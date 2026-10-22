@@ -1,0 +1,54 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { ExportPagePickerScene } from '@/components/illustrations/pages';
+
+export const metadata = helpMetadata({
+  title: 'Exporting Documents',
+  description:
+    'Get your pages out of livepages as a PDF, PNG or SVG images, an animated GIF or a JSON file, or embed a live view elsewhere.',
+  path: '/help/account-and-data/exporting-documents/',
+});
+
+<ArticleLayout title="Exporting Documents" description="Take your pages with you as a PDF, images, an animated GIF or a portable file, or drop a live view into another site." categoryTitle="Account and Data" categorySlug="account-and-data">
+
+Your documents are not locked inside livepages. When you want a copy to print, attach, or drop into a chat, you can export a tab's pages as a PDF, as images or as an animated GIF, or keep the tab as a file you can import back. And when you want the document to stay live wherever you put it, you can embed it instead.
+
+## Exporting a tab
+
+Export works on one tab at a time, so switch to the tab you want first. Then either:
+
+- open the tab's **⋯** menu and choose **Export**; or
+- open the Explorer panel's menu and choose **Export**, which exports the tab you are on.
+
+<Figure caption="The Export dialog: All pages or One page, the page the preview shows, and what the download will be.">
+  <ExportPagePickerScene />
+</Figure>
+
+Pick a format, then **All pages** or **One page**:
+
+- **PDF** to print or attach: every page in one PDF, in order, each at its own size, so an A4 page comes out a true A4 page. Or just the page you pick.
+- **PNG** or **SVG** for a picture: PNG to paste into docs and chat, SVG to stay sharp at any size. One page gives you that page's image; all pages give you a **.zip** with one image per page.
+- **GIF** for an animated image that plays anywhere a picture does, with everything that moves on a page moving in it.
+- **JSON** for a `.livepages-tab.json` file that [imports](/help/tabs/import-tabs/) back into livepages with everything intact. This is the one to keep as a backup.
+
+A tab with a [logo page](/help/pages/logo-pages/) also offers **Logo Kit**: the logo as an SVG, PNGs from 16 to 1024 pixels, and a favicon, in one .zip.
+
+Each page exports exactly its sheet: its size, its background and what is on it, cut off at its edges just as the editor shows it. [Exporting and Presenting Pages](/help/pages/exporting-pages/) covers every format and option in detail.
+
+An export is the right choice when you need a fixed snapshot: a handout, a report, an attachment, or a printout.
+
+## Embedding a live view
+
+When you want the document to keep updating wherever it lives, [embed it](/help/collaboration/sharing/embeds/) instead. An embed is an iframe of a shared document that you can drop into Notion, a wiki, or any page that accepts an iframe.
+
+An embed follows the role of the pass it was made from: a **Viewer** or **Participant** pass embeds a read-only view, an **Editor** pass an editable one. It hides the editor's controls, leaving your pages with pan and zoom, and it stays live: as the document is edited, the embed updates in place rather than showing a stale snapshot.
+
+To grab one, open the **Share** dialog, find the pass you want, open its **Embed** menu and choose **Copy iframe** for a ready-made snippet you can paste straight into your page, or **Copy embed URL** for the address alone. A document in This Browser has no passes, so [sync it](/help/privacy-and-security/offline-mode/) first.
+
+<Tip>
+  Reach for an image when you need a fixed snapshot, and an embed when you want the document to keep
+  updating in place wherever you have put it. For a picture that updates itself, see [Live
+  Image](/help/collaboration/sharing/live-image/).
+</Tip>
+
+</ArticleLayout>

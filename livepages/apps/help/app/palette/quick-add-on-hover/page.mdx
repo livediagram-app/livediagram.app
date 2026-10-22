@@ -1,7 +1,6 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { QuickAddHoverMenu } from '@/components/illustrations/palette-settings';
 import { SettingsEditorPane } from '@/components/illustrations/settings-dialog';
 
 export const metadata = helpMetadata({
@@ -19,17 +18,13 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles("quick-add-on-hover")}
 >
 
-When you select an element, a **+** button appears on each of its sides. Clicking one opens the quick-add menu, a strip of actions for that side: **Duplicate** (copy the element to that side, connected), **Arrow** (drag out an arrow), **Pencil** (sketch freehand) and **Text** (add a label beside it, with no connector). Quick-add on Hover changes how that menu opens, so you can reach it without a click.
+When you select an element, a **+** button appears on each of its sides. Clicking one opens the quick-add menu, a strip of actions for that side: **Duplicate** (copy the element to that side, connected), **Arrow** (drag out an arrow) and **Text** (add a label beside it, with no connector). Quick-add on Hover changes how that menu opens, so you can reach it without a click.
 
-Some elements put their own actions on the **+**: a mind node leads with **Add Child** and **Add Sibling**, a table offers **Add Row** and **Add Column**, and a timeline offers **Add Milestone**.
+Some elements put their own actions on the **+**: a stat row offers **Add Stat**, a table offers **Add Row** and **Add Column**, and a timeline offers **Add Milestone**.
 
 ## What it does
 
 With the setting on, **hovering** a **+** opens its menu straight away, and the menu stays open while your pointer is over the + or the menu itself. Move away and it closes on its own after a moment, long enough to cross the gap between the two. When you are adding several connected elements in a row, it saves a click each time.
-
-<Figure caption="With Quick-add on Hover on, resting the pointer on a + opens its menu, no click needed.">
-  <QuickAddHoverMenu />
-</Figure>
 
 The **+** buttons still only appear on the element you have selected, and clicking a + still works exactly as before, so turning this on only adds the hover shortcut; it never takes the click away. Dragging a **+** still skips the menu and starts an arrow from that side, either way.
 

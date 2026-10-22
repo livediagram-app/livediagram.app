@@ -18,7 +18,7 @@ Your documents are the whole point, so it helps to know exactly where they live 
 Documents are saved through a single Cloudflare Worker API that holds the database binding. The browser never talks to the database directly.
 
 - **Durable storage** lives in Cloudflare D1, the API's database. Each document, its tabs, folders, share links, and its Timeline events are rows there.
-- **Real-time state** (who is in the room, live cursors, in-flight edits) is handled by a Cloudflare Durable Object, one room per document. The room also keeps a working record of collaborative input (answers, ideas, ticks, votes and comments) in its own storage, so that saves made at the same moment can be merged.
+- **Real-time state** (who is in the room, live cursors, in-flight edits) is handled by a Cloudflare Durable Object, one room per document. The room also keeps a working record of collaborative input (such as comments and votes) in its own storage, so that saves made at the same moment can be merged.
 - **Images** you add, and a cached picture of each document used for its thumbnail and live image, are stored in Cloudflare R2 object storage and served back through the same API. Location and camera details are stripped from a JPEG before it is stored.
 
 **Or nowhere but your own machine.** A document created in [Offline Mode](/help/privacy-and-security/offline-mode/) lives only in this browser's IndexedDB. It is never stored by the API, so none of the storage above holds a copy of it (using the AI assistant on it still sends the current tab's elements through the API to the AI provider, as below), and it stays that way until you choose **Sync Document** to move it to the cloud.

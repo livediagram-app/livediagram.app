@@ -4,13 +4,13 @@
 
 A **Pointer note**: a short note joined by a leader line to a point it is about. The line's tip can attach to one of
 the eight points of another element ([The badge](badge.md) "Attachment"), and then the note travels with that element,
-so "stale here" keeps pointing at the right place when the diagram moves. A `shape: 'pointer-note'`.
+so "stale here" keeps pointing at the right place when the page changes. A `shape: 'pointer-note'`.
 
 ## Why
 
-An annotation that explains one spot of a diagram is today a sticky and a loose line: the line is not pinned to
-anything, so the first time the node moves the note points at empty canvas. An arrow pins to anchors, but a note box
-and an arrow are two elements to place, style and keep together, and an arrow ends in a head where an annotation wants
+A note that explains one spot of a page is otherwise a sticky and a loose line: the line is not pinned to
+anything, so the first time the element moves the note points at empty canvas. An arrow pins to anchors, but a note box
+and an arrow are two elements to place, style and keep together, and an arrow ends in a head where a note wants
 a quiet dot.
 
 ## The element
@@ -58,12 +58,7 @@ to the spot the note is about. CSS only; reduced motion and every export show th
 
 ## Palette
 
-| Mode     | Where                                     |
-| -------- | ----------------------------------------- |
-| Diagram  | **Write**: Pointer Note, after Annotation |
-| Pages    | **Write**: Pointer Note                   |
-| Plan     | none                                      |
-| Workshop | **Write**: Pointer Note                   |
+**Write**: Pointer Note.
 
 ## Share roles
 

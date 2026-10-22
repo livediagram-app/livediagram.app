@@ -7,7 +7,7 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata: Metadata = helpMetadata({
   title: 'Getting Started',
   description:
-    'New to livepages? Create your first diagram, learn the canvas, and share it with your team.',
+    'New to livepages? Create your first document, learn your way around its pages, and share it with your team.',
   path: '/help/getting-started/',
 });
 

@@ -18,8 +18,8 @@ describe('the Templates article lists the real catalogue', () => {
   const page = readFileSync(ARTICLE, 'utf8');
 
   it('reads a real catalogue (guard against this test going blind)', () => {
-    expect(TEMPLATES.length).toBeGreaterThan(30);
-    expect(TEMPLATE_CATEGORIES.length).toBeGreaterThan(5);
+    expect(TEMPLATES.length).toBeGreaterThan(20);
+    expect(TEMPLATE_CATEGORIES.length).toBeGreaterThan(1);
   });
 
   it('names every template', () => {

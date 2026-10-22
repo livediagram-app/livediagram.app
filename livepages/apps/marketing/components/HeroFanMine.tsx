@@ -64,7 +64,7 @@ export function HeroFanMine({ diagrams }: { diagrams: readonly RecentDiagram[] }
         <div key={d.id} className={slot(i, i < PHONE_RECENT ? PHONE[i]! : null)}>
           <a href={`/document/${encodeURIComponent(d.id)}`} className={CARD} style={dealt(i)}>
             <span className="truncate text-xs font-semibold sm:text-sm">
-              {d.name || 'Untitled diagram'}
+              {d.name || 'Untitled document'}
             </span>
             <RecentPreview diagram={d} className="h-20 rounded-lg sm:h-32 sm:rounded-xl" />
             {/* How long since it was saved, at the card's foot, right-aligned: off the band at rest, and

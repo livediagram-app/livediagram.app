@@ -26,10 +26,8 @@ editing an existing tab use the same operations; a full rebuild uses `replace`. 
 | `layout`  | `layout <selector> [style=flow\|tree\|mindmap] [direction=down\|right]`           | Lays out only the selection, keeping its top-left corner                                          |
 | `test`    | `test <selector> key=value…`                                                      | Fails the changeset unless the element holds these values                                         |
 
-- **`replace`** is the other changeset body: a whole tab from `graph`, `mermaid`, `template`, `dashboard` (a new
-  Plan Dashboard tab, or a Dashboard tab rebuilt whole, [Plan agents](../026-plan/plan-agents.md) "Making a
-  dashboard") or `elements`, exactly
-  as the MCP takes them ([MCP server](../015-api/mcp-server.md) §4.7). It is still a changeset: previewed, based,
+- **`replace`** is the other changeset body: a whole tab from `template` or `elements`, exactly
+  as the MCP takes them ([MCP server](../015-api/mcp-server.md) §4.3). It is still a changeset: previewed, based,
   attributed and revertable.
 - **Ids** given with `id=` name the new element, so later operations in the same changeset can refer to it. An id is
   a slug id (`^[a-z][a-z0-9_-]{0,23}$`, as [Document views](document-views.md#refs) defines it). Without one, a new

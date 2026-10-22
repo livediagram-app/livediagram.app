@@ -22,7 +22,7 @@ Scope, by file:
 | `apps/live/app/document/[id]/useEditorState.ts`         | `pressModeButton`: Leave, else `pickCanvasTool`                     |
 | `apps/live/hooks/canvas/useCanvasTool.ts`               | `selectCanvasTool` telemetry, `toolBeforeCurrent`                   |
 | `apps/live/components/canvas/EditorCanvasHost.tsx`      | Threads the press; `mode ?? DEFAULT_BUTTON_MODE`                    |
-| `apps/live/components/palette/palette-tile-defs.tsx`    | Seven `tools:mode-<mode>` tiles, `tileGroup: 'mode'` [QF6]          |
+| `apps/live/components/palette/palette-tile-defs.tsx`    | Six `tools:mode-<mode>` tiles , `tileGroup: 'mode'` [QF6]           |
 | `apps/live/components/palette/ElementDataSections.tsx`  | The **Button** menu section                                         |
 | `apps/live/hooks/canvas/useDataShapeSetters.ts`         | `setButtonModeSelected`                                             |
 | `apps/live/lib/draw-commit.ts`, `useElementCreation.ts` | Apply the tile's `mode` at commit / drop                            |
@@ -90,7 +90,7 @@ The element holds one field, `mode`. Everything else is per-viewer and never per
 4. `pickCanvasTool` applies the palette's rules unchanged: entering `spotlight` clears the
    selection; `selectCanvasTool` records the prior tool and emits the palette picker's
    own event for that mode, none for Select and Hand [QF7]. The empty-canvas guard (refusing
-   `eraser`, `format`, `laser`, `spotlight`, `isometric` on an empty tab) is on the path
+   `format`, `laser`, `spotlight`, `isometric` on an empty tab) is on the path
    but never fires for a button pressed on the active tab, which the button itself makes
    non-empty.
 
@@ -111,8 +111,7 @@ Invariants:
 ## Interfaces and contracts
 
 ```ts
-export const SELECTION_MODES = ['select', 'pan', 'laser', 'spotlight', 'eraser', 'format',
-  'isometric'] as const;
+export const SELECTION_MODES = ['select', 'pan', 'laser', 'spotlight', 'format', 'isometric'] as const;
 export type SelectionMode = (typeof SELECTION_MODES)[number];
 export const DEFAULT_BUTTON_MODE: SelectionMode = 'laser';
 export function buttonMode(mode: unknown): SelectionMode; // unknown -> DEFAULT_BUTTON_MODE
@@ -145,9 +144,8 @@ onPressModeButton?: (element: ShapeElement) => void; // Canvas.types, BoxedEleme
 
 - **Persisted:** `mode`, plus the ordinary shape fields. Absent means Laser.
 - **Migration:** `migrateLegacyModeButtons` (`packages/document/src/legacy-mode-buttons.ts`, run by
-  `migrateStoredElements`) drops a retired `mode` (`'highlighter'`, a mode until the Highlighter
-  became a Draw tile, [Highlighter](../../008-canvas/highlighter.md); `'avatar'`, a mode until Avatar
-  mode was removed, and still carried by livediagram documents), so the button loads as a Laser
+  `migrateStoredElements`) drops a `mode` livepages does not have (`'highlighter'`, `'avatar'`, carried by livediagram
+  documents), so the button loads as a Laser
   button rather than failing I4.
 - **Not persisted by default:** colours. A fresh button stores none; an author's pick or a themed
   tab's projection is stored and wins.
@@ -177,7 +175,7 @@ onPressModeButton?: (element: ShapeElement) => void; // Canvas.types, BoxedEleme
 
 - A press is local UI state; there is no wire message and no write.
 - `mode` arrives from any writer (guest, signed-in, API token, MCP); the validator is the gate.
-- Handing out the Eraser is allowed by design; the eraser's own edit gates still apply to the
+- Handing out the Format painter is allowed by design; its own edit gates still apply to the
   presser.
 
 ## Presentation and UX
@@ -195,7 +193,7 @@ onPressModeButton?: (element: ShapeElement) => void; // Canvas.types, BoxedEleme
   changes the mode for that person only").
 - **Copy:** "Switch to <Mode>", "Leave <Mode>", menu "Button", "Switches the presser to".
 - **Palette:** a **Selection Mode** accordion (`tileGroup: 'mode'`) in Behaviours, one tile per
-  mode with the mode's own glyph [QF6].
+  mode with the mode's own glyph [QF6]; no Pages palette layout lists Behaviours.
 - **Telemetry:** placing emits `Element·Added·ModeButton`; re-pointing emits
   `Element·Changed·ModeButton` [QF7].
 - **Export:** the keycap edge, the chip, the mode's glyph from `MODE_GLYPHS` at 22 px, and the

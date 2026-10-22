@@ -5,7 +5,7 @@ a per-tab default — from a curated set of eleven Google Fonts.
 
 ## The eleven fonts
 
-A wide spread of voices so a diagram can read as crisp, friendly, formal,
+A wide spread of voices so a page can read as crisp, friendly, formal,
 hand-drawn, or bold. Defined once in `packages/document/src/fonts.ts` (id + label
 
 - CSS stack + Google family spec):

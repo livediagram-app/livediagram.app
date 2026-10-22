@@ -234,21 +234,6 @@ export function Pill({
   );
 }
 
-/** A line of text standing in for a sentence: a soft bar. */
-export function TextBar({
-  x,
-  y,
-  w,
-  className = LINE,
-}: {
-  x: number;
-  y: number;
-  w: number;
-  className?: string;
-}) {
-  return <rect className={className} x={x} y={y} width={w} height="3" rx="1.5" />;
-}
-
 // Chrome glyphs on a 10-unit grid, drawn at (x, y) in currentColor-free strokes.
 export function Glyph({
   x,

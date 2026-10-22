@@ -89,7 +89,7 @@ the preset tiles:
 - the **Shape** morph tiles (the single menu previews just the clicked
   element, never its whole group; the multi menu previews every morphable
   member),
-- the **Icon size** tiles on a Technology icon ([Technology icons](technology-icons.md)),
+- the **Icon size** tiles on an icon,
 - the **Icon position** cross on a shape's inline icon,
 - the **Markers** tiles and their Size row ([Shape markers](../009-elements/shape-markers.md)),
 - the **Text Alignment** 3×3 grid, and
@@ -205,25 +205,6 @@ shapes have always had `colorPreset`.) Hand-setting any of the colours the look
 owns (cell fill, grid, text, header band, header text) or toggling the banding
 clears the binding, because past that point the colours are the user's.
 
-## Boards and sheets
-
-A Plan board's and a Sheet's Presets grid is a row of **calm hues** rather than
-the shape looks: Slate, Stone, Sky, Teal, Sage, Amber, Rose and Lavender, then
-the reset. A board or sheet is a large surface, so the shape looks' accent fills
-(Solid, Bold, Inked) made it a loud slab. Each hue is only a whisper on the fill
-(6% on a light canvas, 14% on a dark one), carried more firmly by the border, with
-ink leaning toward it and always 4.5:1 on its fill.
-
-The pick is stored as its id (`colorPreset: 'plan-<hue>'`) and drawn **for the
-surface it is on** (`planPalette` resolves it over the colours it also wrote),
-so the same board is quiet paper on a light canvas and a quiet tint on a dark
-one, and follows a switch between them, a theme change included. The tiles are
-drawn for the canvas surface they will be seen on. Hand-setting a colour clears
-the binding, as for a shape. A multi-selection of only boards and sheets shows
-this grid; one mixing them with shapes shows the shape looks. Maximised, the
-element's hue also tints the chrome in its header band (Plan board "The header
-holds the top row"). Defined in `@livepages/document` `plan-presets.ts`.
-
 ## Code-block schemes
 
 A code block's Presets grid is its **colour scheme** rather than a shape look. It paints its own card and takes no element colours, so there is nothing to reset it to but another scheme, and the grid carries no reset row. See [Code block](../009-elements/code-block.md).
@@ -238,6 +219,6 @@ chart back on the tab theme's palette. See [Data charts (pie + bar + line)](../0
 ## Which grid an element gets
 
 `TargetPresetsSection` (`components/palette/PresetSections.tsx`) is the one
-place that answers it: chart palette, table look, board and sheet hue, shape look,
+place that answers it: chart palette, table look, shape look,
 sticky pad, code scheme, or arrow line. Elements with none render nothing, so the caller mounts
 it unconditionally.

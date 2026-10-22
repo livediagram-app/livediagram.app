@@ -20,7 +20,7 @@ type HeroMatch = (typeof ALL)[number];
 
 // The best matches for a query, by the editor's own search (filterGallery): a template whose title
 // holds every typed word ranks before one found only through its description, category or search
-// words, then the catalogue's order. "retro" puts Retrospective ahead of a board that mentions one.
+// words, then the catalogue's order. "poster" puts Event Poster ahead of a blank page that mentions one.
 export function heroSearch(query: string, limit = HERO_SEARCH_LIMIT): HeroMatch[] {
   const words = templateQueryWords(query);
   if (words.length === 0) return [];
@@ -40,13 +40,13 @@ export function heroSearch(query: string, limit = HERO_SEARCH_LIMIT): HeroMatch[
 // HTML (no script) shows this opening hand, left to right: all seven on a very wide screen
 // (HERO_FAN_FULL_MIN_PX), the middle five on a laptop, the middle three on a phone.
 export const HERO_FAN_OPENING: readonly TemplateKind[] = [
-  'retrospective',
-  'kanban',
-  'flowchart',
-  'mindmap',
+  'resume',
+  'year-in-review',
+  'logo-design',
   'slide-deck',
-  'budget-planner',
-  'sketchnote',
+  'article',
+  'wireframe-mobile-app',
+  'event-poster',
 ];
 
 // How many cards the fan holds at once, and the window width from which all of them show: seven
@@ -84,7 +84,7 @@ export function nextFanKind(
   return { kind: pool[from]!, at: from };
 }
 
-// A curated kind's descriptor (its title, description and mode), from the same catalogue.
+// A curated kind's descriptor (its title, description and category), from the same catalogue.
 export function heroTemplate(kind: TemplateKind): HeroMatch {
   const t = ALL.find((m) => m.kind === kind);
   if (!t) throw new Error(`hero template not listed: ${kind}`);

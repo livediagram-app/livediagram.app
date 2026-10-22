@@ -2,7 +2,7 @@
 
 Follow the references below only as needed; never upfront.
 
-- ./document.md - when naming things: a document holds tabs; diagram and the Plan tabs are tab kinds; whiteboarding is an editor mode
+- ./document.md - when naming things: a document holds tabs, a tab holds pages; one tab kind and one editor mode (Pages)
 - ./document-structure.md - when working on Document structure: Documents contain tabs; elements can link across tabs
 - ./per-tab-storage.md - when working on Per-tab storage: Split tabs into their own D1 rows so autosave scope shrinks
 - ./tab-document-many-to-many.md - when working on Tab ↔ document many-to-many: Link table so a tab can live in multiple documents

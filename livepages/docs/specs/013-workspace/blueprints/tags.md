@@ -4,15 +4,15 @@ Derived from [Tags](../tags.md). Implementation detail only; design lives in the
 
 ## Domain and naming
 
-| Term          | Identifier                                               | Where                                   |
-| ------------- | -------------------------------------------------------- | --------------------------------------- |
-| Tag           | `Tag` `{ id, name, colour, createdAt }`                  | `packages/api-schema/src/tags.ts`       |
-| Link          | `TagLink` `{ tagId, documentId }`; table `document_tags` | api-schema, migration `0094_tags.sql`   |
-| Tag list      | `TagsList` `{ tags, links }`                             | `GET /api/tags`                         |
-| Tag picker    | `TagPicker`, opened through `openPicker(target)`         | `apps/live/components/tags/`            |
-| Chip / dots   | `TagChip`, `DocumentTagChips`, `DocumentTagDots`         | `apps/live/components/tags/TagChip.tsx` |
-| Tags page     | `SelectedNode { kind: 'tags'; id?: string }`, `TagsPane` | `apps/live/app/explorer/tags/`          |
-| Panel section | `PanelSection { kind: 'tags' }`, `PanelTagsSection`      | `apps/live/components/panels/`          |
+| Term          | Identifier                                               | Where                                                              |
+| ------------- | -------------------------------------------------------- | ------------------------------------------------------------------ |
+| Tag           | `Tag` `{ id, name, colour, createdAt }`                  | `packages/api-schema/src/tags.ts`                                  |
+| Link          | `TagLink` `{ tagId, documentId }`; table `document_tags` | api-schema, the baseline migration, `0001_livepages_baseline.sql`, |
+| Tag list      | `TagsList` `{ tags, links }`                             | `GET /api/tags`                                                    |
+| Tag picker    | `TagPicker`, opened through `openPicker(target)`         | `apps/live/components/tags/`                                       |
+| Chip / dots   | `TagChip`, `DocumentTagChips`, `DocumentTagDots`         | `apps/live/components/tags/TagChip.tsx`                            |
+| Tags page     | `SelectedNode { kind: 'tags'; id?: string }`, `TagsPane` | `apps/live/app/explorer/tags/`                                     |
+| Panel section | `PanelSection { kind: 'tags' }`, `PanelTagsSection`      | `apps/live/components/panels/`                                     |
 
 No synonyms: never "label" or "category" in code.
 

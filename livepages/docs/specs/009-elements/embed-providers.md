@@ -12,7 +12,7 @@ The parser, the poster URL and the embed origin are the only provider-specific p
 [YouTube video element](youtube-video.md), so each provider is one more case in them. There
 is no `provider` field: the provider is derived from the link, like the video id.
 
-Miro and Excalidraw both embed live third-party content. The hard part, an iframe that
+Slides and articles show live third-party content: a prototype, a video, a doc. The hard part, an iframe that
 does not eat the canvas, is shared with the YouTube element.
 
 ## `embedTargetFor`
@@ -77,9 +77,7 @@ as you type, validated again at commit.
 The collapsible tile group is shared state across the palette
 (`palette-group-state.tsx`): opening one closes any other.
 
-Behaviour holds two groups ([Session button](../012-collaboration/session-button.md)'s session tools
-and [The Reaction Pad](reaction-pad.md)'s reactions) with eight tiles between them. With both open the
-category would run well past the panel, so the reader would scroll a list they
+A category holding two groups of several tiles each would, with both open, run well past the panel, so the reader would scroll a list they
 opened precisely to avoid scrolling.
 
 The state lives in a context rather than per group, for the same reason the

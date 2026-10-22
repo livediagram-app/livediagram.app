@@ -168,8 +168,7 @@ The Flows table per keystroke at 200 rows: `flowLevels` 0.14 ms, `rowReasons` 0.
 
 ## Presentation and UX
 
-- Palette: tile `tools:sankey`, last in Build, blurb "Flows drawn as wide as the amount they carry"; Diagram and
-  Pages only.
+- Palette: tile `tools:sankey`, last in Concepts, blurb "Flows drawn as wide as the amount they carry".
 - Band opacity 0.42 rest, 0.78 focus, 0.10 dim; unlit nodes 0.35; 150 ms ease-out (`D156`).
 - Labels 10 / 12 / 15 px (`D158`), name semibold, detail at 0.92 size and 0.72 opacity; halo 3 px at 0.75.
 - Dialog: size `3xl`; preview 300 px wide, 150–260 px tall (`D164`); final copy as in the spec.

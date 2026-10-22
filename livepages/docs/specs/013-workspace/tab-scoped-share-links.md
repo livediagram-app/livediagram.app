@@ -16,7 +16,7 @@ Owners sometimes want to show one tab of a document, not the whole thing: the ro
 
 ## Data model
 
-Migration `0048_tab_scoped_share_links.sql`:
+The baseline migration, `0001_livepages_baseline.sql`:
 
 - `share_links.tab_id TEXT NULL`: the tab the link is scoped to; NULL = All tabs. Existing rows are NULL, so every existing link keeps its meaning.
 - `shared_with.tab_id TEXT NULL`: the scope the visitor was last granted, written alongside `role` on every share resolve (last visit wins, the rule `role` already follows).
@@ -93,7 +93,7 @@ A session's scope and code come from its room ticket, minted a moment before the
 
 - A scoped visitor lands **on their tab**, whatever tab the document last had open.
 - Other tabs render as **"Not shared" pills**: greyed, an eye-off glyph, the label "Not shared", not clickable, not draggable, no context menu. The hover card reads "This tab isn't shared with you". They never sit inside a tab folder (the folder name is withheld too).
-- Everything that works across tabs, or on the tab bar itself, is off for a scoped visitor: the add-tab button, the mode menu's New Tab offer (a mode that would open a new tab is shown but inert), the tab menu (so rename, duplicate, delete, lock and the tab's session tools too), drag-reordering, tab folders, document rename, and the slide deck (picking it says "The slide deck isn't shared with you").
+- Everything that works across tabs, or on the tab bar itself, is off for a scoped visitor: the add-tab button, the tab menu (so rename, duplicate, delete and lock too), drag-reordering, tab folders, document rename, and the slide deck (picking it says "The slide deck isn't shared with you").
 - An element link, search result or keyboard switch pointing at a tab outside the scope does nothing but show the toast "That tab isn't shared with you".
 - Make a copy takes their tab only.
 

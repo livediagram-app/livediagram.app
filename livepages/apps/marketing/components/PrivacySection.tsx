@@ -24,13 +24,13 @@ const PROMISES: { title: string; description: string; art: React.ReactNode }[] =
   {
     title: 'Your data is yours',
     description:
-      "Every document lives in your own row, scoped to your owner id. Export any tab to PNG, SVG, PDF, Mermaid, Markdown, or portable JSON whenever you like, and delete your account from settings to remove it all in one go. We don't make money by holding it hostage.",
+      "Every document lives in your own row, scoped to your owner id. Export any page to PNG, SVG or PDF, or any tab as portable JSON, whenever you like, and delete your account from settings to remove it all in one go. We don't make money by holding it hostage.",
     art: <DataIsYoursArt />,
   },
   {
     title: 'Never sold, never traded',
     description:
-      "We don't sell your data. We don't trade it. We don't share it with advertisers or model trainers or anyone else. There is no paid tier and no plan to add one, so we have no commercial pressure to monetise what you draw.",
+      "We don't sell your data. We don't trade it. We don't share it with advertisers or model trainers or anyone else. There is no paid tier and no plan to add one, so we have no commercial pressure to monetise what you make.",
     art: <NoSaleArt />,
   },
   {
@@ -64,7 +64,7 @@ export function PrivacySection() {
           </h2>
           <p className={BAND_LEAD}>
             We don&rsquo;t make money by being creepy. No third-party trackers, no ads, no resale,
-            no surprise audience. Just a diagram editor that treats your work like your work.
+            no surprise audience. Just an editor that treats your work like your work.
           </p>
         </div>
 

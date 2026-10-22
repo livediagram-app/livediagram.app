@@ -17,8 +17,8 @@ const TemplateGallery = dynamic(() =>
 );
 
 // The page tells one story (docs/specs/019-marketing/marketing-site.md): what it is, one click to a real
-// diagram, its promises (built with your values in mind), then a beat per core feature, each
-// linking into its own category page.
+// document, its promises (built with your values in mind), then a beat per kind of page and one for
+// working together, each linking into its own category page.
 export default function LandingPage() {
   return (
     <>

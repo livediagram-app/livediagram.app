@@ -13,7 +13,7 @@ Scope, by file:
 
 | File                                                                              | Role                                                                                                                                                                |
 | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `packages/edit-operations/{package.json,tsconfig.json,oxlint.config.ts,...}`      | Private workspace package `@livepages/edit-operations`, laid out like `packages/explorer-lens` (EO1)                                                              |
+| `packages/edit-operations/{package.json,tsconfig.json,oxlint.config.ts,...}`      | Private workspace package `@livepages/edit-operations`, laid out like `packages/explorer-lens` (EO1)                                                                |
 | `packages/edit-operations/src/index.ts`                                           | The public surface (listed under [Interfaces and contracts](#interfaces-and-contracts))                                                                             |
 | `packages/edit-operations/src/types.ts`                                           | `EditOperation` and one type per operation, `Selector`, `Placement`, `FieldValue`, `ApplyOptions`, outcomes                                                         |
 | `packages/edit-operations/src/vocabulary.ts`                                      | `EDIT_OPERATION_NAMES`, `OPERATION_MEMBERS`, `PLACEMENT_RELATIONS`, `SELECTOR_KEYS`, `FLAG_MEMBERS`, `RESERVED_WORDS`, constants                                    |
@@ -58,7 +58,7 @@ Scope, by file:
 | `apps/live/lib/canvas.ts`                                                         | `withFrameContents` and `isFrameEl` removed; `framesFirst` reads `isContainer`                                                                                      |
 | `apps/live/hooks/canvas/useBoxedDragHandlers.ts`                                  | The drag's move set is `containerContents(elements, ids)`                                                                                                           |
 | `apps/live/lib/canvas.test.ts`                                                    | The `withFrameContents` suite gives way to `containment.test.ts` and `useEditorDrag.frames.test.tsx`                                                                |
-| `apps/api/package.json`                                                           | Depends on `@livepages/edit-operations`; the changeset route is the [Agent changesets](agent-changesets.md) blueprint's                                           |
+| `apps/api/package.json`                                                           | Depends on `@livepages/edit-operations`; the changeset route is the [Agent changesets](agent-changesets.md) blueprint's                                             |
 | `docs/development/architecture.md`, `README.md`                                   | The package in the package list                                                                                                                                     |
 
 ## Domain and naming
@@ -79,7 +79,7 @@ Scope, by file:
 | Content origin     | `contentOrigin(tab)` (shared)                       | The point coordinates shown and taken are relative to                                                                        |
 | Field              | `fields` member, `FieldValue`                       | A key and its value; `null` unsets                                                                                           |
 | Field alias        | `FIELD_ALIASES`                                     | A spec-named key (`label`, `note`, `shape`, `fill`, `text`, `line`) or a view's style key (`stroke`, `text-color`, `border`) |
-| Live field         | `LIVE_ELEMENT_FIELDS` (`@livepages/document`)     | A multi-writer field that travels as a delta; never written by an operation                                                  |
+| Live field         | `LIVE_ELEMENT_FIELDS` (`@livepages/document`)       | A multi-writer field that travels as a delta; never written by an operation                                                  |
 | Theme slot         | `fillSlotNames`, `resolveColourValue`               | `theme` or one of the theme's six quick-swatch hues, written as a binding                                                    |
 | Container          | `isContainer` (frame or lane)                       | A shape whose box holds members                                                                                              |
 | Member, membership | `deriveContainers` (shared) over `smallestHolder`   | An element and the smallest frame or lane holding its centre                                                                 |
@@ -96,7 +96,7 @@ Scope, by file:
 | Result line        | `ResultLine` (union on `mark`)                      | One line of a changeset's answer: `+ ~ - »`, a container line, `!`                                                           |
 | Warning            | `EditWarning`, `EDIT_WARNING_CODES`                 | A named note that does not reject                                                                                            |
 | Rejection          | `EditRejection`, `EDIT_REJECTION_CODES`             | A named refusal; the spec's code table                                                                                       |
-| Replace            | `ReplaceBody`, `applyReplace`                       | The other changeset body: a whole tab from graph, Mermaid, template, elements                                                |
+| Replace            | `ReplaceBody`, `applyReplace`                       | The other changeset body: a whole tab from a template or elements                                                            |
 
 Banned: "op" for an edit operation (that is a room `ElementOp`), "action", "command" (a CLI command is a front
 door), "batch", "patch", "query" or "filter" for a selector, "handle" or "alias" for a ref, "group" for a frame
@@ -434,16 +434,15 @@ On the working state, in order:
 3. `rebindArrowAnchorsAfterMove(elements, geometryChanged)` for every boxed element whose box changed.
 4. `lanesToFront`, then each container moved to directly before its earliest member when it is after it (I6).
 5. `settleDiagramKeys(elements, tagColoursOf(tab))`: a diagram key's rows follow the lines and tags the edit leaves,
-   as the editor settles them on commit ([Diagram key](../../009-elements/diagram-key.md) "Stored rows").
+   as the editor settles them on commit.
 6. Membership before and after (`deriveContainers`) is read by the result lines' container lines.
 
 ### Replace
 
 `applyReplace(tab | null, body, options)` builds the next tab as the MCP does and returns the same outcome shape
-(EO41). The api's `POST /api/documents` compiles each `graph`, `mermaid` or `template` tab through it with
+(EO41). The api's `POST /api/documents` compiles each `template` tab through it with
 `tab === null`, and a changeset with a `replace` body on a tab id the document lacks creates that tab.
 
-- `graph` / `mermaid`: `resolveGraphInput` then `layoutGraph` (the label cap included).
 - `elements`: `normaliseElements`, shape kinds coerced, `applyLayout(body.layout, elements)`, then `buildTab`'s
   facing bends (`withFacingBends`, [Layout cleanup](../../008-canvas/layout-cleanup.md) "Angled lines bend twice")
   and diagram keys settled.
@@ -493,11 +492,7 @@ type ApplyOptions = {
 // `themeId` names a created tab's theme by id (custom themes included); it wins over `theme`.
 type ReplaceOptions = ApplyOptions & { tabId: string; name: string; themeId?: string };
 
-type ReplaceBody =
-  | { graph: GraphInput }
-  | { mermaid: string }
-  | { template: string }
-  | { elements: unknown[]; layout?: 'auto' | 'preserve' };
+type ReplaceBody = { template: string } | { elements: unknown[]; layout?: 'auto' | 'preserve' };
 
 type ApplySuccess = {
   tab: Tab;
@@ -669,7 +664,7 @@ and by the api for the tab byte cap.
 | `not_connected`     | `no arrow <a>→<b>`; the arrows touching a and b as `ref  from→to "label"`                                   | `connect <a> -> <b> first, or insert between the ends of one of these` |
 | `frame_captures`    | `the <frame> @x,y w×h would hold non-members:` and each bystander                                           | `add them to the members, or add absorb or make-room`                  |
 | `test_failed`       | `<ref> <key>: expected <value>, actual <value>`                                                             | `re-read <ref>: it changed since you read it`                          |
-| `invalid_result`    | `<ref> <field>: <rule>` from `elementValidationIssue`                                                       | `see the format: livepages schema <kind>`                            |
+| `invalid_result`    | `<ref> <field>: <rule>` from `elementValidationIssue`                                                       | `see the format: livepages schema <kind>`                              |
 | `too_large`         | `<n> operations; the cap is <CHANGESET_MAX_OPERATIONS>`                                                     | `split it into several changesets, or send a replace`                  |
 
 Every rejection prints `error <code> · op <n> · <formatOperation(op)>` (parse errors: `· line <n>`), its detail
@@ -703,11 +698,6 @@ Edge cases:
 - **E16** A `connect` whose `a` or `b` is an arrow: `invalid_value` ("arrows connect boxes").
 - **E17** `connect a->b->c` or `connect a -> b -> c`: `parse_error` at the second `->` word, expected
   `one -> in connect: <a> -> <b>`; the `<a>-><b>` selector term with a third end is a parse error too.
-- **E18** A result holding a board or Sheet the tab did not hold, on a tab not in Plan (operations after `finalise`,
-  replace after `nextTab`; `planOnlyAddedOutsidePlan`): `invalid_value` (`planOnlyOutsidePlan`), detail `a board or
-Sheet goes only on a tab in Plan: <ids>`, hint `add a Board tab or a Sheet tab with add_tab (template "kanban" or
-"blank-spreadsheet")` ([Agent changesets](../agent-changesets.md#boards-and-sheets-only-in-plan)). One the tab
-  already held passes.
 
 ## Security and trust
 
@@ -772,7 +762,7 @@ and changeset ids. Fields are counts, codes and names only.
 | `[edit-ops] selection-unread` | `selected` with `selected: null`             | `operation`                                                          |
 | `[edit-ops] locked`           | An operation refused for a lock              | `operation`, `op`, `scope` (tab, element, layer)                     |
 | `[edit-ops] theme-fallback`   | No theme passed and `tab.theme` not built in | (none)                                                               |
-| `[edit-ops] replace`          | `applyReplace` ran                           | `source` (graph, mermaid, template, elements), `elements`            |
+| `[edit-ops] replace`          | `applyReplace` ran                           | `source` (template, elements), `elements`                            |
 | `[edit-ops] laid-out`         | `layout` or `wrap tidy` laid boxes out       | `operation`, `boxes`, `arrows`, `style`                              |
 | `[edit-ops] test-failed`      | A `test` found other values                  | `operation`, `fields`                                                |
 
@@ -824,7 +814,7 @@ Every suite uses `packages/edit-operations/src/fixtures/checkout-flow.ts` and a 
 | Containers behind members; lanes first                                                                                   | `invariants.test.ts` › "lanes first, and every container behind its members" (I6)                                                     |
 | `too_large` over `CHANGESET_MAX_OPERATIONS`                                                                              | `parse.test.ts` › "caps the line length, the operation count"                                                                         |
 | Cost grows linearly with the tab and with the changeset                                                                  | `performance.test.ts`                                                                                                                 |
-| `replace` from graph, Mermaid, template, elements                                                                        | `replace.test.ts`                                                                                                                     |
+| `replace` from a template or elements                                                                                    | `replace.test.ts`                                                                                                                     |
 | Moved MCP modules behave as before                                                                                       | `packages/document/src/{element-normalise,graph-input,tab-builders}.test.ts`                                                          |
 | Every stored field listed per type                                                                                       | `packages/document/src/element-fields.test.ts` (plus the compile-time `satisfies`)                                                    |
 | Validation names the field and rule                                                                                      | `packages/document/src/validate.test.ts` › "elementValidationIssue"                                                                   |
@@ -836,14 +826,14 @@ Every suite uses `packages/edit-operations/src/fixtures/checkout-flow.ts` and a 
 
 | Constant                   | Value                     | Provenance                                                                            | Safe range      |
 | -------------------------- | ------------------------- | ------------------------------------------------------------------------------------- | --------------- |
-| `CHANGESET_MAX_OPERATIONS` | 500                       | [Agent changesets](../agent-changesets.md), imported from `@livepages/api-schema`   | owned there     |
+| `CHANGESET_MAX_OPERATIONS` | 500                       | [Agent changesets](../agent-changesets.md), imported from `@livepages/api-schema`     | owned there     |
 | `GRAPH_LABEL_MAX`          | 40                        | Spec; the MCP's graph input                                                           | 24 to 80        |
 | `PLACEMENT_GAP`            | `LAYER_GAP` (90)          | The layout engine's rank gap (EO23)                                                   | 16 to 200       |
 | `PLACEMENT_GAP_MAX`        | 2,000                     | Larger reads as a separate drawing (EO23)                                             | 500 to 10,000   |
 | `INSERT_MIN_GAP`           | 16                        | Below it boxes read as touching (EO32)                                                | 8 to 40         |
 | `FRAME_PAD`, `FRAME_TOP`   | 32, 64                    | The clustered layout's frame padding and header band                                  | 16 to 96        |
-| `SLUG_ID_PATTERN`          | `^[a-z][a-z0-9_-]{0,23}$` | [Document views](../document-views.md), from `@livepages/document`                  | fixed           |
-| `REF_MIN_LENGTH`           | 4                         | [Document views](../document-views.md), from `@livepages/document`                  | fixed           |
+| `SLUG_ID_PATTERN`          | `^[a-z][a-z0-9_-]{0,23}$` | [Document views](../document-views.md), from `@livepages/document`                    | fixed           |
+| `REF_MIN_LENGTH`           | 4                         | [Document views](../document-views.md), from `@livepages/document`                    | fixed           |
 | `EDIT_LINE_MAX_CHARS`      | 16,384                    | A 4,000-character code value with escapes and its other fields fits (EO3)             | 8,192 to 65,536 |
 | `EDIT_MAX_ERRORS`          | 10                        | Enough to fix a batch of typos in one round (EO7)                                     | 1 to 50         |
 | `REJECTION_CANDIDATES_MAX` | 10                        | A readable list; the rest counted (EO45)                                              | 5 to 25         |

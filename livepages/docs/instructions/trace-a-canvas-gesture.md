@@ -1,6 +1,6 @@
 # Trace a canvas gesture
 
-How to measure what one gesture (a click, a drag, a pan) costs on a large board, by hand, in a real
+How to measure what one gesture (a click, a drag, a pan) costs on a large tab, by hand, in a real
 browser. The budget it is held to is in [Canvas performance](../specs/008-canvas/canvas-performance.md).
 
 ## Build
@@ -8,19 +8,19 @@ browser. The budget it is held to is in [Canvas performance](../specs/008-canvas
 1. Work in your own worktree off `origin/main`.
 2. For named functions in profiles, add `productionBrowserSourceMaps: true` to
    `apps/live/next.config.ts` for this build only.
-3. Build the export against the api whose board you measure:
+3. Build the export against the api whose document you measure:
    `NEXT_PUBLIC_API_BASE=https://staging.livepages.app/api npx next build` in `apps/live`, under
    PM2.
 4. Revert `next.config.ts` as soon as the build is done; the flag is never committed.
 5. Serve `apps/live/out` over HTTPS on a free loopback port, mapping every `/document/<id>` path to
    `document/placeholder.html`, under PM2.
 
-## Open the board
+## Open the document
 
 6. Launch headless Chromium at 1440 × 900 in dark mode, ignoring the local certificate.
 7. Route every non-GET `/api/**` request to a 204 and swallow every WebSocket
-   (`context.routeWebSocket`), so the board is never written; staging boards belong to people.
-8. Open the board, wait for network idle, dismiss any dialog, and press `v` for the Select tool.
+   (`context.routeWebSocket`), so the document is never written; staging documents belong to people.
+8. Open the document, wait for network idle, dismiss any dialog, and press `v` for the Select tool.
 9. Set `Emulation.setCPUThrottlingRate` to 4.
 
 ## Measure
@@ -41,7 +41,7 @@ browser. The budget it is held to is in [Canvas performance](../specs/008-canvas
 
 14. Start the CPU profiler (`Profiler.start`) once, over an idle window before the first measured
     gesture, and throw that window away. Starting it parses every script again to collect source
-    positions: about a second at 4× on a large board, which otherwise lands in the first gesture's
+    positions: about a second at 4× on a large tab, which otherwise lands in the first gesture's
     trace as a task of `(program)`.
 15. Profile the following gestures; their timings carry the sampler's overhead, so read budgets from
     step 10, and the profile only for where the time goes.

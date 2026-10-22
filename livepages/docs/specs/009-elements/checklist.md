@@ -1,6 +1,6 @@
 # Checklist
 
-Checkable to-do rows as a first-class element. It gives agile/retro boards and assigned-action workflows ([Assigned actions](../012-collaboration/assigned-actions.md)) a visual home: a card of tasks whose boxes anyone with edit access can tick, live-synced like everything else.
+Checkable to-do rows as a first-class element. It gives to-do pages, onboarding sheets and assigned-action workflows ([Assigned actions](../012-collaboration/assigned-actions.md)) a visual home: a card of tasks whose boxes anyone with edit access can tick, live-synced like everything else.
 
 ## Model: a data shape
 
@@ -11,11 +11,11 @@ checklistItems?: { text: string; done: boolean }[];
 // validate.ts bounds: ≤ 30 items, text ≤ 200 chars each
 ```
 
-Everything else is inherited from the shape path: tap-to-drop AND draw-to-size, selection, resize, lock, layers, duplicate, copy/paste, history, sync, eraser. `checklist` joins `isSelfDrawingShape` (no centred label; the rows are the content). Default size 240×180; new checklists seed three unchecked starter rows, "First task", "Second task" and "Third task" (`CHECKLIST_DEFAULT_ITEMS`): concrete enough to show the affordance, cheap to overwrite.
+Everything else is inherited from the shape path: tap-to-drop AND draw-to-size, selection, resize, lock, layers, duplicate, copy/paste, history, sync. `checklist` joins `isSelfDrawingShape` (no centred label; the rows are the content). Default size 240×180; new checklists seed three unchecked starter rows, "First task", "Second task" and "Third task" (`CHECKLIST_DEFAULT_ITEMS`): concrete enough to show the affordance, cheap to overwrite.
 
 ## Visual treatment
 
-A themed boxed card (fill/stroke/text follow the tab theme like any shape — unlike the code block, a checklist belongs to the diagram's palette). Each row: a rounded checkbox square + the row text, top-aligned, clipped to the card. Done rows tick the box (brand-coloured check), strike through the text, and mute it. A footer count ("2/5") renders bottom-right when at least one row is done.
+A themed boxed card (fill/stroke/text follow the tab theme like any shape — unlike the code block, a checklist belongs to the page's palette). Each row: a rounded checkbox square + the row text, top-aligned, clipped to the card. Done rows tick the box (brand-coloured check), strike through the text, and mute it. A footer count ("2/5") renders bottom-right when at least one row is done.
 
 ## Interaction
 
@@ -36,8 +36,8 @@ undoable: like a dot or an answer, they are the room's, not an edit.
 
 ## Plumbing checklist
 
-`SHAPE_KINDS` + field bounds in `validate.ts`, colour defaults in `colors.ts` (standard themed boxed element), kind label ("Checklist"), palette tile `tools:checklist` (Components category; favouritable, no letter shortcut), quick-connect excluded, OpenAPI regen, MCP schema prose (built from `SHAPE_KINDS`), AI-generate prompt vocabulary (include — "the AI may emit checklists for plan/retro asks" is genuinely useful), telemetry dashboard TOOLS label set.
+`SHAPE_KINDS` + field bounds in `validate.ts`, colour defaults in `colors.ts` (standard themed boxed element), kind label ("Checklist"), palette tile `tools:checklist` (Components category; favouritable, no letter shortcut), quick-connect excluded, OpenAPI regen, MCP schema prose (built from `SHAPE_KINDS`), AI-generate prompt vocabulary (include: "the AI may emit checklists for to-do asks" is genuinely useful), telemetry dashboard TOOLS label set.
 
 ## Telemetry
 
-`track('Element', 'Added', 'Checklist')` at the add handler. Box toggles deliberately don't track (high-frequency, low-signal, matching [Session tools (timer + voting)](../012-collaboration/session-tools.md)'s vote-cast precedent).
+`track('Element', 'Added', 'Checklist')` at the add handler. Box toggles deliberately don't track (high-frequency, low-signal).

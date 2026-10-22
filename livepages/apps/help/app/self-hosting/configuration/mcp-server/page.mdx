@@ -22,10 +22,9 @@ The MCP server is its own Cloudflare Worker, `apps/mcp`. It carries no AI model 
   binding in `apps/mcp/wrangler.toml`. The command is below.
 </Step>
 <Step n={2}>
-  Give the Worker a hostname of its own, such as `mcp.diagrams.example.com`: in the Cloudflare
-  dashboard, open the `livepages-mcp` Worker and add a custom domain under **Domains & Routes**.
-  The deploy token only uploads Workers, so hostnames are attached by hand, as for every other
-  Worker.
+  Give the Worker a hostname of its own, such as `mcp.pages.example.com`: in the Cloudflare
+  dashboard, open the `livepages-mcp` Worker and add a custom domain under **Domains & Routes**. The
+  deploy token only uploads Workers, so hostnames are attached by hand, as for every other Worker.
 </Step>
 <Step n={3}>
   Point the pieces at each other with the three variables in the table below. Each ships with

@@ -6,7 +6,7 @@ Status: shipped
 
 On a touch screen every control has a tap area of at least **44 × 44px**, the size Apple's Human
 Interface Guidelines set (44pt) and WCAG 2.5.5 (Target Size, AAA) asks for. WCAG 2.5.8 (AA) sets the
-floor at 24px; the editor aims past it, because a diagram editor is used with a thumb on a phone.
+floor at 24px; the editor aims past it, because a page editor is used with a thumb on a phone.
 
 ## How
 
@@ -15,7 +15,7 @@ floor at 24px; the editor aims past it, because a diagram editor is used with a 
   `(pointer: coarse)`; a box already 44px or more is left alone. The control keeps its drawn size,
   so a dense desktop layout and a phone share one design. The host is positioned (`relative`, or
   its own `absolute`): a static host's pad fills its nearest positioned ancestor and takes every tap
-  there (a Plan column's Remove Column once took every tap in its popover). A static guard
+  there (a popover's remove button once took every tap in its popover). A static guard
   (`touch-target-guard` in `packages/tailwind-config`, run by each site's `touch-target-guard.test.ts`)
   fails a class list that names either utility without a position.
 - **`touch-target-y` for packed rows.** Where neighbours sit closer than 44px apart (the palette
@@ -26,12 +26,10 @@ floor at 24px; the editor aims past it, because a diagram editor is used with a 
   header buttons (`MovablePanelHeader`, `SettingsPopover`), the dialog close in both shapes
   (`DialogCloseButton`), search clear and dismiss buttons, and Add tab. Resize handles have their
   own 16px pad on a coarse pointer (canvas element parts).
-- **Every canvas toolbar pads its items.** The Palette strip, the Draw dock's pills (`DockToolbar`)
-  and the menu button's own card in Draw (`ToolbarExplorerButton`) all carry `PHONE_TOOLBAR_ITEMS`;
+- **Every canvas toolbar pads its items.** The Palette strip carries `PHONE_TOOLBAR_ITEMS`;
   the selection toolbar's 32px buttons (`SelectionPopover`) get `touch-target-y`, as do the tab pill,
   the role pill (Editing / Viewing), the tour card's buttons and a page's lock and cog.
-  The Plan cogs (a column's, Board Settings, a Sheet's) and the empty-tab card's close take the
-  full `touch-target`.
+  The empty-tab card's close takes the full `touch-target`.
 - **A phone sheet's grab handle** (BottomSheet, Dialog's `phoneSheet`, the start panels) is one shared strip,
   `SheetHandle`: the sheet's full width and 32px tall (`SHEET_HANDLE_PX`), its pill 48 by 6px, so a thumb finds it
   without aiming for the pill. A pad cannot reach above it, where the sheet's edge clips it.
@@ -51,7 +49,7 @@ floor at 24px; the editor aims past it, because a diagram editor is used with a 
   (`[@media(hover:none)]`), quietly where it would crowd. A canvas comment bubble's quick delete stays hover-only:
   shown on every bubble it would invite a mistaken tap, and the open thread offers Delete.
 - **Keyboard hints are not drawn on a touch screen.** A tile's always-on shortcut letter (the Palette
-  strip, the Draw dock and its flyouts, a picker's corner key) teaches a key there is no keyboard to
+  strip, a picker's corner key) teaches a key there is no keyboard to
   press, so it carries `pointer-coarse:hidden`; `aria-keyshortcuts` stays for a paired keyboard.
 - **Text fields are 16px on a touch screen.** iOS zooms the page into any focused field under 16px and
   leaves it zoomed, so a search box drawn at 14 or 15px reads at 16px under `pointer: coarse` (the

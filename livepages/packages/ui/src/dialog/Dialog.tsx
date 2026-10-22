@@ -46,7 +46,7 @@ const WIDTHS: Record<DialogSize, string> = {
   xl: 'w-[36rem]',
   // The image picker's two-column grid (640px = 40rem).
   '2xl': 'w-[40rem]',
-  // A Plan item's panel: a main column beside a details panel (docs/specs/026-plan/plan-board.md).
+  // An item's panel: a main column beside a details panel.
   '3xl': 'w-[60rem]',
 };
 

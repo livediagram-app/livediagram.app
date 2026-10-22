@@ -51,27 +51,24 @@ Next renders the root not-found slot inside the layout, so its code is part of e
 ### A surface that is not on screen loads when it is
 
 A dialog, panel or view that renders only behind an open flag or a tab is loaded with
-`next/dynamic` (`ssr: false`), the way the editor's Dashboard page and Sheets host already are.
+`next/dynamic` (`ssr: false`), the way the editor's presentation overlay already is.
 The Explorer's Settings and move picker, and every telemetry dashboard view but the first, load
 this way. Where switching to one must stay instant, its code is fetched once the page is idle
 (the telemetry dashboard).
 
-### The document page loads what a board may not need on demand
+### The document page loads what a document may not need on demand
 
 `apps/live/lib/editor-deferred-code.ts` names every module the editor loads on demand, so a surface's
 `next/dynamic` and the prefetch below share one import:
 
-- **Content a board may draw on open**: Pages mode's pages and their writing, the Draw dock, tables
-  and facilitation panels. Fetched as the editor mounts (`prefetchWhenIdle`), alongside the document
-  request, so a board that has one finds its code already in, while the first load does not carry it.
+- **Content a board may draw on open**: the pages and their writing, and tables. Fetched as the editor mounts (`prefetchWhenIdle`), alongside the document
+  request, so a document that has one finds its code already in, while the first load does not carry it.
 - **Surfaces someone opens**: the Explorer and Layers popovers (mounted from their first opening on,
-  then kept, so their state survives), search, the quick style panel, the tool panels, presenting and
-  session settings. Fetched once the opened document has rendered and the page is idle.
+  then kept, so their state survives), search, the quick style panel, the tool panels and presenting. Fetched once the opened document has rendered and the page is idle.
 - **At the press**: a template's canvas overrides load with its builders when one is applied.
 - **What waits for on-demand code.** Starting a deck waits for the presentation overlay's code (with
   the deck's unvisited tabs), and the overlay draws in the first slide's commit, so the deck's keys
-  listen from its first frame. The top corners give way to a top Draw dock from the commit the dock is
-  first drawn in, measured then rather than before it is on the page.
+  listen from its first frame.
 - A panel whose code cannot load (offline behind the load-error card) draws nothing rather than
   throwing into the screen around it.
 - `apps/live/app/document/[id]/document-lazy-load.test.ts` fails if any of these become static
@@ -155,8 +152,6 @@ seen on the document).
   threads, every document in id order, every document-scoped event) slows as the database grows,
   not as the person's work does. `apps/api/src/db/home-plans.test.ts` pins the plans of the Home and
   Inbox reads against the real migrations.
-- Cells named by key are matched as `(row_id, col_id)` pairs, so the primary key seeks each one
-  (`apps/api/src/db/sheets-plans.test.ts`).
 - A check that needs only a document's owner and team reads that row, not the full document.
 - A realtime room reads a socket's fixed session facts once, not on every frame.
 - The tab save reads its document in one query and fetches the room's ledger alongside its other

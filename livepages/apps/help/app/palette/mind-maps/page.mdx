@@ -18,7 +18,9 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles("mind-maps")}
 >
 
-A **Mind node** is a labelled node that knows its parent. It lives in the palette's **Diagrams** category in Diagram mode, and the whole point of it is the keyboard: you can build an entire branch while you are still talking.
+A **Mind node** is a labelled node that knows its parent, and the whole point of it is the keyboard: you can build an entire branch while you are still talking.
+
+The Pages palette doesn't show a mind node, but the [search panel](/help/search-panel/the-search-panel/search-add-to-canvas/) (`⌘K` or `Ctrl+K`) adds one: type its name and pick it under **Add to canvas**.
 
 ## Take the tour
 
@@ -26,7 +28,7 @@ The first time you select a mind node, a small **Show Me** toolbar appears besid
 
 ## The two keys
 
-<Step n={1}>Add a Mind node from the palette and type its label.</Step>
+<Step n={1}>Add a mind node from the search panel and type its label.</Step>
 
 <Step n={2}>
   Press **Tab** to add a **child**, then start typing. The new node is already connected and
@@ -46,7 +48,7 @@ The first time you select a mind node, a small **Show Me** toolbar appears besid
   <MindMapGrowth />
 </Figure>
 
-You never have to stop typing to reach for the palette, and you never have to draw the connectors: each new node arrives joined to its parent. Type as fast as you like: keys pressed before the next node is on screen are held for it, so a burst of several nodes lands exactly as typed.
+You never have to stop typing to reach for the mouse, and you never have to draw the connectors: each new node arrives joined to its parent. Type as fast as you like: keys pressed before the next node is on screen are held for it, so a burst of several nodes lands exactly as typed.
 
 <Tip>
   The keys work from **inside** the label editor as well as from a selected node. Typing a name and
@@ -110,18 +112,12 @@ See [Edit a Mind Map as an Outline](/help/palette/mind-maps/edit-outline/) for t
 
 A new node looks like the others at its level: siblings match each other, and the first node of a new level takes after its parent, except a root's first branch, which starts with the plain default look. The connector matches the ones already in the map. So a map drawn with bold roots, tinted branches and dashed lines keeps growing that way.
 
-A mind node can be made round: right-click it, open **Style**, then **Border**, and pick the last (fully rounded) **Radius** option. A square node with a full radius is a circle, which is how the bubble map template draws its bubbles.
+A mind node can be made round: right-click it, open **Style**, then **Border**, and pick the last (fully rounded) **Radius** option. A square node with a full radius is a circle.
 
 ## Moving and deleting
 
 Dragging a node takes its whole branch with it. Resizing a node resizes only that node.
 
 Deleting a node deletes its whole branch: everything under it and the lines between them go with it, in one step, so **Undo** brings the whole branch back. **Cut** takes the branch too, so pasting puts it all back. A locked node in the branch stays, with everything under it, as a map of its own. The eraser removes only what it touches.
-
-<Note>
-  Every mind map [template](/help/canvas/templates/) (Mind map, Tree mind map, Bubble map and
-  Sitemap) is made of mind nodes, so you can grow a template with Tab and Enter straight away, and
-  the new nodes match the template's look.
-</Note>
 
 </ArticleLayout>

@@ -32,11 +32,9 @@ Scope, by file:
 | `apps/live/components/canvas/ElementEllipsisMenu.tsx`       | Element quick menu (`kind="command"`) or session settings (`kind="control"`)                |
 | `apps/live/components/canvas/LockedElementMenu.tsx`         | Command menu, no trigger                                                                    |
 | `apps/live/components/chrome/ZoomMenu.tsx`                  | Hover-open command menu with a button of its own                                            |
-| `apps/live/components/chrome/editor-mode/ModeMenuChip.tsx`  | One-of-a-set command menu; its own key handling deleted                                     |
 | `apps/live/components/chrome/AuthControls.tsx`              | Account command menu                                                                        |
 | `apps/live/components/chrome/EmbedChrome.tsx`               | Embed tab command menu                                                                      |
 | `apps/live/components/dialogs/ShareCopyMenu.tsx`            | Command menu, or control menu when it carries a header control                              |
-| `apps/live/components/canvas/whiteboard/ColourPicker.tsx`   | Custom colour command menu; its own focus and Escape deleted                                |
 | `apps/live/hooks/canvas/useEditorKeyboardShortcuts.ts`      | Canvas shortcuts stand down inside a menu surface                                           |
 | `apps/live/components/canvas/SelectionPopover.tsx`          | More actions: `aria-haspopup="dialog"` and the stable id `selection-more-actions`           |
 | `apps/live/lib/element-names.ts`                            | `shapeKindLabel`: names the Shape tiles of the element and selection menus                  |
@@ -142,19 +140,19 @@ Options: `onClose()`, `onEscape?()` (default `onClose`), `trigger?`, `label: str
 
 ### Hosts
 
-| Host                                                                           | Kind                                                 | Return target, trigger            |
-| ------------------------------------------------------------------------------ | ---------------------------------------------------- | --------------------------------- |
-| `PortalMenu` (primitives)                                                      | `surface` prop: `'command'` (default) or `'control'` | `anchor` is the trigger           |
-| `MenuFlyoutSection`                                                            | The parent tree's kind                               | Its row is the trigger            |
-| `ContextMenu`                                                                  | Control, `label` prop                                | None: the focused element at open |
-| `TabPortalMenu` `PortalMenu`                                                   | Control, "Tab menu" / "Canvas menu"                  | `anchor` (tab ⋯) or none (canvas) |
-| `LayerRowMenu`                                                                 | Control, "<layer> layer menu"                        | None                              |
-| `ShareCopyMenu`                                                                | Control with a header control, else command          | Its button                        |
-| Custom colour menu (`ColourPicker`)                                            | Command, "<colour> menu"                             | The swatch                        |
-| `ElementEllipsisMenu`                                                          | `kind` prop                                          | Its ⋯                             |
-| `LockedElementMenu`                                                            | Command, labelled by "In use"                        | None                              |
-| `ZoomMenu`                                                                     | Command, `initialFocus` `none` on hover              | The percentage button             |
-| `ModeMenuChip`, `AuthControls`, `EmbedChrome`, `ProductNav`, `StickyWindowBar` | Command                                              | Their trigger                     |
+| Host                                                           | Kind                                                 | Return target, trigger            |
+| -------------------------------------------------------------- | ---------------------------------------------------- | --------------------------------- |
+| `PortalMenu` (primitives)                                      | `surface` prop: `'command'` (default) or `'control'` | `anchor` is the trigger           |
+| `MenuFlyoutSection`                                            | The parent tree's kind                               | Its row is the trigger            |
+| `ContextMenu`                                                  | Control, `label` prop                                | None: the focused element at open |
+| `TabPortalMenu` `PortalMenu`                                   | Control, "Tab menu" / "Canvas menu"                  | `anchor` (tab ⋯) or none (canvas) |
+| `LayerRowMenu`                                                 | Control, "<layer> layer menu"                        | None                              |
+| `ShareCopyMenu`                                                | Control with a header control, else command          | Its button                        |
+| Custom colour menu (`ColourPicker`)                            | Command, "<colour> menu"                             | The swatch                        |
+| `ElementEllipsisMenu`                                          | `kind` prop                                          | Its ⋯                             |
+| `LockedElementMenu`                                            | Command, labelled by "In use"                        | None                              |
+| `ZoomMenu`                                                     | Command, `initialFocus` `none` on hover              | The percentage button             |
+| `AuthControls`, `EmbedChrome`, `ProductNav`, `StickyWindowBar` | Command                                              | Their trigger                     |
 
 ### Row primitives by kind
 

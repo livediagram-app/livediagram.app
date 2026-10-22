@@ -4,7 +4,7 @@ The payoff [Teams](teams.md) deferred: every team gets a shared library — a fo
 
 ## Data model
 
-Migration `0022_team_library.sql` adds a nullable `team_id` to both tables:
+The baseline migration, `0001_livepages_baseline.sql`, adds a nullable `team_id` to both tables:
 
 - **`folders.team_id`** — non-null = a team folder. Personal reads/writes always filter `team_id IS NULL`, so the two trees can't bleed into each other. `owner_id` keeps the creator for audit, but authorisation is by team membership, not ownership.
 - **`documents.team_id`** — non-null = the document lives in that team's library. Placement mirrors [Folders](folders.md): `folder_id NULL` = the root of the team's library (listed beside its root folders, not a row, can't be deleted), otherwise a folder of the same team.

@@ -11,7 +11,7 @@ up from label to label, and matches the Explorer's folder counts.
   (`packages/ui/src/CountBadge.tsx`, shared with the marketing site), the same grey pill the
   Explorer puts beside a folder's name. `MenuTile` takes a `count`, and the
   element `…` menus' rows put the badge at their trailing edge.
-- **On the canvas** a board's own controls draw the badge in the card's accent
+- **On the canvas** an element's own controls draw the badge in its accent
   (`AccentBar`'s `count`), because canvas elements take their colours from the
   tab theme, not from the app's grey.
 - **Not a count, not a badge.** Brackets that are part of a value stay text: a

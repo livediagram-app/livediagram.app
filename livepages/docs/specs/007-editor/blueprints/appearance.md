@@ -100,8 +100,8 @@ editor.
 
 ## Data and persistence
 
-| Field                    | Store                             | Class             | Notes                                    |
-| ------------------------ | --------------------------------- | ----------------- | ---------------------------------------- |
+| Field                  | Store                             | Class             | Notes                                    |
+| ---------------------- | --------------------------------- | ----------------- | ---------------------------------------- |
 | `livepages:v2:ui-mode` | `localStorage`, this browser only | Device preference | Values `'light'` / `'dark'` / `'system'` |
 
 Nothing is synced to the api or written into a document. Migration: none; older builds wrote `'light'` / `'dark'`, which
@@ -188,7 +188,7 @@ layout inlines the real string rather than a client-reference stub.
 
 | Constant                       | Value                            | Provenance                              | Safe range                            |
 | ------------------------------ | -------------------------------- | --------------------------------------- | ------------------------------------- |
-| `APPEARANCE_STORAGE_KEY`       | `'livepages:v2:ui-mode'`       | Stored data; renaming resets every user | Fixed; no quote, backslash or newline |
+| `APPEARANCE_STORAGE_KEY`       | `'livepages:v2:ui-mode'`         | Stored data; renaming resets every user | Fixed; no quote, backslash or newline |
 | `DARK_MEDIA_QUERY`             | `'(prefers-color-scheme: dark)'` | CSS Media Queries Level 5               | Fixed                                 |
 | `DEFAULT_APPEARANCE_SETTING`   | `'system'`                       | Spec: System is the default             | One of the three literals             |
 | `DEFAULT_BACKGROUND_COLOR`     | `#ffffff`                        | Colour scheme: canvas is pure white     | Light (`isLightColor` true)           |

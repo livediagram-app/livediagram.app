@@ -228,11 +228,6 @@ heads, sketchedHeads, headFill, inkOpacity }`; Sketch: `lineOver` empty, `headFi
   sketched line in place of `pathD`, sketched heads in place of markers (in `arrowheadColor` when set); the
   selection halo and the hit band keep `pathD`.
 - Lettering: `CanvasElementsLayer`, `text-hug-measure` and `useTextStyleSetters` resolve fonts with `elementFontId`.
-- Mind connectors: `deriveArrowViewFrame(arrow, index, finish)` / `arrowViewGeometry(..., finish)` (finish from
-  `resolveFinish(el.finish, tabFinish)` in `CanvasElementsLayer` and `previewArrowGeometry`) draw through
-  `finishArrowEnds` (`packages/document/src/mind-connector-route.ts`, blueprint in
-  [Mind node](../../009-elements/blueprints/mind-node.md)); a routed frame has no curve, elbow or anchor handles,
-  and `beginArrowBend` refuses a routed connector.
 - New arrows: `applyCollisionAvoidance(els, arrowId, tabFinish)` gives an untouched arrow
   `arrowStyle: finishNewArrowStyle(finish)` under Professional and skips the curve when `finishCurvesNewArrows` is
   false.
@@ -341,8 +336,6 @@ is. `svgChecklistShape`, `svgLegendShape` and the empty tab window letter in the
   changes, `resize`, and once fonts load): Professional marks SVG pills `data-finish-pill`; Marker draws each
   positioned bordered HTML box (and the face's own box) as an `<svg data-marker-ink>` inside it, each SVG part as a
   `<g data-marker-ink>` after it, and a `[data-marker-grid]` (a table)'s cell borders joined into whole rules.
-- A Plan body over the canvas (`MaximisableSlot`'s `OverFace`) carries `data-face-finish`, its own pass and a
-  stable-tree `SketchFace` (`keepTree`).
 - `drawn-outline-finish.ts`: `isPolygonOutline`, `polygonStrokePx`, `handDrawnPolygonPaint`, `handDrawnPathPaint`
   (line and shading only; a combined path is never shaded), `imageCornerPx`, `handDrawnImagePaint` (an edge round
   the picture), reached through `handDrawnElementPaint`. Marker's sticky is a colouring drawing over its paper.
@@ -357,12 +350,7 @@ is. `svgChecklistShape`, `svgLegendShape` and the empty tab window letter in the
   (`box-shadow: c 0 0 0 Npx inset`) counts as a frame's line (`data-marker-drawn="ring"` drops it).
 - The face's own box (`MARKER_FACE_BODY_SLACK_PX`) is coloured in once, its ink at `z-index: -1` in a box the pass
   isolates (`data-marker-isolated`), and never when the element's body is already drawn by hand (`FaceBox.bodyDrawn`,
-  a `svg[data-finish]` body) or the surface is a page (`useFaceFinishPass(..., { page: true })`: OverFace and the
-  Dashboard page).
-- Dashboard (`components/plan/dashboard/DashboardPage.tsx`): the page provides `FaceFinishProvider` and
-  `data-face-finish` from `resolveFinish(undefined, tab.finish)`, letters itself with
-  `planFontStyle(resolveFontStack(elementFontId({}, tab.font, tab.finish)))`, and runs the pass as a page.
-- `lib/plan-font.ts`: only Sketch's Caveat takes `fontSizeAdjust: ex-height PLAN_HANDWRITING_EX`.
+  a `svg[data-finish]` body) or the surface is a page (`useFaceFinishPass(..., { page: true })`).
 - Stickers: `sticker-markup.ts` marks the shadow `data-sticker-shadow` and the emoji art `data-finish-keep`;
   `faceFinishOf` returns Professional and Marker for a sticker (Sketch wobbles it whole); face-finish.css and
   `svgProfessionalFace` / `svgMarkerFace` drop the shadow.
@@ -375,7 +363,7 @@ is. `svgChecklistShape`, `svgLegendShape` and the empty tab window letter in the
   `onPreviewEnd` (mouse only); click commits. Mounted by `ElementColourBorderSections` (the Style flyout, arrows
   included) when `supportsFinish(target)`, and by `MultiStyleSections` for the first finish-taking member;
   `resolveOwnFinish(el)` picks the checked row.
-- `components/plan/OptionRows.tsx`: optional `onPreview(id)` / `onPreviewEnd()`.
+- `apps/live/components/primitives/OptionRows.tsx`: optional `onPreview(id)` / `onPreviewEnd()`.
 - `lib/style-presets.ts`: `applyFinishToEl(el, finish | null)` (null deletes the key; other types unchanged).
 - `useStylePreview`: `previewFinish`, `commitFinish` (`'Finish'` telemetry type), plumbed through `useEditorState`,
   `EditorContextMenuHost` and `EditorContextMenu.types.ts` as `onPreviewFinish` / `onCommitFinish`.

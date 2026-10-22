@@ -1,22 +1,24 @@
 # Document structure
 
-A document is the top-level artifact users create. It is not a single canvas — it is a **collection of tabs**, each its own canvas, with **links between elements across tabs**.
+A document is the top-level artifact users create. It is not a single canvas — it is a **collection of tabs**, each its own run of pages, with **links between elements across tabs**.
 
 ## Hierarchy
 
 ```
 Document
  ├─ Tab 1
- │   ├─ Element (node)
- │   ├─ Element (node)
- │   └─ Element (edge)
+ │   ├─ Page
+ │   │   ├─ Element
+ │   │   └─ Element
+ │   └─ Page
+ │       └─ Element
  ├─ Tab 2
- │   └─ Element (node)
+ │   └─ Page
  └─ ...
 ```
 
 - A document has **one or more tabs**. New documents start with a single empty tab.
-- Each tab has its own independent canvas — elements, layout, theme, background pattern, optional lock state.
+- Each tab has its own independent canvas — pages, elements, layout, theme, optional lock state. Pages are themselves elements on the tab's canvas ([Pages mode](../007-editor/pages-mode.md)).
 - Tabs are **ordered**; users can drag-reorder them in the tab bar.
 - A tab has a name (default `"Tab 1"`, `"Tab 2"`, etc.) and is renameable.
 - **Auto-rename on first edit.** While a tab still has its default name (matching `^Tab \d+$`), editing the label of its first element renames the tab to that label. The rename only fires once: as soon as the tab name diverges from the default pattern (auto-rename or manual rename), subsequent label edits leave the tab name alone. This mirrors the document-name auto-fill from the default `Untitled document`.
@@ -33,9 +35,8 @@ Activating a tab/element/document link is a navigation action; a `url` link open
 
 ### Use cases
 
-- **Drill-down.** A "Database" node on the Overview tab links to the "Database internals" tab — clicking it dives into detail.
-- **Mindmap deep-dives.** A leaf branch on the mindmap links to its own tab for deeper structure.
-- **Cross-references.** A process step links to a related decision elsewhere in the document, without duplicating the content.
+- **Drill-down.** A summary slide's "Results" box links to the tab holding the full report — clicking it dives into detail.
+- **Cross-references.** A step in an infographic links to the article page that explains it, without duplicating the content.
 
 ## Data model
 
@@ -86,11 +87,10 @@ type LiveDoc = {
 type Tab = {
   id: TabId;
   name: string;
-  kind?: TabKind; // 'diagram' | 'board' | 'sheet' | 'dashboard' | 'form' (docs/specs/026-plan/plan-tabs.md); absent = 'diagram'
-  // The tab's editor mode, the same for everyone on it, which it also opens in
-  // (docs/specs/007-editor/editor-modes.md "Where the mode lives"); absent = 'diagram'. A stored kind 'whiteboard' reads as
-  // kind 'diagram' with opensIn 'draw'.
-  opensIn?: EditorMode; // 'diagram' | 'draw' | 'pages' | 'plan'
+  kind?: TabKind; // 'diagram', the one general tab kind; any other stored kind reads as it
+  // The tab's editor mode: always 'pages'. A stored livediagram mode reads as 'pages'
+  // (docs/specs/003-system-architecture/domain-language.md "Mode").
+  opensIn?: EditorMode; // 'pages'
   elements: Element[];
   // …plus theme, backgroundColor/Pattern/Opacity, patternColor, locked
 };
@@ -100,14 +100,14 @@ type Tab = {
 //                            / document / stadium / actor / cloud / browser / monitor / laptop
 //                            / phone / tablet)
 //   TextElement      (optionally sizing: 'fit' | 'wrap', how the box hugs its text, absent = a
-//                     fixed box, docs/specs/007-editor/editor-modes.md "A text box's sizing"; and
+//                     fixed box; and
 //                     textScale, the Shift-resize scale. A stored autoWidth: true reads as 'fit')
 //   ImageElement     (boxed, references an R2-stored bitmap by imageId, see docs/specs/009-elements/images.md)
 //   ArrowElement     (from + to Endpoints, arrowStyle, arrowheadSize, optional label)
 //   FreehandElement  (boxed, carries its points as one packed block, docs/specs/006-document/stroke-points.md,
 //                     + optional auto-close flag for
 //                     filled custom shapes; rendered as an SVG path inside its bounding box;
-//                     see docs/specs/008-canvas/canvas-and-palette.md's Pencil (freehand) subsection)
+//                     drawn by the polygon tool, see docs/specs/008-canvas/polygon-tool.md)
 //
 // Most elements may carry `link?: ElementLink` for cross-tab navigation.
 type Element =

@@ -20,7 +20,7 @@ hand with their geometry off the centre of their own viewBox. A row of stacked a
 label) drifts a third way: when one action's icon is taller, its label drops.
 
 Each offset is one or two pixels. Together they make the chrome look careless, which is the
-opposite of what a diagramming tool has to look like.
+opposite of what a design tool has to look like.
 
 One drift is the browser's own and stays out of reach: Chromium paints every text baseline on a
 whole CSS pixel, at any pixel density, and no CSS opts out. A shape at a fractional position shows

@@ -6,40 +6,34 @@ import { SessionTools } from '@/components/illustrations/collaboration';
 export const metadata = helpMetadata({
   title: 'Session Tools',
   description:
-    'A per-tab timer and live dot-voting for running interactive workshops, synced to every participant.',
+    'A per-tab timer and live dot-voting for running interactive sessions, synced to every participant.',
   path: '/help/collaboration/session-tools/',
 });
 
-<ArticleLayout title="Session Tools" description="A timer and dot-voting that turn a shared document into an interactive workshop board." categoryTitle="Collaboration" categorySlug="collaboration" subArticles={getSubArticles("session-tools")}>
+<ArticleLayout title="Session Tools" description="A timer and dot-voting that turn a shared document into an interactive session." categoryTitle="Collaboration" categorySlug="collaboration" subArticles={getSubArticles("session-tools")}>
 
-Session tools make a shared document interactive for live workshops. There are two: a **timer** for time-boxing an activity, and **dot-voting** for prioritising as a group. Anyone who can edit the document can run them (or only the [facilitator](/help/collaboration/facilitator/), once someone takes that role), and they sync to everyone in real time, so they pair naturally with collaborative boards like retros, brainstorms, and planning sessions.
+Session tools make a shared document interactive for a live session. There are two: a **timer** for time-boxing an activity (a countdown, or a stopwatch counting up), and **dot-voting** for prioritising as a group. Anyone who can edit the document can run them (or only the [facilitator](/help/collaboration/facilitator/), once someone takes that role), and they sync to everyone in real time.
 
-<Figure caption="A dot vote in progress, with the timer's clock and the lit Vote button in the bottom bar.">
+<Figure caption="A dot vote in progress, with the lit Vote button in the bottom bar.">
   <SessionTools />
 </Figure>
 
-## Built for facilitating live
+## Starting a session tool
 
-The tools live in the bottom bar: **Timer** and **Vote** sit together in one group, right after Undo and Redo. [Workshop mode](/help/canvas/workshop-mode/) has both; [Plan mode](/help/canvas/plan-mode/) has **Timer** and **Vote** on a tab with a board made for voting, such as a Retro, whose cards have a **Votes** field (never on a dashboard); Diagram, Draw and Pages mode have none, even while a tool runs, so switch to Workshop to run a session.
+Each tool starts from a button on the page. Open the [search panel](/help/search-panel/the-search-panel/) (`Cmd` / `Ctrl` + `K`) and search for **Timer**, **Stopwatch** or **Dot Vote** to add that button to the page you are on, then press it to start the tool for everyone. Set a timer's minutes, or a vote's dots each, from the button's right-click menu. The palette strip doesn't offer these buttons.
 
-Each button opens its tool in a popover above it. While a tool is idle its button is just an icon, and pressing it opens the set-up. Once it is going the button shows what is happening: the **Timer** shows its clock, and the **Vote** button shows how many dots you have left. Visitors on a Participant or Viewer pass see the **Timer** and **Vote** buttons only while those tools are running.
+While a vote runs, a **Vote** button appears in the bottom-right corner, showing how many dots you have left. Press it to open the [Vote panel](/help/collaboration/session-tools/voting/vote-panel/) above it. It goes again when the vote is cleared.
 
-On a desktop, a running vote's popover stays open while you work on the canvas: only pressing its button again puts it away, and it closes by itself when the activity ends. The timer's popover, and any set-up popover, closes as soon as you click elsewhere: the clock stays on the **Timer** button.
+While someone else is facilitating, the buttons say who, and can't be pressed.
 
-You can also put a session tool **on the canvas** as a [session button](/help/palette/behaviour/session-buttons/), so a template can carry its own facilitation.
+The timer and the vote are scoped to a single tab, so different tabs can run different activities, and they ride the same live sync as everything else on the page. That means people who join late or reload simply see what is happening now: a timer mid-countdown, or the votes cast so far, with nothing to set up again.
 
-While someone else is facilitating, the set-up, and a running timer's controls, say who at the top and are greyed out.
-
-The timer and the vote are scoped to a single tab, so different tabs can run different activities, and they ride the same live sync as everything else on the canvas. That means people who join late or reload simply see what is happening now: a timer mid-countdown, or the votes cast so far, with nothing to set up again.
-
-- **Timer** time-boxes an activity, as a countdown or a stopwatch counting up from zero (one runs at a time), shown on its button in the bottom bar. See [The Timer](/help/collaboration/session-tools/timer/).
+- **Timer** time-boxes an activity, as a countdown or a stopwatch counting up from zero (one runs at a time). See [The Timer](/help/collaboration/session-tools/timer/).
 - **Dot-voting** lets each participant spend a budget of dots on the elements they care about, with live tallies and a results reveal. See [Dot Voting](/help/collaboration/session-tools/voting/).
-
-You can also put a timer or a vote **on the canvas** as a [session button](/help/palette/behaviour/session-buttons/), so a template can carry its own running order.
 
 ## Who can do what
 
-Session tools follow the document's roles automatically. Anyone with an **Editor** pass (and the owner, and team members) can run the controls and take part: starting the timer, casting votes. Visitors on a **Participant** pass take part but never run anything: they cast dots and answer estimates, temperature checks, the Done check and the idea box, while starting, revealing and clearing stay with editors. Visitors on a **Viewer** pass can still watch, they see the timer ticking and the tallies, but they cannot control the session or cast a dot, and they only get a tool's button in the bottom bar while it is running. Typically the facilitator holds an Editor pass, the team shares a Participant pass, and observers follow a Viewer pass.
+Session tools follow the document's roles automatically. Anyone with an **Editor** pass (and the owner, and team members) can run the controls and take part: starting the timer, casting votes. Visitors on a **Participant** pass take part but never run anything: they cast dots, while starting, revealing and clearing stay with editors. Visitors on a **Viewer** pass can still watch, they see the timer ticking and the tallies, but they cannot control the session or cast a dot. Typically the facilitator holds an Editor pass, the team shares a Participant pass, and observers follow a Viewer pass.
 
 **A vote is narrower still.** Anyone who can take part (an Editor or a Participant) can cast dots, but only the person who _started_ the vote (or the facilitator) can end it, reveal the results, clear it, or drive the results walkthrough. Ending a vote can't be undone, so it isn't something a participant should be able to do by accident. See [Dot Voting](/help/collaboration/session-tools/voting/).
 

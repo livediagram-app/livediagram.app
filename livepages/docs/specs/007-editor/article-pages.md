@@ -1,14 +1,13 @@
 # Article pages
 
-An **article page** is the second kind of page in Pages mode ([Pages](pages-mode.md)
+An **article page** is the second kind of page ([Pages](pages-mode.md)
 "Page kinds"): a page to **write** on, like a page of a Google Doc or a Word document. Most of it
 is text, typed straight onto the page with no text boxes to place or size; pictures, charts,
 tables and drawings go into the writing from the palette or the toolbar and sit in it inline or
 with the text wrapping round them. Writing that runs past the foot of a page flows onto the next
 page of the same article, which is added for it.
 
-It supersedes the earlier Document mode experiment (a fourth editor mode that made each paragraph
-a text element): the text here is the page's own, one continuous piece of writing, never elements.
+The text here is the page's own, one continuous piece of writing, never elements.
 
 ## Domain language
 
@@ -110,8 +109,8 @@ http, https or mailto address), a **text colour** and a **highlight** (each a he
   moves the view, nor does a press, which lands where the caret already shows.
 - **Typing**, the arrow keys, Home / End, word jumps (Alt / Ctrl+Arrow), Page Up / Down, Shift to
   extend, the browser's spell check, IME composition, dictation and the system emoji picker all
-  work as in any editor. The canvas's own shortcuts (tool keys, Delete for elements, arrow nudges,
-  Shift+D) are off while the caret is in the writing.
+  work as in any editor. The canvas's own shortcuts (tool keys, Delete for elements, arrow nudges)
+  are off while the caret is in the writing.
 - **Enter** splits the block: after a heading, the new block is a paragraph; in a list item, a
   new item of the same kind and level (unticked); in a quote, a quote; on an empty list item,
   the level steps out, then at level 0 it becomes a paragraph; on an empty quote, a paragraph.
@@ -234,7 +233,7 @@ laid out with it, holding ordinary canvas elements that move with it.
   boundary of its own. Resizing the element
   resizes the zone.
 - **Drawing zone** (`zone: 'drawing'`): an area of the page for shapes, text labels
-  and the arrows between them, worked on with every Diagram tool. It is a size of its own (by
+  and the arrows between them, worked on with the canvas's own tools. It is a size of its own (by
   default the text width x 240 px) with grips on its bottom edge (taller or shorter), its right
   edge (wider or narrower, up to the text width, a wrapped zone two thirds of it) and its
   bottom-right corner (both); it grows to keep its elements inside it with 24 px to spare, and never
@@ -283,8 +282,8 @@ laid out with it, holding ordinary canvas elements that move with it.
   - A palette tile **pressed** puts its element at the caret (or, with no caret in the article,
     after the last block); a tile **dragged** onto a page puts it where it is dropped. On a drawing
     zone it joins that zone at that point. Elsewhere on the writing it starts a new zone at the
-    block boundary nearest the drop: a **drawing zone** for drawing elements (shapes of the
-    Shapes and Flowchart families, arrows, text, mind nodes, frames), an **object zone** for
+    block boundary nearest the drop: a **drawing zone** for drawing elements (shapes,
+    arrows, text, frames), an **object zone** for
     everything else, a sticky note included (a sticky dropped into a drawing joins it there). The **Text** tile dropped on the writing puts the caret there
     instead.
   - The new zone, and its element, are selected; the zone bar shows.
@@ -299,7 +298,7 @@ due dates, Activity, email), because it lives on an element: a **margin note**.
 
 - **Putting one on**: with text selected, the page toolbar's **Comment** (⌘⌥M) or **Assign
   Action** button. The text is tinted (amber for a comment, sky blue for an action, translucent so
-  it reads on a dark page) and underlined; a marker (an annotation, `articleNote`, 32 px) appears
+  it reads on a dark page) and underlined; a marker (`articleNote`, 32 px) appears
   in the page's right margin, centred in the margin and level with the text's first line; the
   comment thread opens on it, or the Assign Action dialog. One edit.
 - **The marker** is a small rounded chip in its note's colour: for a comment an amber speech
@@ -317,31 +316,6 @@ due dates, Activity, email), because it lives on an element: a **margin note**.
   brings both back).
 - **Never printed**: exports leave the markers out and the text untinted.
 - A tint is never taken from a paste.
-
-## Leaving Pages
-
-Diagram and Draw draw no pages and no writing. An editor switching a tab with articles out of
-Pages (a start's mode switch or Shift+D) is asked first, in a dialog **Turn Articles
-Into Pages?**:
-
-- **Turn Into Pages** (the default button): every article page becomes a **Page** element
-  ([The Page element](../009-elements/page-element.md)) covering its sheet, holding the writing
-  that was laid out on that page as rich text: headings as headings, list items led by their
-  marker and indented, a divider as a rule, bold, italic, underline, strikethrough, links and
-  colours kept; the article's title and subtitle become the first Page's masthead. Zones' elements
-  stay where they are, on top; margin-note markers become ordinary annotations. The pages stay, as
-  infographic pages; the writing goes. One edit (undo brings the articles back), then the switch.
-- **Keep as Articles**: the switch, the articles left as they are for Pages.
-- **Cancel**: no switch.
-
-**A lock holds an article as it is** ([Pages](pages-mode.md) "Locking a page"):
-an article with any page locked is never turned. **Turn Into Pages** turns the other articles and
-leaves it an article, its pages, writing and margin notes untouched, for when the tab is back in
-Pages; and it is not asked of at all when every article on the tab has a locked page: the
-switch asks only the lighter confirmation a tab with content but no articles asks
-([Editor modes](editor-modes.md) "Leaving Pages").
-
-A visitor, a locked tab, or a tab with no articles switches straight away.
 
 ## Article style
 
@@ -411,9 +385,6 @@ ink").
   text in SVG output; rasterised in PNG, and in PDF, whose pages are images), with its zones'
   elements, its page number and its ruled lines; nothing of the editing chrome.
 - **The Map** shows each page's text as soft grey lines.
-- **Diagram and Draw modes** show the tab's elements as always; the writing belongs to the pages
-  and shows only in Pages mode and on a presenting page slide (its zones' elements stay on the
-  canvas where they are).
 - **Viewers** (a view role, a locked tab) read the writing and cannot change it; no caret, no
   toolbar, no zone bar. **A locked page** makes its whole article read the same way for everyone
   ([Pages](pages-mode.md) "Locking a page"), from any of its pages: no caret, no
@@ -456,8 +427,7 @@ ink").
 ## Telemetry
 
 - `Tab · Changed · ArticleAdded` (the add popover's Article); `ArticleLook<Name>` (Clean,
-  Classic, Report, Notebook, Bold); `ArticleStyle` (any other style field); `ArticlesToPages`
-  (**Turn Into Pages** on leaving Pages).
+  Classic, Report, Notebook, Bold); `ArticleStyle` (any other style field).
 - `Element · Added · Article<Insert>` for an insert from the toolbar's Insert, the slash menu or
   a palette drop: `ArticleImage`, `ArticleTable`, `ArticleChart`, `ArticleCallout`,
   `ArticleSticky`, `ArticleDrawing`, `ArticleObject`, `ArticleDivider`, `ArticlePageBreak`,
@@ -474,4 +444,3 @@ ink").
 - Headers and footers beyond page numbers, footnotes, a table of contents, columns, suggestions
   and tracked changes, find and replace, Word / Google Docs import.
 - Character-level merging of two people typing in the same paragraph at the same moment.
-- The writing in Diagram or Draw mode.

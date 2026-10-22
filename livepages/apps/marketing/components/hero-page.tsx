@@ -4,13 +4,13 @@ import { SHEET } from './hero-infographic-parts';
 import { TimelinePage } from './hero-infographic-timeline';
 
 // The hero's Infographic window (docs/specs/019-marketing/marketing-site.md "Hero"): the Year in
-// Review template laid out in Pages mode (docs/specs/007-editor/editor-modes.md "The pages"),
+// Review template laid out in Pages mode (docs/specs/007-editor/pages-mode.md "The pages"),
 // three A4 pages in a row, each with its name row above and its pager below, as the editor shows
 // them. The cover lands first (the year set huge, the title, a harbour picture, a sticker), then
 // the numbers page (four tinted stat tiles, a chart card whose bars grow and whose ring fills,
 // selected by a teammate), then the timeline (a rail drawn through five months). On a phone the
 // cover and the numbers page stack, as a phone scrolls. Each piece arrives at its own --d delay
-// (hero-mode-animations.css).
+// (hero-scenes/pages.css).
 
 // The article window (hero-article-page.tsx) shares this row geometry: its pages sit where this
 // window's used to.

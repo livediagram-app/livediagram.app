@@ -24,7 +24,7 @@ import {
 // grow over their caption, and a caret blinks where you are writing. Meanwhile a teammate selects a
 // phrase on page 1: the rich-text toolbar docks at the top of the page, Bold is pressed, and the
 // phrase turns bold on a highlight. Each piece arrives at its own --d delay
-// (hero-mode-animations.css; the phrase's own handover in hero-scenes/article.css).
+// (hero-scenes/pages.css; the phrase's own handover in hero-scenes/article.css).
 
 // Where each page sits: side by side in the wide window; stacked on a phone, page 2 running on
 // below the fold as a phone scrolls.

@@ -12,7 +12,7 @@ export const metadata = helpMetadata({
 
 <ArticleLayout title="Sharing Your Document" description="Hand over a link and build the same document together, live, even with people who never sign in." categoryTitle="Getting Started" categorySlug="getting-started">
 
-livepages is multiplayer from the first shape. Sharing is just creating a link and handing it over: whoever opens it joins the same canvas, sees live cursors, and edits alongside you. The person you share with does not need an account. For the full details see [Sharing](/help/collaboration/sharing/).
+livepages is multiplayer from the first page. Sharing is just creating a link and handing it over: whoever opens it joins the same document, sees live cursors, and edits alongside you. The person you share with does not need an account. For the full details see [Sharing](/help/collaboration/sharing/).
 
 ## Create a share link
 
@@ -24,10 +24,10 @@ livepages is multiplayer from the first shape. Sharing is just creating a link a
 
 <Step n={2}>
   Under **Issue a pass**, click the role card to choose a role: **Editor** (draws with you in real
-  time, the default), **Participant** (adds stickies, writes and votes, but can't reshape the board)
-  or **Viewer** (watches, pans and zooms; can't comment, vote or change a thing). **Valid** sets how
-  long it lasts: Forever, 1 week, 1 month or 6 months. In a document with several tabs, **Opens**
-  can limit the link to one tab.
+  time, the default), **Participant** (adds stickies, text and pictures, but can't reshape the
+  pages) or **Viewer** (watches, pans and zooms; can't comment or change a thing). **Valid** sets
+  how long it lasts: Forever, 1 week, 1 month or 6 months. In a document with several tabs,
+  **Opens** can limit the link to one tab.
 </Step>
 
 <Step n={3}>
@@ -45,7 +45,7 @@ saved to **This Browser** has to be synced to your account before it can be shar
 
 ## What happens when they open it
 
-Someone opening your link for the first time enters the password if you set one, picks the name others will see (a signed-in visitor keeps their account name), and then lands on the canvas:
+Someone opening your link for the first time enters the password if you set one, picks the name others will see (a signed-in visitor keeps their account name), and then lands in the document:
 
 <Figure caption="Everyone in a shared document sees the others' live cursors and a presence stack of who is here.">
   <LiveCursors />
@@ -53,7 +53,7 @@ Someone opening your link for the first time enters the password if you set one,
 
 - **Live cursors and selections.** Everyone sees where everyone else is and what they have selected.
 - **Simultaneous editing.** On an Editor pass, you both change the document at once. To avoid clashes, an element one person has selected is gently locked for the others while they hold it.
-- **No sign-in required.** A guest can edit straight away, the canvas never blocks them with a sign-in wall. See [Guest vs account](/help/getting-started/guest-vs-account/).
+- **No sign-in required.** A guest can edit straight away, the editor never blocks them with a sign-in wall. See [Guest vs account](/help/getting-started/guest-vs-account/).
 
 ## Managing and ending access
 

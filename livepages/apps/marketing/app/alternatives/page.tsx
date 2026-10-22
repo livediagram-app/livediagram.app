@@ -19,7 +19,7 @@ const COMPETITORS = new Intl.ListFormat('en-GB', { type: 'conjunction' }).format
 export const metadata = pageMetadata({
   title: 'How livepages compares · alternatives',
   description:
-    'Honest, side-by-side comparisons of livepages with Miro, FigJam, Lucidchart, draw.io, Google Slides and more, including where each is the better pick.',
+    'An honest, side-by-side comparison of livepages with Google Slides, including where each is the better pick.',
   path: '/alternatives',
   modifiedTime: ALTERNATIVES_LAST_UPDATED,
 });

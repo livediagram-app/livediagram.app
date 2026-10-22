@@ -5,7 +5,7 @@ browser, a device code or a token kept in the system's keychain, and is counted 
 article is `/help/developers/cli/` (Developers). Ahead: the update check.
 
 `livepages` is a command-line front door to the api, built first for **agents** (a coding agent in a repo, a chat
-agent changing a diagram while a person talks to it) and second for people (scripts, pulling documents to files).
+agent changing a deck while a person talks to it) and second for people (scripts, pulling documents to files).
 With it an agent reads, builds, edits, comments on and reasons about documents, paying for context only when it
 asks. It sits beside the [MCP server](mcp-server.md), not in place of it: the two are front doors to one set of
 verbs, and the api owns every write ([Agents](../024-agents/README.md)). The research behind it is in
@@ -27,52 +27,45 @@ verbs, and the api owns every write ([Agents](../024-agents/README.md)). The res
 
 Resource, then verb. `doc` and `el` are accepted for `document` and `element`.
 
-| Command                                                                         | Does                                                                                                                                                                       |
-| ------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `document ls [query]`                                                           | Documents in the personal library and joined teams, newest first                                                                                                           |
-| `folder ls [--json]` / `folder create <name> [--in <f>]`                        | The person's folders as paths with their ids; a new folder, at the top of My documents or inside another                                                                   |
-| `document view <doc>`                                                           | The overview view                                                                                                                                                          |
-| `document create <name> [--tab <name>] [-f <file>\|--template <kind>]`          | A new document from a graph, Mermaid or template, compiled by the api                                                                                                      |
-| `document rename\|share\|rm\|restore <doc>`                                     | As the MCP's verbs; `rm` moves to the Trash, there is no permanent delete                                                                                                  |
-| `tab ls <doc>`                                                                  | The document's tabs                                                                                                                                                        |
-| `tab view <doc> [--tab <t>] [--view <name>] [--budget <n>]`                     | A view; the outline by default; `show` takes `--ref`, `find` `--text`                                                                                                      |
-| `tab add\|rename\|rm <doc> ...`                                                 | Tab lifecycle; `add` takes `-f` or `--template`                                                                                                                            |
-| `tab diff <doc> [--tab <t>] --since <rev>`                                      | The diff view, computed by the CLI from its copy of the tab at that rev                                                                                                    |
-| `tab render <doc> [--tab <t>] --png <file>\|--svg <file>`                       | A preview image; prints the path and its size, never image bytes                                                                                                           |
-| `tab lint <doc> [--tab <t>]`                                                    | The [diagram lint](../024-agents/diagram-lint.md), served as a view                                                                                                        |
-| `element add\|set\|rm\|move\|connect\|insert\|wrap <doc> ...`                   | One [edit operation](../024-agents/edit-operations.md) as a changeset                                                                                                      |
-| `item ls\|add\|set\|move\|rm <doc> ...`                                         | [Items](../026-plan/items.md) by number (`#12`); columns, types, fields by name                                                                                            |
-| `board add\|set <doc> ...`                                                      | Add a Plan board, or change one's title, columns or card types ([Plan for agents](../026-plan/plan-agents.md#adding-a-board))                                              |
-| `type ls\|apply <doc> ...`                                                      | Card types, and changes to them from a JSON file ([Plan for agents](../026-plan/plan-agents.md))                                                                           |
-| `sheet ls\|get\|set\|add\|insert-rows\|insert-cols\|rm-rows\|rm-cols <doc> ...` | Sheets: list, read cells by A1, set cells (or `--csv`), put one on a tab, insert or delete rows and columns ([Sheet store](../029-sheets/sheet-store.md#agents))           |
-| `page ls\|set <doc> ...`                                                        | Pages: list them (the `pages` view), add, change, lay out, move, duplicate and delete them ([Pages for agents](../024-agents/pages-for-agents.md))                         |
-| `form get\|add\|change\|share <doc> ...`                                        | Forms: read one, add one from a starter or `--from` JSON, change it from a JSON file of changes, publish, close or delete its link ([Forms](../030-forms/forms.md#agents)) |
-| `article get\|set <doc> ...`                                                    | Articles: one as Markdown, or write one from Markdown (`--file`, `--append`, `--new`) ([Pages for agents](../024-agents/pages-for-agents.md#write_article))                |
-| `changeset apply <doc> [--tab <t>] -f <file>\|-` (`edit`)                       | Many edit operations, or a `replace`, as one changeset                                                                                                                     |
-| `changeset ls\|show\|revert <doc> [<changeset>]`                                | Recent changesets and their revert                                                                                                                                         |
-| `comment ls\|add\|reply\|resolve\|reopen <doc> ...`                             | Threads ([Agent presence](../024-agents/agent-presence.md#comments)), by element ref                                                                                       |
-| `presence set\|clear <doc> [--tab <t>] [--status ..] [--focus ..]`              | The agent's presence                                                                                                                                                       |
-| `wait <doc> --for comment\|change [--timeout <s>]`                              | Blocks until it happens, prints it, exits                                                                                                                                  |
-| `watch <doc>`                                                                   | Streams changes, one line each, until interrupted                                                                                                                          |
-| `graph lint\|render <file>`                                                     | Lint or preview a graph or Mermaid file locally, before writing anything                                                                                                   |
-| `pull <doc> [--to <dir>] [--force]` / `push <file>`                             | Sync one document to a file and back                                                                                                                                       |
-| `export --all --to <dir> [--format json,svg,png,mermaid,md]`                    | Every document to files                                                                                                                                                    |
-| `workbench open <doc>\|--workspace [--folder <f>] [--tab <t>] --origin <o>`     | A single-use link that opens the document, or the whole workspace (on Home, or a folder), live in a paired workbench                                                       |
-| `workbench pair --origin <origin> [--name <name>] [--workspace]`                | Pairs the token with a workbench, approved once in the browser; `--workspace` asks for the whole workspace                                                                 |
-| `template ls\|view`, `icon search <text>`, `image ls [name]`, `schema [kind]`   | The catalogues, the image gallery an image element's `imageId=` takes ([Image element](../009-elements/images.md#agents)), and the element format, from the api            |
-| `guide [topic]`                                                                 | How-tos: `build`, `edit`, `views`, `comments`, `collaborate`, `workbench`                                                                                                  |
-| `skill print\|install --to <dir>`                                               | The agent skill file                                                                                                                                                       |
-| `api <method> <path> [--body <file>\|-]`                                        | Any api route, authenticated; the escape hatch                                                                                                                             |
-| `auth login\|status\|logout`                                                    | Credentials                                                                                                                                                                |
+| Command                                                                       | Does                                                                                                                                                            |
+| ----------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `document ls [query]`                                                         | Documents in the personal library and joined teams, newest first                                                                                                |
+| `folder ls [--json]` / `folder create <name> [--in <f>]`                      | The person's folders as paths with their ids; a new folder, at the top of My documents or inside another                                                        |
+| `document view <doc>`                                                         | The overview view                                                                                                                                               |
+| `document create <name> [--tab <name>] [-f <file>\|--template <kind>]`        | A new document from elements or a template, compiled by the api                                                                                                 |
+| `document rename\|share\|rm\|restore <doc>`                                   | As the MCP's verbs; `rm` moves to the Trash, there is no permanent delete                                                                                       |
+| `tab ls <doc>`                                                                | The document's tabs                                                                                                                                             |
+| `tab view <doc> [--tab <t>] [--view <name>] [--budget <n>]`                   | A view; the outline by default; `show` takes `--ref`, `find` `--text`                                                                                           |
+| `tab add\|rename\|rm <doc> ...`                                               | Tab lifecycle; `add` takes `-f` or `--template`                                                                                                                 |
+| `tab diff <doc> [--tab <t>] --since <rev>`                                    | The diff view, computed by the CLI from its copy of the tab at that rev                                                                                         |
+| `tab render <doc> [--tab <t>] --png <file>\|--svg <file>`                     | A preview image; prints the path and its size, never image bytes                                                                                                |
+| `tab lint <doc> [--tab <t>]`                                                  | The [diagram lint](../024-agents/diagram-lint.md), served as a view                                                                                             |
+| `element add\|set\|rm\|move\|connect\|insert\|wrap <doc> ...`                 | One [edit operation](../024-agents/edit-operations.md) as a changeset                                                                                           |
+| `page ls\|set <doc> ...`                                                      | Pages: list them (the `pages` view), add, change, lay out, move, duplicate and delete them ([Pages for agents](../024-agents/pages-for-agents.md))              |
+| `article get\|set <doc> ...`                                                  | Articles: one as Markdown, or write one from Markdown (`--file`, `--append`, `--new`) ([Pages for agents](../024-agents/pages-for-agents.md#write_article))     |
+| `changeset apply <doc> [--tab <t>] -f <file>\|-` (`edit`)                     | Many edit operations, or a `replace`, as one changeset                                                                                                          |
+| `changeset ls\|show\|revert <doc> [<changeset>]`                              | Recent changesets and their revert                                                                                                                              |
+| `comment ls\|add\|reply\|resolve\|reopen <doc> ...`                           | Threads ([Agent presence](../024-agents/agent-presence.md#comments)), by element ref                                                                            |
+| `presence set\|clear <doc> [--tab <t>] [--status ..] [--focus ..]`            | The agent's presence                                                                                                                                            |
+| `wait <doc> --for comment\|change [--timeout <s>]`                            | Blocks until it happens, prints it, exits                                                                                                                       |
+| `watch <doc>`                                                                 | Streams changes, one line each, until interrupted                                                                                                               |
+| `pull <doc> [--to <dir>] [--force]` / `push <file>`                           | Sync one document to a file and back                                                                                                                            |
+| `export --all --to <dir> [--format json,svg,png,md]`                          | Every document to files                                                                                                                                         |
+| `workbench open <doc>\|--workspace [--folder <f>] [--tab <t>] --origin <o>`   | A single-use link that opens the document, or the whole workspace (on Home, or a folder), live in a paired workbench                                            |
+| `workbench pair --origin <origin> [--name <name>] [--workspace]`              | Pairs the token with a workbench, approved once in the browser; `--workspace` asks for the whole workspace                                                      |
+| `template ls\|view`, `icon search <text>`, `image ls [name]`, `schema [kind]` | The catalogues, the image gallery an image element's `imageId=` takes ([Image element](../009-elements/images.md#agents)), and the element format, from the api |
+| `guide [topic]`                                                               | How-tos: `build`, `edit`, `views`, `comments`, `collaborate`, `workbench`                                                                                       |
+| `skill print\|install --to <dir>`                                             | The agent skill file                                                                                                                                            |
+| `api <method> <path> [--body <file>\|-]`                                      | Any api route, authenticated; the escape hatch                                                                                                                  |
+| `auth login\|status\|logout`                                                  | Credentials                                                                                                                                                     |
 
 **Addressing.** `<doc>` is a document name, an id prefix, or a pasted livepages URL; an ambiguous one is refused
 with the candidates. A share-link URL acts through that link: each request of the command carries its code. A
 pulled file's path reads its views offline. `--tab` takes a tab name or id prefix and defaults to the first tab.
 Elements are [refs and selectors](../024-agents/edit-operations.md#selectors); the comment verbs take the ref of the
-element whose thread they act on, and `--cell <A1>` on a Sheet for a cell's thread
-([Cell comments](../029-sheets/sheet.md#cell-comments)).
+element whose thread they act on.
 
-**Files.** `-f <file>` holds edit operations, a graph, Mermaid, or elements, told apart by their content; a file
+**Files.** `-f <file>` holds edit operations or elements, told apart by their content; a file
 that is none of them is refused.
 
 **Changeset writes** (`element`, `changeset apply`, `tab add`, `push`) accept `--dry-run` (the plan, nothing
@@ -87,7 +80,7 @@ every element, so the api can tell whether what the changeset targets changed si
 nothing new happened and exits 0.
 
 **Provenance.** A document the CLI creates records `source: 'cli'`. Made by AI does not count it: a person directing
-an agent through the CLI is designing their own diagram.
+an agent through the CLI is designing their own pages.
 
 ## Help
 
@@ -160,7 +153,7 @@ In order of precedence:
 - The CLI learns a host from `GET /api/capabilities`: the api base, whether sign-in and the OAuth server exist, the
   document format and the oldest CLI version it accepts (`cli.minVersion`). Below that version the CLI refuses
   writes and names the version to install. Against a host storing a newer document format than it reads, the CLI
-  refuses the commands that work on local files (`pull`, `push`, `export`, `graph`, `tab diff`) the same way.
+  refuses the commands that work on local files (`pull`, `push`, `export`, `tab diff`) the same way.
 - A self-host profile never contacts livepages.app.
 
 ## Local files
@@ -178,7 +171,7 @@ In order of precedence:
 
 ## Previews
 
-`tab render` and `graph render` draw with the shared SVG renderer (`renderElementsToSvg`) and rasterise PNGs with
+`tab render` draws with the shared SVG renderer (`renderElementsToSvg`) and rasterise PNGs with
 `@livepages/render-png`, the MCP's resvg and embedded Inter. A stored tab is drawn from the api's
 `render.svg`, so the CLI and the MCP draw alike.
 
@@ -211,8 +204,8 @@ test fails when a verb is exposed by neither, or a tool's schema drifts from its
 
 ## Limits
 
-| Constant                   | Value | Why                                                                                      |
-| -------------------------- | ----- | ---------------------------------------------------------------------------------------- |
-| `HELP_TOP_MAX_TOKENS`      | 520   | Top-level help measured at 380; room to grow, not to sprawl (raised from 500 for `form`) |
-| `HELP_RESOURCE_MAX_TOKENS` | 250   | A resource's verbs, a line each                                                          |
-| `HELP_VERB_MAX_TOKENS`     | 400   | Usage, flags, two examples                                                               |
+| Constant                   | Value | Why                                                         |
+| -------------------------- | ----- | ----------------------------------------------------------- |
+| `HELP_TOP_MAX_TOKENS`      | 520   | Top-level help measured at 380; room to grow, not to sprawl |
+| `HELP_RESOURCE_MAX_TOKENS` | 250   | A resource's verbs, a line each                             |
+| `HELP_VERB_MAX_TOKENS`     | 400   | Usage, flags, two examples                                  |

@@ -1,10 +1,9 @@
 'use client';
 
 import { ctaHref } from '@livepages/api-schema';
-import { editorModeLabel } from '@livepages/document';
 import { TemplatePreview } from '@livepages/template-previews';
 import { templateCreateHref, type TemplateKind } from '@livepages/templates';
-import { EDITOR_MODE_ICONS, Glyph, START_BLANK_HREF } from '@livepages/ui';
+import { Glyph, START_BLANK_HREF } from '@livepages/ui';
 import { useDeferredValue, useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
 import { heroSearch } from '@/lib/hero-starts';
 
@@ -12,7 +11,7 @@ import { heroSearch } from '@/lib/hero-starts';
 // best matches list under the bar as real links, each creating its template. Enter opens the top
 // match, Down moves into the list (Up and Down walk it, Up off the top returns to the box), Escape
 // clears the box. The list shows while focus is inside the search and the box holds a query. Start
-// Blank sits inside the bar, a plain link to the wizard: the mode picked there opens with no start screen.
+// Blank sits inside the bar, a plain link that opens a new document on one empty page.
 
 const createHref = (kind: TemplateKind) => ctaHref(templateCreateHref(kind), 'Home.HeroSearch');
 
@@ -131,30 +130,28 @@ export function HeroSearch() {
       >
         {matches.length > 0 ? (
           <ul aria-label="Matching templates" className="flex flex-col">
-            {matches.map((t) => {
-              const ModeIcon = EDITOR_MODE_ICONS[t.mode];
-              return (
-                <li key={t.kind}>
-                  <a
-                    data-hero-result=""
-                    href={createHref(t.kind)}
-                    className="flex items-center gap-4 rounded-xl px-3 py-2.5 outline-none hover:bg-slate-100 focus-visible:bg-slate-100 focus-visible:ring-2 focus-visible:ring-amber-500"
-                  >
-                    <span className="flex h-12 w-[4.5rem] shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 [&>svg]:h-9 [&>svg]:w-auto">
-                      <TemplatePreview kind={t.kind} />
+            {matches.map((t) => (
+              <li key={t.kind}>
+                <a
+                  data-hero-result=""
+                  href={createHref(t.kind)}
+                  className="flex items-center gap-4 rounded-xl px-3 py-2.5 outline-none hover:bg-slate-100 focus-visible:bg-slate-100 focus-visible:ring-2 focus-visible:ring-amber-500"
+                >
+                  <span className="flex h-12 w-[4.5rem] shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 [&>svg]:h-9 [&>svg]:w-auto">
+                    <TemplatePreview kind={t.kind} />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-[15px] font-semibold">{t.title}</span>
+                    <span className="block truncate text-sm text-slate-600">{t.description}</span>
+                  </span>
+                  {t.categoryLabel ? (
+                    <span className="hidden shrink-0 items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700 sm:inline-flex">
+                      {t.categoryLabel}
                     </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-[15px] font-semibold">{t.title}</span>
-                      <span className="block truncate text-sm text-slate-600">{t.description}</span>
-                    </span>
-                    <span className="hidden shrink-0 items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700 sm:inline-flex">
-                      <ModeIcon size={13} aria-hidden />
-                      {editorModeLabel(t.mode)}
-                    </span>
-                  </a>
-                </li>
-              );
-            })}
+                  ) : null}
+                </a>
+              </li>
+            ))}
           </ul>
         ) : (
           <p className="px-3 py-3 text-[15px] text-slate-700">

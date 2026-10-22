@@ -1,16 +1,92 @@
 # Pages
 
-Pages mode ([Editor modes](editor-modes.md)) lays a tab out as **pages**: sheets on the
+livepages has one editor mode, **Pages**: every tab is laid out as **pages**, sheets on the
 canvas, each built up into one finished visual. This spec is what a page **is** and everything a
 page offers: its size, its background, a ready-made layout to start from, the page's own actions,
-snapping to it, and exporting it. The basics (pages in a row, the add button, content moving with
-its page, clipping, centring) are in [Editor modes](editor-modes.md) "The pages".
+snapping to it, and exporting it.
+
+## One mode
+
+The mode stays a named value (`EditorMode`, `packages/document/src/editor-mode.ts`) whose only id is
+`pages`, so the places that name a mode (a tab's `opensIn`, a `/new?mode=` link, an `opens-in:` Explorer
+filter) read through one function. A stored mode from livediagram (`diagram`, `draw`, `workshop`, `plan`
+and Pages' older names, `illustrate` and `infographic`) reads as Pages (`parseEditorMode`); anything else
+reads as nothing. There is no mode switch and no mode step on `/new`.
+
+## The pages
+
+Pages draws **pages** on the canvas, in a row, like artboards in a design tool. The rest of this spec is what a
+page is and offers; this section is the basics.
+
+- **The pages** are sheets of paper (white in light chrome, slate-900 in dark)
+  with a soft shadow, under every element. The first is centred on the row
+  anchor (`Page.rowAt`, the canvas origin when absent; "A page"), so content put onto a page keeps its
+  place; each further page sits **96** px (`PAGE_GAP`) to the right
+  of the one before, every page centred on the row's horizontal axis.
+  - A page is **A4** unless it has a size of its own: at 96 px per inch,
+    **794 x 1123** in portrait, **1123 x 794** in landscape (`A4_SHORT_SIDE`,
+    `A4_LONG_SIDE`, `packages/document/src/page.ts`); the other
+    sizes are in "Sizes".
+  - The pages are the tab's (`Tab.pages`: `Page[]`, in row
+    order), so everyone lays out on the same ones. A tab with no `pages` has one
+    page, in its legacy `pageOrientation` (portrait when absent); the legacy
+    field is dropped the first time the pages change. At most **100** pages
+    (`MAX_PAGES`).
+- **The surround** is the tab's own canvas: its colour, and every canvas setting, apply behind the pages. Its
+  pattern is **plain** while the tab keeps its theme's pattern; a pattern someone picked shows behind the pages.
+- **Each page's label** sits above its top-left corner (**A4 · Portrait** on an infographic page, or
+  **A4 · Landscape · Article**, its name first when it has one, never "Page n": the page
+  navigator shows its place), and
+  **its settings cog** above its top-right, both held at one screen size at any
+  zoom. The cog (tooltip **Page settings**, or **Page 2 settings**) opens the
+  **page panel** ("The page panel").
+  A viewer who cannot edit (a view role, a locked tab) gets no cog and no add
+  button.
+- **Adding a page:** a round **+** sits in the gap's width to the right of the
+  last page, level with its middle, adding another page like the last; under it
+  a smaller button opens **Add a Page** to choose a page of any kind
+  ("Adding a page"). The page goes after the last; both
+  are gone at the limit, and the view then frames the new page.
+- **Content moves with its page.** Turning, resizing, moving or deleting a page
+  moves the pages after it; every element whose centre lies on a page that
+  moves (and an arrow's free ends) moves with it, re-centred on the page's
+  centre (`withPages`); on an article page it keeps its place from
+  the page's top-left corner, where the writing starts. A deleted page takes its content with it; a
+  turned or resized page re-fits its own content
+  ("Sizes"). Elements on no page stay
+  where they are. Each change is one tab edit (one undo step, synced to
+  everyone).
+- **Turning, adding and deleting animate:** the sheets ease to their new places
+  and shapes over 200 ms (none under reduced motion).
+- **Centred in the viewport:** opening a tab fits the first page itself (`pageFitBox(page)`), never the whole row of
+  pages: the tab's own fit on landing, and the fit after a template or an import
+  lands on it, frame the first page too (only Fit to Screen fits everything), and going to a page
+  (its label, the page navigator, a new page) fits that page, so whatever its shape
+  (a landscape slide on a wide screen too) it fills the view; turning or resizing a
+  page re-fits it. Where the Toolbar strip lies over
+  the canvas's top edge, the page centres in the band below it
+  (`computeFitBelow`).
+- **Only the pages are drawn on.** A draw, tap-to-place or double-click-to-add
+  that starts off every page is ignored (`pressIsOffPage`); elements already on
+  the canvas still move freely, on or off the pages.
+- **Elements are cut off at the page edges.** Whatever part of an element hangs
+  off a page is hidden and cannot be pressed, as if the pages were the only
+  paper (`PageClip`, a layer clipped to the pages that holds the
+  element views). The selection handles are drawn above it, so an element
+  hanging off a page still shows all of them. Not in the isometric view, whose
+  3D stack a clip would flatten.
+- **The sheets are a view, never elements.** They take no pointer events (a
+  press on one is a press on the empty canvas). Thumbnails see the tab's own
+  backdrop and the elements whole; the Export dialog exports
+  the pages ("Export").
+- The sheets are `apps/live/components/canvas/CanvasPages.tsx`; the pages'
+  edits and the centring are `apps/live/hooks/editor/usePagesMode.ts`.
 
 ## Domain language
 
 | Term                | Means                                                                                                                                 |
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| **page**            | One sheet of a tab in Pages mode (`Page`), stored in `Tab.pages` in row order.                                                        |
+| **page**            | One sheet of a tab (`Page`) , stored in `Tab.pages` in row order.                                                                     |
 | **page kind**       | What a page is for, fixed when it is made: an **infographic**, **article**, **slide**, **logo** or **wireframe** page.                |
 | **page size**       | The sheet's format (`PageSizeId`): its short and long side in canvas px, or Fit to Content's own sides.                               |
 | **row anchor**      | Where the row of pages sits on the canvas (`Page.rowAt`): the first page's centre.                                                    |
@@ -29,16 +105,16 @@ mode.
 
 ## The palette's kind
 
-The palette in Pages mode has a **kind**, which is always the kind of the page someone is on: it
+The palette has a **kind**, which is always the kind of the page someone is on: it
 is never shown and never chosen. Each kind is its own palette layout (`palette-layouts.ts`),
 offering what that page is made of and nothing it has no use for; within a kind every tile sits in
 one category (Popular, a pick from across them, aside).
 
-- **Design** (infographic pages): Popular, Shapes, Library,
+- **Design** (infographic pages): Popular, Shapes,
   Write, Concepts, Components, Devices, Icons, Stickers, Media, Data.
 - **Slide** (slide pages): Popular (a
   title, a picture, a chart and a point), then in Common **Write**, **Shapes**, **Media** (with
-  its embeds: a video, a prototype or a page a talk plays) and **Library**; in Structure **Data**,
+  its embeds: a video, a prototype or a page a talk plays); in Structure **Data**,
   **Concepts**, **Components** (no website Header) and **Devices** (a screenshot in a frame); then
   **Icons** and **Stickers**.
 - **Article** (article pages): the strip holds the article's
@@ -48,9 +124,8 @@ one category (Popular, a pick from across them, aside).
 - **Wireframe** (wireframe pages): **Components** and **Elements** first, in a band of their own
   (a divider after Elements), then the rest without **Concepts** and **Devices**
   ([Wireframe pages](wireframe-pages.md) "The Elements palette").
-- **Logo** (logo pages): **Draw** (Pens: the
-  Pen, the Pencil, the Shape Pen; Outlines: the Polygon; Markers: Draw mode's three), **Shapes**,
-  **Write** (Text for a wordmark, a sticky note for a comment), **Icons**, **Library** and **Media**
+- **Logo** (logo pages): **Draw** (Outlines: the Polygon), **Shapes**,
+  **Write** (Text for a wordmark, a sticky note for a comment), **Icons** and **Media**
   (an Image to trace); no charts, blocks, frames, stickers or embeds, and no Logo category
   ([Logo pages](logo-pages.md) "The Logo palette").
 
@@ -136,7 +211,7 @@ was designed on. Every path that makes a page lands the same: adding
 one, choosing the first page's kind, the template picker and an AI tool's template. The popover is the same on
 a phone (a bottom sheet). The + already adds another of the last page's kind, so the list keeps one fixed order.
 
-A tab entering Pages mode with no pages stored starts with one page, its kind unchosen.
+A tab with no pages stored starts with one page, its kind unchosen.
 
 **The first page's choice**: while a tab's only page is unchosen and empty, it offers the four kinds
 inside itself, for someone who may edit: a card centred on the page, held at one screen size,
@@ -150,7 +225,7 @@ edit each. Anything put on the page first (a layout, an element) is choosing Inf
 offer goes while the page has content, and comes back if it is emptied while still unchosen. The
 empty page's layout invitation waits until the choice is made. Not offered in zen or isometric
 view, nor on a second page (a page added from the + is chosen in the popover).
-The **Project Brief** template (kind `article`) in /new starts a tab that opens in Pages mode with one article.
+The **Project Brief** template (kind `article`) in /new starts a tab with one article.
 
 ## The page panel
 
@@ -232,7 +307,7 @@ a slide of a deleted page can never find a new page under the old id.
 | `slide`         | Slide (16:9)                               | 1080 x 1920            | Slides, landscape only    |
 | `slide-classic` | Classic slide (4:3)                        | 1080 x 1440            | Slides for 4:3 screens    |
 | `logo`          | 1024 x 1024                                | 1024 x 1024            | Logos, logo pages only    |
-| `fit`           | Fit to Content                             | its own (`fit`)        | A board put onto a page   |
+| `fit`           | Fit to Content                             | its own (`fit`)        | Content put onto a page   |
 
 - **Which sizes a page offers** depends on its kind. An **infographic** or **article** page: A4,
   US Letter, A3, Square, Post and Story (never a slide size: a deck is made of slide pages; an
@@ -247,7 +322,7 @@ a slide of a deleted page can never find a new page under the old id.
   (16:9)**; a landscape page still on the Slide size shows its Slide tile in Widescreen's place,
   never two tiles of one shape.
 - A page is only ever given a size its kind offers; any other is refused.
-- **Fit to Content** (`fit`) is the page made around a board that does not fit a paper size ("Into
+- **Fit to Content** (`fit`) is the page made around content that does not fit a paper size ("Into
   pages"): its sides are its own (`Page.fit`), the content's bounds plus the page margin
   all round, so nothing on it is scaled. Each side is clamped to **200** to **19200** px
   (`FIT_PAGE_MIN_SIDE`, `FIT_PAGE_MAX_SIDE`; 19200 px is 14400 pt, the largest page a PDF holds).
@@ -255,7 +330,7 @@ a slide of a deleted page can never find a new page under the old id.
     from content, so no other page can choose it. Choosing another size leaves it for good (its
     content re-fits as any size change does).
   - It has no orientation, like a square: no Portrait / Landscape choice and no turn.
-  - Its label is **Fit to Content**; its tile hint "Sized around the board it was made for".
+  - Its label is **Fit to Content**; its tile hint "Sized around the content it was made for".
 
 - Paper sizes are at the CSS 96 px per inch; screen sizes are their own pixels.
 - A **square** page has no orientation: its panel shows no Portrait / Landscape choice, and it keeps
@@ -380,10 +455,10 @@ fill twice changes nothing the second time.
   width, its corners) and only its tone moves.
 
 - **Left as they are**, their colours being what they are, and their text sitting on their own
-  surface: sticky notes, images, videos, link cards, stickers, code blocks, Plan elements,
-  Collaborate widgets, device frames, legends, checklists, the accent-bar web components (banner,
-  header), whose text sits on their own bar, Technology (brand) icons and emoji, highlighter strokes, a chart's series colours
-  (they adapt as they are drawn instead, below), a table's per-cell styles and fills, and a whiteboard pen colour (it follows the board already).
+  surface: sticky notes, images, videos, link cards, stickers, code blocks,
+  device frames, checklists, the accent-bar web components (banner,
+  header), whose text sits on their own bar, emoji, a chart's series colours
+  (they adapt as they are drawn instead, below), a table's per-cell styles and fills.
   A status colour (a green tick, a rose cross) is ink like any other: re-inked keeping its hue, so
   a tick stays green.
 - **Elements with no colour of their own** follow the page ("A dark page has light ink") and are
@@ -428,7 +503,7 @@ drawing only, never stored:
   (a filled box, a closed filled path, a filled table, a sticky note or a link card, in its fill as
   drawn), else the page under the chart's box (a solid's colour, a picture's tone under its
   overlay, a gradient's every tone across the box). A chart over a surface of unknown tone (a
-  picture, a widget, a Sheet) and a chart on the plain paper or on no page are drawn as they are:
+  picture) and a chart on the plain paper or on no page are drawn as they are:
   the palettes are made for the paper.
 - **Series** (a line, its points and its area, a bar, a wedge, a Sankey node and the bands it
   colours) under **3:1** against the ground (at its worst tone) are lightened or darkened, keeping
@@ -594,7 +669,7 @@ given in one go rather than page by page.
   its new fill ("Re-inking"). A notice says what it did: "Background applied to 35 slides.", adding
   "2 locked slides kept their own." when it skipped any. A locked page is skipped, never refused
   whole; a logo page's pattern is never touched.
-- **The Format tool paints pages**: in Pages mode, with the [Format
+- **The Format tool paints pages**: with the [Format
   tool](../008-canvas/canvas-and-palette.md#format-painter), a press on a page's paper (anywhere on
   the page but on an element) arms that page's background as the brush, and each press on another
   page paints it there, one edit each, re-inked. The banner reads "Select a base element or page to
@@ -644,15 +719,10 @@ and logo pages keep their background in the panel only. Opening it is tracked as
 An infographic or slide page's title bar holds a **Tidy** button, its icon alone (never named,
 on a desktop or a phone), right after Background and left of the lock and the cog, shown only
 while a press would change something (a page already tidy, or empty, shows none), the cog's
-size with a tooltip ("Tidy: align and space what is on this page"), its glyph the diagram Tidy
-Up's broom. A logo page's Tidy (for drawn lines) sits in the same place, after Mirror and
-Guides, its icon alone too. It is Diagram mode's Tidy Up ([Layout cleanup](../008-canvas/layout-cleanup.md#the-tidy-up-button))
-for a page: where the diagram one lays shapes out from their arrows, a page has no graph, so this
-one keeps the author's layout and straightens it.
+size with a tooltip ("Tidy: align and space what is on this page"), its glyph a broom. A page has no graph to lay out from, so it keeps the author's layout and straightens it.
 
 - **Runs at once.** One tidier, so no popover: a press tidies the page, one edit, one undo. On a
-  desktop pointer, hovering the button shows the tidied page in place (nothing written), as the
-  diagram Tidy Up's tiles do; leaving the button puts it back. A page already tidy says so in a
+  desktop pointer, hovering the button shows the tidied page in place (nothing written); leaving the button puts it back. A page already tidy says so in a
   toast ("This page is already tidy.") and writes nothing.
 - **What it tidies**: the elements on the page (centre on the page, as everywhere else), as
   **blocks**: an element with others wholly inside it (a card and its text, a background and
@@ -682,7 +752,7 @@ one keeps the author's layout and straightens it.
   which stays where it is and is kept clear of like any other block. Arrows pinned to what moves
   follow their ends; a free arrow end stays. Running it twice changes nothing the second time.
 - **Where it shows**: infographic pages only (a slide page lays out from its own layouts, a logo
-  page has its own Tidy for drawn lines, an article flows its writing). A locked page shows no
+  page is drawn by hand, an article flows its writing). A locked page shows no
   Tidy, like its Background.
 
 | Role        | Tidy                                                                                    |
@@ -691,7 +761,7 @@ one keeps the author's layout and straightens it.
 | Participant | No button: a tidy moves every element on the page, and a Participant never reshapes it. |
 | Viewer      | No button.                                                                              |
 
-Pressing it is tracked as `Tab / Aligned / PageTidyUp`, beside the diagram tidiers' events.
+Pressing it is tracked as `Tab / Aligned / PageTidyUp`.
 
 ## Layouts
 
@@ -1355,7 +1425,7 @@ article**, **Move article left / right**, **Delete article**. On a **slide page*
 
 ## Arrows stay on one page
 
-In Pages mode an arrow never joins two pages. An element (or arrow) is on the page its centre
+An arrow never joins two pages. An element (or arrow) is on the page its centre
 lies on; one between pages is on none.
 
 - **Drawing or moving an arrow's end**: the end pins to an element, or connects onto another
@@ -1364,8 +1434,8 @@ lies on; one between pages is on none.
   end stays free where it is dropped.
 - **Connect** (an arrow from a selected element to the next one clicked): clicking an element on
   another page draws no arrow and ends the connect.
-- An arrow already joining two pages (made before this rule, in Diagram or Draw mode, or by an AI
-  tool or a collaborator) stays as it is. Diagram and Draw mode draw arrows as ever.
+- An arrow already joining two pages (made before this rule, in livediagram, or by an AI tool or a
+  collaborator) stays as it is.
 
 ## Locking a page
 
@@ -1396,8 +1466,8 @@ is while the rest of the tab is worked on.
     lock never holds it.
 - **What a lock does not do**: pages around it can still be added, moved or deleted (its content
   moves with it as pages close up or open around it), and the tab's theme still applies to it.
-  The lock is Pages mode's, on the active tab's edits made here: in Diagram or Draw mode a
-  page's elements are edited as ever, and an AI tool's or a collaborator's edit is not refused.
+  The lock is on the active tab's edits made here: an AI tool's or a collaborator's edit is not
+  refused.
 - **Telemetry**: `Tab · Changed · PageLocked` / `PageUnlocked`.
 
 ## Getting around the pages
@@ -1417,7 +1487,7 @@ is while the rest of the tab is worked on.
   article.
 - **The label fits its page**: it truncates to the page's width on screen less the title bar's
   buttons, and hides when under 40 px.
-- **Snapping to the pages**: while a move or a resize is in hand in Pages mode, an element
+- **Snapping to the pages**: while a move or a resize is in hand, an element
   snaps to the edges, the centre lines and the margins (7% of the short side) of every page, with
   the same guides as element-to-element alignment (not to the pages' spacing: equal-spacing snaps
   stay element to element).
@@ -1453,10 +1523,9 @@ is while the rest of the tab is worked on.
   - **Whenever the view rests**: the same holds after anything else that moves the view (the zoom
     cluster's buttons, the Map, the arrow keys) once the view has rested 250 ms with no pointer
     held. Not while following someone (their view is the follow's, and a move of your own would
-    end it), and nowhere outside Pages mode.
+    end it).
   - For everyone who can see the pages, on a phone and a desktop alike; no setting.
-- **Back to the page you were on**: landing on a tab of pages (switching back to it, a reload,
-  entering the mode) fits the page you were last on rather than the first, so moving between tabs
+- **Back to the page you were on**: landing on a tab of pages (switching back to it, a reload) fits the page you were last on rather than the first, so moving between tabs
   never loses your place. The page you are on is the one under the middle of the view (else the
   nearest), taken once the view has rested for 400 ms (`LAST_PAGE_SETTLE_MS`), and
   straight away as you leave the tab or close the page. It is each person's, kept in this browser
@@ -1468,7 +1537,7 @@ is while the rest of the tab is worked on.
 
 ## Export
 
-In Pages mode the Export dialog exports **pages**, not the tab's content bounds.
+The Export dialog exports **pages**, not the tab's content bounds.
 
 - **Formats**: **PDF**, **PNG**, **SVG** and **GIF** (an animated GIF of the pages, moving as they
   move on the canvas: [Animated GIF export](../020-import-export/animated-gif-export.md)), plus **JSON** (the tab
@@ -1492,17 +1561,15 @@ In Pages mode the Export dialog exports **pages**, not the tab's content bounds.
 - A PDF page is the page's size in print points (CSS px x 0.75: A4 is 595.5 x 842.25 pt).
 - The Isometric and Background pattern options are not offered: a page is its own background and
   is never tilted.
-- The Hidden layers option is not offered: Pages mode has no Layers, so a hidden layer's
+- The Hidden layers option is not offered: Pages has no Layers, so a hidden layer's
   elements stay out of the export as they stay off its canvas.
 - The preview is the download: a logo page's PNG and SVG preview show its see-through paper over a
   checkerboard, as the Logo Kit's preview does.
-- Outside Pages mode, export is unchanged.
 
 ## Import
 
-In Pages mode the Import dialog offers **JSON** only (a livepages tab, which may carry
-pages), and opens straight at it, with no list of formats to go back to. Markdown builds a diagram and is not
-offered.
+The Import dialog offers **JSON** (a livepages tab, which may carry pages) and **Markdown**
+([Markdown import](../020-import-export/markdown-import.md)).
 
 ## Telemetry
 
@@ -1510,7 +1577,7 @@ offered.
 `PageBackground`, `PageBackgroundImage`, `PagePattern`, `PageBackgroundAppliedToAll` (Apply to All),
 `PageBackgroundPainted` (the Format tool, page onto page), `PageRenamed`, `PageDuplicated`, `PageMoved`, `PageLayout`,
 `PageLayoutSurprise` (the layout gallery's Surprise Me), `PageLocked`, `PageUnlocked`,
-`PageFitToContent` (a board put onto a page on entering the mode), `PagesLaidOut` (Split Into Pages), `SlidePageAdded`
+`PageFitToContent` (content put onto a page on opening), `PagesLaidOut` (Split Into Pages), `SlidePageAdded`
 (and `ArticleAdded`, `LogoPageAdded`, the other kinds' adds), `PageKindInfographic` / `PageKindArticle` / `PageKindSlide` /
 `PageKindLogo` (the first page's own choice);
 `Document · Exported · PagesPNG / PagesSVG / PagesPDF / PagesGIF` (one page) and
@@ -1524,40 +1591,31 @@ A logo page's own events are in [Logo pages](logo-pages.md) "Telemetry".
 
 ## Into pages
 
-Switching mode changes no content ([Domain language](../003-system-architecture/domain-language.md)
-"Mode"): entering Pages never moves, resizes or scales an element. A board that does not fit
-its page is put onto a page made to fit it instead.
+Opening a tab never moves, resizes or scales an element. Content that does not fit its page is put
+onto a page made to fit it instead.
 
-- When a tab enters Pages mode, its content is put onto a page (a viewer or a locked tab is
-  left alone):
-  - **An editor's switch** does it in the **same tab edit** as the switch ([Editor
-    modes](editor-modes.md) "Where the mode lives"), so one undo puts the tab back in the mode it
-    was in, with no page.
-  - **A tab already in Pages** when an editor opens it (made in Pages by an import or
-    the api with content off its page) gets the page as an edit of its own.
-  - Either way the rules are:
-    - **No pages stored**, and content that does **not fit inside the first page**: one page is
-      made **around all of the content, where it is**. The row anchor (`rowAt`) is the content's
-      centre, so the page sits over the content and nothing moves.
-    - **Pages stored**, none of them made anything of (no article, slide or logo page, no name, no
-      background, no lock), and **no element on any page**: the stored pages are replaced by one
-      page made around the content, as above. Pages someone has set up are kept, the content left
-      in the surround.
-    - Otherwise nothing happens: content left in the surround stays where it is.
+- When an editor opens a tab whose content is off its page (a tab from livediagram, an import, or the
+  api), its content is put onto a page as an edit of its own (a viewer or a locked tab is left alone):
+  - **No pages stored**, and content that does **not fit inside the first page**: one page is
+    made **around all of the content, where it is**. The row anchor (`rowAt`) is the content's
+    centre, so the page sits over the content and nothing moves.
+  - **Pages stored**, none of them made anything of (no article, slide or logo page, no name, no
+    background, no lock), and **no element on any page**: the stored pages are replaced by one
+    page made around the content, as above. Pages someone has set up are kept, the content left
+    in the surround.
+  - Otherwise nothing happens: content left in the surround stays where it is.
 - **The page made around content** is an infographic page, landscape when the content is more than
   1.1 times wider than tall (`LANDSCAPE_RATIO`), portrait otherwise. It is **A4** when the content
   fits A4's margin box in that orientation, and otherwise **Fit to Content** ("Sizes"): the
   content's bounds plus the margin all round. Past `FIT_PAGE_MAX_SIDE` the page stops growing and
   the content runs off its edge, still unscaled.
-- A toast tells the editor who switched: "Put onto a page that fits it. Undo switches back to
-  <Mode>." (the mode it came from); for a tab opened in Pages, "Put onto a page that fits it.
-  Undo takes the page away." Telemetry: `Tab · Changed · PageFitToContent`.
-- The Diagram view draws no pages, so it looks exactly as it did.
+- A toast tells the editor: "Put onto a page that fits it. Undo takes the page away." Telemetry:
+  `Tab · Changed · PageFitToContent`.
 
 ### Split Into Pages
 
-A page action on a **Fit to Content** page ("Page actions"), for a board that reads better as
-separate pages. It is explicit: never run on entering the mode.
+A page action on a **Fit to Content** page ("Page actions"), for content that reads better as
+separate pages. It is explicit: never run on opening a tab.
 
 - The page's content (every element whose centre is on it) splits into **clusters**: elements
   joined by a pinned arrow, and elements within 120 px of each other (edge to edge)
@@ -1606,7 +1664,7 @@ separate pages. It is explicit: never run on entering the mode.
     tab's run in page order. A slide handed back is forgotten, so one deleted by hand after it came
     back stays deleted. A reload forgets the memory: a slide page then gets a fresh slide, as any
     slide page does.
-- In Pages mode the Slide Deck panel also adds slides **a page at a time**, for the pages that
+- The Slide Deck panel also adds slides **a page at a time**, for the pages that
   are not slide pages (an infographic, article or logo page): a page picker (each page by its
   label) and **Add as slide**, in place of "Select elements to make a slide". Such a page slide
   takes its place in the page order too once it is in the deck.
@@ -1646,16 +1704,15 @@ SlideShown`).
   page slide presents, the canvas shows that page's sheet alone (its neighbours are not drawn), as
   it shows only a slide's elements.
 
-## Chrome in Pages mode
+## Chrome
 
-- **Slides button**: in the bottom-right cluster, where Layers sits in the other modes (left of
-  the brush), joined to Contents in one frame (`PagesClusterStrip`, as Layers and Theme share one), a **Slides** button opens the Slide Deck panel as a popover hanging above it (an
+- **Slides button**: in the bottom-right cluster (left of the brush), joined to Contents in one frame (`PagesClusterStrip`, as Layers and Theme share one), a **Slides** button opens the Slide Deck panel as a popover hanging above it (an
   outside press closes it; the button shows pressed while open). An infographic is likely to be
   presented, so its deck is one press away. Desktop only, as the Slide Deck itself is. Shown only
   while **at least one page is a slide**: until then the deck has nothing to hold, and the
   Pages tour skips its Slides step. Telemetry: `UI · Opened · SlideDeck`.
 - **No Layers**: the Layers button and panel are not offered (a page is arranged by its pages, not
-  layers); the tab's layers are untouched and come back in the other modes.
+  layers); a tab's stored layers are left untouched.
 
 ## Non-goals
 

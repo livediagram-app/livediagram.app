@@ -33,8 +33,7 @@ One term, one identifier. The left column is the only spelling used in code, tes
 | Rootless element | (internal)                                     | Element in the graph that no root reaches                |
 | Palette theme    | `theme.palette !== undefined`                  | A multi-colour theme                                     |
 
-Banned synonyms: "rainbow theme" outside user-facing labels, "colour group", "hue index". Also "lane",
-which is an element kind ([Lane](../../009-elements/lane.md)).
+Banned synonyms: "rainbow theme" outside user-facing labels, "colour group", "hue index".
 
 ## Behaviour and state
 

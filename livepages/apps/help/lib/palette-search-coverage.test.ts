@@ -33,10 +33,17 @@ const TILE_DEFS = fileURLToPath(
   new URL('../../live/components/palette/palette-tile-defs.tsx', import.meta.url),
 );
 
+// The Behaviour tool group (the Collaborate kit, reactions, focus and mode buttons, pickers) is livediagram's: no
+// kind of page offers it and livepages has no articles for it, so its captions are not held to a help result.
+const UNDOCUMENTED_SECTION = /toolGroup: 'behaviour'/;
+
 function paletteNames(): string[] {
   const src = readFileSync(TILE_DEFS, 'utf8');
-  const names = [...src.matchAll(/caption: '([^']+)'/g)].map((m) => m[1]!);
+  const names: string[] = [];
   for (const tile of src.split(/\n {2}\{\n/)) {
+    if (UNDOCUMENTED_SECTION.test(tile)) continue;
+    const caption = /caption: '([^']+)'/.exec(tile);
+    if (caption) names.push(caption[1]!);
     if (!/id: 'shapes:/.test(tile)) continue;
     const label = /label: 'Add ([^']+)'/.exec(tile);
     if (label) names.push(label[1]!);

@@ -19,17 +19,12 @@ Switching the mode **on** writes these values, once:
 | -------------------- | -------------------- | ----- |
 | Alignment guides     | `alignmentGuides`    | on    |
 | Auto-attach arrows   | `autoRebindArrows`   | on    |
-| Diagram tour         | `tourSeen`           | seen  |
-| Plan tour            | `planTourSeen`       | seen  |
-| Workshop tour        | `workshopTourSeen`   | seen  |
-| Draw tour            | `drawTourSeen`       | seen  |
-| Forms tour           | `formTourSeen`       | seen  |
 | Pages tour           | `pagesTourSeen`      | seen  |
 | Element tours        | `elementToursSeen`   | seen  |
 | AI suggested prompts | `aiSuggestedPrompts` | off   |
 | Minimal chrome       | `minimalChrome`      | on    |
 
-The Plan and Pages tours offer each of their tracks once (`planTourTracks`, `pagesTourKinds`), and the
+The Pages tour offers each of its tracks once (`pagesTourKinds`), and the
 [element tours](element-tours.md) each toured kind (`elementTourKinds`); their seen
 flag counts every track only while the mode is on, so switching it off gives back every track not yet answered.
 
@@ -63,7 +58,7 @@ directly, indented beneath it as one group named "Power User Mode settings":
 
 1. The power-user-only settings: **Minimal Chrome**.
 2. **Set By Power User Mode**: a readout of the preset, one line per preset setting other than Minimal chrome (Alignment
-   Guides, Auto-Attach Arrows, the Diagram, Plan and Workshop tours, Suggested Prompts), each with its current value
+   Guides, Auto-Attach Arrows, the Pages tours, Show Me on Every Element, Suggested Prompts), each with its current value
    and the category it lives in. Each is still changed in its own row, and a **Change** button on the line goes to
    that row, ringed. A line whose value the user has changed since switching on says so ("Changed: kept when you
    switch off"); the others read "Restored when you switch off". With no baseline to restore from (the mode was switched on by a client that recorded none), the lines make no promise

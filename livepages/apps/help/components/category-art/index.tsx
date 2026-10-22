@@ -6,6 +6,7 @@ import { CollaborationArt } from './collaboration';
 import { DevelopersArt } from './developers';
 import { ExplorerArt } from './explorer';
 import { GettingStartedArt } from './getting-started';
+import { PagesArt } from './pages';
 import { PaletteArt } from './palette';
 import { PoliciesArt } from './policies';
 import { PrivacyAndSecurityArt } from './privacy-and-security';
@@ -29,6 +30,7 @@ export const CATEGORY_ART: Record<string, ComponentType> = {
   developers: DevelopersArt,
   explorer: ExplorerArt,
   'getting-started': GettingStartedArt,
+  pages: PagesArt,
   palette: PaletteArt,
   policies: PoliciesArt,
   'privacy-and-security': PrivacyAndSecurityArt,

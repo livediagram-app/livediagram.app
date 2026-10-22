@@ -54,7 +54,7 @@ describe('SiteFooter columns', () => {
   it('groups the links under titled categories below the brand', () => {
     const titles = [...footerNav.matchAll(/<h2[^>]*>([^<]+)<\/h2>/g)].map((m) => m[1]);
     expect(titles).toEqual(['Product', 'Resources', 'Legal', 'Connect']);
-    expect(html.indexOf('Free diagrams')).toBeLessThan(html.indexOf('aria-label="Footer"'));
+    expect(html.indexOf('Free articles')).toBeLessThan(html.indexOf('aria-label="Footer"'));
   });
 });
 

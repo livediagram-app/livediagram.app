@@ -8,9 +8,9 @@ anywhere an image does (a chat message, an email, a README, a social post), whic
 
 ## Where it is offered
 
-- **Pages mode only.** The Export dialog's Pages formats ([Pages](../007-editor/pages-mode.md)
-  "Export") gain a **GIF** card after SVG: PDF, PNG, SVG, GIF, JSON (then Logo Kit while the tab has a logo page).
-  Outside Pages the card is never shown.
+- **Tabs with pages.** The Export dialog's formats ([Pages](../007-editor/pages-mode.md) "Export") include a **GIF**
+  card after SVG: PDF, PNG, SVG, GIF, JSON (then Logo Kit while the tab has a logo page). A tab with no page yet, and
+  an export of a selection, show no GIF card.
 - Card copy: **GIF**, "An animated image of the pages, moving as they move on the canvas."
 - Every page kind exports: slides, infographic, article and logo pages. A logo page's see-through paper exports white
   (GIF transparency is one bit and would fringe every soft edge).
@@ -102,4 +102,4 @@ The GIF card opens an options-and-download panel, like PNG's, with the shared ba
 
 - A hold per page: one hold applies to every page.
 - A transition chosen in the export: the deck's own transition is used.
-- Frame rate or colour count options; video formats (MP4, WebM); a GIF of a diagram tab.
+- Frame rate or colour count options; video formats (MP4, WebM); a GIF of a selection.

@@ -23,7 +23,7 @@ answering questions and tidying.
 
 | Mode      | What it does                                         | Response                                           |
 | --------- | ---------------------------------------------------- | -------------------------------------------------- |
-| **Ask**   | Answers questions about the diagram (read-only Q&A)  | `text/event-stream` SSE (text deltas)              |
+| **Ask**   | Answers questions about the document (read-only)     | `text/event-stream` SSE (text deltas)              |
 | **Clean** | Fixes label typos, normalises sizes/positions/styles | `text/event-stream` SSE; client parses JSON on end |
 
 Both modes stream: the worker pipes OpenAI's SSE through unchanged so the panel can render progress (text deltas for Ask, a "thinking" indicator for the JSON Clean mode). The client buffers the Clean stream until completion, parses it, then applies the elements via `commit()` so undo still treats the change as one block.
@@ -156,7 +156,7 @@ to the same structural guard every save is: `isValidElement` from `@livepages/do
 limited to the four types the assistant may add (shape, text, sticky, arrow). A looser local
 check used to live in the client and let through what the api then refused on save (an
 arrow with a junk endpoint, a non-finite coordinate). Renamed additions carry every
-reference kind with them (arrow ends, mind-map parents, portal partners) through the shared
+reference kind with them (arrow ends, element links) through the shared
 `remapElementRefs`.
 
 Error responses follow the standard worker envelope, `{ "error": "<token>" }`. The route emits

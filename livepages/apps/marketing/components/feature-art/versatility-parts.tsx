@@ -202,23 +202,6 @@ export function ArrowHead({ id, hollow = false }: { id: string; hollow?: boolean
   );
 }
 
-export function WandIcon() {
-  return (
-    <svg width="9" height="9" viewBox="0 0 16 16" fill="none" aria-hidden>
-      <path
-        className="stroke-brand-600 dark:stroke-brand-300"
-        d="M3 13 L11 5"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-      <path
-        className="fill-brand-600 dark:fill-brand-300"
-        d="M12 2 l0.7 1.8 L14.5 4.5 l-1.8 0.7 L12 7 l-0.7-1.8 L9.5 4.5 l1.8-0.7 Z"
-      />
-    </svg>
-  );
-}
-
 export const delay = (s: number): CSSProperties => ({ animationDelay: `${s}s` });
 
 // A panel floating over the canvas, as the editor's popovers and panels sit.

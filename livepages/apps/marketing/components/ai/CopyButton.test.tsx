@@ -6,10 +6,8 @@ import { CopyButton } from './CopyButton';
 // docs/specs/019-marketing/build-with-ai.md "Behaviour": copy, flash "Copied", announce it politely.
 describe('CopyButton', () => {
   it('names itself starting with the words it shows', () => {
-    render(<CopyButton text="x" label="Copy prompt" what="Map a codebase" />);
-    expect(screen.getByRole('button').getAttribute('aria-label')).toBe(
-      'Copy prompt: Map a codebase',
-    );
+    render(<CopyButton text="x" label="Copy prompt" what="Build a deck" />);
+    expect(screen.getByRole('button').getAttribute('aria-label')).toBe('Copy prompt: Build a deck');
     render(<CopyButton text="x" what="the address" />);
     expect(screen.getByRole('button', { name: 'Copy the address' })).toBeTruthy();
   });

@@ -554,13 +554,6 @@ hardening landed first:
      internally for its role/identity checks but never broadcasts the owner id.
      This removes the last surface that exposed it.
 
-     One thing the ephemeral id cannot do, learned the hard way: **join a peer
-     to something saved in the document.** It changes on every socket, so any
-     feature that records an answer per person and then matches it back to the
-     roster needs a second, stable id. That is `ParticipantPresence.key`, the
-     collab key — see [Per-participant responses](../012-collaboration/participant-responses.md), which also
-     explains why the owner id can't be it and why leaving the key claimable
-     costs nothing.
 3. ✅ `api_tokens` table + migration (`expires_at` fixed to +6 months) + token
    mint/verify (`auth/`), Clerk-gated `/api/tokens` routes (the team-route
    gate, [Teams](../013-workspace/teams.md)).

@@ -26,13 +26,13 @@ The first time you select an entity, a small **Show Me** toolbar appears beside 
 
 ## Finding it
 
-In Diagram mode, **Entity** is in the palette's **Diagrams** category, after the Table. It belongs to the Components category, which only Pages mode's palette offers, and Pages leaves it out; in any mode you can also add it by name from the editor's [Search panel](/help/search-panel/the-search-panel/search-add-to-canvas/).
+The Pages palette doesn't show an entity, but the [search panel](/help/search-panel/the-search-panel/search-add-to-canvas/) (`⌘K` or `Ctrl+K`) adds one: type its name and pick it under **Add to canvas**.
 
 ## Adding one and filling it in
 
 <Step n={1}>
-  Add an **Entity**. It arrives titled "Entity" with two example fields: `id`, the primary key, and
-  `name`, both typed `string`.
+  Add an **Entity** from the search panel. It arrives titled "Entity" with two example fields: `id`,
+  the primary key, and `name`, both typed `string`.
 </Step>
 
 <Step n={2}>Double-click its title bar to rename it: the title is an ordinary element label.</Step>
@@ -73,7 +73,7 @@ A line joining two entities becomes a relationship as you let go, with crow's-fo
 
 ## Modelling with them
 
-- **Data models.** One entity per table, one field per column, with its type and key, and a relationship from each foreign key to the table it points at. The **Database Schema** template is a worked example.
+- **Data models.** One entity per table, one field per column, with its type and key, and a relationship from each foreign key to the table it points at.
 - **Class diagrams.** Put attributes and methods in the same list; a method reads naturally as `render(): void` in the name column.
 - **Relationships** are ordinary [arrows](/help/palette/arrows/), so every arrow style applies; the arrowhead styles also include the hollow triangle (inheritance) and the filled and hollow diamonds (composition and aggregation) UML uses.
 

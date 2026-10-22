@@ -75,8 +75,8 @@ export const categories: Category[] = [
     slug: 'getting-started',
     title: 'Getting Started',
     description:
-      'Go from a blank canvas to a shared diagram in minutes, with the basics every new user needs.',
-    articleCount: 8,
+      'Go from a blank page to a shared document in minutes, with the basics every new user needs.',
+    articleCount: 7,
   },
   {
     slug: 'tips-and-tricks',
@@ -145,6 +145,15 @@ export const categories: Category[] = [
   // counts the feature landings in the category (each landing has its own
   // sub-guides). See docs/specs/018-help/help-app.md.
   {
+    slug: 'pages',
+    title: 'Pages',
+    description:
+      'Build documents out of pages: articles, slide decks, infographics, logos and wireframes, with layouts, backgrounds and exports.',
+    articleCount: 9,
+    kind: 'feature',
+    groups: ['Basics', 'Kinds of Page'],
+  },
+  {
     slug: 'user-interface',
     title: 'User Interface',
     description:
@@ -165,39 +174,33 @@ export const categories: Category[] = [
     slug: 'selection-modes',
     title: 'Selection Modes',
     description:
-      'The pointer modes at the top of the palette: Select, Hand, Eraser, Format Painter, Laser, Spotlight, Slide Deck, and Isometric.',
-    articleCount: 8,
+      'The pointer modes at the top of the palette: Select, Hand, Format Painter, Laser, Spotlight, Slide Deck, and Isometric.',
+    articleCount: 7,
     kind: 'feature',
   },
   {
     slug: 'palette',
     title: 'Palette',
     description:
-      'Your launchpad for everything on the canvas: every element and palette setting explained.',
-    articleCount: 31,
+      'Your launchpad for everything on a page: every element and palette setting explained.',
+    articleCount: 29,
     kind: 'feature',
-    groups: ['Everyday Elements', 'Diagram Kits', 'Workshop Kits', 'Palette Settings'],
+    groups: ['Everyday Elements', 'Page Blocks', 'Diagram Elements', 'Palette Settings'],
   },
   {
     slug: 'canvas',
     title: 'Canvas',
     description:
-      'Master the infinite canvas: place, select, link, annotate, layer, rotate, animate, lock and theme elements, undo changes, and start from templates.',
-    articleCount: 30,
+      'Work with what is on your pages: place, select, link, layer, rotate, animate, lock and theme elements, undo changes, and start from templates.',
+    articleCount: 25,
     kind: 'feature',
-    groups: [
-      'Basics',
-      'Modes and Boards',
-      'Text and Notes',
-      'Styling Elements',
-      'Layers and Locking',
-    ],
+    groups: ['Basics', 'Text and Notes', 'Styling Elements', 'Layers and Locking'],
   },
   {
     slug: 'tabs',
     title: 'Tabs',
     description:
-      'Keep a whole project in one document: organise, link, and move between multiple boards with tabs.',
+      'Keep a whole project in one document: organise, link, and move between tabs of pages.',
     articleCount: 9,
     kind: 'feature',
   },
@@ -280,7 +283,7 @@ export const articles: Article[] = [
     slug: 'tab-bar',
     title: 'The Tab Bar',
     description:
-      'Switch between the boards in a document, add new ones, and group them into folders.',
+      'Switch between the tabs in a document, add new ones, and group them into folders.',
     keywords: 'tabs boards pages switch bottom bar sheets add rename',
     category: 'User Interface',
     categorySlug: 'user-interface',
@@ -328,8 +331,10 @@ export const articles: Article[] = [
   {
     slug: 'what-is-livepages',
     title: 'What is livepages?',
-    description: 'An overview of the real-time, multiplayer diagram editor and what it does.',
-    keywords: 'overview intro introduction about product whiteboard drawing tool app',
+    description:
+      'An overview of the real-time, multiplayer editor for articles, decks, infographics and logos.',
+    keywords:
+      'overview intro introduction about product articles slides deck infographics logos wireframes presenting app',
     category: 'About livepages',
     categorySlug: 'about',
     parentSlug: 'about',
@@ -364,21 +369,11 @@ export const articles: Article[] = [
 
   // ---- Getting Started ----
   {
-    slug: 'your-first-diagram',
-    title: 'Your First Diagram',
-    description: 'Create a diagram and add your first shapes in under a minute.',
+    slug: 'your-first-document',
+    title: 'Your First Document',
+    description: 'From a new document to a first page you can share, in a couple of minutes.',
     keywords:
-      'start begin new create tutorial beginner basics quickstart onboarding wizard document template location',
-    category: 'Getting Started',
-    categorySlug: 'getting-started',
-  },
-  {
-    slug: 'diagram-tour',
-    title: 'The Diagram Tour',
-    description:
-      'The interactive Diagram mode walkthrough, offered once and replayable from Settings.',
-    keywords:
-      'tour walkthrough guide onboarding show me around intro tutorial replay rerun steps welcome diagram mode palette',
+      'start begin new create tutorial beginner basics quickstart onboarding document page article slide picture template location',
     category: 'Getting Started',
     categorySlug: 'getting-started',
   },
@@ -393,8 +388,8 @@ export const articles: Article[] = [
   {
     slug: 'adding-shapes-and-arrows',
     title: 'Adding Shapes and Arrows',
-    description: 'Use the palette and quick-connect to build out a diagram.',
-    keywords: 'add box connector line draw create insert place flowchart',
+    description: 'Drop shapes from the palette onto a page and connect them with arrows.',
+    keywords: 'add box connector line create insert place process flow how-to',
     category: 'Getting Started',
     categorySlug: 'getting-started',
   },
@@ -409,7 +404,7 @@ export const articles: Article[] = [
   {
     slug: 'guest-vs-account',
     title: 'Guest vs Account',
-    description: 'The canvas works without signing in. Here is what an account adds.',
+    description: 'The editor works without signing in. Here is what an account adds.',
     keywords: 'sign in sign up anonymous login register benefits sync account',
     category: 'Getting Started',
     categorySlug: 'getting-started',
@@ -438,7 +433,7 @@ export const articles: Article[] = [
     title: 'Keyboard Shortcuts',
     description: 'The full shortcut reference and how to toggle shortcuts off.',
     keywords:
-      'hotkey hotkeys keybinding cheat sheet reference keys bindings number numbers digit digits tool row excalidraw muscle memory single key letter settings keyboard category draw mode pens shift d disable all',
+      'hotkey hotkeys keybinding cheat sheet reference keys bindings number numbers digit digits tool row excalidraw muscle memory single key letter settings keyboard category disable all',
     category: 'Tips and Tricks',
     categorySlug: 'tips-and-tricks',
   },
@@ -446,7 +441,7 @@ export const articles: Article[] = [
     slug: 'command-palette',
     title: 'The Palette',
     description:
-      'Pick a selection mode and add shapes, text, icons and more from the palette strip.',
+      'Pick tools and add shapes, text, icons and more to your pages from the palette strip.',
     keywords:
       'quick add search elements toolbar strip launcher categories dropdown popular selection mode tiles bands',
     category: 'Tips and Tricks',
@@ -480,8 +475,8 @@ export const articles: Article[] = [
   },
   {
     slug: 'fast-theming',
-    title: 'Restyle a Diagram Fast',
-    description: 'Restyle an entire diagram in seconds with themes and presets.',
+    title: 'Restyle a Document Fast',
+    description: 'Restyle a whole tab of pages in seconds with themes and presets.',
     keywords: 'restyle recolour recolor colors colours presets quick style scheme',
     category: 'Tips and Tricks',
     categorySlug: 'tips-and-tricks',
@@ -515,11 +510,12 @@ export const articles: Article[] = [
     categorySlug: 'account-and-data',
   },
   {
-    slug: 'exporting-diagrams',
-    title: 'Exporting Diagrams',
-    description: 'Get a tab out as an image, a PDF or a portable file, or embed a live view.',
+    slug: 'exporting-documents',
+    title: 'Exporting Documents',
+    description:
+      'Take your pages with you as a PDF, images, a GIF or a portable file, or embed a live view.',
     keywords:
-      'export download png svg pdf image save picture screenshot json markdown csv embed backup',
+      'export download png svg pdf gif animated logo kit image save picture screenshot json embed backup',
     category: 'Account and Data',
     categorySlug: 'account-and-data',
   },
@@ -553,7 +549,7 @@ export const articles: Article[] = [
     title: 'Connect an AI Tool (MCP)',
     description: 'Connect Claude or any MCP client to find, view, create, and edit your documents.',
     keywords:
-      'claude chatgpt cursor model context protocol ai integration assistant llm connector trash restore plan items read-only',
+      'claude chatgpt cursor model context protocol ai integration assistant llm connector trash restore pages slides article read-only',
     category: 'Account and Data',
     categorySlug: 'account-and-data',
   },
@@ -614,11 +610,11 @@ export const articles: Article[] = [
     parentSlug: 'working-with-documents',
   },
   {
-    slug: 'plan-sheets-images',
-    title: 'Plan Items, Sheets and Images',
-    description: 'API examples for Plan cards, Sheets, images, pages, copies and themes.',
+    slug: 'images-and-pages',
+    title: 'Images, Pages and More',
+    description: 'API examples for images, pages and articles, renders, copies and themes.',
     keywords:
-      'items cards plan board card types sheets cells spreadsheet images upload pages pages article render svg copy custom themes api',
+      'images upload pages page slides article articles markdown render svg picture copy duplicate custom themes api',
     category: 'Developers',
     categorySlug: 'developers/working-with-documents',
     parentSlug: 'working-with-documents',
@@ -643,9 +639,9 @@ export const articles: Article[] = [
   },
   {
     slug: 'workbenches',
-    title: 'Diagrams in Your Developer Tools',
+    title: 'Documents in Your Developer Tools',
     description:
-      'Draw in a document inside a developer tool beside your agent, and talk about what you select.',
+      'Work on a document inside a developer tool beside your agent, and talk about what you select.',
     keywords:
       'workbench spinner vs code vscode ide editor embed frame iframe pair pairing selection select agent coding agent live view developer tool workspace explorer folder whole workspace',
     category: 'Developers',
@@ -920,14 +916,6 @@ export const articles: Article[] = [
     categorySlug: 'selection-modes',
   },
   {
-    slug: 'eraser',
-    title: 'Eraser',
-    description: 'Click or drag across elements to delete them quickly.',
-    keywords: 'delete remove rub out erase clear wipe brush size filter drawings arrows sweep tap',
-    category: 'Selection Modes',
-    categorySlug: 'selection-modes',
-  },
-  {
     slug: 'format-painter',
     title: 'Format Painter',
     description: "Copy one element's style and paint it onto others.",
@@ -954,8 +942,7 @@ export const articles: Article[] = [
   {
     slug: 'slide-deck',
     title: 'Slide Deck',
-    description:
-      'Build slides from what is on your canvas and present them full screen, with notes, transitions and auto-advance.',
+    description: 'Turn your pages into a deck: each slide is a page, presented full screen.',
     keywords:
       'presentation presenting present presentation mode slideshow slide show slides slide deck talk demo walkthrough narrate projector screen share screenshare speaker notes presenter notes script full screen fullscreen next previous advance start deck build slides element set spans tabs',
     category: 'Selection Modes',
@@ -964,7 +951,8 @@ export const articles: Article[] = [
   {
     slug: 'building-a-deck',
     title: 'Building a Deck',
-    description: 'Edit, hide, reorder and annotate the slides before you present them.',
+    description:
+      'Everything you do to a deck before you present it: slides, order, hiding and notes.',
     keywords:
       'build deck new slide add remove elements selection membership rename duplicate copy slide delete confirm hide hidden slide skip struck through eye reorder drag order presenter notes script speaker notes budget minutes timing per slide pace slide menu ellipsis',
     category: 'Selection Modes',
@@ -1024,9 +1012,10 @@ export const articles: Article[] = [
   {
     slug: 'tools',
     title: 'Where each tool lives',
-    description: 'A map of the palette categories and which elements are in each.',
+    description:
+      'The palette categories on each kind of page, and what only the search panel adds.',
     keywords:
-      'tools tab category where find text pencil pen table frame chart sticky note image draw write build structure mind node lane timeline components media behaviour collaborate data moved',
+      'tools tab category where find text table chart sticky note image write components media data concepts devices icons stickers search panel slide wireframe logo moved',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Everyday Elements',
@@ -1034,34 +1023,12 @@ export const articles: Article[] = [
   {
     slug: 'write',
     title: 'Write Elements',
-    description:
-      'Page, Text, Sticky note, Annotation and Pointer note: the elements made of words.',
+    description: 'Text, Sticky note and Pointer note: the elements made of words.',
     keywords:
-      'write writing text words wordy prose page document label caption title heading sticky note post-it annotation marker remark comment copy typing type compose pointer note leader',
+      'write writing text words wordy label caption title heading sticky note post-it remark comment copy typing type compose pointer note leader',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Everyday Elements',
-  },
-  {
-    slug: 'build',
-    title: 'Build Elements',
-    description:
-      'Mind maps, org charts, flowcharts, sequence diagrams, lanes, frames, stacks, boundaries, keys and tables: diagram structure.',
-    keywords:
-      'build structure layout container holds frame lane boundary timeline table mind node sankey flow arrange scaffold group section band track grid organise card badge step number diagram key legend stack row column grid auto layout even gaps org chart organisation reports hierarchy sequence diagram uml lifeline message',
-    category: 'Palette',
-    categorySlug: 'palette',
-    group: 'Diagram Kits',
-  },
-  {
-    slug: 'frames',
-    title: 'Frames',
-    description: 'A labelled section that draws behind its contents and moves them as one.',
-    keywords:
-      'frame section container backdrop labelled box region area cluster move together carries contents behind resize outline f key figjam section export slide framing nest nested centre quick connect plus fill background',
-    category: 'Palette',
-    categorySlug: 'palette/build',
-    parentSlug: 'build',
   },
   {
     slug: 'sankey-diagram',
@@ -1070,59 +1037,18 @@ export const articles: Article[] = [
     keywords:
       'sankey flow flows diagram energy budget money income spending funnel conversion journey migration material supply chain band bands width amount quantity nodes split merge sankeymatic alluvial csv paste spreadsheet',
     category: 'Palette',
-    categorySlug: 'palette/build',
-    parentSlug: 'build',
+    categorySlug: 'palette/concept-graphics',
+    parentSlug: 'concept-graphics',
   },
   {
     slug: 'components',
     title: 'Components',
     description: 'Cards, badges, step numbers and web components: banners, callouts and more.',
     keywords:
-      'banner callout stat row stat rows kpi badge step number block prebuilt widgets cards sections hero header masthead nav navigation website web page process steps pages mode',
+      'banner callout stat row stat rows kpi badge step number block prebuilt widgets cards sections hero header masthead nav navigation website web page process steps pages',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Everyday Elements',
-  },
-  {
-    slug: 'mind-maps',
-    title: 'Mind Maps',
-    description: 'Tab adds a child, Enter a sibling: build a branch from the keyboard.',
-    keywords:
-      'mind map mindmap node branch child sibling tab enter keyboard tree hierarchy brainstorm outline edit outline markdown list indent bullets branching flow leftward upward downward balanced bubble spacing tight compact comfortable wide select branch delete branch',
-    category: 'Palette',
-    categorySlug: 'palette',
-    group: 'Diagram Kits',
-  },
-  {
-    slug: 'flowcharts',
-    title: 'Flowcharts',
-    description: 'Tab adds the next step, Enter a parallel one: a flowchart that lays itself out.',
-    keywords:
-      'flowchart flow chart process diagram step steps decision diamond yes no branch merge loop start end terminator input output parallelogram document database preparation connector iso 5807 tab enter keyboard auto layout tidy swimlane swim lane lanes cross functional direction down right workflow',
-    category: 'Palette',
-    categorySlug: 'palette',
-    group: 'Diagram Kits',
-  },
-  {
-    slug: 'edit-outline',
-    title: 'Edit a Mind Map as an Outline',
-    description: 'Rewrite a whole mind map as an indented list, then save it back in one go.',
-    keywords:
-      'mind map mindmap outline edit outline list bullets indent outdent restructure rearrange reorder text markdown paste bold italic underline rows tree hierarchy bulk',
-    category: 'Palette',
-    categorySlug: 'palette/mind-maps',
-    parentSlug: 'mind-maps',
-  },
-  {
-    slug: 'collaborate',
-    title: 'Collaborate elements',
-    description:
-      'The Collaborate categories (Ask and Record) that collect what the room thinks: comment panels, action panels, estimates, temperature checks, idea boxes, agendas, decisions and roll calls.',
-    keywords:
-      'collaborate collaboration comment panel action panel task assign card pin pinned remark note thread reply discuss feedback annotate sticky question estimate estimation planning poker story points fibonacci tshirt t-shirt temperature check fist of five pulse mood vote idea box anonymous brainstorm brainwriting retro retrospective agenda run of show timebox segments decision record adr architecture decision roll call attendance register present room team workshop facilitation powers of two',
-    category: 'Palette',
-    categorySlug: 'palette',
-    group: 'Workshop Kits',
   },
   {
     slug: 'cards-and-callouts',
@@ -1132,7 +1058,7 @@ export const articles: Article[] = [
       'card cards node service component title meta line subtitle body tags chips icon badge tile initial header band callout note tip warning accent edge stripe strip colour color coded side border architecture persona title and caption',
     category: 'Palette',
     categorySlug: 'palette',
-    group: 'Workshop Kits',
+    group: 'Page Blocks',
   },
   {
     slug: 'badges-and-step-numbers',
@@ -1142,17 +1068,7 @@ export const articles: Article[] = [
       'badge badges pill label tag status version new beta count step number numbers numbered disc circle walkthrough order sequence 1 2 3 attach attached corner marker renumber play in order annotate annotation',
     category: 'Palette',
     categorySlug: 'palette',
-    group: 'Workshop Kits',
-  },
-  {
-    slug: 'boundaries',
-    title: 'Boundaries',
-    description: 'Titled, tinted containers for regions, networks and systems.',
-    keywords:
-      'boundary boundaries container zone region vpc subnet network cluster trust zone group c4 system cloud aws azure gcp architecture nested nest tab tint cidr dashed',
-    category: 'Palette',
-    categorySlug: 'palette',
-    group: 'Diagram Kits',
+    group: 'Page Blocks',
   },
   {
     slug: 'pointer-notes',
@@ -1162,7 +1078,7 @@ export const articles: Article[] = [
       'pointer note notes leader line callout remark comment annotate point spot pin pinned dot tip attach detach follow arrow label caveat',
     category: 'Palette',
     categorySlug: 'palette',
-    group: 'Workshop Kits',
+    group: 'Page Blocks',
   },
   {
     slug: 'stacks',
@@ -1172,37 +1088,7 @@ export const articles: Article[] = [
       'stack stacks row column grid auto layout autolayout flex flexbox align distribute even gaps spacing padding container list reflow arrange',
     category: 'Palette',
     categorySlug: 'palette',
-    group: 'Diagram Kits',
-  },
-  {
-    slug: 'diagram-keys',
-    title: 'Diagram Keys and Tag Colours',
-    description: 'A legend that builds itself, and cards coloured by their tags.',
-    keywords:
-      'diagram key keys legend line styles dashed dotted solid meaning explain tag tags colour color colours colors colour code coding by team status layer card edge',
-    category: 'Palette',
-    categorySlug: 'palette',
-    group: 'Diagram Kits',
-  },
-  {
-    slug: 'org-charts',
-    title: 'Org Charts',
-    description: 'A tree of people with names and roles that lays itself out.',
-    keywords:
-      'org chart organisation organization chart people team hierarchy reports manager reporting line structure role initials tree ownership',
-    category: 'Palette',
-    categorySlug: 'palette',
-    group: 'Diagram Kits',
-  },
-  {
-    slug: 'sequence-diagrams',
-    title: 'Sequence Diagrams',
-    description: 'Who calls whom, in order, laid out from a list of messages.',
-    keywords:
-      'sequence diagram diagrams uml lifeline lifelines message messages call reply async request response interaction api participants actor activation numbered',
-    category: 'Palette',
-    categorySlug: 'palette',
-    group: 'Diagram Kits',
+    group: 'Page Blocks',
   },
   {
     slug: 'concept-graphics',
@@ -1213,28 +1099,7 @@ export const articles: Article[] = [
       'concept concepts graphic layer stack layers tiers pyramid triangle hierarchy maslow inverted funnel conversion cycle loop ring flywheel pdca plan do check act smartart rows build pulse flow animation hub and spoke hub spoke satellites ecosystem onion rings concentric core chevron chevrons pipeline value chain stages timeline milestones roadmap',
     category: 'Palette',
     categorySlug: 'palette',
-    group: 'Diagram Kits',
-  },
-  {
-    slug: 'lanes',
-    title: 'Lanes',
-    description: 'Titled bands for swimlanes; dragging one carries its contents.',
-    keywords:
-      'lane swimlane swim band row role team process cross-functional container pool track column vertical heading gutter upright title draw.io',
-    category: 'Palette',
-    categorySlug: 'palette',
-    group: 'Diagram Kits',
-  },
-  {
-    slug: 'entities',
-    title: 'Entities',
-    description:
-      'A title over fields with keys, joined field to field, for data models and class diagrams.',
-    keywords:
-      'entity class uml er erd record table schema model field attribute method database column inheritance aggregation composition fields popular primary foreign key pk fk unique relationship cardinality crows foot one many related',
-    category: 'Palette',
-    categorySlug: 'palette',
-    group: 'Diagram Kits',
+    group: 'Page Blocks',
   },
   {
     slug: 'embed-elements',
@@ -1244,7 +1109,7 @@ export const articles: Article[] = [
       'embed video youtube vimeo loom figma google docs sheets slides play iframe media link website web page site url address browser frame pages',
     category: 'Palette',
     categorySlug: 'palette',
-    group: 'Workshop Kits',
+    group: 'Page Blocks',
   },
   {
     slug: 'website',
@@ -1258,22 +1123,11 @@ export const articles: Article[] = [
     parentSlug: 'embed-elements',
   },
   {
-    slug: 'behaviour',
-    title: 'Collaborate',
-    description:
-      'Every element that comes alive with the room, as six palette categories in Workshop mode: comment and action panels, estimates, temperature checks, idea boxes, Done checks, pickers, session buttons (timer, stopwatch, vote), agendas, decisions, roll calls, reactions, seven selection mode buttons, and the Navigate trio: a portal, Bring Focus and a link card.',
-    keywords:
-      'behaviour behavior behaviours behaviors interactive button portal session timer stopwatch countdown count up elapsed vote reveal hide cover picker random spinner control mode switch link card bookmark preview url bring focus look here attention gather reaction pad confetti celebrate sparkles hearts applause fireworks emoji burst done check finished ready waiting who progress everyone mark complete collaborate collaboration estimate question temperature idea box agenda decision roll call ask the room keep a record run the room workshop facilitation runtime live tools record react navigate selection mode',
-    category: 'Palette',
-    categorySlug: 'palette',
-    group: 'Workshop Kits',
-  },
-  {
     slug: 'devices',
     title: 'Devices',
     description: 'Browser, phone, laptop and other wireframing frames.',
     keywords:
-      'browser phone laptop wireframe mockup frame window screen monitor smartwatch watch tablet foldable fold unfolded desktop device pages mode',
+      'browser phone laptop wireframe mockup frame window screen monitor smartwatch watch tablet foldable fold unfolded desktop device pages',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Everyday Elements',
@@ -1299,14 +1153,137 @@ export const articles: Article[] = [
     group: 'Everyday Elements',
   },
   {
+    slug: 'build',
+    title: 'Build Elements',
+    description:
+      'Mind maps, org charts, flowcharts, sequence diagrams, lanes, frames and more, added from search.',
+    keywords:
+      'build structure layout container holds frame lane boundary timeline table mind node sankey flow arrange scaffold group section band track grid organise card badge step number diagram key legend stack row column grid auto layout even gaps org chart organisation reports hierarchy sequence diagram uml lifeline message',
+    category: 'Palette',
+    categorySlug: 'palette',
+    group: 'Diagram Elements',
+  },
+  {
+    slug: 'frames',
+    title: 'Frames',
+    description: 'A labelled section that draws behind its contents and moves them as one.',
+    keywords:
+      'frame section container backdrop labelled box region area cluster move together carries contents behind resize outline f key figjam section export slide framing nest nested centre quick connect plus fill background',
+    category: 'Palette',
+    categorySlug: 'palette/build',
+    parentSlug: 'build',
+  },
+  {
+    slug: 'mind-maps',
+    title: 'Mind Maps',
+    description: 'Tab adds a child, Enter a sibling: build a branch from the keyboard.',
+    keywords:
+      'mind map mindmap node branch child sibling tab enter keyboard tree hierarchy brainstorm outline edit outline markdown list indent bullets branching flow leftward upward downward balanced bubble spacing tight compact comfortable wide select branch delete branch',
+    category: 'Palette',
+    categorySlug: 'palette',
+    group: 'Diagram Elements',
+  },
+  {
+    slug: 'edit-outline',
+    title: 'Edit a Mind Map as an Outline',
+    description: 'Rewrite a whole mind map as an indented list, then save it back in one go.',
+    keywords:
+      'mind map mindmap outline edit outline list bullets indent outdent restructure rearrange reorder text markdown paste bold italic underline rows tree hierarchy bulk',
+    category: 'Palette',
+    categorySlug: 'palette/mind-maps',
+    parentSlug: 'mind-maps',
+  },
+  {
+    slug: 'flowcharts',
+    title: 'Flowcharts',
+    description: 'Tab adds the next step, Enter a parallel one: a flowchart that lays itself out.',
+    keywords:
+      'flowchart flow chart process diagram step steps decision diamond yes no branch merge loop start end terminator input output parallelogram document database preparation connector iso 5807 tab enter keyboard auto layout tidy swimlane swim lane lanes cross functional direction down right workflow',
+    category: 'Palette',
+    categorySlug: 'palette',
+    group: 'Diagram Elements',
+  },
+  {
+    slug: 'org-charts',
+    title: 'Org Charts',
+    description: 'A tree of people with names and roles that lays itself out.',
+    keywords:
+      'org chart organisation organization chart people team hierarchy reports manager reporting line structure role initials tree ownership',
+    category: 'Palette',
+    categorySlug: 'palette',
+    group: 'Diagram Elements',
+  },
+  {
+    slug: 'sequence-diagrams',
+    title: 'Sequence Diagrams',
+    description: 'Who calls whom, in order, laid out from a list of messages.',
+    keywords:
+      'sequence diagram diagrams uml lifeline lifelines message messages call reply async request response interaction api participants actor activation numbered',
+    category: 'Palette',
+    categorySlug: 'palette',
+    group: 'Diagram Elements',
+  },
+  {
+    slug: 'lanes',
+    title: 'Lanes',
+    description: 'Titled bands for swimlanes; dragging one carries its contents.',
+    keywords:
+      'lane swimlane swim band row role team process cross-functional container pool track column vertical heading gutter upright title draw.io',
+    category: 'Palette',
+    categorySlug: 'palette',
+    group: 'Diagram Elements',
+  },
+  {
+    slug: 'entities',
+    title: 'Entities',
+    description:
+      'A title over fields with keys, joined field to field, for data models and class diagrams.',
+    keywords:
+      'entity class uml er erd record table schema model field attribute method database column inheritance aggregation composition fields popular primary foreign key pk fk unique relationship cardinality crows foot one many related',
+    category: 'Palette',
+    categorySlug: 'palette',
+    group: 'Diagram Elements',
+  },
+  {
+    slug: 'boundaries',
+    title: 'Boundaries',
+    description: 'Titled, tinted containers for regions, networks and systems.',
+    keywords:
+      'boundary boundaries container zone region vpc subnet network cluster trust zone group c4 system cloud aws azure gcp architecture nested nest tab tint cidr dashed',
+    category: 'Palette',
+    categorySlug: 'palette',
+    group: 'Diagram Elements',
+  },
+  {
+    slug: 'diagram-keys',
+    title: 'Diagram Keys and Tag Colours',
+    description: 'A legend that builds itself, and cards coloured by their tags.',
+    keywords:
+      'diagram key keys legend line styles dashed dotted solid meaning explain tag tags colour color colours colors colour code coding by team status layer card edge',
+    category: 'Palette',
+    categorySlug: 'palette',
+    group: 'Diagram Elements',
+  },
+  {
     slug: 'technology',
     title: 'Technology',
-    description: 'Full-colour AWS, Azure, Cloudflare, Firebase and infrastructure icons.',
+    description:
+      'Full-colour AWS, Azure, Cloudflare and infrastructure icons, added from the search panel.',
     keywords:
       'aws azure gcp cloud logos tech stack infrastructure brands kubernetes docker cloudflare firebase postgres database lambda s3 architecture brand',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Everyday Elements',
+  },
+  {
+    slug: 'drawing',
+    title: 'Drawing with the Polygon',
+    description: 'Place clean, straight-edged outlines point by point with the Polygon.',
+    keywords:
+      'polygon outline point by point straight edges shape draw logo vertex vertices close path',
+    category: 'Palette',
+    categorySlug: 'palette/tools',
+    parentSlug: 'tools',
   },
   // ---- Palette landings: Palette Settings ----
   {
@@ -1351,7 +1328,7 @@ export const articles: Article[] = [
     title: 'Toolbar Layout',
     description: 'The palette strip across the top of the canvas, its More and its Search.',
     keywords:
-      'toolbar strip top bar excalidraw panel layout floating palette compact menu button explorer more tiles recent recently used order reorder search find element other modes',
+      'toolbar strip top bar excalidraw panel layout floating palette compact menu button explorer more tiles recent recently used order reorder search find element per page kind slide wireframe logo',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Palette Settings',
@@ -1396,196 +1373,23 @@ export const articles: Article[] = [
   {
     slug: 'templates',
     title: 'Templates',
-    description: 'Start from a ready-made template instead of a blank canvas.',
+    description: 'Start a document from a ready-made template instead of a blank page.',
     keywords:
-      'wardley map value chain evolution threat model threat modelling stride security trust boundary threat register service blueprint frontstage backstage line of visibility metric tree north star kpi tree driver model what if value proposition canvas jobs pains gains working backwards pr faq press release amazon family tree genealogy ancestry value stream map vsm lead time flow efficiency kaizen icebreaker icebreakers bingo find someone who games starter blank slide deck blank article blank infographic blank logo empty slide empty page artboard kanban flowchart swot gantt sankey flow diagram wireframe prebuilt scaffold quick start retro sailboat postmortem risk stakeholder persona agenda objectives crazy 8s opportunity tree article brief document write writing standup stand-up hiring pipeline recruiting content calendar editorial project planner bug tracker okrs key results product launch go no-go feedback board feature requests onboarding new wizard mode filter draw pages plan popular blank category categories finance budget invoice expense report loan calculator mortgage sales pipeline crm spreadsheet sheet inventory guest list rsvp grade book habit tracker meetings workshops presentations timelines roadmaps search words blank spreadsheet empty sheet blank slate',
+      'template templates starter scaffold quick start prebuilt blank slide deck blank article blank infographic blank logo blank tab blank illustration empty slide empty page artboard wireframe phone tablet website laptop watch app slide deck logo design group card storyboard floor plan working backwards pr faq project brief event poster year in review resume cv recipe card data story how it works versus social carousel launch keynote quarterly review team welcome workshop kickoff design presentations search find a template start making pages recommended',
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Basics',
   },
   {
-    slug: 'editor-modes',
-    title: 'Editor Modes',
+    slug: 'working-with-pages',
+    title: 'Working with Pages',
     description:
-      'Diagram, Draw, Workshop, Pages and Plan: what each mode is for, choosing one on an empty tab, and Opens in.',
+      'Every tab is a row of pages: add, size, paint, reorder, lock and find them, then export or present.',
     keywords:
-      'editor mode editor modes mode switch switch mode change mode choose mode new tab tab window modes diagram draw pages plan workshop session shift+d shift d cycle next mode opens in open in default mode per tab per person tab pill mode icon whiteboard sketch pages infographic boards kanban phone mobile view only read only kind template leave pages switch to diagram confirm convert pages workflow way of working',
-    category: 'Canvas',
-    categorySlug: 'canvas',
-    group: 'Modes and Boards',
-  },
-  {
-    slug: 'draw-mode',
-    title: 'Draw Mode',
-    description:
-      'Freehand drawing on any tab: switch modes, then a dock of pens, a Path tool, erasers and shapes.',
-    keywords:
-      'draw mode drawing mode diagram mode editor mode switch modes mode switch toggle shift+d shift d opens in open in default mode per tab whiteboards whiteboard white board chalkboard blackboard sketch draw drawing freehand hand drawn ink pen pens marker stylus apple pencil surface pen touch finger palm rejection pinch zoom dock toolbar eraser rubber partial erase stroke erase sticky text shapes shape recognition recognise recognize snap clean up background plain dots dotted grid graph microsoft whiteboard dark mode chalk colour color width thickness path tool vector pen tool bezier curve curves anchor point points node nodes handle handles edit points corner smooth mirrored aligned illustrator figma undo redo settings cog more shapes shape search find a shape flowchart pin pinned unpin favourite shapes frequent most used simple mode dock mode colour picker color picker custom colour hex eyedropper eye dropper your colours remove colour contrast dock position top bottom move the dock tablet ipad snap colours snap to stock colours stock colors custom colors convert colours adaptive nearest colour',
-    category: 'Canvas',
-    categorySlug: 'canvas',
-    group: 'Modes and Boards',
-  },
-  {
-    slug: 'plan-mode',
-    title: 'Plan Mode',
-    description:
-      'Boards of items on any tab: Kanban, sprints, triage, retros and roadmaps, with cards you drag together.',
-    keywords:
-      'plan mode planning board boards kanban scrum sprint agile retro retrospective roadmap now next later bug triage weekly planner jira trello asana linear backlog to do in progress done column columns swimlane swimlanes rows wip limit work in progress card cards ticket tickets task tasks story stories issue issues drag drop move card assign label priority estimate story points vote voting dot vote hide writing private reveal facilitator set up board settings plan card keyboard shift arrow undo editor mode switch shift+d opens in plan templates project planner gantt daily standup bug tracker okrs key results product launch feedback board budget planner timesheet contact list task tracker spreadsheet templates hiring onboarding tabs dashboard trash archive flag finder types hand tool view only phone',
-    category: 'Canvas',
-    categorySlug: 'canvas',
-    group: 'Modes and Boards',
-  },
-  {
-    slug: 'workshop-mode',
-    title: 'Workshop Mode',
-    description:
-      'Run a session on any tab: retros, brainstorms and workshops, with timers, votes and reveals.',
-    keywords:
-      'icebreaker questions find someone who people bingo games workshop mode facilitate facilitate mode facilitation facilitator session sessions run a session workshop meeting team meeting retro retrospective all hands crazy eights brainstorm board workshop board kickoff ground rules icebreaker questions agenda timer countdown stopwatch vote dot vote voting pulse check reveal hide estimate planning poker temperature check fist of five idea box anonymous picker random spin reactions confetti stickers emoji sticker badge collaborate category session strip blank session editor mode switch shift+d where did the timer go where are stickers missing tools moved',
-    category: 'Canvas',
-    categorySlug: 'canvas',
-    group: 'Modes and Boards',
-  },
-  {
-    slug: 'items',
-    title: 'Items',
-    description:
-      'The tasks, bugs, notes and ideas boards show: numbered, typed, live, kept offline and in copies.',
-    keywords:
-      'item items ticket tickets task story bug epic note idea action risk issue record records field fields custom field status assignee owner priority label labels tag tags estimate points due date deadline checklist subtasks parent epic votes number key id #12 database store offline sync duplicate copy export drive api mcp agent automation script limit 2000',
-    category: 'Canvas',
-    categorySlug: 'canvas/plan-mode',
-    parentSlug: 'plan-mode',
-  },
-  {
-    slug: 'boards',
-    title: 'Boards',
-    description:
-      'Plan boards: pick one, set up its columns, swimlanes and widgets, and what cards it takes.',
-    keywords:
-      'board boards plan board kanban sprint retro roadmap bug triage week weekly all cards archive blank column columns swimlane swimlanes rows wip limit width done counts as done widget widgets completion filter people points priorities unassigned top voted stale card size minimal compact detailed new cards card types move handle grip start with a board reveal hide writing votes left vote budget planner csv import csv download csv spreadsheet export cards',
-    category: 'Canvas',
-    categorySlug: 'canvas/plan-mode',
-    parentSlug: 'plan-mode',
-  },
-  {
-    slug: 'cards',
-    title: 'Cards',
-    description:
-      'Plan cards: add, open and fill one in, child cards, comments, flags, find any card, archive or trash it, and present it as a slide.',
-    keywords:
-      'card cards ticket tickets plan card add card open card panel modal details tab tabs description rich text bullet list numbered list labels checklist steps parent open parent assignee team members comments comment thread resolve mention trash restore empty trash archive duplicate slide slides present presentation card size flag flagged child breadcrumb trail find search finder not on a board',
-    category: 'Canvas',
-    categorySlug: 'canvas/plan-mode',
-    parentSlug: 'plan-mode',
-  },
-  {
-    slug: 'card-types',
-    title: 'Card Types',
-    description: 'Your own kinds of card on Plan boards: name, colour, glyph and custom fields.',
-    keywords:
-      'card type types item type types custom type kind kinds category ticket type issue type template fields custom field fields property properties attribute column choice dropdown select option options checkbox tick link url number date text long text show on card colour color glyph icon reorder delete restore built-in tabs details new cards can be limits',
-    category: 'Canvas',
-    categorySlug: 'canvas/plan-mode',
-    parentSlug: 'plan-mode',
-  },
-  {
-    slug: 'draw-tour',
-    title: 'The Draw Tour',
-    description:
-      "A short, optional walkthrough of Draw mode's dock, offered the first time you work in Draw and replayable from Settings.",
-    keywords:
-      'draw tour tour walkthrough onboarding intro introduction getting started guide tutorial first time learn draw mode whiteboard sketch pen pens marker markers highlighter eraser path tool shapes sticky dock settings background cursor shape recognition replay rerun settings accessibility',
-    category: 'Canvas',
-    categorySlug: 'canvas/draw-mode',
-    parentSlug: 'draw-mode',
-  },
-  {
-    slug: 'workshop-tour',
-    title: 'The Workshop Tour',
-    description:
-      'A short, optional walkthrough of Workshop mode, offered once after the welcome tour and replayable from Settings.',
-    keywords:
-      'workshop tour facilitate tour tour walkthrough onboarding intro introduction show me around getting started guide tutorial first time learn workshop mode session retro workshop timer vote session strip collaborate share participant replay rerun settings accessibility',
-    category: 'Canvas',
-    categorySlug: 'canvas/workshop-mode',
-    parentSlug: 'workshop-mode',
-  },
-  {
-    slug: 'plan-tour',
-    title: 'The Plan Tour',
-    description:
-      'A guided walkthrough of Plan mode on an example board or sheet, offered once and replayable from Settings.',
-    keywords:
-      'plan tour tour walkthrough onboarding intro introduction show me around getting started guide tutorial example board example cards example sheet first time learn plan mode kanban board cards spreadsheet spreadsheets sheet sheets formulas replay rerun settings accessibility',
-    category: 'Canvas',
-    categorySlug: 'canvas/plan-mode',
-    parentSlug: 'plan-mode',
-  },
-  {
-    slug: 'forms',
-    title: 'Forms',
-    description:
-      'A form anyone can fill in from a link, each response a card on your board: questions, where answers go, publishing and closing.',
-    keywords:
-      'form forms survey surveys questionnaire google forms typeform intake submission submissions responses response respondents rsvp feedback bug report contact job application public link share link publish questions question answers mapping fields card type board column close limit report anonymous',
-    category: 'Canvas',
-    categorySlug: 'canvas/plan-mode',
-    parentSlug: 'plan-mode',
-  },
-  {
-    slug: 'dashboards',
-    title: 'Dashboards',
-    description:
-      'A Plan tab of rows and slots: boards, sheets, metrics, charts and notes side by side, live, arranged by dragging.',
-    keywords:
-      'dashboard dashboards overview report summary page layout rows row slots slot grid tiles widgets metrics metric kpi kpis chart charts board boards sheet sheets tabs at a glance status home portal add to slot settings cog background tint clear dashboard start over sheet chart change chart sheet figure column summary trend move swap resize arrange drag rearrange',
-    category: 'Canvas',
-    categorySlug: 'canvas/plan-mode',
-    parentSlug: 'plan-mode',
-  },
-  {
-    slug: 'sheets',
-    title: 'Sheets',
-    description:
-      'A spreadsheet tab on the canvas: setup and templates, cells, formulas, formatting, dropdowns, checkboxes, conditional formatting, sort, filter, find, charts, card tables, CSV, maximise and fill tab.',
-    keywords:
-      'sheet sheets spreadsheet spreadsheets excel google sheets workbook table grid cell cells row rows column columns formula formulas function functions sum average reference references a1 range ranges number format currency percent date bold italic border borders merge merged freeze frozen sort sorting filter filtering find replace csv tsv import export download upload paste copy fill handle series autofill maximise maximize full screen restore spill setup chart charts bar line pie card table cards linked save focus fill tab templates template budget invoice expense report expenses loan calculator mortgage sales pipeline inventory stock guest list rsvp grade book habit tracker timesheet contacts tracker cell size compact roomy dropdown drop down select picklist pick list list chip chips checkbox check box tick box tickbox validation data validation rule rules conditional formatting conditional format highlight colour scale color scale heat map paint format format painter custom number format format code',
-    category: 'Canvas',
-    categorySlug: 'canvas/plan-mode',
-    parentSlug: 'plan-mode',
-  },
-  {
-    slug: 'sheet-functions',
-    title: 'Sheet Functions',
-    description: 'Every function a Sheet formula can use, with its arguments and an example.',
-    keywords:
-      'sheet functions function list formulas formula reference spreadsheet functions excel functions sum average count countif sumif vlookup xlookup index match if iferror concat text date today now round filter sort unique sequence pmt npv cardcount cardsum cards plan cards errors div/0 n/a name ref value spill',
-    category: 'Canvas',
-    categorySlug: 'canvas/plan-mode',
-    parentSlug: 'plan-mode',
-  },
-  {
-    slug: 'visualisations',
-    title: 'Charts of Your Cards',
-    description: 'Visualisation tabs: a Gantt chart, calendars and more, live from every card.',
-    keywords:
-      'visualisation visualisations visualization chart charts graph gantt gantt chart timeline roadmap due calendar start calendar calendar cards by field workload priority by status priority matrix card search filter filters swimlanes swimlane lanes row order reorder drag to reorder sort by date chart settings cog card types group by statuses maximise maximize view restore view dashboard slot status breakdown',
-    category: 'Canvas',
-    categorySlug: 'canvas/plan-mode',
-    parentSlug: 'plan-mode',
-  },
-  {
-    slug: 'pages-mode',
-    title: 'Pages Mode',
-    description:
-      'Work on a tab as pages: sizes for print and social, layouts, colour and photo backgrounds, then export or present.',
-    keywords:
-      'pages pages mode illustrate illustrate mode infographic infographics poster one pager one-pager flyer handout report page pages sheet sheets a4 a3 letter us letter square social post instagram linkedin story stories slide portrait landscape orientation size page size background article articles write writing document page kind infographic or article first page choice navigator next page previous page backgrounds colour color gradient pattern dots grid lines theme dark page name rename duplicate move reorder drag delete add page snap margins margin fit resize scale lay out into pages diagram to infographic convert mind map editor mode switch modes opens in templates blank illustration leave lock locked unlock padlock protect freeze read only page lock custom gradient photo background image background picture background photo overlay image overlay wash tint fade upload image title bar layout button background button tidy up tidy align straighten even spacing widescreen carry over',
-    category: 'Canvas',
-    categorySlug: 'canvas',
-    group: 'Modes and Boards',
+      'pages page infographic infographics poster one pager one-pager flyer handout report sheet a4 a3 letter us letter square social post instagram linkedin story stories slide portrait landscape orientation size page size background article articles document page kind first page choice navigator next page previous page backgrounds colour color gradient pattern dots grid lines theme dark page name rename duplicate move reorder drag delete add page snap margins margin fit resize scale split into pages contents sidebar find a page lock locked unlock padlock protect freeze read only page lock custom gradient photo background image background picture background photo overlay image overlay wash tint fade upload image title bar layout button background button tidy up tidy align straighten even spacing widescreen carry over',
+    category: 'Pages',
+    categorySlug: 'pages',
+    group: 'Basics',
   },
   {
     slug: 'infographic-layouts',
@@ -1594,9 +1398,9 @@ export const articles: Article[] = [
       'Ninety-two ready-made pages in eight categories, previewed on your page as you hover.',
     keywords:
       'layout layouts template templates page template start from a layout ready made starter preview hover replace title page big number key stats statistics process steps timeline milestones comparison before after chart story top tips quote testimonial team people facts grid checklist event invitation poster layout button replace undo covers posters data explainers cover report cover annual report magazine book cover proposal case study newsletter contents certificate award gig concert research poster academic coming soon movie film exhibition travel workshop hiring job sale discount notice warning motivational kpi dashboard metrics trend market share pie doughnut stat mosaic staircase customer journey project plan gantt decision flow flowchart how-to recipe versus vs pricing price plans tiers swot effort impact matrix quadrant scorecard rating spectrum venn options org chart organisation organization testimonials reviews speakers spotlight employee values idea board brainstorm persona user persona shout-outs kudos thank you social media carousel instagram tip of the day milestone followers behind the scenes countdown product launch giveaway contest welcome onboarding webinar how it works anatomy diagram key concepts cheat sheet shortcuts glossary definitions myths facts fact file lesson summary quiz formula equation explainer education',
-    category: 'Canvas',
-    categorySlug: 'canvas/pages-mode',
-    parentSlug: 'pages-mode',
+    category: 'Pages',
+    categorySlug: 'pages',
+    group: 'Kinds of Page',
   },
   {
     slug: 'logo-pages',
@@ -1605,9 +1409,9 @@ export const articles: Article[] = [
       'Design a logo on a square artboard with guides, mirror, wordmarks, combined shapes and a logo kit.',
     keywords:
       'logo logos brand branding mark wordmark lettermark monogram icon favicon app icon avatar artboard guides keyline grid safe area symmetry mirror reflect flip radial rotational kaleidoscope four way horizontal vertical axis copies merge combine boolean union unite subtract intersect exclude merge shapes tracking letter spacing kerning arc curved text circle text badge emblem logo kit export png svg ico transparent',
-    category: 'Canvas',
-    categorySlug: 'canvas/pages-mode',
-    parentSlug: 'pages-mode',
+    category: 'Pages',
+    categorySlug: 'pages',
+    group: 'Kinds of Page',
   },
   {
     slug: 'wireframe-pages',
@@ -1616,9 +1420,9 @@ export const articles: Article[] = [
       'Wireframe a screen inside a phone, tablet, laptop, desktop, browser or watch frame, from ready-made screens.',
     keywords:
       'wireframe wireframes mockup mock up mockups prototype ui ux screen screens app design device frame phone iphone android mobile tablet ipad laptop desktop monitor browser website web page watch smartwatch status bar dynamic island notch home indicator landscape portrait safe area sign in login onboarding dashboard settings profile checkout pricing chat feed landing page button text field input search switch toggle placeholder',
-    category: 'Canvas',
-    categorySlug: 'canvas/pages-mode',
-    parentSlug: 'pages-mode',
+    category: 'Pages',
+    categorySlug: 'pages',
+    group: 'Kinds of Page',
   },
   {
     slug: 'articles',
@@ -1627,9 +1431,9 @@ export const articles: Article[] = [
       'Write on pages like a doc: text that flows onto new pages, with pictures, charts and drawings in it.',
     keywords:
       'article articles write writing document doc word google docs page pages text paragraph heading headings title subtitle list bullet numbered todo checklist quote code divider page break flow overflow new page toolbar formatting bold italic underline link colour color highlight align markdown shortcut slash menu paste picture image chart table sticky drawing inline wrap float move drag resize comment comments action actions assign margin note style look font fonts margins page numbers line spacing lined paper notebook convert page element leave pages',
-    category: 'Canvas',
-    categorySlug: 'canvas/pages-mode',
-    parentSlug: 'pages-mode',
+    category: 'Pages',
+    categorySlug: 'pages',
+    group: 'Kinds of Page',
   },
   {
     slug: 'pages-tour',
@@ -1637,10 +1441,10 @@ export const articles: Article[] = [
     description:
       'A short, optional walkthrough for each kind of page, offered the first time you work on one and replayable from Settings or Show Me.',
     keywords:
-      'pages tour tour walkthrough onboarding intro introduction getting started guide tutorial first time learn pages mode pages page name cog page settings layout background add page slides slide deck add to slides present presentation infographic article logo show me replay rerun settings accessibility',
-    category: 'Canvas',
-    categorySlug: 'canvas/pages-mode',
-    parentSlug: 'pages-mode',
+      'pages tour tour walkthrough onboarding intro introduction getting started guide tutorial first time learn pages page name cog page settings layout background add page slides slide deck add to slides present presentation infographic article logo show me replay rerun settings accessibility',
+    category: 'Pages',
+    categorySlug: 'pages',
+    group: 'Basics',
   },
   {
     slug: 'exporting-pages',
@@ -1648,9 +1452,9 @@ export const articles: Article[] = [
     description: 'Every page or one page as a PDF, images or an animated GIF, and pages as slides.',
     keywords:
       'export download pdf png svg gif animated gif animation moving image loop image zip all pages one page import json print printable pages page pages infographic slides slide deck present presentation add as slide page slide deck from pages',
-    category: 'Canvas',
-    categorySlug: 'canvas/pages-mode',
-    parentSlug: 'pages-mode',
+    category: 'Pages',
+    categorySlug: 'pages',
+    group: 'Basics',
   },
   {
     slug: 'tab-windows',
@@ -1658,9 +1462,9 @@ export const articles: Article[] = [
     description: 'Another tab, live, fitted inside a slide or page.',
     keywords:
       'tab window windows live view embed mirror show another tab diagram on a slide reference up to date stale copy paste sync linked picture choose a tab open',
-    category: 'Canvas',
-    categorySlug: 'canvas/pages-mode',
-    parentSlug: 'pages-mode',
+    category: 'Pages',
+    categorySlug: 'pages',
+    group: 'Basics',
   },
   {
     slug: 'slide-pages',
@@ -1668,16 +1472,17 @@ export const articles: Article[] = [
     description: 'Landscape 16:9 or 4:3 pages with slide layouts, added to the deck in one press.',
     keywords:
       'slide slides deck presentation present powerpoint keynote 16:9 4:3 widescreen classic landscape layouts title slide bullets agenda thank you add to slide deck hide show eye presenter',
-    category: 'Canvas',
-    categorySlug: 'canvas/pages-mode',
-    parentSlug: 'pages-mode',
+    category: 'Pages',
+    categorySlug: 'pages',
+    group: 'Kinds of Page',
   },
   {
     slug: 'using-tabs',
     title: 'Tabs',
-    description: 'Multiple boards in one document: add, name, reorder, and switch between them.',
+    description:
+      'Multiple tabs of pages in one document: add, name, reorder, and switch between them.',
     keywords:
-      'boards pages multiple sheets add rename reorder switch delete duplicate tab menu new tab quick start',
+      'tabs pages multiple add rename reorder switch delete duplicate tab menu new tab start making pages',
     category: 'Tabs',
     categorySlug: 'tabs',
   },
@@ -1727,10 +1532,9 @@ export const articles: Article[] = [
   {
     slug: 'import-tabs',
     title: 'Importing a Tab',
-    description:
-      'Import a livepages tab exported as JSON, or a Markdown outline, into the active tab, by pasting it or picking the file.',
+    description: 'Import a livepages JSON tab export into a tab by pasting text or picking a file.',
     keywords:
-      'import json markdown outline file files paste upload load restore backup copy clipboard replace tab export round trip',
+      'import json file files paste upload load restore backup copy clipboard replace tab export round trip',
     category: 'Tabs',
     categorySlug: 'tabs',
   },
@@ -1738,8 +1542,9 @@ export const articles: Article[] = [
     slug: 'export-tabs',
     title: 'Exporting a Tab',
     description:
-      'Export the active tab or a selection as JSON, Markdown, CSV, PNG, SVG, or PDF: copy the text formats or set image options.',
-    keywords: 'export download save png svg pdf gif animated json markdown csv image picture',
+      "Export a tab's pages as PDF, PNG, SVG or GIF, or as JSON; a selection also exports as Markdown.",
+    keywords:
+      'export download save png svg pdf gif animated json markdown image picture pages logo kit',
     category: 'Tabs',
     categorySlug: 'tabs',
   },
@@ -1757,15 +1562,6 @@ export const articles: Article[] = [
     title: 'Comments',
     description: 'Leave threaded comments on the canvas and resolve them.',
     keywords: 'thread feedback reply resolve discussion note annotate mention',
-    category: 'Collaboration',
-    categorySlug: 'collaboration',
-  },
-  {
-    slug: 'facilitator',
-    title: 'Facilitator',
-    description: 'Give one person the timer and votes for a live session.',
-    keywords:
-      'facilitator workshop host run the room session lead moderator driver baton timer vote control handover take over step down chair meeting workshop',
     category: 'Collaboration',
     categorySlug: 'collaboration',
   },
@@ -1788,8 +1584,9 @@ export const articles: Article[] = [
   },
   {
     slug: 'links',
-    title: 'Links and Link Cards',
-    description: 'Link elements across tabs or to URLs, and bookmark cards.',
+    title: 'Links',
+    description:
+      'Make a shape, text, sticky note, image or table a link to another tab, document or the web.',
     keywords:
       'url hyperlink bookmark card website jump navigate external resources add link edit link remove link',
     category: 'Canvas',
@@ -1894,9 +1691,9 @@ export const articles: Article[] = [
   {
     slug: 'default-folders',
     title: 'Default Folders',
-    description: 'Choose the folder new diagrams, whiteboards and boards land in automatically.',
+    description: 'Send new documents to a folder you choose instead of My Documents.',
     keywords:
-      'default folder where new documents go automatic placement file whiteboards retrospectives kanban diagrams use as default settings documents new document wizard pages plan',
+      'default folder where new documents go automatic placement file use as default settings documents new document',
     category: 'Explorer',
     categorySlug: 'explorer/folders',
     parentSlug: 'folders',
@@ -1907,7 +1704,7 @@ export const articles: Article[] = [
     description:
       'Narrow any document list with words, chips or typed filters like made-by:ai, and share it as a link.',
     keywords:
-      'search find filter filters chips narrow refine query token tokens made by ai generated opens in mode diagram draw template retrospective kanban edited date last week recent people me others owner space team shared unsorted unfiled root lens results pages plan',
+      'search find filter filters chips narrow refine query token tokens made by ai generated edited date last week recent people me others owner space team shared unsorted unfiled root lens results',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Your Library',
@@ -1999,7 +1796,7 @@ export const articles: Article[] = [
   {
     slug: 'ai',
     title: 'AI Assistance',
-    description: 'Optional Ask and Clean helpers on the canvas.',
+    description: 'An optional assistant that answers questions about, and tidies, the active tab.',
     keywords:
       'assistant ask clean generate artificial intelligence helper suggest question summarise summarize typo llm',
     category: 'Tools',
@@ -2008,25 +1805,16 @@ export const articles: Article[] = [
   {
     slug: 'markdown-import',
     title: 'Markdown Import',
-    description: 'Turn a Markdown outline into a themed tree diagram.',
-    keywords: 'outline text to diagram tree convert bullet list paste',
+    description: 'Paste Markdown into an article page and it becomes formatted writing.',
+    keywords: 'markdown md paste article headings lists bullet formatting import text convert',
     category: 'Tools',
     categorySlug: 'tools',
-  },
-  {
-    slug: 'session-tools',
-    title: 'Session Tools',
-    description: 'A shared countdown or stopwatch and live dot-voting.',
-    keywords: 'timer voting workshop meeting facilitation retro countdown stopwatch dot vote dots',
-    category: 'Collaboration',
-    categorySlug: 'collaboration',
   },
   {
     slug: 'style-presets',
     title: 'Style Presets',
     description: 'One-click colour and line-style variations for shapes and arrows.',
-    keywords:
-      'quick styles variations color colour line fill appearance preset sticky table chart theme reset bold',
+    keywords: 'markdown md paste article headings lists bullet formatting import text convert',
     category: 'Palette',
     categorySlug: 'palette/shapes',
     parentSlug: 'shapes',
@@ -2034,19 +1822,10 @@ export const articles: Article[] = [
   {
     slug: 'layout-cleanup',
     title: 'Layout Cleanup',
-    description: 'Auto-align to a grid or auto-layout the whole diagram.',
+    description: 'Auto-align to a grid or auto-layout the whole tab, from the command palette.',
     keywords: 'tidy align arrange auto grid organise organize straighten',
     category: 'Tools',
     categorySlug: 'tools',
-  },
-  {
-    slug: 'annotations',
-    title: 'Annotations',
-    description: 'Drop a marker with a note that readers hover to read.',
-    keywords: 'note marker callout tooltip pin footnote comment hover rich text formatting',
-    category: 'Canvas',
-    categorySlug: 'canvas',
-    group: 'Text and Notes',
   },
   {
     slug: 'notes',
@@ -2058,35 +1837,6 @@ export const articles: Article[] = [
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Text and Notes',
-  },
-  {
-    slug: 'layers',
-    title: 'Layers',
-    description: 'Split a tab into stacking layers you can hide, lock, rename, and restack.',
-    keywords: 'photoshop stack hide lock organise organize panel z order',
-    category: 'Canvas',
-    categorySlug: 'canvas',
-    group: 'Layers and Locking',
-  },
-  {
-    slug: 'layers-visibility-and-locking',
-    title: 'Hiding, Locking, and Dimming Layers',
-    description: 'Hide, lock, dim, or solo a whole layer, and preview one on hover.',
-    keywords: 'show visibility solo preview toggle eye protect',
-    category: 'Canvas',
-    categorySlug: 'canvas',
-    group: 'Layers and Locking',
-    parentSlug: 'layers',
-  },
-  {
-    slug: 'layers-organising',
-    title: 'Organising and Merging Layers',
-    description: 'Rename, restack, merge, clear, and move elements between layers.',
-    keywords: 'organize rename reorder merge move clear manage',
-    category: 'Canvas',
-    categorySlug: 'canvas',
-    group: 'Layers and Locking',
-    parentSlug: 'layers',
   },
   {
     slug: 'layer-order',
@@ -2220,6 +1970,130 @@ export const articles: Article[] = [
     group: 'Styling Elements',
   },
 
+  {
+    slug: 'annotations',
+    title: 'Annotations',
+    description: 'Drop a marker with a note that readers hover to read.',
+    keywords: 'note marker callout tooltip pin footnote comment hover rich text formatting',
+    category: 'Canvas',
+    categorySlug: 'canvas',
+    group: 'Text and Notes',
+  },
+  {
+    slug: 'layers',
+    title: 'Layers',
+    description: 'Split a tab into stacking layers you can hide, lock, rename, and restack.',
+    keywords: 'photoshop stack hide lock organise organize panel z order',
+    category: 'Canvas',
+    categorySlug: 'canvas',
+    group: 'Layers and Locking',
+  },
+  {
+    slug: 'layers-visibility-and-locking',
+    title: 'Hiding, Locking, and Dimming Layers',
+    description: 'Hide, lock, dim, or solo a whole layer, and preview one on hover.',
+    keywords: 'show visibility solo preview toggle eye protect',
+    category: 'Canvas',
+    categorySlug: 'canvas',
+    group: 'Layers and Locking',
+    parentSlug: 'layers',
+  },
+  {
+    slug: 'layers-organising',
+    title: 'Organising and Merging Layers',
+    description: 'Rename, restack, merge, clear, and move elements between layers.',
+    keywords: 'organize rename reorder merge move clear manage',
+    category: 'Canvas',
+    categorySlug: 'canvas',
+    group: 'Layers and Locking',
+    parentSlug: 'layers',
+  },
+  {
+    slug: 'facilitator',
+    title: 'Facilitator',
+    description: 'Give one person the timer and votes for a live session.',
+    keywords:
+      'facilitator workshop host run the room session lead moderator driver baton timer vote control handover take over step down chair meeting workshop',
+    category: 'Collaboration',
+    categorySlug: 'collaboration',
+  },
+  {
+    slug: 'session-tools',
+    title: 'Session Tools',
+    description: 'A shared countdown or stopwatch and live dot-voting.',
+    keywords: 'timer voting workshop meeting facilitation retro countdown stopwatch dot vote dots',
+    category: 'Collaboration',
+    categorySlug: 'collaboration',
+  },
+  {
+    slug: 'timer',
+    title: 'The Timer',
+    description: 'Run a shared countdown or stopwatch on a tab.',
+    keywords: 'countdown stopwatch timebox clock minutes workshop',
+    category: 'Collaboration',
+    categorySlug: 'collaboration/session-tools',
+    parentSlug: 'session-tools',
+  },
+  {
+    slug: 'voting',
+    title: 'Dot Voting',
+    description: 'Let everyone vote live, privately if you want, and tally the results.',
+    keywords:
+      'vote poll tally decide prioritise prioritize dots anonymous private privacy secret blind hide hidden cursors pointers counts totals dot vote',
+    category: 'Collaboration',
+    categorySlug: 'collaboration/session-tools',
+    parentSlug: 'session-tools',
+  },
+  {
+    slug: 'casting-dots',
+    title: 'Casting Dots',
+    description: 'Spending and taking back your dots, and what counts as votable.',
+    keywords:
+      'cast dot dots vote counter tally pill plus minus retract withdraw budget spend stack votable shapes sticky notes images frames arrows not votable',
+    category: 'Collaboration',
+    categorySlug: 'collaboration/session-tools/voting',
+    parentSlug: 'voting',
+  },
+  {
+    slug: 'vote-layers',
+    title: 'Voting on One Layer',
+    description: 'Restrict a vote to one layer so only its elements take dots.',
+    keywords:
+      'vote layer layers votable layer all layers dimmed ringed restrict scope background frame annotation ideas scaffolding',
+    category: 'Collaboration',
+    categorySlug: 'collaboration/session-tools/voting',
+    parentSlug: 'voting',
+  },
+  {
+    slug: 'vote-privacy',
+    title: 'Private Voting',
+    description: 'Hide cursors and hide the running counts for a blind vote.',
+    keywords:
+      'private privacy secret blind anonymous hide cursors pointers laser hide running counts totals tallies pile on bandwagon switches fixed',
+    category: 'Collaboration',
+    categorySlug: 'collaboration/session-tools/voting',
+    parentSlug: 'voting',
+  },
+  {
+    slug: 'vote-panel',
+    title: 'The Vote Panel',
+    description: 'Track how far through a vote the room has got.',
+    keywords:
+      'vote panel turnout progress dots cast finished waiting pips remaining left rows unnamed anonymous when to end vote',
+    category: 'Collaboration',
+    categorySlug: 'collaboration/session-tools/voting',
+    parentSlug: 'voting',
+  },
+  {
+    slug: 'vote-results',
+    title: 'Vote Results',
+    description: 'The shared walkthrough of what won, with the ranked list beside it.',
+    keywords:
+      'results reveal show results winners ranked list top result walkthrough previous next done highlight amber follow shared focus clear vote',
+    category: 'Collaboration',
+    categorySlug: 'collaboration/session-tools/voting',
+    parentSlug: 'voting',
+  },
   // ---- Sub-articles: Canvas ----
   {
     slug: 'adding-elements',
@@ -2303,26 +2177,6 @@ export const articles: Article[] = [
 
   // ---- Sub-articles: Tools ----
   {
-    slug: 'drawing',
-    title: 'Drawing and Sketch',
-    description: 'The Freehand and Shape Pen and the Polygon tool, plus shape recognition.',
-    keywords:
-      'pencil freehand sketch draw doodle pen scribble ink polygon polyline vertex points outline zone region shape recognition',
-    category: 'Palette',
-    categorySlug: 'palette/tools',
-    parentSlug: 'tools',
-  },
-  {
-    slug: 'highlighter',
-    title: 'Highlighter',
-    description: 'Lay a wide, translucent marker stroke from the Draw category, in five colours.',
-    keywords:
-      'highlighter highlight marker mark up markup annotate emphasise emphasize pen draw attention translucent transparent yellow green pink blue orange colour color width thin medium bold strength quick style review workshop underline circle',
-    category: 'Palette',
-    categorySlug: 'palette/tools',
-    parentSlug: 'tools',
-  },
-  {
     slug: 'images',
     title: 'Images',
     description: 'Add images to the canvas by uploading, from your gallery, or by searching.',
@@ -2338,16 +2192,6 @@ export const articles: Article[] = [
     description: 'An editable grid of cells for tabular content on the canvas.',
     keywords:
       'grid cells rows columns spreadsheet matrix data preset presets look looks style banded zebra striped header band recolour recolor',
-    category: 'Palette',
-    categorySlug: 'palette/tools',
-    parentSlug: 'tools',
-  },
-  {
-    slug: 'pages',
-    title: 'Pages',
-    description: 'A paper-sized surface for the prose a label cannot hold.',
-    keywords:
-      'page document doc paper sheet a4 prose writing write rich text brief memo report notes longform masthead heading subtitle word processor',
     category: 'Palette',
     categorySlug: 'palette/tools',
     parentSlug: 'tools',
@@ -2400,169 +2244,10 @@ export const articles: Article[] = [
     categorySlug: 'palette/tools',
     parentSlug: 'tools',
   },
-  {
-    slug: 'shape-recognition',
-    title: 'Shape Recognition',
-    description: 'Let the Shape Pen snap rough sketches into clean shapes.',
-    keywords: 'shape pen pencil auto detect convert sketch clean up smart drawing snap',
-    category: 'Palette',
-    categorySlug: 'palette/tools/drawing',
-    parentSlug: 'drawing',
-  },
 
   // ---- Sub-articles: Behaviour ----
-  {
-    slug: 'bring-focus',
-    title: 'Bring Focus',
-    description: 'Ask everyone else in the room to come and look at one spot.',
-    keywords:
-      'bring focus look here attention everyone jump navigate gather point show spotlight presenter workshop big board find lost viewport zoom same view',
-    category: 'Palette',
-    categorySlug: 'palette/behaviour',
-    parentSlug: 'behaviour',
-  },
-  {
-    slug: 'mode-buttons',
-    title: 'Selection Mode Buttons',
-    description: 'A button that hands whoever presses it a selection mode.',
-    keywords:
-      'mode button selection mode switch tool select hand pan laser spotlight eraser format painter isometric control bar press leave walkthrough read-only',
-    category: 'Palette',
-    categorySlug: 'palette/behaviour',
-    parentSlug: 'behaviour',
-  },
-  {
-    slug: 'session-buttons',
-    title: 'Session Buttons',
-    description: 'Start a timer, a stopwatch or a dot vote for the room from the canvas.',
-    keywords:
-      'session button timer countdown minutes dot vote dots start room facilitation running order agenda clock pause resume reset remove edit access view only stopwatch count up facilitator',
-    category: 'Palette',
-    categorySlug: 'palette/behaviour',
-    parentSlug: 'behaviour',
-  },
-  {
-    slug: 'done-checks',
-    title: 'Done Checks',
-    description: 'Ask the room to say when they have finished, and see who you are waiting on.',
-    keywords:
-      'done check finished ready waiting who progress everyone mark complete im done not done clear my mark reset everyone silent writing roster room presence flash',
-    category: 'Palette',
-    categorySlug: 'palette/behaviour',
-    parentSlug: 'behaviour',
-  },
-  {
-    slug: 'reaction-pads',
-    title: 'Reaction Pads',
-    description: 'A pad the room can press to throw a burst over the canvas.',
-    keywords:
-      'reaction pad confetti celebrate sparkles hearts applause clap fireworks emoji burst cheer thanks press ephemeral moment nothing saved',
-    category: 'Palette',
-    categorySlug: 'palette/behaviour',
-    parentSlug: 'behaviour',
-  },
-  {
-    slug: 'reveal-zones',
-    title: 'Reveal Zones',
-    description: 'Cover part of the canvas until the room is ready to see it.',
-    keywords:
-      'reveal zone hide cover conceal spoiler answers estimates blackout double click double tap hide pill reveal for all hide for all not private not secure',
-    category: 'Palette',
-    categorySlug: 'palette/behaviour',
-    parentSlug: 'behaviour',
-  },
-  {
-    slug: 'pickers',
-    title: 'Pickers',
-    description: 'Choose at random from the room, or from a list you write.',
-    keywords:
-      'picker random pick choose spinner wheel raffle draw lottery who demos next volunteer people here a list options shuffle',
-    category: 'Palette',
-    categorySlug: 'palette/behaviour',
-    parentSlug: 'behaviour',
-  },
 
   // ---- Sub-articles: Collaborate ----
-  {
-    slug: 'comment-panels',
-    title: 'Comment Panels',
-    description: 'A whole comment thread, left out on the canvas.',
-    keywords:
-      'comment panel thread remark note reply discuss feedback annotate composer resolve reopen badge popover pinned about an element arrow export',
-    category: 'Palette',
-    categorySlug: 'palette/collaborate',
-    parentSlug: 'collaborate',
-  },
-  {
-    slug: 'action-panels',
-    title: 'Action Panels',
-    description: 'A list of assigned actions as a card on the canvas, ticked off from the card.',
-    keywords:
-      'action panel card task todo to-do assign assignee owner follow-up action item complete done reopen email teammate board',
-    category: 'Palette',
-    categorySlug: 'palette/collaborate',
-    parentSlug: 'collaborate',
-  },
-  {
-    slug: 'estimate-cards',
-    title: 'Estimate Cards',
-    description: 'Planning poker: everyone picks privately, one Reveal shows the lot.',
-    keywords:
-      'estimate estimation planning poker story points sizing fibonacci tshirt t-shirt shirt powers of two scale reveal spread unanimous clear anchor private pick withdraw',
-    category: 'Palette',
-    categorySlug: 'palette/collaborate',
-    parentSlug: 'collaborate',
-  },
-  {
-    slug: 'temperature-checks',
-    title: 'Temperature Checks',
-    description: 'A fist-of-five gauge that shows the shape of the room.',
-    keywords:
-      'temperature check fist of five pulse mood confidence gauge sentiment 1 to 5 blocked enthusiastic average bars shape of the room never hidden',
-    category: 'Palette',
-    categorySlug: 'palette/collaborate',
-    parentSlug: 'collaborate',
-  },
-  {
-    slug: 'idea-boxes',
-    title: 'Idea Boxes',
-    description: 'Anonymous submissions, held until you open the box.',
-    keywords:
-      'idea box anonymous anonymity brainstorm brainwriting suggestion submissions count hidden open the box scatter to stickies sticky notes retro pre-mortem safety',
-    category: 'Palette',
-    categorySlug: 'palette/collaborate',
-    parentSlug: 'collaborate',
-  },
-  {
-    slug: 'agendas',
-    title: 'Agendas',
-    description: 'The run of the session, with minutes against each segment.',
-    keywords:
-      'agenda run of show running order segments timebox minutes total schedule plan meeting workshop timer remaining struck through reorder',
-    category: 'Palette',
-    categorySlug: 'palette/collaborate',
-    parentSlug: 'collaborate',
-  },
-  {
-    slug: 'decision-records',
-    title: 'Decision Records',
-    description: 'What was decided, why, when, and whether it still stands.',
-    keywords:
-      'decision record adr architecture decision record status proposed accepted rejected superseded drivers rationale date why chose choice log',
-    category: 'Palette',
-    categorySlug: 'palette/collaborate',
-    parentSlug: 'collaborate',
-  },
-  {
-    slug: 'roll-calls',
-    title: 'Roll Calls',
-    description: 'Who was in the room, frozen into the document.',
-    keywords:
-      'roll call attendance register present participants who was here minutes snapshot take roll take again latecomers record',
-    category: 'Palette',
-    categorySlug: 'palette/collaborate',
-    parentSlug: 'collaborate',
-  },
 
   // ---- Sub-articles: Selecting and Grouping ----
   {
@@ -2627,15 +2312,6 @@ export const articles: Article[] = [
   },
 
   // ---- Sub-articles: Links ----
-  {
-    slug: 'link-cards',
-    title: 'Link Cards',
-    description: 'Bookmark a URL as a card with title, favicon, and preview.',
-    keywords: 'bookmark website url card preview embed reference',
-    category: 'Canvas',
-    categorySlug: 'canvas/links',
-    parentSlug: 'links',
-  },
 
   // ---- Sub-articles: Teams ----
   {
@@ -2719,77 +2395,8 @@ export const articles: Article[] = [
   },
 
   // ---- Sub-articles: Session Tools ----
-  {
-    slug: 'timer',
-    title: 'The Timer',
-    description: 'Run a shared countdown or stopwatch on a tab.',
-    keywords: 'countdown stopwatch timebox clock minutes workshop',
-    category: 'Collaboration',
-    categorySlug: 'collaboration/session-tools',
-    parentSlug: 'session-tools',
-  },
-  {
-    slug: 'voting',
-    title: 'Dot Voting',
-    description: 'Let everyone vote live, privately if you want, and tally the results.',
-    keywords:
-      'vote poll tally decide prioritise prioritize dots anonymous private privacy secret blind hide hidden cursors pointers counts totals dot vote',
-    category: 'Collaboration',
-    categorySlug: 'collaboration/session-tools',
-    parentSlug: 'session-tools',
-  },
 
   // ---- Sub-articles: Dot Voting ----
-  {
-    slug: 'casting-dots',
-    title: 'Casting Dots',
-    description: 'Spending and taking back your dots, and what counts as votable.',
-    keywords:
-      'cast dot dots vote counter tally pill plus minus retract withdraw budget spend stack votable shapes sticky notes images frames arrows not votable',
-    category: 'Collaboration',
-    categorySlug: 'collaboration/session-tools/voting',
-    parentSlug: 'voting',
-  },
-  {
-    slug: 'vote-layers',
-    title: 'Voting on One Layer',
-    description: 'Restrict a vote to one layer so only its elements take dots.',
-    keywords:
-      'vote layer layers votable layer all layers dimmed ringed restrict scope background frame annotation ideas scaffolding',
-    category: 'Collaboration',
-    categorySlug: 'collaboration/session-tools/voting',
-    parentSlug: 'voting',
-  },
-  {
-    slug: 'vote-privacy',
-    title: 'Private Voting',
-    description: 'Hide cursors and hide the running counts for a blind vote.',
-    keywords:
-      'private privacy secret blind anonymous hide cursors pointers laser hide running counts totals tallies pile on bandwagon switches fixed',
-    category: 'Collaboration',
-    categorySlug: 'collaboration/session-tools/voting',
-    parentSlug: 'voting',
-  },
-  {
-    slug: 'vote-panel',
-    title: 'The Vote Panel',
-    description: 'Track how far through a vote the room has got.',
-    keywords:
-      'vote panel turnout progress dots cast finished waiting pips remaining left rows unnamed anonymous when to end vote',
-    category: 'Collaboration',
-    categorySlug: 'collaboration/session-tools/voting',
-    parentSlug: 'voting',
-  },
-  {
-    slug: 'vote-results',
-    title: 'Vote Results',
-    description: 'The shared walkthrough of what won, with the ranked list beside it.',
-    keywords:
-      'results reveal show results winners ranked list top result walkthrough previous next done highlight amber follow shared focus clear vote',
-    category: 'Collaboration',
-    categorySlug: 'collaboration/session-tools/voting',
-    parentSlug: 'voting',
-  },
 
   // ---- Sub-articles: Data Elements ----
   {

@@ -35,7 +35,7 @@ cards cache their preview in `meta` because unfurling costs a network round
 trip; parsing an id costs nothing, so caching it would only create a second
 copy of the truth that can drift from the link.
 
-**Aspect-locked to 16:9** on resize, like an icon ([Technology icons](../010-palette/technology-icons.md)) and for the same
+**Aspect-locked to 16:9** on resize, like an icon and for the same
 reason: a letterboxed or stretched video frame is never what anyone wants.
 
 **The lock also governs placement.** The Media tiles arm the tap-or-drag draw
@@ -131,7 +131,7 @@ are worth having.
 - **SVG / PNG export and the share thumbnail** cannot contain an iframe or a
   cross-origin image, so a video renders as its card with a play glyph and its
   title. That is the honest static representation.
-- **Mermaid / Markdown** export it as a link, which is all those formats can
+- **Markdown** exports it as a link, which is all those formats can
   hold.
 
 ## Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))

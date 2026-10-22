@@ -109,14 +109,13 @@ clearer than silently growing the tab list, and Undo makes it safe.)
 
 The export side emits a flat, human-readable **summary** (`## Elements`, the _labelled_ elements, and
 `## Connections`, every arrow that joins two elements: a labelled one as `- *label*: A → B`, an unlabelled one as
-`- A → B`, since on a flowchart the unlabelled arrows are the main path; a free line with no label stays out),
+`- A → B`, since an unlabelled arrow is usually the main path; a free line with no label stays out),
 sorted for reading, to drop into a doc, PR, or notes. It is deliberately **lossy** (no nesting, unlabelled
 elements omitted) because it's a summary, not a reconstruction; the faithful round-trip is the JSON export.
 
 ## Boundaries / future
 
-- **Not in scope here:** an inline ` ```mermaid ` fenced block _inside_ a Markdown file → an edge graph. The
-  parser deliberately skips code fences.
+- **Not in scope here:** fenced code blocks. The parser deliberately skips them.
 
 Implementation: `apps/live/lib/markdown-import.ts` (pure parser + layout +
 `buildTabFromMarkdown`, unit-tested), dynamically imported by

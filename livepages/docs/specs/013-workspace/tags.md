@@ -126,7 +126,7 @@ menu), so opening the editor costs no extra request.
 
 ## Storage
 
-Two tables (migration `0094_tags.sql`):
+Two tables (the baseline migration, `0001_livepages_baseline.sql`):
 
 - `tags (id, owner_id, name, colour, created_at, updated_at)`, `id` a client-minted UUID; a unique index on
   `(owner_id, name COLLATE NOCASE)` enforces the one name per person.

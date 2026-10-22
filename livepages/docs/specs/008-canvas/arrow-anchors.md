@@ -52,7 +52,7 @@ Each kind offers its own **anchors**: which of the sixteen it has, and where the
 ## Anchor geometry
 
 - An anchor is a point on the element's **connector box**: the element's box, or a Technology
-  icon's mark ([Technology icons](../010-palette/technology-icons.md)).
+  icon's mark (a brand mark from the icon catalogue).
 - **Outline projection.** On a shape whose drawn outline differs from its box, the anchor moves
   onto that outline along the ray from the box centre through the box anchor, so a connector meets
   the edge the user sees. This applies to every anchor, quarters included. The outlined

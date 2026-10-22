@@ -9,7 +9,7 @@
 // it.
 
 import { useMemo, useRef, useState } from 'react';
-import { WEEKDAY_SHORT } from '@livepages/items';
+import { WEEKDAY_SHORT } from './calendar-days';
 import { Tooltip } from '../Tooltip';
 import { dateKey } from './useTimelineGrouping';
 import { buildMonthCells, formatMonth, monthKeyOf, shiftMonth } from './monthCells';

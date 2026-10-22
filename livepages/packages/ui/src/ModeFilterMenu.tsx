@@ -1,8 +1,7 @@
 'use client';
 
-// The mode filter beside a template search (docs/specs/007-editor/templates-by-mode.md "The mode
-// filter"): a dropdown, so a mode added later is one more row, not a wider control. Its chip shows
-// the choice in force; its menu lists every option with its glyph and how many templates it holds.
+// The mode filter beside a template search: a dropdown, so a mode added later is one more row, not
+// a wider control. Its chip shows the choice in force; its menu lists every option with its glyph and how many templates it holds.
 // Hovering the chip with a mouse opens the menu without taking focus, so the choice is in plain
 // sight; it closes a moment after the pointer leaves, unless it was opened by a press or the
 // keyboard (then an outside press, Escape or a choice closes it). Menu button pattern

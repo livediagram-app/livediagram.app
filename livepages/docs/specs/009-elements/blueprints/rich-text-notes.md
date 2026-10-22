@@ -67,8 +67,7 @@ editable. There is no other state: the editor is uncontrolled and the live value
 1. `openNote(id)` toggles: the same id closes, any other id opens. `track('Note', 'Opened')` fires
    only on an open transition.
 2. Entry points: the element menu's Resources band (`Add Note` / `Edit Note` in
-   `ElementContentSections.tsx`), the note indicator (`ElementIndicators`, suppressed for annotations), an
-   annotation double-click ([Annotations blueprint](annotations.md)), and the command palette's
+   `ElementContentSections.tsx`), the note indicator (`ElementIndicators`) and the command palette's
    `note` command.
 3. `NotePopover` anchors to `[data-element-id]`'s live rect, bottom-centre plus `GAP`, clamps
    horizontally by `WIDTH / 2 + VIEWPORT_EDGE_MARGIN`, and flips above when the popover would pass

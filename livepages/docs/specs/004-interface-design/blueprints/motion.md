@@ -149,7 +149,7 @@ Every chrome `duration-<n>` becomes a token. Hover-driven ones become `duration-
     `TimelineLanesOverlay`, and the `MovablePanel` fade.
   - `short`: `ToolbarStripRail`, `AccordionSection`,
     `MovablePanel` rows, `AnimatedHeightBox`, the `PortalMenu` body and chevron, the
-    `template-picker-wizard` progress bar, the `VotePanel` bars, and `NoteBox`.
+    `template-picker-wizard` progress bar and `NoteBox`.
   - `long`: `TourPopover`, `TourHost`, `PresentationHud`.
   - Inline: the `CanvasSelectionToolbars` fades take `micro`. `QuickConnectRing` takes `micro`
     for the plus and opacity, and `short` for the ring's transform. `explorer-icons` takes `micro`.
@@ -182,9 +182,9 @@ This is a pure move out of `globals.css` into a new file, imported right after `
 takes these blocks:
 
 - The animated elements: `lvd-anim-*`, `lvd-text-*`, `lvd-svg-*`, `lvd-trace-run`, `lvd-grad-*`,
-  `lvd-vote-*`, `lvd-arrow-*`, `lvd-icon-*`, `lvd-prog-*`, `lvd-rating-*` and `lvd-pie-*`, with
+  `lvd-arrow-*`, `lvd-icon-*`, `lvd-prog-*`, `lvd-rating-*` and `lvd-pie-*`, with
   their reduced-motion block.
-- `[data-insert-shift]` and `lvd-done-*`.
+- `[data-insert-shift]`.
 - The presentation slide transitions (`lvd-slide-*`, `[data-slide-move]` and the reduced-motion
   fade).
 - `longpress-hold` and the new `element-pop-in`.

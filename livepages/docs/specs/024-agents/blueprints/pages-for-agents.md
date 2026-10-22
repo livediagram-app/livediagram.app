@@ -57,8 +57,8 @@ Banned synonyms: "document" for an article, "slide deck" for a tab of slides (it
 
 `page-changes.ts` `applyPageChanges(tab, changes, { themeId, newId })`:
 
-2. `switched = opensInOf(tab) !== 'pages'`; if so `tab = withEditorModeSwitched(tab, 'pages')`.
-3. For each change `i` in order, against the current `tab`:
+1. A locked tab → `tab_locked`.
+2. For each change `i` in order, against the current `tab`:
    - resolve `page` (`resolvePage`: id, then integer place 1..n, then name by `nameKey`) else `page_unknown` listing
      `1 Cover (slide), 2 (slide)`;
    - `add`: `kind === 'article'` → `article_by_write`; if the only page is unchosen and empty
@@ -83,11 +83,11 @@ which change 1 made the page it added; nothing deleted.`; otherwise `pageRemoved
      (an article: `Deleted article "Brief" (3 pages)`);
    - a `refused` from a pure edit maps to its code (`unknown_page` → `page_unknown`, `locked` → `page_locked`,
      the rest the same name) and stops: `{ refusal: { code, message, change: i } }`, nothing to write.
-4. Answer `{ tab, lines, switched }`; the route adds the summaries (`pageSummaries`, `articleSummaries`).
+3. Answer `{ tab, lines }`; the route adds the summaries (`pageSummaries`, `articleSummaries`).
 
 `article-write.ts` `applyArticleWrite(tab, write, { page?, flow? })` (ids injectable for tests):
 
-1. Tab refusals as above; switch into Pages as above.
+1. Tab refusals as above.
 2. `markdown.length > ARTICLE_MARKDOWN_MAX` → `article_too_large`, refused by the request reader, pointing at
    `append`.
 3. Resolve the article: `new` → new; `article` → flow id, else title by `nameKey` among `articlesOf(tab)` →
@@ -106,7 +106,7 @@ which change 1 made the page it added; nothing deleted.`; otherwise `pageRemoved
 8. Dropped zones: their elements removed (`withZoneContentsRemoved`); notes whose text is gone (`articleNoteIds`
    before and after): their markers removed (`withNoteMarkersRemoved`).
 9. Style: `look`, `accent` (`isArticleHex` else `invalid_value`), `pageNumbers` merged into `style`.
-10. `withArticleFlow(tab, flow, { blocks, style })`. Answer `{ tab, flow, created, lines, switched }`.
+10. `withArticleFlow(tab, flow, { blocks, style })`. Answer `{ tab, flow, created, lines }`.
 
 ### Markdown in and out (`article-markdown-io.ts`)
 
@@ -167,7 +167,7 @@ PageBackgroundInput = { color?: string; gradient?: [string, string]; angle?: num
 Answer `200`:
 
 ```ts
-{ tab: { id, rev }, switched: boolean, lines: string[], pages: PageSummary[], articles: ArticleSummary[],
+{ tab: { id, rev }, lines: string[], pages: PageSummary[], articles: ArticleSummary[],
   article?: ArticleSummary & { created: boolean }, changesetId: string | null }
 ```
 
@@ -181,13 +181,12 @@ tab, `409 tab_busy`, `413 tab_too_large`.
 ### MCP
 
 - `change_pages` `{ documentId, tabId?, changes: PageChange[] (1..50) }`, behaviour `destructive`, output
-  `{ documentId, tabId, switched, lines, pages, articles, rev, url }`; a refusal is a tool error, `Change n: …`
+  `{ documentId, tabId, lines, pages, articles, rev, url }`; a refusal is a tool error, `Change n: …`
   counting from 1.
 - `write_article` `{ documentId, tabId?, article?, new?, markdown, mode?, size?, orientation?, look?, accent?,
 pageNumbers? }`, behaviour `destructive`, output as `change_pages` plus `article` (with `created`). Fields not
   given are not sent.
-- Which tab, before the route (`pagesTabOf`): the one named, else the first in Pages mode, else the first
-  tab when it is empty, else `tab_needed` saying to name a tab or `add_tab` with `blank-illustration`.
+- Which tab, before the route (`pagesTabOf`): the one named, else the first.
 - Every input and output property `.describe()`d; layout ids described by kind in `change_pages`'s `layout`
   description, generated from `layoutCatalogueFor`.
 - `read_document` `view` enum gains `pages`.
@@ -209,7 +208,7 @@ pageNumbers? }`, behaviour `destructive`, output as `change_pages` plus `article
 
 ## Data and persistence
 
-- Stored fields touched: `Tab.opensIn`, `Tab.pages`, `Tab.articles`, `Tab.elements`. No new field, no migration.
+- Stored fields touched: `Tab.pages`, `Tab.articles`, `Tab.elements`. No new field, no migration.
 - One write per call: `writeChangeset` when the elements changed (its batch writes the whole next tab, pages and
   articles included, and records and relays the element ops), else `upsertTabAtRev`. The tab passes
   `withServerRules` first, as a changeset's does.
@@ -220,7 +219,6 @@ pageNumbers? }`, behaviour `destructive`, output as `change_pages` plus `article
 
 | Case                                                          | Handling                                                               |
 | ------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| Diagram tab                                                   | switched, `switched: true`, line "Switched the tab to Pages"           |
 | Fresh tab whose only page is unchosen and empty               | first `add` / new article takes that page                              |
 | Only page already of the kind added, unnamed and empty        | first `add` of that kind takes that page (its fields and layout set)   |
 | `add` article                                                 | `article_by_write`                                                     |
@@ -241,7 +239,6 @@ pageNumbers? }`, behaviour `destructive`, output as `change_pages` plus `article
 | Tab bytes over `MAX_TAB_BYTES` after the edit                 | `413 tab_too_large`                                                    |
 | Revision moved twice                                          | `409 tab_busy`                                                         |
 | Relay fails                                                   | logged `[pages-agent] relay-missed`, the write stands                  |
-| No tab named, no Pages tab, first tab not empty               | `tab_needed` (verbs), saying how to get one                            |
 | An `iconId` that names no icon (any edit operation)           | `invalid_value` "is not an icon", hint: icons like it (`iconsLike`)    |
 
 ## Security and trust
@@ -270,7 +267,7 @@ pageNumbers? }`, behaviour `destructive`, output as `change_pages` plus `article
 
 ## Observability
 
-- `[pages-agent] applied` `{ documentId, tabId, kind: 'pages' | 'article', changes, rev, switched }`.
+- `[pages-agent] applied` `{ documentId, tabId, kind: 'pages' | 'article', changes, rev }`.
 - `[pages-agent] refused` `{ documentId, tabId, code, change }`.
 - `[pages-agent] stale-retry` `{ documentId, tabId }`; `[pages-agent] busy`.
 - `[pages-agent] relay-missed` `{ documentId, tabId, op }`.
@@ -301,7 +298,7 @@ Not unit tested: the route's stale retry and `tab_busy` (they follow the changes
 
 | Constant               | Value   | Provenance                                                          | Safe range   |
 | ---------------------- | ------- | ------------------------------------------------------------------- | ------------ |
-| `PAGE_CHANGES_MAX`     | 50      | Matches `change_items` and `change_sheet`                           | 1 to 100     |
+| `PAGE_CHANGES_MAX`     | 50      | A batch large enough for a whole deck                               | 1 to 100     |
 | `ARTICLE_MARKDOWN_MAX` | 400,000 | 5,000 blocks of ~80 characters; well inside `MAX_TAB_BYTES` 1.99 MB | 100k to 1.5M |
 | `PAGES_REF_MAX`        | 64      | `isArticleId`'s cap                                                 | fixed        |
 | `PAGE_GRADIENT_ANGLE`  | 160     | The page panel's gradients (moved to packages/document)             | 0 to 359     |

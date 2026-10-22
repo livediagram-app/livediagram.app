@@ -185,9 +185,9 @@ Whenever you add, remove or rename a help article, follow [`docs/instructions/re
 
 See [Domain language](docs/specs/003-system-architecture/domain-language.md).
 
-- **Mode** is how a tab is worked on (Diagram, Draw); the tab's, shared by everyone on it, never a type of document or tab.
-- **Kind** is what a tab is: the general diagram tab, or one of Plan's Board, Sheet, Dashboard and Form tabs.
-- **Template** is what a document was made from; a template family (Retrospectives, Kanban) is never a kind.
+- **Mode** is how a tab is worked on. livepages has one, **Pages**; a mode stored by livediagram (Diagram, Draw, Workshop, Plan) reads as Pages. Never a type of document or tab.
+- **Page kind** is what a page is: infographic, article, slide, logo or wireframe. A tab holds pages of any kind.
+- **Template** is what a document was made from: a Pages template or a page layout, never a kind.
 - **This Browser** names a document saved only in this browser, its place, pill and badge alike; never "Local Only" or "Local Browser".
 
 ## Repo layout
@@ -195,7 +195,7 @@ See [Domain language](docs/specs/003-system-architecture/domain-language.md).
 ```
 apps/
   marketing/    # static marketing site (Next.js, /)
-  live/         # the diagram editor app (Next.js, clean routes)
+  live/         # the Pages editor app (Next.js, clean routes)
   telemetry/    # public anonymous-events dashboard (Next.js, /telemetry)
   help/         # help centre (Next.js export + MDX, /help)
   api/          # Cloudflare Worker REST + WebSocket API (D1 + Durable Objects, /api)
@@ -205,22 +205,18 @@ apps/
 packages/
   ui/             # shared UI primitives (Brand, SiteHeader, Button, TextInput, Select, Tooltip, hooks) + chrome icons (src/icons)
   document/       # document data model (Tab, Element types + element helpers)
-  icons/          # icon catalogues (line-art + Technology + stickers) + SVG markup builders + xmlEscape
+  icons/          # icon catalogues (line-art + stickers) + SVG markup builders + xmlEscape
   templates/      # template catalogue + pure element builders (editor template starts + MCP)
   template-previews/ # per-template preview SVGs (editor template starts + marketing template gallery)
   help-registry/  # help-centre article/category registry + keywords (help app + editor search)
   explorer-lens/  # the Explorer filter lens: parse, match and autocomplete filter tokens (pure)
-  page-background/ # a page background's colours, patterns and motions + their parser (slides and form covers, pure)
-  forms/          # Form tabs: form model, answer checks, answer-to-card mapping, starters (pure)
-  plan-art/       # Plan tab images (Board, Sheet, Dashboard as laid out) for editor exports + MCP previews (pure)
-  items/          # items, item types, fields, ranks, writes and the Plan board projection (pure)
-  sheets/         # the Sheet engine: A1 addressing, formulas, recalculation, writes, CSV (pure)
-  document-views/ # read-only text views of a tab (outline, graph, layout, ...) for agents and scripts
+  page-background/ # a page background's colours, patterns and motions + their parser (pure)
+  document-views/ # read-only text views of a tab (outline, pages, layout, ...) for agents and scripts
   api-schema/     # wire-format DTOs the api worker emits + the live editor consumes
   api-client/     # the api client the MCP server and the CLI share (fetch, timeouts, ApiError)
   agent-verbs/    # the verbs the CLI routes to: schemas, handlers, compact text, addressing, guides
   edit-operations/ # the engine agent changesets run on: edit operations and replace, into element ops (pure)
-  diagram-lint/   # checks how a tab is drawn (overlaps, crossings, arrows behind boxes), with a fix each
+  diagram-lint/   # checks how a tab is laid out (overlaps, crossings, arrows behind boxes), with a fix each
   render-png/     # SVG to PNG with resvg (wasm) + Inter, for MCP previews, share cards and the CLI's renders
   telemetry-client/ # shared browser telemetry emitter (buffer/flush/beacon engine)
   licences/     # build-time generator of the /licences page from what each app bundles
@@ -264,7 +260,7 @@ See [Secrets policy](docs/specs/002-project-scope/secrets-policy.md). **Repo is 
 
 See [Auth + guest access](docs/specs/014-identity/auth-and-guest-access.md).
 
-- **The canvas always works without signing in.** Friction-free engagement is the acquisition strategy. Never put a sign-in wall in front of the editor.
+- **The editor always works without signing in.** Friction-free engagement is the acquisition strategy. Never put a sign-in wall in front of the editor.
 - **Hybrid identity** — the api accepts two equivalent ways of identifying the owner of a request:
   - **Guest path**: a per-browser participant id (`livepages:v2:self-id` in `localStorage`) carried as `X-Owner-Id`. Default for unsigned visitors. Full feature set (persistence, share links, real-time collab).
   - **Authed path**: a Clerk session JWT in `Authorization: Bearer <token>`, verified via `CLERK_JWKS_URL`.

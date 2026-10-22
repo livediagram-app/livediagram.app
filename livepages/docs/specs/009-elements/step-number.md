@@ -2,12 +2,12 @@
 
 ## What
 
-A **Step number**: a small disc carrying a number ("1", "2", "3a") for walking a reader through a diagram in order,
-the way annotated architecture diagrams mark a request's path. A `shape: 'step'`.
+A **Step number**: a small disc carrying a number ("1", "2", "3a") for walking a reader through a page in order,
+the way an annotated how-to marks its path. A `shape: 'step'`.
 
 ## Why
 
-A diagram that explains a sequence (a request path, an onboarding flow, an incident timeline) needs its order on
+A page that explains a sequence (a how-to, an onboarding flow, an incident timeline) needs its order on
 the canvas, not only in the arrows. Today that is a small circle and a text box, two elements to keep aligned and
 renumber by hand.
 
@@ -44,12 +44,7 @@ A step takes the **Shape** set for its body, along its disc. It adds one option 
 
 ## Palette
 
-| Mode     | Where                                   |
-| -------- | --------------------------------------- |
-| Diagram  | **Build**: Step Number                  |
-| Pages    | **Components**: Step Number             |
-| Plan     | none                                    |
-| Workshop | none (Search still finds and places it) |
+**Components**: Step Number.
 
 ## Share roles
 

@@ -7,7 +7,7 @@ The spec decides; this file adds engineering precision. Defaults are ledgered in
 
 | File                                                          | Role                                                                                    |
 | ------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| `apps/api/migrations/0084_tab_stats.sql`                      | The `tab_stats` table                                                                   |
+| `apps/api/migrations/0001_livepages_baseline.sql`             | The `tab_stats` table                                                                   |
 | `packages/document/src/tab-stats.ts`                          | `tabStatsOf`, `TabStats`: one counting rule for the api and the browser                 |
 | `apps/api/src/db/tab-stats.ts`                                | `tabStatsOfData`, `tabStatsStatement`, `documentStatsSql`, `readDocumentStats`          |
 | `apps/api/src/tab-stats-backfill.ts`                          | `runTabStatsBackfill`: the cron's bounded count of tabs without stats                   |
@@ -52,7 +52,7 @@ The spec decides; this file adds engineering precision. Defaults are ledgered in
   `elementCount = body.elements.length` (0 when not an array); `commentCount` sums
   `commentThread.comments.length` over the elements; `dataBytes` is the UTF-8 length of `data`.
 - `tabStatsOfData(data)` (api) parses a stored body and counts it; a body that is not a JSON object
-  counts as an empty Diagram tab with its bytes, flagged `corrupt`.
+  counts as an empty Pages tab with its bytes, flagged `corrupt`.
 - `tabStatsStatement(env, tabId, stats, writtenAt)` is
   `INSERT INTO tab_stats (...) VALUES (...) ON CONFLICT(tab_id) DO UPDATE SET` every column. It is
   placed in each batch **after** the `tabs` upsert (the foreign key needs the row):
@@ -74,7 +74,7 @@ SUM, 'comments', SUM, 'bytes', SUM)`. It reads no `tabs` column, so no body.
 
 1. `SELECT t.id, t.data, t.updated_at FROM tabs t WHERE NOT EXISTS (SELECT 1 FROM tab_stats s WHERE s.tab_id = t.id) LIMIT ?`
    with `TAB_STATS_BACKFILL_PAGE_ROWS`.
-2. Each body counts through `tabStatsOfData`; a body that fails to parse counts as Diagram with no elements
+2. Each body counts through `tabStatsOfData`; a body that fails to parse counts as Pages with no elements
    and no comments, its bytes measured, and warns `tab-stats: corrupt tab <id> counted empty`.
 3. One batch of `INSERT ... ON CONFLICT(tab_id) DO NOTHING`, `written_at` set to the tab's own
    `updated_at` (never the run's time, which would make the backfilled tab the document's newest and
@@ -257,14 +257,14 @@ CREATE TABLE tab_stats (
 
 ## Constants and configuration
 
-| Constant                       | Value                               | Provenance                                                    | Safe range     |
-| ------------------------------ | ----------------------------------- | ------------------------------------------------------------- | -------------- |
-| `PREVIEW_OPEN_DELAY_MS`        | 600                                 | Spec                                                          | 400-1000       |
-| `PREVIEW_WARMUP_MS`            | 500                                 | Spec, as the tooltip's                                        | 300-800        |
-| `TAB_STATS_BACKFILL_PAGE_ROWS` | 10                                  | `D147`: 10 bodies of at most `MAX_TAB_BYTES` stay under 20 MB | 1-20           |
-| `TAB_STATS_BACKFILL_MAX_ROWS`  | 5000                                | `D148`                                                        | 500-20000      |
-| `TAB_STATS_BACKFILL_BUDGET_MS` | 60 000                              | As the image-refs backfill                                    | 10 000-120 000 |
-| `DETAILS_SORT_STORAGE_KEY`     | `livepages:explorer-details-sort` | Beside `livepages:explorer-view`                            | n/a            |
+| Constant                       | Value                             | Provenance                                                    | Safe range     |
+| ------------------------------ | --------------------------------- | ------------------------------------------------------------- | -------------- |
+| `PREVIEW_OPEN_DELAY_MS`        | 600                               | Spec                                                          | 400-1000       |
+| `PREVIEW_WARMUP_MS`            | 500                               | Spec, as the tooltip's                                        | 300-800        |
+| `TAB_STATS_BACKFILL_PAGE_ROWS` | 10                                | `D147`: 10 bodies of at most `MAX_TAB_BYTES` stay under 20 MB | 1-20           |
+| `TAB_STATS_BACKFILL_MAX_ROWS`  | 5000                              | `D148`                                                        | 500-20000      |
+| `TAB_STATS_BACKFILL_BUDGET_MS` | 60 000                            | As the image-refs backfill                                    | 10 000-120 000 |
+| `DETAILS_SORT_STORAGE_KEY`     | `livepages:explorer-details-sort` | Beside `livepages:explorer-view`                              | n/a            |
 
 ## Defaults ledger
 

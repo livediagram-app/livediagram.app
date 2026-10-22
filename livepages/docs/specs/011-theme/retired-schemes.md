@@ -34,8 +34,7 @@ already a hand-picked canvas and is left alone.
 
 ## Default's previous light half
 
-Default's light half changed from white `#ffffff` to the off-white `#fbfaf7`, keeping its `#cbd5e1` grid
-([Editor modes](../007-editor/editor-modes.md#one-look)). A Default tab whose stored backdrop is white with that grid
+Default's light half changed from white `#ffffff` to the off-white `#fbfaf7`, keeping its `#cbd5e1` grid. A Default tab whose stored backdrop is white with that grid
 (or no stored grid colour) is rewritten to the current light half on load, so it keeps following the viewer. A white
 canvas with another grid colour, or on another scheme, was a choice and is left alone.
 

@@ -27,12 +27,10 @@ side. They were not small:
   and the exporters each kept a font table and they disagreed at every preset
   (the default `md` was 22px on the canvas and 14px in an export).
 - **Twenty-two kinds exported as an empty labelled box.** Charts, progress bars
-  and rings, ratings, timelines, record rows, a page's masthead, and every
-  Behaviour / Collaborate card had no branch in the SVG emitter, so each fell
+  and rings, ratings, timelines, record rows and the Behaviour faces had no branch in the SVG emitter, so each fell
   through to the generic box. A pie chart exported as a rectangle with the word
   "pie-chart" in the middle of it.
-- **A swimlane exported without its gutter and a browser frame without its
-  window**, because the export drew the box and stopped.
+- **A browser frame exported without its window**, because the export drew the box and stopped.
 - **The PNG and the SVG of the same tab disagreed**, because the PNG path only
   rasterises the SVG markup for kinds listed in `boxedNeedsSvgRaster`, and the
   list had not kept up.
@@ -48,7 +46,6 @@ written down in two places is a rule that drifts. What moved there for this:
 | Label font sizes                    | `label-font.ts` (`LABEL_FONT_PX`, `NOTE_FONT_PX`) |
 | An arrow caption's size + footprint | `arrow-label.ts`                                  |
 | A chart's plot + legend rects       | `chart-frame.ts`                                  |
-| A lane's gutter edge + thickness    | `lane-gutter.ts`                                  |
 
 The canvas re-exports each from the module its views already import, so a view
 keeps its existing import and there is still only one table.
@@ -61,19 +58,7 @@ canvas-2D drawers cannot draw. Adding a body to a kind wires up both exports.
 width, dash pattern and radius (`svg-render-border.ts`), inset by half the
 stroke the way the canvas's CSS border sits inside the box; every silhouette drawn
 to its box edge (`strokeInside`: diamond, parallelogram, hexagon, document, cylinder,
-cloud) is inset the same way, so its outline never crosses the box edge. A self-painting
-kind keeps the wrapper's 4px corners (the Reveal cover).
-
-**The Collaborate cards share one kit.** Every card is laid out in the canvas
-panel's design units (`collabCard`: 16/14 padding, a 24px header row, the body
-10px under it), takes its accent from the element's stroke exactly as
-`CollabAccentScope` does (`collabAccent`: the accent, the ink that reads on
-it, and the accent as text mixed 40% toward the text colour on a card of the
-same tone), and draws its controls from the shared parts
-(`svg-render-collab-parts.ts`: the dashed accent bar, the composer, accent
-chips, count boxes, the 16-unit glyphs). The done green is `COLLAB_DONE_COLOR`.
-Cards whose rows reflow (Idea box, Comment panel, Action panel,
-Agenda, Roll call) lay out at the element's own size rather than scaling.
+cloud) is inset the same way, so its outline never crosses the box edge.
 
 **Every export draws an arrow the same way.** The SVG and the PNG / PDF both
 hand `svgArrow` the elements the export draws as its occluders, so a line
@@ -94,58 +79,21 @@ would be worse than the gap:
 - **Motion.** Every element animation is designed so its resting frame is the
   static element ([Canvas and palette](../008-canvas/canvas-and-palette.md)), which is what a still
   image wants.
-- **Placeholders and affordances.** An empty page masthead shows "Title" on the
+- **Placeholders and affordances.** An empty hero title shows "Title" on the
   canvas because you can click it; an export of an empty field is empty.
-- **Live state of a control.** A timer's remaining time, a picker mid-roll, a
-  pressed button.
-- **Who is in the room.** An export has no presence, so a Done check has
-  nobody to wait on: it draws the people who marked themselves done, not a
-  waiting list.
-- **Editor chrome.** The `…` settings menu in a card's header, the Start
-  button on a timer, a hover card. A card's title therefore sits where the
-  header puts it without the menu beside it.
+- **Live state of a control.** A pressed button, a playing embed.
+- **Editor chrome.** A hover card, a selection handle, an in-place editor.
 - **The progress track on dark paper.** The canvas paints a fixed light
   track; the export keeps the element's fill on dark paper so its percentage
   stays readable.
 
-### The behaviour cards export as they look
+### Faces export as they look
 
-The Behaviour and Collaborate cards moved onto one modern look (flat, lit by
-the tab theme's accent, [Participant responses](../012-collaboration/participant-responses.md)), and their exports
-carry its **marks**, not just their text: the Temperature check's five faces,
-the Estimate card's face-up cards and its scale chooser while it has no scale,
-the Roll call's people as initial discs on their own colour (it stores their
-names and colours; a Done check or an Estimate stores only an opaque key per
-answer, so their people export as neutral discs), the Decision
-record's status badge with its glyph, and the soft accent glows behind the
-Reveal zone and the Idea box. What stays out is motion (a bob, a sweep, a
-flip) and live clocks, as above.
+A Behaviour face draws what the canvas draws: a Mode button is a keycap with its glyph chip over the label, or
+"Switch to" and the mode's name (`SELECTION_MODE_LABEL`) when it has none. A box label breaks a word wider than its
+line between characters, as the canvas's `break-words` does; an icon caption keeps the word whole.
 
-The cards export their **controls** too, at rest: the Agenda's progress bar,
-step markers and the current step's minutes; the Idea box
-composer, accent bar and rows; the Estimate card's pick cards,
-face-down room cards and Reveal / New Round footer; the Temperature check's
-bars and meter; the Comment panel's grouped bubbles, Resolve chip and composer;
-the Action panel's rings, checks and Add Action bar; the Roll call's avatar
-stack, time chip and Take again bar.
-
-**Nothing runs off a card.** A Collaborate card's title takes one line in the
-room its aside leaves and ends in an ellipsis (`fitLine`), as the canvas's
-header truncates it; a word wider than a wrapped line is cut the same way; a
-Roll call chip's name is cut to its chip; and a Decision record's drivers wrap
-(up to three lines each), with the ones that do not fit above the date counted
-in a "+N more" line rather than dropped. The Behaviour faces draw what the canvas
-draws: a timer Session button is the idle dial (ticks, "TIMER", its length); a
-Mode button is a keycap with its glyph chip over the label, or "Switch to" and
-the mode's name (`SELECTION_MODE_LABEL`) when it has none; a Portal is its
-bloom, mouth and lit rim (dim when unpaired); a Reaction pad is its soft wash,
-the emoji on its glowing spot and the label chip; a Reveal cover carries the
-lock disc and the gesture chip; a Picker shows its reel window. A Page draws its masthead inside the border, starts
-its body label under the rule, and turns back its bottom-right corner over the
-paper. A box label breaks a word wider than its line between characters, as
-the canvas's `break-words` does; an icon caption keeps the word whole.
-
-The Mode button's glyph is shared data: the nine selection-mode glyphs live in
+The Mode button's glyph is shared data: the selection-mode glyphs live in
 `@livepages/icons/mode-glyphs` (`MODE_GLYPHS`), which the editor's palette and
 button face render through `<Prims>` and the export through `iconPrimsMarkup`,
 so the chip carries the same drawing in both. A glyph with a filled dot or a
@@ -163,5 +111,5 @@ label, and that every kind whose body the SVG draws is one the PNG rasterises.
 The pixels are checked by eye, which is what found all of this: seed a tab with
 a dense grid of one family of elements, screenshot the canvas in focus mode, and
 render the same tab's export beside it, in both light and dark paper.
-`svg-render-fidelity.test.ts` and the per-card tests pin the marks each face
+`svg-render-fidelity.test.ts` and the per-kind tests pin the marks each face
 draws.

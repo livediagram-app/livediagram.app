@@ -86,11 +86,6 @@ Banned: "pro mode", "expert mode", "compact chrome", "clean mode"; "badge" for t
 const POWER_USER_PRESET = {
   alignmentGuides: { alignmentGuides: true },
   autoRebindArrows: { autoRebindArrows: true },
-  tourSeen: { tourSeen: true },
-  planTourSeen: { planTourSeen: true },
-  workshopTourSeen: { workshopTourSeen: true },
-  drawTourSeen: { drawTourSeen: true },
-  formTourSeen: { formTourSeen: true },
   pagesTourSeen: { pagesTourSeen: true },
   elementToursSeen: { elementToursSeen: true },
   aiSuggestedPrompts: { aiSuggestedPrompts: false },
@@ -323,8 +318,8 @@ export function AppearanceToggle(props: { labelled?: boolean; quick?: boolean })
 - Offer copy: message "Power user mode: fewer labels, faster defaults.", actions "No Thanks" and
   "Try It" (primary, last).
 - Settings copy:
-  - **Power User Mode**: "Applies a set of recommended settings for people who know their way around: alignment guides and auto-attach arrows on, the welcome, Plan and Workshop tours marked as seen, and AI suggested prompts off.
-    Change any of them afterwards and the mode stays on. Switching it off puts back the settings you did not change."
+  - **Power User Mode**: "Applies recommended settings for experienced users and hides the tours. Switching it off puts back whatever
+    you did not change since."
   - **Minimal Chrome**: "Hides labels and hints you no longer need: palette captions, panel titles, the selection
     caption, status bar text and onboarding notices. Every control stays; its name shows when you hover or focus it."
 - Help row in the Explorer menu: the help glyph, label "Help".

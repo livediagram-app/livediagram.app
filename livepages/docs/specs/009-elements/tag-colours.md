@@ -9,7 +9,7 @@ with it changes.
 
 ## Why
 
-Colour-coding a diagram by team or status is the most common reason people restyle nodes one at a time, and it drifts:
+Colour-coding cards by team or status is the most common reason people restyle them one at a time, and it drifts:
 the fifth Payments card is a slightly different orange, and a card that moved to another team keeps its old colour.
 Tags already say what a card belongs to; the colour should follow the tag, not the hand.
 
@@ -42,8 +42,7 @@ To stop a card showing a tag's colour, clear that tag's colour (or remove the ta
 A **Tag Colours** block in the card's **Card** section lists the selected card's tags, each with a colour row (the
 shared colour picker: [Colour picker](../004-interface-design/colour-picker.md)) and, once set, **Clear** beside it.
 The picker's **No Colour** clears it the same way.
-Picking a colour sets the tag's colour for the whole tab, in one history step. The [Diagram key](diagram-key.md) lists
-the map.
+Picking a colour sets the tag's colour for the whole tab, in one history step.
 
 ## Share roles
 
@@ -55,5 +54,5 @@ the map.
 
 ## Agents
 
-The MCP server and the REST API take `tagColours` on a tab; an agent colour-codes a diagram by tagging cards and
+The MCP server and the REST API take `tagColours` on a tab; an agent colour-codes a page by tagging cards and
 setting the map once.

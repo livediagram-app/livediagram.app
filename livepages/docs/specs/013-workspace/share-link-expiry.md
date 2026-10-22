@@ -4,7 +4,7 @@ Share links ([Auth + guest access](../014-identity/auth-and-guest-access.md), [A
 
 ## Why
 
-A share link is a capability: anyone holding the URL has the link's role forever. Expiry bounds that exposure ("share with the workshop group for a week") without the owner having to remember to revoke. It complements the share password ([Share password](share-password.md)) as the second self-serve security control.
+A share link is a capability: anyone holding the URL has the link's role forever. Expiry bounds that exposure ("share with the review group for a week") without the owner having to remember to revoke. It complements the share password ([Share password](share-password.md)) as the second self-serve security control.
 
 ## Choices
 
@@ -21,7 +21,7 @@ Lifetimes are fixed ms constants (`SHARE_LINK_EXPIRY_MS` in `@livepages/api-sche
 
 ## Data model
 
-Migration `0020_share_link_expiry.sql` adds two nullable columns to `share_links`:
+The baseline migration, `0001_livepages_baseline.sql`, adds two nullable columns to `share_links`:
 
 - `expiry TEXT` — the chosen lifetime token (`week` / `month` / `sixMonths`); NULL = never. Kept so **Extend** knows what duration to re-apply.
 - `expires_at INTEGER` — the moment the link stops working (ms epoch); NULL = never. Set to `created_at + lifetime` at creation.

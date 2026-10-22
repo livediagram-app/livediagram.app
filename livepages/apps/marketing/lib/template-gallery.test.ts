@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { TEMPLATES, isBlankTemplate, templateEditorMode } from '@livepages/templates';
+import { TEMPLATES, isBlankTemplate } from '@livepages/templates';
 import {
   filterGallery,
   galleryShelves,
@@ -15,14 +15,10 @@ describe('galleryTemplates (docs/specs/019-marketing/marketing-site.md)', () => 
       (t) => t.kind,
     );
     expect(kinds).toEqual(expected);
-    for (const blank of ['blank', 'whiteboard', 'blank-illustration', 'blank-slide-deck']) {
+    for (const blank of ['blank', 'blank-illustration', 'blank-slide-deck', 'blank-logo']) {
       expect(kinds).not.toContain(blank);
     }
     expect(new Set(kinds).size).toBe(kinds.length);
-  });
-
-  it('carries the mode each template opens in', () => {
-    for (const t of galleryTemplates()) expect(t.mode, t.kind).toBe(templateEditorMode(t.kind));
   });
 
   it('labels every card with its category', () => {
@@ -39,27 +35,27 @@ describe('filterGallery', () => {
   });
 
   it('matches the title, case-insensitively', () => {
-    expect(filterGallery(all, 'KANBAN').map((t) => t.kind)).toEqual(['kanban']);
+    expect(filterGallery(all, 'STORYBOARD').map((t) => t.kind)).toEqual(['storyboard']);
   });
 
   it('matches the description and the category name', () => {
-    expect(filterGallery(all, 'offsite plan').map((t) => t.kind)).toContain('mindmap');
-    expect(filterGallery(all, 'technical').map((t) => t.kind)).toContain('sequence-diagram');
+    expect(filterGallery(all, 'landing page').map((t) => t.kind)).toContain('wireframe-website');
+    expect(filterGallery(all, 'design').map((t) => t.kind)).toContain('floor-plan');
   });
 
   it('needs every word to hit somewhere', () => {
-    const kinds = filterGallery(all, 'mind tree').map((t) => t.kind);
-    expect(kinds).toContain('mindmap-tree');
-    expect(kinds).not.toContain('mindmap-bubble');
-    expect(filterGallery(all, 'kanban zebra')).toEqual([]);
+    const kinds = filterGallery(all, 'watch wireframe').map((t) => t.kind);
+    expect(kinds).toContain('wireframe-watch-app');
+    expect(kinds).not.toContain('wireframe-website');
+    expect(filterGallery(all, 'storyboard zebra')).toEqual([]);
   });
 });
 
 describe('groupGallery', () => {
   it('keeps catalogue category order and drops emptied categories', () => {
-    const groups = groupGallery(filterGallery(galleryTemplates(), 'kanban'));
-    expect(groups.map((g) => g.label)).toEqual(['Planning']);
-    expect(groups[0]?.templates.map((t) => t.kind)).toEqual(['kanban']);
+    const groups = groupGallery(filterGallery(galleryTemplates(), 'storyboard'));
+    expect(groups.map((g) => g.label)).toEqual(['Design']);
+    expect(groups[0]?.templates.map((t) => t.kind)).toEqual(['storyboard']);
   });
 
   it('runs the categories alphabetically by name, Blank Slate first', () => {
@@ -69,39 +65,34 @@ describe('groupGallery', () => {
     expect(names).toEqual([...names].sort((a, b) => a.localeCompare(b, 'en')));
   });
 
-  it('shows a cross-listed template on each of its categories', () => {
+  it('shows each template on its own category', () => {
     const browse = groupGallery(galleryTemplates());
     const holding = (kind: string) =>
       browse.filter((g) => g.templates.some((t) => t.kind === kind)).map((g) => g.id);
-    expect(holding('invoice')).toEqual(['finance', 'spreadsheets']);
+    expect(holding('slide-deck')).toEqual(['presentations']);
+    expect(holding('wireframe-website')).toEqual(['design']);
   });
 
   it('finds a template by its search words, as the editor does', () => {
-    expect(filterGallery(galleryTemplates(), 'mortgage').map((t) => t.kind)).toContain(
-      'loan-calculator',
+    expect(filterGallery(galleryTemplates(), 'cv').map((t) => t.kind)).toContain('resume');
+    expect(filterGallery(galleryTemplates(), 'cooking').map((t) => t.kind)).toContain(
+      'recipe-card',
     );
-    expect(filterGallery(galleryTemplates(), 'erd').map((t) => t.kind)).toContain('er-diagram');
   });
 });
 
 // docs/specs/019-marketing/marketing-site.md "Template gallery": the editor's template step's
 // structure, Popular first.
 describe('the shelves, as the template step lays them out', () => {
-  it('opens on Blank Slate, only the blanks in mode order, then every category in catalogue order', () => {
+  it('opens on Blank Slate, only the blanks, then every category in catalogue order', () => {
     const shelves = galleryShelves();
     expect(shelves[0]?.id).toBe('popular');
     expect(shelves[0]?.templates.map((t) => t.kind)).toEqual([
-      'blank',
-      'whiteboard',
-      'blank-session',
       'blank-illustration',
       'blank-slide-deck',
       'blank-article',
       'blank-logo',
       'blank-wireframe-phone',
-      'blank-plan',
-      'blank-spreadsheet',
-      'blank-form',
     ]);
     for (const t of popularTemplates()) expect(isBlankTemplate(t.kind), t.kind).toBe(true);
     expect(shelves.slice(1).map((s) => s.id)).toEqual(

@@ -48,10 +48,9 @@ It is **compact** (no header, 258 px wide), not draggable and with no collapse b
 it leaves when the selection does. The colour swatches are the colour picker's one swatch
 ([Colour picker](../004-interface-design/colour-picker.md)): a 20 px chip in a **24 × 24 px target**
 (WCAG 2.2, 2.5.8 target size), ten to a row with the targets touching. **The width is fixed, never
-the content's**, so the panel never resizes as its rows change, nor when the editor mode changes:
-every colour row lays out on the same ten columns (the theme's seven, Ink and **More colours** in
-Diagram mode, Ink, the eight hued stock colours and More colours in Draw mode, a Background row's
-seven and More colours), a row of swatches never wraps and is never clipped (the
+the content's**, so the panel never resizes as its rows change:
+every colour row lays out on the same ten columns (the theme's seven, Ink and **More colours**, a
+Background row's seven and More colours), a row of swatches never wraps and is never clipped (the
 width counts the targets, their gaps, 8 px of padding a side and a 1 px border a side, exactly). The panel-opacity preference
 ([User preferences](../007-editor/user-preferences.md)) fades it.
 
@@ -89,20 +88,17 @@ working from the context menu.
 
 Top to bottom, each a small title over one row of option buttons:
 
-| Section            | Applies to                                         | Options                               |
-| ------------------ | -------------------------------------------------- | ------------------------------------- |
-| Stroke             | Shapes + arrows                                    | 7 colours, then Ink                   |
-| Background         | Shapes                                             | 7 colours, then Transparent           |
-| Text colour        | Text elements                                      | 7 colours, then Ink                   |
-| Stroke width       | Shapes + arrows                                    | Thin / Medium / Thick                 |
-| Stroke style       | Shapes                                             | Solid / Dashed / Dotted               |
-|                    | Arrows                                             | Solid / Dashed / Flowing              |
-| Text alignment     | Shapes with a label it moves (`supportsTextAlign`) | Left / Centre / Right (horizontal)    |
-| Icon alignment     | Shapes with icon                                   | Before / Above / After the label      |
-| Corners            | Free-corner shapes (Draw mode only)                | None / Small / Medium / Large         |
-| Highlighter colour | Highlight strokes, or the armed Highlighter        | Yellow / Green / Pink / Blue / Orange |
-| Highlighter width  | Highlight strokes, or the armed Highlighter        | Thin / Medium / Bold                  |
-| Actions            | Shapes + arrows + text elements                    | Clear Styles                          |
+| Section        | Applies to                                         | Options                            |
+| -------------- | -------------------------------------------------- | ---------------------------------- |
+| Stroke         | Shapes + arrows                                    | 7 colours, then Ink                |
+| Background     | Shapes                                             | 7 colours, then Transparent        |
+| Text colour    | Text elements                                      | 7 colours, then Ink                |
+| Stroke width   | Shapes + arrows                                    | Thin / Medium / Thick              |
+| Stroke style   | Shapes                                             | Solid / Dashed / Dotted            |
+|                | Arrows                                             | Solid / Dashed / Flowing           |
+| Text alignment | Shapes with a label it moves (`supportsTextAlign`) | Left / Centre / Right (horizontal) |
+| Icon alignment | Shapes with icon                                   | Before / Above / After the label   |
+| Actions        | Shapes + arrows + text elements                    | Clear Styles                       |
 
 **Transparent** ends the Background row, after its seven colours: the shared no-colour chip (white
 crossed by a diagonal), named "Transparent". A press clears the shape's fill to `transparent`
@@ -113,26 +109,12 @@ opens nothing.
 - **Flowing** is a dashed line with the marching-dashes flow animation (`strokeStyle: 'dashed'`,
   `flow: 'dashes'`). So the plain arrow and the animated dashed arrow are each one click, the two
   arrow looks people build most. Solid and Dashed clear any flow.
-- **Corners** (Draw mode only) sets the corner preset ([Corner radius](corner-radius.md)) of
-  every selected element that takes one (`supportsBorderRadius`: rectangles, the browser frame,
-  the web components with a rectangular surface) and leaves the rest. It earns its place on a
-  whiteboard and nowhere else: a whiteboard's context menu offers no corners, so the panel is the
-  only place a board's corners can change, and every imported or drawn rectangle carries them.
-  On a diagram tab the menu's Border category already holds them and corners are not among the
-  most-used choices, so the row is not shown there. It offers four options, not three: dropping
-  None would leave no way back to square, and Full is a pill rather than a corner, so it stays in
-  the menu's set. That one row of four is the operator's decision; the rhythm rule below still
-  holds for every other row. An element with no preset (its kind's default corner) marks none.
-  On a whiteboard, Clear Styles returns corners to the kind's default too, and the board's style
-  memory remembers them for the next rectangle.
-- **Highlighter colour** and **Highlighter width** are the [Highlighter](highlighter.md)'s settings, shown above the other rows for selected highlight strokes, and on their own (captioned "Highlighter") while the Highlighter tile is armed with nothing selected, where they set the next stroke. Five colours and three widths: the marker's own set, not the theme's. The width row has no context-menu twin, a deliberate exception scoped to these rows ([Highlighter](highlighter.md) "Settings").
 - **Icon alignment** shows only when a selected shape carries an inline icon. Before / Above / After
   map to `iconPosition` left / above / right. "Below" stays in the context menu: it is the rarest
   arrangement, and a fourth option would break the row rhythm.
 - **Text alignment** is the horizontal axis only. Vertical alignment is the less-used half and stays
   in the menu's 3×3 grid. It shows only where it moves something: not on self-drawing kinds (no
-  label) and not on kinds with their own face (the collab panels such as the idea box and agenda,
-  the session tools, the comment and action panels, the portal), whose label is a fixed
+  label) and not on kinds with their own face, whose label is a fixed
   title, and not on icons or stickers (a glyph, at most a short caption). One predicate, `supportsTextAlign` in `@livepages/document`, gates both this panel and the
   context menu's Text Alignment section, so the two can't disagree. The panel also waits for words:
   a shape whose label is empty (or only whitespace) shows no Text alignment row, since there is
@@ -176,8 +158,7 @@ The seven colours are **theme-relative**:
   a near-black one still yields visible strokes). That keeps every row genuinely on-theme (a Sand
   diagram's green is a muted green) while still offering six distinct colours, and it puts the six in
   the same order a multi-colour palette runs, so slot 4 means green everywhere.
-- **Then Ink**, on the Stroke and Text colour rows only, the eighth swatch
-  ([One look](../007-editor/editor-modes.md#one-look)): the same drawing colour on every theme,
+- **Then Ink**, on the Stroke and Text colour rows only, the eighth swatch: the same drawing colour on every theme,
   stored by name (`ink`) and drawn in its version for the canvas, named "Ink" (its accessible name
   and tooltip). It is not a theme colour, so it takes no custom colour in its place, and a fill
   has none. Ink is marked when every styled element stores it.
@@ -269,12 +250,12 @@ identity otherwise, and into this browser's cache either way.
 
 ## Multi-selection
 
-The panel styles every selected shape, arrow, path and text element at once, including mixed
+The panel styles every selected shape, arrow, polygon and text element at once, including mixed
 kinds: select three arrows, two rectangles and a circle, press green, and all six turn green. Add a
 text element to that selection and a Text colour row appears beside the others, styling only it.
 
-**Any mix works.** A selection may hold every kind at once (a whole pasted or imported board:
-marker strokes, shapes, lines, arrows, paths, text boxes, stickies, images, frames). Each row
+**Any mix works.** A selection may hold every kind at once (a whole pasted page:
+shapes, lines, arrows, polygons, text boxes, stickies, images, frames). Each row
 styles the selected elements it is meaningful for and leaves the rest exactly as they are; the
 elements no row fits (stickies, images, frames, tables and the other non-shape kinds) are passed
 over, never refused, so they never hide the panel from the rest.
@@ -283,25 +264,8 @@ over, never refused, so they never hide the panel from the rest.
   the elements that do.
 - An option is **highlighted** when every supporting element has that value. When they disagree,
   nothing is highlighted: a mixed row claiming one value would be a lie.
-- **In Draw mode the Stroke and Text colour rows are the stock colours**: Ink, the eight hued
-  colours and More colours (custom colours live in its picker), as Marker colour offers them
-  ([Draw mode](../023-draw-mode/draw-mode.md) "The quick style panel stays"); a stock colour,
-  Ink included, is stored by name and marked by name, each swatch in its version for the canvas.
-  A line with no colour of its own wears its theme default and marks none. Background keeps the
-  theme's fills.
-- **A colour stored by name** shown in Diagram mode matches no theme swatch, so it marks none;
-  choosing a swatch replaces the name with the swatch's colour. It is drawn in its version for the
-  canvas in both modes ([One look](../007-editor/editor-modes.md#one-look)).
-- **On a whiteboard**, a mixed selection shows the **Marker colour** and **Marker width** rows for
-  its marker strokes ([Draw mode](../023-draw-mode/draw-mode.md) "The quick style panel
-  stays") above the rows for everything else: Stroke, Background, Text colour, Stroke width, Stroke
-  style, Text alignment and Icon alignment, each where it fits. The marker rows style only the
-  strokes; the others never touch a stroke.
-- **The caption** above the rows on a whiteboard names what they style when marker strokes are
-  among it: "Marker stroke" or "3 marker strokes" when only strokes are styled, and the count of
-  styled elements when strokes mix with other kinds ("12 elements"). Elements passed over are not
-  counted, and a selection without strokes keeps no caption: its rows name themselves. Power user
-  mode leaves it out, as it does every caption.
+- **A colour stored by name** matches no theme swatch, so it marks none; choosing a swatch replaces
+  the name with the swatch's colour. It is drawn in its version for the canvas.
 - **Stroke style on a mixed selection** of shapes and arrows offers the shape row (Solid / Dashed /
   Dotted): each of those means something for both kinds (arrows draw dotted lines too), whereas
   Flowing means nothing for a shape. Flowing is offered when every style-supporting element is an
@@ -329,8 +293,8 @@ element of the same kind you draw.
   preset look follows the theme like the preset does.
 - **Theme defaults are not memories.** Setting a field back to the theme default forgets it, so a
   remembered "default" never pins one theme's colour onto a tab with another.
-- **User-drawn elements only**: a shape or text element placed from the palette (tap, drag-to-size, drag and drop), a
-  shape recognised by the Shape Pen, an arrow drawn with the arrow tool, by click-to-connect, from a
+- **User-drawn elements only**: a shape or text element placed from the palette (tap, drag-to-size, drag and drop), an
+  arrow drawn with the arrow tool, by click-to-connect, from a
   quick-connect plus, or chained with Shift. Paste, duplicate (including quick-connect Duplicate and
   Shift-drag), a forked arrow branch (it takes its trunk's look), templates, import, the MCP server
   and AI never read memory: they carry styles of their own, and applying memory to them would
@@ -343,7 +307,7 @@ element of the same kind you draw.
 
 The Actions section's first button. It resets the selected elements' quick-style fields to the
 tab theme's default (stroke, background and label colour, width, style, text alignment, icon
-alignment; on an arrow its stroke colour, width, style and flow; on a text element its text colour; on a whiteboard any stock colour stored by name, too) **and** forgets the memory of every
+alignment; on an arrow its stroke colour, width, style and flow; on a text element its text colour; any stock colour stored by name, too) **and** forgets the memory of every
 kind it touched, so the next shape of those kinds is the default again. A one-off style stays a
 one-off: without the second half, clearing a shape would leave its style waiting in memory for the
 next one. One undo step.
@@ -359,7 +323,7 @@ the selection. Clear Styles is the first action, because every restyle needs a w
 
 WCAG 2.2 AA.
 
-- A row of glyph options (width, style, alignment, corners) is a **radio group** named by its
+- A row of glyph options (width, style, alignment) is a **radio group** named by its
   section title; each option is a radio with its own accessible name. The arrow keys move between
   options and choose, per the radio-group pattern; Tab moves between rows.
 - A **colour row** follows the colour picker's keyboard

@@ -61,7 +61,7 @@ Gaps an agent will hit, each verified in the code:
 | `update` on an unknown id              | `byId.set(op.elementId, mergeElementUpdate(byId.get(op.elementId), el))` with `prev` undefined                                   | Silently creates a partial element, then fails validation with a generic message |
 | `remove` on an unknown id              | `byId.delete` of a missing key                                                                                                   | Silent no-op: a hallucinated id "succeeds"                                       |
 | Removing a node leaves dangling arrows | `isValidTab` checks a pinned endpoint is a non-empty string with a valid anchor (`validate.ts:223`), not that the element exists | Broken arrows persist                                                            |
-| One generic error                      | `'The resulting elements are invalid. See the livepages://schema/elements resource.'`                                          | No op index, field or reason; the model guesses                                  |
+| One generic error                      | `'The resulting elements are invalid. See the livepages://schema/elements resource.'`                                            | No op index, field or reason; the model guesses                                  |
 | Absolute geometry only on `add`        | `add` takes a full element                                                                                                       | The model must compute `x/y/width/height` and anchors for every insertion        |
 | Shallow merge only                     | Nested fields (`from`, `to`, `entityFields`) replace wholesale; no way to unset a field                                          | Easy to drop an arrow's anchor or styling by sending a partial endpoint          |
 | No preconditions                       | Read-modify-write against D1, no revision check                                                                                  | A stale read silently overwrites newer work                                      |
@@ -229,8 +229,8 @@ Derived from the above, in the order they bite:
 Resource-verb, consistent with the rest of the CLI. Editing verbs only; read views belong to the
 reading angle and are referenced where editing depends on them.
 
-| Command                                                       | Purpose                                                                                    |
-| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| Command                                                     | Purpose                                                                                    |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
 | `livepages edit <doc> [--tab T] [-f FILE \| -]`             | Apply a batch of ops (line form or JSON lines). The core verb                              |
 | `livepages edit … --dry-run [--png FILE]`                   | Print the plan (and render it) without writing                                             |
 | `livepages el set <doc> <sel> k=v…`                         | One-op sugar for `set`; every op has such a verb so `--help` teaches the vocabulary        |

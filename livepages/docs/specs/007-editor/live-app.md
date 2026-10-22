@@ -1,6 +1,6 @@
 # Live app
 
-The diagram editor — where users actually build diagrams and mindmaps.
+The Pages editor: where people build articles, slide decks, infographics, logos and wireframes on pages.
 
 - **Workspace:** `apps/live` (`@livepages/live`).
 - **Public URL:** `https://livepages.app` — the app serves at **clean routes** (`/document/...`, `/explorer/...`, `/new`, ...); the [router app](../016-platform/router-app.md) selects it by route. There's no `/live` URL prefix.
@@ -15,9 +15,6 @@ A guest can open `/new`, create a document, and use the full canvas without an a
 - `/new` — welcome / template-picker flow for creating a new document (the app's entry point). See [New document route](new-document-route.md).
 - `/document/<id>` — the editor itself, scoped to one document id. Static-exports a single `/document/placeholder` page; the live worker rewrites all `/document/<id>` paths to it at the edge, and the client reads the real id from the path.
 - `/explorer/*`, `/sign-in`, `/get-started`, `/sso-callback`, `/embed` — the library, auth, and read-only embed surfaces.
-- `/form/<code>` — a published form's page ([Forms](../030-forms/forms.md#filling-in-a-form)): one placeholder page
-  backs every code (the live worker rewrites `/form/<code>` to `/form/placeholder`, as it does `/document/<id>`), with
-  none of the editor's chrome or code.
 
 ## Persistence
 
@@ -82,21 +79,20 @@ The **role pill** says whether you are editing, participating in or viewing this
 - Real-time presence + selection + cursor broadcast via the per-document Durable Object room (see [11-api.md](../015-api/api.md)).
 - Undo and redo (snapshot-based, personal to each editor; the per-tab Activity panel was removed on 2026-10-03, see [Collaboration](../012-collaboration/README.md#removed-the-activity-panel)).
 - Folders in the Explorer (see [15-folders.md](../013-workspace/folders.md)).
-- Themed templates (chosen on the new-document route).
+- Themed Pages templates (chosen on the tab's start, [Template start](start-diagramming.md)).
 
 ## Concurrent-selection lock
 
 To cut down on two people fighting over the same element, an element another participant currently has selected is **locked** for everyone else: you can't select, drag, or edit it while they hold it.
 
-- **Advisory, not authoritative.** The lock is driven entirely by the realtime presence layer (`remoteSelectionsByElement`, built from the room's `select` ops) and deliberately does no server-side enforcement. It is a UX guard that makes same-element collisions rare, **not** a mutual-exclusion guarantee: two clients can still race inside the presence-propagation window, the room relays an `el` update from any edit-role session whoever holds the selection, and REST writers (the MCP server, an API-token script) never see the lock at all. A collision that does happen is last-writer-wins over the whole element, in room order; only the multi-writer fields (answers, ideas, checklist ticks, comments, dots) merge, because they travel as deltas ([Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md), [Collaboration race hardening](../012-collaboration/collab-race-hardening.md)). A field-level CRDT that would have merged such collisions was scoped and deliberately dropped; that residual is the accepted cost.
+- **Advisory, not authoritative.** The lock is driven entirely by the realtime presence layer (`remoteSelectionsByElement`, built from the room's `select` ops) and deliberately does no server-side enforcement. It is a UX guard that makes same-element collisions rare, **not** a mutual-exclusion guarantee: two clients can still race inside the presence-propagation window, the room relays an `el` update from any edit-role session whoever holds the selection, and REST writers (the MCP server, an API-token script) never see the lock at all. A collision that does happen is last-writer-wins over the whole element, in room order; only the multi-writer fields (checklist ticks, comments) merge, because they travel as deltas ([Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md), [Collaboration race hardening](../012-collaboration/collab-race-hardening.md)). A field-level CRDT that would have merged such collisions was scoped and deliberately dropped; that residual is the accepted cost.
 - **Shown as an outline, never a recolour.** A held element wears the holder's colour as its border (and their disc); a
-  face that paints its content from the element's accent (a Card's header band and media, a banner's bar, a
-  boundary's tab) keeps its own colours.
+  face that paints its content from the element's accent (a Card's header band and media, a banner's bar) keeps
+  its own colours.
 - **Self is never locked out.** Only OTHER participants' selections lock an element; your own selection never blocks you.
 - **Auto-releases.** The lock is purely a function of live presence, so it clears the moment the holder deselects, switches tabs, or leaves the room — there's no sticky server state to clean up.
 - **Where it's enforced.** All local selection choke points respect it: single-click select, shift multi-select, and marquee (which filters locked ids out of its hit set), plus the element's own pointer-down / double-click-to-edit. A locked element shows a `not-allowed` cursor and the existing remote-selector badge's hover card reads "Locked to <name>" (each disc takes the pointer so the card opens; presses still reach the element).
 - **A Viewer's selection holds nothing.** A Viewer only looks, so their selection shows its disc and border but locks nothing: the element stays selectable and editable, and the disc's hover card reads "Selected by <name>" with "They're only viewing, so you can still edit it." Every lock check reads the selector's `holds` flag (false for a Viewer).
-- **The facilitator can free one.** "Auto-releases" covers the holder deselecting or leaving, but not the person still connected who wandered off with something selected — and a session can stop dead on an element nobody may touch. Right-clicking a locked element opens a one-item menu for whoever is running the session ([Facilitator](../012-collaboration/facilitator.md) "Freeing somebody's lock"); it still opens nothing for everybody else. The room tells the holder alone, the holder drops the selection, and the lock then clears everywhere through the ordinary `select` op — so this adds no server-side enforcement and leaves the lock exactly as advisory as it was.
 - The user-set element **lock** (`element.locked`, the padlock badge) is a separate, persisted feature; this concurrent-selection lock is ephemeral and presence-only.
 
 ## SEO and indexing
@@ -204,12 +200,12 @@ Its confirm button is the brand primary button for every action, a delete includ
 ## Element dialogs and popovers
 
 A dialog or popover opened for one element (its link, a table cell's link, line data, code, Sankey Flows, a
-Sequence, a picture's image picker, comments, an action, a note) shows only while it can be shown for that element:
+picture's image picker, comments, an action, a note) shows only while it can be shown for that element:
 the element is on the active tab, of the kind the dialog edits, and the session may still use it. The moment that
 stops being true (a collaborator deletes the element, an undo takes it away, the tab changes, the element locks, the
 session turns read-only), the dialog **closes**, rather than hiding with its element still named, so it never
 reopens by itself when the element, the lock or the role comes back (`useCloseVanishedDialogs`, with each dialog's own
-check). Edit Outline closes itself the same way (`useMindOutline`).
+check).
 
 ## Toasts
 
@@ -226,9 +222,9 @@ They ARE used for actions that finish off-surface from the gesture: clicking "Ad
 
 On a phone-sized viewport the editor's chrome would crowd the canvas. It tightens so a mobile visitor can read the canvas and tap through:
 
-- **A phone has the same layout as a desktop** ([Toolbar layout](toolbar-layout.md)), fitted to its width. A phone is below `sm:`, or a touch screen under 500px tall (landscape; `PHONE_MEDIA_QUERY`, the `phone:` variant). There the Palette is the strip across the top, the Explorer opens from the strip's menu button, and every other panel behaves as on a desktop: tool panels dock in their corners, and the session panels ([Session tools (timer + voting)](../012-collaboration/session-tools.md)) open from the Session strip, reachable by view-only participants too (a view-only participant watches vote results). (Per-element + tab formatting lives in the right-click context menus, so there is no Editor panel. The desktop-only [Quick style panel](../008-canvas/quick-style-panel.md) offers the few most-used choices beside a selection; it is not that panel, and the menus stay the complete home of every setting.) The `/explorer/` page and the AuthControls menu item are alternate routes to the library, open to guests and signed-in users alike.
+- **A phone has the same layout as a desktop** ([Toolbar layout](toolbar-layout.md)), fitted to its width. A phone is below `sm:`, or a touch screen under 500px tall (landscape; `PHONE_MEDIA_QUERY`, the `phone:` variant). There the Palette is the strip across the top, the Explorer opens from the strip's menu button, and every other panel behaves as on a desktop: tool panels dock in their corners. (Per-element + tab formatting lives in the right-click context menus, so there is no Editor panel. The desktop-only [Quick style panel](../008-canvas/quick-style-panel.md) offers the few most-used choices beside a selection; it is not that panel, and the menus stay the complete home of every setting.) The `/explorer/` page and the AuthControls menu item are alternate routes to the library, open to guests and signed-in users alike.
 
-  **Layers and Collaborate are buttons in the bottom-right cluster**, beside Undo and Redo. Left to right: Undo / Redo, the [Session strip](../012-collaboration/session-tools.md#the-session-strip) (Timer, Vote), the mode's own strip (Slides, Plan), Collaborate, then **Layers and the Theme & Canvas brush as one strip** (in every mode; a mode or session without one of the two keeps the other; in Diagram mode an Editor's strip starts with [Tidy Up](../008-canvas/layout-cleanup.md#the-tidy-up-button), left of Layers), then Zoom (Collaborate only while the tab has a comment thread or an action, [Assigned actions](../012-collaboration/assigned-actions.md) §5). Each button opens its panel as a **popover hanging above it** (`computeDockAnchor(..., 'above')`: from the button's left edge, kept on the canvas, arrow on the popover's bottom edge pointing at the button), and a second press closes it, as does a press anywhere outside it such as the canvas (`dismissOnOutside`; its own portalled menus and confirms count as inside). The popovers share one open-at-a-time slot with the Explorer popover, so opening one closes the others. **Named on a wide desktop** (1440 px and up, `useDockNames`): Contents, Slides, Timer, Vote, Layers, Tidy Up and the Plan strip's Trash, New Card, Find a Card and Card Types show their name beside their icon, and the Theme & Canvas brush is named **Style**, unless **Button Labels** in Settings › Appearance is off (`dockButtonNames`; `DockNamesProvider` in the editor, on outside one); narrower (a laptop at 1280 px, a tablet, a phone) they are icons alone, since the named strips would take the canvas's lower middle (at 1280 px they reach x 446). **A phone's zoom controls drop − and +** (`pinchOnly`): the cluster carries Undo, Redo and Layers, and pinch zooms. Fit stays.
+  **Collaborate and the page buttons are in the bottom-right cluster**, beside Undo and Redo. Left to right: Undo / Redo, the pages strip (Slides, Contents, [Pages](pages-mode.md) "Chrome"), Collaborate, then the Theme & Canvas brush, then Zoom (Collaborate only while the tab has a comment thread or an action, [Assigned actions](../012-collaboration/assigned-actions.md) §5). Each button opens its panel as a **popover hanging above it** (`computeDockAnchor(..., 'above')`: from the button's left edge, kept on the canvas, arrow on the popover's bottom edge pointing at the button), and a second press closes it, as does a press anywhere outside it such as the canvas (`dismissOnOutside`; its own portalled menus and confirms count as inside). The popovers share one open-at-a-time slot with the Explorer popover, so opening one closes the others. **Named on a wide desktop** (1440 px and up, `useDockNames`): Contents and Slides show their name beside their icon, and the Theme & Canvas brush is named **Style**, unless **Button Labels** in Settings › Appearance is off (`dockButtonNames`; `DockNamesProvider` in the editor, on outside one); narrower (a laptop at 1280 px, a tablet, a phone) they are icons alone, since the named strips would take the canvas's lower middle (at 1280 px they reach x 446). **A phone's zoom controls drop − and +** (`pinchOnly`): the cluster carries Undo and Redo, and pinch zooms. Fit stays.
 
 - **EditorHeader** drops the `livepages` wordmark on mobile via the Brand component's new `wordmarkClassName` prop (set to `hidden sm:inline`). The mark stays for orientation. The header's reserved width shrinks accordingly so the document title centres correctly.
 - **TabBar** hides the leading `Tabs` label below `sm` and drops the right-hand cluster's text labels to icons only. Tabs themselves, the +-add, Search, Settings and the dark-mode toggle stay. (There is no shortcuts button to hide: the shortcut reference lives in Settings' Keyboard category, [User preferences](user-preferences.md).)
@@ -248,7 +244,7 @@ and a desktop window however short (a fine pointer) never fold. `orientation: la
 upright phone whose layout shrinks for its keyboard (an older Android) from folding mid-typing.
 
 - **What stays.** Everything else on the canvas stays where it is: the strip across the top (the
-  palette, its Search), the bottom-right cluster (Undo, Redo, the Session strip, Layers, the Theme
+  palette, its Search), the bottom-right cluster (Undo, Redo, the pages strip, the Theme
   & Canvas brush, Fit), the menus and the dialogs.
 - **What goes for good: the menu button and the Explorer.** At this height the Explorer has no
   room to be useful, so the menu button is not drawn (in the strip's row or, without a strip, the
@@ -271,8 +267,7 @@ upright phone whose layout shrinks for its keyboard (an older Android) from fold
   fresh load starts folded.
 - **The bars come back on their own** when something needs them: a rename asked for elsewhere (the
   Rename Document and Rename Tab search commands) shows them first, so the name field takes the
-  focus; a tour on screen (any of them: the Diagram tour's Tabs step points at the tab bar) keeps
-  them shown; and a bar never folds while focus is inside it, so a layout that changes while a
+  focus; a tour on screen keeps them shown; and a bar never folds while focus is inside it, so a layout that changes while a
   name is typed there (the on-screen keyboard resizing it) cannot fold the field away. Pressing
   Hide takes the focus to the handle, which ends a rename as any press outside it does.
 - **Turning the phone** upright shows the bars at once and sideways folds them again (unless shown
@@ -292,7 +287,7 @@ Implementation: `useLandscapeBars` (the shown flag, the rename and tour reveals,
 `LandscapeBarFold` (the wrapper round each bar) and `LandscapeBarsHandle`
 (`components/chrome/LandscapeBars.tsx`), wired in `EditorView`.
 
-These don't change desktop layout. The strip and the popovers are what resolve the old "panels overlap when all four open" case on a phone: the Palette is one strip and the Explorer, Layers and Collaborate are one-at-a-time popovers. The mobile picker ([Dedicated route for new-document creation](new-document-route.md) responsive section) covers the template / identity surface the same way.
+These don't change desktop layout. The strip and the popovers are what resolve the old "panels overlap when all four open" case on a phone: the Palette is one strip and the Explorer and the bottom-row panels are one-at-a-time popovers. The mobile picker ([Dedicated route for new-document creation](new-document-route.md) responsive section) covers the template / identity surface the same way.
 
 The routes that draw the canvas (`/document/<id>`, `/new`, which opens the editor in place, `/embed` and `/embed/workbench`) export `EDITOR_VIEWPORT` (`apps/live/lib/page-viewport.ts`), which pins the page at `initialScale: 1` with `maximumScale: 1` + `userScalable: false`, so mobile browsers don't auto-zoom on top of the editor's own canvas zoom. The two paths this blocks: pinch-zoom on the whole page, and iOS Safari's automatic focus-zoom when a focused input's effective font-size is under 16px (every TabBar / Explorer / Palette field is well under). Without this, focusing a text input on iOS zooms the page in and leaves the chrome misaligned with the canvas-transform coordinate space the cursor / selection-ring math expects. The canvas zoom (pinch on the canvas surface, or the bottom-right zoom buttons) is the only zoom the editor wants users to drive.
 
@@ -301,8 +296,8 @@ zoomed the whole page (Chromium, 1.5x) instead of the canvas, which breaks the e
 gesture. Readability on a phone comes from the UI scale ([UI scale](ui-scale.md)) and the canvas
 zoom instead.
 
-The lock is the canvas's, so it covers only the canvas routes. Every other page of the live app (the public form
-page `/form/<code>`, the Explorer, sign-in, get-started, join and the rest) keeps the root layout's zoomable viewport
+The lock is the canvas's, so it covers only the canvas routes. Every other page of the live app (the
+Explorer, sign-in, get-started, join and the rest) keeps the root layout's zoomable viewport
 (`width: device-width`, `initialScale: 1`), so a phone can pinch to read it (WCAG 1.4.4 Resize Text). They have no
 focus-zoom to do: `globals.css` already holds every field at 16px on a phone.
 
@@ -323,7 +318,7 @@ releasing the drag past the panel's edge lands the click on the backdrop too, an
 away what was being edited (`Dialog`).
 
 **Working dialogs rise as sheets on a phone.** A dialog you work in rather than answer, where
-the thing being edited sits behind it (Edit Outline), opens on a phone as a sheet docked to the
+the thing being edited sits behind it, opens on a phone as a sheet docked to the
 bottom edge instead of filling the screen: full width, rounded at the top, at most 85% of the
 screen tall with its own scroll, clear of the home indicator, rising in (`animate-sheet-up`), with
 the same grab handle, which fills the screen, returns or closes it as a menu's sheet does (`useSheetDrag`). It stays a modal
@@ -332,7 +327,7 @@ desktop, where it is the usual centred card (`Dialog`'s `phoneSheet`).
 
 **A dialog stays above the on-screen keyboard.** A touch screen's keyboard shrinks the visual
 viewport, not the window a fixed layer and `vh` measure against, so a dialog centred in the window
-(Edit Outline on an iPad) sat half under the keyboard, and moving the page or dragging the sheet put
+(on an iPad) sat half under the keyboard, and moving the page or dragging the sheet put
 it further under. While the visible area is smaller than the window (`visualViewport` height or
 offset differs by more than 1 px), the dialog's dim layer covers just that visible band, following
 its every resize and scroll, so the card centres in it and a phone sheet docks on top of the

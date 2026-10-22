@@ -28,8 +28,7 @@ Once focus is on the canvas:
 - **`Tab`** selects the **next** element, **`Shift`+`Tab`** the **previous**, in the order they're stacked on the canvas. The canvas scrolls each selected shape into view as you go (arrows are selected without scrolling).
 - There's **no wrap and no trap**: pressing `Tab` past the last element (or `Shift`+`Tab` before the first) moves focus out of the canvas to the next thing on the page, so you can always keyboard your way onward.
 - The **selection ring is the focus indicator**: there's one highlighted element, not two competing outlines.
-- Elements **locked by someone else** are skipped, the same as when you click, and so are elements on a hidden or locked [layer](/help/canvas/layers/).
-- On a selected [mind map](/help/palette/mind-maps/) node, `Tab` adds a child node instead, and `Enter` a sibling.
+- Elements **locked by someone else** are skipped, the same as when you click.
 
 This works even in read-only views, since it's just navigation. It is part of the editor's keyboard shortcuts, so it pauses while a dialog is open or a slide deck is presenting, and it is off if you have switched **Keyboard Shortcuts** off in Settings.
 
@@ -39,7 +38,6 @@ Every element carries a name, so a screen reader can describe it, for example `S
 
 - **Selection:** `Selected 'Login'` for a labelled element (or `Selected a Square` when it has no label; arrows, tables and images are always named by their type, such as `Selected an Arrow`), a short summary when several are selected (`Selected 2 Squares & an Arrow`), or `Selection cleared`.
 - **Editing:** deleting an element (`Deleted 'Login'`), **Undo** and **Redo** (`Undid the last change`, `Redid the last change`) are announced too.
-- **Mode:** switching editor mode with `Shift`+`D` announces the new one, for example `Draw mode`.
 
 These announcements are separate from the on-screen notifications, so you'll hear them even if you've turned notifications off.
 

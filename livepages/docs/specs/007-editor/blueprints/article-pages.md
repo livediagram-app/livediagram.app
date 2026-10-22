@@ -2,7 +2,7 @@
 
 Derived from [Article pages](../article-pages.md). Implementation detail only; the spec owns every
 design decision. The page model, the row, page kinds and page actions are
-[Pages](pages-mode.md); the mode and its switch are [Editor modes](editor-modes.md).
+[Pages](pages-mode.md).
 
 ## Domain and naming
 
@@ -33,14 +33,12 @@ design decision. The page model, the row, page kinds and page actions are
 | Margin note              | `AnnotationElement.articleNote?: 'comment' \| 'action'` (`element-types.ts`); `ArticleNoteKind`, `ArticleNotePlace`, `packages/document/src/article-notes.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | Note edits               | `articleNoteCorner`, `newArticleNote`, `withNotesSettled`, `withNoteMarksRemoved`, `articleNoteIds`, `withNoteMarkersRemoved`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | Note marker face         | `ArticleNoteFace` (`components/canvas/article/ArticleNoteFace.tsx`), routed by `ElementFaceRouter`; chip variant in `element-variant.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| Turn Into Pages          | `articleBlocksAsRuns`, `articleAsPages`, `withArticlesAsPages`, `packages/document/src/article-to-page.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | Block ops                | `ArticleOp` (`put`, `remove`, `style`), `diffArticleFlow(before, after)`, `applyArticleOps(flow, ops)`, `parseArticleOps(v)`; ids `isArticleId`, `packages/document/src/article-flow-ops.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | Room op                  | `RoomOp` `{ kind: 'article'; tabId; flow; ops; created?; agent? }` / `{ …; removed: true }` (mutation), `packages/api-schema/src/room-messages.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | Caret on the wire        | `RoomOp` `'article-caret'` (presence), `ArticleCaret`, `parseArticleCaret`, `packages/api-schema/src/article-caret.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | Broadcast / apply        | `tabArticleOps` (`packages/api-schema/src/article-frames.ts`, re-exported by `tab-broadcast-ops.ts`); `wholeTabOp`, `META_SKIP`, `mergeRemoteTab` (`tab-broadcast-ops.ts`); `applyRoomOpToTabs` case `'article'` (`room-op-apply.ts`)                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | The articles view        | `ArticlesView`, `useArticles`, `ArticleInsert`, `ZoneAction`, `ArticleStyleChange`, `apps/live/hooks/editor/useArticles.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | Intake                   | `useArticleIntake`, `apps/live/hooks/editor/useArticleIntake.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| Leaving Pages            | `useLeavePages`, `LeavePages` (`hooks/editor/useLeavePages.ts`); `LeavePagesDialog`, and the lighter `LeavePagesConfirm` ([Editor modes](editor-modes.md)) (`components/dialogs/`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | The writing (editor)     | `ArticleEditor` (lazy), `FlowLayout`, `FocusRequest`, `apps/live/components/canvas/article/ArticleEditor.tsx`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | Every article on the tab | `ArticleFlows` (`ArticleFlows.tsx`): paper press layer, editors, `PageToolbar`, `ZoneBar`, `ZoneResizeGrips`, drop carets                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | A finger on a page       | `useTouchPagePan` (`useTouchPagePan.ts`), given `PagesModeView.panFrom`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
@@ -121,7 +119,6 @@ is `break-after: column` (`article-pages.css`).
 | `ARTICLE_FRAME_CHARS`                   | 200,000 characters per `article` frame | `packages/api-schema/src/article-frames.ts`; D42, under the room's `MAX_MESSAGE_CHARS` (256K) |
 | `MAX_PAGES`                             | 100                                    | `page.ts`; spec "Limit"                                                                       |
 | Page number                             | 12 px, half the bottom margin          | `CanvasPages.tsx`, `pageWriting`; D46                                                         |
-| Turn Into Pages text colour             | `#1f2937`                              | `articleAsPages`; D54                                                                         |
 
 ## Data and persistence
 
@@ -177,12 +174,6 @@ style? }`. Saved with the tab (D1 row, `MAX_TAB_BYTES` has the last word), carri
   missing); a placed `put` removes the block if present, then inserts after `after`, else before
   `before`, else at its old index, else at the end; a missing `remove` is a no-op; never empty
   (`b-empty` paragraph).
-- **Turn Into Pages** (`withArticlesAsPages`): Page elements (`createShape('page')`) per article
-  page under every other element; article pages become `kind: 'infographic'` (`flow` dropped);
-  `articles` deleted; `articleNote` dropped from markers. One edit. A held article (any page
-  `locked`) is skipped: its pages keep `kind: 'article'` and `flow`, its stored flow stays in
-  `articles` (by identity, the only entries left), and markers whose ids are in its writing
-  (`articleNoteIds`) keep `articleNote`. Every article held: the same tab back.
 - **Snapshot, restore**: the writing is tab data, so history, undo, offline store, export JSON
   and version restore carry it unchanged. No migration: every field is new and optional; a tab
   without `articles` has none.
@@ -224,7 +215,7 @@ blocks)` → one `commitTabs` (`withArticleFlow`, the style kept); `onCommit` re
   local, uncommitted, for the
   next commit. Also flushed on blur, on
   Escape, before undo / redo, before every handle edit (`insertZone`, `moveZone`, `markNote`
-  take the writing as written themselves), on unmount and on Turn Into Pages.
+  take the writing as written themselves), and on unmount.
 - **Merge in**: when `props.doc !== committed` (checked when `props.doc` changes, and after every
   undo / redo from the writing, `undoSeq`: a flush and the undo of it land in one render, the
   flow back to the very object it was), local changes since the last commit are diffed
@@ -259,7 +250,7 @@ caretOf(state))` (editable only), and `setActiveArticle({ handle, pageId, select
   canvas elements (`articlePasteIsCanvas`, `lib/clipboard-payload.ts`) is left to the canvas, which
   puts it into the writing as a zone.
 - **Handle** (`ArticleEditorHandle`, registered by flow): `run`, `can`, `insert`, `flush`,
-  `takeBlocks` (the writing as typed, for Turn Into Pages), `undo`,
+  `takeBlocks` (the writing as typed), `undo`,
   `redo`, `focus`, `selection`, `claimLayout` (stamps the writer window), `caretRect`,
   `blocksByPage`, `markNote`, `boundaryNear`, `moveZone`, `insertZone`, `snapshot`, `bars`,
   `focusAt`, `caretCanvasPoint`. Built by `createArticleHandle` (`article-editor-handle.ts`) over
@@ -451,19 +442,6 @@ pagesNeeded)` (adds pages like the last; removes trailing pages with no elements
 - Ruling: `pageSheetStyle(background, { pitch: articleBodyLinePx, inset: margin, top })` and the
   export's `pageExportFrame({ ruling })` draw Lines on the body baseline pitch inside the margins.
 
-### Leaving Pages (`useLeavePages`)
-
-Wraps `useEditorMode(...)`. `setMode(next)` asks (sets `pending`) only when the mode is
-`'pages'`, `next` is not, the person may edit, the tab is unlocked and has an article with
-no locked page (`articleLocked`); a tab whose articles are all held, or with elements, asks the
-lighter `confirming` instead; else it switches. `convert`: per flow not held, `takeBlocks()` then
-`blocksByPage()` (a held article's editor is never read, and the updater writes no typed blocks
-into a flow held by then); `ArticlesToPages`; then ONE
-switch, `rawSet(pending, t => withArticlesAsPages(t', splits))`, so the conversion and the switch
-are one tab edit (one undo puts the tab back in Pages with its articles). `keep` switches;
-`cancel` clears. Shift+D and a start's mode switch on the active tab reach the wrapped `setMode`, so
-they ask too.
-
 ### Collaboration
 
 - Writing: commits go out as `article` ops (Data and persistence); a peer's land in `tabs`, and
@@ -513,8 +491,7 @@ ops): ArticleFlow` (never empty). For any `a`, `b`: `applyArticleOps(a, diffArti
 - `withArticleAdded`, `withArticleDuplicated`: null at the page limit (or a taken id);
   `withArticleRemoved`: null for the only unit or an unknown flow; `withUnitMoved`: null when
   nothing moves. `withArticlePageCount`, `withZonesSettled`, `withNotesSettled`,
-  `withZonesFitted`, `withZoneWrap`, `withZoneSize`, `withArticleStyleChanged`,
-  `withArticlesAsPages`: the same tab back when nothing changes or the flow is unknown.
+  `withZonesFitted`, `withZoneWrap`, `withZoneSize`, `withArticleStyleChanged`: the same tab back when nothing changes or the flow is unknown.
 - `withZoneLanded(tab, flow, landed): { tab, rect | null }`: rect null when the article or the
   landed page is gone.
 - `ArticleEditorHandle` methods returning a landing (`insertZone`, `moveZone`, `markNote`) return
@@ -525,9 +502,6 @@ ops): ArticleFlow` (never empty). For any `a`, `b`: `applyArticleOps(a, diffArti
   and `blockId` ids (1 to 256 chars) and `offset` an integer in 0..1,000,000.
 - `ArticlesView` (null outside Pages): see `useArticles.ts`; every action is a no-op for a
   person who cannot edit or a locked tab.
-- `LeavePages`: `{ pending, convert, keep, cancel, confirming, confirmSwitch, cancelSwitch }`
-  (the last three drive the lighter `LeavePagesConfirm`; `confirmSwitch` tracks
-  `Editor · Changed · LeavePagesConfirmed`).
 
 ## Errors and edge cases
 
@@ -562,7 +536,6 @@ ops): ArticleFlow` (never empty). For any `a`, `b`: `applyArticleOps(a, diffArti
 | Caret for a block that went                        | `resolveCaret` null: not drawn                                                                          |
 | Caret from someone not in the room, or another tab | Not drawn                                                                                               |
 | `getBoundingClientRect` / `coordsAtPos` throws     | Caught: caret page falls back to the first page, caret rect null                                        |
-| Leaving Pages on a locked tab or as a visitor      | Switches straight away (no dialog)                                                                      |
 | Stale dev bundle                                   | Not a code path; restart the dev server (wipe `.next-dev`)                                              |
 
 ## Security and trust
@@ -624,8 +597,7 @@ height / width / size**; placeholders "Title", "Subtitle", "Heading 1..3", "Quot
 "To-do", "Start writing, or press / for blocks", "Type / for blocks"; page break "Page break"; the
 Style tab sections **Looks**, **Accent** (**Headings in the Accent**), **Page** (**Margins**,
 **Page Numbers**); the Text tab **Fonts** (**Headings**, **Body**), **Size and Spacing** (**Text
-Size**, **Line Spacing**, **Paragraph Spacing**, **Lines Under Text**); the dialog **Turn Articles
-Into Pages?** with **Cancel**, **Keep as Articles**, **Turn Into Pages** (focused). Empty states:
+Size**, **Line Spacing**, **Paragraph Spacing**, **Lines Under Text**). Empty states:
 a new article is a Title and an empty paragraph with placeholders; loading: the editor's chunk
 loads behind `Suspense` with no fallback (the sheets show meanwhile); errors: none surfaced (every
 failure is a silent no-op with a debug log).
@@ -672,7 +644,7 @@ moved`, `style changed`, `zone took elements in`, `object dropped in the writing
 ended`, `articles turned into pages`. Page-level edits log `[page] …` (Pages
   pages blueprint).
 - Telemetry as the spec's Telemetry section, charted in `apps/telemetry/app/catalogue/features.ts`
-  (`PAGES`: `ArticleAdded`, `ArticlesToPages`, `PageKind*`; `ARTICLE_INSERTS`;
+  (`PAGES`: `ArticleAdded`, `PageKind*`; `ARTICLE_INSERTS`;
   `ARTICLE_FORMATTING`; `ARTICLE_LOOKS`), explained in `event-explanations.ts`. Never text.
 
 ## Testing
@@ -687,7 +659,6 @@ ended`, `articles turned into pages`. Page-level edits log `[page] …` (Pages
 | First page's choice                                                                                                                                                                                                | `article-pages.test.ts` "the first page's own choice of kind"                                                                        |
 | Zones settle with their elements, never swap, drawing clip, objects whole                                                                                                                                          | `packages/document/src/article-zones.test.ts`                                                                                        |
 | Margin notes: place, follow, stack, untint, go with their text                                                                                                                                                     | `packages/document/src/article-notes.test.ts`                                                                                        |
-| Turn Into Pages                                                                                                                                                                                                    | `packages/document/src/article-to-page.test.ts`                                                                                      |
 | Article pages read, flow fallback, kept together                                                                                                                                                                   | `packages/document/src/page.test.ts` "page kinds"                                                                                    |
 | Blocks to editor and back, identity kept                                                                                                                                                                           | `apps/live/lib/article/article-convert.test.ts`                                                                                      |
 | Pasted Markdown, safe links only, plain text                                                                                                                                                                       | `packages/document/src/article-markdown.test.ts`                                                                                     |
@@ -706,8 +677,6 @@ ended`, `articles turned into pages`. Page-level edits log `[page] …` (Pages
 | A locked page holds its article: every entry point refused, a lock landing mid-commit holds, inserts counted once in                                                                                               | `apps/live/hooks/editor/useArticles.locks.test.ts`                                                                                   |
 | Nothing taken into a held article's writing; an unlocked one takes a drop in                                                                                                                                       | `apps/live/hooks/editor/useArticleIntake.locks.test.ts`                                                                              |
 | Held articles by page and by tab                                                                                                                                                                                   | `apps/live/lib/article/article-lock.test.ts`                                                                                         |
-| Turn Into Pages keeps a held article, its pages and notes; all held: the same tab                                                                                                                                  | `packages/document/src/article-to-page.test.ts`                                                                                      |
-| Leaving with held articles: the lighter question, held writing never taken                                                                                                                                         | `apps/live/hooks/editor/useLeavePages.test.ts`                                                                                       |
 | Slash-menu block inserts counted as the toolbar's                                                                                                                                                                  | `apps/live/lib/article/article-telemetry.test.ts`                                                                                    |
 | ⌘Enter ticks the to-do at the caret, falls through elsewhere                                                                                                                                                       | `apps/live/lib/article/article-commands.todo.test.ts`                                                                                |
 | Zone grip arrow keys step a block up or down, nowhere past the ends                                                                                                                                                | `apps/live/components/canvas/article/zone-step.test.ts`                                                                              |
@@ -743,7 +712,7 @@ ended`, `articles turned into pages`. Page-level edits log `[page] …` (Pages
 - "Share roles": the room refusing a Participant's `article` op has only the generic test above.
 - "Everywhere a page goes": the exported writing (`snapshotWriting`, `articleOpsToSvg`,
   `drawArticleOps`), the Map and thumbnail bars.
-- The leave dialog's rendering (`LeavePagesDialog`) and the writer rule's `local` in
+- The writer rule's `local` in
   `ArticleEditor` (the pure grow decision is tested).
 
 ## Assets and external resources
@@ -758,4 +727,4 @@ ended`, `articles turned into pages`. Page-level edits log `[page] …` (Pages
 
 ## Defaults ledger
 
-See [DEFAULTS.md](DEFAULTS.md), rows D33 to D54 and D60.
+See [DEFAULTS.md](DEFAULTS.md), rows D33 to D53 and D60.

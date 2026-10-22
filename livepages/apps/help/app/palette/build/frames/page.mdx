@@ -6,7 +6,7 @@ import { FrameSection } from '@/components/illustrations/palette-build';
 export const metadata = helpMetadata({
   title: 'Frames',
   description:
-    'Use frames to label sections of the canvas: a frame draws behind its contents, carries them when moved, and defines a section for exports and slides.',
+    'Use frames to label sections of the canvas: a frame draws behind its contents, carries them when moved, and keeps its layering in exports.',
   path: '/help/palette/build/frames/',
 });
 
@@ -19,7 +19,7 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles('build').filter((a) => a.slug !== 'frames')}
 >
 
-A **frame** is a labelled, transparent box you draw around a cluster of elements to say "this part is a thing". It lives in the **Layout** category ([Build Elements](/help/palette/build/)) in Diagram and Workshop mode, and pressing `F` adds one (on a Draw-mode whiteboard, find Frame in the dock's Shapes flyout instead).
+A **frame** is a labelled, transparent box you draw around a cluster of elements to say "this part is a thing". The Pages palette doesn't show a frame, but pressing `F` adds one, and so does the [search panel](/help/search-panel/the-search-panel/search-add-to-canvas/) (`⌘K` or `Ctrl+K`) adds one: type its name and pick it under **Add to canvas**.
 
 A new frame is 360 by 260, titled "Frame". Its body has no fill, so everything inside shows through, and its title sits inside the top-right corner. Rename it the way you rename anything else: double-click it and type.
 
@@ -43,12 +43,9 @@ A selected frame shows the quick-connect **+** buttons like any shape, so you ca
 
 Arrows that pass behind boxes don't break around a frame: everything inside sits on top of it, so an arrow inside a section stays whole.
 
-## What else reads a frame
+## Frames in exports
 
-A frame is the one element other features treat as "a section", which is what makes it worth reaching for beyond tidiness:
-
-- **A slide with exactly one frame on it is framed by that frame** when you present it, rather than by a box drawn round its elements. That is how you author precise framing for a [slide deck](/help/selection-modes/slide-deck/presenting/) without learning a second concept.
-- **Exports keep the layering**, so a frame is behind its contents in a PNG or SVG exactly as on the canvas. See [Exporting](/help/account-and-data/exporting-diagrams/).
+**Exports keep the layering**, so a frame is behind its contents in a PNG or SVG exactly as on the canvas. See [Exporting](/help/account-and-data/exporting-documents/).
 
 ## Frames and multi-selection
 

@@ -14,23 +14,6 @@
 - [x] Constants and configuration
 - [x] Defaults ledger
 
-## annotations
-
-- [x] Domain and naming
-- [x] Behaviour and state
-- [x] Interfaces and contracts
-- [x] Data and persistence
-- [x] Errors and edge cases
-- [x] Security and trust
-- [x] Performance and limits
-- [x] Presentation and UX
-- [ ] Accessibility
-- [x] Web Experience
-- [ ] Observability
-- [ ] Testing
-- [x] Constants and configuration
-- [x] Defaults ledger
-
 ## checklist
 
 - [x] Domain and naming
@@ -100,22 +83,6 @@
 - [x] Assets and external resources
 - [x] Defaults ledger
 
-## entity
-
-- [x] Domain and naming
-- [x] Behaviour and state
-- [x] Interfaces and contracts
-- [x] Data and persistence
-- [x] Errors and edge cases
-- [x] Security and trust
-- [x] Performance and limits
-- [x] Presentation and UX
-- [ ] Accessibility
-- [ ] Observability
-- [x] Testing
-- [x] Constants and configuration
-- [x] Defaults ledger
-
 ## image-search
 
 - [x] Domain and naming
@@ -150,23 +117,6 @@
 - [x] Constants and configuration
 - [x] Defaults ledger
 
-## lane
-
-- [x] Domain and naming
-- [x] Behaviour and state
-- [x] Interfaces and contracts
-- [x] Data and persistence
-- [x] Errors and edge cases
-- [x] Security and trust
-- [x] Performance and limits
-- [x] Presentation and UX
-- [ ] Accessibility
-- [x] Web Experience
-- [ ] Observability
-- [ ] Testing
-- [x] Constants and configuration
-- [x] Defaults ledger
-
 ## link-cards
 
 - [x] Domain and naming
@@ -184,23 +134,6 @@
 - [x] Constants and configuration
 - [x] Defaults ledger
 
-## mind-node
-
-- [x] Domain and naming
-- [x] Behaviour and state
-- [x] Interfaces and contracts
-- [x] Data and persistence
-- [x] Errors and edge cases
-- [x] Security and trust
-- [ ] Performance and limits
-- [x] Presentation and UX
-- [ ] Accessibility
-- [x] Web Experience
-- [ ] Observability
-- [ ] Testing
-- [x] Constants and configuration
-- [x] Defaults ledger
-
 ## mode-button
 
 - [x] Domain and naming
@@ -209,40 +142,6 @@
 - [x] Data and persistence
 - [x] Errors and edge cases
 - [x] Security and trust
-- [x] Presentation and UX
-- [x] Accessibility
-- [x] Web Experience
-- [ ] Observability
-- [ ] Testing
-- [x] Constants and configuration
-- [x] Defaults ledger
-
-## page-element
-
-- [x] Domain and naming
-- [x] Behaviour and state
-- [x] Interfaces and contracts
-- [x] Data and persistence
-- [x] Errors and edge cases
-- [x] Security and trust
-- [x] Performance and limits
-- [x] Presentation and UX
-- [ ] Accessibility
-- [x] Web Experience
-- [ ] Observability
-- [ ] Testing
-- [x] Constants and configuration
-- [x] Defaults ledger
-
-## portal-element
-
-- [x] Domain and naming
-- [x] Behaviour and state
-- [x] Interfaces and contracts
-- [x] Data and persistence
-- [x] Errors and edge cases
-- [x] Security and trust
-- [x] Performance and limits
 - [x] Presentation and UX
 - [x] Accessibility
 - [x] Web Experience
@@ -283,39 +182,6 @@
 - [ ] Observability
 - [ ] Testing
 - [ ] Constants and configuration
-- [x] Defaults ledger
-
-## reaction-pad
-
-- [x] Domain and naming
-- [x] Behaviour and state
-- [x] Interfaces and contracts
-- [x] Data and persistence
-- [x] Errors and edge cases
-- [x] Security and trust
-- [x] Performance and limits
-- [x] Presentation and UX
-- [x] Accessibility
-- [x] Web Experience
-- [ ] Observability
-- [ ] Testing
-- [x] Constants and configuration
-- [x] Defaults ledger
-
-## reveal-zone
-
-- [x] Domain and naming
-- [x] Behaviour and state
-- [x] Interfaces and contracts
-- [x] Data and persistence
-- [x] Errors and edge cases
-- [x] Security and trust
-- [x] Presentation and UX
-- [x] Accessibility
-- [x] Web Experience
-- [ ] Observability
-- [ ] Testing
-- [x] Constants and configuration
 - [x] Defaults ledger
 
 ## rich-text-notes
@@ -386,22 +252,6 @@
 - [x] Constants and configuration
 - [x] Defaults ledger
 
-## flowchart
-
-- [x] Domain and naming
-- [x] Behaviour and state
-- [x] Interfaces and contracts
-- [x] Data and persistence
-- [x] Errors and edge cases
-- [x] Security and trust
-- [x] Performance and limits
-- [x] Presentation and UX
-- [ ] Accessibility
-- [ ] Observability
-- [x] Testing
-- [x] Constants and configuration
-- [x] Defaults ledger
-
 ## card
 
 - [x] Domain and naming
@@ -420,22 +270,6 @@
 - [x] Defaults ledger
 
 ## badge
-
-- [x] Domain and naming
-- [x] Behaviour and state
-- [x] Interfaces and contracts
-- [x] Data and persistence
-- [x] Errors and edge cases
-- [x] Security and trust
-- [x] Performance and limits
-- [x] Presentation and UX
-- [x] Accessibility
-- [x] Observability
-- [x] Testing
-- [x] Constants and configuration
-- [x] Defaults ledger
-
-## boundary
 
 - [x] Domain and naming
 - [x] Behaviour and state
@@ -500,22 +334,6 @@
 - [x] Constants and configuration
 - [x] Defaults ledger
 
-## diagram-key
-
-- [x] Domain and naming
-- [x] Behaviour and state
-- [x] Interfaces and contracts
-- [x] Data and persistence
-- [x] Errors and edge cases
-- [x] Security and trust
-- [x] Performance and limits
-- [x] Presentation and UX
-- [x] Accessibility
-- [x] Observability
-- [x] Testing
-- [x] Constants and configuration
-- [x] Defaults ledger
-
 ## stack
 
 - [x] Domain and naming
@@ -532,7 +350,7 @@
 - [x] Constants and configuration
 - [x] Defaults ledger
 
-## org-chart
+## annotations
 
 - [x] Domain and naming
 - [x] Behaviour and state
@@ -542,29 +360,14 @@
 - [x] Security and trust
 - [x] Performance and limits
 - [x] Presentation and UX
-- [x] Accessibility
-- [x] Observability
-- [x] Testing
+- [ ] Accessibility
+- [x] Web Experience
+- [ ] Observability
+- [ ] Testing
 - [x] Constants and configuration
 - [x] Defaults ledger
 
 ## sequence-diagram
-
-- [x] Domain and naming
-- [x] Behaviour and state
-- [x] Interfaces and contracts
-- [x] Data and persistence
-- [x] Errors and edge cases
-- [x] Security and trust
-- [x] Performance and limits
-- [x] Presentation and UX
-- [x] Accessibility
-- [x] Observability
-- [x] Testing
-- [x] Constants and configuration
-- [x] Defaults ledger
-
-## tab-window
 
 - [x] Domain and naming
 - [x] Behaviour and state

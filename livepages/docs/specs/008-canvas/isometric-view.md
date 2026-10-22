@@ -33,7 +33,7 @@ isometric (axonometric, parallel — no perspective) view:
   shared predicate (`isoExtrudes`, `lib/isometric.ts`) consumed by the
   on-screen `IsometricDepthLayer` AND both image exporters, so screen and
   export can't drift.
-- **Arrows, freehand strokes, and labels** stay on the base plane (they have
+- **Arrows, polygons, and labels** stay on the base plane (they have
   no box to extrude); they ride the tilt with everything else.
 
 It reuses the existing element rendering wholesale — the same shapes, fonts,
@@ -78,11 +78,11 @@ Available to everyone, including view-only visitors (looking is read-only).
 
 - **Tool dropdown** in the palette (its own isometric-cube icon).
   The picker is grouped with menu dividers: editing tools (Select / Hand /
-  Eraser / Format), then presenter tools (Laser / Spotlight / Slide
+  Format), then presenter tools (Laser / Spotlight / Slide
   Deck), then the view modes (Isometric, then Zen) at the end. Selecting it switches the cursor mode the same way Select /
   Hand / Laser do.
 - **Keyboard:** `I` selects it (free letter; `V` / `H` / `K` are the
-  other view tools, `E` eraser, `Z` zen). Obeys the per-device keyboard-shortcuts toggle and the
+  other view tools, `Z` zen). Obeys the per-device keyboard-shortcuts toggle and the
   text-input / label-edit bailouts so typing `i` into a label never flips the
   mode. Listed under Tools in the shortcut catalogue (Settings' Keyboard
   category, [User preferences](../007-editor/user-preferences.md)).
@@ -97,7 +97,7 @@ Like Pan / Select, repeated re-selection isn't re-tracked.
 ## Implementation notes
 
 - `isometric` joins the `CanvasTool` union (`'pan' | 'select' | 'laser' |
-'spotlight' | 'eraser' | 'isometric'`). It's a mutually-exclusive cursor
+'spotlight' | 'format' | 'isometric'`). It's a mutually-exclusive cursor
   mode, so it belongs **inside** the tool group, unlike Zen mode which is an
   orthogonal visibility flag.
 - The projection math lives in its own helper (`apps/live/lib/isometric.ts`):

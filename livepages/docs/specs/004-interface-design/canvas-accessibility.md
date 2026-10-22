@@ -21,13 +21,11 @@ delete, undo, label edit via Space) that already work on a selection.
 - **No wrap, no trap:** Tab past the last element (or Shift+Tab before the
   first) falls through to the browser default, so keyboard focus can always
   leave the canvas. Escape keeps its existing behaviour (clear selection /
-  exit transient modes). An element that grows on Tab (a mind node, a flowchart step) gives way only when a
-  pointer or an edit selected it: one the walk itself just reached keeps Tab as traversal, or every press would
-  grow a new node and focus could never leave.
+  exit transient modes).
 - **F6 moves between regions.** Tab is busy inside the canvas, walking its elements, so on a real document the
   chrome after it in the tab order (the palette strip, the bottom controls, the tab bar) sat behind dozens of
   presses. F6 moves focus to the next region and Shift+F6 to the previous, wrapping round, in screen order:
-  **Header** (the document's title row), **Palette** (the strip or the Draw dock), **Canvas**, **Controls** (the
+  **Header** (the document's title row), **Palette** (the strip), **Canvas**, **Controls** (the
   bottom-right cluster: Undo, Tidy Up, Layers, Style, zoom) and **Tabs** (the tab bar). A region lands on its first
   control (the Canvas on the canvas itself); a region not on screen (a viewer has no Palette, Zen hides the chrome)
   is skipped. It works from anywhere on the page but a modal dialog (whose focus trap keeps it) and with focus in a
@@ -50,13 +48,9 @@ delete, undo, label edit via Space) that already work on a selection.
   shared naming helpers in `lib/element-names.ts` (`kindLabel` /
   `describeOne`): `Square "Login"`, `Sticky note`, `Arrow
 "yes"`. Arrows carry the same on their SVG group.
-- An element whose face holds controls of its own is a named `role="group"` instead (`elementRole`): the session
-  buttons (timer, vote), checklists, temperature checks, agendas, reaction pads, pickers,
-  reveals, decision records and mode buttons, an embed, a link card, and an image still waiting for its picture. An
-  img's children are presentational, so as pictures their Start, tick and Ask buttons could
-  not be reached with a screen reader.
-- A session button is named by the tool it starts (`Timer`, `Stopwatch`, `Dot vote`), never the generic
-  "Session button".
+- An element whose face holds controls of its own is a named `role="group"` instead (`elementRole`): checklists and
+  mode buttons, an embed, a link card, and an image still waiting for its picture. An img's children are
+  presentational, so as pictures their tick and Ask buttons could not be reached with a screen reader.
 
 ## Live announcements
 

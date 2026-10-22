@@ -103,13 +103,13 @@ Out of scope (V1):
 ```
 folders
   id          TEXT PRIMARY KEY        -- UUID
-  owner_id    TEXT NOT NULL           -- matches diagrams.owner_id
+  owner_id    TEXT NOT NULL           -- matches documents.owner_id
   parent_id   TEXT NULL REFERENCES folders(id) ON DELETE SET NULL
   name        TEXT NOT NULL
   created_at  INTEGER NOT NULL
   updated_at  INTEGER NOT NULL
 
-diagrams
+documents
   ...
   folder_id   TEXT NULL REFERENCES folders(id) ON DELETE SET NULL
   source      TEXT NULL   -- provenance: NULL = user-made; 'ai' / 'mcp' = made by AI; 'cli' = the CLI
@@ -118,7 +118,7 @@ diagrams
 - `folder_id IS NULL` means the document sits at the root of its space
   (My Documents, or its team). The root has no row in the folders
   table, so it can't be renamed or deleted.
-- `source` records how the document came to exist (migration 0028): NULL
+- `source` records how the document came to exist (the baseline migration): NULL
   for one a person made in the editor; `'mcp'` for one an external AI tool
   created through the MCP server ([MCP server](../015-api/mcp-server.md)); `'ai'` reserved for the
   in-editor AI assistant (no producer today); `'cli'` for one the [CLI](../015-api/cli.md) created, which
@@ -163,7 +163,7 @@ documents wherever they are filed.
   a folder deleted after the route's own read files nothing and the
   move answers `404`.
 
-Migration `0007_folders.sql` creates the `folders` table and adds
+The baseline migration, `0001_livepages_baseline.sql`, creates the `folders` table and adds
 the `folder_id` column.
 
 ### Deleting a folder
@@ -245,13 +245,13 @@ for.
 - **Named rejections, never a fallback.** An invalid placement refuses the whole create
   before anything is written: the document is not filed somewhere else instead.
 
-  | Rejection               | Status | When                                                                              |
-  | ----------------------- | ------ | --------------------------------------------------------------------------------- |
-  | `placement_invalid`     | 400    | `teamId` or `folderId` is neither absent, null nor a string                       |
-  | `team_forbidden`        | 403    | A team asked for by a guest or a caller who has not joined                        |
-  | `folder_not_found`      | 404    | The folder is missing or invisible to the caller                                  |
-  | `folder_scope_mismatch` | 400    | The folder is the caller's to see, but in the other space                         |
-  | `intent_invalid`        | 400    | `intent` is present but not `{ mode, tabKind?, templateFamily? }` of known values |
+  | Rejection               | Status | When                                                             |
+  | ----------------------- | ------ | ---------------------------------------------------------------- |
+  | `placement_invalid`     | 400    | `teamId` or `folderId` is neither absent, null nor a string      |
+  | `team_forbidden`        | 403    | A team asked for by a guest or a caller who has not joined       |
+  | `folder_not_found`      | 404    | The folder is missing or invisible to the caller                 |
+  | `folder_scope_mismatch` | 400    | The folder is the caller's to see, but in the other space        |
+  | `intent_invalid`        | 400    | `intent` is present but not `{ mode, tabKind? }` of known values |
 
 - **One write.** `folder_id` and `team_id` are written by the same `INSERT` that creates the
   row; the caller is the owner, in a team as in My Documents.
@@ -294,8 +294,7 @@ split by separators:
    list, `/explorer/recent`).
 
 The panel does not carry the import entry: its header holds only
-**⋯** and **?**, and a row of source icons would crowd it. Importing boards
-from other tools lives on the full-page Explorer (below). 2. **Share** (the owner, or any joined member of a team document's team: the header Share button's gate) and
+**⋯** and **?**. Importing Markdown lives on the full-page Explorer (below). 2. **Share** (the owner, or any joined member of a team document's team: the header Share button's gate) and
 **Export** (the active tab, as the tab menu's Export). 3. **Search**, **GitHub** (the open-source repo, new tab), **Licences** (the
 third-party licences page, new tab, see
 [Third-party licences](../002-project-scope/third-party-licences.md)), **Settings**.

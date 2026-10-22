@@ -16,7 +16,7 @@ export const metadata = helpMetadata({
   categorySlug="developers"
 >
 
-`livepages` is a command line for the livepages API. It is built first for **coding agents** (an agent working in your repository, or one changing a diagram while you talk to it) and second for **scripts**: finding documents, reading a tab as text, changing it with edit operations, answering comments, and syncing documents to files.
+`livepages` is a command line for the livepages API. It is built first for **coding agents** (an agent working in your repository, or one changing a document while you talk to it) and second for **scripts**: finding documents, reading a tab as text, changing it with edit operations, answering comments, and syncing documents to files.
 
 It sits beside the [MCP server](/help/account-and-data/connect-ai-mcp/), not in place of it. Both call the same [API](/help/developers/api-overview/) with an [API token](/help/account-and-data/api-tokens/), and the API owns every change, so an older copy of the CLI never writes the old way.
 
@@ -124,16 +124,16 @@ A few commands read livepages's catalogues rather than your documents, which hel
 
 ```bash
 livepages template ls                       # the templates a document or tab can start from
-livepages template view kanban              # one template, as the outline of the tab it builds
+livepages template view slide-deck          # one template, as the outline of the tab it builds
 livepages icon search "message queue"       # icons by name, best match first, for iconId=
 livepages schema sticky                     # the element kinds, or one kind's fields and values
 ```
 
-## Change a Diagram
+## Change a Document
 
 ```bash
 livepages document create "Shop" -f arch.json            # from a graph, Mermaid or elements file
-livepages document create "Retro" --template start-stop-continue
+livepages document create "Pitch" --template slide-deck
 livepages element set "Auth flow" n3 label="Sign in" shape=stadium
 livepages edit "Auth flow" -f ops.txt                     # many edit operations at once
 livepages changeset revert "Auth flow" cs_8k2m4q7d1x
@@ -145,17 +145,11 @@ Every change is **one changeset**, applied all or nothing and checked against th
 
 `document rm` moves a document to the [Trash](/help/account-and-data/trash/) for 30 days, and `document restore` brings it back to its folder (or the top level, when that folder is gone); the CLI has no permanent delete.
 
-## Comments, Items and Waiting
+## Comments and Waiting
 
 ```bash
 livepages comment ls "Shop"
 livepages comment add "Shop" api "Should this be idempotent?"
-livepages item ls "Shop"                       # Plan boards and their items, by number such as #12
-livepages item add "Shop" "Fix login" --status "In Progress" --type Bug
-livepages board add "Shop" --columns "Ideas,Doing,Shipped"
-livepages sheet get "Shop" Costs A1:D20          # a sheet's cells by A1, formulas worked out
-livepages sheet set "Shop" Costs B2 1200 =B2*12
-livepages type ls "Shop"                       # card types and their fields
 livepages wait "Shop" --for comment --timeout 600
 livepages watch "Shop"                         # stream changes until you stop it
 ```
@@ -164,7 +158,7 @@ livepages watch "Shop"                         # stream changes until you stop i
 
 ## Pages and Articles
 
-[Pages](/help/canvas/pages-mode/) tabs hold pages (infographics, slides and logos) and articles, which have their own commands:
+A tab's [pages](/help/pages/working-with-pages/) (infographics, slides and logos) and articles have their own commands:
 
 ```bash
 livepages page ls "Pitch deck"                                  # each page, its refs, articles and layouts
@@ -174,20 +168,6 @@ livepages article set "Project brief" brief.md                  # write it back,
 ```
 
 `page set` makes one change from its flags, or up to 50 from a JSON list with `--changes`. `article set` writes over the article you name with `--article`, adds after its last block with `--append`, or starts another with `--new`, and the editor flows the text onto as many pages as it needs.
-
-## Forms
-
-A [form](/help/canvas/plan-mode/forms/) on a Form tab has its own commands, so an agent can build one, publish it and check where its answers land:
-
-```bash
-livepages form add --starter rsvp --name "Summer Party"   # a new document with a Form tab
-livepages form get "Summer Party"                         # its questions, where responses go, its link
-livepages form change "Summer Party" changes.json         # up to 50 changes, all or nothing
-livepages form share "Summer Party" publish               # or close, or delete-link
-livepages form try "Summer Party" answers.json            # one test response, as the builder's Preview sends
-```
-
-A test response makes a card (or sheet row) titled **Preview:**, so you can see each answer land where you expect, then delete it.
 
 ## Files, Exports and Pictures
 
@@ -199,7 +179,7 @@ livepages graph lint flow.mmd                    # check a graph or Mermaid file
 livepages graph render flow.mmd --png flow.png
 ```
 
-To draw beside your agent inside a developer tool, see [Diagrams in Your Developer Tools](/help/developers/workbenches/).
+To draw beside your agent inside a developer tool, see [Documents in Your Developer Tools](/help/developers/workbenches/).
 
 `pull` writes the document in the format the editor imports, and never overwrites a file holding changes you have not pushed yet (add `--force` to drop them). `push` sends each changed tab as a changeset; a tab that changed on livepages since you pulled it is refused and named, so pull again. Only elements travel: each changed tab's elements are replaced by the file's, so an element you removed from the file is removed from the tab, and a tab the document lacks is created. Changes to a tab's name, theme or background are not sent (a tab a push creates goes up with its name), and no tab or document is ever deleted by a push. `export --all` writes every document you can read, for backups and docs. `graph lint` and `graph render` work on the file alone and send nothing.
 
@@ -235,13 +215,13 @@ Every error names what was wrong and suggests one command that fixes it. Set `LI
 
 ## Self-Hosted Instances
 
-The CLI talks to `https://livepages.app` unless you point it elsewhere. For one command, add `--host https://diagrams.example.com`; for a shell, set `LIVEPAGES_HOST`. To keep several, name them as profiles in `~/.config/livepages/config.toml` and choose one with `--profile` or `LIVEPAGES_PROFILE`:
+The CLI talks to `https://livepages.app` unless you point it elsewhere. For one command, add `--host https://pages.example.com`; for a shell, set `LIVEPAGES_HOST`. To keep several, name them as profiles in `~/.config/livepages/config.toml` and choose one with `--profile` or `LIVEPAGES_PROFILE`:
 
 ```toml
 default_profile = "work"
 
 [profiles.work]
-host = "https://diagrams.example.com"
+host = "https://pages.example.com"
 ```
 
 Each profile keeps its own sign-in, and a self-hosted profile never contacts livepages.app. `LIVEPAGES_TOKEN` goes to whichever host is active, so set `LIVEPAGES_HOST` beside it. A [self-hosted](/help/self-hosting/self-hosting-overview/) instance without accounts has no tokens, so the CLI cannot act there and says so; one without the sign-in server offers no browser or device sign-in, so use `--with-token`. If an instance needs a newer CLI for writes, the CLI refuses them and names the version to install.
@@ -259,8 +239,8 @@ The CLI counts which commands succeed, and which fail because of the server or t
 <Note>
   A full-access token can change and share everything you can. Give an agent a **Read-only access**
   token when it only needs to read, keep `LIVEPAGES_TOKEN` out of source control and logs, and
-  revoke a token from **API Tokens** (or with `livepages auth logout`) the moment you no longer
-  need it or think it may have leaked.
+  revoke a token from **API Tokens** (or with `livepages auth logout`) the moment you no longer need
+  it or think it may have leaked.
 </Note>
 
 </ArticleLayout>

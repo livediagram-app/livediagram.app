@@ -7,8 +7,8 @@ const PILLS: { label: string; x: number; w: number; active?: boolean }[] = [
   { label: 'Roadmap', x: 228, w: 70 },
 ];
 
-// Tabs: one document holding several canvases, stacked behind each other, each with its own content: a roadmap
-// at the back, a board in the middle, the architecture diagram in front, and the tab bar to move between them.
+// Tabs: one document holding several tabs of pages, stacked behind each other, each with its own content: a roadmap
+// at the back, an article in the middle, an architecture page in front, and the tab bar to move between them.
 export function TabsArt() {
   return (
     <Stage>
@@ -17,27 +17,20 @@ export function TabsArt() {
         <rect x={262} y={22} width={60} height={8} rx={4} className="fill-amber-300" />
         <rect x={300} y={38} width={56} height={8} rx={4} className="fill-emerald-300" />
       </Card>
-      {/* Middle: a board's columns. */}
+      {/* Middle: an article page's heading and lines of text. */}
       <Card x={94} y={24} w={250} h={124} r={12}>
-        <rect x={276} y={34} width={56} height={10} rx={3} className="fill-violet-100" />
-        <rect
-          x={276}
-          y={50}
-          width={56}
-          height={22}
-          rx={4}
-          className="fill-white stroke-violet-200"
-          strokeWidth={1}
-        />
-        <rect
-          x={276}
-          y={76}
-          width={56}
-          height={22}
-          rx={4}
-          className="fill-white stroke-violet-200"
-          strokeWidth={1}
-        />
+        <rect x={276} y={34} width={56} height={8} rx={4} className="fill-violet-300" />
+        {[0, 1, 2].map((i) => (
+          <rect
+            key={i}
+            x={276}
+            y={50 + i * 10}
+            width={i === 2 ? 34 : 56}
+            height={4}
+            rx={2}
+            className="fill-violet-100"
+          />
+        ))}
       </Card>
       {/* Front: the architecture diagram. */}
       <Card x={30} y={40} w={250} h={124} r={12}>

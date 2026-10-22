@@ -2,7 +2,7 @@
 
 Status: shipped
 
-`/ai` is the marketing page that gets a visitor from "I use an AI tool" to "my AI just made a diagram in livepages" in the fewest possible steps. It is the front door to the [MCP server](../015-api/mcp-server.md): one address, one approval, then a prompt. The [help article](../../../apps/help/app/account-and-data/connect-ai-mcp/ai-clients/page.mdx) stays the reference; this page is the guided path, and links to it for everything past the first connection.
+`/ai` is the marketing page that gets a visitor from "I use an AI tool" to "my AI just made a deck in livepages" in the fewest possible steps. It is the front door to the [MCP server](../015-api/mcp-server.md): one address, one approval, then a prompt. The [help article](../../../apps/help/app/account-and-data/connect-ai-mcp/ai-clients/page.mdx) stays the reference; this page is the guided path, and links to it for everything past the first connection.
 
 ## Entry points
 
@@ -16,7 +16,7 @@ Status: shipped
 2. **Three steps** (`#how-it-works`), one row: **Add livepages** (paste the address into your tool), **Approve** (a livepages page opens: sign in or create a free account, check where access goes, Connect), **Ask** (request a diagram, board, sheet or deck; it lands in your account).
 3. **Pick your tool** (`#connect`): a tab list of clients, grouped Chat apps, Coding agents, Editors, Anything else. Selecting one shows its steps. The choice is mirrored into the URL hash (`/ai#cursor`) with `history.replaceState`, and a hash on arrival selects that client, so a link can open straight onto one tool. Every panel is in the HTML (inactive ones `hidden`), so the instructions are indexable and work before hydration (the first client shows until then).
 4. **Try it** (`#prompts`): starter prompts, each a card with a Copy button, each mapped to a shipped MCP tool.
-5. **What it can do**: a grid of the MCP's capabilities in plain words (diagrams from a description or Mermaid, templates and Plan boards, Sheets, slides, articles and logos, find and read with a picture, share links, live changes on an open canvas with Undo).
+5. **What it can do**: a grid of the MCP's capabilities in plain words (articles written from Markdown, slide decks, infographics and logos, templates, find and read with a picture, share links, live changes on an open document with Undo).
 6. **In your control**: account needed (free), the approval page shows where access goes, Read-only access, revoke from Settings › Account › API Tokens, six-month tokens, livepages runs no AI model of its own.
 7. **If it doesn't connect**: the three failure lines from the help article (expired request, token limit, keeps asking to sign in) plus self-hosting (use your own MCP host), and a link to the full help article.
 
@@ -28,10 +28,10 @@ Status: shipped
 | ------------- | ----------- | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `claude`      | Claude      | Chat apps     | Open claude.ai Settings › Connectors (button), Add custom connector, name and URL, Connect. Same connectors in Claude Desktop. Team or Enterprise: an owner may need to add it.                                  |
 | `chatgpt`     | ChatGPT     | Chat apps     | Settings › Apps & Connectors › Advanced: Developer mode on, Create, name, URL, OAuth, then pick it in a chat. Availability depends on the plan.                                                                  |
-| `claude-code` | Claude Code | Coding agents | `claude mcp add --transport http --scope user livepages <url>`, then `/mcp` › livepages › Authenticate.                                                                                                      |
-| `codex`       | Codex       | Coding agents | `codex mcp add livepages --url <url>`, then `codex mcp login livepages`. The `~/.codex/config.toml` form beside it.                                                                                          |
-| `gemini`      | Gemini CLI  | Coding agents | `gemini mcp add --transport http livepages <url>`, then `/mcp auth livepages`.                                                                                                                               |
-| `cursor`      | Cursor      | Editors       | One-click **Add to Cursor** (`cursor://anysphere.cursor-deeplink/mcp/install?name=livepages&config=<base64 {"url": <url>}>`), or the `~/.cursor/mcp.json` entry; then sign in from Cursor's MCP settings.      |
+| `claude-code` | Claude Code | Coding agents | `claude mcp add --transport http --scope user livepages <url>`, then `/mcp` › livepages › Authenticate.                                                                                                          |
+| `codex`       | Codex       | Coding agents | `codex mcp add livepages --url <url>`, then `codex mcp login livepages`. The `~/.codex/config.toml` form beside it.                                                                                              |
+| `gemini`      | Gemini CLI  | Coding agents | `gemini mcp add --transport http livepages <url>`, then `/mcp auth livepages`.                                                                                                                                   |
+| `cursor`      | Cursor      | Editors       | One-click **Add to Cursor** (`cursor://anysphere.cursor-deeplink/mcp/install?name=livepages&config=<base64 {"url": <url>}>`), or the `~/.cursor/mcp.json` entry; then sign in from Cursor's MCP settings.        |
 | `vscode`      | VS Code     | Editors       | One-click **Add to VS Code** (`vscode:mcp/install?<encoded {"name","type":"http","url"}>`), or `.vscode/mcp.json` (`servers`, `type: "http"`); start it and allow the sign-in; use it from Copilot's agent mode. |
 | `windsurf`    | Windsurf    | Editors       | Cascade's MCP settings › raw config (`mcp_config.json`), an entry with `serverUrl`; refresh, then sign in.                                                                                                       |
 | `other`       | Any client  | Anything else | Add a remote (Streamable HTTP) server with the address; OAuth is discovered, no client id or secret. Without OAuth: an API token as `Authorization: Bearer lvd_…`.                                               |

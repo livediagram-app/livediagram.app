@@ -1,7 +1,7 @@
 # Pages for agents
 
-How an agent (the MCP tools and the CLI's verbs, [Agents](README.md)) reads and makes the pages of a tab in
-Pages mode: infographic, slide and logo pages ([Pages](../007-editor/pages-mode.md),
+How an agent (the MCP tools and the CLI's verbs, [Agents](README.md)) reads and makes the pages of a tab:
+infographic, slide and logo pages ([Pages](../007-editor/pages-mode.md),
 [Logo pages](../007-editor/logo-pages.md)) and articles ([Article pages](../007-editor/article-pages.md)). People
 with the document open see an agent's pages and writing arrive at once, as anyone's.
 
@@ -29,20 +29,12 @@ The interface's words are kept: an agent writes an **article**, never a "documen
   `article set` (`write_article`) ([CLI](../015-api/cli.md)).
 - Both go through one api route, `POST /api/documents/:id/tabs/:tabId/pages`, over one pure engine shared with
   the editor, so an agent's page edit is exactly the edit the page panel makes.
-  The route answered at `.../illustrate` before Illustrate mode became Pages mode; that address is still served,
-  marked deprecated in `/api/openapi.json`, for CLI and MCP builds from before the rename.
 - `create_document` and `add_tab` with a Pages template (`article`, `slide-deck`, `logo-design`, the poster
   family, `blank-illustration`, ...) still make a tab on its pages; the new tools then change it.
 
 ## Which tab
 
-- Both tools take an optional `tabId`. Absent, they act on the document's first tab in Pages mode
-  (`opensIn: 'pages'`), else its first tab when that tab is empty (switching it loses nothing: a document
-  just made for pages). A document with neither is refused (`tab_needed`), saying to name a tab (which switches
-  it) or to `add_tab` with template `blank-illustration`: a diagram is never switched into Pages unasked.
-- A tab named that is not in Pages mode is switched into it by the same edit, as the editor's mode switch does
-  (`withEditorModeSwitched`: content past the first page is put onto a page of its own). The answer says
-  "Switched the tab to Pages".
+- Both tools take an optional `tabId`. Absent, they act on the document's first tab.
 - A locked tab is refused (`tab_locked`).
 
 ## Naming a page
@@ -169,7 +161,7 @@ Where a line breaks is measured by the editor, so the server never sets an artic
   the form `write_article` takes (front matter, `[zone <id>]` lines), so read, edit, write back round-trips;
 - the layouts each kind on the tab offers, by id and label.
 
-A tab not in Pages mode answers one line saying so and how to switch it (`change_pages`). The view keeps to the
+The view keeps to the
 read budget: past it an article's Markdown stops at a block boundary with "(truncated: N more blocks; read with
 `article get`)". The outline's header names a Pages tab's page count and points at the view.
 
@@ -181,11 +173,11 @@ read budget: past it an article's Markdown stops at a block boundary with "(trun
 - Open to anyone who may edit the tab (a person's session or an API token); a read-only token is refused as every
   write is.
 - Reads the tab at its revision, applies the engine, and writes the tab at that revision: elements through the
-  changeset write (so their ops are recorded, merged into later saves, relayed and revertible), the pages,
-  `opensIn` and articles with them in the same batch. A revision that moved meanwhile is read again and applied
+  changeset write (so their ops are recorded, merged into later saves, relayed and revertible), the pages and
+  articles with them in the same batch. A revision that moved meanwhile is read again and applied
   once more; a second move answers `409 tab_busy`.
 - Relays to the document's room what an editor's own edit sends: the changeset's element ops, a `tab-meta`
-  `{ pages, opensIn }` patch, and the `article` ops (block diffs) of each article written. The room relays without
+  `{ pages }` patch, and the `article` ops (block diffs) of each article written. The room relays without
   reading them, as it does an editor's.
 - **Known gap** (the tab rename's, [Agent changesets](agent-changesets.md#whole-tab-saves-and-tab-renames)): a
   whole-tab save an editor already had in flight when the write landed carries the pages and writing it had. The

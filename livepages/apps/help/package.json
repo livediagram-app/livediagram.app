@@ -15,7 +15,6 @@
   "dependencies": {
     "@livepages/help-registry": "workspace:*",
     "@livepages/icons": "workspace:^",
-    "@livepages/sheets": "workspace:*",
     "@livepages/telemetry-client": "workspace:*",
     "@livepages/ui": "workspace:*",
     "@mdx-js/loader": "^3.1.0",

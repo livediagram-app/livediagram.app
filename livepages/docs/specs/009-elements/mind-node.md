@@ -414,7 +414,7 @@ opens to the side (a `MenuFlyoutSection`, the way the Sankey row does). Inside
 it, three categories, each a closed `MenuAccordionSection` like every
 element-menu section, so the menu never shows all three lists at once. Each
 holds one of Plan mode's option lists
-(`OptionRows`, docs/specs/026-plan/plan-board.md "Option lists"): a bordered,
+(`OptionRows`): a bordered,
 rounded box with one row per choice at full width, its icon at the left and its
 name after it.
 

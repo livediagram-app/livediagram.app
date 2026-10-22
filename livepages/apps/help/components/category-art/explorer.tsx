@@ -76,78 +76,60 @@ const ROWS: { label: string; glyph: ReactNode }[] = [
   },
 ];
 
-const DOCS: { title: string; kind: 'flow' | 'board' | 'slide' | 'sticky' | 'tree' | 'sheet' }[] = [
-  { title: 'Roadmap', kind: 'board' },
-  { title: 'System map', kind: 'flow' },
+const DOCS: {
+  title: string;
+  kind: 'article' | 'slide' | 'sticky' | 'logo' | 'wireframe' | 'poster';
+}[] = [
+  { title: 'Annual report', kind: 'article' },
+  { title: 'Launch poster', kind: 'poster' },
   { title: 'Team retro', kind: 'sticky' },
   { title: 'Kickoff deck', kind: 'slide' },
-  { title: 'Org chart', kind: 'tree' },
-  { title: 'Budget', kind: 'sheet' },
+  { title: 'Brand mark', kind: 'logo' },
+  { title: 'Sign-up screen', kind: 'wireframe' },
 ];
 
-// A tiny drawing of a document's content inside its card's thumbnail, in the box (x, y, 64 by 34).
+// A tiny drawing of a document's first page inside its card's thumbnail, in the box (x, y, 64 by 34).
 function Thumb({ x, y, kind }: { x: number; y: number; kind: (typeof DOCS)[number]['kind'] }) {
   switch (kind) {
-    case 'board':
-      return (
-        <g>
-          {[0, 1, 2].map((c) => (
-            <g key={c}>
-              <rect
-                x={x + 6 + c * 19}
-                y={y + 6}
-                width={16}
-                height={4}
-                rx={2}
-                className={['fill-violet-300', 'fill-amber-300', 'fill-emerald-300'][c]}
-              />
-              <rect
-                x={x + 6 + c * 19}
-                y={y + 13}
-                width={16}
-                height={7}
-                rx={1.5}
-                className="fill-white stroke-slate-200"
-                strokeWidth={0.8}
-              />
-              {c < 2 && (
-                <rect
-                  x={x + 6 + c * 19}
-                  y={y + 23}
-                  width={16}
-                  height={7}
-                  rx={1.5}
-                  className="fill-white stroke-slate-200"
-                  strokeWidth={0.8}
-                />
-              )}
-            </g>
-          ))}
-        </g>
-      );
-    case 'flow':
+    case 'article':
       return (
         <g>
           <rect
-            x={x + 6}
-            y={y + 12}
-            width={16}
-            height={11}
-            rx={2}
-            className="fill-white stroke-brand-400"
-            strokeWidth={1}
+            x={x + 18}
+            y={y + 3}
+            width={28}
+            height={30}
+            rx={1.5}
+            className="fill-white stroke-slate-200"
+            strokeWidth={0.8}
           />
-          <path
-            d={`M${x + 32} ${y + 7} l8 10.5 -8 10.5 -8 -10.5 Z`}
-            className="fill-white stroke-brand-400"
-            strokeWidth={1}
+          <rect x={x + 22} y={y + 7} width={14} height={3} rx={1.5} className="fill-brand-400" />
+          {[0, 1, 2, 3].map((r) => (
+            <rect
+              key={r}
+              x={x + 22}
+              y={y + 13 + r * 4.5}
+              width={r === 3 ? 12 : 20}
+              height={2}
+              rx={1}
+              className="fill-slate-200"
+            />
+          ))}
+        </g>
+      );
+    case 'poster':
+      return (
+        <g>
+          <rect x={x + 20} y={y + 3} width={24} height={30} rx={1.5} className="fill-brand-500" />
+          <rect
+            x={x + 24}
+            y={y + 8}
+            width={14}
+            height={3}
+            rx={1.5}
+            className="fill-white help-art-as-drawn"
           />
-          <rect x={x + 46} y={y + 12} width={14} height={11} rx={2} className="fill-brand-400" />
-          <path
-            d={`M${x + 22} ${y + 17.5} h2 M${x + 40} ${y + 17.5} h6`}
-            className="stroke-brand-400"
-            strokeWidth={1}
-          />
+          <circle cx={x + 32} cy={y + 22} r={5} className="fill-amber-300" />
         </g>
       );
     case 'sticky':
@@ -187,45 +169,52 @@ function Thumb({ x, y, kind }: { x: number; y: number; kind: (typeof DOCS)[numbe
           <rect x={x + 13} y={y + 19} width={16} height={3} rx={1.5} className="fill-brand-200" />
         </g>
       );
-    case 'tree':
+    case 'logo':
       return (
         <g>
-          <rect x={x + 25} y={y + 5} width={14} height={8} rx={2} className="fill-teal-200" />
-          <path
-            d={`M${x + 32} ${y + 13} v4 M${x + 14} ${y + 21} v-4 h36 v4`}
-            className="fill-none stroke-slate-300"
-            strokeWidth={1}
+          <rect
+            x={x + 17}
+            y={y + 2}
+            width={30}
+            height={30}
+            rx={1.5}
+            className="fill-white stroke-slate-200"
+            strokeWidth={0.8}
           />
-          {[7, 25, 43].map((dx) => (
-            <rect
-              key={dx}
-              x={x + dx}
-              y={y + 21}
-              width={14}
-              height={8}
-              rx={2}
-              className="fill-white stroke-teal-400"
-              strokeWidth={0.9}
-            />
-          ))}
+          <circle
+            cx={x + 32}
+            cy={y + 17}
+            r={10}
+            className="fill-none stroke-sky-300"
+            strokeWidth={0.7}
+            strokeDasharray="2 2"
+          />
+          <path d={`M${x + 32} ${y + 9} l7 13 h-14 Z`} className="fill-teal-400" />
         </g>
       );
     default:
       return (
         <g>
-          {[0, 1, 2, 3].map((r) =>
-            [0, 1, 2].map((c) => (
-              <rect
-                key={`${r}${c}`}
-                x={x + 7 + c * 17}
-                y={y + 5 + r * 7}
-                width={16}
-                height={6}
-                className={r === 0 ? 'fill-emerald-200' : 'fill-white stroke-slate-200'}
-                strokeWidth={0.6}
-              />
-            )),
-          )}
+          <rect
+            x={x + 24}
+            y={y + 2}
+            width={16}
+            height={30}
+            rx={3}
+            className="fill-white stroke-slate-400"
+            strokeWidth={0.9}
+          />
+          <rect x={x + 27} y={y + 8} width={10} height={3} rx={1} className="fill-slate-300" />
+          <rect
+            x={x + 27}
+            y={y + 14}
+            width={10}
+            height={3}
+            rx={1}
+            className="fill-white stroke-slate-300"
+            strokeWidth={0.6}
+          />
+          <rect x={x + 27} y={y + 22} width={10} height={4} rx={1.5} className="fill-brand-400" />
         </g>
       );
   }

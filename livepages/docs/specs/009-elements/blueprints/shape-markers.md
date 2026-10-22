@@ -33,8 +33,7 @@ Scope, by file:
 | Marker glyph | `ShapeMarkerGlyph`     | The one drawing, shared by canvas and menu tiles                                        |
 | Tile label   | `MARKER_LABELS`        | Green, Orange, Red, To do, Done                                                         |
 
-Banned synonyms: "status dot" in code (say marker), "badge", "tick box" (say checkbox marker),
-"annotation marker" (that is the annotation element).
+Banned synonyms: "status dot" in code (say marker), "badge", "tick box" (say checkbox marker).
 
 ## Behaviour and state
 

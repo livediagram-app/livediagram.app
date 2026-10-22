@@ -1,9 +1,8 @@
 # Arrow-to-arrow connections
 
 An arrow's endpoint can connect to a point **along another arrow's line**, not
-just to a shape anchor. This is the sequence-diagram pattern: messages attach to
-a lifeline (itself an arrow) at a chosen height, and stay attached as the
-lifeline moves.
+just to a shape anchor. A branch arrow attaches to a trunk arrow at a chosen
+point, and stays attached as the trunk moves.
 
 ## Behaviour
 

@@ -1,5 +1,5 @@
 /* The Article scene's own keyframes and classes (components/hero-article-page.tsx); the shared hm-*
-   build lives in ../hero-mode-animations.css. */
+   build lives in ./pages.css. */
 
 /* The plain phrase gives way to its bold, highlighted self once Bold is pressed. */
 .ha-plain {

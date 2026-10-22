@@ -2,8 +2,7 @@
 
 Derived from [Within reach](../within-reach.md). The spec decides; this file adds engineering precision. The
 surfaces that use the rule own their own blueprints ([Explorer Home, data](../../013-workspace/blueprints/explorer-home.md),
-[Explorer Home, view](../../013-workspace/blueprints/explorer-home-view.md),
-[Whiteboard dock](../../023-draw-mode/blueprints/whiteboard-dock.md)); this one is the allocation they share.
+[Explorer Home, view](../../013-workspace/blueprints/explorer-home-view.md)); this one is the allocation they share.
 
 Scope, by file:
 
@@ -77,23 +76,22 @@ Items are compared by identity; a caller never passes the same item twice.
 
 ## Performance and limits
 
-`O(k log k)` for `k` items: two sorts of copies. Callers pass at most a few hundred items (the dock's 20 kept shape
-kinds; Home's 8 server items plus this browser's opened local documents).
+`O(k log k)` for `k` items: two sorts of copies. Callers pass at most a few hundred items (Home's 8 server items plus this
+browser's opened local documents).
 
 ## Testing
 
-| Rule                                                | Test                                                                                           |
-| --------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| Most used by uses, ties to the newest, unused never | `packages/api-schema/src/within-reach.test.ts`                                                 |
-| Recent newest first, never one of the most used     | same                                                                                           |
-| Short groups, empty input, `n <= 0`, stable ties    | same                                                                                           |
-| The merge property over two lists                   | same                                                                                           |
-| The Shapes flyout unchanged                         | `apps/live/lib/whiteboard-shape-slots.test.ts`, `apps/live/e2e/whiteboard-shape-slots.spec.ts` |
-| Jump Back In's split, merge and alternation         | `apps/live/app/explorer/home/home-model.test.ts`                                               |
+| Rule                                                | Test                                             |
+| --------------------------------------------------- | ------------------------------------------------ |
+| Most used by uses, ties to the newest, unused never | `packages/api-schema/src/within-reach.test.ts`   |
+| Recent newest first, never one of the most used     | same                                             |
+| Short groups, empty input, `n <= 0`, stable ties    | same                                             |
+| The merge property over two lists                   | same                                             |
+| Jump Back In's split, merge and alternation         | `apps/live/app/explorer/home/home-model.test.ts` |
 
 ## Constants and configuration
 
-None of its own: N, the measure of a use and its window belong to each surface (Shape slots: 3; Jump Back In: 4,
+None of its own: N, the measure of a use and its window belong to each surface (Jump Back In: 4,
 over `WITHIN_REACH_USE_WINDOW_DAYS`).
 
 ## Defaults ledger

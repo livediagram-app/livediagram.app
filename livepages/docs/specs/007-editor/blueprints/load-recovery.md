@@ -25,17 +25,17 @@ design decision.
 
 ## Constants and configuration
 
-| Constant                        | Value                           | Where                          | Provenance                                       |
-| ------------------------------- | ------------------------------- | ------------------------------ | ------------------------------------------------ |
-| `LOAD_TIMEOUT_MS`               | `30_000`                        | `lib/load-progress.ts`         | Spec: 30 seconds                                 |
-| `AUTO_RELOAD_DELAY_MS`          | `1_500`                         | `lib/load-progress.ts`         | Default D63                                      |
-| `AUTO_RELOAD_WINDOW_MS`         | `600_000`                       | `lib/load-progress.ts`         | Spec: 10 minutes                                 |
+| Constant                        | Value                         | Where                          | Provenance                                       |
+| ------------------------------- | ----------------------------- | ------------------------------ | ------------------------------------------------ |
+| `LOAD_TIMEOUT_MS`               | `30_000`                      | `lib/load-progress.ts`         | Spec: 30 seconds                                 |
+| `AUTO_RELOAD_DELAY_MS`          | `1_500`                       | `lib/load-progress.ts`         | Default D63                                      |
+| `AUTO_RELOAD_WINDOW_MS`         | `600_000`                     | `lib/load-progress.ts`         | Spec: 10 minutes                                 |
 | `AUTO_RELOAD_KEY`               | `livepages:load-auto-reloads` | sessionStorage                 | Default D64                                      |
-| `OFFLINE_STORE_OPEN_TIMEOUT_MS` | `4_000`                         | `lib/offline/offline-store.ts` | Spec: 4 seconds; = `INDEXED_DB_PROBE_TIMEOUT_MS` |
-| `SESSION_TOKEN_TIMEOUT_MS`      | `10_000`                        | `lib/api/core.ts`              | Spec: 10 seconds per attempt                     |
-| `GUEST_ID_PREFIX_LENGTH`        | `8`                             | `packages/ui/.../identity.ts`  | Spec: first 8 characters                         |
-| `COPIED_FOR_MS`                 | `2_000`                         | `BrowserRepairPanel.tsx`       | Default D65                                      |
-| `SLOW_AFTER_MS`                 | `10_000`                        | `DocumentLoading.tsx`          | Unchanged                                        |
+| `OFFLINE_STORE_OPEN_TIMEOUT_MS` | `4_000`                       | `lib/offline/offline-store.ts` | Spec: 4 seconds; = `INDEXED_DB_PROBE_TIMEOUT_MS` |
+| `SESSION_TOKEN_TIMEOUT_MS`      | `10_000`                      | `lib/api/core.ts`              | Spec: 10 seconds per attempt                     |
+| `GUEST_ID_PREFIX_LENGTH`        | `8`                           | `packages/ui/.../identity.ts`  | Spec: first 8 characters                         |
+| `COPIED_FOR_MS`                 | `2_000`                       | `BrowserRepairPanel.tsx`       | Default D65                                      |
+| `SLOW_AFTER_MS`                 | `10_000`                      | `DocumentLoading.tsx`          | Unchanged                                        |
 
 ## Behaviour and state
 

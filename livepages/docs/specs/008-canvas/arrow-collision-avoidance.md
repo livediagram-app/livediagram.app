@@ -32,7 +32,7 @@ the arrow is special afterwards.
   `curveOffset`, or `curvePoints`). Anything the user or the creation flow
   chose wins.
 - Never for imports, templates, AI authoring, or auto layout: those paths
-  own their geometry ([MCP server](../015-api/mcp-server.md), [Mermaid import & export](../020-import-export/mermaid.md)).
+  own their geometry ([MCP server](../015-api/mcp-server.md)).
 
 ## How (packages/document/src/arrow-avoidance.ts)
 
@@ -73,5 +73,4 @@ bow is always cheaper, and the clearance margin sizes it.
 
 [Canvas and palette](canvas-and-palette.md) (arrows + curve handles),
 [Arrow-to-arrow connections](arrow-to-arrow.md) (arrow-to-arrow connections),
-[MCP server](../015-api/mcp-server.md) / [Mermaid import & export](../020-import-export/mermaid.md) (authoring paths that
-own their geometry).
+[MCP server](../015-api/mcp-server.md) (an authoring path that owns its geometry).

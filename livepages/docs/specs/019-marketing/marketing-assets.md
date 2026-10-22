@@ -18,8 +18,8 @@ Same rule as the landing page ([16](marketing-site.md)): every claim in
 items in [02-prototype-scope](../005-project-roadmap/prototype-scope.md) (team workspaces,
 transactional email, CRDT / conflict-free editing) must not appear, even
 softened. When the editor gains or loses a feature, update the affected copy in
-the same change. Counts (currently 137 templates, 24 themes, ten core shapes)
-must match their source of truth, as pinned by the live app's tests.
+the same change. Counts (templates, themes, shapes) must match
+their source of truth, as pinned by the live app's tests.
 
 ## Layout
 
@@ -45,9 +45,9 @@ listing body uses the ~500-word description).
 ## Tone & brand
 
 Inherits [16](marketing-site.md) and [00-purpose](../001-project-vision/purpose.md): plain,
-confident, understated; multiplayer-from-the-start diagramming for teams who
-think visually. Lead with the hook: the canvas works without signing in (open a
-link, draw, share). Be honest about trade-offs (realtime is last-write-wins,
+confident, understated; multiplayer-from-the-start pages (articles, decks,
+infographics and logos) for teams who make things together. Lead with the hook:
+the editor works without signing in (open a link, make, share). Be honest about trade-offs (realtime is last-write-wins,
 not CRDT). Say "free, MIT-licensed, self-hostable, no paid tier" where the
 format allows ([03](../002-project-scope/open-source-and-business-model.md)). Product name
 **livepages** (lowercase); brand colour amber `#F59E0B`, text and fills in `#A34A0C`
@@ -57,6 +57,6 @@ format allows ([03](../002-project-scope/open-source-and-business-model.md)). Pr
 
 Binary assets live under `marketing/media/` (see its README for the suggested
 sub-layout and brand guidance). Prefer SVG for logos and optimised PNG / WebP
-for screenshots; screenshots should show a real diagram with visible
+for screenshots; screenshots should show a real deck or article with visible
 multiplayer cursors, since "no sign-in, real-time" is the pitch. Keep heavy
 binaries out of git where practical.

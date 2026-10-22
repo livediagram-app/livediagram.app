@@ -18,7 +18,7 @@ Starring is personal. Starring a document in a shared team folder must not star
 it for the rest of the team, so a star is a row keyed by
 `(owner_id, document_id)` rather than a flag on the document.
 
-It gets a **D1 table** (migration `0040_favourites.sql`) rather than a key in
+It gets a **D1 table** (the baseline migration, `0001_livepages_baseline.sql`) rather than a key in
 the `user_preferences` blob, which is how [Hide a document from Recent](hide-from-recent.md) stores hidden-from-Recent
 ids. That blob is capped at **4 KB** server-side — roughly 100 36-char UUIDs —
 and favourites are meant to be unlimited. Overflowing it wouldn't just lose a

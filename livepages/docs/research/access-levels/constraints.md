@@ -72,8 +72,8 @@ Sources: [Team shared documents](../../specs/013-workspace/team-shared-documents
 Sources: [room-messages.ts](../../../packages/api-schema/src/room-messages.ts) (op classes),
 [document-room.ts](../../../apps/api/src/document-room.ts) (`sender.role !== 'edit' && !isPresenceOp`),
 [API app](../../specs/015-api/api.md) (comment and Q&A rows),
-[Per-participant responses](../../specs/012-collaboration/participant-responses.md) ("Edit-role only"),
-[Session tools](../../specs/012-collaboration/session-tools.md) ("the facilitator and participants share an edit link"),
+Per-participant responses ("Edit-role only"),
+Session tools ("the facilitator and participants share an edit link"),
 the Quiz, since removed ("View-role visitors cannot answer").
 
 The consequence: **a retrospective today needs an edit link for everybody who votes**, which is the
@@ -133,7 +133,7 @@ or opens a hole; "should" is a strong preference.
   under a participation gate; otherwise a "look only" link can still answer polls.
 - **C11. Participant identity is claimed and public.** Answers, dots and Done checks are keyed by the
   **collab key**, which the client claims in `hello` and the room relays to every peer on the roster
-  ([Per-participant responses](../../specs/012-collaboration/participant-responses.md)); the `vote` op
+  (Per-participant responses); the `vote` op
   carries a client-supplied `voter`. The spec's own justification is that "any edit-role peer can
   already write any id into the document". Once a **non-editor** may answer, that argument fails: a
   participant could claim a peer's key and overwrite or withdraw their answer, or exceed the dot
@@ -145,7 +145,7 @@ or opens a hole; "should" is a strong preference.
 - **C12. The baton is edit-only and the owner bit is narrow.** `canHold` requires edit because
   "everything it governs writes to the document"; timers and vote rounds ride ordinary `tab` /
   `tab-meta` ops, which the room deliberately does not inspect
-  ([Facilitator](../../specs/012-collaboration/facilitator.md)). Granting facilitation to a non-editor
+  (Facilitator). Granting facilitation to a non-editor
   needs payload-level classification of those ops. Separately, the upgrade sets `X-Verified-Owner: 1`
   only on the bare-`o` path, which `isPersonalOwner` restricts to personal documents
   ([document-room-routes.ts](../../../apps/api/src/routes/document-room-routes.ts)); on a team
@@ -270,7 +270,7 @@ ideas.
 | C11 server-bound key needed      | yes                             | yes                                           | yes (participant only)                                               | yes, and for facilitation                   |
 | C14 persistence without editor   | yes                             | yes                                           | yes                                                                  | yes, plus facilitator writes                |
 | C26 hues and glyphs              | 3                               | 3                                             | 4                                                                    | 3 or 4, plus a capability mark              |
-| Matches a familiar product       | Google Docs words               | Google ladder, livepages words              | none directly                                                        | none directly                               |
+| Matches a familiar product       | Google Docs words               | Google ladder, livepages words                | none directly                                                        | none directly                               |
 
 ### (1) Three roles: view, comment, edit (the worktree draft)
 
@@ -332,7 +332,7 @@ ideas.
   which the room does not inspect (C12). A non-editor facilitator therefore needs payload-level
   classification of `tab-meta` (or new op kinds), plus REST Q&A running actions gated on the
   capability rather than `gateEdit`. Persistence of facilitator writes then joins C14.
-- **Risks.** Large room change for a case the [Facilitator](../../specs/012-collaboration/facilitator.md)
+- **Risks.** Large room change for a case the Facilitator
   spec explicitly scoped out ("who is driving, not who is allowed"). Worth keeping as a later layer
   over (2), not a prerequisite.
 

@@ -240,23 +240,13 @@ export const AI_CLIENTS: readonly AiClient[] = [
 
 type StarterPrompt = { title: string; prompt: string };
 
-// Each maps to a shipped MCP tool (docs/specs/015-api/mcp-server.md §4): create_document with a graph,
-// a Plan template, write_article, change_pages, find + read_document, add_sheet.
+// Each maps to a shipped MCP tool (docs/specs/015-api/mcp-server.md §4): write_article, change_pages with slide
+// layouts, a logo page, create_document from a template, find + read_document, share_document.
 export const STARTER_PROMPTS: readonly StarterPrompt[] = [
   {
-    title: 'Map a codebase',
+    title: 'Write it up',
     prompt:
-      'Read this repository and draw its architecture as a livepages diagram: the main services, what each one owns, and how requests flow between them.',
-  },
-  {
-    title: 'Turn steps into a flowchart',
-    prompt:
-      'Make a livepages flowchart of how a new customer signs up, from landing page to first invoice, with a decision for each place they can drop off.',
-  },
-  {
-    title: 'Plan a launch',
-    prompt:
-      'Create a livepages kanban board for launching our new website, with cards for design, copy, build, testing and go-live, and share a link I can send the team.',
+      'Write up the decisions from this conversation as a livepages article, with a short summary first and a section per decision.',
   },
   {
     title: 'Build a deck',
@@ -264,9 +254,19 @@ export const STARTER_PROMPTS: readonly StarterPrompt[] = [
       'Build a five-slide livepages deck that explains our product to a new hire: the problem, who it is for, how it works, what is next, and how to get help.',
   },
   {
-    title: 'Write it up',
+    title: 'Make a one-pager',
     prompt:
-      'Write up the decisions from this conversation as a livepages article, with a short summary first and a section per decision.',
+      'Turn these numbers into a livepages infographic: a headline, three big figures and a short line under each, on one page.',
+  },
+  {
+    title: 'Sketch a logo',
+    prompt:
+      'Add a livepages logo page for a bakery called Bloom: a simple symmetrical mark above the name, in warm colours.',
+  },
+  {
+    title: 'Start from a template',
+    prompt:
+      'Make me a livepages resume from the resume template, filled in from the profile I paste below, and share a link I can send.',
   },
   {
     title: 'Find and improve',

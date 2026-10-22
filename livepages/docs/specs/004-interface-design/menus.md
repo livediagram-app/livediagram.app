@@ -76,13 +76,13 @@ There is one Tab stop: focus lives on one item at a time and the arrow keys move
 - Opening never takes focus from a live text edit: a menu opened beside a label being edited
   leaves the caret where it is.
 - While focus is inside a menu of either kind the canvas's shortcuts stand down: an arrow in a menu
-  never nudges the selection, and Delete, Escape or Tab in one never deletes, deselects or grows
-  the diagram.
+  never nudges the selection, and Delete, Escape or Tab in one never deletes, deselects or walks
+  the canvas.
 
 ## Control menus
 
 - The menu is a non-modal `role="dialog"` with a name ("Element menu", "Selection menu", "Cell
-  menu", "Tab menu", "Canvas menu", "<layer> layer menu", the session tool's "<tool> options",
+  menu", "Tab menu", "Canvas menu", "<layer> layer menu",
   "Live image"). Its trigger says so: `aria-haspopup="dialog"` (the tab's ⋯, the selection
   toolbar's More actions, an element's settings ⋯).
 - Its controls keep their own roles: buttons, toggle buttons (`aria-pressed`), sliders, fields,
@@ -98,11 +98,6 @@ There is one Tab stop: focus lives on one item at a time and the arrow keys move
   it, and it stays open, because it is a companion to the canvas.
 - Opening a flyout from the keyboard moves focus to its first control; Escape in the flyout closes
   only the flyout and returns focus to its trigger.
-- **One menu per item, its cog.** A Plan item with a settings cog (a board, a Sheet, a chart, a Dashboard
-  slot) has that cog as its only menu: never a ⋯ beside it. Anything else that item's container offers (a
-  Dashboard slot's Open Tab, Add a Slot, Clear Slot, Remove Slot) is a collapsible section in the same cog's
-  popover, one section open at a time, and an item with no cog of its own gets the container's cog (Slot
-  Settings) rather than a ⋯, so the trigger looks the same everywhere ([Plan tabs](../026-plan/plan-tabs.md#dashboard-tab)).
 
 ## Focus ring
 
@@ -134,19 +129,17 @@ Anchor", "A List".
 The same rule covers the close cousins of a menu item, the controls that name an action on an
 element or add one:
 
-- **Palette tiles**: every add-tile's name and caption ("Add Sticky Note" captioned "Sticky Note"), the Toolbar strip's **Add Page**, and the Draw dock's shapes. A catalogue entry keeps its own sentence-case name and its tile Title Cases it on the way (`headlineCase` in `@livepages/api-schema`).
-- **The quick-add ring's options**: "Add Row", "Add Column", "Add Child", "Add Sibling", "Add
+- **Palette tiles**: every add-tile's name and caption ("Add Sticky Note" captioned "Sticky Note") and the Toolbar strip's **Add Page**. A catalogue entry keeps its own sentence-case name and its tile Title Cases it on the way (`headlineCase` in `@livepages/api-schema`).
+- **The quick-add ring's options**: "Add Row", "Add Column", "Add
   Point", "Add Stat".
 - **Buttons drawn on an element**: the selection toolbar ("Bring to Front", "Edit Points", "Add
-  Text"), the path toolbar ("Delete Point", "Close Path"), a facilitator's accent bar ("Open the
-  Box", "New Round", "Take Roll"). An
-  export draws an accent bar with the same words.
+  Text").
 - **Command palette names**: every command search offers ("Bring to Front", "Create New Tab",
   "Hand Tool", "Add Green Status Marker"), so an action reads the same in search as on the toolbar.
 - **Keyboard shortcut rows that name a command or tool** ("Bring to Front", "Zoom In", "Select
   Tool (or 1)"): the name is Title Case and a trailing hint in parentheses stays as written. A row
-  that describes a gesture rather than naming a command ("Pan canvas (overrides current tool)",
-  "On a mind node: add a child") and the presentation rows, which pair with the presentation
+  that describes a gesture rather than naming a command ("Pan canvas (overrides current tool)")
+  and the presentation rows, which pair with the presentation
   controls' tooltips, keep sentence case.
 
 Captions inside a section ("Picks from", "Move to layer"), hints, a tooltip that is not the
@@ -173,8 +166,6 @@ Each menu, how it opens, what it holds, and what the keyboard could do before th
 | Slide menu            | ⋯ on a presentation slide row                                  | Tool buttons, accordion groups of tiles                                  | Tab only, into collapsed rows too                   |
 | Embed copy menu       | Embed on a share pass                                          | Copy rows                                                                | Tab only                                            |
 | Selection filter menu | The filter button on a mixed selection                         | One tile per element type                                                | Tab only                                            |
-| Custom colour menu    | Right-click, long press or Shift+F10 on a custom Draw colour   | Remove                                                                   | Focus in, Escape                                    |
-| Editor mode menu      | The mode chip                                                  | One-of-a-set modes                                                       | Arrows, Home, End, Escape; no typeahead, Tab        |
 | Zoom menu             | Hovering or focusing the zoom percentage                       | One-of-a-set zoom levels, Fit to screen                                  | Opened on focus; Tab through; no arrows             |
 | Account menu          | The account pill                                               | Name header, Account, Sign out                                           | Tab only; trigger had no `aria-haspopup`; no Escape |
 | Embed tab menu        | The tab pill on an embedded document                           | One-of-a-set tabs                                                        | Tab, Escape                                         |
@@ -185,16 +176,15 @@ Each menu, how it opens, what it holds, and what the keyboard could do before th
 
 ### Control menus
 
-| Menu                  | Opens from                                                               | Holds                                                                   |
-| --------------------- | ------------------------------------------------------------------------ | ----------------------------------------------------------------------- |
-| Element menu          | Right-click, long press or Shift+F10 on an element; an element's ⋯       | Accordions, tiles, sliders, colour rows, fields, flyouts, session panes |
-| Selection menu        | The same on a multi-selection                                            | Accordions, tiles, sliders, colour rows, flyouts                        |
-| Cell menu             | Right-click on a table cell                                              | Text toggles, colour rows, tiles                                        |
-| Tab menu, Canvas menu | ⋯ on the active tab; right-click on the canvas; the footer canvas button | Tool buttons, accordions, canvas sections                               |
-| Layer menu            | ⋯ on a layer row                                                         | Tool buttons, an opacity slider, accordion tiles                        |
-| Session tool settings | ⋯ on a timer, stopwatch or vote element                                  | The session pane for that tool                                          |
-| Live image copy menu  | Live image on a share pass, with more than one tab                       | A tab select, copy rows                                                 |
-| Settings cog          | The cog on a board, Sheet or chart header, a Dashboard slot or page      | Collapsible sections of fields, tiles and pictures                      |
+| Menu                  | Opens from                                                               | Holds                                                    |
+| --------------------- | ------------------------------------------------------------------------ | -------------------------------------------------------- |
+| Element menu          | Right-click, long press or Shift+F10 on an element; an element's ⋯       | Accordions, tiles, sliders, colour rows, fields, flyouts |
+| Selection menu        | The same on a multi-selection                                            | Accordions, tiles, sliders, colour rows, flyouts         |
+| Cell menu             | Right-click on a table cell                                              | Text toggles, colour rows, tiles                         |
+| Tab menu, Canvas menu | ⋯ on the active tab; right-click on the canvas; the footer canvas button | Tool buttons, accordions, canvas sections                |
+| Layer menu            | ⋯ on a layer row                                                         | Tool buttons, an opacity slider, accordion tiles         |
+| Live image copy menu  | Live image on a share pass, with more than one tab                       | A tab select, copy rows                                  |
+| Settings cog          | The cog on a chart or a page                                             | Collapsible sections of fields, tiles and pictures       |
 
 Before this spec every one of them was `role="menu"`, so their sliders, fields and toggles sat inside
 a menu that may not own them, and opening one from the keyboard left focus behind.

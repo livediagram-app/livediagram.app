@@ -86,7 +86,7 @@ export function DataIsYoursArt() {
           <rect x="20" y="42" width="28" height="4" rx="1" fill={SLATE} />
           <rect x="20" y="50" width="28" height="4" rx="1" fill={SLATE} />
         </g>
-        {/* Diagram label travelling along the arc */}
+        {/* A document label travelling along the arc */}
         <path
           id="arc-path"
           d="M54 45 Q 110 -10 165 45"
@@ -97,7 +97,7 @@ export function DataIsYoursArt() {
         <g className="fa-fade" style={{ animationDuration: '4s' }}>
           <rect x="100" y="14" width="40" height="14" rx="3" fill={SKY} />
           <text x="120" y="24" textAnchor="middle" fontSize="9" fontWeight="600" fill={ON_SKY}>
-            diagram
+            document
           </text>
         </g>
         {/* User avatar on the right */}

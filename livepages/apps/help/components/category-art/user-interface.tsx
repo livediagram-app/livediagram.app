@@ -110,7 +110,7 @@ export function UserInterfaceArt() {
         <rect x={306} y={140} width={60} height={10} rx={3} className="fill-slate-100" />
 
         {/* Canvas content. */}
-        <Shape x={66} y={94} w={70} h={34} label="Plan" />
+        <Shape x={66} y={94} w={70} h={34} label="Idea" />
         <Shape x={168} y={94} w={78} h={34} accent label="Launch" />
         <Arrow from={[136, 111]} to={[165, 111]} />
 

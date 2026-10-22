@@ -6,7 +6,7 @@ Status: shipped. The grammar, matching, suggestion engine and view models live i
 ## What
 
 Every Explorer list can be narrowed by one **lens**: a single filter state written as one string of words and
-**tokens**. People pick **chips**; experts type tokens like `opens-in:draw template:retrospective made-by:ai edited:7d`
+**tokens**. People pick **chips**; experts type tokens like `made-by:ai edited:7d people:me`
 into the top-bar search. Both edit the same string:
 
 - Choosing a chip value **writes its token** into the string.
@@ -53,7 +53,7 @@ An **aggregate view** lists documents from every place at once: **Recent**, **Fa
 
 Every document view shows one row of chips under its page header and breadcrumb:
 
-- One chip per dimension, in dimension order (Opens in, Template, Made by AI, Edited, People), then **Space**
+- One chip per dimension, in dimension order (Opens in, Made by AI, Edited, People), then **Space**
   on aggregate views only. The folder or team the reader is in is the breadcrumb, never a chip.
 - **Clear** ends the row while the lens is set and empties `q`. It keeps its place when hidden, so nothing moves.
 - A chip opens a listbox of its values under it. Choosing a value toggles it and leaves the listbox open; Escape,
@@ -64,21 +64,18 @@ Every document view shows one row of chips under its page header and breadcrumb:
 
 ## Dimensions
 
-Each dimension is a closed list of values. The interface says what a value means; it never calls an editor mode, a tab
-kind or a template family a "type", and it keeps "board type" for what it means elsewhere: a board that leaves the
-general diagram tab's environment.
+Each dimension is a closed list of values. The interface says what a value means; it never calls an editor mode a "type".
 
-| Dimension | Key        | Chip label  | Values and their labels                                                                                                              |
-| --------- | ---------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| Text      | (none)     | (the field) | Free words                                                                                                                           |
-| Opens in  | `opens-in` | Opens in    | `diagram` Diagram, `draw` Draw, `pages` Pages, `plan` Plan, `workshop` Workshop: the editor mode the document was created to open in |
-| Template  | `template` | Template    | `retrospective` Retrospective, `kanban` Kanban: the template family the document was made from                                       |
-| Made by   | `made-by`  | Made by AI  | `ai` Made by AI: the document's `source` is the AI assistant or an AI tool through the MCP server (not the CLI)                      |
-| Edited    | `edited`   | Edited      | `today` Today, `7d` Last 7 days, `30d` Last 30 days, `12m` Last 12 months, `this-year` This year                                     |
-| People    | `people`   | People      | `me` Me, `others` Others: the owner of a document; the actor of a Timeline event                                                     |
-| Space     | `space`    | Space       | `mine` My Documents, `shared` Shared With Me, `team:<id>` the team's name. Aggregate views only                                      |
+| Dimension | Key        | Chip label  | Values and their labels                                                                                         |
+| --------- | ---------- | ----------- | --------------------------------------------------------------------------------------------------------------- |
+| Text      | (none)     | (the field) | Free words                                                                                                      |
+| Opens in  | `opens-in` | Opens in    | `pages` Pages: the editor mode the document was created to open in                                              |
+| Made by   | `made-by`  | Made by AI  | `ai` Made by AI: the document's `source` is the AI assistant or an AI tool through the MCP server (not the CLI) |
+| Edited    | `edited`   | Edited      | `today` Today, `7d` Last 7 days, `30d` Last 30 days, `12m` Last 12 months, `this-year` This year                |
+| People    | `people`   | People      | `me` Me, `others` Others: the owner of a document; the actor of a Timeline event                                |
+| Space     | `space`    | Space       | `mine` My Documents, `shared` Shared With Me, `team:<id>` the team's name. Aggregate views only                 |
 
-- **Opens in** and **Template** read the creation intent recorded on the document (Default folders: `opensIn`, `templateFamily` on the document summary). Opens in offers one value per editor mode (`EDITOR_MODES`); Kind offers the specific tab kinds, every creatable kind but the general diagram tab; Template offers the template families (`TEMPLATE_FAMILIES`). A document whose recorded value is unknown (made before the intent was recorded) matches no value of that dimension; it shows whenever that dimension is not set. A general diagram tab matches no Kind value, and a document made from no family matches no Template value.
+- **Opens in** reads the creation intent recorded on the document (Default folders: `opensIn` on the document summary), one value per editor mode (`EDITOR_MODES`). A document whose recorded value is unknown (made before the intent was recorded) matches no value; it shows whenever the dimension is not set.
 - **Made by AI is a filter, not a place.** AI-made documents are no bucket of their own: they live at the root of
   their space or in a folder like any other document, and `made-by:ai` finds them anywhere. Every row and card of an
   AI-made document carries a **Made by AI** badge (a sparkle and the words), so what the filter reads is visible. The
@@ -91,14 +88,13 @@ general diagram tab's environment.
 - **Space** on a document is `mine` for one in My Documents or in this browser ([Offline Mode](../006-document/offline-mode.md),
   the documents the sidebar marks "This Browser"), `team:<id>` for one in a team, `shared` for a row of Shared With Me. A
   token names a team by id; every label shows the team's **name**, never the id.
-- A row that cannot answer a dimension (a Shared With Me row carries no provenance, mode, kind or family) matches no
+- A row that cannot answer a dimension (a Shared With Me row carries no provenance or mode) matches no
   value of it.
-- **More filters** (favourited, sharing, Drive status) join later behind a "More filters" disclosure.
+- **More filters** (favourited, sharing) join later behind a "More filters" disclosure.
 
 ## Matching
 
-- A dimension may hold **several values**: they combine with **or** (`template:retrospective,kanban` lists both
-  families). Dimensions combine with **and**.
+- A dimension may hold **several values**: they combine with **or** (`edited:today,7d` lists both). Dimensions combine with **and**.
 - Text matches the document's **name**: every word must appear in it, ignoring case and accents.
 - The empty lens matches everything.
 
@@ -109,18 +105,18 @@ The string is words separated by whitespace.
 - A word of the form `<key>:<values>` whose key is a dimension key is a **token**. `<values>` is one value or a
   **comma list** of them (`edited:today,7d`). Keys and values are read without regard to case and written lower case;
   a team id keeps its case.
-- A dimension may also be **repeated** (`template:retrospective template:kanban`): its tokens' values join, exactly as
+- A dimension may also be **repeated** (`people:me people:others`): its tokens' values join, exactly as
   one comma list does. A value listed twice counts once.
 - Every other word is **text**.
 - A word shaped like a token that is not one stays **text**, whole, and is **reported by a named reason**, never
   dropped. A comma list is reported by its first bad value:
 
-| Reason              | When                                                                        | Message                                                      |
-| ------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| `unknown_dimension` | The key is no dimension (`colour:red`)                                      | “colour:red” isn’t a filter, so it’s searched as text.       |
-| `missing_value`     | Nothing after the colon, or an empty list entry (`template:`, `edited:7d,`) | “template:” needs a value, so it’s searched as text.         |
-| `unknown_value`     | A value is not in the list (`template:mindmap`)                             | “mindmap” isn’t a Template option, so it’s searched as text. |
-| `unknown_team`      | `space:team:<id>` names no team of the reader                               | That team isn’t one of yours, so it’s searched as text.      |
+| Reason              | When                                                                      | Message                                                   |
+| ------------------- | ------------------------------------------------------------------------- | --------------------------------------------------------- |
+| `unknown_dimension` | The key is no dimension (`colour:red`)                                    | “colour:red” isn’t a filter, so it’s searched as text.    |
+| `missing_value`     | Nothing after the colon, or an empty list entry (`edited:`, `edited:7d,`) | “edited:” needs a value, so it’s searched as text.        |
+| `unknown_value`     | A value is not in the list (`edited:never`)                               | “never” isn’t an Edited option, so it’s searched as text. |
+| `unknown_team`      | `space:team:<id>` names no team of the reader                             | That team isn’t one of yours, so it’s searched as text.   |
 
 - A valid token that cannot apply is kept in the string, not applied, and reported:
 
@@ -133,7 +129,7 @@ The string is words separated by whitespace.
   is **pending**: neither applied nor text, and not reported until the caret leaves it.
 
 The **canonical** string writes **one token per dimension, its values as a comma list**: the tokens in dimension order
-(Opens in, Template, Made by, Edited, People, Space), each list in its dimension's value order (teams after My
+(Opens in, Made by, Edited, People, Space), each list in its dimension's value order (teams after My
 documents and Shared With Me, by id), then the text words, single spaces between. Parsing accepts both spellings;
 writing produces only this one. Writing a chip edits the string in place: the dimension's tokens merge into one,
 written where the first stood, or added after the last token; clearing a chip removes every token of its dimension.
@@ -151,7 +147,7 @@ and the header draws none. With the hero hidden ([Hiding the banner](explorer-ho
 draws the header's field like every other page. It is the same field: the same lens, pills, suggestions and keyboard. Typing in it opens
 Search results; the header's field there takes the focus with the caret after the typed words.
 
-- Each token renders as a **pill** inside the field: "Template: Retrospective, Kanban", "Space: Acme". The free text
+- Each token renders as a **pill** inside the field: "Edited: Today, Last 7 days", "Space: Acme". The free text
   follows the pills. A pill that does not apply (a Space pill on a scoped view) is muted and says why.
 - A typed token becomes a pill once it is complete: accepted from the suggestions, or followed by a space.
 
@@ -186,12 +182,12 @@ Keyboard:
   `aria-expanded`, `aria-controls` naming the suggestion `listbox`, and `aria-activedescendant` naming the active
   option. Its label is "Filter documents".
 - Each option's name is its label and dimension, plus "no matches" when marked: "Last 7 days, Edited, no matches".
-- Each pill has an accessible name ("Filter Template: Retrospective, Kanban", plus "not applied: <reason>" when muted)
-  and a **remove** button named "Remove filter Template: Retrospective, Kanban", in the tab order.
+- Each pill has an accessible name ("Filter Edited: Today, Last 7 days", plus "not applied: <reason>" when muted)
+  and a **remove** button named "Remove filter Edited: Today, Last 7 days", in the tab order.
 - After the lens changes, a polite **live region** announces the count once typing settles: "12 of 40 documents",
   "40 documents", or "No documents match".
 - Chips sit in a `group` named "Filters". A chip is **multi-select**: a button with `aria-haspopup="listbox"` and
-  `aria-expanded`, named "Template: Retrospective, Kanban" when set and "Template, any" when not, opening a listbox with
+  `aria-expanded`, named "Edited: Today, Last 7 days" when set and "Edited, any" when not, opening a listbox with
   `aria-multiselectable="true"`. Its options are `option`s with `aria-selected`; choosing one toggles it, and the
   first option, "Any", clears every value. **Made by AI**, a dimension of one value, is a toggle button with
   `aria-pressed`.
@@ -226,7 +222,7 @@ Keyboard:
 ## Telemetry
 
 Each time a dimension gains a value it did not hold, from a chip, an accepted suggestion or a typed token, the Explorer emits
-`Explorer / Selected / <Dimension>` once, with `<Dimension>` from the closed set `Text`, `OpensIn`, `Template`,
+`Explorer / Selected / <Dimension>` once, with `<Dimension>` from the closed set `Text`, `OpensIn`,
 `MadeBy`, `Edited`, `People`, `Space` ([Telemetry](../017-telemetry/telemetry.md)). Text counts when it goes from empty to
 non-empty. Never a value, a word or an id. A lens arriving with a link, or restored by Back, counts for nothing: only
 the reader's own change does.

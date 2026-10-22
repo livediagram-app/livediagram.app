@@ -59,12 +59,10 @@ What stays, with where it runs, is the allow-list in `apps/live/render-browser-g
 
 | Site                                                      | The wrapper carried          | Becomes                                                          |
 | --------------------------------------------------------- | ---------------------------- | ---------------------------------------------------------------- |
-| `apps/live/components/canvas/whiteboard/ShapesFlyout.tsx` | focus for the search field   | `<Fragment ref>`; `FragmentInstance.focus()` lands on the input  |
 | `apps/live/components/panels/LayerRowMenu.tsx` (two rows) | the confirm popover's anchor | the click's `currentTarget` (`MenuActionRow` hands its click on) |
 
 Stay, carrying more than a ref: `packages/ui/src/Tooltip.tsx` (React pointer and focus handlers, capture-phase
-ones among them), `apps/help/components/ArticleShell.tsx` (reads `textContent`),
-`apps/live/components/plan/AddCardPopover.tsx` (catches React events bubbling out of a portal) and
+ones among them), `apps/help/components/ArticleShell.tsx` (reads `textContent`) and
 `packages/ui/src/timeline/TimelineCalendarView.tsx` (the component's own box).
 
 ### The React Compiler's reach
@@ -143,8 +141,8 @@ No new log lines: a refused fullscreen and a Trusted Types violation are logged 
 
 ## Constants and configuration
 
-| Constant                 | Value                                       | Provenance                       | Safe range        |
-| ------------------------ | ------------------------------------------- | -------------------------------- | ----------------- |
+| Constant                 | Value                                       | Provenance                     | Safe range        |
+| ------------------------ | ------------------------------------------- | ------------------------------ | ----------------- |
 | `NEXT_PUBLIC_BUILD_YEAR` | `String(new Date().getFullYear())` at build | `@livepages/next-config` `env` | A four-digit year |
 
 ## Defaults ledger

@@ -32,12 +32,12 @@ its actions; never over 90. Filler ("Please", "so your recent changes", a restat
 
 A toast about a document, a folder or a tab names it, so someone who acted on one of several, or on a row that has
 scrolled away, can tell which one it was: "“Roadmap” deleted", "“Roadmap” moved to “Plans”", "Could not rename
-“Plans”. Try again.", "“Sheet 1” added to “Roadmap”".
+“Plans”. Try again.", "“Slides” added to “Roadmap”".
 
 - **The name is in curly quotes**, its whitespace collapsed to single spaces.
 - **It is cut to 30 characters**, the last one an ellipsis (`TOAST_NAME_MAX`, `apps/live/lib/toast-name.ts`), cut
   between characters so an emoji is never split. Two cut names and the words round them stay under the 90-character
-  ceiling; where they would not, the advice is dropped first ("Could not add “Sheet 1” to “Roadmap”.").
+  ceiling; where they would not, the advice is dropped first ("Could not add “Slides” to “Roadmap”.").
 - **A blank or unknown name falls back to the generic word**: "Document deleted", "Could not move the document. Try
   again.", "moved to the team library". The surface never shows empty quotes.
 - **Where it went is named too**: the folder, or My Documents. A team is named when the surface knows it, else "the
@@ -93,7 +93,7 @@ lists its decline before its confirm.
   where that is wider, so it is easy to read and to tap.
 - **Clear of the bottom chrome, and of banners.** The stack sits 16px above the bottom edge (clear of the home
   indicator), and above anything that occupies the bottom of the screen beneath it: the editor's tab bar, its
-  bottom-right cluster (Undo, Layers, Zoom) and the whiteboard dock, the Explorer's bottom bar, and the
+  bottom-right cluster (Undo, Layers, Zoom), the Explorer's bottom bar, and the
   [sign-in banner](../014-identity/sign-in-encouragement.md). It lifts 8px clear of the highest of those that
   overlaps its column, measured as they move or resize, so a toast never lands on a button or on a banner's words.
   Chrome off to the side of the column (the cluster on a wide desktop) does not lift it.

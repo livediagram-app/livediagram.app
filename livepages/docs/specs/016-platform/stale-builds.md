@@ -3,7 +3,7 @@
 A tab keeps running the editor build it loaded. Every deploy renames the editor's code chunks
 (their names are content hashes) and the old files are gone, so a tab from an earlier build that
 navigates within the app asks for chunks that no longer exist. Without care, that navigation ends
-on the framework's crash page ("This page couldn't load"), as going back from a whiteboard to the
+on the framework's crash page ("This page couldn't load"), as going back from a document to the
 Explorer did after a deploy.
 
 Two layers handle it: the app **learns when a newer build is live** and stops navigating in-app

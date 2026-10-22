@@ -135,17 +135,17 @@ describe('getAlternative', () => {
   it('returns undefined for an unknown slug (not throw, not the first entry)', () => {
     // The page calls getAlternative(slug) at render time and
     // routes notFound() when undefined. A regression that returned
-    // ALTERNATIVES[0] as a default would show a Miro page under
+    // ALTERNATIVES[0] as a default would show the first page under
     // /alternatives/some-typo, which Google would index as a
-    // duplicate of the real /alternatives/miro.
+    // duplicate of the real one.
     expect(getAlternative('this-competitor-does-not-exist')).toBeUndefined();
     expect(getAlternative('')).toBeUndefined();
   });
 
   it('is case-sensitive (matches the URL-safe lowercase slug)', () => {
     // generateStaticParams emits the exact lowercase slug; a
-    // case-insensitive lookup would let /alternatives/MIRO render
-    // the Miro page as a non-canonical URL.
+    // case-insensitive lookup would let /alternatives/GOOGLE-SLIDES render
+    // the Google Slides page as a non-canonical URL.
     const first = ALTERNATIVES[0]!;
     expect(getAlternative(first.slug.toUpperCase())).toBeUndefined();
   });

@@ -33,12 +33,12 @@ Both renderers (the canvas `FreehandSvg` and the headless `svgFreehandShape` use
 - The **mode banner** reads **"Drag to highlight"**, the same banner every other one-shot arm wears.
 - A gesture too short to be a stroke disarms, as for the pencil.
 - No single-letter shortcut ([Canvas and palette](canvas-and-palette.md): only the common flowchart vocabulary gets letters). It is not a command-palette tool switch: like the pens, it is reached from the palette (and its search).
-- `PendingDraw` carries `{ type: 'freehand'; variant: 'highlighter' }`. Commit path is the same sampling + simplification as the pencil, then always `createFreehand(points, false)` + `pen: 'highlighter'` + the current colour (and `penWidth` when the width is not Medium): no recognition branch, no auto-close. Recognition is the Shape Pen's job ([Two pens instead of a pen and a mode](two-pens.md)); the highlighter is a third variant of the same gesture.
+- `PendingDraw` carries `{ type: 'freehand'; variant: 'highlighter' }`. Commit path is the same sampling + simplification as the pencil, then always `createFreehand(points, false)` + `pen: 'highlighter'` + the current colour (and `penWidth` when the width is not Medium): no recognition branch, no auto-close. Recognition is the Shape Pen's job (Two pens instead of a pen and a mode); the highlighter is a third variant of the same gesture.
 - Cursor: a highlighter-nib glyph, distinct from the pencil nib. The live draw preview (`CanvasDrawPreview`) paints the in-flight polyline with the marker recipe in the current colour and width, so what you see while dragging is what commits.
 
 ## Settings: the Quick style panel
 
-The highlighter's settings live in the [Quick style panel](quick-style-panel.md), as a whiteboard marker's do ([Draw mode](../023-draw-mode/draw-mode.md) "The quick style panel stays"). Two rows:
+The highlighter's settings live in the [Quick style panel](quick-style-panel.md), as a whiteboard marker's do (Draw mode "The quick style panel stays"). Two rows:
 
 - **Highlighter colour**: five marker swatches, **Yellow** (`#fde047`, the default), **Green** (`#86efac`), **Pink** (`#f9a8d4`), **Blue** (`#93c5fd`), **Orange** (`#fdba74`). Fixed hexes, not theme colours: a highlight that changed colour with the theme would stop reading as one. The row ends with **More colours**, opening the [colour picker](../004-interface-design/colour-picker.md) with the soft standard colours, Custom colours and **Add a custom colour** (four coloured dots).
 - **Highlighter width**: **Thin** (8 px), **Medium** (14 px, the default), **Bold** (22 px), each drawn as a preview of its band.
@@ -52,7 +52,7 @@ The current colour and width are **session-local editor state**, not a persisted
 
 **Width is a panel-only setting.** The context menu offers a highlight's colour (Colours) but not its width; the panel holds both, as it holds a whiteboard marker's width. This is a deliberate exception to the panel's "the menu stays complete" rule, scoped to the highlighter's two rows.
 
-- Draw mode ([Draw mode](../023-draw-mode/draw-mode.md)) has no highlighter: a whiteboard's pens are its markers, and its dock replaces the palette.
+- Draw mode (Draw mode) has no highlighter: a whiteboard's pens are its markers, and its dock replaces the palette.
 
 ## Not a selection mode
 
@@ -62,7 +62,7 @@ A Mode Button saved while it was one still carries `mode: 'highlighter'`. The st
 
 ## Popular
 
-The tile is not in Diagram mode's Popular ([Editor modes](../007-editor/editor-modes.md#the-palette-per-mode)): Table kept the slot it took when the tile was first retired.
+The tile is not in Diagram mode's Popular (Editor modes): Table kept the slot it took when the tile was first retired.
 
 ## Everything else is inherited
 

@@ -18,7 +18,7 @@ move the audience to the pointer.
 
 ## Wire
 
-A new **`viewport` RoomOp**: `{ kind: 'viewport', tabId, pan: {x, y}, zoom, size?: {width, height} }`. `size` is the sender's canvas, read by [Bring Focus](bring-focus.md) to judge whether a peer is already looking at a point; Follow Me does not use it.
+A new **`viewport` RoomOp**: `{ kind: 'viewport', tabId, pan: {x, y}, zoom, size?: {width, height} }`. `size` is the sender's canvas; Follow Me does not use it.
 
 Ephemeral presence exactly like `cursor` / `laser`: throttled, never
 logged, never ordered (no `seq`), never replayed to a reconnecting client.
@@ -47,8 +47,7 @@ recognise itself in a peer's message.
   room sends the person followed **`{ kind: 'followers', ids }`** on their socket
   alone: the presence ids following them, sorted. Nobody else hears it.
 - A new socket is a new presence id: the client empties its followers list when
-  a socket opens and says its own follow again right after `hello`, the way it
-  presents the facilitator token.
+  a socket opens and says its own follow again right after `hello`.
 - The presenter's own avatar in the tab presence stack carries the count, and its
   hover card names it ("2 Following You").
 

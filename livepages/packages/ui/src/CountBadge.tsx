@@ -5,10 +5,9 @@ import { SOLID_BRAND_DARK } from './brand-classes';
 // Explorer page's rows, cards and sidebar and the floating panel's tree
 // show the neutral one beside a folder's name; the Collaborate button and
 // panel show the brand one for their open count (docs/specs/012-collaboration/assigned-actions.md §5), the
-// "something here wants you" tone. A Plan board paints its own from the
-// board's palette (`background` + `color`, docs/specs/026-plan/board-widgets.md
-// "The header") at the larger `md` size, so every lone number on a board reads
-// the same way. `className` is for the caller's spacing and placement only.
+// "something here wants you" tone. A board paints its own from the board's
+// palette (`background` + `color`) at the larger `md` size, so every lone number
+// on a board reads the same way. `className` is for the caller's spacing and placement only.
 export function CountBadge({
   count,
   children,

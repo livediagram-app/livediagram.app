@@ -3,18 +3,20 @@
 Every path that brings outside pictures in meets the same problem: the source carries image bytes, and a
 livepages image element carries an `imageId` that points into the owner's gallery
 ([Image element + per-owner gallery](../009-elements/images.md)). The import image pipeline is the
-one browser-side path that turns those bytes into a stored image, so every importer migrates
-images the same way, under the same limits, with the same named outcomes.
+one browser-side path that turns those bytes into a stored image, so every caller stores images
+the same way, under the same limits, with the same named outcomes.
 
-The goal it serves is migration: a person moving 100+ boards in from other tools should see their
-images arrive, and when some cannot, see how many and why, never a failed import.
+Its caller today is [Image search](../009-elements/image-search.md): a picked Openverse result is
+downloaded in the browser and handed to the pipeline (`apps/live/lib/image-search/pick.ts`). The
+session and the report below are shaped for an import that meets many images at once, so a
+future importer plugs in unchanged: it should see its images arrive, and when some cannot, see
+how many and why, never a failed import.
 
 ## Where it lives
 
 `apps/live/lib/import-images/`, a folder of small modules, not a package:
 
-- Every consumer is an importer in the live editor (`apps/live/lib/*-import.ts`); no other app
-  imports boards.
+- Every caller is in the live editor; no other app stores outside pictures.
 - It needs the browser: canvas decoding and encoding (`createImageBitmap`, `<canvas>`), the
   editor's authenticated api client (`apiUploadImage`) and the Offline Mode store check. The MCP
   worker has none of these, and uploading from a worker would spend server CPU the browser can
@@ -25,9 +27,8 @@ images arrive, and when some cannot, see how many and why, never a failed import
 
 ## What goes in
 
-An importer hands the pipeline an **image source**: bytes it found in the file, either as a
-`data:` URL (Excalidraw's `files` map, draw.io's embedded styles) or as a `Blob` with a MIME type
-(Miro and Whiteboard archives). It may add a **display hint**, the size of the element the image
+A caller hands the pipeline an **image source**: the bytes, either as a `data:` URL or as a
+`Blob` with a MIME type (a downloaded search result). It may add a **display hint**, the size of the element the image
 will fill, used only to pick a sensible raster size for SVG.
 
 The pipeline returns, per source, either a **stored image** (`imageId`, natural width and height,
@@ -106,7 +107,7 @@ differ, and the second copy is stored once more.
 
 | Failure              | When                                                                                                         |
 | -------------------- | ------------------------------------------------------------------------------------------------------------ |
-| `missing-bytes`      | The file names an image but does not carry its bytes (an Excalidraw `fileId` absent from `files`).           |
+| `missing-bytes`      | The source names an image but does not carry its bytes.                                                      |
 | `unsupported`        | The browser cannot decode the bytes, or the gallery refuses the type (`unsupported_type`, `malformed_jpeg`). |
 | `too-large`          | The source is over 50 MB, or the encoded image is over the 10 MB per-file cap (`file_too_large`).            |
 | `gallery-full`       | The owner's gallery is at its image-count or byte cap (`gallery_full`, 100 images / 100 MB hosted).          |
@@ -129,11 +130,10 @@ differ, and the second copy is stored once more.
 Images are processed through an **import session**, created per import with the owner, the
 document and whether it is offline. The session holds what must be shared across a file's images:
 the concurrency limit (three images in flight at once), the offline budget, and the
-`images-unavailable` short-circuit. Within one file, images named by the same key (Excalidraw's
-`fileId`) are processed once and every element referencing it shares the outcome.
+`images-unavailable` short-circuit. Within one import, images named by the same key are processed once and every element referencing it shares the outcome.
 
 The session is the seam bulk import will use: many files through one session share one budget and
-one short-circuit, and their reports add up, so importing a folder of boards later needs no change
+one short-circuit, and their reports add up, so importing many files at once later needs no change
 to the pipeline.
 
 ## Order: images first, then the tab
@@ -144,14 +144,14 @@ progress beside its buttons ("Importing images 3 of 12…"), so the buttons neve
 
 ## The report
 
-Each import that meets images returns a **report**, counted per image element on the board:
+Each import that meets images returns a **report**, counted per image element on the tab:
 
 - **imported**: new images stored (uploaded, or embedded in an offline document);
 - **already in your gallery**: images the gallery already held (the server deduped them);
 - **placeholders**, counted per failure.
 
 An image used on several elements counts once per element, each with its image's outcome, so
-the three numbers always add up to the image elements on the board.
+the three numbers always add up to the image elements on the tab.
 
 The Import dialog shows the report calmly in place of closing: a short summary with the counts,
 one plain sentence per failure that occurred, what to do about it, and a Done button. An import

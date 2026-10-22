@@ -43,16 +43,16 @@ op: ElementOp }` and `{ kind: 'tab-meta'; tabId; patch }` alongside the kept
   the same element are still last-writer-wins per element, in room order, on every screen
   ([Same-element edits converge](#same-element-edits-converge)). The
   selection lock makes that rare; it is advisory and client-only, so it does not
-  prevent it. Only the multi-writer fields (answers, ideas, checklist ticks,
-  comments, dots) survive a same-element collision, because they travel as
-  `el-delta` / `vote` deltas and receivers keep their own copy of them
+  prevent it. Only the multi-writer fields (checklist ticks and
+  comments) survive a same-element collision, because they travel as
+  `el-delta` deltas and receivers keep their own copy of them
   ([Collaboration race hardening](collab-race-hardening.md)).
 - The emit side is `tabBroadcastOps` (in the autosave path); it falls back to a
   whole-`tab` op for a new tab or a bulk change. A meta field that was
   _cleared_ serialises to `undefined`, which JSON drops on the wire, so it
-  travels by name in the `tab-meta` op's `clear` list. It used to force a
-  whole-`tab` op too, and Clear Timer / Clear Vote then replaced every element
-  on every receiver ([Collaboration race hardening](collab-race-hardening.md)).
+  travels by name in the `tab-meta` op's `clear` list rather than forcing a
+  whole-`tab` op that would replace every element on every receiver
+  ([Collaboration race hardening](collab-race-hardening.md)).
 
 ### Same-element edits converge
 
@@ -126,16 +126,13 @@ that let `viewport` through.
   sender, so a client used to learn seqs only from other people's ops: a
   reconnect asked for its own ops back, and a session that had heard nothing
   asked for the whole log. Re-applying ops is harmless for element ops (by id),
-  but a dot vote ([Session tools (timer + voting)](session-tools.md)) is a delta, so every replayed dot counted twice. The
+  but a delta replayed twice is wasted work. The
   room now sends a `{ kind: 'cursor', epoch, seq }` frame on `hello` and to the
   sender of each ordered op, and the client folds it into its cursor (ignoring
   a different epoch, which the `sync` / `catchup` exchange reconciles). An op
   frame may carry a `ref` (a positive integer the client picks); the room echoes
   it on that op's `cursor` frame, which is how a save knows the room has
-  sequenced the deltas it sent before writing ([Collaboration race hardening](collab-race-hardening.md) phase 6).
-- **A whole-`tab` op keeps the receiver's dots.** It carries the sender's votes
-  map as of their autosave, without dots still in flight, so the receiver keeps
-  its own map unless the round itself changed (`mergeRemoteTab`).
+  sequenced the deltas it sent before writing ([Collaboration race hardening](collab-race-hardening.md#saves)).
 - **The save baseline follows remote ops** ([Collaboration race hardening](collab-race-hardening.md)). `lastSavedTabsRef` is
   the "before" for both the D1 save diff and the broadcast diff, so it must
   hold what peers already have. Every applied remote op is folded into it
@@ -160,7 +157,7 @@ The room relays an Editor's op as it was sent and keeps it in the catch-up log, 
 document-changing op's envelope before applying it (`roomOpIsWellFormed`, `room-op-shape.ts`): a `tab` carries a
 tab with its elements, an `el` an element op (an add or update an element with an id and a type, a remove an id, a
 reorder a list, a patch an id and its fields), an `el-delta` an element id and a delta, a `changeset` a list of
-element ops if any, a `vote` an element and a voter, a `tab-meta` a patch, an `article` a flow, a `document-meta`
+element ops if any, a `tab-meta` a patch, an `article` a flow, a `document-meta`
 a name and a list of tabs with ids and names; each but `document-meta` names its tab. One that does not is dropped
 and logged (`[room] malformed op dropped`), so it can no longer stop every editor in the room, or each one that
 reconnects, from rendering. What an element or a patch holds is the stored-element migrations' to settle; a kind
@@ -193,8 +190,7 @@ the editor until a reload, and nothing says so. The client therefore checks its 
    tab they added, and the resulting element ops are broadcast as yours. A
    resync's re-read content replaces only what is on screen.
 2. **D1 is the system of record.** The room holds ordering and collaboration
-   state (epoch + seq, the op log, the collaboration ledger, the
-   facilitator baton), never a copy of the document. REST reads, exports, and
+   state (epoch + seq, the op log, the collaboration ledger), never a copy of the document. REST reads, exports, and
    offline durability read D1.
 3. **The selection lock stays advisory.** The [Live app](../007-editor/live-app.md) lock soft-locks a
    selected element for peers on the client. It makes same-element concurrent
@@ -246,8 +242,7 @@ verified end-to-end and turned on properly, not carried as dormant code.
   `sync` → `catchup` handler (`resolveCatchup` in `document-room-rules.ts`). It
   rewrites comment authors in every mutation it relays and keeps collaboration
   state in Durable Object storage: the per-element ledger
-  (`room-ledger-store.ts`) and the
-  facilitator baton (`facilitator.ts`). The full description is
+  (`room-ledger-store.ts`). The full description is
   [API app → Realtime model](../015-api/api.md#realtime-model).
 - `apps/api/src/room-client.ts` — the worker's calls into the room: the ledger
   merge on a tab PUT (`fetchRoomLedger` + `applyRoomLedger`, driven by `X-Room-Cursor`), the

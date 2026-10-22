@@ -239,13 +239,13 @@ bound their access levels, and what that means for livepages's proposed four: **
   (the Q&A board, since removed; the live poll, since removed;
   [Follow-me viewport](../../specs/012-collaboration/follow-me-viewport.md)).
 - A `view` link **cannot** cast dot votes, estimates, temperature checks or quiz answers, or drop a card in the idea
-  box, because those travel as element mutations ([Session tools](../../specs/012-collaboration/session-tools.md);
-  [Participant responses](../../specs/012-collaboration/participant-responses.md);
-  the Quiz, since removed; [Idea box](../../specs/012-collaboration/idea-box.md)).
+  box, because those travel as element mutations (Session tools;
+  Participant responses;
+  the Quiz, since removed; Idea box).
 - So today's `view` is neither "Viewer" nor "Participant": it is half of each, split by transport rather than by
   intent. That is the root the four-level model addresses.
 - The facilitator baton is edit-only and already behaves like the market's "role in the session"
-  ([Facilitator](../../specs/012-collaboration/facilitator.md)).
+  (Facilitator).
 - Tokens are full or read-only and act as their owner, through the same gates
   ([Public API and tokens](../../specs/015-api/public-api-and-tokens.md)).
 

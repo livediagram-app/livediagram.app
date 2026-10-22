@@ -7,7 +7,7 @@ Matthew Sankey, whose 1898 drawing of a steam engine's energy losses made it fam
 standard picture for energy balances, budgets (income into spending), material and supply flows, website
 journeys and conversion funnels, and migration between places.
 
-It is one element in the palette's **Build** category: a diagram that lays itself out from a list of
+It is one element in the palette's **Concepts** category: a diagram that lays itself out from a list of
 flows, so nobody has to position a band by hand.
 
 ## What someone does with it
@@ -118,7 +118,7 @@ closed until opened as everywhere ([menus](../004-interface-design/menus.md)), a
   [colour picker](../004-interface-design/colour-picker.md) in a popover, led by **Palette** once the
   node has a colour of its own, which hands it back) and its name.
 - **Bands** (Blend / From / To / Grey), **Layout** (Ends Right / By Step), **Labels** (Amount / Percent /
-  Names Only) and **Leftovers** (Show / Hide): each an option list, the Plan mode picker (`OptionRows`): a
+  Names Only) and **Leftovers** (Show / Hide): each an option list (`OptionRows`): a
   bordered box, one choice to a row, a glyph drawing it at the left, the chosen row tinted with a tick.
   **Leftovers** also holds **Leftover Name** while they show.
 - **Text**: **Unit**, and **Text Size** (the [Text Size](../004-interface-design/fonts.md#text-size) slider without Scale: a px is the labels' own; the presets earlier Sankeys carry read 10 / 12 / 15px). Unit and Leftover
@@ -241,4 +241,4 @@ authors them, and a rename in the dialog renames every flow and the node's colou
   text views summarise it as `flows=N`.
 - **Telemetry**: `track('Element', 'Added', 'Sankey')` on create; `track('Element', 'Changed', 'SankeyFlows'
 | 'SankeyStyle' | 'SankeyAnim')` on edits.
-- **Help**: a Sankey Diagram article under Build Elements.
+- **Help**: a Sankey Diagram article.

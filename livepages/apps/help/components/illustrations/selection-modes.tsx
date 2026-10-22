@@ -268,65 +268,6 @@ function ToolPanel({
   );
 }
 
-/** The Eraser panel with a filter on: a Large brush set to Drawings, so the
- *  ring on the canvas (and in the preview) is amber, and a sweep through the
- *  pencil scribble leaves the shape under it alone. */
-export function EraserPanelScene() {
-  return (
-    <Scene w={420} h={230}>
-      <Shape x={34} y={70} w={110} h={56} label="Checkout" />
-      {/* A pencil scribble over the shape */}
-      <path
-        d="M30 150 q24 -40 52 -8 t52 -10 t44 6"
-        className="stroke-slate-500"
-        strokeWidth={2.5}
-        fill="none"
-        strokeLinecap="round"
-      />
-      {/* The brush ring, amber because a filter is on */}
-      <circle
-        cx={150}
-        cy={140}
-        r={26}
-        className="fill-amber-400/20 stroke-amber-500"
-        strokeWidth={2}
-      />
-      <ToolPanel
-        x={226}
-        y={20}
-        title="ERASER"
-        preview={
-          <g>
-            {[0, 1, 2, 3].map((i) => (
-              <rect
-                key={i}
-                x={242 + i * 38}
-                y={44}
-                width={28}
-                height={16}
-                rx={3}
-                className="fill-slate-300"
-              />
-            ))}
-            <circle
-              cx={314}
-              cy={52}
-              r={14}
-              className="fill-amber-400/25 stroke-amber-500"
-              strokeWidth={2}
-            />
-          </g>
-        }
-        rows={[
-          { label: 'Mode', value: 'Sweep' },
-          { label: 'Size', value: 'Large' },
-          { label: 'Erases', value: 'Drawings', amber: true },
-        ]}
-      />
-    </Scene>
-  );
-}
-
 /** The Format tool mid-job: the banner across the top, a source loaded in the
  *  Format panel (its swatch drawn from the enabled parts only), and a target
  *  being painted. */

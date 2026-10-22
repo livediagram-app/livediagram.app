@@ -249,21 +249,12 @@ If you enable this on a deployment that already has signed-in users, run the one
 
 Teams need Clerk. With it on, the daily cron expires team invites nobody answered within 28 days (whether or not
 email is configured) and, with `RESEND_API_KEY` set, sends the three reminders first
-([Teams](../specs/013-workspace/teams.md#reminders-and-expiry)). Migration `0095_team_invite_decline_and_reminders.sql`
-adds the columns; nothing else to configure.
+([Teams](../specs/013-workspace/teams.md#reminders-and-expiry)). The baseline migration
+holds the columns; nothing else to configure.
 
 - `TEAM_INVITE_RATE_LIMITER` (optional binding, declared in `apps/api/wrangler.toml`): 20 requests a minute per
   network on the invite email's open Decline doors (`/api/teams/invite-decline/...`). Without the binding every
   request is allowed; the token is 256 random bits either way.
-
-## Forms
-
-Form tabs ([Forms](../specs/030-forms/forms.md)) need nothing extra: migration `0092_forms.sql` creates their tables
-with the others, and a form link is served by the live worker (`/form/<code>`) and the api (`/api/forms/...`).
-
-- `FORM_RATE_LIMITER` (optional binding, declared in `apps/api/wrangler.toml`): 60 reads and 60 responses a minute
-  per network. Without the binding every request is allowed; the per-form cap of 500 responses an hour still holds.
-- The new-response and suspension emails go only where email is configured (`RESEND_API_KEY`).
 
 ## Workbenches (optional, needs Clerk)
 
@@ -271,11 +262,7 @@ A workbench is a developer tool that frames the editor signed in, beside an agen
 
 - `APP_BASE_URL` (api `[vars]`): set it to your deployment's public origin. Besides the links in emails, it builds the workbench frame URLs (`/embed/workbench`, and `/embed/workbench/explorer` for the whole workspace) and the pairing URL (`/workbench/pair`) the CLI prints. Use the origin that serves the app without redirecting (for example `https://www.example.com` when the apex redirects to `www`): a workbench checks the frame's messages against the origin of that URL, and a redirect changes it. Left at its default, those links point at livepages.app.
 - `WORKBENCH_TICKET_RATE_LIMITER` (optional binding, declared in `apps/api/wrangler.toml`): caps ticket mints and pairing requests per token. Without the binding every request is allowed.
-- Migration `0077_workbench.sql` creates the four workbench tables; it runs with the others.
-
-## Sheets
-
-Plan-mode Sheets ([Sheet store](../specs/029-sheets/sheet-store.md)) need no setup: migration `0078_sheets.sql` creates the `sheets` and `sheet_cells` tables and runs with the others, and the worker's existing daily scheduled run removes sheets that no Sheet element shows any more.
+- The baseline migration creates the four workbench tables; it runs with the others.
 
 ## Per-owner image gallery caps
 

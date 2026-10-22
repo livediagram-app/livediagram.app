@@ -5,16 +5,15 @@
 // instant. The one function that converts a timestamp (`monthKeyOf`)
 // reads local fields, matching `dateKey` in the grouping helper — the
 // day a cell represents has to be the same day the feed grouped events
-// into, or a dot appears on the wrong square. The day arithmetic is the
-// Plan views' (@livepages/items plan-view-dates), so both month grids
-// pad, step and name months the same way.
+// into, or a dot appears on the wrong square. The day arithmetic is
+// calendar-days.ts.
 import {
   MONTH_LONG,
   dayParts,
   daysInMonth,
   monthStart,
   shiftMonth as shiftCivilMonth,
-} from '@livepages/items';
+} from './calendar-days';
 
 export type MonthCell = {
   // YYYY-MM-DD, or null for a leading/trailing pad square.

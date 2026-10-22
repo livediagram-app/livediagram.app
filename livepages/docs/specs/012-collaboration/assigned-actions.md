@@ -19,12 +19,9 @@ unassign someone's work.
 ## 1. Data model
 
 At most **one action per element** (mirrors note + link, keeps the panel,
-badge, and popover 1:1 with elements). The one exception is the **Action
-panel** ([The Action Panel](action-panel.md)), a card whose job is to hold a list: it carries
-`actions: ElementAction[]`. Everything that reads actions goes through
-`elementActions(el)`, which returns that list or the single `action` as a
-one-item list, so the Collaborate panel, the Inbox, the timeline and
-the email treat both the same. A new optional field on boxed elements in
+badge, and popover 1:1 with elements). Everything that reads actions goes through
+`elementActions(el)`, which returns the single `action` as a one-item list, so the Collaborate panel, the Inbox,
+the timeline and the email read it one way. A new optional field on boxed elements in
 `packages/document`:
 
 ```ts
@@ -52,7 +49,7 @@ interface ElementAction {
   teamId: string | null;
   assignerId: string; // Clerk user id of who assigned it
   assignerName: string | null;
-  // 'wont-do': closed without being done (docs/specs/026-plan/linked-boards.md "On the canvas").
+  // 'wont-do': closed without being done.
   status: 'open' | 'done' | 'wont-do';
   createdAt: number;
   updatedAt: number;
@@ -74,15 +71,12 @@ Assignee/assigner identity here is informational (who to render), not a
 permission: anyone with edit access can complete, edit, or delete an action,
 the same way they can edit any element content.
 
-**Won't Do** is a third status beside open and done ([Linked boards](../026-plan/linked-boards.md) "On the
-canvas"): decided against, closed without being done. It counts as closed wherever open and closed are counted. Every
-action in a document also has a card on its **Actions board**, kept in step both ways
-([Linked boards](../026-plan/linked-boards.md)).
+**Won't Do** is a third status beside open and done: decided against, closed without being done. It counts as
+closed wherever open and closed are counted.
 
 **A copy doesn't carry the action.** Copy / paste (both the OS clipboard and
 the in-app fallback buffer) and every Duplicate (`freshCopyFields`, one list,
-`ORIGINAL_ONLY_FIELDS`) strip `action` and `actions` along with comment threads
-and votes: an action is work somebody handed to a person, with its own id in
+`ORIGINAL_ONLY_FIELDS`) strip `action` along with comment threads: an action is work somebody handed to a person, with its own id in
 the Activity index, not a property of the shape, so a pasted copy would be a
 second action under the same id that nobody assigned.
 
@@ -100,8 +94,7 @@ collaboration band** ([Canvas and palette](../008-canvas/canvas-and-palette.md) 
    Note alone.
 
 Both categories keep the old section's gate (boxed elements only, so arrows
-are excluded just like today, and never a Plan item: a board, Plan card,
-visualisation or Sheet takes none, [Nothing attached to Plan items](../026-plan/plan-mode.md#nothing-attached-to-plan-items)), each gets its own accordion section id
+are excluded just like today), each gets its own accordion section id
 (`'collaborate'`, `'resources'`), and the band separator rules are
 unchanged. The **Assign Action** tile:
 
@@ -310,22 +303,17 @@ the tab has threads or actions. Comments and actions keep working from the eleme
 
 ### The look
 
-The panel follows the refreshed Collaborate cards ([Participant responses](participant-responses.md), [Idea box](idea-box.md) "The look"): soft tinted rows rather than a ruled list, a friendly empty state with its glyph in a soft brand disc, round brand controls, count chips, and short motion that collapses under Reduce motion. It is editor chrome, not a card on a themed tab, so its accent is the **brand** colour rather than a tab theme's.
+The panel's look: soft tinted rows rather than a ruled list, a friendly empty state with its glyph in a soft brand disc, round brand controls, count chips, and short motion that collapses under Reduce motion. It is editor chrome, not a card on a themed tab, so its accent is the **brand** colour rather than a tab theme's.
 
 - **Header.** The title with the **open count** in a brand chip sitting directly beside it (`MovablePanel`'s `titleAdornment`), hidden at zero. It no longer floats in the middle of the header.
 - **Open / Resolved.** A segmented control on the shared sliding pill (`SegmentSlider`), each side carrying its count. **Open** = open actions + unresolved comment threads; **Resolved** = completed actions + resolved comment threads (the thread still reopens from its element badge). It lands on Open, or Resolved when nothing is open.
 - **Kind chips.** Under the segmented control, three small chips: **All** (the word), **Comments** (bubble glyph) and **Actions** (clipboard glyph), each with its count for the current side. Comments and Actions show only their glyph and count, so the row fits a narrow panel; their name is the chip's accessible name ("Comments 12") and its tooltip; the active one takes a soft brand fill. They show only when the tab has BOTH kinds; with one kind there is nothing to narrow. (They replace an unlabelled funnel button that cycled through three hidden states.)
 - **Sections.** In the Open view, rows assigned to you lead under a **For You** label, and everything else follows under **Everything Else**. The labels show only when both groups have rows; a single group needs no heading.
-- **Action rows** lead with a **round check**. Pressing it completes the action (or, in Resolved, reopens it) in place, through the same `completeAction` / `reopenAction` the card and popover use, with a brief pop; the row then moves to the other side. Read-only visitors see the check as a static status disc. The body is the action name (up to two lines, struck through once done) over a quiet meta line: the element label and the relative time. The assignee sits on the right: a **You** chip in brand for your own, otherwise an initials avatar with the name on its hover card.
+- **Action rows** lead with a **round check**. Pressing it completes the action (or, in Resolved, reopens it) in place, through the same `completeAction` / `reopenAction` the popover uses, with a brief pop; the row then moves to the other side. Read-only visitors see the check as a static status disc. The body is the action name (up to two lines, struck through once done) over a quiet meta line: the element label and the relative time. The assignee sits on the right: a **You** chip in brand for your own, otherwise an initials avatar with the name on its hover card.
 - **Comment rows** lead with a bubble disc tinted in the latest author's colour, carrying the thread's comment count. The body is the element label over the latest comment, prefixed with its author's first name ("Priya: Agreed, let's queue it"), clamped to two lines, and the relative time sits top-right.
 - **Rows** are rounded, tinted on hover, fully keyboard reachable (the row is a button; the check is its own button with a label naming the action), and slide in on a short stagger (`stagger-enter`).
-- **Row click goes to the conversation.** For an ordinary element it
-  selects the element and opens its matching popover (comment thread /
-  action). For an element that **is** the conversation, a
-  [Comment panel](comment-pin.md) (`comment-pin`) or an [Action panel](action-panel.md) (`action-card`),
-  it selects the card and **scrolls the canvas to centre it** instead: the
-  card already shows the thread or the action, so a popover beside it would
-  only repeat it. As a popover the panel closes once a row is clicked, so it
+- **Row click goes to the conversation.** It selects the element and opens its matching popover (comment thread /
+  action). As a popover the panel closes once a row is clicked, so it
   never covers where the click took you.
 - **Density.** Rows breathe: 12px horizontal and 10px vertical padding, a
   6px gap between rows and 12px between sections, the body at a relaxed
