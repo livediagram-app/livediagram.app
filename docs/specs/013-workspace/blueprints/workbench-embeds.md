@@ -41,7 +41,7 @@ It provides these names to sibling blueprints ([CLI](../../015-api/blueprints/cl
 
 | File                                                                                                                                                                         | Role                                                                                                                                                                                                                      |
 | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `apps/api/migrations/0001_liveplanner_baseline.sql`                                                                                                                                     | Tables `workbench_pairing_requests`, `workbench_pairings`, `workbench_tickets`, `workbench_sessions`; `ws_tickets.workbench_pairing`                                                                                      |
+| `apps/api/migrations/0001_liveplanner_baseline.sql`                                                                                                                          | Tables `workbench_pairing_requests`, `workbench_pairings`, `workbench_tickets`, `workbench_sessions`; `ws_tickets.workbench_pairing`                                                                                      |
 | `packages/api-schema/src/workbench.ts` (new, + test)                                                                                                                         | Constants; wire types of every route; `parseWorkbenchOrigin`; `isWorkbenchSessionFormat`; `WorkbenchRole`, `capWorkbenchRole`; `WORKBENCH_ERROR_CODES`; `WORKBENCH_ROUTES`, `workbenchRouteVerdict`                       |
 | `packages/api-schema/src/workbench-messages.ts` (new, + test)                                                                                                                | The ten message types, `WORKBENCH_MESSAGE_TYPES`, `parseWorkbenchMessage`                                                                                                                                                 |
 | `packages/api-schema/src/room-messages.ts`                                                                                                                                   | `WORKBENCH_ENDED_CLOSE = 4006`                                                                                                                                                                                            |
@@ -133,7 +133,7 @@ The workspace scope adds or changes, by file:
 
 | File                                                                                                                                                     | Role                                                                                                                                                       |
 | -------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `apps/api/migrations/0001_liveplanner_baseline.sql`                                                                                                       | `scope` on requests, pairings, tickets and sessions; `folder_id` and a nullable `document_id` on tickets and sessions (rebuilt); `workbench_session_rooms` |
+| `apps/api/migrations/0001_liveplanner_baseline.sql`                                                                                                      | `scope` on requests, pairings, tickets and sessions; `folder_id` and a nullable `document_id` on tickets and sessions (rebuilt); `workbench_session_rooms` |
 | `packages/api-schema/src/workbench.ts`                                                                                                                   | `WorkbenchScope`, `WORKBENCH_SCOPES`, `pairingCoversScope`; the scoped wire types; `workbenchRouteVerdict` by scope (`WORKSPACE_ROUTES`)                   |
 | `packages/api-schema/src/workbench-messages.ts`                                                                                                          | `liveplanner:place`, `liveplanner:open`; the workspace `ready`                                                                                             |
 | `apps/api/src/db/workbench.ts`                                                                                                                           | Scope and folder on every row; requests per scope; approval widens a pairing; `noteWorkbenchSessionRoom`                                                   |
@@ -961,101 +961,90 @@ covers them by dispatch probe.
 
 ## Data and persistence
 
-Migration `apps/api/migrations/0001_liveplanner_baseline.sql` (WB40):
+The baseline migration, `apps/api/migrations/0001_liveplanner_baseline.sql` (WB40, WB64), creates the four tables,
+the rooms table, and the `ws_tickets.workbench_pairing TEXT NULL` column:
 
 ```sql
-CREATE TABLE workbench_pairing_requests (
-  id TEXT PRIMARY KEY,
-  code TEXT NOT NULL UNIQUE,
-  owner_id TEXT NOT NULL,
-  token_id TEXT NOT NULL REFERENCES api_tokens(id) ON DELETE CASCADE,
-  origin TEXT NOT NULL,
-  name TEXT NULL,
-  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'declined')),
-  created_at INTEGER NOT NULL,
-  expires_at INTEGER NOT NULL,
-  answered_at INTEGER NULL
-);
-CREATE UNIQUE INDEX workbench_pairing_requests_live
-  ON workbench_pairing_requests (token_id, origin) WHERE status = 'pending';
-CREATE INDEX workbench_pairing_requests_expiry ON workbench_pairing_requests (expires_at);
-
 CREATE TABLE workbench_pairings (
-  id TEXT PRIMARY KEY,
-  owner_id TEXT NOT NULL,
-  token_id TEXT NOT NULL REFERENCES api_tokens(id) ON DELETE CASCADE,
-  origin TEXT NOT NULL,
-  name TEXT NULL,
+  id         TEXT    PRIMARY KEY,
+  owner_id   TEXT    NOT NULL,
+  token_id   TEXT    NOT NULL REFERENCES api_tokens (id) ON DELETE CASCADE,
+  origin     TEXT    NOT NULL,
+  name       TEXT    NULL,
   created_at INTEGER NOT NULL,
+  scope      TEXT    NOT NULL DEFAULT 'document' CHECK (scope IN ('document', 'workspace')),
   UNIQUE (token_id, origin)
 );
 CREATE INDEX workbench_pairings_owner ON workbench_pairings (owner_id);
 
-CREATE TABLE workbench_tickets (
-  ticket_hash TEXT PRIMARY KEY,
-  owner_id TEXT NOT NULL,
-  token_id TEXT NOT NULL REFERENCES api_tokens(id) ON DELETE CASCADE,
-  pairing_id TEXT NOT NULL REFERENCES workbench_pairings(id) ON DELETE CASCADE,
-  document_id TEXT NOT NULL REFERENCES documents(id) ON DELETE CASCADE,
-  tab_id TEXT NULL,
-  origin TEXT NOT NULL,
-  role TEXT NOT NULL CHECK (role IN ('view', 'participate', 'edit')),
-  created_at INTEGER NOT NULL,
-  expires_at INTEGER NOT NULL,
-  used_at INTEGER NULL
+CREATE TABLE workbench_pairing_requests (
+  id          TEXT    PRIMARY KEY,
+  code        TEXT    NOT NULL UNIQUE,
+  owner_id    TEXT    NOT NULL,
+  token_id    TEXT    NOT NULL REFERENCES api_tokens (id) ON DELETE CASCADE,
+  origin      TEXT    NOT NULL,
+  name        TEXT    NULL,
+  status      TEXT    NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'declined')),
+  created_at  INTEGER NOT NULL,
+  expires_at  INTEGER NOT NULL,
+  answered_at INTEGER NULL,
+  scope       TEXT    NOT NULL DEFAULT 'document' CHECK (scope IN ('document', 'workspace'))
 );
-CREATE INDEX workbench_tickets_expiry ON workbench_tickets (expires_at);
-
-CREATE TABLE workbench_sessions (
-  id TEXT PRIMARY KEY,
-  secret_hash TEXT NOT NULL UNIQUE,
-  owner_id TEXT NOT NULL,
-  token_id TEXT NOT NULL REFERENCES api_tokens(id) ON DELETE CASCADE,
-  pairing_id TEXT NOT NULL REFERENCES workbench_pairings(id) ON DELETE CASCADE,
-  document_id TEXT NOT NULL REFERENCES documents(id) ON DELETE CASCADE,
-  tab_id TEXT NULL,
-  origin TEXT NOT NULL,
-  role TEXT NOT NULL CHECK (role IN ('view', 'participate', 'edit')),
-  created_at INTEGER NOT NULL,
-  expires_at INTEGER NOT NULL
-);
-CREATE INDEX workbench_sessions_pairing ON workbench_sessions (pairing_id);
-CREATE INDEX workbench_sessions_expiry ON workbench_sessions (expires_at);
-
-ALTER TABLE ws_tickets ADD COLUMN workbench_pairing TEXT NULL;
-```
-
-Migration `apps/api/migrations/0001_liveplanner_baseline.sql` (WB64) adds the scope. Tickets and sessions are rebuilt,
-since SQLite cannot drop a `NOT NULL`; no table references either, so the rebuild drops and renames with no parked
-rows, and every row is copied as `document`:
-
-```sql
-ALTER TABLE workbench_pairing_requests ADD COLUMN scope TEXT NOT NULL DEFAULT 'document'
-  CHECK (scope IN ('document', 'workspace'));
-DROP INDEX workbench_pairing_requests_live;
+CREATE INDEX workbench_pairing_requests_expiry ON workbench_pairing_requests (expires_at);
 CREATE UNIQUE INDEX workbench_pairing_requests_live
   ON workbench_pairing_requests (token_id, origin, scope) WHERE status = 'pending';
 
-ALTER TABLE workbench_pairings ADD COLUMN scope TEXT NOT NULL DEFAULT 'document'
-  CHECK (scope IN ('document', 'workspace'));
+CREATE TABLE workbench_tickets (
+  ticket_hash TEXT    PRIMARY KEY,
+  owner_id    TEXT    NOT NULL,
+  token_id    TEXT    NOT NULL REFERENCES api_tokens (id) ON DELETE CASCADE,
+  pairing_id  TEXT    NOT NULL REFERENCES workbench_pairings (id) ON DELETE CASCADE,
+  scope       TEXT    NOT NULL DEFAULT 'document' CHECK (scope IN ('document', 'workspace')),
+  document_id TEXT    NULL REFERENCES documents (id) ON DELETE CASCADE,
+  folder_id   TEXT    NULL,
+  tab_id      TEXT    NULL,
+  origin      TEXT    NOT NULL,
+  role        TEXT    NOT NULL CHECK (role IN ('view', 'participate', 'edit')),
+  created_at  INTEGER NOT NULL,
+  expires_at  INTEGER NOT NULL,
+  used_at     INTEGER NULL,
+  CHECK ((scope = 'document') = (document_id IS NOT NULL)),
+  CHECK (scope = 'workspace' OR folder_id IS NULL)
+);
+CREATE INDEX workbench_tickets_document_idx ON workbench_tickets (document_id);
+CREATE INDEX workbench_tickets_expiry ON workbench_tickets (expires_at);
 
--- workbench_tickets and workbench_sessions, each: CREATE TABLE <t>_new as before but
---   document_id TEXT NULL REFERENCES documents(id) ON DELETE CASCADE,
---   scope TEXT NOT NULL DEFAULT 'document' CHECK (scope IN ('document', 'workspace')),
---   folder_id TEXT NULL,
---   CHECK ((scope = 'document') = (document_id IS NOT NULL)),
---   CHECK (scope = 'workspace' OR folder_id IS NULL);
--- INSERT ... SELECT the old columns; DROP the old table; RENAME; recreate its indexes.
+CREATE TABLE workbench_sessions (
+  id          TEXT    PRIMARY KEY,
+  secret_hash TEXT    NOT NULL UNIQUE,
+  owner_id    TEXT    NOT NULL,
+  token_id    TEXT    NOT NULL REFERENCES api_tokens (id) ON DELETE CASCADE,
+  pairing_id  TEXT    NOT NULL REFERENCES workbench_pairings (id) ON DELETE CASCADE,
+  scope       TEXT    NOT NULL DEFAULT 'document' CHECK (scope IN ('document', 'workspace')),
+  document_id TEXT    NULL REFERENCES documents (id) ON DELETE CASCADE,
+  folder_id   TEXT    NULL,
+  tab_id      TEXT    NULL,
+  origin      TEXT    NOT NULL,
+  role        TEXT    NOT NULL CHECK (role IN ('view', 'participate', 'edit')),
+  created_at  INTEGER NOT NULL,
+  expires_at  INTEGER NOT NULL,
+  CHECK ((scope = 'document') = (document_id IS NOT NULL)),
+  CHECK (scope = 'workspace' OR folder_id IS NULL)
+);
+CREATE INDEX workbench_sessions_document_idx ON workbench_sessions (document_id);
+CREATE INDEX workbench_sessions_expiry ON workbench_sessions (expires_at);
+CREATE INDEX workbench_sessions_pairing ON workbench_sessions (pairing_id);
 
+-- The projects a workspace-scoped session has opened rooms on, so revoking the session closes them.
 CREATE TABLE workbench_session_rooms (
-  session_id TEXT NOT NULL REFERENCES workbench_sessions(id) ON DELETE CASCADE,
-  document_id TEXT NOT NULL REFERENCES documents(id) ON DELETE CASCADE,
+  session_id  TEXT NOT NULL REFERENCES workbench_sessions (id) ON DELETE CASCADE,
+  document_id TEXT NOT NULL REFERENCES documents (id) ON DELETE CASCADE,
   PRIMARY KEY (session_id, document_id)
 );
+CREATE INDEX workbench_session_rooms_document_idx ON workbench_session_rooms (document_id);
 ```
 
-- Every pairing approved before 0099 reads `document`, as the spec says. `folder_id` has no foreign key: a folder
-  deleted since is only a start place the Explorer reports as gone.
+- `folder_id` has no foreign key: a folder deleted since is only a start place the Explorer reports as gone.
 - `workbench_session_rooms` is ephemeral with its session (cascade, and the sweep's session delete); it carries no
   owner id, so account deletion reaches it through `workbench_sessions`.
 
@@ -1344,7 +1333,7 @@ and the two CLI rows.
 | Origin shapes: every accepted and refused form of the spec and E1                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | `packages/api-schema/src/workbench.test.ts`                                                                             |
 | Allow-list: every row allowed, every listed confined route refused, another document `other-document`                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | `packages/api-schema/src/workbench.test.ts` (table-driven)                                                              |
 | Message parse: each type, bounds, unknown, `v: 2`, invalid fields                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | `packages/api-schema/src/workbench-messages.test.ts`                                                                    |
-| Migration 0077: tables, indexes, cascades from `api_tokens`, `documents`, `workbench_pairings`                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | `apps/api/src/db/workbench.test.ts` (real SQLite)                                                                       |
+| Baseline migration: tables, indexes, cascades from `api_tokens`, `documents`, `workbench_pairings`                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | `apps/api/src/db/workbench.test.ts` (real SQLite)                                                                       |
 | Account deletion and the owner-keyed ledger                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | `apps/api/src/db/account-owner-columns.test.ts`                                                                         |
 | Unpaired mint 428 with a URL; second mint same request; expired request replaced                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | `apps/api/src/routes/workbench-ticket-route.test.ts`                                                                    |
 | Mint refusals: token required, confined, origin, body, 404, 410, tab not linked, 429; share code ignored                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | `workbench-ticket-route.test.ts`                                                                                        |
@@ -1392,7 +1381,7 @@ The workspace scope's tests:
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------- |
 | `pairingCoversScope`; `WORKSPACE_ROUTES`: every allowed class allowed, every confined class refused, ambient headers by scope                                                                                                                                                                                      | `packages/api-schema/src/workbench.test.ts` (table-driven)                                              |
 | `place`, `open`, workspace `ready`: shapes, bounds, invalid fields                                                                                                                                                                                                                                                 | `packages/api-schema/src/workbench-messages.test.ts`                                                    |
-| Migration 0099: old pairings read `document`; the CHECKs; the rebuilt indexes; the rooms table cascades                                                                                                                                                                                                            | `apps/api/src/db/workbench.test.ts` (real SQLite)                                                       |
+| Scope: the CHECKs; the indexes; the rooms table cascades                                                                                                                                                                                                                                                           | `apps/api/src/db/workbench.test.ts` (real SQLite)                                                       |
 | Requests per scope; approval widens, never narrows; `paired` only when covering                                                                                                                                                                                                                                    | `workbench-pairing-routes.test.ts`, `db/workbench.test.ts`                                              |
 | Workspace mint: 428 on a document pairing, 201 on a workspace one, document mint on a workspace pairing, `invalid_value` cases, folder reach (personal, team member, stranger 404), view token view                                                                                                                | `workbench-ticket-route.test.ts`                                                                        |
 | Workspace redemption: the scoped answer, no document check                                                                                                                                                                                                                                                         | `workbench-session-routes.test.ts`                                                                      |

@@ -87,8 +87,7 @@ All seven deploy jobs use raw `pnpm exec wrangler` rather than `cloudflare/wrang
 ### Renaming migrations
 
 Most migrations only add, so the new worker running briefly on the newer schema is harmless. A
-migration that **renames** (`0055_documents.sql`, [Document](../006-document/document.md#renaming-from-diagram))
-is different: from the moment it applies until the new api worker is live, the old worker's queries
+migration that **renames** a table or column is different: from the moment it applies until the new api worker is live, the old worker's queries
 name tables that no longer exist, and the other apps' workers deploy separately, so old and new
 versions briefly serve side by side. The deploy keeps that window short and recoverable:
 

@@ -208,8 +208,8 @@ or opens a hole; "should" is a strong preference.
   Q&A (anything less is a loss). Gaining dots and answers is a widening that needs Webber's explicit
   consent (worktree Open A1).
 - **C23. The schema enforces two roles.** `share_links.role` and `shared_with.role` carry
-  `CHECK (role IN ('edit', 'view'))` ([0003](../../../apps/api/migrations/0001_liveplanner_baseline.sql),
-  [0010](../../../apps/api/migrations/0001_liveplanner_baseline.sql)). SQLite cannot alter a CHECK in place; it
+  `CHECK (role IN ('edit', 'view'))` ([baseline migration](../../../apps/api/migrations/0001_liveplanner_baseline.sql)).
+  SQLite cannot alter a CHECK in place; it
   needs the table rebuild procedure ([SQLite: ALTER TABLE](https://www.sqlite.org/lang_altertable.html#otheralter)).
 - **C24. Old readers fail open.** During the deploy window the migration is applied just before the
   new api worker goes live ([Deployment](../../specs/016-platform/deployment.md)), so the old worker
@@ -282,7 +282,7 @@ ideas.
   "Commenter" undersells what the level does in a session: a retro participant does not think of a
   dot vote as a comment.
 - **Server gates.** `gateComment` beside `gateRead`/`gateEdit`; `minimumRoleForOp` with `poll-answer`,
-  `vote`, `response`, `idea` at comment; token classifier `requiredTokenRole`; migration 0067 rebuilds
+  `vote`, `response`, `idea` at comment; token classifier `requiredTokenRole`; a migration rebuilds
   two tables. All specified in the worktree blueprint.
 - **Risks.** The deploy window as drafted maps view to comment in the same deploy that introduces it,
   so the old `rowToShareLink` reads `comment` as edit (C24, worktree Open A7). C11 and C14 are not yet

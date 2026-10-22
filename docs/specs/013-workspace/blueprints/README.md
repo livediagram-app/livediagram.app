@@ -13,8 +13,8 @@ Follow the references below only as needed; never upfront.
 - ./explorer-home.md - when changing Home's data: recording opens, Jump Back In's Within reach set, the `/api/home` read and its wire
 - ./explorer-home-view.md - when changing the Home page: its route, Jump Back In (grid, phone strip, See More), What Happened entries, local opens
 - ./share-roles.md - when implementing or changing access levels (Viewer, Participant, Editor): the participant content rule, the room's participant write path and adder keys, the Plan and Sheet doors, editor capabilities, the Share dialog and role pill
-- ./workbench-embeds.md - when implementing or changing workbench embeds: pairing, tickets, `lvw_` sessions and their confinement, migration 0077, the `/embed/workbench` page and its messages, the selection reference, `/workbench/pair`, Settings pairings, `workbench open` and `pair`
-- ./team-invites.md - when changing team invites: the decline token and its open doors, rejected rows, the reminder and expiry sweep, migration 0095
+- ./workbench-embeds.md - when implementing or changing workbench embeds: pairing, tickets, `lvw_` sessions and their confinement, the tables, the `/embed/workbench` page and its messages, the selection reference, `/workbench/pair`, Settings pairings, `workbench open` and `pair`
+- ./team-invites.md - when changing team invites: the decline token and its open doors, rejected rows, the reminder and expiry sweep, the invite columns
 - ./DEFAULTS.md - when a workspace blueprint applies a default the spec leaves open
 - ./COMPLETENESS.md - when checking which completeness categories a workspace blueprint covers
 - ./empty-document-cleanup.md - when implementing or changing the daily move of empty documents to the Trash: the sweep, the trash reason, the restore restart

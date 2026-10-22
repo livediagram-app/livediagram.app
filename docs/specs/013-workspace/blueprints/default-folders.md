@@ -8,34 +8,33 @@ as `Dn`.
 
 Scope, by file:
 
-| File                                                      | Role                                                                                                           |
-| --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| `packages/document/src/editor-mode.ts`                    | `EDITOR_MODES` (read off `EDITOR_MODE_CATALOGUE`), `EditorMode`, `DEFAULT_EDITOR_MODE`, `isEditorMode` (`D27`) |
-| `packages/api-schema/src/placement-defaults.ts`           | Dimensions, keys, intent, `creationIntentOf`, `readCreationIntent`, telemetry values                           |
-| `packages/templates/src/template-families.ts`             | `templateFamilyOf`: the one exhaustive template to template family map                                         |
-| `apps/api/migrations/0001_liveplanner_baseline.sql`         | The `placement_defaults` table (`D17`)                                                                         |
-| `apps/api/migrations/0001_liveplanner_baseline.sql`   | `documents.opens_in`, `documents.tab_kind`, `documents.template_family`                                        |
-| `apps/api/src/document-intent-row.ts`                     | `readRecordedIntent`: stored text to the lists, else null                                                      |
-| `apps/api/src/db/documents.ts`                            | The create insert writes the record; reads expose it; the copy carries it                                      |
-| `apps/api/src/db/placement-defaults.ts`                   | `listPlacementDefaults`, `setPlacementDefault`, `clearPlacementDefault`                                        |
-| `apps/api/src/db/account.ts`                              | Account deletion and owner migration statements                                                                |
-| `apps/api/src/placement/placement-types.ts`               | `RequestedPlacement`, `PlacementCaller`, `PlacementLookups`, `PlacementOutcome`, steps                         |
-| `apps/api/src/placement/default-folder.ts`                | `judgeDefaultFolder`, `joinedFolderTeam`, the `defaultFolder` step                                             |
-| `apps/api/src/placement/resolve-placement.ts`             | `parsePlacement` (chosen or not); `FOLDER_STEPS = [explicitFolder, defaultFolder]`                             |
-| `apps/api/src/placement/placement-lookups.ts`             | `getPlacementDefaults(ownerId)` beside the membership and folder reads                                         |
-| `apps/api/src/placement/placement-log.ts`                 | The `placement:` and `placement-defaults:` fingerprints                                                        |
-| `apps/api/src/placement/placement-response.ts`            | `intentRejected()`                                                                                             |
-| `apps/api/src/routes/placement-defaults.ts`               | `GET` / `PUT` / `DELETE /api/placement-defaults[/:key]`                                                        |
-| `apps/api/src/routes/documents.ts`                        | `POST /api/documents` reads `intent`, resolves, records                                                        |
-| `apps/api/src/index.ts`, `auth/guest-rest.ts`             | Dispatch case; owner-scoped segment                                                                            |
-| `packages/api-schema/src/error-telemetry.ts`              | `placement-defaults` in `API_ROUTE_RESOURCES`                                                                  |
-| `apps/api/src/openapi/manifest.ts`                        | The three routes; the create body's `folderId` semantics and `intent`                                          |
-| `apps/live/lib/api/placement-defaults.ts`                 | `apiListPlacementDefaults`, `apiSetPlacementDefault`, `apiClearPlacementDefault`                               |
-| `apps/live/lib/api/documents.ts`                          | `apiCreateDocument` sends `folderId` when not `undefined` (null included) and `intent`                         |
-| `apps/live/app/new/page.tsx` (`createByDefault`)          | The wizard's placement: the `/new?folder=` / `?team=` context, else none                                       |
-| `apps/live/app/new/page.tsx`                              | The wizard and its bypasses send the first tab's intent and the template's family                              |
-| `apps/live/lib/duplicate-document.ts`                     | Duplicate: beside the source, the source's recorded intent, root on refusal                                    |
-| `apps/mcp/src/tools.ts`, `apps/mcp/src/created-folder.ts` | `create_document` sends the intent; reports the folder it landed in                                            |
+| File                                                      | Role                                                                                                            |
+| --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `packages/document/src/editor-mode.ts`                    | `EDITOR_MODES` (read off `EDITOR_MODE_CATALOGUE`), `EditorMode`, `DEFAULT_EDITOR_MODE`, `isEditorMode` (`D27`)  |
+| `packages/api-schema/src/placement-defaults.ts`           | Dimensions, keys, intent, `creationIntentOf`, `readCreationIntent`, telemetry values                            |
+| `packages/templates/src/template-families.ts`             | `templateFamilyOf`: the one exhaustive template to template family map                                          |
+| `apps/api/migrations/0001_liveplanner_baseline.sql`       | The `placement_defaults` table (`D17`); `documents.opens_in`, `documents.tab_kind`, `documents.template_family` |
+| `apps/api/src/document-intent-row.ts`                     | `readRecordedIntent`: stored text to the lists, else null                                                       |
+| `apps/api/src/db/documents.ts`                            | The create insert writes the record; reads expose it; the copy carries it                                       |
+| `apps/api/src/db/placement-defaults.ts`                   | `listPlacementDefaults`, `setPlacementDefault`, `clearPlacementDefault`                                         |
+| `apps/api/src/db/account.ts`                              | Account deletion and owner migration statements                                                                 |
+| `apps/api/src/placement/placement-types.ts`               | `RequestedPlacement`, `PlacementCaller`, `PlacementLookups`, `PlacementOutcome`, steps                          |
+| `apps/api/src/placement/default-folder.ts`                | `judgeDefaultFolder`, `joinedFolderTeam`, the `defaultFolder` step                                              |
+| `apps/api/src/placement/resolve-placement.ts`             | `parsePlacement` (chosen or not); `FOLDER_STEPS = [explicitFolder, defaultFolder]`                              |
+| `apps/api/src/placement/placement-lookups.ts`             | `getPlacementDefaults(ownerId)` beside the membership and folder reads                                          |
+| `apps/api/src/placement/placement-log.ts`                 | The `placement:` and `placement-defaults:` fingerprints                                                         |
+| `apps/api/src/placement/placement-response.ts`            | `intentRejected()`                                                                                              |
+| `apps/api/src/routes/placement-defaults.ts`               | `GET` / `PUT` / `DELETE /api/placement-defaults[/:key]`                                                         |
+| `apps/api/src/routes/documents.ts`                        | `POST /api/documents` reads `intent`, resolves, records                                                         |
+| `apps/api/src/index.ts`, `auth/guest-rest.ts`             | Dispatch case; owner-scoped segment                                                                             |
+| `packages/api-schema/src/error-telemetry.ts`              | `placement-defaults` in `API_ROUTE_RESOURCES`                                                                   |
+| `apps/api/src/openapi/manifest.ts`                        | The three routes; the create body's `folderId` semantics and `intent`                                           |
+| `apps/live/lib/api/placement-defaults.ts`                 | `apiListPlacementDefaults`, `apiSetPlacementDefault`, `apiClearPlacementDefault`                                |
+| `apps/live/lib/api/documents.ts`                          | `apiCreateDocument` sends `folderId` when not `undefined` (null included) and `intent`                          |
+| `apps/live/app/new/page.tsx` (`createByDefault`)          | The wizard's placement: the `/new?folder=` / `?team=` context, else none                                        |
+| `apps/live/app/new/page.tsx`                              | The wizard and its bypasses send the first tab's intent and the template's family                               |
+| `apps/live/lib/duplicate-document.ts`                     | Duplicate: beside the source, the source's recorded intent, root on refusal                                     |
+| `apps/mcp/src/tools.ts`, `apps/mcp/src/created-folder.ts` | `create_document` sends the intent; reports the folder it landed in                                             |
 
 ## Domain and naming
 
@@ -130,8 +129,8 @@ Location step and no client-side resolution ([New document route](../../007-edit
 
 ## Recorded intent
 
-- Migration 0062: `ALTER TABLE documents ADD COLUMN opens_in TEXT`, `ADD COLUMN tab_kind TEXT`,
-  `ADD COLUMN template_family TEXT`; nullable, no default, no backfill: existing rows read unknown.
+- `documents.opens_in TEXT`, `documents.tab_kind TEXT`, `documents.template_family TEXT`: nullable, no default;
+  a null reads unknown.
 - `upsertDocumentMeta` takes `opensIn` / `tabKind` / `templateFamily` and writes them in the INSERT
   only; the `ON CONFLICT` update never sets them.
 - `POST /api/documents` records `intent.mode`, `intent.tabKind`, `intent.templateFamily ?? null` when

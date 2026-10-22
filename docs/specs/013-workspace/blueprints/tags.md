@@ -7,7 +7,7 @@ Derived from [Tags](../tags.md). Implementation detail only; design lives in the
 | Term          | Identifier                                               | Where                                   |
 | ------------- | -------------------------------------------------------- | --------------------------------------- |
 | Tag           | `Tag` `{ id, name, colour, createdAt }`                  | `packages/api-schema/src/tags.ts`       |
-| Link          | `TagLink` `{ tagId, documentId }`; table `document_tags` | api-schema, migration `0094_tags.sql`   |
+| Link          | `TagLink` `{ tagId, documentId }`; table `document_tags` | api-schema, the baseline migration      |
 | Tag list      | `TagsList` `{ tags, links }`                             | `GET /api/tags`                         |
 | Tag picker    | `TagPicker`, opened through `openPicker(target)`         | `apps/live/components/tags/`            |
 | Chip / dots   | `TagChip`, `DocumentTagChips`, `DocumentTagDots`         | `apps/live/components/tags/TagChip.tsx` |

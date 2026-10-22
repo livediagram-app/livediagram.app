@@ -116,7 +116,7 @@ diagrams
 - `folder_id IS NULL` means the document sits at the root of its space
   (My Documents, or its team). The root has no row in the folders
   table, so it can't be renamed or deleted.
-- `source` records how the document came to exist (migration 0028): NULL
+- `source` records how the document came to exist: NULL
   for one a person made in the editor; `'mcp'` for one an external AI tool
   created through the MCP server ([MCP server](../015-api/mcp-server.md)); `'ai'` reserved for the
   in-editor AI assistant (no producer today); `'cli'` for one the [CLI](../015-api/cli.md) created, which
@@ -161,8 +161,8 @@ documents wherever they are filed.
   a folder deleted after the route's own read files nothing and the
   move answers `404`.
 
-Migration `0007_folders.sql` creates the `folders` table and adds
-the `folder_id` column.
+The baseline migration (`apps/api/migrations/0001_liveplanner_baseline.sql`) creates the `folders`
+table and the `folder_id` column.
 
 ### Deleting a folder
 

@@ -678,10 +678,7 @@ Home's count.
 
 ## 3. Data model
 
-<!-- legacy-names -->
-
-Migration `0042_timeline.sql`. Three tables, owned by the api worker. Migration `0055_documents.sql` renamed the `diagram` source and scope types, the `diagram_*` and `team_diagram_*` event types, the stored titles ("Diagram Created" and so on) and the snapshot keys `diagramId` / `diagramName` to their document forms ([Document](../006-document/document.md#renaming-from-diagram)).
-<!-- /legacy-names -->
+Three tables, owned by the api worker. Source and scope types, event types, stored titles and snapshot keys name the container a document ([Document](../006-document/document.md#renaming-from-diagram)).
 
 ### 3.1 `timeline_events`
 
@@ -741,7 +738,7 @@ CREATE TABLE timeline_event_scopes (
   scope_type TEXT NOT NULL,               -- v1: 'user'. Reserved: 'diagram', 'team'.
   scope_id   TEXT NOT NULL,               -- an owner id when scope_type = 'user'
   added_at   INTEGER NOT NULL,
-  deleted_at INTEGER,                     -- was set by Remove from Timeline (§2.9, removed); migration 0044
+  deleted_at INTEGER,                     -- was set by Remove from Timeline (§2.9, removed)
   PRIMARY KEY (scope_type, scope_id, event_id)
 );
 
@@ -767,15 +764,12 @@ measurement, not a hunch.
 CREATE TABLE timeline_scope_state (
   scope_type       TEXT NOT NULL,
   scope_id         TEXT NOT NULL,
-  backfilled_at    INTEGER,               -- was set by the one-shot backfill (§5, removed); no longer written
-  last_refreshed_at INTEGER,
+  last_seen_at     INTEGER,
   PRIMARY KEY (scope_type, scope_id)
 );
 ```
 
-One row per scope. `backfilled_at` gated the one-shot seeding (§5, removed)
-and is no longer written; `last_seen_at` (migration 0043, renamed from
-`last_refreshed_at`) is the unread watermark (§2.5).
+One row per scope. `last_seen_at` is the unread watermark (§2.5).
 
 ### 3.4 What the scope model bought
 
@@ -824,7 +818,7 @@ Still open:
   membership row, so a future composite read can't bleed one scope's
   stars into another's.
 - **Per-entry dismissal** was a `deleted_at` on the membership row
-  (§2.9, migration `0045_timeline_dismissal`), and went with the Explorer's
+  (§2.9), and went with the Explorer's
   Timeline section.
 
 Favourites are not built. Everything here is additive.
@@ -851,8 +845,7 @@ Favourites are not built. Everything here is additive.
   Deleted / Payments architecture", in danger red, surviving the sweep
   by being written after it — and it was noise the reader had asked to
   be rid of: the delete was their own act, and a red card for it told
-  them nothing they didn't know. Migration `0045` swept the rows already
-  written. (Folders, themes and teams keep their tombstones: those are
+  them nothing they didn't know. (Folders, themes and teams keep their tombstones: those are
   the one row that answers "what happened to it?" for a container other
   people may have relied on.)
   `markTimelineEventsDeletedBySource(env, sourceType, sourceId)` is the

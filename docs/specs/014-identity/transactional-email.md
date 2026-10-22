@@ -38,16 +38,16 @@ invite** — read from the [User preferences](../007-editor/user-preferences.md)
 
 6. **Activation nudge** (#4, onboarding) — ~3 days after sign-up, to anyone who
    still has zero documents (`dueForActivation`'s `NOT EXISTS` check). Daily cron,
-   opt-out `notifyTips`. `activation_sent_at`, migration 0031.
+   opt-out `notifyTips`. `activation_sent_at`.
 7. **Win-back** (#5, opt-out `notifyTips`) — one-shot for owners quiet ~4 weeks
    (last document activity via the newest `documents.saved_at`; zero-document owners are excluded,
-   that's #4's job). Daily cron. `winback_sent_at`, migration 0032.
+   that's #4's job). Daily cron. `winback_sent_at`.
 8. **Milestone** (#6, opt-out `notifyMilestones`) — a celebration when an owner's
    document count reaches 10, fired on a genuine create. Atomic `claimMilestone`
-   dedups a burst of saves. `milestone_sent_at`, migration 0033.
+   dedups a burst of saves. `milestone_sent_at`.
 9. **API-token expiry** (#3, transactional) — 7 days before a token's 6-month
    expiry, so a script / connected tool doesn't silently break. Daily cron.
-   `api_tokens.expiry_warned_at`, migration 0030.
+   `api_tokens.expiry_warned_at`.
 10. **New comment** (#1, opt-out `notifyComments`) — when someone other than the
     owner comments on a document (either comment path), the owner is emailed
     **immediately** (no cron). Never includes the comment text. On the tab save
@@ -66,7 +66,7 @@ invite** — read from the [User preferences](../007-editor/user-preferences.md)
     invite link. The invite expires (is rejected) 28 days after it was sent. Not
     opt-out: the recipient may have no account to hold a preference, and the
     Decline link is the one-click way to stop them. Stamps on the invite's own
-    `team_members` row (`reminder1_sent_at` to `reminder3_sent_at`, `reminder_attempts`, `clock_started_at`, migration 0095); see [Teams → Reminders and expiry](../013-workspace/teams.md#reminders-and-expiry).
+    `team_members` row (`reminder1_sent_at` to `reminder3_sent_at`, `reminder_attempts`, `clock_started_at`); see [Teams → Reminders and expiry](../013-workspace/teams.md#reminders-and-expiry).
 
 The three opt-out lifecycle/notification categories (`notifyComments`,
 `notifyTips`, `notifyMilestones`) join the [Account settings & email notifications](profile-and-email-notifications.md) pair in `getNotificationPrefs`
@@ -97,7 +97,7 @@ Production: `wrangler secret put RESEND_API_KEY`.
 ## 3. Data model
 
 One table, keyed by the owner id (the Clerk `sub` — lifecycle email is
-authenticated-only). Migration `0029_email_lifecycle.sql`:
+authenticated-only):
 
 ```sql
 CREATE TABLE IF NOT EXISTS email_lifecycle (
@@ -152,7 +152,7 @@ enough for onboarding; no per-user timers.
 
 A failed send (the welcome inline, or any stage in the sweep) leaves its stamp
 unset for the next run to retry, and counts against the row: `send_attempts`
-goes up by one and `last_attempt_at` records when (migration 0086). Once a row
+goes up by one and `last_attempt_at` records when. Once a row
 reaches `MAX_SEND_ATTEMPTS` (3, in `db/email-lifecycle.ts`) every due-query
 skips it, so an address that always fails (a deleted mailbox, a hard bounce)
 cannot hold a place in the oldest-first batch for good; the sweep logs

@@ -12,7 +12,7 @@ Scope, by file:
 | File                                                                             | Role                                                                                        |
 | -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
 | `packages/api-schema/src/trash.ts`                                               | The clock and the wire: retention, days left, error code, close code, `TrashedDocument`     |
-| `apps/api/migrations/0001_liveplanner_baseline.sql`                                     | `documents.trashed_at` + the partial index                                                  |
+| `apps/api/migrations/0001_liveplanner_baseline.sql`                              | `documents.trashed_at` + the partial index                                                  |
 | `apps/api/src/db/trash.ts`                                                       | `trashDocument`, `restoreDocument`, `purgeDocuments`, `purgeExpiredTrash`, `listTrash`, ... |
 | `apps/api/src/db/document-removal.ts`                                            | `documentRemovalStatements` takes `{ ids }` besides one id / one owner                      |
 | `apps/api/src/db/documents.ts`                                                   | `getDocument`, `getDocumentMeta`, both lists: live rows only                                |
@@ -138,8 +138,7 @@ stops reconnecting.
 | `documents.trashed_at`            | state | INTEGER NULL, epoch ms; partial index `documents_trashed_idx` |
 | `OfflineDocumentRecord.trashedAt` | state | optional number; absent on every record written before it     |
 
-Migration 0051 adds the column and index; every existing row is live (NULL). No backfill. 0050 belongs to
-the image reference index; the two are independent (D1). Snapshot and restore are the row itself: nothing
+The baseline migration creates the column and index; a live row is NULL (D1). Snapshot and restore are the row itself: nothing
 is copied. Account deletion and guest-to-account migration act on `owner_id` and so carry trashed rows with
 the rest. Deleting a team re-homes its trashed documents to their owners' personal Trash (`team_id = NULL`).
 

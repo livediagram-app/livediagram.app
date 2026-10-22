@@ -24,7 +24,7 @@ The catalogue ships a fixed set of themes. Teams want their own palette (brand c
   CREATE INDEX custom_themes_owner_created_idx ON custom_themes (owner_id, created_at DESC);
   ```
 
-  (Migration `apps/api/migrations/0001_liveplanner_baseline.sql`, applied by CI on deploy like every other migration — never run against prod by hand.)
+  (In the baseline migration, `apps/api/migrations/0001_liveplanner_baseline.sql`, applied by CI on deploy like every migration — never run against prod by hand.)
 
 - The theme **id** for a custom theme is `custom:<uuid>`. The `custom:` prefix keeps it from ever colliding with a built-in `ThemeId`, and makes "is this a custom theme?" a cheap string check. It is stored on `Tab.theme` like any other theme id, so a document referencing a custom theme round-trips with no special-casing in the document model.
 

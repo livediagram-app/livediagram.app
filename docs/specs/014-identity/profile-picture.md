@@ -150,8 +150,7 @@ The picture is a URL, never bytes: nothing is proxied, and nothing is stored
 in R2. Two server-side places hold it, both set only by the person's own
 verified Clerk session and both cleared when the switch is off:
 
-- **The participant record** (`participants.picture_url`, D1 migration
-  `0058`). `PUT /api/participants/<id>/picture` sets or clears it; the caller
+- **The participant record** (`participants.picture_url`). `PUT /api/participants/<id>/picture` sets or clears it; the caller
   must be that id's verified Clerk session (a guest header or an API token is
   refused). `GET /api/participants/<id>` returns `pictureUrl` only to a
   signed-in caller, and team member lists carry it for joined members.

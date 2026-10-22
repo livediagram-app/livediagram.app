@@ -198,7 +198,7 @@ CREATE TABLE collab_threads (
   die with it (FK cascade), and a document's tabs die with the document.
 - **One row per action, one per thread.** An ordinary element carries at most
   one action and an Action panel a list ([The Action Panel](../012-collaboration/action-panel.md)), so `collab_actions` is keyed
-  `(tab_id, element_id, action_id)` (migration 0053); an element has one
+  `(tab_id, element_id, action_id)`; an element has one
   thread. Either way a save is a full replace of the
   tab's rows: `DELETE … WHERE tab_id = ?` for each table, then one
   `INSERT` per element that carries the thing. Idempotent, and it
@@ -293,7 +293,7 @@ Plan cards are items in the document's item store ([Items](../026-plan/items.md)
 not element JSON, so they need no blob projection: the read filters
 `items` directly. Two pieces make that cheap and correct:
 
-- **An expression index on the assignee.** Migration 0073 adds
+- **An expression index on the assignee.**
   `CREATE INDEX items_assignee ON items (json_extract(fields, '$.assignee.id'))`.
   An item's assignee id is `itemPersonId(userId)`, a one-way hash
   ([Item store blueprint](../026-plan/blueprints/item-store.md) "Security and trust"); the worker hashes the reader's
@@ -359,7 +359,7 @@ open (§4). A card's thread is listed when:
 - on a tab-scoped share, a board on the scoped tab shows the card (the same rule as §2.4).
 
 It is placed on a board exactly as §2.4 places a card. The read takes the newest `ACTIVITY_LIST_MAX` by latest
-comment. Migration 0074 adds a partial index, `items_open_threads ON items (document_id) WHERE
+comment. A partial index, `items_open_threads ON items (document_id) WHERE
 json_extract(fields, '$.comments.resolved') = 0`, so the read seeks only cards with an open thread in each
 visible document (measured: 20,000 cards, 2,000 open 20-comment threads, ~106ms; ~200ms without it). Author ids never leave the worker: the row carries the latest author's name and colour only.
 

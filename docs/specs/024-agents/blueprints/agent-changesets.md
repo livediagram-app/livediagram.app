@@ -22,7 +22,7 @@ Scope, by file:
 | `packages/document/src/element-fingerprint.ts`                                     | `canonicalElementJson`, `elementFingerprint`                                                                                       |
 | `packages/document/src/comments.ts`                                                | Exports `LIVE_ELEMENT_FIELDS`; `opForTheWire` strips comment author ids from a `changeset` op                                      |
 | `packages/document/src/element-ops.ts`                                             | `invertElementOps(before, ops)`, shared by the engine and the revert                                                               |
-| `apps/api/migrations/0001_liveplanner_baseline.sql`                                    | `tabs.rev`, the `tabs_rev_advances` trigger, `agent_changesets`, `agent_changeset_parts`                                           |
+| `apps/api/migrations/0001_liveplanner_baseline.sql`                                | `tabs.rev`, the `tabs_rev_advances` trigger, `agent_changesets`, `agent_changeset_parts`                                           |
 | `apps/api/src/tab-row.ts`                                                          | `TabRow.rev`; `rowToTab` returns it                                                                                                |
 | `apps/api/src/db/tabs.ts`                                                          | `getTab` reads `rev`; `upsertTab`, `seedTabs`, `swapTabData` advance it; new `upsertTabAtRev`, `renameTab`                         |
 | `apps/api/src/db/documents.ts`                                                     | The copy's tab insert starts at `rev` 1                                                                                            |
@@ -382,7 +382,7 @@ the room records `elementIds` whenever it is non-empty, a multi-selection withou
 Internal: `POST /mutation { op }` accepts `changeset` and `tab-meta`; `GET /selections` above. The person tag
 on the attachment comes from the ticket as the [agent presence blueprint](agent-presence.md) describes it
 (`personTagFor`, the mint storing it for a verified account, the upgrade forwarding `X-Verified-Person`); it is built
-with this file, its column `ws_tickets.person_tag` in migration 0067, since the held check needs it.
+with this file, its column `ws_tickets.person_tag` in the baseline migration, since the held check needs it.
 
 ### Shared functions
 
@@ -427,10 +427,9 @@ layout, theme, name } }`, no base; then reads the tab to render the PNG (CS36). 
 
 ## Data and persistence
 
-Migration `0067_agent_changesets.sql` (CS1):
+The baseline migration (CS1) gives `tabs` a `rev INTEGER NOT NULL DEFAULT 0` column and creates:
 
 ```sql
-ALTER TABLE tabs ADD COLUMN rev INTEGER NOT NULL DEFAULT 0;
 CREATE TRIGGER tabs_rev_advances BEFORE UPDATE OF data ON tabs
   WHEN NEW.rev IS NOT OLD.rev + 1
   BEGIN SELECT RAISE(ABORT, 'tab_rev_stale'); END;
@@ -466,7 +465,7 @@ CREATE TABLE agent_changeset_parts (
 
 | Field                          | Class              | Notes                                                                    |
 | ------------------------------ | ------------------ | ------------------------------------------------------------------------ |
-| `tabs.rev`                     | state              | 0 on every existing row; 1 on insert (CS2); +1 on every write of the tab |
+| `tabs.rev`                     | state              | 0 by default; 1 on insert (CS2); +1 on every write of the tab            |
 | `agent_changesets.id`          | identity           | `cs_` + 10                                                               |
 | `document_id`, `tab_id`, `rev` | reference          | `(tab_id, rev)` unique: one changeset per revision                       |
 | `base_rev`                     | audit              | Null without a base                                                      |

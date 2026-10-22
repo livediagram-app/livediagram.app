@@ -895,7 +895,7 @@ and schema resource.
 
 A trust story for cautious users: the MCP consent screen offers a **"read-only
 access"** checkbox. When ticked, the minted `lvd_` token carries `read_only = 1`
-([Public API and API tokens](public-api-and-tokens.md) §3.4, migration 0039), and the api worker rejects every write it
+([Public API and API tokens](public-api-and-tokens.md) §3.4), and the api worker rejects every write it
 presents — `POST`/`PUT`/`DELETE` → `403 read_only_token` — at a **single
 dispatch choke point** in `apps/api/src/index.ts`, so no write route can be
 reached, present or future, with no per-route changes. The read tools

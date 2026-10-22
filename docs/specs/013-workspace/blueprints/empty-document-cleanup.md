@@ -10,7 +10,7 @@ Scope, by file:
 | File                                                                      | Role                                                                                                         |
 | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
 | `packages/api-schema/src/trash.ts`                                        | `TrashReason`, `TrashedDocument.reason`, `EMPTY_DOCUMENT_STALE_DAYS` / `_MS`                                 |
-| `apps/api/migrations/0001_liveplanner_baseline.sql`                      | `documents.trash_reason`                                                                                     |
+| `apps/api/migrations/0001_liveplanner_baseline.sql`                       | `documents.trash_reason`                                                                                     |
 | `apps/api/src/db/empty-document-sweep.ts`                                 | `trashEmptyDocuments`: the set-based move, capped                                                            |
 | `apps/api/src/db/trash.ts`                                                | `listTrash` reads the reason; `restoreDocument` clears it and restarts stale                                 |
 | `apps/api/src/index.ts`                                                   | The 03:00 cron calls the sweep beside the purge                                                              |
@@ -110,8 +110,7 @@ No new route, no new error.
 | `documents.trash_reason` | state | TEXT NULL; NULL or `'empty'`; meaningful only in the Trash |
 | `TrashedDocument.reason` | wire  | `'deleted' \| 'empty'`, derived                            |
 
-Migration 0056 adds the nullable column with no backfill: every row already in the Trash was deleted by a
-person, which NULL means (D141). No index: nothing filters on it. The sweep scans live rows; an index ordering them by `saved_at` would
+The column is nullable: NULL means a person deleted the document (D141). No index: nothing filters on it. The sweep scans live rows; an index ordering them by `saved_at` would
 cost every autosave a write to save a once-a-day scan (Performance). Account deletion and purges remove the row with the rest; guest-to-account
 migration moves `owner_id` only. Restore clears the column, so a live row's value is always NULL.
 

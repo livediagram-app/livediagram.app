@@ -14,15 +14,13 @@ D1. Cost grows linearly with the document's tab count.
 - One DB write per editorial commit, scoped to the changed tab.
 - Per-tab snapshot fetch (open one tab, hydrate one row) so the
   initial view of a many-tab document is fast.
-- Foundation for "this tab is shared across documents" reuse — landed in [Tab ↔ document many-to-many](tab-document-many-to-many.md) (migration 0011 / item #13). The link table sits over the same tab body rows described here.
+- Foundation for "this tab is shared across documents" reuse — landed in [Tab ↔ document many-to-many](tab-document-many-to-many.md) (item #13). The link table sits over the same tab body rows described here.
 
 ## Non-goals (V1)
 
-- ~~Sharing a tab across documents~~ — landed in [Tab ↔ document many-to-many](tab-document-many-to-many.md) (migration 0011). The link table lives next to `tabs` and holds the per-document placement.
+- ~~Sharing a tab across documents~~ — landed in [Tab ↔ document many-to-many](tab-document-many-to-many.md). The link table lives next to `tabs` and holds the per-document placement.
 - Per-element rows / CRDT. Each tab still serialises its `elements`
   array as JSON within its row; the granularity stops at the tab.
-- Online migration. The cutover is one D1 migration; the live app
-  hydrates the new schema on the next save.
 
 ## Data model
 
@@ -34,7 +32,7 @@ CREATE TABLE tabs (
   -- on the row). Holds elements + per-tab metadata: theme,
   -- backgroundColor, backgroundPattern, backgroundOpacity,
   -- patternColor, locked. `templateChosen` is intentionally ephemeral
-  -- client state (see migration 0009), stripped before persistence,
+  -- client state, stripped before persistence,
   -- never stored here.
   data        TEXT    NOT NULL,
   updated_at  INTEGER NOT NULL
@@ -43,9 +41,9 @@ CREATE TABLE tabs (
 
 A `tabs` row is the tab's body and nothing else. Which documents contain it, and its order and folder in each, live on the `document_tabs` link ([Tab ↔ document many-to-many](tab-document-many-to-many.md)). Nothing on the row points at a document, so nothing cascades from `documents` into `tabs`: removing a tab from a document, deleting a document and deleting an account each drop a tab explicitly once no document links it. `collab_actions` and `collab_threads` cascade from `tabs(id)`, so a dropped tab takes its index rows with it.
 
-The table was introduced by `0005_tabs.sql` and has this shape since `0049_tabs_drop_legacy_columns.sql`, which removed the original `document_id` + `order_index` columns and the `document_id` foreign key.
+The table is created by the baseline migration, `apps/api/migrations/0001_liveplanner_baseline.sql`.
 
-`documents` keeps `id`, `owner_id`, `name`, `shareable`, `folder_id`, `saved_at`, `created_at`. The `data` column was dropped in migration 0006 once the live app had been on the new schema for a release window.
+`documents` keeps `id`, `owner_id`, `name`, `shareable`, `folder_id`, `saved_at`, `created_at`; the tab bodies live only in `tabs`.
 
 ## API surface
 
@@ -311,19 +309,8 @@ Linking an existing tab into a document has its own route
 `apps/api/src/routes/tab-put-route.ts`) runs only when the document has no
 such tab, so the common autosave pays nothing.
 
-## Cutover (historical)
-
-How this rolled out, recorded here so future schema changes can repeat the pattern:
-
-1. Migration 0005 created the `tabs` table + a same-migration backfill SQL step that split every existing `diagrams.data` JSON into N rows of `tabs` (one per array element), assigning `order_index` from the array position.
-2. `diagrams.data` was kept in place for one release window so a deployed-but-not-yet-shipped client didn't 500.
-3. Migration 0006 dropped `diagrams.data`.
-
 ## Risk
 
-- D1 doesn't currently support cross-row transactions cleanly, so the
-  backfill is per-document in its own statement set. If the backfill
-  step partially fails, the migration tracker re-runs it.
 - Tab reorder is a `UPDATE tabs SET order_index = ? WHERE id = ?` per
   tab. Acceptable for the small tab counts (< 20) we see in practice.
 

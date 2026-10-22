@@ -43,8 +43,8 @@ src/slug.ts            slugText, cutSlug, uniqueSlug (accents folded, `-2`, `-3`
 
 ## Data and persistence
 
-- Migration `0072_item_types.sql`: `documents.item_types TEXT NULL`. Migration `0082_item_types_rev.sql`:
-  `documents.item_types_rev INTEGER NOT NULL DEFAULT 0`.
+- `documents.item_types TEXT NULL` and `documents.item_types_rev INTEGER NOT NULL DEFAULT 0`, in the baseline
+  migration.
 - `db/documents.ts`: `DocumentDTO.itemTypes` read through `readItemTypeCatalogue`, `DocumentDTO.itemTypesRev`
   (0 when absent); written by the create's INSERT (copy, sync, Drive; the revision starts at 0) and by
   `setDocumentItemTypes(env, id, catalogue | null, expectedRev?)`, one guarded UPDATE raising `item_types_rev` and
@@ -265,9 +265,7 @@ a board takes (Kanban: Tasks and Actions, Sprint: Stories, Tasks and Bugs, Bug T
   capped at `ITEM_TYPES_MAX`; null when nothing changes.
 - `typesOf(null)` is `[]`; `validateItemTypeCatalogue` takes 0 to `ITEM_TYPES_MAX` types. `legacyCatalogue(stored,
 hasCards)` answers `defaultCatalogue()` for a null catalogue with cards (offline records in `recordToDocument` and
-  `offline-items`, exported tabs in `parseImportedTab`, and the api's create with carried items); migration
-  `0090_card_types_start_empty.sql` stores the same for D1 documents with items and a null catalogue (its JSON is
-  guarded by `apps/api/src/card-types-migration.test.ts`).
+  `offline-items`, exported tabs in `parseImportedTab`, and the api's create with carried items).
 - `READY_MADE_DEFAULT_STATE_NAMES` / `readyMadeDefaultStatus` name a Default State for every ready-made type.
 - The editor: `usePresetCardTypes({ catalogue, itemsReady, saveCatalogue, ... })` applies it to boards
   that appear on the open tab once the items are read, and `bring(elements)` (a template picked on a start) at once, or held until

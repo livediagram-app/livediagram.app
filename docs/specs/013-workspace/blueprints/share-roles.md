@@ -23,7 +23,7 @@ socket, the answers route, a look-only Viewer) are not derived here; their earli
 | `packages/document/src/participant-content.ts` (new)                                                         | The participant content rule: `applyParticipantOp`, `PARTICIPANT_ADDABLE_TYPES`, field sets    |
 | `packages/document/src/element-types.ts`, `validate.ts`                                                      | `addedBy?: string` on `StickyElement` and `TextElement`; validated                             |
 | `packages/document/src/collab-ledger.ts`                                                                     | `mergeLedgerAnswersIntoTab`: votes and responses only                                          |
-| `apps/api/migrations/0001_liveplanner_baseline.sql` (new)                                                       | A `level` column on `share_links` and `shared_with`; `ws_tickets.adder_key`                    |
+| `apps/api/migrations/0001_liveplanner_baseline.sql`                                                          | A `level` column on `share_links` and `shared_with`; `ws_tickets.adder_key`                    |
 | `apps/api/src/share-link-row.ts`, `db/ws-tickets.ts`, `db/shared.ts`                                         | Readers through `parseStoredLevel`; the ticket's `adderKey`                                    |
 | `apps/api/src/auth/document-access.ts`                                                                       | Gates compare levels; `canParticipateDocument`                                                 |
 | `apps/api/src/routes/context.ts`                                                                             | `gateParticipate` is the Participant check                                                     |
@@ -292,10 +292,9 @@ they only look, with no comments or votes. "edit": they can change anything.`
 | Element `addedBy`                        | content    | Optional, ≤ `ADDER_KEY_LENGTH` chars; on `sticky` and `text` only   |
 | Room attachment `adderKey`               | ephemeral  | Per socket, survives hibernation                                    |
 
-Migration `0080_participate_links.sql`: `ALTER TABLE share_links ADD COLUMN level` and the same on `shared_with`
-(`CHECK (level IS NULL OR level IN ('view', 'participate', 'edit'))`), and `ALTER TABLE ws_tickets ADD COLUMN
-adder_key TEXT NULL`. No table is rebuilt (SR11): `community_posts` cascades from `share_links`, so a rebuild's DROP
-would delete them. No row changes level. Readers take `parseStoredLevel(level ?? role)` (`storedLevelOf`); writers
+The baseline migration gives `share_links` and `shared_with` a `level` column
+(`CHECK (level IS NULL OR level IN ('view', 'participate', 'edit'))`) and `ws_tickets` an `adder_key TEXT NULL`.
+Readers take `parseStoredLevel(level ?? role)` (`storedLevelOf`); writers
 keep `role` two-valued (`legacyRoleColumn`) and set `level` only for `participate` (`levelColumn`); the Shared lists
 join on `COALESCE(level, role)`. Copies,
 exports, templates and duplicates keep `addedBy` as data (it identifies nobody outside its document); a Make a copy
@@ -432,7 +431,7 @@ The Share dialog is a lazy chunk; a third card adds no request. A Participant's 
 | `PARTICIPANT_PENDING_MAX`   | 64                                              | SR12                                           | 8 to 512            |
 | `HELD_BACK_NOTICE_MS`       | 4000                                            | SR13                                           | 1000 to 30000       |
 
-No new environment variable or binding; a deployment needs migration 0080.
+No new environment variable or binding.
 
 ## Assets and external resources
 

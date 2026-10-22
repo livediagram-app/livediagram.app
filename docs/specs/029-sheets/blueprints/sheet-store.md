@@ -17,7 +17,7 @@ writes are the engine's ([sheets-engine](sheets-engine.md#writes-storets)); this
 
 ## Data and persistence: D1
 
-Migration `apps/api/migrations/0001_liveplanner_baseline.sql`:
+The baseline migration, `apps/api/migrations/0001_liveplanner_baseline.sql`:
 
 ```sql
 CREATE TABLE sheets (
@@ -29,10 +29,11 @@ CREATE TABLE sheets (
   rev INTEGER NOT NULL,
   cell_count INTEGER NOT NULL DEFAULT 0,
   cell_bytes INTEGER NOT NULL DEFAULT 0,
-  unframed_since INTEGER,              -- renamed unreferenced_since by 0079
+  unreferenced_since INTEGER,          -- set when no element frames the sheet; cleared when one does again
   write_nonce TEXT,                    -- the write that last moved rev: guards that write's own statements
   created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL,
   updated_by TEXT NOT NULL,            -- JSON SheetPerson
+  delete_when_unreferenced INTEGER,    -- 1: deleted with its element; gone once unreferenced
   PRIMARY KEY (document_id, id)
 );
 CREATE INDEX sheets_tab ON sheets(document_id, tab_id);
@@ -48,11 +49,9 @@ CREATE TABLE sheet_cells (
 );
 ```
 
-Migration `apps/api/migrations/0001_liveplanner_baseline.sql` (Deleting a sheet):
+The same migration, for Deleting a sheet:
 
 ```sql
-ALTER TABLE sheets RENAME COLUMN unframed_since TO unreferenced_since;
-ALTER TABLE sheets ADD COLUMN delete_when_unreferenced INTEGER;  -- 1: deleted with its element; gone once unreferenced
 CREATE TABLE sheet_refs (
   tab_id TEXT NOT NULL REFERENCES tabs(id) ON DELETE CASCADE,
   sheet_id TEXT NOT NULL,             -- a planSheet.sheetId or planSheet.copyOf on the tab

@@ -116,8 +116,7 @@ The server decides everything that matters:
   account has no preferences and is emailed at their invite address.
 - On the canvas, `commentText` is required, at most 5000 characters; the email
   quotes the first 280, cut at a word with an ellipsis.
-- Each email is **claimed** before it goes (`notify_email_claims`, migration
-  0087): a hash of the author, document, card, recipient and, for a card, the
+- Each email is **claimed** before it goes (`notify_email_claims`): a hash of the author, document, card, recipient and, for a card, the
   stored comment's id (on the canvas, the body's text) is sent at most once per 24 hours
   (`NOTIFY_EMAIL_DEDUPE_MS`), so a replayed request emails nobody twice, and one
   author's action-assigned and mention emails together are capped at 60 an hour
