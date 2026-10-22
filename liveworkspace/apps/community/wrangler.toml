@@ -1,4 +1,6 @@
 name = "liveworkspace-community"
+# The liveworkspace Cloudflare account, so a deploy can never land on another one.
+account_id = "851be7d244b76a6557bcbe6c4ded80f5"
 main = "src/index.ts"
 compatibility_date = "2026-05-29"
 # Only its API, /api/community, on liveworkspace.app (liveworkspace/docs/community.md). liveworkspace.app
@@ -15,7 +17,7 @@ ENVIRONMENT = "production"
 [[d1_databases]]
 binding = "COMMUNITY_DB"
 database_name = "liveworkspace-community"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_id = "3547c10c-39db-4b76-85b9-65ca47362166"
 migrations_dir = "migrations"
 
 # Per-network budget for likes and reports, whose callers are anonymous: counted at Cloudflare's edge, so
@@ -35,7 +37,7 @@ ENVIRONMENT = "staging"
 [[env.staging.d1_databases]]
 binding = "COMMUNITY_DB"
 database_name = "liveworkspace-community-staging"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_id = "9cc861ac-3986-44c2-be30-777261832307"
 migrations_dir = "migrations"
 
 [[env.staging.ratelimits]]

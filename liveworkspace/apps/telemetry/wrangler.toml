@@ -1,4 +1,6 @@
 name = "liveworkspace-telemetry"
+# The liveworkspace Cloudflare account, so a deploy can never land on another one.
+account_id = "851be7d244b76a6557bcbe6c4ded80f5"
 main = "src/index.ts"
 compatibility_date = "2026-05-29"
 # Only its API, /api/telemetry, on liveworkspace.app: every page, the dashboard at /telemetry
@@ -16,7 +18,7 @@ TELEMETRY_ENABLED = "true"
 [[d1_databases]]
 binding = "TELEMETRY_DB"
 database_name = "liveworkspace-telemetry"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_id = "578223b0-96db-48ef-a509-ae475ef80dc9"
 migrations_dir = "migrations"
 
 # Per-network budget for browser batches: counted at Cloudflare's edge, so it holds across isolates.
@@ -40,7 +42,7 @@ TELEMETRY_ENABLED = "true"
 [[env.staging.d1_databases]]
 binding = "TELEMETRY_DB"
 database_name = "liveworkspace-telemetry-staging"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_id = "3c6fef93-5e71-4094-a7ce-bbcf4a692b1d"
 migrations_dir = "migrations"
 
 [[env.staging.ratelimits]]
