@@ -4039,6 +4039,9 @@ importers:
       '@livedocuments/telemetry-client':
         specifier: workspace:*
         version: link:../telemetry-client
+      '@liveworkspace/sites':
+        specifier: workspace:*
+        version: link:../../../packages/sites
       react:
         specifier: ^19.3.0
         version: 19.3.1

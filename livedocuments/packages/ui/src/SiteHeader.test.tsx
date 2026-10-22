@@ -8,7 +8,9 @@ describe('SiteHeader', () => {
   const html = renderToStaticMarkup(<SiteHeader ctaSurface="Home" shareRail={false} />);
 
   it('makes Start Blank a plain link to the wizard, not a menu of blanks', () => {
-    expect(html).not.toContain('aria-haspopup="menu"');
+    // The one menu in the bar is the logo's site switcher.
+    expect(html.match(/aria-haspopup="menu"/g)).toHaveLength(1);
+    expect(html).toContain('aria-label="Switch site"');
     const link = html.match(
       /<a [^>]*href="\/new\?start=blank&amp;via=Home\.HeaderBlank"[^>]*>(.*?)<\/a>/,
     );

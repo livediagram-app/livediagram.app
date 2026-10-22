@@ -55,7 +55,7 @@ floor at 24px; the editor aims past it, because a page editor is used with a thu
   leaves it zoomed, so a search box drawn at 14 or 15px reads at 16px under `pointer: coarse` (the
   landing page's template search).
 - **The public sites follow the same rules** (marketing, help, telemetry): the shared header's
-  brand, apps menu and primary CTA pad vertically; the hero's example dots are 44px tall and 24px wide
+  brand, site switcher chevron and primary CTA pad vertically; the hero's example dots are 44px tall and 24px wide
   and its arrows padded; the template carousel arrows and the telemetry window pills are padded.
 - **A scroller holding padded controls scrolls on its own axis only.** The pad is an absolutely
   positioned box, so it counts toward its scroll container's overflow; a container that sets

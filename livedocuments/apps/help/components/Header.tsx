@@ -1,8 +1,7 @@
 import { SiteHeader } from '@livedocuments/ui';
 import { SearchInput } from '@/components/SearchInput';
 
-// Help-centre header: the shared SiteHeader (packages/ui, also marketing's and
-// the dashboard's) keyed to Help in the apps menu. Brand links back to the
+// Help-centre header: the shared SiteHeader (packages/ui, also marketing's). Brand links back to the
 // marketing home, the search box sits in the centre slot so it's reachable
 // from every article (not just the home hero), and the landing page's own CTA
 // pair (Start Blank + Choose Template) keeps the editor a click away (the
@@ -15,7 +14,6 @@ import { SearchInput } from '@/components/SearchInput';
 export function Header() {
   return (
     <SiteHeader
-      productNav="help"
       ctaSurface="Help"
       center={<SearchInput />}
       shareRail={false}

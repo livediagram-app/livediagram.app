@@ -1,8 +1,9 @@
 # The site switcher
 
 Every app's headers carry one way to move between liveworkspace's sites: **hover the logo**. A card
-drops down from it, with **liveworkspace.app** at the top and one row for each app below it
-(livediagram.app, liveplanner.app). Each row is one click to that site. The app you're on is marked.
+drops down from it, with **liveworkspace** at the top and one row for each app below it
+(livediagram, liveplanner, livedocuments, livedesign). Each row names the site without ".app", with
+its one-line pitch under it, and is one click to that site. The app you're on is marked.
 
 It replaced each app's section switcher, the "Home / Editor / Explorer / Help / …" menu beside the
 logo (October 2026). An app's own surfaces are still linked from its pages: the header's call to
@@ -31,3 +32,8 @@ liveworkspace.app.
 `@liveworkspace/sites` (`packages/sites`) holds the list: each site's name, URL, one-line pitch and
 accent colour. Every app's switcher reads it, so adding an app is one row there, not an edit in each
 app. It lists livediagram, liveplanner, livedocuments and livedesign.
+
+Every app shows **the same switcher**. Each app's UI package holds its own copy of `SiteSwitcher.tsx`
+(the packages are forks), and `packages/sites/src/switcher-copies.test.ts` fails if the copies differ,
+so a change to one is a change to all. livediagram, liveplanner and livedocuments have it;
+livedesign gets it with its platform move, and joins that test then.

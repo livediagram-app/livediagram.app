@@ -25,4 +25,9 @@ describe('SiteSwitcher', () => {
     expect(html).toMatch(/href="https:\/\/www\.liveplanner\.app"[^>]*aria-current="page"/);
     expect(html.match(/aria-current="page"/g)).toHaveLength(1);
   });
+
+  it('names each site without ".app"', () => {
+    for (const site of SITES) expect(html).toContain(`>${site.name}</span>`);
+    expect(html).not.toMatch(/>[a-z]+\.app<\/span>/);
+  });
 });

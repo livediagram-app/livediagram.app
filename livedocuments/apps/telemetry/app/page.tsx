@@ -89,9 +89,8 @@ export default function TelemetryDashboard() {
   return (
     <>
       {/* Same header + footer as the marketing landing page (shared SiteHeader /
-          SiteFooter), with the apps-menu dropdown enabled next to the logo so
-          telemetry reads as part of the product. */}
-      <SiteHeader productNav="telemetry" ctaSurface="Dashboard" />
+          SiteFooter), so telemetry reads as part of the product. */}
+      <SiteHeader ctaSurface="Dashboard" />
       <main className="mx-auto max-w-6xl px-6 py-16 sm:py-20">
         <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl dark:text-slate-100">
           Telemetry, in the open

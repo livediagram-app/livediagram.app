@@ -7,6 +7,8 @@ import {
   Glyph,
   safeInlinePadding,
   safeInset,
+  SITE_ID,
+  SiteSwitcher,
 } from '@livedocuments/ui';
 import { AuthControls } from '@/components/chrome/AuthControls';
 import { SharedBadge } from '@/components/chrome/SharedBadge';
@@ -120,13 +122,16 @@ export function EditorHeader({
       className="relative z-[var(--z-modal)] flex shrink-0 items-center justify-between gap-2 border-y border-slate-200 bg-white sm:gap-4 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
     >
       <div className="flex w-auto items-center gap-2.5">
-        {/* The editor's logo goes up one level, to the Explorer home; the Explorer's goes to the homepage. */}
-        <Brand
-          href={EXPLORER_LANDING_PATH}
-          size="md"
-          wordmarkClassName="hidden sm:inline"
-          className="relative touch-target"
-        />
+        {/* The editor's logo goes up one level, to the Explorer home; the Explorer's goes to the homepage.
+            Hovering it lists liveworkspace's other sites (liveworkspace/docs/site-switcher.md). */}
+        <SiteSwitcher current={SITE_ID}>
+          <Brand
+            href={EXPLORER_LANDING_PATH}
+            size="md"
+            wordmarkClassName="hidden sm:inline"
+            className="relative touch-target"
+          />
+        </SiteSwitcher>
       </div>
       {/* min-w-0 down to the name, so a long name truncates instead of pushing Share and Sign in off a phone. */}
       <div className="flex min-w-0 flex-1 items-center justify-start sm:justify-center">

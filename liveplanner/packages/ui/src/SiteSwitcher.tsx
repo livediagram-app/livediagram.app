@@ -104,8 +104,9 @@ function SiteRow({ site, current, onPick }: { site: Site; current: SiteId; onPic
         style={{ backgroundColor: site.accent }}
       />
       <span className="flex min-w-0 flex-col gap-0.5">
+        {/* The name, without ".app": the row already links to the site. */}
         <span className="text-sm font-semibold text-slate-800 dark:text-slate-100">
-          {site.id}
+          {site.name}
         </span>
         <span className="text-xs text-slate-500 dark:text-slate-400">{site.pitch}</span>
       </span>
