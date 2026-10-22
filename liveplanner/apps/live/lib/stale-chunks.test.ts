@@ -48,9 +48,7 @@ describe('navigation intents', () => {
     expect(intents.destination(0, '/project/a')).toBe('/project/a');
     intents.note('/explorer/unsorted', 1_000);
     expect(intents.destination(1_500, '/project/a')).toBe('/explorer/unsorted');
-    expect(intents.destination(1_000 + NAVIGATION_INTENT_MS + 1, '/project/a')).toBe(
-      '/project/a',
-    );
+    expect(intents.destination(1_000 + NAVIGATION_INTENT_MS + 1, '/project/a')).toBe('/project/a');
   });
 });
 

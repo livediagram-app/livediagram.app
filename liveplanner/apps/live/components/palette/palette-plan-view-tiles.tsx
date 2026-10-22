@@ -57,8 +57,7 @@ const METRIC_DESCRIPTIONS: Record<MetricKind, string> = {
   progress: 'A metric over every card in the project: the share that is done.',
   people: 'A metric over every card in the project: who has cards, most first.',
   types: 'A metric over every card in the project: how many of each type.',
-  priorities:
-    'A metric over every card in the project: how many are urgent, high, medium and low.',
+  priorities: 'A metric over every card in the project: how many are urgent, high, medium and low.',
   due: 'A metric over every card in the project: overdue, and due in the next 7 days.',
   unassigned: 'A metric over every card in the project: the cards nobody has picked up.',
   points: 'A metric over every card in the project: estimate points done out of all.',

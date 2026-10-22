@@ -57,7 +57,7 @@ Top to bottom. "Opens" names the view a row selects; every view keeps its own ro
 | -------------- | ---------------------------------------------------- | --------------------------------------------------------------------------------- |
 | Home           | `/explorer/home` ([Explorer Home](explorer-home.md)) | Other people's events since the reader last looked ([Timeline](timeline.md) §2.5) |
 | Inbox          | `/explorer/inbox` ([Inbox](inbox.md))                | Open actions and Plan cards assigned to the reader, always shown, 0 included      |
-| Shared With Me | `/explorer/shared`                                   | Projects shared with the reader                                                  |
+| Shared With Me | `/explorer/shared`                                   | Projects shared with the reader                                                   |
 
 Home is the Explorer's landing view. The **Inbox** is what is outstanding for the reader now; Home's What Happened is
 what others did. There is no Timeline row: the Explorer's Timeline section was removed ([Timeline events](timeline.md)),
@@ -67,12 +67,12 @@ and an old `/explorer/timeline` link lands on Home. Recent and Favourites have n
 
 ### Spaces
 
-| Row          | Opens                                  | Children                | Badge                      |
-| ------------ | -------------------------------------- | ----------------------- | -------------------------- |
+| Row         | Opens                                 | Children                | Badge                      |
+| ----------- | ------------------------------------- | ----------------------- | -------------------------- |
 | My Projects | `/explorer/all`, the My Projects root | The root folders        | None                       |
-| Each team    | `/explorer/team?id=<id>`               | The team's root folders | Member count, when above 1 |
-| Invites      | `/explorer/invites`                    | None                    | Pending invites            |
-| New Team     | The New Team form (a dialog)           | None                    | None                       |
+| Each team   | `/explorer/team?id=<id>`              | The team's root folders | Member count, when above 1 |
+| Invites     | `/explorer/invites`                   | None                    | Pending invites            |
+| New Team    | The New Team form (a dialog)          | None                    | None                       |
 
 - **The My Projects root** lists its root folders, then its root projects, newest first. A team's root does the
   same for the team. The old Unsorted, Generated and Dynamic addresses still answer: `/explorer/unsorted` and
@@ -95,11 +95,11 @@ and an old `/explorer/timeline` link lands on Home. Recent and Favourites have n
 
 ### More
 
-| Row          | Opens                                  | Children     | Badge                     |
-| ------------ | -------------------------------------- | ------------ | ------------------------- |
+| Row          | Opens                                  | Children     | Badge                    |
+| ------------ | -------------------------------------- | ------------ | ------------------------ |
 | This Browser | `/explorer/offline`                    | None         | Projects in this browser |
-| Library      | Nothing: the row expands and collapses | Tags, Themes | None                      |
-| Trash        | `/explorer/trash` ([Trash](trash.md))  | None         | None                      |
+| Library      | Nothing: the row expands and collapses | Tags, Themes | None                     |
+| Trash        | `/explorer/trash` ([Trash](trash.md))  | None         | None                     |
 
 - **This Browser** shows only while this browser holds at least one offline project, or while its view is the current
   one (so the highlighted row never vanishes under the reader). Its projects are the reader's own
@@ -151,7 +151,7 @@ the breadcrumb and the help centre's copy. Routes stay as they are.
 | -------------- | ------------------- | -------------- |
 | Home           | `/explorer/home`    | Home           |
 | Shared With Me | `/explorer/shared`  | Shared With Me |
-| My Projects   | `/explorer/all`     | My Projects   |
+| My Projects    | `/explorer/all`     | My Projects    |
 | This Browser   | `/explorer/offline` | This Browser   |
 
 Every other row's view already carries its row's label (Inbox, a folder or team by its name, Invites,
@@ -160,17 +160,17 @@ Home, and its breadcrumb leads back to it (**Home › Recent**).
 
 ## Visibility at a glance
 
-| Row           | Guest (sign-in configured) | Guest (no sign-in deployment) | Signed in                |
-| ------------- | -------------------------- | ----------------------------- | ------------------------ |
-| Overview      | All four                   | All four                      | All four                 |
-| My Projects  | Yes                        | Yes                           | Yes                      |
-| Teams         | None                       | None                          | One row per team         |
-| Invites       | No                         | No                            | While one is pending     |
-| New Team      | No                         | No                            | Yes                      |
-| Sign-in nudge | Yes                        | No                            | No                       |
-| This Browser  | While it holds projects   | While it holds projects      | While it holds projects |
-| Library       | Yes                        | Yes                           | Yes                      |
-| Trash         | Yes                        | Yes                           | Yes                      |
+| Row           | Guest (sign-in configured) | Guest (no sign-in deployment) | Signed in               |
+| ------------- | -------------------------- | ----------------------------- | ----------------------- |
+| Overview      | All four                   | All four                      | All four                |
+| My Projects   | Yes                        | Yes                           | Yes                     |
+| Teams         | None                       | None                          | One row per team        |
+| Invites       | No                         | No                            | While one is pending    |
+| New Team      | No                         | No                            | Yes                     |
+| Sign-in nudge | Yes                        | No                            | No                      |
+| This Browser  | While it holds projects    | While it holds projects       | While it holds projects |
+| Library       | Yes                        | Yes                           | Yes                     |
+| Trash         | Yes                        | Yes                           | Yes                     |
 
 ## Expansion
 
@@ -296,17 +296,17 @@ sky, shared: violet, moved: amber, removed: rose, changed: brand);
 **section headings** (small capitals with an action at the end), the Explorer's **illustrated empty state** at a
 compact size, skeleton rows while loading, and one line with **Try Again** when a read fails.
 
-| Section        | The pane shows                                                                                                                                                                                                                                                                                                                                                   | Action     |
-| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
+| Section        | The pane shows                                                                                                                                                                                                                                                                                                                                                | Action     |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
 | Home           | **Jump Back In**: up to six projects (most used, then most recent), never the one already open, as preview cards, with **See all** (Recent); when the open one is the only one, the empty state says "Nothing else yet" rather than "No projects yet". **What Happened**, only when someone else did something: each project's summary sentence under its day | None       |
-| Inbox          | The Inbox ([Inbox](inbox.md)): assigned to you, you assigned, open comment threads                                                                                                                                                                                                                                                                               | None       |
-| Shared With Me | The projects shared with the reader, as rows                                                                                                                                                                                                                                                                                                                    | None       |
-| My Projects   | The root folders as preview cards (their counts on the picture), then the root projects as rows; a folder opens **in the pane** under the import and export screens' back bar (back to the folder above, the folder as its chip). New Folder makes the folder in the one open here; a folder's New Subfolder opens it                                           | New Folder |
-| A team         | The team's folders, then its projects, the same way                                                                                                                                                                                                                                                                                                             | New Folder |
-| Tags           | Each tag as a heading (its chip and count) over its projects as rows ([Tags](tags.md#the-editors-explorer-panel))                                                                                                                                                                                                                                               | None       |
-| This Browser   | The projects saved only in this browser                                                                                                                                                                                                                                                                                                                         | None       |
-| Library        | Themes, the Explorer page's own view at the pane's width; Open Page goes to it                                                                                                                                                                                                                                                                                   | None       |
-| Trash          | A line on the 30 days, then each deleted project as a row with **Restore** and **Delete** as icon buttons named by their tooltips (Delete asked first)                                                                                                                                                                                                          | None       |
+| Inbox          | The Inbox ([Inbox](inbox.md)): assigned to you, you assigned, open comment threads                                                                                                                                                                                                                                                                            | None       |
+| Shared With Me | The projects shared with the reader, as rows                                                                                                                                                                                                                                                                                                                  | None       |
+| My Projects    | The root folders as preview cards (their counts on the picture), then the root projects as rows; a folder opens **in the pane** under the import and export screens' back bar (back to the folder above, the folder as its chip). New Folder makes the folder in the one open here; a folder's New Subfolder opens it                                         | New Folder |
+| A team         | The team's folders, then its projects, the same way                                                                                                                                                                                                                                                                                                           | New Folder |
+| Tags           | Each tag as a heading (its chip and count) over its projects as rows ([Tags](tags.md#the-editors-explorer-panel))                                                                                                                                                                                                                                             | None       |
+| This Browser   | The projects saved only in this browser                                                                                                                                                                                                                                                                                                                       | None       |
+| Library        | Themes, the Explorer page's own view at the pane's width; Open Page goes to it                                                                                                                                                                                                                                                                                | None       |
+| Trash          | A line on the 30 days, then each deleted project as a row with **Restore** and **Delete** as icon buttons named by their tooltips (Delete asked first)                                                                                                                                                                                                        | None       |
 
 - **Every project the pane shows** (a place's rows, Home's cards and What Happened)
   carries the Explorer page's project menu (`⋯`, right-click, Shift+F10), the same verbs as on the Explorer page. The

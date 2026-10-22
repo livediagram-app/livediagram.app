@@ -1,90 +1,37 @@
-// /api/tokens — external API credentials, signed-in users only
-// (docs/specs/015-api/public-api-and-tokens.md). Gated exactly like the team routes: a guest (X-Owner-Id-only)
-// caller is refused outright. A token always acts as the account that
-// created it; there are no guest-owned tokens.
+// /api/tokens — API tokens are the liveworkspace account's (liveworkspace/docs/accounts.md "API
+// tokens"): made, listed and revoked on liveworkspace.app, so the management routes answer 410 with
+// where to go. What stays is the token a request presented:
 //
-//   GET    /api/tokens        — list the caller's live tokens (metadata only)
-//   POST   /api/tokens        — mint one; returns the secret ONCE
-//   DELETE /api/tokens/<id>   — revoke one of the caller's tokens
 //   GET    /api/tokens/current — the token this request presented (the CLI's auth status)
 //   DELETE /api/tokens/current — that token revoking itself (the CLI's auth logout)
 
-import type { CurrentTokenResponse } from '@liveplanner/api-schema';
-import {
-  badRequest,
-  conflict,
-  forbidden,
-  json,
-  methodNotAllowed,
-  noContent,
-  notFound,
-} from '../responses';
-import { readOptionalBody, type RouteContext } from './context';
+import { bearerTokenOf, type CurrentTokenResponse } from '@liveplanner/api-schema';
+import { forbidden, json, methodNotAllowed, noContent, notFound } from '../responses';
+import type { RouteContext } from './context';
 import {
   getParticipant,
   listApiTokensByOwner,
-  mintApiToken,
   retractTimelineWarning,
-  revokeApiToken,
+  revokePresentedToken,
 } from '../db';
-import { MAX_NAME_LEN } from '../limits';
-import { recordTokenCreated, recordTokenRevoked } from '../timeline';
+import { recordTokenRevoked } from '../timeline';
 import { endWorkbenchAccess } from '../workbench-end';
 
 export async function handleTokens(ctx: RouteContext): Promise<Response> {
-  const { request, env, segments, accountUserId } = ctx;
+  const { request, env, segments } = ctx;
   if (segments[1] !== 'tokens') return notFound();
   if (segments[2] === 'current' && segments.length === 3) return handleCurrentToken(ctx);
-  // Signed-in only: reject when there's no verified account identity (a guest
-  // with only X-Owner-Id, or auth not configured), mirroring routes/teams.ts.
-  if (!accountUserId) return forbidden();
-  const owner = accountUserId;
-
-  if (segments.length === 2) {
-    if (request.method === 'GET') {
-      return json({ tokens: await listApiTokensByOwner(env, owner) });
-    }
-    if (request.method === 'POST') {
-      const body = await readOptionalBody(request);
-      const name = typeof body.name === 'string' ? body.name.trim() : '';
-      if (name.length > MAX_NAME_LEN) return badRequest('name too long');
-      const minted = await mintApiToken(env, { ownerId: owner, name: name || null });
-      // Null means the per-account cap (docs/specs/015-api/public-api-and-tokens.md) is already reached.
-      if (!minted) return conflict('token_limit_reached');
-      ctx.waitUntil?.(recordTokenCreated(env, { id: minted.id, name: name || 'API token' }, owner));
-      // The plaintext is returned ONCE, here. It is never stored and never
-      // retrievable again; the client shows it for copy then drops it.
-      return json(
-        { token: minted.secret, id: minted.id, name: name || null, expiresAt: minted.expiresAt },
-        { status: 201 },
-      );
-    }
-  }
-
-  if (segments.length === 3 && request.method === 'DELETE') {
-    const tokenId = segments[2]!;
-    // Named before the revoke, so the feed can say WHICH token stopped
-    // working rather than just that one did.
-    const doomed = (await listApiTokensByOwner(env, owner)).find((t) => t.id === tokenId);
-    const revoked = await revokeApiToken(env, owner, tokenId);
-    if (revoked) {
-      // docs/specs/013-workspace/workbench-embeds.md: its pairings and sessions end with it.
-      await endWorkbenchAccess(env, { tokenId }, 'revoked');
-      ctx.waitUntil?.(
-        // Withdraw the pending "expires soon" warning first: the token is gone,
-        // so its deadline can't arrive, and leaving the future-dated row would
-        // have the feed still counting down to a token the same feed says the
-        // owner already revoked. token_revoked carries a DIFFERENT source id
-        // ('<id>:revoked'), so emitting it never displaced the warning.
-        retractTimelineWarning(env, 'account', tokenId, 'token_expiring').then(() =>
-          recordTokenRevoked(env, { id: tokenId, name: doomed?.name || 'API token' }, owner),
-        ),
-      );
-    }
-    return revoked ? noContent() : notFound();
-  }
-
-  return notFound();
+  const managed =
+    (segments.length === 2 && (request.method === 'GET' || request.method === 'POST')) ||
+    (segments.length === 3 && request.method === 'DELETE');
+  if (!managed) return notFound();
+  return json(
+    {
+      error: 'tokens_moved',
+      manageAt: `${(env.ACCOUNTS_URL ?? 'https://liveworkspace.app').replace(/\/+$/, '')}/account/tokens`,
+    },
+    { status: 410 },
+  );
 }
 
 // The token the request presented (docs/specs/015-api/blueprints/cli.md "Token self-service"). Only a token
@@ -109,8 +56,9 @@ async function handleCurrentToken(ctx: RouteContext): Promise<Response> {
     };
     return json(body);
   }
-  // DELETE: the token revokes itself.
-  await revokeApiToken(env, owner, token.id);
+  // DELETE: the token revokes itself, at liveworkspace too, so it stops in every app.
+  const secret = bearerTokenOf(request.headers.get('Authorization'));
+  if (secret) await revokePresentedToken(env, { id: token.id, secret });
   await endWorkbenchAccess(env, { tokenId: token.id }, 'revoked');
   console.info('[tokens] current revoked', { tokenId: token.id });
   ctx.waitUntil?.(

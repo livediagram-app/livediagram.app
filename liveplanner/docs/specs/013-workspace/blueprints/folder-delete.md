@@ -3,13 +3,13 @@
 Derived from [Folders → Deleting a folder](../folders.md#deleting-a-folder). The spec decides; this
 file adds engineering precision. Defaults are ledgered in [DEFAULTS.md](DEFAULTS.md) as `D121`, `D122`.
 
-| File                                                                                                | Role                                                       |
-| --------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| `apps/api/src/db/folders.ts`                                                                        | `deleteFolder(env, id)`: one batch, contents to the parent |
-| `apps/api/src/routes/folders.ts`                                                                    | `DELETE /api/folders/:id`: authorise, delete, log          |
-| `apps/live/lib/folder-delete-confirmation.ts`                                                       | The confirmation's words                                   |
-| `apps/live/hooks/persistence/useFolders.ts`                                                         | Optimistic: subfolders to the parent                       |
-| `apps/live/hooks/persistence/useProjectListActions.ts`                                             | Confirm; optimistic: projects to the parent               |
+| File                                                                                               | Role                                                       |
+| -------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| `apps/api/src/db/folders.ts`                                                                       | `deleteFolder(env, id)`: one batch, contents to the parent |
+| `apps/api/src/routes/folders.ts`                                                                   | `DELETE /api/folders/:id`: authorise, delete, log          |
+| `apps/live/lib/folder-delete-confirmation.ts`                                                      | The confirmation's words                                   |
+| `apps/live/hooks/persistence/useFolders.ts`                                                        | Optimistic: subfolders to the parent                       |
+| `apps/live/hooks/persistence/useProjectListActions.ts`                                             | Confirm; optimistic: projects to the parent                |
 | `apps/live/hooks/ui/useTeamFolderActions.ts`, `apps/live/components/panels/TeamSharedProjects.tsx` | Team folders: the same confirmation                        |
 
 ## Domain and naming
@@ -48,12 +48,12 @@ backstop that the explicit statements make unreachable.
 
 ## Errors and edge cases
 
-| Case                             | Handling                                              |
-| -------------------------------- | ----------------------------------------------------- |
-| Top-level folder                 | Contents to the space root (parent null)              |
+| Case                            | Handling                                              |
+| ------------------------------- | ----------------------------------------------------- |
+| Top-level folder                | Contents to the space root (parent null)              |
 | Folder holding trashed projects | They move up too; a restore lands in the parent       |
-| Folder that is a default folder  | The default dangles and is kept (spec)                |
-| Batch fails                      | Nothing changes; the route answers 500 via the worker |
+| Folder that is a default folder | The default dangles and is kept (spec)                |
+| Batch fails                     | Nothing changes; the route answers 500 via the worker |
 
 ## Security and trust
 

@@ -19,7 +19,7 @@ liveplanner --help
 Create an API token in liveplanner (Settings › API Tokens), then either set it for a command:
 
 ```bash
-export LIVEPLANNER_TOKEN=lvd_...
+export LIVEPLANNER_TOKEN=lwt_...
 ```
 
 or store it for this machine:

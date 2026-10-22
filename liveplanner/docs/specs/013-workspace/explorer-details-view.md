@@ -19,15 +19,15 @@ by any column.
 
 ## Columns
 
-| Column   | A project shows                                                                   | A folder shows                          |
-| -------- | ---------------------------------------------------------------------------------- | --------------------------------------- |
-| Name     | Its name (a link that opens it), favourite star, This Browser and Made by AI pills | Its name (opens it), default marker     |
-| Type     | A project: Plan's icon (every tab is in Plan)                                     | The folder icon                         |
-| Comments | A speech bubble holding how many comments its tabs hold; empty for none            | Empty                                   |
-| Access   | The reader's level as a small, muted role icon: Editor, Participant or Viewer      | Empty                                   |
+| Column   | A project shows                                                                    | A folder shows                         |
+| -------- | ---------------------------------------------------------------------------------- | -------------------------------------- |
+| Name     | Its name (a link that opens it), favourite star, This Browser and Made by AI pills | Its name (opens it), default marker    |
+| Type     | A project: Plan's icon (every tab is in Plan)                                      | The folder icon                        |
+| Comments | A speech bubble holding how many comments its tabs hold; empty for none            | Empty                                  |
+| Access   | The reader's level as a small, muted role icon: Editor, Participant or Viewer      | Empty                                  |
 | Size     | "N objects (S)": elements across all its tabs, and the stored size of those tabs   | "N items": its subfolders and projects |
-| Created  | Date and time it was created                                                       | Date and time it was created            |
-| Updated  | Date and time it was last saved                                                    | Date and time it was last changed       |
+| Created  | Date and time it was created                                                       | Date and time it was created           |
+| Updated  | Date and time it was last saved                                                    | Date and time it was last changed      |
 
 - **Icon columns.** Type, Comments and Access are narrow columns of one icon each, with no words: their
   headers show the column's icon (shapes, a speech bubble, a key) in place of a title, still sortable,

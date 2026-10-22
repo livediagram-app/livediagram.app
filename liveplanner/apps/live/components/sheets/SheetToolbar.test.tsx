@@ -495,11 +495,7 @@ describe('the sheet toolbar', () => {
     act(() => h.ctl().setEditing(null));
     const win = vi.spyOn(window, 'open').mockImplementation(() => null);
     fireEvent.click(btn('All Functions'));
-    expect(win).toHaveBeenCalledWith(
-      '/help/plan/sheet-functions/',
-      '_blank',
-      'noopener',
-    );
+    expect(win).toHaveBeenCalledWith('/help/plan/sheet-functions/', '_blank', 'noopener');
     win.mockRestore();
   });
 

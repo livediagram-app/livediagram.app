@@ -1,94 +1,48 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { RolesAndInvites } from '@/components/illustrations/collaboration';
 
 export const metadata = helpMetadata({
   title: 'Roles and Invites',
-  description:
-    'How team roles work and the two ways to bring people into a team: by email address or with a shareable invite link.',
+  description: 'How team roles work, and how to invite people to a team on liveworkspace.app.',
   path: '/help/collaboration/teams/roles-and-invites/',
 });
 
-<ArticleLayout title="Roles and Invites" description="Admin and Member roles, plus the two ways to bring people into a team." categoryTitle="Collaboration" categorySlug="collaboration" parentArticle={{ title: "Teams", slug: "teams" }} subArticles={getSubArticles("teams").filter((a) => a.slug !== "roles-and-invites")}>
+<ArticleLayout title="Roles and Invites" description="Admin and Member roles, and inviting people to a team." categoryTitle="Collaboration" categorySlug="collaboration" parentArticle={{ title: "Teams", slug: "teams" }} subArticles={getSubArticles("teams").filter((a) => a.slug !== "roles-and-invites")}>
 
-A team has two roles and two ways in. Roles decide who may manage the team; invites decide who joins. Everything here needs a signed-in account, since teams are keyed to your account and invites are matched by your verified email.
+Teams belong to your liveworkspace account, so a team is the same in every liveworkspace app, liveplanner included. You make and run them on [liveworkspace.app](https://liveworkspace.app/account/teams); liveplanner shows your teams, their members and their shared projects. Everything here needs a signed-in account.
 
 ## Admin and Member
 
-The person who creates a team is its first **Admin**. Admins can:
+The person who creates a team is its first **Admin**. On liveworkspace.app, Admins can:
 
+- rename the team,
 - invite people by email,
-- turn the shareable invite link on or off,
 - change a member's role,
-- edit the team name and organisation,
-- remove a member or cancel an invite,
+- remove a member or withdraw an invite,
 - delete the team.
 
-**Members** can see the team and its member list, work in the shared library, and leave the team, but cannot manage membership.
+**Members** can see the team and its member list, work in the shared library, and leave the team.
 
-On the team page, an Admin sees a role dropdown (**Admin** or **Member**) on each row, which changes the role straight away, and a small cross (shown when you hover the row) to remove them or withdraw their invite. Removing or withdrawing asks you to confirm. An invited person can be given the Admin role before they accept, but they can't manage anything until they have joined.
+A team always keeps an Admin: the last Admin can't step down or leave while others remain. Deleting a team gives its projects back to their owners (see [Team Shared Projects](/help/collaboration/teams/team-shared-projects/#when-a-team-is-deleted)).
 
-One rule shapes the whole team: the **last remaining Admin** cannot be demoted, removed, or leave. If you are the only Admin, your row has no role dropdown and **Leave Team** is missing from the team's **⋯** menu. To step away, promote someone else to Admin first, or delete the team. Deleting a team removes all of its member rows; its projects go back to their owners (see [Team Shared Projects](/help/collaboration/teams/team-shared-projects/#when-a-team-is-deleted)).
+In liveplanner, open a team in the Explorer and choose **Manage on liveworkspace.app** at the top of its page to get there.
 
 ## Inviting by email
 
 <Step n={1}>
-  Open your team in the Explorer. At the foot of the member list (Admins only) is the invite field,
-  "Add your team by email address, they will receive an invite."
+  On [liveworkspace.app](https://liveworkspace.app/account/teams), open your team and enter the
+  person's email address.
 </Step>
 <Step n={2}>
-  Enter the person's email address and choose **Invite**. They join the list straight away, marked
-  **Invited**, with their email address under their name, and the team's summary line counts them as
-  invited.
+  They get an email from liveworkspace with a link to their teams page, where the invitation waits.
+  They don't need an account yet: it waits until they sign up with that address.
 </Step>
 <Step n={3}>
-  They get an email letting them know, with a link to their Invites page and a **Decline the
-  invite** link that works without an account. If they don't answer, a reminder follows a day later,
-  a week later and three weeks later. (If email isn't configured on the deployment, the invite still
-  lands in their in-app Invites section, so tell them out of band as well.)
+  They accept or decline there. Accepting takes a signed-in account whose verified email address is
+  the one invited.
 </Step>
 
-When that person signs in with the same email address, the invite appears in their Explorer **Invites** section, showing the team name, organisation, and member count. They don't need an account yet when you invite them: the invite waits until they sign up with that address. They then choose:
-
-- **Accept**, which adds them to the team with the role they were given (Member, unless an Admin promoted them), or
-- **Decline**, which turns the invite down. An Admin can re-invite the same address later.
-
-They can also decline straight from the email: its **Decline the invite** link opens a page that asks them to confirm with **Decline Invite**, with no sign-in and no account needed. Opening the link alone changes nothing.
-
-An invite nobody answers **expires 28 days** after it was sent, a week after the last reminder.
-
-## Rejected invites
-
-A declined or expired invite stays on the member list, marked **Rejected**, with "Declined" or "Expired" after the email address, so an Admin can see the answer. It grants no access and isn't counted as invited. An Admin can clear it with the cross on its row (**Remove from list?**), or invite the same address again, which replaces it with a fresh invite and a fresh set of reminders.
-
-A pending invite grants no access until it is accepted. Admins can get an email when someone accepts or declines, controlled by **Someone Responds to a Team Invite** in their [email notifications](/help/account-and-data/email-notifications/).
-
-<Figure caption="An Admin's view: a role dropdown on every row but the last Admin's, a pending invite marked Invited, and the invite-by-email row that adds someone new.">
-  <RolesAndInvites />
-</Figure>
-
-## The shareable invite link
-
-As an alternative, an Admin can turn on a **shareable invite link**. Anyone signed in who opens it can join the team as a Member.
-
-<Step n={1}>
-  Open the team page and press the link button beside the **⋯** menu at the top (**Invite by Link**,
-  Admins only).
-</Step>
-<Step n={2}>
-  Choose **Turn on invite link**, then **Copy link** and send it to whoever should join.
-</Step>
-
-- It is off by default; an Admin turns it on deliberately.
-- It **expires after one week**; the dialog shows how long it has left ("Expires in 6 days").
-- An Admin can **Turn off** the link at any time from the same dialog. Turning it on again makes a new link, so the old one never works again: do that if a link has spread further than you meant.
-
-Opening the link lands on a join page that shows what team you are joining. A signed-in visitor sees **Join** or **Decline**; a signed-out visitor is asked to **Sign in to join** or **Create an account** first, then returns to finish joining. A link that has been turned off or has expired says "This invite link isn't valid".
-
-<Tip>
-  The invite link is a credential: anyone who has the URL can join while it is active. Turn it off
-  once your team is assembled, and rely on per-email invites for tighter control.
-</Tip>
+Once they've joined, the team shows up in liveplanner within a few minutes, usually at once.
 
 </ArticleLayout>

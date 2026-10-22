@@ -15,12 +15,12 @@ gave nobody a reason to tell them apart or click.
 
 ## What a preview shows
 
-| Link                                                                  | Title               | Description        | Image                  |
-| --------------------------------------------------------------------- | ------------------- | ------------------ | ---------------------- |
+| Link                                                                 | Title              | Description        | Image                  |
+| -------------------------------------------------------------------- | ------------------ | ------------------ | ---------------------- |
 | A working share link (`/project/shared?s=<code>`), no share password | The project's name | The share pitch    | The share card (below) |
-| A share link to a project with a share password                      | liveplanner         | The editor's pitch | The brand card         |
-| An unknown, revoked or expired code; a trashed project               | liveplanner         | The editor's pitch | The brand card         |
-| Any other editor address (`/project/<id>`, the Explorer, ...)        | liveplanner         | The editor's pitch | The brand card         |
+| A share link to a project with a share password                      | liveplanner        | The editor's pitch | The brand card         |
+| An unknown, revoked or expired code; a trashed project               | liveplanner        | The editor's pitch | The brand card         |
+| Any other editor address (`/project/<id>`, the Explorer, ...)        | liveplanner        | The editor's pitch | The brand card         |
 
 - **The share pitch** is `Open it in liveplanner: boards, sheets, dashboards and forms, planned together in real time.` (the site's `SITE_PITCH`)
 - **The editor's pitch** is the editor's own description, unchanged.

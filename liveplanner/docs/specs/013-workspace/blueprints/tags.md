@@ -7,10 +7,10 @@ Derived from [Tags](../tags.md). Implementation detail only; design lives in the
 | Term          | Identifier                                               | Where                                   |
 | ------------- | -------------------------------------------------------- | --------------------------------------- |
 | Tag           | `Tag` `{ id, name, colour, createdAt }`                  | `packages/api-schema/src/tags.ts`       |
-| Link          | `TagLink` `{ tagId, projectId }`; table `project_tags` | api-schema, the baseline migration      |
+| Link          | `TagLink` `{ tagId, projectId }`; table `project_tags`   | api-schema, the baseline migration      |
 | Tag list      | `TagsList` `{ tags, links }`                             | `GET /api/tags`                         |
 | Tag picker    | `TagPicker`, opened through `openPicker(target)`         | `apps/live/components/tags/`            |
-| Chip / dots   | `TagChip`, `ProjectTagChips`, `ProjectTagDots`         | `apps/live/components/tags/TagChip.tsx` |
+| Chip / dots   | `TagChip`, `ProjectTagChips`, `ProjectTagDots`           | `apps/live/components/tags/TagChip.tsx` |
 | Tags page     | `SelectedNode { kind: 'tags'; id?: string }`, `TagsPane` | `apps/live/app/explorer/tags/`          |
 | Panel section | `PanelSection { kind: 'tags' }`, `PanelTagsSection`      | `apps/live/components/panels/`          |
 
@@ -26,13 +26,13 @@ No synonyms: never "label" or "category" in code.
 
 ## Interfaces and contracts
 
-| Route                                        | Body                   | Answers                                                              |
-| -------------------------------------------- | ---------------------- | -------------------------------------------------------------------- |
-| `GET /api/tags`                              | none                   | 200 `TagsList` (links to trashed projects left out)                 |
-| `POST /api/tags`                             | `{ id, name, colour }` | 201 `{ tag }`; 400 `invalid_tag`; 409 `tag_name_taken` / `tag_limit` |
-| `PUT /api/tags/:id`                          | `{ name?, colour? }`   | 200 `{ tag }`; 400 `invalid_tag`; 404; 409 `tag_name_taken`          |
-| `DELETE /api/tags/:id`                       | none                   | 204; 404                                                             |
-| `PUT /api/tags/:id/projects/:projectId`    | none                   | 204; 404 (not the caller's tag, or no such project via the FK)      |
+| Route                                      | Body                   | Answers                                                              |
+| ------------------------------------------ | ---------------------- | -------------------------------------------------------------------- |
+| `GET /api/tags`                            | none                   | 200 `TagsList` (links to trashed projects left out)                  |
+| `POST /api/tags`                           | `{ id, name, colour }` | 201 `{ tag }`; 400 `invalid_tag`; 409 `tag_name_taken` / `tag_limit` |
+| `PUT /api/tags/:id`                        | `{ name?, colour? }`   | 200 `{ tag }`; 400 `invalid_tag`; 404; 409 `tag_name_taken`          |
+| `DELETE /api/tags/:id`                     | none                   | 204; 404                                                             |
+| `PUT /api/tags/:id/projects/:projectId`    | none                   | 204; 404 (not the caller's tag, or no such project via the FK)       |
 | `DELETE /api/tags/:id/projects/:projectId` | none                   | 204; 404 (not the caller's tag)                                      |
 
 Validation (shared by both sides): `normaliseTagName` (trim, collapse whitespace, 1 to `TAG_NAME_MAX` code points), `isTagColour`, `isTagId`. A malformed tag id in the path is a 404.
@@ -47,15 +47,15 @@ Validation (shared by both sides): `normaliseTagName` (trim, collapse whitespace
 
 ## Errors and edge cases
 
-| Case                               | Handling                                                      |
-| ---------------------------------- | ------------------------------------------------------------- |
-| List fails                         | `status: 'error'`, `LoadFailed` / `PaneFailed` with Try Again |
-| Name taken (another tab)           | 409, revert, "You already have a tag with that name."         |
-| Limit (another tab)                | 409 from the counted insert, revert, the limit line           |
+| Case                              | Handling                                                      |
+| --------------------------------- | ------------------------------------------------------------- |
+| List fails                        | `status: 'error'`, `LoadFailed` / `PaneFailed` with Try Again |
+| Name taken (another tab)          | 409, revert, "You already have a tag with that name."         |
+| Limit (another tab)               | 409 from the counted insert, revert, the limit line           |
 | Tag deleted while a project syncs | `Promise.allSettled`: that link is left off, the sync stands  |
-| Deleted tag on an offline record   | Dropped from the list by `apiListTags`                        |
-| Unknown or someone else's tag id   | 404 on every write; the page falls back to `/explorer/tags`   |
-| Delete 404 (already gone)          | Treated as done                                               |
+| Deleted tag on an offline record  | Dropped from the list by `apiListTags`                        |
+| Unknown or someone else's tag id  | 404 on every write; the page falls back to `/explorer/tags`   |
+| Delete 404 (already gone)         | Treated as done                                               |
 
 ## Security and trust
 
@@ -88,7 +88,7 @@ Every write carries `owner_id` in its statement (the insert selects from the cal
 | Schema: uniqueness, limit, owner, cascades, trash, merge, plans | `apps/api/src/db/tags.test.ts`                                                                   |
 | Routes and refusals                                             | `apps/api/src/routes/tags.test.ts`                                                               |
 | Owner-keyed ledger                                              | `apps/api/src/db/account-owner-columns.test.ts`                                                  |
-| Optimistic writes and reverts                                   | `apps/live/components/tags/useProjectTagsState.test.tsx`                                        |
+| Optimistic writes and reverts                                   | `apps/live/components/tags/useProjectTagsState.test.tsx`                                         |
 | Picker                                                          | `apps/live/components/tags/TagPicker.test.tsx`                                                   |
 | Chips, dots, delete copy                                        | `apps/live/components/tags/TagChip.test.tsx`                                                     |
 | Colour by appearance                                            | `apps/live/components/tags/tag-colour.test.ts`                                                   |

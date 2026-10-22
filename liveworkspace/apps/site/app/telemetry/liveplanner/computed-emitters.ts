@@ -369,9 +369,6 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/live/components/panels/SearchPanel.tsx Search·Selected': {
     values: ['Project', 'Shared', 'Folder', 'Team', 'Tab', 'Element', 'Palette', 'Command'],
   },
-  'apps/live/components/panels/useTeamPaneActions.ts Team·Removed': {
-    values: ['Invite', 'Member', 'Self'],
-  },
   'apps/live/components/primitives/AreaErrorBoundary.tsx Error·Client': {
     values: ['Render.Canvas.TypeError', 'Render.Header.Error'],
     open: 'Render.<Area>.<ErrorName>',

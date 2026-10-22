@@ -28,7 +28,7 @@ export function renderSkill(): string {
     '',
     '# liveplanner',
     '',
-    'Sign in with LIVEPLANNER_TOKEN (an lvd_ API token), or `liveplanner auth login`. The CLI never prompts.',
+    'Sign in with LIVEPLANNER_TOKEN (an lwt_ API token), or `liveplanner auth login`. The CLI never prompts.',
     '',
     'Start:',
     '',
