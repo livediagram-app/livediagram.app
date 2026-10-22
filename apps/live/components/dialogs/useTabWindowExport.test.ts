@@ -71,17 +71,15 @@ describe('tabWindowArts', () => {
     expect(arts.has('gone')).toBe(false);
   });
 
-  it('draws a Pages tab as its pages, a Form tab as its form and a Board tab laid out', () => {
+  it('draws a Form tab as its form and a Board tab laid out', () => {
     const shown = [
       ...tabs,
-      tab('deck', 'Deck', [], { opensIn: 'pages' }),
       tab('survey', 'Survey', [], {
         kind: 'form',
         form: { v: 1, heading: 'Team Survey', sections: [{ id: 's', title: '', questions: [] }] },
       }),
     ];
-    const arts = tabWindowArts('slides', ['deck', 'survey'], shown, new Map());
-    expect(arts.get('deck')?.drawing?.markup).toContain('<svg x="');
+    const arts = tabWindowArts('slides', ['survey'], shown, new Map());
     expect(arts.get('survey')?.drawing?.markup).toContain('Team Survey');
     // A Board tab is its board alone (planImageOf), never the canvas's other elements.
     const board = tab(

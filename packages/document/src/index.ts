@@ -467,9 +467,7 @@ export * from './shape-variants';
 export * from './title-caption';
 export * from './editor-mode';
 export * from './tab-stats';
-export * from './wordmark';
-export * from './page-ink-contrast';
-export * from './page-ink-rules';
+export * from './ink-legibility';
 export * from './colour-background';
 export * from './editor-mode-switch';
 export * from './tab-window';
@@ -769,7 +767,6 @@ export * from './svg-path-outline';
 export * from './shape-hit';
 // The band a shape's label sits in (docs/specs/008-canvas/canvas-and-palette.md "Shape primitives").
 export * from './label-body';
-export * from './shape-area';
 export * from './indicator-placement';
 export * from './anchor-choice';
 export * from './arrow-body-drop';

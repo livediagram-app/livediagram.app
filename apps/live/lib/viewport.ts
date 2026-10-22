@@ -84,8 +84,8 @@ export function computeFitBelow(
   };
 }
 
-// A frame computed for the canvas less `insets.left` and `insets.right` screen px at its sides (the
-// Contents panel laid over it: docs/specs/007-editor/pages-mode.md "Contents"), moved so it lands
+// A frame computed for the canvas less `insets.left` and `insets.right` screen px at its sides (a
+// panel laid over it), moved so it lands
 // in the band between them rather than in the whole canvas. Compute the frame on `{ width: w - left -
 // right, height }`; with the centred transform a canvas x lands at `w/2 + z(x + offset.x - w/2)`, so
 // the band's middle (`(left - right)/2` right of the canvas's) adds `(left + right)/2` for the
@@ -165,37 +165,4 @@ export function isContentOffScreen(
   const top = rect.height / 2 + zoom * (bbox.y - centre.y);
   const bottom = rect.height / 2 + zoom * (bbox.y + bbox.height - centre.y);
   return right <= 0 || left >= rect.width || bottom <= 0 || top >= rect.height;
-}
-
-// Screen px left clear above an article page for its page toolbar and title bar, and either side.
-export const READING_TOP_ROOM = 104;
-const READING_SIDE_ROOM = 32;
-
-/**
- * The view that reads an article page (docs/specs/007-editor/article-pages.md "Getting around"):
- * its width filling the canvas (never past 100%), room above it for the page toolbar; a page that
- * fits sits in the middle of the room below, a taller one shows its top.
- */
-export function computeReadingFrame(
-  rect: ViewportSize,
-  page: Rect,
-  insetTop: number,
-  // The page's side margin: given, the text column (the page less its margins) fills the width,
-  // the margins off screen, so the text reads larger on a narrow screen.
-  margin = 0,
-): { zoom: number; offset: Offset } {
-  const top = Math.min(rect.height / 2, insetTop + READING_TOP_ROOM);
-  const zoom = Math.max(
-    0.1,
-    Math.min(1, (rect.width - 2 * READING_SIDE_ROOM) / Math.max(1, page.width - 2 * margin)),
-  );
-  const room = rect.height - top - 16;
-  const screenTop = page.height * zoom <= room ? top + (room - page.height * zoom) / 2 : top;
-  return {
-    zoom,
-    offset: {
-      x: rect.width / 2 - (page.x + page.width / 2),
-      y: (screenTop - rect.height / 2) / zoom + rect.height / 2 - page.y,
-    },
-  };
 }

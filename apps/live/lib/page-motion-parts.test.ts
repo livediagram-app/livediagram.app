@@ -5,8 +5,7 @@ import { PAGE_MOTIONS } from '@liveplanner/document';
 import { motionPaint } from './page-motion';
 import { motionParts, waveLine, wavePath, type MotionNode } from './page-motion-parts';
 
-// Every motion's parts, read by both the moving layer and the still export (docs/specs/007-editor/
-// pages-mode.md "Animated backgrounds").
+// Every motion's parts, read by the moving layer (docs/specs/030-forms/forms.md "The form card, top to bottom", Cover).
 
 const paint = motionPaint({ from: '#1e3a8a', to: '#4c1d95' });
 const flat = (nodes: readonly MotionNode[]): MotionNode[] =>

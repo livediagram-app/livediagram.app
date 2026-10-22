@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
-// A slide's animated background on screen (docs/specs/007-editor/pages-mode.md "Animated
-// backgrounds"): the parts of lib/page-motion-parts.ts drawn as moving DOM.
+// A form cover's animated background on screen (docs/specs/030-forms/forms.md "The form card, top to bottom",
+// Cover): the parts of lib/page-motion-parts.ts drawn as moving DOM.
 
 import { cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';

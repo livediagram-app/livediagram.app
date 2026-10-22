@@ -124,7 +124,7 @@ export function usePathTool({
     lastEditedRef.current = editing?.id ?? null;
     if (!stale && !vanished) return;
     debugLog(`[path] edit left: ${vanished && !stale ? 'path gone' : 'no longer editable'}`);
-    // A combined shape's points are not edited one by one (docs/specs/007-editor/logo-pages.md).
+    // A path of several contours is not edited point by point (docs/specs/023-draw-mode/path-tool.md).
     if (askedCompound) toast.info('Combined shapes edit as a whole.');
     onLeaveEdit();
   }, [stale, editing, editingId, onLeaveEdit, askedCompound, toast]);

@@ -136,7 +136,7 @@ function readQuestion(v: unknown): FormQuestion | null {
   return q;
 }
 
-// The cover: a colour background as a slide's (@liveplanner/page-background), nothing kept when it is not one.
+// The cover: a colour background (@liveplanner/page-background), nothing kept when it is not one.
 const readCover = (v: unknown): FormCover | undefined => parseColourBackground(v);
 
 function readDestination(v: unknown): FormDestination | undefined {

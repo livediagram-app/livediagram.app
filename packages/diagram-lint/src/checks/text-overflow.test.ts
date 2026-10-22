@@ -46,12 +46,6 @@ describe('text-overflow', () => {
     );
   });
 
-  it('leaves text on a curve out, drawn along its arc, not in its box', () => {
-    const top = text('t', 0, 0, 'CRUMB AND CO.', { width: 400, height: 400, textArc: 180 });
-    const bottom = text('b', 0, 0, 'ARTISAN BAKERY', { width: 400, height: 400, textArc: -180 });
-    expect(of(lint(tabOf(top, bottom)), 'text-overflow')).toEqual([]);
-  });
-
   it('names text printed over text on any tab, a board heading wrapped onto its subtitle', () => {
     const heading = text('h', 0, 0, 'Smoother onboarding for every new team', {
       width: 280,

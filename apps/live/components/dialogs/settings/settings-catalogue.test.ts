@@ -9,8 +9,7 @@ import { autoRebindArrowsEnabled, type UserPreferences } from '@/lib/user-prefer
 const ALL_ROWS = SETTINGS_CATEGORIES.flatMap((c) => c.rows);
 const TOGGLES = ALL_ROWS.filter((r) => r.kind === 'toggle');
 // The switches inside toggle groups (the tours): each its own preference, checked like a toggle row's.
-const GROUP_TOGGLES = ALL_ROWS.flatMap((r) => (r.kind === 'toggleGroup' ? r.toggles : []));
-const SWITCHES = [...TOGGLES, ...GROUP_TOGGLES];
+const SWITCHES = TOGGLES;
 const CHOICES = ALL_ROWS.filter((r) => r.kind === 'choice');
 const SLIDERS = ALL_ROWS.filter((r) => r.kind === 'slider');
 const BOTH_CONTEXTS = [
@@ -244,16 +243,6 @@ describe('settings catalogue', () => {
     expect(row.write({}, false)).toEqual({ dockButtonNames: false });
     expect(row.desktopOnly).toMatch(/Phones always show these buttons as icons/);
     expect(row.event).toMatchObject({ on: 'DockButtonNamesOn', off: 'DockButtonNamesOff' });
-  });
-
-  it('gives every grouped switch telemetry tokens the schema accepts, and a round trip', () => {
-    for (const toggle of GROUP_TOGGLES) {
-      expect(TELEMETRY_TYPE_PATTERN.test(toggle.event.on), toggle.key).toBe(true);
-      expect(TELEMETRY_TYPE_PATTERN.test(toggle.event.off), toggle.key).toBe(true);
-      for (const value of [true, false]) {
-        expect(toggle.read(toggle.write({}, value)), toggle.key).toBe(value);
-      }
-    }
   });
 
   it('defaults every slider and choice to a value it actually offers', () => {

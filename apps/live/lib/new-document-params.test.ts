@@ -22,10 +22,6 @@ describe('wizardBypassKind (docs/specs/007-editor/new-document-route.md)', () =>
     expect(wizardBypassKind('?team=t1&template=er-diagram')).toBe('er-diagram');
   });
 
-  it('opens a retired template’s replacement (a stale link)', () => {
-    expect(wizardBypassKind('?template=browser-wireframe')).toBe('wireframe-website');
-  });
-
   it('falls back to the wizard for an unknown kind or no bypass', () => {
     expect(wizardBypassKind('?template=not-a-template')).toBeNull();
     expect(wizardBypassKind('?template=')).toBeNull();

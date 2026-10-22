@@ -29,15 +29,6 @@ import { ELEMENT_KEY_FIELDS, ELEMENT_KEY_MAX, isElementKey } from './malformed-i
 import { parseStrokePoints } from './stroke-points';
 import { shapeValidationIssue } from './validate-shape';
 import {
-  FONT_WEIGHTS,
-  isFontWeight,
-  isTextCase,
-  LETTER_SPACING_MAX,
-  LETTER_SPACING_MIN,
-  TEXT_ARC_MAX,
-  TEXT_CASES,
-} from './wordmark';
-import {
   type ElementValidationIssue,
   type FieldCheck,
   boundedArray,
@@ -385,19 +376,6 @@ const TEXT_FIELD_CHECKS: readonly FieldCheck[] = [
     field: 'textScale',
     valid: (v) => isNum(v) && v >= TEXT_SCALE_MIN && v <= TEXT_SCALE_MAX,
     rule: `a number from ${TEXT_SCALE_MIN} to ${TEXT_SCALE_MAX}`,
-  },
-  // Wordmark type (docs/specs/007-editor/logo-pages.md "Wordmark type").
-  {
-    field: 'letterSpacing',
-    valid: (v) => isNum(v) && v >= LETTER_SPACING_MIN && v <= LETTER_SPACING_MAX,
-    rule: `a number from ${LETTER_SPACING_MIN} to ${LETTER_SPACING_MAX}`,
-  },
-  { field: 'fontWeight', valid: isFontWeight, rule: oneOfRule(FONT_WEIGHTS.map(String)) },
-  { field: 'textCase', valid: isTextCase, rule: oneOfRule([...TEXT_CASES]) },
-  {
-    field: 'textArc',
-    valid: (v) => isNum(v) && Math.abs(v) <= TEXT_ARC_MAX,
-    rule: `a number from -${TEXT_ARC_MAX} to ${TEXT_ARC_MAX}`,
   },
 ];
 

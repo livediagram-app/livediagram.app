@@ -1,12 +1,10 @@
-// A slide's animated backgrounds (docs/specs/007-editor/pages-mode.md "Animated
-// backgrounds") as data: every motion's moving parts, where each sits, what it is painted with and
-// how it moves. Pure, so the two places that draw a motion read the same parts: the motion layer on
-// the canvas (components/canvas/PageMotionLayer.tsx, moving) and the PNG / PDF export
-// (lib/page-motion-canvas.ts, still, as the slide opens).
+// A form cover's animated backgrounds (docs/specs/030-forms/forms.md "The form card, top to bottom", Cover) as
+// data: every motion's moving parts, where each sits, what it is painted with and
+// how it moves. Pure; the motion layer (components/canvas/PageMotionLayer.tsx) draws them.
 //
 // Kept cheap and calm: every part moves by transform and opacity alone, soft edges are radial
 // gradients rather than blur filters, each motion has at most about a hundred parts, and loops run
-// 4 to 90 seconds. Positions come from fixed seeds, so a slide looks the same wherever it is opened.
+// 4 to 90 seconds. Positions come from fixed seeds, so a cover looks the same wherever it is opened.
 import type { PageMotion } from '@liveplanner/document';
 import { motionSeed, type MotionPaint } from './page-motion';
 import { Confetti, Equaliser, Orbits, Radar, Threads, Warp } from './page-motion-parts-page-four';

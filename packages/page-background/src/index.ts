@@ -53,7 +53,7 @@ export type PageColourFill =
       speed?: number;
     };
 
-// A background in colour alone: a form's cover (a page's PageBackground adds pictures).
+// A background in colour alone: a form's cover.
 export type ColourBackground = { fill?: PageColourFill; pattern?: PagePattern };
 
 const HEX = /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i;

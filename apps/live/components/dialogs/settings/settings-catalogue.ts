@@ -174,25 +174,6 @@ export type SettingsToggleRowSpec = RowBase & {
   event: { category: TelemetryCategory; on: string; off: string };
 };
 
-// One switch inside a toggle group: its own preference and telemetry, like a toggle row, drawn as a
-// tile in the group's grid under the group's heading and description.
-export type SettingsToggleOptionSpec = {
-  key: string;
-  label: string;
-  // Linked from the group's description by this switch's label.
-  helpArticle?: HelpArticleKey;
-  read: (prefs: UserPreferences) => boolean;
-  write: (prefs: UserPreferences, next: boolean) => UserPreferences;
-  event: { category: TelemetryCategory; on: string; off: string };
-};
-
-// Several related switches as one control (the guided tours): one heading and one description over a
-// grid of switch tiles, where separate rows would repeat the same paragraph each time.
-export type SettingsToggleGroupRowSpec = RowBase & {
-  kind: 'toggleGroup';
-  toggles: SettingsToggleOptionSpec[];
-};
-
 export type SettingsChoiceRowSpec = RowBase & {
   kind: 'choice';
   options: { id: string; label: string }[];
@@ -282,7 +263,6 @@ export type SettingsPlacementDefaultRowSpec = RowBase & {
 
 export type SettingsRowSpec =
   | SettingsToggleRowSpec
-  | SettingsToggleGroupRowSpec
   | SettingsChoiceRowSpec
   | SettingsSliderRowSpec
   | SettingsAppearanceRowSpec

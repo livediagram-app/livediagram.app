@@ -686,13 +686,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "animationSpeed": {
         "$ref": "#/components/schemas/AnimationSpeed"
       },
-      "articleNote": {
-        "enum": [
-          "comment",
-          "action"
-        ],
-        "type": "string"
-      },
       "aspectLocked": {
         "type": "boolean"
       },
@@ -1131,426 +1124,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "medium",
       "large",
       "extra-large"
-    ],
-    "type": "string"
-  },
-  "ArticleAlign": {
-    "enum": [
-      "left",
-      "center",
-      "right",
-      "justify"
-    ],
-    "type": "string"
-  },
-  "ArticleBlock": {
-    "anyOf": [
-      {
-        "$ref": "#/components/schemas/ArticleParagraphBlock"
-      },
-      {
-        "$ref": "#/components/schemas/ArticleListBlock"
-      },
-      {
-        "$ref": "#/components/schemas/ArticleCodeBlock"
-      },
-      {
-        "$ref": "#/components/schemas/ArticleDividerBlock"
-      },
-      {
-        "$ref": "#/components/schemas/ArticlePageBreakBlock"
-      },
-      {
-        "$ref": "#/components/schemas/ArticleZoneBlock"
-      }
-    ]
-  },
-  "ArticleCodeBlock": {
-    "additionalProperties": false,
-    "properties": {
-      "id": {
-        "type": "string"
-      },
-      "text": {
-        "type": "string"
-      },
-      "type": {
-        "const": "code",
-        "type": "string"
-      }
-    },
-    "required": [
-      "id",
-      "type",
-      "text"
-    ],
-    "type": "object"
-  },
-  "ArticleDividerBlock": {
-    "additionalProperties": false,
-    "properties": {
-      "id": {
-        "type": "string"
-      },
-      "type": {
-        "const": "divider",
-        "type": "string"
-      }
-    },
-    "required": [
-      "id",
-      "type"
-    ],
-    "type": "object"
-  },
-  "ArticleFlow": {
-    "additionalProperties": false,
-    "properties": {
-      "blocks": {
-        "items": {
-          "$ref": "#/components/schemas/ArticleBlock"
-        },
-        "type": "array"
-      },
-      "style": {
-        "$ref": "#/components/schemas/ArticleStyle"
-      }
-    },
-    "required": [
-      "blocks"
-    ],
-    "type": "object"
-  },
-  "ArticleLineSpacing": {
-    "enum": [
-      "single",
-      "onehalf",
-      "double"
-    ],
-    "type": "string"
-  },
-  "ArticleListBlock": {
-    "additionalProperties": false,
-    "properties": {
-      "align": {
-        "$ref": "#/components/schemas/ArticleAlign"
-      },
-      "checked": {
-        "const": true,
-        "type": "boolean"
-      },
-      "id": {
-        "type": "string"
-      },
-      "level": {
-        "type": "number"
-      },
-      "list": {
-        "$ref": "#/components/schemas/ArticleListKind"
-      },
-      "runs": {
-        "items": {
-          "$ref": "#/components/schemas/ArticleRun"
-        },
-        "type": "array"
-      },
-      "type": {
-        "const": "list",
-        "type": "string"
-      }
-    },
-    "required": [
-      "id",
-      "type",
-      "list",
-      "runs"
-    ],
-    "type": "object"
-  },
-  "ArticleListKind": {
-    "enum": [
-      "bullet",
-      "numbered",
-      "todo"
-    ],
-    "type": "string"
-  },
-  "ArticleLookId": {
-    "enum": [
-      "clean",
-      "classic",
-      "report",
-      "notebook",
-      "bold"
-    ],
-    "type": "string"
-  },
-  "ArticleMargins": {
-    "enum": [
-      "narrow",
-      "normal",
-      "wide"
-    ],
-    "type": "string"
-  },
-  "ArticlePageBreakBlock": {
-    "additionalProperties": false,
-    "properties": {
-      "id": {
-        "type": "string"
-      },
-      "type": {
-        "const": "pageBreak",
-        "type": "string"
-      }
-    },
-    "required": [
-      "id",
-      "type"
-    ],
-    "type": "object"
-  },
-  "ArticleParagraphBlock": {
-    "additionalProperties": false,
-    "properties": {
-      "align": {
-        "$ref": "#/components/schemas/ArticleAlign"
-      },
-      "id": {
-        "type": "string"
-      },
-      "runs": {
-        "items": {
-          "$ref": "#/components/schemas/ArticleRun"
-        },
-        "type": "array"
-      },
-      "style": {
-        "$ref": "#/components/schemas/ArticleParagraphStyle"
-      },
-      "type": {
-        "const": "paragraph",
-        "type": "string"
-      }
-    },
-    "required": [
-      "id",
-      "type",
-      "runs"
-    ],
-    "type": "object"
-  },
-  "ArticleParagraphSpacing": {
-    "enum": [
-      "none",
-      "normal",
-      "wide"
-    ],
-    "type": "string"
-  },
-  "ArticleParagraphStyle": {
-    "enum": [
-      "body",
-      "title",
-      "subtitle",
-      "h1",
-      "h2",
-      "h3",
-      "quote"
-    ],
-    "type": "string"
-  },
-  "ArticleRules": {
-    "enum": [
-      "none",
-      "title",
-      "headings"
-    ],
-    "type": "string"
-  },
-  "ArticleRun": {
-    "additionalProperties": false,
-    "description": "A stretch of text with one formatting. `text` may hold '\\n', a line break inside the block.",
-    "properties": {
-      "b": {
-        "const": true,
-        "type": "boolean"
-      },
-      "code": {
-        "const": true,
-        "type": "boolean"
-      },
-      "color": {
-        "type": "string"
-      },
-      "hl": {
-        "type": "string"
-      },
-      "href": {
-        "type": "string"
-      },
-      "i": {
-        "const": true,
-        "type": "boolean"
-      },
-      "nk": {
-        "const": "action",
-        "type": "string"
-      },
-      "note": {
-        "type": "string"
-      },
-      "s": {
-        "const": true,
-        "type": "boolean"
-      },
-      "sub": {
-        "const": true,
-        "type": "boolean"
-      },
-      "sup": {
-        "const": true,
-        "type": "boolean"
-      },
-      "text": {
-        "type": "string"
-      },
-      "u": {
-        "const": true,
-        "type": "boolean"
-      }
-    },
-    "required": [
-      "text"
-    ],
-    "type": "object"
-  },
-  "ArticleStyle": {
-    "additionalProperties": false,
-    "description": "An article's look (docs/specs/007-editor/article-pages.md \"Article style\"). Every field is optional, absent being its default (`resolveArticleStyle`).",
-    "properties": {
-      "accent": {
-        "type": "string"
-      },
-      "accentHeadings": {
-        "type": "boolean"
-      },
-      "bodyFont": {
-        "type": "string"
-      },
-      "headingFont": {
-        "type": "string"
-      },
-      "lineSpacing": {
-        "$ref": "#/components/schemas/ArticleLineSpacing"
-      },
-      "look": {
-        "$ref": "#/components/schemas/ArticleLookId"
-      },
-      "margins": {
-        "$ref": "#/components/schemas/ArticleMargins"
-      },
-      "pageNumbers": {
-        "type": "boolean"
-      },
-      "paragraphSpacing": {
-        "$ref": "#/components/schemas/ArticleParagraphSpacing"
-      },
-      "rules": {
-        "$ref": "#/components/schemas/ArticleRules"
-      },
-      "textSize": {
-        "$ref": "#/components/schemas/ArticleTextSize"
-      }
-    },
-    "type": "object"
-  },
-  "ArticleTextSize": {
-    "enum": [
-      "small",
-      "normal",
-      "large"
-    ],
-    "type": "string"
-  },
-  "ArticleZoneAlign": {
-    "enum": [
-      "left",
-      "center",
-      "right"
-    ],
-    "type": "string"
-  },
-  "ArticleZoneAt": {
-    "additionalProperties": false,
-    "properties": {
-      "page": {
-        "type": "string"
-      },
-      "x": {
-        "type": "number"
-      },
-      "y": {
-        "type": "number"
-      }
-    },
-    "required": [
-      "page",
-      "x",
-      "y"
-    ],
-    "type": "object"
-  },
-  "ArticleZoneBlock": {
-    "additionalProperties": false,
-    "properties": {
-      "align": {
-        "$ref": "#/components/schemas/ArticleZoneAlign"
-      },
-      "at": {
-        "$ref": "#/components/schemas/ArticleZoneAt"
-      },
-      "height": {
-        "type": "number"
-      },
-      "id": {
-        "type": "string"
-      },
-      "type": {
-        "const": "zone",
-        "type": "string"
-      },
-      "width": {
-        "type": "number"
-      },
-      "wrap": {
-        "$ref": "#/components/schemas/ArticleZoneWrap"
-      },
-      "zone": {
-        "$ref": "#/components/schemas/ArticleZoneKind"
-      }
-    },
-    "required": [
-      "id",
-      "type",
-      "zone",
-      "width",
-      "height"
-    ],
-    "type": "object"
-  },
-  "ArticleZoneKind": {
-    "enum": [
-      "object",
-      "drawing"
-    ],
-    "type": "string"
-  },
-  "ArticleZoneWrap": {
-    "enum": [
-      "inline",
-      "left",
-      "right"
     ],
     "type": "string"
   },
@@ -9520,73 +9093,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
-  "Page": {
-    "additionalProperties": false,
-    "properties": {
-      "background": {
-        "$ref": "#/components/schemas/PageBackground"
-      },
-      "device": {
-        "$ref": "#/components/schemas/WireframeDeviceId"
-      },
-      "fit": {
-        "$ref": "#/components/schemas/PageSides"
-      },
-      "flow": {
-        "type": "string"
-      },
-      "frameLook": {
-        "$ref": "#/components/schemas/WireframeFrameLook"
-      },
-      "id": {
-        "type": "string"
-      },
-      "kind": {
-        "$ref": "#/components/schemas/PageKind"
-      },
-      "locked": {
-        "const": true,
-        "type": "boolean"
-      },
-      "name": {
-        "type": "string"
-      },
-      "orientation": {
-        "$ref": "#/components/schemas/PageOrientation"
-      },
-      "rowAt": {
-        "$ref": "#/components/schemas/RowAt"
-      },
-      "size": {
-        "$ref": "#/components/schemas/PageSizeId"
-      },
-      "startedBlank": {
-        "const": true,
-        "type": "boolean"
-      },
-      "systemBars": {
-        "const": false,
-        "type": "boolean"
-      }
-    },
-    "required": [
-      "id",
-      "orientation"
-    ],
-    "type": "object"
-  },
-  "PageBackground": {
-    "additionalProperties": false,
-    "properties": {
-      "fill": {
-        "$ref": "#/components/schemas/PageFill"
-      },
-      "pattern": {
-        "$ref": "#/components/schemas/PagePattern"
-      }
-    },
-    "type": "object"
-  },
   "PageColourFill": {
     "anyOf": [
       {
@@ -9639,93 +9145,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       }
     ]
   },
-  "PageFill": {
-    "anyOf": [
-      {
-        "$ref": "#/components/schemas/PageColourFill"
-      },
-      {
-        "$ref": "#/components/schemas/PageImageFill"
-      }
-    ]
-  },
-  "PageImageFill": {
-    "additionalProperties": false,
-    "properties": {
-      "credit": {
-        "$ref": "#/components/schemas/ImageCredit"
-      },
-      "imageId": {
-        "type": "string"
-      },
-      "kind": {
-        "const": "image",
-        "type": "string"
-      },
-      "overlay": {
-        "$ref": "#/components/schemas/PageImageOverlay"
-      },
-      "position": {
-        "$ref": "#/components/schemas/PageImagePosition"
-      },
-      "preview": {
-        "type": "string"
-      },
-      "tone": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "kind",
-      "imageId"
-    ],
-    "type": "object"
-  },
-  "PageImageOverlay": {
-    "additionalProperties": false,
-    "properties": {
-      "color": {
-        "type": "string"
-      },
-      "kind": {
-        "$ref": "#/components/schemas/PageImageOverlayKind"
-      },
-      "strength": {
-        "type": "number"
-      }
-    },
-    "required": [
-      "kind",
-      "strength"
-    ],
-    "type": "object"
-  },
-  "PageImageOverlayKind": {
-    "enum": [
-      "light",
-      "dark",
-      "tint",
-      "fade"
-    ],
-    "type": "string"
-  },
-  "PageImagePosition": {
-    "enum": [
-      "top",
-      "bottom"
-    ],
-    "type": "string"
-  },
-  "PageKind": {
-    "enum": [
-      "infographic",
-      "article",
-      "slide",
-      "logo",
-      "wireframe"
-    ],
-    "type": "string"
-  },
   "PageMotion": {
     "enum": [
       "flow",
@@ -9755,50 +9174,11 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
-  "PageOrientation": {
-    "enum": [
-      "portrait",
-      "landscape"
-    ],
-    "type": "string"
-  },
   "PagePattern": {
     "enum": [
       "dots",
       "grid",
       "lines"
-    ],
-    "type": "string"
-  },
-  "PageSides": {
-    "additionalProperties": false,
-    "properties": {
-      "height": {
-        "type": "number"
-      },
-      "width": {
-        "type": "number"
-      }
-    },
-    "required": [
-      "width",
-      "height"
-    ],
-    "type": "object"
-  },
-  "PageSizeId": {
-    "enum": [
-      "a4",
-      "letter",
-      "a3",
-      "square",
-      "social",
-      "wide",
-      "slide",
-      "slide-classic",
-      "logo",
-      "device",
-      "fit"
     ],
     "type": "string"
   },
@@ -11343,22 +10723,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "none"
     ],
     "type": "string"
-  },
-  "RowAt": {
-    "additionalProperties": false,
-    "properties": {
-      "x": {
-        "type": "number"
-      },
-      "y": {
-        "type": "number"
-      }
-    },
-    "required": [
-      "x",
-      "y"
-    ],
-    "type": "object"
   },
   "RunHeading": {
     "enum": [
@@ -13558,12 +12922,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "Tab": {
     "additionalProperties": false,
     "properties": {
-      "articles": {
-        "additionalProperties": {
-          "$ref": "#/components/schemas/ArticleFlow"
-        },
-        "type": "object"
-      },
       "backgroundAnimationSpeed": {
         "type": "number"
       },
@@ -13633,15 +12991,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "opensIn": {
         "$ref": "#/components/schemas/EditorMode"
       },
-      "pageOrientation": {
-        "$ref": "#/components/schemas/PageOrientation"
-      },
-      "pages": {
-        "items": {
-          "$ref": "#/components/schemas/Page"
-        },
-        "type": "array"
-      },
       "patternColor": {
         "type": "string"
       },
@@ -13688,12 +13037,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "TabRecord": {
     "additionalProperties": false,
     "properties": {
-      "articles": {
-        "additionalProperties": {
-          "$ref": "#/components/schemas/ArticleFlow"
-        },
-        "type": "object"
-      },
       "backgroundAnimationSpeed": {
         "type": "number"
       },
@@ -13768,15 +13111,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "orderIndex": {
         "type": "number"
-      },
-      "pageOrientation": {
-        "$ref": "#/components/schemas/PageOrientation"
-      },
-      "pages": {
-        "items": {
-          "$ref": "#/components/schemas/Page"
-        },
-        "type": "array"
       },
       "patternColor": {
         "type": "string"
@@ -14819,14 +14153,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "font": {
         "type": "string"
       },
-      "fontWeight": {
-        "enum": [
-          400,
-          500,
-          700
-        ],
-        "type": "number"
-      },
       "headerFill": {
         "type": "string"
       },
@@ -14841,9 +14167,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "layerId": {
         "type": "string"
-      },
-      "letterSpacing": {
-        "type": "number"
       },
       "link": {
         "$ref": "#/components/schemas/ElementLink"
@@ -14899,18 +14222,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "textAnimationSpeed": {
         "$ref": "#/components/schemas/AnimationSpeed"
       },
-      "textArc": {
-        "type": "number"
-      },
       "textBold": {
         "type": "boolean"
-      },
-      "textCase": {
-        "enum": [
-          "upper",
-          "lower"
-        ],
-        "type": "string"
       },
       "textColor": {
         "type": "string"
@@ -15627,29 +14940,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "find",
       "diff",
       "lint"
-    ],
-    "type": "string"
-  },
-  "WireframeDeviceId": {
-    "enum": [
-      "iphone",
-      "iphone-duo",
-      "android",
-      "ipad",
-      "android-tablet",
-      "laptop",
-      "desktop",
-      "browser",
-      "watch"
-    ],
-    "type": "string"
-  },
-  "WireframeFrameLook": {
-    "enum": [
-      "theme",
-      "dark",
-      "light",
-      "outline"
     ],
     "type": "string"
   },

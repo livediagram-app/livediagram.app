@@ -21,6 +21,7 @@ export const POPULAR_BY_MODE: Readonly<Partial<Record<PopularChoice, readonly Te
     'budget-planner',
     'orgchart',
     'sketchnote',
+    'gantt',
   ],
   diagram: [
     'blank',

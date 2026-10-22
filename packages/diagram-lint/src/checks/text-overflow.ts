@@ -70,12 +70,10 @@ const inkOverlap = (a: Ink, b: Ink) =>
     Math.min(a.y + a.height, b.y + b.height) - Math.max(a.y, b.y),
   );
 
-// Text on a curve (a badge's) is drawn along its arc, not in its box, and turned text (an axis title stood on end)
-// is drawn across its box, so both are left out.
+// Turned text (an axis title stood on end) is drawn across its box, so it is left out.
 const textsOf = (ctx: Parameters<Check>[0]) =>
   ctx.visible
     .filter(isText)
-    .filter((t) => !(t as { textArc?: number }).textArc)
     .filter((t) => ((t as { rotation?: number }).rotation ?? 0) % 360 === 0);
 
 export const textOverprint: Check = (ctx) => {

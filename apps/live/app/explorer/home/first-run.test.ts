@@ -46,7 +46,6 @@ describe('the starts', () => {
       'blank',
       'whiteboard',
       'blank-session',
-      'blank-illustration',
       'blank-plan',
     ]);
   });

@@ -37,12 +37,12 @@ describe('NewDocumentWizard', () => {
   });
 
   it("creates the preset mode's blank from Create, else a Blank Diagram", () => {
-    const p = wizard({ initialMode: 'pages' });
-    expect(screen.getByRole('button', { name: /^Pages:/ }).getAttribute('aria-pressed')).toBe(
+    const p = wizard({ initialMode: 'plan' });
+    expect(screen.getByRole('button', { name: /^Plan:/ }).getAttribute('aria-pressed')).toBe(
       'true',
     );
     fireEvent.click(screen.getByRole('button', { name: 'Create' }));
-    expect(p.onCreate).toHaveBeenCalledWith('blank-illustration');
+    expect(p.onCreate).toHaveBeenCalledWith('blank-plan');
     cleanup();
     const q = wizard();
     fireEvent.click(screen.getByRole('button', { name: 'Create' }));

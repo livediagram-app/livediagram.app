@@ -11,8 +11,6 @@ const staticImports = (src: string) =>
 
 describe('Show Me in the editor’s first load', () => {
   it.each([
-    ['PageTour.tsx', './page-tour-steps'],
-    ['PagesTourHost.tsx', './page-tour-steps'],
     ['PhotoReviewTour.tsx', './photo-review-tour-steps'],
   ])('%s imports its steps only at the press', (file, steps) => {
     const src = read(file);

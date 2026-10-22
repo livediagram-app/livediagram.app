@@ -31,7 +31,7 @@ export function PathSvg({
 }) {
   const w = Math.max(element.width, 1);
   const h = Math.max(element.height, 1);
-  // Every contour; a combined shape's holes show through (docs/specs/007-editor/logo-pages.md).
+  // Every contour; a path of several shows its holes through (docs/specs/023-draw-mode/path-tool.md).
   const d = pathElementD(element, { x: 0, y: 0 });
   const fillRule = isCompoundPath(element) ? 'evenodd' : undefined;
   // A path follows its tab's finish (docs/specs/008-canvas/finish.md "Polygons and paths"): under Sketch and Marker

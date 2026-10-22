@@ -67,8 +67,6 @@ export {
   xmlEscape,
 } from './svg-render-primitives';
 import { svgRichWrappedLabel, svgWrappedLabel } from './svg-render-labels';
-import { svgWordmarkLabel } from './svg-render-wordmark';
-import { hasWordmarkType } from './wordmark';
 
 export {
   EXPORT_DEFAULT_FONT,
@@ -479,38 +477,35 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
   const labelStr =
     !label || selfLabelled(el)
       ? ''
-      : el.type === 'text' && hasWordmarkType(el)
-        ? // Tracking, weight, case and arc (docs/specs/007-editor/logo-pages.md "Wordmark type").
-          svgWordmarkLabel(el, label)
-        : label.runs
-          ? svgRichWrappedLabel(
-              label.runs,
-              label.x,
-              label.y,
-              label.anchor,
+      : label.runs
+        ? svgRichWrappedLabel(
+            label.runs,
+            label.x,
+            label.y,
+            label.anchor,
+            label.maxWidth,
+            label.valign,
+            label.fontFamily,
+          )
+        : svgWrappedLabel(
+            // Wrapped in the face it paints in, or a wide face breaks at the
+            // wrong words and runs out of its element.
+            wrapLabel(
+              label.text,
               label.maxWidth,
-              label.valign,
-              label.fontFamily,
-            )
-          : svgWrappedLabel(
-              // Wrapped in the face it paints in, or a wide face breaks at the
-              // wrong words and runs out of its element.
-              wrapLabel(
-                label.text,
-                label.maxWidth,
-                labelMeasure(label.size, label.bold, label.italic, label.fontFamily),
-                !(el.type === 'shape' && el.shape === 'icon'),
-              ),
-              label.x,
-              label.y,
-              label.anchor,
-              label.color,
-              label.size,
-              label.bold,
-              label.italic,
-              label.valign,
-              label.fontFamily,
-            );
+              labelMeasure(label.size, label.bold, label.italic, label.fontFamily),
+              !(el.type === 'shape' && el.shape === 'icon'),
+            ),
+            label.x,
+            label.y,
+            label.anchor,
+            label.color,
+            label.size,
+            label.bold,
+            label.italic,
+            label.valign,
+            label.fontFamily,
+          );
   // An upright lane title turns about its frame's corner (docs/specs/009-elements/lane.md).
   const turned =
     labelStr && label?.turnAbout
@@ -570,8 +565,6 @@ export function boxedNeedsSvgRaster(
   // An accent edge (docs/specs/008-canvas/accent-edge.md) is a clipped bar only the SVG draws.
   if (resolvedAccentEdge(el)) return true;
   if (el.type === 'table' || el.type === 'freehand' || el.type === 'path') return true;
-  // Wordmark type (tracking, weight, case, an arc) is drawn by the SVG alone.
-  if (el.type === 'text' && hasWordmarkType(el)) return true;
   if (el.type === 'shape' && (hasShapeSilhouette(el.shape) || el.shape === 'stadium')) return true;
   // Anything whose BODY this module draws and the canvas drawers cannot: a
   // chart's plot, a progress value, a card's face, a lane's gutter, a

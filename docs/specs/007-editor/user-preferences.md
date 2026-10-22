@@ -700,8 +700,7 @@ and the dialog stays as the one complete, browsable index of them.
 
   Row kinds: `toggle`, `choice` (a segmented control, e.g.
   the theme and the minimap size), `slider` (panel opacity, UI scale, committing on
-  release so one drag is not one PUT per pixel), `toggleGroup` (several
-  switches as one row of chips, see **Toggle groups** below), `appearance` (the one row
+  release so one drag is not one PUT per pixel), `appearance` (the one row
   backed by the device-local store, not `UserPreferences`), and `tokens` (the
   API token manager).
   A toggle row's control is one `role="switch"` button, named by the label
@@ -783,12 +782,6 @@ and the dialog stays as the one complete, browsable index of them.
   kind nested under it, named for the element (**Sankey Diagram**). Element tours
   need no relaunch: the offer shows the next time such an element is selected. A category may mark any section
   closed this way (`collapsedSections`); Settings opened on one of its rows opens it.
-
-  **Toggle groups.** Several related switches that share one description are
-  one `toggleGroup` row: the label and description over a row of **chips**, one
-  per switch, ticked and tinted while on, each its own preference with its own
-  telemetry. Chips rather than a grid of switches, so short names fit without
-  truncating.
 
   **Button Labels** (Appearance › Interface, `dockButtonNames`, on by default)
   names the editor's bottom buttons beside their icons: the footer bar's Search,

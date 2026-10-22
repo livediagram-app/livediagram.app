@@ -74,7 +74,7 @@ export interface FormDestination {
   typeId: string;
   status: string;
 }
-// A slide background in colour (@liveplanner/page-background): a solid or gradient fill (a moving one included) and a
+// A colour background (@liveplanner/page-background): a solid or gradient fill (a moving one included) and a
 // pattern; no picture. Read with parseColourBackground.
 export type FormCover = ColourBackground; // { fill?: PageColourFill; pattern?: PagePattern }
 export interface FormDefinition {
@@ -390,7 +390,7 @@ editor modules: `forms-public.ts`, the shared controls and `@liveplanner/ui`.
 | Start Planning's Forms                                                                                                            | `components/plan/PlanBoardPicker.test.tsx`                                                                                                                                                              |
 | The Inbox section                                                                                                                 | `components/panels/ActivityPane.test.tsx`                                                                                                                                                               |
 | The worker rewrite                                                                                                                | `apps/live/src/worker.test.ts`, `lib/form-path.test.ts`                                                                                                                                                 |
-| A cover is a colour background, read and refused as a slide's                                                                     | `packages/page-background/src/index.test.ts`, `packages/forms/src/read.test.ts`                                                                                                                         |
+| A cover is a colour background, read and refused by its parser                                                                    | `packages/page-background/src/index.test.ts`, `packages/forms/src/read.test.ts`                                                                                                                         |
 | No row, Preview or response, for a sheet whose tab left the document; pause on destination delete, reopen refused while not ready | `apps/api/src/routes/forms.test.ts`, `apps/live/hooks/forms/form-preview.test.ts`                                                                                                                       |
 | Blank makes nothing; sheet starters make a Sheet tab; names follow the tab                                                        | `packages/templates/src/form-start.test.ts`                                                                                                                                                             |
 | Rename keeps the destination's automatic name in step                                                                             | `apps/live/hooks/forms/useFormActions.rename.test.ts`                                                                                                                                                   |
@@ -522,7 +522,7 @@ showIfBroken?, questions: [{ id, type, typeName, prompt, …settings, goesTo?, g
 
 ### The picture (`form-art.ts`)
 
-Blocks drawn from their own top and measured: the cover (`COVER_H` 160, a slide's gradient or colour with its pattern
+Blocks drawn from their own top and measured: the cover (`COVER_H` 160, a gradient or colour with its pattern
 as a light overlay; else a `BAND_H` band of the accent), the heading card, each section's card ("Section n of m", its
 rule as "Shown when “prompt” is A or B"), each question's card (prompt with a red `tspan` asterisk when required, help,
 its control: text boxes with the placeholder or the type's hint, a paragraph's three lines, radios or a dropdown past

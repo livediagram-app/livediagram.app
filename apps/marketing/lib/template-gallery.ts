@@ -61,10 +61,14 @@ export function galleryTemplates(): GalleryTemplate[] {
 }
 
 // Blank Slate's blanks in mode order (the mode switch's), Blank Spreadsheet beside Blank Plan.
-const BLANK_SLATE_KINDS = EDITOR_MODES.flatMap((mode) => [
-  BLANK_TEMPLATE_FOR_MODE[mode],
-  ...EXTRA_BLANK_TEMPLATES.filter((k) => templateEditorMode(k) === mode),
-]);
+const BLANK_SLATE_KINDS = EDITOR_MODES.flatMap((mode) =>
+  mode === 'pages'
+    ? []
+    : [
+        BLANK_TEMPLATE_FOR_MODE[mode],
+        ...EXTRA_BLANK_TEMPLATES.filter((k) => templateEditorMode(k) === mode),
+      ],
+);
 
 // Blank Slate: every blank and nothing else, in its fixed order.
 export function popularTemplates(): GalleryTemplate[] {

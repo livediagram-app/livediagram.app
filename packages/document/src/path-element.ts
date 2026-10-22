@@ -65,8 +65,8 @@ export function pathOfContours(
   };
 }
 
-/** Whether the path is a combined shape of several contours (docs/specs/007-editor/logo-pages.md
- *  "Combine"): filled even-odd, edited as a whole. */
+/** Whether the path has several contours (docs/specs/023-draw-mode/path-tool.md): filled even-odd, edited as a
+ *  whole. */
 export function isCompoundPath(el: Pick<PathElement, 'subpaths'>): boolean {
   return (el.subpaths?.length ?? 0) > 0;
 }

@@ -1,9 +1,8 @@
 'use client';
 
-// A slide's animated background (docs/specs/007-editor/pages-mode.md "Animated
-// backgrounds"): the moving parts drawn over the page's gradient and under everything on it, on
-// screen and while presenting. The parts are lib/page-motion-parts.ts's (the export draws the same
-// ones, still); its keyframes are app/motion-page.css.
+// A form cover's animated background (docs/specs/030-forms/forms.md "The form card, top to bottom", Cover): the
+// moving parts drawn over the cover's gradient and under everything on it. The parts are
+// lib/page-motion-parts.ts's; its keyframes are app/motion-page.css.
 //
 // Kept cheap and calm: every part moves by transform and opacity alone (the compositor's work, no
 // repaint per frame) and soft edges are radial gradients rather than blur filters. Reduced motion
