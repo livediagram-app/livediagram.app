@@ -50,7 +50,7 @@ When you set a URL, liveplanner fetches the page's preview once and caches it on
 
 ## Safe by Design
 
-Fetching a preview happens on liveplanner's server, never from your browser reaching across the web on its own, and that path is built to be safe to run on a public, self-hostable codebase:
+Fetching a preview happens on liveplanner's server, never from your browser reaching across the web on its own, and that path is built to be safe:
 
 - Only `http` and `https` addresses are fetched, and a slow page is given up on after 8 seconds rather than holding the card.
 - Addresses pointing at private networks, local machines, or internal metadata are refused, so a card can never be used to probe somewhere it should not reach.

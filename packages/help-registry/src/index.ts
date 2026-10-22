@@ -68,8 +68,8 @@ export const categories: Category[] = [
     slug: 'about',
     title: 'About liveplanner',
     description:
-      'Get to know liveplanner: what it is, who it helps, and the ideas behind a free, open canvas.',
-    articleCount: 4,
+      'Get to know liveplanner: what it is, who it helps, and the ideas behind a free planning space with no trackers.',
+    articleCount: 3,
   },
   {
     slug: 'getting-started',
@@ -97,14 +97,7 @@ export const categories: Category[] = [
     title: 'Privacy and Security',
     description:
       'Know exactly how your documents are stored, what we collect, and how to keep shared links safe.',
-    articleCount: 5,
-  },
-  {
-    slug: 'self-hosting',
-    title: 'Self-Hosting',
-    description:
-      'Run liveplanner on your own infrastructure, with the full feature set, free and open source.',
-    articleCount: 3,
+    articleCount: 4,
   },
   {
     slug: 'developers',
@@ -290,8 +283,7 @@ export const articles: Article[] = [
     title: 'Quick Controls',
     description:
       'The always-available Search, Settings and appearance controls at the end of the bottom bar.',
-    keywords:
-      'corner buttons actions settings search github bottom bar cluster appearance light dark',
+    keywords: 'corner buttons actions settings search bottom bar cluster appearance light dark',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
@@ -346,17 +338,8 @@ export const articles: Article[] = [
   {
     slug: 'why-liveplanner',
     title: 'Why Use liveplanner?',
-    description: 'Free, open source, no sign-in wall, real-time collaboration. Here is why.',
+    description: 'Free, no trackers, no sign-in wall, real-time collaboration. Here is why.',
     keywords: 'benefits reasons comparison alternatives features advantages',
-    category: 'About liveplanner',
-    categorySlug: 'about',
-    parentSlug: 'about',
-  },
-  {
-    slug: 'what-is-open-source',
-    title: 'What is Open Source?',
-    description: 'What open source means, and what liveplanner being MIT-licensed gives you.',
-    keywords: 'mit license free code github oss public repository',
     category: 'About liveplanner',
     categorySlug: 'about',
     parentSlug: 'about',
@@ -635,9 +618,9 @@ export const articles: Article[] = [
     slug: 'cli',
     title: 'The liveplanner CLI',
     description:
-      'Read, build, edit and discuss documents from a terminal: install, sign in, the commands, and self-hosting.',
+      'Read, build, edit and discuss documents from a terminal: install, sign in, the commands, and profiles.',
     keywords:
-      'cli command line terminal shell npm npx install agent coding agent script automation device code login sign in token keychain export pull push self-host',
+      'cli command line terminal shell npm npx install agent coding agent script automation device code login sign in token keychain export pull push profile',
     category: 'Developers',
     categorySlug: 'developers',
   },
@@ -761,57 +744,6 @@ export const articles: Article[] = [
     categorySlug: 'privacy-and-security',
     parentSlug: 'privacy-and-security',
   },
-  {
-    slug: 'open-source-trust',
-    title: 'Open Source and Trust',
-    description: 'The code is public and MIT-licensed. What that means for you.',
-    keywords: 'github mit audit code public license transparent inspect',
-    category: 'Privacy and Security',
-    categorySlug: 'privacy-and-security',
-    parentSlug: 'privacy-and-security',
-  },
-
-  // ---- Self-Hosting ----
-  {
-    slug: 'self-hosting-overview',
-    title: 'Self-Hosting Overview',
-    description: 'What it takes to run your own liveplanner, and why you might.',
-    keywords: 'host yourself own server on premise deploy install run',
-    category: 'Self-Hosting',
-    categorySlug: 'self-hosting',
-    parentSlug: 'self-hosting',
-  },
-  {
-    slug: 'deploying-liveplanner',
-    title: 'Deploying liveplanner',
-    description: 'The apps, the Cloudflare stack, and how a deploy runs.',
-    keywords:
-      'cloudflare workers deploy install setup infrastructure d1 github actions router mcp wrangler',
-    category: 'Self-Hosting',
-    categorySlug: 'self-hosting',
-    parentSlug: 'self-hosting',
-  },
-  {
-    slug: 'configuration',
-    title: 'Configuration and Optional Auth',
-    description: 'Environment variables, optional Clerk auth, and guest-only mode.',
-    keywords:
-      'env vars environment clerk setup secrets settings configure resend email ai openai mcp telemetry r2',
-    category: 'Self-Hosting',
-    categorySlug: 'self-hosting',
-    parentSlug: 'self-hosting',
-  },
-  {
-    slug: 'mcp-server',
-    title: 'The MCP Server on a Self-Hosted Instance',
-    description: 'Set up the MCP server for AI tools on your own deployment.',
-    keywords:
-      'mcp server worker kv namespace consent base url oauth issuer mcp origin self host ai claude connector',
-    category: 'Self-Hosting',
-    categorySlug: 'self-hosting/configuration',
-    parentSlug: 'configuration',
-  },
-
   // ---- Troubleshooting ----
   {
     slug: 'document-not-loading',
@@ -1895,7 +1827,7 @@ export const articles: Article[] = [
     description:
       'The compact in-editor Explorer: the same Overview, Spaces and More, opening documents in place.',
     keywords:
-      'sidebar overview spaces more tree keyboard switch documents diagrams files library in editor menu button hamburger popover open more menu new share export github',
+      'sidebar overview spaces more tree keyboard switch documents diagrams files library in editor menu button hamburger popover open more menu new share export',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Your Library',

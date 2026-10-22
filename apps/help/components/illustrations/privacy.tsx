@@ -1,6 +1,5 @@
 // Privacy and Security category illustrations (docs/specs/018-help/help-app.md): where documents live on
-// Cloudflare, who can read them, the anonymous-telemetry opt-out, and the
-// open-source / public-code motif. (Share-link security reuses the Share
+// Cloudflare, who can read them, and the anonymous-telemetry opt-out. (Share-link security reuses the Share
 // dialog scenes in sharing.tsx.)
 // Composed only from the shared primitives so the house style holds.
 
@@ -183,38 +182,6 @@ export function TelemetryToggle() {
         <TextBar x={170} y={110} w={176} tone="faint" />
         <TextBar x={170} y={122} w={120} tone="faint" />
       </Dialog>
-    </Scene>
-  );
-}
-
-/** A public, MIT-licensed codebase: an open repository panel of readable source
- *  with no hidden secrets, marked as auditable. */
-export function PublicCode() {
-  return (
-    <Scene w={420} h={210}>
-      <Panel x={70} y={26} w={280} h={158} title="REPOSITORY (PUBLIC)">
-        {/* Open-book / visible glyph */}
-        <g transform="translate(94 66)">
-          <circle r={9} className="fill-none stroke-brand-500" strokeWidth={2} />
-          <circle r={3} className="fill-brand-500" />
-          <path
-            d="M-15 0 a17 12 0 0 1 30 0 a17 12 0 0 1 -30 0"
-            fill="none"
-            className="stroke-brand-300"
-            strokeWidth={1.5}
-          />
-        </g>
-        <Label x={116} y={67} size={10} weight={600} tone="strong">
-          MIT licensed
-        </Label>
-
-        {/* Source lines */}
-        <TextBar x={94} y={98} w={220} />
-        <TextBar x={110} y={112} w={150} tone="faint" />
-        <TextBar x={110} y={126} w={184} tone="faint" />
-        <TextBar x={94} y={140} w={120} />
-        <TextBar x={110} y={154} w={166} tone="faint" />
-      </Panel>
     </Scene>
   );
 }
