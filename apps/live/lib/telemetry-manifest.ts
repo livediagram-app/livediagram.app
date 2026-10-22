@@ -204,16 +204,12 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Theme·Changed',
   'Theme·Created',
   'Theme·Deleted',
-  // Timeline (docs/specs/013-workspace/timeline.md): 'Opened' with type 'Landing' | 'Nav' | 'Stack'
-  // — the first two measure the landing-page change, the third tells us
-  // whether the stacking thresholds are right. 'Changed' carries the
-  // view mode, 'Selected' a filter chip's source type, 'Loaded'/'More'
-  // a Show-more click, 'Removed'/'Entry' a card taken off the feed
-  // (docs/specs/013-workspace/timeline.md §2.9).
+  // The scoped event feeds, History and Team Activity (docs/specs/013-workspace/timeline.md): 'Opened'
+  // with type 'Stack' tells us whether the stacking thresholds are right. 'Changed' carries the
+  // view mode, 'Selected' a filter chip's source type, 'Loaded'/'More' a Show-more click.
   'Timeline·Changed',
   'Timeline·Loaded',
   'Timeline·Opened',
-  'Timeline·Removed',
   'Timeline·Selected',
   'Token·Created',
   // A token's owner allowed a workbench on the pairing page (docs/specs/013-workspace/workbench-embeds.md).

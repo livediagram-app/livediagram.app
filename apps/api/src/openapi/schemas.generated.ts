@@ -7027,7 +7027,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "array"
       },
       "lastSeenAt": {
-        "description": "The Timeline feed's unread mark as it stood before this read (the read moves it, once per visit); null when the person had never looked. What happened after it is new to them.",
+        "description": "Home's unread mark as it stood before this read (the read moves it, once per visit); null when the person had never looked. What happened after it is new to them.",
         "type": [
           "number",
           "null"

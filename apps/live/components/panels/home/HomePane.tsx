@@ -25,17 +25,13 @@ const HomeWelcome = lazy(() => import('./HomeWelcome').then((m) => ({ default: m
 export function HomePane({
   ownerId,
   onSeen,
-  timelineHref,
-  onSeeTimeline,
   recentHref,
   onSeeMore,
   documentMenus,
 }: {
   ownerId: string;
-  /** Home's read moved the Timeline feed's unread mark: clear the sidebar badge. */
+  /** Home's read moved the unread mark: clear the sidebar badge. */
   onSeen: () => void;
-  timelineHref: string;
-  onSeeTimeline: () => void;
   recentHref: string;
   onSeeMore: () => void;
   /** Each Jump Back In document's Explorer ⋯ menu (explorer-home.md "Jump Back In"). */
@@ -84,13 +80,7 @@ export function HomePane({
         onSeeMore={onSeeMore}
         documentMenus={documentMenus}
       />
-      <WhatHappened
-        groups={home.whatHappened}
-        loading={loading}
-        lastSeenAt={home.lastSeenAt}
-        timelineHref={timelineHref}
-        onSeeTimeline={onSeeTimeline}
-      />
+      <WhatHappened groups={home.whatHappened} loading={loading} lastSeenAt={home.lastSeenAt} />
     </div>
   );
 }

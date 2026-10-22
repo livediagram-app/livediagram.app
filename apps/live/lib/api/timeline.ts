@@ -1,31 +1,21 @@
-// The Explorer's landing feed (docs/specs/013-workspace/timeline.md).
+// The event record's reads (docs/specs/013-workspace/timeline.md): a scoped feed, a document's History
+// or a team's Team Activity (§3.4), and the Home row's unread count (§2.5).
 //
-// Nothing user-AUTHORED lives on this feed, so there is no create or
-// update to wrap; the one write is the per-card dismissal (§2.9). There
-// is no refresh wrapper either — the feed loads on mount, re-reads this
-// same GET when the reader returns to the tab (docs/specs/013-workspace/timeline.md §2.4a) or after
-// one of their own writes lands (§2.4b), and the worker seeds a
-// first-time scope off it, so a manual refresh button had nothing to
-// do that reopening the page doesn't. (The `POST /api/timeline/refresh`
-// endpoint stays part of the documented public API for external
-// callers who want to force a seed; the app just doesn't need it.)
+// Nothing user-AUTHORED lives on these feeds, so there is no create, update or delete to wrap. A feed
+// loads on mount and re-reads this same GET when the reader returns to the tab (§2.4a) or after one of
+// their own writes lands (§2.4b).
 //
-// Offline Mode (docs/specs/006-document/offline-mode.md) is a deliberate no-op here rather than a
-// dispatch. `isOfflineId` keys on a DOCUMENT id, and this endpoint is
-// scoped to an owner — there is no id to dispatch on, and a
-// browser-only document never reaches the worker, so it has no server
-// events to show. An offline-only user sees an empty feed, which is
-// the truth.
+// Offline Mode (docs/specs/006-document/offline-mode.md) needs no dispatch here: a browser-only document
+// never reaches the worker, so it has no server history to show, and the History dialog is never offered
+// for one.
 
 import type { TimelineEvent, TimelineReadResult, TimelineScopeRef } from '@liveplanner/api-schema';
 import { TIMELINE_PAGE_SIZE, formatScope } from '@liveplanner/api-schema';
-import { API_BASE, apiDelete, apiHeaders, apiFetch, expectOkVoid } from './core';
+import { API_BASE, apiHeaders, apiFetch } from './core';
 
 export type TimelinePage = {
   events: TimelineEvent[];
   nextCursor?: string;
-  /** The unread watermark as it stood before this read. */
-  lastSeenAt?: number;
 };
 
 // Null means the read FAILED — offline, a lapsed session token, a
@@ -39,17 +29,16 @@ export async function apiListTimeline(
   opts: {
     cursor?: string;
     limit?: number;
-    scope?: TimelineScopeRef;
+    scope: TimelineScopeRef;
     // Epoch-ms bounds, for the calendar's on-demand period fetch.
     from?: number;
     to?: number;
-  } = {},
+  },
 ): Promise<TimelinePage | null> {
   const params = new URLSearchParams();
   params.set('limit', String(opts.limit ?? TIMELINE_PAGE_SIZE));
   if (opts.cursor) params.set('cursor', opts.cursor);
-  // Omitted for the personal feed, which is what the worker defaults to.
-  if (opts.scope) params.set('scope', formatScope(opts.scope));
+  params.set('scope', formatScope(opts.scope));
   if (opts.from !== undefined) params.set('from', String(opts.from));
   if (opts.to !== undefined) params.set('to', String(opts.to));
   try {
@@ -61,13 +50,11 @@ export async function apiListTimeline(
     return {
       events: Array.isArray(body.items) ? body.items : [],
       nextCursor: typeof body.nextCursor === 'string' ? body.nextCursor : undefined,
-      lastSeenAt: typeof body.lastSeenAt === 'number' ? body.lastSeenAt : undefined,
     };
   } catch {
     // Offline, or a self-host with no /api configured. Still not an
     // empty feed: "we couldn't ask" and "there is nothing" are
-    // different answers, and this surface is the first thing a visitor
-    // sees, so getting them confused is expensive.
+    // different answers.
     return null;
   }
 }
@@ -87,27 +74,4 @@ export async function apiTimelineUnread(ownerId: string): Promise<number> {
   } catch {
     return 0;
   }
-}
-
-// Take one card off the reader's own feed (docs/specs/013-workspace/timeline.md §2.9). The
-// membership row is soft-marked server-side, so the event stays on every
-// other reader's feed and can't be re-attached by a later emit. Throws
-// on failure so the caller can put the card back; a 404 counts as done —
-// the card wasn't on the feed, which is the outcome asked for.
-export async function apiDismissTimelineEvent(ownerId: string, eventId: string): Promise<void> {
-  return apiDelete(`${API_BASE}/timeline/events/${encodeURIComponent(eventId)}`, ownerId, {
-    action: 'dismiss timeline event',
-  });
-}
-
-// A whole stack at once (docs/specs/013-workspace/timeline.md §2.9): one request for the run, not
-// one per member. Ids the feed never held are ignored server-side, so a
-// member that vanished between render and click is not a failure.
-export async function apiDismissTimelineEvents(ownerId: string, eventIds: string[]): Promise<void> {
-  const res = await apiFetch(`${API_BASE}/timeline/events/dismiss`, {
-    method: 'POST',
-    headers: await apiHeaders(ownerId, { body: true }),
-    body: JSON.stringify({ ids: eventIds }),
-  });
-  await expectOkVoid(res, 'dismiss timeline events');
 }

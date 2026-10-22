@@ -27,7 +27,7 @@ liveplanner is built to need as little of your data as possible, and the whole c
 - **Team invitations.** If a teammate invites you by email, we store that address with the team, send you the invitation (and up to three reminders while nobody has answered it, each with a link to decline it), and may send you action and mention emails at that address before you create an account.
 - **Form responses.** If you publish a [form](/help/canvas/plan-mode/forms/), each response someone sends is stored in your document as a card or a sheet row, holding only what they typed into the form. People filling in a form need no account, and we store no name, account or browser id for them. A report about a form stores its reason, the optional note, a random key kept in the reporter's browser and a one-way hash of their network.
 - **Votes from guests.** To stop one person voting many times, a guest's vote stores a one-way hash of their network address combined with the document's id. It is deleted with the document.
-- **Document activity.** Your [Timeline](/help/explorer/timeline/) records what happened to your documents (created, renamed, shared, commented on) and which ones you opened, so the Explorer can show you. These records are kept for a year.
+- **Document activity.** liveplanner records what happened to your documents (created, renamed, shared, commented on) and which ones you opened, so [Home](/help/explorer/home/) and each document's History can show you. These records are kept for a year.
 - **Basic operational logs.** Our host, Cloudflare, keeps standard request logs that help us run the service securely.
 
 ## AI features
@@ -88,7 +88,7 @@ You can delete any document you own at any time. A deleted document waits in the
 
 You can delete your account, and the data associated with it, yourself: open **Settings**, then **Account**, then **Delete Account**. This removes your documents (the Trash and their collaboration-session copies included), folders, images, themes, preferences and API tokens straight away, and deletes your account at Clerk. Documents in a team's shared library pass to another member of that team rather than being deleted. See [Deleting Your Data](/help/account-and-data/deleting-your-data/).
 
-Other things are kept only as long as they are useful: anonymous product events for 60 days, Timeline activity for a year, changes made by connected AI tools for 30 days (so they can be undone), and an uploaded image that no document uses is removed once it is more than 30 days old. A guest's documents have no account to delete: remove them from the Explorer, or ask us.
+Other things are kept only as long as they are useful: anonymous product events for 60 days, document activity for a year, changes made by connected AI tools for 30 days (so they can be undone), and an uploaded image that no document uses is removed once it is more than 30 days old. A guest's documents have no account to delete: remove them from the Explorer, or ask us.
 
 ## Security
 

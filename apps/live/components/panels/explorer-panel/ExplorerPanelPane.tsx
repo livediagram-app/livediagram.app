@@ -21,10 +21,6 @@ const InboxSection = dynamic(() => load().then((m) => m.InboxSection), {
   ssr: false,
   loading: () => <PaneSkeleton />,
 });
-const TimelineSection = dynamic(() => load().then((m) => m.TimelineSection), {
-  ssr: false,
-  loading: () => <PaneSkeleton />,
-});
 const TrashSection = dynamic(() => load().then((m) => m.TrashSection), {
   ssr: false,
   loading: () => <PaneSkeleton />,
@@ -46,7 +42,6 @@ export function ExplorerPanelPane({
   currentDocumentId,
   onOpenDocument,
   tree,
-  onPick,
   onNewFolder,
   inFolder = false,
   onLibraryChanged,
@@ -61,7 +56,6 @@ export function ExplorerPanelPane({
   onOpenDocument: (id: string, shareCode?: string) => void;
   // The rows of a section that holds documents (PanelExplorerTree), rendered by the host which owns their state.
   tree: ReactNode;
-  onPick: (s: PanelSection) => void;
   // My Documents' or a team's New Folder; absent where the session may not make one.
   onNewFolder?: () => void;
   // A folder is open in the pane, so New Folder makes one inside it and says so.
@@ -81,16 +75,11 @@ export function ExplorerPanelPane({
           ownerId={ownerId}
           currentDocumentId={currentDocumentId}
           onOpenDocument={onOpenDocument}
-          onSeeTimeline={() => onPick({ kind: 'timeline' })}
         />
       ) : null
     ) : section.kind === 'inbox' ? (
       ownerId ? (
         <InboxSection ownerId={ownerId} />
-      ) : null
-    ) : section.kind === 'timeline' ? (
-      ownerId ? (
-        <TimelineSection ownerId={ownerId} />
       ) : null
     ) : section.kind === 'trash' ? (
       ownerId ? (

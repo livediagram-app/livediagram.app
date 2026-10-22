@@ -59,8 +59,8 @@ team, not the individual.
   personal to each editor.
 - Sharing: editor, participant or view-only links, optionally for one tab,
   with expiry, revocable any time.
-- Teams with a shared folder of projects; folders and a Timeline and Inbox in
-  the Explorer.
+- Teams with a shared folder of projects; folders, Home (what happened) and an
+  Inbox in the Explorer; a history for every project and team.
 - Agents: AI tools can read and change boards, cards, sheets and forms over
   MCP, the API or the CLI.
 - Hybrid auth: guests get the full feature set keyed to a per-browser id;

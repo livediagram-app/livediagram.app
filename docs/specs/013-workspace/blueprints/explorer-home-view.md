@@ -3,7 +3,7 @@
 Derived from [Explorer Home](../explorer-home.md) (Route, Layout, Jump Back In, What Happened, Opens, States,
 Telemetry, Accessibility), with the allocation of [Within reach](../../004-interface-design/within-reach.md), the
 principle of [Design principles](../../004-interface-design/design-principles.md) (Calm by default), the page-title
-rules of [Explorer structure](../explorer-structure.md) and the landing of [Timeline](../timeline.md) §8. The data,
+rules of [Explorer structure](../explorer-structure.md) and the landing of [Timeline events](../timeline.md) §8.1. The data,
 its wire and its reads are [Explorer Home, data](explorer-home.md); this file is the view that renders them, the
 browser's own opens of local documents, and the route. Defaults applied where the spec is silent are ledgered in
 [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
@@ -21,7 +21,7 @@ Scope, by file:
 | `apps/live/app/explorer/home/home-model.ts`                             | Pure: Jump Back In's set, the phone order, hrefs, What Happened's days, the fade          |
 | `apps/live/app/explorer/home/home-copy.ts`                              | Pure: every sentence, label and state copy                                                |
 | `apps/live/app/explorer/home/useHome.ts`                                | The read, the local merge, retry, the unread clear                                        |
-| `apps/live/app/explorer/entry-path.ts`                                  | `ENTRY_PATH`, `ARRIVED_ON_HOME`, `ARRIVED_ON_TIMELINE`: where the page load began         |
+| `apps/live/app/explorer/entry-path.ts`                                  | `ENTRY_PATH`, `ARRIVED_ON_HOME`: where the page load began                                |
 | `apps/live/lib/explorer-landing.ts`                                     | `EXPLORER_LANDING_PATH`, the one landing path                                             |
 | `apps/live/components/panels/home/HomePane.tsx`                         | One column of two sections; the error state; the landing telemetry                        |
 | `apps/live/components/panels/home/HomeHero.tsx`                         | The hero: menu button, Help, pills, greeting, lead, the large lens field, fanned previews |
@@ -41,7 +41,7 @@ Scope, by file:
 | `apps/live/components/panels/home/JumpBackInMenu.tsx`                   | A card's or tile's ⋯: the Explorer's DocumentEntryMenu, right-click, in-place rename      |
 | `apps/live/app/explorer/useDocumentEntryFor.ts`                         | A document id to its Explorer menu props, and whether it has left the Explorer's lists    |
 | `apps/live/components/panels/home/HomeSection.tsx`                      | `HomeSection` (wrapper, display heading row, quiet link) and `InAppLink`                  |
-| `apps/live/components/panels/home/WhatHappened.tsx`                     | The section: day headings, See Timeline, the entries                                      |
+| `apps/live/components/panels/home/WhatHappened.tsx`                     | The section: day headings, the entries                                                    |
 | `apps/live/components/panels/home/WhatHappenedEntry.tsx`                | `ActionEntry` (one person) and `SummaryEntry` (the disclosure)                            |
 | `apps/live/components/panels/home/HomeAvatar.tsx`                       | `HomeAvatar`, `AvatarStack`: people without presence rings                                |
 | `apps/live/components/panels/home/home-icons.tsx`                       | The verb icons and the empty states' glyphs                                               |
@@ -53,14 +53,13 @@ Scope, by file:
 | `apps/live/app/explorer/page.tsx`, `apps/live/src/worker.ts`            | The landing goes to `EXPLORER_LANDING_PATH`                                               |
 | `scripts/e2e-stack.mjs`                                                 | The e2e stack's `/explorer` redirect reads the same constant                              |
 | `apps/live/app/explorer/sidebar/OverviewGroup.tsx`                      | The Home row selects and opens Home                                                       |
-| `apps/live/components/panels/explorer-panel/PanelViews.tsx`             | The panel's Home section shows `HomePane`; See Timeline shows the Timeline section        |
-| `apps/live/app/explorer/useTimelineFeed.ts`                             | `Timeline·Opened·Landing` only for a load that started on `/explorer/timeline`            |
+| `apps/live/components/panels/explorer-panel/PanelViews.tsx`             | The panel's Home section shows `HomePane`                                                 |
 | `apps/live/app/explorer/useTimelineUnread.ts`                           | A clear outlives a count still in flight                                                  |
 | `packages/ui/src/timeline/useTimelineGrouping.ts`                       | `formatDay` exported, shared by the day headings                                          |
 | `packages/api-schema/src/telemetry-schema.ts`                           | The `Home` category                                                                       |
 | `apps/telemetry/app/{catalogue/collaboration.ts,event-explanations.ts}` | Home's charts and sentences                                                               |
 | `apps/telemetry/app/event-vocab.ts`                                     | The `Home` category's description and colour                                              |
-| `apps/help/app/explorer/timeline/page.mdx`, `packages/help-registry`    | The Home article: Home, then the Timeline                                                 |
+| `apps/help/app/explorer/home/page.mdx`, `packages/help-registry`        | The Home article (`home`): Home, then the histories                                       |
 | `apps/live/e2e/home-seed.ts`                                            | e2e seeding through the api: drawn documents, opens, edits through a link                 |
 
 ## Domain and naming
@@ -68,7 +67,6 @@ Scope, by file:
 | Term          | Identifier                                       | Meaning                                                       |
 | ------------- | ------------------------------------------------ | ------------------------------------------------------------- |
 | Home          | `{ kind: 'home' }`, `/explorer/home`, `HomePane` | The landing view                                              |
-| Timeline      | `{ kind: 'timeline' }`, `/explorer/timeline`     | The Timeline feed, its sidebar row and its page title         |
 | Jump Back In  | `JumpBackIn`, `JumpBackInSet`, `JumpBackInItem`  | The section and its within-reach set of documents             |
 | Group         | `JumpBackInGroup = 'mostUsed' \| 'recent'`       | Which half of the set an item belongs to; labelled when wide  |
 | Grid          | `JumpBackIn` wide branch                         | Desktop and tablet: Most Used cards, then Recent cards        |
@@ -87,7 +85,7 @@ Scope, by file:
 | Summary entry | `SummaryEntry`                                   | A group of several people, a disclosure                       |
 
 Banned: "Most Used" and "Recent" anywhere on Home but the two group labels, "frecency",
-"timeline" for anything on Home but the See Timeline link that leaves for it, "notification" for an action.
+"timeline" for anything on Home, "notification" for an action.
 
 ## Behaviour and state
 
@@ -96,12 +94,12 @@ Banned: "Most Used" and "Recent" anywhere on Home but the two group labels, "fre
 - `selectedFromRoute('/explorer/home')` → `{ kind: 'home' }`; the `default:` case and id-less `folder` / `team` links
   → `{ kind: 'home' }`. `explorerPathFor({ kind: 'home' })` → `/explorer/home`.
 - `/explorer` → 302 `/explorer/home` (worker), `router.replace('/explorer/home')` (dev fallback).
-- `VIEW_TITLES.home = 'Home'` (`SIDEBAR_LABELS.home`); `VIEW_TITLES.timeline = 'Timeline'` (`SIDEBAR_LABELS.timeline`, `D94`).
-- Crumbs: `recent` → `[{ Home, go home }, { Recent }]`; `timeline` → `[{ Timeline }]`, its own row
-  (`D130`); `home` → `[{ Home }]` (one crumb, not shown).
+- `VIEW_TITLES.home = 'Home'` (`SIDEBAR_LABELS.home`). There is no `timeline` view (`D94`, retired): `/explorer/timeline`
+  falls to the `default:` case, Home.
+- Crumbs: `recent` → `[{ Home, go home }, { Recent }]`; `home` → `[{ Home }]` (one crumb, not shown).
 - The sidebar Home row: `selected = kind === 'home'`; activation tracks `Sidebar.Home`, clears the unread badge, goes
   home. The panel's Home row opens `/explorer/home`.
-- `SECTION_HELP.home = 'timeline'` (the Home article). `newDocument` applies to `home` (navigates to `/new`); no
+- `SECTION_HELP.home = 'home'` (the Home article). `newDocument` applies to `home` (navigates to `/new`); no
   folder, no import toolbar, no view toggle.
 - A team left (`onLeftTeam`) goes home.
 
@@ -124,8 +122,8 @@ Date.now())`; `whatHappened` as sent; call `onSeen()` (the unread clear: the rea
 ### New
 
 `useHome` keeps `lastSeenAt` from the first successful read of the mount (`undefined` when the api says `null`) and
-never replaces it. `isNewEvent(at, lastSeenAt)` (`@liveplanner/ui`, the Timeline's rule: none without a mark) marks an
-`ActionEntry` by its action's `occurredAt` and a `SummaryEntry` by its `latestAt`. The pill is the Timeline card's:
+never replaces it. `isNewEvent(at, lastSeenAt)` (`@liveplanner/ui`: none without a mark) marks an
+`ActionEntry` by its action's `occurredAt` and a `SummaryEntry` by its `latestAt`. The pill is the feed card's:
 `bg-brand-600` (`SOLID_BRAND_DARK` in dark), white 9 px semibold caps, "New", first in the entry's meta line, inside
 the link or button so it is part of the accessible name.
 
@@ -180,7 +178,7 @@ both groups' height with fewer items (`D131`, `D168`).
 
 `ExplorerPane` builds `useDocumentEntryFor({ onShowHistory })` once and hands it to `HomePane` as `documentMenus`, which
 passes it to `JumpBackIn`. `entryFor(id)` resolves the id against `useExplorerDocumentsById()` (personal, team, then
-`sharedToPaneDocument(shared)`; the Timeline's cards resolve through the same map) and binds the Explorer's actions as
+`sharedToPaneDocument(shared)`) and binds the Explorer's actions as
 `documentEntryPropsFor` does; an unloaded id gives `null`. `isGone(id)` is true once an id seen in the map (recorded in
 an effect after each render) is no longer in it; `JumpBackIn` filters both groups through it before drawing, so the
 strip's `phoneOrder` and the grid see the same set. Each `JumpBackInCard` and `JumpBackInTile` takes
@@ -265,7 +263,6 @@ export const HOME_COPY: {
   jumpBackIn: 'Jump Back In';
   whatHappened: 'What Happened';
   seeMore: 'See More';
-  seeTimeline: 'See Timeline';
   jumpBackInEmptyTitle: 'No documents yet';
   jumpBackInEmpty: 'The documents you use most and last will gather here.';
   readFailed: string;
@@ -277,7 +274,7 @@ export const HOME_COPY: {
 
 Component props:
 
-- `HomePane({ ownerId, onSeen, timelineHref, onSeeTimeline, recentHref, onSeeMore })`: owns `useHome`; `onSeen` is the
+- `HomePane({ ownerId, onSeen, recentHref, onSeeMore })`: owns `useHome`; `onSeen` is the
   unread badge's `clear`.
 - `JumpBackIn({ ownerId, set, loading, recentHref, onSeeMore })`.
 - `JumpBackInStrip({ ownerId, set, recentHref, onSeeMore, labelledBy })`.
@@ -286,8 +283,7 @@ Component props:
   `data-home-section`), the heading row and its rule; `link` is `{ href, label, onNavigate, onActivate? }`.
 - `InAppLink({ href, onNavigate, onActivate?, className, children })`: `onActivate` runs on every click
   (telemetry); a plain click is prevented and calls `onNavigate`.
-- `WhatHappened({ groups, loading, lastSeenAt, timelineHref, onSeeTimeline })`: the link keeps its href (new tab, copy
-  link); a plain click navigates in the app.
+- `WhatHappened({ groups, loading, lastSeenAt })`: no heading link.
 - `ActionEntry({ group, action, isNew })`, `SummaryEntry({ group, isNew })`.
 - Today and Yesterday are taken at mount (`useNow(false)`): a page left open past midnight keeps its headings.
 
@@ -341,9 +337,9 @@ Component props:
   (`radial-gradient(#cfe0f1 1px, transparent 1px)` at 22 px; dark: `bg-slate-900`, dots `#1c2752`, and a 900 × 520
   radial `rgba(37,99,235,0.30)` glow centred on the top edge). Inner box `max-w-7xl px-4 sm:px-6 pt-6 pb-12
 lg:pb-14`, a `flex flex-wrap items-center gap-10`; left column `flex-[999_1_32rem] min-w-0 flex-col gap-5`, right
-  column `hidden lg:block flex-[1_1_22rem] h-72 relative` (`aria-hidden`).
+  column `hidden lg:block flex-[1_1_22rem] h-72 relative`.
   - Top row: the menu button (`sm:hidden`, 40 px, the pane header's hamburger) then the pills (`flex flex-wrap gap-2`),
-    then Help at the end (`HelpArticleLink` for `timeline`, the pane header's button classes).
+    then Help at the end (`HelpArticleLink` for `home`, the pane header's button classes).
   - Pill: `inline-flex h-8 items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 text-[13px]
 font-medium text-slate-700` (dark `border-slate-700 bg-slate-800 text-slate-200`), a 7 px dot
     (`bg-emerald-500`, `bg-sky-500`), hover `border-slate-300`.
@@ -380,7 +376,7 @@ rotate-[3deg]`, the front two with a sky shadow. Its one motion is `motion-safe:
   (`data-home-section="jump-back-in"` / `"what-happened"`).
 - Heading row (`SECTION_HEADER`): `flex items-baseline justify-between gap-4`, 16 px above the section's body, no
   rule. The heading (`h2`, `SECTION_HEADING`): `text-2xl font-extrabold tracking-[-0.03em] text-[#17153a]
-dark:text-slate-100`. The quiet link at the end (See More, See Timeline): `text-sm font-semibold text-brand-700
+dark:text-slate-100`. The quiet link at the end (See More): `text-sm font-semibold text-brand-700
 dark:text-brand-300 hover:underline`.
 - Group label (`GROUP_LABEL`): `text-xs font-semibold uppercase tracking-[0.08em] text-slate-500
 dark:text-slate-400`, 10 px above its list; Recent's 16 px below Most Used's list.
@@ -484,7 +480,7 @@ tracking-[0.08em] text-slate-500 pt-3`), entries in a `ul` with 4 px between.
 | Greeting by hour, pills' copy, the previews' features                                                  | `apps/live/app/explorer/home/hero-model.test.ts`                                        |
 | Hero: pills open their views, New Document, Help, the four labelled previews, no fetch, one lens field | `apps/live/components/panels/home/HomeHero.test.tsx`                                    |
 | The hero field hands the focus to the header field on Search results                                   | `apps/live/app/explorer/lens/lens-focus-handoff.test.ts`                                |
-| Entries: one-person links, summary disclosure, telemetry, See Timeline                                 | `apps/live/components/panels/home/WhatHappened.test.tsx`                                |
+| Entries: one-person links, summary disclosure, telemetry, no heading link                              | `apps/live/components/panels/home/WhatHappened.test.tsx`                                |
 | One column, two sections, no Timeline, the error state                                                 | `apps/live/components/panels/home/HomePane.test.tsx`                                    |
 | Routes, titles, crumbs (Recent under Home), the landing 302                                            | `routes.test.ts`, `view-titles.test.ts`, `apps/live/src/worker.test.ts`                 |
 | Telemetry charted and explained                                                                        | `apps/telemetry` `metric-emitters.test.ts`, `event-explanation.test.ts`                 |

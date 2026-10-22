@@ -1,15 +1,10 @@
 'use client';
 
-// The Timeline's data + control state (docs/specs/013-workspace/timeline.md §8).
+// A scoped feed's data + control state (docs/specs/013-workspace/timeline.md §3.4): a document's
+// History or a team's Team Activity (ScopedTimeline), its controls and its cards reading one state.
 //
-// Held in ExplorerPane rather than inside the pane component, because
-// the two halves of the Timeline render in different places: the
-// controls belong in the page-header row beside Help, and the feed
-// belongs in the body. One hook keeps them reading the same state.
-//
-// Gated on `enabled` like the Explorer's other section hooks
-// (useTokens, useTeams), so visiting Recent doesn't fetch a feed
-// nobody is looking at.
+// Gated on `enabled` like the Explorer's other section hooks (useTokens, useTeams), so a feed
+// nobody is looking at is never fetched.
 
 import { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import {
@@ -24,11 +19,7 @@ import {
   TIMELINE_PAGE_SIZE,
   type TimelineScopeRef,
 } from '@liveplanner/api-schema';
-import {
-  apiDismissTimelineEvent,
-  apiDismissTimelineEvents,
-  apiListTimeline,
-} from '@/lib/api-client';
+import { apiListTimeline } from '@/lib/api-client';
 import {
   mergeEvents,
   purgeEventsForSource,
@@ -38,16 +29,6 @@ import { fetchPeriod } from '@/app/explorer/timeline/fetch-period';
 import { useAfterApiWrite } from '@/hooks/persistence/useAfterApiWrite';
 import { useReturnToTab } from '@/hooks/ui/useReturnToTab';
 import { track } from '@/lib/telemetry';
-import { ARRIVED_ON_TIMELINE } from './entry-path';
-
-// Was the Timeline where this page load STARTED, or somewhere the user
-// went afterwards (its sidebar row, Home's See Timeline)? See ./entry-path.ts.
-
-// `#event=<id>` on the Timeline URL. Read once at module scope for the
-// same reason ENTRY_PATH (./entry-path.ts) is: the hash is what the page was OPENED with,
-// and a later in-app navigation shouldn't resurrect an old target.
-const ENTRY_HASH = typeof window === 'undefined' ? '' : window.location.hash;
-const FOCUS_EVENT_ID = /^#event=(.+)$/.exec(ENTRY_HASH)?.[1];
 
 export type TimelineFeed = {
   events: TimelineEvent[];
@@ -60,21 +41,14 @@ export type TimelineFeed = {
   error: boolean;
   /** Re-read the first page; what the failed state's Try again calls. */
   retry: () => void;
-  /** Take one card, or a whole stack of them, off this reader's feed (docs/specs/013-workspace/timeline.md §2.9). */
-  dismiss: (eventIds: string | string[]) => void;
-  /** Watermark from the first read; events past it render as New. */
-  lastSeenAt?: number;
-  /** Deep-link target from the URL hash, if the page was opened with one. */
-  focusEventId?: string;
 };
 
 export function useTimelineFeed(
   ownerId: string | null,
   enabled: boolean,
-  // Omitted for the reader's own feed. A team scope reads that team's
-  // whole history, including what happened before the reader joined —
-  // the per-member scopes only carry events from after they arrived.
-  scope?: TimelineScopeRef,
+  // A document's or a team's. A team scope reads that team's whole history, including what happened
+  // before the reader joined: the per-member scopes only carry events from after they arrived.
+  scope: TimelineScopeRef,
 ): TimelineFeed {
   const [events, setEvents] = useState<TimelineEvent[]>([]);
   const [cursor, setCursor] = useState<string | undefined>();
@@ -84,10 +58,6 @@ export function useTimelineFeed(
   // (docs/specs/013-workspace/timeline.md §2.4). Conflating the two is what told people with years
   // of history that nothing had ever happened to them.
   const [error, setError] = useState(false);
-  // Captured from the FIRST read only. The server moves the watermark
-  // forward on that read, so re-reading would report nothing new and
-  // the New pills would vanish mid-visit.
-  const [lastSeenAt, setLastSeenAt] = useState<number | undefined>();
 
   const controls = useTimelineControls(events, {
     viewerId: ownerId,
@@ -123,13 +93,12 @@ export function useTimelineFeed(
   // call sites, so depending on it directly would refetch on every parent
   // render. Rebuilt only when its two fields change, so the callbacks can
   // list it as the dependency it really is.
-  const scopeType = scope?.scopeType;
-  const scopeId = scope?.scopeId;
-  const stableScope = useMemo<TimelineScopeRef | undefined>(
-    () => (scopeType !== undefined && scopeId !== undefined ? { scopeType, scopeId } : undefined),
+  const { scopeType, scopeId } = scope;
+  const stableScope = useMemo<TimelineScopeRef>(
+    () => ({ scopeType, scopeId }),
     [scopeType, scopeId],
   );
-  const scopeKey = stableScope ? `${stableScope.scopeType}:${stableScope.scopeId}` : '';
+  const scopeKey = `${scopeType}:${scopeId}`;
 
   // The first page, read four ways: on arrival, on Try again, on
   // returning to the tab, and after the reader's own write lands. They
@@ -142,7 +111,7 @@ export function useTimelineFeed(
   //               scrolled a long way down keeps their place. Within
   //               the stretch the page covers it is authoritative
   //               (reconcileEvents), so a card the server has since
-  //               swept or the reader dismissed elsewhere goes too.
+  //               swept goes too.
   //
   // The read settles state only from its response, so the load effect below
   // only starts it; `load` adds the skeleton for a replace asked for later.
@@ -196,12 +165,6 @@ export function useTimelineFeed(
           // never landed: there is no tail yet, so take this page's.
           setCursor((prev) => prev ?? page.nextCursor);
         }
-        // First value wins. The server holds the watermark still for a
-        // visit window, but a re-read — triggered by the owner id
-        // changing, or by coming back to the tab — would otherwise
-        // replace it with a newer one and drop the New markers the reader
-        // hasn't looked at yet.
-        setLastSeenAt((prev) => prev ?? page.lastSeenAt);
         setLoading(false);
       });
     },
@@ -236,13 +199,9 @@ export function useTimelineFeed(
   // "fix" with a browser refresh.
   useReturnToTab(() => void load('merge'), { enabled: enabled && !!ownerId });
 
-  // The reader's own actions (docs/specs/013-workspace/timeline.md §2.4b). Deleting a document from a
-  // card's menu used to leave the feed exactly as it was until a browser
-  // refresh: the worker had swept the document's cards and written its
-  // tombstone, and nothing on the client asked. Now any successful
-  // write re-reads the first page a beat later (the emit runs after the
-  // response), and a DELETE that ended an entity drops its cards at
-  // once — the client half of the worker's cascade (§3.5), which also
+  // The reader's own actions (docs/specs/013-workspace/timeline.md §2.4b): any successful write
+  // re-reads the first page a beat later (the emit runs after the response), and a DELETE that ended
+  // an entity drops its cards at once, the client half of the worker's cascade (§3.5), which also
   // covers loaded pages the re-read won't reach.
   useAfterApiWrite(
     (signal) => {
@@ -255,16 +214,6 @@ export function useTimelineFeed(
     },
     { enabled: enabled && !!ownerId },
   );
-
-  // Once per arrival, not once per fetch: the effect above also re-runs
-  // when the owner id changes, and a guest signing in should not read
-  // as a second visit.
-  const reported = useRef(false);
-  useEffect(() => {
-    if (!enabled || reported.current) return;
-    reported.current = true;
-    track('Timeline', 'Opened', ARRIVED_ON_TIMELINE ? 'Landing' : 'Nav');
-  }, [enabled]);
 
   // The calendar can be paged to a month the loaded pages don't reach —
   // a reader clicking back four months would otherwise see an empty grid
@@ -349,34 +298,6 @@ export function useTimelineFeed(
     void load('replace');
   }, [load]);
 
-  // Per-card removal (docs/specs/013-workspace/timeline.md §2.9). Optimistic: the card goes as the
-  // menu closes, and comes back only if the worker refused. Its own
-  // path rather than a write signal — the dismissal endpoint is the
-  // feed's own, and the feed already knows exactly what changed.
-  const dismiss = useCallback(
-    (eventIds: string | string[]) => {
-      if (!ownerId) return;
-      const ids = new Set(typeof eventIds === 'string' ? [eventIds] : eventIds);
-      const removed = events.filter((e) => ids.has(e.id));
-      if (removed.length === 0) return;
-      track('Timeline', 'Removed', 'Entry');
-      setEvents((prev) => prev.filter((e) => !ids.has(e.id)));
-      // A stack goes in one request (docs/specs/013-workspace/timeline.md §6.2a); a single card on
-      // its own endpoint, whose 404 the client already tolerates.
-      const request =
-        removed.length === 1
-          ? apiDismissTimelineEvent(ownerId, removed[0]!.id)
-          : apiDismissTimelineEvents(
-              ownerId,
-              removed.map((e) => e.id),
-            );
-      void request.catch(() => {
-        setEvents((prev) => mergeEvents(prev, removed));
-      });
-    },
-    [ownerId, events],
-  );
-
   return {
     events,
     controls,
@@ -386,9 +307,6 @@ export function useTimelineFeed(
     loadMore,
     error,
     retry,
-    dismiss,
-    lastSeenAt,
-    focusEventId: FOCUS_EVENT_ID,
   };
 }
 

@@ -14,16 +14,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { TimelineScopeRef } from '@liveplanner/api-schema';
 import type { TimelineEvent } from '@liveplanner/ui';
 
-const { apiListTimeline, apiDismissTimelineEvent, apiDismissTimelineEvents } = vi.hoisted(() => ({
-  apiListTimeline: vi.fn(),
-  apiDismissTimelineEvent: vi.fn(),
-  apiDismissTimelineEvents: vi.fn(),
-}));
-vi.mock('@/lib/api-client', () => ({
-  apiListTimeline,
-  apiDismissTimelineEvent,
-  apiDismissTimelineEvents,
-}));
+const { apiListTimeline } = vi.hoisted(() => ({ apiListTimeline: vi.fn() }));
+vi.mock('@/lib/api-client', () => ({ apiListTimeline }));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
 import { notifyApiWrite, resetApiWriteListeners } from '@/lib/api/write-signal';
@@ -60,11 +52,7 @@ function event(id: string, occurredAt: number, over: Partial<TimelineEvent> = {}
 beforeEach(() => {
   resetApiWriteListeners();
   apiListTimeline.mockReset();
-  apiListTimeline.mockResolvedValue({ events: [], nextCursor: undefined, lastSeenAt: undefined });
-  apiDismissTimelineEvent.mockReset();
-  apiDismissTimelineEvent.mockResolvedValue(undefined);
-  apiDismissTimelineEvents.mockReset();
-  apiDismissTimelineEvents.mockResolvedValue(undefined);
+  apiListTimeline.mockResolvedValue({ events: [], nextCursor: undefined });
 });
 
 describe('useTimelineFeed', () => {
@@ -149,7 +137,7 @@ describe('useTimelineFeed', () => {
 describe('useTimelineFeed failure handling', () => {
   it('reports a failed read as an error rather than an empty feed', async () => {
     apiListTimeline.mockResolvedValue(null);
-    const { result } = renderHook(() => useTimelineFeed('me', true));
+    const { result } = renderHook(() => useTimelineFeed('me', true, TEAM_A));
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.error).toBe(true);
     expect(result.current.events).toEqual([]);
@@ -161,7 +149,7 @@ describe('useTimelineFeed failure handling', () => {
     // on screen belong to the feed we just left.
     apiListTimeline.mockResolvedValue({ events: [event('guest-era', 10)] });
     const { result, rerender } = renderHook(
-      ({ owner }: { owner: string }) => useTimelineFeed(owner, true),
+      ({ owner }: { owner: string }) => useTimelineFeed(owner, true, TEAM_A),
       { initialProps: { owner: 'guest-1' } },
     );
     await waitFor(() => expect(result.current.events).toHaveLength(1));
@@ -174,7 +162,7 @@ describe('useTimelineFeed failure handling', () => {
 
   it('recovers on Try again', async () => {
     apiListTimeline.mockResolvedValueOnce(null);
-    const { result } = renderHook(() => useTimelineFeed('me', true));
+    const { result } = renderHook(() => useTimelineFeed('me', true, TEAM_A));
     await waitFor(() => expect(result.current.error).toBe(true));
 
     apiListTimeline.mockResolvedValue({ events: [event('a', 10)], nextCursor: '10:a' });
@@ -200,7 +188,7 @@ describe('useTimelineFeed on return to the tab', () => {
   it('merges what happened since, without dropping loaded events', async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     apiListTimeline.mockResolvedValue({ events: [event('old', 10)] });
-    const { result } = renderHook(() => useTimelineFeed('me', true));
+    const { result } = renderHook(() => useTimelineFeed('me', true, TEAM_A));
     await waitFor(() => expect(result.current.events).toHaveLength(1));
 
     apiListTimeline.mockResolvedValue({ events: [event('new', 20), event('old', 10)] });
@@ -217,7 +205,7 @@ describe('useTimelineFeed on return to the tab', () => {
     // events, and the next return re-reads anyway.
     vi.useFakeTimers({ shouldAdvanceTime: true });
     apiListTimeline.mockResolvedValue({ events: [event('old', 10)] });
-    const { result } = renderHook(() => useTimelineFeed('me', true));
+    const { result } = renderHook(() => useTimelineFeed('me', true, TEAM_A));
     await waitFor(() => expect(result.current.events).toHaveLength(1));
 
     apiListTimeline.mockResolvedValue(null);
@@ -232,7 +220,7 @@ describe('useTimelineFeed on return to the tab', () => {
 
   it('ignores a glance at another window', async () => {
     apiListTimeline.mockResolvedValue({ events: [event('old', 10)] });
-    const { result } = renderHook(() => useTimelineFeed('me', true));
+    const { result } = renderHook(() => useTimelineFeed('me', true, TEAM_A));
     await waitFor(() => expect(result.current.events).toHaveLength(1));
     const reads = apiListTimeline.mock.calls.length;
 
@@ -256,7 +244,7 @@ describe('useTimelineFeed after the readers own write', () => {
   it('re-reads a beat after a write and shows what the worker recorded', async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     apiListTimeline.mockResolvedValue({ events: [event('old', 10)] });
-    const { result } = renderHook(() => useTimelineFeed('me', true));
+    const { result } = renderHook(() => useTimelineFeed('me', true, TEAM_A));
     await waitFor(() => expect(result.current.events).toHaveLength(1));
     const reads = apiListTimeline.mock.calls.length;
 
@@ -280,7 +268,7 @@ describe('useTimelineFeed after the readers own write', () => {
         event('b-made', 10, { sourceId: 'd-b' }),
       ],
     });
-    const { result } = renderHook(() => useTimelineFeed('me', true));
+    const { result } = renderHook(() => useTimelineFeed('me', true, TEAM_A));
     await waitFor(() => expect(result.current.events).toHaveLength(3));
 
     act(() => notifyApiWrite({ purge: { sourceType: 'document', sourceId: 'd-b' } }));
@@ -300,7 +288,7 @@ describe('useTimelineFeed after the readers own write', () => {
     // the page is authoritative for the stretch it covers.
     vi.useFakeTimers({ shouldAdvanceTime: true });
     apiListTimeline.mockResolvedValue({ events: [event('a', 30), event('swept', 20)] });
-    const { result } = renderHook(() => useTimelineFeed('me', true));
+    const { result } = renderHook(() => useTimelineFeed('me', true, TEAM_A));
     await waitFor(() => expect(result.current.events).toHaveLength(2));
 
     apiListTimeline.mockResolvedValue({ events: [event('a', 30)] });
@@ -309,40 +297,5 @@ describe('useTimelineFeed after the readers own write', () => {
       vi.advanceTimersByTime(1_100);
     });
     await waitFor(() => expect(result.current.events.map((e) => e.id)).toEqual(['a']));
-  });
-});
-
-// Per-card removal (docs/specs/013-workspace/timeline.md §2.9).
-describe('useTimelineFeed dismiss', () => {
-  it('takes the card off at once and tells the worker', async () => {
-    apiListTimeline.mockResolvedValue({ events: [event('a', 30), event('b', 20)] });
-    const { result } = renderHook(() => useTimelineFeed('me', true));
-    await waitFor(() => expect(result.current.events).toHaveLength(2));
-
-    act(() => result.current.dismiss('b'));
-    expect(result.current.events.map((e) => e.id)).toEqual(['a']);
-    expect(apiDismissTimelineEvent).toHaveBeenCalledWith('me', 'b');
-  });
-
-  it('takes a whole stack off in one request', async () => {
-    apiListTimeline.mockResolvedValue({ events: [event('a', 30), event('b', 20), event('c', 10)] });
-    const { result } = renderHook(() => useTimelineFeed('me', true));
-    await waitFor(() => expect(result.current.events).toHaveLength(3));
-
-    act(() => result.current.dismiss(['b', 'c']));
-    expect(result.current.events.map((e) => e.id)).toEqual(['a']);
-    expect(apiDismissTimelineEvents).toHaveBeenCalledWith('me', ['b', 'c']);
-    expect(apiDismissTimelineEvent).not.toHaveBeenCalled();
-  });
-
-  it('puts the card back if the worker refused', async () => {
-    apiListTimeline.mockResolvedValue({ events: [event('a', 30), event('b', 20)] });
-    apiDismissTimelineEvent.mockRejectedValue(new Error('dismiss failed: 500'));
-    const { result } = renderHook(() => useTimelineFeed('me', true));
-    await waitFor(() => expect(result.current.events).toHaveLength(2));
-
-    act(() => result.current.dismiss('b'));
-    expect(result.current.events.map((e) => e.id)).toEqual(['a']);
-    await waitFor(() => expect(result.current.events.map((e) => e.id)).toEqual(['a', 'b']));
   });
 });

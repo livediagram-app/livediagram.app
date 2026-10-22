@@ -24,7 +24,7 @@ export const HOME_WHAT_HAPPENED_ACTION_MAX = 200;
 export const HOME_TZ_MAX_LENGTH = 64;
 
 /** The event type of a person's own coalesced open: the open-day record Jump back in counts.
- *  Recorded in their `user` scope only, and deliberately outside the Timeline feed's vocabulary
+ *  Recorded in their `user` scope only, and deliberately outside the event catalogue's vocabulary
  *  (docs/specs/013-workspace/timeline.md §4.2). */
 export const HOME_OPENED_EVENT_TYPE = 'document_opened';
 
@@ -140,7 +140,7 @@ export type HomeResponse = {
   /** The server's Within reach set: the most used, then the recent; at most twice the per-row N. */
   jumpBackIn: HomeJumpBackInItem[];
   whatHappened: HomeGroup[];
-  /** The Timeline feed's unread mark as it stood before this read (the read moves it, once per visit);
+  /** Home's unread mark as it stood before this read (the read moves it, once per visit);
    *  null when the person had never looked. What happened after it is new to them. */
   lastSeenAt: number | null;
 };

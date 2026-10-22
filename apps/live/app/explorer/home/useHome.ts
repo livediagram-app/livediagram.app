@@ -6,7 +6,7 @@
 // One read draws the first screen (GET /api/home); this browser's own opens of its local documents
 // are read beside it and placed by the same Within reach rule. A failed read is an error, never an empty Home: "we could not
 // ask" and "there is nothing" are different answers (docs/specs/013-workspace/timeline.md §2.4).
-// The read moves the Timeline's unread mark on the server, so a successful one clears the badge.
+// The read moves the unread mark on the server, so a successful one clears the badge.
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { HomeGroup } from '@liveplanner/api-schema';

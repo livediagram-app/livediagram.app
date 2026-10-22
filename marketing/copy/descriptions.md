@@ -148,7 +148,7 @@ detailed GitHub / Product Hunt write-up.
 > Expense Report, Sales Pipeline, Inventory), a form (Bug Report, Feedback,
 > Feature Request, RSVP, Job Application, Contact), or start blank. File
 > projects into folders, share a folder with a team, and catch up on what
-> changed from the Timeline and Inbox.
+> changed from Home and the Inbox.
 >
 > #### Agents welcome
 >

@@ -7,9 +7,8 @@ brings, in one screen: "what was I working on?" and "what happened while I was a
 ## Route
 
 - Home lives at `/explorer/home`. `/explorer`, and any Explorer URL that names no view, lands on it.
-- The **Timeline** ([Timeline](timeline.md)) lives at `/explorer/timeline`, with a sidebar row of its own under the
-  Inbox ([Explorer structure](explorer-structure.md)). What Happened's **See Timeline** link also opens it; its
-  breadcrumb is its own (**Timeline**).
+- The Explorer has no Timeline section (it was removed, [Timeline events](timeline.md)); an old `/explorer/timeline`
+  link lands on Home too.
 
 ## Layout
 
@@ -22,13 +21,14 @@ backdrop, a heavy display heading, pills with a coloured dot, the glowing search
 - **One column** under it, beside the sidebar, at every width: **Jump Back In**, then **What Happened**. It scrolls
   with the page.
 - **Display headings** set the sections apart. Each section opens with its heading row: the title (about 24 px,
-  extra bold, tight tracking) and the section's quiet link at the right end (**See More**, **See Timeline**). No rule
+  extra bold, tight tracking) and the section's quiet link at the right end (Jump Back In's **See More**). No rule
   runs under the row. Generous space (about 40 px) separates one section from the next.
 - Jump Back In's documents are **cards** ([Jump Back In](#jump-back-in)); What Happened's days sit in **one panel**
   (a white, rounded, hairline-bordered surface; the raised surface in dark mode).
 - Home has no import, no folder and no view switch.
 - The person's own history (what they created, updated or opened) is not on Home: Jump Back In holds what they
-  reach for, and the full record is the Timeline's.
+  reach for, and the full record of a document or a team is its History or Team Activity
+  ([Timeline events](timeline.md) §3.4).
 
 ## The hero
 
@@ -268,9 +268,6 @@ the **4 most used** and the **4 most recent**, no document twice.
 - **Nothing from anyone, no section.** When nobody else did anything in the window, What Happened is left out of the
   page entirely, heading included, rather than set a second empty state under Jump Back In's. While it loads, its
   heading and skeleton hold its place.
-- A quiet **See Timeline** link beside the section's heading opens the **Timeline**, shown only once What Happened
-  has an entry (not while it loads, not when it is empty), where
-  everything that happened, the person's own doings included, can be filtered and paged.
 - Every entry is **spot on**. It names:
   - who acted;
   - what they did, as a plain verb phrase (commented, replied, resolved a thread, edited, assigned you an action,
@@ -300,11 +297,10 @@ the **4 most used** and the **4 most recent**, no document twice.
 
 ## Unread
 
-Viewing Home counts as having looked: it moves the Timeline feed's unread mark exactly as the Timeline page does
-([Timeline](timeline.md) §2.5), once per visit, and says where the mark stood before, so what is new to the person
+Viewing Home counts as having looked: it moves the unread mark ([Timeline events](timeline.md) §2.5), once per visit, and says where the mark stood before, so what is new to the person
 can be marked.
 
-- In What Happened, an entry newer than that mark carries a **New** pill, as the Timeline's cards do: the word,
+- In What Happened, an entry newer than that mark carries a **New** pill: the word,
   never colour alone. A summary is new when its latest action is.
 - A person who has never looked sees none: marking a whole history new would be noise.
 - The mark is the one the first read of the visit reports; a retry does not move what is marked.
@@ -322,7 +318,7 @@ An **open** is the editor loading a document for a person to look at.
 - These are **not** opens: a snapshot or thumbnail, an embed ([Read-only embeds](embeds.md)), a duplicate, Take
   Offline, and any read through the public API or an AI tool.
 - Opens are **private**. Only the person who opened a document ever sees that they did: in their Jump Back In, never in What Happened, a document's
-  History, a team's feed, or the Timeline feed ([Timeline](timeline.md)).
+  History or a team's feed ([Timeline events](timeline.md)).
 - Offline Mode documents never reach the server, so the server records none of their opens. **This Browser counts
   them instead**: the editor opening a document stored only here adds the day to that document's own record in
   this browser, by the same once-per-UTC-day rule, keeping the days of the last 90, and moves its last open. Its
@@ -339,7 +335,7 @@ An **open** is the editor loading a document for a person to look at.
   open the later of the two.
 - Deleting the account deletes its opens. Deleting a document for good deletes everyone's opens of it; a document in
   the Trash only leaves Home until it is restored.
-- An open older than a year is forgotten, the Timeline's retention ([Timeline](timeline.md) §3.5).
+- An open older than a year is forgotten, the record's retention ([Timeline events](timeline.md) §3.5).
 
 ## States
 
@@ -376,7 +372,7 @@ One-liners on the closed vocabulary ([Telemetry](../017-telemetry/telemetry.md))
 
 ## Help
 
-The help centre's [Home](../../../apps/help/app/explorer/timeline/page.mdx) article describes Home (Jump Back In, What Happened) and the Timeline.
+The help centre's [Home](../../../apps/help/app/explorer/home/page.mdx) article describes Home (Jump Back In, What Happened) and a document's or a team's history.
 
 ## Accessibility
 

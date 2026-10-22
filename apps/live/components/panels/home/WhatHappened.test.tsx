@@ -4,8 +4,8 @@ import { fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // What Happened (docs/specs/013-workspace/explorer-home.md): one person's actions are links that
-// open the document; several people collapse into a summary that expands; See Timeline leads
-// to the feed; no filter controls.
+// open the document; several people collapse into a summary that expands; no link of its own
+// and no filter controls.
 
 const { track } = vi.hoisted(() => ({ track: vi.fn() }));
 vi.mock('@/lib/telemetry', () => ({ track }));
@@ -43,17 +43,8 @@ const busy = fixtureGroup({
   ],
 });
 
-function renderIt(groups = [busy, solo], onSeeTimeline = vi.fn(), lastSeenAt?: number) {
-  render(
-    <WhatHappened
-      groups={groups}
-      lastSeenAt={lastSeenAt}
-      loading={false}
-      timelineHref="/explorer/timeline"
-      onSeeTimeline={onSeeTimeline}
-    />,
-  );
-  return onSeeTimeline;
+function renderIt(groups = [busy, solo], lastSeenAt?: number) {
+  render(<WhatHappened groups={groups} lastSeenAt={lastSeenAt} loading={false} />);
 }
 
 beforeEach(() => {
@@ -102,7 +93,7 @@ describe('WhatHappened', () => {
   });
 
   it('marks what is newer than the last look as New, in words', () => {
-    renderIt([busy, solo], vi.fn(), today(10, 30));
+    renderIt([busy, solo], today(10, 30));
     expect(screen.getByRole('button', { name: /in Payments architecture\s*New/ })).toBeTruthy();
     expect(screen.getByRole('link', { name: /Sam commented on Onboarding.*New/ })).toBeTruthy();
     expect(screen.getByRole('link', { name: /Sam edited Onboarding/ }).textContent).not.toContain(
@@ -120,39 +111,20 @@ describe('WhatHappened', () => {
     expect(screen.getByRole('heading', { name: 'Today' })).toBeTruthy();
   });
 
-  it('opens the Timeline in the app, and leaves modified clicks to the browser', () => {
-    const onSeeTimeline = renderIt();
-    const link = screen.getByRole('link', { name: 'See Timeline' });
-    expect(link.getAttribute('href')).toBe('/explorer/timeline');
-    fireEvent.click(link);
-    expect(onSeeTimeline).toHaveBeenCalledTimes(1);
-    fireEvent.click(link, { metaKey: true });
-    expect(onSeeTimeline).toHaveBeenCalledTimes(1);
+  it('carries no See Timeline link: the Timeline is gone', () => {
+    renderIt();
+    expect(screen.queryByRole('link', { name: 'See Timeline' })).toBeNull();
   });
 
   it('leaves the section out when nothing happened', () => {
     const { container } = render(
-      <WhatHappened
-        groups={[]}
-        loading={false}
-        lastSeenAt={undefined}
-        timelineHref="/explorer/timeline"
-        onSeeTimeline={() => {}}
-      />,
+      <WhatHappened groups={[]} loading={false} lastSeenAt={undefined} />,
     );
     expect(container.innerHTML).toBe('');
   });
 
   it('holds its heading and skeleton while it loads, without the link', () => {
-    render(
-      <WhatHappened
-        groups={[]}
-        loading
-        lastSeenAt={undefined}
-        timelineHref="/explorer/timeline"
-        onSeeTimeline={() => {}}
-      />,
-    );
+    render(<WhatHappened groups={[]} loading lastSeenAt={undefined} />);
     expect(screen.getByRole('heading', { level: 2, name: 'What Happened' })).toBeTruthy();
     expect(screen.queryByRole('link', { name: 'See Timeline' })).toBeNull();
   });

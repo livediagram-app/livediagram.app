@@ -7,7 +7,6 @@
 // Extracted so the two view modes can't drift on what a document's badge
 // says or which actions its menu offers.
 
-import { CloseIcon } from '@liveplanner/ui';
 import {
   ClockIcon,
   ClockOffIcon,
@@ -16,7 +15,6 @@ import {
   FolderOutlineIcon,
   HistoryIcon,
   PencilIcon,
-  ShareIcon,
   StarIcon,
   SyncIcon,
   TagIcon,
@@ -106,8 +104,6 @@ export function DocumentActionsMenu({
   onToggleFavourite,
   isOpen = false,
   onOpen,
-  onRemoveFromTimeline,
-  onShare,
 }: {
   document: PaneDocument;
   anchor: HTMLElement | null;
@@ -141,14 +137,6 @@ export function DocumentActionsMenu({
   // How to open it. Absent = navigate to the document's page; the floating
   // panel passes its own opener so switching documents stays in-editor.
   onOpen?: () => void;
-  // Timeline only (docs/specs/013-workspace/timeline.md §2.9): take THIS card off the reader's feed.
-  // Says nothing about the document, so it sits with the other "how you
-  // see it" verbs, not with Delete.
-  onRemoveFromTimeline?: () => void;
-  // Open the document with its Share dialog already up (the editor
-  // honours `?share=1`). Offered where a reader is likely to be looking
-  // at sharing — the Timeline's share-link cards — rather than everywhere.
-  onShare?: () => void;
 }) {
   const href = hrefForDocument(liveDoc);
   const offline = liveDoc.ownerId === OFFLINE_OWNER_ID;
@@ -175,14 +163,6 @@ export function DocumentActionsMenu({
           onClick={() => assignAppLocation(href)}
         />
         <MenuGroupSeparator />
-        {onRemoveFromTimeline ? (
-          <MenuActionRow
-            plain
-            icon={<CloseIcon size={11} />}
-            label="Remove from Timeline"
-            onClick={then(onRemoveFromTimeline)}
-          />
-        ) : null}
         <MenuActionRow
           plain
           icon={<DismissSharedIcon />}
@@ -206,9 +186,6 @@ export function DocumentActionsMenu({
             label="Open"
             onClick={onOpen ? then(onOpen) : () => assignAppLocation(href)}
           />
-          {onShare ? (
-            <MenuActionRow plain icon={<ShareIcon />} label="Share" onClick={then(onShare)} />
-          ) : null}
           <MenuGroupSeparator />
         </>
       )}
@@ -298,14 +275,6 @@ export function DocumentActionsMenu({
             onClick={() => void takeOffline()}
           />
         )
-      ) : null}
-      {onRemoveFromTimeline ? (
-        <MenuActionRow
-          plain
-          icon={<CloseIcon size={11} />}
-          label="Remove from Timeline"
-          onClick={then(onRemoveFromTimeline)}
-        />
       ) : null}
       {onDelete ? (
         <>

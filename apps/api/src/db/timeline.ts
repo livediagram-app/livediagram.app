@@ -1,4 +1,5 @@
-// timeline — the Explorer's landing feed (migration 0042, docs/specs/013-workspace/timeline.md).
+// timeline — the event record behind Home, a document's History and a team's Activity (migration 0042,
+// docs/specs/013-workspace/timeline.md).
 //
 // Every event is written inline on the write path that caused it.
 // There are no scanners and no scan cron: unlike the system this shape
@@ -26,9 +27,6 @@ export type TimelineEventDraft = {
   description?: string | null;
   occurredAt?: number;
   snapshot?: Record<string, unknown>;
-  // Leave an existing row for the same key untouched rather than updating it. For a
-  // reconstruction (the backfill's edit) that must never overwrite what really happened.
-  keepExisting?: boolean;
 };
 
 // The dedupe key for an event that should collapse to one row per
@@ -48,7 +46,7 @@ export function dedupeKeyForDay(actorId: string | null, at: number): string {
 // stack of three, and a rename this month silently moved last month's
 // card to today. '' stays right for events that genuinely happen once
 // per source (created, a tombstone, an invite), where a retry or a
-// backfill overlap SHOULD land on the existing row.
+// re-emit SHOULD land on the existing row.
 export function dedupeKeyOnce(): string {
   return crypto.randomUUID();
 }
@@ -57,7 +55,7 @@ export function dedupeKeyOnce(): string {
 //
 // Idempotent twice over: the UNIQUE key on
 // (source_type, source_id, event_type, dedupe_key) means a retry or a
-// backfill that overlaps a live emit updates the existing row, and the
+// re-emit updates the existing row, and the
 // scope rows are INSERT OR IGNORE against their composite primary key.
 //
 // The UPDATE on conflict is what makes the coalesced editing event
@@ -89,16 +87,12 @@ export async function emitTimelineEvent(
        (id, actor_id, source_type, source_id, event_type, dedupe_key,
         title, description, occurred_at, snapshot, created_at)
      VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)
-     ON CONFLICT (source_type, source_id, event_type, dedupe_key) ${
-       draft.keepExisting
-         ? 'DO NOTHING'
-         : `DO UPDATE SET
+     ON CONFLICT (source_type, source_id, event_type, dedupe_key) DO UPDATE SET
        actor_id = COALESCE(timeline_events.actor_id, excluded.actor_id),
        title = excluded.title,
        description = excluded.description,
        snapshot = excluded.snapshot,
-       occurred_at = MAX(timeline_events.occurred_at, excluded.occurred_at)`
-     }`,
+       occurred_at = MAX(timeline_events.occurred_at, excluded.occurred_at)`,
   ).bind(
     id,
     draft.actorId,
@@ -224,8 +218,8 @@ export async function readTimeline(
   const readerId = opts.readerId ?? (opts.scope.scopeType === 'user' ? opts.scope.scopeId : null);
   // ?1 and ?2 are VISIBLE_DOCUMENTS_CTES' own binds (the reader, now).
   const binds: unknown[] = [readerId ?? '', Date.now(), opts.scope.scopeType, opts.scope.scopeId];
-  // A dismissed membership (docs/specs/013-workspace/timeline.md §2.9) is still a row, so the
-  // re-emit path can't resurrect it, but it is not part of the feed.
+  // A membership dismissed from the personal feed while it had one (the feed and its Remove are gone; the column
+  // stays) is still a row, so the re-emit path can't resurrect it, but it is not part of any read.
   let where = `s.scope_type = ?3 AND s.scope_id = ?4 AND s.deleted_at IS NULL AND ${NOT_IN_TRASH} AND ${NOT_IN_FEED}`;
 
   if (opts.cursor) {
@@ -312,7 +306,6 @@ function parseCursor(raw: string): { occurredAt: number; id: string } | null {
 // ---------------------------------------------------------------------
 
 type TimelineScopeState = {
-  backfilledAt: number | null;
   /** When this scope was last READ by its owner — the unread watermark. */
   lastSeenAt: number | null;
 };
@@ -322,18 +315,12 @@ export async function getScopeState(
   scope: TimelineScopeRef,
 ): Promise<TimelineScopeState | null> {
   const row = await env.DB.prepare(
-    'SELECT backfilled_at, last_seen_at FROM timeline_scope_state WHERE scope_type = ?1 AND scope_id = ?2',
+    'SELECT last_seen_at FROM timeline_scope_state WHERE scope_type = ?1 AND scope_id = ?2',
   )
     .bind(scope.scopeType, scope.scopeId)
-    .first<{
-      backfilled_at: number | null;
-      last_seen_at: number | null;
-    }>();
+    .first<{ last_seen_at: number | null }>();
   if (!row) return null;
-  return {
-    backfilledAt: row.backfilled_at,
-    lastSeenAt: row.last_seen_at,
-  };
+  return { lastSeenAt: row.last_seen_at };
 }
 
 // Move the unread watermark to now. Called AFTER the read has captured
@@ -396,16 +383,6 @@ export async function countUnseen(
     .bind(scope.scopeType, scope.scopeId, since, cap + 1, now)
     .first<{ n: number }>();
   return row?.n ?? 0;
-}
-
-export async function markScopeBackfilled(env: Env, scope: TimelineScopeRef): Promise<void> {
-  await env.DB.prepare(
-    `INSERT INTO timeline_scope_state (scope_type, scope_id, backfilled_at)
-     VALUES (?1, ?2, ?3)
-     ON CONFLICT (scope_type, scope_id) DO UPDATE SET backfilled_at = excluded.backfilled_at`,
-  )
-    .bind(scope.scopeType, scope.scopeId, Date.now())
-    .run();
 }
 
 // ---------------------------------------------------------------------
@@ -514,65 +491,6 @@ export function documentsTimelineSweepStatement(env: Env, ids: string[]): D1Prep
         AND (source_id IN (SELECT value FROM json_each(?1))
              OR json_extract(snapshot, '$.documentId') IN (SELECT value FROM json_each(?1)))`,
   ).bind(JSON.stringify(ids));
-}
-
-// Per-entry dismissal (docs/specs/013-workspace/timeline.md §2.9): take one event off ONE scope's
-// feed. Soft, on the membership row rather than the event, because the
-// event is shared by everyone it was scoped to — a teammate tidying
-// their feed must not tidy yours — and because an emit attaches its scopes
-// with INSERT OR IGNORE, so a soft-deleted row is exactly what stops a
-// re-emit (the coalesced editing event re-attaches on every save) from
-// bringing the card back.
-//
-// Returns false when the scope never held the event, so the route can
-// 404 rather than claim to have removed something that wasn't there.
-// Dismissing twice is a no-op that still reports true: the second
-// click found the row, and the outcome the caller wanted holds.
-export async function dismissTimelineEventForScope(
-  env: Env,
-  scope: TimelineScopeRef,
-  eventId: string,
-): Promise<boolean> {
-  const row = await env.DB.prepare(
-    `SELECT deleted_at FROM timeline_event_scopes
-      WHERE scope_type = ?1 AND scope_id = ?2 AND event_id = ?3`,
-  )
-    .bind(scope.scopeType, scope.scopeId, eventId)
-    .first<{ deleted_at: number | null }>();
-  if (!row) return false;
-  if (row.deleted_at !== null) return true;
-  await env.DB.prepare(
-    `UPDATE timeline_event_scopes SET deleted_at = ?4
-      WHERE scope_type = ?1 AND scope_id = ?2 AND event_id = ?3`,
-  )
-    .bind(scope.scopeType, scope.scopeId, eventId, Date.now())
-    .run();
-  return true;
-}
-
-// The same dismissal for a whole stack at once (docs/specs/013-workspace/timeline.md §2.9). One
-// UPDATE over the id list rather than a round trip per card: a day's
-// stack of forty renames is one request and one statement. Returns how
-// many rows this call actually marked; ids the scope never held, or
-// had already dismissed, simply don't count.
-export const DISMISS_BATCH_MAX = 200;
-
-export async function dismissTimelineEventsForScope(
-  env: Env,
-  scope: TimelineScopeRef,
-  eventIds: readonly string[],
-): Promise<number> {
-  const ids = eventIds.slice(0, DISMISS_BATCH_MAX);
-  if (ids.length === 0) return 0;
-  const placeholders = ids.map((_, i) => `?${i + 4}`).join(', ');
-  const res = await env.DB.prepare(
-    `UPDATE timeline_event_scopes SET deleted_at = ?3
-      WHERE scope_type = ?1 AND scope_id = ?2 AND deleted_at IS NULL
-        AND event_id IN (${placeholders})`,
-  )
-    .bind(scope.scopeType, scope.scopeId, Date.now(), ...ids)
-    .run();
-  return res.meta?.changes ?? 0;
 }
 
 // Account deletion. The FK cascade makes the order safe regardless;

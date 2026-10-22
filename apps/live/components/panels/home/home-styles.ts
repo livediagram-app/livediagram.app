@@ -8,7 +8,7 @@ export const SECTION_HEADER = 'flex items-baseline justify-between gap-4';
 export const SECTION_HEADING =
   'text-2xl font-extrabold tracking-[-0.03em] text-[#17153a] dark:text-slate-100';
 
-/** The quiet link at the end of a heading row: See More, See Timeline. Its line box is padded
+/** The quiet link at the end of a heading row: See More. Its line box is padded
  *  to the 24 px target. */
 export const SECTION_LINK =
   'inline-flex min-h-6 items-center rounded-sm text-sm font-semibold text-brand-700 hover:underline dark:text-brand-300';

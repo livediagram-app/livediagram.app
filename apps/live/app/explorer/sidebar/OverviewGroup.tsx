@@ -1,11 +1,6 @@
 'use client';
 
-import {
-  HomeIcon,
-  InboxIcon,
-  ShareIcon,
-  TimelineIcon,
-} from '@/components/primitives/explorer-icons';
+import { HomeIcon, InboxIcon, ShareIcon } from '@/components/primitives/explorer-icons';
 import { useExplorer } from '../ExplorerContext';
 import { SIDEBAR_LABELS, type SidebarDivider } from './sidebar-structure';
 import { trackSidebar } from './sidebar-telemetry';
@@ -13,13 +8,13 @@ import { SidebarGroup } from './SidebarGroup';
 import { SidebarRow } from './SidebarRow';
 import { inboxBadge } from './inbox-badge';
 
-// Overview (docs/specs/013-workspace/explorer-structure.md): Home, Inbox, Timeline, Shared With Me.
+// Overview (docs/specs/013-workspace/explorer-structure.md): Home, Inbox, Shared With Me.
 export function OverviewGroup({ divider, first }: { divider: SidebarDivider; first: boolean }) {
   const { selected, go, shared, timelineUnread, activity } = useExplorer();
   return (
     <SidebarGroup id="overview" divider={divider} first={first}>
       {/* Home (docs/specs/013-workspace/explorer-home.md). Its badge counts OTHER people's
-          Timeline events since the reader last looked (timeline.md §8.2), cleared on navigation
+          events since the reader last looked (explorer-home.md "Unread"), cleared on navigation
           so the number doesn't linger while Home loads. */}
       <SidebarRow
         icon={<HomeIcon />}
@@ -48,19 +43,6 @@ export function OverviewGroup({ divider, first }: { divider: SidebarDivider; fir
         }}
         depth={0}
         badge={inboxBadge(activity)}
-      />
-      {/* The Timeline (docs/specs/013-workspace/timeline.md §8.2): no badge, its unread count sits on Home. */}
-      <SidebarRow
-        icon={<TimelineIcon />}
-        tone="amber"
-        label={SIDEBAR_LABELS.timeline}
-        textLabel={SIDEBAR_LABELS.timeline}
-        selected={selected.kind === 'timeline'}
-        onActivate={() => {
-          trackSidebar('Timeline');
-          go({ kind: 'timeline' });
-        }}
-        depth={0}
       />
       <SidebarRow
         icon={<ShareIcon />}

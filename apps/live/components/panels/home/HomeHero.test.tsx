@@ -191,7 +191,7 @@ describe('HomeHero', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Browse sections' }));
     expect(setMobileNavOpen).toHaveBeenCalledWith(true);
     expect(screen.getAllByRole('link', { name: 'Help' })[0]!.getAttribute('href')).toBe(
-      '/help/timeline',
+      '/help/home',
     );
   });
 });

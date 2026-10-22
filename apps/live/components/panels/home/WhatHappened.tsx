@@ -1,9 +1,7 @@
 'use client';
 
 // What Happened (docs/specs/013-workspace/explorer-home.md "What Happened"): what other people did
-// to documents the person can open, under day headings, with no filter controls. A quiet See
-// timeline link at the end of the section's heading row opens the Timeline; it
-// sits there so it never moves when the entries land.
+// to documents the person can open, under day headings, with no filter controls and no link of its own.
 
 import { useMemo } from 'react';
 import { isNewEvent } from '@liveplanner/ui';
@@ -20,17 +18,11 @@ export function WhatHappened({
   groups,
   loading,
   lastSeenAt,
-  timelineHref,
-  onSeeTimeline,
 }: {
   groups: HomeGroup[];
   loading: boolean;
   /** The unread mark before this visit: newer entries are New. */
   lastSeenAt: number | undefined;
-  /** The Timeline page, for the link's href (new tab, copy link). */
-  timelineHref: string;
-  /** In-app navigation to the Timeline. */
-  onSeeTimeline: () => void;
 }) {
   const now = useNow(false);
   const days = useMemo(() => groupsByDay(groups, now), [groups, now]);
@@ -38,17 +30,7 @@ export function WhatHappened({
   // (explorer-home.md "What Happened"). It is the page's last section, so nothing moves when it goes.
   if (!loading && days.length === 0) return null;
   return (
-    <HomeSection
-      id="what-happened"
-      title={HOME_COPY.whatHappened}
-      busy={loading}
-      // See Timeline once the entries are in: an empty section is not drawn at all.
-      link={
-        loading
-          ? undefined
-          : { href: timelineHref, label: HOME_COPY.seeTimeline, onNavigate: onSeeTimeline }
-      }
-    >
+    <HomeSection id="what-happened" title={HOME_COPY.whatHappened} busy={loading}>
       {loading ? (
         <WhatHappenedSkeleton />
       ) : (

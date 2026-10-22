@@ -90,9 +90,9 @@ describe('applyCachePolicy', () => {
   });
 
   it('works on a response whose headers cannot change', () => {
-    const redirect = Response.redirect('https://example.com/explorer/timeline', 302);
+    const redirect = Response.redirect('https://example.com/explorer/inbox', 302);
     expect(applyCachePolicy(redirect, '/explorer').headers.get('Location')).toBe(
-      'https://example.com/explorer/timeline',
+      'https://example.com/explorer/inbox',
     );
   });
 

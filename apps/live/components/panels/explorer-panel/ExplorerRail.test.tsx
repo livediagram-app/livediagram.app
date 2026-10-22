@@ -39,7 +39,6 @@ describe('ExplorerRail', () => {
     expect(names).toEqual([
       'Home',
       'Inbox',
-      'Timeline',
       'Shared With Me (2)',
       'My Documents',
       'Design guild',
@@ -55,8 +54,8 @@ describe('ExplorerRail', () => {
 
   it('picks a section, never leaving the editor', () => {
     const onPick = show();
-    fireEvent.click(screen.getByRole('button', { name: 'Timeline' }));
-    expect(onPick).toHaveBeenCalledWith({ kind: 'timeline' });
+    fireEvent.click(screen.getByRole('button', { name: 'Inbox' }));
+    expect(onPick).toHaveBeenCalledWith({ kind: 'inbox' });
   });
 
   it('moves between entries with Up and Down on a desktop, Left and Right on a phone', () => {
