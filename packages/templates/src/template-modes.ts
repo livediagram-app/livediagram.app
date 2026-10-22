@@ -100,7 +100,7 @@ export function templateEditorMode(kind: TemplateKind): EditorMode {
 }
 
 /** Each mode's blank (docs/specs/007-editor/templates-by-mode.md "Five blanks"). */
-export const BLANK_TEMPLATE_FOR_MODE: Readonly<Record<EditorMode, TemplateKind>> = {
+export const BLANK_TEMPLATE_FOR_MODE: Readonly<Record<Exclude<EditorMode, 'pages'>, TemplateKind>> = {
   diagram: 'blank',
   draw: 'whiteboard',
   plan: 'blank-plan',
@@ -108,11 +108,10 @@ export const BLANK_TEMPLATE_FOR_MODE: Readonly<Record<EditorMode, TemplateKind>>
 };
 
 // The blanks beyond each mode's own (docs/specs/007-editor/templates-by-mode.md "The blanks"): Blank Spreadsheet, an
-// empty Sheet, beside Blank Plan; the blanks of a page kind ("Blanks of a page kind"), one empty page of a chosen kind,
-// beside Blank Illustration, in the order the landing page's Blank Slate lists them.
+// empty Sheet, and Blank Form, beside Blank Plan.
 export const EXTRA_BLANK_TEMPLATES: readonly TemplateKind[] = ['blank-spreadsheet', 'blank-form'];
 
-/** True for the blanks: each mode's, Blank Spreadsheet and the blanks of a page kind. Quick-picks on Popular, never on a category shelf or tile. */
+/** True for the blanks: each mode's, Blank Spreadsheet and Blank Form. Quick-picks on Popular, never on a category shelf or tile. */
 export function isBlankTemplate(kind: TemplateKind): boolean {
   return (
     Object.values(BLANK_TEMPLATE_FOR_MODE).includes(kind) || EXTRA_BLANK_TEMPLATES.includes(kind)

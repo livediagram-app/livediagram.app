@@ -1,9 +1,9 @@
 // @vitest-environment jsdom
 
-// The Background section (docs/specs/007-editor/pages-mode.md "Backgrounds").
+// A cover's Background section (docs/specs/030-forms/forms.md "The form card, top to bottom", Cover).
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { penColourHex, standardColours, type Page, type PageFill } from '@liveplanner/document';
+import { penColourHex, standardColours, type PageColourFill } from '@liveplanner/document';
 import {
   backgroundCategoryOf,
   customGradientSeed,
@@ -21,16 +21,15 @@ const theme: ThemeBackgroundPreset[] = [
     fill: { kind: 'gradient', from: '#eef2ff', to: '#ddd6fe', angle: 160 },
   },
 ];
-const custom: PageFill = { kind: 'gradient', from: '#123456', to: '#abcdef', angle: 90 };
+const custom: PageColourFill = { kind: 'gradient', from: '#123456', to: '#abcdef', angle: 90 };
 
 let onPreview = vi.fn();
-function show(fill?: PageFill, presets: ThemeBackgroundPreset[] = theme) {
-  const page = { id: 'p', orientation: 'portrait', ...(fill ? { background: { fill } } : {}) };
+function show(fill?: PageColourFill, presets: ThemeBackgroundPreset[] = theme) {
   const onBackground = vi.fn();
   onPreview = vi.fn();
   render(
     <BackgroundSection
-      page={page as Page}
+      background={fill ? { fill } : undefined}
       themePresets={presets}
       onBackground={onBackground}
       onPreview={onPreview}
@@ -51,7 +50,7 @@ describe('background categories', () => {
     expect(isCustomGradient(undefined, theme)).toBe(false);
   });
 
-  it('starts a custom gradient from the page’s fill', () => {
+  it('starts a custom gradient from the cover’s fill', () => {
     expect(customGradientSeed(custom)).toBe(custom);
     expect(customGradientSeed({ kind: 'solid', color: '#ff0000' })).toMatchObject({
       kind: 'gradient',
@@ -62,7 +61,7 @@ describe('background categories', () => {
 });
 
 describe('BackgroundSection', () => {
-  it('opens on the current fill’s category, and switching changes nothing on the page', () => {
+  it('opens on the current fill’s category, and switching changes nothing on the cover', () => {
     const onBackground = show(custom);
     expect(radio('Gradient').getAttribute('aria-checked')).toBe('true');
     fireEvent.click(radio('Solid'));
@@ -70,9 +69,11 @@ describe('BackgroundSection', () => {
     expect(screen.getByRole('group', { name: 'Background colour' })).toBeTruthy();
   });
 
-  it('offers Solid and Gradient, the theme’s gradients in their own row', () => {
+  it('offers Solid, Gradient and Animated, the theme’s gradients in their own row', () => {
     show();
     expect(screen.queryByRole('radio', { name: 'Theme' })).toBeNull();
+    expect(screen.queryByRole('radio', { name: 'Image' })).toBeNull();
+    expect(radio('Animated')).toBeTruthy();
     fireEvent.click(radio('Gradient'));
     const names = (group: string) =>
       within(screen.getByRole('radiogroup', { name: group }))
@@ -153,7 +154,7 @@ describe('BackgroundSection', () => {
     expect(within(screen.getByRole('group', { name: 'Dark' })).getAllByRole('button')).toHaveLength(
       10,
     );
-    // The page's fill is picked; Paper clears it.
+    // The cover's fill is picked; Paper clears it.
     expect(light[8]!.getAttribute('aria-pressed')).toBe('true');
     fireEvent.click(light[0]!);
     expect(onBackground).toHaveBeenLastCalledWith({ fill: undefined });
@@ -223,36 +224,8 @@ describe('BackgroundSection', () => {
 });
 
 describe('the Animated category', () => {
-  const slide = (fill?: PageFill) => {
-    const page = {
-      id: 's',
-      orientation: 'landscape',
-      kind: 'slide',
-      ...(fill ? { background: { fill } } : {}),
-    };
-    const onBackground = vi.fn();
-    onPreview = vi.fn();
-    render(
-      <BackgroundSection
-        page={page as Page}
-        themePresets={theme}
-        onBackground={onBackground}
-        onPreview={onPreview}
-      />,
-    );
-    return onBackground;
-  };
-
-  it('is offered on a slide page alone', () => {
-    show();
-    expect(screen.queryByRole('radio', { name: 'Animated' })).toBeNull();
-    cleanup();
-    slide();
-    expect(radio('Animated')).toBeTruthy();
-  });
-
   it('previews a motion on hover and sets it on a press, as a gradient with its motion', () => {
-    const onBackground = slide();
+    const onBackground = show();
     fireEvent.click(radio('Animated'));
     fireEvent.pointerEnter(radio('Starfield'));
     expect(onPreview).toHaveBeenLastCalledWith({
@@ -264,8 +237,8 @@ describe('the Animated category', () => {
     });
   });
 
-  it('opens on Animated for a slide that has one, the motion marked', () => {
-    slide({ kind: 'gradient', from: '#0b1020', to: '#123456', angle: 160, motion: 'waves' });
+  it('opens on Animated for a cover that has one, the motion marked', () => {
+    show({ kind: 'gradient', from: '#0b1020', to: '#123456', angle: 160, motion: 'waves' });
     expect(radio('Animated').getAttribute('aria-checked')).toBe('true');
     expect(radio('Waves').getAttribute('aria-checked')).toBe('true');
   });
@@ -273,24 +246,13 @@ describe('the Animated category', () => {
 
 describe('the Animated speed', () => {
   it('previews while dragged and is set once, on letting go, keeping the motion', () => {
-    const page = {
-      id: 's',
-      orientation: 'landscape',
-      kind: 'slide',
-      background: {
-        fill: { kind: 'gradient', from: '#0b1020', to: '#123456', angle: 160, motion: 'waves' },
-      },
-    };
-    const onBackground = vi.fn();
-    onPreview = vi.fn();
-    render(
-      <BackgroundSection
-        page={page as Page}
-        themePresets={theme}
-        onBackground={onBackground}
-        onPreview={onPreview}
-      />,
-    );
+    const onBackground = show({
+      kind: 'gradient',
+      from: '#0b1020',
+      to: '#123456',
+      angle: 160,
+      motion: 'waves',
+    });
     const slider = screen.getByRole('slider', { name: 'Animation speed' });
     fireEvent.change(slider, { target: { value: '2' } });
     expect(onPreview).toHaveBeenLastCalledWith({
@@ -306,35 +268,15 @@ describe('the Animated speed', () => {
 });
 
 describe('Animated custom colours', () => {
-  const customFill = {
-    kind: 'gradient',
-    from: '#ff0066',
-    to: '#330099',
-    angle: 160,
-    motion: 'waves',
-    speed: 2,
-  } as const;
-  const slideWith = (fill: PageFill) => {
-    const onBackground = vi.fn();
-    onPreview = vi.fn();
-    render(
-      <BackgroundSection
-        page={{
-          id: 's',
-          orientation: 'landscape',
-          kind: 'slide',
-          background: { fill },
-        }}
-        themePresets={theme}
-        onBackground={onBackground}
-        onPreview={onPreview}
-      />,
-    );
-    return onBackground;
-  };
-
   it('marks Custom for colours that are not the theme’s, and keeps them through a motion change', () => {
-    const onBackground = slideWith(customFill);
+    const onBackground = show({
+      kind: 'gradient',
+      from: '#ff0066',
+      to: '#330099',
+      angle: 160,
+      motion: 'waves',
+      speed: 2,
+    });
     expect(radio('Custom Colours').getAttribute('aria-checked')).toBe('true');
     fireEvent.click(radio('Aurora'));
     expect(onBackground).toHaveBeenLastCalledWith({

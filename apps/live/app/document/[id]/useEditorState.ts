@@ -168,7 +168,7 @@ import { useTabSession } from '@/hooks/persistence/useTabSession';
 import { useEditorKeyboardShortcuts } from '@/hooks/canvas/useEditorKeyboardShortcuts';
 import { useEditorViewport } from '@/hooks/canvas/useEditorViewport';
 import { useSlideDeck } from './useSlideDeck';
-import { slideFitOptions } from '@/lib/presentation-config';
+import { slideMaxZoom } from '@/lib/presentation-config';
 import { useCanvasPinchZoom } from '@/hooks/canvas/useCanvasPinchZoom';
 import { useCapabilities } from '@/hooks/persistence/useCapabilities';
 import { participantKey, type Participant } from '@/lib/identity';
@@ -1642,7 +1642,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const frameSlide = useEffectEvent(() => {
     if (!presentingStep) return;
     const bounds = slideFrame(presentingStep.slide, presentingStep.tab);
-    if (bounds) fitToBounds(bounds, slideFitOptions(presentingStep.slide, slideDeck.config));
+    if (bounds) fitToBounds(bounds, { maxZoom: slideMaxZoom(slideDeck.config) });
   });
   const slideZoom = slideDeck.config.zoom;
   useLayoutEffect(() => {
@@ -1665,7 +1665,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const refitSlide = useEffectEvent(() => {
     if (!presentingStep) return;
     const bounds = slideFrame(presentingStep.slide, presentingStep.tab);
-    if (bounds) fitToBounds(bounds, slideFitOptions(presentingStep.slide, slideDeck.config));
+    if (bounds) fitToBounds(bounds, { maxZoom: slideMaxZoom(slideDeck.config) });
   });
   useEffect(() => {
     const node = canvasMainRef.current;

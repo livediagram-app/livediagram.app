@@ -102,12 +102,6 @@ const COPY: Record<
     noMatch: 'session templates',
     help: 'templates',
   },
-  pages: {
-    title: 'Start Making Pages',
-    line: 'Pick something to make, or close this to start from a blank page.',
-    noMatch: 'page templates',
-    help: 'templates',
-  },
 };
 
 export function StartFromTemplates({

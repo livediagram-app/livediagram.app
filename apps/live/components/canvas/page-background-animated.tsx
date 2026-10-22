@@ -1,15 +1,15 @@
 'use client';
 
-// The Background section's Animated category, on a slide page (docs/specs/007-editor/
-// pages-mode.md "Animated backgrounds"): a carousel of motions, six to a page (two rows of
+// The Background section's Animated category (docs/specs/030-forms/forms.md "The form card, top to bottom", Cover):
+// a carousel of motions, six to a page (two rows of
 // three), each tile playing in the tab theme's colours; then the theme colourings the chosen
-// motion comes in, and its speed. A hover previews on the slide, a press sets it, as the other
+// motion comes in, and its speed. A hover previews on the cover, a press sets it, as the other
 // categories do; the speed previews as it is dragged and is set once, on letting go.
 import { useState } from 'react';
 import {
   PAGE_MOTION_SPEED_MAX,
   PAGE_MOTION_SPEED_MIN,
-  type PageFill,
+  type PageColourFill,
   type PageMotion,
 } from '@liveplanner/document';
 import { PagedCarousel } from '@/components/primitives/PagedCarousel';
@@ -28,7 +28,7 @@ import { track } from '@/lib/telemetry';
 import { CustomGradientEditor, RAINBOW } from './page-background-custom';
 import { PageMotionLayer } from './PageMotionLayer';
 
-// A tile's preview, 16:9 like the slide it stands for, in its own px.
+// A tile's preview, 16:9, in its own px.
 const TILE_W = 84;
 const TILE_H = 47;
 
@@ -47,26 +47,22 @@ function themeOfPresets(presets: readonly ThemeBackgroundPreset[]) {
     : {};
 }
 
-const MOTION_NOTE =
-  'Moves on screen and while presenting; still in exports and with Reduce Motion on.';
+const MOTION_NOTE = 'Moves in the builder and on the form’s page; still with Reduce Motion on.';
 
 export function AnimatedBackgroundChoices({
   fill,
   themePresets,
   onPick,
   onPreview,
-  note = MOTION_NOTE,
 }: {
-  fill: PageFill | undefined;
+  fill: PageColourFill | undefined;
   themePresets: readonly ThemeBackgroundPreset[];
-  onPick: (fill: PageFill) => void;
-  onPreview: (fill: PageFill) => void;
-  // When it moves, under the choices: a slide's, unless the caller paints something else (a form's cover).
-  note?: string;
+  onPick: (fill: PageColourFill) => void;
+  onPreview: (fill: PageColourFill) => void;
 }) {
   const theme = themeOfPresets(themePresets);
   const motion = fill?.kind === 'gradient' ? fill.motion : undefined;
-  // The colouring the page's motion is in; once picked, it carries to the next motion chosen.
+  // The colouring the motion is in; once picked, it carries to the next motion chosen.
   const [chosen, setChosen] = useState<PageMotionColouringId | null>(null);
   // Colours of the author's own (Custom): kept through a motion change, and through a theme change
   // (they are not the theme's).
@@ -76,12 +72,12 @@ export function AnimatedBackgroundChoices({
       ? fill
       : null;
   const current = custom ? undefined : (colouringOf(theme, fill) ?? chosen ?? undefined);
-  // The page's speed carries to whatever motion or colouring is picked next.
+  // The speed carries to whatever motion or colouring is picked next.
   const speed = fill?.kind === 'gradient' ? (fill.speed ?? 1) : 1;
   const [dragSpeed, setDragSpeed] = useState<number | null>(null);
-  const withSpeed = (f: PageFill, s: number): PageFill =>
+  const withSpeed = (f: PageColourFill, s: number): PageColourFill =>
     f.kind === 'gradient' && s !== 1 ? { ...f, speed: s } : f;
-  const fillFor = (id: PageMotion, colouring?: PageMotionColouringId): PageFill =>
+  const fillFor = (id: PageMotion, colouring?: PageMotionColouringId): PageColourFill =>
     !colouring && custom
       ? { ...custom, motion: id }
       : withSpeed(
@@ -250,7 +246,7 @@ export function AnimatedBackgroundChoices({
           />
         </div>
       ) : null}
-      <p className="mt-2 text-[11px] leading-snug text-slate-500 dark:text-slate-400">{note}</p>
+      <p className="mt-2 text-[11px] leading-snug text-slate-500 dark:text-slate-400">{MOTION_NOTE}</p>
     </div>
   );
 }

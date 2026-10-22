@@ -5,7 +5,7 @@
 // (docs/specs/004-interface-design/colour-picker.md), the Angle, and Swap. Each previews while
 // changed and commits once.
 import { useState } from 'react';
-import type { PageFill } from '@liveplanner/document';
+import type { PageColourFill } from '@liveplanner/document';
 import { MenuSliderRow } from '@/components/primitives/MenuSliderRow';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
 import { standardOptions, type ColourGroup } from '@/components/colour/colour-options';
@@ -32,11 +32,11 @@ export function CustomGradientEditor({
   onPreviewEnd,
   onCommit,
 }: {
-  fill: Extract<PageFill, { kind: 'gradient' }>;
-  onPreview: (fill: PageFill) => void;
+  fill: Extract<PageColourFill, { kind: 'gradient' }>;
+  onPreview: (fill: PageColourFill) => void;
   // Drops the preview (a colour picked and cancelled).
   onPreviewEnd: () => void;
-  onCommit: (fill: PageFill) => void;
+  onCommit: (fill: PageColourFill) => void;
 }) {
   // The angle while the slider is dragged; committed once on release.
   const [dragAngle, setDragAngle] = useState<number | null>(null);

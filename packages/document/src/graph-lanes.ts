@@ -4,7 +4,7 @@
 // longest path from a start (edges back to an earlier column are left to the loop routing), so a hand-off between
 // lanes drops or climbs in the gap between two columns, as the swimlane template's do.
 
-import { BOLD_EM } from './article-layout-estimate';
+import { BOLD_EM } from './svg-render-primitives';
 import {
   edgeToArrow,
   glyphWidth,

@@ -13,19 +13,7 @@ const tab = (elements: Element[], extra: Partial<Tab> = {}): Tab => ({
 });
 
 describe('withEditorModeSwitched', () => {
-  it('sets the mode, and on entering Pages puts a wide board on a page in the same edit', () => {
-    const board = tab([sticky('a', -1500), sticky('b', 1500)]);
-    const out = withEditorModeSwitched(board, 'pages');
-    expect(out.pagedContent).toBe(true);
-    expect(out.tab.opensIn).toBe('pages');
-    expect(out.tab.pages).toHaveLength(1);
-    expect(out.tab.elements).toBe(board.elements);
-  });
-
-  it('only sets the mode where there is nothing to put on a page', () => {
-    const out = withEditorModeSwitched(tab([sticky('a', -75)]), 'pages');
-    expect(out).toMatchObject({ pagedContent: false, tab: { opensIn: 'pages' } });
-    expect(out.tab.pages).toBeUndefined();
+  it('sets the mode as one tab edit', () => {
     const draw = withEditorModeSwitched(tab([sticky('a', -1500), sticky('b', 1500)]), 'draw');
     expect(draw).toMatchObject({ pagedContent: false, tab: { opensIn: 'draw' } });
   });

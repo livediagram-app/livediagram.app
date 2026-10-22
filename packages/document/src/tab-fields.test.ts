@@ -22,6 +22,16 @@ describe('settleTabFields', () => {
     expect(settleTabFields(base)).toBe(base);
   });
 
+  it("drops a stored tab's pages and their writing, which nothing reads", () => {
+    const out = settleTabFields({
+      ...base,
+      pages: [{ id: 'p', orientation: 'portrait' }],
+      articles: { f: { blocks: [] } },
+      pageOrientation: 'landscape',
+    });
+    expect(Object.keys(out).sort()).toEqual(['elements', 'id', 'name']);
+  });
+
   it('drops background and pattern colours that are not strings', () => {
     const out = settleTabFields({ ...base, backgroundColor: true, patternColor: 3 });
     expect('backgroundColor' in out).toBe(false);

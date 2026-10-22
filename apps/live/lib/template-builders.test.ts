@@ -1,15 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import {
-  ES_LANES,
-  laneIndexAt,
-  laneCentre,
-  layOutPages,
-  type Element,
-} from '@liveplanner/document';
-import { templateCanvasOverrides, type TemplateKind } from '@liveplanner/templates';
-import { primsBounds } from '@liveplanner/icons';
-import { ICON_CATALOG_1 } from '@liveplanner/icons/icon-catalog-1';
-import { ICON_CATALOG_2 } from '@liveplanner/icons/icon-catalog-2';
+import { ES_LANES, laneIndexAt, laneCentre, type Element } from '@liveplanner/document';
+import type { TemplateKind } from '@liveplanner/templates';
 import { buildTemplate, buildTemplatedTab } from './template-builders';
 import { isTechIconId } from './tech-icons';
 
@@ -33,7 +24,7 @@ import { isTechIconId } from './tech-icons';
 //     fails to compile when that set is non-empty.
 // The previous wording claimed `satisfies` alone enforced
 // exhaustiveness, which was wrong: `satisfies` only checks the
-// other direction. `logo-design` slipped past the check that way.
+// other direction. A kind once slipped past the check that way.
 const ALL_KINDS = [
   'blank',
   'mindmap',
@@ -55,16 +46,8 @@ const ALL_KINDS = [
   'journey',
   'fishbone',
   'pyramid',
-  'slide-deck',
   'flywheel',
-  'logo-design',
-  'wireframe-mobile-app',
-  'wireframe-website',
-  'wireframe-dashboard',
-  'wireframe-tablet-app',
-  'wireframe-watch-app',
   'gantt',
-  'live-card',
   'comparison-table',
   'system-architecture',
   'er-diagram',
@@ -93,11 +76,9 @@ const ALL_KINDS = [
   'sankey',
   'okr-tree',
   'sitemap',
-  'storyboard',
   'cloud-architecture',
   'uml-class',
   'state-machine',
-  'floor-plan',
   'event-storming',
   'start-stop-continue',
   'mad-sad-glad',
@@ -113,40 +94,16 @@ const ALL_KINDS = [
   'service-blueprint',
   'metric-tree',
   'value-proposition-canvas',
-  'working-backwards',
   'family-tree',
   'value-stream-map',
   'user-persona',
   'meeting-agenda',
   'objectives-planner',
   'whiteboard',
-  'article',
-  'blank-illustration',
-  'blank-slide-deck',
-  'blank-article',
-  'blank-infographic',
-  'blank-logo',
-  'blank-wireframe-phone',
-  'blank-wireframe-tablet',
-  'blank-wireframe-browser',
-  'blank-wireframe-laptop',
-  'blank-wireframe-watch',
   'sketchnote',
   'rich-picture',
   'comic-strip',
   'doodle-warmup',
-  'event-poster',
-  'year-in-review',
-  'resume',
-  'recipe-card',
-  'data-story',
-  'how-it-works',
-  'versus',
-  'social-carousel',
-  'launch-keynote',
-  'quarterly-review',
-  'team-welcome',
-  'workshop-kickoff',
   'paper-prototype',
   'journey-doodle',
   'pre-mortem',
@@ -209,115 +166,6 @@ function coordsOf(el: Element): { x: number; y: number }[] {
   return [{ x: el.x, y: el.y }];
 }
 
-// The templates that open in Pages on pages of their own (canvas-and-palette.md "Templates
-// on pages").
-const PAGED_KINDS = [
-  'slide-deck',
-  'logo-design',
-  'wireframe-mobile-app',
-  'wireframe-website',
-  'wireframe-dashboard',
-  'wireframe-tablet-app',
-  'wireframe-watch-app',
-  'live-card',
-  'event-poster',
-  'year-in-review',
-  'resume',
-  'recipe-card',
-  'data-story',
-  'how-it-works',
-  'versus',
-  'social-carousel',
-  'launch-keynote',
-  'quarterly-review',
-  'team-welcome',
-  'workshop-kickoff',
-  'floor-plan',
-  'storyboard',
-] as const;
-
-// An element's centre, from its box or, for an arrow, its free endpoints' midpoint.
-function centreOf(el: Element): { x: number; y: number } | undefined {
-  if (el.type === 'arrow') {
-    const pts = coordsOf(el);
-    if (pts.length === 0) return undefined;
-    return {
-      x: pts.reduce((a, p) => a + p.x, 0) / pts.length,
-      y: pts.reduce((a, p) => a + p.y, 0) / pts.length,
-    };
-  }
-  const b = el as { x: number; y: number; width: number; height: number };
-  return { x: b.x + b.width / 2, y: b.y + b.height / 2 };
-}
-
-describe('templates on pages', () => {
-  // A deck is built of slide pages, the logo exploration's lockups of logo pages; every other paged
-  // template of infographic pages. Either way a chosen kind, so the first page's kind choice is
-  // never offered.
-  // The decks: the Slide Deck and the decks built from slide layouts.
-  const SLIDE_DECK_KINDS = new Set<string>([
-    'slide-deck',
-    'launch-keynote',
-    'quarterly-review',
-    'team-welcome',
-    'workshop-kickoff',
-  ]);
-  it.each(PAGED_KINDS)('%s: opens in Pages on pages of its kind', (kind) => {
-    const o = templateCanvasOverrides(kind);
-    expect(o.opensIn).toBe('pages');
-    expect(o.pages?.length).toBeGreaterThan(0);
-    const want = (i: number) =>
-      SLIDE_DECK_KINDS.has(kind)
-        ? 'slide'
-        : kind === 'logo-design' && i < 6
-          ? 'logo'
-          : kind.startsWith('wireframe-')
-            ? 'wireframe'
-            : 'infographic';
-    expect(o.pages!.every((p, i) => p.kind === want(i))).toBe(true);
-    expect(new Set(o.pages!.map((p) => p.id)).size).toBe(o.pages!.length);
-  });
-
-  it.each(PAGED_KINDS)(
-    '%s: puts every element centre on one of its pages, and every page gets content',
-    (kind) => {
-      const rects = layOutPages(templateCanvasOverrides(kind).pages!).map((p) => p.rect);
-      // Wherever the caller centres it: the elements are built in page coordinates.
-      for (const [cx, cy] of [
-        [0, 0],
-        [137, -421],
-      ] as const) {
-        const els = buildTemplate(kind, cx, cy);
-        expect(els.length).toBeGreaterThan(0);
-        const used = new Set<number>();
-        const strays: string[] = [];
-        for (const el of els) {
-          const c = centreOf(el);
-          if (!c) continue;
-          const page = rects.findIndex(
-            (r) => c.x >= r.x && c.x <= r.x + r.width && c.y >= r.y && c.y <= r.y + r.height,
-          );
-          if (page < 0) strays.push(`${el.type} ${'label' in el ? el.label : ''} at ${c.x},${c.y}`);
-          else used.add(page);
-        }
-        expect(strays).toEqual([]);
-        expect(used.size).toBe(rects.length);
-      }
-    },
-  );
-
-  it('leaves the slide deck’s elements without notes', () => {
-    const notes = buildTemplate('slide-deck', 0, 0).filter((el) => 'note' in el && el.note);
-    expect(notes).toHaveLength(0);
-  });
-
-  it('keeps the group card a card the team signs: seven signed notes and an open slot', () => {
-    const els = buildTemplate('live-card', 0, 0);
-    expect(els.filter((el) => el.type === 'sticky')).toHaveLength(7);
-    expect(els.some((el) => 'label' in el && el.label === '+ Your message here')).toBe(true);
-  });
-});
-
 describe('the whiteboard template', () => {
   it('starts empty: a whiteboard is a clean board to draw on', () => {
     expect(buildTemplate('whiteboard', 0, 0)).toEqual([]);
@@ -357,29 +205,17 @@ describe('buildTemplate translation invariance', () => {
   // 'blank' is intentionally empty (no seeded element, docs/specs/007-editor/new-document-route.md), so it has no
   // coordinates to shift — excluded from this invariance check (it stays in
   // ALL_KINDS above for the exhaustiveness assertion).
-  // The templates on pages are built on their pages, not around (cx, cy); 'templates on pages'
-  // below pins where they land instead.
   it.each(
     ALL_KINDS.filter(
       (k) =>
         k !== 'blank' &&
         k !== 'whiteboard' &&
-        k !== 'article' &&
-        k !== 'working-backwards' &&
-        k !== 'blank-illustration' &&
-        // One empty page of a chosen kind (docs/specs/007-editor/templates-by-mode.md "Blanks of a page kind").
-        k !== 'blank-slide-deck' &&
-        k !== 'blank-article' &&
-        k !== 'blank-infographic' &&
-        k !== 'blank-logo' &&
-        !k.startsWith('blank-wireframe-') &&
         // An empty Plan tab: it opens on Start Planning (docs/specs/026-plan/plan-templates.md).
         k !== 'blank-plan' &&
         // An empty session tab (docs/specs/012-collaboration/workshop-mode.md "Templates").
         k !== 'blank-session' &&
         // A form template's empty Plan tab: the editor starts the form on it (docs/specs/030-forms/forms.md).
-        !k.endsWith('-form') &&
-        !(PAGED_KINDS as readonly string[]).includes(k),
+        !k.endsWith('-form'),
     ),
   )('%s: every coordinate shifts by (cx, cy)', (kind) => {
     const atOrigin = buildTemplate(kind, 0, 0);
@@ -572,158 +408,5 @@ describe('system architecture is a vendor-neutral tiered diagram', () => {
       expect(a.to.kind).toBe('pinned');
       expect(a.label?.length).toBeGreaterThan(0);
     }
-  });
-});
-
-describe('floor plan geometry', () => {
-  // A floor plan is the one template whose numbers mean something in
-  // the world: it is authored in metres at a fixed 80px scale, so the
-  // proportions only hold if the furniture actually fits the rooms it
-  // is drawn in. These checks are what stop a later "nudge the sofa"
-  // edit from quietly parking a bathtub in the hallway.
-  const elements = buildTemplate('floor-plan', 0, 0);
-  const boxOf = (el: Element) => {
-    const b = el as { x: number; y: number; width: number; height: number };
-    return { x1: b.x, y1: b.y, x2: b.x + b.width, y2: b.y + b.height };
-  };
-  // Rooms are the opaque square scaffold shapes (the translucent squares
-  // are their zone washes); the frame is the outer wall.
-  const rooms = elements
-    .filter(
-      (el) =>
-        el.type === 'shape' &&
-        el.shape === 'square' &&
-        (el as { opacity?: number }).opacity === undefined,
-    )
-    .map(boxOf);
-  // Furniture is everything on the content layer (doors ride the
-  // scaffold with the walls, because they straddle one).
-  const furniture = elements.filter((el) => el.layerId === 'layer:template:content');
-
-  it('draws seven rooms inside one outer wall', () => {
-    expect(rooms).toHaveLength(7);
-    const wall = boxOf(elements.find((el) => el.type === 'shape' && el.shape === 'frame')!);
-    for (const room of rooms) {
-      expect(room.x1).toBeGreaterThanOrEqual(wall.x1);
-      expect(room.y1).toBeGreaterThanOrEqual(wall.y1);
-      expect(room.x2).toBeLessThanOrEqual(wall.x2);
-      expect(room.y2).toBeLessThanOrEqual(wall.y2);
-    }
-  });
-
-  it('keeps every piece of furniture inside a room', () => {
-    expect(furniture.length).toBeGreaterThan(0);
-    const strays: string[] = [];
-    for (const piece of furniture) {
-      const b = boxOf(piece);
-      const inside = rooms.some(
-        (r) =>
-          b.x1 >= r.x1 - 0.01 && b.y1 >= r.y1 - 0.01 && b.x2 <= r.x2 + 0.01 && b.y2 <= r.y2 + 0.01,
-      );
-      if (!inside) strays.push(`${(piece as { iconId?: string }).iconId} at ${b.x1},${b.y1}`);
-    }
-    expect(strays).toEqual([]);
-  });
-
-  it('never stacks two pieces of furniture on the same floor space', () => {
-    const clashes: string[] = [];
-    for (let i = 0; i < furniture.length; i++) {
-      for (let j = i + 1; j < furniture.length; j++) {
-        const a = boxOf(furniture[i]!);
-        const b = boxOf(furniture[j]!);
-        // Touching edges is fine (a table against a wall unit); real
-        // overlap is not.
-        const overlaps =
-          a.x1 < b.x2 - 0.01 && b.x1 < a.x2 - 0.01 && a.y1 < b.y2 - 0.01 && b.y1 < a.y2 - 0.01;
-        if (overlaps) {
-          clashes.push(
-            `${(furniture[i] as { iconId?: string }).iconId} / ${(furniture[j] as { iconId?: string }).iconId}`,
-          );
-        }
-      }
-    }
-    expect(clashes).toEqual([]);
-  });
-
-  // The drawn ink of an icon element (its glyph bounds scaled to the box, rotated in quarter
-  // turns about the centre), not its square box: a door's arc or a sofa's back is what reads.
-  const inkOf = (el: Element) => {
-    const b = boxOf(el);
-    const def = [...ICON_CATALOG_1, ...ICON_CATALOG_2].find(
-      (d) => d.id === (el as { iconId?: string }).iconId,
-    )!;
-    const g = primsBounds(def.prims)!;
-    const k = (b.x2 - b.x1) / 24;
-    const turns = (((el as { rotation?: number }).rotation ?? 0) / 90) % 4;
-    // Rotate the 0..24 bounds clockwise about 12,12, one quarter at a time.
-    let [x1, y1, x2, y2] = [g.minX, g.minY, g.maxX, g.maxY];
-    for (let t = 0; t < turns; t++) [x1, y1, x2, y2] = [24 - y2, x1, 24 - y1, x2];
-    return { x1: b.x1 + x1 * k, y1: b.y1 + y1 * k, x2: b.x1 + x2 * k, y2: b.y1 + y2 * k };
-  };
-  const overlap = (a: ReturnType<typeof boxOf>, b: ReturnType<typeof boxOf>) =>
-    a.x1 < b.x2 - 0.5 && b.x1 < a.x2 - 0.5 && a.y1 < b.y2 - 0.5 && b.y1 < a.y2 - 0.5;
-  const icons = elements.filter((el) => el.type === 'shape' && el.shape === 'icon');
-  const doors = icons.filter((el) => (el as { iconId?: string }).iconId === 'door');
-  // Room captions: the text's own run, ~7px a character at the caption size, not its full-width box.
-  const captions = elements
-    .filter((el) => el.type === 'text' && / m²$/.test((el as { label?: string }).label ?? ''))
-    .filter((el) => !(el as { label: string }).label.startsWith('Floor plan'))
-    .map((el) => {
-      const b = boxOf(el);
-      return {
-        label: (el as { label: string }).label,
-        box: { ...b, x2: b.x1 + (el as { label: string }).label.length * 7 },
-      };
-    });
-
-  it('keeps every room caption clear of furniture and door swings', () => {
-    const hits = captions.flatMap((c) =>
-      icons
-        .filter((el) => overlap(inkOf(el), c.box))
-        .map((el) => `${c.label} / ${(el as { iconId?: string }).iconId}`),
-    );
-    expect(hits).toEqual([]);
-  });
-
-  it('swings every door clear of the furniture', () => {
-    const hits = doors.flatMap((d) =>
-      furniture
-        .filter((f) => overlap(inkOf(d), inkOf(f)))
-        .map((f) => (f as { iconId?: string }).iconId),
-    );
-    expect(hits).toEqual([]);
-  });
-
-  it('seats the desk on its own drawn chair, not a second one', () => {
-    const desk = inkOf(furniture.find((f) => (f as { iconId?: string }).iconId === 'desk')!);
-    const room = rooms.find(
-      (r) => desk.x1 >= r.x1 && desk.x2 <= r.x2 && desk.y1 >= r.y1 && desk.y2 <= r.y2,
-    )!;
-    const chairs = furniture.filter((f) => {
-      const c = boxOf(f);
-      return (
-        (f as { iconId?: string }).iconId === 'chair' &&
-        c.x1 >= room.x1 &&
-        c.x2 <= room.x2 &&
-        c.y1 >= room.y1 &&
-        c.y2 <= room.y2
-      );
-    });
-    expect(chairs).toEqual([]);
-  });
-
-  it('sizes furniture by real footprints, not by whatever fitted', () => {
-    const size = (icon: string) => {
-      const el = furniture.find((p) => (p as { iconId?: string }).iconId === icon);
-      return (el as { width: number } | undefined)?.width;
-    };
-    // 80px = 1m, so a double bed is far bigger than a toilet and a
-    // bathtub sits between them. Pinned as ratios of the scale rather
-    // than raw pixels so the intent survives a scale change.
-    expect(size('bed')! / 80).toBeCloseTo(1.85);
-    expect(size('bathtub')! / 80).toBeCloseTo(1.7);
-    expect(size('toilet')! / 80).toBeCloseTo(0.8);
-    expect(size('bed')!).toBeGreaterThan(size('bathtub')!);
-    expect(size('bathtub')!).toBeGreaterThan(size('toilet')!);
   });
 });

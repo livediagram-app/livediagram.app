@@ -16,8 +16,6 @@
 // editor, the api and the MCP worker can all reach for the same answers.
 
 import { contentBounds } from './svg-render';
-import { pagesOf, layOutPages } from './page';
-import { elementIdsOnPage } from './page-content';
 import type { Element, ElementId, Tab, TabId } from './index';
 
 export type Slide = {
@@ -27,12 +25,6 @@ export type Slide = {
   /** The one tab this slide draws from: its backdrop, theme and coordinates. */
   tabId: TabId;
   elementIds: ElementId[];
-  /**
-   * A page slide (docs/specs/007-editor/pages-mode.md "Slides"): the slide IS this
-   * Page of the tab, resolved live: whatever is on the page, framed to the page.
-   * `elementIds` is empty and ignored. Added from the slide panel's page picker.
-   */
-  pageId?: string;
   /**
    * An item slide (docs/specs/012-collaboration/presentation-mode.md "Item slides"): the slide IS this Plan
    * item, presented full screen as a card, resolved live. `elementIds` is empty and ignored; `tabId` is
@@ -93,11 +85,6 @@ export function slideName(slide: Slide, index: number): string {
  */
 export function resolveSlide(slide: Slide, tab: Tab | undefined): Element[] {
   if (!tab || slide.itemId) return [];
-  if (slide.pageId) {
-    const pages = layOutPages(pagesOf(tab));
-    const on = elementIdsOnPage(tab.elements, pages, slide.pageId);
-    return tab.elements.filter((el) => on.has(el.id));
-  }
   const wanted = new Set(slide.elementIds);
   if (wanted.size === 0) return [];
   const chosen = tab.elements.filter((el) => wanted.has(el.id));
@@ -148,18 +135,11 @@ export function slideBounds(
   return contentBounds(elements);
 }
 
-/**
- * The rectangle a slide is framed to: a page slide's page, exactly (when the page is still there),
- * else slideBounds of what it shows.
- */
+/** The rectangle a slide is framed to: slideBounds of what it shows. */
 export function slideFrame(
   slide: Slide,
   tab: Tab | undefined,
 ): { x: number; y: number; w: number; h: number } | null {
-  if (slide.pageId && tab) {
-    const page = layOutPages(pagesOf(tab)).find((p) => p.id === slide.pageId);
-    if (page) return { x: page.rect.x, y: page.rect.y, w: page.rect.width, h: page.rect.height };
-  }
   return slideBounds(resolveSlide(slide, tab));
 }
 
@@ -232,9 +212,8 @@ function isSlide(value: unknown): value is Slide {
   if (s.name !== undefined && typeof s.name !== 'string') return false;
   if (s.notes !== undefined && typeof s.notes !== 'string') return false;
   if (s.hidden !== undefined && typeof s.hidden !== 'boolean') return false;
-  if (s.pageId !== undefined && (typeof s.pageId !== 'string' || s.pageId.length === 0)) {
-    return false;
-  }
+  // A stored page slide (a page of a tab, from before pages were retired) has nothing to show.
+  if ((value as { pageId?: unknown }).pageId !== undefined) return false;
   if (s.itemId !== undefined && (typeof s.itemId !== 'string' || s.itemId.length === 0)) {
     return false;
   }

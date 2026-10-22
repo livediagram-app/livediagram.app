@@ -30,16 +30,13 @@ export function LineChartView({
   fontFamily,
   textColor,
   palette,
-  ground,
 }: {
   element: ShapeElement;
   fontFamily?: string;
   textColor: string;
   palette?: readonly string[];
-  // What the chart sits on (chartPageGrounds): its series drawn adapted to it.
-  ground?: readonly string[];
 }) {
-  const { w, h, colorAt, area, legend } = chartFrame(element, palette, ground);
+  const { w, h, colorAt, area, legend } = chartFrame(element, palette);
   const { hover, markProps } = useChartHover<{ s: number; i: number }>(
     (a, b) => a.s === b.s && a.i === b.i,
   );

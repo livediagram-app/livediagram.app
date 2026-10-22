@@ -13,7 +13,7 @@
 // referencing an unknown node id is dropped rather than producing an arrow
 // to nowhere.
 
-import { BOLD_EM } from './article-layout-estimate';
+import { BOLD_EM } from './svg-render-primitives';
 import { personCardText } from './person-card';
 import type { ErShape } from './er-heads';
 import { SHAPE_DEFAULT_SIZE } from './factories';

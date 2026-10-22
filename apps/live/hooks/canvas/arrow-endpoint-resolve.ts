@@ -2,6 +2,7 @@ import {
   alignmentGuides,
   arrowSnapPoints,
   bodyDropAnchor,
+  endpointPosition,
   snapToAlignment,
   snapToAnchor,
   snapToArrowPoint,

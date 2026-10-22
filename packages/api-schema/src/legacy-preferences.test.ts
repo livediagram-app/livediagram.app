@@ -17,14 +17,20 @@ describe('upgradeLegacyPreferences', () => {
     });
   });
 
-  // docs/specs/007-editor/editor-modes.md "Naming in the interface": Illustrate mode became Pages mode.
-  it("carries the Illustrate tour's seen-guard and tracks to the Pages names", () => {
+  it("drops Pages mode's tour, guide and Contents keys under every name", () => {
     expect(
-      upgradeLegacyPreferences({ illustrateTourSeen: true, illustrateTourKinds: ['slide'] }),
-    ).toEqual({ pagesTourSeen: true, pagesTourKinds: ['slide'] });
-    expect(upgradeLegacyPreferences({ illustrateTourSeen: true, pagesTourSeen: false })).toEqual({
-      pagesTourSeen: false,
-    });
+      upgradeLegacyPreferences({
+        illustrateTourSeen: true,
+        illustrateTourKinds: ['slide'],
+        pagesTourSeen: true,
+        pagesTourKinds: ['slide'],
+        logoGuides: false,
+        logoGuidesHidden: ['grid'],
+        logoGuideStrength: 'faint',
+        contentsPlacement: 'button',
+        theme: 'dark',
+      }),
+    ).toEqual({ theme: 'dark' });
   });
 
   // docs/specs/007-editor/editor-modes.md "Naming in the interface": Facilitate mode became Workshop mode.

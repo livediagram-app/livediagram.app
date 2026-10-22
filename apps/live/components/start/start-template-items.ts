@@ -1,7 +1,7 @@
 // What an empty tab's template start offers (docs/specs/007-editor/start-diagramming.md): Start Diagramming on a
-// Diagram tab, Start a Workshop on a Workshop tab, Start Making Pages on a Pages tab. Every listed template
+// Diagram tab, Start a Workshop on a Workshop tab. Every listed template
 // of the mode, a rail over them (Recommended, then groups) and the search across them. Diagram's groups are the
-// catalogue's categories; Workshop's and Pages mode's templates nearly all share one, so they group their own way
+// catalogue's categories; Workshop's templates nearly all share one, so they group their own way
 // (OWN_GROUPS). Drawn from the template
 // catalogue, so a new template joins its mode's panel with no change here. Pure: the panel draws what these return.
 import {
@@ -17,7 +17,7 @@ import {
   type TemplateKind,
 } from '@liveplanner/templates';
 
-export type TemplateStartMode = 'diagram' | 'draw' | 'workshop' | 'pages';
+export type TemplateStartMode = 'diagram' | 'draw' | 'workshop';
 
 type TemplateStartGroup = {
   id: string;
@@ -40,29 +40,15 @@ const RECOMMENDED_LINE: Record<TemplateStartMode, string> = {
   diagram: 'The quickest ways to start, picked for most diagrams.',
   draw: 'The quickest ways to start sketching, picked for most people.',
   workshop: 'The quickest ways to run a session, picked for most teams.',
-  pages: 'The quickest ways to make something to share, picked for most people.',
 };
 
 // Recommended leaves these to their group (Timeline, under Timelines).
 const NOT_RECOMMENDED: ReadonlySet<TemplateKind> = new Set(['timeline']);
 
-// Start Making Pages' Recommended opens on two blanks of a page kind in place of the Popular shelf's Blank Illustration
-// and Article: a page already of its kind is the quicker start (docs/specs/007-editor/start-diagramming.md
-// "Recommended and groups"). The shelf itself, shared with the Quick Start and the gallery, is unchanged.
-const RECOMMENDED_SWAPS: Partial<
-  Record<TemplateStartMode, ReadonlyMap<TemplateKind, TemplateKind>>
-> = {
-  pages: new Map<TemplateKind, TemplateKind>([
-    ['blank-illustration', 'blank-infographic'],
-    ['article', 'blank-article'],
-  ]),
-};
-
 type OwnGroup = { id: string; name: string; line: string; kinds: readonly TemplateKind[] };
 
 // The modes whose templates nearly all share one catalogue category (Workshops, Presentations) group them their own
-// way: Workshop by the session each runs, Pages by what each makes, each Pages group but Posters and Design led by
-// its blank of a page kind. A template of the mode in none of its groups is placed in the last.
+// way: Workshop by the session each runs. A template of the mode in none of its groups is placed in the last.
 const OWN_GROUPS: Readonly<Record<Exclude<TemplateStartMode, 'diagram'>, readonly OwnGroup[]>> = {
   workshop: [
     {
@@ -160,68 +146,6 @@ const OWN_GROUPS: Readonly<Record<Exclude<TemplateStartMode, 'diagram'>, readonl
       kinds: ['paper-prototype'],
     },
   ],
-  pages: [
-    {
-      id: 'slides',
-      name: 'Slides',
-      line: 'Decks to present, one idea to a slide.',
-      kinds: [
-        'blank-slide-deck',
-        'slide-deck',
-        'launch-keynote',
-        'quarterly-review',
-        'team-welcome',
-        'workshop-kickoff',
-      ],
-    },
-    {
-      id: 'infographics',
-      name: 'Infographics',
-      line: 'Numbers, comparisons and how-tos told visually.',
-      kinds: ['blank-infographic', 'year-in-review', 'data-story', 'how-it-works', 'versus'],
-    },
-    {
-      id: 'articles',
-      name: 'Articles',
-      line: 'Articles, résumés and cards of text on pages.',
-      kinds: ['blank-article', 'article', 'working-backwards', 'resume', 'recipe-card'],
-    },
-    {
-      id: 'posters',
-      name: 'Posters and Social',
-      line: 'Posters, cards and social posts to print, pin up or share.',
-      kinds: ['event-poster', 'social-carousel', 'live-card'],
-    },
-    {
-      id: 'logos',
-      name: 'Logos',
-      line: 'Marks, wordmarks and lockups for a brand.',
-      kinds: ['blank-logo', 'logo-design'],
-    },
-    {
-      id: 'wireframes',
-      name: 'Wireframes',
-      line: 'Screens in their device: a phone, a tablet, a laptop, a browser or a watch.',
-      kinds: [
-        'blank-wireframe-phone',
-        'blank-wireframe-tablet',
-        'blank-wireframe-browser',
-        'blank-wireframe-laptop',
-        'blank-wireframe-watch',
-        'wireframe-mobile-app',
-        'wireframe-website',
-        'wireframe-dashboard',
-        'wireframe-tablet-app',
-        'wireframe-watch-app',
-      ],
-    },
-    {
-      id: 'design',
-      name: 'Design',
-      line: 'Storyboards and floor plans, drawn to show.',
-      kinds: ['storyboard', 'floor-plan'],
-    },
-  ],
 };
 
 const byKind = new Map(TEMPLATES.map((t) => [t.kind, t]));
@@ -238,9 +162,7 @@ function build(mode: TemplateStartMode): TemplateStart {
     id: 'recommended',
     name: 'Recommended',
     line: RECOMMENDED_LINE[mode],
-    kinds: popularKindsFor(mode)
-      .filter((k) => !NOT_RECOMMENDED.has(k))
-      .map((k) => RECOMMENDED_SWAPS[mode]?.get(k) ?? k),
+    kinds: popularKindsFor(mode).filter((k) => !NOT_RECOMMENDED.has(k)),
   };
   const rest: TemplateStartGroup[] =
     mode === 'diagram'
@@ -277,5 +199,4 @@ export const TEMPLATE_STARTS: Readonly<Record<TemplateStartMode, TemplateStart>>
   diagram: build('diagram'),
   draw: build('draw'),
   workshop: build('workshop'),
-  pages: build('pages'),
 };

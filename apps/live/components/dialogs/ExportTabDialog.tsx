@@ -421,7 +421,7 @@ export function ExportTabDialog({
             }
             renderPreview={renderPreview}
             previewReady={previewReady && planImage.ready && windows.ready}
-            onExport={(opts) => void runImageExport(active as ImageFormat, opts)}
+            onExport={(opts) => void runImageExport(active, opts)}
             onBack={() => {
               setError(null);
               setActive(null);

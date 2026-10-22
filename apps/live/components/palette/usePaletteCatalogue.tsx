@@ -1,4 +1,3 @@
-import type { PaletteTileDef } from './palette-tile-defs';
 import {
   DEFAULT_EDITOR_MODE,
   type EmbedProvider,

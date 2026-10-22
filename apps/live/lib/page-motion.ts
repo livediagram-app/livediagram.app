@@ -11,7 +11,7 @@ import {
   themeAccent,
   themeSecondaries,
   tint,
-  type PageFill,
+  type PageColourFill,
   type PageMotion,
   type ThemeDefinition,
 } from '@liveplanner/document';
@@ -202,7 +202,7 @@ export function motionFill(
   theme: ThemeColours,
   motion: PageMotion,
   colouring: PageMotionColouringId,
-): PageFill {
+): PageColourFill {
   return {
     kind: 'gradient',
     ...motionColouring(theme, colouring),
@@ -214,7 +214,7 @@ export function motionFill(
 /** The colouring a fill's stops match for this theme, if any (its swatch shows as chosen). */
 export function colouringOf(
   theme: ThemeColours,
-  fill: PageFill | undefined,
+  fill: PageColourFill | undefined,
 ): PageMotionColouringId | undefined {
   if (fill?.kind !== 'gradient') return undefined;
   return PAGE_MOTION_COLOURINGS.find(({ id }) => {

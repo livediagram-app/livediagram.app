@@ -42,7 +42,7 @@ export function NewDocumentWizard({
   const create = (next: EditorMode | null) => {
     if (busy) return;
     if (next) setChosen(next);
-    onCreate(BLANK_TEMPLATE_FOR_MODE[next ?? 'diagram']);
+    onCreate(BLANK_TEMPLATE_FOR_MODE[next && next !== 'pages' ? next : 'diagram']);
   };
   // A card clicked before hydration is chosen now, before the browser can hand React another event.
   useLayoutEffect(() => {

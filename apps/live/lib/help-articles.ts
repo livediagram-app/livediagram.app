@@ -440,7 +440,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   tabWindows: {
     title: 'Learn about tab windows',
-    description: 'Show another tab live on a slide, and keep it up to date.',
+    description: 'Show another tab live on the canvas, and keep it up to date.',
   },
   lanes: {
     title: 'Learn about lanes',

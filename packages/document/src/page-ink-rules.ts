@@ -2,7 +2,15 @@
 // pages-mode.md "Re-inking"): the floors and targets of text, lines, marks and cards, the
 // shape kinds each rule reaches, and the elements left as they are. Pure.
 import { isLegacyEmojiIconId, isTechIconId } from '@liveplanner/icons';
-import { defaultFillColor, defaultStrokeColor, type CanvasSurface } from './colors';
+import {
+  contrastRatio,
+  defaultFillColor,
+  defaultStrokeColor,
+  isLightColor,
+  shade,
+  tint,
+  type CanvasSurface,
+} from './colors';
 import { isOpaqueHex } from './page-ink-contrast';
 import type { BoxedElement, Element } from './index';
 
@@ -162,4 +170,19 @@ export function hasLabel(el: Element): boolean {
     typeof (el as { label?: unknown }).label === 'string' &&
     (el as { label: string }).label.trim() !== ''
   );
+}
+
+/** A colour that reads on `tone`: the same hue lightened on a dark tone or darkened on a light one,
+ *  stepwise until it reaches AA contrast (or `floor`, where that is higher); unchanged while it
+ *  already clears `floor` (3:1 by default: a colour of its own that still reads is kept). */
+export function legibleOn(color: string, tone: string, floor: number = PAGE_INK_FLOOR): string {
+  const ratio = contrastRatio(color, tone);
+  if (Number.isNaN(ratio) || ratio >= floor) return color;
+  const target = Math.max(PAGE_INK_CONTRAST, floor);
+  const lighten = !isLightColor(tone);
+  for (let amount = 0.2; amount <= 1.0001; amount += 0.1) {
+    const next = lighten ? tint(color, amount) : shade(color, amount);
+    if (contrastRatio(next, tone) >= target) return next;
+  }
+  return lighten ? '#ffffff' : '#0f172a';
 }
