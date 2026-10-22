@@ -19,6 +19,7 @@ export function photoView(
   const toasts: string[] = [];
   const view: PhotoEditorView = {
     photos: { p: h.s.photo },
+    hasPhotoPage: true,
     tabId: 't',
     focusId: 'p',
     session: h.s,

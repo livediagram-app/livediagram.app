@@ -523,7 +523,7 @@ function CanvasView(props: CanvasProps) {
               ) : null}
               {/* Photo pages' pictures on their sheets: the page in focus live, the rest their
             previews (PhotoPagesLayer). */}
-              {props.pagesMode?.photo ? (
+              {props.pagesMode?.photo?.hasPhotoPage ? (
                 <PhotoPagesLayer
                   pages={props.pagesMode.pages}
                   photo={props.pagesMode.photo}
@@ -586,7 +586,7 @@ function CanvasView(props: CanvasProps) {
                 ) : null}
                 {/* A photo page's tools: the press, the ants, the crop box, floating pixels and
             the text being typed (PhotoCanvasOverlays). */}
-                {props.pagesMode?.photo ? (
+                {props.pagesMode?.photo?.hasPhotoPage ? (
                   <PhotoCanvasOverlays
                     pages={props.pagesMode.pages}
                     photo={props.pagesMode.photo}

@@ -20,6 +20,7 @@ describe('a photo page’s code', () => {
     for (const file of [
       'components/canvas/Canvas.tsx',
       'components/canvas/CanvasChrome.tsx',
+      'components/dialogs/ExportTabDialog.tsx',
       'components/canvas/CanvasPages.tsx',
       'components/canvas/useCanvasChromePanels.tsx',
       'components/canvas/page-title-bar-room.ts',
@@ -33,6 +34,17 @@ describe('a photo page’s code', () => {
         staticImports(read(file)).filter((m) => PHOTO_ONLY.test(m)),
         file,
       ).toEqual([]);
+  });
+
+  // A dynamic import still loads the moment its component renders: the photo view is there for every Pages tab (Edit
+  // as Photo makes a tab's first photo page), so each surface renders only once the tab has a photo page.
+  it('renders none of its surfaces for a tab without a photo page', () => {
+    expect(
+      read('components/canvas/Canvas.tsx').match(/pagesMode\?\.photo\?\.hasPhotoPage \? \(/g),
+    ).toHaveLength(2);
+    expect(read('components/canvas/CanvasChrome.tsx')).toContain(
+      'chromeHidden || !props.pagesMode?.photo?.hasPhotoPage ? null',
+    );
   });
 
   it('loads the working parts once a tab has a photo page', () => {

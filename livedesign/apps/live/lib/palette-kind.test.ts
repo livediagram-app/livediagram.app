@@ -6,6 +6,7 @@ describe('the palette kind', () => {
   it('is the page’s own: Wireframe, Logo, else Design', () => {
     expect(paletteKindForPage('wireframe')).toBe('wireframe');
     expect(paletteKindForPage('logo')).toBe('logo');
+    expect(paletteKindForPage('photo')).toBe('design');
     expect(paletteKindForPage(null)).toBe('design');
   });
 });

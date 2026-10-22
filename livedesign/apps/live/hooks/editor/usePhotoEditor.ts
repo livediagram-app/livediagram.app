@@ -6,13 +6,7 @@
 // its checkpoint), the History, the previews made after commits, the blob store's transports, and the
 // pages' view with `photo` in it.
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
-import {
-  photoOfPage,
-  photosOf,
-  withPhoto,
-  type LaidOutPage,
-  type Tab,
-} from '@livedesign/document';
+import { photoOfPage, photosOf, withPhoto, type LaidOutPage, type Tab } from '@livedesign/document';
 import { PHOTO_PREVIEW_DELAY_MS, type Photo } from '@livedesign/photo-engine';
 import type { PagesModeView } from '@/hooks/editor/usePagesMode';
 import type { useToast } from '@/hooks/ui/useToast';
@@ -55,6 +49,8 @@ export type PhotoTextEdit = { layerId: string; isNew: boolean };
 export type PhotoEditorView = {
   // The tab's photos by page (each page's preview), and the tab.
   photos: Readonly<Record<string, Photo>>;
+  // Whether the tab has a photo page: until it does, none of the photo surfaces (or their code) load.
+  hasPhotoPage: boolean;
   tabId: string;
   // The photo page in focus, and its session once its photo is in hand.
   focusId: string | null;
@@ -441,6 +437,7 @@ export function usePhotoEditor<V extends PagesModeView>({
   const photo: PhotoEditorView = useMemo(
     () => ({
       photos,
+      hasPhotoPage,
       tabId,
       focusId,
       session,
@@ -469,6 +466,7 @@ export function usePhotoEditor<V extends PagesModeView>({
     }),
     [
       photos,
+      hasPhotoPage,
       tabId,
       focusId,
       session,

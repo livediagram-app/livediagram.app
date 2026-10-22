@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { DialogCloseButton, DialogHeader } from '@livedesign/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { FormatCard } from './FormatCard';
@@ -6,7 +7,6 @@ import { FormatIcon } from './export-format-icons';
 import { TextExportPanel } from './TextExportPanel';
 import { ImageExportPanel } from './ImageExportPanel';
 import { LogoKitPanel } from './LogoKitPanel';
-import { PhotoExportPanel } from '@/components/photo/PhotoExportPanel';
 import {
   isLayerVisible,
   tabLayers,
@@ -34,6 +34,12 @@ import { ensureIconCatalogs } from '@/lib/icon-registry';
 import { track } from '@/lib/telemetry';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { useTabWindowExport } from './useTabWindowExport';
+
+// A photo page's formats (PNG, JPEG, WebP, PSD) and their encoders load only once Photo is picked.
+const PhotoExportPanel = dynamic(
+  () => import('@/components/photo/PhotoExportPanel').then((m) => m.PhotoExportPanel),
+  { ssr: false },
+);
 
 // Telemetry (docs/specs/017-telemetry/telemetry.md): map the internal format key to the public label
 // the dashboard shows. 'file' is the portable .json export.

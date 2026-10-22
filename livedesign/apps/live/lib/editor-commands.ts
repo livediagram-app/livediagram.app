@@ -318,7 +318,7 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
     out.push({
       id: 'share',
       name: 'Share Document',
-      keywords: 'share document diagram link invite collaborate publish embed export',
+      keywords: 'share document design link invite collaborate publish embed',
       run: h.openShare,
     });
   }

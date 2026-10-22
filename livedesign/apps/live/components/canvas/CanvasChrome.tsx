@@ -460,7 +460,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
       ) : null}
 
       {/* A photo page's options flyout while it is in focus, and a phone's tools row (PhotoChrome). */}
-      {chromeHidden ? null : (
+      {chromeHidden || !props.pagesMode?.photo?.hasPhotoPage ? null : (
         <PhotoChrome
           photo={props.pagesMode?.photo}
           scale={toolbarScale}
