@@ -6,7 +6,6 @@ import { Wordmark } from './Wordmark';
 // bar; the footer lists them all.
 const NAV: { href: string; label: string }[] = [
   { href: '/#apps', label: 'Our Apps' },
-  { href: '/#how-it-fits', label: 'How it fits' },
   { href: '/telemetry', label: 'Telemetry' },
 ];
 

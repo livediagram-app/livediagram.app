@@ -6,7 +6,9 @@ describe('sites', () => {
     expect(SITES[0]).toBe(PLATFORM_SITE);
     expect(new Set(SITES.map((s) => s.id)).size).toBe(SITES.length);
     for (const site of SITES) {
-      expect(new URL(site.url).origin).toBe(`https://${site.id}`);
+      // The platform is on its bare domain; links to an app always use www.
+      const host = site.id === 'liveworkspace.app' ? site.id : `www.${site.id}`;
+      expect(new URL(site.url).origin).toBe(`https://${host}`);
       expect(site.accent).toMatch(/^#[0-9a-f]{6}$/);
     }
   });

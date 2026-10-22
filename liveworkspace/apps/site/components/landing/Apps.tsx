@@ -26,7 +26,7 @@ export function Apps() {
           The apps
         </p>
         <h2 className="mt-3 max-w-2xl text-3xl font-semibold tracking-tight text-slate-900 sm:text-5xl dark:text-white">
-          Each one built for one kind of work.
+          Each app built for one kind of work.
         </h2>
         <p className="mt-4 max-w-2xl text-lg leading-relaxed text-slate-600 dark:text-slate-300">
           Use one, or move between them as the work moves on. They look alike, work alike, and know

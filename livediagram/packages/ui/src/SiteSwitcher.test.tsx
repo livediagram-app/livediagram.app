@@ -22,7 +22,7 @@ describe('SiteSwitcher', () => {
       .filter(Boolean);
     expect(hrefs).toEqual(SITES.map((site) => site.url));
     expect(hrefs[0]).toBe('https://liveworkspace.app');
-    expect(html).toMatch(/href="https:\/\/livediagram\.app"[^>]*aria-current="page"/);
+    expect(html).toMatch(/href="https:\/\/www\.livediagram\.app"[^>]*aria-current="page"/);
     expect(html.match(/aria-current="page"/g)).toHaveLength(1);
   });
 });

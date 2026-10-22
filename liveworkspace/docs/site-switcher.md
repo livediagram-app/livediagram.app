@@ -23,7 +23,7 @@ liveworkspace.app.
 - **Keyboard**: the chevron is a menu button. Tab reaches it after the logo; Enter, Space or an
   arrow opens the card with focus on the first site, arrows move between sites, Escape closes it
   and returns focus to the chevron.
-- Sites are plain links to each site's own origin (`https://livediagram.app`, …), since every site
+- Sites are plain links to each site's own origin (`https://www.livediagram.app`, …; app links always use `www.`), since every site
   is a different origin.
 
 ## The list
