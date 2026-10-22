@@ -20,7 +20,7 @@ describe('resolveEditorCapabilities', () => {
   // Locks the role in as capabilities are added: every flag and every per-element check is false for a Viewer.
   it('gives a Viewer nothing at all, whatever the element', () => {
     const can = resolveEditorCapabilities({ level: 'view', adderKey: ME });
-    const els = [sticky(), sticky({ addedBy: ME }), shape(), shape({ shape: 'mind-node' })];
+    const els = [sticky(), sticky({ addedBy: ME }), shape(), shape({ shape: 'circle' })];
     for (const [key, value] of Object.entries(can)) {
       if (key === 'level') continue;
       if (typeof value === 'function') {
@@ -42,10 +42,8 @@ describe('resolveEditorCapabilities', () => {
     expect(can.takePart && can.addContent && can.planCards && can.sheetCells).toBe(true);
     expect(can.writeText(shape())).toBe(true);
     expect(can.writeText(shape({ locked: true }))).toBe(false);
-    expect(can.writeText(shape({ shape: 'session-button', label: 'Vote' }))).toBe(false);
     expect(can.move(sticky())).toBe(true);
     expect(can.move(shape())).toBe(false);
-    expect(can.move(shape({ shape: 'mind-node' }))).toBe(true);
     expect(can.resize(sticky())).toBe(true);
     expect(can.resize(shape())).toBe(false);
     expect(can.resize(shape({ addedBy: ME }))).toBe(true);
@@ -58,8 +56,7 @@ describe('resolveEditorCapabilities', () => {
     expect(can.remove(sticky())).toBe(false);
     expect(can.remove(sticky({ addedBy: 'b'.repeat(32) }))).toBe(false);
     expect(can.remove(sticky({ addedBy: ME }))).toBe(true);
-    expect(can.remove(shape({ shape: 'mind-node', addedBy: ME }))).toBe(true);
-    expect(can.remove(shape({ shape: 'mind-node' }))).toBe(true);
+    expect(can.remove(shape({ addedBy: ME }))).toBe(true);
     expect(can.remove(shape())).toBe(false);
     expect(can.remove(sticky({ addedBy: ME, locked: true }))).toBe(false);
   });

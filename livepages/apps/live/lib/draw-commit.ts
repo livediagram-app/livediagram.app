@@ -1,4 +1,4 @@
-import { defaultSessionConfig, isFixedSizeShape, REACTION_PAD_LABEL } from '@livepages/document';
+import { isFixedSizeShape } from '@livepages/document';
 import { ARROW_SNAP_THRESHOLD_PX, inheritedSizeFor } from '@/lib/canvas';
 import {
   createComponent,
@@ -210,7 +210,7 @@ export function buildDrawnBoxed(
                   createVideo(startX, startY, intent.provider)
                 : createImage(startX, startY);
   const tapSize = inheritedSizeFor(base, inheritFrom);
-  // A fixed-size kind (docs/specs/009-elements/mode-button.md) ignores the drag entirely: dragging one out
+  // A fixed-size kind (docs/specs/009-elements/badge.md) ignores the drag entirely: dragging one out
   // still places it, at the one size it is meant to be.
   const fixedSize = base.type === 'shape' && isFixedSizeShape(base.shape);
   // Shared with the live preview so the outline the user sizes against is the
@@ -261,29 +261,6 @@ export function buildDrawnBoxed(
     // in would only fight resizing the caption room, so drop it.
     ...(intent.type === 'shape' && intent.iconId && isTechIconId(intent.iconId)
       ? { aspectLocked: false }
-      : {}),
-    // The palette offers a tile per session tool and per reaction (docs/specs/012-collaboration/session-button.md,
-    // docs/specs/009-elements/reaction-pad.md), so the choice arrives with the intent and is applied here
-    // rather than left on the factory default for the user to go and change.
-    ...(intent.type === 'shape' && intent.kind === 'session-button' && intent.session
-      ? {
-          session: { ...defaultSessionConfig(intent.session) },
-          // A TIMER renders as the pill from the top chrome (docs/specs/012-collaboration/session-button.md), which
-          // is wide and short; the session button's square-ish default box
-          // clipped the kicker off one end and the remove control off the
-          // other. Only on a TAP — a deliberate drag is the user saying what
-          // size they want.
-          ...(intent.session === 'timer' && isTap ? { width: 224, height: 64 } : {}),
-        }
-      : {}),
-    ...(intent.type === 'shape' && intent.kind === 'estimate' && intent.estimateScale
-      ? { estimateScale: intent.estimateScale }
-      : {}),
-    ...(intent.type === 'shape' && intent.kind === 'mode-button' && intent.mode
-      ? { mode: intent.mode }
-      : {}),
-    ...(intent.type === 'shape' && intent.kind === 'reaction-pad' && intent.reaction
-      ? { reaction: intent.reaction, label: REACTION_PAD_LABEL[intent.reaction] }
       : {}),
     // Sticker draw intent (docs/specs/010-palette/stickers.md): carry the chosen art. Lands SQUARE to
     // the canvas — an automatic tilt was tried and dropped, see the spec.

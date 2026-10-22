@@ -5,10 +5,7 @@ import { paletteCategoriesFor } from './palette-layouts';
 // What the category bar offers (docs/specs/007-editor/toolbar-layout.md "The category bar").
 
 const bar = () =>
-  barCategoriesFor(
-    paletteCategoriesFor('pages').map((c) => ({ ...c, content: null })),
-    (groups) => groups.map((g) => g.id).join(','),
-  );
+  barCategoriesFor(paletteCategoriesFor('pages').map((c) => ({ ...c, content: null })));
 
 describe('the category bar’s categories', () => {
   it('drops Popular, keeping the rest in order, names shortened', () => {

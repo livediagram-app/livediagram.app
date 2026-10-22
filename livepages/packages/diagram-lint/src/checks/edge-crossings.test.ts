@@ -91,7 +91,7 @@ describe('edge-crossings', () => {
     const [next] = of(lint(restyled), 'edge-crossings');
     if (next) expect(next.fix).not.toBe(`set ${selector} line=${arrowStyleBefore(tab, selector!)}`);
     // With no style that helps, the fix is advice rather than a style that changes nothing.
-    expect(fixes.edgeCrossings('tab', { arrow: 'a->b', style: null })).toBe(
+    expect(fixes.edgeCrossings({ arrow: 'a->b', style: null })).toBe(
       'move a box so a->b crosses fewer lines',
     );
   });

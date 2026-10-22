@@ -6,43 +6,28 @@ import {
   LEGEND_MAX_TEXT,
   type LegendItem,
   CHECKLIST_MAX_TEXT,
-  isEntity,
-  withEntityFields,
-  type FieldRemap,
-  AGENDA_MAX_ITEMS,
-  AGENDA_MAX_TEXT,
-  DECISION_MAX_DRIVERS,
-  DECISION_MAX_TEXT,
-  type AgendaItem,
-  type DecisionStatus,
-  type EstimateScale,
-  type EntityField,
   clampPercent,
   CODE_MAX_LENGTH,
   isProgressShape,
   type AnimationSpeed,
   type ChecklistItem,
-  type SelectionMode,
   type CodeLanguage,
   type Element,
   type ProgressAnim,
-  type ShapeElement,
 } from '@livepages/document';
 import { track } from '@/lib/telemetry';
 import { useChartSetters } from '@/hooks/canvas/useChartSetters';
-import { useMindMapSetters } from '@/hooks/canvas/useMindMapSetters';
 import { useWebComponentSetters } from '@/hooks/canvas/useWebComponentSetters';
 import { makeShapePatcher } from '@/hooks/canvas/shape-patcher';
 
 // The kinds carrying masthead lines (see setPageHeading).
-const MASTHEAD_SHAPES = new Set<string>(['page', 'banner', 'callout', 'card', 'boundary']);
+const MASTHEAD_SHAPES = new Set<string>(['page', 'banner', 'callout', 'card']);
 
 type DataShapeSetterDeps = {
   currentSelectionIds: () => Set<string>;
   commit: (mapElements: (els: Element[]) => Element[]) => void;
-  // For Tidy Map's notification (useMindMapSetters).
+  // The tab's elements, for the web components' row writes (useWebComponentSetters).
   elements: () => Element[];
-  notify: (tone: 'success' | 'info', message: string) => void;
 };
 
 // The selection-wide setters for the data-bearing shapes: progress bars,
@@ -55,7 +40,6 @@ export function useDataShapeSetters({
   currentSelectionIds,
   commit,
   elements,
-  notify,
 }: DataShapeSetterDeps) {
   // Progress elements (docs/specs/009-elements/progress.md): the percentage + how its fill animates, all
   // gated to progress shapes. The four setters differ only in the patched
@@ -173,103 +157,13 @@ export function useDataShapeSetters({
   ) => {
     commit((els) =>
       els.map((el) => {
-        if (el.id !== elementId || el.type !== 'shape') return el;
-        // A person node's role is its meta line (docs/specs/009-elements/org-chart.md).
-        const personRole =
-          el.shape === 'mind-node' && el.mindLook === 'person' && field === 'pageSubtitle';
-        if (!MASTHEAD_SHAPES.has(el.shape) && !personRole) return el;
+        if (el.id !== elementId || el.type !== 'shape' || !MASTHEAD_SHAPES.has(el.shape)) return el;
         // An empty line stores as undefined rather than '', so a page that was
         // typed into and cleared serialises the same as one never touched.
         return { ...el, [field]: value.trim() ? value : undefined };
       }),
     );
   };
-
-  // Entity fields (docs/specs/009-elements/entity.md). Bounded on write like the checklist's rows, so
-  // a paste into the menu can't produce an element nobody can read.
-  // Entity fields (docs/specs/009-elements/entity.md "The Fields menu"): cleaned and bounded, each box refitted
-  // to its fields, and ends pinned to a removed field let go (withEntityFields).
-  const setEntityFieldsSelected = (fields: EntityField[], remap?: FieldRemap) => {
-    const ids = currentSelectionIds();
-    if (ids.size === 0) return;
-    commit((els) => {
-      let next = els;
-      for (const el of els)
-        if (ids.has(el.id) && isEntity(el)) next = withEntityFields(next, el.id, fields, remap);
-      return next;
-    });
-    track('Element', 'Changed', 'Entity');
-  };
-
-  // --- The collaboration elements (docs/specs/012-collaboration/estimate-card.md, 127, 128, 130) ----------------
-  // Selection-wide like every other setter here, each gated to its own kind so
-  // a multi-selection containing a chair and a chart only writes the chair.
-  const setCollabFieldSelected = (
-    kind: ShapeElement['shape'],
-    patch: Partial<ShapeElement>,
-    telemetryType: string,
-  ) => {
-    const ids = currentSelectionIds();
-    if (ids.size === 0) return;
-    commit((els) =>
-      els.map((el) =>
-        ids.has(el.id) && el.type === 'shape' && el.shape === kind ? { ...el, ...patch } : el,
-      ),
-    );
-    track('Element', 'Changed', telemetryType);
-  };
-
-  const setEstimateScaleSelected = (scale: EstimateScale) =>
-    setCollabFieldSelected('estimate', { estimateScale: scale }, 'Estimate');
-
-  // The current segment travels with its row (docs/specs/012-collaboration/agenda.md
-  // "The current segment"): `moveCurrent` says where a reorder or removal put
-  // it, and a current index past the new rows is cleared either way.
-  const setAgendaItemsSelected = (
-    items: AgendaItem[],
-    moveCurrent?: (current: number) => number | undefined,
-  ) => {
-    const ids = currentSelectionIds();
-    if (ids.size === 0) return;
-    const agendaItems = items.slice(0, AGENDA_MAX_ITEMS).map((item) => ({
-      label: item.label.slice(0, AGENDA_MAX_TEXT),
-      minutes: item.minutes,
-    }));
-    commit((els) =>
-      els.map((el) => {
-        if (!ids.has(el.id) || el.type !== 'shape' || el.shape !== 'agenda') return el;
-        let current = el.agendaCurrent;
-        if (current !== undefined && moveCurrent) current = moveCurrent(current);
-        if (current !== undefined && current >= agendaItems.length) current = undefined;
-        return {
-          ...el,
-          agendaItems,
-          agendaCurrent: current,
-          ...(current === undefined ? { agendaTimerStartedAt: undefined } : {}),
-        };
-      }),
-    );
-    track('Element', 'Changed', 'Agenda');
-  };
-
-  const setDecisionStatusSelected = (status: DecisionStatus) =>
-    setCollabFieldSelected('decision', { decisionStatus: status }, 'Decision');
-
-  // An empty date CLEARS the field, so an undated card renders nothing at all
-  // rather than an empty slot (docs/specs/012-collaboration/decision-record.md).
-  const setDecisionDateSelected = (date: string | undefined) =>
-    setCollabFieldSelected('decision', { decisionDate: date || undefined }, 'Decision');
-
-  const setDecisionDriversSelected = (drivers: string[]) =>
-    setCollabFieldSelected(
-      'decision',
-      {
-        decisionDrivers: drivers
-          .slice(0, DECISION_MAX_DRIVERS)
-          .map((d) => d.slice(0, DECISION_MAX_TEXT)),
-      },
-      'Decision',
-    );
 
   const setChecklistItemsSelected = (items: ChecklistItem[]) => {
     const ids = currentSelectionIds();
@@ -287,30 +181,13 @@ export function useDataShapeSetters({
     track('Element', 'Changed', 'Checklist');
   };
 
-  // Mode button (docs/specs/009-elements/mode-button.md): which selection mode the button hands whoever
-  // presses it. Gated to the button kind, so a multi-selection of mixed
-  // elements only rewrites the buttons in it.
-  const setButtonModeSelected = (mode: SelectionMode) => {
-    const ids = currentSelectionIds();
-    if (ids.size === 0) return;
-    commit((els) =>
-      els.map((el) =>
-        ids.has(el.id) && el.type === 'shape' && el.shape === 'mode-button' ? { ...el, mode } : el,
-      ),
-    );
-    track('Element', 'Changed', 'ModeButton');
-  };
-
   // Rating (docs/specs/009-elements/rating.md) + the charts (docs/specs/009-elements/pie-chart.md) — see useChartSetters.
   const chartSetters = useChartSetters({ currentSelectionIds, commit });
-  // Mind map flow + Tidy Map (docs/specs/009-elements/mind-node.md) — see useMindMapSetters.
-  const mindSetters = useMindMapSetters({ currentSelectionIds, commit, elements, notify });
   // The web components (docs/specs/009-elements/web-components-and-no-groups.md) — see useWebComponentSetters.
   const webSetters = useWebComponentSetters({ currentSelectionIds, commit, elements });
 
   return {
     ...chartSetters,
-    ...mindSetters,
     ...webSetters,
     setProgressSelected,
     setProgressAnimSelected,
@@ -323,12 +200,5 @@ export function useDataShapeSetters({
     setLegendItemsSelected,
     setPageHeading,
     setChecklistItemsSelected,
-    setEntityFieldsSelected,
-    setEstimateScaleSelected,
-    setAgendaItemsSelected,
-    setDecisionStatusSelected,
-    setDecisionDateSelected,
-    setDecisionDriversSelected,
-    setButtonModeSelected,
   };
 }

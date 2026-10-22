@@ -21,7 +21,7 @@ import type { Element, ShapeKind, Tab } from './index';
 import { ALL_ANCHORS } from './arrow-types';
 import { isPenColourName } from './pen-colours';
 import { ADDER_KEY_LENGTH } from './adder';
-import { ENTITY_MAX_FIELDS, PAGE_HEADING_MAX } from './data-shapes';
+import { PAGE_HEADING_MAX } from './data-shapes';
 import { isQuickSwatchSlot } from './quick-swatches';
 import { isImageCredit } from './image-credit';
 import { isBendDelta, isCurvePoints, MAX_CURVE_POINTS } from './malformed-bends';
@@ -98,12 +98,6 @@ export const SHAPE_KINDS = new Set<string>([
   // prose into. Named 'page' internally because the flowchart output symbol
   // above already owns 'document'.
   'page',
-  // Mind node (docs/specs/009-elements/mind-node.md).
-  'mind-node',
-  // Lane (docs/specs/009-elements/lane.md).
-  'lane',
-  // Record (docs/specs/009-elements/entity.md).
-  'entity',
   // The web components (docs/specs/009-elements/web-components-and-no-groups.md).
   'banner',
   'callout',
@@ -111,10 +105,7 @@ export const SHAPE_KINDS = new Set<string>([
   'badge',
   'step',
   'pointer-note',
-  'diagram-key',
   'stack',
-  'sequence',
-  'boundary',
   'layer-stack',
   'pyramid',
   'cycle',
@@ -124,37 +115,9 @@ export const SHAPE_KINDS = new Set<string>([
   'stat-row',
   'process',
   'site-header',
-  // Mode button (docs/specs/009-elements/mode-button.md): a pressable pill that switches whoever clicks it
-  // into a selection mode.
-  'mode-button',
-  // Portal (docs/specs/009-elements/portal-element.md): a portal to the portal it is paired with.
-  'portal',
   // Tab window (docs/specs/009-elements/tab-window.md): another tab of the document drawn inside it.
   'tab-window',
-  // Session button (docs/specs/012-collaboration/session-button.md): starts a timer / vote for the room.
-  'session-button',
-  // Reveal zone (docs/specs/009-elements/reveal-zone.md): a cover you click to see what is underneath.
-  'reveal',
-  // Picker (docs/specs/012-collaboration/picker.md): rolls a random person or option.
-  'picker',
-  // Reaction pad (docs/specs/009-elements/reaction-pad.md).
-  'reaction-pad',
-  // Comment pin (docs/specs/012-collaboration/comment-pin.md).
-  'comment-pin',
-  // Action panel (docs/specs/012-collaboration/action-panel.md).
-  'action-card',
-  // Done check (docs/specs/012-collaboration/done-check.md).
-  'done-check',
-  // The collaboration family (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md).
-  'estimate',
-  'temperature',
-  'idea-box',
-  'agenda',
-  'decision',
-  'roll-call',
   'stadium',
-  'actor',
-  'final-state',
   'cloud',
   'triangle',
   'trapezoid',
@@ -179,7 +142,6 @@ export const SHAPE_KINDS = new Set<string>([
   'checklist',
   'legend',
   'sankey',
-  'focus-button',
   'icon',
   'sticker',
 ]);
@@ -242,13 +204,7 @@ function endpointRule(ep: unknown): string | null {
     case 'free':
       return isNum(ep.x) && isNum(ep.y) ? null : 'a free end: finite x and y';
     case 'pinned':
-      if (!isNonEmptyStr(ep.elementId) || !ANCHORS.has(ep.anchor as string)) return PINNED_RULE;
-      return ep.field === undefined ||
-        (Number.isInteger(ep.field) &&
-          (ep.field as number) >= 0 &&
-          (ep.field as number) < ENTITY_MAX_FIELDS)
-        ? null
-        : `a pinned end's field: a whole number from 0 to ${ENTITY_MAX_FIELDS - 1}`;
+      return isNonEmptyStr(ep.elementId) && ANCHORS.has(ep.anchor as string) ? null : PINNED_RULE;
     case 'on-arrow':
       return isNonEmptyStr(ep.arrowId) && isNum(ep.t) ? null : 'an on-arrow end: arrowId and t';
     // LEGACY (docs/specs/009-elements/web-components-and-no-groups.md): groups are gone and no

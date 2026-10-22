@@ -1,34 +1,13 @@
 // The shape element's field checks (validate.ts): its kind, the bounded data arrays of charts and
-// rails, and the closed sets and bounded rows of the content-carrying and collaborative kinds. Each
+// rails, and the closed sets and bounded rows of the content-carrying kinds. Each
 // check names its field and rule, so a refusal says which value to fix.
 
 import { isChartCategory, isChartSeries, isChartSlice } from './malformed-chart-rows';
-import { isFlowchartDirection } from './flowchart';
 import { CHART_VARIANTS, isChartVariant } from './chart-types';
 import { EMBED_PROVIDERS } from './youtube';
-import { SELECTION_MODES, isPickerSource, isSelectionMode, isSessionTool } from './selection-mode';
-import { RESPONSES_MAX, RESPONSE_VALUE_MAX } from './responses';
-import { COLLAB_ROUND_MAX } from './element-deltas';
-import {
-  AGENDA_MAX_ITEMS,
-  AGENDA_MAX_TEXT,
-  DECISION_MAX_DRIVERS,
-  DECISION_MAX_TEXT,
-  IDEA_CARD_ID_MAX,
-  IDEA_MAX_CARDS,
-  IDEA_MAX_TEXT,
-  ROLL_CALL_MAX,
-  ROLL_CALL_MAX_TEXT,
-  isDecisionDate,
-  isDecisionStatus,
-  isEstimateScale,
-} from './collab-shapes';
 import {
   CHECKLIST_MAX_ITEMS,
   PAGE_HEADING_MAX,
-  ENTITY_KEYS,
-  ENTITY_MAX_FIELDS,
-  ENTITY_MAX_TEXT,
   CHECKLIST_MAX_TEXT,
   LEGEND_MAX_ITEMS,
   LEGEND_MAX_TEXT,
@@ -41,10 +20,8 @@ import { CARD_TAG_MAX, CARD_TAGS_MAX, isCardMedia } from './card';
 import { isChipLook } from './chip';
 import { isAttachPoint } from './attachment';
 import { isPointerTip } from './pointer-note';
-import { isBoundaryStyle } from './boundary';
 import { isPyramidVariant } from './concept';
 import { isChartPaletteId } from './chart-palettes';
-import { isMindFlow, isMindSpacing } from './mind-flow';
 import {
   type ElementValidationIssue,
   type FieldCheck,
@@ -72,7 +49,7 @@ import {
   SANKEY_VALUE_MAX,
 } from './sankey-model';
 
-// railLabels / lineCategories / pieSlices / lineSeries / pickerOptions / session options.
+// railLabels / lineCategories / pieSlices / lineSeries.
 const MAX_DATA_ARRAY = 5_000;
 
 const isStrUpTo = (max: number) => (v: unknown) => typeof v === 'string' && v.length <= max;
@@ -120,34 +97,6 @@ export const ATTACH_POINTS_RULE = [
 ] as const;
 
 const flag = (field: string): FieldCheck => ({ field, valid: isBool, rule: 'a boolean' });
-const finite = (field: string): FieldCheck => ({ field, valid: isNum, rule: 'a finite number' });
-
-// Record (docs/specs/009-elements/entity.md): rows of { name, type? }.
-const isEntityField = (f: unknown) =>
-  isRecord(f) &&
-  isStrUpTo(ENTITY_MAX_TEXT)(f.name) &&
-  isOptionalStrUpTo(f.type, ENTITY_MAX_TEXT) &&
-  (f.key === undefined || (ENTITY_KEYS as readonly unknown[]).includes(f.key));
-
-// Per-participant responses (docs/specs/012-collaboration/participant-responses.md). The
-// one-per-participant rule is `setResponse`'s on write, not a load check: a duplicate from an older
-// client renders as the first entry rather than failing the tab.
-const isResponse = (r: unknown) =>
-  isRecord(r) &&
-  typeof r.participantId === 'string' &&
-  isStrUpTo(RESPONSE_VALUE_MAX)(r.value) &&
-  isNum(r.at);
-
-// Agenda (docs/specs/012-collaboration/agenda.md): minutes are clamped where read
-// (clampAgendaMinutes), not rejected here.
-const isAgendaItem = (item: unknown) =>
-  isRecord(item) && isStrUpTo(AGENDA_MAX_TEXT)(item.label) && isNum(item.minutes);
-
-const isRollCallEntry = (entry: unknown) =>
-  isRecord(entry) &&
-  isStrUpTo(ROLL_CALL_MAX_TEXT)(entry.name) &&
-  isStrUpTo(ROLL_CALL_MAX_TEXT)(entry.color) &&
-  isNum(entry.at);
 
 const isChecklistItem = (item: unknown) =>
   isRecord(item) && isStrUpTo(CHECKLIST_MAX_TEXT)(item.text) && isBool(item.done);
@@ -178,14 +127,9 @@ const isLegendItem = (item: unknown) =>
   isStrUpTo(LEGEND_MAX_TEXT)(item.label) &&
   (item.color === undefined || typeof item.color === 'string');
 
-// Session button (docs/specs/012-collaboration/session-button.md): a known tool. Durations and dots are
-// clamped where read (sessionButtonPlan), so they are not a load check.
-const isSession = (v: unknown) => isRecord(v) && isSessionTool(v.tool);
-
 // Absent passes every check; a present value must satisfy its rule. Ids that point at nothing
-// (`portalTarget`, `mindParentId`, `windowTabId`) are legal: the element renders unpaired or as a root.
+// (`windowTabId`, `attachedTo`) are legal: the element renders unpaired.
 const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
-  { field: 'titleOrientation', valid: (v) => v === 'upright', rule: oneOfRule(['upright']) },
   dataArray('railLabels'),
   // A chart's rows (docs/specs/009-elements/pie-chart.md "Model").
   {
@@ -203,14 +147,8 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
     valid: rowsOf(MAX_DATA_ARRAY, isChartSeries),
     rule: arrayRule(MAX_DATA_ARRAY, 'series, each { name, values }'),
   },
-  { field: 'portalTarget', valid: isNonEmptyStr, rule: 'an element id' },
   // A tab id that is gone is legal too: the window says its tab is not available.
   { field: 'windowTabId', valid: isNonEmptyStr, rule: 'a tab id' },
-  { field: 'mode', valid: isSelectionMode, rule: oneOfRule(SELECTION_MODES) },
-  { field: 'session', valid: isSession, rule: 'a session with a known tool' },
-  flag('revealed'),
-  { field: 'pickerSource', valid: isPickerSource, rule: 'a picker source' },
-  dataArray('pickerOptions'),
   { field: 'code', valid: isStrUpTo(CODE_MAX_LENGTH), rule: stringRule(CODE_MAX_LENGTH) },
   {
     field: 'codeLanguage',
@@ -218,8 +156,6 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
     rule: oneOfRule(CODE_LANGUAGES),
   },
   { field: 'codeTheme', valid: (v) => isCodeThemeId(v as string), rule: 'a code theme id' },
-  { field: 'mindFlow', valid: (v) => isMindFlow(v as string), rule: 'a mind flow' },
-  { field: 'mindSpacing', valid: (v) => isMindSpacing(v as string), rule: 'a mind spacing' },
   {
     field: 'chartVariant',
     valid: isChartVariant,
@@ -235,10 +171,6 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
     valid: (v) => (EMBED_PROVIDERS as readonly unknown[]).includes(v),
     rule: oneOfRule(EMBED_PROVIDERS),
   },
-  { field: 'mindParentId', valid: (v) => typeof v === 'string', rule: 'an element id' },
-  { field: 'flowchartId', valid: isNonEmptyStr, rule: 'a flowchart id' },
-  { field: 'flowDirection', valid: isFlowchartDirection, rule: 'a flowchart direction' },
-  { field: 'flowLaneId', valid: isNonEmptyStr, rule: 'an element id' },
   { field: 'pageTitle', valid: isHeadingStr, rule: stringRule(PAGE_HEADING_MAX) },
   { field: 'pageSubtitle', valid: isHeadingStr, rule: stringRule(PAGE_HEADING_MAX) },
   // Card slots (docs/specs/009-elements/card.md).
@@ -256,8 +188,6 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
     valid: (v: unknown) => isPointerTip(v),
     rule: 'an { x, y } of finite numbers within ±4000',
   },
-  // A person node (docs/specs/009-elements/org-chart.md).
-  { field: 'mindLook', valid: (v: unknown) => v === 'person', rule: oneOfRule(['person']) },
   // A stack's arrangement (docs/specs/009-elements/stack.md).
   {
     field: 'stackDirection',
@@ -284,63 +214,7 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
     valid: (v: unknown) => Number.isInteger(v) && (v as number) >= 2 && (v as number) <= 6,
     rule: 'a whole number 2 to 6',
   },
-  // A diagram key (docs/specs/009-elements/diagram-key.md): derived rows, and the author's meanings.
-  {
-    field: 'keyRows',
-    valid: rowsOf(
-      12,
-      (r) =>
-        isRecord(r) &&
-        isStrUpTo(48)(r.id) &&
-        (r.kind === 'line' || r.kind === 'tag') &&
-        isOptionalStrUpTo(r.style, 40) &&
-        isOptionalStrUpTo(r.tag, 40) &&
-        isOptionalStrUpTo(r.color, 40),
-    ),
-    rule: 'an array of at most 12 { id, kind: line | tag, style?, tag?, color? } rows',
-  },
-  {
-    field: 'keyMeanings',
-    valid: (v: unknown) =>
-      isRecord(v) &&
-      Object.keys(v).length <= 24 &&
-      Object.entries(v).every(([k, t]) => k.length <= 48 && isStrUpTo(60)(t)),
-    rule: 'at most 24 row meanings of at most 60 characters',
-  },
   flag('hubSpokes'),
-  // A sequence diagram's rows (docs/specs/009-elements/sequence-diagram.md); Play is cosmetic and lenient.
-  {
-    field: 'sequenceParticipants',
-    valid: (v: unknown) =>
-      Array.isArray(v) &&
-      v.length >= 2 &&
-      rowsOf(
-        12,
-        (p) =>
-          isRecord(p) &&
-          isNonEmptyStr(p.id) &&
-          isStrUpTo(24)(p.id) &&
-          isStrUpTo(40)(p.label) &&
-          (p.actor === undefined || isBool(p.actor)),
-      )(v),
-    rule: 'an array of 2 to 12 { id, label, actor? } participants (24 and 40 characters)',
-  },
-  {
-    field: 'sequenceMessages',
-    valid: rowsOf(
-      60,
-      (m) =>
-        isRecord(m) &&
-        isStrUpTo(24)(m.from) &&
-        isStrUpTo(24)(m.to) &&
-        isStrUpTo(80)(m.label) &&
-        (m.kind === 'call' || m.kind === 'async' || m.kind === 'reply'),
-    ),
-    rule: 'an array of at most 60 { from, to, label, kind: call | async | reply } messages',
-  },
-  flag('sequenceNumbered'),
-  // Boundary (docs/specs/009-elements/boundary.md).
-  { field: 'boundaryStyle', valid: isBoundaryStyle, rule: oneOfRule(['tab', 'inset', 'c4']) },
   // Concept graphics (docs/specs/009-elements/concept-graphics.md): the rows are content; the animation is
   // cosmetic and lenient, like every element animation.
   {
@@ -359,14 +233,6 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
     rule: `an array of at most ${CARD_TAGS_MAX} strings of at most ${CARD_TAG_MAX} characters`,
   },
   {
-    field: 'entityFields',
-    valid: rowsOf(ENTITY_MAX_FIELDS, isEntityField),
-    rule: arrayRule(
-      ENTITY_MAX_FIELDS,
-      `{ name, type?, key? } rows of ${ENTITY_MAX_TEXT} characters, key one of ${ENTITY_KEYS.join(' ')}`,
-    ),
-  },
-  {
     field: 'stats',
     valid: rowsOf(
       STATS_MAX,
@@ -383,48 +249,6 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
     field: 'navLinks',
     valid: rowsOf(NAV_LINKS_MAX, isBoundedStr),
     rule: arrayRule(NAV_LINKS_MAX, `strings of ${WEB_TEXT_MAX} characters`),
-  },
-  {
-    field: 'responses',
-    valid: rowsOf(RESPONSES_MAX, isResponse),
-    rule: arrayRule(RESPONSES_MAX, '{ participantId, value, at } responses'),
-  },
-  flag('responsesRevealed'),
-  { field: 'estimateScale', valid: isEstimateScale, rule: 'an estimate scale' },
-  {
-    field: 'ideaCards',
-    valid: rowsOf(IDEA_MAX_CARDS, isStrUpTo(IDEA_MAX_TEXT)),
-    rule: arrayRule(IDEA_MAX_CARDS, `strings of ${IDEA_MAX_TEXT} characters`),
-  },
-  {
-    field: 'ideaCardIds',
-    valid: rowsOf(IDEA_MAX_CARDS, isStrUpTo(IDEA_CARD_ID_MAX)),
-    rule: arrayRule(IDEA_MAX_CARDS, `ids of ${IDEA_CARD_ID_MAX} characters`),
-  },
-  flag('ideasRevealed'),
-  { field: 'collabRound', valid: isStrUpTo(COLLAB_ROUND_MAX), rule: stringRule(COLLAB_ROUND_MAX) },
-  {
-    field: 'agendaItems',
-    valid: rowsOf(AGENDA_MAX_ITEMS, isAgendaItem),
-    rule: arrayRule(AGENDA_MAX_ITEMS, '{ label, minutes } rows'),
-  },
-  finite('agendaCurrent'),
-  finite('agendaTimerStartedAt'),
-  { field: 'decisionStatus', valid: isDecisionStatus, rule: 'a decision status' },
-  {
-    field: 'decisionDate',
-    valid: (v) => typeof v === 'string' && isDecisionDate(v),
-    rule: 'a YYYY-MM-DD date',
-  },
-  {
-    field: 'decisionDrivers',
-    valid: rowsOf(DECISION_MAX_DRIVERS, isStrUpTo(DECISION_MAX_TEXT)),
-    rule: arrayRule(DECISION_MAX_DRIVERS, `strings of ${DECISION_MAX_TEXT} characters`),
-  },
-  {
-    field: 'rollCall',
-    valid: rowsOf(ROLL_CALL_MAX, isRollCallEntry),
-    rule: arrayRule(ROLL_CALL_MAX, '{ name, color, at } entries'),
   },
   {
     field: 'checklistItems',

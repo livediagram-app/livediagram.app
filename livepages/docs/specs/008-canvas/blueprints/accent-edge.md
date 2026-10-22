@@ -20,7 +20,7 @@ Derived from [Accent edge](../accent-edge.md). Defaults in [DEFAULTS.md](DEFAULT
 | ------------- | --------------------------- | -------------------------------------------- |
 | Accent edge   | `AccentEdge`, `accentEdge`  | `'left' \| 'top' \| 'bottom'`; absent = None |
 | Edge colour   | `accentEdgeColor`           | Hex; absent = the border colour as drawn     |
-| Edge shapes   | `ACCENT_EDGE_SHAPES`        | `square`, `stadium`, `card`, `mind-node`     |
+| Edge shapes   | `ACCENT_EDGE_SHAPES`        | `square`, `stadium`, `card`                  |
 | Bar thickness | `accentEdgeThickness(w, h)` | `clamp(min(w, h) * 0.06, 3, 6)` element px   |
 
 Banned: "stripe", "rail" (the timeline rail), "accent bar" (the banner's own bar, `isAccentBarShape`).

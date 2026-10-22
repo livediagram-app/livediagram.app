@@ -456,24 +456,10 @@ export type ParticipantPresence = {
   // "Presence"), remembered from the same tab-focus ops so a late joiner sees it too. Undefined with
   // no split.
   besideTabId?: string;
-  // The id this participant WRITES INTO THE DOCUMENT for anything recorded
-  // per person — today the `responses` on a done check / estimate card /
-  // temperature check (docs/specs/012-collaboration/participant-responses.md).
-  //
-  // It exists because `id` above cannot do that job. `id` is minted fresh by
-  // the room for every socket (docs/specs/015-api/public-api-and-tokens.md §6), so it is unforgeable but also
-  // unrecognisable: it changes on reconnect and matches nothing that was ever
-  // saved. Joining a saved answer back to the person in the roster needs an
-  // id that is STABLE across connections, and the owner id can't be it —
-  // publishing that is exactly what §6 forbids.
-  //
-  // So this is a separate, per-browser random the client mints and keeps
-  // (`livepages:v2:collab-key`), relayed VERBATIM: unlike `id` and `role`
-  // it is claimed, not verified. That is deliberate and costs nothing — it is
-  // not a credential and grants nothing, and any edit-role peer could already
-  // write any participant id straight into the document. Optional, so an
-  // older client's hello still parses (the roster falls back to `id`, which
-  // simply matches nothing — the behaviour before this field existed).
+  // A per-browser random the client mints and keeps (`livepages:v2:collab-key`), shared by every tab in that browser
+  // so the roster shows one avatar per person (docs/specs/012-collaboration/collaborator-enhancements.md). `id` above
+  // can't do it: the room mints that per socket. Relayed VERBATIM: claimed, not verified, and it grants nothing.
+  // Optional, so a hello without one still parses (the roster falls back to `id`).
   key?: string;
   // The participant's published profile picture (docs/specs/014-identity/profile-picture.md §6). The
   // room keeps it only from a verified account session and sends it only to account sessions;

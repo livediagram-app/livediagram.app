@@ -19,7 +19,7 @@ const LAST_RESORT = /^Someone did /;
 // vocabulary, and the old "One occurrence of" filler.
 const JARGON =
   /spec\/\d|\bClerk\b|api worker|Durable Object|\bD1\b|\bemit|\bmint|One occurrence|localStorage|IndexedDB|—/;
-// A camelCase or PascalCase token ("FillColor", "SessionButton") is a code
+// A camelCase or PascalCase token ("FillColor", "LinkCard") is a code
 // name leaking into the copy. Product and brand names are allowed.
 const CODE_NAME =
   /\b(?!JavaScript\b|GitHub\b|PowerPoint\b|iPhone\b|iPad\b)[A-Za-z]*[a-z][A-Z][A-Za-z]*\b/;
@@ -77,8 +77,8 @@ describe('eventExplanation', () => {
   });
 
   it('prefers an exact sentence, then a pattern, then one for the action', () => {
-    expect(eventExplanation('Element', 'Changed', 'SessionButton')).toBe(
-      EXACT['Element|Changed|SessionButton'],
+    expect(eventExplanation('Element', 'Changed', 'ArrowStyle')).toBe(
+      EXACT['Element|Changed|ArrowStyle'],
     );
     expect(eventExplanation('Element', 'Added', 'Annotation')).toBe(
       'Someone added an annotation to the canvas.',

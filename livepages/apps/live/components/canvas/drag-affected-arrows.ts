@@ -9,7 +9,6 @@ import {
   queryElementGrid,
   rectsIntersect,
   routeBehindHoles,
-  resolveFinish,
   routeBehindQueryRect,
   type ArrowElement,
   type Element,
@@ -85,9 +84,8 @@ export function previewArrowGeometry(
   index: ElementIndex,
   grid: ElementGrid,
   overlay: DragOverlay,
-  tabFinish?: unknown,
 ): { frame: ArrowViewFrame; holes: Rect[] } {
-  const frame = deriveArrowViewFrame(arrow, index, resolveFinish(arrow.finish, tabFinish));
+  const frame = deriveArrowViewFrame(arrow, index);
   const still = queryElementGrid(grid, routeBehindQueryRect(frame.from, frame.to)).filter(
     (el) => !overlay.changed.has(el.id) && !overlay.removed.has(el.id),
   );

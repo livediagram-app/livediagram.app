@@ -6,9 +6,7 @@ import { LookAndFeelView } from './LookAndFeelView';
 import {
   AGENT_CHANGESETS,
   API_TOKEN_ACTIVITY,
-  COUNTDOWNS,
   DISCUSSION,
-  STOPWATCHES,
   TEAM_ACTIVITY,
 } from './metric-catalogue';
 import { MetricGroups, type MetricGroup } from './MetricCards';
@@ -20,12 +18,12 @@ import { windowLabel } from './windows';
 
 // The Features tab (docs/specs/017-telemetry/telemetry.md): what people build with, gathering what
 // were five tabs until October 2026 (Editing, Palette, Modes, Look & Feel, Settings) as sections,
-// plus the facilitation tools and connections the Dashboard leaves out.
+// plus the discussion, teams and connections the Dashboard leaves out.
 
-export const FACILITATION_GROUPS: MetricGroup[] = [
+export const TEAMWORK_GROUPS: MetricGroup[] = [
   {
-    title: 'Facilitation tools',
-    metrics: [DISCUSSION, TEAM_ACTIVITY, COUNTDOWNS, STOPWATCHES],
+    title: 'Discussion and teams',
+    metrics: [DISCUSSION, TEAM_ACTIVITY],
   },
 ];
 
@@ -70,15 +68,15 @@ export function FeaturesView({ summary, active, focus }: Props & { focus?: Secti
           content: <SettingsView summary={summary} active={active} />,
         },
         {
-          key: 'facilitation',
-          title: 'Facilitation',
+          key: 'teamwork',
+          title: 'Discussion & Teams',
           content: (
             <>
               <GroupsIntro
-                text="Comments, teams and timers, beside the voting and presenting on the Dashboard"
+                text="Comments and teams, beside the presenting on the Dashboard"
                 active={active}
               />
-              <MetricGroups groups={FACILITATION_GROUPS} summary={summary} active={active} />
+              <MetricGroups groups={TEAMWORK_GROUPS} summary={summary} active={active} />
             </>
           ),
         },

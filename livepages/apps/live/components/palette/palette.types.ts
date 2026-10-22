@@ -30,16 +30,11 @@ export type PaletteProps = {
   // True when the active tab has no elements. Disables the canvas tools that
   // need existing content (Format / Laser / Spotlight / Isometric).
   canvasEmpty?: boolean;
-  // `opts` carries the creation-time choice for the kinds that have one
-  // (docs/specs/012-collaboration/session-button.md session tools, docs/specs/009-elements/reaction-pad.md reactions), so a tile per choice places
+  // `opts` carries the creation-time choice for the kinds that have one, so a tile per choice places
   // that choice rather than the factory default.
   onAddShape: (
     kind: ShapeKind,
     opts?: {
-      session?: import('@livepages/document').SessionTool;
-      reaction?: import('@livepages/document').Reaction;
-      mode?: import('@livepages/document').SelectionMode;
-      estimateScale?: import('@livepages/document').EstimateScale;
       plan?: string;
       variant?: string;
     },
@@ -74,7 +69,6 @@ export type PaletteProps = {
   onAddCallout: () => void;
   onAddStatRow: () => void;
   onAddProcess: () => void;
-  onAddFlowchart: () => void;
   onAddAvatar: () => void;
   // Spawn an image placeholder + open the picker. Optional so
   // deployments without R2 (or view-role visitors) can omit it; the

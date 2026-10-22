@@ -139,7 +139,7 @@ describe('inside', () => {
 
   it('refuses what is not a container', () => {
     expect(refusal({ rel: 'inside', ref: 'n3' }).details).toEqual([
-      'inside:n3: n3 is not a frame or lane',
+      'inside:n3: n3 is not a frame or stack',
     ]);
   });
 });

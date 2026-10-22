@@ -55,7 +55,6 @@ import { CATEGORY_BAR_MODES } from './category-flyout-groups';
 import { setPalettePopoverOpen } from '@/lib/palette-popover-open';
 import { useBarLabels } from './useBarLabels';
 import { useStripCrowded } from './useStripCrowded';
-import { SessionBrowse } from './session-category';
 import { barCategoriesFor } from './bar-categories';
 import { CategoryBarButtons, CategoryBarFlyout, useCategoryBar } from './CategoryBar';
 import { usePaletteKindMotion } from './usePaletteKindMotion';
@@ -191,14 +190,8 @@ export function ToolbarPalette(props: Props) {
     [tabs],
   );
   // The bar has no Popular: with every category one press away, a pick from across them adds nothing.
-  // The bar's categories (bar-categories): no Popular, one-word names, Session.
-  const barCategories = useMemo(
-    () =>
-      barCategoriesFor(tabs, (groups) => (
-        <SessionBrowse groups={groups} actions={tileActions} pendingDraw={pendingDraw ?? null} />
-      )),
-    [tabs, tileActions, pendingDraw],
-  );
+  // The bar's categories (bar-categories): no Popular, one-word names.
+  const barCategories = useMemo(() => barCategoriesFor(tabs), [tabs]);
   // A category this mode does not offer (one picked in another mode) shows the mode's landing.
   const category =
     tabs.find((t) => t.id === categoryId) ?? tabs.find((t) => t.id === defaultId) ?? tabs[0];

@@ -91,7 +91,7 @@ export function typeLabel(type: string): string {
   // what was recorded, so they stay as they are.
   if (type.startsWith('/') || type.includes('.')) return type;
   if (/^[a-z0-9]+(-[a-z0-9]+)+$/.test(type)) return articleTitle(type);
-  // 'SessionButton' -> 'Session Button', 'AiOn' -> 'AI On', 'Idea-box' -> 'Idea Box'.
+  // 'LinkCard' -> 'Link Card', 'AiOn' -> 'AI On', 'Speech-bubble' -> 'Speech Bubble'.
   return type
     .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
     .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2')

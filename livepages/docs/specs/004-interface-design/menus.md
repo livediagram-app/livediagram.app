@@ -121,9 +121,9 @@ keys add nothing to a menu's box: no row grows, moves or appears when focus arri
 
 Every item an element's menus print is **Title Case**: the element menu and the selection menu
 (accordion titles, tiles, toggle rows, action buttons and the row buttons inside a section), the
-cell menu, the locked element menu, the selection filter menu and the element quick menus. Short
+cell menu, the locked element menu and the selection filter menu. Short
 articles, conjunctions and prepositions (a, an, the, and, or, of, to, in, on, for, at, by, with,
-from, as) stay lowercase unless they lead: "Empty the Box", "Reset to Theme", "Start at Exact
+from, as) stay lowercase unless they lead: "Reset to Theme", "Start at Exact
 Anchor", "A List".
 
 The same rule covers the close cousins of a menu item, the controls that name an action on an
@@ -145,7 +145,7 @@ element or add one:
 Captions inside a section ("Picks from", "Move to layer"), hints, a tooltip that is not the
 control's only name (the page lock, the slide deck eye), descriptions, aria-labels written only
 for a screen reader, and the Explorer's folder actions are not item labels and keep sentence
-case. An element's own name in prose ("a Done check") stays sentence case too. A help article
+case. An element's own name in prose ("a Code block") stays sentence case too. A help article
 that names an item in bold spells it exactly as the editor does
 (`apps/help/lib/ui-labels-in-articles.test.ts`).
 
@@ -169,7 +169,6 @@ Each menu, how it opens, what it holds, and what the keyboard could do before th
 | Zoom menu             | Hovering or focusing the zoom percentage                       | One-of-a-set zoom levels, Fit to screen                                  | Opened on focus; Tab through; no arrows             |
 | Account menu          | The account pill                                               | Name header, Account, Sign out                                           | Tab only; trigger had no `aria-haspopup`; no Escape |
 | Embed tab menu        | The tab pill on an embedded document                           | One-of-a-set tabs                                                        | Tab, Escape                                         |
-| Element quick menus   | ⋯ on a Done check, Idea box                                    | Verbs, All Settings… under a separator                                   | Tab only                                            |
 | Locked element menu   | Right-click on an element someone else holds                   | "In use" header, Release rows, a note                                    | Escape only                                         |
 | Product switcher      | The section name in the help, telemetry and marketing headers  | Section links                                                            | Tab only                                            |
 | Telemetry view picker | The view button on the sticky window bar                       | Views                                                                    | Tab only                                            |

@@ -1,25 +1,9 @@
 // What a content kind holds, briefly (docs/specs/024-agents/blueprints/document-views.md "Content
 // summaries", VW18 to VW21).
-import { ENTITY_KEY_LABELS, type Element } from '@livepages/document';
-import { ENTITY_FIELDS_SHOWN } from './constants';
+import type { Element } from '@livepages/document';
 import { arrayField, flagField, isObject, listOf, stringField } from './fields';
 import { cellText } from './text';
 import { shapeKindOf } from './view-attribute';
-
-function entitySummary(el: Element): string {
-  const fields = arrayField(el, 'entityFields').filter(isObject);
-  const shown = fields.slice(0, ENTITY_FIELDS_SHOWN).map((field) => {
-    const name = cellText(stringField(field, 'name') ?? '', true);
-    const type = stringField(field, 'type');
-    const key = stringField(field, 'key');
-    const typed = type ? `${name} ${cellText(type, true)}` : name;
-    return key && key in ENTITY_KEY_LABELS
-      ? `${typed} ${ENTITY_KEY_LABELS[key as keyof typeof ENTITY_KEY_LABELS]}`
-      : typed;
-  });
-  if (fields.length > ENTITY_FIELDS_SHOWN) shown.push(`+${fields.length - ENTITY_FIELDS_SHOWN}`);
-  return `{${shown.join('; ')}}`;
-}
 
 // Columns are the longest row's length (E26); the first row's missing cells print empty.
 function tableSummary(el: Element): string {
@@ -65,19 +49,8 @@ function conceptSummary(el: Element): string {
   return `rows=${labels}${variant ? ` variant=${cellText(variant)}` : ''}`;
 }
 
-// A sequence diagram (docs/specs/009-elements/sequence-diagram.md): its participants in order and its message count.
-function sequenceSummary(el: Element): string {
-  const people = arrayField(el, 'sequenceParticipants')
-    .filter(isObject)
-    .map((p) => cellText(stringField(p, 'label') ?? '?'))
-    .join('|');
-  return `participants=${people} messages=${arrayField(el, 'sequenceMessages').length}`;
-}
-
 export function contentSummaryOf(el: Element): string | null {
   switch (shapeKindOf(el)) {
-    case 'entity':
-      return entitySummary(el);
     case 'table':
       return tableSummary(el);
     case 'code-block':
@@ -99,8 +72,6 @@ export function contentSummaryOf(el: Element): string | null {
     case 'chevrons':
     case 'timeline-rail':
       return conceptSummary(el);
-    case 'sequence':
-      return sequenceSummary(el);
     case 'stack':
       return `direction=${cellText(stringField(el, 'stackDirection') ?? 'row')}`;
     default:

@@ -9,14 +9,14 @@ import type { ShapeKind } from '@livepages/document';
 import type { PaletteTileDef } from '@/components/palette/palette-tile-defs';
 
 // Search synonyms per shape: the words somebody types when they don't know
-// what we called it ("database" for the cylinder, "swimlane" for the lane).
+// what we called it ("database" for the cylinder, "legend" for the key).
 // Only the extra vocabulary lives here — the NAME and the description come
 // from the shared tile catalogue, so a new element type shows up in search the
 // moment its tile exists, with or without an entry below.
 //
 // This used to be a hand-written list of the shapes themselves, and it had
-// silently fallen 22 kinds behind the palette: every Devices, Data, Media and
-// Behaviour element was unfindable from the search panel.
+// silently fallen 22 kinds behind the palette: every Devices, Data and Media
+// element was unfindable from the search panel.
 export const SHAPE_KEYWORDS: Partial<Record<ShapeKind, string>> = {
   square: 'square box rect node',
   circle: 'oval ellipse round node',
@@ -33,44 +33,19 @@ export const SHAPE_KEYWORDS: Partial<Record<ShapeKind, string>> = {
   'speech-bubble': 'comment callout chat note',
   frame: 'section container group region',
   page: 'document doc write article heading',
-  'mind-node': 'mind map brainstorm branch idea tree',
-  lane: 'swimlane band row track process',
-  entity: 'record table uml class er schema field',
   card: 'node service component box tile persona tag title',
   badge: 'tag pill label chip status version beta new count',
   step: 'number numbered sequence order walkthrough marker 1 2 3',
   stack: 'stack row column grid auto layout flex align distribute even gap spacing container list',
-  sequence:
-    'sequence diagram uml lifeline message call reply request response interaction api flow',
-  'diagram-key': 'legend key line styles dashed solid meaning tag colours colour code explain',
   'pointer-note':
     'annotation callout leader line pointer note comment explain here arrow pin label',
-  boundary: 'region zone vpc network container group cloud system c4 subnet cluster',
   'layer-stack': 'layers stack tiers osi architecture levels bands',
   pyramid: 'pyramid tiers hierarchy maslow funnel triangle levels conversion',
   cycle: 'cycle loop flywheel pdca circle steps process iteration',
   hub: 'hub spoke satellites ecosystem stakeholders integrations centre radial star',
   onion: 'onion rings concentric layers clean hexagonal architecture core maturity trust',
   chevrons: 'chevron arrows stages pipeline value chain phases process lifecycle',
-  'mode-button': 'mode switch button press',
-  portal: 'teleport jump link warp travel',
   'tab-window': 'tab window live view embed mirror show diagram slide reference frame',
-  'session-button': 'timer vote session start',
-  reveal: 'hide cover spoiler blur uncover',
-  picker: 'random pick spinner wheel choose',
-  estimate: 'points sizing poker fist estimate vote',
-  temperature: 'mood check pulse gauge feeling',
-  'idea-box': 'suggestions ideas inbox submit',
-  agenda: 'plan schedule topics running order',
-  decision: 'decided outcome record resolution',
-  'roll-call': 'attendance present who register',
-  'comment-pin': 'annotate feedback discuss thread remark marker note',
-  'action-card': 'task todo to-do assign assignee follow-up owner action item',
-  'focus-button':
-    'look here attention bring everyone jump navigate spotlight point show gather focus',
-  'done-check': 'complete finished tick ready everyone signed off',
-  'reaction-pad': 'emoji react clap applause celebrate burst',
-  actor: 'person stick figure user role uml',
   browser: 'web page window chrome site',
   monitor: 'screen desktop display computer',
   laptop: 'macbook notebook computer',

@@ -69,8 +69,8 @@ describe('inline icons in an export', () => {
 });
 
 describe('a rich label beside its icon', () => {
-  it("keeps a person card's role on one line when it is the longest line", async () => {
-    const { renderElementsToSvg, personCardText } = await import('./index');
+  it("keeps a card's second line on one line when it is the longest line", async () => {
+    const { renderElementsToSvg } = await import('./index');
     const card = (id: string, name: string, role: string, x: number) => ({
       id,
       type: 'shape',
@@ -81,7 +81,9 @@ describe('a rich label beside its icon', () => {
       height: 86,
       textSize: 'sm',
       iconId: 'user',
-      ...personCardText(name, role),
+      // A bold name at the medium size over the role.
+      label: `${name}\n${role}`,
+      richText: [{ text: name, bold: true, size: 'md' }, { text: `\n${role}` }],
     });
     const svg = renderElementsToSvg(
       {

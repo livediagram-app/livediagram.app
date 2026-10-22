@@ -30,10 +30,10 @@ describe('foldAliases / rank', () => {
   });
 
   it('lets a predicate over current tokens see the folded history', () => {
-    const rows = [row('Element', 'Added', 'Mind-node', 2), row('Element', 'Added', 'Square', 1)];
-    const kinds = ['MindNode', 'Square'];
+    const rows = [row('Element', 'Added', 'Code-block', 2), row('Element', 'Added', 'Square', 1)];
+    const kinds = ['CodeBlock', 'Square'];
     expect(rank(rows, (r) => kinds.includes(r.type ?? ''), PALETTE_TYPE_ALIASES)).toEqual([
-      row('Element', 'Added', 'MindNode', 2),
+      row('Element', 'Added', 'CodeBlock', 2),
       row('Element', 'Added', 'Square', 1),
     ]);
     // Without the aliases the old spelling isn't in the catalogue and vanishes.

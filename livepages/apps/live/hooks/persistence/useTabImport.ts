@@ -21,10 +21,7 @@ export function remintElements(elements: Element[]): {
     ids.set(el.id, id);
     return { ...el, id };
   });
-  // Arrow endpoints, mind-map parents (docs/specs/009-elements/mind-node.md) and portal partners
-  // (docs/specs/009-elements/portal-element.md) follow the new ids. Missed, a duplicated tab's mind-map
-  // nodes named parents on the SOURCE tab and paired portals lost their
-  // partner. Element links are left alone: a link names its tab too, and
+  // Arrow endpoints follow the new ids. Element links are left alone: a link names its tab too, and
   // that is still the source tab, where the original element still is.
   return { elements: remapElementRefs(minted, ids), ids };
 }
@@ -94,13 +91,12 @@ export function useTabImport({
 
     if (format === 'markdown') {
       const { buildTabFromMarkdown, markdownImportOutcome } = await import('@/lib/markdown-import');
-      const result = buildTabFromMarkdown(text, { tabName: active?.name, themeId: active?.theme });
+      const result = buildTabFromMarkdown(text, { tabName: active?.name });
       if (!result.ok) return { status: 'error', error: result.error };
       replaceActiveTabContent(result.tab);
       track('Tab', 'Imported', 'Markdown');
-      if (result.leftOut > 0) debugLog('[markdown-import] left out', { leftOut: result.leftOut });
-      // Past the node cap, the dialog's report says how much was left out.
-      return markdownImportOutcome(result.leftOut);
+      // Tables written as lists: the dialog's report says so.
+      return markdownImportOutcome(result.tables);
     }
 
     const { parseImportedTab } = await import('@/lib/import-tab');

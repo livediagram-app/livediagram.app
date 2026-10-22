@@ -1,7 +1,6 @@
-// `wrap <selector…> in frame|lane [id=] key=value… [tidy] [absorb | make-room]`
-// (docs/specs/024-agents/blueprints/edit-operations.md "Operations", EO34, EO35): a frame or lane drawn
-// around the members, `FRAME_PAD` clear of them (a frame `FRAME_TOP` at the top, a lane its gutter on
-// its title edge). It never silently takes in what is not a member: such bystanders refuse the
+// `wrap <selector…> in frame [id=] key=value… [tidy] [absorb | make-room]`
+// (docs/specs/024-agents/blueprints/edit-operations.md "Operations", EO34, EO35): a frame drawn
+// around the members, `FRAME_PAD` clear of them (`FRAME_TOP` at the top). It never silently takes in what is not a member: such bystanders refuse the
 // changeset unless `absorb` makes them members or `make-room` moves them out.
 
 import type { EditRejection } from '@livepages/api-schema';
@@ -11,8 +10,6 @@ import {
   containerContents,
   createShape,
   deriveContainers,
-  laneEdgeOfElement,
-  laneSizeOfElement,
   recolourElementForTheme,
   type BoxedElement,
   type Element,
@@ -53,25 +50,19 @@ function membersOf(
     rejection: {
       code: 'invalid_value',
       operation,
-      details: [`${targets.join(' ')}: only arrows; a frame or lane holds boxes`],
+      details: [`${targets.join(' ')}: only arrows; a frame holds boxes`],
       hint: 'name the boxes the arrows join',
     },
   };
 }
 
-// The members' bounding box grown by the padding: a frame's title room at the top, a lane's gutter
-// on its title edge (EO34).
-export function wrapBox(members: readonly Box[], container: ShapeElement): Box {
+// The members' bounding box grown by the padding: a frame's title room at the top (EO34).
+export function wrapBox(members: readonly Box[]): Box {
   const left = Math.min(...members.map((m) => m.x));
   const top = Math.min(...members.map((m) => m.y));
   const right = Math.max(...members.map((m) => m.x + m.width));
   const bottom = Math.max(...members.map((m) => m.y + m.height));
-  const pad = { left: FRAME_PAD, top: FRAME_PAD, right: FRAME_PAD, bottom: FRAME_PAD };
-  if (container.shape === 'frame') pad.top = FRAME_TOP;
-  else {
-    const edge = laneEdgeOfElement(container);
-    if (edge !== 'centre-x') pad[edge] += laneSizeOfElement(container);
-  }
+  const pad = { left: FRAME_PAD, top: FRAME_TOP, right: FRAME_PAD, bottom: FRAME_PAD };
   return {
     x: left - pad.left,
     y: top - pad.top,
@@ -165,7 +156,7 @@ export function applyWrap(
   const shaped = written.next;
   const sized = (over: readonly BoxedElement[]): ShapeElement => ({
     ...shaped,
-    ...wrapBox(over, shaped),
+    ...wrapBox(over),
   });
   let container = sized(members);
   let memberIds = new Set(members.map((el) => el.id));

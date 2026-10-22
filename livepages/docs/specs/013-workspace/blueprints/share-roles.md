@@ -94,7 +94,7 @@ Permitted fields on another's element:
 
 | Element                   | Fields                                                                                                      |
 | ------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| Any element carrying text | `label`, `richText` (`PARTICIPANT_TEXT_FIELDS`); never on a mode button (`participantWritesOn`)             |
+| Any element carrying text | `label`, `richText` (`PARTICIPANT_TEXT_FIELDS`) (`participantWritesOn`)                                     |
 | `table`                   | also `cells`, only when every row keeps its length and the row count is unchanged                           |
 | `sticky`, `image`         | also `x`, `y` (finite), `width`, `height` (positive) (`PARTICIPANT_PLACE_FIELDS`, `isParticipantPlaceable`) |
 | `sticky`                  | also `fillColor`, `strokeColor`, `textColor`, `penTextColour` (`PARTICIPANT_STICKY_FIELDS`)                 |
@@ -137,7 +137,7 @@ Editor state:
 | Flag            | participate                                     | view  |
 | --------------- | ----------------------------------------------- | ----- |
 | `addContent`    | true (sticky and text)                          | false |
-| `writeText(el)` | true unless `el.locked` or a mode button        | false |
+| `writeText(el)` | true unless `el.locked`                         | false |
 | `move(el)`      | a sticky, image or own; not locked              | false |
 | `resize(el)`    | a sticky, image or own; not locked              | false |
 | `recolour(el)`  | `el.type === 'sticky'` or own                   | false |

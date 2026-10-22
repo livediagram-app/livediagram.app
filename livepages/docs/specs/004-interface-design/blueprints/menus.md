@@ -29,7 +29,6 @@ Scope, by file:
 | `apps/live/components/palette/ContextMenu.tsx`              | Control menu at a point (element, selection, cell)                                          |
 | `apps/live/components/chrome/TabPortalMenu.tsx`             | Tab and Canvas control menu                                                                 |
 | `apps/live/components/panels/LayerRowMenu.tsx`              | Layer control menu                                                                          |
-| `apps/live/components/canvas/ElementEllipsisMenu.tsx`       | Element quick menu (`kind="command"`) or session settings (`kind="control"`)                |
 | `apps/live/components/canvas/LockedElementMenu.tsx`         | Command menu, no trigger                                                                    |
 | `apps/live/components/chrome/ZoomMenu.tsx`                  | Hover-open command menu with a button of its own                                            |
 | `apps/live/components/chrome/AuthControls.tsx`              | Account command menu                                                                        |
@@ -149,7 +148,6 @@ Options: `onClose()`, `onEscape?()` (default `onClose`), `trigger?`, `label: str
 | `LayerRowMenu`                                                 | Control, "<layer> layer menu"                        | None                              |
 | `ShareCopyMenu`                                                | Control with a header control, else command          | Its button                        |
 | Custom colour menu (`ColourPicker`)                            | Command, "<colour> menu"                             | The swatch                        |
-| `ElementEllipsisMenu`                                          | `kind` prop                                          | Its ⋯                             |
 | `LockedElementMenu`                                            | Command, labelled by "In use"                        | None                              |
 | `ZoomMenu`                                                     | Command, `initialFocus` `none` on hover              | The percentage button             |
 | `AuthControls`, `EmbedChrome`, `ProductNav`, `StickyWindowBar` | Command                                              | Their trigger                     |
@@ -193,7 +191,7 @@ export function isInMenuSurface(target: EventTarget | null): boolean;
 ```
 
 - `PortalMenu` gains `surface?: MenuKind`, `label?: string`, `initialFocus?: MenuInitialFocus`.
-- `ContextMenu` gains `label: string`. `ElementEllipsisMenu` gains `kind: MenuKind`. `EllipsisTriggerButton` gains
+- `ContextMenu` gains `label: string`. `EllipsisTriggerButton` gains
   `onKeyDown`. `MenuFlyoutPanel`'s `FlyoutPanel` gains `trigger` and `kind`.
 - Rejections: `useMenu` with no own items opens empty and warns (Observability); an unknown key is `null`.
 
@@ -263,7 +261,6 @@ spec. No layout shift: roles and `tabIndex` add no box, and `inert` changes no s
 | Submenu keys and roles                                                                     | `apps/live/components/primitives/MenuFlyoutSection.test.tsx`, `UseAsDefaultMenu.test.tsx` |
 | Canvas stands down inside a menu                                                           | `apps/live/hooks/canvas/useEditorKeyboardShortcuts.dom.test.tsx`                          |
 | Folder menu + submenu, element menu, Tab menu, zoom presets, phone drill-down, by keyboard | e2e `apps/live/e2e/menu-keyboard.spec.ts`                                                 |
-| Element quick menu kinds                                                                   | `apps/live/components/canvas/ElementEllipsisMenu.test.tsx`                                |
 | Locked element menu focus and Escape                                                       | `apps/live/components/canvas/LockedElementMenu.test.tsx`                                  |
 | Row ⋯ opens on Down / Up Arrow                                                             | `apps/live/components/primitives/useRowMenu.test.tsx`                                     |
 | Shape tiles are named                                                                      | `apps/live/lib/element-names.test.ts`                                                     |

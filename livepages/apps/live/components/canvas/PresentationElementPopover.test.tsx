@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
-// Presenting reads an element's detail (docs/specs/012-collaboration/presentation-mode.md), an Action panel's
-// whole list included (docs/specs/012-collaboration/action-panel.md).
+// Presenting reads an element's detail (docs/specs/012-collaboration/presentation-mode.md), its assigned
+// action included (docs/specs/012-collaboration/assigned-actions.md).
 
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -20,20 +20,16 @@ const action = (name: string) =>
   });
 
 describe('PresentationElementPopover', () => {
-  it('treats an Action panel with actions as readable, and an empty one as not', () => {
-    const empty = createShape('action-card', 0, 0);
+  it('treats an element with an assigned action as readable, and a bare one as not', () => {
+    const empty = createShape('square', 0, 0);
     expect(hasReadableDetail(empty)).toBe(false);
-    expect(hasReadableDetail({ ...empty, actions: [action('One')] })).toBe(true);
+    expect(hasReadableDetail({ ...empty, action: action('One') })).toBe(true);
   });
 
-  it('lists every action on a card', () => {
-    const card = {
-      ...createShape('action-card', 0, 0),
-      actions: [action('Write the runbook'), action('Load test')],
-    };
-    render(<PresentationElementPopover element={card} at={{ x: 10, y: 10 }} onClose={() => {}} />);
-    expect(screen.getByText('Actions')).toBeTruthy();
+  it('shows the action assigned to an element', () => {
+    const box = { ...createShape('square', 0, 0), action: action('Write the runbook') };
+    render(<PresentationElementPopover element={box} at={{ x: 10, y: 10 }} onClose={() => {}} />);
+    expect(screen.getByText('Action')).toBeTruthy();
     expect(screen.getByText('Write the runbook')).toBeTruthy();
-    expect(screen.getByText('Load test')).toBeTruthy();
   });
 });

@@ -1,12 +1,10 @@
-import { lucideWorkflow } from '@livepages/icons/lucide';
 import type { EditorMode } from '@livepages/document';
 import type { ComponentType } from 'react';
 
 import { Glyph, type IconProps } from './Glyph';
-import { lucideGlyph } from './lucide-glyph';
 
-// The three kinds of drawing a visitor can start (docs/specs/019-marketing/marketing-site.md "Hero"):
-// a marker for freehand drawing, a flowchart for a diagram, a mind map for a brainstorm.
+// The kinds of drawing a visitor can start (docs/specs/019-marketing/marketing-site.md "Hero"): a marker for
+// freehand drawing.
 
 // A marker silhouette on its 24-unit grid, body, nib and the band below, in the text colour and
 // centred in its box.
@@ -19,9 +17,6 @@ export function MarkerIcon({ size = 16, ...rest }: IconProps) {
     </Glyph>
   );
 }
-
-// Two steps joined by a connector.
-export const FlowchartIcon = lucideGlyph(lucideWorkflow, 16);
 
 // A page with a little chart above two lines of writing, on its 24-unit grid: Pages mode's mark
 // (docs/specs/007-editor/pages-mode.md), for the pages it lays out, infographics and articles.

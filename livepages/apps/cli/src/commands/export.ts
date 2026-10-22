@@ -1,4 +1,4 @@
-// `export --all --to <dir> [--format json,svg,mermaid,md]` (docs/specs/015-api/blueprints/cli.md "Pull and push",
+// `export --all --to <dir> [--format json,svg,png,md]` (docs/specs/015-api/blueprints/cli.md "Pull and push",
 // CLI29): every document the token can read, written read-only for backups and docs. `json` is the editor's
 // `livepages.document` envelope; the other formats are one file per tab under `<slug>/`. Two documents at a time;
 // a rate-limited read waits a minute and tries again, up to three times. A document that fails is reported and the
@@ -14,7 +14,6 @@ import { ApiError } from '@livepages/api-client';
 import type { DocumentResponse } from '@livepages/api-schema';
 import {
   documentToEnvelopeText,
-  mermaidFromTab,
   tabToMarkdownText,
   type EnvelopeTab,
   type Tab,
@@ -91,7 +90,6 @@ const joinPath = (dir: string, name: string) => `${dir.replace(/\/+$/, '')}/${na
 const TAB_FILES: Record<Exclude<ExportFormat, 'json'>, string> = {
   svg: 'svg',
   png: 'png',
-  mermaid: 'mmd',
   md: 'md',
 };
 
@@ -141,8 +139,7 @@ async function exportDocument(
           const { writePicture } = await import('../render/png');
           written.push((await writePicture(io, path, body, 'png')).path);
         }
-      } else if (format === 'mermaid') await write(path, mermaidFromTab(tab));
-      else await write(path, tabToMarkdownText(tab));
+      } else await write(path, tabToMarkdownText(tab));
     }
   }
   return written;

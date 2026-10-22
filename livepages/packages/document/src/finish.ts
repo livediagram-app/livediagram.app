@@ -127,22 +127,9 @@ export const FACTORY_CORNERS: Readonly<Record<string, string>> = {
   callout: 'md',
   card: 'md',
   'pointer-note': 'md',
-  'diagram-key': 'md',
   stack: 'md',
-  boundary: 'md',
   'stat-row': 'md',
   'site-header': 'md',
-  'mode-button': 'lg',
-  'session-button': 'lg',
-  reveal: 'lg',
-  picker: 'lg',
-  'reaction-pad': 'lg',
-  estimate: 'lg',
-  temperature: 'lg',
-  'idea-box': 'lg',
-  agenda: 'lg',
-  decision: 'lg',
-  'roll-call': 'lg',
 };
 
 /** An element's own corner as its finish reads it: a corner picked on it wins, but under Professional the corner
@@ -223,8 +210,8 @@ export function finishWobblesArt(el: { type: string; shape?: string }): boolean 
 }
 
 // The shapes whose whole body the sketched outline draws, their face being the label alone: Sketch has nothing
-// more of theirs to draw by hand (unless they carry an inline icon). The sequence diagram redraws itself in its
-// finish, and icons and stickers go through the wobble whole (finishWobblesArt).
+// more of theirs to draw by hand (unless they carry an inline icon). Icons and stickers go through the wobble whole
+// (finishWobblesArt).
 const SKETCHED_BY_BODY = new Set<string>([
   'square',
   'circle',
@@ -233,10 +220,7 @@ const SKETCHED_BY_BODY = new Set<string>([
   'parallelogram',
   'hexagon',
   'document',
-  'mind-node',
   'stadium',
-  'actor',
-  'final-state',
   'cloud',
   'triangle',
   'trapezoid',
@@ -249,7 +233,6 @@ const SKETCHED_BY_BODY = new Set<string>([
   'tablet',
   'foldable',
   'smartwatch',
-  'sequence',
   'icon',
   'sticker',
 ]);
@@ -283,17 +266,13 @@ export function finishNewArrowStyle(finish: Finish): ArrowStyle | undefined {
 }
 
 /** Whether a shape's kind takes Sketch's hatching and Marker's colouring at all, whatever its fill and whatever sits
- *  on it: every box with a body of its own (plain boxes, drawn silhouettes, cards, panels, records, pages, lanes and
+ *  on it: every box with a body of its own (plain boxes, drawn silhouettes, cards, panels, pages and
  *  frames, docs/specs/008-canvas/finish.md), not a self-painting face, whose own parts are its drawing. The shading is
  *  light enough to read words over; what sits on a shape (a backdrop) still keeps it solid. */
 export function finishHatchesKind(element: Element): boolean {
   if (element.type !== 'shape') return false;
-  return !SELF_PAINTING_SHAPES.has(element.shape) && !UNSHADED_BODIES.has(element.shape);
+  return !SELF_PAINTING_SHAPES.has(element.shape);
 }
-
-// Bodies whose face paints its own panel over most of them (a sequence diagram's lifeline area): shading them would
-// show only round the edges.
-const UNSHADED_BODIES = new Set<string>(['sequence']);
 
 /** Whether a hand-drawn element's fill (`fill`, already resolved) is shaded (Sketch's hatching, Marker's colouring in)
  *  rather than solid:

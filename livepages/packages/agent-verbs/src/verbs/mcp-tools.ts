@@ -138,8 +138,7 @@ export const mcpCreateDocument = mcpTool('create_document', {
     'Create a new document of pages: a slide deck or presentation (a tab from the "blank-slide-deck" template, then ' +
     'change_pages adds the slides), an article or report (a tab from "blank-article", then write_article), an ' +
     'infographic, a poster or a logo. Each tab holds pages; a tab may start from a "template" (a kind from ' +
-    'list_templates: ready-made pages with sample text) or take elements for its first page: a "graph" (nodes and ' +
-    'edges, laid out as a diagram with sizes, elbows, side exits, title and key), "mermaid", or raw "elements" (the ' +
+    'list_templates: ready-made pages with sample text) or take "elements" for its first page (the ' +
     'full format is documented inline on the "tabs" argument below). Pass one tab, or several to build a ' +
     'multi-tab document in one call. The server validates, lays ' +
     "out each tab per the layout arg, tags it as made by AI (the Explorer's Made by AI filter finds it), " +

@@ -18,9 +18,9 @@ const actions = () =>
 const panel = (a: PaletteTileActions) =>
   render(
     <StripOpenerPanel
-      label="Ask"
-      description="Ask the room."
-      tiles={tilesForCategory('collab-ask')}
+      label="Shapes"
+      description="Boxes and outlines."
+      tiles={tilesForCategory('shapes')}
       actions={a}
       pendingDraw={null}
     />,
@@ -29,26 +29,23 @@ const panel = (a: PaletteTileActions) =>
 describe('StripOpenerPanel', () => {
   it('names the category and lists its tiles as cards', () => {
     panel(actions());
-    expect(screen.getByRole('heading', { name: 'Ask' })).toBeTruthy();
-    expect(screen.getAllByRole('button')).toHaveLength(tilesForCategory('collab-ask').length);
+    expect(screen.getByRole('heading', { name: 'Shapes' })).toBeTruthy();
+    expect(screen.getAllByRole('button')).toHaveLength(tilesForCategory('shapes').length);
   });
 
   it('places what a card stands for', () => {
     const a = actions();
     panel(a);
-    const vote = tilesForCategory('collab-ask').find((t) => t.id === 'tools:session-vote')!;
-    fireEvent.click(screen.getByRole('button', { name: vote.label }));
-    expect(a.addShape).toHaveBeenCalledWith(
-      'session-button',
-      expect.objectContaining({ session: 'vote' }),
-    );
+    const circle = tilesForCategory('shapes').find((t) => t.id === 'shapes:circle')!;
+    fireEvent.click(screen.getByRole('button', { name: circle.label }));
+    expect(vi.mocked(a.addShape).mock.calls[0]?.[0]).toBe('circle');
   });
 
   it('clears the canvas preview when a drag ends, dropped or not', () => {
     panel(actions());
-    const vote = tilesForCategory('collab-ask').find((t) => t.id === 'tools:session-vote')!;
-    const card = screen.getByRole('button', { name: vote.label });
-    setPaletteDragPreview({ kind: 'session-button', width: 10, height: 10 });
+    const circle = tilesForCategory('shapes').find((t) => t.id === 'shapes:circle')!;
+    const card = screen.getByRole('button', { name: circle.label });
+    setPaletteDragPreview({ kind: 'circle', width: 10, height: 10 });
     fireEvent.dragEnd(card);
     expect(getPaletteDragPreview()).toBeNull();
   });

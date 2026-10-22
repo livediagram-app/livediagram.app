@@ -66,7 +66,6 @@ ARROW ANCHOR RULES — critical for correct layout:
 
 DESIGN RULES:
 • Sizes: default 140×60. Primary/title nodes: 180×70. Small leaves: 120×50.
-  Actor shapes: 60×80 (portrait, taller than wide).
 • Spacing: minimum 40 px gap between all shapes in every direction.
 • Colors: do NOT set fillColor, strokeColor, or textColor — the diagram theme manages all color.
 • Add borderRadius:"sm" to square/process shapes for a polished look.

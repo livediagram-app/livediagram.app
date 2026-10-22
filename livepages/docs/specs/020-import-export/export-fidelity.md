@@ -89,16 +89,9 @@ would be worse than the gap:
 
 ### Faces export as they look
 
-A Behaviour face draws what the canvas draws: a Mode button is a keycap with its glyph chip over the label, or
-"Switch to" and the mode's name (`SELECTION_MODE_LABEL`) when it has none. A box label breaks a word wider than its
+A box label breaks a word wider than its
 line between characters, as the canvas's `break-words` does; an icon caption keeps the word whole.
-
-The Mode button's glyph is shared data: the selection-mode glyphs live in
-`@livepages/icons/mode-glyphs` (`MODE_GLYPHS`), which the editor's palette and
-button face render through `<Prims>` and the export through `iconPrimsMarkup`,
-so the chip carries the same drawing in both. A glyph with a filled dot or a
-heavier stroke says so on the primitive (`StyledPrim`), and the export converts
-the canvas's on-screen stroke weight into the glyph's units. The one small
+The one small
 known gap is the Callout body's indent, a few pixels off the canvas's.
 
 ## Checking it

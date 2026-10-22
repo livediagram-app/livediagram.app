@@ -56,31 +56,12 @@ describe('every kind with a body draws one', () => {
     'progress-ring',
     'rating',
     'timeline-rail',
-    'entity',
     'page',
-    'lane',
     'browser',
-    'portal',
-    'reveal',
-    'picker',
-    'mode-button',
-    'session-button',
-    'reaction-pad',
-    'comment-pin',
-    'action-card',
-    'estimate',
-    'temperature',
-    'idea-box',
-    'agenda',
-    'decision',
-    'roll-call',
-    'done-check',
-    'focus-button',
   ];
 
   // A plain export is the box and its label. Anything with a body of its own
-  // emits at least two DRAWN marks (a portal is two ellipses and nothing
-  // else), so that is the floor.
+  // emits at least two DRAWN marks, so that is the floor.
   const markCount = (kind: ShapeKind) => {
     const el = { ...createShape(kind, 0, 0), label: 'Label', width: 220, height: 160 };
     return (svgBoxed(el).match(/<(rect|circle|path|polygon|text|ellipse|polyline|svg)\b/g) ?? [])
@@ -137,18 +118,11 @@ describe('a self-painting element gets no box drawn round it', () => {
     );
     expect(hasElementRect(svg)).toBe(false);
   });
-
-  it('still frames a record, which is a real box with rows in it', () => {
-    const svg = renderElementsToSvg(
-      tabOf([{ ...createShape('entity', 0, 0), width: 200, height: 160 }]),
-    );
-    expect(hasElementRect(svg)).toBe(true);
-  });
 });
 
 describe('a face paints in the element typeface', () => {
   it('wraps a card in the font its label would use (docs/specs/004-interface-design/fonts.md)', () => {
-    const el = { ...createShape('agenda', 0, 0), label: 'Standup', font: 'caveat' };
+    const el = { ...createShape('stat-row', 0, 0), label: 'Standup', font: 'caveat' };
     // The group carries the face, so every text mark inside inherits it: a
     // card exported in a different typeface to the canvas is the same bug this
     // file is about, in smaller type.

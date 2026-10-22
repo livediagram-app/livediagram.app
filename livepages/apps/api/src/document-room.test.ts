@@ -77,8 +77,7 @@ type FakeState = {
   // instances built from the same FakeState, which is exactly what a
   // hibernation wake looks like: same storage, fresh instance.
   store: Map<string, unknown>;
-  // The room's one alarm: the facilitator grace period (docs/specs/012-collaboration/facilitator.md) and agent
-  // presence expiries; a cleared alarm records null.
+  // The room's one alarm: agent presence expiries; a cleared alarm records null.
   alarms: (number | null)[];
   storage: {
     get: (key: string) => Promise<unknown>;
@@ -176,13 +175,8 @@ function presence(id: string, role?: 'edit' | 'view'): ParticipantPresence {
 
 // Seed a fully-established session directly (attachment + connected set),
 // the hibernation-API equivalent of the old `sessions.set(ws, presence)`.
-function seedSession(
-  state: FakeState,
-  ws: FakeSocket,
-  p: ParticipantPresence | null,
-  isOwner = false,
-): void {
-  ws.attachment = { presenceId: p?.id ?? 'pre-hello', verifiedRole: p?.role, presence: p, isOwner };
+function seedSession(state: FakeState, ws: FakeSocket, p: ParticipantPresence | null): void {
+  ws.attachment = { presenceId: p?.id ?? 'pre-hello', verifiedRole: p?.role, presence: p };
   state.sockets.push(asWs(ws));
 }
 
@@ -553,30 +547,11 @@ describe('DocumentRoom op-role enforcement', () => {
   // loop automatically instead of shipping untested.
   // `drag-preview` is presence an editor alone may send: a viewer's would make others' elements appear
   // to move (docs/specs/008-canvas/drag-preview.md). Its own test below pins both halves.
-  const EDITOR_ONLY_PRESENCE_KINDS = ['drag-preview', 'focus-here'];
+  const EDITOR_ONLY_PRESENCE_KINDS = ['drag-preview'];
   // `follow` is the room's alone: never relayed, it tells the person followed (the "DocumentRoom follow" block).
   const ROOM_DECIDED_PRESENCE_KINDS = ['follow'];
-  // A reaction is taking part (docs/specs/013-workspace/share-roles.md): a Participant's, never a Viewer's.
-  const PARTICIPANT_PRESENCE_KINDS = ['reaction'];
-  for (const kind of PARTICIPANT_PRESENCE_KINDS) {
-    it(`drops a '${kind}' from a Viewer and relays a Participant's`, () => {
-      const { room } = newRoom();
-      const editor = connect(room, 'editor', 'edit');
-      const viewer = connect(room, 'viewer', 'view');
-      const participant = connect(room, 'participant', 'participate');
-      editor.ws.sent.length = 0;
-      const op = { kind, tabId: 't', id: 'b1', text: 'hi', x: 1, y: 2 };
-      sendFrame(room, viewer.ws, { kind: 'op', op });
-      expect(opsReceived(editor.ws)).toHaveLength(0);
-      sendFrame(room, participant.ws, { kind: 'op', op });
-      expect(opsReceived(editor.ws)).toHaveLength(1);
-    });
-  }
   for (const kind of [...PRESENCE_OP_KINDS].filter(
-    (k) =>
-      !EDITOR_ONLY_PRESENCE_KINDS.includes(k) &&
-      !ROOM_DECIDED_PRESENCE_KINDS.includes(k) &&
-      !PARTICIPANT_PRESENCE_KINDS.includes(k),
+    (k) => !EDITOR_ONLY_PRESENCE_KINDS.includes(k) && !ROOM_DECIDED_PRESENCE_KINDS.includes(k),
   )) {
     it(`relays a '${kind}' presence op from a view-role session`, () => {
       const { room } = newRoom();
@@ -703,24 +678,6 @@ describe('DocumentRoom op-role enforcement', () => {
     const received = opsReceived(other.ws);
     expect(received).toHaveLength(1);
     expect(received[0]).not.toHaveProperty('seq');
-  });
-
-  // docs/specs/012-collaboration/bring-focus.md + share-roles.md: moving everyone's view runs the session.
-  it("relays an editor's Bring Focus and drops a Viewer's and a Participant's", () => {
-    const { room } = newRoom();
-    const editor = connect(room, 'editor', 'edit');
-    const viewer = connect(room, 'viewer', 'view');
-    const participant = connect(room, 'participant', 'participate');
-    const other = connect(room, 'other', 'edit');
-    other.ws.sent.length = 0;
-    const op = { kind: 'focus-here', tabId: 't', at: { x: 10, y: 20 }, zoom: 1 };
-
-    sendFrame(room, viewer.ws, { kind: 'op', op });
-    sendFrame(room, participant.ws, { kind: 'op', op });
-    expect(opsReceived(other.ws)).toHaveLength(0);
-
-    sendFrame(room, editor.ws, { kind: 'op', op });
-    expect(opsReceived(other.ws)).toHaveLength(1);
   });
 
   it('keeps viewports out of the catch-up log entirely', () => {
@@ -936,7 +893,7 @@ describe('DocumentRoom hibernation survival', () => {
     after.acceptSession(asWs(joiner), 'edit');
     sendFrame(after, joiner, { kind: 'hello', participant: { id: 'j', name: 'J', color: '#333' } });
     // The presence frame by kind, not by position: a hello is also answered
-    // with the facilitator state (docs/specs/012-collaboration/facilitator.md), so "the last frame" is not it.
+    // with the cursor and format frames, so "the last frame" is not it.
     const frame = joiner.sent
       .map((raw) => JSON.parse(raw) as { kind: string; participants?: ParticipantPresence[] })
       .findLast((f) => f.kind === 'presence')!;
@@ -981,8 +938,8 @@ describe('DocumentRoom op ordering + reconnect catch-up (docs/specs/012-collabor
 
   it('tells the sender the seq its own op took, and a joiner where the stream stands', () => {
     // The relay skips the sender, so without this a client only learned seqs
-    // from other people's ops and a reconnect replayed its own `vote` deltas
-    // back at it, counting each dot twice.
+    // from other people's ops and a reconnect replayed its own deltas
+    // back at it, applying each one twice.
     const { room } = newRoom();
     const { editor, peer } = editorAndPeer(room);
     sendFrame(room, editor, {
@@ -1179,223 +1136,6 @@ describe('DocumentRoom op ordering + reconnect catch-up (docs/specs/012-collabor
   });
 });
 
-// ── The facilitator baton (docs/specs/012-collaboration/facilitator.md) ──────────────────────────────────
-//
-// The room is the only thing that can arbitrate this, so these cover what
-// only it can get wrong: who is told, who is told the TOKEN, and the one op
-// it can enforce.
-
-const frames = (ws: FakeSocket) => ws.sent.map((s) => JSON.parse(s) as Record<string, unknown>);
-const facFrames = (ws: FakeSocket) => frames(ws).filter((f) => f.kind === 'facilitator');
-
-describe('DocumentRoom facilitator', () => {
-  it('hands the baton to an editor who claims it, and the token to them alone', () => {
-    const { room, state } = newRoom();
-    const a = makeSocket();
-    const b = makeSocket();
-    seedSession(state, a, presence('p-a', 'edit'));
-    seedSession(state, b, presence('p-b', 'edit'));
-
-    sendFrame(room, a, { kind: 'facilitator', action: 'claim' });
-
-    // Everybody learns who holds it...
-    expect(facFrames(b)).toEqual([
-      { kind: 'facilitator', holder: 'p-a', reason: 'claim', by: 'p-a' },
-    ]);
-    // ...and only the holder is ever sent the token, which is the whole
-    // security model: no other socket can present it later.
-    const mine = facFrames(a);
-    expect(mine.at(-1)).toMatchObject({ holder: 'p-a', token: expect.any(String) });
-    expect(JSON.stringify(b.sent)).not.toContain(String(mine.at(-1)!.token));
-  });
-
-  it('refuses a view-role claim', () => {
-    const { room, state } = newRoom();
-    const v = makeSocket();
-    seedSession(state, v, presence('p-v', 'view'));
-    sendFrame(room, v, { kind: 'facilitator', action: 'claim' });
-    expect(facFrames(v)).toEqual([]);
-  });
-
-  it('refuses a second editor but lets the owner take it back', () => {
-    const { room, state } = newRoom();
-    const a = makeSocket();
-    const b = makeSocket();
-    const o = makeSocket();
-    seedSession(state, a, presence('p-a', 'edit'));
-    seedSession(state, b, presence('p-b', 'edit'));
-    seedSession(state, o, presence('p-o', 'edit'), true);
-
-    sendFrame(room, a, { kind: 'facilitator', action: 'claim' });
-    sendFrame(room, b, { kind: 'facilitator', action: 'claim' });
-    expect(facFrames(b).filter((f) => f.holder === 'p-b')).toEqual([]);
-
-    sendFrame(room, o, { kind: 'facilitator', action: 'claim' });
-    expect(facFrames(b).at(-1)).toMatchObject({ holder: 'p-o', reason: 'claim' });
-  });
-
-  it('leaves every other op alone: the baton is not an edit permission', () => {
-    const { room, state } = newRoom();
-    const a = makeSocket();
-    const b = makeSocket();
-    seedSession(state, a, presence('p-a', 'edit'));
-    seedSession(state, b, presence('p-b', 'edit'));
-    sendFrame(room, a, { kind: 'facilitator', action: 'claim' });
-
-    sendFrame(room, b, { kind: 'op', op: { kind: 'el', tabId: 't', ops: [] } });
-    expect(frames(a).some((f) => f.kind === 'op')).toBe(true);
-  });
-
-  it('tells a holder their own state frame carries the token', () => {
-    // Without it the holder's own client would read "somebody else is
-    // facilitating" off its own baton: a client cannot recognise its presence
-    // id, so the token is the only thing that says the baton is theirs.
-    const { room, state } = newRoom();
-    const a = makeSocket();
-    seedSession(state, a, presence('p-a', 'edit'));
-    sendFrame(room, a, { kind: 'facilitator', action: 'claim' });
-    const token = facFrames(a).at(-1)!.token as string;
-
-    sendFrame(room, a, { kind: 'hello', participant: presence('p-a', 'edit') });
-    expect(facFrames(a).at(-1)).toMatchObject({ holder: 'p-a', reason: 'state', token });
-  });
-
-  it('announces nothing when a refresh brings the baton home', async () => {
-    // A reload is not an event. Everybody's badge still has to follow the new
-    // presence id, so the frame goes out — as state, which nobody toasts.
-    const { room, state } = newRoom();
-    const a = makeSocket();
-    const b = makeSocket();
-    seedSession(state, a, presence('p-a', 'edit'));
-    seedSession(state, b, presence('p-b', 'edit'));
-    sendFrame(room, a, { kind: 'facilitator', action: 'claim' });
-    const token = facFrames(a).at(-1)!.token as string;
-    const before = facFrames(b).length;
-
-    const back = makeSocket();
-    seedSession(state, back, presence('p-a2', 'edit'));
-    sendFrame(room, back, {
-      kind: 'hello',
-      participant: presence('p-a2', 'edit'),
-      facilitatorToken: token,
-    });
-    expect(facFrames(b).slice(before)).toEqual([
-      { kind: 'facilitator', holder: 'p-a2', reason: 'state' },
-    ]);
-  });
-
-  it('refuses a token whose grace period ran out while the room slept', async () => {
-    // The alarm is what normally releases it, and an alarm needs a room. If
-    // the DO was evicted first, the next read is what has to notice.
-    const { room, state } = newRoom();
-    const a = makeSocket();
-    seedSession(state, a, presence('p-a', 'edit'));
-    sendFrame(room, a, { kind: 'facilitator', action: 'claim' });
-    const token = facFrames(a).at(-1)!.token as string;
-    room.webSocketClose(asWs(a));
-
-    vi.setSystemTime(new Date(Date.now() + 91_000));
-    const back = makeSocket();
-    seedSession(state, back, presence('p-a2', 'edit'));
-    sendFrame(room, back, {
-      kind: 'hello',
-      participant: presence('p-a2', 'edit'),
-      facilitatorToken: token,
-    });
-    expect(room.facilitator.holder).toBeNull();
-    expect(facFrames(back).at(-1)).toMatchObject({ holder: null, reason: 'state' });
-    vi.useRealTimers();
-  });
-
-  it('gives a refreshing holder their baton back when they present the token', () => {
-    const { room, state } = newRoom();
-    const a = makeSocket();
-    seedSession(state, a, presence('p-a', 'edit'));
-    sendFrame(room, a, { kind: 'facilitator', action: 'claim' });
-    const token = facFrames(a).at(-1)!.token as string;
-
-    // The refresh: a brand new socket, a brand new presence id, and the one
-    // thing that survived in sessionStorage.
-    const back = makeSocket();
-    seedSession(state, back, presence('p-a2', 'edit'));
-    sendFrame(room, back, {
-      kind: 'hello',
-      participant: presence('p-a2', 'edit'),
-      facilitatorToken: token,
-    });
-    expect(facFrames(back).at(-1)).toMatchObject({ holder: 'p-a2', token });
-  });
-
-  it('ignores a token somebody else guessed', () => {
-    const { room, state } = newRoom();
-    const a = makeSocket();
-    const thief = makeSocket();
-    seedSession(state, a, presence('p-a', 'edit'));
-    seedSession(state, thief, presence('p-t', 'edit'));
-    sendFrame(room, a, { kind: 'facilitator', action: 'claim' });
-
-    sendFrame(room, thief, {
-      kind: 'hello',
-      participant: presence('p-t', 'edit'),
-      facilitatorToken: 'not-the-token',
-    });
-    // They are told the state, and it is not them.
-    expect(facFrames(thief).at(-1)).toMatchObject({ holder: 'p-a', reason: 'state' });
-  });
-
-  it('tells a joiner who is facilitating without announcing anything', () => {
-    const { room, state } = newRoom();
-    const a = makeSocket();
-    seedSession(state, a, presence('p-a', 'edit'));
-    sendFrame(room, a, { kind: 'facilitator', action: 'claim' });
-
-    const late = makeSocket();
-    seedSession(state, late, presence('p-l', 'edit'));
-    sendFrame(room, late, { kind: 'hello', participant: presence('p-l', 'edit') });
-    expect(facFrames(late)).toEqual([{ kind: 'facilitator', holder: 'p-a', reason: 'state' }]);
-  });
-
-  it('starts a grace clock when the holder leaves, and releases when it fires', async () => {
-    const { room, state } = newRoom();
-    const a = makeSocket();
-    const b = makeSocket();
-    seedSession(state, a, presence('p-a', 'edit'));
-    seedSession(state, b, presence('p-b', 'edit'));
-    sendFrame(room, a, { kind: 'facilitator', action: 'claim' });
-
-    room.webSocketClose(asWs(a));
-    // Still theirs: a refresh and a dropped connection look identical here.
-    expect(state.alarms).toHaveLength(1);
-    expect(room.facilitator.holder).toBe('p-a');
-
-    vi.setSystemTime(new Date(Date.now() + 91_000));
-    await room.alarm();
-    expect(room.facilitator.holder).toBeNull();
-    expect(facFrames(b).at(-1)).toMatchObject({ holder: null, reason: 'left' });
-    vi.useRealTimers();
-  });
-
-  it('does nothing on an alarm whose holder came back', async () => {
-    const { room, state } = newRoom();
-    const a = makeSocket();
-    seedSession(state, a, presence('p-a', 'edit'));
-    sendFrame(room, a, { kind: 'facilitator', action: 'claim' });
-    const token = facFrames(a).at(-1)!.token as string;
-    room.webSocketClose(asWs(a));
-
-    const back = makeSocket();
-    seedSession(state, back, presence('p-a2', 'edit'));
-    sendFrame(room, back, {
-      kind: 'hello',
-      participant: presence('p-a2', 'edit'),
-      facilitatorToken: token,
-    });
-
-    await room.alarm();
-    expect(room.facilitator.holder).toBe('p-a2');
-  });
-});
-
 describe('DocumentRoom multiplayer telemetry (docs/specs/017-telemetry/telemetry.md)', () => {
   // A fake D1 that records every telemetry row the room writes.
   function envWithRows(): { env: Env; rows: unknown[][] } {
@@ -1458,7 +1198,7 @@ describe('DocumentRoom multiplayer telemetry (docs/specs/017-telemetry/telemetry
   });
 });
 
-describe('DocumentRoom freeing a selection lock (docs/specs/007-editor/live-app.md + docs/specs/012-collaboration/facilitator.md)', () => {
+describe('DocumentRoom freeing a selection lock (docs/specs/007-editor/live-app.md)', () => {
   // Sent frames as the fake socket recorded them.
   const framesOf = (ws: FakeSocket) => ws.sent.map((raw) => JSON.parse(raw) as { kind: string });
   const released = (ws: FakeSocket) => framesOf(ws).filter((f) => f.kind === 'selection-released');
@@ -1494,7 +1234,7 @@ describe('DocumentRoom freeing a selection lock (docs/specs/007-editor/live-app.
     expect(released(host)).toEqual([]);
   });
 
-  it('refuses a view-role visitor, even while nobody is facilitating', () => {
+  it('refuses a view-role visitor', () => {
     const { room, state } = newRoom();
     const viewer = makeSocket();
     const holder = makeSocket();
@@ -1504,19 +1244,12 @@ describe('DocumentRoom freeing a selection lock (docs/specs/007-editor/live-app.
     expect(released(holder)).toEqual([]);
   });
 
-  it('refuses somebody who is not running the session', () => {
-    const { room, host, holder, bystander } = room3();
-    // Give the baton to `host`, then have a bystander try to use it.
-    sendFrame(room, host, { kind: 'facilitator', action: 'claim' });
+  it('lets any editor free a hold', () => {
+    const { room, bystander, holder } = room3();
     sendFrame(room, bystander, unlock());
-    expect(released(holder)).toEqual([]);
-  });
-
-  it('lets the facilitator use it once they hold the baton', () => {
-    const { room, host, holder } = room3();
-    sendFrame(room, host, { kind: 'facilitator', action: 'claim' });
-    sendFrame(room, host, unlock());
-    expect(released(holder)).toHaveLength(1);
+    expect(released(holder)).toEqual([
+      { kind: 'selection-released', elementId: 'el-1', by: 'bystander' },
+    ]);
   });
 
   it('ignores an unlock aimed at yourself', () => {
@@ -1540,13 +1273,6 @@ describe('DocumentRoom freeing a selection lock (docs/specs/007-editor/live-app.
     sendFrame(room, host, unlock('holder', ''));
     expect(released(holder)).toEqual([]);
   });
-
-  it('moves no baton — it uses one', () => {
-    const { room, host, holder } = room3();
-    sendFrame(room, host, unlock());
-    // A facilitator frame would have gone out had the baton changed hands.
-    expect(framesOf(holder).some((f) => f.kind === 'facilitator')).toBe(false);
-  });
 });
 
 describe('DocumentRoom collaboration ledger (docs/specs/012-collaboration/collab-race-hardening.md phase 3)', () => {
@@ -1556,28 +1282,31 @@ describe('DocumentRoom collaboration ledger (docs/specs/012-collaboration/collab
     sendFrame(room, ws, { kind: 'hello', participant: { id: 'e', name: 'E', color: '#000' } });
     return ws;
   }
-  const answer = (participantId: string) => ({
+  const answer = (commentId: string) => ({
     kind: 'op',
     op: {
       kind: 'el-delta',
       tabId: 't1',
       elementId: 'card',
-      delta: { kind: 'response', participantId, value: 'done', at: 1 },
+      delta: {
+        kind: 'comment-add',
+        comment: { id: commentId, text: 'x', createdAt: 1, authorName: 'E', authorColor: '#000' },
+      },
     },
   });
   const ledger = async (room: DocumentRoom, epoch = room.epoch) =>
     (await room.fetch(new Request(`https://room/ledger?tab=t1&epoch=${epoch}`))).json();
 
-  it('records each answer with the seq it took, and serves the tab ledger', async () => {
+  it('records each comment with the seq it took, and serves the tab ledger', async () => {
     const { room } = newRoom();
     const ws = editor(room);
     sendFrame(room, ws, answer('a'));
     sendFrame(room, ws, answer('b'));
     const body = (await ledger(room)) as {
-      elements: Record<string, { responses: Record<string, { seq: number }> }>;
+      elements: Record<string, { comments: { adds: Record<string, { seq: number }> } }>;
     };
-    expect(body.elements.card!.responses.a!.seq).toBe(1);
-    expect(body.elements.card!.responses.b!.seq).toBe(2);
+    expect(body.elements.card!.comments.adds.a!.seq).toBe(1);
+    expect(body.elements.card!.comments.adds.b!.seq).toBe(2);
   });
 
   it('serves nothing to a cursor from another epoch', async () => {
@@ -1702,7 +1431,6 @@ describe('DocumentRoom tab-scoped sessions', () => {
       presenceId: p.id,
       verifiedRole: p.role,
       presence: p,
-      isOwner: false,
       tabScope,
       shareCode,
     };
@@ -1902,7 +1630,7 @@ describe('DocumentRoom tab-scoped sessions', () => {
     const ws = makeSocket();
     (room as unknown as { state: { acceptWebSocket: () => void } }).state.acceptWebSocket =
       () => {};
-    room.acceptSession(asWs(ws), 'view', false, 't2', 'CODE2345');
+    room.acceptSession(asWs(ws), 'view', 't2', 'CODE2345');
     expect(ws.attachment).toMatchObject({ tabScope: 't2', shareCode: 'CODE2345' });
   });
 
@@ -1911,7 +1639,7 @@ describe('DocumentRoom tab-scoped sessions', () => {
     const ws = makeSocket();
     (room as unknown as { state: { acceptWebSocket: () => void } }).state.acceptWebSocket =
       () => {};
-    room.acceptSession(asWs(ws), 'edit', true, null, null, true, 'a'.repeat(64), 'pair-1');
+    room.acceptSession(asWs(ws), 'edit', null, null, true, 'a'.repeat(64), 'pair-1');
     expect(ws.attachment).toMatchObject({ workbenchPairing: 'pair-1' });
   });
 });
@@ -1936,8 +1664,8 @@ describe('DocumentRoom profile pictures', () => {
     const { room } = newRoom();
     const account = makeSocket();
     const anonymous = makeSocket();
-    room.acceptSession(asWs(account), 'edit', false, null, null, true);
-    room.acceptSession(asWs(anonymous), 'view', false, null, 'CODE', false);
+    room.acceptSession(asWs(account), 'edit', null, null, true);
+    room.acceptSession(asWs(anonymous), 'view', null, 'CODE', false);
     sendFrame(room, account, hello(PICTURE));
     sendFrame(room, anonymous, hello(PICTURE));
     expect(storedPresence(account)?.picture).toBe(PICTURE);
@@ -1948,7 +1676,7 @@ describe('DocumentRoom profile pictures', () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     const { room } = newRoom();
     const ws = makeSocket();
-    room.acceptSession(asWs(ws), 'edit', false, null, null, true);
+    room.acceptSession(asWs(ws), 'edit', null, null, true);
     sendFrame(room, ws, hello('https://evil.example/me.png'));
     expect(storedPresence(ws)?.picture).toBeUndefined();
   });
@@ -1958,9 +1686,9 @@ describe('DocumentRoom profile pictures', () => {
     const ann = makeSocket();
     const bob = makeSocket();
     const visitor = makeSocket();
-    room.acceptSession(asWs(ann), 'edit', false, null, null, true);
-    room.acceptSession(asWs(bob), 'edit', false, null, null, true);
-    room.acceptSession(asWs(visitor), 'view', false, null, 'CODE', false);
+    room.acceptSession(asWs(ann), 'edit', null, null, true);
+    room.acceptSession(asWs(bob), 'edit', null, null, true);
+    room.acceptSession(asWs(visitor), 'view', null, 'CODE', false);
     sendFrame(room, ann, hello(PICTURE));
     sendFrame(room, bob, hello());
     sendFrame(room, visitor, hello());
@@ -1973,8 +1701,8 @@ describe('DocumentRoom profile pictures', () => {
     const { room } = newRoom();
     const ann = makeSocket();
     const bob = makeSocket();
-    room.acceptSession(asWs(ann), 'edit', false, null, null, true);
-    room.acceptSession(asWs(bob), 'edit', false, null, null, true);
+    room.acceptSession(asWs(ann), 'edit', null, null, true);
+    room.acceptSession(asWs(bob), 'edit', null, null, true);
     sendFrame(room, ann, hello(PICTURE));
     sendFrame(room, bob, hello());
     const annCursorFrames = () => ann.sent.filter((m) => m.includes('"kind":"cursor"')).length;
@@ -1990,7 +1718,7 @@ describe('DocumentRoom identity updates', () => {
   it('are ignored before hello, and keep the tab the session is on', () => {
     const { room } = newRoom();
     const ws = makeSocket();
-    room.acceptSession(asWs(ws), 'edit', false, null, null, true);
+    room.acceptSession(asWs(ws), 'edit', null, null, true);
     sendFrame(room, ws, {
       kind: 'identity',
       participant: { id: 'x', name: 'Early', color: '#000' },
@@ -2030,7 +1758,7 @@ describe('DocumentRoom and agent changesets', () => {
     role: 'edit' | 'view' = 'edit',
   ) {
     const ws = makeSocket();
-    room.acceptSession(asWs(ws), role, false, null, null, personTag !== null, personTag);
+    room.acceptSession(asWs(ws), role, null, null, personTag !== null, personTag);
     sendFrame(room, ws, { kind: 'hello', participant: { id, name: `Name ${id}`, color: '#abc' } });
     ws.sent.length = 0;
     return ws;
@@ -2242,7 +1970,7 @@ describe('DocumentRoom agent presence (docs/specs/024-agents/agent-presence.md)'
   it('clears every entry when the document is trashed, and a link’s entries when it is revoked', async () => {
     const { room, state } = newRoom();
     const ada = makeSocket();
-    seedSession(state, ada, presence('p-ada', 'edit'), true);
+    seedSession(state, ada, presence('p-ada', 'edit'));
     await put(room, body({ tokenId: 'tok_a', shareCode: 'CODE' }));
     await put(room, body({ tokenId: 'tok_b' }));
     const broadcast = (op: unknown) =>

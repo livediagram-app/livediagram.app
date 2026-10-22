@@ -8,37 +8,6 @@ const state = (kind: Parameters<typeof shapeAt>[0], extra: Record<string, unknow
     .join(' ');
 
 describe('stateAttributeOf (R14, VW22)', () => {
-  it('counts the collaboration family', () => {
-    expect(state('estimate', { responses: [{}, {}], responsesRevealed: true })).toBe(
-      'votes=2 revealed',
-    );
-    expect(state('estimate', { responses: [] })).toBe('votes=0');
-    expect(state('temperature', { responses: [{}] })).toBe('votes=1');
-    expect(state('done-check', { responses: [{}, {}, {}] })).toBe('done=3');
-    expect(state('idea-box', { ideaCards: ['a'], ideasRevealed: true })).toBe('ideas=1 revealed');
-    expect(state('idea-box', { ideaCards: [] })).toBe('ideas=0');
-    expect(state('roll-call', { rollCall: [{}, {}] })).toBe('present=2');
-  });
-
-  it('places an agenda', () => {
-    const segment = { label: 'A', minutes: 10 };
-    expect(state('agenda', { agendaItems: [segment, segment, segment], agendaCurrent: 1 })).toBe(
-      'item=2/3 minutes=30',
-    );
-    expect(state('agenda', { agendaItems: [segment, segment], agendaCurrent: undefined })).toBe(
-      'items=2 minutes=20',
-    );
-  });
-
-  it('names a decision, a pick and a reveal only when set', () => {
-    expect(state('decision', { decisionStatus: 'accepted' })).toBe('status=accepted');
-    expect(state('decision', { decisionStatus: undefined })).toBe('');
-    expect(state('picker', { pickerResult: 'Sam Lee' })).toBe('picked="Sam Lee"');
-    expect(state('picker', { pickerResult: undefined })).toBe('');
-    expect(state('reveal', { revealed: true })).toBe('revealed');
-    expect(state('reveal', { revealed: false })).toBe('');
-  });
-
   it('counts the structured kinds', () => {
     expect(state('stat-row', { stats: [{}, {}] })).toBe('stats=2');
     expect(state('process', { processSteps: ['a'] })).toBe('steps=1');
@@ -77,13 +46,5 @@ describe('stateAttributeOf (R14, VW22)', () => {
 
   it('gives every other kind none', () => {
     expect(state('square')).toBe('');
-  });
-
-  it('says what a session button starts', () => {
-    expect(state('session-button', { session: { tool: 'timer', minutes: 10 } })).toBe(
-      'session=timer:10m',
-    );
-    expect(state('session-button', { session: { tool: 'vote', dots: 3 } })).toBe('session=vote:3');
-    expect(state('session-button', { session: { tool: 'stopwatch' } })).toBe('session=stopwatch');
   });
 });

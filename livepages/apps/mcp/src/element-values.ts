@@ -72,18 +72,3 @@ export function elementsIssue(elements: readonly unknown[]): string | null {
   }
   return null;
 }
-
-// A graph node whose icon names no icon, as a sentence; null when every icon is one.
-export function graphIconIssue(
-  nodes: readonly { id: string; icon?: string | undefined }[],
-): string | null {
-  const bad = nodes.find((n) => n.icon !== undefined && !isIconId(n.icon));
-  if (!bad) return null;
-  const like = iconsLike(bad.icon!).map((i) => i.id);
-  return (
-    `node "${bad.id}": icon ${JSON.stringify(bad.icon)} is not an icon` +
-    (like.length
-      ? `; icons like it: ${like.join(', ')}.`
-      : '; search_icons finds one by what it shows.')
-  );
-}

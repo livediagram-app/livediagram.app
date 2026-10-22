@@ -54,12 +54,11 @@ type ClipboardEnvelope = {
 // Fields that carry WHO did something rather than WHAT the element is. They are
 // stripped on the way out, so a copy handed to another person (or pasted into a
 // document with a different participant set) never arrives carrying somebody
-// else's name against a comment or their answer against a card.
+// else's name against a comment.
 //
 // Comments go entirely rather than being anonymised: a thread is a conversation
 // about the original element, and re-attaching it to a copy in another document
-// misrepresents it whether or not the names survive. `responses` (docs/specs/012-collaboration/participant-responses.md) go
-// for the same reason — a vote is cast in a session, not a property of a shape.
+// misrepresents it whether or not the names survive.
 // An assigned `action` (docs/specs/012-collaboration/assigned-actions.md) is work handed to a person, and carries its own
 // id into the Activity index: a pasted copy made a second action under the
 // same id rather than a second piece of work anybody had assigned.

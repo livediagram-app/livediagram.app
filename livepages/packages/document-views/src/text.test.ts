@@ -53,9 +53,4 @@ describe('cellText', () => {
     expect(cellText('p99 | p50')).toBe('p99 \\| p50');
     expect(cellText('two\nlines "q"')).toBe('two\\nlines \\"q\\"');
   });
-
-  it('escapes ; and } inside entity braces', () => {
-    expect(cellText('a;b}', true)).toBe('a\\;b\\}');
-    expect(cellText('a;b}')).toBe('a;b}');
-  });
 });

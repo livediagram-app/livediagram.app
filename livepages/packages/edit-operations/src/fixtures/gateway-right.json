@@ -1,0 +1,125 @@
+{
+  "id": "t",
+  "name": "T",
+  "elements": [
+    {
+      "id": "gw",
+      "type": "shape",
+      "shape": "square",
+      "x": 0,
+      "y": 120,
+      "width": 180,
+      "height": 64,
+      "textSize": "md",
+      "label": "Gateway"
+    },
+    {
+      "id": "a",
+      "type": "shape",
+      "shape": "square",
+      "x": 270,
+      "y": 0,
+      "width": 180,
+      "height": 64,
+      "textSize": "md",
+      "label": "Service A"
+    },
+    {
+      "id": "b",
+      "type": "shape",
+      "shape": "square",
+      "x": 270,
+      "y": 120,
+      "width": 180,
+      "height": 64,
+      "textSize": "md",
+      "label": "Service B"
+    },
+    {
+      "id": "c",
+      "type": "shape",
+      "shape": "square",
+      "x": 270,
+      "y": 240,
+      "width": 180,
+      "height": 64,
+      "textSize": "md",
+      "label": "Service C"
+    },
+    {
+      "id": "50c8dd4e-1f53-41d7-baac-ce2ef3b8f357",
+      "type": "arrow",
+      "from": {
+        "kind": "pinned",
+        "elementId": "gw",
+        "anchor": "e"
+      },
+      "to": {
+        "kind": "pinned",
+        "elementId": "a",
+        "anchor": "w"
+      },
+      "arrowStyle": "angled",
+      "exactStart": true,
+      "exactEnd": true,
+      "curvePoints": [
+        {
+          "dx": 0,
+          "dy": 60
+        },
+        {
+          "dx": 0,
+          "dy": -60
+        }
+      ]
+    },
+    {
+      "id": "1b6d6522-e3dd-4f94-b849-2f55652d5381",
+      "type": "arrow",
+      "from": {
+        "kind": "pinned",
+        "elementId": "gw",
+        "anchor": "e"
+      },
+      "to": {
+        "kind": "pinned",
+        "elementId": "b",
+        "anchor": "w"
+      },
+      "arrowStyle": "straight",
+      "exactStart": true,
+      "exactEnd": true
+    },
+    {
+      "id": "4c9505b7-b31b-4d65-9cbd-29be328b1fb8",
+      "type": "arrow",
+      "from": {
+        "kind": "pinned",
+        "elementId": "gw",
+        "anchor": "e"
+      },
+      "to": {
+        "kind": "pinned",
+        "elementId": "c",
+        "anchor": "w"
+      },
+      "arrowStyle": "angled",
+      "exactStart": true,
+      "exactEnd": true,
+      "curvePoints": [
+        {
+          "dx": 0,
+          "dy": -60
+        },
+        {
+          "dx": 0,
+          "dy": 60
+        }
+      ]
+    }
+  ],
+  "theme": "brand",
+  "backgroundColor": "#fbfaf7",
+  "backgroundPattern": "grid",
+  "patternColor": "#cbd5e1"
+}

@@ -42,12 +42,12 @@ frame d41e "Slide 3"
 
 The example is abridged; a real outline prints every element.
 
-- **Header** names the tab, its counts (boxes, frames, lanes, arrows), its finish when set (`finish=sketch`), its pages (`4 pages: 3 slide, 1 article (view pages)`), elements on hidden layers and elements of unknown kinds, open threads and the revision.
-- **Kind** is the shape for shapes (`square`, `cylinder`, `frame`, `lane`), else the element type (`text`, `sticky`, `table`, `arrow`, `image`, `freehand`).
+- **Header** names the tab, its counts (boxes, frames, arrows), its finish when set (`finish=sketch`), its pages (`4 pages: 3 slide, 1 article (view pages)`), elements on hidden layers and elements of unknown kinds, open threads and the revision.
+- **Kind** is the shape for shapes (`square`, `cylinder`, `frame`), else the element type (`text`, `sticky`, `table`, `arrow`, `image`, `freehand`).
 - **Labels and notes** are JSON strings. Labels are cut at 60 characters, notes at 48, both on a word boundary
   with `…`.
-- **Containment** is derived: an element nests under the smallest frame or lane holding its centre, as
-  `mermaidFromTab` decides it. Edit operations report frame and lane
+- **Containment** is derived: an element nests under the smallest frame holding its centre
+  (`deriveContainers`). Edit operations report frame
   membership by the same rule; the editor's frame drag keeps its own.
 - **Arrows** print on their source line as `→ target "label" ~style`; an arrow with a free end prints on its own
   line. The arrow's own id is in the `graph` view.

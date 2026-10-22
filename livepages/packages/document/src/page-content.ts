@@ -98,7 +98,7 @@ export function withDuplicatedPage<T extends Pick<Tab, 'elements'>>(
   const to = after[index + 1]!.rect;
   const dx = to.x + to.width / 2 - (from.x + from.width / 2);
   const dy = to.y + to.height / 2 - (from.y + from.height / 2);
-  // The shared duplication (ids, links, mind-map parents, portals, arrow-on-arrow ends remapped),
+  // The shared duplication (ids, links, arrow-on-arrow ends remapped),
   // less any arrow tied to something left behind: pinned to an element off the page, or riding an
   // arrow that is not copied. Settled as a fixpoint, since leaving one arrow behind can leave its
   // riders behind too. Those stay with the original.

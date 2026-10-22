@@ -67,7 +67,7 @@ describe('quickStyleView: which sections show', () => {
   });
 
   it('offers no text alignment on a kind with its own face, but keeps it on a web component', () => {
-    for (const kind of ['agenda', 'session-button', 'comment-pin'] as const) {
+    for (const kind of ['pie-chart', 'progress-bar', 'rating'] as const) {
       expect(sections([shape('a', { shape: kind })]), kind).not.toContain('textAlign');
     }
     expect(sections([shape('a', { shape: 'banner' })])).toContain('textAlign');
@@ -77,8 +77,8 @@ describe('quickStyleView: which sections show', () => {
     expect(sections([shape('a', { iconId: 'server' })])).toContain('iconAlign');
   });
 
-  it('offers no icon alignment on a kind that places its own icon (a card, callout, header, boundary)', () => {
-    for (const kind of ['card', 'callout', 'site-header', 'boundary'] as const) {
+  it('offers no icon alignment on a kind that places its own icon (a card, callout, header)', () => {
+    for (const kind of ['card', 'callout', 'site-header'] as const) {
       expect(sections([shape('a', { shape: kind, iconId: 'server' })]), kind).not.toContain(
         'iconAlign',
       );

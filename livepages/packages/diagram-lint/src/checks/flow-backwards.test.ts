@@ -45,13 +45,11 @@ describe('flow-backwards', () => {
     ).toEqual(['rev']);
   });
 
-  it('takes a graph source\x27s direction, every flow, and says reverse the edge', () => {
+  it('takes a given direction, every flow, and says rewire the arrow', () => {
     const row = [box('a', 0, 0), box('b', 300, 0), arrow('x', 'b', 'a', ['w', 'e'])];
-    expect(
-      of(lint(tabOf(...row), { source: 'graph', flow: 'right' }), 'flow-backwards')[0],
-    ).toMatchObject({
+    expect(of(lint(tabOf(...row), { flow: 'right' }), 'flow-backwards')[0]).toMatchObject({
       message: 'b→a points left, against the flow right',
-      fix: 'reverse the edge, unless it is a loop',
+      fix: 'rewire x from=a to=b',
     });
     const left = [
       box('a', 900, 0),

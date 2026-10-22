@@ -132,12 +132,12 @@ livepages schema sticky                     # the element kinds, or one kind's f
 ## Change a Document
 
 ```bash
-livepages document create "Shop" -f arch.json            # from a graph, Mermaid or elements file
+livepages document create "Shop" -f arch.json            # from an elements file
 livepages document create "Pitch" --template slide-deck
 livepages element set "Auth flow" n3 label="Sign in" shape=stadium
 livepages edit "Auth flow" -f ops.txt                     # many edit operations at once
 livepages changeset revert "Auth flow" cs_8k2m4q7d1x
-livepages tab add "Auth flow" Details -f detail.mmd       # a new tab, empty, from a file or --template
+livepages tab add "Auth flow" Details -f detail.json      # a new tab, empty, from a file or --template
 livepages tab rm "Auth flow" Scratch                      # delete one tab; the others stay
 ```
 
@@ -175,13 +175,11 @@ livepages article set "Project brief" brief.md                  # write it back,
 livepages pull "Shop" --to docs --svg            # docs/shop.livepages.json, plus an SVG per tab
 livepages push docs/shop.livepages.json        # send back each tab whose elements changed
 livepages export --all --to backup --format json,svg,md
-livepages graph lint flow.mmd                    # check a graph or Mermaid file before writing it
-livepages graph render flow.mmd --png flow.png
 ```
 
 To draw beside your agent inside a developer tool, see [Documents in Your Developer Tools](/help/developers/workbenches/).
 
-`pull` writes the document in the format the editor imports, and never overwrites a file holding changes you have not pushed yet (add `--force` to drop them). `push` sends each changed tab as a changeset; a tab that changed on livepages since you pulled it is refused and named, so pull again. Only elements travel: each changed tab's elements are replaced by the file's, so an element you removed from the file is removed from the tab, and a tab the document lacks is created. Changes to a tab's name, theme or background are not sent (a tab a push creates goes up with its name), and no tab or document is ever deleted by a push. `export --all` writes every document you can read, for backups and docs. `graph lint` and `graph render` work on the file alone and send nothing.
+`pull` writes the document in the format the editor imports, and never overwrites a file holding changes you have not pushed yet (add `--force` to drop them). `push` sends each changed tab as a changeset; a tab that changed on livepages since you pulled it is refused and named, so pull again. Only elements travel: each changed tab's elements are replaced by the file's, so an element you removed from the file is removed from the tab, and a tab the document lacks is created. Changes to a tab's name, theme or background are not sent (a tab a push creates goes up with its name), and no tab or document is ever deleted by a push. `export --all` writes every document you can read, for backups and docs.
 
 ## Help, Guides and the Agent Skill
 

@@ -35,7 +35,7 @@ import {
   RatingAnimTiles,
   SankeyAnimTiles,
 } from '@/components/palette/context-menu-data-rows';
-import { ConceptAnimTiles, SequenceAnimTiles } from '@/components/palette/ElementAnimationTiles';
+import { ConceptAnimTiles } from '@/components/palette/ElementAnimationTiles';
 import { AnimationSetTiles } from '@/components/palette/AnimationSetTiles';
 import { setAnimationState } from '@/lib/animation-set-writes';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
@@ -71,8 +71,7 @@ type Handlers = Pick<
 type SectionProps = { open: boolean; onToggle: () => void; flush?: boolean };
 
 // The categories in menu order. Body sets come before the words they carry; arrows come last.
-type OwnCategory =
-  'icon' | 'chart' | 'sankey' | 'progress' | 'rating' | 'concept' | 'sequence' | 'arrow';
+type OwnCategory = 'icon' | 'chart' | 'sankey' | 'progress' | 'rating' | 'concept' | 'arrow';
 type Category = AnimationSetId | OwnCategory;
 const ORDER: readonly Category[] = [
   'shape',
@@ -86,7 +85,6 @@ const ORDER: readonly Category[] = [
   'progress',
   'rating',
   'concept',
-  'sequence',
   'text',
   'arrow',
 ];
@@ -97,7 +95,6 @@ const OWN_NAME: Record<OwnCategory, string> = {
   progress: 'Progress',
   rating: 'Rating',
   concept: 'Concept',
-  sequence: 'Sequence',
   arrow: 'Arrow',
 };
 
@@ -111,7 +108,6 @@ function ownCategoryOf(el: Element): OwnCategory | undefined {
   if (isProgressShape(el.shape)) return 'progress';
   if (isRatingShape(el.shape)) return 'rating';
   if (isConceptShape(el.shape)) return 'concept';
-  if (el.shape === 'sequence') return 'sequence';
   return undefined;
 }
 
@@ -269,10 +265,6 @@ function CategoryBody({
     )!;
     return <ConceptAnimTiles target={el} ops={h.elementStyle} />;
   }
-  if (category === 'sequence') {
-    const el = elements.find((e): e is ShapeElement => ownCategoryOf(e) === 'sequence')!;
-    return <SequenceAnimTiles target={el} ops={h.elementStyle} />;
-  }
   if (category === 'arrow') {
     const arrow = elements.find((el) => el.type === 'arrow');
     if (arrow?.type !== 'arrow') return null;
@@ -295,8 +287,7 @@ function CategoryBody({
   return (
     <AnimationSetTiles
       set={set}
-      // Shape offers what every member takes: a boundary only the motions that leave it in place
-      // (docs/specs/009-elements/boundary.md), a photo or a note only the motions (element-animations.md "Shape motions").
+      // Shape offers what every member takes: a photo or a note only the motions (element-animations.md "Shape motions").
       values={set === 'shape' ? sharedShapeAnimations(elements) : undefined}
       current={state.value}
       legacy={state.legacy}

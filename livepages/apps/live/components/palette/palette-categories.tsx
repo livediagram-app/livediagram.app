@@ -13,7 +13,6 @@ import {
   ComponentsTabIcon,
   DataTabIcon,
   DevicesTabIcon,
-  DiagramsTabIcon,
   DrawTabIcon,
   PopularTabIcon,
   IconsTabIcon,
@@ -23,14 +22,6 @@ import {
   TechTabIcon,
   WriteTabIcon,
   ParticipateTabIcon,
-} from '@livepages/ui';
-import {
-  AskGroupIcon,
-  WorkshopGroupIcon,
-  ModeGroupIcon,
-  MoveGroupIcon,
-  ReactionGroupIcon,
-  RecordGroupIcon,
 } from '@livepages/ui';
 import { Glyph } from '@livepages/ui';
 
@@ -56,7 +47,7 @@ function WireframeTabIcon() {
  *
  * Order IS layout: the category picker renders the dropdown straight from this
  * array, grouping by `group` under the CATEGORY_BANDS headings (0 Common,
- * 1 Structure, 2 Decorate, 3 Dynamic, 6 Collaborate).
+ * 1 Structure, 2 Decorate, 3 Dynamic).
  */
 export const PALETTE_CATEGORIES: {
   id: string;
@@ -122,20 +113,8 @@ export const PALETTE_CATEGORIES: {
     id: 'build',
     label: 'Build',
     group: 1,
-    description:
-      'The structural elements: mind nodes, org charts, flowcharts, sequence diagrams, lanes, frames, stacks, boundaries, a diagram key, tables, and Sankey diagrams.',
+    description: 'The structural elements: frames, stacks, tables, and Sankey diagrams.',
     icon: <BuildTabIcon />,
-  },
-  {
-    // Diagrams and Layout (docs/specs/010-palette/build-category.md "In Diagram: Diagrams and Layout"): Diagram mode's
-    // Build as two, what is built apart from what it is laid out in. No tiles of their own: Diagram's layout lists
-    // Build's (and a few of Components') in them.
-    id: 'diagrams',
-    label: 'Diagrams',
-    group: 1,
-    description:
-      'The structures that grow as you type: mind nodes, org charts, flowcharts, sequence diagrams, tables and entities.',
-    icon: <DiagramsTabIcon />,
   },
   {
     // Concept graphics (docs/specs/009-elements/concept-graphics.md): the shapes ideas come in, as single elements.
@@ -147,19 +126,11 @@ export const PALETTE_CATEGORIES: {
     icon: <ConceptsTabIcon />,
   },
   {
-    id: 'layout',
-    label: 'Layout',
-    group: 1,
-    description:
-      'What a diagram is arranged and labelled with: lanes, frames, stacks, boundaries, a diagram key, cards, badges and step numbers.',
-    icon: <BuildTabIcon />,
-  },
-  {
     id: 'components',
     label: 'Components',
     group: 1,
     description:
-      'Ready-made blocks that follow the tab theme: the Card, Badge and Step number, the web components (Banner, Callout, Stat row, Process, Hero, Header) and the code block, checklist and entity. Each is one element that re-flows as you resize it, with every line of text editable in place.',
+      'Ready-made blocks that follow the tab theme: the Card, Badge and Step number, the web components (Banner, Callout, Stat row, Process, Hero, Header) and the code block and checklist. Each is one element that re-flows as you resize it, with every line of text editable in place.',
     icon: <ComponentsTabIcon />,
   },
   {
@@ -198,7 +169,7 @@ export const PALETTE_CATEGORIES: {
     label: 'Media',
     group: 2,
     description:
-      'Pictures and figures: an uploaded image or a circular avatar; in Pages, embeds and a Tab Window onto another tab.',
+      'Pictures and figures: an uploaded image or a circular avatar; in Pages, embeds, a Tab Window onto another tab and a Link Card.',
     icon: <MediaTabIcon />,
   },
   {
@@ -208,57 +179,5 @@ export const PALETTE_CATEGORIES: {
     description:
       'Charts and meters: pie, bar and line charts, progress bars and rings, and ratings.',
     icon: <DataTabIcon />,
-  },
-  // The Collaborate elements (docs/specs/010-palette/palette-top-level-categories.md): everything whose
-  // content arrives at RUNTIME rather than being drawn by the author, the ones that do something when
-  // pressed and the ones that collect what the room thinks. Their own Collaborate band. Six categories, one per group, in
-  // room-first order, in place of one Collaborate category with a group browser inside it, since
-  // every group is something a facilitator reaches for mid-session and a parent category was a
-  // click in front of each. Their tiles: COLLABORATE_CATEGORY_GROUPS.
-  {
-    id: 'collab-ask',
-    label: 'Ask',
-    group: 6,
-    description:
-      'Put a question to the room: dot votes, estimates, a temperature check and an idea box.',
-    icon: <AskGroupIcon />,
-  },
-  {
-    id: 'collab-tools',
-    label: 'Tools',
-    group: 6,
-    description:
-      'Run the session: a timer or a stopwatch, a reveal zone, a done check and a picker.',
-    icon: <WorkshopGroupIcon />,
-  },
-  {
-    id: 'collab-record',
-    label: 'Record',
-    group: 6,
-    description:
-      'Leave a record on the canvas: comments, actions, an agenda, decisions and a roll call.',
-    icon: <RecordGroupIcon />,
-  },
-  {
-    id: 'collab-react',
-    label: 'React',
-    group: 6,
-    description: 'Pads that throw confetti, sparkles, hearts, applause or fireworks for everyone.',
-    icon: <ReactionGroupIcon />,
-  },
-  {
-    id: 'collab-mode',
-    label: 'Selection Mode',
-    group: 6,
-    description:
-      'Buttons that hand everyone a selection mode: select, pan, laser, spotlight and more.',
-    icon: <ModeGroupIcon />,
-  },
-  {
-    id: 'collab-navigate',
-    label: 'Navigate',
-    group: 6,
-    description: 'Take people somewhere: a portal, a bring-focus button and a link card.',
-    icon: <MoveGroupIcon />,
   },
 ];

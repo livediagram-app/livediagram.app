@@ -4,7 +4,7 @@
 // Lives in editor state (not Canvas) so other components (e.g. a
 // status bar later) can read it without prop-drilling through Canvas.
 
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import type { CanvasTool } from '@/components/palette/palette.types';
 import { isMobileViewportSync } from '@/lib/responsive';
 import { track } from '@/lib/telemetry';
@@ -27,12 +27,7 @@ export function useCanvasTool({ defaultPan = false }: { defaultPan?: boolean } =
   // (high frequency), and internal auto-switches (e.g. laser to pan
   // when a draw starts) keep the raw setter so they don't count as
   // "used laser".
-  // Whatever tool you were in before the current one, for any mode. A Selection Mode button (docs/specs/009-elements/mode-button.md) presses back
-  // out of its own mode with this, so a button that switches you in is never a
-  // one-way door.
-  const priorToolRef = useRef<CanvasTool>('select');
   const selectCanvasTool = (tool: CanvasTool) => {
-    if (tool !== canvasTool) priorToolRef.current = canvasTool;
     if (tool === 'laser' && canvasTool !== 'laser') track('Canvas', 'Used', 'Laser');
     if (tool === 'spotlight' && canvasTool !== 'spotlight') track('Canvas', 'Used', 'Spotlight');
     if (tool === 'format' && canvasTool !== 'format') track('Canvas', 'Used', 'FormatPainter');
@@ -43,9 +38,5 @@ export function useCanvasTool({ defaultPan = false }: { defaultPan?: boolean } =
     if (tool === 'slide-deck' && canvasTool !== 'slide-deck') track('UI', 'Opened', 'SlideDeck');
     setCanvasTool(tool);
   };
-  // Where "go back" leads: the tool before the current one, never the current
-  // one itself (a stale ref must not trap the user in the mode they're leaving).
-  const toolBeforeCurrent = (): CanvasTool =>
-    priorToolRef.current === canvasTool ? 'select' : priorToolRef.current;
-  return { canvasTool, setCanvasTool, selectCanvasTool, toolBeforeCurrent };
+  return { canvasTool, setCanvasTool, selectCanvasTool };
 }

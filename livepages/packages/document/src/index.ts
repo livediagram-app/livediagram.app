@@ -3,10 +3,6 @@
 // handles document data. See docs/specs/006-document/document-structure.md and
 // docs/specs/008-canvas/canvas-and-palette.md.
 
-// Live session-tool types used by the `Tab.timer` / `Tab.vote` fields
-// below. Type-only import (erased at build) so the index <-> session
-// circular reference is fine. The runtime helpers are re-exported lower
-// down via `export * from './session'`.
 // Value import from the data-shapes LEAF module (it imports only types from
 // here, so no cycle at runtime) — elementSupportsText excludes the
 // self-drawing data shapes the same way the inline editor does.
@@ -16,10 +12,9 @@ import type { TabKind } from './tab-kind';
 import type { EditorMode } from './editor-mode';
 import type { Page, PageOrientation } from './page';
 import type { ArticleFlow } from './article-flow';
-import type { TabTimer, TabVote } from './session';
 
 // Layer type used by the `Tab.layers` field below (docs/specs/006-document/layers.md). Type-only
-// import for the same erasability reason as session; the runtime layer
+// import (erased at build) so the index <-> layers circular reference is fine; the runtime layer
 // helpers are re-exported lower down via `export * from './layers'`.
 import type { Layer } from './layers';
 
@@ -398,13 +393,6 @@ export type Tab = {
   // loose in another. Unset / empty = loose. See tab-folders.ts for
   // the normalize + grouping helpers.
   folder?: string;
-  // Live session tools (docs/specs/012-collaboration/session-tools.md), facilitator-run + synced to every
-  // participant via the normal tab sync. `timer` is a countdown /
-  // stopwatch; `vote` is a dot-voting session. Both are edit-role
-  // controlled (the room drops view-role mutations) and absent until a
-  // facilitator starts one. See session.ts for the pure helpers.
-  timer?: TabTimer;
-  vote?: TabVote;
   // Photoshop-style layers (docs/specs/006-document/layers.md), ordered BOTTOM -> TOP (index 0
   // paints lowest). Absent = the tab behaves as one implicit default
   // layer; the array is materialised lazily on the first layer
@@ -422,13 +410,7 @@ export * from './chip';
 export * from './attachment';
 export * from './pointer-note';
 export * from './tag-colours';
-export * from './diagram-key';
 export * from './stack';
-export * from './sequence-element';
-export * from './sequence-text';
-export { sequenceDrawing, type SequenceLook } from './svg-render-sequence';
-export * from './person-node';
-export * from './boundary';
 export * from './concept';
 export * from './concept-timeline';
 export * from './concept-ramp';
@@ -531,19 +513,6 @@ export * from './animation';
 export * from './animation-membership';
 export * from './arrow-avoidance';
 export * from './nearest-towards';
-export * from './flowchart';
-export * from './flowchart-layout';
-export * from './flowchart-grow';
-export * from './flowchart-settle';
-export * from './mind-flow';
-export * from './mind-connector-route';
-export * from './mind-map';
-export * from './mind-layout';
-export * from './mind-grow';
-export * from './mind-fit';
-export * from './mind-outline-text';
-export * from './mind-outline-marks';
-export * from './mind-outline';
 export * from './youtube';
 export * from './arrow-path';
 export * from './arrow-dash';
@@ -554,10 +523,8 @@ export * from './arrow-bend';
 export * from './arrow-scale';
 export * from './label-font';
 export * from './table-cell-font';
-export * from './lane-gutter';
 export * from './arrow-style';
 export * from './er-heads';
-export * from './er-hub-first';
 export * from './border-style';
 // Element drop shadows (docs/specs/008-canvas/element-shadows.md): model, presets + render builders.
 export * from './shadow';
@@ -575,9 +542,8 @@ export * from './drawn-outline-finish';
 // Which elements can be rotated (an annotation marker cannot).
 export * from './rotation';
 export * from './shape-marker';
-// Selection modes a Mode Button can switch to (docs/specs/009-elements/mode-button.md).
+// Fixed-size elements.
 export * from './selection-mode';
-export * from './behaviour-skin';
 export * from './comments';
 export * from './collab-index-rows';
 export * from './comment-thread';
@@ -601,10 +567,6 @@ export * from './sankey-model';
 export * from './sankey-layout';
 export * from './sankey-frame';
 export * from './sankey-text';
-export * from './entity-geometry';
-export * from './entity-fields';
-export * from './entity-look';
-export * from './entity-related';
 export * from './code-themes';
 export * from './chart-palettes';
 export * from './chart-frame';
@@ -613,21 +575,12 @@ export * from './chart-types';
 export * from './chart-marks';
 export * from './chart-axis';
 export * from './chart-values';
-// Per-participant responses (docs/specs/012-collaboration/participant-responses.md) + the collaboration element family
-// (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md). Both leaf modules, for the factories cycle.
-export * from './responses';
-export * from './collab-shapes';
-export * from './agenda-current';
 export * from './shape-geometry';
-export * from './actor-figure';
 export * from './color-wash';
 export { labelOn } from './readable-colour';
 export * from './quick-swatches';
 export * from './quick-swatch-rederive';
 export * from './web-components';
-// The Behaviours family (docs/specs/010-palette/palette-top-level-categories.md): which kinds are in it, and which of them
-// draw their own `…` rather than taking the shared settings one.
-export * from './behaviour-shapes';
 export * from './colors';
 export * from './cell-colours';
 export * from './table-header-colours';
@@ -638,13 +591,10 @@ export * from './icon-weight';
 // Per-range label formatting (docs/specs/008-canvas/canvas-and-palette.md): the runs-as-delta model + pure
 // helpers shared by the canvas renderer and the contentEditable editor.
 export * from './rich-text';
-export * from './person-card';
 
 export * from './factories';
 export * from './whiteboard';
 export * from './segment-geometry';
-export * from './graph-authoring';
-export * from './mermaid';
 export * from './duplicate';
 export * from './polyline';
 export * from './pen-stroke';
@@ -673,44 +623,25 @@ export * from './auto-layout';
 // The editor's Tidy Up profile (docs/specs/008-canvas/layout-cleanup.md): whether a style suits a tab.
 export { tidyLayoutElements, tidyMindmapFits } from './auto-layout-tidy';
 
-// Cluster-aware graph layout (docs/specs/020-import-export/mermaid.md): Mermaid subgraphs as frames.
-export * from './auto-layout-clusters';
-export { frameHeadingRect } from './auto-layout-cluster-seats';
 // The layout engine's gaps, which edit operations place and make room by.
 export { LAYER_GAP, SIBLING_GAP } from './auto-layout-shared';
+// The nodes a layout leaves loose swept into rows, and the room a container keeps round its members.
+export { FRAME_PAD, FRAME_TOP, sweepEdgelessNodes } from './auto-layout-sweep';
 
-// Authoring input shared by the MCP, the api and the CLI (docs/specs/015-api/mcp-server.md §4.7,
-// §4.7a): raw elements made safe, graph input capped and laid out, and finished tabs built.
+// Authoring input shared by the MCP, the api and the CLI (docs/specs/015-api/mcp-server.md §4.7a):
+// raw elements made safe, labels capped and boxes sized to them, and finished tabs built.
 export * from './element-normalise';
-export * from './graph-input';
-export { KINK_RUN, arrowEndKey } from './graph-notches';
-export * from './graph-limits';
+export * from './label-box';
 export * from './tab-builders';
-
-// Shared by the editor's text export + import and reusable by the api / MCP.
 
 // Headless SVG renderer (docs/specs/015-api/mcp-server.md §5): per-element drawers + renderElementsToSvg,
 // shared by the in-app export and the MCP worker's inline image render.
 export * from './svg-render';
-export {
-  isSequenceDiagram,
-  parseSequenceDiagram,
-  SEQUENCE_MAX_ITEMS,
-  SEQUENCE_MAX_PARTICIPANTS,
-  type SequenceDiagram,
-} from './mermaid-sequence';
 export { ELEMENT_FIELD_VALUES, fieldValueIssue } from './element-field-values';
-export { buildMindTemplate, MIND_HUES, type MindHue, type MindSpec } from './mind-template';
 export { inlineIconGap, inlineIconMetrics } from './svg-render-inline-icon';
 export { SKETCH_ART_FILTER_ID, SKETCH_FACE_FILTER, svgSketchArtFilter } from './svg-render-sketch';
 export * from './svg-render-table';
-// The SVG face kit's marks: text, line fitting and colour mixing.
-export {
-  fitLine as svgFitLine,
-  mixHex,
-  text as svgText,
-  wrapLines as svgWrapLines,
-} from './svg-render-face-kit';
+export { mixHex } from './color-wash';
 
 // Theme engine (docs/specs/011-theme/multicolour-themes.md, /42, /44, /48): theme catalogue + types + the pure
 // recolour / switch / reset / preset transforms, shared by the editor and the
@@ -782,7 +713,7 @@ export * from './adder';
 export * from './element-fingerprint';
 
 // Per-element deltas for the fields many participants write at once
-// (docs/specs/012-collaboration/collab-race-hardening.md): answers, ideas, checklist ticks, comments.
+// (docs/specs/012-collaboration/collab-race-hardening.md): checklist ticks and comments.
 export * from './element-deltas';
 
 // The room's record of those deltas, merged into each save so D1 keeps what
@@ -794,10 +725,6 @@ export * from './collab-ledger';
 // server route so the contiguous-run invariant has a single
 // implementation.
 export * from './tab-folders';
-
-// Live session tools (docs/specs/012-collaboration/session-tools.md): the TabTimer / TabVote types used by the
-// Tab fields above, plus the pure timer + vote helpers.
-export * from './session';
 
 // The curated typefaces (docs/specs/004-interface-design/fonts.md): the catalogue, the id -> CSS stack
 // resolver, and the Google Fonts stylesheet href. Lives here rather than in
@@ -811,7 +738,6 @@ export * from './fonts';
 // because the api and the MCP worker can answer the same questions.
 export * from './slide-deck';
 export * from './slide-deck-pages';
-export * from './lane-seam-snapping';
 // Refs, slug ids, kind words, derived containment and the style keys (docs/specs/024-agents/document-views.md):
 // how views, edit operations and the lint name and place elements alike.
 export * from './element-refs';
@@ -821,8 +747,6 @@ export * from './tab-names';
 export * from './svg-render-pages';
 export * from './article-draw-ops';
 export * from './article-layout-estimate';
-export { agendaFitHeight } from './svg-render-agenda';
-export * from './session-button-text';
 export { lineChars } from './svg-render-web';
 export * from './drawn-count';
 // The a / an rule for copy built around a name, shared with every package above this one.

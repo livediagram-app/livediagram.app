@@ -12,7 +12,6 @@
 // Pure; no DOM.
 
 import { BORDER_STROKE_PX, DEFAULT_BORDER_STROKE, cornerRadiusPx } from './border-style';
-import { actorFigureRect } from './actor-figure';
 import { defaultFillColor } from './colors';
 import { rotatePoint, type Point } from './geometry-primitives';
 import type { Element, ShapeElement } from './index';
@@ -51,11 +50,7 @@ const DRAWN_KINDS: ReadonlySet<ShapeKind> = new Set(SHAPE_GEOMETRY_KINDS);
 // The corner a CSS-drawn box gets with no radius of its own (element-variant.ts).
 export const CSS_DEFAULT_RADIUS_PX = 8;
 // The parts that take the element's fill (shape-geometry.ts roles).
-export const FILLED_ROLES: ReadonlySet<ShapePartRole> = new Set<ShapePartRole>([
-  'main',
-  'outline',
-  'head',
-]);
+export const FILLED_ROLES: ReadonlySet<ShapePartRole> = new Set<ShapePartRole>(['main', 'outline']);
 // No drawn outline reaches further from the centre than this many half
 // diagonals of its box (the speech bubble's tail hangs to 120% of the height),
 // so a brush beyond it is skipped without building the outline.
@@ -173,9 +168,7 @@ export function partLines(part: ShapePart, seg: OutlineSegments = HIT_SEGMENTS):
 function drawnOutline(el: ShapeElement, filled: boolean): Omit<ShapeHitOutline, 'halfWidth'> {
   const geometry = shapeGeometry(el.shape, el.width / el.height);
   if (!geometry) return { lines: [], fills: [] };
-  const area =
-    el.shape === 'actor' ? actorFigureRect(el) : { x: 0, y: 0, width: el.width, height: el.height };
-  const fit = boxFit(geometry, area);
+  const fit = boxFit(geometry, { x: 0, y: 0, width: el.width, height: el.height });
   const place = (p: Point): Point => ({ x: fit.ox + p.x * fit.sx, y: fit.oy + p.y * fit.sy });
   const lines: HitLine[] = [];
   const fills: Point[][] = [];

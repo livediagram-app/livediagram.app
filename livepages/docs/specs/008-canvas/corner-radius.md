@@ -1,10 +1,10 @@
 # Corner radius
 
 A rectangle's corners (and the other free-corner boxes: the browser frame, the banner, the
-header bar, the callout card, a stat row's cards, an image, a mind node) take a **corner
+header bar, the callout card, a stat row's cards, an image) take a **corner
 preset**, `borderRadius`: **None**, **Small** (4 px), **Medium** (12 px), **Large** (24 px) or
 **Full** (a pill, or a circle on a square). Unset, each kind keeps its own default corner (8 px
-for a shape, 4 px for an image, 12 px for a mind node).
+for a shape, 4 px for an image).
 
 ## Corners scale down on small shapes
 

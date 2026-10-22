@@ -6,7 +6,6 @@ import {
   createFreehand,
   createImage,
   createLinkCard,
-  createPinnedArrow,
   createSticky,
   createTable,
   createText,
@@ -36,19 +35,8 @@ const IMAGE = ['imageId', 'naturalWidth', 'naturalHeight', 'alt', 'credit'];
 
 const theirs = (el: Element, id: string): Element => ({ ...el, id, addedBy: THEM }) as Element;
 
-const root = theirs({ ...createShape('mind-node', 0, 0), label: 'Root' }, 'root');
 const SAMPLES: Sample[] = [
   { name: 'shape (square)', el: theirs(createShape('square', 0, 0), 'sq'), allowed: TEXT },
-  {
-    name: 'shape (Behaviour: session button)',
-    el: theirs(createShape('session-button', 0, 0), 'sb'),
-    allowed: [],
-  },
-  {
-    name: 'shape (mind node)',
-    el: theirs({ ...createShape('mind-node', 300, 0), mindParentId: 'root' }, 'mn'),
-    allowed: [...TEXT, 'x', 'y'],
-  },
   { name: 'text', el: theirs(createText(0, 0), 'tx'), allowed: TEXT },
   {
     name: 'text (sizes to its words)',
@@ -80,12 +68,6 @@ const SAMPLES: Sample[] = [
   { name: 'link card', el: theirs(createLinkCard(0, 0), 'lc'), allowed: TEXT },
   { name: 'video', el: theirs(createVideo(0, 0), 'vi'), allowed: TEXT },
   { name: 'arrow (free)', el: theirs(createArrow(0, 0, 100, 100), 'af'), allowed: TEXT },
-  {
-    // Only the faces turn: the ends stay pinned to the same nodes (checked below).
-    name: 'arrow (mind connector)',
-    el: theirs(createPinnedArrow('root', 'e', 'mn', 'w'), 'ac'),
-    allowed: [...TEXT, 'from', 'to'],
-  },
 ];
 
 // Values a field is offered: the kind a real client would send for it, and some it would not.
@@ -99,11 +81,7 @@ function offers(stored: unknown): unknown[] {
 }
 
 function tabFor(sample: Sample): Tab {
-  const elements =
-    sample.el.id === 'mn' || sample.el.id === 'ac'
-      ? [root, ...(sample.el.id === 'ac' ? [SAMPLES[2]!.el] : []), sample.el]
-      : [sample.el];
-  return { id: 't', name: 't', elements };
+  return { id: 't', name: 't', elements: [sample.el] };
 }
 
 describe('the participant content rule never leaks', () => {
@@ -135,44 +113,36 @@ describe('the participant content rule never leaks', () => {
             ).toEqual(stored[key]);
           }
           if (r.changed) landed++;
-          // A connector's ends never move to another element.
-          if (sample.el.type === 'arrow' && sample.allowed.includes('from')) {
-            for (const end of ['from', 'to'] as const) {
-              expect((merged[end] as Bag).elementId).toEqual((stored[end] as Bag).elementId);
-            }
-          }
         }
       }
-      // Not vacuous: something the list allows does land (a Behaviour allows nothing).
+      // Not vacuous: something the list allows does land.
       if (sample.allowed.length > 0) expect(landed, sample.name).toBeGreaterThan(0);
     });
   }
 
-  // A connector is addable only between two mind nodes on the tab, and this tab holds the root alone.
-  it('lets no add through but a sticky, text, image, or a mind node on a map', () => {
-    const tab = { id: 't', name: 't', elements: [root] } as Tab;
+  it('lets no add through but a sticky, text or image', () => {
+    const tab = { id: 't', name: 't', elements: [] } as Tab;
     const verdict = (el: Element) =>
       applyParticipantOp(tab, { kind: 'add', element: el, at: 1 }, ME).result;
     for (const s of SAMPLES) {
       const fresh = { ...(s.el as Bag) };
       delete fresh.addedBy;
       fresh.id = `new-${s.el.id}`;
-      const ok = ['sticky', 'text', 'image'].includes(s.el.type) || s.el.id === 'mn';
+      const ok = ['sticky', 'text', 'image'].includes(s.el.type);
       expect(verdict(fresh as Element), s.name).toBe(ok ? 'applied' : 'refused');
     }
   });
 
-  it("removes nothing of someone else's but a mind node or its connector", () => {
+  it("removes nothing of someone else's", () => {
     for (const s of SAMPLES) {
       const tab = tabFor(s);
       const r = applyParticipantOp(tab, { kind: 'remove', id: s.el.id }, ME);
-      const ok = s.el.id === 'mn' || s.el.id === 'ac';
-      expect(r.result, s.name).toBe(ok ? 'applied' : 'refused');
+      expect(r.result, s.name).toBe('refused');
     }
   });
 
   it("never changes a tab's own fields", () => {
-    const tab = tabFor(SAMPLES[6]!);
+    const tab = tabFor(SAMPLES[4]!);
     for (const meta of [
       { name: 'Renamed' },
       { mode: 'draw' },

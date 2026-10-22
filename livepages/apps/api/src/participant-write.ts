@@ -1,18 +1,15 @@
-// A Participant's content and answers, written by the room (docs/specs/013-workspace/share-roles.md "Integrity";
-// blueprint "Behaviour and state"). A Participant never saves a whole tab: the room applies each element op it
-// sends to the STORED tab through the participant content rule, and folds its dots, responses and ideas from the
-// room's ledger, then compare-and-swaps the row.
+// A Participant's content, written by the room (docs/specs/013-workspace/share-roles.md "Integrity"; blueprint
+// "Behaviour and state"). A Participant never saves a whole tab: the room applies each element op it sends to the
+// STORED tab through the participant content rule, then compare-and-swaps the row.
 //
 // Called ONLY from the document's room, on its tab write queue, so these writes never race each other. The
 // compare-and-swap is the second line, against an editor's autosave and a linked tab's other room.
 
 import {
   applyParticipantOp,
-  mergeLedgerAnswersIntoTab,
   type ElementOp,
   type ParticipantOpResult,
   type Tab,
-  type TabLedger,
 } from '@livepages/document';
 import { getTabData, swapTabData } from './db';
 import { tabStatsOf } from './db/tab-stats';
@@ -81,17 +78,4 @@ export async function writeParticipantOp(
   });
   if (!result.ok) return result;
   return { ok: true, outcome: result.answer };
-}
-
-// The room's recorded answers for a tab into its stored row; `changed` is false when the row already held them.
-export async function writeParticipantAnswers(
-  env: Env,
-  req: { documentId: string; tabId: string; ledger: TabLedger },
-): Promise<{ ok: true; changed: boolean } | ParticipantWriteFailure> {
-  const result = await swapTab(env, req.documentId, req.tabId, (tab) => {
-    const merged = mergeLedgerAnswersIntoTab(tab, req.ledger);
-    return merged === tab ? { next: null, answer: false } : { next: merged, answer: true };
-  });
-  if (!result.ok) return result;
-  return { ok: true, changed: result.answer };
 }

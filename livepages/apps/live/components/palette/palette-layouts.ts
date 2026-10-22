@@ -106,8 +106,8 @@ const PAGES: PaletteLayout = {
     },
     { id: 'shapes' },
     { id: 'write', tiles: PAGES_WRITE },
-    // No Build (docs/specs/010-palette/build-category.md "In Pages: no Build"): mind maps, flowcharts, lanes and
-    // frames organise a diagram, not a visual page, and the Build tiles a page uses join the categories they sit
+    // No Build (docs/specs/010-palette/build-category.md "In Pages: no Build"): frames organise a diagram, not a
+    // visual page, and the Build tiles a page uses join the categories they sit
     // beside: the Stack in Components and the Table in Data. The Timeline is in Concepts, as everywhere.
     { id: 'concepts', tiles: CONCEPTS_WITH_SANKEY },
     { id: 'components', tiles: PAGES_COMPONENTS },

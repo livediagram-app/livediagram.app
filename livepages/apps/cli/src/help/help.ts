@@ -20,7 +20,7 @@ const GROUPED_ROWS = [
   },
   {
     words: ['pull', 'push'],
-    after: 'graph',
+    after: 'presence',
     summary: 'one document to a file and back; export --all',
   },
 ] as const;

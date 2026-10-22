@@ -28,12 +28,12 @@ Each **lint finding** has a code, a severity, the refs involved and a fix phrase
 | `flow-backwards`    | info     | Arrows point against the flow direction (not one that closes a loop: a retry runs back by design)                                                                                                                                                                                                                    |
 | `text-overflow`     | warning  | Two texts print over each other, on any tab; and a page's text needs more lines than its box holds (text on a page is its content, not a caption). Turned text and text on a curve are left out                                                                                                                      |
 
-- A fix never lays out shapes alone on a tab with frames or lanes: `layout` would leave the groups behind, so there a
+- A fix never lays out shapes alone on a tab with frames: `layout` would leave the groups behind, so there a
   crossing fix reroutes an arrow, and the drawing's shape is the groups' to set.
 - The error codes judge the diagram's graph. Boxes no arrow connects are decoration (an icon on a card, a sticker,
   a Venn circle) and may overlap by design; a line with both ends free is a drawing, not a broken arrow. The
   editor's templates use both and lint without errors.
-- The group codes judge frames, not lanes. An element belongs to the smallest frame or lane holding its centre,
+- The group codes judge frames. An element belongs to the smallest frame holding its centre,
   the containment the views use.
 - Whether the story reads is not linted; that is what the preview is for.
 

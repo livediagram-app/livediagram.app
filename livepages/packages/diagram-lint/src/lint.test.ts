@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { computeRefs, type Element } from '@livepages/document';
-import { arrow, box, frame, lint, quiet, tabOf } from './fixtures/build';
-import { graphEdgeIds, lintGraph, lintTab } from './lint';
+import { arrow, box, frame, lint, tabOf } from './fixtures/build';
+import { lintTab } from './lint';
 
 const messy = () =>
   tabOf(
@@ -74,7 +74,6 @@ describe('lintTab', () => {
     expect(fp).toBe('[lint] run');
     for (const value of Object.values(fields))
       expect(['number', 'boolean', 'string'].includes(typeof value)).toBe(true);
-    expect(fields.source).toBe('tab');
     expect(JSON.stringify(fields)).not.toMatch(/alone|7f3a/);
     expect(fields['box-overlap']).toBe(1);
   });
@@ -89,32 +88,5 @@ describe('lintTab', () => {
       console.info = info;
     }
     expect(calls).toContain('[lint] run');
-  });
-});
-
-describe('lintGraph', () => {
-  it('lays a graph out deterministically, its arrows named e1, e2, … clear of node ids (LN28)', () => {
-    const input = {
-      nodes: [
-        { id: 'a', label: 'A' },
-        { id: 'e1', label: 'E' },
-      ],
-      edges: [{ from: 'a', to: 'e1' }],
-    };
-    const { elements, report } = lintGraph(input, { log: quiet });
-    expect(elements.filter((el) => el.type === 'arrow').map((el) => el.id)).toEqual(['e1-2']);
-    expect(report.findings).toEqual([]);
-    expect(lintGraph(input, { log: quiet })).toEqual(lintGraph(input, { log: quiet }));
-    const next = graphEdgeIds({ nodes: [{ id: 'e1' }, { id: 'e1-2' }], edges: [] });
-    expect([next(), next()]).toEqual(['e1-3', 'e2']);
-  });
-
-  it("judges against a graph source's direction", () => {
-    const input = {
-      direction: 'right' as const,
-      nodes: [{ id: 'a' }, { id: 'b' }],
-      edges: [{ from: 'a', to: 'b' }],
-    };
-    expect(lintGraph(input, { log: quiet }).report.findings).toEqual([]);
   });
 });

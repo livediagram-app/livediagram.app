@@ -6,7 +6,7 @@ import type { Dispatch, SetStateAction } from 'react';
 // via inline import('...') so this file only needs the bare-named
 // types as top-level imports.
 import type { PointerEvent as ReactPointerEvent, Ref } from 'react';
-import type { CommentMention, EmbedProvider, Finish, FrameHandle } from '@livepages/document';
+import type { EmbedProvider, Finish, FrameHandle } from '@livepages/document';
 import type {
   BackgroundPattern,
   EditorMode,
@@ -95,87 +95,10 @@ export type CanvasProps = {
   onSelectMarquee: (ids: Set<string>) => void;
   canvasTool: CanvasTool;
   onSetCanvasTool: (tool: CanvasTool) => void;
-  // Press a Mode Button element (docs/specs/009-elements/mode-button.md): hands the LOCAL participant the
-  // mode the element carries. Optional — the read-only embed has no tool picker
-  // to drive, so its buttons render inert.
-  onPressModeButton?: (element: import('@livepages/document').ShapeElement) => void;
-  // Bring Focus (docs/specs/012-collaboration/bring-focus.md): ask everyone else in the room to come and look at
-  // this element. Absent on a surface with nobody to ask (an export, a solo
-  // canvas), which renders the face inert.
-  onPressFocusButton?: (element: import('@livepages/document').ShapeElement) => void;
-  // Session button (docs/specs/012-collaboration/session-button.md): starts the tool the pressed element carries.
-  onPressSessionButton?: (element: import('@livepages/document').ShapeElement) => void;
-  // True when this viewer can't start session tools (view role): the button
-  // renders inert and says why instead of failing silently on press.
-  sessionStartBlocked?: boolean;
-  // Who is running the session when it is somebody else (docs/specs/012-collaboration/facilitator.md), so a blocked
-  // face names the person to ask; null when nobody else holds the baton.
-  sessionRunBy?: string | null;
-  // The tab timer's state for the session button's face (docs/specs/012-collaboration/session-button.md).
-  timerState?: import('@/components/canvas/SessionButtonFace').TimerState;
-  // Reveal zones (docs/specs/009-elements/reveal-zone.md) this viewer has lifted for themselves. Ephemeral
-  // and local — the shared state is `revealed` on the element.
-  revealedIds?: ReadonlySet<string>;
-  onToggleReveal?: (elementId: string) => void;
-  // Per-element session settings from the element's own `…` menu (docs/specs/012-collaboration/session-button.md):
-  // the timer's length and the vote's dots.
-  // Absent on a read-only surface, which renders the menu's trigger not at all.
-  // Comment panel (docs/specs/012-collaboration/comment-pin.md): who I am, plus the thread mutators, so a panel
-  // shows and edits its thread in place. All keyed by element id, which is how
-  // the anchored popover already drives them.
-  commentSelfId?: string;
-  commentPanelActions?: {
-    add: (elementId: string, text: string, mentions?: CommentMention[]) => void;
-    remove: (elementId: string, commentId: string) => void;
-    resolve: (elementId: string) => void;
-    unresolve: (elementId: string) => void;
-  };
-  // Action panel (docs/specs/012-collaboration/action-panel.md): who I am (for "Assigned to you"), plus the
-  // docs/specs/012-collaboration/assigned-actions.md action mutators, keyed by element id like everything else that
-  // drives an action. Absent on a read-only surface: the card renders inert.
-  actionSelfId?: string | null;
-  actionPanelActions?: {
-    // Opens the Assign Action dialog: to add (no action id) or edit one.
-    configure: (elementId: string, actionId?: string | null) => void;
-    complete: (elementId: string, actionId?: string | null) => void;
-    reopen: (elementId: string, actionId?: string | null) => void;
-  };
-  onSetSessionConfig?: (
-    element: import('@livepages/document').ShapeElement,
-    config: import('@livepages/document').SessionButtonConfig,
-  ) => void;
-  // Open an element's own context menu from the `…` on its face, anchored at
-  // the trigger's screen position (docs/specs/008-canvas/canvas-and-palette.md). Absent on a read-only surface,
-  // where there is nothing to configure.
-  onOpenElementSettings?: (elementId: string) => void;
-  // Picker (docs/specs/012-collaboration/picker.md): the candidates a roll can land on, and the roll itself.
-  // `shared` says whether this viewer's roll is written back (and so reaches
-  // the room), which is how the face tells its own landing apart from a peer's.
-  onRollPicker?: (element: import('@livepages/document').ShapeElement) => {
-    candidates: import('@/lib/picker').PickerCandidate[];
-    shared: boolean;
-    roll: () => import('@/lib/picker').PickerCandidate | null;
-  };
-  // The collaboration elements (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md): the viewer's identity,
-  // the room, and the writes they may make — one prop for all five faces.
-  collab?: import('@/components/canvas/collab/CollabFaceRouter').CollabApi;
   // Follow-me (docs/specs/012-collaboration/follow-me-viewport.md): the name of whoever we are following, for the pill,
   // and the way out of it. Null / absent = not following anybody.
   followingName?: string | null;
   onStopFollowing?: () => void;
-  // Portal (docs/specs/009-elements/portal-element.md): resolve a portal's pairing — the paired portal's name and, when
-  // it has one, the action that travels there.
-  onEnterPortal?: (element: import('@livepages/document').ShapeElement) => {
-    targetName: string | null;
-    travel?: () => void;
-  };
-  // Reaction pad (docs/specs/009-elements/reaction-pad.md): set one off. Absent on a read-only surface, which
-  // renders the pad inert rather than hiding it.
-  onFireReaction?: (element: import('@livepages/document').ShapeElement) => void;
-  // The bursts currently playing, keyed by the pad's element id, plus the way
-  // to retire one when its animation ends. Ephemeral: never document state.
-  reactionBursts?: Map<string, { reaction: import('@livepages/document').Reaction; seed: number }>;
-  onReactionBurstDone?: (elementId: string) => void;
   // The laser pen (docs/specs/008-canvas/spotlight-panel.md). Owned in editor state, not here: the broadcaster
   // stamps it onto every sample and the trail rows carry it, both of which sit
   // above Canvas — so Canvas forwards it to the panel rather than owning it.
@@ -263,7 +186,6 @@ export type CanvasProps = {
   onAddCallout: () => void;
   onAddStatRow: () => void;
   onAddProcess: () => void;
-  onAddFlowchart: () => void;
   onAddAvatar: () => void;
   onAddText: () => void;
   onAddSticky: () => void;
@@ -321,10 +243,7 @@ export type CanvasProps = {
   // hover card can name the tab/element a link points at (docs/specs/008-canvas/canvas-and-palette.md). Kept
   // minimal + memoised by the caller so element edits don't churn it.
   tabSummaries: { id: string; name: string }[];
-  // Portals (docs/specs/009-elements/portal-element.md) link ACROSS tabs, so the canvas needs every tab's
-  // elements to resolve where one leads, plus which tab is showing. Optional so
-  // read-only / embed mounts that never travel can omit them.
-  portalTabs?: import('@livepages/document').Tab[];
+  // Which tab is showing. Optional so read-only / embed mounts can omit it.
   activeTabId?: string;
   // False while the active tab's content is still on its way (a tab never opened before): its elements arrive with
   // the board once it lands, not as additions. Omitted, the tab is loaded.
@@ -353,11 +272,6 @@ export type CanvasProps = {
   layers: Layer[];
   activeLayerId: string;
   layerCounts: Map<string, number>;
-  // The session tools for the Session strip (docs/specs/012-collaboration/session-tools.md "The Session
-  // strip"): the same bundle the tab menu's Session Studio drives. Absent on a surface without one.
-  sessionTools?: import('@/components/chrome/session-tools-props').SessionToolsProps;
-  // Live vote panel (docs/specs/012-collaboration/session-tools.md): turnout while casting is open, then the
-  // clickable ranked results. Null when no vote is running on this tab.
   // Per-user preferences (docs/specs/007-editor/user-preferences.md) + the Recent exclusion toggle
   // (docs/specs/013-workspace/hide-from-recent.md), for the Explorer panel's Recent list.
   userPreferences: import('@/lib/user-preferences').UserPreferences;
@@ -365,14 +279,6 @@ export type CanvasProps = {
   // Per-user stars (docs/specs/013-workspace/favourites.md).
   favouriteIds: Set<string>;
   onToggleFavourite: (documentId: string) => void;
-  voteResults: { id: string; votes: number }[];
-  onJumpToVoteResult: (index: number) => void;
-  // Whether the local participant started the running vote — the only
-  // one who may end / reveal / clear it or move the results focus.
-  isVoteHost: boolean;
-  // Everyone in the room right now who can cast (remote presence + you, one per person, no Viewers or agents),
-  // the turnout denominator.
-  participantCount: number;
   // Bottom-dock "Theme & canvas" button (docs/specs/011-theme/canvas-and-theme-dialog.md): opens the
   // CanvasThemeDialog. Omitted in read-only / embed sessions (no button).
   onOpenCanvasTheme?: () => void;
@@ -470,9 +376,6 @@ export type CanvasProps = {
   // Single combined table commit (cells + the parallel colWidths /
   // rowHeights / cellStyles arrays) applied in ONE commit, so structural
   // ops can't drop a side array or clobber each other off a stale base.
-  // A lane's title gutter, resized by dragging its seam (docs/specs/009-elements/lane.md). One
-  // commit per gesture, so a drag is one undo step.
-  onCommitHeaderSize?: (elementId: string, px: number) => void;
   onCommitTable: (
     id: string,
     patch: Partial<
@@ -489,24 +392,8 @@ export type CanvasProps = {
   onAddTableColumn: () => void;
   // Toggle one checklist row's done state (docs/specs/009-elements/checklist.md). Omitted in read-only.
   onToggleChecklistItem?: (elementId: string, index: number) => void;
-  // Entities (docs/specs/009-elements/entity.md): fields saved in place, relationships drawn from a field,
-  // the ring's Add Field / Add Related Entity and the arrow toolbar's Cardinality. Omitted in read-only.
-  entityActions?: import('@/hooks/canvas/useEntityActions').EntityActions;
   // The Page masthead (docs/specs/009-elements/page-element.md): its heading and subtitle are their own
   // fields, so they commit through here rather than the label editor.
-  // Mind map (docs/specs/009-elements/mind-node.md): grows the next node from the label editor.
-  onGrowMindNode: (id: string, kind: 'child' | 'sibling') => void;
-  // Flowchart (docs/specs/009-elements/flowchart.md): a step's type and lane from its toolbar. An
-  // Editor's only, so absent for anyone else (who still grows a chart through onGrowMindNode).
-  flowchartActions?: import('@/hooks/canvas/useFlowchartSetters').FlowchartActions;
-  // Edit Outline (docs/specs/009-elements/mind-node.md): whether `id` is a root whose outline may be
-  // edited, and opening it.
-  canEditMindOutline?: (id: string) => boolean;
-  onEditMindOutline?: (id: string) => void;
-  // Tidy Map on the map `id` belongs to (the badge on a map's root).
-  onTidyMindMap?: (id: string) => void;
-  // Escape on the empty node a Tab made one time too many removes it.
-  onAbandonMindNode: (id: string) => boolean;
   onSetPageHeading: (elementId: string, field: 'pageTitle' | 'pageSubtitle', value: string) => void;
   // The web components (docs/specs/009-elements/web-components-and-no-groups.md): a row edited in place, one more row from
   // the quick-connect ring, and a hero's caption line. Omitted in read-only.
@@ -601,33 +488,6 @@ export type CanvasProps = {
   // section (right-hand inspector) houses them next to theme +
   // canvas, where the user is editing the tab anyway. Optional so
   // welcome-flow surfaces with no tab loaded yet can omit them.
-  // Live session tools (docs/specs/012-collaboration/session-tools.md): the active tab's timer / vote state +
-  // the facilitator controls (Tab Settings) and the per-element dot
-  // cast/retract used by the canvas vote interaction. State is read off
-  // the tab; handlers no-op when edits are blocked.
-  tabTimer?: import('@livepages/document').TabTimer;
-  tabVote?: import('@livepages/document').TabVote;
-  onStartTimer: (mode: import('@livepages/document').TimerMode, durationMs?: number) => void;
-  onPauseTimer: () => void;
-  onResumeTimer: () => void;
-  onResetTimer: () => void;
-  onClearTimer: () => void;
-  // Change a running / paused countdown's length, restarting it at the new
-  // one (docs/specs/012-collaboration/session-button.md). Driven by the Timer element's own `…` menu.
-  onSetTimerDuration?: (durationMs: number) => void;
-  onStartVote: (votesPerPerson: number, privacy?: import('@livepages/document').VoteSetup) => void;
-  onEndVote: () => void;
-  onRevealVote: () => void;
-  onClearVote: () => void;
-  onCastVote: (elementId: string) => void;
-  onRetractVote: (elementId: string) => void;
-  // Vote-results walkthrough (docs/specs/012-collaboration/session-tools.md): the currently-reviewed top pick
-  // (pulsed on the canvas, described in the vote banner) and the banner's
-  // Previous / Next / Done controls. Null when not reviewing.
-  voteReview: import('@/hooks/canvas/useVoteReview').VoteReview | null;
-  onNextVoteResult: () => void;
-  onPrevVoteResult: () => void;
-  onDoneVoteReview: () => void;
   aiPanel?: {
     position: { x: number; y: number } | null;
     onMove: (x: number, y: number) => void;

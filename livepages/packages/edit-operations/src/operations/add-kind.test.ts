@@ -1,10 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  createShape,
-  getBuiltInTheme,
-  type Element,
-  type Tab,
-} from '@livepages/document';
+import { createShape, getBuiltInTheme, type Element, type Tab } from '@livepages/document';
 import { applyEditOperations } from '../apply';
 import { checkoutFlow, fixedIds } from '../fixtures/checkout-flow';
 import { applied, lines, refused } from '../fixtures/outcomes';
@@ -140,7 +135,7 @@ describe('add <kind>', () => {
       /is not inside f2/,
     );
     expect(refused(run('add square inside:n1 right-of:n4')).details?.[0]).toMatch(
-      /not a frame or lane/,
+      /not a frame or stack/,
     );
     const parseError = (text: string) => {
       const out = parseEditOperations(text);

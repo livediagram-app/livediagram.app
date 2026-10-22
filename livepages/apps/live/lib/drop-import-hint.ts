@@ -1,8 +1,9 @@
 // What a file dropped on the canvas is told when the canvas does not take it. The canvas lands only images where they
-// are released; a livepages JSON export replaces the tab's content, so it goes through Import, and its refusal says
-// so.
+// are released; a Markdown file or a livepages JSON export replaces the tab's content, so it goes through Import,
+// and its refusal says so.
 
 const IMPORT_FORMATS: readonly { label: string; extensions: readonly string[] }[] = [
+  { label: 'a Markdown file', extensions: ['.md', '.markdown'] },
   { label: 'a livepages export', extensions: ['.json'] },
 ];
 

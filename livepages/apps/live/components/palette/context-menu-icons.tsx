@@ -19,7 +19,6 @@ import {
   lucideArrowRight,
   lucideBaseline,
   lucideBringToFront,
-  lucideCircleCheck,
   lucideClipboardPaste,
   lucideImage,
   lucideLayers,
@@ -36,7 +35,6 @@ import {
   lucideStar,
   lucideStarOff,
   lucideTable,
-  lucideTimer,
   lucideType,
   lucideWandSparkles,
   lucideWrench,
@@ -73,10 +71,6 @@ export function LinkMenuIcon() {
 // The "Shape" section: the element's outline.
 export const SquareMenuIcon = lucideGlyph(lucideShapes, MENU_ICON_PX);
 export const PaletteMenuIcon = lucideGlyph(lucidePalette, MENU_ICON_PX);
-// The Timer session-tool category glyph.
-export const TimerMenuIcon = lucideGlyph(lucideTimer, MENU_ICON_PX);
-// The Vote session-tool category glyph (a cast dot-vote).
-export const VoteMenuIcon = lucideGlyph(lucideCircleCheck, MENU_ICON_PX);
 
 // A small arrow pointing in `dir` (one up-arrow path, rotated). Used by the
 // inline-icon placement picker's cross of direction cells.

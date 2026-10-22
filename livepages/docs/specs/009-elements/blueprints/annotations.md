@@ -41,7 +41,7 @@ Scope, by file:
 | Hover preview | `AnnotationHoverNote`                     | Read-only note floating above the canvas on hover  |
 | Note popover  | `NotePopover`                             | The shared editor; see the notes blueprint         |
 
-Banned synonyms: "pin" (a comment pin is another element), "marker note", "callout" (a web
+Banned synonyms: "pin", "marker note", "callout" (a web
 component), "tooltip" for the hover preview.
 
 ## Behaviour and state

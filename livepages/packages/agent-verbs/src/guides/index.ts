@@ -8,12 +8,9 @@ export const GUIDE_TOPICS = {
     summary: 'build a diagram from scratch',
     text: `Build a diagram
 
-Write the structure, not the coordinates: a graph or Mermaid is laid out for you.
+Start from a template, or empty, and add with edit operations, each box placed beside the one it names:
 
-  livepages document create Shop -f arch.json   {"nodes": [...], "edges": [...], "direction": "right"}
-  livepages tab add Shop Flow -f flow.mmd       flowchart LR ...
-
-Or start empty and add with edit operations, each box placed beside the one it names:
+  livepages document create Shop --template kanban
 
   livepages document create Shop
   livepages edit Shop -f - <<'OPS'

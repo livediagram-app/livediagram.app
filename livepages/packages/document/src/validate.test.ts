@@ -8,7 +8,6 @@ import {
   TEXT_SCALE_MAX,
   TEXT_SCALE_MIN,
 } from './validate';
-import { SELECTION_MODES } from './selection-mode';
 import { IMAGE_CREDIT_TEXT_MAX, IMAGE_CREDIT_URL_MAX } from './image-credit';
 import { MAX_FREEHAND_POINTS, encodeStrokePoints } from './stroke-points';
 
@@ -36,12 +35,6 @@ describe('isValidElement', () => {
         to: { kind: 'free', x: 10, y: 20 },
       }),
     ).toBe(true);
-  });
-
-  it('reads the orientation of a lane title as upright or nothing', () => {
-    const lane = { id: 'l', type: 'shape', shape: 'lane', ...box };
-    expect(isValidElement({ ...lane, titleOrientation: 'upright' })).toBe(true);
-    expect(isValidElement({ ...lane, titleOrientation: 'sideways' })).toBe(false);
   });
 
   it('bounds the exact end of an arrow and its own label width', () => {
@@ -321,33 +314,6 @@ describe('coerceShapeKind', () => {
   });
 });
 
-describe('mode button validation (docs/specs/009-elements/mode-button.md)', () => {
-  const button = {
-    id: 'b1',
-    type: 'shape',
-    shape: 'mode-button',
-    x: 0,
-    y: 0,
-    width: 180,
-    height: 44,
-  };
-
-  it('accepts a button with no mode (it falls back to the Avatar default)', () => {
-    expect(isValidElement(button)).toBe(true);
-  });
-
-  it('accepts every selection mode the editor can switch to', () => {
-    for (const mode of SELECTION_MODES) {
-      expect(isValidElement({ ...button, mode })).toBe(true);
-    }
-  });
-
-  it('rejects a mode outside the vocabulary rather than silently rewriting it', () => {
-    expect(isValidElement({ ...button, mode: 'teleport' })).toBe(false);
-    expect(isValidElement({ ...button, mode: 42 })).toBe(false);
-  });
-});
-
 describe('quick-swatch bindings (docs/specs/008-canvas/quick-style-panel.md)', () => {
   const shape = { id: 's', type: 'shape', shape: 'square', ...box };
   const arrow = {
@@ -480,23 +446,5 @@ describe('elementValidationIssue', () => {
       { id: 'a', type: 'image', imageId: 3, ...box },
     ];
     for (const el of cases) expect(isValidElement(el)).toBe(elementValidationIssue(el) === null);
-  });
-});
-
-describe('flowchart step validation (docs/specs/009-elements/flowchart.md)', () => {
-  const step = { id: 's1', type: 'shape', shape: 'diamond', x: 0, y: 0, width: 200, height: 120 };
-
-  it('accepts a step with its chart, direction and lane', () => {
-    expect(
-      isValidElement({ ...step, flowchartId: 's1', flowDirection: 'right', flowLaneId: 'l1' }),
-    ).toBe(true);
-    expect(isValidElement({ ...step, flowDirection: 'down' })).toBe(true);
-  });
-
-  it('rejects an empty chart or lane id and an unknown direction', () => {
-    expect(isValidElement({ ...step, flowchartId: '' })).toBe(false);
-    expect(isValidElement({ ...step, flowLaneId: '' })).toBe(false);
-    expect(isValidElement({ ...step, flowDirection: 'up' })).toBe(false);
-    expect(isValidElement({ ...step, flowchartId: 7 })).toBe(false);
   });
 });

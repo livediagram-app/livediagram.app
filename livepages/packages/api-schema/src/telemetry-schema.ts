@@ -43,12 +43,8 @@ export const TELEMETRY_CATEGORIES = [
   // to-layer, 'Opened' for the panel. Never layer names in `type`.
   'Layer',
   'Session',
-  // The facilitator baton (docs/specs/012-collaboration/facilitator.md): who is running a live session.
-  // 'Started' when somebody takes a free one, 'Changed' when it is handed on
-  // or taken back, 'Ended' when the holder steps down. `type` is the shape of
-  // the move ('Claimed' / 'Granted' / 'Released'), or 'Unlocked' when the
-  // facilitator frees an element somebody was holding (docs/specs/007-editor/live-app.md lock) — never a
-  // name: the question is whether rooms use the role at all, not who held it.
+  // Freeing an element somebody was holding (docs/specs/007-editor/live-app.md lock): 'Changed' with `type`
+  // 'Unlocked'. Named for the facilitator baton it once belonged to.
   'Facilitator',
   'AI',
   'Team',
@@ -207,12 +203,9 @@ export const TELEMETRY_ACTIONS = [
   'SignedIn',
   'SignedUp',
   'SignedOut',
-  // Live session tools (docs/specs/012-collaboration/session-tools.md): a timer / vote started or ended, vote
-  // results revealed, and a dot cast on an element.
+  // Something with a beginning and an end: a presentation or a tour started, a tour ended.
   'Started',
   'Ended',
-  'Revealed',
-  'Voted',
   // Help centre (docs/specs/017-telemetry/telemetry.md + docs/specs/018-help/help-app.md): an article was viewed, and the
   // reader rated it helpful / not-really via the article feedback widget.
   'View',
@@ -375,8 +368,6 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Trapezoid',
     'Star',
     'Speech-bubble',
-    // The UML final state (a state machine's end), made by graph input and Mermaid.
-    'Final-state',
   ],
   tools: [
     'Text',
@@ -386,7 +377,6 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Table',
     'Image',
     'Avatar',
-    'Actor',
     'Frame',
     'Annotation',
     // Pointer note (docs/specs/009-elements/pointer-note.md): a Write element beside Annotation.
@@ -403,40 +393,11 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Timeline-rail',
     'CodeBlock',
     'Page',
-    // Mind node (docs/specs/009-elements/mind-node.md).
-    'MindNode',
-    // Flowchart (docs/specs/009-elements/flowchart.md): the palette's Start, and every grown step.
-    'Flowchart',
-    'FlowchartStep',
-    // Lane (docs/specs/009-elements/lane.md).
-    'Lane',
-    // Boundary (docs/specs/009-elements/boundary.md): a Build container beside Frame and Lane.
-    'Boundary',
-    // Org chart (docs/specs/009-elements/org-chart.md): a person mind node, after Mind node.
-    'OrgChart',
     // Stack (docs/specs/009-elements/stack.md): a Build container after Frame.
     'Stack',
-    // Sequence diagram (docs/specs/009-elements/sequence-diagram.md): a Build element after Flowchart.
-    'Sequence',
-    // Diagram key (docs/specs/009-elements/diagram-key.md): a Build element after Boundary.
-    'DiagramKey',
-    // Entity (docs/specs/009-elements/entity.md).
-    'Entity',
     'Checklist',
-    'ModeButton',
-    'Portal',
     // Tab window (docs/specs/009-elements/tab-window.md).
     'TabWindow',
-    'SessionButton',
-    'Reveal',
-    'Picker',
-    'ReactionPad',
-    // Done check (docs/specs/012-collaboration/done-check.md): a Behaviour element by its palette home.
-    'DoneCheck',
-    // Bring Focus (docs/specs/012-collaboration/bring-focus.md): likewise Behaviour, in the Navigate group. The
-    // token is what elementTelemetryType actually emits for the kind, which
-    // for a hyphenated one is the hyphen kept (see Pie-chart above).
-    'Focus-button',
     'Pie-chart',
     'Bar-chart',
     'Line-chart',
@@ -446,21 +407,6 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Legend',
     // Sankey diagram (docs/specs/009-elements/sankey.md): a Build element; its kind has no hyphen to keep.
     'Sankey',
-  ],
-  // The Collaborate category (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md) — its own bucket rather
-  // than more entries under `tools`, because the palette gave it its own
-  // category and the dashboard's cards are the palette's own tabs.
-  collaborate: [
-    'Estimate',
-    'Temperature',
-    'Idea-box',
-    'Agenda',
-    'Decision',
-    'Roll-call',
-    // Comment pin (docs/specs/012-collaboration/comment-pin.md).
-    'CommentPin',
-    // Action panel (docs/specs/012-collaboration/action-panel.md).
-    'ActionPanel',
   ],
   components: [
     'Banner',

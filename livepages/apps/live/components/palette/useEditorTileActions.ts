@@ -30,7 +30,6 @@ export function useEditorTileActions(): PaletteTileActions {
     addCallout,
     addStatRow,
     addProcess,
-    addFlowchart,
   } = useEditorContext();
   const byComponent = {
     avatar: addAvatar,
@@ -40,7 +39,6 @@ export function useEditorTileActions(): PaletteTileActions {
     callout: addCallout,
     stat: addStatRow,
     process: addProcess,
-    flowchart: addFlowchart,
   } as const;
   return {
     addShape,

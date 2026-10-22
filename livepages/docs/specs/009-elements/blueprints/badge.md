@@ -31,7 +31,7 @@ Derived from [The badge](../badge.md) and [The step number](../step-number.md). 
 | Point       | `AttachPoint`                                                     | One of eight: corners and edge midpoints            |
 | Host        | `canHost(el)`                                                     | The element an attachment names                     |
 
-Banned: "pin" (the comment pin), "dock" (legacy docks), "group".
+Banned: "pin", "dock" (legacy docks), "group".
 
 ## Behaviour and state
 

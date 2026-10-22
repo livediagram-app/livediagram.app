@@ -6,7 +6,7 @@ import { LongPressRing } from '@/components/primitives/LongPressRing';
 import { useViewportOf, useViewportStore } from '@/hooks/canvas/useViewportStore';
 import { useDoubleTapZoom } from '@/hooks/canvas/useDoubleTapZoom';
 import { useSmallElementDoubleTap } from '@/hooks/canvas/useSmallElementDoubleTap';
-import { useCallback, useEffect, useMemo, useRef, ViewTransition } from 'react';
+import { useEffect, useMemo, useRef, ViewTransition } from 'react';
 import { isAnimatedPattern } from '@livepages/document';
 import { tabBackgroundStyle, worldPatternOrigin } from '@/lib/canvas-backgrounds';
 import { useObservedSize } from '@/hooks/canvas/useObservedSize';
@@ -33,8 +33,6 @@ import { useCanvasLongTaskLog } from '@/hooks/canvas/useCanvasLongTaskLog';
 import { useSelectionStore } from '@/hooks/canvas/useSelectionStore';
 import type { CanvasSelectionInput } from '@/hooks/canvas/useCanvasSelectionView';
 import { withStableEventProps } from '@/components/primitives/withStableEventProps';
-import { MindGrowProvider } from '@/components/canvas/MindGrowContext';
-import { MindOutlineProvider, useMindOutlineBadges } from '@/components/canvas/MindOutlineContext';
 import { ElementIndicatorStyleProvider } from '@/components/canvas/ElementIndicatorStyleContext';
 import { readElementIndicatorStyle } from '@/lib/element-indicator-style';
 import { CanvasArrivalProvider } from '@/components/canvas/CanvasArrivalContext';
@@ -42,7 +40,6 @@ import { CanvasLiveRegion } from '@/components/canvas/CanvasLiveRegion';
 import { IsometricDepthLayer } from '@/components/canvas/IsometricDepthLayer';
 import { useIsometricView } from '@/hooks/canvas/useIsometricView';
 import { SpotlightOverlay } from '@/components/canvas/SpotlightOverlay';
-import { usePortalTravel } from '@/components/canvas/portal-travel';
 import { useCanvasPointer } from './useCanvasPointer';
 import { articlePlusBlocked } from '@/lib/article-plus-blocked';
 import { useCanvasDrawTools } from './useCanvasDrawTools';
@@ -107,9 +104,7 @@ function CanvasView(props: CanvasProps) {
     onRetryTabLoad,
   } = props;
   const { zoom: viewportZoom, offset: viewportOffset } = useViewportOf(wholeView);
-  // The zoom when a handler runs, for what is handed down and must keep its identity across zooms.
   const viewportStore = useViewportStore();
-  const readZoom = useCallback(() => viewportStore.get().zoom, [viewportStore]);
 
   const wrapperRef = useRef<HTMLDivElement>(null);
 
@@ -237,17 +232,6 @@ function CanvasView(props: CanvasProps) {
   const { spotlightLook, spotlight, handlePointerMoveCanvas, handlePointerLeaveCanvas } =
     useCanvasPointer({ canvasTool, mainRef, onCanvasPointerMove, wrapperRef, viewportZoom });
 
-  // Portals (docs/specs/009-elements/portal-element.md): the camera centres on the paired portal.
-  const { resolvePortal } = usePortalTravel({
-    elements,
-    tabs: props.portalTabs,
-    activeTabId: props.activeTabId,
-    onFollowLink: props.onFollowLink,
-    mainRef,
-    readZoom,
-    setViewportOffset,
-  });
-
   // Isometric view (docs/specs/008-canvas/isometric-view.md): the orbit-able camera + the innermost
   // transform fragment, pivoted on the content centre — see
   // useIsometricView. Shift-drag on the canvas spins / tilts it (see
@@ -338,19 +322,6 @@ function CanvasView(props: CanvasProps) {
     const node = mainRef && 'current' in mainRef ? mainRef.current : null;
     node?.focus({ preventScroll: true });
   }, [mainRef]);
-  // Mind map (docs/specs/009-elements/mind-node.md): the growers the label editor and the "+" reach.
-  const { onGrowMindNode, onAbandonMindNode } = props;
-  const mindGrow = useMemo(
-    () => ({ grow: onGrowMindNode, abandon: onAbandonMindNode }),
-    [onGrowMindNode, onAbandonMindNode],
-  );
-  // The Edit Outline badge on each map root (MindOutlineContext).
-  const mindOutlineBadges = useMindOutlineBadges(
-    elements,
-    props.canEditMindOutline,
-    props.onEditMindOutline,
-    props.onTidyMindMap,
-  );
   return (
     // This canvas's tab's finish (docs/specs/008-canvas/finish.md), over the editor's active tab's.
     <CanvasFinishProvider finish={props.tabFinish}>
@@ -534,44 +505,30 @@ function CanvasView(props: CanvasProps) {
                   elements={elements}
                 />
               ) : null}
-                <CanvasArrivalProvider
-                  tabId={props.activeTabId ?? ''}
-                  loaded={props.activeTabLoaded ?? true}
-                >
-                  {/* The zoom reaches only the counter-scaled parts of each element
+              <CanvasArrivalProvider
+                tabId={props.activeTabId ?? ''}
+                loaded={props.activeTabLoaded ?? true}
+              >
+                {/* The zoom reaches only the counter-scaled parts of each element
               (docs/specs/008-canvas/canvas-performance.md). */}
-                  <CanvasZoomProvider zoom={viewportZoom}>
-                    <MindGrowProvider value={mindGrow}>
-                      <MindOutlineProvider value={mindOutlineBadges}>
-                        <ElementIndicatorStyleProvider
-                          style={readElementIndicatorStyle(props.settings)}
-                        >
-                          <CanvasElementsLayer
-                            {...props}
-                            // Portal travel is resolved HERE (Canvas owns the viewport), so the prop
-                            // from the host is overridden with the local resolver.
-                            onEnterPortal={resolvePortal}
-                            onFireReaction={props.onFireReaction}
-                            reactionBursts={props.reactionBursts}
-                            onReactionBurstDone={props.onReactionBurstDone}
-                            onPressModeButton={props.onPressModeButton}
-                            onPressFocusButton={props.onPressFocusButton}
-                            hasArrows={hasArrows}
-                            arrowLabels={arrowLabels}
-                            selectionInput={selectionInput}
-                            isPaintMode={isPaintMode}
-                            handleArrowSelect={handleArrowSelect}
-                            handleElementClick={handleElementClick}
-                            handleElementContextSelect={handleElementContextSelect}
-                            quickRingOpen={quickRingOpen}
-                            setQuickRingOpen={setQuickRingOpen}
-                            drawDrag={drawDrag}
-                          />
-                        </ElementIndicatorStyleProvider>
-                      </MindOutlineProvider>
-                    </MindGrowProvider>
-                  </CanvasZoomProvider>
-                </CanvasArrivalProvider>
+                <CanvasZoomProvider zoom={viewportZoom}>
+                  <ElementIndicatorStyleProvider style={readElementIndicatorStyle(props.settings)}>
+                    <CanvasElementsLayer
+                      {...props}
+                      hasArrows={hasArrows}
+                      arrowLabels={arrowLabels}
+                      selectionInput={selectionInput}
+                      isPaintMode={isPaintMode}
+                      handleArrowSelect={handleArrowSelect}
+                      handleElementClick={handleElementClick}
+                      handleElementContextSelect={handleElementContextSelect}
+                      quickRingOpen={quickRingOpen}
+                      setQuickRingOpen={setQuickRingOpen}
+                      drawDrag={drawDrag}
+                    />
+                  </ElementIndicatorStyleProvider>
+                </CanvasZoomProvider>
+              </CanvasArrivalProvider>
               {/* Drafts and the logo page's guides: editor-only, left out of an animated GIF
             (GifOmit). */}
               <GifOmit>

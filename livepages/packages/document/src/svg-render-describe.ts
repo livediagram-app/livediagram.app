@@ -6,9 +6,7 @@
 
 import type { ResolveTabWindow } from './tab-window';
 import type { TagColour } from './tag-colours';
-import { isPersonNode } from './person-node';
 import { imageCornerPx } from './drawn-outline-finish';
-import { ownColours } from './behaviour-skin';
 import {
   defaultFillColor,
   defaultPadding,
@@ -22,8 +20,6 @@ import { elementFontId, isFinish, resolveFinish, type Finish } from './finish';
 import { hasRichFormatting } from './rich-text';
 import { iconCaptionBand } from './icon-size';
 import { fontSizeFor, labelMaxWidth } from './svg-render-primitives';
-import { BEHAVIOUR_FACE_SHAPES } from './svg-render-faces';
-import { isCollabPanelShape } from './collab-shapes';
 import { isSelfDrawingShape } from './data-shapes';
 import { isWebComponentShape } from './web-components';
 import type { ExportLabel, ExportRun } from './svg-render-labels';
@@ -31,7 +27,6 @@ import { PADDING_PX } from './index';
 import { pageBodyTop } from './svg-render-page';
 import { borderOf } from './svg-render-border';
 import { chipColours, chipLookOf, isChipShape } from './chip';
-import { isUprightTitle, uprightTitleStrip } from './lane-gutter';
 import type { BoxedElement, TextRun } from './index';
 import { runFontPx } from './label-font';
 import { resolveStockColours } from './stock-colours';
@@ -94,10 +89,6 @@ export type ResolveIconArt = (iconId: string) => ExportIconArt | undefined;
 export type ExportStickerArt = { viewBox: string; markup: string };
 export type ResolveStickerArt = (stickerId: string) => ExportStickerArt | undefined;
 
-// An emoji's own drawing, by its glyph, for a render with no emoji font (a Worker's preview): a face that writes an
-// emoji (a reaction pad's) draws it from this instead of as text. Absent, or answering nothing, the glyph is text.
-export type ResolveEmojiArt = (glyph: string) => { viewBox: string; markup: string } | undefined;
-
 type BoxedExport = { opacity: number; shape: ExportShape; label: ExportLabel | null };
 
 // What an export needs from its caller beyond the element itself: the three
@@ -110,7 +101,6 @@ export type BoxedExportOptions = {
   tagColours?: readonly TagColour[];
   resolveIconArt?: ResolveIconArt;
   resolveStickerArt?: ResolveStickerArt;
-  resolveEmojiArt?: ResolveEmojiArt;
   tabFont?: string;
   // The tab's finish (docs/specs/008-canvas/finish.md), for elements without their own.
   tabFinish?: Finish;
@@ -227,9 +217,11 @@ export function describeBoxedExport(
   if (stickerArt) {
     return { opacity, shape: { kind: 'sticker', art: stickerArt }, label: null };
   }
-  // ownColours: a skin a Behaviour element was once created with reads as
-  // unset, as on the canvas (behaviour-skin.ts).
-  const own = ownColours(el);
+  const own = {
+    fill: 'fillColor' in el ? el.fillColor : undefined,
+    stroke: 'strokeColor' in el ? el.strokeColor : undefined,
+    text: 'textColor' in el ? el.textColor : undefined,
+  };
   const fill = own.fill ?? defaultFillColor(el, surface);
   // A sticky is borderless paper unless the user deliberately set a border
   // colour (matching the canvas, docs/specs/008-canvas/canvas-and-palette.md "Sticky notes read as paper").
@@ -339,42 +331,6 @@ export function describeBoxedExport(
   const bodyBottom = el.y + el.height - body.bottom;
   // ...and inside its border, lining up with the masthead.
   const bodyInset = isPage ? borderOf(el).width : 0;
-  const upright =
-    el.type === 'shape' && el.shape === 'lane' && isUprightTitle(el)
-      ? uprightTitleStrip(el, el.width, el.height)
-      : null;
-  if (upright && el.label) {
-    // The turned frame: as long as the strip is tall, as tall as it is thick, turned about its
-    // top-left corner (the strip's bottom-left).
-    const inset = Math.min(PADDING_PX.sm, pad);
-    const fx = el.x + upright.x;
-    const fy = el.y + upright.y + upright.height;
-    const along = upright.alongAlign;
-    return {
-      opacity,
-      shape,
-      label: {
-        text: el.label,
-        x:
-          along === 'right'
-            ? fx + upright.height - inset
-            : along === 'left'
-              ? fx + inset
-              : fx + upright.height / 2,
-        y: fy + upright.width / 2,
-        anchor: along === 'right' ? 'end' : along === 'left' ? 'start' : 'middle',
-        valign: 'middle',
-        maxWidth: Math.max(0, upright.height - 2 * inset),
-        color: baseColor,
-        size: baseSize,
-        bold: !!el.textBold,
-        italic: !!el.textItalic,
-        fontFamily,
-        runs,
-        turnAbout: { x: fx, y: fy },
-      },
-    };
-  }
   const label: ExportLabel | null = el.label
     ? {
         text: el.label,
@@ -405,25 +361,15 @@ export function describeBoxedExport(
 }
 
 // A shape that writes its own text, so no centred label is printed over it: a self-drawing shape
-// (charts; the legend is its own case), a Collaborate panel, a Behaviour face, a web component.
+// (charts; the legend is its own case), a web component.
 export function selfLabelled(el: BoxedElement): boolean {
   if (el.type !== 'shape') return false;
   return (
     (isSelfDrawingShape(el.shape) && el.shape !== 'legend') ||
-    isCollabPanelShape(el.shape) ||
-    BEHAVIOUR_FACE_SHAPES.has(el.shape) ||
     isWebComponentShape(el.shape) ||
-    // A boundary writes its own title in its tab or corner (docs/specs/009-elements/boundary.md).
-    el.shape === 'boundary' ||
     // A cycle and a hub write their centre label themselves (docs/specs/009-elements/concept-graphics.md).
     el.shape === 'cycle' ||
-    el.shape === 'hub' ||
-    // A diagram key writes its title above its rows (docs/specs/009-elements/diagram-key.md).
-    el.shape === 'diagram-key' ||
-    // A sequence diagram's names are in its picture (docs/specs/009-elements/sequence-diagram.md).
-    el.shape === 'sequence' ||
-    // A person node writes its name beside its initials (docs/specs/009-elements/org-chart.md).
-    isPersonNode(el)
+    el.shape === 'hub'
   );
 }
 

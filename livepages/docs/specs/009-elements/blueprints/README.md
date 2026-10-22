@@ -9,7 +9,6 @@ Follow the references below only as needed; never upfront.
 - ./image-reference-index.md - when implementing or changing `image_refs`, `image_grants`, their writers, backfill, or the image sweep, usage map, share read and render read
 - ./images.md - when implementing or changing the image element, uploads, the picker, image reads or image export
 - ./link-cards.md - when implementing or changing link cards, the unfurl endpoint or its SSRF guard
-- ./mode-button.md - when implementing or changing the Selection Mode button, its press, Leave or its palette tiles
 - ./progress.md - when implementing or changing the progress bar / ring, its fill animation or its menu
 - ./rating.md - when implementing or changing the star rating, its animations or its picker
 - ./rich-text-notes.md - when implementing or changing rich-text notes, the note popover or the block-type picker
@@ -25,4 +24,3 @@ Follow the references below only as needed; never upfront.
 - ./stack.md - when implementing or changing the stack, its layout or how it settles
 - ./concept-graphics.md - when implementing or changing the layer stack, pyramid / funnel or cycle, their rows, layouts or Concept animations
 - ./annotations.md - when implementing or changing the annotation marker, its hover preview or its note
-- ./sequence-diagram.md - when implementing or changing the sequence diagram element, its rows or its picture

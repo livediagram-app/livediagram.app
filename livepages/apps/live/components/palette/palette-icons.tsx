@@ -12,15 +12,7 @@
 // (in which case it goes into a sibling icon module).
 
 import type { TextAlignX, TextAlignY } from '@livepages/document';
-import {
-  lucideCircleCheck,
-  lucideFileDown,
-  lucideFileUp,
-  lucideLightbulb,
-  lucideScanEye,
-  lucideSpade,
-  lucideThermometer,
-} from '@livepages/icons/lucide';
+import { lucideFileDown, lucideFileUp } from '@livepages/icons/lucide';
 import { Glyph, lucideGlyph, Prims } from '@livepages/ui';
 
 import { MENU_ICON_PX } from '@/components/palette/context-menu-icons';
@@ -72,7 +64,6 @@ export const FileExportIcon = lucideGlyph(lucideFileUp, MENU_ICON_PX);
 export function PanIcon({ size = 14 }: IconSizeProps = {}) {
   return <ModeGlyphIcon mode="pan" size={size} />;
 }
-
 
 export function SelectIcon({ size = 14 }: IconSizeProps = {}) {
   return <ModeGlyphIcon mode="select" size={size} />;
@@ -203,152 +194,8 @@ export function AlignIcon({ x, y }: { x: TextAlignX; y: TextAlignY }) {
   );
 }
 
-// --- Session tools (docs/specs/012-collaboration/session-button.md) ------------------------------------------------
-// 14px, not 13, like every small glyph in this file: an odd size centred in
-// an even tile lands on a half pixel and its strokes blur (docs/specs/007-editor/toolbar-layout.md).
-// The three glyphs a Session button wears, in the same 16-grid, 1.4-stroke
-// house style as the mode icons above so a row of Behaviour tiles matches.
-
-// The Timer counts down, so it wears an hourglass; the Stopwatch counts up, so it wears the stopwatch. One
-// clock face for both left the two tiles side by side in the palette looking identical.
-export function TimerIcon({ size = 14 }: IconSizeProps = {}) {
-  return (
-    <Glyph size={size} units={16}>
-      {/* an hourglass: two caps, the glass pinched at the waist, sand settled at the bottom */}
-      <path d="M4 1.6h8" />
-      <path d="M4 14.4h8" />
-      <path d="M5.2 1.6c0 3.2 2.8 4.4 2.8 6.4s-2.8 3.2-2.8 6.4" />
-      <path d="M10.8 1.6c0 3.2-2.8 4.4-2.8 6.4s2.8 3.2 2.8 6.4" />
-      <path d="M6.4 13.6h3.2L8 11.6z" fill="currentColor" stroke="none" />
-    </Glyph>
-  );
-}
-
-export function StopwatchIcon({ size = 14 }: IconSizeProps = {}) {
-  return (
-    <Glyph size={size} units={16}>
-      {/* a stopwatch: crown, dial, and a hand at ten past */}
-      <path d="M6.4 1.6h3.2" />
-      <path d="M8 1.6v1.6" />
-      <circle cx="8" cy="9" r="5" />
-      <path d="M8 9V6.4" />
-      <path d="M8 9l2 1.6" />
-    </Glyph>
-  );
-}
-
-// Vote: the same glyph as its context-menu category.
-export const VoteIcon = lucideGlyph(lucideCircleCheck, 14);
-
-// --- Reveal zone (docs/specs/009-elements/reveal-zone.md) + Picker (docs/specs/012-collaboration/picker.md) ------------------------------
-
-export function RevealIcon({ size = 14 }: IconSizeProps = {}) {
-  return (
-    <Glyph size={size} units={24}>
-      <Prims prims={lucideScanEye} />
-    </Glyph>
-  );
-}
-
-export function PickerIcon({ size = 14 }: IconSizeProps = {}) {
-  return (
-    <Glyph size={size} units={16}>
-      {/* a die mid-roll */}
-      <rect x="2.6" y="2.6" width="10.8" height="10.8" rx="2.2" />
-      <circle cx="5.8" cy="5.8" r="0.9" fill="currentColor" stroke="none" />
-      <circle cx="10.2" cy="10.2" r="0.9" fill="currentColor" stroke="none" />
-      <circle cx="8" cy="8" r="0.9" fill="currentColor" stroke="none" />
-    </Glyph>
-  );
-}
-
-// --- The collaboration family (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md) -----
-// In-house members share one 16-unit frame; the rest are Lucide (estimate card, thermometer, light bulb).
-
-function CollabGlyph({ size, children }: { size: number; children: React.ReactNode }) {
-  return (
-    <Glyph size={size} units={16}>
-      {children}
-    </Glyph>
-  );
-}
-
-export function EstimateIcon({ size = 14 }: IconSizeProps = {}) {
-  return (
-    <Glyph size={size} units={24}>
-      <Prims prims={lucideSpade} />
-    </Glyph>
-  );
-}
-
-export function TemperatureIcon({ size = 14 }: IconSizeProps = {}) {
-  return (
-    <Glyph size={size} units={24}>
-      <Prims prims={lucideThermometer} />
-    </Glyph>
-  );
-}
-
-export function IdeaBoxIcon({ size = 14 }: IconSizeProps = {}) {
-  return (
-    <Glyph size={size} units={24}>
-      <Prims prims={lucideLightbulb} />
-    </Glyph>
-  );
-}
-
-export function AgendaIcon({ size = 14 }: IconSizeProps = {}) {
-  return (
-    <CollabGlyph size={size}>
-      {/* a run of segments, each with its time against it */}
-      <path d="M2.6 4.4h6.2" />
-      <path d="M2.6 8h6.2" />
-      <path d="M2.6 11.6h6.2" />
-      <circle cx="12.6" cy="8" r="2.6" />
-      <path d="M12.6 6.8V8l.9.7" />
-    </CollabGlyph>
-  );
-}
-
-export function DecisionIcon({ size = 14 }: IconSizeProps = {}) {
-  return (
-    <CollabGlyph size={size}>
-      {/* a record card with a tick in its corner chip */}
-      <rect x="2.4" y="2.8" width="11.2" height="10.4" rx="1.6" />
-      <path d="M4.8 6.2h4.4" />
-      <path d="M4.8 9h2.6" />
-      <path d="M9.4 10.6l1.3 1.3 2.2-2.6" />
-    </CollabGlyph>
-  );
-}
-
-export function RollCallIcon({ size = 14 }: IconSizeProps = {}) {
-  return (
-    <CollabGlyph size={size}>
-      {/* three heads: who was here, not who is here */}
-      <circle cx="5" cy="5.6" r="2" />
-      <circle cx="11.2" cy="5.6" r="2" />
-      <path d="M1.8 12.4a3.4 3.4 0 0 1 6.4 0" />
-      <path d="M8.6 12.4a3.4 3.4 0 0 1 5.6-1.5" />
-    </CollabGlyph>
-  );
-}
-
-/** Session tools (docs/specs/012-collaboration/session-button.md): dot voting, drawn as dots landing on a card. */
-export function SessionVoteIcon() {
-  return (
-    <Glyph size={18} units={24}>
-      <rect x="3" y="5" width="18" height="14" rx="2.2" />
-      <circle cx="8.5" cy="11" r="1.9" fill="currentColor" stroke="none" />
-      <circle cx="14" cy="11" r="1.9" fill="currentColor" stroke="none" />
-      <circle cx="11.2" cy="15.4" r="1.9" fill="currentColor" stroke="none" />
-    </Glyph>
-  );
-}
-
 // A selection-mode glyph drawn from the shared data (MODE_GLYPHS in
-// @livepages/icons), the ONE drawing the palette, the Mode button face and
-// the export all use (docs/specs/009-elements/mode-button.md).
+// @livepages/icons), the ONE drawing the palette and the export use.
 function ModeGlyphIcon({ mode, size }: { mode: string; size: number }) {
   const g = MODE_GLYPHS[mode]!;
   return (

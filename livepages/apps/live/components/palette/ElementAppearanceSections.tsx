@@ -19,18 +19,14 @@ import {
   isBoxed,
   isChartShape,
   positionsInlineIcon,
-  isLaneBand,
-  laneEdgeOfElement,
   isChecklistShape,
   isCodeBlockShape,
   isLegendShape,
   isSankeyShape,
-  isMindNode,
   isLineShape,
   isProgressShape,
   isRatingShape,
-  supportsMarkers,
-  supportsTextAlign,
+  isSelfDrawingShape,
   supportsBorderControls,
   supportsColours,
   supportsShadow,
@@ -52,7 +48,6 @@ import {
 import { MenuAccordionSection, MenuGroupSeparator } from '@/components/primitives/PortalMenu';
 import { MenuTile } from '@/components/primitives/MenuTiles';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
-import { MenuToggleRow } from '@/components/palette/context-menu-input-rows';
 import { TypographySections } from './TypographySections';
 import { presetPxFor } from './TextSizeControl';
 import { WordmarkSection } from './WordmarkSection';
@@ -113,8 +108,8 @@ export function ElementAppearanceSections({
   const boxed = isBoxed(target);
   const isIcon = target.type === 'shape' && target.shape === 'icon';
   // Border controls apply only where a wrapper border actually renders
-  // (shapes / freehand / tables — supportsBorderControls excludes icons,
-  // the actor, and the self-drawing data shapes, whose controls were dead).
+  // (shapes / freehand / tables — supportsBorderControls excludes icons
+  // and the self-drawing data shapes, whose controls were dead).
   const borderable = supportsBorderControls(target);
   // A regular shape carrying an inline icon (drag-an-icon-onto-it
   // feature, docs/specs/008-canvas/canvas-and-palette.md) gets a "Remove Icon" entry; the dedicated 'icon'
@@ -128,24 +123,7 @@ export function ElementAppearanceSections({
   const isCodeBlock = target.type === 'shape' && isCodeBlockShape(target.shape);
   const isLegend = target.type === 'shape' && isLegendShape(target.shape);
   const isSankey = target.type === 'shape' && isSankeyShape(target.shape);
-  const isMind = isMindNode(target);
   const isChecklist = target.type === 'shape' && isChecklistShape(target.shape);
-  const isEntity = target.type === 'shape' && target.shape === 'entity';
-  // Mode button (docs/specs/009-elements/mode-button.md): its one setting is which mode it hands out.
-  const isModeButton = target.type === 'shape' && target.shape === 'mode-button';
-  // Portal (docs/specs/009-elements/portal-element.md): its one setting is which portal it leads to.
-  const isPortal = target.type === 'shape' && target.shape === 'portal';
-  // The other Behaviour kinds with settings (docs/specs/012-collaboration/session-button.md, /106, /107).
-  // Both are the facilitator's while somebody holds the baton (docs/specs/012-collaboration/facilitator.md): no handler, no section.
-  const isSessionButton =
-    target.type === 'shape' && target.shape === 'session-button' && !!props.onSetSession;
-  const isReveal = target.type === 'shape' && target.shape === 'reveal' && !!props.onSetRevealed;
-  const isPicker = target.type === 'shape' && target.shape === 'picker';
-  const isReactionPad = target.type === 'shape' && target.shape === 'reaction-pad';
-  // The collaboration elements that carry settings (docs/specs/012-collaboration/estimate-card.md, 127, 128, 130).
-  const isEstimate = target.type === 'shape' && target.shape === 'estimate';
-  const isAgenda = target.type === 'shape' && target.shape === 'agenda';
-  const isDecision = target.type === 'shape' && target.shape === 'decision';
   // The Text band (docs/specs/008-canvas/canvas-and-palette.md): Markers + Alignment. Markers are regular-shape
   // only (self-drawing shapes have no label slot); Alignment applies to any
   // boxed element with a text slot.
@@ -156,12 +134,12 @@ export function ElementAppearanceSections({
   // options for the words on screen, not the empty committed label.
   const hasText =
     ((target as { label?: string }).label ?? '').trim().length > 0 || props.editingId === target.id;
-  const showMarkers = target.type === 'shape' && supportsMarkers(target.shape) && hasText;
+  const showMarkers = target.type === 'shape' && !isSelfDrawingShape(target.shape) && hasText;
   // Like Markers, Text Alignment only shows once there's text to align.
   const showAlignment =
     boxed &&
     target.type !== 'image' &&
-    !(target.type === 'shape' && !supportsTextAlign(target.shape)) &&
+    !(target.type === 'shape' && isSelfDrawingShape(target.shape)) &&
     hasText;
   // The shape-only sections below (Marker / Progress / Rail / Rating / Data)
   // all render under a `target.type === 'shape'` guard, so this is non-null
@@ -237,18 +215,7 @@ export function ElementAppearanceSections({
         isCodeBlock={isCodeBlock}
         isLegend={isLegend}
         isSankey={isSankey}
-        isMindNode={isMind}
         isChecklist={isChecklist}
-        isEntity={isEntity}
-        isModeButton={isModeButton}
-        isPortal={isPortal}
-        isSessionButton={isSessionButton}
-        isReveal={isReveal}
-        isPicker={isPicker}
-        isReactionPad={isReactionPad}
-        isEstimate={isEstimate}
-        isAgenda={isAgenda}
-        isDecision={isDecision}
         sectionProps={sectionProps}
         flyoutProps={flyoutProps}
       />
@@ -404,18 +371,6 @@ export function ElementAppearanceSections({
                   onPreviewEnd={props.onPreviewStyleEnd}
                 />
               </div>
-              {/* A lane whose title runs down a side can read it upright
-                  (docs/specs/009-elements/lane.md "Upright titles"); a band always reads across. */}
-              {shapeTarget?.shape === 'lane' && !isLaneBand(laneEdgeOfElement(shapeTarget)) ? (
-                <MenuToggleRow
-                  label="Upright Title"
-                  description="Read bottom to top in a thin strip"
-                  checked={shapeTarget.titleOrientation === 'upright'}
-                  onToggle={() =>
-                    props.onSetLaneUprightTitle(shapeTarget.titleOrientation !== 'upright')
-                  }
-                />
-              ) : null}
             </MenuAccordionSection>
           ) : null}
           {showMarkers ? (

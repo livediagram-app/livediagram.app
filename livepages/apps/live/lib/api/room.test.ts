@@ -32,7 +32,7 @@ describe('roomQueryString (the room upgrade carries only the ticket)', () => {
 // The reconnect cursor (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 1). The room skips the sender when it
 // relays an op, so the client's own ops only ever reach its cursor through a
 // `cursor` frame; without one a reconnect asked for them back and re-applied
-// its own `vote` deltas, counting each dot twice.
+// its own deltas, applying each twice.
 describe('connectRoom reconnect cursor', () => {
   class FakeSocket {
     static OPEN = 1;
@@ -201,21 +201,31 @@ describe('connectRoom outbox (docs/specs/012-collaboration/collab-race-hardening
     const first = FakeSocket.all[0]!;
     first.fire('open');
     first.fire('close');
-    const dot = (delta: 1 | -1) =>
+    const tick = (done: boolean) =>
       ({
         kind: 'op',
-        op: { kind: 'vote', tabId: 't', elementId: 'e', voter: 'k', delta },
+        op: {
+          kind: 'el-delta',
+          tabId: 't',
+          elementId: 'e',
+          delta: { kind: 'check', index: 0, text: 'a', done },
+        },
       }) as const;
-    room.send(dot(1));
+    room.send(tick(true));
     room.send({ kind: 'op', op: { kind: 'cursor', x: 1, y: 2 } } as never);
-    room.send(dot(-1));
+    room.send(tick(false));
     vi.runOnlyPendingTimers();
     const second = FakeSocket.all[1]!;
     second.fire('open');
-    expect(second.sent.map((m) => m.op?.kind ?? m.kind)).toEqual(['hello', 'sync', 'vote', 'vote']);
-    expect(second.sent.slice(2).map((m) => (m.op as unknown as { delta: number }).delta)).toEqual([
-      1, -1,
+    expect(second.sent.map((m) => m.op?.kind ?? m.kind)).toEqual([
+      'hello',
+      'sync',
+      'el-delta',
+      'el-delta',
     ]);
+    expect(
+      second.sent.slice(2).map((m) => (m.op as unknown as { delta: { done: boolean } }).delta.done),
+    ).toEqual([true, false]);
   });
 
   // A longer outage (a laptop asleep, wifi gone for a minute) outlasts the backoff's attempts: the
@@ -416,11 +426,11 @@ describe('connectRoom outbox (docs/specs/012-collaboration/collab-race-hardening
   // A save waits for the room to sequence its ledger deltas before it writes
   // (docs/specs/012-collaboration/collab-race-hardening.md phase 6).
   describe('sequence', () => {
-    const vote = {
+    const tick = {
       kind: 'el-delta',
       tabId: 't',
       elementId: 'e',
-      delta: { kind: 'response', participantId: 'p1', value: 'yes', at: 1 },
+      delta: { kind: 'check', index: 0, text: 'a', done: true },
     } as const;
     const open = () => {
       const room = connectRoom(
@@ -436,8 +446,8 @@ describe('connectRoom outbox (docs/specs/012-collaboration/collab-race-hardening
 
     it('sends the op with a ref and resolves once the room names that ref', async () => {
       const { room, socket } = open();
-      const first = room.sequence(vote);
-      const second = room.sequence(vote);
+      const first = room.sequence(tick);
+      const second = room.sequence(tick);
       const refs = socket.sent.slice(-2).map((m) => (m as { ref?: number }).ref);
       expect(refs).toEqual([1, 2]);
       expect(socket.sent.at(-1)).toMatchObject({ kind: 'op', op: { kind: 'el-delta' } });
@@ -458,7 +468,7 @@ describe('connectRoom outbox (docs/specs/012-collaboration/collab-race-hardening
     it('gives up after ROOM_SEQUENCE_ACK_TIMEOUT_MS, and logs it', async () => {
       const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
       const { room } = open();
-      const pending = room.sequence(vote);
+      const pending = room.sequence(tick);
       vi.advanceTimersByTime(ROOM_SEQUENCE_ACK_TIMEOUT_MS);
       await expect(pending).resolves.toBe(false);
       expect(warn).toHaveBeenCalledWith('[room] op not confirmed in time', {
@@ -470,7 +480,7 @@ describe('connectRoom outbox (docs/specs/012-collaboration/collab-race-hardening
 
     it('answers false at once when the socket drops, and ignores a late ref', async () => {
       const { room, socket } = open();
-      const pending = room.sequence(vote);
+      const pending = room.sequence(tick);
       socket.fire('close');
       await expect(pending).resolves.toBe(false);
       expect(() => answer(socket, { kind: 'cursor', epoch: 'e1', seq: 3, ref: 1 })).not.toThrow();
@@ -480,7 +490,7 @@ describe('connectRoom outbox (docs/specs/012-collaboration/collab-race-hardening
     it('holds the op in the outbox while the socket is down, and answers false', async () => {
       const { room, socket } = open();
       socket.fire('close');
-      await expect(room.sequence(vote)).resolves.toBe(false);
+      await expect(room.sequence(tick)).resolves.toBe(false);
       vi.runOnlyPendingTimers();
       const second = FakeSocket.all[1]!;
       second.fire('open');
@@ -492,7 +502,7 @@ describe('connectRoom outbox (docs/specs/012-collaboration/collab-race-hardening
       const { room, socket } = open();
       room.close();
       const sent = socket.sent.length;
-      await expect(room.sequence(vote)).resolves.toBe(false);
+      await expect(room.sequence(tick)).resolves.toBe(false);
       expect(socket.sent).toHaveLength(sent);
     });
   });

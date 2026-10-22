@@ -134,22 +134,6 @@
 - [x] Constants and configuration
 - [x] Defaults ledger
 
-## mode-button
-
-- [x] Domain and naming
-- [x] Behaviour and state
-- [x] Interfaces and contracts
-- [x] Data and persistence
-- [x] Errors and edge cases
-- [x] Security and trust
-- [x] Presentation and UX
-- [x] Accessibility
-- [x] Web Experience
-- [ ] Observability
-- [ ] Testing
-- [x] Constants and configuration
-- [x] Defaults ledger
-
 ## progress
 
 - [x] Domain and naming
@@ -364,21 +348,5 @@
 - [x] Web Experience
 - [ ] Observability
 - [ ] Testing
-- [x] Constants and configuration
-- [x] Defaults ledger
-
-## sequence-diagram
-
-- [x] Domain and naming
-- [x] Behaviour and state
-- [x] Interfaces and contracts
-- [x] Data and persistence
-- [x] Errors and edge cases
-- [x] Security and trust
-- [x] Performance and limits
-- [x] Presentation and UX
-- [x] Accessibility
-- [x] Observability
-- [x] Testing
 - [x] Constants and configuration
 - [x] Defaults ledger

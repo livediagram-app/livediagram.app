@@ -40,12 +40,11 @@ describe('pickedByOutline', () => {
     'speech-bubble',
     'frame',
     'laptop',
-    'actor',
   ])('picks a %s by its drawn outline', (kind) => {
     expect(pickedByOutline(shape(kind))).toBe(true);
   });
 
-  it.each<ShapeKind>(['icon', 'pie-chart', 'estimate', 'callout', 'mode-button'])(
+  it.each<ShapeKind>(['icon', 'pie-chart', 'callout'])(
     'keeps the box of a %s, which paints its own face',
     (kind) => {
       expect(pickedByOutline(shape(kind))).toBe(false);
@@ -155,13 +154,6 @@ describe('shapeTouchesBrush', () => {
   it('picks a speech bubble by its tail, drawn below the box', () => {
     expect(hits(shape('speech-bubble'), { x: 26, y: 120 })).toBe(true);
     expect(hits(shape('speech-bubble'), { x: 50, y: 50 }, 10)).toBe(false);
-  });
-
-  it('fits the actor into its box as drawn, and fills its head', () => {
-    const actor = shape('actor', { width: 90, height: 130 });
-    expect(hits(actor, { x: 45, y: 6 })).toBe(true);
-    expect(hits(actor, { x: 45, y: 22 })).toBe(false);
-    expect(hits({ ...actor, fillColor: '#fff' }, { x: 45, y: 22 })).toBe(true);
   });
 
   it('picks a browser by its frame and its chrome divider', () => {

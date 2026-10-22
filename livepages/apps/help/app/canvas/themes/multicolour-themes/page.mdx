@@ -6,20 +6,20 @@ import { MulticolourTheme } from '@/components/illustrations/canvas';
 export const metadata = helpMetadata({
   title: 'Multicolour Themes',
   description:
-    'Tint each branch of a mind map or hierarchy a different hue with a multicolour theme, the way a rainbow mind map does.',
+    'Tint each branch of a hierarchy of connected shapes a different hue with a multicolour theme.',
   path: '/help/canvas/themes/multicolour-themes/',
 });
 
 <ArticleLayout
   title="Multicolour Themes"
-  description="Give each branch of a hierarchy its own hue with a multicolour theme, so a mind map or org chart reads as colourful at a glance."
+  description="Give each branch of a hierarchy its own hue with a multicolour theme, so a tree of connected shapes reads as colourful at a glance."
   categoryTitle="Canvas"
   categorySlug="canvas"
   parentArticle={{ title: "Themes", slug: "themes" }}
   subArticles={getSubArticles("themes").filter((a) => a.slug !== "multicolour-themes")}
 >
 
-Most themes paint every element one colour. A multicolour theme is different: it carries a palette of several colours and gives each branch of your diagram a different one, the way a rainbow mind map tints each main branch a distinct hue. They are perfect for mind maps, org charts, and any diagram where colour helps you tell one limb from another.
+Most themes paint every element one colour. A multicolour theme is different: it carries a palette of several colours and gives each branch of your hierarchy a different one. They suit any picture where colour helps you tell one limb from another.
 
 ## What They Are
 
@@ -29,7 +29,7 @@ livepages ships three multicolour themes in the [Tab Style dialog](/help/canvas/
 
 ## How a Branch Is Decided
 
-livepages works out the branches from your arrows. An arrow whose ends are both pinned to elements defines a parent-to-child link. The roots of the hierarchy (the centre of a mind map, or the top of an org chart) take the trunk colour, and each of a root's direct children starts a fresh branch hue that flows down the whole subtree beneath it. So a top-level limb and all of its sub-topics share one colour.
+livepages works out the branches from your arrows. An arrow whose ends are both pinned to elements defines a parent-to-child link. The roots of the hierarchy take the trunk colour, and each of a root's direct children starts a fresh branch hue that flows down the whole subtree beneath it. So a top-level limb and all of its sub-topics share one colour.
 
 <Figure caption="A multicolour theme gives the neutral root a trunk colour and tints each branch its own hue.">
   <MulticolourTheme />
@@ -39,7 +39,7 @@ Elements that no arrow touches each pick up the next colour in turn, so even a f
 
 ## Adding to a Multicolour Diagram
 
-A brand-new element you drop on a multicolour tab is not wired into the hierarchy yet, so it takes the neutral trunk colour. Once you connect it in with an arrow, give it the limb's hue by painting a neighbour's look onto it with the [Format Painter](/help/tips-and-tricks/format-painter/). (Re-picking the theme does not do it: by then the trunk colour counts as one you chose, so it is kept.) A mind-map node you add from the keyboard is the exception: it copies its sibling's look, so it arrives in its branch colour. This is deliberate: livepages does not silently re-rainbow your whole canvas every time you draw an arrow, which would fight any hand-colouring you have done.
+A brand-new element you drop on a multicolour tab is not wired into the hierarchy yet, so it takes the neutral trunk colour. Once you connect it in with an arrow, give it the limb's hue by painting a neighbour's look onto it with the [Format Painter](/help/tips-and-tricks/format-painter/). (Re-picking the theme does not do it: by then the trunk colour counts as one you chose, so it is kept.) This is deliberate: livepages does not silently re-rainbow your whole canvas every time you draw an arrow, which would fight any hand-colouring you have done.
 
 <Tip>
   Each theme card previews a small diagram in that theme's colours. On a multicolour theme each node

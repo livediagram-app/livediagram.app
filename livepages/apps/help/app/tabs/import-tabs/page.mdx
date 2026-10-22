@@ -5,28 +5,31 @@ import { ImportMenu, ImportWarning } from '@/components/illustrations/tabs';
 export const metadata = helpMetadata({
   title: 'Importing a Tab',
   description:
-    'Import a livepages JSON tab export into a tab by pasting text or picking a file. It replaces the tab contents.',
+    'Import a livepages JSON tab export, or a Markdown document as an article, into a tab by pasting text or picking a file. It replaces the tab contents.',
   path: '/help/tabs/import-tabs/',
 });
 
 <ArticleLayout
   title="Importing a Tab"
-  description="Bring a tab's contents in from pasted text or a file. Import a livepages JSON tab export into the active tab."
+  description="Bring a tab's contents in from pasted text or a file: a livepages JSON tab export, or Markdown as an article."
   categoryTitle="Tabs"
   categorySlug="tabs"
 >
 
 **Import** brings content into the active tab from pasted text or a file. It is the counterpart to [exporting](/help/tabs/export-tabs/): export a tab from one document, import it into a tab somewhere else.
 
-## Importing JSON
+## Importing JSON or Markdown
 
-Open the tab's menu (the **⋯** button on the active tab, or right-click the tab) and choose **Import**. You can also run **Import…** from the [command palette](/help/search-panel/the-search-panel/command-palette/). The **Import to Tab** dialog takes **JSON**: a livepages tab export (a `.livepages-tab.json` file), pages and all, restored exactly, the highest-fidelity round trip.
+Open the tab's menu (the **⋯** button on the active tab, or right-click the tab) and choose **Import**. You can also run **Import…** from the [command palette](/help/search-panel/the-search-panel/command-palette/). The **Import to Tab** dialog takes two formats:
+
+- **JSON**: a livepages tab export (a `.livepages-tab.json` file), pages and all, restored exactly, the highest-fidelity round trip.
+- **Markdown**: a `.md` document, written into an [article](/help/pages/articles/). Headings, lists, to-dos, quotes and code become the article's blocks; see [Markdown Import](/help/tools/markdown-import/).
 
 <Figure caption="The tab menu holds Import, beside Export and Clear.">
   <ImportMenu />
 </Figure>
 
-**Paste or write** the JSON into the box and press **Import**, or press **Import a file instead** to pick one from disk. Either way the tab updates once it parses.
+**Paste or write** the text into the box and press **Import**, or press **Import a file instead** to pick one from disk. Either way the tab updates once it parses.
 
 Dropping a `.json` file straight onto the canvas doesn't import it: a small note points you to **Import** in the tab menu, since importing replaces the tab.
 

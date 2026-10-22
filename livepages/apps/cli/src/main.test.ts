@@ -118,9 +118,9 @@ describe('run', () => {
         ? Response.json({ document: { id: DOC, name: 'Auth flow' } })
         : undefined;
     const io = signedIn({ routes: [capabilities, share, library, tokens] });
-    expect(
-      (await cli(['tab', 'ls', 'https://livepages.app/document/shared?s=abc'], io)).code,
-    ).toBe(0);
+    expect((await cli(['tab', 'ls', 'https://livepages.app/document/shared?s=abc'], io)).code).toBe(
+      0,
+    );
     expect(io.requests.at(-1)!.headers.get('X-Share-Code')).toBe('abc');
     expect(io.requests[1]!.headers.get('X-Share-Code')).toBeNull();
   });
@@ -182,12 +182,8 @@ describe('run', () => {
     expect((await cli(['api', 'POST', '/documents'], io)).code).toBe(1);
     expect(io.err()).toContain('accepts writes from livepages 99.0.0 or later');
     expect(
-      (
-        await cli(
-          ['api', 'GET', '/documents'],
-          fakeIo({ env: { LIVEPAGES_TOKEN: TOKEN }, routes }),
-        )
-      ).code,
+      (await cli(['api', 'GET', '/documents'], fakeIo({ env: { LIVEPAGES_TOKEN: TOKEN }, routes })))
+        .code,
     ).toBe(0);
     expect(
       (await cli(['document', 'ls'], fakeIo({ env: { LIVEPAGES_TOKEN: TOKEN }, routes }))).code,
@@ -519,30 +515,5 @@ describe('auth', () => {
     });
     expect((await cli(['auth', 'logout'], broken)).code).toBe(7);
     expect(JSON.parse(broken.fileMap.get(CREDENTIALS)!.data)).toHaveProperty('profiles.default');
-  });
-});
-
-describe('graph lint', () => {
-  it('lints a file or stdin locally, reaching no host, and refuses what is no graph', async () => {
-    const graph = JSON.stringify({
-      nodes: [
-        { id: 'a', label: 'A' },
-        { id: 'b', label: 'B' },
-      ],
-      edges: [{ from: 'a', to: 'b' }],
-    });
-    const io = fakeIo({ files: { '/work/g.json': graph }, stdin: 'flowchart LR\n  a --> b' });
-    expect(await run(['graph', 'lint', 'g.json'], io)).toBe(0);
-    expect(io.out()).toMatch(/^0 crossings · 0 behind · 0 overlaps/);
-    expect(await run(['graph', 'lint', '-', '--compare', 'direction'], io)).toBe(0);
-    expect(io.out()).toContain('variant');
-    expect(io.requests).toEqual([]);
-    const debug = fakeIo({ env: { LIVEPAGES_DEBUG: '1' }, files: { '/work/g.json': graph } });
-    await run(['graph', 'lint', 'g.json'], debug);
-    expect(debug.out()).not.toContain('[lint]');
-    expect(debug.err()).toMatch(/\[cli\] \[lint\] run \{/);
-    const bad = fakeIo({ stdin: 'rm n1' });
-    expect(await run(['graph', 'lint', '-'], bad)).toBe(1);
-    expect(bad.err()).toContain('stdin holds no graph or Mermaid');
   });
 });

@@ -22,10 +22,6 @@ function box(
   return { ...createShape(kind, x, y), id, width: w, height: h } satisfies ShapeElement;
 }
 
-function mind(id: string, parent?: string): ShapeElement {
-  return { ...box('mind-node', id, 0, 0, 100, 40), ...(parent ? { mindParentId: parent } : {}) };
-}
-
 describe('boxCentre and boxHoldsPoint', () => {
   it('finds the centre and holds points on the edges', () => {
     const b = { x: 10, y: 20, width: 100, height: 40 };
@@ -49,14 +45,14 @@ describe('smallestHolder', () => {
 });
 
 describe('deriveContainers (R11)', () => {
-  it('nests an element under the smallest frame or lane holding its centre', () => {
+  it('nests an element under the smallest frame or stack holding its centre', () => {
     const outer = box('frame', 'outer', 0, 0, 1000, 1000);
-    const lane = box('lane', 'lane', 0, 0, 500, 200);
+    const inner = box('stack', 'inner', 0, 0, 500, 200);
     const node = box('square', 'node', 10, 10, 100, 50);
     const loose = box('square', 'loose', 2000, 0, 100, 50);
-    const map = deriveContainers([outer, lane, node, loose]);
-    expect(map.get('node')).toBe('lane');
-    expect(map.get('lane')).toBe('outer');
+    const map = deriveContainers([outer, inner, node, loose]);
+    expect(map.get('node')).toBe('inner');
+    expect(map.get('inner')).toBe('outer');
     expect(map.get('outer')).toBeNull();
     expect(map.get('loose')).toBeNull();
   });
@@ -97,48 +93,6 @@ describe('deriveContainers (R11)', () => {
     expect(map.get('odd')).toBeNull();
     expect(map.get('g')).toBeNull();
   });
-
-  it('lets a mind map parent link win over geometry', () => {
-    const frame = box('frame', 'f', -500, -500, 2000, 2000);
-    const map = deriveContainers([
-      frame,
-      mind('root'),
-      mind('child', 'root'),
-      mind('leaf', 'child'),
-    ]);
-    expect(map.get('root')).toBe('f');
-    expect(map.get('child')).toBe('root');
-    expect(map.get('leaf')).toBe('child');
-  });
-
-  it('reads a dangling or non-mind parent as a root (E11)', () => {
-    const square = box('square', 'sq', 0, 0, 10, 10);
-    const map = deriveContainers([square, mind('a', 'gone'), mind('b', 'sq')]);
-    expect(map.get('a')).toBeNull();
-    expect(map.get('b')).toBeNull();
-  });
-
-  it('breaks a parent loop at its lowest array index (E11)', () => {
-    const map = deriveContainers([
-      mind('x', 'z'),
-      mind('y', 'x'),
-      mind('z', 'y'),
-      mind('tail', 'z'),
-    ]);
-    expect(map.get('x')).toBeNull();
-    expect(map.get('y')).toBe('x');
-    expect(map.get('z')).toBe('y');
-    expect(map.get('tail')).toBe('z');
-  });
-
-  it('breaks a self-parent and a loop reached from its tail', () => {
-    const self = deriveContainers([mind('s', 's')]);
-    expect(self.get('s')).toBeNull();
-    const tailFirst = deriveContainers([mind('tail', 'b'), mind('a', 'b'), mind('b', 'a')]);
-    expect(tailFirst.get('tail')).toBe('b');
-    expect(tailFirst.get('a')).toBeNull();
-    expect(tailFirst.get('b')).toBe('a');
-  });
 });
 
 describe('contentOrigin', () => {
@@ -155,9 +109,9 @@ describe('contentOrigin', () => {
 });
 
 describe('isContainer', () => {
-  it('is a frame or a lane', () => {
+  it('is a frame or a stack', () => {
     expect(isContainer(box('frame', 'f', 0, 0, 10, 10))).toBe(true);
-    expect(isContainer(box('lane', 'l', 0, 0, 10, 10))).toBe(true);
+    expect(isContainer(box('stack', 'l', 0, 0, 10, 10))).toBe(true);
     expect(isContainer(box('square', 's', 0, 0, 10, 10))).toBe(false);
     expect(isContainer({ ...createPinnedArrow('a', 'e', 'b', 'w'), id: 'arr' })).toBe(false);
   });
@@ -198,19 +152,21 @@ describe('containerContents', () => {
 
   it('gives an element in overlapping containers to the smallest', () => {
     const big = box('frame', 'big', 0, 0, 400, 400);
-    const small = box('lane', 'small', 100, 100, 150, 150);
+    const small = box('stack', 'small', 100, 100, 150, 150);
     const el = box('square', 'el', 150, 150, 20, 20);
     // Dragging the smaller carries it; the bigger carries the smaller and so the element too.
     expect(containerContents([big, small, el], new Set(['small'])).has('el')).toBe(true);
     expect(containerContents([big, small, el], new Set(['big'])).has('el')).toBe(true);
-    // Overlapping, not nested: the lane's centre (150,150) lies outside it, the element (170,170) in both.
-    const lane = box('lane', 'lane', 100, 100, 100, 100);
+    // Overlapping, not nested: the stack's centre (150,150) lies outside it, the element (170,170) in both.
+    const inner = box('stack', 'inner', 100, 100, 100, 100);
     const sibling = box('frame', 'sibling', 155, 155, 300, 300);
     const shared = box('square', 'shared', 160, 160, 20, 20);
-    expect(containerContents([sibling, lane, shared], new Set(['sibling'])).has('shared')).toBe(
+    expect(containerContents([sibling, inner, shared], new Set(['sibling'])).has('shared')).toBe(
       false,
     );
-    expect(containerContents([sibling, lane, shared], new Set(['lane'])).has('shared')).toBe(true);
+    expect(containerContents([sibling, inner, shared], new Set(['inner'])).has('shared')).toBe(
+      true,
+    );
   });
 
   it('carries an arrow whose free ends all lie inside, not one reaching out or fully pinned', () => {
@@ -235,13 +191,5 @@ describe('containerContents', () => {
     expect(out.has('half')).toBe(true);
     expect(out.has('free-out')).toBe(false);
     expect(out.has('pinned')).toBe(false);
-  });
-
-  it('carries a mind map child through its root in the container', () => {
-    const map = deriveContainers;
-    expect(map).toBeTypeOf('function');
-    const root = { ...mind('root'), x: 130, y: 130, width: 40, height: 20 };
-    const child = { ...mind('child', 'root'), x: 900, y: 900 };
-    expect(containerContents([frame, root, child], new Set(['frame'])).has('child')).toBe(true);
   });
 });

@@ -3,39 +3,16 @@
 import { describe, expect, it } from 'vitest';
 import {
   arrowPolyline,
-  buildGraphTab,
   elementIndexFor,
-  resolveGraphInput,
   type ArrowElement,
   type BoxedElement,
   type Tab,
 } from '@livepages/document';
 import { applied } from '../fixtures/outcomes';
+import { laidOutTab } from '../fixtures/laid-out-tabs';
 import { run } from '../fixtures/run';
 
-const gateway = (direction: 'down' | 'right' = 'down'): Tab =>
-  buildGraphTab(
-    't',
-    'T',
-    resolveGraphInput({
-      graph: {
-        style: 'flow',
-        direction,
-        nodes: [
-          { id: 'gw', label: 'Gateway' },
-          { id: 'a', label: 'Service A' },
-          { id: 'b', label: 'Service B' },
-          { id: 'c', label: 'Service C' },
-        ],
-        edges: [
-          { from: 'gw', to: 'a' },
-          { from: 'gw', to: 'b' },
-          { from: 'gw', to: 'c' },
-        ],
-      },
-    }).graph!,
-    undefined,
-  );
+const gateway = (direction: 'down' | 'right' = 'down'): Tab => laidOutTab(`gateway-${direction}`);
 
 const arrowTo = (tab: Tab, to: string) =>
   tab.elements.find(

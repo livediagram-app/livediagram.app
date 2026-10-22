@@ -75,10 +75,8 @@ a bare row.
 The actor / stick-figure tile is gone from the palette and from the "Add to canvas" search catalogue, and the AI
 prompt no longer offers `actor` as a shape to emit. Nothing can create one any more.
 
-The `actor` **shape kind itself is kept** in the model, the renderer and the wire schema. Removing it would coerce
-every existing actor element to a square on next load (`coerceShape`'s fallback) — silent data loss for anyone who
-used it — and would be a breaking change for API and MCP callers. So: gone from everywhere you can add one, still
-renders wherever one already exists.
+The `actor` **shape kind** has since been removed from the model, the renderer and the wire schema as well, with
+the other flowchart-only kinds: livepages has no stored documents that could hold one.
 
 ## The body scrolls when it has to
 

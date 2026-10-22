@@ -241,7 +241,6 @@ describe('kindWordOf (R9)', () => {
   it('names a shape by its kind', () => {
     expect(kindWordOf(createShape('cylinder', 0, 0))).toBe('cylinder');
     expect(kindWordOf(createShape('frame', 0, 0))).toBe('frame');
-    expect(kindWordOf(createShape('actor', 0, 0))).toBe('actor');
   });
 
   it('names an element by its type', () => {

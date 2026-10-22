@@ -12,7 +12,6 @@ export type BoxedShared = Omit<
   | 'showHandles'
   | 'showAnchors'
   | 'isoDepth'
-  | 'votableInVote'
   | 'layerOpacity'
   | 'remoteSelectors'
   | 'isEditing'
@@ -20,10 +19,5 @@ export type BoxedShared = Omit<
   | 'movable'
   | 'writable'
   | 'resizable'
-  | 'isVoteFocus'
-  | 'commentActions'
-  | 'actionActions'
-  | 'revealedForMe'
-  | 'reactionBurst'
   | 'fontFamily'
 >;

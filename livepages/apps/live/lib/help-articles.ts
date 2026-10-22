@@ -23,18 +23,9 @@ export const HELP_ARTICLES = {
   sharePasswords: 'collaboration/sharing/share-passwords',
   // Palette behaviour
   autoAttachArrows: 'palette/auto-attach-arrows',
-  // Of the elements added in docs/specs/009-elements/youtube-video.md and docs/specs/009-elements/mind-node.md, docs/specs/009-elements/lane.md, docs/specs/009-elements/entity.md, docs/specs/009-elements/embed-providers.md, only the embed has a
-  // surface that links its article (the link picker, when it is restricted to
-  // a URL). Lanes and entities had keys here and no placement, so they were
-  // removed; their element tours brought them back, below. The mind map's Edit
-  // Outline dialog links its own sub-article from its header, and the mind
-  // map's, the flowchart's and the org chart's element tours (docs/specs/007-editor/element-tours.md) link their
-  // articles.
+  // The embed's article is linked from the link picker, when it is restricted to a URL
+  // (docs/specs/009-elements/embed-providers.md).
   embedElements: 'palette/embed-elements',
-  mindMaps: 'palette/mind-maps',
-  flowcharts: 'palette/flowcharts',
-  orgCharts: 'palette/org-charts',
-  mindMapOutline: 'palette/mind-maps/edit-outline',
   alignmentGuides: 'palette/alignment-guides',
   panelOpacity: 'palette/panel-opacity',
   quickAddOnHover: 'palette/quick-add-on-hover',
@@ -77,8 +68,6 @@ export const HELP_ARTICLES = {
   explorerPanel: 'explorer/explorer-panel',
   layers: 'canvas/layers',
   minimap: 'user-interface/minimap',
-  sessionVoting: 'collaboration/session-tools/voting',
-  sessionTimer: 'collaboration/session-tools/timer',
   imageGallery: 'explorer/image-gallery',
   timeline: 'explorer/timeline',
   // The Inbox's article keeps the slug it had as Activity, so links already out there keep working.
@@ -92,13 +81,7 @@ export const HELP_ARTICLES = {
   sankeyDiagram: 'palette/concept-graphics/sankey-diagram',
   // The round-two element tours' closing cards (docs/specs/007-editor/element-tours.md).
   stacks: 'palette/stacks',
-  entities: 'palette/entities',
   tabWindows: 'pages/tab-windows',
-  lanes: 'palette/lanes',
-  boundaries: 'palette/boundaries',
-  diagramKeys: 'palette/diagram-keys',
-  portals: 'palette/tools/portals',
-  sequenceDiagram: 'palette/sequence-diagrams',
   conceptGraphics: 'palette/concept-graphics',
   palette: 'palette',
   // Settings
@@ -210,7 +193,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   markdownImport: {
     title: 'Learn about Markdown import',
-    description: 'How headings and lists become a themed tree diagram.',
+    description: 'How a Markdown file becomes an article.',
   },
   linkingTabs: {
     title: 'Learn about linking tabs',
@@ -261,33 +244,9 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about layers',
     description: 'Tips and tricks for stacking, hiding and locking parts of a tab.',
   },
-  orgCharts: {
-    title: 'Learn about org charts',
-    description: 'People and roles in a tree: reports, peers, and the downward flow.',
-  },
-  flowcharts: {
-    title: 'Learn about flowcharts',
-    description: 'Growing a chart a step at a time, step types, swimlanes and direction.',
-  },
-  mindMaps: {
-    title: 'Learn about mind maps',
-    description: 'Growing a map with Tab and Enter, its branching shapes, spacing and Tidy Map.',
-  },
-  mindMapOutline: {
-    title: 'Learn about editing an outline',
-    description: 'Rewrite a mind map as an indented list and save it back in one go.',
-  },
   minimap: {
     title: 'Learn about the Map',
     description: 'Tips for finding your way around a big canvas.',
-  },
-  sessionVoting: {
-    title: 'Learn about voting',
-    description: 'Tips for running a quick vote across the elements on the canvas.',
-  },
-  sessionTimer: {
-    title: 'Learn about the timer',
-    description: 'Tips for keeping a session to time with a countdown or a stopwatch.',
   },
   imageGallery: {
     title: 'Learn about the Image Gallery',
@@ -337,38 +296,14 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about stacks',
     description: 'Rows, columns and grids that lay out what you drop in them.',
   },
-  entities: {
-    title: 'Learn about entities',
-    description: 'UML classes and ER tables: a title over name and type fields.',
-  },
   tabWindows: {
     title: 'Learn about tab windows',
     description: 'Show another tab live on a slide, and keep it up to date.',
-  },
-  lanes: {
-    title: 'Learn about lanes',
-    description: 'Swimlanes: title gutters, seams, and columns as well as rows.',
-  },
-  boundaries: {
-    title: 'Learn about boundaries',
-    description: 'Zones that hold what is inside them: regions, VPCs, C4 systems.',
-  },
-  diagramKeys: {
-    title: 'Learn about diagram keys',
-    description: 'A legend that lists the line styles and tag colours you use.',
-  },
-  portals: {
-    title: 'Learn about portals',
-    description: 'Linked rings that take you across the canvas or to another tab.',
   },
   conceptGraphics: {
     title: 'Learn about concept graphics',
     description:
       'Stacks, pyramids, funnels, cycles, hubs, onions and chevrons, and editing their rows.',
-  },
-  sequenceDiagram: {
-    title: 'Learn about sequence diagrams',
-    description: 'Writing participants and messages, and the three kinds of arrow.',
   },
   palette: {
     title: 'Learn about the Palette',

@@ -21,12 +21,10 @@ describe('fieldValueIssue', () => {
   it('checks the diagram-building kinds’ closed fields', () => {
     expect(ELEMENT_FIELD_VALUES.chipLook).toContain('solid');
     expect(fieldValueIssue('cardMedia', 'tile')).toBeNull();
-    expect(fieldValueIssue('boundaryStyle', 'dashed')).toMatch(/tab, inset, c4/);
     expect(fieldValueIssue('pyramidVariant', 'funnel')).toBeNull();
     expect(fieldValueIssue('attachAt', 'middle')).not.toBeNull();
     expect(fieldValueIssue('accentEdge', 'right')).toMatch(/left, top, bottom/);
     expect(fieldValueIssue('stackDirection', 'grid')).toBeNull();
     expect(fieldValueIssue('stackAlign', 'middle')).toMatch(/start, center, end/);
-    expect(fieldValueIssue('mindLook', 'avatar')).toMatch(/person/);
   });
 });

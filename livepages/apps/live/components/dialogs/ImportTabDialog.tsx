@@ -48,10 +48,9 @@ const FORMATS: {
   {
     key: 'markdown',
     title: 'Markdown',
-    description:
-      'A .md outline (headings + lists), e.g. exported from XMind. Becomes a themed tree.',
-    placeholder: '# Project\n\n- Research\n  - Interviews\n  - Survey\n- Build\n- Launch',
-    note: { article: 'markdownImport', label: 'See how a Markdown outline maps to a tree' },
+    description: 'A .md file. Becomes an article, its headings, lists and paragraphs kept.',
+    placeholder: '# Project\n\nWhy we are doing this.\n\n- Research\n- Build\n- Launch',
+    note: { article: 'markdownImport', label: 'See how Markdown becomes an article' },
   },
 ];
 

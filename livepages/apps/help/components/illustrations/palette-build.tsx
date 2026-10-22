@@ -1,5 +1,5 @@
-// Build-category illustrations (docs/specs/010-palette/build-category.md): the containers you lay a diagram
-// out with. The frame is the one that needed drawing, because what it does is
+// The frame's illustration: the labelled section you lay a page
+// out with. It needed drawing, because what it does is
 // spatial (it sits behind a cluster and takes the cluster with it) and no
 // amount of prose replaces seeing that.
 

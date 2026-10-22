@@ -15,7 +15,7 @@ and a cleanup is a bulk move. `cleanupElements` (`lib/tab-cleanup.ts`) collects 
 Auto Layout treats a locked box as scenery rather than a graph node, so arrows to it are
 not edges and it is never placed, and a locked arrow keeps its anchors. The editor's Tidy Up
 treats a locked box like any box it does not move: the laid-out block steps clear of it, and
-arrows route around it (graph input still lays out as if it were not there). A box holding a
+arrows route around it. A box holding a
 locked element is never a [unit](#what-moves-together).
 
 ## Auto-align (grid snap)
@@ -56,17 +56,16 @@ components, with cycle-breaking for cyclic graphs (when a loop stalls the order 
 waiting node some placed node already feeds, with the fewest predecessors still to come, so a node or group the loop
 does not hold is never ranked ahead of what feeds it); direction is inferred from the elements' current rough
 positions. It can legitimately relocate an element across the
-canvas. This is also the routine Markdown import and the agents' graph input lean on to place nodes they
-never drew.
+canvas.
 
 - **Scope:** the whole active tab. Boxed elements that aren't wired to anything
   (loose stickies / text / images) pass through with their positions untouched;
   spacing respects element sizes.
-- **Graph input** (importers, the MCP, AI output) gets the layout described in the sections up to
+- **The plain layout** (`autoLayoutElements` with no tidy profile) gets the layout described in the sections up to
   "Two-way edges bow apart", pinned to the origin the caller gives.
 - **The editor's Tidy Up** runs the **tidy profile** instead (`tidyLayoutElements`,
   [below](#tidy-up-keeps-a-flowchart-a-flowchart)): an author's drawing carries intent a generated
-  graph does not, and the graph-input layout trashed it.
+  graph does not, and the plain layout trashed it.
 - One undoable op (`commit` snapshots the pre-layout state), so it can be
   undone in a single step.
 
@@ -78,7 +77,7 @@ already arranged. It is then refined by a few alternating barycentre sweeps
 (each node moved toward the average position of its neighbours in the rank
 above, then below), and the refined order is **kept only if it crosses fewer
 edges** than the one it started from. A graph whose nodes all start at one point
-(the MCP's graph input, an import) therefore gets a readable order instead of
+therefore gets a readable order instead of
 its input order, and a hand-arranged one is only changed where that removes a
 crossing.
 
@@ -120,8 +119,7 @@ pick by angle (`reanchorArrow`'s `axis`).
 ### Angled lines bend twice
 
 An angled arrow on its own is an L: from a parent's bottom to a child's top it
-runs down to the child's level and meets the child's top edge sideways. Laid-out
-graph input (the MCP's `graph` / `mermaid`, [MCP server](../015-api/mcp-server.md))
+runs down to the child's level and meets the child's top edge sideways. The plain layout
 gives each angled arrow two bends through `curvePoints` (down to half height,
 across, down into the child), the shape an org chart is read in; one whose ends
 already line up runs straight rather than drawing a zero-length elbow with a
@@ -146,7 +144,7 @@ do not face each other keeps its L, which already meets both ends square.
 
 ### Two-way edges bow apart
 
-In laid-out graph input (a Mermaid import, the MCP's `graph` / `mermaid`), a
+In the plain layout's output, a
 pair of straight arrows between the same two boxes in opposite directions (a
 state diagram's Private -> Shared and Shared -> Private) is curved apart, each
 bowing to its own side of the line between the boxes (`arrow-reciprocal.ts`):
@@ -158,9 +156,9 @@ carry a curve or a routing are left as they are.
 
 ### Tidy Up keeps a flowchart a flowchart
 
-The editor's Auto Layout (`cleanupElements` → `tidyLayoutElements`, a separate entry so graph-input callers never load it,
+The editor's Auto Layout (`cleanupElements` → `tidyLayoutElements`, a separate entry so plain-layout callers never load it,
 `auto-layout-tidy.ts`) reads the drawing as well as the graph. On the checkout template the
-graph-input layout squared both decisions, straightened every elbow into a diagonal, ran the retry
+plain layout squared both decisions, straightened every elbow into a diagonal, ran the retry
 loop back through the column it returns along, and landed the flow on top of the title. The tidy
 profile:
 
@@ -265,8 +263,7 @@ a component's nodes are positioned:
 | **Tree**              | `{ style: 'tree' }`                  | Tidy tree / org chart: a spanning tree from the roots (in-degree 0), each parent centred over its subtree, depth = rank, top-to-bottom. |
 | **Mindmap**           | `{ style: 'mindmap' }`               | Radial: the highest-degree node sits at the centre, each subtree gets an angular wedge sized by its leaf count, depth = ring radius.    |
 
-- The style lives in `AutoLayoutOptions` on `autoLayoutElements`: importers and the
-  MCP server keep calling it with no style and get Smart, unchanged.
+- The style lives in `AutoLayoutOptions` on `autoLayoutElements`: a caller that passes no style gets Smart.
 - **UI:** the command palette carries one command per style (Smart is the plain "Auto Layout (tidy up)", then
   "Auto Layout: Mindmap", ...). All styles are the same single undoable op.
 - **Mindmap order** is measured clockwise from 12 o'clock, where its first branch is placed, so a
@@ -282,7 +279,7 @@ a component's nodes are positioned:
 ## Out of scope
 
 Force-directed ("organic") layouts, laying shapes out inside their lanes (a lane moves only as a
-rigid block, so lane diagrams are offered Auto-align), routing graph input's arrows around
+rigid block, so lane diagrams are offered Auto-align), routing the plain layout's arrows around
 obstacles, and any LLM
 involvement (the AI "Clean" in [AI Assistance](../007-editor/ai-assistance.md) is the separate,
 key-gated path; Auto Layout is the deterministic, offline-safe one every deployment

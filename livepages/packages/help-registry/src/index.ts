@@ -183,9 +183,9 @@ export const categories: Category[] = [
     title: 'Palette',
     description:
       'Your launchpad for everything on a page: every element and palette setting explained.',
-    articleCount: 29,
+    articleCount: 21,
     kind: 'feature',
-    groups: ['Everyday Elements', 'Page Blocks', 'Diagram Elements', 'Palette Settings'],
+    groups: ['Everyday Elements', 'Page Blocks', 'Palette Settings'],
   },
   {
     slug: 'canvas',
@@ -208,8 +208,8 @@ export const categories: Category[] = [
     slug: 'collaboration',
     title: 'Collaboration',
     description:
-      'Work together in real time: comments, assigned actions, live presence, teams, sharing, and session tools.',
-    articleCount: 7,
+      'Work together in real time: comments, assigned actions, live presence, teams and sharing.',
+    articleCount: 5,
     kind: 'feature',
   },
   {
@@ -1153,116 +1153,14 @@ export const articles: Article[] = [
     group: 'Everyday Elements',
   },
   {
-    slug: 'build',
-    title: 'Build Elements',
-    description:
-      'Mind maps, org charts, flowcharts, sequence diagrams, lanes, frames and more, added from search.',
-    keywords:
-      'build structure layout container holds frame lane boundary timeline table mind node sankey flow arrange scaffold group section band track grid organise card badge step number diagram key legend stack row column grid auto layout even gaps org chart organisation reports hierarchy sequence diagram uml lifeline message',
-    category: 'Palette',
-    categorySlug: 'palette',
-    group: 'Diagram Elements',
-  },
-  {
     slug: 'frames',
     title: 'Frames',
     description: 'A labelled section that draws behind its contents and moves them as one.',
     keywords:
       'frame section container backdrop labelled box region area cluster move together carries contents behind resize outline f key figjam section export slide framing nest nested centre quick connect plus fill background',
     category: 'Palette',
-    categorySlug: 'palette/build',
-    parentSlug: 'build',
-  },
-  {
-    slug: 'mind-maps',
-    title: 'Mind Maps',
-    description: 'Tab adds a child, Enter a sibling: build a branch from the keyboard.',
-    keywords:
-      'mind map mindmap node branch child sibling tab enter keyboard tree hierarchy brainstorm outline edit outline markdown list indent bullets branching flow leftward upward downward balanced bubble spacing tight compact comfortable wide select branch delete branch',
-    category: 'Palette',
     categorySlug: 'palette',
-    group: 'Diagram Elements',
-  },
-  {
-    slug: 'edit-outline',
-    title: 'Edit a Mind Map as an Outline',
-    description: 'Rewrite a whole mind map as an indented list, then save it back in one go.',
-    keywords:
-      'mind map mindmap outline edit outline list bullets indent outdent restructure rearrange reorder text markdown paste bold italic underline rows tree hierarchy bulk',
-    category: 'Palette',
-    categorySlug: 'palette/mind-maps',
-    parentSlug: 'mind-maps',
-  },
-  {
-    slug: 'flowcharts',
-    title: 'Flowcharts',
-    description: 'Tab adds the next step, Enter a parallel one: a flowchart that lays itself out.',
-    keywords:
-      'flowchart flow chart process diagram step steps decision diamond yes no branch merge loop start end terminator input output parallelogram document database preparation connector iso 5807 tab enter keyboard auto layout tidy swimlane swim lane lanes cross functional direction down right workflow',
-    category: 'Palette',
-    categorySlug: 'palette',
-    group: 'Diagram Elements',
-  },
-  {
-    slug: 'org-charts',
-    title: 'Org Charts',
-    description: 'A tree of people with names and roles that lays itself out.',
-    keywords:
-      'org chart organisation organization chart people team hierarchy reports manager reporting line structure role initials tree ownership',
-    category: 'Palette',
-    categorySlug: 'palette',
-    group: 'Diagram Elements',
-  },
-  {
-    slug: 'sequence-diagrams',
-    title: 'Sequence Diagrams',
-    description: 'Who calls whom, in order, laid out from a list of messages.',
-    keywords:
-      'sequence diagram diagrams uml lifeline lifelines message messages call reply async request response interaction api participants actor activation numbered',
-    category: 'Palette',
-    categorySlug: 'palette',
-    group: 'Diagram Elements',
-  },
-  {
-    slug: 'lanes',
-    title: 'Lanes',
-    description: 'Titled bands for swimlanes; dragging one carries its contents.',
-    keywords:
-      'lane swimlane swim band row role team process cross-functional container pool track column vertical heading gutter upright title draw.io',
-    category: 'Palette',
-    categorySlug: 'palette',
-    group: 'Diagram Elements',
-  },
-  {
-    slug: 'entities',
-    title: 'Entities',
-    description:
-      'A title over fields with keys, joined field to field, for data models and class diagrams.',
-    keywords:
-      'entity class uml er erd record table schema model field attribute method database column inheritance aggregation composition fields popular primary foreign key pk fk unique relationship cardinality crows foot one many related',
-    category: 'Palette',
-    categorySlug: 'palette',
-    group: 'Diagram Elements',
-  },
-  {
-    slug: 'boundaries',
-    title: 'Boundaries',
-    description: 'Titled, tinted containers for regions, networks and systems.',
-    keywords:
-      'boundary boundaries container zone region vpc subnet network cluster trust zone group c4 system cloud aws azure gcp architecture nested nest tab tint cidr dashed',
-    category: 'Palette',
-    categorySlug: 'palette',
-    group: 'Diagram Elements',
-  },
-  {
-    slug: 'diagram-keys',
-    title: 'Diagram Keys and Tag Colours',
-    description: 'A legend that builds itself, and cards coloured by their tags.',
-    keywords:
-      'diagram key keys legend line styles dashed dotted solid meaning explain tag tags colour color colours colors colour code coding by team status layer card edge',
-    category: 'Palette',
-    categorySlug: 'palette',
-    group: 'Diagram Elements',
+    group: 'Everyday Elements',
   },
   {
     slug: 'technology',
@@ -1805,8 +1703,9 @@ export const articles: Article[] = [
   {
     slug: 'markdown-import',
     title: 'Markdown Import',
-    description: 'Paste Markdown into an article page and it becomes formatted writing.',
-    keywords: 'markdown md paste article headings lists bullet formatting import text convert',
+    description:
+      'Import a Markdown file as an article, or paste Markdown into an article page, and it becomes formatted writing.',
+    keywords: 'markdown md file paste article headings lists bullet formatting import text convert',
     category: 'Tools',
     categorySlug: 'tools',
   },
@@ -1923,7 +1822,7 @@ export const articles: Article[] = [
     description:
       'The small icons that show an element has a link, a note, an action or comments, and how to set them to Top, Footer or Off.',
     keywords:
-      'indicators indicator badges badge icons markers chip pip status metadata link note action comment comments count top footer off hide hidden mind map edit outline tidy map settings editor color colour',
+      'indicators indicator badges badge icons markers chip pip status metadata link note action comment comments count top footer off hide hidden tidy map settings editor color colour',
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Styling Elements',
@@ -2008,92 +1907,6 @@ export const articles: Article[] = [
     group: 'Layers and Locking',
     parentSlug: 'layers',
   },
-  {
-    slug: 'facilitator',
-    title: 'Facilitator',
-    description: 'Give one person the timer and votes for a live session.',
-    keywords:
-      'facilitator workshop host run the room session lead moderator driver baton timer vote control handover take over step down chair meeting workshop',
-    category: 'Collaboration',
-    categorySlug: 'collaboration',
-  },
-  {
-    slug: 'session-tools',
-    title: 'Session Tools',
-    description: 'A shared countdown or stopwatch and live dot-voting.',
-    keywords: 'timer voting workshop meeting facilitation retro countdown stopwatch dot vote dots',
-    category: 'Collaboration',
-    categorySlug: 'collaboration',
-  },
-  {
-    slug: 'timer',
-    title: 'The Timer',
-    description: 'Run a shared countdown or stopwatch on a tab.',
-    keywords: 'countdown stopwatch timebox clock minutes workshop',
-    category: 'Collaboration',
-    categorySlug: 'collaboration/session-tools',
-    parentSlug: 'session-tools',
-  },
-  {
-    slug: 'voting',
-    title: 'Dot Voting',
-    description: 'Let everyone vote live, privately if you want, and tally the results.',
-    keywords:
-      'vote poll tally decide prioritise prioritize dots anonymous private privacy secret blind hide hidden cursors pointers counts totals dot vote',
-    category: 'Collaboration',
-    categorySlug: 'collaboration/session-tools',
-    parentSlug: 'session-tools',
-  },
-  {
-    slug: 'casting-dots',
-    title: 'Casting Dots',
-    description: 'Spending and taking back your dots, and what counts as votable.',
-    keywords:
-      'cast dot dots vote counter tally pill plus minus retract withdraw budget spend stack votable shapes sticky notes images frames arrows not votable',
-    category: 'Collaboration',
-    categorySlug: 'collaboration/session-tools/voting',
-    parentSlug: 'voting',
-  },
-  {
-    slug: 'vote-layers',
-    title: 'Voting on One Layer',
-    description: 'Restrict a vote to one layer so only its elements take dots.',
-    keywords:
-      'vote layer layers votable layer all layers dimmed ringed restrict scope background frame annotation ideas scaffolding',
-    category: 'Collaboration',
-    categorySlug: 'collaboration/session-tools/voting',
-    parentSlug: 'voting',
-  },
-  {
-    slug: 'vote-privacy',
-    title: 'Private Voting',
-    description: 'Hide cursors and hide the running counts for a blind vote.',
-    keywords:
-      'private privacy secret blind anonymous hide cursors pointers laser hide running counts totals tallies pile on bandwagon switches fixed',
-    category: 'Collaboration',
-    categorySlug: 'collaboration/session-tools/voting',
-    parentSlug: 'voting',
-  },
-  {
-    slug: 'vote-panel',
-    title: 'The Vote Panel',
-    description: 'Track how far through a vote the room has got.',
-    keywords:
-      'vote panel turnout progress dots cast finished waiting pips remaining left rows unnamed anonymous when to end vote',
-    category: 'Collaboration',
-    categorySlug: 'collaboration/session-tools/voting',
-    parentSlug: 'voting',
-  },
-  {
-    slug: 'vote-results',
-    title: 'Vote Results',
-    description: 'The shared walkthrough of what won, with the ranked list beside it.',
-    keywords:
-      'results reveal show results winners ranked list top result walkthrough previous next done highlight amber follow shared focus clear vote',
-    category: 'Collaboration',
-    categorySlug: 'collaboration/session-tools/voting',
-    parentSlug: 'voting',
-  },
   // ---- Sub-articles: Canvas ----
   {
     slug: 'adding-elements',
@@ -2168,7 +1981,7 @@ export const articles: Article[] = [
   {
     slug: 'arrow-to-arrow',
     title: 'Connecting Arrows to Arrows',
-    description: 'Snap an arrow endpoint onto another arrow for sequence diagrams.',
+    description: 'Snap an arrow endpoint onto another arrow to branch or join a line.',
     keywords: 'sequence join connect endpoint attach branch',
     category: 'Palette',
     categorySlug: 'palette/arrows',
@@ -2220,16 +2033,6 @@ export const articles: Article[] = [
     title: 'Checklists',
     description: 'Checkable to-do rows you tick right on the canvas.',
     keywords: 'todo to-do task tick check box checkbox list rows done progress action items',
-    category: 'Palette',
-    categorySlug: 'palette/tools',
-    parentSlug: 'tools',
-  },
-  {
-    slug: 'portals',
-    title: 'Portals',
-    description: 'Link two rings of energy and jump between them, across tabs too.',
-    keywords:
-      'portal door teleport jump travel warp link pair navigate shortcut across tabs step through',
     category: 'Palette',
     categorySlug: 'palette/tools',
     parentSlug: 'tools',

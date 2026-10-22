@@ -6,7 +6,7 @@ import { handleDocuments } from './documents';
 import { asUser } from './placement-test-support';
 import { compileSeededTabs } from './document-seed';
 
-// A create's seeded tabs given as a graph, Mermaid or a template (docs/specs/015-api/api.md): compiled by
+// A create's seeded tabs given as a template (docs/specs/015-api/api.md): compiled by
 // applyReplace before anything is written, the intent derived from the first, a refusal naming the tab.
 
 let db: SqliteD1;
@@ -31,29 +31,18 @@ afterEach(() => {
 });
 
 describe('seeded tabs compiled on create', () => {
-  it('lays out a graph and a Mermaid tab, and records the CLI as the source', async () => {
-    const res = await create(
-      [
-        {
-          id: 't1',
-          name: 'Arch',
-          graph: {
-            nodes: [
-              { id: 'web', label: 'Web' },
-              { id: 'api', label: 'API' },
-            ],
-            edges: [{ from: 'web', to: 'api' }],
-          },
-        },
-        { id: 't2', name: 'Flow', mermaid: 'flowchart LR\n  a[Cart] --> b[Pay]' },
-      ],
-      { source: 'cli' },
-    );
+  it('records the CLI as the source of a seeded create', async () => {
+    const res = await create([{ id: 't1', name: 'Deck', template: 'blank-slide-deck' }], {
+      source: 'cli',
+    });
     expect(res.status).toBe(201);
-    const arch = await getTab(db.env, 'd1', 't1');
-    expect(arch?.elements.map((e) => e.type).sort()).toEqual(['arrow', 'shape', 'shape']);
-    expect((await getTab(db.env, 'd1', 't2'))?.elements.length).toBe(3);
     expect((await getDocument(db.env, 'd1'))?.source).toBe('cli');
+  });
+
+  it('stores a graph or Mermaid tab as given, compiling nothing', async () => {
+    // The graph and Mermaid builders went with the diagram kinds: such a tab is no seed source now.
+    const tabs = [{ id: 'b', name: 'B', graph: { nodes: [] }, mermaid: 'graph TD' }];
+    expect(compileSeededTabs(tabs, 'd1')).toEqual({ tabs, intent: null });
   });
 
   it('builds a template tab and derives the intent from it when none is given', async () => {
@@ -92,10 +81,10 @@ describe('seeded tabs compiled on create', () => {
 });
 
 describe('compileSeededTabs', () => {
-  it('passes through what is not a single source: elements, two sources, no id, not a tab', () => {
+  it('passes through what is not a template seed: elements, a template beside elements, no id, not a tab', () => {
     const tabs = [
       { id: 'a', name: 'A', elements: [] },
-      { id: 'b', name: 'B', graph: { nodes: [] }, mermaid: 'graph TD' },
+      { id: 'b', name: 'B', elements: [], template: 'blank-slide-deck' },
       { name: 'C', template: 'blank-slide-deck' },
       'not a tab',
     ];
@@ -107,7 +96,7 @@ describe('compileSeededTabs', () => {
       [
         {
           id: 't1',
-          graph: { nodes: [{ id: 'a', label: 'A' }], edges: [] },
+          template: 'blank-slide-deck',
           theme: 'ocean',
           background: 'dots',
         },

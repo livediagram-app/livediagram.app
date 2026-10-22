@@ -6,7 +6,7 @@ frame ca76 "Data"
   cylinder d41e "Orders DB"
   cylinder 822f "Inventory DB"
 cloud e6d7 "Stripe"
-entity cb02 "Order"
+square cb02 "Order"
 table 480a
 sticky 0c84 "Payment retries are not idempotent yet!" comments=2 open
 … notes hidden; attributes hidden; 7 elements in frame 048c hidden; 13 elements in frame c991 hidden: read_document {"only":"c991"}

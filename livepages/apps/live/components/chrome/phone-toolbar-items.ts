@@ -7,9 +7,9 @@
 // (or use their own row classes), so they are untouched.
 export const PHONE_TOOLBAR_ITEMS = 'phone:[&_.px-2]:px-1 [&_.h-9]:relative [&_.h-9]:touch-target-y';
 
-// The bottom-right cluster's buttons on a phone (docs/specs/012-collaboration/session-tools.md "The Session
-// strip"): with the Session strip there are six 44px-wide buttons (Undo, Redo, Timer, Vote, Layers, the theme
-// brush) beside Fit, more than a phone's row holds. Each takes an equal share of the width left once
+// The bottom-right cluster's buttons on a phone (docs/specs/007-editor/live-app.md "Mobile chrome"): at most
+// six 44px-wide buttons (Undo, Redo, Slides, Contents, Collaborate, the theme brush) beside Fit, more than a
+// phone's row holds. Each takes an equal share of the width left once
 // the page gutters (2 x 16px), the cluster's gaps (3 x 6px), Fit (about 45px) and the strips' borders (8px)
 // are taken off: 103px in all, between 36px and the usual 44px. So the row fills the screen instead of leaving
 // room on the left, and stays one row down to 360px; the buttons stay 44px tall to tap. A cluster with fewer

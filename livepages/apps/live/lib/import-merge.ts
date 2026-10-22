@@ -23,6 +23,10 @@ function mergeFields(receiving: Tab, imported: Tab): Tab {
     // The mode the tab opens in travels with it (docs/specs/007-editor/pages-mode.md "One mode").
     opensIn: imported.opensIn ?? receiving.opensIn,
     layers: imported.layers ?? receiving.layers,
+    // A Pages tab's pages and its articles' writing (docs/specs/007-editor/article-pages.md): an imported article
+    // arrives as both, and without them its elements would sit on the receiving tab's pages.
+    pages: imported.pages ?? receiving.pages,
+    articles: imported.articles ?? receiving.articles,
     theme: imported.theme ?? receiving.theme,
     backgroundColor: imported.backgroundColor ?? receiving.backgroundColor,
     backgroundPattern: imported.backgroundPattern ?? receiving.backgroundPattern,

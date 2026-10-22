@@ -2,7 +2,6 @@
 // strokes, its fill as hatching or a solid area, its thin chrome as single strokes. In the element's own
 // coordinates (0..width, 0..height), so moving an element never changes it and the canvas can memoise it on
 // size alone. The canvas overlay and the SVG export both draw from this, so the two cannot disagree.
-import { actorFigureRect } from './actor-figure';
 import { ARROWHEAD_SIZE_PX, type ArrowheadShape, type ArrowheadSize } from './arrow-style';
 import { SELF_PAINTING_SHAPES } from './colors';
 import {
@@ -10,7 +9,6 @@ import {
   BORDER_STROKE_PX,
   DEFAULT_BORDER_STYLE,
   DEFAULT_BOX_RADIUS_PX,
-  MIND_NODE_RADIUS_PX,
   cornerRadiusPx,
 } from './border-style';
 import {
@@ -149,7 +147,7 @@ export function handDrawnOutlines(
   const h = el.height;
   const geometry = shapeGeometry(el.shape, w / h);
   if (geometry) {
-    const area = el.shape === 'actor' ? actorFigureRect(el) : { x: 0, y: 0, width: w, height: h };
+    const area = { x: 0, y: 0, width: w, height: h };
     const pad = geometry.strokeInside ? inset : 0;
     const fit = boxFit(geometry, {
       x: area.x + pad,
@@ -188,7 +186,7 @@ export function sketchElementPaint(
   if (el.type === 'shape') {
     strokePx = BORDER_STROKE_PX[finishBorderStroke(el.strokeWidth, finish)];
     dash = BORDER_DASH_ARRAY[el.strokeStyle ?? DEFAULT_BORDER_STYLE];
-    const kindDefault = el.shape === 'mind-node' ? MIND_NODE_RADIUS_PX : DEFAULT_BOX_RADIUS_PX;
+    const kindDefault = DEFAULT_BOX_RADIUS_PX;
     radiusPx = cornerRadiusPx(
       finishOwnCorner(el, finish),
       el.width,

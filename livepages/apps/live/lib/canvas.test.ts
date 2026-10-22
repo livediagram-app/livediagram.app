@@ -128,16 +128,7 @@ describe('inheritedSizeFor', () => {
 
   it('keeps a step number, boundary, concept graphic, sequence, key and tab window their own size', () => {
     const card = { ...createShape('card', 0, 0), width: 300, height: 150 } as BoxedElement;
-    for (const kind of [
-      'step',
-      'boundary',
-      'stack',
-      'cycle',
-      'pyramid',
-      'sequence',
-      'diagram-key',
-      'tab-window',
-    ] as const) {
+    for (const kind of ['step', 'stack', 'cycle', 'pyramid', 'tab-window'] as const) {
       const fresh = createShape(kind, 0, 0) as BoxedElement;
       expect(inheritedSizeFor(fresh, card), kind).toEqual({
         width: fresh.width,
@@ -181,7 +172,7 @@ describe('inheritedSizeFor', () => {
     const table = createTable(0, 0);
     const card = { ...createShape('card', 0, 0), width: 300, height: 90 } as BoxedElement;
     expect(inheritedSizeFor(table, card)).toEqual({ width: table.width, height: table.height });
-    const node = createShape('mind-node', 0, 0);
+    const node = createShape('square', 0, 0);
     expect(inheritedSizeFor(node, table)).toEqual({ width: node.width, height: node.height });
   });
 
@@ -198,17 +189,6 @@ describe('inheritedSizeFor', () => {
     expect(inheritedSizeFor(marker, bigSelected)).toEqual({ width: 44, height: 44 });
     expect(inheritedSizeFor(marker, null)).toEqual({ width: 44, height: 44 });
   });
-
-  it('keeps a portal at its intrinsic size regardless of selection (docs/specs/009-elements/portal-element.md)', () => {
-    const portal = createShape('portal', 0, 0);
-    // A wide banner selected when the portal is dropped must not stretch the
-    // ring into a letterbox — the silhouette IS the element.
-    const wideSelected = { ...createShape('square', 0, 0), width: 1666, height: 16 };
-    expect(inheritedSizeFor(portal, wideSelected)).toEqual({
-      width: portal.width,
-      height: portal.height,
-    });
-  });
 });
 
 describe('framesFirst', () => {
@@ -218,12 +198,6 @@ describe('framesFirst', () => {
     const frameB = createShape('frame', 9, 9);
     const ordered = framesFirst([box, frameA, frameB]);
     expect(ordered.map((e) => e.id)).toEqual([frameA.id, frameB.id, box.id]);
-  });
-
-  it('puts lanes first too, as containers', () => {
-    const box = createShape('square', 0, 0);
-    const lane = createShape('lane', 0, 0);
-    expect(framesFirst([box, lane]).map((e) => e.id)).toEqual([lane.id, box.id]);
   });
 
   it('returns the same array reference when there are no frames (no-op)', () => {

@@ -29,7 +29,7 @@ describe('lintResult', () => {
     expect(report?.counts.error).toBe(1);
     expect(infos[0]).toEqual([
       '[lint] run',
-      expect.objectContaining({ documentId: 'D', tabId: 't1', source: 'tab' }),
+      expect.objectContaining({ documentId: 'D', tabId: 't1' }),
     ]);
   });
 

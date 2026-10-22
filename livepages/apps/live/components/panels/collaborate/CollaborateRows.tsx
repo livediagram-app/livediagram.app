@@ -86,7 +86,7 @@ export function ActionRowItem({
 }) {
   const now = useRelativeNow();
   const [pressed, setPressed] = useState(false);
-  // Closed: done, or Won't Do (docs/specs/012-collaboration/action-panel.md), which wears slate, not green.
+  // Closed: done, or Won't Do (docs/specs/012-collaboration/assigned-actions.md), which wears slate, not green.
   const done = row.status !== 'open';
   const wontDo = row.status === 'wont-do';
   const shownDone = pressed ? !done : done;

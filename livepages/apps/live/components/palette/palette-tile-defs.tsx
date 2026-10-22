@@ -2,35 +2,8 @@ import { BADGE_PRESET_TILES, CARD_PRESET_TILES } from './palette-element-presets
 import { BadgePresetGlyph } from './BadgePresetGlyph';
 import { badgePresetFace } from '@livepages/document';
 import type { EmbedProvider } from '@livepages/document';
-import { REACTION_EMOJI } from '@livepages/document';
 
-import type {
-  ComponentKind,
-  EstimateScale,
-  Reaction,
-  SelectionMode,
-  SessionTool,
-  ShapeKind,
-} from '@livepages/document';
-import {
-  AgendaIcon,
-  DecisionIcon,
-  EstimateIcon,
-  FormatPainterIcon,
-  IsometricIcon,
-  LaserIcon,
-  PanIcon,
-  IdeaBoxIcon,
-  PickerIcon,
-  SelectIcon,
-  SpotlightIcon,
-  SessionVoteIcon,
-  RevealIcon,
-  RollCallIcon,
-  TemperatureIcon,
-  StopwatchIcon,
-  TimerIcon,
-} from '@/components/palette/palette-icons';
+import type { ComponentKind, ShapeKind } from '@livepages/document';
 import {
   lucideCircle,
   lucideDiamond,
@@ -84,7 +57,7 @@ const lucideStickyNotePaths = { body: pathD(0), fold: pathD(1) };
 export type PaletteTileSection =
   | 'shapes'
   // Structure (docs/specs/010-palette/build-category.md): the elements you lay a diagram OUT with rather than
-  // draw on it — a mind node, a lane, a frame, a timeline, a table. They were
+  // draw on it — a frame, a stack, a table, a Sankey. They were
   // scattered across Write, Draw, Data and Components, filed by what they look
   // like; what they have in common is that they hold other work.
   | 'build'
@@ -94,14 +67,6 @@ export type PaletteTileSection =
   | 'wireframe'
   | 'tools'
   | 'data'
-  // 'collaborate' is GONE (docs/specs/010-palette/palette-top-level-categories.md). The collaboration family (docs/specs/012-collaboration/estimate-card.md to
-  // docs/specs/012-collaboration/roll-call.md) had its own category on the reasoning that Behaviour is
-  // "pressing this does something to your session" while these are "the canvas
-  // is collecting an answer from everybody". In the picker that line never
-  // held: both are elements whose content arrives at runtime, both are reached
-  // for while facilitating, and a user looking for the Done check found it in
-  // one and the Estimate card in the other with nothing to tell them which.
-  // They are now Collaborate elements, offered as six categories: see COLLABORATE_CATEGORY_GROUPS.
   | 'media'
   | 'components'
   // Concept graphics (docs/specs/009-elements/concept-graphics.md).
@@ -115,17 +80,9 @@ export type PaletteTileSection =
 // drive the tile's drag-to-place payload + pending-draw highlight; the
 // singleton tools map one-to-one onto the editor's add-handlers.
 type PaletteTileAction =
-  // `session` / `reaction` are creation-time choices, not separate kinds: both
-  // elements are ONE kind with a mode field, and the palette offers a tile per
-  // mode inside an accordion (docs/specs/012-collaboration/session-button.md, docs/specs/009-elements/reaction-pad.md) the way Media does for embed
-  // providers. Placing "Dot Vote" has to place a vote, not a timer to reconfigure.
   | {
       type: 'shape';
       kind: ShapeKind;
-      session?: SessionTool;
-      reaction?: Reaction;
-      mode?: SelectionMode;
-      estimateScale?: EstimateScale;
       // A creation-time variant of the kind (packages/document shape-variants.ts): the Callout card, a Funnel.
       variant?: string;
     }
@@ -152,7 +109,7 @@ type PaletteTileAction =
 // the Tools tab renders one labelled grid per group instead of a flat
 // sixteen-tile wall. Group membership is metadata on the tile — ids stay
 // stable, so palette layouts and search are untouched.
-export type ToolGroupId = 'write' | 'draw' | 'behaviour';
+export type ToolGroupId = 'write' | 'draw';
 
 // Display order, headings, and a one-line "what's in here" for the Tools tab's
 // groups. The description is what the category tile's hover card says: a count
@@ -161,9 +118,7 @@ export type ToolGroupId = 'write' | 'draw' | 'behaviour';
 // Label + membership only. These groups render through PaletteToolRows /
 // PaletteTileGroup, each carrying its own title, and a title shows a label
 // rather than a blurb —
-// the browsable category descriptions live in PALETTE_CATEGORIES. A
-// `description` field here went unread for long enough to drift out of step
-// with the live one for `behaviour`, which is why it is gone.
+// the browsable category descriptions live in PALETTE_CATEGORIES.
 export const TOOL_GROUPS: { id: ToolGroupId; label: string }[] = [
   {
     id: 'write',
@@ -175,13 +130,6 @@ export const TOOL_GROUPS: { id: ToolGroupId; label: string }[] = [
     // pairing bought nothing and the combined list ran to eight rows.
     id: 'draw',
     label: 'Draw',
-  },
-  // Behaviour (docs/specs/009-elements/mode-button.md): elements that DO something when someone interacts
-  // with them, rather than elements that say something. Last, because a
-  // diagram is drawn before it is wired up.
-  {
-    id: 'behaviour',
-    label: 'Behaviour',
   },
 ];
 
@@ -195,12 +143,8 @@ export type PaletteTileDef = {
   toolGroup?: ToolGroupId;
   // Collapses this tile into a named group inside its category, rather than
   // showing it as a top-level row (docs/specs/009-elements/embed-providers.md). 'embed' = the Media tab's embed
-  // providers; 'web' = the Components tab's website composites; 'session' and
-  // 'reaction' = the Behaviour tab's session tools and reactions; 'mode' its
-  // selection-mode buttons; 'move' / 'tools' the rest of Behaviour; and
-  // 'ask' / 'record' the two halves of Collaborate.
-  tileGroup?:
-    'embed' | 'web' | 'session' | 'reaction' | 'mode' | 'move' | 'tools' | 'ask' | 'record';
+  // providers; 'web' = the Components tab's website composites.
+  tileGroup?: 'embed' | 'web';
   label: string;
   // Overrides the caption derived from `label` where that runs too long
   // for the tile (see IconButton).
@@ -416,86 +360,6 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   },
   // --- Tools --------------------------------------------------------------
   {
-    id: 'tools:mind-node',
-    blurb: 'Tab adds a child, Enter a sibling',
-    caption: 'Mind Node',
-    section: 'build',
-    label: 'Add Mind Node',
-    description:
-      'A mind-map node. With one selected, Tab adds a child to its right and Enter adds a sibling below, each connected and ready to type into.',
-    action: { type: 'shape', kind: 'mind-node' },
-    icon: (
-      <Glyph size={18} units={24}>
-        {/* A parent node with two branches: the picture IS the behaviour. */}
-        <rect x="1.5" y="9" width="8" height="6" rx="2" />
-        <rect x="15" y="3" width="7.5" height="5" rx="2" />
-        <rect x="15" y="16" width="7.5" height="5" rx="2" />
-        <path d="M9.5 12h2.5v-6.5H15M12 12v6.5h3" />
-      </Glyph>
-    ),
-  },
-  {
-    // The org chart (docs/specs/009-elements/org-chart.md): a person root in the Downward flow; Tab adds a report.
-    id: 'tools:org-chart',
-    blurb: 'Tab adds a report, Enter a peer',
-    caption: 'Org Chart',
-    section: 'build',
-    label: 'Add Org Chart',
-    description:
-      'Org chart. A person with a name and role; with it selected, Tab adds a report below and Enter a peer beside it.',
-    action: { type: 'shape', kind: 'mind-node', variant: 'org-chart' },
-    icon: (
-      <Glyph size={18} units={24}>
-        <rect x="8" y="2.5" width="8" height="5" rx="1.5" />
-        <rect x="2" y="16.5" width="8" height="5" rx="1.5" />
-        <rect x="14" y="16.5" width="8" height="5" rx="1.5" />
-        <path d="M12 7.5V12M6 16.5V12h12v4.5" />
-      </Glyph>
-    ),
-  },
-  {
-    // Flowchart (docs/specs/009-elements/flowchart.md): drops a Start that IS a chart; the steps grow
-    // from it and the chart lays itself out.
-    id: 'tools:flowchart',
-    blurb: 'Tab adds the next step',
-    caption: 'Flowchart',
-    section: 'build',
-    label: 'Add Flowchart',
-    description:
-      'A flowchart that lays itself out. With a step selected, Tab adds the next step and Enter a parallel one; change any step to a Decision, Input / Output and more.',
-    action: { type: 'component', kind: 'flowchart' },
-    icon: (
-      <Glyph size={18} units={24}>
-        {/* A start, a decision and two exits: the picture IS the behaviour. */}
-        <rect x="7" y="1.5" width="10" height="4.5" rx="2.25" />
-        <path d="M12 9.5l4 3.5-4 3.5-4-3.5z" />
-        <path d="M12 6v3.5M8 13H4.5v4.5M16 13h3.5v4.5" />
-        <rect x="1.5" y="17.5" width="6" height="5" rx="0.5" />
-        <rect x="16.5" y="17.5" width="6" height="5" rx="0.5" />
-      </Glyph>
-    ),
-  },
-  {
-    // The sequence diagram (docs/specs/009-elements/sequence-diagram.md): participants and messages, laid out as UML.
-    id: 'tools:sequence',
-    blurb: 'Who calls whom, in order',
-    caption: 'Sequence',
-    section: 'build',
-    label: 'Add Sequence Diagram',
-    description:
-      'Sequence diagram. Participants side by side and the messages between them in order; add a message by typing a row and the diagram lays itself out.',
-    action: { type: 'shape', kind: 'sequence' },
-    icon: (
-      <Glyph size={18} units={24}>
-        <rect x="2" y="2" width="6" height="4" rx="1" />
-        <rect x="16" y="2" width="6" height="4" rx="1" />
-        <path d="M5 6v16M19 6v16" strokeDasharray="2 2" />
-        <path d="M5 10h13M15.5 8l2.5 2-2.5 2" />
-        <path d="M19 16H6M8.5 14 6 16l2.5 2" strokeDasharray="2 1.5" />
-      </Glyph>
-    ),
-  },
-  {
     // Page (docs/specs/009-elements/page-element.md). Sits first in Write: it is the largest writing
     // surface, and the group reads shortest-to-longest from there. Called
     // Page, not Document, so the palette and the selection toolbar agree —
@@ -626,463 +490,6 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     noTint: true,
     action: { type: 'shape', kind: 'code-block' },
     icon: <CodeBlockTileArt />,
-  },
-  {
-    // Selection Mode buttons (docs/specs/009-elements/mode-button.md): one tile per mode, grouped, so the
-    // button lands pointed at the mode you wanted rather than at the default
-    // you then have to change.
-    id: 'tools:mode-select',
-    tileGroup: 'mode',
-    blurb: 'The ordinary pointer',
-    caption: 'Select',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Select Mode Button',
-    description:
-      'A button that switches whoever presses it into Select mode. It changes the mode for that person only, and pressing it again hands them back the mode they were in.',
-    filled: true,
-    action: { type: 'shape', kind: 'mode-button', mode: 'select' },
-    // The mode's OWN glyph, the one the canvas-tool popover shows for it
-    // (buildCanvasToolOptions): eight identical pointers told the reader
-    // nothing about which mode a row would hand out.
-    icon: <SelectIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    id: 'tools:mode-pan',
-    tileGroup: 'mode',
-    blurb: 'Drag the canvas around',
-    caption: 'Hand',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Hand Mode Button',
-    description:
-      'A button that switches whoever presses it into Hand mode. It changes the mode for that person only, and pressing it again hands them back the mode they were in.',
-    filled: true,
-    action: { type: 'shape', kind: 'mode-button', mode: 'pan' },
-    // The mode's OWN glyph, the one the canvas-tool popover shows for it
-    // (buildCanvasToolOptions): eight identical pointers told the reader
-    // nothing about which mode a row would hand out.
-    icon: <PanIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    id: 'tools:mode-laser',
-    tileGroup: 'mode',
-    blurb: 'Point at things while you talk',
-    caption: 'Laser',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Laser Mode Button',
-    description:
-      'A button that switches whoever presses it into Laser mode. It changes the mode for that person only, and pressing it again hands them back the mode they were in.',
-    filled: true,
-    action: { type: 'shape', kind: 'mode-button', mode: 'laser' },
-    // The mode's OWN glyph, the one the canvas-tool popover shows for it
-    // (buildCanvasToolOptions): eight identical pointers told the reader
-    // nothing about which mode a row would hand out.
-    icon: <LaserIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    id: 'tools:mode-spotlight',
-    tileGroup: 'mode',
-    blurb: 'Dim everything but one patch',
-    caption: 'Spotlight',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Spotlight Mode Button',
-    description:
-      'A button that switches whoever presses it into Spotlight mode. It changes the mode for that person only, and pressing it again hands them back the mode they were in.',
-    filled: true,
-    action: { type: 'shape', kind: 'mode-button', mode: 'spotlight' },
-    // The mode's OWN glyph, the one the canvas-tool popover shows for it
-    // (buildCanvasToolOptions): eight identical pointers told the reader
-    // nothing about which mode a row would hand out.
-    icon: <SpotlightIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    id: 'tools:mode-format',
-    tileGroup: 'mode',
-    blurb: 'Copy one element\u2019s style onto others',
-    caption: 'Format',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Format Mode Button',
-    description:
-      'A button that switches whoever presses it into Format mode. It changes the mode for that person only, and pressing it again hands them back the mode they were in.',
-    filled: true,
-    action: { type: 'shape', kind: 'mode-button', mode: 'format' },
-    // The mode's OWN glyph, the one the canvas-tool popover shows for it
-    // (buildCanvasToolOptions): eight identical pointers told the reader
-    // nothing about which mode a row would hand out.
-    icon: <FormatPainterIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    id: 'tools:mode-isometric',
-    tileGroup: 'mode',
-    blurb: 'Tilt the canvas into 3D',
-    caption: 'Isometric',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Isometric Mode Button',
-    description:
-      'A button that switches whoever presses it into Isometric mode. It changes the mode for that person only, and pressing it again hands them back the mode they were in.',
-    filled: true,
-    dividerAfter: true,
-    action: { type: 'shape', kind: 'mode-button', mode: 'isometric' },
-    // The mode's OWN glyph, the one the canvas-tool popover shows for it
-    // (buildCanvasToolOptions): eight identical pointers told the reader
-    // nothing about which mode a row would hand out.
-    icon: <IsometricIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    // Portal (docs/specs/009-elements/portal-element.md): step in here, come out of the portal it is linked to.
-    // The tile id keeps its original 'door' word: ids are stable, since palette layouts and
-    // search address tiles by them.
-    id: 'tools:door',
-    tileGroup: 'move',
-    blurb: 'Step through to its linked portal',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Portal',
-    caption: 'Portal',
-    description:
-      'Click it, or walk your Avatar character into it, and you come out of the portal it is linked to. Link a pair from the element menu.',
-    filled: true,
-    action: { type: 'shape', kind: 'portal' },
-    icon: (
-      <Glyph size={18} units={18}>
-        {/* The standing oval ring, with the far side showing through it. */}
-        <ellipse cx="9" cy="9" rx="4.6" ry="7" />
-        <ellipse cx="9" cy="9" rx="2.1" ry="3.6" strokeWidth="1.1" opacity="0.6" />
-      </Glyph>
-    ),
-  },
-  {
-    // Session tools (docs/specs/012-collaboration/session-button.md): one tile per tool, grouped, rather than one
-    // button you place and then reconfigure. The tools have nothing in common
-    // at the moment of choosing — you know whether you want a countdown or a
-    // vote before you reach for the palette.
-    id: 'tools:session-timer',
-    tileGroup: 'tools',
-    blurb: 'A countdown everyone can see',
-    caption: 'Timer',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Timer Button',
-    description:
-      'A button that starts a countdown for everyone in the room. Pressing it again pauses, and again continues. Set the minutes from its right-click menu.',
-    filled: true,
-    action: { type: 'shape', kind: 'session-button', session: 'timer' },
-    icon: <TimerIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    id: 'tools:session-stopwatch',
-    tileGroup: 'tools',
-    blurb: 'Counts up from zero',
-    caption: 'Stopwatch',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Stopwatch Button',
-    description:
-      'A button that starts a stopwatch for everyone in the room, counting up from zero. Pressing it again pauses, and again continues. Nothing to set: a stopwatch has no length.',
-    filled: true,
-    action: { type: 'shape', kind: 'session-button', session: 'stopwatch' },
-    icon: <StopwatchIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    id: 'tools:session-vote',
-    tileGroup: 'ask',
-    blurb: 'Dot voting, a few dots each',
-    caption: 'Dot Vote',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Dot Vote Button',
-    description:
-      'A button that starts a dot vote for everyone in the room: each person gets a few dots to place on whatever they think matters. Set how many from its right-click menu.',
-    filled: true,
-    action: { type: 'shape', kind: 'session-button', session: 'vote' },
-    icon: <SessionVoteIcon />,
-  },
-  {
-    // Reveal zone (docs/specs/009-elements/reveal-zone.md): a cover you click to see what is underneath.
-    id: 'tools:reveal',
-    tileGroup: 'tools',
-    blurb: 'Double-click to look underneath',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Reveal Zone',
-    caption: 'Reveal',
-    description:
-      'A cover over part of the canvas. Double-click it to uncover it just for you, or reveal it for everyone from the menu.',
-    filled: true,
-    action: { type: 'shape', kind: 'reveal' },
-    icon: <RevealIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    // Done check (docs/specs/012-collaboration/done-check.md): who has finished, live.
-    id: 'tools:done-check',
-    tileGroup: 'tools',
-    blurb: 'Everyone marks themselves finished',
-    caption: 'Done',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Done Check',
-    description:
-      'Everyone marks themselves done and the card shows who has and who has not, from whoever is actually in the room. It flashes when the last person finishes. Reset it for the next round from its own menu.',
-    filled: true,
-    action: { type: 'shape', kind: 'done-check' },
-    icon: (
-      <Glyph size={18} units={24}>
-        {/* Two ticked rows over one still waiting. */}
-        <path d="M3.2 7.2 4.6 8.6 7.4 5.8" />
-        <path d="M3.2 13 4.6 14.4 7.4 11.6" />
-        <circle cx="4.8" cy="19" r="1.5" />
-        <path d="M10.5 7.2h10.3M10.5 13h10.3M10.5 19h6.4" />
-      </Glyph>
-    ),
-  },
-  {
-    // Reaction pads (docs/specs/009-elements/reaction-pad.md): one tile per reaction, grouped, rather than one
-    // pad you place and then switch. Which reaction you want is the whole
-    // decision — a pad is not useful until it is the right one.
-    id: 'tools:reaction-confetti',
-    tileGroup: 'reaction',
-    blurb: 'A result worth celebrating',
-    caption: 'Confetti',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Confetti Pad',
-    description:
-      'Press it and confetti bursts up and falls for everyone in the room. A result worth celebrating.',
-    filled: true,
-    action: { type: 'shape', kind: 'reaction-pad', reaction: 'confetti' },
-    icon: <span className="text-[15px] leading-none">{REACTION_EMOJI['confetti']}</span>,
-  },
-  {
-    id: 'tools:reaction-sparkles',
-    tileGroup: 'reaction',
-    blurb: 'A good idea, nicely done',
-    caption: 'Sparkles',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Sparkles Pad',
-    description:
-      'Press it and a slow twinkle around the pad for everyone in the room. A good idea, nicely done.',
-    filled: true,
-    action: { type: 'shape', kind: 'reaction-pad', reaction: 'sparkles' },
-    icon: <span className="text-[15px] leading-none">{REACTION_EMOJI['sparkles']}</span>,
-  },
-  {
-    id: 'tools:reaction-hearts',
-    tileGroup: 'reaction',
-    blurb: 'Warmth for a person, not a result',
-    caption: 'Hearts',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Hearts Pad',
-    description:
-      'Press it and hearts rise and drift for everyone in the room. Warmth for a person, not a result.',
-    filled: true,
-    action: { type: 'shape', kind: 'reaction-pad', reaction: 'hearts' },
-    icon: <span className="text-[15px] leading-none">{REACTION_EMOJI['hearts']}</span>,
-  },
-  {
-    id: 'tools:reaction-applause',
-    tileGroup: 'reaction',
-    blurb: 'Thanks for the talk or the demo',
-    caption: 'Applause',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Applause Pad',
-    description:
-      'Press it and rings of sound spread out for everyone in the room. Thanks for the talk or the demo.',
-    filled: true,
-    action: { type: 'shape', kind: 'reaction-pad', reaction: 'applause' },
-    icon: <span className="text-[15px] leading-none">{REACTION_EMOJI['applause']}</span>,
-  },
-  {
-    id: 'tools:reaction-fireworks',
-    tileGroup: 'reaction',
-    blurb: 'It shipped',
-    caption: 'Fireworks',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Fireworks Pad',
-    description:
-      'Press it and shells burst one after another for everyone in the room. It shipped.',
-    filled: true,
-    action: { type: 'shape', kind: 'reaction-pad', reaction: 'fireworks' },
-    icon: <span className="text-[15px] leading-none">{REACTION_EMOJI['fireworks']}</span>,
-  },
-  {
-    // Picker (docs/specs/012-collaboration/picker.md): rolls a person or a written option.
-    id: 'tools:picker',
-    tileGroup: 'tools',
-    blurb: 'Pick someone at random',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Picker',
-    caption: 'Picker',
-    description:
-      'Press it to choose at random: one of the people in the room, or one of the options you write on it.',
-    filled: true,
-    action: { type: 'shape', kind: 'picker' },
-    icon: <PickerIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    // Bring Focus (docs/specs/012-collaboration/bring-focus.md): Navigate, beside Portal, because both take
-    // somebody somewhere. This is the one that takes everybody.
-    id: 'tools:focus-button',
-    tileGroup: 'move',
-    blurb: 'Ask everyone to look here',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Bring Focus',
-    caption: 'Bring Focus',
-    description:
-      'Bring Focus. Press it and everyone else in the room is offered a jump to it, on your tab.',
-    filled: true,
-    action: { type: 'shape', kind: 'focus-button' },
-    icon: (
-      <Glyph size={18} units={24} strokeLinejoin="miter">
-        <circle cx="12" cy="12" r="7.5" />
-        <circle cx="12" cy="12" r="2.2" fill="currentColor" stroke="none" />
-        <path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3" />
-      </Glyph>
-    ),
-  },
-  // --- Collaborate (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md) ----------------------------------
-  // Elements that collect what the ROOM thinks. Rows with a blurb, like
-  // Behaviour: none of these glyphs can say what the element does, and
-  // "everyone picks privately, then all at once" is the thing being chosen.
-  {
-    // Comment pin (docs/specs/012-collaboration/comment-pin.md): a remark about a PLACE rather than a shape.
-    id: 'collab:comment-pin',
-    blurb: 'A comment thread as a card on the canvas',
-    caption: 'Comment',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    tileGroup: 'record',
-    label: 'Add Comment Panel',
-    description:
-      'A card that carries a whole comment thread, read and answered where it sits. Drop it on any spot to talk about that spot, rather than attaching the remark to whichever shape happens to be nearest.',
-    filled: true,
-    action: { type: 'shape', kind: 'comment-pin' },
-    icon: (
-      <Glyph size={18} units={24}>
-        <path d="M20.5 12.2c0 3.9-3.8 7-8.5 7-.9 0-1.8-.1-2.6-.3l-5 3.1 1.1-4.5A6.6 6.6 0 0 1 3.5 12.2c0-3.9 3.8-7 8.5-7s8.5 3.1 8.5 7z" />
-        <path d="M8.6 11.9h.01M12 11.9h.01M15.4 11.9h.01" />
-      </Glyph>
-    ),
-  },
-  {
-    // Action panel (docs/specs/012-collaboration/action-panel.md): one assigned action as a card on the canvas, the
-    // Comment panel's sibling.
-    id: 'collab:action-card',
-    blurb: 'Assigned actions as a card on the canvas',
-    caption: 'Action',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    tileGroup: 'record',
-    label: 'Add Action Panel',
-    description:
-      'A card that carries a list of assigned actions: what needs doing, who owns each, and whether it is done. Set it up from the card, and join it to what it is about with an arrow.',
-    filled: true,
-    action: { type: 'shape', kind: 'action-card' },
-    icon: (
-      <Glyph size={18} units={24}>
-        <path d="M9 4.5H7a1.5 1.5 0 0 0-1.5 1.5v13.5A1.5 1.5 0 0 0 7 21h10a1.5 1.5 0 0 0 1.5-1.5V6A1.5 1.5 0 0 0 17 4.5h-2" />
-        <rect x="9" y="3" width="6" height="3.5" rx="1" />
-        <path d="m9 13.5 2.2 2.2 4-4.5" />
-      </Glyph>
-    ),
-  },
-  {
-    // Estimate card (docs/specs/012-collaboration/estimate-card.md): ONE tile. The three scales are the same
-    // card with different answers, so they are one entry here, and a new card
-    // asks for its scale on the canvas ("Choosing a scale"); the element
-    // menu's Scale changes it later.
-    id: 'collab:estimate',
-    tileGroup: 'ask',
-    blurb: 'Planning poker: pick a scale on the card',
-    caption: 'Estimate',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Estimate Card',
-    description:
-      'Planning poker on the canvas: everyone picks privately, then one Reveal shows every answer and the spread. Choose Fibonacci, T-shirt sizes or powers of two on the card once it is placed.',
-    filled: true,
-    action: { type: 'shape', kind: 'estimate' },
-    icon: <EstimateIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    id: 'collab:temperature',
-    tileGroup: 'ask',
-    blurb: 'Fist of five: how does the room feel?',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Temperature Check',
-    caption: 'Temperature',
-    description:
-      'A fist-of-five gauge. Everyone registers 1 to 5 and the bars and average move as the answers land.',
-    filled: true,
-    action: { type: 'shape', kind: 'temperature' },
-    icon: <TemperatureIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    id: 'collab:idea-box',
-    tileGroup: 'ask',
-    blurb: 'Anonymous ideas, held until you open it',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Idea Box',
-    caption: 'Idea Box',
-    description:
-      'Anyone can drop in an idea without their name on it. Nothing shows until you open the box.',
-    filled: true,
-    action: { type: 'shape', kind: 'idea-box' },
-    icon: <IdeaBoxIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    id: 'collab:agenda',
-    tileGroup: 'record',
-    blurb: 'Segments with minutes that start the timer',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Agenda',
-    caption: 'Agenda',
-    description:
-      'The run of the session. Press a segment and it starts the tab timer for that long and marks where the room is.',
-    filled: true,
-    action: { type: 'shape', kind: 'agenda' },
-    icon: <AgendaIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    id: 'collab:decision',
-    tileGroup: 'record',
-    blurb: 'What was decided, why, and whether it stands',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Decision Record',
-    caption: 'Decision Record',
-    description:
-      'A decision on the canvas beside the thing it decided: the statement, a status, the date, and what drove it.',
-    filled: true,
-    action: { type: 'shape', kind: 'decision' },
-    icon: <DecisionIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    id: 'collab:roll-call',
-    tileGroup: 'record',
-    blurb: 'Freezes who was in the room, right now',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Roll Call',
-    caption: 'Roll Call',
-    description:
-      'Press Take Roll and it records everyone in the room at that moment, and keeps them after they leave.',
-    filled: true,
-    action: { type: 'shape', kind: 'roll-call' },
-    icon: <RollCallIcon size={TILE_GLYPH_PX} />,
   },
   {
     id: 'tools:checklist',
@@ -1236,24 +643,6 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   {
-    id: 'tools:entity',
-    blurb: 'A class or table: title over fields',
-    caption: 'Entity',
-    section: 'components',
-    label: 'Add Entity',
-    description:
-      'A UML class or ER entity: a title bar over a list of name / type fields. Edit the fields from its right-click menu.',
-    dividerAfter: true,
-    action: { type: 'shape', kind: 'entity' },
-    icon: (
-      <Glyph size={18} units={24}>
-        {/* A titled box with rows: the classic class-diagram silhouette. */}
-        <rect x="3.5" y="3" width="17" height="18" rx="2" />
-        <path d="M3.5 8.5h17M7 12h6M7 15.5h9" />
-      </Glyph>
-    ),
-  },
-  {
     // The card (docs/specs/009-elements/card.md): a diagram node with slots, placed like any shape so the theme
     // paints it. The Callout below is its preset.
     id: 'components:card',
@@ -1312,24 +701,6 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   {
-    id: 'tools:lane',
-    blurb: 'A titled band that carries its steps',
-    caption: 'Lane',
-    section: 'build',
-    label: 'Add Lane',
-    description:
-      'A swimlane: a horizontal band with a title down its left edge. Dragging it carries everything inside, like a frame.',
-    action: { type: 'shape', kind: 'lane' },
-    icon: (
-      <Glyph size={18} units={24}>
-        {/* Two stacked bands, each with its title gutter. */}
-        <rect x="2" y="5" width="20" height="6.5" rx="1.5" />
-        <rect x="2" y="13" width="20" height="6.5" rx="1.5" />
-        <path d="M8 5v6.5M8 13v6.5" />
-      </Glyph>
-    ),
-  },
-  {
     id: 'tools:frame',
     blurb: 'A labelled box that groups a section',
     section: 'build',
@@ -1359,42 +730,6 @@ export const PALETTE_TILES: PaletteTileDef[] = [
         <rect x="5" y="9" width="4" height="6" rx="1" />
         <rect x="10" y="9" width="4" height="6" rx="1" />
         <rect x="15" y="9" width="4" height="6" rx="1" />
-      </Glyph>
-    ),
-  },
-  {
-    // The boundary (docs/specs/009-elements/boundary.md): a titled, tinted container for regions and systems.
-    id: 'tools:boundary',
-    blurb: 'A titled zone: a region, a VPC, a system',
-    section: 'build',
-    label: 'Add Boundary',
-    description:
-      'Boundary. A titled, tinted container for a cloud region, a network or a system. It carries what is inside it, and nested boundaries tint deeper.',
-    action: { type: 'shape', kind: 'boundary' },
-    icon: (
-      <Glyph size={TILE_GLYPH_PX} units={24}>
-        <rect x="3" y="6" width="18" height="15" rx="2" strokeDasharray="3 2.5" />
-        <rect x="5" y="3.5" width="9" height="5" rx="1.5" />
-      </Glyph>
-    ),
-  },
-  {
-    // The diagram key (docs/specs/009-elements/diagram-key.md): a legend of the tab's line patterns and tag colours.
-    id: 'tools:diagram-key',
-    blurb: 'A legend that fills itself in',
-    caption: 'Diagram Key',
-    section: 'build',
-    label: 'Add Diagram Key',
-    description:
-      'Diagram key. Lists the line styles and tag colours this tab uses, each with a meaning you type.',
-    filled: true,
-    action: { type: 'shape', kind: 'diagram-key' },
-    icon: (
-      <Glyph size={TILE_GLYPH_PX} units={24}>
-        <rect x="2.5" y="3.5" width="19" height="17" rx="2.5" />
-        <path d="M5.5 9h5M15 9h3.5" />
-        <path d="M5.5 14h1.5M9 14h1.5M15 14h3.5" />
-        <path d="M5.5 17.5h5" strokeOpacity={0.5} />
       </Glyph>
     ),
   },
@@ -1588,14 +923,10 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     id: 'tools:link-card',
     blurb: 'A clickable preview of a link',
-    // Navigate (docs/specs/010-palette/palette-top-level-categories.md), beside Portal: the group is what an
-    // element DOES, and both take you somewhere. A portal moves you to
-    // another tab, a link card sends you out to the page. It sat under Components, which groups by what a thing looks
-    // like — a ready-made composite you recolour — and a link card is neither
-    // composite nor decoration.
-    section: 'tools',
-    toolGroup: 'behaviour',
-    tileGroup: 'move',
+    // Media, beside the Tab Window: both show another page inside this one. It sat under Components, which groups by
+    // what a thing looks like — a ready-made composite you recolour — and a link card is neither composite nor
+    // decoration.
+    section: 'media',
     label: 'Add Link Card',
     description: "Link card. A bookmark preview with the page's title, favicon, and image.",
     noTint: true,
@@ -1999,29 +1330,10 @@ export function tileDisplayName(def: PaletteTileDef): string {
   return tileCaption(def.label, def.caption);
 }
 
-// The Collaborate elements' six categories: each holds the `behaviour` tool group's tiles of one
-// `tileGroup`, in catalogue order, in place of one Collaborate category with a group browser inside it.
-export const COLLABORATE_CATEGORY_GROUPS: Readonly<
-  Record<string, NonNullable<PaletteTileDef['tileGroup']>>
-> = {
-  'collab-ask': 'ask',
-  'collab-tools': 'tools',
-  'collab-record': 'record',
-  'collab-react': 'reaction',
-  'collab-mode': 'mode',
-  'collab-navigate': 'move',
-};
-
-/** The palette category a tile renders under by default: its section, its tool group inside
- *  Tools, or for a Collaborate element its group's category. The inverse of tilesForCategory. */
+/** The palette category a tile renders under by default: its section, or its tool group inside
+ *  Tools. The inverse of tilesForCategory. */
 export function tileCategoryId(tile: PaletteTileDef): string {
   if (tile.section !== 'tools') return tile.section;
-  if (tile.toolGroup === 'behaviour' && tile.tileGroup) {
-    const id = Object.keys(COLLABORATE_CATEGORY_GROUPS).find(
-      (c) => COLLABORATE_CATEGORY_GROUPS[c] === tile.tileGroup,
-    );
-    if (id) return id;
-  }
   return tile.toolGroup ?? 'tools';
 }
 
@@ -2032,8 +1344,7 @@ export function tileCategoryId(tile: PaletteTileDef): string {
  * palette actually shows.
  *
  * Most categories are a section. Write and Draw are not: they are tool GROUPS
- * inside the tools section, and the six Collaborate categories are `tileGroup`s of
- * the Behaviour tool group (docs/specs/010-palette/palette-top-level-categories.md), so `tilesInSection('write')`
+ * inside the tools section (docs/specs/010-palette/palette-top-level-categories.md), so `tilesInSection('write')`
  * is empty and a caller that assumed otherwise silently showed nothing (the
  * since-removed Edit Favourites dialog did exactly that and dropped all three).
  *
@@ -2042,10 +1353,6 @@ export function tileCategoryId(tile: PaletteTileDef): string {
  * those through their own search.
  */
 export function tilesForCategory(categoryId: string): PaletteTileDef[] {
-  const collaborate = COLLABORATE_CATEGORY_GROUPS[categoryId];
-  if (collaborate) {
-    return tilesInToolGroup('behaviour').filter((t) => t.tileGroup === collaborate);
-  }
   if (TOOL_GROUPS.some((g) => g.id === categoryId)) {
     return tilesInToolGroup(categoryId as ToolGroupId);
   }

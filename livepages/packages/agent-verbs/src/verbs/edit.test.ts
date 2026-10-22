@@ -37,7 +37,7 @@ describe('changeset apply', () => {
     const { requests, api } = recording();
     const files: Record<string, string> = {
       'ops.txt': 'rm n1\n',
-      'arch.json': '{"nodes":[{"id":"a"}]}',
+      'arch.json': '[{"id":"a","type":"text"}]',
     };
     const ctx = contextOf(api, [], [], { readInput: async (p) => files[p]! });
     const out = await changesetApply.run!(
@@ -50,7 +50,7 @@ describe('changeset apply', () => {
     );
     expect(requests).toEqual([
       { operations: 'rm n1\n' },
-      { replace: { graph: { nodes: [{ id: 'a' }] } }, summary: 'Arch' },
+      { replace: { elements: [{ id: 'a', type: 'text' }] }, summary: 'Arch' },
     ]);
     expect(changesetApply.text!(out)).toEqual([written.text]);
     expect(changesetApply.quiet!(out)).toEqual(['cs_1']);

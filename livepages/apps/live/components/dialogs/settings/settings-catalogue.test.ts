@@ -146,18 +146,9 @@ describe('settings catalogue', () => {
       ['elementTour-onion', 'toggle', 'Onion', 'conceptGraphics'],
       ['elementTour-chevrons', 'toggle', 'Chevrons', 'conceptGraphics'],
       ['elementTour-timeline', 'toggle', 'Timeline', 'conceptGraphics'],
-      ['elementTour-mind-node', 'toggle', 'Mind Map', 'mindMaps'],
-      ['elementTour-flowchart', 'toggle', 'Flowchart', 'flowcharts'],
-      ['elementTour-org-chart', 'toggle', 'Org Chart', 'orgCharts'],
-      ['elementTour-sequence', 'toggle', 'Sequence', 'sequenceDiagram'],
       ['elementTour-chart', 'toggle', 'Chart', 'dataElements'],
       ['elementTour-stack', 'toggle', 'Stack', 'stacks'],
-      ['elementTour-entity', 'toggle', 'Entity', 'entities'],
       ['elementTour-tab-window', 'toggle', 'Tab Window', 'tabWindows'],
-      ['elementTour-lane', 'toggle', 'Lane', 'lanes'],
-      ['elementTour-boundary', 'toggle', 'Boundary', 'boundaries'],
-      ['elementTour-diagram-key', 'toggle', 'Diagram Key', 'diagramKeys'],
-      ['elementTour-portal', 'toggle', 'Portal', 'portals'],
     ]);
     // One shared explanation under the section heading, not one per row.
     expect(tours.sectionNotes?.['Offer Again']?.note).toMatch(/close Settings/);
@@ -184,18 +175,9 @@ describe('settings catalogue', () => {
         ['OnionTourSeenOff', 'OnionTourSeenOn'],
         ['ChevronsTourSeenOff', 'ChevronsTourSeenOn'],
         ['TimelineTourSeenOff', 'TimelineTourSeenOn'],
-        ['MindMapTourSeenOff', 'MindMapTourSeenOn'],
-        ['FlowchartTourSeenOff', 'FlowchartTourSeenOn'],
-        ['OrgChartTourSeenOff', 'OrgChartTourSeenOn'],
-        ['SequenceTourSeenOff', 'SequenceTourSeenOn'],
         ['ChartTourSeenOff', 'ChartTourSeenOn'],
         ['StackTourSeenOff', 'StackTourSeenOn'],
-        ['EntityTourSeenOff', 'EntityTourSeenOn'],
         ['TabWindowTourSeenOff', 'TabWindowTourSeenOn'],
-        ['LaneTourSeenOff', 'LaneTourSeenOn'],
-        ['BoundaryTourSeenOff', 'BoundaryTourSeenOn'],
-        ['DiagramKeyTourSeenOff', 'DiagramKeyTourSeenOn'],
-        ['PortalTourSeenOff', 'PortalTourSeenOn'],
       ],
     );
   });
@@ -267,18 +249,9 @@ describe('settings catalogue', () => {
       'elementTour-onion': ['elementTourKinds'],
       'elementTour-timeline': ['elementTourKinds'],
       'elementTour-chevrons': ['elementTourKinds'],
-      'elementTour-mind-node': ['elementTourKinds'],
-      'elementTour-flowchart': ['elementTourKinds'],
-      'elementTour-org-chart': ['elementTourKinds'],
-      'elementTour-sequence': ['elementTourKinds'],
       'elementTour-chart': ['elementTourKinds'],
       'elementTour-stack': ['elementTourKinds'],
-      'elementTour-entity': ['elementTourKinds'],
       'elementTour-tab-window': ['elementTourKinds'],
-      'elementTour-lane': ['elementTourKinds'],
-      'elementTour-boundary': ['elementTourKinds'],
-      'elementTour-diagram-key': ['elementTourKinds'],
-      'elementTour-portal': ['elementTourKinds'],
     };
     // Power user mode is a PRESET by design (docs/specs/007-editor/power-user-mode.md): it moves
     // exactly the preset's settings, pinned by its own test below.

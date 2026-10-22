@@ -40,7 +40,7 @@ describe('canvas silhouettes survive the headless export', () => {
     // loudly here rather than let the real assertion pass over nothing.
     expect(OVERLAY_KINDS.length).toBeGreaterThan(12);
     expect(OVERLAY_KINDS).toContain('hexagon');
-    expect(OVERLAY_KINDS).toContain('actor');
+    expect(OVERLAY_KINDS).toContain('cloud');
   });
 
   it('exports every overlay-drawn kind as more than a plain box', () => {

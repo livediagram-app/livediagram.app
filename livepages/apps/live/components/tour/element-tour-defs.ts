@@ -3,7 +3,6 @@
 // away on Done. ElementTourHost runs whichever the selected element's kind names; this module is loaded with it, so
 // none of it is in the editor's first load.
 import {
-  boundaryStyleOf,
   chartTypeOf,
   stackChildren,
   stackSettingsOf,
@@ -20,18 +19,9 @@ import { hubTourSteps } from './hub-tour-steps';
 import { onionTourSteps } from './onion-tour-steps';
 import { timelineTourSteps } from './timeline-tour-steps';
 import { chevronsTourSteps } from './chevrons-tour-steps';
-import { mindNodeTourSteps } from './mind-node-tour-steps';
-import { flowchartTourSteps } from './flowchart-tour-steps';
-import { orgChartTourSteps } from './org-chart-tour-steps';
-import { sequenceTourSteps } from './sequence-tour-steps';
 import { chartTourSteps } from './chart-tour-steps';
 import { stackTourSteps } from './stack-tour-steps';
-import { entityTourSteps } from './entity-tour-steps';
 import { tabWindowTourSteps } from './tab-window-tour-steps';
-import { laneTourSteps } from './lane-tour-steps';
-import { boundaryTourSteps } from './boundary-tour-steps';
-import { diagramKeyTourSteps } from './diagram-key-tour-steps';
-import { portalTourSteps } from './portal-tour-steps';
 import type { ElementTourApi } from './element-tour-api';
 import {
   sankeyElementTourSteps,
@@ -47,7 +37,7 @@ type ElementTourEnv = {
   hasMore: boolean;
   // A touch screen: taps where a mouse clicks.
   touch: boolean;
-  // The tab's elements, for a tour that reads past its own element (a mind node's children).
+  // The tab's elements, for a tour that reads past its own element (a stack's children).
   elements: readonly Element[];
 };
 
@@ -65,7 +55,7 @@ type ElementTourDef = {
 
 const conceptRows = (el: Element) => (el as ShapeElement).conceptRows ?? [];
 
-// Whether a part of the element is on screen when Play is pressed (a tab window's Open button, a linked portal's).
+// Whether a part of the element is on screen when Play is pressed (a tab window's Open button).
 const inDom = (selector: string) =>
   typeof document !== 'undefined' && document.querySelector(selector) !== null;
 
@@ -138,60 +128,6 @@ export const ELEMENT_TOUR_DEFS: Record<ElementTourKind, ElementTourDef> = {
     helpArticle: 'conceptGraphics',
     steps: (el, env) => timelineTourSteps({ elementId: el.id, rows: conceptRows(el), ...env }),
   },
-  'mind-node': {
-    token: 'MindMapTour',
-    eyebrow: 'Mind map tour',
-    helpArticle: 'mindMaps',
-    steps: (el, env) =>
-      mindNodeTourSteps({
-        elementId: el.id,
-        hasChildren: env.elements.some((e) => (e as ShapeElement).mindParentId === el.id),
-        hasMore: env.hasMore,
-        touch: env.touch,
-      }),
-  },
-  flowchart: {
-    token: 'FlowchartTour',
-    eyebrow: 'Flowchart tour',
-    helpArticle: 'flowcharts',
-    steps: (el, env) =>
-      flowchartTourSteps({
-        elementId: el.id,
-        hasLanes: env.elements.some(
-          (e) =>
-            e.type === 'shape' &&
-            e.shape === 'lane' &&
-            e.flowchartId === (el as ShapeElement).flowchartId,
-        ),
-        hasMore: env.hasMore,
-        touch: env.touch,
-      }),
-  },
-  'org-chart': {
-    token: 'OrgChartTour',
-    eyebrow: 'Org chart tour',
-    helpArticle: 'orgCharts',
-    steps: (el, env) =>
-      orgChartTourSteps({
-        elementId: el.id,
-        hasReports: env.elements.some((e) => (e as ShapeElement).mindParentId === el.id),
-        hasMore: env.hasMore,
-        touch: env.touch,
-      }),
-  },
-  sequence: {
-    token: 'SequenceTour',
-    eyebrow: 'Sequence tour',
-    helpArticle: 'sequenceDiagram',
-    steps: (el, env) =>
-      sequenceTourSteps({
-        elementId: el.id,
-        hasMessages: ((el as ShapeElement).sequenceMessages ?? []).length > 0,
-        hasMore: env.hasMore,
-        touch: env.touch,
-      }),
-    onDone: (api) => api.closeSequence(),
-  },
   chart: {
     token: 'ChartTour',
     eyebrow: 'Chart tour',
@@ -218,18 +154,6 @@ export const ELEMENT_TOUR_DEFS: Record<ElementTourKind, ElementTourDef> = {
         touch: env.touch,
       }),
   },
-  entity: {
-    token: 'EntityTour',
-    eyebrow: 'Entity tour',
-    helpArticle: 'entities',
-    steps: (el, env) =>
-      entityTourSteps({
-        elementId: el.id,
-        hasFields: ((el as ShapeElement).entityFields ?? []).length > 0,
-        hasMore: env.hasMore,
-        touch: env.touch,
-      }),
-  },
   'tab-window': {
     token: 'TabWindowTour',
     eyebrow: 'Tab window tour',
@@ -238,48 +162,6 @@ export const ELEMENT_TOUR_DEFS: Record<ElementTourKind, ElementTourDef> = {
       tabWindowTourSteps({
         elementId: el.id,
         chosen: inDom(elementSelector(el.id, '[data-tab-window-open]')),
-        hasMore: env.hasMore,
-        touch: env.touch,
-      }),
-  },
-  lane: {
-    token: 'LaneTour',
-    eyebrow: 'Lane tour',
-    helpArticle: 'lanes',
-    steps: (el, env) => laneTourSteps({ elementId: el.id, hasMore: env.hasMore, touch: env.touch }),
-  },
-  boundary: {
-    token: 'BoundaryTour',
-    eyebrow: 'Boundary tour',
-    helpArticle: 'boundaries',
-    steps: (el, env) =>
-      boundaryTourSteps({
-        elementId: el.id,
-        style: boundaryStyleOf(el as ShapeElement),
-        hasMeta: !!(el as ShapeElement).pageSubtitle,
-        hasMore: env.hasMore,
-        touch: env.touch,
-      }),
-  },
-  'diagram-key': {
-    token: 'DiagramKeyTour',
-    eyebrow: 'Diagram key tour',
-    helpArticle: 'diagramKeys',
-    steps: (el, env) =>
-      diagramKeyTourSteps({
-        elementId: el.id,
-        firstRowId: (el as ShapeElement).keyRows?.[0]?.id ?? null,
-        touch: env.touch,
-      }),
-  },
-  portal: {
-    token: 'PortalTour',
-    eyebrow: 'Portal tour',
-    helpArticle: 'portals',
-    steps: (el, env) =>
-      portalTourSteps({
-        elementId: el.id,
-        linked: inDom(elementSelector(el.id, 'button[aria-label*=": go to"]')),
         hasMore: env.hasMore,
         touch: env.touch,
       }),

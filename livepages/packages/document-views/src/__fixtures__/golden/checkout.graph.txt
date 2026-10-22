@@ -1,5 +1,5 @@
 tab 0b34 "Checkout platform" · 30 elements: 16 boxes, 3 frames, 11 arrows · 1 page: 1 infographic (view pages) · threads 1 open/2 · rev 41
-actor b811 "Customer"
+circle b811 "Customer"
 square a3cf "Web app"
 hexagon 649c "API gateway"
 square 202b "Auth service"

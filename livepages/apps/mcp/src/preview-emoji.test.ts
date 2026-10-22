@@ -14,18 +14,17 @@ const el = (id: string, extra: object) => ({ id, type: 'shape', ...box, ...extra
 const SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36"><path d="M0 0"/></svg>';
 
 describe('preview emoji', () => {
-  it('finds the emoji a tab draws: stickers, emoji icons and reaction pads, once each', () => {
+  it('finds the emoji a tab draws: stickers and emoji icons, once each', () => {
     expect(
       emojiGlyphsOf([
         el('a', { shape: 'sticker', stickerId: 'emoji-thumbs-up' }),
         el('b', { shape: 'icon', iconId: 'emoji-thumbs-up' }),
         el('c', { shape: 'icon', iconId: 'clock' }),
-        el('d', { shape: 'reaction-pad', reaction: 'applause' }),
-        el('e', { shape: 'reaction-pad' }),
+        el('d', { shape: 'sticker', stickerId: 'emoji-fire' }),
         el('f', { shape: 'square' }),
         { id: 'g', type: 'text', ...box, label: '🚀' },
       ]),
-    ).toEqual(['👍', '👏', '🎉']);
+    ).toEqual(['👍', '🔥']);
   });
 
   it('fetches each emoji by its Twemoji name and reads its art, leaving out one that fails', async () => {

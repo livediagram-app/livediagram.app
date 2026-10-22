@@ -1,9 +1,6 @@
 import { mirroredLogoPages } from '@/hooks/editor/useLogoTools';
 import { useViewportStore } from '@/hooks/canvas/useViewportStore';
 import { ViewZoomControls } from '@/components/canvas/view-readers';
-import { votesSpentBy } from '@livepages/document';
-import { participantKey } from '@/lib/identity';
-import { useVoteReviewOpener } from '@/hooks/canvas/useVoteReviewOpener';
 import { computeDrawGuides } from '@/components/canvas/canvas-draw-guides';
 import { CanvasGuideOverlay } from '@/components/canvas/CanvasGuideOverlay';
 import { CanvasDrawPreview } from '@/components/canvas/CanvasDrawPreview';
@@ -23,11 +20,6 @@ import { pickPaletteAddHandlers } from '@/components/palette/palette-add-handler
 import { ToolbarExplorerButton } from '@/components/chrome/ToolbarExplorerButton';
 import { WorkbenchBackButton } from '@/components/chrome/WorkbenchChrome';
 import { showsSlidesButton, SlidesClusterSegment } from '@/components/canvas/SlidesClusterSegment';
-import {
-  SessionClusterStrip,
-  sessionStripTools,
-  stripCanStart,
-} from '@/components/canvas/SessionClusterStrip';
 import { toolbarTopClearancePx } from '@/lib/canvas-chrome';
 import { CONTENTS_SIDEBAR_WIDTH, contentsSidebarClearancePx } from '@/lib/contents-placement';
 import { ContentsClusterSegment } from './ContentsClusterSegment';
@@ -234,11 +226,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
     snapTargets,
   });
 
-  // The Vote button, which a starting results walkthrough opens for whoever drives it.
-  const voteButtonRef = useVoteReviewOpener(!!props.voteReview?.canControl, {
-    activeDockPanel,
-    handleDockButtonClick,
-  });
   // The palette strip: an editor's (not read-only), or a Participant's (docs/specs/013-workspace/share-roles.md), on
   // every mode.
   const paletteShown = !readOnly || !!props.participantPalette;
@@ -265,8 +252,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
     />
   );
 
-  // The Session strip's tools, by mode (SessionClusterStrip).
-  const stripTools = sessionStripTools(props.editorMode);
   // Panel elements + their wiring live in useCanvasChromePanels.
   const {
     panelEls,
@@ -274,7 +259,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
     layersEl,
     collaborateEl,
     slidesPopoverEl,
-    sessionPopoverEl,
     contentsPopoverEl,
     contentsSidebarEl,
     contentsDocked,
@@ -282,7 +266,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
     paletteTint,
   } = useCanvasChromePanels({
     props,
-    stripTools,
     chromeHidden,
     isMobile,
     panelWiringFor,
@@ -408,8 +391,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
       />
 
       {/* Top-of-canvas floating chrome (docs/specs/008-canvas/canvas-and-palette.md): owner / role badge, the
-          active editor-mode banner, multi-selection toolbar, session timer
-          and vote banner — laid out as one non-overlapping stack. */}
+          active editor-mode banner and multi-selection toolbar — laid out as one non-overlapping stack. */}
       <TopCenterChrome {...props} />
 
       {/* The menu button (docs/specs/007-editor/toolbar-layout.md) opens the Explorer as a popover
@@ -427,8 +409,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
       {zenMode ? null : slidesPopoverEl}
       {contentsSidebarEl}
       {contentsPopoverEl}
-      {/* The Session strip's popover, in Zen too, as its strip is (docs/specs/012-collaboration/session-tools.md). */}
-      {sessionPopoverEl}
       {paletteShown ? (
         <ToolbarPalette
           key={readOnly ? 'participant' : 'standard'}
@@ -467,7 +447,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
       )}
 
       {/* Bottom-right cluster. Order, left to right: the Undo / Redo
-          strip, the Session strip (Timer, Vote), the mode's own strip (Slides, Plan), the
+          strip, the mode's own strip (Slides, Plan), the
           Collaborate button (only while the tab has a thread or an action), the Layers and
           Theme & Canvas strip, then the Zoom controls. The buttons open their panels as popovers
           above them (docs/specs/007-editor/live-app.md). */}
@@ -487,9 +467,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 bottom: toSurfacePx(16, cornerScale),
               }
         }
-        // On a phone the cluster stays one row (docs/specs/012-collaboration/session-tools.md "The Session
-        // strip"): its buttons share the width there is, PHONE_CLUSTER_BUTTON_WIDTH, from 36px up to their
-        // usual 44px (always 44px tall to tap), so Undo, the Session strip, Layers and Theme and Fit fill the
+        // On a phone the cluster stays one row: its buttons share the width there is, PHONE_CLUSTER_BUTTON_WIDTH,
+        // from 36px up to their usual 44px (always 44px tall to tap), so Undo, Layers and Theme and Fit fill the
         // row on a 360px screen and up. It may still wrap, from the right, on a narrower one, so Undo is never
         // pushed off the screen.
         className={`pointer-events-none absolute bottom-4 right-4 z-[var(--z-panel)] flex items-center gap-2 phone:left-4 phone:flex-wrap phone:justify-end phone:gap-1.5 ${PHONE_CLUSTER_BUTTON_WIDTH} ${PHONE_TOOLBAR_ITEMS}`}
@@ -515,39 +494,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 pageIds={props.pagesMode.pages.map((p) => p.id)}
                 onGo={props.pagesMode.focusPage}
               />
-            ) : null}
-            {/* The Session strip (docs/specs/012-collaboration/session-tools.md "The Session strip"): left of
-                Layers, or of the mode's own strip. Kept in Zen: a running session is the one piece of
-                chrome a facilitator still needs there. Workshop has all three, Plan its Timer and
-                Vote, Pages a running Vote only; Diagram and Draw keep their bottom bar to
-                their own tools. */}
-            {props.sessionTools && stripTools ? (
-              <div className="contents">
-                <SessionClusterStrip
-                  timer={props.sessionTools.timer}
-                  voteRunning={!!props.tabVote}
-                  voteDotsLeft={
-                    // A Participant votes too (docs/specs/013-workspace/share-roles.md), so it sees its dots left.
-                    props.tabVote?.active && (!readOnly || props.takePart)
-                      ? Math.max(
-                          0,
-                          props.tabVote.votesPerPerson -
-                            votesSpentBy(props.tabVote, participantKey(selfParticipant)),
-                        )
-                      : null
-                  }
-                  voteReviewing={!!props.voteReview}
-                  voteButtonRef={voteButtonRef}
-                  canStart={stripCanStart(stripTools, !!readOnly)}
-                  offersTimer={stripTools.timer}
-                  open={
-                    activeDockPanel === 'session-timer' || activeDockPanel === 'session-vote'
-                      ? activeDockPanel
-                      : null
-                  }
-                  onToggle={(segment, button) => handleDockButtonClick(segment, button, true)}
-                />
-              </div>
             ) : null}
             {/* Contents and Slides (docs/specs/007-editor/pages-mode.md "Contents", "Slides"): in Pages
                 mode, one strip where Layers would be. Contents for every role and on a phone too; Slides on a

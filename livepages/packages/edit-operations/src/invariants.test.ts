@@ -72,25 +72,19 @@ describe('invariants', () => {
     expect(run(text)).toEqual(run(text));
   });
 
-  it.each(samples)('%s: lanes first, and every container behind its members (I6)', (_, text) => {
-    const lane: Element = {
-      id: 'lane',
+  it.each(samples)('%s: every container behind its members (I6)', (_, text) => {
+    const frame: Element = {
+      id: 'frame',
       type: 'shape',
-      shape: 'lane',
+      shape: 'frame',
       x: -400,
       y: -100,
       width: 2000,
       height: 1200,
     };
-    const tab = { ...checkoutFlow(), elements: [...checkoutFlow().elements, lane] };
+    const tab = { ...checkoutFlow(), elements: [...checkoutFlow().elements, frame] };
     const { tab: next } = applied(run(text, tab));
     const order = next.elements.map((el) => el.id);
-    const firstOther = next.elements.findIndex(
-      (el) => !(el.type === 'shape' && el.shape === 'lane'),
-    );
-    expect(
-      next.elements.slice(firstOther).some((el) => el.type === 'shape' && el.shape === 'lane'),
-    ).toBe(false);
     const byId = new Map(next.elements.map((el) => [el.id, el]));
     for (const [id, holder] of deriveContainers(next.elements)) {
       if (holder && isContainer(byId.get(holder)!))

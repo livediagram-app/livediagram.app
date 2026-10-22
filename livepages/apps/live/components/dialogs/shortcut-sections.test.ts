@@ -78,16 +78,3 @@ describe('the Keyboard settings list matches the keys the editor binds', () => {
     expect(undocumented.sort()).toEqual([]);
   });
 });
-
-// docs/specs/009-elements/mind-node.md "New lines": Enter grows a mind map, so the key for a new
-// line in a node's label has a row of its own, beside Tab and Enter.
-describe('the mind node keys', () => {
-  it('lists Tab, Enter and Shift+Enter together', () => {
-    const rows = EDITOR_SECTIONS.flatMap((section) => section.rows);
-    const at = (label: string) => rows.findIndex((row) => row.label === label);
-    const newLine = at('In a mind node’s label: new line');
-    expect(rows[newLine]?.keys).toEqual(['⇧', 'Enter']);
-    expect(at('On a mind node: add a sibling')).toBe(newLine - 1);
-    expect(at('On a mind node: add a child')).toBe(newLine - 2);
-  });
-});

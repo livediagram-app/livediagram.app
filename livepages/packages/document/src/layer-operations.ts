@@ -14,8 +14,8 @@ import {
 //
 // Split from layers.ts along the seam that file already drew between its
 // queries and its operations. The queries answer "what is on this layer, and
-// can I see it?" and are read on every render by the canvas, the SVG renderer
-// and the Mermaid serialiser; these are the writes, reached only from the
+// can I see it?" and are read on every render by the canvas and the SVG
+// renderer; these are the writes, reached only from the
 // Layers panel and the editor's commands. Two audiences, two files.
 //
 // The no-op contract is the reason these are worth reading together: an

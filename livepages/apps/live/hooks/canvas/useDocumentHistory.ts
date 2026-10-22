@@ -98,9 +98,8 @@ function historyClearRedo(h: History): History {
 
 // Undo / redo re-graft the LIVE non-undoable state onto the restored
 // snapshot: comment threads (docs/specs/008-canvas/canvas-and-palette.md — typing a comment then Ctrl+Z
-// mustn't wipe it) AND the session tools' `timer` / `vote` tab fields
-// (docs/specs/012-collaboration/session-tools.md — not undoable, mutated via tick so no snapshot ever holds
-// them). Restoring a snapshot verbatim silently dropped both (then
+// mustn't wipe it) and the other live element fields (graftLiveTabState). Restoring a snapshot verbatim
+// silently dropped them (then
 // autosave persisted + broadcast the stripped tab to every peer).
 
 export function historyUndo(h: History): History {

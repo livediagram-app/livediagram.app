@@ -13,10 +13,9 @@ export function tileDragStart(
 ): ((e: React.DragEvent) => void) | undefined {
   switch (action.type) {
     case 'shape': {
-      const choice =
-        action.session ?? action.reaction ?? action.mode ?? action.estimateScale ?? action.variant;
+      const choice = action.variant;
       return (e) => {
-        // `kind` or `kind|choice`, so a dragged Vote drops a vote, not a timer.
+        // `kind` or `kind|choice`, so a dragged Funnel drops a funnel, not a pyramid.
         copy(e, PALETTE_DND_MIME, choice ? `${action.kind}|${choice}` : action.kind);
         const { width, height } = SHAPE_DEFAULT_SIZE[action.kind];
         setPaletteDragPreview({ kind: action.kind, width, height });

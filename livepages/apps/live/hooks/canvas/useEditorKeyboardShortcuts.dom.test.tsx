@@ -33,8 +33,6 @@ function deps(overrides: Overrides = {}) {
     canvasTool: 'select',
     enabled: true,
     zenMode: false,
-    canGrowMindNode: () => false,
-    onEscapeMindNode: () => false,
     // An ordinary diagram tab unless a test says otherwise.
     ...spies,
     ...overrides,
@@ -238,31 +236,13 @@ describe('Space tap', () => {
   });
 });
 
-describe('Escape on a just-grown mind node (docs/specs/009-elements/mind-node.md)', () => {
-  it('drops the empty node instead of deselecting', () => {
-    const onEscapeMindNode = vi.fn(() => true);
-    const onDeselect = vi.fn();
-    const { bag } = deps({ onEscapeMindNode, onDeselect });
-    renderHook(() => useEditorKeyboardShortcuts(bag));
-    expect(press('Escape').defaultPrevented).toBe(true);
-    expect(onEscapeMindNode).toHaveBeenCalledWith('a');
-    expect(onDeselect).not.toHaveBeenCalled();
-  });
-
-  it('deselects as usual when the node is not one to drop', () => {
+describe('Escape with a selection', () => {
+  it('deselects', () => {
     const onDeselect = vi.fn();
     const { bag } = deps({ onDeselect });
     renderHook(() => useEditorKeyboardShortcuts(bag));
     press('Escape');
     expect(onDeselect).toHaveBeenCalledTimes(1);
-  });
-
-  it('leaves an open label editor its own Escape', () => {
-    const onEscapeMindNode = vi.fn(() => true);
-    const { bag } = deps({ onEscapeMindNode, editingId: 'a' });
-    renderHook(() => useEditorKeyboardShortcuts(bag));
-    press('Escape');
-    expect(onEscapeMindNode).not.toHaveBeenCalled();
   });
 });
 

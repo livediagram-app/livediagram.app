@@ -35,7 +35,7 @@ A Participant changes the document's **content**, never its **shape**.
 | May                                                                                                 | Never                                                                                                                                                                                                               |
 | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Add a sticky, a text element or an image                                                            | Add any other element: shapes, connectors, frames, templates, kits, page layouts                                                                                                                                    |
-| Write on any element: change its text (a sticky's, a shape's label, a table's cells)                | Change any other field of an element it did not add: size, style, rotation, layer, lock; write on a mode button's caption                                                                                           |
+| Write on any element: change its text (a sticky's, a shape's label, a table's cells)                | Change any other field of an element it did not add: size, style, rotation, layer, lock                                                                                                                             |
 | Move and resize any sticky or image; recolour any sticky; swap any image's picture                  | Move, resize or restyle anything else, text boxes included; turn (rotate) anything someone else added                                                                                                               |
 | Delete anything it added itself                                                                     | Delete anything someone else added                                                                                                                                                                                  |
 | Change anything about what it added (size, style, text), so long as it stays something it could add | Reorder layers; group; lock                                                                                                                                                                                         |
@@ -49,7 +49,7 @@ A Participant changes the document's **content**, never its **shape**.
   them. Shapes, frames, connectors and someone else's text boxes (which often carry the layout) stay where
   their author put them; a text box that sizes to its words still follows them when a Participant writes on it.
 - **Nothing offers what a session cannot do.** A Participant or Viewer sees no Slides button or Slide Deck command,
-  no page panel or page actions, and an inert face on a mode button set to the Format Painter. Empty states describe
+  no page panel or page actions. Empty states describe
   instead of instructing: a comment thread invites only someone who may add. A Viewer's
   selection toolbar offers **Show Comments** on an element that has comments, to read them, and no comment button
   on one that has none (a Participant's offers **Add Comment** everywhere).

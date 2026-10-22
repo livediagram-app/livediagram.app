@@ -88,18 +88,9 @@ async function markModeToursSeen(context: BrowserContext): Promise<void> {
               'hub',
               'onion',
               'chevrons',
-              'mind-node',
-              'flowchart',
-              'org-chart',
-              'sequence',
               'chart',
               'stack',
-              'entity',
               'tab-window',
-              'lane',
-              'boundary',
-              'diagram-key',
-              'portal',
             ],
           }),
         );
@@ -208,9 +199,7 @@ export async function openStartBlank(page: Page): Promise<void> {
   await dismissQuickTour(page);
 }
 
-// A blank session tab straight away: /new?template=blank-session creates it with no wizard. Where the
-// session kit lives: the Collaborate and Stickers categories and the Session strip
-// (docs/specs/012-collaboration/session-tools.md "The Session strip").
+// A blank session tab straight away: /new?template=blank-session creates it with no wizard.
 export async function openBlankSession(page: Page): Promise<void> {
   // The Workshop tour offers itself 800 ms into Workshop (WorkshopTourHost OFFER_DELAY_MS) and its
   // overlay would take these specs' presses; it has its own unit tests.

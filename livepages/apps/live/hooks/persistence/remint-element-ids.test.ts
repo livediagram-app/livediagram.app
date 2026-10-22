@@ -20,20 +20,6 @@ const shape = (id: string, extra: Partial<ShapeElement> = {}): Element => ({
 });
 
 describe('remintElementIds', () => {
-  it('re-parents mind-map nodes and re-pairs portals onto the new ids', () => {
-    const out = remintElementIds([
-      shape('root'),
-      shape('child', { mindParentId: 'root' }),
-      shape('p1', { portalTarget: 'p2' }),
-      shape('p2', { portalTarget: 'p1' }),
-    ]) as ShapeElement[];
-    const [root, child, p1, p2] = out;
-    expect(root!.id).not.toBe('root');
-    expect(child!.mindParentId).toBe(root!.id);
-    expect(p1!.portalTarget).toBe(p2!.id);
-    expect(p2!.portalTarget).toBe(p1!.id);
-  });
-
   it('keeps element order, which is stacking order', () => {
     const out = remintElementIds([
       {

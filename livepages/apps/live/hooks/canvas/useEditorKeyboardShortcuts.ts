@@ -111,8 +111,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       // BEHIND the modal.
       if (anyModalOpen()) return;
       // While focus is inside a menu of either kind the canvas stands down: an arrow there never
-      // nudges, Delete never deletes, Tab never grows a mind map
-      // (docs/specs/004-interface-design/menus.md).
+      // nudges, Delete never deletes (docs/specs/004-interface-design/menus.md).
       if (isInMenuSurface(e.target)) return;
       // A closer handler already claimed this keystroke — the table's
       // selected-cell layer prevents default on the keys it consumes
@@ -133,30 +132,6 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       const mod = e.metaKey || (e.ctrlKey && !altGraphHeld(e));
       const key = e.key;
       const lower = key.toLowerCase();
-
-      // --- Mind map growth (docs/specs/009-elements/mind-node.md) ---
-      // Tab adds a child, Enter a sibling, both off the selected mind node.
-      // Placed before every other branch because Tab is otherwise the
-      // browser's focus key: left to bubble it would walk the chrome behind
-      // the canvas, which is never what someone mid-mind-map wants.
-      //
-      // Only ever fires with a single mind node selected and no editor open,
-      // so Tab keeps its normal meaning everywhere else in the app.
-      if (
-        (key === 'Tab' || key === 'Enter') &&
-        !inText &&
-        !mod &&
-        !e.shiftKey &&
-        (!live.isReadOnly || live.participant) &&
-        live.editingId === null &&
-        selectedId !== null &&
-        multiSelectedIds.size === 0 &&
-        live.canGrowMindNode(selectedId)
-      ) {
-        e.preventDefault();
-        live.onGrowMindNode(selectedId, key === 'Tab' ? 'child' : 'sibling');
-        return;
-      }
 
       // --- Zen mode exit (docs/specs/007-editor/zen-mode.md) ---
       // Escape leaves zen mode. Only when actually in zen, not mid-
@@ -180,20 +155,6 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       ) {
         e.preventDefault();
         live.onToggleZen();
-        return;
-      }
-
-      // --- Escape drops an empty, just-grown mind node ---
-      // (docs/specs/009-elements/mind-node.md "Escape keeps what you typed")
-      if (
-        key === 'Escape' &&
-        !inText &&
-        live.editingId === null &&
-        selectedId !== null &&
-        multiSelectedIds.size === 0 &&
-        live.onEscapeMindNode(selectedId)
-      ) {
-        e.preventDefault();
         return;
       }
 

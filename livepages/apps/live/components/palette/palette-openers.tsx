@@ -27,10 +27,6 @@ const OPENERS: Record<string, Opener> = {
     label: 'AWS',
     section: 'technology',
   },
-  'open:collab-ask': { category: 'collab-ask', label: 'Ask', section: 'tools' },
-  'open:collab-tools': { category: 'collab-tools', label: 'Tools', section: 'tools' },
-  'open:collab-record': { category: 'collab-record', label: 'Record', section: 'tools' },
-  'open:collab-react': { category: 'collab-react', label: 'React', section: 'tools' },
 };
 
 // Drawn at render, so a catalogue group's artwork (its first entry) appears once the catalogue chunk lands.

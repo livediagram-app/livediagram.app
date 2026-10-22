@@ -36,8 +36,6 @@ import { gateClientOp } from './room-op-gate';
 import { answerInternal, type InternalRoom } from './room-internal';
 import { rosterFrames, type RosterEntry } from './room-roster';
 import { sessionMatchesAccessClose, type AccessCloseMatch } from './room-access';
-import type { FacilitatorState } from './facilitator';
-import { RoomFacilitator } from './room-facilitator';
 
 import {
   newSessionAttachment,
@@ -54,7 +52,7 @@ import {
 // State and conflict model (docs/specs/015-api/api.md, Realtime model): the room
 // classifies each op by kind, orders mutations (seq within an epoch, kept in
 // storage), rewrites comment authors, and keeps collaboration state in DO
-// storage (the ledger, the facilitator baton). It never holds
+// storage (the ledger). It never holds
 // the document: D1 does, written by clients over REST, except a Participant's
 // writes this room performs itself. Payloads stay `op: unknown` so the
 // editor can evolve its vocabulary without changing the room. Two edits to
@@ -156,11 +154,6 @@ export class DocumentRoom implements DurableObject {
   // numbers: a client compares the epoch on an incoming op against the last
   // it saw to know whether the room restarted (seq reset) versus advanced.
   epoch: string = crypto.randomUUID();
-  // Who is running the session (docs/specs/012-collaboration/facilitator.md), restored in the constructor.
-  private baton: RoomFacilitator;
-  get facilitator(): FacilitatorState {
-    return this.baton.state;
-  }
   // The collaboration ledger (docs/specs/012-collaboration/collab-race-hardening.md phase 3); see room-ledger-store.
   ledger: RoomLedgerStore;
   // Each session's selection, for the api's held check (room-selections.ts).
@@ -177,7 +170,7 @@ export class DocumentRoom implements DurableObject {
   // runs through here ONE AT A TIME. A Durable Object only serialises the
   // synchronous parts of its handlers: while one write is awaiting D1, the
   // runtime happily starts the next request, and two read-modify-writes of the
-  // same row would be exactly the race that once cost the dot vote its votes.
+  // same row would be exactly the race that loses one of the two writes.
   // In memory because a queue only matters while requests are in flight; a
   // hibernation wake has none.
   // Blueprint SR2: a Participant's writes, one at a time per document.
@@ -197,7 +190,6 @@ export class DocumentRoom implements DurableObject {
       sequence: (from, op, except) => this.sequenceMutation(from, op, except),
       sendTo: (ws, payload) => this.sendTo(ws, payload),
       position: () => ({ epoch: this.epoch, seq: this.seq }),
-      readLedger: (tabId) => this.ledger.read(tabId),
     });
     this.internal = {
       broadcastSystemOp: (op) => this.broadcastSystemOp(op),
@@ -212,15 +204,6 @@ export class DocumentRoom implements DurableObject {
       readLedger: (tabId) => this.ledger.read(tabId),
       epoch: () => this.epoch,
     };
-    this.baton = new RoomFacilitator({
-      storage: state.storage,
-      broadcast: (payload, except) => this.broadcast(payload, except),
-      sendTo: (ws, payload) => this.sendTo(ws, payload),
-      sendToPresence: (presenceId, payload) => this.sendToPresence(presenceId, payload),
-      socketByPresence: (presenceId) => this.socketByPresence(presenceId),
-      readSession: (ws) => this.readSession(ws),
-      armAlarm: () => this.armAlarm(),
-    });
     this.selections = new RoomSelectionStore(state.storage);
     // The keepalive (see the hibernation notes above): answered by the runtime, never by this class. Absent from a
     // test double of the state, and from a runtime without the hibernation API.
@@ -243,7 +226,6 @@ export class DocumentRoom implements DurableObject {
         // First instantiation for this document: adopt the random epoch above.
         await state.storage.put(ORDER_STATE_KEY, { epoch: this.epoch, seq: this.seq });
       }
-      await this.baton.restore();
       for (const r of await this.agents.restore()) agentPresenceLog('expired', r);
       this.armAlarm();
     });
@@ -274,7 +256,6 @@ export class DocumentRoom implements DurableObject {
     this.acceptSession(
       server,
       v.verifiedRole,
-      v.isOwner,
       v.tabScope,
       v.shareCode,
       v.account,
@@ -319,7 +300,6 @@ export class DocumentRoom implements DurableObject {
   acceptSession(
     ws: WebSocket,
     verifiedRole?: AccessLevel,
-    isOwner = false,
     tabScope: string | null = null,
     shareCode: string | null = null,
     account = false,
@@ -332,7 +312,6 @@ export class DocumentRoom implements DurableObject {
       newSessionAttachment(
         {
           verifiedRole,
-          isOwner,
           tabScope,
           shareCode,
           account,
@@ -469,7 +448,7 @@ export class DocumentRoom implements DurableObject {
   }
 
   // The document is gone for good: end every session, then drop everything stored here, which includes the
-  // collaboration ledger's comment, idea and answer text, the order state, the baton and the alarm.
+  // collaboration ledger's comment, idea and answer text, the order state and the alarm.
   // The ledger's queued writes land first, so none of them can re-create a key after the wipe.
   private async purge(): Promise<void> {
     this.closeSockets(() => [DOCUMENT_TRASHED_CLOSE, 'document-purged']);
@@ -571,11 +550,11 @@ export class DocumentRoom implements DurableObject {
       this.sendTo(ws, { kind: 'format', format: DOCUMENT_FORMAT, ...(build ? { build } : {}) });
       this.broadcastPresence();
       this.noteMultiplayer();
-      this.baton.welcome(ws, session, presence.id, msg.facilitatorToken);
       return;
     }
     if (msg.kind === 'facilitator') {
-      this.baton.handle(msg, session);
+      // The baton went with the session tools; freeing a held element is all this frame still asks.
+      if (msg.action === 'unlock') this.releaseSelectionLock(session, msg.target, msg.elementId);
       return;
     }
     if (msg.kind === 'sync') {
@@ -593,7 +572,6 @@ export class DocumentRoom implements DurableObject {
       const gate = gateClientOp(msg.op, {
         role: sender.role,
         tabScope: session.tabScope ?? null,
-        key: sender.key,
       });
       if (gate.kind === 'drop') return;
       if (gate.kind === 'participant-content') {
@@ -608,12 +586,6 @@ export class DocumentRoom implements DurableObject {
           msg.ref,
         );
         return;
-      }
-      if (gate.participantAnswers) {
-        this.participantWrites.scheduleAnswers(
-          session.documentId ?? null,
-          (msg.op as { tabId?: unknown }).tabId,
-        );
       }
       const opKind = (msg.op as { kind?: unknown } | null | undefined)?.kind;
       const isPresenceOp = gate.presence;
@@ -762,22 +734,43 @@ export class DocumentRoom implements DurableObject {
     return null;
   }
 
-  // The room's one alarm, at the earliest of the facilitator grace deadline and every agent presence expiry, or
-  // none when there is neither (agent-presence I5, PR29).
-  private armAlarm(): void {
-    const deadlines = [this.baton.deadline(), this.agents.nextExpiry() ?? undefined].filter(
-      (d): d is number => d !== undefined,
-    );
-    if (deadlines.length === 0) void this.state.storage.deleteAlarm();
-    else void this.state.storage.setAlarm(Math.min(...deadlines));
+  /**
+   * Tell one peer to let go of an element (docs/specs/007-editor/live-app.md concurrent-selection lock).
+   *
+   * Sent to the holder's socket ALONE, which is the entire addressing scheme: a client is never told its own
+   * presence id (docs/specs/015-api/public-api-and-tokens.md §6), so a broadcast naming a target would arrive at
+   * nobody who could recognise it. The holder drops the selection and re-broadcasts its own `select`, which
+   * clears the lock everywhere through the path that already exists.
+   *
+   * Any editor may ask; a view-role visitor cannot select or edit, so it cannot free an editor's hold. Silent on
+   * every refusal: a room that answered would be telling a peer which presence ids are live.
+   */
+  private releaseSelectionLock(
+    session: SessionAttachment,
+    target: string,
+    elementId: string,
+  ): void {
+    if (session.verifiedRole !== 'edit') return;
+    const asker = session.presence?.id ?? session.presenceId;
+    if (typeof target !== 'string' || target === asker) return;
+    if (typeof elementId !== 'string' || elementId.length === 0) return;
+    if (!this.socketByPresence(target)) return;
+    this.sendToPresence(target, { kind: 'selection-released', elementId, by: asker });
   }
 
-  /** Agent entries past their expiry go; then the grace clock ran out (or did not, if they came back). */
+  // The room's one alarm, at the earliest agent presence expiry, or none when there is none (agent-presence I5,
+  // PR29).
+  private armAlarm(): void {
+    const next = this.agents.nextExpiry();
+    if (next === null) void this.state.storage.deleteAlarm();
+    else void this.state.storage.setAlarm(next);
+  }
+
+  /** Agent entries past their expiry go. */
   async alarm(): Promise<void> {
     const expired = await this.agents.sweep();
     for (const r of expired) agentPresenceLog('expired', r);
     if (expired.length > 0) this.broadcastPresence();
-    this.baton.alarm();
     this.armAlarm();
   }
 
@@ -813,10 +806,7 @@ export class DocumentRoom implements DurableObject {
     // A follower leaving is one fewer for the person they followed.
     if (leaving?.following) this.sendFollowers(leaving.following, ws);
     const presenceId = leaving?.presence?.id;
-    if (presenceId) {
-      this.baton.startGrace(presenceId);
-      void this.selections.drop(presenceId).catch(() => {});
-    }
+    if (presenceId) void this.selections.drop(presenceId).catch(() => {});
     // Exclude the departing socket explicitly: depending on when the
     // runtime prunes it from getWebSockets(), it could otherwise still
     // appear in the roster of this very broadcast.

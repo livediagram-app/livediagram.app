@@ -3,7 +3,6 @@
 // Text set. The menu offers one category per set present in a selection, in a fixed order.
 
 import {
-  CONTAINER_ANIMATIONS,
   SHAPE_ANIMATIONS,
   SHAPE_MOTIONS,
   type AnimationSetId,
@@ -29,12 +28,12 @@ function hasOwnShapeSet(el: Element): boolean {
   );
 }
 
-// Shapes whose rows are what moves, not the box (Concept, Sequence), so they take their own set instead of Shape. One
+// Shapes whose rows are what moves, not the box (Concept), so they take their own set instead of Shape. One
 // that carries words of its own beyond its rows (a layer stack, pyramid, onion or chevrons) takes the Text set too; a
-// self-labelled one (sequence, cycle, hub) does not. A Shape `animation` stored on one before it had its own set plays
+// self-labelled one (cycle, hub) does not. A Shape `animation` stored on one before it had its own set plays
 // only when it is a motion (takesShapeMotions): the menu has no tile for the rest to change or clear it.
 export function hasOwnBodySet(el: Element): boolean {
-  return el.type === 'shape' && (isConceptShape(el.shape) || el.shape === 'sequence');
+  return el.type === 'shape' && isConceptShape(el.shape);
 }
 
 /** The body set that animates the element itself, or undefined when it takes none of these. */
@@ -79,11 +78,9 @@ export function takesShapeMotions(el: Element): boolean {
   }
 }
 
-/** The Shape values a Shape category offers the element: the whole set, a boundary's six, the motions, or none. */
+/** The Shape values a Shape category offers the element: the whole set, the motions, or none. */
 export function shapeAnimationsFor(el: Element): readonly ShapeAnimation[] {
-  if (bodyAnimationSetOf(el) === 'shape') {
-    return el.type === 'shape' && el.shape === 'boundary' ? CONTAINER_ANIMATIONS : SHAPE_ANIMATIONS;
-  }
+  if (bodyAnimationSetOf(el) === 'shape') return SHAPE_ANIMATIONS;
   return takesShapeMotions(el) ? SHAPE_MOTIONS : [];
 }
 

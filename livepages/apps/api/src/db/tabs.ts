@@ -227,7 +227,7 @@ export function tabWriteStatements(
   now = Date.now(),
 ): D1PreparedStatement[] {
   // Action panel lists are bounded here, the one place every tab write
-  // meets (docs/specs/012-collaboration/action-panel.md "The data").
+  // meets (docs/specs/012-collaboration/assigned-actions.md).
   const tab = { ...input, elements: capElementActions(input.elements) };
   const { id, name, ...rest } = tab;
   const data = JSON.stringify(rest);

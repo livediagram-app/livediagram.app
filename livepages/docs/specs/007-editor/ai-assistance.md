@@ -139,7 +139,7 @@ of things Clean tidies. This is load-bearing, not tidiness: the client coerces a
 outside its accept-set to `square` so a node the model _invented_ off-vocabulary still
 renders rather than being dropped, and Clean asks the model to return every element with
 its real `shape` forwarded. Unpinned, one Clean flattened every composite in the tab —
-checklists, code blocks, charts, lanes, entities, progress rings, 30 of the 51 ShapeKinds —
+checklists, code blocks, charts, progress rings and most other ShapeKinds —
 and autosaved and broadcast the result. The coercion is right for an
 invented element and has no business touching one the user already had.
 

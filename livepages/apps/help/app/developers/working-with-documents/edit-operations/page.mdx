@@ -55,13 +55,13 @@ One parser turns the line form into the JSON form, so both are checked the same 
 | `add`     | `add <kind> [id=<id>] key=value… [<placement>]`                              | Creates an element sized for its label                                                                                          |
 | `set`     | `set <selector> key=value… [all]`                                            | Changes only the fields named; `key=` with nothing after it unsets one                                                          |
 | `rm`      | `rm <selector> [all] [keep-arrows]`                                          | Removes elements, and the arrows pinned to them unless `keep-arrows` leaves those with free ends                                |
-| `move`    | `move <selector> <placement> [all]` or `move <selector> by=dx,dy [all]`      | Moves elements; pinned arrows follow, and a frame or lane carries its members                                                   |
+| `move`    | `move <selector> <placement> [all]` or `move <selector> by=dx,dy [all]`      | Moves elements; pinned arrows follow, and a frame carries its members                                                           |
 | `connect` | `connect <a> -> <b> [id=<id>] [label=…] [line=…] [again]`                    | Draws an arrow pinned at both ends, anchored on the sides facing each other                                                     |
 | `rewire`  | `rewire <arrow> from=<x> [to=<y>]` or `rewire <arrow> to=<y>`                | Moves one or both ends of an arrow to other elements                                                                            |
 | `insert`  | `insert <kind> [id=<id>] key=value… between <a> <b>`                         | Puts a new element on the arrow from a to b, which becomes two arrows, and makes room for it                                    |
-| `wrap`    | `wrap <selector…> in frame [id=<id>] key=value… [tidy] [absorb] [make-room]` | Draws a frame (or `in lane`, a lane) around the members                                                                         |
-| `unwrap`  | `unwrap <frame>`                                                             | Removes a frame or lane and leaves its members where they are                                                                   |
-| `order`   | `order <selector> front`, `back`, `above=<x>` or `below=<x>`                 | Changes the stacking order; frames and lanes always stay behind their contents                                                  |
+| `wrap`    | `wrap <selector…> in frame [id=<id>] key=value… [tidy] [absorb] [make-room]` | Draws a frame around the members                                                                                                |
+| `unwrap`  | `unwrap <frame>`                                                             | Removes a frame and leaves its members where they are                                                                           |
+| `order`   | `order <selector> front`, `back`, `above=<x>` or `below=<x>`                 | Changes the stacking order; frames always stay behind their contents                                                            |
 | `layout`  | `layout <selector> [style=flow] [direction=down]`                            | Lays out only the selection, keeping its top-left corner; `style` is `flow`, `tree` or `mindmap`, `direction` `down` or `right` |
 | `test`    | `test <selector> key=value…`                                                 | Refuses the whole changeset unless the element still holds these values                                                         |
 
@@ -84,7 +84,7 @@ A selector picks the elements an operation acts on. It is a ref, a quoted label,
 | `label~orders`               | Elements whose label contains `orders`                                            |
 | `type:sticky`                | Elements of that kind, as the outline prints it, or of that element type          |
 | `shape:diamond`              | Shapes of that shape kind                                                         |
-| `in:f2`                      | The members of a frame or lane, at any depth (not arrows)                         |
+| `in:f2`                      | The members of a frame, at any depth (not arrows)                                 |
 | `n3->n4`, `"Sign in"->"Pay"` | The arrow pinned from one element to the other                                    |
 | `from:n3`, `to:n4`           | Arrows pinned from, or to, an element                                             |
 | `downstream:n3`              | Every element reachable from n3 by following arrows forwards (n3 itself left out) |
@@ -96,8 +96,8 @@ Terms combine: `type:sticky in:f2` is the stickies inside frame `f2`, and `from:
 - A selector must match **exactly one** element unless the operation takes `all`. Nothing matching is refused as `target_not_found` with the nearest labels; several is refused as `target_ambiguous`, listing them.
 - `wrap` and `layout` act on many by nature. Each ref or quoted label you give names one element, and the other terms together add whatever they match.
 - `selected` with nothing selected is refused. The owner is whoever the API token belongs to, so an agent can act on "what I have selected" while you point at it.
-- Membership (for `in:`, `wrap` and moving a frame) is the smallest frame or lane holding an element's centre, the same rule the editor uses when you drag a frame.
-- The words `selected`, `all`, `again`, `tidy`, `absorb`, `make-room`, `keep-arrows`, `between`, `in`, `frame`, `lane`, `front` and `back` are always keywords. Reach an element named one of them by its quoted label or a longer ref.
+- Membership (for `in:`, `wrap` and moving a frame) is the smallest frame holding an element's centre, the same rule the editor uses when you drag a frame.
+- The words `selected`, `all`, `again`, `tidy`, `absorb`, `make-room`, `keep-arrows`, `between`, `in`, `frame`, `front` and `back` are always keywords. Reach an element named one of them by its quoted label or a longer ref.
 
 ## Placement
 
@@ -110,7 +110,7 @@ Terms combine: `type:sticky in:f2` is the stickies inside frame `f2`, and `from:
 | `above:<x>`      | Above x                                                                     |
 | `below:<x>`      | Below x                                                                     |
 | `after:<x>`      | Along the flow of x's outgoing arrows                                       |
-| `inside:<frame>` | In the next free slot inside a frame or lane                                |
+| `inside:<frame>` | In the next free slot inside a frame                                        |
 | `align:<x>`      | Sharing x's centre, on the axis the element is already nearer               |
 | `at:x,y`         | At that point, relative to the tab's content origin                         |
 | `gap:<n>`        | Beside a side, `after` or `align` placement: the space to leave, 0 to 2,000 |
@@ -132,7 +132,7 @@ What you did not ask to change stays put. `set` moves nothing except a box that 
 
 In the JSON form, a flag is a member set to `true`: `"all"`, `"keepArrows"`, `"again"`, `"tidy"`, `"absorb"`, `"makeRoom"`.
 
-`insert` always makes room: everything beyond the new element along the flow, within the same frame or lane (or the same connected group, outside them), shifts by its size and the gap, and those moves are reported. A frame holding shifted members grows with them.
+`insert` always makes room: everything beyond the new element along the flow, within the same frame (or the same connected group, outside them), shifts by its size and the gap, and those moves are reported. A frame holding shifted members grows with them.
 
 ## The Answer
 
@@ -154,7 +154,7 @@ rev 41→42 · cs_8k2m4q7d1x · lint clean · revert: livepages changeset revert
 | `~`           | Changed, each field before→after                          |
 | `-`           | Removed, with the reason when it went with another        |
 | `»`           | Moved without being named (made room, carried by a frame) |
-| `f2  +verify` | A frame or lane's membership changed                      |
+| `f2  +verify` | A frame's membership changed                              |
 | `!`           | A warning                                                 |
 
 The last line carries the tab's new revision, the changeset's id, the lint verdict and the command that reverts it. A changeset that changes nothing answers `nothing changed`.
@@ -219,7 +219,7 @@ W arrow-behind-box   orders→bus passes behind pay  fix: set orders->bus line=a
 | `aspect-extreme`    | info     | The drawing is more than 3 times wider than tall, or the reverse | `layout type:shape direction=down`         |
 | `colour-on-themed`  | info     | A fill or stroke the theme would not paint, bound to no swatch   | `set a fill=` to give it back to the theme |
 
-Boxes no arrow connects count as decoration and may overlap; the group checks judge frames, not lanes. Above 300 arrows the crossing check is skipped (the summary says so) and every other check still runs. The verdict on a changeset's last line reads `lint clean` or, say, `lint 2 warnings, 1 info`.
+Boxes no arrow connects count as decoration and may overlap; the group checks judge frames. Above 300 arrows the crossing check is skipped (the summary says so) and every other check still runs. The verdict on a changeset's last line reads `lint clean` or, say, `lint 2 warnings, 1 info`.
 
 <Tip>
   Send a changeset with `?dryRun=1` first while you learn the vocabulary: the answer and the lint

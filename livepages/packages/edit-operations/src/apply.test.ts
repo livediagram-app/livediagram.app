@@ -1,11 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CHANGESET_MAX_OPERATIONS } from '@livepages/api-schema';
-import {
-  MAX_ELEMENTS_PER_TAB,
-  applyElementOps,
-  type Element,
-  type Tab,
-} from '@livepages/document';
+import { MAX_ELEMENTS_PER_TAB, applyElementOps, type Element, type Tab } from '@livepages/document';
 import { applyEditOperations } from './apply';
 import { EDIT_MAX_ERRORS } from './vocabulary';
 import { parseEditOperations } from './parse';
@@ -186,11 +181,6 @@ describe('applyEditOperations', () => {
         applied(outcome).elementOps.map((op) => op.kind === 'update' && op.element.id),
       ).toContain('a3');
       expect(lines(outcome)).toEqual(['~ n4  @40,300→@340,200', 'f2  -n4']);
-    });
-
-    it('puts lanes behind everything else', () => {
-      const lane = { id: 'lane', type: 'shape', shape: 'lane', ...box, width: 800, height: 200 };
-      expect(applied(run([add(lane)])).tab.elements[0]!.id).toBe('lane');
     });
 
     it('refuses a touched element the format does not allow, naming field and rule', () => {

@@ -270,7 +270,6 @@ describe('the lint over REST', () => {
     expect(logged('[lint] run')).toMatchObject({
       documentId: 'D',
       tabId: 't1',
-      source: 'tab',
       elements: 6,
     });
     await settled();

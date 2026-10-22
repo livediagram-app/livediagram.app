@@ -1,24 +1,19 @@
 // The participant content rule (docs/specs/013-workspace/share-roles.md "What a Participant changes"; blueprint
-// "Behaviour and state"). A Participant changes a board's content, never its shape: it adds stickies, text, images
-// and mind-map branches, writes on any element but a Behaviour, moves and recolours stickies, re-lays a mind map,
-// swaps an image's picture, and removes what it added and any mind node. The server applies each of
+// "Behaviour and state"). A Participant changes a board's content, never its shape: it adds stickies, text and
+// images, writes on any element, moves and recolours stickies, swaps an image's picture, and removes what it
+// added. The server applies each of
 // a Participant's element ops to the STORED tab through this one pure function, so a stale screen can never write
 // an old copy of the board back: a permitted field lands, a forbidden field stays as stored, a forbidden add or
 // remove is refused with the op that puts the sender's screen back.
 
-import { isFlowchartLane, isFlowchartStep } from './flowchart';
-import { isBehaviourShape } from './behaviour-shapes';
 import { LIVE_ELEMENT_FIELDS } from './comments';
 import { diffToElementOps, type ElementOp, type RoomElementOp } from './element-ops';
-import type { Element, ShapeElement, Tab } from './index';
-import { TEXT_PX_MAX } from './label-font';
+import type { Element, Tab } from './index';
 import { isLayerLocked, resolveLayerId, tabLayers } from './layers';
-import { isMindNode } from './mind-map';
 import { isValidElement } from './validate';
 
-// The element types a Participant may add. A `shape` only as a mind node grown from another, an `arrow` only as
-// the connector between two mind nodes (`addableOn`).
-const PARTICIPANT_ADDABLE_TYPES = ['sticky', 'text', 'image', 'shape', 'arrow'] as const;
+// The element types a Participant may add.
+const PARTICIPANT_ADDABLE_TYPES = ['sticky', 'text', 'image'] as const;
 // The fields a Participant may change on an element someone else added: its words.
 const PARTICIPANT_TEXT_FIELDS = ['label', 'richText'] as const;
 // What else a Participant may change on anyone's sticky: where it sits and its colour.
@@ -32,18 +27,6 @@ const PARTICIPANT_STICKY_FIELDS = [
 // text box is not one: it often labels the board's structure, so it stays where its author put it.
 const PARTICIPANT_PLACE_TYPES = ['sticky', 'image'] as const;
 const PARTICIPANT_PLACE_FIELDS = ['x', 'y', 'width', 'height'] as const;
-// The most a Participant's writing may grow anyone's mind node, per character of its label: a line of the
-// largest label there is (TEXT_PX_MAX) at double line height, as if every character wrapped alone. Generous for
-// any real label, and a bound, so one changed letter cannot stretch a node to ten million pixels that only an
-// Editor could put back (it never shrinks on its own).
-export const MIND_GROW_PX_PER_CHAR = TEXT_PX_MAX * 2;
-// What a Participant may change on anyone's mind node: where it sits, so growing a map re-lays it tidily.
-const PARTICIPANT_MIND_FIELDS = ['x', 'y'] as const;
-// What a Participant may change on anyone's flowchart step: where it sits, so growing a chart lays it out
-// (docs/specs/009-elements/flowchart.md "Share roles").
-const PARTICIPANT_STEP_FIELDS = ['x', 'y'] as const;
-// What a Participant may change on anyone's flowchart lane: its band, which the chart's layout fits to its steps.
-const PARTICIPANT_LANE_FIELDS = ['x', 'y', 'width', 'height'] as const;
 // What a Participant may change on anyone's image: the picture it shows.
 const PARTICIPANT_IMAGE_FIELDS = [
   'imageId',
@@ -76,12 +59,6 @@ export type ParticipantOpResult =
 
 type Bag = Record<string, unknown>;
 
-// Whether a Participant may write on an element someone else added. A Behaviour's words (a
-// timer's or mode button's caption) are how the facilitator runs the session, so they stay an Editor's.
-export function participantWritesOn(el: Element): boolean {
-  return !(el.type === 'shape' && isBehaviourShape(el.shape));
-}
-
 function isParticipantAddable(type: string): boolean {
   return (PARTICIPANT_ADDABLE_TYPES as readonly string[]).includes(type);
 }
@@ -91,75 +68,10 @@ export function isParticipantPlaceable(el: Element): boolean {
   return (PARTICIPANT_PLACE_TYPES as readonly string[]).includes(el.type);
 }
 
-type Endpoint = { kind: string; elementId?: string; anchor?: unknown };
-
-function mindNodeOn(tab: Tab, id: unknown): boolean {
-  return tab.elements.some((e) => e.id === id && isMindNode(e));
-}
-
-function stepOfChartOn(tab: Tab, id: unknown, chart: unknown): boolean {
-  return tab.elements.some(
-    (e) => e.id === id && isFlowchartStep(e) && (chart === undefined || e.flowchartId === chart),
-  );
-}
-
-// A connector pinned at both ends to steps of one flowchart on the tab: how a chart's steps are joined.
-function isFlowchartConnectorOn(tab: Tab, el: Element): boolean {
-  if (el.type !== 'arrow') return false;
-  const from = (el as { from: Endpoint }).from;
-  const to = (el as { to: Endpoint }).to;
-  if (from.kind !== 'pinned' || to.kind !== 'pinned') return false;
-  const source = tab.elements.find((e) => e.id === from.elementId);
-  return (
-    !!source && isFlowchartStep(source) && stepOfChartOn(tab, to.elementId, source.flowchartId)
-  );
-}
-
-// A connector pinned at both ends to mind nodes on the tab: how a mind map's branches are drawn.
-function isMindConnectorOn(tab: Tab, el: Element): boolean {
-  if (el.type !== 'arrow') return false;
-  const from = (el as { from: Endpoint }).from;
-  const to = (el as { to: Endpoint }).to;
-  return (
-    from.kind === 'pinned' &&
-    to.kind === 'pinned' &&
-    mindNodeOn(tab, from.elementId) &&
-    mindNodeOn(tab, to.elementId)
-  );
-}
-
-// Whether a Participant may remove this element though someone else added it: any mind node (decided 2026-10-10),
-// and a mind connector, including one whose node went first in the same change (each end a mind node on the tab
-// or no longer on it), so deleting a node takes its branch line with it.
-function removableByAnyone(tab: Tab, el: Element): boolean {
-  if (isMindNode(el)) return true;
-  if (el.type !== 'arrow') return false;
-  const ends = [(el as { from: Endpoint }).from, (el as { to: Endpoint }).to];
-  return ends.every(
-    (end) =>
-      end.kind === 'pinned' &&
-      (mindNodeOn(tab, end.elementId) || !tab.elements.some((e) => e.id === end.elementId)),
-  );
-}
-
 // Whether a Participant may add this element to the tab, or hold it there as its own after a change: a sticky,
-// text or image anywhere; a mind node only as a branch of one already on the tab, a flowchart step only in a chart
-// already on it; an arrow only between two mind nodes or two steps of one chart.
-function addableOn(tab: Tab, el: Element): boolean {
-  if (!isParticipantAddable(el.type)) return false;
-  if (el.type === 'shape') {
-    if (isMindNode(el)) return mindNodeOn(tab, (el as Bag).mindParentId);
-    // Read as a plain element: isMindNode's guard leaves nothing for TypeScript to narrow here.
-    const step = el as Element as ShapeElement;
-    return (
-      isFlowchartStep(step) &&
-      tab.elements.some(
-        (e) => e.id !== step.id && isFlowchartStep(e) && e.flowchartId === step.flowchartId,
-      )
-    );
-  }
-  if (el.type === 'arrow') return isMindConnectorOn(tab, el) || isFlowchartConnectorOn(tab, el);
-  return true;
+// text or image anywhere.
+function addableOn(el: Element): boolean {
+  return isParticipantAddable(el.type);
 }
 
 // Whether an element was added by the Participant holding this adder key.
@@ -211,14 +123,12 @@ function keepLiveFields(target: Bag, stored: Bag): void {
 
 // What a Participant's update turns another person's element into: the stored element with the permitted fields
 // copied from incoming.
-function mergeOthers(tab: Tab, stored: Element, incoming: Element): Element {
+function mergeOthers(stored: Element, incoming: Element): Element {
   const s = stored as Bag;
   const inc = incoming as Bag;
   const next: Bag = { ...s };
-  if (participantWritesOn(stored)) {
-    for (const field of PARTICIPANT_TEXT_FIELDS) {
-      if (field in s || field in inc) copyField(next, inc, field);
-    }
+  for (const field of PARTICIPANT_TEXT_FIELDS) {
+    if (field in s || field in inc) copyField(next, inc, field);
   }
   if (stored.type === 'table' && sameCellShape(s.cells, inc.cells)) next.cells = inc.cells;
   // A text box that sizes to its text (`sizing` set) follows its words: writing on it resizes it.
@@ -238,49 +148,8 @@ function mergeOthers(tab: Tab, stored: Element, incoming: Element): Element {
   if (stored.type === 'sticky') {
     for (const field of PARTICIPANT_STICKY_FIELDS) copyField(next, inc, field);
   }
-  if (isMindNode(stored)) {
-    for (const field of PARTICIPANT_MIND_FIELDS) {
-      if (typeof inc[field] === 'number' && Number.isFinite(inc[field])) next[field] = inc[field];
-    }
-    // A node grows to fit its label (docs/specs/009-elements/mind-node.md), so writing on it may make it taller in
-    // the same change, as a text box that sizes to its words follows them; never shorter.
-    const wrote = PARTICIPANT_TEXT_FIELDS.some((f) => !sameValue(s[f], inc[f]));
-    const label = typeof inc.label === 'string' ? inc.label : '';
-    const ceiling = (s.height as number) + Math.max(1, label.length) * MIND_GROW_PX_PER_CHAR;
-    if (wrote && isPositive(inc.height) && inc.height > (s.height as number)) {
-      next.height = Math.min(inc.height, ceiling);
-    }
-  }
-  if (isFlowchartStep(stored)) {
-    for (const field of PARTICIPANT_STEP_FIELDS) {
-      if (typeof inc[field] === 'number' && Number.isFinite(inc[field])) next[field] = inc[field];
-    }
-  }
-  if (isFlowchartLane(stored)) {
-    for (const field of PARTICIPANT_LANE_FIELDS) {
-      const v = inc[field];
-      const ok = field === 'x' || field === 'y' ? Number.isFinite(v) : isPositive(v);
-      if (ok && typeof v === 'number') next[field] = v;
-    }
-  }
   if (stored.type === 'image') {
     for (const field of PARTICIPANT_IMAGE_FIELDS) copyField(next, inc, field);
-  }
-  // A laid-out chart routes its straight and angled connectors: their bends, never their ends or look.
-  if (isFlowchartConnectorOn(tab, stored) && s.arrowStyle !== 'curved') {
-    if (inc.arrowStyle === 'straight' || inc.arrowStyle === 'angled')
-      next.arrowStyle = inc.arrowStyle;
-    copyField(next, inc, 'curvePoints');
-  }
-  // A re-laid map or chart turns its connectors to face the way it now flows: the faces move, never the ends.
-  if (isMindConnectorOn(tab, stored) || isFlowchartConnectorOn(tab, stored)) {
-    for (const end of ['from', 'to'] as const) {
-      const was = s[end] as Endpoint;
-      const now = inc[end] as Endpoint | undefined;
-      if (now?.kind === 'pinned' && now.elementId === was.elementId) {
-        next[end] = { ...was, anchor: now.anchor };
-      }
-    }
   }
   return next as Element;
 }
@@ -344,7 +213,7 @@ export function applyParticipantOp(
   }
   if (op.kind === 'remove') {
     if (isHeld(tab, stored)) return refuse('locked', { kind: 'add', element: stored, at: index });
-    if (!addedByAdder(stored, adderKey) && !removableByAnyone(tab, stored))
+    if (!addedByAdder(stored, adderKey))
       return refuse('not-own', { kind: 'add', element: stored, at: index });
     return {
       result: 'applied',
@@ -361,10 +230,10 @@ export function applyParticipantOp(
   if (incoming.type !== stored.type) return refuse('type-changed', restore);
   if (isHeld(tab, stored)) return refuse('locked', restore);
   const own = addedByAdder(stored, adderKey);
-  const merged = own ? mergeOwn(stored, incoming) : mergeOthers(tab, stored, incoming);
+  const merged = own ? mergeOwn(stored, incoming) : mergeOthers(stored, incoming);
   if (!isValidElement(merged)) return refuse('invalid', restore);
-  // What it added stays something it could add: its connector keeps joining two mind nodes, its node stays one.
-  if (own && !addableOn(tab, merged)) return refuse('not-holdable', restore);
+  // What it added stays something it could add.
+  if (own && !addableOn(merged)) return refuse('not-holdable', restore);
   // Its own element moved onto a locked layer would be one it could never touch again.
   if (isHeld(tab, merged)) return refuse('locked', restore);
   const changed = !sameValue(merged, stored);
@@ -395,7 +264,7 @@ function applyAdd(
   const undo: ElementOp | null = taken ? null : { kind: 'remove', id: element.id };
   if (taken) return refuse('id-taken', undo);
   if (tab.locked === true) return refuse('tab-locked', undo);
-  if (!addableOn(tab, element)) return refuse('not-addable', undo);
+  if (!addableOn(element)) return refuse('not-addable', undo);
   if (adderKey === null || adderKey === '') return refuse('no-adder', undo);
   const stamped: Bag = { ...(element as Bag), addedBy: adderKey };
   // A new element carries no answers or threads of its own yet, and a Participant cannot lock what it adds.

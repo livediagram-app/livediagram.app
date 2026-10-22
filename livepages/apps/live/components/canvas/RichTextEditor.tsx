@@ -20,7 +20,6 @@
 // JSX and its event handlers.
 
 import { formatShortcut } from '@/components/rich-text/rich-text-format';
-import { useMindLabelKeys } from '@/components/canvas/useMindLabelKeys';
 import {
   ALIGN_ITEMS,
   labelTypographyClass,
@@ -70,7 +69,6 @@ export function RichTextEditor({
     placeCaretAtEnd,
     syncFromDom,
     commitNow,
-    handleCancel,
     onToggle,
     onPatch,
     applyList,
@@ -93,17 +91,6 @@ export function RichTextEditor({
     onCancel,
   });
   const wordmark = wordmarkTextStyle(element);
-  // Mind map (docs/specs/009-elements/mind-node.md): a no-op for every other element, and outside the
-  // editor canvas (share view, embed, exports) where there is no grower.
-  const { onMindKeyDown } = useMindLabelKeys({
-    element,
-    initialLabel,
-    editorRef,
-    syncFromDom,
-    commitNow,
-    handleCancel,
-  });
-
   return (
     <div
       // Marks the whole editing session (editor + floating toolbar) so the
@@ -164,13 +151,6 @@ export function RichTextEditor({
           commitNow();
         }}
         onKeyDown={(e) => {
-          // Mind map (docs/specs/009-elements/mind-node.md): on a mind node, Tab and Enter COMMIT this
-          // label and grow the next node, so a whole branch is typed without
-          // leaving the editor, and Escape keeps what was typed. Handled here
-          // rather than in the global shortcut handler because the label has
-          // to be committed first — the global one would move the edit to the
-          // new node and lose what was just typed.
-          if (onMindKeyDown(e)) return;
           // Escape keeps what was typed and leaves (docs/specs/008-canvas/canvas-and-palette.md "Labels"), as a click
           // away does: it is how people finish typing on a canvas, so a cancel lost the label they had just written.
           // Undo takes it back.

@@ -3,7 +3,7 @@ import { headlineCase, titleCase } from './title-case';
 
 describe('titleCase', () => {
   it('raises every word and leaves the rest of each word alone', () => {
-    expect(titleCase('flowchart')).toBe('Flowchart');
+    expect(titleCase('kanban')).toBe('Kanban');
     expect(titleCase('arrow to the right')).toBe('Arrow To The Right');
     expect(titleCase('PNG')).toBe('PNG');
   });

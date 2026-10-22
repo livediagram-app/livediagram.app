@@ -23,7 +23,11 @@ describe('outlineView on the checkout tab (R8)', () => {
       'utf8',
     );
     const block = research.split('### 4.1 Rendered\n\n```text\n')[1]!.split('\n```')[0]!;
-    const [header, ...rest] = block.split('\n');
+    // The research drew an actor and an entity, kinds since retired: the fixture holds a circle and a square there.
+    const [header, ...rest] = block
+      .replace('actor b811', 'circle b811')
+      .replace(/entity cb02 "Order" \{.*\}/, 'square cb02 "Order"')
+      .split('\n');
     // The research drew a diagram tab; every tab now has pages, which the header counts before its threads.
     const paged = header!.replace(' · threads', ' · 1 page: 1 infographic (view pages) · threads');
     expect(outlineView(checkout()).text).toBe([`${paged} · rev 41`, ...rest].join('\n'));
@@ -128,13 +132,13 @@ describe('outline budgets (R20, R21)', () => {
 });
 
 describe('outline budgets over nested containers', () => {
-  // Two equal frames, the first holding a lane; each holds strokes and boxes.
+  // Two equal frames, the first holding a smaller one; each holds strokes and boxes.
   const elements: Element[] = [
     shapeAt('frame', 'left', 0, 0, 1000, 1000),
-    shapeAt('lane', 'lane', 0, 500, 1000, 400),
-    shapeAt('square', 'in-lane-1', 10, 550, 100, 50, { label: 'A long label '.repeat(4) }),
-    shapeAt('square', 'in-lane-3', 600, 550, 100, 50, { label: 'Another long label '.repeat(3) }),
-    shapeAt('square', 'in-lane-2', 300, 550),
+    shapeAt('frame', 'inner', 0, 500, 1000, 400),
+    shapeAt('square', 'in-inner-1', 10, 550, 100, 50, { label: 'A long label '.repeat(4) }),
+    shapeAt('square', 'in-inner-3', 600, 550, 100, 50, { label: 'Another long label '.repeat(3) }),
+    shapeAt('square', 'in-inner-2', 300, 550),
     shapeAt('square', 'in-left', 10, 10),
     shapeAt('frame', 'right', 2000, 0, 1000, 1000),
     shapeAt('square', 'r1', 2010, 10),
@@ -161,7 +165,7 @@ describe('outline budgets over nested containers', () => {
     });
     expect(collapsedRefs).toContain('left');
     expect(collapsedRefs).toContain('left,right');
-    expect(collapsedRefs.some((refs) => refs.includes('lane'))).toBe(false);
+    expect(collapsedRefs.some((refs) => refs.includes('inner'))).toBe(false);
     expect(collapsedRefs.includes('right')).toBe(false);
   });
 });

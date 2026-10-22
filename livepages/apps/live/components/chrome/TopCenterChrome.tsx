@@ -10,9 +10,7 @@ import { TopCenterBanner, TopCenterRow, TopCenterStack } from '@/components/chro
 import { formatBannerMessage } from '@/lib/format-page-brush';
 
 // Everything that floats at the top of the canvas: the follow-me pill,
-// the active editor-mode banner. (The session timer and the vote's status and
-// results walkthrough live in the Session strip's popovers,
-// docs/specs/012-collaboration/session-tools.md.) (The multi-selection toolbar now floats over the selection
+// the active editor-mode banner. (The multi-selection toolbar now floats over the selection
 // itself, via Canvas + FloatingToolbar.) Extracted from CanvasChrome so the
 // chrome shell stays lean — this is one cohesive concern (the top-centre
 // stack and its non-overlap layout) with its own props.

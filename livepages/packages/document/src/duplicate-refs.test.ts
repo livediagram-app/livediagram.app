@@ -15,14 +15,14 @@ const shape = (id: string, extra: Partial<ShapeElement> = {}): ShapeElement =>
   }) as ShapeElement;
 
 describe('remapElementRefs', () => {
-  it('follows pinned, on-arrow, mind-parent and portal references in the map', () => {
+  it('follows pinned and on-arrow references in the map', () => {
     const arrow = {
       id: 'a1',
       type: 'arrow',
       from: { kind: 'pinned', elementId: 's1', anchor: 'e' },
       to: { kind: 'on-arrow', arrowId: 'a0', t: 0.5 },
     } as ArrowElement;
-    const els: Element[] = [shape('s2', { mindParentId: 's1', portalTarget: 's1' }), arrow];
+    const els: Element[] = [shape('s2'), arrow];
     const out = remapElementRefs(
       els,
       new Map([
@@ -30,14 +30,12 @@ describe('remapElementRefs', () => {
         ['a0', 'A0'],
       ]),
     );
-    expect(out[0]).toMatchObject({ mindParentId: 'S1', portalTarget: 'S1' });
     expect((out[1] as ArrowElement).from).toMatchObject({ elementId: 'S1' });
     expect((out[1] as ArrowElement).to).toMatchObject({ arrowId: 'A0' });
   });
 
   it('leaves references outside the map, and element links, alone', () => {
     const el = shape('s2', {
-      mindParentId: 'other',
       link: { kind: 'element', tabId: 't', elementId: 's1' },
     });
     const [out] = remapElementRefs([el], new Map([['s1', 'S1']]));

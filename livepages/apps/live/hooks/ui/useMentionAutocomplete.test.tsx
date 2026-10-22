@@ -4,7 +4,8 @@
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { CollabComposer } from '@/components/canvas/collab/CollabComposer';
+import { MentionContext } from '@/components/canvas/collab/comment/MentionContext';
+import { CommentComposer } from '@/components/panels/comment-thread-parts';
 import type { MentionCandidate } from '@/hooks/collab/useCommentMentions';
 import {
   MENTION_UNAVAILABLE_HINT,
@@ -54,33 +55,29 @@ describe('mentions in the composer', () => {
   const setup = (available = true) => {
     const onSubmit = vi.fn();
     render(
-      <CollabComposer
-        textColor="#000"
-        placeholder="Reply…"
-        ariaLabel="Write a comment"
-        sendLabel="Send comment"
-        maxLength={5000}
-        mentionScope={{ candidates: [priya, sam], available }}
-        onSubmit={onSubmit}
-      />,
+      <MentionContext.Provider value={{ candidates: [priya, sam], available }}>
+        <CommentComposer onAddComment={onSubmit} />
+      </MentionContext.Provider>,
     );
-    const field = screen.getByLabelText('Write a comment') as HTMLInputElement;
+    const field = screen.getByLabelText('Add a comment') as HTMLTextAreaElement;
+    // Cmd/Ctrl+Enter sends; Enter alone picks from an open list.
+    const send = () => fireEvent.keyDown(field, { key: 'Enter', metaKey: true });
     // The caret rides along, at the end of what was typed.
     const type = (value: string) =>
       fireEvent.change(field, {
         target: { value, selectionStart: value.length, selectionEnd: value.length },
       });
-    return { field, type, onSubmit };
+    return { field, type, send, onSubmit };
   };
 
   it('suggests teammates, picks with Enter, and sends the mention', () => {
-    const { field, type, onSubmit } = setup();
+    const { field, type, send, onSubmit } = setup();
     type('can you check @pri');
     expect(screen.getByRole('option', { name: /Priya Kaur/ })).toBeTruthy();
     fireEvent.keyDown(field, { key: 'Enter' });
     expect(field.value).toBe('can you check @priya-kaur ');
     expect(onSubmit).not.toHaveBeenCalled();
-    fireEvent.keyDown(field, { key: 'Enter' });
+    send();
     expect(onSubmit).toHaveBeenCalledWith('can you check @priya-kaur', [
       { userId: 'u-priya', memberId: 'm-priya', name: 'Priya Kaur', handle: 'priya-kaur' },
     ]);
@@ -89,7 +86,7 @@ describe('mentions in the composer', () => {
   it('keeps the arrow-key highlight through the key release that follows it', () => {
     // The real browser order: keydown moves the highlight, keyup re-reads the
     // caret. The keyup used to reset the highlight to the first row.
-    const { field, type, onSubmit } = setup();
+    const { field, type, send, onSubmit } = setup();
     type('@');
     fireEvent.keyDown(field, { key: 'ArrowDown' });
     fireEvent.keyUp(field, { key: 'ArrowDown' });
@@ -99,7 +96,7 @@ describe('mentions in the composer', () => {
     fireEvent.keyDown(field, { key: 'Enter' });
     fireEvent.keyUp(field, { key: 'Enter' });
     expect(field.value).toBe('@sam-lee ');
-    fireEvent.keyDown(field, { key: 'Enter' });
+    send();
     expect(onSubmit).toHaveBeenCalledWith('@sam-lee', [
       { userId: null, memberId: 'm-sam', name: 'Sam Lee', handle: 'sam-lee' },
     ]);
@@ -117,11 +114,11 @@ describe('mentions in the composer', () => {
   });
 
   it('drops a picked mention whose handle was deleted before sending', () => {
-    const { field, type, onSubmit } = setup();
+    const { field, type, send, onSubmit } = setup();
     type('@sa');
     fireEvent.keyDown(field, { key: 'Enter' });
     type('never mind');
-    fireEvent.keyDown(field, { key: 'Enter' });
+    send();
     expect(onSubmit).toHaveBeenCalledWith('never mind', []);
   });
 

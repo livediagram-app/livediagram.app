@@ -405,8 +405,8 @@ enum-ish tokens, not user content.
   [Inbox](../013-workspace/inbox.md), exactly the way this bullet predicted:
   a D1 projection (`collab_actions`) written beside every tab save,
   with the per-element blob still the source of truth.
-- Due dates, priorities, more than one action on an ordinary element (an
-  Action panel is the place for a list), and multiple assignees.
+- Due dates, priorities, more than one action on an element, and multiple
+  assignees.
 - Auto-sharing the document with the assignee on assign (§4 caveat).
 - View-role mutation endpoints (complete-without-edit-access).
 - Reminder / nag emails; exactly one send per assignment or reassignment

@@ -1,9 +1,8 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useStableCallbacks } from '@/hooks/ui/useStableCallbacks';
-import { participantKey } from '@/lib/identity';
 import type { useCornerDocking } from '@/hooks/ui/useCornerDocking';
 import type { PanelId } from '@/lib/panel-layout';
 import { loadLayersPanel } from '@/lib/editor-deferred-code';
@@ -14,7 +13,6 @@ import { ViewMinimap } from '@/components/canvas/view-readers';
 import type { CanvasChromeProps } from './CanvasChrome';
 import { usePaletteChrome } from './usePaletteChrome';
 import { useCanvasToolPanels } from './useCanvasToolPanels';
-import { stripSegmentGone, type SessionStripTools } from './SessionClusterStrip';
 import { useContentsChrome } from './useContentsChrome';
 import { useWithheldExplorerCloses } from './useWithheldExplorerCloses';
 
@@ -32,12 +30,6 @@ const CollaboratePanel = dynamic(
   { ssr: false },
 );
 
-// Lazy for the same reason: the Session strip's popovers (docs/specs/012-collaboration/session-tools.md
-// "The Session strip") load on the first press of a Timer or Vote button.
-const SessionPopover = dynamic(() => import('./SessionPopover').then((m) => m.SessionPopover), {
-  ssr: false,
-});
-
 // Lazy for the same reason: the Actions panel (docs/specs/012-collaboration/assigned-actions.md) only mounts when
 // the active tab has at least one element with an OPEN assigned action.
 
@@ -54,15 +46,12 @@ const NO_MOVE = () => {};
 
 export function useCanvasChromePanels({
   props,
-  stripTools,
   chromeHidden,
   isMobile,
   panelWiringFor,
   panelsOn,
 }: {
   props: CanvasChromeProps;
-  // The tools the mode's Session strip offers (sessionStripTools), as CanvasChrome drew them.
-  stripTools: SessionStripTools | null;
   chromeHidden: boolean;
   isMobile: boolean;
   panelWiringFor: ReturnType<typeof useCornerDocking>['panelWiringFor'];
@@ -77,8 +66,6 @@ export function useCanvasChromePanels({
   layersEl: ReactNode;
   collaborateEl: ReactNode;
   slidesPopoverEl: ReactNode;
-  // The Session strip's open popover (Timer or Vote), over its button.
-  sessionPopoverEl: ReactNode;
   // Pages mode's Contents (docs/specs/007-editor/pages-mode.md "Contents"): the popover,
   // or docked as the sidebar (useContentsChrome).
   contentsPopoverEl: ReactNode;
@@ -106,15 +93,6 @@ export function useCanvasChromePanels({
     onToggleRecentExclusion,
     favouriteIds,
     onToggleFavourite,
-    tabVote,
-    voteResults,
-    onJumpToVoteResult,
-    isVoteHost,
-    participantCount,
-    voteReview,
-    onNextVoteResult,
-    onPrevVoteResult,
-    onDoneVoteReview,
     onSelectLayer,
     onAddLayer,
     onRemoveLayer,
@@ -147,7 +125,6 @@ export function useCanvasChromePanels({
     onTeamFolders,
     onResetCommentsPanel,
     readOnly,
-    takePart,
     selfParticipant,
     setActiveDockAnchor,
     setActiveDockPanel,
@@ -400,68 +377,6 @@ export function useCanvasChromePanels({
       />
     ) : null;
 
-  // The Session strip's popovers (docs/specs/012-collaboration/session-tools.md "The Session strip"). A
-  // segment whose button has gone (a view-role visitor's tool ended) closes its
-  // popover rather than leaving it floating with no button under it.
-  const sessionSegment =
-    activeDockPanel === 'session-timer' || activeDockPanel === 'session-vote'
-      ? activeDockPanel
-      : null;
-  // Only the tools the mode's strip offers (docs/specs/012-collaboration/session-tools.md).
-  const sessionTools = stripTools ? props.sessionTools : undefined;
-  const sessionButtonGone = stripSegmentGone({
-    segment: sessionSegment,
-    tools: sessionTools ? stripTools : null,
-    readOnly: !!readOnly,
-    running: { timer: !!sessionTools?.timer, vote: !!tabVote },
-  });
-  useEffect(() => {
-    if (sessionButtonGone) closeDockPanel();
-  }, [sessionButtonGone, closeDockPanel]);
-  // A running tool's popover stays up until its button closes it, and goes when the activity ends
-  // (docs/specs/012-collaboration/session-tools.md "The Session strip"), rather than turning back
-  // into the set-up under the facilitator's pointer.
-  const sessionRunning =
-    sessionSegment === 'session-timer'
-      ? !!sessionTools?.timer
-      : sessionSegment === 'session-vote'
-        ? !!tabVote
-        : false;
-  // Per segment: switching from a running tool's popover to an idle one is not an ending.
-  const wasRunning = useRef({ segment: sessionSegment, running: sessionRunning });
-  useEffect(() => {
-    const prev = wasRunning.current;
-    wasRunning.current = { segment: sessionSegment, running: sessionRunning };
-    if (sessionSegment && prev.segment === sessionSegment && prev.running && !sessionRunning)
-      closeDockPanel();
-  }, [sessionRunning, sessionSegment, closeDockPanel]);
-  const sessionPopoverEl =
-    !chromeHidden && sessionSegment && sessionTools && !sessionButtonGone ? (
-      <SessionPopover
-        segment={sessionSegment}
-        anchor={activeDockAnchor ?? undefined}
-        onClose={closeDockPanel}
-        session={sessionTools}
-        readOnly={!!readOnly}
-        canVote={!readOnly || !!takePart}
-        holdOpen={!isMobile}
-        voteSelfId={participantKey(selfParticipant)}
-        vote={{
-          tabVote,
-          elements,
-          participantCount,
-          results: voteResults,
-          reviewIndex: voteReview ? voteReview.index : null,
-          onJumpToResult: onJumpToVoteResult,
-          isHost: isVoteHost,
-          review: voteReview,
-          onNextResult: onNextVoteResult,
-          onPrevResult: onPrevVoteResult,
-          onDoneReview: onDoneVoteReview,
-        }}
-      />
-    ) : null;
-
   // Map of panel id → element for the docked-layout distribution.
   const panelEls: Partial<Record<PanelId, ReactNode>> = {
     // Collaborate renders outside the corner layer (collaborateEl, below).
@@ -485,7 +400,6 @@ export function useCanvasChromePanels({
     contentsDocked,
     contentsSide,
     layersEl,
-    sessionPopoverEl,
     paletteTint,
   };
 }

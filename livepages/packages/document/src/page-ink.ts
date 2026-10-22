@@ -24,7 +24,6 @@ import {
   inkKindOf,
   INK_ROLE_CONTRAST,
   keptCover,
-  labelFill,
   type InkField,
   type InkRole,
 } from './page-ink-rules';
@@ -354,7 +353,7 @@ function inkPass(
           : undefined;
       field(el, 'textColor', 'text', [shown], patch, caption);
     } else if (hasLabel(el)) {
-      const under = labelFill(el, shown);
+      const under = shown;
       // A label with no colour of its own on a fill of the box's own is judged like one on a card.
       const own = isOpaqueHex(el.fillColor) && !hasPen(el, 'penTextColour');
       const auto = own

@@ -925,13 +925,6 @@ export const SHORTCUTS_OPENED = opened(
   (t) => t === 'Shortcuts',
 );
 
-// Edit Outline (docs/specs/009-elements/mind-node.md): how often a mind map is opened as text.
-export const MIND_OUTLINE_OPENED = opened(
-  'Mind Map Outline Opened',
-  "A mind map's outline opened to edit it as text.",
-  (t) => t === 'MindOutline',
-);
-
 // The Pages tour's offer (docs/specs/007-editor/pages-tour.md); charted in its funnel on the Visitors tab.
 export const PAGES_TOUR_OFFERED = opened(
   'Pages Tour Offered',
@@ -981,20 +974,6 @@ export const EDITOR_REASONS_OPENED = opened(
   (t) => t === 'SignInReasonsEditor',
 );
 
-// The Session strip's buttons in the bottom-right cluster (docs/specs/012-collaboration/session-tools.md
-// "The Session strip"), each opening its tool: the set-up while idle, the live tool while running.
-export const SESSION_TIMER_OPENED = opened(
-  'Timer Button Opened',
-  'The Timer button in the bottom bar opened, to start a timer or to drive the one running.',
-  (t) => t === 'SessionTimer',
-);
-
-export const SESSION_VOTE_OPENED = opened(
-  'Vote Button Opened',
-  'The Vote button in the bottom bar opened, to start a vote or to follow the one running.',
-  (t) => t === 'SessionVote',
-);
-
 export const ACTION_SIGN_IN_NUDGE = opened(
   'Assign Action Nudge',
   'A guest opened Assign Action and was asked to sign in, since actions need an account.',
@@ -1030,7 +1009,6 @@ export const PANELS_OPENED: MetricStack = {
     PICKERS_OPENED,
     HELP_FROM_EDITOR,
     SHORTCUTS_OPENED,
-    MIND_OUTLINE_OPENED,
     OTHER_OPENED,
   ],
   seeAlso: { section: 'editing', label: 'See Each Dialog in Features › Editing' },

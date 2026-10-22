@@ -1,13 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { editorModeLabel, type EditorMode, type Element } from '@livepages/document';
+import type { EditorMode, Element } from '@livepages/document';
 import { CompactEmptyState, HoverCard, NoMatches, SearchIcon } from '@livepages/ui';
 import type { PendingDraw } from '@/lib/draw-mode';
-import { track } from '@/lib/telemetry';
 import { SearchInput } from '@/components/primitives/SearchInput';
 import { TOOLBAR_TRIGGER_TONE } from './PaletteDropdown';
-import { ToolbarSearchAccordion } from './ToolbarSearchAccordion';
 import { PaletteTileGrid, tileHandler, type PaletteTileActions } from './PaletteTileGrid';
 import { mergeByName, searchElementTiles } from './palette-tile-search';
 import { searchCatalogueTiles } from './palette-catalogue-search';
@@ -52,7 +50,7 @@ export function ToolbarSearchButton({
     <HoverCard
       disabled={open}
       title="Search Elements"
-      description="Find any element by name, from every category and every mode. Shortcut: S."
+      description="Find any element by name, from every category. Shortcut: S."
     >
       {button}
     </HoverCard>
@@ -71,9 +69,8 @@ export function ToolbarSearchPanel({
   actions: PaletteTileActions;
   pendingDraw: PendingDraw | null | undefined;
 }) {
-  // Mounted only while the popover is open, so both reset each time it opens.
+  // Mounted only while the popover is open, so it resets each time it opens.
   const [query, setQuery] = useState('');
-  const [othersOpen, setOthersOpen] = useState(false);
   // Icons, Stickers and Technology load as a chunk of their own: re-rendered when it lands.
   const cataloguesLoaded = useIconCatalogs();
   const elements = searchElementTiles({
@@ -83,15 +80,12 @@ export function ToolbarSearchPanel({
     tabElements,
   });
   const catalogues = searchCatalogueTiles({ query, mode, tabElements, loaded: cataloguesLoaded });
-  // One ranking per section across element types and catalogue entries: name matches first.
-  const here = mergeByName(query, elements.here, catalogues.here);
-  const elsewhere = mergeByName(query, elements.elsewhere, catalogues.elsewhere);
-  const below = elsewhere.length;
+  // One ranking across element types and catalogue entries: name matches first.
+  const here = mergeByName(query, elements, catalogues);
   const browsing = !query.trim();
-  const modeName = editorModeLabel(mode);
 
-  // Enter uses the best match: this mode's first, else the open accordion's first.
-  const best = here[0] ?? (othersOpen ? elsewhere[0] : undefined);
+  // Enter uses the best match.
+  const best = here[0];
   const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key !== 'Enter' || !best) return;
     e.preventDefault();
@@ -121,34 +115,12 @@ export function ToolbarSearchPanel({
         <CompactEmptyState
           size="small"
           icon={<SearchIcon />}
-          title={
-            below > 0 ? `No ${modeName} elements on this tab yet` : 'No elements on this tab yet'
-          }
+          title="No elements on this tab yet"
           description="Type to find any element."
-        />
-      ) : below > 0 ? (
-        <NoMatches
-          things={`${modeName} elements`}
-          query={query}
-          hint={`Other modes have ${below} below.`}
         />
       ) : (
         <NoMatches things="elements" query={query} onClear={() => setQuery('')} />
       )}
-      {elsewhere.length > 0 ? (
-        <ToolbarSearchAccordion
-          title="Elements From Other Modes"
-          description="Elements other modes offer. Any of them works here too."
-          count={elsewhere.length}
-          open={othersOpen}
-          onToggle={() => {
-            if (!othersOpen) track('UI', 'Opened', 'ToolbarSearchOtherModes');
-            setOthersOpen(!othersOpen);
-          }}
-        >
-          <PaletteTileGrid tiles={elsewhere} actions={actions} pendingDraw={pendingDraw} />
-        </ToolbarSearchAccordion>
-      ) : null}
     </div>
   );
 }

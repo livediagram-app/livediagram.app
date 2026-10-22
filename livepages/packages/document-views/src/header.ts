@@ -9,11 +9,10 @@ type ElementCounts = ViewHeader['counts'];
 export type HeaderFacts = Omit<ViewHeader, 'view'>;
 
 export function countElements(printed: readonly Element[]): ElementCounts {
-  const counts: ElementCounts = { boxes: 0, frames: 0, lanes: 0, arrows: 0 };
+  const counts: ElementCounts = { boxes: 0, frames: 0, arrows: 0 };
   for (const el of printed) {
     if (el.type === 'arrow') counts.arrows++;
     else if (el.type === 'shape' && el.shape === 'frame') counts.frames++;
-    else if (el.type === 'shape' && el.shape === 'lane') counts.lanes++;
     else counts.boxes++;
   }
   return counts;
@@ -33,11 +32,10 @@ export function viewHeader(view: ViewName, facts: HeaderFacts): ViewHeader {
 
 // Everything after the tab's name, ` · `-joined; `overview` reuses it on each tab line.
 export function headerSegments(facts: HeaderFacts): string {
-  const { boxes, frames, lanes, arrows } = facts.counts;
+  const { boxes, frames, arrows } = facts.counts;
   const buckets = [
     [boxes, 'box', 'boxes'],
     [frames, 'frame', 'frames'],
-    [lanes, 'lane', 'lanes'],
     [arrows, 'arrow', 'arrows'],
   ] as const;
   const shown = buckets.filter(([n]) => n > 0).map(([n, one, many]) => plural(n, one, many));

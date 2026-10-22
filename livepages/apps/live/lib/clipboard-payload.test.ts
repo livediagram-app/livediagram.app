@@ -45,7 +45,7 @@ describe('serialiseElements', () => {
 
   // A copy can travel to another document, another account, another person.
   // Nothing that says WHO does anything should ride along.
-  it('strips comment threads and per-participant responses', () => {
+  it('strips comment threads', () => {
     const withIdentity = shape('a', {
       commentThread: {
         resolved: false,
@@ -60,14 +60,11 @@ describe('serialiseElements', () => {
           },
         ],
       },
-      responses: [{ participantId: 'p1', value: 'done', at: 1 }],
     });
     const text = serialiseElements([withIdentity]);
     expect(text).not.toContain('Someone Else');
-    expect(text).not.toContain('p1');
-    const back = parseElementsPayload(text)![0] as ShapeElement & { responses?: unknown };
+    const back = parseElementsPayload(text)![0] as ShapeElement;
     expect(back.commentThread).toBeUndefined();
-    expect(back.responses).toBeUndefined();
   });
 
   it('strips an assigned action, which would otherwise duplicate its id', () => {

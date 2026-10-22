@@ -10,7 +10,6 @@ const EDIT = {
   personTag: null,
   workbenchPairing: null,
   adderKey: null,
-  owner: false,
 } as const;
 const VIEW = {
   role: 'view',
@@ -20,7 +19,6 @@ const VIEW = {
   personTag: null,
   workbenchPairing: null,
   adderKey: null,
-  owner: false,
 } as const;
 
 // A ws ticket is the only thing standing between "passed the REST access
@@ -46,7 +44,6 @@ describe('createWsTicket (docs/specs/007-editor/live-app.md room auth)', () => {
       null,
       null,
       null,
-      0,
     ]);
   });
 
@@ -62,7 +59,6 @@ describe('createWsTicket (docs/specs/007-editor/live-app.md room auth)', () => {
       personTag: null,
       workbenchPairing: null,
       adderKey: null,
-      owner: false,
     });
     expect(db.one('INSERT INTO ws_tickets').bindings.slice(4)).toEqual([
       't2',
@@ -71,7 +67,6 @@ describe('createWsTicket (docs/specs/007-editor/live-app.md room auth)', () => {
       null,
       null,
       null,
-      0,
     ]);
   });
 
@@ -81,29 +76,16 @@ describe('createWsTicket (docs/specs/007-editor/live-app.md room auth)', () => {
     const db = fakeD1();
     await createWsTicket(db.env, 'diag-1', { ...EDIT, account: true, personTag: 'tag1' });
     expect(db.one('INSERT INTO ws_tickets').sql).toContain('person_tag');
-    expect(db.one('INSERT INTO ws_tickets').bindings.slice(6)).toEqual([1, 'tag1', null, null, 0]);
+    expect(db.one('INSERT INTO ws_tickets').bindings.slice(6)).toEqual([1, 'tag1', null, null]);
   });
 
   // docs/specs/013-workspace/workbench-embeds.md: a workbench session's ticket carries its pairing to the room.
   it('writes and returns the workbench pairing', async () => {
     const db = fakeD1();
     await createWsTicket(db.env, 'diag-1', { ...EDIT, account: true, workbenchPairing: 'pair-1' });
-    expect(db.one('INSERT INTO ws_tickets').bindings.at(-3)).toBe('pair-1');
+    expect(db.one('INSERT INTO ws_tickets').bindings.at(-2)).toBe('pair-1');
     const read = fakeD1(() => ({ first: { role: 'edit', workbench_pairing: 'pair-1' } }));
     expect((await consumeWsTicket(read.env, 't', 'diag-1', 5))?.workbenchPairing).toBe('pair-1');
-  });
-
-  // docs/specs/012-collaboration/facilitator.md "Who may take it": the owner bit rides the ticket to the room,
-  // the only way an editor that joins by ticket is seated as the owner.
-  it('writes and returns the owner bit', async () => {
-    const db = fakeD1();
-    await createWsTicket(db.env, 'diag-1', { ...EDIT, owner: true });
-    expect(db.one('INSERT INTO ws_tickets').sql).toContain('owner');
-    expect(db.one('INSERT INTO ws_tickets').bindings.at(-1)).toBe(1);
-    const read = fakeD1(() => ({ first: { role: 'edit', owner: 1 } }));
-    expect((await consumeWsTicket(read.env, 't', 'diag-1', 5))?.owner).toBe(true);
-    const other = fakeD1(() => ({ first: { role: 'edit', owner: 0 } }));
-    expect((await consumeWsTicket(other.env, 't', 'diag-1', 5))?.owner).toBe(false);
   });
 
   it('mints an unguessable ticket, never a value the caller supplied', async () => {
@@ -142,7 +124,6 @@ describe('consumeWsTicket (docs/specs/007-editor/live-app.md room auth)', () => 
       personTag: 'tag1',
       workbenchPairing: null,
       adderKey: null,
-      owner: false,
     });
   });
 
@@ -156,7 +137,6 @@ describe('consumeWsTicket (docs/specs/007-editor/live-app.md room auth)', () => 
       personTag: null,
       workbenchPairing: null,
       adderKey: null,
-      owner: false,
     });
   });
 

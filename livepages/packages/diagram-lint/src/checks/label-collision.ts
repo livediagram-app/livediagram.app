@@ -160,9 +160,8 @@ export const labelCollision: Check = (ctx) =>
           message: `${arrowName(ctx, d.arrow)} label ${said.join(' and ')}`,
           fix:
             clear !== undefined
-              ? fixes.labelStruck(ctx.source, arrowSelector(ctx, d.arrow), clear)
+              ? fixes.labelStruck(arrowSelector(ctx, d.arrow), clear)
               : fixes.labelCollision(
-                  ctx.source,
                   arrowSelector(ctx, d.arrow),
                   fits(d.polyline, layout.width, d.arrow.label!),
                 ),
@@ -184,7 +183,6 @@ export const labelCollision: Check = (ctx) =>
         ],
         message: `${arrowName(ctx, d.arrow)} label overlaps ${boxes.join(', ')}`,
         fix: fixes.labelCollision(
-          ctx.source,
           arrowSelector(ctx, d.arrow),
           fits(d.polyline, layout.width, d.arrow.label!),
         ),

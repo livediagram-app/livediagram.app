@@ -4,7 +4,7 @@ import { featureAnchor, featureHref } from './feature-anchor';
 
 describe('featureAnchor (docs/specs/019-marketing/marketing-site.md)', () => {
   it('kebab-cases a title, dropping punctuation', () => {
-    expect(featureAnchor('Run the session: timer + voting')).toBe('run-the-session-timer-voting');
+    expect(featureAnchor('Present it: notes + laser')).toBe('present-it-notes-laser');
     expect(featureAnchor('Your screen, not everyone else’s')).toBe(
       'your-screen-not-everyone-else-s',
     );

@@ -74,7 +74,6 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Element·Duplicated',
   'Element·Linked',
   'Element·Locked',
-  'Element·Removed',
   'Element·Reordered',
   // A search submitted in the image picker (docs/specs/009-elements/image-search.md).
   'Element·Searched',
@@ -85,16 +84,13 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   // Playback started on a video element (docs/specs/009-elements/youtube-video.md),
   // or a search result attached to an image (docs/specs/009-elements/image-search.md).
   'Element·Used',
-  'Element·Voted',
   'Error·Api',
   'Error·Client',
   // A degradation the load was carried through rather than stopped by (lib/api/error-report.ts).
   'Error·Warning',
-  // The facilitator baton (docs/specs/012-collaboration/facilitator.md): taken, handed on, stepped down. The
-  // question is whether rooms use the role at all, never who held it.
+  // An editor freed an element somebody else was holding (docs/specs/007-editor/live-app.md lock), type
+  // 'Unlocked'. The category keeps the name the dashboard already counts it under.
   'Facilitator·Changed',
-  'Facilitator·Ended',
-  'Facilitator·Started',
   'Folder·Changed',
   'Folder·Cleared',
   'Folder·Created',
@@ -135,7 +131,6 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Tab·Created',
   'Tab·Deleted',
   'Tab·Duplicated',
-  'Tab·Ended',
   'Tab·Imported',
   'Tab·Linked',
   'Tab·Loaded',
@@ -145,10 +140,7 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Tab·Removed',
   'Tab·Renamed',
   'Tab·Reordered',
-  'Tab·Revealed',
   'Tab·Selected',
-  'Tab·Started',
-  'Tab·Toggled',
   'Tab·Unlocked',
   'Team·Added',
   'Team·Changed',

@@ -786,7 +786,7 @@ The output literals that named the container changed with it: `renamed`, `delete
   under it; `page` (an id, place or name) draws one page alone at its own size. An article page draws its writing as
   estimated without a browser (`article-layout-estimate.ts`: each block set as the editor's stylesheet sets it,
   wrapped at an estimated width, flowed down the article's pages), with the pages the editor would add after its last
-  shown and labelled as such. An emoji icon, sticker or reaction pad, which needs a colour-emoji font a Worker lacks,
+  shown and labelled as such. An emoji icon or sticker, which needs a colour-emoji font a Worker lacks,
   draws from its Twemoji SVG (release 15.1.0 on jsDelivr, CC-BY 4.0, in `THIRD_PARTY_NOTICES.md`), fetched by its
   code points when the preview is made (`preview-emoji.ts`: at most `PREVIEW_EMOJI_MAX` (40) a preview, within
   `PREVIEW_EMOJI_TIMEOUT_MS` (2.5 s), each file at most 64 kB and kept in the Cache API, alongside the fonts). One

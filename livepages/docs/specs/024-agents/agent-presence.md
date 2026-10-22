@@ -33,7 +33,7 @@ person's, and comments are how people and agents talk on the canvas when nobody 
   characters), `focus` (up to 20 element ids, shown with a ring in the owner's colour) and `ttl` (up to
   `AGENT_PRESENCE_MAX_TTL_MS`). `DELETE` on the same path clears it. The agent holds no socket.
 - The room keeps agent presence entries beside people's and expires them on their ttl. An agent's presence never
-  holds an element, and never counts in a session's head count, the Done check or a roll call.
+  holds an element, and never counts in a session's head count.
 
 ## Comments
 
@@ -51,7 +51,7 @@ person's, and comments are how people and agents talk on the canvas when nobody 
 ## Token levels
 
 What an agent may do follows its token's [level](../013-workspace/share-roles.md#api-tokens), through the same gates
-as a share link: reading needs read access; comments, session answers and presence need the participation gate
+as a share link: reading needs read access; comments, taking part and presence need the participation gate
 (`gateParticipate`); changesets need the edit gate. A participate token comments, takes part and sets presence and
 submits no changesets; a view token reads and writes nothing, comments and presence included.
 

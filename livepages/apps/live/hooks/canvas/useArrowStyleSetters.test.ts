@@ -4,7 +4,7 @@ import { useArrowStyleSetters } from './useArrowStyleSetters';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
-// An ER relationship (docs/specs/020-import-export/mermaid.md "ER diagrams"): its start head differs from its end's.
+// An ER relationship: its start head differs from its end's.
 const er: ArrowElement = {
   id: 'r',
   type: 'arrow',

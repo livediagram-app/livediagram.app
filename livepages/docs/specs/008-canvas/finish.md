@@ -54,13 +54,13 @@ element leaves unset, plus how a line is drawn (Sketch, Marker).
 
 ### Sketch
 
-- **Outlines** of shapes (a Comment Panel's card included), frames, lanes, stickies and tables are drawn as two slightly different hand-drawn
+- **Outlines** of shapes, frames, stickies and tables are drawn as two slightly different hand-drawn
   strokes: straight edges bow and overshoot their corners a little, curves wander. The wobble is seeded by the
   element's id, so an element looks the same on every screen, in every export and after every reload, and only
   changes when its size or kind does.
 - **Fills** of shapes keep their solid colour, shaded over with faint diagonal pencil hatching in the outline colour,
   like coloured pencil on paper. The fill never goes away, so a label keeps the contrast it was coloured for on a
-  light or a dark canvas. Every box with a body of its own is shaded (cards, panels, records, pages, lanes and
+  light or a dark canvas. Every box with a body of its own is shaded (cards, panels, pages and
   frames included); stickies, tables and self-painting faces (charts, code blocks, concept graphics) are not, their
   own parts being their drawing.
 - **Backdrops** keep a solid fill too: a shape that other elements sit on (another element drawn above it has its
@@ -111,7 +111,7 @@ element leaves unset, plus how a line is drawn (Sketch, Marker).
 Marker reads as a diagram drawn quickly and confidently on a whiteboard or flip chart with felt-tip markers. Where
 Sketch is a pencil's wandering double line, Marker is one bold stroke per edge, laid down fast.
 
-- **Outlines** of shapes (a Comment Panel's card included), frames, lanes and tables are drawn as one hand-drawn stroke per edge (never doubled):
+- **Outlines** of shapes, frames and tables are drawn as one hand-drawn stroke per edge (never doubled):
   straight edges bow a little and run past their corners as a quick stroke does, curves drift, and a closed curve
   overlaps where it started. The wobble is seeded by the element's id, as Sketch's is, so an element looks the same
   everywhere and only changes when its size or kind does.
@@ -123,7 +123,7 @@ Sketch is a pencil's wandering double line, Marker is one bold stroke per edge, 
 - **Fills** of shapes are coloured in: the fill colour laid down in broad, overlapping back-and-forth marker
   strokes, their ends not quite meeting the outline, with the overlaps showing as faint darker streaks. The strokes
   overlap enough that no gap opens under a label, so a label keeps the contrast it was coloured for. Every box with a
-  body of its own is coloured in, cards, panels, records, pages, lanes and frames included, and so is a shape
+  body of its own is coloured in, cards, panels, pages and frames included, and so is a shape
   something sits on: the streaks are light enough to read over, and one shape left solid beside a coloured one read
   as missed.
 - **Shadows:** a marker drawing casts none, so the default soft shadow on boxes is not drawn. An element's own

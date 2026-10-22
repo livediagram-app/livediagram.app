@@ -18,9 +18,8 @@ export type PanelCorner = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-rig
 // shared MovablePanel. The fixed zoom controls are deliberately absent — they
 // are not a MovablePanel and stay pinned bottom-right. The Palette, the
 // Explorer and Layers are not corner panels (the strip, and popovers off
-// their buttons, docs/specs/007-editor/toolbar-layout.md), nor is Vote (a popover off the
-// Session strip, docs/specs/012-collaboration/session-tools.md): a stored layout naming them is read like any
-// unknown id.
+// their buttons, docs/specs/007-editor/toolbar-layout.md), nor are the retired Vote and Poll
+// panels: a stored layout naming them is read like any unknown id.
 export type PanelId =
   | 'collaborate'
   | 'ai'

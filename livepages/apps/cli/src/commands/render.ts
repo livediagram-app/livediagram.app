@@ -1,10 +1,7 @@
-// `tab render` and `graph render` (docs/specs/015-api/blueprints/cli.md "Previews", CLI30): a tab as the api draws
-// it (render.svg), or a graph or Mermaid file laid out as the api would lay it out, written as SVG or PNG.
+// `tab render` (docs/specs/015-api/blueprints/cli.md "Previews", CLI30): a tab as the api draws it (render.svg),
+// written as SVG or PNG.
 
-import { graphOfSource, tabOf, tabPath, type VerbContext } from '@livepages/agent-verbs';
-import { lintGraph } from '@livepages/diagram-lint';
-import { renderElementsToSvg } from '@livepages/document';
-import { resolveIconExportArt, resolveStickerArt } from '@livepages/icons/resolve';
+import { tabOf, tabPath, type VerbContext } from '@livepages/agent-verbs';
 import type { CliIo } from '../io';
 import { CliError } from '../output/cli-error';
 import { EXIT } from '../output/exit-codes';
@@ -34,23 +31,4 @@ export async function renderTab(
   const { document, tab } = await tabOf(ctx, input.doc, input.tab);
   const { body } = await ctx.api.text(`${tabPath(document.id, tab.id)}/render.svg`);
   return { lines: [pictureLine(await writePicture(io, target.path, body, target.format))] };
-}
-
-export async function renderGraph(
-  io: CliIo,
-  readInput: (path: string) => Promise<string>,
-  input: { file: string } & PictureFlags,
-  log: (line: string) => void,
-): Promise<{ lines: string[] }> {
-  const target = targetOf(input);
-  const named = input.file === '-' ? 'stdin' : input.file;
-  const graph = graphOfSource(await readInput(input.file), named);
-  const { elements } = lintGraph(graph, {
-    log: (fingerprint, fields) => log(`${fingerprint} ${JSON.stringify(fields)}`),
-  });
-  const svg = renderElementsToSvg(
-    { id: 'graph', name: named, elements },
-    { resolveIconArt: resolveIconExportArt, resolveStickerArt },
-  );
-  return { lines: [pictureLine(await writePicture(io, target.path, svg, target.format))] };
 }

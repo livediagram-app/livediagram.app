@@ -325,7 +325,7 @@ export function mergeAiElements(
   // clean asks the model to "Return ALL elements ... (same IDs)", and the
   // server forwards each existing element's real shape, so the model echoes
   // kinds the set doesn't hold — 30 of the 51 ShapeKinds, every composite from
-  // checklist and code-block to the charts, lanes, entities and progress
+  // checklist and code-block to the charts and progress
   // rings. Spread over the original, `shape: 'square'` overwrote the stored
   // kind: one "Clean up" flattened those elements, autosaved, change-logged
   // and broadcast the result to every peer. The coercion is right for an

@@ -1,28 +1,18 @@
 // The Toolbar strip's Search (docs/specs/007-editor/toolbar-layout.md "Search: every element type"):
-// which element tiles a query finds, split into the ones the current editor mode's palette offers
-// and the ones only another mode's does. Pure, so the split and
-// the ranking are tested without a strip.
+// which element tiles a query finds among the ones the current editor mode's palette offers. Pure,
+// so the ranking is tested without a strip.
 import { componentShapeKind, type EditorMode, type Element } from '@livepages/document';
 import { paletteRank } from '@livepages/icons';
 import { tileKeywords } from '@/lib/palette-tile-keywords';
-import { PALETTE_LAYOUTS, paletteCategoriesFor } from './palette-layouts';
+import { paletteCategoriesFor } from './palette-layouts';
 import { tileDisplayName, type PaletteTileDef } from './palette-tile-defs';
-
-export type ElementTileSearch = {
-  // The matches the current mode's palette offers, best first. On an empty query: the tiles whose
-  // element type is already on the tab, in layout order.
-  here: PaletteTileDef[];
-  // The matches only another mode's palette offers, best first; on an empty query, those already
-  // on the tab.
-  elsewhere: PaletteTileDef[];
-};
 
 // --- The element types on the tab --------------------------------------------------------------
 // A tile and an element meet on a signature: the element type, plus the creation-time choice that
-// tells two tiles of one type apart where the element records it (the shape kind and its session,
-// reaction, mode, scale or plan view; a pen; an embed's provider; an
-// arrow's or a line's ends). Where an element does not record the choice (which board preset, which
-// card type), the tiles share a signature and the first in layout order stands for them.
+// tells two tiles of one type apart where the element records it (the shape kind; a pen; an embed's
+// provider; an arrow's or a line's ends). Where an element does not record the choice (which
+// variant, which card preset), the tiles share a signature and the first in layout order stands for
+// them.
 
 const shapeSig = (kind: string, choice?: string) => `shape:${kind}:${choice ?? ''}`;
 
@@ -34,7 +24,7 @@ export function tileSignature(tile: PaletteTileDef): string | null {
   switch (a.type) {
     case 'shape':
       if (a.kind === 'icon' || a.kind === 'sticker') return null;
-      return shapeSig(a.kind, a.session ?? a.reaction ?? a.mode ?? a.estimateScale ?? a.variant);
+      return shapeSig(a.kind, a.variant);
     case 'component': {
       const kind = componentShapeKind(a.kind);
       return kind ? shapeSig(kind) : null;
@@ -63,7 +53,7 @@ export function tileSignature(tile: PaletteTileDef): string | null {
 export function elementSignature(el: Element): string {
   switch (el.type) {
     case 'shape':
-      return shapeSig(el.shape, el.session?.tool ?? el.reaction ?? el.mode ?? el.estimateScale);
+      return shapeSig(el.shape);
     case 'sticky':
       return 'sticky:';
     case 'freehand':
@@ -77,14 +67,13 @@ export function elementSignature(el: Element): string {
   }
 }
 
-/** The tiles, in order, whose element type is on the tab: one per signature. `seen` carries the
- *  signatures already listed, so a second list never repeats the first's. */
+/** The tiles, in order, whose element type is on the tab: one per signature. */
 function tilesOnTab(
   tiles: readonly PaletteTileDef[],
   elements: readonly Element[],
-  seen = new Set<string>(),
 ): PaletteTileDef[] {
   const onTab = new Set(elements.map(elementSignature));
+  const seen = new Set<string>();
   return tiles.filter((t) => {
     const sig = tileSignature(t);
     if (sig === null || !onTab.has(sig) || seen.has(sig)) return false;
@@ -104,17 +93,6 @@ function unique(tiles: Iterable<PaletteTileDef>): PaletteTileDef[] {
  *  Stickers, ...) hold no tiles and so add none. */
 export function modeElementTiles(mode: EditorMode): PaletteTileDef[] {
   return unique(paletteCategoriesFor(mode).flatMap((c) => c.tiles ?? []));
-}
-
-// Every mode's tiles: a fixed set, so built once.
-let everyModeTiles: PaletteTileDef[] | null = null;
-function allElementTiles(): PaletteTileDef[] {
-  everyModeTiles ??= unique(
-    (Object.keys(PALETTE_LAYOUTS) as EditorMode[]).flatMap((mode) =>
-      paletteCategoriesFor(mode).flatMap((c) => c.tiles ?? []),
-    ),
-  );
-  return everyModeTiles;
 }
 
 /** The query's matches, ranked exact name, name prefix, name substring, then keyword only; ties
@@ -156,20 +134,16 @@ export function mergeByName(
     .map((r) => r.tile);
 }
 
-/** Every element tile, split: the ones the mode's palette offers (layout order) and the ones only
- *  another mode's does. Image-upload tiles are left out without image support, as in every grid. */
-export function elementTileSections({
+/** Every element tile the mode's palette offers, in layout order. Image-upload tiles are left out
+ *  without image support, as in every grid. */
+export function searchableElementTiles({
   mode,
   hasImage,
 }: {
   mode: EditorMode;
   hasImage: boolean;
-}): ElementTileSearch {
-  const visible = (t: PaletteTileDef) => hasImage || !t.needsImage;
-  const here = modeElementTiles(mode).filter(visible);
-  const hereIds = new Set(here.map((t) => t.id));
-  const elsewhere = allElementTiles().filter((t) => visible(t) && !hereIds.has(t.id));
-  return { here, elsewhere };
+}): PaletteTileDef[] {
+  return modeElementTiles(mode).filter((t) => hasImage || !t.needsImage);
 }
 
 /** What the Search lists: the query's matches, best first, or before anything is typed, the
@@ -177,24 +151,14 @@ export function elementTileSections({
 export function searchElementTiles({
   query,
   tabElements = [],
-  ...sections
+  ...offered
 }: {
   query: string;
   // The tab's elements: an empty query lists the tiles of the element types on it.
   tabElements?: readonly Element[];
   mode: EditorMode;
   hasImage: boolean;
-}): ElementTileSearch {
-  const { here, elsewhere } = elementTileSections(sections);
-  if (!query.trim()) {
-    const seen = new Set<string>();
-    return {
-      here: tilesOnTab(here, tabElements, seen),
-      elsewhere: tilesOnTab(elsewhere, tabElements, seen),
-    };
-  }
-  return {
-    here: rankTiles(query, here),
-    elsewhere: rankTiles(query, elsewhere),
-  };
+}): PaletteTileDef[] {
+  const tiles = searchableElementTiles(offered);
+  return query.trim() ? rankTiles(query, tiles) : tilesOnTab(tiles, tabElements);
 }

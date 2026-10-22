@@ -7,7 +7,6 @@ import { ACCENT_EDGES } from './accent-edge';
 import { ARROWHEAD_SHAPES } from './arrow-style';
 import { ATTACH_POINTS } from './attachment';
 import { BORDER_DASH_ARRAY } from './border-style';
-import { BOUNDARY_STYLES } from './boundary';
 import { CARD_MEDIA } from './card';
 import { CHIP_LOOKS } from './chip';
 import { PYRAMID_VARIANTS } from './concept';
@@ -26,18 +25,15 @@ export const ELEMENT_FIELD_VALUES: Readonly<Record<string, readonly string[]>> =
   arrowheadStartShape: ARROWHEAD_SHAPES,
   strokeStyle: Object.keys(BORDER_DASH_ARRAY),
   borderRadius: ['none', 'sm', 'md', 'lg', 'full'],
-  // The diagram-building kinds (docs/specs/009-elements/): accent edge, card, badge / step, boundary, pyramid.
+  // The diagram-building kinds (docs/specs/009-elements/): accent edge, card, badge / step, pyramid.
   accentEdge: ACCENT_EDGES,
   cardMedia: CARD_MEDIA,
   chipLook: CHIP_LOOKS,
   attachAt: ATTACH_POINTS,
-  boundaryStyle: BOUNDARY_STYLES,
   pyramidVariant: PYRAMID_VARIANTS,
-  // Round 2 (docs/specs/009-elements/stack.md, org-chart.md, sequence-diagram.md).
+  // Round 2 (docs/specs/009-elements/stack.md).
   stackDirection: STACK_DIRECTIONS,
   stackAlign: STACK_ALIGNS,
-  mindLook: ['person'],
-  sequenceAnim: ['play'],
   // A line-art icon's stroke (icon-weight.ts): an icon's strokeWidth is not its weight.
   iconWeight: ICON_WEIGHTS,
   // The editor's faces (fonts.ts): a family name ("serif", "Georgia") drew in the tab's font in silence.

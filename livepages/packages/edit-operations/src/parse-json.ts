@@ -99,7 +99,7 @@ function memberIssue(name: EditOperationName, raw: Raw, member: string): string 
         ? null
         : expected(member, 'a non-empty array of selectors');
     case 'in':
-      return isOneOf(WRAP_CONTAINERS, value) ? null : expected(member, 'frame or lane');
+      return isOneOf(WRAP_CONTAINERS, value) ? null : expected(member, 'frame');
     case 'style':
       return isOneOf(LAYOUT_STYLES, value) ? null : expected(member, LAYOUT_STYLES.join(', '));
     case 'direction':

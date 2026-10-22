@@ -22,9 +22,6 @@ const POPOVER_WIDTHS: Partial<Record<string, number>> = {
   slides: 420,
   // The Contents popover's `w-[380px]` (docs/specs/007-editor/pages-mode.md "Contents").
   contents: 380,
-  // The Session strip's popovers, `w-72` each (docs/specs/012-collaboration/session-tools.md).
-  'session-timer': 288,
-  'session-vote': 288,
   // The Explorer's `w-[38rem]`: its rail beside a pane (docs/specs/013-workspace/explorer-structure.md).
   explorer: 608,
 };
@@ -36,10 +33,7 @@ export type DockPanel =
   | 'collaborate'
   | 'slides'
   // Pages mode's Contents (docs/specs/007-editor/pages-mode.md "Contents").
-  | 'contents'
-  // The Session strip's Timer and Vote (docs/specs/012-collaboration/session-tools.md "The Session strip").
-  | 'session-timer'
-  | 'session-vote';
+  | 'contents';
 
 export type { DockAnchor };
 
@@ -51,8 +45,6 @@ function trackDockPanelOpened(id: DockPanel): void {
   else if (id === 'collaborate') track('UI', 'Opened', 'Collaborate');
   else if (id === 'slides') track('UI', 'Opened', 'SlideDeck');
   else if (id === 'contents') track('UI', 'Opened', 'PageContents');
-  else if (id === 'session-timer') track('UI', 'Opened', 'SessionTimer');
-  else if (id === 'session-vote') track('UI', 'Opened', 'SessionVote');
 }
 
 export function useDockPopovers(mainRef: Ref<HTMLElement>) {

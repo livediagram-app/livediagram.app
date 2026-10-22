@@ -110,9 +110,9 @@ describe('UML theme (per-shape colours, docs/specs/010-palette/technology-icons.
   });
 
   it('falls back to the base element colour for a kind with no override', () => {
-    // No `actor` override, so it should take the theme's element stroke.
-    const actor = deriveNewBoxedColours(createShape('actor', 0, 0), { theme: 'uml' });
-    expect(actor.strokeColor).toBe(uml.elementStroke);
+    // No `speech-bubble` override, so it should take the theme's element stroke.
+    const bubble = deriveNewBoxedColours(createShape('speech-bubble', 0, 0), { theme: 'uml' });
+    expect(bubble.strokeColor).toBe(uml.elementStroke);
   });
 
   it('recolours existing shapes per-kind when applied to a scaffold', () => {

@@ -153,8 +153,8 @@ All `guest-or-clerk`; tab-scoped grants reach their own tab only; a trashed docu
 | POST   | `/api/documents/:id/tabs/:tabId/comments/:commentId/reopen`  | `gateParticipate`                  | 204                                        |
 | GET    | `/api/documents/:id/comments?status=open\|resolved\|all`     | `gateGrant` (any level, any token) | 200 `{ threads: DocumentCommentThread[] }` |
 
-The six writes above are gated by `gateParticipate` and belong to the participation-class routes, beside the session
-tools share-roles owns (dots, answers, the idea box). The choke point lets a token that
+The six writes above are gated by `gateParticipate` and belong to the participation-class routes, beside the
+participation writes share-roles owns (comments, a Participant's stickies). The choke point lets a token that
 passes `gateParticipate` but not `gateEdit` reach those routes and no other write; a token that fails
 `gateParticipate` reaches none of them. Every other write keeps `gateEdit`.
 

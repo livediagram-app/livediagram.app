@@ -69,7 +69,7 @@ export function createElementAction(input: {
   };
 }
 
-// An Action panel holds at most this many (docs/specs/012-collaboration/action-panel.md "The data").
+// An element's `actions` list holds at most this many.
 export const ACTION_CARD_MAX = 50;
 
 // Every action an element carries, as a list: an Action panel's `actions`,

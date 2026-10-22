@@ -80,9 +80,8 @@ export function usePaletteDrop({
     // bubbles up from the panel to this canvas handler, so without this guard a
     // drop over the Palette would still add an element behind it.
     if (overFloatingPanel(e.target)) return;
-    // `kind` or `kind|choice` — the creation-time choice a split tile
-    // carries (docs/specs/009-elements/mode-button.md, /105, /123, /135). Without parsing it back out, a
-    // dragged Vote tile dropped a timer.
+    // `kind` or `kind|choice` — the creation-time variant a split tile
+    // carries. Without parsing it back out, a dragged Funnel tile dropped a pyramid.
     const file = onDropFile ? e.dataTransfer.files?.[0] : undefined;
     if (file) {
       e.preventDefault();

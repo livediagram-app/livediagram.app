@@ -42,7 +42,6 @@ export type LayerPreviewInputs = {
   arrowLinks: ArrowLinks | null;
   gridFor: (elements: readonly Element[]) => ElementGrid;
   arrowLabels: ArrowLabels;
-  tabFinish: unknown;
 };
 
 export type LayerPreviewStore = {
@@ -99,8 +98,7 @@ function sameInputs(a: LayerPreviewInputs | null, b: LayerPreviewInputs): boolea
     a.drawnElements === b.drawnElements &&
     a.elementIndex === b.elementIndex &&
     a.arrowLinks === b.arrowLinks &&
-    a.arrowLabels === b.arrowLabels &&
-    a.tabFinish === b.tabFinish
+    a.arrowLabels === b.arrowLabels
   );
 }
 
@@ -169,7 +167,7 @@ export function createLayerPreviewStore(): LayerPreviewStore {
       if (!arrow || arrow.type !== 'arrow') continue;
       const entry: PreviewEntry = {
         element: arrow,
-        geometry: previewArrowGeometry(arrow, index, grid, overlay, inputs.tabFinish),
+        geometry: previewArrowGeometry(arrow, index, grid, overlay),
       };
       if (arrow.label) {
         virtual ??= shownWithOverlay(inputs.ordered, overlay).map((o) => o.element);

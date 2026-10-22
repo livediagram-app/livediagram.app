@@ -50,12 +50,6 @@ type EditorBroadcastDeps = {
   // switches away from 'laser' so a fresh laser session doesn't
   // start from a previous run's tail.
   canvasTool: CanvasTool;
-  // Vote privacy (docs/specs/012-collaboration/session-tools.md): true while a hide-cursors vote is open on the
-  // active tab. Cursor + laser ops stop going out entirely, so a peer
-  // can't read positions off the socket even with devtools open — a
-  // render-only gate would leave the coordinates on the wire. The
-  // matching render gate lives in usePresenceRows.
-  cursorsHidden: boolean;
 };
 
 type EditorBroadcastApi = {
@@ -70,19 +64,12 @@ type EditorBroadcastApi = {
   // `look` is the sender's pen (docs/specs/008-canvas/laser-panel.md); omitted by callers that have no
   // panel behind them, which draws the original laser.
   broadcastLaser: (x: number, y: number, look?: LaserConfig) => void;
-  // Reaction pad (docs/specs/009-elements/reaction-pad.md): tell the room a pad went off, so the burst plays
-  // for everyone rather than only the person who pressed it.
-  broadcastReaction: (elementId: string, reaction: string) => void;
   // Publish where we are looking (docs/specs/012-collaboration/follow-me-viewport.md), for anyone following us.
   broadcastViewport: (
     pan: { x: number; y: number },
     zoom: number,
     size: { width: number; height: number },
   ) => void;
-  // Ask everyone else to come and look at a point (docs/specs/012-collaboration/bring-focus.md). Returns whether
-  // it went out, so the presser can be told when nobody is listening rather
-  // than watching a button do nothing.
-  broadcastFocusHere: (at: { x: number; y: number }, zoom: number) => boolean;
   // The local trail buffer (canvas-coords + timestamps), consumed
   // by the LaserOverlay via the laserTrailRows aggregator in
   // editor-page.
@@ -90,7 +77,7 @@ type EditorBroadcastApi = {
 };
 
 export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastApi {
-  const { roomRef, cursorsHidden, activeId, canvasTool } = deps;
+  const { activeId, canvasTool } = deps;
   const [localLaserTrail, setLocalLaserTrail] = useState<LaserPoint[]>([]);
   const lastCursorSentRef = useRef(0);
   // The cursor position a throttle window held back, sent when the window ends: the last move of a quick drag or
@@ -121,29 +108,7 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
     setLocalLaserTrail([]);
   }
 
-  // Entering a hide-cursors vote, retract our indicator once. Without
-  // this, every peer keeps the LAST position we sent in their map: it's
-  // suppressed while the vote runs, but the moment casting closes and the
-  // render gate lifts, that frozen arrow re-appears pointing at whatever
-  // we were looking at mid-vote — exactly the leak the mode exists to
-  // prevent. A null cursor is the room's "pointer left the canvas" signal,
-  // so peers drop the entry outright. Sent before the gate below applies.
-  useEffect(() => {
-    if (!cursorsHidden) return;
-    // A position held back for the end of a throttle window must not follow the retraction.
-    pendingCursorRef.current = null;
-    if (cursorTimerRef.current) {
-      clearTimeout(cursorTimerRef.current);
-      cursorTimerRef.current = null;
-    }
-    roomRef.current?.send({
-      kind: 'op',
-      op: { kind: 'cursor', tabId: activeId, x: null, y: null },
-    });
-  }, [cursorsHidden, roomRef, activeId]);
-
   const broadcastCursor = (pos: { x: number; y: number } | null) => {
-    if (deps.cursorsHidden) return;
     if (!deps.hydrated || !deps.documentId || (!deps.documentShareable && !deps.documentTeamId))
       return;
     const send = (at: { x: number; y: number } | null) => {
@@ -185,9 +150,6 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
     if (now - lastLaserSentRef.current < BROADCAST_THROTTLE_MS) return;
     lastLaserSentRef.current = now;
     setLocalLaserTrail((prev) => trimLaserBuffer([...prev, { x, y, t: now }]));
-    // Your own trail still draws locally (it's your own pointer); only the
-    // outbound half is withheld while a hide-cursors vote is open.
-    if (deps.cursorsHidden) return;
     if (!deps.hydrated || !deps.documentId || (!deps.documentShareable && !deps.documentTeamId))
       return;
     deps.roomRef.current?.send({
@@ -205,7 +167,6 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
     zoom: number,
     size: { width: number; height: number },
   ) => {
-    if (deps.cursorsHidden) return;
     if (!deps.hydrated || !deps.documentId || (!deps.documentShareable && !deps.documentTeamId))
       return;
     const now = performance.now();
@@ -217,40 +178,10 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
     });
   };
 
-  // "Come and look at this" (docs/specs/012-collaboration/bring-focus.md). A discrete event:
-  // never throttled, because there is only ever one of them per press, and
-  // dropping it would silently do nothing to the room.
-  //
-  // Returns whether it went out, so the presser can be told when they are the
-  // only one here rather than watching a button do nothing.
-  const broadcastFocusHere = (at: { x: number; y: number }, zoom: number): boolean => {
-    if (deps.cursorsHidden) return false;
-    if (!deps.hydrated || !deps.documentId || (!deps.documentShareable && !deps.documentTeamId))
-      return false;
-    const room = deps.roomRef.current;
-    if (!room) return false;
-    room.send({ kind: 'op', op: { kind: 'focus-here', tabId: deps.activeId, at, zoom } });
-    return true;
-  };
-
-  // A reaction burst (docs/specs/009-elements/reaction-pad.md). A discrete event: never throttled, never
-  // dropped, behind the same presence gate.
-  const broadcastReaction = (elementId: string, reaction: string) => {
-    if (deps.cursorsHidden) return;
-    if (!deps.hydrated || !deps.documentId || (!deps.documentShareable && !deps.documentTeamId))
-      return;
-    deps.roomRef.current?.send({
-      kind: 'op',
-      op: { kind: 'reaction', tabId: deps.activeId, elementId, reaction },
-    });
-  };
-
   return {
     broadcastCursor,
-    broadcastReaction,
     broadcastLaser,
     broadcastViewport,
-    broadcastFocusHere,
     localLaserTrail,
   };
 }

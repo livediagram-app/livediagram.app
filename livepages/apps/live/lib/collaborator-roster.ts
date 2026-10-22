@@ -82,18 +82,14 @@ export function participantBadges(
   selfId: string,
   selfRole: AccessLevel,
   followingId?: string | null,
-  // Whether this person holds the facilitator baton (docs/specs/012-collaboration/facilitator.md). Passed in
-  // rather than read off the participant: the holder is a presence id, and
-  // your own row cannot be recognised by one.
   // `followerCount`: how many follow you (docs/specs/012-collaboration/follow-me-viewport.md "Who follows whom"),
   // named on your own row so you know to narrate.
-  opts?: { isFacilitator?: boolean; followerCount?: number },
+  opts?: { followerCount?: number },
 ): string[] {
   const badges: string[] = [];
   if (p.id === selfId) badges.push('You', LEVEL_BADGE[selfRole]);
   if (p.id === selfId && opts?.followerCount) badges.push(`${opts.followerCount} Following You`);
   else if (p.role) badges.push(LEVEL_BADGE[parseStoredLevel(p.role)]);
-  if (opts?.isFacilitator) badges.push('Facilitating');
   if (followingId && followingId === p.id) badges.push('Following');
   return badges;
 }

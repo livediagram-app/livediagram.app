@@ -1,8 +1,7 @@
 'use client';
 
 // Who the comment composers may @-mention (docs/specs/012-collaboration/comment-mentions.md), handed down
-// from the editor so both composers (the Comment panel card's and the comment
-// popover's) read one list without threading it through the canvas. Outside
+// from the editor so the comment composers read one list without threading it through the canvas. Outside
 // the editor (the embed, an export) there is nobody: the default.
 
 import { createContext, useContext } from 'react';

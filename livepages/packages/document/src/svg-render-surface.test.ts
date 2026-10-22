@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import { REVEAL_COVER_BASE } from './colors';
 import { createShape, SHAPE_DEFAULT_SIZE } from './shape-factory';
 import { svgBoxed } from './svg-render';
 import type { ShapeKind } from './index';
@@ -49,12 +48,5 @@ describe('svgBoxed on dark paper', () => {
       return light.length ? [`${kind}: ${light.join(',')}`] : [];
     });
     expect(offenders).toEqual([]);
-  });
-
-  it('draws the Reveal cover on the base the canvas face uses for each paper', () => {
-    const el = createShape('reveal', 0, 0);
-    for (const surface of ['light', 'dark'] as const) {
-      expect(svgBoxed(el, { surface })).toContain(`fill="${REVEAL_COVER_BASE[surface]}"`);
-    }
   });
 });

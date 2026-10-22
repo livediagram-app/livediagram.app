@@ -479,8 +479,7 @@ describe('mergeAiElements (docs/specs/007-editor/ai-assistance.md AI apply)', ()
   });
 
   // A clashing addition id is renamed, and EVERY kind of reference follows it
-  // the same way: pinned ends, on-arrow ends, mind-map parents and portal
-  // partners. Only pinned ends used to.
+  // the same way: pinned ends and on-arrow ends. Only pinned ends used to.
   it('re-points every reference kind at a renamed addition', () => {
     const onArrow: ArrowElement = {
       id: 'arr2',
@@ -490,21 +489,12 @@ describe('mergeAiElements (docs/specs/007-editor/ai-assistance.md AI apply)', ()
     };
     const out = mergeAiElements(
       [sq('a')],
-      [
-        sq('dup'),
-        pinned('dup', 'a', 'a'),
-        sq('child', { mindParentId: 'dup', portalTarget: 'dup' }),
-        pinned('arr', 'a', 'dup'),
-        onArrow,
-      ],
+      [sq('dup'), pinned('dup', 'a', 'a'), pinned('arr', 'a', 'dup'), onArrow],
       'generate',
     );
     const renamed = out.find(
       (e) => e.type === 'arrow' && e.id !== 'dup' && e.id !== 'arr' && e.id !== 'arr2',
     )!;
-    const child = byId(out, 'child') as ShapeElement;
-    expect(child.mindParentId).toBe(renamed.id);
-    expect(child.portalTarget).toBe(renamed.id);
     expect((byId(out, 'arr') as ArrowElement).to).toMatchObject({ elementId: renamed.id });
     expect((byId(out, 'arr2') as ArrowElement).from).toMatchObject({ arrowId: renamed.id });
   });

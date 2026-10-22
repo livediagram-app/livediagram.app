@@ -110,13 +110,6 @@ describe('routeBehindHoles', () => {
     expect(holes).toEqual([]);
   });
 
-  it('ignores swimlanes, which a hand-off arrow crosses by design', () => {
-    const holes = routeBehindHoles(arrow(), from, to, [
-      box('lane', -100, -100, { shape: 'lane', width: 800, height: 400 }),
-    ]);
-    expect(holes).toEqual([]);
-  });
-
   it('ignores text and annotations, which have no fill to hide behind', () => {
     const text: Element = {
       id: 't',
@@ -182,7 +175,6 @@ describe('routeBehindHoles', () => {
     const outline = box('o', 200, 0, { fillColor: 'transparent' });
     expect(routeBehindHoles(arrow(), from, to, [outline])).toEqual([]);
   });
-
 });
 
 // docs/specs/008-canvas/canvas-performance.md: an arrow asks the element grid for its neighbours.

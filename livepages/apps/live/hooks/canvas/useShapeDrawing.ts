@@ -188,7 +188,7 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
             ? // Stickers are their own element kind (docs/specs/010-palette/stickers.md), so their own
               // dashboard token rather than riding Icon's.
               'Sticker'
-            : // Hyphenated kinds ('mind-node', 'session-button', ...) need
+            : // Hyphenated kinds ('code-block', 'tab-window', ...) need
               // their spelled-out token or they split from the copy path's.
               shapeTelemetryToken(intent.kind)
         : intent.type === 'text'

@@ -1,14 +1,13 @@
 // @vitest-environment jsdom
 
-// The element-menu row editors (docs/specs/009-elements/pie-chart.md, entity.md, checklist.md): each
+// The element-menu row editors (docs/specs/009-elements/pie-chart.md, checklist.md): each
 // keeps a local draft while typing, and follows the element's rows when they change.
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ReactElement } from 'react';
-import type { ChecklistItem, EntityField, LegendItem, PieSlice } from '@livepages/document';
+import type { ChecklistItem, LegendItem, PieSlice } from '@livepages/document';
 import { ChecklistRowsEditor, LegendDataEditor, PieDataEditor } from './context-menu-data-editors';
-import { EntityFieldsEditor } from './EntityFieldsEditor';
 
 afterEach(() => cleanup());
 
@@ -38,14 +37,6 @@ const cases = [
     input: () => screen.getByPlaceholderText('Label'),
     valueOf: (rows: LegendItem[]) => rows[0]!.label,
   } satisfies Case<LegendItem>,
-  {
-    name: 'EntityFieldsEditor',
-    editor: (rows: EntityField[]) => <EntityFieldsEditor fields={rows} onChange={vi.fn()} />,
-    rows: [{ name: 'id', type: 'uuid' }],
-    changed: [{ name: 'email', type: 'text' }],
-    input: () => screen.getByLabelText('Field 1 name'),
-    valueOf: (rows: EntityField[]) => rows[0]!.name,
-  } satisfies Case<EntityField>,
   {
     name: 'ChecklistRowsEditor',
     editor: (rows: ChecklistItem[]) => <ChecklistRowsEditor items={rows} onChange={vi.fn()} />,

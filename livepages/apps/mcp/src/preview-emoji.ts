@@ -10,7 +10,7 @@ import {
   twemojiFileName,
   type EmojiArt,
 } from '@livepages/icons/resolve';
-import { REACTION_DEFAULT, REACTION_EMOJI, type Element } from '@livepages/document';
+import type { Element } from '@livepages/document';
 import { cached, type Fetcher } from './preview-fonts';
 
 export const TWEMOJI_BASE = 'https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/';
@@ -20,7 +20,7 @@ export const PREVIEW_EMOJI_MAX = 40;
 export const PREVIEW_EMOJI_TIMEOUT_MS = 2500;
 const EMOJI_BYTES_MAX = 64_000;
 
-// The emoji the elements draw: each emoji sticker's, emoji icon's and reaction pad's, once each, in order.
+// The emoji the elements draw: each emoji sticker's and emoji icon's, once each, in order.
 export function emojiGlyphsOf(elements: readonly Element[]): string[] {
   const glyphs = new Set<string>();
   for (const el of elements) {
@@ -30,9 +30,7 @@ export function emojiGlyphsOf(elements: readonly Element[]): string[] {
         ? stickerEmojiGlyph(el.stickerId)
         : el.shape === 'icon' && el.iconId
           ? iconEmojiGlyph(el.iconId)
-          : el.shape === 'reaction-pad'
-            ? REACTION_EMOJI[el.reaction ?? REACTION_DEFAULT]
-            : undefined;
+          : undefined;
     if (glyph !== undefined) glyphs.add(glyph);
   }
   return [...glyphs];

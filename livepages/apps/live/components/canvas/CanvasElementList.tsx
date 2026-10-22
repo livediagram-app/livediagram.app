@@ -1,11 +1,5 @@
 import { Fragment, memo } from 'react';
-import {
-  arrowLabelFontStack,
-  exportFontFamily,
-  isBoxed,
-  isVotableInVote,
-  type Element,
-} from '@livepages/document';
+import { arrowLabelFontStack, exportFontFamily, isBoxed, type Element } from '@livepages/document';
 import type { ArrowLabels } from '@/hooks/canvas/useArrowLabelLayouts';
 import type {
   LayerDrawn,
@@ -63,15 +57,10 @@ type CanvasElementListProps = Pick<
   | 'tabLocked'
   | 'readOnly'
   | 'shiftDupGhostIds'
-  | 'tabVote'
-  | 'tabLayers'
   | 'remoteSelectionsByElement'
   | 'canMove'
   | 'canWriteText'
   | 'canResize'
-  | 'voteReview'
-  | 'revealedIds'
-  | 'reactionBursts'
   | 'tabFont'
   | 'tabFinish'
 > & {
@@ -81,17 +70,11 @@ type CanvasElementListProps = Pick<
   boxedShared: BoxedShared;
   arrowGeometry: ReadonlyMap<string, ReturnType<typeof arrowViewGeometry>>;
   arrowLabels: ArrowLabels;
-  commentActionsFor: ((id: string) => BoxedViewProp<'commentActions'>) | null;
-  actionActionsFor: ((id: string) => BoxedViewProp<'actionActions'>) | null;
   // Bumped when webfonts land, so every fitted label measures again in its real face (useFontEpoch).
   fontEpoch: number;
   // The ids a stack holds, which glide to their slots when it reflows (docs/specs/009-elements/stack.md).
   stackedIds: ReadonlySet<string>;
 };
-
-type BoxedViewProp<K extends string> = K extends keyof Parameters<typeof SelectableBoxedView>[0]
-  ? Parameters<typeof SelectableBoxedView>[0][K]
-  : never;
 
 export const CanvasElementList = memo(function CanvasElementList({
   shownOrder,
@@ -108,17 +91,10 @@ export const CanvasElementList = memo(function CanvasElementList({
   tabLocked,
   readOnly,
   shiftDupGhostIds,
-  tabVote,
-  tabLayers,
   remoteSelectionsByElement,
   canMove,
   canWriteText,
   canResize,
-  voteReview,
-  commentActionsFor,
-  actionActionsFor,
-  revealedIds,
-  reactionBursts,
   tabFont,
   tabFinish,
   stackedIds,
@@ -212,10 +188,6 @@ export const CanvasElementList = memo(function CanvasElementList({
                 isoDepth={isoDepth}
                 // A stack's child glides to its new slot, unless the gesture is moving it (docs/specs/009-elements/stack.md).
                 stackGlide={stackedIds.has(element.id) && entry === undefined}
-                // Resolved once here, where both the vote and the tab's layers
-                // are in scope, rather than threading `layers` down to the
-                // gesture hook and the overlay separately (docs/specs/012-collaboration/vote-layer-scope.md).
-                votableInVote={isVotableInVote(element, tabVote, tabLayers)}
                 layerOpacity={effOpacity < 1 ? effOpacity : undefined}
                 remoteSelectors={
                   remoteSelectionsByElement.get(element.id) ?? EMPTY_REMOTE_SELECTORS
@@ -225,11 +197,6 @@ export const CanvasElementList = memo(function CanvasElementList({
                 movable={!readOnly || canMove?.(element) === true}
                 writable={!readOnly || canWriteText?.(element) === true}
                 resizable={!readOnly || canResize?.(element) === true}
-                isVoteFocus={voteReview?.focusId === element.id}
-                commentActions={commentActionsFor?.(element.id)}
-                actionActions={actionActionsFor?.(element.id)}
-                revealedForMe={revealedIds?.has(element.id)}
-                reactionBurst={reactionBursts?.get(element.id)}
                 // An explicit per-element font outranks the tab default.
                 // Under the Sketch finish, the handwriting font (docs/specs/008-canvas/finish.md).
                 fontFamily={exportFontFamily(element, tabFont, tabFinish)}

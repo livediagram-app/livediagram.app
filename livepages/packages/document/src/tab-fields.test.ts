@@ -52,25 +52,6 @@ describe('settleTabFields', () => {
     ]);
   });
 
-  it("settles a dot vote's tallies, and drops a vote that is not one", () => {
-    const vote = { active: true, revealed: false, votesPerPerson: 3, votes: { a: ['p1', 'p1'] } };
-    const kept = { ...base, vote };
-    expect(settleTabFields(kept)).toBe(kept);
-    for (const junk of ['x', 5, [], true, null])
-      expect('vote' in settleTabFields({ ...base, vote: junk })).toBe(false);
-    expect(
-      (settleTabFields({ ...base, vote: { ...vote, votes: 'x' } }) as unknown as Tab).vote?.votes,
-    ).toEqual({});
-    expect(
-      (
-        settleTabFields({
-          ...base,
-          vote: { ...vote, votes: { a: ['p1'], b: 'p2', c: [3] } },
-        }) as unknown as Tab
-      ).vote?.votes,
-    ).toEqual({ a: ['p1'] });
-  });
-
   it('a malformed tab arriving from outside renders after the migration', () => {
     const el = { id: 'e', type: 'text', x: 0, y: 0, width: 10, height: 10, text: 'x' };
     for (const layers of ['x', 0.5, [1, 'a', null], [{ id: 'a' }, null]]) {

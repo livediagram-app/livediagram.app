@@ -20,9 +20,9 @@ describe('eventLabel', () => {
     );
     expect(typeLabel('/alternatives/miro')).toBe('/alternatives/miro');
     expect(typeLabel('square')).toBe('Square');
-    expect(typeLabel('SessionButton')).toBe('Session Button');
+    expect(typeLabel('LinkCard')).toBe('Link Card');
     expect(typeLabel('AiOn')).toBe('AI On');
-    expect(typeLabel('Idea-box')).toBe('Idea Box');
+    expect(typeLabel('Speech-bubble')).toBe('Speech Bubble');
     expect(typeLabel('your-first-diagram')).toBe('Your First Diagram');
     expect(typeLabel('Http403.SaveTab')).toBe('Http403.SaveTab');
   });

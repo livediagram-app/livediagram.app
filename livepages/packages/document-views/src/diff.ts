@@ -32,7 +32,6 @@ const NONE = 'none';
 // The stored fields each kind of change speaks for; anything else that differs is an "other field".
 const SUMMARY_SOURCES = [
   'cells',
-  'entityFields',
   'code',
   'codeLanguage',
   'pieSlices',
@@ -49,18 +48,6 @@ const ATTRIBUTE_SOURCES = [
   'action',
   'actions',
   'esDraft',
-  'responses',
-  'responsesRevealed',
-  'ideaCards',
-  // Each card's random id moves with its card, so the ideas count speaks for it too.
-  'ideaCardIds',
-  'ideasRevealed',
-  'agendaItems',
-  'agendaCurrent',
-  'decisionStatus',
-  'rollCall',
-  'pickerResult',
-  'revealed',
   'stats',
   'processSteps',
   'navLinks',

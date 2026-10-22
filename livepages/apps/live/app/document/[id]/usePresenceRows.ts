@@ -44,13 +44,9 @@ type PresenceRowsDeps = {
   localLaserTrail: LaserPoint[];
   // The local participant's laser pen (docs/specs/008-canvas/laser-panel.md).
   selfLaserConfig?: LaserConfig;
-  // Vote privacy (docs/specs/012-collaboration/session-tools.md): true while a hide-cursors vote is open on the
-  // active tab. Peer cursors and peer laser trails are withheld from the
-  // render so nobody can watch the room converge on a favourite. Our own
-  // laser trail still shows, and presence / selection badges are untouched
-  // — the selection lock needs to keep naming who holds an element.
-  // useEditorBroadcast applies the matching gate on the outbound side.
-  // Presenting sets it too, inbound only (docs/specs/012-collaboration/presentation-mode.md).
+  // True while presenting (docs/specs/012-collaboration/presentation-mode.md), inbound only: peer cursors and
+  // peer laser trails are withheld from the render. Our own laser trail still shows, and presence / selection
+  // badges are untouched — the selection lock needs to keep naming who holds an element.
   cursorsHidden: boolean;
 };
 

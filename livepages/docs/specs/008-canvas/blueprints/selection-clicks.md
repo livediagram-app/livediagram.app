@@ -35,7 +35,7 @@ Scope, by file:
 ## Behaviour and state
 
 **Boxed press** (`handleShapeDown`), after the existing guards (editing, secondary button, remote
-lock, vote cast):
+lock):
 
 1. The press ledger judges the press. A paired press starts nothing (as before); a path opens its
    edit mode; and when the element is not selected (the first click deselected it), it calls
@@ -99,18 +99,18 @@ reaches the canvas (the element stops it), so the element menu keeps its own sel
 
 ## Errors and edge cases
 
-| Case                                              | Handling                                                        |
-| ------------------------------------------------- | --------------------------------------------------------------- |
-| Release after `PRESS_DRAG_SLOP_PX` of travel      | A drag: nothing settled                                         |
-| `pointercancel` (pinch, lost pointer)             | Listener removed; nothing settled                               |
-| Another pointer's release                         | Ignored; the armed press keeps waiting for its own              |
-| Touch held to `LONG_PRESS_MS`                     | Not a click: the long-press context menu owns it                |
-| Slow mouse click                                  | Still a click; no time limit off touch (D58)                    |
-| Format painter or Format tool armed               | Never armed: the press paints                                   |
-| Selected table                                    | Never armed: the click picks a cell                             |
-| Remotely locked, editing, vote cast, right button | Returned before arming (existing guards)                        |
-| Hidden or locked layer                            | `handleElementClick` and `handleArrowSelect` ignore inert ids   |
-| Multi-selection of one                            | Counts as the only selected element: a plain click deselects it |
+| Case                                         | Handling                                                        |
+| -------------------------------------------- | --------------------------------------------------------------- |
+| Release after `PRESS_DRAG_SLOP_PX` of travel | A drag: nothing settled                                         |
+| `pointercancel` (pinch, lost pointer)        | Listener removed; nothing settled                               |
+| Another pointer's release                    | Ignored; the armed press keeps waiting for its own              |
+| Touch held to `LONG_PRESS_MS`                | Not a click: the long-press context menu owns it                |
+| Slow mouse click                             | Still a click; no time limit off touch (D58)                    |
+| Format painter or Format tool armed          | Never armed: the press paints                                   |
+| Selected table                               | Never armed: the click picks a cell                             |
+| Remotely locked, editing, right button       | Returned before arming (existing guards)                        |
+| Hidden or locked layer                       | `handleElementClick` and `handleArrowSelect` ignore inert ids   |
+| Multi-selection of one                       | Counts as the only selected element: a plain click deselects it |
 
 ## Observability
 

@@ -34,7 +34,7 @@ const snap = (value: number): number => Math.round(value / AUTO_ALIGN_GRID) * AU
 // warp a square one, so one that is ALREADY square keeps both sides equal. One
 // drawn otherwise keeps its own proportions: a flowchart's decision is a wide
 // diamond, and squaring it doubled its height into the steps around it.
-export const SQUARE_SHAPES: ReadonlySet<string> = new Set(['circle', 'diamond', 'actor']);
+export const SQUARE_SHAPES: ReadonlySet<string> = new Set(['circle', 'diamond']);
 
 const drawnSquare = (width: number, height: number) => Math.abs(width - height) <= AUTO_ALIGN_GRID;
 

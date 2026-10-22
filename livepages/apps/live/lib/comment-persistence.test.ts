@@ -9,9 +9,8 @@ vi.mock('@/lib/api-client', () => api);
 
 import { commentPersisters } from './comment-persistence';
 
-// docs/specs/012-collaboration/comment-pin.md + docs/specs/013-workspace/share-roles.md: a read-only session (a
-// Participant) has no autosave, so every surface that changes a thread (the anchored popover, the Comment panel)
-// keeps the change through the comment endpoints. The Comment panel once passed nothing, and a Participant's panel
+// docs/specs/008-canvas/canvas-and-palette.md "Comments" + docs/specs/013-workspace/share-roles.md: a read-only
+// session (a Participant) has no autosave, so every surface that changes a thread (the anchored popover) keeps the change through the comment endpoints. The Comment panel once passed nothing, and a Participant's panel
 // comment never left their screen.
 const session = {
   readOnly: true,

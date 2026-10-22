@@ -36,25 +36,14 @@ export function shapeTileSearchItem(tile: PaletteTileDef) {
   const action = tile.action as {
     type: 'shape';
     kind: ShapeKind;
-    session?: string;
-    reaction?: string;
-    mode?: string;
-    estimateScale?: string;
     plan?: string;
     variant?: string;
   };
   const kind = action.kind;
-  // Keyed on the CHOICE where there is one, not just the kind: the five
-  // reaction tiles and the three session tiles all place the same shape,
-  // so keying on kind alone gave eight results three distinct ids and the
-  // panel silently dropped the duplicates.
-  const choice =
-    action.session ??
-    action.reaction ??
-    action.mode ??
-    action.estimateScale ??
-    action.plan ??
-    action.variant;
+  // Keyed on the CHOICE where there is one, not just the kind: a kind's variant
+  // tiles all place the same shape, so keying on kind alone gave them one id
+  // and the panel silently dropped the duplicates.
+  const choice = action.plan ?? action.variant;
   return {
     id: choice ? `shape:${kind}:${choice}` : `shape:${kind}`,
     name: tileDisplayName(tile),
@@ -65,10 +54,6 @@ export function shapeTileSearchItem(tile: PaletteTileDef) {
     add: {
       type: 'shape' as const,
       shapeKind: kind,
-      ...(action.session ? { session: action.session as never } : {}),
-      ...(action.reaction ? { reaction: action.reaction as never } : {}),
-      ...(action.mode ? { mode: action.mode as never } : {}),
-      ...(action.estimateScale ? { estimateScale: action.estimateScale as never } : {}),
       ...(action.variant ? { variant: action.variant } : {}),
       ...(action.plan ? { plan: action.plan } : {}),
     },

@@ -8,9 +8,9 @@ import {
   arrowThicknessOf,
   canvasSurface,
   defaultArrowStrokeColor,
+  isSelfDrawingShape,
   INK_PEN_COLOUR,
   PEN_INK,
-  supportsTextAlign,
   quickSwatches,
   supportsBorderControls,
   supportsColours,
@@ -87,7 +87,7 @@ export function supportsQuickSection(el: QuickStyleTarget, section: QuickSection
       return el.type === 'arrow' || (el.type === 'shape' && supportsBorderControls(el));
     case 'textAlign':
       // Only once the shape has words to align: an empty label has nothing to move.
-      return el.type === 'shape' && supportsTextAlign(el.shape) && !!el.label?.trim();
+      return el.type === 'shape' && !isSelfDrawingShape(el.shape) && !!el.label?.trim();
     case 'iconAlign':
       // Not on a card, callout, header or boundary: they place their icon themselves.
       return el.type === 'shape' && positionsInlineIcon(el) && !!el.iconId;

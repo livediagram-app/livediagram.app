@@ -33,7 +33,6 @@ import {
   SIGN_UPS,
   TAB_ACTIONS,
   TIMELINE_AND_ACTIVITY,
-  VOTING,
 } from './metric-catalogue';
 import { MetricGroups, type MetricGroup } from './MetricCards';
 import type { SectionKey } from './view-keys';
@@ -84,7 +83,7 @@ export const GROUPS: MetricGroup[] = [
   // so read them against it.
   {
     title: 'Collaboration',
-    metrics: [LIVE_TOGETHER, SHARING_AND_JOINING, TIMELINE_AND_ACTIVITY, PRESENTATIONS, VOTING],
+    metrics: [LIVE_TOGETHER, SHARING_AND_JOINING, TIMELINE_AND_ACTIVITY, PRESENTATIONS],
   },
   {
     title: 'Connections',

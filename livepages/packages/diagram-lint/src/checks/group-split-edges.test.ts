@@ -25,22 +25,6 @@ describe('group-split-edges', () => {
         fix: 'unwrap core',
       },
     ]);
-    expect(
-      of(
-        lint(
-          tabOf(
-            ...core(),
-            ...outside,
-            arrow('1', 'a', 'x'),
-            arrow('2', 'b', 'y'),
-            arrow('3', 'a', 'z'),
-            arrow('4', 'a', 'b'),
-          ),
-          { source: 'graph' },
-        ),
-        'group-split-edges',
-      )[0]!.fix,
-    ).toBe('group by ownership, or drop the groups');
   });
 
   it('stays quiet on a stage the flow passes through: in from before it, out to after it', () => {
@@ -79,7 +63,7 @@ describe('group-split-edges', () => {
     expect(of(loose, 'group-split-edges')).toHaveLength(1);
   });
 
-  it('stays quiet under three arrows, when most stay inside, and for a lane', () => {
+  it('stays quiet under three arrows, when most stay inside, and for a stack', () => {
     expect(
       of(
         lint(tabOf(...core(), box('x', 400, 40), arrow('1', 'a', 'x'), arrow('2', 'b', 'x'))),
@@ -98,8 +82,8 @@ describe('group-split-edges', () => {
         'group-split-edges',
       ),
     ).toEqual([]);
-    const lane = [
-      frame('lane', 0, 0, 200, 400, 'lane'),
+    const stack = [
+      frame('stack', 0, 0, 200, 400, 'stack'),
       box('a', 40, 40),
       box('x', 400, 40),
       box('y', 400, 300),
@@ -107,7 +91,7 @@ describe('group-split-edges', () => {
     ];
     expect(
       of(
-        lint(tabOf(...lane, arrow('1', 'a', 'x'), arrow('2', 'a', 'y'), arrow('3', 'a', 'z'))),
+        lint(tabOf(...stack, arrow('1', 'a', 'x'), arrow('2', 'a', 'y'), arrow('3', 'a', 'z'))),
         'group-split-edges',
       ),
     ).toEqual([]);

@@ -177,18 +177,9 @@ export const ELEMENT_TOUR_STEP_SOURCE: string[] = [
   ...conceptTourSteps('OnionTour', 'onion-tour-steps.ts'),
   ...conceptTourSteps('TimelineTour', 'timeline-tour-steps.ts'),
   ...conceptTourSteps('ChevronsTour', 'chevrons-tour-steps.ts'),
-  ...conceptTourSteps('MindMapTour', 'mind-node-tour-steps.ts'),
-  ...conceptTourSteps('FlowchartTour', 'flowchart-tour-steps.ts'),
-  ...conceptTourSteps('OrgChartTour', 'org-chart-tour-steps.ts'),
-  ...conceptTourSteps('SequenceTour', 'sequence-tour-steps.ts'),
   ...conceptTourSteps('ChartTour', 'chart-tour-steps.ts'),
   ...conceptTourSteps('StackTour', 'stack-tour-steps.ts'),
-  ...conceptTourSteps('EntityTour', 'entity-tour-steps.ts'),
   ...conceptTourSteps('TabWindowTour', 'tab-window-tour-steps.ts'),
-  ...conceptTourSteps('LaneTour', 'lane-tour-steps.ts'),
-  ...conceptTourSteps('BoundaryTour', 'boundary-tour-steps.ts'),
-  ...conceptTourSteps('DiagramKeyTour', 'diagram-key-tour-steps.ts'),
-  ...conceptTourSteps('PortalTour', 'portal-tour-steps.ts'),
 ];
 
 // The Pages tour's steps, as pagesTourStepTelemetryType makes them (apps/live PagesTourHost.tsx,
@@ -212,7 +203,7 @@ const SLUGS = ['your-first-diagram', 'tips-format-painter', 'connect-ai-mcp'];
 const SLUG_WHY = "a help article's telemetry id, one per registered article";
 const THEMES = ['Default', 'Plum', 'Custom'];
 const THEME_WHY = "themeTelemetryLabel(themeId): a built-in theme's label, or Custom";
-const TEMPLATES = ['Flowchart', 'Mindmap', 'Kanban'];
+const TEMPLATES = ['Article', 'SlideDeck', 'LogoDesign'];
 const TEMPLATE_WHY = "titleCaseType(kind): a template's kind";
 const ELEMENT_KINDS = ['Square', 'Circle', 'Sticky', 'Icon', 'TechIcon', 'Banner', 'Video'];
 const ELEMENT_WHY = 'an element kind, as the palette catalogue spells it';
@@ -461,8 +452,6 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
       'CardSlots',
       'ChipLook',
       'ChipDetach',
-      'BoundaryStyle',
-      'BoundaryMeta',
       'PyramidVariant',
       'HubSpokes',
       'PointerDetach',
@@ -471,14 +460,8 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
       'StackGap',
       'StackPadding',
       'StackAlign',
-      'SequenceNumbered',
-      'SequenceAnim',
       'ConceptAnim',
     ],
-  },
-  // The Sequence dialog's writes (apps/live/hooks/canvas/useSequenceSetters.ts): which part of it changed.
-  'apps/live/hooks/canvas/useSequenceSetters.ts Element·Changed': {
-    values: ['SequenceParticipants', 'SequenceMessages', 'SequenceText'],
   },
   // The element menu's whole-tab writes (apps/live/lib/element-style-ops.ts `commitTab`).
   'apps/live/components/palette/EditorContextMenuHost.tsx Element·Changed': {

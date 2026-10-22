@@ -11,7 +11,7 @@ import type { ShapePartRole } from '@livepages/document';
 export type ShapeSvgAnimation = 'trace' | 'gradient' | 'pulse' | 'glow';
 
 // The roles that draw the silhouette's edge; detail chrome (bezels, keys) is left out of copies.
-const EDGE_ROLES: ReadonlySet<ShapePartRole> = new Set(['main', 'outline', 'limb', 'head']);
+const EDGE_ROLES: ReadonlySet<ShapePartRole> = new Set(['main', 'outline']);
 
 export type ShapeSvgEffectLayer = {
   className: string;

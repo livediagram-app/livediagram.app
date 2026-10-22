@@ -1,5 +1,5 @@
 // The diagram-building elements' figures (docs/specs/009-elements/): Card, accent edge, Badge and Step number,
-// Boundary, and the concept graphics. Each is drawn the way the element draws on the canvas: the same slots, the same
+// and the concept graphics. Each is drawn the way the element draws on the canvas: the same slots, the same
 // ramp from the accent, the same places for a chip to sit.
 
 import { Arrow, Label, Scene, Shape, TextBar } from './primitives';
@@ -233,77 +233,6 @@ export function AttachPoints() {
       <Label x={210} y={134} anchor="middle" size={11} tone="muted">
         Drop a badge or step on any of the eight points to attach it
       </Label>
-    </Scene>
-  );
-}
-
-// --- Boundary --------------------------------------------------------------------
-
-/** A region boundary with its title in a tab, holding an inset VPC that holds an inset subnet. */
-export function BoundaryNesting() {
-  return (
-    <Scene w={420} h={236}>
-      {/* The region: a tab on its top edge. */}
-      <rect
-        x={16}
-        y={34}
-        width={388}
-        height={186}
-        rx={10}
-        className="fill-teal-500/5 stroke-teal-500"
-        strokeWidth={2}
-        strokeDasharray="7 5"
-      />
-      <rect
-        x={30}
-        y={22}
-        width={176}
-        height={24}
-        rx={6}
-        className="fill-teal-500 dark:fill-teal-700"
-      />
-      <Label x={42} y={34.5} size={11} weight={700} className="fill-white">
-        AWS Cloud · eu-west-2
-      </Label>
-      <Shape x={34} y={70} w={86} h={44} label="API" />
-      <Shape x={34} y={140} w={86} h={44} label="Queue" />
-
-      {/* The VPC, inset: its title inside its corner, its CIDR the meta line. */}
-      <rect
-        x={140}
-        y={58}
-        width={250}
-        height={148}
-        rx={8}
-        className="fill-violet-500/5 stroke-violet-500"
-        strokeWidth={1.5}
-      />
-      <Label x={152} y={74} size={11} weight={700} className="fill-violet-700 dark:fill-violet-300">
-        VPC
-      </Label>
-      <Label x={180} y={74} size={10} tone="muted">
-        10.0.0.0/16
-      </Label>
-
-      {/* A subnet inside the VPC: the washes stack, so it reads deeper. */}
-      <rect
-        x={156}
-        y={88}
-        width={218}
-        height={104}
-        rx={8}
-        className="fill-brand-500/10 stroke-brand-500"
-        strokeWidth={1.5}
-      />
-      <Label x={168} y={104} size={11} weight={700} className="fill-brand-700 dark:fill-sky-300">
-        Private subnet
-      </Label>
-      <Label x={256} y={104} size={10} tone="muted">
-        10.0.1.0/24
-      </Label>
-      <Shape x={172} y={124} w={86} h={48} label="Orders" accent />
-      <Shape x={272} y={124} w={86} h={48} kind="cylinder" label="Postgres" />
-      <Arrow from={[120, 92]} to={[170, 140]} />
     </Scene>
   );
 }

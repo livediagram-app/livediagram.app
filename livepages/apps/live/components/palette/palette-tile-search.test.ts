@@ -1,13 +1,13 @@
 // The Toolbar strip's Search (docs/specs/007-editor/toolbar-layout.md "Search: every element type"):
-// the split between Pages' own tiles and the rest of the catalogue, and the ranking.
+// Pages' own tiles, and the ranking.
 import { describe, expect, it } from 'vitest';
 import type { Element } from '@livepages/document';
 import {
   elementSignature,
-  elementTileSections,
   mergeByName,
   modeElementTiles,
   rankTiles,
+  searchableElementTiles,
   searchElementTiles,
   tileSignature,
 } from './palette-tile-search';
@@ -19,43 +19,35 @@ const ids = (tiles: PaletteTileDef[]) => tiles.map((t) => t.id);
 const el = (e: Record<string, unknown>) =>
   ({ id: 'x', x: 0, y: 0, width: 1, height: 1, ...e }) as unknown as Element;
 
-describe('elementTileSections', () => {
+describe('searchableElementTiles', () => {
   it('lists every tile of the palette once, in layout order', () => {
     const tiles = modeElementTiles('pages');
     expect(new Set(ids(tiles)).size).toBe(tiles.length);
     // Popular leads, so its Text comes first.
     expect(tiles[0]?.id).toBe('tools:text');
-    expect(ids(elementTileSections({ mode: 'pages', hasImage: true }).here)).toEqual(ids(tiles));
-  });
-
-  it('offers every tile in its own section, leaving none elsewhere', () => {
-    const { here, elsewhere } = elementTileSections({ mode: 'pages', hasImage: true });
-    expect(ids(here)).toEqual(expect.arrayContaining(['data:pie', 'devices:phone']));
-    expect(elsewhere).toEqual([]);
+    expect(ids(searchableElementTiles({ mode: 'pages', hasImage: true }))).toEqual(ids(tiles));
+    expect(ids(tiles)).toEqual(expect.arrayContaining(['data:pie', 'devices:phone']));
   });
 
   it('leaves out the image-upload tiles where the editor has none', () => {
-    const { here, elsewhere } = elementTileSections({ mode: 'pages', hasImage: false });
+    const tiles = searchableElementTiles({ mode: 'pages', hasImage: false });
     const needsImage = PALETTE_TILES.filter((t) => t.needsImage).map((t) => t.id);
-    expect([...ids(here), ...ids(elsewhere)].filter((id) => needsImage.includes(id))).toEqual([]);
+    expect(ids(tiles).filter((id) => needsImage.includes(id))).toEqual([]);
   });
 });
 
 describe('searchElementTiles', () => {
   it('finds a tile by a synonym', () => {
-    const { here } = searchElementTiles({ query: 'database', mode: 'pages', hasImage: true });
-    expect(ids(here)).toContain('shapes:cylinder');
+    const found = searchElementTiles({ query: 'database', mode: 'pages', hasImage: true });
+    expect(ids(found)).toContain('shapes:cylinder');
   });
 
-  it('finds nothing for nonsense, in either section', () => {
-    expect(searchElementTiles({ query: 'zzqqxx', mode: 'pages', hasImage: true })).toEqual({
-      here: [],
-      elsewhere: [],
-    });
+  it('finds nothing for nonsense', () => {
+    expect(searchElementTiles({ query: 'zzqqxx', mode: 'pages', hasImage: true })).toEqual([]);
   });
 
   it('lists only the element types on the tab before anything is typed', () => {
-    const { here, elsewhere } = searchElementTiles({
+    const onTab = searchElementTiles({
       query: '  ',
       mode: 'pages',
       hasImage: true,
@@ -66,15 +58,11 @@ describe('searchElementTiles', () => {
       ],
     });
     // Layout order (Popular first), each type once.
-    expect(ids(here)).toEqual(['shapes:circle', 'tools:sticky']);
-    expect(ids(elsewhere)).toEqual([]);
+    expect(ids(onTab)).toEqual(['shapes:circle', 'tools:sticky']);
   });
 
   it('lists nothing before typing on an empty tab', () => {
-    expect(searchElementTiles({ query: '', mode: 'pages', hasImage: true })).toEqual({
-      here: [],
-      elsewhere: [],
-    });
+    expect(searchElementTiles({ query: '', mode: 'pages', hasImage: true })).toEqual([]);
   });
 });
 

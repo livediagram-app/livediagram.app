@@ -68,10 +68,6 @@ describe('supportsBorderControls', () => {
     expect(selfDrawing.filter((k) => supportsBorderControls(shape(k)))).toEqual([]);
   });
 
-  it('excludes the actor (a stick figure with no enclosing outline)', () => {
-    expect(supportsBorderControls(shape('actor'))).toBe(false);
-  });
-
   it('excludes elements that carry no stroke (text, arrow, image)', () => {
     expect(supportsBorderControls(ofType('text'))).toBe(false);
     expect(supportsBorderControls(ofType('arrow'))).toBe(false);

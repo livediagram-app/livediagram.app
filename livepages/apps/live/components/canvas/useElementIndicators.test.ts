@@ -37,11 +37,10 @@ const thread = (n: number, resolved = false) => ({
     createdAt: 0,
   })),
 });
-const kinds = (el: BoxedElement, mind?: { editOutline: () => void; tidy: () => void }) =>
-  elementIndicatorItems(el, handlers(), mind).map((i) => i.kind);
+const kinds = (el: BoxedElement) => elementIndicatorItems(el, handlers()).map((i) => i.kind);
 
 describe('elementIndicatorItems', () => {
-  it('lists everything a shape carries, with a mind root’s commands first', () => {
+  it('lists everything a shape carries', () => {
     const el = {
       ...createShape('square', 0, 0),
       link: { kind: 'url', url: 'https://example.com' },
@@ -49,14 +48,7 @@ describe('elementIndicatorItems', () => {
       action: action('open'),
       commentThread: thread(2),
     } as BoxedElement;
-    expect(kinds(el, { editOutline: vi.fn(), tidy: vi.fn() })).toEqual([
-      'outline',
-      'tidy',
-      'link',
-      'note',
-      'action',
-      'comment',
-    ]);
+    expect(kinds(el)).toEqual(['link', 'note', 'action', 'comment']);
   });
 
   it('opens what each one stands for', () => {
@@ -110,10 +102,6 @@ describe('elementIndicatorItems', () => {
   });
 
   it('skips what an element already shows on its own face', () => {
-    const pin = { ...createShape('comment-pin', 0, 0), commentThread: thread(2) } as BoxedElement;
-    expect(kinds(pin)).toEqual([]);
-    const panel = { ...createShape('action-card', 0, 0), action: action('open') } as BoxedElement;
-    expect(kinds(panel)).toEqual([]);
     const card = {
       id: 'c',
       type: 'link-card',

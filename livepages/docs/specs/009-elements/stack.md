@@ -18,8 +18,8 @@ help once; a stack keeps the arrangement as the content changes.
   stack works as any nested container.
 - **Order** is position: in a row, left to right by each child's centre; in a column, top to bottom; in a grid,
   reading order (top to bottom in rows, then left to right). Dragging a child past a sibling moves it to that slot.
-  A mark is never a child: a badge, step or pointer note attached to something rides on its host, and a comment pin
-  stays where it was put, so neither takes a slot.
+  A mark is never a child: a badge, step or pointer note attached to something rides on its host, so it takes no
+  slot.
 - **Arrangement** (`stackDirection`): **Row** (the default), **Column** or **Grid**. A grid takes `stackColumns`
   (2 to 6, 2 by default); its cells are as wide as its widest child and as tall as its tallest.
 - **Gap** (`stackGap`, 0 to 64 px, 16 by default) between children, and **Padding** (`stackPadding`, 0 to 64 px, 16 by

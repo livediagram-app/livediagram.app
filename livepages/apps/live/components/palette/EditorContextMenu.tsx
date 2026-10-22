@@ -92,9 +92,6 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
     arrowheadColorHandlers,
     strokeColorHandlers,
   } = useContextMenuScaffold(props);
-  // Session-tool pickers (docs/specs/012-collaboration/session-tools.md): the chosen timer mode + countdown length
-  // and the votes-per-person budget, local until the facilitator hits Start
-  // (mirrors the old tab editor's Session accordion).
 
   if (menu.mode === 'multi') {
     return (
@@ -197,7 +194,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
             all answer "how big is this": the width / height boxes, the aspect
             lock (which lived in Layer) and the reset (which lived in Shape,
             so it only appeared for morphable kinds). */}
-        {/* Fixed-size elements (docs/specs/009-elements/mode-button.md buttons) have no size to edit — offering the boxes would advertise
+        {/* Fixed-size elements (a badge, docs/specs/009-elements/badge.md) have no size to edit — offering the boxes would advertise
             a resize the drag paths deliberately ignore. */}
         {boxed && !isFixedSizeElement(target) ? (
           <MenuAccordionSection title="Size" icon={<SizeMenuIcon />} {...sectionProps('size')}>

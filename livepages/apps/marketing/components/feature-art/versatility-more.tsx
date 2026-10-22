@@ -1,5 +1,5 @@
 // The rest of the versatility feature illustrations: the AI assistant, rotation and size, Zen mode
-// and fonts (Markdown and Mermaid coming in are in ./diagram-text). Split from ./versatility (which re-exports them) to
+// and fonts. Split from ./versatility (which re-exports them) to
 // keep each file a readable size; built from the same parts, on the same 300 by 96 stage, with the
 // same fa-c-* loops.
 

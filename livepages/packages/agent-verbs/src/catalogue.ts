@@ -23,7 +23,6 @@ import {
   telemetryOff,
   telemetryOn,
   exportAll,
-  graphRender,
   pull,
   push,
   tabRender,
@@ -33,7 +32,6 @@ import {
 import { iconSearch, schemaView, templateLs, templateView } from './verbs/catalogues';
 import { imageLs } from './verbs/image';
 import { changesetApply, elementVerbs, tabDiff } from './verbs/edit';
-import { graphLintVerb } from './verbs/graph';
 import {
   documentCreate,
   documentRename,
@@ -78,8 +76,6 @@ export const VERBS: readonly Verb[] = [
   commentReopen,
   presenceSet,
   presenceClear,
-  graphLintVerb,
-  graphRender,
   templateLs,
   templateView,
   iconSearch,
@@ -119,7 +115,6 @@ export const RESOURCES: readonly { name: string; alias?: string; summary: string
   { name: 'changeset', summary: 'Changesets: what changed, by whom, and undoing one' },
   { name: 'comment', summary: 'Comment threads' },
   { name: 'presence', summary: 'What the agent is doing, shown on a tab' },
-  { name: 'graph', summary: 'Graph files: lint or draw one before writing it' },
   {
     name: 'workbench',
     summary: 'Workbenches: open a document in a developer tool, pair one',

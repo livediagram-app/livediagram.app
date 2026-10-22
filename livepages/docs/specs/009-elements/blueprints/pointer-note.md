@@ -21,7 +21,7 @@ the note's own tip. Defaults in [DEFAULTS.md](DEFAULTS.md) as `Dn`.
 | Leader       | `pointerLeader(note)`                    | The line from the note's nearest edge point to the tip |
 | Host / point | `attachedTo` / `attachAt`                | The badge's fields                                     |
 
-Banned: "callout" (a Card preset), "arrow" (an arrow element), "pin" (comment pins).
+Banned: "callout" (a Card preset), "arrow" (an arrow element), "pin".
 
 ## Behaviour and state
 

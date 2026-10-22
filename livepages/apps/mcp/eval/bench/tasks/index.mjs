@@ -17,7 +17,7 @@ export function taskById(id) {
   return task;
 }
 
-// `all`, an area name, or ids, comma-separated and mixed ("pages,D1,D2").
+// `all`, an area name, or ids, comma-separated and mixed ("pages,D2,D3").
 export function selectTasks(spec = 'all') {
   const picked = new Map();
   for (const part of spec

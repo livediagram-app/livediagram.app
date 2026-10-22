@@ -18,7 +18,6 @@ function setup(overrides: Partial<Deps> = {}) {
     documentTeamId: null,
     activeId: 'tab1',
     canvasTool: 'laser',
-    cursorsHidden: false,
     ...overrides,
   };
   const hook = renderHook((d: Deps) => useEditorBroadcast(d), { initialProps: deps });
@@ -47,17 +46,6 @@ describe('useEditorBroadcast laser trail', () => {
   });
 });
 
-// Vote privacy (docs/specs/012-collaboration/session-tools.md).
-describe('useEditorBroadcast hidden cursors', () => {
-  it('retracts the cursor once when a hide-cursors vote opens, and sends nothing while it runs', () => {
-    const { hook, deps, sent } = setup();
-    hook.rerender({ ...deps, cursorsHidden: true });
-    expect(sent).toEqual([{ kind: 'op', op: { kind: 'cursor', tabId: 'tab1', x: null, y: null } }]);
-    act(() => hook.result.current.broadcastCursor({ x: 1, y: 1 }));
-    expect(sent).toHaveLength(1);
-  });
-});
-
 // docs/specs/015-api/api.md `cursor`: peers see the cursor where it stopped.
 describe('useEditorBroadcast cursor', () => {
   it('sends the last position a throttle window held back once the window ends', () => {
@@ -83,24 +71,20 @@ describe('useEditorBroadcast cursor', () => {
     vi.useRealTimers();
   });
 
-  it('never follows the pointer leaving, or a hide-cursors vote, with a held-back position', () => {
+  it('never follows the pointer leaving with a held-back position', () => {
     vi.useFakeTimers();
     let now = 1000;
     vi.spyOn(performance, 'now').mockImplementation(() => now);
-    const { hook, sent, deps } = setup({ canvasTool: 'select' });
+    const { hook, sent } = setup({ canvasTool: 'select' });
     act(() => hook.result.current.broadcastCursor({ x: 1, y: 1 }));
     now += 5;
     act(() => hook.result.current.broadcastCursor({ x: 2, y: 2 }));
     act(() => hook.result.current.broadcastCursor(null));
-    now += 5;
-    act(() => hook.result.current.broadcastCursor({ x: 3, y: 3 }));
-    hook.rerender({ ...deps, canvasTool: 'select', cursorsHidden: true });
     act(() => {
       vi.runAllTimers();
     });
     expect(sent.map((m) => (m.kind === 'op' && m.op.kind === 'cursor' ? m.op.x : 'x'))).toEqual([
       1,
-      null,
       null,
     ]);
     vi.useRealTimers();

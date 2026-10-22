@@ -229,7 +229,7 @@ export function KeyCap({
 
 // ── Scene-specific parts for ./features: the tab bar's pills, a window's tabs and its roadmap,
 // the undo cluster, a layer plane and the Layers panel's eye, a photograph and its selection
-// handles, a palette tile with its key, and a sticky collecting votes.
+// handles, and a palette tile with its key.
 
 // One tab pill in the bottom bar: the mode glyph (a small diagram mark) in the tab's accent, its
 // name, and on the active tab a tint and the people on it.

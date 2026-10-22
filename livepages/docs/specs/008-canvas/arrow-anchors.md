@@ -40,7 +40,6 @@ Each kind offers its own **anchors**: which of the sixteen it has, and where the
 | `hexagon`                                                    | 16    | Top and bottom faces carry three: the middle and, halfway between it and each end of the face, a quarter; the corners and the side quarters split each slanted face into thirds; the side middles are the side points                                               |
 | `triangle`                                                   | 9     | Three on each face (left `w`, right `e`, base `s`): the face's middle and, halfway between it and each end of the face, a quarter. No corners, nothing at the apex                                                                                                  |
 | `circle`, `diamond`                                          | 8     | Corners and middles on the outline (a diamond's middles are its tips, its corners the centres of its edges)                                                                                                                                                         |
-| `actor`                                                      | 8     | Corners and middles on the hull around the figure                                                                                                                                                                                                                   |
 
 - A side that carries anchors always carries its middle.
 - Snapping, the snap-target markers, the creation anchor and the auto-rebind only ever choose an
@@ -61,8 +60,6 @@ Each kind offers its own **anchors**: which of the sixteen it has, and where the
   - `diamond`, `parallelogram`, `hexagon`, `triangle` and `trapezoid` (their polygons in the
     shared shape-geometry table; the last four also place their anchors along their faces, above);
   - `stadium` (the capsule: a box with fully rounded ends);
-  - `actor` (the hull around the stick figure: head, arm tips and feet, down to the bottom of its
-    label band);
   - `cloud` and `document` (their drawn paths: the cloud's bumps, the document's wavy bottom edge);
   - `cylinder` (its body with the curved top and bottom).
 - Every other kind keeps its box as its outline for anchoring, including `star` and
@@ -120,7 +117,7 @@ it is set, with `exactStart`, where ends meet at one point and run along one tru
 that end clears it, so a hand-drawn connection fans as usual.
 
 A dashed or dotted arrow with an exact end starts its pattern from its **end**, not its start (`arrowDashOffset`,
-in both renderers): arrows sharing an end (graph input's bus of services that each "publish" to one queue) run in
+in both renderers): arrows sharing an end (a bus of services that each "publish" to one queue) run in
 step along the stretch they share and draw it as one dashed line, where each starting its pattern at its own start
 drew a blur of dashes out of phase.
 

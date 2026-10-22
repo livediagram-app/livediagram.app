@@ -35,7 +35,7 @@ export const arrowBehindBox: Check = (ctx) =>
         code: 'arrow-behind-box' as const,
         refs: [refOf(ctx, d.arrow.id), ...boxes],
         message: `${arrowName(ctx, d.arrow)} passes behind ${boxes.join(', ')}`,
-        fix: fixes.arrowBehindBox(ctx.source, arrowSelector(ctx, d.arrow), clears?.style ?? null, {
+        fix: fixes.arrowBehindBox(arrowSelector(ctx, d.arrow), clears?.style ?? null, {
           box: boxes[0]!,
           by: clearShift(d.polyline, behind[0]!),
         }),

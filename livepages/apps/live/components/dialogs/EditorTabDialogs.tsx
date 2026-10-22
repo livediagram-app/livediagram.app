@@ -119,9 +119,6 @@ export function EditorTabDialogs() {
           tabName={activeTab.name}
           onImportFile={importIntoActiveTab}
           onImportText={importTextIntoActiveTab}
-          // Pages mode imports a livepages tab only: Markdown builds a diagram
-          // (docs/specs/007-editor/pages-mode.md "Import").
-          formats={pagesMode ? ['json'] : undefined}
           onClose={() => setImportOpen(false)}
         />
       ) : null}

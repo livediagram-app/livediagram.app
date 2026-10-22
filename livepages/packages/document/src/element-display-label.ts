@@ -17,10 +17,5 @@ export function elementDisplayLabel(el: BoxedElement): string {
   }
   const label = (el as { label?: string }).label;
   if (label && label.trim().length > 0) return label.trim();
-  // The Comment and Action panels ship unlabelled on purpose (their dialogs
-  // would otherwise prefill every entry from it), so an empty one is named
-  // by what it is rather than "Untitled" (docs/specs/012-collaboration/comment-pin.md, action-panel.md).
-  if (el.type === 'shape' && el.shape === 'action-card') return 'Action Panel';
-  if (el.type === 'shape' && el.shape === 'comment-pin') return 'Comment Panel';
   return 'Untitled';
 }

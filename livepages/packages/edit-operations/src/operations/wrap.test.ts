@@ -1,11 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  FRAME_PAD,
-  FRAME_TOP,
-  createShape,
-  type Element,
-  type ShapeElement,
-} from '@livepages/document';
+import { FRAME_PAD, FRAME_TOP, type Element } from '@livepages/document';
 import { applyEditOperations } from '../apply';
 import { checkoutFlow } from '../fixtures/checkout-flow';
 import { applied, lines, refused } from '../fixtures/outcomes';
@@ -39,14 +33,6 @@ describe('wrap', () => {
       'f2  +frame-2 -n5',
       'frame-2  +n5',
     ]);
-  });
-
-  it('wraps in a lane with its gutter on the title edge', () => {
-    const outcome = run('wrap n7 n8 in lane label=Ops');
-    const [x, , width] = boxIn(applied(outcome).tab, 'ops');
-    expect(x).toBeLessThan(-FRAME_PAD);
-    expect(width).toBeGreaterThan(140 + 2 * FRAME_PAD);
-    expect(lines(outcome)).toEqual(['+ ops  lane "Ops" @-124,588 336×224', 'ops  +n7 +n8']);
   });
 
   it('lays the members out first with tidy', () => {
@@ -109,7 +95,7 @@ describe('wrap', () => {
 
   it('holds boxes, not only arrows', () => {
     expect(refused(run('wrap a1 in frame')).details).toEqual([
-      'a1: only arrows; a frame or lane holds boxes',
+      'a1: only arrows; a frame holds boxes',
     ]);
   });
 
@@ -164,18 +150,13 @@ describe('wrap', () => {
 
 describe('wrapBox', () => {
   const box = { x: 0, y: 0, width: 100, height: 50 };
-  const lane = (
-    alignX: ShapeElement['textAlignX'],
-    alignY: ShapeElement['textAlignY'],
-  ): ShapeElement => ({ ...createShape('lane', 0, 0), textAlignX: alignX, textAlignY: alignY });
 
-  it('pads a lane on its gutter edge, and nowhere extra for a centred title', () => {
-    expect(wrapBox([box], lane('center', 'top')).y).toBeLessThan(-FRAME_PAD);
-    expect(wrapBox([box], lane('center', 'middle'))).toEqual({
+  it('pads a frame on every side, deeper at the top for its title', () => {
+    expect(wrapBox([box])).toEqual({
       x: -FRAME_PAD,
-      y: -FRAME_PAD,
+      y: -FRAME_TOP,
       width: 100 + 2 * FRAME_PAD,
-      height: 50 + 2 * FRAME_PAD,
+      height: 50 + FRAME_TOP + FRAME_PAD,
     });
   });
 });

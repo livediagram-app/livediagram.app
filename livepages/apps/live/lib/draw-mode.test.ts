@@ -107,11 +107,7 @@ describe('drawBannerMessage', () => {
   });
 
   it('spells out a hyphenated kind instead of leaving the hyphen in', () => {
-    // 'Mode-button' / 'Code-block' is the capitalise-the-first-letter fallback
-    // showing through; these are two-word names.
-    expect(drawBannerMessage({ type: 'shape', kind: 'mode-button' }, false)).toBe(
-      'Tap to drop or drag to draw Mode button',
-    );
+    // 'Code-block' is the capitalise-the-first-letter fallback showing through; it is a two-word name.
     expect(drawBannerMessage({ type: 'shape', kind: 'code-block' }, false)).toBe(
       'Tap to drop or drag to draw Code block',
     );

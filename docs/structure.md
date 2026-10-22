@@ -11,10 +11,16 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 ├─ livediagram/                imported with full history (main at 82e6ed79a)
 │  ├─ apps/                    live, api, mcp, cli, marketing, help, community, telemetry, router
 │  └─ packages/                @livediagram/*
-└─ liveplanner/                imported with full history (main at d5c8bed2)
+├─ liveplanner/                imported with full history (main at d5c8bed2)
+│  ├─ apps/                    the same set minus community
+│  └─ packages/                @liveplanner/*
+└─ livepages/                  forked from livediagram in-tree (Pages mode only)
    ├─ apps/                    the same set minus community
-   └─ packages/                @liveplanner/*
+   └─ packages/                @livepages/*
 ```
+
+livepages was forked from livediagram `main` at `82e6ed79a` on 2026-10-22 and cut down to Pages
+mode (livepages/plans/0001-livepages-fork.md); Phase 8 takes Pages out of livediagram.
 
 liveplanner was forked from livediagram on 2026-10-21, so today most of it is a renamed copy.
 I compared each file with the product name ignored, and these counts are from that:

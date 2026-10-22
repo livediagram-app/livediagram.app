@@ -105,7 +105,6 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'sticky-notes': '#eab308',
   'code-blocks': '#475569',
   checklists: '#22c55e',
-  portals: '#8b5cf6',
   // Palette → Arrow guides
   'arrow-styles': '#3b82f6',
   'curve-and-elbow-handles': '#8b5cf6',
@@ -172,34 +171,13 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'colours-borders-opacity': '#9333ea',
   'formatting-label-text': '#0e7490',
   'slide-pages': '#f97316',
-  build: '#22c55e',
   frames: '#14b8a6',
-  'mind-maps': '#8b5cf6',
-  'edit-outline': '#7c3aed',
-  flowcharts: '#0ea5e9',
-  'org-charts': '#2563eb',
-  'sequence-diagrams': '#0891b2',
-  lanes: '#3b82f6',
-  entities: '#0284c7',
-  boundaries: '#0d9488',
-  'diagram-keys': '#7c3aed',
   technology: '#0ea5e9',
   drawing: '#f97316',
   annotations: '#eab308',
   layers: '#6366f1',
   'layers-visibility-and-locking': '#64748b',
   'layers-organising': '#3b82f6',
-  facilitator: '#a855f7',
-  'session-tools': '#f43f5e',
-  // Collaboration guides
-  timer: '#f43f5e',
-  voting: '#ef4444',
-  // Collaboration → Voting
-  'casting-dots': '#ef4444',
-  'vote-layers': '#6366f1',
-  'vote-privacy': '#64748b',
-  'vote-panel': '#0891b2',
-  'vote-results': '#f59e0b',
 };
 
 /** Top-level feature category → accent hue, the fallback for a landing with no

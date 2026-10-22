@@ -15,11 +15,9 @@
 //   - main:    the element's fill + stroke + border dash, round joins
 //   - outline: the same without round joins (the frame's sharp corners)
 //   - detail:  thin solid chrome (bezels, keys, creases), no fill
-//   - limb:    an unfilled round-capped line (the actor's body)
-//   - head:    a limb that takes the element's fill (the actor's head)
 import type { ShapeKind } from './shape-kind';
 
-export type ShapePartRole = 'main' | 'outline' | 'detail' | 'limb' | 'head';
+export type ShapePartRole = 'main' | 'outline' | 'detail';
 
 export type ShapePart =
   | { tag: 'path'; role: ShapePartRole; d: string }
@@ -42,7 +40,7 @@ export type ShapePart =
 export type ShapeGeometry = {
   viewBox: string;
   // `none` stretches the art to the element box; `meet` keeps it
-  // proportional (the actor, who would otherwise turn into a smear).
+  // proportional.
   preserveAspectRatio: 'none' | 'xMidYMid meet';
   parts: readonly ShapePart[];
   // The art is drawn into the box inset by half the stroke, so the stroke
@@ -84,23 +82,6 @@ const rect = (
 // The diamond's vertices, exported on their own because the headless render
 // draws it natively at element coordinates rather than as a nested <svg>.
 export const DIAMOND_POINTS = '50,0 100,50 50,100 0,50';
-
-/** The actor's anchoring hull in its 0..90 x 0..130 viewBox
- *  (docs/specs/008-canvas/arrow-anchors.md): the convex hull of the head, the
- *  arm tips and the feet, carried down to the bottom of the label band so a
- *  connector below the figure clears its caption. Clockwise from the top. */
-export const ACTOR_HULL: readonly (readonly [number, number])[] = [
-  [45, 6],
-  [56.3, 10.7],
-  [61, 22],
-  [74, 56],
-  [68, 130],
-  [22, 130],
-  [16, 56],
-  [29, 22],
-  [33.7, 10.7],
-];
-export const ACTOR_VIEWBOX = { width: 90, height: 130 } as const;
 
 // Every silhouette whose geometry does not depend on the element's size.
 const FIXED_GEOMETRY: Partial<Record<ShapeKind, ShapeGeometry>> = {
@@ -164,28 +145,6 @@ const FIXED_GEOMETRY: Partial<Record<ShapeKind, ShapeGeometry>> = {
     rect(22, 14, 56, 72, 14),
     rect(29, 21, 42, 58, 9, 'detail'),
   ),
-  // UML final state: a ring (the line colour, unfilled) round a solid dot (the fill), kept round in any box.
-  'final-state': {
-    viewBox: '0 0 100 100',
-    preserveAspectRatio: 'xMidYMid meet',
-    parts: [
-      { tag: 'circle', role: 'limb', cx: 50, cy: 50, r: 46 },
-      { tag: 'circle', role: 'head', cx: 50, cy: 50, r: 27 },
-    ],
-  },
-  // UML actor: an open head over a line body. The viewBox leaves a small
-  // clear band under the legs (y 112..130) for the label.
-  actor: {
-    viewBox: `0 0 ${ACTOR_VIEWBOX.width} ${ACTOR_VIEWBOX.height}`,
-    preserveAspectRatio: 'xMidYMid meet',
-    parts: [
-      { tag: 'circle', role: 'head', cx: 45, cy: 22, r: 16 },
-      path('M 45 38 L 45 82', 'limb'),
-      path('M 16 56 L 74 56', 'limb'),
-      path('M 45 82 L 22 112', 'limb'),
-      path('M 45 82 L 68 112', 'limb'),
-    ],
-  },
 };
 
 /** A single-path silhouette's `d` in its 0..100 box, or null for a kind not

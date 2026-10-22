@@ -41,8 +41,8 @@ describe('tileDragStart', () => {
   });
 
   it('carries a shape’s creation-time choice alongside its kind', () => {
-    const { data } = drag({ type: 'shape', kind: 'session-button', session: 'vote' });
-    expect(data.get(PALETTE_DND_MIME)).toBe('session-button|vote');
+    const { data } = drag({ type: 'shape', kind: 'pyramid', variant: 'funnel' });
+    expect(data.get(PALETTE_DND_MIME)).toBe('pyramid|funnel');
   });
 
   it('carries a sticky note', () => {

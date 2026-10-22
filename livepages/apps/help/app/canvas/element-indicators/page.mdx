@@ -3,7 +3,6 @@ import { helpMetadata } from '@/lib/seo';
 import {
   IndicatorStylesScene,
   IndicatorPlacementScene,
-  MindRootCommandsScene,
 } from '@/components/illustrations/element-indicators';
 
 export const metadata = helpMetadata({
@@ -30,8 +29,6 @@ Comments come last because they are the most frequent and the most urgent, and t
 
 A few elements show these things on their own face instead, so they carry no indicator for them: an [annotation](/help/canvas/annotations/)'s marker is its note. A margin note on an article page shows no indicators at all.
 
-A **mind map root** can also carry two commands, **Edit Outline** and **Tidy Map**. They work a little differently; see [Mind Map Commands](#mind-map-commands) below.
-
 ## Choosing a Style
 
 Open [Settings](/help/user-interface/settings/), go to **Editor** and pick an option for **Element Indicators**. It is your own preference, so it changes what you see and nobody else's view.
@@ -48,7 +45,7 @@ Open [Settings](/help/user-interface/settings/), go to **Editor** and pick an op
 
 Indicators always sit **inside** the element's outline, never across it:
 
-- On a box-like element (a rectangle, rounded rectangle, pill, mind node, card or panel), Top sits at the **top-right**.
+- On a box-like element (a rectangle, rounded rectangle, pill, card or panel), Top sits at the **top-right**.
 - On a round or pointed shape (a circle, diamond, hexagon, cloud, triangle, trapezoid, star or actor), Top is **centred** along the top, since there is no corner for it.
 - Footer starts at the bottom-left of a box, and is centred on the same round or pointed shapes.
 
@@ -75,28 +72,17 @@ Hovering the element brings its indicators up a little, and the one under the po
 
 Selecting an element brings its own handles, **+** buttons and toolbar onto the same edges, so its indicators **shrink and fade away** while it is selected and come back when you deselect it. Nothing else moves: the label stays exactly where it was. To reach a link, note, action or comments on a selected element, deselect it or use its menu.
 
-## Mind Map Commands
-
-A mind map root with at least one child carries **Edit Outline** (edit the whole map as a list) and **Tidy Map** (lay the map out neatly again). These are things you **do**, not things the root **has**, so they stay hidden until you **hover** the root. Their space is kept free so nothing shifts when they appear. In Top they lead the cluster, and in Footer they end the row.
-
-They aren't shown while the root is selected, on a root with no children, on a [locked tab](/help/tabs/locking-tabs/), on a hidden or locked active [layer](/help/canvas/layers/), or to a Viewer or Participant. Both are always in the root's **Mind Map** menu section too, which is the way in from the keyboard or on a touch screen. See [Edit Outline](/help/palette/mind-maps/edit-outline/).
-
-<Figure caption="Hovering a mind map root shows Edit Outline and Tidy Map ahead of its note indicator.">
-  <MindRootCommandsScene />
-</Figure>
-
 ## With Indicators Off
 
-Turning indicators **Off** hides them on every element, and a mind map root's commands no longer appear on hover. Nothing becomes unreachable:
+Turning indicators **Off** hides them on every element. Nothing becomes unreachable:
 
 - Actions, comments, links and notes are the buttons along the top of the element's menu, tinted when the element has one; every open thread and action is also listed in the **Collaborate** panel.
-- **Edit Outline** and **Tidy Map** are in the root's **Mind Map** section.
 
 ## When They Don't Show
 
 - **Zoomed far out**: below 40% zoom, indicators hide, along with the padlock on locked elements and the avatars of collaborators who have an element selected. An overview is for shape, not detail. See [Pan and Zoom](/help/canvas/the-canvas/pan-and-zoom/).
 - **Exports**: indicators are editor chrome, so PNG and SVG exports and document thumbnails never include them.
-- **Viewers and Participants** still see links, notes, actions and comments, and can open each one to read it. They don't get the mind map commands.
+- **Viewers and Participants** still see links, notes, actions and comments, and can open each one to read it.
 - **Embeds**: a document [embedded](/help/collaboration/sharing/embeds/) in another page shows no indicators at all, whether the embed is for viewing or editing and whatever style you chose. Open it in livepages to see them.
 
 <Tip>
@@ -107,7 +93,7 @@ Turning indicators **Off** hides them on every element, and a mind map root's co
 
 ## On a Phone or Tablet
 
-Indicators work the same on a touch screen: tap one to open what it points to. There is no pointer to hover with, so a mind map root's commands don't appear; long-press the root and use its **Mind Map** section instead. See [Mobile](/help/supported-devices/mobile/).
+Indicators work the same on a touch screen: tap one to open what it points to. See [Mobile](/help/supported-devices/mobile/).
 
 <Note>
   Element indicators are separate from the other marks an element can wear. The padlock on a [locked

@@ -109,11 +109,7 @@ export function TopCenterBanner({
 }: {
   tone?: BannerTone;
   className?: string;
-  // Inline styles for effects a class can't express. The countdown pill
-  // uses it to paint a draining background gradient (docs/specs/012-collaboration/session-tools.md) — done as
-  // a background rather than an absolutely-positioned fill layer so the
-  // pill needs no extra DOM and no stacking-context juggling to keep the
-  // clock and buttons legible on top.
+  // Inline styles for effects a class can't express.
   style?: CSSProperties;
   onPointerDown?: (e: ReactPointerEvent) => void;
   onContextMenu?: (e: ReactMouseEvent) => void;

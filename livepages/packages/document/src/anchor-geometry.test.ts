@@ -57,31 +57,19 @@ describe('sixteen anchor positions (docs/specs/008-canvas/arrow-anchors.md)', ()
     expect(p.y).toBeLessThan(50);
   });
 
-  it.each([
-    'stadium',
-    'actor',
-    'triangle',
-    'hexagon',
-    'parallelogram',
-    'trapezoid',
-    'cylinder',
-  ] as const)('puts every %s anchor on its outline, never inside it', (kind) => {
-    const el = shape({ shape: kind, width: 180, height: 120 });
-    for (const a of offeredAnchors(el)) {
-      const p = anchorPosition(el, a);
-      expect(pointInsideOutline(el, p, 0.01), `${kind} ${a}`).toBe(false);
-      // A point a hair towards the centre is inside: p is on the outline.
-      const inward = { x: p.x + (90 - p.x) * 0.02, y: p.y + (60 - p.y) * 0.02 };
-      expect(pointInsideOutline(el, inward, 0), `${kind} ${a} inward`).toBe(true);
-    }
-  });
-
-  it('keeps the actor corners on the figure rather than the empty box corner', () => {
-    const actor = shape({ shape: 'actor', width: 90, height: 130 });
-    const se = anchorPosition(actor, 'se');
-    expect(se.x).toBeLessThan(80);
-    close(anchorPosition(actor, 's'), 45, 130);
-  });
+  it.each(['stadium', 'triangle', 'hexagon', 'parallelogram', 'trapezoid', 'cylinder'] as const)(
+    'puts every %s anchor on its outline, never inside it',
+    (kind) => {
+      const el = shape({ shape: kind, width: 180, height: 120 });
+      for (const a of offeredAnchors(el)) {
+        const p = anchorPosition(el, a);
+        expect(pointInsideOutline(el, p, 0.01), `${kind} ${a}`).toBe(false);
+        // A point a hair towards the centre is inside: p is on the outline.
+        const inward = { x: p.x + (90 - p.x) * 0.02, y: p.y + (60 - p.y) * 0.02 };
+        expect(pointInsideOutline(el, inward, 0), `${kind} ${a} inward`).toBe(true);
+      }
+    },
+  );
 
   it('rotates a quarter with the element', () => {
     // 90deg clockwise: the top edge's east quarter (75,0) swings to (100,75).

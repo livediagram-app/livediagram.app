@@ -76,14 +76,11 @@ describe('stripTilesFor', () => {
     expect([...stripTilesFor(category, NONE).dividersAfter]).toEqual(after);
   });
 
-  it('drops the dividers of a category that exactly fills the strip, keeping every tile', () => {
-    // Components holds the strip's full twelve tiles (with the Card, Badge and Step number), so its
-    // divider after the entity gives way rather than a tile.
+  it('keeps every tile of a category short of the strip', () => {
     const components = stripTilesFor('components', NONE);
-    expect(components.tiles).toHaveLength(STRIP_TILE_LIMIT);
-    expect([...components.dividersAfter]).toEqual([]);
-    // Build, short of it since the Timeline moved to Concepts, keeps every tile on the strip.
-    expect(stripTilesFor('build', NONE).tiles).toHaveLength(11);
+    expect(components.tiles).toHaveLength(tilesForCategory('components').length);
+    expect(components.hasMore).toBe(false);
+    expect(stripTilesFor('build', NONE).tiles).toHaveLength(4);
   });
 
   it('gives a divided category one tile less when it overflows, to make room', () => {

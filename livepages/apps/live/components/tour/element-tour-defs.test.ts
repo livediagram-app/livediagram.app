@@ -17,22 +17,9 @@ const SAMPLE: Record<(typeof ELEMENT_TOUR_KINDS)[number], Element> = {
   onion: createShape('onion', 0, 0),
   chevrons: createShape('chevrons', 0, 0),
   timeline: createShape('timeline-rail', 0, 0),
-  'mind-node': createShape('mind-node', 0, 0),
-  flowchart: { ...createShape('square', 0, 0), flowchartId: 'f1' },
-  'org-chart': {
-    ...createShape('mind-node', 0, 0),
-    mindLook: 'person',
-    label: 'Ana Kim',
-  },
-  sequence: createShape('sequence', 0, 0),
   chart: createShape('line-chart', 0, 0),
   stack: createShape('stack', 0, 0),
-  entity: createShape('entity', 0, 0),
   'tab-window': createShape('tab-window', 0, 0),
-  lane: createShape('lane', 0, 0),
-  boundary: createShape('boundary', 0, 0),
-  'diagram-key': createShape('diagram-key', 0, 0),
-  portal: createShape('portal', 0, 0),
 };
 
 describe('ELEMENT_TOUR_DEFS', () => {
@@ -56,12 +43,6 @@ describe('ELEMENT_TOUR_DEFS', () => {
       expect(steps.filter((s) => s.card === 'welcome')).toEqual([]);
     },
   );
-
-  it('puts away the Sequence dialog on Done', () => {
-    const api = { closeSequence: vi.fn() } as unknown as ElementTourApi;
-    ELEMENT_TOUR_DEFS.sequence.onDone?.(api);
-    expect(api.closeSequence).toHaveBeenCalled();
-  });
 
   it('puts away the Chart Data dialog on Done', () => {
     const api = { closeChartData: vi.fn() } as unknown as ElementTourApi;

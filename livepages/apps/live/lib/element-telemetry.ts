@@ -48,25 +48,9 @@ export function trackDuplicated(created: Element[], gestureType?: string): void 
 // titleCaseType, which only upper-cases the first character: 'code-block'
 // would report as 'Code-block' while every other event for that feature says
 // 'CodeBlock', splitting one feature across two tokens on the dashboard.
-//
-// Four of these were missing and the events really were going nowhere: a
-// session button, reaction pad, comment pin or done check reported as
-// 'Session-button' and friends on Added, while its own Changed events and the
-// dashboard's PALETTE_TELEMETRY_TYPES both said 'SessionButton'. The Added
-// count for four features sat at zero.
-//
-// Not every hyphenated kind belongs here. 'roll-call' reports as 'Roll-call'
-// deliberately, and the catalogue agrees; this map is for kinds whose OTHER
-// events already chose the camel-case spelling.
+// This map is for kinds whose OTHER events already chose the camel-case spelling.
 const SHAPE_TOKENS: Record<string, string> = {
   'code-block': 'CodeBlock',
-  'mode-button': 'ModeButton',
-  'mind-node': 'MindNode',
-  'session-button': 'SessionButton',
-  'reaction-pad': 'ReactionPad',
-  'comment-pin': 'CommentPin',
-  'action-card': 'ActionPanel',
-  'done-check': 'DoneCheck',
   // The tab window (docs/specs/009-elements/tab-window.md).
   'tab-window': 'TabWindow',
   // The web components (docs/specs/009-elements/web-components-and-no-groups.md) report as their palette component, so a
@@ -79,11 +63,7 @@ const SHAPE_TOKENS: Record<string, string> = {
   badge: 'Badge',
   step: 'Step',
   'pointer-note': 'PointerNote',
-  'diagram-key': 'DiagramKey',
   stack: 'Stack',
-  sequence: 'Sequence',
-  // Boundary (docs/specs/009-elements/boundary.md).
-  boundary: 'Boundary',
   // Concept graphics (docs/specs/009-elements/concept-graphics.md).
   'layer-stack': 'LayerStack',
   pyramid: 'Pyramid',
@@ -140,8 +120,6 @@ export function elementTelemetryType(element: Element): string {
       // A brand mark reports as TechIcon rather than by its shape, matching
       // both the click-to-add and drag-to-draw paths.
       if (element.iconId && isTechIconId(element.iconId)) return 'TechIcon';
-      // A person node is the org chart's (docs/specs/009-elements/org-chart.md), counted apart from mind nodes.
-      if (element.shape === 'mind-node' && element.mindLook === 'person') return 'OrgChart';
       return shapeTelemetryToken(element.shape);
     }
   }
@@ -162,7 +140,6 @@ export const COMPONENT_TELEMETRY: Record<ComponentKind, string> = {
   stat: 'StatRow',
   process: 'ProcessSteps',
   avatar: 'Avatar',
-  flowchart: 'Flowchart',
 };
 
 export function componentTelemetryType(kind: ComponentKind): string {

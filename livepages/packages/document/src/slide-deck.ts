@@ -50,8 +50,6 @@ export type Slide = {
    *
    * The deck deliberately does not enforce a budget — a slide that moved on
    * because its four minutes were up would cut off the answer you were giving.
-   * The agenda element (docs/specs/012-collaboration/agenda.md) models minutes-per-segment the same way and
-   * does not drive the clock either.
    */
   minutes?: number;
 };

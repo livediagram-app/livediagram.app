@@ -1,7 +1,5 @@
 import { useMemo, useState } from 'react';
-import { participantKey } from '@/lib/identity';
 import { useStableHandlers } from '@/hooks/ui/useStableHandlers';
-import { idBound } from './element-layer-props';
 import { arrowViewGeometry } from './arrow-view-frame';
 import { buildArrowLinks } from './drag-affected-arrows';
 import { shownWithOverlay, useLayerDragPreview } from '@/hooks/canvas/useLayerDragPreview';
@@ -11,15 +9,9 @@ import { useFontEpoch } from './useFontEpoch';
 import {
   elementFontId,
   resolveFontStack,
-  resolveFinish,
-  isSelectionMode,
-  alignmentCoordinates,
   buildElementIndex,
   layerBands,
-  laneSeamCoordinates,
   layerOpacityOf,
-  snapSeamCoordinate,
-  type CommentMention,
   createElementGridTracker,
   type ElementIndex,
   stackedElementIds,
@@ -43,7 +35,6 @@ import { ZoomedLaserOverlay, ZoomedRemoteCursor } from '@/components/canvas/view
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { PageClip } from '@/components/canvas/PageClip';
 import { WireframeDeviceOverlays } from '@/components/canvas/WireframeDeviceOverlays';
-import type { LaneGutterEdge, LaneLike } from '@livepages/document';
 import { GifOmit } from './GifOmit';
 
 // What a drawn arrow resolves its ends against on a board with no arrows yet.
@@ -109,11 +100,9 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onCommitLabel,
     onSetTextAlign,
     onCommitTable,
-    onCommitHeaderSize,
     onAddTableRow,
     onAddTableColumn,
     onToggleChecklistItem,
-    entityActions,
     onSetPageHeading,
     onSetWebRows,
     onSetPointerTip,
@@ -123,32 +112,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onSpawnConnect,
     onStartArrow,
     onFollowLink,
-    onPressModeButton,
-    onPressFocusButton,
-    onPressSessionButton,
-    sessionStartBlocked,
-    sessionRunBy,
-    timerState,
-    // The tab's live timer plus the handlers that drive it, so a Timer
-    // session element can BE the timer (docs/specs/012-collaboration/session-button.md) rather than a button that
-    // starts one elsewhere. The handlers no-op when edits are blocked, so a
-    // read-only surface needs no separate gate here.
-    tabTimer,
-    onSetSessionConfig,
-    onOpenElementSettings,
-    commentSelfId,
-    commentPanelActions,
-    actionSelfId,
-    actionPanelActions,
-    onPauseTimer,
-    onResumeTimer,
-    onResetTimer,
-    onClearTimer,
-    onSetTimerDuration,
-    revealedIds,
-    onToggleReveal,
-    onRollPicker,
-    collab,
     onOpenComments,
     onOpenAction,
     onOpenNote,
@@ -157,24 +120,13 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onDropIcon,
     onLinkCell,
     onShiftSelect,
-    tabVote,
-    selfParticipant,
-    onCastVote,
-    onRetractVote,
     readOnly,
-    takePart = false,
     canMove,
     canWriteText,
     canResize,
-    canvasTool,
-    onEnterPortal,
-    onFireReaction,
-    reactionBursts,
-    onReactionBurstDone,
     remoteCursors,
     remoteSelectionsByElement,
     shiftDupGhostIds,
-    voteReview,
     tabFont,
     tabFinish,
     tabLocked,
@@ -209,42 +161,14 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onBeginDrag,
     onPressArmedAction,
     onShiftSelect,
-    // Voting is taking part: a Participant's as well as an Editor's (docs/specs/013-workspace/share-roles.md).
-    onCastVote: readOnly && !takePart ? undefined : onCastVote,
-    onRetractVote: readOnly && !takePart ? undefined : onRetractVote,
     onSetTextAlign: readOnly ? undefined : onSetTextAlign,
     onCommitTable,
-    onCommitHeaderSize: readOnly ? undefined : onCommitHeaderSize,
-    // The seam's snap targets (docs/specs/009-elements/lane.md). Resolved here because this is where
-    // the sibling elements are: BoxedElementView only ever sees its own.
-    onSnapSeam: readOnly
-      ? undefined
-      : (
-          candidate: number,
-          axis: 'x' | 'y',
-          excludeId: string,
-          edgeOf: (el: LaneLike) => LaneGutterEdge,
-          sizeOf: (el: LaneLike) => number,
-        ) =>
-          snapSeamCoordinate(candidate, {
-            seams: laneSeamCoordinates(elements, axis, excludeId, edgeOf, sizeOf),
-            alignment: alignmentCoordinates(elements, axis, excludeId),
-          }).value,
     onToggleChecklistItem: readOnly ? undefined : onToggleChecklistItem,
-    onSetEntityFields: readOnly ? undefined : entityActions?.setFields,
-    onStartFieldArrow: readOnly ? undefined : entityActions?.startFieldArrow,
-    onAddEntityField: readOnly ? undefined : entityActions?.addFieldSelected,
-    onAddRelatedEntity: readOnly ? undefined : entityActions?.addRelatedSelected,
     onSetPageHeading,
     onSetWebRows: readOnly ? undefined : onSetWebRows,
     onSetPointerTip: readOnly ? undefined : onSetPointerTip,
     onSetHeroCaptionLine: readOnly ? undefined : onSetHeroCaptionLine,
     onFollowLink,
-    onPressModeButton,
-    onPressFocusButton,
-    onPressSessionButton,
-    onToggleReveal,
-    onRollPicker,
     onOpenComments,
     onOpenAction,
     onOpenNote,
@@ -252,62 +176,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onOpenEditDialog,
     onDropIcon,
     onLinkCell,
-    // docs/specs/008-canvas/canvas-performance.md: the rest of what each view receives, stable too.
-    onSetSessionConfig,
-    onOpenElementSettings,
-    onEnterPortal,
-    onFireReaction,
-    onReactionBurstDone,
-    onPauseTimer,
-    onResumeTimer,
-    onResetTimer,
-    onClearTimer,
-    onSetTimerDuration,
-    commentAdd: commentPanelActions?.add,
-    commentRemove: commentPanelActions?.remove,
-    commentResolve: commentPanelActions?.resolve,
-    commentUnresolve: commentPanelActions?.unresolve,
-    actionConfigure: actionPanelActions?.configure,
-    actionComplete: actionPanelActions?.complete,
-    actionReopen: actionPanelActions?.reopen,
   });
-  // One timer bag and one comment / action bag per element, built from the stable wrappers above, so
-  // a view's memo holds across editor renders (docs/specs/008-canvas/canvas-performance.md).
-  // Running the timer is the session's runner's (docs/specs/013-workspace/share-roles.md, facilitator.md): a
-  // Participant, a Viewer and anyone but the facilitator see the face without its controls.
-  const timerControls = useMemo(
-    () =>
-      sessionStartBlocked
-        ? {}
-        : {
-            pause: h.onPauseTimer,
-            resume: h.onResumeTimer,
-            reset: h.onResetTimer,
-            clear: h.onClearTimer,
-            setDuration: h.onSetTimerDuration,
-          },
-    [h, sessionStartBlocked],
-  );
-  const commentActionsFor = useMemo(() => {
-    const { commentAdd, commentRemove, commentResolve, commentUnresolve } = h;
-    if (!commentAdd || !commentRemove || !commentResolve || !commentUnresolve) return null;
-    return idBound((id) => ({
-      add: (text: string, mentions: CommentMention[]) => commentAdd(id, text, mentions),
-      remove: (commentId: string) => commentRemove(id, commentId),
-      resolve: () => commentResolve(id),
-      unresolve: () => commentUnresolve(id),
-    }));
-  }, [h]);
-  const actionActionsFor = useMemo(() => {
-    const { actionConfigure, actionComplete, actionReopen } = h;
-    if (!actionConfigure || !actionComplete || !actionReopen) return null;
-    return idBound((id) => ({
-      add: () => actionConfigure(id, null),
-      edit: (actionId: string) => actionConfigure(id, actionId),
-      complete: (actionId: string) => actionComplete(id, actionId),
-      reopen: (actionId: string) => actionReopen(id, actionId),
-    }));
-  }, [h]);
   // Auto-fit measures the face it paints, and webfonts land after first
   // paint — re-render this layer once they are in so every fitted label
   // re-measures in its real face (see useFontEpoch).
@@ -317,11 +186,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
   // The font an element following the tab letters in, resolved once (docs/specs/004-interface-design/fonts.md):
   // the tab's, or the handwriting font on a Sketch tab (docs/specs/008-canvas/finish.md).
   const tabFontStack = resolveFontStack(elementFontId({}, tabFont, tabFinish));
-  // Highest dot count on the tab (docs/specs/012-collaboration/session-tools.md), computed once so each element's
-  // vote pill can flag itself a winner once results are revealed.
-  const voteMax = tabVote
-    ? Object.values(tabVote.votes).reduce((m, ids) => Math.max(m, ids.length), 0)
-    : 0;
   // One id -> element index per ELEMENTS CHANGE (not per render),
   // shared by every ArrowView so each resolves its endpoints / label
   // collisions with O(1) lookups instead of scanning the whole element
@@ -360,7 +224,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
   const paletteKey = chartPalette?.join('|') ?? '';
   // oxlint-disable-next-line react/exhaustive-deps
   const stablePalette = useMemo(() => chartPalette, [paletteKey]);
-  const selfId = participantKey(selfParticipant);
   // What every boxed element view takes from this layer, the same for each element.
   const boxedShared = useMemo<BoxedShared>(
     () => ({
@@ -372,21 +235,11 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
       onBeginDrag: h.onBeginDrag,
       onPressArmedAction: h.onPressArmedAction,
       onShiftSelect: h.onShiftSelect,
-      vote: tabVote,
-      selfId,
-      voteMax,
-      voteReviewActive: voteReview != null,
-      onCastVote: h.onCastVote,
-      onRetractVote: h.onRetractVote,
       onBeginEdit: h.onBeginEdit,
       onCommitLabel: h.onCommitLabel,
       onSetTextAlign: h.onSetTextAlign,
       onCommitTable: h.onCommitTable,
-      onCommitHeaderSize: h.onCommitHeaderSize,
-      onSnapSeam: h.onSnapSeam,
       onToggleChecklistItem: h.onToggleChecklistItem,
-      onSetEntityFields: h.onSetEntityFields,
-      onStartFieldArrow: h.onStartFieldArrow,
       onSetPageHeading: h.onSetPageHeading,
       onSetWebRows: h.onSetWebRows,
       onSetPointerTip: h.onSetPointerTip,
@@ -394,28 +247,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
       chartPalette: stablePalette,
       onCancelEdit: h.onCancelEdit,
       onFollowLink: h.onFollowLink,
-      onPressModeButton: h.onPressModeButton,
-      onPressFocusButton: h.onPressFocusButton,
-      onPressSessionButton: h.onPressSessionButton,
-      sessionStartBlocked,
-      sessionRunBy,
-      timerState,
-      tabTimer: tabTimer ?? null,
-      onSetSessionConfig: h.onSetSessionConfig,
-      onOpenElementSettings: h.onOpenElementSettings,
-      commentSelfId,
-      actionSelfId,
-      timerControls,
-      onToggleReveal: h.onToggleReveal,
-      onRollPicker: h.onRollPicker,
-      collab,
-      // Mode Buttons light up for the mode they hand out, and the canvas-tool union is WIDER than the mode
-      // vocabulary: Slide Deck (docs/specs/012-collaboration/presentation-mode.md) has no Mode Button, so it is not a
-      // SelectionMode. Narrow rather than widen: a "Switch to Slide Deck" button is exactly what that spec rules out.
-      activeMode: isSelectionMode(canvasTool) ? canvasTool : undefined,
-      onEnterPortal: h.onEnterPortal,
-      onFireReaction: h.onFireReaction,
-      onReactionBurstDone: h.onReactionBurstDone,
       onOpenComments: h.onOpenComments,
       onOpenAction: h.onOpenAction,
       onOpenNote: h.onOpenNote,
@@ -426,28 +257,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
       imageContext,
       onContextSelect: h.handleElementContextSelect,
     }),
-    [
-      h,
-      isPaintMode,
-      tabLocked,
-      tabSummaries,
-      readOnly,
-      tabVote,
-      selfId,
-      voteMax,
-      voteReview,
-      stablePalette,
-      sessionStartBlocked,
-      sessionRunBy,
-      timerState,
-      tabTimer,
-      commentSelfId,
-      actionSelfId,
-      timerControls,
-      collab,
-      canvasTool,
-      imageContext,
-    ],
+    [h, isPaintMode, tabLocked, tabSummaries, readOnly, stablePalette, imageContext],
   );
   // The elements actually drawn, for the arrows' pass-behind breaks: a box on
   // a hidden layer must not cut a gap in a line (docs/specs/008-canvas/arrow-route-behind.md).
@@ -464,14 +274,10 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     if (!elementIndex) return out;
     const grid = gridTracker.gridFor(drawnElements);
     for (const el of drawnElements) {
-      if (el.type === 'arrow')
-        out.set(
-          el.id,
-          arrowViewGeometry(el, elementIndex, grid, resolveFinish(el.finish, tabFinish)),
-        );
+      if (el.type === 'arrow') out.set(el.id, arrowViewGeometry(el, elementIndex, grid));
     }
     return out;
-  }, [drawnElements, elementIndex, gridTracker, tabFinish]);
+  }, [drawnElements, elementIndex, gridTracker]);
   const arrowLinks = useMemo(
     () => (hasArrows ? buildArrowLinks(drawnElements) : null),
     [hasArrows, drawnElements],
@@ -488,7 +294,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     arrowLinks,
     gridFor: (els) => gridTracker.gridFor(els),
     arrowLabels,
-    tabFinish,
   });
   const shownOrder = useMemo(
     () => (previewStructure ? shownWithOverlay(ordered, previewStructure) : ordered),
@@ -544,17 +349,10 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             tabLocked={tabLocked}
             readOnly={readOnly}
             shiftDupGhostIds={shiftDupGhostIds}
-            tabVote={tabVote}
-            tabLayers={tabLayers}
             remoteSelectionsByElement={remoteSelectionsByElement}
             canMove={canMove}
             canWriteText={canWriteText}
             canResize={canResize}
-            voteReview={voteReview}
-            commentActionsFor={commentActionsFor}
-            actionActionsFor={actionActionsFor}
-            revealedIds={revealedIds}
-            reactionBursts={reactionBursts}
             tabFont={tabFont}
             tabFinish={tabFinish}
             fontEpoch={fontEpoch}
@@ -626,8 +424,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
               onAddTableRow,
               onAddTableColumn,
               onAppendWebRow,
-              onAddEntityField: h.onAddEntityField,
-              onAddRelatedEntity: h.onAddRelatedEntity,
             }}
             onBeginDrag={onBeginDrag}
             pages={props.pagesMode?.pages}

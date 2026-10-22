@@ -114,7 +114,6 @@ describe('Shape motions', () => {
       createShape('progress-bar', 0, 0),
       createShape('rating', 0, 0),
       createShape('chevrons', 0, 0),
-      createShape('sequence', 0, 0),
     ]) {
       expect(takesShapeMotions(el), el.type).toBe(true);
       expect(inAnimationSet('shape', el), el.type).toBe(true);

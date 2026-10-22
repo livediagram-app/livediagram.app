@@ -27,7 +27,7 @@ Specs live in numbered category folders: the reserved `001`–`005` first (visio
 - ./017-telemetry/README.md - when adding or changing anonymous events or the telemetry dashboard
 - ./018-help/README.md - when working on the help centre or contextual help links
 - ./019-marketing/README.md - when working on the marketing site, comparison pages or outbound assets
-- ./020-import-export/README.md - when working on Markdown import and export, Mermaid text from agents, imported images, the animated GIF export, or export fidelity
+- ./020-import-export/README.md - when working on Markdown import and export, imported images, the animated GIF export, or export fidelity
 - ./024-agents/README.md - when an agent reads, writes or comments on documents: changesets, presence, views, edit operations, lint
 - ./028-animation/README.md - when working on element animations: the animation set each element takes (Shape, Text, Sticky, Drawing, Media, Table), the per-set menu categories, reveals, loops and the quality bar
 

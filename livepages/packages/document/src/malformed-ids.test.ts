@@ -19,7 +19,7 @@ describe('dropMalformedIds', () => {
   it.each([[[]], [{}], [5], [null], ['x'.repeat(ELEMENT_KEY_MAX + 1)]])(
     'drops a key that is not one (%j)',
     (bad) => {
-      for (const field of ['iconId', 'stickerId', 'flowchartId']) {
+      for (const field of ['iconId', 'stickerId']) {
         const [out] = dropMalformedIds([icon({ [field]: bad })]);
         expect(field in out!).toBe(false);
       }

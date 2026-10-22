@@ -76,15 +76,6 @@ export type EditorKeyboardShortcutsDeps = {
   addSticky: () => void;
   addArrow: (ends?: import('@livepages/document').ArrowEnds) => void;
   onAddImage: (() => void) | null;
-  // Mind map (docs/specs/009-elements/mind-node.md): whether Tab / Enter should grow from this element,
-  // and the grower itself. Asked per keystroke rather than held as a flag so
-  // it can't go stale against the selection.
-  canGrowMindNode: (id: string) => boolean;
-  onGrowMindNode: (id: string, kind: 'child' | 'sibling') => void;
-  // Escape on the empty node a growth just made (the Tab one time too many):
-  // removes it and selects its parent. False when that is not the case, so
-  // Escape deselects as usual.
-  onEscapeMindNode: (id: string) => boolean;
   // Cmd/Ctrl+Shift+L: toggle lock on the current selection (single or
   // multi). On Shift+L rather than plain Cmd+L so it never fights the
   // browser's "focus the address bar" binding.

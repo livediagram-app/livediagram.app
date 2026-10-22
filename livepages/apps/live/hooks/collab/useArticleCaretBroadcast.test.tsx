@@ -13,15 +13,14 @@ import { BROADCAST_THROTTLE_MS } from './useEditorBroadcast';
 
 // docs/specs/007-editor/article-pages.md "Collaboration": where we are writing goes to the room as
 // presence at the cursor's rate, the last place always following, and a null when the writing loses
-// the caret; nothing while the room is closed or a hide-cursors vote runs.
+// the caret; nothing while the room is closed.
 
-function setup(initial: { live?: boolean; hidden?: boolean; activeId?: string } = {}) {
+function setup(initial: { live?: boolean; activeId?: string } = {}) {
   const sent: unknown[] = [];
   const roomRef = { current: { send: (msg: unknown) => sent.push(msg) } };
   const hook = renderHook(
-    (p: { live: boolean; hidden: boolean; activeId: string }) =>
-      useArticleCaretBroadcast({ roomRef, ...p }),
-    { initialProps: { live: true, hidden: false, activeId: 't', ...initial } },
+    (p: { live: boolean; activeId: string }) => useArticleCaretBroadcast({ roomRef, ...p }),
+    { initialProps: { live: true, activeId: 't', ...initial } },
   );
   return { sent, ops: () => sent.map((m) => (m as { op: unknown }).op), hook };
 }
@@ -62,14 +61,14 @@ describe('useArticleCaretBroadcast', () => {
     expect(sent).toEqual([]);
   });
 
-  it('retracts a shown caret when a hide-cursors vote opens, and shows it again after', () => {
+  it('retracts a shown caret when the room closes, and shows it again when it opens', () => {
     const { ops, hook } = setup();
     act(() => setLocalArticleCaret('f', { blockId: 'b', offset: 1 }));
-    hook.rerender({ live: true, hidden: true, activeId: 't' });
+    hook.rerender({ live: false, activeId: 't' });
     expect(ops().at(-1)).toEqual({ kind: 'article-caret', tabId: 't', flow: null });
     act(() => setLocalArticleCaret('f', { blockId: 'b', offset: 2 }));
     expect(ops()).toHaveLength(2);
-    hook.rerender({ live: true, hidden: false, activeId: 't' });
+    hook.rerender({ live: true, activeId: 't' });
     expect(ops().at(-1)).toMatchObject({ flow: 'f', offset: 2 });
   });
 
@@ -78,7 +77,7 @@ describe('useArticleCaretBroadcast', () => {
     syncArticlePeople([{ id: 'ann', name: 'Ann', color: '#f00' }]);
     receiveArticleCaret('ann', { tabId: 'u', flow: 'f', blockId: 'b', offset: 0 });
     expect(articlePeersOf('f')).toEqual([]);
-    hook.rerender({ live: true, hidden: false, activeId: 'u' });
+    hook.rerender({ live: true, activeId: 'u' });
     expect(articlePeersOf('f').map((p) => p.id)).toEqual(['ann']);
   });
 });

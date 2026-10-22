@@ -1,8 +1,5 @@
-// The selection-mode glyphs (docs/specs/009-elements/mode-button.md), as data: the ONE drawing of each mode that
-// the editor's palette and Mode button (through <Prims>) and the export (through
-// iconPrimsMarkup) all render, so an exported Mode button shows the same glyph
-// as the canvas. Keyed by the mode ids in @livepages/document's SELECTION_MODES
-// (a test there checks every mode has one); `units` is the glyph's viewBox.
+// The selection-mode glyphs, as data: the ONE drawing of each mode (select, pan, laser, spotlight, ...) that the
+// editor's palette (through <Prims>) and the marketing hero render; `units` is the glyph's viewBox.
 
 import {
   lucideFootprints,

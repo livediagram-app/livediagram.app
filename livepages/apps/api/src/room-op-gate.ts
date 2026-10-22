@@ -1,12 +1,6 @@
 // Which client ops a session may relay (docs/specs/013-workspace/share-roles.md "The level ladder"): the room's
 // role gate as one pure decision, so every rule is testable without a socket. The room acts on the answer.
-import {
-  isParticipationOp,
-  isPresenceOpKind,
-  isSystemOpKind,
-  parseStoredLevel,
-} from '@livepages/api-schema';
-import { answersAsSelf } from './document-room-rules';
+import { isPresenceOpKind, isSystemOpKind, parseStoredLevel } from '@livepages/api-schema';
 import { scopedSenderMayRelay } from './room-scope';
 
 type OpGate =
@@ -14,16 +8,15 @@ type OpGate =
   | { kind: 'drop' }
   /** A Participant's `el` op: through the participant content rule, never relayed as sent. */
   | { kind: 'participant-content' }
-  /** Relayed: unordered when `presence`; a Participant's answers also schedule their write. */
-  | { kind: 'relay'; presence: boolean; participantAnswers: boolean };
+  /** Relayed: unordered when `presence`. */
+  | { kind: 'relay'; presence: boolean };
 
 const DROP: OpGate = { kind: 'drop' };
 
-/** The sender as the gate needs it: its server-verified role, tab scope and published key. */
+/** The sender as the gate needs it: its server-verified role and tab scope. */
 export type GateSender = {
   role: unknown;
   tabScope: string | null;
-  key: string | undefined;
 };
 
 export function gateClientOp(op: unknown, sender: GateSender): OpGate {
@@ -46,25 +39,18 @@ export function gateClientOp(op: unknown, sender: GateSender): OpGate {
   // document's structure (docs/specs/013-workspace/tab-scoped-share-links.md).
   if (!scopedSenderMayRelay(op, sender.tabScope)) return DROP;
   const presence = isPresenceOpKind(opKind);
-  // The level ladder (docs/specs/013-workspace/share-roles.md): presence from anyone; a Participant's dots,
-  // responses and ideas relay like an Editor's; its `el` op goes through the participant content rule and
-  // never relays as sent; everything else needs an Editor.
+  // The level ladder (docs/specs/013-workspace/share-roles.md): presence from anyone; a Participant's `el` op
+  // goes through the participant content rule and never relays as sent; everything else needs an Editor.
   const level = parseStoredLevel(sender.role);
   // A Viewer only looks (docs/specs/013-workspace/share-roles.md): of the presence class, a reaction is taking
   // part, so it needs a Participant.
   if (level === 'view' && opKind === 'reaction') return DROP;
-  // Bring Focus moves everyone's view (docs/specs/012-collaboration/bring-focus.md): running the session, so an
-  // Editor's alone.
-  if (opKind === 'focus-here' && level !== 'edit') return DROP;
-  let participantAnswers = false;
   if (!presence && level !== 'edit') {
-    if (level !== 'participate') return DROP;
-    if (opKind === 'el') return { kind: 'participant-content' };
-    if (!isParticipationOp(op) || !answersAsSelf(op, sender.key)) return DROP;
-    participantAnswers = true;
+    if (level === 'participate' && opKind === 'el') return { kind: 'participant-content' };
+    return DROP;
   }
   // A drag preview (docs/specs/008-canvas/drag-preview.md) is presence, but shows elements moving: only
   // an editor's may reach anyone, so a viewer can never make others' elements appear to move.
   if (opKind === 'drag-preview' && sender.role !== 'edit') return DROP;
-  return { kind: 'relay', presence, participantAnswers };
+  return { kind: 'relay', presence };
 }

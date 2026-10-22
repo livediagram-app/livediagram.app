@@ -79,7 +79,7 @@ snapEdge)` with `lead` from the raw pointer, so the square survives the snap; wi
   the element's resting box, turned and shifted as the wrapper is. The frame is
   `pointer-events: none`; each grip re-enables them, so the body beneath stays draggable.
 - The element's own content keeps its paint order; nothing about selection raises it.
-- A grip is not affected by the element's opacity, a layer's opacity, a vote's dimming or a looping
+- A grip is not affected by the element's opacity, a layer's opacity or a looping
   animation's motion: it draws opaque on the resting box.
 
 ## Interfaces and contracts
@@ -117,7 +117,7 @@ primaryId, mode, dx, dy, shiftHeld, dragAspectLocked, guidesOn })` returns `{ bo
   `translate: 0 0 calc(2px + var(--iso-z) * 0.01px)` with `--iso-z` one past the top element's
   paint index (above the arrows' `1px` nudge).
 - A later element that forms its own stacking context, or a descendant with its own z-index (a
-  lane's gutter and a face's settings button, both `z-10`), stays under the layer.
+  face's settings button, `z-10`), stays under the layer.
 - Remote cursors (`z-index: 40`) stay above the grips.
 
 ## Performance and limits

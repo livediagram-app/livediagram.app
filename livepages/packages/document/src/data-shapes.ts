@@ -122,22 +122,6 @@ export const CHECKLIST_MAX_ITEMS = 30;
 // clamps it to one line anyway, so anything longer is a paste accident.
 export const PAGE_HEADING_MAX = 200;
 
-// Record (docs/specs/009-elements/entity.md): a UML class / ER entity box. One row per field, each a
-// name with an optional type. Bounded like the checklist so a paste can't
-// produce an element nobody can scroll.
-export const ENTITY_MAX_FIELDS = 40;
-export const ENTITY_MAX_TEXT = 80;
-
-// A field's role in a data model (docs/specs/009-elements/entity.md "Keys"): primary, foreign, both (a
-// join table's composite key) or unique. One value, not a set: these four are the combinations a schema
-// uses, and one value is one press to cycle.
-export const ENTITY_KEYS = ['pk', 'fk', 'pk-fk', 'uk'] as const;
-export type EntityKey = (typeof ENTITY_KEYS)[number];
-
-// A row in a record box. `type` is optional because half the uses (an ER
-// entity's attribute list, a rough class sketch) don't carry one, and an empty
-// column reads better than a placeholder. `key` is absent for a field with no key.
-export type EntityField = { name: string; type?: string; key?: EntityKey };
 export const CHECKLIST_MAX_TEXT = 200;
 // All three seed rows are unchecked, per docs/specs/009-elements/checklist.md. A seeded `done: true` made
 // a freshly-dropped checklist render its first row ticked and struck through,
@@ -244,76 +228,4 @@ export function clampRating(value: number): number {
 // (default applied by the caller before clamping).
 export function clampPercent(value: number): number {
   return clampRound(value, 100);
-}
-
-// Reaction pads (docs/specs/009-elements/reaction-pad.md). Five reactions, chosen to cover distinct THINGS
-// PEOPLE MEAN rather than five ways of saying "nice": celebrate a result,
-// admire an idea, show warmth to a person, thank a speaker, mark the moment a
-// thing shipped. A sixth would be decoration.
-export const REACTIONS = ['confetti', 'sparkles', 'hearts', 'applause', 'fireworks'] as const;
-export type Reaction = (typeof REACTIONS)[number];
-
-// Each reaction's colour, a pair of hues from one end of its glow to the other
-// (docs/specs/009-elements/reaction-pad.md "The look"). Fixed rather than the theme's: the reaction's
-// feeling is its identity. Shared by the canvas face and the export.
-export const REACTION_HUES: Record<Reaction, readonly [string, string]> = {
-  confetti: ['#fbbf24', '#fb7185'],
-  sparkles: ['#a78bfa', '#22d3ee'],
-  hearts: ['#f472b6', '#a855f7'],
-  applause: ['#fbbf24', '#fb923c'],
-  fireworks: ['#818cf8', '#e879f9'],
-};
-
-/** Menu + hover card name for a reaction. */
-export const REACTION_LABEL: Record<Reaction, string> = {
-  confetti: 'Confetti',
-  sparkles: 'Sparkles',
-  hearts: 'Hearts',
-  applause: 'Applause',
-  fireworks: 'Fireworks',
-};
-
-/** The glyph the pad wears, and the particle each burst throws. */
-export const REACTION_EMOJI: Record<Reaction, string> = {
-  confetti: '🎉',
-  sparkles: '✨',
-  hearts: '💜',
-  applause: '👏',
-  fireworks: '🎆',
-};
-
-/** One line on what the reaction is FOR, for the menu tile. */
-export const REACTION_HINT: Record<Reaction, string> = {
-  confetti: 'A result worth celebrating',
-  sparkles: 'A good idea, nicely done',
-  hearts: 'Warmth for a person, not a result',
-  applause: 'Thanks for the talk or the demo',
-  fireworks: 'It shipped',
-};
-
-/**
- * The pad's own caption per reaction (docs/specs/009-elements/reaction-pad.md).
- *
- * The palette offers a tile per reaction, so a placed pad should already say
- * what pressing it does — "Celebrate" over a confetti pad, "Thanks" over an
- * applause one. Naming the ACT rather than repeating the glyph.
- */
-export const REACTION_PAD_LABEL: Record<Reaction, string> = {
-  confetti: 'Celebrate',
-  sparkles: 'Nice one',
-  hearts: 'Show some love',
-  applause: 'Thanks',
-  fireworks: 'It shipped',
-};
-
-export const REACTION_DEFAULT: Reaction = 'confetti';
-
-export function isReaction(value: unknown): value is Reaction {
-  return typeof value === 'string' && (REACTIONS as readonly string[]).includes(value);
-}
-
-/** A pad's reaction as it plays and draws: a stored one this build does not know (a newer build's, or a
- *  hand-edited file) falls back to the default, as the validator leaves cosmetic values for the renderer to read. */
-export function reactionOf(value: unknown): Reaction {
-  return isReaction(value) ? value : REACTION_DEFAULT;
 }

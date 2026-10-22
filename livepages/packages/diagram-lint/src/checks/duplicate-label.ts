@@ -29,7 +29,7 @@ export const duplicateLabel: Check = (ctx) => {
         code: 'duplicate-label' as const,
         refs,
         message: `${refs.join(', ')} share ${quoteLabel(label)}`,
-        fix: fixes.duplicateLabel(ctx.source, refs[1]!),
+        fix: fixes.duplicateLabel(refs[1]!),
         at: { x: boxes[0]!.x, y: boxes[0]!.y },
       };
     });

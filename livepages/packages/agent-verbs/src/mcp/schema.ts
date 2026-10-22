@@ -30,10 +30,6 @@ import {
   CODE_MAX_LENGTH,
   CODE_THEMES,
   ELEMENT_TYPES,
-  ENTITY_MAX_FIELDS,
-  GRAPH_LABEL_MAX,
-  GRAPH_LAYOUT_MAX_EDGES,
-  GRAPH_LAYOUT_MAX_NODES,
   NAME_MAX_LENGTH,
   SANKEY_LINK_COLORS,
   SANKEY_MAX_FLOWS,
@@ -74,11 +70,6 @@ const CONTENT_KINDS =
   `shape "code-block": "code" (up to ${CODE_MAX_LENGTH} chars), "codeLanguage" (` +
   `${CODE_LANGUAGES.join(', ')}), "codeTheme" (${CODE_THEMES.map((t) => t.id).join(', ')}; ` +
   'default midnight, dark), "codeWrap"; the block draws itself and shows no label. ' +
-  'shape "entity": "label" is the title, "entityFields" is [{ "name", "type"?, "key"? }] rows (up to ' +
-  `${ENTITY_MAX_FIELDS}; "key" is "pk", "fk", "pk-fk" or "uk"); the box grows to fit its rows. A pinned ` +
-  'arrow end on an entity may add "field": a row index, with anchor "w" or "e", to join that field. ' +
-  'shape "lane": a swimlane whose "label" is the title in its left strip; elements fully inside ' +
-  'its box belong to it, lanes are placed one under another, and they paint behind everything. ' +
   'shape "bar-chart" / "pie-chart": "pieSlices" is [{ "label", "value" }]; categories show in ' +
   'the legend. shape "line-chart": "lineCategories" is the x labels, "lineSeries" is ' +
   '[{ "name", "values" }] with one value per category. "chartVariant" picks the chart type: ' +
@@ -113,9 +104,6 @@ const CONTENT_KINDS =
   `shape "badge": a small label pill (up to ${BADGE_LABEL_MAX} chars); shape "step": a numbered disc ` +
   `("label" the number, up to ${STEP_LABEL_MAX} chars). Both take "chipLook"; with "attachedTo" (a node id) ` +
   'and "attachAt" they sit on that point of the node and move, copy and delete with it; no x / y needed. ' +
-  'shape "boundary": a titled container ("label" the title, "pageSubtitle" a meta line such as a CIDR, ' +
-  '"iconId" in its tab); elements whose centre is inside it belong to it; nest them for edge, region, ' +
-  'VPC and subnet, "boundaryStyle" inset for a nested one, c4 for a C4 diagram. ' +
   'shape "layer-stack" / "pyramid" / "cycle": "conceptRows" is [{ "label", "note"? }]: a stack 2 to 8 ' +
   '(note = a side note), a pyramid 2 to 6 (first row the apex; "pyramidVariant" funnel makes it a ' +
   'funnel and its note the row\'s value), a cycle 3 to 8 clockwise from the top (its "label" is the ' +
@@ -126,16 +114,9 @@ const CONTENT_KINDS =
   // Round 2 (docs/specs/015-api/mcp-server.md §4.7a).
   'shape "pointer-note": a note ("label") with a leader to a tip; "pointerTip" { x, y } is relative to its ' +
   'top-left, or "attachedTo" + "attachAt" pins the tip to that point of a node. ' +
-  'shape "diagram-key": a legend of the tab\'s arrow line styles and tag colours; its rows fill in by ' +
-  'themselves, "keyMeanings" maps a row id ("line:dashed", "tag:<tag>") to what it means. ' +
   'shape "stack": a container that lines up the elements whose centre is inside it; "stackDirection", ' +
   '"stackColumns" (2 to 6, grid), "stackGap" and "stackPadding" (0 to 64), "stackAlign"; place children ' +
-  'anywhere inside and the editor lays them out. ' +
-  'An org chart is quickest as a graph with style "tree" and a "role" on each node (see the graph tool). ' +
-  'shape "sequence": a UML sequence diagram in one element; "sequenceParticipants" is [{ "id", "label", ' +
-  '"actor"? }] (2 to 12, left to right), "sequenceMessages" [{ "from", "to", "label", "kind": call | async | ' +
-  'reply }] (up to 60, top to bottom, from === to a self-call), "sequenceNumbered" true numbers them. It lays ' +
-  'itself out; prefer it over loose shapes and arrows for a sequence diagram you will edit.';
+  'anywhere inside and the editor lays them out.';
 
 // The style fields a box or arrow takes beyond its geometry, as facts (docs/specs/015-api/mcp-server.md §4.7a "Style
 // fields"): the closed vocabularies from the one list edit operations and the value check read, so they cannot drift.
@@ -154,15 +135,11 @@ const STYLE_FIELDS =
   '360 degrees, positive bowing up: a badge\u2019s top line 180, its bottom -180); on an arrow "label", ' +
   '"strokeStyle", "arrowEnds", "arrowheadShape" (an ER line\u2019s ends: one, zero-or-one, many, zero-or-many, ' +
   'one-or-many), "arrowheadStartShape" (the start\u2019s, when it differs: a one at one table, a many at the ' +
-  'other). A Mermaid erDiagram draws these ends itself. A field a type ' +
+  'other). A field a type ' +
   'does not have, or a value off its list, is refused naming what it takes. ' +
-  'Facilitation kinds and what they hold: "session-button" a "session" ({"tool": "timer" with "minutes", ' +
-  '"stopwatch", or "vote" with "dots"}), drawn as what pressing it does ' +
-  'unless it has a label; "agenda" its "agendaItems" ([{"label", "minutes"}]); "checklist" its "checklistItems" ' +
+  'Kinds and what they hold: "checklist" its "checklistItems" ' +
   '([{"text", "done"}]); a stat row its "stats" ([{"value", "caption"}]); a callout its "pageTitle" over its "label" ' +
-  '(the body); a banner its "pageTitle" and "pageSubtitle"; "sticker" a "stickerId" (an emoji- id from search_icons). The entries of an "idea-box" ' +
-  'and a "temperature" are the people\u2019s, never an edit\u2019s: starter questions or ideas go on ' +
-  'stickies beside them. ';
+  '(the body); a banner its "pageTitle" and "pageSubtitle"; "sticker" a "stickerId" (an emoji- id from search_icons). ';
 
 // Self-contained element schema, attached to each tool's element argument so the
 // model reads it straight from the tool definition (see the comment above).
@@ -270,11 +247,9 @@ tabs in a create_document call.
 - Size sibling nodes consistently (e.g. every box 160x64).
 - Prefer pinned arrows (node -> node) so they track their shapes when moved.
 - Give every node an id and a short, clear label.
-- A node/edge diagram given as "graph" is laid out in the template look (sizes,
-  elbows, side exits, loops round the outside, title, key). For a deck, an
-  article, a logo, a poster or another page that is not a graph, list_templates
-  has ready-made pages to pass as "template", then replace their sample text
-  with update_document.
+- For a deck, an article, a logo, a poster or another ready-made page,
+  list_templates has ready-made pages to pass as "template", then replace their
+  sample text with update_document.
 `;
 }
 
@@ -296,21 +271,12 @@ from ready-made pages, and list_templates lists them all. A layout's elements ho
 "pages" lists each page's elements with their refs and text, to replace with update_document. It also shows each
 article as Markdown.
 The calling model produces the elements on a page AND decides their layout; this server validates, persists, and
-renders them, and only auto-arranges a graph when you ask it to (or leave nodes unplaced). The full element format is
-documented inline on each tool's element argument, so the tool definitions are the complete reference for it. The
-"graph" argument (nodes + edges by id, or the same as Mermaid text in "mermaid") builds a node/edge diagram
-(flowchart, process, architecture, org chart, state machine, swimlanes, a cycle, a mind map) with no coordinates:
-template-sized boxes, elbow lines, a decision's side exit level beside it, loops and skipped ranks routed round the
-boxes, flowchart steps toned by their "shape" (a stadium starts or ends, a diamond decides;
-a node's "role" is a person's job title, for an org chart), node tones and icons, and a title, subtitle and shape key when given. Its
-styles: flow (layered), tree (hierarchy), mindmap, lanes (each group a swimlane) and cycle (a ring). A node's label is
-its heading (up to 40 characters, longer ones shortened with the full text kept in the node's note). Raw "elements"
-are for content a graph cannot express (text, charts, tables, stickies, free placement). Either way: use a unique "id"
-per element, make nodes "shape" elements (a labelled box) NOT "text" (text is only for titles, captions and running
-copy), prefer pinned arrows (node -> node), and the theme owns colours (a sticky keeps its own). Stickies, tables, code
-blocks, entities, lanes and charts carry content fields, documented on each tool's element argument. search_icons
-finds icon ids for "iconId" and a graph node's "icon"; list_images lists the user's pictures for an image element's
-"imageId".`;
+renders them, and only auto-arranges boxes and arrows when you ask it to (or leave nodes unplaced). The full element
+format is documented inline on each tool's element argument, so the tool definitions are the complete reference for
+it. Each element has a unique "id"; nodes are "shape" elements (a labelled box) NOT "text" (text is only for titles,
+captions and running copy); pinned arrows (node -> node) track their boxes; and the theme owns colours (a sticky keeps
+its own). Stickies, tables, code blocks and charts carry content fields, documented on each tool's element argument.
+search_icons finds icon ids for "iconId"; list_images lists the user's pictures for an image element's "imageId".`;
 
 // --- Tool input shapes (ZodRawShape). Element arrays are permissive; isValidTab
 // is the real guard, so there's no second schema to drift. ---
@@ -356,186 +322,6 @@ const finishField = z
       '(crisp corners, thin lines, no shadows), "sketch" (hand-drawn pencil lines, hatched fills, a ' +
       'handwriting font) or "marker" (bold felt-tip lines, coloured-in fills, marker lettering). An element ' +
       'can carry its own "finish" too.',
-  );
-
-// Graph-first authoring (docs/specs/015-api/mcp-server.md §4.7): the LOW-BURDEN path. Give just the
-// connection graph — nodes and edges by id — and the server builds the
-// boxes + arrows and lays them out for you. Prefer this over hand-placing
-// elements whenever the diagram is a node/edge graph (flowcharts, org
-// charts, architecture, dependency graphs): no x/y/width/height, no
-// anchors, far fewer mistakes. Use `elements` only when you need precise
-// control (a deliberate ring/grid, mixed free-text, non-node content).
-const graphField = z
-  .object({
-    nodes: z
-      .array(
-        z.object({
-          id: z.string().describe('Unique id the edges reference.'),
-          label: z
-            .string()
-            .optional()
-            .describe(
-              `The heading in the box, at most ${GRAPH_LABEL_MAX} characters. A longer label is ` +
-                "shortened at a word boundary and its full text is kept in the node's note. " +
-                'The box is sized to fit the label.',
-            ),
-          shape: z
-            .string()
-            .optional()
-            .describe(
-              `Shape kind (${shapeKinds}); default "square". Use "diamond" for a ` +
-                'decision, "cylinder" for a datastore, "stadium" for start/end. A "circle" with no label is a ' +
-                'small solid dot, a state machine\'s start; "final-state" is its end, a bullseye.',
-            ),
-          note: z
-            .string()
-            .optional()
-            .describe(
-              'Detail behind the heading: longer explanation, context or a description. ' +
-                "Stored as the element's note, which the editor shows on the element.",
-            ),
-          role: z
-            .string()
-            .optional()
-            .describe(
-              "A person's role: the node draws as the org-chart template's person card, the label (their name) " +
-                'in bold over the role, with a person icon unless "icon" names another.',
-            ),
-          group: z
-            .string()
-            .optional()
-            .describe(
-              "Id of the group this node sits in; the same as listing it in that group's members.",
-            ),
-          icon: z
-            .string()
-            .optional()
-            .describe('An icon on the box: an id from search_icons ("database", "aws-lambda").'),
-          tone: z
-            .enum(['strong', 'soft', 'muted', 'plain'])
-            .optional()
-            .describe(
-              'How the box stands out: strong (filled in the accent), soft (tinted), muted (outlined and ' +
-                'dashed: an exception or an optional step) or plain. Unset in a flowchart, a stadium the flow ' +
-                'starts from is strong, one it ends on soft, and a diamond soft.',
-            ),
-        }),
-      )
-      .min(1)
-      .max(GRAPH_LAYOUT_MAX_NODES)
-      .describe(
-        `The nodes (boxes), at most ${GRAPH_LAYOUT_MAX_NODES}. Each needs a unique id. ` +
-          'A larger diagram is better split into several.',
-      ),
-    edges: z
-      .array(
-        z.object({
-          from: z.string().describe('Source node or group id.'),
-          to: z.string().describe('Target node or group id.'),
-          label: z
-            .string()
-            .optional()
-            .describe(`Optional text on the arrow, at most ${GRAPH_LABEL_MAX} characters.`),
-          line: z
-            .enum(['solid', 'dashed', 'thick'])
-            .optional()
-            .describe(
-              'The stroke: solid (default), dashed (an event, a reply, an optional path) or thick.',
-            ),
-          ends: z
-            .enum(['to', 'none', 'both', 'from'])
-            .optional()
-            .describe(
-              'Which ends carry an arrowhead. Default: "to", except in a tree, whose lines show belonging and ' +
-                'carry none.',
-            ),
-        }),
-      )
-      .max(GRAPH_LAYOUT_MAX_EDGES)
-      .describe(
-        `Directed connections between ids, at most ${GRAPH_LAYOUT_MAX_EDGES}. An edge to an ` +
-          'unknown id is dropped.',
-      ),
-    groups: z
-      .array(
-        z.object({
-          id: z.string().describe("Unique id, never also a node's (an edge may point at a group)."),
-          label: z.string().optional().describe("The group's heading, drawn on its frame."),
-          members: z
-            .array(z.string())
-            .optional()
-            .describe('The node ids inside this group (or set "group" on each node).'),
-        }),
-      )
-      .optional()
-      .describe(
-        'Named clusters (e.g. "Frontend", "Backend"): each is drawn as a frame around its ' +
-          'members and laid out as one block.',
-      ),
-    direction: z
-      .enum(['down', 'right'])
-      .optional()
-      .describe(
-        'Flow direction: "down" (top to bottom) or "right" (left to right). Default: auto.',
-      ),
-    style: z
-      .enum(['flow', 'tree', 'mindmap', 'lanes', 'cycle', 'sequence'])
-      .optional()
-      .describe(
-        'Layout: "flow" (layered, the default; the layout for processes and systems: a decision\u2019s ' +
-          'side exit sits level beside it and a loop back runs round the outside), "tree" (a tidy ' +
-          'hierarchy, the layout for org charts), "mindmap" (radial around the first node), "lanes" (a ' +
-          'swimlane diagram: each group a lane, the flow left to right across them) or "cycle" (a ring in ' +
-          'node order, clockwise from the top; a node with no edge sits at its centre) or "sequence" (a sequence diagram: the nodes the participants, a node shaped actor a stick ' +
-          'figure; the edges the messages in order, a dashed edge a reply; Mermaid sequenceDiagram text says ' +
-          'more: activations, notes, alt/loop fragments). With groups the layout is flow unless it is lanes.',
-      ),
-    lines: z
-      .enum(['straight', 'angled', 'curved'])
-      .optional()
-      .describe(
-        'Arrow routing. Default: angled (elbows) for flow, tree and lanes; curved for mindmap and cycle.',
-      ),
-    title: z
-      .string()
-      .max(120)
-      .optional()
-      .describe('A heading above the diagram, left aligned, as every template has.'),
-    subtitle: z
-      .string()
-      .max(300)
-      .optional()
-      .describe('A muted caption under the title: what the diagram shows and how to read it.'),
-    key: z
-      .union([z.boolean(), z.record(z.string(), z.string().max(40))])
-      .optional()
-      .describe(
-        'A key beside the diagram: one miniature per shape kind it uses with what that shape means. true ' +
-          'names them by default (a flowchart\u2019s Start or end, Step, Decision...; else Component, Data ' +
-          'store, Hub or bus, External system...); an object names them yourself by shape ' +
-          '({"hexagon": "Event bus", "cylinder": "Database"}), the rest by default.',
-      ),
-  })
-  .optional()
-  .describe(
-    'A node/edge graph the server turns into laid-out boxes + arrows — the ' +
-      'easiest way to author. Provide one of graph, mermaid, elements or template.',
-  );
-
-// The same graph as Mermaid (docs/specs/015-api/mcp-server.md §4.7): parsed by the editor's own
-// importer, so a model can write the notation it already knows.
-const mermaidField = z
-  .string()
-  .optional()
-  .describe(
-    'The diagram as Mermaid text: a flowchart (graph / flowchart, with subgraphs), a state ' +
-      "diagram (stateDiagram), an ER diagram (erDiagram: crow's-foot ends from the cardinality tokens, " +
-      'an entity alias in brackets is its title, BOOK_AUTHOR[Book author]) or a sequence diagram (sequenceDiagram: ' +
-      'participant / actor, ->> calls, -) async, -->> replies, +/- activations, Note over, alt/else, loop, ' +
-      'opt, par, autonumber, title). Parsed into the same graph as the "graph" input: subgraphs become ' +
-      'groups, the direction is kept, and the same label limit applies; a sequence diagram is drawn with ' +
-      'lifelines, activation bars, notes and fragments. Front matter (---, title: Text, ---) titles any of them. ' +
-      'Provide one of graph, mermaid, elements or template.',
   );
 
 // Icon search (docs/specs/015-api/mcp-server.md §4.5a): the ids "iconId" takes, found by what they show.
@@ -638,8 +424,6 @@ export const createDocumentTab = z.object({
   name: nameField(
     'Name of the tab. Optional with a template (its own first tab name is used); otherwise "Tab n".',
   ).optional(),
-  graph: graphField,
-  mermaid: mermaidField,
   elements: elementArray.optional(),
   template: templateField,
   theme: z
@@ -687,8 +471,6 @@ export const addTabShape = {
     .string()
     .describe('The document to add a tab to (from find_documents / read_document).'),
   name: nameField('Name of the new tab.'),
-  graph: graphField,
-  mermaid: mermaidField,
   elements: elementArray.optional(),
   template: templateField,
   layout: layoutField,
@@ -714,8 +496,6 @@ export const updateDocumentShape = {
       'ops mode: the tab revision read_document returned. An element a person changed since is then a ' +
         'conflict, never silently overwritten; read again and redo the edit.',
     ),
-  graph: graphField,
-  mermaid: mermaidField,
   elements: elementArray
     .optional()
     .describe(`Replace mode: the full new element list. ${ELEMENT_SCHEMA_HINT}`),

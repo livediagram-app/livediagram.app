@@ -177,7 +177,7 @@ export const capBandBaselineY = (centreY: number, fontPx: number) =>
   (`svg-render-data.ts`, `PROGRESS_LABEL_PX = 14`; its canvas label is `text-optical-centre`), and badge
   stickers (`sticker-markup.ts`: the word on the pill's centre line, `x` moved half the tracking right,
   because SVG centres a word with its trailing letter-space).
-- Emoji glyphs (`icon-glyph.tsx`, `markup.ts` text prims, reaction pads, emoji stickers) keep `central`:
+- Emoji glyphs (`icon-glyph.tsx`, `markup.ts` text prims, emoji stickers) keep `central`:
   an emoji fills its em box, so the em centre is its centre (D44). User labels are out of scope.
 
 ## Ink audit

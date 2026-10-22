@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { Comment } from '@livepages/document';
 import { groupByAuthor } from './CommentBubbles';
 
-// Consecutive comments by one author read as one voice (docs/specs/012-collaboration/comment-pin.md "The look").
+// Consecutive comments by one author read as one voice.
 
 const c = (id: string, authorName: string, authorId?: string): Comment => ({
   id,

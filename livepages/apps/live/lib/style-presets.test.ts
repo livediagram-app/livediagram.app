@@ -195,13 +195,10 @@ describe("colour field setters clear a table's preset binding", () => {
     });
   });
 
-  it('applyHeaderFillToEl, and leaves a lane gutter untouched', () => {
+  it('applyHeaderFillToEl', () => {
     expect(applyHeaderFillToEl(bound(), '#c')).toMatchObject({
       headerFill: '#c',
       tablePreset: undefined,
-    });
-    expect(applyHeaderFillToEl(el('shape', { shape: 'lane' }), '#c')).toMatchObject({
-      headerFill: '#c',
     });
   });
 });

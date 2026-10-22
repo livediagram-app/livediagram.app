@@ -1,11 +1,11 @@
 // Frames and their members, by the views' containment (blueprint "The checks", LN12, LN13, N13): the group
-// codes judge frames, never lanes; a box belongs to the first frame on its chain of containers, and a
+// codes judge frames, never stacks; a box belongs to the first frame on its chain of containers, and a
 // frame's members are every box whose chain reaches it.
 
 import { isBoxed, type BoxedElement, type ElementId } from '@livepages/document';
 import type { LintContext } from './context';
 
-// The frame an id names, or null for a lane, a mind node or anything else.
+// The frame an id names, or null for a stack or anything else.
 function frameAt(ctx: LintContext, id: ElementId): BoxedElement | null {
   const el = ctx.byId.get(id);
   return el && isBoxed(el) && el.type === 'shape' && el.shape === 'frame' ? el : null;

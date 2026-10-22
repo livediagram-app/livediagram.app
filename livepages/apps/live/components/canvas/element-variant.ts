@@ -2,7 +2,6 @@ import type { CSSProperties } from 'react';
 import {
   SELF_PAINTING_SHAPES,
   DEFAULT_BOX_RADIUS_PX,
-  MIND_NODE_RADIUS_PX,
   cornerRadiusPx,
   finishBorderStroke,
   finishCornerFallbackPx,
@@ -15,7 +14,6 @@ import {
   DEFAULT_BORDER_STYLE,
   defaultFillColor,
   defaultStrokeColor,
-  ownColours,
   shadowBoxCss,
   shadowFilterCss,
   supportsShadow,
@@ -95,8 +93,6 @@ export function describeVariant(
       // code block (docs/specs/009-elements/code-block.md) + checklist (docs/specs/009-elements/checklist.md) paint their own content,
       // so the wrapper carries no box border / background — just the
       // selection ring.
-      // A portal (docs/specs/009-elements/portal-element.md) is in the same family: its ring IS the element, so
-      // a wrapper box behind it would frame the energy in a rectangle.
       // SELF_PAINTING_SHAPES (@livepages/document) is the single list of
       // kinds that draw their own body. The menu reads the same set to decide
       // whether to offer Border at all — they used to keep separate lists and
@@ -123,14 +119,6 @@ export function describeVariant(
           ? cornerRadiusPx(ownCorner, element.width, element.height, 0)
           : null;
       const fallbackPx = finishCornerFallbackPx(DEFAULT_BOX_RADIUS_PX, finish);
-      // A mind node (docs/specs/009-elements/mind-node.md) is a soft-cornered pill-ish box by default:
-      // rounded enough to read as a node in a tree rather than a flowchart
-      // box. Unlike the fixed silhouettes above it honours a radius pick, so a
-      // full radius on a square node draws a bubble-map circle.
-      const mindRadius =
-        element.shape === 'mind-node'
-          ? `${cornerRadiusPx(element.borderRadius, element.width, element.height, finishCornerFallbackPx(MIND_NODE_RADIUS_PX, finish))}px`
-          : null;
       const strokePx = BORDER_STROKE_PX[finishBorderStroke(element.strokeWidth, finish)];
       const style = element.strokeStyle ?? DEFAULT_BORDER_STYLE;
       // The composite dash patterns can't be drawn by a CSS border, so
@@ -143,11 +131,7 @@ export function describeVariant(
       // Transparent-fill shapes (icons, outline boxes) take the filter
       // path: a box-shadow behind a see-through body reads as a floating
       // grey rectangle.
-      // ownColours drops a skin a Behaviour element was once CREATED with
-      // (the old light button skin, the pre-redesign blue), so it resolves
-      // like an unstyled element and follows the surface (behaviour-skin.ts).
-      const own = ownColours(element);
-      const fill = own.fill ?? defaultFillColor(element, surface);
+      const fill = element.fillColor ?? defaultFillColor(element, surface);
       return {
         // Drop the border-2 class so we can drive border width from
         // the user's strokeWidth pick instead of a fixed 2px.
@@ -156,10 +140,10 @@ export function describeVariant(
           ...(fill === 'transparent' ? filterShadow : boxShadow),
           borderRadius:
             fixedRadius ??
-            mindRadius ??
             `${userRadius ?? cornerRadiusPx(undefined, element.width, element.height, fallbackPx)}px`,
           backgroundColor: sketched ? 'transparent' : fill,
-          borderColor: remoteBorderColor ?? own.stroke ?? defaultStrokeColor(element, surface),
+          borderColor:
+            remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface),
           borderWidth: useSvgBorder ? 0 : remoteBorderColor ? remoteBorderWidth : strokePx,
           borderStyle: useSvgBorder
             ? 'none'

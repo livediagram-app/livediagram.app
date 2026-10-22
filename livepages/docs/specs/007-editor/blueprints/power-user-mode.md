@@ -210,7 +210,7 @@ mapped long press, so one handler covers every input.
 
 Inside the main keydown listener: `const claimed = e.defaultPrevented` before dispatch; after dispatch,
 `if (!claimed && e.defaultPrevented) live.onShortcutUsed?.()`. Every handled branch already calls `preventDefault`, so
-this counts exactly the keys the editor acted on (D4). The mind-map Tab / Enter growth counts too.
+this counts exactly the keys the editor acted on (D4).
 
 ## Interfaces and contracts
 

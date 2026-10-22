@@ -19,26 +19,24 @@ const el = (e: Record<string, unknown>) =>
   ({ id: 'x', x: 0, y: 0, width: 1, height: 1, type: 'shape', ...e }) as unknown as Element;
 
 describe('searchCatalogueTiles', () => {
-  it("finds icons and stickers in Pages' own section, and Technology in the other", () => {
-    // Pages offers Icons and Stickers but not Technology.
+  it('finds icons and stickers, and leaves out Technology, which Pages does not offer', () => {
     const pages = searchCatalogueTiles({ query: 'database', mode: 'pages' });
-    expect(from(pages.here, 'icon:').length).toBeGreaterThan(0);
-    expect(from(pages.here, 'tech:')).toEqual([]);
-    expect(from(pages.elsewhere, 'tech:').length).toBeGreaterThan(0);
+    expect(from(pages, 'icon:').length).toBeGreaterThan(0);
+    expect(from(pages, 'tech:')).toEqual([]);
     const sticker = getStickerCatalog()[0]!;
-    expect(ids(searchCatalogueTiles({ query: sticker.label, mode: 'pages' }).here)).toContain(
+    expect(ids(searchCatalogueTiles({ query: sticker.label, mode: 'pages' }))).toContain(
       `sticker:${sticker.id}`,
     );
   });
 
   it('caps each catalogue, best match first', () => {
-    const { here } = searchCatalogueTiles({ query: 'e', mode: 'pages' });
-    for (const prefix of ['icon:', 'tech:', 'sticker:']) {
-      expect(from(here, prefix).length).toBeLessThanOrEqual(CATALOGUE_MATCH_LIMIT);
+    const found = searchCatalogueTiles({ query: 'e', mode: 'pages' });
+    for (const prefix of ['icon:', 'sticker:']) {
+      expect(from(found, prefix).length).toBeLessThanOrEqual(CATALOGUE_MATCH_LIMIT);
     }
     const first = getLineArtIconCatalog()[0]!;
     // An exact name ranks first.
-    expect(ids(searchCatalogueTiles({ query: first.label, mode: 'pages' }).here)[0]).toBe(
+    expect(ids(searchCatalogueTiles({ query: first.label, mode: 'pages' }))[0]).toBe(
       `icon:${first.id}`,
     );
   });
@@ -46,7 +44,7 @@ describe('searchCatalogueTiles', () => {
   it('lists the entries on the tab before anything is typed', () => {
     const icon = getLineArtIconCatalog()[0]!;
     const sticker = getStickerCatalog()[0]!;
-    const { here, elsewhere } = searchCatalogueTiles({
+    const onTab = searchCatalogueTiles({
       query: '',
       mode: 'pages',
       tabElements: [
@@ -56,15 +54,11 @@ describe('searchCatalogueTiles', () => {
         el({ shape: 'square' }),
       ],
     });
-    expect(ids(here).sort()).toEqual([`icon:${icon.id}`, `sticker:${sticker.id}`].sort());
-    expect(ids(elsewhere)).toEqual(['tech:aws-s3']);
+    expect(ids(onTab).sort()).toEqual([`icon:${icon.id}`, `sticker:${sticker.id}`].sort());
   });
 
   it('lists nothing before typing on a tab with no catalogue entries', () => {
-    expect(searchCatalogueTiles({ query: ' ', mode: 'pages' })).toEqual({
-      here: [],
-      elsewhere: [],
-    });
+    expect(searchCatalogueTiles({ query: ' ', mode: 'pages' })).toEqual([]);
   });
 
   it('searches every catalogue well inside a keystroke budget', () => {
@@ -75,9 +69,6 @@ describe('searchCatalogueTiles', () => {
   });
 
   it('lists nothing until the catalogues have loaded', () => {
-    expect(searchCatalogueTiles({ query: 'database', mode: 'pages', loaded: false })).toEqual({
-      here: [],
-      elsewhere: [],
-    });
+    expect(searchCatalogueTiles({ query: 'database', mode: 'pages', loaded: false })).toEqual([]);
   });
 });

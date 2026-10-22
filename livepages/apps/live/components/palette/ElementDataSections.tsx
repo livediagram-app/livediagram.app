@@ -19,10 +19,8 @@ import { ChipMenuSection } from '@/components/palette/ChipMenuSection';
 import { PointerNoteMenuSection } from '@/components/palette/PointerNoteMenuSection';
 import { TagColoursBlock } from '@/components/palette/TagColoursBlock';
 import { StackMenuSection } from '@/components/palette/StackMenuSection';
-import { BoundaryMenuSection } from '@/components/palette/BoundaryMenuSection';
 import { TabWindowMenuSection } from '@/components/palette/TabWindowMenuSection';
 import { ConceptMenuSection } from '@/components/palette/ConceptMenuSection';
-import { SequenceMenuSection } from '@/components/palette/SequenceMenuSection';
 import {
   isChipShape,
   isConceptShape,
@@ -33,43 +31,15 @@ import {
   chartTypeOf,
   PIE_DEFAULT_SLICES,
   RATING_DEFAULT,
-  buttonModeOf,
-  DEFAULT_BUTTON_MODE,
-  SELECTION_MODES,
   type ChecklistItem,
-  type EntityField,
   type LegendItem,
   type PieSlice,
 } from '@livepages/document';
-import {
-  FormatPainterIcon,
-  IsometricIcon,
-  LaserIcon,
-  PanIcon,
-  SelectIcon,
-  SpotlightIcon,
-} from '@/components/palette/palette-icons';
-import { MODE_LABEL } from '@/components/canvas/ModeButtonFace';
 import { ProgressMenuGlyph, ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
-import { MindMapMenuSections } from './MindMapMenuSections';
-import { FlowchartMenuSections } from '@/components/flowchart/FlowchartMenuSections';
 import { AnimationSections } from '@/components/palette/AnimationSections';
-import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
 import { LegendTextSize } from '@/components/palette/TypographySections';
-import { PortalMenuSection } from '@/components/palette/PortalMenuSection';
-import {
-  AgendaMenuSection,
-  DecisionMenuSection,
-  EstimateMenuSection,
-} from '@/components/palette/CollabMenuSections';
-import {
-  PickerMenuSection,
-  ReactionMenuSection,
-  RevealMenuSection,
-  SessionMenuSection,
-} from '@/components/palette/BehaviourMenuSections';
 
 import { LegendPositionTiles } from '@/components/palette/context-menu-tiles';
 import { ChartAxisRows } from '@/components/palette/ChartAxisRows';
@@ -83,7 +53,6 @@ import {
 import {
   ChartMenuGlyph,
   ChecklistRowsEditor,
-  EntityFieldsEditor,
   CodeSummary,
   DataMenuGlyph,
   LegendDataEditor,
@@ -121,20 +90,6 @@ type ElementDataSectionsProps = {
   isLegend: boolean;
   // Sankey diagram (docs/specs/009-elements/sankey.md): its Sankey and Display sections.
   isSankey: boolean;
-  isMindNode: boolean;
-  isEntity: boolean;
-  isModeButton: boolean;
-  isPortal: boolean;
-  isSessionButton: boolean;
-  isReveal: boolean;
-  isPicker: boolean;
-  isReactionPad: boolean;
-  // The collaboration elements that carry settings (docs/specs/012-collaboration/estimate-card.md, 127, 128, 130).
-  // The temperature check, idea box and roll call have none — they are entirely
-  // driven from their own faces — so they get no flag.
-  isEstimate: boolean;
-  isAgenda: boolean;
-  isDecision: boolean;
   sectionProps: Scaffold['sectionProps'];
   flyoutProps: Scaffold['flyoutProps'];
 };
@@ -142,20 +97,8 @@ type ElementDataSectionsProps = {
 // Row editors re-seed their draft when handed a different array, so the fallbacks for an element
 // without rows are one stable array each rather than a fresh one per render (which reset the draft).
 const DEFAULT_PIE_ROWS: PieSlice[] = PIE_DEFAULT_SLICES.map((s) => ({ ...s }));
-const NO_ENTITY_FIELDS: EntityField[] = [];
 const NO_CHECKLIST_ITEMS: ChecklistItem[] = [];
 const NO_LEGEND_ITEMS: LegendItem[] = [];
-
-// The mode tiles' glyphs — the palette picker's own icons, so a button's
-// configured mode is recognisable from the same artwork everywhere (docs/specs/009-elements/mode-button.md).
-const MODE_TILE_ICON: Record<(typeof SELECTION_MODES)[number], React.ReactNode> = {
-  select: <SelectIcon />,
-  pan: <PanIcon />,
-  laser: <LaserIcon />,
-  spotlight: <SpotlightIcon />,
-  format: <FormatPainterIcon />,
-  isometric: <IsometricIcon />,
-};
 
 export function ElementDataSections({
   props,
@@ -168,17 +111,6 @@ export function ElementDataSections({
   isChecklist,
   isLegend,
   isSankey,
-  isMindNode,
-  isEntity,
-  isModeButton,
-  isPortal,
-  isSessionButton,
-  isReveal,
-  isPicker,
-  isReactionPad,
-  isEstimate,
-  isAgenda,
-  isDecision,
   sectionProps,
   flyoutProps,
 }: ElementDataSectionsProps) {
@@ -196,10 +128,8 @@ export function ElementDataSections({
   const showTools =
     hasWebRowsSection(target) ||
     isChip ||
-    shapeTarget?.shape === 'boundary' ||
     shapeTarget?.shape === 'pointer-note' ||
     shapeTarget?.shape === 'stack' ||
-    shapeTarget?.shape === 'sequence' ||
     (shapeTarget ? isConceptShape(shapeTarget.shape) : false) ||
     isProgress ||
     isRating ||
@@ -208,20 +138,8 @@ export function ElementDataSections({
     isChecklist ||
     isLegend ||
     isSankey ||
-    isMindNode ||
-    isEntity ||
-    isModeButton ||
-    isPortal ||
-    isSessionButton ||
-    isReveal ||
-    isPicker ||
-    isReactionPad ||
-    isEstimate ||
-    isAgenda ||
-    isDecision ||
     // Its Tab Window section (Shows, Open) lives in Tools: without this the menu never offered another tab.
-    shapeTarget?.shape === 'tab-window' ||
-    !!props.flowchart;
+    shapeTarget?.shape === 'tab-window';
   return (
     <>
       {showTools ? (
@@ -305,31 +223,6 @@ export function ElementDataSections({
               />
             </MenuAccordionSection>
           ) : null}
-          {/* The collaboration elements' settings (docs/specs/012-collaboration/estimate-card.md, 127, 128, 130).
-            Each is a small form of its own — see CollabMenuSections. */}
-          {isEstimate ? (
-            <EstimateMenuSection
-              target={shapeTarget ?? undefined}
-              sectionProps={sectionProps}
-              onSetScale={props.onSetEstimateScale}
-            />
-          ) : null}
-          {isAgenda ? (
-            <AgendaMenuSection
-              target={shapeTarget ?? undefined}
-              sectionProps={sectionProps}
-              onSetItems={props.onSetAgendaItems}
-            />
-          ) : null}
-          {isDecision ? (
-            <DecisionMenuSection
-              target={shapeTarget ?? undefined}
-              sectionProps={sectionProps}
-              onSetStatus={props.onSetDecisionStatus}
-              onSetDate={props.onSetDecisionDate}
-              onSetDrivers={props.onSetDecisionDrivers}
-            />
-          ) : null}
           {/* Web components (docs/specs/009-elements/web-components-and-no-groups.md) — a stat row's cards, a process's
             steps, a header's links: add / remove / reorder. */}
           {/* A concept graphic's variant; its animation is in the Animation row (docs/specs/009-elements/concept-graphics.md). */}
@@ -343,14 +236,6 @@ export function ElementDataSections({
           {/* A tab window's tab, and opening it (docs/specs/009-elements/tab-window.md). */}
           {shapeTarget?.shape === 'tab-window' ? (
             <TabWindowMenuSection
-              target={shapeTarget}
-              ops={props.elementStyle}
-              sectionProps={sectionProps}
-            />
-          ) : null}
-          {/* A boundary's style (docs/specs/009-elements/boundary.md). */}
-          {shapeTarget?.shape === 'boundary' ? (
-            <BoundaryMenuSection
               target={shapeTarget}
               ops={props.elementStyle}
               sectionProps={sectionProps}
@@ -373,16 +258,6 @@ export function ElementDataSections({
               target={shapeTarget}
               ops={props.elementStyle}
               sectionProps={sectionProps}
-            />
-          ) : null}
-          {/* A sequence diagram's summary, Edit Sequence and Numbered; Play is in the Animation row
-              (docs/specs/009-elements/sequence-diagram.md "The menu"). */}
-          {shapeTarget?.shape === 'sequence' ? (
-            <SequenceMenuSection
-              target={shapeTarget}
-              ops={props.elementStyle}
-              sectionProps={sectionProps}
-              onEdit={props.onEditSequence}
             />
           ) : null}
           {/* A pointer note's Detach (docs/specs/009-elements/pointer-note.md). */}
@@ -417,19 +292,6 @@ export function ElementDataSections({
               sectionProps={sectionProps}
               onSetRows={props.onSetWebRows}
             />
-          ) : null}
-          {/* Record (docs/specs/009-elements/entity.md) — the fields: name + optional type, add / remove. */}
-          {isEntity ? (
-            <MenuAccordionSection
-              title="Fields"
-              icon={<DataMenuGlyph />}
-              {...sectionProps('entity')}
-            >
-              <EntityFieldsEditor
-                fields={shapeTarget?.entityFields ?? NO_ENTITY_FIELDS}
-                onChange={props.onSetEntityFields}
-              />
-            </MenuAccordionSection>
           ) : null}
           {/* Checklist (docs/specs/009-elements/checklist.md) — the rows: done toggles, text, add / remove. */}
           {isChecklist ? (
@@ -491,105 +353,6 @@ export function ElementDataSections({
               flyoutProps={flyoutProps('sankey')}
               onPreviewTextSize={props.onPreviewTextSize}
               onPreviewEnd={props.onPreviewStyleEnd}
-            />
-          ) : null}
-          {/* Mind map (docs/specs/009-elements/mind-node.md "The Mind Map menu"): a flyout of Outline, Branching and Spacing.
-            Branching and Spacing set the ROOT's, so one pick re-shapes the whole map rather than half of it. */}
-          {isMindNode ? (
-            <MindMapMenuSections
-              flow={props.mindFlow}
-              spacing={props.mindSpacing}
-              onSetFlow={props.onSetMindFlow}
-              onSetSpacing={props.onSetMindSpacing}
-              onTidy={props.onTidyMindMap}
-              onEditOutline={props.onEditMindOutline}
-              onSelectBranch={props.onSelectMindBranch}
-              onSelectMap={props.onSelectMindMap}
-              sectionProps={sectionProps}
-              flyoutProps={flyoutProps('mind-map')}
-            />
-          ) : null}
-          {/* Flowchart (docs/specs/009-elements/flowchart.md "The Flowchart menu"): a flyout of Chart (lanes and
-            tidy), the step's Step Type and the chart's Direction. */}
-          {props.flowchart ? (
-            <FlowchartMenuSections
-              {...props.flowchart}
-              sectionProps={sectionProps}
-              flyoutProps={flyoutProps('flowchart')}
-            />
-          ) : null}
-          {/* Mode button (docs/specs/009-elements/mode-button.md) — which selection mode pressing it hands
-            whoever clicked. Tiles rather than a list so the icons match the
-            palette's own mode picker. */}
-          {isModeButton ? (
-            <MenuAccordionSection
-              title="Button"
-              icon={<ToolsMenuGlyph />}
-              {...sectionProps('button-mode')}
-            >
-              <p className="px-3 pt-1 text-[10px] font-medium text-slate-500 dark:text-slate-400">
-                Switches the presser to
-              </p>
-              <MenuTileGrid cols={3}>
-                {SELECTION_MODES.map((mode) => (
-                  <MenuTile
-                    key={mode}
-                    icon={MODE_TILE_ICON[mode]}
-                    label={MODE_LABEL[mode]}
-                    active={
-                      (shapeTarget ? buttonModeOf(shapeTarget) : DEFAULT_BUTTON_MODE) === mode
-                    }
-                    onClick={() => props.onSetButtonMode(mode)}
-                  />
-                ))}
-              </MenuTileGrid>
-            </MenuAccordionSection>
-          ) : null}
-          {/* Portal (docs/specs/009-elements/portal-element.md) — its name, where it leads (any tab), and a
-            shortcut to create the far end. See PortalMenuSection. */}
-          {isPortal && shapeTarget ? (
-            <PortalMenuSection
-              portal={shapeTarget}
-              tabs={props.tabs}
-              activeTabId={props.activeTabId}
-              onSetPortalTarget={props.onSetPortalTarget}
-              onSetPortalName={props.onSetPortalName}
-              onCreateLinkedPortal={props.onCreateLinkedPortal}
-              sectionProps={sectionProps('portal-target')}
-            />
-          ) : null}
-          {/* Session button (docs/specs/012-collaboration/session-button.md) — which tool a press starts, and its
-            one setting. See BehaviourMenuSections. */}
-          {isSessionButton && shapeTarget && props.onSetSession ? (
-            <SessionMenuSection
-              element={shapeTarget}
-              onSetSession={props.onSetSession}
-              sectionProps={sectionProps('session')}
-            />
-          ) : null}
-          {/* Reveal zone (docs/specs/009-elements/reveal-zone.md) — off for everyone, or back on. */}
-          {isReveal && shapeTarget && props.onSetRevealed ? (
-            <RevealMenuSection
-              element={shapeTarget}
-              onSetRevealed={props.onSetRevealed}
-              sectionProps={sectionProps('reveal')}
-            />
-          ) : null}
-          {/* Picker (docs/specs/012-collaboration/picker.md) — where it draws candidates from. */}
-          {isPicker && shapeTarget ? (
-            <PickerMenuSection
-              element={shapeTarget}
-              onSetPickerSource={props.onSetPickerSource}
-              onSetPickerOptions={props.onSetPickerOptions}
-              sectionProps={sectionProps('picker')}
-            />
-          ) : null}
-          {/* Reaction pad (docs/specs/009-elements/reaction-pad.md) — which burst it throws. */}
-          {isReactionPad && shapeTarget ? (
-            <ReactionMenuSection
-              element={shapeTarget}
-              onSetReaction={props.onSetReaction}
-              sectionProps={sectionProps('reaction')}
             />
           ) : null}
           {/* Chart (docs/specs/009-elements/pie-chart.md) — display options. Legend placement: Off + 4 sides. */}

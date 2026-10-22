@@ -1,7 +1,7 @@
 'use client';
 
-// The one thing you can do to an element somebody else is holding (docs/specs/007-editor/live-app.md
-// concurrent-selection lock + docs/specs/012-collaboration/facilitator.md facilitator): free it.
+// The one thing an Editor can do to an element somebody else is holding (docs/specs/007-editor/live-app.md
+// concurrent-selection lock): free it.
 //
 // Its own menu rather than a row in the element's real context menu, because
 // the element is still LOCKED. Every other row in that menu edits something,
@@ -14,13 +14,7 @@
 // so a right-click near an edge does not open it off-screen.
 
 import { useCallback, useId, useRef } from 'react';
-import {
-  MENU_LABEL_ATTR,
-  MenuTreeContext,
-  useMenu,
-  Portal,
-  useClickOutside,
-} from '@livepages/ui';
+import { MENU_LABEL_ATTR, MenuTreeContext, useMenu, Portal, useClickOutside } from '@livepages/ui';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
 
 const WIDTH = 236;

@@ -1,8 +1,8 @@
-// Feature art for presenting and running the room (docs/specs/019-marketing/marketing-site.md,
-// docs/specs/012-collaboration/presentation-mode.md, facilitator.md, bring-focus.md): slides cut
-// from a diagram, one deck drawn from several tabs, the presenter's own notes, a deck that plays on
+// Feature art for presenting (docs/specs/019-marketing/marketing-site.md,
+// docs/specs/012-collaboration/presentation-mode.md): slides cut
+// from a canvas, one deck drawn from several tabs, the presenter's own notes, a deck that plays on
 // your screen alone. Each is a small mock of the real surface, built on ./page-kit so it reads in
-// light and in dark. The room tools (3D, the facilitator, Bring Focus) live in ./room.
+// light and in dark.
 
 import type { CSSProperties } from 'react';
 import { Frame } from './shared';

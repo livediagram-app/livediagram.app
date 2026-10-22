@@ -14,7 +14,6 @@ import {
   WORKBENCH_ENDED_CLOSE,
   type AgentPresence,
   type ParticipantPresence,
-  type FacilitatorReason,
   type RoomIncoming,
   type RoomOp,
   type RoomOutgoing,
@@ -30,15 +29,7 @@ export type RoomHandlers = {
   // The room's agents arrive apart from the sessions (docs/specs/024-agents/agent-presence.md "In the editor").
   onPresence: (participants: ParticipantPresence[], agents: AgentPresence[]) => void;
   onOp: (from: string, op: RoomOp) => void;
-  // Who holds the facilitator baton (docs/specs/012-collaboration/facilitator.md), and the token when it is
-  // ours. Arrives on every change and once on connect with reason 'state'.
-  onFacilitator?: (msg: {
-    holder: string | null;
-    by?: string;
-    reason: FacilitatorReason;
-    token?: string;
-  }) => void;
-  // The facilitator has freed an element we were holding (docs/specs/007-editor/live-app.md lock). Sent
+  // Somebody has freed an element we were holding (docs/specs/007-editor/live-app.md lock). Sent
   // to this socket alone, so being called IS the addressing — there is no id to
   // check against our own, which we do not know (docs/specs/015-api/public-api-and-tokens.md §6).
   onSelectionReleased?: (msg: { elementId: string; by: string }) => void;
@@ -132,24 +123,17 @@ const ROOM_KEEPALIVE_TICK_MS = 5_000;
 const RECONNECT_MAX_MS = 15_000;
 
 /** Who this client says it is to the room: the room overrides `id` (see connectRoom). */
-type RoomSelf = { id: string; key?: string; name: string; color: string; picture?: string };
+type RoomSelf = { id: string; name: string; color: string; picture?: string };
 
 export function connectRoom(
   documentId: string,
-  // `key` is the document-write id (docs/specs/012-collaboration/participant-responses.md), relayed to peers verbatim so
-  // an answer saved on the document can be joined back to the person in the
-  // roster. The room OVERRIDES `id` with its own per-socket presence id
-  // (docs/specs/015-api/public-api-and-tokens.md §6), which is why the two are separate fields.
+  // The room OVERRIDES `id` with its own per-socket presence id (docs/specs/015-api/public-api-and-tokens.md §6).
   //
   // `picture` is the published profile picture (docs/specs/014-identity/profile-picture.md §6); the
   // room keeps it only for an account session.
   initialParticipant: RoomSelf,
   handlers: RoomHandlers,
   options: RoomConnectOptions = {},
-  // Read at every (re)connect rather than captured once: the baton can be
-  // taken while this socket is open, and the token we present has to be the
-  // one we hold NOW (docs/specs/012-collaboration/facilitator.md).
-  readFacilitatorToken?: () => string | null,
 ): {
   send: (msg: RoomOutgoing) => void;
   close: () => void;
@@ -262,16 +246,7 @@ export function connectRoom(
       lastHeard = Date.now();
       keepalive = setInterval(checkAlive, ROOM_KEEPALIVE_TICK_MS);
       attempts = 0;
-      // The baton coming home (docs/specs/012-collaboration/facilitator.md): on a reconnect this is what tells
-      // the room we are the same facilitator it granted before the refresh.
-      const facilitatorToken = readFacilitatorToken?.();
-      socket.send(
-        JSON.stringify({
-          kind: 'hello',
-          participant,
-          ...(facilitatorToken ? { facilitatorToken } : {}),
-        } satisfies RoomOutgoing),
-      );
+      socket.send(JSON.stringify({ kind: 'hello', participant } satisfies RoomOutgoing));
       // A reconnect (not the first open): ask the room for the ops we missed
       // while we were gone before resuming live traffic.
       if (opened) {
@@ -315,8 +290,7 @@ export function connectRoom(
           settleTimings(true);
           const frame = splitPresenceFrame(msg);
           handlers.onPresence(frame.participants, frame.agents);
-        } else if (msg.kind === 'facilitator') handlers.onFacilitator?.(msg);
-        else if (msg.kind === 'selection-released') handlers.onSelectionReleased?.(msg);
+        } else if (msg.kind === 'selection-released') handlers.onSelectionReleased?.(msg);
         else if (msg.kind === 'followers') handlers.onFollowers?.(msg.ids);
         // The server release signal (docs/specs/016-platform/new-version-prompt.md, stale-builds.md).
         else if (msg.kind === 'format') {

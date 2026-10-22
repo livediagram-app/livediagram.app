@@ -9,12 +9,7 @@ import {
 import { setRemoteBesideTab, syncRemoteBesideTabs } from '@/lib/split-presence';
 import { noteAccessEnded } from '@/lib/access-notice';
 import type { Tab } from '@livepages/document';
-import {
-  parseArticleCaret,
-  type AgentPresence,
-  type ChangesetRoomOp,
-  type FacilitatorReason,
-} from '@livepages/api-schema';
+import { parseArticleCaret, type AgentPresence, type ChangesetRoomOp } from '@livepages/api-schema';
 import { nextFreeColor, type Participant } from '@/lib/identity';
 import { usePublishedPicture } from '@/hooks/persistence/usePublishedPicture';
 import { apiCreateRoomTicket, connectRoom, type RoomHandlers } from '@/lib/api-client';
@@ -27,7 +22,7 @@ import {
 } from './presence-coalescer';
 import type { RemoteSelection } from '@/lib/presence-rows';
 import { pruneMapToPresent } from './editor-page-helpers';
-import { applyRoomOpToTabs, type PendingIdeaIds } from './room-op-apply';
+import { applyRoomOpToTabs } from './room-op-apply';
 import { keepUnsavedTabChanges } from './meta-keep-local';
 import { migrateRoomOp } from './room-op-migrate';
 import { roomOpIsWellFormed } from './room-op-shape';
@@ -94,9 +89,6 @@ export function useRoomConnection(opts: {
   // A peer's op into the present and every undo / redo snapshot (historyApplyRemoteOp), so undo
   // never brings back what the peer changed.
   applyRemoteOp: (apply: (prev: Tab[]) => Tab[]) => void;
-  // This browser's own idea posts the room has not answered (useIdeaPosts), so a peer's card that reaches a
-  // full box takes the newest one's place (docs/specs/012-collaboration/idea-box.md "Racing for the last card").
-  pendingIdeaIds?: PendingIdeaIds;
   // The tabs whose content is here (fetched, or made here), and marking one so: a peer's element op
   // for a tab still waiting on its first fetch is left to that fetch.
   loadedTabIdsRef: MutableRefObject<Set<string>>;
@@ -115,26 +107,11 @@ export function useRoomConnection(opts: {
   setSelfParticipant: Dispatch<SetStateAction<Participant>>;
   // Inbound handlers are stable (useCallback with no changing deps) so they don't reopen the socket — the
   // effect's dep list stays [hydrated, documentId, documentServerStored].
-  // A peer set off a reaction pad (docs/specs/009-elements/reaction-pad.md). Purely visual: nothing is
-  // written, so there is nothing here to persist, order, or undo.
-  receiveReaction: (elementId: string, reaction: string) => void;
-  // Bring Focus (docs/specs/012-collaboration/bring-focus.md): somebody is asking the room to come and look.
-  // The op also carries the presser's zoom, which is not used: taking it keeps your own.
-  receiveFocusHere: (from: string, tabId: string, at: { x: number; y: number }) => void;
-  // The facilitator baton (docs/specs/012-collaboration/facilitator.md): the room's answer, and the token we
-  // present on every hello so a refresh keeps it.
-  receiveFacilitator: (msg: {
-    holder: string | null;
-    by?: string;
-    reason: FacilitatorReason;
-    token?: string;
-  }) => void;
-  readFacilitatorToken: () => string | null;
   // Follow-me (docs/specs/012-collaboration/follow-me-viewport.md "Who follows whom"): who follows us, from the room,
   // and who we follow, said again on every new socket.
   setFollowerIds: Dispatch<SetStateAction<readonly string[]>>;
   readFollowing: () => string | null;
-  // The facilitator freed an element we were holding (docs/specs/007-editor/live-app.md lock). Only our
+  // Somebody freed an element we were holding (docs/specs/007-editor/live-app.md lock). Only our
   // socket is sent this, so there is nothing to check it against.
   receiveSelectionReleased: (msg: { elementId: string; by: string }) => void;
   // The document went to the Trash (docs/specs/013-workspace/trash.md): the
@@ -173,7 +150,6 @@ export function useRoomConnection(opts: {
     sessionShareCodeRef,
     roomRef,
     applyRemoteOp,
-    pendingIdeaIds,
     loadedTabIdsRef,
     markTabLoaded,
     setLivePresence,
@@ -185,11 +161,7 @@ export function useRoomConnection(opts: {
     setRemoteViewports,
     setDocumentName,
     setSelfParticipant,
-    receiveReaction,
-    receiveFocusHere,
-    receiveFacilitator,
     receiveSelectionReleased,
-    readFacilitatorToken,
     setFollowerIds,
     readFollowing,
     receiveDocumentTrashed,
@@ -226,8 +198,6 @@ export function useRoomConnection(opts: {
   }, [picture]);
   // Each peer's server-verified role by presence id, refreshed with every presence list.
   const roleByPresenceRef = useRef<Map<string, string | undefined>>(new Map());
-  // The facilitator token is read on demand by the room, always as it is now.
-  const roomReadFacilitatorToken = useEffectEvent(() => readFacilitatorToken());
   const roomReadFollowing = useEffectEvent(() => readFollowing());
   const roomFollowers = useEffectEvent((ids: string[]) => setFollowerIds(ids));
 
@@ -253,11 +223,8 @@ export function useRoomConnection(opts: {
       setLivePresence(
         participants.map((p) => ({
           id: p.id,
-          // The peer's document-write id (docs/specs/012-collaboration/participant-responses.md), claimed in their
-          // hello and relayed unchanged — it is what joins their saved
-          // answer on a done check / estimate card back to their avatar.
-          // `p.id` cannot: the room mints that per socket (docs/specs/015-api/public-api-and-tokens.md §6),
-          // so it matches nothing that was ever written down.
+          // The peer's browser key, claimed in their hello and relayed unchanged: it is what collapses their tabs into
+          // one avatar (lib/presence-rows.ts). `p.id` cannot, as the room mints that per socket.
           ...(p.key ? { key: p.key } : {}),
           name: p.name,
           color: p.color,
@@ -357,14 +324,13 @@ export function useRoomConnection(opts: {
       if (
         op.kind === 'tab' ||
         op.kind === 'el' ||
-        op.kind === 'vote' ||
         op.kind === 'el-delta' ||
         op.kind === 'tab-meta' ||
         op.kind === 'article' ||
         op.kind === 'document-meta'
       ) {
         // A document change from a peer: a whole tab, one element (docs/specs/012-collaboration/realtime-conflict-resolution.md),
-        // one dot (docs/specs/012-collaboration/session-tools.md), one answer / idea / tick / comment (docs/specs/012-collaboration/collab-race-hardening.md),
+        // one tick / comment (docs/specs/012-collaboration/collab-race-hardening.md),
         // non-element tab fields, or the document's name
         // and tab list. One pure function applies each (room-op-apply.ts),
         // to the tabs on screen AND to the autosave's baseline, so the
@@ -391,7 +357,7 @@ export function useRoomConnection(opts: {
         applyRemoteOp((prev) =>
           op.kind === 'document-meta'
             ? keepUnsavedTabChanges(prev, applyRoomOpToTabs(prev, op), savedBefore)
-            : applyRoomOpToTabs(prev, op, pendingIdeaIds),
+            : applyRoomOpToTabs(prev, op),
         );
         foldRemoteOpIntoBaseline(saveBaseline, op);
         // In the same batch as the tabs update, so the render that shows the op also counts it.
@@ -441,17 +407,6 @@ export function useRoomConnection(opts: {
           next.set(from, { tabId: op.tabId, pan: op.pan, zoom: op.zoom, size: op.size });
           return next;
         });
-      } else if (op.kind === 'reaction') {
-        // No tab check here, unlike the laser: a burst is keyed to the
-        // ELEMENT, and only the active tab's elements are rendered, so a
-        // burst for a pad on another tab has nothing to draw itself on and
-        // expires quietly.
-        receiveReaction(op.elementId, op.reaction);
-      } else if (op.kind === 'focus-here') {
-        // No tab check: the invitation names its own tab and taking it is
-        // what switches you, so one sent from another tab is exactly the
-        // case this element exists for.
-        receiveFocusHere(from, op.tabId, op.at);
       } else if (op.kind === 'tab-focus') {
         setRemoteTabFocus((prev) => {
           const next = new Map(prev);
@@ -481,10 +436,6 @@ export function useRoomConnection(opts: {
         if (from === 'system') receiveDocumentTrashed();
       }
     },
-  );
-
-  const roomFacilitator = useEffectEvent(
-    (msg: Parameters<NonNullable<RoomHandlers['onFacilitator']>>[0]) => receiveFacilitator(msg),
   );
 
   const roomSelectionReleased = useEffectEvent(
@@ -565,7 +516,6 @@ export function useRoomConnection(opts: {
         }
         roomOp(from, migrateRoomOp(op), presence);
       },
-      onFacilitator: (msg) => roomFacilitator(msg),
       onSelectionReleased: (msg) => roomSelectionReleased(msg),
       // Called for this socket alone: being called is the addressing (we never learn our own presence id).
       onFollowers: (ids) => roomFollowers(ids),
@@ -584,27 +534,21 @@ export function useRoomConnection(opts: {
     // says meanwhile (its selection, its tab) for the room.
     const { self, shareCode } = connectAs();
     let firstMint = true;
-    const openedRoom = connectRoom(
-      documentId,
-      self,
-      handlers,
-      {
-        // The api worker resolves the role the mint stored on the ticket and
-        // stamps it into the participant row via X-Verified-Role so
-        // peers see a trustworthy Viewer / Editor badge. Each connect needs its
-        // own ticket: the upgrade spends the one it admits.
-        mintTicket: async () => {
-          const minted = await apiCreateRoomTicket(self.id, documentId, shareCode);
-          // A Participant's key comes back with every ticket (the same key, derived per document); the
-          // first answer also says when there is none.
-          if (minted?.adderKey || firstMint) announceAdderKey(minted?.adderKey ?? null);
-          firstMint = false;
-          return minted?.ticket ?? null;
-        },
-        readFollowing: roomReadFollowing,
+    const openedRoom = connectRoom(documentId, self, handlers, {
+      // The api worker resolves the role the mint stored on the ticket and
+      // stamps it into the participant row via X-Verified-Role so
+      // peers see a trustworthy Viewer / Editor badge. Each connect needs its
+      // own ticket: the upgrade spends the one it admits.
+      mintTicket: async () => {
+        const minted = await apiCreateRoomTicket(self.id, documentId, shareCode);
+        // A Participant's key comes back with every ticket (the same key, derived per document); the
+        // first answer also says when there is none.
+        if (minted?.adderKey || firstMint) announceAdderKey(minted?.adderKey ?? null);
+        firstMint = false;
+        return minted?.ticket ?? null;
       },
-      roomReadFacilitatorToken,
-    );
+      readFollowing: roomReadFollowing,
+    });
     roomRef.current = openedRoom;
     return () => {
       presence.cancel();

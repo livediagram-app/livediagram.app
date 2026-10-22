@@ -38,7 +38,6 @@ function inputs(over: Partial<LayerPreviewInputs> = {}): LayerPreviewInputs {
       labelRectOf: () => null,
       draftLayout: () => null,
     },
-    tabFinish: undefined,
     ...over,
   };
 }

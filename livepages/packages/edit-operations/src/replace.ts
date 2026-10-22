@@ -1,12 +1,11 @@
 // `applyReplace` (docs/specs/024-agents/blueprints/edit-operations.md "Replace"): the other changeset
-// body, a whole tab from a graph, Mermaid, a template or raw elements, built exactly as the MCP's
+// body, a whole tab from a template or raw elements, built exactly as the MCP's
 // `update_document` replace and `add_tab` build it, and answered with the same outcome as operations.
 // An existing tab keeps every tab field and swaps its elements (no theme repaint, EO41); a new tab is
 // built whole.
 
 import type { EditRejection } from '@livepages/api-schema';
 import {
-  buildGraphTab,
   buildTab,
   coerceShapeKind,
   contentOrigin,
@@ -16,9 +15,7 @@ import {
   invertElementOps,
   isValidTab,
   normaliseElements,
-  resolveGraphInput,
   type Element,
-  type GraphInput,
   type Tab,
 } from '@livepages/document';
 import {
@@ -29,13 +26,12 @@ import {
   validTemplateKinds,
 } from '@livepages/templates';
 import { tabRejection } from './finalise';
-import { graphBodyIssue } from './graph-body';
 import { invalidResult, tabLocked } from './rejections';
 import { addedLine, lineNaming, removedLine } from './results';
 import type { ApplyOutcome, EditLog, ReplaceBody, ReplaceOptions } from './types';
 
-type Source = 'graph' | 'mermaid' | 'template' | 'elements';
-const SOURCES: readonly Source[] = ['graph', 'mermaid', 'template', 'elements'];
+type Source = 'template' | 'elements';
+const SOURCES: readonly Source[] = ['template', 'elements'];
 
 // What one source builds: the new elements, and for a tab that does not exist yet, the whole tab.
 type Built = { elements: Element[]; tab: (tabId: string, name: string) => Tab } | EditRejection;
@@ -45,14 +41,6 @@ const invalidBody = (detail: string, hint?: string): EditRejection => ({
   details: [detail],
   ...(hint ? { hint } : {}),
 });
-
-// The elements a replace writes onto an existing tab are built exactly as a new tab's are, themed included: a
-// graph's tones and a template's presets are colour presets the theme resolves, and an existing tab took them
-// unresolved, so a replace drew every toned node plain.
-function fromGraph(graph: GraphInput, themeId: string | undefined): Built {
-  const tab = (tabId: string, name: string) => buildGraphTab(tabId, name, graph, themeId);
-  return { elements: tab('graph', 'graph').elements, tab };
-}
 
 function fromElements(
   raw: unknown,
@@ -89,19 +77,8 @@ function build(
   kept: ReadonlySet<string> = new Set(),
 ): Built {
   switch (source) {
-    case 'graph': {
-      const { graph } = body as { graph: unknown };
-      const issue = graphBodyIssue(graph);
-      return issue ? invalidBody(issue) : fromGraph(graph as GraphInput, themeId);
-    }
-    case 'mermaid': {
-      const { mermaid } = body as { mermaid: unknown };
-      if (typeof mermaid !== 'string') return invalidBody('mermaid: expected a string');
-      const resolved = resolveGraphInput({ mermaid });
-      return resolved.graph
-        ? fromGraph(resolved.graph, themeId)
-        : { code: 'parse_error', details: [resolved.error!] };
-    }
+    // The elements a replace writes onto an existing tab are built exactly as a new tab's are, themed included: a
+    // template's presets are colour presets the theme resolves, and an existing tab took them unresolved.
     case 'template': {
       const { template } = body as { template: unknown };
       const kind = typeof template === 'string' ? resolveTemplate(template) : null;

@@ -8,7 +8,6 @@ import {
   BORDER_STROKE_PX,
   DEFAULT_BORDER_STYLE,
   DEFAULT_BOX_RADIUS_PX,
-  MIND_NODE_RADIUS_PX,
   cornerRadiusPx,
 } from './border-style';
 import { MARKER_LINE_PX, finishCornerFallbackPx, finishHatches } from './finish';
@@ -90,7 +89,7 @@ export function markerElementPaint(
   const strokePx =
     el.strokeWidth && el.strokeWidth !== 'thin' ? BORDER_STROKE_PX[el.strokeWidth] : MARKER_LINE_PX;
   const dash = BORDER_DASH_ARRAY[el.strokeStyle ?? DEFAULT_BORDER_STYLE];
-  const kindDefault = el.shape === 'mind-node' ? MIND_NODE_RADIUS_PX : DEFAULT_BOX_RADIUS_PX;
+  const kindDefault = DEFAULT_BOX_RADIUS_PX;
   const radiusPx = cornerRadiusPx(
     el.borderRadius,
     w,

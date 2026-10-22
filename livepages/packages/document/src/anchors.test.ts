@@ -100,9 +100,9 @@ describe('offered anchors per kind (docs/specs/008-canvas/arrow-anchors.md "Anch
     ({ id: 'x', type: 'shape', shape, x: 0, y: 0, width: 100, height: 100 }) as BoxedElement;
   const compass = ['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw'];
 
-  it('offers sixteen on a box and eight on a circle, diamond and actor', () => {
+  it('offers sixteen on a box and eight on a circle and diamond', () => {
     expect(offeredAnchors(el('square'))).toEqual(ALL_ANCHORS);
-    for (const k of ['circle', 'diamond', 'actor']) expect(offeredAnchors(el(k))).toEqual(compass);
+    for (const k of ['circle', 'diamond']) expect(offeredAnchors(el(k))).toEqual(compass);
   });
 
   it('offers nine on a triangle: three per face, no corners, nothing on top', () => {
@@ -129,7 +129,7 @@ describe('offered anchors per kind (docs/specs/008-canvas/arrow-anchors.md "Anch
   });
 
   it('keeps every side that carries anchors carrying its middle', () => {
-    for (const k of ['square', 'circle', 'triangle', 'document', 'actor']) {
+    for (const k of ['square', 'circle', 'triangle', 'document']) {
       for (const side of ['n', 'e', 's', 'w'] as const) {
         if (sideOffered(el(k), side)) expect(offeredAnchors(el(k)), `${k} ${side}`).toContain(side);
       }

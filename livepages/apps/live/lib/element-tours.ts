@@ -1,7 +1,6 @@
-import { isChartShape, isFlowchartStep, type Element } from '@livepages/document';
+import { isChartShape, type Element } from '@livepages/document';
 import type { EditorCapabilities } from './editor-capabilities';
 import { canEditSankey } from './sankey-edit';
-import { canEditSequence } from './sequence-edit';
 import { tourTrackSeen, withTracksAnswered } from './tour-tracks';
 import type { UserPreferences } from './user-preferences';
 
@@ -20,18 +19,9 @@ export const ELEMENT_TOUR_KINDS = [
   'onion',
   'chevrons',
   'timeline',
-  'mind-node',
-  'flowchart',
-  'org-chart',
-  'sequence',
   'chart',
   'stack',
-  'entity',
   'tab-window',
-  'lane',
-  'boundary',
-  'diagram-key',
-  'portal',
 ] as const;
 
 export type ElementTourKind = (typeof ELEMENT_TOUR_KINDS)[number];
@@ -47,18 +37,9 @@ export const ELEMENT_TOUR_NAMES: Record<ElementTourKind, string> = {
   onion: 'onion',
   chevrons: 'chevron process',
   timeline: 'timeline',
-  'mind-node': 'mind map node',
-  flowchart: 'flowchart step',
-  'org-chart': 'person in an org chart',
-  sequence: 'sequence diagram',
   chart: 'chart',
   stack: 'stack',
-  entity: 'entity',
   'tab-window': 'tab window',
-  lane: 'lane',
-  boundary: 'boundary',
-  'diagram-key': 'diagram key',
-  portal: 'portal',
 };
 
 // The toured kind an element is, or null when its type has no tour.
@@ -73,19 +54,9 @@ export function elementTourKindOf(el: Element | null | undefined): ElementTourKi
   if (el.shape === 'onion') return 'onion';
   if (el.shape === 'chevrons') return 'chevrons';
   if (el.shape === 'timeline-rail') return 'timeline';
-  if (el.shape === 'mind-node' && el.mindLook !== 'person') return 'mind-node';
-  if (el.shape === 'mind-node' && el.mindLook === 'person') return 'org-chart';
-  if (el.shape === 'sequence') return 'sequence';
   if (isChartShape(el.shape)) return 'chart';
   if (el.shape === 'stack') return 'stack';
-  if (el.shape === 'entity') return 'entity';
   if (el.shape === 'tab-window') return 'tab-window';
-  if (el.shape === 'lane') return 'lane';
-  if (el.shape === 'boundary') return 'boundary';
-  if (el.shape === 'diagram-key') return 'diagram-key';
-  if (el.shape === 'portal') return 'portal';
-  // Last: a step guard that fails narrows the element to nothing for any check after it.
-  if (isFlowchartStep(el)) return 'flowchart';
   return null;
 }
 
@@ -100,15 +71,10 @@ export function canTourElement(
     case 'sankey':
       return canEditSankey(can, el);
     // A concept graphic's rows are structure, an Editor's on an unlocked element
-    // (docs/specs/009-elements/concept-graphics.md "Share roles"); so are a chart's data, a stack's arrangement, an
-    // entity's fields, the tab a window shows, a lane's gutter, a boundary's style, a key's meanings and a portal's link.
+    // (docs/specs/009-elements/concept-graphics.md "Share roles"); so are a chart's data, a stack's arrangement and
+    // the tab a window shows.
     case 'layer-stack':
-    case 'portal':
-    case 'diagram-key':
-    case 'boundary':
-    case 'lane':
     case 'tab-window':
-    case 'entity':
     case 'stack':
     case 'chart':
     case 'chevrons':
@@ -119,14 +85,6 @@ export function canTourElement(
     case 'funnel':
     case 'pyramid':
       return can.level === 'edit' && (el as { locked?: boolean }).locked !== true;
-    case 'mind-node':
-      return can.level === 'edit' && (el as { locked?: boolean }).locked !== true;
-    case 'flowchart':
-      return can.level === 'edit' && (el as { locked?: boolean }).locked !== true;
-    case 'org-chart':
-      return can.level === 'edit' && (el as { locked?: boolean }).locked !== true;
-    case 'sequence':
-      return canEditSequence(can, el);
   }
 }
 

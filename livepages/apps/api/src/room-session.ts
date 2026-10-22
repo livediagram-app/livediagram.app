@@ -31,12 +31,6 @@ export type SessionAttachment = {
   presenceId: string;
   verifiedRole?: AccessLevel;
   presence: ParticipantPresence | null;
-  //   - `isOwner`: whether the api resolved this upgrade as the document's
-  //     OWNER (docs/specs/012-collaboration/facilitator.md). A boolean, never an id: it is the one thing the
-  //     facilitator baton needs that role alone cannot answer ("the owner can
-  //     always take it back"), and carrying it as a bit keeps docs/specs/015-api/public-api-and-tokens.md §6's
-  //     promise that no real identity reaches the room.
-  isOwner?: boolean;
   //   - `multiplayer`: this session belongs to a multiplayer session the
   //     room has already counted (Document·Used·Multiplayer, docs/specs/017-telemetry/telemetry.md). See
   //     room-multiplayer.ts for why the mark lives here.
@@ -79,7 +73,6 @@ const MAX_DOCUMENT_ID_LEN = 64;
 /** The server-verified facts an upgrade carries, as the api worker set them (empty header = none). */
 type VerifiedSession = {
   verifiedRole?: AccessLevel;
-  isOwner: boolean;
   tabScope: string | null;
   shareCode: string | null;
   account: boolean;
@@ -100,7 +93,6 @@ export function verifiedSessionOf(request: Request): VerifiedSession {
   const role = request.headers.get('X-Verified-Role');
   return {
     verifiedRole: isAccessLevel(role) ? role : undefined,
-    isOwner: request.headers.get('X-Verified-Owner') === '1',
     tabScope: header('X-Verified-Tab-Scope'),
     shareCode: header('X-Verified-Share-Code'),
     account: request.headers.get('X-Verified-Account') === '1',
@@ -125,7 +117,6 @@ export function newSessionAttachment(v: VerifiedSession, presenceId: string): Se
     presenceId,
     verifiedRole: v.verifiedRole,
     presence: null,
-    isOwner: v.isOwner,
     tabScope: v.tabScope,
     shareCode: v.shareCode,
     account: v.account,

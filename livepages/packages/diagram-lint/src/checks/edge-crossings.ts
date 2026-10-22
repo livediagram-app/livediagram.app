@@ -39,7 +39,7 @@ export const edgeCrossings: Check = (ctx) => {
       code: 'edge-crossings' as const,
       refs: crossed.map((d) => refOf(ctx, d.arrow.id)),
       message: `${named.join(', ')}${more > 0 ? ` +${more}` : ''}: ${crossings.pairs} crossings among ${ctx.drawable.length} arrows, limit ${Math.floor(limit)}`,
-      fix: fixes.edgeCrossings(ctx.source, framedTab(ctx) ? restyle() : null),
+      fix: fixes.edgeCrossings(framedTab(ctx) ? restyle() : null),
       at: crossed[0]!.polyline[0]!,
     },
   ];

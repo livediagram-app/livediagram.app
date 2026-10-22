@@ -9,7 +9,6 @@ describe('verifiedSessionOf', () => {
     const v = verifiedSessionOf(
       upgrade({
         'X-Verified-Role': 'participate',
-        'X-Verified-Owner': '1',
         'X-Verified-Tab-Scope': 't1',
         'X-Verified-Share-Code': '',
         'X-Verified-Account': '1',
@@ -21,7 +20,6 @@ describe('verifiedSessionOf', () => {
     );
     expect(v).toEqual({
       verifiedRole: 'participate',
-      isOwner: true,
       tabScope: 't1',
       shareCode: null,
       account: true,
@@ -42,7 +40,6 @@ describe('newSessionAttachment', () => {
     const long = 'x'.repeat(500);
     const a = newSessionAttachment(
       {
-        isOwner: false,
         tabScope: null,
         shareCode: null,
         account: false,

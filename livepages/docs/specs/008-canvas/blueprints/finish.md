@@ -69,7 +69,7 @@ export function elementFontId(el, tabFont, tabFinish): string | undefined; // fi
 export function finishCurvesNewArrows(finish: Finish): boolean; // finish !== 'professional'
 export function finishNewArrowStyle(finish: Finish): ArrowStyle | undefined; // professional → 'angled'
 export function finishHatchesKind(element: Element): boolean;
-// a shape of a plain box kind or a drawn silhouette; not a frame, lane or self-painting kind
+// a shape of a plain box kind or a drawn silhouette; not a frame or self-painting kind
 export function finishHatches(element: Element, fill: string, backdrop?: boolean): boolean;
 // finishHatchesKind, not a backdrop, fill not transparent
 ```
@@ -171,7 +171,7 @@ len * 0.04)`; the bow is `±min(len * MARKER_BOW_SHARE, MARKER_BOW_MAX_PX)`. Emi
 - `markerElementPaint(el, fill, backdrop)` returns `{ drawing: MarkerDrawing, strokePx, dash }` or null:
   - `MarkerDrawing = { pen: 'marker'; ink: MarkerLayers; details: string; solid: string; streaks: MarkerLayers;
 nibPx: number }`.
-  - table: its frame at `MARKER_TABLE_FRAME_PX` (2.5), no fill layers; sticky, comment pin, text, images and
+  - table: its frame at `MARKER_TABLE_FRAME_PX` (2.5), no fill layers; sticky, text, images and
     self-painting kinds: null.
   - shape: `strokePx` is `MARKER_LINE_PX` when `strokeWidth` is unset or `thin`, else `BORDER_STROKE_PX[strokeWidth]`; dash and corner as
     Flexible's; outlines from `handDrawnOutlines(el, strokePx / 2, radiusPx)` (`sketch-element.ts`, shared with
@@ -241,7 +241,7 @@ heads, sketchedHeads, headFill, inkOpacity }`; Sketch: `lineOver` empty, `headFi
 
 - Faces (spec "Every other face is drawn by hand too"): `finishSplitsFace(el)` (`finish.ts`) names the elements
   whose face is split: every shape kind outside `SKETCHED_BY_BODY` (the plain boxes whose sketched body is their
-  whole drawing, the sequence diagram, icons and stickers), a plain box with an inline icon, tables, link cards,
+  whole drawing, icons and stickers), a plain box with an inline icon, tables, link cards,
   video and annotations. `BoxedElementView` wraps everything it draws over the body (accent edge to
   `ElementFaceRouter`) in `components/canvas/SketchFace.tsx` when the resolved finish is Sketch (never Marker) and the predicate
   holds. `SketchFace` renders an empty `[data-sketch-ink]` div (`aria-hidden`, `inert`) then a

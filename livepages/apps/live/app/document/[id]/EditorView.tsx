@@ -41,8 +41,6 @@ import { useLandscapeBars } from '@/hooks/ui/useLandscapeBars';
 import { SplitViewFrame } from '@/components/split/SplitViewFrame';
 import { SignInBanner, SIGNIN_BANNER_DISMISS_KEY } from '@/components/chrome/SignInBanner';
 import { EditorModals } from '@/components/dialogs/EditorModals';
-import { FocusInviteDialog } from '@/components/dialogs/FocusInviteDialog';
-import { focusPageAt } from '@/lib/focus-audience';
 import { EditorTabDialogs } from '@/components/dialogs/EditorTabDialogs';
 import { CollaboratorsHost } from '@/components/dialogs/CollaboratorsHost';
 import { EditorElementDialogs } from '@/components/dialogs/EditorElementDialogs';
@@ -113,8 +111,6 @@ export function EditorView() {
     appChrome,
     workbench,
     quickStyleDeps,
-    focusInvite,
-    livePresence,
     canvasTool,
     drag,
     clearTabContent,
@@ -529,25 +525,6 @@ export function EditorView() {
                                   <EditorSearchPanel />
                                 </AreaErrorBoundary>
                               ) : null}
-                              {/* Bring Focus (docs/specs/012-collaboration/bring-focus.md). A dialog: it is a question addressed to
-          you, not a status line. Shown to view-role visitors too. */}
-                              <FocusInviteDialog
-                                from={
-                                  focusInvite.invite
-                                    ? (livePresence.find((p) => p.id === focusInvite.invite!.from)
-                                        ?.name ?? 'Someone')
-                                    : null
-                                }
-                                toPage={
-                                  !!focusInvite.invite &&
-                                  !!focusPageAt(
-                                    tabs.find((t) => t.id === focusInvite.invite!.tabId),
-                                    focusInvite.invite.at,
-                                  )
-                                }
-                                onAccept={focusInvite.acceptFocus}
-                                onDismiss={focusInvite.dismissFocus}
-                              />
                               <AreaErrorBoundary area="Modals">
                                 <EditorModals />
                               </AreaErrorBoundary>

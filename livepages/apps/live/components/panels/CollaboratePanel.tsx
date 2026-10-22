@@ -58,8 +58,8 @@ export type CommentRow = {
 export type ActionRow = {
   // Element id; click jumps to it and opens the action popover.
   elementId: string;
-  // The action's own id: an Action panel card holds several
-  // (docs/specs/012-collaboration/action-panel.md), so (elementId, actionId) is what names a row.
+  // The action's own id: elementActions reads an element's actions as a
+  // list, so (elementId, actionId) is what names a row.
   actionId: string;
   // Display label for the element (same fallbacks as comment rows).
   label: string;

@@ -11,11 +11,11 @@
 //   so two replies inside one save window lost one of them.
 // - `openComments`, `closeComments`, `addComment`, `deleteComment`,
 //   `resolveThread`, `unresolveThread`: the six actions the
-//   comment thread popover + the Comment panel bind to.
+//   comment thread popover binds to.
 //
-// Telemetry (docs/specs/017-telemetry/telemetry.md) lives HERE, not at the call sites: the anchored
-// popover and the Comment panel (docs/specs/012-collaboration/comment-pin.md) both drive these actions, and an
-// emit beside one surface silently missed the other. Each action counts once,
+// Telemetry (docs/specs/017-telemetry/telemetry.md) lives HERE, not at the call sites: every surface that
+// drives a thread (docs/specs/008-canvas/canvas-and-palette.md "Comments") runs these actions, and an
+// emit beside one surface once silently missed another. Each action counts once,
 // whichever surface ran it. Added / Deleted with a `persist` callback (the
 // view-role path, which writes through the dedicated comment endpoints rather
 // than the tab autosave) count only once the server accepted the write.

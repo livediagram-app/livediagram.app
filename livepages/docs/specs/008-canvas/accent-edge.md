@@ -20,7 +20,7 @@ its corner. As a style option it costs one click and stays true to the shape.
 ## Where it applies
 
 The box shapes whose outline has a straight edge to lay a bar along: **Square**, **Stadium**, **Card**
-([The card](../009-elements/card.md)) and **Mind node**. Other kinds (diamond, cylinder, circle, the self-painting
+([The card](../009-elements/card.md)). Other kinds (diamond, cylinder, circle, the self-painting
 kinds) do not offer it; a stored value on one is ignored.
 
 ## How it draws

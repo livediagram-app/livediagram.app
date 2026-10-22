@@ -31,11 +31,9 @@ export function attrValue(text: string): string {
   return ATTR_BARE_PATTERN.test(text) ? text : JSON.stringify(text);
 }
 
-// A table cell or entity field: JSON escapes without the quotes, `|` escaped; inside entity braces `;`
-// and `}` too.
-export function cellText(text: string, inEntity = false): string {
-  const escaped = JSON.stringify(text).slice(1, -1).replace(/\|/g, '\\|');
-  return inEntity ? escaped.replace(/;/g, '\\;').replace(/\}/g, '\\}') : escaped;
+// A table cell: JSON escapes without the quotes, `|` escaped.
+export function cellText(text: string): string {
+  return JSON.stringify(text).slice(1, -1).replace(/\|/g, '\\|');
 }
 
 // `1 element`, `2 elements`: the shared wording, re-exported for this package's views.

@@ -4,8 +4,7 @@ import { isUntitledDocumentName } from '@livepages/templates';
 import {
   hasRichFormatting,
   isBoxed,
-  isMindNode,
-  opensInlineLabelEditor,
+  isSelfDrawingShape,
   normalizeRuns,
   trimLabel,
   truncateName,
@@ -15,8 +14,7 @@ import {
   type TextRun,
 } from '@livepages/document';
 import { hugCommittedText, hugsText } from '@/lib/text-hug';
-import { measureDrawnMindLabel, measureDrawnText } from '@/components/canvas/text-hug-measure';
-import { fitMindLabel } from '@/lib/mind-label-fit';
+import { measureDrawnText } from '@/components/canvas/text-hug-measure';
 import { patchTab } from './editor-page-helpers';
 import type { EditorContextMenuState } from '@/components/palette/EditorContextMenu';
 import { debugLog } from '@/lib/debug-log';
@@ -132,7 +130,7 @@ export function useSelectionEditing(opts: {
     // have no editable text label, so no entry point (double-click, Space,
     // type-to-edit) opens the inline editor for them.
     const el = activeTab.elements.find((e) => e.id === elementId);
-    if (el && el.type === 'shape' && !opensInlineLabelEditor(el.shape)) return;
+    if (el && el.type === 'shape' && isSelfDrawingShape(el.shape)) return;
     seeded.current = null;
     setSelectedId(elementId);
     // Double-click / Space edit: select-all so a retype replaces the label.
@@ -154,14 +152,6 @@ export function useSelectionEditing(opts: {
     commit((els) =>
       els.map((el) => (el.id === elementId && el.type === 'table' ? { ...el, ...patch } : el)),
     );
-  };
-
-  // A lane's title gutter, resized by dragging its seam (docs/specs/009-elements/lane.md). One
-  // commit on release, like the table's dividers: the drag itself is live
-  // local state in the view, so a gesture is one undo step rather than one
-  // per pixel.
-  const commitHeaderSize = (elementId: string, headerSize: number) => {
-    commit((els) => els.map((el) => (el.id === elementId ? { ...el, headerSize } : el)));
   };
 
   const commitLabel = (elementId: string, typed: string, typedRuns?: TextRun[]) => {
@@ -187,44 +177,36 @@ export function useSelectionEditing(opts: {
     const measure = measureDrawnText(activeTab.font, activeTab.finish);
     const target = activeTab.elements.find((el) => el.id === elementId);
     const removesEmpty = !!target && hugsText(target) && label.trim() === '';
-    // A mind node grows to fit its label, in the same commit (docs/specs/009-elements/mind-node.md
-    // "A node grows to fit its label").
-    const measureMind =
-      target && isMindNode(target) ? measureDrawnMindLabel(activeTab.font, activeTab.finish) : null;
-    const fitted = (els: Element[]) =>
-      measureMind ? fitMindLabel(els, elementId, measureMind) : els;
     commit((els) =>
-      fitted(
-        els.flatMap((el): Element[] => {
-          if (el.id !== elementId) return [el];
-          // Boxed elements always carry a label; arrows treat an empty
-          // string as "no label" and drop the field so the data model
-          // round-trips cleanly through API JSON.
-          if (isBoxed(el)) {
-            const { richText: _prev, ...base } = el as typeof el & { richText?: TextRun[] };
-            const next = keepRich ? { ...base, label, richText } : { ...base, label };
-            if (!hugsText(next)) return [next];
-            // An edit that changed nothing leaves the box as it was, so an existing box keeps its
-            // size until it is edited.
-            const unchanged =
-              label !== '' &&
-              (el.label ?? '') === label &&
-              JSON.stringify(_prev ?? null) === JSON.stringify(keepRich ? richText : null);
-            if (unchanged) return [next];
-            const hugged = hugCommittedText(next, measure);
-            return hugged ? [hugged] : [];
+      els.flatMap((el): Element[] => {
+        if (el.id !== elementId) return [el];
+        // Boxed elements always carry a label; arrows treat an empty
+        // string as "no label" and drop the field so the data model
+        // round-trips cleanly through API JSON.
+        if (isBoxed(el)) {
+          const { richText: _prev, ...base } = el as typeof el & { richText?: TextRun[] };
+          const next = keepRich ? { ...base, label, richText } : { ...base, label };
+          if (!hugsText(next)) return [next];
+          // An edit that changed nothing leaves the box as it was, so an existing box keeps its
+          // size until it is edited.
+          const unchanged =
+            label !== '' &&
+            (el.label ?? '') === label &&
+            JSON.stringify(_prev ?? null) === JSON.stringify(keepRich ? richText : null);
+          if (unchanged) return [next];
+          const hugged = hugCommittedText(next, measure);
+          return hugged ? [hugged] : [];
+        }
+        if (el.type === 'arrow') {
+          if (label.length === 0) {
+            const { label: _drop, ...rest } = el;
+            void _drop;
+            return [rest];
           }
-          if (el.type === 'arrow') {
-            if (label.length === 0) {
-              const { label: _drop, ...rest } = el;
-              void _drop;
-              return [rest];
-            }
-            return [{ ...el, label }];
-          }
-          return [el];
-        }),
-      ),
+          return [{ ...el, label }];
+        }
+        return [el];
+      }),
     );
     setEditingId(null);
     if (removesEmpty) {
@@ -321,7 +303,7 @@ export function useSelectionEditing(opts: {
     const labelable = isBoxed(el) || el.type === 'arrow';
     if (!labelable) return false;
     // Self-drawing data components have no editable label (see beginEdit).
-    if (el.type === 'shape' && !opensInlineLabelEditor(el.shape)) return false;
+    if (el.type === 'shape' && isSelfDrawingShape(el.shape)) return false;
     // Type-to-edit REPLACES the whole label with the typed char, so any
     // per-range `richText` from a prior edit must be dropped — otherwise the
     // editor would re-open against the stale runs instead of the seed char.
@@ -398,7 +380,6 @@ export function useSelectionEditing(opts: {
     beginEdit,
     commitLabel,
     commitTable,
-    commitHeaderSize,
     cancelEdit,
     typeIntoSelected,
     selectElement,

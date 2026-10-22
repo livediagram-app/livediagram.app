@@ -12,12 +12,6 @@ import {
   type BoxedElement,
   type Element,
   type LaidOutPage,
-  defaultSessionConfig,
-  REACTION_PAD_LABEL,
-  type EstimateScale,
-  type Reaction,
-  type SelectionMode,
-  type SessionTool,
   type ShapeKind,
   type Tab,
   withVariantColours,
@@ -90,18 +84,14 @@ export function useElementCreation(opts: {
   // useShapeDrawing.commitDraw), once the tap / drag actually lands the
   // element — not here, where the gesture is only queued.
   // `opts` carries a creation-time choice for the kinds that have one: which
-  // session tool (docs/specs/012-collaboration/session-button.md), which reaction (docs/specs/009-elements/reaction-pad.md). The palette offers a
-  // tile per choice, so it has to survive the draw gesture and land on the
-  // element rather than leaving the factory default in place.
+  // variant (the Callout card, a Funnel). The palette offers a tile per choice,
+  // so it has to survive the draw gesture and land on the element rather than
+  // leaving the factory default in place.
   const addShape = (kind: ShapeKind, opts?: AddShapeOptions) => {
     if (editsBlocked) return;
     beginDraw({
       type: 'shape',
       kind,
-      ...(opts?.session ? { session: opts.session } : {}),
-      ...(opts?.reaction ? { reaction: opts.reaction } : {}),
-      ...(opts?.mode ? { mode: opts.mode } : {}),
-      ...(opts?.estimateScale ? { estimateScale: opts.estimateScale } : {}),
       ...(opts?.variant ? { variant: opts.variant } : {}),
       ...(opts?.name ? { name: opts.name } : {}),
     });
@@ -257,11 +247,6 @@ export function useElementCreation(opts: {
     if (editsBlocked) return;
     beginDraw({ type: 'component', kind: 'avatar' });
   };
-  // A flowchart's first step (docs/specs/009-elements/flowchart.md).
-  const addFlowchart = () => {
-    if (editsBlocked) return;
-    beginDraw({ type: 'component', kind: 'flowchart' });
-  };
 
   const addText = () => {
     if (editsBlocked) return;
@@ -352,32 +337,9 @@ export function useElementCreation(opts: {
           : {
               // A creation-time variant (the Callout card, a Funnel) applies to its own kind only.
               ...applyShapeVariant(createShape(kind, x, y), art?.choice),
-              // The dragged tile's creation-time choice (docs/specs/009-elements/mode-button.md, /105, /123,
-              // /135). Applied by the kind that owns the field, so one payload
-              // serves all four without the drop path knowing which is which.
-              ...(art?.choice && kind === 'session-button'
-                ? {
-                    session: defaultSessionConfig(art.choice as SessionTool),
-                    // Same sizing the tap path applies (draw-commit): a timer is
-                    // a wide pill.
-                    ...(art.choice === 'timer' ? { width: 224, height: 64 } : {}),
-                  }
-                : {}),
-              ...(art?.choice && kind === 'reaction-pad'
-                ? {
-                    reaction: art.choice as Reaction,
-                    label: REACTION_PAD_LABEL[art.choice as Reaction],
-                  }
-                : {}),
-              ...(art?.choice && kind === 'mode-button'
-                ? { mode: art.choice as SelectionMode }
-                : {}),
-              ...(art?.choice && kind === 'estimate'
-                ? { estimateScale: art.choice as EstimateScale }
-                : {}),
             },
       // Shapes and icons open for typing too; takesTypedLabel filters out the
-      // kinds whose face isn't text (stickers, session buttons, ...). A preset's own colour (the Warning badge's
+      // kinds whose face isn't text (stickers, charts, ...). A preset's own colour (the Warning badge's
       // rose) is put back after the theme and the remembered style.
       {
         edit: true,
@@ -453,7 +415,6 @@ export function useElementCreation(opts: {
     addCallout,
     addStatRow,
     addProcess,
-    addFlowchart,
     addAvatar,
     dropPaletteItem,
     addText,

@@ -201,12 +201,11 @@ export function applyArrowheadColorToEl(el: Element, color: string): Element {
 }
 
 // The heading band's fill, for the elements that HAVE a heading distinct from
-// their body: a table's header row and a lane's title gutter. A no-op on
+// their body: a table's header row. A no-op on
 // anything else, so a multi-selection containing a mix only paints the ones
 // with a heading rather than parking a dead field on the rest.
 export function applyHeaderFillToEl(el: Element, color: string): Element {
   if (el.type === 'table') return { ...el, headerFill: color, tablePreset: undefined };
-  if (el.type === 'shape' && el.shape === 'lane') return { ...el, headerFill: color };
   return el;
 }
 

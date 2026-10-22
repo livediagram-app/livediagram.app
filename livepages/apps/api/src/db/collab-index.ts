@@ -246,7 +246,7 @@ function dedupePlaces<R extends PlaceRow>(rows: R[]): R[] {
   for (const row of rows) {
     if (row.via === 'shared' && !row.share_code) continue;
     // An action row is one of possibly many on its element (an Action panel,
-    // docs/specs/012-collaboration/action-panel.md), so its own id is part of what makes it one row.
+    // docs/specs/012-collaboration/assigned-actions.md), so its own id is part of what makes it one row.
     const actionId = (row as { action_id?: string }).action_id;
     const key = `${row.tab_id}:${row.element_id}${actionId ? `:${actionId}` : ''}`;
     const cur = best.get(key);

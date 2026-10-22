@@ -15,7 +15,6 @@ Scope, by file:
 | `packages/document/src/element-refs.ts`                                 | Refs, slug ids and kind words: `computeRefs`, `resolveRef`, `isSlugId`, `slugIdFor`, `kindWordOf`, `isKnownElement`         |
 | `packages/document/src/containment.ts`                                  | The centre rule and the content origin: `boxCentre`, `boxHoldsPoint`, `smallestHolder`, `deriveContainers`, `contentOrigin` |
 | `packages/document/src/style-keys.ts`                                   | `STYLE_KEYS`, `styleKeysFor`: the style keys views print and edit operations write                                          |
-| `packages/document/src/mermaid-serialise.ts`                            | `mermaidFromTab` calls `smallestHolder` over frames; its output is byte-identical                                           |
 | `packages/document/src/index.ts`                                        | Re-exports `./element-refs`, `./containment` and `./style-keys`                                                             |
 | `packages/api-schema/src/document-views.ts`                             | `VIEW_NAMES`, `ViewName`, `VIEW_QUERY`, `ViewDoor`, every view's JSON wire type, `UNKNOWN_VIEW_ERROR`                       |
 | `packages/api-schema/src/ref-errors.ts`                                 | `TARGET_NOT_FOUND_ERROR`, `TARGET_AMBIGUOUS_ERROR`, `RefCandidate`, `RefErrorBody`                                          |
@@ -81,7 +80,7 @@ edited without it); the change names the gap.
 | Resolve         | `resolveRef(input, refs) → RefResolution`                                | Input to one element, or a named refusal                                       |
 | Kind word       | `kindWordOf(el)`                                                         | The first word of a line: the shape, the notation, or the element type         |
 | Unknown kind    | `isKnownElement`, `UNKNOWN_KIND_MARK` (`?`)                              | An element type or shape kind `@livepages/document` does not know              |
-| Container       | `deriveContainers`, `ViewNode.container`                                 | The frame, lane or mind-map parent an element nests under                      |
+| Container       | `deriveContainers`, `ViewNode.container`                                 | The frame an element nests under                                               |
 | Reading order   | `readingOrder`, `rowsOf`                                                 | Rows top to bottom, then left to right                                         |
 | Freehand run    | `FreehandRun`, `freehandRuns`                                            | Consecutive bare strokes in one container, printed as one counted line         |
 | Content summary | `contentSummaryOf`                                                       | What a content kind holds, briefly                                             |
@@ -90,7 +89,7 @@ edited without it); the change names the gap.
 | Edge            | `ViewEdge`                                                               | An arrow as printed on its source line                                         |
 | Own-line arrow  | `ViewModel.ownLineArrows`                                                | An arrow without a printed source, on its own line                             |
 | Header line     | `viewHeader`, `headerLine`, `ViewHeader`                                 | The first line of every tab view                                               |
-| Counts          | `ElementCounts { boxes, frames, lanes, arrows }`                         | The header's element buckets                                                   |
+| Counts          | `ElementCounts { boxes, frames, arrows }`                                | The header's element buckets                                                   |
 | Hidden          | `ViewModel.hidden`                                                       | Elements left out because they sit on a hidden layer                           |
 | Budget          | `budget` (tokens), `estimateTokens`, `fitOutline`, `fitLines`            | The token ceiling a view is fitted to                                          |
 | Elision line    | `elisionLine`, `Elision`                                                 | The one closing line naming what was left out and how to see it                |
@@ -100,7 +99,7 @@ edited without it); the change names the gap.
 
 Banned: "handle", "alias", "short id", "short code" (for a ref); "mode", "format", "snapshot", "render" (for a view;
 "render" stays the image preview's verb, and `format` names only `read_document`'s choice between a view and the
-elements); "parent" for a frame or lane (it is the container; only `mindParentId` is a parent); "group",
+elements); "parent" for a frame (it is the container); "group",
 "cluster" (a frame is a container; a cluster is graph input's word); "query" or "filter" (those are selectors and
 Explorer lenses); "token" for a kind word (a token is an API token); "truncate" in copy ("hidden", "left out").
 
@@ -175,7 +174,7 @@ non-empty unique ids. The round-trip tests in [Testing](#testing) hold this.
 | Element                                   | Kind word                                                                     |
 | ----------------------------------------- | ----------------------------------------------------------------------------- |
 | The notation `actor`                      | `es:actor`, so it never reads as the `actor` shape                            |
-| `type: 'shape'`, `shape` in `SHAPE_KINDS` | the shape (`square`, `frame`, `lane`, `entity`, `mind-node`, `actor`, …)      |
+| `type: 'shape'`, `shape` in `SHAPE_KINDS` | the shape (`square`, `frame`, `cylinder`, …)                                  |
 | `type` in `ELEMENT_TYPES`, not a shape    | the type (`text`, `sticky`, `table`, `image`, `freehand`, `path`, `arrow`, …) |
 | `type: 'shape'`, unknown `shape`          | `? <shape>` (`VW12`); `? shape` when it has none                              |
 | unknown `type`                            | `? <type>`                                                                    |
@@ -190,20 +189,15 @@ An unknown name prints bare when it matches `^[A-Za-z0-9_.:-]+$`, else as a JSON
 container; views, the edit-operations membership reports, the lint and the editor's frame drag (through
 `containerContents`) all read it.
 
-1. **Mind parent first.** A `mind-node` whose `mindParentId` names a `mind-node` in the input nests under it.
-   Following parent links from any node, a link that returns to a node already on the chain is ignored at the node
-   with the lowest array index, which becomes a root of its tree (`VW24`).
-2. **Geometry otherwise.** Candidates are `frame` and `lane` shapes other than the element itself whose stored box
-   holds the element's centre (`boxHoldsPoint`, edges inclusive) and whose area is strictly greater than the
-   element's (`VW23`). The smallest candidate by area wins; equal areas go to the earlier in array order.
-   `smallestHolder(point, holders)` is that point query alone, the rule `mermaidFromTab` applies (smallest frame
-   holding the centre, inclusive, the earlier on a tie); `deriveContainers` passes it only the strictly larger
-   candidates, and that guard makes nesting acyclic. Rotation is ignored: centres and boxes are the stored
-   axis-aligned ones.
-3. Elements without numeric `x`, `y`, `width`, `height` (only unknown kinds can lack them) sit at the root.
+Candidates are `frame` shapes other than the element itself whose stored box
+holds the element's centre (`boxHoldsPoint`, edges inclusive) and whose area is strictly greater than the
+element's (`VW23`). The smallest candidate by area wins; equal areas go to the earlier in array order.
+`smallestHolder(point, holders)` is that point query alone (smallest frame
+holding the centre, inclusive, the earlier on a tie); `deriveContainers` passes it only the strictly larger
+candidates, and that guard makes nesting acyclic. Rotation is ignored: centres and boxes are the stored
+axis-aligned ones. 3. Elements without numeric `x`, `y`, `width`, `height` (only unknown kinds can lack them) sit at the root.
 
-Views pass printed elements only, so a hidden frame contains nothing. Containers nest to any depth. `mermaidFromTab`
-keeps its one-level, frames-only output by calling `smallestHolder` with frames only.
+Views pass printed elements only, so a hidden frame contains nothing. Containers nest to any depth.
 
 `contentOrigin(elements)`: the rounded minimum `x` and `y` over boxed elements, `(0, 0)` when there are none. Views
 pass printed elements; the edit-operations engine reads and writes coordinates against the same origin.
@@ -279,8 +273,8 @@ header      := "tab" SP tabRef SP jsonString(name) " · " total " element" ["s"]
                [" · finish=" finish] [" · " pages " pages: " byKind " (view pages)"]
                [" · " hidden " hidden"] [" · " unknown " unknown"]
                [" · threads " open " open/" threadTotal] [" · rev " rev]
-buckets     := bucket {", " bucket}                       (non-zero only, in the order boxes, frames, lanes, arrows)
-bucket      := count SP ("box" | "boxes" | "frame" | "frames" | "lane" | "lanes" | "arrow" | "arrows")
+buckets     := bucket {", " bucket}                       (non-zero only, in the order boxes, frames, arrows)
+bucket      := count SP ("box" | "boxes" | "frame" | "frames" | "arrow" | "arrows")
 line        := indent kindWord SP ref [SP label] [SP summary] {SP attribute} [SP "→" SP edge {", " edge}]
 runLine     := indent "freehand ×" count [" (" closed " closed)"]
 ownLine     := "arrow" SP ref SP end SP "→" SP end [SP label] {SP style}
@@ -297,7 +291,7 @@ attribute   := key "=" attrValue | flag
 `threads` only when the tab has a thread; `rev`
 only when the context gives one (`VW8`). A blank label (after trim) prints nothing (`VW17`).
 
-**Buckets** (`VW9`): `frames` and `lanes` are those shapes; `arrows` are arrows; `boxes` is every other printed
+**Buckets** (`VW9`): `frames` are those shapes; `arrows` are arrows; `boxes` is every other printed
 element, unknown kinds included. `total` is the printed count; `hidden` and `unknown` are counted apart from it
 (`unknown` is also inside `total`).
 
@@ -319,7 +313,6 @@ are escaped as `\;` and `\}` too.
 
 | Element                           | Summary                                                                                                                      | Ledger |
 | --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ------ |
-| `entity`                          | `{` first `ENTITY_FIELDS_SHOWN` fields as `name[ type]`, joined `; ` (`; +N` when more) `}`                                  | `VW19` |
 | `table`                           | `<rows>x<cols>` then the first row's cells joined `\|`; `0x0` when empty                                                     | `VW18` |
 | `code-block`                      | `lang=<codeLanguage, else plain> lines=<line count, 0 when empty>`                                                           | `VW20` |
 | `pie-chart`, `bar-chart`          | `slices=<pieSlices.length>`                                                                                                  | `VW21` |
@@ -333,27 +326,17 @@ The table line prints its label first when it has one. Every text a summary prin
 
 **State attributes** (`stateAttributeOf`), one per element of these kinds, printed after the summary (`VW22`):
 
-| Kind                    | State attribute                                                                       |
-| ----------------------- | ------------------------------------------------------------------------------------- |
-| `estimate`              | `votes=<responses.length>`, then `revealed` when `responsesRevealed`                  |
-| `temperature`           | `votes=<responses.length>`                                                            |
-| `done-check`            | `done=<responses.length>`                                                             |
-| `idea-box`              | `ideas=<ideaCards.length>`, then `revealed` when `ideasRevealed`                      |
-| `agenda`                | `item=<agendaCurrent + 1>/<n>` once started, else `items=<n>`; then `minutes=<total>` |
-| `session-button`        | `session=<tool>`, with `:<minutes>m` (timer) or `:<dots>` (vote)                      |
-| `decision`              | `status=<decisionStatus>` when set                                                    |
-| `roll-call`             | `present=<rollCall.length>`                                                           |
-| `picker`                | `picked=<attrValue(pickerResult)>` when set                                           |
-| `reveal`                | `revealed` when `revealed`                                                            |
-| `stat-row`              | `stats=<stats.length>`                                                                |
-| `process`               | `steps=<processSteps.length>`                                                         |
-| `site-header`           | `links=<navLinks.length>`                                                             |
-| `legend`                | `items=<legendItems.length>`                                                          |
-| `rating`                | `rating=<rating>/5`                                                                   |
-| `progress-bar`, `-ring` | `progress=<progress, else 50>`                                                        |
-| `timeline-rail`         | `points=<railCount>`                                                                  |
-| `page`, `card`          | `title=` the `pageTitle` cut at `NOTE_CUT_CHARS`, when set                            |
-| `badge`, `step`         | `attached` when `attachedTo` is set                                                   |
+| Kind                    | State attribute                                            |
+| ----------------------- | ---------------------------------------------------------- |
+| `stat-row`              | `stats=<stats.length>`                                     |
+| `process`               | `steps=<processSteps.length>`                              |
+| `site-header`           | `links=<navLinks.length>`                                  |
+| `legend`                | `items=<legendItems.length>`                               |
+| `rating`                | `rating=<rating>/5`                                        |
+| `progress-bar`, `-ring` | `progress=<progress, else 50>`                             |
+| `timeline-rail`         | `points=<railCount>`                                       |
+| `page`, `card`          | `title=` the `pageTitle` cut at `NOTE_CUT_CHARS`, when set |
+| `badge`, `step`         | `attached` when `attachedTo` is set                        |
 
 Every other kind has no state attribute; `show` has its content.
 
@@ -541,7 +524,7 @@ type ViewHeader = {
   view: ViewName;
   tab: { id: string; ref: string; name: string; kind: TabKind };
   elements: number;
-  counts: { boxes: number; frames: number; lanes: number; arrows: number };
+  counts: { boxes: number; frames: number; arrows: number };
   hidden: number;
   unknown: number;
   threads: { open: number; total: number };
@@ -851,7 +834,7 @@ Every rule maps to a deterministic test; the spec's rules are numbered here.
 | R8 One line per element, indentation is containment                  | `packages/document-views/src/outline.test.ts`, golden `checkout.outline.txt`                                                             |
 | R9 Kind words, notations, `es:actor`                                 | `element-refs.test.ts` (kind words)                                                                                                      |
 | R10 JSON strings, cut 60 / 48 on a word boundary                     | `text.test.ts`                                                                                                                           |
-| R11 Smallest frame or lane holding the centre; mind parent wins      | `packages/document/src/containment.test.ts`; `mermaid.test.ts` unchanged; `tree.test.ts`                                                 |
+| R11 Smallest frame holding the centre                                | `packages/document/src/containment.test.ts`                                                                                              |
 | R12 Arrows on the source line; free ends on their own                | `edges.test.ts`                                                                                                                          |
 | R13 Reading order                                                    | `reading-order.test.ts`                                                                                                                  |
 | R14 Content summaries and state attributes                           | `content-summary.test.ts`, `state-attribute.test.ts` (every kind in the table)                                                           |

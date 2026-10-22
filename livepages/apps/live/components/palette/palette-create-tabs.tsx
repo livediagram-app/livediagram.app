@@ -30,11 +30,9 @@ export function PaletteShapesTab({ pendingDraw, actions, tiles }: TabProps) {
   return <PaletteTileGrid tiles={tiles} actions={actions} pendingDraw={pendingDraw} />;
 }
 
-// The structural elements (docs/specs/010-palette/build-category.md): Mind node, Lane, Frame, Timeline, Table.
+// The structural elements (docs/specs/010-palette/build-category.md): Frame, Stack, Table, Sankey.
 // Rows with a blurb rather than a bare icon grid: these are all "a container
-// that holds other work", so the picture alone doesn't separate them — "Tab
-// adds a child, Enter a sibling" vs "A titled band that carries its steps" is
-// the thing you are choosing between.
+// that holds other work", so the picture alone doesn't separate them.
 export function PaletteBuildTab({ pendingDraw, actions, tiles }: TabProps) {
   return <PaletteToolRows tiles={tiles} actions={actions} pendingDraw={pendingDraw} />;
 }
@@ -53,20 +51,10 @@ export function PaletteDrawTab({ pendingDraw, actions, tiles }: TabProps) {
 
 // Charts, meters and tables (docs/specs/009-elements/pie-chart.md, docs/specs/010-palette/palette-top-level-categories.md): pie / bar / line charts,
 // progress bars and rings, ratings, and the editable grid. Rows with a blurb,
-// like Behaviour: "Pie" and "Donut" name the picture but not the job, and
+// like Build: "Pie" and "Donut" name the picture but not the job, and
 // "Proportions of a whole" vs "How far along something is" is the thing you
 // are actually choosing between.
 export function PaletteDataTab({ pendingDraw, actions, tiles }: TabProps) {
-  return <PaletteToolRows tiles={tiles} actions={actions} pendingDraw={pendingDraw} />;
-}
-
-// The Collaborate elements: six categories, one per group (Ask, Tools, Record, React, Selection Mode, Navigate). Rows with a blurb,
-// like Build and Data: eight mode buttons or five reaction pads look alike at palette size, and
-// "Hand everyone the laser" against "Hand everyone the spotlight" is the choice being made.
-//
-// They were once one category with a group browser inside it. Every group is something a
-// facilitator reaches for mid-session, so the parent was a click in front of each.
-export function PaletteCollaborateTab({ pendingDraw, actions, tiles }: TabProps) {
   return <PaletteToolRows tiles={tiles} actions={actions} pendingDraw={pendingDraw} />;
 }
 

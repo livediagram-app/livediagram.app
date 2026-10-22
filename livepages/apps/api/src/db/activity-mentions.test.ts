@@ -126,7 +126,7 @@ describe('Activity: comment mentions', () => {
   });
 });
 
-// An Action panel's list (docs/specs/012-collaboration/action-panel.md "The data"): every action on one card
+// An Action panel's list (docs/specs/012-collaboration/assigned-actions.md): every action on one card
 // is its own Activity row, through the real table and its per-action key.
 describe('Activity: an Action panel with several actions', () => {
   it('lists each action on the card as its own row', async () => {
@@ -174,7 +174,7 @@ describe('Activity: an Action panel with several actions', () => {
   });
 });
 
-// The cap (docs/specs/012-collaboration/action-panel.md "The data"): a hand-crafted save can't store or index
+// The cap (docs/specs/012-collaboration/assigned-actions.md): a hand-crafted save can't store or index
 // an unbounded list.
 describe('an Action panel list past the cap', () => {
   it('is trimmed to 50 in the stored tab and the index', async () => {

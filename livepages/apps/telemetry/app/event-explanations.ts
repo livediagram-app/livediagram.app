@@ -105,8 +105,6 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Document|Undone|': 'Someone hit Undo on a document edit.',
   'Document|Used|Multiplayer':
     'A document was open with at least one other person live in the room, counted once per document per visit. The one event that counts collaboration happening rather than being offered.',
-  'Element|Changed|Agenda':
-    'Someone pressed a segment on an Agenda element, starting its timer and marking it as the current item.',
   'Element|Changed|IconSwapped': 'Someone dropped an icon onto another icon, swapping its glyph.',
   'Element|Changed|Animation':
     'Someone gave a selected element a looping animation, or turned it off.',
@@ -125,8 +123,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone toggled whether a selected arrow routes behind the boxes it passes.',
   'Element|Changed|ArrowExactStart':
     'Someone set an arrow to start exactly at the anchor it is connected to, or back to fanning out.',
-  'Element|Changed|LaneUprightTitle':
-    'Someone turned a lane title upright in its side strip, or back to reading across.',
   'Element|Changed|ArrowStyle':
     "Someone changed a selected arrow's shape, such as straight, curved, or elbowed.",
   'Element|Changed|ArrowThickness': "Someone changed a selected arrow's line thickness.",
@@ -145,14 +141,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone changed how a badge or step number looks (solid, ink, outline, tinted or quiet).',
   'Element|Changed|ChipDetach':
     'Someone let a badge or step number go from the element it was attached to.',
-  'Element|Changed|BoundaryStyle':
-    "Someone changed where a boundary shows its title: in a tab on its edge, inside its corner, or C4's bottom-left.",
   'Element|Changed|TabWindowTab':
     'Someone chose which tab a Tab Window shows, so a slide or page shows that tab live.',
   'UI|Used|TabWindowOpen':
     'Someone opened the tab a Tab Window shows, from the window or its menu.',
-  'Element|Changed|BoundaryMeta':
-    "Someone added or removed the second line under a boundary's title, such as a network range.",
   'Element|Changed|ConceptRows':
     'Someone added, removed, reordered or renamed the layers, tiers or steps of a layer stack, pyramid or cycle.',
   'Element|Changed|PointerTip':
@@ -171,16 +163,6 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Element|Changed|StackPadding': 'Someone changed the space inside the edge of a stack.',
   'Element|Changed|StackAlign':
     'Someone changed whether the things in a stack line up at the start, the centre or the end.',
-  'Element|Changed|SequenceParticipants':
-    'Someone added, renamed, reordered or removed a participant in a sequence diagram.',
-  'Element|Changed|SequenceMessages':
-    'Someone added, edited, reordered or removed a message in a sequence diagram.',
-  'Element|Changed|SequenceText':
-    'Someone rewrote a sequence diagram as text in its dialog, one message per line.',
-  'Element|Changed|SequenceNumbered':
-    'Someone switched the message numbers of a sequence diagram on or off.',
-  'Element|Changed|SequenceAnim':
-    'Someone changed how a sequence diagram plays in, or its speed or repeat.',
   'Element|Changed|HubSpokes': 'Someone switched the spokes of a hub and spoke graphic on or off.',
   'Element|Changed|PyramidVariant':
     'Someone switched a pyramid between pointing up, pointing down and a funnel.',
@@ -207,14 +189,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone edited a code block element's snippet or its programming language.",
   'Element|Changed|CodeTheme': 'Someone applied a colour scheme to a selected code block.',
   'Element|Changed|CodeWrap': 'Someone toggled long-line wrapping on a selected code block.',
-  'Element|Changed|Decision':
-    'Someone edited a Decision element: its status, its date, or the factors driving it.',
-  'Element|Changed|DoneCheck':
-    'Someone pressed a done-check element to mark it done, or cleared it.',
-  'Element|Changed|Entity':
-    "Someone edited an Entity element's fields, on an entity-relationship diagram.",
-  'Element|Changed|Estimate':
-    'Someone submitted, revealed, or cleared a response on an Estimate card during a planning-poker round.',
   'Element|Changed|FillColor': "Someone changed a selected element's fill colour.",
   'Element|Changed|FlowRepeat': "Someone turned a selected arrow's flow animation loop on or off.",
   'Element|Changed|FlowSpeed': "Someone changed how fast a selected arrow's flow animation plays.",
@@ -223,8 +197,7 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone used the format painter to copy a style from one element onto another.',
   'Element|Changed|Header':
     "Someone edited a Header web component's lines, such as adding, removing, or retitling one.",
-  'Element|Changed|HeaderFill':
-    "Someone changed a table's header row colour, or a lane's title band colour.",
+  'Element|Changed|HeaderFill': "Someone changed a table's header row colour.",
   'Element|Changed|Hero': "Someone turned a hero image's caption card on or off.",
   'Element|Changed|Icon': 'Someone placed or repositioned an inline icon on a selected element.',
   'Element|Changed|IconAnimation':
@@ -240,8 +213,6 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Element|Changed|TableAnimation':
     'Someone gave a selected table an animation, such as rows cascading in, or turned it off.',
   'Element|Changed|IconSize': "Someone changed a selected Technology icon's tile size.",
-  'Element|Changed|Idea-box':
-    'Someone added an idea to an Idea Box element, revealed its cards, or cleared it for the next round.',
   'Element|Changed|LabelFill': "Someone changed the background colour of an arrow's label.",
   'Element|Changed|Legend': "Someone edited a Legend element's items.",
   'Element|Changed|LineData': "Someone edited a line chart element's categories and series data.",
@@ -249,20 +220,9 @@ export const EXACT: Readonly<Record<string, string>> = {
     'A link-card element automatically fetched a preview (title, image, and favicon) after someone gave it a web address.',
   'Element|Changed|Marker': "Someone added or removed a status marker next to a shape's label.",
   'Element|Changed|MarkerSize': "Someone changed the size of a shape's status marker.",
-  'Element|Changed|MindFlow': "Someone changed a mind map's flow direction.",
-  'Element|Changed|MindOutline':
-    'Someone saved an edited outline onto a mind map, re-shaping the map from its text.',
-  'Element|Changed|MindSpacing':
-    "Someone changed how far apart a mind map's nodes sit (Tight, Compact, Comfortable or Wide).",
-  'Element|Changed|ModeButton':
-    "Someone changed which selection mode a Mode Button element switches everyone into when it's pressed.",
   'Element|Changed|Nudge':
     'Someone nudged a selected element with the arrow keys. Counted once per burst of presses, not once per key press.',
   'Element|Changed|Padding': "Someone changed a selected element's internal padding.",
-  'Element|Changed|Picker':
-    'Someone rolled a Picker element, landing on a participant or option from its list, shared with everyone in the room.',
-  'Element|Changed|Portal':
-    'Someone linked a Portal element to another portal, on this tab or another, so stepping into one jumps to the other.',
   'Element|Changed|ProcessSteps':
     "Someone edited a Process web component's steps, such as adding, removing, or retitling one.",
   'Element|Changed|Progress': "Someone changed a progress-bar element's percentage.",
@@ -289,15 +249,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Element|Changed|Rating': "Someone changed a star-rating element's score.",
   'Element|Changed|RatingAnim':
     'Someone gave a star-rating element a looping animation, changed its speed, or turned it off.',
-  'Element|Changed|ReactionPad':
-    'Someone changed which reaction burst a Reaction Pad element throws.',
-  'Element|Changed|Reveal':
-    "Someone toggled a Reveal element's cover on or off for the whole room.",
-  'Element|Changed|Roll-call':
-    'Someone took a roll call on a Roll Call element, freezing the names of everyone currently in the room onto it.',
   'Element|Changed|Rotation': 'Someone rotated a selected element to a fixed angle.',
-  'Element|Changed|SessionButton':
-    'Someone configured what a Session Button element starts when pressed, such as a timer or a vote.',
   'Element|Changed|Finish':
     "Someone set a selected element's own finish (Flexible, Professional, Sketch or Marker), or set it back to follow its tab.",
   'Element|Changed|SankeyAnim':
@@ -325,8 +277,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone styled one or more selected table cells, such as their fill colour, borders, or text alignment.',
   'Element|Changed|TablePreset':
     'Someone applied a one-click look to a table: its fill, borders, and row banding together.',
-  'Element|Changed|Temperature':
-    'Someone submitted, revealed, or cleared a response on a temperature-check element.',
   'Element|Changed|TextAlign': "Someone changed a selected element's text alignment.",
   'Element|Changed|TextColor': "Someone changed a selected element's text colour.",
   'Element|Changed|TextFormat':
@@ -374,11 +324,6 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Element|Changed|TextCase':
     'Someone set a text on a logo page in capitals, lower case or as typed.',
   'Element|Changed|TextArc': 'Someone bent a text on a logo page along an arc.',
-  'Element|Created|RelatedEntity':
-    "Someone added an entity from another entity's ring, already joined to it by a foreign key.",
-  'Element|Added|EntityField':
-    "Someone started a new field on an entity from its ring's Add Field.",
-  'Element|Changed|Cardinality': "Someone picked a relationship's cardinality from its toolbar.",
   'Element|Created|MirrorTwin':
     'Someone drew on a logo page with Mirror on, so it got a reflected twin.',
   'UI|Toggled|LogoGuidesOn': "Someone showed a logo page's construction guides.",
@@ -432,8 +377,6 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Element|Linked|Tab': 'Someone linked an element to another tab.',
   'Element|Linked|Url': 'Someone linked an element to a web address.',
   'Element|Locked|': "An element's lock was turned on (no edits allowed).",
-  'Element|Removed|Vote':
-    'Someone retracted one of their dots from a dot vote. Counted only when a dot actually came off.',
   'Element|Reordered|Back': 'Someone sent an element to the back of the stack.',
   'Element|Reordered|Front': 'Someone sent an element to the front of the stack.',
   'Element|Reordered|TableColumn': 'Someone dragged a table column to a new position.',
@@ -442,8 +385,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone narrowed a multi-selection down to just one kind of element, from the right-click menu's Filter Selection.",
   'Element|Selected|Keyboard':
     'Someone moved the selection to the next element using the keyboard.',
-  'Element|Selected|MindBranch':
-    'Someone selected a mind map branch, or a whole map, from its menu.',
   'Element|Toggled|AspectLock':
     'Someone toggled a formatting option on an element or table: a text style (bold, italic, underline, or strikethrough), the aspect-ratio lock, or a table option (header row, header column, or zebra striping).',
   'Element|Toggled|Strikethrough':
@@ -458,17 +399,12 @@ export const EXACT: Readonly<Record<string, string>> = {
     'A group was disbanded back into individual elements (before groups were removed).',
   'Element|Unlinked|': 'Someone cleared the link off an element.',
   'Element|Unlocked|': "An element's lock was turned off (edits resume).",
-  'Element|Used|BringFocus':
-    "Someone asked everyone else in the room to jump to this element's spot on the canvas.",
-  'Element|Used|ReactionPad':
-    'Someone pressed a Reaction Pad element and played its burst for everyone.',
   'Element|Searched|Image':
     "Someone searched for openly licensed pictures in the image picker's Search tab.",
   'Element|Used|ImagePlaceholder':
     "Someone pressed Select Image on an empty image's placeholder to open the image picker.",
   'Element|Used|ImageSearch': 'Someone attached a picture found with image search to an image.',
   'Element|Used|Video': 'Someone pressed play on a video element.',
-  'Element|Voted|': 'Someone cast a dot in a dot vote.',
   'Email|Sent|DocumentJoined':
     "An email went out to a document's owner after someone opened it for the first time through a share link.",
   'Email|Sent|FirstShare': "An email went out marking someone's first time sharing a document.",
@@ -505,14 +441,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     "The browser's local database did not open in time, so the load carried on without checking for Offline Mode documents.",
   'Error|Warning|SessionToken.TimedOut':
     "A signed-in browser's session did not hand out a token within 10 seconds, so the request gave up instead of waiting forever.",
-  'Facilitator|Changed|Granted':
-    'The facilitator of a live session handed the role to someone else.',
   'Facilitator|Changed|Unlocked':
-    'The facilitator freed an element a peer had locked by selecting it, so someone else could work on it.',
-  'Facilitator|Ended|Released':
-    'The facilitator of a live session stepped down, leaving nobody in charge of its shared tools.',
-  'Facilitator|Started|Claimed':
-    'Someone took the facilitator role in a live session, becoming the one in charge of its shared tools: the timer and votes.',
+    'Someone freed an element a peer had locked by selecting it, so someone else could work on it.',
   'Folder|Created|': 'A new folder was created in the document explorer.',
   'Folder|Created|Tab':
     'A new tab folder was created inside a document, by typing a name the document had not used before.',
@@ -738,20 +668,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone changed a tab's default text size, used for new elements added to it.",
   'Tab|Changed|Font':
     "Someone changed a tab's default font, or applied the tab's font and size to every element on it.",
-  'Tab|Changed|TimerExtended':
-    "Someone gave a tab's running or paused countdown timer more time, from the timer element's menu.",
-  'Tab|Changed|TimerReset': "Someone reset a tab's timer back to its starting length.",
   'Tab|Cleared|': "A tab's content was wiped.",
-  'Tab|Cleared|Vote': "A tab's content was wiped.",
   'Tab|Created|': 'A new tab was added to a document.',
   'Tab|Deleted|': 'A tab was removed from a document.',
   'Tab|Duplicated|': 'A tab was duplicated.',
-  'Tab|Ended|CountdownTimer':
-    "Someone cleared a tab's countdown timer, whether it had run out or was dismissed early.",
-  'Tab|Ended|StopwatchTimer': 'Someone cleared a running stopwatch on a tab.',
-  'Tab|Ended|Vote': 'Someone ended a dot vote on a tab.',
-  'Tab|Ended|VoteReview':
-    "Someone finished reviewing a dot vote's ranked results, closing out the vote for everyone.",
   'Tab|Linked|': 'A tab was linked into another document.',
   'Tab|Loaded|':
     "A tab's content was fetched for viewing (the first tab when a document opens, then each tab switched to).",
@@ -769,14 +689,6 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Tab|Selected|SideBySideHover':
     'Someone rested the pointer on the other side by side pane, and the editor followed it there.',
   'Tab|Closed|SideBySide': 'Someone closed the side by side pane, going back to one tab.',
-  'Tab|Revealed|Vote': "Someone revealed a dot vote's results to everyone in the room.",
-  'Tab|Started|CountdownTimer': 'Someone started a countdown timer on a tab.',
-  'Tab|Started|PrivateVote':
-    'Someone started a dot vote with cursors or counts hidden from other participants.',
-  'Tab|Started|StopwatchTimer': 'Someone started a stopwatch on a tab.',
-  'Tab|Started|Vote': 'Someone started a dot vote on a tab.',
-  'Tab|Toggled|TimerPaused': 'Someone paused a running timer on a tab.',
-  'Tab|Toggled|TimerResumed': 'Someone resumed a paused timer on a tab.',
   'Tab|Unlocked|': 'A tab was unlocked (edits resume).',
   'Team|Added|Document': "A document was added to a team's shared library.",
   'Team|Added|Member':
@@ -997,22 +909,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone reached the end of the Chevrons tour, offered beside a selected chevron process.',
   'UI|Ended|ChevronsTourSkipped':
     'Someone left the Chevrons tour before its end, or the chevron process it was on went away.',
-  'UI|Ended|MindMapTourCompleted':
-    'Someone reached the end of the Mind Map tour, offered beside a selected mind map node.',
-  'UI|Ended|MindMapTourSkipped':
-    'Someone left the Mind Map tour before its end, or the mind map node it was on went away.',
-  'UI|Ended|FlowchartTourCompleted':
-    'Someone reached the end of the Flowchart tour, offered beside a selected flowchart step.',
-  'UI|Ended|FlowchartTourSkipped':
-    'Someone left the Flowchart tour before its end, or the flowchart step it was on went away.',
-  'UI|Ended|OrgChartTourCompleted':
-    'Someone reached the end of the Org Chart tour, offered beside a selected person in an org chart.',
-  'UI|Ended|OrgChartTourSkipped':
-    'Someone left the Org Chart tour before its end, or the person in an org chart it was on went away.',
-  'UI|Ended|SequenceTourCompleted':
-    'Someone reached the end of the Sequence tour, offered beside a selected sequence diagram.',
-  'UI|Ended|SequenceTourSkipped':
-    'Someone left the Sequence tour before its end, or the sequence diagram it was on went away.',
   'UI|Ended|ChartTourCompleted':
     'Someone reached the end of the Chart tour, offered beside a selected chart.',
   'UI|Ended|ChartTourSkipped':
@@ -1021,30 +917,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone reached the end of the Stack tour, offered beside a selected stack.',
   'UI|Ended|StackTourSkipped':
     'Someone left the Stack tour before its end, or the stack it was on went away.',
-  'UI|Ended|EntityTourCompleted':
-    'Someone reached the end of the Entity tour, offered beside a selected entity.',
-  'UI|Ended|EntityTourSkipped':
-    'Someone left the Entity tour before its end, or the entity it was on went away.',
   'UI|Ended|TabWindowTourCompleted':
     'Someone reached the end of the Tab Window tour, offered beside a selected tab window.',
   'UI|Ended|TabWindowTourSkipped':
     'Someone left the Tab Window tour before its end, or the tab window it was on went away.',
-  'UI|Ended|LaneTourCompleted':
-    'Someone reached the end of the Lane tour, offered beside a selected lane.',
-  'UI|Ended|LaneTourSkipped':
-    'Someone left the Lane tour before its end, or the lane it was on went away.',
-  'UI|Ended|BoundaryTourCompleted':
-    'Someone reached the end of the Boundary tour, offered beside a selected boundary.',
-  'UI|Ended|BoundaryTourSkipped':
-    'Someone left the Boundary tour before its end, or the boundary it was on went away.',
-  'UI|Ended|DiagramKeyTourCompleted':
-    'Someone reached the end of the Diagram Key tour, offered beside a selected diagram key.',
-  'UI|Ended|DiagramKeyTourSkipped':
-    'Someone left the Diagram Key tour before its end, or the diagram key it was on went away.',
-  'UI|Ended|PortalTourCompleted':
-    'Someone reached the end of the Portal tour, offered beside a selected portal.',
-  'UI|Ended|PortalTourSkipped':
-    'Someone left the Portal tour before its end, or the portal it was on went away.',
   'UI|Ended|SankeyTourCompleted':
     'Someone reached the end of the Sankey tour, offered beside a selected Sankey diagram.',
   'UI|Ended|SankeyTourSkipped':
@@ -1064,20 +940,11 @@ export const EXACT: Readonly<Record<string, string>> = {
     'A signed-out visitor opened the "Assign action" dialog and saw the sign-in nudge, since a guest can only assign work to themself. Counted once per dialog open.',
   'UI|Opened|Activity': 'Someone expanded the since-removed Activity panel.',
   'UI|Opened|Collaborate': 'Someone opened the Collaborate panel from its bottom-bar button.',
-  'UI|Opened|SessionTimer':
-    'Someone opened the Timer button in the bottom bar: the set-up while no timer runs, the live timer while one does. A timer shared by countdowns and stopwatches, so it appears under both.',
-  'UI|Opened|SessionVote':
-    'Someone opened the Vote button in the bottom bar: the vote set-up while none runs, the Vote panel while one does.',
-  'UI|Opened|BehaviourGroup':
-    "Someone opened one of Session's groups (Tools, Record, React, Selection Mode or Navigate) on Workshop mode's palette strip. Earlier, a category inside the palette's Collaborate tab (formerly Behaviours), before Workshop offered those categories one by one and then gathered them into Session.",
   'UI|Opened|CanvasStyle':
     "Someone opened the tab's look-and-feel dialog on its Canvas tab, to change the background.",
-  'UI|Opened|CollabGroup':
-    "Someone opened a category inside the palette's old Collaborate tab (session tools like timers and votes). That tab was merged into Behaviours (since renamed Collaborate). No longer recorded.",
   'UI|Opened|Collaborators':
     "Someone opened the Collaborators dialog, either from a tab's presence stack or from a command.",
   'UI|Opened|IconGroup': "Someone opened a category inside the palette's Icons tab.",
-  'UI|Opened|MindOutline': "Someone opened a mind map's outline to edit it as text.",
   'UI|Opened|PresentationSettings':
     "Someone opened the settings popover on the presentation's on-screen controls, while presenting.",
   'UI|Opened|PresenterNotes': 'Someone opened the speaker-notes card while presenting.',
@@ -1156,30 +1023,12 @@ export const EXACT: Readonly<Record<string, string>> = {
     'The Timeline tour was offered, as a small Tour toolbar beside a selected timeline (counted once per visit).',
   'UI|Opened|ChevronsTourOffer':
     'The Chevrons tour was offered, as a small Tour toolbar beside a selected chevron process (counted once per visit).',
-  'UI|Opened|MindMapTourOffer':
-    'The Mind Map tour was offered, as a small Tour toolbar beside a selected mind map node (counted once per visit).',
-  'UI|Opened|FlowchartTourOffer':
-    'The Flowchart tour was offered, as a small Tour toolbar beside a selected flowchart step (counted once per visit).',
-  'UI|Opened|OrgChartTourOffer':
-    'The Org Chart tour was offered, as a small Tour toolbar beside a selected person in an org chart (counted once per visit).',
-  'UI|Opened|SequenceTourOffer':
-    'The Sequence tour was offered, as a small Tour toolbar beside a selected sequence diagram (counted once per visit).',
   'UI|Opened|ChartTourOffer':
     'The Chart tour was offered, as a small Tour toolbar beside a selected chart (counted once per visit).',
   'UI|Opened|StackTourOffer':
     'The Stack tour was offered, as a small Tour toolbar beside a selected stack (counted once per visit).',
-  'UI|Opened|EntityTourOffer':
-    'The Entity tour was offered, as a small Tour toolbar beside a selected entity (counted once per visit).',
   'UI|Opened|TabWindowTourOffer':
     'The Tab Window tour was offered, as a small Tour toolbar beside a selected tab window (counted once per visit).',
-  'UI|Opened|LaneTourOffer':
-    'The Lane tour was offered, as a small Tour toolbar beside a selected lane (counted once per visit).',
-  'UI|Opened|BoundaryTourOffer':
-    'The Boundary tour was offered, as a small Tour toolbar beside a selected boundary (counted once per visit).',
-  'UI|Opened|DiagramKeyTourOffer':
-    'The Diagram Key tour was offered, as a small Tour toolbar beside a selected diagram key (counted once per visit).',
-  'UI|Opened|PortalTourOffer':
-    'The Portal tour was offered, as a small Tour toolbar beside a selected portal (counted once per visit).',
   'UI|Opened|SankeyTourOffer':
     'The Sankey tour was offered, as a small Tour toolbar beside a selected Sankey diagram (counted once per visit).',
   'UI|Opened|activity':
@@ -1209,8 +1058,6 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Removed|PaletteFavourite':
     'Someone removed a tile from their Favourites in the shape palette. No longer recorded: Favourites is gone.',
   'UI|Removed|Slide': 'Someone deleted a slide from the Slide Deck.',
-  'UI|Searched|BehaviourSearch':
-    "Someone searched within Session on Workshop mode's palette strip, across its groups of session tools. Earlier, a search within the palette's Collaborate tab (formerly Behaviours).",
   'UI|Searched|IconSearch': "Someone searched within the palette's Icons tab.",
   'UI|Searched|PaletteSearch':
     'Someone searched within their Favourites in the palette. No longer recorded: Favourites is gone.',
@@ -1254,30 +1101,12 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone pressed Play on the Tour toolbar beside a selected timeline, starting its tour.',
   'UI|Started|ChevronsTour':
     'Someone pressed Play on the Tour toolbar beside a selected chevron process, starting its tour.',
-  'UI|Started|MindMapTour':
-    'Someone pressed Play on the Tour toolbar beside a selected mind map node, starting its tour.',
-  'UI|Started|FlowchartTour':
-    'Someone pressed Play on the Tour toolbar beside a selected flowchart step, starting its tour.',
-  'UI|Started|OrgChartTour':
-    'Someone pressed Play on the Tour toolbar beside a selected person in an org chart, starting its tour.',
-  'UI|Started|SequenceTour':
-    'Someone pressed Play on the Tour toolbar beside a selected sequence diagram, starting its tour.',
   'UI|Started|ChartTour':
     'Someone pressed Play on the Tour toolbar beside a selected chart, starting its tour.',
   'UI|Started|StackTour':
     'Someone pressed Play on the Tour toolbar beside a selected stack, starting its tour.',
-  'UI|Started|EntityTour':
-    'Someone pressed Play on the Tour toolbar beside a selected entity, starting its tour.',
   'UI|Started|TabWindowTour':
     'Someone pressed Play on the Tour toolbar beside a selected tab window, starting its tour.',
-  'UI|Started|LaneTour':
-    'Someone pressed Play on the Tour toolbar beside a selected lane, starting its tour.',
-  'UI|Started|BoundaryTour':
-    'Someone pressed Play on the Tour toolbar beside a selected boundary, starting its tour.',
-  'UI|Started|DiagramKeyTour':
-    'Someone pressed Play on the Tour toolbar beside a selected diagram key, starting its tour.',
-  'UI|Started|PortalTour':
-    'Someone pressed Play on the Tour toolbar beside a selected portal, starting its tour.',
   'UI|Started|SankeyTour':
     'Someone pressed Play on the Tour toolbar beside a selected Sankey diagram, starting its tour.',
   'UI|Started|SankeyFlowsTour':
@@ -1483,22 +1312,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone switched on Tours › Element Tours › "Chevrons Tour" in Settings, so it is offered again.',
   'UI|Toggled|ChevronsTourSeenOn':
     'Someone switched off Tours › Element Tours › "Chevrons Tour" in Settings, so it is not offered.',
-  'UI|Toggled|MindMapTourSeenOff':
-    'Someone switched on Tours › Element Tours › "Mind Map Tour" in Settings, so it is offered again.',
-  'UI|Toggled|MindMapTourSeenOn':
-    'Someone switched off Tours › Element Tours › "Mind Map Tour" in Settings, so it is not offered.',
-  'UI|Toggled|FlowchartTourSeenOff':
-    'Someone switched on Tours › Element Tours › "Flowchart Tour" in Settings, so it is offered again.',
-  'UI|Toggled|FlowchartTourSeenOn':
-    'Someone switched off Tours › Element Tours › "Flowchart Tour" in Settings, so it is not offered.',
-  'UI|Toggled|OrgChartTourSeenOff':
-    'Someone switched on Tours › Element Tours › "Org Chart Tour" in Settings, so it is offered again.',
-  'UI|Toggled|OrgChartTourSeenOn':
-    'Someone switched off Tours › Element Tours › "Org Chart Tour" in Settings, so it is not offered.',
-  'UI|Toggled|SequenceTourSeenOff':
-    'Someone switched on Tours › Element Tours › "Sequence Tour" in Settings, so it is offered again.',
-  'UI|Toggled|SequenceTourSeenOn':
-    'Someone switched off Tours › Element Tours › "Sequence Tour" in Settings, so it is not offered.',
   'UI|Toggled|ChartTourSeenOff':
     'Someone switched on Tours › Element Tours › "Chart Tour" in Settings, so it is offered again.',
   'UI|Toggled|ChartTourSeenOn':
@@ -1507,30 +1320,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone switched on Tours › Element Tours › "Stack Tour" in Settings, so it is offered again.',
   'UI|Toggled|StackTourSeenOn':
     'Someone switched off Tours › Element Tours › "Stack Tour" in Settings, so it is not offered.',
-  'UI|Toggled|EntityTourSeenOff':
-    'Someone switched on Tours › Element Tours › "Entity Tour" in Settings, so it is offered again.',
-  'UI|Toggled|EntityTourSeenOn':
-    'Someone switched off Tours › Element Tours › "Entity Tour" in Settings, so it is not offered.',
   'UI|Toggled|TabWindowTourSeenOff':
     'Someone switched on Tours › Element Tours › "Tab Window Tour" in Settings, so it is offered again.',
   'UI|Toggled|TabWindowTourSeenOn':
     'Someone switched off Tours › Element Tours › "Tab Window Tour" in Settings, so it is not offered.',
-  'UI|Toggled|LaneTourSeenOff':
-    'Someone switched on Tours › Element Tours › "Lane Tour" in Settings, so it is offered again.',
-  'UI|Toggled|LaneTourSeenOn':
-    'Someone switched off Tours › Element Tours › "Lane Tour" in Settings, so it is not offered.',
-  'UI|Toggled|BoundaryTourSeenOff':
-    'Someone switched on Tours › Element Tours › "Boundary Tour" in Settings, so it is offered again.',
-  'UI|Toggled|BoundaryTourSeenOn':
-    'Someone switched off Tours › Element Tours › "Boundary Tour" in Settings, so it is not offered.',
-  'UI|Toggled|DiagramKeyTourSeenOff':
-    'Someone switched on Tours › Element Tours › "Diagram Key Tour" in Settings, so it is offered again.',
-  'UI|Toggled|DiagramKeyTourSeenOn':
-    'Someone switched off Tours › Element Tours › "Diagram Key Tour" in Settings, so it is not offered.',
-  'UI|Toggled|PortalTourSeenOff':
-    'Someone switched on Tours › Element Tours › "Portal Tour" in Settings, so it is offered again.',
-  'UI|Toggled|PortalTourSeenOn':
-    'Someone switched off Tours › Element Tours › "Portal Tour" in Settings, so it is not offered.',
   'UI|Toggled|SankeyTourSeenOff':
     'Someone switched on Tours › Element Tours › "Sankey Diagram Tour" in Settings, so it is offered again.',
   'UI|Toggled|SankeyTourSeenOn':
@@ -1713,70 +1506,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     'The Chevrons tour reached its "Run the Pipeline" step, playing the Pulse animation on the process.',
   'UI|View|ChevronsTourStepOutro':
     'The Chevrons tour reached its closing "That Is a Chevron Process" card.',
-  'UI|View|MindMapTourStepNode':
-    'The Mind Map tour reached its "A Node That Knows Its Parent" step, on the selected node.',
-  'UI|View|MindMapTourStepChild':
-    'The Mind Map tour reached its "Grow a Child" step, on the toolbar\'s Add Child.',
-  'UI|View|MindMapTourStepSibling':
-    'The Mind Map tour reached its "Add a Sibling" step, on the toolbar\'s Add Sibling.',
-  'UI|View|MindMapTourStepBranch':
-    'The Mind Map tour reached its branch-moving step, on the selected node.',
-  'UI|View|MindMapTourStepMenu':
-    'The Mind Map tour reached its "The Mind Map Menu" step, on the selection toolbar\'s More button.',
-  'UI|View|MindMapTourStepOutro':
-    'The Mind Map tour reached its closing "That Is a Mind Map" card.',
-  'UI|View|FlowchartTourStepStep':
-    'The Flowchart tour reached its "A Step in a Flowchart" step, on the selected step.',
-  'UI|View|FlowchartTourStepNext':
-    'The Flowchart tour reached its "The Next Step" step, on the toolbar\'s Add Step.',
-  'UI|View|FlowchartTourStepBranch':
-    'The Flowchart tour reached its "Add a Branch" step, on the toolbar\'s Add Branch.',
-  'UI|View|FlowchartTourStepType':
-    'The Flowchart tour reached its "Change Its Type" step, on the toolbar\'s Step Type.',
-  'UI|View|FlowchartTourStepLane':
-    'The Flowchart tour reached its "Its Lane" step, on the toolbar\'s Lane.',
-  'UI|View|FlowchartTourStepMenu':
-    'The Flowchart tour reached its "The Flowchart Menu" step, on the selection toolbar\'s More button.',
-  'UI|View|FlowchartTourStepOutro':
-    'The Flowchart tour reached its closing "That Is a Flowchart" card.',
-  'UI|View|OrgChartTourStepPerson':
-    'The Org Chart tour reached its "A Person in the Chart" step, on the selected person.',
-  'UI|View|OrgChartTourStepRole':
-    'The Org Chart tour reached its "Their Role" step, on the role line.',
-  'UI|View|OrgChartTourStepInitials':
-    'The Org Chart tour reached its "Initials, Made for You" step, on the initials disc.',
-  'UI|View|OrgChartTourStepReport':
-    'The Org Chart tour reached its "Add a Report" step, on the toolbar\'s Add Child.',
-  'UI|View|OrgChartTourStepPeer':
-    'The Org Chart tour reached its "Add a Peer" step, on the toolbar\'s Add Sibling.',
-  'UI|View|OrgChartTourStepTeam':
-    'The Org Chart tour reached its team-moving step, on the selected person.',
-  'UI|View|OrgChartTourStepMenu':
-    'The Org Chart tour reached its "The Mind Map Menu" step, on the selection toolbar\'s More button.',
-  'UI|View|OrgChartTourStepOutro':
-    'The Org Chart tour reached its closing "That Is an Org Chart" card.',
-  'UI|View|SequenceTourStepDiagram':
-    'The Sequence tour reached its "Who Calls Whom" step, on the whole diagram.',
-  'UI|View|SequenceTourStepMenu':
-    'The Sequence tour reached its "The Sequence Menu" step, on the selection toolbar\'s More button.',
-  'UI|View|SequenceTourStepWrite':
-    'The Sequence tour reached its "Write It as a List" step, on the whole diagram.',
-  'UI|View|SequenceTourStepParticipants':
-    'The Sequence tour reached its "The Participants" step, inside the Sequence dialog it opened.',
-  'UI|View|SequenceTourStepMessages':
-    'The Sequence tour reached its "A Row a Message" step, inside the Sequence dialog.',
-  'UI|View|SequenceTourStepKind':
-    'The Sequence tour reached its "Call, Async or Reply" step, on a message\'s kind.',
-  'UI|View|SequenceTourStepAdd':
-    'The Sequence tour reached its "Add a Message" step, inside the Sequence dialog.',
-  'UI|View|SequenceTourStepText':
-    'The Sequence tour reached its "Or Type It" step, on the Sequence dialog\'s Text tab.',
-  'UI|View|SequenceTourStepPreview':
-    'The Sequence tour reached its "Live Preview" step, inside the Sequence dialog.',
-  'UI|View|SequenceTourStepNumbered':
-    'The Sequence tour reached its "Number Them" step, on Numbered.',
-  'UI|View|SequenceTourStepOutro':
-    'The Sequence tour reached its closing "That Is a Sequence Diagram" card.',
   'UI|View|ChartTourStepChart':
     'The Chart tour reached its first step, how a chart is sized by value.',
   'UI|View|ChartTourStepReadout':
@@ -1800,14 +1529,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     'The Stack tour reached its step on a stack carrying what it holds.',
   'UI|View|StackTourStepMenu': 'The Stack tour reached its step on the Stack menu.',
   'UI|View|StackTourStepOutro': 'The Stack tour reached its closing card.',
-  'UI|View|EntityTourStepEntity':
-    'The Entity tour reached its first step, a title over its fields.',
-  'UI|View|EntityTourStepTitle': 'The Entity tour reached its step on renaming it.',
-  'UI|View|EntityTourStepRows': 'The Entity tour reached its step on its name and type rows.',
-  'UI|View|EntityTourStepMenu': 'The Entity tour reached its step on the Fields menu.',
-  'UI|View|EntityTourStepRelate':
-    'The Entity tour reached its step on joining entities with ER ends.',
-  'UI|View|EntityTourStepOutro': 'The Entity tour reached its closing card.',
   'UI|View|TabWindowTourStepWindow':
     'The Tab Window tour reached its first step, another tab drawn live.',
   'UI|View|TabWindowTourStepOpen': 'The Tab Window tour reached its step on its Open button.',
@@ -1816,31 +1537,6 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|View|TabWindowTourStepMenu': 'The Tab Window tour reached its step on the Tab Window menu.',
   'UI|View|TabWindowTourStepSize': 'The Tab Window tour reached its step on resizing it.',
   'UI|View|TabWindowTourStepOutro': 'The Tab Window tour reached its closing card.',
-  'UI|View|LaneTourStepLane': 'The Lane tour reached its first step, a band for each role.',
-  'UI|View|LaneTourStepGutter': 'The Lane tour reached its step on its title gutter.',
-  'UI|View|LaneTourStepSeam': 'The Lane tour reached its step on dragging its seam.',
-  'UI|View|LaneTourStepCarry': 'The Lane tour reached its step on a lane carrying its steps.',
-  'UI|View|LaneTourStepMenu': 'The Lane tour reached its step on turning it into a column.',
-  'UI|View|LaneTourStepOutro': 'The Lane tour reached its closing card.',
-  'UI|View|BoundaryTourStepZone':
-    'The Boundary tour reached its first step, a zone that holds things.',
-  'UI|View|BoundaryTourStepTitle': 'The Boundary tour reached its step on its title and icon.',
-  'UI|View|BoundaryTourStepMeta': 'The Boundary tour reached its step on its meta line.',
-  'UI|View|BoundaryTourStepMenu': 'The Boundary tour reached its step on its three styles.',
-  'UI|View|BoundaryTourStepOutro': 'The Boundary tour reached its closing card.',
-  'UI|View|DiagramKeyTourStepKey':
-    'The Diagram Key tour reached its first step, a key that builds itself.',
-  'UI|View|DiagramKeyTourStepMeaning':
-    "The Diagram Key tour reached its step on writing a row's meaning.",
-  'UI|View|DiagramKeyTourStepEmpty':
-    'The Diagram Key tour reached its step on a key with nothing to list yet.',
-  'UI|View|DiagramKeyTourStepTitle': 'The Diagram Key tour reached its step on its title.',
-  'UI|View|DiagramKeyTourStepOutro': 'The Diagram Key tour reached its closing card.',
-  'UI|View|PortalTourStepPortal': 'The Portal tour reached its first step, a way through.',
-  'UI|View|PortalTourStepTravel': 'The Portal tour reached its step on stepping through it.',
-  'UI|View|PortalTourStepUnlinked': 'The Portal tour reached its step on an unlinked portal.',
-  'UI|View|PortalTourStepMenu': 'The Portal tour reached its step on linking it from its menu.',
-  'UI|View|PortalTourStepOutro': 'The Portal tour reached its closing card.',
   'UI|View|SankeyTourStepBands':
     'The Sankey tour reached its "Bands Carry Amounts" step, lifting the widest band of the diagram.',
   'UI|View|SankeyTourStepLeftover':
@@ -1924,8 +1620,6 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Element|Linked':
     'Someone linked an element to something: another element, a web address, a document or a tab.',
   'Element|Locked': "An element's lock was turned on (no edits allowed).",
-  'Element|Removed':
-    'Someone took something off an element, such as one of their dots in a dot vote.',
   'Element|Reordered':
     'Someone changed the order of something on the canvas, such as the stacking of elements or a table row or column.',
   'Element|Selected':
@@ -1937,9 +1631,8 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Element|Unlinked': 'Someone cleared the link off an element.',
   'Element|Unlocked': "An element's lock was turned off (edits resume).",
   'Element|Searched': 'Someone searched for something to put in an element, such as a picture.',
-  'Element|Used': 'Someone used an interactive element on the canvas, such as a Reaction Pad.',
+  'Element|Used': 'Someone used an element in place on the canvas, such as playing a video.',
   'Element|Added': 'Someone added an element to a canvas, or put something into a document.',
-  'Element|Voted': 'Someone cast a dot in a dot vote.',
   'Email|Sent':
     'An automatic email went out: a welcome message, an onboarding nudge, a team invite, or a notification about activity on a document. The type names which one; it never says who received it.',
   'Error|Api':
@@ -1948,10 +1641,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
     "Something failed in a visitor's browser: a part of the editor or help centre crashed, or recovered on its own from a hiccup in live sync. The type says what happened and where; see the accompanying pattern for how to read it.",
   'Error|Warning':
     'A feature hit a soft limit and quietly fell back to a slower or more limited way of working, rather than failing outright.',
-  'Facilitator|Changed':
-    'Something changed about who is facilitating a live session, or an element lock the facilitator freed.',
-  'Facilitator|Ended': 'The facilitator role in a live session ended.',
-  'Facilitator|Started': 'Someone became the facilitator of a live session.',
+  'Facilitator|Changed': 'Someone freed an element a peer had locked by selecting it.',
   'Folder|Created': 'A new folder was created in the document explorer.',
   'Folder|Deleted': 'A folder was deleted (contained documents move to the top level).',
   'Folder|Moved': 'A folder was re-parented under another folder (or the root).',
@@ -2015,7 +1705,6 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Tab|Created': 'A new tab was added to a document.',
   'Tab|Deleted': 'A tab was removed from a document.',
   'Tab|Duplicated': 'A tab was duplicated.',
-  'Tab|Ended': 'Someone ended a live activity on a tab, such as a vote or a timer.',
   'Tab|Imported': 'Someone imported a tab from a file.',
   'Tab|Linked': 'A tab was linked into another document.',
   'Tab|Loaded':
@@ -2029,11 +1718,6 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Tab|Selected':
     'Someone moved the editor to the other side by side pane, by a click or by resting the pointer there.',
   'Tab|Closed': 'Someone closed the side by side pane.',
-  'Tab|Revealed':
-    "Someone revealed a tab's hidden results to everyone in the room, such as a dot vote's.",
-  'Tab|Started': 'Someone started a live activity on a tab, such as a vote or a timer.',
-  'Tab|Toggled':
-    'Someone switched something on a tab on or off, such as pausing or resuming its timer.',
   'Tab|Unlocked': 'A tab was unlocked (edits resume).',
   'Team|Added':
     'Something was added to a team: an invitation sent, or a document added to its shared library.',
@@ -2095,7 +1779,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
     "Someone opened a dialog, panel, popover, or menu somewhere in the editor. A lowercase, hyphenated type is a help-centre article's address: someone clicked a help link, or a Help result in search, to read it.",
   'UI|Removed': 'Someone removed something in the editor, such as a slide.',
   'UI|Searched':
-    'Someone typed into a search box inside a palette tab (Collaborate, Icons, or Technology), narrowing it to matching tiles. Counted once per tab visit, on the first keystroke.',
+    'Someone typed into a search box inside a palette tab (Icons, Technology or Stickers), narrowing it to matching tiles. Counted once per tab visit, on the first keystroke.',
   'UI|Selected':
     'Someone picked an option from a dropdown, or clicked through on a banner, somewhere in the editor.',
   'UI|Started': 'Someone started a presentation or the welcome tour.',

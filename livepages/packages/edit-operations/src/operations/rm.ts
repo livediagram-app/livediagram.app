@@ -1,7 +1,6 @@
 // `rm <selector> [all] [keep-arrows]` (docs/specs/024-agents/blueprints/edit-operations.md
 // "Operations"): arrows attached to what is removed go with it, transitively; with `keepArrows`
-// their attached ends are freed where they are drawn instead. A mind node's parent link to a removed
-// node is removed (EO30).
+// their attached ends are freed where they are drawn instead (EO30).
 
 import type { EditRejection } from '@livepages/api-schema';
 import {
@@ -10,7 +9,6 @@ import {
   type Element,
   type ElementId,
   type Endpoint,
-  type ShapeElement,
 } from '@livepages/document';
 import { resolveSome } from '../selectors';
 import {
@@ -97,16 +95,6 @@ function keepArrows(
   return null;
 }
 
-// Mind nodes whose parent is removed lose the link and become roots.
-function orphansOf(state: EditState, removed: ReadonlySet<ElementId>): ShapeElement[] {
-  const orphans: ShapeElement[] = [];
-  for (const el of state.byId.values()) {
-    if (el.type !== 'shape' || el.mindParentId === undefined || removed.has(el.id)) continue;
-    if (removed.has(el.mindParentId)) orphans.push(el);
-  }
-  return orphans;
-}
-
 export function applyRm(
   state: EditState,
   { target, all, keepArrows: keep }: RmOperation,
@@ -140,19 +128,9 @@ export function removeOne(
     const locked = lockRejection(state, state.byId.get(id)!, operation);
     if (locked) return locked;
   }
-  const removed = new Set([el.id, ...pulled.keys()]);
-  const orphans = orphansOf(state, removed);
-  for (const orphan of orphans) {
-    const locked = lockRejection(state, orphan, operation);
-    if (locked) return locked;
-  }
   if (keep) {
     const kept = keepArrows(state, el.id, attached.get(el.id) ?? [], operation);
     if (kept) return kept;
-  }
-  for (const orphan of orphans) {
-    const { mindParentId: _removed, ...rest } = orphan;
-    writeFields(state, rest, operation, ['mindParentId']);
   }
   removeElement(state, el.id, operation, removal);
   for (const [id, by] of pulled) removeElement(state, id, operation, { pinnedTo: by });

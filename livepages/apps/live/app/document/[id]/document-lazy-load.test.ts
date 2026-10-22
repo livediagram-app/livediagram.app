@@ -24,11 +24,8 @@ describe('the document page’s first load', () => {
     ['components/canvas/Canvas.tsx', '@/components/canvas/article/ArticleFlows'],
     ['components/canvas/CanvasChrome.tsx', '@/components/canvas/whiteboard/WhiteboardDock'],
     ['components/canvas/ElementFaceRouter.tsx', '@/components/canvas/TableView'],
-    ['components/canvas/ElementFaceRouter.tsx', '@/components/canvas/collab/CollabFaceRouter'],
     ['components/canvas/QuickStyleHost.tsx', '@/components/canvas/QuickStylePanel'],
     ['components/canvas/PresentationHost.tsx', '@/components/canvas/PresentationOverlay'],
-    ['components/canvas/SessionTimerFace.tsx', '@/components/canvas/SessionElementSettings'],
-    ['components/canvas/SessionSettingsMenu.tsx', '@/components/canvas/SessionElementSettings'],
   ])('%s loads %s on demand', (file, module) => {
     expect(importsOf(file)).not.toContain(module);
   });

@@ -1,4 +1,4 @@
-// The Comment panel's thread as a conversation (docs/specs/012-collaboration/comment-pin.md "The look"):
+// A comment thread as a conversation, as presenting shows it (docs/specs/012-collaboration/presentation-mode.md):
 // bubbles under their author, your own on the right in the accent, everyone
 // else's on the left. Consecutive comments by one author group under one
 // name, the way a chat does, so a three-part remark reads as one voice.
@@ -8,8 +8,10 @@ import { Glyph, GlyphDisc, IDENTITY_FILL, identityVars } from '@livepages/ui';
 import { AuthorDisc } from '@/components/primitives/AuthorDisc';
 import { relativeSince } from '@/lib/relative-time';
 import { MentionText } from '@/components/primitives/MentionText';
-import { tint } from '../collab-chrome';
-import { COLLAB_ACCENT, stopPointer } from '../collab-parts';
+import { tint } from '@/lib/element-tint';
+
+// Your own bubbles in the accent, read from `--collab-accent` where a scope sets it.
+const COLLAB_ACCENT = 'var(--collab-accent)';
 
 const CrossGlyph = () => (
   <Glyph size={8} units={16}>
@@ -115,7 +117,8 @@ export function CommentBubbles({
                         as="button"
                         type="button"
                         aria-label="Delete this comment"
-                        {...stopPointer}
+                        // A press on a control must not also select what it sits on.
+                        onPointerDown={(e) => e.stopPropagation()}
                         onClick={(e: React.MouseEvent) => {
                           e.stopPropagation();
                           onDelete(c.id);

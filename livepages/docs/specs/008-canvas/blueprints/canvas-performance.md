@@ -13,7 +13,6 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
 | `apps/live/components/canvas/CanvasElementList.tsx`       | Every element in paint order, memoised so an editor render that changes none skips them; the element plane      |
 | `apps/live/hooks/canvas/useLayerDragPreview.ts`           | The layer's preview store: a drag frame renders each previewed element, not the layer                           |
 | `apps/live/hooks/canvas/useSnapGuideState.ts`             | `SnapGuideStore`: the drag's snap guides, read only by `CanvasChrome`                                           |
-| `apps/live/components/canvas/element-layer-props.ts`      | `idBound`, `useStableCollab`: identity-stable per-element objects                                               |
 | `apps/live/components/canvas/arrow-view-frame.ts`         | `ArrowViewFrame` and `sameArrowViewFrame`                                                                       |
 | `apps/live/components/canvas/ArrowView.tsx`               | Takes `frame` + `holes`, no `elementIndex` / `occluders`                                                        |
 | `apps/live/components/canvas/BoxedElementView.tsx`        | No `zoom` prop; counter-scaled children read `useCanvasZoom()`                                                  |
@@ -100,20 +99,11 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
 
 - Every prop of `BoxedElementView` is a primitive, the element itself, or identity-stable across
   `Canvas` renders that do not change it. Measured breakers and their fix:
-  - `timerControls`: one object per layer, `useMemo` over the five timer handlers, which pass
-    through the layer's `useStableHandlers` bag.
-  - `commentActions`, `actionActions`: the panel actions' methods join the stable bag, and
-    `idBound(make)` hands each element one object built from them, cached per id for as long as
-    the bag's presence pattern holds. Absent actions give `undefined`, as before.
-  - `onSetSessionConfig`, `onOpenElementSettings`, `onEnterPortal`, `onFireReaction`,
-    `onReactionBurstDone`: into the layer's `useStableHandlers` bag.
-  - `collab`: `useStableCollab(collab)` in `EditorCanvasHost`: handlers through
-    `useStableHandlers` (presence kept; `COLLAB_HANDLERS` is checked against `CollabApi` at compile
-    time), `participants` held while what a face reads of them (`id`, `key`, `name`, `color`,
-    `status`, `role`, `picture`; not `lastActiveAt`) is unchanged, the rest by value.
+  - The layer's handlers: into its `useStableHandlers` bag, so each keeps its identity across
+    renders; a handler that is absent for a read-only surface stays `undefined`.
 - `zoom` leaves `BoxedElementView`'s props. `CanvasZoomProvider` (in `Canvas`, around the element
-  layer) carries it; every child that sizes by zoom reads `useCanvasZoom()`: `LaneGutter`, `ShapeHitOutline`,
-  `RemoteSelectorsStrip`, `ElementIndicators`, `LockBadge`, `ElementVoteOverlay`, `SelectionChromeLayer`,
+  layer) carries it; every child that sizes by zoom reads `useCanvasZoom()`: `ShapeHitOutline`,
+  `RemoteSelectorsStrip`, `ElementIndicators`, `LockBadge`, `SelectionChromeLayer`,
   `PhotoDraftRing` and `PhotoMatchedBadge` (`photo-badges.tsx`), `RichTextEditor` (mounted only
   while editing), `HeroCaptionCard`, `TableView`, `PageMasthead` and the web faces. A stroke's
   hit band is `StrokeHitPath`: `FreehandSvg` and `PathSvg` take `hitPenWidth` and only that
@@ -403,10 +393,6 @@ export function CanvasZoomProvider(props: { zoom: number; children: ReactNode })
 export function useCanvasZoom(): number;
 export function CounterScaled(props: ComponentProps<'div'>): ReactElement;
 
-// apps/live/components/canvas/element-layer-props.ts
-export function idBound<T>(make: (id: string) => T): (id: string) => T;
-export function useStableCollab(collab: CollabApi): CollabApi;
-
 // apps/live/hooks/canvas/useSettledElements.ts
 export const MAP_REDRAW_MIN_MS = 250;
 export function useSettledElements(elements: Element[]): Element[];
@@ -523,25 +509,25 @@ export function budgetIssueComment(report: BudgetIssueReport): string;
 
 ## Testing
 
-| Spec rule                                        | Test                                                                                                                                                                                                                                                       |
-| ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| A still canvas does nothing                      | `e2e/canvas-still.spec.ts`: no frame requested over a still second; probe idle row                                                                                                                                                                         |
-| An observer never notifies itself                | `useQuickStylePlacement.test.tsx` (shipped)                                                                                                                                                                                                                |
-| A pan or zoom moves the canvas, not its elements | `CanvasElementsLayer.renders.test.tsx`: re-render with the same inputs renders no view; a zoom renders zoom consumers only                                                                                                                                 |
-| No layout read in a gesture frame                | `useEdgeAwarePlacement.test.tsx`: no measure while suspended, one on resume                                                                                                                                                                                |
-| Selection chrome hidden while moving             | `CanvasSelectionToolbars.test.tsx`: stale under `move`, `resize`, `reshape`                                                                                                                                                                                |
-| The Map redraws when a gesture ends              | `useSettledElements.test.tsx`: frozen, released, throttled, trailing; `Minimap.test.tsx`: held mid-move                                                                                                                                                    |
-| Questions about neighbours ask the index         | `element-grid.test.ts`; `arrow-behind.test.ts`: grid candidates give the same holes                                                                                                                                                                        |
-| Whole-board passes linear and once               | `useArrowLabelLayouts.hook.test.tsx`: `draftLayout` stable across element changes                                                                                                                                                                          |
-| The canvas's cursor stays off the elements       | `CanvasElementsLayer.renders.test.tsx`: every element (boxed and arrow) sits in the one element plane; `app/canvas-motion.test.ts`: `globals.css` keeps the plane's `cursor: auto`                                                                         |
-| A move re-renders what moved                     | `CanvasElementsLayer.renders.test.tsx`: moving one element renders it; a preview frame renders no layer; `useLayerDragPreview.test.ts`; `useSnapGuideState.test.ts`: a guide set tells its readers only on a change; `element-layer-props.collab.test.tsx` |
-| Gesture store semantics                          | `canvas-gesture.test.ts`                                                                                                                                                                                                                                   |
-| Reference board deterministic, mix as specced    | `reference-board.test.ts`                                                                                                                                                                                                                                  |
-| Budget evaluation and table                      | `budget.test.ts`                                                                                                                                                                                                                                           |
-| Opening counts every long frame                  | `interactive.test.ts`: tasks and frames merged, overlaps, a gap of exactly 500 ms, nothing after the response                                                                                                                                              |
-| Opening animates nothing across the board        | `canvas-motion.test.tsx`: arriving elements do not pop and arm no timer, later ones pop; `canvas-motion.test.ts`: the fade rule omits the world                                                                                                            |
-| Timings come from the trace, never a profiler    | `canvas.perf.ts`: its CDP session sends no `Profiler.*` command                                                                                                                                                                                            |
-| The budget holds                                 | The nightly probe                                                                                                                                                                                                                                          |
+| Spec rule                                        | Test                                                                                                                                                                                                                |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A still canvas does nothing                      | `e2e/canvas-still.spec.ts`: no frame requested over a still second; probe idle row                                                                                                                                  |
+| An observer never notifies itself                | `useQuickStylePlacement.test.tsx` (shipped)                                                                                                                                                                         |
+| A pan or zoom moves the canvas, not its elements | `CanvasElementsLayer.renders.test.tsx`: re-render with the same inputs renders no view; a zoom renders zoom consumers only                                                                                          |
+| No layout read in a gesture frame                | `useEdgeAwarePlacement.test.tsx`: no measure while suspended, one on resume                                                                                                                                         |
+| Selection chrome hidden while moving             | `CanvasSelectionToolbars.test.tsx`: stale under `move`, `resize`, `reshape`                                                                                                                                         |
+| The Map redraws when a gesture ends              | `useSettledElements.test.tsx`: frozen, released, throttled, trailing; `Minimap.test.tsx`: held mid-move                                                                                                             |
+| Questions about neighbours ask the index         | `element-grid.test.ts`; `arrow-behind.test.ts`: grid candidates give the same holes                                                                                                                                 |
+| Whole-board passes linear and once               | `useArrowLabelLayouts.hook.test.tsx`: `draftLayout` stable across element changes                                                                                                                                   |
+| The canvas's cursor stays off the elements       | `CanvasElementsLayer.renders.test.tsx`: every element (boxed and arrow) sits in the one element plane; `app/canvas-motion.test.ts`: `globals.css` keeps the plane's `cursor: auto`                                  |
+| A move re-renders what moved                     | `CanvasElementsLayer.renders.test.tsx`: moving one element renders it; a preview frame renders no layer; `useLayerDragPreview.test.ts`; `useSnapGuideState.test.ts`: a guide set tells its readers only on a change |
+| Gesture store semantics                          | `canvas-gesture.test.ts`                                                                                                                                                                                            |
+| Reference board deterministic, mix as specced    | `reference-board.test.ts`                                                                                                                                                                                           |
+| Budget evaluation and table                      | `budget.test.ts`                                                                                                                                                                                                    |
+| Opening counts every long frame                  | `interactive.test.ts`: tasks and frames merged, overlaps, a gap of exactly 500 ms, nothing after the response                                                                                                       |
+| Opening animates nothing across the board        | `canvas-motion.test.tsx`: arriving elements do not pop and arm no timer, later ones pop; `canvas-motion.test.ts`: the fade rule omits the world                                                                     |
+| Timings come from the trace, never a profiler    | `canvas.perf.ts`: its CDP session sends no `Profiler.*` command                                                                                                                                                     |
+| The budget holds                                 | The nightly probe                                                                                                                                                                                                   |
 
 ## Constants and configuration
 

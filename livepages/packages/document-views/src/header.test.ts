@@ -6,7 +6,7 @@ import { countElements, headerLine, threadCounts, viewHeader, type HeaderFacts }
 const facts = (over: Partial<HeaderFacts> = {}): HeaderFacts => ({
   tab: { id: 't', ref: '0b34', name: 'Checkout platform', kind: 'diagram' },
   elements: 30,
-  counts: { boxes: 16, frames: 3, lanes: 0, arrows: 11 },
+  counts: { boxes: 16, frames: 3, arrows: 11 },
   hidden: 0,
   unknown: 0,
   threads: { open: 1, total: 2 },
@@ -26,7 +26,7 @@ describe('headerLine (R16, VW8)', () => {
       facts({
         tab: { id: 't', ref: 'es', name: 'Deck "1"', kind: 'diagram' },
         elements: 1,
-        counts: { boxes: 1, frames: 1, lanes: 1, arrows: 1 },
+        counts: { boxes: 1, frames: 1, arrows: 1 },
         hidden: 2,
         unknown: 1,
         threads: { open: 0, total: 0 },
@@ -34,7 +34,7 @@ describe('headerLine (R16, VW8)', () => {
       }),
     );
     expect(line).toBe(
-      'tab es "Deck \\"1\\"" · 1 element: 1 box, 1 frame, 1 lane, 1 arrow · 2 hidden · 1 unknown',
+      'tab es "Deck \\"1\\"" · 1 element: 1 box, 1 frame, 1 arrow · 2 hidden · 1 unknown',
     );
   });
 
@@ -47,7 +47,7 @@ describe('headerLine (R16, VW8)', () => {
   it('says 0 elements for an empty tab (E1)', () => {
     const empty = facts({
       elements: 0,
-      counts: { boxes: 0, frames: 0, lanes: 0, arrows: 0 },
+      counts: { boxes: 0, frames: 0, arrows: 0 },
       threads: { open: 0, total: 0 },
     });
     expect(headerLine(empty)).toBe('tab 0b34 "Checkout platform" · 0 elements · rev 41');
@@ -59,16 +59,15 @@ describe('headerLine (R16, VW8)', () => {
 });
 
 describe('countElements (VW9) and threadCounts (VW11)', () => {
-  it('buckets frames, lanes, arrows and everything else as boxes', () => {
+  it('buckets frames, arrows and everything else as boxes', () => {
     const els: Element[] = [
       shapeAt('frame', 'f', 0, 0),
-      shapeAt('lane', 'l', 0, 0),
       shapeAt('square', 's', 0, 0),
       createText(0, 0),
       { id: 'u', type: 'hologram' } as unknown as Element,
       arrowBetween('a', 's', 'f'),
     ];
-    expect(countElements(els)).toEqual({ boxes: 3, frames: 1, lanes: 1, arrows: 1 });
+    expect(countElements(els)).toEqual({ boxes: 3, frames: 1, arrows: 1 });
   });
 
   it('counts threads with comments, open when unresolved (E21)', () => {

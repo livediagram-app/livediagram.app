@@ -29,8 +29,7 @@ const rows = (cursorsHidden: boolean) =>
     }),
   ).result.current;
 
-// The hide-cursors vote (docs/specs/012-collaboration/session-tools.md) and presenting
-// (docs/specs/012-collaboration/presentation-mode.md) both set cursorsHidden.
+// Presenting (docs/specs/012-collaboration/presentation-mode.md) sets cursorsHidden.
 describe('usePresenceRows cursorsHidden', () => {
   it("shows a peer's cursor and laser normally", () => {
     const r = rows(false);

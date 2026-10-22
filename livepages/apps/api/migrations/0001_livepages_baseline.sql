@@ -319,8 +319,7 @@ CREATE TABLE ws_tickets (
   account           INTEGER NOT NULL DEFAULT 0,
   person_tag        TEXT,
   workbench_pairing TEXT    NULL,
-  adder_key         TEXT    NULL,
-  owner             INTEGER NOT NULL DEFAULT 0
+  adder_key         TEXT    NULL
 );
 CREATE INDEX ws_tickets_expires_at ON ws_tickets (expires_at);
 

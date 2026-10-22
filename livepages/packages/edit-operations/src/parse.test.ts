@@ -141,11 +141,11 @@ describe('parseEditOperations: the line form (the vocabulary)', () => {
       between: ['n3', 'n4'],
     });
     expect(
-      one('wrap n3 "Orders DB" type:sticky in:f2 in lane id=svc label=Services tidy make-room'),
+      one('wrap n3 "Orders DB" type:sticky in:f2 in frame id=svc label=Services tidy make-room'),
     ).toEqual({
       op: 'wrap',
       targets: ['n3', '"Orders DB"', 'type:sticky in:f2'],
-      in: 'lane',
+      in: 'frame',
       id: 'svc',
       fields: { label: 'Services' },
       tidy: true,
@@ -282,7 +282,7 @@ describe('parseEditOperations: refusals', () => {
       'line 1, column 9: expected connect <a> -> <b>',
       'line 1, column 9: expected connect <a> -> <b>',
       'line 1, column 12: expected a selector after ->',
-      'line 1, column 9: expected in frame or in lane',
+      'line 1, column 9: expected in frame',
       'line 1, column 6: expected the members to wrap',
       'line 1, column 26: expected key=value or tidy, absorb, make-room',
       'line 1, column 4: expected a selector: a ref, a "label" or key:value terms',

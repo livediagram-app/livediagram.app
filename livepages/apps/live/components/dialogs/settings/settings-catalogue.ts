@@ -1251,38 +1251,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         description: 'The first time you select a timeline.',
         helpArticle: 'conceptGraphics',
       }),
-      elementTourSwitch('mind-node', {
-        label: 'Mind Map',
-        event: { category: 'UI', on: 'MindMapTourSeenOff', off: 'MindMapTourSeenOn' },
-        keywords:
-          'tour walkthrough tutorial mind map node tab enter child sibling branch tidy outline replay',
-        description: 'The first time you select a mind map node.',
-        helpArticle: 'mindMaps',
-      }),
-      elementTourSwitch('flowchart', {
-        label: 'Flowchart',
-        event: { category: 'UI', on: 'FlowchartTourSeenOff', off: 'FlowchartTourSeenOn' },
-        keywords:
-          'tour walkthrough tutorial flowchart step tab enter branch decision step type lane swimlane direction replay',
-        description: 'The first time you select a flowchart step.',
-        helpArticle: 'flowcharts',
-      }),
-      elementTourSwitch('org-chart', {
-        label: 'Org Chart',
-        event: { category: 'UI', on: 'OrgChartTourSeenOff', off: 'OrgChartTourSeenOn' },
-        keywords:
-          'tour walkthrough tutorial org chart organisation organization person role initials report peer team replay',
-        description: 'The first time you select a person in an org chart.',
-        helpArticle: 'orgCharts',
-      }),
-      elementTourSwitch('sequence', {
-        label: 'Sequence',
-        event: { category: 'UI', on: 'SequenceTourSeenOff', off: 'SequenceTourSeenOn' },
-        keywords:
-          'tour walkthrough tutorial sequence diagram participants messages call reply async lifeline numbered uml replay',
-        description: 'The first time you select a sequence diagram.',
-        helpArticle: 'sequenceDiagram',
-      }),
       elementTourSwitch('chart', {
         label: 'Chart',
         event: { category: 'UI', on: 'ChartTourSeenOff', off: 'ChartTourSeenOn' },
@@ -1297,47 +1265,12 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         description: 'The first time you select a stack.',
         helpArticle: 'stacks',
       }),
-      elementTourSwitch('entity', {
-        label: 'Entity',
-        event: { category: 'UI', on: 'EntityTourSeenOff', off: 'EntityTourSeenOn' },
-        keywords: 'entity uml class er table fields record tour',
-        description: 'The first time you select an entity.',
-        helpArticle: 'entities',
-      }),
       elementTourSwitch('tab-window', {
         label: 'Tab Window',
         event: { category: 'UI', on: 'TabWindowTourSeenOff', off: 'TabWindowTourSeenOn' },
         keywords: 'tab window live slide embed another tab tour',
         description: 'The first time you select a tab window.',
         helpArticle: 'tabWindows',
-      }),
-      elementTourSwitch('lane', {
-        label: 'Lane',
-        event: { category: 'UI', on: 'LaneTourSeenOff', off: 'LaneTourSeenOn' },
-        keywords: 'lane swimlane band gutter seam column tour',
-        description: 'The first time you select a lane.',
-        helpArticle: 'lanes',
-      }),
-      elementTourSwitch('boundary', {
-        label: 'Boundary',
-        event: { category: 'UI', on: 'BoundaryTourSeenOff', off: 'BoundaryTourSeenOn' },
-        keywords: 'boundary zone region vpc cluster c4 container tour',
-        description: 'The first time you select a boundary.',
-        helpArticle: 'boundaries',
-      }),
-      elementTourSwitch('diagram-key', {
-        label: 'Diagram Key',
-        event: { category: 'UI', on: 'DiagramKeyTourSeenOff', off: 'DiagramKeyTourSeenOn' },
-        keywords: 'diagram key legend line styles tag colours meanings tour',
-        description: 'The first time you select a diagram key.',
-        helpArticle: 'diagramKeys',
-      }),
-      elementTourSwitch('portal', {
-        label: 'Portal',
-        event: { category: 'UI', on: 'PortalTourSeenOff', off: 'PortalTourSeenOn' },
-        keywords: 'portal link travel teleport avatar shortcut tour',
-        description: 'The first time you select a portal.',
-        helpArticle: 'portals',
       }),
     ],
   },

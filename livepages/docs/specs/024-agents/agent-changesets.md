@@ -42,7 +42,7 @@ persistence boundary"). That write never reached the room, so:
 - **A new document** is not a changeset: nothing else can hold it yet. `POST /api/documents` creates it, compiling
   template tabs with the same engine.
 - **A fingerprint** covers the element without its live multi-writer fields (`LIVE_ELEMENT_FIELDS`: comments,
-  answers, ideas, ticks and the like), which people change through deltas that never conflict with an agent's
+  checklist ticks and the like), which people change through deltas that never conflict with an agent's
   edit.
 
 ## The tab revision

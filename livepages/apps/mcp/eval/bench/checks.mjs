@@ -3,7 +3,7 @@
 // a round's score is a count, never an opinion. Pure: no server, no clock.
 
 // Shapes that hold a node's words; frames, key swatches and the like are containers or decoration.
-const DECOR_SHAPES = new Set(['frame', 'lane', 'pool']);
+const DECOR_SHAPES = new Set(['frame']);
 
 export const lc = (s) => (s ?? '').toString().toLowerCase();
 
@@ -34,8 +34,6 @@ export function wordsOf(el) {
   if (Array.isArray(el.attributes))
     parts.push(...el.attributes.map((a) => (typeof a === 'string' ? a : a?.name)));
   if (Array.isArray(el.data)) parts.push(...el.data.map((d) => d?.label ?? d?.name));
-  if (Array.isArray(el.entityFields))
-    parts.push(...el.entityFields.flatMap((f) => [f?.name, f?.type]));
   if (Array.isArray(el.pieSlices)) parts.push(...el.pieSlices.map((d) => d?.label));
   if (Array.isArray(el.lineCategories)) parts.push(...el.lineCategories);
   if (Array.isArray(el.lineSeries)) parts.push(...el.lineSeries.map((d) => d?.name));
@@ -79,12 +77,12 @@ export function flows(snap, a, b) {
   return linked(snap, a, b, { directed: true });
 }
 
-// Elements of one kind: a shape name ("lane", "entity", "bar-chart") or an element type ("sticky", "arrow").
+// Elements of one kind: a shape name ("frame", "icon", "bar-chart") or an element type ("sticky", "arrow").
 export function shapes(snap, kind) {
   return elementsOf(snap).filter((e) => e.shape === kind || (e.type === kind && !e.shape));
 }
 
-// Something matching `word` sits inside a frame or lane whose words match `group`: by bounds, or by its parent.
+// Something matching `word` sits inside a frame whose words match `group`: by bounds, or by its parent.
 export function inside(snap, word, group) {
   const groups = find(snap, group).filter(
     (g) => g.type === 'shape' && (DECOR_SHAPES.has(g.shape) || g.width),
@@ -174,7 +172,7 @@ export function mentionsAll(snap, words) {
   };
 }
 
-// Every word has an element of its own (a box, a sticky, an entity, a lane) holding it.
+// Every word has an element of its own (a box, a sticky, a frame) holding it.
 export function elementsFor(snap, words) {
   const missing = words.filter((w) => find(snap, w).length === 0);
   return {

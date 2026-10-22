@@ -12,7 +12,7 @@ Scope, by file:
 | --------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `packages/diagram-lint/{package.json,tsconfig.json,oxlint.config.ts}`             | The package `@livepages/diagram-lint`; depends on `@livepages/document` and `@livepages/api-schema` (tests also on `templates` and `edit-operations`) |
 | `packages/diagram-lint/vitest.config.ts`                                          | `defineProject`, node environment, 100% coverage thresholds (as `explorer-lens`)                                                                      |
-| `packages/diagram-lint/src/index.ts`                                              | The barrel: `lintTab`, `lintGraph`, `compareGraphLayouts`, the formatters, the constants                                                              |
+| `packages/diagram-lint/src/index.ts`                                              | The barrel: `lintTab`, the formatters, the logger, the constants                                                                                      |
 | `packages/diagram-lint/src/constants.ts`                                          | Every `LINT_*` constant (see Constants)                                                                                                               |
 | `packages/diagram-lint/src/context.ts`                                            | `prepareLintContext`: visible elements, index, refs, boxes, containment, arrows, routes, the connected boxes, grid, labels                            |
 | `packages/diagram-lint/src/boxes.ts`                                              | `isLintBox`, `centreOf`, `boxCorners`, `boxBounds`, `overlapDepth` (separating axes), `holdsWholly`                                                   |
@@ -27,15 +27,13 @@ Scope, by file:
 | `packages/diagram-lint/src/order.ts`                                              | `sortFindings`                                                                                                                                        |
 | `packages/diagram-lint/src/format.ts`                                             | `lintSummaryLine`, `lintVerdict`, `lintFooterPart`, `formatLintReport`                                                                                |
 | `packages/diagram-lint/src/lint.ts`                                               | `lintTab`, `lintGraph`, `graphEdgeIds`                                                                                                                |
-| `packages/diagram-lint/src/compare.ts`                                            | `compareGraphLayouts`, `formatCompareTable`, `parseCompareDimensions`                                                                                 |
 | `packages/diagram-lint/src/log.ts`                                                | `LintLogger`, `consoleLintLogger`, the `[lint]` fingerprints                                                                                          |
-| `packages/diagram-lint/src/fixtures/build.ts`, `shop-architecture.ts`             | Fixture builders and a quiet lint; the research's 15-node architecture graph                                                                          |
+| `packages/diagram-lint/src/fixtures/build.ts`                                     | Fixture builders and a quiet lint                                                                                                                     |
 | `packages/api-schema/src/lint.ts` (+ test), `index.ts`                            | Wire types: `LINT_CODES`, `LINT_SEVERITIES`, `LINT_SEVERITY`, `LintFinding`, `LintReport`, `LintMeasures`, `isLintCode`                               |
 | `packages/api-schema/src/document-views.ts`                                       | `VIEW_NAMES` gains `lint`; `LINT_VIEW_NAME`                                                                                                           |
 | `packages/api-schema/src/changesets.ts`                                           | `ChangesetResponse.lint` and `RevertResponse.lint`: `LintReport \| null`                                                                              |
 | `packages/document/src/svg-render-primitives.ts`                                  | `LABEL_ESTIMATE_CHAR_EM`, `estimatedLabelMeasure`; `labelMeasure`'s fallback calls it                                                                 |
 | `packages/document/src/svg-render-describe.ts`, `svg-render.ts`                   | `selfLabelled` (lifted from `svgBoxed`'s label condition), `drawsStandardLabel`, `labelRoom`                                                          |
-| `packages/document/src/graph-input.ts`                                            | `layoutGraph(input, { makeEdgeId })` passes the id option through                                                                                     |
 | `packages/document/src/{element-refs,containment}.ts`                             | Shared homes, consumed here: `computeRefs`, `isContainer`, `deriveContainers`                                                                         |
 | `apps/api/src/routes/document-views-route.ts`                                     | `parseViewQuery` reads `view=lint` (only `json`); `answerTabView` answers it with `lintTab`                                                           |
 | `apps/api/src/changesets/lint.ts`                                                 | `lintResult`, `lintLog`: the result tab's lint for writes, dry runs and reverts; `[lint] failed`                                                      |
@@ -64,14 +62,12 @@ The root `AGENTS.md` repo layout lists packages; its line for `diagram-lint/` ne
 | Source           | `LintSource` (`tab`, `graph`)                                | What was linted: a stored or changed tab, or a graph or Mermaid file laid out               |
 | Box              | `isLintBox`                                                  | A boxed element that is not a container, text, annotation, freehand or path (LN2)           |
 | Shape            | `isLintBox(el) && el.type === 'shape'`                       | The boxes `node-isolated` judges                                                            |
-| Container        | `isContainer` (`@livepages/document`)                        | A `shape` of kind `frame` or `lane`                                                         |
+| Container        | `isContainer` (`@livepages/document`)                        | A `shape` of kind `frame`                                                                   |
 | Frame            | `shape: 'frame'`                                             | The container the group codes judge; a graph group is laid out as one                       |
 | Member           | `framesWithMembers`                                          | A box with the frame on its container chain (`deriveContainers`)                            |
 | Drawable arrow   | `ctx.drawable`                                               | A visible arrow whose two ends resolve to a point                                           |
 | Connecting arrow | `ctx.connecting`                                             | A drawable arrow pinned at both ends to two different boxes                                 |
 | Flow             | `LintFlow` (`down`, `up`, `right`, `left`)                   | The direction most connecting arrows point                                                  |
-| Variant          | `CompareVariant`, `CompareRow`                               | One layout of a graph source under `compareGraphLayouts`                                    |
-| Dimension        | `CompareDimension` (`direction`, `groups`, `lines`)          | What `compareGraphLayouts` varies                                                           |
 
 Banned: "issue", "warning" or "lint error" for a finding (a warning is a severity), "problem" in copy, "edge" for an
 arrow in tab-facing messages (graph-source fixes may say edge), "group" for a frame in tab-facing messages, "node" for
@@ -89,7 +85,7 @@ The lint is a pure function: no state, no clock, no randomness, no I/O but one l
    - `refs` = `computeRefs(tab.elements ids)` (`@livepages/document`), the refs every view prints.
    - `boxes` = `visible.filter(isLintBox)` with finite `x`, `y`, `width`, `height`. An element with a non-finite
      rect is counted in `skipped` and checked by nothing.
-   - `containers` = `deriveContainers(visible)`: each element's container, the smallest frame or lane holding its centre.
+   - `containers` = `deriveContainers(visible)`: each element's container, the smallest frame holding its centre.
      `frameOf(box)` walks that chain to its first frame (LN13).
    - `arrows` = visible arrows. `dangling` = those failing the `arrow-dangling` test. `drawable` = the rest.
    - `polylines` = `arrowRoutePoints(arrow, visible)` for each drawable arrow (the drawn route, shared-anchor ends
@@ -155,21 +151,6 @@ verdict or summary would go (LN23); the view answers 500 with that message.
 `tab lint` exits 1 when `report.counts.error > 0`, else 0; a usage error exits 2 and a view request
 the api refuses exits with the CLI's code for it.
 
-### Compare
-
-`compareGraphLayouts(input, dimensions)` enumerates variants as nested loops over the dimensions in the order given,
-each in its fixed value order (LN26):
-
-| Dimension   | Values, in order               | Applied as                                                |
-| ----------- | ------------------------------ | --------------------------------------------------------- |
-| `direction` | `down`, `right`                | `input.direction`                                         |
-| `groups`    | `groups`, `no-groups`          | `no-groups` drops `input.groups` and every node's `group` |
-| `lines`     | `straight`, `angled`, `curved` | `input.lines`                                             |
-
-A source without groups collapses `groups` to `no-groups` alone. Each variant is `lintGraph`'d. The best row is the
-lowest by: errors; crossings plus behind (crossings counted as 0 when skipped in every row); warnings; `|ln(w/h)|`;
-area; enumeration index (LN27). At most 2 × 2 × 3 = 12 variants.
-
 ## Interfaces and contracts
 
 `packages/api-schema/src/lint.ts` (wire types live with every DTO the api emits, LN25):
@@ -234,31 +215,11 @@ export function lintSummaryLine(report: LintReport): string;
 export function lintVerdict(report: LintReport): string;
 export function lintFooterPart(report: LintReport | null): string; // 'lint clean', or 'lint unavailable' for null
 export function formatLintReport(report: LintReport): string; // summary line, then finding lines
-export type CompareDimension = 'direction' | 'groups' | 'lines';
-export function parseCompareDimensions(text: string): CompareDimension[] | { error: string };
-export type CompareRow = {
-  label: string; // "right no-groups straight"
-  variant: { direction: 'down' | 'right'; groups: boolean; lines: ArrowStyle };
-  measures: LintMeasures;
-  counts: Record<LintSeverity, number>;
-  ratio: number | null; // width / height
-  best: boolean;
-};
-export function compareGraphLayouts(
-  input: GraphInput,
-  dims: CompareDimension[],
-  options?: { log?: LintLogger },
-): CompareRow[];
-export function formatCompareTable(rows: CompareRow[]): string;
 export type LintLogger = (
   fingerprint: string,
   fields: Record<string, number | string | boolean>,
 ) => void;
 ```
-
-`parseCompareDimensions`: comma-separated, trimmed, each a `CompareDimension`, no repeats, at least one. An unknown
-or repeated name returns `{ error: 'unknown dimension "<x>"; use direction, groups, lines' }`, which the CLI prints as
-a usage error.
 
 `@livepages/document` additions:
 
@@ -289,7 +250,6 @@ CLI: `tab lint <doc> [--tab <t>] [--json]`. `--json` prints `LintFinding[]` (`JS
 | `LintReport`                 | derived | Recomputed on every call from the tab; never stored (LN32)         |
 | `LintFinding.refs`           | derived | Refs of the tab linted; a later write can make a prefix ambiguous  |
 | `LintFinding.message`, `fix` | derived | May quote a label (`quoteLabel`); the reader already holds the tab |
-| Compare rows                 | derived | Local to the CLI; nothing leaves the machine                       |
 
 No migration, no D1 column, no R2 object, no room op. `agent_changesets` rows do not carry the report; a reader
 re-lints the tab through the view.
@@ -378,8 +338,6 @@ The lint has no web surface; its text output is its interface (CLI, MCP text, ch
   `fix: {fix}`. Every finding prints its fix (LN19). Each code prints at most `LINT_MAX_LINES_PER_CODE` lines, then
   `… {n} more {code}` (LN20).
 - **Changeset footer**: `lintFooterPart`: `lint clean`, `lint 2 warnings, 1 info`, or `lint unavailable`.
-- **Compare table**: a header `variant  crossings  behind  overlaps  extent  ratio  verdict`, then one row a variant,
-  columns padded to their widest cell, ratio to one decimal, `← best` after the best row's verdict.
 
 Messages, with `{a}` a box ref, `{x→y}` an arrow named by its ends (`arrowName`, the arrow's ref when an end is not a
 box), `{label}` a `quoteLabel`:
@@ -404,19 +362,19 @@ order, `, or ` separates alternatives, and `<ref>` and `<text>` are placeholders
 change to the source in words, or a command. `{arrow}` is `arrowSelector`: `x->y` when exactly one arrow joins them
 that way, else the arrow's ref (N18).
 
-| Code                | Tab source                                                                                                                                                                                                                                                                                                                                     | Graph source                                  |
-| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- |
-| `box-overlap`       | `move {b} right-of:{a}`                                                                                                                                                                                                                                                                                                                        | `graph lint --compare direction,groups`       |
-| `arrow-dangling`    | `rm {arrow}`                                                                                                                                                                                                                                                                                                                                   | `remove the edge`                             |
-| `arrow-behind-box`  | The first other line style (`angled`, `curved`, `straight`, `restyle.ts`) whose route passes behind no box but its ends: `set {arrow} line={style}`; none: `move {box} by={dx},{dy}`, the first box clear of the line by `LINT_MOVE_CLEAR` across its first run through it, the shorter way                                                    | `drop the groups, or lines: angled`           |
-| `edge-crossings`    | `layout type:shape`; on a framed tab, of the most-crossed arrows (up to `LINT_REFS_PER_FINDING_MAX`), the first whose line style (`angled`, `curved`, `straight`) strictly lowers its own crossings, `set {arrow} line={style}`; none: `move a box so {arrow} crosses fewer lines` (advice: a suggested style that added crossings oscillated) | `graph lint --compare direction,groups,lines` |
-| `label-collision`   | `set {arrow} label="<at most {n} characters>"`; struck, with a clear spot (the first of 0.25, 0.75, 0.33, 0.67, 0.5, 0.15, 0.85 along its own line whose plate meets no box and no line): `set {arrow} labelOffset={"t":{t},"offset":0}`                                                                                                       | `shorten the edge label to {n} characters`    |
-| `label-overflow`    | `set {a} text=sm` (when larger), else `set {a} label="<text>" note="<text>"`; a cut card `set {a} width={w}`, the width that holds it                                                                                                                                                                                                          | `shorten the label; detail goes in note`      |
-| `node-isolated`     | `connect <ref> -> {a}`                                                                                                                                                                                                                                                                                                                         | `add an edge to {a}, or drop it`              |
-| `group-escape`      | `move {a} inside:{frame}`                                                                                                                                                                                                                                                                                                                      | `drop the group`                              |
-| `group-split-edges` | `unwrap {frame}`                                                                                                                                                                                                                                                                                                                               | `group by ownership, or drop the groups`      |
-| `duplicate-label`   | `set {b} label="<text>"`                                                                                                                                                                                                                                                                                                                       | `rename one, or merge the nodes`              |
-| `flow-backwards`    | `rewire {arrow} from={y} to={x}`                                                                                                                                                                                                                                                                                                               | `reverse the edge, unless it is a loop`       |
+| Code                | Tab source                                                                                                                                                                                                                                                                                                                                     | Graph source                               |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ |
+| `box-overlap`       | `move {b} right-of:{a}`                                                                                                                                                                                                                                                                                                                        | none                                       |
+| `arrow-dangling`    | `rm {arrow}`                                                                                                                                                                                                                                                                                                                                   | `remove the edge`                          |
+| `arrow-behind-box`  | The first other line style (`angled`, `curved`, `straight`, `restyle.ts`) whose route passes behind no box but its ends: `set {arrow} line={style}`; none: `move {box} by={dx},{dy}`, the first box clear of the line by `LINT_MOVE_CLEAR` across its first run through it, the shorter way                                                    | `drop the groups, or lines: angled`        |
+| `edge-crossings`    | `layout type:shape`; on a framed tab, of the most-crossed arrows (up to `LINT_REFS_PER_FINDING_MAX`), the first whose line style (`angled`, `curved`, `straight`) strictly lowers its own crossings, `set {arrow} line={style}`; none: `move a box so {arrow} crosses fewer lines` (advice: a suggested style that added crossings oscillated) | none                                       |
+| `label-collision`   | `set {arrow} label="<at most {n} characters>"`; struck, with a clear spot (the first of 0.25, 0.75, 0.33, 0.67, 0.5, 0.15, 0.85 along its own line whose plate meets no box and no line): `set {arrow} labelOffset={"t":{t},"offset":0}`                                                                                                       | `shorten the edge label to {n} characters` |
+| `label-overflow`    | `set {a} text=sm` (when larger), else `set {a} label="<text>" note="<text>"`; a cut card `set {a} width={w}`, the width that holds it                                                                                                                                                                                                          | `shorten the label; detail goes in note`   |
+| `node-isolated`     | `connect <ref> -> {a}`                                                                                                                                                                                                                                                                                                                         | `add an edge to {a}, or drop it`           |
+| `group-escape`      | `move {a} inside:{frame}`                                                                                                                                                                                                                                                                                                                      | `drop the group`                           |
+| `group-split-edges` | `unwrap {frame}`                                                                                                                                                                                                                                                                                                                               | `group by ownership, or drop the groups`   |
+| `duplicate-label`   | `set {b} label="<text>"`                                                                                                                                                                                                                                                                                                                       | `rename one, or merge the nodes`           |
+| `flow-backwards`    | `rewire {arrow} from={y} to={x}`                                                                                                                                                                                                                                                                                                               | `reverse the edge, unless it is a loop`    |
 
 ## Observability
 
@@ -424,7 +382,6 @@ that way, else the arrow's ref (N18).
 | -------------------------------- | ----- | -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
 | `[lint] run`                     | info  | `lintTab`                        | `source`, `elements`, `boxes`, `arrows`, `skipped`, `errors`, `warnings`, `infos`, one count per code with findings, `crossingsSkipped`, `ms` |
 | `[lint] crossings skipped`       | warn  | `lintTab`                        | `arrows`, `max`                                                                                                                               |
-| `[lint] compare`                 | info  | `compareGraphLayouts`            | `variants`, `bestIndex`, `ms`                                                                                                                 |
 | `[lint] failed`                  | error | changeset route, view route, MCP | `where` (`changeset`, `view`, `mcp`), the error's message and stack                                                                           |
 | `[element-grid] skipped element` | debug | `buildElementGrid`               | Existing; fires for a box with an unusable rect                                                                                               |
 
@@ -451,12 +408,9 @@ added: the front doors already count the verbs (`Cli·Used·TabLint`, `Cli·Used
 | Summary line, plurals, verdict, footer part, `empty`, `clean`                                           | `packages/diagram-lint/src/format.test.ts`                                                                                                              |
 | One finding a line, refs first, fix last, columns, elision; the spec's example byte for byte            | `packages/diagram-lint/src/format.test.ts`                                                                                                              |
 | `quoteLabel` strips controls and cuts                                                                   | `packages/diagram-lint/src/format.test.ts` › "quoteLabel"                                                                                               |
-| `compareGraphLayouts` enumerates, measures, marks the best                                              | `packages/diagram-lint/src/compare.test.ts`; `parseCompareDimensions` rejections                                                                        |
-| Measured architecture: tier groups cross, no groups ranks best                                          | `packages/diagram-lint/src/compare.test.ts` over `packages/diagram-lint/src/fixtures/shop-architecture.ts`                                              |
 | Graph-authored boxes never overflow their labels                                                        | `packages/diagram-lint/src/checks/label-overflow.test.ts` › "sized for its label"                                                                       |
 | Templates draw without errors                                                                           | `packages/diagram-lint/src/templates.test.ts`: every `@livepages/templates` kind lints with 0 errors                                                    |
 | Headless renders and the lint measure alike; `drawsStandardLabel`, `labelRoom`                          | `packages/document/src/svg-render-label-room.test.ts`                                                                                                   |
-| `layoutGraph` names edges with `makeEdgeId`                                                             | `packages/document/src/graph-input.test.ts` › "layoutGraph edge ids"                                                                                    |
 | The api serves the lint as a view, text and `json=1`, read gate, failure                                | `apps/api/src/routes/document-views-route.test.ts` › "the lint over REST", `apps/api/src/routes/document-views-lint-failure.test.ts`                    |
 | A changeset's footer carries the verdict; whole tab; dry run; revert; failure                           | `apps/api/src/routes/changesets.test.ts`, `apps/api/src/changesets/lint.test.ts`, `apps/api/src/changesets/lint-failure.test.ts`                        |
 | MCP write results carry the summary line                                                                | `apps/mcp/src/create-document-placement.test.ts` › "create_document lint", `apps/mcp/src/changeset-client.test.ts`, `apps/mcp/src/image-result.test.ts` |

@@ -28,7 +28,7 @@ function board(boxes: number, chips: number): Element[] {
   return els;
 }
 
-// Untimed warm-up passes, then the fastest of a few timed ones, as mind-connector-route.perf.test.ts does:
+// Untimed warm-up passes, then the fastest of a few timed ones, as the other perf tests do:
 // `cpuUsage` bills a pass for V8 compiling and collecting on its background threads, so the CI coverage job (an
 // instrumented build on a shared runner) measured 58 ms with one warm-up against 11 to 17 ms locally.
 const WARM_UP_PASSES = 3;

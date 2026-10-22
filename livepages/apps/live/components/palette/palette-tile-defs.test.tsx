@@ -5,7 +5,6 @@ import {
   PALETTE_TILES,
   TILE_GLYPH_PX,
   TOOL_GROUPS,
-  COLLABORATE_CATEGORY_GROUPS,
   tileCategoryId,
   tilesForCategory,
   tilesInSection,
@@ -78,7 +77,7 @@ describe('tool blurbs', () => {
 // category picker, and several of those blurbs list the elements the category
 // holds. Adding a tile does not update the blurb, and nothing failed when it
 // went stale: Behaviour named five of its eight elements for three releases,
-// and Collaborate dropped the comment pin (docs/specs/012-collaboration/comment-pin.md) the day it shipped.
+// and Collaborate dropped the comment pin the day it shipped.
 //
 // Text cannot be checked mechanically here — some blurbs enumerate ("estimate
 // cards, temperature checks, ...") while others are deliberately illustrative
@@ -94,7 +93,7 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   // Popular has no tiles of its own: each mode's layout fills it (palette-layouts).
   popular: 0,
   shapes: 13,
-  build: 11,
+  build: 4,
   write: 5,
   draw: 3,
   // A screen's parts (docs/specs/007-editor/wireframe-pages.md "The Elements palette"); the layout
@@ -104,20 +103,10 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   icons: 0,
   stickers: 0,
   technology: 0,
-  media: 9,
-  components: 12,
+  media: 10,
+  components: 11,
   concepts: 8,
   data: 7,
-  // The Collaborate elements, one category per group: 28 tiles between them.
-  'collab-ask': 4,
-  'collab-tools': 5,
-  'collab-record': 5,
-  'collab-react': 5,
-  'collab-mode': 6,
-  'collab-navigate': 3,
-  // Diagram's Build as two, listed by the Diagram layout (docs/specs/010-palette/build-category.md).
-  diagrams: 0,
-  layout: 0,
   // A Participant's category borrows the landing category's sticky and text tiles (participantTiles).
   participate: 0,
 };
@@ -163,31 +152,6 @@ describe('TOOL_GROUPS', () => {
   });
 });
 
-// The Collaborate elements are six categories, one per `tileGroup` of the Behaviour tool group
-// (COLLABORATE_CATEGORY_GROUPS). A tile whose group maps to no category would stay in the catalogue
-// and in search but be absent from every palette, with nothing to notice, so the six must partition
-// the tool group exactly.
-describe('the Collaborate categories', () => {
-  const ids = Object.keys(COLLABORATE_CATEGORY_GROUPS);
-
-  it('partition the Behaviour tool group: every tile in exactly one', () => {
-    const placed = ids.flatMap((id) => tilesForCategory(id).map((t) => t.id)).sort();
-    expect(placed).toEqual(
-      tilesInToolGroup('behaviour')
-        .map((t) => t.id)
-        .sort(),
-    );
-  });
-
-  it('are each a catalogue category with tiles in it', () => {
-    const catalogue = new Set(PALETTE_CATEGORIES.map((c) => c.id));
-    for (const id of ids) {
-      expect(catalogue.has(id), id).toBe(true);
-      expect(tilesForCategory(id).length, id).toBeGreaterThan(0);
-    }
-  });
-});
-
 // One tile strip, one size step (docs/specs/004-interface-design/iconography.md): every tile glyph
 // that renders through Glyph does so at TILE_GLYPH_PX, so a strip of tiles reads as one set.
 describe('palette tile glyph size', () => {
@@ -197,16 +161,6 @@ describe('palette tile glyph size', () => {
 
   it.each(glyphTiles)('%s renders at the tile step', (_id, svg) => {
     expect(Number(/width="([\d.]+)"/.exec(svg)![1])).toBe(TILE_GLYPH_PX);
-  });
-});
-
-// docs/specs/012-collaboration/session-button.md: the Timer and Stopwatch tiles sit side by side and must not
-// wear the same glyph.
-describe('session clock tiles', () => {
-  it('draw the timer and the stopwatch differently', () => {
-    const glyph = (id: string) =>
-      renderToStaticMarkup(<>{PALETTE_TILES.find((t) => t.id === id)!.icon}</>);
-    expect(glyph('tools:session-timer')).not.toBe(glyph('tools:session-stopwatch'));
   });
 });
 

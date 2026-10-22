@@ -27,13 +27,11 @@ describe('showView (R17, VW34)', () => {
     expect(json.fields).not.toHaveProperty('id');
   });
 
-  it("renders a table's cells, an entity's fields and a thread, root elements with no container", () => {
+  it("renders a table's cells and a thread, root elements with no container", () => {
     const model = checkout();
     const table = showView(model, elementOf(model, CHECKOUT_IDS.slos)).text.split('\n');
     expect(table).toContain('    | Service | p99 latency | Availability |');
-    const entity = showView(model, elementOf(model, CHECKOUT_IDS.order));
-    expect(entity.text.split('\n')).toContain('    - customer_id uuid FK');
-    expect(entity.json.container).toBeNull();
+    expect(showView(model, elementOf(model, CHECKOUT_IDS.order)).json.container).toBeNull();
     const sticky = showView(model, elementOf(model, CHECKOUT_IDS.sticky)).text.split('\n');
     expect(sticky).toContain('  comments: open · 2');
     expect(sticky.at(-1)).toBe('  omitted: commentThread.comments[].authorId');
@@ -48,7 +46,7 @@ describe('showView (R17, VW34)', () => {
       cells: [['x|y', 3], 'row'],
       rotation: 30,
     };
-    const e = { ...shapeAt('entity', 'e', 0, 0), entityFields: [{ name: 'n' }, 'junk'] };
+    const e = shapeAt('square', 'e', 0, 0, 100, 50, { label: 'Entity' });
     const odd = { id: 'odd', type: 'hologram', note: 'n' };
     const arrow = {
       ...arrowBetween('arr', 'a', 'e', { label: 'go' }),
@@ -68,7 +66,7 @@ describe('showView (R17, VW34)', () => {
       '  at 0,0 100x50 r=30',
     ]);
     expect(showView(model, elementOf(model, 'a')).text).toContain('    | x\\|y |  |\n    |  |');
-    expect(showView(model, elementOf(model, 'e')).text).toContain('  fields:\n    - n\n  ← free');
+    expect(showView(model, elementOf(model, 'e')).text).toContain('  ← free');
     expect(showView(model, elementOf(model, 'odd')).text.split('\n').slice(1)).toEqual([
       '? hologram odd',
       '  note: "n"',
@@ -112,10 +110,9 @@ describe('person ids (security)', () => {
     mentions: [{ userId: secret, memberId: secret, name: 'Pri', handle: 'pri' }],
   };
   const el = {
-    ...shapeAt('estimate', 'q', 0, 0),
+    ...shapeAt('square', 'q', 0, 0),
     action,
     actions: [action],
-    responses: [{ participantId: secret, value: '3', at: 0 }],
     commentThread: { comments: [comment], resolved: false },
     addedBy: secret,
   } as unknown as Element;
@@ -129,17 +126,11 @@ describe('person ids (security)', () => {
   });
 
   it('leaves no top-level field holding an id unaccounted for', () => {
-    // An idea card's id is a random UUID per card, never its poster's (docs/specs/012-collaboration/idea-box.md).
     const notPeople = new Set([
       'layerId',
       'iconId',
       'stickerId',
       'imageId',
-      'mindParentId',
-      // A flowchart's id (its first step's) and a step's lane (docs/specs/009-elements/flowchart.md).
-      'flowchartId',
-      'flowLaneId',
-      'ideaCardIds',
       // The tab a tab window shows (docs/specs/009-elements/tab-window.md).
       'windowTabId',
     ]);
@@ -157,9 +148,7 @@ describe('show on malformed and mirrored fields', () => {
       ...shapeAt('square', 's', 0, 0),
       action: 'junk',
       actions: 'junk',
-      responses: [[], 'x'],
       noteRich: [{ text: 'n' }],
-      entityFields: [{ type: 'int' }],
       commentThread: {
         comments: [{ id: 'c', text: 'ok', createdAt: 0, authorName: 'A', authorColor: '#000' }],
         resolved: true,
@@ -168,7 +157,7 @@ describe('show on malformed and mirrored fields', () => {
     const model = buildViewModel({ id: 't', name: 'T', elements: [el] });
     const { text, json } = showView(model, el);
     expect(json.omitted).toEqual(['noteRich']);
-    expect(json.fields).toMatchObject({ action: 'junk', actions: 'junk', responses: [[], 'x'] });
-    expect(text).toContain('  fields:\n    -  int\n  comments: resolved · 1');
+    expect(json.fields).toMatchObject({ action: 'junk', actions: 'junk' });
+    expect(text).toContain('  comments: resolved · 1');
   });
 });

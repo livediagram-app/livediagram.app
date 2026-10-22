@@ -56,9 +56,8 @@ export type AutoLayoutOptions = {
   // Positioning style; omit for the layered flow (the long-standing default).
   style?: LayoutStyle;
   // Nodes whose given width/height must survive layout untouched, exempt
-  // from peer-size normalisation. Used by the cluster layout (docs/specs/020-import-export/mermaid.md):
-  // a contracted cluster block is exactly its members' bounding box, and
-  // normalizeSizes would clamp it to the shape tier's size.
+  // from peer-size normalisation (the edit operations' layout keeps each box
+  // the size it was given; normalizeSizes would clamp it to the shape tier's size).
   fixedSizeIds?: Set<ElementId>;
   // Elements that keep their place and size (docs/specs/008-canvas/layout-cleanup.md "Locked elements
   // stay put"): the editor passes its locked elements and everything on a locked layer. A locked

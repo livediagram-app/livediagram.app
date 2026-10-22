@@ -36,7 +36,6 @@ const inputs: LayerPreviewInputs = {
     labelRectOf: () => null,
     draftLayout: () => null,
   },
-  tabFinish: undefined,
 };
 const moved = (dx: number) =>
   BOARD.map((el, i) =>

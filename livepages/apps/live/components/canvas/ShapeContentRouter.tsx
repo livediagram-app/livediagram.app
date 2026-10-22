@@ -3,7 +3,6 @@ import {
   finishIconWeight,
   finishWobblesArt,
   isHandDrawn,
-  actorFigureRect,
   BORDER_DASH_ARRAY,
   BORDER_STROKE_PX,
   finishBorderStroke,
@@ -282,7 +281,6 @@ export function ShapeContentRouter({
       // wrapper. svgHandlesAnim above suppresses the wrapper class so these
       // don't double up.
       animation={svgAnim}
-      figure={element.shape === 'actor' ? actorFigureRect(element) : undefined}
     />
   ) : null;
 }

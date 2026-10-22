@@ -10,7 +10,7 @@ import { GROUPS as HELP } from './HelpView';
 import { GROUPS as DASHBOARD } from './DashboardView';
 import { GROUPS as TIMINGS } from './TimingsView';
 import { GROUPS as PAGES } from './PagesView';
-import { CONNECTIONS_GROUPS, FACILITATION_GROUPS } from './FeaturesView';
+import { CONNECTIONS_GROUPS, TEAMWORK_GROUPS } from './FeaturesView';
 import { TOURS_GROUPS } from './PagesHelpView';
 import {
   CUSTOM_THEME_METRICS,
@@ -93,7 +93,7 @@ const ALL: MetricGroup[] = [
   ...PAGES,
   ...HELP,
   ...TOURS_GROUPS,
-  ...FACILITATION_GROUPS,
+  ...TEAMWORK_GROUPS,
   ...CONNECTIONS_GROUPS,
   ...TIMINGS,
 ];
