@@ -33,8 +33,8 @@ const RING_CLOSE_DELAY_MS = 160;
 
 // Quick add + connect (docs/specs/008-canvas/canvas-and-palette.md). One of these floats on each edge of the
 // selected element. The plus is a click *trigger*: clicking it unfolds a
-// single connected menu strip of five quick actions out of the plus —
-// Duplicate / Arrow / Square / Pencil / Text — each acting on this edge.
+// single connected menu strip of four quick actions out of the plus —
+// Duplicate / Arrow / Square / Text — each acting on this edge.
 // Clicking the plus again (now an ×) or anywhere outside closes it. Open
 // state is owned by the parent (Canvas) so only one ring opens at a time
 // and the selection toolbar can hide while it's open.
@@ -66,15 +66,13 @@ type QuickConnectRingProps = {
   // Start the Arrow action from this side. The parent decides drag
   // (desktop) vs tap-target (mobile) from the pointer type.
   onArrowPointerDown: (e: ReactPointerEvent) => void;
-  // Enter freehand (pencil) draw mode.
-  onPencil: () => void;
   // Web components (docs/specs/009-elements/web-components-and-no-groups.md): when set (the selected element is a stat row,
   // process or header with room for more), the ring gains an action that
   // appends one more stat / step / link, labelled with what it adds.
   webRow?: { label: string; description: string; onAdd: () => void };
   // Table variant (docs/specs/008-canvas/canvas-and-palette.md): the ring slims down to Arrow plus the
   // structural add for this side — Add Row on the bottom plus, Add Column
-  // on the right one. Duplicate / Pencil / Text don't apply to a grid.
+  // on the right one. Duplicate / Text don't apply to a grid.
   variant?: 'default' | 'table';
   onAddTableRow?: () => void;
   // Mind-map growth (docs/specs/009-elements/mind-node.md). Set only on a mind node, which is what
@@ -163,7 +161,6 @@ export function QuickConnectRing({
   onOpen,
   onSpawn,
   onArrowPointerDown,
-  onPencil,
   webRow,
   variant = 'default',
   onAddTableRow,
@@ -173,7 +170,7 @@ export function QuickConnectRing({
   entity,
 }: QuickConnectRingProps) {
   // The table variant slims to Arrow + this side's structural add (Add Row
-  // below, Add Column on the right — docs/specs/008-canvas/canvas-and-palette.md): Duplicate / Pencil / Text
+  // below, Add Column on the right — docs/specs/008-canvas/canvas-and-palette.md): Duplicate / Text
   // don't apply to a grid.
   const options =
     variant === 'table'
@@ -417,8 +414,7 @@ export function QuickConnectRing({
                     }}
                     onClick={() => {
                       if (isArrow) return;
-                      if (option.kind === 'pencil') onPencil();
-                      else if (option.kind === 'add-web-row') webRow?.onAdd();
+                      if (option.kind === 'add-web-row') webRow?.onAdd();
                       else if (option.kind === 'add-row') onAddTableRow?.();
                       else if (option.kind === 'entity-related') entity?.onAddRelated();
                       else if (option.kind === 'entity-field') entity?.onAddField?.();

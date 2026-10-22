@@ -118,7 +118,7 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   'empathy-map': 'grid',
   funnel: 'blank',
   sankey: 'blank',
-  // A new whiteboard starts on Grid (docs/specs/023-draw-mode/draw-mode.md "Board background").
+  // A new whiteboard starts on Grid (docs/specs/007-editor/editor-modes.md).
   whiteboard: WHITEBOARD_DEFAULT_PATTERN,
   // The Draw templates start on the whiteboard's board too.
   sketchnote: WHITEBOARD_DEFAULT_PATTERN,

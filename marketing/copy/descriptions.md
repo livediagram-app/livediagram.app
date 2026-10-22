@@ -55,8 +55,8 @@ For Product Hunt, app store short descriptions, README intros.
 > opening a link and drawing. Teams work on the same canvas in real time: live
 > cursors, selection rings, comment threads, and a laser pointer.
 >
-> Build with ten core shapes, sticky notes, images, freehand sketching with
-> shape recognition, and arrows you can curve, bend, and label. Start from 17
+> Build with ten core shapes, sticky notes, images, polygons, and arrows you
+> can curve, bend, and label. Start from 17
 > templates, recolor everything with 18 themes, and step back any slip with
 > undo. Share view or edit links any time.
 >
@@ -81,9 +81,8 @@ For longer listing bodies and "about this project" sections.
 >
 > The canvas is deep enough for real work: ten core shapes, sticky notes, text,
 > images, and arrows you can draw straight, curved, or angled, with draggable
-> handles, configurable thickness and arrowheads, and optional labels. A Pencil
-> tool does freehand sketching with optional shape recognition that snaps your
-> scribbles into clean rectangles, circles, and diamonds. Multi-select, groups,
+> handles, configurable thickness and arrowheads, and optional labels. A Polygon
+> tool places outlines point by point. Multi-select, groups,
 > and a format painter keep large diagrams manageable. Start from 17 templates,
 > recolor the whole canvas with 18 themes, and organize work into tabs and
 > nested folders.
@@ -125,9 +124,7 @@ detailed GitHub / Product Hunt write-up.
 > Build with ten core shapes, sticky notes, text, and images. Connect them with
 > arrows you can draw straight, curved, or angled, each with draggable curve and
 > elbow handles, configurable thickness and arrowhead size, and optional labels.
-> The Pencil tool handles freehand sketching, with an optional shape-recognition
-> mode that converts rough scribbles into clean rectangles, circles, diamonds,
-> and lines. Marquee select, shift-click, groups, and a format painter keep big
+> The Polygon tool places outlines point by point. Marquee select, shift-click, groups, and a format painter keep big
 > diagrams under control. Lock elements you don't want to move, and link any
 > element to another tab or an external URL.
 >

@@ -3,7 +3,7 @@ import type { PresentationOverlay as PresentationOverlayComponent } from '@/comp
 // The editor's code that loads on demand (docs/specs/016-platform/web-performance.md), in one place so each
 // surface's dynamic import and the prefetch below name the same module.
 //
-// - Content a board may draw as soon as it opens (the Draw dock, tables,
+// - Content a board may draw as soon as it opens (tables,
 //   facilitation panels): fetched as the editor mounts, alongside the document request, so a board that has
 //   one finds its code already in. A board without one pays nothing on the critical path.
 // - Surfaces someone opens (the Explorer, search, layers, the style panel, tool panels, presenting): fetched
@@ -14,8 +14,6 @@ import type { PresentationOverlay as PresentationOverlayComponent } from '@/comp
 export const loadAvatarSpeechLayer = () =>
   import('@/components/canvas/AvatarSpeechLayer').then((m) => m.AvatarSpeechLayer);
 
-export const loadWhiteboardDock = () =>
-  import('@/components/canvas/whiteboard/WhiteboardDock').then((m) => m.WhiteboardDock);
 export const loadTableView = () => import('@/components/canvas/TableView').then((m) => m.TableView);
 export const loadCollabFaceRouter = () =>
   import('@/components/canvas/collab/CollabFaceRouter').then((m) => m.CollabFaceRouter);
@@ -41,7 +39,6 @@ export const loadSessionElementSettings = () =>
   import('@/components/canvas/SessionElementSettings');
 
 export const DOCUMENT_CONTENT_CODE = [
-  loadWhiteboardDock,
   loadTableView,
   loadCollabFaceRouter,
 ] as const;

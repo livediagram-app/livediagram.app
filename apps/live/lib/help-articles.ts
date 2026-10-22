@@ -45,7 +45,6 @@ export const HELP_ARTICLES = {
   avatarMode: 'selection-modes/avatar-mode',
   laser: 'selection-modes/laser',
   spotlight: 'selection-modes/spotlight',
-  eraser: 'selection-modes/eraser',
   formatPainter: 'selection-modes/format-painter',
   slideDeck: 'selection-modes/slide-deck',
   // AI
@@ -83,7 +82,6 @@ export const HELP_ARTICLES = {
   workshopTour: 'canvas/workshop-mode/workshop-tour',
   // The event-storming board, its photo import review included (docs/specs/021-event-storming/event-storming.md).
   eventStormingBoards: 'canvas/event-storming-boards',
-  drawTour: 'canvas/draw-mode/draw-tour',
   avatarTour: 'selection-modes/avatar-mode/avatar-tour',
   links: 'canvas/links',
   comments: 'collaboration/comments',
@@ -126,7 +124,6 @@ export const HELP_ARTICLES = {
   whatWeCollect: 'privacy-and-security/what-we-collect',
   offlineMode: 'privacy-and-security/offline-mode',
   // Onboarding / empty states
-  drawMode: 'canvas/draw-mode',
   keyboardShortcuts: 'tips-and-tricks/keyboard-shortcuts',
   guestVsAccount: 'getting-started/guest-vs-account',
   // Load recovery (docs/specs/007-editor/load-recovery.md).
@@ -176,10 +173,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   workshopTour: {
     title: 'Learn about the Workshop Tour',
-    description: 'What the tour shows you and how replaying works.',
-  },
-  drawTour: {
-    title: 'Learn about the Draw Tour',
     description: 'What the tour shows you and how replaying works.',
   },
   avatarTour: {
@@ -233,10 +226,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   spotlight: {
     title: 'Learn about the Spotlight',
     description: 'Tips for dimming everything but the part you are talking about.',
-  },
-  eraser: {
-    title: 'Learn about the Eraser',
-    description: 'Tips for rubbing out sketches and elements without selecting them first.',
   },
   formatPainter: {
     title: 'Learn about the Format Painter',
@@ -468,10 +457,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   offlineMode: {
     title: 'Learn about Offline Mode',
     description: 'Documents saved only in this browser, and how to sync them.',
-  },
-  drawMode: {
-    title: 'Learn about Draw mode',
-    description: 'Switching modes, the dock, its pens and shapes, and where it sits.',
   },
   livePresence: {
     title: 'Learn about live presence',

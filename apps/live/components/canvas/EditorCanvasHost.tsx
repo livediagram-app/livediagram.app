@@ -12,7 +12,6 @@ import {
   canvasSurface,
   DEFAULT_BACKGROUND_COLOR,
   DEFAULT_BUTTON_MODE,
-  PEN_INK,
 } from '@liveplanner/document';
 import { createStockColourProjector } from '@/lib/stock-colour-projector';
 import { drawnArrowAsShown } from '@/lib/drawn-arrow-preview';
@@ -75,10 +74,6 @@ export function EditorCanvasHost() {
     laserPanelPosition,
     spotlightPanelPosition,
     setSpotlightPanelPosition,
-    eraserPanelPosition,
-    setEraserPanelPosition,
-    eraserConfig,
-    onChangeEraserField,
     formatConfig,
     onToggleFormatGroup,
     onSetFormatMode,
@@ -155,13 +150,7 @@ export function EditorCanvasHost() {
     pressArmedAction,
     beginEdit,
     beginEndpointDrag,
-    beginErase,
-    beginFreehand,
-    beginHighlighter,
-    beginMarker,
-    beginShapePen,
     beginPolygon,
-    beginPath,
     broadcastAvatar,
     broadcastAvatarPush,
     broadcastAvatarSay,
@@ -191,10 +180,7 @@ export function EditorCanvasHost() {
     commentRows,
     commentsPanelPosition,
     commitDraw,
-    commitFreehand,
     commitPolygon,
-    commitPath,
-    commitPathEdit,
     styleNewElement,
     commitLabel,
     commitTable,
@@ -506,7 +492,6 @@ export function EditorCanvasHost() {
     editingId,
     elements: activeTab.elements,
     isReadOnly,
-    whiteboard: false,
     setContextMenu,
   });
 
@@ -638,12 +623,10 @@ export function EditorCanvasHost() {
               elements={canvasElements}
               tabLayers={activeTab.layers}
               tabKind={activeTab.kind}
-              whiteboardInk={PEN_INK[surface]}
               previewDrawnArrow={(intent, startX, startY, endX, endY) =>
                 drawnArrowAsShown(intent, startX, startY, endX, endY, {
                   elements: activeTab.elements,
                   theme: activeTheme,
-                  whiteboard: false,
                   styleNewElement,
                   surface,
                 })
@@ -693,7 +676,7 @@ export function EditorCanvasHost() {
               // the palette, so it goes through the same setter — telemetry, the
               // selection clear, and the empty-canvas guard all included. Pressing it
               // again, while already in that mode, hands you back your previous one.
-              // A read-only session presses only the modes it has (PARTICIPANT_CANVAS_TOOLS): a button set to the Eraser or
+              // A read-only session presses only the modes it has (PARTICIPANT_CANVAS_TOOLS): a button set to the
               // Format Painter does nothing for it (docs/specs/013-workspace/share-roles.md).
               onPressModeButton={(element) => {
                 const mode = element.mode ?? DEFAULT_BUTTON_MODE;
@@ -775,7 +758,6 @@ export function EditorCanvasHost() {
               }
               onStopFollowing={followMe.stopFollowing}
               collab={collab}
-              onEraseStart={isReadOnly ? undefined : beginErase}
               onDuplicateMultiSelected={duplicateMultiSelected}
               onDeleteMultiSelected={deleteMultiSelected}
               onToggleLockMultiSelected={toggleLockMultiSelected}
@@ -820,19 +802,10 @@ export function EditorCanvasHost() {
               onAddImage={addImage}
               onAddArrow={addArrow}
               reshapingArrowId={reshapingArrowId}
-              onBeginFreehand={beginFreehand}
-              onBeginHighlighter={beginHighlighter}
-              onBeginMarker={beginMarker}
-              onBeginShapePen={beginShapePen}
               onBeginPolygon={beginPolygon}
-              onBeginPath={beginPath}
               pendingDraw={pendingDraw}
               onCommitDraw={commitDraw}
-              onCommitFreehand={commitFreehand}
               onCommitPolygon={commitPolygon}
-              onCommitPath={commitPath}
-              onCommitPathEdit={commitPathEdit}
-              onDressPath={styleNewElement}
               settings={userPreferences}
               onCancelDraw={cancelDrawShape}
               onUndo={undo}
@@ -880,9 +853,6 @@ export function EditorCanvasHost() {
               onToggleFavourite={toggleFavourite}
               laserPanelPosition={laserPanelPosition}
               spotlightPanelPosition={spotlightPanelPosition}
-              eraserPanelPosition={eraserPanelPosition}
-              eraserConfig={eraserConfig}
-              onChangeEraserField={onChangeEraserField}
               formatConfig={formatConfig}
               onToggleFormatGroup={onToggleFormatGroup}
               onSetFormatMode={onSetFormatMode}
@@ -906,8 +876,6 @@ export function EditorCanvasHost() {
               slideDeckPanelPosition={slideDeckPanelPosition}
               onMoveSlideDeckPanel={(x, y) => setSlideDeckPanelPosition({ x, y })}
               onResetSlideDeckPanel={() => setSlideDeckPanelPosition(null)}
-              onMoveEraserPanel={(x, y) => setEraserPanelPosition({ x, y })}
-              onResetEraserPanel={() => setEraserPanelPosition(null)}
               onMoveSpotlightPanel={(x, y) => setSpotlightPanelPosition({ x, y })}
               onResetSpotlightPanel={() => setSpotlightPanelPosition(null)}
               laserConfig={laserConfig}
@@ -1208,7 +1176,6 @@ export function EditorCanvasHost() {
               onDropPalette={dropThenDisarm(dropPaletteItem, cancelDrawShape)}
               onSpawnConnect={spawnConnectSelected}
               onStartArrow={handleStartArrow}
-              onStartPencil={beginFreehand}
               onToggleLockSelected={toggleLockSelected}
               onDeleteSelected={deleteSelected}
               // One gesture, one answer: while the element menu is open the

@@ -203,7 +203,7 @@ export function participantPaletteCategories(): ResolvedPaletteCategory[] {
   return [{ ...identity, tiles: participantTiles() }];
 }
 
-// The selection modes a Participant has: look, point and walk around, never an Editor's tools (Eraser, Format
+// The selection modes a Participant has: look, point and walk around, never an Editor's tools (Format
 // Painter, Slide Deck).
 export const PARTICIPANT_CANVAS_TOOLS: readonly string[] = [
   'select',

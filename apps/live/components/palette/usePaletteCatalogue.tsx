@@ -23,7 +23,6 @@ import { useBoardFillingTab, usePlanTabKind } from '@/hooks/plan/plan-cover-stor
 import { usePlanTabList } from '@/hooks/plan/plan-tab-list-store';
 import { dashboardTabTiles } from './palette-dashboard-tiles';
 import { getMaximisedPlanId, restorePlanElement } from '@/hooks/plan/maximised-plan';
-import type { WhiteboardPenId } from '@/lib/whiteboard-prefs';
 import type { AddShapeOptions } from '@/lib/draw-mode';
 
 // Everything a palette SURFACE needs that isn't how it is drawn: the tile
@@ -80,13 +79,8 @@ export function usePaletteCatalogue({
   onAddAvatar,
   onAddImage,
   onAddArrow,
-  onBeginFreehand,
-  onBeginHighlighter,
-  onBeginMarker,
   onCancelDraw,
-  onBeginShapePen,
   onBeginPolygon,
-  onBeginPath,
   pendingDraw,
   esBoard,
   esBoardControls,
@@ -138,13 +132,7 @@ export function usePaletteCatalogue({
   // palette so the canvas is clear to draw on.
   const addArrow = (ends?: import('@liveplanner/document').ArrowEnds) =>
     armed(() => onAddArrow(ends))();
-  const beginFreehand = armed(onBeginFreehand);
-  const beginHighlighter = armed(onBeginHighlighter);
-  const beginMarker = (penId: WhiteboardPenId, once?: boolean) =>
-    armed(() => (once ? onBeginMarker(penId, true) : onBeginMarker(penId)))();
-  const beginShapePen = armed(onBeginShapePen);
   const beginPolygon = armed(onBeginPolygon);
-  const beginPath = armed(onBeginPath);
   const addImage = armed(() => onAddImage?.());
   // One handler per composite-component kind, so the tile catalogue can
   // address them by kind (see PaletteTileGrid).
@@ -172,12 +160,7 @@ export function usePaletteCatalogue({
     {
       addShape,
       addText,
-      beginFreehand,
-      beginHighlighter,
-      beginMarker,
-      beginShapePen,
       beginPolygon,
-      beginPath,
       addArrow,
       addSticky,
       addTable,

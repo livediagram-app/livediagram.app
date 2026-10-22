@@ -260,8 +260,8 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
     factories + defaults, geometry / anchor / snap math, arrow path +
     avoidance + endpoint-spread + auto-rebind and crossing swaps, arrow labels,
     layer mutations, auto-layout (clusters, styles, lanes, crossings), mind maps,
-    Mermaid import/export (flowchart, state, ER), graph authoring, freehand +
-    shape recognition, rich text, tables, comments + mentions, element ops and
+    Mermaid import/export (flowchart, state, ER), graph authoring, freehand
+    strokes, rich text, tables, comments + mentions, element ops and
     deltas, sessions (Q&A, polls, quizzes), slide decks, tab kinds and the
     event-storming lanes + photo placement, names, themes, element shadows,
     the headless SVG renderer's fidelity and coverage, validation.

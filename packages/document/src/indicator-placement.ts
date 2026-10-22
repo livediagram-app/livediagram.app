@@ -9,7 +9,7 @@ import type { BoxedElement, TextAlignX, TextAlignY, TextSize } from './index';
 import { labelFontPx } from './label-font';
 import { pickedByOutline, roundedRectRing, shapeHitOutline } from './shape-hit';
 import type { ShapeKind } from './shape-kind';
-import { insidePolygon, segmentDistance } from './whiteboard-stroke';
+import { insidePolygon, segmentDistance } from './segment-geometry';
 
 type IndicatorAnchor = 'top-right' | 'top-centre' | 'bottom-left' | 'bottom-centre';
 export type IndicatorBox = { x: number; y: number; width: number; height: number };

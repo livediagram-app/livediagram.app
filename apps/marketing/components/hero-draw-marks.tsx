@@ -1,6 +1,6 @@
 import { trustedHtml } from '@liveplanner/ui';
 // The hand-drawn marks the hero's Draw window is made of (components/hero-draw-board.tsx), in the
-// look Draw mode gives them (docs/specs/023-draw-mode/draw-mode.md): marker strokes that wobble and
+// look Draw mode gives them (docs/specs/007-editor/editor-modes.md): marker strokes that wobble and
 // overshoot their corners, stickies on the editor's pad colours with the paper-peel shadow, the
 // hand face, and a sticker on its die-cut plate. Every path is generated from a fixed seed, so the
 // wobble is the same on every render (and in the static HTML).

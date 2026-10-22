@@ -332,7 +332,7 @@ export function describeBoxedExport(
   // smaller at every preset. The canvas decides that the same way (its
   // `multiline` flag is `type === 'sticky'`).
   const multiline = el.type === 'sticky';
-  // A Shift-resized text box draws its text scaled (docs/specs/023-draw-mode/draw-mode.md).
+  // A Shift-resized text box draws its text scaled (docs/specs/007-editor/editor-modes.md).
   const textScale = el.type === 'text' ? (el.textScale ?? 1) : 1;
   const baseSize = fontSizeFor(el.textSize, multiline) * textScale;
   const richText = (el as { richText?: TextRun[] }).richText;
@@ -455,9 +455,9 @@ export function selfLabelled(el: BoxedElement): boolean {
 }
 
 // Whether an export prints the element's label as the ordinary centred, wrapped label: not a table,
-// stroke, path, code block, legend or checklist (each draws its own), nor a self-labelled shape.
+// stroke, code block, legend or checklist (each draws its own), nor a self-labelled shape.
 export function drawsStandardLabel(el: BoxedElement): boolean {
-  if (el.type === 'table' || el.type === 'freehand' || el.type === 'path') return false;
+  if (el.type === 'table' || el.type === 'freehand') return false;
   if (
     el.type === 'shape' &&
     (el.shape === 'code-block' ||

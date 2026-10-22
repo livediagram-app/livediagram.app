@@ -55,7 +55,7 @@ A Participant changes the board's **content**, never its **shape**.
   their author put them; a text box that sizes to its words still follows them when a Participant writes on it,
   and a mind node grows to fit the label a Participant writes on it (taller only, in the same change).
 - **Nothing offers what a session cannot do.** A Participant or Viewer sees no Slide Deck command,
-  no timer controls on a timer element, and an inert face on a mode button set to the Eraser or Format Painter; a
+  no timer controls on a timer element, and an inert face on a mode button set to the Format Painter; a
   Participant sees no Sheet toolbar, row, column, merge or settings controls (cells only). Empty states describe
   instead of instructing: an agenda, roll call or done check with nothing in it says who fills it, a mood meter
   asks only someone who may answer, a comment thread or card finder invites only someone who may add. A Viewer's
@@ -85,7 +85,7 @@ capabilities, the Participant palette, the room) keep a new feature from widenin
   Storming board's coloured notes, else Sticky and Text (whatever the mode's Popular holds); then Image. On every mode, Draw included. No Search, no More. A mind map grows from a selected node (Tab, Enter, or Add
   child and Add sibling on its toolbar), not from a tile. Each tile works as an Editor's does: dragged onto the
   canvas it lands where it is let go; pressed, it arms a tap to drop or a drag to draw; its key (N, T, 9, as the tiles show) arms it the same way, and no other add key runs (`PARTICIPANT_KEYS`).
-- **The selection modes it needs**: Select, Hand, Laser, Spotlight, Isometric and Zen. Eraser, Format
+- **The selection modes it needs**: Select, Hand, Laser, Spotlight, Isometric and Zen. Format
   Painter and Slide Deck are an Editor's. Avatar is in the picker only while you are in it; a Participant enters it,
   like anyone, from a Selection Mode button on the board.
 

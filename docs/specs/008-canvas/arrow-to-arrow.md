@@ -21,7 +21,7 @@ lifeline moves.
 - A connected endpoint draws filled (like a pinned endpoint), not hollow.
 - It applies both ways an arrow is created: **repositioning** an existing
   endpoint (live snap dots as you drag), and **drawing a new arrow** (the arrow
-  tool, or a pencil-recognised line) — a fresh arrow's ends connect to a nearby
+  tool) — a fresh arrow's ends connect to a nearby
   line at commit, so you don't have to drop it and nudge it after.
 - **Shift-drag the arrow HEAD forks a branch** ([Canvas and palette](canvas-and-palette.md)): holding Shift while
   grabbing a selected arrow's head handle leaves the arrow untouched and

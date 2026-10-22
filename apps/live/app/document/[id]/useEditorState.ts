@@ -69,17 +69,11 @@ import {
   type Tab,
 } from '@liveplanner/document';
 
-import { useWhiteboard } from '@/hooks/canvas/useWhiteboard';
-import { useSnapColours } from '@/hooks/canvas/useSnapColours';
-import { isPathEditing } from '@/lib/path-edit';
-import { usePathCommits } from '@/hooks/canvas/usePathCommits';
-import { useCanvasEraser } from '@/hooks/canvas/useCanvasEraser';
 import { useCanvasTool } from '@/hooks/canvas/useCanvasTool';
 import { useCommentMentions } from '@/hooks/collab/useCommentMentions';
 import { useDesktopOnlyToolExit } from '@/hooks/canvas/useDesktopOnlyToolExit';
 import { isMobileViewportSync } from '@/lib/responsive';
 import { useLaserConfig } from '@/hooks/canvas/useLaserConfig';
-import { useEraserConfig } from '@/hooks/canvas/useEraserConfig';
 import { useFormatConfig } from '@/hooks/canvas/useFormatConfig';
 import { useStyleMemory } from '@/hooks/canvas/useStyleMemory';
 import { getTheme } from '@/lib/themes';
@@ -438,9 +432,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // The laser pen (docs/specs/008-canvas/laser-panel.md): persisted per browser, published with every
   // laser sample, and edited from the Laser Panel.
   const laserPen = useLaserConfig();
-  // The eraser's settings (docs/specs/008-canvas/eraser-panel.md): read by the erase gesture below and
-  // edited from the Eraser Panel.
-  const eraserSettings = useEraserConfig();
   // The format painter's settings (docs/specs/008-canvas/format-panel.md): which parts of a copied style
   // travel, read by the paint and edited from the Format Panel.
   const formatSettings = useFormatConfig();
@@ -489,10 +480,10 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // on exit. Wraps the tracked selectCanvasTool so every entry point (palette
   // dropdown, keyboard) routes through it; internal auto-switches keep using
   // the raw setCanvasTool and are unaffected.
-  // Plan leaves Eraser and Format out (usePlanDefaultTool).
+  // Plan leaves Format out (usePlanDefaultTool).
   const pickCanvasTool = (tool: CanvasTool) => {
     if (PLAN_LEFT_OUT_TOOLS.has(tool)) return;
-    // Eraser / Format / Laser / Spotlight / Isometric all act on existing
+    // Format / Laser / Spotlight / Isometric all act on existing
     // content, so they're unavailable on an empty canvas — the palette greys
     // them out, and this guards the keyboard-shortcut path to match. Select +
     // Hand stay available.
@@ -500,8 +491,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     if (
       tabForTool &&
       tabForTool.elements.length === 0 &&
-      (tool === 'eraser' ||
-        tool === 'format' ||
+      (tool === 'format' ||
         tool === 'laser' ||
         tool === 'spotlight' ||
         tool === 'avatar' ||
@@ -1347,7 +1337,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const addCustomColour = useAddCustomColour({ activeId: activeTab.id, canEdit, tickTabs });
   // A card tag's colour for the tab (docs/specs/009-elements/tag-colours.md).
   const setTagColour = useTagColourSetter({ activeTab, canEdit, commitTabs });
-  // Plan starts on Hand and leaves Eraser and Format out (docs/specs/026-plan/plan-mode.md "The tools").
+  // Plan starts on Hand and leaves Format out (docs/specs/026-plan/plan-mode.md "The tools").
   usePlanDefaultTool(canvasTool, setCanvasTool);
   // A palette card goes into the board column at the point, or nowhere (docs/specs/026-plan/plan-mode.md
   // "The palette"): never a card on the canvas. A miss or a refusal is said.
@@ -2734,53 +2724,30 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
 
   // --- Element CRUD --------------------------------------------------------
 
-  // Draw-to-size + freehand pen tooling (pendingDraw state machine +
+  // Draw-to-size + polygon tooling (pendingDraw state machine +
   // commit handlers). beginDrawIfEnabled short-circuits the palette
   // adds below into draw mode; the rest is consumed by the Canvas +
   // keyboard hook. See useShapeDrawing.
-  const {
-    pendingDraw,
-    beginDraw,
-    commitDraw,
-    cancelDrawShape,
-    beginFreehand,
-    beginHighlighter,
-    beginMarker,
-    beginShapePen,
-    beginPolygon,
-    beginPath,
-    commitFreehand,
-    commitPolygon,
-  } = useShapeDrawing({
-    editsBlocked: createBlocked,
-    readSelection,
-    canvasTool,
-    setCanvasTool,
-    activeTab,
-    drawMode: false,
-    commit,
-    setSelectedId,
-    setMultiSelectedIds,
-    setEditingId,
-    zoomRef,
-    styleNewElement: styleMemory.styleNewElement,
-    onPlanCardPlace: placePaletteCard,
-  });
+  const { pendingDraw, beginDraw, commitDraw, cancelDrawShape, beginPolygon, commitPolygon } =
+    useShapeDrawing({
+      editsBlocked: createBlocked,
+      readSelection,
+      canvasTool,
+      setCanvasTool,
+      activeTab,
+      commit,
+      setSelectedId,
+      setMultiSelectedIds,
+      setEditingId,
+      styleNewElement: styleMemory.styleNewElement,
+      onPlanCardPlace: placePaletteCard,
+    });
   useEffect(() => {
     putToolDownRef.current = () => {
       cancelDrawShape();
       setCanvasTool('select');
     };
   });
-  // The Path tool (docs/specs/023-draw-mode/path-tool.md): a drawn path, a continued one, an edit.
-  const { commitPath, commitPathEdit } = usePathCommits({
-    editsBlocked: structureCreateBlocked,
-    commit,
-    elements: () => activeTab.elements,
-    styleNewElement: styleMemory.styleNewElement,
-    setSelectedId,
-  });
-
   // Mind-map growth (docs/specs/009-elements/mind-node.md) and flowchart growth
   // (docs/specs/009-elements/flowchart.md): Tab / Enter / the "+" ring, routed through one API
   // (growth-routing.ts) so the keyboard and label-editor plumbing serves both.
@@ -2952,49 +2919,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     lockedByOther,
     layerLockedIds,
     layerInertIds,
-  });
-
-  // Snap colours (docs/specs/023-draw-mode/draw-mode.md "Snap colours"): one commit, one undo step.
-  const snapColours = useSnapColours({
-    elements: activeTab.elements,
-    inertIds: layerInertIds,
-    editsBlocked: structureBlocked,
-    commit,
-  });
-
-  const whiteboardDock = useWhiteboard({
-    activeTab,
-    drawMode: false,
-    canvasTool,
-    pendingDraw,
-    editsBlocked: structureCreateBlocked,
-    setCanvasTool,
-    selectCanvasTool,
-    beginDraw,
-    cancelDraw: cancelDrawShape,
-    pathEditing: isPathEditing(activeTab.elements, editingId),
-    leavePathEdit: () => setEditingId(null),
-    snapColours,
-    userPreferences,
-    setUserPreferences,
-    writeUserPreferences,
-    ownerId: selfParticipant.id,
-  });
-
-  // Eraser canvas tool (docs/specs/008-canvas/canvas-and-palette.md): press / drag to delete any element the
-  // pointer touches, as a single-undo gesture. Canvas calls beginErase
-  // from its capture-phase pointerdown. See useCanvasEraser.
-  const { beginErase } = useCanvasEraser({
-    config: eraserSettings.config,
-    whiteboard: whiteboardDock.whiteboard ? { mode: whiteboardDock.prefs.eraserMode } : null,
-    editsBlocked: structureBlocked,
-    layerInertIds,
-    activeId,
-    activeTab,
-    tick,
-    markCheckpoint,
-    setSelectedId,
-    setEditingId,
   });
 
   // Element styling / layering actions (lock, layer order, text size /
@@ -3282,7 +3206,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     documentName,
     tabs,
     activeTab,
-    drawMode: false,
     editingId,
     commit,
     discardLastStep: cancelToCheckpoint,
@@ -3531,11 +3454,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     addSticky,
     addArrow,
     onAddImage: addImage ?? null,
-    onBeginFreehand: beginFreehand,
     canGrowMindNode,
     onGrowMindNode: growMindNode,
     onEscapeMindNode: escapeGrownMindNode,
-    onBeginShapePen: beginShapePen,
     onBeginEditSelected: beginEdit,
     onNudgeSelection: nudgeSelection,
     onTypeIntoSelected: typeIntoSelected,
@@ -3589,19 +3510,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     onOpenSearch: () => openSearchWithPrefetch(dialogs.setSearchOpen, loadAllTabs),
     onShortcutUsed: powerUserOffer.onShortcutUsed,
     enabled: keyboardEnabled,
-    // A whiteboard's keys are its dock's (docs/specs/023-draw-mode/draw-mode.md "Keyboard shortcuts").
-    whiteboard: whiteboardDock.whiteboard
-      ? {
-          pickSelect: whiteboardDock.pickSelect,
-          pickPen: whiteboardDock.pickPen,
-          pickEraser: whiteboardDock.pickEraser,
-          pickSticky: whiteboardDock.pickSticky,
-          pickText: whiteboardDock.pickText,
-          pickShape: whiteboardDock.pickShape,
-          pickPath: whiteboardDock.pickPath,
-          openShapes: whiteboardDock.openShapes,
-        }
-      : null,
   });
 
   // The workbench's side of the conversation, and the ends the editor learns of.
@@ -3662,7 +3570,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     releaseSheets: sheets.releaseSheets,
     // A header's Focus: glide the view to fit an element (hooks/canvas/useCanvasFocus.tsx).
     focusBounds,
-    whiteboardDock,
     // Whether anything edited is still unsaved: the new version prompt reloads only once it is not
     // (docs/specs/016-platform/new-version-prompt.md).
     hasUnsavedChanges,
@@ -3822,12 +3729,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     pressArmedAction,
     beginEdit,
     beginEndpointDrag,
-    beginFreehand,
-    beginHighlighter,
-    beginMarker,
-    beginShapePen,
     beginPolygon,
-    beginPath,
     bringSelectedToFront,
     broadcastAvatar,
     broadcastAvatarPush,
@@ -3851,7 +3753,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     canvasTool,
     exitAvatarTool,
     exitFormatTool,
-    beginErase,
     chooseTemplate,
     clearTabContent,
     clerkDisplayName,
@@ -3864,10 +3765,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     commentThreadOpenId,
     commentThreadOpenCell,
     commitDraw,
-    commitFreehand,
     commitPolygon,
-    commitPath,
-    commitPathEdit,
     styleNewElement: styleMemory.styleNewElement,
     commitLabel,
     commitTable,
@@ -4163,8 +4061,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setCanvasTool: pickCanvasTool,
     laserConfig: laserPen.config,
     onChangeLaserField: laserPen.setField,
-    eraserConfig: eraserSettings.config,
-    onChangeEraserField: eraserSettings.setField,
     formatConfig: formatSettings.config,
     onToggleFormatGroup: formatSettings.toggleGroup,
     onSetFormatMode: formatSettings.setMode,

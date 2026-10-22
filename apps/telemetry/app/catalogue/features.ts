@@ -211,34 +211,12 @@ export const PHOTO_IMPORT: MetricStack = {
   headline: PHOTOS_IMPORTED,
 };
 
-// Draw mode (docs/specs/023-draw-mode/draw-mode.md): Whiteboard tabs made, and which of the dock's
-// choices people reach for. Headed by the boards made; the rest are settings.
+// Draw mode (docs/specs/007-editor/editor-modes.md): Whiteboard tabs made.
 export const WHITEBOARDS_CREATED = chart(
   'Draw',
   'Created',
   'Whiteboards Created',
   'A whiteboard tab made, from the New Document wizard or as a new tab.',
-);
-
-export const WHITEBOARD_PENS = chart(
-  'Draw',
-  'Selected',
-  'Pens Picked',
-  'A whiteboard pen picked up: the main, second or third pen.',
-);
-
-export const WHITEBOARD_SETTINGS = chart(
-  'Draw',
-  'Changed',
-  'Pens, Eraser and Background',
-  "A whiteboard pen's colour or width, the eraser mode or the board background changed.",
-);
-
-export const WHITEBOARD_RECOGNITION = chart(
-  'Draw',
-  'Toggled',
-  'Shape Recognition',
-  'Shape recognition switched on or off on a whiteboard.',
 );
 
 // The mode a tab opens in, set from the tab menu's Opens in (docs/specs/007-editor/editor-modes.md).
@@ -281,17 +259,13 @@ export const PAGE_FIT_TO_CONTENT = chart(
 export const WHITEBOARDS: MetricStack = {
   stack: true,
   title: 'Draw Mode',
-  blurb:
-    'Whiteboard tabs made, and the pens, erasers, backgrounds and recognition people use in Draw mode.',
+  blurb: 'Whiteboard tabs made and mode switches.',
   members: [
     WHITEBOARDS_CREATED,
     TAB_OPENS_IN,
     ANIMATED_BACKGROUNDS,
     PAGE_FIT_TO_CONTENT,
     TAB_WINDOW_USE,
-    WHITEBOARD_PENS,
-    WHITEBOARD_SETTINGS,
-    WHITEBOARD_RECOGNITION,
   ],
   headline: WHITEBOARDS_CREATED,
 };
@@ -656,7 +630,6 @@ export const PALETTE_USE: MetricStack = {
 const MODE_TITLES: Record<string, string> = {
   Laser: 'Laser',
   Spotlight: 'Spotlight',
-  Eraser: 'Eraser',
   FormatPainter: 'Format Painter',
   Isometric: 'Isometric',
   AvatarMode: 'Avatar Mode',
@@ -989,16 +962,6 @@ export const CUSTOM_SWATCHES = chart(
   { types: ['QuickSwatchCustom', 'QuickSwatchReset'], rising: 'neutral' },
 );
 
-// The Highlighter's next-stroke settings (docs/specs/008-canvas/highlighter.md "Settings"), chosen in
-// the quick style panel while its tile is armed. Restyling a drawn highlight is an Element change.
-export const HIGHLIGHTER_SETTINGS = chart(
-  'UI',
-  'Changed',
-  'Highlighter Settings',
-  "The Highlighter's colour or width changed for the next stroke, in the quick style panel.",
-  { types: ['HighlighterColour', 'HighlighterWidth'], rising: 'neutral' },
-);
-
 // The Tab Style popover's Finish filter beside its Looks carousel (docs/specs/011-theme/
 // canvas-and-theme-dialog.md).
 export const LOOKS_FILTERED = chart(
@@ -1022,7 +985,6 @@ export const LOOK_AND_FEEL: MetricStack = {
     CUSTOM_THEMES,
     CUSTOM_SWATCHES,
     LOOKS_FILTERED,
-    HIGHLIGHTER_SETTINGS,
   ],
   headline: [THEMES_CHOSEN, CANVAS_STYLES_PICKED],
   seeAlso: { section: 'lookfeel', label: 'See Each Preset in Features › Look & Feel' },

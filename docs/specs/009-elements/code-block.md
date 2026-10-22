@@ -11,7 +11,7 @@ code?: string; // the snippet, capped at 4000 chars in validate.ts
 codeLanguage?: CodeLanguage; // closed set below, defaults to 'plain'
 ```
 
-`CodeLanguage = 'plain' | 'ts' | 'js' | 'python' | 'json' | 'bash' | 'sql' | 'html' | 'css' | 'yaml'` (exported from `packages/document`). Everything else is inherited from the shape path: palette tap-to-drop AND draw-to-size, selection, resize, rotation, lock, layers, duplicate, copy/paste, history, realtime sync, eraser. `code-block` joins the self-drawing set (`isSelfDrawingShape`) so it has no centred label editing.
+`CodeLanguage = 'plain' | 'ts' | 'js' | 'python' | 'json' | 'bash' | 'sql' | 'html' | 'css' | 'yaml'` (exported from `packages/document`). Everything else is inherited from the shape path: palette tap-to-drop AND draw-to-size, selection, resize, rotation, lock, layers, duplicate, copy/paste, history, realtime sync. `code-block` joins the self-drawing set (`isSelfDrawingShape`) so it has no centred label editing.
 
 ## Visual treatment
 

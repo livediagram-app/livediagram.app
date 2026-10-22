@@ -40,8 +40,6 @@ function inkPatch(el: Element): ColourFields {
         ...unfilled,
         ...(unset(c.textColor, c.penTextColour) ? { penTextColour: INK_PEN_COLOUR } : {}),
       };
-    case 'path':
-      return { ...line, ...unfilled };
     case 'arrow':
       return line;
     case 'freehand':

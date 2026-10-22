@@ -71,8 +71,7 @@ this way. Where switching to one must stay instant, its code is fetched once the
   photo is picked; a template's canvas overrides load with its builders when one is applied.
 - **What waits for on-demand code.** Starting a deck waits for the presentation overlay's code (with
   the deck's unvisited tabs), and the overlay draws in the first slide's commit, so the deck's keys
-  listen from its first frame. The top corners give way to a top Draw dock from the commit the dock is
-  first drawn in, measured then rather than before it is on the page.
+  listen from its first frame.
 - A panel whose code cannot load (offline behind the load-error card) draws nothing rather than
   throwing into the screen around it.
 - `apps/live/app/document/[id]/document-lazy-load.test.ts` fails if any of these become static

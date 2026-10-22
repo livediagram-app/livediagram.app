@@ -86,9 +86,9 @@ never arrives.
 
 - **Not a documentation platform.** Diagrams may be embedded elsewhere, but
   long-form prose is not the goal.
-- **Not a general-purpose whiteboard.** Freehand, the Shape Pen and the
-  Highlighter exist ([Two pens instead of a pen and a mode](../008-canvas/two-pens.md), [Highlighter](../008-canvas/highlighter.md)),
-  and so do stickers, emoji and avatars, but structured output is still the
+- **Not a general-purpose whiteboard.** The Polygon tool
+  ([Polygon tool](../008-canvas/polygon-tool.md)), stickers, emoji and avatars
+  exist, but structured output is still the
   point: the test for a new drawing affordance is whether it helps produce a
   diagram someone would keep, not whether a whiteboard has one.
 - **Not a desktop app.** The web, with collaboration, is the product. Offline

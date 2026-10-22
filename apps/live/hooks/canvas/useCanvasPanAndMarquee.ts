@@ -55,10 +55,6 @@ type MarqueeState = {
   startY: number;
   currentX: number;
   currentY: number;
-  // Shift with Select on a whiteboard (docs/specs/023-draw-mode/draw-mode.md "Selecting"): the box adds
-  // to the selection, and a click toggles `clickTarget` (the element pressed) instead of deselecting.
-  additive?: boolean;
-  clickTarget?: string | null;
 };
 
 type Deps = {
@@ -74,9 +70,6 @@ type Deps = {
   // the canvas-empty deselect path.
   onDeselect: () => void;
   onSelectMarquee: (hits: Set<string>) => void;
-  // For an additive marquee: toggle one element, and read what is selected now.
-  onShiftSelect?: (id: string) => void;
-  currentSelection?: () => Set<string>;
   // Suppresses pointer-driven pan updates while a 2-finger pinch is
   // active so the pan and pinch hooks don't fight over viewportOffset.
   isPinchingRef?: RefObject<boolean>;
@@ -242,9 +235,7 @@ export function useCanvasPanAndMarquee(deps: Deps): Api {
       const dragWidth = Math.abs(m.currentX - m.startX);
       const dragHeight = Math.abs(m.currentY - m.startY);
       if (dragWidth < 4 && dragHeight < 4) {
-        if (m.additive) {
-          if (m.clickTarget) d.onShiftSelect?.(m.clickTarget);
-        } else d.onDeselect();
+        d.onDeselect();
         setMarquee(null);
         return;
       }
@@ -301,7 +292,6 @@ export function useCanvasPanAndMarquee(deps: Deps): Api {
             hits.add(el.id);
           }
         }
-        if (m.additive) for (const id of d.currentSelection?.() ?? []) hits.add(id);
         d.onSelectMarquee(hits);
       }
       setMarquee(null);

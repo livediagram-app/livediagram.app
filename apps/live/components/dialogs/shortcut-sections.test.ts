@@ -50,7 +50,7 @@ describe('the Keyboard settings list matches the keys the editor binds', () => {
   it('reads real rows (guard against this test going blind)', () => {
     expect(SHORTCUT_SECTIONS.length).toBeGreaterThan(3);
     expect(singleKeyRows.length).toBeGreaterThan(15);
-    expect(handledKeys.size).toBeGreaterThan(25);
+    expect(handledKeys.size).toBeGreaterThan(20);
   });
 
   it('lists no key the editor does not bind', () => {

@@ -375,7 +375,7 @@ view as its ring lands, as every tour's is ([Mechanics](../007-editor/editor-tou
 Seen is `formTourSeen` (synced preferences); **Show Me Around** at the foot of the cog's panel reruns it at once, seen
 or not, as Settings' Tours › **Forms Tour** does. Its events are `UI` `Opened`/`Closed` `FormTourOffer`, `Started`
 `FormTour`, `View` `FormTourStep<Step>` and `Ended` `FormTourCompleted`/`FormTourSkipped`, charted as the **Forms
-Tour** stack beside the Draw tour's.
+Tour** stack.
 
 ## Publishing and the form link
 

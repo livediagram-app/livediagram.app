@@ -2,7 +2,7 @@
 
 **Import from Microsoft Whiteboard**, in the Explorer, brings boards made in
 Microsoft Whiteboard across as **documents**, one per board, each holding one
-tab that opens in Draw mode ([Draw mode](../023-draw-mode/draw-mode.md)): pressure ink as marker
+tab that opens in Draw mode ([Editor modes](../007-editor/editor-modes.md)): pressure ink as marker
 strokes, colours that follow light and dark boards, text, sticky notes, shapes,
 lines and images, all editable, so a board survives Microsoft deleting it.
 The parser turns each board into a [Board scene](board-scene.md); the shared

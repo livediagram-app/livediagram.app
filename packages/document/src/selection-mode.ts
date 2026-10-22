@@ -3,9 +3,9 @@
 // lives in the live app; this is the DATA half — what a saved element may carry
 // — so it belongs with the model, where validation can reach it.
 //
-// Kept deliberately as the full set: a button that hands someone the Eraser is
-// odd but not our call to forbid, and the author picks from a menu that names
-// each one.
+// Kept deliberately as the full set: a button that hands someone the Format
+// painter is odd but not our call to forbid, and the author picks from a menu
+// that names each one.
 
 import {
   isPollStyle,
@@ -21,7 +21,6 @@ export const SELECTION_MODES = [
   'laser',
   'spotlight',
   'avatar',
-  'eraser',
   'format',
   'isometric',
 ] as const;
@@ -41,7 +40,6 @@ export const SELECTION_MODE_LABEL: Record<SelectionMode, string> = {
   laser: 'Laser',
   spotlight: 'Spotlight',
   avatar: 'Avatar',
-  eraser: 'Eraser',
   format: 'Format',
   isometric: 'Isometric',
 };

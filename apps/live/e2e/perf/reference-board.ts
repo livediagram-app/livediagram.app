@@ -6,7 +6,6 @@
 
 import {
   createFreehand,
-  createPath,
   createPinnedArrow,
   createShape,
   createSticky,
@@ -30,7 +29,7 @@ const MIX = [
   ['arrow', 0.3],
   ['freehand', 0.1],
   ['text', 0.1],
-  ['path', 0.05],
+  ['polygon', 0.05],
   ['sticky', 0.05],
 ] as const;
 type Kind = (typeof MIX)[number][0];
@@ -89,7 +88,7 @@ export function buildReferenceBoard(seed = REFERENCE_SEED, count = REFERENCE_COU
         const text = createText(0, 0);
         return { ...text, ...at(text.width, text.height), id, label: `Note ${i}` };
       }
-      case 'path': {
+      case 'polygon': {
         const { x, y } = at(160, 120);
         const closed = i % 2 === 1;
         const corners = [
@@ -97,9 +96,9 @@ export function buildReferenceBoard(seed = REFERENCE_SEED, count = REFERENCE_COU
           { x: x + 160, y: y + 20 },
           { x: x + 120, y: y + 120 },
           { x: x + 20, y: y + 90 },
-        ].map((p) => ({ ...p, mode: 'corner' as const }));
-        const path = createPath(corners, closed);
-        return { ...path, id, ...(closed ? { fillColor: '#bfdbfe' } : {}) };
+        ];
+        const polygon = { ...createFreehand(corners, closed), straightEdges: true };
+        return { ...polygon, id, ...(closed ? { fillColor: '#bfdbfe' } : {}) };
       }
       case 'sticky': {
         const sticky = createSticky(0, 0);

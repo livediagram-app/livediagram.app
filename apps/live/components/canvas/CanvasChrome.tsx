@@ -80,7 +80,6 @@ type ChromeExtras = {
   drawHover: { x: number; y: number } | null;
   // The armed fixed-size note's ghost (docs/specs/021-event-storming/event-storming.md Phase 4).
   stamp: StampGhost | null;
-  penPoints: { x: number; y: number }[] | null;
   // Polygon tool in-flight state (docs/specs/008-canvas/polygon-tool.md): the placed vertices and
   // the live rubber-band cursor position, both canvas coords.
   polygonVertices: { x: number; y: number }[];
@@ -144,16 +143,6 @@ type ChromeExtras = {
   spotlightPanelPosition?: { x: number; y: number } | null;
   onMoveSpotlightPanel?: (x: number, y: number) => void;
   onResetSpotlightPanel?: () => void;
-  // Eraser Panel (docs/specs/008-canvas/eraser-panel.md): the brush's settings, owned by useEraserConfig in
-  // Canvas (the erase gesture reads it too).
-  eraserConfig?: import('@/lib/eraser-config').EraserConfig;
-  onChangeEraserField?: <K extends keyof import('@/lib/eraser-config').EraserConfig>(
-    field: K,
-    value: import('@/lib/eraser-config').EraserConfig[K],
-  ) => void;
-  eraserPanelPosition?: { x: number; y: number } | null;
-  onMoveEraserPanel?: (x: number, y: number) => void;
-  onResetEraserPanel?: () => void;
   // Slide Deck panel (docs/specs/012-collaboration/presentation-mode.md): the sixth tool panel.
   slideDeckPanelPosition?: { x: number; y: number } | null;
   onMoveSlideDeckPanel?: (x: number, y: number) => void;
@@ -221,7 +210,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
     onCancelIdentity,
     onUndo,
     pendingDraw,
-    penPoints,
     polygonVertices,
     polygonCursor,
     readOnly,
@@ -289,10 +277,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
     pendingDraw,
     elements,
     drawHover,
-    penPoints,
     snapGuides,
     snapTargets,
-    whiteboard: false,
   });
 
   // The palette's Edit Cards opens the Card Types popover from its button (docs/specs/026-plan/item-types.md).
@@ -443,7 +429,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
 
       <CanvasDrawPreview
         drawDrag={drawDrag}
-        penPoints={penPoints}
         polygonVertices={polygonVertices}
         polygonCursor={polygonCursor}
         pendingDraw={pendingDraw}
@@ -489,7 +474,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
           {panelEls.minimap}
           {panelEls.laser}
           {panelEls.spotlight}
-          {panelEls.eraser}
           {panelEls.format}
           {panelEls['slide-deck']}
         </>
@@ -642,7 +626,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
               onToggleZen={onToggleZen}
               zenActive={zenMode}
               // View-only visitors have no palette (so no canvas-tool
-              // dropdown); the dock keeps the enter button for them.
+              // dropdown); the zoom controls keep the enter button for them.
               zenEnterHere={readOnly}
               pinchOnly={isMobile}
             />

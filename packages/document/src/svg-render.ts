@@ -21,7 +21,6 @@ import {
   svgLegendShape,
   svgCodeBlockShape,
   svgFreehandShape,
-  svgPathElementShape,
   svgShapeSilhouette,
 } from './svg-render-shapes';
 import { MIND_NODE_RADIUS_PX, cornerRadiusPx } from './border-style';
@@ -262,11 +261,6 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
     // The sketch's actual polyline instead of its bounding box; a Polygon-tool outline drawn by hand in its finish
     // (docs/specs/008-canvas/finish.md "Polygons").
     return `<g${opAttr}${rotAttr}>${sketch ?? svgFreehandShape(el, shape.stroke, shape.fill, finish)}</g>`;
-  }
-  if (el.type === 'path' && shape.kind === 'rect') {
-    // The path's own curve (docs/specs/023-draw-mode/path-tool.md "Export"), or drawn by hand in its finish
-    // (finish.md "Polygons and paths").
-    return `<g${opAttr}${rotAttr}>${sketch ?? svgPathElementShape(el, shape.stroke, shape.fill, finish)}</g>`;
   }
   if (el.type === 'shape' && el.shape === 'code-block') {
     // The dark editor card + plain mono lines (docs/specs/009-elements/code-block.md); no label.
@@ -564,7 +558,7 @@ export function boxedNeedsSvgRaster(
   if (supportsShadow(el) && el.shadow) return true;
   // An accent edge (docs/specs/008-canvas/accent-edge.md) is a clipped bar only the SVG draws.
   if (resolvedAccentEdge(el)) return true;
-  if (el.type === 'table' || el.type === 'freehand' || el.type === 'path') return true;
+  if (el.type === 'table' || el.type === 'freehand') return true;
   if (el.type === 'shape' && (hasShapeSilhouette(el.shape) || el.shape === 'stadium')) return true;
   // Anything whose BODY this module draws and the canvas drawers cannot: a
   // chart's plot, a progress value, a card's face, a lane's gutter, a

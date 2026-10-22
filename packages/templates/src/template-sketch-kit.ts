@@ -1,6 +1,6 @@
 // The hand-drawn kit the Draw templates are made with (docs/specs/007-editor/templates-by-mode.md
 // "Draw templates"): marker strokes laid down the way the whiteboard pen lays them down
-// (docs/specs/023-draw-mode/draw-mode.md "Pens"), plus the notes, text and stickers a person adds
+// (docs/specs/006-document/stroke-points.md), plus the notes, text and stickers a person adds
 // in Draw mode.
 //
 // Every mark starts as clean geometry (a line, a box, an ellipse, a cloud) and is then resampled

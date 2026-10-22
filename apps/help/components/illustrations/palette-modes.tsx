@@ -1,5 +1,5 @@
 // Palette-category illustrations (docs/specs/018-help/help-app.md): the mode picker (Select, Hand,
-// Eraser, Format Painter, Laser, Spotlight, Avatar, Isometric) and the palette
+// Format Painter, Laser, Spotlight, Avatar, Isometric) and the palette
 // settings (Auto-Attach Arrows, Alignment Guides, Panel Opacity). Composed only from the shared primitives so the house style
 // holds — except the Avatar sprite, which is deliberately pixel art.
 
@@ -46,54 +46,6 @@ export function HandMode() {
           strokeWidth={2}
           strokeLinecap="round"
           strokeLinejoin="round"
-        />
-      </g>
-    </Scene>
-  );
-}
-
-/** Eraser mode: the picker set to Eraser and a drag across shapes, the ones
- *  already swept fading away. */
-export function EraserMode() {
-  return (
-    <Scene w={420} h={230}>
-      <PickerTrigger tool="eraser" />
-      {/* Erased (fading) */}
-      <Shape x={70} y={118} w={62} h={38} dashed fill="fill-slate-50" stroke="stroke-slate-300" />
-      <Shape x={150} y={150} w={62} h={38} dashed fill="fill-slate-50" stroke="stroke-slate-300" />
-      {/* Still present */}
-      <Shape x={244} y={132} w={62} h={38} kind="circle" label="C" />
-      <Shape x={320} y={172} w={62} h={38} accent label="D" />
-      {/* Eraser drag path */}
-      <path
-        d="M96 132 L184 168 L276 150"
-        className="stroke-rose-400"
-        strokeWidth={2.5}
-        fill="none"
-        strokeDasharray="6 5"
-        strokeLinecap="round"
-      />
-      {/* Eraser cursor */}
-      <g transform="translate(276 150)">
-        <rect
-          x={-9}
-          y={-5}
-          width={18}
-          height={11}
-          rx={2}
-          transform="rotate(-30)"
-          className="fill-white stroke-slate-500"
-          strokeWidth={1.8}
-        />
-        <rect
-          x={-9}
-          y={1}
-          width={18}
-          height={5}
-          rx={1}
-          transform="rotate(-30)"
-          className="fill-rose-300 stroke-slate-500"
-          strokeWidth={1.5}
         />
       </g>
     </Scene>

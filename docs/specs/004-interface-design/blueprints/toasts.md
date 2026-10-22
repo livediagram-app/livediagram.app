@@ -143,8 +143,7 @@ rect:
   inset is added in CSS: `bottom: max(<floor>px, calc(16px + env(safe-area-inset-bottom)))`.
 
 Bottom chrome that comes or goes without resizing anything the stack watches dispatches `TOAST_FLOOR_CHANGED_EVENT`
-on `window` (`announceToastFloorChange()`): the sign-in banner on mount and unmount, the whiteboard dock on mount,
-move and unmount, the new-version prompt when it shows or hides.
+on `window` (`announceToastFloorChange()`): the sign-in banner on mount and unmount, the tour banner, the new-version prompt when it shows or hides.
 
 ## Errors and edge cases
 

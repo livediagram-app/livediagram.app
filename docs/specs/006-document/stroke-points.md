@@ -1,12 +1,13 @@
 # Stroke points
 
 How a `freehand` element stores its points: one compact binary block per stroke, written as
-base64 inside the tab's JSON. It covers every freehand stroke on every tab kind: whiteboard pen
-strokes, diagram pencil sketches, highlighter marks and polygon-tool paths, drawn or imported.
+base64 inside the tab's JSON. It covers every freehand stroke on every tab kind: Polygon-tool
+outlines, and the pen strokes and highlights that templates, imports and the MCP write. A stroke
+stored with a streamline or pressure is stored data, rendered as drawn.
 
 ## Why
 
-- Pen strokes are the bulk of a whiteboard. Stored as `{ nx, ny }` objects with full doubles, a
+- Pen strokes are the bulk of an imported board. Stored as `{ nx, ny }` objects with full doubles, a
   point costs about 29 to 46 bytes, and a large board's tab outgrows what one database row holds.
 - A tab is saved as one row in Cloudflare D1, which caps a row at 2,000,000 bytes, so a tab must fit
   within it ([API](../015-api/api.md)). Compact points keep large boards well inside
@@ -54,11 +55,11 @@ pen's pressure at each point when it reported one. It replaces the former `point
 
 - **In memory the element holds the block exactly as stored.** Loading a tab creates one string
   per stroke and no point objects.
-- **Decoding is lazy and memoised.** Whatever needs the points (drawing, the eraser, export,
+- **Decoding is lazy and memoised.** Whatever needs the points (drawing, export,
   hit-testing) asks the codec, which decodes the block into typed arrays once and remembers the
   result in a bounded cache keyed by the block. A stroke that is never drawn is never decoded.
-- **Every edit produces a new block.** Moving or resizing a stroke changes only its box; erasing
-  part of it, drawing it, or importing it encodes fresh blocks.
+- **Every edit produces a new block.** Moving or resizing a stroke changes only its box; drawing
+  it, writing it through the MCP or importing it encodes fresh blocks.
 - **One codec** in `@liveplanner/document` serves the editor, the api worker, the MCP server
   and the imports, so there is one reader and one writer of the format.
 - **Developers read a block** with the debug decoder: a function that expands a block into
@@ -115,10 +116,10 @@ A block the editor cannot decode at draw time (it never passed validation) draws
 
 - At most `MAX_FREEHAND_POINTS` (20,000) points per stroke, as before: at most 100,002 bytes,
   133,336 base64 characters.
-- A stroke drawn with more samples than that is **kept, never lost**: on release it is simplified
-  just enough to fit (the smallest tolerance from a tenth of a pixel, doubling, that brings it
+- The codec fits a stroke with more samples than that (`fitStrokeToLimit`) rather than losing
+  it: it is simplified just enough to fit (the smallest tolerance from a tenth of a pixel, doubling, that brings it
   under the cap, else evenly thinned), its pressures following the samples it keeps. A stroke
-  that fits is stored exactly as drawn.
+  that fits is stored exactly as written.
 - The decode cache holds at most `STROKE_DECODE_CACHE_POINTS` decoded points; the least recently
   used blocks leave it first.
 

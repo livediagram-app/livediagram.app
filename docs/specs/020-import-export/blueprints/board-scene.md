@@ -1,7 +1,7 @@
 # Board scene: blueprint
 
 Derived from [Board scene](../board-scene.md), with the element-model delta it needs from
-[Draw mode](../../023-draw-mode/draw-mode.md) "Imported and pasted content". The spec's mapping
+[Colour picker](../../004-interface-design/colour-picker.md) and [Stroke points](../../006-document/stroke-points.md). The spec's mapping
 table is not restated; this file fixes the modules, types, constants, algorithms, wiring and tests.
 Defaults are ledgered in [DEFAULTS.md](DEFAULTS.md) (rows `B1` onwards).
 
@@ -30,14 +30,12 @@ Scope, by file:
 | `apps/live/lib/board-scene-hug.ts`                                        | `hugLandedText`, `landedTextFonts`: re-hugs landed text boxes                                     |
 | `apps/live/lib/board-scene-browser.ts`                                    | The browser seams: `browserImageSession`, `browserHugText` (fonts loaded first)                   |
 | `apps/live/components/dialogs/ImportImageReport.tsx`                      | The dialog's result view: scene report, board failures, images                                    |
-| `apps/live/lib/quick-style-applicability.ts`                              | `quickStyleApplicability`, `quickStyleCaption`                                                    |
 | `apps/live/lib/reset-colours.ts`                                          | "Reset to Theme" per element, named colours included                                              |
 | `apps/live/components/canvas/BoardSceneNotice.tsx`                        | The paste notice                                                                                  |
 | `apps/live/components/dialogs/BoardSceneReportList.tsx`                   | The report's rows, shared by the notice and the Import dialog                                     |
 | `packages/document/src/element-types.ts`, `arrow-types.ts`, `validate.ts` | `penTextColour` on text, shape, sticky and arrow; `penColour` on path                             |
 | `packages/document/src/pen-colours.ts`                                    | `hexOklch` for the colour rules                                                                   |
 | `packages/document/src/stock-colours.ts`                                  | `resolveStockColours` draws `penTextColour`                                                       |
-| `apps/live/lib/quick-style-pen.ts`                                        | `tabCustomColours` reads text, path and arrow colours too                                         |
 
 ## Domain and naming
 
@@ -123,7 +121,6 @@ order, counts summed per rule.
 | `TEXT_SCALE_EPSILON`      | `0.005`                                                     | 0.001 to 0.02       | A scale this close to 1 is omitted (no visible difference at 64 px)                                                         |
 | `CLOSED_END_EPSILON_PX`   | `1`                                                         | 0.5 to 2            | The Excalidraw importer's closure test: ends within 1 px coincide                                                           |
 | `SCENE_FONTS`             | hand `caveat`, mono `roboto-mono`, serif `lora`, sans unset | n/a                 | `fonts.ts` catalogue; Excalifont / Virgil / Whiteboard ink fonts read as hand                                               |
-| Marker widths             | `WHITEBOARD_PEN_WIDTHS`                                     | as defined          | `apps/live/lib/whiteboard-prefs.ts` (1, 1.5, 2.5, 4, 6, 9 px)                                                               |
 | Border widths             | `BORDER_STROKE_PX`                                          | as defined          | `nearestBorderStroke` in `packages/document/src/whiteboard.ts`                                                              |
 | Text presets              | `LABEL_FONT_PX` sm/md/lg                                    | as defined          | 14 / 22 / 32 px                                                                                                             |
 | Text scale limits         | `TEXT_SCALE_MIN..MAX`                                       | as defined          | 0.1 to 40, `validate.ts`                                                                                                    |
@@ -482,7 +479,6 @@ heading per the spec, `BoardSceneReportList` rows, the image placeholder sentenc
 | reset to theme drops named colours                                                 | `apps/live/lib/reset-colours.test.ts`                                                                                                          |
 | rotation, links, point helpers                                                     | `common.test.ts`                                                                                                                               |
 | text hug of landed boxes                                                           | `apps/live/lib/board-scene-hug.test.ts`                                                                                                        |
-| quick style on a mixed whiteboard selection, dark mode                             | `apps/live/e2e/quick-style-mixed.spec.ts`                                                                                                      |
 | insert: one commit, selection, images, notice, point                               | `apps/live/hooks/canvas/useBoardSceneInsert.test.ts` (fakes)                                                                                   |
 | board document name and dates                                                      | `apps/live/lib/board-scene/board-document.test.ts`                                                                                             |
 | document dates rule; the worker's create with dates (real schema)                  | `packages/api-schema/src/document-dates.test.ts`, `apps/api/src/routes/document-create-dates.test.ts`, `apps/api/src/routes/documents.test.ts` |

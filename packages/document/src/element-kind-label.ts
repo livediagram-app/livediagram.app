@@ -60,14 +60,12 @@ export function elementKindLabel(el: Element): string {
     case 'image':
       return 'Image';
     case 'freehand':
-      // The marker pen (docs/specs/008-canvas/highlighter.md) and polygon tool (docs/specs/008-canvas/polygon-tool.md) both commit
+      // The marker pen (docs/specs/006-document/stroke-points.md) and polygon tool (docs/specs/008-canvas/polygon-tool.md) both commit
       // freehands; name them by what the user drew (matching the live
       // app's kindLabel in element-names.ts).
       if (el.pen === 'highlighter') return 'Highlight';
       if (el.straightEdges) return el.closed ? 'Polygon' : 'Polyline';
       return 'Sketch';
-    case 'path':
-      return 'Path';
     case 'annotation':
       return 'Annotation';
     case 'link-card':

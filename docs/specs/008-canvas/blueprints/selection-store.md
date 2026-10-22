@@ -108,8 +108,7 @@ multiSelectedIds.size === 0`. Element views compare the three booleans.
     `CanvasSelectionToolbars` take `selectionInput` (`CanvasSelectionInput`: the derivation's
     inputs other than the selection, memoised in `Canvas`) and call `useCanvasSelectionView`;
   - `Canvas` reads the store with `get()` in handlers (`currentSelection`, `readSelection` for
-    `useCanvasSelectHandlers`) and subscribes to one narrow slice, `soleSelectedPathId` (the one
-    selected element when it is a path) for the path tool, which flips only for paths;
+    `useCanvasSelectHandlers`);
   - `useQuickRing(store)` closes an open ring on a change of the selected element through a store
     subscription;
   - `SlideDeckPanel` reads `selectionIds(selectedId, multiSelectedIds)` from the store (compared

@@ -27,7 +27,7 @@ export type ElementTileSearch = {
 const shapeSig = (kind: string, choice?: string) => `shape:${kind}:${choice ?? ''}`;
 
 /** The signature a tile places, or null for a tile that places no one element type (the icon,
- *  sticker and tech catalogue tiles, the shape pen's recognised shapes, a board's header widget,
+ *  sticker and tech catalogue tiles, a board's header widget,
  *  the hero and avatar composites). */
 export function tileSignature(tile: PaletteTileDef): string | null {
   const a = tile.action;
@@ -49,16 +49,9 @@ export function tileSignature(tile: PaletteTileDef): string | null {
     }
     case 'sticky':
       return `sticky:${a.esKind ?? ''}`;
-    case 'freehand':
-      return 'freehand:';
-    case 'highlighter':
-      return 'freehand:highlighter';
-    // A marker's stroke is a freehand element like the pencil's: where both are offered, the
-    // pencil, first in layout order, stands for it.
-    case 'marker':
-      return 'freehand:';
+    // The polygon tool's outline is a freehand element.
     case 'polygon':
-      return 'path';
+      return 'freehand:';
     case 'arrow':
       return a.ends === 'none' ? 'arrow:none' : 'arrow:';
     case 'video':
@@ -185,12 +178,9 @@ export function mergeByName(
 export function elementTileSections({
   hasImage,
   planCardTiles,
-  drawTiles = [],
 }: {
   hasImage: boolean;
   planCardTiles?: readonly PaletteTileDef[];
-  // The markers (palette-marker-tiles), in no category: always elsewhere.
-  drawTiles?: readonly PaletteTileDef[];
 }): ElementTileSearch {
   const visible = (t: PaletteTileDef) => hasImage || !t.needsImage;
   const here = modeElementTiles(planCardTiles).filter(visible);
@@ -203,7 +193,7 @@ export function elementTileSections({
     if (planCardTiles && t.section === 'plan-cards') continue;
     elsewhere.push(t);
   }
-  return { here, elsewhere: [...elsewhere, ...drawTiles] };
+  return { here, elsewhere };
 }
 
 /** What the Search lists: the query's matches, best first, or before anything is typed, the
@@ -218,7 +208,6 @@ export function searchElementTiles({
   tabElements?: readonly Element[];
   hasImage: boolean;
   planCardTiles?: readonly PaletteTileDef[];
-  drawTiles?: readonly PaletteTileDef[];
 }): ElementTileSearch {
   const { here, elsewhere } = elementTileSections(sections);
   if (!query.trim()) {

@@ -6,12 +6,7 @@
 // handful of them, and never grows into the old Editor panel.
 
 import { useRef, useState, type PointerEvent } from 'react';
-import {
-  BorderRadiusIcon,
-  BorderStrokeIcon,
-  BorderStyleIcon,
-} from '@/components/palette/palette-style-previews';
-import { QUICK_CORNERS } from '@/lib/quick-style-whiteboard';
+import { BorderStrokeIcon, BorderStyleIcon } from '@/components/palette/palette-style-previews';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { useQuickStylePlacement } from '@/hooks/ui/useQuickStylePlacement';
 import { useUiScale } from '@/components/providers/ui-scale';
@@ -20,7 +15,6 @@ import {
   QUICK_ICON_ALIGNS,
   QUICK_TEXT_ALIGNS,
   QUICK_WIDTHS,
-  type QuickCorners,
   type QuickIconAlign,
   type QuickStrokeStyle,
   QUICK_INK,
@@ -38,8 +32,6 @@ import {
 } from '@liveplanner/document';
 import type { ShownSwatch } from '@/lib/swatch-overrides';
 import { SwatchOverridePopover } from './SwatchOverridePopover';
-import { BoardColourRow, QuickPenRows } from './QuickPenRows';
-import { QuickHighlighterRows } from './QuickHighlighterRows';
 import { QuickMoreColours } from './QuickMoreColours';
 import { standardGroup } from '@/components/colour/colour-options';
 import { useCanvasSurface } from './CanvasSurfaceContext';
@@ -69,13 +61,6 @@ const TEXT_ALIGN_NAMES: Record<TextAlignX, string> = {
   left: 'Align left',
   center: 'Align centre',
   right: 'Align right',
-};
-// The Corners row (docs/specs/008-canvas/quick-style-panel.md "Corners"), whiteboards only.
-const CORNER_NAMES: Record<QuickCorners, string> = {
-  none: 'None',
-  sm: 'Small',
-  md: 'Medium',
-  lg: 'Large',
 };
 const ICON_ALIGN_NAMES: Record<QuickIconAlign, string> = {
   left: 'Icon before label',
@@ -161,12 +146,8 @@ export function QuickStylePanel({
   quickStyle,
   hidden,
   showTitles,
-  powerUser = false,
 }: {
   quickStyle: QuickStyleApi;
-  // Power user mode (docs/specs/007-editor/power-user-mode.md) drops the caption naming the pen
-  // or strokes a whiteboard's pen rows style.
-  powerUser?: boolean;
   // Zen, embeds, presenting, or a context menu open: the panel stands down.
   hidden: boolean;
   // Section titles; on unless a caller turns them off. The rows keep their
@@ -204,8 +185,6 @@ export function QuickStylePanel({
       aria-label="Quick style"
       data-quick-style-panel=""
       data-testid="quick-style-panel"
-      // The Draw tour's anchor (docs/specs/023-draw-mode/draw-tour.md "The steps").
-      data-tour-id="quick-style"
       // A panel, so the panel-opacity preference (docs/specs/007-editor/user-preferences.md) applies to it.
       data-panel-translucent=""
       onPointerDown={stop}
@@ -231,7 +210,6 @@ export function QuickStylePanel({
           view={view}
           quickStyle={quickStyle}
           showTitles={titles}
-          showSubject={!powerUser}
           onEditSwatch={(role, slot, anchor) => setEditing({ role, slot, anchor })}
         />
         {view.targetIds.length > 0 ? (
@@ -293,13 +271,11 @@ function QuickStyleSections({
   view,
   quickStyle,
   showTitles,
-  showSubject,
   onEditSwatch,
 }: {
   view: QuickStyleView;
   quickStyle: QuickStyleApi;
   showTitles: boolean;
-  showSubject: boolean;
   onEditSwatch: (role: QuickSwatchRole, slot: QuickSwatchSlot, anchor: HTMLButtonElement) => void;
 }) {
   // Slot 0 is the way back to the theme and is never overridden.
@@ -308,48 +284,11 @@ function QuickStyleSections({
     (role: QuickSwatchRole) => (slot: QuickColourValue, anchor: HTMLButtonElement) => {
       if (isQuickSwatchSlot(slot)) onEditSwatch(role, slot, anchor);
     };
-  const { width, style, textAlign, iconAlign, corners } = view.sections;
+  const { width, style, textAlign, iconAlign } = view.sections;
   const surface = useCanvasSurface();
-  // Whose style this is when it is not plainly the selection: the pen in hand,
-  // the selected strokes, or a tool's next mark. Power user mode leaves it out.
-  const caption = view.caption ?? view.pen?.subject.name ?? view.highlighter?.subject.name;
   return (
     <>
-      {showSubject && caption ? (
-        <p className="px-0.5 text-xs font-medium text-slate-700 dark:text-slate-200">{caption}</p>
-      ) : null}
-      {view.pen ? (
-        <QuickPenRows pen={view.pen} quickStyle={quickStyle} showTitles={showTitles} />
-      ) : null}
-      {view.highlighter ? (
-        <QuickHighlighterRows
-          highlighter={view.highlighter}
-          quickStyle={quickStyle}
-          showTitles={showTitles}
-        />
-      ) : null}{' '}
       {COLOUR_ROWS.map((row) => {
-        // A whiteboard's Stroke and Text colour rows are the whiteboard's colours.
-        const board =
-          row.role === 'stroke'
-            ? view.sections.boardStroke
-            : row.role === 'text'
-              ? view.sections.boardText
-              : undefined;
-        if (board) {
-          return (
-            <BoardColourRow
-              key={row.role}
-              title={row.title}
-              testId={row.testId}
-              section={board}
-              showTitles={showTitles}
-              onChoose={
-                row.role === 'stroke' ? quickStyle.setBoardStroke : quickStyle.setBoardTextColour
-              }
-            />
-          );
-        }
         const colours = view.sections[row.section];
         return colours ? (
           <QuickRadioRow<QuickColourValue | typeof QUICK_TRANSPARENT>
@@ -427,21 +366,6 @@ function QuickStyleSections({
           }))}
           value={style.value}
           onChoose={quickStyle.setStrokeStyle}
-        />
-      ) : null}
-      {corners ? (
-        <QuickRadioRow
-          title="Corners"
-          testId="quick-style-corners"
-          showTitle={showTitles}
-          columns={QUICK_CORNERS.length}
-          options={QUICK_CORNERS.map((c) => ({
-            value: c,
-            name: CORNER_NAMES[c],
-            content: <BorderRadiusIcon value={c} />,
-          }))}
-          value={corners.value}
-          onChoose={quickStyle.setCorners}
         />
       ) : null}
       {textAlign ? (

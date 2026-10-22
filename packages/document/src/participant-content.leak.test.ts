@@ -13,7 +13,6 @@ import {
   createVideo,
 } from './factories';
 import type { Element, Tab } from './index';
-import { createPath } from './path-element';
 import { applyParticipantOp, participantTabChange } from './participant-content';
 import { createShape } from './shape-factory';
 import { ELEMENT_TYPES, isValidElement } from './validate';
@@ -74,20 +73,6 @@ const SAMPLES: Sample[] = [
         false,
       ),
       'fh',
-    ),
-    allowed: TEXT,
-  },
-  {
-    name: 'path',
-    el: theirs(
-      createPath(
-        [
-          { x: 0, y: 0, mode: 'corner' },
-          { x: 40, y: 20, mode: 'corner' },
-        ],
-        false,
-      ),
-      'pa',
     ),
     allowed: TEXT,
   },

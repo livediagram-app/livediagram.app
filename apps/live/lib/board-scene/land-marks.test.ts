@@ -7,15 +7,13 @@ import {
   freehandNormalisedPoints,
   freehandPressures,
   isValidElement,
-  pathAnchors,
   penColourHex,
-  type PathElement,
 } from '@liveplanner/document';
 import { createLandContext, LANDING_RULES } from './context';
-import { landInk, landLine, landPath } from './land-marks';
+import { landInk, landLine } from './land-marks';
 import type { SceneInk, ScenePolyline } from './scene';
 
-// docs/specs/020-import-export/board-scene.md "Kinds": ink, lines and paths on a whiteboard.
+// docs/specs/020-import-export/board-scene.md "Kinds": ink and lines on a whiteboard.
 const ink = (over: Partial<SceneInk> = {}): SceneInk => ({
   key: 'i',
   kind: 'ink',
@@ -274,76 +272,5 @@ describe('landLine', () => {
     expect(el.from).toMatchObject({ x: expect.closeTo(5, 6), y: expect.closeTo(-5, 6) });
     expect(el.to).toMatchObject({ x: expect.closeTo(5, 6), y: expect.closeTo(5, 6) });
     expect((el as { rotation?: number }).rotation).toBeUndefined();
-  });
-});
-
-describe('landPath', () => {
-  it('keeps a closed line through two points and back as a valid path', () => {
-    const el = landPath(
-      line({
-        closed: true,
-        points: [
-          { x: 0, y: 0 },
-          { x: 100, y: 0 },
-          { x: 0, y: 0 },
-        ],
-      }),
-      'id',
-      createLandContext(),
-    );
-    expect(isValidElement(el)).toBe(true);
-  });
-
-  it('keeps corners as corners', () => {
-    const el = landPath(line(), 'id', createLandContext());
-    expect(isValidElement(el)).toBe(true);
-    expect(el.nodes.every((n) => n.mode === 'corner' && !n.handleIn && !n.handleOut)).toBe(true);
-    const anchors = pathAnchors(el);
-    expect(anchors.map((a) => [a.x, a.y])).toEqual([
-      [0, 0],
-      [100, 0],
-      [100, 50],
-    ]);
-    expect(el.penColour).toBe('blue');
-    expect(el.strokeWidth).toBeUndefined();
-  });
-
-  it('smooths a curved line through its points', () => {
-    const el = landPath(line({ curved: true }), 'id', createLandContext());
-    expect(el.nodes[1]!.mode).toBe('mirrored');
-    expect(el.nodes[1]!.handleIn).toBeDefined();
-    expect(el.nodes[0]!.handleIn).toBeUndefined();
-    expect(el.nodes[0]!.handleOut).toBeDefined();
-    expect(el.nodes[2]!.handleOut).toBeUndefined();
-    const anchors = pathAnchors(el);
-    expect(anchors[1]!.x).toBeCloseTo(100);
-    expect(anchors[1]!.y).toBeCloseTo(0);
-  });
-
-  it('closes with its fill, dropping a repeated closing point', () => {
-    const el: PathElement = landPath(
-      line({
-        closed: true,
-        fill: { hex: '#ffc9c9' },
-        points: [
-          { x: 0, y: 0 },
-          { x: 10, y: 0 },
-          { x: 10, y: 10 },
-          { x: 0, y: 0 },
-        ],
-      }),
-      'id',
-      createLandContext(),
-    );
-    expect(el.closed).toBe(true);
-    expect(el.nodes).toHaveLength(3);
-    expect(el.fillColor).toBe('#ffc9c9');
-    expect(isValidElement(el)).toBe(true);
-  });
-
-  it('leaves an open line unfilled', () => {
-    expect(
-      landPath(line({ fill: { hex: '#ffc9c9' } }), 'id', createLandContext()).fillColor,
-    ).toBeUndefined();
   });
 });

@@ -21,7 +21,7 @@ and from [Avatar tour](../avatar-tour.md).
 | `apps/live/hooks/collab/useEditorBroadcast.ts`         | `broadcastAvatarSay`                                                                              |
 | `apps/live/app/document/[id]/useRoomConnection.ts`     | Routes a received `avatar-say` to the speech hook                                                 |
 | `apps/live/components/tour/avatar-tour-steps.ts`       | The tour's steps                                                                                  |
-| `apps/live/components/tour/AvatarTourHost.tsx`         | Orchestrates the tour, as `DrawTourHost`                                                          |
+| `apps/live/components/tour/AvatarTourHost.tsx`         | Orchestrates the tour                                                                             |
 | `apps/live/components/tour/AvatarTourArt.tsx`          | The welcome card's illustration                                                                   |
 | `apps/live/lib/avatar-tour.ts`                         | The relaunch event                                                                                |
 
@@ -106,7 +106,7 @@ closes the composer, tracks `Canvas · Used · AvatarMessage` or `AvatarMessageP
 
 ### Tour
 
-As the Draw tour's host (`DrawTourHost`), with: armed on entering Avatar mode; `canWork` without the
+Armed on entering Avatar mode; `canWork` without the
 `isReadOnly` and lock gates; steps filtered by `{ canSpeak, mobile }`; `prepare` of `character` clicks the Avatar
 button when the popover is closed and waits for `avatar-character`; `prepare` of `push` closes the popover;
 `cleanup` on leaving closes the popover if the tour opened it. Ends as skipped when the mode is left or the tab

@@ -1,5 +1,5 @@
 // Feature art for the Whiteboard category (docs/specs/019-marketing/marketing-site.md,
-// docs/specs/023-draw-mode/draw-mode.md): Draw mode's three markers, a pressure-sensitive pen,
+// docs/specs/007-editor/editor-modes.md): Draw mode's three markers, a pressure-sensitive pen,
 // and the two erasers (the Path tool and palm rejection are in ./whiteboard-pen). Each is a finished little board at rest;
 // the fa-f-* loops only draw the strokes on and move the hands (mode-parts.tsx).
 

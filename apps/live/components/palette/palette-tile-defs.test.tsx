@@ -133,7 +133,7 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   shapes: 13,
   build: 11,
   write: 5,
-  draw: 6,
+  draw: 3,
   devices: 7,
   icons: 0,
   stickers: 0,
@@ -149,7 +149,7 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   'collab-tools': 5,
   'collab-record': 5,
   'collab-react': 5,
-  'collab-mode': 8,
+  'collab-mode': 7,
   'collab-navigate': 15,
   // The Event Storming notation (docs/specs/021-event-storming/event-storming.md): one tile per note kind.
   'event-storming': 8,

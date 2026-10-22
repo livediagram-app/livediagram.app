@@ -119,14 +119,6 @@ describe('canvasCursorClass', () => {
       'cursor-grab',
     );
   });
-  it('the eraser tool shows the eraser cursor unless Space is held', () => {
-    expect(canvasCursorClass({ ...rest, canvasTool: 'eraser' })).toBe('cursor-eraser');
-    // Space held suppresses the eraser cursor, falling through to the rest
-    // (pan tool here -> grab) for a temporary pan.
-    expect(canvasCursorClass({ ...rest, canvasTool: 'eraser', spaceHeld: true })).toBe(
-      'cursor-grab',
-    );
-  });
   it('the format tool shows the copy cursor unless Space is held', () => {
     expect(canvasCursorClass({ ...rest, canvasTool: 'format' })).toBe('cursor-copy');
     // Space held suppresses it, falling through to the rest (pan -> grab).

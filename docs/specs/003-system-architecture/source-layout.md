@@ -43,7 +43,7 @@ exhaustive — each file lands in the bucket that owns its concern):
 
 `apps/live/hooks/`
 
-- `canvas/` — drag, eraser, marquee, element style, keyboard shortcuts.
+- `canvas/` — drag, marquee, element style, keyboard shortcuts.
 - `persistence/` — folders, teams, capabilities, custom themes, share links.
 - `ui/` — confirm, toast, panel layout, escape/click-outside.
 - `collab/` — room connection, presence.

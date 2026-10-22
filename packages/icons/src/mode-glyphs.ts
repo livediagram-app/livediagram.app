@@ -2,8 +2,7 @@
 // the editor's palette and Mode button (through <Prims>) and the export (through
 // iconPrimsMarkup) all render, so an exported Mode button shows the same glyph
 // as the canvas. Keyed by the mode ids in @liveplanner/document's SELECTION_MODES
-// (a test there checks every mode has one), plus the Highlighter, a former mode whose
-// glyph its Draw tile kept; `units` is the glyph's viewBox.
+// (a test there checks every mode has one); `units` is the glyph's viewBox.
 
 import {
   lucideFootprints,
@@ -53,18 +52,6 @@ export const MODE_GLYPHS: Record<string, ModeGlyph> = {
     ],
   },
   avatar: { units: 24, prims: lucideFootprints },
-  // A tilted block eraser sitting on the canvas line.
-  eraser: {
-    units: 16,
-    prims: [
-      {
-        t: 'path',
-        d: 'M3 10.5l4.5-4.5a1.3 1.3 0 0 1 1.8 0l2.7 2.7a1.3 1.3 0 0 1 0 1.8l-2.7 2.7H5.2z',
-      },
-      { t: 'path', d: 'M6.2 7.3l3.5 3.5' },
-      { t: 'path', d: 'M2.5 13.5h11' },
-    ],
-  },
   format: { units: 24, prims: lucidePaintRoller },
   // A cube: the top rhombus and the two front faces.
   isometric: {
@@ -73,16 +60,6 @@ export const MODE_GLYPHS: Record<string, ModeGlyph> = {
       { t: 'path', d: 'M8 1.8l5.2 3v0L8 7.8 2.8 4.8z' },
       { t: 'path', d: 'M2.8 4.8v5.4L8 13.2v-5.4' },
       { t: 'path', d: 'M13.2 4.8v5.4L8 13.2' },
-    ],
-  },
-  // A marker over a faint, heavy stroke of highlight. Not a selection mode any more: the
-  // Highlighter is a Draw tile (docs/specs/008-canvas/highlighter.md), which keeps this drawing.
-  highlighter: {
-    units: 16,
-    prims: [
-      { t: 'path', d: 'M3.5 10.5 L9 5 L11.5 7.5 L6 13 Z' },
-      { t: 'path', d: 'M9 5 L11 2.5 L14 5.5 L11.5 7.5' },
-      { t: 'path', d: 'M2 14.5 H9', sw: 2.4, opacity: 0.45 },
     ],
   },
 };

@@ -170,14 +170,14 @@ describe('wrapLabel', () => {
 describe('Mode button glyph (docs/specs/020-import-export/export-fidelity.md)', () => {
   it('draws the mode’s own glyph from the shared data, not a placeholder ring', () => {
     for (const mode of SELECTION_MODES) expect(MODE_GLYPHS[mode], mode).toBeDefined();
-    const el = { ...createShape('mode-button', 0, 0), mode: 'eraser' as const };
+    const el = { ...createShape('mode-button', 0, 0), mode: 'isometric' as const };
     const svg = renderElementsToSvg({ id: 't', name: 'T', elements: [el] });
-    const eraser = MODE_GLYPHS.eraser!.prims[0] as { d: string };
-    expect(svg).toContain(eraser.d);
+    const cube = MODE_GLYPHS.isometric!.prims[0] as { d: string };
+    expect(svg).toContain(cube.d);
   });
 });
 
-// docs/specs/023-draw-mode/draw-mode.md "Text boxes": a Shift-resized text box draws its text
+// docs/specs/007-editor/editor-modes.md "A text box's sizing": a Shift-resized text box draws its text
 // scaled, and exports that way too.
 describe('Scaled text box export', () => {
   it('draws the label at its size times its scale', () => {

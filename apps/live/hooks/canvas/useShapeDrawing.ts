@@ -1,4 +1,4 @@
-// Draw-to-size + freehand pen tooling, lifted out of editor-page.tsx.
+// Draw-to-size and polygon tooling, lifted out of editor-page.tsx.
 // Two related gestures share the `pendingDraw` state machine:
 //
 // - Draw-to-size: picking anything from the palette except the annotation
@@ -6,16 +6,13 @@
 //   canvas intercepts the next pointer-down and calls `commitDraw` with the
 //   drag's start + end points, which mint the element sized to the dragged
 //   box (or the dragged endpoints, for arrows).
-// - Freehand pen: `beginFreehand` queues a 'freehand' intent; the
-//   canvas streams the pointer polyline to `commitFreehand`, which
-//   simplifies it (RDP), optionally runs shape recognition, and
-//   commits either a recognised shape / arrow or a FreehandElement.
+// - Polygon: `beginPolygon` queues a 'polygon' intent; the canvas collects the
+//   clicked vertices and hands them to `commitPolygon`.
 //
-// `beginDrawIfEnabled` is returned so the page's palette-add handlers
+// `beginDraw` is returned so the page's palette-add handlers
 // (addShape / addText / addSticky / addArrow) can short-circuit into
 // draw mode; everything else (pendingDraw, commitDraw, cancelDrawShape,
-// beginFreehand, commitFreehand) is consumed by the Canvas + keyboard
-// hook. Verbatim relocation — no behaviour change.
+// beginPolygon, commitPolygon) is consumed by the Canvas + keyboard hook.
 
 import type { Selection } from '@/lib/selection-store';
 import { useRef, useState } from 'react';
@@ -24,13 +21,9 @@ import { getTheme } from '@/lib/themes';
 import { track, titleCaseType } from '@/lib/telemetry';
 import { isTechIconId } from '@/lib/tech-icons';
 import { opensForTyping, type PendingDraw } from '@/lib/draw-mode';
-import { HIGHLIGHTER_COLOR, HIGHLIGHTER_WIDTH } from '@/lib/highlighter-config';
-import { boardShape, whiteboardPenIntent } from '@/lib/whiteboard-tool';
-import { loadWhiteboardPrefs, type WhiteboardPenId } from '@/lib/whiteboard-prefs';
 import { buildDressedDrawnArrow, buildDrawnBoxed, buildDrawnComponent } from '@/lib/draw-commit';
 import type { CanvasTool } from '@/components/palette/palette.types';
 import { componentTelemetryType, shapeTelemetryToken } from '@/lib/element-telemetry';
-import { makeCommitFreehand } from '@/hooks/canvas/commit-freehand';
 
 type ShapeDrawingDeps = {
   editsBlocked: boolean;
@@ -41,9 +34,6 @@ type ShapeDrawingDeps = {
   canvasTool: CanvasTool;
   setCanvasTool: (tool: CanvasTool) => void;
   activeTab: Tab;
-  // The viewer works in Draw mode (docs/specs/007-editor/editor-modes.md): what is drawn is
-  // written the Draw way (unpainted ink, no fill, hugging text, a sticky open for typing).
-  drawMode: boolean;
   // Every draw lands through the functional `commit` (live elements): the
   // commit closure is frozen for the whole
   // gesture, so a wholesale write of gesture-start elements would
@@ -52,8 +42,6 @@ type ShapeDrawingDeps = {
   setSelectedId: (id: string | null) => void;
   setMultiSelectedIds: (ids: Set<string>) => void;
   setEditingId: (id: string | null) => void;
-  // Live viewport zoom — scales the freehand simplification tolerance.
-  zoomRef: React.RefObject<number>;
   // Style memory (docs/specs/008-canvas/quick-style-panel.md): dresses every user-drawn shape and arrow in
   // the remembered style of its kind. Identity for anything memory does not know.
   styleNewElement: <T extends Element>(el: T) => T;
@@ -69,12 +57,10 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     canvasTool,
     setCanvasTool,
     activeTab,
-    drawMode,
     commit,
     setSelectedId,
     setMultiSelectedIds,
     setEditingId,
-    zoomRef,
     styleNewElement,
     onPlanCardPlace,
   } = deps;
@@ -83,11 +69,6 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
   // the canvas intercepts the next pointer-down on its surface and uses the
   // drag's bounding box for the element's size. Escape clears it.
   const [pendingDraw, setPendingDraw] = useState<PendingDraw | null>(null);
-  // The highlighter's colour and width (docs/specs/008-canvas/highlighter.md "Settings"): what the
-  // next stroke lands in, set from the Quick style panel while the tile is armed. Session-local by
-  // design: Yellow / Medium again on a fresh load, like a real pen cup.
-  const [highlighterColour, setHighlighterColourState] = useState(HIGHLIGHTER_COLOR);
-  const [highlighterWidth, setHighlighterWidthState] = useState(HIGHLIGHTER_WIDTH);
   // The element selected when the gesture was armed, captured here because
   // beginDraw clears the selection (below). A tap-to-drop inherits this
   // element's size in commitDraw, preserving the old "new shapes match the
@@ -95,12 +76,10 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
   const inheritSizeRef = useRef<Element | null>(null);
 
   // The canvas tool an armed draw cannot share the pointer with: laser goes to pan (it swallows pointer-down to paint
-  // trail dots and would block the draw), and the eraser and the format painter to select, as a whiteboard's pens
-  // put them down (useWhiteboard armPen). With the eraser still held, A said "drag to draw an arrow" and the drag
-  // erased what it crossed.
+  // trail dots and would block the draw), and the format painter to select.
   const putDownPressTool = () => {
     if (canvasTool === 'laser') setCanvasTool('pan');
-    else if (canvasTool === 'eraser' || canvasTool === 'format') setCanvasTool('select');
+    else if (canvasTool === 'format') setCanvasTool('select');
   };
 
   // Shared "arm draw mode" path for every palette add. Tap-to-drop and
@@ -148,12 +127,6 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     // frozen for the whole gesture, so writing gesture-start elements
     // wholesale would revert anything that landed mid-drag. New
     // elements default to the FRONT of z-order (see addBoxed).
-    // A shape drawn in Draw mode starts as plain ink, unfilled (a pen never colours
-    // it), then wears the style chosen for its tool, which Draw mode keeps
-    // apart from Diagram mode's (docs/specs/023-draw-mode/draw-mode.md "Shapes").
-    const whiteboard = drawMode;
-    const dress = <T extends Element>(el: T): T =>
-      styleNewElement(whiteboard ? boardShape(el) : el);
     if (intent.type === 'arrow') {
       // Built exactly as the canvas previews it while the drag is in flight.
       const arrow = buildDressedDrawnArrow(
@@ -162,7 +135,7 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
         startY,
         endX,
         endY,
-        { elements: activeTab.elements, theme: getTheme(activeTab.theme), whiteboard },
+        { elements: activeTab.elements, theme: getTheme(activeTab.theme) },
         styleNewElement,
       );
       commit((els) => [...els, arrow]);
@@ -171,14 +144,11 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
       track('Element', 'Added', arrow.arrowEnds === 'none' ? 'Line' : 'Arrow');
       return;
     }
-    // Freehand / polygon / path never reach commitDraw: freehand routes
-    // through commitFreehand (with the polyline), polygon through
-    // commitPolygon (with its vertices) and a path through commitPath
-    // (usePathCommits). If a future regression
-    // mis-routes either here, bail rather than fall through into the
-    // boxed branch and mint a phantom element where the user expected
-    // a sketch.
-    if (intent.type === 'freehand' || intent.type === 'polygon' || intent.type === 'path') {
+    // A polygon never reaches commitDraw: it routes through commitPolygon
+    // (with its vertices). If a future regression mis-routes it here, bail
+    // rather than fall through into the boxed branch and mint a phantom
+    // element where the user expected an outline.
+    if (intent.type === 'polygon') {
       setPendingDraw(null);
       return;
     }
@@ -197,17 +167,8 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
       onPlanCardPlace?.(intent.plan, endX, endY);
       return;
     }
-    const dressed = dress(
-      buildDrawnBoxed(
-        intent,
-        startX,
-        startY,
-        endX,
-        endY,
-        inheritSizeRef.current,
-        activeTab,
-        drawMode,
-      ),
+    const dressed = styleNewElement(
+      buildDrawnBoxed(intent, startX, startY, endX, endY, inheritSizeRef.current, activeTab),
     );
     // A preset's own colour (the Warning badge's rose) outlasts the theme and the remembered style it was dressed in.
     const sized =
@@ -224,7 +185,7 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     // an empty text box is only useful once you type into it, so save the
     // user the extra click. Other element kinds stay selected-but-not-
     // editing so their format popover is the immediate next interaction.
-    if (opensForTyping(intent, whiteboard)) setEditingId(sized.id);
+    if (opensForTyping(intent)) setEditingId(sized.id);
     setPendingDraw(null);
     const label =
       intent.type === 'shape'
@@ -264,69 +225,9 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
 
   const cancelDrawShape = () => setPendingDraw(null);
 
-  // Pen tool entry. Unlike addShape / addText / etc, freehand is
-  // always gestural and doesn't drop at the viewport centre, so
-  // there's no "drop if drawToAdd is off" branch. Just queues the
-  // intent so the canvas's pen-gesture effect picks up the next
-  // drag. Clears selection like beginDrawIfEnabled does so the
-  // selection popover doesn't hover over the about-to-be-drawn
-  // stroke. The highlighter (docs/specs/008-canvas/highlighter.md) is the same gesture with the
-  // marker variant, colour and width riding the intent. The begin* entry points stay zero-arg
-  // (rather than taking the intent as a parameter) because they're passed
-  // straight into onClick slots, where a parameter would swallow the event object.
-  const armFreehand = (intent: Extract<PendingDraw, { type: 'freehand' }>) => {
-    if (editsBlocked) return;
-    setSelectedId(null);
-    setMultiSelectedIds(new Set());
-    setEditingId(null);
-    putDownPressTool();
-    setPendingDraw(intent);
-  };
-  const beginFreehand = () => armFreehand({ type: 'freehand' });
-  const beginHighlighter = () =>
-    armFreehand({
-      type: 'freehand',
-      variant: 'highlighter',
-      colour: highlighterColour,
-      width: highlighterWidth,
-    });
-  // One of Draw mode's markers, picked up in another mode from the Toolbar strip's Search
-  // (docs/specs/007-editor/toolbar-layout.md "Search: every element type"): the dock's own pen
-  // intent, in the pen's colour and width as this browser last set them, held until put down.
-  const beginMarker = (penId: WhiteboardPenId, once?: boolean) => {
-    const prefs = loadWhiteboardPrefs();
-    const pen = prefs.pens.find((p) => p.id === penId);
-    if (pen)
-      armFreehand({ ...whiteboardPenIntent(pen, prefs.recognise), ...(once ? { once } : {}) });
-  };
-  // A setting chosen while the tile is armed reaches the armed stroke too, so the very next drag
-  // (and its preview) lands in it.
-  const rearmHighlighter = (patch: { colour?: string; width?: number }) =>
-    setPendingDraw((p) =>
-      p?.type === 'freehand' && p.variant === 'highlighter' ? { ...p, ...patch } : p,
-    );
-  const setHighlighterColour = (colour: string) => {
-    setHighlighterColourState(colour);
-    rearmHighlighter({ colour });
-  };
-  const setHighlighterWidth = (width: number) => {
-    setHighlighterWidthState(width);
-    rearmHighlighter({ width });
-  };
-
-  // The shape pen (docs/specs/008-canvas/two-pens.md): the same gesture, but the stroke is run through
-  // shape recognition on release. Which pen you picked IS the setting.
-  const beginShapePen = () => armFreehand({ type: 'freehand', variant: 'shape-pen' });
-
   // Polygon tool entry (docs/specs/008-canvas/polygon-tool.md): queues the click-to-place-vertices
   // intent. The vertex accumulation lives canvas-side
   // (useCanvasPolygonGesture); this just arms the mode.
-  // The Path tool from a palette (docs/specs/023-draw-mode/path-tool.md): the same tool Draw
-  // mode's dock holds.
-  const beginPath = () => {
-    if (editsBlocked) return;
-    beginDraw({ type: 'path' });
-  };
   const beginPolygon = () => {
     if (editsBlocked) return;
     setSelectedId(null);
@@ -335,18 +236,6 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     putDownPressTool();
     setPendingDraw({ type: 'polygon' });
   };
-
-  // Canvas-driven commit for the pen gesture — see makeCommitFreehand.
-  const commitFreehand = makeCommitFreehand({
-    editsBlocked,
-    activeTab,
-    commit,
-    pendingDraw,
-    setPendingDraw,
-    setSelectedId,
-    zoomRef,
-    styleNewElement,
-  });
 
   // Canvas-driven commit for the polygon tool (docs/specs/008-canvas/polygon-tool.md). Receives the
   // deliberately placed vertices (no RDP simplification — the user
@@ -375,19 +264,7 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     beginDraw,
     commitDraw,
     cancelDrawShape,
-    beginFreehand,
-    beginHighlighter,
-    beginMarker,
-    beginShapePen,
     beginPolygon,
-    beginPath,
-    commitFreehand,
     commitPolygon,
-    highlighter: {
-      colour: highlighterColour,
-      width: highlighterWidth,
-      setColour: setHighlighterColour,
-      setWidth: setHighlighterWidth,
-    },
   };
 }

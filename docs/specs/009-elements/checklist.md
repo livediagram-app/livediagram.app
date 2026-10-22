@@ -11,7 +11,7 @@ checklistItems?: { text: string; done: boolean }[];
 // validate.ts bounds: ≤ 30 items, text ≤ 200 chars each
 ```
 
-Everything else is inherited from the shape path: tap-to-drop AND draw-to-size, selection, resize, lock, layers, duplicate, copy/paste, history, sync, eraser. `checklist` joins `isSelfDrawingShape` (no centred label; the rows are the content). Default size 240×180; new checklists seed three unchecked starter rows, "First task", "Second task" and "Third task" (`CHECKLIST_DEFAULT_ITEMS`): concrete enough to show the affordance, cheap to overwrite.
+Everything else is inherited from the shape path: tap-to-drop AND draw-to-size, selection, resize, lock, layers, duplicate, copy/paste, history, sync. `checklist` joins `isSelfDrawingShape` (no centred label; the rows are the content). Default size 240×180; new checklists seed three unchecked starter rows, "First task", "Second task" and "Third task" (`CHECKLIST_DEFAULT_ITEMS`): concrete enough to show the affordance, cheap to overwrite.
 
 ## Visual treatment
 

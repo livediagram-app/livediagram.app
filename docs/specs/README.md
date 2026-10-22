@@ -29,7 +29,6 @@ Specs live in numbered category folders: the reserved `001`–`005` first (visio
 - ./019-marketing/README.md - when working on the marketing site, comparison pages or outbound assets
 - ./020-import-export/README.md - when working on Markdown, Mermaid, Excalidraw or draw.io import/export, pasting from Excalidraw, imported images, board scenes and board imports from Miro or Microsoft Whiteboard, or export fidelity
 - ./021-event-storming/README.md - when working on the event-storming board, its lanes or its photo import
-- ./023-draw-mode/README.md - when working on Draw mode: its pens, dock, snap colours, text boxes and path tool
 - ./024-agents/README.md - when an agent reads, writes or comments on documents: changesets, presence, views, edit operations, lint
 - ./026-plan/README.md - when working on Plan mode, Plan boards and cards, or items and the item store
 - ./028-animation/README.md - when working on element animations: the animation set each element takes (Shape, Text, Sticky, Drawing, Media, Table), the per-set menu categories, reveals, loops and the quality bar

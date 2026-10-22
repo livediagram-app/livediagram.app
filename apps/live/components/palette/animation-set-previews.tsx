@@ -5,8 +5,8 @@
 // (ANIMATION_PREVIEW_FRAME) and plays it on hover.
 
 import type { CSSProperties } from 'react';
-import type { AnimationSetId, PathElement } from '@liveplanner/document';
-import { PathSvg } from '@/components/canvas/path/PathSvg';
+import { createFreehand, type AnimationSetId } from '@liveplanner/document';
+import { FreehandSvg } from '@/components/canvas/boxed-element-overlays';
 import { planTextAnimation, renderUnits } from '@/components/canvas/animated-words';
 import { ANIMATION_CLASS_PREFIX } from '@/lib/animation-classes';
 
@@ -207,29 +207,29 @@ function StickyPreview({ value }: { value: string | null }) {
   );
 }
 
-// A small zig-zag path, drawn by the real path renderer so its masks and overlays are the
+// A small zig-zag line, drawn by the real freehand renderer so its masks and overlays are the
 // canvas's own.
+const ZIG_ZAG = createFreehand(
+  [
+    { x: 0, y: 20 },
+    { x: 12.5, y: 2 },
+    { x: 25, y: 20 },
+    { x: 38, y: 2 },
+  ],
+  false,
+);
+
 function DrawingPreview({ value }: { value: string | null }) {
-  const path = {
+  const line = {
+    ...ZIG_ZAG,
     id: `tile-${value ?? 'none'}`,
-    type: 'path',
-    x: 0,
-    y: 0,
-    width: 38,
-    height: 22,
-    closed: false,
-    strokeWidth: 'thick',
-    nodes: [
-      { nx: 0, ny: 0.9, mode: 'corner' },
-      { nx: 0.33, ny: 0.1, mode: 'corner' },
-      { nx: 0.66, ny: 0.9, mode: 'corner' },
-      { nx: 1, ny: 0.1, mode: 'corner' },
-    ],
+    straightEdges: true,
+    strokeWidth: 'thick' as const,
     ...(value ? { animation: value } : {}),
-  } as unknown as PathElement;
+  } as typeof ZIG_ZAG;
   return (
     <span className="relative block h-[22px] w-[38px]" style={BODY_VARS}>
-      <PathSvg element={path} fill="transparent" stroke={ACCENT} />
+      <FreehandSvg element={line} fill="transparent" stroke={ACCENT} />
     </span>
   );
 }

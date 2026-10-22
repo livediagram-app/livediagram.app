@@ -80,16 +80,22 @@ describe('legacyHelpRedirect', () => {
         '/help/getting-started/sharing-your-document/',
       ],
       ['/help/developers/working-with-diagrams', '/help/developers/working-with-documents'],
-      // Whiteboarding became Draw mode (docs/specs/007-editor/editor-modes.md "Naming in the interface").
-      ['/help/canvas/whiteboards/', '/help/canvas/draw-mode/'],
+      // Whiteboarding became Draw mode (docs/specs/007-editor/editor-modes.md "Naming in the interface"),
+      // whose own articles were retired with its tools.
+      ['/help/canvas/whiteboards/', '/help/canvas/editor-modes/'],
+      ['/help/canvas/draw-mode/', '/help/canvas/editor-modes/'],
+      ['/help/canvas/draw-mode/draw-tour/', '/help/canvas/editor-modes/'],
+      ['/help/palette/tools/drawing/shape-recognition/', '/help/palette/tools/drawing/'],
+      ['/help/selection-modes/eraser/', '/help/selection-modes/'],
       // Facilitate mode became Workshop mode (docs/specs/007-editor/editor-modes.md "Naming in the interface").
       ['/help/canvas/facilitate-mode/', '/help/canvas/workshop-mode/'],
       [
         '/help/canvas/facilitate-mode/facilitate-tour/',
         '/help/canvas/workshop-mode/workshop-tour/',
       ],
-      // The Highlighter became a Draw tile again (docs/specs/008-canvas/highlighter.md "History").
-      ['/help/selection-modes/highlighter/', '/help/palette/tools/highlighter/'],
+      // The Highlighter became a Draw tile, then was retired.
+      ['/help/selection-modes/highlighter/', '/help/palette/tools/'],
+      ['/help/palette/tools/highlighter/', '/help/palette/tools/'],
       // The Activity Panel was removed (docs/specs/012-collaboration/README.md); Undo / Redo moved to Canvas.
       ['/help/activity-panel/', '/help/canvas/undo/'],
       ['/help/activity-panel/undo/', '/help/canvas/undo/'],
@@ -112,7 +118,7 @@ describe('legacyHelpRedirect', () => {
       '/help/getting-started/your-first-diagram/',
       '/help/account-and-data/exporting-diagrams/',
       '/help/tabs/add-to-document/',
-      '/help/canvas/draw-mode/',
+      '/help/canvas/editor-modes/',
     ]) {
       expect(legacyHelpRedirect(new URL(`https://liveplanner.app${path}`)), path).toBeNull();
     }

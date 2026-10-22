@@ -21,7 +21,6 @@ import { keycapEdge } from '@/components/canvas/paper-kit';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import {
   AvatarModeIcon,
-  EraserIcon,
   FormatPainterIcon,
   IsometricIcon,
   LaserIcon,
@@ -38,7 +37,6 @@ const MODE_ICON: Record<SelectionMode, React.ReactNode> = {
   laser: <LaserIcon />,
   spotlight: <SpotlightIcon />,
   avatar: <AvatarModeIcon />,
-  eraser: <EraserIcon />,
   format: <FormatPainterIcon />,
   isometric: <IsometricIcon />,
 };

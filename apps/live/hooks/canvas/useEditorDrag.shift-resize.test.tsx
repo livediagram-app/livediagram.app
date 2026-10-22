@@ -7,7 +7,6 @@ import {
   createFreehand,
   createImage,
   createLinkCard,
-  createPath,
   createShape,
   createSticky,
   createTable,
@@ -60,18 +59,6 @@ const KINDS: [string, () => Element][] = [
           { x: 0, y: 0 },
           { x: 90, y: 30 },
           { x: 160, y: 70 },
-        ],
-        false,
-      ),
-  ],
-  [
-    'path',
-    () =>
-      createPath(
-        [
-          { x: 0, y: 0, mode: 'corner' },
-          { x: 120, y: 40, mode: 'corner' },
-          { x: 60, y: 90, mode: 'corner' },
         ],
         false,
       ),
@@ -217,7 +204,7 @@ describe('Shift pressed or released mid-drag', () => {
   });
 });
 
-// docs/specs/023-draw-mode/draw-mode.md "Text boxes": Shift keeps a hugging text box's
+// docs/specs/007-editor/editor-modes.md "A text box's sizing": Shift keeps a hugging text box's
 // ratio by scaling its text with the box; the height hugs the scaled text.
 // Keyed on the box's sizing, never the editor mode (docs/specs/007-editor/editor-modes.md "A text
 // box's sizing"); the drag machine has no mode at all.

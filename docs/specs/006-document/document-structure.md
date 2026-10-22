@@ -108,7 +108,7 @@ type Tab = {
 //   FreehandElement  (boxed, carries its points as one packed block, docs/specs/006-document/stroke-points.md,
 //                     + optional auto-close flag for
 //                     filled custom shapes; rendered as an SVG path inside its bounding box;
-//                     see docs/specs/008-canvas/canvas-and-palette.md's Pencil (freehand) subsection)
+//                     see docs/specs/008-canvas/canvas-and-palette.md's Freehand elements section)
 //
 // Most elements may carry `link?: ElementLink` for cross-tab navigation.
 type Element =

@@ -35,7 +35,7 @@ export function KeyboardShortcuts() {
     ['V', 'Select Tool (or 1)'],
     ['H', 'Hand Tool'],
     ['K', 'Laser Pointer'],
-    ['E', 'Eraser (click / drag to delete)'],
+    ['I', 'Isometric View'],
     ['Z', 'Zen Mode (focus)'],
   ];
   return (

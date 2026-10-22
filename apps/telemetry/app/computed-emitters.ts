@@ -569,10 +569,6 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     values: ELEMENT_TOUR_TOKENS.map((t) => `${t}Offer`),
   },
   'apps/live/components/tour/AvatarTourHost.tsx UI·View': { values: AVATAR_TOUR_STEP_SOURCE },
-  'apps/live/hooks/canvas/commit-freehand.ts Element·Added': {
-    values: ['Square', 'Circle', 'Diamond', 'Triangle'],
-    open: 'the shape the Shape Pen recognised',
-  },
   'apps/live/hooks/canvas/useDebouncedCanvasTelemetry.ts Canvas·Changed': {
     values: Object.keys(CANVAS_CONTROLS),
   },
@@ -622,10 +618,6 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   },
   'apps/live/hooks/canvas/useTextStyleSetters.ts Element·Toggled': {
     values: ['Bold', 'Italic', 'Underline', 'Strikethrough'],
-  },
-  'apps/live/hooks/canvas/useWhiteboard.ts Draw·Selected': {
-    values: ['Main', 'Second', 'Third'],
-    open: 'penTelemetryType: the place of the pen in the dock, never its colour',
   },
   'apps/live/hooks/canvas/useWebComponentSetters.ts Element·Changed': {
     values: ['Banner', 'Callout', 'StatRow'],

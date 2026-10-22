@@ -437,7 +437,7 @@ function ArrowViewImpl({
 
       <path
         // The wide transparent hit band. Carries data-element-id so DOM
-        // hit-testing (the eraser's elementsFromPoint, docs/specs/008-canvas/canvas-and-palette.md) resolves an
+        // hit-testing (elementsFromPoint, lib/dom-hit-test) resolves an
         // arrow the same way it resolves a boxed element's wrapper.
         data-element-id={arrow.id}
         ref={hitBandRef}

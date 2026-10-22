@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test';
 import { DOCUMENT_FORMAT, DOCUMENT_FORMAT_HEADER } from '@liveplanner/api-schema';
-import { dismissQuickTour, expect, expectNoPageErrors, test } from './fixtures';
+import { expect, expectNoPageErrors, startBlankDocument, test } from './fixtures';
 
 // The new version prompt (docs/specs/016-platform/new-version-prompt.md), in dark mode: this build is
 // the "older editor", and the server is made "newer" by raising the document format number every
@@ -10,7 +10,7 @@ import { dismissQuickTour, expect, expectNoPageErrors, test } from './fixtures';
 const CANVAS = '[data-canvas-a11y-root]';
 const prompt = (page: Page) =>
   page.getByRole('status').filter({ hasText: /new version|Saving|saved yet/ });
-const sketches = (page: Page) => page.locator(CANVAS).getByRole('img', { name: /^Sketch/ });
+const notes = (page: Page) => page.locator(CANVAS).getByRole('img', { name: /^Sticky note/ });
 
 // Every api response says the server's format is one ahead of this editor; optionally, saves fail.
 async function serveNewerFormat(page: Page, { failSaves = false } = {}) {
@@ -31,20 +31,21 @@ async function serveNewerFormat(page: Page, { failSaves = false } = {}) {
   });
 }
 
-async function openWhiteboard(page: Page) {
+async function openBoard(page: Page) {
   await page.setViewportSize({ width: 1600, height: 900 });
   await page.emulateMedia({ colorScheme: 'dark' });
-  await page.goto('/new?template=whiteboard');
+  await startBlankDocument(page);
   await page.locator(CANVAS).waitFor({ timeout: 30_000 });
-  await dismissQuickTour(page);
-  await page.locator('[data-whiteboard-dock]').waitFor();
 }
 
-async function drawStroke(page: Page) {
-  await page.mouse.move(500, 450);
-  await page.mouse.down();
-  for (let i = 1; i <= 40; i++) await page.mouse.move(500 + i * 10, 450 + Math.sin(i / 5) * 50);
-  await page.mouse.up();
+// N arms a sticky note; a tap drops it, each one a little further along. Escape first, so N never
+// types into the note just placed.
+let placed = 0;
+async function addNote(page: Page) {
+  await page.keyboard.press('Escape');
+  await page.keyboard.press('n');
+  placed += 1;
+  await page.mouse.click(400 + placed * 160, 450);
 }
 
 test.describe('new version prompt', () => {
@@ -56,8 +57,8 @@ test.describe('new version prompt', () => {
     page,
     pageErrors,
   }) => {
-    await openWhiteboard(page);
-    await drawStroke(page);
+    await openBoard(page);
+    await addNote(page);
     await page.waitForTimeout(1_500);
     await expect(prompt(page)).toHaveCount(0);
     expectNoPageErrors(pageErrors);
@@ -67,29 +68,29 @@ test.describe('new version prompt', () => {
     page,
     pageErrors,
   }) => {
-    await openWhiteboard(page);
+    await openBoard(page);
     await serveNewerFormat(page);
-    await drawStroke(page);
+    await addNote(page);
     await expect(prompt(page)).toContainText('A new version of liveplanner is ready.');
     await page.screenshot({ path: test.info().outputPath('offered.png') });
     // It never takes focus; the keyboard reaches it.
     const reload = prompt(page).getByRole('button', { name: 'Reload' });
     await expect(reload).not.toBeFocused();
-    await drawStroke(page);
+    await addNote(page);
     const reloaded = page.waitForEvent('load');
     await reload.focus();
     await page.keyboard.press('Enter');
     await reloaded;
     await page.locator(CANVAS).waitFor();
-    await expect(sketches(page)).toHaveCount(2);
+    await expect(notes(page)).toHaveCount(2);
     expectNoPageErrors(pageErrors);
   });
 
   test('never reloads over unsaved changes, and says why', async ({ page }) => {
     test.setTimeout(45_000);
-    await openWhiteboard(page);
+    await openBoard(page);
     await serveNewerFormat(page, { failSaves: true });
-    await drawStroke(page);
+    await addNote(page);
     await expect(prompt(page)).toBeVisible();
     let reloads = 0;
     page.on('load', () => reloads++);
@@ -101,17 +102,17 @@ test.describe('new version prompt', () => {
     );
     await page.screenshot({ path: test.info().outputPath('unsaved.png') });
     expect(reloads).toBe(0);
-    await expect(sketches(page)).toHaveCount(1);
+    await expect(notes(page)).toHaveCount(1);
   });
 
   test('steps aside on Not now', async ({ page, pageErrors }) => {
-    await openWhiteboard(page);
+    await openBoard(page);
     await serveNewerFormat(page);
-    await drawStroke(page);
+    await addNote(page);
     await expect(prompt(page)).toBeVisible();
     await prompt(page).getByRole('button', { name: 'Not now' }).click();
     await expect(prompt(page)).toHaveCount(0);
-    await drawStroke(page);
+    await addNote(page);
     await page.waitForTimeout(1_500);
     await expect(prompt(page)).toHaveCount(0);
     expectNoPageErrors(pageErrors);

@@ -35,7 +35,6 @@ Scope, by file:
 | `apps/live/components/chrome/AuthControls.tsx`              | Account command menu                                                                        |
 | `apps/live/components/chrome/EmbedChrome.tsx`               | Embed tab command menu                                                                      |
 | `apps/live/components/dialogs/ShareCopyMenu.tsx`            | Command menu, or control menu when it carries a header control                              |
-| `apps/live/components/canvas/whiteboard/ColourPicker.tsx`   | Custom colour command menu; its own focus and Escape deleted                                |
 | `apps/live/hooks/canvas/useEditorKeyboardShortcuts.ts`      | Canvas shortcuts stand down inside a menu surface                                           |
 | `apps/live/components/canvas/SelectionPopover.tsx`          | More actions: `aria-haspopup="dialog"` and the stable id `selection-more-actions`           |
 | `apps/live/lib/element-names.ts`                            | `shapeKindLabel`: names the Shape tiles of the element and selection menus                  |

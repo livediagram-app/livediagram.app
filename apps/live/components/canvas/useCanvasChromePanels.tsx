@@ -206,7 +206,7 @@ export function useCanvasChromePanels({
     onResetCommentsPanel,
   );
   const aiWiring = aiPanel ? panelWiringFor('ai', aiPanel.position, aiPanel.onReset) : null;
-  // The six tool-config panels (avatar / laser / spotlight / eraser / format /
+  // The five tool-config panels (avatar / laser / spotlight / format /
   // slide deck), see useCanvasToolPanels. They share one contract: on screen
   // only while their own tool is active.
   // The Card Types popover, and the Plan strip's others, over their buttons.
@@ -234,7 +234,7 @@ export function useCanvasChromePanels({
     window.addEventListener('keydown', onKey, true);
     return () => window.removeEventListener('keydown', onKey, true);
   }, [avatarOpen, closeDockPanel]);
-  const { avatarEl, laserEl, spotlightEl, eraserEl, formatEl, slideDeckEl } = useCanvasToolPanels({
+  const { avatarEl, laserEl, spotlightEl, formatEl, slideDeckEl } = useCanvasToolPanels({
     props,
     chromeHidden,
     panelWiringFor,
@@ -403,7 +403,6 @@ export function useCanvasChromePanels({
     ai: aiEl,
     laser: laserEl,
     spotlight: spotlightEl,
-    eraser: eraserEl,
     'slide-deck': slideDeckEl,
     format: formatEl,
   };

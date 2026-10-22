@@ -33,7 +33,6 @@ import { CollabSettingsSlot } from '@/components/canvas/collab/collab-chrome';
 import { CommentPanelFace } from '@/components/canvas/CommentPanelFace';
 import { ActionPanelFace } from '@/components/canvas/ActionPanelFace';
 import { FreehandSvg } from '@/components/canvas/boxed-element-overlays';
-import { PathSvg } from '@/components/canvas/path/PathSvg';
 import { ImageElementView } from '@/components/canvas/ImageElementView';
 import { LinkCardView } from '@/components/canvas/LinkCardView';
 import { ModeButtonFace } from '@/components/canvas/ModeButtonFace';
@@ -137,12 +136,9 @@ type ElementFaceRouterProps = Pick<
   iconCaptionBand: string | null;
   // An upright lane title's turned frame (upright-title.ts), or null.
   labelFrame: CSSProperties | null;
-  // A pen stroke or a path is picked by its drawn line (selected, its box catches pointers too).
-  hitLine: boolean;
 };
 
 export function ElementFaceRouter({
-  hitLine,
   element,
   isEditing,
   isSelected,
@@ -231,7 +227,7 @@ export function ElementFaceRouter({
           label={label}
           activeMode={activeMode}
           textColor={textColor}
-          // A mode a read-only session lacks (the Eraser, Format Painter) draws an inert face for it.
+          // A mode a read-only session lacks (the Format Painter) draws an inert face for it.
           onPress={
             onPressModeButton &&
             (!readOnly || PARTICIPANT_CANVAS_TOOLS.includes(element.mode ?? DEFAULT_BUTTON_MODE))
@@ -447,7 +443,6 @@ export function ElementFaceRouter({
         <>
           <FreehandSvg
             element={element}
-            hitPenWidth={hitLine ? (element.penWidth ?? 0) : undefined}
             fill={element.fillColor ?? defaultFillColor(element, surface)}
             stroke={
               remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)
@@ -463,16 +458,6 @@ export function ElementFaceRouter({
               the drawn stroke. */}
           {isEditing || label.length > 0 ? labelNode : null}
         </>
-      ) : element.type === 'path' ? (
-        // A path (docs/specs/023-draw-mode/path-tool.md) draws its curve and takes no label.
-        <PathSvg
-          element={element}
-          hitPenWidth={
-            hitLine ? BORDER_STROKE_PX[element.strokeWidth ?? DEFAULT_BORDER_STROKE] : undefined
-          }
-          fill={element.fillColor ?? defaultFillColor(element, surface)}
-          stroke={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)}
-        />
       ) : element.type === 'table' ? (
         <TableView
           element={element}

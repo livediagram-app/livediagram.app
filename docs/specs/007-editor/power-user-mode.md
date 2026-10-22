@@ -22,7 +22,6 @@ Switching the mode **on** writes these values, once:
 | Diagram tour         | `tourSeen`           | seen  |
 | Plan tour            | `planTourSeen`       | seen  |
 | Workshop tour        | `workshopTourSeen`   | seen  |
-| Draw tour            | `drawTourSeen`       | seen  |
 | Forms tour           | `formTourSeen`       | seen  |
 | Avatar tour          | `avatarTourSeen`     | seen  |
 | Pages tour           | `pagesTourSeen`      | seen  |

@@ -6,7 +6,7 @@ import type {
 } from '@/components/primitives/MovablePanel.types';
 import type { HelpArticleKey } from '@/lib/help-articles';
 
-// The chrome every MODE panel wears: Avatar, Eraser, Format, Laser, Spotlight.
+// The chrome every MODE panel wears: Avatar, Format, Laser, Spotlight.
 //
 // These five are the panels that exist only while their tool does (docs/specs/008-canvas/laser-panel.md for
 // the Laser, docs/specs/008-canvas/avatar-mode.md for Avatar, and the same shape for the rest). They are

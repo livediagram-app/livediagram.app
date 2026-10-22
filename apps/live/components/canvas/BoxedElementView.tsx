@@ -39,8 +39,6 @@ import { elementAriaLabel, elementRole } from '@/lib/element-names';
 import { captionBandAlignY, captionBandClass } from '@/components/primitives/icon-band';
 import { LockBadge, SelectionChromeLayer } from '@/components/canvas/element-parts';
 import { isSvgRenderedShape } from '@/components/canvas/shape-svg-overlay';
-import { ShapeHitOutline, outlineHit } from '@/components/canvas/ShapeHitOutline';
-import { useCanvasPicksByOutline } from '@/components/canvas/CanvasStillContext';
 import { BoxBorderOverlay } from '@/components/canvas/BoxBorderOverlay';
 import { useTextHug } from '@/components/canvas/useTextHug';
 import { useMindLabelFit } from '@/components/canvas/useMindLabelFit';
@@ -51,7 +49,7 @@ import { AvatarPadView } from '@/components/canvas/collab/AvatarPadView';
 import { FurnitureView, isFurnitureViewShape } from '@/components/canvas/collab/FurnitureView';
 import { RoomView } from '@/components/canvas/collab/RoomView';
 import { isCssNativeBorderStyle } from '@/components/canvas/border-css';
-import { describeVariant, editingLook } from '@/components/canvas/element-variant';
+import { describeVariant } from '@/components/canvas/element-variant';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { useElementFinish } from '@/components/canvas/CanvasFinishContext';
 import { SketchOverlay, useSketchPaint } from '@/components/canvas/SketchOverlay';
@@ -284,13 +282,11 @@ function BoxedElementViewImpl({
       onContextSelect,
     });
 
-  // A label being typed wears the text cursor and rises; a path in its edit mode does neither.
-  const editLook = editingLook(element, isEditing);
   const cursor = remotelyLocked
     ? 'cursor-not-allowed'
     : isPaintMode
       ? 'cursor-copy'
-      : editLook.textCursor
+      : isEditing
         ? 'cursor-text'
         : isLocked || !movable
           ? 'cursor-default'
@@ -313,31 +309,14 @@ function BoxedElementViewImpl({
   // default stroke. Shared by the ProgressView / RatingView branches below so
   // they all read the same accent.
   const accent = remoteBorderColor ?? own.stroke ?? defaultStrokeColor(element, surface);
-  // A path in its edit mode shows its nodes, not its box (docs/specs/023-draw-mode/path-tool.md).
-  const ringed = isSelected && !(element.type === 'path' && isEditing);
   const variant = describeVariant(
     element,
-    ringed,
+    isSelected,
     isMultiSelected,
     remoteBorderColor,
     surface,
     finish,
   );
-  // A whiteboard pen stroke and a path are picked by their drawn line, not their box
-  // (docs/specs/023-draw-mode/draw-mode.md "Selecting", path-tool.md "Selecting and erasing");
-  // once selected, the box drags either as any element, and the line still catches pointers
-  // outside the box, so a press on its outer half never falls to the board.
-  const selected = isSelected || isMultiSelected;
-  const hitLine =
-    (element.type === 'freehand' &&
-      element.penWidth !== undefined &&
-      element.pen !== 'highlighter') ||
-    (element.type === 'path' && !isEditing);
-  // A whiteboard shape likewise, by its drawn outline (ShapeHitOutline, below).
-  const onWhiteboard = useCanvasPicksByOutline();
-  const shapeHit = outlineHit(element, { onWhiteboard, selected });
-  // Not yet selected, only the drawn line picks it: the rest of its box lets pointers through.
-  const passThrough = (hitLine && !selected) || shapeHit === 'outline';
 
   // The element's drawn corner, which its border overlay and its indicators both follow.
   const shapeKind = element.type === 'shape' ? element.shape : undefined;
@@ -547,10 +526,7 @@ function BoxedElementViewImpl({
         // While EDITING the label, though, raise it so the text the user
         // is typing isn't hidden behind elements painted above it. (The
         // selection handles live in the grips layer, SelectionChromeLayer.)
-        ...(editLook.raise ? { zIndex: 10 } : {}),
-        // Only the drawn line picks an element not yet selected (its hit
-        // line, in FreehandSvg / ShapeHitOutline); the rest of its box lets pointers through.
-        ...(passThrough ? { pointerEvents: 'none' as const } : {}),
+        ...(isEditing ? { zIndex: 10 } : {}),
       }}
     >
       {/* The hand-drawn body under the content (docs/specs/008-canvas/finish.md "Sketch"); an image's edge goes over
@@ -709,7 +685,6 @@ function BoxedElementViewImpl({
           {/* Whatever this element shows in place of a plain label: a pressable
           face, a drawn body, or the label itself. See ElementFaceRouter. */}
           <ElementFaceRouter
-            hitLine={hitLine}
             element={element}
             isEditing={isEditing}
             isSelected={isSelected}
@@ -763,13 +738,6 @@ function BoxedElementViewImpl({
         </SketchFace>
       </FaceFinishProvider>
       {element.type === 'image' ? sketchOverlay() : null}
-
-      {shapeHit && element.type === 'shape' ? (
-        <ShapeHitOutline
-          element={element}
-          borderPx={typeof variant.style.borderWidth === 'number' ? variant.style.borderWidth : 0}
-        />
-      ) : null}
 
       {/* The Shape set's ring / halo / trace / gradient layer (AnimationLayer): over the face. */}
       {layer && layerAnim ? (

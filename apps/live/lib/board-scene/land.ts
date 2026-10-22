@@ -13,7 +13,7 @@ import { createLandContext, LANDING_RULES, type LandContext } from './context';
 import { landFrame, landImage, landShape, landSticky, landText } from './land-boxes';
 import { landArrow } from './land-connectors';
 import { diagramFreehand, diagramShape, diagramSticky, diagramText } from './land-diagram';
-import { landInk, landLine, landPath } from './land-marks';
+import { landInk, landLine } from './land-marks';
 import { placementOffset, translateItem, type BoardScenePlacement } from './placement';
 import { mergeNotes, type BoardSceneReport } from './report';
 import { compactLanded } from './compact';
@@ -98,11 +98,9 @@ function landBox(
       return wrap(whiteboard ? landInk(item, id, ctx) : diagramFreehand(item, id, ctx));
     case 'polyline':
       return wrap(
-        !whiteboard
-          ? diagramFreehand(item, id, ctx)
-          : item.points.length === 2
-            ? landLine(item, id, ctx)
-            : landPath(item, id, ctx),
+        whiteboard && item.points.length === 2
+          ? landLine(item, id, ctx)
+          : diagramFreehand(item, id, ctx),
       );
     case 'shape':
       return wrap(whiteboard ? landShape(item, id, ctx) : diagramShape(item, id, ctx));

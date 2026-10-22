@@ -96,14 +96,6 @@ const FIXTURES: Record<string, Record<string, unknown>> = {
   sticky: { ...MINIMAL_BOX },
   image: { ...MINIMAL_BOX, imageId: 'img_1' },
   freehand: { ...MINIMAL_BOX, closed: false, packedPoints: 'AQAAAAAA' },
-  path: {
-    ...MINIMAL_BOX,
-    closed: false,
-    nodes: [
-      { nx: 0, ny: 0, mode: 'corner' },
-      { nx: 1, ny: 1, mode: 'corner' },
-    ],
-  },
   annotation: { ...MINIMAL_BOX },
   'link-card': { ...MINIMAL_BOX },
   video: { ...MINIMAL_BOX },

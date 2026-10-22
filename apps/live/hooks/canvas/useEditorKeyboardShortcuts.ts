@@ -26,8 +26,6 @@ import {
   coveredKeyRole,
   PARTICIPANT_KEYS,
   VIEW_TOOL_KEYS,
-  WHITEBOARD_EDIT_KEYS,
-  WHITEBOARD_VIEW_KEYS,
   type EditorKeyboardShortcutsDeps,
 } from './editor-shortcut-keys';
 import { useLatest } from '@/hooks/ui/useLatest';
@@ -44,8 +42,6 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
   // callback. This is the React canon for "I want fresh references
   // but I don't want to re-attach the listener on every render."
   const liveRef = useLatest(deps);
-  // Re-arms the Escape listener when the tab turns into (or out of) a whiteboard.
-  const onWhiteboard = deps.whiteboard !== null;
 
   // Escape cancels whichever transient editor mode is active:
   // format-painter, or a pending draw-to-size shape.
@@ -55,16 +51,12 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
   useEffect(() => {
     const { formatSourceId, pendingDraw, canvasTool, enabled } = liveRef.current;
     if (!enabled) return;
-    // A whiteboard's eraser is a held tool too: Escape puts it down
-    // (docs/specs/023-draw-mode/draw-mode.md "Keyboard shortcuts").
-    const whiteboardEraser = liveRef.current.whiteboard !== null && canvasTool === 'eraser';
     if (
       formatSourceId === null &&
       pendingDraw === null &&
       canvasTool !== 'format' &&
       canvasTool !== 'isometric' &&
-      canvasTool !== 'avatar' &&
-      !whiteboardEraser
+      canvasTool !== 'avatar'
     )
       return;
     const onKey = (e: KeyboardEvent) => {
@@ -85,15 +77,9 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
           live.pendingDraw !== null ||
           live.canvasTool === 'format' ||
           live.canvasTool === 'isometric' ||
-          live.canvasTool === 'avatar' ||
-          (live.whiteboard !== null && live.canvasTool === 'eraser')
+          live.canvasTool === 'avatar'
         ) {
           e.preventDefault();
-        }
-        // Whiteboard: back to Select from any tool in hand.
-        if (live.whiteboard !== null && live.canvasTool === 'eraser') {
-          live.whiteboard.pickSelect();
-          return;
         }
         liveRef.current.setFormatSourceId(null);
         // Persistent Format tool: Escape exits the tool entirely (back to
@@ -117,7 +103,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [deps.enabled, deps.formatSourceId, deps.pendingDraw, deps.canvasTool, onWhiteboard, liveRef]);
+  }, [deps.enabled, deps.formatSourceId, deps.pendingDraw, deps.canvasTool, liveRef]);
 
   // Everything else: Delete / Backspace, Cmd-Z / Cmd-Y / Cmd-Shift-Z,
   // Cmd-C / Cmd-V, V / H / L tool switches. One listener for the
@@ -216,7 +202,6 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         live.canvasTool !== 'format' &&
         live.canvasTool !== 'isometric' &&
         live.canvasTool !== 'avatar' &&
-        !(live.whiteboard !== null && live.canvasTool === 'eraser') &&
         selectedId === null &&
         multiSelectedIds.size === 0
       ) {
@@ -255,8 +240,6 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         live.canvasTool !== 'format' &&
         live.canvasTool !== 'isometric' &&
         live.canvasTool !== 'avatar' &&
-        // A whiteboard eraser in hand is put down first (the narrow listener).
-        !(live.whiteboard !== null && live.canvasTool === 'eraser') &&
         (selectedId !== null || multiSelectedIds.size > 0)
       ) {
         e.preventDefault();
@@ -299,10 +282,10 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       // Standards-aligned bindings (Excalidraw / tldraw / Figma / Miro),
       // dispatched via VIEW_TOOL_KEYS / EDIT_KEYS above:
       //   V (S alias) = Select, H = Hand, K = Laser, I = Isometric,
-      //   Z = Zen, E = Eraser, P (F alias) = Pencil (tools)
-      //   R = Rectangle, O = Oval, D = Diamond, C = Cylinder,
+      //   Z = Zen (tools)
+      //   F = Frame, R = Rectangle, O = Oval, D = Diamond, C = Cylinder,
       //   G = Parallelogram, T = Text, N = Note, A = Arrow (elements)
-      //   1-9/0 mirror the same actions (Excalidraw number row).
+      //   1-5, 8, 9 mirror the same actions (Excalidraw number row).
       // The plain shape keys never collide with Cmd/Ctrl+C / +D (copy /
       // duplicate) etc., which are handled in the modifier block above and
       // return before reaching here.
@@ -371,20 +354,6 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       // picking Select. V / H / K / I / Z and Escape stay the way out.
       if (live.canvasTool === 'avatar' && avatarActionForKey(e)) return;
 
-      // A whiteboard's keys are its dock's, and only these
-      // (docs/specs/023-draw-mode/draw-mode.md "Keyboard shortcuts"): the diagram tab's element and
-      // mode keys have no palette to mirror there.
-      if (live.whiteboard) {
-        const action =
-          WHITEBOARD_VIEW_KEYS[lower] ??
-          (live.isReadOnly ? undefined : WHITEBOARD_EDIT_KEYS[lower]);
-        if (action) {
-          e.preventDefault();
-          action(live);
-        }
-        return;
-      }
-
       // Non-mutating view tools (Select / Hand / Laser / Isometric /
       // Zen): before the read-only gate so view-role visitors get them.
       const viewAction = VIEW_TOOL_KEYS[lower];
@@ -405,7 +374,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         return;
       }
       // Avatar mode (docs/specs/008-canvas/avatar-mode.md) is read-only FOR THE PRESENTER too: the
-      // element-add / Eraser / Pencil keys stay dormant while walking, so a
+      // element-add keys stay dormant while walking, so a
       // stray keypress can't drop a shape mid-narration. The view tools above
       // already ran, so V / H / K / I / Z remain the way out.
       if (live.canvasTool === 'avatar') return;
@@ -418,8 +387,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         return;
       }
 
-      // Mutating tools / element adds (Eraser / Pencil / shapes / Text /
-      // Note / Arrow), editors only.
+      // Element adds (shapes / Text / Note / Arrow), editors only.
       const editAction = EDIT_KEYS[lower];
       if (editAction) {
         e.preventDefault();

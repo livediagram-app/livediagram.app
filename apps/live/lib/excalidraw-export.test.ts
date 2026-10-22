@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { tabToExcalidrawText } from './excalidraw-export';
 import type { Element, Tab } from '@liveplanner/document';
-import { createPath, DEFAULT_BACKGROUND_COLOR } from '@liveplanner/document';
+import { DEFAULT_BACKGROUND_COLOR } from '@liveplanner/document';
 import { STROKE_PRESSURE_MAX_ERROR, encodeStrokePoints } from '@liveplanner/document';
 
 const tab = (elements: Element[], over: Partial<Tab> = {}): Tab => ({
@@ -241,29 +241,6 @@ describe('boxed element degradation', () => {
     [0.2, 0.9].forEach((p, i) =>
       expect(Math.abs(freedraw.pressures[i]! - p)).toBeLessThanOrEqual(STROKE_PRESSURE_MAX_ERROR),
     );
-  });
-
-  it('exports a path as a line sampled along its curve (docs/specs/023-draw-mode/path-tool.md)', () => {
-    const path = createPath(
-      [
-        { x: 0, y: 0, mode: 'corner', handleOut: { x: 0, y: -40 } },
-        { x: 100, y: 0, mode: 'corner', handleIn: { x: 100, y: -40 } },
-        { x: 100, y: 50, mode: 'corner' },
-      ],
-      true,
-    );
-    const scene = parse(tabToExcalidrawText(tab([{ ...path, fillColor: '#ffec99' }])));
-    const [line] = scene.elements;
-    expect(line!.type).toBe('line');
-    // 16 samples along the curve, one per straight segment, back to the start.
-    expect(line!.points).toHaveLength(1 + 16 + 1 + 1);
-    const [first] = line!.points!;
-    const last = line!.points![line!.points!.length - 1]!;
-    expect(last[0]).toBeCloseTo(first![0]);
-    expect(last[1]).toBeCloseTo(first![1]);
-    expect(line!.backgroundColor).toBe('#ffec99');
-    // The top of the arch is inside the box: the box wraps the curve.
-    expect(Math.min(...line!.points!.map((p) => p[1]))).toBeCloseTo(0);
   });
 
   it('exports freehand strokes as freedraw and polygons as closed lines', () => {

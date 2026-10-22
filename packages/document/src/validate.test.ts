@@ -5,8 +5,6 @@ import {
   isValidElement,
   isValidTab,
   MAX_ELEMENTS_PER_TAB,
-  MAX_PATH_NODES,
-  PATH_COORD_MAX,
   TEXT_SCALE_MAX,
   TEXT_SCALE_MIN,
 } from './validate';
@@ -89,7 +87,7 @@ describe('isValidElement', () => {
 
   it('accepts the freehand pen + straightEdges flags, rejects junk values', () => {
     const freehand = { id: 'f', type: 'freehand', closed: false, packedPoints: 'AQA=', ...box };
-    // Highlighter recipe (docs/specs/008-canvas/highlighter.md) + polygon straight edges (docs/specs/008-canvas/polygon-tool.md).
+    // Highlighter recipe (docs/specs/006-document/stroke-points.md) + polygon straight edges (docs/specs/008-canvas/polygon-tool.md).
     expect(isValidElement({ ...freehand, pen: 'highlighter' })).toBe(true);
     expect(isValidElement({ ...freehand, straightEdges: true })).toBe(true);
     expect(isValidElement({ ...freehand, pen: 'marker' })).toBe(false);
@@ -100,7 +98,7 @@ describe('isValidElement', () => {
   });
 
   it('accepts a whiteboard pen stroke\u2019s packed pressures and streamline, rejects junk', () => {
-    // docs/specs/023-draw-mode/draw-mode.md "Pens": a pressure per point, 0 to 1, packed.
+    // docs/specs/006-document/stroke-points.md: a pressure per point, 0 to 1, packed.
     const points = [
       { nx: 0, ny: 0 },
       { nx: 1, ny: 1 },
@@ -113,7 +111,7 @@ describe('isValidElement', () => {
   });
 
   it('accepts a marker\u2019s named colour on a stroke, a shape or a line, rejects any other', () => {
-    // docs/specs/023-draw-mode/draw-mode.md "The colour picker": stored by name.
+    // docs/specs/004-interface-design/colour-picker.md: stored by name.
     const packedPoints = encodeStrokePoints([
       { nx: 0, ny: 0 },
       { nx: 1, ny: 1 },
@@ -126,24 +124,14 @@ describe('isValidElement', () => {
       from: { kind: 'free', x: 0, y: 0 },
       to: { kind: 'free', x: 9, y: 9 },
     };
-    const path = {
-      id: 'p',
-      type: 'path',
-      closed: false,
-      nodes: [
-        { nx: 0, ny: 0, mode: 'corner' },
-        { nx: 1, ny: 1, mode: 'corner' },
-      ],
-      ...box,
-    };
-    for (const el of [pen, shape, line, path]) {
+    for (const el of [pen, shape, line]) {
       expect(isValidElement({ ...el, penColour: 'blue' })).toBe(true);
       expect(isValidElement({ ...el, penColour: 'blue-3' })).toBe(false);
       expect(isValidElement({ ...el, penColour: '#1d7afc' })).toBe(false);
     }
   });
 
-  // docs/specs/023-draw-mode/draw-mode.md "Imported and pasted content": a text box's and a
+  // docs/specs/004-interface-design/colour-picker.md: a text box's and a
   // shape label's stock colour, stored by name.
   it('accepts a named text colour and rejects anything else in its place', () => {
     const text = { id: 't', type: 'text', label: 'Hi', ...box };
@@ -272,66 +260,6 @@ describe('image credit (docs/specs/009-elements/image-search.md)', () => {
   it('rejects a credit that is not an object', () => {
     expect(isValidElement(image('by admiller'))).toBe(false);
     expect(isValidElement(image(null))).toBe(false);
-  });
-});
-
-describe('path validation (docs/specs/023-draw-mode/path-tool.md)', () => {
-  const node = (nx: number, ny: number) => ({ nx, ny, mode: 'corner' });
-  const path = (extra: Record<string, unknown> = {}) => ({
-    id: 'p',
-    type: 'path',
-    closed: false,
-    nodes: [node(0, 0), node(1, 1)],
-    ...box,
-    ...extra,
-  });
-
-  it('accepts an open path, a closed one, and handles in every mode', () => {
-    expect(isValidElement(path())).toBe(true);
-    expect(
-      isValidElement(path({ closed: true, nodes: [node(0, 0), node(1, 0), node(0, 1)] })),
-    ).toBe(true);
-    const smooth = {
-      nx: 0.5,
-      ny: 0.5,
-      mode: 'mirrored',
-      handleIn: { nx: -0.2, ny: 0.5 },
-      handleOut: { nx: 1.2, ny: 0.5 },
-    };
-    expect(
-      isValidElement(path({ nodes: [node(0, 0), smooth, { ...smooth, mode: 'aligned' }] })),
-    ).toBe(true);
-    expect(
-      isValidElement(path({ strokeWidth: 'thick', strokeStyle: 'dashed', strokeSwatch: 2 })),
-    ).toBe(true);
-  });
-
-  it('rejects too few nodes, and a closed pair with no handle', () => {
-    expect(isValidElement(path({ nodes: [node(0, 0)] }))).toBe(false);
-    expect(isValidElement(path({ closed: true }))).toBe(false);
-    const bent = { ...node(0, 0), handleOut: { nx: 0.5, ny: -1 } };
-    expect(isValidElement(path({ closed: true, nodes: [bent, node(1, 1)] }))).toBe(true);
-  });
-
-  it('rejects malformed nodes, modes, handles and flags', () => {
-    expect(isValidElement(path({ closed: 'no' }))).toBe(false);
-    expect(isValidElement(path({ nodes: 'nope' }))).toBe(false);
-    expect(isValidElement(path({ nodes: [node(0, 0), { nx: 1, ny: 1, mode: 'smooth' }] }))).toBe(
-      false,
-    );
-    expect(isValidElement(path({ nodes: [node(0, 0), { nx: 1, mode: 'corner' }] }))).toBe(false);
-    expect(
-      isValidElement(path({ nodes: [node(0, 0), { ...node(1, 1), handleIn: { nx: 1 } }] })),
-    ).toBe(false);
-    expect(isValidElement(path({ nodes: [node(0, 0), { ...node(1, 1), handleOut: 3 }] }))).toBe(
-      false,
-    );
-    expect(isValidElement(path({ nodes: [node(0, 0), node(PATH_COORD_MAX * 2, 0)] }))).toBe(false);
-  });
-
-  it('rejects more than MAX_PATH_NODES nodes', () => {
-    const nodes = Array.from({ length: MAX_PATH_NODES + 1 }, () => node(0, 0));
-    expect(isValidElement(path({ nodes }))).toBe(false);
   });
 });
 

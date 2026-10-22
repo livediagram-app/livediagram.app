@@ -127,7 +127,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     chartPalette,
     onSpawnConnect,
     onStartArrow,
-    onStartPencil,
     onFollowLink,
     onPressModeButton,
     onPressFocusButton,
@@ -613,7 +612,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
 
           {/* Editor-only marks, left out of an animated GIF (GifOmit). */}
           <GifOmit>
-            {/* The line or arrow being drawn (docs/specs/023-draw-mode/draw-mode.md "Shapes"): the
+            {/* The line or arrow being drawn (docs/specs/007-editor/editor-modes.md): the
           element the release lands, after every element, where it will land. */}
             {drawDrag && props.pendingDraw?.type === 'arrow' && props.previewDrawnArrow ? (
               <DrawnArrowPreview
@@ -677,7 +676,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
                 openOnHover: settings.quickAddOnHover === true,
                 onSpawnConnect,
                 onStartArrow,
-                onStartPencil,
                 onAddTableRow,
                 onAddTableColumn,
                 onAppendWebRow,

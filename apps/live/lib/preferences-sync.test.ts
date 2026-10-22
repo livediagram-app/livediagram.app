@@ -23,7 +23,6 @@ import {
   writeUserPreferences,
   type UserPreferences,
 } from './user-preferences';
-import type { ShapePicks } from './whiteboard-shape-slots';
 
 // Saving preferences to the server (docs/specs/007-editor/user-preferences.md "Saving to the server").
 
@@ -32,42 +31,18 @@ const mockedPut = vi.mocked(apiPutPreferences);
 
 const uuid = (i: number) => `00000000-0000-4000-8000-${String(i).padStart(12, '0')}`;
 
-// A full account, as measured: 60 hidden documents, a busy shape history and the usual flags
-// came to 4,967 characters, past the api's cap, after which every save was refused.
+// A full account: 60 hidden documents and the usual flags, with stored older-client colours padding it past the
+// api's cap, after which every save was refused.
 function fullAccount(): UserPreferences {
-  const kinds = [
-    'rectangle',
-    'ellipse',
-    'diamond',
-    'triangle',
-    'hexagon',
-    'star',
-    'arrow',
-    'line',
-    'cloud',
-    'cylinder',
-    'parallelogram',
-    'trapezoid',
-    'pentagon',
-    'octagon',
-    'cross',
-    'heart',
-  ];
-  const picks = Object.fromEntries(
-    kinds.map((k, i) => [k, [i + 1, 1_760_000_000_000 + i * 1000]]),
-  ) as ShapePicks;
   return {
     recentExcludedIds: Array.from({ length: RECENT_EXCLUDED_LIMIT }, (_, i) => uuid(i)),
-    whiteboardShapePicks: picks,
-    whiteboardPinnedShapes: ['arrow', 'rectangle'],
     quickSwatchOverrides: { brand: { fill: ['#112233', null, '#445566'] } } as never,
     powerUserBaseline: {
       showMinimap: { before: { showMinimap: true }, applied: { showMinimap: false } },
       notificationsEnabled: { before: {}, applied: { notificationsEnabled: false } },
     },
     // Stored by older clients and kept (docs/specs/004-interface-design/colour-picker.md).
-    customSwatches: Array.from({ length: 100 }, (_, i) => `#${String(i).padStart(6, '0')}`),
-    whiteboardYourColours: Array.from({ length: 50 }, (_, i) => `#${String(i).padStart(6, 'a')}`),
+    customSwatches: Array.from({ length: 150 }, (_, i) => `#${String(i).padStart(6, '0')}`),
     telemetryEnabled: false,
     planTourSeen: true,
     workshopTourSeen: true,
@@ -100,32 +75,17 @@ describe('fitPreferences', () => {
     expect(fitPreferences(prefs)).toBe(prefs);
   });
 
-  it('trims the oldest hidden ids, then the oldest shape picks, until it fits', () => {
-    const full = fullAccount();
-    // Pad the rest so the hidden list alone cannot make room.
-    const prefs = { ...full, customSwatches: Array.from({ length: 280 }, () => '#abcdef') };
-    expect(preferencesBodyLength(prefs)).toBeGreaterThan(PREFERENCES_BODY_MAX);
-    const fitted = fitPreferences(prefs);
-    expect(preferencesBodyLength(fitted)).toBeLessThanOrEqual(PREFERENCES_BODY_MAX);
-    expect(fitted.recentExcludedIds).toEqual([]);
-    // The newest picks stay: what went was the least recently used.
-    const left = Object.values(fitted.whiteboardShapePicks ?? {}).map((p) => p![1]);
-    const all = Object.values(full.whiteboardShapePicks ?? {}).map((p) => p![1]);
-    expect(left.length).toBeLessThan(all.length);
-    expect(Math.min(...left)).toBeGreaterThan(Math.max(...all.filter((t) => !left.includes(t))));
-    expect(fitted.customSwatches).toHaveLength(280);
-  });
-
-  it('fits the measured full account by dropping only its oldest hidden ids', () => {
+  it('trims the oldest hidden ids until it fits', () => {
     const prefs = fullAccount();
-    // Within a few characters of the 4,967 measured.
-    expect(preferencesBodyLength(prefs)).toBeGreaterThan(4900);
+    expect(preferencesBodyLength(prefs)).toBeGreaterThan(PREFERENCES_BODY_MAX);
     const fitted = fitPreferences(prefs);
     expect(preferencesBodyLength(fitted)).toBeLessThanOrEqual(PREFERENCES_BODY_MAX);
     const kept = fitted.recentExcludedIds ?? [];
     expect(kept.length).toBeGreaterThan(0);
+    expect(kept.length).toBeLessThan(prefs.recentExcludedIds!.length);
+    // The newest stay: what went was the oldest, at the end.
     expect(kept).toEqual(prefs.recentExcludedIds!.slice(0, kept.length));
-    expect(fitted.whiteboardShapePicks).toEqual(prefs.whiteboardShapePicks);
+    expect(fitted.customSwatches).toEqual(prefs.customSwatches);
   });
 
   it('stays fast on the largest blob it can be handed', () => {

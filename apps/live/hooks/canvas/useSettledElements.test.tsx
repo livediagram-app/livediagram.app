@@ -44,7 +44,7 @@ describe('useSettledElements', () => {
     expect(result.current).toHaveLength(29);
   });
 
-  for (const kind of ['resize', 'reshape', 'stroke', 'erase'] as const) {
+  for (const kind of ['resize', 'reshape', 'stroke'] as const) {
     it(`freezes through a ${kind} too`, () => {
       const { result, rerender } = setup();
       act(() => {
