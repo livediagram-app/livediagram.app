@@ -330,6 +330,19 @@ const AGENT_ICON_SEARCH = new Set(['Mcp|Used|SearchIcons', 'Cli|Used|IconSearch'
 const isElementUsedInPlace = (category: string, action: string) =>
   category === 'Element' && action === 'Used';
 
+// The dashboard's Draw Mode stack and the chrome it counted (removed 2026-10-22, plans/0001-liveplanner-fork.md
+// Phase 4): a tab's Opens in mode, a board put onto a page that fits it, a tab opened from a Tab Window, the Toolbar
+// layout's category switch and the whiteboard dock's position. A form cover's moving background carries on.
+const DRAW_MODE_EVENTS = new Set([
+  'Tab|Changed|PageFitToContent',
+  'UI|Used|TabWindowOpen',
+  'UI|Changed|ToolbarCategory',
+]);
+const isRetiredDrawModeEvent = (category: string, action: string, type: string | null) =>
+  DRAW_MODE_EVENTS.has(`${category}|${action}|${type ?? ''}`) ||
+  (category === 'Tab' && action === 'Changed' && (type ?? '').startsWith('OpensIn')) ||
+  (category === 'UI' && action === 'Changed' && (type ?? '').startsWith('WhiteboardDockPosition'));
+
 // The diagram lint (removed 2026-10-22, plans/0001-liveplanner-fork.md Phase 4): the agents' `view=lint` and the CLI's
 // `tab lint`.
 const DIAGRAM_LINT_EVENTS = new Set(['Agent|Viewed|Lint', 'Cli|Used|TabLint']);
@@ -381,6 +394,7 @@ export function isRetiredEvent(category: string, action: string, type: string | 
   if (isRetiredDiagramTourEvent(category, action, type)) return true;
   if (AGENT_ICON_SEARCH.has(`${category}|${action}|${type ?? ''}`)) return true;
   if (isElementUsedInPlace(category, action)) return true;
+  if (isRetiredDrawModeEvent(category, action, type)) return true;
   if (DIAGRAM_LINT_EVENTS.has(`${category}|${action}|${type ?? ''}`)) return true;
   if (isRetiredWorkshopEvent(category, action, type)) return true;
   if (category === 'Document' && action === 'Reverted') return true;

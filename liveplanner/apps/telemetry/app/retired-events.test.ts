@@ -11,6 +11,15 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('Element', 'Changed', 'Video')).toBe(false);
   });
 
+  it('retires the Draw Mode stack, keeping animated backgrounds', () => {
+    expect(isRetiredEvent('Tab', 'Changed', 'OpensInDraw')).toBe(true);
+    expect(isRetiredEvent('Tab', 'Changed', 'PageFitToContent')).toBe(true);
+    expect(isRetiredEvent('UI', 'Used', 'TabWindowOpen')).toBe(true);
+    expect(isRetiredEvent('UI', 'Changed', 'ToolbarCategory')).toBe(true);
+    expect(isRetiredEvent('UI', 'Changed', 'WhiteboardDockPositionTop')).toBe(true);
+    expect(isRetiredEvent('Tab', 'Changed', 'PageBackgroundAnimated')).toBe(false);
+  });
+
   it('retires the diagram lint view, keeping the other agent views', () => {
     expect(isRetiredEvent('Agent', 'Viewed', 'Lint')).toBe(true);
     expect(isRetiredEvent('Cli', 'Used', 'TabLint')).toBe(true);
@@ -90,7 +99,7 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('Page', 'View', '/explorer/home')).toBe(false);
   });
 
-  it('retires Pages mode, not the backgrounds and windows that outlive it', () => {
+  it('retires Pages mode, not the backgrounds that outlive it', () => {
     expect(isRetiredEvent('Tab', 'Changed', 'PageAdded')).toBe(true);
     expect(isRetiredEvent('Tab', 'Changed', 'PageKindLogo')).toBe(true);
     expect(isRetiredEvent('Tab', 'Changed', 'WireframeDeviceIphone')).toBe(true);
@@ -107,7 +116,6 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('Mcp', 'Used', 'WriteArticle')).toBe(true);
     expect(isRetiredEvent('Cli', 'Used', 'PageSet')).toBe(true);
     expect(isRetiredEvent('Tab', 'Changed', 'PageBackgroundAnimated')).toBe(false);
-    expect(isRetiredEvent('UI', 'Used', 'TabWindowOpen')).toBe(false);
     expect(isRetiredEvent('UI', 'Started', 'PlanTour')).toBe(false);
     expect(isRetiredEvent('Document', 'Exported', 'PNG')).toBe(false);
     expect(isRetiredEvent('Help', 'View', 'pages')).toBe(false);
@@ -136,8 +144,6 @@ describe('isRetiredEvent', () => {
     }
     expect(isRetiredEvent('Folder', 'Changed', 'DefaultModePlan')).toBe(false);
     expect(isRetiredEvent('Folder', 'Changed', 'DefaultKindEventStorming')).toBe(false);
-    expect(isRetiredEvent('Tab', 'Changed', 'PageFitToContent')).toBe(false);
-    expect(isRetiredEvent('UI', 'Changed', 'ToolbarCategory')).toBe(false);
     expect(isRetiredEvent('UI', 'Opened', 'ToolbarSearch')).toBe(false);
   });
 

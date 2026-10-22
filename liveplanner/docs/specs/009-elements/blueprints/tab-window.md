@@ -1,5 +1,4 @@
-# The tab window blueprint
+# The tab window: blueprint
 
-Removed from liveplanner (plans/0001-liveplanner-fork.md Phase 4). liveplanner's editor draws Plan's elements only
-(boards, cards, views, Sheets and the session tools beside them), so its code for tab windows is gone. Phase 6 deletes
+Removed from liveplanner (plans/0001-liveplanner-fork.md Phase 4): see [The tab window](../tab-window.md). Phase 6 deletes
 this page.

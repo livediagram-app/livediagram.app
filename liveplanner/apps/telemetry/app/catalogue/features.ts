@@ -172,24 +172,6 @@ export const AI_ASSISTANCE: MetricStack = {
   headline: AI_REQUESTS,
 };
 
-// The mode a tab opens in, set from the tab menu's Opens in (docs/specs/007-editor/editor-modes.md).
-export const TAB_OPENS_IN = chart(
-  'Tab',
-  'Changed',
-  'Opening Modes Set',
-  'A tab set to open in Diagram, Draw or Pages mode for everyone, from the tab menu.',
-  { types: ['OpensInDiagram', 'OpensInDraw', 'OpensInPages', 'OpensInPlan'] },
-);
-
-// Tab windows (docs/specs/009-elements/tab-window.md): a window's tab chosen, and the tab opened from it.
-export const TAB_WINDOW_USE = chart(
-  'UI',
-  'Used',
-  'Tab Windows Opened',
-  'A tab opened from a Tab Window showing it.',
-  { types: ['TabWindowOpen'], rising: 'neutral' },
-);
-
 // A form cover's moving background (docs/specs/030-forms/forms.md "The form card, top to bottom"): set
 // moving, or its speed changed.
 export const ANIMATED_BACKGROUNDS = chart(
@@ -199,23 +181,6 @@ export const ANIMATED_BACKGROUNDS = chart(
   'A background set moving, or its speed changed.',
   { types: ['PageBackgroundAnimated', 'PageBackgroundAnimatedSpeed'] },
 );
-
-// A board switched onto a page that fits it (docs/specs/007-editor/editor-modes.md).
-export const PAGE_FIT_TO_CONTENT = chart(
-  'Tab',
-  'Changed',
-  'Boards Put Onto Pages',
-  'A board put onto a page that fits it as its tab switched mode.',
-  { types: ['PageFitToContent'] },
-);
-
-export const WHITEBOARDS: MetricStack = {
-  stack: true,
-  title: 'Draw Mode',
-  blurb: 'Mode switches.',
-  members: [TAB_OPENS_IN, ANIMATED_BACKGROUNDS, PAGE_FIT_TO_CONTENT, TAB_WINDOW_USE],
-  headline: TAB_OPENS_IN,
-};
 
 // Layers (docs/specs/006-document/layers.md): made, used, and looked at.
 export const LAYERS_CREATED: Metric = {
@@ -549,19 +514,11 @@ export const PALETTE_GROUPS_OPENED = chart(
   },
 );
 
-export const TOOLBAR_CATEGORY = chart(
-  'UI',
-  'Changed',
-  'Toolbar Category',
-  'The Toolbar layout switched to another category.',
-  { types: ['ToolbarCategory'] },
-);
-
 export const PALETTE_USE: MetricStack = {
   stack: true,
   title: 'Palette Use',
-  blurb: 'How the palette gets used beyond adding elements: groups and the toolbar.',
-  members: [PALETTE_GROUPS_OPENED, TOOLBAR_CATEGORY],
+  blurb: 'How the palette gets used beyond adding elements: its groups and the toolbar.',
+  members: [PALETTE_GROUPS_OPENED],
   seeAlso: { section: 'palette', label: 'See Each Element in Features › Palette' },
 };
 

@@ -20,7 +20,6 @@ import { PointerNoteMenuSection } from '@/components/palette/PointerNoteMenuSect
 import { TagColoursBlock } from '@/components/palette/TagColoursBlock';
 import { StackMenuSection } from '@/components/palette/StackMenuSection';
 import { BoundaryMenuSection } from '@/components/palette/BoundaryMenuSection';
-import { TabWindowMenuSection } from '@/components/palette/TabWindowMenuSection';
 import { ConceptMenuSection } from '@/components/palette/ConceptMenuSection';
 import { SequenceMenuSection } from '@/components/palette/SequenceMenuSection';
 import {
@@ -196,8 +195,6 @@ export function ElementDataSections({
     isSessionButton ||
     isPicker ||
     isDecision ||
-    // Its Tab Window section (Shows, Open) lives in Tools: without this the menu never offered another tab.
-    shapeTarget?.shape === 'tab-window' ||
     !!props.flowchart;
   return (
     <>
@@ -330,14 +327,6 @@ export function ElementDataSections({
           {shapeTarget && isConceptShape(shapeTarget.shape) ? (
             <ConceptMenuSection
               target={shapeTarget as ShapeElement & { shape: ConceptShape }}
-              ops={props.elementStyle}
-              sectionProps={sectionProps}
-            />
-          ) : null}
-          {/* A tab window's tab, and opening it (docs/specs/009-elements/tab-window.md). */}
-          {shapeTarget?.shape === 'tab-window' ? (
-            <TabWindowMenuSection
-              target={shapeTarget}
               ops={props.elementStyle}
               sectionProps={sectionProps}
             />

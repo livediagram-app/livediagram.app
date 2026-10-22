@@ -6,7 +6,7 @@ import { FORM_STARTERS, QUESTION_TYPE_TELEMETRY } from '@liveplanner/forms';
 import { canonicalElementType, PALETTE_KINDS, type PaletteTab } from '../palette-types';
 import type { Metric, MetricStack } from '../metric-series';
 import { chart } from './helpers';
-import { LOCAL_MOVE_OFFERED, TIDY_UP_OPENED } from './features';
+import { ANIMATED_BACKGROUNDS, LOCAL_MOVE_OFFERED, TIDY_UP_OPENED } from './features';
 
 // The Element types that are a table's rows and columns, not elements, and
 // the table's own switches (docs/specs/017-telemetry/telemetry.md).
@@ -1068,6 +1068,7 @@ export const FORMS: MetricStack = {
     FORMS_OPENED_CLOSED,
     FORMS_NOT_TAKING_OPENED,
     FORMS_SYNCED_TO_SHARE,
+    ANIMATED_BACKGROUNDS,
     FORM_RESPONSES,
     FORM_REPORTS,
   ],
