@@ -306,7 +306,7 @@ export function PagesScene() {
 
 // --- The page panel ----------------------------------------------------------------------------
 
-// An infographic page's six sizes (a slide size is a slide page's alone).
+// An infographic page's six sizes.
 const SIZE_TILES: { label: string; w: number; h: number }[] = [
   { label: 'A4', w: 10, h: 14 },
   { label: 'Letter', w: 11, h: 14 },

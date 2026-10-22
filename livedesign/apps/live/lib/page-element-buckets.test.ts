@@ -19,8 +19,8 @@ function deck(pageCount: number, perPage: number): Tab {
   const pages = Array.from({ length: pageCount }, (_, i): Page => ({
     id: `p${i}`,
     orientation: 'landscape',
-    kind: 'slide',
-    size: 'slide',
+    kind: 'logo',
+    size: 'logo',
   }));
   const laid = layOutPages(pages);
   const elements: Element[] = [];

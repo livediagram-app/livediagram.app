@@ -49,7 +49,6 @@ const ALL_KINDS = [
   'journey',
   'fishbone',
   'pyramid',
-  'slide-deck',
   'flywheel',
   'logo-design',
   'wireframe-mobile-app',
@@ -113,7 +112,6 @@ const ALL_KINDS = [
   'objectives-planner',
   'whiteboard',
   'blank-illustration',
-  'blank-slide-deck',
   'blank-infographic',
   'blank-logo',
   'blank-wireframe-phone',
@@ -133,10 +131,6 @@ const ALL_KINDS = [
   'how-it-works',
   'versus',
   'social-carousel',
-  'launch-keynote',
-  'quarterly-review',
-  'team-welcome',
-  'workshop-kickoff',
   'paper-prototype',
   'journey-doodle',
   'pre-mortem',
@@ -202,7 +196,6 @@ function coordsOf(el: Element): { x: number; y: number }[] {
 // The templates that open in Pages on pages of their own (canvas-and-palette.md "Templates
 // on pages").
 const PAGED_KINDS = [
-  'slide-deck',
   'logo-design',
   'wireframe-mobile-app',
   'wireframe-website',
@@ -218,10 +211,6 @@ const PAGED_KINDS = [
   'how-it-works',
   'versus',
   'social-carousel',
-  'launch-keynote',
-  'quarterly-review',
-  'team-welcome',
-  'workshop-kickoff',
   'floor-plan',
   'storyboard',
 ] as const;
@@ -245,13 +234,7 @@ describe('templates on pages', () => {
   // template of infographic pages. Either way a chosen kind, so the first page's kind choice is
   // never offered.
   // The decks: the Slide Deck and the decks built from slide layouts.
-  const SLIDE_DECK_KINDS = new Set<string>([
-    'slide-deck',
-    'launch-keynote',
-    'quarterly-review',
-    'team-welcome',
-    'workshop-kickoff',
-  ]);
+  const SLIDE_DECK_KINDS = new Set<string>([]);
   it.each(PAGED_KINDS)('%s: opens in Pages on pages of its kind', (kind) => {
     const o = templateCanvasOverrides(kind);
     expect(o.opensIn).toBe('pages');
@@ -296,11 +279,6 @@ describe('templates on pages', () => {
     },
   );
 
-  it('leaves the slide deck’s elements without notes', () => {
-    const notes = buildTemplate('slide-deck', 0, 0).filter((el) => 'note' in el && el.note);
-    expect(notes).toHaveLength(0);
-  });
-
   it('keeps the group card a card the team signs: seven signed notes and an open slot', () => {
     const els = buildTemplate('live-card', 0, 0);
     expect(els.filter((el) => el.type === 'sticky')).toHaveLength(7);
@@ -334,7 +312,6 @@ describe('buildTemplate translation invariance', () => {
         k !== 'whiteboard' &&
         k !== 'blank-illustration' &&
         // One empty page of a chosen kind (docs/specs/007-editor/templates-by-mode.md "Blanks of a page kind").
-        k !== 'blank-slide-deck' &&
         k !== 'blank-infographic' &&
         k !== 'blank-logo' &&
         !k.startsWith('blank-wireframe-') &&

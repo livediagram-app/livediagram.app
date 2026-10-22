@@ -1,6 +1,6 @@
 'use client';
 
-// A slide page's speaker notes, in its title bar once the page is in the slide deck
+// A page's speaker notes, in its title bar once the page is in the slide deck
 // (docs/specs/007-editor/pages-mode.md "Slides"): Add Notes while the slide has none, Notes
 // (pressed) once it has. A popover holds the slide's notes, the same notes the Slide Deck panel
 // writes and the presenter view shows: they belong to the deck's slide, not to the page.

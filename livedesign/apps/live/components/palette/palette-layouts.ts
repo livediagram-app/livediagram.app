@@ -225,53 +225,9 @@ const PAGES: PaletteLayout = {
   ],
 };
 
-// The Pages palette by its kind (docs/specs/007-editor/pages-mode.md "The palette's kind"): Design is PAGES; a slide,
-// a wireframe and a logo page each have their own, offering what that page is made of and nothing it has no use for.
+// The Pages palette by its kind (docs/specs/007-editor/pages-mode.md "The palette's kind"): Design is PAGES; a
+// wireframe and a logo page each have their own, offering what that page is made of and nothing it has no use for.
 // Every tile is in one category (Popular aside, a pick from across them).
-
-// A slide (docs/specs/007-editor/pages-mode.md "The palette's kind"): what a talk is told with. Words, shapes, pictures
-// and the embeds a talk plays first (Common), then what explains a point (Structure: charts, concept graphics, ready-made
-// blocks and device frames for a screenshot), then the decorations; no website Header.
-const PAGES_SLIDE: PaletteLayout = {
-  landing: 'popular',
-  categories: [
-    {
-      id: 'popular',
-      description: 'What a slide is most often made of: a title, a picture, a chart and a point.',
-      tiles: [
-        'tools:text',
-        'tools:image',
-        'shapes:square',
-        'shapes:circle',
-        'shapes:speech-bubble',
-        'data:bar',
-        'data:pie',
-        'components:stat',
-        'components:process',
-        'components:callout',
-        'tools:timeline',
-        'media:embed-youtube',
-      ],
-    },
-    { id: 'write', tiles: PAGES_WRITE },
-    { id: 'shapes' },
-    // Pictures and the embeds a talk plays (a video, a prototype, a page), in Common: a slide reaches for them first.
-    { id: 'media', band: 0 },
-    {
-      id: 'data',
-      tiles: [...tilesForCategory('data').map((t) => t.id), DIVIDE, 'tools:table'],
-    },
-    { id: 'concepts', tiles: CONCEPTS_WITH_SANKEY },
-    // The blocks that make a point on a slide; no website Header.
-    {
-      id: 'components',
-      tiles: PAGES_COMPONENTS.filter((id) => id !== 'components:header'),
-    },
-    { id: 'devices' },
-    { id: 'icons' },
-    { id: 'stickers' },
-  ],
-};
 
 // A wireframe (docs/specs/007-editor/wireframe-pages.md "The Elements palette"): Components and Elements first, in a
 // band of their own, then the rest. Elements holds the Card, the Badge and the Checklist, so Components does not; no
@@ -355,7 +311,6 @@ const PAGES_LOGO: PaletteLayout = {
 
 const PAGES_BY_KIND: Readonly<Record<PaletteKind, PaletteLayout>> = {
   design: PAGES,
-  slide: PAGES_SLIDE,
   wireframe: PAGES_WIREFRAME,
   logo: PAGES_LOGO,
 };

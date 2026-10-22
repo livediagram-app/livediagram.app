@@ -28,7 +28,7 @@ const PAGE = { one: 'page line', many: 'page lines' };
 const LAYOUTS = { one: 'layout line', many: 'layout lines' };
 const ELEMENT = { one: 'element line', many: 'element lines' };
 
-const KIND_ORDER: readonly PageKind[] = ['infographic', 'slide', 'logo', 'wireframe'];
+const KIND_ORDER: readonly PageKind[] = ['infographic', 'logo', 'wireframe'];
 
 const sizeName = (size: keyof typeof PAGE_SIZES, orientation: 'portrait' | 'landscape' | null) => {
   const s = PAGE_SIZES[size];

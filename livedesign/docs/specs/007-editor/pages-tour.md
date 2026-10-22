@@ -1,9 +1,9 @@
 # Pages tour
 
-A short, optional guided tour of one [page kind](pages-mode.md#page-kinds) in Pages mode: a slide, an
-infographic or a logo. Each kind has its own **track**, which shows how that kind of page is made by
-opening the real controls on the person's own page (a slide's Layout and Background popovers, its deck button,
-the Slide Deck and Present) rather than only pointing at them. It is the [Draw tour](../023-draw-mode/draw-tour.md)'s
+A short, optional guided tour of one [page kind](pages-mode.md#page-kinds) in Pages mode: an infographic
+or a logo. Each kind has its own **track**, which shows how that kind of page is made by
+opening the real controls on the person's own page (an infographic page's Layout and Background popovers, its
+panel, the Slide Deck) rather than only pointing at them. It is the [Draw tour](../023-draw-mode/draw-tour.md)'s
 sibling: the same welcome card, anchored step cards, glide, dimming ring, Skip, Back and outro card, driven by the
 same engine. Where this spec is silent, the Draw tour's rules hold.
 
@@ -12,7 +12,7 @@ same engine. Where this spec is silent, the Draw tour's rules hold.
 | Term                   | Means                                                                                              |
 | ---------------------- | -------------------------------------------------------------------------------------------------- |
 | **Pages tour**         | This tour, whichever track it runs                                                                 |
-| **Track**              | One page kind's steps: the **Slides**, **Infographic** or **Logo** track                           |
+| **Track**              | One page kind's steps: the **Infographic** or **Logo** track                                       |
 | **Tour page**          | The page a track runs on: the person's own page of that kind, fixed when the tour starts           |
 | **Page Show Me**       | The same track run on demand from a page's panel ([Show Me](show-me.md)), without the welcome card |
 | **Diagram tour**       | The Diagram mode tour, [Diagram tour](editor-tour.md)                                              |
@@ -40,7 +40,7 @@ same engine. Where this spec is silent, the Draw tour's rules hold.
   (`apps/live/lib/tour-tracks.ts`, shared with the [Plan tour](../026-plan/plan-tour.md)).
 - **Replayable from Settings**: in Settings' **Tours** category, **Pages Tours** switches every kind at once (on
   while any is owed; off answers them all, on forgets every answer), and one switch per kind sits nested beneath
-  it, named for its kind (**Slides Tour**, **Infographic Tour**, **Logo Tour**). On means that kind
+  it, named for its kind (**Infographic Tour**, **Logo Tour**). On means that kind
   is still owed. Turning one off answers that kind alone; turning one on forgets that kind alone (and folds a
   Power user's single `pagesTourSeen` into the answered list first, so the other kinds stay as they were).
   Closing Settings with a kind newly owed runs the track for the page on screen straight away when the person is
@@ -62,9 +62,8 @@ step rings one control of the tour page (or the Slide Deck), held by its own pag
 never the whole page: a ring that size would light most of the screen, so a step about the page itself is a card
 on its own (centred, counted, no ring), and a popover step rings its title-bar button until the popover shows.
 
-The welcome card names its page kind, never the mode: eyebrow **Slides tour**, **Infographic tour** or **Logo
-tour**, over an illustration of that kind (`components/tour/art/pages-tour-art.tsx`): a
-slide whose words and picture trade sides as layouts are picked beside it, with a Present button; an infographic
+The welcome card names its page kind, never the mode: eyebrow **Infographic tour** or **Logo
+tour**, over an illustration of that kind (`components/tour/art/pages-tour-art.tsx`): an infographic
 page whose band, headline, bars and ring chart fill in; a logo's two shapes meeting on the page's guides, its wordmark appearing.
 The exact strings live in `apps/live/components/tour/<kind>-tour-steps.ts`.
 
@@ -76,26 +75,6 @@ never reopens it. Leaving the step closes whatever it opened that is still open.
 **A step that opens the page's panel** opens it on the tab it is about (Page, Style, Text, or a logo page's
 Layouts) and closes it on leaving.
 
-### Slides track
-
-0. **Getting started with Slides?** (offer): a quick look at making a slide, choosing its layout and background,
-   the deck and presenting.
-1. **Choose a Layout** (the slide's Layout popover, opened): hover a layout to preview it, press to place it;
-   Change Theme restyles every page.
-2. **Change the Background** (the Background popover, opened): colours, gradients, animated backgrounds and
-   pictures, a pattern on top; hover to preview, press to keep it.
-3. **Add Another Slide** (the + after the last page, or the Toolbar strip's + while that one is out of the window).
-4. **Your Slide Deck** (the Slide Deck, opened from the Slides button, ringing its rows): every slide page is in the
-   deck already; drag a row to reorder, press one to go to that slide.
-5. **Each Slide's Menu** (a row's ⋯ menu, opened): speaker notes, hide from the show, rename, duplicate.
-6. **Set Up the Show** (the deck's Presentation settings, opened): transitions and their speed, auto-advance, slide
-   size.
-7. **Present** (the deck's Present button): full screen, arrow keys to move, Escape to end.
-8. **You're ready to present** (outro).
-
-The deck stays open from step 4 to step 7 and closes after them, however the tour leaves them
-(`holdSlideDeck` / `releaseSlideDeck`).
-
 ### Infographic track
 
 0. **Getting started with Infographics?** (offer): a quick look at laying out a page.
@@ -104,7 +83,8 @@ The deck stays open from step 4 to step 7 and closes after them, however the tou
 3. **Change the Background** (the Background popover, opened).
 4. **Page Size** (the page's panel, opened on Page): size and orientation; duplicate, move or delete below.
 5. **Add a Page** (the +).
-6. **Present It** (the Slide Deck, opened): any page can be a slide, picked in the deck and presented.
+6. **Present It** (the Slide Deck, opened): every page is in the deck; hide the ones to skip, then Present
+   shows them full screen.
 7. **You're ready to make pages** (outro).
 
 A **wireframe** page takes this track under its own offer (**Getting started with wireframes?**), save step 4,
@@ -121,8 +101,7 @@ their union go when the tour ends.
 
 ### Filtering
 
-- A step whose control is not on screen when the tour starts (a slide's deck button and the Slides button on a
-  phone; the + when neither the one after the last page nor the Toolbar strip's is in the window) is left out up front, so the count stays honest; one that goes before its
+- A step whose control is not on screen when the tour starts (the Slide Deck on a phone; the + when neither the one after the last page nor the Toolbar strip's is in the window) is left out up front, so the count stays honest; one that goes before its
   turn is skipped, as in the Diagram tour.
 - If the tour can no longer run where it started (the person's edit rights go, they leave Pages, they open
   another tab, or the tour page is deleted or locked) it ends as skipped, closing whatever it opened.
@@ -140,14 +119,14 @@ The Draw tour's funnel, with its own tokens; the track shows in the step tokens:
   `PagesTourOffer` on No.
 - **Start**: `UI` · `Started` · `PagesTour`.
 - **Stage views**: `UI` · `View` · `PagesTourStep<Kind><Id>` once per step entry, `<Kind>` the track
-  (`Slide`, `Infographic`, `Logo`): `PagesTourStepSlideLayouts`,
+  (`Infographic`, `Logo`): `PagesTourStepInfographicLayouts`,
   `PagesTourStepInfographicPageSize`, `PagesTourStepLogoOutro`, ...
 - **End**: `UI` · `Ended` · `PagesTourCompleted` | `PagesTourSkipped`.
-- **Settings rows**: `UI` · `Toggled` · `<Kind>TourSeenOn` | `<Kind>TourSeenOff`, for `SlidesTour`,
+- **Settings rows**: `UI` · `Toggled` · `<Kind>TourSeenOn` | `<Kind>TourSeenOff`, for
   `InfographicTour` and `LogoTour` (`PagesTourSeenOn` | `PagesTourSeenOff` until the row split
   per kind in October 2026).
 - **Page Show Me**: `UI` · `Started` · `<Kind>Tour`, and `UI` · `Ended` · `<Kind>TourCompleted` |
-  `<Kind>TourSkipped`, for `SlideTour`, `InfographicTour` and `LogoTour` ([Show Me](show-me.md)).
+  `<Kind>TourSkipped`, for `InfographicTour` and `LogoTour` ([Show Me](show-me.md)).
 
 ## Power user mode
 
@@ -156,7 +135,7 @@ is on) alongside the Diagram, Plan, Workshop and Draw tours.
 
 ## Code
 
-- `<kind>-tour-steps.ts` (`slide-`, `infographic-`, `logo-`): each track's steps, against one
+- `<kind>-tour-steps.ts` (`infographic-`, `logo-`): each track's steps, against one
   `PageTourApi` (`page-tour-api.ts`); `page-tour-dom.ts` opens and closes a page's title-bar popovers and finds
   its controls; `page-tour-steps.ts` picks a track's steps for a kind, loaded at the offer or the press so the
   copy stays out of the editor's first load.

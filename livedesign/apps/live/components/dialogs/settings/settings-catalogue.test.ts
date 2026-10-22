@@ -188,7 +188,6 @@ describe('settings catalogue', () => {
       ['formTourSeen', 'toggle', 'Forms Tour', 'planForms'],
       ['avatarTourSeen', 'toggle', 'Avatar Tour', 'avatarTour'],
       ['pagesTourSeen', 'toggle', 'Pages Tours', 'pagesTour'],
-      ['pagesTourSeen-slide', 'toggle', 'Slides Tour', 'pagesTour'],
       ['pagesTourSeen-infographic', 'toggle', 'Infographic Tour', 'pagesTour'],
       ['pagesTourSeen-logo', 'toggle', 'Logo Tour', 'pagesTour'],
       // Element tours (docs/specs/007-editor/element-tours.md): one switch over them all, then one per element,
@@ -236,7 +235,6 @@ describe('settings catalogue', () => {
         ['FormTourSeenOff', 'FormTourSeenOn'],
         ['AvatarTourSeenOff', 'AvatarTourSeenOn'],
         ['PagesTourSeenOff', 'PagesTourSeenOn'],
-        ['SlidesTourSeenOff', 'SlidesTourSeenOn'],
         ['InfographicTourSeenOff', 'InfographicTourSeenOn'],
         ['LogoTourSeenOff', 'LogoTourSeenOn'],
         ['ElementToursSeenOff', 'ElementToursSeenOn'],
@@ -321,7 +319,6 @@ describe('settings catalogue', () => {
       'planTourSeen-sheets': ['planTourSeen', 'planTourTracks'],
       'planTourSeen-dashboards': ['planTourSeen', 'planTourTracks'],
       pagesTourSeen: ['pagesTourSeen', 'pagesTourKinds'],
-      'pagesTourSeen-slide': ['pagesTourSeen', 'pagesTourKinds'],
       'pagesTourSeen-infographic': ['pagesTourSeen', 'pagesTourKinds'],
       'pagesTourSeen-logo': ['pagesTourSeen', 'pagesTourKinds'],
       elementToursSeen: ['elementToursSeen', 'elementTourKinds'],
@@ -363,17 +360,17 @@ describe('settings catalogue', () => {
 
   // docs/specs/007-editor/pages-tour.md "Where it appears": one switch over every page kind's track.
   it('gives each kind of page its own tour row, turned back on alone', () => {
-    // docs/specs/007-editor/pages-tour.md: Slides Tour, Infographic Tour, Logo Tour.
-    const slides = TOGGLES.find((r) => r.key === 'pagesTourSeen-slide')!;
+    // docs/specs/007-editor/pages-tour.md: Infographic Tour, Logo Tour.
+    const infographic = TOGGLES.find((r) => r.key === 'pagesTourSeen-infographic')!;
     const logo = TOGGLES.find((r) => r.key === 'pagesTourSeen-logo')!;
-    const seen: UserPreferences = { pagesTourKinds: ['slide', 'infographic', 'logo'] };
-    expect(slides.read(seen)).toBe(false);
-    const next = slides.write(seen, true);
+    const seen: UserPreferences = { pagesTourKinds: ['infographic', 'logo'] };
+    expect(infographic.read(seen)).toBe(false);
+    const next = infographic.write(seen, true);
     expect(next).toEqual({
       pagesTourSeen: false,
-      pagesTourKinds: ['infographic', 'logo'],
+      pagesTourKinds: ['logo'],
     });
-    expect(slides.read(next)).toBe(true);
+    expect(infographic.read(next)).toBe(true);
     expect(logo.read(next)).toBe(false);
   });
 

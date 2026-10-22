@@ -18,14 +18,12 @@ export type ContentsRow = {
   number: number;
   // Its own name, else "Page n".
   name: string;
-  // What it is: "Infographic · A4 Portrait", "Slide · In the deck", "Logo".
+  // What it is: "Infographic · A4 Portrait", "Logo".
   line: string;
   locked: boolean;
   // Its shape on the sheet, for the thumbnail's frame.
   aspect: number;
   kind: PageKind;
-  // A slide page with a slide in the deck; absent where there is no deck to ask.
-  inDeck?: boolean;
 };
 
 // More pages than this show the Find a Page box.
@@ -38,13 +36,7 @@ const KIND_NAME = {
   wireframe: 'Wireframe',
 } as const;
 
-export function contentsRows(
-  pages: readonly LaidOutPage[],
-  opts: {
-    // Whether the deck has a slide of the page; absent where there is no deck to ask.
-    inDeck?: (pageId: string) => boolean;
-  } = {},
-): ContentsRow[] {
+export function contentsRows(pages: readonly LaidOutPage[]): ContentsRow[] {
   return pages.map((p, i) => {
     const kind = pageKindOf(p);
     let line: string = KIND_NAME[kind];
@@ -54,8 +46,6 @@ export function contentsRows(
       line += ` · ${size}${turn ? ` ${p.orientation === 'portrait' ? 'Portrait' : 'Landscape'}` : ''}`;
     } else if (kind === 'wireframe') {
       line += ` · ${pageSizeLabel(p)}${p.orientation === 'landscape' && pageHasOrientation(p) ? ' Landscape' : ''}`;
-    } else if (kind === 'slide' && opts.inDeck) {
-      line += opts.inDeck(p.id) ? ' · In the deck' : ' · Not in the deck';
     }
     return {
       id: p.id,
@@ -65,7 +55,6 @@ export function contentsRows(
       locked: p.locked === true,
       aspect: p.rect.width / p.rect.height,
       kind,
-      ...(kind === 'slide' && opts.inDeck ? { inDeck: opts.inDeck(p.id) } : {}),
     };
   });
 }

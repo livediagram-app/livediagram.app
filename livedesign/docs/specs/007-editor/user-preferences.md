@@ -280,7 +280,7 @@ type UserPreferences = {
   // page kind's track as seen while Power user mode is on. Set with every kind by Power user mode.
   pagesTourSeen?: boolean;
   // The page kinds whose Pages tour track has been offered and answered (taken, skipped or declined), so each
-  // kind offers its own once ever. Settings' row per kind (Slides Tour, ...) adds or removes its own kind.
+  // kind offers its own once ever. Settings' row per kind (Infographic Tour, ...) adds or removes its own kind.
   pagesTourKinds?: PageKind[];
   // Element tours (docs/specs/007-editor/element-tours.md): the toured element kinds whose offer has been answered
   // (Play or Cancel). Surfaced in Settings as Tours › Show Me, one switch per kind (inverted).
@@ -767,7 +767,7 @@ and the dialog stays as the one complete, browsable index of them.
 
   **Tours** is a category of its own: one switch per guided tour, **Diagram
   Tour**, **Plan Tours** (over **Boards Tour**, **Sheets Tour** and **Dashboards Tour**), **Workshop Tour**,
-  **Draw Tour**, **Forms Tour**, **Avatar Tour** and **Pages Tours** (over **Slides Tour**, **Infographic Tour**
+  **Draw Tour**, **Forms Tour**, **Avatar Tour** and **Pages Tours** (over **Infographic Tour**
   and **Logo Tour**), each with a line saying where it offers itself and a **Learn more**
   to its article, under one **Offer Again** section note: each tour offers
   itself once; switch one back on and close Settings to take it again, straight
@@ -797,8 +797,8 @@ and the dialog stays as the one complete, browsable index of them.
   `workshopTourSeen` ([Workshop tour](../012-collaboration/workshop-tour.md)), **Draw Tour** against
   `drawTourSeen` ([Draw tour](../023-draw-mode/draw-tour.md)), **Forms Tour** against `formTourSeen` ([Forms](../030-forms/forms.md) "The Forms tour"), **Avatar Tour** against `avatarTourSeen`
   ([Avatar tour](../008-canvas/avatar-tour.md)), and the Pages tour is built as the Plan tour's
-  rows are ([Pages tour](pages-tour.md)): **Pages Tours** over one row per page kind (**Slides Tour**,
-  **Infographic Tour**, **Logo Tour**); `pagesTourKinds` lists the kinds answered. Power user
+  rows are ([Pages tour](pages-tour.md)): **Pages Tours** over one row per page kind (**Infographic Tour**,
+  **Logo Tour**); `pagesTourKinds` lists the kinds answered. Power user
   mode's readout lists each tour's switch over all its tracks (**Plan Tours**, **Pages Tours**).
   A multi-track tour's old single flag (`planTourSeen`, `pagesTourSeen`) counts every track only while Power
   user mode is on, so an answer given before the tour split offers each track once more.

@@ -81,7 +81,7 @@ export type PagesModeView = {
   logo?: LogoToolsView;
   // Absent where the viewer may not change the pages (a view role, a locked tab).
   edit?: PageEdits;
-  // A slide page's place in the slide deck (PageDeckButton), composed in by the editor; absent
+  // A page's place in the slide deck (PageDeckButton), composed in by the editor; absent
   // where the deck cannot be changed.
   deck?: PageDeckControls;
   // A page slide presenting: the surround is blacked out round the sheet, as a projector shows it.

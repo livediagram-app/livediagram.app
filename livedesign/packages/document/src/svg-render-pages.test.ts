@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createShape } from './shape-factory';
-import { newSlidePage } from './page';
+import type { Page } from './page';
 import { laidOutPagesOf, pagesPerRow, renderPageToSvg, renderPagesToSvg } from './svg-render-pages';
 import type { Tab } from './index';
 
@@ -67,14 +67,15 @@ describe('a Pages tab drawn as its pages', () => {
     expect(svg).not.toContain('Elsewhere');
   });
 
-  it('lays every page out in rows, named under each, two to a row of slides and three of tall pages', () => {
+  it('lays every page out in rows, named under each, two to a row of wide pages and three of tall ones', () => {
     const tall = tab([portrait('a'), portrait('b', { name: 'Two' }), portrait('c'), portrait('d')]);
     const svg = renderPagesToSvg(tall)!;
     expect(svg.match(/<svg x=/g)).toHaveLength(4);
     expect(svg).toContain('>2  Two<');
     expect(pagesPerRow(laidOutPagesOf(tall))).toBe(3);
-    const slides = tab([newSlidePage('s1'), newSlidePage('s2'), newSlidePage('s3')]);
+    const wide = (id: string): Page => ({ id, orientation: 'landscape', size: 'wide' });
+    const slides = tab([wide('s1'), wide('s2'), wide('s3')]);
     expect(pagesPerRow(laidOutPagesOf(slides))).toBe(2);
-    expect(pagesPerRow(laidOutPagesOf(tab([newSlidePage('s1')])))).toBe(1);
+    expect(pagesPerRow(laidOutPagesOf(tab([wide('s1')])))).toBe(1);
   });
 });

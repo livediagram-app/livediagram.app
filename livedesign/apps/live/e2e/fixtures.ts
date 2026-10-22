@@ -80,7 +80,7 @@ async function markModeToursSeen(context: BrowserContext): Promise<void> {
             avatarTourSeen: true,
             formTourSeen: true,
             pagesTourSeen: true,
-            pagesTourKinds: ['slide', 'infographic', 'logo'],
+            pagesTourKinds: ['infographic', 'logo'],
             // Element tours (docs/specs/007-editor/element-tours.md): the offer beside a Sankey's toolbar.
             elementTourKinds: [
               'sankey',

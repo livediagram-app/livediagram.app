@@ -10,8 +10,8 @@ afterEach(cleanup);
 describe('ApplyBackgroundToAll', () => {
   it('names the kind it reaches and applies on a press', () => {
     const onApply = vi.fn();
-    render(<ApplyBackgroundToAll page={{ kind: 'slide' }} reach={35} onApply={onApply} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Apply to All Slides' }));
+    render(<ApplyBackgroundToAll page={{ kind: 'logo' }} reach={35} onApply={onApply} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Apply to All Logo Pages' }));
     expect(onApply).toHaveBeenCalledTimes(1);
     expect(screen.getByText(/Gives the other 35 this background and pattern/)).toBeTruthy();
   });
@@ -23,7 +23,7 @@ describe('ApplyBackgroundToAll', () => {
 
   it('is absent with no other page of the kind', () => {
     const { container } = render(
-      <ApplyBackgroundToAll page={{ kind: 'slide' }} reach={0} onApply={vi.fn()} />,
+      <ApplyBackgroundToAll page={{ kind: 'logo' }} reach={0} onApply={vi.fn()} />,
     );
     expect(container.innerHTML).toBe('');
   });

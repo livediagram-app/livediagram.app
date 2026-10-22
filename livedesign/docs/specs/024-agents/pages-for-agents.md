@@ -1,11 +1,11 @@
 # Pages for agents
 
 How an agent (the MCP tools and the CLI's verbs, [Agents](README.md)) reads and makes the pages of a tab in
-Pages mode: infographic, slide and logo pages ([Pages](../007-editor/pages-mode.md),
-[Logo pages](../007-editor/logo-pages.md)). People with the document open see an agent's pages arrive at once, as
+Pages mode: infographic, logo and wireframe pages ([Pages](../007-editor/pages-mode.md),
+[Logo pages](../007-editor/logo-pages.md), [Wireframe pages](../007-editor/wireframe-pages.md)). People with the document open see an agent's pages arrive at once, as
 anyone's.
 
-The bar: an agent asked to "make a deck" or "design a logo" makes it on the right kind of page on the first try, and
+The bar: an agent asked to "make a poster" or "design a logo" makes it on the right kind of page on the first try, and
 is never told a change worked when it shows on no page.
 
 ## Domain language
@@ -25,7 +25,7 @@ is never told a change worked when it shows on no page.
   the editor, so an agent's page edit is exactly the edit the page panel makes.
   The route answered at `.../illustrate` before Illustrate mode became Pages mode; that address is still served,
   marked deprecated in `/api/openapi.json`, for CLI and MCP builds from before the rename.
-- `create_document` and `add_tab` with a Pages template (`slide-deck`, `logo-design`, the poster
+- `create_document` and `add_tab` with a Pages template (`logo-design`, the poster
   family, `blank-illustration`, ...) still make a tab on its pages; `change_pages` then changes it.
 
 ## Which tab
@@ -43,7 +43,7 @@ is never told a change worked when it shows on no page.
 
 - A page is named by its **id** (`page-3f2a91c0`), its **place** (`2`, or `"2"`), or its **name** (case and spacing
   aside). An id wins over a place, a place over a name.
-- An unknown page is refused (`page_unknown`) with the pages there are ("Pages: 1 Cover (slide), 2 (slide),
+- An unknown page is refused (`page_unknown`) with the pages there are ("Pages: 1 Cover (infographic), 2 (infographic),
   3 Logo (logo)").
 - Places are read against the pages as the changes before it left them, so `[delete 2, set 2]` sets the page that
   was third.
@@ -54,45 +54,45 @@ Up to **50** page changes, applied in order, each to the tab as the ones before 
 edit. A refused change stops the batch and nothing is written; the answer names the change and why, and what the
 changes before it would have done.
 
-| Change                    | Fields                                                                                               | Does                                                                                                                                                                          |
-| ------------------------- | ---------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `add`                     | `kind` (infographic, slide, logo), `size?`, `orientation?`, `name?`, `background?`, `layout?`, `at?` | A new page of the kind, sized as the editor's **+** sizes it unless told, at place `at` (default the end)                                                                     |
-| `set`                     | `page`, `name?`, `size?`, `orientation?`, `background?`, `locked?`                                   | The page panel's edits                                                                                                                                                        |
-| `layout`                  | `page`, `layout`                                                                                     | Puts a layout onto the page in place of everything on it, as the panel's Layouts do                                                                                           |
-| `move`                    | `page`, `to`                                                                                         | Moves the page to place `to`, its content with it                                                                                                                             |
-| `duplicate`               | `page`                                                                                               | A copy after it, content and all                                                                                                                                              |
-| `delete`                  | `page`                                                                                               | Removes the page and everything on it; never the last page. A later delete in the same change naming, by id, a page an earlier one took is done already, never a missing page |
-| `apply_background_to_all` | `page`                                                                                               | Every other page of the page's kind takes its background, as the Background tab's **Apply to All** does                                                                       |
+| Change                    | Fields                                                                                                   | Does                                                                                                                                                                          |
+| ------------------------- | -------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `add`                     | `kind` (infographic, logo, wireframe), `size?`, `orientation?`, `name?`, `background?`, `layout?`, `at?` | A new page of the kind, sized as the editor's **+** sizes it unless told, at place `at` (default the end)                                                                     |
+| `set`                     | `page`, `name?`, `size?`, `orientation?`, `background?`, `locked?`                                       | The page panel's edits                                                                                                                                                        |
+| `layout`                  | `page`, `layout`                                                                                         | Puts a layout onto the page in place of everything on it, as the panel's Layouts do                                                                                           |
+| `move`                    | `page`, `to`                                                                                             | Moves the page to place `to`, its content with it                                                                                                                             |
+| `duplicate`               | `page`                                                                                                   | A copy after it, content and all                                                                                                                                              |
+| `delete`                  | `page`                                                                                                   | Removes the page and everything on it; never the last page. A later delete in the same change naming, by id, a page an earlier one took is done already, never a missing page |
+| `apply_background_to_all` | `page`                                                                                                   | Every other page of the page's kind takes its background, as the Background tab's **Apply to All** does                                                                       |
 
 - **The first page's choice**: while the tab's only page is unchosen and empty, an `add` of a kind makes that page
   the kind (`withPageKindChosen`) instead of adding a second page, so a fresh Pages tab does not keep an empty
   first page. Likewise a blank of the kind asked for (the tab's only page already of that kind, unnamed and holding
-  nothing, as the Blank Slide Deck makes it) becomes the page added, so a deck made from it does not open on an empty
-  slide.
+  nothing, as the Blank Infographic makes it) becomes the page added, so a document made from it does not open on an
+  empty page.
 - **A delete of the page an add took**: once an `add` has taken the first page that way, the empty page is gone, so a
   later `delete` in the same call naming that page (by place or id) means the empty page and is done already: it
   deletes nothing and says so (`Page 1 was the empty first page, which change 1 made the page it added; nothing
 deleted.`). An agent replacing a starter page writes `[add, delete 1]`, and without this the delete would remove the
   page it just added, or be refused as the tab's only page.
 - **Sizes**: a page takes only the sizes its kind offers (`pageSizesFor`); any other is refused (`size_not_offered`)
-  naming the ones it takes. Fit to Content is never chosen (`size_not_offered`). A slide or logo page has no
+  naming the ones it takes. Fit to Content is never chosen (`size_not_offered`). A logo page has no
   orientation; turning one is refused (`no_orientation`).
 - **Backgrounds**: `{ color }` (a hex) is a solid fill, `{ gradient: [from, to], angle? }` a two-stop gradient
   (angle in degrees, default 160, the panel's), `pattern` one of `dots`, `grid`, `lines` or `none`, `{ paper: true }` back to the
   plain paper. A logo page takes no pattern (`pattern_not_offered`). A new fill re-inks what is on the page as the panel does
   (`pageInkFor`, [Re-inking](../007-editor/pages-mode.md#re-inking)), from the colours as they are (the
   editor's session memory is the editor's).
-- **Apply to all**: `apply_background_to_all` gives every other page of the page's kind (every slide, say) its
+- **Apply to all**: `apply_background_to_all` gives every other page of the page's kind (every infographic page, say) its
   background, fill and pattern, re-inking each ([Copying a background](../007-editor/pages-mode.md#copying-a-background)).
-  A locked page keeps its own and the line says how many did ("Gave 34 other slide pages the background of page 1;
+  A locked page keeps its own and the line says how many did ("Gave 34 other infographic pages the background of page 1;
   2 locked kept their own"). With no other page of the kind it is refused (`no_other_pages`). It is how an agent
-  gives a whole deck one background: `set` the first slide's, then this, in the same call.
+  gives a whole set of pages one background: `set` the first page's, then this, in the same call.
 - **Layouts**: a layout id the page's kind offers (`layoutCatalogueFor`); any other is refused (`layout_unknown`)
   naming the kind's layouts. Laid out in the page's content box, in the tab's theme.
 - **Locks**: a locked page refuses every change but `set { locked: false }` (`page_locked`).
 - **Limit**: a tab holds at most 100 pages (`MAX_PAGES`); an `add` or `duplicate` past it is refused
   (`page_limit`).
-- **The answer**: one line per change ("Added page 3 (slide, 16:9) from layout Title", "Deleted page 2 and 4
+- **The answer**: one line per change ("Added page 3 (infographic, A4) from layout Report Cover", "Deleted page 2 and 4
   elements on it"), then the tab's pages as they now are: place, id, name, kind, size and orientation, the page's
   rectangle on the canvas (`x, y, width, height`) and how many elements are on it. Elements are put onto a page with
   `update_document`, at coordinates inside its rectangle.

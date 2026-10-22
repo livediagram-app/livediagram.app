@@ -45,7 +45,7 @@ describe.each(MODES)('the %s template start', (mode) => {
       diagram: ['flow', 'flowchart'],
       draw: ['sketch', 'sketchnote'],
       workshop: ['retro', 'retrospective'],
-      pages: ['slide', 'slide-deck'],
+      pages: ['logo', 'logo-design'],
     }[mode];
     const kinds = start.search(probe[0]!).flatMap((g) => g.kinds);
     expect(kinds).toContain(probe[1]);
@@ -94,37 +94,33 @@ describe('Start a Workshop', () => {
 });
 
 describe('Start Making Pages', () => {
-  it('groups by what is made: Slides, Infographics, Posters and Social, Logos, Wireframes, Design', () => {
+  it('groups by what is made: Infographics, Posters and Social, Logos, Wireframes, Design', () => {
     expect(TEMPLATE_STARTS.pages.groups.map((g) => g.name)).toEqual([
       'Recommended',
-      'Slides',
       'Infographics',
       'Posters and Social',
       'Logos',
       'Wireframes',
       'Design',
     ]);
-    // A carousel is posted, not presented.
     const group = (id: string) => TEMPLATE_STARTS.pages.groups.find((g) => g.id === id)!.kinds;
-    expect(group('slides')).not.toContain('social-carousel');
     expect(group('posters')).toContain('social-carousel');
     expect(group('design')).toEqual(['storyboard', 'floor-plan']);
     expect(TEMPLATE_STARTS.pages.blank).toBe('blank-illustration');
   });
 
-  it('leads Slides, Infographics and Logos with their blank of a page kind', () => {
+  it('leads Infographics and Logos with their blank of a page kind', () => {
     // docs/specs/007-editor/templates-by-mode.md "Blanks of a page kind".
     const first = Object.fromEntries(TEMPLATE_STARTS.pages.groups.map((g) => [g.id, g.kinds[0]]));
     expect(first).toMatchObject({
-      slides: 'blank-slide-deck',
       infographics: 'blank-infographic',
       logos: 'blank-logo',
     });
-    // Recommended leads with Blank Infographic, then Blank Slide Deck in the Slide Deck's place; Blank
-    // Illustration is left out of it, and Blank Logo stays in its group alone.
+    // Recommended leads with Blank Infographic in Blank Illustration's place, and Blank Logo stays in
+    // its group alone.
     const recommended = TEMPLATE_STARTS.pages.groups[0]!.kinds;
-    expect(recommended.slice(0, 2)).toEqual(['blank-infographic', 'blank-slide-deck']);
-    for (const k of ['blank-illustration', 'slide-deck', 'blank-logo'] as const)
+    expect(recommended[0]).toBe('blank-infographic');
+    for (const k of ['blank-illustration', 'blank-logo'] as const)
       expect(recommended).not.toContain(k);
     expect(TEMPLATE_STARTS.pages.groups.filter((g) => g.kinds.includes('blank-logo'))).toHaveLength(
       1,

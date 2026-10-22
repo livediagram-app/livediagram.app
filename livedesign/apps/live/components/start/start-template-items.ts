@@ -159,19 +159,6 @@ const OWN_GROUPS: Readonly<Record<Exclude<TemplateStartMode, 'diagram'>, readonl
   ],
   pages: [
     {
-      id: 'slides',
-      name: 'Slides',
-      line: 'Decks to present, one idea to a slide.',
-      kinds: [
-        'blank-slide-deck',
-        'slide-deck',
-        'launch-keynote',
-        'quarterly-review',
-        'team-welcome',
-        'workshop-kickoff',
-      ],
-    },
-    {
       id: 'infographics',
       name: 'Infographics',
       line: 'Numbers, comparisons and how-tos told visually.',

@@ -11,19 +11,6 @@ const ids = (steps: { id: string }[]) => steps.map((s) => s.id);
 const everything = () => true;
 
 describe('the tracks', () => {
-  it('Slides: layout, background, another slide, then the deck: its rows, a slide’s menu, the show, present', () => {
-    expect(ids(pageTourSteps('slide'))).toEqual([
-      'layouts',
-      'background',
-      'add-page',
-      'deck',
-      'slide-menu',
-      'show-settings',
-      'present',
-      'outro',
-    ]);
-  });
-
   it('Infographic: its name, layout, background, size, another page, present', () => {
     expect(ids(pageTourSteps('infographic'))).toEqual([
       'page-name',
@@ -56,7 +43,7 @@ describe('the tracks', () => {
   });
 
   it('holds every control to the tour page, never the first page', () => {
-    for (const kind of ['slide', 'infographic', 'logo'] as const) {
+    for (const kind of ['infographic', 'logo'] as const) {
       for (const step of pageTourSteps(kind)) {
         const selectors = [step.requires?.(api), step.selector?.(api)].filter(Boolean) as string[];
         for (const sel of selectors) {
@@ -70,19 +57,19 @@ describe('the tracks', () => {
 
 describe('what the tour starts with', () => {
   it('opens the offer on the track’s own welcome card', () => {
-    const steps = pagesTourSteps('slide', api, everything);
+    const steps = pagesTourSteps('logo', api, everything);
     expect(steps[0]).toMatchObject({ id: 'welcome', card: 'welcome' });
-    expect(steps[0]!.title).toBe('Getting started with Slides?');
+    expect(steps[0]!.title).toBe('Getting started with Logos?');
   });
 
   it('leaves out a step whose control is not on screen (no Slides button on a phone)', () => {
     const exists = (sel: string) => !sel.includes('data-tour-id="slides"');
-    expect(ids(shownPageTourSteps('slide', api, exists))).not.toContain('present');
-    expect(ids(shownPageTourSteps('slide', api, exists))).toContain('layouts');
+    expect(ids(shownPageTourSteps('infographic', api, exists))).not.toContain('present');
+    expect(ids(shownPageTourSteps('infographic', api, exists))).toContain('layouts');
   });
 
   it('checks what a step opens by the button that opens it', () => {
-    const layouts = pageTourSteps('slide').find((s) => s.id === 'layouts')!;
+    const layouts = pageTourSteps('infographic').find((s) => s.id === 'layouts')!;
     const seen: string[] = [];
     stepShown(layouts, api, (sel) => {
       seen.push(sel);
@@ -92,14 +79,14 @@ describe('what the tour starts with', () => {
   });
 
   it('always keeps a card with nothing to point at', () => {
-    const outro = pageTourSteps('slide').find((s) => s.id === 'outro')!;
+    const outro = pageTourSteps('infographic').find((s) => s.id === 'outro')!;
     expect(stepShown(outro, api, () => false)).toBe(true);
   });
 });
 
 describe('telemetry', () => {
   it('names the track in each step view', () => {
-    expect(pagesTourStepTelemetryType('slide', 'add-page')).toBe('PagesTourStepSlideAddPage');
+    expect(pagesTourStepTelemetryType('logo', 'add-page')).toBe('PagesTourStepLogoAddPage');
     expect(pagesTourStepTelemetryType('infographic', 'page-size')).toBe(
       'PagesTourStepInfographicPageSize',
     );

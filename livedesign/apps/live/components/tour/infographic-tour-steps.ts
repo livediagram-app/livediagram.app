@@ -67,7 +67,7 @@ export function infographicTourSteps(): PageTourStep[] {
     {
       id: 'present',
       title: 'Present It',
-      body: 'Add any page as a slide, then Present shows them full screen.',
+      body: 'Every page is in the deck: hide the ones to skip, then Present shows them full screen.',
       selector: () => SLIDE_DECK,
       requires: () => SLIDES_BUTTON,
       prepare: openSlideDeck,

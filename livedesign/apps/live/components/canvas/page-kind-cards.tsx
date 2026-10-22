@@ -27,7 +27,16 @@ export function moveBetweenKindCards(
   if (step === undefined) return;
   e.preventDefault();
   const at = cards.findIndex((c) => c === document.activeElement);
-  cards[(at + step + PAGE_KINDS.length) % PAGE_KINDS.length]?.focus();
+  const n = PAGE_KINDS.length;
+  let next = at + step;
+  // Down from a card above a short last row lands on that row's last card (the wide one), not round to the top.
+  if (
+    step === KIND_COLUMNS &&
+    next >= n &&
+    Math.floor(at / KIND_COLUMNS) < Math.floor((n - 1) / KIND_COLUMNS)
+  )
+    next = n - 1;
+  cards[(next + n) % n]?.focus();
 }
 
 export const PAGE_KINDS: readonly PageKindChoice[] = [
@@ -36,12 +45,6 @@ export const PAGE_KINDS: readonly PageKindChoice[] = [
     name: 'Infographic',
     line: 'A page to lay out: layouts, icons, charts and media.',
     hint: 'Lay out icons, charts and media.',
-  },
-  {
-    kind: 'slide',
-    name: 'Slide',
-    line: 'A slide for a deck: widescreen, ready to present.',
-    hint: 'A widescreen slide for a deck.',
   },
   {
     kind: 'logo',
@@ -65,7 +68,7 @@ export function PageKindCard({
 }: {
   choice: PageKindChoice;
   onChoose: () => void;
-  // Across both columns, its miniature beside its words (the last card of the five).
+  // Across both columns, its miniature beside its words (the last card of an odd number).
   wide?: boolean;
   ref?: Ref<HTMLButtonElement>;
 }) {
@@ -85,8 +88,6 @@ export function PageKindCard({
       >
         {choice.kind === 'wireframe' ? (
           <WireframeMiniature />
-        ) : choice.kind === 'slide' ? (
-          <SlideMiniature />
         ) : choice.kind === 'logo' ? (
           <LogoMiniature />
         ) : (
@@ -147,39 +148,6 @@ function InfographicMiniature() {
         height="2.5"
         rx="1.25"
         className="fill-slate-200 dark:fill-slate-500"
-      />
-    </svg>
-  );
-}
-
-// A widescreen slide: a title, an accent rule and bullet points beside a picture.
-function SlideMiniature() {
-  const line = 'fill-slate-300 dark:fill-slate-500';
-  return (
-    <svg width="78" height="44" viewBox="0 0 78 44" aria-hidden className="drop-shadow-sm">
-      <rect width="78" height="44" rx="3" className="fill-white dark:fill-slate-700" />
-      <rect
-        x="6"
-        y="6"
-        width="30"
-        height="5"
-        rx="2"
-        className="fill-slate-700 dark:fill-slate-200"
-      />
-      <rect x="6" y="14" width="9" height="1.6" rx="0.8" className="fill-brand-500" />
-      <circle cx="7.5" cy="21" r="1.3" className="fill-brand-500" />
-      <rect x="11" y="20" width="24" height="2.2" rx="1.1" className={line} />
-      <circle cx="7.5" cy="27" r="1.3" className="fill-brand-500" />
-      <rect x="11" y="26" width="20" height="2.2" rx="1.1" className={line} />
-      <circle cx="7.5" cy="33" r="1.3" className="fill-brand-500" />
-      <rect x="11" y="32" width="22" height="2.2" rx="1.1" className={line} />
-      <rect
-        x="42"
-        y="6"
-        width="30"
-        height="32"
-        rx="2"
-        className="fill-brand-100 dark:fill-brand-500/25"
       />
     </svg>
   );

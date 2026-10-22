@@ -8,7 +8,7 @@ import { renderView } from './render-view';
 // docs/specs/024-agents/pages-for-agents.md "Reading: the pages view".
 
 const pages: Page[] = [
-  { id: 'page-cover', orientation: 'landscape', size: 'slide', kind: 'slide', name: 'Cover' },
+  { id: 'page-cover', orientation: 'landscape', size: 'wide', kind: 'infographic', name: 'Cover' },
   { id: 'page-logo', orientation: 'portrait', size: 'logo', kind: 'logo', locked: true },
   { id: 'page-wf1', orientation: 'portrait', size: 'device', kind: 'wireframe', device: 'iphone' },
 ];
@@ -54,26 +54,26 @@ describe('the pages view', () => {
     const out = pagesOf(pagesTab());
     const lines = out.text.split('\n');
     expect(lines[0]).toBe(
-      'tab tab-deck "Deck" · 1 element: 1 box · mode=pages · 3 pages: 1 slide, 1 logo, 1 wireframe (view pages) · rev 7',
+      'tab tab-deck "Deck" · 1 element: 1 box · mode=pages · 3 pages: 1 infographic, 1 logo, 1 wireframe (view pages) · rev 7',
     );
     expect(lines[1]).toBe(
-      `page 1 "Cover" page-cover · slide Slide (16:9) · at ${cover.x},${cover.y} 1920x1080 · 1 element`,
+      `page 1 "Cover" page-cover · infographic Widescreen (16:9) · at ${cover.x},${cover.y} 1920x1080 · 1 element`,
     );
     expect(lines[2]).toBe('  square aaaa1111');
     expect(lines[1]).toBe(
-      `page 1 "Cover" page-cover · slide Slide (16:9) · at ${cover.x},${cover.y} 1920x1080 · 1 element`,
+      `page 1 "Cover" page-cover · infographic Widescreen (16:9) · at ${cover.x},${cover.y} 1920x1080 · 1 element`,
     );
     expect(lines[3]).toMatch(/^page 2 page-logo · logo 1024 x 1024 · at .* · locked · empty$/);
     expect(lines[4]).toMatch(/^page 3 page-wf1 · wireframe .* · at .* · empty$/);
     expect(out.text).toContain(
       "Rectangles and elements' x, y are canvas coordinates (the layout view prints positions from the content's corner).",
     );
-    expect(out.text).toMatch(/layouts slide: slide-title, /);
+    expect(out.text).toMatch(/layouts infographic: /);
     expect(out.text).toMatch(/layouts logo: /);
     const json = out.json as PagesView;
     expect(json.pagesMode).toBe(true);
-    expect(json.pages[0]).toMatchObject({ place: 1, kind: 'slide', refs: ['aaaa1111'] });
-    expect(json.layouts.map((l) => l.kind)).toEqual(['slide', 'logo', 'wireframe']);
+    expect(json.pages[0]).toMatchObject({ place: 1, kind: 'infographic', refs: ['aaaa1111'] });
+    expect(json.layouts.map((l) => l.kind)).toEqual(['infographic', 'logo', 'wireframe']);
   });
 
   it('names a landscape page, its paint and its elements', () => {

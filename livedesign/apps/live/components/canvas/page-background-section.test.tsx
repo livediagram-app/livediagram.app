@@ -223,11 +223,11 @@ describe('BackgroundSection', () => {
 });
 
 describe('the Animated category', () => {
-  const slide = (fill?: PageFill) => {
+  const screenPage = (fill?: PageFill) => {
     const page = {
       id: 's',
       orientation: 'landscape',
-      kind: 'slide',
+      kind: 'wireframe',
       ...(fill ? { background: { fill } } : {}),
     };
     const onBackground = vi.fn();
@@ -243,16 +243,16 @@ describe('the Animated category', () => {
     return onBackground;
   };
 
-  it('is offered on a slide page alone', () => {
+  it('is offered on a wireframe page alone', () => {
     show();
     expect(screen.queryByRole('radio', { name: 'Animated' })).toBeNull();
     cleanup();
-    slide();
+    screenPage();
     expect(radio('Animated')).toBeTruthy();
   });
 
   it('previews a motion on hover and sets it on a press, as a gradient with its motion', () => {
-    const onBackground = slide();
+    const onBackground = screenPage();
     fireEvent.click(radio('Animated'));
     fireEvent.pointerEnter(radio('Starfield'));
     expect(onPreview).toHaveBeenLastCalledWith({
@@ -264,8 +264,8 @@ describe('the Animated category', () => {
     });
   });
 
-  it('opens on Animated for a slide that has one, the motion marked', () => {
-    slide({ kind: 'gradient', from: '#0b1020', to: '#123456', angle: 160, motion: 'waves' });
+  it('opens on Animated for a screen that has one, the motion marked', () => {
+    screenPage({ kind: 'gradient', from: '#0b1020', to: '#123456', angle: 160, motion: 'waves' });
     expect(radio('Animated').getAttribute('aria-checked')).toBe('true');
     expect(radio('Waves').getAttribute('aria-checked')).toBe('true');
   });
@@ -276,7 +276,7 @@ describe('the Animated speed', () => {
     const page = {
       id: 's',
       orientation: 'landscape',
-      kind: 'slide',
+      kind: 'wireframe',
       background: {
         fill: { kind: 'gradient', from: '#0b1020', to: '#123456', angle: 160, motion: 'waves' },
       },
@@ -314,7 +314,7 @@ describe('Animated custom colours', () => {
     motion: 'waves',
     speed: 2,
   } as const;
-  const slideWith = (fill: PageFill) => {
+  const screenWith = (fill: PageFill) => {
     const onBackground = vi.fn();
     onPreview = vi.fn();
     render(
@@ -322,7 +322,7 @@ describe('Animated custom colours', () => {
         page={{
           id: 's',
           orientation: 'landscape',
-          kind: 'slide',
+          kind: 'wireframe',
           background: { fill },
         }}
         themePresets={theme}
@@ -334,7 +334,7 @@ describe('Animated custom colours', () => {
   };
 
   it('marks Custom for colours that are not the theme’s, and keeps them through a motion change', () => {
-    const onBackground = slideWith(customFill);
+    const onBackground = screenWith(customFill);
     expect(radio('Custom Colours').getAttribute('aria-checked')).toBe('true');
     fireEvent.click(radio('Aurora'));
     expect(onBackground).toHaveBeenLastCalledWith({

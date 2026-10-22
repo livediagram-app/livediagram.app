@@ -5,7 +5,6 @@ import { pagesOf } from './page';
 import { PEN_INK } from './pen-colours';
 import {
   defaultPageBackground,
-  STEEL_GRADIENT,
   themeAccent,
   withDefaultPageBackgrounds,
 } from './page-default-background';
@@ -22,33 +21,6 @@ describe("a new infographic page's background", () => {
         expect(contrastRatio(PEN_INK.dark, tone), `${t.id} ${tone}`).toBeGreaterThanOrEqual(4.5);
       }
     }
-  });
-
-  it('starts a slide on Steel, light enough that dark ink reads at 7:1', () => {
-    const fill = defaultPageBackground(getBuiltInTheme(undefined), 'slide').fill!;
-    expect(fill).toMatchObject({ kind: 'gradient', ...STEEL_GRADIENT });
-    for (const tone of [STEEL_GRADIENT.from, STEEL_GRADIENT.to])
-      expect(contrastRatio(PEN_INK.light, tone)).toBeGreaterThanOrEqual(7);
-  });
-
-  it('gives a slide its default only as a new slide document’s one page', () => {
-    const theme = getBuiltInTheme(undefined);
-    const slide = {
-      id: 's1',
-      orientation: 'landscape' as const,
-      kind: 'slide' as const,
-      size: 'slide' as const,
-    };
-    const alone = pagesOf(withDefaultPageBackgrounds({ pages: [slide] }, theme, new Set(['s1'])));
-    expect(alone[0]!.background).toEqual(defaultPageBackground(theme, 'slide'));
-    const deck = pagesOf(
-      withDefaultPageBackgrounds(
-        { pages: [slide, { ...slide, id: 's2' }] },
-        theme,
-        new Set(['s2']),
-      ),
-    );
-    expect(deck[1]!.background).toBeUndefined();
   });
 
   it('follows the theme accent', () => {
@@ -73,9 +45,9 @@ describe("a new infographic page's background", () => {
         },
         {
           id: 'p3',
-          orientation: 'landscape' as const,
-          kind: 'slide' as const,
-          size: 'slide' as const,
+          orientation: 'portrait' as const,
+          kind: 'logo' as const,
+          size: 'logo' as const,
         },
       ],
     };

@@ -2,7 +2,7 @@
 
 // The page panel's Background section (docs/specs/007-editor/pages-mode.md "Backgrounds"), for
 // every page kind: the kinds as tiles (page-background-kinds: Solid, Gradient, and Image but on a logo page,
-// page-background-image, and Animated on a slide page, page-background-animated) over that
+// page-background-image, and Animated on a wireframe page, page-background-animated) over that
 // category's choices: Solid is the
 // one colour picker (docs/specs/004-interface-design/colour-picker.md), Paper leading the theme's
 // colours, then the soft and the strong standard colours and Custom colours with +; Gradient is the
@@ -154,13 +154,13 @@ export function BackgroundSection({
   const fill = page.background?.fill;
   const pattern = page.background?.pattern;
   // A logo page takes no picture (docs/specs/007-editor/logo-pages.md "A logo page").
-  // A slide page and a wireframe page's screen move (docs/specs/007-editor/pages-mode.md "Animated
-  // backgrounds", wireframe-pages.md "The screen").
+  // A wireframe page's screen moves (docs/specs/007-editor/pages-mode.md "Animated backgrounds",
+  // wireframe-pages.md "The screen").
   const kind = pageKindOf(page);
   const offered: BackgroundCategory[] =
     kind === 'logo'
       ? ['solid', 'gradient']
-      : kind === 'slide' || kind === 'wireframe'
+      : kind === 'wireframe'
         ? ['solid', 'gradient', 'image', 'animated']
         : ['solid', 'gradient', 'image'];
   const categories = only ? offered.filter((c) => only.includes(c)) : offered;

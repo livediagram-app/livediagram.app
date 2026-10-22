@@ -95,16 +95,16 @@ const CHANGESET = {
 const PAGES = {
   tab: { id: 't1', rev: 4 },
   switched: false,
-  lines: ['Added page 1 (slide, Slide (16:9)).'],
+  lines: ['Added page 1 (logo, 1024 x 1024).'],
   pages: [
     {
       place: 1,
       id: 'page-1',
       name: null,
-      kind: 'slide',
-      size: 'slide',
+      kind: 'logo',
+      size: 'logo',
       orientation: null,
-      rect: { x: -960, y: -540, width: 1920, height: 1080 },
+      rect: { x: -512, y: -512, width: 1024, height: 1024 },
       background: null,
       locked: false,
       elements: 0,
@@ -423,7 +423,7 @@ const CALLS: { tool: string; output: keyof typeof outputs; args: Record<string, 
   {
     tool: 'change_pages',
     output: 'changePagesOutput',
-    args: { documentId: 'd1', changes: [{ op: 'add', kind: 'slide', layout: 'slide-title' }] },
+    args: { documentId: 'd1', changes: [{ op: 'add', kind: 'logo', layout: 'slide-title' }] },
   },
 ];
 

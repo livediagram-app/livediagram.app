@@ -20,7 +20,8 @@ const picture = { kind: 'image' as const, imageId: 'img-1' };
 const slide = (id: string, extra: Partial<Page> = {}): Page => ({
   id,
   orientation: 'landscape',
-  kind: 'slide',
+  kind: 'infographic',
+  size: 'wide',
   ...extra,
 });
 
@@ -34,7 +35,7 @@ const tabOf = (pages: Page[], elements: Element[] = []): Tab => ({
 const backgrounds = (tab: Tab) => Object.fromEntries(pagesOf(tab).map((p) => [p.id, p.background]));
 
 describe('pageBackgroundSpread', () => {
-  it('gives every other slide the background, animated speed and pattern included', () => {
+  it('gives every other page of its kind the background, animated speed and pattern included', () => {
     const tab = tabOf([
       slide('a', { background: { fill: animated, pattern: 'dots' } }),
       slide('b'),
@@ -50,7 +51,7 @@ describe('pageBackgroundSpread', () => {
   it('reaches only pages of the same kind', () => {
     const tab = tabOf([
       slide('a', { background: { fill: dusk } }),
-      { id: 'i', orientation: 'portrait' },
+      { id: 'i', orientation: 'portrait', kind: 'wireframe', size: 'device' },
       slide('b'),
     ]);
     const out = pageBackgroundSpread(tab, 'a');
@@ -66,7 +67,7 @@ describe('pageBackgroundSpread', () => {
     expect(backgrounds(out.tab).b).toBeUndefined();
   });
 
-  it('leaves a locked slide as it is and counts it', () => {
+  it('leaves a locked page as it is and counts it', () => {
     const tab = tabOf([
       slide('a', { background: { fill: dusk } }),
       slide('b', { locked: true }),
@@ -78,7 +79,7 @@ describe('pageBackgroundSpread', () => {
     expect(backgrounds(out.tab).b).toBeUndefined();
   });
 
-  it('counts a slide already wearing it as applied, with no change', () => {
+  it('counts a page already wearing it as applied, with no change', () => {
     const tab = tabOf([
       slide('a', { background: { fill: dusk } }),
       slide('b', { background: { fill: dusk } }),
@@ -119,7 +120,13 @@ describe('pageBackgroundSpread', () => {
 
   it('is refused with no other page of the kind, or an unknown page', () => {
     expect(
-      pageBackgroundSpread(tabOf([slide('a'), { id: 'i', orientation: 'portrait' }]), 'a'),
+      pageBackgroundSpread(
+        tabOf([
+          slide('a'),
+          { id: 'i', orientation: 'portrait', kind: 'wireframe', size: 'device' },
+        ]),
+        'a',
+      ),
     ).toEqual({
       refused: 'no_other_pages',
     });
@@ -152,7 +159,7 @@ describe('pageBackgroundCopied', () => {
     expect(backgrounds(out.tab).b).toEqual({ fill: picture, pattern: 'lines' });
   });
 
-  it('paints across kinds, a slide onto an infographic page', () => {
+  it('paints across shapes, a wide page onto a portrait one', () => {
     const tab = tabOf([
       slide('a', { background: { fill: dusk } }),
       { id: 'i', orientation: 'portrait' },
@@ -181,7 +188,7 @@ describe('pageBackgroundCopied', () => {
 
 describe('backgroundPatchFor', () => {
   it('carries the fill and the pattern, absent ones clearing the target’s', () => {
-    expect(backgroundPatchFor({ kind: 'slide' }, undefined)).toEqual({
+    expect(backgroundPatchFor({ kind: 'infographic' }, undefined)).toEqual({
       fill: undefined,
       pattern: undefined,
     });
@@ -197,9 +204,9 @@ describe('backgroundPatchFor', () => {
 // Performance: a deck at the page cap, every page full, takes one press. Measured 130 ms CPU on an
 // M-series Mac, 175 ms under coverage: the pages are re-inked in one walk (pagesInkFor), where
 // page by page cost 251 ms and 706 ms, and went over this budget on a loaded CI runner. The budget is
-// loose for slower runners, there to catch a slide back into re-reading the tab for every page.
+// loose for slower runners, there to catch a slip back into re-reading the tab for every page.
 describe('pageBackgroundSpread at the page cap', () => {
-  it('gives 99 full slides one background within its budget', () => {
+  it('gives 99 full pages one background within its budget', () => {
     const pages = Array.from({ length: 100 }, (_, i) =>
       slide(`p${i}`, i === 0 ? { background: { fill: { kind: 'solid', color: '#0f172a' } } } : {}),
     );

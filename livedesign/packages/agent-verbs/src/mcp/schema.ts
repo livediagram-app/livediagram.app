@@ -315,16 +315,15 @@ theirs: list_sheets lists a document's sheets, read_sheet reads one's cells by A
 formats cells, inserts and deletes rows and columns, sorts, freezes and renames,
 and sets dropdowns, checkboxes and other validation rules and conditional formats,
 and add_sheet puts a new Sheet on a tab in Plan, blank or from rows or CSV text.
-Tabs in Pages mode hold pages: infographics, slides, logo artboards and wireframes.
+Tabs in Pages mode hold pages: infographics, logo artboards and wireframes.
 change_pages adds, changes, lays out (from a ready-made layout), moves, copies and
 deletes them and answers each page's rectangle on the canvas, where update_document
-puts elements. Asked for a deck, add slide pages; asked for a logo, add a logo page;
-asked for a screen, add a wireframe page. A new document for pages starts with create_document and one
-tab whose template is "blank-slide-deck" for a deck (one empty slide; change_pages
-adds the rest, each change an object such as {"op": "add", "kind": "slide",
-"layout": ...}) or "blank-illustration" otherwise (then
-change_pages on it); the Pages templates (slide-deck, logo-design, ...) start
-from ready-made pages. A layout's elements hold sample text: read_document with
+puts elements. Asked for a logo, add a logo page; asked for a screen, add a wireframe
+page. A new document for pages starts with create_document and one tab whose template
+is "blank-logo" for a logo (one empty artboard; change_pages adds the rest, each change
+an object such as {"op": "add", "kind": "logo", "layout": ...}) or "blank-illustration"
+otherwise (then change_pages on it); the Pages templates (logo-design,
+wireframe-mobile-app, ...) start from ready-made pages. A layout's elements hold sample text: read_document with
 view "pages" lists each page's elements with their refs and text, to replace
 with update_document.
 Form tabs hold forms (like Google Forms): questions anyone fills in from a link,

@@ -23,6 +23,7 @@ import {
   CommentsArt,
   ComponentsArt,
   ConditionalFormatArt,
+  ContentsSidebarArt,
   CustomThemesArt,
   DashboardArt,
   DragDuplicateArt,
@@ -95,7 +96,6 @@ import {
   ShortcutsArt,
   SideBySideArt,
   SlideDeckArt,
-  SlideLayoutsArt,
   SlideTimingArt,
   SpotlightArt,
   TabCopyArt,
@@ -927,22 +927,22 @@ export const LANDING_SECTIONS: LandingSection[] = [
     cta: 'Explore slide decks',
     title: 'Build the deck, then present it',
     description:
-      'Start a slide from one of 61 ready-made layouts, or make one from what you drew, then present the deck full screen on your screen alone, your notes behind a button. Slides reference your diagram, so they never drift from it.',
+      'Every page you design is a slide already, or make one from what you drew, then present the deck full screen on your screen alone, your notes behind a button. Slides reference your work, so they never drift from it.',
     metaDescription:
-      'Slide decks from 61 ready-made layouts or from what you drew, presented full screen with private notes. Slides stay in step with your diagram.',
+      'Slide decks from your pages or from what you drew, presented full screen with private notes. Slides stay in step with your work.',
     highlights: [
-      'Slide pages, ready-made layouts',
+      'Every page is a slide',
       'Slides made from what you drew',
       'Notes only you open',
       'Your screen, not everyone else’s',
     ],
     items: [
       {
-        art: <SlideLayoutsArt />,
+        art: <ContentsSidebarArt />,
         href: '/help/canvas/pages-mode/exporting-pages/#turning-pages-into-slides',
-        title: 'Slide pages, ready-made layouts',
+        title: 'Every page is a slide',
         description:
-          'Add a 16:9 or classic 4:3 slide page and start it from one of 61 layouts: a keynote title, an agenda, three big numbers, a roadmap, a call to action and more. One press puts it in the deck, and it presents edge to edge.',
+          'Every page you design joins the deck on its own, in page order: move a page and its slide moves with it. Hide one you want to skip, show a page twice if you need to, and each one presents edge to edge.',
       },
       {
         art: <SlideDeckArt />,

@@ -25,15 +25,12 @@ export const PAGE_PANEL: Pick<PageTourApi, 'openPanel' | 'closePanel'> = {
 type Frozen = { pageId: string; kind: PageKind };
 
 function trackStarted(kind: PageKind) {
-  if (kind === 'slide') track('UI', 'Started', 'SlideTour');
-  else if (kind === 'logo') track('UI', 'Started', 'LogoTour');
+  if (kind === 'logo') track('UI', 'Started', 'LogoTour');
   else track('UI', 'Started', 'InfographicTour');
 }
 
 function trackEnded(kind: PageKind, completed: boolean) {
-  if (kind === 'slide') track('UI', 'Ended', completed ? 'SlideTourCompleted' : 'SlideTourSkipped');
-  else if (kind === 'logo')
-    track('UI', 'Ended', completed ? 'LogoTourCompleted' : 'LogoTourSkipped');
+  if (kind === 'logo') track('UI', 'Ended', completed ? 'LogoTourCompleted' : 'LogoTourSkipped');
   else track('UI', 'Ended', completed ? 'InfographicTourCompleted' : 'InfographicTourSkipped');
 }
 
@@ -104,7 +101,6 @@ export function PageShowMeButton({
 
 // Each kind's help article, linked beside Show Me and from the tour's closing card.
 export const PAGE_TOUR_HELP: Record<PageKind, { article: HelpArticleKey }> = {
-  slide: { article: 'slidePages' },
   infographic: { article: 'infographicLayouts' },
   logo: { article: 'logoPages' },
   wireframe: { article: 'wireframePages' },

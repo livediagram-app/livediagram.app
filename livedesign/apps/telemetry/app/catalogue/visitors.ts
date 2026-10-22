@@ -636,7 +636,6 @@ const SHOW_ME_SURFACES = [
   { token: 'ShareTour', title: 'Share', where: 'the Share dialog' },
   { token: 'DashboardTour', title: 'Dashboard', where: 'Dashboard Settings' },
   { token: 'LogoTour', title: 'Logo', where: 'a logo page’s panel' },
-  { token: 'SlideTour', title: 'Slide', where: 'a slide page’s panel' },
   { token: 'InfographicTour', title: 'Infographic', where: 'an infographic page’s panel' },
   { token: 'SankeyFlowsTour', title: 'Sankey Flows', where: 'a Sankey’s Flows dialog' },
   { token: 'TabStyleTour', title: 'Tab Style', where: 'the Tab Style dialog' },

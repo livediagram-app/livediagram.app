@@ -121,7 +121,7 @@ export const ALTERNATIVES: Alternative[] = [
       'Run the lesson on the board: an agenda that starts the timer for each segment, a roll call, and a picker that chooses someone at random so nobody has to volunteer.',
       'Around 190 emoji stickers and 32 word badges like APPROVED and WIP, for reacting to work and marking it.',
       'Switch the same tab to Diagram mode when a sketch needs to become a tidy flowchart, org chart or plan, and draw it in the Marker finish so it still looks like it came off the whiteboard.',
-      '143 templates, including retrospectives, Lean Coffee and town hall Q&A.',
+      '137 templates, including retrospectives, Lean Coffee and town hall Q&A.',
       'Free and MIT-licensed, so no future retirement can take your boards away: you can always run your own copy.',
     ],
     sections: [
@@ -219,7 +219,7 @@ export const ALTERNATIVES: Alternative[] = [
       'Assign action items to teammates on the canvas itself, tracked beside comments in the Collaborate panel.',
       'Workshop tools built in: Workshop mode, a facilitator role, a shared timer, dot-voting, live polls, planning-poker estimate cards, temperature checks, quizzes, an anonymous idea box and a Q&A board.',
       'Run the meeting itself on the board: an agenda that starts the timer for each segment, a roll call, a random picker, reveal zones that cover work until the room is ready, and decision records that keep what was agreed.',
-      '143 templates, 24 one-click whole-canvas themes and ready-made looks turn a blank canvas into a polished diagram fast, drawn clean, crisp and Professional, or by hand in Sketch or Marker.',
+      '137 templates, 24 one-click whole-canvas themes and ready-made looks turn a blank canvas into a polished diagram fast, drawn clean, crisp and Professional, or by hand in Sketch or Marker.',
       'Forms built in: share a link, and every response lands as a card on a board or a row in a Sheet.',
       'Meet on the board: everyone walks an avatar round a virtual office or team space, with speech bubbles and a status.',
       'Present a document as a slide deck built from its own elements, with a laser pointer and spotlight, no export needed.',
@@ -337,7 +337,7 @@ export const ALTERNATIVES: Alternative[] = [
       'Nothing to install: open a link in any browser and start.',
       'Bring existing maps across: export Markdown from XMind and paste it into Edit Outline.',
       'Sketch with the Freehand pen, or the Shape Pen to have a rough shape tidied into a clean one.',
-      '143 templates (three mind-map styles among them), 24 one-click themes and ready-made looks make a map look polished instantly, clean or hand-drawn in the Sketch and Marker finishes.',
+      '137 templates (three mind-map styles among them), 24 one-click themes and ready-made looks make a map look polished instantly, clean or hand-drawn in the Sketch and Marker finishes.',
       'Free, open source, and self-hostable.',
     ],
     sections: [
@@ -417,7 +417,7 @@ export const ALTERNATIVES: Alternative[] = [
       },
       {
         label: 'Presentations',
-        us: 'Free: slides from your canvas or 61 layouts, presenter notes, transitions',
+        us: 'Free: present your pages, with presenter notes and transitions',
         them: 'On the Excalidraw+ hosted plan, with a presenter view',
       },
       {
@@ -439,7 +439,7 @@ export const ALTERNATIVES: Alternative[] = [
       '24 themes recolour the whole canvas, shapes and arrows, in one click, and ready-made looks such as Doodle, Notebook and Flipchart set the theme, finish, font and canvas pattern together.',
       'Draw mode is a plain whiteboard: pressure-sensitive markers, an eraser and shapes on a plain, dotted or grid board, light or dark.',
       'Sketching tools beyond the marker: a Path tool for clean curves, optional shape recognition, an eraser that takes a whole stroke or just part of one, and Draw templates such as Sketchnote, Rich Picture and Comic Strip.',
-      'Presentations free for everyone: build a deck from elements on any tab, or design slides from 61 layouts in Pages, then present with notes, time budgets, transitions, a laser pointer and a spotlight.',
+      'Presentations free for everyone: present the pages of any design in order, skip the ones you hide, then present with notes, time budgets, transitions, a laser pointer and a spotlight.',
       'Animate a drawing so it draws itself on, or export a Pages tab as an animated GIF.',
       'Built-in charts, an icon library, comments and assigned actions, without add-ons.',
       'Smart alignment guides and snapping line everything up as you drag.',
@@ -463,7 +463,7 @@ export const ALTERNATIVES: Alternative[] = [
       {
         heading: 'Presentations, free',
         paragraphs: [
-          'Presenting is one of the things Excalidraw+ adds on its paid plan. In livedesign it is part of the free product. Pick elements on any tab and make them a slide, so the deck points at the real diagram and changes when it does, or switch a tab to Pages and design 16:9 or 4:3 slides from 61 ready-made layouts, with a Tab Window that shows another tab live on a slide.',
+          'Presenting is one of the things Excalidraw+ adds on its paid plan. In livedesign it is part of the free product. Pick elements on any tab and make them a slide, so the deck points at the real diagram and changes when it does.',
           'Present full screen with presenter notes, a time budget per slide, Slide or Fade transitions, auto-advance and loop, a laser pointer and a spotlight. Animate an element so a drawing draws itself on or a title types itself in, and export a Pages tab as PDF, PNG, SVG or an animated GIF.',
         ],
       },
@@ -496,7 +496,7 @@ export const ALTERNATIVES: Alternative[] = [
       },
       {
         q: 'Can I present from livedesign, like Excalidraw+?',
-        a: 'Yes, for free. Build a slide deck from elements on any tab, or design slides from 61 layouts in Pages, then present full screen with presenter notes, per-slide time budgets, transitions, auto-advance, a laser pointer and a spotlight. Slides made from the canvas point at the real elements, so the deck changes when the diagram does.',
+        a: 'Yes, for free. Present the pages of any design in order, hiding the ones to skip, then present full screen with presenter notes, per-slide time budgets, transitions, auto-advance, a laser pointer and a spotlight. Slides made from the canvas point at the real elements, so the deck changes when the diagram does.',
       },
       {
         q: 'When should I pick Excalidraw instead?',
@@ -550,7 +550,7 @@ export const ALTERNATIVES: Alternative[] = [
     usBest: [
       'Real-time co-editing with live cursors and presence on every document, wherever it is stored.',
       'A modern, fast canvas with nothing to set up: open a link and go.',
-      '143 templates and 24 themes for good-looking diagrams in minutes, not blank-canvas fiddling.',
+      '137 templates and 24 themes for good-looking diagrams in minutes, not blank-canvas fiddling.',
       'Diagrams stay tidy on their own: arrows re-route as shapes move, with collision avoidance, alignment guides and snapping.',
       'Full-colour technology icons (AWS, Azure, Kubernetes, databases…) for architecture diagrams.',
       'Tidy Up lays out a tangle of shapes and arrows as a flowchart, tree or mind map, and the UML theme colours each shape by its meaning.',
@@ -626,7 +626,7 @@ export const ALTERNATIVES: Alternative[] = [
       { label: 'Real-time multiplayer', us: 'Yes, live cursors and comments', them: 'Yes' },
       {
         label: 'Designed slides',
-        us: '16:9 or 4:3 slide pages from 61 layouts',
+        us: 'Present any design’s pages, in order',
         them: 'Themes, layouts and a large template gallery',
       },
       {
@@ -659,7 +659,7 @@ export const ALTERNATIVES: Alternative[] = [
     ],
     usBest: [
       'Slides straight from the work: select elements or a Plan board on any tab and present it, and editing a shape updates every slide it is on.',
-      'Slide pages when you want a designed deck: 16:9 or 4:3, started from 61 layouts (title, agenda, big numbers, roadmap and more).',
+      'Every page of a design joins its deck: reorder them, hide the ones to skip, and present.',
       'One document for the whole story: the write-up as pages, the diagram, the plan and the spreadsheet beside the deck that presents them.',
       'Present with presenter notes, a time budget per slide, Slide or Fade transitions, a laser pointer and a spotlight; your screen moves, nobody else’s.',
       'Leave a deck running on a screen: auto-advance every 5 to 60 seconds and loop back to the start.',
@@ -674,7 +674,7 @@ export const ALTERNATIVES: Alternative[] = [
       {
         heading: 'Two ways to make a deck',
         paragraphs: [
-          'In Google Slides a deck is its own file, built slide by slide. livedesign gives you two ways in. Switch a tab to Pages and add slide pages, 16:9 or 4:3, each started from one of 61 layouts (a title, an agenda, two columns, image and text, a timeline and more) and painted from your theme. Or build slides from what is already on your canvas: select a cluster of elements, or a Plan board, and make it a slide.',
+          'In Google Slides a deck is its own file, built slide by slide. livedesign gives you two ways in. Every page of a design joins its deck on its own, in order. Or build slides from what is already on your canvas: select a cluster of elements, or a Plan board, and make it a slide.',
           'Slides made from the canvas point at the real elements rather than copying them, so the deck can never drift from the work: change a shape, a card or a label and every slide it is on changes with it. A Tab Window does the same for a whole tab: put one on a slide page and it shows that tab live, fitted to the frame. Both kinds of slide sit in one deck, ordered in the Slide Deck panel, saved with the document.',
         ],
       },
@@ -726,7 +726,7 @@ export const ALTERNATIVES: Alternative[] = [
     name: 'FigJam',
     title: 'FigJam alternative · livedesign',
     description:
-      'A free, open-source FigJam alternative: a real-time whiteboard with workshop tools, no account needed, 143 templates, Mermaid, an API and an MCP server.',
+      'A free, open-source FigJam alternative: a real-time whiteboard with workshop tools, no account needed, 137 templates, Mermaid, an API and an MCP server.',
     h1: 'The free, open-source FigJam alternative',
     lede: 'FigJam is a polished, playful whiteboard that lives inside Figma. livedesign covers the same ground, brainstorms, workshops and diagrams with your team in real time, as free, open-source software that anyone can open from a link, no account or Figma seat needed.',
     rows: [
@@ -768,7 +768,7 @@ export const ALTERNATIVES: Alternative[] = [
     usBest: [
       'Free with no file limits and no seats: every feature, for everyone.',
       'Open a link and start, no account needed, even to create a document.',
-      'Structured diagrams that stay tidy: shapes and arrows that stay attached, alignment guides, 24 one-click themes and 143 templates.',
+      'Structured diagrams that stay tidy: shapes and arrows that stay attached, alignment guides, 24 one-click themes and 137 templates.',
       'Five ways to work one tab: Diagram for structure, Draw for freehand whiteboarding, Workshop for running a session with your team, Pages for slides, articles, posters and logos, and Plan for boards of cards, Sheets and forms.',
       'Diagrams with a whiteboard feel: the Sketch and Marker finishes draw any tab by hand, and ready-made looks set theme, finish, font and pattern in one click.',
       'Meet on the board: everyone walks an avatar round a virtual office or team space, with speech bubbles and a status.',
@@ -790,7 +790,7 @@ export const ALTERNATIVES: Alternative[] = [
         heading: 'A whiteboard that keeps going',
         paragraphs: [
           'FigJam is excellent for loose, freeform boards. livedesign’s Draw mode is a plain whiteboard too, with pressure-sensitive markers, sticky notes, text and shapes, but the same document carries on after the brainstorm. Switch a tab to Diagram when a sketch needs structure, with arrows that stay attached, themes that restyle the whole canvas in one click and a Marker or Sketch finish that keeps it looking hand-drawn; to Plan when the ideas become cards on a board, with a Sheet beside it and a form to gather more; or to Pages for the write-up and the slides.',
-          'Start from one of 143 templates, from retrospectives and story maps to flowcharts and system architecture, and split larger work across tabs, folders and layers.',
+          'Start from one of 137 templates, from retrospectives and story maps to flowcharts and system architecture, and split larger work across tabs, folders and layers.',
         ],
       },
       {
@@ -814,7 +814,7 @@ export const ALTERNATIVES: Alternative[] = [
       },
       {
         q: 'Can I import my FigJam boards?',
-        a: 'Not directly: there is no FigJam importer. You can bring a board across as a picture by exporting it from FigJam as a PNG and adding it to a tab as an image. For new work, start from one of the 143 templates.',
+        a: 'Not directly: there is no FigJam importer. You can bring a board across as a picture by exporting it from FigJam as a PNG and adding it to a tab as an image. For new work, start from one of the 137 templates.',
       },
       {
         q: 'Does livedesign work with Figma?',
@@ -873,7 +873,7 @@ export const ALTERNATIVES: Alternative[] = [
     usBest: [
       'Free with no plan limits on documents or shapes, and no paid tier.',
       'Open a link and start, no account needed, even to create a document.',
-      '143 templates, from flowcharts, org charts and swimlanes to system and cloud architecture, database schemas and sequence, class and state diagrams.',
+      '137 templates, from flowcharts, org charts and swimlanes to system and cloud architecture, database schemas and sequence, class and state diagrams.',
       'Real-time multiplayer with live cursors, comments, assigned actions and a laser pointer for presenting.',
       '24 one-click themes restyle the whole canvas, shapes and arrows, and the Professional finish draws it crisp and print-ready: square corners, thin lines, Inter lettering, no default shadows.',
       'Mermaid through the API: flowcharts from a script or an AI assistant become editable diagrams.',
@@ -892,7 +892,7 @@ export const ALTERNATIVES: Alternative[] = [
       {
         heading: 'The diagrams you need, ready to go',
         paragraphs: [
-          'livedesign ships 143 templates, including flowcharts in four styles, swimlanes, org charts, mind maps, data-flow diagrams, system and cloud architecture, database schemas, Sankey flows, and sequence, class and state diagrams. Shapes and arrows stay attached and re-route as you move things, alignment guides and snapping keep layouts tidy, and themes restyle the whole canvas in one click. A finish sets how it is drawn: Professional for crisp, print-ready work, or Sketch and Marker when a review should feel like a whiteboard.',
+          'livedesign ships 137 templates, including flowcharts in four styles, swimlanes, org charts, mind maps, data-flow diagrams, system and cloud architecture, database schemas, Sankey flows, and sequence, class and state diagrams. Shapes and arrows stay attached and re-route as you move things, alignment guides and snapping keep layouts tidy, and themes restyle the whole canvas in one click. A finish sets how it is drawn: Professional for crisp, print-ready work, or Sketch and Marker when a review should feel like a whiteboard.',
           'Bigger work splits across tabs inside one document, grouped into folders, with Photoshop-style layers on each tab. Presentation mode turns elements from any tab into a slide deck, so you can walk a room through a diagram without exporting it, and a Pages tab adds designed slides with a live window onto the diagram.',
         ],
       },

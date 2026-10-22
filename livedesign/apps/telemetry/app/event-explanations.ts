@@ -865,16 +865,14 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Tab|Aligned|FlowchartRight': 'Someone tapped "Auto align" to snap a tab to the grid.',
   'Tab|Aligned|Mindmap': 'Someone tapped "Auto align" to snap a tab to the grid.',
   'Tab|Aligned|PageTidyUp':
-    'Someone pressed Tidy on an infographic or slide page, lining up and spacing what is on it.',
+    'Someone pressed Tidy on an infographic or wireframe page, lining up and spacing what is on it.',
   'Tab|Aligned|Tree': 'Someone tapped "Auto align" to snap a tab to the grid.',
   'Tab|Changed|OpensInDiagram':
     "Someone set a tab to open in Diagram mode for everyone, from the tab menu's former Opens in (retired: the tab menu's Mode now counts as a mode switch).",
   'Tab|Changed|OpensInDraw':
     "Someone set a tab to open in Draw mode for everyone, from the tab menu's former Opens in (retired: the tab menu's Mode now counts as a mode switch).",
   'Tab|Changed|PageAdded': 'Someone added an infographic page to a Pages tab.',
-  'Tab|Changed|SlidePageAdded': 'Someone added a slide page to a Pages tab.',
   'Tab|Changed|PageKindInfographic': "Someone chose Infographic for a new Pages tab's first page.",
-  'Tab|Changed|PageKindSlide': "Someone chose Slide for a new Pages tab's first page.",
   'Tab|Changed|PageRemoved': 'Someone deleted a page from a Pages tab.',
   'Tab|Changed|PagePortrait': 'Someone turned a page to portrait.',
   'Tab|Changed|PageLandscape': 'Someone turned a page to landscape.',
@@ -1181,8 +1179,6 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Ended|DashboardTourSkipped': "Someone left Dashboard Settings' Show Me tour before its end.",
   'UI|Ended|LogoTourCompleted': "Someone reached the end of a logo page's Show Me tour.",
   'UI|Ended|LogoTourSkipped': "Someone left a logo page's Show Me tour before its end.",
-  'UI|Ended|SlideTourCompleted': "Someone reached the end of a slide page's Show Me tour.",
-  'UI|Ended|SlideTourSkipped': "Someone left a slide page's Show Me tour before its end.",
   'UI|Ended|InfographicTourCompleted':
     "Someone reached the end of an infographic page's Show Me tour.",
   'UI|Ended|InfographicTourSkipped':
@@ -1360,8 +1356,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone turned to the next or previous page in Pages mode with a short pan or a flick, the view gliding onto it.',
   'UI|Used|PageContentsReorder':
     "Someone dragged a page to a new place in Pages mode's Contents list.",
-  'UI|Added|AllPageSlides':
-    "Someone added every slide page of a tab to the deck at once, from the Slide Deck's Add All Slide Pages.",
   'UI|Opened|SlideDeck':
     "Someone opened the deck-building panel: the Slide Deck tool, or a Pages tab's Slides button.",
   'UI|Opened|SlideElementDetail':
@@ -1503,8 +1497,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone pressed Show Me in the card type editor, starting its tour of making a card type.',
   'UI|Started|DashboardTour':
     'Someone pressed Show Me in Dashboard Settings, starting its tour of arranging and filling a dashboard.',
-  'UI|Started|SlideTour':
-    "Someone pressed Show Me in a slide page's panel, starting its tour of layouts, backgrounds, the deck and presenting.",
   'UI|Started|InfographicTour':
     "Someone pressed Show Me in an infographic page's panel, starting its tour of layouts, backgrounds and page size.",
   'UI|Started|LogoTour':
@@ -1722,10 +1714,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone switched on Tours › "Pages Tours" in Settings (the switch over every kind of page; "Pages Tour" until October 2026), so every kind\'s Pages tour is offered again.',
   'UI|Toggled|PagesTourSeenOn':
     'Someone switched off Tours › "Pages Tours" in Settings (the switch over every kind of page; "Pages Tour" until October 2026), answering every kind\'s Pages tour.',
-  'UI|Toggled|SlidesTourSeenOff':
-    'Someone switched on Tours › "Slides Tour" in Settings, so the Pages tour\'s slides track is offered again.',
-  'UI|Toggled|SlidesTourSeenOn':
-    'Someone switched off Tours › "Slides Tour" in Settings, marking the Pages tour\'s slides track as answered.',
   'UI|Toggled|InfographicTourSeenOff':
     'Someone switched on Tours › "Infographic Tour" in Settings, so the Pages tour\'s infographic track is offered again.',
   'UI|Toggled|InfographicTourSeenOn':
@@ -1880,20 +1868,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     'The Pages tour reached its "Slides" step, on the Slides button in the bottom-right cluster.',
   'UI|View|PagesTourStepOutro':
     'The Pages tour reached its closing "You\'re ready to make pages" card.',
-  'UI|View|PagesTourStepSlideLayouts':
-    'The Pages tour\'s slides track reached its "Choose a Layout" step, with the slide\'s Layout popover open.',
-  'UI|View|PagesTourStepSlideBackground':
-    'The Pages tour\'s slides track reached its "Change the Background" step, with the slide\'s Background popover open.',
-  'UI|View|PagesTourStepSlideDeck':
-    'The Pages tour\'s slides track reached its "Add It to the Deck" step, on the slide\'s deck button (retired in October 2026 for the speaker notes step: every slide of a deck is in it already).',
-  'UI|View|PagesTourStepSlideNotes':
-    'The Pages tour\'s slides track reached its "Write Your Speaker Notes" step, with the slide\'s notes popover open.',
-  'UI|View|PagesTourStepSlideAddPage':
-    'The Pages tour\'s slides track reached its "Add Another Slide" step, on the + after the last page.',
-  'UI|View|PagesTourStepSlidePresent':
-    'The Pages tour\'s slides track reached its "Present" step, with the Slide Deck open.',
-  'UI|View|PagesTourStepSlideOutro':
-    'The Pages tour\'s slides track reached its closing "You\'re ready to present" card.',
   'UI|View|PagesTourStepInfographicPageName':
     'The Pages tour\'s infographic track reached its "Your Page" step, on the page\'s name.',
   'UI|View|PagesTourStepInfographicLayouts':

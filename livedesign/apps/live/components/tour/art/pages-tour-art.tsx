@@ -5,101 +5,8 @@ import type { ReactNode } from 'react';
 import { ART, TourArtFrame } from './TourArtFrame';
 
 // The Pages tour's welcome card heroes (docs/specs/007-editor/pages-tour.md "The steps"), one per page
-// kind, each showing what its track teaches: a slide taking a layout and being presented, an infographic page
-// filling in, a logo's shapes combining on its guides. Drawn in TourArtFrame's recipe.
-
-const SLIDES_CSS = `
-  @keyframes slides-art-pick {
-    0%, 26% { transform: translate(0px, 0px); }
-    34%, 60% { transform: translate(0px, 22px); }
-    68%, 92% { transform: translate(0px, 44px); }
-    100% { transform: translate(0px, 0px); }
-  }
-  @keyframes slides-art-swap {
-    0%, 30% { transform: translate(0px, 0px); }
-    36%, 64% { transform: translate(-60px, 0px); }
-    70%, 100% { transform: translate(0px, 0px); }
-  }
-  @keyframes slides-art-swap-text {
-    0%, 30% { transform: translate(0px, 0px); }
-    36%, 64% { transform: translate(58px, 0px); }
-    70%, 100% { transform: translate(0px, 0px); }
-  }
-  @keyframes slides-art-play {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.12); }
-  }
-  .slides-art-pick { animation: slides-art-pick 5.4s ease-in-out infinite; }
-  .slides-art-swap { animation: slides-art-swap 5.4s ease-in-out infinite; }
-  .slides-art-swap-text { animation: slides-art-swap-text 5.4s ease-in-out infinite; }
-  .slides-art-play { animation: slides-art-play 1.8s ease-in-out infinite; }
-  @media (prefers-reduced-motion: reduce) {
-    .slides-art-pick, .slides-art-swap, .slides-art-swap-text, .slides-art-play { animation: none; }
-  }
-`;
-
-/** Slides: a widescreen slide whose layout changes as one is picked beside it, and a Present button. */
-function SlidesTourArt() {
-  return (
-    <TourArtFrame css={SLIDES_CSS}>
-      {/* The deck behind the slide. */}
-      <rect x="60" y="22" width="124" height="70" rx="3" className={ART.paper} />
-      <rect x="54" y="16" width="124" height="70" rx="3" className={ART.paper} strokeWidth="1.5" />
-      {/* Its words and picture, trading sides as the layout changes. */}
-      <g className="tour-art-el slides-art-swap-text">
-        <rect x="64" y="28" width="52" height="6" rx="2" className={ART.ink} />
-        <rect x="64" y="38" width="22" height="2" rx="1" className={ART.accent} />
-        <rect x="64" y="46" width="44" height="3" rx="1.5" className={ART.faint} />
-        <rect x="64" y="53" width="36" height="3" rx="1.5" className={ART.faint} />
-      </g>
-      <rect
-        x="124"
-        y="26"
-        width="44"
-        height="50"
-        rx="2"
-        className="tour-art-el slides-art-swap fill-amber-300 dark:fill-amber-400"
-      />
-      {/* The layouts, one picked after another. */}
-      {[18, 40, 62].map((y, i) => (
-        <g key={y}>
-          <rect x="200" y={y} width="34" height="18" rx="2" className={ART.paper} />
-          <rect
-            x={i === 1 ? 204 : 218}
-            y={y + 4}
-            width="12"
-            height="10"
-            rx="1"
-            className={ART.faint}
-          />
-          <rect
-            x={i === 1 ? 220 : 204}
-            y={y + 5}
-            width="10"
-            height="2"
-            rx="1"
-            className={ART.ink}
-          />
-        </g>
-      ))}
-      <rect
-        x="198"
-        y="16"
-        width="38"
-        height="22"
-        rx="3"
-        fill="none"
-        strokeWidth="2"
-        className="tour-art-el slides-art-pick stroke-brand-500"
-      />
-      {/* Present. */}
-      <g className="tour-art-el slides-art-play">
-        <circle cx="262" cy="80" r="11" className={ART.accent} />
-        <path d="M 258.5 74.5 L 267 80 L 258.5 85.5 Z" className="fill-white" />
-      </g>
-    </TourArtFrame>
-  );
-}
+// kind, each showing what its track teaches: an infographic page filling in, a logo's shapes combining on its
+// guides. Drawn in TourArtFrame's recipe.
 
 const INFOGRAPHIC_CSS = `
   @keyframes info-art-in {
@@ -246,7 +153,6 @@ function LogoTourArt() {
 }
 
 const BY_KIND: Record<PageKind, () => ReactNode> = {
-  slide: SlidesTourArt,
   infographic: InfographicTourArt,
   logo: LogoTourArt,
   // A wireframe page is laid out as an infographic page is: its track and art are the infographic's.

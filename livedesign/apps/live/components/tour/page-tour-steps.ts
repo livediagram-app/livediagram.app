@@ -5,7 +5,6 @@ import type { PageKind } from '@livedesign/document';
 import { INFOGRAPHIC_WELCOME, infographicTourSteps } from './infographic-tour-steps';
 import { LOGO_WELCOME, logoTourSteps } from './logo-tour-steps';
 import type { PageTourApi, PageTourStep } from './page-tour-api';
-import { SLIDE_WELCOME, slideTourSteps } from './slide-tour-steps';
 import { stepTelemetryType } from './tour-step';
 
 // The DOM tidy-up a page's tour needs, loaded with its steps so neither sits in the editor's first load.
@@ -14,8 +13,6 @@ export { resetPageTour, tidyPageTour } from './page-tour-dom';
 /** A kind's steps. */
 export function pageTourSteps(kind: PageKind): PageTourStep[] {
   switch (kind) {
-    case 'slide':
-      return slideTourSteps();
     case 'logo':
       return logoTourSteps();
     // A wireframe page takes the infographic track, save that its cog sets a device rather than a page size.
@@ -35,7 +32,6 @@ export function pageTourSteps(kind: PageKind): PageTourStep[] {
 }
 
 const WELCOMES: Record<PageKind, PageTourStep> = {
-  slide: SLIDE_WELCOME,
   infographic: INFOGRAPHIC_WELCOME,
   logo: LOGO_WELCOME,
   // A wireframe page is laid out as an infographic page is, and takes its track under its own welcome.
@@ -79,7 +75,7 @@ export function pagesTourSteps(
   return [WELCOMES[kind], ...shownPageTourSteps(kind, api, exists)];
 }
 
-/** The telemetry `type` of a step view: ('slide', 'add-page') → 'PagesTourStepSlideAddPage'. */
+/** The telemetry `type` of a step view: ('logo', 'add-page') → 'PagesTourStepLogoAddPage'. */
 export function pagesTourStepTelemetryType(kind: PageKind, stepId: string): string {
   return stepTelemetryType('PagesTourStep', `${kind}-${stepId}`);
 }

@@ -1,6 +1,6 @@
 // docs/specs/007-editor/pages-mode.md "The layout gallery": what it shows for each chip and search.
 import { describe, expect, it } from 'vitest';
-import { SLIDE_LAYOUT_CATEGORIES, SLIDE_LAYOUTS, type PageLayoutId } from '@livedesign/templates';
+import { layoutCatalogueFor, type PageLayoutId } from '@livedesign/templates';
 import {
   ALL_LAYOUTS,
   categoryCounts,
@@ -24,7 +24,7 @@ const cats = [
 const all = [
   layout('one', 'a', 'Title Slide', 'A large title'),
   layout('two', 'b', 'Text and Picture', 'Words on the left, a picture on the right'),
-  layout('three', 'b', 'Hero Picture', 'A picture filling the slide'),
+  layout('three', 'b', 'Hero Picture', 'A picture filling the page'),
 ];
 
 describe('gallerySections', () => {
@@ -71,10 +71,11 @@ describe('categoryCounts', () => {
     ]);
   });
 
-  it('covers every slide layout across the slide categories', () => {
-    const counts = categoryCounts(SLIDE_LAYOUTS, SLIDE_LAYOUT_CATEGORIES);
-    expect(counts[0]!.count).toBe(SLIDE_LAYOUTS.length);
-    expect(counts.slice(1).reduce((n, c) => n + c.count, 0)).toBe(SLIDE_LAYOUTS.length);
+  it('covers every wireframe layout across the wireframe categories', () => {
+    const { layouts, categories } = layoutCatalogueFor('wireframe');
+    const counts = categoryCounts(layouts, categories);
+    expect(counts[0]!.count).toBe(layouts.length);
+    expect(counts.slice(1).reduce((n, c) => n + c.count, 0)).toBe(layouts.length);
   });
 });
 

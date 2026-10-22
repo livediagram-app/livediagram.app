@@ -12,11 +12,7 @@ import {
   type ShapeElement,
   type Tab,
 } from '@livedesign/document';
-import {
-  isTemplateStart,
-  templateSheetWithCharts,
-  type TemplateStartId,
-} from '@livedesign/sheets';
+import { isTemplateStart, templateSheetWithCharts, type TemplateStartId } from '@livedesign/sheets';
 
 type Rand = () => number;
 

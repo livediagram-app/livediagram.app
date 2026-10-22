@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { storePresentation, type Deck, type Tab } from '@livedesign/document';
 import { pageSlideLabels, useSlideDeck } from './useSlideDeck';
 
-// docs/specs/007-editor/pages-mode.md "Slides": a page slide is its page. Its row names the
+// docs/specs/012-collaboration/presentation-mode.md "The deck follows the pages": a page slide is its page. Its row names the
 // page from the slide's own tab, pressing it frames the page, and a copy of it counts as a page
 // slide.
 const track = vi.fn<typeof import('@/lib/telemetry').track>();
@@ -21,7 +21,7 @@ const tabs = [
     elements: [],
     pages: [
       { id: 'p1', orientation: 'portrait' },
-      { id: 'p2', orientation: 'landscape', name: 'Launch', kind: 'slide' },
+      { id: 'p2', orientation: 'landscape', name: 'Launch', kind: 'infographic', size: 'wide' },
     ],
   },
 ] as unknown as Tab[];
@@ -39,7 +39,7 @@ describe('pageSlideLabels', () => {
     };
     const labels = pageSlideLabels(deck, tabs);
     expect(labels.get('s1')).toBe('Page 1 · A4 · Portrait');
-    expect(labels.get('s2')).toBe('Launch · Slide (16:9)');
+    expect(labels.get('s2')).toBe('Launch · Widescreen (16:9)');
     expect(labels.get('s3')).toBeNull();
     expect(labels.get('s4')).toBeNull();
     expect(labels.has('s5')).toBe(false);

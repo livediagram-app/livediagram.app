@@ -18,7 +18,7 @@ afterEach(() => {
 });
 
 const slide = (id: string) =>
-  ({ id, orientation: 'landscape', kind: 'slide', size: 'slide' }) as const;
+  ({ id, orientation: 'landscape', kind: 'logo', size: 'logo' }) as const;
 const pagesMode = {
   pages: layOutPages([slide('p1'), slide('p2')]),
   focusPage: () => {},

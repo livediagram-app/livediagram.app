@@ -16,8 +16,8 @@ afterEach(() => {
 const pages: Page[] = ['p1', 'p2', 'p3'].map((id) => ({
   id,
   orientation: 'landscape',
-  kind: 'slide',
-  size: 'slide',
+  kind: 'logo',
+  size: 'logo',
 }));
 const laid = layOutPages(pages);
 const boxOn = (i: number, id: string, label = id): Element => ({

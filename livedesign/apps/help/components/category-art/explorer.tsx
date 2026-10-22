@@ -76,11 +76,11 @@ const ROWS: { label: string; glyph: ReactNode }[] = [
   },
 ];
 
-const DOCS: { title: string; kind: 'flow' | 'board' | 'slide' | 'sticky' | 'tree' | 'sheet' }[] = [
+const DOCS: { title: string; kind: 'flow' | 'board' | 'poster' | 'sticky' | 'tree' | 'sheet' }[] = [
   { title: 'Roadmap', kind: 'board' },
   { title: 'System map', kind: 'flow' },
   { title: 'Team retro', kind: 'sticky' },
-  { title: 'Kickoff deck', kind: 'slide' },
+  { title: 'Launch poster', kind: 'poster' },
   { title: 'Org chart', kind: 'tree' },
   { title: 'Budget', kind: 'sheet' },
 ];
@@ -172,7 +172,7 @@ function Thumb({ x, y, kind }: { x: number; y: number; kind: (typeof DOCS)[numbe
           ))}
         </g>
       );
-    case 'slide':
+    case 'poster':
       return (
         <g>
           <rect x={x + 8} y={y + 5} width={48} height={26} rx={2} className="fill-brand-500" />

@@ -1866,13 +1866,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M8 18.5h13" />
     </Glyph>
   ),
-  'slide-pages': (
-    <Glyph>
-      <rect x="2.5" y="5" width="19" height="13" rx="1.5" />
-      <path d="M5.5 8.5h8" />
-      <path d="M5.5 11.5h1M8 11.5h6M5.5 14.5h1M8 14.5h5" />
-    </Glyph>
-  ),
 };
 
 /** Top-level feature category → glyph.

@@ -48,9 +48,9 @@ describe("a new page's background", () => {
     expect(h.pages()[0]!.background).toEqual(defaultPageBackground(theme));
   });
 
-  it('leaves slides, articles and logo pages on the paper', () => {
+  it('leaves logo and wireframe pages on the paper', () => {
     const h = harness(tabOf([{ id: 'page-1', orientation: 'portrait', kind: 'infographic' }]));
-    h.edits().addPage!('slide');
+    h.edits().addPage!('wireframe');
     h.edits().addPage!('logo');
     expect(
       h

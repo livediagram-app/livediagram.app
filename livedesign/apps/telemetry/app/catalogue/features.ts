@@ -236,14 +236,12 @@ export const PAGES = chart(
   'Tab',
   'Changed',
   'Pages Added and Deleted',
-  'A page added to a Pages tab from the plus after its last page (an infographic page, a slide, a logo or a wireframe), or deleted from its settings.',
+  'A page added to a Pages tab from the plus after its last page (an infographic page, a logo or a wireframe), or deleted from its settings.',
   {
     types: [
       'PageAdded',
-      'SlidePageAdded',
       'PageRemoved',
       'PageKindInfographic',
-      'PageKindSlide',
       'LogoPageAdded',
       'PageKindLogo',
       'WireframePageAdded',

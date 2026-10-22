@@ -62,17 +62,13 @@ describe('tourStepsFor', () => {
   });
 
   it('counts six steps on a desktop diagram and five on a phone', () => {
-    const count = (opts: { mobile: boolean }) =>
-      tourStepsFor(opts).filter((s) => !s.card).length;
+    const count = (opts: { mobile: boolean }) => tourStepsFor(opts).filter((s) => !s.card).length;
     expect(count({ mobile: false })).toBe(6);
     expect(count({ mobile: true })).toBe(5);
   });
 
   it('keeps the bookend cards on every surface', () => {
-    for (const opts of [
-      { mobile: false },
-      { mobile: true },
-    ]) {
+    for (const opts of [{ mobile: false }, { mobile: true }]) {
       const steps = tourStepsFor(opts);
       expect(steps[0]!.card).toBe('welcome');
       expect(steps[steps.length - 1]!.card).toBe('outro');

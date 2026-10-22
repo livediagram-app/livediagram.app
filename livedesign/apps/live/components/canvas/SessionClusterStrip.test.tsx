@@ -152,7 +152,6 @@ describe('sessionStripTools', () => {
       runningOnly: true,
     });
   });
-
 });
 
 describe('stripCanStart', () => {

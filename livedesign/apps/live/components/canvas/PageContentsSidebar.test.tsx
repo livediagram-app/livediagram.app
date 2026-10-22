@@ -29,8 +29,8 @@ const laid = layOutPages(
   Array.from({ length: 3 }, (_, i): Page => ({
     id: `p${i + 1}`,
     orientation: 'landscape',
-    kind: 'slide',
-    size: 'slide',
+    kind: 'logo',
+    size: 'logo',
   })),
 );
 

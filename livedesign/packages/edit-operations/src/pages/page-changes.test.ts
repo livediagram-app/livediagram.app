@@ -65,7 +65,7 @@ const kinds = (tab: Tab) => pageSummaries(tab).map((p) => p.kind);
 
 describe('fresh ids and the unexpected', () => {
   it('mints its own page ids when none are given', () => {
-    const out = applyPageChanges(tabOf({ pages: [page('p1')] }), [{ op: 'add', kind: 'slide' }]);
+    const out = applyPageChanges(tabOf({ pages: [page('p1')] }), [{ op: 'add', kind: 'logo' }]);
     if ('refusal' in out) throw new Error('refused');
     expect(pagesOf(out.tab)[1]!.id).toMatch(/^page-/);
   });
@@ -82,32 +82,30 @@ describe('fresh ids and the unexpected', () => {
 
 describe('which tab', () => {
   it('switches a diagram tab into Pages, saying so', () => {
-    const out = run(tabOf({ opensIn: undefined }), [{ op: 'add', kind: 'slide' }]);
+    const out = run(tabOf({ opensIn: undefined }), [{ op: 'add', kind: 'logo' }]);
     expect(out.switched).toBe(true);
     expect(out.tab.opensIn).toBe('pages');
     expect(out.lines[0]).toBe('Switched the tab to Pages.');
   });
 
   it('refuses a locked tab', () => {
-    expect(refusal(tabOf({ locked: true }), [{ op: 'add', kind: 'slide' }]).code).toBe(
-      'tab_locked',
-    );
+    expect(refusal(tabOf({ locked: true }), [{ op: 'add', kind: 'logo' }]).code).toBe('tab_locked');
   });
 });
 
 describe('adding', () => {
   it('turns the fresh tab’s empty first page into the page asked for', () => {
-    const out = run(tabOf(), [{ op: 'add', kind: 'slide' }]);
-    expect(kinds(out.tab)).toEqual(['slide']);
-    expect(out.lines).toEqual(['Added page 1 (slide, Slide (16:9)).']);
+    const out = run(tabOf(), [{ op: 'add', kind: 'logo' }]);
+    expect(kinds(out.tab)).toEqual(['logo']);
+    expect(out.lines).toEqual(['Added page 1 (logo, 1024 x 1024).']);
   });
 
-  it('turns a blank of the kind asked for (a blank deck’s one empty slide) into the page asked for', () => {
-    const blank = tabOf({ pages: [page('p1', { kind: 'slide' })] });
-    const slide = layoutCatalogueFor('slide').layouts[0]!;
+  it('turns a blank of the kind asked for (a blank logo’s one empty artboard) into the page asked for', () => {
+    const blank = tabOf({ pages: [page('p1', { kind: 'logo' })] });
+    const slide = layoutCatalogueFor('logo').layouts[0]!;
     const out = run(blank, [
-      { op: 'add', kind: 'slide', name: 'Cover', layout: slide.id },
-      { op: 'add', kind: 'slide', name: 'Problem' },
+      { op: 'add', kind: 'logo', name: 'Cover', layout: slide.id },
+      { op: 'add', kind: 'logo', name: 'Problem' },
     ]);
     expect(pagesOf(out.tab).map((p) => [p.id, p.name])).toEqual([
       ['p1', 'Cover'],
@@ -116,26 +114,26 @@ describe('adding', () => {
     // Of another kind, named or holding anything, the one page stays and the new one follows it.
     for (const kept of [
       tabOf({ pages: [page('p1', { kind: 'infographic' })] }),
-      tabOf({ pages: [page('p1', { kind: 'slide', name: 'Title' })] }),
+      tabOf({ pages: [page('p1', { kind: 'logo', name: 'Title' })] }),
     ])
-      expect(pagesOf(run(kept, [{ op: 'add', kind: 'slide' }]).tab)).toHaveLength(2);
+      expect(pagesOf(run(kept, [{ op: 'add', kind: 'logo' }]).tab)).toHaveLength(2);
   });
 
   it('never takes a page the same call added as a blank', () => {
     const out = run(tabOf(), [
-      { op: 'add', kind: 'slide' },
-      { op: 'add', kind: 'slide', name: 'Two' },
+      { op: 'add', kind: 'logo' },
+      { op: 'add', kind: 'logo', name: 'Two' },
     ]);
     expect(pagesOf(out.tab).map((p) => p.name ?? null)).toEqual([null, 'Two']);
   });
 
   it('adds after the last page, with its fields, a layout and a place', () => {
     const tab = tabOf({ pages: [page('p1'), page('p2')] });
-    const slide = layoutCatalogueFor('slide').layouts[0]!;
+    const slide = layoutCatalogueFor('logo').layouts[0]!;
     const out = run(tab, [
       {
         op: 'add',
-        kind: 'slide',
+        kind: 'logo',
         name: 'Cover',
         background: { color: '#0f172a' },
         layout: slide.id,
@@ -144,10 +142,10 @@ describe('adding', () => {
     ]);
     const pages = pagesOf(out.tab);
     expect(pages.map((p) => p.id)).toEqual(['pg-1', 'p1', 'p2']);
-    expect(pages[0]).toMatchObject({ kind: 'slide', name: 'Cover' });
+    expect(pages[0]).toMatchObject({ kind: 'logo', name: 'Cover' });
     expect(out.tab.elements.length).toBeGreaterThan(0);
     expect(out.lines[0]).toBe(
-      `Added page 1 (slide, Slide (16:9)) from layout ${slide.label}: name "Cover", background #0f172a.`,
+      `Added page 1 (logo, 1024 x 1024) from layout ${slide.label}: name "Cover", background #0f172a.`,
     );
   });
 
@@ -162,9 +160,9 @@ describe('adding', () => {
   });
 
   it('refuses a size the kind lacks', () => {
-    const r = refusal(tabOf({ pages: [page('p1')] }), [{ op: 'add', kind: 'slide', size: 'a4' }]);
+    const r = refusal(tabOf({ pages: [page('p1')] }), [{ op: 'add', kind: 'logo', size: 'a4' }]);
     expect(r).toMatchObject({ code: 'size_not_offered', change: 0 });
-    expect(r.message).toContain('slide, slide-classic');
+    expect(r.message).toContain('takes the sizes logo');
   });
 
   it('refuses a layout of another kind', () => {
@@ -179,7 +177,7 @@ describe('adding', () => {
     const full = tabOf({
       pages: Array.from({ length: MAX_PAGES }, (_, i) => page(`p${i}`)),
     });
-    expect(refusal(full, [{ op: 'add', kind: 'slide' }]).code).toBe('page_limit');
+    expect(refusal(full, [{ op: 'add', kind: 'logo' }]).code).toBe('page_limit');
   });
 });
 
@@ -257,14 +255,11 @@ describe('setting', () => {
     expect(pagesOf(out.tab)[0]!.locked).toBeUndefined();
   });
 
-  it('refuses a turn of a slide and a pattern on a logo', () => {
+  it('refuses a turn of a logo and a pattern on one', () => {
     const tab = tabOf({
-      pages: [
-        page('s', { kind: 'slide', size: 'slide', orientation: 'landscape' }),
-        page('l', { kind: 'logo', size: 'logo' }),
-      ],
+      pages: [page('s', { kind: 'logo', size: 'logo' }), page('l', { kind: 'logo', size: 'logo' })],
     });
-    expect(refusal(tab, [{ op: 'set', page: 1, orientation: 'portrait' }]).code).toBe(
+    expect(refusal(tab, [{ op: 'set', page: 1, orientation: 'landscape' }]).code).toBe(
       'no_orientation',
     );
     expect(refusal(tab, [{ op: 'set', page: 2, background: { pattern: 'dots' } }]).code).toBe(
@@ -349,9 +344,9 @@ describe('laying out, moving, duplicating, deleting', () => {
     );
     // With a second page added, the first is kept too, by place or by the blank's id.
     for (const ref of [1, 'p1'] as const) {
-      const deck = run(tabOf({ pages: [page('p1', { kind: 'slide' })] }), [
-        { op: 'add', kind: 'slide', name: 'Cover' },
-        { op: 'add', kind: 'slide', name: 'Problem' },
+      const deck = run(tabOf({ pages: [page('p1', { kind: 'logo' })] }), [
+        { op: 'add', kind: 'logo', name: 'Cover' },
+        { op: 'add', kind: 'logo', name: 'Problem' },
         { op: 'delete', page: ref },
       ]);
       expect(pagesOf(deck.tab).map((p) => p.name)).toEqual(['Cover', 'Problem']);
@@ -382,7 +377,7 @@ describe('laying out, moving, duplicating, deleting', () => {
   it('stops at the first refusal and writes nothing, naming the change', () => {
     const tab = tabOf({ pages: [page('p1')] });
     const r = refusal(tab, [
-      { op: 'add', kind: 'slide' },
+      { op: 'add', kind: 'logo' },
       { op: 'delete', page: 7 },
     ]);
     expect(r).toMatchObject({ code: 'page_unknown', change: 1 });
@@ -396,7 +391,7 @@ describe('the answer', () => {
         name: 'One',
         background: { fill: { kind: 'solid', color: '#fff' }, pattern: 'dots' },
       }),
-      page('s', { kind: 'slide', size: 'slide', orientation: 'landscape', locked: true }),
+      page('s', { kind: 'logo', size: 'logo', orientation: 'landscape', locked: true }),
     ];
     const tab = tabOf({ pages, elements: [onPage(pages, 0, 'b')] });
     const [one, two] = pageSummaries(tab);
@@ -410,7 +405,7 @@ describe('the answer', () => {
       elements: 1,
     });
     expect(one!.rect.width).toBe(794);
-    expect(two).toMatchObject({ kind: 'slide', orientation: null, locked: true, background: null });
+    expect(two).toMatchObject({ kind: 'logo', orientation: null, locked: true, background: null });
   });
 });
 
@@ -437,8 +432,8 @@ describe('worst case', () => {
 // colour, as any element made on the tab does.
 describe('a layout on a themed tab', () => {
   it('takes the tab’s theme', () => {
-    const out = run(tabOf({ pages: [page('p1', { kind: 'slide' })], theme: 'mocha' }), [
-      { op: 'layout', page: 1, layout: 'slide-three-points' },
+    const out = run(tabOf({ pages: [page('p1', { kind: 'logo' })], theme: 'mocha' }), [
+      { op: 'layout', page: 1, layout: 'logo-icon-above' },
     ]);
     const circle = out.tab.elements.find((el) => el.type === 'shape' && el.shape === 'circle');
     expect(circle?.strokeColor).toBe(getBuiltInTheme('mocha').elementStroke);
@@ -449,22 +444,22 @@ describe('a layout on a themed tab', () => {
 // Background tab's Apply to All.
 describe('giving every page of a kind one background', () => {
   const slide = (id: string, extra: Partial<Page> = {}) =>
-    page(id, { kind: 'slide', orientation: 'landscape', ...extra });
+    page(id, { kind: 'logo', size: 'logo', ...extra });
 
-  it('sets a slide, then gives every other slide its background, in one call', () => {
+  it('sets a logo, then gives every other logo its background, in one call', () => {
     const tab = tabOf({ pages: [slide('s1'), slide('s2'), page('i1'), slide('s3')] });
     const out = run(tab, [
-      { op: 'set', page: 1, background: { gradient: ['#1e1b4b', '#4c1d95'], pattern: 'dots' } },
+      { op: 'set', page: 1, background: { gradient: ['#1e1b4b', '#4c1d95'] } },
       { op: 'apply_background_to_all', page: 1 },
     ]);
-    expect(out.lines[1]).toBe('Gave 2 other slide pages the background of page 1.');
+    expect(out.lines[1]).toBe('Gave 2 other logo pages the background of page 1.');
     const bg = Object.fromEntries(pageSummaries(out.tab).map((p) => [p.id, p.background]));
     expect(bg.s2).toBe(bg.s1);
     expect(bg.s3).toBe(bg.s1);
     expect(bg.i1).toBeNull();
   });
 
-  it('says how many locked slides kept their own', () => {
+  it('says how many locked logos kept their own', () => {
     const tab = tabOf({
       pages: [
         slide('s1', { background: { fill: { kind: 'solid', color: '#0f172a' } } }),
@@ -473,7 +468,7 @@ describe('giving every page of a kind one background', () => {
       ],
     });
     expect(run(tab, [{ op: 'apply_background_to_all', page: 's1' }]).lines[0]).toBe(
-      'Gave 1 other slide page the background of page 1; 1 locked kept their own.',
+      'Gave 1 other logo page the background of page 1; 1 locked kept their own.',
     );
   });
 
@@ -530,10 +525,10 @@ describe('wireframe pages', () => {
 
   it('refuses a device on a page added as another kind, rather than saying it was set', () => {
     const why = refusal(tabOf({ pages: [page('p1')] }), [
-      { op: 'add', kind: 'slide', device: 'watch' },
+      { op: 'add', kind: 'logo', device: 'watch' },
     ]);
     expect(why.code).toBe('not_a_wireframe');
-    expect(why.message).toMatch(/^A slide page has no device/);
+    expect(why.message).toMatch(/^A logo page has no device/);
     expect(
       refusal(tabOf({ pages: [page('p1')] }), [{ op: 'set', page: 1, frameLook: 'dark' }]).message,
     ).toMatch(/^An infographic page has no device/);

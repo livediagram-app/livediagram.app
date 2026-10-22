@@ -70,7 +70,7 @@ describe('template categories', () => {
       strategy: 14,
       hierarchies: 7,
       design: 14,
-      presentations: 16,
+      presentations: 11,
       technical: 9,
       games: 5,
     });

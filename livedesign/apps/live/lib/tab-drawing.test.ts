@@ -53,8 +53,8 @@ describe('renderTabDrawingSvg', () => {
 
   it('draws a Pages tab as each page where it lies, its own ids per page', () => {
     const pages: Page[] = [
-      { id: 'p1', orientation: 'landscape', kind: 'slide' },
-      { id: 'p2', orientation: 'landscape', kind: 'slide' },
+      { id: 'p1', orientation: 'landscape', kind: 'logo' },
+      { id: 'p2', orientation: 'landscape', kind: 'logo' },
     ];
     const [one, two] = laidOutPagesOf(tab({ opensIn: 'pages', pages }));
     const t = tab({
@@ -98,8 +98,8 @@ describe('tabDrawingFontIdsOf', () => {
 describe('pageElements', () => {
   it('gives each page the elements reaching it, an arrow there with what it is pinned to', () => {
     const pages: Page[] = [
-      { id: 'p1', orientation: 'landscape', kind: 'slide' },
-      { id: 'p2', orientation: 'landscape', kind: 'slide' },
+      { id: 'p1', orientation: 'landscape', kind: 'logo' },
+      { id: 'p2', orientation: 'landscape', kind: 'logo' },
     ];
     const [one, two] = laidOutPagesOf(tab({ opensIn: 'pages', pages }));
     const a = box('a', 'A', { x: one!.rect.x + 10, y: one!.rect.y + 10 });

@@ -24,9 +24,6 @@ describe('blanks of a page kind', () => {
   });
 
   it('makes each page the way the kind choice makes it', () => {
-    expect(blankPageTemplateOverrides('blank-slide-deck')!.pages).toEqual([
-      { id: 'page-1', orientation: 'landscape', size: 'slide', kind: 'slide' },
-    ]);
     expect(blankPageTemplateOverrides('blank-infographic')!.pages).toEqual([
       { id: 'page-1', orientation: 'portrait', kind: 'infographic' },
     ]);
@@ -40,31 +37,27 @@ describe('blanks of a page kind', () => {
       expect(isBlankTemplate(kind)).toBe(true);
       expect(templateCategory(kind)).toBeNull();
     }
-    expect(untitledNameForTemplate('blank-slide-deck')).toBe('Untitled Slide Deck');
+    expect(untitledNameForTemplate('blank-infographic')).toBe('Untitled Infographic');
     expect(untitledNameForTemplate('blank-logo')).toBe('Untitled Logo');
   });
 
   it('answers nothing for any other template', () => {
     expect(blankPageTemplateOverrides('blank-illustration')).toBeUndefined();
-    expect(blankPageTemplateOverrides('slide-deck')).toBeUndefined();
+    expect(blankPageTemplateOverrides('logo-design')).toBeUndefined();
     expect(templateCanvasOverrides('blank-illustration').pages).toBeUndefined();
   });
 });
 
 describe('a blank infographic on its theme', () => {
-  it("starts its page on the theme's default background, a blank deck's on Steel; other templates keep theirs", async () => {
+  it("starts its page on the theme's default background; other templates keep theirs", async () => {
     const { buildTemplateTab } = await import('./template-tab');
     const { defaultPageBackground, getBuiltInTheme, pagesOf } =
       await import('@livedesign/document');
     const tab = buildTemplateTab('t', 'T', 'blank-infographic', 'ocean');
     expect(pagesOf(tab)[0]!.background).toEqual(defaultPageBackground(getBuiltInTheme('ocean')));
-    const slides = buildTemplateTab('s', 'S', 'blank-slide-deck', 'ocean');
-    expect(pagesOf(slides)[0]!.background).toEqual(
-      defaultPageBackground(getBuiltInTheme('ocean'), 'slide'),
-    );
-    const deck = buildTemplateTab('d', 'D', 'slide-deck', 'ocean');
-    expect(pagesOf(deck)[0]!.background).not.toEqual(
-      defaultPageBackground(getBuiltInTheme('ocean'), 'slide'),
+    const poster = buildTemplateTab('d', 'D', 'event-poster', 'ocean');
+    expect(pagesOf(poster)[0]!.background).not.toEqual(
+      defaultPageBackground(getBuiltInTheme('ocean')),
     );
   });
 });

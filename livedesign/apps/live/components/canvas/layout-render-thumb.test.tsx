@@ -4,8 +4,14 @@
 // layouts"): what pressing it puts on the page.
 import { cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import { layOutPages, newLogoPage, newSlidePage, type Tab } from '@livedesign/document';
-import { LOGO_LAYOUTS, SLIDE_LAYOUTS } from '@livedesign/templates';
+import {
+  layOutPages,
+  newLogoPage,
+  newWireframePage,
+  pageDeviceClass,
+  type Tab,
+} from '@livedesign/document';
+import { layoutCatalogueFor, LOGO_LAYOUTS } from '@livedesign/templates';
 import { LayoutRenderThumb, layoutRenderSvg, PAGE_PAPER_DARK } from './layout-render-thumb';
 import { LayoutThumb } from './infographic-layout-thumb';
 
@@ -46,35 +52,37 @@ describe('logo layout tiles', () => {
   });
 });
 
-// docs/specs/007-editor/pages-mode.md "The layout gallery": a picture-led slide layout's tile shows a
-// sample picture where the layout leaves one; every slide layout's tile renders within budget,
-// since the gallery can show them all.
-describe('slide layout tiles', () => {
-  const [slide] = layOutPages([newSlidePage('s', 'slide')]);
-  const deck = {
+// docs/specs/007-editor/pages-mode.md "The layout gallery": a picture-led layout's tile shows a sample
+// picture where the layout leaves one; every wireframe layout's tile renders within budget, since the
+// gallery can show them all.
+describe('layout tiles', () => {
+  const [screen] = layOutPages([newWireframePage('s')]);
+  const flow = {
     id: 't',
     name: 'T',
     elements: [],
-    pages: [newSlidePage('s', 'slide')],
+    pages: [newWireframePage('s')],
   } as unknown as Tab;
+  const layouts = layoutCatalogueFor('wireframe', pageDeviceClass(screen!)).layouts;
 
   it('draw a sample picture where the layout leaves one, and none where it leaves none', () => {
-    expect(layoutRenderSvg(deck, slide!, 'slide-split-image-right')).toContain(
-      'data:image/svg+xml',
-    );
-    expect(layoutRenderSvg(deck, slide!, 'slide-bullets')).not.toContain('data:image/svg+xml');
+    const pages = [{ id: 'p', orientation: 'portrait' as const, size: 'a4' as const }];
+    const [page] = layOutPages(pages);
+    const poster = { id: 't', name: 'T', elements: [], pages } as unknown as Tab;
+    expect(layoutRenderSvg(poster, page!, 'poster')).toContain('data:image/svg+xml');
+    expect(layoutRenderSvg(poster, page!, 'big-number')).not.toContain('data:image/svg+xml');
   });
 
   it('draw a plain page as the viewer sees it: white in light chrome, the dark paper in dark', () => {
-    const light = layoutRenderSvg(deck, slide!, 'slide-bullets', 'light');
-    const dark = layoutRenderSvg(deck, slide!, 'slide-bullets', 'dark');
-    expect(light).not.toContain(PAGE_PAPER_DARK);
-    expect(dark).toContain(PAGE_PAPER_DARK);
+    const [page] = layOutPages([{ id: 'p', orientation: 'portrait', size: 'a4' }]);
+    const tab = { id: 't', name: 'T', elements: [], pages: [page] } as unknown as Tab;
+    expect(layoutRenderSvg(tab, page!, 'big-number', 'light')).not.toContain(PAGE_PAPER_DARK);
+    expect(layoutRenderSvg(tab, page!, 'big-number', 'dark')).toContain(PAGE_PAPER_DARK);
   });
 
-  it('render all sixty-one quickly enough for the whole gallery', () => {
+  it('render all of them quickly enough for the whole gallery', () => {
     const t = performance.now();
-    for (const l of SLIDE_LAYOUTS) layoutRenderSvg(deck, slide!, l.id);
+    for (const l of layouts) layoutRenderSvg(flow, screen!, l.id);
     expect(performance.now() - t).toBeLessThan(1000);
   });
 });

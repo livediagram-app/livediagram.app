@@ -8929,9 +8929,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
                   "logo": {
                     "type": "number"
                   },
-                  "slide": {
-                    "type": "number"
-                  },
                   "wireframe": {
                     "type": "number"
                   }
@@ -9479,7 +9476,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "PageKind": {
     "enum": [
       "infographic",
-      "slide",
       "logo",
       "wireframe"
     ],
@@ -9583,8 +9579,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "square",
       "social",
       "wide",
-      "slide",
-      "slide-classic",
       "logo",
       "device",
       "fit"
@@ -15495,9 +15489,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
                 "type": "number"
               },
               "logo": {
-                "type": "number"
-              },
-              "slide": {
                 "type": "number"
               },
               "wireframe": {

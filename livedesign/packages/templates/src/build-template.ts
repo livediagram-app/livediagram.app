@@ -11,7 +11,6 @@ import { buildVirtualOffice } from './template-builders-office';
 import { buildAllHandsHall, buildCoworkingSpace, buildTeamPod } from './template-builders-spaces';
 import { settleChips, type Element, type Tab } from '@livedesign/document';
 import type { TemplateKind } from './templates';
-import { buildSlideDeck } from './template-builders-slides';
 import { buildPlanTemplate, isPlanTemplateKind, planTemplateTabs } from './template-builders-plan';
 import { companionTemplateTabs } from './template-companions';
 import {
@@ -32,7 +31,6 @@ import { buildDataStory } from './template-builders-data-story';
 import { buildHowItWorks } from './template-builders-how-it-works';
 import { buildVersus } from './template-builders-versus';
 import { buildSocialCarousel } from './template-builders-social-carousel';
-import { buildLayoutDeck } from './template-builders-layout-decks';
 import { buildStoryboard } from './template-builders-storyboard';
 import { buildOnDesignPage } from './template-design-pages';
 import {
@@ -184,8 +182,6 @@ function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
       return buildFishbone(cx, cy);
     case 'pyramid':
       return buildPyramid(cx, cy);
-    case 'slide-deck':
-      return buildSlideDeck(cx, cy);
     case 'flywheel':
       return buildFlywheel(cx, cy);
     case 'logo-design':
@@ -307,7 +303,6 @@ function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
     // A blank illustration is its one empty page, which asks what it is for, and a blank of a page kind its one
     // empty page of that kind (blank-page-templates.ts).
     case 'blank-illustration':
-    case 'blank-slide-deck':
     case 'blank-infographic':
     case 'blank-logo':
     case 'blank-wireframe-phone':
@@ -355,11 +350,6 @@ function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
       return buildVersus();
     case 'social-carousel':
       return buildSocialCarousel();
-    case 'launch-keynote':
-    case 'quarterly-review':
-    case 'team-welcome':
-    case 'workshop-kickoff':
-      return buildLayoutDeck(kind);
   }
 }
 

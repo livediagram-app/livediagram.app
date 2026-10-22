@@ -5,7 +5,6 @@
 import type { PageKind } from '@livedesign/document';
 import { lucidePanelsTopLeft, lucideShapes } from '@livedesign/icons/lucide';
 import { lucideGlyph } from '@livedesign/ui';
-import { SlideDeckIcon } from '@/components/palette/palette-icons';
 import { DeviceGlyph } from './wireframe/DeviceGlyph';
 
 const InfographicIcon = lucideGlyph(lucidePanelsTopLeft, 16);
@@ -15,8 +14,6 @@ export function PageKindGlyph({ kind }: { kind: PageKind }) {
   switch (kind) {
     case 'infographic':
       return <InfographicIcon />;
-    case 'slide':
-      return <SlideDeckIcon />;
     case 'logo':
       return <LogoIcon />;
     case 'wireframe':

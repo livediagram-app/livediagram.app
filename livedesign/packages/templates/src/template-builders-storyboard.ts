@@ -1,4 +1,4 @@
-// The storyboard template, split out of template-builders-slides.ts once it
+// The storyboard template, split out of the slide deck's builders once it
 // grew a real story: shot chips, dialogue, and an action + sound line per
 // panel.
 //

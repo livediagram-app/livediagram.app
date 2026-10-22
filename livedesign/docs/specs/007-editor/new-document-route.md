@@ -666,8 +666,8 @@ theme for a new tab.
 - `/new?template=whiteboard` → no wizard; a document created whose tab opens
   in Draw mode ([Editor modes](editor-modes.md)), the Ink pen in hand.
 - `/new?mode=draw` → the wizard, the Draw card chosen; Create makes a Draw tab.
-- `/new?mode=pages&q=slide` → the wizard, Pages chosen; on the new document Start Making Pages
-  opens with its search reading "slide".
+- `/new?mode=pages&q=poster` → the wizard, Pages chosen; on the new document Start Making Pages
+  opens with its search reading "poster".
 - `/new?mode=sideways` → the plain wizard, no card chosen.
 - `/new?browse=brainstorm` → the plain wizard: the Brainstorm collection (and `?browse=`) was
   removed with the landing hero's Brainstorm button, its only link; the Brainstorm category remains.

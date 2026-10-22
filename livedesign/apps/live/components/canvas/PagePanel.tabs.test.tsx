@@ -61,10 +61,12 @@ describe('pagePanelTabs', () => {
     ).toEqual(['page']);
   });
 
-  it('gives a slide page Page and Background, its Layouts beside the cog', () => {
+  it('gives a wireframe page its Device alone, its Background and Layouts beside the cog', () => {
     expect(
-      pagePanelTabs(laidOut({ id: 'p', orientation: 'landscape', kind: 'slide', size: 'slide' })),
-    ).toEqual(['page', 'background']);
+      pagePanelTabs(
+        laidOut({ id: 'p', orientation: 'portrait', kind: 'wireframe', device: 'iphone' }),
+      ),
+    ).toEqual(['device']);
   });
 
   it('drops Page from a logo page, which has no size or orientation to choose', () => {
@@ -75,17 +77,6 @@ describe('pagePanelTabs', () => {
 });
 
 describe('the Background tab', () => {
-  const slide: Page = { id: 'p', orientation: 'landscape', kind: 'slide', size: 'slide' };
-
-  it('holds the backgrounds, which the Page tab no longer shows', () => {
-    renderPanel(slide, 'page');
-    expect(screen.getByText('Size')).toBeTruthy();
-    expect(screen.queryByText('Pattern')).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: 'Background' }));
-    expect(screen.getByText('Pattern')).toBeTruthy();
-    expect(screen.queryByText('Size')).toBeNull();
-  });
-
   it('opens an infographic page asked for Background on Page, with no tab switch', () => {
     renderPanel({ id: 'p', orientation: 'portrait', kind: 'infographic' }, 'background');
     expect(screen.queryByRole('group', { name: 'Page panel section' })).toBeNull();

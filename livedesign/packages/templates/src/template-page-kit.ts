@@ -6,7 +6,6 @@
 import {
   layOutPages,
   newLogoPage,
-  newSlidePage,
   pageMargin,
   type Page,
   type PageBackground,
@@ -31,22 +30,6 @@ export function templatePage(
     ...(background ? { background } : {}),
     name,
     kind: 'infographic',
-  };
-}
-
-/** A slide page of a template (docs/specs/007-editor/pages-mode.md "Page kinds"): `page-n`,
- *  landscape in a slide size (16:9 by default), so it offers the slide sizes and layouts and its
- *  deck button. */
-export function templateSlidePage(
-  n: number,
-  name: string,
-  background?: PageBackground,
-  size: PageSizeId = 'slide',
-): Page {
-  return {
-    ...newSlidePage(`page-${n}`, size),
-    ...(background ? { background } : {}),
-    name,
   };
 }
 

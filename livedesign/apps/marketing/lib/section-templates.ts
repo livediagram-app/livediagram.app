@@ -55,15 +55,7 @@ export const SECTION_TEMPLATE_KINDS: Readonly<Record<string, readonly TemplateKi
     'recipe-card',
     'live-card',
   ],
-  slides: [
-    'slide-deck',
-    'launch-keynote',
-    'quarterly-review',
-    'team-welcome',
-    'workshop-kickoff',
-    'social-carousel',
-    'blank-slide-deck',
-  ],
+  slides: ['social-carousel'],
   plan: [
     'kanban',
     'project-planner',

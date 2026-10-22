@@ -27,7 +27,7 @@ afterEach(() => {
 
 const page = (kind: Page['kind'], over: Partial<Page> = {}): Page => ({
   id: `${kind}-1`,
-  orientation: kind === 'slide' ? 'landscape' : 'portrait',
+  orientation: 'portrait',
   kind,
   ...(kind === 'logo' ? { size: 'logo' as const } : {}),
   ...over,
@@ -164,12 +164,9 @@ const showMe = async () => {
 const stepDialog = (title: RegExp) => screen.getByRole('dialog', { name: title });
 // Under load a step lands a beat after Next: wait for what it shows.
 const shows = (check: () => void) => waitFor(check);
-const popover = (name: string) =>
-  document.querySelector(`[role="dialog"][aria-label="${name}"][data-anchored-popover]`);
 
 describe('Show Me on every page', () => {
   it.each([
-    ['slide', '/help/canvas/pages-mode/slide-pages/'],
     ['infographic', '/help/canvas/pages-mode/infographic-layouts/'],
     ['logo', '/help/canvas/pages-mode/logo-pages/'],
   ] as const)('heads a %s page’s panel beside its own Help', (kind, href) => {
@@ -177,61 +174,6 @@ describe('Show Me on every page', () => {
     expect(screen.getByRole('button', { name: 'Show Me' })).toBeTruthy();
     const help = document.querySelector<HTMLAnchorElement>('[data-page-panel] a[href]');
     expect(help?.getAttribute('href')).toBe(href);
-  });
-});
-
-describe('a slide’s Show Me', () => {
-  it('opens Layout, then Background, points at the +, then walks the Slide Deck', async () => {
-    render(<Page of={page('slide')} />);
-    await showMe();
-    expect(track).toHaveBeenCalledWith('UI', 'Started', 'SlideTour');
-    // The panel it was pressed in makes way for the page.
-    await shows(() => expect(document.querySelector('[data-page-panel]')).toBeNull());
-    await shows(() => expect(stepDialog(/^Show Me step 1 of 7: Choose a Layout/)).toBeTruthy());
-    await shows(() => expect(popover('Layout')).not.toBeNull());
-    await next();
-    await shows(() => expect(popover('Layout')).toBeNull());
-    await shows(() => expect(stepDialog(/Change the Background/)).toBeTruthy());
-    await shows(() => expect(popover('Background')).not.toBeNull());
-    await next();
-    await shows(() => expect(popover('Background')).toBeNull());
-    await shows(() => expect(stepDialog(/Add Another Slide/)).toBeTruthy());
-    await next();
-    await shows(() => expect(stepDialog(/Your Slide Deck/)).toBeTruthy());
-    await shows(() => expect(document.querySelector('[data-tour-id="slide-deck"]')).not.toBeNull());
-    await next();
-    await shows(() => expect(stepDialog(/Each Slide’s Menu/)).toBeTruthy());
-    await next();
-    await shows(() => expect(stepDialog(/Set Up the Show/)).toBeTruthy());
-    await next();
-    await shows(() => expect(stepDialog(/Present/)).toBeTruthy());
-    // The deck stays open from step to step.
-    expect(document.querySelector('[data-tour-id="slide-deck"]')).not.toBeNull();
-    await next();
-    await shows(() => expect(document.querySelector('[data-tour-id="slide-deck"]')).toBeNull());
-    fireEvent.click(screen.getByRole('button', { name: 'Done' }));
-    expect(track).toHaveBeenCalledWith('UI', 'Ended', 'SlideTourCompleted');
-  });
-
-  it('keeps a pick, and never reopens the popover it closed', async () => {
-    render(<Page of={page('slide')} />);
-    await showMe();
-    // The tour's card is modal to assistive tech, so the popover's pick is pressed by its node.
-    fireEvent.click(popover('Layout')!.querySelector('button')!);
-    // Past the engine's tracking tick, which re-prepares a step whose target went.
-    await settle(400);
-    await shows(() => expect(popover('Layout')).toBeNull());
-    await shows(() => expect(stepDialog(/Choose a Layout/)).toBeTruthy());
-  });
-
-  it('closes what it opened when skipped', async () => {
-    render(<Page of={page('slide')} />);
-    await showMe();
-    await shows(() => expect(popover('Layout')).not.toBeNull());
-    fireEvent.click(screen.getByRole('button', { name: /skip/i }));
-    await settle();
-    await shows(() => expect(popover('Layout')).toBeNull());
-    expect(track).toHaveBeenCalledWith('UI', 'Ended', 'SlideTourSkipped');
   });
 });
 

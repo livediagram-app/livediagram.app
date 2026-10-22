@@ -30,14 +30,13 @@ export const OFFER_DELAY_MS = 800;
 // about ten seconds for a tab's pages to draw.
 const OFFER_LOOKS = 12;
 
-// The telemetry `type` of a step view, naming its track: ('slide', 'add-page') → 'PagesTourStepSlideAddPage'.
+// The telemetry `type` of a step view, naming its track: ('logo', 'add-page') → 'PagesTourStepLogoAddPage'.
 export function pagesTourStepTelemetryType(kind: PageKind, stepId: string): string {
   return stepTelemetryType('PagesTourStep', `${kind}-${stepId}`);
 }
 
 // Each welcome card names its page kind's track, never the mode.
 const EYEBROW: Record<PageKind, string> = {
-  slide: 'Slides tour',
   infographic: 'Infographic tour',
   logo: 'Logo tour',
   wireframe: 'Wireframe tour',
@@ -188,7 +187,7 @@ export function PagesTourHost() {
     prefsRef,
   ]);
 
-  // Settings rerun (a Tours › "Slides Tour" (or another kind's) row, turned on from off + closed): offers again in Pages, and
+  // Settings rerun (a Tours › "Logo Tour" (or another kind's) row, turned on from off + closed): offers again in Pages, and
   // otherwise the next time the person enters it (the row has cleared the preferences).
   const inPagesRef = useLatest(inPages);
   useEffect(() => {

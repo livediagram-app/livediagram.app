@@ -4,44 +4,46 @@
 // the gallery's chips, search, Surprise Me and tiles, and Choose a Layout's dialog.
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { layOutPages, newSlidePage } from '@livedesign/document';
-import { SLIDE_LAYOUTS } from '@livedesign/templates';
+import { layOutPages, newWireframePage, pageDeviceClass } from '@livedesign/document';
+import { layoutCatalogueFor } from '@livedesign/templates';
 import { EmptyPageInvite } from '../EmptyPageInvite';
 import { LayoutGalleryDialog } from '../LayoutGalleryDialog';
 import { LayoutGallery } from './LayoutGallery';
 
 afterEach(() => cleanup());
 
-const [slide] = layOutPages([newSlidePage('s', 'slide')]);
+const [screenPage] = layOutPages([newWireframePage('s')]);
+// A phone's layouts: what the gallery offers a wireframe page on one.
+const LAYOUTS = layoutCatalogueFor('wireframe', pageDeviceClass(screenPage!)).layouts;
 const tiles = () => document.querySelectorAll('[data-layout-tile]');
 const chip = (name: RegExp) =>
   within(screen.getByRole('group', { name: 'Layout categories' })).getByRole('button', { name });
 
 describe('LayoutGallery', () => {
   it('shows every layout under All, in a section per category', () => {
-    render(<LayoutGallery page={slide!} onApply={vi.fn()} onPreview={vi.fn()} />);
-    expect(tiles()).toHaveLength(SLIDE_LAYOUTS.length);
+    render(<LayoutGallery page={screenPage!} onApply={vi.fn()} onPreview={vi.fn()} />);
+    expect(tiles()).toHaveLength(LAYOUTS.length);
     expect(chip(/^All/).getAttribute('aria-pressed')).toBe('true');
-    expect(screen.getByRole('region', { name: 'Pictures' })).not.toBeNull();
+    expect(screen.getByRole('region', { name: 'Shop' })).not.toBeNull();
   });
 
   it('narrows to one category by its chip, and searches across them', () => {
-    render(<LayoutGallery page={slide!} onApply={vi.fn()} onPreview={vi.fn()} />);
-    fireEvent.click(chip(/^Pictures/));
+    render(<LayoutGallery page={screenPage!} onApply={vi.fn()} onPreview={vi.fn()} />);
+    fireEvent.click(chip(/^Shop/));
     expect(tiles()).toHaveLength(
-      SLIDE_LAYOUTS.filter((l) => l.category === 'slide-pictures').length,
+      LAYOUTS.filter((l: { category: string }) => l.category === 'wf-shop').length,
     );
     fireEvent.click(chip(/^All/));
     fireEvent.change(screen.getByRole('textbox', { name: 'Search layouts' }), {
-      target: { value: 'hero' },
+      target: { value: 'boarding pass' },
     });
     expect([...tiles()].map((t) => t.getAttribute('data-layout-tile'))).toEqual([
-      'slide-hero-image',
+      'wf-boarding-pass',
     ]);
   });
 
   it('says so when nothing matches, and clears back to every layout', () => {
-    render(<LayoutGallery page={slide!} onApply={vi.fn()} onPreview={vi.fn()} />);
+    render(<LayoutGallery page={screenPage!} onApply={vi.fn()} onPreview={vi.fn()} />);
     fireEvent.change(screen.getByRole('textbox', { name: 'Search layouts' }), {
       target: { value: 'zzzz' },
     });
@@ -49,31 +51,36 @@ describe('LayoutGallery', () => {
     expect(screen.getByRole('button', { name: /Surprise Me/ })).toHaveProperty('disabled', true);
     // The empty state's own Clear Search (the search box carries one too).
     fireEvent.click(screen.getAllByRole('button', { name: 'Clear Search' }).at(-1)!);
-    expect(tiles()).toHaveLength(SLIDE_LAYOUTS.length);
+    expect(tiles()).toHaveLength(LAYOUTS.length);
   });
 
   it('places a pressed tile, and previews one under the pointer', () => {
     const onApply = vi.fn();
     const onPreview = vi.fn();
-    render(<LayoutGallery page={slide!} onApply={onApply} onPreview={onPreview} />);
-    const tile = document.querySelector('[data-layout-tile="slide-split-image-right"]')!;
+    render(<LayoutGallery page={screenPage!} onApply={onApply} onPreview={onPreview} />);
+    const tile = document.querySelector('[data-layout-tile="wf-checkout"]')!;
     fireEvent.pointerEnter(tile);
-    expect(onPreview).toHaveBeenLastCalledWith('slide-split-image-right');
+    expect(onPreview).toHaveBeenLastCalledWith('wf-checkout');
     fireEvent.click(tile);
-    expect(onApply).toHaveBeenCalledWith('slide-split-image-right');
+    expect(onApply).toHaveBeenCalledWith('wf-checkout');
   });
 
   it('lands Surprise Me on a layout shown, through its own handler where given', () => {
     const onApply = vi.fn();
     const onSurprise = vi.fn();
     render(
-      <LayoutGallery page={slide!} onApply={onApply} onSurprise={onSurprise} onPreview={vi.fn()} />,
+      <LayoutGallery
+        page={screenPage!}
+        onApply={onApply}
+        onSurprise={onSurprise}
+        onPreview={vi.fn()}
+      />,
     );
-    fireEvent.click(chip(/^Pictures/));
+    fireEvent.click(chip(/^Shop/));
     fireEvent.click(screen.getByRole('button', { name: /Surprise Me/ }));
     expect(onApply).not.toHaveBeenCalled();
     const picked = onSurprise.mock.calls[0]![0];
-    expect(SLIDE_LAYOUTS.find((l) => l.id === picked)!.category).toBe('slide-pictures');
+    expect(LAYOUTS.find((l) => l.id === picked)!.category).toBe('wf-shop');
   });
 });
 
@@ -88,10 +95,10 @@ describe('Choose a Layout', () => {
   it('places a layout from the dialog and closes it', () => {
     const onApply = vi.fn();
     const onClose = vi.fn();
-    render(<LayoutGalleryDialog page={slide!} onApply={onApply} onClose={onClose} />);
+    render(<LayoutGalleryDialog page={screenPage!} onApply={onApply} onClose={onClose} />);
     expect(screen.getByRole('heading', { name: 'Start From a Layout' })).not.toBeNull();
-    fireEvent.click(document.querySelector('[data-layout-tile="slide-title"]')!);
-    expect(onApply).toHaveBeenCalledWith('slide-title');
+    fireEvent.click(document.querySelector('[data-layout-tile="wf-sign-in"]')!);
+    expect(onApply).toHaveBeenCalledWith('wf-sign-in');
     expect(onClose).toHaveBeenCalled();
   });
 });
@@ -110,12 +117,12 @@ describe('LayoutTile', () => {
     const prior = globalThis.IntersectionObserver;
     globalThis.IntersectionObserver = IO as unknown as typeof IntersectionObserver;
     const { LayoutTile } = await import('./LayoutTile');
-    const layout = SLIDE_LAYOUTS[0]!;
+    const layout = LAYOUTS[0]!;
     const onPreview = vi.fn();
     const { container } = render(
       <LayoutTile
         layout={layout}
-        page={slide!}
+        page={screenPage!}
         width={160}
         described
         scrollRoot={{ current: null }}

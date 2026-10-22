@@ -1,9 +1,9 @@
 'use client';
 
-// The Background section's Animated category, on a slide page (docs/specs/007-editor/
+// The Background section's Animated category, on a wireframe page (docs/specs/007-editor/
 // pages-mode.md "Animated backgrounds"): a carousel of motions, six to a page (two rows of
 // three), each tile playing in the tab theme's colours; then the theme colourings the chosen
-// motion comes in, and its speed. A hover previews on the slide, a press sets it, as the other
+// motion comes in, and its speed. A hover previews on the page, a press sets it, as the other
 // categories do; the speed previews as it is dragged and is set once, on letting go.
 import { useState } from 'react';
 import {

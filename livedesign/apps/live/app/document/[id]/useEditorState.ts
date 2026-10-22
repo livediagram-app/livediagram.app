@@ -2332,7 +2332,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     set: { setSelectedId, setEditingId, setFormatSourceId },
   });
   const { tick, undo, redo, canUndo, canRedo } = editorHistory;
-  // A slide page's add-to-deck / hide-from-deck button reaches the deck (pageDeckControls).
+  // A page's add-to-deck / hide-from-deck button reaches the deck (pageDeckControls).
   // Memoised so the pages' view keeps its identity across renders where nothing changed.
   const { deck: currentDeck, newPageSlide, toggleSlideHidden, setSlideNotes } = slideDeck;
   const pageDeck = useMemo(

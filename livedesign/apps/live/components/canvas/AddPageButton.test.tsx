@@ -40,15 +40,14 @@ describe('AddPageButton', () => {
     const rows = within(screen.getByRole('group', { name: 'Add a Page' })).getAllByRole('button');
     expect(rows.map((r) => r.querySelector('span.block')?.textContent)).toEqual([
       'Infographic',
-      'Slide',
       'Logo',
       'Wireframe',
     ]);
     expect(document.activeElement).toBe(rows[0]);
     fireEvent.keyDown(rows[0]!, { key: 'ArrowUp' });
-    expect(document.activeElement).toBe(rows[3]);
+    expect(document.activeElement).toBe(rows[2]);
     fireEvent.click(rows[1]!);
-    expect(onAdd).toHaveBeenCalledWith('slide');
+    expect(onAdd).toHaveBeenCalledWith('logo');
 
     fireEvent.click(screen.getByRole('button', { name: 'Add a Page of Any Kind' }));
     fireEvent.click(document.querySelector('[data-add-kind="wireframe"]')!);
@@ -60,7 +59,6 @@ describe('AddPageButton', () => {
 
 describe('addAnotherLabel', () => {
   it('names each kind, a wireframe by its device', () => {
-    expect(addAnotherLabel({ kind: 'slide' })).toBe('Add Another Slide');
     expect(addAnotherLabel({})).toBe('Add Another Infographic Page');
     expect(addAnotherLabel({ kind: 'logo' })).toBe('Add Another Logo Page');
     expect(addAnotherLabel({ kind: 'wireframe', device: 'iphone-duo' })).toBe(

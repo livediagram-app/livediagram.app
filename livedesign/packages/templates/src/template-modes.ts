@@ -16,7 +16,6 @@ const TEMPLATE_MODES: Partial<Record<TemplateKind, EditorMode>> = {
   'pre-mortem': 'draw',
   'idea-garden': 'draw',
   'blank-illustration': 'pages',
-  'blank-slide-deck': 'pages',
   'blank-infographic': 'pages',
   'blank-logo': 'pages',
   'blank-wireframe-phone': 'pages',
@@ -29,7 +28,6 @@ const TEMPLATE_MODES: Partial<Record<TemplateKind, EditorMode>> = {
   'wireframe-dashboard': 'pages',
   'wireframe-tablet-app': 'pages',
   'wireframe-watch-app': 'pages',
-  'slide-deck': 'pages',
   'logo-design': 'pages',
   'live-card': 'pages',
   'event-poster': 'pages',
@@ -40,10 +38,6 @@ const TEMPLATE_MODES: Partial<Record<TemplateKind, EditorMode>> = {
   'how-it-works': 'pages',
   versus: 'pages',
   'social-carousel': 'pages',
-  'launch-keynote': 'pages',
-  'quarterly-review': 'pages',
-  'team-welcome': 'pages',
-  'workshop-kickoff': 'pages',
   // Design templates (template-design-pages.ts): drawn on a page sized for what each is.
   'floor-plan': 'pages',
   storyboard: 'pages',
@@ -144,7 +138,6 @@ export const BLANK_TEMPLATE_FOR_MODE: Readonly<Record<EditorMode, TemplateKind>>
 // empty Sheet, beside Blank Plan; the blanks of a page kind ("Blanks of a page kind"), one empty page of a chosen kind,
 // beside Blank Illustration, in the order the landing page's Blank Slate lists them.
 export const EXTRA_BLANK_TEMPLATES: readonly TemplateKind[] = [
-  'blank-slide-deck',
   'blank-infographic',
   'blank-logo',
   'blank-wireframe-phone',

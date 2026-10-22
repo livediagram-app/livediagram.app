@@ -11,11 +11,7 @@ import type {
   SessionTool,
   ShapeKind,
 } from '@livedesign/document';
-import {
-  EMBED_PROVIDER_LABEL,
-  penColourCss,
-  type PenColour,
-} from '@livedesign/document';
+import { EMBED_PROVIDER_LABEL, penColourCss, type PenColour } from '@livedesign/document';
 
 // Draw-to-size intent. Picking any element from the palette except the
 // annotation (docs/specs/008-canvas/canvas-and-palette.md "Placement on add") stashes the intent here; the canvas

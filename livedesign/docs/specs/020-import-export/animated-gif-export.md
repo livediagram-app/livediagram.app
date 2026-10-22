@@ -12,7 +12,7 @@ anywhere an image does (a chat message, an email, a README, a social post), whic
   "Export") gain a **GIF** card after SVG: PDF, PNG, SVG, GIF, JSON (then Logo Kit while the tab has a logo page).
   Outside Pages the card is never shown.
 - Card copy: **GIF**, "An animated image of the pages, moving as they move on the canvas."
-- Every page kind exports: slides, infographic and logo pages. A logo page's see-through paper exports white
+- Every page kind exports: infographic, logo and wireframe pages. A logo page's see-through paper exports white
   (GIF transparency is one bit and would fringe every soft edge).
 - **Share roles**: as every Export dialog format. Whoever can open the Export dialog (an Editor, a Participant and a
   Viewer alike) can export a GIF; it reads the tab and changes nothing.
@@ -30,7 +30,7 @@ The GIF card opens an options-and-download panel, like PNG's, with the shared ba
   **3 seconds**. The hold is the page's whole time in the GIF, its transition included.
 - **Size**: a segmented control, **Small**, **Medium**, **Large**: the page's longer side at **480**, **960** or
   **1440** px, the other side in proportion. Starts on **Medium**. Every frame of a GIF is the picked page's size;
-  with All pages, a page of another shape (a 4:3 slide in a 16:9 deck, a portrait infographic) is fitted inside it,
+  with All pages, a page of another shape (a square page among widescreen ones, a portrait infographic) is fitted inside it,
   centred on white, never cropped.
 - **Between pages** (All pages with two or more pages): a one-line note naming the deck's transition and speed, as
   the Slide Deck settings hold them ("Between pages: Fade, Normal, from the Slide Deck settings."; with None, "Between

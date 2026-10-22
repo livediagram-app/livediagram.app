@@ -369,14 +369,7 @@ export const TOURS_SETTINGS = settingsStack(
       'PagesTourSeenOff',
       'PagesTourSeenOn',
       'Pages Tours',
-      'Every Pages tour (slides, infographics and logos) switched back on or off at once.',
-    ),
-    toggle(
-      'UI',
-      'SlidesTourSeenOff',
-      'SlidesTourSeenOn',
-      'Slides Tour',
-      "The Pages tour's slides track switched back on or off.",
+      'Every Pages tour (infographics and logos) switched back on or off at once.',
     ),
     toggle(
       'UI',

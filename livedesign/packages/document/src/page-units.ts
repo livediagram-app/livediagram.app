@@ -4,7 +4,6 @@
 import {
   pagesOf,
   newLogoPage,
-  newSlidePage,
   newWireframePage,
   withPages,
   type Page,
@@ -60,9 +59,8 @@ export function offersPageKindChoice(
   return pages.length === 1 && pages[0]!.id === pageId && !pages[0]!.kind && contentCount === 0;
 }
 
-/** The tab with its first page's kind chosen: an infographic page (kept, now chosen), a slide (the
- *  page turned into a 16:9 landscape slide), a logo page (the 1024 artboard) or a wireframe page
- *  (the device). Null when the page no longer offers the choice. */
+/** The tab with its first page's kind chosen: an infographic page (kept, now chosen), a logo page
+ *  (the 1024 artboard) or a wireframe page (the device). Null when the page no longer offers the choice. */
 export function withPageKindChosen<T extends PagesTab>(
   tab: T,
   pageId: string,
@@ -75,15 +73,6 @@ export function withPageKindChosen<T extends PagesTab>(
   if (!page || pages.length !== 1 || page.kind) return null;
   const { name } = page;
   if (kind === 'infographic') return withPages(tab, [{ ...page, kind: 'infographic' }]);
-  if (kind === 'slide') {
-    return withPages(tab, [
-      {
-        ...newSlidePage(page.id),
-        ...(page.background ? { background: page.background } : {}),
-        ...(name ? { name } : {}),
-      },
-    ]);
-  }
   if (kind === 'logo') {
     // The artboard keeps the page's name and fill; a logo page takes no pattern.
     const fill = page.background?.fill;
