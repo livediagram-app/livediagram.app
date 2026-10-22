@@ -503,7 +503,7 @@ export type CanvasProps = {
   // window between "loader dropped" and "welcome modal mounted" so
   // a fresh New Document doesn't flash the Empty Canvas message.
   hydrated: boolean;
-  // When non-null, the visitor is signed in via Clerk and their
+  // When non-null, the visitor is signed in to an account and their
   // display name is fixed to their account name: IdentityPrompt
   // locks the input.
   identityLockedName?: string | null;

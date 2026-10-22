@@ -71,7 +71,7 @@ import { useBehaviourElements } from '@/hooks/canvas/useBehaviourElements';
 import { useCollabElements } from '@/hooks/canvas/useCollabElements';
 import type { CanvasTool } from '@/components/palette/palette.types';
 import { useCellLinkPicker } from '@/hooks/canvas/useCellLinkPicker';
-import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
+import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { usePublishPicture } from '@/hooks/persistence/usePublishedPicture';
 import { useClipboard } from '@/hooks/canvas/useClipboard';
 import { useDocumentActions } from '@/hooks/canvas/useDocumentActions';
@@ -196,13 +196,13 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Embed page-view telemetry (docs/specs/013-workspace/embeds.md) is emitted by editor-page.tsx —
   // exactly one site, so an embed render can't be double-counted.
 
-  // Clerk wiring (token provider + guest→authed migration). One hook
-  // does both — see `hooks/useClerkApiBootstrap.ts`. The values it
+  // Sign-in wiring (token provider + guest→authed migration). One hook
+  // does both — see `hooks/useAccountBootstrap.ts`. The values it
   // returns are the same ones `useAuth()` would; we read them via the
   // hook so the page has one source of truth.
-  const { authLoaded, clerkUserId, clerkDisplayName } = useClerkApiBootstrap();
+  const { authLoaded, accountUserId, accountDisplayName } = useAccountBootstrap();
   // Keep the participant record's profile picture current (docs/specs/014-identity/profile-picture.md §6).
-  usePublishPicture(workbenchMode ? null : clerkUserId);
+  usePublishPicture(workbenchMode ? null : accountUserId);
 
   const {
     tabs,
@@ -814,8 +814,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     authLoaded,
     passwordRetry,
     hydrated,
-    clerkUserId,
-    clerkDisplayName,
+    accountUserId,
+    accountDisplayName,
     embed: embedMode,
     workbench,
     activeId,
@@ -1070,20 +1070,20 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Teams the signed-in user belongs to (docs/specs/013-workspace/teams.md), surfaced in the
   // search panel. Fetched lazily the first time search opens so
   // guest sessions and non-searching sessions never pay the request;
-  // guests can't have teams, so the gate also requires a Clerk id.
+  // guests can't have teams, so the gate also requires an account id.
   // Signed-in only (guests can't have teams). Loaded for the whole
   // session, not just while search is open, because the floating
   // Explorer panel now surfaces teams + their documents (a Teams
   // accordion, team rows in Recent, the current team document —
   // docs/specs/013-workspace/team-shared-documents.md), so the data has to be present whenever the panel is.
-  const { teams } = useTeams(clerkUserId ?? null, {
-    enabled: !!clerkUserId && !workbenchMode,
+  const { teams } = useTeams(accountUserId ?? null, {
+    enabled: !!accountUserId && !workbenchMode,
   });
   // Comment @-mentions (docs/specs/012-collaboration/comment-mentions.md): the document team's members as
   // candidates, and the notify a mentioning comment fires.
   const commentMentions = useCommentMentions({
     // A workbench reads no team and notifies no one.
-    ownerId: workbenchMode ? null : (clerkUserId ?? null),
+    ownerId: workbenchMode ? null : (accountUserId ?? null),
     teams,
     documentTeamId,
     documentId,
@@ -1096,8 +1096,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     teamFolders,
     teamDocuments,
     refresh: refreshTeamLibraries,
-  } = useTeamLibrariesSweep(clerkUserId ?? null, teams, {
-    enabled: !!clerkUserId && !workbenchMode,
+  } = useTeamLibrariesSweep(accountUserId ?? null, teams, {
+    enabled: !!accountUserId && !workbenchMode,
   });
 
   const activeTab = tabs.find((t) => t.id === activeId) ?? tabs[0]!;
@@ -1308,12 +1308,12 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // The signed-in account, or the hydrated guest participant identity
     // (guests may self-assign, docs/specs/012-collaboration/assigned-actions.md §2). Null only pre-hydration.
     self: {
-      userId: clerkUserId ?? (hydrated ? selfParticipant.id : null),
-      name: clerkDisplayName ?? (hydrated ? selfParticipant.name : null),
+      userId: accountUserId ?? (hydrated ? selfParticipant.id : null),
+      name: accountDisplayName ?? (hydrated ? selfParticipant.name : null),
     },
     notify: (input) => {
-      if (!clerkUserId || !documentId) return;
-      void apiNotifyActionAssigned(clerkUserId, input.teamId, {
+      if (!accountUserId || !documentId) return;
+      void apiNotifyActionAssigned(accountUserId, input.teamId, {
         assigneeUserId: input.assigneeUserId,
         assigneeMemberId: input.assigneeMemberId,
         documentId,
@@ -1331,8 +1331,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     const boxed: BoxedElement[] = activeTab.elements.filter((el): el is BoxedElement =>
       isBoxed(el),
     );
-    return actionRowsFromElements(boxed, clerkUserId ?? selfParticipant.id);
-  }, [activeTab.elements, clerkUserId, selfParticipant.id]);
+    return actionRowsFromElements(boxed, accountUserId ?? selfParticipant.id);
+  }, [activeTab.elements, accountUserId, selfParticipant.id]);
 
   // The visitor name prompt drives the chrome hide rule (palette / explorer / dock / tab bar all suppressed so the
   // visitor's focus is on it). Gated on `hydrated` so it only shows once the post-mount useLayoutEffect has replaced
@@ -1615,7 +1615,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     [linkedActions.placeOf, linkedActions.showOnCanvas],
   );
   // Assignees: the members of your teams (docs/specs/026-plan/items.md "Who may do what").
-  const teamPeople = useTeamPeople(selfParticipant.id, !workbenchMode, !!clerkUserId);
+  const teamPeople = useTeamPeople(selfParticipant.id, !workbenchMode, !!accountUserId);
   // Whether a Plan board covers the canvas (docs/specs/026-plan/plan-board.md "Fill Tab"): see usePlanCoverWiring.
   const planCover = usePlanCoverWiring({ activeTab, tabs });
   // Board, Sheet and Dashboard tabs (docs/specs/026-plan/plan-tabs.md).
@@ -2963,8 +2963,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     exitFormatTool,
     chooseTemplate,
     clearTabContent,
-    clerkDisplayName,
-    clerkUserId,
+    accountDisplayName,
+    accountUserId,
     closeComments,
     closeContextMenu,
     closeNote,

@@ -190,7 +190,7 @@ export async function notifyMentioned(
 // A signed-in person opened one of an owner's shared documents for the FIRST
 // time (recordSharedAccess reported a new row; the route sends only for a
 // verified visitor, never a guest id). No-op unless email is on, the owner has
-// a stored verified address (a Clerk owner, guests have none), and the owner
+// a stored verified address (a signed-in owner, guests have none), and the owner
 // hasn't opted out. Throttled per document so a run of joins is one email.
 export async function notifyDocumentJoin(
   env: Env,

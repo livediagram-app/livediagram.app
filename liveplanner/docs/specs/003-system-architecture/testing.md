@@ -141,7 +141,7 @@ functions and lines** by per-glob thresholds in `apps/api/vitest.config.ts`:
 
 | Files                                                                                | Why                                                                                                                         |
 | ------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
-| `src/auth/**`                                                                        | Decides WHO a request is — Clerk verification, guest-id signatures, api tokens, the read/edit gates                         |
+| `src/auth/**`                                                                        | Decides WHO a request is — access-token checks, guest-id signatures, api tokens, the read/edit gates                        |
 | `src/api-token-row.ts`, `src/db/api-tokens.ts`, `src/routes/tokens.ts`               | Mint, resolve and revoke the credentials that act as an account                                                             |
 | `src/db/share.ts`, `src/db/shared.ts`, `src/db/ws-tickets.ts`                        | Share links, the "shared with you" record, and the one-time realtime room tickets                                           |
 | `src/routes/share.ts`, `src/routes/shared.ts`, `src/routes/document-share-routes.ts` | The only unauthenticated read path into a document, and the owner-only routes that grant it                                 |
@@ -264,7 +264,7 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
     `optical-guard.test.ts` (no untrimmed text in a centring circle or pill;
     [Optical alignment](../004-interface-design/optical-alignment.md)), and every
     UI workspace's `motion-budget.test.ts` ([Motion](../004-interface-design/motion.md)).
-  - `apps/api`: auth guards (Clerk, guest signatures, document access, tokens),
+  - `apps/api`: auth guards (account access tokens, guest signatures, document access, tokens),
     every defensive D1 row mapper, the D1 modules against real SQLite
     (cascades, migrations), the `DocumentRoom` Durable Object's rules, ledger
     and multiplayer paths, every route family (documents, tabs, share, images,

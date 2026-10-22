@@ -228,7 +228,7 @@ for.
 - **Defaults.** Only a create that carries an `intent` and whose placement is no choice consults
   the defaults. A dangling default is skipped, never a rejection
   ([Default folders](default-folders.md#dangling-defaults)).
-- **Team space.** Only a **verified account id** (a Clerk session or an API token) may place
+- **Team space.** Only a **verified account id** (a signed-in session or an API token) may place
   into a team, and only when it is a **joined** member of that team. The guest `X-Owner-Id`
   header never counts. A guest, an invited-but-not-joined member, or an unknown team is
   refused with `team_forbidden`.
@@ -361,7 +361,7 @@ toggle ([Live app](../007-editor/live-app.md)). Neither carries a link to the so
 
 This is the full-page library view. Open to both guests and signed-in
 users: the owner id resolves the same way every other surface in the
-live app does (Clerk userId when signed in, the `liveplanner:v2:self-id`
+live app does (the account userId when signed in, the `liveplanner:v2:self-id`
 localStorage UUID otherwise), so a guest sees the documents + folders
 their per-browser id owns. AuthControls in the page header
 surfaces a "Sign in" CTA for guests who want to upgrade. The page is

@@ -34,7 +34,7 @@ export function EditorStartPanels() {
     embedMode,
     activeTab,
     isReadOnly,
-    clerkUserId,
+    accountUserId,
     tabs,
     loadAllTabs,
     deleteTab,
@@ -48,7 +48,7 @@ export function EditorStartPanels() {
     ownerId: ctx.selfParticipant.id,
     documentId: ctx.documentId,
     tabId: activeTab.id,
-    signedIn: !!clerkUserId,
+    signedIn: !!accountUserId,
     tabHasContent: activeTab.elements.length > 0,
   });
   // An empty tab: Start Planning, in the middle of the canvas, for someone who can edit. Anything already drawn (a

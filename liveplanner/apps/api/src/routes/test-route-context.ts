@@ -7,7 +7,7 @@ import type { Env } from '../types';
 // defaults — so RouteContext growing a field meant eight edits (and
 // the copies had already drifted on which fields they bothered to
 // stub). Each test file keeps a thin local `makeCtx` wrapper that
-// bakes in its identity default (guest 'owner-1', Clerk 'user_1', …)
+// bakes in its identity default (guest 'owner-1', signed-in 'user_1', …)
 // and delegates the skeleton here.
 //
 // Not a `.test.ts` file so vitest doesn't collect it as a suite; it is
@@ -19,12 +19,12 @@ export function makeTestRouteContext(
     // What resolveOwner() returns — the hybrid identity (docs/specs/014-identity/auth-and-guest-access.md) the
     // route acts as. Wrappers bake their surface's default.
     owner?: string | null;
-    clerkUserId?: string | null;
-    // Defaults to clerkUserId (a Clerk session carries both); pass
+    accountUserId?: string | null;
+    // Defaults to accountUserId (a signed-in session carries both); pass
     // explicitly for the token-caller shape (verified account id with
-    // NO Clerk session, docs/specs/015-api/public-api-and-tokens.md).
+    // NO signed-in session, docs/specs/015-api/public-api-and-tokens.md).
     verifiedUserId?: string | null;
-    clerkEmail?: string | null;
+    accountEmail?: string | null;
     // The API token the request presented (docs/specs/024-agents/agent-changesets.md).
     token?: { id: string; readOnly?: boolean } | null;
     // The workbench session the request presented (docs/specs/013-workspace/workbench-embeds.md).
@@ -49,16 +49,16 @@ export function makeTestRouteContext(
     headers: { 'Content-Type': 'application/json', ...opts.headers },
     body: opts.rawBody ?? (opts.body === undefined ? undefined : JSON.stringify(opts.body)),
   });
-  const clerkUserId = opts.clerkUserId ?? null;
-  const verifiedUserId = opts.verifiedUserId === undefined ? clerkUserId : opts.verifiedUserId;
+  const accountUserId = opts.accountUserId ?? null;
+  const verifiedUserId = opts.verifiedUserId === undefined ? accountUserId : opts.verifiedUserId;
   return {
     request,
     env: opts.env ?? ({} as Env),
     url,
     segments,
-    clerkUserId,
+    accountUserId,
     verifiedUserId,
-    clerkEmail: opts.clerkEmail ?? null,
+    accountEmail: opts.accountEmail ?? null,
     resolveOwner: () => opts.owner ?? null,
     token: opts.token ?? null,
     workbench: opts.workbench ?? null,

@@ -267,7 +267,7 @@ describe('DELETE /api/documents/:id', () => {
 
     const res = await call(db, 'DELETE', '/api/documents/A', {
       owner: 'user_bob',
-      clerkUserId: 'user_bob',
+      accountUserId: 'user_bob',
       headers: { [DOCUMENT_CONVERSION_HEADER]: 'offline' },
     });
 

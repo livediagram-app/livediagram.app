@@ -266,9 +266,9 @@ place. The editor reads the id from `window.location.pathname` on mount, so
 it cannot tell the difference from a direct visit.
 
 - **Why:** a hard navigation paid for a second full page load: the editor's
-  document, a second Clerk settle, a second identity round trip, and a
+  document, a second sign-in settle, a second identity round trip, and a
   second, visually different loading screen after "Creating…". The in-place
-  swap keeps the one Clerk session, the one document, and one continuous
+  swap keeps the one signed-in session, the one document, and one continuous
   opening screen.
 - **The editor code is fetched ahead.** `/new` starts loading the editor's chunk as soon as it mounts, so the chunk
   downloads in parallel with identity and the create request. If it is not ready at handoff, the opening screen holds
@@ -316,8 +316,8 @@ document"**; everything else stays put.
 - **Reduced motion:** the drawing sits finished, the cursor, pulses, glows
   and bar are still.
 - `DiagramBuildAnimation` stays a bare illustration (no surface of its own),
-  so the sso-callback and OAuth consent cards keep composing it inside their
-  own card.
+  so a card can compose it inside its own (the Clerk-era sso-callback card
+  did).
 - **The family:** a loading Sheet shows its sibling `SheetBuildAnimation`
   ([Sheet](../029-sheets/sheet.md#the-sheet-element), "Loading"), the same
   cursor, timing and colours typing data into a small table, with the same

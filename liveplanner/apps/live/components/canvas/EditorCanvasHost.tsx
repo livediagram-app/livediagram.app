@@ -133,8 +133,8 @@ export function EditorCanvasHost() {
     cancelIdentity,
     clearTimer,
     clearVote,
-    clerkDisplayName,
-    clerkUserId,
+    accountDisplayName,
+    accountUserId,
     actionRows,
     commentRows,
     commentsPanelPosition,
@@ -312,7 +312,7 @@ export function EditorCanvasHost() {
   // (docs/specs/013-workspace/team-shared-documents.md) - see useTeamFolderActions.
   const viewerId = selfParticipant?.id ?? null;
   const onTeamFolders = useTeamFolderActions({
-    clerkUserId,
+    accountUserId,
     viewerId,
     teamFolders,
     refreshTeamLibraries,
@@ -544,8 +544,8 @@ export function EditorCanvasHost() {
             }
             // Action panels (docs/specs/012-collaboration/action-panel.md) drive the SAME action machinery the popover
             // and the Assign Action dialog do. The viewer identity is the one the
-            // popover uses: the Clerk account, else the guest participant.
-            actionSelfId={clerkUserId ?? selfParticipant.id}
+            // popover uses: the account, else the guest participant.
+            actionSelfId={accountUserId ?? selfParticipant.id}
             actionPanelActions={
               isReadOnly
                 ? undefined
@@ -885,10 +885,10 @@ export function EditorCanvasHost() {
             showIdentityPrompt={identityOnlyScreenOpen}
             hydrated={hydrated}
             // Visitor on someone else's document + signed in → lock the
-            // identity input to their Clerk name. Owner branch never
+            // identity input to their account name. Owner branch never
             // shows the identity prompt so `lockedName` is moot there;
             // pure guests pass null and keep the editable name field.
-            identityLockedName={!isOwner && clerkUserId ? clerkDisplayName : null}
+            identityLockedName={!isOwner && accountUserId ? accountDisplayName : null}
             welcomeOpen={anyWelcomeOpen}
             selfParticipant={selfParticipant}
             onConfirmIdentity={confirmIdentity}

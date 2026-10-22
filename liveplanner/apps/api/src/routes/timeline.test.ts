@@ -171,7 +171,7 @@ describe('handleTimeline read', () => {
     expect(res.status).toBe(403);
   });
 
-  it('403s a team scope for a guest — teams are Clerk-only', async () => {
+  it('403s a team scope for a guest — teams are signed-in only', async () => {
     const res = await handleTimeline(
       makeCtx('GET', '/api/timeline?scope=team:t-1', { verifiedUserId: null }),
     );

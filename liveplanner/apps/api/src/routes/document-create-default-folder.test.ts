@@ -24,7 +24,7 @@ const RETRO = { mode: 'plan', templateFamily: 'retrospective' };
 const KANBAN = { mode: 'plan', templateFamily: 'kanban' };
 
 function create(
-  who: { owner: string; clerkUserId: string | null },
+  who: { owner: string; accountUserId: string | null },
   extra: Record<string, unknown>,
 ) {
   return handleDocuments(

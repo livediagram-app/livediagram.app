@@ -14,9 +14,9 @@ import {
   apiReadPairingRequest,
   type PairingAnswerOutcome,
 } from '@/lib/api-client';
-import { sessionsEnabled } from '@/lib/clerk-config';
+import { sessionsEnabled } from '@/lib/auth-config';
 import { track } from '@/lib/telemetry';
-import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
+import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { OAUTH_PRIMARY, OauthShell } from '../../oauth/oauth-shell';
 import { AUTH_TITLE } from '@/components/chrome/AuthStage';
 
@@ -112,10 +112,10 @@ const command = <code className={MONO}>{PAIR_COMMAND}</code>;
 
 export function PairWorkbench() {
   const params = useSearchParams();
-  const { authLoaded, isSignedIn, clerkUserId } = useClerkApiBootstrap();
+  const { authLoaded, isSignedIn, accountUserId } = useAccountBootstrap();
   const raw = params.get('code') ?? '';
   const code = WORKBENCH_HANDLE_PATTERN.test(raw) ? raw : null;
-  const ownerId = authLoaded && isSignedIn && clerkUserId ? clerkUserId : null;
+  const ownerId = authLoaded && isSignedIn && accountUserId ? accountUserId : null;
   const [step, setStep] = useState<Step | null>(null);
 
   // The page's one read, once auth has settled on a signed-in person.

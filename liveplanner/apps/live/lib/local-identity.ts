@@ -1,7 +1,7 @@
 // Single source of truth for the browser-local identity state that
 // guests rely on (docs/specs/014-identity/auth-and-guest-access.md). The key strings used to be inlined at
 // every read/write site across editor-page, the new-document page and
-// the Clerk bootstrap hook — renaming the namespace or evolving the
+// the account bootstrap hook — renaming the namespace or evolving the
 // schema needed a grep + sweep across several files. Centralising
 // them here means a v3 migration is a one-line edit and the intent
 // of each piece of state is documented once.
@@ -28,7 +28,7 @@ const NS = 'liveplanner:v2:';
 const KEYS = {
   // Per-browser guest participant id (`crypto.randomUUID()`),
   // carried to the api worker as `X-Owner-Id` until/unless the
-  // user signs in with Clerk. See docs/specs/014-identity/auth-and-guest-access.md — "Hybrid identity".
+  // user signs in with an account. See docs/specs/014-identity/auth-and-guest-access.md — "Hybrid identity".
   selfId: `${NS}self-id`,
   // HMAC signature of the guest id, minted by the api worker at
   // POST /api/guest-id (auth/owner-signature.ts). Replayed in the
@@ -45,7 +45,7 @@ const KEYS = {
   // Boolean flag — '1' once the user has confirmed their display
   // name via the welcome modal at least once. Used to suppress the
   // identity prompt on subsequent document opens. Only meaningful
-  // for guests; signed-in users derive their name from Clerk.
+  // for guests; signed-in users derive their name from the account.
   nameConfirmed: `${NS}name-confirmed`,
   // UTC day string (YYYY-MM-DD) of this browser's most recent app
   // open. Gates the once-per-day 'Participant'/'Returned' telemetry

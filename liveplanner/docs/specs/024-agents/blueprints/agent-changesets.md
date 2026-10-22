@@ -68,7 +68,7 @@ Scope, by file:
 | `apps/live/app/document/[id]/{usePerTabLoad,useRoomResync,seed-fetched-...}`       | Record each loaded tab's `rev`; resync of named tabs                                                                               |
 | `apps/live/app/document/[id]/useAutosave.ts`                                       | Passes the seen revision per tab                                                                                                   |
 | `apps/live/components/canvas/ChangesetRevealOverlay.tsx`, `CanvasElementsLayer`    | The outline in the author's colour; `ChangesetRevealContext` provided by `EditorView`                                              |
-| `apps/live/e2e/clerk-stub/agent-changesets.spec.ts`                                | The end-to-end spec, signed in (only an account mints a token)                                                                     |
+| `apps/live/e2e/signed-in/agent-changesets.spec.ts`                                 | The end-to-end spec, signed in (only an account mints a token)                                                                     |
 | `apps/live/hooks/ui/useToast.tsx`                                                  | `toast.action`: a keyed info toast with buttons, upserted by key, no timeout                                                       |
 | `apps/telemetry/app/catalogue/collaboration.ts`                                    | The `Agent` stack                                                                                                                  |
 
@@ -680,7 +680,7 @@ type `frontDoorOf(request)`: `Mcp`, `Cli`, `Api` or, for the toast's Undo, `Edit
 | Rooms for every server-stored document, none offline                                                          | `room-client.test.ts` "stub for a personal document"; `useRoomConnection` gate test                           |
 | Revert: inverse as a new changeset, kept list, twice, created tab                                             | `apps/api/src/changesets/revert-plan.test.ts`; `changesets.test.ts` revert cases                              |
 | One changeset read                                                                                            | `changesets.test.ts` "GET one answers results and text"                                                       |
-| Toast Undo is the revert; Ctrl+Z never reverts                                                                | `useChangesetFeed.test.tsx`; `apps/live/e2e/clerk-stub/agent-changesets.spec.ts` "Ctrl+Z leaves it"           |
+| Toast Undo is the revert; Ctrl+Z never reverts                                                                | `useChangesetFeed.test.tsx`; `apps/live/e2e/signed-in/agent-changesets.spec.ts` "Ctrl+Z leaves it"            |
 | Revertable while the record exists                                                                            | `db/changesets.test.ts` sweep with cascade; `changesets.test.ts` "404 after the sweep"                        |
 | Anyone with edit may revert                                                                                   | `changesets.test.ts` "team member reverts", "viewer refused"                                                  |
 | Applies as a peer's and folds into the baseline                                                               | `room-op-apply.test.ts` case `changeset`; `save-baseline.test.ts`                                             |
@@ -697,8 +697,8 @@ type `frontDoorOf(request)`: `Mcp`, `Cli`, `Api` or, for the toast's Undo, `Edit
 | OpenAPI parity                                                                                                | `apps/api/src/openapi/*.test.ts`                                                                              |
 | Owner columns                                                                                                 | `account-owner-columns.test.ts` entry for `agent_changesets.author_id`                                        |
 
-The end-to-end spec (`apps/live/e2e/clerk-stub/agent-changesets.spec.ts`, dark mode, signed in through the Clerk
-stub, since only an account mints tokens) opens a personal document, submits a changeset with an
+The end-to-end spec (`apps/live/e2e/signed-in/agent-changesets.spec.ts`, dark mode, signed in through the test
+session (`installSession`), since only an account mints tokens) opens a personal document, submits a changeset with an
 API token, and checks the element appears, the outline shows, the toast reads, Show frames it, the next autosave
 keeps it, and Undo reverts it.
 

@@ -10,9 +10,9 @@ export type SaveLocationId = 'liveplanner' | 'browser';
 // starts on liveplanner.
 export function defaultSaveLocationFor(who: {
   signedIn: boolean;
-  clerkEnabled: boolean;
+  signInEnabled: boolean;
 }): SaveLocationId {
-  return who.clerkEnabled && !who.signedIn ? 'browser' : 'liveplanner';
+  return who.signInEnabled && !who.signedIn ? 'browser' : 'liveplanner';
 }
 
 // Whether an id resolves to the browser-only IndexedDB store (Offline Mode,

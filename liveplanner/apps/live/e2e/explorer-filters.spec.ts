@@ -6,7 +6,7 @@ import { expect, expectNoPageErrors, mintSignedGuest, ownerHeaders, test } from 
 // the My Documents root lists its documents directly, the chips and the field write one lens into
 // `q`, a scoped lens reaches subfolders, typing on Home opens Search results, the lens rides
 // between aggregate views, and the retired Unsorted and Generated addresses still answer. The
-// signed-in team library is e2e/clerk-stub/explorer-filters.spec.ts.
+// signed-in team library is e2e/signed-in/explorer-filters.spec.ts.
 
 test.use({ colorScheme: 'dark' });
 

@@ -4,7 +4,7 @@ import { use, useCallback, useDeferredValue, useEffect, useMemo, useState } from
 import { browser } from 'react-dom';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useAppNavigation } from '@/hooks/navigation/useAppNavigation';
-import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
+import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { usePublishPicture } from '@/hooks/persistence/usePublishedPicture';
 import {
   apiListDocuments,
@@ -57,7 +57,7 @@ import { useDefaultFolderMenus } from '@/hooks/persistence/useDefaultFolderMenus
 // navigates, so back/forward and deep links work for free.
 //
 // Open to both guests and signed-in users (docs/specs/014-identity/auth-and-guest-access.md + docs/specs/013-workspace/folders.md): the
-// owner id resolves to the Clerk userId when signed in, otherwise to
+// owner id resolves to the account id when signed in, otherwise to
 // the `liveplanner:v2:self-id` localStorage UUID.
 
 export function useExplorerState() {
@@ -76,11 +76,11 @@ export function useExplorerState() {
       : selectedFromRoute(pathname ?? '/explorer', searchParams);
   }, [pathname, searchParams]);
 
-  const { authLoaded, clerkUserId, clerkDisplayName, isSignedIn } = useClerkApiBootstrap();
+  const { authLoaded, accountUserId, accountDisplayName, isSignedIn } = useAccountBootstrap();
   // In a workspace frame the Explorer drops the app's surroundings and the account (explorer-surface.ts).
   const surface = explorerSurfaceFlags(useExplorerSurface());
   // Keep the participant record's profile picture current (docs/specs/014-identity/profile-picture.md §6).
-  usePublishPicture(surface.publishPicture ? clerkUserId : null);
+  usePublishPicture(surface.publishPicture ? accountUserId : null);
 
   // Synced user preferences (docs/specs/007-editor/user-preferences.md). Owned HERE rather than in
   // ExplorerShell because the pane needs them too (Recent honours the
@@ -96,14 +96,14 @@ export function useExplorerState() {
   // device's state are read from the first render on.
   use(browser());
   // Owner id resolution mirrors new/page.tsx + editor-page.tsx: a
-  // signed-in user is keyed by Clerk userId, a guest is keyed by the
-  // localStorage UUID (minted on first visit). Null until Clerk has
+  // signed-in user is keyed by account id, a guest is keyed by the
+  // localStorage UUID (minted on first visit). Null until auth has
   // settled so a signed-in user never momentarily reads a guest id.
   // For a guest, the SIGNED id (useSignedGuestId; docs/specs/014-identity/auth-and-guest-access.md
   // "Signed guest ids"), so the lists' first calls carry the `X-Owner-Sig` the api may require. Null
   // until it resolves (the lists are autoLoad:false off ownerId).
-  const guestId = useSignedGuestId(authLoaded, clerkUserId);
-  const ownerId: string | null = !authLoaded ? null : (clerkUserId ?? guestId);
+  const guestId = useSignedGuestId(authLoaded, accountUserId);
+  const ownerId: string | null = !authLoaded ? null : (accountUserId ?? guestId);
   // Daily-active-returns signal (docs/specs/017-telemetry/telemetry.md): the Explorer is an app-open
   // surface too, so count a returning visitor here. Gated once per
   // browser per UTC day inside the helper (shared with the editor +
@@ -111,8 +111,8 @@ export function useExplorerState() {
   // once. Runs once auth has settled so guest vs signed-in is known.
   useEffect(() => {
     if (!authLoaded) return;
-    trackDailyReturn(!!clerkUserId);
-  }, [authLoaded, clerkUserId]);
+    trackDailyReturn(!!accountUserId);
+  }, [authLoaded, accountUserId]);
   const [liveDocs, setDocuments] = useState<DocumentListItem[]>([]);
   const {
     folders,
@@ -123,9 +123,9 @@ export function useExplorerState() {
   } = useFolders(ownerId, { autoLoad: false });
   const [shared, setShared] = useState<SharedWithItem[]>([]);
   // Teams (docs/specs/013-workspace/teams.md): signed-in only. Guests get a sign-in prompt in
-  // the sidebar section instead of rows; Clerk-disabled deployment
+  // the sidebar section instead of rows; sign-in-disabled deployment
   // deployments hide the section entirely.
-  const teamsEnabled = Boolean(isSignedIn && clerkUserId);
+  const teamsEnabled = Boolean(isSignedIn && accountUserId);
   const {
     teams,
     invites,
@@ -286,7 +286,7 @@ export function useExplorerState() {
 
   // A guest's ownerId resolves asynchronously now (ensureSignedGuestIdentity
   // above), so it lags `authLoaded` by a tick. Keep the skeleton rather than
-  // flashing an empty state — ownerId always resolves (signed-in → Clerk id;
+  // flashing an empty state — ownerId always resolves (signed-in → account id;
   // guest → minted id), so this never stalls. A new owner is loading from its
   // first render.
   const loadOwner = authLoaded ? ownerId : null;
@@ -540,8 +540,8 @@ export function useExplorerState() {
   return {
     // Identity / auth
     authLoaded,
-    clerkUserId,
-    clerkDisplayName,
+    accountUserId,
+    accountDisplayName,
     ownerId,
     teamsEnabled,
     // Route

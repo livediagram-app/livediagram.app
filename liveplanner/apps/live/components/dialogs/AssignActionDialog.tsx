@@ -20,7 +20,7 @@ import {
   type PickableMember,
 } from '@/components/dialogs/AssignActionAssigneePicker';
 import { ToggleSwitch } from '@/components/palette/palette-controls';
-import { clerkEnabled } from '@/lib/clerk-config';
+import { signInEnabled } from '@/lib/auth-config';
 import { track } from '@/lib/telemetry';
 import { DialogFooter } from '@/components/dialogs/DialogFooter';
 
@@ -53,10 +53,10 @@ type AssignActionDialogProps = {
   // Teams the current user has joined (useTeams already filters to
   // joined memberships server-side via listTeamsByUser).
   teams: TeamListItem[];
-  // The signed-in Clerk id, or null for a guest session (guests get the
+  // The signed-in account id, or null for a guest session (guests get the
   // Myself-only picker).
   ownerId: string | null;
-  // The assigner's identity: the Clerk account, or the guest participant
+  // The assigner's identity: the account, or the guest participant
   // identity (docs/specs/014-identity/auth-and-guest-access.md). Drives the Myself row.
   selfUserId: string | null;
   selfName: string | null;
@@ -134,7 +134,7 @@ export function AssignActionDialog({
   // only renders for a non-self assignee anyway).
   // The seed is adjusted during render against the target it last seeded for, so the first commit
   // already shows the seeded fields. selfRow is read but is not a trigger: a late identity settle
-  // (Clerk name resolving after the dialog opened) can't re-seed and wipe mid-typing edits.
+  // (account name resolving after the dialog opened) can't re-seed and wipe mid-typing edits.
   const [seededFor, setSeededFor] = useState<SeedTarget | null>(null);
   if (!open && seededFor !== null) setSeededFor(null);
   if (
@@ -161,7 +161,7 @@ export function AssignActionDialog({
   // Signed-out impression: the Myself-only picker with the sign-in
   // nudge. One emit per open so the funnel is measurable (docs/specs/017-telemetry/telemetry.md).
   useEffect(() => {
-    if (open && !signedIn && clerkEnabled) track('UI', 'Opened', 'ActionSignInNudge');
+    if (open && !signedIn && signInEnabled) track('UI', 'Opened', 'ActionSignInNudge');
   }, [open, signedIn]);
 
   const editing = existing !== null;

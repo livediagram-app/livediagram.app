@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useAppNavigation } from '@/hooks/navigation/useAppNavigation';
-import { clerkEnabled } from '@/lib/clerk-config';
+import { signInEnabled } from '@/lib/auth-config';
 import { useExplorer } from '../ExplorerContext';
 import { ExplorerPane } from '../ExplorerPane';
 
@@ -11,13 +11,13 @@ import { ExplorerPane } from '../ExplorerPane';
 // `redirect_url` back to this page so they land on their invites after
 // signing in or registering. Signed-in invitees see their pending
 // invites automatically — the worker connects invites by the verified
-// email the app forwards (no link to claim). Clerk-disabled (a deployment without it)
+// email the app forwards (no link to claim). sign-in-disabled (a deployment without it)
 // deploys have no teams, so we leave the pane be there.
 export function InvitesRedirectGate() {
-  const { authLoaded, clerkUserId } = useExplorer();
+  const { authLoaded, accountUserId } = useExplorer();
   // Full page loads once a newer build is live (docs/specs/016-platform/stale-builds.md).
   const router = useAppNavigation();
-  const signedOut = authLoaded && !clerkUserId && clerkEnabled;
+  const signedOut = authLoaded && !accountUserId && signInEnabled;
 
   useEffect(() => {
     if (signedOut) {

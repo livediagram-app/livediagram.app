@@ -55,9 +55,10 @@ The planner is real:
   roles and a shared library.
 - **Sharing**: editor, participant and view-only links per project, with expiry, an optional password, tab-scoped
   links and read-only embeds ([Share roles](../013-workspace/share-roles.md)).
-- **Hybrid Clerk auth** ([Auth + guest access](../014-identity/auth-and-guest-access.md)): guests get everything without
+- **Hybrid auth** ([Auth + guest access](../014-identity/auth-and-guest-access.md)): guests get everything without
   signing in; a signed-in person's projects travel under their account, adding cross-device sync. Guest projects
-  migrate on first sign-in. Without Clerk keys the api and the live app degrade to pure guest mode.
+  migrate on first sign-in. Sign-in goes through the liveworkspace accounts
+  Worker; without its settings the api and the live app degrade to pure guest mode.
 - **Offline Mode** ([Offline Mode](../006-document/offline-mode.md)): a project saved only in this browser
   (IndexedDB), convertible either way.
 - **Export**: a tab as PNG, SVG, PDF, Markdown, CSV (a Board or Sheet tab) or a portable JSON file, and a JSON export
@@ -92,8 +93,8 @@ only small per-browser state, under `liveplanner:*` keys:
   CLI verbs ([Domain language](../003-system-architecture/domain-language.md)); finish the help centre around Plan.
 - **Run and verify**: walk every Plan flow on the local stack, and measure the project page's first-load JS against
   livediagram's.
-- **Launch**: create the Cloudflare resources on the liveplanner account and fill in their ids, set up Clerk, Resend and
-  the model key, deploy staging, then production at liveplanner.app, then publish the CLI and the MCP registry entry.
+- **Launch**: create the Cloudflare resources on the liveplanner account and fill in their ids, register the accounts client, set up
+  Resend and the model key, deploy staging, then production at liveplanner.app, then publish the CLI and the MCP registry entry.
 
 ## Later
 

@@ -33,7 +33,7 @@ interface ElementAction {
   name: string; // required, short ("Confirm the retry budget")
   description: string; // optional detail, '' when empty
   assignee: {
-    // The stable key: a Clerk user id, or — for a SELF-assignment made
+    // The stable key: an account user id, or — for a SELF-assignment made
     // while signed out — the guest participant id (docs/specs/014-identity/auth-and-guest-access.md hybrid
     // identity). Guests can only ever pick themselves, so a guest id
     // here always means "the assigner's own browser identity".
@@ -50,7 +50,7 @@ interface ElementAction {
   // The team the assignee was picked from; null for a self-assignment
   // (Myself is not a team row).
   teamId: string | null;
-  assignerId: string; // Clerk user id of who assigned it
+  assignerId: string; // account user id of who assigned it
   assignerName: string | null;
   // 'wont-do': closed without being done (docs/specs/026-plan/linked-boards.md "On the canvas").
   status: 'open' | 'done' | 'wont-do';
@@ -63,7 +63,7 @@ action?: ElementAction;
 ```
 
 **No email address is ever stored in the element blob.** Documents travel
-(share links, embeds, exports); the blob carries only the Clerk `userId` /
+(share links, embeds, exports); the blob carries only the account `userId` /
 membership `memberId` and a display name, all already visible to anyone the
 assignee collaborates with. The assignee's address is resolved server-side
 at send time (§4), never denormalised. An invited member's display name is
@@ -106,7 +106,7 @@ visualisation or Sheet takes none, [Nothing attached to Plan items](../026-plan/
 unchanged. The **Assign Action** tile:
 
 - **Always shows, for everyone.** The feature is not sign-in gated:
-  a signed-out user (or anyone on a deployment without Clerk, [Business model + licence](../002-project-scope/business-model-and-licence.md)) can assign an
+  a signed-out user (or anyone on a deployment without sign-in, [Business model + licence](../002-project-scope/business-model-and-licence.md)) can assign an
   action to **themselves** — the picker offers a pinned **Myself** row in
   every session, so actions double as personal to-dos on the document.
   Only assigning to OTHER people needs an account: teammates come from
@@ -203,7 +203,7 @@ state; nothing is added to `useEditorState.ts` beyond the wiring call.
 
 ## 4. Email notification
 
-A new **signed-in-only** endpoint on the api worker (Clerk JWT required,
+A new **signed-in-only** endpoint on the api worker (account access token required,
 401 otherwise):
 
 ```

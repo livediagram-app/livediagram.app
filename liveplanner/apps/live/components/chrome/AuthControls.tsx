@@ -6,19 +6,18 @@
 //   - signed in  → account avatar (profile picture or initial) + dropdown with "Profile" + "Sign out"
 //
 // Mounted in EditorHeader (and any future header chrome that wants
-// auth controls). Pure presentational — Clerk's `useUser` / `useAuth`
-// hooks read from the same context the ClerkProvider in
-// app/layout.tsx supplies, so this works anywhere under the provider.
+// auth controls). Pure presentational — it reads the deferred auth
+// context the AuthProvider in app/layout.tsx supplies, so this works
+// anywhere under the provider.
 //
-// While Clerk is still loading (first paint, before
-// useAuth().isLoaded) we render nothing so the header doesn't flicker
+// While the session is still loading (first paint, before the token
+// request answers) we render nothing so the header doesn't flicker
 // a "Sign in" link only to swap it for the user pill a tick later.
 //
-// When Clerk is disabled for the deployment (no publishable key set —
-// docs/specs/002-project-scope/business-model-and-licence.md: Clerk is optional), the component is a no-op. Same module-load
-// hook-swap pattern as `useClerkApiBootstrap` — calling `useAuth`
-// outside a ClerkProvider would throw, so the disabled branch never
-// touches Clerk.
+// When sign-in is disabled for the deployment
+// (docs/specs/002-project-scope/business-model-and-licence.md: sign-in is optional), the component is a
+// no-op. Same module-load hook-swap pattern as `useAccountBootstrap`, chosen
+// from a compile-time constant.
 
 import { useDeferredAuth } from '@/components/providers/deferred-auth';
 import Link from 'next/link';
@@ -31,7 +30,7 @@ import {
   useMenuButton,
   PictureDisc,
 } from '@liveplanner/ui';
-import { sessionsEnabled } from '@/lib/clerk-config';
+import { sessionsEnabled } from '@/lib/auth-config';
 import { track } from '@/lib/telemetry';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
 import { accountInitial } from '@/lib/account-avatar';
@@ -212,7 +211,7 @@ function AccountMenu({
 }
 
 function AuthControlsDisabled(_props: AuthControlsProps) {
-  // Clerk not configured — sign-in is not part of this deployment.
+  // Sign-in is not part of this deployment.
   // Render nothing so the header just shows the Share button.
   return null;
 }

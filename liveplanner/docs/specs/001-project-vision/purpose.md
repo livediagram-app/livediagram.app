@@ -119,7 +119,7 @@ everyone, no paid tier, with no trackers and no ads. See
 ([Build phase](../005-project-roadmap/prototype-scope.md)).
 
 The planner is **always available without signing in**: a visitor can build a
-real plan before being asked to create an account. Auth (Clerk) adds sync,
+real plan before being asked to create an account. Signing in (a liveworkspace account) adds sync,
 teams and per-account history on top of that
 ([Auth + guest access](../014-identity/auth-and-guest-access.md)).
 

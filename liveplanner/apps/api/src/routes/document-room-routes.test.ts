@@ -178,7 +178,7 @@ describe('WebSocket upgrade — trust headers', () => {
   });
 
   it('does not treat a TEAM document owner id in ?o= as the owner', async () => {
-    // A team owner id is a Clerk id every teammate can read, so the bare-`o`
+    // A team owner id is an account id every teammate can read, so the bare-`o`
     // leg is personal-only; team owners come in through the ticket.
     db.getDocumentMeta.mockResolvedValue({ ownerId: 'user_owner', teamId: 'team-1' });
     db.getShareLink.mockResolvedValue(null);
@@ -391,17 +391,17 @@ describe('WebSocket upgrade: tab scope', () => {
   });
 });
 
-// The account bit (docs/specs/014-identity/profile-picture.md §6): only a verified Clerk session
+// The account bit (docs/specs/014-identity/profile-picture.md §6): only a verified session
 // mints an account ticket, and the upgrade stamps the bit on every path, so a client header can
 // never claim it.
 describe('account sessions', () => {
-  it('mints an account ticket for a verified Clerk caller only', async () => {
+  it('mints an account ticket for a verified signed-in caller only', async () => {
     db.getDocumentMeta.mockResolvedValue({ ownerId: 'other', teamId: null });
     gates.resolveDocumentGrant.mockResolvedValue({ role: 'view', tabScope: null, shareCode: 'C' });
     await handleDocumentRoomRoutes(
       makeTestRouteContext('POST', '/api/documents/d1/room-ticket', {
         owner: 'user_ann',
-        clerkUserId: 'user_ann',
+        accountUserId: 'user_ann',
       }),
     );
     expect(db.createWsTicket).toHaveBeenLastCalledWith(
@@ -462,7 +462,7 @@ describe('person tag', () => {
     await handleDocumentRoomRoutes(
       makeTestRouteContext('POST', '/api/documents/d1/room-ticket', {
         owner: 'user_ann',
-        clerkUserId: 'user_ann',
+        accountUserId: 'user_ann',
       }),
     );
     expect(db.createWsTicket).toHaveBeenLastCalledWith(

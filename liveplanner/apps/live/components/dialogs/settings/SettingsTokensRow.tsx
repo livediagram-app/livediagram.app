@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
+import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useTokens } from '@/hooks/persistence/useTokens';
 import { useWorkbenchPairings } from '@/hooks/persistence/useWorkbenchPairings';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
@@ -17,13 +17,13 @@ import type { SettingsTokensRowSpec } from './settings-catalogue';
 // The API Tokens category's one row: the whole token manager
 // (docs/specs/015-api/public-api-and-tokens.md#36-management--the-settings-dialogs-api-tokens-category).
 // Overview and capacity, then whichever of the composer or the one-time
-// reveal is open, then the tokens. Tokens are Clerk-only, so a guest gets the
+// reveal is open, then the tokens. Tokens are signed-in only, so a guest gets the
 // reason and a way to sign in rather than a form that would only ever 403.
 export function SettingsTokensRow({ row }: { row: SettingsTokensRowSpec }) {
-  const { authLoaded, clerkUserId, isSignedIn } = useClerkApiBootstrap();
-  const enabled = Boolean(isSignedIn && clerkUserId);
-  const tokens = useTokens(clerkUserId ?? null, { enabled });
-  const pairings = useWorkbenchPairings(clerkUserId ?? null, { enabled });
+  const { authLoaded, accountUserId, isSignedIn } = useAccountBootstrap();
+  const enabled = Boolean(isSignedIn && accountUserId);
+  const tokens = useTokens(accountUserId ?? null, { enabled });
+  const pairings = useWorkbenchPairings(accountUserId ?? null, { enabled });
   const [composing, setComposing] = useState(false);
   const [secret, setSecret] = useState<string | null>(null);
   // First run: with no tokens and nothing just minted, the composer is the

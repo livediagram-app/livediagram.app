@@ -8,8 +8,8 @@
 // section, its refresh and its Remove from Timeline) is gone, so a read names its scope, and a `user`
 // scope is refused like any other the reader may not see; Home (/api/home) is what moves the unread mark.
 //
-// Hybrid identity like the rest of the api (docs/specs/014-identity/auth-and-guest-access.md): the Clerk
-// userId when signed in, X-Owner-Id otherwise.
+// Hybrid identity like the rest of the api (docs/specs/014-identity/auth-and-guest-access.md): the account
+// id when signed in, X-Owner-Id otherwise.
 
 import {
   TIMELINE_PAGE_MAX,
@@ -101,7 +101,7 @@ async function canReadScope(ctx: RouteContext, scope: TimelineScopeRef): Promise
   if (scope.scopeType === 'team') {
     // Joined members only — an `invited` row grants no access to the
     // team's content (docs/specs/013-workspace/teams.md), and its feed is content. Teams are
-    // Clerk-only, so a guest never passes this.
+    // signed-in only, so a guest never passes this.
     if (!ctx.verifiedUserId) return false;
     const membership = await getMembership(ctx.env, scope.scopeId, ctx.verifiedUserId);
     return membership?.status === 'joined';

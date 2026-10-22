@@ -251,7 +251,7 @@ See [Business model + licence](docs/specs/002-project-scope/business-model-and-l
 - The codebase is **proprietary** (all rights reserved, every `package.json` is `UNLICENSED`) and its source is **not public**. Never add open-source, contributing, forking or self-hosting wording, or links to the repository, to anything users see.
 - liveplanner is free to use. **No paid tier and no plan to introduce one.** No trackers, no ads.
 - liveplanner is **not deployed yet**: Cloudflare ids in the wrangler configs are placeholders and the deploy, CLI publish and MCP registry workflows are manual-only. Never deploy, publish or touch a remote Cloudflare resource from an agent session.
-- Optional integrations degrade, never break: Clerk auth is optional, and when unset the api worker and live frontend degrade to pure-guest mode.
+- Optional integrations degrade, never break: sign-in (the liveworkspace accounts Worker) is optional, and when unset the api worker and live frontend degrade to pure-guest mode.
 - No "Pro features" flags, no billing integration. If we ship it, every user gets it.
 
 ## Secrets policy
@@ -259,8 +259,8 @@ See [Business model + licence](docs/specs/002-project-scope/business-model-and-l
 See [Secrets policy](docs/specs/002-project-scope/secrets-policy.md). **No secrets in source. Ever.**
 
 - All secrets via env vars: `.env.local` (gitignored) for dev, `wrangler secret put` for Workers, dashboard env vars for Pages.
-- Client bundles only carry values explicitly prefixed `NEXT_PUBLIC_*` and only when documented as publishable (e.g. Clerk publishable key).
-- Server-only secrets (Clerk secret key, Resend, D1 access) never appear in client code.
+- Client bundles only carry values explicitly prefixed `NEXT_PUBLIC_*` and only when documented as publishable (e.g. `NEXT_PUBLIC_SIGN_IN_ENABLED`).
+- Server-only secrets (the accounts client secret, Resend, D1 access) never appear in client code.
 - Each app/worker that needs env vars ships a `.env.example` documenting what's required.
 
 ## Auth model
@@ -270,10 +270,10 @@ See [Auth + guest access](docs/specs/014-identity/auth-and-guest-access.md).
 - **The planner always works without signing in.** Friction-free engagement is the acquisition strategy. Never put a sign-in wall in front of the editor.
 - **Hybrid identity** — the api accepts two equivalent ways of identifying the owner of a request:
   - **Guest path**: a per-browser participant id (`liveplanner:v2:self-id` in `localStorage`) carried as `X-Owner-Id`. Default for unsigned visitors. Full feature set (persistence, share links, real-time collab).
-  - **Authed path**: a Clerk session JWT in `Authorization: Bearer <token>`, verified via `CLERK_JWKS_URL`.
+  - **Authed path**: an account access token in `Authorization: Bearer <token>`, verified against the accounts Worker's published keys (`ACCOUNTS_URL`) and this API's audience (`API_RESOURCE`).
   - The api worker uses the `sub` claim as the owner id.
 - The two paths coexist forever — a signed-in user can still hand a share link to a guest who edits without auth.
-- Sign-in lives at `/sign-in/` and sign-up at `/get-started/` (custom UI; email-code or Google OAuth). On sign-up, a guest's projects migrate from the localStorage id to the Clerk user id via `POST /api/migrate`.
+- Sign-in lives at `/sign-in/` and sign-up at `/get-started/` (both hand off to the liveworkspace accounts site; email code). On sign-up, a guest's projects migrate from the localStorage id to the account id via `POST /api/migrate`.
 
 ## Core principle: reuse over duplication
 

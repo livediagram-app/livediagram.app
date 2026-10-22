@@ -1,6 +1,6 @@
-// /api/tokens — external API credentials, signed-in (Clerk) users only
+// /api/tokens — external API credentials, signed-in users only
 // (docs/specs/015-api/public-api-and-tokens.md). Gated exactly like the team routes: a guest (X-Owner-Id-only)
-// caller is refused outright. A token always acts as the Clerk account that
+// caller is refused outright. A token always acts as the account that
 // created it; there are no guest-owned tokens.
 //
 //   GET    /api/tokens        — list the caller's live tokens (metadata only)
@@ -32,13 +32,13 @@ import { recordTokenCreated, recordTokenRevoked } from '../timeline';
 import { endWorkbenchAccess } from '../workbench-end';
 
 export async function handleTokens(ctx: RouteContext): Promise<Response> {
-  const { request, env, segments, clerkUserId } = ctx;
+  const { request, env, segments, accountUserId } = ctx;
   if (segments[1] !== 'tokens') return notFound();
   if (segments[2] === 'current' && segments.length === 3) return handleCurrentToken(ctx);
-  // Signed-in only: reject when there's no verified Clerk identity (a guest
+  // Signed-in only: reject when there's no verified account identity (a guest
   // with only X-Owner-Id, or auth not configured), mirroring routes/teams.ts.
-  if (!clerkUserId) return forbidden();
-  const owner = clerkUserId;
+  if (!accountUserId) return forbidden();
+  const owner = accountUserId;
 
   if (segments.length === 2) {
     if (request.method === 'GET') {

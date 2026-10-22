@@ -7,15 +7,15 @@ import {
 } from '@/components/providers/workbench-session-context';
 import { useEffect, useLayoutEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { registerTokenProvider } from '@/lib/api-client';
-import { sessionsEnabled } from '@/lib/clerk-config';
+import { sessionsEnabled } from '@/lib/auth-config';
 import {
   guestMigrationPending,
   settleGuestMigration,
   subscribeGuestMigration,
 } from '@/lib/guest-migration';
 
-// Two things every page that talks to the api needs to do once Clerk
-// is in the tree:
+// Two things every page that talks to the api needs to do once a
+// session can exist:
 //
 //   1. Register `() => getToken()` as the api-client's token provider
 //      so every request ships `Authorization: Bearer <jwt>` instead of
@@ -25,11 +25,11 @@ import {
 //   2. Run the guest → authed migration the first time the user is
 //      signed in AND `liveplanner:v2:self-id` is still in localStorage.
 //      `POST /api/migrate` reassigns every `documents.owner_id` +
-//      `folders.owner_id` row from the guest id to the Clerk userId
+//      `folders.owner_id` row from the guest id to the account id
 //      (docs/specs/014-identity/auth-and-guest-access.md + docs/specs/015-api/api.md). On success we drop the localStorage key so
 //      subsequent loads skip the call entirely. `authLoaded` stays
 //      false until the migration settles, so no page reads owner data
-//      as the Clerk userId while it still belongs to the guest id
+//      as the account id while it still belongs to the guest id
 //      (issue #67). lib/guest-migration.ts runs it once per page load.
 //
 // Both Stage 3 (token provider) and Stage 4 (migration) lived as
@@ -40,11 +40,10 @@ import {
 // destructure them — there's exactly one place those values come from
 // per page.
 //
-// When Clerk isn't configured for the deployment (docs/specs/002-project-scope/business-model-and-licence.md: Clerk
-// is optional; `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` unset), the hook returns
-// a stable stub — `useAuth` would throw outside a ClerkProvider, so
-// the disabled branch never touches Clerk at all. The choice between
-// real-Clerk and stub is made at module load, then frozen — React's
+// When sign-in isn't configured for the deployment (docs/specs/002-project-scope/business-model-and-licence.md: sign-in
+// is optional; `NEXT_PUBLIC_SIGN_IN_ENABLED` unset), the hook returns
+// a stable stub. The choice between the real session and the stub is
+// made at module load, then frozen — React's
 // rules-of-hooks require the same function to run on every render,
 // which this satisfies because `sessionsEnabled` is a compile-time
 // constant baked from a `NEXT_PUBLIC_*` env var.
@@ -52,16 +51,16 @@ import {
 type BootstrapResult = {
   isSignedIn: boolean | undefined;
   authLoaded: boolean;
-  clerkUserId: string | null | undefined;
-  // Best-guess display name for the signed-in Clerk user. Used to
+  accountUserId: string | null | undefined;
+  // Best-guess display name for the signed-in account. Used to
   // seed the participant record on first load so a signed-in user
   // never appears under the random "Sleepy Lemur" placeholder, and
   // to lock the welcome-modal name input when joining someone
   // else's document (the user explicitly asked that visitors with a
-  // Clerk account aren't allowed to type a different display name).
-  // Null when Clerk hasn't surfaced the user yet, the user signed
+  // account aren't allowed to type a different display name).
+  // Null when the session hasn't surfaced the user yet, the user signed
   // out, or the user genuinely has no name configured.
-  clerkDisplayName: string | null;
+  accountDisplayName: string | null;
 };
 
 // The editor in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md "The editor in a
@@ -71,8 +70,8 @@ function workbenchResult(session: WorkbenchSession): BootstrapResult {
   return {
     isSignedIn: true,
     authLoaded: true,
-    clerkUserId: session.person.id,
-    clerkDisplayName: session.person.name,
+    accountUserId: session.person.id,
+    accountDisplayName: session.person.name,
   };
 }
 
@@ -81,51 +80,50 @@ function workbenchResult(session: WorkbenchSession): BootstrapResult {
 const HELD: BootstrapResult = {
   isSignedIn: false,
   authLoaded: false,
-  clerkUserId: null,
-  clerkDisplayName: null,
+  accountUserId: null,
+  accountDisplayName: null,
 };
 
-function useClerkApiBootstrapEnabled(): BootstrapResult {
+function useAccountBootstrapEnabled(): BootstrapResult {
   const workbench = useWorkbenchSession();
   const auth = useDeferredAuth();
   const held = workbench !== null || auth === DEFERRED_AUTH_PENDING;
-  const { getToken, isSignedIn, authLoaded: clerkLoaded, userId: clerkUserId, user } = auth;
+  const { getToken, isSignedIn, authLoaded: sessionLoaded, userId: accountUserId, user } = auth;
 
-  // If Clerk hasn't reported its state within 5 s, treat the session as
+  // If the session hasn't reported its state within 5 s, treat it as
   // guest rather than hanging the canvas indefinitely. Corporate proxies
-  // (e.g. Zscaler) sometimes hold connections to auth subdomains open
-  // for tens of seconds before failing, which blocks rendering. When the
+  // (e.g. Zscaler) sometimes hold connections open for tens of seconds
+  // before failing, which blocks rendering. When the
   // timer fires isSignedIn is still undefined so the token provider stays
-  // null and the guest X-Owner-Id path is used. If Clerk eventually loads
+  // null and the guest X-Owner-Id path is used. If the session eventually loads
   // after the timeout, isSignedIn updates and the token provider effect
   // below re-runs, switching subsequent API calls to the JWT path.
   const [timedOut, setTimedOut] = useState(false);
   useEffect(() => {
-    if (clerkLoaded || held) return;
+    if (sessionLoaded || held) return;
     const id = window.setTimeout(() => setTimedOut(true), 5000);
     return () => window.clearTimeout(id);
-  }, [clerkLoaded, held]);
+  }, [sessionLoaded, held]);
   // 2. Guest → authed migration. Read as an external store, so the very
   // first signed-in render already holds `authLoaded` and settling
   // releases it (see subscribeGuestMigration for why a re-render alone
   // is not enough under the React Compiler).
   const migrating = useSyncExternalStore(
     subscribeGuestMigration,
-    () => !held && !!isSignedIn && !!clerkUserId && guestMigrationPending(clerkUserId),
+    () => !held && !!isSignedIn && !!accountUserId && guestMigrationPending(accountUserId),
     () => false,
   );
   useEffect(() => {
-    if (held || !isSignedIn || !clerkUserId) return;
-    void settleGuestMigration(clerkUserId);
-  }, [held, isSignedIn, clerkUserId]);
-  const authLoaded = (clerkLoaded || timedOut) && !migrating;
+    if (held || !isSignedIn || !accountUserId) return;
+    void settleGuestMigration(accountUserId);
+  }, [held, isSignedIn, accountUserId]);
+  const authLoaded = (sessionLoaded || timedOut) && !migrating;
 
   // First+Last takes precedence so we always present the form the
-  // user picked at sign-up. Falls back to fullName (covers OAuth
-  // flows where Clerk parses the names differently) and finally the
+  // user picked at sign-up. Falls back to fullName and finally the
   // username so we never show a blank pill for an account that does
   // exist.
-  const clerkDisplayName = useMemo(() => {
+  const accountDisplayName = useMemo(() => {
     if (!user) return null;
     const fl = [user.firstName, user.lastName].filter(Boolean).join(' ').trim();
     return fl || user.fullName || user.username || null;
@@ -137,10 +135,10 @@ function useClerkApiBootstrapEnabled(): BootstrapResult {
   //
   // A LAYOUT effect on purpose. React runs a child's passive effects before
   // its parent's, and the render that flips `isSignedIn` is the same one that
-  // hands children the Clerk id as their owner (the Explorer's
+  // hands children the account id as their owner (the Explorer's
   // CustomThemeProvider, say). With a plain useEffect, that child's first
   // fetch went out before the provider existed, so apiHeaders fell back to
-  // `X-Owner-Id: <Clerk id>`, which the worker refuses with a 401 (a Clerk id
+  // `X-Owner-Id: <account id>`, which the worker refuses with a 401 (an account id
   // is never a guest credential). Every layout effect runs before any
   // passive one, so the provider is in place by the time a child fetches.
   //
@@ -154,26 +152,26 @@ function useClerkApiBootstrapEnabled(): BootstrapResult {
 
   if (workbench) return workbenchResult(workbench);
   if (held) return HELD;
-  return { isSignedIn, authLoaded, clerkUserId, clerkDisplayName };
+  return { isSignedIn, authLoaded, accountUserId, accountDisplayName };
 }
 
-function useClerkApiBootstrapDisabled(): BootstrapResult {
+function useAccountBootstrapDisabled(): BootstrapResult {
   const workbench = useWorkbenchSession();
   const auth = useDeferredAuth();
   if (workbench) return workbenchResult(workbench);
   if (auth === DEFERRED_AUTH_PENDING) return HELD;
-  // Stable stub for Clerk-disabled deployments. `authLoaded: true`
-  // so anything gated on "has Clerk reported its state yet?" doesn't
-  // wait forever; `isSignedIn: false` / `clerkUserId: null` keep the
+  // Stable stub for sign-in-disabled deployments. `authLoaded: true`
+  // so anything gated on "has the session reported its state yet?" doesn't
+  // wait forever; `isSignedIn: false` / `accountUserId: null` keep the
   // caller in pure-guest mode.
   return {
     isSignedIn: false,
     authLoaded: true,
-    clerkUserId: null,
-    clerkDisplayName: null,
+    accountUserId: null,
+    accountDisplayName: null,
   };
 }
 
-export const useClerkApiBootstrap = sessionsEnabled
-  ? useClerkApiBootstrapEnabled
-  : useClerkApiBootstrapDisabled;
+export const useAccountBootstrap = sessionsEnabled
+  ? useAccountBootstrapEnabled
+  : useAccountBootstrapDisabled;

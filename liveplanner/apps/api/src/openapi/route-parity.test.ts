@@ -18,15 +18,10 @@ import {
 // dispatch (docs/specs/015-api/api-documentation.md "Drift test"). See dispatch-probe.ts
 // for how the worker is probed; what each case below proves is stated on it.
 
-// Probe as a signed-in caller, so the Clerk-only surfaces (teams, tokens,
+// Probe as a signed-in caller, so the signed-in-only surfaces (teams, tokens,
 // OAuth exchange) route instead of answering 401 for every path under them.
-vi.mock('../auth/clerk', () => ({
-  getClerkIdentity: async () => ({
-    userId: 'user_probe',
-    email: null,
-    sessionId: null,
-    firstFactorAgeMinutes: null,
-  }),
+vi.mock('../auth/accounts', () => ({
+  getAccountIdentity: async () => ({ userId: 'user_probe', email: null }),
 }));
 
 const vocabulary = routeVocabulary();

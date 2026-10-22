@@ -7,7 +7,7 @@
 // both want room to grow without the barrel becoming a catalogue.
 
 // Who a run of events is FOR. v1 emits only 'user', where the id is an
-// owner id (a Clerk `sub`, or a guest participant id per docs/specs/014-identity/auth-and-guest-access.md).
+// owner id (an account `sub`, or a guest participant id per docs/specs/014-identity/auth-and-guest-access.md).
 //
 // Widened with `(string & {})` rather than closed, because the whole
 // point of the scope model is that a later per-document or per-team feed
@@ -26,7 +26,7 @@ export function formatScope(scope: TimelineScopeRef): string {
 }
 
 // Inverse of formatScope. Splits on the FIRST colon only — a scope id
-// is an opaque owner id and a Clerk `sub` may itself contain one.
+// is an opaque owner id and an account `sub` may itself contain one.
 // Returns null for anything without both halves, so a malformed query
 // param is a 400 rather than a scope read of `""`.
 export function parseScope(raw: string): TimelineScopeRef | null {

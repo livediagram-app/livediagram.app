@@ -163,7 +163,7 @@ describe("a non-owner cannot convert someone else's document", () => {
   it('treats a joined teammates declared conversion as a plain delete, to the team Trash', async () => {
     const { ctx, settle } = ctxWith('DELETE', '/api/documents/d1', {
       owner: 'bob',
-      clerkUserId: 'bob',
+      accountUserId: 'bob',
       ...conversion('offline'),
     });
     expect((await handleDocuments(ctx)).status).toBe(204);
@@ -177,7 +177,7 @@ describe("a non-owner cannot convert someone else's document", () => {
     // Ownership is what gates it, not the absence of a team.
     const { ctx, settle } = ctxWith('DELETE', '/api/documents/d1', {
       owner: 'alice',
-      clerkUserId: 'alice',
+      accountUserId: 'alice',
       ...conversion('offline'),
     });
     await handleDocuments(ctx);

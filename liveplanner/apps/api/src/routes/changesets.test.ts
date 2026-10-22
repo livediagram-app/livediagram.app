@@ -56,7 +56,7 @@ function call(db: SqliteD1, method: string, path: string, body?: unknown, who: W
     makeTestRouteContext(method, path, {
       env: db.env,
       owner,
-      clerkUserId: who.token ? null : owner,
+      accountUserId: who.token ? null : owner,
       verifiedUserId: owner,
       body,
       headers: who.headers,

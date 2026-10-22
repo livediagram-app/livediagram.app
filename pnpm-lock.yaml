@@ -1732,6 +1732,9 @@ importers:
       '@liveplanner/templates':
         specifier: workspace:*
         version: link:../../packages/templates
+      '@liveworkspace/auth-client':
+        specifier: workspace:*
+        version: link:../../../packages/auth-client
       jose:
         specifier: ^6.2.12
         version: 6.2.13
@@ -1912,9 +1915,6 @@ importers:
 
   liveplanner/apps/live:
     dependencies:
-      '@clerk/react':
-        specifier: ^6.17.8
-        version: 6.18.0(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       '@liveplanner/api-schema':
         specifier: workspace:*
         version: link:../../packages/api-schema

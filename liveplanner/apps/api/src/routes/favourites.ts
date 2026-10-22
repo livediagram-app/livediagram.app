@@ -4,7 +4,7 @@
 // PUT    /api/favourites/:documentId -> 204, star it
 // DELETE /api/favourites/:documentId -> 204, un-star it
 //
-// Hybrid identity like the rest of the api: the Clerk userId when signed
+// Hybrid identity like the rest of the api: the account id when signed
 // in, X-Owner-Id otherwise, so guests get durable favourites too.
 //
 // Deliberately NOT gated on "can this owner read that document". A star is a

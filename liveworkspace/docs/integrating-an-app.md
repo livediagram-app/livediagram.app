@@ -126,3 +126,24 @@ session-token claim that Teams invites needed.
 It isn't published yet. Until it is, copy `packages/auth-client/src` into the app's own
 `packages/`. It's two files that depend only on `jose`, which livediagram already uses. When a
 second app needs it, publish it to GitHub Packages, or move this repo into the apps' workspace.
+
+## liveplanner
+
+liveplanner is wired this way. Its routes live on its API Worker under `/api/auth/*`
+(`liveplanner/apps/api/src/routes/auth.ts`), on the same origin as the app, and it uses the
+workspace package directly (`"@liveworkspace/auth-client": "workspace:*"`). It derives the issuer
+from `ACCOUNTS_URL` (`${ACCOUNTS_URL}/api/auth`) rather than taking `ACCOUNTS_ISSUER`. Register it
+once per environment with its callback on each origin it serves:
+
+```sh
+ADMIN_TOKEN=… node apps/accounts/scripts/register-client.ts \
+  --accounts https://accounts.liveworkspace.app \
+  --name liveplanner \
+  --redirect https://www.liveplanner.app/api/auth/callback \
+  --redirect https://liveplanner.app/api/auth/callback \
+  --resource https://liveplanner.app/api
+```
+
+Locally, against a development accounts Worker, the redirect is
+`http://localhost:3100/api/auth/callback` (the router) and the resource `http://localhost/api`
+(liveplanner/docs/development/local-development.md).

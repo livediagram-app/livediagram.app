@@ -7,7 +7,6 @@ import {
   isAllowedScriptUrl,
   resetTrustedTypesForTests,
   trustedHtml,
-  trustedScriptOrigins,
   trustedTypesBootScript,
 } from './trusted-types';
 
@@ -77,10 +76,8 @@ describe('isAllowedScriptUrl', () => {
   });
 
   it('lets a named third-party origin through', () => {
-    const clerk = 'https://clerk.liveplanner.app';
-    expect(
-      isAllowedScriptUrl(`${clerk}/npm/@clerk/clerk-js@6/dist/clerk.browser.js`, page, '', [clerk]),
-    ).toBe(true);
+    const vendor = 'https://scripts.example.com';
+    expect(isAllowedScriptUrl(`${vendor}/sdk/v1/sdk.js`, page, '', [vendor])).toBe(true);
   });
 
   it('refuses anything else', () => {
@@ -91,33 +88,6 @@ describe('isAllowedScriptUrl', () => {
     expect(isAllowedScriptUrl('data:text/javascript,alert(1)', page, '', [])).toBe(false);
     expect(isAllowedScriptUrl('blob:https://liveplanner.app/1234', page, '', [])).toBe(false);
     expect(isAllowedScriptUrl('::not a url', page, '', [])).toBe(false);
-  });
-});
-
-describe('trustedScriptOrigins', () => {
-  const key = (host: string) => `pk_test_${btoa(`${host}$`)}`;
-  it("reads the Clerk frontend API's origin from the publishable key, beside its sign-up CAPTCHA's", () => {
-    expect(
-      trustedScriptOrigins({ NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: key('clerk.liveplanner.app') }),
-    ).toEqual(['https://clerk.liveplanner.app', 'https://challenges.cloudflare.com']);
-  });
-
-  it("lets Clerk's sign-up CAPTCHA load, and nothing else on its origin's neighbours", () => {
-    const origins = trustedScriptOrigins({
-      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: key('clerk.liveplanner.app'),
-    });
-    const page = 'https://www.liveplanner.app';
-    const turnstile = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
-    expect(isAllowedScriptUrl(turnstile, page, '/live', origins)).toBe(true);
-    expect(isAllowedScriptUrl('https://evil.cloudflare.com/x.js', page, '/live', origins)).toBe(
-      false,
-    );
-  });
-
-  it('names none without a key, or with one it cannot read', () => {
-    expect(trustedScriptOrigins({})).toEqual([]);
-    expect(trustedScriptOrigins({ NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: 'pk_test_%%%' })).toEqual([]);
-    expect(trustedScriptOrigins({ NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: 'sk_test_abc' })).toEqual([]);
   });
 });
 
@@ -150,15 +120,15 @@ describe('trustedTypesBootScript', () => {
   it('creates the default policy, which lets only allowed script URLs through and logs a refusal', () => {
     const { created } = stubTrustedTypes();
     const error = vi.spyOn(console, 'error').mockImplementation(() => {});
-    run(trustedTypesBootScript('/live', ['https://clerk.example.com']));
+    run(trustedTypesBootScript('/live', ['https://scripts.example.com']));
     const policy = created.find((c) => c.name === 'default')!;
     expect(Object.keys(policy.rules).sort()).toEqual(['createHTML', 'createScriptURL']);
     expect(policy.rules.createScriptURL!('/live/_next/static/chunks/a.js')).toBe(
       '/live/_next/static/chunks/a.js',
     );
     expect(policy.rules.createScriptURL!('/_next/static/chunks/a.js')).toBeNull();
-    expect(policy.rules.createScriptURL!('https://clerk.example.com/c.js')).toBe(
-      'https://clerk.example.com/c.js',
+    expect(policy.rules.createScriptURL!('https://scripts.example.com/c.js')).toBe(
+      'https://scripts.example.com/c.js',
     );
     expect(policy.rules.createScriptURL!('https://evil.example/x.js')).toBeNull();
     const own = `blob:${location.origin}/1234`;
@@ -213,12 +183,12 @@ describe('trustedTypesBootScript', () => {
     expect(() => trustedTypesBootScript('help', [])).toThrow(/asset prefix/);
     expect(() => trustedTypesBootScript('', ['https://a.example"];alert(1)//'])).toThrow(/origin/);
     expect(() => trustedTypesBootScript('', ['javascript:alert(1)'])).toThrow(/origin/);
-    expect(() => trustedTypesBootScript('/live', ['https://clerk.example.com'])).not.toThrow();
+    expect(() => trustedTypesBootScript('/live', ['https://scripts.example.com'])).not.toThrow();
   });
 
   // It is inlined in a <script> element: a closing tag anywhere in it would end that element early.
   it('never closes the inline script element it is written into', () => {
-    expect(trustedTypesBootScript('/live', ['https://clerk.example.com'])).not.toMatch(
+    expect(trustedTypesBootScript('/live', ['https://scripts.example.com'])).not.toMatch(
       /<\/script/i,
     );
   });

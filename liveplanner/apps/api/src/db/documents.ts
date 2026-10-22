@@ -70,7 +70,7 @@ async function rowToDocument(env: Env, row: DocumentRow): Promise<DocumentDTO> {
   // Join owner participant info onto the response so visitors can
   // render "Owner: <name>" without waiting for the owner to come
   // online in the realtime room. Null when the owner has no
-  // participant row yet (e.g. a Clerk-authed owner who's never set a
+  // participant row yet (e.g. a signed-in owner who's never set a
   // name on a document); the UI hides the badge in that case.
   // The participant lookup and the tab-summary read are independent,
   // so issue them concurrently rather than paying two serial round

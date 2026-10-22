@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test';
 import { expect, test } from '../fixtures';
-import { freshUserId, installClerkStub, type StubUser } from './clerk-stub';
+import { freshUserId, installSession, type StubUser } from './session';
 
 // Placement rides the create (docs/specs/013-workspace/folders.md "Placement on create",
 // docs/specs/007-editor/new-document-route.md): a signed-in member's /new into a team folder files
@@ -15,9 +15,6 @@ function stubUser(id: string): StubUser {
     firstName: 'Pat',
     lastName: 'Lane',
     email: `${id}@example.com`,
-    hasImage: false,
-    imageUrl: 'https://img.clerk.com/stub/default',
-    externalAccounts: [],
   };
 }
 
@@ -26,7 +23,7 @@ async function signedIn(page: Page, baseURL: string, userId: string) {
     localStorage.setItem('liveplanner:v2:name-confirmed', '1');
     localStorage.setItem('liveplanner:user-preferences:v1', JSON.stringify({ planTourSeen: true }));
   });
-  await installClerkStub(page, stubUser(userId));
+  await installSession(page, stubUser(userId));
   const token = await (await page.request.get(`/e2e/token?sub=${userId}`)).text();
   return { Authorization: `Bearer ${token}`, Origin: new URL(baseURL).origin };
 }

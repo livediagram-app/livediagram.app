@@ -149,7 +149,7 @@ describe('hosted-vars script', () => {
       bindings: [
         { type: 'plain_text', name: 'TELEMETRY_ENABLED', text: 'true' },
         { type: 'plain_text', name: 'APP_BASE_URL', text: 'https://old.example' },
-        { type: 'secret_text', name: 'CLERK_JWKS_URL' },
+        { type: 'secret_text', name: 'ACCOUNTS_CLIENT_SECRET' },
         { type: 'd1', name: 'DB' },
       ],
     },

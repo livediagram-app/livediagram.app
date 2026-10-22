@@ -96,7 +96,7 @@ Invariant: no write happens before resolution has succeeded.
 
 ## Security and trust
 
-- Team membership is read against `ctx.verifiedUserId` only (Clerk session or API token); `X-Owner-Id`
+- Team membership is read against `ctx.verifiedUserId` only (signed-in session or API token); `X-Owner-Id`
   never reaches `judgeTeam`.
 - `folder_not_found` covers every folder the caller cannot see, so the 404/400 split leaks nothing about
   other people's folders or teams the caller has not joined.
@@ -146,7 +146,7 @@ No new request on the happy path (one fewer: the follow-up PUT is gone); no layo
 | Team duplicate is one create                                    | `apps/live/lib/duplicate-document.test.ts`                            |
 | Sync refile                                                     | `apps/live/lib/offline/offline-convert.test.ts`                       |
 | OpenAPI parity                                                  | `apps/api/src/openapi/*.test.ts`                                      |
-| Signed-in /new into a team folder; the refusal card             | `apps/live/e2e/clerk-stub/create-placement.spec.ts`                   |
+| Signed-in /new into a team folder; the refusal card             | `apps/live/e2e/signed-in/create-placement.spec.ts`                    |
 
 ## Constants and configuration
 

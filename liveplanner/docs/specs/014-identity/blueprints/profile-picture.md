@@ -1,33 +1,38 @@
 # Profile picture: blueprint
 
+> **Dormant since the move off Clerk.** Sign-in now goes through the liveworkspace accounts Worker, which supplies
+> no profile picture, so `pictureUrl` is always `null` and every avatar draws initials. The code below (the Clerk
+> image-host allowlist in `packages/api-schema/src/profile-picture.ts`, the publish path, the room's `picture`
+> fields) is still present but never carries a picture. What follows is the design as built for Clerk.
+
 Derived from [Profile picture](../profile-picture.md). Defaults applied where the spec is silent
 are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
 
-| File                                                                                     | Role                                                                                                                                                     |
-| ---------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `packages/api-schema/src/profile-picture.ts`                                             | `PROFILE_PICTURE_HOST`, `MAX_PICTURE_URL_LEN`, `isProfilePictureUrl` (api and live)                                                                      |
-| `packages/api-schema/src/index.ts`, `room-messages.ts`                                   | `ParticipantPresence.picture`, `TeamMember.pictureUrl`, `ParticipantRecord.pictureUrl`, the `identity` client frame                                      |
-| `apps/api/migrations/0001_liveplanner_baseline.sql`                                      | `participants.picture_url`, `ws_tickets.account`                                                                                                         |
-| `apps/api/src/db/participants.ts`                                                        | Reads `picture_url`; `setParticipantPicture`                                                                                                             |
-| `apps/api/src/routes/participants.ts`                                                    | `PUT /participants/<id>/picture`; GET gates `pictureUrl` on a signed-in caller                                                                           |
-| `apps/api/src/db/teams.ts`                                                               | Joined members carry `pictureUrl`                                                                                                                        |
-| `apps/api/src/db/ws-tickets.ts`, `routes/document-room-routes.ts`                        | Ticket `account` bit; `X-Verified-Account` stamped on every upgrade                                                                                      |
-| `apps/api/src/document-room.ts`, `room-roster.ts`, `document-room-rules.ts`              | Session `account`; hello keeps `picture` for accounts only; `identity` frames; roster stripped per recipient                                             |
-| `apps/api/src/openapi/manifest.ts`                                                       | The picture route documented                                                                                                                             |
-| `apps/live/lib/account-avatar.ts`                                                        | `resolveProfilePicture` (Google > copy, never an upload), `clerkImageSource`; `pictureSrc`, `pictureSrcSet` live in `packages/ui/src/profile-picture.ts` |
-| `apps/live/lib/user-preferences.ts`                                                      | `showProfilePicture`, `SHOW_PROFILE_PICTURE_DEFAULT`, `showProfilePictureEnabled`                                                                        |
-| `apps/live/components/dialogs/settings/settings-catalogue.ts`                            | Account > You toggle "Show My Profile Picture"; identity copy                                                                                            |
-| `apps/live/hooks/persistence/usePublishedPicture.ts`                                     | `publishedPicture`, `usePublishedPicture`, `usePublishPicture` (editor + Explorer)                                                                       |
-| `apps/live/hooks/persistence/useEditorPreferences.ts`                                    | `useCachedPreferences`                                                                                                                                   |
-| `packages/ui/src/PictureDisc.tsx`, `apps/live/components/primitives/AuthorDisc.tsx`      | GlyphDisc + picture overlay; a comment author's disc (initials)                                                                                          |
-| `apps/live/components/providers/ClerkBridge.tsx`, `deferred-auth.tsx`                    | `pictureUrl` on the auth user                                                                                                                            |
-| `apps/live/lib/api/room.ts`, `app/document/[id]/useRoomConnection.ts`                    | hello `picture`; `updateSelf` sends `identity`; signed-in joins mint a ticket                                                                            |
-| `apps/live/app/document/[id]/usePresenceRows.ts`, `lib/presence-rows.ts`                 | Own entry carries our picture; cursor rows carry `picture`                                                                                               |
-| Surfaces                                                                                 | `AuthControls`, `SettingsAccountRows`, `ParticipantAvatar`, `RemoteCursor`, `team-pane-parts`                                                            |
-| `apps/live/e2e/clerk-stub/*`, `apps/live/scripts/build-clerk-stub.mjs`                   | Fake `window.Clerk`, signed-in and collaborator specs, the Clerk-enabled export                                                                          |
-| `scripts/e2e-stack.mjs`, `apps/live/playwright.config.ts`                                | `E2E_LIVE_OUT`, `E2E_CLERK_JWKS` (`/e2e/jwks.json`, `/e2e/token`), the `clerk-stub` project                                                              |
-| `apps/help/app/account-and-data/signing-in/page.mdx`, `policies/privacy-policy/page.mdx` | User-facing copy                                                                                                                                         |
-| `apps/telemetry/app/catalogue/settings.ts`, `event-explanations.ts`                      | `ShowProfilePictureOn/Off`                                                                                                                               |
+| File                                                                                     | Role                                                                                                                                                         |
+| ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `packages/api-schema/src/profile-picture.ts`                                             | `PROFILE_PICTURE_HOST`, `MAX_PICTURE_URL_LEN`, `isProfilePictureUrl` (api and live)                                                                          |
+| `packages/api-schema/src/index.ts`, `room-messages.ts`                                   | `ParticipantPresence.picture`, `TeamMember.pictureUrl`, `ParticipantRecord.pictureUrl`, the `identity` client frame                                          |
+| `apps/api/migrations/0001_liveplanner_baseline.sql`                                      | `participants.picture_url`, `ws_tickets.account`                                                                                                             |
+| `apps/api/src/db/participants.ts`                                                        | Reads `picture_url`; `setParticipantPicture`                                                                                                                 |
+| `apps/api/src/routes/participants.ts`                                                    | `PUT /participants/<id>/picture`; GET gates `pictureUrl` on a signed-in caller                                                                               |
+| `apps/api/src/db/teams.ts`                                                               | Joined members carry `pictureUrl`                                                                                                                            |
+| `apps/api/src/db/ws-tickets.ts`, `routes/document-room-routes.ts`                        | Ticket `account` bit; `X-Verified-Account` stamped on every upgrade                                                                                          |
+| `apps/api/src/document-room.ts`, `room-roster.ts`, `document-room-rules.ts`              | Session `account`; hello keeps `picture` for accounts only; `identity` frames; roster stripped per recipient                                                 |
+| `apps/api/src/openapi/manifest.ts`                                                       | The picture route documented                                                                                                                                 |
+| `apps/live/lib/account-avatar.ts`                                                        | `accountInitial`; `resolveProfilePicture` and `clerkImageSource` left with Clerk; `pictureSrc`, `pictureSrcSet` live in `packages/ui/src/profile-picture.ts` |
+| `apps/live/lib/user-preferences.ts`                                                      | `showProfilePicture`, `SHOW_PROFILE_PICTURE_DEFAULT`, `showProfilePictureEnabled`                                                                            |
+| `apps/live/components/dialogs/settings/settings-catalogue.ts`                            | Account > You toggle "Show My Profile Picture"; identity copy                                                                                                |
+| `apps/live/hooks/persistence/usePublishedPicture.ts`                                     | `publishedPicture`, `usePublishedPicture`, `usePublishPicture` (editor + Explorer)                                                                           |
+| `apps/live/hooks/persistence/useEditorPreferences.ts`                                    | `useCachedPreferences`                                                                                                                                       |
+| `packages/ui/src/PictureDisc.tsx`, `apps/live/components/primitives/AuthorDisc.tsx`      | GlyphDisc + picture overlay; a comment author's disc (initials)                                                                                              |
+| `apps/live/components/providers/AccountsBridge.tsx`, `deferred-auth.tsx`                 | `pictureUrl` on the auth user, always `null` now                                                                                                             |
+| `apps/live/lib/api/room.ts`, `app/document/[id]/useRoomConnection.ts`                    | hello `picture`; `updateSelf` sends `identity`; signed-in joins mint a ticket                                                                                |
+| `apps/live/app/document/[id]/usePresenceRows.ts`, `lib/presence-rows.ts`                 | Own entry carries our picture; cursor rows carry `picture`                                                                                                   |
+| Surfaces                                                                                 | `AuthControls`, `SettingsAccountRows`, `ParticipantAvatar`, `RemoteCursor`, `team-pane-parts`                                                                |
+| `apps/live/e2e/signed-in/*`, `apps/live/scripts/build-signed-in.mjs`                     | The signed-in specs and export; the two picture specs were removed with Clerk                                                                                |
+| `scripts/e2e-stack.mjs`, `apps/live/playwright.config.ts`                                | `E2E_LIVE_OUT`, `E2E_ACCOUNTS_STUB` (`/e2e/accounts/api/auth/jwks`, `/e2e/token`), the `signed-in` project                                                   |
+| `apps/help/app/account-and-data/signing-in/page.mdx`, `policies/privacy-policy/page.mdx` | User-facing copy                                                                                                                                             |
+| `apps/telemetry/app/catalogue/settings.ts`, `event-explanations.ts`                      | `ShowProfilePictureOn/Off`                                                                                                                                   |
 
 ## Domain and naming
 
@@ -67,15 +72,15 @@ Clerk answers with a 160x96 band (spec §2).
 Published picture: signed in && `showProfilePictureEnabled(prefs)` → `pictureUrl`, else null.
 Recomputed on every auth emission and every `PREFERENCES_CHANGED_EVENT`.
 
-Publisher (`usePublishPicture(clerkUserId)`, called from `useEditorState` and `useExplorerState`
-after `useClerkApiBootstrap` registers the token provider): PUT when the published value differs from the last value PUT this page (D2). A 404 (no
+Publisher (`usePublishPicture(accountUserId)`, called from `useEditorState` and `useExplorerState`
+after `useAccountBootstrap` registers the token provider): PUT when the published value differs from the last value PUT this page (D2). A 404 (no
 participant row yet) is not retried until the value changes (D3). Clearing (null) with no row yet is answered 200: the
 account has no picture either way, and a fresh account's first page load would otherwise log a 404.
 
 Room:
 
 - Join: a signed-in client mints a ticket for every room (not only team documents). The ticket
-  row records `account = 1` when `ctx.clerkUserId` is set. Consume returns it; the upgrade
+  row records `account = 1` when `ctx.accountUserId` is set. Consume returns it; the upgrade
   stamps `X-Verified-Account: 1|0` on every path; the DO pins it on the attachment.
 - `helloPresence(claimed, session)`: `picture` kept when `session.account` and
   `isProfilePictureUrl(claimed.picture)`, else dropped (logged when a non-empty picture is
@@ -103,7 +108,7 @@ export const MAX_PICTURE_URL_LEN = 512;
 export function isProfilePictureUrl(url: unknown): url is string;
 
 // PUT /api/participants/<id>/picture   body { pictureUrl: string | null }
-//   401 when no verified Clerk session; 403 when clerkUserId !== id;
+//   401 when no verified Clerk session; 403 when accountUserId !== id;
 //   400 invalid_picture_url; 404 no participant row; 200 { pictureUrl }
 // GET /api/participants/<id> → { participant: { id, name, color, createdAt, pictureUrl } }
 //   pictureUrl is null unless the caller is signed in (verifiedUserId)
@@ -190,8 +195,8 @@ CLS 0: fixed boxes, the cursor pill is a transient absolutely positioned overlay
 | D1 rows, team members, ticket bit                                                                                                            | `apps/api/src/db/profile-pictures.test.ts`, `db/ws-tickets.test.ts`                      |
 | Account bit through the upgrade                                                                                                              | `apps/api/src/routes/document-room-routes.test.ts`                                       |
 | Hello keeps / drops, per-recipient roster, identity frames                                                                                   | `apps/api/src/document-room.test.ts`                                                     |
-| End to end: own chrome, fallback, framing at 2x, the switch                                                                                  | `apps/live/e2e/clerk-stub/profile-picture.spec.ts`                                       |
-| End to end: collaborator sees presence / cursor pictures, anonymous visitor sees initials and never requests one, switch off removes it live | `apps/live/e2e/clerk-stub/collaborator-pictures.spec.ts`                                 |
+| End to end: own chrome, fallback, framing at 2x, the switch                                                                                  | None since the move off Clerk (the spec was removed)                                     |
+| End to end: collaborator sees presence / cursor pictures, anonymous visitor sees initials and never requests one, switch off removes it live | None since the move off Clerk (the spec was removed)                                     |
 
 ## Constants and configuration
 

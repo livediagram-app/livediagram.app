@@ -50,7 +50,7 @@ export function ActionPanelFace({
   textColor: string;
   /** The card's own fill, for the accent scope. Defaults to white for tests. */
   surface?: string;
-  // The current user's identity (Clerk id, else the guest participant id),
+  // The current user's identity (account id, else the guest participant id),
   // for "You", the rule ActionPopover uses.
   selfId: string | null;
   // Absent on a surface that cannot edit (a view-role visitor, the embed, a

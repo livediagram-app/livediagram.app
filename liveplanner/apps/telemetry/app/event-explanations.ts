@@ -648,8 +648,6 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Page|View|/help/canvas/links': 'Someone opened the help centre\'s "Learn about links" article.',
   'Page|View|/new': 'Someone opened the New Document wizard.',
   'Page|View|/sign-in': 'Someone opened the sign-in page.',
-  'Page|View|/sso-callback':
-    'Someone was redirected through the sign-in callback page after completing Google sign-in.',
   'Page|View|/telemetry': 'Someone opened the public telemetry dashboard.',
   'Participant|Created|':
     'Someone visited liveplanner for the first time in this browser, and a new anonymous guest identity was created for them. Counted once per browser, ever.',

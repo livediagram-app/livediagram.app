@@ -53,8 +53,8 @@ import {
 import { TRUSTED_TYPES_CSP } from '../packages/ui/src/trusted-types-csp.ts';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-// E2E_LIVE_OUT serves another export of the live app, e.g. the Clerk-enabled `.next/out-clerk-stub`
-// the signed-in specs run against (apps/live/scripts/build-clerk-stub.mjs).
+// E2E_LIVE_OUT serves another export of the live app, e.g. the signed-in `.next/out-signed-in`
+// the signed-in specs run against (apps/live/scripts/build-signed-in.mjs).
 const OUT_DIR = path.join(ROOT, 'apps', 'live', process.env.E2E_LIVE_OUT ?? 'out');
 // The builds a simulated deploy (POST /__e2e/deploy) made: copies whose chunk files carry new
 // names, as a real deploy's do. Deploy n is served from deployDirs[n - 1].
@@ -109,52 +109,59 @@ const MARKETING_PORT = Number(process.env.E2E_MARKETING_PORT ?? 3013);
 //                    deployment with no AI key does.
 const LIVE_ONLY = process.env.E2E_LIVE_ONLY === '1';
 const NO_AI = process.env.E2E_NO_AI === '1';
-//   E2E_CLERK_JWKS=1  act as Clerk for the signed-in specs (docs/specs/003-system-architecture/
-//                    e2e-smoke.md): a key made at boot, its JWKS on /e2e/jwks.json for the api
-//                    worker to verify against, and /e2e/token?sub=<id> minting a session token
-//                    for any test account. Test-only: nothing outside this stack trusts the key.
+//   E2E_ACCOUNTS_STUB=1  act as the liveworkspace accounts Worker for the signed-in specs
+//                    (docs/specs/003-system-architecture/e2e-smoke.md): a key made at boot, its JWKS
+//                    on the issuer's own path (/e2e/accounts/api/auth/jwks) for the api worker to
+//                    verify against, and /e2e/token?sub=<id> minting an access token for any test
+//                    account, with the issuer and audience the api expects. Test-only: nothing
+//                    outside this stack trusts the key.
 //   E2E_WORKBENCH=1  the workbench embed e2e (docs/specs/013-workspace/blueprints/workbench-embeds.md,
-//                    "Testing"): the stack acts as Clerk as under E2E_CLERK_JWKS, for the signed-in
-//                    pairing page and the api calls the CLI makes, and the api builds its workbench
-//                    and pairing URLs on this live origin (APP_BASE_URL). The live build must carry
-//                    NEXT_PUBLIC_E2E_AUTH=1.
+//                    "Testing"): the stack acts as the accounts Worker as under E2E_ACCOUNTS_STUB,
+//                    for the signed-in pairing page and the api calls the CLI makes, and the api
+//                    builds its workbench and pairing URLs on this live origin (APP_BASE_URL). The
+//                    live build must carry NEXT_PUBLIC_E2E_AUTH=1.
 const WORKBENCH = process.env.E2E_WORKBENCH === '1';
-const CLERK_JWKS = process.env.E2E_CLERK_JWKS === '1' || WORKBENCH;
+const ACCOUNTS_STUB = process.env.E2E_ACCOUNTS_STUB === '1' || WORKBENCH;
 //   E2E_GUEST_SIG_ENFORCE  guest signature enforcement, as production runs once armed
 //                    (docs/specs/003-system-architecture/e2e-smoke.md "Armed guest signatures").
 //                    On unless set to 0: every spec seeds through signed guests. `=1` also selects
 //                    the armed project and its own ports (playwright.config.ts).
 const GUEST_SIG_ENFORCE = process.env.E2E_GUEST_SIG_ENFORCE !== '0';
-const clerkKey = CLERK_JWKS ? generateKeyPairSync('rsa', { modulusLength: 2048 }) : null;
-const CLERK_KID = 'e2e-clerk-stub';
+const accountsKey = ACCOUNTS_STUB ? generateKeyPairSync('rsa', { modulusLength: 2048 }) : null;
+const ACCOUNTS_KID = 'e2e-accounts-stub';
+// What the api worker is started with (below): its issuer is `${ACCOUNTS_URL}/api/auth`, and the
+// audience is its own API_RESOURCE, exactly as against the real accounts Worker.
+const ACCOUNTS_PATH = '/e2e/accounts';
+const API_RESOURCE = 'https://e2e.liveplanner.test/api';
 
 const b64url = (buf) => Buffer.from(buf).toString('base64url');
 
-// An RS256 session token shaped like Clerk's: sub, sid, iat / nbf / exp.
-function mintClerkToken(sub, email) {
+// An RS256 access token shaped like the accounts Worker's: sub, email (verified), iss, aud.
+function mintAccessToken(sub, email) {
   const now = Math.floor(Date.now() / 1000);
-  const header = b64url(JSON.stringify({ alg: 'RS256', kid: CLERK_KID, typ: 'JWT' }));
+  const header = b64url(JSON.stringify({ alg: 'RS256', kid: ACCOUNTS_KID, typ: 'JWT' }));
   const payload = b64url(
     JSON.stringify({
       sub,
-      sid: `sess_${sub}`,
+      iss: `http://127.0.0.1:${LIVE_PORT}${ACCOUNTS_PATH}/api/auth`,
+      aud: API_RESOURCE,
       iat: now,
       nbf: now - 5,
       exp: now + 3600,
-      ...(email ? { email } : {}),
+      ...(email ? { email, email_verified: true } : {}),
     }),
   );
-  const signature = sign('sha256', Buffer.from(`${header}.${payload}`), clerkKey.privateKey);
+  const signature = sign('sha256', Buffer.from(`${header}.${payload}`), accountsKey.privateKey);
   return `${header}.${payload}.${b64url(signature)}`;
 }
 
-// Answers the two Clerk stand-in routes, or returns false for anything else.
-function serveClerkStandIn(pathname, url, res) {
-  if (!CLERK_JWKS) return false;
-  if (pathname === '/e2e/jwks.json') {
-    const jwk = clerkKey.publicKey.export({ format: 'jwk' });
+// Answers the two accounts stand-in routes, or returns false for anything else.
+function serveAccountsStandIn(pathname, url, res) {
+  if (!ACCOUNTS_STUB) return false;
+  if (pathname === `${ACCOUNTS_PATH}/api/auth/jwks`) {
+    const jwk = accountsKey.publicKey.export({ format: 'jwk' });
     res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ keys: [{ ...jwk, kid: CLERK_KID, alg: 'RS256', use: 'sig' }] }));
+    res.end(JSON.stringify({ keys: [{ ...jwk, kid: ACCOUNTS_KID, alg: 'RS256', use: 'sig' }] }));
     return true;
   }
   if (pathname === '/e2e/token') {
@@ -165,7 +172,7 @@ function serveClerkStandIn(pathname, url, res) {
       return true;
     }
     res.writeHead(200, { 'Content-Type': 'text/plain', 'Cache-Control': 'no-store' });
-    res.end(mintClerkToken(sub, url.searchParams.get('email') ?? undefined));
+    res.end(mintAccessToken(sub, url.searchParams.get('email') ?? undefined));
     return true;
   }
   return false;
@@ -492,7 +499,7 @@ function startLiveServer() {
         });
       return;
     }
-    if (serveClerkStandIn(pathname, new URL(req.url, 'http://localhost'), res)) return;
+    if (serveAccountsStandIn(pathname, new URL(req.url, 'http://localhost'), res)) return;
     if (pathname === '/__e2e/assets-out-of-cache' && req.method === 'POST') {
       res.writeHead(204, {
         'Cache-Control': 'no-store',
@@ -631,10 +638,15 @@ async function main() {
       // /__e2e/legacy-guest writes (created_at 1), never one the app makes during a run.
       '--var',
       'GUEST_SIGNING_LIVE_AT:1000',
-      // Verify session tokens against the stack's own key (E2E_CLERK_JWKS above), never a real
-      // Clerk instance a developer's .dev.vars may name.
-      ...(CLERK_JWKS
-        ? ['--var', `CLERK_JWKS_URL:http://127.0.0.1:${LIVE_PORT}/e2e/jwks.json`]
+      // Verify access tokens against the stack's own key (E2E_ACCOUNTS_STUB above), never a real
+      // accounts Worker a developer's .dev.vars may name.
+      ...(ACCOUNTS_STUB
+        ? [
+            '--var',
+            `ACCOUNTS_URL:http://127.0.0.1:${LIVE_PORT}${ACCOUNTS_PATH}`,
+            '--var',
+            `API_RESOURCE:${API_RESOURCE}`,
+          ]
         : []),
       ...(WORKBENCH ? ['--var', `APP_BASE_URL:http://localhost:${LIVE_PORT}`] : []),
     ],

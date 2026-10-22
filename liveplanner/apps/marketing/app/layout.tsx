@@ -12,7 +12,6 @@ import {
   SITE_URL,
   WebVitalsBoot,
   trustedHtml,
-  trustedScriptOrigins,
   trustedTypesBootScript,
 } from '@liveplanner/ui';
 import { VIEW_TRANSITION_GUARD_SCRIPT } from '../lib/view-transition-guard';
@@ -30,14 +29,8 @@ const TITLE = MARKETING_TITLE;
 const DESCRIPTION = MARKETING_DESCRIPTION;
 
 // Trusted Types before anything else (docs/specs/016-platform/trusted-types.md): the default policy and the
-// violation log, this app's own scripts under its asset prefix, and the Clerk origin read from this build's key
-// (Next inlines only the literal expression).
-const TRUSTED_TYPES_BOOT = trustedTypesBootScript(
-  '',
-  trustedScriptOrigins({
-    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
-  }),
-);
+// violation log, and this app's own scripts under its asset prefix.
+const TRUSTED_TYPES_BOOT = trustedTypesBootScript('');
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

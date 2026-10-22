@@ -55,7 +55,7 @@ scope change recorded here and in [Purpose](../001-project-vision/purpose.md#bou
   ([Next.js](../016-platform/nextjs.md)).
 - **Cloudflare only**: Workers, D1, Durable Objects, KV and R2; no Node-hosted backend
   ([Deployment](../016-platform/deployment.md)).
-- **Optional integrations**: Clerk, Resend and a model provider are each gated on their own key, and the planner
+- **Optional integrations**: sign-in (the liveworkspace accounts Worker), Resend and a model provider are each gated on their own key, and the planner
   runs fully without them ([Business model + licence](business-model-and-licence.md)).
 - **No secrets in source** ([Secrets policy](secrets-policy.md)).
 

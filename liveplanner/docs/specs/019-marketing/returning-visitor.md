@@ -19,7 +19,7 @@ Everyone else, including a returning person in a fresh browser, sees the templat
 
 ## The recent-diagrams snapshot
 
-The marketing site is static and fast; it does not load Clerk and does not call the api. So it never asks
+The marketing site is static and fast; it loads no sign-in code and does not call the api. So it never asks
 the server who you are. Instead **the editor leaves a note** in the browser for the landing page to read,
 on the same origin (the router serves `/` and `/explorer` from one host).
 
@@ -48,7 +48,7 @@ on the same origin (the router serves `/` and `/explorer` from one host).
   never send a request ([Offline Mode](../006-document/offline-mode.md#this-browser-badge--explorer)); a request that failed outright (no network) is simply asked again on
   the next list. The landing page reads them from the cache, never the
   network, and shows them as `<img>` (an SVG image runs no script).
-- **Forgotten on sign-out:** signing out clears the note and the thumbnails before Clerk signs out, so
+- **Forgotten on sign-out:** signing out clears the note and the thumbnails before the session ends, so
   the landing page it returns to (and the next person on a shared computer) never shows the account's
   diagrams. Deleting the account does the same.
 
@@ -81,7 +81,7 @@ cache answers.
 ## Performance
 
 No new request on the landing page: one `localStorage` read and at most four Cache Storage reads (one per document card), after
-hydration. The landing page loads no Clerk, no api client. The editor's side costs one `localStorage`
+hydration. The landing page loads no sign-in code, no api client. The editor's side costs one `localStorage`
 write per document list, and a thumbnail fetch only for a recent diagram whose save time changed. The
 team documents ride the editor's existing document list (no new request): one more query on the api,
 which reads each joined team document's first-tab count to skip the empty ones and draws the full

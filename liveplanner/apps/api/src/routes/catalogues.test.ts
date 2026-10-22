@@ -3,7 +3,7 @@ import { makeTestRouteContext } from './test-route-context';
 import { CATALOGUE_CACHE_CONTROL, handleCatalogues } from './catalogues';
 
 const get = (path: string, method = 'GET') =>
-  handleCatalogues(makeTestRouteContext(method, path, { clerkUserId: null, owner: null }));
+  handleCatalogues(makeTestRouteContext(method, path, { accountUserId: null, owner: null }));
 let logs: string[];
 
 beforeEach(() => {

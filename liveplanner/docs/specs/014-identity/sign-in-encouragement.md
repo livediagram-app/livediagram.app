@@ -24,10 +24,10 @@ hides it everywhere.
 
 Common gate (all must hold):
 
-- Clerk is configured for the deployment (`clerkEnabled`). A
-  deployment without Clerk ([Business model + licence](../002-project-scope/business-model-and-licence.md) + [Auth + guest access](auth-and-guest-access.md)) has no working
+- Sign-in is configured for the deployment (`signInEnabled`). A
+  deployment without sign-in ([Business model + licence](../002-project-scope/business-model-and-licence.md) + [Auth + guest access](auth-and-guest-access.md)) has no working
   sign-in, so the banner never renders there.
-- The visitor is **not** signed in (no `clerkUserId`; a guest owner id
+- The visitor is **not** signed in (no `accountUserId`; a guest owner id
   doesn't count).
 - The visitor hasn't dismissed it (see Dismissal).
 
@@ -51,7 +51,7 @@ dismiss it to reach the timer or the vote. It is drawn over the canvas, and is a
 
 - in **embed** mode (the read-only `/embed` iframe, [Read-only embeds (`/embed`)](../013-workspace/embeds.md)), and
 - in **zen** mode ([Zen mode](../007-editor/zen-mode.md)), but entering/leaving zen does **not**
-  restart the delay; the timer runs on the stable gate (Clerk / signed
+  restart the delay; the timer runs on the stable gate (sign-in enabled / signed
   in / embed / dismissed) and zen only hides the card at render, and
 - while a **tour's offer or last card** is up ([Editor tour](../007-editor/editor-tour.md)): they take the same place
   at the bottom, so the banner steps aside until the card goes (`data-tour-card-open` on the body), and

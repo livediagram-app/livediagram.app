@@ -101,7 +101,8 @@ This implements the OAuth flow Manager Toolkit uses:
 3. **Authorize** — `GET /oauth/authorize` creates a short-lived session in KV and
    redirects to a **consent page in `apps/live`** (e.g. `/oauth/authorize` or an
    Explorer "Connect an app" screen), passing the session id. The user is
-   already signed in there via Clerk.
+   already signed in there (a liveplanner session through the liveworkspace accounts
+   Worker; a signed-out visitor gets a Sign in link that returns here).
    **What the consent screen may believe.** `/oauth/authorize` also passes the
    client name and the redirect host as query params for display, and the screen
    must **not** render those. It is the only thing standing between a user and a
@@ -126,11 +127,11 @@ This implements the OAuth flow Manager Toolkit uses:
    Connect click can't be clickjacked from an attacker's page.
 4. **Consent + mint** — on approve, `apps/live` calls a **new
    `POST /api/oauth/exchange`** on the api worker. This is the one api change: an
-   endpoint that requires a verified Clerk identity (gated exactly like
+   endpoint that requires a verified account identity (gated exactly like
    `/api/tokens`), and on success **reuses the existing token-mint path**
    (`generateApiToken` → `hashApiToken` → `createApiToken`,
    `apps/api/src/auth/api-token.ts` + `db/api-tokens.ts`) to create an `lvd_`
-   token owned by that Clerk user, named for the connecting client (e.g. "Claude
+   token owned by that account, named for the connecting client (e.g. "Claude
    (MCP)"). It binds the PKCE challenge so only the holder of the verifier can
    redeem it. A minted token is never left orphaned: the page re-checks the
    session (`GET /oauth/session/<id>`) before minting, and when the MCP's
@@ -158,8 +159,8 @@ web connectors expects OAuth, and the user chose the OAuth path. Because it stil
 resolves to an `lvd_` token, the heavy lifting (verification, gating, revoke,
 caps) is already built — OAuth is the front door, not a new lock.
 
-**Clerk gating.** OAuth depends on the consent page authenticating
-the user via Clerk and on `/api/oauth/exchange` requiring a Clerk identity — the
+**Sign-in gating.** OAuth depends on the consent page authenticating
+the user through sign-in and on `/api/oauth/exchange` requiring an account identity — the
 same gate as `/api/tokens` ([Public API and API tokens §3.7](public-api-and-tokens.md)). A
 deployment without sign-in: the exchange endpoint rejects every caller and the consent
 page has no signed-in user, so the MCP can mint nothing. Operators who don't want
@@ -665,7 +666,7 @@ dispatch choke point** in `apps/api/src/index.ts`, so no write route can be
 reached, present or future, with no per-route changes. The read tools
 (find_documents, read_document, both GETs) still work; every write tool
 (create/update/delete/share/add_tab/rename) is blocked server-side, which is the
-security boundary (the tool list is static, but the api is the enforcer). Clerk
+security boundary (the tool list is static, but the api is the enforcer). Signed-in
 sessions and full tokens are unaffected. The token list in the Explorer shows a
 "Read-only" badge. This is a single boolean, not a general scopes system —
 finer grants stay deferred ([Public API and API tokens](public-api-and-tokens.md) §7).
@@ -947,7 +948,7 @@ Worker (no DOM, no React).
 4. **Write tools** — `create_document`, `update_document` (both modes), reusing
    `validate.ts` + `auto-layout.ts`.
 5. **OAuth** — `/api/oauth/exchange` on the api worker (reusing the token-mint
-   path, Clerk-gated like `/api/tokens`); `apps/live` consent page; the MCP
+   path, signed-in only like `/api/tokens`); `apps/live` consent page; the MCP
    OAuth endpoints + `OAUTH_KV`. Until this lands, the worker can be exercised
    with a hand-pasted `lvd_` Bearer for development.
 6. **Docs + help, shipped WITH the feature** (per the help-centre + docs rules in
@@ -956,7 +957,7 @@ Worker (no DOM, no React).
      connecting it to Claude/an AI tool, the signed-in-only limitation, that it
      mints a revocable API token — **registered in `apps/help/lib/articles.ts`**.
    - `docs/development/architecture.md` — the new `apps/mcp` worker in the layout + deploy
-     order; [Deployment](../016-platform/deployment.md) — MCP needs Clerk (like tokens/teams) and is
+     order; [Deployment](../016-platform/deployment.md) — MCP needs sign-in (like tokens/teams) and is
      optional to deploy; `README.md` repo-layout tree gets the new app.
    - Cross-link from the API-token help/docs ([Public API and API tokens](public-api-and-tokens.md)).
 

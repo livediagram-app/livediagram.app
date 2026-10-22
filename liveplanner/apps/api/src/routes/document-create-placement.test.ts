@@ -19,7 +19,7 @@ let db: SqliteD1;
 let logs: string[];
 
 function create(
-  who: { owner: string; clerkUserId: string | null },
+  who: { owner: string; accountUserId: string | null },
   placement: Record<string, unknown>,
   id = 'd1',
 ) {

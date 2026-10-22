@@ -40,8 +40,8 @@ Each AI request optionally includes a `history` array of prior `{ role, content 
 
 ## Security
 
-- Auth required: Clerk JWT or `X-Owner-Id`. The hosted deployment additionally requires
-  Clerk (see `AI_REQUIRE_CLERK` below); a deployment can accept anonymous owners by
+- Auth required: an account access token or `X-Owner-Id`. The hosted deployment additionally requires
+  sign-in (see `AI_REQUIRE_SIGN_IN` below); a deployment can accept anonymous owners by
   leaving the flag unset.
 - Per-IP rate limiter (`AI_RATE_LIMITER` binding, 20 req/60 s). Optional — absent on
   a deployment it falls through to "allow", matching the pattern used by
@@ -62,11 +62,11 @@ Each AI request optionally includes a `history` array of prior `{ role, content 
   403 for every genuine request from the editor. Another deployment (staging) sets its own hostname —
   whichever one the browser actually lands on after redirects — plus dev origins like
   `http://localhost:3102`.
-- Optional Clerk-only gate (`AI_REQUIRE_CLERK`). When set to `"true"`, `/api/ai` rejects
-  any request without a verified Clerk Bearer JWT with `401 { error: 'sign_in_required' }`;
+- Optional signed-in-only gate (`AI_REQUIRE_SIGN_IN`, formerly `AI_REQUIRE_CLERK`). When set to `"true"`, `/api/ai` rejects
+  any request without a verified account access token with `401 { error: 'sign_in_required' }`;
   the legacy `X-Owner-Id` guest path still works for every OTHER endpoint, just not for
   AI. Unset = guests can still use AI (the default before this flag landed), preserving
-  the rule that Clerk is optional. Combined with the origin allow-list,
+  the rule that sign-in is optional. Combined with the origin allow-list,
   this is the spend-DoS defence on a public deployment: a third-party site can no longer
   drain the operator's OpenAI budget by minting fresh `X-Owner-Id` UUIDs.
 - Prompt capped at 1 000 characters server-side; element payload capped at 200 elements
@@ -98,7 +98,7 @@ together or not at all: one flag answers for both.
 
 ### `POST /api/ai`
 
-Auth required (Clerk Bearer JWT **or** `X-Owner-Id`).
+Auth required (an account access token as `Authorization: Bearer` **or** `X-Owner-Id`).
 
 Request body:
 
@@ -171,7 +171,7 @@ exactly six:
 | `ai_error`           | 502    | The upstream model call failed.                              |
 | `ai_not_configured`  | 503    | No model key on this deployment (the default without a key). |
 
-A request with no identity at all (neither a Clerk session nor an `X-Owner-Id`)
+A request with no identity at all (neither a signed-in session nor an `X-Owner-Id`)
 gets the worker-wide `bad_request` 400 every owner-scoped route sends.
 
 **`off_topic` is not one of them.** A prompt the model judges off-topic still returns **200**: the
@@ -238,7 +238,7 @@ Requests use `response_format: { type: 'json_object' }` plus our own strict vali
 | `AI_BASE_URL`                                                | Worker var (generic only) | The OpenAI-COMPATIBLE chat-completions base for `AI_API_KEY`: a laptop points it at llama.cpp or Ollama. The google and openai keys bring their own.                                                                    |
 | `AI_MODEL`                                                   | Worker var (optional)     | Model id for the assistant. Defaults per provider (table above); required for the generic key.                                                                                                                          |
 | `AI_ALLOWED_ORIGINS`                                         | Worker var (optional)     | Comma-separated `Origin` values that may call `/api/ai`. Unset = no check. Example: `https://liveplanner.app,http://localhost:3102`. Entries are matched case-sensitive against the request's `Origin` header verbatim. |
-| `AI_REQUIRE_CLERK`                                           | Worker var (optional)     | Set to `"true"` to require a verified Clerk JWT on `/api/ai` (rejects the `X-Owner-Id` guest path with 401). Unset / any other value = guests allowed.                                                                  |
+| `AI_REQUIRE_SIGN_IN`                                         | Worker var (optional)     | Set to `"true"` to require a verified account access token on `/api/ai` (rejects the `X-Owner-Id` guest path with 401). Unset / any other value = guests allowed.                                                       |
 
 Set via `wrangler secret put <the key var>` for production; drop into `apps/api/.dev.vars`
 for local dev (gitignored). The two `AI_*` flags are plain `[vars]` (no secret value), so

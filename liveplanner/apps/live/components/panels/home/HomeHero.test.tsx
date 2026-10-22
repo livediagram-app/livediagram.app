@@ -65,7 +65,7 @@ function renderHero(over: Partial<ExplorerStateValue> = {}, active = true) {
     shared: [],
     teamDocuments: [],
     offlineDocuments: [],
-    clerkUserId: null,
+    accountUserId: null,
     failedReads: { documents: false, shared: false },
     activity: { assignedToMe: [{}, {}], loading: false, error: false },
     go,
@@ -182,7 +182,7 @@ describe('HomeHero', () => {
   });
 
   it('tells a signed-in newcomer their work is saved to their account', () => {
-    renderHero({ documents: [], clerkUserId: 'user_1' });
+    renderHero({ documents: [], accountUserId: 'user_1' });
     expect(screen.getByText('Saved to your account')).toBeTruthy();
   });
 

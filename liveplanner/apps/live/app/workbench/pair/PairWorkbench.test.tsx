@@ -11,16 +11,16 @@ const env = vi.hoisted(() => ({
   signedIn: true,
   query: 'code=AAAAAAAAAAAAAAAAAAAAAA',
 }));
-vi.mock('@/lib/clerk-config', () => ({
+vi.mock('@/lib/auth-config', () => ({
   get sessionsEnabled() {
     return env.clerk;
   },
 }));
-vi.mock('@/hooks/persistence/useClerkApiBootstrap', () => ({
-  useClerkApiBootstrap: () => ({
+vi.mock('@/hooks/persistence/useAccountBootstrap', () => ({
+  useAccountBootstrap: () => ({
     authLoaded: env.authLoaded,
     isSignedIn: env.signedIn,
-    clerkUserId: env.signedIn ? 'user_1' : null,
+    accountUserId: env.signedIn ? 'user_1' : null,
   }),
 }));
 vi.mock('next/navigation', () => ({ useSearchParams: () => new URLSearchParams(env.query) }));

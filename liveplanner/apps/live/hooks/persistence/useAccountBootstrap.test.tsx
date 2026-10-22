@@ -2,9 +2,9 @@
 
 // Production's `Error·Api·Http401.ListCustomThemes`: the Explorer mounts
 // CustomThemeProvider in the same render that makes the signed-in user's
-// Clerk id the owner, and React runs that child's effect (its themes fetch)
+// account id the owner, and React runs that child's effect (its themes fetch)
 // before the parent's. When the token provider was registered in a passive
-// effect, the fetch went out without a Bearer and put the Clerk id in
+// effect, the fetch went out without a Bearer and put the account id in
 // `X-Owner-Id`, which the worker refuses. The provider must be in place
 // before any child's first fetch.
 
@@ -16,7 +16,7 @@ import { apiHeaders, setTokenProvider } from '@/lib/api/core';
 import { resetGuestMigrationForTests } from '@/lib/guest-migration';
 import { setGuestIdentity } from '@/lib/local-identity';
 
-vi.mock('@/lib/clerk-config', () => ({ clerkEnabled: true, sessionsEnabled: true }));
+vi.mock('@/lib/auth-config', () => ({ signInEnabled: true, sessionsEnabled: true }));
 const { getToken } = vi.hoisted(() => ({
   getToken: vi.fn(async (opts?: { skipCache?: boolean }): Promise<string | null> =>
     opts?.skipCache ? 'jwt-fresh' : 'jwt-1',
@@ -44,11 +44,11 @@ vi.mock('@/lib/api-client', async (importOriginal) => ({
   apiMigrateGuestData,
 }));
 
-const { useClerkApiBootstrap } = await import('./useClerkApiBootstrap');
+const { useAccountBootstrap } = await import('./useAccountBootstrap');
 
 afterEach(() => setTokenProvider(null));
 
-describe('useClerkApiBootstrap token provider', () => {
+describe('useAccountBootstrap token provider', () => {
   it("is registered before a child's first-render fetch", async () => {
     let headers: Promise<HeadersInit> | null = null;
     function Child() {
@@ -58,7 +58,7 @@ describe('useClerkApiBootstrap token provider', () => {
       return null;
     }
     function Parent({ children }: { children: ReactNode }) {
-      useClerkApiBootstrap();
+      useAccountBootstrap();
       return <>{children}</>;
     }
     render(
@@ -71,11 +71,11 @@ describe('useClerkApiBootstrap token provider', () => {
     expect(sent['X-Owner-Id']).toBeUndefined();
   });
 
-  // Clerk's getToken() can resolve null for a moment on a live session; the
-  // retry must reach Clerk as a cache bypass, not another cached read.
-  it('passes the cache bypass through to Clerk', async () => {
+  // The session's getToken() can resolve null for a moment on a live session; the
+  // retry must reach the session as a cache bypass, not another cached read.
+  it('passes the cache bypass through to the session', async () => {
     function Probe() {
-      useClerkApiBootstrap();
+      useAccountBootstrap();
       return null;
     }
     render(<Probe />);
@@ -87,9 +87,9 @@ describe('useClerkApiBootstrap token provider', () => {
 });
 
 // Issue #67: signing in with a guest document open showed "diagram does not
-// exist", because the editor loaded it as the Clerk user before
+// exist", because the editor loaded it as the account before
 // POST /api/migrate had moved it. Owner data waits for the migration.
-describe('useClerkApiBootstrap guest migration', () => {
+describe('useAccountBootstrap guest migration', () => {
   it('holds authLoaded until the guest data has migrated', async () => {
     resetGuestMigrationForTests();
     setGuestIdentity('guest-1', 'sig-1');
@@ -97,7 +97,7 @@ describe('useClerkApiBootstrap guest migration', () => {
     apiMigrateGuestData.mockReturnValue(new Promise((r) => (finish = r)));
     const seen: boolean[] = [];
     function Probe() {
-      seen.push(useClerkApiBootstrap().authLoaded);
+      seen.push(useAccountBootstrap().authLoaded);
       return null;
     }
 
@@ -116,7 +116,7 @@ describe('useClerkApiBootstrap guest migration', () => {
     resetGuestMigrationForTests();
     setGuestIdentity('guest-1', 'sig-1');
     function Probe() {
-      return <>{String(useClerkApiBootstrap().authLoaded)}</>;
+      return <>{String(useAccountBootstrap().authLoaded)}</>;
     }
     expect(renderToString(<Probe />)).toBe('true');
   });
@@ -126,7 +126,7 @@ describe('useClerkApiBootstrap guest migration', () => {
     setGuestIdentity('guest-1', 'sig-1');
     apiMigrateGuestData.mockResolvedValue(MIGRATED);
     function Probe() {
-      useClerkApiBootstrap();
+      useAccountBootstrap();
       return null;
     }
 
@@ -142,13 +142,13 @@ describe('useClerkApiBootstrap guest migration', () => {
   });
 });
 
-describe('useClerkApiBootstrap with several mounts', () => {
+describe('useAccountBootstrap with several mounts', () => {
   // AuthControls, the Settings dialog's rows and the page itself each mount
   // the hook. One of them
   // unmounting must not take the Bearer away from the rest.
   it('keeps the provider while any mount remains', async () => {
     function Probe() {
-      useClerkApiBootstrap();
+      useAccountBootstrap();
       return null;
     }
     function Page({ extra }: { extra: boolean }) {

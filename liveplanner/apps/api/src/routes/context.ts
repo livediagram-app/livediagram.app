@@ -40,34 +40,34 @@ export type RouteContext = {
   url: URL;
   // Path split on '/', leading slash stripped: `['api', '<resource>', ...]`.
   segments: string[];
-  // The verified Clerk userId, or null. Routes that must be
-  // Clerk-only (account deletion, guest->authed migration, teams)
+  // The verified account id, or null. Routes that must be
+  // signed-in only (account deletion, guest->authed migration, teams)
   // read this directly rather than through `resolveOwner` so there's
   // no X-Owner-Id fallback.
-  clerkUserId: string | null;
-  // The server-verified Clerk account id from EITHER credential: a Clerk
-  // session JWT, or an `lvd_` API token (whose owner is always a Clerk
+  accountUserId: string | null;
+  // The server-verified account id from EITHER credential: an account
+  // access token, or an `lvd_` API token (whose owner is always an
   // account, docs/specs/015-api/public-api-and-tokens.md §3.3). This is the identity for team-membership
   // CONTENT access — gateRead/gateEdit and the teams-surface reads — so a
   // token reaches the same documents the app does (docs/specs/015-api/public-api-and-tokens.md §3.4). Account
   // and team ADMINISTRATION (team mutations, token management, account
-  // deletion, migration) keeps requiring `clerkUserId`: a leaked token
+  // deletion, migration) keeps requiring `accountUserId`: a leaked token
   // must not be able to manage membership or mint further credentials.
   verifiedUserId: string | null;
-  // The verified `email` claim from the Clerk JWT (docs/specs/013-workspace/teams.md), or null
-  // when Clerk is off, the caller is a guest, or the deployment's JWT
-  // template doesn't carry the claim. Never read from a header — it
+  // The verified `email` claim from the account access token (docs/specs/013-workspace/teams.md), or null
+  // when sign-in is off, the caller is a guest, or the address is not
+  // verified. Never read from a header — it
   // drives teams' invite auto-connection so it must be unforgeable.
-  clerkEmail: string | null;
-  // Hybrid identity (docs/specs/014-identity/auth-and-guest-access.md): the verified Clerk userId, else the
+  accountEmail: string | null;
+  // Hybrid identity (docs/specs/014-identity/auth-and-guest-access.md): the verified account id, else the
   // legacy X-Owner-Id header, else null. Resolved once in `fetch`.
   resolveOwner: () => string | null;
-  // The API token the request presented, or null for a Clerk session or a guest. Only a token
+  // The API token the request presented, or null for a signed-in session or a guest. Only a token
   // makes a changeset an agent's, and a token may never do a whole-tab save
   // (docs/specs/024-agents/agent-changesets.md). Optional so unit tests can leave it out.
   token?: { id: string; readOnly?: boolean } | null;
   // The presenting workbench session (docs/specs/013-workspace/workbench-embeds.md), or null for every other
-  // caller. Under one, `clerkUserId` and `token` are null and `resolveOwner()` is the owner: a person's editor on
+  // caller. Under one, `accountUserId` and `token` are null and `resolveOwner()` is the owner: a person's editor on
   // one document, never a token and never an administrator. Optional so unit tests can leave it out.
   workbench?: WorkbenchContext | null;
   // Schedule background work that may outlive the response (docs/specs/014-identity/transactional-email.md email
@@ -127,7 +127,7 @@ export function gateRead(
     documentOwnerId,
     sharePasswordOf(ctx.request),
     documentTeamId,
-    // Server-verified account id (Clerk session or API token) for the
+    // Server-verified account id (signed-in session or API token) for the
     // team-membership check — never the unsigned X-Owner-Id header
     // (docs/specs/013-workspace/team-shared-documents.md access trust boundary).
     ctx.verifiedUserId,
@@ -173,7 +173,7 @@ export function gateEdit(
     documentOwnerId,
     sharePasswordOf(ctx.request),
     documentTeamId,
-    // Server-verified account id (Clerk session or API token) for the
+    // Server-verified account id (signed-in session or API token) for the
     // team-membership check — never the unsigned X-Owner-Id header
     // (docs/specs/013-workspace/team-shared-documents.md access trust boundary).
     ctx.verifiedUserId,
@@ -215,7 +215,7 @@ export function gateGrant(
 // means the authz status-code mapping (400 / 404 / 403) lives in one
 // place a reviewer can check, instead of N copies that can drift.
 
-// The resolved owner id, or the 400 to return when neither a Clerk
+// The resolved owner id, or the 400 to return when neither an account
 // token nor X-Owner-Id identifies the caller.
 export function requireOwner(ctx: RouteContext): string | Response {
   return ctx.resolveOwner() ?? missingAuth();
@@ -225,17 +225,17 @@ export function requireOwner(ctx: RouteContext): string | Response {
 // below share, and the reason it isn't a bare `owner === ownerId`.
 //
 // For a PERSONAL document the hybrid identity is safe: the owner id is either
-// a Clerk `sub` the caller proved with a verified JWT, or a guest UUID that
+// an account `sub` the caller proved with a verified JWT, or a guest UUID that
 // is unguessable.
 //
-// For a TEAM document it is NOT. A team's owner id is a Clerk id deliberately
+// For a TEAM document it is NOT. A team's owner id is an account id deliberately
 // visible to every teammate (`GET /api/teams/<id>` lists `members[].userId`),
 // so accepting the unsigned `X-Owner-Id` header here would let anyone who
 // ever learned it — a removed member, an invitee who declined — present it as
 // a credential and reach the owner-only surfaces: reading the share password
 // in the clear, minting an edit-role share link, clearing the password,
 // deleting the document. So a team document's ownership must be proven with a
-// server-VERIFIED account id (Clerk session or API token), never the header.
+// server-VERIFIED account id (signed-in session or API token), never the header.
 //
 // This is the same trust boundary auth/document-access.ts draws for the
 // read/edit gates; it belongs here too rather than only there.

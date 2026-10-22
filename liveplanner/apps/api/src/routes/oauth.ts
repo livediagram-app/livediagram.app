@@ -1,26 +1,26 @@
 // /api/oauth/exchange — the single api change for the MCP OAuth flow
-// (docs/specs/015-api/mcp-server.md §3.4). The apps/live consent page (Clerk-authed) calls this when a
+// (docs/specs/015-api/mcp-server.md §3.4). The apps/live consent page (signed-in) calls this when a
 // user approves an MCP client. It mints an ordinary lvd_ API token (docs/specs/015-api/public-api-and-tokens.md)
-// owned by that Clerk user, named for the connecting client, and returns the
+// owned by that account, named for the connecting client, and returns the
 // secret ONCE. The MCP worker binds it to the PKCE flow in its own KV; the
 // token then shows up in the Explorer "API tokens" page and is revocable like
 // any other — no parallel credential model.
 //
 // Gated exactly like /api/tokens: a guest (X-Owner-Id only) or a no-auth
-// deployment has no verified Clerk identity, so nothing can be minted.
+// deployment has no verified account identity, so nothing can be minted.
 import { badRequest, conflict, forbidden, json, notFound } from '../responses';
 import { readOptionalBody, type RouteContext } from './context';
 import { mintApiToken } from '../db';
 import { MAX_NAME_LEN } from '../limits';
 
 export async function handleOauthExchange(ctx: RouteContext): Promise<Response> {
-  const { request, env, segments, clerkUserId } = ctx;
+  const { request, env, segments, accountUserId } = ctx;
   if (segments[1] !== 'oauth') return notFound();
-  if (!clerkUserId) return forbidden();
+  if (!accountUserId) return forbidden();
   if (segments[2] !== 'exchange' || segments.length !== 3 || request.method !== 'POST') {
     return notFound();
   }
-  const owner = clerkUserId;
+  const owner = accountUserId;
 
   const body = (await readOptionalBody(request)) as {
     clientName?: string;

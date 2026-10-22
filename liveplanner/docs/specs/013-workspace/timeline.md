@@ -97,7 +97,7 @@ One thing that happened. Carries:
 - `snapshot` — JSON extras the renderer needs (the document's thumbnail
   key, the commenter's colour, the team's member count) captured at
   emit time so rendering the feed never fans out into other tables.
-- `actorId` — who did it, as an owner id (Clerk `sub` or guest
+- `actorId` — who did it, as an owner id (account `sub` or guest
   participant id). `NULL` for system events like a token expiry
   warning. An owner id is a credential, so a `document:` scope (which a
   share-link visitor can read) returns only the reader's own id; every
@@ -1098,7 +1098,7 @@ scope in the same lazy-claim step that fills in `user_id`, using the
 invite's original `created_at` as `occurred_at`. The invite then
 appears on the new member's Timeline dated when it was actually sent.
 
-Teams are Clerk-only, so none of these events ever reach a guest scope.
+Teams are for accounts only, so none of these events ever reach a guest scope.
 
 ### 4.5 Account and housekeeping
 
@@ -1402,10 +1402,10 @@ touches the same files.
 Guests' writes are recorded too, keyed to their signed participant id
 ([Auth + guest access](../014-identity/auth-and-guest-access.md)): document lifecycle, editing, comments on their
 own documents, and share-link events. Team, invite, and token events never reach them because those features are
-Clerk-only — Home and a History are simply thinner, with no sign-in wall.
+signed-in only — Home and a History are simply thinner, with no sign-in wall.
 
 **On sign-up, the record migrates.** `POST /api/migrate` already
-moves documents from the guest participant id to the Clerk user id; it
+moves documents from the guest participant id to the account user id; it
 gains two statements in the same transaction:
 
 ```sql
@@ -1468,7 +1468,7 @@ Per [Testing](../003-system-architecture/testing.md):
   every joined member and to nobody who is merely `invited`.
 - **Coalescing**: three saves in one UTC day produce one row whose
   `occurred_at` advances; a save the next day produces a second row.
-- **Migration**: guest → Clerk id moves scopes, events, and scope
+- **Migration**: guest → account id moves scopes, events, and scope
   state.
 - **Failed reads never read as empty** (§2.4): `apiListTimeline`
   returns null on a refusal (401), on a worker error, on a thrown fetch

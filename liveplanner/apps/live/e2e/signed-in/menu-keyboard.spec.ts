@@ -1,5 +1,5 @@
 import { test, expect, expectNoPageErrors } from '../fixtures';
-import { freshUserId, installClerkStub } from './clerk-stub';
+import { freshUserId, installSession } from './session';
 
 // The account menu by keyboard, signed in (docs/specs/004-interface-design/menus.md): a menu button
 // whose menu is named by the account's name, takes focus on open, and gives it back on Escape.
@@ -7,14 +7,11 @@ import { freshUserId, installClerkStub } from './clerk-stub';
 test.use({ colorScheme: 'dark' });
 
 test('the account menu walks by keyboard and returns focus', async ({ page, pageErrors }) => {
-  await installClerkStub(page, {
+  await installSession(page, {
     id: freshUserId('menu-keys'),
     firstName: 'Ariel',
     lastName: 'Keys',
     email: 'ariel@example.com',
-    hasImage: false,
-    imageUrl: '',
-    externalAccounts: [],
   });
   await page.goto('/explorer/recent');
   const trigger = page.getByRole('button', { name: 'Account menu' });

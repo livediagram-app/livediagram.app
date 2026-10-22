@@ -108,7 +108,7 @@ async function get(path: string, opts: { owner?: string; env?: Env } = {}) {
     makeTestRouteContext('GET', path, {
       env: opts.env ?? db.env,
       owner: opts.owner ?? ME,
-      clerkUserId: opts.owner ?? ME,
+      accountUserId: opts.owner ?? ME,
       waitUntil: (p) => void pending.push(p),
     }),
   );

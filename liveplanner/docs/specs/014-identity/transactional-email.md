@@ -2,7 +2,7 @@
 
 **Status: in progress.** Optional, off by default. Wires [Resend](https://resend.com)
 into the api worker so the product can send a small set of account emails. Like
-Clerk ([Auth + guest access](auth-and-guest-access.md)) and AI ([AI Assistance](../007-editor/ai-assistance.md)), it is **entirely gated on a secret**: when
+sign-in ([Auth + guest access](auth-and-guest-access.md)) and AI ([AI Assistance](../007-editor/ai-assistance.md)), it is **entirely gated on a secret**: when
 `RESEND_API_KEY` is absent the whole feature is inert — no sends, no new request
 work — and everything else behaves exactly as before. Guests and the editor stay
 account-free and never receive email.
@@ -28,7 +28,8 @@ Five messages, two kinds:
    `/join/decline?token=<token>` that turns it down with no account and no
    sign-in ([Teams → Declining from the email](../013-workspace/teams.md#declining-from-the-email)).
 5. **Account deleted** — after a user deletes their account (spec: account
-   self-deletion), a confirmation that the account and its data are gone.
+   self-deletion), a confirmation that their liveplanner data is gone (their
+   liveworkspace account stays, for the other apps that use it).
 
 [Account settings & email notifications](profile-and-email-notifications.md) adds two further opt-out
 notifications — **someone joined my document** and **someone responded to my team
@@ -96,13 +97,13 @@ Production: `wrangler secret put RESEND_API_KEY`.
 
 ## 3. Data model
 
-One table, keyed by the owner id (the Clerk `sub` — lifecycle email is
+One table, keyed by the owner id (the account `sub` — lifecycle email is
 authenticated-only):
 
 ```sql
 CREATE TABLE IF NOT EXISTS email_lifecycle (
-  owner_id        TEXT PRIMARY KEY,   -- Clerk user id (verified)
-  email           TEXT NOT NULL,      -- from the verified session token only
+  owner_id        TEXT PRIMARY KEY,   -- account user id (verified)
+  email           TEXT NOT NULL,      -- from the verified access token only
   created_at      INTEGER NOT NULL,   -- first authenticated sighting (ms)
   welcome_sent_at INTEGER,
   week1_sent_at   INTEGER,
@@ -111,19 +112,19 @@ CREATE TABLE IF NOT EXISTS email_lifecycle (
 CREATE INDEX IF NOT EXISTS idx_email_lifecycle_due ON email_lifecycle (created_at);
 ```
 
-The `email` is only ever the **verified** `email` claim from the Clerk session
+The `email` is only ever the **verified** `email` claim from the account access
 token ([Teams](../013-workspace/teams.md)) — never a client-supplied value, never a guest. Rows exist only
 for authenticated owners.
 
 ## 4. Sign-up detection — first authenticated sighting
 
-On any request carrying a verified Clerk identity (userId + email), and only
+On any request carrying a verified account identity (userId + email), and only
 when `emailEnabled`, the worker does an `INSERT … ON CONFLICT DO NOTHING` into
 `email_lifecycle`. If a **new** row was created (`meta.changes === 1`), that
 first sighting is treated as sign-up: send the welcome and stamp
 `welcome_sent_at`. On a returning owner's sighting the row instead takes the
 token's address when it differs (an `UPDATE` guarded on `email <> ''` and on the
-address actually changing), so a changed Clerk primary email is where the next
+address actually changing), so a changed account email is where the next
 email goes; a backfilled suppression row (below) keeps its empty sentinel, and
 "is new" stays the insert's answer alone. All of this runs in `ctx.waitUntil(...)` so it never delays
 the response, and is wrapped so an email/D1 hiccup can't fail the user's request.
@@ -139,7 +140,7 @@ INSERT OR IGNORE INTO email_lifecycle
 SELECT DISTINCT owner_id, '', 0, 0, 0, 0 FROM documents WHERE owner_id LIKE 'user_%';
 ```
 
-(The `'user_%'` prefix targets Clerk ids, skipping guest UUID owners.)
+(The `'user_%'` prefix targets account ids, skipping guest UUID owners.)
 
 ## 5. Scheduling the series — the existing daily cron
 

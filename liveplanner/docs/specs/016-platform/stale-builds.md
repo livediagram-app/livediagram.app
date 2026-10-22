@@ -44,7 +44,7 @@ sets them.
   the history-traversal cache. The cost is the back/forward cache (bfcache), which restores a whole
   live page instantly:
   - **Chrome** has, since the spring of 2025, kept `no-store` pages in bfcache when that is safe:
-    it evicts them on a cookie change (signing in or out, Clerk's session refresh), on a `no-store`
+    it evicts them on a cookie change (signing in or out, a token refresh rotating the refresh cookie), on a `no-store`
     fetch response, and after three minutes instead of ten. So a Chrome user mostly keeps bfcache.
   - **Firefox and Safari** may still refuse bfcache for a `no-store` page; there, back reloads the
     page from the network (a fresh, current page).

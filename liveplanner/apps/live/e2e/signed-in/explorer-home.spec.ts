@@ -1,8 +1,8 @@
 import type { Page } from '@playwright/test';
 import { test, expect, expectNoPageErrors } from '../fixtures';
-import { freshUserId, installClerkStub, type StubUser } from './clerk-stub';
+import { freshUserId, installSession, type StubUser } from './session';
 
-// Explorer Home signed in (docs/specs/013-workspace/explorer-home.md), against the Clerk-enabled
+// Explorer Home signed in (docs/specs/013-workspace/explorer-home.md), against the signed-in
 // export: a team member's Home names what a teammate did on a team document, where it lives, and
 // opens it; the person's own Jump Back In holds the document they opened, on a desktop and on a
 // phone, and See More leads to Recent.
@@ -15,9 +15,6 @@ function member(id: string, firstName: string): StubUser {
     firstName,
     lastName: 'Tester',
     email: `${id}@example.com`,
-    hasImage: false,
-    imageUrl: '',
-    externalAccounts: [],
   };
 }
 
@@ -88,7 +85,7 @@ test('a teammate’s work on a team document reaches Home, named and placed', as
     ],
   });
 
-  await installClerkStub(page, member(ann, 'Ann'));
+  await installSession(page, member(ann, 'Ann'));
   await page.goto('/explorer');
   await expect(page).toHaveURL(/\/explorer\/home\/?$/, { timeout: 30_000 });
   const nav = page.getByRole('navigation', { name: 'Explorer' }).first();

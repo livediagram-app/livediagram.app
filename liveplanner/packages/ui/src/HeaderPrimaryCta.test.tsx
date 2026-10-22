@@ -6,7 +6,7 @@ import { HeaderPrimaryCta } from './HeaderPrimaryCta';
 // docs/specs/019-marketing/marketing-site.md "Header": Choose Template for a visitor, Open Explorer for
 // someone signed in, as the sign-in provider's readable cookie says.
 afterEach(() => {
-  document.cookie = '__client_uat=; max-age=0; path=/';
+  document.cookie = 'lp_signed_in=; max-age=0; path=/';
 });
 
 describe('the header primary', () => {
@@ -18,11 +18,11 @@ describe('the header primary', () => {
   });
 
   it('is Open Explorer for someone signed in, and stays Choose Template when signed out', () => {
-    document.cookie = '__client_uat=1792100000; path=/';
+    document.cookie = 'lp_signed_in=1; path=/';
     const signedIn = render(<HeaderPrimaryCta ctaSurface="Home" />).container.querySelector('a')!;
     expect(signedIn.getAttribute('aria-label')).toBe('Open Explorer');
     expect(signedIn.getAttribute('href')).toBe('/explorer/home');
-    document.cookie = '__client_uat=0; path=/';
+    document.cookie = 'lp_signed_in=0; path=/';
     const signedOut = render(<HeaderPrimaryCta />).container.querySelector('a')!;
     expect(signedOut.getAttribute('href')).toBe('/new');
   });

@@ -42,7 +42,7 @@ export async function deleteAccount(
   // admin when they were the last one), and delete teams they were the
   // last joined member of. MUST run before the documents DELETE below —
   // that wipe would otherwise destroy shared team work, and the dead
-  // Clerk id would linger as a ghost (or sole-admin-blocking) member.
+  // account id would linger as a ghost (or sole-admin-blocking) member.
   await detachUserFromTeams(env, ownerId);
   // Document SVG snapshots (docs/specs/006-document/document-snapshots.md) live in R2 under thumb/<documentId>,
   // keyed off the document id rather than carried on a D1 row, so the
@@ -145,17 +145,17 @@ export async function deleteAccount(
 // (docs/specs/015-api/api.md "Owner-keyed data") from `fromOwnerId` to
 // `toOwnerId`. Called
 // from POST /api/migrate when a guest signs up: their localStorage
-// participant id moves to their Clerk userId so the new account sees
+// participant id moves to their account id so the new account sees
 // the documents, folders, shared-with-them list and editor preferences
 // they built as a guest.
 //
 // shared_with's primary key is (owner_id, document_id), so a naive
 // UPDATE could PK-collide if the visitor accepted the same share
-// link both as a guest AND, later in the same session, as Clerk
+// link both as a guest AND, later in the same session, signed in
 // (recordSharedAccess upserts a row each time). INSERT OR IGNORE
 // then DELETE handles both cases in one shot: copy guest rows to
-// the Clerk userId, skip rows where (clerkId, documentId) already
-// exists, then drop every leftover guest row. The skipped Clerk
+// the account id, skip rows where (clerkId, documentId) already
+// exists, then drop every leftover guest row. The skipped account
 // rows keep the role + last_seen they already had (which is the
 // more recent of the two paths the user actually used).
 //
@@ -200,7 +200,7 @@ export async function migrateOwnerId(
       toOwnerId,
     ),
     // user_preferences (docs/specs/007-editor/user-preferences.md): same INSERT OR IGNORE pattern as
-    // shared_with so a Clerk userId who somehow already had a row (an
+    // shared_with so an account id who somehow already had a row (an
     // earlier sign-in on a different device) keeps that authoritative
     // copy and the guest row gets dropped. Guest-only is the common
     // path; the existing-row case just stops the migration clobbering
@@ -254,8 +254,8 @@ export async function migrateOwnerId(
     ),
     placementDrop: move('DELETE FROM placement_defaults WHERE owner_id = ?', fromOwnerId),
     // participants: the guest's name and colour. The id IS the owner id, so an
-    // account that already has a row keeps it (a signed-in name comes from Clerk
-    // anyway). The copy is stamped NOW, never with the source's created_at: a row
+    // account that already has a row keeps it (a signed-in name comes from the
+    // account anyway). The copy is stamped NOW, never with the source's created_at: a row
     // older than GUEST_SIGNING_LIVE_AT marks a legacy id that may upgrade unsigned
     // (auth/guest-rest.ts isLegacyGuestEra), and the new id is a signed one, so
     // carrying the old date over would let anyone holding the new id move its data

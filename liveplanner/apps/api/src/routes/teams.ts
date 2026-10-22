@@ -1,13 +1,13 @@
-// /api/teams (docs/specs/013-workspace/teams.md) — teams with Admin/Member roles. Clerk-only:
-// membership is keyed by Clerk user id and invites by verified email,
+// /api/teams (docs/specs/013-workspace/teams.md) — teams with Admin/Member roles. signed-in only:
+// membership is keyed by account id and invites by verified email,
 // so the guest X-Owner-Id path is structurally insufficient and every
 // request here requires a verified Bearer token (401 otherwise). The
 // rest of the API keeps its hybrid guest path; this surface alone is
 // signed-in (the canvas never is — docs/specs/014-identity/auth-and-guest-access.md).
 //
 // Two verified credentials reach the READ surface (docs/specs/015-api/public-api-and-tokens.md §3.4): a
-// Clerk session JWT, or an `lvd_` API token (its owner is always a
-// Clerk account) — so an external integration can list the caller's
+// account access token, or an `lvd_` API token (its owner is always a
+// account) — so an external integration can list the caller's
 // teams and read their shared libraries like the app does. Every
 // MUTATION (create, invites, roles, join/accept/leave, invite links,
 // deletion) additionally requires the interactive session: a leaked
@@ -78,7 +78,7 @@ import type { RouteContext } from './context';
 
 // Light shape check, not RFC 5322: something@something.tld. The real
 // gate is that the address only ever matters if its owner can sign in
-// to Clerk with it; this just catches paste accidents.
+// with it; this just catches paste accidents.
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const TEAM_NAME_MAX = 80;
@@ -91,11 +91,11 @@ function normaliseEmail(raw: string): string {
 }
 
 export async function handleTeams(ctx: RouteContext): Promise<Response> {
-  const { request, env, segments, clerkUserId, clerkEmail, verifiedUserId } = ctx;
+  const { request, env, segments, accountUserId, accountEmail, verifiedUserId } = ctx;
   if (segments[1] !== 'teams') return notFound();
-  // Identity for everything below: the verified Clerk account id, from a
+  // Identity for everything below: the verified account id, from a
   // session JWT or an API token (see the header comment). Mutations are
-  // additionally gated on `clerkUserId` after the shared sign-in gate.
+  // additionally gated on `accountUserId` after the shared sign-in gate.
   const userId = verifiedUserId;
 
   // /api/teams/invite-link/<token> — RESOLVE a shareable join link
@@ -123,15 +123,15 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
 
   if (!userId) return signInRequired();
   // Read vs manage (docs/specs/015-api/public-api-and-tokens.md §3.4): an API token passes the gate above for
-  // GETs, but every mutation needs the interactive Clerk session.
-  if (request.method !== 'GET' && !clerkUserId) return signInRequired();
+  // GETs, but every mutation needs the interactive signed-in session.
+  if (request.method !== 'GET' && !accountUserId) return signInRequired();
 
   // /api/teams/invite-link/<token>/join — JOIN via the link (docs/specs/013-workspace/teams.md).
   // Signed-in only (above). Adds the caller as a joined member; the db
   // helper de-dupes against an existing membership / pending invite.
   if (segments.length === 5 && segments[2] === 'invite-link' && segments[4] === 'join') {
     if (request.method !== 'POST') return notFound();
-    const result = await joinTeamByInviteToken(env, segments[3]!, userId, clerkEmail);
+    const result = await joinTeamByInviteToken(env, segments[3]!, userId, accountEmail);
     if (!result) return notFound();
     // docs/specs/013-workspace/timeline.md §4.4: only a genuine arrival. `alreadyMember` means the
     // caller re-opened their own join link, which is not news to anyone.
@@ -139,7 +139,7 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
       const joined = await getTeam(env, result.teamId);
       if (joined) {
         ctx.waitUntil?.(
-          recordMemberJoined(env, joined, { userId, name: clerkEmail?.split('@')[0] ?? null }),
+          recordMemberJoined(env, joined, { userId, name: accountEmail?.split('@')[0] ?? null }),
         );
       }
     }
@@ -152,7 +152,7 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
       // Lazy invite claim before listing, so a pending invite for the
       // caller's verified address becomes a membership in the same
       // round-trip that would render it.
-      if (clerkEmail) await connectInvitesByEmail(env, userId, clerkEmail);
+      if (accountEmail) await connectInvitesByEmail(env, userId, accountEmail);
       // docs/specs/013-workspace/timeline.md §4.4: the claim above just told us who a pending
       // invite belongs to. Hand them the invite events that were
       // emitted scope-less because nobody could be scoped at the time.
@@ -182,7 +182,7 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
       const team = await createTeam(
         env,
         { id: body.id, name, organisation },
-        { userId, email: clerkEmail },
+        { userId, email: accountEmail },
       );
       ctx.waitUntil?.(recordTeamCreated(env, team, userId));
       return json({ team }, { status: 201 });
@@ -196,7 +196,7 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
   // lazy claim as the list so the two calls are order-independent.
   if (segments.length === 3 && segments[2] === 'invites') {
     if (request.method === 'GET') {
-      if (clerkEmail) await connectInvitesByEmail(env, userId, clerkEmail);
+      if (accountEmail) await connectInvitesByEmail(env, userId, accountEmail);
       ctx.waitUntil?.(attachClaimedInviteEvents(env, userId));
       const invites = await listInvitesByUser(env, userId);
       return json({ invites });
@@ -257,7 +257,7 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
       // so only admins get its token in the detail payload, and only in an interactive
       // session: the token lets any account join and edit the library, and team
       // administration is session-only (docs/specs/015-api/public-api-and-tokens.md §3.4).
-      const inviteLink = isAdmin && clerkUserId ? await getTeamInviteLink(env, teamId) : null;
+      const inviteLink = isAdmin && accountUserId ? await getTeamInviteLink(env, teamId) : null;
       return json({ team, members, myRole: me.role, inviteLink });
     }
     if (request.method === 'PUT') {
@@ -388,7 +388,7 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
       ctx.waitUntil?.(recordInviteAccepted(env, team, userId, member.email ?? null));
       // docs/specs/014-identity/profile-and-email-notifications.md: tell the team's admins someone said yes. Best-effort,
       // off the response path; no-op when email is off / admins opted out.
-      const responder = member.email ?? clerkEmail;
+      const responder = member.email ?? accountEmail;
       if (responder) {
         ctx.waitUntil?.(notifyInviteResponse(env, team, responder, true, userId).catch(() => {}));
       }
@@ -448,7 +448,7 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
       if (member.status === 'invited' && isSelf) {
         if (await declineTeamInvite(env, member.id)) {
           ctx.waitUntil?.(recordInviteDeclined(env, team, userId, memberDisplayName(member)));
-          const responder = member.email ?? clerkEmail;
+          const responder = member.email ?? accountEmail;
           if (responder) {
             ctx.waitUntil?.(
               notifyInviteResponse(env, team, responder, false, userId).catch(() => {}),

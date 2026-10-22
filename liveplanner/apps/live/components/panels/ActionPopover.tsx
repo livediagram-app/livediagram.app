@@ -42,7 +42,7 @@ type ActionPopoverProps = {
   onDelete: () => void;
   onClose: () => void;
   readOnly?: boolean;
-  // The current user's identity (Clerk id or guest participant id), for
+  // The current user's identity (account id or guest participant id), for
   // the "Assigned to you" line.
   selfUserId: string | null;
 };
