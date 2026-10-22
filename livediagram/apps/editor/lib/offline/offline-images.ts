@@ -19,7 +19,7 @@
 // element's current reference rather than aborting the whole conversion (a
 // kept R2 id still renders while online; a kept data URI renders anywhere).
 
-import { pageImageIds, withPageImageIds, type Tab } from '@livediagram/document';
+import type { Tab } from '@livediagram/document';
 import { apiFetchImageDataUrl } from '../api/images';
 import { uploadImageFile } from '../upload-image';
 
@@ -27,10 +27,9 @@ export function isDataImageId(imageId: string | null | undefined): boolean {
   return typeof imageId === 'string' && imageId.startsWith('data:');
 }
 
-// Every picture a tab names: its image elements' and its pages' backgrounds
-// (docs/specs/007-editor/pages-mode.md "Image backgrounds").
+// Every picture a tab names: its image elements'.
 export function tabImageIds(tab: Tab): string[] {
-  const ids = new Set<string>(pageImageIds(tab.pages));
+  const ids = new Set<string>();
   for (const el of tab.elements) if (el.type === 'image' && el.imageId) ids.add(el.imageId);
   return [...ids];
 }
@@ -43,21 +42,17 @@ function collectImageIds(tabs: Tab[], match: (id: string) => boolean): string[] 
 }
 
 // Swap every matching imageId through the map (ids absent from the map are
-// left untouched), on elements and page backgrounds alike. Pure; exported for tests.
+// left untouched). Pure; exported for tests.
 export function rewriteImageIds(tabs: Tab[], mapping: Map<string, string>): Tab[] {
   if (mapping.size === 0) return tabs;
-  return tabs.map((tab) => {
-    const pages = withPageImageIds(tab.pages, mapping);
-    return {
-      ...tab,
-      elements: tab.elements.map((el) => {
-        if (el.type !== 'image' || !el.imageId) return el;
-        const next = mapping.get(el.imageId);
-        return next && next !== el.imageId ? { ...el, imageId: next } : el;
-      }),
-      ...(pages !== tab.pages ? { pages: pages as Tab['pages'] } : {}),
-    };
-  });
+  return tabs.map((tab) => ({
+    ...tab,
+    elements: tab.elements.map((el) => {
+      if (el.type !== 'image' || !el.imageId) return el;
+      const next = mapping.get(el.imageId);
+      return next && next !== el.imageId ? { ...el, imageId: next } : el;
+    }),
+  }));
 }
 
 // Decode a base64 data URL into a File for the shared upload flow. Pure

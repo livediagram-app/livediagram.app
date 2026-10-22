@@ -25,12 +25,11 @@ Switching the mode **on** writes these values, once:
 | Draw tour            | `drawTourSeen`       | seen  |
 | Forms tour           | `formTourSeen`       | seen  |
 | Avatar tour          | `avatarTourSeen`     | seen  |
-| Pages tour           | `pagesTourSeen`      | seen  |
 | Element tours        | `elementToursSeen`   | seen  |
 | AI suggested prompts | `aiSuggestedPrompts` | off   |
 | Minimal chrome       | `minimalChrome`      | on    |
 
-The Plan and Pages tours offer each of their tracks once (`planTourTracks`, `pagesTourKinds`), and the
+The Plan tour offers each of its tracks once (`planTourTracks`), and the
 [element tours](element-tours.md) each toured kind (`elementTourKinds`); their seen
 flag counts every track only while the mode is on, so switching it off gives back every track not yet answered.
 

@@ -36,8 +36,6 @@ const INERT_HANDLERS: CommandHandlers = {
   bringToFront: noop,
   sendToBack: noop,
   rotate: noop,
-  combine: noop,
-  mirrorCopy: noop,
   clearAnimation: noop,
   renumberSteps: noop,
   setMarker: noop,
@@ -126,9 +124,6 @@ export function useEditorCommands(open: boolean): {
     canvasTool,
     setCanvasTool,
     workbenchMode,
-    canCombine,
-    combineSelected,
-    pagesMode,
   } = ctx;
 
   // Offline documents (docs/specs/006-document/offline-mode.md) have nothing on the server to share, so the
@@ -148,8 +143,6 @@ export function useEditorCommands(open: boolean): {
   const singleTakesAttachments = single ? takesAttachments(single) : true;
   const singleIsShape = single?.type === 'shape';
   const singleRotates = single ? supportsRotation(single) : false;
-  const combinable = isMulti && canCombine();
-  const mirrorable = selectionCount > 0 && !!pagesMode?.logo?.canMirrorCopy();
   const marker = single?.type === 'shape' ? (single.marker ?? null) : null;
   const hasAnimation = single
     ? single.type === 'arrow'
@@ -173,8 +166,6 @@ export function useEditorCommands(open: boolean): {
       singleIsBoxed,
       singleTakesAttachments,
       singleRotates,
-      canCombine: combinable,
-      canMirrorCopy: mirrorable,
       singleIsShape,
       hasAnimation,
       tabHasSteps,
@@ -203,8 +194,6 @@ export function useEditorCommands(open: boolean): {
       singleIsBoxed,
       singleTakesAttachments,
       singleRotates,
-      combinable,
-      mirrorable,
       singleIsShape,
       hasAnimation,
       tabHasSteps,
@@ -233,8 +222,6 @@ export function useEditorCommands(open: boolean): {
     bringToFront: bringSelectedToFront,
     sendToBack: sendSelectedToBack,
     rotate: setRotationSelected,
-    combine: (op) => void combineSelected(op),
-    mirrorCopy: () => pagesMode?.logo?.mirrorCopy(),
     clearAnimation: () =>
       single?.type === 'arrow' ? setArrowFlowSelected(null) : clearAnimationsSelected(),
     setMarker: setMarkerSelected,

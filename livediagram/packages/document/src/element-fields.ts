@@ -80,7 +80,6 @@ export const ELEMENT_FIELD_NAMES = {
     'fillSwatch',
     'mode',
     'portalTarget',
-    'windowTabId',
     'session',
     'revealed',
     'pickerSource',
@@ -527,7 +526,6 @@ export const ELEMENT_FIELD_NAMES = {
     'textUnderline',
     'textStrikethrough',
     'font',
-    'articleNote',
   ]),
   'link-card': fieldsOf<LinkCardElement>()([
     'id',

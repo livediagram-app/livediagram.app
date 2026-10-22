@@ -7,13 +7,13 @@ interchangeable. These are design decisions, taken before any feature that uses 
 
 | Term         | Answers                        | Values                                                      | Where it lives                                |
 | ------------ | ------------------------------ | ----------------------------------------------------------- | --------------------------------------------- |
-| **mode**     | How is a tab worked on?        | Diagram, Draw, Workshop, Pages, Plan (`EditorMode`)         | Per tab, the same for everyone; `Tab.opensIn` |
+| **mode**     | How is a tab worked on?        | Diagram, Draw, Workshop, Plan (`EditorMode`)                | Per tab, the same for everyone; `Tab.opensIn` |
 | **kind**     | What is a tab?                 | the general diagram tab, or Event Storming (`TabKind`)      | `Tab.kind`                                    |
 | **template** | What was a document made from? | a template (`TemplateKind`), grouped into template families | Captured once, at creation                    |
 
 ### Mode
 
-- An **editor mode** is how a general tab is worked on right now, by everyone on it: Diagram, Draw, Workshop, Pages or Plan.
+- An **editor mode** is how a general tab is worked on right now, by everyone on it: Diagram, Draw, Workshop or Plan.
   (the Editor modes spec in 007-editor).
 - A mode is never a type of document or tab. Switching mode changes no content: it sets the tab's mode (one undo step) and everyone on the tab follows.
 - A tab stores the mode it **opens in**. "Opens in" is a choice among modes, not a binary, so a new mode needs no
@@ -197,8 +197,8 @@ mark it, and where a new guest's documents start. A document is **in This Browse
 
 ## Names in a sentence
 
-Copy that builds a phrase around a name (a page kind, a field, a note, a template, a chart type, an element type in
+Copy that builds a phrase around a name (a field, a note, a template, a chart type, an element type in
 an agent's error) takes its article from the name: `withArticle` / `indefiniteArticle` in `@livediagram/items`
-(re-exported by `@livediagram/document` and `@livediagram/ui`). A vowel sound takes "an" ("Add an infographic
-page", "Create an Org Chart", "is not an Estimate option"), and a vowel said "you" keeps "a" ("a User Persona", "a
+(re-exported by `@livediagram/document` and `@livediagram/ui`). A vowel sound takes "an" ("Add an image",
+"Create an Org Chart", "is not an Estimate option"), and a vowel said "you" keeps "a" ("a User Persona", "a
 UML Class"). A fixed "a" before an interpolated name is how "Create a Org Chart" reached the marketing site.

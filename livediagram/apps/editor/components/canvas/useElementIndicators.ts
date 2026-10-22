@@ -34,8 +34,6 @@ export function elementIndicatorItems(
   // Community visitor, docs/specs/025-community/community.md): no comment indicator.
   showComments = true,
 ): IndicatorItem[] {
-  // A margin note shows its count and action on its own face.
-  if (element.type === 'annotation' && element.articleNote) return [];
   // A Plan item carries no link, note, action or comments (docs/specs/026-plan/plan-mode.md "Nothing attached to Plan
   // items"): any left on one from before are kept in the document but not shown.
   if (!takesAttachments(element)) return [];

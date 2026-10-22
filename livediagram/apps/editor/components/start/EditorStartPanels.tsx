@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { pagesOf, readDashboard, type EditorMode } from '@livediagram/document';
+import { readDashboard, type EditorMode } from '@livediagram/document';
 import type { TemplateKind } from '@livediagram/templates';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useSelectTab } from '@/app/document/[id]/useSelectTab';
@@ -85,9 +85,6 @@ export function EditorStartPanels() {
     drawToolArmed: !!pendingDraw,
     mode: ctx.editorMode.mode,
     elementCount: activeTab.elements.length,
-    // Read only for an empty Pages tab: EditorView renders often, and a tab with content shows no start.
-    pages:
-      ctx.editorMode.mode === 'pages' && activeTab.elements.length === 0 ? pagesOf(activeTab) : [],
   });
   // An empty Plan tab: the board types, in the middle of the canvas. Anything already drawn (a board, a shape, a
   // view) hides it; the palette's Boards still add one.

@@ -2,7 +2,7 @@
 // synchronous and DOM-free, so a picture exists before the first paint and in tests. The image data
 // is stored, not compressed (zlib "stored" blocks), which suits pictures of a few tens of kilobytes
 // that live in memory as a blob and never cross the network.
-import { crc32 } from './zip-writer';
+import { crc32 } from './crc32';
 
 const SIGNATURE = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
 // The most a stored deflate block holds.

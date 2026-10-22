@@ -57,10 +57,6 @@ const EXCLUDED_CATEGORIES = new Set([
 ]);
 
 // The palette tile behind each flyout shape that has one; Line and Arrow have none.
-// Kinds that are not board ink: a tab window (docs/specs/009-elements/tab-window.md) shows another tab, a Pages
-// element a whiteboard pen never draws.
-const EXCLUDED_KINDS = new Set<string>(['tab-window']);
-
 const DOCK_TILE_KIND: Partial<Record<WhiteboardShapeId, ShapeKind>> = {
   rectangle: 'square',
   ellipse: 'circle',
@@ -126,7 +122,6 @@ function buildCatalogue(): WhiteboardShapeEntry[] {
     stickyEntry(),
     ...SHAPE_TILES.filter((t) => !EXCLUDED_CATEGORIES.has(tileCategoryId(t)))
       .filter((t) => !(t.action.type === 'shape' && docked.has(t.action.kind)))
-      .filter((t) => !(t.action.type === 'shape' && EXCLUDED_KINDS.has(t.action.kind)))
       .map(tileEntry),
   ];
   // Grouped in the palette's category order; catalogue order within a group.

@@ -94,14 +94,6 @@ describe('renderElementsToSvg under Sketch', () => {
     expect(inkLayer(svg)).toContain('<rect');
     expect(svg.indexOf(FILTERED)).toBeLessThan(svg.indexOf('data-finish="sketch"'));
   });
-
-  it("draws only a tab window's frame by hand", () => {
-    const tw = { ...createShape('tab-window', 0, 0), id: 'tw' } as Element;
-    const svg = renderElementsToSvg(tabOf([tw], 'sketch'));
-    const ink = inkLayer(svg);
-    expect(ink).toMatch(/^<g filter="url\(#lvd-sketch-face\)"><rect [^>]*fill="none"/);
-    expect(svg).not.toContain('visibility="hidden"');
-  });
 });
 
 describe('svgSketchArtDefs', () => {
@@ -131,8 +123,8 @@ describe('a face\'s words under Sketch (docs/specs/008-canvas/finish.md "Letteri
   const words = (kind: string) =>
     renderElementsToSvg(tabOf([{ ...createShape(kind as never, 0, 0), id: 'x' }], 'sketch'));
 
-  it('writes a checklist, a legend and an empty tab window by hand', () => {
-    for (const kind of ['checklist', 'legend', 'tab-window']) {
+  it('writes a checklist and a legend by hand', () => {
+    for (const kind of ['checklist', 'legend']) {
       const svg = words(kind);
       expect(svg, kind).not.toContain('font-family="system-ui');
       expect(svg, kind).toMatch(/<text[^>]*font-family="[^"]*Caveat/);

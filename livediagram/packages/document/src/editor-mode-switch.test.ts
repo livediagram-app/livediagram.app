@@ -13,27 +13,17 @@ const tab = (elements: Element[], extra: Partial<Tab> = {}): Tab => ({
 });
 
 describe('withEditorModeSwitched', () => {
-  it('sets the mode, and on entering Pages puts a wide board on a page in the same edit', () => {
+  it('sets the mode and leaves the elements as they are', () => {
     const board = tab([sticky('a', -1500), sticky('b', 1500)]);
-    const out = withEditorModeSwitched(board, 'pages');
-    expect(out.pagedContent).toBe(true);
-    expect(out.tab.opensIn).toBe('pages');
-    expect(out.tab.pages).toHaveLength(1);
+    const out = withEditorModeSwitched(board, 'draw');
+    expect(out.tab.opensIn).toBe('draw');
     expect(out.tab.elements).toBe(board.elements);
-  });
-
-  it('only sets the mode where there is nothing to put on a page', () => {
-    const out = withEditorModeSwitched(tab([sticky('a', -75)]), 'pages');
-    expect(out).toMatchObject({ pagedContent: false, tab: { opensIn: 'pages' } });
-    expect(out.tab.pages).toBeUndefined();
-    const draw = withEditorModeSwitched(tab([sticky('a', -1500), sticky('b', 1500)]), 'draw');
-    expect(draw).toMatchObject({ pagedContent: false, tab: { opensIn: 'draw' } });
   });
 
   it('returns the same tab when it is already in the mode, or is an event-storming board', () => {
     const inDraw = tab([], { opensIn: 'draw' });
     expect(withEditorModeSwitched(inDraw, 'draw').tab).toBe(inDraw);
     const es = tab([], { kind: 'event-storming' });
-    expect(withEditorModeSwitched(es, 'pages').tab).toBe(es);
+    expect(withEditorModeSwitched(es, 'workshop').tab).toBe(es);
   });
 });

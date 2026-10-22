@@ -29,7 +29,6 @@ import { handleCommentPicturesRoute } from './comment-pictures-routes';
 import { handleTabPut, refuseTokenTabPut } from './tab-put-route';
 import { handleTabRename } from './tab-name-route';
 import { handleTabForm } from './tab-form-route';
-import { handleTabPages } from './tab-pages-route';
 import { handleChangesetRoutes } from './changesets';
 import { handleCommentRoutes } from './comment-routes';
 import { handleAgentPresenceRoute } from './agent-presence-routes';
@@ -81,16 +80,6 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
   //   DELETE — remove one tab.
   //   PUT / DELETE are writes: owner or edit-role only.
   // /api/documents/<id>/tabs/<tabId>/name: a tab rename (docs/specs/024-agents/agent-changesets.md).
-  if (
-    segments.length === 6 &&
-    segments[3] === 'tabs' &&
-    // `illustrate`: the address before Illustrate mode became Pages mode, still sent by older
-    // CLI and MCP builds (docs/specs/024-agents/pages-for-agents.md).
-    (segments[5] === 'pages' || segments[5] === 'illustrate') &&
-    ctx.request.method === 'POST'
-  ) {
-    return handleTabPages(ctx, segments[2]!, segments[4]!);
-  }
   // /api/documents/<id>/tabs/<tabId>/form: an agent's form write (docs/specs/030-forms/forms.md "Agents").
   if (
     segments.length === 6 &&

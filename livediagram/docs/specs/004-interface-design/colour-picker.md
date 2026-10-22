@@ -34,7 +34,7 @@ felt inconsistent and janky.
 A picker shows up to three groups, always in this order, each under a small heading:
 
 1. **Theme Palette**, in every picker in the editor, whatever the mode or surface (an element, a Plan card, card type
-   or column, a Draw marker, a page background, an article, the laser): the active tab's theme colours, as the
+   or column, a Draw marker, a form cover, the laser): the active tab's theme colours, as the
    theme derives them ([Canvas and palette](../008-canvas/canvas-and-palette.md#colours)), each named by a
    colour word, never two alike ("Blue", "Light blue", "Deep blue"). A Quick Style row's More colours shows the
    row's own colours here instead ([Quick Style Panel](../008-canvas/quick-style-panel.md#colours)). Outside
@@ -65,8 +65,8 @@ A picker shows up to three groups, always in this order, each under a small head
 3. **Custom Colours**: the colours picked with **Add a custom colour** in this document, newest first, at most twelve, then **Add a custom colour** (four coloured dots).
 
 **Leading options** go first in the first group: **no colour** where a surface can have none (No ... colour,
-None, No colour, Default colour, No highlight, Paper), and the surface's own named defaults (the article's
-Accent, the article style's Theme, the laser's Your colour).
+None, No colour, Default colour, No highlight, Paper), and the surface's own named defaults (the laser's Your
+colour).
 
 ## Custom colours
 
@@ -82,7 +82,7 @@ colour editor keeps the colour with the tab it was picked on (newest first, at m
 - Recording one is not a step of its own: the pick it applies is the undoable edit.
 - A colour already offered (the Theme Palette's, a standard colour) is not shown again as a custom colour.
 - The custom colour in force always shows, as the first of Custom Colours, picked, even when no one picked it
-  with **Add a custom colour** (an older Plan colour, a page's earlier preset, a template's colour).
+  with **Add a custom colour** (an older Plan colour, a template's colour).
 - While a picker is open, Custom Colours hold their order. Hovering a swatch previews it on the document, which
   must not slide the swatches under the pointer, so a colour already shown keeps its place and only a colour
   new to the list, such as one just picked with **Add a custom colour**, joins at the front. The order is worked out afresh each
@@ -115,7 +115,7 @@ exactly as it did:
   element with no name field (a table, a note's border) stores the colour's light-paper hex. A fill stores
   its `#rrggbb`; a theme colour stores what it stored before.
 - The laser stores a standard colour by name, Your colour as `presence`, or a custom `#rrggbb`.
-- Off the canvas (Plan, pages, articles, charts, themes), a standard colour stores its
+- Off the canvas (Plan, form covers, charts, themes), a standard colour stores its
   `#rrggbb` for light paper. A Plan card type and a card's own Colour accept any `#rrggbb`.
 
 ## How it looks
@@ -144,15 +144,14 @@ exactly as it did:
 
 ## Previews
 
-Where the surface previews (the element menu, page backgrounds and gradient ends, article
-accents), hovering or focusing a swatch shows the colour live and leaving the picker puts the colour back. A
+Where the surface previews (the element menu, form covers and their gradient ends), hovering or focusing a swatch shows the colour live and leaving the picker puts the colour back. A
 pick commits it, once, for undo.
 
 ## Skins
 
 | Skin              | What it is                                                                                  | Used by                                                                                                                                                                                                                                                                                                        |
 | ----------------- | ------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Inline**        | The picker drawn in place, inside a flyout, panel or popover                                | Draw pen flyout, Plan column, page background, article toolbar Colour, article Accent                                                                                                                                                                                                                          |
+| **Inline**        | The picker drawn in place, inside a flyout, panel or popover                                | Draw pen flyout, Plan column, form cover                                                                                                                                                                                                                                                                       |
 | **Row**           | A labelled row (the colour in force on its right) opening the picker in a popover beside it | Element, selection and table cell menu colour rows (the menu is 224px, narrower than the picker), the Laser Panel's Colour                                                                                                                                                                                     |
 | **Field**         | A field-sized trigger (swatch, name, chevron) opening the picker in a popover               | Plan card Colour                                                                                                                                                                                                                                                                                               |
 | **Swatch button** | A small swatch-only trigger opening the picker in a popover                                 | Rich-text label colour, gradient From and To, chart slice and legend colours, canvas and pattern colours, custom theme builder tiles, Quick Style's **More colours**, Plan card type (end of its Name field), a tag's colour in the tag picker and its menu's Change Colour ([Tags](../013-workspace/tags.md)) |

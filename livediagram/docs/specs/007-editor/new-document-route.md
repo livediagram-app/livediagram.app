@@ -196,7 +196,7 @@ knowing about when adding another.
 1. User clears the active tab's content (or opens a tab that was
    created empty).
 2. An Editor sees the mode's start in the middle of the canvas (Start Diagramming,
-   Start a Workshop, Start Making Pages, Start Planning; [Template starts](start-diagramming.md));
+   Start a Workshop, Start Planning; [Template starts](start-diagramming.md));
    a Participant or Viewer the empty-canvas card ([The empty-canvas hint](#the-empty-canvas-hint)).
 
 ### Document not found
@@ -311,26 +311,25 @@ full library. Component: `apps/editor/app/new/RecentDocumentsCard.tsx`.
 
 ## Choosing a mode
 
-The wizard's first step asks **what you are making**, as the five editor modes, never a template
+The wizard's first step asks **what you are making**, as the four editor modes, never a template
 (`NewDocumentModeStep`, `components/palette/NewDocumentModeStep.tsx`). The templates wait on the canvas, in the
 mode's own start ([Template starts](start-diagramming.md)); the marketing site's gallery is where every template is
 browsed before signing up.
 
 - **Heading:** "What are you making today?"
-- **Five mode cards**, in the order every mode list shows them (`EDITOR_MODES`: Diagram, Draw, Workshop,
-  Pages, Plan), three then two from 640px (a six-track grid: the first row's cards take two tracks each, the
-  second row's three, `modeCardSpan`; one column on a phone). Every card has the same build and, across both rows,
-  the same height (`auto-rows-fr`), so **Diagram**, first there and where most start, leads the top row as an equal
-  rather than a wide, short strip. The cards carry no template names and no "Most Popular" badge.
+- **Four mode cards**, in the order every mode list shows them (`EDITOR_MODES`: Diagram, Draw, Workshop,
+  Plan), in a grid from 640px (`modeCardSpan`; one column on a phone). Every card has the same build and the same
+  height (`auto-rows-fr`), so **Diagram**, first there and where most start, leads as an equal rather than a wide,
+  short strip. The cards carry no template names and no "Most Popular" badge.
 - **Each card:** a fan of its own templates' previews on top (`PreviewFan`, the mode's Popular shelf less its blank)
-  wider on hover, then the mode's mark, its name and its **number key** (1 to 5, a small key cap at the row's end,
+  wider on hover, then the mode's mark, its name and its **number key** (1 to 4, a small key cap at the row's end,
   hidden on a phone, which has no keys), then a line on what it makes in the words of the work ("Flowcharts, mind
   maps, org charts and architecture, snapped neatly into place."). The number is `aria-hidden`; the card carries it
   as `aria-keyshortcuts`.
 - **Choosing a card creates the document at once**, as an empty tab of the mode's blank (`BLANK_TEMPLATE_FOR_MODE`),
   which opens on its start.
 - **Keyboard:** the chosen (else the first) card is focused on a fine pointer; the arrow keys move between cards,
-  and 1 to 5 choose one straight away, wherever the focus is on the page (after a click on the backdrop too), except
+  and 1 to 4 choose one straight away, wherever the focus is on the page (after a click on the backdrop too), except
   in a field being typed in or with Cmd, Ctrl or Alt held.
 - **`?mode=`** preselects that mode's card (and its blank for **Create**); **`?q=`** is handed to the new document's
   start as its search ([Template starts](start-diagramming.md) "Search handed over").
@@ -398,7 +397,7 @@ The **empty-canvas hint** is a calm **card in the middle of the canvas** (`Empty
 active tab has no elements to someone who cannot edit it: an Editor gets the mode's start instead ([Template
 starts](start-diagramming.md)). A **Viewer** reads "Nothing here yet. The owner can build it out, and your view
 updates live."; a **Participant** is pointed at a sticky, text or an image. It shows in Diagram and Workshop; Draw
-(its dock is the hint, [Draw mode](../023-draw-mode/draw-mode.md)), Pages and Plan show none. It offers no action
+(its dock is the hint, [Draw mode](../023-draw-mode/draw-mode.md)) and Plan show none. It offers no action
 of its own: an Editor's empty tab shows its start instead, and **Help** on a desktop. It goes once the
 canvas has content, and a **Close** (×) in its top right corner closes it for good on that tab for this person in
 this browser (a per-browser list of the last 200 closed keys, `livediagram:v2:empty-card-dismissed` in localStorage,
@@ -666,8 +665,10 @@ theme for a new tab.
 - `/new?template=whiteboard` → no wizard; a document created whose tab opens
   in Draw mode ([Editor modes](editor-modes.md)), the Ink pen in hand.
 - `/new?mode=draw` → the wizard, the Draw card chosen; Create makes a Draw tab.
-- `/new?mode=pages&q=article` → the wizard, Pages chosen; on the new document Start Making Pages
-  opens with its search reading "article".
+- `/new?mode=workshop&q=retro` → the wizard, Workshop chosen; on the new document Start a Workshop
+  opens with its search reading "retro".
+- `/new?mode=pages` (or `illustrate`, `infographic`) → the wizard, Diagram chosen: Pages mode was removed, and its
+  old ids read as Diagram (`parseEditorMode`).
 - `/new?mode=sideways` → the plain wizard, no card chosen.
 - `/new?browse=brainstorm` → the plain wizard: the Brainstorm collection (and `?browse=`) was
   removed with the landing hero's Brainstorm button, its only link; the Brainstorm category remains.

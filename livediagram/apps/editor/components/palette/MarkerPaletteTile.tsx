@@ -1,7 +1,7 @@
 'use client';
 
-// A marker's palette tile (Draw mode's pen, offered in a logo page's Draw and the Toolbar strip's
-// Search: docs/specs/007-editor/logo-pages.md "The Logo palette"). Pressed, it picks the marker up;
+// A marker's palette tile (Draw mode's pen, offered by the Toolbar strip's Search in the other modes:
+// docs/specs/007-editor/toolbar-layout.md "Search: every element type"). Pressed, it picks the marker up;
 // pressed again while held, it opens Draw mode's own flyout for it (colour and width), as the
 // whiteboard dock's marker does. A change re-arms the held marker, so the next stroke is in it.
 import { useContext, useState } from 'react';

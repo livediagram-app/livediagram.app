@@ -64,7 +64,6 @@ describe('UseAsDefaultMenu', () => {
       'Diagrams',
       'Whiteboards',
       'Sessions',
-      'Pages documents',
       'Plan boards',
       'Event Storming boards',
       'Retrospectives',
@@ -78,7 +77,6 @@ describe('UseAsDefaultMenu', () => {
       'false',
       'false',
       'false',
-      'false',
     ]);
   });
 
@@ -87,7 +85,7 @@ describe('UseAsDefaultMenu', () => {
     open({ isChecked: () => false, isDisabled: () => false, toggle });
     fireEvent.click(screen.getByRole('menuitemcheckbox', { name: 'Retrospectives' }));
     expect(toggle).toHaveBeenCalledWith('template:retrospective');
-    expect(screen.getAllByRole('menuitemcheckbox')).toHaveLength(8);
+    expect(screen.getAllByRole('menuitemcheckbox')).toHaveLength(7);
   });
 
   it('keeps a disabled entry in place and inert', () => {

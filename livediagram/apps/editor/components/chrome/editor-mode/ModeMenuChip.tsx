@@ -67,8 +67,6 @@ export function ModeMenuChip({
       <button
         ref={setTrigger}
         type="button"
-        // What the Leave Pages confirmation hangs from (LeavePagesConfirm).
-        data-mode-switch=""
         aria-haspopup="menu"
         aria-expanded={open}
         // Named for the tab it sets.

@@ -249,7 +249,7 @@ the same surface recurs rather than redrawn.
 
 ## Renamed articles
 
-Six articles about the container moved when it became a document ([Document](../006-document/document.md)), **Whiteboards** became **Draw mode** when whiteboarding became an editor mode ([Editor modes](../007-editor/editor-modes.md#naming-in-the-interface)), the **Highlighter** moved from Selection Modes to the palette's Tools when it became a Draw tile ([Highlighter](../008-canvas/highlighter.md)), the **Activity Panel** category went with the panel on 2026-10-03 (Undo and Redo moved to Canvas; its other articles and the category page land on Undo), **The Welcome Tour** became **The Diagram Tour** when the tour became Diagram mode's alone ([Diagram tour](../007-editor/editor-tour.md)), and **Infographics**, then **Illustrate Mode**, became **Pages Mode**, its section moving to `/help/canvas/pages-mode/` and **The Illustrate Tour** becoming **The Pages Tour** ([Editor modes](../007-editor/editor-modes.md#naming-in-the-interface)), and **Facilitate Mode** became **Workshop Mode**, its section moving to `/help/canvas/workshop-mode/` and **The Facilitate Tour** becoming **The Workshop Tour**; each old address answers a permanent `308` from the router ([Router app, Legacy editor route](../016-platform/router-app.md#legacy-editor-route)):
+Six articles about the container moved when it became a document ([Document](../006-document/document.md)), **Whiteboards** became **Draw mode** when whiteboarding became an editor mode ([Editor modes](../007-editor/editor-modes.md#naming-in-the-interface)), the **Highlighter** moved from Selection Modes to the palette's Tools when it became a Draw tile ([Highlighter](../008-canvas/highlighter.md)), the **Activity Panel** category went with the panel on 2026-10-03 (Undo and Redo moved to Canvas; its other articles and the category page land on Undo), **The Welcome Tour** became **The Diagram Tour** when the tour became Diagram mode's alone ([Diagram tour](../007-editor/editor-tour.md)), **Facilitate Mode** became **Workshop Mode**, its section moving to `/help/canvas/workshop-mode/` and **The Facilitate Tour** becoming **The Workshop Tour**, and **Infographics**, then **Illustrate Mode**, became **Pages Mode**, which has since left livediagram for livedocuments, so every article of all three sections (`/help/canvas/infographics/`, `/help/canvas/illustrate/`, `/help/canvas/pages-mode/` and the articles under each) lands on **Editor Modes** ([Editor modes](../007-editor/editor-modes.md)); each old address answers a permanent `308` from the router ([Router app, Legacy editor route](../016-platform/router-app.md#legacy-editor-route)):
 
 | Old address                                            | New address                                             |
 | ------------------------------------------------------ | ------------------------------------------------------- |
@@ -268,12 +268,12 @@ Six articles about the container moved when it became a document ([Document](../
 | `/help/activity-panel/redo/`                           | `/help/canvas/redo/`                                    |
 | `/help/activity-panel/reverting-changes/`              | `/help/canvas/undo/`                                    |
 | `/help/getting-started/welcome-tour/`                  | `/help/getting-started/diagram-tour/`                   |
-| `/help/canvas/infographics/`                           | `/help/canvas/pages-mode/`                              |
-| `/help/canvas/infographics/infographic-layouts/`       | `/help/canvas/pages-mode/infographic-layouts/`          |
-| `/help/canvas/infographics/exporting-infographics/`    | `/help/canvas/pages-mode/exporting-pages/`              |
-| `/help/canvas/illustrate/`                             | `/help/canvas/pages-mode/`                              |
-| `/help/canvas/illustrate/<article>/`                   | `/help/canvas/pages-mode/<article>/`                    |
-| `/help/canvas/illustrate/illustrate-tour/`             | `/help/canvas/pages-mode/pages-tour/`                   |
+| `/help/canvas/infographics/`                           | `/help/canvas/editor-modes/`                            |
+| `/help/canvas/infographics/<article>/`                 | `/help/canvas/editor-modes/`                            |
+| `/help/canvas/illustrate/`                             | `/help/canvas/editor-modes/`                            |
+| `/help/canvas/illustrate/<article>/`                   | `/help/canvas/editor-modes/`                            |
+| `/help/canvas/pages-mode/`                             | `/help/canvas/editor-modes/`                            |
+| `/help/canvas/pages-mode/<article>/`                   | `/help/canvas/editor-modes/`                            |
 | `/help/canvas/facilitate-mode/`                        | `/help/canvas/workshop-mode/`                           |
 | `/help/canvas/facilitate-mode/facilitate-tour/`        | `/help/canvas/workshop-mode/workshop-tour/`             |
 

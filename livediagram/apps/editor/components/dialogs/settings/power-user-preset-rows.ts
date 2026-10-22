@@ -40,16 +40,6 @@ function findRow(key: string): {
     for (const row of category.rows) {
       if (row.key === key)
         return { category, rowKey: row.key, label: row.label, read: (p) => formatValue(row, p) };
-      if (row.kind !== 'toggleGroup') continue;
-      const toggle = row.toggles.find((t) => t.key === key);
-      if (toggle)
-        return {
-          category,
-          rowKey: row.key,
-          // Named with its group, since the switch's own label leans on the group's heading.
-          label: `${row.label}: ${toggle.label}`,
-          read: (p) => (toggle.read(p) ? 'On' : 'Off'),
-        };
     }
   }
   throw new Error(`No settings row "${key}" for the power user preset`);

@@ -31,7 +31,6 @@ describe('presetSummaryLines', () => {
       ['Draw Tour', 'Off', 'Tours'],
       ['Forms Tour', 'Off', 'Tours'],
       ['Avatar Tour', 'Off', 'Tours'],
-      ['Pages Tours', 'Off', 'Tours'],
       ['Show Me on Every Element', 'Off', 'Tours'],
       ['Suggested Prompts', 'Off', 'AI Tools'],
     ]);

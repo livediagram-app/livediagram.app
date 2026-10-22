@@ -3,7 +3,7 @@
 import { memo, useMemo } from 'react';
 import { imageCornerPx, type ImageElement } from '@livediagram/document';
 import { useElementFinish } from '@/components/canvas/CanvasFinishContext';
-import { useCanvasTheme, useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useCanvasSurface, useCanvasTheme } from '@/components/canvas/CanvasSurfaceContext';
 import { ImageEmptyFace } from '@/components/canvas/ImageEmptyFace';
 import {
   IMAGE_BROKEN_TONE,
@@ -77,9 +77,9 @@ function ImageElementViewImpl({
   const radiusStyle = { borderRadius: radius };
   const fit = element.objectFit ?? 'contain';
 
-  // The paper under the element (its page's fill, else the canvas), never the app's chrome: a
-  // light page in dark chrome keeps dark ink (docs/specs/009-elements/images.md "Placeholder rendering").
-  const surface = useElementSurface(element.id);
+  // The paper under the element (the canvas), never the app's chrome: a light canvas in dark
+  // chrome keeps dark ink (docs/specs/009-elements/images.md "Placeholder rendering").
+  const surface = useCanvasSurface();
   // Dressed in the tab's theme where it has colours of its own, kept legible on this paper.
   const theme = useCanvasTheme();
   const tone = useMemo(

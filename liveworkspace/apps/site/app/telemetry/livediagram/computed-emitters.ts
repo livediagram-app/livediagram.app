@@ -264,7 +264,6 @@ export const ELEMENT_TOUR_STEP_SOURCE: string[] = [
   ...conceptTourSteps('ChartTour', 'chart-tour-steps.ts'),
   ...conceptTourSteps('StackTour', 'stack-tour-steps.ts'),
   ...conceptTourSteps('EntityTour', 'entity-tour-steps.ts'),
-  ...conceptTourSteps('TabWindowTour', 'tab-window-tour-steps.ts'),
   ...conceptTourSteps('LaneTour', 'lane-tour-steps.ts'),
   ...conceptTourSteps('BoundaryTour', 'boundary-tour-steps.ts'),
   ...conceptTourSteps('DiagramKeyTour', 'diagram-key-tour-steps.ts'),
@@ -314,23 +313,6 @@ const AVATAR_TOUR_STEP_SOURCE: string[] = [
         .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
         .join('')}`,
   );
-
-// The Pages tour's steps, as pagesTourStepTelemetryType makes them (apps/editor PagesTourHost.tsx,
-// docs/specs/007-editor/pages-tour.md): each page kind's track names its kind before the step. The welcome card
-// sends no step view.
-const camel = (id: string) =>
-  id
-    .split('-')
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join('');
-const PAGES_TOUR_STEP_SOURCE: string[] = (
-  ['slide', 'infographic', 'article', 'logo'] as const
-).flatMap((kind) =>
-  [...read(`editor/components/tour/${kind}-tour-steps.ts`).matchAll(/^ +id: '([a-z-]+)',/gm)]
-    .map((m) => m[1]!)
-    .filter((id, i, ids) => id !== 'welcome' && ids.indexOf(id) === i)
-    .map((id) => `PagesTourStep${camel(`${kind}-${id}`)}`),
-);
 
 // Plan items name their type (titleCaseType of an item type id); set-up changes name the part.
 const PLAN_ITEM_TYPES = ['Task', 'Story', 'Bug', 'Epic', 'Note', 'Idea', 'Action', 'Risk'];
@@ -466,14 +448,6 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   },
   'apps/editor/components/dialogs/settings/settings-catalogue.ts UI·Changed': {
     values: PRESENTATION_SETTINGS.changed,
-  },
-  // ARTICLE_BLOCK_INSERT_EVENT (apps/editor/lib/article/article-telemetry.ts): a block put into an
-  // article from the page toolbar's Insert or the slash menu.
-  'apps/editor/components/canvas/article/PageToolbar.tsx Element·Added': {
-    values: ['ArticleDivider', 'ArticlePageBreak', 'ArticleQuote', 'ArticleCode'],
-  },
-  'apps/editor/components/canvas/article/ArticleEditor.tsx Element·Added': {
-    values: ['ArticleDivider', 'ArticlePageBreak', 'ArticleQuote', 'ArticleCode'],
   },
   'apps/editor/app/document/[id]/useTemplateFlow.ts Template·Used': {
     values: TEMPLATES,
@@ -688,9 +662,6 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     values: ELEMENT_TOUR_TOKENS.map((t) => `${t}Offer`),
   },
   'apps/editor/components/tour/AvatarTourHost.tsx UI·View': { values: AVATAR_TOUR_STEP_SOURCE },
-  'apps/editor/components/tour/PagesTourHost.tsx UI·View': {
-    values: PAGES_TOUR_STEP_SOURCE,
-  },
   'apps/editor/components/tour/TourHost.tsx UI·View': { values: TOUR_STEP_SOURCE },
   'apps/editor/hooks/canvas/commit-freehand.ts Element·Added': {
     values: ['Square', 'Circle', 'Diamond', 'Triangle'],
@@ -712,29 +683,10 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     open: 'titleCaseType(pattern): a background pattern',
   },
   'apps/editor/hooks/canvas/useTabTheme.ts Theme·Changed': { values: THEMES, open: THEME_WHY },
-  'apps/editor/hooks/editor/useLogoTools.ts UI·Toggled': {
-    values: [
-      'LogoGuidesOn',
-      'LogoGuidesOff',
-      'LogoMirrorOn',
-      'LogoMirrorOff',
-      ...['CentreLines', 'Diagonals', 'SafeArea', 'Circles', 'Square', 'Grid'].flatMap((p) => [
-        `LogoGuide${p}On`,
-        `LogoGuide${p}Off`,
-      ]),
-    ],
-  },
-  'apps/editor/hooks/editor/useLogoTools.ts UI·Changed': {
-    values: ['LogoGuideStrengthFaint', 'LogoGuideStrengthMedium', 'LogoGuideStrengthStrong'],
-  },
   'apps/editor/hooks/canvas/useStylePreview.ts Element·Changed': {
-    // The wordmark fields, and the types the element menu's generic style ops pass through it
-    // (apps/editor/lib/element-style-ops.ts): the accent edge, card slots and chip looks.
+    // The types the element menu's generic style ops pass through it (apps/editor/lib/element-style-ops.ts): the
+    // accent edge, card slots and chip looks.
     values: [
-      'TextTracking',
-      'TextWeight',
-      'TextCase',
-      'TextArc',
       'AccentEdge',
       'CardSlots',
       'ChipLook',
@@ -784,7 +736,10 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     ],
   },
   'apps/editor/lib/element-telemetry.ts Element·Duplicated': { values: [null, 'ShiftDrag'] },
-  'apps/editor/lib/element-telemetry.ts Element·Added': { values: ELEMENT_KINDS, open: ELEMENT_WHY },
+  'apps/editor/lib/element-telemetry.ts Element·Added': {
+    values: ELEMENT_KINDS,
+    open: ELEMENT_WHY,
+  },
   // Timings (docs/specs/017-telemetry/timing-telemetry.md): every editor timing and every app's Web
   // Vitals go through the one reportTiming, so this one site sends every metric in every bucket.
   'packages/telemetry-client/src/timing.ts Timing·Measured': { values: ALL_TIMING_TYPES },

@@ -5,46 +5,28 @@
 import {
   DEFAULT_BACKGROUND_COLOR,
   canvasSurface,
-  elementPageSurfaces,
-  hasPageLook,
-  layOutPages,
-  opensInOf,
-  pagesOf,
   withReadableLabelInks,
   type Appearance,
   type Tab,
 } from '@livediagram/document';
 import { getResolvedAppearance } from '@livediagram/ui';
 import { resolveTabBackdrop, themeViewMap } from './themes';
-import { labelsFollowCanvas } from './tab-theme-apply';
-import { elementAsSeen, type PageView } from './stock-colour-projector';
+import { elementAsSeen } from './stock-colour-projector';
 
 export function tabAsSeen(tab: Tab, appearance: Appearance = getResolvedAppearance()): Tab {
   const backdrop = resolveTabBackdrop(tab, appearance);
   const surface = canvasSurface(backdrop.backgroundColor);
-  // Theme colours in the export's half (docs/specs/011-theme/light-and-dark.md), then the stock colours;
-  // an element on a page with a fill of its own in the half that page's surface needs, as the canvas draws it.
+  // Theme colours in the export's half (docs/specs/011-theme/light-and-dark.md), then the stock colours.
   const themeMap = themeViewMap(tab.theme, appearance);
-  const surfaces = hasPageLook(opensInOf(tab))
-    ? elementPageSurfaces(tab.elements, layOutPages(pagesOf(tab)))
-    : null;
-  const pageView: PageView | undefined = surfaces?.size
-    ? {
-        surfaces,
-        maps: { light: themeViewMap(tab.theme, 'light'), dark: themeViewMap(tab.theme, 'dark') },
-      }
-    : undefined;
-  const drawn = tab.elements.map((el) => elementAsSeen(el, surface, themeMap, pageView));
+  const drawn = tab.elements.map((el) => elementAsSeen(el, surface, themeMap));
   // As the canvas draws them: a label the half sank into what is behind it in an ink that reads there.
-  const elements = labelsFollowCanvas(tab)
-    ? [
-        ...withReadableLabelInks(
-          tab.elements,
-          tab.backgroundColor ?? DEFAULT_BACKGROUND_COLOR,
-          drawn,
-          backdrop.backgroundColor,
-        ),
-      ]
-    : drawn;
+  const elements = [
+    ...withReadableLabelInks(
+      tab.elements,
+      tab.backgroundColor ?? DEFAULT_BACKGROUND_COLOR,
+      drawn,
+      backdrop.backgroundColor,
+    ),
+  ];
   return { ...tab, ...backdrop, elements };
 }

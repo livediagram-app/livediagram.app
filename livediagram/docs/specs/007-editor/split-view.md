@@ -81,9 +81,8 @@ reads **Close Side by Side**.
 
 - **Body:** the tab drawn with the export renderer, in the viewer's appearance, with the document's
   Plan items and the tab's photos, on the tab's own paper and pattern (in the mode it opens in
-  here), laid out in canvas space exactly as the editor lays it out. A Pages tab is its pages, each
-  as its page export draws it (its sheet, background and writing) where it lies, and a Form tab is
-  its form as respondents see it, as a [tab window](../009-elements/tab-window.md) draws them. On
+  here), laid out in canvas space exactly as the editor lays it out. A Form tab is
+  its form as respondents see it. On
   opening it is fitted to the pane (never enlarged past 125%) and stays fitted as the tab grows until
   the person moves it.
 - **Moving around:** scroll pans; Ctrl or Cmd + scroll (and a trackpad pinch) zooms about the
@@ -96,8 +95,7 @@ reads **Close Side by Side**.
 - **States:** _Loading name…_ while a never-opened tab's content is fetched (it is fetched as soon
   as it is placed, or when its drag starts); _Couldn't load name. Click to try again._ when that fetch
   fails (clicking in loads it as the editor does, with its Retry); _Nothing on this tab yet. Click to
-  start on it._ for a tab with nothing to draw: no elements, and neither in Pages (which always has a
-  page) nor a Form tab with its form. The drop zone previews the same drawing. Resting the pointer here never moves the editor while a text field
+  start on it._ for a tab with nothing to draw: no elements, and not a Form tab with its form. The drop zone previews the same drawing. Resting the pointer here never moves the editor while a text field
   has focus.
 
 ## Closing, and tab changes

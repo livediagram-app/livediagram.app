@@ -15,7 +15,7 @@ describe('galleryTemplates (docs/specs/019-marketing/marketing-site.md)', () => 
       (t) => t.kind,
     );
     expect(kinds).toEqual(expected);
-    for (const blank of ['blank', 'whiteboard', 'blank-illustration', 'blank-slide-deck']) {
+    for (const blank of ['blank', 'whiteboard', 'blank-session', 'blank-plan']) {
       expect(kinds).not.toContain(blank);
     }
     expect(new Set(kinds).size).toBe(kinds.length);
@@ -94,11 +94,6 @@ describe('the shelves, as the template step lays them out', () => {
       'blank',
       'whiteboard',
       'blank-session',
-      'blank-illustration',
-      'blank-slide-deck',
-      'blank-article',
-      'blank-logo',
-      'blank-wireframe-phone',
       'blank-plan',
       'blank-spreadsheet',
       'blank-form',

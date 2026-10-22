@@ -11,7 +11,7 @@ import {
 vi.mock('@/lib/motion-preference', () => ({ prefersReducedMotion: () => reduced }));
 let reduced = false;
 
-// docs/specs/007-editor/pages-mode.md "The palette's kind": a change of kind cascades in.
+// A change of the palette's kind (a change of editor mode) cascades in (docs/specs/004-interface-design/motion.md).
 describe('usePaletteKindMotion', () => {
   afterEach(() => {
     reduced = false;

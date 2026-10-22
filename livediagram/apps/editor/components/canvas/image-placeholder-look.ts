@@ -1,7 +1,6 @@
 import {
   contrastRatio,
   isLightColor,
-  legibleOn,
   shade,
   tint,
   type CanvasSurface,
@@ -11,10 +10,9 @@ import {
 // How an image element without a bitmap looks (docs/specs/009-elements/images.md "Placeholder
 // rendering"): the empty placeholder, the broken-image state and the loading skeleton.
 //
-// Inked for the paper the element sits on (its page's where the page has a fill of its own, else
-// the canvas's: useElementSurface), never for the app's light or dark chrome. A Tailwind `dark:`
-// variant follows the chrome, so in dark chrome a light page (or a light-themed canvas) got the
-// dark look: white text on a see-through grey over cream, all but invisible.
+// Inked for the paper the element sits on (the canvas's: useCanvasSurface), never for the app's
+// light or dark chrome. A Tailwind `dark:` variant follows the chrome, so in dark chrome a
+// light-themed canvas got the dark look: white text on a see-through grey over cream, all but invisible.
 //
 // Dressed in the tab's theme where the theme has colours of its own (imagePlaceholderTone), else
 // the neutral slate below, as the Default theme leaves every element uncoloured.
@@ -23,6 +21,24 @@ import {
 // any page fill, gradient or pattern underneath; a theme colour that falls short is pushed toward
 // contrast (legibleOn). Hex values rather than Tailwind tokens: the brand and slate tokens are
 // themselves redefined by the chrome's `.dark` class.
+
+// AA contrast, the least a colour pushed toward legibility is pushed to.
+const AA_CONTRAST = 4.5;
+
+/** A colour that reads on `tone`: the same hue lightened on a dark tone or darkened on a light one,
+ *  stepwise until it reaches AA contrast (or `floor`, where that is higher); unchanged while it
+ *  already clears `floor`. */
+export function legibleOn(color: string, tone: string, floor: number): string {
+  const ratio = contrastRatio(color, tone);
+  if (Number.isNaN(ratio) || ratio >= floor) return color;
+  const target = Math.max(AA_CONTRAST, floor);
+  const lighten = !isLightColor(tone);
+  for (let amount = 0.2; amount <= 1.0001; amount += 0.1) {
+    const next = lighten ? tint(color, amount) : shade(color, amount);
+    if (contrastRatio(next, tone) >= target) return next;
+  }
+  return lighten ? '#ffffff' : '#0f172a';
+}
 
 export type PlaceholderTone = {
   /** The box's body, opaque. */

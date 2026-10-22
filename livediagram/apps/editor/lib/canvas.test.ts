@@ -126,7 +126,7 @@ describe('inheritedSizeFor', () => {
     });
   });
 
-  it('keeps a step number, boundary, concept graphic, sequence, key and tab window their own size', () => {
+  it('keeps a step number, boundary, concept graphic, sequence and key their own size', () => {
     const card = { ...createShape('card', 0, 0), width: 300, height: 150 } as BoxedElement;
     for (const kind of [
       'step',
@@ -136,7 +136,6 @@ describe('inheritedSizeFor', () => {
       'pyramid',
       'sequence',
       'diagram-key',
-      'tab-window',
     ] as const) {
       const fresh = createShape(kind, 0, 0) as BoxedElement;
       expect(inheritedSizeFor(fresh, card), kind).toEqual({

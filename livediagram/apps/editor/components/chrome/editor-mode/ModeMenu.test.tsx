@@ -46,8 +46,8 @@ describe('ModeMenu preview', () => {
 
   it('follows keyboard focus too', () => {
     open('diagram');
-    fireEvent.focus(row('Pages'));
-    expect(preview().dataset.modePreview).toBe('pages');
+    fireEvent.focus(row('Plan'));
+    expect(preview().dataset.modePreview).toBe('plan');
   });
 
   it('is hidden from assistive technology and holds no button', () => {
@@ -57,7 +57,7 @@ describe('ModeMenu preview', () => {
     expect(preview().querySelector('button')).toBeNull();
     expect(preview().textContent).not.toContain('Switch to');
     // The menu's items are its rows alone.
-    expect(screen.getAllByRole('menuitemradio')).toHaveLength(5);
+    expect(screen.getAllByRole('menuitemradio')).toHaveLength(4);
   });
 
   it('is left out under 640px, each row then showing its description', () => {
@@ -137,12 +137,11 @@ describe('ModeMenu across Plan’s line', () => {
 });
 
 describe('ModeMenu on a start panel', () => {
-  it('opens from the named chip, which the Leave Pages confirmation hangs from', () => {
+  it('opens from the named chip', () => {
     open('draw');
     const chip = screen.getByRole('button', { name: 'Tab mode: Draw' });
     expect(chip.textContent).toContain('Draw');
-    expect(chip.hasAttribute('data-mode-switch')).toBe(true);
     expect(preview().dataset.modePreview).toBe('draw');
-    expect(screen.getAllByRole('menuitemradio')).toHaveLength(5);
+    expect(screen.getAllByRole('menuitemradio')).toHaveLength(4);
   });
 });

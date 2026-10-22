@@ -1,4 +1,4 @@
-// Wordmark type (docs/specs/007-editor/logo-pages.md "Wordmark type"): a text element's tracking,
+// Wordmark type (docs/specs/007-editor/editor-modes.md "Pages moved to livedocuments"): a text element's tracking,
 // weight, case and arc, and the arc's geometry. Pure: the canvas face, the SVG export and the
 // controls all read these, so a wordmark looks the same wherever it is drawn.
 import type { TextElement } from './element-types';

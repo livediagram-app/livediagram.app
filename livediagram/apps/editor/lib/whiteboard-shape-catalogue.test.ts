@@ -22,12 +22,10 @@ describe('the whiteboard shape catalogue', () => {
     expect(draw).toEqual(['line', 'arrow']);
   });
 
-  it('offers every palette shape tile except the Components, Plan and Dashboard categories and the Tab Window', () => {
+  it('offers every palette shape tile except the Components, Plan and Dashboard categories', () => {
     const keys = new Set(WHITEBOARD_SHAPE_CATALOGUE.map((e) => e.key));
-    expect([...keys].some((k) => k.startsWith('tab-window'))).toBe(false);
     for (const tile of SHAPE_TILES) {
       if (
-        tile.id === 'media:tab-window' ||
         tile.section === 'components' ||
         tile.section.startsWith('plan-') ||
         tile.section === 'dashboard-layout' ||

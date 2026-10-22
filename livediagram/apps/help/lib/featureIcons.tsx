@@ -479,14 +479,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <circle cx="12" cy="12" r="10" strokeDasharray="1.6 1.4" />
     </Glyph>
   ),
-  // A page with its colour band under a dashed spotlight ring: a guided look at Pages.
-  'pages-tour': (
-    <Glyph>
-      <rect x="7" y="4" width="10" height="14" rx="1" />
-      <path d="M7 7.5h10M9.5 11h5M9.5 13.5h3" />
-      <circle cx="12" cy="11" r="9.5" strokeDasharray="1.6 1.4" />
-    </Glyph>
-  ),
   'plan-tour': (
     <Glyph>
       <rect x="2.5" y="4" width="19" height="16" rx="1.5" />
@@ -528,67 +520,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M11 4.5c-1.6 0-2.4 1-2.7 2.6L6.6 19.5" />
       <path d="M5.5 10h5.5" />
       <path d="M15 9.5c-1.2 1.2-1.8 2.6-1.8 4.5s.6 3.3 1.8 4.5M19 9.5c1.2 1.2 1.8 2.6 1.8 4.5s-.6 3.3-1.8 4.5" />
-    </Glyph>
-  ),
-  // A page with a title and a bar chart: the poster an infographic becomes.
-  'pages-mode': (
-    <Glyph>
-      <rect x="5" y="2.5" width="14" height="19" rx="1.5" />
-      <path d="M8 6.5h8" />
-      <path d="M9 17.5v-4M12 17.5v-6.5M15 17.5v-2.5" />
-    </Glyph>
-  ),
-  // A page split into ready-made blocks: a layout to start from.
-  'infographic-layouts': (
-    <Glyph>
-      <rect x="5" y="2.5" width="14" height="19" rx="1.5" />
-      <rect x="7.5" y="5" width="9" height="4" rx="0.5" />
-      <rect x="7.5" y="11" width="4" height="4" rx="0.5" />
-      <rect x="12.5" y="11" width="4" height="4" rx="0.5" />
-      <path d="M7.5 18h9" />
-    </Glyph>
-  ),
-  // A square artboard with a keyline circle and its centre lines: a logo built on its guides.
-  'logo-pages': (
-    <Glyph>
-      <rect x="3" y="3" width="18" height="18" rx="2" />
-      <circle cx="12" cy="12" r="5.5" />
-      <path d="M12 3v18M3 12h18" strokeDasharray="1.5 2" />
-    </Glyph>
-  ),
-  // A phone with a screen being wireframed: a header bar, a picture block and a button.
-  'wireframe-pages': (
-    <Glyph>
-      <rect x="6" y="2" width="12" height="20" rx="2.5" />
-      <path d="M10.5 4.5h3" />
-      <rect x="8.5" y="7.5" width="7" height="5" rx="0.75" />
-      <path d="M8.5 15h7M8.5 18h4" />
-    </Glyph>
-  ),
-  // A page of writing: a title over lines of text, a short last line where a paragraph ends.
-  articles: (
-    <Glyph>
-      <rect x="5" y="2.5" width="14" height="19" rx="1.5" />
-      <path d="M8 6.5h6" />
-      <path d="M8 10h8M8 13h8M8 16h5" />
-    </Glyph>
-  ),
-  // Two pages, the front one heading out: every page as its own sheet.
-  'exporting-pages': (
-    <Glyph>
-      <path d="M8 5.5V3.5a1 1 0 011-1h9.5a1 1 0 011 1v13a1 1 0 01-1 1H16" />
-      <rect x="4.5" y="6" width="11.5" height="15.5" rx="1" />
-      <path d="M10.25 10.5v6.5M7.75 14.5l2.5 2.5 2.5-2.5" />
-    </Glyph>
-  ),
-  // A slide with a window onto a small diagram: another tab shown live inside it.
-  'tab-windows': (
-    <Glyph>
-      <rect x="2.5" y="4" width="19" height="16" rx="1.5" />
-      <rect x="6.5" y="8" width="11" height="8" rx="1" />
-      <circle cx="9.5" cy="12" r="1.25" />
-      <circle cx="14.5" cy="12" r="1.25" />
-      <path d="M10.75 12h2.5" />
     </Glyph>
   ),
   'using-tabs': (
@@ -1924,13 +1855,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M14 5h7M14 9h7M14 13h5" />
       <circle cx="5" cy="18.5" r="1" fill="currentColor" stroke="none" />
       <path d="M8 18.5h13" />
-    </Glyph>
-  ),
-  'slide-pages': (
-    <Glyph>
-      <rect x="2.5" y="5" width="19" height="13" rx="1.5" />
-      <path d="M5.5 8.5h8" />
-      <path d="M5.5 11.5h1M8 11.5h6M5.5 14.5h1M8 14.5h5" />
     </Glyph>
   ),
 };

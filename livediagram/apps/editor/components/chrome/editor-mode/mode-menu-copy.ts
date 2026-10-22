@@ -9,7 +9,6 @@ export const MODE_TINT: Readonly<Record<EditorMode, string>> = {
   diagram: 'bg-sky-100 text-sky-700 dark:bg-sky-400/15 dark:text-sky-300',
   draw: 'bg-orange-100 text-orange-700 dark:bg-orange-400/15 dark:text-orange-300',
   workshop: 'bg-violet-100 text-violet-700 dark:bg-violet-400/15 dark:text-violet-300',
-  pages: 'bg-pink-100 text-pink-700 dark:bg-pink-400/15 dark:text-pink-300',
   plan: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-300',
 };
 
@@ -18,7 +17,6 @@ export const MODE_TOOLS: Readonly<Record<EditorMode, readonly string[]>> = {
   diagram: ['Shapes', 'Arrows', 'Icons', 'Templates', 'Snapping'],
   draw: ['Pens', 'Highlighter', 'Eraser', 'Shape recognition'],
   workshop: ['Timer', 'Votes', 'Polls', 'Reveals', 'Stickers'],
-  pages: ['Infographics', 'Slides', 'Articles', 'Logos'],
   plan: ['Boards', 'Cards', 'Card types', 'Fields'],
 };
 

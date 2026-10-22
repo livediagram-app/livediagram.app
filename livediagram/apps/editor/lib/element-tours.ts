@@ -27,7 +27,6 @@ export const ELEMENT_TOUR_KINDS = [
   'chart',
   'stack',
   'entity',
-  'tab-window',
   'lane',
   'boundary',
   'diagram-key',
@@ -54,7 +53,6 @@ export const ELEMENT_TOUR_NAMES: Record<ElementTourKind, string> = {
   chart: 'chart',
   stack: 'stack',
   entity: 'entity',
-  'tab-window': 'tab window',
   lane: 'lane',
   boundary: 'boundary',
   'diagram-key': 'diagram key',
@@ -79,7 +77,6 @@ export function elementTourKindOf(el: Element | null | undefined): ElementTourKi
   if (isChartShape(el.shape)) return 'chart';
   if (el.shape === 'stack') return 'stack';
   if (el.shape === 'entity') return 'entity';
-  if (el.shape === 'tab-window') return 'tab-window';
   if (el.shape === 'lane') return 'lane';
   if (el.shape === 'boundary') return 'boundary';
   if (el.shape === 'diagram-key') return 'diagram-key';
@@ -101,13 +98,12 @@ export function canTourElement(
       return canEditSankey(can, el);
     // A concept graphic's rows are structure, an Editor's on an unlocked element
     // (docs/specs/009-elements/concept-graphics.md "Share roles"); so are a chart's data, a stack's arrangement, an
-    // entity's fields, the tab a window shows, a lane's gutter, a boundary's style, a key's meanings and a portal's link.
+    // entity's fields, a lane's gutter, a boundary's style, a key's meanings and a portal's link.
     case 'layer-stack':
     case 'portal':
     case 'diagram-key':
     case 'boundary':
     case 'lane':
-    case 'tab-window':
     case 'entity':
     case 'stack':
     case 'chart':

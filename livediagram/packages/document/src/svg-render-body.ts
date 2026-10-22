@@ -62,8 +62,7 @@ export function shapeHasBespokeBody(kind: ShapeKind): boolean {
     kind === 'entity' ||
     kind === 'page' ||
     kind === 'lane' ||
-    kind === 'browser' ||
-    kind === 'tab-window'
+    kind === 'browser'
   );
 }
 
@@ -84,8 +83,6 @@ export function svgElementBody(
     fill: string;
     /** The tab theme's categorical ramp, for the charts. */
     chartPalette?: readonly string[];
-    /** What a chart sits on, where a page's fill makes it matter (chartPageGrounds). */
-    chartGround?: readonly string[];
     /** The element's label text, for the faces that write their own title. */
     label: string;
     /** The paper under the element, for the faces whose base follows it. */
@@ -101,15 +98,15 @@ export function svgElementBody(
   },
 ): string {
   if (el.type !== 'shape') return '';
-  const { labelColor, fontFamily, stroke, fill, chartPalette, chartGround, label } = o;
+  const { labelColor, fontFamily, stroke, fill, chartPalette, label } = o;
   if (isPieShape(el.shape))
-    return svgPieChart(el, labelColor, chartPalette, fontFamily, chartGround);
+    return svgPieChart(el, labelColor, chartPalette, fontFamily);
   if (isBarShape(el.shape))
-    return svgBarChart(el, labelColor, chartPalette, fontFamily, chartGround);
+    return svgBarChart(el, labelColor, chartPalette, fontFamily);
   if (isLineShape(el.shape))
-    return svgLineChart(el, labelColor, chartPalette, fontFamily, chartGround);
+    return svgLineChart(el, labelColor, chartPalette, fontFamily);
   if (isSankeyShape(el.shape))
-    return svgSankey(el, labelColor, chartPalette, fontFamily, chartGround);
+    return svgSankey(el, labelColor, chartPalette, fontFamily);
   // The empty track is the element's OWN fill, else the paper's default track,
   // the one the canvas's ProgressView draws (docs/specs/009-elements/progress.md).
   const track = progressTrackColour(el, o.surface);

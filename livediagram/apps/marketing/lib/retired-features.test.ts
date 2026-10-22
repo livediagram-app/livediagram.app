@@ -19,6 +19,9 @@ const RETIRED = [
   'reliability',
   'connect',
   'foundations',
+  'infographics',
+  'slides',
+  'documents',
 ];
 
 const rules = readFileSync(fileURLToPath(new URL('../public/_redirects', import.meta.url)), 'utf8')
@@ -38,7 +41,13 @@ describe('retired feature pages', () => {
   });
 
   it('sends each one to a live page', () => {
-    const live = new Set(['/', ...LANDING_SECTION_IDS.map((id) => `/features/${id}`)]);
+    // Pages mode's own categories went to livedocuments, the app that now makes them.
+    const live = new Set([
+      '/',
+      '/alternatives',
+      'https://livedocuments.app/',
+      ...LANDING_SECTION_IDS.map((id) => `/features/${id}`),
+    ]);
     for (const [, to] of rules) expect(live.has(to!), to).toBe(true);
   });
 

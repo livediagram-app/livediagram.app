@@ -38,6 +38,8 @@ describe('readRecordedIntent', () => {
     ['no record', row(null, null, null)],
     ['an unknown opens-in with stray values', row(null, 'diagram', 'kanban')],
     ['a retired mode', row('pixel', 'diagram', 'kanban')],
+    ['Pages, moved out to livedocuments', row('pages', 'diagram', null)],
+    ['Pages under an older name', row('infographic', 'diagram', null)],
   ])('reads %s as unknown throughout', (_label, stored) => {
     expect(readRecordedIntent(stored)).toEqual({
       opensIn: null,

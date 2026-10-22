@@ -18,8 +18,9 @@ const EMPTY_SWEEP_MAX_BATCHES = 4;
 // tabs of 6.7 KiB: 8.9 ms CPU, as the three-check OR before the form check (8.7 ms); that OR with it was 11.0 ms.
 // Select and move in one statement, so a document saved a moment before it runs
 // is judged on that save. A tab whose data is not valid JSON counts as content:
-// the sweep fails safe. So does a tab with any article: an article's writing
-// lives in `articles`, not in `elements`; and a tab holding a form (a Form tab's
+// the sweep fails safe. So does a tab with any article: a former Pages tab's
+// writing is still stored in `articles` (not in `elements`) though livediagram no
+// longer reads it, and it is never swept away; and a tab holding a form (a Form tab's
 // form is `form`, not an element). A tab shared with another document counts in
 // both.
 const MOVE_EMPTY_STALE = `

@@ -5,8 +5,8 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
 
 ## Files
 
-| File                                                      | Role                                                                                                            |
-| --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| File                                                        | Role                                                                                                            |
+| ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
 | `apps/editor/lib/canvas-gesture.ts`                         | The gesture store: `beginCanvasGesture`, `canvasGestureNow`, `useCanvasGesture`                                 |
 | `apps/editor/components/canvas/CanvasZoomContext.tsx`       | `CanvasZoomProvider`, `useCanvasZoom()`, `CounterScaled` (a div reading the zoom itself)                        |
 | `apps/editor/components/canvas/CanvasElementsLayer.tsx`     | Stable per-element props; per-arrow frame and holes; the grid                                                   |
@@ -17,9 +17,9 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
 | `apps/editor/components/canvas/arrow-view-frame.ts`         | `ArrowViewFrame` and `sameArrowViewFrame`                                                                       |
 | `apps/editor/components/canvas/ArrowView.tsx`               | Takes `frame` + `holes`, no `elementIndex` / `occluders`                                                        |
 | `apps/editor/components/canvas/BoxedElementView.tsx`        | No `zoom` prop; counter-scaled children read `useCanvasZoom()`                                                  |
-| `packages/document/src/element-grid.ts`                   | `ElementGrid`: build, update, query, `elementGridFor`, `createElementGridTracker`                               |
-| `packages/document/src/arrow-behind.ts`                   | `routeBehindHoles` unchanged in contract; callers pass grid candidates                                          |
-| `packages/document/src/svg-render-arrows.ts`              | The export builds one grid per render and queries it                                                            |
+| `packages/document/src/element-grid.ts`                     | `ElementGrid`: build, update, query, `elementGridFor`, `createElementGridTracker`                               |
+| `packages/document/src/arrow-behind.ts`                     | `routeBehindHoles` unchanged in contract; callers pass grid candidates                                          |
+| `packages/document/src/svg-render-arrows.ts`                | The export builds one grid per render and queries it                                                            |
 | `apps/editor/hooks/canvas/useArrowLabelLayouts.ts`          | `draftLayout` identity-stable across passes                                                                     |
 | `apps/editor/lib/stock-colour-projector.ts`                 | Same board in, same array out (`lastIn` / `lastOut`)                                                            |
 | `apps/editor/hooks/canvas/useSettledElements.ts`            | What the Map draws: frozen during element gestures, throttled otherwise                                         |
@@ -41,7 +41,7 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
 | `apps/editor/e2e/perf/calibrate.ts`                         | `benchmarkInPage`, `calibratedThrottle`, `REFERENCE_BENCH_MS`, `TARGET_SLOWDOWN`                                |
 | `apps/editor/e2e/perf/trace-tasks.ts`                       | `mainThreadTasks`: the renderer main thread's task durations from a trace                                       |
 | `apps/editor/e2e/perf/canvas.perf.ts`                       | The probe: seeds, runs each gesture under a trace, writes the report                                            |
-| `.github/workflows/canvas-perf.yml`                       | The nightly run and the budget issue                                                                            |
+| `.github/workflows/canvas-perf.yml`                         | The nightly run and the budget issue                                                                            |
 
 ## Domain and naming
 
@@ -154,8 +154,7 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
 ### The element plane
 
 - `CanvasElementList` renders every element inside one `<div data-element-plane class="contents">`:
-  no box, so layout, hit testing, paint order and the isometric 3D stack are as before (Pages mode's
-  page clip already wraps the elements the same way).
+  no box, so layout, hit testing, paint order and the isometric 3D stack are as before.
 - `globals.css` gives `[data-element-plane]` `cursor: auto`. The canvas world's cursor (its
   `canvasCursorClass` class, or a draw tool's inline cursor) then stops there, so a change of it
   restyles the plane and not the 2,760 nodes beneath it on the reference board. Every part of an
@@ -169,9 +168,8 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
     zoom (the pen's cursor follows its width on screen) or a path hover still restyles the board;
   - the eraser and the spotlight, whose own rules match every `[data-element-id]`, so switching to or from them
     restyles each element once;
-  - the world's other children (`IsometricDepthLayer`, `ArticleFlows`, `CanvasPages`, `LogoCanvasOverlays`),
-    which sit outside the plane and inherit the world's cursor (pages rely on it: no cursor of their own), so a
-    pan restyles isometric depth blocks and an article's text.
+  - the world's other children (`IsometricDepthLayer`), which sit outside the plane and inherit the world's
+    cursor, so a pan restyles isometric depth blocks.
 
 ### The element grid
 

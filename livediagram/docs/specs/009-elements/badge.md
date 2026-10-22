@@ -78,7 +78,6 @@ Pulse and Heartbeat suit "New" and alerts. Its text is too small to animate on i
 | Mode     | Where                                   |
 | -------- | --------------------------------------- |
 | Diagram  | **Build**: Badge                        |
-| Pages    | **Components**: Badge                   |
 | Plan     | none                                    |
 | Workshop | none (Search still finds and places it) |
 

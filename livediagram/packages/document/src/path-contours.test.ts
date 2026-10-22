@@ -5,7 +5,7 @@ import { svgPathElementShape } from './svg-render-shapes';
 import { elementValidationIssue } from './validate';
 import { pathTouchesBrush } from './whiteboard-stroke';
 
-// docs/specs/007-editor/logo-pages.md "Combine": a combined shape is a closed path of several
+// docs/specs/007-editor/editor-modes.md "Pages moved to livedocuments": a combined shape is a closed path of several
 // contours, filled even-odd so its holes show through.
 const square = (a: number, b: number): PathNode[] => [
   { nx: a, ny: a, mode: 'corner' },

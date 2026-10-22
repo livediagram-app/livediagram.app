@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
-// A marker's tile, anywhere the palette shows it (docs/specs/007-editor/logo-pages.md "The Logo
-// palette"): pressed again while held, it opens Draw mode's colour and width.
+// A marker's tile in the Toolbar strip's Search (docs/specs/007-editor/toolbar-layout.md "Search: every element
+// type"): pressed again while held, it opens Draw mode's colour and width.
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ReactNode } from 'react';
@@ -17,7 +17,7 @@ const def: PaletteTileDef = {
   section: 'tools',
   label: 'Marker 2',
   description: 'Marker 2',
-  action: { type: 'marker', penId: 'second', colour: 'blue', width: 4, once: true },
+  action: { type: 'marker', penId: 'second', colour: 'blue', width: 4 },
   icon: <span />,
 };
 const ctx = {
@@ -34,7 +34,6 @@ const held: PendingDraw = {
   width: 4,
   recognise: false,
   penId: 'second',
-  once: true,
 };
 
 function show(pendingDraw: PendingDraw | null) {
@@ -49,10 +48,10 @@ function show(pendingDraw: PendingDraw | null) {
 }
 
 describe('a marker tile', () => {
-  it('picks the marker up, for one stroke', () => {
+  it('picks the marker up', () => {
     const actions = show(null);
     fireEvent.click(screen.getByRole('button', { name: /Marker 2/ }));
-    expect(actions.beginMarker).toHaveBeenCalledWith('second', true);
+    expect(actions.beginMarker).toHaveBeenCalledWith('second');
   });
 
   it('opens its colour and width when pressed again while held', () => {

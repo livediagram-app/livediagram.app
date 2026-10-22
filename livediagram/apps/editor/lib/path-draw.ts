@@ -157,7 +157,7 @@ export function rubberBand(
 
 /** Where a press can pick an open path up again: both ends of each open, unlocked, reachable path
  *  of one line (a path of several, a merged mirrored line, moves and restyles as a whole: its
- *  points are not edited one by one, docs/specs/007-editor/logo-pages.md "Mirror"). */
+ *  points are not edited one by one, docs/specs/007-editor/editor-modes.md "Pages moved to livedocuments"). */
 export function openPathEnds(
   elements: readonly Element[],
   inertIds: ReadonlySet<string>,

@@ -185,11 +185,10 @@ function StripTile({ tile, index }: { tile: Tile; index: number }) {
 const NAMED_FROM: Partial<Record<HeroMode, string>> = {
   diagram: 'hidden @[640px]:inline',
   workshop: 'hidden @[780px]:inline',
-  pages: 'hidden @[900px]:inline',
 };
 
 // The Palette in the Toolbar layout (docs/specs/007-editor/toolbar-layout.md): one strip at the top
-// centre of the canvas. In Diagram, Workshop and Pages it is the category bar: the selection
+// centre of the canvas. In Diagram and Workshop it is the category bar: the selection
 // mode, then the mode's categories (each its glyph and one-word name, a hairline between bands; the
 // glyphs alone where the window is narrow), then Search. Draw shows its dock instead, its drawing
 // tools split from its shapes and its settings in a card of its own. A Plan tab brings its own bar

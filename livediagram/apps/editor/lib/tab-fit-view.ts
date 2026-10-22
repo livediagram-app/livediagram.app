@@ -1,12 +1,11 @@
 // The view Fit to Screen lands on (docs/specs/008-canvas/canvas-and-palette.md "Zoom & pan"): every boxed element on
-// the tab in view, clear of the Palette strip over the canvas's top, beside Pages mode's Contents panel and clear of
+// the tab in view, clear of the Palette strip over the canvas's top and clear of
 // the Map (docs/specs/008-canvas/minimap.md "Fit leaves the Map clear"). Shared by
 // the Fit button (hooks/canvas/useEditorViewport) and a double-tap's fit back out to the whole tab
 // (hooks/canvas/useDoubleTapZoom), so both land on the same view.
 
 import { isBoxed, unionBoxedBounds, type Element } from '@livediagram/document';
 import { fitClearOfPanel, MAP_PANEL_SELECTOR, type FitInsets } from './fit-clear-of-panel';
-import { sideChromeInsets } from './side-chrome-insets';
 import {
   besideSideInsets,
   computeFitToScreen,
@@ -14,6 +13,9 @@ import {
   topChromeInset,
 } from './viewport';
 import type { ViewPose } from './viewport-glide';
+
+// No chrome beside the content to fit clear of.
+const NO_INSETS: FitInsets = { left: 0, right: 0, top: 0, bottom: 0 };
 
 // A tab with nothing on it: back to the origin at 100%.
 const EMPTY_TAB_VIEW: ViewPose = { zoom: 1, offset: { x: 0, y: 0 } };
@@ -36,9 +38,6 @@ export function tabFitView(canvas: HTMLElement | null, elements: Element[]): Vie
   const inset = topChromeInset(rect, strip && strip.width > 0 ? strip : null);
   // Padded by the strip's depth on every side, not centred below it: the content stays centred (as before the
   // strip was considered) and clears both the strip and the bottom chrome of the same depth.
-  // Beside Pages mode's Contents sidebar, never under it (docs/specs/007-editor/pages-mode.md
-  // "Contents"): the fit fills what shows beside it.
-  const sides = sideChromeInsets(canvas);
   const padding = Math.max(FIT_TO_SCREEN_PADDING, inset);
   const fitIn = (ins: FitInsets) =>
     besideSideInsets(
@@ -57,7 +56,7 @@ export function tabFitView(canvas: HTMLElement | null, elements: Element[]): Vie
     { width: rect.width, height: rect.height },
     bbox,
     mapPanelBox(box),
-    { ...sides, top: 0, bottom: 0 },
+    NO_INSETS,
     padding,
     fitIn,
   );

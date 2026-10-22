@@ -52,7 +52,6 @@ the motions that do not move it, like a boundary's.
 | Mode     | Where                                   |
 | -------- | --------------------------------------- |
 | Diagram  | **Build**: Stack, after Frame           |
-| Pages    | **Build**: Stack                        |
 | Plan     | none                                    |
 | Workshop | none (Search still finds and places it) |
 

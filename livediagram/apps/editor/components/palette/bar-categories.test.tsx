@@ -85,15 +85,8 @@ describe('the category bar’s categories', () => {
     expect(session.content).toBe(SESSION_GROUP_IDS.join(','));
   });
 
-  it('leaves a mode with no Draw or session tools as it is, names shortened', () => {
-    const cats = bar('pages');
-    expect(cats.map((c) => c.id)).not.toContain('draw');
-    expect(cats.map((c) => c.id)).not.toContain(SESSION_CATEGORY_ID);
-    expect(cats.find((c) => c.id === 'write')?.label).toBe('Write');
-  });
-
   it('names every category in one word', () => {
-    for (const mode of ['diagram', 'workshop', 'pages'] as const)
+    for (const mode of ['diagram', 'workshop'] as const)
       for (const c of bar(mode)) expect(c.label, `${mode} ${c.id}`).not.toMatch(/\s|&/);
   });
 });

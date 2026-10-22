@@ -117,14 +117,12 @@ export type PaletteProps = {
   // Picks up one of Draw mode's markers outside Draw mode (the Toolbar strip's Search,
   // docs/specs/007-editor/toolbar-layout.md "Search: every element type").
   // `once`: picked up for one stroke (a logo page's palette), else held until put down.
-  onBeginMarker: (penId: import('@/lib/whiteboard-prefs').WhiteboardPenId, once?: boolean) => void;
+  onBeginMarker: (penId: import('@/lib/whiteboard-prefs').WhiteboardPenId) => void;
   onBeginShapePen: () => void;
   // Disarm the armed tool: its tile pressed again (docs/specs/008-canvas/canvas-and-palette.md "Placement on add").
   onCancelDraw?: () => void;
   // Polygon tool (docs/specs/008-canvas/polygon-tool.md): arms the click-to-place-vertices mode.
   onBeginPolygon: () => void;
-  // The Path tool (docs/specs/023-draw-mode/path-tool.md), a logo page's Pen in the palette.
-  onBeginPath: () => void;
   // Currently-queued draw-to-size intent, or null. When set, the
   // matching palette button (shape, text, sticky, image, arrow)
   // renders pressed so the user can see what's queued for the next

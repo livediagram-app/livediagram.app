@@ -22,14 +22,11 @@ export type SessionSegment = 'session-timer' | 'session-vote' | 'session-poll';
 // all three in Workshop (docs/specs/012-collaboration/workshop-mode.md), and on an event-storming
 // board, a workshop that is always Diagram and cannot switch; Timer and Vote in Plan, where cards take
 // the dots, only while `planVoting` (usePlanVoting: a board on the tab made for voting, or a session running);
-// in Pages, Vote and Poll only while one runs (`runningOnly`), so a vote or poll started from a
-// session button there can be watched and ended; none in Diagram or Draw, even while a tool runs.
+// none in Diagram or Draw, even while a tool runs.
 export type SessionStripTools = {
   timer: boolean;
   vote: boolean;
   poll: boolean;
-  // Only the buttons of tools that are running, for everyone: nothing is started from the strip.
-  runningOnly?: boolean;
 };
 
 export function sessionStripTools(
@@ -39,19 +36,18 @@ export function sessionStripTools(
 ): SessionStripTools | null {
   if (mode === 'workshop' || esBoard) return { timer: true, vote: true, poll: true };
   if (mode === 'plan') return planVoting ? { timer: true, vote: true, poll: false } : null;
-  if (mode === 'pages') return { timer: false, vote: true, poll: true, runningOnly: true };
   return null;
 }
 
-// Whether this strip offers its idle tools, to start one: an editor's, outside a running-only strip. The one
-// rule both the strip's buttons and its popovers' closing read, so they never disagree about what is there.
-export function stripCanStart(tools: SessionStripTools, readOnly: boolean): boolean {
-  return !readOnly && !tools.runningOnly;
+// Whether this strip offers its idle tools, to start one: an editor's. The one rule both the strip's buttons
+// and its popovers' closing read, so they never disagree about what is there.
+export function stripCanStart(readOnly: boolean): boolean {
+  return !readOnly;
 }
 
 // Has the button under an open strip popover gone? Then the popover closes rather than float with nothing
 // under it: the mode offers no strip or not that tool (a mode switch), or the strip shows only running tools
-// (a view-role visitor's, or Pages mode's for everyone) and that tool's activity has ended. `running.poll`
+// (a view-role visitor's) and that tool's activity has ended. `running.poll`
 // is a poll whose results are ours to see, which is when its button shows.
 export function stripSegmentGone({
   segment,
@@ -69,7 +65,7 @@ export function stripSegmentGone({
   if (!tools) return true;
   if (segment === 'session-poll' && !tools.poll) return true;
   if (segment === 'session-timer' && !tools.timer) return true;
-  if (stripCanStart(tools, readOnly)) return false;
+  if (stripCanStart(readOnly)) return false;
   if (segment === 'session-timer') return !running.timer;
   if (segment === 'session-vote') return !running.vote;
   return !running.poll;

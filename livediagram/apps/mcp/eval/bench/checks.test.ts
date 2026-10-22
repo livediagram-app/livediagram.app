@@ -9,7 +9,6 @@ import {
   inside,
   linked,
   mentionsAll,
-  pagesOf,
   runChecks,
   sketched,
 } from './checks.mjs';
@@ -118,83 +117,11 @@ describe('sheet readers', () => {
   });
 });
 
-describe('pagesOf', () => {
-  it('reads every kind of page line', () => {
-    const pages = [
-      'page 1 page-1 · slide Slide (16:9) · at -960,-540 1920x1080 · 3 elements',
-      'page 2 "Tip 2" page-99 · infographic Square · at 636,-540 1080x1080 · 16 elements',
-      'page 3 "Badge" page-3 · logo 1024 x 1024 · at -512,-512 1024x1024 · background #fdf3e3 · 5 elements',
-      'page 4 page-4 · article A4 · at -397,-561 794x1123 · article art-55 · its writing below',
-    ].join('\n');
-    const snap = { documents: [{ id: 'd', tabs: [{ id: 't', elements: [], pages }] }] };
-    expect(pagesOf(snap)).toEqual([
-      {
-        tabId: 't',
-        n: 1,
-        name: null,
-        kind: 'slide',
-        format: 'Slide (16:9)',
-        x: -960,
-        y: -540,
-        width: 1920,
-        height: 1080,
-        elements: 3,
-      },
-      {
-        tabId: 't',
-        n: 2,
-        name: 'Tip 2',
-        kind: 'infographic',
-        format: 'Square',
-        x: 636,
-        y: -540,
-        width: 1080,
-        height: 1080,
-        elements: 16,
-      },
-      {
-        tabId: 't',
-        n: 3,
-        name: 'Badge',
-        kind: 'logo',
-        format: '1024 x 1024',
-        x: -512,
-        y: -512,
-        width: 1024,
-        height: 1024,
-        elements: 5,
-      },
-      {
-        tabId: 't',
-        n: 4,
-        name: null,
-        kind: 'article',
-        format: 'A4',
-        x: -397,
-        y: -561,
-        width: 794,
-        height: 1123,
-        elements: null,
-      },
-    ]);
-  });
-});
-
 describe('parseTabHeader', () => {
-  it('reads a kind and mode, or a Pages tab’s pages', () => {
+  it('reads a kind and mode', () => {
     expect(
       parseTabHeader('tab 6cb1 "RSVP" · 0 elements · kind=form (read_form) · mode=plan · rev 1'),
     ).toEqual({ kind: 'form', mode: 'plan' });
-    expect(
-      parseTabHeader(
-        'tab 3be5 "Deck" · 53 elements: 53 boxes · mode=pages · 6 pages: 5 slide, 1 infographic (view pages) · rev 5',
-      ),
-    ).toEqual({
-      kind: null,
-      mode: 'pages',
-      pageCount: 6,
-      pageKinds: { slide: 5, infographic: 1 },
-    });
   });
 });
 

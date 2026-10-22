@@ -15,21 +15,21 @@ The spec decides; this file adds engineering precision. Defaults are ledgered in
 | `apps/api/src/participant-write.ts`, `qa-board-write.ts`      | Hand `swapTabData` the next body's stats                                                |
 | `packages/api-schema/src/index.ts`                            | `DocumentStats`, `DocumentSummary.stats`                                                |
 | `packages/ui/src/hint/*`, `packages/ui/src/useRowPreview.tsx` | Hint kind `preview`: delay, per-kind warm-up (`isHintWarm`), look; `useRowPreview`      |
-| `apps/editor/app/explorer/useExplorerViewMode.ts`               | `ExplorerViewMode` gains `'details'`                                                    |
-| `apps/editor/app/explorer/ViewToggle.tsx`                       | The third button                                                                        |
-| `apps/editor/app/explorer/details/DetailsView.tsx`              | The table: header, folder rows, document rows                                           |
-| `apps/editor/app/explorer/details/DetailsHeader.tsx`            | Sortable column headers                                                                 |
-| `apps/editor/app/explorer/details/DetailsDocumentRow.tsx`       | One document row: drag source, preview, `⋯`                                             |
-| `apps/editor/app/explorer/details/DetailsFolderRow.tsx`         | One folder row: drop target, `⋯`                                                        |
-| `apps/editor/app/explorer/details/details-columns.ts`           | `DETAILS_COLUMNS`, `sortDetailsEntries`, cell values                                    |
-| `apps/editor/app/explorer/details/details-format.ts`            | `formatObjects`, `formatBytes`, `formatSize`, `formatDateTime`, `formatItems`           |
-| `apps/editor/app/explorer/details/details-cells.tsx`            | `TypeCell`, `AccessCell`, `DateCell`, `NoValue`, `SHOWN_FROM_CLASS`                     |
-| `apps/editor/app/explorer/explorer-view-props.ts`               | `documentEntryPropsFor`: the per-document bindings every view shares                    |
-| `apps/editor/lib/offline/offline-stats.ts`                      | `offlineDocumentStats`: a document in this browser counted from its record              |
-| `apps/editor/components/panels/TeamSharedDocuments.tsx`         | The team library's Details branch                                                       |
-| `apps/editor/app/explorer/details/useDetailsSort.ts`            | The device-local sort                                                                   |
-| `apps/editor/app/explorer/details/useSnapshotPrefetch.ts`       | Asks for a row's snapshot as it nears the viewport                                      |
-| `apps/editor/lib/document-space.ts`                             | `readerAccessOf`                                                                        |
+| `apps/editor/app/explorer/useExplorerViewMode.ts`             | `ExplorerViewMode` gains `'details'`                                                    |
+| `apps/editor/app/explorer/ViewToggle.tsx`                     | The third button                                                                        |
+| `apps/editor/app/explorer/details/DetailsView.tsx`            | The table: header, folder rows, document rows                                           |
+| `apps/editor/app/explorer/details/DetailsHeader.tsx`          | Sortable column headers                                                                 |
+| `apps/editor/app/explorer/details/DetailsDocumentRow.tsx`     | One document row: drag source, preview, `⋯`                                             |
+| `apps/editor/app/explorer/details/DetailsFolderRow.tsx`       | One folder row: drop target, `⋯`                                                        |
+| `apps/editor/app/explorer/details/details-columns.ts`         | `DETAILS_COLUMNS`, `sortDetailsEntries`, cell values                                    |
+| `apps/editor/app/explorer/details/details-format.ts`          | `formatObjects`, `formatBytes`, `formatSize`, `formatDateTime`, `formatItems`           |
+| `apps/editor/app/explorer/details/details-cells.tsx`          | `TypeCell`, `AccessCell`, `DateCell`, `NoValue`, `SHOWN_FROM_CLASS`                     |
+| `apps/editor/app/explorer/explorer-view-props.ts`             | `documentEntryPropsFor`: the per-document bindings every view shares                    |
+| `apps/editor/lib/offline/offline-stats.ts`                    | `offlineDocumentStats`: a document in this browser counted from its record              |
+| `apps/editor/components/panels/TeamSharedDocuments.tsx`       | The team library's Details branch                                                       |
+| `apps/editor/app/explorer/details/useDetailsSort.ts`          | The device-local sort                                                                   |
+| `apps/editor/app/explorer/details/useSnapshotPrefetch.ts`     | Asks for a row's snapshot as it nears the viewport                                      |
+| `apps/editor/lib/document-space.ts`                           | `readerAccessOf`                                                                        |
 
 ## Domain and naming
 
@@ -151,18 +151,18 @@ CREATE TABLE tab_stats (
 
 ## Errors and edge cases
 
-| Case                                 | Handling                                                  |
-| ------------------------------------ | --------------------------------------------------------- |
-| Document with no tabs                | `stats: null`, cells `–`                                  |
-| Some tabs not yet counted            | `stats: null` until the backfill reaches them             |
-| Event-storming board                 | Mode Diagram (`opensInOf`)                                |
-| Legacy mode `infographic`            | Pages (`opensInOf` reads through `parseEditorMode`)       |
-| Corrupt tab body in the backfill     | Counted empty, warned                                     |
-| Write racing the backfill            | The write's row wins (`DO NOTHING`)                       |
-| Shared row                           | No `stats`: `–`; no Created: `–` "Not known" (`D153`)     |
-| Offline row                          | Counted in the browser, the first tab's mode (`D152`)     |
-| Unknown stored sort or view mode     | Defaults                                                  |
-| Folder row in Type, Comments, Access | Type "Folder", the others empty; sorted by name for those |
+| Case                                    | Handling                                                  |
+| --------------------------------------- | --------------------------------------------------------- |
+| Document with no tabs                   | `stats: null`, cells `–`                                  |
+| Some tabs not yet counted               | `stats: null` until the backfill reaches them             |
+| Event-storming board                    | Mode Diagram (`opensInOf`)                                |
+| Retired mode `pages` (or `infographic`) | Diagram (`opensInOf` reads through `parseEditorMode`)     |
+| Corrupt tab body in the backfill        | Counted empty, warned                                     |
+| Write racing the backfill               | The write's row wins (`DO NOTHING`)                       |
+| Shared row                              | No `stats`: `–`; no Created: `–` "Not known" (`D153`)     |
+| Offline row                             | Counted in the browser, the first tab's mode (`D152`)     |
+| Unknown stored sort or view mode        | Defaults                                                  |
+| Folder row in Type, Comments, Access    | Type "Folder", the others empty; sorted by name for those |
 
 ## Security and trust
 
@@ -237,22 +237,22 @@ CREATE TABLE tab_stats (
 
 ## Testing
 
-| Rule                                                           | Test                                                          |
-| -------------------------------------------------------------- | ------------------------------------------------------------- |
-| Stats of a body: mode, elements, comments, bytes               | `packages/document/src/tab-stats.test.ts`                     |
-| A corrupt body counts empty                                    | `apps/api/src/db/tab-stats.test.ts`                           |
+| Rule                                                           | Test                                                            |
+| -------------------------------------------------------------- | --------------------------------------------------------------- |
+| Stats of a body: mode, elements, comments, bytes               | `packages/document/src/tab-stats.test.ts`                       |
+| A corrupt body counts empty                                    | `apps/api/src/db/tab-stats.test.ts`                             |
 | A document in this browser is counted, cached per save         | `apps/editor/lib/offline/offline-stats.test.ts`                 |
 | The snapshot prefetch asks once, near the viewport             | `apps/editor/app/explorer/details/useSnapshotPrefetch.test.tsx` |
 | Reader access                                                  | `apps/editor/lib/document-space.test.ts`                        |
-| Warm-up per kind                                               | `packages/ui/src/hint/hint-registry.test.ts`                  |
-| Every write path leaves a matching stats row                   | `apps/api/src/db/tab-stats-writers.test.ts`                   |
-| Document stats sum, latest mode, null when uncounted           | `apps/api/src/db/tab-stats.test.ts`                           |
-| Backfill counts, keeps a racing write, logs, stops             | `apps/api/src/tab-stats-backfill.test.ts`                     |
-| Preview delay, warm-up, focus                                  | `packages/ui/src/hint/useHint.test.tsx`                       |
+| Warm-up per kind                                               | `packages/ui/src/hint/hint-registry.test.ts`                    |
+| Every write path leaves a matching stats row                   | `apps/api/src/db/tab-stats-writers.test.ts`                     |
+| Document stats sum, latest mode, null when uncounted           | `apps/api/src/db/tab-stats.test.ts`                             |
+| Backfill counts, keeps a racing write, logs, stops             | `apps/api/src/tab-stats-backfill.test.ts`                       |
+| Preview delay, warm-up, focus                                  | `packages/ui/src/hint/useHint.test.tsx`                         |
 | Sort: natural direction, toggle, folders first, `–` last       | `apps/editor/app/explorer/details/details-columns.test.ts`      |
 | Formats                                                        | `apps/editor/app/explorer/details/details-format.test.ts`       |
-| Stored sort and mode read back, defaults                       | `useDetailsSort.test.tsx`, `useExplorerViewMode.test.tsx`     |
-| A phone shows cards, keeps the stored mode; toggle hidden      | `useExplorerViewMode.test.tsx`, `ViewToggle.test.tsx`         |
+| Stored sort and mode read back, defaults                       | `useDetailsSort.test.tsx`, `useExplorerViewMode.test.tsx`       |
+| A phone shows cards, keeps the stored mode; toggle hidden      | `useExplorerViewMode.test.tsx`, `ViewToggle.test.tsx`           |
 | Table renders columns, aria-sort, `–`, menu, drag, row preview | `apps/editor/app/explorer/details/DetailsView.test.tsx`         |
 | Icon columns, the bubble and `99+`, dense rows                 | `apps/editor/app/explorer/details/DetailsView.test.tsx`         |
 

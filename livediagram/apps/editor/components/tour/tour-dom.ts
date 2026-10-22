@@ -17,12 +17,6 @@ function isRendered(el: Element): boolean {
   return el.getClientRects().length > 0;
 }
 
-/** Whether a selector's first match is on screen: in the document and laid out. */
-export function isOnScreen(selector: string): boolean {
-  const el = document.querySelector(selector);
-  return !!el && isRendered(el);
-}
-
 export function findTour(tourId: string): HTMLElement | null {
   const el = document.querySelector<HTMLElement>(tourSelector(tourId));
   return el && isRendered(el) ? el : null;

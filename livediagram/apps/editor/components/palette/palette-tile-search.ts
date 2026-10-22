@@ -10,8 +10,13 @@ import {
 } from '@livediagram/document';
 import { paletteRank } from '@livediagram/icons';
 import { tileKeywords } from '@/lib/palette-tile-keywords';
-import { PALETTE_LAYOUTS, paletteCategoriesFor } from './palette-layouts';
-import { tileDisplayName, type PaletteTileDef, type PaletteTileSection } from './palette-tile-defs';
+import { PALETTE_LAYOUTS, SEARCH_ONLY_TILE_IDS, paletteCategoriesFor } from './palette-layouts';
+import {
+  tileById,
+  tileDisplayName,
+  type PaletteTileDef,
+  type PaletteTileSection,
+} from './palette-tile-defs';
 
 export type ElementTileSearch = {
   // The matches the current mode's palette offers, best first. On an empty query: the tiles whose
@@ -166,6 +171,15 @@ function allElementTiles(): PaletteTileDef[] {
   return everyModeTiles;
 }
 
+// The tiles on no strip (SEARCH_ONLY_TILE_IDS): every mode's, the Search being the strip's one way to them.
+let searchOnly: PaletteTileDef[] | null = null;
+function searchOnlyTiles(): PaletteTileDef[] {
+  searchOnly ??= SEARCH_ONLY_TILE_IDS.map(tileById).filter(
+    (t): t is PaletteTileDef => t !== undefined,
+  );
+  return searchOnly;
+}
+
 /** The query's matches, ranked exact name, name prefix, name substring, then keyword only; ties
  *  keep the input order. An empty query keeps every tile, in order. */
 export function rankTiles(query: string, tiles: readonly PaletteTileDef[]): PaletteTileDef[] {
@@ -205,8 +219,8 @@ export function mergeByName(
     .map((r) => r.tile);
 }
 
-/** Every element tile, split: the ones the mode's palette offers (layout order), the ones only
- *  another mode's does, and the ones bound to another mode's own tools. Image-upload tiles are left
+/** Every element tile, split: the ones the mode's palette offers (layout order, then the tiles on no strip), the
+ *  ones only another mode's does, and the ones bound to another mode's own tools. Image-upload tiles are left
  *  out without image support, as in every grid. */
 export function elementTileSections({
   mode,
@@ -222,7 +236,9 @@ export function elementTileSections({
   drawTiles?: readonly PaletteTileDef[];
 }): ElementTileSearch {
   const visible = (t: PaletteTileDef) => hasImage || !t.needsImage;
-  const here = modeElementTiles(mode, planCardTiles).filter(visible);
+  const here = unique([...modeElementTiles(mode, planCardTiles), ...searchOnlyTiles()]).filter(
+    visible,
+  );
   const hereIds = new Set(here.map((t) => t.id));
   const elsewhere: PaletteTileDef[] = [];
   const unavailable: PaletteTileDef[] = [];

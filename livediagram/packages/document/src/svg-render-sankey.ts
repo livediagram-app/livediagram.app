@@ -3,7 +3,6 @@
 // hover readouts and the motion are the canvas's alone.
 
 import type { BoxedElement } from './index';
-import { chartTextInk } from './chart-ink';
 import {
   SANKEY_BAND_OPACITY,
   sankeyFrame,
@@ -48,11 +47,9 @@ export function svgSankey(
   labelColor: string,
   palette?: readonly string[],
   fontFamily?: string,
-  // What the diagram sits on (chartPageGrounds): its nodes and names drawn adapted to it.
-  ground?: readonly string[],
 ): string {
-  const textColor = chartTextInk(labelColor, ground);
-  const f = sankeyFrame(el, palette, ground);
+  const textColor = labelColor;
+  const f = sankeyFrame(el, palette);
   const font = ` font-family="${xmlEscape(fontFamily ?? EXPORT_DEFAULT_FONT)}"`;
   if (f.layout.links.length === 0) {
     // The empty state, as the canvas draws it for someone who cannot edit: an outline and a line of text.

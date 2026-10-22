@@ -40,3 +40,6 @@ export function textAdvanceEm(text: string): number {
   for (const ch of text) em += charEm(ch);
   return em;
 }
+
+// A bold glyph's advance as a share of a regular one's, as the headless renders widen a bold label's estimate.
+export const BOLD_EM = 1.06;

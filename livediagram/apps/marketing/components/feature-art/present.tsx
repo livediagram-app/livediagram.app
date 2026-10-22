@@ -1,6 +1,6 @@
 // Feature art for presenting and running the room (docs/specs/019-marketing/marketing-site.md,
 // docs/specs/012-collaboration/presentation-mode.md, facilitator.md, bring-focus.md): slides cut
-// from a diagram, one deck drawn from several tabs, the presenter's own notes, a deck that plays on
+// from a diagram, the presenter's own notes, a deck that plays on
 // your screen alone. Each is a small mock of the real surface, built on ./page-kit so it reads in
 // light and in dark. The room tools (3D, the facilitator, Bring Focus) live in ./room.
 
@@ -17,7 +17,6 @@ import {
   ROSE,
   Screen,
   SKY,
-  SKY_DEEP,
   VIOLET,
 } from './page-kit';
 
@@ -237,120 +236,6 @@ export function SlideDeckArt() {
               </g>
             ))}
           </Panel>
-        </g>
-      </svg>
-    </Frame>
-  );
-}
-
-/** One deck across every tab: the deck's rows, each from its own tab, one being dragged into place. */
-export function FullScreenSlideArt() {
-  const rows: {
-    title: string;
-    tab: string;
-    color: string;
-    hidden?: boolean;
-    style?: CSSProperties;
-    moving?: boolean;
-    shapes: number;
-  }[] = [
-    { title: 'System overview', tab: 'Architecture', color: SKY, shapes: 9 },
-    {
-      title: 'Q3 roadmap',
-      shapes: 6,
-      tab: 'Roadmap',
-      color: EMERALD,
-      moving: true,
-      style: { ...at(0.4), '--e-y': '17px' } as CSSProperties,
-    },
-    {
-      title: 'Data flow',
-      shapes: 5,
-      tab: 'Architecture',
-      color: SKY,
-      moving: true,
-      style: { ...at(0.4), '--e-y': '-17px' } as CSSProperties,
-    },
-    { title: 'Open risks', tab: 'Risks', color: ROSE, hidden: true, shapes: 4 },
-  ];
-  return (
-    <Frame canvas>
-      <svg viewBox="0 0 300 96" className="absolute inset-0 h-full w-full">
-        <Panel x={30} y={6} w={240} h={86} title="Slide deck">
-          <text x="264" y="15.5" textAnchor="end" fontSize="4" className={INK_SOFT} fill="#64748b">
-            4 slides, 3 tabs
-          </text>
-          {rows.map((row, i) => {
-            const y = 19 + i * 17;
-            return (
-              <g
-                key={row.title}
-                className={row.moving ? 'fa-e-move' : undefined}
-                style={row.style}
-                opacity={row.hidden ? 0.45 : 1}
-              >
-                {/* The row lifted while it moves: a card with its own shadow. */}
-                <rect
-                  className="fill-white stroke-slate-200 dark:fill-slate-900 dark:stroke-slate-700"
-                  x="34"
-                  y={y}
-                  width="232"
-                  height="15"
-                  rx="2.6"
-                  fill="#ffffff"
-                  stroke="#e2e8f0"
-                  strokeWidth="0.6"
-                />
-                <g className="fill-slate-300 dark:fill-slate-600" fill="#cbd5e1">
-                  {[0, 1, 2].map((r) =>
-                    [0, 1].map((c) => (
-                      <circle key={`${r}${c}`} cx={39 + c * 2} cy={y + 4.6 + r * 2.8} r="0.6" />
-                    )),
-                  )}
-                </g>
-                <SlideThumb x={45} y={y + 2.5} w={17.5} accent={row.color} />
-                <text
-                  x="67"
-                  y={y + 9.4}
-                  fontSize="4.8"
-                  fontWeight="600"
-                  className={INK}
-                  fill="#1e293b"
-                >
-                  {row.title}
-                </text>
-                <text x="150" y={y + 9.2} fontSize="3.8" className={INK_SOFT} fill="#64748b">
-                  {row.shapes} shapes
-                </text>
-                {/* The tab it comes from, in that tab's colour. */}
-                <rect
-                  x={214}
-                  y={y + 4}
-                  width={row.tab.length * 2.6 + 7}
-                  height="7"
-                  rx="3.5"
-                  fill={row.color}
-                  fillOpacity="0.15"
-                />
-                <circle cx="217.5" cy={y + 7.5} r="1.3" fill={row.color} />
-                <text x="220.5" y={y + 9} fontSize="3.8" fontWeight="600" fill={row.color}>
-                  {row.tab}
-                </text>
-                {row.hidden ? (
-                  <path
-                    d={`M252 ${y + 7.5}c2-3 7-3 9 0c-2 3-7 3-9 0zM252 ${y + 11}l9-7`}
-                    fill="none"
-                    className="stroke-slate-400"
-                    stroke="#94a3b8"
-                    strokeWidth="0.7"
-                  />
-                ) : null}
-              </g>
-            );
-          })}
-        </Panel>
-        <g className="fa-e-move" style={{ ...at(0.4), '--e-y': '17px' } as CSSProperties}>
-          <Cursor x={124} y={42} color={SKY_DEEP} />
         </g>
       </svg>
     </Frame>

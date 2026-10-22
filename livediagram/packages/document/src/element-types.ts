@@ -261,9 +261,6 @@ export type ShapeElement = {
   // Only meaningful on the 'portal' kind. Absent = an unpaired portal, which is
   // inert and says so — a portal to nowhere shouldn't silently swallow clicks.
   portalTarget?: ElementId;
-  // Tab window (docs/specs/009-elements/tab-window.md): the id of the tab of this document it shows. Only meaningful
-  // on the 'tab-window' kind. Absent until chosen; a tab that is gone (or not shared) shows as unavailable.
-  windowTabId?: string;
   // Session button (docs/specs/012-collaboration/session-button.md): which session tool pressing this element starts
   // for the room, and its one setting. Only meaningful on 'session-button';
   // absent means a default five-minute timer, so a button authored without one
@@ -684,7 +681,7 @@ export type TextElement = {
   // Multiplier on the label size, set by a Shift resize of a whiteboard text box
   // (docs/specs/023-draw-mode/draw-mode.md "Text boxes"). Absent = 1.
   textScale?: number;
-  // Wordmark type (docs/specs/007-editor/logo-pages.md "Wordmark type"), drawn wherever the text
+  // Wordmark type (docs/specs/007-editor/editor-modes.md "Pages moved to livedocuments"), drawn wherever the text
   // is. Tracking: em added between letters, -0.2 to 1; absent is none.
   letterSpacing?: number;
   // The weight it paints in; wins over `textBold` while set. Absent follows `textBold`.
@@ -1189,9 +1186,9 @@ export type PathElement = {
   height: number;
   nodes: PathNode[];
   closed: boolean;
-  // Further contours after `nodes`, closed or open as the path is (docs/specs/007-editor/
-  // logo-pages.md "Combine", "Mirror"): a combined shape's islands and holes, filled even-odd, or a
-  // mirrored line's two halves. Such a path moves and restyles as a whole and its points are not
+  // Further contours after `nodes`, closed or open as the path is
+  // (docs/specs/007-editor/editor-modes.md "Pages moved to livedocuments"): a combined shape's islands and holes,
+  // filled even-odd, or a mirrored line's two halves. Such a path moves and restyles as a whole and its points are not
   // edited one by one.
   subpaths?: PathNode[][];
   fillColor?: string;
@@ -1260,10 +1257,6 @@ export type AnnotationElement = {
   // always === runsPlainText(noteRich). Absent = an unformatted note, which
   // renders exactly as it always did.
   noteRich?: TextRun[];
-  // A margin note of an article (docs/specs/007-editor/article-pages.md "Comments and actions"):
-  // the marker in a page's margin beside the text its comment thread or action is on, kept beside
-  // that text as the writing moves. Its glyph says which: a speech bubble, or a tick for an action.
-  articleNote?: 'comment' | 'action';
   // fillColor tints the circle; strokeColor draws the ring + the note glyph.
   // textColor is unused (no inline label) but declared for the generic
   // colour code paths.
@@ -1517,8 +1510,6 @@ const UNTYPED_SHAPES = new Set<string>([
   'plan-card',
   'plan-view',
   'plan-sheet',
-  // A tab window shows another tab (docs/specs/009-elements/tab-window.md); there is nothing to write on it.
-  'tab-window',
 ]);
 
 export function takesTypedLabel(el: { type: string; shape?: string }): boolean {

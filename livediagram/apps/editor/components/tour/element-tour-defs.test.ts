@@ -33,7 +33,6 @@ const SAMPLE: Record<(typeof ELEMENT_TOUR_KINDS)[number], Element> = {
   chart: createShape('line-chart', 0, 0),
   stack: createShape('stack', 0, 0),
   entity: createShape('entity', 0, 0),
-  'tab-window': createShape('tab-window', 0, 0),
   lane: createShape('lane', 0, 0),
   boundary: createShape('boundary', 0, 0),
   'diagram-key': createShape('diagram-key', 0, 0),

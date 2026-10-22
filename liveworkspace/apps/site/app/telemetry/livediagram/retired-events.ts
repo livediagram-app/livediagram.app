@@ -65,8 +65,64 @@ const LOCATION_STEP_AND_QUICK_START_UI = new Set([
   'Toggled|TemplateModePlan',
 ]);
 
+// Pages mode (removed 2026-10-22; its pages, articles, slide pages, infographics, logos and wireframes moved to
+// livedocuments.app): switching a tab to Pages or opening it there, every page and article change, a logo page's
+// tools and guides, a wireframe page's device, Contents, the Pages tour and each page kind's Show Me tour, the Tab Window (a live view of a tab on a slide or page) and its tour, the
+// agents' page tools, the Pages help articles, a logo page's wordmark controls (tracking, weight, case, arc) and Tidy
+// Up, a page's title-bar buttons, a page added to a deck as a slide, the agents' Pages view, and the Pages export
+// formats (every page as PNG, SVG, PDF or GIF, the animated GIF and the logo kit). The Slide Deck, which presents a
+// canvas or a Plan board, carries on, and so does an animated background: a form's cover still takes one, under the
+// same two Tab·Changed tokens (FORM_COVER_TAB_TYPES).
+const PAGES_MODE_EDITOR_TYPES = new Set(['ModePages', 'LeavePagesConfirmed']);
+const PAGES_MODE_TAB_TYPE =
+  /^(OpensInPages|Page[A-Z]|Pages[A-Z]|Articles?[A-Z]|SlidePage|LogoPage|Wireframe[A-Z])/;
+const FORM_COVER_TAB_TYPES = new Set(['PageBackgroundAnimated', 'PageBackgroundAnimatedSpeed']);
+const PAGES_MODE_ELEMENT_TYPE =
+  /^(Article[A-Z]|TabWindow|MirrorCopy$|MirrorTwin$|Shapes(United|Subtracted|Intersected|Excluded)$|Text(Tracking|Weight|Case|Arc)$|StrokesTidiedUp$)/;
+const PAGES_MODE_UI_TYPE =
+  /^(Logo[A-Z]|Wireframe[A-Z]|TabWindow|PagesTour|SlidesTour|SlideTour|InfographicTour|ArticleTour|Contents(Placement|Side)|EmptyPage|PageContents|PageSwipe|PageSlide$|AllPageSlides$|Page(ArticleStyle|ArticleText|Background|Layouts|Notes)Button$)/;
+const PAGES_MODE_EXPORT_TYPE = /^(LogoKit|GIF|Pages(PNG|SVG|PDF|GIF)(Pages)?)$/;
+// The agents' page tools: the MCP's change_pages and write_article, and the CLI's page and article verbs.
+const PAGES_MODE_AGENT_TYPES = new Set([
+  'Mcp|ChangePages',
+  'Mcp|WriteArticle',
+  'Cli|PageLs',
+  'Cli|PageSet',
+  'Cli|ArticleGet',
+  'Cli|ArticleSet',
+]);
+const PAGES_MODE_HELP_IDS = new Set([
+  'pages-mode',
+  'infographic-layouts',
+  'logo-pages',
+  'wireframe-pages',
+  'articles',
+  'pages-tour',
+  'exporting-pages',
+  'slide-pages',
+  'tab-windows',
+]);
+
+function isPagesModeEvent(category: string, action: string, type: string | null): boolean {
+  const t = type ?? '';
+  if (category === 'Editor') return PAGES_MODE_EDITOR_TYPES.has(t);
+  if (category === 'Tab') return PAGES_MODE_TAB_TYPE.test(t) && !FORM_COVER_TAB_TYPES.has(t);
+  if (category === 'Element') return PAGES_MODE_ELEMENT_TYPE.test(t);
+  if (category === 'Document') return action === 'Exported' && PAGES_MODE_EXPORT_TYPE.test(t);
+  if (category === 'Agent') return action === 'Viewed' && t === 'Pages';
+  if (category === 'Help') return PAGES_MODE_HELP_IDS.has(t);
+  if (category === 'Mcp' || category === 'Cli')
+    return PAGES_MODE_AGENT_TYPES.has(`${category}|${t}`);
+  if (category === 'UI') {
+    if (action === 'Opened' && PAGES_MODE_HELP_IDS.has(t)) return true;
+    return PAGES_MODE_UI_TYPE.test(t);
+  }
+  return false;
+}
+
 export function isRetiredEvent(category: string, action: string, type: string | null): boolean {
   if (category === 'Document' && action === 'Reverted') return true;
+  if (isPagesModeEvent(category, action, type)) return true;
   if (category === 'UI' && PALETTE_FAVOURITES_UI.has(`${action}|${type ?? ''}`)) return true;
   if (category === 'UI' && EXPERIMENTAL_SETTINGS_UI.has(`${action}|${type ?? ''}`)) return true;
   if (category === 'UI' && LOCATION_STEP_AND_QUICK_START_UI.has(`${action}|${type ?? ''}`))

@@ -22,7 +22,7 @@ import { Header } from '@/components/Header';
 export const metadata = pageMetadata({
   title: 'Build with AI · livediagram',
   description:
-    'Connect Claude, ChatGPT, Cursor, VS Code or any MCP client to livediagram in a minute, then ask your AI for diagrams, boards, sheets and decks.',
+    'Connect Claude, ChatGPT, Cursor, VS Code or any MCP client to livediagram in a minute, then ask your AI for diagrams, boards, sheets and forms.',
   path: '/ai',
 });
 
@@ -79,7 +79,7 @@ export default function BuildWithAiPage() {
               </h1>
               <p className="mt-4 max-w-xl text-lg leading-relaxed text-slate-600 dark:text-slate-300">
                 Connect the AI tool you already use, then ask it for a diagram, a board, a sheet or
-                a deck. It lands in your account, ready to edit together. Set up takes about a
+                a form. It lands in your account, ready to edit together. Set up takes about a
                 minute.
               </p>
               <div className="mt-8">

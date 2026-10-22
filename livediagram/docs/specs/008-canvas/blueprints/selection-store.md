@@ -7,8 +7,8 @@ who re-renders when it changes.
 
 ## Files
 
-| File                                                       | Role                                                                                |
-| ---------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| File                                                         | Role                                                                                |
+| ------------------------------------------------------------ | ----------------------------------------------------------------------------------- |
 | `apps/editor/lib/selection-store.ts`                         | `createSelectionStore`, `Selection`, `SelectionStore`, `EMPTY_SELECTION`            |
 | `apps/editor/hooks/canvas/useSelectionStore.tsx`             | `SelectionStoreProvider`, `useSelectionStore`, `useSelectionOf`                     |
 | `apps/editor/hooks/ui/useStableEventProps.ts`                | `useStableEventProps`: every `on*` function prop identity-stable                    |
@@ -129,7 +129,7 @@ Selection` instead and reads it where it acts. By kind:
 | The Quick Style view              | `useQuickStyle`, called by the root                                                                                                                                                                                                                                                                                                                                                                                                                                         | the root returns `quickStyleDeps` (every input but the selection); `QuickStyleHost` (`components/canvas/QuickStyleHost.tsx`) subscribes to `selectionIds` and calls `useQuickStyle`, rendering `QuickStylePanel` |
 
 - The editor root also reads the gesture store only through `useElementGestureActive()` (whether a
-  move, resize, reshape, stroke or erase is open; `useArticleIntake`), so a pan, zoom or marquee
+  move, resize, reshape, stroke or erase is open), so a pan, zoom or marquee
   renders no part of the editor above the canvas.
 - One root render per press remains: pressing an element opens a pending drag (`useEditorDrag`'s
   `drag` state), and the release closes it. It is drag state, not selection; a plain click-select

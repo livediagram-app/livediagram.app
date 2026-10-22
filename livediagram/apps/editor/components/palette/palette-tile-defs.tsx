@@ -57,7 +57,6 @@ import {
   lucideFileText,
   lucideGlobe,
   lucideImage,
-  lucideAppWindow,
   lucideMoveRight,
   lucidePanelTop,
   lucideSquare,
@@ -67,7 +66,6 @@ import {
 } from '@livediagram/icons/lucide';
 import { Glyph, Prims } from '@livediagram/ui';
 import { PLAN_TILES } from './palette-plan-tiles';
-import { WIREFRAME_TILES } from './palette-wireframe-tiles';
 import { tileCaption } from './tile-caption';
 
 import {
@@ -126,10 +124,6 @@ export type PaletteTileSection =
   | 'dashboard-tabs'
   // A Dashboard's written cards (Status, Checklist, Key Date, Links), on a Dashboard tab alone.
   | 'dashboard-cards'
-  // A logo page's drawing tools (docs/specs/007-editor/logo-pages.md "The Logo palette").
-  | 'logo'
-  // A screen's parts (docs/specs/007-editor/wireframe-pages.md "The Elements palette").
-  | 'wireframe'
   | 'plan-sheets'
   | 'tools'
   | 'data'
@@ -182,8 +176,6 @@ type PaletteTileAction =
   | { type: 'video'; provider?: EmbedProvider }
   | { type: 'sticker'; stickerId: string }
   | { type: 'polygon' }
-  // The Path tool (docs/specs/023-draw-mode/path-tool.md): a logo page's Pen (logo-pages.md).
-  | { type: 'path' }
   // `ends`: the Line tile's `'none'`; the Arrow tile leaves it to the tool's pointer at its end.
   | { type: 'arrow'; ends?: import('@livediagram/document').ArrowEnds }
   // `fill` rides the sticky action for the Event Storming tiles (docs/specs/021-event-storming/event-storming.md):
@@ -213,8 +205,6 @@ type PaletteTileAction =
       penId: WhiteboardPenId;
       colour: PenColour | null;
       width: number;
-      // Picked up for one stroke (a logo page's palette), as the pencil is.
-      once?: true;
     };
 
 // Themed sub-groups within the Tools section (docs/specs/008-canvas/canvas-and-palette.md "Sub-categories"):
@@ -601,19 +591,6 @@ export const PALETTE_TILES: PaletteTileDef[] = [
         <Prims prims={lucideType} />
       </Glyph>
     ),
-  },
-  // The Path tool as a logo page's Pen (docs/specs/007-editor/logo-pages.md "The Logo palette"):
-  // the same tool Draw mode's dock holds, in a logo page's Draw only.
-  {
-    id: 'logo:pen',
-    blurb: 'Click for corners, drag for curves',
-    section: 'logo',
-    caption: 'Pen',
-    label: 'Pen',
-    description:
-      'Draw a precise path: click to place corners, drag to pull out curves, and close it on its first point.',
-    action: { type: 'path' },
-    icon: <ShapePenIcon size={TILE_GLYPH_PX} />,
   },
   {
     id: 'tools:pencil',
@@ -1529,23 +1506,6 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   {
-    // The tab window (docs/specs/009-elements/tab-window.md): another tab of the document, live, fitted inside it.
-    id: 'media:tab-window',
-    blurb: 'Another tab, live',
-    caption: 'Tab Window',
-    section: 'media',
-    label: 'Add Tab Window',
-    description:
-      'Tab Window. Shows another tab of this document, live and fitted inside it, so a slide stays up to date with the diagram it shows.',
-    dividerAfter: true,
-    action: { type: 'shape', kind: 'tab-window' },
-    icon: (
-      <Glyph size={TILE_GLYPH_PX} units={24}>
-        <Prims prims={lucideAppWindow} />
-      </Glyph>
-    ),
-  },
-  {
     id: 'media:embed-youtube',
     tileGroup: 'embed',
     blurb: 'A YouTube video',
@@ -2410,8 +2370,6 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   })),
   // Plan (docs/specs/026-plan/plan-mode.md): boards by preset, cards by item type.
   ...PLAN_TILES,
-  // A wireframe page's parts (docs/specs/007-editor/wireframe-pages.md "The Elements palette").
-  ...WIREFRAME_TILES,
 ];
 
 export function tilesInSection(section: PaletteTileSection): PaletteTileDef[] {

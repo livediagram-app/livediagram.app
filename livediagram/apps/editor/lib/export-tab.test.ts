@@ -11,7 +11,7 @@ import {
 } from '@livediagram/document';
 import { exportScale, exportTabAsSvg, MAX_EXPORT_CANVAS_SIDE, renderTabToSvg } from './export-tab';
 import { parseImportedTab } from './import-tab';
-import { encodeStrokePoints, layOutPages } from '@livediagram/document';
+import { encodeStrokePoints } from '@livediagram/document';
 
 const shape = (id: string, overrides: Partial<ShapeElement> = {}): ShapeElement => ({
   id,
@@ -351,39 +351,7 @@ describe('exportTabAsSvg', () => {
   });
 });
 
-describe('an article page export cuts a drawing off at its zone', () => {
-  it('wraps a shape poking past a drawing zone in a clip to the zone', () => {
-    const pages = [
-      { id: 'p1', orientation: 'portrait' as const, kind: 'article' as const, flow: 'f' },
-    ];
-    const page = layOutPages(pages)[0]!;
-    const zoneX = page.rect.x + 100;
-    const t = tab({
-      pages,
-      articles: {
-        f: {
-          blocks: [
-            {
-              id: 'z',
-              type: 'zone',
-              zone: 'drawing',
-              width: 200,
-              height: 100,
-              at: { page: 'p1', x: 100, y: 100 },
-            },
-          ],
-        },
-      },
-      elements: [shape('poke', { x: zoneX - 40, y: page.rect.y + 120, width: 80, height: 40 })],
-    });
-    const svg = renderTabToSvg(t, { page });
-    expect(svg).toContain('<clipPath id="lvd-zc-poke">');
-    expect(svg).toContain('clip-path="url(#lvd-zc-poke)"');
-  });
-});
-
-// A Fit to Content page reaches 19200 px (docs/specs/007-editor/pages-mode.md "Sizes"): its
-// image is drawn at 2x only while that stays inside the largest canvas every browser draws.
+// A large tab's image is drawn at 2x only while that stays inside the largest canvas every browser draws.
 describe('exportScale', () => {
   it('keeps 2x for an ordinary page, and lowers it so no side passes the canvas limit', () => {
     expect(exportScale(2, 1123, 794)).toBe(2);

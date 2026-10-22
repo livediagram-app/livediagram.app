@@ -59,9 +59,7 @@ export const fixes = {
   // A card's title or subtitle cut short: the card widened to hold it.
   cardTextCut: (s: LintSource, a: string, width: number) =>
     pick(s, `set ${a} width=${width}`, 'shorten the title, or widen the card'),
-  // A page's text: grown to hold its lines; two texts over each other moved apart.
-  textOverflow: (a: string, height: number) => `set ${a} height=${height}`,
-  textOverflowWidth: (a: string, width: number) => `set ${a} width=${width}`,
+  // Two texts over each other moved apart.
   textOverlap: (a: string, b: string) => `move ${b} below:${a}`,
   nodeIsolated: (s: LintSource, a: string) =>
     pick(s, `connect <ref> -> ${a}`, `add an edge to ${a}, or drop it`),

@@ -4,7 +4,6 @@
 // element -> shape + label descriptor both the per-element emitters and
 // the in-app canvas drawer consume. The emitters stay in svg-render.ts.
 
-import type { ResolveTabWindow } from './tab-window';
 import type { TagColour } from './tag-colours';
 import { isPersonNode } from './person-node';
 import type { SheetRenderModel } from './svg-render-plan-sheet';
@@ -130,10 +129,6 @@ export type BoxedExportOptions = {
   // canvas hands its charts the same list; without it they fall back to the
   // built-in one, which is what a caller with no theme in hand wants.
   chartPalette?: readonly string[];
-  // What each chart on a filled page sits on, by element id (chartPageGrounds): its series and text
-  // are drawn adapted to it, as the canvas draws them (docs/specs/007-editor/pages-mode.md
-  // "Charts adapt as they are drawn"). Absent, a chart is drawn in its colours as they are.
-  chartGrounds?: ReadonlyMap<string, readonly string[]>;
   // The document's items, for the Plan board and Plan card (docs/specs/026-plan/plan-board.md). Without
   // them a board draws its columns empty and a card a neutral placeholder.
   items?: ReadonlyMap<string, Item>;
@@ -144,9 +139,6 @@ export type BoxedExportOptions = {
   // A plan view's picture at its box (docs/specs/026-plan/plan-tabs.md "Export"), from a caller that has the charts'
   // models (the editor); undefined, or no resolver, draws the labelled box.
   resolvePlanArt?: ResolvePlanArt;
-  // A tab window's tab (docs/specs/009-elements/tab-window.md "Exports"): its drawing to fit inside, from a caller
-  // that has the document's tabs (the editor's export); without one a window draws its frame named for its tab.
-  resolveTabWindow?: ResolveTabWindow;
 };
 
 // The markup of a plan view drawn at its own box, or undefined to fall back to the labelled box.
@@ -470,8 +462,7 @@ export function drawsStandardLabel(el: BoxedElement): boolean {
       el.shape === 'plan-board' ||
       el.shape === 'plan-card' ||
       el.shape === 'plan-view' ||
-      el.shape === 'plan-sheet' ||
-      el.shape === 'tab-window')
+      el.shape === 'plan-sheet')
   )
     return false;
   return !selfLabelled(el);

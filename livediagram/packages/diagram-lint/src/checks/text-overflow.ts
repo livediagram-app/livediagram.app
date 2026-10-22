@@ -1,7 +1,5 @@
-// `text-overflow` (warning): on a page (a Pages tab) text is the content rather than a caption, so a text
-// element whose words, wrapped as every headless render wraps them, need more lines than its box holds runs into what
-// is under it. On every tab, two text elements whose lines are drawn over each other print over each other (a board's
-// column heading wrapped onto its subtitle): `textOverprint` alone, as a caption's own box is not linted elsewhere.
+// `text-overflow` (warning): two text elements whose lines, wrapped as every headless render wraps them, are drawn
+// over each other print over each other (a board's column heading wrapped onto its subtitle).
 
 import {
   defaultPadding,
@@ -89,12 +87,6 @@ const textsOf = (ctx: Parameters<Check>[0]) =>
     .filter((t) => !(t as { textArc?: number }).textArc)
     .filter((t) => ((t as { rotation?: number }).rotation ?? 0) % 360 === 0);
 
-export const textOverflow: Check = (ctx) => {
-  const texts = textsOf(ctx);
-  const inks = new Map(texts.map((t) => [t.id, inkOf(t)]));
-  return [...linesOver(ctx, texts, inks), ...overprints(ctx, texts, inks)];
-};
-
 export const textOverprint: Check = (ctx) => {
   const texts = textsOf(ctx);
   return overprints(ctx, texts, new Map(texts.map((t) => [t.id, inkOf(t)])));
@@ -102,45 +94,6 @@ export const textOverprint: Check = (ctx) => {
 
 type Text = BoxedElement & { label: string };
 type Inks = ReadonlyMap<string, ReturnType<typeof inkOf>>;
-
-function linesOver(ctx: Parameters<Check>[0], texts: readonly Text[], inks: Inks): RawFinding[] {
-  const out: RawFinding[] = [];
-  for (const t of texts) {
-    // A text set to scale fills its box by its size.
-    if (t.textSize === 'scale') continue;
-    const { lines, px, measure } = inks.get(t.id)!;
-    const room = labelRoom(t);
-    // A word wider than the line is cut between its letters ("£4.6b" / "n"): the box is too narrow for it.
-    const widest = t.label
-      .split(/\s+/)
-      .reduce((w, word) => (measure(word) > measure(w) ? word : w), '');
-    if (measure(widest) > room.width + 1) {
-      const ref = refOf(ctx, t.id);
-      out.push({
-        code: 'text-overflow',
-        refs: [ref],
-        message: `${ref} breaks ${JSON.stringify(widest)} across lines`,
-        fix: fixes.textOverflowWidth(ref, Math.ceil(t.width + measure(widest) - room.width)),
-        at: { x: t.x, y: t.y },
-      });
-      continue;
-    }
-    const holds = Math.max(1, Math.floor((room.height + px * 0.25) / (px * LABEL_LINE_HEIGHT)));
-    if (lines <= holds) continue;
-    const ref = refOf(ctx, t.id);
-    out.push({
-      code: 'text-overflow',
-      refs: [ref],
-      message: `${ref} needs ${lines} lines, holds ${holds}`,
-      fix: fixes.textOverflow(
-        ref,
-        Math.ceil(lines * px * LABEL_LINE_HEIGHT + (t.height - room.height)),
-      ),
-      at: { x: t.x, y: t.y },
-    });
-  }
-  return out;
-}
 
 // Texts printed over each other, where their lines are drawn: a sweep down the page (sorted by the top of their
 // ink), each against those starting above its ink's bottom, so the pairs tested are only those that share rows.

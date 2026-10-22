@@ -142,8 +142,6 @@ describe('person ids (security)', () => {
       'flowchartId',
       'flowLaneId',
       'ideaCardIds',
-      // The tab a tab window shows (docs/specs/009-elements/tab-window.md).
-      'windowTabId',
     ]);
     const roots = new Set(PERSON_ID_FIELDS.map((p) => p.split(/[.[{]/)[0]));
     const idLike = Object.values(ELEMENT_FIELD_NAMES)

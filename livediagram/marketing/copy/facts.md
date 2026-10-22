@@ -33,8 +33,7 @@ is the team, not the individual.
   per-element links and locks.
 - Multi-select: marquee drag, shift-click, format painter, groups.
 - 17 templates (Blank, Mind map, Flowchart, Kanban, SWOT, Retrospective, Org
-  chart, Timeline, Fishbone, Pyramid, Flywheel, Venn, User journey, Logo
-  design, plus three UI wireframes).
+  chart, Timeline, Fishbone, Pyramid, Flywheel, Venn, User journey).
 - 18 themes that recolor the whole canvas in one click.
 - Undo and redo (Cmd/Ctrl+Z, Cmd/Ctrl+Shift+Z), personal to each editor.
 - Tabs per document (link across them, copy a tab into another document), nested

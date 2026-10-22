@@ -22,10 +22,6 @@ describe('wizardBypassKind (docs/specs/007-editor/new-document-route.md)', () =>
     expect(wizardBypassKind('?team=t1&template=er-diagram')).toBe('er-diagram');
   });
 
-  it('opens a retired template’s replacement (a stale link)', () => {
-    expect(wizardBypassKind('?template=browser-wireframe')).toBe('wireframe-website');
-  });
-
   it('falls back to the wizard for an unknown kind or no bypass', () => {
     expect(wizardBypassKind('?template=not-a-template')).toBeNull();
     expect(wizardBypassKind('?template=')).toBeNull();
@@ -62,8 +58,9 @@ describe('choosePlacementAgainUrl (docs/specs/007-editor/new-document-route.md)'
 describe('wizardPresetMode / wizardPresetQuery', () => {
   it('reads a known mode, and ignores an unknown one', () => {
     expect(wizardPresetMode('?mode=draw')).toBe('draw');
-    expect(wizardPresetMode('?folder=f1&mode=pages&via=Home.HeroBuild')).toBe('pages');
-    expect(wizardPresetMode('?mode=illustrate')).toBe('pages');
+    expect(wizardPresetMode('?folder=f1&mode=workshop&via=Home.HeroBuild')).toBe('workshop');
+    // A retired mode's stale link opens on Diagram.
+    expect(wizardPresetMode('?mode=pages')).toBe('diagram');
     expect(wizardPresetMode('?mode=sideways')).toBeNull();
     expect(wizardPresetMode('')).toBeNull();
   });

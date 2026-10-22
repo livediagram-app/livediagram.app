@@ -231,7 +231,7 @@ export function RichTextEditor({
           fontSize: `${basePx}px`,
           textAlign: TEXT_ALIGN[alignX],
           fontFamily,
-          // Wordmark type (docs/specs/007-editor/logo-pages.md): the tracking, weight and case the
+          // Wordmark type (docs/specs/007-editor/editor-modes.md "Pages moved to livedocuments"): the tracking, weight and case the
           // committed label wears, so editing never shifts the text.
           ...wordmarkTextCss(wordmark),
           // Same capitals the committed label wears (docs/specs/021-event-storming/event-storming.md): the typed

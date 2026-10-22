@@ -31,7 +31,6 @@ import {
   type EditorKeyboardShortcutsDeps,
 } from './editor-shortcut-keys';
 import { useLatest } from '@/hooks/ui/useLatest';
-import { arrowPageDir } from '@/lib/page-step';
 import { isTypingTarget, passesHistoryChords } from '@/lib/typing-target';
 import { avatarActionForKey } from '@/lib/avatar-action-keys';
 import { altGraphHeld } from '@/lib/composed-key';
@@ -326,13 +325,6 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         // character (useAvatarWalk), and the mode is read-only anyway.
         if (live.canvasTool === 'avatar') return;
         const hasSelection = multiSelectedIds.size > 0 || selectedId !== null;
-        // With nothing selected in Pages mode, an arrow goes to the next or previous page (for every
-        // role: it only moves the view).
-        const dir = arrowPageDir(key);
-        if (!hasSelection && live.onStepPage && dir && !e.shiftKey && !e.altKey) {
-          if (live.onStepPage(dir)) e.preventDefault();
-          return;
-        }
         if (live.isReadOnly) return;
         if (!hasSelection) return;
         const step = e.shiftKey ? 10 : 1;

@@ -93,7 +93,7 @@ element leaves unset, plus how a line is drawn (Sketch, Marker).
   layers: charts, legends, progress, rating, checklists, code blocks, concept graphics, Sankey,
   badges, steps, cards, pointer notes, stacks, boundaries, diagram keys, people, web components, office furniture
   and rooms, Plan boards, cards, views and sheets, collaboration panels, buttons, pickers, reveals, portals, quizzes,
-  a tab window's frame, link cards, a video's frame, annotation markers, a table's grid, a lane's gutter, a record's
+  link cards, a video's frame, annotation markers, a table's grid, a lane's gutter, a record's
   rows, a page's fold, a browser's chrome and an inline icon beside a label.
   - Its **ink** (fills, outlines, bars, discs, rules, glyphs) is drawn through the same wobble as icons.
   - Its **words** sit above the ink, crisp, in the element's font. The wobble mangles small figures ("4,000" reads
@@ -103,8 +103,7 @@ element leaves unset, plus how a line is drawn (Sketch, Marker).
   into as before. The ink is a still copy of the face, so a hover or press tint on a face's own control is not
   drawn on a Sketch tab. A face's own animations (a quiz's answers fanning out from its disc) play in the copy in
   step with the live face: each new copy picks up each animation where the live one is, never from the start, so a
-  face that keeps changing (a quiz's countdown) does not drag its moving parts back. Photos inside a face (an avatar, a link card's preview, a video's poster) are not wobbled,
-  and a tab window's content keeps the finish of the tab it shows. Exports draw the same two layers.
+  face that keeps changing (a quiz's countdown) does not drag its moving parts back. Photos inside a face (an avatar, a link card's preview, a video's poster) are not wobbled. Exports draw the same two layers.
   A Plan board, view or sheet that fills its tab or is maximised is drawn over the canvas, outside its element's
   box, and keeps its finish there too: its face is split and wobbled as it is on the canvas.
 
@@ -162,8 +161,7 @@ Sketch is a pencil's wandering double line, Marker is one bold stroke per edge, 
     the frame size) keep their plain look, so the words in and around them stay easy to read.
   - The marker strokes are seeded by the element's id and the part's place in it, so a face looks the same on
     every screen and in every export.
-- **Not affected:** pencil, pen and highlighter strokes, images, photos inside a face, and a tab window's content (it keeps the
-  finish of the tab it shows).
+- **Not affected:** pencil, pen and highlighter strokes, images, and photos inside a face.
 - **Selection, hit testing, anchors and snapping** use the element's true geometry, as under Sketch.
 
 ### Every hand-drawn finish

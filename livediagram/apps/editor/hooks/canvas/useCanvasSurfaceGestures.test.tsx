@@ -431,9 +431,8 @@ describe('a double press on the bare canvas', () => {
   }
 
   it("zooms on a finger's double-tap on the bare surface around the zoomed-out content", () => {
-    const { press, dblSurface, onCanvasDoubleClick, result } = dblSetup();
+    const { press, dblSurface, onCanvasDoubleClick } = dblSetup();
     press('touch');
-    expect(result.current.pressedByFinger()).toBe(true);
     dblSurface();
     // Outside the wrapper's rect, by the same linear mapping.
     expect(onCanvasDoubleClick).toHaveBeenCalledWith(300, 0, true);
@@ -442,7 +441,6 @@ describe('a double press on the bare canvas', () => {
   it('leaves the bare surface alone for a mouse, for anything on it, and in the inert tools', () => {
     const mouse = dblSetup();
     mouse.press('mouse');
-    expect(mouse.result.current.pressedByFinger()).toBe(false);
     mouse.dblSurface();
     expect(mouse.onCanvasDoubleClick).not.toHaveBeenCalled();
 

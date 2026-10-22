@@ -28,6 +28,9 @@ vi.mock('./useWorkbenchHandshake', () => ({
   },
 }));
 vi.mock('./useWorkbenchRenewal', () => ({ useWorkbenchRenewal: () => {} }));
+// The page prefetches both chunks on mount, unawaited: stubbed, so neither import outlives the file.
+vi.mock('./WorkspaceFrame', () => ({ WorkspaceFrame: () => null }));
+vi.mock('../../document/[id]/editor-page', () => ({ default: () => null }));
 vi.mock('next/dynamic', () => ({
   default: (_load: unknown, options: { loading?: () => unknown } = {}) => {
     if (!options.loading) return () => null;

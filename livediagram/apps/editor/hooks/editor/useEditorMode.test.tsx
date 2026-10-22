@@ -51,46 +51,17 @@ describe('useEditorMode', () => {
     expect(h.hook.result.current.mode).toBe('draw');
   });
 
-  it('puts a board that does not fit onto a page in the same edit as entering Pages', () => {
-    const h = setup({ id: 't', name: 'T', elements: [sticky('a', -1500), sticky('b', 1500)] });
-    act(() => h.hook.result.current.setMode('pages'));
-    expect(h.commitTabs).toHaveBeenCalledTimes(1);
-    expect(h.tab()).toMatchObject({ opensIn: 'pages', pages: [{ size: 'fit' }] });
-    expect(h.toastInfo).toHaveBeenCalledWith(
-      'Put onto a page that fits it. Undo switches back to Diagram.',
-    );
-    expect(events).toContainEqual(['Tab', 'Changed', 'PageFitToContent']);
-  });
-
-  it('says the board went onto a page even when the commit runs later', () => {
-    tabs = [{ id: 't', name: 'T', elements: [sticky('a', -1500), sticky('b', 1500)] }];
-    const later: ((ts: Tab[]) => Tab[])[] = [];
-    const toastInfo = vi.fn();
-    const hook = renderHook(() =>
-      useEditorMode(tabs[0], {
-        canEdit: true,
-        commitTabs: (map) => void later.push(map),
-        toastInfo,
-      }),
-    );
-    act(() => hook.result.current.setMode('pages'));
-    expect(toastInfo).toHaveBeenCalledTimes(1);
-    expect(events).toContainEqual(['Tab', 'Changed', 'PageFitToContent']);
-    tabs = later[0]!(tabs);
-    expect(tabs[0]).toMatchObject({ opensIn: 'pages', pages: [{ size: 'fit' }] });
-  });
-
   it('applies what leaving a mode brings in the same edit', () => {
-    const h = setup({ id: 't', name: 'T', opensIn: 'pages', elements: [] });
+    const h = setup({ id: 't', name: 'T', opensIn: 'workshop', elements: [] });
     act(() => h.hook.result.current.setMode('diagram', (t) => ({ ...t, name: 'Converted' })));
     expect(h.commitTabs).toHaveBeenCalledTimes(1);
     expect(h.tab()).toMatchObject({ opensIn: 'diagram', name: 'Converted' });
   });
 
   // docs/specs/003-system-architecture/react-state-and-effects.md "A handler decides before it commits": the switch
-  // worked out to decide the toast is the one committed, so a board's conversion runs once, not twice.
+  // worked out is the one committed, so a board's conversion runs once, not twice.
   it('works the switch out once and commits that one', () => {
-    const h = setup({ id: 't', name: 'T', opensIn: 'pages', elements: [] });
+    const h = setup({ id: 't', name: 'T', opensIn: 'workshop', elements: [] });
     const convert = vi.fn((t: Tab) => ({ ...t, name: 'Converted' }));
     act(() => h.hook.result.current.setMode('diagram', convert));
     expect(convert).toHaveBeenCalledTimes(1);
@@ -121,8 +92,8 @@ describe('useEditorMode', () => {
   });
 
   it('refuses a switch from a visitor, on a locked tab, or on an event-storming board', () => {
-    const visitor = setup({ id: 't', name: 'T', opensIn: 'pages', elements: [] }, false);
-    expect(visitor.hook.result.current).toMatchObject({ mode: 'pages', canSwitch: false });
+    const visitor = setup({ id: 't', name: 'T', opensIn: 'workshop', elements: [] }, false);
+    expect(visitor.hook.result.current).toMatchObject({ mode: 'workshop', canSwitch: false });
     act(() => visitor.hook.result.current.setMode('draw'));
     expect(visitor.commitTabs).not.toHaveBeenCalled();
     const locked = setup({ id: 't', name: 'T', locked: true, elements: [] });

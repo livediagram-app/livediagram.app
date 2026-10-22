@@ -32,17 +32,17 @@ describe('NewDocumentWizard', () => {
 
   it('creates from the number keys too', () => {
     const p = wizard();
-    fireEvent.keyDown(screen.getByRole('group', { name: 'What are you making?' }), { key: '5' });
+    fireEvent.keyDown(screen.getByRole('group', { name: 'What are you making?' }), { key: '4' });
     expect(p.onCreate).toHaveBeenCalledWith('blank-plan');
   });
 
   it("creates the preset mode's blank from Create, else a Blank Diagram", () => {
-    const p = wizard({ initialMode: 'pages' });
-    expect(screen.getByRole('button', { name: /^Pages:/ }).getAttribute('aria-pressed')).toBe(
+    const p = wizard({ initialMode: 'workshop' });
+    expect(screen.getByRole('button', { name: /^Workshop:/ }).getAttribute('aria-pressed')).toBe(
       'true',
     );
     fireEvent.click(screen.getByRole('button', { name: 'Create' }));
-    expect(p.onCreate).toHaveBeenCalledWith('blank-illustration');
+    expect(p.onCreate).toHaveBeenCalledWith('blank-session');
     cleanup();
     const q = wizard();
     fireEvent.click(screen.getByRole('button', { name: 'Create' }));

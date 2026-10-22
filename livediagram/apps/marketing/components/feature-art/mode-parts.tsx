@@ -1,15 +1,14 @@
-// Shared parts for the mode categories' card art (whiteboard.tsx, plan.tsx, documents.tsx):
+// Shared parts for the mode categories' card art (whiteboard.tsx, plan.tsx):
 // the editor's surfaces drawn small, on a 300 by 96 stage (one unit is one CSS pixel in the
 // card's 96px Frame). Every surface has a light and a dark half, through Tailwind's dark:
 // variants and the canvas palette (--art-*), with the light value restated as the SVG attribute
-// underneath. Motion comes from the fa-f-* loops (app/feature-art/modes.css, the whiteboard, Plan and documents block).
+// underneath. Motion comes from the fa-f-* loops (app/feature-art/modes.css, the whiteboard and Plan block).
 
 import type { ReactNode } from 'react';
 import { FONT } from '@/components/art-tokens';
 import { Cursor as TeammateCursor, Frame } from './shared';
 
 export { FONT, YOU, TEAMMATE, at } from '@/components/art-tokens';
-export { SERIF } from './page-kit';
 
 // A surface in the editor (a card, a panel, a page): white in light, slate in dark, with the
 // soft shadow the editor lifts it on.

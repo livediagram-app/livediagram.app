@@ -48,14 +48,13 @@ describe('adding a tab', () => {
     expect(add('diagram').added.opensIn).toBeUndefined();
   });
 
-  it('from Pages, Draw or Workshop, opens in that same mode on its own start', () => {
-    for (const mode of ['pages', 'draw', 'workshop'] as const)
-      expect(add(mode).added.opensIn).toBe(mode);
+  it('from Draw or Workshop, opens in that same mode on its own start', () => {
+    for (const mode of ['draw', 'workshop'] as const) expect(add(mode).added.opensIn).toBe(mode);
   });
 
   it('asked for in a mode, opens in that mode whatever the active tab is in', () => {
-    expect(add('pages', 'draw').added.opensIn).toBe('draw');
-    expect(add('pages', 'diagram').added.opensIn).toBeUndefined();
+    expect(add('workshop', 'draw').added.opensIn).toBe('draw');
+    expect(add('workshop', 'diagram').added.opensIn).toBeUndefined();
   });
 
   it('is a general tab carrying the active tab look, never its kind', () => {
@@ -66,8 +65,8 @@ describe('adding a tab', () => {
   });
 
   it("in any mode, opens on that mode's own start", () => {
-    // From Plan's mode menu: Start Making Pages, Start Drawing, Start a Workshop are each the new tab's start.
-    for (const mode of ['pages', 'draw', 'workshop'] as const)
+    // From Plan's mode menu: Start Drawing and Start a Workshop are each the new tab's start.
+    for (const mode of ['draw', 'workshop'] as const)
       expect(add('plan', mode).added.opensIn).toBe(mode);
   });
 });
@@ -80,7 +79,7 @@ describe('adding a tab without the right to change tabs', () => {
   });
 
   it("adds nothing from the + either, whatever the active tab's mode", () => {
-    for (const mode of ['pages', 'plan', 'diagram'] as const)
+    for (const mode of ['workshop', 'plan', 'diagram'] as const)
       expect(run(mode, undefined, false).commitTabs).not.toHaveBeenCalled();
   });
 });

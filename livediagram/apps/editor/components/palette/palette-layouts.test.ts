@@ -16,9 +16,9 @@ import {
 import { tileById, tilesForCategory } from './palette-tile-defs';
 
 // The palette per mode (docs/specs/007-editor/editor-modes.md "The palette per mode").
-const ids = (mode: 'diagram' | 'pages' | 'plan' | 'workshop', esBoard = false) =>
+const ids = (mode: 'diagram' | 'plan' | 'workshop', esBoard = false) =>
   paletteCategoriesFor(mode, { esBoard }).map((c) => c.id);
-const tileIds = (mode: 'diagram' | 'pages' | 'plan' | 'workshop', category: string) =>
+const tileIds = (mode: 'diagram' | 'plan' | 'workshop', category: string) =>
   paletteCategoriesFor(mode)
     .find((c) => c.id === category)!
     .tiles!.map((t) => t.id);
@@ -61,12 +61,10 @@ describe('palette layouts', () => {
     expect(write.tiles!.slice(-3)[0]!.id).toBe('components:callout');
   });
 
-  it('offers every Data tile in Workshop and Pages, Pages adding the Table', () => {
+  it('offers every Data tile in Workshop', () => {
     const data = tilesForCategory('data').map((t) => t.id);
     expect(tileIds('workshop', 'data')).toEqual(data);
-    expect(tileIds('pages', 'data')).toEqual([...data, 'tools:table']);
     // The Timeline is a concept graphic (docs/specs/009-elements/concept-graphics.md "Timeline"), in Concepts.
-    expect(tileIds('pages', 'concepts')).toContain('tools:timeline');
     expect(tileIds('diagram', 'concepts')).toContain('tools:timeline');
   });
 
@@ -124,13 +122,13 @@ describe('palette layouts', () => {
       if (t.action.type === 'open') expect(offered.has(t.action.category), t.id).toBe(true);
   });
 
-  // A layout that drops a group's last tile keeps the group's end: Diagram and Workshop leave out the Tab Window,
-  // which ends Media's first group, and Image ends it there instead.
-  it("keeps Media's divider after Image where the Tab Window is left out", () => {
+  // A layout that drops a group's last tile keeps the group's end: Diagram and Workshop leave out the embeds,
+  // whose Website ends Media's first group after Image, and Image ends it there instead.
+  it("keeps Media's divider after Image where the embeds are left out", () => {
     for (const mode of ['diagram', 'workshop'] as const) {
       const media = paletteCategoriesFor(mode).find((c) => c.id === 'media')!;
       const ids = media.tiles!.map((t) => t.id);
-      expect(ids, mode).not.toContain('media:tab-window');
+      expect(ids, mode).not.toContain('media:embed-website');
       expect(media.tiles!.find((t) => t.id === 'tools:image')?.dividerAfter, mode).toBe(true);
       // Never one at the very end.
       expect(media.tiles!.at(-1)?.dividerAfter, mode).toBeFalsy();
@@ -191,37 +189,20 @@ describe('palette layouts', () => {
     expect(paletteCategoryOffered('diagram', 'event-storming')).toBe(false);
   });
 
-  it('narrows Pages to the categories a visual page is made of', () => {
-    expect(ids('pages')).toEqual([
-      'popular',
-      'shapes',
-      'my-shapes',
-      'write',
-      'concepts',
-      'components',
-      'devices',
-      'icons',
-      'stickers',
-      'media',
-      'data',
-    ]);
-  });
-
   it('lands every mode on its Popular, a board on its notation', () => {
     expect(paletteLandingCategory('diagram', false)).toBe('popular');
-    expect(paletteLandingCategory('pages', false)).toBe('popular');
+    expect(paletteLandingCategory('workshop', false)).toBe('popular');
     expect(paletteLandingCategory('diagram', true)).toBe('event-storming');
   });
 
   it('holds the same tile in different categories per mode: Page is in Write for Diagram only', () => {
     expect(tileIds('diagram', 'write')).toContain('tools:page');
-    expect(tileIds('pages', 'write')).not.toContain('tools:page');
-    expect(tileIds('pages', 'write')).toEqual(['tools:text', 'tools:sticky', 'tools:pointer-note']);
+    expect(tileIds('workshop', 'write')).not.toContain('tools:page');
   });
 
   // Every Popular tile is in another category of its mode too: the category bar has no Popular.
   it('offers every Popular tile in another category of its mode', () => {
-    for (const mode of ['diagram', 'workshop', 'pages'] as const) {
+    for (const mode of ['diagram', 'workshop'] as const) {
       const cats = paletteCategoriesFor(mode);
       const elsewhere = new Set(
         cats.filter((c) => c.id !== 'popular').flatMap((c) => (c.tiles ?? []).map((t) => t.id)),
@@ -232,41 +213,13 @@ describe('palette layouts', () => {
     }
   });
 
-  it('files the Sankey under Concepts, not Build, in Diagram and Pages', () => {
-    for (const mode of ['diagram', 'pages'] as const)
-      expect(tileIds(mode, 'concepts').at(-1), mode).toBe('tools:sankey');
+  it('files the Sankey under Concepts, not Build, in Diagram', () => {
+    expect(tileIds('diagram', 'concepts').at(-1)).toBe('tools:sankey');
     expect(tileIds('diagram', 'diagrams')).not.toContain('tools:sankey');
-  });
-
-  it('leaves mind nodes, lanes, frames, annotations and entities out of Pages', () => {
-    const everywhere = paletteCategoriesFor('pages').flatMap((c) =>
-      (c.tiles ?? []).map((t) => t.id),
-    );
-    for (const id of [
-      'tools:mind-node',
-      'tools:lane',
-      'tools:frame',
-      'tools:annotation',
-      'tools:entity',
-    ]) {
-      expect(everywhere, id).not.toContain(id);
-    }
-    // No Build: its three page tiles sit in Components and Data.
-    expect(ids('pages')).not.toContain('build');
-    // Components leads with its Layout group: the Hero, Header and Banner, then the Stack.
-    expect(tileIds('pages', 'components').slice(0, 4)).toEqual([
-      'components:hero',
-      'components:header',
-      'components:banner',
-      'tools:stack',
-    ]);
-    expect(tileIds('diagram', 'diagrams')).toContain('tools:mind-node');
-    expect(tileIds('diagram', 'write')).toContain('tools:annotation');
   });
 
   it("leaves Media's embeds out of Diagram, keeping its own two", () => {
     expect(tileIds('diagram', 'media')).toEqual(['tools:image', 'tools:avatar']);
-    expect(tileIds('pages', 'media')).toContain('media:embed-youtube');
   });
 
   it('defaults a category to its own tiles', () => {
@@ -288,17 +241,6 @@ describe('palette layouts', () => {
       'open:technology/aws',
       'tools:entity',
     ]);
-  });
-
-  it('picks twelve Popular tiles, each reachable from another Pages category', () => {
-    const popular = tileIds('pages', 'popular');
-    expect(popular).toHaveLength(12);
-    const reachable = new Set(
-      paletteCategoriesFor('pages')
-        .filter((c) => c.id !== 'popular')
-        .flatMap((c) => (c.tiles ?? []).map((t) => t.id)),
-    );
-    for (const id of popular) expect(reachable.has(id), id).toBe(true);
   });
 
   // docs/specs/026-plan/plan-mode.md "The palette".
@@ -331,7 +273,7 @@ describe('palette layouts', () => {
     expect(paletteLandingCategory('plan', false, false)).toBe('plan-boards');
     expect(paletteLandingCategory('diagram', false, false)).toBe('popular');
     expect(paletteLandingCategory('plan', true, false)).toBe('event-storming');
-    for (const mode of ['diagram', 'pages'] as const) {
+    for (const mode of ['diagram', 'workshop'] as const) {
       expect(ids(mode)).not.toContain('plan-boards');
       expect(ids(mode)).not.toContain('plan-cards');
       expect(ids(mode)).not.toContain('plan-visualisations');
@@ -365,54 +307,6 @@ describe('palette layouts', () => {
       expect(t.action).toMatchObject({ type: 'shape', kind: 'plan-view' });
       expect(isPlanViewId((t.action as { plan?: string }).plan)).toBe(true);
     }
-  });
-
-  it('gives a logo page its own palette: Draw, Shapes, Write, Icons, Library, Media (logo-pages.md)', () => {
-    const logo = paletteCategoriesFor('pages', { pagesKind: 'logo' });
-    expect(logo.map((c) => c.id)).toEqual([
-      'popular',
-      'draw',
-      'shapes',
-      'write',
-      'icons',
-      'my-shapes',
-      'media',
-    ]);
-    const tilesOf = (id: string) => logo.find((c) => c.id === id)!.tiles!.map((t) => t.id);
-    expect(tilesOf('draw')).toEqual([
-      'logo:pen',
-      'tools:pencil',
-      'tools:shape-pen',
-      'tools:polygon',
-    ]);
-    expect(tilesOf('write')).toEqual(['tools:text', 'tools:sticky']);
-    expect(tilesOf('media')).toEqual(['tools:image']);
-    // No Logo category anywhere: its tools are Draw's.
-    for (const kind of ['design', 'slide', 'wireframe', 'logo'] as const)
-      expect(paletteCategoriesFor('pages', { pagesKind: kind }).map((c) => c.id)).not.toContain(
-        'logo',
-      );
-  });
-
-  it('gives a slide page words, shapes and media first, then what makes a point (pages-mode.md)', () => {
-    const slide = paletteCategoriesFor('pages', { pagesKind: 'slide' });
-    expect(slide.map((c) => c.id)).toEqual([
-      'popular',
-      'write',
-      'shapes',
-      'media',
-      'my-shapes',
-      'data',
-      'concepts',
-      'components',
-      'devices',
-      'icons',
-      'stickers',
-    ]);
-    expect(slide.find((c) => c.id === 'media')!.group).toBe(0);
-    expect(slide.find((c) => c.id === 'components')!.tiles!.map((t) => t.id)).not.toContain(
-      'components:header',
-    );
   });
 });
 
@@ -452,53 +346,5 @@ describe('the Dashboard palette', () => {
     ]);
     // Layout is a Dashboard's alone.
     expect(paletteCategoriesFor('plan').some((c) => c.id === 'dashboard-layout')).toBe(false);
-  });
-});
-
-// docs/specs/007-editor/pages-mode.md "The palette's kind": each kind's tiles in one category each.
-describe('the Pages kinds', () => {
-  const wireframe = paletteCategoriesFor('pages', { pagesKind: 'wireframe' });
-
-  it('leads Wireframe with Components then Elements, in a band of their own, and no Concepts or Devices', () => {
-    const ids = wireframe.map((c) => c.id);
-    expect(ids.slice(0, 3)).toEqual(['popular', 'components', 'wireframe']);
-    expect(ids).not.toContain('concepts');
-    expect(ids).not.toContain('devices');
-    const band = wireframe[1]!.group;
-    expect(wireframe[2]!.group).toBe(band);
-    expect(wireframe[3]!.group).not.toBe(band);
-  });
-
-  it('keeps the Card, the Badge and the Checklist in Elements alone', () => {
-    const components = wireframe.find((c) => c.id === 'components')!.tiles!.map((t) => t.id);
-    expect(components).not.toContain('components:card');
-    expect(components).not.toContain('components:badge');
-    expect(components).not.toContain('tools:checklist');
-    expect(tileIds('pages', 'components')).toContain('components:card');
-  });
-
-  it.each(['design', 'slide', 'wireframe', 'logo'] as const)(
-    'shares no tile between two categories in %s, Popular aside',
-    (kind) => {
-      const seen = new Map<string, string>();
-      for (const c of paletteCategoriesFor('pages', { pagesKind: kind })) {
-        if (c.id === 'popular') continue;
-        for (const t of c.tiles ?? []) {
-          expect(seen.get(t.id), `${t.id} in ${c.id}`).toBeUndefined();
-          seen.set(t.id, c.id);
-        }
-      }
-    },
-  );
-
-  it('fills each kind’s Popular from its own categories', () => {
-    for (const kind of ['design', 'slide', 'wireframe', 'logo'] as const) {
-      const cats = paletteCategoriesFor('pages', { pagesKind: kind });
-      const popular = cats.find((c) => c.id === 'popular')!.tiles!.map((t) => t.id);
-      const rest = new Set(
-        cats.filter((c) => c.id !== 'popular').flatMap((c) => (c.tiles ?? []).map((t) => t.id)),
-      );
-      for (const id of popular) expect(rest.has(id), `${kind}: ${id}`).toBe(true);
-    }
   });
 });

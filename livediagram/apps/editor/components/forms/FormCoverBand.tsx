@@ -1,14 +1,14 @@
-// The band across a form's top (docs/specs/030-forms/forms.md "The form card"): its cover, a slide background in
-// colour painted as a slide's is (pageSheetStyle, and PageMotionLayer for a moving one), or a thin band of the form
+// The band across a form's top (docs/specs/030-forms/forms.md "The form card"): its cover, a colour background
+// painted by pageSheetStyle (and CoverMotionLayer for a moving one), or a thin band of the form
 // colour without one. Pure drawing, shared by the builder, Preview and the form page.
 import type { FormCover } from '@livediagram/forms';
-import { pageSheetStyle } from '@/lib/page-paint';
+import { pageSheetStyle } from '@/lib/form-cover/cover-paint';
 import dynamic from 'next/dynamic';
 
 // A moving cover's motion, fetched only when a cover moves: every motion's drawing stays out of the form page's
 // first load (most covers are still).
-const PageMotionLayer = dynamic(
-  () => import('@/components/canvas/PageMotionLayer').then((m) => m.PageMotionLayer),
+const CoverMotionLayer = dynamic(
+  () => import('@/components/forms/cover/CoverMotionLayer').then((m) => m.CoverMotionLayer),
   { ssr: false },
 );
 
@@ -35,7 +35,7 @@ export function FormCoverBand({
       style={pageSheetStyle(cover)}
     >
       {fill?.kind === 'gradient' && fill.motion ? (
-        <PageMotionLayer motion={fill.motion} fill={fill} width={BAND_W} height={BAND_H} />
+        <CoverMotionLayer motion={fill.motion} fill={fill} width={BAND_W} height={BAND_H} />
       ) : null}
     </div>
   );

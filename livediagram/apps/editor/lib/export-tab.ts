@@ -13,25 +13,14 @@ import type { Item, ItemTypeDef } from '@livediagram/items';
 import {
   arrowLabelFontStack,
   arrowLabelPass,
-  articlesOf,
-  drawingZoneClips,
-  pagesOf,
   isBoxed,
-  isDrawingElement,
-  layOutPages,
   layerBands,
   layerOpacityOf,
   shade,
   exportFontIds,
   visibleLayerElements,
-  type ArrowElement,
-  type ArrowLineMotion,
   type BoxedElement,
-  type Element,
-  type LaidOutPage,
-  type PageRect,
   type ResolvePlanArt,
-  type ResolveTabWindow,
   type SheetRenderModel,
   type Tab,
 } from '@livediagram/document';
@@ -68,11 +57,8 @@ import {
   ISO_TILT_DEG,
 } from './isometric';
 import { drawBoxed, drawBoxedExtrusion } from './export-tab-canvas-draw';
-import { EXPORT_PAPER, pageExportFrame } from './export-page';
-import { pageScreenRect, tabWireframeFrameTheme, withinPageFrame } from '@livediagram/document';
 import type { ExportImageMap } from './export-tab-images';
 import { exportChartInk } from './export-chart-ink';
-import { motionFrameHref, paintMotionFrame, type MotionFrameCache } from './page-motion-canvas';
 
 // Shared options for the image exports (PNG / SVG / PDF). `isometric` tilts
 // the rendered scene into the editor's isometric projection (docs/specs/008-canvas/isometric-view.md / 48),
@@ -93,20 +79,6 @@ export type ImageExportOpts = {
   // Google stylesheet by @import, which only a browser opening the file
   // directly will honour.
   fontCss?: string;
-  // One page to export (docs/specs/007-editor/pages-mode.md "Export"): the
-  // frame becomes exactly its sheet, painted with its background; isometric and the tab's own
-  // backdrop do not apply.
-  page?: LaidOutPage;
-  // A logo page's plain paper left see-through (docs/specs/007-editor/logo-pages.md "Export"):
-  // PNG and SVG pass it, PDF never does.
-  transparentPaper?: boolean;
-  // Slides' animated backgrounds painted so far in this export, so a background repeated across a
-  // deck is painted once (lib/page-motion-canvas.ts). Absent, each page paints its own.
-  motionFrames?: MotionFrameCache;
-  // A slide's animated background drawn as its still gradient (a thumbnail): no frame is painted or
-  // embedded. The Layouts tab's tiles pass it, as a full-size picture in each 120 px tile was
-  // megabytes of markup for nothing seen.
-  stillBackground?: boolean;
   // The document's items, so Plan boards and cards export with their cards
   // (docs/specs/026-plan/plan-board.md "Both elements everywhere").
   items?: ReadonlyMap<string, Item>;
@@ -118,24 +90,6 @@ export type ImageExportOpts = {
   // A plan view's picture (docs/specs/026-plan/plan-tabs.md "Export"), drawn by the editor, which has the charts'
   // models; without it a plan view draws as its labelled box.
   resolvePlanArt?: ResolvePlanArt;
-  // Each tab window's tab drawn (docs/specs/009-elements/tab-window.md "Exports"), and the typefaces those tabs write
-  // in, so their words export in their own faces; without it a window draws its frame named for its tab.
-  resolveTabWindow?: ResolveTabWindow;
-  tabWindowFontIds?: readonly string[];
-  // The drawing set moving rather than still (docs/specs/009-elements/tab-window.md "The drawing"): each element's
-  // animation class and custom properties, as the canvas mounts them, so the page's own motion stylesheets play it.
-  // Only a tab window passes it (an inline SVG on the page); every file export is a still.
-  motion?: SvgMotion;
-  // A page's writing as estimated without a browser (svg-render-pages.ts pagesWithWriting), drawn where the editor has
-  // not laid that article out (no handle): a tab window onto a Pages tab passes it. SVG only.
-  estimatedWriting?: (page: LaidOutPage) => string | undefined;
-};
-
-// How an element moves in a live inline SVG: the wrapper class + inline style for a boxed element, and the moving
-// line for an arrow's flow. Undefined for one that holds still.
-export type SvgMotion = {
-  boxed: (el: BoxedElement) => { className: string; style: string } | undefined;
-  arrowLine: (el: ArrowElement) => ArrowLineMotion | undefined;
 };
 
 // Re-export so callers (the export dialog) get the loader from the same
@@ -144,43 +98,6 @@ export { loadTabImages } from './export-tab-images';
 
 // Webfont embedding for downloads (docs/specs/004-interface-design/fonts.md) — the bytes travel with the file.
 import { embeddedFontFaceCss } from './export-fonts';
-import {
-  pageRulingOf,
-  pageWriting,
-  pageWritingFonts,
-  type PageWriting,
-} from './article/article-export';
-import { articleOpsToSvg, drawArticleOps } from './article/article-draw';
-
-// A page export's drawing-zone clips (docs/specs/007-editor/article-pages.md "Zones"): what pokes
-// past a drawing zone's edge is cut off in an export as on the canvas.
-function exportZoneClips(tab: Tab, page: LaidOutPage | undefined): Map<string, PageRect> {
-  if (!page) return new Map();
-  return drawingZoneClips(
-    layOutPages(pagesOf(tab)),
-    articlesOf(tab),
-    tab.elements,
-    isDrawingElement,
-  );
-}
-
-// An element's SVG markup cut off at its drawing zone, when it has one.
-function svgZoneClipped(id: string, svg: string, clips: Map<string, PageRect>): string {
-  const r = clips.get(id);
-  if (!r || !svg) return svg;
-  const cid = `lvd-zc-${id}`.replace(/[^a-zA-Z0-9-]/g, '');
-  return `<clipPath id="${cid}"><rect x="${r2(r.x)}" y="${r2(r.y)}" width="${r2(r.width)}" height="${r2(r.height)}"/></clipPath><g clip-path="url(#${cid})">${svg}</g>`;
-}
-
-// An article's margin-note marker (docs/specs/007-editor/article-pages.md "Comments and actions"):
-// review furniture, like a comment badge, never part of what the page prints.
-const isArticleNoteMarker = (el: Element) => el.type === 'annotation' && !!el.articleNote;
-
-// The font ids an export declares, with an article page's writing's faces added.
-function withWritingFonts(ids: string[], writing: Pick<PageWriting, 'fonts'> | null): string[] {
-  return writing ? [...new Set([...ids, ...writing.fonts])] : ids;
-}
-
 // Default backdrop pattern colour when a tab leaves it unset (matches the
 // editor's fallback).
 export const EXPORT_PATTERN_COLOR = '#cbd5e1'; // slate-300
@@ -248,32 +165,15 @@ export async function renderTabToCanvas(
   tab: Tab,
   opts: { scale?: number } & ImageExportOpts = {},
 ): Promise<HTMLCanvasElement> {
-  const frame = opts.page
-    ? pageExportFrame(opts.page, {
-        ruling: pageRulingOf(tab, opts.page),
-        transparentPaper: opts.transparentPaper,
-        imageHref: (id) => opts.images?.get(id)?.href,
-        frameTheme: tabWireframeFrameTheme(tab),
-      })
-    : null;
-  // An article page's writing (docs/specs/007-editor/article-pages.md "Everywhere a page goes").
-  const writing = opts.page ? pageWriting(tab, opts.page) : null;
-  const clips = exportZoneClips(tab, opts.page);
-  const chartInk = exportChartInk(tab, opts.page);
-  const reaches = (el: Element) =>
-    !isArticleNoteMarker(el) && (!frame || frame.reaches(el, tab.elements));
+  const chartInk = exportChartInk(tab);
   // Hidden layers drop out of the export (bounds included) unless the
   // dialog's include-hidden option is on (docs/specs/006-document/layers.md). `ordered` is the
   // paint order — layer bands bottom -> top, frames first per band —
   // with each element carrying its band's opacity factor.
-  const els = (
-    opts.hiddenLayers ? tab.elements : visibleLayerElements(tab.elements, tab.layers)
-  ).filter(reaches);
+  const els = opts.hiddenLayers ? tab.elements : visibleLayerElements(tab.elements, tab.layers);
   const ordered = layerBands(tab.elements, tab.layers, {
     includeHidden: opts.hiddenLayers,
-  }).flatMap((band) =>
-    band.elements.filter(reaches).map((el) => ({ el, alpha: layerOpacityOf(band.layer) })),
-  );
+  }).flatMap((band) => band.elements.map((el) => ({ el, alpha: layerOpacityOf(band.layer) })));
   // Every caption laid out once, as the canvas and the SVG export do
   // (docs/specs/008-canvas/arrow-labels.md); the bounds include the plates.
   // Shapes something sits on keep a solid fill under Sketch, as on the canvas (sketch-backdrop.ts).
@@ -281,16 +181,15 @@ export async function renderTabToCanvas(
   const labels = arrowLabelPass(tab.elements, {
     fontFamilyOf: (a) => arrowLabelFontStack(a, tab.font, tab.finish),
   });
-  const bounds = frame ? frame.bounds : contentBounds(els, labels);
-  const pad = frame ? 0 : EXPORT_PADDING;
+  const bounds = contentBounds(els, labels);
+  const pad = EXPORT_PADDING;
   // Isometric export (docs/specs/008-canvas/isometric-view.md / 48): project the flat content through the iso
   // affine and size the canvas to the tilted footprint so nothing clips. The
   // matrix is applied to the drawing context after positioning, so every
   // element / arrow drawer stays in plain canvas coordinates.
-  const iso = opts.isometric && !frame ? isoCanvasMatrix() : null;
+  const iso = opts.isometric ? isoCanvasMatrix() : null;
   const draw = iso ? isoProjectBounds(bounds, iso) : bounds;
-  // 2x for crisp output, lowered so no side passes the largest canvas every browser draws (a Fit to
-  // Content page reaches 19200 px, docs/specs/007-editor/pages-mode.md "Sizes").
+  // 2x for crisp output, lowered so no side passes the largest canvas every browser draws.
   const scale = exportScale(opts.scale ?? 2, draw.w + pad * 2, draw.h + pad * 2);
   const w = (draw.w + pad * 2) * scale;
   const h = (draw.h + pad * 2) * scale;
@@ -308,44 +207,12 @@ export async function renderTabToCanvas(
   // Elements that carry no colours of their own are drawn in the ink of the
   // paper being exported onto (docs/specs/007-editor/editor-app.md), so a dark canvas exports dark-canvas
   // elements rather than pale ones.
-  const surface = frame ? frame.surface : canvasSurface(bgColor);
+  const surface = canvasSurface(bgColor);
   // The paper under the content: a hollow arrowhead is filled with it, as on the canvas.
-  const paper = frame ? EXPORT_PAPER : bgColor;
+  const paper = bgColor;
   ctx.fillStyle = paper;
-  if (!frame?.transparent) ctx.fillRect(0, 0, w / scale, h / scale);
-  const bg = frame ? null : backgroundPatternDefs(tab, opts);
-  if (frame) {
-    const { x, y, w: fw, h: fh } = frame.bounds;
-    const svg =
-      `<svg xmlns="http://www.w3.org/2000/svg" width="${Math.floor(w)}" height="${Math.floor(h)}" viewBox="${r2(x)} ${r2(y)} ${r2(fw)} ${r2(fh)}">` +
-      `${frame.backgroundSvg}</svg>`;
-    try {
-      ctx.drawImage(await svgToImage(svg), 0, 0, w / scale, h / scale);
-    } catch {
-      // The paper behind it is already down: a failed paint must never abort the export.
-    }
-    // A slide's animated background, still as the slide opens, over its gradient and under all on
-    // it (docs/specs/007-editor/pages-mode.md "Animated backgrounds").
-    const pageFill = opts.page?.background?.fill;
-    if (opts.page && pageFill?.kind === 'gradient' && pageFill.motion) {
-      // A wireframe page's motion is its screen's, cut to it (its frame stays as drawn).
-      const r = pageScreenRect(opts.page);
-      if (frame.clipPath) {
-        ctx.save();
-        ctx.translate(-x, -y);
-        ctx.clip(new Path2D(frame.clipPath));
-        ctx.translate(x, y);
-      }
-      paintMotionFrame(
-        ctx,
-        pageFill.motion,
-        pageFill,
-        { x: r.x - x, y: r.y - y, width: r.width, height: r.height },
-        opts.motionFrames,
-      );
-      if (frame.clipPath) ctx.restore();
-    }
-  }
+  ctx.fillRect(0, 0, w / scale, h / scale);
+  const bg = backgroundPatternDefs(tab, opts);
   if (bg) {
     const wu = w / scale;
     const hu = h / scale;
@@ -363,11 +230,6 @@ export async function renderTabToCanvas(
   // apply the iso projection so element coords map onto the tilted plane.
   ctx.translate(pad - draw.x, pad - draw.y);
   if (iso) ctx.transform(iso.a, iso.b, iso.c, iso.d, 0, 0);
-  // The writing, over the page and under every element (its zones' elements sit over it).
-  if (writing) {
-    await document.fonts?.ready;
-    drawArticleOps(ctx, writing.ops);
-  }
 
   // Isometric: paint every element's extrusion column first, so all the
   // depth sits behind all the element bodies (matching the editor's single
@@ -396,10 +258,7 @@ export async function renderTabToCanvas(
   // markup. Fetched once here and inlined into every fragment below.
   const fontCss =
     opts.fontCss ??
-    (await embeddedFontFaceCss([
-      ...exportFontIds(els, tab.font, opts.sheets, tab.finish),
-      ...(opts.tabWindowFontIds ?? []),
-    ]));
+    (await embeddedFontFaceCss(exportFontIds(els, tab.font, opts.sheets, tab.finish)));
   // The canvas drawers paint through the DOM's own font set, so wait for it
   // to settle — rasterising mid-swap bakes the fallback face into the PNG.
   await document.fonts?.ready;
@@ -438,7 +297,6 @@ export async function renderTabToCanvas(
         itemTypes: opts.itemTypes,
         sheets: opts.sheets,
         resolvePlanArt: opts.resolvePlanArt,
-        resolveTabWindow: opts.resolveTabWindow,
       })}</svg>`;
     try {
       rasterImages.set(el.id, { image: await svgToImage(svg), pad });
@@ -457,12 +315,6 @@ export async function renderTabToCanvas(
   const ay = bounds.y - pad;
   const aw = bounds.w + pad * 2;
   const ah = bounds.h + pad * 2;
-  // A wireframe page's elements are cut to its screen (docs/specs/007-editor/wireframe-pages.md
-  // "Export"); its system bars go over them below.
-  if (frame?.clipPath) {
-    ctx.save();
-    ctx.clip(new Path2D(frame.clipPath));
-  }
   let arrowRun: string[] = [];
   const flushArrows = async () => {
     if (arrowRun.length === 0) return;
@@ -474,41 +326,24 @@ export async function renderTabToCanvas(
   };
   for (const { el, alpha } of ordered) {
     if (el.type === 'arrow') {
-      const svg = svgZoneClipped(
-        el.id,
-        svgArrow(el, tab.elements, surface, tabFont, labels, undefined, els, paper, tab.finish),
-        clips,
+      const svg = svgArrow(
+        el,
+        tab.elements,
+        surface,
+        tabFont,
+        labels,
+        undefined,
+        els,
+        paper,
+        tab.finish,
       );
       arrowRun.push(alpha < 1 ? `<g opacity="${r2(alpha)}">${svg}</g>` : svg);
       continue;
     }
     await flushArrows();
-    // Cut off at its drawing zone, as on the canvas.
-    const clip = clips.get(el.id);
-    if (clip) {
-      ctx.save();
-      ctx.beginPath();
-      ctx.rect(clip.x, clip.y, clip.width, clip.height);
-      ctx.clip();
-    }
     drawOne(ctx, el, alpha);
-    if (clip) ctx.restore();
   }
   await flushArrows();
-  if (frame?.clipPath) {
-    ctx.restore();
-    if (frame.overlaySvg) {
-      const { x, y, w: fw, h: fh } = frame.bounds;
-      const svg =
-        `<svg xmlns="http://www.w3.org/2000/svg" width="${r2(fw * scale)}" height="${r2(fh * scale)}"` +
-        ` viewBox="${r2(x)} ${r2(y)} ${r2(fw)} ${r2(fh)}">${fontDefs}${frame.overlaySvg}</svg>`;
-      try {
-        ctx.drawImage(await svgToImage(svg), x, y, fw, fh);
-      } catch {
-        // The bars are the frame's dressing: a failed paint must never abort the export.
-      }
-    }
-  }
   return canvas;
 
   function drawOne(c: CanvasRenderingContext2D, el: BoxedElement, alpha: number) {
@@ -594,52 +429,12 @@ function svgBoxedExtrusion(el: BoxedElement, surface: CanvasSurface): string {
 // export (docs/specs/010-palette/style-presets.md): same SVG the .svg download produces, and PNG / PDF
 // rasterise the same content, so one SVG preview faithfully represents all
 // three image formats under the current isometric / pattern options.
-// A slide's animated background in the SVG export: a picture of its gradient with the motion as
-// it stands when the slide opens, as the PNG and PDF paint it (docs/specs/007-editor/
-// pages-mode.md "Animated backgrounds"). Nothing where no canvas can draw it, leaving the
-// gradient.
-function pageMotionSvg(page: LaidOutPage | undefined): string {
-  const fill = page?.background?.fill;
-  if (!page || fill?.kind !== 'gradient' || !fill.motion) return '';
-  // A wireframe page's screen (pageExportFrame lays it inside the screen's clip).
-  const r = pageScreenRect(page);
-  const href = motionFrameHref(fill, r.width, r.height);
-  if (!href) return '';
-  return `<image x="${r2(r.x)}" y="${r2(r.y)}" width="${r2(r.width)}" height="${r2(r.height)}" preserveAspectRatio="none" href="${href}"/>`;
-}
-
-// A boxed element's markup in the group its animation class rides (tab-window-motion.ts), or as it is.
-function withMotion(el: BoxedElement, motion: SvgMotion | undefined, svg: string): string {
-  const m = motion?.boxed(el);
-  if (!m) return svg;
-  return `<g class="lvd-svg-motion ${xmlEscape(m.className)}" style="${xmlEscape(m.style)}">${svg}</g>`;
-}
-
 export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
   // Same hidden-layer + band-order + band-opacity rules as the canvas
   // renderer above; each band wraps in a <g opacity> when dimmed.
-  const frame = opts.page
-    ? pageExportFrame(opts.page, {
-        ruling: pageRulingOf(tab, opts.page),
-        transparentPaper: opts.transparentPaper,
-        imageHref: (id) => opts.images?.get(id)?.href,
-        frameTheme: tabWireframeFrameTheme(tab),
-        overFill: opts.stillBackground ? undefined : pageMotionSvg(opts.page),
-      })
-    : null;
-  const writing = opts.page ? pageWriting(tab, opts.page) : null;
-  const estimated =
-    !writing && opts.page && opts.estimatedWriting ? opts.estimatedWriting(opts.page) : undefined;
-  const clips = exportZoneClips(tab, opts.page);
-  const chartInk = exportChartInk(tab, opts.page);
-  const reaches = (el: Element) =>
-    !isArticleNoteMarker(el) && (!frame || frame.reaches(el, tab.elements));
-  const els = (
-    opts.hiddenLayers ? tab.elements : visibleLayerElements(tab.elements, tab.layers)
-  ).filter(reaches);
-  const bands = layerBands(tab.elements, tab.layers, { includeHidden: opts.hiddenLayers }).map(
-    (band) => ({ ...band, elements: band.elements.filter(reaches) }),
-  );
+  const chartInk = exportChartInk(tab);
+  const els = opts.hiddenLayers ? tab.elements : visibleLayerElements(tab.elements, tab.layers);
+  const bands = layerBands(tab.elements, tab.layers, { includeHidden: opts.hiddenLayers });
   // Shapes something sits on keep a solid fill under Sketch, as on the canvas (sketch-backdrop.ts).
   const backdrops = sketchBackdropIds(els, tab.finish);
   const labels = arrowLabelPass(tab.elements, {
@@ -649,12 +444,12 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
     layerOpacity < 1
       ? `<g opacity="${r2(layerOpacity)}">${inner.join('\n')}</g>`
       : inner.join('\n');
-  const bounds = frame ? frame.bounds : contentBounds(els, labels);
-  const pad = frame ? 0 : EXPORT_PADDING;
+  const bounds = contentBounds(els, labels);
+  const pad = EXPORT_PADDING;
   // Isometric export: the viewBox spans the projected (tilted) footprint and a
   // <g matrix> applies the iso projection to the content, while the background
   // rect stays in viewBox space so it fills the whole frame.
-  const iso = opts.isometric && !frame ? isoCanvasMatrix() : null;
+  const iso = opts.isometric ? isoCanvasMatrix() : null;
   const draw = iso ? isoProjectBounds(bounds, iso) : bounds;
   const vbX = draw.x - pad;
   const vbY = draw.y - pad;
@@ -662,43 +457,30 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
   const vbH = draw.h + pad * 2;
   const bgColor = tab.backgroundColor ?? EXPORT_BG;
   // See the PNG path: unpainted elements take the exported paper's ink.
-  const surface = frame ? frame.surface : canvasSurface(bgColor);
+  const surface = canvasSurface(bgColor);
   // As the PNG path: a hollow head takes this paper, and an arrow breaks only
-  // behind the boxes this export draws (`els`), never a hidden or off-page one.
-  const paper = frame ? EXPORT_PAPER : bgColor;
+  // behind the boxes this export draws (`els`), never a hidden one.
+  const paper = bgColor;
   const parts: string[] = [];
   parts.push(
     `<svg xmlns="http://www.w3.org/2000/svg" width="${r2(vbW)}" height="${r2(vbH)}" viewBox="${r2(vbX)} ${r2(vbY)} ${r2(vbW)} ${r2(vbH)}">`,
   );
   parts.push(
-    frame
-      ? frame.backgroundSvg
-      : `<rect x="${r2(vbX)}" y="${r2(vbY)}" width="${r2(vbW)}" height="${r2(vbH)}" fill="${xmlEscape(bgColor)}"/>`,
+    `<rect x="${r2(vbX)}" y="${r2(vbY)}" width="${r2(vbW)}" height="${r2(vbH)}" fill="${xmlEscape(bgColor)}"/>`,
   );
   // Typefaces (docs/specs/004-interface-design/fonts.md): the real bytes when the caller pre-fetched them
   // (a download, which must stand alone), else a declaration of the Google
   // stylesheet (the live preview, where the page has the faces already).
   const fontDefs = opts.fontCss
     ? `<defs><style type="text/css">${opts.fontCss}</style></defs>`
-    : svgFontDefs(
-        withWritingFonts(
-          [
-            ...exportFontIds(els, tab.font, opts.sheets, tab.finish),
-            ...(opts.tabWindowFontIds ?? []),
-          ],
-          writing ?? (estimated && opts.page ? { fonts: pageWritingFonts(tab, opts.page) } : null),
-        ),
-      );
+    : svgFontDefs(exportFontIds(els, tab.font, opts.sheets, tab.finish));
   if (fontDefs) parts.push(fontDefs);
-  // The writing, over the page and under every element.
-  if (writing) parts.push(articleOpsToSvg(writing.ops));
-  else if (estimated) parts.push(estimated);
   // Element-shadow filter defs (docs/specs/008-canvas/element-shadows.md); empty string when none.
   const shadowDefs = svgShadowDefs(els);
   if (shadowDefs) parts.push(shadowDefs);
   // Backdrop pattern (docs/specs/010-palette/style-presets.md) over the colour, flat (never tilted — the
   // editor's backdrop doesn't tilt in isometric either).
-  const bg = frame ? null : backgroundPatternDefs(tab, opts);
+  const bg = backgroundPatternDefs(tab, opts);
   if (bg) {
     parts.push(bg.defs);
     parts.push(
@@ -723,67 +505,35 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
   // z-order as the canvas); bands stack bottom -> top with frame
   // sections behind their band-mates (docs/specs/006-document/layers.md + docs/specs/008-canvas/canvas-and-palette.md).
   const resolveImageHref = opts.images ? (id: string) => opts.images!.get(id)?.href : undefined;
-  // A wireframe page's elements are cut to its screen, its system bars over them (withinPageFrame).
-  const bandsStart = parts.length;
   for (const band of bands) {
     const inner: string[] = [];
     for (const el of band.elements) {
       if (el.type !== 'arrow')
         inner.push(
-          svgZoneClipped(
-            el.id,
-            withMotion(
-              el,
-              opts.motion,
-              svgBoxed(el, {
-                resolveImageHref,
-                resolveIconArt: resolveIconArtLoaded,
-                resolveStickerArt: resolveStickerArtLoaded,
-                tabFont: tab.font,
-                tabFinish: tab.finish,
-                sketchBackdrop: backdrops.has(el.id),
-                surface,
-                ...chartInk,
-                items: opts.items,
-                itemTypes: opts.itemTypes,
-                sheets: opts.sheets,
-                resolvePlanArt: opts.resolvePlanArt,
-                resolveTabWindow: opts.resolveTabWindow,
-              }),
-            ),
-            clips,
-          ),
+          svgBoxed(el, {
+            resolveImageHref,
+            resolveIconArt: resolveIconArtLoaded,
+            resolveStickerArt: resolveStickerArtLoaded,
+            tabFont: tab.font,
+            tabFinish: tab.finish,
+            sketchBackdrop: backdrops.has(el.id),
+            surface,
+            ...chartInk,
+            items: opts.items,
+            itemTypes: opts.itemTypes,
+            sheets: opts.sheets,
+            resolvePlanArt: opts.resolvePlanArt,
+          }),
         );
     }
     for (const el of band.elements) {
       if (el.type === 'arrow')
         inner.push(
-          svgZoneClipped(
-            el.id,
-            svgArrow(
-              el,
-              tab.elements,
-              surface,
-              tab.font,
-              labels,
-              undefined,
-              els,
-              paper,
-              tab.finish,
-              opts.motion?.arrowLine(el),
-            ),
-            clips,
-          ),
+          svgArrow(el, tab.elements, surface, tab.font, labels, undefined, els, paper, tab.finish),
         );
     }
     parts.push(wrapBand(layerOpacityOf(band.layer), inner));
   }
-  if (frame?.clipId)
-    parts.splice(
-      bandsStart,
-      parts.length - bandsStart,
-      withinPageFrame(frame, parts.slice(bandsStart).join('\n')),
-    );
   if (iso) parts.push('</g>');
   parts.push('</svg>');
   return parts.join('\n');
@@ -793,19 +543,9 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
 // Permanent Marker installed, and an @import is dead in an offline viewer.
 export async function exportTabAsSvg(tab: Tab, opts: ImageExportOpts = {}): Promise<Blob> {
   const els = opts.hiddenLayers ? tab.elements : visibleLayerElements(tab.elements, tab.layers);
-  // The writing's faces only: the writing itself is measured once, by renderTabToSvg.
-  const writing = opts.page ? { fonts: pageWritingFonts(tab, opts.page) } : null;
   const fontCss =
     opts.fontCss ??
-    (await embeddedFontFaceCss(
-      withWritingFonts(
-        [
-          ...exportFontIds(els, tab.font, opts.sheets, tab.finish),
-          ...(opts.tabWindowFontIds ?? []),
-        ],
-        writing,
-      ),
-    ));
+    (await embeddedFontFaceCss(exportFontIds(els, tab.font, opts.sheets, tab.finish)));
   return new Blob([renderTabToSvg(tab, { ...opts, fontCss })], { type: 'image/svg+xml' });
 }
 

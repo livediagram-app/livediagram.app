@@ -4,7 +4,7 @@
 // colour and style changed from Change Cover), then the heading (the tab's name too) and description, edited in
 // place. A later section's header is SectionHeader.
 import { useContext, useMemo, useState } from 'react';
-import type { Page, PageBackground } from '@livediagram/document';
+import type { ColourBackground } from '@/lib/form-cover/colour-background';
 import {
   FORM_DESCRIPTION_MAX,
   FORM_HEADING_MAX,
@@ -15,9 +15,9 @@ import {
 import { TrashIcon, Tooltip } from '@livediagram/ui';
 import { patchForm, deleteSection, updateSection } from '@livediagram/forms';
 import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
-import { BackgroundSection } from '@/components/canvas/page-background-section';
+import { BackgroundSection } from '@/components/forms/cover/cover-background-section';
 import { EditorContext } from '@/app/document/[id]/EditorContext';
-import { themeBackgroundPresets } from '@/lib/page-paint';
+import { themeBackgroundPresets } from '@/lib/form-cover/cover-paint';
 import { getTheme } from '@/lib/themes';
 import { FormCoverBand } from '../FormCoverBand';
 import { LinkedText } from '../LinkedText';
@@ -26,20 +26,17 @@ import { DraftText } from './DraftText';
 import { SectionRule } from './SectionRule';
 import { useFormBuilder } from './form-builder-context';
 
-// The cover's choices: a slide's Background categories but the picture (docs/specs/030-forms/forms.md "The form card").
-const COVER_CATEGORIES = ['solid', 'gradient', 'animated'] as const;
-// Wide enough for the motion tiles and their names to sit three across with room, as on a slide's panel.
+// Wide enough for the motion tiles and their names to sit three across with room.
 const COVER_POPOVER_W = 380;
 
-// A slide's background patched, kept in colour: the cover takes no picture.
+// The cover with a background patch laid over it; none once it holds neither a fill nor a pattern.
 function patchedCover(
   cover: FormCover | undefined,
-  patch: Partial<PageBackground>,
+  patch: Partial<ColourBackground>,
 ): FormCover | undefined {
   const merged = { ...cover, ...patch };
-  const fill = merged.fill && merged.fill.kind !== 'image' ? merged.fill : undefined;
   const next: FormCover = {
-    ...(fill ? { fill } : {}),
+    ...(merged.fill ? { fill: merged.fill } : {}),
     ...(merged.pattern ? { pattern: merged.pattern } : {}),
   };
   return next.fill || next.pattern ? next : undefined;
@@ -51,20 +48,13 @@ export function FormHeaderCard({ sections }: { sections: number }) {
   const accent = FORM_ACCENT;
   const [coverAnchor, setCoverAnchor] = useState<HTMLButtonElement | null>(null);
   const [coverOpen, setCoverOpen] = useState(false);
-  // A hovered choice, shown on the band until it is picked or left (as on a slide).
-  const [preview, setPreview] = useState<Partial<PageBackground> | null>(null);
+  // A hovered choice, shown on the band until it is picked or left.
+  const [preview, setPreview] = useState<Partial<ColourBackground> | null>(null);
   const shownCover = preview ? patchedCover(form.cover, preview) : form.cover;
-  // The tab theme's own gradients lead the Gradient choices, as on a slide.
+  // The tab theme's own gradients lead the Gradient choices.
   // Read as the colour picker reads it (useThemeColours): no editor around it (a test) is the default theme.
   const themeId = useContext(EditorContext)?.activeTab?.theme;
   const themePresets = useMemo(() => themeBackgroundPresets(getTheme(themeId)), [themeId]);
-  // The cover as the slide's Background section reads a page: a wide slide wearing it.
-  const coverPage: Page = {
-    id: 'form-cover',
-    orientation: 'landscape',
-    kind: 'slide',
-    ...(form.cover ? { background: form.cover } : {}),
-  };
   return (
     <div className="form-box form-ink group/head overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700/80 dark:bg-slate-900">
       <div className="relative">
@@ -112,10 +102,8 @@ export function FormHeaderCard({ sections }: { sections: number }) {
               ) : null}
             </div>
             <div className="overflow-y-auto px-4 py-3">
-              {/* A slide's Background and Pattern (docs/specs/007-editor/pages-mode.md "Backgrounds"), no picture. */}
               <BackgroundSection
-                page={coverPage}
-                only={COVER_CATEGORIES}
+                background={form.cover}
                 themePresets={themePresets}
                 onBackground={(patch) => {
                   setPreview(null);
@@ -124,7 +112,6 @@ export function FormHeaderCard({ sections }: { sections: number }) {
                   );
                 }}
                 onPreview={setPreview}
-                motionNote="Moves in the builder and on the form’s page; still with Reduce Motion on."
               />
             </div>
           </div>

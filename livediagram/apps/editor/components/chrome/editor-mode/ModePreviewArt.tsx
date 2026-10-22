@@ -57,15 +57,6 @@ const ART: Record<EditorMode, ReactNode> = {
       <path d="M90 18v10l7 5M86 8h8" />
     </>
   ),
-  // A page with a chart and lines, and a slide.
-  pages: (
-    <>
-      <rect x="14" y="6" width="34" height="44" rx="3" />
-      <path d="M22 26v-6M30 26V14M38 26v-8M22 34h18M22 41h12" />
-      <rect x="58" y="12" width="50" height="30" rx="3" fill="currentColor" fillOpacity=".12" />
-      <path d="M66 22h22M66 30h34" />
-    </>
-  ),
   // Three columns of cards, one raised.
   plan: (
     <>

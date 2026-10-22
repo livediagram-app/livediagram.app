@@ -81,7 +81,7 @@ export function measureLabelBlock(
     node.style.fontFamily = fontFamily ?? '';
     node.style.width = fixed ? `${width}px` : 'max-content';
     node.style.maxWidth = `${width}px`;
-    // Wordmark type (docs/specs/007-editor/logo-pages.md): tracked, weighted and cased text hugs
+    // Wordmark type (docs/specs/007-editor/editor-modes.md "Pages moved to livedocuments"): tracked, weighted and cased text hugs
     // the width it draws at. Reset every time: the measurer is shared.
     node.style.letterSpacing = word.letterSpacing ? `${word.letterSpacing}em` : '';
     node.style.fontWeight = String(word.fontWeight ?? 500);

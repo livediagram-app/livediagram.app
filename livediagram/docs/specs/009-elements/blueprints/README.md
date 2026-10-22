@@ -41,5 +41,4 @@ Follow the references below only as needed; never upfront.
 - ./org-chart.md - when implementing or changing person nodes, the org chart variant or how they grow
 - ./sequence-diagram.md - when implementing or changing the sequence diagram element, its rows or its picture
 - ./boundary.md - when implementing or changing the boundary, its styles, depth tint, containment or paint order
-- ./tab-window.md - when implementing or changing the tab window, its states, the tab list, its context, its export drawing or the export's fetch
 - ./concept-graphics.md - when implementing or changing the layer stack, pyramid / funnel or cycle, their rows, layouts or Concept animations

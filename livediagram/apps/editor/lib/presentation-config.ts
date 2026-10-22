@@ -94,15 +94,9 @@ function slideMaxZoom(config: PresentationConfig): number {
   return config.zoom === 'actual' ? 1 : 2.5;
 }
 
-/** How a slide is fitted to the screen: a page slide fills it edge to edge (its page is the
- *  slide, docs/specs/007-editor/pages-mode.md "Slides"); any other keeps the fit's margin. */
-export function slideFitOptions(
-  slide: { pageId?: string },
-  config: PresentationConfig,
-): { maxZoom: number; padding?: number } {
-  return slide.pageId
-    ? { maxZoom: slideMaxZoom(config), padding: 0 }
-    : { maxZoom: slideMaxZoom(config) };
+/** How a slide is fitted to the screen: up to its zoom ceiling, with the fit's margin. */
+export function slideFitOptions(config: PresentationConfig): { maxZoom: number } {
+  return { maxZoom: slideMaxZoom(config) };
 }
 
 /** A stored presenter config, trusted only once parsed: every field checked, the default where it is not valid. */

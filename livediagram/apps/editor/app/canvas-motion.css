@@ -51,19 +51,6 @@
 
 /* The Shape set's classes live in motion-shape.css (docs/specs/028-animation/element-animations.md). */
 
-/* A tab window's drawing (docs/specs/009-elements/tab-window.md "The drawing") puts an element's set class on the
- * SVG group that draws it. A group has no layout box, so its transforms measure from its own drawing and pivot on
- * its centre as the canvas's wrapper does. Zero specificity, so a set that pivots elsewhere (Swing, a sticky's
- * Flutter and Sway from the top edge) keeps its own origin. */
-:where(.lvd-svg-motion) {
-  transform-box: fill-box;
-  transform-origin: center;
-}
-/* A window off screen holds still (TabWindowDrawing's useHoldOffscreen). */
-[data-tab-window-drawing][data-held] * {
-  animation-play-state: paused !important;
-}
-
 /* Text-native animations (docs/specs/008-canvas/canvas-and-palette.md). A standalone text element has no fill or
  * border, so the box-shadow / ring / background versions above would animate an
  * invisible bounding rectangle around the words. These variants ride the

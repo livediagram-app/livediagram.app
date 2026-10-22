@@ -16,7 +16,6 @@ import {
   createText,
   type BoxedElement,
   type Element,
-  type LaidOutPage,
   defaultSessionConfig,
   REACTION_PAD_LABEL,
   type EstimateScale,
@@ -91,9 +90,6 @@ export function useElementCreation(opts: {
   // A palette card never lands on the canvas (docs/specs/026-plan/plan-mode.md "The palette"): it goes
   // into the board column at the point, or nowhere.
   onPlanCardPlace?: (itemType: string | undefined, canvasX: number, canvasY: number) => void;
-  // Pages mode's laid-out pages: a click-to-connect arrow never joins two pages
-  // (docs/specs/007-editor/pages-mode.md "Arrows stay on one page"). Null outside it.
-  pages?: readonly LaidOutPage[] | null;
 }) {
   const {
     editsBlocked,
@@ -109,7 +105,6 @@ export function useElementCreation(opts: {
     beginDraw,
     styleNewElement,
     onPlanCardPlace,
-    pages,
   } = opts;
 
   // Telemetry for these arming handlers fires on commit (see
@@ -316,7 +311,6 @@ export function useElementCreation(opts: {
     beginDraw,
     commitTabs,
     styleNewElement,
-    pages,
   });
 
   // Drag-from-palette drop (docs/specs/008-canvas/canvas-and-palette.md): place the dragged kind centred on the
@@ -495,22 +489,7 @@ export function useElementCreation(opts: {
     track('Element', 'Added', 'Text');
   };
 
-  // An element of its default size put at a canvas point at once, as a tap with its tile would:
-  // an article page's Insert (docs/specs/007-editor/article-pages.md "The page toolbar") places
-  // a table, a chart or an image at the caret, and the writing takes it into a zone.
-  const placeIntentAt = (
-    intent: Extract<PendingDraw, { type: 'shape' | 'table' | 'image' | 'sticky' }>,
-    x: number,
-    y: number,
-  ) => {
-    if (editsBlocked) return;
-    addBoxedAt(x, y, (px, py) => buildDrawnBoxed(intent, px, py, px, py, null, activeTab), {
-      style: styleNewElement,
-    });
-  };
-
   return {
-    placeIntentAt,
     addShape,
     addIcon,
     addSticker,

@@ -79,7 +79,6 @@ export function inheritedSizeFor(
       isConceptShape(base.shape) ||
       base.shape === 'sequence' ||
       base.shape === 'diagram-key' ||
-      base.shape === 'tab-window' ||
       // A chart, a meter, a rating, a timeline rail, a legend, a sticker: each draws its own content to its own
       // proportions. A progress bar tapped while a legend was selected came out a 200 x 170 blob.
       isSelfDrawingShape(base.shape))

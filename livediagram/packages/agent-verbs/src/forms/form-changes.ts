@@ -252,7 +252,7 @@ function sectionPatch(
   return { ok: true, patch };
 }
 
-// A cover as agents give it (as change_pages takes a background): a colour or a gradient, perhaps moving, and a
+// A cover as agents give it: a colour or a gradient, perhaps moving, and a
 // pattern; read as the editor reads a stored cover.
 function coverOf(raw: unknown): ColourBackground | undefined {
   if (!raw || typeof raw !== 'object') return undefined;

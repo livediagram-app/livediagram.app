@@ -1,5 +1,3 @@
-import type { PaletteTileDef } from './palette-tile-defs';
-import { usePaletteKind } from '@/lib/palette-kind';
 import {
   DEFAULT_EDITOR_MODE,
   type EmbedProvider,
@@ -18,7 +16,6 @@ import { restoresMaximised, withTileActionPreamble } from './palette-tile-action
 import { paletteCategoryTabs } from './palette-category-tabs';
 import { useShapeLibraries } from '@/components/primitives/ShapeLibraryProvider';
 import type { PaletteAddHandlers } from './palette-add-handlers';
-import { useLogoMarkerTiles } from './PaletteLogoTab';
 import {
   coveredPaletteCategories,
   dashboardPaletteCategories,
@@ -94,7 +91,6 @@ export function usePaletteCatalogue({
   onCancelDraw,
   onBeginShapePen,
   onBeginPolygon,
-  onBeginPath,
   pendingDraw,
   esBoard,
   esBoardControls,
@@ -150,11 +146,9 @@ export function usePaletteCatalogue({
     armed(() => onAddArrow(ends))();
   const beginFreehand = armed(onBeginFreehand);
   const beginHighlighter = armed(onBeginHighlighter);
-  const beginMarker = (penId: WhiteboardPenId, once?: boolean) =>
-    armed(() => (once ? onBeginMarker(penId, true) : onBeginMarker(penId)))();
+  const beginMarker = (penId: WhiteboardPenId) => armed(() => onBeginMarker(penId))();
   const beginShapePen = armed(onBeginShapePen);
   const beginPolygon = armed(onBeginPolygon);
-  const beginPath = armed(onBeginPath);
   const addImage = armed(() => onAddImage?.());
   // One handler per composite-component kind, so the tile catalogue can
   // address them by kind (see PaletteTileGrid).
@@ -187,7 +181,6 @@ export function usePaletteCatalogue({
       beginMarker,
       beginShapePen,
       beginPolygon,
-      beginPath,
       addArrow,
       addSticky,
       addTable,
@@ -252,12 +245,6 @@ export function usePaletteCatalogue({
   const dashboardTab = usePlanTabKind() === 'dashboard';
   // Its Tabs category: the document's Board and Sheet tabs (plan-tab-list-store), gone while it has none.
   const planTabList = usePlanTabList();
-  // In Pages mode, the palette's kind (lib/palette-kind.ts): the page someone is on's. Each kind is its own layout
-  // (palette-layouts.ts).
-  const paletteKind = usePaletteKind();
-  const pages = editorMode === 'pages';
-  // Logo's Draw takes this person's markers, as tiles in their colours and widths (useLogoMarkerTiles).
-  const markers = useLogoMarkerTiles(pages && paletteKind === 'logo');
   // While a Plan board fills its tab, only Cards (coveredPaletteCategories).
   const categories = participant
     ? participantPaletteCategories(editorMode, !!esBoard)
@@ -271,16 +258,9 @@ export function usePaletteCatalogue({
                 ? [{ ...c, tiles: dashboardTabTiles(planTabList) }]
                 : [],
           )
-        : paletteCategoriesFor(editorMode, {
-            esBoard: !!esBoard,
-            ...(pages ? { pagesKind: paletteKind } : {}),
-          })
-            .filter((c) => hasLibraryShapes || c.id !== 'my-shapes')
-            .map((c) =>
-              c.id === 'draw' && markers.length
-                ? { ...c, tiles: [...withGroupEnd(c.tiles ?? []), ...markers] }
-                : c,
-            );
+        : paletteCategoriesFor(editorMode, { esBoard: !!esBoard }).filter(
+            (c) => hasLibraryShapes || c.id !== 'my-shapes',
+          );
   const tabs = paletteCategoryTabs({
     categories,
     pendingDraw,
@@ -329,12 +309,4 @@ export function usePaletteCatalogue({
     onCanvasToolChange,
     iconCatalogsLoaded,
   };
-}
-
-// `tiles` with its last ending a group, so what is added after it (Logo's markers) is a group of its own.
-function withGroupEnd(tiles: readonly PaletteTileDef[]): PaletteTileDef[] {
-  const last = tiles.at(-1);
-  return last && !last.dividerAfter
-    ? [...tiles.slice(0, -1), { ...last, dividerAfter: true }]
-    : [...tiles];
 }

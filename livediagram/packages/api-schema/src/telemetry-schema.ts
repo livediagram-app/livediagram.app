@@ -160,7 +160,7 @@ export const TELEMETRY_CATEGORIES = [
   // 'BreakShapeKey' | 'BreakShapeChip'). Presets only; never content.
   'Draw',
   // Editor modes (docs/specs/007-editor/editor-modes.md): a person switched a tab's editor mode,
-  // 'Changed' with 'ModeDiagram' | 'ModeDraw' | 'ModePages', fired before the mode applies.
+  // 'Changed' with 'ModeDiagram' | 'ModeDraw' | 'ModeWorkshop' | 'ModePlan', fired before the mode applies.
   'Editor',
   // Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md, "Telemetry"):
   // 'Linked' / 'Unlinked' (connected / disconnected, typed by token path
@@ -287,7 +287,7 @@ export const TELEMETRY_ACTIONS = [
   'Present',
   'Held',
   // Document views (docs/specs/024-agents/document-views.md): a view the api answered, typed by the
-  // view ('Overview' | 'Outline' | 'Graph' | 'Layout' | 'Comments' | 'Show' | 'Find' | 'Pages' | 'Lint').
+  // view ('Overview' | 'Outline' | 'Graph' | 'Layout' | 'Comments' | 'Show' | 'Find' | 'Lint').
   'Viewed',
   // Email (docs/specs/014-identity/transactional-email.md): a transactional / lifecycle email left the worker for
   // the provider. Only ever paired with the 'Email' category.
@@ -435,8 +435,6 @@ export const PALETTE_TELEMETRY_TYPES = {
     'PlanSheet',
     'ModeButton',
     'Portal',
-    // Tab window (docs/specs/009-elements/tab-window.md).
-    'TabWindow',
     'SessionButton',
     'Reveal',
     'Picker',

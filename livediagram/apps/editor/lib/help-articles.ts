@@ -89,7 +89,6 @@ export const HELP_ARTICLES = {
   eventStormingBoards: 'canvas/event-storming-boards',
   drawTour: 'canvas/draw-mode/draw-tour',
   avatarTour: 'selection-modes/avatar-mode/avatar-tour',
-  pagesTour: 'canvas/pages-mode/pages-tour',
   links: 'canvas/links',
   comments: 'collaboration/comments',
   livePresence: 'collaboration/live-presence',
@@ -118,7 +117,6 @@ export const HELP_ARTICLES = {
   // The round-two element tours' closing cards (docs/specs/007-editor/element-tours.md).
   stacks: 'palette/stacks',
   entities: 'palette/entities',
-  tabWindows: 'canvas/pages-mode/tab-windows',
   lanes: 'palette/lanes',
   boundaries: 'palette/boundaries',
   diagramKeys: 'palette/diagram-keys',
@@ -135,12 +133,6 @@ export const HELP_ARTICLES = {
   yourFirstDiagram: 'getting-started/your-first-diagram',
   templates: 'canvas/templates',
   drawMode: 'canvas/draw-mode',
-  logoPages: 'canvas/pages-mode/logo-pages',
-  wireframePages: 'canvas/pages-mode/wireframe-pages',
-  // Each page kind's Show Me links its own article (docs/specs/007-editor/pages-tour.md).
-  slidePages: 'canvas/pages-mode/slide-pages',
-  infographicLayouts: 'canvas/pages-mode/infographic-layouts',
-  articlePages: 'canvas/pages-mode/articles',
   keyboardShortcuts: 'tips-and-tricks/keyboard-shortcuts',
   guestVsAccount: 'getting-started/guest-vs-account',
   // Load recovery (docs/specs/007-editor/load-recovery.md).
@@ -198,10 +190,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   avatarTour: {
     title: 'Learn about the Avatar Tour',
-    description: 'What the tour shows you and how replaying works.',
-  },
-  pagesTour: {
-    title: 'Learn about the Pages Tour',
     description: 'What the tour shows you and how replaying works.',
   },
   sharing: {
@@ -450,10 +438,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about entities',
     description: 'UML classes and ER tables: a title over name and type fields.',
   },
-  tabWindows: {
-    title: 'Learn about tab windows',
-    description: 'Show another tab live on a slide, and keep it up to date.',
-  },
   lanes: {
     title: 'Learn about lanes',
     description: 'Swimlanes: title gutters, seams, and columns as well as rows.',
@@ -510,26 +494,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   drawMode: {
     title: 'Learn about Draw mode',
     description: 'Switching modes, the dock, its pens and shapes, and where it sits.',
-  },
-  logoPages: {
-    title: 'Learn about logo pages',
-    description: 'Guides, mirror drawing, wordmarks, combining shapes and the logo kit.',
-  },
-  wireframePages: {
-    title: 'Learn about wireframe pages',
-    description: 'Device frames, ready-made screens, the Elements palette and mockup export.',
-  },
-  slidePages: {
-    title: 'Learn about slide pages',
-    description: 'Slide layouts, backgrounds, the deck and presenting.',
-  },
-  infographicLayouts: {
-    title: 'Learn about infographic layouts',
-    description: 'Starting a page from a layout, its theme, and making it your own.',
-  },
-  articlePages: {
-    title: 'Learn about articles',
-    description: 'Writing, the page toolbar, article style and how pages flow.',
   },
   livePresence: {
     title: 'Learn about live presence',

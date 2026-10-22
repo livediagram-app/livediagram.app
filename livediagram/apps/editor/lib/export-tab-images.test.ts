@@ -55,8 +55,8 @@ describe('loadTabImages accepts a raster data URL', () => {
   });
 });
 
-describe('loadTabImages loads a page’s picture', () => {
-  it('fetches a page background’s gallery picture with the element images, once each', async () => {
+describe('loadTabImages', () => {
+  it('fetches each element image once', async () => {
     vi.stubGlobal(
       'Image',
       class {
@@ -71,22 +71,13 @@ describe('loadTabImages loads a page’s picture', () => {
       async (_o, id) => `data:image/png;base64,${id}`,
     );
     const tab = {
-      elements: [{ id: 'e', type: 'image', imageId: 'el' }],
-      pages: [
-        {
-          id: 'p',
-          orientation: 'portrait',
-          background: { fill: { kind: 'image', imageId: 'bg' } },
-        },
-        {
-          id: 'q',
-          orientation: 'portrait',
-          background: { fill: { kind: 'image', imageId: 'el' } },
-        },
+      elements: [
+        { id: 'e', type: 'image', imageId: 'el' },
+        { id: 'f', type: 'image', imageId: 'el' },
       ],
     } as unknown as Tab;
     const map = await loadTabImages(tab, { ownerId: 'o', documentId: 'd', shareCode: null });
-    expect([...map.keys()].sort()).toEqual(['bg', 'el']);
-    expect(vi.mocked(apiFetchImageDataUrl)).toHaveBeenCalledTimes(2);
+    expect([...map.keys()]).toEqual(['el']);
+    expect(vi.mocked(apiFetchImageDataUrl)).toHaveBeenCalledTimes(1);
   });
 });

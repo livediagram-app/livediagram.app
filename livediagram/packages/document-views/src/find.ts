@@ -61,8 +61,7 @@ function searchedTexts(el: Element): [FindField, string[]][] {
 }
 
 /** Every text `find` searches on one element (its label, note, cells, fields, items, nodes, code
- *  and comments), for a caller that searches by element without the view, such as Pages mode's
- *  Find a Page (docs/specs/007-editor/pages-mode.md "Contents"). */
+ *  and comments), for a caller that searches by element without the view. */
 export function elementFindTexts(el: Element): string[] {
   return searchedTexts(el).flatMap(([, texts]) => texts);
 }

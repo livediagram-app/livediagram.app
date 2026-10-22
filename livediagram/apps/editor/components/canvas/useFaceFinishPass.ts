@@ -298,7 +298,7 @@ function insetRing(shadow: string): { colour: string; px: number } | null {
   return m ? { colour: m[1]!, px: Number(m[2]) } : null;
 }
 
-// A box the size of the face (a banner's or a site header's coloured card, a tab window's sheet): the face's own box,
+// A box the size of the face (a banner's or a site header's coloured card): the face's own box,
 // whichever element paints it.
 function isFaceBox(el: HTMLElement, face: { width: number; height: number }): boolean {
   return (
@@ -329,7 +329,7 @@ function frameInk(
       parseFloat(css.getPropertyValue(`border-${s.toLowerCase()}-width`)) > 0 &&
       css.getPropertyValue(`border-${s.toLowerCase()}-style`) !== 'none',
   );
-  // A hairline drawn as an inset ring (a tab window's frame) is an outline too.
+  // A hairline drawn as an inset ring is an outline too.
   const ring = bordered ? null : insetRing(css.boxShadow);
   if (!bordered && !ring && !own) return null;
   const rx = parseFloat(css.borderTopLeftRadius) || 0;

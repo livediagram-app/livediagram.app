@@ -5,7 +5,6 @@
 // statement outweighs a small eyebrow; the topmost on a tie. On one line, cut to
 // SLIDE_HEADLINE_MAX characters. Pure.
 import {
-  pagesOf,
   LABEL_FONT_PX,
   resolveSlide,
   type Deck,
@@ -59,8 +58,7 @@ export function slideHeadlines(deck: Deck, tabs: readonly Tab[]): Map<string, st
 }
 
 /** What a presented slide is called (presentation-mode.md "Jump to a slide"): its own name, an item slide's
- *  card, the headline on it, the name of the page it shows, the name of the tab it comes from, and only then
- *  its position, so the deck's list reads as the talk does rather than "Slide 1, Slide 2". */
+ *  card, the headline on it, the name of the tab it comes from, and only then its position, so the deck's list reads as the talk does rather than "Slide 1, Slide 2". */
 export function presentedSlideName(
   slide: Slide,
   tab: Tab | undefined,
@@ -72,8 +70,6 @@ export function presentedSlideName(
   if (cardTitle?.trim()) return cardTitle.trim();
   const headline = slideHeadline(slide, tab);
   if (headline) return headline;
-  const page = slide.pageId && tab ? pagesOf(tab).find((p) => p.id === slide.pageId) : undefined;
-  if (page?.name?.trim()) return page.name.trim();
   if (tab?.name?.trim()) return tab.name.trim();
   return `Slide ${index + 1}`;
 }

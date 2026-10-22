@@ -31,7 +31,6 @@ export const PALETTE_ADD_HANDLER_KEYS = [
   'onBeginMarker',
   'onBeginShapePen',
   'onBeginPolygon',
-  'onBeginPath',
   // Not an add: a tile pressed while armed puts its tool down again.
   'onCancelDraw',
 ] as const satisfies readonly (keyof PaletteProps)[];

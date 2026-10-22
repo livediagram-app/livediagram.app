@@ -3,6 +3,9 @@
 # each old /features/<id> URL moves permanently to where its cards went, so search results and
 # old links keep landing. Workers Static Assets reads this file from out/ (Next copies public/).
 # lib/retired-features.test.ts pins every target to a live page.
+# Pages mode moved out of livediagram into livedocuments: its infographics and documents categories
+# go there, the slide deck cards that stayed went to collaboration, and the Google Slides comparison
+# to the comparisons hub.
 
 /features/simple /features/diagrams 301
 /features/simple/ /features/diagrams 301
@@ -22,9 +25,17 @@
 /features/connect/ /features/diagrams 301
 /features/express /features/whiteboard 301
 /features/express/ /features/whiteboard 301
-/features/present /features/documents 301
-/features/present/ /features/documents 301
+/features/present /features/collaboration 301
+/features/present/ /features/collaboration 301
 /features/reliability / 301
 /features/reliability/ / 301
 /features/foundations / 301
 /features/foundations/ / 301
+/features/slides /features/collaboration 301
+/features/slides/ /features/collaboration 301
+/features/infographics https://livedocuments.app/ 301
+/features/infographics/ https://livedocuments.app/ 301
+/features/documents https://livedocuments.app/ 301
+/features/documents/ https://livedocuments.app/ 301
+/alternatives/google-slides /alternatives 301
+/alternatives/google-slides/ /alternatives 301

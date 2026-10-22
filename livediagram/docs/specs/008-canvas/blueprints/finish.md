@@ -256,7 +256,6 @@ heads, sketchedHeads, headFill, inkOpacity }`; Sketch: `lineOver` empty, `headFi
   last change, never later than `SKETCH_INK_MAX_WAIT_MS` after the first. `app/sketch-face.css` hides the live
   layer's backgrounds, borders, shadows (not on `:focus-visible`) and SVG shapes (`opacity: 0`), and gives the ink
   layer `filter: url(#lvd-sketch-face)`, `pointer-events: none`, transparent text fill and hidden SVG text.
-  `TabWindowFace` marks its drawing and its Open button `data-sketch-skip`.
 - `SketchFilterDefs` also renders `SKETCH_FACE_FILTER` (`svg-render-sketch.ts`): one `feTurbulence` (octaves 1,
   seed 7, base frequency 0.12) and one `feDisplacementMap` (scale 3) over a 5% margin.
 - WebKit (spec "In WebKit"): `lib/live-filter-cost.ts` `liveFiltersRedrawOnRepaint()` is true when `window` has
@@ -302,14 +301,14 @@ once and passes `sketchBackdrop` per element; `boxedNeedsSvgRaster` sends every 
 raster path so PNG matches SVG.
 
 `svgBoxed` wraps `svgBoxedFace`: it sets the element's `exportFontFamily` on its outer `<g>`, and when the element is
-sketched, `finishSplitsFace` holds and it is not a tab window, passes the group's inner markup to `svgSketchFace`:
+sketched, `finishSplitsFace` holds, passes the group's inner markup to `svgSketchFace`:
 a `data-finish="sketch"` body is lifted out and kept where it was (first for a box, last for a table); the ink copy
 (every `<text>`, `<image>` and `<foreignObject>` removed) goes in `<g filter="url(#lvd-sketch-face)">`; the words
 copy (every `rect`, `circle`, `ellipse`, `path`, `line`, `polyline`, `polygon` and `use` given
 `visibility="hidden"`, `clipPath`, `mask`, `defs`, `pattern` and `marker` blocks left whole) follows when the face
-has words or photos. `svgTabWindow(..., sketched, fontFamily)` puts only its hairline through the filter.
+has words or photos.
 `svgSketchArtDefs` emits the art filter when an icon or sticker is sketched and the face filter when a split face
-is. `svgChecklistShape`, `svgLegendShape` and the empty tab window letter in the element's face.
+is. `svgChecklistShape` and `svgLegendShape` letter in the element's face.
 
 ### Faces in their finish (spec "Faces", "Faces: frames and shapes")
 
@@ -500,32 +499,32 @@ per command letter.
 
 ## Testing
 
-| Rule                                                         | Test                                                                                                     |
-| ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------- |
-| resolve order, unknown values, Professional fallbacks, font  | `packages/document/src/finish.test.ts`                                                                   |
-| determinism, seeds differ, outlines, hatching bounds/caps    | `packages/document/src/sketch.test.ts`                                                                   |
-| budgets                                                      | `packages/document/src/sketch.perf.test.ts`                                                              |
-| export draws sketch strokes / hatching / Professional radius | `packages/document/src/svg-render-finish.test.ts`                                                        |
-| variant drops shadow / peel / border per finish              | `apps/editor/components/canvas/element-variant.test.ts`                                                    |
-| menu rows commit, preview, Follow Tab clears                 | `apps/editor/components/palette/FinishSection.test.tsx`                                                    |
-| backdrops: what sits on a shape, order, finish, speed        | `packages/document/src/sketch-backdrop.test.ts`                                                          |
-| Professional new arrows angled; avoidance per finish         | `apps/editor/hooks/canvas/arrow-avoidance-apply.test.ts`                                                   |
-| which palette tiles take the finish                          | `apps/editor/components/palette/palette-tile-finish.test.ts`                                               |
-| applyFinishToEl                                              | `apps/editor/lib/style-presets.test.ts`                                                                    |
-| preview draws each finish, stable, in the tab's font         | `apps/editor/lib/finish-preview.test.ts`                                                                   |
+| Rule                                                         | Test                                                                                                         |
+| ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------ |
+| resolve order, unknown values, Professional fallbacks, font  | `packages/document/src/finish.test.ts`                                                                       |
+| determinism, seeds differ, outlines, hatching bounds/caps    | `packages/document/src/sketch.test.ts`                                                                       |
+| budgets                                                      | `packages/document/src/sketch.perf.test.ts`                                                                  |
+| export draws sketch strokes / hatching / Professional radius | `packages/document/src/svg-render-finish.test.ts`                                                            |
+| variant drops shadow / peel / border per finish              | `apps/editor/components/canvas/element-variant.test.ts`                                                      |
+| menu rows commit, preview, Follow Tab clears                 | `apps/editor/components/palette/FinishSection.test.tsx`                                                      |
+| backdrops: what sits on a shape, order, finish, speed        | `packages/document/src/sketch-backdrop.test.ts`                                                              |
+| Professional new arrows angled; avoidance per finish         | `apps/editor/hooks/canvas/arrow-avoidance-apply.test.ts`                                                     |
+| which palette tiles take the finish                          | `apps/editor/components/palette/palette-tile-finish.test.ts`                                                 |
+| applyFinishToEl                                              | `apps/editor/lib/style-presets.test.ts`                                                                      |
+| preview draws each finish, stable, in the tab's font         | `apps/editor/lib/finish-preview.test.ts`                                                                     |
 | dialog tab sets, previews, Apply to All clears               | `apps/editor/components/dialogs/CanvasThemeDialog.test.tsx`, `apps/editor/hooks/canvas/useTabCanvas.test.ts` |
-| Participant cannot write `finish`                            | `packages/document/src/participant-content.leak.test.ts`                                                 |
-| which elements split their face                              | `packages/document/src/finish.test.ts`                                                                   |
-| Marker: finish rules, font, widths, icon weight, sticky      | `packages/document/src/finish.test.ts`                                                                   |
-| Marker: strokes, layers, gestures, pins, trim, heads, rows   | `packages/document/src/marker.test.ts`                                                                   |
-| Marker: budgets                                              | `packages/document/src/marker.perf.test.ts`                                                              |
-| one door to both pens; Marker in the export; backdrops       | `packages/document/src/hand-drawn.test.ts`                                                               |
-| export split, body placement, tab window frame, defs, fonts  | `packages/document/src/svg-render-sketch.test.ts`                                                        |
-| ink copy, settle and longest wait, single render             | `apps/editor/components/canvas/SketchFace.test.tsx`                                                        |
-| face split per finish, element font on the wrapper           | `apps/editor/components/canvas/BoxedElementView.sketch-face.test.tsx`                                      |
-| WebKit: faces whole, icons as pictures, elsewhere unchanged  | `apps/editor/components/canvas/BoxedElementView.sketch-face.test.tsx`                                      |
-| WebKit is told by `GestureEvent`                             | `apps/editor/lib/live-filter-cost.test.ts`                                                                 |
-| pictures: markup, colours, ids, scale, margin, settle, reuse | `apps/editor/components/canvas/SketchArtPicture.test.tsx`                                                  |
+| Participant cannot write `finish`                            | `packages/document/src/participant-content.leak.test.ts`                                                     |
+| which elements split their face                              | `packages/document/src/finish.test.ts`                                                                       |
+| Marker: finish rules, font, widths, icon weight, sticky      | `packages/document/src/finish.test.ts`                                                                       |
+| Marker: strokes, layers, gestures, pins, trim, heads, rows   | `packages/document/src/marker.test.ts`                                                                       |
+| Marker: budgets                                              | `packages/document/src/marker.perf.test.ts`                                                                  |
+| one door to both pens; Marker in the export; backdrops       | `packages/document/src/hand-drawn.test.ts`                                                                   |
+| export split, body placement, defs, fonts                    | `packages/document/src/svg-render-sketch.test.ts`                                                            |
+| ink copy, settle and longest wait, single render             | `apps/editor/components/canvas/SketchFace.test.tsx`                                                          |
+| face split per finish, element font on the wrapper           | `apps/editor/components/canvas/BoxedElementView.sketch-face.test.tsx`                                        |
+| WebKit: faces whole, icons as pictures, elsewhere unchanged  | `apps/editor/components/canvas/BoxedElementView.sketch-face.test.tsx`                                        |
+| WebKit is told by `GestureEvent`                             | `apps/editor/lib/live-filter-cost.test.ts`                                                                   |
+| pictures: markup, colours, ids, scale, margin, settle, reuse | `apps/editor/components/canvas/SketchArtPicture.test.tsx`                                                    |
 
 ## Constants and configuration
 

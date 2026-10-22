@@ -58,8 +58,9 @@ export function imageRefPruneTabStatement(env: Env, tabId: string): D1PreparedSt
 // valid JSON with an `elements` ARRAY, so a corrupt tab can't fail the
 // statement (in whatever order SQLite evaluates the join) and an object
 // isn't walked.
-// The pages' pictures (docs/specs/007-editor/pages-mode.md "Image backgrounds") are walked
-// the same way over `$.pages`, the id at `$.background.fill.imageId` of a `kind: 'image'` fill.
+// A tab stored while it was in Pages mode may still hold its pages until it is next saved (docs/specs/007-editor/
+// editor-modes.md "Pages moved to livedocuments"), so their pictures are walked the same way over `$.pages`, the id at
+// `$.background.fill.imageId` of a `kind: 'image'` fill, and stay referenced until then.
 function walkSql(
   tabWhere: string,
   array: '$.elements' | '$.pages',

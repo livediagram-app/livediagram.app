@@ -473,8 +473,6 @@ export function supportsFillColor(element: Element): boolean {
   // The control was inert on both, and picking a colour still wrote to the
   // element, autosaved, logged a change and broadcast an op for nothing.
   if (element.type === 'shape' && element.shape === 'icon') return false;
-  // A tab window's ground is the paper of the tab it shows (docs/specs/009-elements/tab-window.md).
-  if (element.type === 'shape' && element.shape === 'tab-window') return false;
   return element.type !== 'text' && element.type !== 'image';
 }
 
@@ -592,8 +590,6 @@ export const SELF_PAINTING_SHAPES = new Set<string>([
   'sankey',
   // Behaviour elements (docs/specs/009-elements/portal-element.md, /106): the ring / cover IS the element.
   'portal',
-  // A tab window (docs/specs/009-elements/tab-window.md) draws its own rounded frame round the tab it shows.
-  'tab-window',
   'reveal',
   // A chair (docs/specs/009-elements/chair.md) draws its own furniture and wants no box behind it,
   // which is what the canvas does too (isSvgRenderedShape excludes it).
@@ -663,7 +659,7 @@ export function positionsInlineIcon(element: Element): boolean {
 }
 
 // The kinds whose own face never draws an inline icon: a badge or step number (chip.ts, its number or text), a concept
-// graphic (its rows), a sequence diagram, a Diagram key, a tab window, and a mind node drawn as a person (its initials).
+// graphic (its rows), a sequence diagram, a Diagram key, and a mind node drawn as a person (its initials).
 // The chip kinds are named here rather than read from chip.ts, which imports this file.
 function drawsNoInlineIcon(element: ShapeElement): boolean {
   return (
@@ -672,7 +668,6 @@ function drawsNoInlineIcon(element: ShapeElement): boolean {
     isConceptShape(element.shape) ||
     element.shape === 'sequence' ||
     element.shape === 'diagram-key' ||
-    element.shape === 'tab-window' ||
     (element.shape === 'mind-node' && element.mindLook === 'person')
   );
 }

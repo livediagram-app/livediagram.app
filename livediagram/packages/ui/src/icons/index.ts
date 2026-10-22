@@ -50,7 +50,6 @@ export {
 export {
   EDITOR_MODE_ICONS,
   FlowchartIcon,
-  PagesIcon,
   PlanCardsIcon,
   PlanIcon,
   FlipchartIcon,

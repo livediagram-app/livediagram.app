@@ -2,10 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   ES_NOTE_GAP,
   ES_LANE_PITCH,
-  pageSnapBoxes,
   laneCentre,
-  layOutPages,
-  pageMargin,
   type Element,
   type EsTimeline,
   type StickyElement,
@@ -211,46 +208,5 @@ describe('resolveBoxedMove — timeline lanes', () => {
     const out = resolve(305 - START.x, ES_LANE_PITCH + 7 - START.y, { timeline: null });
     expect(out.lane).toBeNull();
     expect(START.x + out.tx).toBe(305);
-  });
-});
-
-describe('resolveBoxedMove — Page lines', () => {
-  // docs/specs/007-editor/pages-mode.md "Snapping to the page".
-  const [page] = layOutPages([{ id: 'p', orientation: 'portrait' }]);
-  const boxes = pageSnapBoxes([page!]);
-  const m = pageMargin(page!);
-
-  it('snaps an edge to the page margin and guides it', () => {
-    const left = page!.rect.x + m;
-    const out = resolveBoxedMove({
-      elements: [note('drag', 0, 0)],
-      startBounds: new Map([['drag', { x: 0, y: 0, width: 200, height: 200 }]]),
-      primaryId: 'drag',
-      dx: left + 3,
-      dy: 0,
-      noSnap: false,
-      guidesOn: true,
-      timeline: null,
-      laneHeld: false,
-      pageSnapBoxes: boxes,
-    });
-    expect(out.tx).toBe(left);
-    expect(out.guides.some((g) => g.axis === 'x' && g.position === left)).toBe(true);
-  });
-
-  it('snaps the centre to the page centre line', () => {
-    const out = resolveBoxedMove({
-      elements: [note('drag', 0, 0)],
-      startBounds: new Map([['drag', { x: 0, y: 0, width: 200, height: 200 }]]),
-      primaryId: 'drag',
-      dx: -104,
-      dy: -97,
-      noSnap: false,
-      guidesOn: true,
-      timeline: null,
-      laneHeld: false,
-      pageSnapBoxes: boxes,
-    });
-    expect([out.tx, out.ty]).toEqual([-100, -100]);
   });
 });

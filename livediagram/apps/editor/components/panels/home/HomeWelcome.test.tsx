@@ -35,7 +35,6 @@ describe('HomeWelcome', () => {
       '/new?template=blank',
       '/new?template=whiteboard',
       '/new?template=blank-session',
-      '/new?template=blank-illustration',
       '/new?template=blank-plan',
     ]);
     expect(links[0]!.textContent).toContain('Blank Diagram');
@@ -43,7 +42,7 @@ describe('HomeWelcome', () => {
     expect(track).toHaveBeenLastCalledWith('Home', 'Selected', 'Welcome.Blank');
   });
 
-  it('offers eight popular templates and a way to all of them', () => {
+  it('offers the popular templates and a way to all of them', () => {
     render(<HomeWelcome offerSignIn={false} />);
     const popular = section('Popular Templates');
     const starts = popular.querySelectorAll('[data-welcome-start]');

@@ -28,7 +28,6 @@ describe('acceptsInlineIcon', () => {
       'chevrons',
       'sequence',
       'diagram-key',
-      'tab-window',
     ] as const)
       expect(acceptsInlineIcon(createShape(kind, 0, 0)), kind).toBe(false);
     const person = { ...createShape('mind-node', 0, 0), mindLook: 'person' } as never;

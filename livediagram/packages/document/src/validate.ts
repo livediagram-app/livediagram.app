@@ -135,8 +135,6 @@ export const SHAPE_KINDS = new Set<string>([
   'mode-button',
   // Portal (docs/specs/009-elements/portal-element.md): a portal to the portal it is paired with.
   'portal',
-  // Tab window (docs/specs/009-elements/tab-window.md): another tab of the document drawn inside it.
-  'tab-window',
   // Session button (docs/specs/012-collaboration/session-button.md): starts a timer / vote / poll for the room.
   'session-button',
   // Reveal zone (docs/specs/009-elements/reveal-zone.md): a cover you click to see what is underneath.
@@ -386,7 +384,7 @@ const TEXT_FIELD_CHECKS: readonly FieldCheck[] = [
     valid: (v) => isNum(v) && v >= TEXT_SCALE_MIN && v <= TEXT_SCALE_MAX,
     rule: `a number from ${TEXT_SCALE_MIN} to ${TEXT_SCALE_MAX}`,
   },
-  // Wordmark type (docs/specs/007-editor/logo-pages.md "Wordmark type").
+  // Wordmark type (docs/specs/007-editor/editor-modes.md "Pages moved to livedocuments").
   {
     field: 'letterSpacing',
     valid: (v) => isNum(v) && v >= LETTER_SPACING_MIN && v <= LETTER_SPACING_MAX,
@@ -430,7 +428,7 @@ function pathIssue(el: Record<string, unknown>): ElementValidationIssue | null {
   if (!boundedArray(el.nodes, MAX_PATH_NODES) || el.nodes.length < 2)
     return issue('nodes', nodesRule);
   if (!el.nodes.every(isPathNode)) return issue('nodes', nodesRule);
-  // A path's further contours (docs/specs/007-editor/logo-pages.md "Combine", "Mirror"): each
+  // A path's further contours (docs/specs/007-editor/editor-modes.md "Pages moved to livedocuments"): each
   // closed like the path (three nodes or more) or open (two or more), every contour's nodes within
   // the one budget.
   if (el.subpaths !== undefined) {

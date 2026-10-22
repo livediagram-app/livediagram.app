@@ -49,7 +49,7 @@ const TRUSTED_TYPES_BOOT = trustedTypesBootScript(
 );
 
 const TITLE = 'livediagram';
-const DESCRIPTION = 'Diagrams, whiteboards, illustrations and documents. Multiplayer canvas.';
+const DESCRIPTION = 'Diagrams, whiteboards, workshops and plans. Multiplayer canvas.';
 
 export const metadata: Metadata = {
   title: TITLE,

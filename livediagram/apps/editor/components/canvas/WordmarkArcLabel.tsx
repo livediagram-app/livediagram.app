@@ -1,6 +1,6 @@
 'use client';
 
-// Arched wordmark type on the canvas (docs/specs/007-editor/logo-pages.md "Wordmark type"): the
+// Arched wordmark type on the canvas (docs/specs/007-editor/editor-modes.md "Pages moved to livedocuments"): the
 // text along the element's arc, one line, centred on the arc's midpoint. The same geometry as the
 // export (arcGeometry), at the export's size, so the canvas and every file agree.
 import {

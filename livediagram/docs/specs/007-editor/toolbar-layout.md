@@ -6,13 +6,13 @@ Status: shipped
 
 The editor's one panel layout, on every device (see "One layout" for the retired Floating
 layout). The Palette is a single horizontal strip pinned to the top centre of the canvas, the way
-Excalidraw's tool bar works. In Diagram, Workshop and Pages the strip is the **category bar**
+Excalidraw's tool bar works. In Diagram and Workshop the strip is the **category bar**
 (below): the mode's categories, each opening a flyout of its tiles. Plan keeps the category picker
 and one category's tiles:
 
 ```
  ☰ ⬡|✎   ┌──────────────────────────────────────────────────────────────────────┐
- │        │ [↖ ▾] │ Shapes Write Draw │ Diagrams Concepts Layout │ Icons … │ [🔍] │   Diagram, Workshop, Pages
+ │        │ [↖ ▾] │ Shapes Write Draw │ Diagrams Concepts Layout │ Icons … │ [🔍] │   Diagram, Workshop
  ▼        └──────────────────────────────────────────────────────────────────────┘
  ☰ ⬡|✎   ┌──────────────────────────────────────────────────────┐
           │ [↖ ▾] │ [Cards ▾] │ □ ◇ ○ → ─ ✎ A ▤ … │ [⋯ ▾] │ [🔍] │                  Plan
@@ -28,7 +28,7 @@ and one category's tiles:
 - **Left: the selection mode.** The canvas-tool picker (Select / Hand /
   Eraser / Format / Laser / Spotlight / Isometric / Zen (Avatar only while in it), [Tile grids for the palette dropdowns](../004-interface-design/dropdown-tile-grid.md))
   as a compact icon trigger, opening the banded tile grid.
-- **Then, in Diagram, Workshop and Pages, the category bar** ("The category bar").
+- **Then, in Diagram and Workshop, the category bar** ("The category bar").
 - **Then, in Plan, the category picker.** The same banded category grid ([Palette top-level categories and bands](../010-palette/palette-top-level-categories.md)),
   as a compact trigger showing the current category's glyph and name. It
   sits directly before the tiles it chooses, so it reads as their label.
@@ -42,7 +42,7 @@ and one category's tiles:
 
 ## The category bar
 
-Diagram, Workshop and Pages show their **categories** on the strip rather than one category's tiles, the way
+Diagram and Workshop show their **categories** on the strip rather than one category's tiles, the way
 the Icons category always showed its groups: the strip is a short row of named places, and each holds its tiles in
 a flyout. Finding a tile is one look along the bar, not a trip through a picker, and the strip never changes width
 under the pointer as a category is switched.
@@ -65,18 +65,16 @@ under the pointer as a category is switched.
   node, Org chart, Flowchart, Sequence, Table, Entity), **Layout** what arranges and labels them (Lane, Frame,
   Stack, Boundary, Timeline, then Diagram key, Card, Badge, Step number), after Concepts: what you build comes first, the ideas laid out beside it, then what it is arranged in. Fifteen tiles under one name mixed what
   you build with what you build it in. Workshop offers the same **Layout**: a board is laid out in frames and
-  lanes as a diagram is. Pages has **no Build**: its three page tiles moved beside their neighbours, the Stack
-  into Components and the Timeline and Table into Data.
+  lanes as a diagram is.
 - **Session** (Workshop): the Collaborate categories Tools, Record, React, Selection Mode and Navigate gathered
   into one category, browsed as Icons is (the two-pane browse, below), searchable across all of them. **Ask** keeps
   its own button beside it: putting a question to the room is the session's main act, not one of its tools.
 - **The bars:**
 
-  | Mode     | Bar                                                                                   |
-  | -------- | ------------------------------------------------------------------------------------- |
-  | Diagram  | Shapes, Write, Draw · Diagrams, Concepts, Layout · Icons, Tech, Media                 |
-  | Workshop | Shapes, Write, Draw · Layout · Ask, Session · Icons, Stickers, Media · Data           |
-  | Pages    | (Logo,) Shapes, Write · Concepts, Components, Devices · Icons, Stickers, Media · Data |
+  | Mode     | Bar                                                                         |
+  | -------- | --------------------------------------------------------------------------- |
+  | Diagram  | Shapes, Write, Draw · Diagrams, Concepts, Layout · Icons, Tech, Media       |
+  | Workshop | Shapes, Write, Draw · Layout · Ask, Session · Icons, Stickers, Media · Data |
 
   Library joins after Shapes while the person has a [shape library](../013-workspace/shape-libraries.md) to place
   from, as My shapes does in the picker.
@@ -84,11 +82,11 @@ under the pointer as a category is switched.
 - **Names fit or go.** The bar shows its names while the strip, named, fits the room the centred strip may take
   (the editor's width less the top-left menu card, measured, on both sides); otherwise the glyphs alone
   (`useBarLabels`). Measured, not estimated: the menu card is wider in a mode that shows the tab's name, and an
-  estimate let Pages mode's bar run under it. **Too wide even bare**, as on a tablet (768px) where Diagram's glyphs
+  estimate let a long bar run under it. **Too wide even bare**, as on a tablet (768px) where Diagram's glyphs
   need about 425px of the 382px centring leaves, the strip sits at the right instead, 12px from the edge, clear of
   the card (`useStripCrowded`, measured the same way); it centres again once there is room. A phone always shows the glyphs, 44 px apart, and the bar swipes
   sideways while the selection mode and Search stay put (the tile rail's rule, "On a phone"). A swiping rail (the bar,
-  the tile rail, an article's dock) fades the edge with more beyond it over 20px (`scroll-edge-fade`, a scroll-driven
+  the tile rail) fades the edge with more beyond it over 20px (`scroll-edge-fade`, a scroll-driven
   mask where the browser has them), so a glyph cut by the edge reads as more to swipe to, not a stray sliver of an
   icon; an edge with nothing beyond it stays sharp.
 - **The open category** is pressed (the brand tint) with a short brand bar under it.
@@ -186,11 +184,14 @@ A strip shows one category at a time, so finding an element means knowing which 
   the tab's own types. Opening it focuses its search field (not on a phone, where focusing raises the keyboard over
   it).
 - **What it searches:** the element **tiles** (`PALETTE_TILES`) of every mode's palette layout,
-  each once however many categories hold it. **Icons, Stickers and Technology** are searched too,
+  each once however many categories hold it, and the tiles on no strip (`SEARCH_ONLY_TILE_IDS` in
+  `palette-layouts.ts`: the Code block, the six embeds, the Devices and the page blocks Hero, Header, Banner,
+  Stat row and Process), listed as this mode's in every mode, after its own, since Search is the strip's one way
+  to them (the search panel's Add to canvas finds them too). **Icons, Stickers and Technology** are searched too,
   entry by entry, as their categories' own tiles (`palette-dynamic-tiles`, `palette-catalogue-search`):
   each catalogue at most **15** best matches (five rows; its category has the rest, with its browse),
   merged with the element tiles of the same section by how well the name matches (exact, prefix, substring, then keyword only; element tiles first among equals), so "chart" leads with the charts, not the flowchart shapes that only carry the word. A catalogue is this mode's when the mode's
-  palette offers its category (Icons and Stickers in Diagram and Pages, Technology in Diagram)
+  palette offers its category (Icons in Diagram and Workshop, Stickers in Workshop, Technology in Diagram)
   and another mode's otherwise. Before anything is typed, the entries already on the tab list with
   the element types (an icon or a technology mark is an icon shape carrying its id, a sticker a shape
   carrying its sticker id). The catalogues load as a chunk of their own; the popover asks for it on
@@ -334,7 +335,7 @@ so a new page load starts on the mode's landing (Plan's Cards, or Boards while t
 ## The tab's name
 
 - On a desktop, the menu box (the Explorer button and the mode switch, top left) ends with the open tab's name, after a
-  hairline, in every mode: Diagram, Draw, Pages and Plan alike, as a board's name rides there
+  hairline, in every mode: Diagram, Draw, Workshop and Plan alike, as a board's name rides there
   ([The name rides in the menu box](../026-plan/plan-board.md)). It is the chrome's ink, 14 px at regular weight (never bold), cut short
   with an ellipsis past 16rem, and follows a rename at once. The box shows a name alone, never an icon beside it.
 - While a board, Sheet or view filling the tab (or maximised) has its own name in the box, that name shows instead,

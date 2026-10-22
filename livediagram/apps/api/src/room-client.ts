@@ -284,15 +284,14 @@ export async function relayTabRename(
   return false;
 }
 
-// An agent's Pages edit (docs/specs/024-agents/pages-for-agents.md "The route"), as the ops an
-// editor's own edit sends: a `tab-meta` patch of the pages and mode, then each article's frames, in
-// order; and an agent's form write (docs/specs/030-forms/forms.md "Agents"), its form and name as one
-// `tab-meta`. Best-effort and logged under `tag`, like the tab rename relay; answers how many reached the room.
-export async function relayPages(
+// An agent's form write (docs/specs/030-forms/forms.md "Agents"), as the ops an editor's own edit sends: its form
+// and name as one `tab-meta`, in order. Best-effort and logged under `tag`, like the tab rename relay; answers how
+// many reached the room.
+export async function relayRoomOps(
   env: Env,
   documentId: string,
   ops: readonly RoomOp[],
-  tag = '[pages-agent]',
+  tag: string,
 ): Promise<number> {
   let reached = 0;
   for (const op of ops) {

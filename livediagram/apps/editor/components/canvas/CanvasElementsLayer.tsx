@@ -43,15 +43,12 @@ import { usePhotoDraftView } from '@/lib/photo-draft-preview';
 import { ZoomedLaserOverlay, ZoomedRemoteCursor } from '@/components/canvas/view-readers';
 import { useInsertShift } from '@/hooks/canvas/useInsertShift';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
-import { PageClip } from '@/components/canvas/PageClip';
-import { WireframeDeviceOverlays } from '@/components/canvas/WireframeDeviceOverlays';
 import { CardVoteProvider, type CardVote } from '@/components/plan/CardVoteContext';
 import {
   SheetChartsContext,
   type SheetChartsValue,
 } from '@/components/sheets/sheet-charts-context';
 import { sheetDrawnChartIds, type LaneGutterEdge, type LaneLike } from '@livediagram/document';
-import { GifOmit } from './GifOmit';
 
 // What a drawn arrow resolves its ends against on a board with no arrows yet.
 const EMPTY_ELEMENT_INDEX: ElementIndex = new Map();
@@ -579,98 +576,76 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             above all boxes inside a single SVG layer). Each arrow
             gets its own <svg> overlay; pointer events on the SVG are
             disabled in CSS, only the inner arrow line picks them up. */}
-          {/* Pages mode cuts elements off at the page edges (PageClip); not in the
-          isometric view, whose 3D stack a clip would flatten. */}
-          <PageClip
-            pages={
-              props.pagesMode && props.canvasTool !== 'isometric' ? props.pagesMode.pages : null
-            }
-            // A page under a layout preview shows only the preview.
-            hiddenPageId={props.pagesMode?.layoutPreview?.pageId ?? null}
+          <CanvasElementList
+            shownOrder={shownOrder}
+            previewStore={previewStore}
+            h={h}
+            boxedShared={boxedShared}
+            arrowGeometry={arrowGeometry}
+            arrowLabels={arrowLabels}
             elements={elements}
-            layers={tabLayers}
-          >
-            <CanvasElementList
-              shownOrder={shownOrder}
-              previewStore={previewStore}
-              h={h}
-              boxedShared={boxedShared}
-              arrowGeometry={arrowGeometry}
-              arrowLabels={arrowLabels}
-              elements={elements}
-              editingId={editingId}
-              editCursorAtEnd={editCursorAtEnd}
-              reshapingArrowId={props.reshapingArrowId}
-              isPaintMode={isPaintMode}
-              tabLocked={tabLocked}
-              readOnly={readOnly}
-              insertShift={insertShift}
-              shiftDupGhostIds={shiftDupGhostIds}
-              draftView={draftView}
-              tabVote={tabVote}
-              tabLayers={tabLayers}
-              remoteSelectionsByElement={remoteSelectionsByElement}
-              canMove={canMove}
-              canWriteText={canWriteText}
-              canResize={canResize}
-              voteReview={voteReview}
-              commentActionsFor={commentActionsFor}
-              actionActionsFor={actionActionsFor}
-              revealedIds={revealedIds}
-              reactionBursts={reactionBursts}
-              tabFont={tabFont}
-              tabFinish={tabFinish}
-              fontEpoch={fontEpoch}
-              stackedIds={stackedIds}
-            />
-          </PageClip>
-          {/* A wireframe page's camera and system bars, over what is on its screen. */}
-          {props.pagesMode && props.canvasTool !== 'isometric' ? (
-            <WireframeDeviceOverlays
-              pages={props.pagesMode.pages}
-              frameTheme={props.pagesMode.frameTheme}
+            editingId={editingId}
+            editCursorAtEnd={editCursorAtEnd}
+            reshapingArrowId={props.reshapingArrowId}
+            isPaintMode={isPaintMode}
+            tabLocked={tabLocked}
+            readOnly={readOnly}
+            insertShift={insertShift}
+            shiftDupGhostIds={shiftDupGhostIds}
+            draftView={draftView}
+            tabVote={tabVote}
+            tabLayers={tabLayers}
+            remoteSelectionsByElement={remoteSelectionsByElement}
+            canMove={canMove}
+            canWriteText={canWriteText}
+            canResize={canResize}
+            voteReview={voteReview}
+            commentActionsFor={commentActionsFor}
+            actionActionsFor={actionActionsFor}
+            revealedIds={revealedIds}
+            reactionBursts={reactionBursts}
+            tabFont={tabFont}
+            tabFinish={tabFinish}
+            fontEpoch={fontEpoch}
+            stackedIds={stackedIds}
+          />
+
+          {/* The line or arrow being drawn (docs/specs/023-draw-mode/draw-mode.md "Shapes"): the
+          element the release lands, after every element, where it will land. */}
+          {drawDrag && props.pendingDraw?.type === 'arrow' && props.previewDrawnArrow ? (
+            <DrawnArrowPreview
+              arrow={props.previewDrawnArrow(
+                props.pendingDraw,
+                drawDrag.startX,
+                drawDrag.startY,
+                drawDrag.currentX,
+                drawDrag.currentY,
+              )}
+              elementIndex={elementIndex ?? EMPTY_ELEMENT_INDEX}
+              occluders={drawnElements}
+              draftLayout={arrowLabels.draftLayout}
+              fontFamily={tabFontStack}
+              withDefs={!hasArrows}
             />
           ) : null}
 
-          {/* Editor-only marks, left out of an animated GIF (GifOmit). */}
-          <GifOmit>
-            {/* The line or arrow being drawn (docs/specs/023-draw-mode/draw-mode.md "Shapes"): the
-          element the release lands, after every element, where it will land. */}
-            {drawDrag && props.pendingDraw?.type === 'arrow' && props.previewDrawnArrow ? (
-              <DrawnArrowPreview
-                arrow={props.previewDrawnArrow(
-                  props.pendingDraw,
-                  drawDrag.startX,
-                  drawDrag.startY,
-                  drawDrag.currentX,
-                  drawDrag.currentY,
-                )}
-                elementIndex={elementIndex ?? EMPTY_ELEMENT_INDEX}
-                occluders={drawnElements}
-                draftLayout={arrowLabels.draftLayout}
-                fontFamily={tabFontStack}
-                withDefs={!hasArrows}
-              />
-            ) : null}
-
-            {/* What the agents present name in focus (docs/specs/024-agents/agent-presence.md "In the editor"):
+          {/* What the agents present name in focus (docs/specs/024-agents/agent-presence.md "In the editor"):
           above the elements, beneath the remote cursors. */}
-            <AgentFocusOverlay elements={elements} />
+          <AgentFocusOverlay elements={elements} />
 
-            {remoteCursors.map((c) => (
-              <ZoomedRemoteCursor key={c.id} cursor={c} />
-            ))}
+          {remoteCursors.map((c) => (
+            <ZoomedRemoteCursor key={c.id} cursor={c} />
+          ))}
 
-            {/* Laser overlay sits inside the viewport-transformed wrapper
+          {/* Laser overlay sits inside the viewport-transformed wrapper
             so trail coordinates (canvas-space) pan + zoom with
             elements. The overlay component owns its own RAF loop
             and only runs while there's at least one active trail. */}
-            <ZoomedLaserOverlay trails={laserTrails} />
+          <ZoomedLaserOverlay trails={laserTrails} />
 
-            {/* What a relayed changeset touched (docs/specs/024-agents/agent-changesets.md "In the editor"):
+          {/* What a relayed changeset touched (docs/specs/024-agents/agent-changesets.md "In the editor"):
           above the elements, below the selection chrome. */}
-            <ChangesetRevealOverlay elements={elements} tabId={props.activeTabId ?? ''} />
-          </GifOmit>
+          <ChangesetRevealOverlay elements={elements} tabId={props.activeTabId ?? ''} />
 
           {/* The grips layer (docs/specs/008-canvas/canvas-and-palette.md "Resize"): above every element, so
           no grip is ever covered. The canvas's own grips go in here; each element's are portalled in. */}
@@ -706,7 +681,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
                 onAddRelatedEntity: h.onAddRelatedEntity,
               }}
               onBeginDrag={onBeginDrag}
-              pages={props.pagesMode?.pages}
             />
           </SelectionGripsLayer>
         </SelectionGripsContext.Provider>

@@ -676,8 +676,8 @@ async function copiedItemIds(
 // the copy's tab ids. The data is only parsed when it mentions a tab id, so
 // the common link-free tab is copied byte for byte as before.
 export function remapTabDataLinks(data: string, tabIdMap: Map<string, string>): string {
-  // A tab or element link, or a Tab Window's tab: nothing to re-point without one.
-  if (!data.includes('"tabId"') && !data.includes('"windowTabId"')) return data;
+  // A tab or element link: nothing to re-point without one.
+  if (!data.includes('"tabId"')) return data;
   try {
     const parsed = JSON.parse(data) as { elements?: Element[] };
     if (!Array.isArray(parsed.elements)) return data;

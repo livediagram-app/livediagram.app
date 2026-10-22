@@ -82,15 +82,11 @@ describe('a whiteboard pen stroke', () => {
     expect(freehandPressures(stroke!)).toHaveLength(count);
   });
 
-  it('stays in hand after a stroke, unless picked up for one (the Logo palette): then put down, its stroke selected', () => {
+  it('stays in hand after a stroke, its stroke left unselected', () => {
     const held = setup(pen());
     held.commit(scribble, false);
+    expect(held.elements).toHaveLength(1);
     expect(held.setPendingDraw).not.toHaveBeenCalled();
-    const once = setup(pen({ once: true }));
-    once.commit(scribble, false);
-    expect(once.elements).toHaveLength(1);
-    expect(once.setPendingDraw).toHaveBeenCalledWith(null);
-    expect(once.setSelectedId).toHaveBeenCalledWith(once.elements[0]!.id);
     expect(held.setSelectedId).not.toHaveBeenCalled();
   });
 

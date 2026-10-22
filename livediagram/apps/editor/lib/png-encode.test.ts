@@ -1,7 +1,7 @@
 import { inflateSync } from 'node:zlib';
 import { describe, expect, it } from 'vitest';
 import { encodePngRgba } from './png-encode';
-import { crc32 } from './zip-writer';
+import { crc32 } from './crc32';
 
 // Splits a PNG into its chunks, checking each chunk's CRC on the way.
 function chunks(png: Uint8Array): { type: string; body: Uint8Array }[] {

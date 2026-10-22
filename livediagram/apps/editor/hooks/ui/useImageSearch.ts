@@ -2,11 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { track } from '@/lib/telemetry';
-import {
-  OpenverseSearchError,
-  type OpenverseFilters,
-  type OpenverseImage,
-} from '@/lib/image-search/openverse';
+import { OpenverseSearchError, type OpenverseImage } from '@/lib/image-search/openverse';
 import { searchOpenverse } from '@/lib/image-search/search';
 import { pickFailureMessage, storeSearchResult, type PickStage } from '@/lib/image-search/pick';
 import type { PickedImage } from '@/lib/upload-image';
@@ -27,20 +23,12 @@ export function useImageSearch({
   ownerId,
   documentId,
   onPicked,
-  filters,
 }: {
   ownerId: string;
   documentId: string;
   // Told the stored picture and the result it came from.
   onPicked: (image: PickedImage, result: OpenverseImage) => void;
-  // Openverse's shape and size filters (a page background's search); none in the picker.
-  filters?: OpenverseFilters;
 }) {
-  // Read when a search runs, so a page turned between searches asks for its new shape.
-  const filtersRef = useRef(filters);
-  useEffect(() => {
-    filtersRef.current = filters;
-  });
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<OpenverseImage[]>([]);
   const [page, setPage] = useState(0);
@@ -73,7 +61,7 @@ export function useImageSearch({
     setError(null);
     setPickError(null);
     try {
-      const answer = await searchOpenverse(q, nextPage, fetch, filtersRef.current);
+      const answer = await searchOpenverse(q, nextPage, fetch);
       if (mine !== seq.current || !mounted.current) return;
       setQuery(q);
       setPage(answer.page);

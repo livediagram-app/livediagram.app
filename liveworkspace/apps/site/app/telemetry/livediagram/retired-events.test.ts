@@ -66,6 +66,49 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('Activity', 'Opened', null)).toBe(false);
     expect(isRetiredEvent('UI', 'Opened', 'Settings')).toBe(false);
   });
+
+  it('retires Pages mode, not the Slide Deck or the other modes', () => {
+    expect(isRetiredEvent('Editor', 'Changed', 'ModePages')).toBe(true);
+    expect(isRetiredEvent('Tab', 'Changed', 'OpensInPages')).toBe(true);
+    expect(isRetiredEvent('Tab', 'Changed', 'PageLayout')).toBe(true);
+    expect(isRetiredEvent('Tab', 'Changed', 'WireframeDeviceIphone')).toBe(true);
+    expect(isRetiredEvent('Element', 'Added', 'ArticleImage')).toBe(true);
+    expect(isRetiredEvent('Element', 'Created', 'MirrorTwin')).toBe(true);
+    expect(isRetiredEvent('Document', 'Exported', 'LogoKit')).toBe(true);
+    expect(isRetiredEvent('UI', 'Toggled', 'LogoGuidesOn')).toBe(true);
+    expect(isRetiredEvent('UI', 'View', 'PagesTourStepAddPage')).toBe(true);
+    expect(isRetiredEvent('UI', 'Started', 'SlideTour')).toBe(true);
+    expect(isRetiredEvent('Help', 'View', 'pages-mode')).toBe(true);
+    expect(isRetiredEvent('Mcp', 'Used', 'WriteArticle')).toBe(true);
+    expect(isRetiredEvent('UI', 'Started', 'TabWindowTour')).toBe(true);
+    expect(isRetiredEvent('Element', 'Changed', 'TabWindowTab')).toBe(true);
+    expect(isRetiredEvent('Cli', 'Used', 'PageSet')).toBe(true);
+    expect(isRetiredEvent('Mcp', 'Used', 'ReadDocument')).toBe(false);
+    expect(isRetiredEvent('Editor', 'Changed', 'ModeDiagram')).toBe(false);
+    expect(isRetiredEvent('Tab', 'Changed', 'OpensInPlan')).toBe(false);
+    expect(isRetiredEvent('UI', 'Opened', 'SlideDeck')).toBe(false);
+    expect(isRetiredEvent('UI', 'Toggled', 'SlideHidden')).toBe(false);
+  });
+
+  it('retires the Pages leftovers: exports, wordmark controls, page buttons and page slides', () => {
+    for (const t of ['GIF', 'PagesPNG', 'PagesPDFPages', 'PagesGIF', 'PagesSVGPages'])
+      expect(isRetiredEvent('Document', 'Exported', t), t).toBe(true);
+    for (const t of ['TextTracking', 'TextWeight', 'TextCase', 'TextArc', 'StrokesTidiedUp'])
+      expect(isRetiredEvent('Element', 'Changed', t), t).toBe(true);
+    expect(isRetiredEvent('UI', 'Opened', 'PageBackgroundButton')).toBe(true);
+    expect(isRetiredEvent('UI', 'Added', 'PageSlide')).toBe(true);
+    expect(isRetiredEvent('Tab', 'Changed', 'ArticlesToPages')).toBe(true);
+    expect(isRetiredEvent('Agent', 'Viewed', 'Pages')).toBe(true);
+    // Still sent: the other export formats, the other slides, the agents' other views, a form cover's motion.
+    expect(isRetiredEvent('Document', 'Exported', 'PNG')).toBe(false);
+    expect(isRetiredEvent('UI', 'Added', 'BoardSlide')).toBe(false);
+    expect(isRetiredEvent('Agent', 'Viewed', 'Outline')).toBe(false);
+    expect(isRetiredEvent('Element', 'Changed', 'FormatPainter')).toBe(false);
+    expect(isRetiredEvent('Tab', 'Changed', 'PageBackgroundAnimated')).toBe(false);
+    expect(isRetiredEvent('Tab', 'Changed', 'PageBackgroundAnimatedSpeed')).toBe(false);
+    expect(isRetiredEvent('Help', 'View', 'slide-deck')).toBe(false);
+    expect(isRetiredEvent('Element', 'Added', 'Page')).toBe(false);
+  });
 });
 
 describe('dropRetiredEvents', () => {

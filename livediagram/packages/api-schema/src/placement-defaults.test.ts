@@ -18,12 +18,11 @@ import {
 // lists, the creation intent a create carries, and the order a create's keys are tried in.
 
 describe('PLACEMENT_DEFAULT_KEYS', () => {
-  it('holds the eight keys in the order the list shows them', () => {
+  it('holds the seven keys in the order the list shows them', () => {
     expect(PLACEMENT_DEFAULT_KEYS).toEqual([
       'mode:diagram',
       'mode:draw',
       'mode:workshop',
-      'mode:pages',
       'mode:plan',
       'kind:event-storming',
       'template:retrospective',
@@ -130,11 +129,11 @@ describe('readCreationIntent', () => {
     });
   });
 
-  it("reads a mode by either of Pages mode's old names as Pages", () => {
-    for (const mode of ['illustrate', 'infographic'])
+  it('reads Pages mode, and either of its old names, as Diagram', () => {
+    for (const mode of ['pages', 'illustrate', 'infographic'])
       expect(readCreationIntent({ mode })).toEqual({
         ok: true,
-        intent: { mode: 'pages', tabKind: 'diagram' },
+        intent: { mode: 'diagram', tabKind: 'diagram' },
       });
   });
 
@@ -175,10 +174,10 @@ describe('readCreationIntent', () => {
 });
 
 describe('parsePlacementDefaultKey', () => {
-  it("reads a key stored under either of Pages mode's old names as today's", () => {
-    expect(parsePlacementDefaultKey('mode:illustrate')).toBe('mode:pages');
-    expect(parsePlacementDefaultKey('mode:infographic')).toBe('mode:pages');
-    expect(parsePlacementDefaultKey('mode:pages')).toBe('mode:pages');
+  it('reads a key for Pages mode, or either of its old names, as none', () => {
+    expect(parsePlacementDefaultKey('mode:illustrate')).toBeNull();
+    expect(parsePlacementDefaultKey('mode:infographic')).toBeNull();
+    expect(parsePlacementDefaultKey('mode:pages')).toBeNull();
     expect(parsePlacementDefaultKey('mode:pixel')).toBeNull();
   });
 
@@ -186,13 +185,6 @@ describe('parsePlacementDefaultKey', () => {
     expect(parsePlacementDefaultKey('mode:facilitate')).toBe('mode:workshop');
     expect(parsePlacementDefaultKey('mode:workshop')).toBe('mode:workshop');
     expect(legacyPlacementDefaultKeys('mode:workshop')).toEqual(['mode:facilitate']);
-  });
-
-  it('clears every old name with the key', () => {
-    expect(legacyPlacementDefaultKeys('mode:pages').sort()).toEqual([
-      'mode:illustrate',
-      'mode:infographic',
-    ]);
   });
 });
 
@@ -233,7 +225,6 @@ describe('placementDefaultTelemetryType', () => {
       'DefaultModeDiagram',
       'DefaultModeDraw',
       'DefaultModeWorkshop',
-      'DefaultModePages',
       'DefaultModePlan',
       'DefaultKindEventStorming',
       'DefaultTemplateRetrospective',

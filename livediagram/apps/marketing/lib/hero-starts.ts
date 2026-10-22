@@ -44,7 +44,7 @@ export const HERO_FAN_OPENING: readonly TemplateKind[] = [
   'kanban',
   'flowchart',
   'mindmap',
-  'slide-deck',
+  'system-architecture',
   'budget-planner',
   'sketchnote',
 ];

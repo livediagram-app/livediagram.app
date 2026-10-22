@@ -91,12 +91,11 @@ their own.
 
 ## Palette
 
-| Mode     | Where                                                       |
-| -------- | ----------------------------------------------------------- |
-| Diagram  | **Build**: Card; **Write**: Callout (the preset)            |
-| Pages    | **Components**: Card and Callout; **Popular** keeps Callout |
-| Plan     | none                                                        |
-| Workshop | none (Search still finds and places it)                     |
+| Mode     | Where                                            |
+| -------- | ------------------------------------------------ |
+| Diagram  | **Build**: Card; **Write**: Callout (the preset) |
+| Plan     | none                                             |
+| Workshop | none (Search still finds and places it)          |
 
 The Card tile drops a card with a tile, a title, a meta line, a body and two tags, so the first one shows what the
 slots are; switching a slot off is quicker than discovering one exists.

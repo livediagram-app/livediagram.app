@@ -89,7 +89,7 @@ describe('trashEmptyDocuments', () => {
     expect(await trashEmptyDocuments(db.env, NOW)).toBe(0);
   });
 
-  it('keeps a document whose only content is an article, which lives beside the elements', async () => {
+  it("keeps a document whose only content is a former Pages tab's stored article", async () => {
     const db = sqliteD1();
     liveDoc(db.sql, 'essay', { savedAt: STALE - DAY });
     liveDoc(db.sql, 'blank', { savedAt: STALE - DAY });

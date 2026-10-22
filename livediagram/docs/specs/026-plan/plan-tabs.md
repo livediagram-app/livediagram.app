@@ -91,7 +91,7 @@ A Board tab and its board, and a Sheet tab and its sheet, share **one name**:
 A Plan board and a Sheet are placed only on a tab in Plan (`opensInOf(tab) === 'plan'`: a Board, Sheet or Dashboard
 tab, or a general tab in Plan). A tab keeps its mode once it has content
 ([Editor modes](../007-editor/editor-modes.md#the-mode-switch)), and a board's cards and a Sheet's cells take input only
-in Plan, so one on a Diagram, Draw, Workshop or Pages tab could never be worked there. Every way in keeps to it
+in Plan, so one on a Diagram, Draw or Workshop tab could never be worked there. Every way in keeps to it
 (`tabTakesPlanOnly`, `planOnlyAddedOutsidePlan` and `withoutPlanOnly` in `packages/document/src/plan-only.ts`):
 
 - **The palette, Search and a dropped CSV** are Plan mode's already: Search lists boards and Sheets in another mode
@@ -563,7 +563,7 @@ A **Diagram** slot is a card with the tab's mode icon and name over its drawing,
 too, at a deferred priority) and still: drawn as the split view's other pane draws a tab, in this person's
 appearance, fitted to the slot, as one image (it never scrolls or zooms the page, and runs nothing). Pressing it opens
 the tab (**Open <name>**). It needs 320 by 220 px (What fits). Before the tab's content arrives it says "Loading
-<name>…" (or offers Retry); a tab with nothing to draw (no elements, and neither in Pages nor a Form tab with its form)
+<name>…" (or offers Retry); a tab with nothing to draw (no elements, and not a Form tab with its form)
 says "Nothing on <name> yet."; a deleted one "This Diagram was deleted." The renderer loads only once a Diagram slot is shown.
 
 ## Moving a slot

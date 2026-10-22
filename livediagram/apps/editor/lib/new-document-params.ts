@@ -19,13 +19,12 @@ export const WIZARD_BYPASS_PARAMS = ['blank', 'template'] as const;
 export function wizardBypassKind(search: string): TemplateKind | null {
   const params = new URLSearchParams(search);
   if (params.has('blank')) return 'blank';
-  // A retired template's kind opens its replacement (templateKindOf).
   return templateKindOf(params.get('template'));
 }
 
 // The template step's presets (`?mode=`, `?q=`; docs/specs/007-editor/new-document-route.md): the
 // mode filter to open on, and words to open the search with. Not a bypass: the author still picks.
-// An unknown mode, or empty words, is ignored; a mode's old name (`?mode=illustrate`) reads as today's.
+// An unknown mode, or empty words, is ignored; a retired mode's name (`?mode=pages`) reads as Diagram.
 export const SEARCH_PRESET_MAX = 60;
 
 export function wizardPresetMode(search: string): EditorMode | null {

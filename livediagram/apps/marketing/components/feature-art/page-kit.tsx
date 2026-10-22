@@ -1,6 +1,5 @@
-// Shared primitives for the pages, slides and presenting card art (./infographics, ./present):
-// paper that reads as a page on the canvas in light and dark, an editor panel, a presenting
-// screen, lines of writing, a teammate's cursor. Every colour has its light value as the SVG
+// Shared primitives for the presenting and room card art (./present, ./room): an editor panel, a
+// presenting screen, lines of writing, a teammate's cursor. Every colour has its light value as the SVG
 // attribute and its dark value as a dark: utility, so a card is right in both appearances.
 //
 // Motion lives in app/feature-art/pages.css (the fa-e-* block): each piece takes its own
@@ -19,52 +18,6 @@ export const at = (seconds: number) => ({ '--e-d': `${seconds}s` }) as CSSProper
 export const INK = 'fill-slate-800 dark:fill-slate-100';
 export const INK_SOFT = 'fill-slate-500 dark:fill-slate-400';
 export const LINE = 'fill-slate-200 dark:fill-slate-600';
-
-/** A page on the canvas: white paper with a soft shadow in light, a lifted slate sheet in dark. */
-export function Page({
-  x,
-  y,
-  w,
-  h,
-  className = 'fill-white dark:fill-slate-800',
-  fill = '#ffffff',
-  children,
-}: {
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-  className?: string;
-  fill?: string;
-  children?: ReactNode;
-}) {
-  return (
-    <g>
-      <rect
-        className="fill-slate-900/10 dark:fill-black/40"
-        x={x + 0.8}
-        y={y + 1.6}
-        width={w}
-        height={h}
-        rx="1.6"
-        fill="#0f172a"
-        fillOpacity="0.1"
-      />
-      <rect
-        className={`${className} stroke-slate-200 dark:stroke-slate-600`}
-        x={x}
-        y={y}
-        width={w}
-        height={h}
-        rx="1.6"
-        fill={fill}
-        stroke="#e2e8f0"
-        strokeWidth="0.7"
-      />
-      {children}
-    </g>
-  );
-}
 
 /** A floating editor panel: white with a hairline and a shadow, slate in dark. */
 export function Panel({
@@ -194,17 +147,5 @@ export function Cursor({
     <g transform={`translate(${x} ${y})`}>
       <TeammateCursor color={color} name={name} size={9} />
     </g>
-  );
-}
-
-// The serif an article or report headline is set in (Pages mode's Classic and Report looks).
-export const SERIF = 'ui-serif, Georgia, Cambria, "Times New Roman", serif';
-
-// The small caption over a page, as the editor labels its pages.
-export function PageLabel({ x, y, children }: { x: number; y: number; children: string }) {
-  return (
-    <text x={x} y={y} fontSize="4.6" fontWeight="600" className={INK_SOFT} fill="#64748b">
-      {children}
-    </text>
   );
 }

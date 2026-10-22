@@ -1,12 +1,12 @@
 import {
-  lucidePresentation,
+  lucideClipboardList,
   lucideSearch,
   lucideShare2,
   lucideSquareKanban,
   lucideTable,
   lucideUndo2,
   lucideWorkflow,
-  lucideFileText,
+  lucideTrash2,
 } from '@livediagram/icons/lucide';
 import { lucideGlyph } from '@livediagram/ui';
 
@@ -29,14 +29,14 @@ const CAPABILITIES = [
     body: 'Spreadsheets with formulas, formatting, dropdowns and sorting, built from rows or CSV and read back by cell.',
   },
   {
-    icon: lucideGlyph(lucidePresentation, 20),
-    title: 'Slides, posters and logos',
-    body: 'Decks from ready-made slide layouts, infographics and logo artboards, all on pages you can polish by hand.',
+    icon: lucideGlyph(lucideClipboardList, 20),
+    title: 'Forms',
+    body: 'Builds a form on a Plan tab, tries it out, and shares its link, with every answer landing in a board or a sheet.',
   },
   {
-    icon: lucideGlyph(lucideFileText, 20),
-    title: 'Articles',
-    body: 'Written up in Markdown and flowed onto pages, then read back and revised whenever you ask.',
+    icon: lucideGlyph(lucideTrash2, 20),
+    title: 'Tidy up',
+    body: 'Renames documents, moves the ones you no longer need to the Trash, and restores them again if you change your mind.',
   },
   {
     icon: lucideGlyph(lucideSearch, 20),

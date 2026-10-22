@@ -27,7 +27,6 @@ import { sequenceTourSteps } from './sequence-tour-steps';
 import { chartTourSteps } from './chart-tour-steps';
 import { stackTourSteps } from './stack-tour-steps';
 import { entityTourSteps } from './entity-tour-steps';
-import { tabWindowTourSteps } from './tab-window-tour-steps';
 import { laneTourSteps } from './lane-tour-steps';
 import { boundaryTourSteps } from './boundary-tour-steps';
 import { diagramKeyTourSteps } from './diagram-key-tour-steps';
@@ -65,7 +64,7 @@ type ElementTourDef = {
 
 const conceptRows = (el: Element) => (el as ShapeElement).conceptRows ?? [];
 
-// Whether a part of the element is on screen when Play is pressed (a tab window's Open button, a linked portal's).
+// Whether a part of the element is on screen when Play is pressed (a linked portal's Open button).
 const inDom = (selector: string) =>
   typeof document !== 'undefined' && document.querySelector(selector) !== null;
 
@@ -227,18 +226,6 @@ export const ELEMENT_TOUR_DEFS: Record<ElementTourKind, ElementTourDef> = {
       entityTourSteps({
         elementId: el.id,
         hasFields: ((el as ShapeElement).entityFields ?? []).length > 0,
-        hasMore: env.hasMore,
-        touch: env.touch,
-      }),
-  },
-  'tab-window': {
-    token: 'TabWindowTour',
-    eyebrow: 'Tab window tour',
-    helpArticle: 'tabWindows',
-    steps: (el, env) =>
-      tabWindowTourSteps({
-        elementId: el.id,
-        chosen: inDom(elementSelector(el.id, '[data-tab-window-open]')),
         hasMore: env.hasMore,
         touch: env.touch,
       }),

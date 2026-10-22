@@ -13,6 +13,7 @@ import {
   tileSignature,
 } from './palette-tile-search';
 import { PALETTE_TILES, tileById, type PaletteTileDef } from './palette-tile-defs';
+import { SEARCH_ONLY_TILE_IDS } from './palette-layouts';
 import { planCardTile } from './palette-plan-tiles';
 import { markerTiles } from './palette-marker-tiles';
 import { DEFAULT_WHITEBOARD_PREFS } from '@/lib/whiteboard-prefs';
@@ -29,22 +30,47 @@ describe('elementTileSections', () => {
     expect(new Set(ids(tiles)).size).toBe(tiles.length);
     // Popular leads, so its square comes first.
     expect(tiles[0]?.id).toBe('shapes:square');
-    expect(ids(elementTileSections({ mode: 'diagram', hasImage: true }).here)).toEqual(ids(tiles));
+    // Then the tiles on no strip, which only the Search reaches.
+    expect(ids(elementTileSections({ mode: 'diagram', hasImage: true }).here)).toEqual([
+      ...ids(tiles),
+      ...SEARCH_ONLY_TILE_IDS,
+    ]);
+  });
+
+  it("finds the tiles on no strip in every mode, as this mode's", () => {
+    expect(SEARCH_ONLY_TILE_IDS.length).toBe(19);
+    for (const mode of ['diagram', 'workshop', 'plan'] as const) {
+      const { here, elsewhere, unavailable } = elementTileSections({ mode, hasImage: true });
+      for (const id of SEARCH_ONLY_TILE_IDS) {
+        expect(ids(here), `${mode} ${id}`).toContain(id);
+        expect(ids([...elsewhere, ...unavailable]), `${mode} ${id}`).not.toContain(id);
+      }
+    }
+    for (const [query, id] of [
+      ['code', 'tools:code-block'],
+      ['youtube', 'media:embed-youtube'],
+      ['website', 'media:embed-website'],
+      ['phone', 'devices:phone'],
+      ['hero', 'components:hero'],
+      ['banner', 'components:banner'],
+    ] as const)
+      expect(
+        ids(searchElementTiles({ query, mode: 'diagram', hasImage: true }).here),
+        query,
+      ).toContain(id);
   });
 
   it('puts the tiles only another mode offers in the other section, never in both', () => {
     const { here, elsewhere } = elementTileSections({ mode: 'diagram', hasImage: true });
-    // Charts and devices are Pages mode's; the event-storming notation is a board's.
-    expect(ids(elsewhere)).toEqual(
-      expect.arrayContaining(['data:pie', 'devices:phone', 'tools:es-domain-event']),
-    );
+    // Charts are Workshop's; the event-storming notation is a board's.
+    expect(ids(elsewhere)).toEqual(expect.arrayContaining(['data:pie', 'tools:es-domain-event']));
     expect(ids(here)).not.toContain('data:pie');
     const mine = new Set(ids(here));
     expect(elsewhere.filter((t) => mine.has(t.id))).toEqual([]);
   });
 
   it('flips with the mode', () => {
-    const { here, elsewhere } = elementTileSections({ mode: 'pages', hasImage: true });
+    const { here, elsewhere } = elementTileSections({ mode: 'workshop', hasImage: true });
     expect(ids(here)).toContain('data:pie');
     expect(ids(elsewhere)).not.toContain('data:pie');
   });
@@ -52,7 +78,7 @@ describe('elementTileSections', () => {
   it('covers every tile of every mode between its two sections', () => {
     const { here, elsewhere } = elementTileSections({ mode: 'plan', hasImage: true });
     const all = new Set([...ids(here), ...ids(elsewhere)]);
-    for (const mode of ['diagram', 'pages', 'plan'] as const) {
+    for (const mode of ['diagram', 'workshop', 'plan'] as const) {
       for (const t of modeElementTiles(mode)) expect(all.has(t.id), t.id).toBe(true);
     }
   });
@@ -65,7 +91,7 @@ describe('elementTileSections', () => {
 
   it("keeps Plan's own tiles out of other modes, greyed out with the reason", () => {
     const planOwn = (t: { section: string }) => t.section.startsWith('plan-');
-    for (const mode of ['diagram', 'pages', 'workshop'] as const) {
+    for (const mode of ['diagram', 'draw', 'workshop'] as const) {
       const { here, elsewhere, unavailable } = elementTileSections({ mode, hasImage: true });
       expect([...here, ...elsewhere].filter(planOwn), mode).toEqual([]);
       expect(ids(unavailable), mode).toEqual(

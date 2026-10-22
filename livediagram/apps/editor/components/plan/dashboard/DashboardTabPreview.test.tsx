@@ -109,20 +109,13 @@ describe('a Diagram tab in a slot', () => {
     expect(screen.getByText('This Diagram was deleted.')).toBeTruthy();
   });
 
-  // docs/specs/026-plan/plan-tabs.md "Showing a tab": a Pages tab's pages and a Form tab's form are drawn, though
-  // neither holds an element; a Pages tab still on its way says so rather than drawing a blank page.
-  it('draws an empty Pages or Form tab, and waits for a Pages tab still loading', () => {
-    showTab({ id: 'p', name: 'Deck', opensIn: 'pages', elements: [] }, 'diagram');
-    expect(screen.getByRole('button', { name: 'Open Deck' })).toBeTruthy();
-    cleanup();
+  // docs/specs/026-plan/plan-tabs.md "Showing a tab": a Form tab's form is drawn, though it holds no element.
+  it('draws an empty Form tab', () => {
     showTab(
       { id: 'f', name: 'Survey', kind: 'form', form: {}, elements: [] } as unknown as Tab,
       'diagram',
     );
     expect(screen.getByRole('button', { name: 'Open Survey' })).toBeTruthy();
-    cleanup();
-    showTab({ id: 'p', name: 'Deck', opensIn: 'pages', elements: [] }, 'diagram', 'loading');
-    expect(screen.getByText('Loading Deck…')).toBeTruthy();
     cleanup();
     showTab({ id: 'd', name: 'Blank', elements: [] }, 'diagram');
     expect(screen.getByText('Nothing on Blank yet.')).toBeTruthy();

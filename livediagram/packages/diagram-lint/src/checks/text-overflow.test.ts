@@ -2,8 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { Element } from '@livediagram/document';
 import { lint, of, tabOf } from '../fixtures/build';
 
-// LN text-overflow: on a Pages tab a text element's words fit its box; on any tab no two texts print over each
-// other.
+// LN text-overflow: no two texts print over each other.
 const text = (id: string, x: number, y: number, label: string, extra: object = {}): Element => ({
   id,
   type: 'text',
@@ -14,27 +13,11 @@ const text = (id: string, x: number, y: number, label: string, extra: object = {
   label,
   ...extra,
 });
-const page = (...els: Element[]) => ({ ...tabOf(...els), opensIn: 'pages' as const });
 
 describe('text-overflow', () => {
-  it('names a page’s text that needs more lines than its box holds, with the height that holds it', () => {
-    const long = text(
-      't1',
-      0,
-      0,
-      'A heading long enough to wrap onto three or more lines in its box',
-      { textSize: 'lg' },
-    );
-    const found = of(lint(page(long)), 'text-overflow');
-    expect(found).toHaveLength(1);
-    expect(found[0]).toMatchObject({ severity: 'warning', refs: [expect.any(String)] });
-    expect(found[0]!.message).toMatch(/needs \d+ lines, holds 1$/);
-    expect(found[0]!.fix).toMatch(/^set \S+ height=\d+$/);
-  });
-
   it('names two texts printed over each other, and leaves those apart', () => {
     const found = of(
-      lint(page(text('a', 0, 0, 'One'), text('b', 0, 8, 'Two'), text('c', 0, 300, 'Apart'))),
+      lint(tabOf(text('a', 0, 0, 'One'), text('b', 0, 8, 'Two'), text('c', 0, 300, 'Apart'))),
       'text-overflow',
     );
     expect(found).toHaveLength(1);
@@ -46,7 +29,7 @@ describe('text-overflow', () => {
     const stacked = [0, 1, 2].map((i) =>
       text(`h${i}`, 0, i * 40, ['Keep pull', 'requests', 'small.'][i]!),
     );
-    expect(of(lint(page(...stacked)), 'text-overflow')).toEqual([]);
+    expect(of(lint(tabOf(...stacked)), 'text-overflow')).toEqual([]);
     const spill = text('name', 0, 0, 'Crumb and Company Bakers of Fine Bread', {
       width: 160,
       height: 30,
@@ -58,24 +41,15 @@ describe('text-overflow', () => {
       height: 24,
       textSize: 'sm',
     });
-    expect(of(lint(page(spill, tagline)), 'text-overflow').map((f) => f.message)).toContainEqual(
+    expect(of(lint(tabOf(spill, tagline)), 'text-overflow').map((f) => f.message)).toContainEqual(
       expect.stringMatching(/prints over/),
     );
-  });
-
-  it('names a word cut across lines, with the width that holds it', () => {
-    const stat = text('n', 0, 0, '£4.6bn', { width: 70, height: 120, textSize: 'lg' });
-    const found = of(lint(page(stat)), 'text-overflow');
-    expect(found.map((f) => f.message)).toEqual([
-      expect.stringMatching(/breaks "£4\.6bn" across lines$/),
-    ]);
-    expect(found[0]!.fix).toMatch(/^set \S+ width=\d+$/);
   });
 
   it('leaves text on a curve out, drawn along its arc, not in its box', () => {
     const top = text('t', 0, 0, 'CRUMB AND CO.', { width: 400, height: 400, textArc: 180 });
     const bottom = text('b', 0, 0, 'ARTISAN BAKERY', { width: 400, height: 400, textArc: -180 });
-    expect(of(lint(page(top, bottom)), 'text-overflow')).toEqual([]);
+    expect(of(lint(tabOf(top, bottom)), 'text-overflow')).toEqual([]);
   });
 
   it('names text printed over text on any tab, a board heading wrapped onto its subtitle', () => {
@@ -122,23 +96,5 @@ describe('text-overflow', () => {
     expect(
       of(lint(tabOf({ ...axis, rotation: 0 } as Element, label)), 'text-overflow'),
     ).toHaveLength(1);
-  });
-
-  it('stays quiet on text that fits, set to scale, blank, or off a Pages tab', () => {
-    const fits = text('f', 0, 0, 'Short');
-    const scaled = text('s', 0, 100, 'A heading long enough to wrap onto three or more lines', {
-      textSize: 'scale',
-    });
-    const blank = text('e', 0, 200, '  ');
-    expect(of(lint(page(fits, scaled, blank)), 'text-overflow')).toEqual([]);
-    const long = text(
-      't1',
-      0,
-      0,
-      'A heading long enough to wrap onto three or more lines in its box',
-      { textSize: 'lg' },
-    );
-    // Off a page a caption's own box is not linted: only text printed over text is.
-    expect(of(lint(tabOf(long)), 'text-overflow')).toEqual([]);
   });
 });

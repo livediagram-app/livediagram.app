@@ -19,7 +19,7 @@ const COMPETITORS = new Intl.ListFormat('en-GB', { type: 'conjunction' }).format
 export const metadata = pageMetadata({
   title: 'How livediagram compares · alternatives',
   description:
-    'Honest, side-by-side comparisons of livediagram with Miro, FigJam, Lucidchart, draw.io, Google Slides and more, including where each is the better pick.',
+    'Honest, side-by-side comparisons of livediagram with Miro, FigJam, Lucidchart, draw.io, Excalidraw and more, including where each is the better pick.',
   path: '/alternatives',
   modifiedTime: ALTERNATIVES_LAST_UPDATED,
 });

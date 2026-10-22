@@ -20,7 +20,7 @@ proved the better introduction.
 ## Where it appears
 
 - **Only in Diagram mode.** The tour is offered, and runs, only while the open tab is in Diagram mode. It is
-  never offered on a Draw, Workshop, Pages or Plan tab, nor on a Board, Sheet or Dashboard tab (always
+  never offered on a Draw, Workshop or Plan tab, nor on a Board, Sheet or Dashboard tab (always
   in Plan); an offer owed there waits until the person is on a Diagram tab. Leaving Diagram mid-tour
   (switching the tab's mode, or opening a tab in another mode) ends it as skipped, since its steps point at
   chrome the other modes do not show.
@@ -29,7 +29,7 @@ proved the better introduction.
   (any path: Create or Skip), the tour is owed in that browser tab. A document that opens on a Diagram tab
   shows a **welcome offer banner** at the bottom of the screen once the editor is ready, and once its start is done (a template picked
   or Start Diagramming closed, [Template starts](start-diagramming.md) "The tours wait"): **Yes** starts the tour,
-  **No** dismisses it. A document made from a Plan, Draw, Pages or Workshop template does not show it
+  **No** dismisses it. A document made from a Plan, Draw or Workshop template does not show it
   there; the offer stays owed and comes the first time the person works on a Diagram tab in that browser tab.
   There is no wizard toggle; the offer IS the opt-in, and declining must be one obvious, equal-weight click.
   The count is the one from **before** the create: a cloud create waits for it (up to
@@ -70,8 +70,8 @@ proved the better introduction.
   the next time the person is on a Diagram tab. The welcome card is always step 1, on a rerun too. Finishing
   the rerun turns it off again.
 - **One tour at a time.** The [Plan tour](../026-plan/plan-tour.md), the
-  [Workshop tour](../012-collaboration/workshop-tour.md), the [Draw tour](../023-draw-mode/draw-tour.md) and
-  the [Pages tour](pages-tour.md) are this tour's siblings; while any is on screen the others wait.
+  [Workshop tour](../012-collaboration/workshop-tour.md) and the [Draw tour](../023-draw-mode/draw-tour.md)
+  are this tour's siblings; while any is on screen the others wait.
   Each belongs to its own mode, so none is owed to another: the others never wait for this tour's offer, and
   this tour never carries theirs.
 - **Dialogs come first.** A tour never lands over a dialog the person has open (Share, Settings, Export, Share
@@ -246,7 +246,7 @@ of their steps ask the person to try things.
   in navy. The white **Yes** (and the last card's **Start**) takes its label in the banner's own deep colour. On a phone the
   banner stacks, as the sign-in banner does: the words, then the buttons at the right.
 - **The spotlight** is the dim alone, with no outline in the accent; the step card wears the tab's colours.
-- This holds for the Diagram, Plan, Workshop, Draw and Pages tours and the card type editor's Show Me,
+- This holds for the Diagram, Plan, Workshop and Draw tours and the card type editor's Show Me,
   which all draw through `TourStage` and `TourPopover`.
 
 ## Share roles

@@ -19,7 +19,7 @@ item store.
 
 ## Offering the mode
 
-- Plan is the fifth mode, after Pages: a start's mode switch, **Shift+D** on an empty tab and the template
+- Plan is the fourth mode, after Workshop: a start's mode switch, **Shift+D** on an empty tab and the template
   picker's mode filter list it in that order.
 - It is always offered, like every mode ([Editor modes](../007-editor/editor-modes.md#every-mode-always-offered)).
   Its Settings › Experimental switch went when it graduated.

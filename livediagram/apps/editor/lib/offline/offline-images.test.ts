@@ -42,22 +42,8 @@ describe('rewriteImageIds', () => {
     expect(els.find((e) => e.id === 'b')).toBe(tabs[0]!.elements[1]);
   });
 
-  it('re-homes a page background picture too, and lists it with the elements', () => {
-    const withPage = {
-      ...tab([imageEl('a', 'img_1')]),
-      pages: [
-        {
-          id: 'p',
-          orientation: 'portrait',
-          background: { fill: { kind: 'image', imageId: 'img_bg', tone: '#000000' } },
-        },
-      ],
-    } as Tab;
-    expect(tabImageIds(withPage).sort()).toEqual(['img_1', 'img_bg']);
-    const out = rewriteImageIds([withPage], new Map([['img_bg', PNG_DATA_URL]]));
-    const fill = out[0]!.pages![0]!.background!.fill as { imageId: string; tone: string };
-    expect(fill.imageId).toBe(PNG_DATA_URL);
-    expect(fill.tone).toBe('#000000');
+  it("lists each of a tab's pictures once", () => {
+    expect(tabImageIds(tab([imageEl('a', 'img_1'), imageEl('b', 'img_1')]))).toEqual(['img_1']);
   });
 
   it('returns the input array untouched for an empty mapping', () => {

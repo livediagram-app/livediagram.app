@@ -1,7 +1,7 @@
 # Workshop mode
 
-**Workshop** is the fifth [editor mode](../007-editor/editor-modes.md), beside Diagram, Draw,
-Pages and Plan: how a general tab is worked on while a team runs a session on it, a
+**Workshop** is one of the four [editor modes](../007-editor/editor-modes.md), beside Diagram, Draw
+and Plan: how a general tab is worked on while a team runs a session on it, a
 retrospective, a town hall, a lean coffee, a workshop. It brings the tools that run a room into
 focus (timers, votes, polls, reveals, the Collaborate elements, stickers) and takes them out of
 Diagram, so Diagram is about diagrams.
@@ -135,13 +135,12 @@ stop to draw):
 
 `sessionStripTools(mode, esBoard)`:
 
-| Mode     | Strip tools              |
-| -------- | ------------------------ |
-| Workshop | Timer, Vote, Poll        |
-| Plan     | Timer, Vote              |
-| Diagram  | none                     |
-| Draw     | none (as today)          |
-| Pages    | Vote, Poll while running |
+| Mode     | Strip tools       |
+| -------- | ----------------- |
+| Workshop | Timer, Vote, Poll |
+| Plan     | Timer, Vote       |
+| Diagram  | none              |
+| Draw     | none (as today)   |
 
 - **An event-storming board keeps all three.** It is a workshop board, always Diagram, with no
   switch, so it could never reach Workshop's strip; the tab kind brings the strip itself.
@@ -151,9 +150,6 @@ stop to draw):
   on its own canvas element, but its strip button and popover do not: watching turnout, ending a
   poll or keeping its results is done from Workshop (or Plan for a timer or vote). This is the
   same rule Draw already follows, and the price of a Diagram mode with no session chrome.
-- **Pages shows a running Vote or Poll only.** Nothing is started from its strip (the session
-  buttons on a page do that), but once a vote or poll runs, its button and popover appear for
-  everyone so it can be watched and ended, and go again when it ends. It never shows a Timer.
 - A popover whose button leaves (a mode switch, the tool ending) closes, as today.
 
 ## Templates
@@ -221,7 +217,7 @@ as for a viewer, as every mode does.
 
 - **Workshop mode** gets its own help article (`/help/canvas/workshop-mode/`),
   registered per [Register a help article](../../instructions/register-a-help-article.md), and
-  **Editor Modes** covers five modes.
+  **Editor Modes** covers four modes.
 - The Session tools article says the set-up lives in Workshop (and Plan).
 - An optional [Workshop tour](workshop-tour.md) shows the mode the first time someone is in it.
 

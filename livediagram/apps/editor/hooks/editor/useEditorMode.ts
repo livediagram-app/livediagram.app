@@ -16,7 +16,6 @@ import { useCallback } from 'react';
 import { useLatest } from '@/hooks/ui/useLatest';
 import {
   crossesPlan,
-  editorModeLabel,
   withEditorModeSwitched,
   type EditorMode,
   type Tab,
@@ -42,7 +41,6 @@ export type EditorModeState = {
 const MODE_EVENT: Record<EditorMode, string> = {
   diagram: 'ModeDiagram',
   draw: 'ModeDraw',
-  pages: 'ModePages',
   plan: 'ModePlan',
   workshop: 'ModeWorkshop',
 };
@@ -53,14 +51,9 @@ export function trackModeSwitch(next: EditorMode): void {
   track('Editor', 'Changed', MODE_EVENT[next]);
 }
 
-/** The tab switched as one edit: `alsoChange` first, then the mode and what it brings. Whether
- *  entering Pages put the board onto a page comes back with it. */
-export function switchedTab(
-  tab: Tab,
-  next: EditorMode,
-  alsoChange?: (tab: Tab) => Tab,
-): { tab: Tab; pagedContent: boolean } {
-  return withEditorModeSwitched(alsoChange ? alsoChange(tab) : tab, next);
+/** The tab switched as one edit: `alsoChange` first, then the mode and what it brings. */
+export function switchedTab(tab: Tab, next: EditorMode, alsoChange?: (tab: Tab) => Tab): Tab {
+  return withEditorModeSwitched(alsoChange ? alsoChange(tab) : tab, next).tab;
 }
 
 export function useEditorMode(
@@ -73,7 +66,7 @@ export function useEditorMode(
     newTabIn?: (mode: EditorMode) => void;
   },
 ): EditorModeState {
-  const { canEdit, commitTabs, toastInfo } = deps;
+  const { canEdit, commitTabs } = deps;
   const tabId = tab?.id;
   const { mode, canSwitch, lockedReason } = resolveEditorMode({ tab, canEdit });
   const crossPlan = canSwitch && (tab?.elements.length ?? 0) === 0;
@@ -84,24 +77,17 @@ export function useEditorMode(
       // Never into or out of Plan (crossesPlan) unless the tab is empty: the mode menu offers a new tab in it instead.
       if (!canSwitch || !tabId || next === mode || (crossesPlan(mode, next) && !crossPlan)) return;
       trackModeSwitch(next);
-      // Whether the board goes onto a page is read from the tab as it is, not from inside the commit's updater,
-      // which React may run after this returns (the toast and its event would be lost). The switch worked out
-      // here is the one committed, unless the tab moved on meanwhile: a board's transform, layout and fit once.
+      // The switch worked out here is the one committed, unless the tab moved on meanwhile.
       const seen = tabRef.current;
       const out = seen ? switchedTab(seen, next, alsoChange) : null;
-      const paged = !!out?.pagedContent;
       commitTabs((ts) =>
         ts.map((t) =>
-          t.id !== tabId ? t : t === seen && out ? out.tab : switchedTab(t, next, alsoChange).tab,
+          t.id !== tabId ? t : t === seen && out ? out : switchedTab(t, next, alsoChange),
         ),
       );
-      if (paged) {
-        toastInfo(`Put onto a page that fits it. Undo switches back to ${editorModeLabel(mode)}.`);
-        track('Tab', 'Changed', 'PageFitToContent');
-      }
-      debugLog('[editor-mode] switched', { tabId, from: mode, to: next, paged });
+      debugLog('[editor-mode] switched', { tabId, from: mode, to: next });
     },
-    [canSwitch, crossPlan, tabRef, tabId, mode, commitTabs, toastInfo],
+    [canSwitch, crossPlan, tabRef, tabId, mode, commitTabs],
   );
   return {
     mode,

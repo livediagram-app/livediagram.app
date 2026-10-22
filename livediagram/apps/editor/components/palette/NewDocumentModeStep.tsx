@@ -1,12 +1,12 @@
 'use client';
 
 // The New Document wizard's first step (docs/specs/007-editor/new-document-route.md "Choosing a mode"): what you are
-// making, as the five editor modes, never a template. Each mode is a card of one build and one height: a fan of its own
+// making, as the four editor modes, never a template. Each mode is a card of one build and one height: a fan of its own
 // templates' previews on top, then its mark, its name and its number key, then a line on what it makes, so the choice
-// reads as the work it leads to. In the mode switch's order, three then two (one column on a phone), so Diagram, first
+// reads as the work it leads to. In the mode switch's order, two by two (one column on a phone), so Diagram, first
 // there and where most start, leads the top row as an equal. Choosing one creates the document at once, which opens on
 // that mode's own start (Start Diagramming, Start Planning, ...), where the templates are. Arrow keys move between the
-// cards, and 1 to 5 (printed on each card) choose one straight away.
+// cards, and 1 to 4 (printed on each card) choose one straight away.
 import { useEffect, useRef, type KeyboardEvent } from 'react';
 import { EDITOR_MODE_ICONS } from '@livediagram/ui';
 import { EDITOR_MODES, editorModeLabel, type EditorMode } from '@livediagram/document';
@@ -23,7 +23,6 @@ export const NEW_DOCUMENT_MODES: readonly EditorMode[] = EDITOR_MODES;
 const PITCH: Record<EditorMode, string> = {
   diagram: 'Flowcharts, mind maps, org charts and architecture, snapped neatly into place.',
   draw: 'A freehand whiteboard: pens, highlighters and shapes that tidy themselves.',
-  pages: 'Infographics, slides, articles and logos, laid out to print, post or present.',
   plan: 'Boards, sheets and dashboards for the work in motion.',
   workshop: 'Run a collaborative session with your team, from workshops to retros.',
 };
@@ -33,11 +32,10 @@ function examplesOf(mode: EditorMode): TemplateKind[] {
   return popularKindsFor(mode).filter((k) => !isBlankTemplate(k));
 }
 
-// Where each card sits in the six-track grid from 640px: the first row's three cards take two tracks each, the second
-// row's two take three, so both rows span the dialog and Diagram leads at the same height as every other card (the
-// rows share one height, `auto-rows-fr`).
-export function modeCardSpan(index: number): string {
-  return index < 3 ? 'sm:col-span-2' : 'sm:col-span-3';
+// Where each card sits in the six-track grid from 640px: two to a row, three tracks each, so both rows span the
+// dialog and Diagram leads at the same height as every other card (the rows share one height, `auto-rows-fr`).
+export function modeCardSpan(): string {
+  return 'sm:col-span-3';
 }
 
 function ModeCard({
@@ -68,7 +66,7 @@ function ModeCard({
       aria-busy={creating || undefined}
       aria-keyshortcuts={String(index + 1)}
       onClick={onChoose}
-      className={`group relative flex cursor-pointer flex-col overflow-hidden rounded-2xl border bg-white text-left transition duration-micro ease-out hover:-translate-y-0.5 hover:border-brand-400 hover:shadow-xl hover:shadow-brand-900/10 focus-visible:-translate-y-0.5 focus-visible:border-brand-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 motion-reduce:transition-none motion-reduce:hover:translate-y-0 dark:bg-slate-900 dark:hover:border-brand-400 dark:hover:shadow-black/40 ${modeCardSpan(index)} ${
+      className={`group relative flex cursor-pointer flex-col overflow-hidden rounded-2xl border bg-white text-left transition duration-micro ease-out hover:-translate-y-0.5 hover:border-brand-400 hover:shadow-xl hover:shadow-brand-900/10 focus-visible:-translate-y-0.5 focus-visible:border-brand-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 motion-reduce:transition-none motion-reduce:hover:translate-y-0 dark:bg-slate-900 dark:hover:border-brand-400 dark:hover:shadow-black/40 ${modeCardSpan()} ${
         selected
           ? 'border-brand-500 ring-2 ring-brand-500/30 dark:border-brand-400'
           : 'border-slate-200 dark:border-slate-700'
@@ -140,7 +138,7 @@ export function NewDocumentModeStep({
     // Once, as the step appears.
     // oxlint-disable-next-line react/exhaustive-deps
   }, []);
-  // 1 to 5 choose a mode wherever the focus is on the page, as Escape backs out from anywhere: after a click on the
+  // 1 to 4 choose a mode wherever the focus is on the page, as Escape backs out from anywhere: after a click on the
   // backdrop the focus is on the page, not a card, and the keys did nothing. A field being typed in, or a chord, keeps
   // its digit.
   const choose = useLatest(onChoose);

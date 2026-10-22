@@ -2,9 +2,7 @@
 // model"), built once per render.
 import {
   computeRefs,
-  pagesOf,
   opensInOf,
-  pageKindOf,
   isKnownElement,
   kindWordOf,
   tabKindOf,
@@ -62,18 +60,7 @@ function headerFacts(
     rev: rev ?? null,
     ...(opensInOf(tab) !== 'diagram' ? { mode: opensInOf(tab) } : {}),
     ...(tab.finish ? { finish: tab.finish } : {}),
-    ...pagesFacts(tab),
   };
-}
-
-// A Pages tab's pages by kind, for the header (docs/specs/024-agents/pages-for-agents.md
-// "Reading"); nothing for a tab in another mode.
-function pagesFacts(tab: Tab): Pick<HeaderFacts, 'pages'> {
-  if (opensInOf(tab) !== 'pages') return {};
-  const pages = pagesOf(tab);
-  const kinds: NonNullable<HeaderFacts['pages']>['kinds'] = {};
-  for (const p of pages) kinds[pageKindOf(p)] = (kinds[pageKindOf(p)] ?? 0) + 1;
-  return { pages: { pages: pages.length, kinds } };
 }
 
 // A tab's header facts alone, without its tree: what `overview` keeps of each tab body it reads.

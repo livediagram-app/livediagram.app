@@ -40,9 +40,16 @@ describe('parseLens', () => {
 
   // docs/specs/007-editor/editor-modes.md "Naming in the interface": a link from before a rename.
   it("reads a mode's old name as today's mode", () => {
-    const { lens, issues } = parseLens('opens-in:facilitate,illustrate', aggregate);
+    const { lens, issues } = parseLens('opens-in:facilitate', aggregate);
     expect(issues).toEqual([]);
-    expect(lens.filters['opens-in']).toEqual(['workshop', 'pages']);
+    expect(lens.filters['opens-in']).toEqual(['workshop']);
+  });
+
+  // Pages mode moved out to livedocuments: a tab stored in it opens in Diagram, so a link naming it reads as Diagram.
+  it('reads Pages mode, and its old name, as Diagram', () => {
+    const { lens, issues } = parseLens('opens-in:pages,illustrate', aggregate);
+    expect(issues).toEqual([]);
+    expect(lens.filters['opens-in']).toEqual(['diagram']);
   });
 
   it('keeps free words as text, in order, as typed', () => {

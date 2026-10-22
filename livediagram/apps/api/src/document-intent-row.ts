@@ -12,10 +12,14 @@ export type RecordedIntentRow = {
   template_family: string | null;
 };
 
+const RETIRED_MODES: ReadonlySet<string | null> = new Set(['pages', 'illustrate', 'infographic']);
+
 const UNKNOWN: RecordedIntent = { opensIn: null, tabKind: null, templateFamily: null };
 
 export function readRecordedIntent(row: RecordedIntentRow): RecordedIntent {
-  // A row recorded before Pages mode's rename says `infographic`.
+  // A document made in Pages (recorded as `pages`, or before its renames `illustrate` or `infographic`) was made as
+  // something livediagram no longer makes: nothing reads as recorded, rather than Diagram, which it was not made as.
+  if (RETIRED_MODES.has(row.opens_in)) return UNKNOWN;
   const opensIn = parseEditorMode(row.opens_in);
   if (!opensIn) return UNKNOWN;
   return {

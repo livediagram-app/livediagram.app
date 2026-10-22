@@ -1,4 +1,4 @@
-import { lucidePenTool, lucideSparkles, lucideVote } from '@livediagram/icons/lucide';
+import { lucideSparkles, lucideVote } from '@livediagram/icons/lucide';
 import { Glyph } from '../icons/Glyph';
 import { Prims } from '../icons/Prims';
 // The palette category-tab glyphs (docs/specs/008-canvas/canvas-and-palette.md), shared so the editor's
@@ -7,20 +7,11 @@ import { Prims } from '../icons/Prims';
 // rather than ~180 lines of inline SVG. Each is the universal symbol
 // for its category, readable at tab size.
 
-// Popular (Pages mode): sparkles, for the picks most reached for.
+// Popular: sparkles, for the picks most reached for.
 export function PopularTabIcon() {
   return (
     <Glyph size={18} units={24}>
       <Prims prims={lucideSparkles} />
-    </Glyph>
-  );
-}
-
-// Logo (docs/specs/007-editor/logo-pages.md "The Logo palette"): a pen nib, what a mark is drawn with.
-export function LogoTabIcon() {
-  return (
-    <Glyph size={18} units={24}>
-      <Prims prims={lucidePenTool} />
     </Glyph>
   );
 }

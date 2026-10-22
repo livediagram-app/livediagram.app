@@ -1,13 +1,6 @@
 import type { Selection } from '@/lib/selection-store';
 import type { PointerEvent as ReactPointerEvent } from 'react';
-import type {
-  Anchor,
-  Element,
-  IconPosition,
-  Tab,
-  FrameHandle,
-  LaidOutPage,
-} from '@livediagram/document';
+import type { Anchor, Element, IconPosition, Tab, FrameHandle } from '@livediagram/document';
 import type { ArrowEnd, DragMode, DragState } from '@/lib/canvas';
 import type { InsertionGate } from '@/lib/insert-between';
 import type { SnapGuideStore } from './useSnapGuideState';
@@ -99,12 +92,6 @@ export type EditorDragDeps = {
   // unaffected). Tracked via ref so a mid-drag toggle takes effect on
   // the next pointermove without re-attaching listeners.
   alignmentGuidesRef: React.RefObject<boolean>;
-  // Pages mode's page lines (pageSnapBoxes): what a move or resize snaps to
-  // besides other elements. Null outside the mode.
-  pageSnapBoxes?: Element[] | null;
-  // Pages mode's laid-out pages: an arrow's end joins nothing on another page than its other
-  // end's (docs/specs/007-editor/pages-mode.md "Arrows stay on one page"). Null outside it.
-  pagesMode?: readonly LaidOutPage[] | null;
   // Set to true while a 2-finger pinch is active. The move handler
   // checks this and cancels any in-flight drag so a pinch-to-zoom
   // gesture that starts on an element doesn't also move it.

@@ -54,7 +54,6 @@ export const SHAPE_KEYWORDS: Partial<Record<ShapeKind, string>> = {
   chevrons: 'chevron arrows stages pipeline value chain phases process lifecycle',
   'mode-button': 'mode switch button press avatar',
   portal: 'teleport jump link warp travel',
-  'tab-window': 'tab window live view embed mirror show diagram slide reference frame',
   'session-button': 'timer vote poll session start',
   reveal: 'hide cover spoiler blur uncover',
   picker: 'random pick spinner wheel choose',

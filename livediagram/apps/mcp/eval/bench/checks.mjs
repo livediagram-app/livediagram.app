@@ -103,37 +103,6 @@ export function inside(snap, word, group) {
   );
 }
 
-// A Pages tab's pages, from its pages view: `page 2 "Tip 2" page-99 · infographic Square · at … · 16 elements`
-// (a logo page adds `· background #fff` before its count; an article page ends `· article art-1 · its writing below`).
-// A page line's rectangle on the canvas: `at -960,-540 1920x1080`.
-function rectOf(line) {
-  const r = / · at (-?[\d.]+),(-?[\d.]+) ([\d.]+)x([\d.]+)/.exec(line);
-  return r ? { x: Number(r[1]), y: Number(r[2]), width: Number(r[3]), height: Number(r[4]) } : {};
-}
-
-export function pagesOf(snap) {
-  const out = [];
-  for (const t of tabsOf(snap)) {
-    for (const line of (t.pages ?? '').split('\n')) {
-      const m =
-        /^page (\d+)(?: "([^"]*)")? \S+ · ([\w-]+) ([^·]+?) · at .*?(?:· (\d+) elements?|· article .*)$/.exec(
-          line,
-        );
-      if (m)
-        out.push({
-          tabId: t.id,
-          n: Number(m[1]),
-          name: m[2] ?? null,
-          kind: m[3],
-          format: m[4].trim(),
-          ...rectOf(line),
-          elements: m[5] === undefined ? null : Number(m[5]),
-        });
-    }
-  }
-  return out;
-}
-
 // The tab is drawn hand-made: a Draw tab, or a sketch finish.
 export function sketched(tab) {
   return /finish=sketch|mode=draw/.test(tab.outline?.split('\n')[0] ?? '');
@@ -145,7 +114,7 @@ function sheetText(sheet) {
   return (sheet.read?.cells ?? []).map((c) => c.display ?? c.input).join(' ');
 }
 
-// One lowercase string of every word the run made, wherever it sits (elements, cards, sheets, forms, pages).
+// One lowercase string of every word the run made, wherever it sits (elements, cards, sheets, forms).
 function allText(snap) {
   const out = [];
   for (const d of snap.documents ?? []) {
@@ -153,7 +122,6 @@ function allText(snap) {
     for (const t of d.tabs ?? []) {
       out.push(t.name, ...t.elements.map(wordsOf));
       if (t.form) out.push(JSON.stringify(t.form));
-      if (t.pages) out.push(t.pages);
     }
     for (const it of d.items?.items ?? []) out.push(it.title, JSON.stringify(it.fields ?? {}));
     for (const b of d.items?.boards ?? [])

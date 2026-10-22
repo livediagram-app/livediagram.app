@@ -27,7 +27,7 @@ describe('participantTiles', () => {
   });
 
   it('offers something to add in every mode', () => {
-    for (const mode of ['diagram', 'draw', 'pages', 'plan'] as const) {
+    for (const mode of ['diagram', 'draw', 'workshop', 'plan'] as const) {
       expect(participantTiles(mode, false).length).toBeGreaterThan(0);
     }
   });

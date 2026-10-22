@@ -87,7 +87,7 @@ describe('the editor mode key', () => {
     const rows = EDITOR_SECTIONS.flatMap((section) => section.rows);
     expect(rows).toContainEqual({
       keys: ['⇧', 'D'],
-      label: 'Next Editor Mode (Diagram, Draw, Workshop, Pages)',
+      label: 'Next Editor Mode (Diagram, Draw, Workshop)',
     });
   });
 });

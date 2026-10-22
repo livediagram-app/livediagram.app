@@ -10,9 +10,7 @@
 
 import type { Item, ItemTypeDef } from '@livediagram/items';
 import { svgPlanSheet, type SheetRenderModel } from './svg-render-plan-sheet';
-import { PAGE_EXPORT_PAPER, withinPageFrame, type PageExportFrame } from './page-frame';
 import { svgPlanBoard, svgPlanCard, svgPlanView } from './svg-render-plan';
-import { svgTabWindow, type ResolveTabWindow } from './tab-window';
 import {
   hasShapeSilhouette,
   scaledPolygonPoints,
@@ -85,7 +83,6 @@ import { arrowLabelFontStack, svgArrow } from './svg-render-arrows';
 import { arrowLabelPass, arrowRoutePoints, type ArrowLabelPass } from './arrow-label-layout';
 
 export { arrowLabelFontStack, svgArrow, svgArrowhead } from './svg-render-arrows';
-export type { ArrowLineMotion } from './svg-render-arrows';
 import type { BoxedElement, Element, Tab } from './index';
 import { layerBands, layerOpacityOf, visibleLayerElements } from './layers';
 // Element drop shadows (docs/specs/008-canvas/element-shadows.md): gate + deterministic filter defs.
@@ -194,8 +191,6 @@ export function svgBoxed(source: BoxedElement, opts: BoxedExportOptions = {}): s
   const face = exportFontFamily(source, opts.tabFont, opts.tabFinish);
   const drawn = svgBoxedFace(source, opts);
   const out = face ? drawn.replace(/^<g/, `<g font-family="${xmlEscape(face)}"`) : drawn;
-  // A tab window shows another tab in that tab's own finish: only its frame follows this one.
-  if (source.type === 'shape' && source.shape === 'tab-window') return out;
   const finish = faceFinishOf(source, resolveFinish(finishOf(source), opts.tabFinish));
   const open = out.indexOf('>') + 1;
   const close = out.lastIndexOf('</g>');
@@ -304,11 +299,6 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
           : (opts.resolvePlanArt?.(el) ?? svgPlanView(el, surface));
     return `<g${opAttr}${rotAttr}${shadowAttr}>${body}</g>`;
   }
-  if (el.type === 'shape' && el.shape === 'tab-window') {
-    // Another tab of the document, fitted inside its frame (docs/specs/009-elements/tab-window.md "Exports"); its frame
-    // named for its tab where the caller has no drawing.
-    return `<g${opAttr}${rotAttr}${shadowAttr}>${svgTabWindow(el, opts.resolveTabWindow?.(el), el.strokeColor, surface, finish === 'sketch', fontFamily)}</g>`;
-  }
   if (el.type === 'shape' && el.shape === 'checklist' && shape.kind === 'rect') {
     // The themed to-do card with its rows + done-count footer (docs/specs/009-elements/checklist.md).
     return `<g${opAttr}${rotAttr}${shadowAttr}>${svgChecklistShape(
@@ -385,7 +375,6 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
       stroke: shape.stroke,
       fill: shape.fill,
       chartPalette: opts.chartPalette,
-      chartGround: opts.chartGrounds?.get(el.id),
       label: label?.text ?? el.label ?? '',
       surface,
       resolveIconArt: opts.resolveIconArt,
@@ -482,7 +471,7 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
     !label || selfLabelled(el)
       ? ''
       : el.type === 'text' && hasWordmarkType(el)
-        ? // Tracking, weight, case and arc (docs/specs/007-editor/logo-pages.md "Wordmark type").
+        ? // Tracking, weight, case and arc (docs/specs/007-editor/editor-modes.md "Pages moved to livedocuments").
           svgWordmarkLabel(el, label)
         : label.runs
           ? svgRichWrappedLabel(
@@ -625,42 +614,30 @@ export function renderElementsToSvg(
     // A plan view's or placeholder's picture (a Dashboard laid out, @livediagram/plan-art); its labelled box when
     // absent or answering nothing.
     resolvePlanArt?: ResolvePlanArt;
-    // Each tab window's tab (docs/specs/009-elements/tab-window.md "Exports"); its frame named for its tab without.
-    resolveTabWindow?: ResolveTabWindow;
-    // One page as an export draws it (page-frame.ts, svg-render-pages.ts): the drawing is the
-    // page's rect, painted with its background, its elements inked for it; only the elements reaching it are drawn.
-    // `writingSvg` goes over the page and under every element (an article's writing).
-    frame?: PageExportFrame & { writingSvg?: string };
   } = {},
 ): string {
-  const frame = opts.frame;
-  const padding = frame ? 0 : (opts.padding ?? EXPORT_PADDING);
-  const visible = visibleLayerElements(tab.elements, tab.layers).filter(
-    (el) => !frame || frame.reaches(el, tab.elements),
-  );
+  const padding = opts.padding ?? EXPORT_PADDING;
+  const visible = visibleLayerElements(tab.elements, tab.layers);
   // Shapes something sits on keep a solid fill under Sketch (sketch-backdrop.ts), as on the canvas.
   const backdrops = sketchBackdropIds(visible, tab.finish);
   // Every caption laid out once, in document order, so labels see each other.
   const labels = arrowLabelPass(tab.elements, {
     fontFamilyOf: (a) => arrowLabelFontStack(a, tab.font, tab.finish),
   });
-  const bounds = frame ? frame.bounds : contentBounds(visible, labels);
+  const bounds = contentBounds(visible, labels);
   const vbX = bounds.x - padding;
   const vbY = bounds.y - padding;
   const vbW = bounds.w + padding * 2;
   const vbH = bounds.h + padding * 2;
-  const bg = frame ? PAGE_EXPORT_PAPER : (opts.background ?? tab.backgroundColor ?? EXPORT_BG);
+  const bg = opts.background ?? tab.backgroundColor ?? EXPORT_BG;
   // What you export is what you see: an element with no colours of its own is
   // drawn in the ink of the paper it is being exported onto (docs/specs/007-editor/editor-app.md), so a
   // dark canvas exports dark-canvas elements rather than pale ones.
-  const surface = frame ? frame.surface : canvasSurface(bg);
+  const surface = canvasSurface(bg);
   const parts: string[] = [
     `<svg xmlns="http://www.w3.org/2000/svg" width="${r2(vbW)}" height="${r2(vbH)}" viewBox="${r2(vbX)} ${r2(vbY)} ${r2(vbW)} ${r2(vbH)}">`,
-    frame
-      ? frame.backgroundSvg
-      : `<rect x="${r2(vbX)}" y="${r2(vbY)}" width="${r2(vbW)}" height="${r2(vbH)}" fill="${xmlEscape(bg)}"/>`,
+    `<rect x="${r2(vbX)}" y="${r2(vbY)}" width="${r2(vbW)}" height="${r2(vbH)}" fill="${xmlEscape(bg)}"/>`,
   ];
-  if (frame?.writingSvg) parts.push(frame.writingSvg);
   // Webfont declarations for the faces this tab uses (docs/specs/004-interface-design/fonts.md), including
   // the one the event-storming notation asks for on its notes.
   // The categorical ramp the tab's theme gives its charts (docs/specs/009-elements/pie-chart.md), which is
@@ -681,13 +658,8 @@ export function renderElementsToSvg(
   // A dimmed layer wraps its band in a <g opacity>.
   // The tab's tag colours (docs/specs/009-elements/tag-colours.md): a mapped card's edge and chips.
   const tagColours = tagColoursOf(tab);
-  // A wireframe page's elements are cut to its screen, its system bars over them (withinPageFrame).
-  const bandsStart = parts.length;
   for (const band of layerBands(tab.elements, tab.layers)) {
-    const shown = frame
-      ? band.elements.filter((el) => frame.reaches(el, tab.elements))
-      : band.elements;
-    const inner = shown.map((el) =>
+    const inner = band.elements.map((el) =>
       el.type === 'arrow'
         ? svgArrow(el, tab.elements, surface, tab.font, labels, undefined, visible, bg, tab.finish)
         : svgBoxed(el, {
@@ -705,7 +677,6 @@ export function renderElementsToSvg(
             itemTypes: opts.itemTypes,
             sheets: opts.sheets,
             resolvePlanArt: opts.resolvePlanArt,
-            resolveTabWindow: opts.resolveTabWindow,
             tagColours,
           }),
     );
@@ -714,12 +685,6 @@ export function renderElementsToSvg(
       opacity < 1 ? `<g opacity="${r2(opacity)}">${inner.join('\n')}</g>` : inner.join('\n'),
     );
   }
-  if (frame?.clipId)
-    parts.splice(
-      bandsStart,
-      parts.length - bandsStart,
-      withinPageFrame(frame, parts.slice(bandsStart).join('\n')),
-    );
   parts.push('</svg>');
   return parts.join('\n');
 }

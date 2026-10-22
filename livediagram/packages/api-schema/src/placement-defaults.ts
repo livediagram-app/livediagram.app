@@ -79,11 +79,10 @@ export function isPlacementDefaultKey(value: unknown): value is PlacementDefault
   return isMember(PLACEMENT_DEFAULT_KEYS, value);
 }
 
-// Keys stored under a name since retired: Pages mode was Illustrate mode, and Infographic mode before;
-// Workshop mode was Facilitate mode.
+// Keys stored under a name since retired: Workshop mode was Facilitate mode. A key for Pages mode (`mode:pages`, or
+// its older `mode:illustrate` and `mode:infographic`) is no key now Pages moved out to livedocuments, and reads as
+// none.
 const LEGACY_PLACEMENT_DEFAULT_KEYS: Readonly<Record<string, PlacementDefaultKey>> = {
-  'mode:illustrate': 'mode:pages',
-  'mode:infographic': 'mode:pages',
   'mode:facilitate': 'mode:workshop',
 };
 
@@ -150,7 +149,8 @@ export function readCreationIntent(
     tabKind?: unknown;
     templateFamily?: unknown;
   };
-  // A create from a client from before a mode's rename still names it `illustrate`, `infographic` or `facilitate`.
+  // A create from a client from before a mode's rename still names it `facilitate`; one naming Pages mode (or its
+  // older names) is made in Diagram.
   const parsedMode = parseEditorMode(mode);
   if (!parsedMode) return { ok: false };
   const kind = tabKind ?? DEFAULT_TAB_KIND;

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { TEMPLATES, buildTemplate, templateCanvasOverrides } from '@livediagram/templates';
+import { TEMPLATES, buildTemplate } from '@livediagram/templates';
 import {
   THEMES,
   canvasSurface,
@@ -92,7 +92,6 @@ type CanvasSurface = ReturnType<typeof canvasSurface>;
 
 describe('template labels read against what is drawn behind them under every theme', () => {
   for (const { kind } of TEMPLATES) {
-    if (templateCanvasOverrides(kind).pages) continue;
     it(kind, () => {
       const elements = buildTemplate(kind, 0, 0);
       const problems: string[] = [];

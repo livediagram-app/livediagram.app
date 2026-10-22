@@ -60,47 +60,16 @@ const DRAWINGS: Element[][] = [
   [box('a', 0, 0, { fillColor: '#123456', strokeColor: '#654321' })],
 ];
 
-// The codes only a Pages tab is linted for, each on a page's text.
-const PAGE_DRAWINGS: Element[][] = [
-  [
-    {
-      id: 'a',
-      type: 'text',
-      x: 0,
-      y: 0,
-      width: 200,
-      height: 40,
-      label: 'A heading long enough to wrap onto three or more lines in its box',
-      textSize: 'lg',
-    },
-  ],
-  [
-    {
-      id: 'a',
-      type: 'text',
-      x: 0,
-      y: 0,
-      width: 70,
-      height: 120,
-      label: '£4.6bn',
-      textSize: 'lg',
-    },
-  ],
-  [
-    { id: 'a', type: 'text', x: 0, y: 0, width: 200, height: 40, label: 'One' },
-    { id: 'b', type: 'text', x: 0, y: 8, width: 200, height: 40, label: 'Two' },
-  ],
+// Two texts printed over each other (text-overflow).
+const OVERPRINT: Element[] = [
+  { id: 'a', type: 'text', x: 0, y: 0, width: 200, height: 40, label: 'One' },
+  { id: 'b', type: 'text', x: 0, y: 8, width: 200, height: 40, label: 'Two' },
 ];
 
 describe('tab fixes', () => {
   const findings = [
     ...DRAWINGS.map((elements): Tab => ({ id: 't', name: 'T', theme: 'ocean', elements })),
-    ...PAGE_DRAWINGS.map((elements): Tab => ({
-      id: 't',
-      name: 'T',
-      opensIn: 'pages',
-      elements,
-    })),
+    { id: 't', name: 'T', elements: OVERPRINT } satisfies Tab,
   ].flatMap((tab) => lint(tab).findings.map((finding) => ({ finding, tab })));
 
   it('cover every code', () => {

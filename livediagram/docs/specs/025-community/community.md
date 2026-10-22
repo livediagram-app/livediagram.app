@@ -112,7 +112,7 @@ The closed set, in display order. The id is stored; the label is shown.
 | `design`       | Design & Wireframes | Wireframes, mockups, layouts                  |
 | `data`         | Data & Databases    | Entity diagrams, schemas, tables              |
 | `learning`     | Learning & Teaching | Explainers, lessons, study notes              |
-| `infographics` | Infographics        | Pages and articles                            |
+| `infographics` | Infographics        | Posters, charts and explainers                |
 | `art`          | Drawing & Art       | Sketches, illustrations, Draw mode            |
 | `other`        | Something Else      | Anything that fits nowhere above              |
 

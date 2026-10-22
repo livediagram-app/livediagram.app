@@ -61,7 +61,6 @@ function fullAccount(): UserPreferences {
     whiteboardShapePicks: picks,
     whiteboardPinnedShapes: ['arrow', 'rectangle'],
     quickSwatchOverrides: { brand: { fill: ['#112233', null, '#445566'] } } as never,
-    logoGuidesHidden: ['centre', 'keylines', 'safe', 'grid'],
     powerUserBaseline: {
       showMinimap: { before: { showMinimap: true }, applied: { showMinimap: false } },
       notificationsEnabled: { before: {}, applied: { notificationsEnabled: false } },

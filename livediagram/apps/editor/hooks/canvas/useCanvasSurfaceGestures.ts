@@ -568,6 +568,5 @@ export function useCanvasSurfaceGestures({
     onWrapperPointerDown,
     onWrapperDoubleClick,
     onSurfaceDoubleClick,
-    pressedByFinger,
   };
 }

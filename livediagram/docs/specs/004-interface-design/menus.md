@@ -212,7 +212,7 @@ keep one stack for this (`components/primitives/popover-stack.ts`).
 ### Not menus
 
 Listbox dropdowns (the palette and canvas-tool pickers, the rich-text toolbar's dropdowns, the
-Explorer filter chips), dialog popovers (Settings, presence, infographic pages), mention suggestions
+Explorer filter chips), dialog popovers (Settings, presence), mention suggestions
 and toolbars follow their own patterns and are out of scope.
 
 ## Telemetry

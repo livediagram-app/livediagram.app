@@ -17,8 +17,6 @@ import { isSelfDrawingShape } from './data-shapes';
 import type { TabKind } from './tab-kind';
 import type { DashboardLayout } from './dashboard';
 import type { EditorMode } from './editor-mode';
-import type { Page, PageOrientation } from './page';
-import type { ArticleFlow } from './article-flow';
 import type { TabTimer, TabVote } from './session';
 
 // Layer type used by the `Tab.layers` field below (docs/specs/006-document/layers.md). Type-only
@@ -355,17 +353,6 @@ export type Tab = {
   // (docs/specs/007-editor/editor-modes.md "Where the mode lives"). Absent = 'diagram' (read via
   // `opensInOf`); a switch sets it as one tab edit (withEditorModeSwitched).
   opensIn?: EditorMode;
-  // Pages mode's pages (docs/specs/007-editor/editor-modes.md "The pages"): the A4 sheets,
-  // in row order, each portrait or landscape, that everyone lays the tab out on. Absent = one page
-  // (read via `pagesOf`).
-  pages?: Page[];
-  // The writing of the tab's article pages, by flow id (docs/specs/007-editor/article-pages.md):
-  // each document's blocks and style, shared by its pages (`Page.flow`). Read via
-  // `articlesOf`; synced block by block (the `article` room op), never in a `tab-meta` patch.
-  articles?: Record<string, ArticleFlow>;
-  // Legacy: a single page's orientation, from before multiple pages. Read as one page when `pages`
-  // is absent; dropped the first time the pages change (`withPages`).
-  pageOrientation?: PageOrientation;
   // An event-storming board whose workshop notes have been settled onto the
   // lanes once (docs/specs/021-event-storming/event-storming.md "Always on a lane"). Set by that settle, by the
   // template, or by a file import; never cleared, and grafted across undo.
@@ -480,47 +467,9 @@ export * from './shape-variants';
 export * from './title-caption';
 export * from './editor-mode';
 export * from './tab-stats';
-export * from './page';
-export * from './wireframe-device';
-export * from './wireframe-page';
-export {
-  wireframeFrameOverSvg,
-  wireframeFrameTheme,
-  wireframeFrameUnderSvg,
-  type WireframeFrameTheme,
-} from './wireframe-device-svg';
-export * from './page-fit';
-export * from './page-image';
-export * from './page-lock';
-export * from './page-of';
-export * from './logo-page';
-export * from './element-mirror';
-export * from './element-symmetry';
-export * from './logo-guide-snap';
 export * from './wordmark';
-export * from './page-content';
-export * from './page-frame';
-export * from './page-ink';
-export * from './page-ink-contrast';
-export * from './page-ink-ground';
-export * from './page-ink-rules';
-export * from './paginate';
 export * from './editor-mode-switch';
-export * from './article-flow';
-export * from './article-flow-ops';
-export * from './article-pages';
-export * from './article-style';
-export * from './article-zones';
-export * from './article-notes';
-export * from './article-to-page';
-export * from './article-intake';
-export * from './article-markdown';
-export * from './article-markdown-io';
-export * from './page-paint';
-export * from './page-default-background';
-export * from './pages-edits';
-export * from './pages-background-copy';
-export * from './tab-window';
+export * from './theme-accent';
 export * from './tab-has-drawing';
 export { migrateWhiteboardKind } from './legacy-whiteboard-tab';
 export { downgradeLinks, upgradeLegacyLinks } from './legacy-links';
@@ -662,7 +611,6 @@ export * from './entity-related';
 export * from './code-themes';
 export * from './chart-palettes';
 export * from './chart-frame';
-export * from './chart-ink';
 export * from './chart-types';
 export * from './chart-marks';
 export * from './chart-axis';
@@ -818,7 +766,6 @@ export * from './svg-path-outline';
 export * from './shape-hit';
 // The band a shape's label sits in (docs/specs/008-canvas/canvas-and-palette.md "Shape primitives").
 export * from './label-body';
-export * from './shape-area';
 export * from './indicator-placement';
 export * from './anchor-choice';
 export * from './arrow-body-drop';
@@ -848,6 +795,7 @@ export { isSafeColourValue } from './unsafe-colours';
 export * from './stored-tab';
 export { settleTabFields } from './tab-fields';
 export { retiredSchemeOf, migrateRetiredScheme } from './retired-schemes';
+export { dropRetiredPages, isRetiredPagesElement } from './retired-pages';
 
 // Photoshop-style layers (docs/specs/006-document/layers.md): the Layer type used by the Tab field
 // above, band-aware render ordering, and the pure layer operations.
@@ -897,7 +845,6 @@ export * from './fonts';
 // helpers a presentation is built from. Kept here rather than in apps/editor
 // because the api and the MCP worker can answer the same questions.
 export * from './slide-deck';
-export * from './slide-deck-pages';
 export * from './lane-seam-snapping';
 // Refs, slug ids, kind words, derived containment and the style keys (docs/specs/024-agents/document-views.md):
 // how views, edit operations and the lint name and place elements alike.
@@ -911,9 +858,6 @@ export * from './dashboard-cards';
 export * from './dashboard-card-style';
 export * from './tab-names';
 export { planBoardFitHeight } from './svg-render-plan';
-export * from './svg-render-pages';
-export * from './article-draw-ops';
-export * from './article-layout-estimate';
 export { agendaFitHeight } from './svg-render-agenda';
 export * from './session-button-text';
 export { lineChars } from './svg-render-web';

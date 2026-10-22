@@ -14,7 +14,6 @@
 // grouping by `group` under the CATEGORY_BANDS headings.
 
 import dynamic from 'next/dynamic';
-import { PaletteLogoTab } from './PaletteLogoTab';
 import { PALETTE_CATEGORIES } from './palette-categories';
 import { PaletteMyShapesTab } from './PaletteMyShapesTab';
 import type { ShapeLibraryItem } from '@livediagram/api-schema';
@@ -148,12 +147,7 @@ export function paletteCategoryTabs(
       case 'write':
         return <PaletteWriteTab {...tab} tiles={tiles} />;
       case 'draw':
-        // Logo's Draw holds this person's markers too, with their own flyouts (PaletteLogoTab).
-        return tiles.some((t) => t.action.type === 'marker') ? (
-          <PaletteLogoTab {...tab} tiles={tiles} />
-        ) : (
-          <PaletteDrawTab {...tab} tiles={tiles} />
-        );
+        return <PaletteDrawTab {...tab} tiles={tiles} />;
       case 'devices':
         return <DevicePickerTab {...tab} tiles={tiles} />;
       case 'event-storming':

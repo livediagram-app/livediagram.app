@@ -24,7 +24,6 @@ export type PaletteTileActions = {
   beginHighlighter: () => void;
   beginShapePen: () => void;
   beginPolygon: () => void;
-  beginPath: () => void;
   addArrow: (ends?: import('@livediagram/document').ArrowEnds) => void;
   // Optional fill + kind: the Event Storming tiles pass their note kind's
   // canonical colour and the kind itself (which routes the note onto its
@@ -42,7 +41,7 @@ export type PaletteTileActions = {
   addIcon: (iconId: string) => void;
   addTechIcon: (iconId: string) => void;
   // Picks up one of Draw mode's markers (the Toolbar strip's Search, palette-marker-tiles).
-  beginMarker: (penId: WhiteboardPenId, once?: boolean) => void;
+  beginMarker: (penId: WhiteboardPenId) => void;
   // Puts the armed tool down (its tile pressed again).
   cancelDraw?: () => void;
   // Whether image uploads are available (the editor supplied onAddImage);
@@ -86,8 +85,6 @@ export function tileHandler(
       return actions.beginShapePen;
     case 'polygon':
       return actions.beginPolygon;
-    case 'path':
-      return actions.beginPath;
     case 'arrow':
       // The Arrow tile's pointer, or the Line tile's none (canvas-and-palette.md "Arrows and lines").
       return () => actions.addArrow(a.ends);
@@ -114,7 +111,7 @@ export function tileHandler(
     case 'tech-icon':
       return () => actions.addTechIcon(a.iconId);
     case 'marker':
-      return () => (a.once ? actions.beginMarker(a.penId, true) : actions.beginMarker(a.penId));
+      return () => actions.beginMarker(a.penId);
     case 'open':
       // Off the strip (which opens its popover itself) an opener moves the palette to its category.
       return () => requestPaletteCategory(a.category);

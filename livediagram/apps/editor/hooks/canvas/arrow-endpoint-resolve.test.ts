@@ -1,14 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { layOutPages, newLogoPage, type ArrowElement, type Element } from '@livediagram/document';
+import type { ArrowElement, Element } from '@livediagram/document';
 import { resolveArrowEndpointDrag } from './arrow-endpoint-resolve';
 
-// docs/specs/007-editor/pages-mode.md "Arrows stay on one page": an arrow's dragged end pins
-// to nothing on a page other than its other end's.
-const pages = layOutPages([newLogoPage('a'), newLogoPage('b')]);
-const centre = (i: number) => {
-  const r = pages[i]!.rect;
-  return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
-};
+const centre = (i: number) => ({ x: i * 1000, y: 0 });
 const box = (id: string, at: { x: number; y: number }) =>
   ({
     id,
@@ -36,28 +30,17 @@ const topOf = (el: Element) => {
   const b = el as { x: number; y: number; width: number };
   return { x: b.x + b.width / 2, y: b.y };
 };
-const drag = (cursor: { x: number; y: number }, withPages: boolean) =>
-  resolveArrowEndpointDrag({
-    cursor,
-    elements,
-    arrowId: 'arrow',
-    end: 'to',
-    noSnap: true,
-    guidesOn: false,
-    pages: withPages ? pages : null,
-  }).endpoint;
-
-describe('resolveArrowEndpointDrag across pages', () => {
-  it('pins to an element on the same page', () => {
-    expect(drag(topOf(sameTarget), true)).toMatchObject({ kind: 'pinned', elementId: 't' });
-  });
-
-  it('stays free over an element on another page', () => {
-    expect(drag(topOf(otherTarget), true)).toMatchObject({ kind: 'free' });
-  });
-
-  it('pins anywhere outside Pages mode', () => {
-    expect(drag(topOf(otherTarget), false)).toMatchObject({ kind: 'pinned', elementId: 'o' });
+describe('resolveArrowEndpointDrag onto an anchor', () => {
+  it('pins to an element anchor under the cursor', () => {
+    const out = resolveArrowEndpointDrag({
+      cursor: topOf(otherTarget),
+      elements,
+      arrowId: 'arrow',
+      end: 'to',
+      noSnap: true,
+      guidesOn: false,
+    });
+    expect(out.endpoint).toMatchObject({ kind: 'pinned', elementId: 'o' });
   });
 });
 
@@ -66,7 +49,7 @@ describe('resolveArrowEndpointDrag across pages', () => {
 describe('resolveArrowEndpointDrag over a shape body', () => {
   const over = (
     cursor: { x: number; y: number },
-    opts: { noSnap?: boolean; withPages?: boolean; els?: Element[] } = {},
+    opts: { noSnap?: boolean; els?: Element[] } = {},
   ) =>
     resolveArrowEndpointDrag({
       cursor,
@@ -75,7 +58,6 @@ describe('resolveArrowEndpointDrag over a shape body', () => {
       end: 'to',
       noSnap: opts.noSnap ?? false,
       guidesOn: false,
-      pages: opts.withPages ? pages : null,
     });
   const middle = (el: Element) => {
     const b = el as { x: number; y: number; width: number; height: number };
@@ -90,11 +72,8 @@ describe('resolveArrowEndpointDrag over a shape body', () => {
     expect(active[0]).toMatchObject(topOf(sameTarget));
   });
 
-  it('stays free with Cmd / Ctrl held, and over a shape on another page', () => {
+  it('stays free with Cmd / Ctrl held', () => {
     expect(over(middle(sameTarget), { noSnap: true }).endpoint).toMatchObject({ kind: 'free' });
-    expect(over(middle(otherTarget), { withPages: true }).endpoint).toMatchObject({
-      kind: 'free',
-    });
   });
 
   it('does not pin back onto the shape the arrow leaves', () => {

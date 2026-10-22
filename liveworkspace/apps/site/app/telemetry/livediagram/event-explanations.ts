@@ -989,9 +989,9 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Tab|Changed|PageSize': 'Someone changed a page to another size.',
   'Tab|Changed|PageBackground': "Someone changed a page's background colour.",
   'Tab|Changed|PageBackgroundAnimated':
-    'Someone gave a slide an animated background (aurora, starfield, waves and the like).',
+    "Someone gave a form's cover an animated background (aurora, starfield, waves and the like).",
   'Tab|Changed|PageBackgroundAnimatedSpeed':
-    "Someone changed how fast a slide's animated background moves.",
+    "Someone changed how fast a form cover's animated background moves.",
   'Tab|Changed|PageBackgroundImage':
     'Someone put a picture behind a page, searched or uploaded, under an overlay.',
   'Tab|Changed|PagePattern': "Someone changed a page's background pattern.",

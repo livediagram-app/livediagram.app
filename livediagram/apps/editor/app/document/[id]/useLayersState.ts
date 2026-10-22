@@ -46,8 +46,7 @@ export function useLayersState(opts: {
   // Surfaces the "adding is paused" notice when the active layer goes
   // hidden / locked — the block itself is silent by design.
   toastInfo: (message: string) => void;
-  // Elements inert for another reason than their layer: those on a locked page
-  // (docs/specs/007-editor/pages-mode.md "Locking a page").
+  // Elements inert for another reason than their layer: a Sheet's charts (useSheetChartInertIds).
   extraInertIds?: ReadonlySet<string>;
 }) {
   const {

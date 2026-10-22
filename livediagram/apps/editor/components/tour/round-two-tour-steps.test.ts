@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-// The round-two element tours (docs/specs/007-editor/element-tours.md): the stack, entity, tab window, lane, boundary,
+// The round-two element tours (docs/specs/007-editor/element-tours.md): the stack, entity, lane, boundary,
 // diagram key and portal tours, each on its element's own parts, and the menu step they share.
 
 import { describe, expect, it } from 'vitest';
@@ -14,7 +14,6 @@ import { laneTourSteps } from './lane-tour-steps';
 import { menuStep, type MenuTourEnv } from './menu-tour-step';
 import { portalTourSteps } from './portal-tour-steps';
 import { stackTourSteps } from './stack-tour-steps';
-import { tabWindowTourSteps } from './tab-window-tour-steps';
 import type { TourStepOf } from './tour-step';
 
 const env: MenuTourEnv = { elementId: 'el', hasMore: true, touch: false };
@@ -58,17 +57,6 @@ describe('entityTourSteps', () => {
     expect(step(entityTourSteps({ ...env, touch: true, hasFields: false }), 'title').body).toMatch(
       /^Double-tap/,
     );
-  });
-});
-
-describe('tabWindowTourSteps', () => {
-  it('rings Open on a window showing a tab, and Choose a Tab on one that is not', () => {
-    const shown = tabWindowTourSteps({ ...env, chosen: true });
-    expect(ids(shown)).toEqual(['window', 'open', 'menu', 'size', 'outro']);
-    expect(ringed(step(shown, 'open'))).toBe('[data-element-id="el"] [data-tab-window-open]');
-    const empty = tabWindowTourSteps({ ...env, chosen: false });
-    expect(ids(empty)).toEqual(['window', 'choose', 'menu', 'size', 'outro']);
-    expect(ringed(step(empty, 'choose'))).toBe('[data-element-id="el"] [data-tab-window-choose]');
   });
 });
 
@@ -130,15 +118,6 @@ describe('portalTourSteps', () => {
 
 describe('the registry reads what is on screen when Play is pressed', () => {
   const env2 = (el: Element) => ({ hasMore: true, touch: false, elements: [el] });
-
-  it("rings a tab window's Open button only when it draws one", () => {
-    const win = { ...createShape('tab-window', 0, 0), id: 'w1' } as Element;
-    expect(ids(ELEMENT_TOUR_DEFS['tab-window'].steps(win, env2(win)))).toContain('choose');
-    document.body.innerHTML =
-      '<div data-element-id="w1"><button data-tab-window-open></button></div>';
-    expect(ids(ELEMENT_TOUR_DEFS['tab-window'].steps(win, env2(win)))).toContain('open');
-    document.body.innerHTML = '';
-  });
 
   it('steps through a portal only when it is lit', () => {
     const portal = { ...createShape('portal', 0, 0), id: 'p1' } as Element;

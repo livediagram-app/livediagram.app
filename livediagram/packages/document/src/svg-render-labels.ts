@@ -54,7 +54,7 @@ export type ExportLabel = {
   turnAbout?: { x: number; y: number };
 };
 
-// Wordmark type on a wrapped label (docs/specs/007-editor/logo-pages.md "Wordmark type"): tracking
+// Wordmark type on a wrapped label (docs/specs/007-editor/editor-modes.md "Pages moved to livedocuments"): tracking
 // in em (written in px, which every renderer reads) and the weight a non-bold run paints in.
 // `basePx` is the size the tracking's em is measured against: the label's own size, as the canvas
 // measures it on the label's wrapper (a run of another size inherits the same spacing).

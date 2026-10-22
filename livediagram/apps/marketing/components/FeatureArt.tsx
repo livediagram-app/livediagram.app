@@ -23,26 +23,20 @@ export * from './feature-art/content';
 export * from './feature-art/content-tech';
 export * from './feature-art/structure';
 export * from './feature-art/embeds-timeline';
-// Presentation mode (docs/specs/012-collaboration/presentation-mode.md): decks, the full-screen slide, notes, and the
-// fact that presenting is yours alone.
+// Presentation mode (docs/specs/012-collaboration/presentation-mode.md): decks, notes, and the fact that
+// presenting is yours alone.
 export * from './feature-art/present';
 export * from './feature-art/room';
 export * from './feature-art/workshop';
-// Infographic pages (docs/specs/007-editor/pages-mode.md): pages, layouts, backgrounds, export.
-export * from './feature-art/infographics';
-export * from './feature-art/infographics-export';
-export * from './feature-art/logo';
-export * from './feature-art/article';
+// The presenter's clock beside them.
+export * from './feature-art/present-timing';
 // The mode categories (docs/specs/019-marketing/marketing-site.md "Story beats"): Draw's markers and
-// erasers, Plan's boards, and the writing and slides of Pages mode's articles and slide pages.
+// erasers, and Plan's boards.
 export * from './feature-art/whiteboard';
 export * from './feature-art/whiteboard-pen';
 export * from './feature-art/plan';
 export * from './feature-art/plan-views';
 export * from './feature-art/plan-dashboard';
-export * from './feature-art/documents';
-export * from './feature-art/article-looks';
-export * from './feature-art/slide-layouts';
 // Sheets on a Plan tab, two tabs side by side, and boards brought in from other tools.
 export * from './feature-art/sheet';
 // Forms (docs/specs/030-forms/forms.md): built in place, shared by link, responses landing.
@@ -54,10 +48,8 @@ export * from './feature-art/imports';
 export * from './feature-art/storming';
 export * from './feature-art/canvas-data';
 export * from './feature-art/reach';
-// Plan cards beyond the board, Sheets beyond formulas, Forms beyond the build, pages beyond
-// layouts, and Draw's dock.
+// Plan cards beyond the board, Sheets beyond formulas, Forms beyond the build, and Draw's dock.
 export * from './feature-art/plan-more';
 export * from './feature-art/sheet-more';
 export * from './feature-art/forms-more';
-export * from './feature-art/pages-more';
 export * from './feature-art/whiteboard-dock';

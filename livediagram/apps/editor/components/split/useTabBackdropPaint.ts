@@ -1,8 +1,7 @@
 'use client';
 
 // The paper and pattern the editor paints behind a tab, in its mode (docs/specs/007-editor/split-view.md "The other
-// pane", docs/specs/009-elements/tab-window.md "The drawing"): what a drawing of the tab sits on, so it reads as that
-// tab's own canvas wherever it is shown. Shared by the split view's other pane and a tab window.
+// pane"): what a drawing of the tab sits on, so it reads as that tab's own canvas wherever it is shown.
 import { useCallback, useMemo, type CSSProperties } from 'react';
 import type { Tab } from '@livediagram/document';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';

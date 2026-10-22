@@ -381,8 +381,8 @@ describe('usePerTabLoad never counts an in-flight tab as loaded', () => {
     expect(loadedTabIdsRef.current.has('t2')).toBe(true);
   });
 
-  // docs/specs/009-elements/tab-window.md "States": a window asking for a tab the visit is fetching hears how that
-  // fetch ended, a failure included, rather than nothing.
+  // A caller asking for a tab the visit is fetching hears how that fetch ended, a failure included, rather than
+  // nothing.
   it('reports a visit fetch that fails to a sweep waiting on it', async () => {
     let failT2: (e: Error) => void = () => {};
     apiLoadTab.mockImplementation(

@@ -6,15 +6,15 @@ this blueprint adds only what the fifth mode changes.
 
 ## Domain and naming
 
-| Concept                    | Identifier                                                                                  |
-| -------------------------- | ------------------------------------------------------------------------------------------- |
-| The mode                   | `'workshop'`, a member of `EditorMode` (`packages/document/src/editor-mode.ts`)             |
-| Its catalogue entry        | `EDITOR_MODE_CATALOGUE` row `{ id: 'workshop', label: 'Workshop', description }` (D2)       |
-| Its mark                   | `FlipchartIcon` in `packages/ui/src/icons/drawing-kinds.tsx`, `EDITOR_MODE_ICONS.workshop`  |
+| Concept                    | Identifier                                                                                    |
+| -------------------------- | --------------------------------------------------------------------------------------------- |
+| The mode                   | `'workshop'`, a member of `EditorMode` (`packages/document/src/editor-mode.ts`)               |
+| Its catalogue entry        | `EDITOR_MODE_CATALOGUE` row `{ id: 'workshop', label: 'Workshop', description }` (D2)         |
+| Its mark                   | `FlipchartIcon` in `packages/ui/src/icons/drawing-kinds.tsx`, `EDITOR_MODE_ICONS.workshop`    |
 | Its palette layout         | `WORKSHOP: PaletteLayout` in `apps/editor/components/palette/palette-layouts.ts`              |
 | The strip's tools per mode | `sessionStripTools(mode, esBoard)` in `apps/editor/components/canvas/SessionClusterStrip.tsx` |
-| Its blank                  | template kind `'blank-session'`, label "Blank Session", document name "Untitled Session"    |
-| Its default folder key     | `'mode:workshop'`, words `{ label: 'Sessions', noun: 'sessions' }` (`MODE_WORDS`)           |
+| Its blank                  | template kind `'blank-session'`, label "Blank Session", document name "Untitled Session"      |
+| Its default folder key     | `'mode:workshop'`, words `{ label: 'Sessions', noun: 'sessions' }` (`MODE_WORDS`)             |
 
 Banned as names for the mode, in code and copy: "Session mode", "Collaborate mode", and its old
 name "Facilitate", which survives only where something stored is read: `LEGACY_EDITOR_MODES`
@@ -37,7 +37,7 @@ keeps its name. The Collaborate elements keep `toolGroup: 'behaviour'` and their
 | `WORKSHOP` Popular tiles           | `tools:sticky`, `tools:text`, `tools:frame`, `tools:arrow`, `tools:session-timer`, `tools:session-vote`, `tools:session-poll`, `tools:reveal`, `collab:agenda`, `collab:idea-box`, `collab:qa-board`, `collab:temperature` (12, as every Popular)                                                                                                                                                                                      | spec "The palette"                |
 | `WORKSHOP` categories              | `popular`, `shapes`, `my-shapes`, `write` (less `tools:page`, `tools:annotation`), `draw` (less `tools:shape-pen`, `tools:polygon`), `build` (less `tools:lane`, `tools:timeline`), `collab-ask`, `collab-tools`, `collab-record`, `collab-react`, `collab-mode`, `collab-navigate`, `icons`, `stickers`, `media` (Diagram's: no embeds, D8)                                                                                           | spec "The palette"; D3            |
 | `DIAGRAM` categories               | as today less `stickers` and the Collaborate elements; `write` = its own tiles then `collab:comment-pin`, `collab:action-card` (D4)                                                                                                                                                                                                                                                                                                    | spec "What Diagram gives up"      |
-| `sessionStripTools`                | `workshop` or an event-storming board (`esBoard`) → all three; `plan` → `['timer','vote']`; `pages` → vote and poll with `runningOnly` (the strip gets `canStart` false and `offersTimer` false); else `null`                                                                                                                                                                                                                          | spec "The Session strip per mode" |
+| `sessionStripTools`                | `workshop` or an event-storming board (`esBoard`) → all three; `plan` → `['timer','vote']`; else `null`                                                                                                                                                                                                                                                                                                                                | spec "The Session strip per mode" |
 | `TEMPLATE_MODES` additions         | `retrospective`, `start-stop-continue`, `mad-sad-glad`, `four-ls`, `sailboat`, `town-hall`, `lean-coffee`, `crazy-eights`, `meeting-agenda`, `workshop-board`, `brainstorm`, `affinity-map`, `prioritization-matrix`, `risk-matrix`, `pub-quiz`, `icebreaker-questions`, `two-truths-and-a-lie`, `would-you-rather`, `people-bingo`, `virtual-office`, `coworking-space`, `team-pod`, `all-hands-hall`, `blank-session` → `'workshop'` | spec "Templates"                  |
 | `BLANK_TEMPLATE_FOR_MODE.workshop` | `'blank-session'`                                                                                                                                                                                                                                                                                                                                                                                                                      | spec "Templates"                  |
 | `POPULAR_BY_MODE.workshop`         | `blank-session`, `sailboat`, `retrospective`, `town-hall`, `lean-coffee`, `crazy-eights`, `pub-quiz` (D5)                                                                                                                                                                                                                                                                                                                              | templates-by-mode spec            |
@@ -59,8 +59,7 @@ keeps its name. The Collaborate elements keep `toolGroup: 'behaviour'` and their
 - **Strip:** `CanvasChrome` mounts the strip only when `sessionStripTools(mode, esBoard)` is
   non-null, and `useCanvasChromePanels` closes a session popover whose mode no longer offers it;
   both pass `props.esBoard`, so Diagram's strip vanishes, running tool or not, while an
-  event-storming board keeps it. Under `runningOnly` (Pages) a session popover also closes once
-  its vote or poll stops running, as a view-role visitor's does.
+  event-storming board keeps it.
 - **Elements:** no change to faces, menus or quick menus; they never read the mode.
 - **Templates:** `templateCanvasOverrides` sets `opensIn` from `templateEditorMode(kind)`, so the
   table above is the only template change besides the new blank.
@@ -153,7 +152,7 @@ export const EDITOR_MODE_ICONS: Record<EditorMode, IconComponent>; // key type d
 | Strip per mode; Diagram none while running                                                | `components/canvas/SessionClusterStrip.test.tsx`                                                                           |
 | Strip kept on an event-storming board                                                     | `SessionClusterStrip.test.tsx`                                                                                             |
 | Share roles in Workshop                                                                   | `SessionClusterStrip.test.tsx` (view role), `palette-layouts.test.ts` (participant tiles), `StartModeSwitch.menu.test.tsx` |
-| Templates open in Workshop; blank                                                         | `apps/editor/lib/templates.test.ts`, `packages/templates/src/popular.test.ts`                                                |
+| Templates open in Workshop; blank                                                         | `apps/editor/lib/templates.test.ts`, `packages/templates/src/popular.test.ts`                                              |
 | Default folder key + label                                                                | `default-key-entries.test.ts`, api-schema `placement-defaults.test.ts`                                                     |
 | Explorer Opens in chip                                                                    | `packages/explorer-lens` tests                                                                                             |
 | OpenAPI enum current                                                                      | `apps/api` `manifest.test.ts`                                                                                              |

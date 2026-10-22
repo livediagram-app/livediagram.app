@@ -32,8 +32,6 @@ const GROUPED_ROWS = [
 const NAMED_ONLY = [
   'board',
   'sheet',
-  'page',
-  'article',
   'form',
   'type',
   'template',

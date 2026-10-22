@@ -144,32 +144,21 @@ describe('sessionStripTools', () => {
     expect(sessionStripTools('draw')).toBeNull();
   });
 
-  it('offers Pages a running Vote or Poll only', () => {
-    expect(sessionStripTools('pages')).toEqual({
-      timer: false,
-      vote: true,
-      poll: true,
-      runningOnly: true,
-    });
-  });
-
   it('keeps all three on an event-storming board, a workshop that is always Diagram', () => {
     expect(sessionStripTools('diagram', true)).toEqual({ timer: true, vote: true, poll: true });
   });
 });
 
 describe('stripCanStart', () => {
-  it('offers the idle tools to an editor, never in a running-only strip or to a view role', () => {
-    expect(stripCanStart(sessionStripTools('workshop')!, false)).toBe(true);
-    expect(stripCanStart(sessionStripTools('workshop')!, true)).toBe(false);
-    expect(stripCanStart(sessionStripTools('pages')!, false)).toBe(false);
+  it('offers the idle tools to an editor, never to a view role', () => {
+    expect(stripCanStart(false)).toBe(true);
+    expect(stripCanStart(true)).toBe(false);
   });
 });
 
 describe('stripSegmentGone', () => {
   const idle = { timer: false, vote: false, poll: false };
   const all = { timer: true, vote: true, poll: true };
-  const pages = sessionStripTools('pages');
   const workshop = sessionStripTools('workshop');
 
   it('keeps nothing open when no popover is', () => {
@@ -184,7 +173,6 @@ describe('stripSegmentGone', () => {
     expect(
       stripSegmentGone({ ...at, segment: 'session-poll', tools: sessionStripTools('plan') }),
     ).toBe(true);
-    expect(stripSegmentGone({ ...at, segment: 'session-timer', tools: pages })).toBe(true);
   });
 
   it("keeps an editor's idle popover open where the strip offers starting one", () => {
@@ -192,14 +180,6 @@ describe('stripSegmentGone', () => {
       expect(stripSegmentGone({ segment, tools: workshop, readOnly: false, running: idle })).toBe(
         false,
       );
-  });
-
-  it("closes an editor's Vote and Poll in Pages when the activity ends, never offering the set-up", () => {
-    const at = { tools: pages, readOnly: false };
-    expect(stripSegmentGone({ ...at, segment: 'session-vote', running: all })).toBe(false);
-    expect(stripSegmentGone({ ...at, segment: 'session-vote', running: idle })).toBe(true);
-    expect(stripSegmentGone({ ...at, segment: 'session-poll', running: all })).toBe(false);
-    expect(stripSegmentGone({ ...at, segment: 'session-poll', running: idle })).toBe(true);
   });
 
   it("closes a view role's popover when its tool ends", () => {

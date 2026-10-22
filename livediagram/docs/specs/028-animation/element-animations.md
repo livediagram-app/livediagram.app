@@ -116,9 +116,7 @@ A text element's old value lives in `animation`. Picking a Text animation for it
 - **Held while covering.** A board, view or Sheet that is maximised or fills its tab shows its rest frame, and its
   menu offers no Animation category ([Plan board](../026-plan/plan-board.md#maximised-board)).
 - **Rest frame.** Every animation has a rest frame: the element fully shown, in place, as it is with no animation.
-  Reduced motion, PNG and SVG export, and a still canvas show the rest frame. A tab window plays the shown tab's
-  animations that move the element whole or run along an arrow's line, and shows the rest frame for the others
-  ([The tab window](../009-elements/tab-window.md) "The element"). A reveal's rest frame is fully
+  Reduced motion, PNG and SVG export, and a still canvas show the rest frame. A reveal's rest frame is fully
   revealed, so nothing is ever exported or shown blank.
 - **Loops and reveals.** A **loop** repeats a motion around the rest frame. A **reveal** brings the element or its
   words in. With Repeat on, a reveal cycles: reveal, hold, clear, again. With Repeat off, it plays once and stays

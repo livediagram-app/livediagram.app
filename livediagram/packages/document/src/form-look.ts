@@ -4,7 +4,7 @@
 import { contrastRatio } from './colors';
 import { resolveFinish, type Finish } from './finish';
 import { resolveFontStack } from './fonts';
-import { themeAccent } from './page-default-background';
+import { themeAccent } from './theme-accent';
 import { DEFAULT_PATTERN_COLOR } from './canvas-colors';
 import { isBackgroundPattern, type BackgroundPattern, type Tab } from './index';
 import { themeHalf, viewBackdropInTheme } from './theme-halves';

@@ -175,8 +175,6 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   'focus-button': { width: 120, height: 96 },
   // Portal (docs/specs/009-elements/portal-element.md): portal-shaped — taller than it is wide, like a portal.
   portal: { width: 72, height: 112 },
-  // Tab window (docs/specs/009-elements/tab-window.md): 16:9, TAB_WINDOW_SIZE.
-  'tab-window': { width: 640, height: 360 },
   // Session button (docs/specs/012-collaboration/session-button.md): the Selection Mode button's tile, so a row of
   // Behaviour controls lines up.
   'session-button': { width: 104, height: 96 },

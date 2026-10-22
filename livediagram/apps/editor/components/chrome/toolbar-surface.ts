@@ -42,8 +42,6 @@ export const STRIP_RAIL_SCROLL =
 /** The hairline between groups of controls. */
 export const TOOLBAR_DIVIDER = 'mx-0.5 h-6 w-px shrink-0 bg-slate-200 dark:bg-slate-700';
 
-/** A control at rest, and pressed (on, or its menu open). */
+/** A control at rest. */
 export const TOOLBAR_CONTROL_REST =
   'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white';
-export const TOOLBAR_CONTROL_PRESSED =
-  'bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-200';

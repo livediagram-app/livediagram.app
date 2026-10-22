@@ -376,10 +376,9 @@ describe('getDocumentThumbnailSvg', () => {
   });
 });
 
-// Retired schemes (docs/specs/011-theme/retired-schemes.md): the thumbnail parses `tabs.data` itself,
-// so it runs the same stored-tab migration as every other read.
-// docs/specs/006-document/document-snapshots.md "Pages tabs": the first page alone, as an export draws it.
-describe('a thumbnail of a Pages tab', () => {
+// Pages mode moved out to livedocuments: a tab stored in it previews as a Diagram tab, every ordinary element drawn and
+// its pages (and their pictures) left behind (@livediagram/document retired-pages).
+describe('a thumbnail of a former Pages tab', () => {
   const A4 = { orientation: 'portrait', size: 'a4', kind: 'infographic' };
   const PICTURE = 'b'.repeat(32);
   const ON_FIRST = 'c'.repeat(32);
@@ -437,45 +436,19 @@ describe('a thumbnail of a Pages tab', () => {
     return { images, env: { IMAGES: images } as unknown as Env };
   }
 
-  it('draws the first page alone, at its own size', async () => {
-    const { env } = setup();
-    const out = (await getDocumentThumbnailSvg(env, liveDoc()))!;
-    expect(out).toContain('Cover');
-    expect(out).not.toContain('Later');
-    // The page's own frame, not the bounds of everything on the canvas, nor the grid of every page.
-    expect(out).toMatch(/^<svg [^>]*width="794" height="1123"/);
-  });
-
-  it("reads only the first page's images, its picture background among them", async () => {
+  it("draws every element, as a Diagram tab draws, and reads only the elements' images", async () => {
     const { env, images } = setup();
-    await getDocumentThumbnailSvg(env, liveDoc());
-    const read = images.get.mock.calls.map(([key]) => key as string);
-    expect(read).toEqual(expect.arrayContaining([ON_FIRST, PICTURE]));
-    expect(read).not.toContain(ON_SECOND);
-  });
-
-  it('skips a malformed stored page rather than failing the thumbnail', async () => {
-    const { env } = setup();
-    const parsed = JSON.parse(tabData) as { pages: unknown[] };
-    db.getTabBody.mockResolvedValue(
-      stored(JSON.stringify({ ...parsed, pages: [null, 5, ...parsed.pages] }), 4),
-    );
     const out = (await getDocumentThumbnailSvg(env, liveDoc()))!;
     expect(out).toContain('Cover');
-    expect(out).not.toContain('Later');
-  });
-
-  it('draws the first page for a Community visitor and a tab image too', async () => {
-    const { env } = setup();
-    const community = (await getCommunityThumbnailSvg(env, liveDoc()))!;
-    const tabImage = (await getDocumentTabImageSvg(env, liveDoc(), 't1'))!;
-    for (const svg of [community, tabImage]) {
-      expect(svg).toContain('Cover');
-      expect(svg).not.toContain('Later');
-    }
+    expect(out).toContain('Later');
+    const read = images.get.mock.calls.map(([key]) => key as string);
+    expect(read).toEqual(expect.arrayContaining([ON_FIRST, ON_SECOND]));
+    expect(read).not.toContain(PICTURE);
   });
 });
 
+// Retired schemes (docs/specs/011-theme/retired-schemes.md): the thumbnail parses `tabs.data` itself,
+// so it runs the same stored-tab migration as every other read.
 describe('a thumbnail of a Charcoal tab', () => {
   it('renders the migrated tab, not the colours Charcoal baked', async () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});

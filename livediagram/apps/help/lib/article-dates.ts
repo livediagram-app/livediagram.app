@@ -39,7 +39,19 @@ export function parseArticleDates(log: string): Map<string, Date> {
 export function articleDates(git: Git = runGit): Map<string, Date> {
   try {
     if (git(['rev-parse', '--is-shallow-repository']).trim() !== 'false') return new Map();
-    return parseArticleDates(git(['log', '--format=@%cI', '--name-only', '--relative', '--', '.']));
+    // A merge lists the files it brought in, against its first parent: livediagram arrived in this repo by one merge,
+    // which `git log` would otherwise show without its files, leaving every page it brought undated.
+    return parseArticleDates(
+      git([
+        'log',
+        '--diff-merges=first-parent',
+        '--format=@%cI',
+        '--name-only',
+        '--relative',
+        '--',
+        '.',
+      ]),
+    );
   } catch {
     return new Map();
   }

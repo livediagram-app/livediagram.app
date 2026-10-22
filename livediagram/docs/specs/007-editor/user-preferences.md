@@ -276,12 +276,6 @@ type UserPreferences = {
   // The Avatar tour's seen-guard (docs/specs/008-canvas/avatar-tour.md), as `drawTourSeen`.
   // Surfaced in Settings as Tours › "Avatar Tour" (inverted). Missing / undefined === not seen.
   avatarTourSeen?: boolean;
-  // The Pages tour's seen-guard (docs/specs/007-editor/pages-tour.md), as `planTourSeen`: true counts every
-  // page kind's track as seen while Power user mode is on. Set with every kind by Power user mode.
-  pagesTourSeen?: boolean;
-  // The page kinds whose Pages tour track has been offered and answered (taken, skipped or declined), so each
-  // kind offers its own once ever. Settings' row per kind (Slides Tour, ...) adds or removes its own kind.
-  pagesTourKinds?: PageKind[];
   // Element tours (docs/specs/007-editor/element-tours.md): the toured element kinds whose offer has been answered
   // (Play or Cancel). Surfaced in Settings as Tours › Show Me, one switch per kind (inverted).
   elementTourKinds?: ElementTourKind[];
@@ -329,10 +323,6 @@ type UserPreferences = {
   // or Grid, as last chosen from the dock's Settings; never stored on a tab. Unset, or
   // anything else, is Grid (lib/whiteboard-dock-prefs).
   drawPattern?: 'blank' | 'grid' | 'graph';
-  // Where Pages mode's Contents sits on a desktop (./pages-mode.md "Contents"):
-  // docked as a sidebar beside the canvas, or minimised to its cluster button.
-  // Unset, or anything but 'button', is the sidebar (lib/contents-placement).
-  contentsPlacement?: 'sidebar' | 'button';
 
   // Power user mode (docs/specs/007-editor/power-user-mode.md). True while the mode is on.
   // Switching it on applies the preset once; see powerUserBaseline.
@@ -384,15 +374,6 @@ Missing key === undefined === default behaviour. Concretely:
   ignored: there is one panel layout ([Toolbar layout](toolbar-layout.md#one-layout)).
 - `whiteboardDockPosition` undefined → a whiteboard's dock at the top (the
   default). Only `'bottom'` moves it to the bottom.
-- `contentsPlacement` undefined → Pages mode's Contents docked as a sidebar
-  flush against the canvas's edge on a desktop, with more than one page (the
-  default). `'button'` minimises it to its cluster button; a phone always has
-  the button. Which edge (left or right) is per device, kept in the browser
-  alone, never here
-  ([Pages](pages-mode.md#contents)). Written by the sidebar's
-  Minimise, the popover's Dock as Sidebar and Settings › Editor › Pages ›
-  Contents; emits `UI`/`Changed`/`ContentsPlacementSidebar` or
-  `ContentsPlacementButton`.
 - `elementIndicatorStyle` undefined → Top: an element's link, note, action
   and comment glyphs sit inside it along its top, top-right on a box and centred
   on a round or pointed shape (the default). `'footer'` moves them to a labelled
@@ -440,10 +421,13 @@ Missing key === undefined === default behaviour. Concretely:
   hover preview went with the Activity panel (removed 2026-10-03). A value
   still stored under either is ignored on read and dropped on the next
   write; Undo and Redo always show in the bottom-right cluster.
-  `pagesModeEnabled` (and its older name `infographicModeEnabled`) and
+  `illustrateModeEnabled` (and its older name `infographicModeEnabled`) and
   `planModeEnabled` went with the Settings › Experimental category (removed
   2026-10-06, [Editor modes](editor-modes.md#every-mode-always-offered)):
   every mode is always offered, and a stored `false` is dropped the same way.
+  Pages mode's own preferences (`pagesTourSeen`, `pagesTourKinds`, `contentsPlacement` and the logo guide
+  switches) went with Pages mode
+  ([Editor modes](editor-modes.md#pages-moved-to-livedocuments)): a value still stored under one is ignored.
   `skipLocationStep` ("Always save new documents in <place> and skip this step") went with the New
   Document wizard's Location step ([New document route](new-document-route.md#one-step-wizard)): the wizard
   never asks where a document goes, so a stored place is dropped the same way and new documents follow the
@@ -606,9 +590,7 @@ and the dialog stays as the one complete, browsable index of them.
   element indicators; a **Mouse** section: quick-add on hover, middle-mouse
   pan; then **Power User**: power user mode, with Minimal chrome and the preset
   readout nested under it while the mode is on; with the sub-categories
-  **Draw** (dock position, Top or Bottom) and **Pages** (a **Pages**
-  section: Contents, Sidebar or Button; then a **Logo Pages** section: Logo Guides, with Logo Guide Strength and the Guides Shown chips
-  nested under it) and **Presenting** (the presenter settings: Slides, Playback and While Presenting,
+  **Draw** (dock position, Top or Bottom) and **Presenting** (the presenter settings: Slides, Playback and While Presenting,
   [Presentation mode](../012-collaboration/presentation-mode.md) "Presenter settings")), **Appearance** (theme, then an **Interface** section:
   Button Labels, and UI scale with a slider per part nested under it), **Keyboard**
   (the Keyboard Shortcuts on/off switch, then the full shortcut catalogue as
@@ -648,8 +630,7 @@ and the dialog stays as the one complete, browsable index of them.
   A category can hold **sub-categories** (`parent` on the sub-category's
   spec). **Editor** holds one per editor mode whose settings apply only to
   that mode ([Editor modes](editor-modes.md)): **Draw** holds Dock Position,
-  since only Draw mode has a dock; **Pages** holds Contents and the logo
-  guides. A setting that applies in both modes
+  since only Draw mode has a dock. A setting that applies in both modes
   stays on Editor itself; quick-add on hover, alignment guides, auto-attach
   arrows, middle-mouse pan and power user mode all act in both. There is no
   **Diagram** sub-category while no setting applies only to Diagram mode: a
@@ -768,8 +749,7 @@ and the dialog stays as the one complete, browsable index of them.
 
   **Tours** is a category of its own: one switch per guided tour, **Diagram
   Tour**, **Plan Tours** (over **Boards Tour**, **Sheets Tour** and **Dashboards Tour**), **Workshop Tour**,
-  **Draw Tour**, **Forms Tour**, **Avatar Tour** and **Pages Tours** (over **Slides Tour**, **Infographic Tour**,
-  **Article Tour** and **Logo Tour**), each with a line saying where it offers itself and a **Learn more**
+  **Draw Tour**, **Forms Tour** and **Avatar Tour**, each with a line saying where it offers itself and a **Learn more**
   to its article, under one **Offer Again** section note: each tour offers
   itself once; switch one back on and close Settings to take it again, straight
   away if you are in its mode, otherwise the next time you are. (The tours used
@@ -797,11 +777,9 @@ and the dialog stays as the one complete, browsable index of them.
   became owed while it was open ([Plan tour](../026-plan/plan-tour.md)). **Workshop Tour** works the same way against
   `workshopTourSeen` ([Workshop tour](../012-collaboration/workshop-tour.md)), **Draw Tour** against
   `drawTourSeen` ([Draw tour](../023-draw-mode/draw-tour.md)), **Forms Tour** against `formTourSeen` ([Forms](../030-forms/forms.md) "The Forms tour"), **Avatar Tour** against `avatarTourSeen`
-  ([Avatar tour](../008-canvas/avatar-tour.md)), and the Pages tour is built as the Plan tour's
-  rows are ([Pages tour](pages-tour.md)): **Pages Tours** over one row per page kind (**Slides Tour**,
-  **Infographic Tour**, **Article Tour**, **Logo Tour**); `pagesTourKinds` lists the kinds answered. Power user
-  mode's readout lists each tour's switch over all its tracks (**Plan Tours**, **Pages Tours**).
-  A multi-track tour's old single flag (`planTourSeen`, `pagesTourSeen`) counts every track only while Power
+  ([Avatar tour](../008-canvas/avatar-tour.md)). Power user
+  mode's readout lists the Plan tour's switch over all its tracks (**Plan Tours**).
+  A multi-track tour's old single flag (`planTourSeen`) counts every track only while Power
   user mode is on, so an answer given before the tour split offers each track once more.
 
   Below the mode tours, **Show Me** (element tours, named Show Me in the interface) is its own section, a closed
@@ -815,9 +793,8 @@ and the dialog stays as the one complete, browsable index of them.
   one `toggleGroup` row: the label and description over a row of **chips**, one
   per switch, ticked and tinted while on, each its own preference with its own
   telemetry. Chips rather than a grid of switches, so short names fit without
-  truncating. Pages mode's **Guides Shown** (one chip per logo guide) is the one
-  today; six near-identical rows each saying "Shows the X among a logo page's
-  construction guides" read as clutter.
+  truncating. None is in use today: the one there was, Pages mode's logo guides,
+  went with Pages mode.
 
   **Button Labels** (Appearance › Interface, `dockButtonNames`, on by default)
   names the editor's bottom buttons beside their icons: the footer bar's Search,

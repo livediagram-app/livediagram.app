@@ -13,7 +13,6 @@
 
 import { AXIS_TICK_FONT_PX, AXIS_TICK_GAP } from './chart-axis';
 import { chartFrame, type ChartLegendRect } from './chart-frame';
-import { chartTextInk } from './chart-ink';
 import { AREA_FILL_OPACITY, barMarks, lineMarks, pieMarks } from './chart-marks';
 import {
   barValueLabels,
@@ -126,11 +125,9 @@ export function svgPieChart(
   labelColor: string,
   palette?: readonly string[],
   fontFamily?: string,
-  // What the chart sits on (chartPageGrounds): its series and text drawn adapted to it.
-  ground?: readonly string[],
 ): string {
-  const textColor = chartTextInk(labelColor, ground);
-  const { data, colorAt, area, legend } = chartFrame(el, palette, ground);
+  const textColor = labelColor;
+  const { data, colorAt, area, legend } = chartFrame(el, palette);
   const doughnut = chartTypeOf(el) === 'doughnut';
   const pie = pieMarks(area, data, doughnut, el.x, el.y);
   const { cx, cy, rad, wedges } = pie;
@@ -162,11 +159,9 @@ export function svgBarChart(
   labelColor: string,
   palette?: readonly string[],
   fontFamily?: string,
-  // What the chart sits on (chartPageGrounds): its series and text drawn adapted to it.
-  ground?: readonly string[],
 ): string {
-  const textColor = chartTextInk(labelColor, ground);
-  const { data, colorAt, area, legend } = chartFrame(el, palette, ground);
+  const textColor = labelColor;
+  const { data, colorAt, area, legend } = chartFrame(el, palette);
   const horizontal = chartTypeOf(el) === 'bar';
   const barM = barMarks(area, data, horizontal, el.x, el.y, el.chartAxis === true);
   const { baseline: b, bars } = barM;
@@ -214,11 +209,9 @@ export function svgLineChart(
   labelColor: string,
   palette?: readonly string[],
   fontFamily?: string,
-  // What the chart sits on (chartPageGrounds): its series and text drawn adapted to it.
-  ground?: readonly string[],
 ): string {
-  const textColor = chartTextInk(labelColor, ground);
-  const { colorAt, area, legend } = chartFrame(el, palette, ground);
+  const textColor = labelColor;
+  const { colorAt, area, legend } = chartFrame(el, palette);
   const categories =
     el.lineCategories && el.lineCategories.length > 0 ? el.lineCategories : LINE_DEFAULT_CATEGORIES;
   const series = el.lineSeries && el.lineSeries.length > 0 ? el.lineSeries : LINE_DEFAULT_SERIES;

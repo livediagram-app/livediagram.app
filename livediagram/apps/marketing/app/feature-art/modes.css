@@ -1,4 +1,4 @@
-/* ── Whiteboard, Plan and documents card art (components/feature-art/whiteboard.tsx, plan.tsx, documents.tsx) ──
+/* ── Whiteboard and Plan card art (components/feature-art/whiteboard.tsx, plan.tsx) ──
    Each picture is whole at rest: the finished scene is the base state, and these loops only move
    the accents (a stroke drawing on, a card carried, a caret, a flip). One 7s cycle; a piece's
    --d staggers it. Reduced motion shows the finished frame (rules at the end of this block). */
@@ -214,7 +214,7 @@
   }
 }
 
-/* Whiteboard, Plan and documents card art, continued: the other half of fa-f-out, hidden at the start and shown mid-cycle (a
+/* Whiteboard and Plan card art, continued: the other half of fa-f-out, hidden at the start and shown mid-cycle (a
    count that ticks over as a card lands). Reduced motion shows it, as the finished frame. */
 @keyframes fa-f-on {
   0%,

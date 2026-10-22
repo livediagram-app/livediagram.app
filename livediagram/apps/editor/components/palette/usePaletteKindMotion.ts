@@ -1,8 +1,7 @@
 'use client';
 
-// The strip's change of kind (docs/specs/007-editor/pages-mode.md "The palette's kind"): when the
-// palette's kind changes (someone moves onto a page of another kind), its new categories (or an
-// article's formatting) come in as a quick cascade, each rising and fading in a moment after the one
+// The strip's change of kind: when the
+// palette's kind changes (a change of editor mode), its new categories come in as a quick cascade, each rising and fading in a moment after the one
 // before, so the change reads as one motion rather than a jump. The whole cascade
 // settles within the chrome budget (docs/specs/004-interface-design/motion.md: 250 ms). Nothing
 // moves under reduced motion, or on the first render.
@@ -16,9 +15,8 @@ export const KIND_CASCADE_MS = 250;
 const KIND_STAGGER_MAX_MS = 24;
 const EASE = 'cubic-bezier(0.2, 0.8, 0.2, 1)';
 
-// What moves: the bar's category buttons, or the docked formatting's slot as one (its controls
-// arrive a render later).
-const ITEMS = '[data-category-bar-button], [data-article-dock]';
+// What moves: the bar's category buttons.
+const ITEMS = '[data-category-bar-button]';
 
 /** The stagger between items so `count` of them finish within the cascade. */
 export function kindStagger(count: number): number {

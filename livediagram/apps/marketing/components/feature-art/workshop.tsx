@@ -21,7 +21,7 @@ export function WorkshopModeArt() {
   return (
     <Frame canvas>
       <svg viewBox={VIEW} className="absolute inset-0 h-full w-full">
-        {/* The mode menu: the five modes, Workshop picked. */}
+        {/* The mode menu: the four modes, Workshop picked. */}
         <PanelShadow x={14} y={10} w={84} h={76} r={6} />
         <rect className={PANEL} x="14" y="10" width="84" height="76" rx="6" strokeWidth="1" />
         {MODES.map((name, i) => {

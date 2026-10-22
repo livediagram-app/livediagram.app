@@ -1,9 +1,9 @@
 # Templates by mode
 
 Every template opens in one [editor mode](editor-modes.md): **Diagram**, **Draw**,
-**Workshop**, **Pages** or **Plan**. The New Document wizard asks for the mode itself
+**Workshop** or **Plan**. The New Document wizard asks for the mode itself
 ([New document route](new-document-route.md) "Choosing a mode"), and each mode's templates wait on an empty tab in
-its own start ([Template starts](start-diagramming.md)), so someone who came to sketch or to make a poster sees only
+its own start ([Template starts](start-diagramming.md)), so someone who came to sketch or to run a session sees only
 what starts there. A search on a start also finds the other modes' templates, each saying which mode it opens in
 ([Found in other modes](start-diagramming.md#found-in-other-modes)).
 
@@ -14,9 +14,6 @@ what starts there. A search on a start also finds the other modes' templates, ea
   canvas overrides (`templateCanvasOverrides`) take `opensIn` from it, so the mode a card shows and
   the mode the tab opens in can never disagree.
 - Draw templates: Blank Whiteboard and the eight [Draw templates](#draw-templates) below.
-- Pages templates: Blank Illustration, the four [blanks of a page kind](#blanks-of-a-page-kind), Article,
-  Slide deck, Logo design, Group card and the
-  eight [Pages templates](#pages-templates) below.
 - Plan templates: Blank Plan and the twenty-two [Plan templates](../026-plan/plan-templates.md), Kanban Board
   among them. Plan templates open on a worked example of cards: each but Blank Plan sets up a way of working across
   several tabs, or a ready-made spreadsheet (the twelve
@@ -33,65 +30,31 @@ what starts there. A search on a start also finds the other modes' templates, ea
   **after** the title, so a card's accessible name still starts with its title
   ([Found in other modes](start-diagramming.md#found-in-other-modes)).
 
-## Five blanks
+## Four blanks
 
 Popular opens with one blank per mode, in mode order. Each blank also leads its mode's Recommended in that mode's
 start ([Template starts](start-diagramming.md)), and is what the New Document wizard creates for the mode chosen:
 
-| Template           | Kind id              | Opens in | What it makes                                                                             |
-| ------------------ | -------------------- | -------- | ----------------------------------------------------------------------------------------- |
-| Blank Diagram      | `blank`              | Diagram  | An empty canvas (was "Blank Canvas").                                                     |
-| Blank Whiteboard   | `whiteboard`         | Draw     | An empty board to draw on (was "Whiteboard").                                             |
-| Blank Session      | `blank-session`      | Workshop | An empty tab in Workshop, named "Untitled Session".                                       |
-| Blank Illustration | `blank-illustration` | Pages    | One empty page that asks what it is for (Infographic, Article, Slide, Logo or Wireframe). |
-| Blank Plan         | `blank-plan`         | Plan     | An empty Plan tab that opens on Start Planning.                                           |
+| Template         | Kind id         | Opens in | What it makes                                       |
+| ---------------- | --------------- | -------- | --------------------------------------------------- |
+| Blank Diagram    | `blank`         | Diagram  | An empty canvas (was "Blank Canvas").               |
+| Blank Whiteboard | `whiteboard`    | Draw     | An empty board to draw on (was "Whiteboard").       |
+| Blank Session    | `blank-session` | Workshop | An empty tab in Workshop, named "Untitled Session". |
+| Blank Plan       | `blank-plan`    | Plan     | An empty Plan tab that opens on Start Planning.     |
 
-**Blank Spreadsheet** (`blank-spreadsheet`, Plan) is a sixth blank beside them (`EXTRA_BLANK_TEMPLATES`): one tab
+**Blank Spreadsheet** (`blank-spreadsheet`, Plan) is a fifth blank beside them (`EXTRA_BLANK_TEMPLATES`): one tab
 holding an empty Sheet that fills it, made from the `blank-spreadsheet` start, an empty grid with no template, no
-charts and no setup to await ([Sheet store](../029-sheets/sheet-store.md#template-starts)). It is a blank like the five
+charts and no setup to await ([Sheet store](../029-sheets/sheet-store.md#template-starts)). It is a blank like the four
 (`isBlankTemplate`): in no category and on no category shelf. It is not a mode's blank, so it leads no start and is
 not what the New Document wizard creates; the editor's Popular lists are unchanged (a start's search finds it, under
 Plan in [other modes](start-diagramming.md#found-in-other-modes)), and Start Planning, which has its own Empty Sheet, does not offer it. The landing page's **Blank Slate**
 shelf lists it after Blank Plan ([Marketing site](../019-marketing/marketing-site.md)).
 
-### Blanks of a page kind
-
-Blank Illustration's one page asks what it is for. Four more Pages blanks have already answered, for someone
-who knows they are making a deck, an article, an infographic or a logo (`EXTRA_BLANK_TEMPLATES`, beside Blank
-Spreadsheet):
-
-| Template          | Kind id             | What it makes                                                     |
-| ----------------- | ------------------- | ----------------------------------------------------------------- |
-| Blank Slide Deck  | `blank-slide-deck`  | One empty 16:9 slide page.                                        |
-| Blank Article     | `blank-article`     | One empty article page, its writing an empty Title and paragraph. |
-| Blank Infographic | `blank-infographic` | One empty A4 portrait infographic page.                           |
-| Blank Logo        | `blank-logo`        | One empty logo page (the 1024 artboard).                          |
-
-- **Exactly one page and nothing else**: no elements, the page's kind already chosen. The page is made the way the
-  first page's **What Is This Page For?** makes it (`withPageKindChosen` on an unchosen page, through
-  `blankPageTemplateOverrides`), so a blank of a kind and a chosen Blank Illustration are the same page.
-- **No kind choice.** The page has a kind, so it never asks What Is This Page For? and Start Making Pages does not
-  show over it ([Template starts](start-diagramming.md) "When it shows").
-- **Its layouts are offered as usual.** The empty slide, infographic or logo page shows its in-page **Start From a
-  Layout** card with its own kind's layouts (slide layouts on a slide, logo layouts on a logo page), as any empty
-  page of that kind does ([Pages](pages-mode.md)); an article page never shows one.
-- **Blanks like the others** (`isBlankTemplate`): in no category and on no category shelf, the tab keeps its name, a
-  `/new?template=` link to one opens with the start closed. None is a mode's blank, so none leads Recommended or is
-  what the wizard creates. One is recommended: **Blank Slide Deck** takes the Slide Deck's place in Pages mode's
-  Popular (so in Start Making Pages' Recommended, after Blank Illustration and Article), since a deck is most often
-  built from its own slides; the others are found in their groups or by search.
-- **Each leads its group in Start Making Pages**: Blank Slide Deck first in **Slides**, Blank Infographic in
-  **Infographics**, Blank Article in **Articles**, Blank Logo in **Logos** ([Template starts](start-diagramming.md)).
-  **Slides** holds decks alone; the Social Carousel, made to post rather than present, is in **Posters and Social**
-  (posters, cards and social posts to print, pin up or share).
-- The landing page's **Blank Slate** shelf lists them after Blank Illustration, in that order (Slide Deck, Article,
-  Infographic, Logo).
-
 - The kind ids of the first two are unchanged, so `/new?template=blank` and
   `/new?template=whiteboard` links keep working.
 - None of the blanks is on a category shelf or a category tile.
-- Popular under Everything, in order: Blank Diagram, Blank Whiteboard, Blank Session, Blank Illustration, Blank Plan,
-  Mind map, Flowchart, Kanban Board, Sailboat retrospective, Budget Planner, Org chart, Sketchnote, Article. Under a
+- Popular under Everything, in order: Blank Diagram, Blank Whiteboard, Blank Session, Blank Plan,
+  Mind map, Flowchart, Kanban Board, Sailboat retrospective, Budget Planner, Org chart, Sketchnote. Under a
   mode, its own list ([Template categories](../008-canvas/canvas-and-palette.md#template-categories)).
 
 ## Draw templates
@@ -108,7 +71,7 @@ draw over, not an empty frame.
   discharge delays): stick-figure stakeholders with what they say in speech bubbles, the system in
   a drawn cloud, crossed swords where interests clash, an eye for who is watching, and a legend
   that teaches the symbols.
-- **Comic Strip** _(Presentations)_: a six-panel product story ("Maya finds the bug") in hand-drawn panels,
+- **Comic Strip** _(Design)_: a six-panel product story ("Maya finds the bug") in hand-drawn panels,
   each with a caption, speech bubbles and a sticker for the moment it shows.
 - **Doodle Warm-Up** _(Brainstorm)_: a meeting icebreaker, "Draw your teammate in 60 seconds": six
   hand-drawn frames each named for a teammate, the rules on a sticky note, a timer and a
@@ -121,79 +84,6 @@ draw over, not an empty frame.
   middle, the reasons on stickies round it by theme, and what to do now with tick boxes.
 - **Idea Garden** _(Brainstorm)_: ideas grown as a drawn tree: the question at the roots, themes as
   branches, ideas as leaves, the best ones as fruit, and a legend.
-
-## Pages templates
-
-Each opens on pages of its own ([Templates on pages](../008-canvas/canvas-and-palette.md#templates-on-pages)),
-already infographic pages, built with the page layouts' kit.
-
-- **Event Poster** _(Presentations)_: one A3 portrait page for a community event ("Night Market"): a
-  bold title over a colour band, the date, time and place, an image placeholder, three highlights
-  and a footer line.
-- **Year in Review** _(Presentations)_: a four-page A4 report for a small team: a cover, a page of
-  headline numbers, a timeline of the year's moments, and a thank-you page with a quote.
-- **Résumé** _(Presentations)_: one A4 page: name and role, contact line, a profile, an experience timeline,
-  skills and education in a side column.
-- **Recipe Card** _(Presentations)_: a Square page and a Portrait post page for sharing a recipe: the dish,
-  serves and timings with icons, the ingredients, and the method in numbered steps.
-- **Data Story** _(Presentations)_: one A4 page telling one story in numbers: a headline stat set huge,
-  a pictogram row, a then-and-now comparison, a small chart and a source line.
-- **How It Works** _(Presentations)_: one Story (9:16) page: five illustrated steps down a winding
-  path, from first tap to done, under a title and over a call to action.
-- **Versus** _(Presentations)_: one Portrait post (4:5) page split between two options, a VS badge,
-  matched rows of pros and cons, and a verdict at the foot.
-- **Social Carousel** _(Presentations)_: five Square slides for a LinkedIn or Instagram carousel: a hook,
-  three tips and a call to action, with slide numbers and swipe cues.
-- **Working Backwards** _(Strategy)_: Amazon's PR/FAQ on article pages (Report look): the press release for a launch
-  that is not built yet, then the Customer FAQ and, after a page break, the Internal FAQ, closing on a to-do list
-  for the review ([Templates](../008-canvas/canvas-and-palette.md#templates)). It is an article, not infographic
-  pages, as the Project Brief template is.
-
-### Design templates
-
-Two templates for showing a design open in Pages, each on one infographic page sized for what it is
-(`template-design-pages.ts`). Their drawings are the ones they had as Diagram templates, built by the same builders
-at the same size (the Floor plan is drawn to a captioned metric scale, so none is scaled) and centred on the page.
-Start Making Pages lists them in their own group, **Design** ("Storyboards and floor plans, drawn to show."), after
-Wireframes; their catalogue category stays Design.
-
-| Template   | Kind id      | Page                                                         |
-| ---------- | ------------ | ------------------------------------------------------------ |
-| Storyboard | `storyboard` | A3 landscape, "Storyboard", plain paper                      |
-| Floor plan | `floor-plan` | A3 landscape, "Floor Plan", ruled in the page's grid pattern |
-
-- Both sit on the sheet they are printed on (A3), which carries the backdrop: neither ships a canvas pattern any more
-  (the Floor plan's graph paper became its page's grid, the Storyboard's crosshatch is gone).
-- The three device wireframes once here (`mobile-wireframe`, `laptop-wireframe`, `browser-wireframe`, device shapes on
-  a 16:9 page) are retired for the wireframe templates below: a link, an agent or a seed naming one makes its
-  replacement (`templateKindOf`): **Mobile App Wireframe**, **Web App Wireframe** and **Website Wireframe**.
-
-### Wireframe templates
-
-Ten templates on [wireframe pages](wireframe-pages.md), listed in Start Making Pages' own **Wireframes** group
-("Screens in their device: a phone, a tablet, a laptop, a browser or a watch."), after Logos and before Design.
-
-The **blank wireframes** are blanks of a page kind (above), each one empty wireframe page in its device, made by
-`withPageKindChosen` with the device (`blankPageTemplateOverrides`), and they lead the group:
-
-| Template                | Kind id                   | Device  |
-| ----------------------- | ------------------------- | ------- |
-| Blank Phone Wireframe   | `blank-wireframe-phone`   | iPhone  |
-| Blank Tablet Wireframe  | `blank-wireframe-tablet`  | iPad    |
-| Blank Website Wireframe | `blank-wireframe-browser` | Browser |
-| Blank Laptop Wireframe  | `blank-wireframe-laptop`  | Laptop  |
-| Blank Watch Wireframe   | `blank-wireframe-watch`   | Watch   |
-
-The **flows** (`template-builders-wireframe-flows.ts`, catalogue category Design) are a row of wireframe pages in
-one device, each named for its screen and laid out from a wireframe layout:
-
-| Template             | Kind id                | Device  | Screens                                      |
-| -------------------- | ---------------------- | ------- | -------------------------------------------- |
-| Mobile App Wireframe | `wireframe-mobile-app` | iPhone  | Onboarding, Sign In, Home, Product, Checkout |
-| Website Wireframe    | `wireframe-website`    | Browser | Home, Pricing, Sign In                       |
-| Web App Wireframe    | `wireframe-dashboard`  | Laptop  | Overview, Orders, Settings                   |
-| Tablet App Wireframe | `wireframe-tablet-app` | iPad    | Discover, Messages, Profile                  |
-| Watch App Wireframe  | `wireframe-watch-app`  | Watch   | Glance, Today, Alert                         |
 
 ## Workshop templates
 
@@ -240,7 +130,7 @@ unchanged; only the mode they open in moved from Diagram.
 ## The tab's name
 
 - A template picked on a start or on /new names the tab it fills after itself, in every mode (a flowchart's
-  tab is "Flowchart", an infographic's its template's title): the template's own name for the tab where it gives one
+  tab is "Flowchart"): the template's own name for the tab where it gives one
   (a Plan template's tabs), else for a Board or Sheet template the board's title, else the template's title. It does
   so whatever the tab was called before. A blank template leaves the name as it was (`templateTabName`).
 
@@ -261,24 +151,3 @@ unchanged; only the mode they open in moved from Diagram.
   start gave the document itself (a template's) is kept.
 - It is the document's name like any other: saved with it, shown in the header and the Explorer at once, and changed
   by renaming. No telemetry: it is not a person's rename.
-
-## Slide deck templates
-
-Besides the **Slide Deck** (a six-slide seed pitch), four decks are built from the slide layouts
-(`template-builders-layout-decks.ts`), six 16:9 slide pages each, every page one slide layout with
-its sample text replaced by the deck's own; no element carries a note. Each opens and
-closes on an animated background in colours of its own (custom colours, so they keep through a theme
-change) and sets the slides between on a soft still gradient, so they read and print plainly:
-
-- **Launch Keynote** (Aurora): a launch for a made-up notes app, Lumen: Keynote Title, Opening
-  Question, Three Points, Three Big Numbers, Process Flow, Call to Action.
-- **Quarterly Review** (Mesh): a support team's quarter: Keynote Title, Agenda Grid, Big Chart, Goals
-  Progress, Now Next Later, Questions.
-- **Team Welcome** (Bokeh): a new joiner's first morning: Keynote Title, About the Speaker (their
-  manager), Objectives (the first week), Four Ideas (how we work), Milestones, Contact (their buddy).
-- **Workshop Kickoff** (Waves): a design workshop's opening: Keynote Title, Objectives, Agenda Grid,
-  Process Flow (how each round runs), Key Takeaway (the one rule), Call to Action.
-
-They sit in Start Making Pages' **Slides** group after the Slide Deck, and in the Presentations
-category. A test pins each slide's text to its layout one for one, so a layout change that adds or
-drops a line fails until the deck follows.

@@ -17,7 +17,6 @@ export const ELEMENT_TOUR_KINDS = [
   { token: 'ChartTour', title: 'Chart' },
   { token: 'StackTour', title: 'Stack' },
   { token: 'EntityTour', title: 'Entity' },
-  { token: 'TabWindowTour', title: 'Tab Window' },
   { token: 'LaneTour', title: 'Lane' },
   { token: 'BoundaryTour', title: 'Boundary' },
   { token: 'DiagramKeyTour', title: 'Diagram Key' },

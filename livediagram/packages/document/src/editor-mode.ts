@@ -1,5 +1,5 @@
 // Editor modes (docs/specs/007-editor/editor-modes.md): how a general tab is worked on, Diagram,
-// Draw, Workshop, Pages or Plan. A mode tunes tools and rules; it never decides what the tab is (that is its kind). The
+// Draw, Workshop or Plan. A mode tunes tools and rules; it never decides what the tab is (that is its kind). The
 // mode is the tab's, the same for everyone on it (`Tab.opensIn`, Diagram when absent).
 import type { Layer } from './layers';
 import { isEventStormingTab } from './event-storming';
@@ -22,11 +22,6 @@ export const EDITOR_MODE_CATALOGUE = [
     id: 'workshop',
     label: 'Workshop',
     description: 'Run a live session: timers, votes, polls and reveals.',
-  },
-  {
-    id: 'pages',
-    label: 'Pages',
-    description: 'Lay out slides, infographics, articles and logos on pages.',
   },
   {
     id: 'plan',
@@ -77,12 +72,14 @@ export function isEditorMode(v: unknown): v is EditorMode {
   return EDITOR_MODES.includes(v as EditorMode);
 }
 
-// Pages mode was called Illustrate mode, and Infographic mode before that, and Workshop mode was
-// Facilitate mode; each was stored under its old id wherever a mode is kept (a tab's opensIn, a
-// remembered mode, a placement-default key, a `/new?mode=` link, an `opens-in:` filter).
+// Workshop mode was Facilitate mode, stored under its old id wherever a mode is kept (a tab's opensIn,
+// a remembered mode, a placement-default key, a `/new?mode=` link, an `opens-in:` filter). Pages mode
+// (once Illustrate, and Infographic before that) moved out to livedocuments: a mode stored as any of
+// them reads as Diagram, so a former Pages tab opens with its ordinary elements on the canvas.
 const LEGACY_EDITOR_MODES: Readonly<Record<string, EditorMode>> = {
-  illustrate: 'pages',
-  infographic: 'pages',
+  pages: 'diagram',
+  illustrate: 'diagram',
+  infographic: 'diagram',
   facilitate: 'workshop',
 };
 
@@ -123,12 +120,6 @@ export function setTabOpensIn<T extends ModeTab & { id: string }>(tab: T, mode: 
 // canvas pattern is the person's own (resolveViewBackdrop); everything else looks the same in both.
 export function hasBoardLook(mode: EditorMode): boolean {
   return mode === 'draw';
-}
-
-// Pages mode draws the canvas as pages on a surround (docs/specs/007-editor/editor-modes.md
-// "The pages"); a view of the tab, like the board look, never stored.
-export function hasPageLook(mode: EditorMode): boolean {
-  return mode === 'pages';
 }
 
 // Plan mode works Plan boards as a planning tool (docs/specs/026-plan/plan-mode.md): pressing a card

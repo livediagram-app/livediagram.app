@@ -139,7 +139,7 @@ export function useTextStyleSetters({
 }
 
 // One inline label style flipped. Bold clears a text's wordmark weight
-// (docs/specs/007-editor/logo-pages.md "Wordmark type"), so the Bold button always shows its result.
+// (docs/specs/007-editor/editor-modes.md "Pages moved to livedocuments"), so the Bold button always shows its result.
 export function withTextStyle<T extends Element>(
   el: T,
   field: 'textBold' | 'textItalic' | 'textUnderline' | 'textStrikethrough',

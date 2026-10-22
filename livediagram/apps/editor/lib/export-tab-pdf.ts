@@ -1,10 +1,10 @@
 // PDF export (docs/specs/013-workspace/folders.md export menu). Wraps the rendered canvas into a minimal,
-// hand-rolled PDF (one page, or one per page) (raw RGB pixels, FlateDecode-compressed) so we
+// hand-rolled PDF (raw RGB pixels, FlateDecode-compressed) so we
 // don't pull in a multi-hundred-KB pdf library for a single-image export.
 // Split out of export-tab.ts: the PDF container format is a self-contained
 // concern, distinct from the canvas/SVG renderers; it just needs the rendered
 // pixels from renderTabToCanvas.
-import type { LaidOutPage, Tab } from '@livediagram/document';
+import type { Tab } from '@livediagram/document';
 import { renderedExportScale, renderTabToCanvas, type ImageExportOpts } from './export-tab';
 
 export async function exportTabAsPdf(tab: Tab, opts: ImageExportOpts = {}): Promise<Blob> {
@@ -35,28 +35,6 @@ export function singlePageMedia(
   const fit = Math.min(1, MAX_PDF_PAGE_PT / Math.max(w, h, 1));
   const pt = (n: number) => Math.max(1, Math.round(n * fit * 100) / 100);
   return { mediaW: pt(w), mediaH: pt(h) };
-}
-
-/** A Pages tab's pages as one PDF (docs/specs/007-editor/pages-mode.md "Export"):
- *  every page in row order, one PDF page each at its own size and orientation in print points,
- *  each exactly its sheet. */
-export async function exportPagesAsPdf(
-  tab: Tab,
-  pages: readonly LaidOutPage[],
-  opts: ImageExportOpts = {},
-): Promise<Blob> {
-  const out: PdfPage[] = [];
-  // A deck often repeats one animated background: paint it once for the whole PDF.
-  const motionFrames = opts.motionFrames ?? new Map();
-  for (const page of pages) {
-    const canvas = await renderTabToCanvas(tab, { ...opts, page, motionFrames });
-    out.push({
-      ...(await pdfImage(canvas)),
-      mediaW: Math.round(page.rect.width * PT_PER_PX * 100) / 100,
-      mediaH: Math.round(page.rect.height * PT_PER_PX * 100) / 100,
-    });
-  }
-  return assemblePdf(out);
 }
 
 type PdfImage = { width: number; height: number; bytes: Uint8Array };

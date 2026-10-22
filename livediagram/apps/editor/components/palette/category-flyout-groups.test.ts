@@ -15,7 +15,7 @@ import type { PaletteTileDef } from './palette-tile-defs';
 
 // The category flyout's arrangement (docs/specs/007-editor/toolbar-layout.md "The category bar").
 
-const tiles = (mode: 'diagram' | 'workshop' | 'pages', id: string): PaletteTileDef[] =>
+const tiles = (mode: 'diagram' | 'workshop', id: string): PaletteTileDef[] =>
   paletteCategoriesFor(mode).find((c) => c.id === id)?.tiles ?? [];
 
 const tile = (id: string, dividerAfter = false): PaletteTileDef => ({
@@ -29,8 +29,8 @@ const tile = (id: string, dividerAfter = false): PaletteTileDef => ({
 });
 
 describe('the category bar', () => {
-  it('is Diagram’s, Workshop’s and Pages’s strip, not Plan’s or Draw’s', () => {
-    expect([...CATEGORY_BAR_MODES].sort()).toEqual(['diagram', 'pages', 'workshop']);
+  it('is Diagram’s and Workshop’s strip, not Plan’s or Draw’s', () => {
+    expect([...CATEGORY_BAR_MODES].sort()).toEqual(['diagram', 'workshop']);
   });
 
   it('names every category in one word', () => {
@@ -82,16 +82,6 @@ describe('a flyout’s groups', () => {
     expect(flyoutGroups('layout', tiles('diagram', 'layout')).map((g) => g.title)).toEqual([
       'Containers',
       'Parts',
-    ]);
-    expect(flyoutGroups('data', tiles('pages', 'data')).map((g) => g.title)).toEqual([
-      'Charts',
-      'Meters',
-      'Tables',
-    ]);
-    expect(flyoutGroups('components', tiles('pages', 'components')).map((g) => g.title)).toEqual([
-      'Layout',
-      'Page Blocks',
-      'Code and Lists',
     ]);
     expect(flyoutGroups('data', tiles('workshop', 'data')).map((g) => g.title)).toEqual([
       'Charts',

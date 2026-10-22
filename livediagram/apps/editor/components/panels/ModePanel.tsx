@@ -29,8 +29,6 @@ type ModePanelExtras = {
   headerActions?: ReactNode;
   /** The article explaining this mode (docs/specs/018-help/contextual-help-links.md), shown as `?` in the header. */
   helpArticle?: HelpArticleKey;
-  /** A tour's anchor on the panel (the Slide Deck, docs/specs/007-editor/pages-tour.md). */
-  dataTourId?: string;
 };
 
 export function ModePanel({
@@ -42,7 +40,6 @@ export function ModePanel({
   dock,
   headerActions,
   helpArticle,
-  dataTourId,
   popoverOpen,
   popoverAnchor,
   asPopover,
@@ -67,9 +64,8 @@ export function ModePanel({
       onReset={onReset}
       headerActions={headerActions}
       helpArticle={helpArticle}
-      {...(dataTourId ? { dataTourId } : {})}
       {...dock}
-      // As a popover over a cluster button (the Slide Deck in Pages mode).
+      // As a popover over a cluster button.
       popoverOpen={popoverOpen}
       popoverAnchor={popoverAnchor}
       asPopover={asPopover}

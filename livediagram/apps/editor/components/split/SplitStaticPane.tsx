@@ -45,7 +45,7 @@ export function SplitStaticPane({
   const { appearance } = useAppearance();
   const isDark = appearance === 'dark';
   const svg = useTabSvg(loaded ? tab : undefined);
-  // A Pages tab always has a page and a Form tab its form, though neither need hold an element.
+  // A Form tab always has its form, though it need hold no element.
   const empty = loaded && !tabHasDrawing(tab);
 
   // The paper and pattern the editor would paint for this tab, in its mode.

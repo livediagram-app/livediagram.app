@@ -29,7 +29,6 @@ import { CanvasSelectionToolbars } from '@/components/canvas/CanvasSelectionTool
 
 import { CanvasChrome } from '@/components/canvas/CanvasChrome';
 import { CanvasElementsLayer } from '@/components/canvas/CanvasElementsLayer';
-import { PageImageAccessProvider } from '@/components/canvas/page-image-access';
 import { CanvasZoomProvider } from '@/components/canvas/CanvasZoomContext';
 import { useCanvasLongTaskLog } from '@/hooks/canvas/useCanvasLongTaskLog';
 import { useSelectionOf, useSelectionStore } from '@/hooks/canvas/useSelectionStore';
@@ -63,7 +62,6 @@ import { ReactionBurst } from '@/components/canvas/ReactionBurst';
 // person rather than by whatever size of pad last set one off.
 import { useCanvasAvatar } from './useCanvasAvatar';
 import { useCanvasPointer } from './useCanvasPointer';
-import { articlePlusBlocked } from '@/lib/article-plus-blocked';
 import { useCanvasDrawTools } from './useCanvasDrawTools';
 
 const AVATAR_BURST_PX = 120;
@@ -74,26 +72,16 @@ import { TabLoadOverlay } from '@/components/canvas/TabLoadOverlay';
 import { PaletteDragGhost } from '@/components/canvas/PaletteDragGhost';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { PathDraftLayer } from '@/components/canvas/path/PathDraftLayer';
-import { LogoCanvasOverlays } from '@/components/canvas/LogoCanvasOverlays';
 import { PathEditLayer } from '@/components/canvas/path/PathEditLayer';
 import { PathEditToolbar } from '@/components/canvas/path/PathEditToolbar';
 import { useCanvasSurfaceGestures } from '@/hooks/canvas/useCanvasSurfaceGestures';
 import { useCanvasSelectHandlers } from '@/hooks/canvas/useCanvasSelectHandlers';
 import { useArrowLabelLayouts } from '@/hooks/canvas/useArrowLabelLayouts';
 import { useFontEpoch } from '@/components/canvas/useFontEpoch';
-import {
-  loadArticleFlows,
-  loadAvatarSpeechLayer,
-  loadCanvasPages,
-} from '@/lib/editor-deferred-code';
-import { GifOmit } from './GifOmit';
+import { loadAvatarSpeechLayer } from '@/lib/editor-deferred-code';
 import { SLIDE_VIEW_TRANSITION_UPDATE } from './slide-transition';
 import { useStickyPeelVars } from '@/lib/sticky-peel-image';
 
-// Pages mode's pages and their writing draw only on a tab that has pages, so their code loads on demand
-// (lib/editor-deferred-code.ts fetches it as the editor mounts).
-const CanvasPages = dynamic(loadCanvasPages, { ssr: false });
-const ArticleFlows = dynamic(loadArticleFlows, { ssr: false });
 // Speech bubbles (docs/specs/008-canvas/avatar-mode.md "Speech bubbles") load the first time somebody speaks:
 // nothing on the canvas needs them before then.
 const AvatarSpeechLayer = dynamic(loadAvatarSpeechLayer, { ssr: false });
@@ -162,13 +150,7 @@ function CanvasView(props: CanvasProps) {
   // Long tasks, with the gesture they fell in, while the canvas-perf debug scope is on
   // (docs/specs/008-canvas/canvas-performance.md "Observability").
   useCanvasLongTaskLog();
-  const offscreenContent = useOffscreenContent(
-    elements,
-    viewportOffset,
-    viewportZoom,
-    mainRef,
-    props.pagesMode?.pages,
-  );
+  const offscreenContent = useOffscreenContent(elements, viewportOffset, viewportZoom, mainRef);
   // The canvas's size, for the pattern's zoom centre (worldPatternOrigin).
   const mainSize = useObservedSize(mainRef) ?? { width: 0, height: 0 };
 
@@ -260,14 +242,6 @@ function CanvasView(props: CanvasProps) {
   // it's unit-tested. Memoised because it walks the elements. The chrome that derives it lays a drag in
   // progress over these elements itself (useCanvasSelectionView), so a preview frame renders the
   // chrome and not this canvas (docs/specs/008-canvas/canvas-performance.md "A move re-renders what moved").
-  // An object in an article's writing (a chart, an image, a table) connects to nothing: no
-  // quick-connect pluses on it (docs/specs/007-editor/article-pages.md "Zones"). A predicate the
-  // selection derivation applies, so the canvas itself still doesn't read the selection.
-  const articlePages = props.pagesMode?.pages;
-  const plusBlocked = useMemo(
-    () => articlePlusBlocked(articlePages, elements),
-    [articlePages, elements],
-  );
   const selectionInput = useMemo<CanvasSelectionInput>(
     () => ({
       elements,
@@ -278,7 +252,6 @@ function CanvasView(props: CanvasProps) {
       esBoard: isEventStormingTab({ kind: tabKind, layers: tabLayers }),
       elementMenuOpen: props.elementMenuOpen === true,
       labelRectOf: arrowLabels.labelRectOf,
-      plusBlocked,
     }),
     [
       elements,
@@ -290,7 +263,6 @@ function CanvasView(props: CanvasProps) {
       tabKind,
       props.elementMenuOpen,
       arrowLabels,
-      plusBlocked,
     ],
   );
   // The one selected element when it is a path: the path tool's edit gesture arms on it.
@@ -376,8 +348,6 @@ function CanvasView(props: CanvasProps) {
     polygonCursor,
     handlePolygonDoubleClick,
     pathTool,
-    formatPagePress,
-    offPage,
     beginPendingDrawOrPolygon,
   } = useCanvasDrawTools({
     props,
@@ -419,7 +389,7 @@ function CanvasView(props: CanvasProps) {
     onPushPeer: props.onAvatarPush,
     isoCamera,
     beginPendingDrawGesture: beginPendingDrawOrPolygon,
-    interceptPress: (e) => formatPagePress(e) || pathTool.beginEditPress(e),
+    interceptPress: (e) => pathTool.beginEditPress(e),
     onEraseStart: props.onEraseStart,
     onCanvasContextMenu,
     onDeselect,
@@ -565,15 +535,12 @@ function CanvasView(props: CanvasProps) {
             ) : null}
             <div
               ref={wrapperRef}
-              // The pages and elements, as against the chrome over them (useLogoPaletteSwitch).
               data-canvas-content=""
               onPointerDown={surface.onWrapperPointerDown}
               onDoubleClick={(e) => {
                 // Polygon finish-line double-click (docs/specs/008-canvas/polygon-tool.md) wins over the
                 // add-text double-click while the intent is armed.
                 if (handlePolygonDoubleClick() || pathTool.handlePathDoubleClick()) return;
-                // Off a page nothing is made, but a finger's double-tap still zooms there.
-                if (offPage(e) && !surface.pressedByFinger()) return;
                 surface.onWrapperDoubleClick(e);
               }}
               // Spotlight (docs/specs/008-canvas/canvas-and-palette.md) is a non-editing presenter mode: make the whole
@@ -638,36 +605,6 @@ function CanvasView(props: CanvasProps) {
             behind the real element layer, which caps each column at z=0.
             Only mounted while the tool is active. */}
               {canvasTool === 'isometric' ? <IsometricDepthLayer elements={elements} /> : null}
-              {/* Pages mode's A4 pages, under every element (CanvasPages). */}
-              {props.pagesMode ? (
-                // The image store's access, for the pages' pictures (page-image-access).
-                <PageImageAccessProvider access={props.imageContext}>
-                  <CanvasPages
-                    // Its page state (the palette's pages seen, an open panel, hidden layout cards) is the
-                    // tab's own: page ids repeat across tabs.
-                    key={props.activeTabId}
-                    view={props.pagesMode}
-                    zoom={viewportZoom}
-                    // Zen, presenting and the isometric view show the sheets alone: no labels, cogs,
-                    // layout invites or add button.
-                    bare={props.zenMode === true || canvasTool === 'isometric'}
-                    placing={!!pendingDraw}
-                    onOpenTheme={props.onOpenCanvasTheme}
-                  />
-                </PageImageAccessProvider>
-              ) : null}
-              {/* Article pages' writing (ArticleFlows), over the sheets and under the elements, so a
-            zone's elements sit in the room the writing leaves them. */}
-              {props.pagesMode?.articles && canvasTool !== 'isometric' ? (
-                <ArticleFlows
-                  view={props.pagesMode}
-                  zoom={viewportZoom}
-                  interactive={
-                    !pendingDraw && canvasTool !== 'spotlight' && canvasTool !== 'avatar'
-                  }
-                  elements={elements}
-                />
-              ) : null}
               <CanvasStillProvider still={props.editorMode === 'draw'}>
                 <CanvasArrivalProvider
                   tabId={props.activeTabId ?? ''}
@@ -716,136 +653,120 @@ function CanvasView(props: CanvasProps) {
                   </CanvasZoomProvider>
                 </CanvasArrivalProvider>
               </CanvasStillProvider>
-              {/* Drafts, the logo page's guides and the avatars: editor-only, left out of an animated GIF
-            (GifOmit). */}
-              <GifOmit>
-                {/* The whiteboard pen's stroke being drawn (docs/specs/023-draw-mode/draw-mode.md "Pens"):
+              {/* Drafts and the avatars: editor-only. */}
+              {/* The whiteboard pen's stroke being drawn (docs/specs/023-draw-mode/draw-mode.md "Pens"):
             in this transformed layer, after the elements, laid out as the stroke it lands as, so
             the same layer rasterises both and release changes no pixel. */}
-                {penStroke && isWhiteboardPenIntent(pendingDraw) ? (
-                  <WhiteboardPenPreview
-                    stroke={penStroke}
-                    pen={pendingDraw}
-                    ink={props.whiteboardInk ?? 'currentColor'}
-                    zoom={viewportZoom}
-                  />
-                ) : null}
-                {/* The path being drawn (docs/specs/023-draw-mode/path-tool.md), in the same layer. */}
-                {pathTool.draftView ? <PathDraftLayer {...pathTool.draftView} /> : null}
-                {/* A logo page's guides, its snap points and Mirror's live twins (LogoCanvasOverlays). */}
-                {props.pagesMode ? (
-                  <LogoCanvasOverlays
-                    view={props.pagesMode}
-                    bare={props.zenMode === true || canvasTool === 'isometric'}
-                    pendingDraw={pendingDraw}
-                    penStroke={penStroke}
-                    pathDraft={pathTool.draftView}
-                    ink={props.whiteboardInk ?? 'currentColor'}
-                    wrapperRef={wrapperRef}
-                    zoom={viewportZoom}
-                  />
-                ) : null}
-                {pathTool.editView ? <PathEditLayer {...pathTool.editView} /> : null}
-                {/* Avatar mode (docs/specs/008-canvas/avatar-mode.md): the walking characters, INSIDE the
+              {penStroke && isWhiteboardPenIntent(pendingDraw) ? (
+                <WhiteboardPenPreview
+                  stroke={penStroke}
+                  pen={pendingDraw}
+                  ink={props.whiteboardInk ?? 'currentColor'}
+                  zoom={viewportZoom}
+                />
+              ) : null}
+              {/* The path being drawn (docs/specs/023-draw-mode/path-tool.md), in the same layer. */}
+              {pathTool.draftView ? <PathDraftLayer {...pathTool.draftView} /> : null}
+              {pathTool.editView ? <PathEditLayer {...pathTool.editView} /> : null}
+              {/* Avatar mode (docs/specs/008-canvas/avatar-mode.md): the walking characters, INSIDE the
             transformed wrapper so they pan / zoom with the canvas, and after
             the element layer so they stand in front of the content they walk
             over. Peers' characters render whether or not WE are in the mode —
             someone else walking the canvas is worth seeing regardless. */}
-                {props.remoteAvatars.map((peer) => (
-                  <AvatarWalker
-                    key={peer.id}
-                    pos={{ x: peer.avatar.x, y: peer.avatar.y }}
-                    facing={peer.avatar.facing}
-                    // Parsed, not trusted: an older peer omits the costume entirely and
-                    // a future one may send an option this build doesn't know.
-                    config={parseAvatarConfig(peer.avatar.config)}
-                    walking={peer.avatar.walking}
-                    stepFrame={peer.avatar.stepFrame}
-                    lift={peer.avatar.lift}
-                    wave={peer.avatar.wave}
-                    seated={!!peer.avatar.seatedOn}
-                    // Parsed, not trusted: anything but the two drinks draws an empty hand.
-                    holding={
-                      peer.avatar.holding === 'water' || peer.avatar.holding === 'coffee'
-                        ? peer.avatar.holding
-                        : null
-                    }
-                    status={parseAvatarStatus(peer.avatar.status)}
-                    // Replayed locally from the kind + elapsed time in their packet, by
-                    // the same pure function the sender used (docs/specs/008-canvas/avatar-mode.md).
-                    pose={
-                      peer.avatar.reaction
-                        ? reactionPose(peer.avatar.reaction.kind, peer.avatar.reaction.elapsedMs)
-                        : null
-                    }
-                    shirt={peer.color}
-                    name={peer.name}
-                    standingOn={null}
-                  />
-                ))}
-                {/* A Reaction Pad burst (docs/specs/009-elements/reaction-pad.md) thrown around the CHARACTER rather
+              {props.remoteAvatars.map((peer) => (
+                <AvatarWalker
+                  key={peer.id}
+                  pos={{ x: peer.avatar.x, y: peer.avatar.y }}
+                  facing={peer.avatar.facing}
+                  // Parsed, not trusted: an older peer omits the costume entirely and
+                  // a future one may send an option this build doesn't know.
+                  config={parseAvatarConfig(peer.avatar.config)}
+                  walking={peer.avatar.walking}
+                  stepFrame={peer.avatar.stepFrame}
+                  lift={peer.avatar.lift}
+                  wave={peer.avatar.wave}
+                  seated={!!peer.avatar.seatedOn}
+                  // Parsed, not trusted: anything but the two drinks draws an empty hand.
+                  holding={
+                    peer.avatar.holding === 'water' || peer.avatar.holding === 'coffee'
+                      ? peer.avatar.holding
+                      : null
+                  }
+                  status={parseAvatarStatus(peer.avatar.status)}
+                  // Replayed locally from the kind + elapsed time in their packet, by
+                  // the same pure function the sender used (docs/specs/008-canvas/avatar-mode.md).
+                  pose={
+                    peer.avatar.reaction
+                      ? reactionPose(peer.avatar.reaction.kind, peer.avatar.reaction.elapsedMs)
+                      : null
+                  }
+                  shirt={peer.color}
+                  name={peer.name}
+                  standingOn={null}
+                />
+              ))}
+              {/* A Reaction Pad burst (docs/specs/009-elements/reaction-pad.md) thrown around the CHARACTER rather
             than around a pad. Same engine, same particles: the pad and the
             avatar panel are two ways to set off one effect, not two effects.
             Positioned at the character's canvas point, inside the transformed
             wrapper, so it pans and zooms with the canvas it is celebrating. */}
-                {avatar.pos && avatarBurst ? (
-                  <div
-                    className="pointer-events-none absolute"
-                    style={{ left: avatar.pos.x, top: avatar.pos.y, width: 0, height: 0 }}
-                  >
-                    <ReactionBurst
-                      reaction={avatarBurst.reaction}
-                      seed={avatarBurst.seed}
-                      // The character's own footprint, so the burst is scaled to a
-                      // person rather than to whatever pad happened to throw it.
-                      width={AVATAR_BURST_PX}
-                      height={AVATAR_BURST_PX}
-                      onDone={() => setAvatarBurst(null)}
-                    />
-                  </div>
-                ) : null}
-                {avatar.pos ? (
-                  <AvatarWalker
-                    pos={avatar.pos}
-                    facing={avatar.facing}
-                    config={avatarLook.config}
-                    walking={avatar.walking}
-                    stepFrame={avatar.stepFrame}
-                    lift={avatar.lift}
-                    wave={avatar.wave}
-                    pose={avatar.pose}
-                    seated={avatar.seatedOn !== null}
-                    holding={avatar.holding}
-                    status={avatarStatus}
-                    shirt={props.selfParticipant.color}
-                    standingOn={avatarStandingOn}
-                    onStand={avatar.standUp}
+              {avatar.pos && avatarBurst ? (
+                <div
+                  className="pointer-events-none absolute"
+                  style={{ left: avatar.pos.x, top: avatar.pos.y, width: 0, height: 0 }}
+                >
+                  <ReactionBurst
+                    reaction={avatarBurst.reaction}
+                    seed={avatarBurst.seed}
+                    // The character's own footprint, so the burst is scaled to a
+                    // person rather than to whatever pad happened to throw it.
+                    width={AVATAR_BURST_PX}
+                    height={AVATAR_BURST_PX}
+                    onDone={() => setAvatarBurst(null)}
                   />
-                ) : null}
-                {/* Arrival beams on an Avatar Pad (docs/specs/009-elements/avatar-pad.md), over the characters. */}
-                <AvatarPadArrivals arrivals={padArrivals} />
-                {/* Speech bubbles, in front of every character: yours and everyone's, and the composer above your
+                </div>
+              ) : null}
+              {avatar.pos ? (
+                <AvatarWalker
+                  pos={avatar.pos}
+                  facing={avatar.facing}
+                  config={avatarLook.config}
+                  walking={avatar.walking}
+                  stepFrame={avatar.stepFrame}
+                  lift={avatar.lift}
+                  wave={avatar.wave}
+                  pose={avatar.pose}
+                  seated={avatar.seatedOn !== null}
+                  holding={avatar.holding}
+                  status={avatarStatus}
+                  shirt={props.selfParticipant.color}
+                  standingOn={avatarStandingOn}
+                  onStand={avatar.standUp}
+                />
+              ) : null}
+              {/* Arrival beams on an Avatar Pad (docs/specs/009-elements/avatar-pad.md), over the characters. */}
+              <AvatarPadArrivals arrivals={padArrivals} />
+              {/* Speech bubbles, in front of every character: yours and everyone's, and the composer above your
               own head while you type. */}
-                {speechBubbles.length > 0 || speech.composerOpen ? (
-                  <AvatarSpeechLayer
-                    bubbles={speechBubbles}
-                    activeTabId={props.activeTabId ?? ''}
-                    zoom={viewportZoom}
-                    peers={props.remoteAvatars}
-                    self={{ name: props.selfParticipant.name, colour: props.selfParticipant.color }}
-                    composer={
-                      speech.composerOpen && avatar.pos
-                        ? {
-                            head: headPoint(avatar.pos, avatarScale(avatarLook.config.size)),
-                            coolingDown: speech.coolingDown,
-                            onSend: (text) => speech.send(text, 'composer'),
-                            onCancel: speech.closeComposer,
-                          }
-                        : null
-                    }
-                  />
-                ) : null}
-              </GifOmit>
+              {speechBubbles.length > 0 || speech.composerOpen ? (
+                <AvatarSpeechLayer
+                  bubbles={speechBubbles}
+                  activeTabId={props.activeTabId ?? ''}
+                  zoom={viewportZoom}
+                  peers={props.remoteAvatars}
+                  self={{ name: props.selfParticipant.name, colour: props.selfParticipant.color }}
+                  composer={
+                    speech.composerOpen && avatar.pos
+                      ? {
+                          head: headPoint(avatar.pos, avatarScale(avatarLook.config.size)),
+                          coolingDown: speech.coolingDown,
+                          onSend: (text) => speech.send(text, 'composer'),
+                          onCancel: speech.closeComposer,
+                        }
+                      : null
+                  }
+                />
+              ) : null}
             </div>
 
             {/* Spotlight presenter shroud (docs/specs/008-canvas/canvas-and-palette.md). Screen-space sibling of the

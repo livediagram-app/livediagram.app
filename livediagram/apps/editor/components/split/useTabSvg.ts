@@ -1,12 +1,11 @@
 'use client';
 
 import { useDeferredValue, useEffect, useMemo, useState } from 'react';
-import { canvasSurface, tabWindowNames, type Tab } from '@livediagram/document';
+import type { Tab } from '@livediagram/document';
 import { tabAsSeen } from '@/lib/export-as-seen';
-import { loadTabImages, type renderTabToSvg } from '@/lib/export-tab';
+import { loadTabImages } from '@/lib/export-tab';
 import { renderTabDrawingSvg } from '@/lib/tab-drawing';
 import { tabImageKey, type ExportImageMap } from '@/lib/export-tab-images';
-import type { SvgMotion } from '@/lib/export-tab';
 import { ensureIconCatalogs } from '@/lib/icon-registry';
 import { svgFrameOf } from '@/lib/svg-frame';
 import { usePlan } from '@/components/plan/PlanContext';
@@ -30,26 +29,10 @@ export type TabSvg = {
 // tab's photos. Re-rendered when the tab changes (an edit, a collaborator's op) at a deferred
 // priority, so a burst of remote edits never competes with the editor beside it.
 //
-// `motionFor` sets the drawing moving (a tab window, docs/specs/009-elements/tab-window.md "The drawing"): given the
-// drawn tab's surface, it says how each element animates. Without it the drawing is a still, as the side pane's is.
-// Pass a module-level function so its identity is stable.
-//
-// `planOpts` adds what a Plan tab's picture needs beyond its cards (usePlanImageExport): its Sheets' cells and its
-// plan views' pictures. A tab window passes them, so it draws a Board, Sheet or Dashboard tab as laid out.
-//
-// Drawn by renderTabDrawingSvg: a Pages tab as its pages and a Form tab as its form, any other tab as its canvas, so a
-// window, the other pane and a Diagram slot all show a tab the same way.
-export function useTabSvg(
-  tab: Tab | undefined,
-  motionFor?: (surface: ReturnType<typeof canvasSurface>) => SvgMotion,
-  planOpts?: Pick<NonNullable<Parameters<typeof renderTabToSvg>[1]>, 'sheets' | 'resolvePlanArt'>,
-): TabSvg | null {
-  const { imageContext, tabs } = useEditorContext();
-  // A window inside this tab is named for the tab it shows, as the export names it. Keyed on the tabs' names, not the
-  // tabs, so an edit anywhere in the document does not redraw this one.
-  const nameKey = tabs.map((t) => `${t.id}\u0000${t.name}`).join('\u0001');
-  // oxlint-disable-next-line react/exhaustive-deps
-  const windowNames = useMemo(() => tabWindowNames(tabs), [nameKey]);
+// Drawn by renderTabDrawingSvg: a Form tab as its form, any other tab as its canvas, so the other pane and a Diagram
+// slot show a tab the same way.
+export function useTabSvg(tab: Tab | undefined): TabSvg | null {
+  const { imageContext } = useEditorContext();
   const plan = usePlan();
   const { appearance } = useAppearance();
   const deferredTab = useDeferredValue(tab);
@@ -85,16 +68,13 @@ export function useTabSvg(
     const seen = tabAsSeen(deferredTab, appearance);
     const markup = renderTabDrawingSvg(seen, {
       pattern: false,
-      motion: motionFor?.(canvasSurface(seen.backgroundColor)),
       images: images?.map,
-      resolveTabWindow: windowNames,
       ...(plan ? { items: plan.items, itemTypes: plan.types } : {}),
-      ...planOpts,
     });
     return {
       markup,
       ...svgFrameOf(markup),
       background: seen.backgroundColor ?? '#ffffff',
     };
-  }, [deferredTab, appearance, images, plan, iconsReady, windowNames, motionFor, planOpts]);
+  }, [deferredTab, appearance, images, plan, iconsReady]);
 }

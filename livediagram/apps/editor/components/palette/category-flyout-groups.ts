@@ -6,13 +6,9 @@ import type { PaletteTileDef } from './palette-tile-defs';
 
 import type { EditorMode } from '@livediagram/document';
 
-/** The modes whose strip is a category bar: Diagram, Workshop and Pages. Plan keeps the category picker and
+/** The modes whose strip is a category bar: Diagram and Workshop. Plan keeps the category picker and
  *  its tiles (its boards and cards are a different palette). */
-export const CATEGORY_BAR_MODES: ReadonlySet<EditorMode> = new Set([
-  'diagram',
-  'workshop',
-  'pages',
-]);
+export const CATEGORY_BAR_MODES: ReadonlySet<EditorMode> = new Set(['diagram', 'workshop']);
 
 // The bar names every category in one word, so a name never wraps or crowds its neighbours: a layout's longer
 // name gives way to its short one here (the flyout's header uses the same, so the two never disagree).

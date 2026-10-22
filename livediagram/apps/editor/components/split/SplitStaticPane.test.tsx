@@ -69,11 +69,8 @@ describe('SplitStaticPane', () => {
     expect(onFocus).toHaveBeenCalledWith('Hover');
   });
 
-  // A Pages tab always has a page, and a Form tab its form: neither is "nothing on this tab".
-  it('draws an empty Pages or Form tab, and says an empty canvas has nothing on it', () => {
-    pane({ loaded: true, shown: { ...tab, opensIn: 'pages' } });
-    expect(screen.getByTestId('drawing')).toBeTruthy();
-    cleanup();
+  // A Form tab always has its form: it is not "nothing on this tab".
+  it('draws an empty Form tab, and says an empty canvas has nothing on it', () => {
     pane({ loaded: true, shown: { ...tab, kind: 'form', form: {} } as unknown as Tab });
     expect(screen.getByTestId('drawing')).toBeTruthy();
     cleanup();

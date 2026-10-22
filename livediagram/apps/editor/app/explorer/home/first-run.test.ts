@@ -42,16 +42,10 @@ describe('isFirstRun', () => {
 
 describe('the starts', () => {
   it('offers each mode its blank, in mode order', () => {
-    expect(WELCOME_BLANKS).toEqual([
-      'blank',
-      'whiteboard',
-      'blank-session',
-      'blank-illustration',
-      'blank-plan',
-    ]);
+    expect(WELCOME_BLANKS).toEqual(['blank', 'whiteboard', 'blank-session', 'blank-plan']);
   });
 
-  it('offers the first eight Popular templates, none of them a blank', () => {
+  it('offers eight Popular templates, none of them a blank', () => {
     expect(WELCOME_POPULAR).toHaveLength(WELCOME_TEMPLATES_MAX);
     expect(WELCOME_POPULAR.some(isBlankTemplate)).toBe(false);
     expect(WELCOME_POPULAR.slice(0, 3)).toEqual(['mindmap', 'flowchart', 'kanban']);

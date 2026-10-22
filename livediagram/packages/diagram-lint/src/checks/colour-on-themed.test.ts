@@ -140,10 +140,4 @@ describe('colour-on-themed, judged on what set the colour', () => {
       'u sets its fill on a themed tab',
     ]);
   });
-
-  it('is no finding on a Pages tab, whose pages are coloured by design', () => {
-    expect(
-      of(lint({ ...themed('ocean', coloured('a', 0)), opensIn: 'pages' }), 'colour-on-themed'),
-    ).toEqual([]);
-  });
 });

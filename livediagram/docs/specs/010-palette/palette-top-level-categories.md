@@ -6,7 +6,7 @@ Status: shipped
 
 A flattening of the palette's category structure.
 
-In Diagram, Workshop and Pages the strip now shows these categories as a **category bar**, each opening a
+In Diagram and Workshop the strip now shows these categories as a **category bar**, each opening a
 flyout of its tiles, with no Popular, one-word names, Write and Draw apart, and Workshop's session tools gathered
 into Session ([Toolbar layout](../007-editor/toolbar-layout.md#the-category-bar)). The bands below are the bar's
 dividers there; the banded picker remains Plan's.
@@ -42,15 +42,14 @@ tools plus Frame). The **User / actor** tile was deleted outright — see below.
 **The category dropdown gets bands**, the way the canvas-tool dropdown got them
 ([Tile grids for the palette dropdowns](../004-interface-design/dropdown-tile-grid.md)):
 
-| Band            | Categories                                                                                                                                                                                    |
-| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| _(no heading)_  | Popular, full width                                                                                                                                                                           |
-| **Common**      | Shapes, My shapes (only with a [shape library](../013-workspace/shape-libraries.md) to place), Write, Draw (and Pages' Logo kind, [logo pages](../007-editor/logo-pages.md#the-logo-palette)) |
-| **Structure**   | Diagrams (Diagram), Layout (Diagram, Workshop), Components, Concepts ([Concept graphics](../009-elements/concept-graphics.md)), Devices, Event Storming (on an event-storming board only)     |
-| **Decorate**    | Icons, Stickers, Technology, Media                                                                                                                                                            |
-| **Dynamic**     | Data (Pages, Workshop)                                                                                                                                                                        |
-| **Collaborate** | Ask, Tools, Record, React, Selection Mode, Navigate ([Workshop](../012-collaboration/workshop-mode.md#the-palette) only)                                                                      |
-| **Screen**      | Components and Elements, first, in Pages' Wireframe kind ([wireframe pages](../007-editor/wireframe-pages.md#the-elements-palette))                                                           |
+| Band            | Categories                                                                                                                                                                                                                                             |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| _(no heading)_  | Popular, full width                                                                                                                                                                                                                                    |
+| **Common**      | Shapes, My shapes (only with a [shape library](../013-workspace/shape-libraries.md) to place), Write, Draw                                                                                                                                             |
+| **Structure**   | Diagrams (Diagram), Layout (Diagram, Workshop), Concepts ([Concept graphics](../009-elements/concept-graphics.md)), Event Storming (on an event-storming board only); Components and Devices are in the catalogue but on no mode's strip (Search only) |
+| **Decorate**    | Icons, Stickers, Technology, Media                                                                                                                                                                                                                     |
+| **Dynamic**     | Data (Workshop)                                                                                                                                                                                                                                        |
+| **Collaborate** | Ask, Tools, Record, React, Selection Mode, Navigate ([Workshop](../012-collaboration/workshop-mode.md#the-palette) only)                                                                                                                               |
 
 ## Why flatten
 

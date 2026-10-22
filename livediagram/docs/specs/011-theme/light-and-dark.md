@@ -47,7 +47,7 @@ does too, so the editor never asks anyone to switch mode to suit a tab.
   ink, light on the dark canvas, so words on a panel whose fill the template fixes (a pale key, a pastel lane) carry a
   dark ink (`PAPER_INK`), and coloured words straight on the canvas take a tone that reads on both halves'
   (`CANVAS_TONES`), both in `packages/templates/src/template-inks.ts`. `apps/editor/lib/template-overlay-contrast.test.ts`
-  checks every template but the Pages ones, whose words sit on pages with their own paper.
+  checks every template.
 - **A theme never sinks a label into what is behind it.** Picking a theme or a look, or drawing a tab in the other
   half, repaints each colour on its own, so it can move a label's backdrop (a panel the theme paints, the canvas)
   without its ink, or the ink without the backdrop: a template's dark `PAPER_INK` on a panel a dark theme repaints
@@ -55,16 +55,9 @@ does too, so the editor never asks anyone to switch mode to suit a tab.
   behind it (the same backdrop as above) and reading worse than before, the label's ink is walked in lightness, its
   hue and chroma kept, until it reaches 3:1 (`withReadableLabelInks`, `packages/document/src/label-backdrop.ts`, on
   `reachContrast`). A pick stores the walked ink, as it stores the rest of the theme; a view only draws it. A label no
-  theme touched keeps its ink however low it reads, since that is someone's choice. Pages tabs are left out:
-  their words sit on pages with their own paper. `apps/editor/lib/template-overlay-contrast.test.ts` holds every
+  theme touched keeps its ink however low it reads, since that is someone's choice. `apps/editor/lib/template-overlay-contrast.test.ts` holds every
   template's labels at 3:1 under every theme, picked in either half and seen in either
   ([#819](https://github.com/livediagram-app/livediagram.app/issues/819)).
-- **A page's own paper.** In Pages mode, an element on a page with a fill of its own (a solid, a gradient, an
-  image) is drawn for that page, not for the viewer's chrome: its theme colours in the half whose surface matches
-  the page's (a light slide takes the light half, a dark one the dark half), its stock colours for that surface. A
-  layout placed on a light slide in Steel keeps its dark words in dark chrome, where the dark half's light ink would
-  sink into the slide. Elements on plain paper (no fill) follow the chrome as before, since the paper does. The canvas
-  (`usePageView`, `apps/editor/lib/stock-colour-projector.ts`) and every export (`tabAsSeen`) draw it the same way.
 - **A Border-tier preset is a line drawing on the paper.** Hairline, Outline, Dotted, Dash-Dot and Frame sit on white
   in a light half and, in a dark half, on that half's element fill (the dark ink's for a theme that paints none, as
   Default), their lines and labels lightened to read there. A white card on a dark canvas glared, as the flowchart

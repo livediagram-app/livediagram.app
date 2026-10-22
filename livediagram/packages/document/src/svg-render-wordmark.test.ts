@@ -3,7 +3,7 @@ import type { TextElement } from './element-types';
 import { boxedNeedsSvgRaster, svgBoxed } from './svg-render';
 import { trackedMeasure } from './svg-render-wordmark';
 
-// docs/specs/007-editor/logo-pages.md "Wordmark type": tracking, weight, case and arc in exports.
+// docs/specs/007-editor/editor-modes.md "Pages moved to livedocuments": tracking, weight, case and arc in exports.
 describe('wordmark type in an export', () => {
   const text = (extra: Partial<TextElement>): TextElement => ({
     id: 't1',

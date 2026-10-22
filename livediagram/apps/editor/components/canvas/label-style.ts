@@ -107,7 +107,7 @@ export type LabelTextStyle = {
   // author's casing, and the live editor wears the same rule so typing
   // shows the note as it will read.
   uppercase?: boolean;
-  // Wordmark type (docs/specs/007-editor/logo-pages.md "Wordmark type"): shown in lower case,
+  // Wordmark type (docs/specs/007-editor/editor-modes.md "Pages moved to livedocuments"): shown in lower case,
   // tracked (em between letters), and painted in its own weight over bold's.
   lowercase?: boolean;
   letterSpacing?: number;
@@ -140,9 +140,9 @@ export function wordmarkTextCss(style: LabelTextStyle): React.CSSProperties {
   };
 }
 
-/** A text element's wordmark type as label style (docs/specs/007-editor/logo-pages.md "Wordmark
- *  type"); empty for every other element. The display label and the live editor both wear it, so
- *  editing never shifts the text. */
+/** A text element's wordmark type as label style (docs/specs/007-editor/editor-modes.md "Pages moved to livedocuments");
+ *  empty for every other element. The display label and the live editor both wear it, so editing never shifts the
+ *  text. */
 export function wordmarkTextStyle(el: BoxedElement): LabelTextStyle {
   if (el.type !== 'text') return {};
   return {

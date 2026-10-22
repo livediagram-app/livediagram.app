@@ -1,7 +1,9 @@
 // What a reference to a gallery image is (docs/specs/009-elements/images.md, "Reference index"):
 // a top-level `type: 'image'` element whose `imageId` names a gallery row, or a top-level
-// Page whose `background.fill` is a picture (`kind: 'image'`) naming one
-// (docs/specs/007-editor/pages-mode.md "Image backgrounds").
+// page whose `background.fill` is a picture (`kind: 'image'`) naming one. Pages mode moved out
+// to livedocuments and livediagram no longer reads a tab's pages, but a former Pages tab still
+// stores them until it is next saved: their pictures stay referenced, so the retention sweep
+// never reaps an image that stored data still names.
 // The SQL twin of this extractor lives in db/image-refs.ts; a parity test
 // holds the two to one corpus, because a reference either one misses is an
 // image the retention sweep would reap.

@@ -13,7 +13,7 @@ The toured kinds: the [Sankey diagram](../009-elements/sankey.md), and the
 [mind node](../009-elements/mind-node.md); the [flowchart](../009-elements/flowchart.md) step; the
 [org chart](../009-elements/org-chart.md)'s person node; the [sequence diagram](../009-elements/sequence-diagram.md); the
 [data charts](../009-elements/pie-chart.md); the [stack](../009-elements/stack.md); the
-[entity](../009-elements/entity.md); the [tab window](../009-elements/tab-window.md); the
+[entity](../009-elements/entity.md); the
 [lane](../009-elements/lane.md); the [boundary](../009-elements/boundary.md); the
 [diagram key](../009-elements/diagram-key.md); and the [portal](../009-elements/portal-element.md).
 
@@ -333,7 +333,7 @@ step puts it away. While it runs, Escape is the tour's and never closes the dial
 
 ## Menu steps on the elements of round two
 
-The chart, stack, entity, tab window, lane, boundary and portal are edited mostly from their own section of the
+The chart, stack, entity, lane, boundary and portal are edited mostly from their own section of the
 element menu (More, then **Tools**). Their tours keep that step for everyone: it rings **More** while More shows, and
 otherwise the element itself, with "Right-click it" in place of "More" (a power user on a desktop has no More button).
 The tour points at the section by name; it never opens the menu itself.
@@ -389,18 +389,6 @@ On a selected entity, from `entity-tour-steps.ts`. Its fields carry `data-entity
 5. **Join Them Up**: rings the entity; a "+" adds a related entity already joined, or a drag from the dot beside a
    field to another entity's field draws a one-to-many relationship, which the Cardinality button changes.
 6. **That Is an Entity**: the closing card, with **Entities Help**.
-
-## The Tab Window tour
-
-On a selected tab window, from `tab-window-tour-steps.ts`.
-
-1. **Another Tab, Live**: rings the window; it shows a tab of this document, fitted, following every change there.
-2. **Open It to Edit** (a window showing a tab): rings its **Open** button (`data-tab-window-open`); the window is a
-   picture, so changes are made on the tab. A window with no tab yet instead has **Choose a Tab**, ringing its
-   button (`data-tab-window-choose`): any tab but this one and Plan tabs.
-3. **The Tab Window Menu**: the menu step. Shows (another tab) and Open.
-4. **Any Size**: rings the window; resized, the tab stays fitted and never cropped.
-5. **That Is a Tab Window**: the closing card, with **Tab Windows Help**.
 
 ## The Lane tour
 
@@ -459,13 +447,13 @@ On a selected portal, from `portal-tour-steps.ts`.
 
 The gate is the toured kind's own edit check on the session's `can` (for a Sankey, `canEditSankey`; for a concept
 graphic, a mind node (a person node included) or a flowchart step, an Editor on an unlocked element; for a sequence
-diagram, `canEditSequence`; for a chart, a stack, an entity, a tab window, a lane, a boundary, a diagram key or a
+diagram, `canEditSequence`; for a chart, a stack, an entity, a lane, a boundary, a diagram key or a
 portal, an Editor on an unlocked element, since its data, its arrangement, its fields, the tab it shows, its gutter,
 its style, its meanings and its link are an Editor's), never `isReadOnly` alone.
 
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
 
-Each toured kind has its own tokens, `<Kind>Tour` (`SankeyTour`, `LayerStackTour`, `PyramidTour`, `FunnelTour`, `CycleTour`, `HubTour`, `OnionTour`, `ChevronsTour`, `TimelineTour`, `MindMapTour`, `FlowchartTour`, `OrgChartTour`, `SequenceTour`, `ChartTour`, `StackTour`, `EntityTour`, `TabWindowTour`, `LaneTour`, `BoundaryTour`, `DiagramKeyTour`, `PortalTour`), named in its registry entry:
+Each toured kind has its own tokens, `<Kind>Tour` (`SankeyTour`, `LayerStackTour`, `PyramidTour`, `FunnelTour`, `CycleTour`, `HubTour`, `OnionTour`, `ChevronsTour`, `TimelineTour`, `MindMapTour`, `FlowchartTour`, `OrgChartTour`, `SequenceTour`, `ChartTour`, `StackTour`, `EntityTour`, `LaneTour`, `BoundaryTour`, `DiagramKeyTour`, `PortalTour`), named in its registry entry:
 
 - **Offer**: `UI` · `Opened` · `<Kind>TourOffer` the first time the offer shows in a page load;
   `UI` · `Closed` · `<Kind>TourOffer` on Cancel.
@@ -488,8 +476,7 @@ Each toured kind has its own tokens, `<Kind>Tour` (`SankeyTour`, `LayerStackTour
   `...Kind`, `...Add`, `...Text`, `...Preview`, `...Numbered` and `...Outro`; the Chart's `ChartTourStepChart`,
   `...Readout`, `...Animate`, `...Menu`, `...Data`, `...Series`, `...AddRow`, `...Import` and `...Outro`; the Stack's
   `StackTourStepStack`, `...Child`, `...Drop`, `...Carry`, `...Menu` and `...Outro`; the Entity's
-  `EntityTourStepEntity`, `...Title`, `...Rows`, `...Menu`, `...Relate` and `...Outro`; the Tab Window's
-  `TabWindowTourStepWindow`, `...Open`, `...Choose`, `...Menu`, `...Size` and `...Outro`; the Lane's
+  `EntityTourStepEntity`, `...Title`, `...Rows`, `...Menu`, `...Relate` and `...Outro`; the Lane's
   `LaneTourStepLane`, `...Gutter`, `...Seam`, `...Carry`, `...Menu` and `...Outro`; the Boundary's
   `BoundaryTourStepZone`, `...Title`, `...Meta`, `...Menu` and `...Outro`; the Diagram Key's `DiagramKeyTourStepKey`,
   `...Meaning`, `...Empty`, `...Title` and `...Outro`; the Portal's `PortalTourStepPortal`, `...Travel`,
@@ -525,7 +512,7 @@ help article's tour section; and a section here.
 - `apps/editor/components/tour/mind-node-tour-steps.ts`, `flowchart-tour-steps.ts`, `org-chart-tour-steps.ts`,
   `sequence-tour-steps.ts`: the Mind Map, Flowchart, Org Chart and Sequence tours' steps.
 - `apps/editor/components/tour/chart-tour-steps.ts`, `stack-tour-steps.ts`, `entity-tour-steps.ts`,
-  `tab-window-tour-steps.ts`, `lane-tour-steps.ts`, `boundary-tour-steps.ts`, `diagram-key-tour-steps.ts`,
+  `lane-tour-steps.ts`, `boundary-tour-steps.ts`, `diagram-key-tour-steps.ts`,
   `portal-tour-steps.ts`: the round-two tours' steps; `menu-tour-step.ts`: their menu step.
 - `apps/editor/lib/dialog-handle.ts`: the slot an open dialog registers its tabs and close in, for a tour that runs inside
   it (`sankey-flows-dialog-handle.ts`, `sequence-dialog-handle.ts`, `chart-data-dialog-handle.ts`).

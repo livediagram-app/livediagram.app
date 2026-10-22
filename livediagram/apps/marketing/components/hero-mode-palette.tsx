@@ -1,6 +1,6 @@
 // What the scenes' Palette strip offers in each editor mode (docs/specs/007-editor/editor-modes.md
 // "The palette per mode", toolbar-layout.md "The category bar"): the mode's glyph and name for its
-// switch, then Diagram's, Workshop's and Pages mode's category bars (each category's glyph and its
+// switch, then Diagram's and Workshop's category bars (each category's glyph and its
 // one-word name, in bands), Draw's dock in place of the palette, and none for Plan, whose tab brings
 // its own bar (hero-plan-bars.tsx). Keyed by the editor's own EditorMode, so a new mode fails typecheck here. At the mock's
 // scale, drawn from the editor's own glyphs where it has them. The strip is ToolbarStrip
@@ -12,10 +12,8 @@ import {
   AskGroupIcon,
   BehaviourTabIcon,
   BuildTabIcon,
-  ComponentsTabIcon,
   ConceptsTabIcon,
   DataTabIcon,
-  DevicesTabIcon,
   DiagramsTabIcon,
   DrawTabIcon,
   EDITOR_MODE_ICONS,
@@ -40,7 +38,6 @@ export const HERO_MODE: Record<HeroMode, { label: string; Icon: ComponentType<Ic
   diagram: { label: 'Diagram', Icon: EDITOR_MODE_ICONS.diagram },
   draw: { label: 'Draw', Icon: EDITOR_MODE_ICONS.draw },
   workshop: { label: 'Workshop', Icon: EDITOR_MODE_ICONS.workshop },
-  pages: { label: 'Pages', Icon: EDITOR_MODE_ICONS.pages },
   plan: { label: 'Plan', Icon: EDITOR_MODE_ICONS.plan },
 };
 
@@ -105,7 +102,7 @@ export const DRAW_DOCK: readonly Tile[] = DRAW_TILES;
 export type BarCategory = { key: string; label: string; Icon: ComponentType };
 
 // Each bar mode's categories, band by band (a hairline between bands), as the editor lays them out.
-// Library joins only while someone has a shape library, and Logo only on a logo page, so neither is here.
+// Library joins only while someone has a shape library, so it is not here.
 export const MODE_BAR: Partial<Record<HeroMode, readonly (readonly BarCategory[])[]>> = {
   diagram: [
     [
@@ -133,24 +130,6 @@ export const MODE_BAR: Partial<Record<HeroMode, readonly (readonly BarCategory[]
     [
       { key: 'ask', label: 'Ask', Icon: AskGroupIcon },
       { key: 'session', label: 'Session', Icon: BehaviourTabIcon },
-    ],
-    [
-      { key: 'icons', label: 'Icons', Icon: IconsTabIcon },
-      { key: 'stickers', label: 'Stickers', Icon: StickersTabIcon },
-      { key: 'media', label: 'Media', Icon: MediaTabIcon },
-    ],
-    [{ key: 'data', label: 'Data', Icon: DataTabIcon }],
-  ],
-  pages: [
-    [
-      { key: 'shapes', label: 'Shapes', Icon: ShapesTabIcon },
-      { key: 'write', label: 'Write', Icon: WriteTabIcon },
-    ],
-    [
-      { key: 'build', label: 'Build', Icon: BuildTabIcon },
-      { key: 'concepts', label: 'Concepts', Icon: ConceptsTabIcon },
-      { key: 'components', label: 'Components', Icon: ComponentsTabIcon },
-      { key: 'devices', label: 'Devices', Icon: DevicesTabIcon },
     ],
     [
       { key: 'icons', label: 'Icons', Icon: IconsTabIcon },

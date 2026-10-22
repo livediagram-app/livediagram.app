@@ -96,19 +96,12 @@ export function templateLayers(kind: TemplateKind): Layer[] | undefined {
     // Tier lanes stay put while components and their wiring move.
     case 'system-architecture':
       return layered('Tiers', 'Components');
-    case 'slide-deck':
-    case 'storyboard':
-      return layered('Frames', 'Content');
     case 'timeline':
     case 'milestone-timeline':
     case 'milestone-timeline-vertical':
       return layered('Spine', 'Milestones');
     case 'journey':
       return layered('Stages', 'Notes');
-    // The shell (walls, doorways, room captions) stays put while the
-    // furniture is dragged around it.
-    case 'floor-plan':
-      return layered('Rooms', 'Furniture');
     // Event storming (docs/specs/021-event-storming/event-storming.md) is the one four-layer template: a hidden
     // Timeline-rail scaffold under three workshop-stage bands (Big picture /
     // Process / Design) that the editor's view switcher toggles. The layer

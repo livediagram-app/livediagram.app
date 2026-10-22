@@ -2,14 +2,14 @@
 
 Derived from [The boundary](../boundary.md). Defaults in [DEFAULTS.md](DEFAULTS.md) as `Dn`.
 
-| File                                                                                   | Role                                                         |
-| -------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| `packages/document/src/boundary.ts`                                                    | `BoundaryStyle`, `boundaryLayout`, `BOUNDARY_TINT`, writes   |
-| `packages/document/src/containment.ts`                                                 | `CONTAINER_KINDS`, `isContainerKind`: frame, lane, boundary  |
+| File                                                                                     | Role                                                         |
+| ---------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| `packages/document/src/boundary.ts`                                                      | `BoundaryStyle`, `boundaryLayout`, `BOUNDARY_TINT`, writes   |
+| `packages/document/src/containment.ts`                                                   | `CONTAINER_KINDS`, `isContainerKind`: frame, lane, boundary  |
 | `graph-look.ts`, `arrow-behind.ts`, `arrow-label-layout.ts`, `apps/editor/lib/canvas.ts` | Their frame-or-lane checks read `isContainerKind`            |
-| `packages/document/src/layers.ts`                                                      | Containers paint first (tier 0), the larger first among them |
-| `packages/document/src/colors.ts`                                                      | `defaultFillColor` transparent (the face paints the tint)    |
-| `packages/document/src/svg-render-boundary.ts`                                         | `svgBoundary`: tint, tab or title, icon, meta                |
+| `packages/document/src/layers.ts`                                                        | Containers paint first (tier 0), the larger first among them |
+| `packages/document/src/colors.ts`                                                        | `defaultFillColor` transparent (the face paints the tint)    |
+| `packages/document/src/svg-render-boundary.ts`                                           | `svgBoundary`: tint, tab or title, icon, meta                |
 | `apps/editor/components/canvas/BoundaryFace.tsx`                                         | The canvas face                                              |
 | `apps/editor/components/canvas/shape-svg-overlay.tsx`                                    | `boundary` on the CSS box path (its border is the wrapper's) |
 | `apps/editor/components/palette/BoundaryMenuSection.tsx`                                 | Style tiles                                                  |
@@ -100,7 +100,7 @@ Nothing per tick: the tint is a constant, so a boundary costs one face and no bo
 ## Presentation and UX
 
 Menu section **Boundary** (Tools flyout): **Tab**, **Inset**, **C4** tiles. Palette: Build → **Boundary** after Frame
-and Lane (Diagram); left out of Pages mode's Build. Placeholder for the meta line: "Meta line".
+and Lane (Diagram). Placeholder for the meta line: "Meta line".
 
 ## Accessibility
 
@@ -112,12 +112,12 @@ Tiles named "Tab Style", "Inset Style", "C4 Style"; the meta line is `role="text
 
 ## Testing
 
-| Rule                                   | Test file                                                   |
-| -------------------------------------- | ----------------------------------------------------------- |
-| Layout per style, tint, writes         | `packages/document/src/boundary.test.ts`                    |
-| Containment and carry include boundary | `packages/document/src/containment.test.ts`                 |
-| Paint order larger-first               | `packages/document/src/layers.test.ts`                      |
-| Export draws tab, title, stacked tint  | `packages/document/src/boundary.test.ts`                    |
+| Rule                                   | Test file                                                     |
+| -------------------------------------- | ------------------------------------------------------------- |
+| Layout per style, tint, writes         | `packages/document/src/boundary.test.ts`                      |
+| Containment and carry include boundary | `packages/document/src/containment.test.ts`                   |
+| Paint order larger-first               | `packages/document/src/layers.test.ts`                        |
+| Export draws tab, title, stacked tint  | `packages/document/src/boundary.test.ts`                      |
 | Face                                   | `apps/editor/components/canvas/BoundaryFace.test.tsx`         |
 | Menu section (meta line, styles)       | `apps/editor/components/palette/BoundaryMenuSection.test.tsx` |
 

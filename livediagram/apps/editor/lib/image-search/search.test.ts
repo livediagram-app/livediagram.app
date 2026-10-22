@@ -1,5 +1,4 @@
 import { describe, expect, it, vi } from 'vitest';
-import { sentUrl } from '@livediagram/vitest-config/sent-request';
 import { OpenverseSearchError } from './openverse';
 import { searchOpenverse } from './search';
 
@@ -27,14 +26,6 @@ describe('searchOpenverse', () => {
     });
     const init = vi.mocked(fetchImpl).mock.calls[0]![1]!;
     expect(init).toMatchObject({ credentials: 'omit', referrerPolicy: 'no-referrer' });
-  });
-
-  it('asks with the filters it is given', async () => {
-    const fetchImpl = answer(200, { page_count: 1, results: [] });
-    await searchOpenverse('sea', 1, fetchImpl, { aspectRatio: 'wide', size: 'large' });
-    const url = new URL(sentUrl(vi.mocked(fetchImpl).mock.calls[0]![0]));
-    expect(url.searchParams.get('aspect_ratio')).toBe('wide');
-    expect(url.searchParams.get('size')).toBe('large');
   });
 
   it('reports 429 as rate-limited', async () => {

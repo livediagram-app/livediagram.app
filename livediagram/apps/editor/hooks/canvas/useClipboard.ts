@@ -45,7 +45,6 @@ import {
 import { anyModalOpen } from '@/lib/modal-guard';
 import { watchPrimarySelectionPaste } from '@/lib/primary-selection-paste';
 import {
-  articlePasteIsCanvas,
   clipboardWriteFor,
   copyTooLargeMessage,
   IN_APP_COPY_ELSEWHERE,
@@ -454,19 +453,13 @@ export function useClipboard(deps: ClipboardDeps) {
       if (primaryPaste.current?.isPrimarySelectionPaste()) return;
       // A DOM target: `Element` in this file is the diagram element type.
       const target = e.target;
-      // An article's writing hands on what it cannot hold (docs/specs/007-editor/article-pages.md
-      // "Zones": a pasted image or copied elements go into the writing as zones).
-      const intoArticle =
-        target instanceof HTMLElement &&
-        !!target.closest('[data-article-flow]') &&
-        articlePasteIsCanvas(e.clipboardData ?? null);
       // An empty start search hands the editor a paste of canvas content (docs/specs/007-editor/start-diagramming.md
       // "Undo and redo reach the editor through an empty search"): elements copied from another tab land on this
       // new one rather than their JSON in the search. Text still searches.
       const intoEmptySearch =
         passesHistoryChords(target) &&
         pasteHoldsCanvasContent(e.clipboardData ?? null, pasteRef.current.canPasteScene);
-      if (!intoArticle && !intoEmptySearch && isTypingTarget(target)) {
+      if (!intoEmptySearch && isTypingTarget(target)) {
         return;
       }
       if (isReadOnly) return;

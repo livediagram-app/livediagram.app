@@ -17,7 +17,6 @@ export type TemplateCategory =
   | 'strategy'
   | 'hierarchies'
   | 'design'
-  | 'presentations'
   | 'technical'
   | 'games';
 
@@ -95,13 +94,7 @@ const CATEGORY_LIST: readonly CategoryInfo[] = [
     id: 'design',
     label: 'Design',
     searchWords: 'ux',
-    description: 'Wireframes, prototypes, personas and journeys.',
-  },
-  {
-    id: 'presentations',
-    label: 'Presentations',
-    searchWords: 'content',
-    description: 'Slides, articles, posters and social posts.',
+    description: 'Prototypes, personas, journeys and research.',
   },
   {
     id: 'technical',
@@ -128,22 +121,7 @@ export const TEMPLATE_CATEGORIES: readonly Omit<CategoryInfo, 'searchWords'>[] =
 // The blanks: in no category, reached from Popular or by search (docs/specs/007-editor/templates-by-mode.md "The blanks").
 // Mirrors isBlankTemplate (BLANK_TEMPLATE_FOR_MODE and EXTRA_BLANK_TEMPLATES); the categories test pins them together.
 type BlankKind =
-  | 'blank'
-  | 'whiteboard'
-  | 'blank-illustration'
-  | 'blank-slide-deck'
-  | 'blank-article'
-  | 'blank-infographic'
-  | 'blank-logo'
-  | 'blank-wireframe-phone'
-  | 'blank-wireframe-tablet'
-  | 'blank-wireframe-browser'
-  | 'blank-wireframe-laptop'
-  | 'blank-wireframe-watch'
-  | 'blank-plan'
-  | 'blank-spreadsheet'
-  | 'blank-session'
-  | 'blank-form';
+  'blank' | 'whiteboard' | 'blank-plan' | 'blank-spreadsheet' | 'blank-session' | 'blank-form';
 
 // Every non-blank template's primary category.
 const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCategory> = {
@@ -234,7 +212,6 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   'rich-picture': 'strategy',
   'wardley-map': 'strategy',
   'value-proposition-canvas': 'strategy',
-  'working-backwards': 'strategy',
   // Org and Structure: top-down structure.
   orgchart: 'hierarchies',
   pyramid: 'hierarchies',
@@ -245,38 +222,14 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   'family-tree': 'hierarchies',
   // Design and UX: screens, research and the spaces people move through.
   'paper-prototype': 'design',
-  storyboard: 'design',
   journey: 'design',
   'journey-doodle': 'design',
   'user-persona': 'design',
   'empathy-map': 'design',
   'user-story-map': 'design',
-  'floor-plan': 'design',
   'service-blueprint': 'design',
-  // Presentations and Content: pages made to be read or shared.
-  'slide-deck': 'presentations',
-  article: 'presentations',
-  'how-it-works': 'presentations',
-  'data-story': 'presentations',
-  'year-in-review': 'presentations',
-  versus: 'presentations',
-  'social-carousel': 'presentations',
-  'launch-keynote': 'presentations',
-  'quarterly-review': 'presentations',
-  'team-welcome': 'presentations',
-  'workshop-kickoff': 'presentations',
-  'event-poster': 'presentations',
-  'logo-design': 'presentations',
-  // Design: the wireframe flows sit with the other wireframes.
-  'wireframe-mobile-app': 'design',
-  'wireframe-website': 'design',
-  'wireframe-dashboard': 'design',
-  'wireframe-tablet-app': 'design',
-  'wireframe-watch-app': 'design',
-  resume: 'presentations',
-  'recipe-card': 'presentations',
-  'live-card': 'presentations',
-  'comic-strip': 'presentations',
+  // A comic strip tells a user's story in panels, as a storyboard does.
+  'comic-strip': 'design',
   // Technical: developer diagrams.
   'system-architecture': 'technical',
   'cloud-architecture': 'technical',
@@ -342,9 +295,8 @@ export const TEMPLATE_ALSO_IN: Readonly<
   // A blueprint and a value stream are processes across lanes and steps.
   'service-blueprint': ['flowcharts'],
   'value-stream-map': ['flowcharts'],
-  // A value proposition is product design; a PR/FAQ is a document to share.
+  // A value proposition is product design.
   'value-proposition-canvas': ['design'],
-  'working-backwards': ['presentations'],
 };
 
 /** A template's primary category; null for the blanks, which are in none. */

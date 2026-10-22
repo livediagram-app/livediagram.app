@@ -77,9 +77,6 @@ export type ShapeKind =
   // character into it — takes you to the portal it is paired with, in
   // `portalTarget`.
   | 'portal'
-  // Tab window (docs/specs/009-elements/tab-window.md): another tab of the document drawn live inside it, fitted;
-  // which tab lives in `windowTabId`.
-  | 'tab-window'
   // Session button (docs/specs/012-collaboration/session-button.md): pressing it starts a session tool for the room
   // — a timer, a dot vote, or a live poll. Which one lives in `session`.
   | 'session-button'

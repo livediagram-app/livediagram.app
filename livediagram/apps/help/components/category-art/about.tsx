@@ -2,7 +2,7 @@ import { Arrow, Label, Shape } from '@/components/illustrations/primitives';
 import { Chip, Stage, Window } from './parts';
 
 // About livediagram: what it is in one picture. Three windows fanned out, one per way of working (planning on a
-// board, a diagram, a page to publish), under the two promises: free, and open source.
+// board, a diagram, a sketch), under the two promises: free, and open source.
 export function AboutArt() {
   return (
     <Stage>
@@ -35,21 +35,30 @@ export function AboutArt() {
           ))}
         </Window>
       </g>
-      {/* Pages: a page, tilted forward on the right. */}
+      {/* Draw: a freehand sketch, tilted forward on the right. */}
       <g transform="rotate(7 308 120)">
-        <Window x={232} y={52} w={150} h={118} title="Pages">
-          <rect x={244} y={84} width={126} height={74} rx={6} className="fill-brand-500" />
-          <rect
-            x={254}
-            y={96}
-            width={70}
-            height={7}
-            rx={3.5}
-            className="fill-white help-art-as-drawn"
+        <Window x={232} y={52} w={150} h={118} title="Draw">
+          <path
+            d="M248 136 C262 100 284 96 296 118 S326 150 340 112 S360 92 366 104"
+            fill="none"
+            className="stroke-brand-500"
+            strokeWidth={3}
+            strokeLinecap="round"
           />
-          <rect x={254} y={110} width={50} height={4} rx={2} className="fill-brand-200" />
-          <circle cx={346} cy={136} r={14} className="fill-amber-300" />
-          <rect x={254} y={136} width={34} height={14} rx={3} className="fill-brand-600" />
+          <circle
+            cx={346}
+            cy={142}
+            r={12}
+            fill="none"
+            className="stroke-amber-400"
+            strokeWidth={2.5}
+          />
+          <path
+            d="M252 152 l22 0"
+            className="stroke-slate-400"
+            strokeWidth={2}
+            strokeLinecap="round"
+          />
         </Window>
       </g>
       {/* Diagram: in front, in the middle. */}
@@ -72,7 +81,7 @@ export function AboutArt() {
       <Chip x={118} y={12} label="Free for everyone" tone="emerald" h={20} size={10} />
       <Chip x={236} y={12} label="Open source" tone="violet" h={20} size={10} />
       <Label x={200} y={204} anchor="middle" size={9} weight={600} tone="muted">
-        Diagram · Draw · Plan · Workshop · Pages
+        Diagram · Draw · Workshop · Plan
       </Label>
     </Stage>
   );

@@ -1,8 +1,8 @@
-// Editor-mode illustrations for the Canvas articles on Draw mode and Pages Mode
+// Editor-mode illustrations for the Canvas articles on Draw mode and Editor Modes
 // (docs/specs/018-help/help-app.md): the mode switch at the top of an empty tab's start with its menu open,
 // the list of modes and the preview of one (chrome/editor-mode/ModeMenu.tsx), and Draw mode's dock
 // across the top of the canvas (canvas/whiteboard/WhiteboardDock.tsx). Real labels throughout: the
-// five modes, a mode's description and tools, ⇧D in the preview, the dock's tools and their keys.
+// four modes, a mode's description and tools, ⇧D in the preview, the dock's tools and their keys.
 
 import type { ReactNode } from 'react';
 import { Scene, Label } from './primitives';
@@ -13,12 +13,11 @@ const MODES: { mode: Mode; tile: string; mark: string }[] = [
   { mode: 'Diagram', tile: 'fill-sky-100', mark: 'stroke-sky-700' },
   { mode: 'Draw', tile: 'fill-orange-100', mark: 'stroke-orange-700' },
   { mode: 'Workshop', tile: 'fill-violet-100', mark: 'stroke-violet-700' },
-  { mode: 'Pages', tile: 'fill-pink-100', mark: 'stroke-pink-700' },
   { mode: 'Plan', tile: 'fill-emerald-100', mark: 'stroke-emerald-700' },
 ];
 
 /** The mode switch leading Start Diagramming's rail (start/StartModeSwitch.tsx), its menu open: the
- *  list of the five modes (the current one checked; the tab is empty, so Plan is a plain switch) and
+ *  list of the four modes (the current one checked; the tab is empty, so Plan is a plain switch) and
  *  the preview of the one under the pointer, Draw: its picture, name with ⇧D, description and tools. */
 export function ModeSwitchScene() {
   const mx = 13;
