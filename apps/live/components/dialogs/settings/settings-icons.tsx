@@ -30,14 +30,7 @@ export type SettingsIconId =
 
 // The sub-categories, nested under a top-level category (Editor, Panels, Account).
 export type SettingsSubcategoryId =
-  | 'draw'
-  | 'pages'
-  | 'layers'
-  | 'map'
-  | 'collaborate'
-  | 'quickStyle'
-  | 'notifications'
-  | 'tokens';
+  'draw' | 'pages' | 'layers' | 'map' | 'collaborate' | 'quickStyle' | 'notifications' | 'tokens';
 
 // Every category, top-level and sub-category alike: each opens its own pane.
 export type SettingsCategoryId = SettingsIconId | SettingsSubcategoryId;

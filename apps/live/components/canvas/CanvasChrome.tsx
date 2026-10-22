@@ -581,9 +581,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
           Theme & Canvas strip, then the Zoom controls. The buttons open their panels as popovers
           above them (docs/specs/007-editor/live-app.md). */}
       <div
-        // Presenting hides this cluster (docs/specs/012-collaboration/presentation-mode.md): zen keeps the zoom controls
-        // as its one way back out, and a deck has its own way out plus no
-        // zoom to offer.
+        // Zen keeps the zoom controls as its one way back out.
         data-zoom-cluster=""
         data-region="controls"
         // Drawn at the UI scale, still 16px from the corner, or clear of a landscape notch.

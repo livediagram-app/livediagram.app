@@ -1,5 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createPresenceCoalescer, type CursorPos, type PresenceCoalescer } from './presence-coalescer';
+import {
+  createPresenceCoalescer,
+  type CursorPos,
+  type PresenceCoalescer,
+} from './presence-coalescer';
 
 // The coalescer is the one part of the room that treats a packet as a sample
 // rather than an event: many arrive per frame and exactly one state commit

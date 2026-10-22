@@ -75,7 +75,10 @@ describe('sessionButtonPlan', () => {
 
 describe('defaultSessionConfig', () => {
   it('places a button that starts its tool as it is', () => {
-    expect(defaultSessionConfig('timer')).toEqual({ tool: 'timer', minutes: DEFAULT_TIMER_MINUTES });
+    expect(defaultSessionConfig('timer')).toEqual({
+      tool: 'timer',
+      minutes: DEFAULT_TIMER_MINUTES,
+    });
     expect(defaultSessionConfig('stopwatch')).toEqual({ tool: 'stopwatch' });
     expect(defaultSessionConfig('vote')).toEqual({ tool: 'vote', dots: DEFAULT_VOTE_DOTS });
   });

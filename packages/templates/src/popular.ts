@@ -58,13 +58,7 @@ export const POPULAR_BY_MODE: Readonly<Record<PopularChoice, readonly TemplateKi
     'bug-triage',
     'invoice',
   ],
-  workshop: [
-    'blank-session',
-    'sailboat',
-    'retrospective',
-    'crazy-eights',
-    'brainstorm',
-  ],
+  workshop: ['blank-session', 'sailboat', 'retrospective', 'crazy-eights', 'brainstorm'],
 };
 
 // Popular under Everything (the marketing gallery's and the step's default shelf).

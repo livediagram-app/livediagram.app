@@ -178,13 +178,7 @@ describe('elementRole', () => {
   });
 
   it('makes an element with controls on its face a group', () => {
-    for (const kind of [
-      'session-button',
-      'checklist',
-      'temperature',
-      'picker',
-      'decision',
-    ])
+    for (const kind of ['session-button', 'checklist', 'temperature', 'picker', 'decision'])
       expect(elementRole(shape(kind))).toBe('group');
     expect(
       elementRole({

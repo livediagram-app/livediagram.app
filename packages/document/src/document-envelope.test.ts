@@ -12,11 +12,7 @@ const tab: EnvelopeTab = { id: 't1', name: 'Tab 1', elements: [], folder: 'Ideas
 
 describe('documentToEnvelopeText', () => {
   it('wraps the document, and its tabs with folders in a liveplanner.document envelope', () => {
-    const text = documentToEnvelopeText(
-      { id: 'd1', name: 'Plan' },
-      [tab],
-      42,
-    );
+    const text = documentToEnvelopeText({ id: 'd1', name: 'Plan' }, [tab], 42);
     expect(JSON.parse(text)).toEqual({
       kind: DOCUMENT_ENVELOPE_KIND,
       schemaVersion: 1,

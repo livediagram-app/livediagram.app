@@ -174,10 +174,7 @@ type LiveFieldBag = {
   cellComments?: CellCommentThreads;
   action?: ElementAction;
   actions?: ElementAction[];
-} & Pick<
-  ShapeElement,
-  'responses' | 'collabRound' | 'pickerResult'
->;
+} & Pick<ShapeElement, 'responses' | 'collabRound' | 'pickerResult'>;
 
 function applyLiveField<K extends keyof LiveFieldBag>(
   target: LiveFieldBag,

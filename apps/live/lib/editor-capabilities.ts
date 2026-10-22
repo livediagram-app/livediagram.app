@@ -17,7 +17,7 @@ import type { AccessLevel } from '@liveplanner/api-schema';
 
 export type EditorCapabilities = {
   level: AccessLevel;
-  // Session tools: dots, estimates, temperature checks, the Done check, quizzes, ideas.
+  // Session tools: dots and temperature checks.
   takePart: boolean;
   // Add a sticky, text or image, or grow a mind map (PARTICIPANT_ADDABLE_TYPES, `addableOn`).
   addContent: boolean;

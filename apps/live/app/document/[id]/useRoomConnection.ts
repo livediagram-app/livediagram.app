@@ -21,7 +21,11 @@ import {
 import { nextFreeColor, type Participant } from '@/lib/identity';
 import { usePublishedPicture } from '@/hooks/persistence/usePublishedPicture';
 import { apiCreateRoomTicket, connectRoom, type RoomHandlers } from '@/lib/api-client';
-import { createPresenceCoalescer, type CursorPos, type PresenceCoalescer } from './presence-coalescer';
+import {
+  createPresenceCoalescer,
+  type CursorPos,
+  type PresenceCoalescer,
+} from './presence-coalescer';
 import type { RemoteSelection } from '@/lib/presence-rows';
 import { pruneMapToPresent } from './editor-page-helpers';
 import { applyRoomOpToTabs } from './room-op-apply';
@@ -534,25 +538,20 @@ export function useRoomConnection(opts: {
     // says meanwhile (its selection, its tab) for the room.
     const { self, shareCode } = connectAs();
     let firstMint = true;
-    const openedRoom = connectRoom(
-      documentId,
-      self,
-      handlers,
-      {
-        // The api worker resolves the role the mint stored on the ticket and
-        // stamps it into the participant row via X-Verified-Role so
-        // peers see a trustworthy Viewer / Editor badge. Each connect needs its
-        // own ticket: the upgrade spends the one it admits.
-        mintTicket: async () => {
-          const minted = await apiCreateRoomTicket(self.id, documentId, shareCode);
-          // A Participant's key comes back with every ticket (the same key, derived per document); the
-          // first answer also says when there is none.
-          if (minted?.adderKey || firstMint) announceAdderKey(minted?.adderKey ?? null);
-          firstMint = false;
-          return minted?.ticket ?? null;
-        },
+    const openedRoom = connectRoom(documentId, self, handlers, {
+      // The api worker resolves the role the mint stored on the ticket and
+      // stamps it into the participant row via X-Verified-Role so
+      // peers see a trustworthy Viewer / Editor badge. Each connect needs its
+      // own ticket: the upgrade spends the one it admits.
+      mintTicket: async () => {
+        const minted = await apiCreateRoomTicket(self.id, documentId, shareCode);
+        // A Participant's key comes back with every ticket (the same key, derived per document); the
+        // first answer also says when there is none.
+        if (minted?.adderKey || firstMint) announceAdderKey(minted?.adderKey ?? null);
+        firstMint = false;
+        return minted?.ticket ?? null;
       },
-    );
+    });
     roomRef.current = openedRoom;
     return () => {
       presence.cancel();

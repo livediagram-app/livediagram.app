@@ -287,12 +287,7 @@ function withoutDeltaFields(el: Element): unknown {
     ...rest
   } = el as Element & { commentThread?: CommentThread; cellComments?: CellCommentThreads };
   if (rest.type !== 'shape') return rest;
-  const {
-    responses: _r,
-    planBoard: _b,
-    checklistItems,
-    ...shape
-  } = rest as ShapeElement;
+  const { responses: _r, planBoard: _b, checklistItems, ...shape } = rest as ShapeElement;
   return checklistItems
     ? { ...shape, checklistItems: checklistItems.map((item) => item.text) }
     : shape;

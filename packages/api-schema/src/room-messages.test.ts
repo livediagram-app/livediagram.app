@@ -23,7 +23,12 @@ describe('isParticipationOp', () => {
       isParticipationOp({ kind: 'vote', tabId: 't', elementId: 'e', voter: 'k', delta: 1 }),
     ).toBe(true);
     expect(
-      isParticipationOp({ kind: 'el-delta', tabId: 't', elementId: 'e', delta: { kind: 'response' } }),
+      isParticipationOp({
+        kind: 'el-delta',
+        tabId: 't',
+        elementId: 'e',
+        delta: { kind: 'response' },
+      }),
     ).toBe(true);
   });
 

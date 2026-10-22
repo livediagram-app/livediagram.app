@@ -19,8 +19,6 @@ const POPOVER_WIDTHS: Partial<Record<string, number>> = {
   'plan-trash': 352,
   // The Layers popover's `w-[22rem]`: roomy rows (docs/specs/006-document/layers.md).
   layers: 352,
-  // The Slide Deck popover's `w-[420px]` (docs/specs/012-collaboration/presentation-mode.md).
-  slides: 420,
   // The Contents popover's `w-[380px]` (docs/specs/007-editor/pages-mode.md "Contents").
   contents: 380,
   // CardFinderPanel's `sm:w-[44rem]`: wide enough for each row's state, priority, due date and assignee.

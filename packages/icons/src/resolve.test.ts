@@ -109,9 +109,7 @@ describe('the preview resolvers', () => {
 
   it('draw an emoji from its art when it was fetched, by its glyph', () => {
     const art = { viewBox: '0 0 36 36', markup: '<path d="M0 0h36v36z"/>' };
-    const { resolveIconArt, resolveStickerArt: sticker } = previewResolvers(
-      new Map([['👍', art]]),
-    );
+    const { resolveIconArt, resolveStickerArt: sticker } = previewResolvers(new Map([['👍', art]]));
     expect(sticker('emoji-thumbs-up')?.markup).toContain(
       '<svg x="23" y="23" width="54" height="54" viewBox="0 0 36 36" data-finish-keep=""><path d="M0 0h36v36z"/></svg>',
     );

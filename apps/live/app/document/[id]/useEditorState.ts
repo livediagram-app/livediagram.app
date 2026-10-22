@@ -44,14 +44,7 @@ import { useBoardDeleteGuard } from '@/hooks/plan/useBoardDeleteGuard';
 import { chainDeleteGuards } from '@/lib/delete-guards';
 import { useSheetDeleteGuard } from '@/hooks/sheets/useSheetDeleteGuard';
 import { useKeyboardAvoidance } from '@/hooks/canvas/useKeyboardAvoidance';
-import {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
   isEventStormingTab,
   onlyDraftNotesChanged,
@@ -446,10 +439,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // The format painter's settings (docs/specs/008-canvas/format-panel.md): which parts of a copied style
   // travel, read by the paint and edited from the Format Panel.
   const formatSettings = useFormatConfig();
-  const { canvasTool, setCanvasTool, selectCanvasTool } =
-    useCanvasTool({
-      defaultPan: embedMode,
-    });
+  const { canvasTool, setCanvasTool, selectCanvasTool } = useCanvasTool({
+    defaultPan: embedMode,
+  });
   // Persistent Format painter tool (docs/specs/008-canvas/canvas-and-palette.md): the mode-boundary reset +
   // the exit that restores the pre-Format tool. See useFormatTool.
   const { formatToolActive, exitFormatTool } = useFormatTool({
@@ -1918,8 +1910,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   >(null);
   // Memoised so the pages' view keeps its identity across renders where nothing changed.
   const pagesModeView = useMemo(
-    () =>
-      pagesMode ? { ...pagesMode, ...(articles ? { articles } : {}) } : pagesMode,
+    () => (pagesMode ? { ...pagesMode, ...(articles ? { articles } : {}) } : pagesMode),
     [pagesMode, articles],
   );
   // --- Placement helpers ---------------------------------------------------
@@ -2291,21 +2282,20 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // The interactive Behaviour elements that act on the SESSION rather than the
   // document (docs/specs/012-collaboration/session-button.md, /107): the session button's press and the
   // picker's roll.
-  const { pressSessionButton, pickerFor, setSessionConfigFor } =
-    useBehaviourElements({
-      activeId,
-      commitTabs,
-      tickTabs,
-      editsBlocked,
-      selfParticipant,
-      livePresence,
-      activeTimer: activeTab.timer,
-      activeVote: activeTab.vote,
-      startTimer,
-      pauseTimer,
-      resumeTimer,
-      startVote,
-    });
+  const { pressSessionButton, pickerFor, setSessionConfigFor } = useBehaviourElements({
+    activeId,
+    commitTabs,
+    tickTabs,
+    editsBlocked,
+    selfParticipant,
+    livePresence,
+    activeTimer: activeTab.timer,
+    activeVote: activeTab.vote,
+    startTimer,
+    pauseTimer,
+    resumeTimer,
+    startVote,
+  });
 
   // The collaboration elements (docs/specs/012-collaboration/participant-responses.md). Sibling of the
   // behaviour hook above: these write to the document through `tickTabs`,

@@ -177,7 +177,6 @@ function rail(out: Element[], x: number, top: number): void {
       },
     );
   });
-
 }
 
 // One panel of the folded sheet: its outline, the number chip on its corner

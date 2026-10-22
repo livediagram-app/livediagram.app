@@ -45,7 +45,11 @@ export function tabArrowLabels(tab: Tab): ReturnType<typeof arrowLabelPass> {
 }
 
 /** A page's picture, or null when the page is gone. */
-export function slideThumbFor(pageId: string, tab: Tab, opts: SlideThumbOptions): SlideThumb | null {
+export function slideThumbFor(
+  pageId: string,
+  tab: Tab,
+  opts: SlideThumbOptions,
+): SlideThumb | null {
   const art = opts.iconsLoaded
     ? { resolveIconArt: resolveIconArtLoaded, resolveStickerArt: resolveStickerArtLoaded }
     : {};

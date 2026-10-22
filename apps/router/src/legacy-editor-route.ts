@@ -38,6 +38,7 @@ const LEGACY_HELP_ARTICLES: Readonly<Record<string, string>> = {
   'canvas/illustrate/logo-pages': 'canvas/pages-mode/logo-pages',
   'canvas/illustrate/slide-pages': 'canvas/pages-mode/slide-pages',
   'canvas/illustrate/tab-windows': 'canvas/pages-mode/tab-windows',
+  'canvas/facilitate-mode': 'canvas/workshop-mode',
   'selection-modes/highlighter': 'palette/tools/highlighter',
   'activity-panel': 'canvas/undo',
   'activity-panel/what-it-is': 'canvas/undo',

@@ -87,9 +87,8 @@ type EditorViewportApi = {
   fitToScreen: () => void;
   // Focus: glide to fit an element, or out to the whole tab when it is already fitted.
   focusOn: (bbox: { x: number; y: number; w: number; h: number }, maxZoom?: number) => void;
-  // Frame an ARBITRARY rectangle. Presenting a slide (docs/specs/012-collaboration/presentation-mode.md) needs this:
-  // the deck decides what is on screen, so the box to fit is the slide's
-  // rather than the whole tab's.
+  // Frame an ARBITRARY rectangle: a changeset's Show frames what it touched
+  // rather than the whole tab.
   fitToBounds: (
     bbox: { x: number; y: number; w: number; h: number },
     opts?: { maxZoom?: number; padding?: number },

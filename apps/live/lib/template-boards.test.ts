@@ -152,9 +152,9 @@ describe('prioritization matrix template', () => {
   it('runs the ritual in a rail: vote, size, commit', () => {
     const vote = shapesOf(els, 'session-button');
     expect(vote.map((v) => v.session?.tool)).toEqual(['vote']);
-    expect(els.some((el) => el.type === 'sticky' && /XS · S · M · L · XL/.test(el.label ?? ''))).toBe(
-      true,
-    );
+    expect(
+      els.some((el) => el.type === 'sticky' && /XS · S · M · L · XL/.test(el.label ?? '')),
+    ).toBe(true);
     const commit = shapesOf(els, 'checklist')[0]?.checklistItems ?? [];
     expect(commit.length).toBeGreaterThan(0);
     expect(commit.every((c) => c.text.split(' · ').length === 3)).toBe(true);

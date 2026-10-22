@@ -132,16 +132,7 @@ export function useGifExport({
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [
-    chosen,
-    page,
-    width,
-    height,
-    holdSeconds,
-    loops,
-    captureOnce,
-    phase.kind,
-  ]);
+  }, [chosen, page, width, height, holdSeconds, loops, captureOnce, phase.kind]);
 
   // Closing the dialog mid-make is Cancel.
   useEffect(() => () => abort.current?.abort(), []);

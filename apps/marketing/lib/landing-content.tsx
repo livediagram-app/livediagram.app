@@ -877,10 +877,10 @@ export const LANDING_SECTIONS: LandingSection[] = [
       },
       {
         art: <SlideLayoutsArt />,
-        href: '/help/canvas/pages-mode/exporting-pages/#turning-pages-into-slides',
+        href: '/help/canvas/pages-mode/slide-pages/',
         title: 'Slide pages, ready-made layouts',
         description:
-          'Add a 16:9 or classic 4:3 slide page and start it from one of 61 layouts: a keynote title, an agenda, three big numbers, a roadmap, a call to action and more. Each page is a slide, in page order.',
+          'Add a 16:9 or classic 4:3 slide page and start it from one of 61 layouts: a keynote title, an agenda, three big numbers, a roadmap, a call to action and more.',
       },
       {
         art: <ZenModeArt />,

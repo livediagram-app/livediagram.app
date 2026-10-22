@@ -635,9 +635,4 @@ export function participantPaletteCategories(
 }
 
 // The selection modes a Participant has: look around, never an Editor's tools (Eraser, Format Painter).
-export const PARTICIPANT_CANVAS_TOOLS: readonly string[] = [
-  'select',
-  'pan',
-  'isometric',
-  'zen',
-];
+export const PARTICIPANT_CANVAS_TOOLS: readonly string[] = ['select', 'pan', 'isometric', 'zen'];

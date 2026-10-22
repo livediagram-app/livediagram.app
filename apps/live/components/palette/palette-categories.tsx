@@ -29,12 +29,7 @@ import {
   EventStormingTabIcon,
   ParticipateTabIcon,
 } from '@liveplanner/ui';
-import {
-  AskGroupIcon,
-  WorkshopGroupIcon,
-  MoveGroupIcon,
-  RecordGroupIcon,
-} from '@liveplanner/ui';
+import { AskGroupIcon, WorkshopGroupIcon, MoveGroupIcon, RecordGroupIcon } from '@liveplanner/ui';
 import { PlanCardsIcon, PlanIcon } from '@liveplanner/ui';
 import { SheetArt } from '@/components/sheets/sheet-art';
 import { Glyph, lucideGlyph } from '@liveplanner/ui';
@@ -172,8 +167,7 @@ export const PALETTE_CATEGORIES: {
     id: 'plan-tools',
     label: 'Tools',
     group: 0,
-    description:
-      'Facilitation for the team: a temperature check, a picker and timers.',
+    description: 'Facilitation for the team: a temperature check, a picker and timers.',
     icon: <BehaviourTabIcon />,
   },
   {
@@ -327,32 +321,28 @@ export const PALETTE_CATEGORIES: {
     id: 'collab-ask',
     label: 'Ask',
     group: 6,
-    description:
-      'Put a question to the room: dot votes and a temperature check.',
+    description: 'Put a question to the room: dot votes and a temperature check.',
     icon: <AskGroupIcon />,
   },
   {
     id: 'collab-tools',
     label: 'Tools',
     group: 6,
-    description:
-      'Run the session: a timer or a stopwatch and a picker.',
+    description: 'Run the session: a timer or a stopwatch and a picker.',
     icon: <WorkshopGroupIcon />,
   },
   {
     id: 'collab-record',
     label: 'Record',
     group: 6,
-    description:
-      'Leave a record on the canvas: comments, actions and decisions.',
+    description: 'Leave a record on the canvas: comments, actions and decisions.',
     icon: <RecordGroupIcon />,
   },
   {
     id: 'collab-navigate',
     label: 'Navigate',
     group: 6,
-    description:
-      'Take people somewhere: a portal and a link card.',
+    description: 'Take people somewhere: a portal and a link card.',
     icon: <MoveGroupIcon />,
   },
 ];

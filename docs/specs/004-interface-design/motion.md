@@ -47,7 +47,7 @@ Every duration in the codebase belongs to exactly one kind. The budget applies t
 | ------------------------ | ------------------------------------------------------------------------------------------------------ | ----------------------------------------- |
 | **Chrome transition**    | A chrome surface changing state: entering, leaving, opening, resizing, hovering                        | 250ms, or 150ms for hovers                |
 | **Cascade**              | Chrome items entering one beat apart                                                                   | 250ms for the whole cascade               |
-| **Canvas animation**     | Motion of or on the canvas. Element entry and animations, arrow flow, collab boards | Its own spec                              |
+| **Canvas animation**     | Motion of or on the canvas. Element entry and animations, arrow flow, collab boards                    | Its own spec                              |
 | **Content illustration** | Marketing illustrations and template-preview stories: a picture that moves, not a control              | Its own spec                              |
 | **Content reveal**       | Content drawn in for reading: the marketing page entrance, telemetry data-viz reveals                  | About half its original length, see below |
 | **Ambient indicator**    | Looping status. Spinners, skeleton pulses, live dots, empty-state float, attention pulses that repeat  | Exempt; not a transition                  |

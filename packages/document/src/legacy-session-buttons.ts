@@ -8,7 +8,9 @@ const carriesRetiredTool = (el: Element): boolean => {
   if (el.type !== 'shape') return false;
   const session = (el as { session?: unknown }).session;
   return (
-    typeof session === 'object' && session !== null && !isSessionTool((session as { tool?: unknown }).tool)
+    typeof session === 'object' &&
+    session !== null &&
+    !isSessionTool((session as { tool?: unknown }).tool)
   );
 };
 

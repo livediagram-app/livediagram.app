@@ -121,7 +121,7 @@ export const ALTERNATIVES: Alternative[] = [
       'Run the lesson on the board: a shared timer, dot votes, a temperature check and a picker that chooses someone at random so nobody has to volunteer.',
       'Around 190 emoji stickers and 32 word badges like APPROVED and WIP, for reacting to work and marking it.',
       'Switch the same tab to Diagram mode when a sketch needs to become a tidy flowchart, org chart or plan, and draw it in the Marker finish so it still looks like it came off the whiteboard.',
-      '135 templates, including retrospectives, Lean Coffee, town hall Q&A and event storming boards.',
+      '135 templates, including retrospectives, brainstorms and event storming boards.',
       'Free and MIT-licensed, so no future retirement can take your boards away: you can always run your own copy.',
     ],
     sections: [
@@ -142,8 +142,8 @@ export const ALTERNATIVES: Alternative[] = [
       {
         heading: 'A whiteboard that grows into more',
         paragraphs: [
-          'Draw mode is a plain whiteboard, close to what Whiteboard users are used to: pick a marker, draw, erase, add text and shapes. But the same tab can switch to Diagram mode when a sketch needs structure, with shapes and arrows that stay attached as you move things, and the Marker or Sketch finish keeps that structure looking hand-drawn. A document holds as many tabs as you need, grouped into folders, and Presentation mode turns elements from any tab into a slide deck, or Pages makes slides from ready-made layouts.',
-          'For sessions, switch a tab to Workshop, the mode for running a room: there are templates for retrospectives, Lean Coffee and town hall Q&A, and whoever runs the room has a shared timer and dot votes.',
+          'Draw mode is a plain whiteboard, close to what Whiteboard users are used to: pick a marker, draw, erase, add text and shapes. But the same tab can switch to Diagram mode when a sketch needs structure, with shapes and arrows that stay attached as you move things, and the Marker or Sketch finish keeps that structure looking hand-drawn. A document holds as many tabs as you need, grouped into folders, and Pages makes slides from ready-made layouts.',
+          'For sessions, switch a tab to Workshop, the mode for running a room: there are templates for retrospectives and brainstorms, and whoever runs the room has a shared timer and dot votes.',
         ],
       },
       {
@@ -236,7 +236,7 @@ export const ALTERNATIVES: Alternative[] = [
         paragraphs: [
           'Miro grew into a broad workspace: boards, workshops, docs, tables, video walkthroughs and a marketplace of apps. liveplanner covers the same ground in one document with tabs, and each tab works in one of five modes. Diagram for structure, with arrows that stay attached and re-route as you move things. Draw for freehand whiteboarding with pressure-sensitive markers. Workshop for running the session itself: timers and dot votes. Pages for designed pages: infographics, written documents, slide decks and logos. Plan for boards of cards with WIP limits and swimlanes, beside Sheets with real formulas that can read the cards, forms whose responses arrive as cards or rows, and dashboards that bring them together.',
           'Every tab also has a finish, the way it is drawn: Flexible by default, Professional for crisp, print-ready work, Sketch for pencil on paper and Marker for felt-tip on a whiteboard. A look sets the theme, finish, font and canvas pattern in one click, and switching it never changes the content underneath.',
-          'Workshops are built in rather than bolted on. Whoever runs the room has a shared timer, dot-voting and temperature checks, and templates cover retrospectives, Lean Coffee, town hall Q&A and event storming, including turning a photo of a sticky-note wall into notes. When the session ends, the actions it produced are assigned on the board and the plan picks up on the next tab.',
+          'Workshops are built in rather than bolted on. Whoever runs the room has a shared timer, dot-voting and temperature checks, and templates cover retrospectives, brainstorms and event storming, including turning a photo of a sticky-note wall into notes. When the session ends, the actions it produced are assigned on the board and the plan picks up on the next tab.',
         ],
       },
       {
@@ -680,7 +680,7 @@ export const ALTERNATIVES: Alternative[] = [
       {
         heading: 'Workshops built in',
         paragraphs: [
-          'Running a session needs more than sticky notes. liveplanner gives sessions a mode of their own, Workshop, and with it a shared timer and dot-voting, and a temperature check shows how the room feels. There are templates for retrospectives in five formats, Lean Coffee, town hall Q&A and event storming, and comments and assigned actions keep the follow-ups with the board.',
+          'Running a session needs more than sticky notes. liveplanner gives sessions a mode of their own, Workshop, and with it a shared timer and dot-voting, and a temperature check shows how the room feels. There are templates for retrospectives in five formats, brainstorms and event storming, and comments and assigned actions keep the follow-ups with the board.',
         ],
       },
       {

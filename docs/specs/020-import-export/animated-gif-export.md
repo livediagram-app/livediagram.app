@@ -26,16 +26,13 @@ The GIF card opens an options-and-download panel, like PNG's, with the shared ba
   page, which page, by its label. The line under it says what the download is: "One GIF of the 3 pages in turn,
   looping." (All pages with two or more), otherwise "One GIF of the page, looping."
 - **Each page holds**: one slider for every page, **1 to 20 seconds** in half-second steps, reading its value
-  ("3 s"). It starts at the deck's **Auto-advance** interval when that is on (clamped to the range), otherwise
-  **3 seconds**. The hold is the page's whole time in the GIF, its transition included.
+  ("3 s"). It starts at **3 seconds**. The hold is the page's whole time in the GIF, its transition included.
 - **Size**: a segmented control, **Small**, **Medium**, **Large**: the page's longer side at **480**, **960** or
   **1440** px, the other side in proportion. Starts on **Medium**. Every frame of a GIF is the picked page's size;
   with All pages, a page of another shape (a 4:3 slide in a 16:9 deck, a portrait infographic) is fitted inside it,
   centred on white, never cropped.
-- **Between pages** (All pages with two or more pages): a one-line note naming the deck's transition and speed, as
-  the Slide Deck settings hold them ("Between pages: Fade, Normal, from the Slide Deck settings."; with None, "Between
-  pages: None, from the Slide Deck settings."), so the GIF moves between pages as presenting does. It is not changed
-  here.
+- **Between pages** (All pages with two or more pages): a one-line note, "Between pages: a slide.": each page slides
+  on to the next at a fixed 380 ms. It is not changed here.
 - **Estimated size**: "About 3.4 MB", worked out from a sample frame of the chosen pages at the chosen size, and
   updated as the options change. Above **15 MB** it goes on "About 20.0 MB. Large for chat and email: try Small or a
   shorter hold."

@@ -268,7 +268,7 @@ describe('deriveCanvasSelection', () => {
   });
 });
 
-// A fixed-size element (docs/specs/009-elements/mode-button.md buttons, docs/specs/021-event-storming/event-storming.md event-storming notes)
+// A fixed-size element (docs/specs/012-collaboration/session-button.md buttons, docs/specs/021-event-storming/event-storming.md event-storming notes)
 // advertises NO resize affordance — and the edge "anchor" grips are resize
 // grips today (arrows are drawn from the quick-connect menu now), so they
 // have to disappear with the corner handles. Leaving them behind is exactly

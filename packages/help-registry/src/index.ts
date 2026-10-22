@@ -183,7 +183,7 @@ export const categories: Category[] = [
     title: 'Canvas',
     description:
       'Master the infinite canvas: place, select, link, annotate, layer, rotate, animate, lock and theme elements, undo changes, and start from templates.',
-    articleCount: 29,
+    articleCount: 30,
     kind: 'feature',
     groups: [
       'Basics',
@@ -1371,6 +1371,17 @@ export const articles: Article[] = [
     group: 'Modes and Boards',
   },
   {
+    slug: 'workshop-mode',
+    title: 'Workshop Mode',
+    description:
+      'Run a session on any tab: retros, brainstorms and workshops, with timers and votes.',
+    keywords:
+      'workshop mode facilitate facilitate mode session sessions run a session workshop meeting team meeting retro retrospective crazy eights brainstorm board workshop board kickoff timer countdown stopwatch vote dot vote voting temperature check fist of five picker random spin stickers emoji sticker badge collaborate category session strip blank session editor mode switch shift+d where did the timer go where are stickers missing tools moved',
+    category: 'Canvas',
+    categorySlug: 'canvas',
+    group: 'Modes and Boards',
+  },
+  {
     slug: 'items',
     title: 'Items',
     description:
@@ -1567,10 +1578,10 @@ export const articles: Article[] = [
   },
   {
     slug: 'exporting-pages',
-    title: 'Exporting and Presenting Pages',
-    description: 'Every page or one page as a PDF, images or an animated GIF, and pages as slides.',
+    title: 'Exporting Pages',
+    description: 'Every page or one page as a PDF, images or an animated GIF.',
     keywords:
-      'export download pdf png svg gif animated gif animation moving image loop image zip all pages one page import json print printable pages page pages infographic slides slide deck present presentation add as slide page slide deck from pages',
+      'export download pdf png svg gif animated gif animation moving image loop image zip all pages one page import json print printable pages page pages infographic slides',
     category: 'Canvas',
     categorySlug: 'canvas/pages-mode',
     parentSlug: 'pages-mode',
@@ -1588,9 +1599,9 @@ export const articles: Article[] = [
   {
     slug: 'slide-pages',
     title: 'Slide Pages',
-    description: 'Landscape 16:9 or 4:3 pages with slide layouts, added to the deck in one press.',
+    description: 'Landscape 16:9 or 4:3 pages with slide layouts.',
     keywords:
-      'slide slides deck presentation present powerpoint keynote 16:9 4:3 widescreen classic landscape layouts title slide bullets agenda thank you add to slide deck hide show eye presenter',
+      'slide slides deck presentation present powerpoint keynote 16:9 4:3 widescreen classic landscape layouts title slide bullets agenda thank you',
     category: 'Canvas',
     categorySlug: 'canvas/pages-mode',
     parentSlug: 'pages-mode',
@@ -2623,7 +2634,7 @@ export const articles: Article[] = [
     title: 'Private Voting',
     description: 'Hide cursors and hide the running counts for a blind vote.',
     keywords:
-      'private privacy secret blind anonymous hide cursors pointers laser hide running counts totals tallies pile on bandwagon switches fixed',
+      'private privacy secret blind anonymous hide cursors pointers hide running counts totals tallies pile on bandwagon switches fixed',
     category: 'Collaboration',
     categorySlug: 'collaboration/session-tools/voting',
     parentSlug: 'voting',

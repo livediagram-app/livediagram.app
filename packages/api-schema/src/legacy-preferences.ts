@@ -8,8 +8,6 @@ const RENAMED: Readonly<Record<string, string>> = {
   // migration 0097): a lost seen-guard would offer the tour again.
   illustrateTourSeen: 'pagesTourSeen',
   illustrateTourKinds: 'pagesTourKinds',
-  // Facilitate mode became Workshop mode (migration 0098), for the same reason.
-  facilitateTourSeen: 'workshopTourSeen',
 };
 
 // Preference keys whose feature is gone (docs/specs/007-editor/user-preferences.md "Retired keys"):
@@ -27,6 +25,12 @@ const RETIRED: ReadonlySet<string> = new Set([
   // "Always save new documents in <place> and skip this step": the New Document wizard has no Location step to skip
   // (docs/specs/007-editor/new-document-route.md "One-step wizard").
   'skipLocationStep',
+  // The Workshop and Avatar tours' seen-guards (the Workshop tour was the Facilitate tour) and the presenter
+  // settings, gone with Workshop mode's facilitation features (docs/specs/012-collaboration/session-tools.md).
+  'facilitateTourSeen',
+  'workshopTourSeen',
+  'avatarTourSeen',
+  'presentation',
 ]);
 
 export function upgradeLegacyPreferences<T extends Record<string, unknown>>(prefs: T): T {

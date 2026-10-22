@@ -123,11 +123,7 @@ export async function apiSaveDocumentMeta(
   shareCode: string | null = null,
 ): Promise<void> {
   if (await isOfflineId(d.id)) {
-    await offlineSaveDocumentMeta(
-      d.id,
-      { name: d.name, tabs: d.tabs },
-      Date.now(),
-    );
+    await offlineSaveDocumentMeta(d.id, { name: d.name, tabs: d.tabs }, Date.now());
     return;
   }
   const body = JSON.stringify({

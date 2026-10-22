@@ -32,10 +32,7 @@ const tab = {
 const row = layOutPages(pagesOf(tab));
 const fitOf = (pageId: string) => computeFitBelow(SIZE, row.find((p) => p.id === pageId)!.rect, 0);
 
-function mount(
-  viewport: ViewportStore,
-  opts: { mode?: 'pages' | 'diagram' } = {},
-) {
+function mount(viewport: ViewportStore, opts: { mode?: 'pages' | 'diagram' } = {}) {
   const canvas = document.createElement('main');
   Object.defineProperty(canvas, 'offsetWidth', { value: SIZE.width });
   Object.defineProperty(canvas, 'offsetHeight', { value: SIZE.height });

@@ -31,11 +31,7 @@ const DRIVER_LINES = 3;
 const DRIVER_LINE = 15.8;
 const DRIVER_PITCH = 21.8;
 
-export function svgCollabFace(
-  el: Face,
-  label: string,
-  color: string,
-): string | null {
+export function svgCollabFace(el: Face, label: string, color: string): string | null {
   const title = label.trim();
   switch (el.shape) {
     case 'temperature':

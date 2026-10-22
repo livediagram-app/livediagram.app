@@ -280,7 +280,7 @@ export function buildDrawnBoxed(
                   createVideo(startX, startY, intent.provider)
                 : createImage(startX, startY);
   const tapSize = inheritedSizeFor(base, inheritFrom);
-  // A fixed-size kind (docs/specs/009-elements/mode-button.md) ignores the drag entirely: dragging one out
+  // A fixed-size kind (docs/specs/012-collaboration/session-button.md) ignores the drag entirely: dragging one out
   // still places it, at the one size it is meant to be.
   const fixedSize = (base.type === 'shape' && isFixedSizeShape(base.shape)) || esBoardSticky;
   // Shared with the live preview so the outline the user sizes against is the
@@ -382,8 +382,7 @@ export function buildDrawnBoxed(
     ...(intent.type === 'shape' && intent.iconId && isTechIconId(intent.iconId)
       ? { aspectLocked: false }
       : {}),
-    // The palette offers a tile per session tool and per reaction (docs/specs/012-collaboration/session-button.md,
-    // docs/specs/009-elements/reaction-pad.md), so the choice arrives with the intent and is applied here
+    // The palette offers a tile per session tool (docs/specs/012-collaboration/session-button.md), so the choice arrives with the intent and is applied here
     // rather than left on the factory default for the user to go and change.
     ...(intent.type === 'shape' && intent.kind === 'session-button' && intent.session
       ? {

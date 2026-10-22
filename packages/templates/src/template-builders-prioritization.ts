@@ -264,7 +264,8 @@ export function buildPrioritizationMatrix(cx: number, cy: number): Element[] {
     ...createSticky(railX, sizeY + 40),
     width: railW,
     height: estimateH,
-    label: 'How big is the guided tour?\n\nXS · S · M · L · XL: agree one size and write it on the note.',
+    label:
+      'How big is the guided tour?\n\nXS · S · M · L · XL: agree one size and write it on the note.',
     textSize: 'sm',
     ...content,
   });

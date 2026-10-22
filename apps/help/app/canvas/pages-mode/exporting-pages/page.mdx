@@ -4,22 +4,22 @@ import { helpMetadata } from '@/lib/seo';
 import { ExportPagePickerScene } from '@/components/illustrations/pages';
 
 export const metadata = helpMetadata({
-  title: 'Exporting and Presenting Pages',
+  title: 'Exporting Pages',
   description:
-    'Export pages as a PDF, PNG, SVG or animated GIF of every page or just one, each exactly its sheet, and turn them into slides to present.',
+    'Export pages as a PDF, PNG, SVG or animated GIF of every page or just one, each exactly its sheet.',
   path: '/help/canvas/pages-mode/exporting-pages/',
 });
 
 <ArticleLayout
-  title="Exporting and Presenting Pages"
-  description="Every page or one page as a PDF, images or an animated GIF, and pages as slides."
+  title="Exporting Pages"
+  description="Every page or one page as a PDF, images or an animated GIF."
   categoryTitle="Canvas"
   categorySlug="canvas"
   parentArticle={{ title: 'Pages Mode', slug: 'pages-mode' }}
   subArticles={getSubArticles('pages-mode').filter((a) => a.slug !== 'exporting-pages')}
 >
 
-In Pages mode, export and present work in **pages**, not the content of the whole tab.
+In Pages mode, export works in **pages**, not the content of the whole tab.
 
 ## Exporting
 
@@ -44,12 +44,12 @@ The **Isometric view** and **Background pattern** switches are not offered for p
 
 ### Animated GIF
 
-**GIF** makes one animated image that plays anywhere a picture does: a chat message, an email, a README or a social post. Everything that moves on a page moves in the GIF, exactly as it does on the canvas: an animated background mid-motion, and every element animation. A page's animations start from the beginning each time it comes round, as when a slide opens while presenting.
+**GIF** makes one animated image that plays anywhere a picture does: a chat message, an email, a README or a social post. Everything that moves on a page moves in the GIF, exactly as it does on the canvas: an animated background mid-motion, and every element animation. A page's animations start from the beginning each time it comes round.
 
 - **Pages**: **All pages** plays them in order and loops back to the first; **One page** loops that page alone.
-- **Each page holds**: how long every page shows, from 1 to 20 seconds. It starts at the deck's **Auto-Advance** time when that is on, otherwise 3 seconds.
+- **Each page holds**: how long every page shows, from 1 to 20 seconds, 3 seconds to start with.
 - **Size**: **Small**, **Medium** or **Large**, the page's longer side at 480, 960 or 1440 pixels.
-- Between pages, the GIF uses the transition and speed set in the **Slide Deck** settings, so it moves from page to page as your presentation does, including from the last page back to the first.
+- Between pages, each page slides on to the next, including from the last page back to the first.
 
 The panel shows a still preview of the page and an estimate of the file size, with a note when it is large for chat and email. **Download GIF** makes the file, showing its progress; **Cancel** stops it and nothing downloads. A GIF can run up to 3 minutes in all; past that, shorten the hold or export one page. A page where nothing moves costs a single frame, so a GIF of mostly still pages stays small.
 
@@ -58,22 +58,5 @@ GIFs are made to move, so your **Reduce Motion** setting never stills one. A log
 ## Importing
 
 In Pages mode, **Import** takes **JSON** only: a liveplanner tab, pages and all. Mermaid, Markdown, Excalidraw and draw.io files are diagrams; switch to Diagram mode to import those.
-
-## Turning Pages Into Slides
-
-Pages are often presented, so their deck is one press away: in the bottom-right corner, where the Layers button sits in the other modes, the **Slides** button opens the Slide Deck panel just above it.
-
-In Pages mode every slide page is already in the deck, in page order ([Slide Pages](/help/canvas/pages-mode/slide-pages/#the-deck-button)). Any other page joins **a page at a time**: pick it from the list and press **Add as slide**. (Adding slides is for Editors: a Viewer or Participant can't.) A page slide is the page itself:
-
-- It shows whatever is on the page **now**, so it follows your edits, a new layout, a resize or a reorder without you touching the deck.
-- It is framed to **exactly** the page.
-- Its row reads the tab and the page ("Tab 1 · Page 2 · A4 · Portrait · Article"), and its thumbnail is the page on its background.
-- Delete the page and the slide stays, empty, so you can see it and fix it.
-
-Page slides sit in the same deck as any other slides, so a deck can mix infographic pages with slides built from other tabs. Name them, add notes, hide or reorder them as in Building a Deck.
-
-## Presenting
-
-Press **Present** and each page fills the screen on its own: no labels, cogs or buttons around it, and none of its neighbouring pages beside it. Everything else about presenting is as for any deck; see Presenting.
 
 </ArticleLayout>

@@ -252,11 +252,7 @@ function TileButton({
       description={def.description}
       onClick={onClick}
       dragKind={a.type === 'shape' ? a.kind : undefined}
-      dragChoice={
-        a.type === 'shape'
-          ? (a.session ?? a.plan ?? a.variant)
-          : undefined
-      }
+      dragChoice={a.type === 'shape' ? (a.session ?? a.plan ?? a.variant) : undefined}
       draggable={otherDrag !== undefined || undefined}
       onDragStart={otherDrag}
       filled={def.filled}

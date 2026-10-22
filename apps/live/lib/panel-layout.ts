@@ -38,13 +38,7 @@ export const PANEL_CORNERS: readonly PanelCorner[] = [
   'bottom-right',
 ];
 
-export const PANEL_IDS: readonly PanelId[] = [
-  'collaborate',
-  'ai',
-  'minimap',
-  'eraser',
-  'format',
-];
+export const PANEL_IDS: readonly PanelId[] = ['collaborate', 'ai', 'minimap', 'eraser', 'format'];
 
 // Internal: a free panel's pixel position. Not exported — callers pass
 // plain { x, y } object literals to freePanel().

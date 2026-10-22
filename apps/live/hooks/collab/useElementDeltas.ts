@@ -8,7 +8,7 @@ import { applyDeltaToTabs } from '@/app/document/[id]/room-op-apply';
 // Applied to our own tab through the same `applyDeltaToTabs` every receiver
 // runs, and sent straight down the socket rather than left to the 600 ms
 // autosave: the autosave ships whole elements, which is what let two people
-// pressing the same done check overwrite each other. The autosave still PUTs
+// pressing the same temperature check overwrite each other. The autosave still PUTs
 // the tab to D1, and skips the whole-element broadcast when a delta was the
 // only change (tabBroadcastOps). The socket strips a comment's author id on
 // the way out (room.ts); our own copy keeps it, for our delete button.

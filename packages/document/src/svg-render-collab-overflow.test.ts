@@ -32,7 +32,8 @@ describe('fitLine', () => {
 
 describe('collab card title', () => {
   it('takes one line, cut short of the aside', () => {
-    const long = 'A very long temperature check title that would run under the count and off the card';
+    const long =
+      'A very long temperature check title that would run under the count and off the card';
     const el = {
       ...createShape('temperature', 0, 0),
       label: long,

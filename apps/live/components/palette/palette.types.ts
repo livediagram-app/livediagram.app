@@ -5,12 +5,7 @@ import type { PendingDraw } from '@/lib/draw-mode';
 import type { PaletteTint } from '@/components/palette/palette-controls';
 import type { EsBoardControls } from '@/components/palette/EventStormingBoardRows';
 
-export type CanvasTool =
-  | 'pan'
-  | 'select'
-  | 'eraser'
-  | 'format'
-  | 'isometric';
+export type CanvasTool = 'pan' | 'select' | 'eraser' | 'format' | 'isometric';
 
 // The palette strip's inputs (docs/specs/007-editor/toolbar-layout.md): the canvas tool, the add
 // handlers every tile calls, and the tab's state the tiles read.

@@ -16,7 +16,10 @@ describe('migrateLegacySessionButtons', () => {
   });
 
   it('leaves a known tool, and an unchanged list, alone', () => {
-    const vote = { ...createShape('session-button', 0, 0), session: { tool: 'vote', dots: 3 } } as Element;
+    const vote = {
+      ...createShape('session-button', 0, 0),
+      session: { tool: 'vote', dots: 3 },
+    } as Element;
     const list = [vote];
     expect(migrateLegacySessionButtons(list)).toBe(list);
   });

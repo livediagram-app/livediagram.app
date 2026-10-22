@@ -63,7 +63,6 @@ const KEYS = {
   // on reconnect and matches nothing that was saved. This sits between
   // the two: stable like the owner id, worthless like the presence id.
   collabKey: `${NS}collab-key`,
-  collabSecret: `${NS}collab-secret`,
 } as const;
 
 // The keys, for the guard that every one a browser repair must keep is on its kept list
@@ -185,17 +184,6 @@ export function ensureCollabKey(): string {
   if (stored) return stored;
   const fresh = crypto.randomUUID();
   writeLocalStorageSafe(KEYS.collabKey, fresh);
-  return fresh;
-}
-
-// The secret half of the collab key (docs/specs/012-collaboration/vote-integrity.md): a per-browser random that
-// proves a live poll answer under our collab key is ours. The key is public (it rides the roster); this never leaves
-// the browser except inside our own poll answers, which the room checks and never relays.
-export function ensureCollabSecret(): string {
-  const stored = readLocalStorageSafe(KEYS.collabSecret);
-  if (stored) return stored;
-  const fresh = crypto.randomUUID();
-  writeLocalStorageSafe(KEYS.collabSecret, fresh);
   return fresh;
 }
 

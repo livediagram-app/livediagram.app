@@ -107,7 +107,6 @@ const gifTotalSeconds = (pageCount: number, holdSeconds: number): number => page
 export const gifTooLong = (pageCount: number, holdSeconds: number): boolean =>
   gifTotalSeconds(pageCount, holdSeconds) > GIF_MAX_TOTAL_S;
 
-
 /** A frame's pixel size: the page's longer side at the size's length, the other in proportion. */
 export function gifFrameSize(
   page: { width: number; height: number },

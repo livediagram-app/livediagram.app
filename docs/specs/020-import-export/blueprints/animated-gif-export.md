@@ -16,7 +16,7 @@ canvas DOM it captures); nothing in it is shared with another app.
 | the snapshot    | `PageSnapshot` (`lib/gif-export/page-snapshot.ts`)                                 |
 | editor-only     | `GIF_OMIT_ATTR` / `GIF_OMIT_SELECTOR` (`lib/gif-export/gif-omit.ts`), `GifOmit`    |
 | a failure       | `GifExportError` + `GifExportErrorCode` (`lib/gif-export/gif-export-error.ts`)     |
-| the transition  | `SlideTransition` + `SlideSpeed` from `lib/presentation-config.ts`                 |
+| the transition  | `SlideTransition` (`lib/gif-export/gif-timeline.ts`), fixed at `'slide'`, 380 ms   |
 
 ## Constants and configuration
 
@@ -64,8 +64,7 @@ t: holdMs + t }`: the outgoing page was shown for its whole hold and its clock r
    frame at `t = tr` whose delay runs to the page's end. With `tr = 0` a still page is exactly one frame.
 6. `gifTotalSeconds(pageCount, holdSeconds) = pageCount * holdSeconds`; `gifTooLong(...)` is
    `> GIF_MAX_TOTAL_S`.
-7. `gifHoldDefault(autoAdvanceSeconds)`: `autoAdvanceSeconds > 0` clamped to `[GIF_HOLD_MIN_S, GIF_HOLD_MAX_S]`,
-   else `GIF_HOLD_DEFAULT_S`.
+7. The hold starts at `GIF_HOLD_DEFAULT_S`.
 8. `gifFrameSize(page.rect, size)`: the long side `GIF_SIZE_LONG_SIDE[size]`, the other `round(long * short /
 longSide)`, at least 1.
 
@@ -160,8 +159,8 @@ palette?: key }`, `finish`. Out: `ready` (on `start`: the module loaded and ran)
 
 ### The hook (`useGifExport`) and panel (`GifExportPanel`)
 
-Both in `components/dialogs/gif/`. State: the presentation config (`loadPresentationConfig()`, read once), `holdSeconds`
-(`gifHoldDefault(config.autoAdvanceSeconds)`), `size` (`'medium'`), `scope` (`'all'`), `phase` = `idle |
+Both in `components/dialogs/gif/`. State: `holdSeconds`
+(`GIF_HOLD_DEFAULT_S`), `size` (`'medium'`), `scope` (`'all'`), `phase` = `idle |
 making(progress) | error(code)`, `estimate` = `{ bytes, previewUrl } | null`, an `AbortController`. The page (One
 page's, and the preview's) is the dialog's `page`, picked with the dialog's `onPick`. `loops = scope === 'all' &&
 pages.length > 1`; the transition is `config.transition`, its length `SLIDE_SPEEDS[config.speed].ms`.
@@ -195,8 +194,7 @@ pages.length > 1`; the transition is `config.transition`, its length `SLIDE_SPEE
 
 ## Data and persistence
 
-Nothing is stored. The hold, size and scope are the panel's state, reset each time the dialog opens. The deck's
-transition and Auto-advance are read, never written.
+Nothing is stored. The hold, size and scope are the panel's state, reset each time the dialog opens.
 
 ## Errors and edge cases
 
@@ -275,7 +273,7 @@ frames=<n>`, `done frames=<written> bytes=<n> ms=<n>`, `cancelled`, `failed <cod
 | Transition frames, easing, outgoing clock, loop seam                      | `gif-timeline.test.ts`                                          |
 | Still page is one frame (plus transition)                                 | `gif-timeline.test.ts`, `make-gif.test.ts`                      |
 | One page: no transition                                                   | `gif-timeline.test.ts`                                          |
-| Hold default from Auto-advance, clamped                                   | `gif-timeline.test.ts`, `GifExportPanel.test.tsx`               |
+| Hold starts at three seconds                                              | `gif-timeline.test.ts`, `GifExportPanel.test.tsx`               |
 | 3 minute cap                                                              | `gif-timeline.test.ts`, `GifExportPanel.test.tsx`               |
 | Frame size by long side; size label                                       | `gif-timeline.test.ts`                                          |
 | Pin rules; reduced-motion CSS dropped or unwrapped; grouping rules kept   | `snapshot-css.test.ts`                                          |

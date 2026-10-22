@@ -147,9 +147,8 @@ export function usePortalSetters({
   };
 
   // The remaining Behaviour settings are ordinary active-tab patches on the
-  // element the menu is acting on: what a session button starts (docs/specs/012-collaboration/session-button.md),
-  // whether a cover is off for everyone (docs/specs/009-elements/reveal-zone.md), and where a picker draws
-  // its candidates from (docs/specs/012-collaboration/picker.md).
+  // element the menu is acting on: what a session button starts (docs/specs/012-collaboration/session-button.md)
+  // and where a picker draws its candidates from (docs/specs/012-collaboration/picker.md).
   const patchTarget = (patch: Partial<ShapeElement>, kind: string, telemetry: string) => {
     const tab = tabs.find((t) => t.id === activeId);
     const ids = currentSelectionIds();

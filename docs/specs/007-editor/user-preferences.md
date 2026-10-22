@@ -438,6 +438,9 @@ Missing key === undefined === default behaviour. Concretely:
   Document wizard's Location step ([New document route](new-document-route.md#one-step-wizard)): the wizard
   never asks where a document goes, so a stored place is dropped the same way and new documents follow the
   [default folders](../013-workspace/default-folders.md).
+  `workshopTourSeen` (and its older name `facilitateTourSeen`), `avatarTourSeen` and the presenter settings'
+  `presentation` went with Workshop mode's facilitation features (removed 2026-10-22): the Workshop and Avatar
+  tours and Presentation mode are gone, so a stored value is dropped the same way.
 - `quickAddOnHover` undefined / false → click to open an element's quick-add
   `+` menu (the default; hover-open can feel twitchy, so it's opt-in). `true`
   opens it on hover instead, closing a beat after the pointer leaves both the

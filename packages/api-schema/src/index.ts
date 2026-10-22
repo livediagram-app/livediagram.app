@@ -460,8 +460,8 @@ export type ParticipantPresence = {
   // no split.
   besideTabId?: string;
   // The id this participant WRITES INTO THE DOCUMENT for anything recorded
-  // per person — today the `responses` on a done check / estimate card /
-  // temperature check (docs/specs/012-collaboration/participant-responses.md).
+  // per person — today the `responses` on a temperature check
+  // (docs/specs/012-collaboration/participant-responses.md).
   //
   // It exists because `id` above cannot do that job. `id` is minted fresh by
   // the room for every socket (docs/specs/015-api/public-api-and-tokens.md §6), so it is unforgeable but also
