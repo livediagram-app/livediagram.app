@@ -21,10 +21,8 @@ import { isInMenuSurface, isPressableControl } from '@liveplanner/ui';
 import { anyModalOpen } from '@/lib/modal-guard';
 import { isMobileViewportSync } from '@/lib/responsive';
 import {
-  EDIT_KEYS,
   runModShortcut,
   coveredKeyRole,
-  PARTICIPANT_KEYS,
   VIEW_TOOL_KEYS,
   type EditorKeyboardShortcutsDeps,
 } from './editor-shortcut-keys';
@@ -33,7 +31,7 @@ import { isTypingTarget, passesHistoryChords } from '@/lib/typing-target';
 import { altGraphHeld } from '@/lib/composed-key';
 
 // Re-exported so existing importers (the unit test) keep resolving.
-export { EDIT_KEYS, VIEW_TOOL_KEYS, type ShortcutAction } from './editor-shortcut-keys';
+export { VIEW_TOOL_KEYS, type ShortcutAction } from './editor-shortcut-keys';
 
 export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): void {
   // Single mutable ref the keydown listeners read from. Repointed
@@ -336,29 +334,11 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         }
       }
 
-      // Non-mutating view tools (Select / Hand / Isometric /
-      // Zen): before the read-only gate so view-role visitors get them.
+      // Zen, the one plain key left: non-mutating, so every role gets it.
       const viewAction = VIEW_TOOL_KEYS[lower];
       if (viewAction) {
         e.preventDefault();
         viewAction(live);
-        return;
-      }
-
-      if (live.isReadOnly) {
-        // A Participant's tiles show their keys, and each tile works as an Editor's does (share-roles.md).
-        const add = live.participant ? PARTICIPANT_KEYS[lower] : undefined;
-        if (add) {
-          e.preventDefault();
-          add(live);
-        }
-        return;
-      }
-      // Element adds (shapes / Text / Note / Arrow), editors only.
-      const editAction = EDIT_KEYS[lower];
-      if (editAction) {
-        e.preventDefault();
-        editAction(live);
         return;
       }
     };

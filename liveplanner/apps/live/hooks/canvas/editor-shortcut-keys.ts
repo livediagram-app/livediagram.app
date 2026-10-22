@@ -149,54 +149,15 @@ export type EditorKeyboardShortcutsDeps = {
   enabled: boolean;
 };
 
-// Plain-key (no modifier) tool + element shortcuts, as lookup tables so
-// the letter and number aliases share one action each (no if-ladder to
-// keep in sync). Keys are matched lowercased; number aliases mirror the
-// Excalidraw layout. Split at the read-only gate:
-//
-//   VIEW_TOOL_KEYS: non-mutating view tools, allowed for view-role.
-//   EDIT_KEYS:      mutating tools / element adds, editors only.
-//
-// Image (`9`) is handled outside the table because its callback is
-// nullable (guest deploys without an api worker hide it).
-// Exported for the unit test, which asserts the key -> action mapping
-// against a spy `live` (the effect itself needs jsdom, which this
-// workspace's node-env vitest doesn't run; see docs/specs/003-system-architecture/testing.md).
+// Plain-key (no modifier) shortcuts, as a lookup table. liveplanner's tabs are all Boards, Sheets, Dashboards and
+// Forms, whose own key handlers own the letters and digits; the canvas tool and element-add keys (V, H, I, R, the
+// number row...) went with the palette, and on an empty tab they armed a diagram tool. Only Zen is left, and it is
+// non-mutating, so it runs for every role.
+// Exported for the unit test, which asserts the key -> action mapping against a spy `live`.
 export type ShortcutAction = (live: EditorKeyboardShortcutsDeps) => void;
 
 export const VIEW_TOOL_KEYS: Record<string, ShortcutAction> = {
-  v: (l) => l.setCanvasTool('select'),
-  // The legacy Select alias (pre-`V` standard).
-  s: (l) => l.setCanvasTool('select'),
-  '1': (l) => l.setCanvasTool('select'),
-  h: (l) => l.setCanvasTool('pan'),
-  i: (l) => l.setCanvasTool('isometric'), // docs/specs/008-canvas/isometric-view.md: pans like Hand, non-mutating
   z: (l) => l.onToggleZen(), // docs/specs/007-editor/zen-mode.md focus mode
-};
-
-export const EDIT_KEYS: Record<string, ShortcutAction> = {
-  f: (l) => l.addShape('frame'),
-  r: (l) => l.addShape('square'),
-  '2': (l) => l.addShape('square'),
-  o: (l) => l.addShape('circle'),
-  '4': (l) => l.addShape('circle'),
-  d: (l) => l.addShape('diamond'),
-  '3': (l) => l.addShape('diamond'),
-  c: (l) => l.addShape('cylinder'),
-  g: (l) => l.addShape('parallelogram'),
-  t: (l) => l.addText(),
-  '8': (l) => l.addText(),
-  n: (l) => l.addSticky(),
-  a: (l) => l.addArrow(),
-  '5': (l) => l.addArrow(),
-};
-
-// A Participant's plain keys (docs/specs/013-workspace/share-roles.md "The Participant palette"): what its tiles add, by
-// the keys the tiles show, and nothing else of EDIT_KEYS. The commit guard still decides what lands.
-export const PARTICIPANT_KEYS: Record<string, ShortcutAction> = {
-  n: (l) => l.addSticky(),
-  t: (l) => l.addText(),
-  '8': (l) => l.addText(),
 };
 
 // Cmd / Ctrl modified shortcuts. Returns true when it consumed the event.
@@ -210,7 +171,7 @@ export const PARTICIPANT_KEYS: Record<string, ShortcutAction> = {
 // The caller keeps what only it can know: that a modal isn't open, that the
 // event wasn't already handled, and that focus isn't in a text field. It also
 // keeps swallowing a modified key we do NOT handle, so a stray Cmd+J can't
-// fall through to the plain-key table and drop a shape.
+// fall through to the plain-key table.
 //
 // Cmd+V is intentionally absent. The browser's native `paste` event fires on
 // Cmd/Ctrl+V and carries the system clipboard (text, files, images);

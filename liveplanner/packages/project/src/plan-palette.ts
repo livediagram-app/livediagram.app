@@ -65,7 +65,7 @@ const DARK: PlanPalette = {
   muted: '#94a3b8',
   warning: '#fbbf24',
   warningBg: 'rgba(251, 191, 36, 0.14)',
-  focus: '#60a5fa',
+  focus: '#a78bfa', // brand violet-400
 };
 
 const LIGHT: PlanPalette = {
@@ -79,7 +79,7 @@ const LIGHT: PlanPalette = {
   muted: '#5d6d83',
   warning: '#b45309',
   warningBg: 'rgba(180, 83, 9, 0.1)',
-  focus: '#2563eb',
+  focus: '#7c3aed', // brand violet-600
 };
 
 // Readable ink reaches this contrast on its fill (WCAG AA for body text).
