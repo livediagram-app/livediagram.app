@@ -96,12 +96,12 @@ Each step is its own PR, and both products build and pass their tests after ever
 
 ## Before step 1: deciding when to switch over
 
-Today the original repos (`~/Code/livediagram`, `~/Code/liveplanner`) are still where work
-happens. liveplanner has agents and dev servers running in it right now. Until they're cut over:
+liveplanner has switched over: its work happens here, and the old `~/Code/liveplanner` repo is
+gone (removed on 2026-10-22, after pulling its `main` at `34cc18d0`). livediagram's original repo
+(`~/Code/livediagram`) is still where its work happens. Until it's cut over:
 
-- the copies here go stale. Refresh them with
-  `git subtree pull --prefix=liveplanner ../liveplanner main` (and the same for livediagram from
-  its `origin/main`);
+- the copy here goes stale. Refresh it with
+  `git subtree pull --prefix=livediagram ../livediagram main` (from its `origin/main`);
 - that only stays painless while files keep their places. Once step 1 starts moving files,
   pulls start to conflict.
 
