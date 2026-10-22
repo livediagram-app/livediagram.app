@@ -303,7 +303,7 @@ function ShellChrome({ children }: { children: ReactNode }) {
       {/* Move-destination modal (docs/specs/013-workspace/folders.md + docs/specs/013-workspace/team-shared-documents.md): the shared
           placement browser (docs/specs/006-document/offline-mode.md's Save In UI) for every document
           (personal or team) and for folder re-parenting. It offers
-          "My Documents" plus each team as a space (for document moves);
+          "My Work" plus each team as a space (for document moves);
           `moveDocumentTo` routes the pick from the subject's current
           placement. Folder moves are personal-only, so they pass no
           teams. The New Folder tile creates in the picked scope. */}

@@ -30,8 +30,8 @@ Scope, by file:
 
 | Term        | Identifier                                       | Meaning                                                  |
 | ----------- | ------------------------------------------------ | -------------------------------------------------------- |
-| Placement   | `DocumentPlacement` `{ teamId, folderId }`       | Where a document is filed; null team = My Documents      |
-| Space       | `scope` in logs: `personal` / `team`             | My Documents or one team's library                       |
+| Placement   | `DocumentPlacement` `{ teamId, folderId }`       | Where a document is filed; null team = My Work           |
+| Space       | `scope` in logs: `personal` / `team`             | My Work or one team's library                            |
 | Root        | `folderId: null`, log `folder=root`              | The space's root, listed beside its root folders         |
 | Rejection   | `PlacementRejection`, the response `error` token | A named refusal of the whole create                      |
 | Folder step | `FolderStep`, `FOLDER_STEPS`                     | One rung of folder resolution; `null` passes to the next |

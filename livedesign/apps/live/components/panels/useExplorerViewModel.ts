@@ -69,7 +69,7 @@ export function useExplorerViewModel({
   // can ask for children by id without rescanning the full list.
   const foldersByParent = useMemo(() => indexFolders(folders).childrenByParent, [folders]);
 
-  // Offline documents (docs/specs/006-document/offline-mode.md) stay out of the My Documents root: they
+  // Offline documents (docs/specs/006-document/offline-mode.md) stay out of the My Work root: they
   // render under the panel's This Browser row instead.
   const documentsByFolder = useMemo(
     () =>

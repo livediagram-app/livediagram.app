@@ -136,7 +136,7 @@ export const mcpCreateDocument = mcpTool('create_document', {
     'full format is documented inline on the "tabs" argument below). Pass one tab, or several to build a ' +
     'multi-tab document in one call. The server validates, lays ' +
     "out each tab per the layout arg, tags it as made by AI (the Explorer's Made by AI filter finds it), " +
-    "files it at the root of the user's My Documents (or in their default folder for what that " +
+    "files it at the root of the user's My Work (or in their default folder for what that " +
     'document is made as, when they have set one), and returns the link, the folder, and an inline ' +
     'PNG of the first tab.',
   inputSchema: createDocumentShape,

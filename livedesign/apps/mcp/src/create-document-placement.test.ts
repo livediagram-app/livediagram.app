@@ -88,9 +88,9 @@ describe('create_document intent', () => {
 });
 
 describe('create_document folder', () => {
-  it('reports My Documents when the document landed at the root', async () => {
+  it('reports My Work when the document landed at the root', async () => {
     const { run, requested } = harness({ folderId: null, teamId: null });
-    expect((await run([elements])).structuredContent.folder).toBe('My Documents');
+    expect((await run([elements])).structuredContent.folder).toBe('My Work');
     expect(requested.filter((r) => r.startsWith('GET') && !r.includes('/tabs/'))).toEqual([]);
   });
 

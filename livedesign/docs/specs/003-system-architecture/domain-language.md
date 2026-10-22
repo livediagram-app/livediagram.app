@@ -120,7 +120,7 @@ The words for the editor framed beside code ([Workbench embeds](../013-workspace
 ## This Browser
 
 **This Browser** is the one name for a document saved only in this browser ([Offline Mode](../006-document/offline-mode.md)):
-the place it lives (the Explorer's This Browser section, beside My Documents and the teams), the pill and badge that
+the place it lives (the Explorer's This Browser section, beside My Work and the teams), the pill and badge that
 mark it, and where a new guest's documents start. A document is **in This Browser**; it is never "Local Only",
 "Local Browser" or "offline" in copy. "Offline Mode" stays the name of the feature, and code may say `offline`.
 

@@ -104,7 +104,7 @@ test.describe('Contrast audit, dark mode', () => {
 
     await page.goto('/explorer/all');
     await documentRow(page, 'Contrast').waitFor();
-    expectAA(await auditContrast(page), 'Explorer, My Documents');
+    expectAA(await auditContrast(page), 'Explorer, My Work');
     expectNoPageErrors(pageErrors);
   });
 });

@@ -69,7 +69,7 @@ describe('WhatHappened', () => {
     const comment = screen.getByRole('link', { name: /Sam commented on Onboarding/ });
     expect(comment.getAttribute('href')).toBe('/document/d2');
     expect(within(comment).getByText('“Looks good”')).toBeTruthy();
-    expect(comment.textContent).toContain('My Documents › Guides · ');
+    expect(comment.textContent).toContain('My Work › Guides · ');
     expect(screen.getByRole('link', { name: /Sam edited Onboarding/ })).toBeTruthy();
     fireEvent.click(comment);
     expect(track).toHaveBeenCalledWith('Home', 'Selected', 'WhatHappened');

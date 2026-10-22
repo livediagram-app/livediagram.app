@@ -16,7 +16,7 @@ type FolderDeleteInput = {
 
 function destination({ parentName, scope }: FolderDeleteInput): string {
   if (parentName !== null) return `"${parentName}"`;
-  return scope === 'team' ? "the team's root" : 'My Documents';
+  return scope === 'team' ? "the team's root" : 'My Work';
 }
 
 function folderDeleteMessage(input: FolderDeleteInput): string {

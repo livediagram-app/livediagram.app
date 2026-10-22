@@ -134,7 +134,7 @@ describe('locationLabel', () => {
       'Platform team › Architecture',
     );
     expect(locationLabel({ ...doc, via: 'own', teamName: null, folderName: 'Specs' })).toBe(
-      'My Documents › Specs',
+      'My Work › Specs',
     );
   });
 

@@ -1563,7 +1563,7 @@ export const articles: Article[] = [
   {
     slug: 'default-folders',
     title: 'Default Folders',
-    description: 'Send new documents to a folder you choose instead of My Documents.',
+    description: 'Send new documents to a folder you choose instead of My Work.',
     keywords:
       'default folder where new documents go automatic placement file use as default settings documents new document',
     category: 'Explorer',
@@ -1583,7 +1583,7 @@ export const articles: Article[] = [
   },
   {
     slug: 'personal-space',
-    title: 'My Documents and Folders',
+    title: 'My Work and Folders',
     description:
       'Your own library: the folders you create, and your unfiled documents at its root.',
     keywords:
@@ -1595,7 +1595,7 @@ export const articles: Article[] = [
   {
     slug: 'team-spaces',
     title: 'Team Spaces',
-    description: 'Each team as a space beside My documents, its shared folders, and your invites.',
+    description: 'Each team as a space beside My Work, its shared folders, and your invites.',
     keywords: 'teams team spaces shared workspace invites membership group new team',
     category: 'Explorer',
     categorySlug: 'explorer',

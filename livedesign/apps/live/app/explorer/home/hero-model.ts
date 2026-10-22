@@ -48,7 +48,7 @@ export function heroPills(input: {
   return pills;
 }
 
-/** The fanned sheets: My Documents' most recently saved, newest first, at most HERO_SHEETS. One pass that keeps the
+/** The fanned sheets: My Work' most recently saved, newest first, at most HERO_SHEETS. One pass that keeps the
  *  newest few, so a long list costs a scan, not a sort. Equal saves keep the list's order. */
 export function heroSheets<T extends { savedAt: number }>(documents: readonly T[]): T[] {
   const top: T[] = [];

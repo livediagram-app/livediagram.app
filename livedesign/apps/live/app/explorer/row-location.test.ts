@@ -24,8 +24,8 @@ describe('rowLocation', () => {
     });
   });
 
-  it('names My Documents for a cloud document at the root, its folder or its team otherwise', () => {
-    expect(rowLocation(doc(), on(tags))).toEqual({ label: 'My Documents', opens: { kind: 'all' } });
+  it('names My Work for a cloud document at the root, its folder or its team otherwise', () => {
+    expect(rowLocation(doc(), on(tags))).toEqual({ label: 'My Work', opens: { kind: 'all' } });
     expect(rowLocation(doc({ folderId: 'f1' }), on(tags))).toEqual({
       label: 'Plans',
       opens: { kind: 'folder', id: 'f1' },

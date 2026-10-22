@@ -498,7 +498,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Home|Selected|Welcome.Template':
     'Someone with no documents yet started a popular template from the first-run Home.',
   'Home|Selected|Hero.Documents':
-    'Someone followed the documents pill at the top of Home to My Documents.',
+    'Someone followed the documents pill at the top of Home to My Work.',
   'Home|Selected|Hero.Inbox': 'Someone followed the Inbox pill at the top of Home to their Inbox.',
   'Home|Selected|Hero.NewDocument':
     'Someone started a new document from the New document button in the search field at the top of Home.',
@@ -725,7 +725,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Explorer|Deleted|Tag':
     'Someone deleted one of their tags, which takes it off every document it was on.',
   'Explorer|Selected|Space':
-    'Someone filtered an aggregate Explorer list by where documents live (My Documents, Shared With Me, a team).',
+    'Someone filtered an aggregate Explorer list by where documents live (My Work, Shared With Me, a team).',
   'Token|Created|MCP':
     'An AI tool was connected to the account over MCP, which creates an API token for it to use.',
   'Token|Created|Manual':
@@ -1682,8 +1682,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
     "Someone changed a Timeline filter: turned a category chip (such as Comments, Renames, or Sharing) off, or switched between seeing everyone's activity and just their own.",
   'Folder|Changed':
     'Someone chose a default folder: where new documents land when they pick no place.',
-  'Folder|Cleared':
-    'Someone cleared a default folder, so new documents land in My Documents again.',
+  'Folder|Cleared': 'Someone cleared a default folder, so new documents land in My Work again.',
   'Trash|Opened': 'Someone opened the Trash, where deleted documents wait for 30 days.',
   'Explorer|Created': 'Someone made something in the Explorer (a tag).',
   'Explorer|Added': 'Someone put one of their tags on a document.',

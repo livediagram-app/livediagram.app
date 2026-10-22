@@ -16,7 +16,7 @@ on the `nav`.
 | `apps/live/app/explorer/sidebar/SidebarRow.tsx`                          | `SidebarRow`: one `treeitem` with the chevron gutter (the row's end on a touch screen), icon, label, badge, trailing slot and child `group`                                                                                                                                          |
 | `apps/live/app/explorer/sidebar/OverviewGroup.tsx`                       | Home, Inbox, Timeline, Shared With Me                                                                                                                                                                                                                                                |
 | `apps/live/app/explorer/sidebar/inbox-badge.ts`                          | `inboxBadge(feed)`: the Inbox pill, 0 included, nothing while loading or failed                                                                                                                                                                                                      |
-| `apps/live/app/explorer/sidebar/SpacesGroup.tsx`                         | My Documents (its root folders), teams, Invites, New Team, the sign-in nudge                                                                                                                                                                                                         |
+| `apps/live/app/explorer/sidebar/SpacesGroup.tsx`                         | My Work (its root folders), teams, Invites, New Team, the sign-in nudge                                                                                                                                                                                                              |
 | `apps/live/app/explorer/sidebar/TeamRows.tsx`                            | `TeamRows`, one `TeamRow` per team: a drop target opening its folders on a resting drag                                                                                                                                                                                              |
 | `apps/live/app/explorer/sidebar/MoreGroup.tsx`                           | This Browser, Library (Tags with one row per tag, `TagRows.tsx`, then Image Gallery, Themes), Trash                                                                                                                                                                                  |
 | `apps/live/app/explorer/sidebar/SidebarFolderSubtree.tsx`                | A personal folder row, its menu, and its subfolders                                                                                                                                                                                                                                  |
@@ -35,7 +35,7 @@ on the `nav`.
 | `apps/live/components/panels/explorer-tree/PanelTreeContext.ts`          | `PanelTree`, `PanelTreeProvider`, `usePanelTree`: expansion, the open document and the host's verbs                                                                                                                                                                                  |
 | `apps/live/components/panels/explorer-panel/panel-sections.ts`           | `PanelSection`, `panelSectionGroups`, `sectionKey` / `sectionFromKey`, `sectionLabel`, `sectionPage`, `sectionTelemetryRow`, `resolveSection`                                                                                                                                        |
 | `apps/live/components/panels/explorer-panel/useExplorerPanelSection.ts`  | `useExplorerPanelSection(groups)`: the shown section, remembered under `PANEL_SECTION_STORAGE_KEY` (try/catch), else Home                                                                                                                                                            |
-| `apps/live/components/panels/explorer-panel/ExplorerRail.tsx`            | The rail `nav` "Explorer sections": grouped entries (desktop) or a chip row (phone), `aria-current`, arrow keys, My Documents as a drop target                                                                                                                                       |
+| `apps/live/components/panels/explorer-panel/ExplorerRail.tsx`            | The rail `nav` "Explorer sections": grouped entries (desktop) or a chip row (phone), `aria-current`, arrow keys, My Work as a drop target                                                                                                                                            |
 | `apps/live/components/panels/explorer-panel/ExplorerPanelPane.tsx`       | The pane: title, New Folder (New Subfolder with `inFolder`), Open Page, then the tree or a lazily loaded view (`PanelViews`)                                                                                                                                                         |
 | `apps/live/components/panels/explorer-panel/PanelViews.tsx`              | `HomeSection` (Jump Back In rows, What Happened only when non-empty), `InboxSection` (`ActivityPane compact`), `TimelineSection` (day-grouped rows via `pickRenderer`), `TrashSection` (rows, Restore, Delete with `ConfirmPopover`), `LibrarySection` (tabs over the compact panes) |
 | `apps/live/components/panels/explorer-panel/ExplorerCurrentDocument.tsx` | The Current Document card: thumbnail, the name as a fitted rename button (dotted underline and pencil on hover), `SharedBadge portal` from `useDocumentVisibility`, the document menu                                                                                                |
@@ -70,7 +70,7 @@ on the `nav`.
 | expand key  | `MY_DOCUMENTS_EXPAND_KEY`, `LIBRARY_EXPAND_KEY` | Entries of the shared `expanded` set, prefixed so no folder or team id collides |
 
 `SidebarRowKind`: `home`, `inbox`, `timeline`, `shared`, `myDocuments`, `teams` (zero or more team rows), `invites`, `newTeam`,
-`signInNudge`, `thisBrowser`, `library`, `trash`. "Space" in code means My Documents or a team; "Offline" stays the
+`signInNudge`, `thisBrowser`, `library`, `trash`. "Space" in code means My Work or a team; "Offline" stays the
 name of the view (`kind: 'offline'`), whose row reads "This Browser".
 
 ## Behaviour and state
@@ -89,11 +89,11 @@ name of the view (`kind: 'offline'`), whose row reads "This Browser".
    `MY_DOCUMENTS_EXPAND_KEY`, plus `LIBRARY_EXPAND_KEY` when `isLibraryView(selected.kind)` (`gallery`, `themes`).
    When `selected.kind` changes to a Library view, `LIBRARY_EXPAND_KEY` is added during that render
    (state adjusted in render, not an effect). Toggling is `toggleExpand(key)`; `expand(key)` opens idempotently, used to
-   reveal a new folder's parent (My Documents for a root folder).
+   reveal a new folder's parent (My Work for a root folder).
 4. **Row activation** (click on the label area, or Enter / Space): `go(node)` for a view row, `toggleExpand` for
    Library, `setTeamModalOpen(true)` and `setMobileNavOpen(false)` for New Team, `window.location.assign` for a team
    folder. Home also clears the Timeline unread count. Each activation calls `trackSidebar(row)` first.
-5. **Chevron**: a click on the gutter toggles that row; it never activates it. My Documents is expandable only while it
+5. **Chevron**: a click on the gutter toggles that row; it never activates it. My Work is expandable only while it
    has a root folder (the page) or a root folder or document (the panel).
 6. **Roving tab stop** (`useTreeNavigation`): after every render exactly one `treeitem` in the `nav` has
    `tabIndex = 0`: the focused one while focus is inside the `nav`, else the `aria-selected` one, else the first.
@@ -103,7 +103,7 @@ name of the view (`kind: 'offline'`), whose row reads "This Browser".
    closest ancestor `treeitem`; Enter / Space click its activate element; a single printable character focuses the next
    item (wrapping) whose `data-tree-label` starts with it, case-insensitively. Handled keys `preventDefault`.
 8. **Page titles** (`VIEW_TITLES`): the pane title is `VIEW_TITLES[kind]` (a folder or team by its name); the
-   breadcrumb is `[My Documents, …ancestors, folder]` for a folder, `[Home, leaf]` for Recent (`leadsBackHome`), and
+   breadcrumb is `[My Work, …ancestors, folder]` for a folder, `[Home, leaf]` for Recent (`leadsBackHome`), and
    the single leaf otherwise (the Timeline included: it has a row); each static page's `metadata.title` is
    `viewDocumentTitle(kind)`. The Inbox is `VIEW_TITLES.inbox = SIDEBAR_LABELS.inbox` ("Inbox"), the Timeline
    `VIEW_TITLES.timeline = SIDEBAR_LABELS.timeline` ("Timeline").

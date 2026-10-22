@@ -247,7 +247,7 @@ canvas overrides; the model then personalises labels via `update_document`'s
    piled at ~one point (`nodesLookUnplaced`). The server never overrides the
    model's spatial intent; when it does lay out it reuses the editor's engine, so
    the model is never _forced_ into pixel-perfect placement.
-3. **Tags it as made by AI.** The create sends `source: 'mcp'`, which the Explorer's **Made by AI** filter (`made-by:ai`, [Explorer filters](../013-workspace/explorer-filters.md)) reads, so a user's own work and AI-made documents can be told apart wherever either is filed. Unfiled, it sits at the root of My Documents like any other document, with its **Made by AI** badge. (Earlier this find-or-created a real "Generated" folder, then the Explorer showed a Generated view; provenance is a filter, not a place.) The create also sends the creation `intent` of the first tab it built and the template it used, so with no folder named the server files it in the user's [default folder](../013-workspace/default-folders.md) for that intent, when they have one.
+3. **Tags it as made by AI.** The create sends `source: 'mcp'`, which the Explorer's **Made by AI** filter (`made-by:ai`, [Explorer filters](../013-workspace/explorer-filters.md)) reads, so a user's own work and AI-made documents can be told apart wherever either is filed. Unfiled, it sits at the root of My Work like any other document, with its **Made by AI** badge. (Earlier this find-or-created a real "Generated" folder, then the Explorer showed a Generated view; provenance is a filter, not a place.) The create also sends the creation `intent` of the first tab it built and the template it used, so with no folder named the server files it in the user's [default folder](../013-workspace/default-folders.md) for that intent, when they have one.
 4. **Persists** all tabs via `POST /api/documents` (which seeds a `tabs[]` array
    and accepts `source`). A tab given as a `template` travels
    as such and is compiled by the api ([API app](api.md)), so the MCP and the
@@ -258,7 +258,7 @@ canvas overrides; the model then personalises labels via `update_document`'s
    ([API](api.md#marking-a-document-used)) for a model making many documents in one go,
    so a batch never pushes the user's own work out of reach. Absent, nothing is sent and the
    create counts.
-5. **Returns** the new `id`, tab count + ids, the folder ("My Documents" for the root,
+5. **Returns** the new `id`, tab count + ids, the folder ("My Work" for the root,
    or the name of the default folder it was filed in), the deep-link `url`,
    **and the rendered PNG of the first tab** so the user sees the result inline.
 
@@ -898,7 +898,7 @@ Worker (no DOM, no React).
 
 - **Streaming progress** from tools (the SDK supports it; v1 returns once).
 - **Folder / team management** via MCP — there are no tools to list, rename, or
-  move folders (create_document files new documents at the root of the user's My Documents, or their default folder);
+  move folders (create_document files new documents at the root of the user's My Work, or their default folder);
   more `/api` surface can be wrapped later if demand appears. (Share-link
   creation IS in scope now — `share_document`, [§4.8](#48-share_document); managing
   folders/teams themselves stays out.)
