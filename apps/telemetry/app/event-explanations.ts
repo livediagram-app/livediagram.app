@@ -2641,7 +2641,6 @@ export const API_OPERATIONS: Readonly<Record<string, string>> = {
   ListChangeLog: "listing a document's since-removed change history",
   ListCustomThemes: "listing an account's saved custom themes",
   ListFolders: "listing an account's folders",
-  ListImages: 'listing the images saved to an account',
   ListShareLinks: "listing a document's share links",
   ListShared: 'listing documents shared with a visitor',
   ListTeamInvites: "listing an account's pending team invites",

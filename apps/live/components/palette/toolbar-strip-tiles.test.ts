@@ -69,18 +69,20 @@ describe('stripTilesFor', () => {
     ['write', ['tools:text']],
     ['draw', ['tools:highlighter', 'tools:polygon']],
     ['devices', ['devices:laptop']],
-    ['media', ['media:tab-window', 'media:embed-website']],
+    ['media', ['media:tab-window']],
     ['data', ['data:legend']],
   ])('divides %s into its groups', (category, after) => {
     expect([...stripTilesFor(category, NONE).dividersAfter]).toEqual(after);
   });
 
   it('drops the dividers of a category that exactly fills the strip, keeping every tile', () => {
-    // Components holds the strip's full twelve tiles (with the Card, Badge and Step number), so its
-    // divider after the entity gives way rather than a tile.
-    const components = stripTilesFor('components', NONE);
-    expect(components.tiles).toHaveLength(STRIP_TILE_LIMIT);
+    // Components' eleven tiles on a strip with room for exactly eleven: the divider after the entity gives way
+    // rather than a tile. With the strip's usual twelve slots there is room for both.
+    const components = stripTilesFor('components', { ...NONE, limit: 11 });
+    expect(components.tiles).toHaveLength(11);
+    expect(components.hasMore).toBe(false);
     expect([...components.dividersAfter]).toEqual([]);
+    expect([...stripTilesFor('components', NONE).dividersAfter]).toEqual(['tools:entity']);
     // Build, short of it since the Timeline moved to Concepts, keeps every tile on the strip.
     expect(stripTilesFor('build', NONE).tiles).toHaveLength(11);
   });

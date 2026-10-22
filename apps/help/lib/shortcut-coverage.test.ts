@@ -24,7 +24,6 @@ import { describe, expect, it } from 'vitest';
 // fails a correct edit is a guard people delete.
 const ROOT = fileURLToPath(new URL('../../..', import.meta.url));
 const KEYS_SRC = `${ROOT}/apps/live/hooks/canvas/editor-shortcut-keys.ts`;
-const LISTENER_SRC = `${ROOT}/apps/live/hooks/canvas/useEditorKeyboardShortcuts.ts`;
 const SECTIONS_SRC = `${ROOT}/apps/live/components/dialogs/shortcut-sections.ts`;
 const ARTICLE = `${ROOT}/apps/help/app/tips-and-tricks/keyboard-shortcuts/page.mdx`;
 
@@ -95,15 +94,5 @@ describe('the Keyboard Shortcuts article covers what the editor binds', () => {
     expect(chords().length).toBeGreaterThan(10);
     const missing = chords().filter((c) => !src.includes(`\`${c}\``));
     expect(missing).toEqual([]);
-  });
-
-  it('documents the image key, which is bound outside the tables', () => {
-    // `9` gets its own branch in the listener because its callback is nullable
-    // (a guest deploy with no api worker has nowhere to put the file), so it
-    // never reaches the tables above and the parse cannot see it. Asserted
-    // here explicitly, together with the reason it is an exception, so this
-    // guard's coverage matches what its name claims.
-    expect(readFileSync(LISTENER_SRC, 'utf8')).toContain("lower === '9'");
-    expect(documentedKeys().has('9')).toBe(true);
   });
 });

@@ -1108,7 +1108,7 @@ export const articles: Article[] = [
     title: 'Components',
     description: 'Cards, badges, step numbers and web components: banners, callouts and more.',
     keywords:
-      'banner callout stat row stat rows kpi badge step number block prebuilt widgets cards sections hero header masthead nav navigation website web page process steps pages mode',
+      'banner callout stat row stat rows kpi badge step number block prebuilt widgets cards sections header masthead nav navigation website web page process steps pages mode',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Everyday Elements',
