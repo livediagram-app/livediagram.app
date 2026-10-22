@@ -2,8 +2,8 @@
 // do"): each change resolved against the plan (column names, card types, custom fields, people, item numbers) and
 // written through the item store's routes, in order, each seeing the ones before it. A refusal stops the batch and
 // says what was applied before it. Shared by the MCP's change_items and the CLI's item verbs.
-import { ApiError, type ApiClient } from '@livepages/api-client';
-import type { ItemResponse } from '@livepages/api-schema';
+import { ApiError, type ApiClient } from '@livedesign/api-client';
+import type { ItemResponse } from '@livedesign/api-schema';
 import {
   assignedPeople,
   boardShowsType,
@@ -19,7 +19,7 @@ import {
   type Item,
   type ItemTypeDef,
   type Named,
-} from '@livepages/items';
+} from '@livedesign/items';
 import { apiRefusalOf } from './api-refusal';
 import { itemsPath } from '../verbs/shared';
 import type { PlanState } from './plan-state';

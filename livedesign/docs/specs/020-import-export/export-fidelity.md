@@ -39,7 +39,7 @@ side. They were not small:
 
 ## How it is held
 
-**One definition per decision, in `@livepages/document`,** imported by both
+**One definition per decision, in `@livedesign/document`,** imported by both
 sides rather than reimplemented. That is the only mechanism that works: a rule
 written down in two places is a rule that drifts. What moved there for this:
 
@@ -149,7 +149,7 @@ paper. A box label breaks a word wider than its line between characters, as
 the canvas's `break-words` does; an icon caption keeps the word whole.
 
 The Mode button's glyph is shared data: the nine selection-mode glyphs live in
-`@livepages/icons/mode-glyphs` (`MODE_GLYPHS`), which the editor's palette and
+`@livedesign/icons/mode-glyphs` (`MODE_GLYPHS`), which the editor's palette and
 button face render through `<Prims>` and the export through `iconPrimsMarkup`,
 so the chip carries the same drawing in both. A glyph with a filled dot or a
 heavier stroke says so on the primitive (`StyledPrim`), and the export converts

@@ -7,7 +7,7 @@
 import { planFontStyle } from '@/lib/plan-font';
 import { useSlotSettings } from '@/components/plan/dashboard/slot-menu';
 import { SlotBoardCog } from './SlotBoardCog';
-import { isCardVotableInVote } from '@livepages/document';
+import { isCardVotableInVote } from '@livedesign/document';
 import { useCardVote } from './CardVoteContext';
 import { useViewportStoreIfAny } from '@/hooks/canvas/useViewportStore';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
@@ -16,7 +16,7 @@ import { markPanThrough } from '@/hooks/canvas/pan-through';
 import { mayCreateCardType } from './may-create-card-type';
 import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { cornerRadiusPx, type ShapeElement } from '@livepages/document';
+import { cornerRadiusPx, type ShapeElement } from '@livedesign/document';
 import {
   CARD_FIELDS,
   ITEM_TYPES,
@@ -30,7 +30,7 @@ import {
   boardAddTypes,
   newItemId,
   isTrashed,
-} from '@livepages/items';
+} from '@livedesign/items';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { track } from '@/lib/telemetry';
 import { usePlanBoardDrop } from '@/hooks/plan/usePlanBoardDrop';
@@ -48,7 +48,7 @@ import { boardRowTemplate } from './plan-board-rows';
 import { PlanSetupBoard } from './PlanSetupBoard';
 import { setUpBoard, setupFromBoard, setupLayoutOf, withSetupLayout } from './setup-board';
 import { pickableStatuses } from './column-status-picks';
-import { boardItems } from '@livepages/plan-art';
+import { boardItems } from '@livedesign/plan-art';
 import { trackSetup } from './track-board-setup';
 import { boardColumnTemplate } from './plan-board-columns';
 import { boardLook, shownQuick } from './phone-board';

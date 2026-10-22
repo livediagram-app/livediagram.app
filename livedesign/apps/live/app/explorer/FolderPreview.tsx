@@ -10,7 +10,7 @@
 // over the pulsing rings, as the editor's Explorer shows an empty folder, so an
 // empty card reads as waiting rather than broken.
 
-import { EmptyStateArt } from '@livepages/ui';
+import { EmptyStateArt } from '@livedesign/ui';
 import { FolderSolidIcon } from '@/components/primitives/explorer-icons';
 import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';

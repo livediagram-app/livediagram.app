@@ -1,6 +1,6 @@
 // The attributes of one element's line, in order (docs/specs/024-agents/blueprints/document-views.md
 // "Attributes", VW14): draft, icon, link, alt, locked, action or actions, note, comments, then style.
-import type { Element } from '@livepages/document';
+import type { Element } from '@livedesign/document';
 import { ACTION_CUT_CHARS, ALT_CUT_CHARS, NOTE_CUT_CHARS } from './constants';
 import {
   arrayField,

@@ -51,7 +51,7 @@ activity, the template and Draw mode's dock (`useWhiteboard`, `WhiteboardDock`),
 | `LEGACY_EDITOR_MODES`      | `{ infographic: 'pages' }`            | `editor-mode.ts`; spec "Naming in the interface" |
 | Legacy default-folder key  | `'mode:infographic'` → `'mode:pages'` | `LEGACY_PLACEMENT_DEFAULT_KEYS`; spec            |
 | `DEFAULT_EDITOR_MODE`      | `'diagram'`                           | Spec: `opensIn` absent = Diagram                 |
-| Retired mode store key     | `livepages:v2:editor-mode:<tabId>`  | Per-person era; never read or written now        |
+| Retired mode store key     | `livedesign:v2:editor-mode:<tabId>`  | Per-person era; never read or written now        |
 | `PEN_INK`                  | `#1c1917` light, `#e2e8f0` dark       | `pen-colours.ts`; spec "Ink is one colour"       |
 | `WHITEBOARD_UNSET_PATTERN` | `'blank'`                             | Written on a migrated board with no pattern      |
 | `WHITEBOARD_INKED_SHAPES`  | square, circle, triangle, diamond     | The shapes a migrated board inks                 |
@@ -75,7 +75,7 @@ A further mode is one catalogue entry plus its icon in `EDITOR_MODE_ICONS`
 3. `lockedReason` ("A Board tab is always in Plan.", likewise a Sheet tab and a Dashboard) for an
    editor on a Plan kind's tab: the switch shows, and only its own mode can be picked.
 
-Nothing is remembered per person: the old `livepages:v2:editor-mode:<tab>` keys are never read
+Nothing is remembered per person: the old `livedesign:v2:editor-mode:<tab>` keys are never read
 or written (left in place). Nothing is pinned per page.
 
 - `useEditorMode(tab, { canEdit, commitTabs, toastInfo, newTabIn? })` resolves the mode each render
@@ -247,7 +247,7 @@ lockedReason?, onLockedPick? })` (`ModeMenu.tsx`), opened by `ModeMenuChip`:
 | Field / key                          | Class                  | Notes                                                                                                                                                                                          |
 | ------------------------------------ | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `Tab.opensIn`                        | Document, synced       | The tab's mode, the same for everyone. Absent = Diagram; written by templates, imports and an editor's switch (one undo step; never a new tab); `'infographic'` read as Pages, never rewritten |
-| Per-person mode (retired)            | Device-local           | `livepages:v2:editor-mode:<tab>` keys from before the shared mode: left in place, never read                                                                                                 |
+| Per-person mode (retired)            | Device-local           | `livedesign:v2:editor-mode:<tab>` keys from before the shared mode: left in place, never read                                                                                                 |
 | `drawPattern`                        | Synced user preference | The person's Draw pattern, Grid until chosen                                                                                                                                                   |
 | `TextElement.sizing`                 | Document               | Replaces `autoWidth`                                                                                                                                                                           |
 | `penColour` / `penTextColour: 'ink'` | Document               | Ink by name                                                                                                                                                                                    |

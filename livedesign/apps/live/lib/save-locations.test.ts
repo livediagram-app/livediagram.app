@@ -10,16 +10,16 @@ describe('save locations', () => {
     expect(defaultSaveLocationFor({ signedIn: false, clerkEnabled: true })).toBe('browser');
   });
 
-  it('starts a signed-in person on livepages', () => {
-    expect(defaultSaveLocationFor({ signedIn: true, clerkEnabled: true })).toBe('livepages');
+  it('starts a signed-in person on livedesign', () => {
+    expect(defaultSaveLocationFor({ signedIn: true, clerkEnabled: true })).toBe('livedesign');
   });
 
-  it('starts everyone on livepages on a deployment without sign-in', () => {
-    expect(defaultSaveLocationFor({ signedIn: false, clerkEnabled: false })).toBe('livepages');
+  it('starts everyone on livedesign on a deployment without sign-in', () => {
+    expect(defaultSaveLocationFor({ signedIn: false, clerkEnabled: false })).toBe('livedesign');
   });
 
   it('routes only This Browser to the offline store', () => {
     expect(isOfflineLocation('browser')).toBe(true);
-    expect(isOfflineLocation('livepages')).toBe(false);
+    expect(isOfflineLocation('livedesign')).toBe(false);
   });
 });

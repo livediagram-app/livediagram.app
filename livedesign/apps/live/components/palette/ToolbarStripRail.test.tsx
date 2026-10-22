@@ -3,7 +3,7 @@
 // switch, and the outgoing set leaves on an inert layer.
 import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
-import { MOTION_MS } from '@livepages/tailwind-config/motion';
+import { MOTION_MS } from '@livedesign/tailwind-config/motion';
 import { RAIL_LEAVE_MS, ToolbarStripRail } from './ToolbarStripRail';
 
 // The observers made, so a test can report a resize of the rail's content.

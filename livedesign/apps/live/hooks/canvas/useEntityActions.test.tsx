@@ -9,7 +9,7 @@ import {
   type Element,
   type ShapeElement,
   type Tab,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { getEntityFieldEdit, setEntityFieldEdit } from '@/lib/entity-field-edit';
 import { useEntityActions } from './useEntityActions';
 import { resolveArrowEndpointDrag } from './arrow-endpoint-resolve';

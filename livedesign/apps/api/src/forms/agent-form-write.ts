@@ -2,9 +2,9 @@
 // at the revision the agent read, then relayed to open editors as the `tab-meta` an editor's own edit sends. The tab
 // takes the form's heading as its name. While the form takes responses only its settings may change. A lost race
 // repeats once from the read.
-import type { RoomOp } from '@livepages/api-schema';
-import { tabKindOf, type Tab } from '@livepages/document';
-import { changesBeyondSettings, readForm } from '@livepages/forms';
+import type { RoomOp } from '@livedesign/api-schema';
+import { tabKindOf, type Tab } from '@livedesign/document';
+import { changesBeyondSettings, readForm } from '@livedesign/forms';
 import { getLiveFormLink, isTabRevStale, upsertTabAtRev } from '../db';
 import { TabTooLargeError } from '../limits';
 import { capStoredName } from '../names';

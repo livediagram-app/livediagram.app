@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react';
-import { fnv1aString } from '@livepages/document';
+import { fnv1aString } from '@livedesign/document';
 
 // The "preview on its way" state of a DocumentThumbnail (docs/specs/006-document/document-snapshots.md):
 // the same three-node sketch as the empty-document placeholder, drawing

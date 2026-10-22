@@ -5,7 +5,7 @@
 // then the axis (Vertical, Horizontal, Both, Radial), Radial's copies, and Merge Into One. This
 // page's own, for the session; a page turned on starts from the last settings chosen.
 import type { ReactNode } from 'react';
-import { MIRROR_AXES, RADIAL_COPIES } from '@livepages/document';
+import { MIRROR_AXES, RADIAL_COPIES } from '@livedesign/document';
 import { SegmentedRadio } from '@/components/primitives/SegmentedRadio';
 import { SwitchRow } from '@/components/primitives/SwitchRow';
 import type { LogoToolsView } from '@/hooks/editor/useLogoTools';

@@ -7,9 +7,9 @@ import {
   type Element,
   type ShapeElement,
   type StickyElement,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { describe, expect, it } from 'vitest';
-import type { ThemeDefinition } from '@livepages/document';
+import type { ThemeDefinition } from '@livedesign/document';
 import {
   applyStyleMemory,
   forgetStyleKinds,
@@ -233,7 +233,7 @@ describe('keys', () => {
   it('names a kind and a storage key', () => {
     expect(styleKindOf(shape('a', 'diamond'))).toBe('shape:diamond');
     expect(styleKindOf(arrow('a'))).toBe('arrow');
-    expect(styleMemoryKey('d1')).toBe('livepages:v2:style-memory:d1');
+    expect(styleMemoryKey('d1')).toBe('livedesign:v2:style-memory:d1');
   });
 });
 

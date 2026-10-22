@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { layOutPages, type Element, type Tab } from '@livepages/document';
+import { layOutPages, type Element, type Tab } from '@livedesign/document';
 import { announcePageLocked, guardLockedPagesIn } from './page-lock-guard';
 
 // docs/specs/007-editor/pages-mode.md "Locking a page": the commit choke point's guard.

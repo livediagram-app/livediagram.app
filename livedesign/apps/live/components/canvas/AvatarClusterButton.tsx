@@ -1,7 +1,7 @@
 'use client';
 
-import { lucideUser } from '@livepages/icons/lucide';
-import { lucideGlyph } from '@livepages/ui';
+import { lucideUser } from '@livedesign/icons/lucide';
+import { lucideGlyph } from '@livedesign/ui';
 import { ClusterPopoverButton } from './ClusterPopoverButton';
 
 const AvatarIcon = lucideGlyph(lucideUser, 16);

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { PLAN_COLUMNS_MAX, presetSetup, type PlanBoardSetup } from '@livepages/items';
+import { PLAN_COLUMNS_MAX, presetSetup, type PlanBoardSetup } from '@livedesign/items';
 import {
   columnFromName,
   setUpBoard,

@@ -8,7 +8,7 @@ import {
   DASHBOARD_STATUSES,
   type DashboardCardStyle,
   type DashboardStatus,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { relativeSince, useRelativeNow } from '@/lib/relative-time';
 import { useDashboard } from './dashboard-context';
 import { useSlotDraft } from './useSlotDraft';

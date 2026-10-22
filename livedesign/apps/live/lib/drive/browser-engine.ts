@@ -5,14 +5,14 @@
 import { track } from '../telemetry';
 import { createDriveRestClient } from './drive-rest-client';
 import { DriveMirrorEngine, type DriveMirrorStatus } from './engine';
-import { createApiLivepagesPort } from './livepages-port';
+import { createApiLivedesignPort } from './livedesign-port';
 import { rasteriseSvgToPng } from './thumbnail';
 import { localSeenStore } from './tombstones';
 import type { TokenSource } from './token-source';
 
-const DEVICE_KEY = 'livepages:v2:drive-device';
-const FIRST_MIRROR_KEY = 'livepages:v2:drive-first-mirror';
-const DIAGNOSTICS_KEY = 'livepages:v2:drive-diagnostics';
+const DEVICE_KEY = 'livedesign:v2:drive-device';
+const FIRST_MIRROR_KEY = 'livedesign:v2:drive-first-mirror';
+const DIAGNOSTICS_KEY = 'livedesign:v2:drive-diagnostics';
 
 // A random per-browser id: the lease holder (D13).
 function driveDeviceId(storage: Pick<Storage, 'getItem' | 'setItem'> = localStorage): string {
@@ -34,7 +34,7 @@ export function createBrowserEngine(input: {
     ownerId: input.ownerId,
     host: window.location.host,
     deviceId: driveDeviceId(),
-    port: createApiLivepagesPort(input.ownerId),
+    port: createApiLivedesignPort(input.ownerId),
     drive: createDriveRestClient({
       fetch: (i, init) => fetch(i, init),
       getAccessToken: (opts) => input.tokens.get(opts),

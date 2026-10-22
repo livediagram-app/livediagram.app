@@ -2,21 +2,21 @@
 
 All deployments run **via GitHub Actions** to **Cloudflare Workers**. The **production** deploy is **manually triggered** — a green CI run no longer ships on its own.
 
-There is a second environment, **staging**, which does deploy on its own: every green CI run on `main` lands on `staging.livepages.app`. It runs the same jobs described below through the same reusable workflow, against its own workers and its own D1 / R2 / KV. This spec covers production; [Staging environment](staging-environment.md) covers what staging changes and why.
+There is a second environment, **staging**, which does deploy on its own: every green CI run on `main` lands on `staging.livedesign.app`. It runs the same jobs described below through the same reusable workflow, against its own workers and its own D1 / R2 / KV. This spec covers production; [Staging environment](staging-environment.md) covers what staging changes and why.
 
 ## Apps and their Cloudflare Workers
 
 | App              | Cloudflare Worker       | Type                                                                                                               |
 | ---------------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| `apps/marketing` | `livepages-marketing` | Static assets only (Next.js `output: 'export'`).                                                                   |
-| `apps/live`      | `livepages-live`      | Static assets + a tiny path-rewrite worker.                                                                        |
-| `apps/telemetry` | `livepages-telemetry` | Static assets only (public dashboard, [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)). |
-| `apps/help`      | `livepages-help`      | Static assets only (help centre, [Help app](../018-help/help-app.md)).                                             |
-| `apps/api`       | `livepages-api`       | Worker (D1 binding + Durable Object).                                                                              |
-| `apps/mcp`       | `livepages-mcp`       | Worker (OAuth + MCP tools; own host, [MCP server](../015-api/mcp-server.md)).                                      |
-| `apps/router`    | `livepages-router`    | Worker (service bindings to the other five).                                                                       |
+| `apps/marketing` | `livedesign-marketing` | Static assets only (Next.js `output: 'export'`).                                                                   |
+| `apps/live`      | `livedesign-live`      | Static assets + a tiny path-rewrite worker.                                                                        |
+| `apps/telemetry` | `livedesign-telemetry` | Static assets only (public dashboard, [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)). |
+| `apps/help`      | `livedesign-help`      | Static assets only (help centre, [Help app](../018-help/help-app.md)).                                             |
+| `apps/api`       | `livedesign-api`       | Worker (D1 binding + Durable Object).                                                                              |
+| `apps/mcp`       | `livedesign-mcp`       | Worker (OAuth + MCP tools; own host, [MCP server](../015-api/mcp-server.md)).                                      |
+| `apps/router`    | `livedesign-router`    | Worker (service bindings to the other five).                                                                       |
 
-The marketing worker serves files from `apps/marketing/out/` (`output: 'export'`). The live worker serves files from `apps/live/out/` plus a small worker (`apps/live/src/worker.ts`) that rewrites every `/document/<id>` request to the single statically-built `/document/placeholder/` page — see [New document route](../007-editor/new-document-route.md). The telemetry worker is static-assets-only like marketing, served under `/telemetry` ([22-telemetry](../017-telemetry/telemetry.md)). The help worker is static-assets-only too, served under `/help` ([55-help-app](../018-help/help-app.md)). The api worker holds the REST + WebSocket layer (see [11-api.md](../015-api/api.md)). The mcp worker exposes the AI tools over its own host `mcp.livepages.app` (it binds to the api worker, not the router; see [62-mcp-server.md](../015-api/mcp-server.md)). The router holds **no application logic** — only `MARKETING`, `LIVE`, `TELEMETRY`, `HELP` and `API` service bindings that forward requests to the right downstream worker.
+The marketing worker serves files from `apps/marketing/out/` (`output: 'export'`). The live worker serves files from `apps/live/out/` plus a small worker (`apps/live/src/worker.ts`) that rewrites every `/document/<id>` request to the single statically-built `/document/placeholder/` page — see [New document route](../007-editor/new-document-route.md). The telemetry worker is static-assets-only like marketing, served under `/telemetry` ([22-telemetry](../017-telemetry/telemetry.md)). The help worker is static-assets-only too, served under `/help` ([55-help-app](../018-help/help-app.md)). The api worker holds the REST + WebSocket layer (see [11-api.md](../015-api/api.md)). The mcp worker exposes the AI tools over its own host `mcp.livedesign.app` (it binds to the api worker, not the router; see [62-mcp-server.md](../015-api/mcp-server.md)). The router holds **no application logic** — only `MARKETING`, `LIVE`, `TELEMETRY`, `HELP` and `API` service bindings that forward requests to the right downstream worker.
 
 `wrangler.toml` for each app sits at the app root and is the source of truth for the worker's name, compatibility date, `[assets]`, `[[services]]`, `[[d1_databases]]`, and Durable Object bindings. Account-level identifiers (account id, custom domain, secrets) **never** go in `wrangler.toml` — they live in environment variables or the Cloudflare dashboard. See [06-secrets-policy.md](../002-project-scope/secrets-policy.md).
 
@@ -34,7 +34,7 @@ The marketing worker serves files from `apps/marketing/out/` (`output: 'export'`
 Three jobs run in parallel, each after its own `pnpm install --frozen-lockfile`, so a PR waits for the slowest rather than their sum:
 
 - **Checks**: `pnpm lint`, `pnpm format:check`, `pnpm typecheck`.
-- **Tests**: `pnpm turbo run test --concurrency=2` for every workspace without `test:coverage`, then `pnpm turbo run test:coverage --concurrency=2 --filter=!@livepages/live` for those with it (enforcing the per-file coverage thresholds), and uploads their coverage to Codecov.
+- **Tests**: `pnpm turbo run test --concurrency=2` for every workspace without `test:coverage`, then `pnpm turbo run test:coverage --concurrency=2 --filter=!@livedesign/live` for those with it (enforcing the per-file coverage thresholds), and uploads their coverage to Codecov.
 - **Editor unit tests i/3**: the editor's suite (`apps/live`) under coverage, a third of its files per job (`vitest run --shard=i/3`), each uploading its coverage to Codecov ([Coverage report](../003-system-architecture/testing.md#coverage-report)). Each suite runs exactly once; `scripts/ci-test-filters.mjs` derives the exclusions from the manifests, so adding or removing a coverage script needs no CI edit.
 - **Build**: `pnpm build`, then `pnpm staging:check`.
 
@@ -76,10 +76,10 @@ Jobs:
 4. **deploy-api** — runs:
    - `pnpm exec wrangler whoami` (diagnostic — prints which Cloudflare account the token authenticates against so a `7403 account not authorized` error is debuggable from the log).
    - `pnpm exec wrangler d1 migrations apply DB --remote` applies any pending migrations BEFORE the worker deploy (after the secret syncs, straight before it) so the new code never briefly runs against an older schema; see Renaming migrations below for the non-additive case. If this step fails the job halts and surfaces a precise error pointing at the missing token scopes. (Wrangler 4 dropped the `--yes` flag; the command is non-interactive by default in CI.)
-   - `pnpm exec wrangler deploy` from `apps/api/`, plus the hosted profile's `--var` flags on livepages.app's own repository (see "Hosted profile" below), then `node scripts/hosted-vars.mjs verify` against the live version.
+   - `pnpm exec wrangler deploy` from `apps/api/`, plus the hosted profile's `--var` flags on livedesign.app's own repository (see "Hosted profile" below), then `node scripts/hosted-vars.mjs verify` against the live version.
 5. **deploy-telemetry** — downloads `telemetry-out`, runs `pnpm exec wrangler deploy` from `apps/telemetry/` (in parallel with marketing/live/api).
 6. **deploy-help** — downloads `help-out`, runs `pnpm exec wrangler deploy` from `apps/help/` (in parallel with the others).
-7. **deploy-mcp** — depends on **deploy-api** (the MCP worker has a service binding to the api worker, [MCP server](../015-api/mcp-server.md), so api must exist first). Runs `pnpm exec wrangler deploy` from `apps/mcp/` — no static artifact to download, the worker bundles from source. NOT a `deploy-router` dependency: `mcp.livepages.app` is its own host, not a path under the main hostname.
+7. **deploy-mcp** — depends on **deploy-api** (the MCP worker has a service binding to the api worker, [MCP server](../015-api/mcp-server.md), so api must exist first). Runs `pnpm exec wrangler deploy` from `apps/mcp/` — no static artifact to download, the worker bundles from source. NOT a `deploy-router` dependency: `mcp.livedesign.app` is its own host, not a path under the main hostname.
 8. **deploy-router** — depends on **deploy-marketing**, **deploy-live**, **deploy-api**, **deploy-telemetry** and **deploy-help**. Runs `pnpm exec wrangler deploy` from `apps/router/`. The router's service bindings target the five workers above, so it must deploy after they exist. This is the one job carrying a GitHub `environment`, so a run files a single deployment record with the public URL rather than seven.
 
 `deploy-marketing`, `deploy-api`, `deploy-telemetry` and `deploy-help` run in parallel off `build`, and `deploy-live` follows `deploy-api`; `deploy-mcp` runs once `deploy-api` is up (parallel to the rest); `deploy-router` waits for the five it binds (not mcp, which is a separate host).
@@ -108,14 +108,14 @@ There is no down migration; a problem after a renaming migration is fixed forwar
 
 ## Hosted profile
 
-Some configuration is what **livepages.app** runs with, not what the software defaults to. Committed `[vars]` would make it every fork's default; a value set only in the Cloudflare dashboard would be wiped by the next `wrangler deploy`, which replaces a worker's plain vars with exactly the ones it declares ([Staging environment](staging-environment.md) "Known sharp edge"). So it has a seam of its own: the **hosted profile**.
+Some configuration is what **livedesign.app** runs with, not what the software defaults to. Committed `[vars]` would make it every fork's default; a value set only in the Cloudflare dashboard would be wiped by the next `wrangler deploy`, which replaces a worker's plain vars with exactly the ones it declares ([Staging environment](staging-environment.md) "Known sharp edge"). So it has a seam of its own: the **hosted profile**.
 
-- **What it holds.** `apps/api/hosted-vars.json`: `TELEMETRY_ENABLED = "true"` ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)) and the per-owner image gallery caps `IMAGE_MAX_PER_OWNER = "100"` and `IMAGE_MAX_BYTES_PER_OWNER = "104857600"` ([Image element + per-owner gallery](../009-elements/images.md)). Its frontend mirror, `NEXT_PUBLIC_TELEMETRY_ENABLED`, is derived from it rather than stated twice. A few vars are **per environment**, under `environments.production` and `environments.staging`: the Google Drive mirror's `GOOGLE_CLIENT_ID`, because production and staging are separate Google Cloud projects ([Google Drive mirror](../022-drive-mirror/drive-mirror.md), "Hosted deployment"), mirrored into the live build as `NEXT_PUBLIC_GOOGLE_CLIENT_ID`. Also per environment, `APP_BASE_URL`: the canonical public origin that email, workbench and pairing links are built from (`https://www.livepages.app` in production, never the apex that redirects to it; [Workbench embeds](../013-workspace/workbench-embeds.md)). An empty per-environment value is unset there.
-- **Who gets it.** The reusable workflow resolves `HOSTED` from the repository ID of `livepages-app/livepages.app`, so production and staging both apply it, a rename or transfer keeps it, and no fork matches. A fork's deploy applies nothing, so a fork is **telemetry-off and uncapped** until it opts in by declaring the vars in its own `[vars]`.
+- **What it holds.** `apps/api/hosted-vars.json`: `TELEMETRY_ENABLED = "true"` ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)) and the per-owner image gallery caps `IMAGE_MAX_PER_OWNER = "100"` and `IMAGE_MAX_BYTES_PER_OWNER = "104857600"` ([Image element + per-owner gallery](../009-elements/images.md)). Its frontend mirror, `NEXT_PUBLIC_TELEMETRY_ENABLED`, is derived from it rather than stated twice. A few vars are **per environment**, under `environments.production` and `environments.staging`: the Google Drive mirror's `GOOGLE_CLIENT_ID`, because production and staging are separate Google Cloud projects ([Google Drive mirror](../022-drive-mirror/drive-mirror.md), "Hosted deployment"), mirrored into the live build as `NEXT_PUBLIC_GOOGLE_CLIENT_ID`. Also per environment, `APP_BASE_URL`: the canonical public origin that email, workbench and pairing links are built from (`https://www.livedesign.app` in production, never the apex that redirects to it; [Workbench embeds](../013-workspace/workbench-embeds.md)). An empty per-environment value is unset there.
+- **Who gets it.** The reusable workflow resolves `HOSTED` from the repository ID of `livedesign-app/livedesign.app`, so production and staging both apply it, a rename or transfer keeps it, and no fork matches. A fork's deploy applies nothing, so a fork is **telemetry-off and uncapped** until it opts in by declaring the vars in its own `[vars]`.
 - **How it is applied.** On every hosted deploy, not once: the build step appends the frontend mirror to `$GITHUB_ENV`, and the api deploy passes each var as `wrangler deploy --var NAME:VALUE` (`node scripts/hosted-vars.mjs flags`). Every command takes the environment as `--env staging` (none is production), so a deploy only ever applies its own environment's entries.
 - **How it is checked.** After the api deploy, `node scripts/hosted-vars.mjs verify` reads the plain vars off every version serving traffic (`wrangler deployments status` + `wrangler versions view`) and fails the run on any hosted var that is missing or different, or that its environment leaves unset but the worker still holds. Before any deploy, `verify-build ../live/out` fails the build when the live app lacks its environment's Google client id or holds another environment's, so the worker and the live build of one environment always agree. In CI, `apps/api/src/hosted-vars.test.ts` fails when the profile stops turning telemetry on, stops capping galleries (by the worker's own cap parser), names a var the worker does not read, or when `wrangler.toml` commits a hosted-only var as a default.
 
-`AI_ALLOWED_ORIGINS` is deliberately **not** in the profile. It names livepages.app's origins but fails closed, so a fork that forgets to change it gets an AI endpoint that refuses its own origin rather than one open to every page.
+`AI_ALLOWED_ORIGINS` is deliberately **not** in the profile. It names livedesign.app's origins but fails closed, so a fork that forgets to change it gets an AI endpoint that refuses its own origin rather than one open to every page.
 
 ## Required GitHub Action secrets
 
@@ -164,11 +164,11 @@ Subsequent deploys are idempotent updates.
 
 ## Custom domain
 
-Production lives at **`https://livepages.app`**. The apex routes to the router worker (configured in the Cloudflare dashboard, not in `wrangler.toml`). From there:
+Production lives at **`https://livedesign.app`**. The apex routes to the router worker (configured in the Cloudflare dashboard, not in `wrangler.toml`). From there:
 
-- `https://livepages.app/api/*` → api worker (REST + WebSocket).
-- `https://livepages.app/live` and `https://livepages.app/live/<anything>` → live editor (the router strips the `/live` prefix before forwarding).
-- `https://livepages.app/telemetry` → telemetry dashboard; `https://livepages.app/help` → help centre (both prefix-stripped).
+- `https://livedesign.app/api/*` → api worker (REST + WebSocket).
+- `https://livedesign.app/live` and `https://livedesign.app/live/<anything>` → live editor (the router strips the `/live` prefix before forwarding).
+- `https://livedesign.app/telemetry` → telemetry dashboard; `https://livedesign.app/help` → help centre (both prefix-stripped).
 - Everything else → marketing.
 
 The workers themselves remain reachable at their default `*.workers.dev` URLs for direct testing.

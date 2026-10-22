@@ -10,11 +10,11 @@ import {
   RATING_SCALE_MIN,
   SCALE_LABEL_MAX,
   type FormQuestion,
-} from '@livepages/forms';
-import { Select, TextInput } from '@livepages/ui';
+} from '@livedesign/forms';
+import { Select, TextInput } from '@livedesign/ui';
 import { SwitchRow } from '@/components/primitives/SwitchRow';
 import { SettingsField } from '@/components/plan/settings-panel-parts';
-import { updateQuestion } from '@livepages/forms';
+import { updateQuestion } from '@livedesign/forms';
 import { DraftText } from './DraftText';
 import { useFormBuilder } from './form-builder-context';
 

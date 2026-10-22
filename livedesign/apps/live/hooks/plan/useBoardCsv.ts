@@ -1,7 +1,7 @@
 'use client';
 
 // A board's Download CSV and Import CSV… (docs/specs/026-plan/plan-board.md "CSV"): the rows come from
-// @livepages/items (board-csv.ts), the CSV text from the Sheet's reader and writer, and the board publishes both
+// @livedesign/items (board-csv.ts), the CSV text from the Sheet's reader and writer, and the board publishes both
 // actions for its Board tab's tab menu (board-csv-registry.ts).
 import {
   ITEMS_MAX,
@@ -10,8 +10,8 @@ import {
   boardCsvRows,
   boardTakesCsv,
   type PlanBoardSetup,
-} from '@livepages/items';
-import { parseCsv, toCsv } from '@livepages/sheets';
+} from '@livedesign/items';
+import { parseCsv, toCsv } from '@livedesign/sheets';
 import { usePlan, type PlanContextValue } from '@/components/plan/PlanContext';
 import { usePublishBoardCsv } from '@/components/plan/board-csv-registry';
 import { useLatest } from '@/hooks/ui/useLatest';

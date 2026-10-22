@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { editorModeLabel, type EditorMode, type Element } from '@livepages/document';
-import { CompactEmptyState, HoverCard, NoMatches, SearchIcon } from '@livepages/ui';
+import { editorModeLabel, type EditorMode, type Element } from '@livedesign/document';
+import { CompactEmptyState, HoverCard, NoMatches, SearchIcon } from '@livedesign/ui';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { track } from '@/lib/telemetry';
 import { SearchInput } from '@/components/primitives/SearchInput';

@@ -28,7 +28,7 @@
 // than pick a glyph that gestures at it.
 
 import type { ReactNode } from 'react';
-import { POLL_STYLES, POLL_STYLE_LABEL, type PollStyle } from '@livepages/document';
+import { POLL_STYLES, POLL_STYLE_LABEL, type PollStyle } from '@livedesign/document';
 
 function PillRow({ count }: { count: number }) {
   return (

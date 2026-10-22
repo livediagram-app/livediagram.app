@@ -4,7 +4,7 @@
 // picker (docs/specs/004-interface-design/colour-picker.md) with the strong standard colours by
 // name, each in its version for the board, Custom colours from the document, and + with the
 // hard-to-see warning. Ink is the pen's null colour.
-import { INK_PEN_COLOUR, type Appearance, type PenColour } from '@livepages/document';
+import { INK_PEN_COLOUR, type Appearance, type PenColour } from '@livedesign/document';
 import { ColourPicker as Picker } from '@/components/colour/ColourPicker';
 import { standardGroup } from '@/components/colour/colour-options';
 import { useDocumentColours } from '@/hooks/ui/useDocumentColours';

@@ -24,7 +24,7 @@ describe('pending form start', () => {
   });
 
   it('survives the page load /new hands over with', () => {
-    sessionStorage.setItem('livepages:pending-form-start:t3', 'feedback');
+    sessionStorage.setItem('livedesign:pending-form-start:t3', 'feedback');
     expect(hasPendingFormStart('t3')).toBe(true);
     expect(takePendingFormStart('t3')).toBe('feedback');
   });

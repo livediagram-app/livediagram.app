@@ -1,5 +1,5 @@
 import type { Dispatch, RefObject, SetStateAction } from 'react';
-import { addTableRow, setTableCell, type TableElement } from '@livepages/document';
+import { addTableRow, setTableCell, type TableElement } from '@livedesign/document';
 
 type Cell = { r: number; c: number } | null;
 

@@ -4,7 +4,7 @@
 // rather than scrolling the page.
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { DashboardRow } from '@livepages/document';
+import type { DashboardRow } from '@livedesign/document';
 import { DashboardContext, type DashboardContextValue } from './dashboard-context';
 import { DashboardRowView } from './DashboardRowView';
 

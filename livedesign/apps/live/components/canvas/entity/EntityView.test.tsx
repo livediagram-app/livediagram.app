@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { createShape, type ShapeElement } from '@livepages/document';
+import { createShape, type ShapeElement } from '@livedesign/document';
 import { EntityView } from './EntityView';
 
 describe('EntityView', () => {

@@ -6,7 +6,7 @@ import {
   PRESENCE_OP_KINDS,
   ROOM_OP_KINDS,
   SYSTEM_OP_KINDS,
-} from '@livepages/api-schema';
+} from '@livedesign/api-schema';
 
 // The editor's room-op vocabulary must match the schema's classification.
 //

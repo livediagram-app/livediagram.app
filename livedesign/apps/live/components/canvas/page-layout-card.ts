@@ -2,7 +2,7 @@
 // page offers its layouts"): the Start From a Layout card (EmptyPageLayouts) where the page on
 // screen has room for it, else a Choose a Layout button in its middle (EmptyPageInvite). Pure, so
 // each rule is tested on its own.
-import type { LaidOutPage } from '@livepages/document';
+import type { LaidOutPage } from '@livedesign/document';
 
 // Screen px an empty page needs round the in-page layout card.
 export const LAYOUT_CARD_MARGIN = 16;

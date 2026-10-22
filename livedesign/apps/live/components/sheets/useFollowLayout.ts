@@ -4,7 +4,7 @@
 // selection follow their cells (docs/specs/029-sheets/sheet.md "Collaboration"): positions are read through the
 // old layout's ids and found again in the new one. An edit whose cell was deleted is thrown away, and said.
 import { useEffect, useRef } from 'react';
-import type { GridRange, Selection, SheetLayout } from '@livepages/sheets';
+import type { GridRange, Selection, SheetLayout } from '@livedesign/sheets';
 import type { Editing } from './sheet-controller';
 
 export const EDIT_LOST = 'Someone deleted the row you were editing';

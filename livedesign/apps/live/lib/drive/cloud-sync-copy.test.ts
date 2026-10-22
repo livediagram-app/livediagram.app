@@ -26,7 +26,7 @@ const status = (over: Partial<DriveMirrorStatus> = {}): DriveMirrorStatus => ({
   error: null,
   leaseHeldElsewhere: false,
   notices: [],
-  rootName: 'livepages (staging)',
+  rootName: 'livedesign (staging)',
   mirrored: {},
   failed: [],
   rootFolderId: null,
@@ -45,8 +45,8 @@ const NOTICE = { kind: 'document' as const, ldId: 'd', name: 'Plan', parentId: '
 
 describe('the description under the card, once connected', () => {
   it('says where the documents go', () => {
-    expect(driveConnectedText('livepages (staging)')).toBe(
-      'Your documents are synced to “livepages (staging)” in Google Drive.',
+    expect(driveConnectedText('livedesign (staging)')).toBe(
+      'Your documents are synced to “livedesign (staging)” in Google Drive.',
     );
     expect(driveConnectedText(null)).toBe('Your documents are synced to Google Drive.');
   });
@@ -152,7 +152,7 @@ describe('the problem line', () => {
       action: null,
     });
     expect(problem({ notices: [NOTICE, { ...NOTICE, ldId: 'e' }] })).toEqual({
-      text: "Plan and 1 more: Moved to a Drive folder livepages can't see.",
+      text: "Plan and 1 more: Moved to a Drive folder livedesign can't see.",
       action: 'showFolder',
     });
   });
@@ -199,7 +199,7 @@ describe('the help article', () => {
       'utf8',
     );
     expect(article).toContain(
-      `checks for changes every ${durationWords(DRIVE_POLL_INTERVAL_MS)} while livepages is open`,
+      `checks for changes every ${durationWords(DRIVE_POLL_INTERVAL_MS)} while livedesign is open`,
     );
     expect(article).toContain(
       `${durationWords(DRIVE_WRITE_IDLE_MS)} after you stop, at most once every ` +

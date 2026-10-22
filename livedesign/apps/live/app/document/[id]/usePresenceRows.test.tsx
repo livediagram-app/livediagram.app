@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
 import { renderHook } from '@testing-library/react';
-import type { Tab } from '@livepages/document';
+import type { Tab } from '@livedesign/document';
 import type { Participant } from '@/lib/identity';
 import { usePresenceRows } from './usePresenceRows';
 

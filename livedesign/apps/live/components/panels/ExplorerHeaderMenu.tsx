@@ -10,7 +10,7 @@ import {
   ScaleIcon,
   SearchGlyph,
 } from '@/components/chrome/tab-bar-icons';
-import { REPO_URL, Glyph } from '@livepages/ui';
+import { REPO_URL, Glyph } from '@livedesign/ui';
 import type { ExplorerMenuActions } from './Explorer.types';
 import type { HelpArticleKey } from '@/lib/help-articles';
 import { HelpMarkIcon, openHelpArticle } from '@/components/primitives/HelpArticleLink';

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo } from 'react';
-import type { PlacementDefaultKey } from '@livepages/api-schema';
+import type { PlacementDefaultKey } from '@livedesign/api-schema';
 import {
   buildDefaultFolderIndex,
   workingDefault,

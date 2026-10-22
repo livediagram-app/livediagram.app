@@ -13,7 +13,7 @@ import {
   templateLayers,
   untitledNameForTemplate,
   type TemplateKind,
-} from '@livepages/templates';
+} from '@livedesign/templates';
 import { getTheme } from './themes';
 
 // `buildTemplatedTab` is the seam between /live/new (the welcome

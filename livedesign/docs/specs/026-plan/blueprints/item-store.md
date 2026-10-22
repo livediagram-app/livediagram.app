@@ -1,6 +1,6 @@
 # Item store blueprint
 
-Derived from [Items](../items.md). Implementation contract for the `@livepages/items` package, the api's item
+Derived from [Items](../items.md). Implementation contract for the `@livedesign/items` package, the api's item
 store, the room op, and the editor's item slice.
 
 ## Domain and naming
@@ -16,7 +16,7 @@ store, the room op, and the editor's item slice.
 | status     | `fields.status` (string)                                     |
 | person     | `ItemPerson { id, name, color }`                             |
 
-## Package `@livepages/items` (pure, no DOM, no dependencies)
+## Package `@livedesign/items` (pure, no DOM, no dependencies)
 
 ```
 src/item.ts          Item, ItemFields, ItemFieldValue, ItemPerson, ItemCreate, ItemPatch, ItemMove
@@ -286,7 +286,7 @@ A card's thread (spec items.md "Comments") is the canvas's `CommentThread` in `f
 comment, max)` (append unless present or full, `resolved: false`), `threadWithoutComment(thread, id)` (the last
   takes the thread: `undefined`), `threadResolved(thread, resolved)`. Each returns the same thread when nothing
   changes. `applyElementDelta`'s comment cases call them.
-- **Item writes** (`packages/document/src/item-comments.ts`; `@livepages/document` already reads items, the
+- **Item writes** (`packages/document/src/item-comments.ts`; `@livedesign/document` already reads items, the
   reverse would cycle): `ItemCommentChange = add { comment } | remove { commentId } | resolve { resolved }`;
   `applyItemComment(item, change, ctx)` returns `{ ok, item }` (rev + 1, `updatedAt/By`) or a refusal:
   `comments_full` (count ≥ `ITEM_COMMENTS_MAX`, or the thread past `ITEM_COMMENTS_BYTES`), `comment_not_found`,
@@ -368,7 +368,7 @@ refetches. Presence on cards is a separate ephemeral op, `plan-presence` (`{ tab
 - Sync to cloud sends `storeAsCreates(items)` (column order kept, votes carried); Take offline fetches the store
   first and aborts without it; Duplicate copies it (cloud: the create body; offline: the new record); the Drive
   mirror's `DocumentEnvelope.document.items` (optional, so the file stays version 1).
-- Tab JSON export: `tabToJsonText(tab, plan?)` (`@livepages/document`, `export-tab-text.ts`) adds
+- Tab JSON export: `tabToJsonText(tab, plan?)` (`@livedesign/document`, `export-tab-text.ts`) adds
   `ExportedTabEnvelope.items` from `tabExportItems(tab, items)` (`export-tab-plan.ts`: `itemIdsShownOnTab`, the Trash
   dropped, `votes` and `comments` stripped from `fields`, key order) and `itemTypes` (the stored catalogue, only with
   items). `TabPlanData = { items, types, catalogue }` is what every text export takes; the Export dialog builds it
@@ -376,7 +376,7 @@ refetches. Presence on cards is a separate ephemeral op, `plan-presence` (`{ tab
 - Tab JSON import: `parseImportedTab` reads `items` through `isItemLike` (shared with `parseDocumentEnvelope`) and
   `itemTypes` through `readItemTypeCatalogue`, as `ImportResult.plan`. `useTabImport` lands the tab, then calls
   `importPlanItems` (`hooks/plan/usePlanTabImport.ts`): `planTabItemsImport(incoming, catalogue, existing, types)`
-  (`@livepages/items`, `tab-import.ts`) returns the file's types its fresh items use and the document lacks, the
+  (`@livedesign/items`, `tab-import.ts`) returns the file's types its fresh items use and the document lacks, the
   fresh items as `storeAsCreates` without `key`, and the skipped count; `itemTypes.addTypes(types)` then one undoable
   `write({ kind: 'create', creates })`. A refused write returns `failed: creates.length`, reported as the `Plan Cards`
   failure line (`planCardsFailure`) on the import's report. Logged as `[plan-tab-import]`.

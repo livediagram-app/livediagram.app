@@ -6,7 +6,7 @@
 // collab-shapes.ts is one. Re-exported from './index'.
 
 import type { Element, ShapeKind } from './index';
-import { sha256 } from '@livepages/items';
+import { sha256 } from '@livedesign/items';
 
 export type QaNoteState = 'discussing' | 'done';
 
@@ -217,7 +217,7 @@ export function qaView(notes: QaNote[] | undefined): QaView {
 // voted for. One-way and per-board, so the published value is neither a
 // credential nor a way to follow a person between boards.
 export async function qaVoterId(ownerId: string, elementId: string): Promise<string> {
-  const bytes = new TextEncoder().encode(`livepages:qa-vote:v1:${ownerId}:${elementId}`);
+  const bytes = new TextEncoder().encode(`livedesign:qa-vote:v1:${ownerId}:${elementId}`);
   const digest = await sha256(bytes);
   return Array.from(digest.slice(0, 8), (b) => b.toString(16).padStart(2, '0')).join('');
 }

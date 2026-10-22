@@ -2,7 +2,7 @@
 
 Follow the references below only as needed; never upfront.
 
-This folder is the **source of truth** for what livepages is and how it works. Before building anything, check here. After every product decision, update or add a spec.
+This folder is the **source of truth** for what livedesign is and how it works. Before building anything, check here. After every product decision, update or add a spec.
 
 Specs live in numbered category folders: the reserved `001`–`005` first (vision, scope, architecture, interface design, roadmap), then one folder per domain concept. The specs themselves are unnumbered and named by subject.
 

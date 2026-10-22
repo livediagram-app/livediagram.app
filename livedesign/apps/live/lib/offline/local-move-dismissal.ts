@@ -5,7 +5,7 @@ import { readLocalStorageSafe, writeLocalStorageSafe } from '@/lib/local-storage
 // documents in This Browser at the time. The prompt comes back only when that count grows, so a deliberate
 // document in This Browser is never asked about twice.
 
-const PREFIX = 'livepages:v2:local-move-dismissed:';
+const PREFIX = 'livedesign:v2:local-move-dismissed:';
 
 function dismissedCount(userId: string): number {
   const raw = readLocalStorageSafe(PREFIX + userId);

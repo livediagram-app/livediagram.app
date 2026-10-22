@@ -7,7 +7,7 @@ import {
   type Element,
   type TableCellStyle,
   type TextElement,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { heading, kit, type Kit, type LayoutBox } from './page-layout-kit';
 import { CROSS_ROSE, SOURCE_H, sourceLine, TICK_GREEN } from './page-layout-parts';
 

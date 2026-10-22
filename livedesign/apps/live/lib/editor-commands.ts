@@ -14,7 +14,7 @@ import {
   AUTO_LAYOUT_STYLE_IDS,
   type AutoLayoutChoice,
 } from './auto-layout-choices';
-import type { ShapeMarker } from '@livepages/document';
+import type { ShapeMarker } from '@livedesign/document';
 import type { CommandSearchItem } from './search';
 import { selectionCommands } from './editor-commands-selection';
 

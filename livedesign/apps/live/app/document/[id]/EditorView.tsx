@@ -6,7 +6,7 @@ import dynamic from 'next/dynamic';
 import { CommentBadgesContext } from '@/components/canvas/CommentBadgesContext';
 import { SuppressElementIndicators } from '@/components/canvas/ElementIndicatorStyleContext';
 import { EditorModeProvider } from '@/components/chrome/editor-mode/editor-mode-context';
-import { truncateName } from '@livepages/document';
+import { truncateName } from '@livedesign/document';
 import { openSearchWithPrefetch } from '@/lib/open-search';
 import { track } from '@/lib/telemetry';
 import { NewVersionPrompt } from '@/components/chrome/NewVersionPrompt';
@@ -14,7 +14,7 @@ import { registerUnsavedWork } from '@/lib/unsaved-work';
 import { useRegionCycle } from '@/hooks/ui/useRegionCycle';
 import { useEffect, useMemo } from 'react';
 import { addToDocumentTargets } from '@/lib/add-to-document-targets';
-import { canvasSurface } from '@livepages/document';
+import { canvasSurface } from '@livedesign/document';
 import { getTheme } from '@/lib/themes';
 import { resolveViewBackdrop } from '@/lib/view-backdrop';
 import { CanvasPatternContext } from '@/components/canvas/canvas-pattern-context';
@@ -545,7 +545,7 @@ export function EditorView() {
                                       />
                                     ) : null}
                                     {workbench ? (
-                                      // The workbench's Reconnect line; its Open in livepages sits in the tab bar.
+                                      // The workbench's Reconnect line; its Open in livedesign sits in the tab bar.
                                       <WorkbenchReconnectLine
                                         workbenchName={workbench.workbenchName}
                                         ended={workbench.ended}

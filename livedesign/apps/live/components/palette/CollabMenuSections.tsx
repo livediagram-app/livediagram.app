@@ -42,8 +42,8 @@ import {
   ROOM_DOOR_LABELS,
   ROOM_DOORS,
   type RoomDoor,
-} from '@livepages/document';
-import { DateInput } from '@livepages/ui';
+} from '@livedesign/document';
+import { DateInput } from '@livedesign/ui';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { ToolsMenuGlyph } from '@/components/palette/context-menu-icons';

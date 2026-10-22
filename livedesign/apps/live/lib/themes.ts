@@ -1,5 +1,5 @@
 // The shared theme ENGINE (catalogue, types, recolour / switch / reset / preset
-// transforms) now lives in @livepages/document so the MCP worker (docs/specs/015-api/mcp-server.md)
+// transforms) now lives in @livedesign/document so the MCP worker (docs/specs/015-api/mcp-server.md)
 // themes tabs identically to the editor. This file re-exports it and adds
 // the LIVE-ONLY layer: custom-theme (per-owner, docs/specs/011-theme/custom-themes.md) resolution and the
 // new-element colour derivation that depends on it. The ~120 `@/lib/themes`
@@ -22,8 +22,8 @@ import {
   type BoxedElement,
   type Tab,
   type ThemeDefinition,
-} from '@livepages/document';
-import { getResolvedAppearance } from '@livepages/ui';
+} from '@livedesign/document';
+import { getResolvedAppearance } from '@livedesign/ui';
 import { lookupCustomTheme } from './custom-theme-registry';
 
 // Pass through the shared engine so `@/lib/themes` stays the editor's theme API.
@@ -42,8 +42,8 @@ export {
   rederiveColorPresetForTheme,
   themePresetColors,
   themeChartPalette,
-} from '@livepages/document';
-export type { ThemeId, ThemeDefinition, ShapeColorPreset } from '@livepages/document';
+} from '@livedesign/document';
+export type { ThemeId, ThemeDefinition, ShapeColorPreset } from '@livedesign/document';
 
 // Resolve an id to its real ThemeDefinition, or `undefined` when the id names
 // nothing we know — a deleted custom theme (docs/specs/011-theme/custom-themes.md), or a custom id whose owner

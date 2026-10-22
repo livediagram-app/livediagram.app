@@ -4,14 +4,14 @@
 // every live card, in the canvas theme's board colours. Each view is its own component; this picks one. A
 // visualisation can be maximised to fill the canvas area for this person alone (plan-views.md "Maximised view").
 import { useMemo, useState } from 'react';
-import { PIE_PALETTE, type PlanViewRef, type ShapeElement } from '@livepages/document';
+import { PIE_PALETTE, type PlanViewRef, type ShapeElement } from '@livedesign/document';
 import {
   planViewMetric,
   readPlanViewSettings,
   viewShownTypes,
   type Item,
   type PlanViewId,
-} from '@livepages/items';
+} from '@livedesign/items';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { track } from '@/lib/telemetry';
 import { usePlan, type PlanContextValue } from '../PlanContext';

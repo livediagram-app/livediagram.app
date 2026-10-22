@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Tab } from '@livepages/document';
+import type { Tab } from '@livedesign/document';
 import { keepUnsavedTabChanges } from './meta-keep-local';
 
 // docs/specs/012-collaboration/collab-race-hardening.md "Tab lists".

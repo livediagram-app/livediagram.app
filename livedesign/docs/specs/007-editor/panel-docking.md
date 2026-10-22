@@ -111,7 +111,7 @@ collapsible has no such button.
 
 ## Persistence — device-local
 
-The layout is stored in **`localStorage` only**, under `livepages:panel-layout:v1`, on
+The layout is stored in **`localStorage` only**, under `livedesign:panel-layout:v1`, on
 the browser that set it. It is **not** synced to the account and **not** part of the
 D1-backed user-preferences blob ([User preferences](user-preferences.md)): panel placement is a per-device ergonomic
 choice (screen size, handedness, external monitor) rather than a portable account setting,
@@ -144,7 +144,7 @@ type PanelLayout = {
 
 A panel id appears in **exactly one** place: one corner's array, or `free`, or neither
 (then it uses its default). Writes are best-effort (quota / private-window failures are
-swallowed). A same-tab `livepages:panel-layout-changed` window event fires on write so
+swallowed). A same-tab `livedesign:panel-layout-changed` window event fires on write so
 the editor picks up its own change without polling; the browser's native `storage` event
 covers cross-tab. Mirrors the eventing pattern of `lib/user-preferences.ts` but with no
 network step.

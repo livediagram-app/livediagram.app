@@ -10,15 +10,15 @@ import {
   type PagesRefusal,
   type PagesRequest,
   type RoomOp,
-} from '@livepages/api-schema';
-import { diffToElementOps, plural, type Tab } from '@livepages/document';
+} from '@livedesign/api-schema';
+import { diffToElementOps, plural, type Tab } from '@livedesign/document';
 import {
   applyArticleWrite,
   applyPageChanges,
   articleSummaries,
   type PageChangesOutcome,
   pageSummaries,
-} from '@livepages/edit-operations';
+} from '@livedesign/edit-operations';
 import { isTabRevStale, lastChangesetRev, upsertTabAtRev } from '../db';
 import { TabTooLargeError } from '../limits';
 import { relayPages } from '../room-client';

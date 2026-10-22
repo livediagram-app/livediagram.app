@@ -1,18 +1,18 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-  "name": "io.github.livepages-app/livepages",
-  "title": "livepages",
-  "description": "Create, edit, share and render real-time collaborative diagrams and mindmaps on livepages.app.",
+  "name": "io.github.livedesign-app/livedesign",
+  "title": "livedesign",
+  "description": "Create, edit, share and render real-time collaborative diagrams and mindmaps on livedesign.app.",
   "version": "0.1.0",
-  "websiteUrl": "https://livepages.app",
+  "websiteUrl": "https://livedesign.app",
   "repository": {
-    "url": "https://github.com/livepages-app/livepages.app",
+    "url": "https://github.com/livedesign-app/livedesign.app",
     "source": "github",
     "subfolder": "apps/mcp"
   },
   "icons": [
     {
-      "src": "https://raw.githubusercontent.com/livepages-app/livepages.app/main/marketing/media/icons/livepages-icon-512.png",
+      "src": "https://raw.githubusercontent.com/livedesign-app/livedesign.app/main/marketing/media/icons/livedesign-icon-512.png",
       "mimeType": "image/png",
       "sizes": ["512x512"]
     }
@@ -20,7 +20,7 @@
   "remotes": [
     {
       "type": "streamable-http",
-      "url": "https://mcp.livepages.app/mcp"
+      "url": "https://mcp.livedesign.app/mcp"
     }
   ]
 }

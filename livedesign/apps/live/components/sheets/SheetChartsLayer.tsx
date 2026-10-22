@@ -16,14 +16,14 @@ import {
   type CSSProperties,
   type ReactNode,
 } from 'react';
-import { Tooltip } from '@livepages/ui';
+import { Tooltip } from '@livedesign/ui';
 import {
   CHART_TYPE_LABELS,
   chartTypeOf,
   chartsInSheet,
   type Element,
   type ShapeElement,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { DataChartView } from '@/components/canvas/DataChartView';
 import { useSheetsBridgeContext } from '@/hooks/sheets/useSheetsBridge';
 import { useSheetCharts } from './sheet-charts-context';

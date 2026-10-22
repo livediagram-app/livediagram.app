@@ -1,15 +1,15 @@
 // A Form tab as the api reads it (docs/specs/030-forms/blueprints/forms.md §11): its form, the boards its destination
 // names, and the backdrop its form page draws on.
-import { tabKindOf } from '@livepages/document';
+import { tabKindOf } from '@livedesign/document';
 import {
   destinationProblem,
   readForm,
   type DestinationProblem,
   type FormDefinition,
-} from '@livepages/forms';
-import { normaliseBoardSetup, type ItemTypeDef, type PlanBoardSetup } from '@livepages/items';
+} from '@livedesign/forms';
+import { normaliseBoardSetup, type ItemTypeDef, type PlanBoardSetup } from '@livedesign/items';
 import { documentLinksTab, getTab, liveFormLinksOf, readSheetHead, setFormLinkOpen } from '../db';
-import type { FormSheetDestination } from '@livepages/forms';
+import type { FormSheetDestination } from '@livedesign/forms';
 import type { Env, TabDTO } from '../types';
 
 type FormTab = { tab: TabDTO; form: FormDefinition };

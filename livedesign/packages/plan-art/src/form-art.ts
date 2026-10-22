@@ -1,7 +1,7 @@
 // A Form tab's picture (docs/specs/030-forms/forms.md "Agents": read_form's image; blueprint §15): the form as a
 // respondent sees it on its tab's look, every section one after another as Preview scrolls them: the cover band, the
 // heading card, each question's card with its answer control, and the button that ends it. Pure markup, light half.
-import { svgText, svgWrapLines, type FormLook } from '@livepages/document';
+import { svgText, svgWrapLines, type FormLook } from '@livedesign/document';
 import {
   DROPDOWN_AFTER,
   RATING_SCALE_DEFAULT,
@@ -9,8 +9,8 @@ import {
   ruleQuestion,
   type FormDefinition,
   type FormQuestion,
-} from '@livepages/forms';
-import { xmlEscape } from '@livepages/icons';
+} from '@livedesign/forms';
+import { xmlEscape } from '@livedesign/icons';
 import { box, line, r2 } from './plan-art-kit';
 
 // The builder's column (640) inside its gutters, and the cover's height on a desktop.

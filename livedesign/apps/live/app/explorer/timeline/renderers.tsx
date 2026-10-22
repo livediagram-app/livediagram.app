@@ -1,10 +1,10 @@
 'use client';
 
-// livepages's timeline renderers (docs/specs/013-workspace/timeline.md §7).
+// livedesign's timeline renderers (docs/specs/013-workspace/timeline.md §7).
 //
 // These are the half of the Timeline that knows about this product:
 // which route a card opens, what its preview shows, and when to say
-// "you" instead of a name. The components in @livepages/ui take this
+// "you" instead of a name. The components in @livedesign/ui take this
 // registry as a prop and never import a route themselves, which is what
 // lets a per-document feed reuse them without inheriting the Explorer's
 // copy.
@@ -22,8 +22,8 @@ import type {
   TimelineRenderer,
   TimelineRendererContext,
   TimelineRendererRegistry,
-} from '@livepages/ui';
-import { SourceTypeIcon } from '@livepages/ui';
+} from '@livedesign/ui';
+import { SourceTypeIcon } from '@livedesign/ui';
 import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
 import { EVENT_ICONS } from './icons';
 import { requestOpenSettings } from '@/lib/open-settings';

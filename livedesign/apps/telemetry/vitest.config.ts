@@ -1,4 +1,4 @@
-import { defineProject } from '@livepages/vitest-config';
+import { defineProject } from '@livedesign/vitest-config';
 
 // Next compiles JSX with the automatic runtime (no React import in scope), so
 // a test that imports a view's metric list (metric-emitters.test.ts) must

@@ -1,6 +1,6 @@
 // Renaming a sheet (docs/specs/029-sheets/sheet.md "Header"): trimmed, unchanged or empty does nothing, and a title
 // another sheet on the tab has (any case) is refused with a toast. From the header's title and the Sheet's settings.
-import { uniqueSheetTitle } from '@livepages/sheets';
+import { uniqueSheetTitle } from '@livedesign/sheets';
 import type { SheetController } from './sheet-controller';
 import type { SheetStore } from './sheet-store-client';
 

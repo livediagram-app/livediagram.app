@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { JsonLd } from '@livepages/ui';
+import { JsonLd } from '@livedesign/ui';
 import { Breadcrumb } from '@/components/Breadcrumb';
 import { HelpHero } from '@/components/HelpHero';
 import { CATEGORY_ART } from '@/components/category-art';

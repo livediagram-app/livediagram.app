@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useRef, useState } from 'react';
-import { DialogCloseButton, NoMatches } from '@livepages/ui';
+import { DialogCloseButton, NoMatches } from '@livedesign/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
 import {
   SettingsCategoryList,

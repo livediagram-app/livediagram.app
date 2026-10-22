@@ -3,7 +3,7 @@
 // selection is, the frozen ones always drawn, and a small arrow between the neighbours of hidden lines.
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { Selection, SheetLayout } from '@livepages/sheets';
+import type { Selection, SheetLayout } from '@livedesign/sheets';
 import { planPalette } from '@/components/plan/plan-palette';
 import { SheetHeaders } from './SheetHeaders';
 import { geometryOf, visibleWindow } from './sheet-geometry';

@@ -7,7 +7,7 @@ import {
   avatarPadFootprint,
   type Element,
   type ShapeElement,
-} from '@livepages/document';
+} from '@livedesign/document';
 import type { AvatarPoint } from '@/lib/avatar-walk';
 
 // How long an arrival beam plays, in ms (the `avatar-pad-beam` keyframes in canvas-motion.css run this long).

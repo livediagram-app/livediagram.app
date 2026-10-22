@@ -134,7 +134,7 @@ Anchor", "A List".
 The same rule covers the close cousins of a menu item, the controls that name an action on an
 element or add one:
 
-- **Palette tiles**: every add-tile's name and caption ("Add Sticky Note" captioned "Sticky Note"), the Toolbar strip's **Add Page**, and the Draw dock's shapes. A catalogue entry keeps its own sentence-case name and its tile Title Cases it on the way (`headlineCase` in `@livepages/api-schema`).
+- **Palette tiles**: every add-tile's name and caption ("Add Sticky Note" captioned "Sticky Note"), the Toolbar strip's **Add Page**, and the Draw dock's shapes. A catalogue entry keeps its own sentence-case name and its tile Title Cases it on the way (`headlineCase` in `@livedesign/api-schema`).
 - **The quick-add ring's options**: "Add Row", "Add Column", "Add Child", "Add Sibling", "Add
   Point", "Add Stat".
 - **Buttons drawn on an element**: the selection toolbar ("Bring to Front", "Edit Points", "Add
@@ -217,7 +217,7 @@ None. Menus already count the verbs chosen in them; how focus moved is not an ac
 
 ## Where it lives
 
-- `@livepages/ui` owns the keyboard model and the hooks every app's menus use (`useMenu`,
+- `@livedesign/ui` owns the keyboard model and the hooks every app's menus use (`useMenu`,
   `useMenuButton`, `useControlMenu`), so the editor, help, telemetry and marketing menus
   behave as one.
 - The editor's menu primitives (`PortalMenu`, `ContextMenu`, `MenuFlyoutSection` and the row

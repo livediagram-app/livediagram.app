@@ -1,7 +1,7 @@
 // Text serialisation of a Tab: the non-visual export formats (JSON snapshot and Markdown outline), shared by the
 // editor's Export dialog and the CLI's export. They share nothing with a rasteriser beyond the Tab data model.
 
-import type { Item, ItemTypeCatalogue } from '@livepages/items';
+import type { Item, ItemTypeCatalogue } from '@livedesign/items';
 import { isBoxed, type ArrowElement, type BoxedElement, type Tab } from './index';
 import { tabExportItems, tabPlanMarkdown, type TabPlanData } from './export-tab-plan';
 
@@ -22,7 +22,7 @@ export const TAB_SCHEMA_VERSION = 2;
 
 export type ExportedTabEnvelope = {
   schemaVersion: number;
-  kind: 'livepages.tab';
+  kind: 'livedesign.tab';
   exportedAt: number;
   tab: Tab;
   // The items the tab shows and the document's stored type catalogue (docs/specs/026-plan/items.md "Copies and
@@ -39,7 +39,7 @@ export function tabToJsonText(tab: Tab, plan?: TabPlanData): string {
   const items = plan ? tabExportItems(tab, plan.items) : [];
   const envelope: ExportedTabEnvelope = {
     schemaVersion: TAB_SCHEMA_VERSION,
-    kind: 'livepages.tab',
+    kind: 'livedesign.tab',
     exportedAt: Date.now(),
     tab,
     ...(items.length ? { items } : {}),

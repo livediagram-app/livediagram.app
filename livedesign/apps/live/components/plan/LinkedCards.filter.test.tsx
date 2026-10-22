@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { ITEM_TYPES, type Item } from '@livepages/items';
+import { ITEM_TYPES, type Item } from '@livedesign/items';
 import { FilteredCards } from './LinkedCards';
 
 // docs/specs/026-plan/item-types.md "Card fields": a card's linked cards, filtered by Card Type and State.

@@ -1,6 +1,6 @@
 # Compact representations and query views for the agent CLI
 
-Research for the `livepages` CLI (`livepages <resource> <verb>`), whose first reader is an AI agent.
+Research for the `livedesign` CLI (`livedesign <resource> <verb>`), whose first reader is an AI agent.
 Question: how should a tab be written out so a model can read, reason about and edit it at the lowest token cost,
 and which query views earn a place beside the default outline? Measured on 2026-10-03.
 
@@ -219,7 +219,7 @@ edge   := ref [SP label] [SP "~" lineStyle]
   it never picks one. A prefix printed earlier can become ambiguous after a collaborator adds an element: the
   error says so, and the agent re-reads.
 - Positional refs (`e1..eN`) are rejected. Playwright gets away with them because a browser session is stateful
-  and single-writer; a CLI is stateless between calls and a livepages tab has live co-editors, so `e7` could name
+  and single-writer; a CLI is stateless between calls and a livedesign tab has live co-editors, so `e7` could name
   a different element on the next read.
 - Labels are never refs: they are not unique and they change.
 - The CLI should default new element ids to a unique slug of the label (`redis-cache`) unless the agent passes
@@ -277,7 +277,7 @@ are left out, with a count in the header, matching the export rule in `mermaidFr
 without new rules. Models read JSON escapes fluently.
 
 **One vocabulary in and out.** The tokens and refs the outline prints are the ones the CLI's write verbs take
-(`livepages element add cylinder "Redis cache" --into c991`), so reading teaches writing. The outline itself is
+(`livedesign element add cylinder "Redis cache" --into c991`), so reading teaches writing. The outline itself is
 a read form; see [open question 1](#9-open-questions).
 
 ## 5. Query views
@@ -290,7 +290,7 @@ takes `--json` for the same view's data as JSON, and `--raw` gives the stored ta
 For orienting before choosing a tab. About 90 tokens for three tabs.
 
 ```text
-doc 7f3a "Checkout platform" · 3 tabs · edited 3m ago by Sam · https://livepages.app/document/7f3a…
+doc 7f3a "Checkout platform" · 3 tabs · edited 3m ago by Sam · https://livedesign.app/document/7f3a…
   tab 0b34 "Architecture"       30 elements: 16 boxes, 3 frames, 11 arrows · 1 open thread
   tab 51c9 "Payment sequence"   42 elements: 6 lanes, 18 boxes, 18 arrows
   tab 9e02 "Incident retro"     24 elements: 22 stickies, 2 text · opens in draw · 3 open threads

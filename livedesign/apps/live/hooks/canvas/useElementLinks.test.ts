@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { createLinkCard, createShape, type Element, type Tab } from '@livepages/document';
+import { createLinkCard, createShape, type Element, type Tab } from '@livedesign/document';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 const api = vi.hoisted(() => ({ apiUnfurl: vi.fn() }));

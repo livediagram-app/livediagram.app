@@ -24,7 +24,7 @@ export type ActivityPlace = {
   tabName: string;
   elementId: string;
   // The element's list name (its label, a table's first cell, or
-  // "Untitled"), per `elementDisplayLabel` in @livepages/document.
+  // "Untitled"), per `elementDisplayLabel` in @livedesign/document.
   elementLabel: string;
 };
 

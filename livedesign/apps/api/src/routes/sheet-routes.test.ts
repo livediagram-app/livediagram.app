@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { sentJson } from '@livepages/vitest-config/sent-request';
-import type { SheetResponse, SheetsResponse, SheetWriteResponse } from '@livepages/api-schema';
-import { emptyLayout, type SheetWrite } from '@livepages/sheets';
+import { sentJson } from '@livedesign/vitest-config/sent-request';
+import type { SheetResponse, SheetsResponse, SheetWriteResponse } from '@livedesign/api-schema';
+import { emptyLayout, type SheetWrite } from '@livedesign/sheets';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import * as db from '../db';
 import { makeTestRouteContext } from './test-route-context';

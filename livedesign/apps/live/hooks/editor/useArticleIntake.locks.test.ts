@@ -7,7 +7,7 @@ import {
   layOutPages,
   type ArticleBlock,
   type Tab,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { useArticleIntake } from './useArticleIntake';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));

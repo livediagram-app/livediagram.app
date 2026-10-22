@@ -1,7 +1,7 @@
 import { statusLabel, type Participant, type ParticipantStatus } from '@/lib/identity';
 import { relativeSince } from '@/lib/relative-time';
 import { withoutAgentRows } from '@/lib/agent-presence-rows';
-import { parseStoredLevel, type AccessLevel } from '@livepages/api-schema';
+import { parseStoredLevel, type AccessLevel } from '@livedesign/api-schema';
 
 // The Collaborators modal's roster (docs/specs/012-collaboration/collaborator-enhancements.md): everyone in the document,
 // grouped by the tab they are on. Built from the same `participantsByTab`

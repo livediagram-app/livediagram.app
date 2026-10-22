@@ -1,4 +1,4 @@
-import type { TelemetryCount } from '@livepages/api-schema';
+import type { TelemetryCount } from '@livedesign/api-schema';
 import { describe, expect, it } from 'vitest';
 import { pageViewRows } from './page-views';
 

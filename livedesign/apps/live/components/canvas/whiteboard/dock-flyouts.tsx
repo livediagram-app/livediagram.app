@@ -10,7 +10,7 @@ import {
   penColourCss,
   whiteboardBackgroundOf,
   type Appearance,
-} from '@livepages/document';
+} from '@livedesign/document';
 import {
   WHITEBOARD_PEN_WIDTHS,
   PEN_NAMES,

@@ -1,7 +1,7 @@
 // `arrow-behind-box` (warning): an arrow passes through a box it does not connect, one finding an arrow
 // listing every such box (LN8). An arrow that opts out of route-behind is drawn over them by choice: not behind.
 
-import { boundsOfPoints, pathPassesThrough, queryElementGrid } from '@livepages/document';
+import { boundsOfPoints, pathPassesThrough, queryElementGrid } from '@livedesign/document';
 import { arrowName, arrowSelector } from '../arrow-names';
 import { isLintBox } from '../boxes';
 import { LINT_MOVE_CLEAR } from '../constants';

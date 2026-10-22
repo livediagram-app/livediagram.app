@@ -4,13 +4,13 @@
 // category owns a distinct hue and keeps it in both the mobile root list and
 // the desktop sidebar.
 //
-// Drawn here rather than pulled from @livepages/icons because that package
+// Drawn here rather than pulled from @livedesign/icons because that package
 // is the canvas catalogue (what a user places on the canvas); these are chrome,
 // sized for a 28px tile and stroked to read at that size.
 
 import type { ReactNode } from 'react';
-import { Glyph, lucideGlyph, EDITOR_MODE_ICONS } from '@livepages/ui';
-import { lucideLayers, lucideMap, lucidePalette } from '@livepages/icons/lucide';
+import { Glyph, lucideGlyph, EDITOR_MODE_ICONS } from '@livedesign/ui';
+import { lucideLayers, lucideMap, lucidePalette } from '@livedesign/icons/lucide';
 import { CollaborateGlyph } from '@/components/panels/collaborate/CollaborateGlyph';
 import { SlideDeckIcon } from '@/components/palette/palette-icons';
 

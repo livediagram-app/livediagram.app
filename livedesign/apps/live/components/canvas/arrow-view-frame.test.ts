@@ -5,7 +5,7 @@ import {
   createPinnedArrow,
   createShape,
   MIND_CONNECTOR_LOOK,
-} from '@livepages/document';
+} from '@livedesign/document';
 import {
   arrowViewGeometry,
   deriveArrowViewFrame,

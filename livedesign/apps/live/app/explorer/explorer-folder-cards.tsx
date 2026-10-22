@@ -2,13 +2,13 @@
 
 // The Explorer card grid's folder cards (docs/specs/006-document/document-snapshots.md), split out of
 // CardView: the FolderCard (rename / menu / child count). The card shell + preview classes
-// every card shares live in @livepages/ui, where the Timeline's cards
+// every card shares live in @livedesign/ui, where the Timeline's cards
 // use them too (docs/specs/013-workspace/timeline.md §2).
 
 import type { ReactNode } from 'react';
-import { CARD_PREVIEW as previewArea, CARD_SHELL as cardShell } from '@livepages/ui';
+import { CARD_PREVIEW as previewArea, CARD_SHELL as cardShell } from '@livedesign/ui';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
-import { CountBadge } from '@livepages/ui';
+import { CountBadge } from '@livedesign/ui';
 import { useRowMenu } from '@/components/primitives/useRowMenu';
 import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
 import { FolderActionsMenu } from './folder-actions-menu';

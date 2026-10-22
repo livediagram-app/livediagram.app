@@ -3,7 +3,7 @@
 // One field of an item, as the item panel edits it (docs/specs/026-plan/plan-board.md "Working on a
 // board"): a built-in field by its kind, a custom field by its kind, and the description as rich text.
 // Each saves as it changes.
-import { Select } from '@livepages/ui';
+import { Select } from '@livedesign/ui';
 import {
   ITEM_TYPES,
   customFieldOf,
@@ -16,7 +16,7 @@ import {
   type ItemPatch,
   type ItemPerson,
   type ItemTypeDef,
-} from '@livepages/items';
+} from '@livedesign/items';
 import {
   ChecklistEditor,
   DateField,
@@ -28,7 +28,7 @@ import {
 import { CustomFieldEditor } from './CustomFieldEditor';
 import { LinkedCardField } from './LinkedCardField';
 import { usePlan } from './PlanContext';
-import { isHexColour } from '@livepages/document';
+import { isHexColour } from '@livedesign/document';
 import { ColourSelect } from './ColourSwatches';
 import { PHASE_COLOURS } from './views/view-frame';
 import { track } from '@/lib/telemetry';

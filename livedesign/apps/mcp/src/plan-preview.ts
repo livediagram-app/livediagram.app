@@ -1,28 +1,28 @@
 // A Plan tab's preview as the editor exports it (docs/specs/015-api/mcp-server.md §5, docs/specs/026-plan/plan-tabs.md
 // "Export"): a Board tab its board alone, a Sheet tab its Sheet, a Dashboard its page laid out with every metric, chart
-// and card drawn from the document's cards (@livepages/plan-art), never the raw elements stacked where they sit.
+// and card drawn from the document's cards (@livedesign/plan-art), never the raw elements stacked where they sit.
 // Null for any other tab. Every read is best-effort: what cannot be read draws as the editor draws it missing.
 import type {
   DocumentResponse,
   PlanResponse,
   SheetsResponse,
   TabResponse,
-} from '@livepages/api-schema';
+} from '@livedesign/api-schema';
 import {
   PIE_PALETTE,
   canvasSurface,
   renderElementsToSvg,
   type ResolvePlanArt,
   type Tab,
-} from '@livepages/document';
-import { statusPhasesOf, type Item, type ItemTypeDef } from '@livepages/items';
+} from '@livedesign/document';
+import { statusPhasesOf, type Item, type ItemTypeDef } from '@livedesign/items';
 import {
   sheetContentSize,
   sheetFromJson,
   sheetFramesOf,
   type SheetJson,
-} from '@livepages/sheets';
-import { planImageOf, planTabKindOf, planViewArt, type PlanArtData } from '@livepages/plan-art';
+} from '@livedesign/sheets';
+import { planImageOf, planTabKindOf, planViewArt, type PlanArtData } from '@livedesign/plan-art';
 import { apiJson } from './api';
 import type { Env } from './env';
 

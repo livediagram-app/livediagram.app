@@ -11,7 +11,7 @@ const CHECKS: { label: string; done: boolean }[] = [
 export function TroubleshootingArt() {
   return (
     <Stage>
-      <Window x={18} y={18} w={200} h={180} title="livepages">
+      <Window x={18} y={18} w={200} h={180} title="livedesign">
         <circle cx={118} cy={82} r={22} className="fill-amber-100" />
         <path
           d="M118 66 l17 30 h-34 Z"

@@ -5,7 +5,7 @@ import {
   isFlowchartStep,
   type Element,
   type Rect,
-} from '@livepages/document';
+} from '@livedesign/document';
 import type { QuickConnectDirection, QuickConnectKind } from '@/lib/canvas';
 import { QuickConnectRing } from '@/components/canvas/QuickConnectRing';
 import { useMindGrow } from '@/components/canvas/MindGrowContext';

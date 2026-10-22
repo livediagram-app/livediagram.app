@@ -77,7 +77,7 @@ or **Plain Text** (the value alone; the arrow shows on the active cell only).
 | Text                  | Text meeting the condition (a number is read as it is shown)                                   | Enter text that contains “ref” / Enter an email address / Enter a web address             |
 
 - An email is `something@something.something` with no spaces; a web address starts `http://` or `https://`, or is a
-  domain with a dot (`livepages.app/help`).
+  domain with a dot (`livedesign.app/help`).
 - A Date rule's dates are stored as day numbers; `Is a Valid Date` allows any number from 1 (31 December 1899) to
   2,958,465 (31 December 9999).
 

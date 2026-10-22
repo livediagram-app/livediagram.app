@@ -2,7 +2,7 @@
 // rides the create"). A refused placement will not clear on a retry, so it says why and offers
 // another place; any other failure keeps the connection copy and Try again.
 
-import { isPlacementRejection, type PlacementRejection } from '@livepages/api-schema';
+import { isPlacementRejection, type PlacementRejection } from '@livedesign/api-schema';
 import { ApiError } from '@/lib/api-client';
 
 export type CreateFailure = {

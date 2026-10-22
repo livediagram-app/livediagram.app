@@ -1,4 +1,4 @@
-import { defineProject } from '@livepages/vitest-config';
+import { defineProject } from '@livedesign/vitest-config';
 
 // The engine is pure: every line and branch is covered (docs/specs/024-agents/blueprints/edit-operations.md).
 export default defineProject({

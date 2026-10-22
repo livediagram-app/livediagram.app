@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
-import { runInlineScript } from '@livepages/vitest-config/inline-script';
+import { runInlineScript } from '@livedesign/vitest-config/inline-script';
 
 import { VIEW_TRANSITION_GUARD_SCRIPT } from './view-transition-guard';
 
-const ORIGIN = 'https://livepages.app';
+const ORIGIN = 'https://livedesign.app';
 
 // Runs the inline script against a stub window and swaps the page to `url`.
 function swapTo(url: string, withTransition = true) {

@@ -9,8 +9,8 @@ import type {
   HomePerson,
   HomeVerb,
   HomeVerbCount,
-} from '@livepages/api-schema';
-import { timeLabel } from '@livepages/ui';
+} from '@livedesign/api-schema';
+import { timeLabel } from '@livedesign/ui';
 
 export const HOME_COPY = {
   jumpBackIn: 'Jump Back In',

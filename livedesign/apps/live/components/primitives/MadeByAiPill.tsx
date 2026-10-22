@@ -1,7 +1,7 @@
 'use client';
 
-import { isMadeByAiSource } from '@livepages/api-schema';
-import { HoverCard } from '@livepages/ui';
+import { isMadeByAiSource } from '@livedesign/api-schema';
+import { HoverCard } from '@livedesign/ui';
 import { SparkleIcon } from '@/components/primitives/explorer-icons';
 
 // The Made by AI badge (docs/specs/013-workspace/explorer-filters.md "Dimensions"): every row and

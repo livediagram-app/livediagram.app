@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { blankQuestion, OPTION_MAX } from '@livepages/forms';
+import { blankQuestion, OPTION_MAX } from '@livedesign/forms';
 import { applyQuestionSet, questionFrom } from './form-question';
 
 // An agent's question (docs/specs/030-forms/forms.md "Agents", blueprint §15 "Question input"): made as the builder

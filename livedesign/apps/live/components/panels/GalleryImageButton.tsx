@@ -1,6 +1,6 @@
 'use client';
 
-import type { ImageSummary } from '@livepages/api-schema';
+import type { ImageSummary } from '@livedesign/api-schema';
 import { useImageBlobUrl } from '@/hooks/persistence/useImageBlobUrl';
 import { DISPLAY_EDGE_TILE } from '@/lib/image-display';
 

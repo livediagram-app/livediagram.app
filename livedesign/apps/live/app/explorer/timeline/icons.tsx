@@ -18,8 +18,8 @@
 
 import { TeamIcon } from '@/components/primitives/explorer-icons';
 import type { ReactNode } from 'react';
-import type { KnownTimelineEventType } from '@livepages/api-schema';
-import { Glyph as UiGlyph } from '@livepages/ui';
+import type { KnownTimelineEventType } from '@livedesign/api-schema';
+import { Glyph as UiGlyph } from '@livedesign/ui';
 
 function Glyph({ d }: { d: string }) {
   return (

@@ -1,7 +1,7 @@
 // People and Ideas layouts, part one (docs/specs/007-editor/pages-mode.md "Layouts"): an org
 // chart, testimonials, a speaker line-up and an employee spotlight. Pure builders on the shared kit,
 // laid out in proportions of the page's content box so each fits every size and orientation.
-import type { Element } from '@livepages/document';
+import type { Element } from '@livedesign/document';
 import { heading, kit, type Kit, type LayoutBox } from './page-layout-kit';
 import { iconRow, SOURCE_H, sourceLine } from './page-layout-parts';
 import { avatar, card, clamp, eyebrow, LINE, rule } from './page-layouts-set-people-parts';

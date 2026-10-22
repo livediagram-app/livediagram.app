@@ -1,7 +1,7 @@
 // The person's folders as paths (docs/specs/015-api/cli.md `folder ls`, `workbench open --folder`; blueprint CLI86, CLI87): the personal tree, then each joined team's in name order, each depth first,
 // siblings by name. A folder is named by its full id, an id prefix, or its name ignoring case, as a document is.
 
-import type { Folder } from '@livepages/api-schema';
+import type { Folder } from '@livedesign/api-schema';
 import type { Libraries } from './find-documents';
 import { VerbRefusal } from './define';
 import { REF_MIN_PREFIX, shortestUniquePrefixes } from './refs';
@@ -71,7 +71,7 @@ export function resolveFolderRef(
       code: 'not_found',
       message: `no folder matches "${ref}"${nearest.length ? '; the nearest:' : ''}`,
       lines: folderLines(choices, nearest),
-      hint: 'livepages folder ls',
+      hint: 'livedesign folder ls',
     });
   }
   const refs = shortestUniquePrefixes(choices.map((c) => c.id));

@@ -14,7 +14,7 @@ import {
   type AnimationSetId,
   type AnimationSpeed,
   type Element,
-} from '@livepages/document';
+} from '@livedesign/document';
 
 type Fields = { value: string; speed: string; repeat: string };
 

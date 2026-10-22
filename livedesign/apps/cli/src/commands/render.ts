@@ -1,10 +1,10 @@
 // `tab render` and `graph render` (docs/specs/015-api/blueprints/cli.md "Previews", CLI30): a tab as the api draws
 // it (render.svg), or a graph or Mermaid file laid out as the api would lay it out, written as SVG or PNG.
 
-import { graphOfSource, tabOf, tabPath, type VerbContext } from '@livepages/agent-verbs';
-import { lintGraph } from '@livepages/diagram-lint';
-import { renderElementsToSvg } from '@livepages/document';
-import { resolveIconExportArt, resolveStickerArt } from '@livepages/icons/resolve';
+import { graphOfSource, tabOf, tabPath, type VerbContext } from '@livedesign/agent-verbs';
+import { lintGraph } from '@livedesign/diagram-lint';
+import { renderElementsToSvg } from '@livedesign/document';
+import { resolveIconExportArt, resolveStickerArt } from '@livedesign/icons/resolve';
 import type { CliIo } from '../io';
 import { CliError } from '../output/cli-error';
 import { EXIT } from '../output/exit-codes';

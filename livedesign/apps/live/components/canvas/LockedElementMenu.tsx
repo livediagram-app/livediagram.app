@@ -20,7 +20,7 @@ import {
   useMenu,
   Portal,
   useClickOutside,
-} from '@livepages/ui';
+} from '@livedesign/ui';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
 
 const WIDTH = 236;

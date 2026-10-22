@@ -166,13 +166,13 @@ describe('getClerkIdentity (verified session, docs/specs/014-identity/auth-and-g
     const strict = {
       CLERK_JWKS_URL: JWKS_URL,
       CLERK_ISSUER: 'https://clerk.example',
-      CLERK_AUDIENCE: 'livepages',
+      CLERK_AUDIENCE: 'livedesign',
     } as unknown as Env;
     await getClerkIdentity(strict, verifiedWith({ sub: 'u' }));
     expect(jwtVerifyMock.mock.calls[1]?.[2]).toEqual({
       clockTolerance: 5,
       issuer: 'https://clerk.example',
-      audience: 'livepages',
+      audience: 'livedesign',
     });
   });
 

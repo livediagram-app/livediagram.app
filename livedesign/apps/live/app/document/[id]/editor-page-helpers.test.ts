@@ -1,4 +1,4 @@
-import type { ArrowElement, Element, ShapeElement, Tab } from '@livepages/document';
+import type { ArrowElement, Element, ShapeElement, Tab } from '@livedesign/document';
 import { describe, expect, it } from 'vitest';
 import {
   mayShareDocument,

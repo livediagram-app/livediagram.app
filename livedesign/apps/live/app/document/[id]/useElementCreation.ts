@@ -1,6 +1,6 @@
 import { dashboardItemOf, placeOnDashboard } from '@/hooks/plan/dashboard-drop';
 import { planBoardPlacement } from '@/lib/plan-board-placement';
-import { isPlanViewId, planViewSize } from '@livepages/items';
+import { isPlanViewId, planViewSize } from '@livedesign/items';
 import type { Selection } from '@/lib/selection-store';
 import { type Dispatch, type SetStateAction } from 'react';
 import {
@@ -24,7 +24,7 @@ import {
   type ShapeKind,
   type Tab,
   withVariantColours,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { getTechIcon, isTechIconId } from '@/lib/tech-icons';
 import { buildDrawnBoxed } from '@/lib/draw-commit';
 import { getSticker, stickerDropSize } from '@/lib/stickers';

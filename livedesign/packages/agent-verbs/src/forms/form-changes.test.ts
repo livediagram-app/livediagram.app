@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { questionsOf, type FormDefinition } from '@livepages/forms';
-import { boardsOf } from '@livepages/templates';
+import { questionsOf, type FormDefinition } from '@livedesign/forms';
+import { boardsOf } from '@livedesign/templates';
 import { BUG, bugForm, formDraft } from '../testing/forms';
 import { applyFormChanges, type FormChange } from './form-changes';
 import type { FormDraft } from './form-draft';

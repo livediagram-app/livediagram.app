@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DRIVE_LEASE_MS, type DriveItem } from '@livepages/api-schema';
+import { DRIVE_LEASE_MS, type DriveItem } from '@livedesign/api-schema';
 import { setPendingAccountSwitch } from './drive-account';
 import { sqliteD1 } from '../test-sqlite-d1';
 import {
@@ -28,7 +28,7 @@ function item(over: Partial<DriveItem> = {}): DriveItem {
     kind: 'document',
     ldId: 'd1',
     driveFileId: 'f1',
-    name: 'One.livepages',
+    name: 'One.livedesign',
     ldName: 'One',
     parentId: 'root',
     trashed: false,
@@ -145,7 +145,7 @@ describe('items', () => {
     ]);
     await putDriveItems(env, 'user_a', [
       item({
-        name: 'Two.livepages',
+        name: 'Two.livedesign',
         ldName: 'Two',
         notice: 'unseen_folder',
         noticeParentId: 'x',
@@ -155,7 +155,7 @@ describe('items', () => {
     expect(items).toHaveLength(2);
     expect(items.find((i) => i.kind === 'document')).toEqual(
       item({
-        name: 'Two.livepages',
+        name: 'Two.livedesign',
         ldName: 'Two',
         notice: 'unseen_folder',
         noticeParentId: 'x',

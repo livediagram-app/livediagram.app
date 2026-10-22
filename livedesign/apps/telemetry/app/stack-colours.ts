@@ -1,4 +1,4 @@
-import type { Appearance } from '@livepages/ui';
+import type { Appearance } from '@livedesign/ui';
 import { darkFloor, forAppearance } from './appearance-colours';
 import { shade } from './colour-maths';
 import { categoryColor } from './event-vocab';

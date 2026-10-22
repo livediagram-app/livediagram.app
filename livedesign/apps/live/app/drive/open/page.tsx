@@ -4,7 +4,7 @@ import { DriveOpen } from '@/components/drive/DriveOpen';
 // /drive/open: the Google Drive UI integration's Open URL ("Open with")
 // (docs/specs/022-drive-mirror/drive-mirror.md, "Open with"). Client-side only.
 export const metadata: Metadata = {
-  title: 'Opening from Google Drive | livepages',
+  title: 'Opening from Google Drive | livedesign',
 };
 
 export default function DriveOpenPage() {

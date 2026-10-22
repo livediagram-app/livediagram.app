@@ -8,7 +8,7 @@ import { ToolbarPalette } from './ToolbarPalette';
 import { ensureIconCatalogs } from '@/lib/icon-registry';
 import { COLLABORATE_CATEGORY_GROUPS } from './palette-tile-defs';
 import { paletteCategoriesFor } from './palette-layouts';
-import { createShape, type EditorMode, type Element } from '@livepages/document';
+import { createShape, type EditorMode, type Element } from '@livedesign/document';
 import type { ReactNode } from 'react';
 import { EditorModeProvider } from '@/components/chrome/editor-mode/editor-mode-context';
 import { requestToolbarSearch } from '@/lib/toolbar-search-request';

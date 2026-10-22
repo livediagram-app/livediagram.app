@@ -7,7 +7,7 @@
 // category, and the detail worth reading lands in the description.
 
 import { describe, expect, it, vi } from 'vitest';
-import type { TimelineEvent } from '@livepages/ui';
+import type { TimelineEvent } from '@livedesign/ui';
 import { TIMELINE_RENDERERS } from './renderers';
 import { OPEN_SETTINGS_EVENT } from '@/lib/open-settings';
 

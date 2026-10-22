@@ -1,4 +1,4 @@
-import { PALETTE_TELEMETRY_TYPES } from '@livepages/api-schema';
+import { PALETTE_TELEMETRY_TYPES } from '@livedesign/api-schema';
 import type { TypeAliases } from './rank';
 
 // The palette's element kinds as the dashboard reads them (docs/specs/017-telemetry/telemetry.md): the

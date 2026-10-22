@@ -1,12 +1,12 @@
 #!/usr/bin/env node
-// Drives a livepages MCP server over JSON-RPC (streamable HTTP), so an evaluating agent that cannot mount a new MCP
+// Drives a livedesign MCP server over JSON-RPC (streamable HTTP), so an evaluating agent that cannot mount a new MCP
 // server mid-session still calls exactly the tools a real assistant would (docs/instructions/evaluate-mcp-output.md).
 //
 //   node mcp-call.mjs instructions            the server instructions
 //   node mcp-call.mjs tools [<name> ...]      one line per tool, or the full description and schema of those named
 //   node mcp-call.mjs <tool> '<json args>'    call a tool and print its result
 //
-// Environment: LIVEPAGES_TOKEN (an lvd_ API token; else read from token.env beside this file), MCP_URL (default
+// Environment: LIVEDESIGN_TOKEN (an lvd_ API token; else read from token.env beside this file), MCP_URL (default
 // http://127.0.0.1:8798/mcp), EVAL_LOG (a jsonl of every call; default runs/calls.jsonl) and EVAL_IMG_DIR (where
 // image results are saved; default runs/shots). Never commit a token: token.env and runs/ are gitignored.
 
@@ -21,10 +21,10 @@ const LOG = process.env.EVAL_LOG ?? join(HERE, 'runs', 'calls.jsonl');
 const IMG_DIR = process.env.EVAL_IMG_DIR ?? join(HERE, 'runs', 'shots');
 
 function token() {
-  if (process.env.LIVEPAGES_TOKEN) return process.env.LIVEPAGES_TOKEN;
+  if (process.env.LIVEDESIGN_TOKEN) return process.env.LIVEDESIGN_TOKEN;
   const file = join(HERE, 'token.env');
   if (!existsSync(file))
-    throw new Error('No token: set LIVEPAGES_TOKEN or write TOKEN=lvd_… to eval/token.env');
+    throw new Error('No token: set LIVEDESIGN_TOKEN or write TOKEN=lvd_… to eval/token.env');
   const line = readFileSync(file, 'utf8')
     .split('\n')
     .find((l) => l.startsWith('TOKEN='));

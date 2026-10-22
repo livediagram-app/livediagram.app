@@ -2,7 +2,7 @@
 // minute, with its eyes, nose, grin and one of four hairstyles, glasses optional. Split from the
 // shared doodles (template-sketch-figures.ts) to keep each file cohesive. Pure.
 
-import type { FreehandElement } from '@livepages/document';
+import type { FreehandElement } from '@livedesign/document';
 import { arcPts } from './template-sketch-figures';
 import { BOLD, FINE, drawn, ellipsePath, many, type Pen, type Pt } from './template-sketch-kit';
 

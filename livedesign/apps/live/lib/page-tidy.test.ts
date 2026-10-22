@@ -1,9 +1,9 @@
 // An infographic page's Tidy Up (docs/specs/007-editor/pages-mode.md "Tidy").
 import { describe, expect, it } from 'vitest';
-import { isBoxed, layOutPages, pageMargin, type Element, type Page } from '@livepages/document';
-import { buildPageLayout, PAGE_LAYOUTS } from '@livepages/templates';
+import { isBoxed, layOutPages, pageMargin, type Element, type Page } from '@livedesign/document';
+import { buildPageLayout, PAGE_LAYOUTS } from '@livedesign/templates';
 import { PAGE_TIDY_GRID, tidyPageElements, type PageTidyInput } from './page-tidy';
-import { cpuBudgetMs, cpuMsOf } from '@livepages/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@livedesign/vitest-config/cpu-time';
 
 // A4 portrait: the page is 794 x 1123 centred on the origin, its margin 56, so the content box runs
 // x -341..341, y -505.5..505.5, and the tolerance is 0.012 x 794, about 9.5 px.

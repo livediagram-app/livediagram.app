@@ -11,7 +11,7 @@ import {
   mirrorAxisLines,
   type GuideLine,
   type LaidOutPage,
-} from '@livepages/document';
+} from '@livedesign/document';
 import type { PagesModeView } from '@/hooks/editor/usePagesMode';
 import type { LogoToolsView } from '@/hooks/editor/useLogoTools';
 import { LOGO_GUIDE_ALPHA } from '@/lib/logo-guide-prefs';

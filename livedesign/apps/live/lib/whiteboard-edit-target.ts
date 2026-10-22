@@ -10,7 +10,7 @@ import {
   type Element,
   type Layer,
   type ShapeElement,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { debugLog } from './debug-log';
 
 type Point = { x: number; y: number };

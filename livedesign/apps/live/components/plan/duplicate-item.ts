@@ -1,4 +1,4 @@
-import { unlinkedFields, type Item } from '@livepages/items';
+import { unlinkedFields, type Item } from '@livedesign/items';
 import type { PlanContextValue } from './PlanContext';
 
 // A copy of a card right after it, in its column, without its votes: they were for the original

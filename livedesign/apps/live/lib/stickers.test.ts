@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { stickerArt } from '@livepages/icons';
+import { stickerArt } from '@livedesign/icons';
 import {
   STICKER_CATEGORIES,
   getSticker,

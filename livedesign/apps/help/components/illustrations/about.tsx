@@ -1,12 +1,12 @@
 // About-category illustrations (docs/specs/018-help/help-app.md): the conceptual articles, what
-// livepages is, who it serves, why use it, and what open source means.
+// livedesign is, who it serves, why use it, and what open source means.
 // Composed only from the shared primitives so the house style holds. Several
 // About figures reuse canvas / collaboration scenes (CanvasOverview,
 // LiveCursors) rather than redrawing them.
 
 import { Scene, Shape, Arrow, Label, TextBar } from './primitives';
 
-/** A montage of the diagram kinds livepages covers: a flowchart, a mind map,
+/** A montage of the diagram kinds livedesign covers: a flowchart, a mind map,
  *  and a wireframe, side by side as three mini-canvases. */
 export function DiagramTypes() {
   return (

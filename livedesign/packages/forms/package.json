@@ -1,5 +1,5 @@
 {
-  "name": "@livepages/forms",
+  "name": "@livedesign/forms",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -17,13 +17,13 @@
     "clean": "rm -rf node_modules .turbo coverage"
   },
   "dependencies": {
-    "@livepages/items": "workspace:*",
-    "@livepages/page-background": "workspace:*",
-    "@livepages/sheets": "workspace:*"
+    "@livedesign/items": "workspace:*",
+    "@livedesign/page-background": "workspace:*",
+    "@livedesign/sheets": "workspace:*"
   },
   "devDependencies": {
-    "@livepages/oxlint-config": "workspace:*",
-    "@livepages/vitest-config": "workspace:*",
+    "@livedesign/oxlint-config": "workspace:*",
+    "@livedesign/vitest-config": "workspace:*",
     "@vitest/coverage-v8": "^5.0.3",
     "oxlint": "^1.88.0",
     "typescript": "^7.0.2",

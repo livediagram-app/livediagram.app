@@ -4,8 +4,8 @@
 // foot of the column that opens the Add a Card menu. The board's N key opens it for the focused
 // card's cell (`open`).
 import { useState } from 'react';
-import type { ItemTypeDef } from '@livepages/items';
-import { PlusIcon } from '@livepages/ui';
+import type { ItemTypeDef } from '@livedesign/items';
+import { PlusIcon } from '@livedesign/ui';
 import { AddCardPopover, type NewCard } from './AddCardPopover';
 import type { PlanPalette } from './plan-palette';
 

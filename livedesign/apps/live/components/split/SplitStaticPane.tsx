@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useRef, type Ref } from 'react';
-import { tabHasDrawing, type Tab } from '@livepages/document';
-import { isTextEditFocused } from '@livepages/ui';
+import { tabHasDrawing, type Tab } from '@livedesign/document';
+import { isTextEditFocused } from '@livedesign/ui';
 import { TabModeIcon } from '@/components/chrome/editor-mode/TabModeIcon';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { anyModalOpen } from '@/lib/modal-guard';

@@ -11,7 +11,7 @@ import { EDITOR_VIEWPORT } from '@/lib/page-viewport';
 // this page directly. The live worker omits X-Frame-Options for
 // `/embed` so host pages can iframe it.
 export const metadata: Metadata = {
-  title: 'Embedded document | livepages',
+  title: 'Embedded document | livedesign',
   robots: { index: false },
 };
 

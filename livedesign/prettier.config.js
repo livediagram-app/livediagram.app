@@ -1,1 +1,1 @@
-export { default } from '@livepages/prettier-config';
+export { default } from '@livedesign/prettier-config';

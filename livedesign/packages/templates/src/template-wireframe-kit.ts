@@ -7,7 +7,7 @@ import {
   type ShapeElement,
   type ShapeKind,
   type TextElement,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { TEMPLATE_CONTENT_LAYER_ID } from './template-layers';
 
 type ShapeExtra = Partial<ShapeElement>;

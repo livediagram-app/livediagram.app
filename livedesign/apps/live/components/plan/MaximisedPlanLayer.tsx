@@ -18,7 +18,7 @@ import {
   type ReactNode,
 } from 'react';
 import { createPortal } from 'react-dom';
-import { MENU_SURFACE_ATTR, MaximizeIcon, MinimizeIcon, Tooltip } from '@livepages/ui';
+import { MENU_SURFACE_ATTR, MaximizeIcon, MinimizeIcon, Tooltip } from '@livedesign/ui';
 import {
   finishRestore,
   maximisePlanElement,
@@ -27,8 +27,8 @@ import {
   useMaximisedPlanClosing,
   type MaximisedKind,
 } from '@/hooks/plan/maximised-plan';
-import { MOTION_MS } from '@livepages/tailwind-config/motion';
-import { isAnimatedPattern } from '@livepages/document';
+import { MOTION_MS } from '@livedesign/tailwind-config/motion';
+import { isAnimatedPattern } from '@livedesign/document';
 import { useFaceFinish } from '@/components/canvas/CanvasFinishContext';
 import { useFaceFinishPass } from '@/components/canvas/useFaceFinishPass';
 import { SketchFace } from '@/components/canvas/SketchFace';

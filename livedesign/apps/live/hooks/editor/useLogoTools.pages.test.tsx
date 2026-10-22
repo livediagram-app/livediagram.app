@@ -3,7 +3,7 @@
 // Show Guides and Mirror While Drawing are per page (docs/specs/007-editor/logo-pages.md).
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { MirrorSettings, Tab } from '@livepages/document';
+import type { MirrorSettings, Tab } from '@livedesign/document';
 import { readLogoPageGuides } from '@/lib/logo-page-guides';
 import { useLogoTools } from './useLogoTools';
 

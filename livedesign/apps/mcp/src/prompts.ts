@@ -22,7 +22,7 @@ export function registerPrompts(server: McpServer): void {
     'diagram_this',
     {
       title: 'Diagram this',
-      description: 'Turn a description into a new livepages diagram.',
+      description: 'Turn a description into a new livedesign diagram.',
       argsSchema: {
         description: z
           .string()
@@ -36,7 +36,7 @@ export function registerPrompts(server: McpServer): void {
           content: {
             type: 'text',
             text:
-              `Create a livepages diagram of the following, then give me a link to open it:\n\n` +
+              `Create a livedesign diagram of the following, then give me a link to open it:\n\n` +
               `${description}\n\n` +
               `Use the create_document tool. Prefer the "graph" input (nodes + edges by id, or ` +
               `the same as "mermaid") so the server lays it out: you only need to express ` +
@@ -63,7 +63,7 @@ export function registerPrompts(server: McpServer): void {
           content: {
             type: 'text',
             text:
-              `Build a flowchart in livepages from these steps and give me a link:\n\n` +
+              `Build a flowchart in livedesign from these steps and give me a link:\n\n` +
               `${steps}\n\n` +
               `Use create_document with the "graph" input: one node per step (use shape ` +
               `"diamond" for a decision, "stadium" for start/end, "square" otherwise) and ` +
@@ -90,7 +90,7 @@ export function registerPrompts(server: McpServer): void {
           content: {
             type: 'text',
             text:
-              `Find my livepages document matching "${name}" with find_documents, then ` +
+              `Find my livedesign document matching "${name}" with find_documents, then ` +
               `read_document it to show me the image and a link. If several match, list them ` +
               `and ask which one.`,
           },

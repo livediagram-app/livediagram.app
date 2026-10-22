@@ -1,5 +1,5 @@
 import { TrashIcon } from '@/components/primitives/explorer-icons';
-import { Button, HoverCard } from '@livepages/ui';
+import { Button, HoverCard } from '@livedesign/ui';
 import type { ShareLink } from '@/lib/api-client';
 import { SharePassTicket } from './SharePassTicket';
 import { usePassExit } from './usePassExit';

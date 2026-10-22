@@ -6,7 +6,7 @@
 // a themed card as over the comment popover. Pointer-down keeps focus in the
 // field (the pick writes into it) and never starts a canvas drag.
 
-import { Chip, GlyphDisc, SOLID_BRAND_DARK } from '@livepages/ui';
+import { Chip, GlyphDisc, SOLID_BRAND_DARK } from '@livedesign/ui';
 import { initialsOf } from '@/lib/identity';
 import type { MentionCandidate } from '@/hooks/collab/useCommentMentions';
 

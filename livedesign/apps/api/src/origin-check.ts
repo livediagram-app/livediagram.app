@@ -13,10 +13,10 @@
 // from the route handler: matches the precedent set by image-strip,
 // image-sniff, tab-row, folder-row, share-link-row.
 
-import { isLoopbackHostname } from '@livepages/api-schema';
+import { isLoopbackHostname } from '@livedesign/api-schema';
 
 // IPv4 + IPv6 + textual loopback hostnames the browser may emit; the one
-// definition lives in @livepages/api-schema so the mcp agrees.
+// definition lives in @livedesign/api-schema so the mcp agrees.
 const isLoopback = isLoopbackHostname;
 
 // True iff BOTH `origin` and `target` parse as URLs whose hostname

@@ -4,7 +4,7 @@
 // quiet with no marker, rather than an average of zero, which would read as a
 // very unhappy room.
 
-import { TEMPERATURE_COLORS, temperaturePosition } from '@livepages/document';
+import { TEMPERATURE_COLORS, temperaturePosition } from '@livedesign/document';
 import { tint } from '../collab-chrome';
 import { MOOD_GRID } from './mood-grid';
 

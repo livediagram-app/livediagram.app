@@ -3,7 +3,7 @@
 // A field's row in the type editor's layout (docs/specs/026-plan/item-types.md "Editing a type").
 import type React from 'react';
 import { HANDLE_TOUCH, type useHandleReorder } from '@/components/primitives/useHandleReorder';
-import { LockIcon, PencilIcon, Tooltip } from '@livepages/ui';
+import { LockIcon, PencilIcon, Tooltip } from '@livedesign/ui';
 import { FieldMenu, GripIcon } from './ItemTypeFieldMenu';
 import { ICON_BUTTON } from './ItemTypeFieldForms';
 import type { GroupId } from './item-type-layout';

@@ -22,7 +22,7 @@ import {
   type IconWeight,
   type IconAnimation,
   type IconSize,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { SizeButton } from '@/components/palette/palette-controls';
 import { AnimationPreviewTile } from '@/components/palette/AnimationPreviewTile';
 import {
@@ -32,7 +32,7 @@ import {
 import { MenuToggleRow } from '@/components/palette/context-menu-input-rows';
 import { onMouseHover, useRevertOnUnmount } from '@/components/primitives/hover-preview';
 import { IconPrims } from '@/components/primitives/icon-glyph';
-import { Glyph } from '@livepages/ui';
+import { Glyph } from '@livedesign/ui';
 
 // Stable no-op so a tile grid without preview handlers (e.g. a future caller)
 // still calls useRevertOnUnmount unconditionally (hook-rule safe).

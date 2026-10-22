@@ -5,7 +5,7 @@
 // copy in a `role="status"` region, `refused` and `unbound` headed by an `h1`. A workspace frame speaks of the
 // workspace, a document frame of the diagram.
 import type { ReactNode } from 'react';
-import type { WorkbenchScope } from '@livepages/api-schema';
+import type { WorkbenchScope } from '@livedesign/api-schema';
 import { LoadErrorCard } from '@/components/chrome/LoadErrorCard';
 import type { WorkbenchPhase } from './workbench-machine';
 

@@ -14,7 +14,7 @@ import {
   type ArrowElement,
   type Element,
   type LegendItem,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
 
 const MUTED = '#64748b';

@@ -8,7 +8,7 @@ import {
   type PlanBoardSetup,
   type PlanColumn,
   type SwimlaneBy,
-} from '@livepages/items';
+} from '@livedesign/items';
 
 export const SWIMLANE_LABELS: Record<SwimlaneBy, string> = {
   none: 'None',
@@ -20,8 +20,8 @@ export const SWIMLANE_LABELS: Record<SwimlaneBy, string> = {
   field: 'By a Field',
 };
 
-// The built-in card fields' names live with the card display in @livepages/items, shared with the agent tools.
-export { CARD_FIELD_LABELS } from '@livepages/items';
+// The built-in card fields' names live with the card display in @livedesign/items, shared with the agent tools.
+export { CARD_FIELD_LABELS } from '@livedesign/items';
 
 export const COLUMN_NAME_MAX = 40;
 export const WIP_LIMIT_MAX = 99;

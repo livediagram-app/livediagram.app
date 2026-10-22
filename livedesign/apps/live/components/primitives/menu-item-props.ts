@@ -1,6 +1,6 @@
 'use client';
 
-import { useMenuKind } from '@livepages/ui';
+import { useMenuKind } from '@livedesign/ui';
 
 // The role a menu row takes from the menu it sits in (docs/specs/004-interface-design/menus.md;
 // blueprint "Row primitives by kind"). In a command menu a row is a menu item: one of the roving

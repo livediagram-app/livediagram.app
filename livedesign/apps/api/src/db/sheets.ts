@@ -10,7 +10,7 @@ import {
   type SheetJson,
   type SheetLayout,
   type SheetPerson,
-} from '@livepages/sheets';
+} from '@livedesign/sheets';
 import type { Env } from '../types';
 import { sheetNoteUnreferencedStatement } from './sheet-refs';
 

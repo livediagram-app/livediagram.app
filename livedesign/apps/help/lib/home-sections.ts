@@ -36,14 +36,14 @@ export const HOME_SECTIONS: HomeSection[] = [
     id: 'account',
     eyebrow: 'Your Account',
     heading: 'Your account and your data',
-    lede: 'Who you are to livepages, where your work lives, and the promises that cover it.',
+    lede: 'Who you are to livedesign, where your work lives, and the promises that cover it.',
     categories: ['account-and-data', 'privacy-and-security', 'supported-devices', 'policies'],
   },
   {
     id: 'build',
     eyebrow: 'Build and Run',
     heading: 'Developers and self-hosting',
-    lede: 'Drive livepages from your own code, or run your own copy of it.',
+    lede: 'Drive livedesign from your own code, or run your own copy of it.',
     categories: ['developers', 'self-hosting'],
   },
 ];

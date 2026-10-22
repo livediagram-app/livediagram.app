@@ -4,8 +4,8 @@
 // layouts"): what pressing it puts on the page.
 import { cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import { layOutPages, newLogoPage, newSlidePage, type Tab } from '@livepages/document';
-import { LOGO_LAYOUTS, SLIDE_LAYOUTS } from '@livepages/templates';
+import { layOutPages, newLogoPage, newSlidePage, type Tab } from '@livedesign/document';
+import { LOGO_LAYOUTS, SLIDE_LAYOUTS } from '@livedesign/templates';
 import { LayoutRenderThumb, layoutRenderSvg, PAGE_PAPER_DARK } from './layout-render-thumb';
 import { LayoutThumb } from './infographic-layout-thumb';
 

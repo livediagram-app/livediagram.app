@@ -14,7 +14,7 @@ import {
 
 describe('the CLI client', () => {
   it('is a fixed id with loopback callbacks', () => {
-    expect(CLI_CLIENT_ID).toBe('livepages-cli');
+    expect(CLI_CLIENT_ID).toBe('livedesign-cli');
     expect(CLI_REDIRECT_URIS).toEqual(['http://127.0.0.1/callback', 'http://[::1]/callback']);
   });
 });

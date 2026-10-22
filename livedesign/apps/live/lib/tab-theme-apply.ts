@@ -8,9 +8,9 @@ import {
   withReadableLabelInks,
   type Appearance,
   type Tab,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { withPageBackgroundsFollowingTheme } from './page-theme-follow';
-import { getResolvedAppearance } from '@livepages/ui';
+import { getResolvedAppearance } from '@livedesign/ui';
 import {
   getTheme,
   resetArrowsToTheme,

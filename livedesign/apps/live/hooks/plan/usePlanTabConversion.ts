@@ -5,7 +5,7 @@
 // it converts (lib/plan-tab-conversion.ts) in one change, one undo step, and a toast says so. Once a session per tab:
 // an undo keeps it as it was until the document is next opened.
 import { useEffect, useRef } from 'react';
-import type { Tab } from '@livepages/document';
+import type { Tab } from '@livedesign/document';
 import { convertPlanTab, isConvertiblePlanTab } from '@/lib/plan-tab-conversion';
 import { useToast } from '@/hooks/ui/useToast';
 import { track } from '@/lib/telemetry';

@@ -1,5 +1,5 @@
 @import 'tailwindcss';
-@import '@livepages/tailwind-config';
+@import '@livedesign/tailwind-config';
 
 /* Scan the shared UI package so utility classes used only inside its
  * components (e.g. `text-brand-700` in <Brand>'s wordmark) are generated
@@ -7,7 +7,7 @@
  * is symlinked. */
 @source '../../../packages/ui/src';
 
-@import '@livepages/ui/hero-band.css';
+@import '@livedesign/ui/hero-band.css';
 @import './help-art.css';
 
 html,

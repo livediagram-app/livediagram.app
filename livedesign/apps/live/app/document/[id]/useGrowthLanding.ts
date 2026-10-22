@@ -1,5 +1,5 @@
 import { useEffect, useRef, type Dispatch, type SetStateAction } from 'react';
-import type { Element, Tab } from '@livepages/document';
+import type { Element, Tab } from '@livedesign/document';
 import { beginMindHandoff, landMindHandoff, type HandoffActions } from '@/lib/mind-handoff';
 
 // What both keyboard-grown structures share (docs/specs/009-elements/mind-node.md,

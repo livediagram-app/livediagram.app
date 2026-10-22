@@ -11,7 +11,7 @@ import {
   single,
   type SheetJson,
   type SheetWrite,
-} from '@livepages/sheets';
+} from '@livedesign/sheets';
 import { SheetStore } from './sheet-store-client';
 import { useSheetControllerState } from './sheet-controller';
 import { useSheetActions } from './useSheetActions';
@@ -390,7 +390,7 @@ describe('rows and columns', () => {
       layout: emptyLayout(rand, 3, 3),
     });
     h.typeAt(1, 0, '5');
-    const { typeInto } = await import('@livepages/sheets');
+    const { typeInto } = await import('@livedesign/sheets');
     const t = typeInto(h.store.workbook('t1'), 'sheet0002', { r: 0, c: 0 }, "='Sheet 1'!A2");
     if (t?.ok) h.store.write('sheet0002', t.write);
     expect(h.store.workbook('t1').value('sheet0002', 0, 0)).toBe(5);

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { MissingStatus, PlanBoardSetup } from '@livepages/items';
+import type { MissingStatus, PlanBoardSetup } from '@livedesign/items';
 import { AddColumnPicker, narrowStatuses } from './AddColumnPicker';
 import { cardCount, usedOn } from './ExistingStatusList';
 

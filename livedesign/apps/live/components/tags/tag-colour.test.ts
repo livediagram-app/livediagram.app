@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { penColourHex } from '@livepages/document';
+import { penColourHex } from '@livedesign/document';
 import { tagColourHex, tagWash } from './tag-colour';
 
 describe('tagColourHex', () => {

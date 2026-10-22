@@ -1,4 +1,4 @@
-import { Glyph } from '@livepages/ui';
+import { Glyph } from '@livedesign/ui';
 // Inline SVG icons for the AI panel: the Ask / Clean mode glyphs and the
 // Plug (connect) glyph. Pure presentational; split out of AiPanel.
 

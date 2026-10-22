@@ -6,11 +6,11 @@ import { labelFontPx } from './label-font';
 import type { BoxedElement } from './index';
 
 // XML-escape for both text nodes and attribute values. Re-exported rather
-// than defined here: @livepages/icons owns the one escaper the monorepo's
+// than defined here: @livedesign/icons owns the one escaper the monorepo's
 // SVG builders share, and this package already depends on it. Every existing
 // `xmlEscape` import from here (and from the package barrel) still resolves.
 import type { ExportIconArt } from './svg-render-describe';
-import { xmlEscape } from '@livepages/icons';
+import { xmlEscape } from '@livedesign/icons';
 export { xmlEscape };
 
 export const LABEL_LINE_HEIGHT = 1.25;

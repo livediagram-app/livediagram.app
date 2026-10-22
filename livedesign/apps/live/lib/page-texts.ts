@@ -8,8 +8,8 @@ import {
   type ArticleFlow,
   type Element,
   type LaidOutPage,
-} from '@livepages/document';
-import { elementFindTexts } from '@livepages/document-views';
+} from '@livedesign/document';
+import { elementFindTexts } from '@livedesign/document-views';
 
 /** The words on each page, for Find a Page: the texts of the elements on it (their labels,
  *  notes, cells, items and the rest the editor's find reads) and, on an article's page, the

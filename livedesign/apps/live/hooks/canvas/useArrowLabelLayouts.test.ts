@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { ArrowLabelLayout } from '@livepages/document';
+import type { ArrowLabelLayout } from '@livedesign/document';
 import { labelPlate, sameLabelRender, type ArrowLabelRender } from './useArrowLabelLayouts';
 
 const layout = (over: Partial<ArrowLabelLayout> = {}): ArrowLabelLayout => ({

@@ -2,7 +2,7 @@
 // the view. Everything reads the summary's existing page-view rows; nothing
 // here needs a new query or identifies anybody.
 
-import { pageViewApp, type PageViewApp, type TelemetryCount } from '@livepages/api-schema';
+import { pageViewApp, type PageViewApp, type TelemetryCount } from '@livedesign/api-schema';
 import { rank } from './rank';
 
 export const PAGE_VIEW_APPS: PageViewApp[] = ['Marketing', 'Live', 'Help', 'Dashboard'];

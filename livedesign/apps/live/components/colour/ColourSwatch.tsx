@@ -4,8 +4,8 @@
 // holding a 20px rounded square with a hairline border; picked, a brand ring; no colour, a white
 // square with a slash. Every colour picker draws its colours with it.
 import { forwardRef, type ButtonHTMLAttributes } from 'react';
-import { Tooltip } from '@livepages/ui';
-import { isLightColor } from '@livepages/document';
+import { Tooltip } from '@livedesign/ui';
+import { isLightColor } from '@livedesign/document';
 
 type Props = {
   label: string;

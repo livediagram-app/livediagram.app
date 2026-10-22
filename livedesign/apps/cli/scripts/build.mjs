@@ -1,6 +1,6 @@
-// The CLI as a publishable package (docs/specs/015-api/blueprints/cli.md CLI1, CLI2): dist/livepages.mjs, every
+// The CLI as a publishable package (docs/specs/015-api/blueprints/cli.md CLI1, CLI2): dist/livedesign.mjs, every
 // workspace package and dependency bundled for Node 22 and later, beside the package.json npm publishes (named
-// `@livepages/cli` like the workspace; dist sits outside the workspace globs), the licence, the user README and the notices of every
+// `@livedesign/cli` like the workspace; dist sits outside the workspace globs), the licence, the user README and the notices of every
 // bundled package, read from esbuild's metafile; beside the bundle the PNG renderer's wasm and font (CLI31), which only a
 // render reads, and the font's licence. A bundled package without a licence fails the build.
 
@@ -14,7 +14,7 @@ import { EMBEDDED_WORKS } from '../../../packages/licences/src/embedded-works.ts
 const app = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const repo = resolve(app, '../..');
 const dist = join(app, 'dist');
-const outfile = join(dist, 'livepages.mjs');
+const outfile = join(dist, 'livedesign.mjs');
 
 const result = await build({
   entryPoints: [join(app, 'src/bin.ts')],
@@ -97,7 +97,7 @@ const rule = '-'.repeat(78);
 await writeFile(
   join(dist, 'THIRD_PARTY_LICENSES'),
   [
-    'livepages bundles the following open-source packages. Their licences ask for these notices to travel with it.',
+    'livedesign bundles the following open-source packages. Their licences ask for these notices to travel with it.',
     ...notices.map(
       (n) =>
         `${rule}\n${n.name} ${n.version} (${n.licence})\n\n${n.text || `Licensed under ${n.licence}.`}`,
@@ -110,29 +110,29 @@ await writeFile(
   join(dist, 'package.json'),
   `${JSON.stringify(
     {
-      // Published under the workspace's own name, @livepages/cli (CLI1); the command it installs is `livepages`.
+      // Published under the workspace's own name, @livedesign/cli (CLI1); the command it installs is `livedesign`.
       name: source.name,
       version: source.version,
-      description: 'Read, build, edit and discuss livepages documents from the terminal.',
+      description: 'Read, build, edit and discuss livedesign documents from the terminal.',
       license: 'MIT',
       type: 'module',
-      bin: { livepages: 'livepages.mjs' },
+      bin: { livedesign: 'livedesign.mjs' },
       files: [
-        'livepages.mjs',
+        'livedesign.mjs',
         ...ASSETS.map(({ to }) => to),
         'README.md',
         'LICENSE',
         'THIRD_PARTY_LICENSES',
       ],
       engines: { node: '>=22' },
-      homepage: 'https://livepages.app',
+      homepage: 'https://livedesign.app',
       repository: {
         type: 'git',
-        url: 'git+https://github.com/livepages-app/livepages.app.git',
+        url: 'git+https://github.com/livedesign-app/livedesign.app.git',
         directory: 'apps/cli',
       },
-      bugs: 'https://github.com/livepages-app/livepages.app/issues',
-      keywords: ['diagram', 'cli', 'agents', 'livepages'],
+      bugs: 'https://github.com/livedesign-app/livedesign.app/issues',
+      keywords: ['diagram', 'cli', 'agents', 'livedesign'],
     },
     null,
     2,
@@ -142,5 +142,5 @@ await mkdir(dist, { recursive: true });
 await copyFile(join(repo, 'LICENSE'), join(dist, 'LICENSE'));
 await copyFile(join(app, 'PACKAGE_README.md'), join(dist, 'README.md'));
 console.info(
-  `[cli-build] dist ready: livepages ${source.version}, ${notices.length - embedded.length} bundled packages and ${embedded.length} embedded works noticed`,
+  `[cli-build] dist ready: livedesign ${source.version}, ${notices.length - embedded.length} bundled packages and ${embedded.length} embedded works noticed`,
 );

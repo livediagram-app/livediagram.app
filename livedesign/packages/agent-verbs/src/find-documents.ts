@@ -10,8 +10,8 @@ import type {
   TeamLibraryResponse,
   TeamListItem,
   TeamsResponse,
-} from '@livepages/api-schema';
-import type { ApiClient } from '@livepages/api-client';
+} from '@livedesign/api-schema';
+import type { ApiClient } from '@livedesign/api-client';
 
 type TeamLibrary = { teamName: string; documents: DocumentSummary[] };
 

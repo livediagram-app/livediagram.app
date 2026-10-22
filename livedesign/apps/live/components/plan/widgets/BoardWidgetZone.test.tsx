@@ -147,7 +147,7 @@ describe('BoardWidgetZone +', () => {
 describe('WIDGET_GROUPS', () => {
   it('holds every widget kind exactly once', async () => {
     const { WIDGET_GROUPS } = await import('./BoardWidgetPicker');
-    const { BOARD_WIDGET_KINDS } = await import('@livepages/items');
+    const { BOARD_WIDGET_KINDS } = await import('@livedesign/items');
     const all = WIDGET_GROUPS.flatMap((g) => g.kinds);
     expect([...all].sort()).toEqual([...BOARD_WIDGET_KINDS].sort());
   });

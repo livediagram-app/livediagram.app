@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { TEMPLATES } from '@livepages/templates';
+import { TEMPLATES } from '@livedesign/templates';
 import { LANDING_SECTION_IDS } from '@/lib/landing-content';
 import {
   SECTION_TEMPLATE_KINDS,

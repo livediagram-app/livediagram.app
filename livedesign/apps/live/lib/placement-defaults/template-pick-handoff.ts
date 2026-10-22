@@ -3,7 +3,7 @@
 // screen, so the template's default folder can only be applied then. The wizard notes the document it made, its
 // first tab and whether the person chose the folder themselves; the editor reads it at the first template pick and
 // clears it. Kept for this browser tab only (sessionStorage), and only for a cloud document made from a mode's blank.
-const KEY = 'livepages:v2:template-pick-handoff';
+const KEY = 'livedesign:v2:template-pick-handoff';
 
 export type TemplatePickHandoff = {
   documentId: string;

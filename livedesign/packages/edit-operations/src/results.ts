@@ -5,7 +5,7 @@
 // content origin. An element touched that ends as it began prints nothing (E1), and so does one
 // created and removed again (E2).
 
-import type { EditWarning, FieldChange, JsonValue, ResultLine } from '@livepages/api-schema';
+import type { EditWarning, FieldChange, JsonValue, ResultLine } from '@livedesign/api-schema';
 import {
   computeRefs,
   deriveContainers,
@@ -13,7 +13,7 @@ import {
   type Element,
   type ElementId,
   type ThemeDefinition,
-} from '@livepages/document';
+} from '@livedesign/document';
 import type { Fit } from './labels';
 import { endRef, kindOf, labelOf } from './element-text';
 import { sameValue as same } from './equality';

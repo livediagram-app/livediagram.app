@@ -9,7 +9,7 @@ import {
   posRangeOf,
   templateTints,
   type Sheet,
-} from '@livepages/sheets';
+} from '@livedesign/sheets';
 import {
   anchorAt,
   buildChartChange,

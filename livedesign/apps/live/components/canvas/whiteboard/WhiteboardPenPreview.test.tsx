@@ -6,7 +6,7 @@ import {
   STROKE_PRESSURE_MAX_ERROR,
   createFreehand,
   type FreehandElement,
-} from '@livepages/document';
+} from '@livedesign/document';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { RECOGNITION_PREVIEW_DWELL_MS } from '@/lib/recognition-preview';
 import type { LiveStroke } from '@/lib/live-stroke';

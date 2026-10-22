@@ -9,9 +9,9 @@ import {
   VerbRefusal,
   type VerbContext,
   type WriteFlags,
-} from '@livepages/agent-verbs';
-import type { ChangesetResponse, DocumentResponse } from '@livepages/api-schema';
-import type { Tab } from '@livepages/document';
+} from '@livedesign/agent-verbs';
+import type { ChangesetResponse, DocumentResponse } from '@livedesign/api-schema';
+import type { Tab } from '@livedesign/document';
 import type { CliIo } from '../io';
 import { CliError, formatError } from '../output/cli-error';
 import { EXIT, type ExitCode } from '../output/exit-codes';
@@ -32,7 +32,7 @@ async function readPullFile(io: CliIo, path: string): Promise<PullFile> {
       exit: EXIT.rejected,
       code: 'invalid_pull_file',
       message: `${path}: ${parsed.message}`,
-      hint: 'pull it again: livepages pull <doc>',
+      hint: 'pull it again: livedesign pull <doc>',
     });
   return parsed.file;
 }
@@ -41,7 +41,7 @@ type TabPlan = { tab: Tab; create: boolean; hashes: { hash: string; settingsHash
 
 // What the file asks for, tab by tab; notices for everything that does not travel.
 async function planOf(ctx: VerbContext, file: PullFile, onServer: Set<string>): Promise<TabPlan[]> {
-  const { tabs: pulled } = file.livepagesSync;
+  const { tabs: pulled } = file.livedesignSync;
   const plans: TabPlan[] = [];
   for (const tab of file.document.tabs) {
     const hashes = await tabHashes(tab);
@@ -64,12 +64,12 @@ export async function pushFile(
   input: PushInput,
 ): Promise<{ lines: string[]; exit: number }> {
   const file = await readPullFile(io, input.file);
-  if (file.livepagesSync.host !== host)
+  if (file.livedesignSync.host !== host)
     throw new CliError({
       exit: EXIT.usage,
       code: 'usage',
-      message: `${input.file} was pulled from ${file.livepagesSync.host}, not ${host}`,
-      hint: `livepages push ${input.file} --host ${file.livepagesSync.host}`,
+      message: `${input.file} was pulled from ${file.livedesignSync.host}, not ${host}`,
+      hint: `livedesign push ${input.file} --host ${file.livedesignSync.host}`,
     });
   const documentId = file.document.id;
   const { document } = await ctx.api.json<DocumentResponse>(
@@ -98,7 +98,7 @@ export async function pushFile(
         },
         create
           ? { ...flags, base: null }
-          : { ...flags, base: file.livepagesSync.tabs[tab.id]!.rev, strict: true },
+          : { ...flags, base: file.livedesignSync.tabs[tab.id]!.rev, strict: true },
       );
     } catch (err) {
       if (err instanceof VerbRefusal && err.code === 'stale_tab') {
@@ -115,8 +115,8 @@ export async function pushFile(
     if (input.dryRun) continue;
     // "Nothing changed" writes no revision: the tab keeps the one it was pulled at. The settings stay as pulled,
     // since they were not sent: a rename keeps being named until the file is pulled again.
-    const pulled = file.livepagesSync.tabs[tab.id];
-    file.livepagesSync.tabs[tab.id] = {
+    const pulled = file.livedesignSync.tabs[tab.id];
+    file.livedesignSync.tabs[tab.id] = {
       rev: response.changeset?.rev ?? pulled!.rev,
       hash: hashes.hash,
       settingsHash: pulled?.settingsHash ?? hashes.settingsHash,

@@ -5,9 +5,9 @@
 // (paused: its destination broke; suspended after reports; closed), an Editor's red Not Taking Responses while a
 // published form takes none, and an Editor's Problems with this Form, which opens Share Form where they are listed.
 import type { ReactNode } from 'react';
-import { Tooltip, lucideGlyph } from '@livepages/ui';
-import { lucideTriangleAlert } from '@livepages/icons/lucide';
-import { DESTINATION_PROBLEM_TEXT, type DestinationProblem } from '@livepages/forms';
+import { Tooltip, lucideGlyph } from '@livedesign/ui';
+import { lucideTriangleAlert } from '@livedesign/icons/lucide';
+import { DESTINATION_PROBLEM_TEXT, type DestinationProblem } from '@livedesign/forms';
 import type { FormLinkState } from '@/hooks/forms/useFormLink';
 import { formNotTakingReason, type FormNotTakingFix } from './form-not-taking';
 import { FormNotTakingWarning } from './FormNotTakingWarning';

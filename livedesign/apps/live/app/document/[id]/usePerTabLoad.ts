@@ -6,7 +6,7 @@ import {
   type MutableRefObject,
   type SetStateAction,
 } from 'react';
-import type { Tab } from '@livepages/document';
+import type { Tab } from '@livedesign/document';
 import { apiLoadTabRevisioned } from '@/lib/api-client';
 import { isTabOutOfScope } from '@/lib/tab-scope';
 import { track } from '@/lib/telemetry';

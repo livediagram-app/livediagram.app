@@ -5,8 +5,8 @@
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createShape, type ShapeElement } from '@livepages/document';
-import { ITEM_TYPES, type Item } from '@livepages/items';
+import { createShape, type ShapeElement } from '@livedesign/document';
+import { ITEM_TYPES, type Item } from '@livedesign/items';
 import { PlanProvider, type PlanContextValue } from './PlanContext';
 import { PlanCardView } from './PlanCardView';
 

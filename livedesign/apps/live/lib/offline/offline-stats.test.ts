@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Tab } from '@livepages/document';
+import type { Tab } from '@livedesign/document';
 import { offlineDocumentStats } from './offline-stats';
 
 // docs/specs/013-workspace/explorer-details-view.md: a document in this browser is counted from its

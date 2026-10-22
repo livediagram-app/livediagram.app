@@ -1,5 +1,5 @@
 // A Plan card's comment thread (docs/specs/026-plan/items.md "Comments"): the canvas's CommentThread, kept in
-// the item's `comments` field. Here because it joins the two models: the item store (@livepages/items) knows
+// the item's `comments` field. Here because it joins the two models: the item store (@livedesign/items) knows
 // nothing of comments, and this package already reads items. The api applies these writes to the item as
 // stored, the editor applies them optimistically, and both redact author ids the same way the canvas does.
 
@@ -9,7 +9,7 @@ import {
   commentsByteSize,
   type Item,
   type WriteContext,
-} from '@livepages/items';
+} from '@livedesign/items';
 import { sanitizeMentions } from './comment-mentions';
 import { threadResolved, threadWithComment, threadWithoutComment } from './comment-thread';
 import { withoutCommentAuthorId, type Comment, type CommentThread } from './comments';

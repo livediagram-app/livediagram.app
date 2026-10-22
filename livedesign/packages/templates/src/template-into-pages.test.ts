@@ -3,7 +3,7 @@
 // their text was unreadable). Every template's content stays exactly as built, and any board that
 // does not fit A4 gets a page made around it.
 import { describe, expect, it } from 'vitest';
-import { elementIdsOnPage, pagesOf, layOutPages, withContentOnAPage } from '@livepages/document';
+import { elementIdsOnPage, pagesOf, layOutPages, withContentOnAPage } from '@livedesign/document';
 import { buildTemplate } from './build-template';
 import { TEMPLATES } from './templates';
 

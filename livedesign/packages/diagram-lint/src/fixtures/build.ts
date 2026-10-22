@@ -1,7 +1,7 @@
 // Small builders for lint fixtures: boxes, frames, lanes and pinned arrows on a tab, and a quiet lint.
 
-import type { LintCode, LintReport } from '@livepages/api-schema';
-import type { Anchor, Element, Tab } from '@livepages/document';
+import type { LintCode, LintReport } from '@livedesign/api-schema';
+import type { Anchor, Element, Tab } from '@livedesign/document';
 import { lintTab, type LintOptions } from '../lint';
 
 export const box = (

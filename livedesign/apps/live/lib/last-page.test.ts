@@ -4,7 +4,7 @@
 // the page you were on"): stored in this browser, capped, and found from where the view rests.
 
 import { beforeEach, describe, expect, it } from 'vitest';
-import type { LaidOutPage } from '@livepages/document';
+import type { LaidOutPage } from '@livedesign/document';
 import {
   LAST_PAGE_MAX,
   lastPageKey,
@@ -13,7 +13,7 @@ import {
   writeLastPage,
 } from './last-page';
 
-const STORAGE_KEY = 'livepages:v2:last-illustrate-page';
+const STORAGE_KEY = 'livedesign:v2:last-illustrate-page';
 const page = (id: string, x: number): LaidOutPage =>
   ({ id, rect: { x, y: 0, width: 100, height: 140 } }) as unknown as LaidOutPage;
 const row = [page('a', 0), page('b', 140), page('c', 280)];

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Element, StickyElement, Tab } from '@livepages/document';
+import type { Element, StickyElement, Tab } from '@livedesign/document';
 import { planOnlyLeftOutMessage, useClipboard } from './useClipboard';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn(), titleCaseType: (s: string) => s }));

@@ -2,8 +2,8 @@
 // "Operations", EO37): the target moves in the element order, last, first, directly after x or
 // directly before x. Finalise then keeps every container behind its members.
 
-import type { EditRejection } from '@livepages/api-schema';
-import type { ElementId } from '@livepages/document';
+import type { EditRejection } from '@livedesign/api-schema';
+import type { ElementId } from '@livedesign/document';
 import { resolveOne } from '../selectors';
 import { refsOf, refuseLocked, reorder, touch, type EditState } from '../state';
 import type { OrderOperation } from '../types';

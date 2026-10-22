@@ -11,8 +11,8 @@ import {
   type LayoutRect,
   TAG_CHIP_WASH,
   tagColourOf,
-} from '@livepages/document';
-import { GlyphDisc } from '@livepages/ui';
+} from '@livedesign/document';
+import { GlyphDisc } from '@livedesign/ui';
 import { IconGlyph } from '@/components/primitives/icon-glyph';
 import { TechIconArt } from '@/components/primitives/tech-icon-glyph';
 import { InlineTextLine } from '@/components/canvas/InlineTextLine';

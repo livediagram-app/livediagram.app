@@ -8,7 +8,7 @@ import {
   penColourLabel,
   type PenColour,
   type PenColourName,
-} from '@livepages/document';
+} from '@livedesign/document';
 import {
   readLocalStorageSafe,
   safeJson,
@@ -173,7 +173,7 @@ export function parseWhiteboardPrefs(raw: unknown): WhiteboardPrefs {
 
 // --- Storage ----------------------------------------------------------------
 
-const STORAGE_KEY = 'livepages:v2:whiteboard-pens';
+const STORAGE_KEY = 'livedesign:v2:whiteboard-pens';
 
 export function loadWhiteboardPrefs(): WhiteboardPrefs {
   const raw = readLocalStorageSafe(STORAGE_KEY);

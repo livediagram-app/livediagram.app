@@ -1,10 +1,10 @@
 {
-  "name": "@livepages/cli",
+  "name": "@livedesign/cli",
   "version": "0.3.0",
   "private": true,
   "type": "module",
   "bin": {
-    "livepages": "./src/bin.ts"
+    "livedesign": "./src/bin.ts"
   },
   "scripts": {
     "build": "node scripts/build.mjs",
@@ -15,19 +15,19 @@
     "clean": "rm -rf node_modules .turbo coverage dist"
   },
   "dependencies": {
-    "@livepages/agent-verbs": "workspace:*",
-    "@livepages/api-client": "workspace:*",
-    "@livepages/api-schema": "workspace:*",
-    "@livepages/diagram-lint": "workspace:*",
-    "@livepages/document": "workspace:*",
-    "@livepages/document-views": "workspace:*",
-    "@livepages/icons": "workspace:*",
-    "@livepages/render-png": "workspace:*",
+    "@livedesign/agent-verbs": "workspace:*",
+    "@livedesign/api-client": "workspace:*",
+    "@livedesign/api-schema": "workspace:*",
+    "@livedesign/diagram-lint": "workspace:*",
+    "@livedesign/document": "workspace:*",
+    "@livedesign/document-views": "workspace:*",
+    "@livedesign/icons": "workspace:*",
+    "@livedesign/render-png": "workspace:*",
     "zod": "^4.6.7"
   },
   "devDependencies": {
-    "@livepages/oxlint-config": "workspace:*",
-    "@livepages/vitest-config": "workspace:*",
+    "@livedesign/oxlint-config": "workspace:*",
+    "@livedesign/vitest-config": "workspace:*",
     "@resvg/resvg-wasm": "^2.6.2",
     "@types/node": "^26.6.4",
     "@vitest/coverage-v8": "^5.0.3",

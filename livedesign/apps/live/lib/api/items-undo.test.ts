@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { sentJson } from '@livepages/vitest-config/sent-request';
+import { sentJson } from '@livedesign/vitest-config/sent-request';
 import { __setOfflineBackend } from '../offline/offline-store';
 import { memBackend } from '../offline/offline-test-utils';
 import { writeItem } from './items';

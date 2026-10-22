@@ -21,7 +21,7 @@ import {
   type Element,
   type Page,
   type ShapeElement,
-} from '@livepages/document';
+} from '@livedesign/document';
 import type { Kit } from './page-layout-kit';
 import { CARD_SHADOW, glyph, lockedFill, panel } from './template-page-design';
 import { pageKits, templatePage } from './template-page-kit';

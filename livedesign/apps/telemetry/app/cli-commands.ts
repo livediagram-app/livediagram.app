@@ -113,5 +113,5 @@ export const CLI_COMMANDS: readonly { type: string; command: string; what: strin
 // `Cli·Used·<type>` as a sentence, for the event log.
 export function cliCommandSentence(type: string): string | null {
   const row = CLI_COMMANDS.find((c) => c.type === type);
-  return row ? `Someone ran livepages ${row.command} from the command line: ${row.what}.` : null;
+  return row ? `Someone ran livedesign ${row.command} from the command line: ${row.what}.` : null;
 }

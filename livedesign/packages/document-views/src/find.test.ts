@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@livepages/document';
+import type { Element } from '@livedesign/document';
 import { arrowBetween, shapeAt } from './__fixtures__/build';
 import { CHECKOUT_REV, checkoutTab } from './__fixtures__/checkout-tab';
 import { golden } from './__fixtures__/golden-path';

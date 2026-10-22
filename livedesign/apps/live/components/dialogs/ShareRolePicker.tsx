@@ -1,8 +1,8 @@
 'use client';
 
 import { useId, useState, type KeyboardEvent } from 'react';
-import { CheckIcon, ChevronDownIcon } from '@livepages/ui';
-import { LEVEL_ORDER } from '@livepages/api-schema';
+import { CheckIcon, ChevronDownIcon } from '@livedesign/ui';
+import { LEVEL_ORDER } from '@livedesign/api-schema';
 import type { ShareRole } from '@/lib/api-client';
 import { ROLE_PASS } from './share-dialog-parts';
 

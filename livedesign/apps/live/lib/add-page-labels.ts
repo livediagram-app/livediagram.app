@@ -1,7 +1,7 @@
 // What the + beside the last page adds (docs/specs/007-editor/pages-mode.md "Adding a page"):
 // another page like the last, named for what it is ("Add Another Slide", "Add Another iPhone
 // Screen"), so the button says exactly what a press makes.
-import { pageKindOf, WIREFRAME_DEVICES, type Page, type PageKind } from '@livepages/document';
+import { pageKindOf, WIREFRAME_DEVICES, type Page, type PageKind } from '@livedesign/document';
 
 const KIND_NOUN: Record<PageKind, string> = {
   infographic: 'Infographic Page',

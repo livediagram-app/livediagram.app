@@ -1,7 +1,7 @@
 // The Visualisations tiles' glyphs (docs/specs/026-plan/plan-views.md "Visualisations"): each a small
 // picture of its chart, on the 22-unit grid the other Plan glyphs use.
-import { Glyph } from '@livepages/ui';
-import type { PlanVisualisation } from '@livepages/items';
+import { Glyph } from '@livedesign/ui';
+import type { PlanVisualisation } from '@livedesign/items';
 
 const VIEW_ART: Record<PlanVisualisation, React.ReactNode> = {
   // Staggered bars on a time axis, a milestone at the end.

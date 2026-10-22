@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Tab } from '@livepages/document';
+import type { Tab } from '@livedesign/document';
 import { SPLIT_HOVER_FOCUS_MS } from '@/lib/split-view';
 import { SplitStaticPane } from './SplitStaticPane';
 

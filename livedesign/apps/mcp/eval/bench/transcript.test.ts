@@ -10,13 +10,13 @@ const transcript = [
     subtype: 'init',
     model: 'claude-haiku-5-5',
     session_id: 's-1',
-    mcp_servers: [{ name: 'livepages', status: 'connected' }],
+    mcp_servers: [{ name: 'livedesign', status: 'connected' }],
   }),
   line({
     type: 'assistant',
     message: {
       content: [
-        { type: 'tool_use', id: 't1', name: 'mcp__livepages__add_form', input: { name: 'RSVP' } },
+        { type: 'tool_use', id: 't1', name: 'mcp__livedesign__add_form', input: { name: 'RSVP' } },
       ],
     },
   }),
@@ -37,7 +37,7 @@ const transcript = [
     type: 'assistant',
     message: {
       content: [
-        { type: 'tool_use', id: 't2', name: 'mcp__livepages__add_form', input: { name: 'RSVP' } },
+        { type: 'tool_use', id: 't2', name: 'mcp__livedesign__add_form', input: { name: 'RSVP' } },
       ],
     },
   }),
@@ -59,7 +59,7 @@ const transcript = [
   line({
     type: 'assistant',
     message: {
-      content: [{ type: 'tool_use', id: 't3', name: 'mcp__livepages__find_diagrams', input: {} }],
+      content: [{ type: 'tool_use', id: 't3', name: 'mcp__livedesign__find_diagrams', input: {} }],
     },
   }),
   line({
@@ -129,7 +129,7 @@ describe('mcpConnected', () => {
     const failed = JSON.stringify({
       type: 'system',
       subtype: 'init',
-      mcp_servers: [{ name: 'livepages', status: 'failed' }],
+      mcp_servers: [{ name: 'livedesign', status: 'failed' }],
     });
     expect(parseTranscript(failed).mcpConnected).toBe(false);
     expect(parseTranscript('').mcpConnected).toBeNull();
@@ -154,7 +154,7 @@ describe('documentIdsIn', () => {
   it('reads ids from documentId fields and document links', () => {
     const other = '11111111-2222-3333-4444-555555555555';
     expect(
-      documentIdsIn(`"documentId": "${DOC}" https://livepages.app/document/${other}`),
+      documentIdsIn(`"documentId": "${DOC}" https://livedesign.app/document/${other}`),
     ).toEqual([DOC, other]);
     expect(documentIdsIn(`"tabId":"${DOC}"`)).toEqual([]);
   });

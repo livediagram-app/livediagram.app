@@ -1,6 +1,6 @@
 // /api/share/<code> — resolve a share code to its document + role.
 
-import { LEVEL_TELEMETRY_TYPE } from '@livepages/api-schema';
+import { LEVEL_TELEMETRY_TYPE } from '@livedesign/api-schema';
 import { documentImageSvg } from '../document-image';
 import {
   getDocument,

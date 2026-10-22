@@ -22,7 +22,7 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 # These builds exist to be tested, and CI's required Checks job already type-checks every app, so
-# `next build` skips its own type check here (@livepages/next-config). Deploys keep it.
+# `next build` skips its own type check here (@livedesign/next-config). Deploys keep it.
 env:
   BUILD_SKIP_TYPECHECK: '1'
 
@@ -63,12 +63,12 @@ jobs:
       - name: Build live app
         env:
           NEXT_PUBLIC_BUILD_ID: e2e-build
-        run: bash scripts/next-build-cold-retry.sh pnpm --filter @livepages/live build
+        run: bash scripts/next-build-cold-retry.sh pnpm --filter @livedesign/live build
 
       # Playwright's webServer boots scripts/e2e-stack.mjs (api worker on local D1 + the static
       # serve). CI=1 makes it always start fresh.
       - name: Run smoke shard
-        run: pnpm --filter @livepages/live test:e2e:smoke --shard=${{ matrix.shard }}/${{ strategy.job-total }}
+        run: pnpm --filter @livedesign/live test:e2e:smoke --shard=${{ matrix.shard }}/${{ strategy.job-total }}
 
       # Every shard builds the same thing: one of them saves it.
       - name: Save build cache
@@ -120,19 +120,19 @@ jobs:
         env:
           NEXT_PUBLIC_BUILD_ID: e2e-build
         run: >-
-          bash scripts/next-build-cold-retry.sh pnpm --filter @livepages/live --filter @livepages/help
-          --filter @livepages/telemetry build
+          bash scripts/next-build-cold-retry.sh pnpm --filter @livedesign/live --filter @livedesign/help
+          --filter @livedesign/telemetry build
 
       - name: Build marketing
-        run: bash scripts/next-build-cold-retry.sh pnpm --filter @livepages/marketing build
+        run: bash scripts/next-build-cold-retry.sh pnpm --filter @livedesign/marketing build
 
       - name: Run sites audit
-        run: pnpm --filter @livepages/live test:e2e:sites
+        run: pnpm --filter @livedesign/live test:e2e:sites
       # The armed guest-signature specs (docs/specs/003-system-architecture/e2e-smoke.md "Armed guest
       # signatures") reuse this job's guest-mode build, on their own stack with enforcement on.
       - name: Run armed guest-signature specs
         if: always()
-        run: pnpm --filter @livepages/live test:e2e:armed
+        run: pnpm --filter @livedesign/live test:e2e:armed
 
       - name: Save build cache
         uses: ./.github/actions/next-cache-save
@@ -175,10 +175,10 @@ jobs:
       # build-time switch, so they run against their own export with a stub key and a fake
       # window.Clerk; no Clerk account or secret is involved.
       - name: Build live app with Clerk stubbed
-        run: bash scripts/next-build-cold-retry.sh pnpm --filter @livepages/live build:clerk-stub
+        run: bash scripts/next-build-cold-retry.sh pnpm --filter @livedesign/live build:clerk-stub
 
       - name: Run signed-in specs
-        run: pnpm --filter @livepages/live test:e2e:clerk-stub
+        run: pnpm --filter @livedesign/live test:e2e:clerk-stub
 
       - name: Save build cache
         uses: ./.github/actions/next-cache-save

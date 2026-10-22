@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createShape } from '@livepages/document';
+import { createShape } from '@livedesign/document';
 import { registerPlanBoardTarget, type PlanBoardTarget } from './plan-board-targets';
 import {
   boardClientPoint,

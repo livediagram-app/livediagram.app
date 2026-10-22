@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Button, useEscape, DialogCloseButton } from '@livepages/ui';
-import type { PlacementDefaultKey } from '@livepages/api-schema';
+import { Button, useEscape, DialogCloseButton } from '@livedesign/ui';
+import type { PlacementDefaultKey } from '@livedesign/api-schema';
 import { Dialog } from '@/components/dialogs/Dialog';
 import {
   PlacementBrowser,

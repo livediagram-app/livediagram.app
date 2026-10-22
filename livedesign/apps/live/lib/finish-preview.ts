@@ -10,7 +10,7 @@ import {
   type StickyElement,
   type Tab,
   type TextSize,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { withThemeApplied } from '@/lib/tab-theme-apply';
 
 const STEP: ShapeElement = {

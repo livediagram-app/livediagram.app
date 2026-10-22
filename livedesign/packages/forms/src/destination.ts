@@ -1,7 +1,7 @@
 // Whether a form's destination still holds (docs/specs/030-forms/forms.md "Publishing and the form link"): its
 // Board tab, a board there with a column of its status, and its card type, which that board takes. One rule for the
 // builder (Publish Form, the paused notice) and the api (every response).
-import { boardTakesType, type ItemTypeDef, type PlanBoardSetup } from '@livepages/items';
+import { boardTakesType, type ItemTypeDef, type PlanBoardSetup } from '@livedesign/items';
 import type { FormDestination, FormSheetDestination } from './model';
 
 export type DestinationProblem =

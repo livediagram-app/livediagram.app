@@ -1,6 +1,6 @@
 import { makeTestRouteContext } from './test-route-context';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { TeamMember } from '@livepages/api-schema';
+import type { TeamMember } from '@livedesign/api-schema';
 import type { Env } from '../types';
 
 const { db } = vi.hoisted(() => ({

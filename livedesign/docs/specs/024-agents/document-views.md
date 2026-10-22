@@ -20,7 +20,7 @@ Views are what an agent reads by default; JSON is what it asks for. The measurem
 - A label is never a ref. Labels are matched by [selectors](edit-operations.md#selectors).
 - Elements an agent adds take a slug of their label as their id unless it gives one (`Redis cache` becomes
   `redis-cache`, `-2` on a clash), so agent-built tabs read cheaply.
-- Refs, slug ids, kind words, containment and the content origin live in `@livepages/document`, so views, edit
+- Refs, slug ids, kind words, containment and the content origin live in `@livedesign/document`, so views, edit
   operations and the lint name elements alike.
 
 ## The outline (default)
@@ -101,7 +101,7 @@ compares that copy with the current tab. The api serves no diff.
 
 ## Where views are made
 
-- One package, `@livepages/document-views`, holds every view as a pure function of a tab.
+- One package, `@livedesign/document-views`, holds every view as a pure function of a tab.
 - The api serves every view but `diff`: `GET /api/documents/:id/tabs/:tabId?view=<name>` answers `text/plain`, and
   `GET /api/documents/:id?view=overview` the overview.
 - The MCP's `read_document` returns a view, the outline by default, instead of element JSON: its text first, then one

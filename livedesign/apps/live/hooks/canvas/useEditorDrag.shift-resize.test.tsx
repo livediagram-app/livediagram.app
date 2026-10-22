@@ -17,7 +17,7 @@ import {
   type Element,
   type Tab,
   type TabKind,
-} from '@livepages/document';
+} from '@livedesign/document';
 import type { DragMode } from '@/lib/canvas';
 import { applyOverlay, localPreview, resetDragPreviewForTests } from '@/lib/drag-preview';
 import { useEditorDrag } from './useEditorDrag';

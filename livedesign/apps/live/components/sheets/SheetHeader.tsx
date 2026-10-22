@@ -5,7 +5,7 @@
 // (SheetSettingsPanel; in a Dashboard slot it holds the slot's Slot section too) and Maximise Sheet.
 // The header is where the element is moved from: presses on it reach the canvas, except on its controls.
 import { useState, type ReactNode } from 'react';
-import { SHEET_TITLE_MAX } from '@livepages/sheets';
+import { SHEET_TITLE_MAX } from '@livedesign/sheets';
 import { MaximisePlanButton } from '@/components/plan/MaximisedPlanLayer';
 import { useSheetController } from './sheet-controller';
 import { renameSheet } from './sheet-rename';

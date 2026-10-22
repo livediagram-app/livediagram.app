@@ -19,9 +19,9 @@ test('a reload in the middle of the signed-id upgrade keeps the legacy guest’s
   await page.addInitScript((id) => {
     if (sessionStorage.getItem('e2e:legacy-seeded')) return;
     sessionStorage.setItem('e2e:legacy-seeded', '1');
-    localStorage.setItem('livepages:v2:self-id', id);
-    localStorage.removeItem('livepages:v2:self-sig');
-    localStorage.setItem('livepages:v2:name-confirmed', '1');
+    localStorage.setItem('livedesign:v2:self-id', id);
+    localStorage.removeItem('livedesign:v2:self-sig');
+    localStorage.setItem('livedesign:v2:name-confirmed', '1');
   }, legacy.ownerId);
 
   let moved!: () => void;
@@ -50,8 +50,8 @@ test('a reload in the middle of the signed-id upgrade keeps the legacy guest’s
   await expect
     .poll(() =>
       page.evaluate(() => ({
-        id: localStorage.getItem('livepages:v2:self-id'),
-        signed: Boolean(localStorage.getItem('livepages:v2:self-sig')),
+        id: localStorage.getItem('livedesign:v2:self-id'),
+        signed: Boolean(localStorage.getItem('livedesign:v2:self-sig')),
       })),
     )
     .toEqual({ id: expect.not.stringMatching(legacy.ownerId), signed: true });

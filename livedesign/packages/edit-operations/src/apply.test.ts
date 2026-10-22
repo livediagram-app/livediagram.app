@@ -1,11 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { CHANGESET_MAX_OPERATIONS } from '@livepages/api-schema';
+import { CHANGESET_MAX_OPERATIONS } from '@livedesign/api-schema';
 import {
   MAX_ELEMENTS_PER_TAB,
   applyElementOps,
   type Element,
   type Tab,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { applyEditOperations } from './apply';
 import { EDIT_MAX_ERRORS } from './vocabulary';
 import { parseEditOperations } from './parse';
@@ -197,7 +197,7 @@ describe('applyEditOperations', () => {
       expect(refused(run([set('n3', { width: -5 })]))).toEqual({
         code: 'invalid_result',
         details: ['n3 width: a finite number, 0 or more'],
-        hint: 'see the format: livepages schema square',
+        hint: 'see the format: livedesign schema square',
       });
     });
 

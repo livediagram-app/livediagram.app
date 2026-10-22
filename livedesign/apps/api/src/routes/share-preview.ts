@@ -7,7 +7,7 @@
 // about a link than its image already does: an unknown, revoked or expired code, a trashed document, a document with a
 // share password are all 404.
 
-import { BRAND_CARD_PATH, type SharePreviewResponse } from '@livepages/api-schema';
+import { BRAND_CARD_PATH, type SharePreviewResponse } from '@livedesign/api-schema';
 import {
   getDocumentSharePassword,
   getDocumentThumbMeta,

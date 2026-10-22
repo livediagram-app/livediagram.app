@@ -1,4 +1,4 @@
-import { trustedHtml } from '@livepages/ui';
+import { trustedHtml } from '@livedesign/ui';
 // Renders a Technology (brand) icon: a brand-coloured rounded tile + the
 // icon's white line-art glyph (docs/specs/010-palette/technology-icons.md). Shared by the canvas element
 // (BoxedElementView, for shape==='icon' when the id is a tech icon) and the
@@ -18,8 +18,8 @@ import {
   type IconSize,
   type TextAlignX,
   type TextAlignY,
-} from '@livepages/document';
-import { techGlyphStrokeUnits } from '@livepages/icons';
+} from '@livedesign/document';
+import { techGlyphStrokeUnits } from '@livedesign/icons';
 
 import { iconAnimationClass, iconAnimationStyle } from '@/lib/icons';
 import { getTechIcon, isTechIconId } from '@/lib/tech-icons';

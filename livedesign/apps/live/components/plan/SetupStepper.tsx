@@ -5,7 +5,7 @@
 // current step's circle is filled in the brand colour and its name bold; a done step's circle holds a tick, the line
 // up to the current step is filled, and a done step is a button back to it; a step ahead is muted.
 import { Fragment } from 'react';
-import { CheckIcon, GlyphDisc } from '@livepages/ui';
+import { CheckIcon, GlyphDisc } from '@livedesign/ui';
 import type { PlanPalette } from './plan-palette';
 
 export function SetupStepper<Id extends string>({

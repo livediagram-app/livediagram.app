@@ -111,7 +111,7 @@ are the substance.
 ## Dismissal
 
 - The × hides it and records the dismissal in `localStorage` under
-  `livepages:signin-banner-dismissed:v1` via the shared safe-storage
+  `livedesign:signin-banner-dismissed:v1` via the shared safe-storage
   helpers, synced across tabs through the native `storage` event.
   (Escape is reserved for the Learn-more modal, so it doesn't also
   dismiss the banner underneath.)

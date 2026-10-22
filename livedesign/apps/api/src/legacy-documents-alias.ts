@@ -4,8 +4,8 @@
 // `/api/documents…` with its body's old keys renamed, and the response's keys are renamed
 // back, marked `Deprecation` / `Sunset` with a `Link` to the successor.
 
-import { DOCUMENT_CONVERSION_HEADER } from '@livepages/api-schema';
-import { downgradeLinks, upgradeLegacyLinks } from '@livepages/document';
+import { DOCUMENT_CONVERSION_HEADER } from '@livedesign/api-schema';
+import { downgradeLinks, upgradeLegacyLinks } from '@livedesign/document';
 
 export const LEGACY_DOCUMENTS_SUNSET = 'Fri, 30 Apr 2027 00:00:00 GMT';
 

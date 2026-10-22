@@ -7,7 +7,7 @@ import {
   type Element,
   type ShapeElement,
   type ShapeKind,
-} from '@livepages/document';
+} from '@livedesign/document';
 
 export function shapeAt(
   kind: ShapeKind,

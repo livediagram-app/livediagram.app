@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { EDITOR_MODES } from '@livepages/document';
+import { EDITOR_MODES } from '@livedesign/document';
 import { showsEmptyCanvasCard } from './empty-canvas-card';
 
 // docs/specs/007-editor/new-document-route.md "The empty-canvas hint".

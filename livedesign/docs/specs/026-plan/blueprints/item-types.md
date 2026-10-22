@@ -1,7 +1,7 @@
 # Item types blueprint
 
 Derived from [Item types](../item-types.md). Contract for the type catalogue: its model and checks in
-`@livepages/items`, its column and route in the api, and the editor's panel, type editor and consumers.
+`@livedesign/items`, its column and route in the api, and the editor's panel, type editor and consumers.
 
 ## Domain and naming
 
@@ -15,7 +15,7 @@ Derived from [Item types](../item-types.md). Contract for the type catalogue: it
 | Add Default Types | `ItemTypesSlice.addDefaultTypes()` (`defaultTypesToAdd`, appended; one undo step), behind a `ConfirmPopover` |
 | default types     | `ITEM_TYPES` (`item-types.ts`); ready-made types `READY_MADE_CARD_TYPES` (`brought-types.ts`)                |
 
-## Package `@livepages/items`
+## Package `@livedesign/items`
 
 ```
 src/glyphs.ts          PLAN_GLYPHS, PLAN_GLYPH_IDS, PLAN_GLYPH_CATEGORIES, PLAN_GLYPH_KEYWORDS, planGlyphLabel,
@@ -25,7 +25,7 @@ src/type-catalogue.ts  ItemTypeCatalogue, limits, PLAN_TYPE_COLOURS, BUILT_IN_FI
                        newItemTypeId, newCustomFieldId, defaultNewTitle, validateItemTypeCatalogue,
                        readItemTypeCatalogue, builtInCatalogue
 src/slug.ts            slugText, cutSlug, uniqueSlug (accents folded, `-2`, `-3` on a clash; shared with
-                       @livepages/document's agent element ids)
+                       @livedesign/document's agent element ids)
 ```
 
 - `validateItemTypeCatalogue(input)`: version 1; 1 to `ITEM_TYPES_MAX` types; each `id` matches

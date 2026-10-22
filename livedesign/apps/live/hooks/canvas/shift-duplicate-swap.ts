@@ -18,7 +18,7 @@
 // drag setState all still belong to the caller and are passed in, so the
 // React-shaped parts stay where React can see them.
 
-import { duplicateElements, type ArrowElement, type Element } from '@livepages/document';
+import { duplicateElements, type ArrowElement, type Element } from '@livedesign/document';
 import { translateBoxedSelection } from './boxed-drag-resolve';
 import type { DragState } from '@/lib/canvas';
 

@@ -3,7 +3,7 @@
 // OAuth round-trip handler. Clerk redirects here after the social
 // provider; the AuthenticateWithRedirectCallback component completes
 // the flow and bounces to the editor. Mirrors MT's
-// apps/dashboard/app/sso-callback/page.tsx with livepages fallback
+// apps/dashboard/app/sso-callback/page.tsx with livedesign fallback
 // destinations.
 //
 // When Clerk isn't enabled on this deployment (no publishable key),
@@ -27,7 +27,7 @@ import {
   POST_AUTH_SIGNIN_DEFAULT,
   ssoCallbackDestination,
 } from '@/components/chrome/auth-shared';
-import { DiagramBuildAnimation } from '@livepages/ui';
+import { DiagramBuildAnimation } from '@livedesign/ui';
 import { clerkEnabled } from '@/lib/clerk-config';
 
 // The sign-in / get-started pages forward their `?redirect_url` onto this

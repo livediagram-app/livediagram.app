@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { questionsOf, type FormDefinition, type FormQuestion } from '@livepages/forms';
+import { questionsOf, type FormDefinition, type FormQuestion } from '@livedesign/forms';
 import { BUG, bugForm, formDraft, formWorld } from '../testing/forms';
 import { setGoesTo, setRespondsTo, syncChoiceField } from './form-draft';
 

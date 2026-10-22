@@ -4,7 +4,7 @@
 // theme builder's tiles and dots, the pie and legend rows, and the rich-text toolbar's text colour.
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { penColourHex, standardColours } from '@livepages/document';
+import { penColourHex, standardColours } from '@livedesign/document';
 import { ColorSwatch } from './palette-controls';
 import { ColorDot, ColorTile, type Painter } from './custom-theme-builder-parts';
 import { LegendDataEditor, PieDataEditor } from './context-menu-data-editors';

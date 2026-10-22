@@ -1,6 +1,6 @@
-import { lucideClipboardPaste } from '@livepages/icons/lucide';
+import { lucideClipboardPaste } from '@livedesign/icons/lucide';
 import { useColourWell } from '@/components/palette/palette-controls';
-import { ChevronDownIcon, CopyIcon, Glyph, Prims } from '@livepages/ui';
+import { ChevronDownIcon, CopyIcon, Glyph, Prims } from '@livedesign/ui';
 
 export type Painter = {
   copied: string | null;

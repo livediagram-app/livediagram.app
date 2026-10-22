@@ -7,7 +7,7 @@ import {
   freehandPenStroke,
   penStrokePath,
   type FreehandElement,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { FreehandSvg } from './boxed-element-overlays';
 
 const stroke = (over: Partial<FreehandElement> = {}): FreehandElement => ({

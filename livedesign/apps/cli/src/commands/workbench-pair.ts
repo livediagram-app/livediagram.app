@@ -3,14 +3,14 @@
 // opens the browser only for a person at a terminal (WB25), then waits for the owner's answer as
 // `loginWithDevice` waits for the device grant's.
 
-import { workbenchNameOf, workbenchOriginOf } from '@livepages/agent-verbs';
-import { ApiError, type ApiClient } from '@livepages/api-client';
+import { workbenchNameOf, workbenchOriginOf } from '@livedesign/agent-verbs';
+import { ApiError, type ApiClient } from '@livedesign/api-client';
 import {
   DEVICE_SLOW_DOWN_S,
   type WorkbenchPairingRequestCreated,
   type WorkbenchPairingStatusResponse,
   type WorkbenchScope,
-} from '@livepages/api-schema';
+} from '@livedesign/api-schema';
 import type { DebugLog } from '../debug';
 import type { CliIo } from '../io';
 import { CliError } from '../output/cli-error';
@@ -69,7 +69,7 @@ async function waitForAnswer(
     refused(
       'pairing_expired',
       'the pairing request expired before it was answered',
-      `livepages workbench pair --origin ${origin}${scope === 'workspace' ? ' --workspace' : ''}`,
+      `livedesign workbench pair --origin ${origin}${scope === 'workspace' ? ' --workspace' : ''}`,
     );
   let interval = request.interval;
   let slowDown = 0;

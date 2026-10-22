@@ -4,13 +4,13 @@
 
 When a share link is pasted into Slack, Teams, Discord, iMessage, WhatsApp, X, LinkedIn or anything else that
 draws a link preview, the preview names the document and shows a picture of it. A link that is not a working,
-open share link previews as livepages itself, with the brand card.
+open share link previews as livedesign itself, with the brand card.
 
 ## Why
 
 A link preview is read by a crawler that never runs the page's script. The editor is one static shell for every
 document ([New document route](../007-editor/new-document-route.md)), so its `<head>` named no document and carried
-no image: every pasted link showed "livepages" and the tagline over an empty box, and a channel full of links
+no image: every pasted link showed "livedesign" and the tagline over an empty box, and a channel full of links
 gave nobody a reason to tell them apart or click.
 
 ## What a preview shows
@@ -18,11 +18,11 @@ gave nobody a reason to tell them apart or click.
 | Link                                                                  | Title               | Description        | Image                  |
 | --------------------------------------------------------------------- | ------------------- | ------------------ | ---------------------- |
 | A working share link (`/document/shared?s=<code>`), no share password | The document's name | The share pitch    | The share card (below) |
-| A share link to a document with a share password                      | livepages         | The editor's pitch | The brand card         |
-| An unknown, revoked or expired code; a trashed document               | livepages         | The editor's pitch | The brand card         |
-| Any other editor address (`/document/<id>`, the Explorer, ...)        | livepages         | The editor's pitch | The brand card         |
+| A share link to a document with a share password                      | livedesign         | The editor's pitch | The brand card         |
+| An unknown, revoked or expired code; a trashed document               | livedesign         | The editor's pitch | The brand card         |
+| Any other editor address (`/document/<id>`, the Explorer, ...)        | livedesign         | The editor's pitch | The brand card         |
 
-- **The share pitch** is `Open it in livepages: diagrams, whiteboards and documents, made together.`
+- **The share pitch** is `Open it in livedesign: diagrams, whiteboards and documents, made together.`
 - **The editor's pitch** is the editor's own description, unchanged.
 - **The brand card** is the origin's shared Open Graph image (`/opengraph-image`, `/twitter-image`), the one the
   marketing site and the help centre use.
@@ -44,7 +44,7 @@ gave nobody a reason to tell them apart or click.
 - **Cached in R2** beside the snapshots: `og/<documentId>` for the first tab, stamped with the time it was drawn and redrawn when the document has been saved since. A
   tab-scoped link's card is drawn per request and not stored, as its tab's live image is. Deleting a document
   deletes it with its snapshots.
-- **Drawn by the shared resvg renderer** (`@livepages/render-png/worker`, the MCP server's), with Inter as the
+- **Drawn by the shared resvg renderer** (`@livedesign/render-png/worker`, the MCP server's), with Inter as the
   one font, so a card's text matches the MCP previews.
 - **Served** `Cache-Control: public, max-age=300, stale-while-revalidate=3600`.
 

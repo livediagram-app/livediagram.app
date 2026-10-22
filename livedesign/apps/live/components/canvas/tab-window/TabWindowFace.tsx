@@ -13,9 +13,9 @@ import {
   tabWindowMayShow,
   type CanvasSurface,
   type ShapeElement,
-} from '@livepages/document';
-import { lucideArrowUpRight } from '@livepages/icons/lucide';
-import { lucideGlyph, Tooltip } from '@livepages/ui';
+} from '@livedesign/document';
+import { lucideArrowUpRight } from '@livedesign/icons/lucide';
+import { lucideGlyph, Tooltip } from '@livedesign/ui';
 import { useTabWindows } from './tab-window-context';
 
 const OpenIcon = lucideGlyph(lucideArrowUpRight, 14);

@@ -6,8 +6,8 @@
 // theme list, so the two page the same way.
 
 import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
-import { lucideGlyph } from '@livepages/ui';
-import { lucideChevronLeft, lucideChevronRight } from '@livepages/icons/lucide';
+import { lucideGlyph } from '@livedesign/ui';
+import { lucideChevronLeft, lucideChevronRight } from '@livedesign/icons/lucide';
 
 const PrevIcon = lucideGlyph(lucideChevronLeft, 16);
 const NextIcon = lucideGlyph(lucideChevronRight, 16);

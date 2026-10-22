@@ -11,9 +11,9 @@ import {
   shiftMonth,
   typeIn,
   type CalendarField,
-} from '@livepages/items';
-import { accentOn } from '@livepages/document';
-import { xmlEscape } from '@livepages/icons';
+} from '@livedesign/items';
+import { accentOn } from '@livedesign/document';
+import { xmlEscape } from '@livedesign/icons';
 import { OVERDUE_RED } from './phase-colours';
 import { ART_PAD, box, dot, emptyBody, line, viewFrame, r2 } from './plan-art-kit';
 import type { ViewArtInput } from './plan-view-art';

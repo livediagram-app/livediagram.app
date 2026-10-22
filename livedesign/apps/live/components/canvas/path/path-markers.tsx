@@ -1,4 +1,4 @@
-import type { PathAnchor } from '@livepages/document';
+import type { PathAnchor } from '@livedesign/document';
 
 type Point = { x: number; y: number };
 

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { Element, FreehandElement, ShapeElement } from '@livepages/document';
+import type { Element, FreehandElement, ShapeElement } from '@livedesign/document';
 
 import {
   articlePasteIsCanvas,

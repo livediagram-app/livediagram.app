@@ -11,10 +11,10 @@ import type {
   WorkbenchPerson,
   WorkbenchRole,
   WorkbenchScope,
-} from '@livepages/api-schema';
+} from '@livedesign/api-schema';
 import type { WorkbenchPort } from '@/lib/workbench/workbench-port';
 
-// Where the editor in a workspace frame is, for `livepages:place`.
+// Where the editor in a workspace frame is, for `livedesign:place`.
 export type DocumentPlace = {
   documentId: string;
   documentName: string;

@@ -1,4 +1,4 @@
-import type { Tab } from '@livepages/document';
+import type { Tab } from '@livedesign/document';
 import { hasNewComments } from '../comments';
 import { emailEnabled } from '../email/client';
 import { notifyNewComment } from '../email/notifications';

@@ -4,8 +4,8 @@
 // Sheets the document holds (by the tabs whose elements place one), and one sheet with its tab's workbook, kept
 // current as the sheet store moves on (an edit, a collaborator's op). Its tab's sheets are fetched as it is asked for.
 import { useEffect, useMemo, useSyncExternalStore } from 'react';
-import type { Tab } from '@livepages/document';
-import type { Sheet, Workbook } from '@livepages/sheets';
+import type { Tab } from '@livedesign/document';
+import type { Sheet, Workbook } from '@livedesign/sheets';
 import { useSheetsBridgeContext } from '@/hooks/sheets/useSheetsBridge';
 import { sheetStoreOf, type SheetStore } from '@/components/sheets/sheet-store-client';
 import type { TabsState } from './dashboard-context';

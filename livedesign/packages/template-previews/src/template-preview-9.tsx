@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react';
-import type { TemplateKind } from '@livepages/templates';
+import type { TemplateKind } from '@livedesign/templates';
 import { pv } from './motion';
 
 // Group 9 (plan 0002 new templates): Crazy 8s and User persona. Static SVG

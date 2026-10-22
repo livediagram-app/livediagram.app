@@ -1,7 +1,7 @@
-import type { ArrowElement, Element, Tab, ThemeDefinition } from '@livepages/document';
-import { COMPONENT_SIZE } from '@livepages/document';
+import type { ArrowElement, Element, Tab, ThemeDefinition } from '@livedesign/document';
+import { COMPONENT_SIZE } from '@livedesign/document';
 import { describe, expect, it } from 'vitest';
-import { PLAN_SHEET_ID_PATTERN } from '@livepages/document';
+import { PLAN_SHEET_ID_PATTERN } from '@livedesign/document';
 import { takePlacedSheet } from './sheet-seeds';
 import {
   buildDrawnArrow,

@@ -30,13 +30,13 @@ import {
   errorTypeToken,
   isClerkIdShape,
   TIMELINE_RETENTION_MS,
-} from '@livepages/api-schema';
+} from '@livedesign/api-schema';
 import {
   API_TOKEN_PREFIX,
   isApiTokenFormat,
   isWorkbenchSessionFormat,
   WORKBENCH_SESSION_PREFIX,
-} from '@livepages/api-schema';
+} from '@livedesign/api-schema';
 import { verifyOwnerId } from './auth/owner-signature';
 import { guestSignatureEnforced, OWNER_SCOPED_SEGMENTS } from './auth/guest-rest';
 import { handleTokens } from './routes/tokens';

@@ -2,7 +2,7 @@
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { ITEM_TYPES, READY_MADE_CARD_TYPES } from '@livepages/items';
+import { ITEM_TYPES, READY_MADE_CARD_TYPES } from '@livedesign/items';
 import { CardTypesPanel, addDefaultTypesMessage } from './CardTypesPanel';
 
 // docs/specs/026-plan/item-types.md "The Card Types panel": one list, no type set apart; Add Default Types while one

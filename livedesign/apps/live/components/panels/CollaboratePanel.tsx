@@ -7,13 +7,13 @@ import {
   elementThreads,
   type BoxedElement,
   type ElementActionStatus,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import type {
   MovablePanelPlacementProps,
   MovablePanelPopoverProps,
 } from '@/components/primitives/MovablePanel.types';
-import { CountBadge } from '@livepages/ui';
+import { CountBadge } from '@livedesign/ui';
 import { KindChips, SideTabs } from '@/components/panels/collaborate/CollaborateControls';
 import { CollaborateEmpty } from '@/components/panels/collaborate/CollaborateEmpty';
 import { ActionRowItem, CommentRowItem } from '@/components/panels/collaborate/CollaborateRows';

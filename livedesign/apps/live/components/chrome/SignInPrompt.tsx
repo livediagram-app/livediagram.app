@@ -28,14 +28,14 @@
 // Clerk.
 
 import { useSyncExternalStore } from 'react';
-import { buttonClassName, CloseIcon, ButtonContent } from '@livepages/ui';
+import { buttonClassName, CloseIcon, ButtonContent } from '@livedesign/ui';
 import { useDeferredAuth } from '@/components/providers/deferred-auth';
 import Link from 'next/link';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { useLocalStorageValue, writeLocalStorageValue } from '@/hooks/ui/useLocalStorageValue';
 
-const DISMISS_KEY = 'livepages:v2:signin-prompt-dismissed';
+const DISMISS_KEY = 'livedesign:v2:signin-prompt-dismissed';
 
 const subscribeNever = () => () => {};
 

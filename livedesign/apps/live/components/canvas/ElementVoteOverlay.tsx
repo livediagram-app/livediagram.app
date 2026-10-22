@@ -1,5 +1,5 @@
-import { canCastVote, voteHidesTallies, type TabVote, plural } from '@livepages/document';
-import { HoverCard, SOLID_BRAND_DARK, GlyphDisc } from '@livepages/ui';
+import { canCastVote, voteHidesTallies, type TabVote, plural } from '@livedesign/document';
+import { HoverCard, SOLID_BRAND_DARK, GlyphDisc } from '@livedesign/ui';
 import { CounterScaled } from '@/components/canvas/CanvasZoomContext';
 
 // The dot-vote overlay (docs/specs/012-collaboration/session-tools.md), lifted out of BoxedElementView: the

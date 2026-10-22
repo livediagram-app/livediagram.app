@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { DEFAULT_BACKGROUND_COLOR, DEFAULT_PATTERN_COLOR } from '@livepages/document';
+import { DEFAULT_BACKGROUND_COLOR, DEFAULT_PATTERN_COLOR } from '@livedesign/document';
 
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { commitUserPreferences } from '@/lib/user-preferences';

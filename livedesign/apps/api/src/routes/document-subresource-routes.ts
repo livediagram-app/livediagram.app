@@ -19,7 +19,7 @@ import {
 } from '../db';
 import { conflict, forbidden, json, noContent, notFound } from '../responses';
 import { recordVisitorOpened, retractTabComments } from '../timeline';
-import { DOCUMENT_OPEN_HEADER, readDocumentOpen, tabEtag } from '@livepages/api-schema';
+import { DOCUMENT_OPEN_HEADER, readDocumentOpen, tabEtag } from '@livedesign/api-schema';
 import { recordDocumentOpen } from '../home/record-open';
 import { handleDocumentShareRoutes } from './document-share-routes';
 import { handleQaBoardRoute } from './qa-board-routes';

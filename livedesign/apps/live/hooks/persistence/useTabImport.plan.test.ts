@@ -5,8 +5,8 @@
 
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { defaultCatalogue } from '@livepages/items';
-import { TAB_SCHEMA_VERSION, type Tab } from '@livepages/document';
+import { defaultCatalogue } from '@livedesign/items';
+import { TAB_SCHEMA_VERSION, type Tab } from '@livedesign/document';
 import { planCardsFailure, useTabImport } from './useTabImport';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
@@ -26,7 +26,7 @@ const item = {
 };
 const fileOf = (items?: unknown[]) =>
   JSON.stringify({
-    kind: 'livepages.tab',
+    kind: 'livedesign.tab',
     schemaVersion: TAB_SCHEMA_VERSION,
     exportedAt: 0,
     tab: { id: 'src', name: 'Plan', elements: [] },

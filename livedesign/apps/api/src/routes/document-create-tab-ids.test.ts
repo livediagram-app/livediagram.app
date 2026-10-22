@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { DatabaseSync } from 'node:sqlite';
-import { DOCUMENT_CONVERSION_HEADER } from '@livepages/api-schema';
+import { DOCUMENT_CONVERSION_HEADER } from '@livedesign/api-schema';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { linkTabToDocument, upsertTab } from '../db/tabs';
 import { makeTestRouteContext } from './test-route-context';

@@ -2,7 +2,7 @@
 // cover, a book cover, a newsletter's front page and a certificate. Same contract as
 // page-layouts.ts: the page's content box in, uncoloured elements out, a tall page stacking and a
 // wide one setting side by side.
-import type { Element } from '@livepages/document';
+import type { Element } from '@livedesign/document';
 import { kit, type Kit, type LayoutBox } from './page-layout-kit';
 import { iconDisc } from './page-layout-parts';
 import {

@@ -5,8 +5,8 @@ import {
   DOCUMENT_OPEN_HEADER,
   type TabResponse,
   type TabSummary,
-} from '@livepages/api-schema';
-import { normalizeTable, type CommentMention, type Tab } from '@livepages/document';
+} from '@livedesign/api-schema';
+import { normalizeTable, type CommentMention, type Tab } from '@livedesign/document';
 import { dedupeInFlight } from '../dedupe';
 import {
   isOfflineId,

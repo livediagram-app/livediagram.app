@@ -3,7 +3,7 @@
 // after a write that rebased over nothing (CLI24, CLI25).
 
 import { z } from 'zod';
-import { ApiError } from '@livepages/api-client';
+import { ApiError } from '@livedesign/api-client';
 import {
   CHANGESET_SUMMARY_MAX,
   type ChangesetBase,
@@ -11,7 +11,7 @@ import {
   type ChangesetRequest,
   type ChangesetResponse,
   type HeldElement,
-} from '@livepages/api-schema';
+} from '@livedesign/api-schema';
 import { baseFromCopy, recordCopy } from './copies';
 import { VerbRefusal, type VerbContext } from './define';
 
@@ -81,7 +81,7 @@ function refusalOf(err: unknown, target: WriteTarget, base: ChangesetBase | unde
   if (!(err instanceof ApiError)) return err;
   const body = bodyOf(err);
   const since = `since ${base ? `rev ${base.rev}` : 'your read'}${typeof body.rev === 'number' ? ` (now ${body.rev})` : ''}`;
-  const reread = `re-read: livepages tab view ${JSON.stringify(target.doc)} --tab ${JSON.stringify(target.tabName)}`;
+  const reread = `re-read: livedesign tab view ${JSON.stringify(target.doc)} --tab ${JSON.stringify(target.tabName)}`;
   if (err.code === 'elements_held') {
     const held = (body.held ?? []) as HeldElement[];
     return new VerbRefusal({

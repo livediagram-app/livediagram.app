@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { ITEM_TYPES, presetSetup } from '@livepages/items';
-import type { Element } from '@livepages/document';
+import { ITEM_TYPES, presetSetup } from '@livedesign/items';
+import type { Element } from '@livedesign/document';
 import { boardsTakeVotes } from './usePlanVoting';
 import { sessionStripTools } from '@/components/canvas/SessionClusterStrip';
 

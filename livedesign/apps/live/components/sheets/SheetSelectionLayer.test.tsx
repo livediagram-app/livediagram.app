@@ -4,7 +4,7 @@
 // (Find's highlights, a formula's references, a peer's selection and name tag) and the filter's buttons.
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Selection, SheetLayout } from '@livepages/sheets';
+import type { Selection, SheetLayout } from '@livedesign/sheets';
 import { planPalette } from '@/components/plan/plan-palette';
 import {
   FILL_HANDLE_PX,

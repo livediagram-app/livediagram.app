@@ -10,7 +10,7 @@ import {
   listCustomThemesByOwner,
   updateCustomTheme,
 } from '../db';
-import { isSafeColourValue } from '@livepages/document';
+import { isSafeColourValue } from '@livedesign/document';
 import type { CustomThemeDefinition } from '../types';
 import {
   badRequest,
@@ -65,7 +65,7 @@ function themeFieldsInvalid(body: {
   if (d !== undefined && (typeof d !== 'object' || d === null || Array.isArray(d)))
     return badRequest('invalid definition');
   // A theme's colours paint every element it styles, for everyone who opens a document in it: none may be a
-  // value that loads something from outside (@livepages/document unsafe-colours.ts).
+  // value that loads something from outside (@livedesign/document unsafe-colours.ts).
   if (d !== undefined && !everyStringSafe(d, 0)) return badRequest('invalid colour');
   return null;
 }

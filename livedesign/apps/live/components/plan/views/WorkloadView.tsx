@@ -5,7 +5,7 @@
 // value), and the empty group last, as long as their cards against the most, split Not Started, In Progress and
 // Done. The rows share the view's height and the bars thicken, and labels grow, where there is room.
 import { useMemo } from 'react';
-import { plural } from '@livepages/document';
+import { plural } from '@livedesign/document';
 import {
   STATUS_PHASES,
   STATUS_PHASE_LABELS,
@@ -13,7 +13,7 @@ import {
   breakdownTitle,
   breakdownModel,
   cardsInStatuses,
-} from '@livepages/items';
+} from '@livedesign/items';
 import { PersonDisc } from '../PersonDisc';
 import { PHASE_COLOURS, PhaseLegend, ViewFrame, viewState } from './view-frame';
 import { workloadLayout } from './view-layout';

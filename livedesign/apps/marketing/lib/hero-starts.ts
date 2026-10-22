@@ -1,4 +1,4 @@
-import { templateQueryWords, type TemplateKind } from '@livepages/templates';
+import { templateQueryWords, type TemplateKind } from '@livedesign/templates';
 import { filterGallery, galleryTemplates, popularTemplates } from '@/lib/template-gallery';
 
 // The hero's ways in (docs/specs/019-marketing/marketing-site.md "Hero"): its template search and its

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import type { PlanResponse } from '@livepages/api-schema';
-import { presetSetup } from '@livepages/items';
+import type { PlanResponse } from '@livedesign/api-schema';
+import { presetSetup } from '@livedesign/items';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { makeTestRouteContext } from './test-route-context';
 import { handleDocuments } from './documents';

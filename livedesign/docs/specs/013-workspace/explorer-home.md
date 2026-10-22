@@ -109,7 +109,7 @@ The hero speaks to a beginning:
 
 - **Pills** say what is true of every start and are not links: "Free and open source" (green dot) and, for a guest,
   "No sign-up to start" (sky dot); for someone signed in, "Saved to your account".
-- **The greeting** is "Welcome to livepages. What are you making first?".
+- **The greeting** is "Welcome to livedesign. What are you making first?".
 - **The lead** is "Pick a starting point, or search the templates. Whatever you make lands here, ready to pick up
   again."
 - **The field searches templates**, not documents (there are none): its placeholder is "Search templates", and
@@ -128,7 +128,7 @@ Under it, beside the sidebar, Home holds three sections in place of Jump Back In
   previews, titles and descriptions; activating one makes it at once. A quiet **Browse All Templates** link in the
   heading row opens the wizard (`/new`).
 - **Already Have Work?**, for a guest on a deployment with sign-in only: **Nothing here yet? Sign in**: "If you have
-  used livepages before, sign in and your documents come back with you." with a **Sign In** button. A signed-out
+  used livedesign before, sign in and your documents come back with you." with a **Sign In** button. A signed-out
   person who expected their work finds the way back first.
 
 The welcome's previews are loaded only for a person with nothing yet, so everyone else's Home pays nothing for

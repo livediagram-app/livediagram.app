@@ -29,14 +29,14 @@ const blocked = (): Storage => {
 };
 
 describe('isRepairClearable', () => {
-  it('clears livepages settings and caches', () => {
+  it('clears livedesign settings and caches', () => {
     for (const k of [
-      'livepages:user-preferences:v2',
-      'livepages:recent-diagrams:v1',
-      'livepages:share-password:abc',
-      'livepages:v2:ui-mode',
-      'livepages:stale-chunk-reloads',
-      'livepages-build',
+      'livedesign:user-preferences:v2',
+      'livedesign:recent-diagrams:v1',
+      'livedesign:share-password:abc',
+      'livedesign:v2:ui-mode',
+      'livedesign:stale-chunk-reloads',
+      'livedesign-build',
     ]) {
       expect(isRepairClearable(k), k).toBe(true);
     }
@@ -45,9 +45,9 @@ describe('isRepairClearable', () => {
   it('keeps identity, per-browser keys and Drive state', () => {
     for (const k of [
       ...REPAIR_KEPT_KEYS,
-      'livepages:v2:drive-state',
-      'livepages:v2:drive-seen:user_a',
-      'livepages:drive-mirror',
+      'livedesign:v2:drive-state',
+      'livedesign:v2:drive-seen:user_a',
+      'livedesign:drive-mirror',
     ]) {
       expect(isRepairClearable(k), k).toBe(false);
     }
@@ -63,46 +63,46 @@ describe('repairBrowserStorage', () => {
   it('removes clearable keys from both storages and keeps the rest', () => {
     const localStorage = new MemoryStorage();
     const sessionStorage = new MemoryStorage();
-    localStorage.setItem('livepages:v2:self-id', 'guest');
-    localStorage.setItem('livepages:user-preferences:v2', '{}');
-    localStorage.setItem('livepages:panel-layout:v1', '{}');
+    localStorage.setItem('livedesign:v2:self-id', 'guest');
+    localStorage.setItem('livedesign:user-preferences:v2', '{}');
+    localStorage.setItem('livedesign:panel-layout:v1', '{}');
     localStorage.setItem('__clerk_x', '1');
-    sessionStorage.setItem('livepages:stale-chunk-reloads', '{}');
+    sessionStorage.setItem('livedesign:stale-chunk-reloads', '{}');
 
     const { cleared } = repairBrowserStorage({ localStorage, sessionStorage });
 
     expect(cleared.sort()).toEqual([
-      'livepages:panel-layout:v1',
-      'livepages:stale-chunk-reloads',
-      'livepages:user-preferences:v2',
+      'livedesign:panel-layout:v1',
+      'livedesign:stale-chunk-reloads',
+      'livedesign:user-preferences:v2',
     ]);
-    expect(localStorage.getItem('livepages:v2:self-id')).toBe('guest');
+    expect(localStorage.getItem('livedesign:v2:self-id')).toBe('guest');
     expect(localStorage.getItem('__clerk_x')).toBe('1');
     expect(sessionStorage.length).toBe(0);
   });
 
   it('repairs what it can when a storage is blocked', () => {
     const localStorage = new MemoryStorage();
-    localStorage.setItem('livepages:v2:ui-mode', 'x');
+    localStorage.setItem('livedesign:v2:ui-mode', 'x');
     const win = {
       localStorage,
       get sessionStorage() {
         return blocked();
       },
     };
-    expect(repairBrowserStorage(win).cleared).toEqual(['livepages:v2:ui-mode']);
+    expect(repairBrowserStorage(win).cleared).toEqual(['livedesign:v2:ui-mode']);
   });
 
   it('keeps going when one key will not remove', () => {
     const localStorage = new MemoryStorage();
-    localStorage.setItem('livepages:a', '1');
-    localStorage.setItem('livepages:b', '1');
+    localStorage.setItem('livedesign:a', '1');
+    localStorage.setItem('livedesign:b', '1');
     const remove = localStorage.removeItem.bind(localStorage);
     localStorage.removeItem = (k: string) => {
-      if (k === 'livepages:a') throw new Error('nope');
+      if (k === 'livedesign:a') throw new Error('nope');
       remove(k);
     };
     const { cleared } = repairBrowserStorage({ localStorage, sessionStorage: new MemoryStorage() });
-    expect(cleared).toEqual(['livepages:b']);
+    expect(cleared).toEqual(['livedesign:b']);
   });
 });

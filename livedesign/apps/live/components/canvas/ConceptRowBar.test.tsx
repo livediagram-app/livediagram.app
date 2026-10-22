@@ -13,7 +13,7 @@ import {
   type ShapeElement,
   type WebRows,
   chevronLayout,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { ConceptFace } from './ConceptFace';
 import { BAR_MIN_SCALE, barScale, barWidthPx } from './ConceptRowBar';
 import { HOVER_GRACE_MS } from '@/hooks/ui/useGraceHover';

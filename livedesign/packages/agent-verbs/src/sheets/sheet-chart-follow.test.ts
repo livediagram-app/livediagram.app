@@ -1,7 +1,7 @@
 // A sheet's charts kept with their cells, and the charts clear_charts takes (docs/specs/029-sheets/sheet-store.md
 // "Shaping a sheet").
 import { describe, expect, it } from 'vitest';
-import { emptyLayout, type SheetLayout } from '@livepages/sheets';
+import { emptyLayout, type SheetLayout } from '@livedesign/sheets';
 import { seeded } from '../testing/sheets';
 import {
   anchorCell,

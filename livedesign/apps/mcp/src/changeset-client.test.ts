@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { elementFingerprint, type Element, type Tab } from '@livepages/document';
+import { elementFingerprint, type Element, type Tab } from '@livedesign/document';
 vi.mock('./image-result', () => ({
   imageResult: (value: Record<string, unknown>) => ({
     content: [{ type: 'text', text: JSON.stringify(value) }],
@@ -361,7 +361,7 @@ describe('mcpResultText', () => {
   it('leaves off the CLI revert line no MCP tool runs, keeping the rest', () => {
     expect(
       mcpResultText(
-        '+ a\nrev 1→2 · cs_1 · lint clean · revert: livepages changeset revert doc_1 cs_1',
+        '+ a\nrev 1→2 · cs_1 · lint clean · revert: livedesign changeset revert doc_1 cs_1',
       ),
     ).toBe('+ a\nrev 1→2 · cs_1 · lint clean');
     expect(mcpResultText('dry run · rev 4 · lint clean · nothing written')).toBe(

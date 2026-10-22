@@ -4,7 +4,7 @@
 // Both read the same outline so an anchor always sits exactly on the edge
 // the trigger measures against.
 
-import { isTechIconId } from '@livepages/icons';
+import { isTechIconId } from '@livedesign/icons';
 import type { BoxedElement } from './index';
 import { techIconMarkBounds } from './icon-size';
 import { distToSegment, rotatePoint, type Point } from './geometry-primitives';

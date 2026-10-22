@@ -6,7 +6,7 @@ import {
   OFFICE_TONES,
   ROOM_DOOR_WIDTH,
   type ShapeElement,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { FurnitureView, isFurnitureViewShape } from './FurnitureView';
 import { RoomView } from './RoomView';
 

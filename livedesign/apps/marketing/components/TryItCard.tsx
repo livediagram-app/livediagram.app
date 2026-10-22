@@ -1,4 +1,4 @@
-import { ctaHref } from '@livepages/api-schema';
+import { ctaHref } from '@livedesign/api-schema';
 
 import { StartDrawingArt } from '@/components/StartDrawingArt';
 

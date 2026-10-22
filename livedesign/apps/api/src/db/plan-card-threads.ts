@@ -2,7 +2,7 @@
 // lives in its item (`fields.comments`), not in tab JSON, so the read filters `items` directly, as the Plan cards
 // read does (§2.4), and places each card on a board the same way (`itemPlacementCtes`).
 
-import type { ActivityCardThread } from '@livepages/api-schema';
+import type { ActivityCardThread } from '@livedesign/api-schema';
 import { itemPlacementCtes } from './plan-board-index';
 
 // The thread's comments, and the comments' mentions, as rows SQLite can test.

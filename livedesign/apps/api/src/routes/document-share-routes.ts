@@ -5,7 +5,7 @@
 // broadcast so hydrated visitors hard-redirect), and re-arming an
 // expiring link.
 
-import { DEFAULT_LINK_LEVEL, isAccessLevel, type ShareLinkExpiry } from '@livepages/api-schema';
+import { DEFAULT_LINK_LEVEL, isAccessLevel, type ShareLinkExpiry } from '@livedesign/api-schema';
 import { MAX_PASSWORD_LEN } from '../limits';
 import {
   createShareLink,

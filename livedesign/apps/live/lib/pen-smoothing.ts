@@ -3,7 +3,7 @@
 // samples at a screen-px tolerance; the curve through what is left is drawn by
 // catmullRomToBezierPath. A whiteboard pen does not use it: its live stroke pipeline
 // (lib/live-stroke) smooths while it draws.
-import { simplifyPolyline } from '@livepages/document';
+import { simplifyPolyline } from '@livedesign/document';
 
 type Point = { x: number; y: number };
 

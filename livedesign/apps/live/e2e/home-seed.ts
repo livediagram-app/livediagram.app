@@ -110,10 +110,10 @@ export async function person(
 export async function asGuest(page: Page, owner: string): Promise<void> {
   await page.addInitScript(
     ({ id, sig }) => {
-      localStorage.setItem('livepages:v2:self-id', id);
-      if (sig) localStorage.setItem('livepages:v2:self-sig', sig);
-      localStorage.setItem('livepages:v2:name-confirmed', '1');
-      localStorage.setItem('livepages:v2:ui-mode', 'dark');
+      localStorage.setItem('livedesign:v2:self-id', id);
+      if (sig) localStorage.setItem('livedesign:v2:self-sig', sig);
+      localStorage.setItem('livedesign:v2:name-confirmed', '1');
+      localStorage.setItem('livedesign:v2:ui-mode', 'dark');
     },
     { id: owner, sig: guestSigFor(owner) },
   );
@@ -162,7 +162,7 @@ export async function seedLocalDocuments(page: Page, docs: LocalSeed[]): Promise
     const now = Date.now();
     const day = (ago: number) => new Date(now - ago * 86_400_000).toISOString().slice(0, 10);
     await new Promise<void>((resolve, reject) => {
-      const open = indexedDB.open('livepages-offline', 2);
+      const open = indexedDB.open('livedesign-offline', 2);
       open.onerror = () => reject(open.error ?? new Error('IndexedDB open failed'));
       open.onsuccess = () => {
         const tx = open.result.transaction('documents', 'readwrite');

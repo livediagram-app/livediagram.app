@@ -9,7 +9,7 @@ import {
   type Element,
   type FlowchartDirection,
   type ShapeElement,
-} from '@livepages/document';
+} from '@livedesign/document';
 
 type LiveFlowchart = {
   elements: Element[];

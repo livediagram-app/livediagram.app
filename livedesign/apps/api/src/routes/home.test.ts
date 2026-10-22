@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { HomeResponse } from '@livepages/api-schema';
+import type { HomeResponse } from '@livedesign/api-schema';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { recordDocumentOpen } from '../home/record-open';
 import {

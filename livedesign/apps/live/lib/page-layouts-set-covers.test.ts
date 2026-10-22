@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@livepages/document';
-import { PAGE_LAYOUTS } from '@livepages/templates';
+import type { Element } from '@livedesign/document';
+import { PAGE_LAYOUTS } from '@livedesign/templates';
 
 // docs/specs/007-editor/pages-mode.md "Layouts": the Covers set's openers and front pages.
 const IDS = [

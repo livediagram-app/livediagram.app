@@ -13,7 +13,7 @@
 //   log prints (lib/element-names).
 
 import { useEffect } from 'react';
-import { isBoxed, type Element } from '@livepages/document';
+import { isBoxed, type Element } from '@livedesign/document';
 import { anyModalOpen } from '@/lib/modal-guard';
 import { announce, getAnnouncementSnapshot } from '@/lib/announcer';
 import { describeMany, describeSelected } from '@/lib/element-names';

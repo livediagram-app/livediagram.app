@@ -8,7 +8,7 @@ import {
   DASHBOARD_NOTE_MAX,
   DASHBOARD_NOTE_TITLE_MAX,
   type DashboardCardStyle,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { useDashboard } from './dashboard-context';
 import { useSlotDraft } from './useSlotDraft';
 

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { ITEM_TYPES, type Item } from '@livepages/items';
+import { ITEM_TYPES, type Item } from '@livedesign/items';
 import { LinkedCardGroup } from './LinkedCards';
 
 afterEach(cleanup);

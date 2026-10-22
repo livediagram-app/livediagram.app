@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { useLatest } from '@/hooks/ui/useLatest';
 import type { Ref } from 'react';
-import type { Element, ShapeElement, Tab } from '@livepages/document';
+import type { Element, ShapeElement, Tab } from '@livedesign/document';
 import {
   portalExitPoint,
   portalName,

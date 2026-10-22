@@ -3,7 +3,7 @@
 // The sidebar's Tags row (docs/specs/013-workspace/tags.md "The sidebar"): it opens the Tags page and expands to one
 // row per tag (a dot of its colour, its name, its document count, and its menu on hover), each opening that tag's page.
 
-import type { Tag } from '@livepages/api-schema';
+import type { Tag } from '@livedesign/api-schema';
 import { TagIcon } from '@/components/primitives/explorer-icons';
 import { useDocumentTags } from '@/components/tags/DocumentTagsProvider';
 import { useTagActionsMenu } from '@/components/tags/TagActionsMenu';

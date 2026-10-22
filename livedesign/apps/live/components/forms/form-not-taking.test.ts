@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { FormLinkResponse } from '@livepages/api-schema';
+import type { FormLinkResponse } from '@livedesign/api-schema';
 import { FORM_NOT_TAKING, formNotTakingReason } from './form-not-taking';
 
 // docs/specs/030-forms/forms.md "Hearing about responses", Not Taking Responses: why a published form takes no

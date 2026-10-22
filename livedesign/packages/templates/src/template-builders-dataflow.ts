@@ -4,7 +4,7 @@ import {
   createShape,
   createText,
   type Element,
-} from '@livepages/document';
+} from '@livedesign/document';
 
 // Data flow diagram (docs/specs/008-canvas/canvas-and-palette.md): a level-1 DFD of an online shop, the
 // worked example that teaches the notation. Split out of

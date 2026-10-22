@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createShape, type BoxedElement } from '@livepages/document';
+import { createShape, type BoxedElement } from '@livedesign/document';
 import { publishClearStyles } from '@/lib/clear-styles-store';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import { ElementMenuQuickBar, quickBarItems } from './ElementMenuQuickBar';

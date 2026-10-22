@@ -3,8 +3,8 @@ import { BUILD_ID_HEADER, parseBuildId } from './build-id';
 
 // docs/specs/016-platform/stale-builds.md "Knowing which build is live".
 describe('the build id', () => {
-  it('rides the X-Livepages-Build header', () => {
-    expect(BUILD_ID_HEADER).toBe('X-Livepages-Build');
+  it('rides the X-Livedesign-Build header', () => {
+    expect(BUILD_ID_HEADER).toBe('X-Livedesign-Build');
   });
 
   it.each([

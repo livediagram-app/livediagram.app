@@ -3,16 +3,16 @@ import type {
   ChangesetWritten,
   EditRejection,
   LintReport,
-} from '@livepages/api-schema';
-import { lintFooterPart } from '@livepages/diagram-lint';
-import { migrateIncomingTab, preferNewerQaAll, type Tab } from '@livepages/document';
+} from '@livedesign/api-schema';
+import { lintFooterPart } from '@livedesign/diagram-lint';
+import { migrateIncomingTab, preferNewerQaAll, type Tab } from '@livedesign/document';
 import {
   applyEditOperations,
   applyReplace,
   formatResultFooter,
   formatResultLines,
   type ApplySuccess,
-} from '@livepages/edit-operations';
+} from '@livedesign/edit-operations';
 import { rewriteCommentAuthors } from '../comments';
 import { lastChangesetRev, tabIdsHeldElsewhere } from '../db';
 import { capStoredName } from '../names';

@@ -8,14 +8,14 @@ import { SectionedContent } from './SectionedContent';
 import { TableOfContents } from './TableOfContents';
 // The hrefs alone, not lib/articles: that would bundle the whole article registry (about 300 articles with their
 // descriptions and keywords) into every article's JavaScript.
-import { articleHref, categoryHref } from '@livepages/help-registry/hrefs';
+import { articleHref, categoryHref } from '@livedesign/help-registry/hrefs';
 import type { Article } from '@/lib/articles';
 import { parentRouteHref, routeHref } from '@/lib/article-route';
 import { articleJsonLd } from '@/lib/structured-data';
 import { track } from '@/lib/telemetry';
-import { helpPathTelemetryId } from '@livepages/help-registry/telemetry';
+import { helpPathTelemetryId } from '@livedesign/help-registry/telemetry';
 import { useArticleVote } from './useArticleVote';
-import { CloseIcon, JsonLd, GlyphDisc } from '@livepages/ui';
+import { CloseIcon, JsonLd, GlyphDisc } from '@livedesign/ui';
 import { ClockIcon, ContentsIcon } from '@/lib/chrome-icons';
 import { HelpHero } from './HelpHero';
 import { ArticlePager, StillNeedHelp } from './ArticlePager';

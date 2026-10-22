@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { DOCUMENT_CONVERSION_HEADER } from '@livepages/api-schema';
+import { DOCUMENT_CONVERSION_HEADER } from '@livedesign/api-schema';
 import { makeTestRouteContext } from './test-route-context';
 import type { DocumentDTO } from '../types';
 

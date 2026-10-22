@@ -1,4 +1,4 @@
-import { lucideSparkles } from '@livepages/icons/lucide';
+import { lucideSparkles } from '@livedesign/icons/lucide';
 
 import { ButtonContent, buttonClassName } from './Button';
 import { lucideGlyph } from './icons/lucide-glyph';

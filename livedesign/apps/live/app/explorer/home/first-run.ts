@@ -36,7 +36,7 @@ export const WELCOME_START_BLANK_HREF = '/new?start=blank';
 export const WELCOME_ALL_TEMPLATES_HREF = '/new';
 
 export const WELCOME_COPY = {
-  greeting: 'Welcome to livepages.',
+  greeting: 'Welcome to livedesign.',
   question: 'What are you making first?',
   lead: 'Pick a starting point, or search the templates. Whatever you make lands here, ready to pick up again.',
   pillFree: 'Free and open source',
@@ -50,6 +50,6 @@ export const WELCOME_COPY = {
   allTemplates: 'Browse All Templates',
   haveWorkTitle: 'Already Have Work?',
   signInTitle: 'Nothing here yet? Sign in',
-  signInLine: 'If you have used livepages before, sign in and your documents come back with you.',
+  signInLine: 'If you have used livedesign before, sign in and your documents come back with you.',
   signIn: 'Sign In',
 } as const;

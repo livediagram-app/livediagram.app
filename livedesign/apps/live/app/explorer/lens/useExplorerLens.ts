@@ -10,7 +10,7 @@ import {
   type LensTeam,
   type LensView,
   type ParsedLens,
-} from '@livepages/explorer-lens';
+} from '@livedesign/explorer-lens';
 import { debugLog } from '@/lib/debug-log';
 import type { SelectedNode } from '../views';
 import { lensHref, lensViewOf, SEARCH_RESULTS_PATH } from './lens-views';

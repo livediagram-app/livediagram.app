@@ -6,8 +6,8 @@
 // categories that never carry user content, which is what lets four
 // bubbles collapse into one honest stacked headline (docs/specs/013-workspace/timeline.md §2.1).
 
-import { HOME_OPENED_EVENT_TYPE, TIMELINE_COMMENT_MAX } from '@livepages/api-schema';
-import type { TimelineScopeRef } from '@livepages/api-schema';
+import { HOME_OPENED_EVENT_TYPE, TIMELINE_COMMENT_MAX } from '@livedesign/api-schema';
+import type { TimelineScopeRef } from '@livedesign/api-schema';
 import { dedupeKeyForDay, dedupeKeyOnce, deleteCommentEvents } from '../db/timeline';
 import type { DocumentDTO, Env } from '../types';
 import { audienceForDocument, mergeScopes, userScope } from './audience';

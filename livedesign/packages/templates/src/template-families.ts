@@ -3,7 +3,7 @@
 // folder. A family is a set of ordinary diagram templates, never a tab kind. A Record over
 // TemplateKind, so a new template kind does not compile until it is mapped.
 
-import type { TemplateFamily } from '@livepages/api-schema';
+import type { TemplateFamily } from '@livedesign/api-schema';
 import type { TemplateKind } from './templates';
 
 const TEMPLATE_FAMILY: Record<TemplateKind, TemplateFamily | null> = {

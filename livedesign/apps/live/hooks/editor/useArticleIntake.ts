@@ -31,7 +31,7 @@ import {
   type ArticleZoneBlock,
   type LaidOutPage,
   type Tab,
-} from '@livepages/document';
+} from '@livedesign/document';
 import {
   articleHandleOf,
   forgetZonesReleased,

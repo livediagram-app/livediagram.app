@@ -17,7 +17,7 @@ describe('securityTxt', () => {
 
   it('points Contact at the private GitHub advisory form', () => {
     expect(fields.Contact).toBe(
-      'https://github.com/livepages-app/livepages.app/security/advisories/new',
+      'https://github.com/livedesign-app/livedesign.app/security/advisories/new',
     );
   });
 
@@ -27,9 +27,9 @@ describe('securityTxt', () => {
   });
 
   it('links the policy, language and canonical URL', () => {
-    expect(fields.Policy).toBe('https://livepages.app/help/policies/report-a-vulnerability/');
+    expect(fields.Policy).toBe('https://livedesign.app/help/policies/report-a-vulnerability/');
     expect(fields['Preferred-Languages']).toBe('en');
-    expect(fields.Canonical).toBe('https://livepages.app/.well-known/security.txt');
+    expect(fields.Canonical).toBe('https://livedesign.app/.well-known/security.txt');
   });
 
   it('carries exactly the specified fields and ends with a newline', () => {

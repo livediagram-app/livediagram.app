@@ -1,7 +1,7 @@
 // Which Explorer views the lens narrows, and how it rides a URL
 // (docs/specs/013-workspace/explorer-filters.md "Views", "URL and carry-over").
 
-import { carryLensQuery, withLensQuery, type LensView } from '@livepages/explorer-lens';
+import { carryLensQuery, withLensQuery, type LensView } from '@livedesign/explorer-lens';
 import type { SelectedNode } from '../views';
 
 /** Search results: every document the reader can open, narrowed by the lens. */

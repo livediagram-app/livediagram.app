@@ -76,11 +76,11 @@ test('a Sheet tab takes a formula, works it out, keeps it, and fills the tab', a
 
   await page.addInitScript(
     ({ o, sig }) => {
-      localStorage.setItem('livepages:v2:self-id', o);
-      if (sig) localStorage.setItem('livepages:v2:self-sig', sig);
-      localStorage.setItem('livepages:v2:name-confirmed', '1');
+      localStorage.setItem('livedesign:v2:self-id', o);
+      if (sig) localStorage.setItem('livedesign:v2:self-sig', sig);
+      localStorage.setItem('livedesign:v2:name-confirmed', '1');
       localStorage.setItem(
-        'livepages:user-preferences:v1',
+        'livedesign:user-preferences:v1',
         JSON.stringify({ planTourSeen: true, planTourTracks: ['boards', 'sheets'] }),
       );
     },

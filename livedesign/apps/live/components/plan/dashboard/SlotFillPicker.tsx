@@ -13,11 +13,11 @@ import {
   type MetricKind,
   type PlanBoardPresetId,
   type PlanVisualisation,
-} from '@livepages/items';
+} from '@livedesign/items';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { planPalette, type PlanPalette } from '../plan-palette';
 import { BoardPreview, SHEET_TILES, SheetPreview } from '../PlanBoardPicker';
-import { BOARD_WIDGET_INFO } from '@livepages/plan-art';
+import { BOARD_WIDGET_INFO } from '@livedesign/plan-art';
 import { MetricPreview, NotePreview, VisualisationPreview } from './slot-previews';
 import {
   CardPreview,
@@ -28,8 +28,8 @@ import {
 } from './card-previews';
 import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
 import { ToolsBreadcrumb } from '@/components/palette/palette-tools-nav';
-import { lucideGlyph } from '@livepages/ui';
-import { lucideArrowUpDown } from '@livepages/icons/lucide';
+import { lucideGlyph } from '@livedesign/ui';
+import { lucideArrowUpDown } from '@livedesign/icons/lucide';
 import { PICK_CARD, SlotCategoryCard, type SlotCategory } from './slot-fill-categories';
 import { tileById, tilesForCategory } from '@/components/palette/palette-tile-defs';
 import { tileCaption } from '@/components/palette/tile-caption';

@@ -3,7 +3,7 @@
 // by every surface that sets or clears one, so the menus, the markers, the wizard and Settings agree
 // without refetching. Writes are optimistic and roll back on refusal; telemetry fires before the
 // write, as every surface's must.
-import { placementDefaultTelemetryType, type PlacementDefaultKey } from '@livepages/api-schema';
+import { placementDefaultTelemetryType, type PlacementDefaultKey } from '@livedesign/api-schema';
 import {
   apiClearPlacementDefault,
   apiListPlacementDefaults,

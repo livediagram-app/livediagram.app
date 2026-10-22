@@ -8,13 +8,13 @@ import {
   elementSchemaDoc,
   SCHEMA_RESOURCE_URI,
   SERVER_INSTRUCTIONS,
-} from '@livepages/agent-verbs/mcp';
+} from '@livedesign/agent-verbs/mcp';
 import { registerTools } from './tools';
 import { registerPrompts } from './prompts';
 
 export function buildServer(env: Env): McpServer {
   const server = new McpServer(
-    { name: 'livepages', version: '0.1.0' },
+    { name: 'livedesign', version: '0.1.0' },
     { instructions: SERVER_INSTRUCTIONS },
   );
 
@@ -22,7 +22,7 @@ export function buildServer(env: Env): McpServer {
     'element-schema',
     SCHEMA_RESOURCE_URI,
     {
-      title: 'livepages element schema',
+      title: 'livedesign element schema',
       description:
         'Element types, shape vocabulary, pinned-arrow anchors, and design rules for ' +
         'producing well-formed diagrams. Read before create_document / update_document.',

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isValidTab, parseStrokePoints } from '@livepages/document';
+import { isValidTab, parseStrokePoints } from '@livedesign/document';
 import {
   buildTemplateTab,
   buildTemplateTabs,

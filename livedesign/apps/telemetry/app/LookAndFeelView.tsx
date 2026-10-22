@@ -1,13 +1,13 @@
 'use client';
 
-import { EmptyState } from '@livepages/ui';
+import { EmptyState } from '@livedesign/ui';
 import {
   metricKey,
   type TelemetryCount,
   type TelemetryDaily,
   type TelemetrySummary,
   type TelemetryWindowKey,
-} from '@livepages/api-schema';
+} from '@livedesign/api-schema';
 import { useCategoryColor } from './useCategoryColor';
 import { NON_PATTERN_CANVAS_TYPES, THEME_ALIASES, isNonThemePick } from './look-feel-types';
 import { ActivityGlyph } from './glyphs';

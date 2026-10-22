@@ -1,8 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import type { TeamInviteDecline as TeamInviteDeclineInfo } from '@livepages/api-schema';
-import { Button } from '@livepages/ui';
+import type { TeamInviteDecline as TeamInviteDeclineInfo } from '@livedesign/api-schema';
+import { Button } from '@livedesign/ui';
 import {
   Body,
   Eyebrow,
@@ -78,7 +78,7 @@ export function TeamInviteDecline() {
           The invite may have been withdrawn, or sent again with a new link. There is nothing you
           need to do.
         </Body>
-        <PrimaryLink href="/">Go to livepages</PrimaryLink>
+        <PrimaryLink href="/">Go to livedesign</PrimaryLink>
       </Card>
     );
   }
@@ -108,7 +108,7 @@ export function TeamInviteDecline() {
           You won&apos;t join {teamName}, and there will be no more reminders. The team&apos;s
           admins can see that you declined. If you change your mind, ask them to invite you again.
         </Body>
-        <PrimaryLink href="/">Go to livepages</PrimaryLink>
+        <PrimaryLink href="/">Go to livedesign</PrimaryLink>
       </Card>
     );
   }
@@ -122,7 +122,7 @@ export function TeamInviteDecline() {
           Nobody answered the invite within four weeks, so it closed on its own. There is nothing
           you need to do.
         </Body>
-        <PrimaryLink href="/">Go to livepages</PrimaryLink>
+        <PrimaryLink href="/">Go to livedesign</PrimaryLink>
       </Card>
     );
   }

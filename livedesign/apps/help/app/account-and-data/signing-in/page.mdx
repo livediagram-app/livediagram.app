@@ -5,13 +5,13 @@ import { SignInCard, MigrateOnSignUp } from '@/components/illustrations/account'
 export const metadata = helpMetadata({
   title: 'Signing In',
   description:
-    'Signing in to livepages is optional and free. Learn what an account adds and how your guest documents move across.',
+    'Signing in to livedesign is optional and free. Learn what an account adds and how your guest documents move across.',
   path: '/help/account-and-data/signing-in/',
 });
 
 <ArticleLayout title="Signing In" description="An account is optional and free. It keeps your documents in sync across devices, and your guest work comes with you." categoryTitle="Account and Data" categorySlug="account-and-data">
 
-Signing in to livepages is entirely optional. The canvas works without an account, so there is never a sign-in wall in front of the editor. An account simply adds something useful on top: it keeps your documents with you across browsers and devices instead of being tied to one [guest identity](/help/account-and-data/guest-identity/), unlocks [teams](/help/collaboration/teams/), and lets you create [API tokens](/help/account-and-data/api-tokens/) to call the API from your own scripts.
+Signing in to livedesign is entirely optional. The canvas works without an account, so there is never a sign-in wall in front of the editor. An account simply adds something useful on top: it keeps your documents with you across browsers and devices instead of being tied to one [guest identity](/help/account-and-data/guest-identity/), unlocks [teams](/help/collaboration/teams/), and lets you create [API tokens](/help/account-and-data/api-tokens/) to call the API from your own scripts.
 
 ## Creating an account
 
@@ -20,7 +20,7 @@ There are two routes:
 - **Sign up** at `/get-started`. Enter your first name, last name and email, then confirm with the 6-digit code we email you.
 - **Sign in** at `/sign-in` (the **Sign in** link at the top right of the editor and the Explorer) if you already have an account. Enter your email, choose **Continue with email**, and type the 6-digit code.
 
-Where Google sign-in is enabled, as it is on livepages.app, both pages also offer **Continue with Google** above the email field. If you try to sign in with an email that has no account yet, you are taken to sign-up with that email already filled in.
+Where Google sign-in is enabled, as it is on livedesign.app, both pages also offer **Continue with Google** above the email field. If you try to sign in with an email that has no account yet, you are taken to sign-up with that email already filled in.
 
 Accounts are free, with no paid tier and nothing to upgrade. After signing in from the sign-in page you land on the [Explorer](/explorer) to see your documents; after signing up you land on the new-document flow to start building. If you used the **Sign in** link in the editor or the Explorer, you go back to where you were instead.
 
@@ -35,17 +35,17 @@ Once you are signed in, your picture (or initial) and first name replace the **S
 
 ## Your profile picture
 
-When you sign in with Google, your Google profile picture becomes your avatar. If your account already has a picture of its own, that one is used instead (livepages itself has no upload). If you have no picture, or it cannot load, you see your initial.
+When you sign in with Google, your Google profile picture becomes your avatar. If your account already has a picture of its own, that one is used instead (livedesign itself has no upload). If you have no picture, or it cannot load, you see your initial.
 
 **Who sees it.** You always see your picture: on the account button at the top right and on your card in **Settings > Account**. People you collaborate with who are signed in see it too: on your presence avatar, your cursor, your comments and your team's member list. People who open your share links without signing in always see your initials.
 
 **Turning it off.** Switch off **Settings > Account > Show My Profile Picture** and everyone else sees your initials again, including in documents that are open right now. You still see your own picture.
 
-**Keeping it current.** If you change your picture at Google, livepages shows the new one after your next sign-in with Google: Google only shares your picture when you sign in. livepages keeps only the picture's web address, never the image itself.
+**Keeping it current.** If you change your picture at Google, livedesign shows the new one after your next sign-in with Google: Google only shares your picture when you sign in. livedesign keeps only the picture's web address, never the image itself.
 
 ## When sign-in is not available
 
-Sign-in is an optional capability of livepages. On self-hosted instances where accounts have not been configured, the sign-in pages say "Sign-in isn't enabled on this deployment" and offer **Continue as guest**, and the editor works exactly as before. If sign-in is failing on the hosted site, see [Cannot Sign In](/help/troubleshooting/cannot-sign-in/).
+Sign-in is an optional capability of livedesign. On self-hosted instances where accounts have not been configured, the sign-in pages say "Sign-in isn't enabled on this deployment" and offer **Continue as guest**, and the editor works exactly as before. If sign-in is failing on the hosted site, see [Cannot Sign In](/help/troubleshooting/cannot-sign-in/).
 
 ## Your guest documents come with you
 
@@ -53,7 +53,7 @@ The best part of signing up is that you keep the work you have already done. Whe
 
 Before you sign in, new documents start [in This Browser](/help/privacy-and-security/offline-mode/), saved only in this browser. When you sign in, a **Move Documents in This Browser to Your Account?** dialog lists every one of them: every one is ticked, so press **Move** to bring them all across, or untick any you would rather keep in this browser. **Not Now** leaves them in this browser, and we only ask again when there are more. If one fails to move, it stays in this browser and a follow-up dialog names it. You can also move one any time with **Sync Document** in the Explorer or the Share dialog. Documents in This Browser belong to the browser, not to an account, so after you sign out they are offered to whoever signs in next on it.
 
-Anything you already put on the server as a guest (a document you shared, synced, or saved to **livepages**) moves automatically. The migration moves your guest content, including those documents, folders, your Shared With Me list, favourites, images, custom themes and saved preferences (unless your account already has its own), from your per-browser guest id over to your new account. From then on, that content is owned by your account and follows you to any browser or device where you sign in.
+Anything you already put on the server as a guest (a document you shared, synced, or saved to **livedesign**) moves automatically. The migration moves your guest content, including those documents, folders, your Shared With Me list, favourites, images, custom themes and saved preferences (unless your account already has its own), from your per-browser guest id over to your new account. From then on, that content is owned by your account and follows you to any browser or device where you sign in.
 
 <Figure caption="On sign-up, your guest documents move from the per-browser id over to your new account.">
   <MigrateOnSignUp />
@@ -61,7 +61,7 @@ Anything you already put on the server as a guest (a document you shared, synced
 
 The process runs the first time you are signed in in a browser that holds guest work, and is safe to repeat: a second attempt simply moves nothing. Once you are signed in, the Explorer's sign-in nudge disappears.
 
-Only the guest id in **this** browser moves. Guest documents you made in a different browser or on another device belong to that browser's guest id: open livepages there and sign in with the same account to bring them across too. [Documents in This Browser](/help/privacy-and-security/offline-mode/) stay in their browser until you move them, because they were never on the server.
+Only the guest id in **this** browser moves. Guest documents you made in a different browser or on another device belong to that browser's guest id: open livedesign there and sign in with the same account to bring them across too. [Documents in This Browser](/help/privacy-and-security/offline-mode/) stay in their browser until you move them, because they were never on the server.
 
 <Tip>
   Build freely as a guest, then sign up when you want your documents everywhere. The hand-off is

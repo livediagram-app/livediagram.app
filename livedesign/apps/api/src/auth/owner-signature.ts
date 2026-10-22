@@ -20,7 +20,7 @@
 // null and migrate skips the check — mirroring how `CLERK_JWKS_URL` makes
 // auth optional. Production sets the secret and is protected.
 
-import { bytesToBase64Url } from '@livepages/api-schema';
+import { bytesToBase64Url } from '@livedesign/api-schema';
 import { timingSafeEqual } from './timing-safe';
 
 const enc = new TextEncoder();

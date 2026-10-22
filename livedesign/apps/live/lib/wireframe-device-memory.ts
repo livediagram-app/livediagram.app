@@ -5,9 +5,9 @@ import {
   DEFAULT_WIREFRAME_DEVICE,
   isWireframeDeviceId,
   type WireframeDeviceId,
-} from '@livepages/document';
+} from '@livedesign/document';
 
-const KEY = 'livepages:v2:wireframe-device';
+const KEY = 'livedesign:v2:wireframe-device';
 
 export function lastWireframeDevice(): WireframeDeviceId {
   try {

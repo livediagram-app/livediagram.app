@@ -1,7 +1,7 @@
 // A document's tabs as the plan read names them (docs/specs/026-plan/plan-agents.md "Reading the plan": tabs): each
 // tab's id, name, kind and theme, and a Sheet tab's sheet ids in canvas order, read from the stored JSON in SQL so no tab
 // body leaves the database. A tab-scoped grant reads its own tab only.
-import type { PlanTabOutline } from '@livepages/api-schema';
+import type { PlanTabOutline } from '@livedesign/api-schema';
 import type { Env } from '../types';
 
 type OutlineRow = { id: string; name: string; kind: string | null; theme: string | null };

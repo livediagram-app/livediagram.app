@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createShape, type BoxedElement } from '@livepages/document';
+import { createShape, type BoxedElement } from '@livedesign/document';
 import { maximisePlanElement, releasePlanElement } from '@/hooks/plan/maximised-plan';
 import { setPlanCover } from '@/hooks/plan/plan-cover-store';
 import { useBoxedElementAnimation } from './useBoxedElementAnimation';

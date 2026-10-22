@@ -1,5 +1,5 @@
-import type { EditorMode } from '@livepages/document';
-import { EDITOR_MODES, seededRandom } from '@livepages/document';
+import type { EditorMode } from '@livedesign/document';
+import { EDITOR_MODES, seededRandom } from '@livedesign/document';
 import {
   BLANK_TEMPLATE_FOR_MODE,
   EXTRA_BLANK_TEMPLATES,
@@ -13,7 +13,7 @@ import {
   templateQueryWords,
   type TemplateCategory,
   type TemplateDescriptor,
-} from '@livepages/templates';
+} from '@livedesign/templates';
 
 // The landing page's template gallery (docs/specs/019-marketing/marketing-site.md): every template
 // the editor ships, each a link that creates that document straight away (/new?template=<kind>,

@@ -11,10 +11,10 @@ import {
   PAGE_MOTION_SPEED_MIN,
   type PageFill,
   type PageMotion,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { PagedCarousel } from '@/components/primitives/PagedCarousel';
 import { RANGE_SLIDER } from '@/components/primitives/surface-classes';
-import { CheckIcon, Tooltip } from '@livepages/ui';
+import { CheckIcon, Tooltip } from '@livedesign/ui';
 import { fillCss, type ThemeBackgroundPreset } from '@/lib/page-paint';
 import {
   colouringOf,

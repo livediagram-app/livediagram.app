@@ -1,4 +1,4 @@
-// @livepages/forms (docs/specs/030-forms/forms.md): the form a Form tab holds, its answers, where they go on a
+// @livedesign/forms (docs/specs/030-forms/forms.md): the form a Form tab holds, its answers, where they go on a
 // card, the starters, and what a form link shows. Pure: the editor, the respondent page and the api share it.
 export * from './model';
 export * from './limits';

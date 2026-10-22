@@ -1,4 +1,4 @@
-import { chartPageGrounds, type LaidOutPage, type Tab } from '@livepages/document';
+import { chartPageGrounds, type LaidOutPage, type Tab } from '@livedesign/document';
 import { getTheme, themeChartPalette } from '@/lib/themes';
 
 // What an image export draws its charts in, so they come out as the canvas draws them: the tab

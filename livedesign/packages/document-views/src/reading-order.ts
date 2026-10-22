@@ -1,6 +1,6 @@
 // Reading order (docs/specs/024-agents/blueprints/document-views.md "Reading order", VW25): rows top to
 // bottom, then left to right; elements without geometry follow in array order.
-import type { Element } from '@livepages/document';
+import type { Element } from '@livedesign/document';
 import { boxOf, type Box } from './fields';
 
 export type Placed = { el: Element; index: number };

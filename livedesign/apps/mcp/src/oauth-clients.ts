@@ -1,11 +1,11 @@
 // The OAuth clients the authorization server knows (docs/specs/015-api/blueprints/cli.md "OAuth server").
 
-import { CLI_CLIENT_ID, CLI_CLIENT_NAME, CLI_REDIRECT_URIS } from '@livepages/api-schema';
+import { CLI_CLIENT_ID, CLI_CLIENT_NAME, CLI_REDIRECT_URIS } from '@livedesign/api-schema';
 import type { Env } from './env';
 
 export type ClientReg = { redirectUris: readonly string[]; clientName: string };
 
-// The clients livepages ships (docs/specs/015-api/blueprints/cli.md "OAuth server", CLI35): looked up before any
+// The clients livedesign ships (docs/specs/015-api/blueprints/cli.md "OAuth server", CLI35): looked up before any
 // registration. Registration mints random hex ids, so it can never take one of these.
 export const BUILT_IN_CLIENTS: Readonly<Record<string, ClientReg>> = {
   [CLI_CLIENT_ID]: { clientName: CLI_CLIENT_NAME, redirectUris: CLI_REDIRECT_URIS },

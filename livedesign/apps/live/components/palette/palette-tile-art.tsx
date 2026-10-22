@@ -1,4 +1,4 @@
-import { trustedHtml } from '@livepages/ui';
+import { trustedHtml } from '@livedesign/ui';
 // Tile pictures that are art, not icons (docs/specs/004-interface-design/iconography.md, "Art"):
 // the code block's fixed dark card and the embed providers' marks. They keep their own paint.
 

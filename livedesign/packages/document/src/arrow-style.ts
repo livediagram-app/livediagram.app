@@ -5,7 +5,7 @@ import type { ArrowElement } from './index';
 // defaults, and the accessors that resolve an arrow's effective value.
 // Split out of index.ts so the arrow appearance model lives in one focused
 // module (alongside arrow-path.ts's geometry) rather than the schema barrel.
-// Re-exported from ./index, so the public `@livepages/document` surface is
+// Re-exported from ./index, so the public `@livedesign/document` surface is
 // unchanged.
 
 // Named thickness presets exposed via the Palette. Storing the raw px

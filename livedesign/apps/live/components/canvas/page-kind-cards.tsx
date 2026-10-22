@@ -3,7 +3,7 @@
 // The five kinds of page as cards (docs/specs/007-editor/pages-mode.md "Page kinds"): a
 // miniature of the page above its name and a line on what it is for: the first page's own choice.
 // The Add a Page list shows the same kinds as rows (AddPagePopover).
-import type { PageKind } from '@livepages/document';
+import type { PageKind } from '@livedesign/document';
 import type { KeyboardEvent, Ref } from 'react';
 
 // `hint`: the short line the Add a Page list shows beside the name.

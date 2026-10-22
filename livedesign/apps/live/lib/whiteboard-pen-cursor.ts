@@ -1,7 +1,7 @@
 // The cursor while a whiteboard pen is in hand (docs/specs/023-draw-mode/draw-mode.md "Pens"): it
 // marks exactly where ink lands. Two looks, chosen in the dock's More flyout: a dot of the ink, or
 // a crosshair with a nib and a dot of the pen's colour beside it.
-import { WHITEBOARD_BOARD, type Appearance } from '@livepages/document';
+import { WHITEBOARD_BOARD, type Appearance } from '@livedesign/document';
 
 export type PenCursorVariant = 'dot' | 'nib-crosshair';
 // The default first, as the Settings row lists them.

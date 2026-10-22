@@ -1,4 +1,4 @@
-import { sha256Hex } from '@livepages/api-schema';
+import { sha256Hex } from '@livedesign/api-schema';
 import { clientRateKey } from './client-ip';
 import { personTagFor } from './person-tag';
 import { json } from './responses';
@@ -15,7 +15,7 @@ export const GUEST_VOTERS_PER_NETWORK = 100;
 // matched across documents. 32 hex characters (128 bits) keeps the room's poll state and the ledger rows small.
 export async function networkTagFor(scope: string, networkKey: string): Promise<string> {
   const digest = await sha256Hex(
-    new TextEncoder().encode(`livepages:vote-network:v1:${scope}:${networkKey}`),
+    new TextEncoder().encode(`livedesign:vote-network:v1:${scope}:${networkKey}`),
   );
   return digest.slice(0, 32);
 }

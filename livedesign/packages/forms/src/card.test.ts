@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ITEM_DESCRIPTION_MAX, normaliseRichRuns, type ItemTypeDef } from '@livepages/items';
+import { ITEM_DESCRIPTION_MAX, normaliseRichRuns, type ItemTypeDef } from '@livedesign/items';
 import {
   FROM_FORM_FIELD,
   answerText,

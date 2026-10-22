@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 
-import { SHAPE_DEFAULT_SIZE, type Reaction } from '@livepages/document';
+import { SHAPE_DEFAULT_SIZE, type Reaction } from '@livedesign/document';
 
 import { drawParticle, spawnBurst, stepParticles, type Particle } from '@/lib/reaction-particles';
 import { useLatest } from '@/hooks/ui/useLatest';

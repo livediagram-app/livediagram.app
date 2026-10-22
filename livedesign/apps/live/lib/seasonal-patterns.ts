@@ -2,7 +2,7 @@
 // each, as raw SVG in the tab's pattern colour. canvas-backgrounds.ts draws it twice from this one source: encoded
 // into a CSS `url(...)` for the live canvas, and as an export tile. Every motif sits inside its tile or crosses an
 // edge only where the opposite edge carries the matching half, so the tiles meet seamlessly.
-import type { BackgroundPattern, SeasonalBackgroundPattern } from '@livepages/document';
+import type { BackgroundPattern, SeasonalBackgroundPattern } from '@livedesign/document';
 
 /** One tile of a seasonal pattern: its size and inner SVG markup. */
 type MotifTile = { w: number; h: number; inner: string };

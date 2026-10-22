@@ -11,7 +11,7 @@
 // rename or delete a team folder) simply leaves it out rather than
 // showing a row that does nothing.
 
-import { CloseIcon } from '@livepages/ui';
+import { CloseIcon } from '@livedesign/ui';
 import {
   FolderOutlineIcon,
   OpenIcon,

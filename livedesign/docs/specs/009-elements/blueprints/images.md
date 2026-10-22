@@ -27,7 +27,7 @@ Scope, by file:
 | `apps/api/src/index.ts`                              | Pre-dispatch size gate, write limiter, `scheduled()` retention hand-off |
 | `apps/api/src/thumbnail.ts`                          | `loadEmbeddedImages` for the preview and live image                     |
 | `apps/api/wrangler.toml`                             | `IMAGES` bucket (production and `[env.staging]`), caps comment          |
-| `apps/api/hosted-vars.json`                          | Hosted livepages.app's per-owner caps                                 |
+| `apps/api/hosted-vars.json`                          | Hosted livedesign.app's per-owner caps                                 |
 | `apps/live/lib/api/images.ts`                        | `apiListImages`, `apiUploadImage`, `apiDeleteImage`, `apiImageUsage`, … |
 | `apps/live/lib/upload-image.ts`                      | `uploadImageFile`, `addImageFileForDocument`, `ImageUploadError`        |
 | `apps/live/hooks/canvas/useEditorImages.ts`          | Picker state, attach, detach, place-from-gallery                        |
@@ -369,7 +369,7 @@ read a 503 as `null` and `{}`.
   pass through (spec, Out of scope).
 - **Abuse.** `WRITE_RATE_LIMITER` (300 per 60 s per owner or token) on POST and DELETE; per-file
   cap; optional per-owner caps, enforced atomically at insert (I5) and set on hosted
-  livepages.app by `hosted-vars.json`; guest signature enforcement covers the `images` segment
+  livedesign.app by `hosted-vars.json`; guest signature enforcement covers the `images` segment
   (`OWNER_SCOPED_SEGMENTS`); read-only tokens cannot write. Uploads are off in embeds (D42).
 - **Caching.** `private` only, so no shared cache holds a share-gated image.
 
@@ -491,4 +491,4 @@ backfill fingerprints live in [Image reference index](image-reference-index.md#o
 | Gallery placement size      | `240` px on the longer side              | D40; literal `max` in `addImageFromGallery`                |
 | `createImage` size          | 200 × 150                                | D49                                                        |
 | `WRITE_RATE_LIMITER`        | 300 per 60 s                             | `wrangler.toml`, namespace `1001`                          |
-| Buckets                     | `livepages-images`, `…-images-staging` | Separate so the staging sweep cannot reap production bytes |
+| Buckets                     | `livedesign-images`, `…-images-staging` | Separate so the staging sweep cannot reap production bytes |

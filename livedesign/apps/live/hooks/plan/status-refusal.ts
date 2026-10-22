@@ -8,7 +8,7 @@ import {
   typeIn,
   type Item,
   type ItemTypeDef,
-} from '@livepages/items';
+} from '@livedesign/items';
 
 export function typeStatusRefusal(
   types: readonly ItemTypeDef[],

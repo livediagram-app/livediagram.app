@@ -1,4 +1,4 @@
-import { Button, LockIcon } from '@livepages/ui';
+import { Button, LockIcon } from '@livedesign/ui';
 import { useRef, useState } from 'react';
 import { SettingsRow } from '@/components/dialogs/settings/SettingsRow';
 

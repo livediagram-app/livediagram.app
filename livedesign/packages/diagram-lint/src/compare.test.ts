@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { GraphInput } from '@livepages/document';
+import type { GraphInput } from '@livedesign/document';
 import { compareGraphLayouts, formatCompareTable, parseCompareDimensions } from './compare';
 import { quiet } from './fixtures/build';
 import { shopArchitecture } from './fixtures/shop-architecture';

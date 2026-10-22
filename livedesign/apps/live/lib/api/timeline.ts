@@ -17,8 +17,8 @@
 // events to show. An offline-only user sees an empty feed, which is
 // the truth.
 
-import type { TimelineEvent, TimelineReadResult, TimelineScopeRef } from '@livepages/api-schema';
-import { TIMELINE_PAGE_SIZE, formatScope } from '@livepages/api-schema';
+import type { TimelineEvent, TimelineReadResult, TimelineScopeRef } from '@livedesign/api-schema';
+import { TIMELINE_PAGE_SIZE, formatScope } from '@livedesign/api-schema';
 import { API_BASE, apiDelete, apiHeaders, apiFetch, expectOkVoid } from './core';
 
 export type TimelinePage = {

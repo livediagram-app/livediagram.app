@@ -12,7 +12,7 @@
 // this is mostly what a genuinely new visitor sees.
 
 import Link from 'next/link';
-import { EmptyState, SOLID_BRAND_DARK_CONTROL, Glyph } from '@livepages/ui';
+import { EmptyState, SOLID_BRAND_DARK_CONTROL, Glyph } from '@livedesign/ui';
 
 export function TimelineEmptyState() {
   return (

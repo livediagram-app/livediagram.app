@@ -3,7 +3,7 @@
 // object is an open recursive shape, and the value is built from the
 // (typechecked) route manifest + the generated component schemas, so a full
 // nominal model would add friction without catching real bugs here. The DTO
-// payload shapes ARE strongly typed — in @livepages/api-schema, where the
+// payload shapes ARE strongly typed — in @livedesign/api-schema, where the
 // component schemas are generated from.
 
 /** A single JSON Schema object (draft 2020-12, the dialect OpenAPI 3.1 uses). */

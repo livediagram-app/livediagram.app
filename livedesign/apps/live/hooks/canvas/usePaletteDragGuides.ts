@@ -2,7 +2,7 @@
 
 import { useLatest } from '@/hooks/ui/useLatest';
 import { useEffect, useRef, useState, type RefObject } from 'react';
-import type { AlignmentGuide, DistributionGuide, Element } from '@livepages/document';
+import type { AlignmentGuide, DistributionGuide, Element } from '@livedesign/document';
 import { pointerToCanvas } from '@/lib/canvas';
 import { paletteDragSnapAt } from '@/lib/palette-drag-snap';
 import { setPaletteDragSnap, usePaletteDragPreview } from '@/lib/palette-drag-preview';

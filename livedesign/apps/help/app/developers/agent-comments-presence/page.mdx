@@ -17,7 +17,7 @@ export const metadata = helpMetadata({
 
 Comments are how people and agents talk on the canvas when nobody is chatting. An agent holding an [API token](/help/account-and-data/api-tokens/) reads, adds to, resolves and reopens comment threads through the same endpoints the editor uses, and can show the people on a tab what it is doing while it works. Everything it writes appears under the name and colour of the person who owns the token, never as a new person.
 
-The examples use the [CLI](/help/developers/cli/) and `curl`. Paths are relative to `https://livepages.app/api`, and the `curl` examples assume your token is in `$TOKEN`.
+The examples use the [CLI](/help/developers/cli/) and `curl`. Paths are relative to `https://livedesign.app/api`, and the `curl` examples assume your token is in `$TOKEN`.
 
 ## Who Can Do What
 
@@ -34,12 +34,12 @@ A comment an agent writes records the token's id for the audit trail, and the pe
 Read the whole conversation without reading a tab:
 
 ```bash
-livepages comment ls "Shop"                  # open threads (the default)
-livepages comment ls "Shop" --status all     # resolved ones too
+livedesign comment ls "Shop"                  # open threads (the default)
+livedesign comment ls "Shop" --status all     # resolved ones too
 ```
 
 ```bash
-curl "https://livepages.app/api/documents/$DOC/comments?status=open" \
+curl "https://livedesign.app/api/documents/$DOC/comments?status=open" \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -76,10 +76,10 @@ To read one tab's threads as text, ask for its comments view: `GET /documents/$D
 In the CLI, a thread is named by its element's ref, from any [view](/help/developers/working-with-documents/#read-a-tab-as-text):
 
 ```bash
-livepages comment add "Shop" n2 "Should this be idempotent?"   # starts a thread, or adds to one
-livepages comment reply "Shop" n2 "Yes, keyed by order id"
-livepages comment resolve "Shop" n2
-livepages comment reopen "Shop" n2
+livedesign comment add "Shop" n2 "Should this be idempotent?"   # starts a thread, or adds to one
+livedesign comment reply "Shop" n2 "Yes, keyed by order id"
+livedesign comment resolve "Shop" n2
+livedesign comment reopen "Shop" n2
 ```
 
 Add `--tab Flow` when the element is not on the first tab. `reply`, `resolve` and `reopen` on an element with no thread are refused, with the `comment add` command to start one.
@@ -88,19 +88,19 @@ Over the API, a thread is named by **any comment in it**, so take a comment id f
 
 ```bash
 # Start a thread on an element (or add to its thread)
-curl -X POST https://livepages.app/api/documents/$DOC/tabs/$TAB/comments \
+curl -X POST https://livedesign.app/api/documents/$DOC/tabs/$TAB/comments \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{ "elementId": "n2", "text": "Should this be idempotent?" }'
 
 # Reply on the thread that holds comment c1f0…
-curl -X POST https://livepages.app/api/documents/$DOC/tabs/$TAB/comments/$COMMENT/reply \
+curl -X POST https://livedesign.app/api/documents/$DOC/tabs/$TAB/comments/$COMMENT/reply \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{ "text": "Yes, keyed by order id" }'
 
 # Resolve it, or reopen it
-curl -X POST https://livepages.app/api/documents/$DOC/tabs/$TAB/comments/$COMMENT/resolve \
+curl -X POST https://livedesign.app/api/documents/$DOC/tabs/$TAB/comments/$COMMENT/resolve \
   -H "Authorization: Bearer $TOKEN"
-curl -X POST https://livepages.app/api/documents/$DOC/tabs/$TAB/comments/$COMMENT/reopen \
+curl -X POST https://livedesign.app/api/documents/$DOC/tabs/$TAB/comments/$COMMENT/reopen \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -117,13 +117,13 @@ A Plan card (an **item**) has one thread of its own, so its endpoints name the i
 
 ```bash
 # Add to the card's thread (a resolved thread reopens)
-curl -X POST https://livepages.app/api/documents/$DOC/items/$ITEM/comments \
+curl -X POST https://livedesign.app/api/documents/$DOC/items/$ITEM/comments \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{ "text": "Blocked on the payments review" }'
 
-curl -X POST https://livepages.app/api/documents/$DOC/items/$ITEM/comments/resolve \
+curl -X POST https://livedesign.app/api/documents/$DOC/items/$ITEM/comments/resolve \
   -H "Authorization: Bearer $TOKEN"
-curl -X POST https://livepages.app/api/documents/$DOC/items/$ITEM/comments/reopen \
+curl -X POST https://livedesign.app/api/documents/$DOC/items/$ITEM/comments/reopen \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -134,13 +134,13 @@ Each answers with the card as stored and the item store's new revision (`{ "item
 An agent at work can appear on a tab with a short **status line** ("Adding the payment flow") and a **focus**: the elements it is looking at.
 
 ```bash
-livepages presence set "Shop" --status "Adding the payment flow" --focus api,db
-livepages presence set "Shop" --tab Flow --status "Reviewing" --ttl 120
-livepages presence clear "Shop"
+livedesign presence set "Shop" --status "Adding the payment flow" --focus api,db
+livedesign presence set "Shop" --tab Flow --status "Reviewing" --ttl 120
+livedesign presence clear "Shop"
 ```
 
 ```bash
-curl -X PUT https://livepages.app/api/documents/$DOC/tabs/$TAB/presence \
+curl -X PUT https://livedesign.app/api/documents/$DOC/tabs/$TAB/presence \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{ "status": "Adding the payment flow", "focus": ["api", "db"], "ttl": 60000 }'
 ```
@@ -184,7 +184,7 @@ Presence shows in the editor as its owner, never as a new person:
 To answer comments as they arrive, let the CLI wait for the next one rather than polling:
 
 ```bash
-livepages wait "Shop" --for comment --timeout 600
+livedesign wait "Shop" --for comment --timeout 600
 ```
 
 It prints the comment and exits, so an agent can read it, reply and wait again. Agents cannot be @mentioned; they read new comments as they arrive or on their next read.

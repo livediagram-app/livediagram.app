@@ -16,7 +16,7 @@ import {
   type BoardStatusTypes,
   type CardFinderShow,
   type Item,
-} from '@livepages/items';
+} from '@livedesign/items';
 import {
   CountBadge,
   EmptyState,
@@ -25,7 +25,7 @@ import {
   TrashIcon,
   noMatchTitle,
   useMediaQuery,
-} from '@livepages/ui';
+} from '@livedesign/ui';
 import type { DockAnchor } from '@/lib/canvas-chrome';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import { usePlan, type PlanContextValue } from './PlanContext';

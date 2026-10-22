@@ -27,8 +27,8 @@ import {
   type SheetWrite,
   type StarterCell,
   type AgentValue,
-} from '@livepages/sheets';
-import { isLightColor, type ChartPaletteId, type ChartType } from '@livepages/document';
+} from '@livedesign/sheets';
+import { isLightColor, type ChartPaletteId, type ChartType } from '@livedesign/document';
 import { formatPatchOf, type SheetFormatInput } from './sheet-change-build';
 import { buildRuleChange } from './sheet-rule-change';
 import { designCharts, seriesNote, type SheetChartOut } from './sheet-charts';

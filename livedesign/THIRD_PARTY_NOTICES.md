@@ -1,6 +1,6 @@
 # Third-party notices
 
-livepages is MIT-licensed (see [LICENSE](./LICENSE)). It includes icon artwork and small libraries from the projects below, whose licences require these notices.
+livedesign is MIT-licensed (see [LICENSE](./LICENSE)). It includes icon artwork and small libraries from the projects below, whose licences require these notices.
 
 ## Lucide
 
@@ -113,7 +113,7 @@ Graphics licensed under CC-BY 4.0: https://creativecommons.org/licenses/by/4.0/
 ## svg-path-bbox
 
 - Source: <https://github.com/mondeja/svg-path-bbox>
-- Used for: measuring glyph geometry (ink insets and centring), bundled with `@livepages/icons`.
+- Used for: measuring glyph geometry (ink insets and centring), bundled with `@livedesign/icons`.
 
 ```text
 BSD 3-Clause License

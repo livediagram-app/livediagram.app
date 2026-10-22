@@ -11,7 +11,7 @@ import {
   resolveArticleStyle,
   resolveFontStack,
   type ArticleStyle,
-} from '@livepages/document';
+} from '@livedesign/document';
 
 const MONO = resolveFontStack('roboto-mono')!;
 

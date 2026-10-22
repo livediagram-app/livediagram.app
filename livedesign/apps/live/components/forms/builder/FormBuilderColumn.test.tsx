@@ -2,8 +2,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { useEffect, useRef, useState } from 'react';
-import { questionsOf, type FormDefinition } from '@livepages/forms';
-import type { ItemTypeDef } from '@livepages/items';
+import { questionsOf, type FormDefinition } from '@livedesign/forms';
+import type { ItemTypeDef } from '@livedesign/items';
 import type { FormActions } from '@/hooks/forms/useFormActions';
 import { FormBuilderContext, type FormBuilderValue } from './form-builder-context';
 import { FormBuilderColumn } from './FormBuilderColumn';

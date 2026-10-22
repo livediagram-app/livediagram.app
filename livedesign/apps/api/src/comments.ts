@@ -1,4 +1,4 @@
-import type { CommentListStatus, DocumentCommentThread } from '@livepages/api-schema';
+import type { CommentListStatus, DocumentCommentThread } from '@livedesign/api-schema';
 import {
   elementThreads,
   mapElementThreads,
@@ -9,8 +9,8 @@ import {
   type CommentMention,
   type Element,
   type Tab,
-} from '@livepages/document';
-import { buildViewModel, commentHosts } from '@livepages/document-views';
+} from '@livedesign/document';
+import { buildViewModel, commentHosts } from '@livedesign/document-views';
 import type { ParticipantDTO } from './types';
 
 // Rewrite newly-added comments so the author fields come from the

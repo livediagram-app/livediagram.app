@@ -1,8 +1,8 @@
 'use client';
 
-import { truncateName } from '@livepages/document';
+import { truncateName } from '@livedesign/document';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import type { DocumentSummary, Folder } from '@livepages/api-schema';
+import type { DocumentSummary, Folder } from '@livedesign/api-schema';
 import {
   apiCreateFolder,
   apiDeleteDocument,

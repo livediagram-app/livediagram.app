@@ -3,8 +3,8 @@
 // for. Pressing the rest of the row edits it. The check pops green on done. A Won't Do action
 // (docs/specs/026-plan/linked-boards.md "On the canvas") wears a grey slashed circle that reopens it.
 
-import { COLLAB_DONE_COLOR as ACTION_DONE, type ElementAction } from '@livepages/document';
-import { GlyphDisc } from '@livepages/ui';
+import { COLLAB_DONE_COLOR as ACTION_DONE, type ElementAction } from '@livedesign/document';
+import { GlyphDisc } from '@livedesign/ui';
 import { initialsOf } from '@/lib/identity';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { tint } from '../collab-chrome';

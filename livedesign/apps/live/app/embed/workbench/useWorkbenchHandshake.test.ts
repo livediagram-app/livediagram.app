@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   WORKBENCH_HANDSHAKE_MS,
   type WorkbenchDocumentSessionResponse,
-} from '@livepages/api-schema';
+} from '@livedesign/api-schema';
 import type { WorkbenchRedeemOutcome } from '@/lib/api/workbench';
 import type { WorkbenchEvent } from './workbench-machine';
 
@@ -55,7 +55,7 @@ function fakeWindow(href: string, framed = true) {
   return { win: win as unknown as Window, parent, deliver, listeners };
 }
 
-const ADDRESS = `https://livepages.app/embed/workbench?d=doc-1#ticket=${TICKET}`;
+const ADDRESS = `https://livedesign.app/embed/workbench?d=doc-1#ticket=${TICKET}`;
 
 let events: WorkbenchEvent[];
 const dispatch = (e: WorkbenchEvent) => events.push(e);
@@ -77,7 +77,7 @@ afterEach(() => {
 
 describe('runWorkbenchHandshake', () => {
   it('refuses an address without a ticket and redeems nothing', async () => {
-    const { win } = fakeWindow('https://livepages.app/embed/workbench?d=doc-1');
+    const { win } = fakeWindow('https://livedesign.app/embed/workbench?d=doc-1');
 
     expect(await runWorkbenchHandshake(win, dispatch)).toBeNull();
 
@@ -138,7 +138,7 @@ describe('runWorkbenchHandshake', () => {
     expect(events.at(-1)).toEqual({ type: 'redeemed', session: other });
     expect(endSession).toHaveBeenCalledWith(SESSION.session);
     expect(parent.postMessage).toHaveBeenCalledWith(
-      { type: 'livepages:ended', v: 1, reason: 'refused' },
+      { type: 'livedesign:ended', v: 1, reason: 'refused' },
       ORIGIN,
     );
   });
@@ -160,11 +160,11 @@ describe('runWorkbenchHandshake', () => {
 
     const running = runWorkbenchHandshake(win, dispatch);
     await vi.waitFor(() => expect(parent.postMessage).toHaveBeenCalled());
-    deliver({ type: 'livepages:hello-ack', v: 1, name: 'Acme Editor' });
+    deliver({ type: 'livedesign:hello-ack', v: 1, name: 'Acme Editor' });
     const port = await running;
 
     expect(parent.postMessage).toHaveBeenCalledTimes(1);
-    expect(parent.postMessage).toHaveBeenCalledWith({ type: 'livepages:hello', v: 1 }, ORIGIN);
+    expect(parent.postMessage).toHaveBeenCalledWith({ type: 'livedesign:hello', v: 1 }, ORIGIN);
     expect(events.at(-1)).toEqual({ type: 'acked', name: 'Acme Editor' });
     expect(port?.origin).toBe(ORIGIN);
     expect(endSession).not.toHaveBeenCalled();
@@ -178,9 +178,9 @@ describe('runWorkbenchHandshake', () => {
 
     const running = runWorkbenchHandshake(win, dispatch);
     await vi.waitFor(() => expect(parent.postMessage).toHaveBeenCalled());
-    deliver({ type: 'livepages:hello-ack', v: 1, name: 'Evil' }, 'https://evil.example');
-    deliver({ type: 'livepages:hello-ack', v: 1, name: '' });
-    deliver({ type: 'livepages:theme', v: 1, colourScheme: 'dark' });
+    deliver({ type: 'livedesign:hello-ack', v: 1, name: 'Evil' }, 'https://evil.example');
+    deliver({ type: 'livedesign:hello-ack', v: 1, name: '' });
+    deliver({ type: 'livedesign:theme', v: 1, colourScheme: 'dark' });
     await vi.advanceTimersByTimeAsync(WORKBENCH_HANDSHAKE_MS);
 
     expect(await running).toBeNull();
@@ -213,7 +213,7 @@ describe('useWorkbenchHandshake', () => {
     const { result } = renderHook(() => useWorkbenchHandshake(win));
 
     await waitFor(() => expect(result.current.phase.phase).toBe('binding'));
-    act(() => deliver({ type: 'livepages:hello-ack', v: 1, name: 'Acme Editor' }));
+    act(() => deliver({ type: 'livedesign:hello-ack', v: 1, name: 'Acme Editor' }));
     await waitFor(() => expect(result.current.port).not.toBeNull());
     act(() => result.current.dispatch({ type: 'ended', reason: 'revoked' }));
 

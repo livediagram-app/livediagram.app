@@ -3,8 +3,8 @@
 // Leaving Pages on a tab with articles (docs/specs/007-editor/article-pages.md "Leaving
 // Pages"): turn the articles into Page elements, keep them as articles, or stay.
 import { useEffect, useRef } from 'react';
-import { editorModeLabel } from '@livepages/document';
-import { Button } from '@livepages/ui';
+import { editorModeLabel } from '@livedesign/document';
+import { Button } from '@livedesign/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { DialogFooter } from '@/components/dialogs/DialogFooter';
 import type { LeavePages } from '@/hooks/editor/useLeavePages';

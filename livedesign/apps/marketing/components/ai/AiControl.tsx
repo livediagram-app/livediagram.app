@@ -1,5 +1,5 @@
-import { lucideEye, lucideKey, lucideShieldCheck, lucideCpu } from '@livepages/icons/lucide';
-import { lucideGlyph } from '@livepages/ui';
+import { lucideEye, lucideKey, lucideShieldCheck, lucideCpu } from '@livedesign/icons/lucide';
+import { lucideGlyph } from '@livedesign/ui';
 
 // In your control (docs/specs/019-marketing/build-with-ai.md "The page" 6): the trust facts, each one true of the
 // shipped MCP server (docs/specs/015-api/mcp-server.md §3, §4.11).
@@ -22,7 +22,7 @@ const FACTS = [
   {
     icon: lucideGlyph(lucideCpu, 18),
     title: 'Your AI does the thinking',
-    body: 'livepages runs no AI model of its own here. It checks, lays out and saves what your tool asks for.',
+    body: 'livedesign runs no AI model of its own here. It checks, lays out and saves what your tool asks for.',
   },
 ];
 

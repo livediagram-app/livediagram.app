@@ -8,7 +8,7 @@ import {
   relayoutMindMap,
   type Element,
   type ShapeElement,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { useMindMapSetters } from './useMindMapSetters';
 
 // Tidy Map says what it did (docs/specs/009-elements/mind-node.md "Tidy Map").

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { renderHook, waitFor } from '@testing-library/react';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
-import type { Tab } from '@livepages/document';
+import type { Tab } from '@livedesign/document';
 import { untitledNameForPlanStart, usePlanStartDocumentName } from './usePlanStartDocumentName';
 
 // docs/specs/007-editor/templates-by-mode.md "The document's name": a Plan start on the first tab names a document

@@ -1,8 +1,8 @@
 // The newest documents of the teams a person has joined, beside their personal library
 // (docs/specs/019-marketing/returning-visitor.md), against the real migrations.
 
-import type { Tab } from '@livepages/document';
-import type { DocumentListResponse } from '@livepages/api-schema';
+import type { Tab } from '@livedesign/document';
+import type { DocumentListResponse } from '@livedesign/api-schema';
 import { describe, expect, it } from 'vitest';
 import { sqliteD1 } from '../test-sqlite-d1';
 import { handleDocuments } from '../routes/documents';

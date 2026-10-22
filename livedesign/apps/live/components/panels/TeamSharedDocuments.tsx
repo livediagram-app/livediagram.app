@@ -2,11 +2,11 @@
 
 import { use, useMemo, useState } from 'react';
 import { browser } from 'react-dom';
-import type { Folder } from '@livepages/api-schema';
+import type { Folder } from '@livedesign/api-schema';
 import { FolderRow, SkeletonRows } from '@/app/explorer/views';
 import { scopeDocuments, type LibraryLens } from '@/app/explorer/lens/pane-lens';
 import { FilteredEmpty, LensAnnouncer } from '@/app/explorer/lens/LensStates';
-import { EmptyState } from '@livepages/ui';
+import { EmptyState } from '@livedesign/ui';
 import { FolderSolidIcon, TeamIcon } from '@/components/primitives/explorer-icons';
 import { CardView } from '@/app/explorer/CardView';
 import { DetailsView } from '@/app/explorer/details/DetailsView';

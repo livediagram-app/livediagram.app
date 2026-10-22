@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { EditorState, TextSelection } from 'prosemirror-state';
-import type { ArticleBlock } from '@livepages/document';
+import type { ArticleBlock } from '@livedesign/document';
 import { blocksToDoc } from './article-convert';
 import { articlePeersKey, articlePeersPlugin, onlyPeers, setArticlePeers } from './article-peers';
 import type { ArticlePeerCaret } from './article-carets-store';

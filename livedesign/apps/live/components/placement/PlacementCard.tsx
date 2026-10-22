@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, type ReactNode } from 'react';
-import { Glyph } from '@livepages/ui';
+import { Glyph } from '@livedesign/ui';
 
 // The pieces a placement level is built from (docs/specs/006-document/offline-mode.md, docs/specs/013-workspace/folders.md, docs/specs/006-document/save-locations.md):
 // the selectable destination card, the inline New Folder card, their

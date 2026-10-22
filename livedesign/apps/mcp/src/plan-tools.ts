@@ -1,5 +1,5 @@
 // The Plan tools (docs/specs/026-plan/plan-agents.md, docs/specs/015-api/mcp-server.md §4.9b): list_items,
-// change_items, add_board, change_board and change_card_types, over the Plan engine the CLI shares (@livepages/agent-verbs).
+// change_items, add_board, change_board and change_card_types, over the Plan engine the CLI shares (@livedesign/agent-verbs).
 // Everything is named as people name it; a refusal is a tool error that says what is there.
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import {
@@ -10,14 +10,14 @@ import {
   planListing,
   readPlanState,
   resolveListingFilter,
-} from '@livepages/agent-verbs';
+} from '@livedesign/agent-verbs';
 import {
   mcpAddBoard,
   mcpChangeBoard,
   mcpChangeCardTypes,
   mcpChangeItems,
   mcpListItems,
-} from '@livepages/agent-verbs/mcp';
+} from '@livedesign/agent-verbs/mcp';
 import { clientFor } from './api';
 import type { Env } from './env';
 import { registerTool } from './tool-annotations';

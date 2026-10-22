@@ -8,7 +8,7 @@ import {
   ENTITY_ROW_TEXT_PX,
   nextEntityKey,
   type EntityField,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { useCommitOnLeave } from '@/hooks/ui/useCommitOnLeave';
 import { EntityKeyGlyph } from './EntityKeyGlyph';
 

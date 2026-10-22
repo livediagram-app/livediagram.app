@@ -1,4 +1,4 @@
-import type { BoxedElement, RunSize, TextRun } from '@livepages/document';
+import type { BoxedElement, RunSize, TextRun } from '@livedesign/document';
 import { describe, expect, it } from 'vitest';
 import { effectiveRunStyle, labelTextStyleCss } from './label-style';
 

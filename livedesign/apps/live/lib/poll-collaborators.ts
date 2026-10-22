@@ -13,7 +13,7 @@
 // is a wrong result rather than an ugly one, so repeats are disambiguated
 // before the list is frozen.
 
-import { POLL_OPTION_MAX, POLL_OPTIONS_MAX } from '@livepages/api-schema';
+import { POLL_OPTION_MAX, POLL_OPTIONS_MAX } from '@livedesign/api-schema';
 
 // Just enough of a Participant to build a ballot from. Structural rather than
 // the full `Participant`, so the helper can be tested with two-field literals

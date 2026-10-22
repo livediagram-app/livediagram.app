@@ -4,8 +4,8 @@
 // Ctrl + Alt + M, and the Comments panel naming and selecting a cell.
 import { act, cleanup, fireEvent, renderHook, screen } from '@testing-library/react';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { CellCommentThreads, Comment } from '@livepages/document';
-import { cellKey } from '@livepages/sheets';
+import type { CellCommentThreads, Comment } from '@livedesign/document';
+import { cellKey } from '@livedesign/sheets';
 import {
   SheetCellThreadsProvider,
   SheetCommentsProvider,

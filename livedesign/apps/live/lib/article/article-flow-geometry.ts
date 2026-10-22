@@ -9,7 +9,7 @@ import {
   PAGE_GAP,
   type ArticleStyle,
   type LaidOutPage,
-} from '@livepages/document';
+} from '@livedesign/document';
 
 type FlowFrame = {
   // The box's top-left on the canvas, and its size, in canvas px.

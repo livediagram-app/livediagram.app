@@ -1,6 +1,6 @@
 // Agent changesets from the editor (docs/specs/024-agents/agent-changesets.md "In the editor"): the
 // toast's Undo is a revert, the same route an agent or the CLI calls.
-import { CLIENT_HEADER, type ChangesetSummary, type RevertResponse } from '@livepages/api-schema';
+import { CLIENT_HEADER, type ChangesetSummary, type RevertResponse } from '@livedesign/api-schema';
 import { API_BASE, apiFetch, apiHeaders, expectOk } from './core';
 
 export async function apiRevertChangeset(

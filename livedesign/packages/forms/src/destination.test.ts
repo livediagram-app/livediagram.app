@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { ItemTypeDef, PlanBoardSetup } from '@livepages/items';
+import type { ItemTypeDef, PlanBoardSetup } from '@livedesign/items';
 import {
   DESTINATION_PROBLEM_TEXT,
   destinationProblem,

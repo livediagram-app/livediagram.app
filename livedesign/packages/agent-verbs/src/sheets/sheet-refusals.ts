@@ -1,6 +1,6 @@
 // The sheet store's refusals in words (docs/specs/029-sheets/sheet-store.md "Limits"; docs/specs/026-plan/plan-agents.md
 // "Errors that teach"): one line per code the api names, read by apiRefusalOf for the CLI and the MCP alike.
-import type { SheetError } from '@livepages/api-schema';
+import type { SheetError } from '@livedesign/api-schema';
 
 export const SHEET_REFUSAL_WORDS: Readonly<Record<SheetError, string>> = {
   sheet_not_found: 'no such sheet (it may have been deleted). list_sheets lists them.',

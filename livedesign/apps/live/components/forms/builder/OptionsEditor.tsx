@@ -5,9 +5,9 @@
 // removes it, Alt+Up and Alt+Down move it, pasting several lines adds one option a line, and Add Other adds the free
 // text option. Options are unique ignoring case: a repeat is put back to what it was.
 import { useEffect, useRef } from 'react';
-import { OPTIONS_MAX, OPTION_MAX, type FormQuestion } from '@livepages/forms';
-import { CloseIcon } from '@livepages/ui';
-import { nextOptionName, pastedOptions } from '@livepages/forms';
+import { OPTIONS_MAX, OPTION_MAX, type FormQuestion } from '@livedesign/forms';
+import { CloseIcon } from '@livedesign/ui';
+import { nextOptionName, pastedOptions } from '@livedesign/forms';
 import { DraftText, type DraftTextHandle } from './DraftText';
 
 export function OptionsEditor({

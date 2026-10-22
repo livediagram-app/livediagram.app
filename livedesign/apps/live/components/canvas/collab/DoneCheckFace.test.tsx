@@ -12,7 +12,7 @@
 
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import { DONE_VALUE, type ShapeElement } from '@livepages/document';
+import { DONE_VALUE, type ShapeElement } from '@livedesign/document';
 
 import type { Participant } from '@/lib/identity';
 import { DoneCheckFace } from './DoneCheckFace';

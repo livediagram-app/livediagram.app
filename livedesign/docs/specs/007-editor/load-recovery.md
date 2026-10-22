@@ -67,9 +67,9 @@ button, a recovery card. It shows for every load error, timed out or not:
 
 - **Copy Diagnostics** copies a plain-text report (below) for the person to
   paste to support. The button confirms with "Copied".
-- **Repair This Browser** clears this browser's saved livepages settings and
+- **Repair This Browser** clears this browser's saved livedesign settings and
   caches (below) and reloads. It asks first, inline under the button: "This
-  clears livepages's saved settings and caches in this browser." and what is
+  clears livedesign's saved settings and caches in this browser." and what is
   kept, with **Repair and Reload** and **Cancel**. Inline rather than a modal,
   so the same component serves the editor and the help page.
 - **Troubleshooting steps** links to the "A Document Will Not Load" help
@@ -117,20 +117,20 @@ out-of-date browser).
 Repair clears what is safe to lose and keeps what would lose work or identity.
 
 **Cleared:** every `localStorage` and `sessionStorage` key starting with
-`livepages:` or `livepages-` that is not kept below. This covers editor
+`livedesign:` or `livedesign-` that is not kept below. This covers editor
 preferences, panel layout, dismissed banners and tours, the recent-documents
 cache, cached share passwords, and the stale-build reload guards.
 
 **Kept, always:**
 
 - the guest identity: `self-id`, `self-sig`, `pending-signed-id`,
-  `name-confirmed` (all under `livepages:v2:`). Losing the guest id loses
+  `name-confirmed` (all under `livedesign:v2:`). Losing the guest id loses
   every document a guest owns;
 - `collab-key` and its secret half `collab-secret`, the per-browser keys that
   past answers and votes are matched against;
-- Google Drive mirror state (`livepages:v2:drive-*`,
-  `livepages:drive-mirror*`);
-- the offline store (IndexedDB `livepages-offline`): Offline Mode documents
+- Google Drive mirror state (`livedesign:v2:drive-*`,
+  `livedesign:drive-mirror*`);
+- the offline store (IndexedDB `livedesign-offline`): Offline Mode documents
   exist nowhere else;
 - cookies and the sign-in provider's own storage: repair never signs anyone
   out.

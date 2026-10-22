@@ -2,9 +2,9 @@
 // until a comment is added, or until a change settles for WAIT_SETTLE_MS, then prints it. `--timeout` ends with a
 // line saying nothing came; Ctrl-C ends with exit 1; the document moved to the Trash with exit 3.
 
-import { documentOf, resolveTab, tabPath, type VerbContext } from '@livepages/agent-verbs';
-import { revOfEtag, type DocumentCommentsResponse } from '@livepages/api-schema';
-import { threadListingLines } from '@livepages/document-views';
+import { documentOf, resolveTab, tabPath, type VerbContext } from '@livedesign/agent-verbs';
+import { revOfEtag, type DocumentCommentsResponse } from '@livedesign/api-schema';
+import { threadListingLines } from '@livedesign/document-views';
 import type { CliIo } from '../io';
 import { CliError } from '../output/cli-error';
 import { EXIT } from '../output/exit-codes';
@@ -22,7 +22,7 @@ export const trashedError = () =>
     exit: EXIT.notFound,
     code: 'trashed',
     message: 'the document was moved to the Trash',
-    hint: 'livepages document restore <doc>',
+    hint: 'livedesign document restore <doc>',
   });
 
 const quoted = (text: string) => JSON.stringify(text);
@@ -61,7 +61,7 @@ async function changeLines(
   const head = `tab ${quoted(name)} changed · rev `;
   if (read === undefined || read === now) return [`${head}${now}`];
   return [
-    `${head}${read}→${now} · diff: livepages tab diff ${quoted(input.doc)} --tab ${quoted(name)} --since ${read}`,
+    `${head}${read}→${now} · diff: livedesign tab diff ${quoted(input.doc)} --tab ${quoted(name)} --since ${read}`,
   ];
 }
 
@@ -119,7 +119,7 @@ export async function waitFor(
       },
       onReconnected: () =>
         ctx.notice(
-          `reconnected; what changed meanwhile: livepages tab diff ${quoted(input.doc)}`,
+          `reconnected; what changed meanwhile: livedesign tab diff ${quoted(input.doc)}`,
         ),
     });
     stream.ended.then(

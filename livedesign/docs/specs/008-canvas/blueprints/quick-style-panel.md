@@ -281,7 +281,7 @@ palette)` replaces `stroke` and `textColour` with `boardStroke` / `boardText`
 - `forgetStyleKinds(memory, kinds)`: removes those entries.
 - `parseStyleMemory(raw)`: `safeJson`, keeps only known kind keys and memorable fields with the right
   primitive type (string / number); anything else is dropped (D36).
-- Storage: `localStorage` key `livepages:v2:style-memory:<documentId>`, written through
+- Storage: `localStorage` key `livedesign:v2:style-memory:<documentId>`, written through
   `writeLocalStorageSafe`, at most once per `STYLE_MEMORY_WRITE_DEBOUNCE_MS = 250` (D37), and flushed
   on unmount. Read once per document id.
 
@@ -323,7 +323,7 @@ measures `main[data-canvas-a11y-root]` (area), the panel and obstacles
 non-empty rect, in a layout effect before paint, then again on: `ResizeObserver` (area, panel,
 obstacles, so a resizing panel is followed), `resize`, `pointerup` / `keyup`
 (capture), `transitionend` on the panel or an obstacle (one elsewhere on the canvas is ignored), and
-`livepages:panel-layout-changed`; coalesced to one run per
+`livedesign:panel-layout-changed`; coalesced to one run per
 animation frame. Each run observes only the elements it has not seen before and unobserves the ones
 that left (`observe()` always delivers an initial notification, so re-observing every run would
 re-run it every frame). Still

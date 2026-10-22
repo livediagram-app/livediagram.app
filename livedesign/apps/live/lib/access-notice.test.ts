@@ -26,7 +26,7 @@ describe('access-ended notes', () => {
   });
 
   it('ignores a note it cannot read', () => {
-    sessionStorage.setItem('livepages:access-ended:v1', '{nope');
+    sessionStorage.setItem('livedesign:access-ended:v1', '{nope');
     expect(takeAccessEnded()).toBeNull();
   });
 });

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { FakeGoogle, fakePngBase64Url } from '@livepages/fake-google';
-import { DRIVE_FILE_MIME } from '@livepages/api-schema';
+import { FakeGoogle, fakePngBase64Url } from '@livedesign/fake-google';
+import { DRIVE_FILE_MIME } from '@livedesign/api-schema';
 import { DRIVE_MULTIPART_MAX_BYTES } from './cadence';
 import { DriveApiError } from './drive-client';
 import { createDriveRestClient } from './drive-rest-client';
@@ -29,12 +29,12 @@ describe('createDriveRestClient', () => {
   it('creates a folder and a file with appProperties, parents, md5 and a thumbnail', async () => {
     const { fake, client } = setup();
     const root = await client.createFolder({
-      name: 'livepages',
+      name: 'livedesign',
       parentId: 'root',
       appProperties: { ldRoot: 'h' },
     });
     const file = await client.createFile({
-      name: 'A.livepages',
+      name: 'A.livedesign',
       parentId: root.id,
       mimeType: DRIVE_FILE_MIME,
       content: '{"a":1}',
@@ -42,7 +42,7 @@ describe('createDriveRestClient', () => {
       appProperties: { ldDocumentId: 'd1' },
     });
     expect(file).toMatchObject({
-      name: 'A.livepages',
+      name: 'A.livedesign',
       parents: [root.id],
       trashed: false,
       ownedByMe: true,

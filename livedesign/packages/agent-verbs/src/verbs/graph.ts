@@ -3,7 +3,7 @@
 // prints one line of measures each. Nothing reaches the api.
 
 import { z } from 'zod';
-import { graphFromMermaid, type GraphInput } from '@livepages/document';
+import { graphFromMermaid, type GraphInput } from '@livedesign/document';
 import {
   compareGraphLayouts,
   type LintLogger,
@@ -11,12 +11,12 @@ import {
   formatLintReport,
   lintGraph,
   parseCompareDimensions,
-} from '@livepages/diagram-lint';
-import { graphBodyIssue } from '@livepages/edit-operations';
+} from '@livedesign/diagram-lint';
+import { graphBodyIssue } from '@livedesign/edit-operations';
 import { defineVerb, VerbRefusal } from '../define';
 import { classifySource } from '../source-kind';
 
-const refuse = (message: string, hint = 'livepages guide build') =>
+const refuse = (message: string, hint = 'livedesign guide build') =>
   new VerbRefusal({ status: 400, code: 'invalid_value', message, hint });
 
 // The graph a file holds: graph JSON (bare or as a replace), or Mermaid.
@@ -50,7 +50,7 @@ export function graphLint(
     return { text: formatLintReport(report), errors: report.counts.error };
   }
   const dims = parseCompareDimensions(compare);
-  if ('error' in dims) throw refuse(dims.error, 'livepages graph lint --help');
+  if ('error' in dims) throw refuse(dims.error, 'livedesign graph lint --help');
   return {
     text: formatCompareTable(compareGraphLayouts(graph, dims, { log: lintLog })),
     errors: 0,
@@ -75,8 +75,8 @@ export const graphLintVerb = defineVerb({
   cli: {
     positionals: ['file'],
     examples: [
-      'livepages graph lint arch.json',
-      'livepages graph lint arch.json --compare direction,groups',
+      'livedesign graph lint arch.json',
+      'livedesign graph lint arch.json --compare direction,groups',
     ],
     prints: 'the lint summary and findings, or one line per variant',
   },

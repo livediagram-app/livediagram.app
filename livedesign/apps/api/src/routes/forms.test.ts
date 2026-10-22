@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { sentJson } from '@livepages/vitest-config/sent-request';
-import type { FormLinkResponse, PublicFormResponse } from '@livepages/api-schema';
-import { FROM_FORM_FIELD, type FormDefinition } from '@livepages/forms';
-import { ITEMS_MAX, presetSetup, type Item } from '@livepages/items';
+import { sentJson } from '@livedesign/vitest-config/sent-request';
+import type { FormLinkResponse, PublicFormResponse } from '@livedesign/api-schema';
+import { FROM_FORM_FIELD, type FormDefinition } from '@livedesign/forms';
+import { ITEMS_MAX, presetSetup, type Item } from '@livedesign/items';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { generateFormCode, listItems } from '../db';
 import { makeTestRouteContext } from './test-route-context';

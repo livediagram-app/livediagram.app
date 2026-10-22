@@ -43,7 +43,7 @@ function value(
     disconnect: vi.fn(async () => {}),
     adopt: vi.fn(async () => {}),
     ...over,
-    status: { ...DRIVE_STATUS_INITIAL, rootName: 'livepages (staging)', ...status },
+    status: { ...DRIVE_STATUS_INITIAL, rootName: 'livedesign (staging)', ...status },
   };
 }
 
@@ -106,7 +106,7 @@ describe('GoogleDriveSyncRow', () => {
     expect(problemLine()).toBeNull();
     expect(screen.queryByRole('button', { name: /Sync now|Connect/ })).toBeNull();
     expect(description()).toContain(
-      'Your documents are synced to “livepages (staging)” in Google Drive.',
+      'Your documents are synced to “livedesign (staging)” in Google Drive.',
     );
     fireEvent.click(screen.getByRole('button', { name: 'Disconnect' }));
     expect(v.disconnect).toHaveBeenCalledOnce();
@@ -114,13 +114,13 @@ describe('GoogleDriveSyncRow', () => {
 
   it('makes the quoted folder name open that folder in Google Drive, in a new tab', () => {
     show({ state: 'idle', lastSyncedAt: NOW, rootFolderId: 'root-123' });
-    const link = screen.getByRole('link', { name: 'livepages (staging), open in Google Drive' });
-    expect(link.textContent).toBe('livepages (staging)');
+    const link = screen.getByRole('link', { name: 'livedesign (staging), open in Google Drive' });
+    expect(link.textContent).toBe('livedesign (staging)');
     expect(link.getAttribute('href')).toBe('https://drive.google.com/drive/folders/root-123');
     expect(link.getAttribute('target')).toBe('_blank');
     expect(link.getAttribute('rel')).toBe('noopener noreferrer');
     expect(description()).toBe(
-      'Your documents are synced to “livepages (staging)” in Google Drive. Learn more',
+      'Your documents are synced to “livedesign (staging)” in Google Drive. Learn more',
     );
     // One row, one button: the link is in the description, not beside Disconnect.
     expect(screen.getAllByRole('button').map((b) => b.textContent)).toEqual(['Disconnect']);
@@ -129,7 +129,7 @@ describe('GoogleDriveSyncRow', () => {
   it('shows the folder name as plain text until its id is known, and no link when not connected', () => {
     show({ state: 'idle', lastSyncedAt: NOW, rootFolderId: null });
     expect(screen.queryByRole('link', { name: /open in Google Drive/ })).toBeNull();
-    expect(description()).toContain('“livepages (staging)”');
+    expect(description()).toContain('“livedesign (staging)”');
     cleanup();
     show({ state: 'disconnected', rootFolderId: 'root-123' });
     expect(screen.queryByRole('link', { name: /open in Google Drive/ })).toBeNull();
@@ -170,7 +170,7 @@ describe('GoogleDriveSyncRow', () => {
     const v = show({ state: 'idle', lastSyncedAt: NOW, notices: [NOTICE] }, { canAdopt: true });
     expect(statusText().textContent).toBe('Needs attention');
     expect(problemLine()!.textContent).toContain(
-      "Plan: Moved to a Drive folder livepages can't see.",
+      "Plan: Moved to a Drive folder livedesign can't see.",
     );
     fireEvent.click(screen.getByRole('button', { name: 'Show folder' }));
     expect(v.adopt).toHaveBeenCalledWith(NOTICE);

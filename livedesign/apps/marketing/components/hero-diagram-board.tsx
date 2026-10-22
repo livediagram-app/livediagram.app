@@ -4,7 +4,7 @@ import {
   lucideMail,
   lucideSparkles,
   lucideUser,
-} from '@livepages/icons/lucide';
+} from '@livedesign/icons/lucide';
 import type { Point } from '@/lib/hero-motion';
 import { FONT, TEAMMATE, YOU, at } from '@/components/art-tokens';
 import {

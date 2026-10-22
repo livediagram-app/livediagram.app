@@ -9,9 +9,9 @@ import {
   unionRects,
   type Element,
   type Tab,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { autoAlignElements } from '@/lib/auto-align';
-import type { AccessLevel } from '@livepages/api-schema';
+import type { AccessLevel } from '@livedesign/api-schema';
 
 export function createTab(name: string): Tab {
   // New tabs (and a new document's first tab) default the per-tab text size

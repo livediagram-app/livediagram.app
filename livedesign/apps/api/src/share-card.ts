@@ -2,7 +2,7 @@
 // 1200 x 630 frame every link preview (Slack, Teams, Discord, iMessage, X, LinkedIn) draws at full width. Pure, so
 // the fit is tested without the rasteriser; share-card-png.ts turns the result into a PNG.
 
-import type { Rect } from '@livepages/document';
+import type { Rect } from '@livedesign/document';
 
 // The Open Graph card size. Every preview surface takes 1.91:1 and draws this at full width.
 export const SHARE_CARD_WIDTH = 1200;

@@ -14,7 +14,7 @@ import {
   pageSizeChoices,
   type LaidOutPage,
   type PageBackground,
-} from '@livepages/document';
+} from '@livedesign/document';
 import {
   ACTIVE_SEGMENT,
   SEGMENT_TRACK,
@@ -27,14 +27,14 @@ import {
   useClickOutside,
   useEscape,
   Portal,
-} from '@livepages/ui';
+} from '@livedesign/ui';
 import { SegmentSlider } from '@/components/primitives/SegmentSlider';
 import { BottomSheet } from '@/components/primitives/BottomSheet';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
 import type { PageEdits } from '@/hooks/editor/usePagesMode';
 import type { ThemeBackgroundPreset } from '@/lib/page-paint';
-import type { PageLayoutId } from '@livepages/templates';
+import type { PageLayoutId } from '@livedesign/templates';
 import { LayoutsSection } from './infographic-page-layouts-section';
 import { WireframeDeviceSettings } from './wireframe/WireframeDeviceSettings';
 import { OrientationSection, SizeSection } from './page-panel-sections';

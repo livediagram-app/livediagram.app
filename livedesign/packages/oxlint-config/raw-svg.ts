@@ -9,7 +9,7 @@ export const RAW_ICON_SVG = {
     "JSXOpeningElement[name.name='svg'] > JSXAttribute[name.name='width'][value.expression.value<=24]",
   ].join(', '),
   message:
-    'Icons render through Glyph (or lucideGlyph) from @livepages/ui. Art belongs in a file on ICON_ART_ALLOWLIST (packages/oxlint-config/raw-svg.ts).',
+    'Icons render through Glyph (or lucideGlyph) from @livedesign/ui. Art belongs in a file on ICON_ART_ALLOWLIST (packages/oxlint-config/raw-svg.ts).',
 };
 
 // Globs resolve from each workspace's own oxlint config, so they start at `**/components`.

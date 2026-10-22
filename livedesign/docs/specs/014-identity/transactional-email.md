@@ -87,9 +87,9 @@ help article.
   first-sighting upsert is itself guarded), so a deployment with email off does
   zero extra work. This mirrors the model-key-absent → AI-hidden pattern.
 - `RESEND_FROM` (plain var, optional) — the From identity. Default
-  `livepages <hello@livepages.app>`. Requires a domain verified in Resend.
+  `livedesign <hello@livedesign.app>`. Requires a domain verified in Resend.
 - `APP_BASE_URL` (plain var, optional) — public origin for links in emails.
-  Default `https://livepages.app`.
+  Default `https://livedesign.app`.
 
 Local dev: drop `RESEND_API_KEY=re_…` into `apps/api/.dev.vars` (gitignored).
 Production: `wrangler secret put RESEND_API_KEY`.
@@ -177,7 +177,7 @@ sighting with a changed address (§4), resets the count to zero.
   and a footer under the card with the lockup again, the tagline ("Diagram,
   draw and make pages together, live. Free and open source.") and a link to the
   site. Both lockups link to `APP_BASE_URL`. The mark is a transparent 64px PNG
-  (`/email/livepages-mark-64.png`, shown at 28px in the header and 22px in
+  (`/email/livedesign-mark-64.png`, shown at 28px in the header and 22px in
   the footer) served by the marketing app and written by `pnpm icons:brand`,
   because Gmail and Outlook drop SVG and most clients block `data:` images.
   Its `alt` is empty, since the wordmark beside it names the product when

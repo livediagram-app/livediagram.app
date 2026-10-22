@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, DialogCloseButton, DialogHeader } from '@livepages/ui';
+import { Button, DialogCloseButton, DialogHeader } from '@livedesign/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { DialogFooter } from '@/components/dialogs/DialogFooter';
 import { ImportChecklist } from '@/components/dialogs/ImportChecklist';

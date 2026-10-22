@@ -7,7 +7,7 @@ import {
   settleChips,
   type Element,
   type LaidOutPage,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { pageLayoutById } from './layout-catalogue';
 import { carryPageContent } from './page-layout-carry';
 import type { PageLayoutId } from './page-layouts';

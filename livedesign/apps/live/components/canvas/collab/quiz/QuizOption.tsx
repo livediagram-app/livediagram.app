@@ -8,7 +8,7 @@ import {
   QUIZ_OPTION_LONG_TEXT,
   quizOptionGrowth,
   quizOptionLetter,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { tint } from '@/lib/element-tint';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 

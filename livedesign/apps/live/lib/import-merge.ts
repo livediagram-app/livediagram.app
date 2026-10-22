@@ -1,4 +1,4 @@
-import { migrateStoredTab, type Tab } from '@livepages/document';
+import { migrateStoredTab, type Tab } from '@livedesign/document';
 
 // How an imported tab lands on top of the tab receiving it (docs/specs/020-import-export/markdown-import.md).
 //

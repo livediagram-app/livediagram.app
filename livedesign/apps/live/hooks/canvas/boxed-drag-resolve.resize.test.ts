@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createShape, createText, type Element, type TextElement } from '@livepages/document';
+import { createShape, createText, type Element, type TextElement } from '@livedesign/document';
 import type { DragMode, ShapeBounds } from '@/lib/canvas';
 import { resizedElement, resolveBoxedResize } from './boxed-drag-resolve';
 

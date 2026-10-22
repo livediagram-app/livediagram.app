@@ -8,7 +8,7 @@
 // Pure. `planBoardPatch` diffs two set-ups; `applyPlanBoardPatch` applies one, checking the frame (it
 // arrives off the wire) and refusing a result that is not a readable set-up.
 
-import { normaliseBoardSetup, type PlanBoardSetup, type PlanColumn } from '@livepages/items';
+import { normaliseBoardSetup, type PlanBoardSetup, type PlanColumn } from '@livedesign/items';
 
 export type ColumnChange = { set?: Record<string, unknown>; clear?: string[] };
 

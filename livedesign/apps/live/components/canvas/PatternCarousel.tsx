@@ -6,8 +6,8 @@
 // the pattern's glyph on the canvas colour.
 
 import type { CSSProperties, ReactNode } from 'react';
-import { HoverCard, useMediaQuery } from '@livepages/ui';
-import type { BackgroundPattern } from '@livepages/document';
+import { HoverCard, useMediaQuery } from '@livedesign/ui';
+import type { BackgroundPattern } from '@livedesign/document';
 import { PagedCarousel } from '@/components/primitives/PagedCarousel';
 import type { PatternEntry } from '@/components/palette/palette-controls';
 import { tabBackgroundStyle } from '@/lib/canvas-backgrounds';

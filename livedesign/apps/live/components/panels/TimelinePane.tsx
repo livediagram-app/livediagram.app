@@ -5,7 +5,7 @@
 // Owns the fetch and the paging cursor; the shared <Timeline> owns the
 // layout, the stacking, and the calendar. That split is why this file
 // is short — everything about how a feed LOOKS lives in
-// @livepages/ui, and everything about where the events come from
+// @livedesign/ui, and everything about where the events come from
 // lives here.
 //
 // The controls (mode switch, filters) render in the Explorer's own page
@@ -16,7 +16,7 @@
 // sits inside the Explorer context that holds the document lists and the
 // rename / move / delete handlers they need.
 
-import { Timeline } from '@livepages/ui';
+import { Timeline } from '@livedesign/ui';
 import { track } from '@/lib/telemetry';
 import { TIMELINE_RENDERERS } from '@/app/explorer/timeline/renderers';
 import { useTimelineCardSlots } from '@/app/explorer/timeline/useTimelineCardSlots';

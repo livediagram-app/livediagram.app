@@ -1,14 +1,14 @@
 // The sheet tools (docs/specs/029-sheets/sheet-store.md "Agents", docs/specs/015-api/mcp-server.md §4.9c): list_sheets,
-// read_sheet, change_sheet and add_sheet, over the sheet engine the CLI shares (@livepages/agent-verbs). Sheets are
+// read_sheet, change_sheet and add_sheet, over the sheet engine the CLI shares (@livedesign/agent-verbs). Sheets are
 // named by title, cells by A1; a refusal is a tool error that says what is there.
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { addSheet, changeSheet, listSheets, readSheet } from '@livepages/agent-verbs';
+import { addSheet, changeSheet, listSheets, readSheet } from '@livedesign/agent-verbs';
 import {
   mcpAddSheet,
   mcpChangeSheet,
   mcpListSheets,
   mcpReadSheet,
-} from '@livepages/agent-verbs/mcp';
+} from '@livedesign/agent-verbs/mcp';
 import { clientFor } from './api';
 import type { Env } from './env';
 import { registerTool } from './tool-annotations';

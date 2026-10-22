@@ -1,4 +1,4 @@
-name = "livepages-router"
+name = "livedesign-router"
 main = "src/index.ts"
 compatibility_date = "2026-05-01"
 
@@ -9,25 +9,25 @@ compatibility_date = "2026-05-01"
 
 [[services]]
 binding = "MARKETING"
-service = "livepages-marketing"
+service = "livedesign-marketing"
 
 [[services]]
 binding = "LIVE"
-service = "livepages-live"
+service = "livedesign-live"
 
 [[services]]
 binding = "API"
-service = "livepages-api"
+service = "livedesign-api"
 
 [[services]]
 binding = "TELEMETRY"
-service = "livepages-telemetry"
+service = "livedesign-telemetry"
 
 [[services]]
 binding = "HELP"
-service = "livepages-help"
+service = "livedesign-help"
 
-# Local dev (`wrangler dev --env local --port 3200`, the workspace `dev`
+# Local dev (`wrangler dev --env local --port 3300`, the workspace `dev`
 # script): service bindings can't reach the local Next dev servers, so this
 # environment defines none and sets plain HTTP origins instead. The worker
 # falls back to proxying these when a binding is absent. See docs/specs/016-platform/router-app.md.
@@ -35,15 +35,15 @@ service = "livepages-help"
 # Tells the router it fronts `next dev`, whose chunks are not content-hashed, so their own
 # no-cache header passes through (docs/specs/016-platform/stale-builds.md "Caching rules").
 DEPLOY_ENV = "local"
-MARKETING_ORIGIN = "http://127.0.0.1:3201"
-LIVE_ORIGIN = "http://127.0.0.1:3202"
-API_ORIGIN = "http://127.0.0.1:8987"
-TELEMETRY_ORIGIN = "http://127.0.0.1:3203"
-HELP_ORIGIN = "http://127.0.0.1:3204"
+MARKETING_ORIGIN = "http://127.0.0.1:3301"
+LIVE_ORIGIN = "http://127.0.0.1:3302"
+API_ORIGIN = "http://127.0.0.1:8989"
+TELEMETRY_ORIGIN = "http://127.0.0.1:3303"
+HELP_ORIGIN = "http://127.0.0.1:3304"
 
 # ---------------------------------------------------------------------------
-# Staging (docs/specs/016-platform/staging-environment.md). Deploys as `livepages-router-staging` and fronts
-# https://staging.livepages.app (the custom domain is attached in the
+# Staging (docs/specs/016-platform/staging-environment.md). Deploys as `livedesign-router-staging` and fronts
+# https://staging.livedesign.app (the custom domain is attached in the
 # Cloudflare dashboard — the deploy token has no zone scope, same as
 # production).
 #
@@ -59,27 +59,27 @@ HELP_ORIGIN = "http://127.0.0.1:3204"
 # name on its own, but nothing in `--dry-run` prints the name it resolved,
 # and the router's service bindings depend on this exact string.
 [env.staging]
-name = "livepages-router-staging"
+name = "livedesign-router-staging"
 
 [[env.staging.services]]
 binding = "MARKETING"
-service = "livepages-marketing-staging"
+service = "livedesign-marketing-staging"
 
 [[env.staging.services]]
 binding = "LIVE"
-service = "livepages-live-staging"
+service = "livedesign-live-staging"
 
 [[env.staging.services]]
 binding = "API"
-service = "livepages-api-staging"
+service = "livedesign-api-staging"
 
 [[env.staging.services]]
 binding = "TELEMETRY"
-service = "livepages-telemetry-staging"
+service = "livedesign-telemetry-staging"
 
 [[env.staging.services]]
 binding = "HELP"
-service = "livepages-help-staging"
+service = "livedesign-help-staging"
 
 # Marks this router as the staging one. The worker reads it to stamp
 # `X-Robots-Tag: noindex, nofollow` on every response, which is what keeps a

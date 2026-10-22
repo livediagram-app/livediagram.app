@@ -10,8 +10,8 @@ import {
   normaliseBoardSetup,
   typeIn,
   type CardTypesTaken,
-} from '@livepages/items';
-import type { Element } from '@livepages/document';
+} from '@livedesign/items';
+import type { Element } from '@livedesign/document';
 import { usePlan } from '@/components/plan/PlanContext';
 import { createListeners } from '@/lib/listeners';
 

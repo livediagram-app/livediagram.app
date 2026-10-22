@@ -14,7 +14,7 @@
 // the sweep re-arms when the team list changes.
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { Folder } from '@livepages/api-schema';
+import type { Folder } from '@livedesign/api-schema';
 import { apiGetTeamLibrary, type DocumentListItem } from '@/lib/api-client';
 
 // `path` stays for the search panel's flat "Marketing / Q3" labels;

@@ -1,4 +1,4 @@
-import { TEMPLATES, type TemplateKind } from '@livepages/templates';
+import { TEMPLATES, type TemplateKind } from '@livedesign/templates';
 import { toGallery, type GalleryTemplate } from '@/lib/template-gallery';
 
 // Each category page's "Start from a template" band (docs/specs/019-marketing/marketing-site.md "Feature

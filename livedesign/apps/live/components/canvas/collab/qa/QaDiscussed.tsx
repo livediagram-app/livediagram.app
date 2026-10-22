@@ -3,7 +3,7 @@
 // default: the record of what the room covered is kept, not shown off.
 
 import { useState } from 'react';
-import type { QaNote } from '@livepages/document';
+import type { QaNote } from '@livedesign/document';
 import { tint } from '../collab-chrome';
 import { ChevronGlyph, CheckGlyph, ReopenGlyph, RoundAction, stopPointer } from './qa-parts';
 

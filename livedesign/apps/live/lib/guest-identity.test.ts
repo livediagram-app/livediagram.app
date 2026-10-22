@@ -12,8 +12,8 @@ import { ensureSignedGuestIdentity } from './guest-identity';
 const mockMint = vi.mocked(apiMintGuestId);
 const mockUpgrade = vi.mocked(apiUpgradeGuestId);
 
-const ID = 'livepages:v2:self-id';
-const SIG = 'livepages:v2:self-sig';
+const ID = 'livedesign:v2:self-id';
+const SIG = 'livedesign:v2:self-sig';
 
 function fakeStorage(): Storage {
   const m = new Map<string, string>();
@@ -78,7 +78,7 @@ describe('ensureSignedGuestIdentity', () => {
     expect(await ensureSignedGuestIdentity()).toEqual({ id: 'signed', sig: 'sig' });
     expect(window.localStorage.getItem(ID)).toBe('signed');
     expect(window.localStorage.getItem(SIG)).toBe('sig');
-    expect(window.localStorage.getItem('livepages:v2:pending-signed-id')).toBeNull();
+    expect(window.localStorage.getItem('livedesign:v2:pending-signed-id')).toBeNull();
   });
 
   it('falls back to the existing unsigned id when minting fails (offline)', async () => {
@@ -156,7 +156,7 @@ describe('Participant·Created counts once per browser', () => {
 // A reload can land after the worker moved the data but before the browser kept the new id
 // (docs/specs/014-identity/auth-and-guest-access.md, "An interrupted upgrade resumes").
 describe('an interrupted guest id upgrade', () => {
-  const PENDING = 'livepages:v2:pending-signed-id';
+  const PENDING = 'livedesign:v2:pending-signed-id';
 
   it('records the pending upgrade before asking the worker to move the data', async () => {
     window.localStorage.setItem(ID, 'legacy');

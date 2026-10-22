@@ -1,6 +1,6 @@
 // Telemetry ingest validator (docs/specs/017-telemetry/telemetry.md). The POST /api/events endpoint
 // filters every incoming batch through `isValidTelemetryEvent` from
-// @livepages/api-schema before writing to D1. Validation is the
+// @livedesign/api-schema before writing to D1. Validation is the
 // last line of defence against a malicious client posting events
 // outside the closed vocabulary; if it ever regresses, the public
 // telemetry dashboard could surface arbitrary attacker-supplied

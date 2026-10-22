@@ -105,7 +105,7 @@ declined | expired --re-invite--> (row gone) + new invited row
 
 - Member row: rejected → rose "Rejected" pill, dimmed avatar, secondary line `<email> · Declined` / `<email> · Expired`, no role control, Remove always visible for an Admin. Header "N invited" counts `invited` only.
 - Remove confirm (`teamRemovalCopy('rejected')`): title "Remove from List?", message "<name> declined the invite to "<team>"." or "<name>'s invite to "<team>" expired with no reply." plus "Removing clears it from the list, and you can invite them again any time.", confirm "Remove".
-- Landing card states and copy: Loading ("Loading the invite…"), Pending ("Decline the Invite to <team>?", button "Decline Invite", busy "Declining…", link "Accept Instead" → `/explorer/invites`), Declined ("Invite Declined"), Expired ("This Invite Has Expired"), Joined ("You're Already in <team>", "Open Explorer"), Invalid ("This Invite Link Isn't Valid", "Go to livepages"), error line "Could not decline the invite. Try again."
+- Landing card states and copy: Loading ("Loading the invite…"), Pending ("Decline the Invite to <team>?", button "Decline Invite", busy "Declining…", link "Accept Instead" → `/explorer/invites`), Declined ("Invite Declined"), Expired ("This Invite Has Expired"), Joined ("You're Already in <team>", "Open Explorer"), Invalid ("This Invite Link Isn't Valid", "Go to livedesign"), error line "Could not decline the invite. Try again."
 - Emails: invite outro gains " Not for you? Decline the invite, no account needed."; reminders reuse the invite body with their own subject, heading and intro (`REMINDER_COPY`).
 
 ## Accessibility

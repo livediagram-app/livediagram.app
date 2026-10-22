@@ -4,7 +4,7 @@
 // tokens", WB35, WB36, WB67): under the card's lifetime bar, one row per workbench the token may open documents in,
 // each with Unpair, which asks first in the same popover Revoke uses. None renders nothing.
 import { useId, useState } from 'react';
-import type { WorkbenchPairing, WorkbenchScope } from '@livepages/api-schema';
+import type { WorkbenchPairing, WorkbenchScope } from '@livedesign/api-schema';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import { relativeTime } from './token-status';
 

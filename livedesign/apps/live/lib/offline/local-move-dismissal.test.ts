@@ -24,7 +24,7 @@ describe('local move dismissal', () => {
   });
 
   it('reads a damaged entry as never dismissed', () => {
-    localStorage.setItem('livepages:v2:local-move-dismissed:user_1', 'banana');
+    localStorage.setItem('livedesign:v2:local-move-dismissed:user_1', 'banana');
     expect(shouldOfferLocalMove('user_1', 1)).toBe(true);
   });
 });

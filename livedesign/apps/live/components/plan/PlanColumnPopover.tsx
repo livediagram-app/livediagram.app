@@ -13,7 +13,7 @@ import {
   missingBoardStatuses,
   type PlanBoardSetup,
   type PlanColumn,
-} from '@livepages/items';
+} from '@livedesign/items';
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -21,11 +21,11 @@ import {
   TrashIcon,
   useClickOutside,
   useEscape,
-} from '@livepages/ui';
-import { plural } from '@livepages/document';
+} from '@livedesign/ui';
+import { plural } from '@livedesign/document';
 import { SwitchRow } from '@/components/primitives/SwitchRow';
-import { Portal, Tooltip, lucideGlyph } from '@livepages/ui';
-import { lucideBetweenVerticalEnd } from '@livepages/icons/lucide';
+import { Portal, Tooltip, lucideGlyph } from '@livedesign/ui';
+import { lucideBetweenVerticalEnd } from '@livedesign/icons/lucide';
 
 // Remove Column's glyph: a column taken out from between its neighbours.
 const ColumnOffIcon = lucideGlyph(lucideBetweenVerticalEnd, 16);

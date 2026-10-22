@@ -4,13 +4,13 @@ import {
   editorModeLabel,
   modesBesidePlanRule,
   nextEditorMode,
-} from '@livepages/document';
+} from '@livedesign/document';
 import {
   ChevronDownIcon,
   useClickOutside,
   useMenuButton,
   EDITOR_MODE_ICONS,
-} from '@livepages/ui';
+} from '@livedesign/ui';
 import { TOOLBAR_TRIGGER_TONE } from '@/components/palette/PaletteDropdown';
 import { EDITOR_MODE_KEYSHORTCUT, type EditorModeSwitchProps } from './editor-mode-copy';
 import { ModeMenu } from './ModeMenu';

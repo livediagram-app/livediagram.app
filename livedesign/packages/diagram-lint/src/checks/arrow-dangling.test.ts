@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@livepages/document';
+import type { Element } from '@livedesign/document';
 import { arrow, box, lint, of, tabOf } from '../fixtures/build';
 
 describe('arrow-dangling', () => {

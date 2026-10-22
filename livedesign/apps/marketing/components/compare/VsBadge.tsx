@@ -1,8 +1,8 @@
-import { BrandMark } from '@livepages/ui';
+import { BrandMark } from '@livedesign/ui';
 
 import { COMPETITOR_LOOK } from '@/components/compare/competitor-look';
 
-// The "livepages vs <tool>" pair of tiles: our mark against a generic glyph of what the other tool is
+// The "livedesign vs <tool>" pair of tiles: our mark against a generic glyph of what the other tool is
 // (competitor-look.ts), never its logo, so the page compares without borrowing anyone's brand.
 export function VsBadge({ slug, size = 'lg' }: { slug: string; size?: 'lg' | 'sm' }) {
   const look = COMPETITOR_LOOK[slug];

@@ -17,7 +17,7 @@ import {
   type ArticleAlign,
   type ArticleListKind,
   type ArticleParagraphStyle,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { articleSchema, numberAttr, safeMarkColor, textAttr } from './article-schema';
 
 const S = articleSchema;

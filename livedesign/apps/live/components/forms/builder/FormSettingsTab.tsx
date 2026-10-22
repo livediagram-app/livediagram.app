@@ -8,11 +8,11 @@ import {
   DEFAULT_CONFIRMATION,
   FORM_RESPONSE_LIMIT_MAX,
   MESSAGE_MAX,
-} from '@livepages/forms';
-import { TextInput } from '@livepages/ui';
+} from '@livedesign/forms';
+import { TextInput } from '@livedesign/ui';
 import { SettingsField } from '@/components/plan/settings-panel-parts';
 import { SwitchRow } from '@/components/primitives/SwitchRow';
-import { patchForm } from '@livepages/forms';
+import { patchForm } from '@livedesign/forms';
 import type { FormLinkState } from '@/hooks/forms/useFormLink';
 import { DraftText } from './DraftText';
 import { useFormBuilder } from './form-builder-context';

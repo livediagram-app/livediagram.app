@@ -6,11 +6,11 @@
 // may only view gets Open alone; a Participant gets Open, Duplicate, Move to and Flag, as the item panel's menu gives it. Built on the shared ContextMenu, so it opens at the click, re-clamps to
 // the window as it grows, is a bottom sheet on a phone and keeps the long-press grace, like the element menu.
 import type { SyntheticEvent } from 'react';
-import { DuplicateIcon, PencilIcon, TrashIcon, PlanCardsIcon } from '@livepages/ui';
+import { DuplicateIcon, PencilIcon, TrashIcon, PlanCardsIcon } from '@livedesign/ui';
 import { MenuActionRow, MenuGroupSeparator, MenuHeader } from '@/components/primitives/PortalMenu';
 import { ContextMenu } from '@/components/palette/ContextMenu';
 import { SlideDeckIcon } from '@/components/palette/palette-icons';
-import { isArchived, isFlagged, itemTitle, type PlanBoardSetup } from '@livepages/items';
+import { isArchived, isFlagged, itemTitle, type PlanBoardSetup } from '@livedesign/items';
 import { PlanBoardTileArt } from './plan-tile-art';
 import { duplicateItem } from './duplicate-item';
 import { toggleFlag } from './item-flag';

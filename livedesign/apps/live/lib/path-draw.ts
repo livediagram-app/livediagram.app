@@ -9,7 +9,7 @@ import {
   type Element,
   type PathAnchor,
   type PathElement,
-} from '@livepages/document';
+} from '@livedesign/document';
 
 type Point = { x: number; y: number };
 

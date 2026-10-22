@@ -4,8 +4,8 @@
 // matched by name, then by what it does. Picking one hands its family and name back: the toolbar switches to
 // Functions, opens that family's menu and highlights the function there for a moment (SheetFunctionMenu).
 import { useMemo, useState } from 'react';
-import { NoMatches, TextInput } from '@livepages/ui';
-import { FUNCTION_DOCS, FUNCTION_FAMILIES, type FunctionFamily } from '@livepages/sheets';
+import { NoMatches, TextInput } from '@livedesign/ui';
+import { FUNCTION_DOCS, FUNCTION_FAMILIES, type FunctionFamily } from '@livedesign/sheets';
 import { PortalMenu } from '@/components/primitives/PortalMenu';
 import { useMenuItemProps } from '@/components/primitives/menu-item-props';
 import { FUNCTION_FAMILY_LABELS } from './SheetFunctionMenu';

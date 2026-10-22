@@ -5,7 +5,7 @@ import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-libra
 import { readPinnedPageToolbar } from '@/components/canvas/article/page-toolbar-presence';
 import { useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { layOutPages, pageKindOf, type Page } from '@livepages/document';
+import { layOutPages, pageKindOf, type Page } from '@livedesign/document';
 import type { PageEdits } from '@/hooks/editor/usePagesMode';
 import { useFollowPagePanelRequests } from '@/lib/page-panel-request';
 import { track } from '@/lib/telemetry';

@@ -4,8 +4,8 @@
 // page panel's two article tabs, each in a popover anchored to its button, as an infographic or slide page's
 // Layouts and Background open theirs. The writing's whole article takes a pick; hovers preview on it.
 import type { ReactNode } from 'react';
-import { lucideALargeSmall, lucidePalette } from '@livepages/icons/lucide';
-import { lucideGlyph } from '@livepages/ui';
+import { lucideALargeSmall, lucidePalette } from '@livedesign/icons/lucide';
+import { lucideGlyph } from '@livedesign/ui';
 import { track } from '@/lib/telemetry';
 import { TitlePopoverButton, titleButtonClass } from './TitlePopoverButton';
 

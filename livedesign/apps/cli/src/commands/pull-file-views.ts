@@ -2,10 +2,10 @@
 // `document view`, `tab ls` and `tab view` render it with the views the api renders, with each tab's pulled revision;
 // any other verb given one exits 2. No host, profile or credential is read.
 
-import { resolveTab, tabListOf, type Verb } from '@livepages/agent-verbs';
-import { ApiError } from '@livepages/api-client';
-import { headerFactsOf, overviewView, renderView } from '@livepages/document-views';
-import { INVALID_VIEW_VALUE_ERROR, TAB_VIEW_NAMES, VIEW_REQUIRED } from '@livepages/api-schema';
+import { resolveTab, tabListOf, type Verb } from '@livedesign/agent-verbs';
+import { ApiError } from '@livedesign/api-client';
+import { headerFactsOf, overviewView, renderView } from '@livedesign/document-views';
+import { INVALID_VIEW_VALUE_ERROR, TAB_VIEW_NAMES, VIEW_REQUIRED } from '@livedesign/api-schema';
 import type { CliIo } from '../io';
 import { CliError } from '../output/cli-error';
 import { EXIT } from '../output/exit-codes';
@@ -68,7 +68,7 @@ export function pullFileView(
       hint: `name the document instead of the file: ${file.document.id}`,
     });
   log(`address document file ${path}`);
-  const { document, livepagesSync: sync } = file;
+  const { document, livedesignSync: sync } = file;
   if (verb.id === 'tab.ls') return { tabs: tabListOf(summariesOf(file)) };
   const tabIds = tabIdsOf(file);
   if (verb.id === 'document.view') {

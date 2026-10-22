@@ -4,7 +4,7 @@
 // its kind. Every value is a plain string, number or true/false under the field's id; clearing a
 // field removes its value. A value of the wrong kind (the field's kind changed) shows empty and is
 // replaced by the next edit.
-import { CloseIcon, Select, TextInput } from '@livepages/ui';
+import { CloseIcon, Select, TextInput } from '@livedesign/ui';
 import {
   CURRENCY_DEFAULT,
   EMAIL_MAX,
@@ -14,7 +14,7 @@ import {
   ratingScaleOf,
   type CustomFieldDef,
   type ItemFieldValue,
-} from '@livepages/items';
+} from '@livedesign/items';
 import { DateField, DebouncedText } from './item-field-editors';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { RatingInput } from '../forms/RatingInput';

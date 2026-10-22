@@ -11,7 +11,7 @@ import {
   moveDashboardSlot,
   type DashboardLayout,
   type Element,
-} from '@livepages/document';
+} from '@livedesign/document';
 import type { DashboardItem, DashboardZone, ZoneAllowed } from '@/hooks/plan/dashboard-drop';
 import { contentFitKind, keepsFit, type FitOf } from '@/hooks/plan/slot-fit';
 

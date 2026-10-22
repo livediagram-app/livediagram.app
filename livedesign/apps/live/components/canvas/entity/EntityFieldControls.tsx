@@ -11,7 +11,7 @@ import {
   removedFieldRemap,
   type EntityField,
   type ShapeElement,
-} from '@livepages/document';
+} from '@livedesign/document';
 import {
   getEntityFieldEdit,
   setEntityFieldEdit,

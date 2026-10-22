@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { HomeDocument, HomeGroup, HomePerson, HomeVerb } from '@livepages/api-schema';
+import type { HomeDocument, HomeGroup, HomePerson, HomeVerb } from '@livedesign/api-schema';
 import {
   actionDetail,
   actionPhrase,

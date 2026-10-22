@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createShape } from '@livepages/document';
+import { createShape } from '@livedesign/document';
 import { canEditSequence } from './sequence-edit';
 import { resolveEditorCapabilities } from './editor-capabilities';
 

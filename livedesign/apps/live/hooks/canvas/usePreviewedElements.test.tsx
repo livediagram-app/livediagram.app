@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import { createShape, type Element } from '@livepages/document';
+import { createShape, type Element } from '@livedesign/document';
 import { resetDragPreviewForTests, setLocalPreview } from '@/lib/drag-preview';
 import { usePreviewedElements } from './usePreviewedElements';
 

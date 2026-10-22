@@ -11,7 +11,7 @@ import {
   withMindSubtrees,
   type Anchor,
   type ArrowElement,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { getTheme } from '@/lib/themes';
 import { track } from '@/lib/telemetry';
 import { type DragMode, type DragState, type ShapeBounds } from '@/lib/canvas';

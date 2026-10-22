@@ -5,7 +5,7 @@
 
 import { cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import { PAGE_MOTIONS, type PageMotion } from '@livepages/document';
+import { PAGE_MOTIONS, type PageMotion } from '@livedesign/document';
 import { PageMotionLayer } from './PageMotionLayer';
 
 afterEach(cleanup);

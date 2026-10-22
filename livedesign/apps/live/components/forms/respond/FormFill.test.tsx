@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
-import type { PublicForm } from '@livepages/forms';
+import type { PublicForm } from '@livedesign/forms';
 import { FormFill } from './FormFill';
 import type { SubmitOutcome } from './useFormFill';
 

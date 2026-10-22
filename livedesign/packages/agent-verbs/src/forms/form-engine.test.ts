@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { FormLinkResponse } from '@livepages/api-schema';
-import { presetSetup } from '@livepages/items';
+import type { FormLinkResponse } from '@livedesign/api-schema';
+import { presetSetup } from '@livedesign/items';
 import { fakeApi } from '../testing/fake-api';
 import { sheetJson, sheetServer } from '../testing/sheets';
 import { bugForm, formPlan, formTabBody } from '../testing/forms';

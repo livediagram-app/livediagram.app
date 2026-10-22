@@ -4,7 +4,7 @@ Status: shipped
 
 ## What
 
-Every workspace is linted by **oxlint** with one shared config, `@livepages/oxlint-config`
+Every workspace is linted by **oxlint** with one shared config, `@livedesign/oxlint-config`
 (`packages/oxlint-config`). `pnpm lint` runs `turbo run lint`, and each workspace's `lint` script is
 `oxlint`: it reads the workspace's `oxlint.config.ts`, which re-exports the shared config (`apps/live`
 adds one override for its Playwright suite). Every rule is an **error**; there are no warnings.
@@ -28,7 +28,7 @@ is the whole of what the repo enforces.
   TypeScript). Unused variables and arguments are allowed only when named with a leading `_`.
 - **typescript-eslint's recommended type-checked rules**, as oxlint's type-aware `typescript/*`
   rules (see [Type-aware rules](#type-aware-rules)), each at zero findings
-  ([#711](https://github.com/livepages-app/livepages.app/issues/711)); every rule of the set but
+  ([#711](https://github.com/livedesign-app/livedesign.app/issues/711)); every rule of the set but
   `require-await`:
   - `await-thenable`
   - `no-array-delete`
@@ -56,7 +56,7 @@ is the whole of what the repo enforces.
   written to a function parameter and overwritten before it is read. oxc reports it from
   [oxc-project/oxc#27735](https://github.com/oxc-project/oxc/pull/27735) on; the gap closes when the repo
   takes the first oxlint release that contains it, and fixes what it finds
-  ([#721](https://github.com/livepages-app/livepages.app/issues/721)).
+  ([#721](https://github.com/livedesign-app/livedesign.app/issues/721)).
 - **By language**: the rules TypeScript's compiler already enforces (`no-undef`, `no-dupe-keys`,
   `constructor-super` and the rest) run on JavaScript files only; `no-var`, `prefer-const`,
   `prefer-rest-params` and `prefer-spread` run on TypeScript files only. JavaScript files know the
@@ -68,10 +68,10 @@ is the whole of what the repo enforces.
   `error-boundaries`, `unsupported-syntax`). The plugin's `config` and `gating` rules are not part of
   the port: they check React Compiler options, and the repo sets none.
   [React state and effects](react-state-and-effects.md) says why they are errors.
-- **The repo's own rules**, in the `livepages` JS plugin (`packages/oxlint-config/plugin.ts`):
-  - `livepages/no-native-title`: no native `title` outside `iframe` and `abbr`
+- **The repo's own rules**, in the `livedesign` JS plugin (`packages/oxlint-config/plugin.ts`):
+  - `livedesign/no-native-title`: no native `title` outside `iframe` and `abbr`
     ([Tooltips, hover cards and popovers](../004-interface-design/tooltips-hover-cards-popovers.md));
-  - `livepages/no-raw-icon-svg`: no icon-sized raw `<svg>` outside the art allow-list
+  - `livedesign/no-raw-icon-svg`: no icon-sized raw `<svg>` outside the art allow-list
     ([Iconography](../004-interface-design/iconography.md)).
 - **No formatting rules.** Prettier owns formatting.
 
@@ -85,7 +85,7 @@ is the whole of what the repo enforces.
   involved.
 - A file is typed through the nearest `tsconfig.json` that includes it. Every source file, script and test is in one, so what the lint reads is what `pnpm typecheck` checks: `apps/live`'s `.mts` scripts and marketing's `.well-known` route are named in their app's tsconfig, and a folder of Node scripts beside browser code has its own, which adds Node's types. A file no tsconfig includes is typed on its own, as an inferred project, without the workspace's options and paths; only the tool configs (`oxlint.config.ts`, `vitest.config.ts`) are.
 - `oxlint-tsgolint` is a root dev dependency, so every workspace's `oxlint` resolves it as its peer,
-  and a dependency of `@livepages/oxlint-config`, whose tests run it.
+  and a dependency of `@livedesign/oxlint-config`, whose tests run it.
 - A caught reason passed on unchanged keeps its type, `unknown`: `only-throw-error` allows throwing it
   by default, and `prefer-promise-reject-errors` is set to allow rejecting with it
   (`allowThrowingUnknown`). Wrapping it would lose what was caught. A value typed `any` is still

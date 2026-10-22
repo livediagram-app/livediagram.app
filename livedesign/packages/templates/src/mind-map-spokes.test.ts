@@ -6,7 +6,7 @@ import {
   planMindGrowth,
   type Element,
   type ShapeElement,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { buildMindMap } from './template-builders-mindmaps';
 
 // docs/specs/009-elements/mind-node.md "Connectors": a bubble map's spokes leave each node toward the other's

@@ -1,7 +1,7 @@
 import { usePlan } from '@/components/plan/PlanContext';
 import { tabCsvText } from '@/lib/export-plan/tab-csv';
 import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
-import { DialogCloseButton, DialogHeader } from '@livepages/ui';
+import { DialogCloseButton, DialogHeader } from '@livedesign/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { FormatCard } from './FormatCard';
 import { FormatIcon } from './export-format-icons';
@@ -16,7 +16,7 @@ import {
   tabToJsonText,
   tabToMarkdownText,
   type TabPlanData,
-} from '@livepages/document';
+} from '@livedesign/document';
 import {
   downloadBlob,
   exportTabAsPng,
@@ -38,7 +38,7 @@ import { track } from '@/lib/telemetry';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { useTabWindowExport } from './useTabWindowExport';
 import { usePlanImageExport } from './usePlanImageExport';
-import type { ExportFormatKey } from '@livepages/plan-art';
+import type { ExportFormatKey } from '@livedesign/plan-art';
 
 // The animated GIF's panel and its capture, loaded only when the GIF card opens
 // (docs/specs/020-import-export/blueprints/animated-gif-export.md "Performance and limits").
@@ -141,7 +141,7 @@ const CARDS: { kind: Format; title: string; description: string }[] = [
   {
     kind: 'file',
     title: 'JSON',
-    description: 'A livepages file. Copy it or save a .json to import back with full fidelity.',
+    description: 'A livedesign file. Copy it or save a .json to import back with full fidelity.',
   },
   {
     kind: 'markdown',
@@ -196,9 +196,9 @@ const TEXT_PANELS: Record<
 > = {
   file: {
     blurb:
-      "This tab as a livepages JSON export. Edit it here to copy a variant; your edits don't change the tab.",
+      "This tab as a livedesign JSON export. Edit it here to copy a variant; your edits don't change the tab.",
     downloadLabel: 'Download .json',
-    ext: 'livepages-tab.json',
+    ext: 'livedesign-tab.json',
     mime: 'application/json',
     getText: tabToJsonText,
   },

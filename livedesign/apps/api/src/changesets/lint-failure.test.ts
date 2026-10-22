@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-vi.mock('@livepages/diagram-lint', () => ({
+vi.mock('@livedesign/diagram-lint', () => ({
   coloursSet: () => new Set<string>(),
   lintTab: () => {
     throw new Error('boom');

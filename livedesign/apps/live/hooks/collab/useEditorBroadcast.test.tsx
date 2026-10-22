@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { RoomOutgoing } from '@livepages/api-schema';
+import type { RoomOutgoing } from '@livedesign/api-schema';
 import { useEditorBroadcast } from './useEditorBroadcast';
 
 type Deps = Parameters<typeof useEditorBroadcast>[0];

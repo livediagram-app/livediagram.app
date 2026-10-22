@@ -12,7 +12,7 @@ import {
   runsPlainText,
   type Element,
   type TextRun,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
 import { HEAD_GAP, SUBTITLE_H, TITLE_H, heading } from './template-session-parts';
 import {

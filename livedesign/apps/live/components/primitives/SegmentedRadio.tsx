@@ -2,7 +2,7 @@
 
 // A row of equal segments, one chosen, its highlight sliding between them (SegmentSlider): a
 // radiogroup of short choices (a guide strength, a number of copies).
-import { ACTIVE_SEGMENT, SEGMENT_TRACK } from '@livepages/ui';
+import { ACTIVE_SEGMENT, SEGMENT_TRACK } from '@livedesign/ui';
 import { SegmentSlider } from './SegmentSlider';
 
 export function SegmentedRadio<T extends string | number>({

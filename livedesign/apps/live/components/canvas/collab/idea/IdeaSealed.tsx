@@ -8,7 +8,7 @@
 // animation; the count the box first painted with doesn't animate.
 
 import { useState } from 'react';
-import { GlyphDisc } from '@livepages/ui';
+import { GlyphDisc } from '@livedesign/ui';
 import { tint } from '../collab-chrome';
 import { LockGlyph, QA_ACCENT, QA_ACCENT_INK } from '../qa/qa-parts';
 

@@ -1,6 +1,6 @@
 // tags — per-person document tags (migration 0094, docs/specs/013-workspace/tags.md).
 
-import { TAG_LIMIT, type Tag, type TagLink, type TagsList } from '@livepages/api-schema';
+import { TAG_LIMIT, type Tag, type TagLink, type TagsList } from '@livedesign/api-schema';
 import type { Env } from '../types';
 
 type TagRow = { id: string; name: string; colour: string; created_at: number };

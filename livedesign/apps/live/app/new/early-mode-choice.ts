@@ -5,7 +5,7 @@
 // the mode, and flags the root element so the page shows it is working. The wizard's first layout effect turns the
 // script off and creates the remembered mode, so the choice is kept and nothing is created twice.
 
-import { EDITOR_MODES, type EditorMode } from '@livepages/document';
+import { EDITOR_MODES, type EditorMode } from '@livedesign/document';
 
 // The window property the script and the wizard share: undefined before the script runs, null while it listens with
 // nothing chosen, a mode once one was chosen, and false once the wizard took over.

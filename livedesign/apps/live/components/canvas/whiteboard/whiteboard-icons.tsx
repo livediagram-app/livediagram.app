@@ -1,13 +1,13 @@
 // Glyphs for the whiteboard dock (docs/specs/023-draw-mode/draw-mode.md). Every one renders through
 // the house Glyph primitive (docs/specs/004-interface-design/iconography.md) at the dock's one size
 // step, 20px, on the 24-unit grid, so the dock reads as part of the same editor.
-import { Glyph, Prims } from '@livepages/ui';
+import { Glyph, Prims } from '@livedesign/ui';
 import {
   lucideSettings,
   lucideShapes,
   lucideStickyNote,
   lucideType,
-} from '@livepages/icons/lucide';
+} from '@livedesign/icons/lucide';
 
 // The Toolbar layout strip's tile glyph size, so the dock reads as the strip's twin.
 export const DOCK_ICON_PX = 18;

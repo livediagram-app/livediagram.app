@@ -170,7 +170,7 @@ mark it, and where a new guest's documents start. A document is **in This Browse
 ## Names in a sentence
 
 Copy that builds a phrase around a name (a page kind, a field, a note, a template, a chart type, an element type in
-an agent's error) takes its article from the name: `withArticle` / `indefiniteArticle` in `@livepages/items`
-(re-exported by `@livepages/document` and `@livepages/ui`). A vowel sound takes "an" ("Add an infographic
+an agent's error) takes its article from the name: `withArticle` / `indefiniteArticle` in `@livedesign/items`
+(re-exported by `@livedesign/document` and `@livedesign/ui`). A vowel sound takes "an" ("Add an infographic
 page", "Create an Org Chart", "is not an Estimate option"), and a vowel said "you" keeps "a" ("a User Persona", "a
 UML Class"). A fixed "a" before an interpolated name is how "Create a Org Chart" reached the marketing site.

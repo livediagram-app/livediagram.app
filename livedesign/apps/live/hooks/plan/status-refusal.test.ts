@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ITEM_TYPES, type Item } from '@livepages/items';
+import { ITEM_TYPES, type Item } from '@livedesign/items';
 import {
   cardsMovingRefused,
   cardsStayedMessage,

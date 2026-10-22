@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Element } from '@livepages/document';
-import { ACTIVITY_LIST_MAX } from '@livepages/api-schema';
-import { itemPersonId, type Item } from '@livepages/items';
+import type { Element } from '@livedesign/document';
+import { ACTIVITY_LIST_MAX } from '@livedesign/api-schema';
+import { itemPersonId, type Item } from '@livedesign/items';
 import { __setOfflineBackend, offlinePutRecord } from './offline-store';
 import {
   offlineActivityFromRecords,

@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { defaultCatalogue, validateItemTypeCatalogue } from '@livepages/items';
+import { defaultCatalogue, validateItemTypeCatalogue } from '@livedesign/items';
 
 // Migration 0090 (docs/specs/026-plan/item-types.md "The type catalogue"): a document made before card types started
 // empty, with cards, is given the default types exactly as the code defines them, in their stored (validated) form.

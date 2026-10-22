@@ -25,8 +25,8 @@ import {
   lucidePlus,
   lucideType,
   lucideUnderline,
-} from '@livepages/icons/lucide';
-import { ChevronDownIcon, lucideGlyph, Tooltip, Portal } from '@livepages/ui';
+} from '@livedesign/icons/lucide';
+import { ChevronDownIcon, lucideGlyph, Tooltip, Portal } from '@livedesign/ui';
 import { TOOLBAR_TRIGGER_TONE } from '@/components/palette/PaletteDropdown';
 import {
   TOOLBAR_CARD,

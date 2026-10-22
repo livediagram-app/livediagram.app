@@ -5,7 +5,7 @@
 // written anywhere, and every bubble removes itself when its flight ends.
 
 import { useSyncExternalStore } from 'react';
-import { parseAvatarSay } from '@livepages/api-schema';
+import { parseAvatarSay } from '@livedesign/api-schema';
 import { debugLog } from '@/lib/debug-log';
 import {
   admitBubble,

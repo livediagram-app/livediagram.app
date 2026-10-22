@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Button, CloseIcon, TextInput } from '@livepages/ui';
+import { Button, CloseIcon, TextInput } from '@livedesign/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { DialogFooter } from '@/components/dialogs/DialogFooter';

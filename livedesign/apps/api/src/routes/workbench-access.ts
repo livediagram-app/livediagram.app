@@ -3,7 +3,7 @@
 // access (personal ownership or team membership), never a share code, whatever the request carries (WB3).
 // Redemption has no caller identity of its own, so this cannot ride the request context's gates.
 
-import type { WorkbenchRole } from '@livepages/api-schema';
+import type { WorkbenchRole } from '@livedesign/api-schema';
 import { resolveDocumentGrant } from '../auth/document-access';
 import { getDocumentMeta, getFolder, getMembership, getTrashedDocumentMeta } from '../db';
 import { documentTrashed, notFound } from '../responses';

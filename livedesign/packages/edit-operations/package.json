@@ -1,5 +1,5 @@
 {
-  "name": "@livepages/edit-operations",
+  "name": "@livedesign/edit-operations",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -17,16 +17,16 @@
     "clean": "rm -rf node_modules .turbo coverage"
   },
   "dependencies": {
-    "@livepages/api-schema": "workspace:*",
-    "@livepages/document": "workspace:*",
-    "@livepages/forms": "workspace:*",
-    "@livepages/icons": "workspace:*",
-    "@livepages/templates": "workspace:*"
+    "@livedesign/api-schema": "workspace:*",
+    "@livedesign/document": "workspace:*",
+    "@livedesign/forms": "workspace:*",
+    "@livedesign/icons": "workspace:*",
+    "@livedesign/templates": "workspace:*"
   },
   "devDependencies": {
-    "@livepages/document-views": "workspace:*",
-    "@livepages/oxlint-config": "workspace:*",
-    "@livepages/vitest-config": "workspace:*",
+    "@livedesign/document-views": "workspace:*",
+    "@livedesign/oxlint-config": "workspace:*",
+    "@livedesign/vitest-config": "workspace:*",
     "@vitest/coverage-v8": "^5.0.3",
     "oxlint": "^1.88.0",
     "typescript": "^7.0.2",

@@ -70,7 +70,7 @@ it is reduced to _which page_, never _which thing on it_:
   leaked.
 
 The normaliser is one shared function (`pageViewPath` in
-`@livepages/api-schema`, beside the validator it must satisfy) used by every
+`@livedesign/api-schema`, beside the validator it must satisfy) used by every
 app, so the rules can't drift per app and the browser can never produce a path
 the ingest would drop.
 
@@ -94,11 +94,11 @@ whether or not the document exists.
 ### Counting
 
 - One view per **path change**, from the shared `PageViewTracker` component
-  (`@livepages/ui`), which reacts to Next's `usePathname`, mounted in each
+  (`@livedesign/ui`), which reacts to Next's `usePathname`, mounted in each
   app's root layout through a client adapter that hands it a `track()`. The
   public sites (marketing, help, the dashboard) all mount the shared
-  `PageViewBoot` from `@livepages/ui`, wired to their one shared emitter
-  (`siteTrack` in `@livepages/telemetry-client`); the editor mounts its own
+  `PageViewBoot` from `@livedesign/ui`, wired to their one shared emitter
+  (`siteTrack` in `@livedesign/telemetry-client`); the editor mounts its own
   `PageViewBoot` with its own emitter. A query-only change
   (a tab switch in the editor, a folder switch in the Explorer) is not a new
   page and does not count.
@@ -135,7 +135,7 @@ article say so.
 A **Pages** tab (`PagesView`) reads page views **by app**: Marketing, Live
 (the editor app), Help and Dashboard. The app is derived from the path's first
 segment using the same live route-segment list the router routes by (shared
-from `@livepages/api-schema`, so the dashboard and router can't disagree
+from `@livedesign/api-schema`, so the dashboard and router can't disagree
 about which app serves a path). Top to bottom:
 
 - **Views by app** now lives on **Dashboard** as the **Page Views by App**

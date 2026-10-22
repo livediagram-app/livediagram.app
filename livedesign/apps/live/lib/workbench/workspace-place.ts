@@ -107,14 +107,14 @@ export function isNewDocumentHref(href: string, origin: string): boolean {
   return sameOrigin(url, origin) && url.pathname.replace(/\/+$/, '') === '/new';
 }
 
-// The same place in a full tab: Open in livepages.
+// The same place in a full tab: Open in livedesign.
 export function appHrefOfPlace(place: WorkspacePlace): string {
   if (place.kind === 'explorer') return explorerPathFor(place.node);
   const path = `/document/${encodeURIComponent(place.documentId)}`;
   return place.shareCode ? `${path}?s=${encodeURIComponent(place.shareCode)}` : path;
 }
 
-// The place's name for `livepages:place`: the Explorer view's kind, or `document`.
+// The place's name for `livedesign:place`: the Explorer view's kind, or `document`.
 export function placeView(place: WorkspacePlace): string {
   return place.kind === 'document' ? 'document' : place.node.kind;
 }

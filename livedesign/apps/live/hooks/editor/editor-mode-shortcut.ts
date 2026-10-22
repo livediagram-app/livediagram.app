@@ -1,4 +1,4 @@
-import { EDITOR_MODES, editorModeLabel, nextEditorMode } from '@livepages/document';
+import { EDITOR_MODES, editorModeLabel, nextEditorMode } from '@livedesign/document';
 import type { EditorModeState } from './useEditorMode';
 
 // Shift+D (docs/specs/007-editor/editor-modes.md "The mode switch"): move to the next editor mode

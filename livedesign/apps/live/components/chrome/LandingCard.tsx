@@ -5,7 +5,7 @@
 // Drive routes (/drive/connected, /drive/open).
 
 import type { ReactNode } from 'react';
-import { Brand, buttonClassName, ButtonContent } from '@livepages/ui';
+import { Brand, buttonClassName, ButtonContent } from '@livedesign/ui';
 
 export function LandingCard({ children }: { children: ReactNode }) {
   return (

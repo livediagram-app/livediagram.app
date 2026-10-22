@@ -6,8 +6,8 @@ Derived from [Trusted Types](../trusted-types.md).
 
 | Term               | Identifier                                         | Meaning                                                                                                                            |
 | ------------------ | -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| The header value   | `TRUSTED_TYPES_CSP`                                | `require-trusted-types-for 'script'; trusted-types livepages-markup nextjs ProseMirrorClipboard default` |
-| Markup policy      | `MARKUP_POLICY` (`'livepages-markup'`)           | Makes `TrustedHTML` from livepages's own builders' markup                                                                        |
+| The header value   | `TRUSTED_TYPES_CSP`                                | `require-trusted-types-for 'script'; trusted-types livedesign-markup nextjs ProseMirrorClipboard default` |
+| Markup policy      | `MARKUP_POLICY` (`'livedesign-markup'`)           | Makes `TrustedHTML` from livedesign's own builders' markup                                                                        |
 | Default policy     | `'default'`                                        | The browser's fallback for a plain string at a sink                                                                                |
 | Boot script        | `trustedTypesBootScript(assetPrefix, origins)`     | Inline, first in each layout's `<head>`: the default policy and the violation log                                                  |
 | Asset prefix       | `''`, `/live`, `/help`, `/telemetry`               | Where an app's own build is served from (`assetPrefix` or `basePath`)                                                              |
@@ -19,7 +19,7 @@ Derived from [Trusted Types](../trusted-types.md).
 | File                                                         | Responsibility                                                                                                                                                           |
 | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `packages/ui/src/trusted-types-csp.ts`                       | `TRUSTED_TYPES_CSP`, `MARKUP_POLICY`; import-free, so `scripts/e2e-stack.mjs` runs it as is                                                        |
-| `packages/ui/src/trusted-types.ts`                           | `trustedHtml`, `isAllowedScriptUrl`, `trustedScriptOrigins`, `trustedTypesBootScript`; exported from `@livepages/ui` and `@livepages/ui/trusted-types` |
+| `packages/ui/src/trusted-types.ts`                           | `trustedHtml`, `isAllowedScriptUrl`, `trustedScriptOrigins`, `trustedTypesBootScript`; exported from `@livedesign/ui` and `@livedesign/ui/trusted-types` |
 | `apps/*/app/layout.tsx` (all four)                           | `TRUSTED_TYPES_BOOT` (the boot script for the app's prefix and key), first in `<head>`; help and telemetry gain a `<head>` for it                                        |
 | `apps/live/src/worker.ts`                                    | `Content-Security-Policy: TRUSTED_TYPES_CSP` among its security headers                                                                                                  |
 | `apps/{marketing,help,telemetry}/public/_headers`            | The same header on `/*`                                                                                                                                                  |
@@ -92,7 +92,7 @@ set, else `[]`. The sign-up form holds `<div id="clerk-captcha">` (hidden while 
 
 ```ts
 export const TRUSTED_TYPES_CSP: string;
-export const MARKUP_POLICY: 'livepages-markup';
+export const MARKUP_POLICY: 'livedesign-markup';
 export function trustedHtml(markup: string): TrustedHTML | string;
 export function isAllowedScriptUrl(
   url: string,

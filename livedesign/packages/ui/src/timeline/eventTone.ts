@@ -18,7 +18,7 @@
 // event type from a newer worker reads as plain rather than as a
 // deletion.
 
-import type { KnownTimelineEventType } from '@livepages/api-schema';
+import type { KnownTimelineEventType } from '@livedesign/api-schema';
 
 export type TimelineTone = 'danger' | 'structural' | 'create' | 'neutral';
 

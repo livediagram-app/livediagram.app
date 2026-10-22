@@ -5,7 +5,7 @@
 // (Sheet Settings' registry), a Board tab through its board's (board-csv-registry.ts); any other tab keeps the
 // document's Import dialog. Export opens the Export dialog on every tab, with the formats that suit its kind (CSV
 // among them on a Board or Sheet tab, lib/export-plan/tab-csv.ts).
-import type { Tab } from '@livepages/document';
+import type { Tab } from '@livedesign/document';
 import { sheetSettingsEntryOf } from '@/components/sheets/sheet-settings-registry';
 import { boardCsvEntryOf } from '@/components/plan/board-csv-registry';
 

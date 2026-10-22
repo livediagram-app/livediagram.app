@@ -27,7 +27,7 @@
     </style>
   </head>
   <body>
-    <iframe id="frame" title="livepages"></iframe>
+    <iframe id="frame" title="livedesign"></iframe>
     <p id="refused" role="alert" hidden></p>
     <script>
       const LOOPBACK_HOSTS = ['localhost', '127.0.0.1', '[::1]'];
@@ -64,11 +64,11 @@
         if (event.source !== frame.contentWindow) return;
         const message = event.data;
         window.received.push(message);
-        if (message.type === 'livepages:hello' && !silent) {
-          window.post({ type: 'livepages:hello-ack', v: 1, name: 'Fake Workbench' });
+        if (message.type === 'livedesign:hello' && !silent) {
+          window.post({ type: 'livedesign:hello-ack', v: 1, name: 'Fake Workbench' });
         }
-        if (message.type === 'livepages:renew' && window.nextTicket) {
-          window.post({ type: 'livepages:ticket', v: 1, ticket: window.nextTicket });
+        if (message.type === 'livedesign:renew' && window.nextTicket) {
+          window.post({ type: 'livedesign:ticket', v: 1, ticket: window.nextTicket });
           window.nextTicket = null;
         }
       });

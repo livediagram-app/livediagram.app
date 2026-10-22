@@ -14,7 +14,7 @@ import {
   type Item,
   type ItemPatch,
   type ItemTypeDef,
-} from '@livepages/items';
+} from '@livedesign/items';
 import {
   isoFromSerial,
   cellKey,
@@ -27,7 +27,7 @@ import {
   type SheetWrite,
   type Value,
   type Workbook,
-} from '@livepages/sheets';
+} from '@livedesign/sheets';
 
 export type CardPlan = {
   items: ReadonlyMap<string, Item>;

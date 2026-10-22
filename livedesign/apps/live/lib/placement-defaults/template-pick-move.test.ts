@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { PlacementDefaultKey } from '@livepages/api-schema';
+import type { PlacementDefaultKey } from '@livedesign/api-schema';
 import { buildDefaultFolderIndex } from './default-destination';
 import { templatePickMoveTarget } from './template-pick-move';
 

@@ -6,7 +6,7 @@ import {
   MIN_TEXT_CONTRAST,
   progressLabelInks,
   type ShapeElement,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { ProgressView } from './ProgressView';
 
 // docs/specs/009-elements/progress.md "The percentage stays legible": the bar's percentage is inked

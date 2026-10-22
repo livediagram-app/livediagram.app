@@ -9,7 +9,7 @@
 // Each builder is pure: it takes a centre (cx, cy) and returns a fresh
 // Element[]. See docs/specs/008-canvas/canvas-and-palette.md "Templates" for the catalogue.
 
-import { createShape, createSticky, createText, type Element } from '@livepages/document';
+import { createShape, createSticky, createText, type Element } from '@livedesign/document';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
 import { BLUE, MUTED, PINK, YELLOW } from './template-workshop-stickies';
 

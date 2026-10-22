@@ -6,7 +6,7 @@
 // only after the press. On an article page the preview covers every page of its article, as the
 // press would.
 import { useSyncExternalStore } from 'react';
-import type { LaidOutPage, PageBackground } from '@livepages/document';
+import type { LaidOutPage, PageBackground } from '@livedesign/document';
 import { withBackgroundPatch } from './page-paint';
 import { createListeners } from '@/lib/listeners';
 

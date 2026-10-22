@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi } from 'vitest';
-import type { Element } from '@livepages/document';
+import type { Element } from '@livedesign/document';
 
 const entry = {
   controller: { canShape: true, workbook: { id: 'wb' }, sheet: { id: 'sh' } },

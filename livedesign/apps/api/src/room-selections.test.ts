@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { MAX_SELECTION_IDS } from '@livepages/api-schema';
+import { MAX_SELECTION_IDS } from '@livedesign/api-schema';
 import { RoomSelectionStore, selectionFromOp, type LiveSession } from './room-selections';
 
 // The room's record of who holds what (docs/specs/024-agents/agent-changesets.md "What the room

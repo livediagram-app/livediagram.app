@@ -1,4 +1,4 @@
-import type { ElementLink } from '@livepages/document';
+import type { ElementLink } from '@livedesign/document';
 import { describe, expect, it } from 'vitest';
 import { describeLink } from './link-label';
 

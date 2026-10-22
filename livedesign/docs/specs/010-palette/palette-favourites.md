@@ -18,7 +18,7 @@ What went with it:
 
 - The Favourites category, its body, the Edit Favourites dialog, Reorder, and
   the row stars.
-- The per-browser list (`livepages:v2:palette-favourites` in `localStorage`).
+- The per-browser list (`livedesign:v2:palette-favourites` in `localStorage`).
   It is no longer read; a stored list is left in place and ignored.
 - The Favourites body's cross-category search. Elements stay findable from the
   editor's **Search** panel ([Canvas and palette](../008-canvas/canvas-and-palette.md)),

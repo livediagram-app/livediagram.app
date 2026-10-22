@@ -8,7 +8,7 @@ import {
   type Sheet,
   type SheetJson,
   type SheetWrite,
-} from '@livepages/sheets';
+} from '@livedesign/sheets';
 import { ApiError } from '@/lib/api/core';
 import {
   SheetStore,

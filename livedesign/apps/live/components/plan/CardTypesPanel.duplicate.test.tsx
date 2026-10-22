@@ -2,7 +2,7 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import type { ComponentProps, ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { ITEM_TYPES, ITEM_TYPES_MAX, duplicateItemType } from '@livepages/items';
+import { ITEM_TYPES, ITEM_TYPES_MAX, duplicateItemType } from '@livedesign/items';
 import { CardTypesPanel } from './CardTypesPanel';
 import { ItemTypeEditor } from './ItemTypeEditor';
 

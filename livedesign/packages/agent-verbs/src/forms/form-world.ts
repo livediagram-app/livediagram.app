@@ -1,16 +1,16 @@
 // What every form verb reads first (docs/specs/030-forms/forms.md "Agents", blueprint §15 "Engine flow"): the
 // document's plan, whose tabs name each tab's kind and a Sheet tab's sheets and whose boards name their columns and
 // card types, so no tab body is read but the Form tab's own. One plan read a call, whatever the document's size.
-import type { ApiClient } from '@livepages/api-client';
+import type { ApiClient } from '@livedesign/api-client';
 import type {
   FormLinkResponse,
   PlanResponse,
   PlanStatusName,
   PlanTabOutline,
   TabResponse,
-} from '@livepages/api-schema';
-import type { Tab } from '@livepages/document';
-import type { ItemTypeDef } from '@livepages/items';
+} from '@livedesign/api-schema';
+import type { Tab } from '@livedesign/document';
+import type { ItemTypeDef } from '@livedesign/items';
 import { planPath } from '../plan/plan-state';
 import { tabPath } from '../verbs/shared';
 

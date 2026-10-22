@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { installClientErrorTracking } from '@livepages/telemetry-client';
+import { installClientErrorTracking } from '@livedesign/telemetry-client';
 import { track } from '@/lib/telemetry';
 
 // Error telemetry boot (docs/specs/017-telemetry/telemetry.md 'Error' category): wires window-level

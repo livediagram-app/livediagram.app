@@ -1,4 +1,4 @@
-import { isFixedSizeElement } from '@livepages/document';
+import { isFixedSizeElement } from '@livedesign/document';
 import {
   alignmentGuides,
   distributionSnap,
@@ -11,7 +11,7 @@ import {
   type DistributionGuide,
   type Element,
   type TextElement,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { hugResizedText, hugsText, type MeasureTextBlock } from '@/lib/text-hug';
 import {
   ALIGN_SNAP_THRESHOLD,

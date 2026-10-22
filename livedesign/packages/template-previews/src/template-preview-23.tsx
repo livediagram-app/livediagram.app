@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react';
-import type { TemplateKind } from '@livepages/templates';
+import type { TemplateKind } from '@livedesign/templates';
 import { pv } from './motion';
 import { FILL_BOX } from './story-parts';
 

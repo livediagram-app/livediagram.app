@@ -5,7 +5,7 @@
 // it). A watering can invites people to build on an idea, and a legend reads the tree. Pure:
 // (cx, cy) -> Element[].
 
-import type { Element } from '@livepages/document';
+import type { Element } from '@livedesign/document';
 import { fruit, leaf, wateringCan } from './template-sketch-props';
 import {
   FINE,

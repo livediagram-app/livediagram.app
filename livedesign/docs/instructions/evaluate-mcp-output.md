@@ -1,6 +1,6 @@
 # Evaluate MCP output
 
-How to measure, and raise, the quality of what an AI assistant makes through the livepages MCP server
+How to measure, and raise, the quality of what an AI assistant makes through the livedesign MCP server
 ([MCP server](../specs/015-api/mcp-server.md)). A **benchmark** runs real headless Claude sessions with the connector
 mounted and nothing else, on several models, several times each, then scores every run mechanically: what the
 transcript shows (calls, refusals, retries) and yes/no **checks** on what was made, read back through the tools. A
@@ -115,7 +115,7 @@ The kit lives in `apps/mcp/eval/`:
 - The per-token limits count api requests (reads 120 a minute), and every run has its own token, so runs do not
   share a limit; a run that still hits one has made a tool read too much. Count the requests one call makes before
   blaming the assistant's pace.
-- Links point at livepages.app when the local server has no public host set; a check on a link compares its code,
+- Links point at livedesign.app when the local server has no public host set; a check on a link compares its code,
   never its host.
 - A form's response lands through `try_form`: a check reads the "Preview: ..." card with `list_items` (or the row
   with `read_sheet`) to see each answer where `read_form`'s `goesTo` and `column` say it goes. On a published form a

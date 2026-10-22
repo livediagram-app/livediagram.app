@@ -9,7 +9,7 @@
 // Gated on TELEMETRY_ENABLED like every other emit, and its own failure is
 // swallowed: telemetry must never turn a successful request into a thrown one.
 
-import type { TelemetryAction, TelemetryCategory } from '@livepages/api-schema';
+import type { TelemetryAction, TelemetryCategory } from '@livedesign/api-schema';
 import { insertTelemetryEvents } from './db/telemetry';
 import type { Env } from './types';
 

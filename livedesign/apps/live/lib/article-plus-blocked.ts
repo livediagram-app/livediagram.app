@@ -3,7 +3,7 @@ import {
   zoneAnchorOf,
   type Element,
   type LaidOutPage,
-} from '@livepages/document';
+} from '@livedesign/document';
 
 /**
  * Whether an element sits in an article's writing (docs/specs/007-editor/article-pages.md "Zones"): an object there

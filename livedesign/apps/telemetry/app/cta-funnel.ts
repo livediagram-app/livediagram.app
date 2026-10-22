@@ -14,7 +14,7 @@ import {
   type CtaSource,
   type CtaSurface,
   type TelemetryCount,
-} from '@livepages/api-schema';
+} from '@livedesign/api-schema';
 
 export type FunnelCounts = { views: number; arrived: number; created: number };
 

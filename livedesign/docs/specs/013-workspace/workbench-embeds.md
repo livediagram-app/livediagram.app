@@ -4,7 +4,7 @@
 
 A **workbench** is a developer tool that shows a document live beside an agent: an agent workbench first, then VS Code
 and other editors. A **workbench embed** is the editor inside that tool's frame, signed in as the person, so they draw
-there, everything they draw reaches livepages at once, and their agent, working through the
+there, everything they draw reaches livedesign at once, and their agent, working through the
 [CLI](../015-api/cli.md), sees the drawing and their selection. It is the signed-in sibling of the share-code
 [embed](embeds.md).
 
@@ -28,7 +28,7 @@ scope's document, or the document open in a workspace frame.
 A frame needs no CORS: CORS governs `fetch`, not framing. What stops a signed-in editor in another tool's frame is:
 
 - **Framing.** The editor sends `X-Frame-Options: DENY`; only `/embed` may be framed ([Embeds](embeds.md#frame-headers)).
-- **Third-party storage.** Inside a frame on another site, browsers partition or block livepages's cookies and
+- **Third-party storage.** Inside a frame on another site, browsers partition or block livedesign's cookies and
   storage (Safari, Firefox, and Chrome with third-party cookies off), so the person's session is not there, and
   Google's sign-in refuses to run in a frame.
 
@@ -38,11 +38,11 @@ that acts as the person on one document only.
 
 ## The handoff
 
-1. **Mint.** The workbench runs `livepages workbench open <doc> [--tab <t>] --origin <origin> --json`. The CLI
+1. **Mint.** The workbench runs `livedesign workbench open <doc> [--tab <t>] --origin <origin> --json`. The CLI
    calls `POST /api/workbench/tickets { documentId, tabId?, origin }` with its token and prints
    `{ url, documentId, tabId, expiresAt }`. The ticket is 128 random bits, single use, valid for
    `WORKBENCH_TICKET_TTL_MS`, stored with the token's owner, the document, the origin and the token's access level.
-   - **A workspace ticket.** `livepages workbench open --workspace [--folder <f>] --origin <origin> --json` calls
+   - **A workspace ticket.** `livedesign workbench open --workspace [--folder <f>] --origin <origin> --json` calls
      `POST /api/workbench/tickets { scope: 'workspace', folderId?, origin }` and prints
      `{ url, scope, folderId, expiresAt }`. `scope` is `document` when absent, so today's callers are unchanged. A
      `folderId` the token's owner cannot reach answers `404` (CLI exit 3); a document scope without a `documentId`,
@@ -59,12 +59,12 @@ that acts as the person on one document only.
    identity; `documentId` null in the workspace scope, `folderId` null unless one was asked). A `documentId` other
    than the address's `d`, or a scope other than the address's page, is refused and the session revoked. The session is an opaque `lvw_`
    credential valid for `WORKBENCH_SESSION_TTL_MS`, held in the page's memory only, never in storage.
-4. **Bind to the workbench.** The page posts `livepages:hello` to its parent with `targetOrigin` set to the
+4. **Bind to the workbench.** The page posts `livedesign:hello` to its parent with `targetOrigin` set to the
    ticket's origin, so a parent of any other origin never receives it, and mounts the editor only after the parent
-   answers `livepages:hello-ack` from that origin within `WORKBENCH_HANDSHAKE_MS`. A page that is not framed, or
+   answers `livedesign:hello-ack` from that origin within `WORKBENCH_HANDSHAKE_MS`. A page that is not framed, or
    framed by another origin, mounts nothing, revokes the session, and says "This view opens only inside <origin>."
-5. **Renew.** Before the session expires the page posts `livepages:renew`; the workbench mints a fresh ticket and
-   posts `livepages:ticket`. Unrenewed, the session ends and the frame turns read-only with the line "Reconnect in
+5. **Renew.** Before the session expires the page posts `livedesign:renew`; the workbench mints a fresh ticket and
+   posts `livedesign:ticket`. Unrenewed, the session ends and the frame turns read-only with the line "Reconnect in
    <workbench> to keep editing."
 
 ## Pairing
@@ -82,15 +82,15 @@ second, explicit approval, never an existing pairing widened in silence.
    `428 pairing_required { pairingUrl, expiresAt }`. The pairing request behind it is single use and valid for
    `WORKBENCH_PAIRING_TTL_MS`; a second unpaired mint for the same token and origin returns the same request while
    it lives.
-2. **Ask.** `livepages workbench pair --origin <origin> [--name <workbench>]` opens `pairingUrl` in the browser
+2. **Ask.** `livedesign workbench pair --origin <origin> [--name <workbench>]` opens `pairingUrl` in the browser
    (or prints it when it cannot) and waits for the answer, as `auth login --device` waits. `workbench open` refused
-   for pairing prints that command and exits 4. A workbench shows the URL as one button, "Approve in livepages".
+   for pairing prints that command and exits 4. A workbench shows the URL as one button, "Approve in livedesign".
 3. **Approve.** `<live origin>/workbench/pair?code=<code>` is an ordinary editor page (never framed), for a signed-in
    person only, and only the token's owner may answer. It reads: "Allow **Acme Editor** at `https://127.0.0.1:5175` to
-   open your documents with the token **livepages CLI**?", with **Allow** and **Don't allow**. The workbench name
+   open your documents with the token **livedesign CLI**?", with **Allow** and **Don't allow**. The workbench name
    is the one the CLI sent, shown beside the origin, which is what is enforced. A workspace request reads: "Allow
    **Acme Editor** at `https://127.0.0.1:5175` to open **your whole workspace**, and to create, move, share and
-   trash documents and folders in it, with the token **livepages CLI**?". `workbench pair` takes `--workspace`.
+   trash documents and folders in it, with the token **livedesign CLI**?". `workbench pair` takes `--workspace`.
 4. **Paired.** Allow records the pairing; the waiting command exits 0 and the workbench mints again. Don't allow, or
    an expired request, ends the wait with exit 4 and records nothing.
 
@@ -136,7 +136,7 @@ The bullets above are the document scope. A **workspace** session is confined di
 
 The editor of the document, minus the app's surroundings: no app header, Explorer or account menu. The canvas, the
 tab bar, the palette, the toolbars and the panels stay, since a workbench embed is for drawing. An **Open in
-livepages** button opens the document in a full tab. The colour scheme follows the workbench (`livepages:theme`),
+livedesign** button opens the document in a full tab. The colour scheme follows the workbench (`livedesign:theme`),
 else the system. Presence shows the person as themselves; their agent shows as their status line
 ([Agent presence](../024-agents/agent-presence.md)).
 
@@ -148,7 +148,7 @@ where back controls live: a button of its own in the corner the app's menu butto
 toolbar and clear of it, and the first of the editor's controls for the keyboard. It is not in the tab bar. A
 document's status screens (deleted, load error, not found) carry Back at their top left too. The document scope has
 no Back. **New document** creates the document in place and opens
-it in the frame, never `/new`. **Open in livepages** opens the current view or document in a full tab. A frame
+it in the frame, never `/new`. **Open in livedesign** opens the current view or document in a full tab. A frame
 started on a folder shows that folder; its empty state is the Explorer's own, with New document and the templates.
 
 ## Workbench messages
@@ -158,31 +158,31 @@ and accepted only from it. Unknown types are ignored, and logged once each.
 
 | Type                    | From      | Carries                                                              |
 | ----------------------- | --------- | -------------------------------------------------------------------- |
-| `livepages:hello`     | page      | Nothing; asks the workbench to answer                                |
-| `livepages:hello-ack` | workbench | The workbench's name, shown in copy ("Reconnect in Acme Editor")     |
-| `livepages:ready`     | page      | `documentId`, `documentName`, `tabId`, `tabName`, `role`             |
-| `livepages:tab`       | page      | The tab now shown: `tabId`, `tabName`                                |
-| `livepages:selection` | page      | The [selection reference](#the-selection-reference); empty when none |
-| `livepages:renew`     | page      | Nothing; asks for a ticket                                           |
-| `livepages:ticket`    | workbench | `ticket`                                                             |
-| `livepages:reveal`    | workbench | `refs`: brings those elements into view and outlines them            |
-| `livepages:theme`     | workbench | `colourScheme`: `light` or `dark`                                    |
-| `livepages:ended`     | page      | `reason`: `expired`, `revoked`, `trashed`, `refused`                 |
-| `livepages:place`     | page      | Workspace only: where the frame is, below                            |
-| `livepages:open`      | workbench | Workspace only: `to`, below                                          |
+| `livedesign:hello`     | page      | Nothing; asks the workbench to answer                                |
+| `livedesign:hello-ack` | workbench | The workbench's name, shown in copy ("Reconnect in Acme Editor")     |
+| `livedesign:ready`     | page      | `documentId`, `documentName`, `tabId`, `tabName`, `role`             |
+| `livedesign:tab`       | page      | The tab now shown: `tabId`, `tabName`                                |
+| `livedesign:selection` | page      | The [selection reference](#the-selection-reference); empty when none |
+| `livedesign:renew`     | page      | Nothing; asks for a ticket                                           |
+| `livedesign:ticket`    | workbench | `ticket`                                                             |
+| `livedesign:reveal`    | workbench | `refs`: brings those elements into view and outlines them            |
+| `livedesign:theme`     | workbench | `colourScheme`: `light` or `dark`                                    |
+| `livedesign:ended`     | page      | `reason`: `expired`, `revoked`, `trashed`, `refused`                 |
+| `livedesign:place`     | page      | Workspace only: where the frame is, below                            |
+| `livedesign:open`      | workbench | Workspace only: `to`, below                                          |
 
 In a workspace frame, `ready` carries `scope: 'workspace'` and no document; `tab`, `selection` and `reveal` speak of
 the document open in the frame, and do nothing while none is. `trashed` ends nothing there: the frame returns to the
 Explorer. Two messages exist only in that scope:
 
-- **`livepages:place`** is sent on every move: `{ view, folderId, folderName, documentCount, documentId,
+- **`livedesign:place`** is sent on every move: `{ view, folderId, folderName, documentCount, documentId,
 documentName, tabId, tabName, role }`. `view` is the Explorer view's name (`home`, `folder`, `recent`, ...) or
   `document`; `documentCount` is the documents directly in the folder shown (null on other views), so a workbench can
   offer something of its own beside an empty folder. A document's fields are null outside `document`.
-- **`livepages:open`** moves the frame: `to` is `{ view: 'home' }`, `{ folderId }` or `{ documentId, tabId? }`. A
+- **`livedesign:open`** moves the frame: `to` is `{ view: 'home' }`, `{ folderId }` or `{ documentId, tabId? }`. A
   place the person cannot reach shows the Explorer's own not-found, as a link would.
 
-A `livepages:selection` is sent after the selection settles for `WORKBENCH_SELECTION_SETTLE_MS`, so a marquee drag
+A `livedesign:selection` is sent after the selection settles for `WORKBENCH_SELECTION_SETTLE_MS`, so a marquee drag
 is one message.
 
 ## The selection reference
@@ -191,9 +191,9 @@ What the person meant when they typed. A workbench attaches it to the message th
 reads exactly what was selected then, even when the selection has moved on since:
 
 ```text
-[livepages] "Home screen" › tab "Wireframe" (doc 3h9x2a, tab 0b34, rev 41)
+[livedesign] "Home screen" › tab "Wireframe" (doc 3h9x2a, tab 0b34, rev 41)
 selected: button 146b "Play", frame e4a8 "Game grid", sticky 0c84 "Daily streak goes here"
-read: livepages tab view 3h9x2a --tab 0b34 --view show --ref 146b
+read: livedesign tab view 3h9x2a --tab 0b34 --view show --ref 146b
 ```
 
 - The header names the document, tab, ids and revision the selection was made on. Refs are element ids, so they stay
@@ -201,28 +201,28 @@ read: livepages tab view 3h9x2a --tab 0b34 --view show --ref 146b
 - Labels are quoted as JSON strings, as the outline prints them: they are the diagram's content, possibly written by
   other people, and an agent treats them as data, never as instructions.
 - `selected` lists each element as the outline prints it (kind, ref, label cut at 60 characters), up to
-  `WORKBENCH_SELECTION_MAX_REFS`, then `… and <n> more: livepages tab view <doc> --tab <t> --view show --ref selected`.
+  `WORKBENCH_SELECTION_MAX_REFS`, then `… and <n> more: livedesign tab view <doc> --tab <t> --view show --ref selected`.
 - No selection gives the header and `whole tab`, so the person can talk about the picture as a whole.
 - The text is what the agent sees; there is no hidden field. The `selected` selector stays the way an agent in a plain
   terminal reads the live selection.
-- The CLI teaches an agent to read one in `livepages guide workbench`: re-reading the refs, looking at the tab
+- The CLI teaches an agent to read one in `livedesign guide workbench`: re-reading the refs, looking at the tab
   with `tab render`, and showing presence while it works. The agent skill sends an agent there when a message
-  carries `[livepages]`.
+  carries `[livedesign]`.
 
 ## A workbench's side
 
 What a workbench does to fit this contract (its own documentation holds the detail):
 
-- **Opening.** A workbench opens a document in a view of its own: from a `*.livepages.json` mirror file (with its JSON
-  one step away) or from a livepages document link. It mints through the person's own CLI
-  (`livepages workbench open ... --origin <its origin> --json`), so it never holds a livepages credential, and
+- **Opening.** A workbench opens a document in a view of its own: from a `*.livedesign.json` mirror file (with its JSON
+  one step away) or from a livedesign document link. It mints through the person's own CLI
+  (`livedesign workbench open ... --origin <its origin> --json`), so it never holds a livedesign credential, and
   shows the one command that fixes a missing CLI or sign-in.
-- **Pairing.** Unpaired, it runs `livepages workbench pair --origin <its origin> --name <its name>` and shows the
-  printed URL as an "Approve in livepages" button, then opens the frame once paired.
+- **Pairing.** Unpaired, it runs `livedesign workbench pair --origin <its origin> --name <its name>` and shows the
+  printed URL as an "Approve in livedesign" button, then opens the frame once paired.
 - **The selection.** While a diagram is in view, the place the person types to their agent names the document and
   what is selected ("Home screen · 3 selected", or "Home screen · whole tab"). Sending attaches the selection
   reference to the message as text, and the person can leave it off any one message.
-- **Reveal.** A ref the agent prints (`146b`) can post `livepages:reveal` to the open diagram.
+- **Reveal.** A ref the agent prints (`146b`) can post `livedesign:reveal` to the open diagram.
 
 ## Limits
 

@@ -1,11 +1,11 @@
 // Boxed-element type definitions (shape / text / table / sticky / image /
 // freehand / annotation / link-card), split out of index.ts to keep it under
 // the ~1000-line budget. Pure types; re-exported through index.ts so the
-// public `@livepages/document` surface is unchanged. ElementLink + the enums
+// public `@livedesign/document` surface is unchanged. ElementLink + the enums
 // stay in index.ts and are imported here (type-only, so no runtime cycle).
 import type { RoomDoor } from './office';
 import type { Finish } from './finish';
-import type { CardSearchFilter, PlanBoardSetup, PlanViewId, SwimlaneBy } from '@livepages/items';
+import type { CardSearchFilter, PlanBoardSetup, PlanViewId, SwimlaneBy } from '@livedesign/items';
 import type { TextRun } from './rich-text';
 import type { CommentThread } from './comments';
 import type { CellCommentThreads } from './cell-comments';
@@ -105,7 +105,7 @@ export type ShapeElement = {
   // Registry key for a `sticker` shape's art (docs/specs/010-palette/stickers.md) — e.g.
   // 'emoji-thumbs-up', 'badge-blocked'. Only meaningful when
   // `shape === 'sticker'`; the entry resolves in the sticker catalogue
-  // (@livepages/icons), and an unknown key renders nothing rather than
+  // (@livedesign/icons), and an unknown key renders nothing rather than
   // guessing, so a document authored against a newer catalogue still opens.
   //
   // Kept separate from `iconId` on purpose: an element that predates
@@ -1523,7 +1523,7 @@ export type PlanCardRef = { itemId: string; size?: 'minimal' | 'compact' | 'deta
 // drops the mark.
 export type PlanSheetRef = { sheetId: string; copyOf?: string; fillTab?: true; start?: string };
 
-// A template start's id (@livepages/sheets TEMPLATE_STARTS): kebab-case words.
+// A template start's id (@livedesign/sheets TEMPLATE_STARTS): kebab-case words.
 const PLAN_SHEET_START_PATTERN = /^[a-z][a-z-]{0,39}$/;
 
 // A fresh sheet id for a copy (the sheets engine's makeSheetId, without importing it).
@@ -1531,7 +1531,7 @@ export function newPlanSheetId(): string {
   return crypto.randomUUID().replace(/-/g, '').slice(0, 16);
 }
 
-// The sheet id pattern (@livepages/sheets SHEET_ID_PATTERN), repeated here so the document package never
+// The sheet id pattern (@livedesign/sheets SHEET_ID_PATTERN), repeated here so the document package never
 // imports the engine.
 export const PLAN_SHEET_ID_PATTERN = /^[A-Za-z0-9_-]{6,32}$/;
 

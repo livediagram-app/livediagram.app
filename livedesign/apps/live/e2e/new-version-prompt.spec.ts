@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { DOCUMENT_FORMAT, DOCUMENT_FORMAT_HEADER } from '@livepages/api-schema';
+import { DOCUMENT_FORMAT, DOCUMENT_FORMAT_HEADER } from '@livedesign/api-schema';
 import { dismissQuickTour, expect, expectNoPageErrors, test } from './fixtures';
 
 // The new version prompt (docs/specs/016-platform/new-version-prompt.md), in dark mode: this build is
@@ -70,7 +70,7 @@ test.describe('new version prompt', () => {
     await openWhiteboard(page);
     await serveNewerFormat(page);
     await drawStroke(page);
-    await expect(prompt(page)).toContainText('A new version of livepages is ready.');
+    await expect(prompt(page)).toContainText('A new version of livedesign is ready.');
     await page.screenshot({ path: test.info().outputPath('offered.png') });
     // It never takes focus; the keyboard reaches it.
     const reload = prompt(page).getByRole('button', { name: 'Reload' });

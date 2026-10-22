@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { installClientErrorTracking } from '@livepages/telemetry-client';
+import { installClientErrorTracking } from '@livedesign/telemetry-client';
 import { setApiErrorReporter, setApiWarningReporter } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
 

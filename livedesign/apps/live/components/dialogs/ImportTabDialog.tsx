@@ -6,7 +6,7 @@ import { TextImportPanel } from './TextImportPanel';
 import type { ImportOutcome } from '@/lib/import-tab';
 import { ImportReport } from './ImportReport';
 import type { ImportFormat as Format } from '@/hooks/persistence/useTabImport';
-import { Glyph, DialogCloseButton, DialogHeader } from '@livepages/ui';
+import { Glyph, DialogCloseButton, DialogHeader } from '@livedesign/ui';
 
 type ImportTabDialogProps = {
   // The active tab's name — shown in the warning so it's clear which
@@ -43,8 +43,8 @@ const FORMATS: {
     key: 'json',
     title: 'JSON',
     description:
-      'A livepages tab (a .json export). Restores its elements exactly. Paste it or pick a file.',
-    placeholder: '{\n  "schemaVersion": 1,\n  "kind": "livepages.tab",\n  "tab": { … }\n}',
+      'A livedesign tab (a .json export). Restores its elements exactly. Paste it or pick a file.',
+    placeholder: '{\n  "schemaVersion": 1,\n  "kind": "livedesign.tab",\n  "tab": { … }\n}',
   },
   {
     key: 'markdown',

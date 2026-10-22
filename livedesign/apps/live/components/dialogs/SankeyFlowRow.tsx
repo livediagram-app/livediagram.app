@@ -5,9 +5,9 @@
 // row that cannot be drawn is outlined in amber, with its reason beneath it for eyes and screen readers alike.
 
 import type { InputHTMLAttributes, Ref } from 'react';
-import { SANKEY_NAME_MAX } from '@livepages/document';
-import { lucideGlyph, Tooltip } from '@livepages/ui';
-import { lucideArrowRight, lucidePlus, lucideX } from '@livepages/icons/lucide';
+import { SANKEY_NAME_MAX } from '@livedesign/document';
+import { lucideGlyph, Tooltip } from '@livedesign/ui';
+import { lucideArrowRight, lucidePlus, lucideX } from '@livedesign/icons/lucide';
 
 const ArrowIcon = lucideGlyph(lucideArrowRight, 15);
 const PlusIcon = lucideGlyph(lucidePlus, 15);

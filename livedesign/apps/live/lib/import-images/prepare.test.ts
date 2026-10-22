@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { MAX_IMAGE_BYTES } from '@livepages/api-schema';
+import { MAX_IMAGE_BYTES } from '@livedesign/api-schema';
 import { prepareImportImage } from './prepare';
 import { fakeCodec, fakeImageBlob } from './test-fakes';
 

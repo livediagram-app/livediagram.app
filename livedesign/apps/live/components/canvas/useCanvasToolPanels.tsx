@@ -1,6 +1,6 @@
 'use client';
 
-import { pageLabel } from '@livepages/document';
+import { pageLabel } from '@livedesign/document';
 import type { DockAnchor } from '@/hooks/canvas/useDockPopovers';
 import type { ReactNode } from 'react';
 import type { useCornerDocking } from '@/hooks/ui/useCornerDocking';

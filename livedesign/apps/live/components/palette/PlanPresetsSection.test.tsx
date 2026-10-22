@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { planPresetColours, type ShapeElement } from '@livepages/document';
+import { planPresetColours, type ShapeElement } from '@livedesign/document';
 import { CanvasSurfaceProvider } from '@/components/canvas/CanvasSurfaceContext';
 import { isPlanPresetShape, PlanPresetsSection } from './PresetSections';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';

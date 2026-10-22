@@ -13,7 +13,7 @@ import {
   normaliseRange,
   single,
   type Dir,
-} from '@livepages/sheets';
+} from '@livedesign/sheets';
 import {
   acceptFunction,
   cycleAbsolute,

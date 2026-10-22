@@ -1,9 +1,9 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { runInlineScript } from '@livepages/vitest-config/inline-script';
+import { runInlineScript } from '@livedesign/vitest-config/inline-script';
 import { STORAGE_KEY as USER_PREFERENCES_STORAGE_KEY } from '@/lib/user-preferences';
-import { RANDOM_UUID_BOOT_SCRIPT } from '@livepages/ui';
+import { RANDOM_UUID_BOOT_SCRIPT } from '@livedesign/ui';
 import {
   REDUCE_MOTION_BOOT_SCRIPT,
   WEBFONTS_STYLESHEET_ID,

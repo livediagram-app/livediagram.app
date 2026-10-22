@@ -1,4 +1,4 @@
-import { isChartShape, isFlowchartStep, type Element } from '@livepages/document';
+import { isChartShape, isFlowchartStep, type Element } from '@livedesign/document';
 import type { EditorCapabilities } from './editor-capabilities';
 import { canEditSankey } from './sankey-edit';
 import { canEditSequence } from './sequence-edit';

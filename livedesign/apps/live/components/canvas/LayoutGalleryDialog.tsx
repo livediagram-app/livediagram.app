@@ -5,9 +5,9 @@
 // from the bottom on a phone, a centred dialog on a desktop zoomed out; a press (or Surprise Me)
 // places the layout and closes it, so the page is seen with it. Like the card it stands in for, it
 // keeps to its layouts (no Change Theme).
-import { pageDeviceClass, pageKindOf, type LaidOutPage } from '@livepages/document';
-import { layoutCatalogueFor, type PageLayoutId } from '@livepages/templates';
-import { CloseIcon, Tooltip } from '@livepages/ui';
+import { pageDeviceClass, pageKindOf, type LaidOutPage } from '@livedesign/document';
+import { layoutCatalogueFor, type PageLayoutId } from '@livedesign/templates';
+import { CloseIcon, Tooltip } from '@livedesign/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { LayoutGallery } from './layout-gallery/LayoutGallery';
 

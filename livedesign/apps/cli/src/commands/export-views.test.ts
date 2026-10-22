@@ -4,7 +4,7 @@ import {
   type ArrowElement,
   type ShapeElement,
   type Tab,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { run } from '../main';
 import { pullFileText, type PullFile } from '../sync/pull-file';
 import { fakeIo, NOW, TOKEN, type FakeIo, type Route } from '../testing/fake-io';
@@ -12,7 +12,7 @@ import { EXPORT_RATE_RETRY_MS } from './export';
 
 // `export --all` (CLI29, E24) and a pull file read offline (CLI70), through the whole command.
 
-const HOST = 'https://livepages.app';
+const HOST = 'https://livedesign.app';
 const square = (id: string, label: string, x = 0): ShapeElement => ({
   id,
   type: 'shape',
@@ -75,7 +75,7 @@ function host(docs: Record<string, HostDoc>, options: { limited?: number } = {})
 }
 
 async function cli(argv: string[], route: Route, io?: FakeIo) {
-  const used = io ?? fakeIo({ env: { LIVEPAGES_TOKEN: TOKEN }, routes: [route] });
+  const used = io ?? fakeIo({ env: { LIVEDESIGN_TOKEN: TOKEN }, routes: [route] });
   const [o, e] = [used.out().length, used.err().length];
   const code = await run(argv, used);
   return { code, io: used, out: used.out().slice(o), err: used.err().slice(e) };
@@ -109,17 +109,17 @@ describe('export --all', () => {
     const { code, out, io } = await cli(['export', '--all', '--to', 'backup'], host(docs));
     expect(code).toBe(0);
     expect(out.trim().split('\n')).toEqual([
-      'backup/shop-aaaa0001.livepages.json',
-      'backup/shop-bbbb0002.livepages.json',
-      'backup/notes.livepages.json',
+      'backup/shop-aaaa0001.livedesign.json',
+      'backup/shop-bbbb0002.livedesign.json',
+      'backup/notes.livedesign.json',
       '3 documents · 3 files',
     ]);
     const envelope = JSON.parse(
-      io.fileMap.get('backup/shop-aaaa0001.livepages.json')!.data,
+      io.fileMap.get('backup/shop-aaaa0001.livedesign.json')!.data,
     ) as PullFile;
     expect(envelope.kind).toBe(DOCUMENT_ENVELOPE_KIND);
     expect(envelope.document.tabs[0]).toMatchObject({ id: 'flow-0001', folder: 'Core' });
-    expect(envelope).not.toHaveProperty('livepagesSync');
+    expect(envelope).not.toHaveProperty('livedesignSync');
   });
 
   it('writes each tab as SVG, Mermaid and Markdown, telling apart tabs of one name', async () => {
@@ -176,7 +176,7 @@ describe('export --all', () => {
 
 describe('a pull file read offline', () => {
   const file: PullFile = {
-    kind: 'livepages.document',
+    kind: 'livedesign.document',
     schemaVersion: 1,
     exportedAt: NOW,
     document: {
@@ -185,7 +185,7 @@ describe('a pull file read offline', () => {
       presentation: null,
       tabs: [flow, { id: 'other-01', name: 'Other', elements: [] }],
     },
-    livepagesSync: {
+    livedesignSync: {
       host: HOST,
       pulledAt: NOW,
       tabs: { 'flow-0001': { rev: 9, hash: 'h', settingsHash: 's' } },
@@ -193,15 +193,15 @@ describe('a pull file read offline', () => {
   };
   // No token and no host: nothing is read but the file.
   const offline = (argv: string[], text = pullFileText(file)) => {
-    const io = fakeIo({ files: { 'shop.livepages.json': text } });
+    const io = fakeIo({ files: { 'shop.livedesign.json': text } });
     return cli(argv, () => undefined, io);
   };
 
   it('lists its tabs and prints its overview, with the pulled revisions', async () => {
-    const ls = await offline(['tab', 'ls', 'shop.livepages.json']);
+    const ls = await offline(['tab', 'ls', 'shop.livedesign.json']);
     expect(ls.code).toBe(0);
     expect(ls.out).toContain('"Flow"');
-    const overview = await offline(['document', 'view', 'shop.livepages.json']);
+    const overview = await offline(['document', 'view', 'shop.livedesign.json']);
     expect(overview.code).toBe(0);
     expect(overview.out).toContain('Shop');
     expect(overview.out).toContain('rev 9');
@@ -209,25 +209,25 @@ describe('a pull file read offline', () => {
   });
 
   it('prints a tab’s views, its JSON and the plain tab, as the api would', async () => {
-    const outline = await offline(['tab', 'view', 'shop.livepages.json']);
+    const outline = await offline(['tab', 'view', 'shop.livedesign.json']);
     expect(outline.out).toContain('"Web app"');
     expect(outline.out).toContain('rev 9');
     const json = await offline([
       'tab',
       'view',
-      'shop.livepages.json',
+      'shop.livedesign.json',
       '--view',
       'layout',
       '--coarse',
       '--json',
     ]);
     expect(JSON.parse(json.out)).toHaveProperty('header');
-    const raw = await offline(['tab', 'view', 'shop.livepages.json', '--raw']);
+    const raw = await offline(['tab', 'view', 'shop.livedesign.json', '--raw']);
     expect(JSON.parse(raw.out)).toMatchObject({ id: 'flow-0001' });
     const shown = await offline([
       'tab',
       'view',
-      'shop.livepages.json',
+      'shop.livedesign.json',
       '--view',
       'show',
       '--ref',
@@ -241,7 +241,7 @@ describe('a pull file read offline', () => {
     const found = await offline([
       'tab',
       'view',
-      'shop.livepages.json',
+      'shop.livedesign.json',
       '--tab',
       'Other',
       '--view',
@@ -258,23 +258,23 @@ describe('a pull file read offline', () => {
     const missing = await offline([
       'tab',
       'view',
-      'shop.livepages.json',
+      'shop.livedesign.json',
       '--view',
       'show',
       '--ref',
       'nope',
     ]);
     expect(missing.code).toBe(3);
-    const bad = await offline(['tab', 'view', 'shop.livepages.json', '--view', 'show']);
+    const bad = await offline(['tab', 'view', 'shop.livedesign.json', '--view', 'show']);
     expect([bad.code, bad.err]).toEqual([1, expect.stringContaining('view show needs ref')]);
-    const find = await offline(['tab', 'view', 'shop.livepages.json', '--view', 'find']);
+    const find = await offline(['tab', 'view', 'shop.livedesign.json', '--view', 'find']);
     expect([find.code, find.err]).toEqual([1, expect.stringContaining('view find needs q')]);
-    const arrow = await offline(['tab', 'view', 'shop.livepages.json', '--only', 'link']);
+    const arrow = await offline(['tab', 'view', 'shop.livedesign.json', '--only', 'link']);
     expect([arrow.code, arrow.err]).toEqual([
       1,
       expect.stringContaining('only takes an element, not an arrow'),
     ]);
-    const write = await offline(['element', 'rm', 'shop.livepages.json', 'web']);
+    const write = await offline(['element', 'rm', 'shop.livedesign.json', 'web']);
     expect([write.code, write.err]).toEqual([
       2,
       expect.stringContaining('is a pull file: only document view, tab ls and tab view read it'),
@@ -282,13 +282,13 @@ describe('a pull file read offline', () => {
   });
 
   it('names a file that is not a pull file, and treats a missing one as a document name', async () => {
-    const broken = await offline(['tab', 'ls', 'shop.livepages.json'], '{');
+    const broken = await offline(['tab', 'ls', 'shop.livedesign.json'], '{');
     expect([broken.code, broken.err]).toEqual([
       1,
-      expect.stringContaining('shop.livepages.json: not JSON'),
+      expect.stringContaining('shop.livedesign.json: not JSON'),
     ]);
     // A path that names no file is a document name, looked up on the host.
-    const absent = await offline(['tab', 'ls', 'gone.livepages.json']);
+    const absent = await offline(['tab', 'ls', 'gone.livedesign.json']);
     expect(absent.io.requests.length).toBeGreaterThan(0);
   });
 });

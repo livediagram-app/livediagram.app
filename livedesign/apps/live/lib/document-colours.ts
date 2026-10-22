@@ -2,7 +2,7 @@
 // picked with + anywhere in the document, which every picker offers. Each tab keeps its own
 // (`Tab.customColours`, newest first); the document's are the active tab's, then the others' in
 // tab order, deduped, leaving out any colour the picker already offers (the theme palette's).
-import { CUSTOM_COLOURS_MAX, customColoursOf, type Tab } from '@livepages/document';
+import { CUSTOM_COLOURS_MAX, customColoursOf, type Tab } from '@livedesign/document';
 
 // At most this many: one picker row and a bit.
 export const YOUR_COLOURS_MAX = CUSTOM_COLOURS_MAX;

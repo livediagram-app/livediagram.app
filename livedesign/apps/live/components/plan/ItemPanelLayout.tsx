@@ -4,10 +4,10 @@
 // its top, a main-column section under its heading, a Details row (label beside its control), and the
 // quiet created and edited lines at the foot of Details. ItemPanel arranges them; the field controls are
 // ItemFieldEditor's.
-import { FROM_FORM_FIELD, readFromForm } from '@livepages/forms';
+import { FROM_FORM_FIELD, readFromForm } from '@livedesign/forms';
 import type { ReactNode } from 'react';
-import { relativeSince } from '@livepages/ui';
-import type { Item } from '@livepages/items';
+import { relativeSince } from '@livedesign/ui';
+import type { Item } from '@livedesign/items';
 import { PersonDisc } from './PersonDisc';
 import { ACCENT_BG, accentVars } from './plan-palette';
 

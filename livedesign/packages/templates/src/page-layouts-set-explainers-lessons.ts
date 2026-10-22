@@ -3,7 +3,7 @@
 // points, key words and a quiz question) and Formula Explained (a rule set large, each term led to
 // its meaning, and a worked example). Same contract as page-layouts.ts: the page's content box in,
 // uncoloured elements out, laid out in proportions of the box.
-import { createTable, LABEL_FONT_PX, type Element, type TableElement } from '@livepages/document';
+import { createTable, LABEL_FONT_PX, type Element, type TableElement } from '@livedesign/document';
 import { kit, type Kit, type LayoutBox } from './page-layout-kit';
 import { iconRow, sourceLine } from './page-layout-parts';
 import {

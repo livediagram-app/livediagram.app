@@ -2,7 +2,7 @@
 // and its undo over 10,000 rows once each scanned the layout per id. Timed as growth in CPU time (cpuMsOf), not as a
 // ceiling: four times the rows should cost about four times as much; a scan per id would cost sixteen.
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@livepages/vitest-config/cpu-time';
+import { cpuMsOf } from '@livedesign/vitest-config/cpu-time';
 import { makeSheets } from './testing/book';
 import { applySheetWrite, inverseSheetWrite, type SheetWrite } from './store';
 

@@ -6,9 +6,9 @@
 // the editor: no backdrop, no focus taken, Escape only from inside it, so someone carrying on working leaves it there.
 // The sign-in banner steps aside while it is up (TOUR_CARD_ATTR), so the two never show together.
 import { useEffect, useEffectEvent, useRef, type ReactNode } from 'react';
-import type { PlanPalette } from '@livepages/document';
-import { lucideCircleHelp } from '@livepages/icons/lucide';
-import { lucideGlyph } from '@livepages/ui';
+import type { PlanPalette } from '@livedesign/document';
+import { lucideCircleHelp } from '@livedesign/icons/lucide';
+import { lucideGlyph } from '@livedesign/ui';
 import { announceToastFloorChange, BOTTOM_CHROME_SELECTOR } from '@/components/toast/toast-floor';
 import { useChromeFloor } from '@/components/toast/useToastFloor';
 import { tourColourVars } from './tour-colours';

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Item } from '@livepages/items';
+import type { Item } from '@livedesign/items';
 import { ItemPanelMenu } from './ItemPanelMenu';
 import { duplicateItem } from './duplicate-item';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';

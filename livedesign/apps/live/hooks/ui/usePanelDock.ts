@@ -28,7 +28,7 @@ import {
 //
 // Layout is hydrated synchronously from localStorage at mount (no
 // flash) and re-read whenever it changes — our own writes fire a
-// same-tab `livepages:panel-layout-changed` event, and another tab's
+// same-tab `livedesign:panel-layout-changed` event, and another tab's
 // write fires the native `storage` event. The drag state is transient
 // (never persisted).
 //

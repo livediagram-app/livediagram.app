@@ -5,7 +5,7 @@ import {
   type CardSize,
   type PlanBoardSetup,
   type SwimlaneBy,
-} from '@livepages/items';
+} from '@livedesign/items';
 import { addColumnAfter } from './board-setup-edits';
 import { addStatusColumn, matchStatus, type StatusPick } from './column-status-picks';
 

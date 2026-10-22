@@ -2,10 +2,10 @@
 
 import { use, useEffect, useRef, useState } from 'react';
 import { browser } from 'react-dom';
-import { Button, useCopiedFlash, DialogCloseButton, DialogHeader } from '@livepages/ui';
+import { Button, useCopiedFlash, DialogCloseButton, DialogHeader } from '@livedesign/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { DialogFooter } from '@/components/dialogs/DialogFooter';
-import { CountBadge } from '@livepages/ui';
+import { CountBadge } from '@livedesign/ui';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import type { ShareLinkExpiry, ShareRole } from '@/lib/api-client';
 import { useRelativeNow } from '@/lib/relative-time';

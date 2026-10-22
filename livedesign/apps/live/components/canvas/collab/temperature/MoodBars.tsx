@@ -5,7 +5,7 @@
 // rises after the card first painted pops.
 
 import { useState } from 'react';
-import { TEMPERATURE_COLORS, TEMPERATURE_VALUES } from '@livepages/document';
+import { TEMPERATURE_COLORS, TEMPERATURE_VALUES } from '@livedesign/document';
 import { tint } from '../collab-chrome';
 import { MOOD_GRID } from './mood-grid';
 import { useFaceShadow } from '@/components/canvas/CanvasFinishContext';

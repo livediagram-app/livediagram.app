@@ -1,6 +1,6 @@
 'use client';
 
-import { fenceParts, FENCE_RAIL_OPACITY, type ShapeElement } from '@livepages/document';
+import { fenceParts, FENCE_RAIL_OPACITY, type ShapeElement } from '@livedesign/document';
 
 // A fence (docs/specs/009-elements/fence.md): one straight run of posts and rails that an Avatar-mode
 // character cannot walk through. Drawn from the shared `fenceParts` table, which the headless export

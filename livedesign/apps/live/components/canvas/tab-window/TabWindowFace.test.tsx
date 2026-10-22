@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { ShapeElement, Tab } from '@livepages/document';
+import type { ShapeElement, Tab } from '@livedesign/document';
 import { TabWindowContext, type TabWindowContextValue } from './tab-window-context';
 import { tabWindowState, TabWindowFace } from './TabWindowFace';
 

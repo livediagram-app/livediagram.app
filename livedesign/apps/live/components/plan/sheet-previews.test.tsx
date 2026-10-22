@@ -3,7 +3,7 @@
 // header in its accent, and the chart it places.
 import { render } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { accentHead, SHEET_TEMPLATES } from '@livepages/sheets';
+import { accentHead, SHEET_TEMPLATES } from '@livedesign/sheets';
 import { planPalette } from './plan-palette';
 import { SHEET_TILES, SheetPreview } from './sheet-previews';
 

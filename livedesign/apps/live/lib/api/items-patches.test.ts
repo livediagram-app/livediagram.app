@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { sentJson } from '@livepages/vitest-config/sent-request';
-import { ITEM_BULK_MAX } from '@livepages/items';
+import { sentJson } from '@livedesign/vitest-config/sent-request';
+import { ITEM_BULK_MAX } from '@livedesign/items';
 import { __setOfflineBackend } from '../offline/offline-store';
 import { memBackend } from '../offline/offline-test-utils';
 import { ItemWritePartlyLanded, writeItem } from './items';

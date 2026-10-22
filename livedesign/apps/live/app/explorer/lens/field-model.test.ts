@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { LensContext } from '@livepages/explorer-lens';
+import type { LensContext } from '@livedesign/explorer-lens';
 import {
   chooseChipValue,
   composeField,

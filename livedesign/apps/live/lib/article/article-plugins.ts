@@ -5,7 +5,7 @@
 import { Plugin, PluginKey, type EditorState, type Transaction } from 'prosemirror-state';
 import { Decoration, DecorationSet, type EditorView } from 'prosemirror-view';
 import type { Node as PMNode } from 'prosemirror-model';
-import { articleListMarkers, nextArticleBlockId } from '@livepages/document';
+import { articleListMarkers, nextArticleBlockId } from '@livedesign/document';
 import { articleSchema, listAttr, numberAttr } from './article-schema';
 
 /** Every top-level block with an id of its own: a missing or repeated id is given a fresh one. */

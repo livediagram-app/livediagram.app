@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { sentForm } from '@livepages/vitest-config/sent-request';
+import { sentForm } from '@livedesign/vitest-config/sent-request';
 import type { Env } from '../types';
 import {
   exchangeCode,

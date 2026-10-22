@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { CheckIcon, Glyph, HoverCard, useMenu, type MenuInitialFocus } from '@livepages/ui';
+import { CheckIcon, Glyph, HoverCard, useMenu, type MenuInitialFocus } from '@livedesign/ui';
 import { useHoverCloseTimer } from '@/hooks/ui/useHoverCloseTimer';
 import { TOOLBAR_CONTROL_REST } from '@/components/chrome/toolbar-surface';
 

@@ -3,10 +3,10 @@ import { createRequire } from 'node:module';
 import { crc32, deflateSync } from 'node:zlib';
 import { randomFillSync } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
-import { embedTabImages } from '@livepages/api-schema';
-import { renderElementsToSvg, type Tab } from '@livepages/document';
-import { createPngRenderer } from '@livepages/render-png';
-import { cpuBudgetMs, cpuMsOfAsync } from '@livepages/vitest-config/cpu-time';
+import { embedTabImages } from '@livedesign/api-schema';
+import { renderElementsToSvg, type Tab } from '@livedesign/document';
+import { createPngRenderer } from '@livedesign/render-png';
+import { cpuBudgetMs, cpuMsOfAsync } from '@livedesign/vitest-config/cpu-time';
 import {
   PREVIEW_IMAGE_BUDGET_BYTES,
   PREVIEW_IMAGE_BUDGET_PIXELS,
@@ -32,8 +32,8 @@ WebAssembly.instantiate = (async (...args: Parameters<typeof WebAssembly.instant
 const require = createRequire(import.meta.url);
 const renderer = createPngRenderer({
   wasm: () => readFile(require.resolve('@resvg/resvg-wasm/index_bg.wasm')),
-  font: () => readFile(require.resolve('@livepages/render-png/fonts/Inter-Regular.ttf')),
-  bold: () => readFile(require.resolve('@livepages/render-png/fonts/Inter-Bold.otf')),
+  font: () => readFile(require.resolve('@livedesign/render-png/fonts/Inter-Regular.ttf')),
+  bold: () => readFile(require.resolve('@livedesign/render-png/fonts/Inter-Bold.otf')),
 });
 
 // A Worker's memory is 128 MB in all; the drawing, the fetched bytes and the response take JavaScript heap beside

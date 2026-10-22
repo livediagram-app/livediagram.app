@@ -1,13 +1,13 @@
 // Add New Card Type from a board's Add a Card menu (docs/specs/026-plan/plan-board.md "Add New Card Type"): the type
 // editor opens on a new type with only that board's statuses on, and saving it adds it to the board's card types.
 import { useCallback, useState } from 'react';
-import type { Element } from '@livepages/document';
+import type { Element } from '@livedesign/document';
 import {
   NEW_ITEM_TYPE,
   normaliseBoardSetup,
   type CardField,
   type ItemTypeDef,
-} from '@livepages/items';
+} from '@livedesign/items';
 
 // What a new type is being made for: a board (with the statuses its columns use), or a Gantt chart (with the fields it
 // needs to draw the type: Start and Due), docs/specs/026-plan/plan-views.md "Gantt Chart".

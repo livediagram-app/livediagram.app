@@ -13,7 +13,7 @@ import {
   type ArticleAlign,
   type ArticleListKind,
   type ArticleParagraphStyle,
-} from '@livepages/document';
+} from '@livedesign/document';
 
 const PARAGRAPH_TAG: Record<ArticleParagraphStyle, string> = {
   body: 'p',

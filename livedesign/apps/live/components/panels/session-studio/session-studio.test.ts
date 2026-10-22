@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { TabVote } from '@livepages/document';
+import type { TabVote } from '@livedesign/document';
 import {
   clampTimerMinutes,
   dialAngle,

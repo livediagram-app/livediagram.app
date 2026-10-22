@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@livepages/document';
-import type { RoomOp } from '@livepages/api-schema';
+import type { Element } from '@livedesign/document';
+import type { RoomOp } from '@livedesign/api-schema';
 import {
   createOwnElementWrites,
   holdOwnWrites,

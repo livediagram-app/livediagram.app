@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { DOCUMENT_FORMAT } from '@livepages/api-schema';
+import { DOCUMENT_FORMAT } from '@livedesign/api-schema';
 import { resetServerReleaseForTests, serverBuild, serverDocumentFormat } from '../server-release';
 import {
   connectRoom,

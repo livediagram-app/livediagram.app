@@ -6,10 +6,10 @@
 // first as it is placed; an Editor changes it from the card's form name when the document has more than one, and a
 // slot whose form was deleted offers Clear Slot. Anyone may read it.
 import { useEffect, useState } from 'react';
-import { readForm } from '@livepages/forms';
-import type { FormMetricContent } from '@livepages/document';
-import { Select, lucideGlyph } from '@livepages/ui';
-import { lucideClipboardList } from '@livepages/icons/lucide';
+import { readForm } from '@livedesign/forms';
+import type { FormMetricContent } from '@livedesign/document';
+import { Select, lucideGlyph } from '@livedesign/ui';
+import { lucideClipboardList } from '@livedesign/icons/lucide';
 import { useFormBoard } from '@/components/forms/form-board-context';
 import { useFormLink } from '@/hooks/forms/useFormLink';
 import { formUrlFor } from '@/lib/form-path';

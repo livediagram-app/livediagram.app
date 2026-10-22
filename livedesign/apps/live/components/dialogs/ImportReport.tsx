@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { Button } from '@livepages/ui';
+import { Button } from '@livedesign/ui';
 
 // How an import came across: shown in the Import dialog in place of closing it, once the tab has changed and part
 // of the file could not land. Calm by design: one line per thing left out, and the way forward. Announced as a

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { VERBS } from '@livepages/agent-verbs';
-import { MCP_TOOL_VERBS } from '@livepages/agent-verbs/mcp';
+import { VERBS } from '@livedesign/agent-verbs';
+import { MCP_TOOL_VERBS } from '@livedesign/agent-verbs/mcp';
 import { COMMAND_OF_TOOL, inCliWords } from './tool-names';
 import { formatError } from './cli-error';
 
@@ -18,18 +18,18 @@ describe('the CLI words for MCP tools', () => {
 
   it('writes a tool in a message as the command', () => {
     expect(inCliWords('That document has no Form tab. Make one with add_form.')).toBe(
-      'That document has no Form tab. Make one with livepages form add.',
+      'That document has no Form tab. Make one with livedesign form add.',
     );
     expect(inCliWords('read_form lists its problems; not_a_form_tab stays')).toBe(
-      'livepages form get lists its problems; not_a_form_tab stays',
+      'livedesign form get lists its problems; not_a_form_tab stays',
     );
   });
 
   it('prints an error in those words, text and JSON alike', () => {
     const failure = { exit: 3 as const, code: 'form_tab_none', message: 'Make one with add_form.' };
-    expect(formatError(failure, false)).toBe('error: Make one with livepages form add.\n');
+    expect(formatError(failure, false)).toBe('error: Make one with livedesign form add.\n');
     expect((JSON.parse(formatError(failure, true)) as { message: string }).message).toBe(
-      'Make one with livepages form add.',
+      'Make one with livedesign form add.',
     );
   });
 });

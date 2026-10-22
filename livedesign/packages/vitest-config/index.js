@@ -32,7 +32,7 @@ export const baseConfig = defineConfig({
       reportsDirectory: './coverage',
       // Count first-party source only — never tests or type decls. NB we
       // deliberately do NOT exclude index.ts: in this repo a package's
-      // index.ts is its implementation (e.g. @livepages/document), not a
+      // index.ts is its implementation (e.g. @livedesign/document), not a
       // barrel of re-exports, so excluding it would hide all of its source.
       // Code files only: these folders also hold fixtures (goldens, model weights) that are not
       // source, and parsing them as code fails. Workspace includes are added to this list, not replacing it.
@@ -49,7 +49,7 @@ export const baseConfig = defineConfig({
  * @returns merged Vitest config
  *
  * Usage in a workspace `vitest.config.ts`:
- *   import { defineProject } from '@livepages/vitest-config';
+ *   import { defineProject } from '@livedesign/vitest-config';
  *   export default defineProject();                              // defaults
  *   export default defineProject({ test: { environment: 'jsdom' } });
  */

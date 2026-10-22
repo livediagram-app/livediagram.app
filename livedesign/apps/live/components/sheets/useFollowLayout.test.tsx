@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
-import { emptyLayout, single, type SheetLayout } from '@livepages/sheets';
+import { emptyLayout, single, type SheetLayout } from '@livedesign/sheets';
 import { EDIT_LOST, followSelection, useFollowLayout } from './useFollowLayout';
 
 let seq = 11;

@@ -10,8 +10,8 @@ import { reportServerEvent } from '../server-telemetry';
 import type { EmailKind } from './templates';
 
 const RESEND_ENDPOINT = 'https://api.resend.com/emails';
-const DEFAULT_FROM = 'livepages <hello@livepages.app>';
-const DEFAULT_BASE_URL = 'https://livepages.app';
+const DEFAULT_FROM = 'livedesign <hello@livedesign.app>';
+const DEFAULT_BASE_URL = 'https://livedesign.app';
 
 export function emailEnabled(env: Env): boolean {
   return typeof env.RESEND_API_KEY === 'string' && env.RESEND_API_KEY.length > 0;

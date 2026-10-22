@@ -14,7 +14,7 @@ import {
   type TextRun,
   labelFontPx,
   type TextSize,
-} from '@livepages/document';
+} from '@livedesign/document';
 import {
   ALIGN_ITEMS,
   effectiveRunStyle,

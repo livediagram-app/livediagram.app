@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { penColourHex } from '@livepages/document';
-import { ITEM_TYPES, type Item } from '@livepages/items';
+import { penColourHex } from '@livedesign/document';
+import { ITEM_TYPES, type Item } from '@livedesign/items';
 import { ItemFieldEditor, type ItemFieldContext } from './ItemFieldEditor';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));

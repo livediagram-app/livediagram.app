@@ -11,7 +11,7 @@ import {
   runsPlainText,
   type Element,
   type TextRun,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { BAND_H, MUTED, chip, phaseBand } from './template-planner-parts';
 
 const RHYTHM_HUE = '#0d9488';

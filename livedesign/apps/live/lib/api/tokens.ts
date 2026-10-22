@@ -1,7 +1,7 @@
 // API token calls (docs/specs/015-api/public-api-and-tokens.md). Signed-in (Clerk) only: the routes reject a
 // guest, and apiHeaders attaches the Clerk Bearer when signed in. Used by the
 // Explorer "API tokens" library section.
-import type { ApiToken } from '@livepages/api-schema';
+import type { ApiToken } from '@livedesign/api-schema';
 import {
   API_BASE,
   apiDelete,

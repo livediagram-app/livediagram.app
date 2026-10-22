@@ -3,7 +3,7 @@
 // in Drive"). A purge or a folder deletion takes its row with it in the same
 // batch; remembering the row is what lets the next pass finish the Drive side.
 
-import type { DriveItem, DriveItemKind } from '@livepages/api-schema';
+import type { DriveItem, DriveItemKind } from '@livedesign/api-schema';
 
 export type SeenRow = { kind: DriveItemKind; ldId: string; driveFileId: string };
 
@@ -13,7 +13,7 @@ export interface SeenStore {
   clear(ownerId: string): void;
 }
 
-const keyFor = (ownerId: string) => `livepages:v2:drive-seen:${ownerId}`;
+const keyFor = (ownerId: string) => `livedesign:v2:drive-seen:${ownerId}`;
 
 export function seenRowsOf(items: Iterable<DriveItem>): SeenRow[] {
   return [...items].map((i) => ({ kind: i.kind, ldId: i.ldId, driveFileId: i.driveFileId }));

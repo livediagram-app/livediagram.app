@@ -1,7 +1,7 @@
 // The Details view's columns and their sort (docs/specs/013-workspace/explorer-details-view.md
 // "Columns", "Sorting"). Pure: the table and its header read these, the tests pin them.
-import type { AccessLevel } from '@livepages/api-schema';
-import { editorModeLabel } from '@livepages/document';
+import type { AccessLevel } from '@livedesign/api-schema';
+import { editorModeLabel } from '@livedesign/document';
 import type { Folder } from '@/lib/api-client';
 import { readerAccessOf } from '@/lib/document-space';
 import type { PaneDocument } from '../views';

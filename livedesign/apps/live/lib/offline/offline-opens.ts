@@ -7,8 +7,8 @@
 // document's own record, so it goes wherever the record goes (the local Trash, a purge, Sync
 // Document) and never leaves the browser.
 
-import type { DocumentSummary } from '@livepages/api-schema';
-import { windowStartOf, utcDay } from '@livepages/api-schema';
+import type { DocumentSummary } from '@livedesign/api-schema';
+import { windowStartOf, utcDay } from '@livedesign/api-schema';
 import {
   offlineBackend,
   offlineUpdateRecord,

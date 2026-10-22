@@ -5,7 +5,7 @@
 // Move Down and Delete Rule; Add Another Rule; and the rule form, whose rule draws on the grid for this person while
 // it is open (a preview, never sent).
 import { useEffect, useMemo, useState } from 'react';
-import { Button, Select, TextInput, Tooltip } from '@livepages/ui';
+import { Button, Select, TextInput, Tooltip } from '@livedesign/ui';
 import {
   CONDITION_OPS,
   FORMAT_CONDITION_LABELS,
@@ -21,7 +21,7 @@ import {
   type FormatStyle,
   type GridRange,
   type ScalePoint,
-} from '@livepages/sheets';
+} from '@livedesign/sheets';
 import { OptionRows } from '@/components/plan/OptionRows';
 import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';

@@ -5,7 +5,7 @@ import { RetiredViewRedirect } from '../RetiredViewRedirect';
 // once called Activity, so this address replaces itself with /explorer/inbox and links to it keep
 // working.
 export const metadata: Metadata = {
-  title: 'Explorer | livepages',
+  title: 'Explorer | livedesign',
   robots: { index: false, follow: false },
 };
 

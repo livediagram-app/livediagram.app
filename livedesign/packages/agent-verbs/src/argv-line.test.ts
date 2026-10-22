@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseEditOperations } from '@livepages/edit-operations';
+import { parseEditOperations } from '@livedesign/edit-operations';
 import { argvToOperationLine } from './argv-line';
 
 describe('argvToOperationLine', () => {

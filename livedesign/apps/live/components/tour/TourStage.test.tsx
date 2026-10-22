@@ -8,7 +8,7 @@ import { holePath } from './TourSpotlight';
 import { BoardsTourArt } from './art/plan-tour-art';
 // The tour wears the active tab's colours (tour-colours.ts); outside an editor, a plain light palette.
 vi.mock('@/components/start/useStartPalette', async () => {
-  const { planPalette } = await import('@livepages/document');
+  const { planPalette } = await import('@livedesign/document');
   return { useStartPalette: () => planPalette('light') };
 });
 
@@ -129,7 +129,7 @@ describe('TourStage', () => {
 
   // docs/specs/007-editor/editor-tour.md "Look": the spotlight dims round the target; the card wears the tab's colours.
   it("spotlights the target and paints the card in the tab's accent", async () => {
-    const { planPalette } = await import('@livepages/document');
+    const { planPalette } = await import('@livedesign/document');
     const accent = planPalette('light').focus;
     const e = engine(
       { id: 'one', title: 'One', body: 'Copy' },

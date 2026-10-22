@@ -1,4 +1,4 @@
-import { defineProject } from '@livepages/vitest-config';
+import { defineProject } from '@livedesign/vitest-config';
 
 // Views are pure: every line and branch is covered (docs/specs/024-agents/blueprints/document-views.md "Testing").
 // The fixtures are test support, measured through the tests that use them.

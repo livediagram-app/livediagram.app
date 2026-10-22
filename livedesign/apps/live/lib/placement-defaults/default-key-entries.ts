@@ -5,8 +5,8 @@ import {
   PLACEMENT_DEFAULT_KEYS,
   type PlacementDefaultKey,
   type TemplateFamily,
-} from '@livepages/api-schema';
-import type { EditorMode } from '@livepages/document';
+} from '@livedesign/api-schema';
+import type { EditorMode } from '@livedesign/document';
 
 type DefaultKeyEntry = { key: PlacementDefaultKey; label: string; noun: string };
 

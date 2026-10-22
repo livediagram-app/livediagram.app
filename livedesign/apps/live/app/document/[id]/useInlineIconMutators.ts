@@ -1,4 +1,4 @@
-import { withInlineIcon, type Element } from '@livepages/document';
+import { withInlineIcon, type Element } from '@livedesign/document';
 
 import { isTechIconId } from '@/lib/tech-icons';
 import { track } from '@/lib/telemetry';

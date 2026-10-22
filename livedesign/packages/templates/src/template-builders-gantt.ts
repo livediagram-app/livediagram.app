@@ -24,7 +24,7 @@ import {
   createShape,
   createText,
   type Element,
-} from '@livepages/document';
+} from '@livedesign/document';
 import {
   DEPENDENCIES,
   LAUNCH_WEEK,

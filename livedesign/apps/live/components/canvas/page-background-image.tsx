@@ -16,8 +16,8 @@ import {
   type PageImageOverlay,
   type PageImageOverlayKind,
   type PageImagePosition,
-} from '@livepages/document';
-import { Button } from '@livepages/ui';
+} from '@livedesign/document';
+import { Button } from '@livedesign/ui';
 import { ImageSearchPane } from '@/components/panels/ImageSearchPane';
 import { PageGalleryPicker } from './PageGalleryPicker';
 import { ImageCreditRow } from '@/components/palette/ImageCreditRow';

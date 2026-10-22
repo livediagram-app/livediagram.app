@@ -1,4 +1,4 @@
-// Counterpart to export-tab.ts — parses an imported `.livepages-
+// Counterpart to export-tab.ts — parses an imported `.livedesign-
 // tab.json` envelope back into a Tab. Markdown is also importable
 // (docs/specs/020-import-export/markdown-import.md) via its own module (`markdown-import.ts`). The Import
 // dialog lets the user pick which format; the chosen format drives the picker's file filter + which parser
@@ -30,7 +30,7 @@ import {
   readItemTypeCatalogue,
   type Item,
   type ItemTypeCatalogue,
-} from '@livepages/items';
+} from '@livedesign/items';
 import {
   isItemLike,
   isValidElement,
@@ -38,7 +38,7 @@ import {
   type Tab,
   TAB_SCHEMA_VERSION,
   type ExportedTabEnvelope,
-} from '@livepages/document';
+} from '@livedesign/document';
 
 // The Plan items a tab export carries (docs/specs/026-plan/items.md "Copies and exports"), and its stored type
 // catalogue (null: the default types).
@@ -61,10 +61,10 @@ export function parseImportedTab(text: string): ImportResult {
     return { ok: false, error: 'Expected a JSON object at the top level.' };
   }
   const env = raw as Partial<ExportedTabEnvelope>;
-  if (env.kind !== 'livepages.tab') {
+  if (env.kind !== 'livedesign.tab') {
     return {
       ok: false,
-      error: "This file isn't a livepages tab export (missing kind field).",
+      error: "This file isn't a livedesign tab export (missing kind field).",
     };
   }
   if (typeof env.schemaVersion !== 'number') {

@@ -3,9 +3,9 @@
 // editor's Submit in Preview does: a published form, or one whose responses go to a sheet, takes it through the api's
 // form-preview route (a published form counts it, numbered); an unpublished board form's card is made here through
 // the items route, uncounted, as the editor makes it itself. Nothing is sent when an answer is wrong.
-import type { ApiClient } from '@livepages/api-client';
-import { ApiError } from '@livepages/api-client';
-import type { FormResponseAccepted, ItemResponse } from '@livepages/api-schema';
+import type { ApiClient } from '@livedesign/api-client';
+import { ApiError } from '@livedesign/api-client';
+import type { FormResponseAccepted, ItemResponse } from '@livedesign/api-schema';
 import {
   OTHER_ANSWER,
   answerErrorMessage,
@@ -18,7 +18,7 @@ import {
   type AnswerError,
   type FormDefinition,
   type FormQuestion,
-} from '@livepages/forms';
+} from '@livedesign/forms';
 import { itemsPath, tabPath } from '../verbs/shared';
 import { guarded, readingOf } from './form-calls';
 import { refuse, resolveQuestion, type FormRefusal } from './form-names';

@@ -6,7 +6,7 @@
 import { act, renderHook } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { CustomTheme } from '@livepages/api-schema';
+import type { CustomTheme } from '@livedesign/api-schema';
 import { CustomThemeProvider, useCustomThemes } from './CustomThemeProvider';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));

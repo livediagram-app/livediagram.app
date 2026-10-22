@@ -1,9 +1,9 @@
-// The OAuth clients livepages ships itself, and the device grant's user codes (docs/specs/015-api/blueprints/cli.md
+// The OAuth clients livedesign ships itself, and the device grant's user codes (docs/specs/015-api/blueprints/cli.md
 // "OAuth server", "The CLI's OAuth client", CLI35, CLI36). Shared by the MCP worker's authorization server, the
 // editor's /oauth/device page and the CLI.
 
-export const CLI_CLIENT_ID = 'livepages-cli';
-export const CLI_CLIENT_NAME = 'livepages CLI';
+export const CLI_CLIENT_ID = 'livedesign-cli';
+export const CLI_CLIENT_NAME = 'livedesign CLI';
 // Loopback callbacks, matched on any port (RFC 8252 §7.3).
 export const CLI_REDIRECT_URIS: readonly string[] = [
   'http://127.0.0.1/callback',

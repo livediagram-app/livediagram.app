@@ -12,8 +12,8 @@ import {
   isParticipantPlaceable,
   participantWritesOn,
   type Element,
-} from '@livepages/document';
-import type { AccessLevel } from '@livepages/api-schema';
+} from '@livedesign/document';
+import type { AccessLevel } from '@livedesign/api-schema';
 
 export type EditorCapabilities = {
   level: AccessLevel;

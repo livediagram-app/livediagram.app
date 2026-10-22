@@ -66,7 +66,7 @@ test('the Explorer lands on Home: Jump Back In, then What Happened, no Timeline'
   await expect(hero.getByRole('combobox', { name: 'Filter documents' })).toBeVisible();
   await expect(page.getByRole('combobox', { name: 'Filter documents' })).toHaveCount(1);
   await expect(hero.getByRole('button', { name: 'New Document' })).toBeVisible();
-  await expect(page).toHaveTitle('Home | livepages');
+  await expect(page).toHaveTitle('Home | livedesign');
 
   const jump = page.getByRole('region', { name: 'Jump Back In' });
   const happened = page.getByRole('region', { name: 'What Happened' });
@@ -302,7 +302,7 @@ test('a document stored only in this browser joins Jump Back In with its pill', 
   await page.goto('/explorer/home');
   // Nothing yet: the first run's starts (explorer-home.md "First run"), not an empty Jump Back In.
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-    'Welcome to livepages. What are you making first?',
+    'Welcome to livedesign. What are you making first?',
   );
   await expect(page.getByRole('region', { name: 'Start Blank' })).toBeVisible();
   await expect(page.getByRole('link', { name: /Blank Diagram/ })).toHaveAttribute(

@@ -10,8 +10,8 @@ import {
   type BackgroundPattern,
   type EditorMode,
   type Tab,
-} from '@livepages/document';
-import { getResolvedAppearance } from '@livepages/ui';
+} from '@livedesign/document';
+import { getResolvedAppearance } from '@livedesign/ui';
 import { getTheme, resolveTabBackdrop, type ResolvedBackdrop } from './themes';
 import type { DrawPattern } from './whiteboard-dock-prefs';
 

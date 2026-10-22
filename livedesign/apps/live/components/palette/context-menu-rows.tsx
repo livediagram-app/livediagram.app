@@ -6,7 +6,7 @@
 // Each is purely presentational: props in, JSX out, with every action a
 // callback. Siblings of context-menu-tiles.tsx / context-menu-icons.tsx.
 import { type ReactNode } from 'react';
-import { SHAPE_MARKERS, type ShapeMarker, type TextSizePreset } from '@livepages/document';
+import { SHAPE_MARKERS, type ShapeMarker, type TextSizePreset } from '@livedesign/document';
 
 import { SizeButton } from '@/components/palette/palette-controls';
 import { onMouseHover } from '@/components/primitives/hover-preview';
@@ -22,8 +22,8 @@ import { withNone } from '@/components/palette/context-menu-tiles';
 // re-exported here so the context-menu row imports stay a single source.
 import { ColourRow, IconPositionGrid, MenuToggleRow } from './context-menu-input-rows';
 import { NoMarkerGlyph, PercentSliderRow } from './context-menu-data-rows';
-import { lucideGlyph } from '@livepages/ui';
-import { lucideCircleDot } from '@livepages/icons/lucide';
+import { lucideGlyph } from '@livedesign/ui';
+import { lucideCircleDot } from '@livedesign/icons/lucide';
 import { MENU_ICON_PX } from '@/components/palette/context-menu-icons';
 import { TOOLBAR_CONTROL_REST } from '@/components/chrome/toolbar-surface';
 

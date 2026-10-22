@@ -1162,7 +1162,7 @@ canvas's ink; the Slide Deck's pictures the same.
   panel-close glyph facing its edge; HoverCard "Minimise", "Tuck Contents into its button, bottom
   right."). Dragging the header carries it across the canvas, the side it would pin to outlined,
   and it pins to the left or the right on release; there is no button for it. Its side is the
-  person's per-device choice, kept in this browser alone (`livepages:contents-side:v1`), as the
+  person's per-device choice, kept in this browser alone (`livedesign:contents-side:v1`), as the
   corner panels' places are ([Panel docking](panel-docking.md)). It stays open while the person
   works; the cluster has no Contents button while it shows, and the corner panels and the
   bottom-right cluster on its side start past it.
@@ -1500,7 +1500,7 @@ In Pages mode the Export dialog exports **pages**, not the tab's content bounds.
 
 ## Import
 
-In Pages mode the Import dialog offers **JSON** only (a livepages tab, which may carry
+In Pages mode the Import dialog offers **JSON** only (a livedesign tab, which may carry
 pages), and opens straight at it, with no list of formats to go back to. Markdown builds a diagram and is not
 offered.
 

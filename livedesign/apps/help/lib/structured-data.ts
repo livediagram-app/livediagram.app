@@ -7,7 +7,7 @@
 // `${SITE}/help${appPath}` where appPath is the app-relative href the article
 // registry produces (articleHref / categoryHref, which omit the basePath).
 
-import { SITE_NAME, SITE_URL as SITE } from '@livepages/ui';
+import { SITE_NAME, SITE_URL as SITE } from '@livedesign/ui';
 import { HELP_URL as HELP } from './site';
 
 /** Absolute help-centre URL from an app-relative href (e.g. "/canvas/themes/"). */
@@ -45,7 +45,7 @@ export function webSiteJsonLd() {
   return {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
-    name: 'livepages Help',
+    name: 'livedesign Help',
     url: `${HELP}/`,
     publisher: PUBLISHER,
     inLanguage: 'en-GB',
@@ -68,7 +68,7 @@ export function collectionJsonLd(input: {
     description: input.description,
     url,
     inLanguage: 'en-GB',
-    isPartOf: { '@type': 'WebSite', name: 'livepages Help', url: `${HELP}/` },
+    isPartOf: { '@type': 'WebSite', name: 'livedesign Help', url: `${HELP}/` },
     mainEntity: {
       '@type': 'ItemList',
       itemListElement: input.items.map((item, i) => ({

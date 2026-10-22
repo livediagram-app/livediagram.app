@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { CommentThread } from '@livepages/document';
-import type { Item } from '@livepages/items';
+import type { CommentThread } from '@livedesign/document';
+import type { Item } from '@livedesign/items';
 
 // A card's comments in the editor (docs/specs/026-plan/items.md "Comments"): shown at once, settled on the
 // api's answer, our own author ids kept when the room's copy lands, a refusal said and the store refetched.

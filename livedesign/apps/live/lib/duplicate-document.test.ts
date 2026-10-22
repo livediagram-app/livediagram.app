@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Tab } from '@livepages/document';
+import type { Tab } from '@livedesign/document';
 
 // Mock the api-client boundary so the test exercises only the pure
 // remapping logic inside duplicateDocument, not the network.

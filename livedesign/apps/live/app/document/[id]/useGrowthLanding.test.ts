@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createShape, type Element, type Tab } from '@livepages/document';
+import { createShape, type Element, type Tab } from '@livedesign/document';
 import {
   labelled,
   patchActiveElements,

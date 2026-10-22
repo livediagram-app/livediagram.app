@@ -39,7 +39,7 @@ REST resource at `/api/custom-themes`, mirroring `/api/folders` one-for-one (sam
 
 `POST` and `PUT` reject (400) a `definition` whose `palette` is present but empty: a multi-colour theme with no colours would silently paint as single-colour ([Multi-colour (rainbow) themes](multicolour-themes.md)).
 
-`CustomTheme` DTO (in `@livepages/api-schema`):
+`CustomTheme` DTO (in `@livedesign/api-schema`):
 
 ```ts
 export type CustomThemeDefinition = {

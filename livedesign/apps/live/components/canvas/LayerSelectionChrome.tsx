@@ -5,7 +5,7 @@
 // the store, so a selection change re-renders this and not the element layer around it.
 
 import type { ComponentProps } from 'react';
-import { logoPageAt, type Element, type LaidOutPage } from '@livepages/document';
+import { logoPageAt, type Element, type LaidOutPage } from '@livedesign/document';
 import { UnionResizeHandles } from '@/components/canvas/element-parts';
 import { QuickConnectPluses } from '@/components/canvas/QuickConnectPluses';
 import {

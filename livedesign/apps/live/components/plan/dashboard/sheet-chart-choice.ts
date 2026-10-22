@@ -12,14 +12,14 @@ import {
   type ChartSource,
   type ShapeElement,
   type Tab,
-} from '@livepages/document';
+} from '@livedesign/document';
 import {
   formatRange,
   idRangeOf,
   parseRangeText,
   posRangeOf,
   type Sheet,
-} from '@livepages/sheets';
+} from '@livedesign/sheets';
 
 export const NOT_A_RANGE = 'Not a range on this sheet';
 

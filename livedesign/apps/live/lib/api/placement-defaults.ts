@@ -1,7 +1,7 @@
 // A person's default folders (docs/specs/013-workspace/default-folders.md "API"): read, set and
 // cleared. Owner-scoped, guests included (apiHeaders attaches the Clerk token when signed in, else
 // the X-Owner-Id header). Every refusal throws ApiError with its token as `code`.
-import type { PlacementDefault, PlacementDefaultKey } from '@livepages/api-schema';
+import type { PlacementDefault, PlacementDefaultKey } from '@livedesign/api-schema';
 import { API_BASE, apiDelete, apiFetch, apiHeaders, expectOk, expectOkVoid } from './core';
 
 const defaultUrl = (key: PlacementDefaultKey) =>

@@ -4,7 +4,7 @@
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { lensChips, parseLens, type LensContext } from '@livepages/explorer-lens';
+import { lensChips, parseLens, type LensContext } from '@livedesign/explorer-lens';
 import { LensChips } from './LensChips';
 
 afterEach(cleanup);

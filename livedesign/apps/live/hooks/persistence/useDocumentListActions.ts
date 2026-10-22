@@ -9,7 +9,7 @@
 // dismissed Shared rows without the confirm.)
 
 import { EXPLORER_LANDING_PATH } from '@/lib/explorer-landing';
-import { truncateName } from '@livepages/document';
+import { truncateName } from '@livedesign/document';
 import type { Dispatch, SetStateAction } from 'react';
 import {
   apiDeleteDocument,
@@ -171,7 +171,7 @@ export function useDocumentListActions(deps: DocumentListActionsDeps) {
       // Telemetry rides the resolved delete, not the click: this used to fire
       // before the request was even sent. Emitting here is still delivered
       // despite the navigation below, because the client flushes its buffer
-      // through sendBeacon on pagehide (@livepages/telemetry-client).
+      // through sendBeacon on pagehide (@livedesign/telemetry-client).
       await apiDeleteDocument(ownerId, id)
         .then(() => {
           track('Document', 'Deleted');

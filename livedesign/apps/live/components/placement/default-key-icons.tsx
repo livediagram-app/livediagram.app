@@ -3,14 +3,14 @@ import {
   PLACEMENT_DEFAULT_KEYS,
   type PlacementDefaultKey,
   type TemplateFamily,
-} from '@livepages/api-schema';
-import type { EditorMode } from '@livepages/document';
-import { lucideGlyph, type IconProps, EDITOR_MODE_ICONS } from '@livepages/ui';
+} from '@livedesign/api-schema';
+import type { EditorMode } from '@livedesign/document';
+import { lucideGlyph, type IconProps, EDITOR_MODE_ICONS } from '@livedesign/ui';
 import {
   lucideFolderCheck,
   lucideHistory,
   lucideSquareKanban,
-} from '@livepages/icons/lucide';
+} from '@livedesign/icons/lucide';
 
 // Each default key's icon (docs/specs/013-workspace/default-folders.md "Entry names", blueprint D110):
 // a mode keeps the icon its mode switch shows; the families each draw what they are.

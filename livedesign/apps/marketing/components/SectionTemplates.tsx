@@ -4,7 +4,7 @@ import { TemplateCard } from '@/components/TemplateCard';
 import { sectionTemplates } from '@/lib/section-templates';
 
 // A category page's "Start from a template" band (docs/specs/019-marketing/marketing-site.md "Feature
-// category pages"), between its feature cards and "Explore more of livepages": up to nine of the
+// category pages"), between its feature cards and "Explore more of livedesign": up to nine of the
 // category's best templates (lib/section-templates.ts) in a grid of threes, each a card that opens it
 // in the editor, so a visitor who has just read about the feature can start on one. It sits on the
 // landing gallery's inset band so it reads apart from the white feature grid above it.

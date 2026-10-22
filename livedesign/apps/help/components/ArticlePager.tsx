@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { CONTACT_FORM_URL } from '@livepages/ui';
+import { CONTACT_FORM_URL } from '@livedesign/ui';
 import type { ArticleLink } from '@/lib/article-neighbours';
 import { ArrowLeftIcon, ArrowRightIcon, MessageIcon } from '@/lib/chrome-icons';
 

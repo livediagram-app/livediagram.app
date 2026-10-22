@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { ItemTypeDef } from '@livepages/items';
-import { PLAN_BOARD_PRESET_IDS } from '@livepages/items';
+import type { ItemTypeDef } from '@livedesign/items';
+import { PLAN_BOARD_PRESET_IDS } from '@livedesign/items';
 import { PLAN_BOARD_TILES, PLAN_TILES, planCardTile } from './palette-plan-tiles';
 
 // docs/specs/026-plan/item-types.md "Where types show".

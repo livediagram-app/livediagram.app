@@ -9,7 +9,7 @@ import {
   type ArrowElement,
   type BoxedElement,
   type Tab,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { applied } from '../fixtures/outcomes';
 import { run } from '../fixtures/run';
 

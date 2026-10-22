@@ -18,12 +18,12 @@ import {
   type TimelineControlsState,
   type TimelineEvent,
   type TimelineMode,
-} from '@livepages/ui';
+} from '@livedesign/ui';
 import {
   TIMELINE_PAGE_MAX,
   TIMELINE_PAGE_SIZE,
   type TimelineScopeRef,
-} from '@livepages/api-schema';
+} from '@livedesign/api-schema';
 import {
   apiDismissTimelineEvent,
   apiDismissTimelineEvents,

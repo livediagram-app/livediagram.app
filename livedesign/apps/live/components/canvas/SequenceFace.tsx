@@ -1,4 +1,4 @@
-import { trustedHtml } from '@livepages/ui';
+import { trustedHtml } from '@livedesign/ui';
 import { memo, useMemo, type CSSProperties } from 'react';
 import {
   ANIMATION_SPEED_FACTOR,
@@ -6,7 +6,7 @@ import {
   sequenceDrawing,
   type SequenceLook,
   type ShapeElement,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { useElementFinish } from '@/components/canvas/CanvasFinishContext';
 
 /** Seconds of the Play wipe per message at Normal speed (docs/specs/009-elements/sequence-diagram.md "Animation"). */

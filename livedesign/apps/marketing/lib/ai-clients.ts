@@ -2,10 +2,10 @@
 // "The clients"). One address, MCP_URL, feeds every snippet, so the page can never show two. It is this
 // deployment's MCP worker: a self-hosted build set with NEXT_PUBLIC_MCP_ORIGIN shows its own, never the hosted one.
 
-import { mcpEndpoint, resolveMcpOrigin } from '@livepages/api-schema';
+import { mcpEndpoint, resolveMcpOrigin } from '@livedesign/api-schema';
 
 export const MCP_URL = mcpEndpoint(resolveMcpOrigin(process.env.NEXT_PUBLIC_MCP_ORIGIN));
-const MCP_NAME = 'livepages';
+const MCP_NAME = 'livedesign';
 
 export type AiClientGroup = 'Chat apps' | 'Coding agents' | 'Editors' | 'Anything else';
 
@@ -67,11 +67,11 @@ export const AI_CLIENTS: readonly AiClient[] = [
         },
       },
       {
-        text: 'Choose **Add custom connector**, name it livepages and paste the address as its URL.',
+        text: 'Choose **Add custom connector**, name it livedesign and paste the address as its URL.',
         code: { lang: 'text', code: MCP_URL, label: 'URL' },
       },
       {
-        text: 'Choose **Connect**, then approve on the livepages page that opens.',
+        text: 'Choose **Connect**, then approve on the livedesign page that opens.',
       },
     ],
     note: 'A connector you add on the web shows up in Claude Desktop too. On a Team or Enterprise plan, an owner may need to add it first.',
@@ -91,11 +91,11 @@ export const AI_CLIENTS: readonly AiClient[] = [
         },
       },
       {
-        text: 'Choose **Create**, name it livepages, paste the address as the MCP server URL and pick **OAuth**.',
+        text: 'Choose **Create**, name it livedesign, paste the address as the MCP server URL and pick **OAuth**.',
         code: { lang: 'text', code: MCP_URL, label: 'URL' },
       },
       {
-        text: 'Approve on the livepages page that opens, then pick livepages from the tools menu in a new chat.',
+        text: 'Approve on the livedesign page that opens, then pick livedesign from the tools menu in a new chat.',
       },
     ],
     note: 'Developer mode depends on your ChatGPT plan, and OpenAI moves its menus now and then: look for custom connectors in Settings.',
@@ -107,18 +107,18 @@ export const AI_CLIENTS: readonly AiClient[] = [
     blurb: 'One command in your terminal',
     steps: [
       {
-        text: 'Add livepages for every project:',
+        text: 'Add livedesign for every project:',
         code: {
           lang: 'bash',
           code: `claude mcp add --transport http --scope user ${MCP_NAME} ${MCP_URL}`,
         },
       },
       {
-        text: 'In a Claude Code session, run **/mcp**, choose livepages and **Authenticate**. Approve in the browser.',
+        text: 'In a Claude Code session, run **/mcp**, choose livedesign and **Authenticate**. Approve in the browser.',
         code: { lang: 'text', code: '/mcp', label: 'In Claude Code' },
       },
     ],
-    note: 'Working in a repository? The livepages CLI is another way in, on the same account.',
+    note: 'Working in a repository? The livedesign CLI is another way in, on the same account.',
   },
   {
     id: 'codex',
@@ -160,7 +160,7 @@ export const AI_CLIENTS: readonly AiClient[] = [
     blurb: 'One click, or one line of config',
     steps: [
       {
-        text: 'Add livepages to Cursor in one click:',
+        text: 'Add livedesign to Cursor in one click:',
         action: { href: cursorInstallLink(), label: 'Add to Cursor' },
       },
       {
@@ -172,7 +172,7 @@ export const AI_CLIENTS: readonly AiClient[] = [
         },
       },
       {
-        text: 'In Cursor’s MCP settings, choose to sign in to livepages, then approve in the browser.',
+        text: 'In Cursor’s MCP settings, choose to sign in to livedesign, then approve in the browser.',
       },
     ],
   },
@@ -183,7 +183,7 @@ export const AI_CLIENTS: readonly AiClient[] = [
     blurb: 'GitHub Copilot’s agent mode',
     steps: [
       {
-        text: 'Add livepages to VS Code in one click:',
+        text: 'Add livedesign to VS Code in one click:',
         action: { href: vscodeInstallLink(), label: 'Add to VS Code' },
       },
       {
@@ -208,11 +208,11 @@ export const AI_CLIENTS: readonly AiClient[] = [
         text: 'In Cascade, open the MCP settings and choose to view the raw config (**mcp_config.json**).',
       },
       {
-        text: 'Add livepages to it:',
+        text: 'Add livedesign to it:',
         code: { lang: 'json', code: json({ mcpServers: { [MCP_NAME]: { serverUrl: MCP_URL } } }) },
       },
       {
-        text: 'Refresh the servers, then sign in to livepages and approve in the browser.',
+        text: 'Refresh the servers, then sign in to livedesign and approve in the browser.',
       },
     ],
   },
@@ -227,14 +227,14 @@ export const AI_CLIENTS: readonly AiClient[] = [
         code: { lang: 'text', code: MCP_URL, label: 'URL' },
       },
       {
-        text: 'If the tool can sign in to servers (OAuth), it finds livepages’s sign-in by itself: there is no client id or secret to enter.',
+        text: 'If the tool can sign in to servers (OAuth), it finds livedesign’s sign-in by itself: there is no client id or secret to enter.',
       },
       {
-        text: 'If it can’t, create an API token in livepages’s **Settings**, under **Account**, **API Tokens**, and send it as a header:',
+        text: 'If it can’t, create an API token in livedesign’s **Settings**, under **Account**, **API Tokens**, and send it as a header:',
         code: { lang: 'text', code: 'Authorization: Bearer lvd_…', label: 'Header' },
       },
     ],
-    note: 'Running your own livepages? Use your own MCP host in place of mcp.livepages.app, still ending in /mcp.',
+    note: 'Running your own livedesign? Use your own MCP host in place of mcp.livedesign.app, still ending in /mcp.',
   },
 ];
 
@@ -246,31 +246,31 @@ export const STARTER_PROMPTS: readonly StarterPrompt[] = [
   {
     title: 'Map a codebase',
     prompt:
-      'Read this repository and draw its architecture as a livepages diagram: the main services, what each one owns, and how requests flow between them.',
+      'Read this repository and draw its architecture as a livedesign diagram: the main services, what each one owns, and how requests flow between them.',
   },
   {
     title: 'Turn steps into a flowchart',
     prompt:
-      'Make a livepages flowchart of how a new customer signs up, from landing page to first invoice, with a decision for each place they can drop off.',
+      'Make a livedesign flowchart of how a new customer signs up, from landing page to first invoice, with a decision for each place they can drop off.',
   },
   {
     title: 'Plan a launch',
     prompt:
-      'Create a livepages kanban board for launching our new website, with cards for design, copy, build, testing and go-live, and share a link I can send the team.',
+      'Create a livedesign kanban board for launching our new website, with cards for design, copy, build, testing and go-live, and share a link I can send the team.',
   },
   {
     title: 'Build a deck',
     prompt:
-      'Build a five-slide livepages deck that explains our product to a new hire: the problem, who it is for, how it works, what is next, and how to get help.',
+      'Build a five-slide livedesign deck that explains our product to a new hire: the problem, who it is for, how it works, what is next, and how to get help.',
   },
   {
     title: 'Write it up',
     prompt:
-      'Write up the decisions from this conversation as a livepages article, with a short summary first and a section per decision.',
+      'Write up the decisions from this conversation as a livedesign article, with a short summary first and a section per decision.',
   },
   {
     title: 'Find and improve',
     prompt:
-      'Find my livepages document about onboarding, show it to me, and suggest three ways to make it clearer. Make the changes once I agree.',
+      'Find my livedesign document about onboarding, show it to me, and suggest three ways to make it clearer. Make the changes once I agree.',
   },
 ];

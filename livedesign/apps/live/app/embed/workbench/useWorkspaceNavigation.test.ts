@@ -142,7 +142,7 @@ describe('useWorkspaceNavigation', () => {
     expect(path()).toBe('/embed/workbench/explorer');
   });
 
-  it('moves to a place, as `livepages:open` asks', () => {
+  it('moves to a place, as `livedesign:open` asks', () => {
     const { result } = mount();
 
     act(() => result.current.go({ kind: 'explorer', node: { kind: 'folder', id: 'f9' } }));

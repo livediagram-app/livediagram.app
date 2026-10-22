@@ -2,8 +2,8 @@
 
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { ThisBrowserPill } from '@/components/primitives/ThisBrowserPill';
-import { CloseIcon, NoMatches, SearchIcon, useEscape, useFocusTrap } from '@livepages/ui';
-import type { Tab } from '@livepages/document';
+import { CloseIcon, NoMatches, SearchIcon, useEscape, useFocusTrap } from '@livedesign/ui';
+import type { Tab } from '@livedesign/document';
 import {
   buildSearchResults,
   type CommandSearchItem,

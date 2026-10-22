@@ -1,9 +1,9 @@
 import { ImageResponse } from 'next/og';
-import { brandMarkSvg } from '@livepages/ui';
+import { brandMarkSvg } from '@livedesign/ui';
 
 // iOS home-screen tile. Next.js convention: app/apple-icon.tsx →
 // /apple-icon.png + the <link rel="apple-touch-icon"> tag at build
-// time. We render it (rather than reuse public/livepages-icon-*.png)
+// time. We render it (rather than reuse public/livedesign-icon-*.png)
 // because iOS composites apple-touch-icons onto an OPAQUE tile: a
 // transparent PNG renders its empty pixels as black, which would frame
 // the thin brand mark in a black square. So we paint a white

@@ -2,7 +2,7 @@
 
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { createTable } from '@livepages/document';
+import { createTable } from '@livedesign/document';
 import { useTableCellSelection } from './useTableCellSelection';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));

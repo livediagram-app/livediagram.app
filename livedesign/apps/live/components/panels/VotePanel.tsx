@@ -20,15 +20,15 @@
 // happy accident for a dot-vote, and the turnout numbers below answer the
 // question the host actually has ("is everyone done?") without it.
 
-import { itemIdOfVoteKey, votesSpentBy, type Element, type TabVote } from '@livepages/document';
-import { itemTitle } from '@livepages/items';
+import { itemIdOfVoteKey, votesSpentBy, type Element, type TabVote } from '@livedesign/document';
+import { itemTitle } from '@livedesign/items';
 import { usePlan } from '@/components/plan/PlanContext';
 import { describeOne } from '@/lib/element-names';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import type { DockAnchor } from '@/lib/canvas-chrome';
 import type { VoteReview } from '@/hooks/canvas/useVoteReview';
 import { voteRules } from '@/components/panels/session-studio/session-studio';
-import { buttonClassName } from '@livepages/ui';
+import { buttonClassName } from '@livedesign/ui';
 
 // A popover never moves.
 const NO_MOVE = () => {};

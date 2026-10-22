@@ -49,7 +49,7 @@ editor carried 247 findings and 73 suppressions; at zero they are errors, so no 
   once. A reading by the day (due and overdue counts, the calendar's month, the Gantt's today line) uses
   `useToday()`, a store that moves on at local midnight and when the page is shown again. Nothing reads
   the clock (`Date.now()`, `new Date()`) while rendering; a static page's copyright year is the build's,
-  inlined at build (`@livepages/next-config`).
+  inlined at build (`@livedesign/next-config`).
 - **Effect dependencies are complete.** A dependency that must not retrigger the effect is read through
   an effect event, not omitted.
 - **A handler decides before it commits.** A state updater (the function a commit or a `setX` takes) may
@@ -65,7 +65,7 @@ recompute(t))`. `apps/live/commit-updater-flags.test.ts` fails a new one.
 The editor (`apps/live`) builds with the React Compiler, which memoises components and hooks at build time, so a
 re-render re-runs only what its inputs changed. The three static sites (marketing, help, telemetry) do not:
 their pages rarely re-render, and the compiler's memoisation added 6 to 44 KiB of first-load JavaScript to them.
-The editor asks for it through `@livepages/next-config` (`reactCompiler: true`). The rules above are its precondition: it compiles code
+The editor asks for it through `@livedesign/next-config` (`reactCompiler: true`). The rules above are its precondition: it compiles code
 that keeps them and leaves the rest as plain React.
 
 - **The native Rust port runs it**, inside Turbopack (`reactCompiler: true` with

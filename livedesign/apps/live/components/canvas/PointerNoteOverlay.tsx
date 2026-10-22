@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
-import { pointerLeader, pointerTipOf, type ShapeElement } from '@livepages/document';
+import { pointerLeader, pointerTipOf, type ShapeElement } from '@livedesign/document';
 import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
 
 // A pointer note's leader, tip and (while selected) the tip handle (docs/specs/009-elements/pointer-note.md). Drawn

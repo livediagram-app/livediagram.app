@@ -5,7 +5,7 @@ import {
   type FreehandElement,
   type PathElement,
   type ShapeElement,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { combineElements, multiPolygonToPath, type CombineOp } from './combine';
 import { elementRings, isCombinable } from './outline';
 import { simplifyRing } from './simplify';

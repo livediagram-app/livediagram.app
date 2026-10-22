@@ -16,9 +16,9 @@ import {
   TEXT_PX_MIN,
   type TextSize,
   type TextSizePreset,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { onMouseHover } from '@/components/primitives/hover-preview';
-import { Tooltip } from '@livepages/ui';
+import { Tooltip } from '@livedesign/ui';
 import { PreviewSliderRow } from '@/components/primitives/PreviewSliderRow';
 import { ScaleIcon } from './palette-icons';
 import { TOOLBAR_CONTROL_REST } from '@/components/chrome/toolbar-surface';

@@ -1,5 +1,5 @@
 {
-  "name": "@livepages/help-registry",
+  "name": "@livedesign/help-registry",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -17,7 +17,7 @@
     "clean": "rm -rf node_modules .turbo coverage"
   },
   "devDependencies": {
-    "@livepages/oxlint-config": "workspace:*",
+    "@livedesign/oxlint-config": "workspace:*",
     "oxlint": "^1.88.0",
     "typescript": "^7.0.2"
   }

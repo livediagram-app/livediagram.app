@@ -9,7 +9,7 @@ import {
   type Element,
   type PenColourName,
   type ShapeElement,
-} from '@livepages/document';
+} from '@livedesign/document';
 import {
   isQuickStyleTarget,
   supportsQuickSection,

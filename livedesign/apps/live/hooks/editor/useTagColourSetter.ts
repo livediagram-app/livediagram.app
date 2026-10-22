@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback } from 'react';
-import { withTagColour, type Tab } from '@livepages/document';
+import { withTagColour, type Tab } from '@livedesign/document';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { track } from '@/lib/telemetry';
 

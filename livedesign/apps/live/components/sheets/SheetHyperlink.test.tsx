@@ -21,7 +21,7 @@ beforeEach(() => {
   vi.stubGlobal('open', open);
 });
 
-const LINK = '=HYPERLINK("https://livepages.app", "livepages")';
+const LINK = '=HYPERLINK("https://livedesign.app", "livedesign")';
 const textOf = (label: string) =>
   [...document.querySelectorAll<HTMLElement>('[data-sheet-text]')].find(
     (el) => el.textContent === label,
@@ -30,7 +30,7 @@ const textOf = (label: string) =>
 describe('a HYPERLINK cell', () => {
   it('draws its label underlined, as a link', async () => {
     await mountGrid({ cells: { A1: LINK, A2: 'plain' } });
-    expect(textOf('livepages').style.textDecoration).toBe('underline');
+    expect(textOf('livedesign').style.textDecoration).toBe('underline');
     expect(textOf('plain').style.textDecoration).toBe('');
   });
 
@@ -39,7 +39,7 @@ describe('a HYPERLINK cell', () => {
     fireEvent.pointerDown(h.viewport, { button: 0, ...cellPoint(0, 0), metaKey: true });
     fireEvent.pointerDown(h.viewport, { button: 0, ...cellPoint(0, 0), ctrlKey: true });
     expect(open).toHaveBeenCalledTimes(2);
-    expect(open).toHaveBeenCalledWith('https://livepages.app/', '_blank', 'noopener,noreferrer');
+    expect(open).toHaveBeenCalledWith('https://livedesign.app/', '_blank', 'noopener,noreferrer');
     expect(track).toHaveBeenCalledWith('Sheet', 'Opened', 'Hyperlink');
   });
 
@@ -64,7 +64,7 @@ describe('a HYPERLINK cell', () => {
       fireEvent.pointerMove(h.viewport, cellPoint(0, 0));
     });
     const tip = screen.getByRole('tooltip');
-    expect(tip.textContent).toContain('https://livepages.app/');
+    expect(tip.textContent).toContain('https://livedesign.app/');
     expect(tip.textContent).toMatch(/(⌘|Ctrl\+)Click to open/);
   });
 });

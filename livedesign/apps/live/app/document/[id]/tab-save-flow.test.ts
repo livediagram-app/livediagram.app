@@ -7,9 +7,9 @@ import {
   type ElementLedger,
   type Tab,
   type VoteLedger,
-} from '@livepages/document';
-import { presetSetup } from '@livepages/items';
-import type { RoomOp, RoomOutgoing } from '@livepages/api-schema';
+} from '@livedesign/document';
+import { presetSetup } from '@livedesign/items';
+import type { RoomOp, RoomOutgoing } from '@livedesign/api-schema';
 import {
   participantElementOps,
   prepareTabSave,

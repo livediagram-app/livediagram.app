@@ -4,7 +4,7 @@
 // a layout in its own title bar (docs/specs/007-editor/pages-mode.md) and Plan offers its boards in the middle
 // (docs/specs/026-plan/plan-mode.md "Starting a board"). The sign-in nudge has no say: it sits at the foot of the
 // canvas, clear of the card.
-import type { EditorMode } from '@livepages/document';
+import type { EditorMode } from '@livedesign/document';
 
 const CARD_MODES: ReadonlySet<EditorMode> = new Set(['diagram', 'workshop']);
 

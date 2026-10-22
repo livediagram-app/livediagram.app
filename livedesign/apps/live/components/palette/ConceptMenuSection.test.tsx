@@ -10,7 +10,7 @@ import {
   type ConceptShape,
   type Element,
   type ShapeElement,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { ConceptMenuSection } from './ConceptMenuSection';
 import type { ElementStyleOps } from '@/lib/element-style-ops';
 

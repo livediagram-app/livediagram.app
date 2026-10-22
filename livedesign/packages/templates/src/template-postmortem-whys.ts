@@ -5,7 +5,7 @@
 //
 // Pure: every call returns fresh elements.
 
-import { createPinnedArrow, createShape, createText, type Element } from '@livepages/document';
+import { createPinnedArrow, createShape, createText, type Element } from '@livedesign/document';
 import { PM_ROOT_CAUSE, PM_WHYS } from './template-postmortem-data';
 import {
   CONTENT,

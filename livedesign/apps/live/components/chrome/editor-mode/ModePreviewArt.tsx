@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import type { EditorMode } from '@livepages/document';
+import type { EditorMode } from '@livedesign/document';
 
 // The mode menu's preview picture (docs/specs/007-editor/editor-modes.md "The mode switch"): each
 // mode's work in a few strokes, on a 120 x 56 grid, in the current colour (the mode's tint).

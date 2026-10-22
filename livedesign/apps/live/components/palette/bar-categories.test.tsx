@@ -4,7 +4,7 @@ import { flyoutGroups } from './category-flyout-groups';
 import { tilesForCategory } from './palette-tile-defs';
 import { paletteCategoriesFor } from './palette-layouts';
 import { SESSION_CATEGORY_ID, SESSION_GROUP_IDS } from './session-category';
-import type { EditorMode } from '@livepages/document';
+import type { EditorMode } from '@livedesign/document';
 
 // What the category bar offers (docs/specs/007-editor/toolbar-layout.md "The category bar").
 

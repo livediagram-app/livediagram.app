@@ -1,10 +1,10 @@
 # CLI
 
-**Status: published.** `@livepages/cli` is on npm (0.1.0, 2026-10-06; 0.2.0 adds `workbench`; 0.3.0, not yet on npm, adds `folder` and `workbench --workspace`). Every command below signs in through the
+**Status: published.** `@livedesign/cli` is on npm (0.1.0, 2026-10-06; 0.2.0 adds `workbench`; 0.3.0, not yet on npm, adds `folder` and `workbench --workspace`). Every command below signs in through the
 browser, a device code or a token kept in the system's keychain, and is counted on the dashboard. The help centre
 article is `/help/developers/cli/` (Developers). Ahead: the update check.
 
-`livepages` is a command-line front door to the api, built first for **agents** (a coding agent in a repo, a chat
+`livedesign` is a command-line front door to the api, built first for **agents** (a coding agent in a repo, a chat
 agent changing a diagram while a person talks to it) and second for people (scripts, pulling documents to files).
 With it an agent reads, builds, edits, comments on and reasons about documents, paying for context only when it
 asks. It sits beside the [MCP server](mcp-server.md), not in place of it: the two are front doors to one set of
@@ -65,7 +65,7 @@ Resource, then verb. `doc` and `el` are accepted for `document` and `element`.
 | `api <method> <path> [--body <file>\|-]`                                        | Any api route, authenticated; the escape hatch                                                                                                                             |
 | `auth login\|status\|logout`                                                    | Credentials                                                                                                                                                                |
 
-**Addressing.** `<doc>` is a document name, an id prefix, or a pasted livepages URL; an ambiguous one is refused
+**Addressing.** `<doc>` is a document name, an id prefix, or a pasted livedesign URL; an ambiguous one is refused
 with the candidates. A share-link URL acts through that link: each request of the command carries its code. A
 pulled file's path reads its views offline. `--tab` takes a tab name or id prefix and defaults to the first tab.
 Elements are [refs and selectors](../024-agents/edit-operations.md#selectors); the comment verbs take the ref of the
@@ -91,13 +91,13 @@ an agent through the CLI is designing their own diagram.
 
 ## Help
 
-- `livepages --help` lists the resources, how to address things, the output rules and four starting commands,
+- `livedesign --help` lists the resources, how to address things, the output rules and four starting commands,
   within `HELP_TOP_MAX_TOKENS`.
 - `<resource> --help` lists its verbs in a line each, within `HELP_RESOURCE_MAX_TOKENS`.
 - `<resource> <verb> --help` gives usage, flags, two examples and what it prints, within `HELP_VERB_MAX_TOKENS`.
 - `guide <topic>` and `schema <kind>` carry the depth, so it is paid for only when needed.
 - `skill print` prints a `SKILL.md` whose frontmatter (about 60 tokens) says when to use the CLI and whose body
-  points at `guide`, and at `guide workbench` when a message carries a `[livepages]`
+  points at `guide`, and at `guide workbench` when a message carries a `[livedesign]`
   [selection reference](../013-workspace/workbench-embeds.md#the-selection-reference). `skill install --to <dir>`
   writes it into that agent skills directory; without `--to` it lists the common ones.
 - Help, guides and the skill come from the verb catalogue; templates, icons and the element format (`schema`) come
@@ -130,19 +130,19 @@ an agent through the CLI is designing their own diagram.
 
 In order of precedence:
 
-1. **`LIVEPAGES_TOKEN`**, an `lvd_` token from the environment: agents, CI, sandboxes. There is no `--token` flag;
+1. **`LIVEDESIGN_TOKEN`**, an `lvd_` token from the environment: agents, CI, sandboxes. There is no `--token` flag;
    it would land in shell history and transcripts.
 2. **The stored credential** of the active profile, from `auth login`.
 
 - `auth login` runs OAuth 2.1 with PKCE through the MCP worker's authorisation server
   ([MCP server](mcp-server.md) §3) with a loopback redirect, and stores the minted `lvd_` token. `--device` uses the
   device authorisation grant for machines without a browser. `--with-token` reads a token from stdin, for hosts that
-  do not run the MCP worker. The token is named "livepages CLI"; its work shows as its owner's. A new login on a
+  do not run the MCP worker. The token is named "livedesign CLI"; its work shows as its owner's. A new login on a
   profile that holds a token revokes the old one once the new one works.
 - The token goes in the operating system's own store, through the system's own tool and never native code: the
   macOS Keychain (`security`), the Secret Service on Linux (`secret-tool`), and on Windows a token sealed for the user
   with DPAPI (PowerShell). The token reaches the tool on stdin, never on a command line another process can read.
-  Where the tool is missing or refuses, the token goes in `~/.config/livepages/credentials.json` at mode 0600, with
+  Where the tool is missing or refuses, the token goes in `~/.config/livedesign/credentials.json` at mode 0600, with
   a one-line notice. The file keeps each profile's account, role and expiry either way.
 - `auth status` prints the host, account, token name, its role and expiry, never the secret, and warns inside
   14 days of expiry. `auth logout` revokes the token and forgets it.
@@ -150,22 +150,22 @@ In order of precedence:
   there ([Public API and API tokens](public-api-and-tokens.md) §3.7). The CLI never acts as a guest.
 - A stored credential the api refuses mid-command (a newer `auth login` revoked it while a long command such as
   `watch` ran) is read again from the store, and the refused request is retried once with the new token.
-  `LIVEPAGES_TOKEN` is never re-read.
-- `LIVEPAGES_TOKEN` goes to whichever host is active; set `LIVEPAGES_HOST` beside it for a self-host.
+  `LIVEDESIGN_TOKEN` is never re-read.
+- `LIVEDESIGN_TOKEN` goes to whichever host is active; set `LIVEDESIGN_HOST` beside it for a self-host.
 
 ## Profiles and self-hosting
 
-- `~/.config/livepages/config.toml` names profiles, each a `host`; `--host`, `--profile`, `LIVEPAGES_HOST` and
-  `LIVEPAGES_PROFILE` choose one. The default is `https://livepages.app`.
+- `~/.config/livedesign/config.toml` names profiles, each a `host`; `--host`, `--profile`, `LIVEDESIGN_HOST` and
+  `LIVEDESIGN_PROFILE` choose one. The default is `https://livedesign.app`.
 - The CLI learns a host from `GET /api/capabilities`: the api base, whether sign-in and the OAuth server exist, the
   document format and the oldest CLI version it accepts (`cli.minVersion`). Below that version the CLI refuses
   writes and names the version to install. Against a host storing a newer document format than it reads, the CLI
   refuses the commands that work on local files (`pull`, `push`, `export`, `graph`, `tab diff`) the same way.
-- A self-host profile never contacts livepages.app.
+- A self-host profile never contacts livedesign.app.
 
 ## Local files
 
-- `pull <doc>` writes `<slug>.livepages.json`: the document, its tabs and each tab's revision. `--svg` adds a
+- `pull <doc>` writes `<slug>.livedesign.json`: the document, its tabs and each tab's revision. `--svg` adds a
   picture per tab. A pull never drops edits not yet pushed: when the file there changed since its pull, it is
   refused, naming `push`, and kept; `--force` drops those edits and pulls anyway.
 - `push <file>` sends each changed tab as a changeset based on the pulled revision. A tab changed on the server
@@ -179,32 +179,32 @@ In order of precedence:
 ## Previews
 
 `tab render` and `graph render` draw with the shared SVG renderer (`renderElementsToSvg`) and rasterise PNGs with
-`@livepages/render-png`, the MCP's resvg and embedded Inter. A stored tab is drawn from the api's
+`@livedesign/render-png`, the MCP's resvg and embedded Inter. A stored tab is drawn from the api's
 `render.svg`, so the CLI and the MCP draw alike.
 
 ## One catalogue for the CLI and the MCP
 
-Every command and every MCP tool is a projection of one **verb** in `@livepages/agent-verbs`: its id
+Every command and every MCP tool is a projection of one **verb** in `@livedesign/agent-verbs`: its id
 (`tab.view`, `element.set`), input and output schemas, a factual description, its behaviour (read, write,
-destructive) and a handler calling the api through `@livepages/api-client`. The MCP keeps its tool names and
+destructive) and a handler calling the api through `@livedesign/api-client`. The MCP keeps its tool names and
 schemas: each tool is its own verb, a command whose shape differs is another, and the two share handlers. A parity
 test fails when a verb is exposed by neither, or a tool's schema drifts from its verb.
 
 ## Distribution
 
-- npm package `@livepages/cli`, under the `livepages` npm organisation, installing the command `livepages`: one
-  bundled ESM file plus the resvg wasm and font, Node 22 or later, run with `npx @livepages/cli@latest` or installed.
-  npm refuses the plain name `livepages` as too close to the existing `live-diagram`. Published from CI with provenance, versioned on its own.
+- npm package `@livedesign/cli`, under the `livedesign` npm organisation, installing the command `livedesign`: one
+  bundled ESM file plus the resvg wasm and font, Node 22 or later, run with `npx @livedesign/cli@latest` or installed.
+  npm refuses the plain name `livedesign` as too close to the existing `live-diagram`. Published from CI with provenance, versioned on its own.
 - Standalone binaries and a Homebrew tap may follow; a `curl | sh` installer is never offered.
 - Once a day at most, after a command, it checks npm for a newer version and says so on stderr; never in CI, when
-  stderr is not a terminal, or with `LIVEPAGES_NO_UPDATE_CHECK=1`.
+  stderr is not a terminal, or with `LIVEDESIGN_NO_UPDATE_CHECK=1`.
 
 ## Telemetry
 
 - Category `Cli`, action `Used`, type the verb (`TabView`), sent after a command succeeds, never for help, mirroring
   `Mcp·Used` ([Telemetry](../017-telemetry/telemetry.md)). Api failures report as `Error·Api` with the verb, 4xx
   never.
-- Sent to the active profile's api only. Off with `LIVEPAGES_TELEMETRY=0`, `DO_NOT_TRACK=1` or `telemetry off`
+- Sent to the active profile's api only. Off with `LIVEDESIGN_TELEMETRY=0`, `DO_NOT_TRACK=1` or `telemetry off`
   (which sends its own `UI·Toggled·TelemetryOff` first). The first run says on stderr what is counted.
 - No device id, arguments, document ids or host names.
 - A sign-in through the CLI counts as `Token·Created·Cli`, beside the MCP's `Token·Created·MCP`.

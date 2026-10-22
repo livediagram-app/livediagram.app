@@ -61,7 +61,7 @@ co-viewer. The presence id is deliberately a fresh server-minted random per
 socket, so peers never read an owner id off a roster — which also means it
 matches nothing that was ever saved, and changes on every reconnect.
 
-So the document gets a third id: **`livepages:v2:collab-key`**, a per-browser
+So the document gets a third id: **`livedesign:v2:collab-key`**, a per-browser
 random the client mints and keeps (`ensureCollabKey`). Stable like the owner
 id, worthless like the presence id. It rides the roster as
 `ParticipantPresence.key`, the **one claimed field** on it — relayed verbatim

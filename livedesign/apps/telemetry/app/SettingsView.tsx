@@ -1,6 +1,6 @@
 'use client';
 
-import type { TelemetrySummary, TelemetryWindowKey } from '@livepages/api-schema';
+import type { TelemetrySummary, TelemetryWindowKey } from '@livedesign/api-schema';
 import { CardColumns } from './CardColumns';
 import { SETTINGS_CHANGED, SETTINGS_STACKS } from './metric-catalogue';
 import { MetricGroups, type MetricGroup } from './MetricCards';

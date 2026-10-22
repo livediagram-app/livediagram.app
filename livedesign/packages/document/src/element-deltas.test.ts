@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { presetSetup } from '@livepages/items';
+import { presetSetup } from '@livedesign/items';
 import type { Comment, ElementDelta, ShapeElement } from './index';
 import {
   IDEA_MAX_CARDS,

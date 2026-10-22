@@ -4,7 +4,7 @@
 // Average and Count (and Min and Max, picked in its menu), over the cells that show (rows a filter hides are left
 // out), as a spreadsheet's does. The pick is the viewer's own, kept in their browser.
 import { useMemo, useState } from 'react';
-import { formatNumber } from '@livepages/sheets';
+import { formatNumber } from '@livedesign/sheets';
 import { useSheetController, type SheetController } from './sheet-controller';
 import { STATS, toggleStatusPick, useStatusPick, type Stat } from './sheet-status-pick';
 import { OptionRows } from '@/components/plan/OptionRows';

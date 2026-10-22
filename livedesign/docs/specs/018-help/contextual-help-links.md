@@ -53,7 +53,7 @@ is the only way the editor links to a help article. It:
   which told the reader nothing about where it went;
 - fires `track('UI', 'Opened', <article id>)` on click, reusing the existing
   `UI`/`Opened` telemetry pair. The `type` is the article's **telemetry id**
-  (`helpArticleTelemetryId`, from `@livepages/help-registry/telemetry`):
+  (`helpArticleTelemetryId`, from `@livedesign/help-registry/telemetry`):
   its slug (e.g. `share-link-expiry`), or an explicit token where two
   articles share a slug ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md) Help). It fits `TELEMETRY_TYPE_PATTERN`
   (`[A-Za-z0-9 ._-]{1,40}`, no slashes) - the full nested slug would not -
@@ -71,7 +71,7 @@ named keys -> nested article slug (the path under `/help`, e.g.
 source for help slugs on surfaces that deep-link ONE article, and keys are
 referenced symbolically so a slug change is a one-line edit. (Search is
 different: the SearchPanel's Help group derives from the full
-`@livepages/help-registry` catalogue, see [Help app](help-app.md).) Slugs here must match a
+`@livedesign/help-registry` catalogue, see [Help app](help-app.md).) Slugs here must match a
 real page under `apps/help/app/.../page.mdx` (and its registry entry) - a key
 pointing at a missing article is a bug, the same way an unregistered article
 is.

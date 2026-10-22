@@ -5,7 +5,7 @@ import { transport } from './transport';
 // A long-running command (`watch`) outlives a fresh `auth login`, which revokes the token it started with.
 // The transport re-reads the stored credential when the api refuses the token it holds, and retries once.
 
-const API = 'https://livepages.app/api';
+const API = 'https://livedesign.app/api';
 const bearer = (request: Request) => request.headers.get('Authorization');
 
 // Accepts only `lvd_new`; answers 401 to anything else.

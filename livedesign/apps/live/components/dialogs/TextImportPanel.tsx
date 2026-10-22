@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react';
 import { BackBar } from '@/components/primitives/BackBar';
-import { Button } from '@livepages/ui';
+import { Button } from '@livedesign/ui';
 import type { ImportOutcome } from '@/lib/import-tab';
 
 type DoneOutcome = Extract<ImportOutcome, { status: 'done' }>;

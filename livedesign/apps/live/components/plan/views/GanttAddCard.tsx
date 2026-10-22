@@ -4,10 +4,10 @@
 // under the last card in the names column, opening the Add a Card menu of the card types the chart draws (those with a Start and a Due). The new
 // card starts today and is due a week on, so its bar shows at once, and opens to be named.
 import { useState } from 'react';
-import { newItemId, typeIn, type ItemTypeDef } from '@livepages/items';
+import { newItemId, typeIn, type ItemTypeDef } from '@livedesign/items';
 import { mayCreateCardType } from '../may-create-card-type';
-import { lucideGlyph } from '@livepages/ui';
-import { lucidePlus } from '@livepages/icons/lucide';
+import { lucideGlyph } from '@livedesign/ui';
+import { lucidePlus } from '@livedesign/icons/lucide';
 import { AddCardPopover } from '../AddCardPopover';
 import { newCardStatus } from '../new-card-status';
 import type { PlanContextValue } from '../PlanContext';

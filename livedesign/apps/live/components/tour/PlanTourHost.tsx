@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { newItemId } from '@livepages/items';
+import { newItemId } from '@livedesign/items';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { debugLog } from '@/lib/debug-log';

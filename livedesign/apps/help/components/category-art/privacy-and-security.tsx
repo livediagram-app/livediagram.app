@@ -50,7 +50,7 @@ export function PrivacyAndSecurityArt() {
           strokeLinecap="round"
         />
         <Label x={64} y={77.5} size={9.5} weight={500} tone="body">
-          livepages.app/s/k7Qp2…
+          livedesign.app/s/k7Qp2…
         </Label>
 
         <Label x={38} y={108} size={9} weight={700} tone="muted">

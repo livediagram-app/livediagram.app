@@ -6,7 +6,7 @@ import {
   type PageImageFill,
   type PageImageOverlay,
   type PageImagePosition,
-} from '@livepages/document';
+} from '@livedesign/document';
 
 const r2 = (n: number) => Math.round(n * 100) / 100;
 
@@ -46,5 +46,5 @@ export function pageImageSrc(
   return resolve?.(fill.imageId);
 }
 
-// The picture as SVG for the exports and previews (@livepages/document's page-frame.ts).
-export { pageImageSvg } from '@livepages/document';
+// The picture as SVG for the exports and previews (@livedesign/document's page-frame.ts).
+export { pageImageSvg } from '@livedesign/document';

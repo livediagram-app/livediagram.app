@@ -1,8 +1,8 @@
 // The outline (docs/specs/024-agents/document-views.md "The outline"): one line per element, indentation
 // for containment, outgoing arrows on their source's line, fitted to a budget down a fixed ladder
 // (blueprint "Budgets", VW38).
-import type { FreehandRunJson, OutlineNode, OutlineView, ViewDoor } from '@livepages/api-schema';
-import { isKnownElement, type Element } from '@livepages/document';
+import type { FreehandRunJson, OutlineNode, OutlineView, ViewDoor } from '@livedesign/api-schema';
+import { isKnownElement, type Element } from '@livedesign/document';
 import { attributesOf, isOpenCommentsAttribute } from './attributes';
 import { contentSummaryOf } from './content-summary';
 import { edgeJson, edgeText, ownLineText, type ViewEdge } from './edges';

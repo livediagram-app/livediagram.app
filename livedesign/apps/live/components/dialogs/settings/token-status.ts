@@ -1,8 +1,8 @@
 // Pure readouts for the token manager (docs/specs/015-api/public-api-and-tokens.md#36-management--the-settings-dialogs-api-tokens-category):
 // a token's status, how far through its six months it is, and the dates and
 // relative times its card shows. No React, so every rule is unit-tested.
-import type { ApiToken } from '@livepages/api-schema';
-import { DAY_MS } from '@livepages/items';
+import type { ApiToken } from '@livedesign/api-schema';
+import { DAY_MS } from '@livedesign/items';
 
 // "Expires soon" inside this window: two weeks is enough notice to rotate.
 const EXPIRES_SOON_MS = 14 * DAY_MS;

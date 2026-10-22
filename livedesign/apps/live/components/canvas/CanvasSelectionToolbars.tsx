@@ -15,7 +15,7 @@ import {
   takesAttachments,
   threadAt,
   type Element,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
 import {
   useCanvasSelectionView,

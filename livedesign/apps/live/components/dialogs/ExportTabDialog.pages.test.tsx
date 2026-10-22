@@ -6,7 +6,7 @@
 
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createShape, pagesOf, layOutPages, type Tab } from '@livepages/document';
+import { createShape, pagesOf, layOutPages, type Tab } from '@livedesign/document';
 import { ExportTabDialog } from './ExportTabDialog';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));

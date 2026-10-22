@@ -3,7 +3,7 @@
 // workbench names a project's folder by these ids (`workbench open --workspace --folder <f>`).
 
 import { z } from 'zod';
-import type { Folder } from '@livepages/api-schema';
+import type { Folder } from '@livedesign/api-schema';
 import { defineVerb } from '../define';
 import { readLibraries } from '../find-documents';
 import { folderChoices, resolveFolderRef } from '../folders';
@@ -31,10 +31,10 @@ export const folderLs = defineVerb({
   text: ({ folders }) =>
     folders.length
       ? columns(folders.map((f) => [f.id, JSON.stringify(f.path), f.library]))
-      : ['no folders yet: livepages folder create <name>'],
+      : ['no folders yet: livedesign folder create <name>'],
   cli: {
     positionals: [],
-    examples: ['livepages folder ls', 'livepages folder ls --json'],
+    examples: ['livedesign folder ls', 'livedesign folder ls --json'],
     prints: '<id>  "<path>"  <library> per folder; --json [{ id, path, library }]',
   },
 });
@@ -73,8 +73,8 @@ export const folderCreate = defineVerb({
   cli: {
     positionals: ['name'],
     examples: [
-      'livepages folder create "Minigames" --json',
-      'livepages folder create "Screens" --in Minigames',
+      'livedesign folder create "Minigames" --json',
+      'livedesign folder create "Screens" --in Minigames',
     ],
     prints: '+ folder <id> "<path>"; --json { id, path }',
   },

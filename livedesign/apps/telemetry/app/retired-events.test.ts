@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { metricKey, type TelemetrySummary } from '@livepages/api-schema';
+import { metricKey, type TelemetrySummary } from '@livedesign/api-schema';
 import { dropRetiredEvents, isRetiredEvent } from './retired-events';
 
 // docs/specs/017-telemetry/telemetry.md "Retired features": the removed Activity panel's events never

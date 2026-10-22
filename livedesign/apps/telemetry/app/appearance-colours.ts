@@ -1,4 +1,4 @@
-import type { Appearance } from '@livepages/ui';
+import type { Appearance } from '@livedesign/ui';
 import { contrastRatio, shade } from './colour-maths';
 
 // The chart hues in dark (docs/specs/017-telemetry/telemetry.md): the category colours are picked

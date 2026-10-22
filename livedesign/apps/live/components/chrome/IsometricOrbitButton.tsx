@@ -1,7 +1,7 @@
 'use client';
 
 import { isDragTravel } from '@/lib/press-gestures';
-import { HoverCard, Glyph } from '@livepages/ui';
+import { HoverCard, Glyph } from '@livedesign/ui';
 
 // Orbit control for the isometric view (docs/specs/008-canvas/isometric-view.md). Drag it to orbit the
 // camera the same way Shift-drag does on the canvas — horizontal motion

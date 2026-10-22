@@ -10,11 +10,11 @@ import {
   lucideMail,
   lucideMessageCircle,
   lucideTextAlignStart,
-} from '@livepages/icons/lucide';
-import { lucideGlyph } from '@livepages/ui';
+} from '@livedesign/icons/lucide';
+import { lucideGlyph } from '@livedesign/ui';
 
 // The help centre's own chrome icons (docs/specs/004-interface-design/iconography.md). Icons shared with
-// another app live in @livepages/ui instead (CloseIcon, SearchIcon).
+// another app live in @livedesign/ui instead (CloseIcon, SearchIcon).
 export const ClockIcon = lucideGlyph(lucideClock, 14);
 export const ContentsIcon = lucideGlyph(lucideTextAlignStart, 16);
 export const ChevronUpIcon = lucideGlyph(lucideChevronUp, 16);

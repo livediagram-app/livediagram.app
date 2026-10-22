@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@livepages/document';
+import type { Element } from '@livedesign/document';
 import { buildTemplate } from './template-builders';
 
 // Structure pins for the Crazy 8s and User persona starters

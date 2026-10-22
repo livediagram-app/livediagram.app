@@ -11,7 +11,7 @@ import {
   type PieAnim,
   type PieSlice,
   type RatingAnim,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { makeShapePatcher } from '@/hooks/canvas/shape-patcher';
 import { track } from '@/lib/telemetry';
 

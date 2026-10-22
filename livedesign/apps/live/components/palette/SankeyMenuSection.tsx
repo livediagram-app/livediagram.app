@@ -6,7 +6,7 @@
 // text size. Every pick commits at once, one undo step each, through the Sankey setters.
 
 import { useMemo, type ComponentProps } from 'react';
-import { Button } from '@livepages/ui';
+import { Button } from '@livedesign/ui';
 import {
   chartRamp,
   SANKEY_ALIGN_LABELS,
@@ -29,7 +29,7 @@ import {
   type SankeyValueLabel,
   type ShapeElement,
   type TextSize,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
 import { standardGroup } from '@/components/colour/colour-options';
 import { useDocumentColours } from '@/hooks/ui/useDocumentColours';
@@ -40,7 +40,7 @@ import { LegendTextSize } from '@/components/palette/TypographySections';
 import { DataMenuGlyph } from '@/components/palette/context-menu-rows';
 import { MENU_ICON_PX } from '@/components/palette/context-menu-icons';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
-import { lucideGlyph } from '@livepages/ui';
+import { lucideGlyph } from '@livedesign/ui';
 import {
   lucideALargeSmall,
   lucideCoins,
@@ -48,7 +48,7 @@ import {
   lucideHash,
   lucidePalette,
   lucideRoute,
-} from '@livepages/icons/lucide';
+} from '@livedesign/icons/lucide';
 import { MENU_CELL_INPUT } from '@/components/palette/menu-editor-classes';
 import type { SankeySetters } from '@/hooks/canvas/useSankeySetters';
 import {

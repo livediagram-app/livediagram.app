@@ -2,7 +2,7 @@
 // slide app offers that the other category files lack, filed across Openers, Content, Data and
 // Closers. Several set a picture or a panel to the slide's own edges (a full bleed). Pure builders
 // on the slide kit, in units of the slide's height, so a 16:9 and a 4:3 slide both fit.
-import type { Element } from '@livepages/document';
+import type { Element } from '@livedesign/document';
 import type { Kit } from './page-layout-kit';
 import {
   bleedImage,

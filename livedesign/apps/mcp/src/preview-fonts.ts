@@ -4,7 +4,7 @@
 // specs), whose answer to a client that is not a browser names TrueType files, which resvg reads. Best effort: a face
 // that cannot be fetched in time draws in Inter, as before. Each face is fetched once per isolate and kept in the
 // Cache API, so a document's previews fetch nothing after the first.
-import { FONTS } from '@livepages/document';
+import { FONTS } from '@livedesign/document';
 
 // The most faces one preview fetches, and how long it waits for them all.
 export const PREVIEW_FONTS_MAX = 4;

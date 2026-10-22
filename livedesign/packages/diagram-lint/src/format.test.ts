@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { LintFinding, LintReport } from '@livepages/api-schema';
+import type { LintFinding, LintReport } from '@livedesign/api-schema';
 import { LINT_MAX_LINES_PER_CODE } from './constants';
 import { formatLintReport, lintFooterPart, lintSummaryLine, lintVerdict } from './format';
 import { quoteLabel } from './quote';

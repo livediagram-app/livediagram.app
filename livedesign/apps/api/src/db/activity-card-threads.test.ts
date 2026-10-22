@@ -3,7 +3,7 @@
 // (resolved, archived, the Trash, a document the reader cannot open, a tab-scoped share whose boards miss it),
 // and that author ids never leave the worker.
 
-import type { Tab } from '@livepages/document';
+import type { Tab } from '@livedesign/document';
 import type { DatabaseSync } from 'node:sqlite';
 import { describe, expect, it } from 'vitest';
 import { sqliteD1 } from '../test-sqlite-d1';

@@ -1,6 +1,6 @@
 // The Value stream map template (docs/specs/008-canvas/canvas-and-palette.md "Templates"): how a change gets from an
 // idea to production at Plateful. This builds its first tab, the drawing; the second, Flow Data, is the companion
-// Sheet (template-companions.ts) worked from the same steps (@livepages/sheets VALUE_STREAM_STEPS,
+// Sheet (template-companions.ts) worked from the same steps (@livedesign/sheets VALUE_STREAM_STEPS,
 // valueStreamTotals), so every time and total here is one that sheet works out.
 //
 // The classic notation, left to right: the information flow along the top (ideas into the Product team, the Jira
@@ -23,12 +23,12 @@ import {
   type Element,
   type ShapeElement,
   type TextRun,
-} from '@livepages/document';
+} from '@livedesign/document';
 import {
   VALUE_STREAM_HOURS_PER_DAY,
   VALUE_STREAM_STEPS,
   valueStreamTotals,
-} from '@livepages/sheets';
+} from '@livedesign/sheets';
 import { techHeader, TECH_HEADER_H } from './template-builders-technical-kit';
 import { CONTENT, INK, MUTED, PAPER, SCAFFOLD, chipRow } from './template-report-kit';
 import { CANVAS_TONES } from './template-inks';

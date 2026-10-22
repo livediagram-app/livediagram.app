@@ -1,12 +1,12 @@
-// Outbound: what Drive must do to match livepages
+// Outbound: what Drive must do to match livedesign
 // (docs/specs/022-drive-mirror/drive-mirror.md, "Outbound"; blueprint "Outbound").
 // Pure: returns ops in the order the engine runs them. Drive parents are
 // resolved when an op runs, since a folder created earlier in the same pass
 // is the parent of what follows.
 
-import { stripDriveName, type DriveItem } from '@livepages/api-schema';
+import { stripDriveName, type DriveItem } from '@livedesign/api-schema';
 import { DRIVE_WRITE_IDLE_MS } from './cadence';
-import type { MirrorDocument, MirrorFolder } from './livepages-port';
+import type { MirrorDocument, MirrorFolder } from './livedesign-port';
 import {
   expectedDocumentParent,
   expectedFolderParent,
@@ -50,7 +50,7 @@ type OutboundOptions = {
   seen: SeenRow[];
 };
 
-// Drive's name no longer stands for livepages's: renamed here, a rename
+// Drive's name no longer stands for livedesign's: renamed here, a rename
 // in Drive that lost a conflict, or a name emptied in Drive (which keeps the
 // old one, so Drive gets it back).
 function namesDiffer(ldName: string, item: DriveItem): boolean {

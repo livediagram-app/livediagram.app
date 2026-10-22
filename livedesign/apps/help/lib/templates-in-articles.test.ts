@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { TEMPLATE_CATEGORIES, TEMPLATES } from '@livepages/templates';
+import { TEMPLATE_CATEGORIES, TEMPLATES } from '@livedesign/templates';
 
 // The Templates article lists the catalogue by category. A list of forty-odd
 // names is exactly the kind of prose that rots: adding a template is a change

@@ -2,7 +2,7 @@
 // Effort vs Impact. Same contract as page-layouts.ts: the page's content box in, uncoloured
 // elements out, in proportions of the box so each fits every size and orientation; a wide page
 // sets things side by side where a stack would be squashed.
-import type { Element, TextElement } from '@livepages/document';
+import type { Element, TextElement } from '@livedesign/document';
 import { heading, kit, type Kit, type LayoutBox } from './page-layout-kit';
 
 const CENTRED = { textAlignX: 'center' } as const;

@@ -29,8 +29,8 @@ import {
   typeCardLayout,
   type CardSlot,
   isCustomCardField,
-} from '@livepages/items';
-import { finishFaceShadows } from '@livepages/document';
+} from '@livedesign/items';
+import { finishFaceShadows } from '@livedesign/document';
 import { useFaceFinish } from '@/components/canvas/CanvasFinishContext';
 import { usePlan, type PlanCardPresence } from './PlanContext';
 import { customFieldText } from './custom-field-text';

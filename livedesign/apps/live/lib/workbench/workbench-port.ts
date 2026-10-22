@@ -7,7 +7,7 @@ import {
   parseWorkbenchMessage,
   type PageToWorkbenchMessage,
   type WorkbenchToPageMessage,
-} from '@livepages/api-schema';
+} from '@livedesign/api-schema';
 
 export type WorkbenchPort = {
   origin: string;

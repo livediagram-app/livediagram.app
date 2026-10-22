@@ -1,6 +1,6 @@
 'use client';
 
-import { GlyphDisc, HoverCard, RefreshIcon, IDENTITY_FILL, identityVars } from '@livepages/ui';
+import { GlyphDisc, HoverCard, RefreshIcon, IDENTITY_FILL, identityVars } from '@livedesign/ui';
 import { initialsOf, randomName, type Participant } from '@/lib/identity';
 
 // "Sharing as" (guests only, docs/specs/007-editor/live-app.md "Layout, top to bottom"): the

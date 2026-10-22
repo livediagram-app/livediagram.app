@@ -1,7 +1,7 @@
 'use client';
 
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
-import { ProductNavLinks } from '@livepages/ui';
+import { ProductNavLinks } from '@livedesign/ui';
 import { DocumentRowShell } from './DocumentRowShell';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { MovablePanel } from '@/components/primitives/MovablePanel';

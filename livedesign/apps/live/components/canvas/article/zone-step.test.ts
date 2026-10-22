@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { ArticleBlock } from '@livepages/document';
+import type { ArticleBlock } from '@livedesign/document';
 import { blocksToDoc } from '@/lib/article/article-convert';
 import { zoneStepTarget } from './article-editor-handle';
 import { zoneGripStep } from './ZoneBar';

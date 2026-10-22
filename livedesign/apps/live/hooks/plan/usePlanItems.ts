@@ -3,14 +3,14 @@
 import { subscribeOfflineIds } from '@/lib/offline/offline-store';
 import { debugLog } from '@/lib/debug-log';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { ItemsRoomOp } from '@livepages/api-schema';
+import type { ItemsRoomOp } from '@livedesign/api-schema';
 import {
   applyItemComment,
   createComment,
   keepOwnCommentAuthors,
   type CommentMention,
   type ItemCommentChange,
-} from '@livepages/document';
+} from '@livedesign/document';
 import {
   EMPTY_ITEM_STORE,
   ITEM_TITLE_MAX,
@@ -27,7 +27,7 @@ import {
   type ItemPerson,
   type ItemStoreState,
   type ItemWrite,
-} from '@livepages/items';
+} from '@livedesign/items';
 import {
   fetchItems,
   writeItem,

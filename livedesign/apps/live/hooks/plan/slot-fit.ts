@@ -8,7 +8,7 @@ import {
   type DashboardRow,
   type DashboardSlot,
   type Element,
-} from '@livepages/document';
+} from '@livedesign/document';
 import type { DashboardItem } from './dashboard-drop';
 import { DASHBOARD_CONDENSE_PX } from '@/components/plan/dashboard/condense';
 

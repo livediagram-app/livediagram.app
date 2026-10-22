@@ -17,10 +17,10 @@ import {
   type TabViewName,
   type ViewDoor,
   type ViewQueryParameter,
-} from '@livepages/api-schema';
-import { formatLintReport, lintTab } from '@livepages/diagram-lint';
+} from '@livedesign/api-schema';
+import { formatLintReport, lintTab } from '@livedesign/diagram-lint';
 import { lintLog } from '../changesets/lint';
-import { isKnownElement } from '@livepages/document';
+import { isKnownElement } from '@livedesign/document';
 import {
   FIND_QUERY_MAX_LENGTH,
   headerFactsOf,
@@ -33,7 +33,7 @@ import {
   VIEW_SLOW_MS,
   type OverviewTabInput,
   type ViewRequest,
-} from '@livepages/document-views';
+} from '@livedesign/document-views';
 import { personTagFor } from '../person-tag';
 import { readRoomSelections } from '../room-client';
 import { getTab, tabBodiesInOrder } from '../db/tabs';
@@ -69,7 +69,7 @@ function unknownView(view: string, scope: Scope): Response {
   const names = scope === 'tab' ? TAB_VIEW_NAMES : DOCUMENT_VIEW_NAMES;
   const message =
     view === 'diff'
-      ? 'diff is computed by the CLI: livepages tab diff'
+      ? 'diff is computed by the CLI: livedesign tab diff'
       : view === LINT_VIEW_NAME
         ? 'the lint is a tab view: GET …/tabs/:tabId?view=lint'
         : `view takes ${names.join(', ')} here`;

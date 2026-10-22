@@ -12,8 +12,8 @@ import {
   type Page,
   type PageOrientation,
   type PageSizeId,
-} from '@livepages/document';
-import { ACTIVE_SEGMENT, Glyph, SEGMENT_TRACK, Tooltip } from '@livepages/ui';
+} from '@livedesign/document';
+import { ACTIVE_SEGMENT, Glyph, SEGMENT_TRACK, Tooltip } from '@livedesign/ui';
 import { SegmentSlider } from '@/components/primitives/SegmentSlider';
 
 export function PanelSection({ title, children }: { title: string; children: ReactNode }) {

@@ -11,8 +11,8 @@
 
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { TimelineScopeRef } from '@livepages/api-schema';
-import type { TimelineEvent } from '@livepages/ui';
+import type { TimelineScopeRef } from '@livedesign/api-schema';
+import type { TimelineEvent } from '@livedesign/ui';
 
 const { apiListTimeline, apiDismissTimelineEvent, apiDismissTimelineEvents } = vi.hoisted(() => ({
   apiListTimeline: vi.fn(),

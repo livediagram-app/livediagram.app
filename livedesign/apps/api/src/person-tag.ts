@@ -1,4 +1,4 @@
-import { sha256Hex } from '@livepages/api-schema';
+import { sha256Hex } from '@livedesign/api-schema';
 
 // The room's stand-in for an owner (docs/specs/024-agents/agent-presence.md, PR2): an opaque,
 // per-document SHA-256 of the document id and the owner id. The room holds no owner id (docs/specs/

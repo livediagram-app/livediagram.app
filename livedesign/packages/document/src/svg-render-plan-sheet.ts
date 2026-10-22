@@ -13,7 +13,7 @@ type Shape = BoxedElement & { type: 'shape' };
 
 type RenderBorder = { w: 1 | 2 | 3; s: 'solid' | 'dashed' | 'dotted'; c: string };
 
-// @livepages/sheets SheetRenderModel (engine/render.ts), restated.
+// @livedesign/sheets SheetRenderModel (engine/render.ts), restated.
 export type SheetRenderModel = {
   title: string;
   colWidths: number[];

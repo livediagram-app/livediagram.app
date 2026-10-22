@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createPath, pathAnchors, type Element, type PathAnchor } from '@livepages/document';
+import { createPath, pathAnchors, type Element, type PathAnchor } from '@livedesign/document';
 import { track } from '@/lib/telemetry';
 import { usePathCommits } from './usePathCommits';
 

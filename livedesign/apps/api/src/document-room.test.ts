@@ -1,13 +1,13 @@
 import { MAX_TAB_ID_LEN } from './document-room-rules';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { DOCUMENT_FORMAT } from '@livepages/api-schema';
-import type { ParticipantPresence, RoomIncoming } from '@livepages/api-schema';
+import { DOCUMENT_FORMAT } from '@livedesign/api-schema';
+import type { ParticipantPresence, RoomIncoming } from '@livedesign/api-schema';
 import {
   MUTATION_OP_KINDS,
   PRESENCE_OP_KINDS,
   ROOM_OP_KINDS,
   SYSTEM_OP_KINDS,
-} from '@livepages/api-schema';
+} from '@livedesign/api-schema';
 import { DocumentRoom } from './document-room';
 import type { Env } from './types';
 

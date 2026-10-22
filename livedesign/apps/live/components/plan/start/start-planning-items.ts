@@ -9,8 +9,8 @@ import {
   boardAddTypes,
   type PlanVisualisation,
   type PlanBoardPresetId,
-} from '@livepages/items';
-import { DASHBOARD_PRESETS, type DashboardPresetId } from '@livepages/document';
+} from '@livedesign/items';
+import { DASHBOARD_PRESETS, type DashboardPresetId } from '@livedesign/document';
 import {
   PLAN_TEMPLATE_KINDS,
   TEMPLATES,
@@ -18,12 +18,12 @@ import {
   planTemplateTabCount,
   templateKeywords,
   type PlanTemplateKind,
-} from '@livepages/templates';
+} from '@livedesign/templates';
 import { PLAN_BOARD_TILES } from '@/components/palette/palette-plan-tiles';
 import { VISUALISATION_INFO } from '@/components/palette/palette-plan-view-tiles';
 import type { SuggestedDashboard } from '@/lib/suggested-dashboards';
-import { SHEET_TEMPLATES } from '@livepages/sheets';
-import { FORM_STARTERS, type StarterId } from '@livepages/forms';
+import { SHEET_TEMPLATES } from '@livedesign/sheets';
+import { FORM_STARTERS, type StarterId } from '@livedesign/forms';
 import type { PlacedSheetStart } from '@/lib/sheet-seeds';
 
 export type StartKind = 'board' | 'sheet' | 'form' | 'visualisation' | 'dashboard' | 'template';

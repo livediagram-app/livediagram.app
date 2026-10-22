@@ -1,6 +1,6 @@
 import type { Alternative } from '@/lib/alternatives';
 
-// The at-a-glance table on a comparison page: one row per topic, livepages's column tinted. The caption is
+// The at-a-glance table on a comparison page: one row per topic, livedesign's column tinted. The caption is
 // sr-only so the layout gains no extra heading row, while screen readers and search-engine table extraction get
 // a self-describing summary; scope="col" / scope="row" make the cell relationships explicit. Phones scroll it
 // sideways inside its card rather than the page.
@@ -10,7 +10,7 @@ export function ComparisonTable({ alt }: { alt: Alternative }) {
       <div className="overflow-x-auto">
         <table className="w-full min-w-[36rem] border-collapse text-left text-sm">
           <caption className="sr-only">
-            livepages vs {alt.name}: feature-by-feature comparison
+            livedesign vs {alt.name}: feature-by-feature comparison
           </caption>
           <thead>
             <tr className="border-b border-slate-200 dark:border-slate-800">
@@ -21,7 +21,7 @@ export function ComparisonTable({ alt }: { alt: Alternative }) {
                 scope="col"
                 className="bg-brand-50 px-5 py-4 font-semibold text-brand-700 dark:bg-brand-500/10 dark:text-brand-300"
               >
-                livepages
+                livedesign
               </th>
               <th
                 scope="col"

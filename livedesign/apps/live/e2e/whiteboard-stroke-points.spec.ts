@@ -188,9 +188,9 @@ async function openAs(browser: Browser, baseURL: string, url: string, owner: str
   await ctx.addInitScript(
     ({ o, sig }) => {
       if (o) {
-        localStorage.setItem('livepages:v2:self-id', o);
-        if (sig) localStorage.setItem('livepages:v2:self-sig', sig);
-        localStorage.setItem('livepages:v2:name-confirmed', '1');
+        localStorage.setItem('livedesign:v2:self-id', o);
+        if (sig) localStorage.setItem('livedesign:v2:self-sig', sig);
+        localStorage.setItem('livedesign:v2:name-confirmed', '1');
       }
     },
     { o: owner, sig: owner ? guestSigFor(owner) : null },

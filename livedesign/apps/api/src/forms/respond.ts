@@ -1,7 +1,7 @@
 // A response (docs/specs/030-forms/forms.md "What a response makes", blueprint §11 "The response write"): checked
 // against the form as its tab holds it now, numbered, and made into one card in the form's destination, which the
 // room relays to everyone with the board open.
-import type { FormResponseAccepted, FormResponseRefusal } from '@livepages/api-schema';
+import type { FormResponseAccepted, FormResponseRefusal } from '@livedesign/api-schema';
 import {
   RESPONSE_BODY_MAX,
   checkResponse,
@@ -10,8 +10,8 @@ import {
   destinationType,
   responseCard,
   type FormDefinition,
-} from '@livepages/forms';
-import { itemTitle, readItemCreate, typesOf, type ItemPerson } from '@livepages/items';
+} from '@livedesign/forms';
+import { itemTitle, readItemCreate, typesOf, type ItemPerson } from '@livedesign/items';
 import { claimResponseNumber, getDocument, getFormLink, type FormLinkRow } from '../db';
 import { notifyFormResponse } from '../email/notifications';
 import { json } from '../responses';

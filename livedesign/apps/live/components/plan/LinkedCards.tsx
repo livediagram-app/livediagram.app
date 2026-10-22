@@ -13,9 +13,9 @@ import {
   type Item,
   type ItemTypeDef,
   namedStatus,
-} from '@livepages/items';
-import { ChevronRightIcon, NoMatches, PlusIcon, Select } from '@livepages/ui';
-import type { LinkedGroup } from '@livepages/items';
+} from '@livedesign/items';
+import { ChevronRightIcon, NoMatches, PlusIcon, Select } from '@livedesign/ui';
+import type { LinkedGroup } from '@livedesign/items';
 import { PersonDisc } from './PersonDisc';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { ACCENT_TEXT, accentVars } from './plan-palette';

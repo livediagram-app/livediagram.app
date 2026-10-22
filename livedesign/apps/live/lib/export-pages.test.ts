@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { layOutPages } from '@livepages/document';
+import { layOutPages } from '@livedesign/document';
 import { DEFAULT_PAGE_SCOPE, sanitizeFilename, zipEntryName } from './export-pages';
 
 // docs/specs/007-editor/pages-mode.md "Export".

@@ -12,8 +12,8 @@ import {
   resolveFontStack,
   type ArticleLookId,
   type ArticleStyle,
-} from '@livepages/document';
-import { ACTIVE_SEGMENT, CheckIcon, SEGMENT_TRACK, Select, Tooltip } from '@livepages/ui';
+} from '@livedesign/document';
+import { ACTIVE_SEGMENT, CheckIcon, SEGMENT_TRACK, Select, Tooltip } from '@livedesign/ui';
 import { SegmentSlider } from '@/components/primitives/SegmentSlider';
 import { PanelSection } from '../page-panel-sections';
 import { ColourPicker } from '@/components/colour/ColourPicker';

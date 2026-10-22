@@ -1,6 +1,6 @@
 'use client';
 
-import { trustedHtml } from '@livepages/ui';
+import { trustedHtml } from '@livedesign/ui';
 
 import dynamic from 'next/dynamic';
 import {
@@ -47,8 +47,8 @@ import {
   templateFamilyOf,
   untitledNameForTemplate,
   type TemplateKind,
-} from '@livepages/templates';
-import { creationIntentOf } from '@livepages/api-schema';
+} from '@livedesign/templates';
+import { creationIntentOf } from '@livedesign/api-schema';
 import {
   WIZARD_BYPASS_PARAMS,
   choosePlacementAgainUrl,
@@ -65,7 +65,7 @@ import { debugLog } from '@/lib/debug-log';
 import { handStartQuery } from '@/components/start/start-query';
 import { closeStartForBlank } from '@/components/start/close-start-for-blank';
 import { handTemplatePick } from '@/lib/placement-defaults/template-pick-handoff';
-import { isBlankTemplate } from '@livepages/templates';
+import { isBlankTemplate } from '@livedesign/templates';
 import { NEW_DOCUMENT_THEME_ID, newDocumentContent } from '@/lib/new-document-content';
 
 // In-place handoff (docs/specs/007-editor/new-document-route.md): once a document is created, this page
@@ -201,7 +201,7 @@ export default function NewDocumentPage() {
   };
 
   useEffect(() => {
-    document.title = 'New Document | livepages';
+    document.title = 'New Document | livedesign';
     // Fetch the editor's chunk while identity + the create run. Fire-and-forget: a failure here
     // just leaves `dynamic` to retry the import at handoff.
     loadEditor().catch(() => {});

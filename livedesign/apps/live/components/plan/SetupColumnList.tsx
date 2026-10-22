@@ -6,7 +6,7 @@
 // release places it, Escape or a cancelled pointer puts it back. Alt+Up and Alt+Down on a grip move its column by
 // keyboard. Pointer events, so a mouse, a pen and a finger drag alike.
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
-import { CloseIcon } from '@livepages/ui';
+import { CloseIcon } from '@livedesign/ui';
 import { GripIcon } from './ItemTypeFieldMenu';
 import { HANDLE_TOUCH, reorderSlot } from '@/components/primitives/useHandleReorder';
 import type { PlanPalette } from './plan-palette';

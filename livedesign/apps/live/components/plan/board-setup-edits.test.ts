@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { PLAN_COLUMNS_MAX, presetSetup } from '@livepages/items';
+import { PLAN_COLUMNS_MAX, presetSetup } from '@livedesign/items';
 import {
   addColumnAfter,
   moveColumn,

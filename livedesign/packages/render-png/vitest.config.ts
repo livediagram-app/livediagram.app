@@ -1,4 +1,4 @@
-import { defineProject } from '@livepages/vitest-config';
+import { defineProject } from '@livedesign/vitest-config';
 
 // The rasteriser is small and shared by two front doors: every line and branch is covered.
 export default defineProject({

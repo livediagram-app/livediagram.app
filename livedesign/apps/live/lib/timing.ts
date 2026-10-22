@@ -7,13 +7,13 @@
 // timing ENDS, not when it starts, so a load that starts before the boot's effect has run (the
 // document page's layout effect runs first) still reports.
 
-import type { EditorTimingMetric } from '@livepages/api-schema';
+import type { EditorTimingMetric } from '@livedesign/api-schema';
 import {
   createTimingSampler,
   startTiming,
   type TimingHandle,
   type TimingTrack,
-} from '@livepages/telemetry-client';
+} from '@livedesign/telemetry-client';
 
 let timingTrack: TimingTrack | null = null;
 

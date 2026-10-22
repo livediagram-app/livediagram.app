@@ -3,7 +3,7 @@
 // its pens live in the whiteboard dock (docs/specs/023-draw-mode/draw-mode.md "Pens"), each with the
 // colour and width this person gave it. A tile here is that pen as it is now, picked up exactly as
 // the dock picks it up (onBeginMarker), so a stroke drawn from it is the dock's stroke.
-import { penColourCss, type CanvasSurface } from '@livepages/document';
+import { penColourCss, type CanvasSurface } from '@livedesign/document';
 import { PenGlyph } from '@/components/canvas/whiteboard/whiteboard-icons';
 import {
   colourLabel,

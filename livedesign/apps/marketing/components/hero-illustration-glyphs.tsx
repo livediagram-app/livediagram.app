@@ -4,11 +4,11 @@
 // lines of SVG paths. Every one of these is pure markup with no state, no
 // module constants and no reference to another, so they read on their own.
 // Glyphs the editor's chrome also draws (the share-state dots, the Tabs label,
-// chevrons, menu, search, the canvas cluster and the toolbelt) come from @livepages/ui instead, so the hero
+// chevrons, menu, search, the canvas cluster and the toolbelt) come from @livedesign/ui instead, so the hero
 // mirrors the editor rather than a copy of it.
 
-import { lucideShare2 } from '@livepages/icons/lucide';
-import { Glyph, GlyphDisc, Prims } from '@livepages/ui';
+import { lucideShare2 } from '@livedesign/icons/lucide';
+import { Glyph, GlyphDisc, Prims } from '@livedesign/ui';
 
 // A tab's presence avatar, sized as the editor's TabPresenceStack sizes them:
 // small initials on the participant's colour, a ring of the bar's own surface, overlapping the

@@ -4,7 +4,7 @@
 // docs/specs/007-editor/article-pages.md "The page toolbar", "Article style").
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { penColourHex, standardColours } from '@livepages/document';
+import { penColourHex, standardColours } from '@livedesign/document';
 import type { ArticleSelectionState } from '@/lib/article/article-commands';
 import { ColourPanel } from './page-toolbar-panels';
 import { ArticleStyleSection } from './ArticleStyleSection';

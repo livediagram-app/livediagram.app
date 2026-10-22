@@ -4,7 +4,7 @@
 // showing the colour in force (its chip and name, or the surface's no-colour name) and a chevron,
 // opening the picker in a popover under it. A pick closes it and hands focus back to the trigger.
 import { useState } from 'react';
-import { ChevronDownIcon } from '@livepages/ui';
+import { ChevronDownIcon } from '@livedesign/ui';
 import { SwatchChip } from './ColourSwatch';
 import { ColourPopover } from './ColourPopover';
 import type { ColourPickerProps } from './ColourPicker';

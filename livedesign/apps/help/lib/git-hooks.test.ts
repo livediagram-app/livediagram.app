@@ -54,7 +54,7 @@ describe('prePushPlan', () => {
       'turbo',
       'run',
       'test:coverage',
-      '--filter=@livepages/help',
+      '--filter=@livedesign/help',
     ]);
   });
 });

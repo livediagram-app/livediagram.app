@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { elementFingerprint, type Element, type Tab } from '@livepages/document';
+import { elementFingerprint, type Element, type Tab } from '@livedesign/document';
 import { checkBase } from './base-check';
 
 // docs/specs/024-agents/agent-changesets.md "Conflicts", one case per row of the blueprint's table.

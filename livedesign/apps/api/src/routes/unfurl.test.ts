@@ -55,7 +55,7 @@ describe('parsePublicHttpUrl', () => {
     expect(parsePublicHttpUrl('javascript:alert(1)')).toBeNull();
     expect(parsePublicHttpUrl('ftp://example.com')).toBeNull();
     expect(parsePublicHttpUrl('not a url')).toBeNull();
-    expect(parsePublicHttpUrl('http://localhost:3200')).toBeNull();
+    expect(parsePublicHttpUrl('http://localhost:3300')).toBeNull();
     expect(parsePublicHttpUrl('http://169.254.169.254/latest/meta-data')).toBeNull();
   });
 });

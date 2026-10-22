@@ -13,7 +13,7 @@ import {
   trustedHtml,
   trustedScriptOrigins,
   trustedTypesBootScript,
-} from '@livepages/ui';
+} from '@livedesign/ui';
 
 // The public transparency dashboard (docs/specs/017-telemetry/telemetry.md). Indexable: it's part of
 // the open, "here's exactly what we measure" story, not a private app.
@@ -32,9 +32,9 @@ export const metadata: Metadata = {
   // Canonical, Open Graph and Twitter card from the shared factory, so a link
   // to the dashboard previews with the brand card like every other public page.
   ...pageMetadata({
-    title: 'Telemetry · livepages',
+    title: 'Telemetry · livedesign',
     description:
-      'Anonymous, first-party product usage for livepages, in the open. No third-party vendors; data is never sold or shared beyond this page.',
+      'Anonymous, first-party product usage for livedesign, in the open. No third-party vendors; data is never sold or shared beyond this page.',
     path: '/telemetry',
     type: 'website',
   }),

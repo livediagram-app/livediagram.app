@@ -325,7 +325,7 @@ No environment variable or binding.
 
 ## The Explorer page
 
-The lens on `/explorer`, over `@livepages/explorer-lens`. Files:
+The lens on `/explorer`, over `@livedesign/explorer-lens`. Files:
 
 | File                                                   | Role                                                                                                       |
 | ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------- |

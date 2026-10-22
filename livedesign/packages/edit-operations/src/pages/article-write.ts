@@ -1,7 +1,7 @@
 // An agent's article write (docs/specs/024-agents/pages-for-agents.md "write_article"): an
 // article's text from Markdown, replacing or appending, on a new article or a named one, with its
 // look. The pages its writing reaches are the editor's to count ("Pages for the writing").
-import type { ArticleWrite, PagesRefusal } from '@livepages/api-schema';
+import type { ArticleWrite, PagesRefusal } from '@livedesign/api-schema';
 import {
   ARTICLE_LOOK_IDS,
   articleFromMarkdown,
@@ -31,7 +31,7 @@ import {
   type ArticleZoneBlock,
   type PageEdit,
   type Tab,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { enterPages, type PagesIds } from './enter';
 
 type ArticleWriteOutcome =

@@ -3,13 +3,13 @@
 // `by`, and every element in the moving set (the targets and what a moved frame or lane carries)
 // translates by the same delta. Pinned arrows follow by construction; finalise re-anchors them.
 
-import type { EditRejection } from '@livepages/api-schema';
+import type { EditRejection } from '@livedesign/api-schema';
 import {
   containerContents,
   type BoxedElement,
   type Element,
   type ElementId,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { growContainer, HOLD_PAD } from '../grow-container';
 import { boxOf, resolvePlacement, shifted } from '../placement';
 import { resolveSome } from '../selectors';

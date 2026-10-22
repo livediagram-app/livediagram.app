@@ -1,6 +1,6 @@
 import type { PaletteTileDef } from './palette-tile-defs';
 import { usePaletteKind } from '@/lib/palette-kind';
-import { DEFAULT_EDITOR_MODE, type EmbedProvider } from '@livepages/document';
+import { DEFAULT_EDITOR_MODE, type EmbedProvider } from '@livedesign/document';
 import { useEffect, useState } from 'react';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import type { PaletteTileActions } from '@/components/palette/PaletteTileGrid';
@@ -117,7 +117,7 @@ export function usePaletteCatalogue({
     fn();
     onTileUsed?.();
   };
-  const addShape = (kind: import('@livepages/document').ShapeKind, opts?: AddShapeOptions) =>
+  const addShape = (kind: import('@livedesign/document').ShapeKind, opts?: AddShapeOptions) =>
     armed(() => onAddShape(kind, opts))();
   // Icons, stickers and tech icons arm the draw gesture too (they ride the
   // shape intent carrying the glyph id).
@@ -134,7 +134,7 @@ export function usePaletteCatalogue({
   const addVideo = (provider?: EmbedProvider) => armed(() => onAddVideo(provider))();
   // Components arm the draw gesture (tap-or-drag) and close a popover
   // palette so the canvas is clear to draw on.
-  const addArrow = (ends?: import('@livepages/document').ArrowEnds) =>
+  const addArrow = (ends?: import('@livedesign/document').ArrowEnds) =>
     armed(() => onAddArrow(ends))();
   const beginFreehand = armed(onBeginFreehand);
   const beginHighlighter = armed(onBeginHighlighter);
@@ -146,7 +146,7 @@ export function usePaletteCatalogue({
   const addImage = armed(() => onAddImage?.());
   // One handler per composite-component kind, so the tile catalogue can
   // address them by kind (see PaletteTileGrid).
-  const addComponent = (kind: import('@livepages/document').ComponentKind) => {
+  const addComponent = (kind: import('@livedesign/document').ComponentKind) => {
     const byKind = {
       avatar: onAddAvatar,
       banner: onAddBanner,

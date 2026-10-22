@@ -80,7 +80,7 @@ describe('a drag a panel inside the canvas already took', () => {
       preventDefault: vi.fn(),
       dataTransfer: {
         files: [],
-        types: ['application/x-livepages-id'],
+        types: ['application/x-livedesign-id'],
         getData: () => 'doc-1',
         dropEffect: 'move',
       },

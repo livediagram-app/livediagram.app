@@ -1,5 +1,5 @@
-import { diffToElementOps, ledgerKey, type ElementOp, type Tab } from '@livepages/document';
-import type { RoomOp, RoomOutgoing } from '@livepages/api-schema';
+import { diffToElementOps, ledgerKey, type ElementOp, type Tab } from '@livedesign/document';
+import type { RoomOp, RoomOutgoing } from '@livedesign/api-schema';
 import { tabBroadcastOps } from './tab-broadcast-ops';
 import { holdOwnWrites, type OwnElementWrites } from './own-element-writes';
 

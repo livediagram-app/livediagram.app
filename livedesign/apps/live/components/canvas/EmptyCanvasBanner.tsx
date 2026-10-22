@@ -2,8 +2,8 @@
 
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { useState } from 'react';
-import { Tooltip, lucideGlyph } from '@livepages/ui';
-import { lucideX } from '@livepages/icons/lucide';
+import { Tooltip, lucideGlyph } from '@livedesign/ui';
+import { lucideX } from '@livedesign/icons/lucide';
 import { useEditorModeState } from '@/components/chrome/editor-mode/editor-mode-context';
 import { EmptyCanvasArt } from './EmptyCanvasArt';
 import { dismissEmptyCard, emptyCardDismissed } from './empty-card-dismissed';

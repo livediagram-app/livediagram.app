@@ -2,7 +2,7 @@
 
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createVideo, type VideoElement } from '@livepages/document';
+import { createVideo, type VideoElement } from '@livedesign/document';
 import { VideoView } from './VideoView';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { LivePoll } from '@livepages/api-schema';
+import type { LivePoll } from '@livedesign/api-schema';
 import { PollPanel } from './PollPanel';
 
 // A text poll before anyone answers (docs/specs/012-collaboration/live-poll.md): the shared empty state, not a bare

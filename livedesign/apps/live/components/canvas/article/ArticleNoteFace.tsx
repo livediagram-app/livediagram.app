@@ -8,7 +8,7 @@ import {
   elementActions,
   isClosedAction,
   type AnnotationElement,
-} from '@livepages/document';
+} from '@livedesign/document';
 
 export function ArticleNoteFace({ element }: { element: AnnotationElement }) {
   if (element.articleNote === 'action') {

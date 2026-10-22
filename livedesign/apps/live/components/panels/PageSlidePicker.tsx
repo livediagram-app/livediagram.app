@@ -4,7 +4,7 @@
 // "Slides"): pick a page, add it as a slide. In place of "select elements to make a slide": a page
 // is already the unit an infographic is built in.
 import { useState } from 'react';
-import { Select } from '@livepages/ui';
+import { Select } from '@livedesign/ui';
 
 export function PageSlidePicker({
   pages,

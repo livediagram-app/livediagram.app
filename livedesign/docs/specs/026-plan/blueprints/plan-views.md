@@ -91,7 +91,7 @@ apps/live/components/palette/palette-plan-view-tiles.tsx PLAN_VIEW_TILES, spread
 
 ## Presentation and UX
 
-- Frame: `rounded-xl border`, `palette.surface`, 40 px header (title, `CountBadge` (`@livepages/ui`, `size="md"`) count, aside controls).
+- Frame: `rounded-xl border`, `palette.surface`, 40 px header (title, `CountBadge` (`@livedesign/ui`, `size="md"`) count, aside controls).
 - Phase colours: Not Started `#94a3b8`, In Progress `#3b82f6`, Done `#16a34a`; overdue and today `#dc2626`.
 - Gantt window: `GANTT_SCALES` (month, quarter, year) and `GANTT_SCALE_DAYS` (35, 91, 365); `ganttFitScale(model)`
   picks the opening scale, `ganttWindow(scale, from)` the window and its ticks, `ganttTodayFrom`,

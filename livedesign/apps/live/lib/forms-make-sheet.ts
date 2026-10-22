@@ -2,7 +2,7 @@
 // a form"): through the document's sheet store, once the tab's own save has landed (`whenTabSaved`), so the create
 // never reaches the server ahead of its tab and comes back 404. The store still retries a `tab_not_found` should the
 // wait run out. The store is the lazily loaded sheet chunk's, so it is fetched only when a sheet is made.
-import { emptyLayout } from '@livepages/sheets';
+import { emptyLayout } from '@livedesign/sheets';
 import type { SheetsBridge } from '@/hooks/sheets/useSheetsBridge';
 import { whenTabSaved } from '@/lib/tab-saved';
 

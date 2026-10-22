@@ -4,7 +4,7 @@ import type { PendingDraw } from '@/lib/draw-mode';
 import { PaletteTileGrid, type PaletteTileActions } from './PaletteTileGrid';
 import { PaletteToolRows } from './PaletteToolRows';
 import { PaletteTileGroup } from './PaletteTileGroup';
-import { EmbedGroupIcon, WebGroupIcon } from '@livepages/ui';
+import { EmbedGroupIcon, WebGroupIcon } from '@livedesign/ui';
 import type { PaletteTileDef } from './palette-tile-defs';
 
 // The palette's creation-category tab bodies. Every tile is

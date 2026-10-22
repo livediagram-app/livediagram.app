@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Button, TextInput, Glyph } from '@livepages/ui';
+import { Button, TextInput, Glyph } from '@livedesign/ui';
 
 type SharePasswordGateProps = {
   // True when the visitor already submitted a wrong password (vs the

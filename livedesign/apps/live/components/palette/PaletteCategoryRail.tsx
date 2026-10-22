@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, type ReactNode } from 'react';
-import { CountBadge, NoMatches } from '@livepages/ui';
+import { CountBadge, NoMatches } from '@livedesign/ui';
 import { SearchInput } from '@/components/primitives/SearchInput';
 import type { BrowserCategory } from './PaletteCategoryBrowser';
 

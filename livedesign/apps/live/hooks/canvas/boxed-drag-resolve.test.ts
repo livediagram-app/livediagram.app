@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { pageSnapBoxes, layOutPages, pageMargin, type StickyElement } from '@livepages/document';
+import { pageSnapBoxes, layOutPages, pageMargin, type StickyElement } from '@livedesign/document';
 import { resolveBoxedMove } from './boxed-drag-resolve';
 
 function note(id: string, x: number, y: number): StickyElement {

@@ -6,7 +6,7 @@ import {
   EMPTY_DOCUMENT_STALE_DAYS,
   trashDaysLeft,
   type TrashedDocument,
-} from '@livepages/api-schema';
+} from '@livedesign/api-schema';
 import type { TrashListing } from './api/trash';
 
 export type TrashScope =

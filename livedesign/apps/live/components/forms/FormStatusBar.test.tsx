@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import type { FormLinkResponse } from '@livepages/api-schema';
+import type { FormLinkResponse } from '@livedesign/api-schema';
 import type { FormLinkState } from '@/hooks/forms/useFormLink';
 
 const track = vi.hoisted(() => vi.fn());

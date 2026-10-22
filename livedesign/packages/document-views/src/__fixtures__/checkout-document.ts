@@ -8,7 +8,7 @@ import {
   createText,
   type Element,
   type Tab,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { checkoutTab, FIXED_EPOCH, pinnedId } from './checkout-tab';
 
 export const CHECKOUT_DOCUMENT = {

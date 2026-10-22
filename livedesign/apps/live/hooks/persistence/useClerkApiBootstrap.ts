@@ -23,7 +23,7 @@ import {
 //      / unmount so the guest path resumes cleanly.
 //
 //   2. Run the guest → authed migration the first time the user is
-//      signed in AND `livepages:v2:self-id` is still in localStorage.
+//      signed in AND `livedesign:v2:self-id` is still in localStorage.
 //      `POST /api/migrate` reassigns every `documents.owner_id` +
 //      `folders.owner_id` row from the guest id to the Clerk userId
 //      (docs/specs/014-identity/auth-and-guest-access.md + docs/specs/015-api/api.md). On success we drop the localStorage key so

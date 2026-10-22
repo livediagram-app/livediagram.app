@@ -1,5 +1,5 @@
 import { useMemo, type Ref } from 'react';
-import { isBoxed, unionBoxedBounds, unionRects, type Element } from '@livepages/document';
+import { isBoxed, unionBoxedBounds, unionRects, type Element } from '@livedesign/document';
 import { isContentOffScreen } from '@/lib/viewport';
 import { useObservedSize } from '@/hooks/canvas/useObservedSize';
 

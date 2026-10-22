@@ -11,8 +11,8 @@ import {
   type DriveConnection,
   type DriveItem,
   type DriveItemKind,
-} from '@livepages/api-schema';
-import { stripDriveName } from '@livepages/api-schema';
+} from '@livedesign/api-schema';
+import { stripDriveName } from '@livedesign/api-schema';
 import { Backoff } from './backoff';
 import {
   DRIVE_FOCUS_POLL_MIN_GAP_MS,
@@ -22,7 +22,7 @@ import {
 import { DriveApiError, type DriveChange, type DriveClient } from './drive-client';
 import { applyInbound, folderAppProperties } from './engine-inbound';
 import { runOutbound } from './engine-outbound';
-import type { LivepagesPort } from './livepages-port';
+import type { LivedesignPort } from './livedesign-port';
 import { driveLog, driveWarn } from './log';
 import { PassContext } from './pass-context';
 import { planOutbound } from './plan-outbound';
@@ -80,7 +80,7 @@ type DriveEngineDeps = {
   ownerId: string;
   host: string;
   deviceId: string;
-  port: LivepagesPort;
+  port: LivedesignPort;
   drive: DriveClient;
   tokens: TokenSource;
   rasterise: Rasteriser;
@@ -427,7 +427,7 @@ export class DriveMirrorEngine {
     this.publish({ state: 'idle', error: offline ? 'offline' : 'failed', progress: null });
   }
 
-  // The `livepages` folder, by id. Found again by its `ldRoot` after a
+  // The `livedesign` folder, by id. Found again by its `ldRoot` after a
   // reconnect; made in My Drive otherwise. The first page token is taken
   // before anything is written, so every later write reads back as an echo.
   private async ensureRoot(
@@ -477,7 +477,7 @@ export class DriveMirrorEngine {
     return { connection: await deps.port.putConnection({ rootFolderId: rootId }), fresh: true };
   }
 
-  // After a (re)connect: record a row for every file livepages made earlier
+  // After a (re)connect: record a row for every file livedesign made earlier
   // whose document or folder still exists, instead of making a second copy.
   private async adoptExisting(snapshot: MirrorSnapshot): Promise<void> {
     const files = await this.deps.drive.listFiles(
@@ -570,7 +570,7 @@ export class DriveMirrorEngine {
   }
 
   // Settles research E-A3 against real Drive: does the start token move for
-  // changes livepages cannot see? Opt-in, one quiet line per check.
+  // changes livedesign cannot see? Opt-in, one quiet line per check.
   private diagnose(moved: boolean, listed: number): void {
     if (this.deps.diagnostics?.()) debugLog(`drive: start-token moved=${moved} listed=${listed}`);
   }
@@ -675,7 +675,7 @@ export class DriveMirrorEngine {
 
   // ---- adoption --------------------------------------------------------------
 
-  // The user picked the folder livepages could not see: make the matching
+  // The user picked the folder livedesign could not see: make the matching
   // folder in My Documents under its nearest mirrored ancestor, and move the
   // noticed item into it (docs/specs/022-drive-mirror/drive-mirror.md, "Adopting a folder").
   async adoptFolder(kind: DriveItemKind, ldId: string, pickedFolderId: string): Promise<void> {

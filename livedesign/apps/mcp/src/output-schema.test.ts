@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
-import { ITEM_TYPES } from '@livepages/items';
+import { ITEM_TYPES } from '@livedesign/items';
 import {
   applySheetWrite,
   emptySheet,
@@ -11,7 +11,7 @@ import {
   writeRows,
   type SheetJson,
   type SheetWrite,
-} from '@livepages/sheets';
+} from '@livedesign/sheets';
 // The resvg WASM renderer cannot load in plain node (see tools.test.ts). The
 // stub keeps the structured result, which is what this suite checks.
 vi.mock('./image-result', () => ({
@@ -22,7 +22,7 @@ vi.mock('./image-result', () => ({
 }));
 
 import { connectTestClient } from './mcp-test-client';
-import * as outputs from '@livepages/agent-verbs/mcp';
+import * as outputs from '@livedesign/agent-verbs/mcp';
 
 // Structured output and described parameters (docs/specs/015-api/mcp-server.md §4.17), end to end
 // through a real SDK client and server: the server validates each success's

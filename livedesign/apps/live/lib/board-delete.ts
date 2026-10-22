@@ -2,8 +2,8 @@
 // would leave no board showing, so the delete can offer to take them and their cards too. A board shows the types its
 // Card Types name, or every type when it names none; an Archive board counts as showing every type (it lists any
 // card). Pure: the guard reads the tabs and asks.
-import { normaliseBoardSetup } from '@livepages/items';
-import type { Element, Tab } from '@livepages/document';
+import { normaliseBoardSetup } from '@livedesign/items';
+import type { Element, Tab } from '@livedesign/document';
 
 const isBoard = (el: Element) => el.type === 'shape' && el.shape === 'plan-board';
 

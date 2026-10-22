@@ -15,7 +15,7 @@ import {
   type QaNote,
   type ShapeElement,
   type Tab,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { getTabData, swapTabData } from './db';
 import { tabStatsOf } from './db/tab-stats';
 import { TabTooLargeError } from './limits';

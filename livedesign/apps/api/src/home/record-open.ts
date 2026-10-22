@@ -9,7 +9,7 @@
 import { getDocumentOpen, recordOpenDay, touchLastOpen } from '../db/document-opens';
 import { recordDocumentOpened } from '../timeline/document-events';
 import type { DocumentDTO, Env } from '../types';
-import { utcDay } from '@livepages/api-schema';
+import { utcDay } from '@livedesign/api-schema';
 
 type DocumentRef = Pick<DocumentDTO, 'id' | 'name' | 'ownerId' | 'teamId'>;
 

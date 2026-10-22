@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { Workbook, cellKey, type Sheet } from '@livepages/sheets';
-import type { SheetMetricContent } from '@livepages/document';
+import { Workbook, cellKey, type Sheet } from '@livedesign/sheets';
+import type { SheetMetricContent } from '@livedesign/document';
 import { DashboardContext, type DashboardContextValue } from './dashboard-context';
 import { DashboardSheetMetric } from './DashboardSheetMetric';
 import type { SheetRead } from './useSheetReader';

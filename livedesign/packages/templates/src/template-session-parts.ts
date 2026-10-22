@@ -10,7 +10,7 @@ import {
   type Element,
   type SessionButtonConfig,
   type ShapeElement,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { PAPER_INK } from './template-inks';
 
 export const GAP = 40;

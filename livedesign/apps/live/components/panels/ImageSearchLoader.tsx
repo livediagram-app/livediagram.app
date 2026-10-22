@@ -5,7 +5,7 @@
 // photos fill the grid with a glint rolling across them under a scanning lens; while a pick is
 // stored, its tile lifts behind a chasing ring and says which stage it is at.
 import type { ReactNode } from 'react';
-import { SearchIcon } from '@livepages/ui';
+import { SearchIcon } from '@livedesign/ui';
 import type { PickStage } from '@/lib/image-search/pick';
 
 // One search page fills two rows of four; a further page adds one row.

@@ -6,13 +6,13 @@
 
 import { useCallback, useMemo } from 'react';
 import { useLocalBesideTab, useRemoteBesideTabs } from '@/lib/split-presence';
-import type { Tab } from '@livepages/document';
+import type { Tab } from '@livedesign/document';
 import type { Participant } from '@/lib/identity';
 import { useDeferredAuth } from '@/components/providers/deferred-auth';
 import type { PresenceClock } from './usePresenceState';
 import type { LaserPoint } from '@/lib/laser-buffer';
 import type { LaserConfig } from '@/lib/laser-config';
-import type { AgentPresence, AvatarPresence } from '@livepages/api-schema';
+import type { AgentPresence, AvatarPresence } from '@livedesign/api-schema';
 import { buildAgentFocusByElement, foldAgentPresence } from '@/lib/agent-presence-rows';
 import {
   buildLaserTrailRows,

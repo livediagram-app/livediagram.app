@@ -1,9 +1,9 @@
 // The Pages tools (docs/specs/024-agents/pages-for-agents.md, docs/specs/015-api/mcp-server.md
-// §4.9d): change_pages and write_article, over the verbs the CLI shares (@livepages/agent-verbs). Pages are
+// §4.9d): change_pages and write_article, over the verbs the CLI shares (@livedesign/agent-verbs). Pages are
 // named by id, place or name, articles by id or title; a refusal is a tool error that says what is there.
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { changePages, writeArticle, type PagesDone } from '@livepages/agent-verbs';
-import { mcpChangePages, mcpWriteArticle } from '@livepages/agent-verbs/mcp';
+import { changePages, writeArticle, type PagesDone } from '@livedesign/agent-verbs';
+import { mcpChangePages, mcpWriteArticle } from '@livedesign/agent-verbs/mcp';
 import { clientFor } from './api';
 import type { Env } from './env';
 import { registerTool } from './tool-annotations';

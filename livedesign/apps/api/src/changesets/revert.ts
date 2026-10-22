@@ -1,6 +1,6 @@
-import type { ElementOp } from '@livepages/document';
-import type { RevertResponse } from '@livepages/api-schema';
-import { formatResultLines } from '@livepages/edit-operations';
+import type { ElementOp } from '@livedesign/document';
+import type { RevertResponse } from '@livedesign/api-schema';
+import { formatResultLines } from '@livedesign/edit-operations';
 import { getChangesetPart, lastChangesetRev, type ChangesetRecord } from '../db';
 import { readRoomSelections } from '../room-client';
 import { personTagFor } from '../person-tag';

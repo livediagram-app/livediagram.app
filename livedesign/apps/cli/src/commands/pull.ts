@@ -1,8 +1,8 @@
 // `pull <doc> [--to <dir>] [--svg]` (docs/specs/015-api/blueprints/cli.md "Pull and push", CLI27): the document and
 // every tab with its revision, written as a pull file, each tab kept as a read copy; `--svg` adds a drawing per tab.
 
-import { resolveDocument, tabPath, type VerbContext } from '@livepages/agent-verbs';
-import { DOCUMENT_ENVELOPE_KIND, DOCUMENT_SCHEMA_VERSION } from '@livepages/document';
+import { resolveDocument, tabPath, type VerbContext } from '@livedesign/agent-verbs';
+import { DOCUMENT_ENVELOPE_KIND, DOCUMENT_SCHEMA_VERSION } from '@livedesign/document';
 import type { CliIo } from '../io';
 import { CliError } from '../output/cli-error';
 import { EXIT } from '../output/exit-codes';
@@ -22,7 +22,7 @@ export type PullInput = { doc: string; to?: string; svg?: boolean; force?: boole
 
 const joinPath = (dir: string, name: string) => `${dir.replace(/\/+$/, '')}/${name}`;
 
-// `<slug>.livepages.json`, or `<slug>-<id8>` when the file there is another document's (CLI27); `there` is this
+// `<slug>.livedesign.json`, or `<slug>-<id8>` when the file there is another document's (CLI27); `there` is this
 // document's pull file already at that path.
 async function pullPath(io: CliIo, dir: string, document: { id: string; name: string }) {
   const slug = fileSlug(document.name, document.id);
@@ -51,7 +51,7 @@ async function refuseUnpushed(path: string, file: PullFile | null, input: PullIn
     exit: EXIT.rejected,
     code: 'unpushed_changes',
     message: `${path} changed here and is not pushed; not overwritten`,
-    hint: `send it: livepages push ${path}, or drop it: livepages pull ${JSON.stringify(input.doc)} --force`,
+    hint: `send it: livedesign push ${path}, or drop it: livedesign pull ${JSON.stringify(input.doc)} --force`,
   });
 }
 
@@ -72,7 +72,7 @@ export async function pullDocument(
     schemaVersion: DOCUMENT_SCHEMA_VERSION,
     exportedAt: ctx.now(),
     document: { ...document, tabs },
-    livepagesSync: { host: ctx.host, pulledAt: ctx.now(), tabs: pulled },
+    livedesignSync: { host: ctx.host, pulledAt: ctx.now(), tabs: pulled },
   };
   await io.files.write(path, pullFileText(file));
   ctx.log(`pull ${document.id} ${tabs.length} tabs`);

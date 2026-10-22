@@ -2,7 +2,7 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { useState } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { ITEM_TYPES, type ItemTypeCatalogue, type ItemTypeDef } from '@livepages/items';
+import { ITEM_TYPES, type ItemTypeCatalogue, type ItemTypeDef } from '@livedesign/items';
 import type { SavedItemTypes } from '@/lib/api/item-types';
 import type { ItemUndoStep } from './item-undo-journal';
 

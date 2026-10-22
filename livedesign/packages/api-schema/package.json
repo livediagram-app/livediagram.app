@@ -1,5 +1,5 @@
 {
-  "name": "@livepages/api-schema",
+  "name": "@livedesign/api-schema",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -16,14 +16,14 @@
     "clean": "rm -rf node_modules .turbo"
   },
   "dependencies": {
-    "@livepages/document": "workspace:*",
-    "@livepages/forms": "workspace:*",
-    "@livepages/items": "workspace:*",
-    "@livepages/sheets": "workspace:*"
+    "@livedesign/document": "workspace:*",
+    "@livedesign/forms": "workspace:*",
+    "@livedesign/items": "workspace:*",
+    "@livedesign/sheets": "workspace:*"
   },
   "devDependencies": {
-    "@livepages/oxlint-config": "workspace:*",
-    "@livepages/vitest-config": "workspace:*",
+    "@livedesign/oxlint-config": "workspace:*",
+    "@livedesign/vitest-config": "workspace:*",
     "oxlint": "^1.88.0",
     "typescript": "^7.0.2",
     "vitest": "^5.0.3"

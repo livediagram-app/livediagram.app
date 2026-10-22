@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { NAME_MAX_LENGTH } from '@livepages/document';
+import { NAME_MAX_LENGTH } from '@livedesign/document';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { refocusAfterField } from './refocus-after-field';
 

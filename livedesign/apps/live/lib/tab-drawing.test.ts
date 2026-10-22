@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { laidOutPagesOf, type Element, type Page, type Tab } from '@livepages/document';
-import { blankQuestion, type FormDefinition } from '@livepages/forms';
+import { laidOutPagesOf, type Element, type Page, type Tab } from '@livedesign/document';
+import { blankQuestion, type FormDefinition } from '@livedesign/forms';
 import { renderTabToSvg } from './export-tab';
 import { pageElements, renderTabDrawingSvg, tabDrawingFontIdsOf } from './tab-drawing';
 import { svgFrameOf } from './svg-frame';

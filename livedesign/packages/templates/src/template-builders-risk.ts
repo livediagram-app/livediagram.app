@@ -27,7 +27,7 @@ import {
   createText,
   type Element,
   type TableCellStyle,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { techHeader, TECH_HEADER_H } from './template-builders-technical-kit';
 import {
   IMPACT_STEPS,

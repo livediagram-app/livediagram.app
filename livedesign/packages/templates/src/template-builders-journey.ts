@@ -10,7 +10,7 @@ import {
   createSticky,
   createText,
   type Element,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
 import { PAPER_INK } from './template-inks';
 

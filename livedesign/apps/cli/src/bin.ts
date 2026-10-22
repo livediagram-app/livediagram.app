@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// The livepages command (docs/specs/015-api/cli.md).
+// The livedesign command (docs/specs/015-api/cli.md).
 import { run } from './main';
 import { nodeIo } from './node-io';
 

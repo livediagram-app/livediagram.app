@@ -8,7 +8,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { clamp, type PlanPalette } from '@livepages/document';
+import { clamp, type PlanPalette } from '@livedesign/document';
 import { tourColourVars } from './tour-colours';
 import { glideTransition } from './tour-motion';
 import { placeTourPopover } from './tour-position';

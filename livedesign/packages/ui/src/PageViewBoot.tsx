@@ -1,6 +1,6 @@
 'use client';
 
-import { siteTrack } from '@livepages/telemetry-client';
+import { siteTrack } from '@livedesign/telemetry-client';
 import { PageViewTracker } from './PageViewTracker';
 
 // Page view telemetry (docs/specs/017-telemetry/page-view-telemetry.md) for the public sites (marketing, the help

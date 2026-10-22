@@ -6,7 +6,7 @@ import {
   LINT_SEVERITIES,
   LINT_SEVERITY,
   type LintFinding,
-} from '@livepages/api-schema';
+} from '@livedesign/api-schema';
 import type { RawFinding } from './checks/types';
 
 // By UTF-16 code units, as the refs sort: no locale.

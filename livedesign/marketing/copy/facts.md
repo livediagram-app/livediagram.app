@@ -51,7 +51,7 @@ is the team, not the individual.
 ## Open source and price
 
 - MIT-licensed, publicly viewable, self-hostable end to end.
-- Hosted free at livepages.app. No paid tier and no plan to introduce one.
+- Hosted free at livedesign.app. No paid tier and no plan to introduce one.
 - The OSS core never calls home and never gates features behind a license
   check. Clerk auth is the one optional SaaS dependency; without it the app
   degrades to full-featured guest mode.
@@ -70,5 +70,5 @@ Node-hosted backend, no SSR.
 
 ## Links
 
-- Hosted: https://livepages.app
-- Editor: https://livepages.app/live
+- Hosted: https://livedesign.app
+- Editor: https://livedesign.app/live

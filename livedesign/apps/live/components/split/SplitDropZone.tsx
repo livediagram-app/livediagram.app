@@ -2,8 +2,8 @@
 
 import dynamic from 'next/dynamic';
 import { useEffect, useRef, useState } from 'react';
-import type { Tab } from '@livepages/document';
-import { SideBySideIcon } from '@livepages/ui';
+import type { Tab } from '@livedesign/document';
+import { SideBySideIcon } from '@livedesign/ui';
 import {
   SPLIT_TAB_BAR_CLEARANCE_PX,
   approachProgress,

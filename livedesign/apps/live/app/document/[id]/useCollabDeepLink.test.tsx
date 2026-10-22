@@ -2,7 +2,7 @@
 
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { Element } from '@livepages/document';
+import type { Element } from '@livedesign/document';
 import type { CollabDeepLink } from '@/lib/collab-deep-link';
 import { useCollabDeepLink, useCollabDeepLinkCapture } from './useCollabDeepLink';
 import type { TabLoadState } from './editor-page-helpers';

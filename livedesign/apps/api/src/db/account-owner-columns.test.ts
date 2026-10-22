@@ -252,7 +252,7 @@ function seedAccountOnly(sql: DatabaseSync, id: string, peer: string) {
     item_kind: 'document',
     ld_id: `d-`,
     drive_file_id: `file-`,
-    name: 'x.livepages',
+    name: 'x.livedesign',
     ld_name: 'x',
   });
   insert(sql, 'teams', { id: 'team-1', name: 'Team', created_at: T0, updated_at: T0 });

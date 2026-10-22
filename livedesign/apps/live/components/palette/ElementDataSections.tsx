@@ -39,7 +39,7 @@ import {
   type EntityField,
   type LegendItem,
   type PieSlice,
-} from '@livepages/document';
+} from '@livedesign/document';
 import {
   AvatarModeIcon,
   EraserIcon,

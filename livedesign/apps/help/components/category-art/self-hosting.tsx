@@ -69,7 +69,7 @@ export function SelfHostingArt() {
         <circle cx={180} cy={44} r={3} className="fill-amber-400" />
         <circle cx={190} cy={44} r={3} className="fill-emerald-400" />
         <Label x={266} y={44.5} anchor="middle" size={8.5} weight={600} className="fill-slate-400">
-          ~/livepages
+          ~/livedesign
         </Label>
         {LINES.map((l, i) => (
           <text

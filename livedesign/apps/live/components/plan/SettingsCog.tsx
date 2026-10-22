@@ -5,8 +5,8 @@
 // popover of collapsible sections, one open at a time. A press outside or Escape closes it, handing focus back to the
 // cog. Presses in it are its own, never the canvas's or the element's.
 import { useState, type ReactNode } from 'react';
-import { Tooltip, lucideGlyph } from '@livepages/ui';
-import { lucideSettings } from '@livepages/icons/lucide';
+import { Tooltip, lucideGlyph } from '@livedesign/ui';
+import { lucideSettings } from '@livedesign/icons/lucide';
 import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
 import type { PlanPalette } from './plan-palette';
 import { useSlotSettings } from './dashboard/slot-menu';

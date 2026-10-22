@@ -7,7 +7,7 @@ import {
   ruleMessage,
   validationRuleAt,
   valueInvalid,
-} from '@livepages/sheets';
+} from '@livedesign/sheets';
 import type { SheetController } from '../sheet-controller';
 
 export function invalidWhy(c: SheetController, r: number, col: number): string | null {

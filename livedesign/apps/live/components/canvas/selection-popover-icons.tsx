@@ -1,9 +1,9 @@
-import { lucideBringToFront, lucideSendToBack, lucideType } from '@livepages/icons/lucide';
-import { lucideGlyph } from '@livepages/ui';
+import { lucideBringToFront, lucideSendToBack, lucideType } from '@livedesign/icons/lucide';
+import { lucideGlyph } from '@livedesign/ui';
 
 // Action icons specific to the floating SelectionPopover toolbar (edit text, bring to front / send
 // to back). The duplicate / lock / comment / delete glyphs it shares with the other toolbars come
-// from @livepages/ui.
+// from @livedesign/ui.
 
 // The 16px overflow ellipsis, shared with the rich-text toolbar (the same more-actions motif on the
 // two floating canvas toolbars).

@@ -1,4 +1,4 @@
-import type { CanvasSurface } from '@livepages/document';
+import type { CanvasSurface } from '@livedesign/document';
 
 // The colours of the two "selection box" rectangles the editor draws: the
 // drag-select marquee on the canvas and the Map's current-view window

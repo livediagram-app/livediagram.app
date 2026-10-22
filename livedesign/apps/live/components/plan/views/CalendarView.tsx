@@ -20,8 +20,8 @@ import {
   typeIn,
   type CalendarField,
   type Item,
-} from '@livepages/items';
-import { ChevronLeftIcon, ChevronRightIcon } from '@livepages/ui';
+} from '@livedesign/items';
+import { ChevronLeftIcon, ChevronRightIcon } from '@livedesign/ui';
 import { track } from '@/lib/telemetry';
 import { accentOn } from '../plan-palette';
 import { ViewFrame, ViewStepButton, viewState } from './view-frame';

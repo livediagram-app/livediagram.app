@@ -15,7 +15,7 @@
 //   5. the guard: a block that now overlaps one it did not, goes back where it was and stays.
 // Locked (and rotated) blocks never move; they are anchors and obstacles like a margin.
 
-import { isBoxed, type BoxedElement, type Element, type ElementId } from '@livepages/document';
+import { isBoxed, type BoxedElement, type Element, type ElementId } from '@livedesign/document';
 import {
   blocksOf,
   contains,

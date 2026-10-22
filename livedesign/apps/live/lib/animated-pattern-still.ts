@@ -3,7 +3,7 @@
 // (docs/specs/011-theme/canvas-and-theme-dialog.md "Looks"). A card is a static picture, so it shows the motif at rest
 // rather than running the overlay: six moving cards would break the motion budget, and the overlay sizes its motifs in
 // viewport units, which a card cannot.
-import type { BackgroundPattern } from '@livepages/document';
+import type { BackgroundPattern } from '@livedesign/document';
 
 /** Aurora's glows: the top-left corner of each (percent of the backdrop), its size (vmax), drift (percent) and period
  *  (seconds). */

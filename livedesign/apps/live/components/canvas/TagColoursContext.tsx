@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useMemo, type ReactNode } from 'react';
-import { tagColoursOf, type TagColour } from '@livepages/document';
+import { tagColoursOf, type TagColour } from '@livedesign/document';
 
 // The active tab's tag colours (docs/specs/009-elements/tag-colours.md) for the cards that render them: a mapped card's
 // accent edge and its tinted chips. Read at render, never stored on the card. Its identity holds while the map does, so

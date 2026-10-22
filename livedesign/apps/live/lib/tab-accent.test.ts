@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { MIN_TEXT_CONTRAST, contrastRatio, isLightColor, type Tab } from '@livepages/document';
+import { MIN_TEXT_CONTRAST, contrastRatio, isLightColor, type Tab } from '@livedesign/document';
 import { legibleColor, legibleTabAccent } from './tab-accent';
 
 // The legibility transform: a colour too pale for the light bar gets darkened,

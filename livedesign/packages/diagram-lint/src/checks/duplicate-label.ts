@@ -2,7 +2,7 @@
 // blank never matches; one finding a label (LN14). A card's title and subtitle are part of what it says, so two
 // mirrored cards (an AZ A and an AZ B service with one body) differ.
 
-import type { BoxedElement } from '@livepages/document';
+import type { BoxedElement } from '@livedesign/document';
 import { refOf } from '../context';
 import { fixes } from '../fixes';
 import { quoteLabel } from '../quote';

@@ -10,7 +10,7 @@ import {
   estimateSpreadLabel,
   type EstimateScale,
   type ParticipantResponse,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { participantKey, type Participant } from '@/lib/identity';
 import { ParticipantAvatar } from '@/components/primitives/ParticipantAvatar';
 import { tint } from '../collab-chrome';

@@ -20,7 +20,7 @@
 // this trigger, so the slot hooks hold "which card's menu is open" and
 // both paths flip it.
 
-import { CloseIcon } from '@livepages/ui';
+import { CloseIcon } from '@livedesign/ui';
 import { useState, type ReactNode } from 'react';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
 import {

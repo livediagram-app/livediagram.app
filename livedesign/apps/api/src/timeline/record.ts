@@ -9,7 +9,7 @@
 // Call sites additionally wrap this in `ctx.waitUntil(...)` so the emit
 // runs after the response is sent and never adds latency to a save.
 
-import type { TimelineScopeRef } from '@livepages/api-schema';
+import type { TimelineScopeRef } from '@livedesign/api-schema';
 import type { TimelineEventDraft } from '../db/timeline';
 import { emitTimelineEvent } from '../db/timeline';
 import type { Env } from '../types';

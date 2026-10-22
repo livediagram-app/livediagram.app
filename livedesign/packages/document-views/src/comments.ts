@@ -1,7 +1,7 @@
 // The comments view (docs/specs/024-agents/blueprints/document-views.md "comments", VW33): open threads
 // in the outline's order, every comment in full; resolved threads counted, or shown with `all`.
-import type { CommentsView, ViewDoor } from '@livepages/api-schema';
-import type { Element } from '@livepages/document';
+import type { CommentsView, ViewDoor } from '@livedesign/api-schema';
+import type { Element } from '@livedesign/document';
 import { fitLines, fitOf, type ViewLine, type ViewResult } from './budget';
 import { LABEL_CUT_CHARS } from './constants';
 import { cellThreadsOf, numberField, stringField, textField, threadOf } from './fields';

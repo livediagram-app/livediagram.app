@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { Element, ShapeElement } from '@livepages/document';
-import { PAGE_LAYOUTS, type PageLayout } from '@livepages/templates';
+import type { Element, ShapeElement } from '@livedesign/document';
+import { PAGE_LAYOUTS, type PageLayout } from '@livedesign/templates';
 
 // docs/specs/007-editor/pages-mode.md "Layouts": the Steps and Time category's further
 // layouts (Staircase, Customer Journey, Project Plan, Decision Flow, How-To).

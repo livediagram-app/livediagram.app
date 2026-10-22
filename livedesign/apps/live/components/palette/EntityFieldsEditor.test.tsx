@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { EntityField, FieldRemap } from '@livepages/document';
+import type { EntityField, FieldRemap } from '@livedesign/document';
 import { EntityFieldsEditor } from './EntityFieldsEditor';
 import { CardinalityButton } from '@/components/canvas/entity/CardinalityButton';
 

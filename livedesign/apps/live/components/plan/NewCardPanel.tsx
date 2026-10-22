@@ -3,7 +3,7 @@
 // New Card (docs/specs/026-plan/items.md "New Card"): the Plan strip's + opens this panel above it, pointing at it,
 // as the Trash and Find a Card do: a tile per card type. A pick makes a card of that type,
 // off any board, in its type's starting status, and opens it to be named.
-import { newItemId, typeIn } from '@livepages/items';
+import { newItemId, typeIn } from '@livedesign/items';
 import type { DockAnchor } from '@/lib/canvas-chrome';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import { AddCardChoices } from './AddCardPopover';

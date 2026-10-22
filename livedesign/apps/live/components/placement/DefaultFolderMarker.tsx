@@ -1,6 +1,6 @@
 'use client';
 
-import { Tooltip } from '@livepages/ui';
+import { Tooltip } from '@livedesign/ui';
 import { useFolderDefaultKeys } from '@/hooks/persistence/usePlacementDefaults';
 import { defaultFolderDescription } from '@/lib/placement-defaults/default-key-entries';
 import { DefaultKeyIcon } from './default-key-icons';

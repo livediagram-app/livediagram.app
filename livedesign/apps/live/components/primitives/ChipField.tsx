@@ -8,7 +8,7 @@ import {
   type CSSProperties,
   type ReactNode,
 } from 'react';
-import { CloseIcon, FIELD_INVALID } from '@livepages/ui';
+import { CloseIcon, FIELD_INVALID } from '@livedesign/ui';
 
 // The chip field: chips typed into one bordered field, a Plan card's labels. Enter adds the draft (the caller decides what adding means, and handles a
 // comma in `onDraftChange`), Backspace in an empty field takes the last chip back, and each chip has

@@ -4,7 +4,7 @@
 // two sections under their own headings, General (the name field, holding the glyph and the colour) then Fields (the Fields
 // and Tabs list). The editor owns the draft; this only lays it out.
 import { useId, type ReactNode } from 'react';
-import { ITEM_TYPE_LABEL_MAX, type ItemTypeDef, type PlanGlyphId } from '@livepages/items';
+import { ITEM_TYPE_LABEL_MAX, type ItemTypeDef, type PlanGlyphId } from '@livedesign/items';
 import { SheetRow } from './PlanModal';
 import { TypeColourButton } from './ColourSwatches';
 import { GlyphPicker } from './GlyphPicker';

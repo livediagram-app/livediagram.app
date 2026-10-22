@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { PEN_INK, penColourHex } from '@livepages/document';
-import { defaultCatalogue, presetSetup, type Item } from '@livepages/items';
+import { PEN_INK, penColourHex } from '@livedesign/document';
+import { defaultCatalogue, presetSetup, type Item } from '@livedesign/items';
 import type { DocumentDTO, Env } from './types';
 
 // The render-cache reads/writes the snapshot freshness + first-tab body

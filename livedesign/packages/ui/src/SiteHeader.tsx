@@ -1,4 +1,4 @@
-import type { CtaSurface } from '@livepages/api-schema';
+import type { CtaSurface } from '@livedesign/api-schema';
 import type { ReactNode } from 'react';
 import { Brand } from './Brand';
 import { BuildWithAiLink } from './BuildWithAiLink';

@@ -26,7 +26,7 @@ export const SERVER_CRASHES: Metric = {
   typeIn: isServerCrash,
   title: 'Server Crashes',
   blurb:
-    'Crashes the livepages server reported about itself, by endpoint. Most also appear as an Http500 in Failed Requests, so read the two side by side rather than adding them.',
+    'Crashes the livedesign server reported about itself, by endpoint. Most also appear as an Http500 in Failed Requests, so read the two side by side rather than adding them.',
 };
 
 export const CLIENT_EXCEPTIONS: Metric = {
@@ -107,7 +107,7 @@ export const BROWSER_REPAIRS = chart(
   'UI',
   'Cleared',
   'Browser Repairs',
-  "A browser's livepages settings and caches cleared to get a document loading again.",
+  "A browser's livedesign settings and caches cleared to get a document loading again.",
   { rising: 'bad' },
 );
 

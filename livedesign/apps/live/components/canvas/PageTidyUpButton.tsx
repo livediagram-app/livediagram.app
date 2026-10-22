@@ -7,8 +7,8 @@
 // title bar shows controls only to someone who may edit, and the button checks the session's
 // `can` itself.
 import { useContext, useEffect, useRef } from 'react';
-import { lucideBrushCleaning } from '@livepages/icons/lucide';
-import { lucideGlyph, Tooltip } from '@livepages/ui';
+import { lucideBrushCleaning } from '@livedesign/icons/lucide';
+import { lucideGlyph, Tooltip } from '@livedesign/ui';
 import { EditorContext } from '@/app/document/[id]/EditorContext';
 import type { PageEdits } from '@/hooks/editor/page-edits';
 import { titleButtonClass } from './TitlePopoverButton';

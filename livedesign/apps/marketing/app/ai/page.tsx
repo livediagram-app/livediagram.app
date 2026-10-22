@@ -1,5 +1,5 @@
-import { lucideArrowRight } from '@livepages/icons/lucide';
-import { buttonClassName, ButtonContent, lucideGlyph, pageMetadata } from '@livepages/ui';
+import { lucideArrowRight } from '@livedesign/icons/lucide';
+import { buttonClassName, ButtonContent, lucideGlyph, pageMetadata } from '@livedesign/ui';
 import type { ReactNode } from 'react';
 
 import { AiCapabilities } from '@/components/ai/AiCapabilities';
@@ -17,12 +17,12 @@ import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
 
 // Build with AI (docs/specs/019-marketing/build-with-ai.md): from "I use an AI tool" to "it just made a diagram in
-// livepages" in the fewest steps. One client island (the picker and the copy buttons); the rest is static.
+// livedesign" in the fewest steps. One client island (the picker and the copy buttons); the rest is static.
 
 export const metadata = pageMetadata({
-  title: 'Build with AI · livepages',
+  title: 'Build with AI · livedesign',
   description:
-    'Connect Claude, ChatGPT, Cursor, VS Code or any MCP client to livepages in a minute, then ask your AI for diagrams, boards, sheets and decks.',
+    'Connect Claude, ChatGPT, Cursor, VS Code or any MCP client to livedesign in a minute, then ask your AI for diagrams, boards, sheets and decks.',
   path: '/ai',
 });
 
@@ -75,7 +75,7 @@ export default function BuildWithAiPage() {
                 id="ai-title"
                 className="mt-4 text-4xl font-semibold tracking-tight text-balance text-slate-900 sm:text-5xl dark:text-slate-100"
               >
-                Your AI, building in livepages
+                Your AI, building in livedesign
               </h1>
               <p className="mt-4 max-w-xl text-lg leading-relaxed text-slate-600 dark:text-slate-300">
                 Connect the AI tool you already use, then ask it for a diagram, a board, a sheet or
@@ -140,7 +140,7 @@ export default function BuildWithAiPage() {
               id="connect-title"
               eyebrow="Connect"
               title="Pick your AI tool"
-              lead="Step-by-step for the tools people use most. Choose yours, follow the steps, and approve when livepages asks."
+              lead="Step-by-step for the tools people use most. Choose yours, follow the steps, and approve when livedesign asks."
             />
             <div className="mt-12">
               <ClientPicker />
@@ -158,7 +158,7 @@ export default function BuildWithAiPage() {
               id="prompts-title"
               eyebrow="Try it"
               title="Your first prompts"
-              lead="Connected? Paste one of these into your AI tool, or ask in your own words. Mentioning livepages helps it pick the right tool."
+              lead="Connected? Paste one of these into your AI tool, or ask in your own words. Mentioning livedesign helps it pick the right tool."
             />
             <div className="mt-12">
               <StarterPrompts />
@@ -174,7 +174,7 @@ export default function BuildWithAiPage() {
             <SectionHead
               id="can-title"
               eyebrow="What it can do"
-              title="Everything you make in livepages"
+              title="Everything you make in livedesign"
               lead="Your AI gets the same building blocks you have in the editor, and everything it makes is yours to change."
             />
             <div className="mt-12">
@@ -194,7 +194,7 @@ export default function BuildWithAiPage() {
                 Safe to connect
               </h2>
               <p className={BAND_LEAD}>
-                Connecting needs a free livepages account, so your AI&apos;s work is saved to you.
+                Connecting needs a free livedesign account, so your AI&apos;s work is saved to you.
                 The canvas itself never needs one.
               </p>
               <div className="mt-6 flex flex-wrap gap-3">

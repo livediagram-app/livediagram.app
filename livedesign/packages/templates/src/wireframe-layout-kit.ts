@@ -3,7 +3,7 @@
 // (a 44 px button, a 15 px body line), placed in a page's safe area. Every part is an ordinary
 // element in wireframe greys, a dark primary and soft grey pictures and fields, so a screen reads as
 // a wireframe in any theme and every word stays editable.
-import type { Element, ShapeElement, TextElement } from '@livepages/document';
+import type { Element, ShapeElement, TextElement } from '@livedesign/document';
 import { kit, type Kit, type LayoutBox } from './page-layout-kit';
 
 // The wireframe greys.

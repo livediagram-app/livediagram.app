@@ -3,12 +3,12 @@
 // else. Derived on the server from the caller's identity on the document, never read from a request: stable for
 // one person on one document across devices, opaque, and different on every document.
 
-import { ADDER_KEY_LENGTH } from '@livepages/document';
-import { sha256Hex } from '@livepages/api-schema';
+import { ADDER_KEY_LENGTH } from '@livedesign/document';
+import { sha256Hex } from '@livedesign/api-schema';
 
 export async function adderKeyFor(documentId: string, ownerId: string): Promise<string> {
   const digest = await sha256Hex(
-    new TextEncoder().encode(`livepages:adder:v1:${documentId}:${ownerId}`),
+    new TextEncoder().encode(`livedesign:adder:v1:${documentId}:${ownerId}`),
   );
   return digest.slice(0, ADDER_KEY_LENGTH);
 }

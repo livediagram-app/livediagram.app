@@ -11,7 +11,7 @@ import {
   newFormPartId,
   questionsOf,
   readForm,
-} from '@livepages/forms';
+} from '@livedesign/forms';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useSelectTab } from '@/app/document/[id]/useSelectTab';
 import { useLatest } from '@/hooks/ui/useLatest';
@@ -22,7 +22,7 @@ import { setActiveTour, useActiveTour } from '@/lib/tour-active';
 import { useAnyModalOpen } from '@/lib/modal-guard';
 import { rebaseUserPreferences } from '@/lib/user-preferences';
 import { useStartPanelOpen } from '@/components/start/start-panel-open';
-import { FormStarterPicture } from '@livepages/template-previews';
+import { FormStarterPicture } from '@livedesign/template-previews';
 import { formTourSteps, formTourStepTelemetryType, type FormTourApi } from './form-tour-steps';
 import { TourStage } from './TourStage';
 import { useTourEngine, type TourOutcome } from './useTourEngine';

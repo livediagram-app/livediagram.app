@@ -9,7 +9,7 @@
 // The read moves the Timeline's unread mark on the server, so a successful one clears the badge.
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { HomeGroup } from '@livepages/api-schema';
+import type { HomeGroup } from '@livedesign/api-schema';
 import { apiReadHome } from '@/lib/api-client';
 import { offlineListOpens, type LocalOpenDocument } from '@/lib/offline/offline-opens';
 import { track } from '@/lib/telemetry';

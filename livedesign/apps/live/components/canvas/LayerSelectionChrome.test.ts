@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { layOutPages, newLogoPage } from '@livepages/document';
+import { layOutPages, newLogoPage } from '@livedesign/document';
 import { onLogoPage } from './LayerSelectionChrome';
 
 // docs/specs/007-editor/logo-pages.md "A logo page": no quick-connect pluses on a logo page.

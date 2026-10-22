@@ -1,13 +1,13 @@
 // @vitest-environment jsdom
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createShape, type ShapeElement } from '@livepages/document';
+import { createShape, type ShapeElement } from '@livedesign/document';
 import {
   PLAN_COLUMNS_MAX,
   presetSetup,
   statusColumn,
   type PlanBoardSetup,
-} from '@livepages/items';
+} from '@livedesign/items';
 import { ADDED_TINT_MS, BoardColumnsSection, columnsInsertAfter } from './BoardColumnsSection';
 import {
   subscribeColumnSettingsRequest,

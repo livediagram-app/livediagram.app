@@ -1,5 +1,5 @@
-import type { RoomElementOp } from '@livepages/document';
-import type { RoomOp } from '@livepages/api-schema';
+import type { RoomElementOp } from '@livedesign/document';
+import type { RoomOp } from '@livedesign/api-schema';
 
 // This editor's element writes the room has not sequenced yet (docs/specs/012-collaboration/realtime-conflict-resolution.md
 // "Same-element edits converge").

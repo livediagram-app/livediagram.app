@@ -3,13 +3,13 @@
 // The mounted workspace frame (docs/specs/013-workspace/workbench-embeds.md "What renders", blueprint "The workspace
 // frame"): the Explorer as it is at /explorer, without the app's surroundings, or the editor of the document opened
 // in it, with Back. The place is the frame's own address; every move is the frame's own (useWorkspaceNavigation),
-// told to the workbench as `livepages:place`, and the workbench may move it with `livepages:open`. The
+// told to the workbench as `livedesign:place`, and the workbench may move it with `livedesign:open`. The
 // Explorer unmounts while a document is open, so the editor's shortcuts and panels are the only ones listening.
 import dynamic from 'next/dynamic';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
-import type { WorkbenchOpenTarget, WorkbenchRole } from '@livepages/api-schema';
-import { setAppearanceOverride } from '@livepages/ui';
+import type { WorkbenchOpenTarget, WorkbenchRole } from '@livedesign/api-schema';
+import { setAppearanceOverride } from '@livedesign/ui';
 import { WorkbenchReconnectLine } from '@/components/chrome/WorkbenchChrome';
 import {
   useWorkbenchSession,
@@ -44,7 +44,7 @@ const EditorPage = dynamic(() => import('../../document/[id]/editor-page'), {
 const CREATE_FAILED = 'Couldn’t create the document. Try again.';
 const DOCUMENT_TRASHED = 'That document is in the Trash.';
 
-// The place `livepages:open` asks for.
+// The place `livedesign:open` asks for.
 function placeOfOpen(to: WorkbenchOpenTarget): WorkspacePlace {
   if ('view' in to) return { kind: 'explorer', node: { kind: 'home' } };
   if ('folderId' in to) return { kind: 'explorer', node: { kind: 'folder', id: to.folderId } };
@@ -103,7 +103,7 @@ function MountedFrame({ session }: { session: WorkbenchSession }) {
     if (announced.current) return;
     announced.current = true;
     setAppearanceOverride('system');
-    port.send({ type: 'livepages:ready', v: 1, scope: 'workspace', role: level });
+    port.send({ type: 'livedesign:ready', v: 1, scope: 'workspace', role: level });
     track('Session', 'Opened', 'WorkbenchWorkspace');
   }, [port, level]);
 
@@ -112,8 +112,8 @@ function MountedFrame({ session }: { session: WorkbenchSession }) {
   useEffect(
     () =>
       port.subscribe((message) => {
-        if (message.type === 'livepages:theme') setAppearanceOverride(message.colourScheme);
-        if (message.type !== 'livepages:open') return;
+        if (message.type === 'livedesign:theme') setAppearanceOverride(message.colourScheme);
+        if (message.type !== 'livedesign:open') return;
         debugLog('[workbench] open', { kind: openKindOf(message.to) });
         go(placeOfOpen(message.to));
       }),

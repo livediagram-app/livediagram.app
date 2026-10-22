@@ -288,7 +288,7 @@ export const FUNCTION_DOCS: Readonly<Record<string, FunctionDoc>> = {
   HYPERLINK: D(
     'url, [label]',
     'A link to a web page or email address; Ctrl/⌘-click opens it',
-    '=HYPERLINK("https://livepages.app", "livepages")',
+    '=HYPERLINK("https://livedesign.app", "livedesign")',
   ),
   // Date and time
   TODAY: D('', "Today's date", '=TODAY()'),

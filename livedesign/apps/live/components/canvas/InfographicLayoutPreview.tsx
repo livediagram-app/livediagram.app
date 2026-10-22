@@ -1,6 +1,6 @@
 'use client';
 
-import { trustedHtml } from '@livepages/ui';
+import { trustedHtml } from '@livedesign/ui';
 
 // A layout previewed on its page while its tile is hovered (docs/specs/007-editor/
 // pages-mode.md "Layouts"): the layout built for the page, drawn over the whole sheet in the
@@ -23,12 +23,12 @@ import {
   type Element,
   type LaidOutPage,
   type WireframeFrameTheme,
-} from '@livepages/document';
-import type { PageLayoutId } from '@livepages/templates';
+} from '@livedesign/document';
+import type { PageLayoutId } from '@livedesign/templates';
 import { resolveIconArtLoaded, resolveStickerArtLoaded } from '@/lib/icon-registry';
 import { pageSheetStyle } from '@/lib/page-paint';
 import { PageMotionLayer } from './PageMotionLayer';
-import { buildPageLayoutOver } from '@livepages/templates';
+import { buildPageLayoutOver } from '@livedesign/templates';
 import { useCanvasChartPalette, useCanvasSurface } from './CanvasSurfaceContext';
 import { WireframeDeviceSheet } from './WireframeDeviceSheet';
 import { useImageSources } from './page-image-access';

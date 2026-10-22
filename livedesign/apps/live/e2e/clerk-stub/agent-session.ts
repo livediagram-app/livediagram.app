@@ -65,7 +65,7 @@ export async function arrange(page: Page, baseURL: string, userId: string): Prom
 
 export async function agentSubmits(page: Page, s: Setup, body: unknown) {
   return page.request.post(`/api/documents/${s.id}/tabs/${s.tabId}/changesets`, {
-    headers: { Authorization: `Bearer ${s.token}`, 'X-Livepages-Client': 'cli' },
+    headers: { Authorization: `Bearer ${s.token}`, 'X-Livedesign-Client': 'cli' },
     data: body,
   });
 }
@@ -82,8 +82,8 @@ export async function storedIds(page: Page, s: Setup): Promise<string[]> {
 // live (one that lands before is caught up by the join check, without a toast).
 export async function open(page: Page, s: Setup) {
   await page.addInitScript(() => {
-    localStorage.setItem('livepages:v2:name-confirmed', '1');
-    localStorage.setItem('livepages:user-preferences:v1', JSON.stringify({ tourSeen: true }));
+    localStorage.setItem('livedesign:v2:name-confirmed', '1');
+    localStorage.setItem('livedesign:user-preferences:v1', JSON.stringify({ tourSeen: true }));
   });
   const socket = page.waitForEvent('websocket', (ws) => ws.url().includes(`/documents/${s.id}/ws`));
   await page.goto(`/document/${s.id}`);

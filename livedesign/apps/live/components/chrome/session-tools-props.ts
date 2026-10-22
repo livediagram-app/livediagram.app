@@ -1,5 +1,5 @@
-import type { Layer, TabTimer, TabVote, TimerMode, VoteSetup } from '@livepages/document';
-import type { LivePoll, PollStyle } from '@livepages/api-schema';
+import type { Layer, TabTimer, TabVote, TimerMode, VoteSetup } from '@livedesign/document';
+import type { LivePoll, PollStyle } from '@livedesign/api-schema';
 import type { PollCandidate } from '@/lib/poll-collaborators';
 
 // The session-tools bundle (docs/specs/012-collaboration/session-tools.md, docs/specs/012-collaboration/live-poll.md, docs/specs/012-collaboration/vote-layer-scope.md): the running timer, the

@@ -3,11 +3,11 @@
 // Setup Sheet's steps before Style (docs/specs/029-sheets/sheet.md "Setup Sheet"): Start From, an option row per
 // start; and for Plan Cards, Cards (the Cards panel's own search and filters) then Columns (the fields those cards have).
 import type { ReactNode } from 'react';
-import { itemTitle, namedStatus, typeIn, type Item, type ItemTypeDef } from '@livepages/items';
+import { itemTitle, namedStatus, typeIn, type Item, type ItemTypeDef } from '@livedesign/items';
 import { PlanTypeGlyph } from '@/components/plan/plan-type-glyph';
 import { ACCENT_TEXT, accentVars } from '@/components/plan/plan-palette';
-import { NoMatches, PlanCardsIcon } from '@livepages/ui';
-import { lucideGlyph } from '@livepages/ui';
+import { NoMatches, PlanCardsIcon } from '@livedesign/ui';
+import { lucideGlyph } from '@livedesign/ui';
 import {
   lucideBookOpen,
   lucideCalculator,
@@ -26,13 +26,13 @@ import {
   lucideShieldCheck,
   lucideTable,
   lucideUsers,
-} from '@livepages/icons/lucide';
+} from '@livedesign/icons/lucide';
 import {
   SHEET_TEMPLATE_GROUPS,
   SHEET_TEMPLATES,
   type SheetStartId,
   type SheetTemplateId,
-} from '@livepages/sheets';
+} from '@livedesign/sheets';
 import { CardSearchControls, type CardSearch } from '@/components/plan/CardSearchControls';
 import { OptionRows } from '@/components/plan/OptionRows';
 import type { PlanContextValue } from '@/components/plan/PlanContext';

@@ -15,7 +15,7 @@ import {
   type ArrowStyle,
   type ArrowThickness,
   type BorderStyle,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { SizeButton, ToggleSwitch } from '@/components/palette/palette-controls';
 import {
   ArrowEndsIcon,
@@ -25,7 +25,7 @@ import {
   BorderStyleIcon,
   ThicknessIcon,
 } from '@/components/palette/palette-style-previews';
-import { HoverCard } from '@livepages/ui';
+import { HoverCard } from '@livedesign/ui';
 
 const LINE_PATTERN_ORDER: readonly BorderStyle[] = [
   'solid',

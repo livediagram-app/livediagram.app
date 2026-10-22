@@ -13,8 +13,8 @@ import {
   figureSuggestions,
   numberColumns,
   type SheetCellRef,
-} from '@livepages/sheets';
-import type { SheetMetricContent } from '@livepages/document';
+} from '@livedesign/sheets';
+import type { SheetMetricContent } from '@livedesign/document';
 import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
 import { useSheetRead } from './useSheetReader';
 import {

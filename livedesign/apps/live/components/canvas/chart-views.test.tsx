@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
 import { fireEvent, render } from '@testing-library/react';
-import { createShape, type ShapeElement } from '@livepages/document';
+import { createShape, type ShapeElement } from '@livedesign/document';
 import { BarChartView } from './BarChartView';
 import { LineChartView } from './LineChartView';
 import { PieChartView } from './PieChartView';

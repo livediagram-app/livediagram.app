@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { layOutPages, type Element } from '@livepages/document';
-import { templateCanvasOverrides, type TemplateKind } from '@livepages/templates';
-import { primsBounds } from '@livepages/icons';
-import { ICON_CATALOG_1 } from '@livepages/icons/icon-catalog-1';
-import { ICON_CATALOG_2 } from '@livepages/icons/icon-catalog-2';
+import { layOutPages, type Element } from '@livedesign/document';
+import { templateCanvasOverrides, type TemplateKind } from '@livedesign/templates';
+import { primsBounds } from '@livedesign/icons';
+import { ICON_CATALOG_1 } from '@livedesign/icons/icon-catalog-1';
+import { ICON_CATALOG_2 } from '@livedesign/icons/icon-catalog-2';
 import { buildTemplate, buildTemplatedTab } from './template-builders';
 import { isTechIconId } from './tech-icons';
 

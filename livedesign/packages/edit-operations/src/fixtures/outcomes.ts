@@ -1,6 +1,6 @@
 // Outcome readers for the suites: the success or the single refusal, failing the test otherwise.
 
-import type { EditRejection } from '@livepages/api-schema';
+import type { EditRejection } from '@livedesign/api-schema';
 import { expect } from 'vitest';
 import { formatResultLines } from '../format-results';
 import type { ApplyOutcome, ApplySuccess } from '../types';

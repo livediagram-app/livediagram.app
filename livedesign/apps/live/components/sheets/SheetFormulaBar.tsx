@@ -14,7 +14,7 @@ import {
   rangeNameProblem,
   type GridRange,
   type SheetLayout,
-} from '@livepages/sheets';
+} from '@livedesign/sheets';
 import { SHAPE_REFUSED, useSheetController } from './sheet-controller';
 import { ColouredDraft, FunctionAssist } from './SheetCellEditor';
 import { inputTextAt, type SheetActions } from './useSheetActions';

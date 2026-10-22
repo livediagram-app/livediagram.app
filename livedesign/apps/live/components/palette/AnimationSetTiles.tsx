@@ -15,7 +15,7 @@ import {
   keptAnimation,
   type AnimationSetId,
   type AnimationSpeed,
-} from '@livepages/document';
+} from '@livedesign/document';
 import {
   NOOP,
   SpeedAndRepeatRows,

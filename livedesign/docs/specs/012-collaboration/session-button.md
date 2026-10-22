@@ -63,7 +63,7 @@ Session strip's poll composer uses. It used to have its own `SESSION_POLL_MAX_OP
 and the two drifted the instant the poll cap went to 10: the composer offered ten
 answers while this menu silently stopped at six, with no hint which number was
 real. Two constants for one idea will always produce that, so there is one now,
-declared beside `PollStyle` in `@livepages/document` for the same reason that
+declared beside `PollStyle` in `@livedesign/document` for the same reason that
 union lives there — a `SessionButtonConfig` is a `Tab` field, and api-schema
 depends on document rather than the reverse.
 
@@ -96,8 +96,8 @@ already in it and plainly meant them to be the answers — so the fallback is th
 style that reads them, and every existing poll button starts behaving the way
 its author configured it.
 
-The union itself lives in `@livepages/document` (`poll-style.ts`) rather than
-beside `LivePoll` in `@livepages/api-schema`: the style is now a `Tab` field,
+The union itself lives in `@livedesign/document` (`poll-style.ts`) rather than
+beside `LivePoll` in `@livedesign/api-schema`: the style is now a `Tab` field,
 api-schema depends on document and not the reverse, and re-exporting `PollStyle`
 from api-schema keeps every existing import resolving against one list.
 

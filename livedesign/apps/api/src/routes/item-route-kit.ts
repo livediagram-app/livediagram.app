@@ -1,7 +1,7 @@
 // The item routes' shared parts (item-routes.ts, item-patches-route.ts, item-comment-routes.ts): who the caller is
-// and what they reach, the refusals, the writer's signature and the room relay. A body is read by @livepages/items'
+// and what they reach, the refusals, the writer's signature and the room relay. A body is read by @livedesign/items'
 // write checks (write-checks.ts), which an offline document runs too.
-import { isSafeColourValue, itemForRoom, itemForViewer } from '@livepages/document';
+import { isSafeColourValue, itemForRoom, itemForViewer } from '@livedesign/document';
 import {
   isArchived,
   isTrashed,
@@ -12,7 +12,7 @@ import {
   type Item,
   type ItemPerson,
   type ItemRejection,
-} from '@livepages/items';
+} from '@livedesign/items';
 import { getDocument, getParticipant, getTab, listItems } from '../db';
 import { forbidden, json, notFound } from '../responses';
 import { relayItems } from '../room-client';

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createShape, type ShapeElement } from '@livepages/document';
+import { createShape, type ShapeElement } from '@livedesign/document';
 import { track } from '@/lib/telemetry';
 import { SankeyFlowsDialog } from '@/components/dialogs/SankeyFlowsDialog';
 import { sankeyFlowsTourSteps } from './sankey-flows-tour-steps';

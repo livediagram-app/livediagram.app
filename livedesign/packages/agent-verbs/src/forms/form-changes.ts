@@ -26,8 +26,8 @@ import {
   type FormDefinition,
   type FormQuestion,
   type SectionRule,
-} from '@livepages/forms';
-import { parseColourBackground, type ColourBackground } from '@livepages/page-background';
+} from '@livedesign/forms';
+import { parseColourBackground, type ColourBackground } from '@livedesign/page-background';
 import {
   setGoesTo,
   setRespondsTo,

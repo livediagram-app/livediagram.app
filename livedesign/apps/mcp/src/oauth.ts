@@ -11,7 +11,7 @@ import {
   objectOrEmpty,
   oauthRedirectUrl,
   pkceChallenge,
-} from '@livepages/api-schema';
+} from '@livedesign/api-schema';
 import type { Hono } from 'hono';
 import type { Env } from './env';
 import { lookupClient, type ClientReg } from './oauth-clients';
@@ -71,7 +71,7 @@ export function isAllowedRedirectUri(uri: string): boolean {
 }
 
 // The MCP's own public origin, derived from the request so it's host-agnostic
-// (works on mcp.livepages.app and any self-host).
+// (works on mcp.livedesign.app and any self-host).
 function selfOrigin(reqUrl: string): string {
   return new URL(reqUrl).origin;
 }

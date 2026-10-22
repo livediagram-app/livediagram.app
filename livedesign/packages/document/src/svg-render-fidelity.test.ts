@@ -3,7 +3,7 @@ import { renderElementsToSvg } from './svg-render';
 import { createShape, createText } from './factories';
 import { wrapLabel } from './svg-render-primitives';
 import { SELECTION_MODES } from './selection-mode';
-import { MODE_GLYPHS } from '@livepages/icons/mode-glyphs';
+import { MODE_GLYPHS } from '@livedesign/icons/mode-glyphs';
 import type { ShapeElement, Tab } from './index';
 
 // The Behaviour faces export the way the canvas draws them

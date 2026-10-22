@@ -14,7 +14,7 @@
 // Everybody else sees no verb at all, because there is nothing they can do
 // with it — rather than a button that would be refused by the room.
 
-import { Button, HoverCard } from '@livepages/ui';
+import { Button, HoverCard } from '@livedesign/ui';
 
 export function FacilitatorButton({
   isSelf,

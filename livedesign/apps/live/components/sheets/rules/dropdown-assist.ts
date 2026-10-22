@@ -1,6 +1,6 @@
 // Typing in a dropdown cell (docs/specs/029-sheets/data-validation.md "Using a dropdown"): the options matching what
 // is typed, those starting with it first, then those holding it, case aside; at most DROPDOWN_ASSIST_MAX.
-import { rangeOptions, validationRuleAt, type Workbook } from '@livepages/sheets';
+import { rangeOptions, validationRuleAt, type Workbook } from '@livedesign/sheets';
 
 const DROPDOWN_ASSIST_MAX = 8;
 

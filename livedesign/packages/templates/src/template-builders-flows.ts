@@ -1,4 +1,4 @@
-import type { Element } from '@livepages/document';
+import type { Element } from '@livedesign/document';
 
 // Process-style template builders (swimlane, decision tree, approval
 // workflow), each pure (cx, cy) -> Element[] in its own file and

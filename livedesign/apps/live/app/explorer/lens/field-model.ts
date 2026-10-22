@@ -11,7 +11,7 @@ import {
   setDimensionValues,
   type LensContext,
   type LensDimension,
-} from '@livepages/explorer-lens';
+} from '@livedesign/explorer-lens';
 
 /** The field's two parts: the pills as one string of tokens, and the draft with its caret. */
 type FieldParts = { tokens: string; draft: string; draftCaret: number };

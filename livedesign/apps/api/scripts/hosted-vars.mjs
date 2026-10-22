@@ -1,5 +1,5 @@
 // The hosted profile (docs/specs/016-platform/deployment.md "Hosted profile"): the
-// plain vars livepages.app's own deploys add on top of wrangler.toml, and a
+// plain vars livedesign.app's own deploys add on top of wrangler.toml, and a
 // fork's do not. They live in `hosted-vars.json`, not in `[vars]`, because a
 // committed `[vars]` value is every fork's default too; and not in the
 // Cloudflare dashboard, because `wrangler deploy` replaces a worker's plain
@@ -7,7 +7,7 @@
 //
 // Most hosted vars are shared by every environment; a few are per environment
 // under `environments` (production, staging): the Google Drive mirror's OAuth
-// client id, because livepages.app runs one Google Cloud project per
+// client id, because livedesign.app runs one Google Cloud project per
 // environment (docs/specs/022-drive-mirror/drive-mirror.md, "Hosted deployment").
 // An empty per-environment value means unset there: the feature stays off.
 //

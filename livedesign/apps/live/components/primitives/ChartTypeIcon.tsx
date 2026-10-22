@@ -1,9 +1,9 @@
 // One glyph per chart type (docs/specs/009-elements/pie-chart.md "Chart types"), drawn on the 24-unit grid with the
 // house stroke in `currentColor`: the Sheet toolbar's Insert Chart menu, the cell menu, a chart's Chart Type tiles and
 // a Dashboard's chart picker all show a type by the same picture.
-import { Glyph, Prims } from '@livepages/ui';
-import { lucideChartPie } from '@livepages/icons/lucide';
-import type { ChartType } from '@livepages/document';
+import { Glyph, Prims } from '@livedesign/ui';
+import { lucideChartPie } from '@livedesign/icons/lucide';
+import type { ChartType } from '@livedesign/document';
 
 const AXES = 'M3 3v18h18';
 

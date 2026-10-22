@@ -6,8 +6,8 @@
 // none highlighted, submits the form), Escape closes the list (or, closed, cancels the form). The list is drawn in a
 // portal under the field, so a short slot never clips it.
 import { useId, useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react';
-import { Portal, TextInput } from '@livepages/ui';
-import type { Tab } from '@livepages/document';
+import { Portal, TextInput } from '@livedesign/ui';
+import type { Tab } from '@livedesign/document';
 import { TabModeIcon } from '@/components/chrome/editor-mode/TabModeIcon';
 import { placeAnchored, type AnchoredPlace } from '@/components/primitives/AnchoredPopover';
 import { matchingTabs } from './link-address';

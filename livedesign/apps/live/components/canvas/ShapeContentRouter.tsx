@@ -25,7 +25,7 @@ import {
   progressTrackColour,
   isRatingShape,
   type ShapeKind,
-} from '@livepages/document';
+} from '@livedesign/document';
 import dynamic from 'next/dynamic';
 import type { ReactNode } from 'react';
 import { useFillsTab, usePlanTabKind } from '@/hooks/plan/plan-cover-store';

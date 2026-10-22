@@ -14,7 +14,7 @@ import {
   parsePlacementDefaultKey,
   type PlacementDefaultKey,
   type PlacementDefaultRejection,
-} from '@livepages/api-schema';
+} from '@livedesign/api-schema';
 import { clearPlacementDefault, listPlacementDefaults, setPlacementDefault } from '../db';
 import { joinedFolderTeam, judgeDefaultFolder } from '../placement/default-folder';
 import {

@@ -21,7 +21,7 @@ Scope, by file:
 | `packages/api-schema/src/ref-errors.ts`                                 | `TARGET_NOT_FOUND_ERROR`, `TARGET_AMBIGUOUS_ERROR`, `RefCandidate`, `RefErrorBody`                                          |
 | `packages/api-schema/src/telemetry-schema.ts`                           | `TELEMETRY_ACTIONS` gains `Viewed`                                                                                          |
 | `packages/api-schema/src/index.ts`                                      | Re-exports both new files                                                                                                   |
-| `packages/document-views/{package.json,tsconfig.json,oxlint.config.ts}` | The new package `@livepages/document-views` (depends on `document`, `api-schema`), shaped like `explorer-lens`            |
+| `packages/document-views/{package.json,tsconfig.json,oxlint.config.ts}` | The new package `@livedesign/document-views` (depends on `document`, `api-schema`), shaped like `explorer-lens`            |
 | `packages/document-views/vitest.config.ts`                              | 100% line, branch, function and statement thresholds                                                                        |
 | `packages/document-views/src/index.ts`                                  | The public surface: `renderView`, every view function, the budget                                                           |
 | `packages/document-views/src/constants.ts`                              | The view constants in [Constants and configuration](#constants-and-configuration)                                           |
@@ -48,7 +48,7 @@ Scope, by file:
 | `packages/document-views/src/performance.test.ts`                       | A 10,000-element tab with 100 containers renders and fits within a second                                                   |
 | `packages/document-views/src/__fixtures__/*.ts`                         | The checkout tab, its "after" twin, the three-tab document, the agent-built tab, the 300-element tab, the edge cases        |
 | `packages/document-views/src/__fixtures__/golden/*`                     | One golden file per view (see [Testing](#testing))                                                                          |
-| `apps/api/package.json`                                                 | Depends on `@livepages/document-views`                                                                                    |
+| `apps/api/package.json`                                                 | Depends on `@livedesign/document-views`                                                                                    |
 | `apps/api/src/responses.ts`                                             | `textPlain(body, init)`                                                                                                     |
 | `apps/api/src/routes/document-views-route.ts`                           | `parseViewQuery`, `answerTabView` (+ the selection for `show selected`), `answerOverview`, the `Agent·Viewed` event         |
 | `apps/api/src/room-client.ts`                                           | `readRoomSelections(env, documentId, tabId, personTag, reader)`: the warning names its reader                               |
@@ -64,8 +64,8 @@ Scope, by file:
 | `apps/mcp/src/image-result.ts`                                          | `tabPreview`: the PNG on its own, which `imageResult` and `readDocument` attach                                             |
 | `apps/telemetry/app/catalogue/connections.ts`                           | The `Agent·Viewed` chart, by view                                                                                           |
 | `docs/development/architecture.md`, `README.md`                         | The new package in the layout and the package list                                                                          |
-| `@livepages/edit-operations`, `@livepages/diagram-lint` (own)       | Import refs, slug ids, kind words, `deriveContainers` and `contentOrigin` from `@livepages/document`                      |
-| The cross-tab comments route (agent-presence's blueprint)               | Imports `computeRefs` from `@livepages/document`                                                                          |
+| `@livedesign/edit-operations`, `@livedesign/diagram-lint` (own)       | Import refs, slug ids, kind words, `deriveContainers` and `contentOrigin` from `@livedesign/document`                      |
+| The cross-tab comments route (agent-presence's blueprint)               | Imports `computeRefs` from `@livedesign/document`                                                                          |
 
 The repo layout block in `AGENTS.md` gains the package only with the operator's permission (agent files are not
 edited without it); the change names the gap.
@@ -80,7 +80,7 @@ edited without it); the change names the gap.
 | Slug id         | `isSlugId`, `SLUG_ID_PATTERN`, `slugIdFor`                               | An id matching `^[a-z][a-z0-9_-]{0,23}$`; printed verbatim as its ref          |
 | Resolve         | `resolveRef(input, refs) → RefResolution`                                | Input to one element, or a named refusal                                       |
 | Kind word       | `kindWordOf(el)`                                                         | The first word of a line: the shape, the notation, or the element type         |
-| Unknown kind    | `isKnownElement`, `UNKNOWN_KIND_MARK` (`?`)                              | An element type or shape kind `@livepages/document` does not know            |
+| Unknown kind    | `isKnownElement`, `UNKNOWN_KIND_MARK` (`?`)                              | An element type or shape kind `@livedesign/document` does not know            |
 | Container       | `deriveContainers`, `ViewNode.container`                                 | The frame, lane or mind-map parent an element nests under                      |
 | Reading order   | `readingOrder`, `rowsOf`                                                 | Rows top to bottom, then left to right                                         |
 | Freehand run    | `FreehandRun`, `freehandRuns`                                            | Consecutive bare strokes in one container, printed as one counted line         |
@@ -128,7 +128,7 @@ No view reads a clock, a random source or a locale; `overview` takes `now` as an
 `context` is `{ rev?: number; tabIds?: readonly string[] }`; `tabIds` (the document's tab ids in order) makes the
 tab ref unique within the document (`VW4`).
 
-### Refs (`@livepages/document`, `element-refs.ts`)
+### Refs (`@livedesign/document`, `element-refs.ts`)
 
 - **Slug.** `isSlugId(id)` is `SLUG_ID_PATTERN.test(id)`. A slug id's ref is the id.
 - **Prefix.** Otherwise sort every element id of the tab by UTF-16 code units; for each id, `lcp` is the longest
@@ -184,7 +184,7 @@ An unknown name prints bare when it matches `^[A-Za-z0-9_.:-]+$`, else as a JSON
 
 `SHAPE_KINDS` and `ELEMENT_TYPES` are `packages/document/src/validate.ts`'s sets, so the kind words know exactly what the document model knows.
 
-### Containment (`@livepages/document`, `containment.ts`)
+### Containment (`@livedesign/document`, `containment.ts`)
 
 `deriveContainers(elements) → Map<ElementId, ElementId | null>` assigns each non-arrow element at most one
 container; views, the edit-operations membership reports, the lint and the editor's frame drag (through
@@ -383,7 +383,7 @@ Every other kind has no state attribute; `show` has its content.
 `font=` (`font`), each printed only when present and different from what the kind's factory writes
 (`createShape(kind, 0, 0)`, `createText`, `createSticky`, `createTable`, `createPinnedArrow` built once per render
 with a fixed id). The keys are the edit-operations field keys, so a printed style attribute can be written back with
-`set` unchanged; the two blueprints keep one key table (`STYLE_KEYS` in `@livepages/document`).
+`set` unchanged; the two blueprints keep one key table (`STYLE_KEYS` in `@livedesign/document`).
 
 ### Every view
 
@@ -402,7 +402,7 @@ is the full view's estimate and the step it took (a ladder state, or `lines-drop
 | `comments` | `commentsView`                          | api, CLI offline         | Open threads, every comment in full; `all` adds resolved ones                           |
 | `show`     | `showView` (`ref`), `showSelectedView`  | api, CLI offline         | One element in full                                                                     |
 | `find`     | `findView` (`q` required)               | api, CLI offline         | Matches with their container chains                                                     |
-| `lint`     | `@livepages/diagram-lint` (not built) | api, CLI offline         | The lint's own output ([Diagram lint](../diagram-lint.md)) under the same header        |
+| `lint`     | `@livedesign/diagram-lint` (not built) | api, CLI offline         | The lint's own output ([Diagram lint](../diagram-lint.md)) under the same header        |
 | `diff`     | `diffView(before, after, context)`      | CLI only, from its cache | Added, removed, changed and moved elements                                              |
 | `overview` | `overviewView(document, tabs, options)` | api, CLI offline         | One line per tab                                                                        |
 
@@ -677,7 +677,7 @@ allowed values:
 
 - `view` in the door's names: `overview` on the document; `outline`, `graph`, `layout`, `comments`, `show`, `find`,
   `lint` on the tab once the lint is built. `diff` is `unknown_view` with the message "diff is computed by the CLI:
-  livepages tab diff"; until then `lint` is `unknown_view` with "the lint view arrives with the diagram lint".
+  livedesign tab diff"; until then `lint` is `unknown_view` with "the lint view arrives with the diagram lint".
 - `budget`: an integer in `[1, VIEW_BUDGET_MAX]`.
 - `only`, `ref`: resolved by `resolveRef`; `only` (outline and layout only) naming an arrow is `invalid_value`
   (`VW41`). The header still counts the whole tab.
@@ -724,7 +724,7 @@ types join `ROOT_TYPES`.
 - The description: "Read one tab as text: by default its outline, one line per element with its ref, label and
   arrows, about a tenth of the element JSON. view picks another (graph, layout, comments, show, find, lint), budget
   fits it to a token count, format "json" returns the elements, image adds a PNG preview."
-- `apiText(env, token, path) → Promise<{ text, etag }>` goes through the same `@livepages/api-client` client as
+- `apiText(env, token, path) → Promise<{ text, etag }>` goes through the same `@livedesign/api-client` client as
   `apiJson` (`clientFor(env, token).text`): Bearer token, `ApiError` on
   non-2xx, a 5xx reported to `Error` telemetry. The revision in the result is the view's `ETag`; a view without one
   is an error, never a revision of 0. An `ApiError` carrying `target_not_found` or `target_ambiguous` becomes an
@@ -910,7 +910,7 @@ out of Prettier (`.prettierignore`).
 
 | Constant                       | Value                         | Provenance                                                                 | Safe range      |
 | ------------------------------ | ----------------------------- | -------------------------------------------------------------------------- | --------------- |
-| `SLUG_ID_PATTERN`              | `^[a-z][a-z0-9_-]{0,23}$`     | Spec, "Refs" (in `@livepages/document`)                                  | fixed           |
+| `SLUG_ID_PATTERN`              | `^[a-z][a-z0-9_-]{0,23}$`     | Spec, "Refs" (in `@livedesign/document`)                                  | fixed           |
 | `SLUG_ID_MAX_LENGTH`           | 24                            | Spec (the pattern's bound)                                                 | fixed           |
 | `REF_MIN_LENGTH`               | 4                             | Spec                                                                       | fixed           |
 | `LABEL_CUT_CHARS`              | 60                            | Spec                                                                       | fixed           |
@@ -922,10 +922,10 @@ out of Prettier (`.prettierignore`).
 | `ACTION_CUT_CHARS`             | 48                            | As notes (`VW53`)                                                          | 24 to 120       |
 | `ATTR_BARE_PATTERN`            | `^[A-Za-z0-9._:/#?&=%+@~-]+$` | URL-safe without quotes or spaces (`VW15`)                                 | narrower only   |
 | `REF_NEAREST_MAX`              | 5                             | Enough to choose from (`VW53`)                                             | 1 to 20         |
-| `REF_INPUT_MAX_LENGTH`         | 256                           | Above any stored id in practice (`VW53`); in `@livepages/api-schema`     | 64 to 1,024     |
+| `REF_INPUT_MAX_LENGTH`         | 256                           | Above any stored id in practice (`VW53`); in `@livedesign/api-schema`     | 64 to 1,024     |
 | `SELECTED_REF`                 | `selected`                    | Spec: the edit operations' selector                                        | fixed           |
-| `FIND_QUERY_MAX_LENGTH`        | 200                           | A phrase, not a document (`VW53`); in `@livepages/api-schema`            | 50 to 1,000     |
-| `VIEW_BUDGET_MAX`              | 1,000,000                     | Above a full 10,000-element outline (`VW53`); in `@livepages/api-schema` | 200,000 and up  |
+| `FIND_QUERY_MAX_LENGTH`        | 200                           | A phrase, not a document (`VW53`); in `@livedesign/api-schema`            | 50 to 1,000     |
+| `VIEW_BUDGET_MAX`              | 1,000,000                     | Above a full 10,000-element outline (`VW53`); in `@livedesign/api-schema` | 200,000 and up  |
 | `OVERVIEW_TAB_BATCH`           | 8                             | About 15 MB of bodies at the tab cap (`VW47`)                              | 1 to 16         |
 | `VIEW_SLOW_MS`                 | 100                           | Well above a 1,000-element render (`VW53`)                                 | 50 to 1,000     |
 | `ELISION_CONTAINERS_NAMED`     | 3                             | A line that stays short (`VW60`)                                           | 1 to 10         |
@@ -936,8 +936,8 @@ No environment variable or binding; self-hosting needs nothing new.
 ## Assets and external resources
 
 The fixtures and goldens are the only assets: TypeScript fixtures in `src/__fixtures__/` built from
-`@livepages/document` factories (MIT, this repo), and golden text regenerated by `pnpm --filter
-@livepages/document-views test -- -u`, which CI never runs (a missing or changed golden fails CI). No font, image
+`@livedesign/document` factories (MIT, this repo), and golden text regenerated by `pnpm --filter
+@livedesign/document-views test -- -u`, which CI never runs (a missing or changed golden fails CI). No font, image
 or external resource.
 
 ## Defaults ledger

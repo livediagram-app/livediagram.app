@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
-import { sentJson } from '@livepages/vitest-config/sent-request';
+import { sentJson } from '@livedesign/vitest-config/sent-request';
 import type { DatabaseSync } from 'node:sqlite';
-import { DOCUMENT_CONVERSION_HEADER } from '@livepages/api-schema';
+import { DOCUMENT_CONVERSION_HEADER } from '@livedesign/api-schema';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import type { Env } from '../types';
 import { upsertTab } from '../db/tabs';

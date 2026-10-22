@@ -8,7 +8,7 @@ import {
   MIN_TEXT_CONTRAST,
   type ImageElement,
   type ThemeDefinition,
-} from '@livepages/document';
+} from '@livedesign/document';
 import {
   CanvasSurfaceProvider,
   CanvasThemeProvider,

@@ -12,7 +12,7 @@ import {
   type DashboardTabOf,
   type ShapeElement,
   type SheetMetricKind,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { fitsSlot } from './slot-fit';
 
 export type DashboardItem =

@@ -7,7 +7,7 @@ import {
   removedFieldRemap,
   type EntityField,
   type FieldRemap,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { useFollowingDraft } from '@/hooks/ui/useFollowingDraft';
 import { EntityKeyGlyph } from '@/components/canvas/entity/EntityKeyGlyph';
 import { MENU_ADD_ROW_BUTTON, MENU_CELL_INPUT } from './menu-editor-classes';

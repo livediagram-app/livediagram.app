@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createShape, type Element } from '@livepages/document';
+import { createShape, type Element } from '@livedesign/document';
 import { newTypeForBoard, withTypeOnBoard } from './useTypeForBoard';
 
 // docs/specs/026-plan/plan-board.md "Add New Card Type".

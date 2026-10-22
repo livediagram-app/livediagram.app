@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { canonicalJson, type ShapeElement, type Tab } from '@livepages/document';
+import { canonicalJson, type ShapeElement, type Tab } from '@livedesign/document';
 import {
   fileSlug,
   idSlug,
@@ -28,12 +28,12 @@ const tab = (over: Partial<Tab> = {}): Tab => ({
 });
 
 const file = (tabs: Tab[] = [tab()]): PullFile => ({
-  kind: 'livepages.document',
+  kind: 'livedesign.document',
   schemaVersion: 1,
   exportedAt: 1,
   document: { id: 'd1', name: 'Shop', presentation: null, tabs },
-  livepagesSync: {
-    host: 'https://livepages.app',
+  livedesignSync: {
+    host: 'https://livedesign.app',
     pulledAt: 1,
     tabs: { t1: { rev: 4, hash: 'h', settingsHash: 's' } },
   },
@@ -76,47 +76,47 @@ describe('pullFileText and parsePullFile', () => {
   it('round-trips, keeping the envelope the editor imports', () => {
     const text = pullFileText(file());
     expect(JSON.parse(text)).toMatchObject({
-      kind: 'livepages.document',
-      livepagesSync: { host: 'https://livepages.app' },
+      kind: 'livedesign.document',
+      livedesignSync: { host: 'https://livedesign.app' },
     });
     expect(parsePullFile(text)).toEqual({ ok: true, file: file() });
   });
 
   it('refuses what is not a pull file, naming why', () => {
     expect(parsePullFile('{')).toEqual({ ok: false, message: 'not JSON' });
-    expect(parsePullFile('{"kind":"livepages.tab"}')).toEqual({
+    expect(parsePullFile('{"kind":"livedesign.tab"}')).toEqual({
       ok: false,
-      message: 'not a livepages document',
+      message: 'not a livedesign document',
     });
     expect(parsePullFile(JSON.stringify({ ...file(), schemaVersion: 9 }))).toEqual({
       ok: false,
-      message: 'written by a newer livepages',
+      message: 'written by a newer livedesign',
     });
     expect(parsePullFile(JSON.stringify({ ...file(), document: { id: 'd1' } }))).toEqual({
       ok: false,
       message: 'its document is malformed',
     });
-    const { livepagesSync: _s, ...exported } = file();
+    const { livedesignSync: _s, ...exported } = file();
     expect(parsePullFile(JSON.stringify(exported))).toEqual({
       ok: false,
-      message: 'not pulled by the CLI (no livepagesSync)',
+      message: 'not pulled by the CLI (no livedesignSync)',
     });
     expect(
-      parsePullFile(JSON.stringify({ ...file(), livepagesSync: { host: 1, tabs: {} } })),
+      parsePullFile(JSON.stringify({ ...file(), livedesignSync: { host: 1, tabs: {} } })),
     ).toEqual({
       ok: false,
-      message: 'not pulled by the CLI (no livepagesSync)',
+      message: 'not pulled by the CLI (no livedesignSync)',
     });
     expect(
       parsePullFile(
         JSON.stringify({
           ...file(),
-          livepagesSync: { ...file().livepagesSync, tabs: { t1: { rev: 'x' } } },
+          livedesignSync: { ...file().livedesignSync, tabs: { t1: { rev: 'x' } } },
         }),
       ),
     ).toEqual({
       ok: false,
-      message: 'not pulled by the CLI (no livepagesSync)',
+      message: 'not pulled by the CLI (no livedesignSync)',
     });
   });
 
@@ -135,11 +135,11 @@ describe('a pull file whose pulledAt is not a time', () => {
   it('is not a pull file', () => {
     const text = JSON.stringify({
       ...file(),
-      livepagesSync: { ...file().livepagesSync, pulledAt: 'x' },
+      livedesignSync: { ...file().livedesignSync, pulledAt: 'x' },
     });
     expect(parsePullFile(text)).toEqual({
       ok: false,
-      message: 'not pulled by the CLI (no livepagesSync)',
+      message: 'not pulled by the CLI (no livedesignSync)',
     });
   });
 });

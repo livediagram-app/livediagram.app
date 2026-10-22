@@ -1,4 +1,4 @@
-import { codeTheme, type CodeTheme, type ShapeElement } from '@livepages/document';
+import { codeTheme, type CodeTheme, type ShapeElement } from '@livedesign/document';
 import { tokenizeLoaded, useCodeTokenizer } from '@/lib/code-highlight-registry';
 import type { CodeTokenKind } from '@/lib/code-tokens';
 

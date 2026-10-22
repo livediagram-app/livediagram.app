@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { LINT_CODES } from '@livepages/api-schema';
-import type { Element, Tab } from '@livepages/document';
-import { applyEditOperations, parseEditOperations } from '@livepages/edit-operations';
+import { LINT_CODES } from '@livedesign/api-schema';
+import type { Element, Tab } from '@livedesign/document';
+import { applyEditOperations, parseEditOperations } from '@livedesign/edit-operations';
 import { arrow, box, frame, lint } from './fixtures/build';
 
 // One drawing per code, each drawing that code's fault.

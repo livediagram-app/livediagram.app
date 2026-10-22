@@ -6,8 +6,8 @@
 // sits there so it never moves when the entries land.
 
 import { useMemo } from 'react';
-import { isNewEvent } from '@livepages/ui';
-import type { HomeGroup } from '@livepages/api-schema';
+import { isNewEvent } from '@livedesign/ui';
+import type { HomeGroup } from '@livedesign/api-schema';
 import { HOME_COPY } from '@/app/explorer/home/home-copy';
 import { useNow } from '@/hooks/ui/useNow';
 import { groupsByDay } from '@/app/explorer/home/home-model';

@@ -9,7 +9,7 @@
 // content (data attributes), never in the DOM text.
 
 import type { ReactNode } from 'react';
-import { fnv1aString, type TextAnimation } from '@livepages/document';
+import { fnv1aString, type TextAnimation } from '@livedesign/document';
 
 // Every unit is restyled each frame its label's progress moves, at about 10 µs a unit in the
 // editor (measured), so a label is held to a few dozen units: a title or a label types letter by

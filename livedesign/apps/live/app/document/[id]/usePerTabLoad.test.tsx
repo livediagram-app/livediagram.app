@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Tab } from '@livepages/document';
+import type { Tab } from '@livedesign/document';
 
 const apiLoadTab =
   vi.fn<(owner: string, documentId: string, tabId: string) => Promise<Tab | null>>();

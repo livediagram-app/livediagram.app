@@ -4,7 +4,7 @@
 // An existing tab keeps every tab field and swaps its elements (no theme repaint, EO41); a new tab is
 // built whole.
 
-import type { EditRejection } from '@livepages/api-schema';
+import type { EditRejection } from '@livedesign/api-schema';
 import {
   buildGraphTab,
   buildTab,
@@ -22,7 +22,7 @@ import {
   type Element,
   type GraphInput,
   type Tab,
-} from '@livepages/document';
+} from '@livedesign/document';
 import {
   buildDashboardTab,
   buildTemplateTab,
@@ -30,15 +30,15 @@ import {
   isTemplateKind,
   resolveTemplate,
   validTemplateKinds,
-} from '@livepages/templates';
-import { readForm, type FormDefinition } from '@livepages/forms';
+} from '@livedesign/templates';
+import { readForm, type FormDefinition } from '@livedesign/forms';
 import { dashboardSpecIssue } from './dashboard-body';
 import { tabRejection } from './finalise';
 import { graphBodyIssue } from './graph-body';
 import { invalidResult, planOnlyOutsidePlan, tabLocked } from './rejections';
 import { addedLine, lineNaming, removedLine } from './results';
 import type { ApplyOutcome, EditLog, ReplaceBody, ReplaceOptions } from './types';
-import type { DashboardSpec } from '@livepages/templates';
+import type { DashboardSpec } from '@livedesign/templates';
 
 type Source = 'graph' | 'mermaid' | 'template' | 'dashboard' | 'form' | 'elements';
 const SOURCES: readonly Source[] = [

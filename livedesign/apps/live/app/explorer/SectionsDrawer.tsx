@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, type ReactNode } from 'react';
-import { CloseIcon, useFocusTrap } from '@livepages/ui';
+import { CloseIcon, useFocusTrap } from '@livedesign/ui';
 
 // The Explorer's sections on a phone (docs/specs/013-workspace/explorer-structure.md): the sidebar is hidden below
 // `sm`, so this slides the same tree in from the left, opened by the hamburger in the pane header or the Home hero.

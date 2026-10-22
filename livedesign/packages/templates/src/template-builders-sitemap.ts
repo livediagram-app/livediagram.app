@@ -9,7 +9,7 @@ import {
   type Element,
   type ShapeElement,
   type TextRun,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { buildMindTemplate, mindHowTo, type MindSpec } from './template-builders-mindmaps';
 
 // Sitemap: a real product site's page tree, the way a web team plans one,

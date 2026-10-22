@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { HoverCard, SOLID_BRAND_DARK_CONTROL, Tooltip, Glyph, withArticle } from '@livepages/ui';
+import { HoverCard, SOLID_BRAND_DARK_CONTROL, Tooltip, Glyph, withArticle } from '@livedesign/ui';
 import {
   EMBED_PROVIDER_HINT,
   EMBED_PROVIDER_LABEL,
@@ -9,7 +9,7 @@ import {
   type EmbedProvider,
   type EmbedTarget,
   type VideoElement,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { track } from '@/lib/telemetry';
 import { bodySetClass } from '@/lib/animation-classes';
 import { useFrameBlocked } from '@/components/canvas/use-frame-blocked';

@@ -10,7 +10,7 @@ import {
   pageKindOf,
   type PageKind,
   type WireframeDeviceId,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { usePageThumbnails, type PageThumbTab } from '@/hooks/ui/usePageThumbnails';
 import type { PagesModeView } from '@/hooks/editor/usePagesMode';
 import {

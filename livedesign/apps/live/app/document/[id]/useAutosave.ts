@@ -9,7 +9,7 @@ import {
   type RefObject,
   type SetStateAction,
 } from 'react';
-import type { Tab } from '@livepages/document';
+import type { Tab } from '@livedesign/document';
 import {
   apiDeleteTab,
   apiSaveDocumentMeta,

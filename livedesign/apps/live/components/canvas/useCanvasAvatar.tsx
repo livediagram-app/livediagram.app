@@ -10,7 +10,7 @@ import {
   isBoxed,
   type ShapeElement,
   visibleLayerElements,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { track } from '@/lib/telemetry';
 import { useAvatarSpeech } from '@/hooks/canvas/useAvatarSpeech';
 import { useSpeechBubbles } from '@/lib/avatar-speech-store';
@@ -25,9 +25,9 @@ import {
   nearestSeat,
   drinkFrom,
   seatingFacing,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { useAvatarConfig } from '@/hooks/canvas/useAvatarConfig';
-import type { Reaction } from '@livepages/document';
+import type { Reaction } from '@livedesign/document';
 import { usePortalTravel } from '@/components/canvas/portal-travel';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { useLatest } from '@/hooks/ui/useLatest';

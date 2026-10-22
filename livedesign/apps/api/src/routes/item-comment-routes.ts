@@ -4,9 +4,9 @@
 // their own comments, and an editor deletes any. Each is an item write (writeItem: the item as stored, guarded by
 // its rev, relayed to the room without author ids), so concurrent comments never lose one another.
 
-import { applyItemComment, itemThread, type ItemCommentChange } from '@livepages/document';
-import type { ItemCommentAddResponse, ItemResponse } from '@livepages/api-schema';
-import type { Item, ItemPerson } from '@livepages/items';
+import { applyItemComment, itemThread, type ItemCommentChange } from '@livedesign/document';
+import type { ItemCommentAddResponse, ItemResponse } from '@livedesign/api-schema';
+import type { Item, ItemPerson } from '@livedesign/items';
 import { forbidden, json, methodNotAllowed, noContent } from '../responses';
 import { recordCommentResolved, retractComments } from '../timeline';
 import { afterCommentPosted, newComment } from './comment-routes';

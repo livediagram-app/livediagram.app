@@ -12,7 +12,7 @@ import {
   createText,
   pyramidLayout,
   type Element,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { CANVAS_TONES } from './template-inks';
 
 // A funnel that tells a conversion story rather than just drawing a shape.

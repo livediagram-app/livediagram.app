@@ -1,8 +1,8 @@
 'use client';
 
 import type { CSSProperties, PointerEventHandler, ReactNode } from 'react';
-import { HoverCard } from '@livepages/ui';
-import { CountBadge } from '@livepages/ui';
+import { HoverCard } from '@livedesign/ui';
+import { CountBadge } from '@livedesign/ui';
 import { useMenuItemProps } from './menu-item-props';
 
 // The tile family of the menu rows (PortalMenu.tsx holds the menu and its list rows): a toolbar of

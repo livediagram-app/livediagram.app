@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Tab } from '@livepages/document';
+import type { Tab } from '@livedesign/document';
 import { FORM_TAB_DELETE_WARNING, deleteTabWarning, formsFeeding } from './forms-feeding';
 
 // Deleting a board or sheet a form sends to says first that it pauses the form

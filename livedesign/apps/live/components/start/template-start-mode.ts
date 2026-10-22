@@ -3,7 +3,7 @@
 // empty, outside zen and embed, with no draw tool armed. Draw keeps a pen in hand on an empty
 // tab, so there an armed pen does not hide it. Empty is no elements, and on a Pages tab its one page still
 // unchosen (the page's own What Is This Page For? waits under the panel). Plan has Start Planning.
-import type { EditorMode, Page } from '@livepages/document';
+import type { EditorMode, Page } from '@livedesign/document';
 import type { TemplateStartMode } from './start-template-items';
 
 export function templateStartMode(at: {

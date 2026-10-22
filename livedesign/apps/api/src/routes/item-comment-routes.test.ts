@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { sentJson } from '@livepages/vitest-config/sent-request';
-import type { ItemCommentAddResponse, ItemResponse, ItemsResponse } from '@livepages/api-schema';
-import type { CommentThread } from '@livepages/document';
-import type { Item } from '@livepages/items';
+import { sentJson } from '@livedesign/vitest-config/sent-request';
+import type { ItemCommentAddResponse, ItemResponse, ItemsResponse } from '@livedesign/api-schema';
+import type { CommentThread } from '@livedesign/document';
+import type { Item } from '@livedesign/items';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import * as db from '../db';
 import { makeTestRouteContext } from './test-route-context';

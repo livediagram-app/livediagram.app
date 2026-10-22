@@ -5,8 +5,8 @@
 // of what it makes over its name, line and (a board's) card types; a search across all of them, and across every other
 // mode's templates (otherModeMatches). Choosing a card acts at once. In the tab's own light or dark look (planPalette).
 import { useEffect, useMemo, type ReactNode } from 'react';
-import { DASHBOARD_PRESETS } from '@livepages/document';
-import { lucideGlyph } from '@livepages/ui';
+import { DASHBOARD_PRESETS } from '@livedesign/document';
+import { lucideGlyph } from '@livedesign/ui';
 import {
   lucideChartPie,
   lucideClipboardList,
@@ -15,10 +15,10 @@ import {
   lucideLightbulb,
   lucideSquareKanban,
   lucideStar,
-} from '@livepages/icons/lucide';
+} from '@livedesign/icons/lucide';
 import { StartPanel, type StartPanelCard } from '@/components/start/StartPanel';
-import type { PlanTemplateKind, TemplateKind } from '@livepages/templates';
-import type { EditorMode, Tab } from '@livepages/document';
+import type { PlanTemplateKind, TemplateKind } from '@livedesign/templates';
+import type { EditorMode, Tab } from '@livedesign/document';
 import { useEditorModeState } from '@/components/chrome/editor-mode/editor-mode-context';
 import { otherModeMatches } from '@/components/start/other-mode-matches';
 import { TemplatePicture, templateCard } from '@/components/start/template-card';
@@ -29,9 +29,9 @@ import type { PlanPalette } from '../plan-palette';
 import { BoardPreview, SHEET_TILES, SheetPreview } from '../PlanBoardPicker';
 import { DashboardLayoutPicture } from '../DashboardLayoutPicture';
 import { VisualisationPreview } from '../dashboard/slot-previews';
-import { FormStarterPicture } from '@livepages/template-previews';
-import type { StarterId } from '@livepages/forms';
-import type { PlanVisualisation } from '@livepages/items';
+import { FormStarterPicture } from '@livedesign/template-previews';
+import type { StarterId } from '@livedesign/forms';
+import type { PlanVisualisation } from '@livedesign/items';
 import {
   KIND_NAMES,
   START_CATEGORIES,

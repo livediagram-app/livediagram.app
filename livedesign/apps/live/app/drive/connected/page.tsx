@@ -5,7 +5,7 @@ import { DriveConnected } from '@/components/drive/DriveConnected';
 // (docs/specs/022-drive-mirror/drive-mirror.md, "Connecting"). Client-side only,
 // so this stays a thin shell.
 export const metadata: Metadata = {
-  title: 'Connecting Google Drive | livepages',
+  title: 'Connecting Google Drive | livedesign',
 };
 
 export default function DriveConnectedPage() {

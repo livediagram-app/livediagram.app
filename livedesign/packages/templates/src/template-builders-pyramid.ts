@@ -9,7 +9,7 @@ import {
   createText,
   pyramidLayout,
   type Element,
-} from '@livepages/document';
+} from '@livedesign/document';
 
 const MUTED = '#64748b';
 // The pyramid's ramp: deep violet at the peak toward a pale wash at the base.

@@ -136,7 +136,7 @@ characters; `sourceUrl` and optional `licenseUrl` strings of at most 2048 charac
 - No migration: absent means "no credit", which every existing image is.
 - The gallery row is an ordinary upload; its `original_name` is the result's title (or
   `openverse-<id>`). The gallery does not store the credit (D152).
-- Openverse responses are not cached by livepages; the browser's HTTP cache applies.
+- Openverse responses are not cached by livedesign; the browser's HTTP cache applies.
 
 ## Errors and edge cases
 

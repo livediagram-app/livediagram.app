@@ -1,6 +1,6 @@
 'use client';
 
-import { trustedHtml } from '@livepages/ui';
+import { trustedHtml } from '@livedesign/ui';
 
 import {
   useCallback,

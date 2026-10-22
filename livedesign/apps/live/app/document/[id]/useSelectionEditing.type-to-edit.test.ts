@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { Element, Tab } from '@livepages/document';
+import type { Element, Tab } from '@livedesign/document';
 import { useSelectionEditing } from './useSelectionEditing';
 
 vi.mock('@/components/canvas/text-hug-measure', () => ({

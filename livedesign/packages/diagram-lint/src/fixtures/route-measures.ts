@@ -17,7 +17,7 @@ import {
   type Tab,
   frameHeadingRect,
   type Rect,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { lintTab } from '../lint';
 import { prepareLintContext } from '../context';
 

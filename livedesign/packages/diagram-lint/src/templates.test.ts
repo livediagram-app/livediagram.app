@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildTemplateTab, TEMPLATES } from '@livepages/templates';
+import { buildTemplateTab, TEMPLATES } from '@livedesign/templates';
 import { lint } from './fixtures/build';
 
 // Templates are the editor's own drawings: none of them should draw an error.

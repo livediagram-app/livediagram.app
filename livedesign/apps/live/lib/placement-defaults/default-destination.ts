@@ -7,8 +7,8 @@ import {
   PLACEMENT_DEFAULT_KEYS,
   type CreationIntent,
   type PlacementDefaultKey,
-} from '@livepages/api-schema';
-import type { EditorMode } from '@livepages/document';
+} from '@livedesign/api-schema';
+import type { EditorMode } from '@livedesign/document';
 
 export type IndexedFolder = {
   id: string;

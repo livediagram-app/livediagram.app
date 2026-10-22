@@ -2,7 +2,7 @@
 // person's own said at most every PRESENCE_THROTTLE_MS (the last always sent), silence until something is
 // selected, and the last selection said again to a late joiner.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { SheetPresenceOp } from '@livepages/api-schema';
+import type { SheetPresenceOp } from '@livedesign/api-schema';
 import { PRESENCE_THROTTLE_MS, SheetPresence, sheetPresenceFor } from './sheet-presence-store';
 import type { SheetStore } from './sheet-store-client';
 

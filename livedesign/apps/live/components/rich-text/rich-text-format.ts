@@ -13,7 +13,7 @@ import {
   type RunBoolKey,
   type RunHeading,
   type TextRun,
-} from '@livepages/document';
+} from '@livedesign/document';
 
 // The base an unset run delta falls back to.
 export type RunDefaults = {

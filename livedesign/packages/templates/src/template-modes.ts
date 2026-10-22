@@ -1,7 +1,7 @@
 // The editor mode each template opens in (docs/specs/007-editor/templates-by-mode.md "A template's
 // mode"): declared once here, read by the template step (its mode filter and the glyph on every
 // card) and by templateCanvasOverrides (the tab's `opensIn`), so the two can never disagree.
-import type { EditorMode } from '@livepages/document';
+import type { EditorMode } from '@livedesign/document';
 import type { TemplateKind } from './templates';
 
 // Every template not named here is a Diagram template.

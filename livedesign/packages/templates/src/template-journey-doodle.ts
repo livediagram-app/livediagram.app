@@ -5,7 +5,7 @@
 // goes wrong (the missed delivery) is ringed in red with an "ouch"; green sticky notes along the
 // bottom turn the low points into opportunities. Pure: (cx, cy) -> Element[].
 
-import type { Element } from '@livepages/document';
+import type { Element } from '@livedesign/document';
 import { laptop, stopwatch } from './template-sketch-figures';
 import { face, fridge, gift, house, van, type Feeling } from './template-sketch-props';
 import {

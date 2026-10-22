@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import type { FormDefinition } from '@livepages/forms';
+import type { FormDefinition } from '@livedesign/forms';
 import type { FormActions } from '@/hooks/forms/useFormActions';
 import { FormBuilderContext, type FormBuilderValue } from './form-builder-context';
 import { FormConnectCard } from './FormConnectCard';

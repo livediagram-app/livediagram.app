@@ -1,6 +1,6 @@
 'use client';
 
-import { Portal } from '@livepages/ui';
+import { Portal } from '@livedesign/ui';
 
 // The touch "hold" ring at the finger (docs/specs/008-canvas/canvas-and-palette.md, press and hold): it shows once a
 // press has been held past useLongPress's reveal delay and completes as the long press fires. Portalled so a canvas

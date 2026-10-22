@@ -1,8 +1,8 @@
 // A document's sheets for an agent (docs/specs/029-sheets/sheet-store.md "Agents", MCP list_sheets and `sheet ls`):
 // each one's title, tab, size in use and filled range, and the Sheet element that frames it.
-import type { ApiClient } from '@livepages/api-client';
-import type { DocumentResponse, TabResponse } from '@livepages/api-schema';
-import { AGENT_LOCALE, formatRange, sheetFromJson, Workbook } from '@livepages/sheets';
+import type { ApiClient } from '@livedesign/api-client';
+import type { DocumentResponse, TabResponse } from '@livedesign/api-schema';
+import { AGENT_LOCALE, formatRange, sheetFromJson, Workbook } from '@livedesign/sheets';
 import { tabPath } from '../verbs/shared';
 import { readSheets } from './sheet-state';
 

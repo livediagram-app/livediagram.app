@@ -13,7 +13,7 @@ import {
   useState,
   useSyncExternalStore,
 } from 'react';
-import { getResolvedAppearance, subscribeAppearance, type Appearance } from '@livepages/ui';
+import { getResolvedAppearance, subscribeAppearance, type Appearance } from '@livedesign/ui';
 import {
   dashboardCardLook,
   isDashboardStyledType,
@@ -24,7 +24,7 @@ import {
   type DashboardContent,
   type ShapeColorPreset,
   type ThemeDefinition,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { EditorContext } from '@/app/document/[id]/EditorContext';
 import { getTheme } from '@/lib/themes';
 import { useDashboard } from './dashboard-context';

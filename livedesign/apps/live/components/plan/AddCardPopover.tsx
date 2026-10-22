@@ -9,7 +9,7 @@
 // away. On a phone it is a bottom sheet. Someone who may edit gets a full-width Add New Card Type under the
 // tiles (docs/specs/026-plan/plan-board.md "Create Card Type").
 import { useEffect, useRef, type SyntheticEvent } from 'react';
-import { type ItemFields, type ItemTypeDef } from '@livepages/items';
+import { type ItemFields, type ItemTypeDef } from '@livedesign/items';
 import { BottomSheet } from '@/components/primitives/BottomSheet';
 import { PortalMenu } from '@/components/primitives/PortalMenu';
 import { AddCardTypeButton } from './AddCardTypeButton';

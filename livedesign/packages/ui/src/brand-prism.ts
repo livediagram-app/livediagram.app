@@ -1,4 +1,4 @@
-import { hexToRgb, rgbToHex } from '@livepages/document';
+import { hexToRgb, rgbToHex } from '@livedesign/document';
 
 // The Living Prism's colours (docs/specs/004-interface-design/brand-mark.md).
 // Six stops, light to dark; each face of the mark is a gradient over them.

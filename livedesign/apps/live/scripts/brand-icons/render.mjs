@@ -1,11 +1,11 @@
 // Writes every static copy of the brand mark from its one source, the Living
-// Prism module in @livepages/ui (docs/specs/004-interface-design/brand-mark.md):
+// Prism module in @livedesign/ui (docs/specs/004-interface-design/brand-mark.md):
 //   - apps/*/app/icon.svg: the compact mark, light/dark by prefers-color-scheme
 //   - marketing/media/logo/: the full mark and the lockup, light and dark
 //   - marketing/media/icons/: transparent PNGs at Google Drive's sizes, and
 //     white-tile PNGs (also copied to apps/marketing/public/ for the manifest)
 //   - apps/help/app/icon.png: the 256px tile, its favicon's PNG fallback
-//   - apps/marketing/public/email/livepages-mark-64.png: the transparent 64px mark
+//   - apps/marketing/public/email/livedesign-mark-64.png: the transparent 64px mark
 //     the api's emails show beside the wordmark (2x their 28px slot)
 // Run via `pnpm icons:brand` from the repo root. apps/marketing/lib/brand-icon.test.ts
 // fails when a committed SVG drifts from the module.
@@ -47,10 +47,10 @@ for (const app of ['marketing', 'live', 'help', 'telemetry']) {
 }
 for (const scheme of ['light', 'dark']) {
   write(
-    `marketing/media/logo/livepages-mark-${scheme}.svg`,
+    `marketing/media/logo/livedesign-mark-${scheme}.svg`,
     `${brandMarkSvg({ variant: 'full', scheme })}\n`,
   );
-  write(`marketing/media/logo/livepages-logo-${scheme}.svg`, `${brandLogoSvg(scheme)}\n`);
+  write(`marketing/media/logo/livedesign-logo-${scheme}.svg`, `${brandLogoSvg(scheme)}\n`);
 }
 
 // Below 48px the compact drawing; from 48px the full one (the spec's split).
@@ -75,17 +75,17 @@ const shoot = async (size, background, path) => {
   console.log(`brand-icons: ${size}x${size} -> ${path}`);
 };
 for (const size of [16, 32, 64, 128, 256, 512]) {
-  await shoot(size, null, `marketing/media/icons/livepages-icon-transparent-${size}.png`);
+  await shoot(size, null, `marketing/media/icons/livedesign-icon-transparent-${size}.png`);
 }
 for (const size of [256, 512, 1024]) {
-  await shoot(size, '#ffffff', `marketing/media/icons/livepages-icon-${size}.png`);
+  await shoot(size, '#ffffff', `marketing/media/icons/livedesign-icon-${size}.png`);
 }
 for (const size of [256, 512]) {
-  await shoot(size, '#ffffff', `apps/marketing/public/livepages-icon-${size}.png`);
+  await shoot(size, '#ffffff', `apps/marketing/public/livedesign-icon-${size}.png`);
 }
 // The help centre serves its own icon under a basePath, pairing app/icon.svg with this PNG (Next emits both links).
 copyFileSync(
-  `${root}apps/marketing/public/livepages-icon-256.png`,
+  `${root}apps/marketing/public/livedesign-icon-256.png`,
   `${root}apps/help/app/icon.png`,
 );
 console.log('brand-icons: apps/help/app/icon.png');
@@ -93,8 +93,8 @@ console.log('brand-icons: apps/help/app/icon.png');
 // transparent copy is served at a path no other asset will ever claim.
 mkdirSync(`${root}apps/marketing/public/email`, { recursive: true });
 copyFileSync(
-  `${root}marketing/media/icons/livepages-icon-transparent-64.png`,
-  `${root}apps/marketing/public/email/livepages-mark-64.png`,
+  `${root}marketing/media/icons/livedesign-icon-transparent-64.png`,
+  `${root}apps/marketing/public/email/livedesign-mark-64.png`,
 );
-console.log('brand-icons: apps/marketing/public/email/livepages-mark-64.png');
+console.log('brand-icons: apps/marketing/public/email/livedesign-mark-64.png');
 await browser.close();

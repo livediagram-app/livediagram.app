@@ -6,7 +6,7 @@
 
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { ActivityAction, ActivityCard, ActivityThread } from '@livepages/api-schema';
+import type { ActivityAction, ActivityCard, ActivityThread } from '@livedesign/api-schema';
 import type { ThreadRow, ActivityFeed } from '@/app/explorer/useActivityFeed';
 
 const track = vi.hoisted(() => vi.fn());

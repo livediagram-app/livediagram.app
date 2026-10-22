@@ -4,7 +4,7 @@
 // is written, so one refusal refuses the request, naming the item. The updates land in one D1 batch, each guarded
 // by the rev read, with one store rev raise and one room op; an item a concurrent write moved on is read again and
 // retried, the others kept (item-write-loop.ts): a retry that then fails carries the items already landed.
-import type { ItemsResponse } from '@livepages/api-schema';
+import type { ItemsResponse } from '@livedesign/api-schema';
 import {
   ITEM_BULK_MAX,
   applyPatch,
@@ -13,7 +13,7 @@ import {
   type Item,
   type ItemPatchOf,
   type ItemRejection,
-} from '@livepages/items';
+} from '@livedesign/items';
 import { badRequest, forbidden, json } from '../responses';
 import { readBody, type RouteContext } from './context';
 import {

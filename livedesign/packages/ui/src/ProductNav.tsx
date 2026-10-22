@@ -17,7 +17,7 @@ import { useClickOutside } from './useClickOutside';
 import { useMenu } from './menu/useMenu';
 import { useMenuButton } from './menu/useMenuButton';
 import { ChevronDownIcon } from './icons';
-import { Glyph } from '@livepages/ui';
+import { Glyph } from '@livedesign/ui';
 
 type ProductNavKey = 'home' | 'explorer' | 'editor' | 'help' | 'telemetry';
 

@@ -6,7 +6,7 @@ import {
   createShape,
   type ArrowElement,
   type ShapeElement,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { dressMindConnector, dressMindNode } from './mind-dress';
 
 // docs/specs/009-elements/org-chart.md "Growing" (blueprint org-chart.md I1), and the ordinary mind node's dress.

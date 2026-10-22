@@ -1,5 +1,5 @@
 {
-  "name": "@livepages/document",
+  "name": "@livedesign/document",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -10,10 +10,10 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@livepages/forms": "workspace:*",
-    "@livepages/icons": "workspace:*",
-    "@livepages/items": "workspace:*",
-    "@livepages/page-background": "workspace:*",
+    "@livedesign/forms": "workspace:*",
+    "@livedesign/icons": "workspace:*",
+    "@livedesign/items": "workspace:*",
+    "@livedesign/page-background": "workspace:*",
     "perfect-freehand": "^1.2.3"
   },
   "scripts": {
@@ -25,8 +25,8 @@
     "clean": "rm -rf node_modules .turbo coverage"
   },
   "devDependencies": {
-    "@livepages/oxlint-config": "workspace:*",
-    "@livepages/vitest-config": "workspace:*",
+    "@livedesign/oxlint-config": "workspace:*",
+    "@livedesign/vitest-config": "workspace:*",
     "@types/node": "^26.6.4",
     "@vitest/coverage-v8": "^5.0.3",
     "oxlint": "^1.88.0",

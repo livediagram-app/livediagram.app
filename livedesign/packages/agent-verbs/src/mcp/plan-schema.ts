@@ -7,9 +7,9 @@ import {
   PLAN_BOARD_PRESET_IDS,
   PLAN_GLYPH_IDS,
   PLAN_TYPE_COLOURS,
-} from '@livepages/items';
+} from '@livedesign/items';
 
-const url = z.string().describe('Link that opens the document in the livepages editor.');
+const url = z.string().describe('Link that opens the document in the livedesign editor.');
 const documentId = z.string().describe('The document (from find_documents).');
 const itemRef = z.string().describe('The item, by its number ("#12") or an id prefix.');
 const statusArg = z

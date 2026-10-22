@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { PagesView } from '@livepages/api-schema';
-import { layOutPages, type Element, type Page, type Tab } from '@livepages/document';
+import type { PagesView } from '@livedesign/api-schema';
+import { layOutPages, type Element, type Page, type Tab } from '@livedesign/document';
 import { shapeAt } from './__fixtures__/build';
 import { itemLines } from './pages';
 import { renderView } from './render-view';

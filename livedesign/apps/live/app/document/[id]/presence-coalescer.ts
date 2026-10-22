@@ -1,5 +1,5 @@
 import type { Dispatch, SetStateAction } from 'react';
-import type { AvatarPresence } from '@livepages/api-schema';
+import type { AvatarPresence } from '@livedesign/api-schema';
 import { trimLaserBuffer, type LaserPoint } from '@/lib/laser-buffer';
 import type { LaserConfig } from '@/lib/laser-config';
 

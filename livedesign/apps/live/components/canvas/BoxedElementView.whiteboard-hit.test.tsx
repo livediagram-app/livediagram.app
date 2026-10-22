@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { render } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { createFreehand, createShape, type BoxedElement } from '@livepages/document';
+import { createFreehand, createShape, type BoxedElement } from '@livedesign/document';
 import { BoxedElementView } from '@/components/canvas/BoxedElementView';
 import { CanvasStillProvider } from '@/components/canvas/CanvasStillContext';
 

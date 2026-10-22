@@ -5,13 +5,13 @@ import {
   Glyph,
   PencilIcon as SharedPencilIcon,
   Prims,
-} from '@livepages/ui';
+} from '@livedesign/ui';
 import {
   lucideArrowUpRight,
   lucideBetweenHorizontalEnd,
   lucideBetweenVerticalEnd,
   lucideType,
-} from '@livepages/icons/lucide';
+} from '@livedesign/icons/lucide';
 
 // The quick-connect ring's option catalogue + glyphs (docs/specs/008-canvas/canvas-and-palette.md / 51),
 // split out of QuickConnectRing the same way the other per-surface

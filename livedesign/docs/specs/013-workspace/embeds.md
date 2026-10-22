@@ -1,6 +1,6 @@
 # Read-only embeds (`/embed`)
 
-Tracked as [issue #8](https://github.com/livepages-app/livepages.app/issues/8). [Purpose](../001-project-vision/purpose.md) says "diagrams may be embedded elsewhere"; this spec makes a shared document iframe-able in Notion, wikis, and docs. Every embedded document is a distribution channel for a free product whose growth model is distribution ([Open source + distribution](../002-project-scope/open-source-and-business-model.md)).
+Tracked as [issue #8](https://github.com/livedesign-app/livedesign.app/issues/8). [Purpose](../001-project-vision/purpose.md) says "diagrams may be embedded elsewhere"; this spec makes a shared document iframe-able in Notion, wikis, and docs. Every embedded document is a distribution channel for a free product whose growth model is distribution ([Open source + distribution](../002-project-scope/open-source-and-business-model.md)).
 
 ## URL shape
 
@@ -16,7 +16,7 @@ The embed route mounts the same editor page component with an `embed` flag. The 
 - **Hides all chrome**: header, TabBar, every floating panel (the same gates zen mode uses, [Zen mode](../007-editor/zen-mode.md)). What remains: the canvas (pan / zoom / pinch), the ZoomControls dock (without the zen toggle), and the two embed affordances below. An embed draws no element indicators ([Element indicators](../008-canvas/element-indicators.md)): they are editor chrome. A view-role embed's selection toolbar also has no Add Comment button (a reader there has no comments panel to open); comment pins and comment panels are content and stay.
 - **Defaults to the Hand (pan) tool** on every viewport (`useCanvasTool({ defaultPan })`): an embed is read-first even when editable, so a drag on empty canvas pans rather than starting a marquee. Editable embeds still select / edit by clicking elements, and tool shortcuts work as usual.
 - **Suppresses the visitor identity screen.** A "what's your name" card inside a README iframe is wrong; embed sessions keep their default guest identity silently. They still join the realtime room like any view-role visitor, so embedded documents **live-update** as the document is edited (the room's whole-tab ops; [API app](../015-api/api.md)). If the WebSocket can't connect, the embed simply shows the fetch-time content, which is the existing degradation path.
-- Renders, bottom-left, an **"Open in livepages" badge** linking to the full share view (`/document/shared?s=<code>`, new tab; the acquisition loop) and, only when the document has more than one tab, an **embed tab switcher**. The switcher is a compact hamburger button showing the current tab's name; tapping it opens a dropdown **above** listing the tabs. A fixed-width button (rather than a horizontal pill row) keeps the chrome from stretching across the canvas and colliding with the bottom-right ZoomControls dock when a document has many tabs.
+- Renders, bottom-left, an **"Open in livedesign" badge** linking to the full share view (`/document/shared?s=<code>`, new tab; the acquisition loop) and, only when the document has more than one tab, an **embed tab switcher**. The switcher is a compact hamburger button showing the current tab's name; tapping it opens a dropdown **above** listing the tabs. A fixed-width button (rather than a horizontal pill row) keeps the chrome from stretching across the canvas and colliding with the bottom-right ZoomControls dock when a document has many tabs.
 
 The share-password gate ([Share password](share-password.md)) renders inside the iframe exactly as it does on the share view. Browsers partition third-party iframe storage, so the cached password is per-embedding-site: visitors enter it once per site, which is acceptable for a password-protected artifact. NotFound (revoked code) and the API-error card render minimal versions inside the frame, without the app header or Explorer.
 
@@ -43,6 +43,6 @@ Works with zero external services: the embed page is part of the live app's stat
 
 - oEmbed / OpenGraph provider endpoints (candidate follow-up).
 - Embedding a single element or region rather than a tab.
-- Hiding the "Open in livepages" badge (it is deliberately not configurable).
+- Hiding the "Open in livedesign" badge (it is deliberately not configurable).
 - A signed-in editor inside a developer tool: that is a [workbench embed](workbench-embeds.md), served under `/embed`
   so it may be framed, and admitted by a workbench ticket rather than a share code.

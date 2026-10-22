@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react';
-import type { TemplateKind } from '@livepages/templates';
+import type { TemplateKind } from '@livedesign/templates';
 import { pv } from './motion';
 
 // Group 13: the infographic Pages templates (docs/specs/007-editor/templates-by-mode.md

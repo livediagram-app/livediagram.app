@@ -4,7 +4,7 @@ import { useState, type ReactNode } from 'react';
 import { MenuActionRow, PortalMenu } from '@/components/primitives/PortalMenu';
 import { useToast } from '@/hooks/ui/useToast';
 import { track } from '@/lib/telemetry';
-import { HoverCard, Glyph } from '@livepages/ui';
+import { HoverCard, Glyph } from '@livedesign/ui';
 
 // A labelled Share-dialog button that drops a menu of clipboard-copy
 // actions (docs/specs/013-workspace/embeds.md + docs/specs/013-workspace/live-image-share.md). Shared by the Embed and Live image

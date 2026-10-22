@@ -39,7 +39,7 @@ Activating a tab/element/document link is a navigation action; a `url` link open
 
 ## Data model
 
-Canonical types live in **`@livepages/document`** — that package is the source of truth for the cross-app shape (consumed by the live editor, the api worker, and any future code that handles documents). Everything is re-exported through `src/index.ts`, so consumers import from the package and never from a file inside it; the split below is for readability only and can change without touching a caller.
+Canonical types live in **`@livedesign/document`** — that package is the source of truth for the cross-app shape (consumed by the live editor, the api worker, and any future code that handles documents). Everything is re-exported through `src/index.ts`, so consumers import from the package and never from a file inside it; the split below is for readability only and can change without touching a caller.
 
 | File               | Holds                                                                   |
 | ------------------ | ----------------------------------------------------------------------- |
@@ -128,7 +128,7 @@ Every colour an element stores (its fill, stroke, text colour, a row's or a seri
 painted into CSS, some of it inside a `background` or a gradient. A colour that could load something from outside
 the document (a `url(...)`, an `image-set(...)`, an escape, or anything that leaves its CSS value) is no colour:
 the stored-element migrations drop it wherever elements enter (a load, a peer's op, a paste, a file, an agent's
-write, the api's own reads and writes), and the element paints with that colour's default. Nothing in livepages
+write, the api's own reads and writes), and the element paints with that colour's default. Nothing in livedesign
 fetches from outside a document ([Images](../009-elements/images.md) "External-URL images"), and a colour must not
 become the way it does. The same rule holds for a participant's colour (refused by `PUT /api/participants/<id>`,
 blanked in a room hello) and a custom theme's colours (refused on save).

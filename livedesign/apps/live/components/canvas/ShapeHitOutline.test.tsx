@@ -6,7 +6,7 @@ import {
   shapeHitOutline,
   type Element,
   type ShapeElement,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { ShapeHitOutline, outlineHit } from './ShapeHitOutline';
 import { CanvasZoomProvider } from './CanvasZoomContext';
 

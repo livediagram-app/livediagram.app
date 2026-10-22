@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
 import { renderHook } from '@testing-library/react';
-import { createShape, type Element } from '@livepages/document';
+import { createShape, type Element } from '@livedesign/document';
 import { hasPlanContent, usePlanNeeded } from './usePlanNeeded';
 
 // docs/specs/026-plan/plan-mode.md "Cost".

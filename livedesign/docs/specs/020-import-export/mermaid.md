@@ -1,6 +1,6 @@
 # Mermaid input & export
 
-Agents (the MCP server, the CLI and the public API) can hand livepages [Mermaid](https://mermaid.js.org/)
+Agents (the MCP server, the CLI and the public API) can hand livedesign [Mermaid](https://mermaid.js.org/)
 text in place of a graph or elements, and the CLI's `export --format mermaid` writes a tab back out as
 **flowchart** text. Mermaid is the lingua franca of diagram-as-code, sitting in countless READMEs, issues, and
 AI outputs, and it carries the full **connection graph** (which node points at what), so a round-trip preserves
@@ -9,7 +9,7 @@ the diagram's structure, not just its labels.
 ## Scope: flowcharts, state diagrams, ER diagrams
 
 We support the diagram types that are **node/edge graphs at heart**, because
-they map onto livepages's model losslessly: `graphToElements`
+they map onto livedesign's model losslessly: `graphToElements`
 (packages/document, [MCP server](../015-api/mcp-server.md) §4.7) turns a graph into laid-out shapes + pinned
 arrows.
 

@@ -7,7 +7,7 @@ import {
   arrowStyleOf,
   type ArrowElement,
   type Point,
-} from '@livepages/document';
+} from '@livedesign/document';
 import type { LintContext } from './context';
 
 const RESTYLES = ['angled', 'curved', 'straight'] as const;

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Folder } from '@livepages/api-schema';
+import type { Folder } from '@livedesign/api-schema';
 import { folderPreviewTiles, type FolderPreviewContents } from './folder-preview-tiles';
 import type { PaneDocument } from './views';
 

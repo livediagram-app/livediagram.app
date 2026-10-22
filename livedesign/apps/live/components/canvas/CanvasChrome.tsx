@@ -1,7 +1,7 @@
 import { mirroredLogoPages } from '@/hooks/editor/useLogoTools';
 import { useViewportStore } from '@/hooks/canvas/useViewportStore';
 import { ViewZoomControls } from '@/components/canvas/view-readers';
-import { votesSpentBy } from '@livepages/document';
+import { votesSpentBy } from '@livedesign/document';
 import { participantKey } from '@/lib/identity';
 import { useVoteReviewOpener } from '@/hooks/canvas/useVoteReviewOpener';
 import { computeDrawGuides } from '@/components/canvas/canvas-draw-guides';
@@ -63,7 +63,7 @@ import { PanelSnapSlot } from '@/components/canvas/PanelSnapSlot';
 import { useCanvasChromePanels } from './useCanvasChromePanels';
 import { usePaletteDragGuides } from '@/hooks/canvas/usePaletteDragGuides';
 import { PANEL_CORNERS, PANEL_IDS, cornerBottomInset, type PanelCorner } from '@/lib/panel-layout';
-import { atLeastInset } from '@livepages/ui';
+import { atLeastInset } from '@livedesign/ui';
 import { STRIP_SELECTOR, useStripCrowdsCorners } from '@/hooks/ui/useStripCrowdsCorners';
 import { PHONE_TOOLBAR_ITEMS } from '@/components/chrome/phone-toolbar-items';
 import { PHONE_CLUSTER_BUTTON_WIDTH } from '@/components/chrome/phone-toolbar-items';
@@ -129,7 +129,7 @@ type ChromeExtras = {
   onRandomiseAvatar: () => void;
   onAvatarReaction: (kind: import('@/lib/avatar-reactions').AvatarReactionKind) => void;
   // Throw one of the Reaction Pad's bursts (docs/specs/009-elements/reaction-pad.md) around the character.
-  onAvatarBurst?: (reaction: import('@livepages/document').Reaction) => void;
+  onAvatarBurst?: (reaction: import('@livedesign/document').Reaction) => void;
   // Say something from the Avatar panel (docs/specs/008-canvas/avatar-mode.md "The message popover"): absent for
   // a Viewer, who may not speak. Answers whether the message went; `avatarSpeechCooling` holds Send meanwhile.
   onSendAvatarMessage?: (text: string) => boolean;

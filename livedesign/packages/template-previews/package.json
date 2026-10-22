@@ -1,5 +1,5 @@
 {
-  "name": "@livepages/template-previews",
+  "name": "@livedesign/template-previews",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -22,16 +22,16 @@
     "react-dom": "^19.3.0"
   },
   "dependencies": {
-    "@livepages/document": "workspace:*",
-    "@livepages/forms": "workspace:*",
-    "@livepages/icons": "workspace:*",
-    "@livepages/templates": "workspace:*",
-    "@livepages/ui": "workspace:*"
+    "@livedesign/document": "workspace:*",
+    "@livedesign/forms": "workspace:*",
+    "@livedesign/icons": "workspace:*",
+    "@livedesign/templates": "workspace:*",
+    "@livedesign/ui": "workspace:*"
   },
   "devDependencies": {
-    "@livepages/oxlint-config": "workspace:*",
-    "@livepages/tailwind-config": "workspace:*",
-    "@livepages/vitest-config": "workspace:*",
+    "@livedesign/oxlint-config": "workspace:*",
+    "@livedesign/tailwind-config": "workspace:*",
+    "@livedesign/vitest-config": "workspace:*",
     "@types/node": "^26.6.4",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",

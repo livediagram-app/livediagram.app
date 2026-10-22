@@ -18,7 +18,7 @@ function Callout({ cx, cy, n }: { cx: number; cy: number; n: number }) {
 export function UserInterfaceArt() {
   return (
     <Stage>
-      <Window x={14} y={10} w={372} h={200} title="Product launch · livepages">
+      <Window x={14} y={10} w={372} h={200} title="Product launch · livedesign">
         {/* Menu button and the tab's name. */}
         <rect
           x={24}

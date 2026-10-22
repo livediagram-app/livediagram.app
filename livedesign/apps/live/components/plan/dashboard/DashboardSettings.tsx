@@ -16,15 +16,15 @@ import {
   setDashboardBackground,
   type DashboardBackground,
   type DashboardLayout,
-} from '@livepages/document';
-import { TextInput, lucideGlyph } from '@livepages/ui';
+} from '@livedesign/document';
+import { TextInput, lucideGlyph } from '@livedesign/ui';
 import {
   lucideEraser,
   lucideLayoutGrid,
   lucidePanelsTopLeft,
   lucidePaintbrush,
   lucideBetweenHorizontalEnd,
-} from '@livepages/icons/lucide';
+} from '@livedesign/icons/lucide';
 import { TOOLBAR_CARD } from '@/components/chrome/toolbar-surface';
 import { useUiScale } from '@/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';

@@ -1,7 +1,7 @@
 // The layout view (docs/specs/024-agents/blueprints/document-views.md "layout", VW31, VW32): exact
 // geometry relative to the content origin, or coarse rows per container.
-import type { LayoutView, ViewDoor } from '@livepages/api-schema';
-import { contentOrigin, type Endpoint } from '@livepages/document';
+import type { LayoutView, ViewDoor } from '@livedesign/api-schema';
+import { contentOrigin, type Endpoint } from '@livedesign/document';
 import { fitLines, fitOf, type ViewLine, type ViewResult } from './budget';
 import type { ViewEdge } from './edges';
 import { boxOf, numberField } from './fields';

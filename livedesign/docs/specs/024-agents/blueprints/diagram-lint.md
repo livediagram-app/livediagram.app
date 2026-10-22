@@ -10,7 +10,7 @@ Scope, by file:
 
 | File                                                                              | Role                                                                                                                                                        |
 | --------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `packages/diagram-lint/{package.json,tsconfig.json,oxlint.config.ts}`             | The package `@livepages/diagram-lint`; depends on `@livepages/document` and `@livepages/api-schema` (tests also on `templates` and `edit-operations`) |
+| `packages/diagram-lint/{package.json,tsconfig.json,oxlint.config.ts}`             | The package `@livedesign/diagram-lint`; depends on `@livedesign/document` and `@livedesign/api-schema` (tests also on `templates` and `edit-operations`) |
 | `packages/diagram-lint/vitest.config.ts`                                          | `defineProject`, node environment, 100% coverage thresholds (as `explorer-lens`)                                                                            |
 | `packages/diagram-lint/src/index.ts`                                              | The barrel: `lintTab`, `lintGraph`, `compareGraphLayouts`, the formatters, the constants                                                                    |
 | `packages/diagram-lint/src/constants.ts`                                          | Every `LINT_*` constant (see Constants)                                                                                                                     |
@@ -52,7 +52,7 @@ The root `AGENTS.md` repo layout lists packages; its line for `diagram-lint/` ne
 
 | Term             | Identifier                                                   | Meaning                                                                                     |
 | ---------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------- |
-| Diagram lint     | `@livepages/diagram-lint`, `lintTab`, `lintGraph`          | The check of how a tab is drawn                                                             |
+| Diagram lint     | `@livedesign/diagram-lint`, `lintTab`, `lintGraph`          | The check of how a tab is drawn                                                             |
 | Lint finding     | `LintFinding`                                                | One problem: code, severity, refs, message, fix                                             |
 | Code             | `LintCode`, `LINT_CODES`                                     | The thirteen kebab-case codes of the spec, in the spec's table order                        |
 | Severity         | `LintSeverity` (`error`, `warning`, `info`), `LINT_SEVERITY` | Fixed per code by the spec                                                                  |
@@ -65,7 +65,7 @@ The root `AGENTS.md` repo layout lists packages; its line for `diagram-lint/` ne
 | Source           | `LintSource` (`tab`, `graph`)                                | What was linted: a stored or changed tab, or a graph or Mermaid file laid out               |
 | Box              | `isLintBox`                                                  | A boxed element that is not a container, text, annotation, freehand or path (LN2)           |
 | Shape            | `isLintBox(el) && el.type === 'shape'`                       | The boxes `node-isolated` judges                                                            |
-| Container        | `isContainer` (`@livepages/document`)                      | A `shape` of kind `frame` or `lane`                                                         |
+| Container        | `isContainer` (`@livedesign/document`)                      | A `shape` of kind `frame` or `lane`                                                         |
 | Frame            | `shape: 'frame'`                                             | The container the group codes judge; a graph group is laid out as one                       |
 | Member           | `framesWithMembers`                                          | A box with the frame on its container chain (`deriveContainers`)                            |
 | Drawable arrow   | `ctx.drawable`                                               | A visible arrow whose two ends resolve to a point                                           |
@@ -87,7 +87,7 @@ The lint is a pure function: no state, no clock, no randomness, no I/O but one l
 1. **Prepare** (`prepareLintContext`):
    - `visible` = `visibleLayerElements(tab.elements, tab.layers)`; only these are checked (LN1).
    - `index` = `buildElementIndex(tab.elements)` over every element, so a hidden end is not missing.
-   - `refs` = `computeRefs(tab.elements ids)` (`@livepages/document`), the refs every view prints.
+   - `refs` = `computeRefs(tab.elements ids)` (`@livedesign/document`), the refs every view prints.
    - `boxes` = `visible.filter(isLintBox)` with finite `x`, `y`, `width`, `height`. An element with a non-finite
      rect is counted in `skipped` and checked by nothing.
    - `containers` = `deriveContainers(visible)`: each element's container, the smallest frame or lane holding its centre.
@@ -230,7 +230,7 @@ export type LintReport = {
 
 The changeset response's `lint` field (agent-changesets blueprint) is this `LintReport`, or null when the lint failed.
 
-`@livepages/diagram-lint`:
+`@livedesign/diagram-lint`:
 
 ```ts
 export type LintSource = 'tab' | 'graph';
@@ -273,7 +273,7 @@ export type LintLogger = (
 or repeated name returns `{ error: 'unknown dimension "<x>"; use direction, groups, lines' }`, which the CLI prints as
 a usage error.
 
-`@livepages/document` additions:
+`@livedesign/document` additions:
 
 - `LABEL_ESTIMATE_CHAR_EM = 0.55`; `estimatedLabelMeasure(px) = (s) => s.length × px × LABEL_ESTIMATE_CHAR_EM`.
   `labelMeasure` returns it when no canvas context exists, so the headless renders and the lint agree.
@@ -291,7 +291,7 @@ manifest's view entry lists `lint`; it stays `tokenUsable`, read access.
 
 MCP: `createDocumentOutput.lint: z.array(z.string())`, `addTabOutput.lint: z.string()`,
 `updateDocumentOutput.lint: z.string()`, each described as "The diagram lint summary line of the tab as written."
-`apps/mcp` depends on `@livepages/diagram-lint` for `lintSummaryLine` only.
+`apps/mcp` depends on `@livedesign/diagram-lint` for `lintSummaryLine` only.
 
 CLI: `tab lint <doc> [--tab <t>] [--json]`; `graph lint <file> [--json] [--compare <dims>]`. `--json` prints
 `LintFinding[]` (`JSON.stringify(findings, null, 2)`), or `CompareRow[]` with `--compare` (LN38). `tab lint --compare`
@@ -379,7 +379,7 @@ Worst cases, per run:
   pushed the absolute figure past 50 ms.
 - Changesets: one lint per changeset in the api worker, inside the request it already handles; no extra subrequest.
   The view lints the tab it read; MCP `create_document` adds one view request per created tab.
-- Bundle: the api and MCP workers already bundle `@livepages/document`; `diagram-lint` adds only its own sources.
+- Bundle: the api and MCP workers already bundle `@livedesign/document`; `diagram-lint` adds only its own sources.
 - Output: about 100 tokens for a typical tab; at most `LINT_MAX_LINES_PER_CODE` lines per code, then one elision line.
 
 ## Presentation and UX
@@ -479,7 +479,7 @@ added: the front doors already count the verbs (`Cli·Used·TabLint`, `Cli·Used
 | `--compare` enumerates, measures, marks the best                                                        | `packages/diagram-lint/src/compare.test.ts`; `parseCompareDimensions` rejections                                                                        |
 | Measured architecture: tier groups cross, no groups ranks best                                          | `packages/diagram-lint/src/compare.test.ts` over `packages/diagram-lint/src/fixtures/shop-architecture.ts`                                              |
 | Graph-authored boxes never overflow their labels                                                        | `packages/diagram-lint/src/checks/label-overflow.test.ts` › "sized for its label"                                                                       |
-| Templates draw without errors                                                                           | `packages/diagram-lint/src/templates.test.ts`: every `@livepages/templates` kind lints with 0 errors                                                  |
+| Templates draw without errors                                                                           | `packages/diagram-lint/src/templates.test.ts`: every `@livedesign/templates` kind lints with 0 errors                                                  |
 | Headless renders and the lint measure alike; `drawsStandardLabel`, `labelRoom`                          | `packages/document/src/svg-render-label-room.test.ts`                                                                                                   |
 | `layoutGraph` names edges with `makeEdgeId`                                                             | `packages/document/src/graph-input.test.ts` › "layoutGraph edge ids"                                                                                    |
 | The api serves the lint as a view, text and `json=1`, read gate, failure                                | `apps/api/src/routes/document-views-route.test.ts` › "the lint over REST", `apps/api/src/routes/document-views-lint-failure.test.ts`                    |

@@ -10,7 +10,7 @@
 
 import { sourceTypeIconPath } from './sourceTypeMeta';
 import type { TimelineEvent, TimelineRenderer, TimelineRendererRegistry } from './types';
-import { Glyph } from '@livepages/ui';
+import { Glyph } from '@livedesign/ui';
 
 export function SourceTypeIcon({ sourceType }: { sourceType: string }) {
   return (

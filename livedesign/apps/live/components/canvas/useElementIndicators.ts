@@ -10,7 +10,7 @@ import {
   type TextAlignX,
   type TextAlignY,
   type TextSize,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { describeLink } from '@/lib/link-label';
 import { colorForKey, initialsOf } from '@/lib/identity';
 import { useCommentBadges } from '@/components/canvas/CommentBadgesContext';

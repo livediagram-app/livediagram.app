@@ -24,7 +24,7 @@ export const guide = defineVerb({
   text: ({ text }) => [text],
   cli: {
     positionals: ['topic'],
-    examples: ['livepages guide', 'livepages guide edit'],
+    examples: ['livedesign guide', 'livedesign guide edit'],
     prints: 'the topics, or one topic',
   },
 });
@@ -41,7 +41,7 @@ export const skillPrint = defineVerb({
   text: ({ text }) => [text],
   cli: {
     positionals: [],
-    examples: ['livepages skill print', 'livepages skill print > SKILL.md'],
+    examples: ['livedesign skill print', 'livedesign skill print > SKILL.md'],
     prints: 'the SKILL.md file',
   },
 });
@@ -50,7 +50,7 @@ export const skillInstall = defineVerb({
   id: 'skill.install',
   offline: true,
   summary: "Write the skill into an agent's skills directory",
-  description: 'Writes <dir>/livepages/SKILL.md, overwriting only a livepages skill.',
+  description: 'Writes <dir>/livedesign/SKILL.md, overwriting only a livedesign skill.',
   behaviour: 'write',
   local: true,
   input: z.object({ to: z.string().optional().describe('The skills directory of your agent') }),
@@ -59,8 +59,8 @@ export const skillInstall = defineVerb({
   cli: {
     positionals: [],
     examples: [
-      'livepages skill install --to ~/.claude/skills',
-      'livepages skill install --to ./.agents/skills',
+      'livedesign skill install --to ~/.claude/skills',
+      'livedesign skill install --to ./.agents/skills',
     ],
     prints: 'the path written',
   },
@@ -82,7 +82,7 @@ export const apiCall = defineVerb({
   text: ({ text }) => [text],
   cli: {
     positionals: ['method', 'path'],
-    examples: ['livepages api GET /documents', 'livepages api POST /documents --body doc.json'],
+    examples: ['livedesign api GET /documents', 'livedesign api POST /documents --body doc.json'],
     prints: 'the response body',
   },
 });
@@ -102,7 +102,7 @@ export const authLogin = defineVerb({
   text: ({ host, account }) => [`signed in to ${host} as ${account}`],
   cli: {
     positionals: [],
-    examples: ['livepages auth login', 'livepages auth login --device'],
+    examples: ['livedesign auth login', 'livedesign auth login --device'],
     prints: 'the host and account signed in to',
   },
 });
@@ -134,7 +134,7 @@ export const authStatus = defineVerb({
     ]),
   cli: {
     positionals: [],
-    examples: ['livepages auth status', 'livepages auth status --json'],
+    examples: ['livedesign auth status', 'livedesign auth status --json'],
     prints: 'host, account, token, role, expires, source',
   },
 });
@@ -143,7 +143,7 @@ export const authLogout = defineVerb({
   id: 'auth.logout',
   summary: 'Revoke the stored token and forget it',
   description:
-    "Revokes the stored token with the api, then forgets it. A token from LIVEPAGES_TOKEN is not the CLI's to revoke.",
+    "Revokes the stored token with the api, then forgets it. A token from LIVEDESIGN_TOKEN is not the CLI's to revoke.",
   behaviour: 'destructive',
   local: true,
   input: z.object({}),
@@ -151,7 +151,7 @@ export const authLogout = defineVerb({
   text: ({ host }) => [`signed out of ${host}`],
   cli: {
     positionals: [],
-    examples: ['livepages auth logout', 'livepages --profile work auth logout'],
+    examples: ['livedesign auth logout', 'livedesign --profile work auth logout'],
     prints: 'the host signed out of',
   },
 });
@@ -171,8 +171,8 @@ const telemetryVerb = (on: boolean) =>
     cli: {
       positionals: [],
       examples: [
-        `livepages telemetry ${on ? 'on' : 'off'}`,
-        `LIVEPAGES_TELEMETRY=0 livepages document ls`,
+        `livedesign telemetry ${on ? 'on' : 'off'}`,
+        `LIVEDESIGN_TELEMETRY=0 livedesign document ls`,
       ],
       prints: `telemetry ${on ? 'on' : 'off'}`,
     },
@@ -192,7 +192,7 @@ export const waitFor = defineVerb({
   behaviour: 'read',
   local: true,
   input: z.object({
-    doc: z.string().describe('A name, id prefix or livepages URL'),
+    doc: z.string().describe('A name, id prefix or livedesign URL'),
     for: z.enum(['comment', 'change']).describe('What to wait for: a comment, or a change'),
     tab: z.string().optional().describe('A tab name or id prefix; every tab when omitted'),
     timeout: z.coerce.number().positive().optional().describe('Seconds to wait at most'),
@@ -204,8 +204,8 @@ export const waitFor = defineVerb({
   cli: {
     positionals: ['doc'],
     examples: [
-      'livepages wait "Shop" --for comment',
-      'livepages wait 3f9c --for change --timeout 600',
+      'livedesign wait "Shop" --for comment',
+      'livedesign wait 3f9c --for change --timeout 600',
     ],
     prints: 'the comment\u2019s thread, the change, or that nothing came',
   },
@@ -219,7 +219,7 @@ export const watch = defineVerb({
   behaviour: 'read',
   local: true,
   input: z.object({
-    doc: z.string().describe('A name, id prefix or livepages URL'),
+    doc: z.string().describe('A name, id prefix or livedesign URL'),
     tab: z.string().optional().describe('A tab name or id prefix; every tab when omitted'),
   }),
   output: streamOutput,
@@ -227,7 +227,7 @@ export const watch = defineVerb({
   exitCode: ({ exit }) => exit,
   cli: {
     positionals: ['doc'],
-    examples: ['livepages watch "Shop"', 'livepages watch 3f9c --tab Flow --json'],
+    examples: ['livedesign watch "Shop"', 'livedesign watch 3f9c --tab Flow --json'],
     prints: 'one line per event; --json one object a line',
   },
   // Each event went out as it came; nothing is left to print at the end.
@@ -240,11 +240,11 @@ export const pull = defineVerb({
   files: true,
   summary: 'Write a document to a file, to edit and push back',
   description:
-    'Writes <slug>.livepages.json: the document, every tab and each tab\u2019s revision, in the format the editor imports. --svg adds a drawing per tab. Prints the paths written.',
+    'Writes <slug>.livedesign.json: the document, every tab and each tab\u2019s revision, in the format the editor imports. --svg adds a drawing per tab. Prints the paths written.',
   behaviour: 'read',
   local: true,
   input: z.object({
-    doc: z.string().describe('A name, id prefix or livepages URL'),
+    doc: z.string().describe('A name, id prefix or livedesign URL'),
     to: z.string().optional().describe('The directory to write to; the current one by default'),
     svg: z.boolean().optional().describe('Also write each tab as an SVG drawing'),
     force: z
@@ -257,7 +257,7 @@ export const pull = defineVerb({
   quiet: ({ paths }) => paths,
   cli: {
     positionals: ['doc'],
-    examples: ['livepages pull "Shop"', 'livepages pull 3f9c --to docs --svg'],
+    examples: ['livedesign pull "Shop"', 'livedesign pull 3f9c --to docs --svg'],
     prints: 'the paths written',
   },
 });
@@ -271,7 +271,7 @@ export const push = defineVerb({
   behaviour: 'write',
   local: true,
   input: z.object({
-    file: z.string().describe('A file written by livepages pull'),
+    file: z.string().describe('A file written by livedesign pull'),
     dryRun: writeFlags.dryRun,
     summary: writeFlags.summary,
     waitHeld: writeFlags.waitHeld,
@@ -283,8 +283,8 @@ export const push = defineVerb({
   cli: {
     positionals: ['file'],
     examples: [
-      'livepages push shop.livepages.json',
-      'livepages push shop.livepages.json --dry-run',
+      'livedesign push shop.livedesign.json',
+      'livedesign push shop.livedesign.json --dry-run',
     ],
     prints: 'each changed tab\u2019s result lines, or ! stale <tab>',
   },
@@ -298,7 +298,7 @@ export const exportAll = defineVerb({
   files: true,
   summary: 'Every document to files, for backups and docs',
   description:
-    'Writes every document the token can read: <slug>.livepages.json (json, the default), and per tab <slug>/<tab-slug>.svg, .png, .mmd or .md. Prints the paths written, then the totals.',
+    'Writes every document the token can read: <slug>.livedesign.json (json, the default), and per tab <slug>/<tab-slug>.svg, .png, .mmd or .md. Prints the paths written, then the totals.',
   behaviour: 'read',
   local: true,
   input: z.object({
@@ -319,8 +319,8 @@ export const exportAll = defineVerb({
   cli: {
     positionals: [],
     examples: [
-      'livepages export --all --to backup',
-      'livepages export --all --to docs --format svg,md',
+      'livedesign export --all --to backup',
+      'livedesign export --all --to docs --format svg,md',
     ],
     prints: 'the paths written, then <n> documents · <m> files',
   },
@@ -341,7 +341,7 @@ export const tabRender = defineVerb({
   behaviour: 'read',
   local: true,
   input: z.object({
-    doc: z.string().describe('A name, id prefix or livepages URL'),
+    doc: z.string().describe('A name, id prefix or livedesign URL'),
     tab: z.string().optional().describe('A tab name or id prefix; the first tab when omitted'),
     ...pictureFlags,
   }),
@@ -350,8 +350,8 @@ export const tabRender = defineVerb({
   cli: {
     positionals: ['doc'],
     examples: [
-      'livepages tab render "Shop" --png shop.png',
-      'livepages tab render 3f9c --tab Flow --svg flow.svg',
+      'livedesign tab render "Shop" --png shop.png',
+      'livedesign tab render 3f9c --tab Flow --svg flow.svg',
     ],
     prints: '<path>  <width>×<height> · <n> KB',
   },
@@ -374,8 +374,8 @@ export const graphRender = defineVerb({
   cli: {
     positionals: ['file'],
     examples: [
-      'livepages graph render arch.json --png arch.png',
-      'livepages graph render flow.mmd --svg flow.svg',
+      'livedesign graph render arch.json --png arch.png',
+      'livedesign graph render flow.mmd --svg flow.svg',
     ],
     prints: '<path>  <width>×<height> · <n> KB',
   },

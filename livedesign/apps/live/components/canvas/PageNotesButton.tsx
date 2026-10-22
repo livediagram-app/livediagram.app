@@ -5,8 +5,8 @@
 // (pressed) once it has. A popover holds the slide's notes, the same notes the Slide Deck panel
 // writes and the presenter view shows: they belong to the deck's slide, not to the page.
 import { useRef } from 'react';
-import { lucideFileText } from '@livepages/icons/lucide';
-import { lucideGlyph } from '@livepages/ui';
+import { lucideFileText } from '@livedesign/icons/lucide';
+import { lucideGlyph } from '@livedesign/ui';
 import type { PageDeckControls } from '@/hooks/editor/usePagesMode';
 import { track } from '@/lib/telemetry';
 import { TitlePopoverButton, titleButtonClass } from './TitlePopoverButton';

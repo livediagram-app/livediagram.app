@@ -4,7 +4,7 @@
 // rejections of the edit-operations engine travel inside a changeset's answer, so their wire
 // shapes live here too and the engine re-exports them.
 
-import type { Element, ElementOp, Finish, Tab } from '@livepages/document';
+import type { Element, ElementOp, Finish, Tab } from '@livedesign/document';
 import type { LintReport } from './lint';
 import { MAX_TAB_BYTES } from './tab-size';
 import { TRASH_RETENTION_DAYS } from './trash';
@@ -49,7 +49,7 @@ export const TAB_SAVE_CAS_ATTEMPTS = 2;
 // The highest changeset revision an editor has applied to the tab it saves.
 export const CHANGESET_SEEN_HEADER = 'X-Changeset-Seen';
 // Which surface sent a request: `mcp`, `cli` or `editor`; absent means a plain API caller (CS25).
-export const CLIENT_HEADER = 'X-Livepages-Client';
+export const CLIENT_HEADER = 'X-Livedesign-Client';
 export const CLIENT_KINDS = ['mcp', 'cli', 'editor'] as const;
 export type ClientKind = (typeof CLIENT_KINDS)[number];
 

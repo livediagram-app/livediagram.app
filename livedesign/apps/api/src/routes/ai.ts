@@ -7,7 +7,7 @@ import {
   AI_MAX_ELEMENTS as MAX_ELEMENTS,
   AI_MAX_PROMPT_CHARS as MAX_PROMPT_CHARS,
   type AiRequest,
-} from '@livepages/api-schema';
+} from '@livedesign/api-schema';
 
 const MAX_TOKENS_MUTATE = 8000;
 const MAX_TOKENS_REVIEW = 400;

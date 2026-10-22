@@ -3,7 +3,7 @@
 // Setup Board's third step, Layout (docs/specs/026-plan/plan-board.md "Setup Board"): the board's Swimlanes and Card
 // Size, with the same tiles as its menu's Swimlanes and Card Layout, then Fill Tab with its warning. It starts from
 // the board as it is, so it can be skipped.
-import type { ItemTypeDef } from '@livepages/items';
+import type { ItemTypeDef } from '@livedesign/items';
 import { CardSizeOptions, SwimlaneOptions } from '@/components/palette/plan-menu-parts';
 import type { PlanPalette } from './plan-palette';
 import type { SetupLayout } from './setup-board';

@@ -86,7 +86,7 @@ function Device() {
     const back = window.location.pathname + window.location.search;
     return (
       <OauthShell>
-        <h1 className={HEADING}>Sign in to connect the livepages CLI</h1>
+        <h1 className={HEADING}>Sign in to connect the livedesign CLI</h1>
         <div className="mt-5 flex items-center gap-2">
           <a
             href={`/sign-in/?redirect_url=${encodeURIComponent(back)}`}
@@ -176,7 +176,7 @@ function Device() {
           <h1 className={HEADING}>Connect {clientName}</h1>
           <p className={BODY}>
             <span className="font-medium text-slate-700 dark:text-slate-200">{clientName}</span>{' '}
-            wants to access your livepages documents on your behalf. Approving creates an API
+            wants to access your livedesign documents on your behalf. Approving creates an API
             token, which you can revoke any time from Settings, under Account › API Tokens.
           </p>
           <ReadOnlyAccessToggle readOnly={readOnly} onChange={setReadOnly} />

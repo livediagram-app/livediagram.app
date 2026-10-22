@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { CustomFieldDef } from '@livepages/items';
+import type { CustomFieldDef } from '@livedesign/items';
 import { customFieldText } from './custom-field-text';
 
 // docs/specs/026-plan/item-types.md "An item type": a custom field's value on a card face.

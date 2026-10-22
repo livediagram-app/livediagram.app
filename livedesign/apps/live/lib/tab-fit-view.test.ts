@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it } from 'vitest';
-import type { Element as CanvasElement } from '@livepages/document';
+import type { Element as CanvasElement } from '@livedesign/document';
 import { tabFitView } from './tab-fit-view';
 import { computeFitToScreen } from './viewport';
 

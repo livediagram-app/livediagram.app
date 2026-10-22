@@ -5,8 +5,8 @@
 // count (new ones marked), Copy Link (an Editor's, once published) and Open Form. It reads the count without marking
 // anything seen: only opening the Form tab does.
 import { useState } from 'react';
-import { CheckIcon, Tooltip, lucideGlyph } from '@livepages/ui';
-import { lucideClipboardList, lucideCopy, lucideExternalLink } from '@livepages/icons/lucide';
+import { CheckIcon, Tooltip, lucideGlyph } from '@livedesign/ui';
+import { lucideClipboardList, lucideCopy, lucideExternalLink } from '@livedesign/icons/lucide';
 import { useFormLink } from '@/hooks/forms/useFormLink';
 import { formUrlFor } from '@/lib/form-path';
 import { track } from '@/lib/telemetry';

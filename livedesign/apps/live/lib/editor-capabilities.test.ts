@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@livepages/document';
+import type { Element } from '@livedesign/document';
 import { contentAddBlocked, resolveEditorCapabilities } from './editor-capabilities';
 
 // docs/specs/013-workspace/share-roles.md "What a Participant changes", as the editor renders it.

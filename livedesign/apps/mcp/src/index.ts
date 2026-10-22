@@ -1,9 +1,9 @@
-// livepages MCP server (docs/specs/015-api/mcp-server.md) — a standalone Cloudflare Worker fronted by
+// livedesign MCP server (docs/specs/015-api/mcp-server.md) — a standalone Cloudflare Worker fronted by
 // Hono. POST /mcp carries the Streamable-HTTP MCP transport (stateless, JSON
 // responses), Bearer-gated; tools reach the api worker over the API service
 // binding, forwarding the caller's `Authorization: Bearer lvd_…`. OAuth 2.1
 // endpoints mount alongside (added in the OAuth step).
-import { bearerTokenOf } from '@livepages/api-schema';
+import { bearerTokenOf } from '@livedesign/api-schema';
 import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
@@ -41,7 +41,7 @@ app.all('/mcp', async (c) => {
     // Point MCP clients at the OAuth resource metadata so they can start the
     // connect flow (the metadata endpoint lands with the OAuth step). The
     // origin comes from the request, like every endpoint in oauth.ts, so a
-    // self-hosted worker sends clients to ITS metadata, not livepages.app's.
+    // self-hosted worker sends clients to ITS metadata, not livedesign.app's.
     const origin = new URL(c.req.url).origin;
     return c.json({ error: 'unauthorized' }, 401, {
       'WWW-Authenticate': `Bearer resource_metadata="${origin}/.well-known/oauth-protected-resource"`,

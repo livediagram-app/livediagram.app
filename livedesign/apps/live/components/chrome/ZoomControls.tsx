@@ -2,7 +2,7 @@ import { useCoarsePointer } from '@/hooks/ui/useCoarsePointer';
 import { IsometricOrbitButton } from '@/components/chrome/IsometricOrbitButton';
 import { ZoomMenu, type ZoomRange } from '@/components/chrome/ZoomMenu';
 import { ZenExitIcon, ZenIcon } from '@/components/palette/palette-icons';
-import { HoverCard, Glyph } from '@livepages/ui';
+import { HoverCard, Glyph } from '@livedesign/ui';
 
 type ZoomControlsProps = {
   zoom: number;

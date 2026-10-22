@@ -14,7 +14,7 @@ import {
   type Anchor,
   type DistributionGuide,
   type Element,
-} from '@livepages/document';
+} from '@livedesign/document';
 import type { SnapTarget } from '@/components/canvas/Canvas.types';
 
 // Value-equality for two guide lists. Used to bail out of the

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { HomeDocument } from '@livepages/api-schema';
+import type { HomeDocument } from '@livedesign/api-schema';
 import { groupWhatHappened, verbOf, type WhatHappenedRow } from './what-happened';
 
 // What happened (docs/specs/013-workspace/explorer-home.md; blueprint "Verbs", "Grouping").

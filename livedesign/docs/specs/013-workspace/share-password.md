@@ -111,7 +111,7 @@ so the check can spend the caller's guessing budget.
 
 A visitor who got past the gate is not asked again on their next visit. The
 accepted password is kept in `localStorage` under
-`livepages:share-password:<code>`, **one entry per share code**, in plain
+`livedesign:share-password:<code>`, **one entry per share code**, in plain
 text (`readCachedSharePassword` / `writeCachedSharePassword` in
 `lib/api/core.ts`).
 

@@ -1,5 +1,5 @@
 // The item panel's card trail (docs/specs/026-plan/plan-board.md "Open an item": Breadcrumb). Pure, so the slice, the host and the header read one set of rules.
-import { isTrashed, type Item } from '@livepages/items';
+import { isTrashed, type Item } from '@livedesign/items';
 
 // How a card was opened from inside the item panel: each steps the trail rather than starting a new one, and
 // is the `type` of its `Plan · Opened` event.

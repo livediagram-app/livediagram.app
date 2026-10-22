@@ -12,7 +12,7 @@ import {
   defaultStrokeColor,
   type Element,
   type ThemeDefinition,
-} from '@livepages/document';
+} from '@livedesign/document';
 
 export type ColourField = 'fillColor' | 'strokeColor';
 

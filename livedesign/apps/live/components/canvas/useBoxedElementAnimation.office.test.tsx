@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { createShape, type BoxedElement } from '@livepages/document';
+import { createShape, type BoxedElement } from '@livedesign/document';
 import { useBoxedElementAnimation } from './useBoxedElementAnimation';
 
 // docs/specs/009-elements/office.md: office furniture, rooms and rugs animate on their drawing, as a chair does.

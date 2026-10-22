@@ -6,7 +6,7 @@ import {
   DOCUMENT_FORMAT,
   DOCUMENT_FORMAT_HEADER,
   parseBuildId,
-} from '@livepages/api-schema';
+} from '@livedesign/api-schema';
 
 export function withServerRelease(
   response: Response,

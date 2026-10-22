@@ -28,7 +28,7 @@ and cards.
 
 ## Motion tokens
 
-Three named durations, shared by every app through the Tailwind theme (`@livepages/tailwind-config`).
+Three named durations, shared by every app through the Tailwind theme (`@livedesign/tailwind-config`).
 A chrome duration is one of these three and never a bare number.
 
 | Token   | Duration | For                                                                                                                        |

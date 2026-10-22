@@ -1,6 +1,6 @@
 # Self-hosting
 
-livepages is designed to be self-hostable end-to-end. The whole stack runs on Cloudflare Workers, so a self-hoster needs a Cloudflare account and not much else.
+livedesign is designed to be self-hostable end-to-end. The whole stack runs on Cloudflare Workers, so a self-hoster needs a Cloudflare account and not much else.
 
 This guide is the practical path: provision Cloudflare resources, configure secrets, deploy. For the why-behind-the-shape, read [Deployment](../specs/016-platform/deployment.md) (deployment) and [Secrets policy](../specs/002-project-scope/secrets-policy.md) (secrets).
 
@@ -27,7 +27,7 @@ What you do NOT need:
 2. **Create a D1 database**:
 
    ```sh
-   pnpm exec wrangler d1 create livepages
+   pnpm exec wrangler d1 create livedesign
    ```
 
    Copy the `database_id` from the output into `apps/api/wrangler.toml` under the `[[d1_databases]]` block (it already has the binding name `DB`; you only need to update the id).
@@ -35,17 +35,17 @@ What you do NOT need:
 3. **Apply migrations to the new D1**:
 
    ```sh
-   pnpm --filter @livepages/api db:migrate:remote
+   pnpm --filter @livedesign/api db:migrate:remote
    ```
 
-   (this runs `wrangler d1 migrations apply livepages --remote` — note it takes the database **name**, `livepages`, not the binding name `DB`).
+   (this runs `wrangler d1 migrations apply livedesign --remote` — note it takes the database **name**, `livedesign`, not the binding name `DB`).
 
    This creates every table the worker expects. The same command runs in the deploy workflow on every release, so you only need it once for the first deploy.
 
 4. **Create an R2 bucket** (optional, for images):
 
    ```sh
-   pnpm exec wrangler r2 bucket create livepages-images
+   pnpm exec wrangler r2 bucket create livedesign-images
    ```
 
    The bucket name is bound to `IMAGES` in `apps/api/wrangler.toml`.
@@ -74,7 +74,7 @@ The hosted version uses Clerk for sign-in. To enable on your self-host:
    - **API (worker secret)**:
 
      ```sh
-     pnpm --filter @livepages/api exec wrangler secret put CLERK_JWKS_URL
+     pnpm --filter @livedesign/api exec wrangler secret put CLERK_JWKS_URL
      ```
 
      Paste the JWKS URL when prompted.
@@ -90,7 +90,7 @@ The hosted version uses Clerk for sign-in. To enable on your self-host:
 5. **Recommended when Clerk is on — sign guest ids.** Set a random HMAC secret so the worker mints signed guest ids and `POST /api/migrate` requires a valid signature before moving a guest's data into a Clerk account. Without it, anyone who observed a guest's id (it appears in shared-document DTOs / presence) could claim that guest's data at sign-up. Generate and set:
 
    ```sh
-   openssl rand -hex 32 | pnpm --filter @livepages/api exec wrangler secret put GUEST_ID_HMAC_SECRET
+   openssl rand -hex 32 | pnpm --filter @livedesign/api exec wrangler secret put GUEST_ID_HMAC_SECRET
    ```
 
    Leaving it unset keeps the legacy unsigned migrate, which is fine for a single-user self-host (no one else to claim from). See [Auth + guest access](../specs/014-identity/auth-and-guest-access.md).
@@ -123,18 +123,18 @@ See [Auth + guest access](../specs/014-identity/auth-and-guest-access.md) for th
 After the one-time Cloudflare setup:
 
 ```sh
-git clone https://github.com/livepages-app/livepages.app livepages
-cd livepages
+git clone https://github.com/livedesign-app/livedesign.app livedesign
+cd livedesign
 pnpm install
 pnpm build           # static export for marketing + live + telemetry + help,
                      # plus the generated /licences page (no network needed)
 # Then deploy each worker (run from the repo root):
-pnpm --filter @livepages/marketing exec wrangler deploy
-pnpm --filter @livepages/live exec wrangler deploy
-pnpm --filter @livepages/telemetry exec wrangler deploy
-pnpm --filter @livepages/help exec wrangler deploy
-pnpm --filter @livepages/api exec wrangler deploy
-pnpm --filter @livepages/router exec wrangler deploy   # last, depends on the five above
+pnpm --filter @livedesign/marketing exec wrangler deploy
+pnpm --filter @livedesign/live exec wrangler deploy
+pnpm --filter @livedesign/telemetry exec wrangler deploy
+pnpm --filter @livedesign/help exec wrangler deploy
+pnpm --filter @livedesign/api exec wrangler deploy
+pnpm --filter @livedesign/router exec wrangler deploy   # last, depends on the five above
 ```
 
 Deploying by hand, give the editor build and the api the same build id so an open tab knows when a newer build is live ([Stale builds](../specs/016-platform/stale-builds.md)): `NEXT_PUBLIC_BUILD_ID=$(git rev-parse HEAD) pnpm build`, then `--var "BUILD_ID:$(git rev-parse HEAD)"` on the api's `wrangler deploy`. The workflow does this for you; leaving both unset only turns that detection off.
@@ -168,11 +168,11 @@ nothing. To run it:
 1. **Create a KV namespace** for OAuth state and put the id in `apps/mcp/wrangler.toml`:
 
    ```sh
-   pnpm --filter @livepages/mcp exec wrangler kv namespace create OAUTH_KV
+   pnpm --filter @livedesign/mcp exec wrangler kv namespace create OAUTH_KV
    ```
 
 2. **Point it at your hosts.** Attach your MCP hostname to the worker in the
-   Cloudflare dashboard (Workers → `livepages-mcp` → Domains & Routes → add a
+   Cloudflare dashboard (Workers → `livedesign-mcp` → Domains & Routes → add a
    custom domain) — the same way every other worker here gets its hostname, since
    the deploy token only uploads scripts, not zone routes. Then set
    `CONSENT_BASE_URL` (in `apps/mcp/wrangler.toml`) to your live app's origin and
@@ -194,7 +194,7 @@ tool does the thinking. See [MCP server](../specs/015-api/mcp-server.md).
 
 ## Telemetry: off by default for self-hosters
 
-The api worker's telemetry ingest (`/api/events`) is off unless you set `TELEMETRY_ENABLED = "true"` under `[vars]` in `apps/api/wrangler.toml`. OSS forks ingest nothing by default: the committed config leaves it unset, and the deploy workflow only adds it (with the rest of the hosted profile in `apps/api/hosted-vars.json`) when it runs in livepages.app's own repository ([Deployment](../specs/016-platform/deployment.md) "Hosted profile"). If you DO turn it on, the public `/telemetry` dashboard renders aggregate counts from your own D1; there's no third-party analytics involved. See [Telemetry + public transparency dashboard](../specs/017-telemetry/telemetry.md).
+The api worker's telemetry ingest (`/api/events`) is off unless you set `TELEMETRY_ENABLED = "true"` under `[vars]` in `apps/api/wrangler.toml`. OSS forks ingest nothing by default: the committed config leaves it unset, and the deploy workflow only adds it (with the rest of the hosted profile in `apps/api/hosted-vars.json`) when it runs in livedesign.app's own repository ([Deployment](../specs/016-platform/deployment.md) "Hosted profile"). If you DO turn it on, the public `/telemetry` dashboard renders aggregate counts from your own D1; there's no third-party analytics involved. See [Telemetry + public transparency dashboard](../specs/017-telemetry/telemetry.md).
 
 Turning telemetry on end-to-end takes BOTH the server gate above AND a build-time gate on the frontends. The api flag is the authoritative gate (ingest + summary refuse to serve without it), but every emitting frontend (the editor, the help centre, and the page-view counters on marketing and the dashboard, [Page view telemetry](../specs/017-telemetry/page-view-telemetry.md)) also reads `NEXT_PUBLIC_TELEMETRY_ENABLED` at build time and skips emission entirely when it isn't `"true"`. So a fork that only flips the api flag will see "ingest on" but no events flow. To turn it fully on, set `NEXT_PUBLIC_TELEMETRY_ENABLED=true` in your CI build env (or each frontend's `.env.production`) alongside the api flag. The `/telemetry` dashboard's data has no client-side gate of its own: it just reads `/api/telemetry/summary`, and the api worker returns an empty `enabled: false` payload until you flip `TELEMETRY_ENABLED` (the build flag only governs its own page-view count). Per-user opt-out via the Settings dialog ([User preferences](../specs/007-editor/user-preferences.md)) still overrides every app's emission when off, since they share one origin and one preferences key.
 
@@ -208,7 +208,7 @@ To turn it on, set the key as a worker secret:
 
 ```bash
 # One key turns AI on:
-pnpm --filter @livepages/api exec wrangler secret put GOOGLE_AI_STUDIO_API_KEY
+pnpm --filter @livedesign/api exec wrangler secret put GOOGLE_AI_STUDIO_API_KEY
 # or OPENAI_API_KEY, or AI_API_KEY (with AI_BASE_URL + AI_MODEL as [vars]).
 ```
 
@@ -223,10 +223,10 @@ whichever key exists, and `AI_API_KEY` is used only when neither named key is se
 - `AI_MODEL`: the assistant's model, overriding its preset default
   (`gemini-3.6-flash` for Google, `gpt-4o` for OpenAI). Required when using
   `AI_API_KEY`.
-- `AI_ALLOWED_ORIGINS`: comma-separated `Origin` allow-list for `POST /api/ai` (e.g. `https://your-host,http://localhost:3202`). Unset = no origin check. Matched verbatim, case-sensitive. `apps/api/wrangler.toml` commits livepages.app's origins here, so a fork sets its own or deletes the line, or every AI request answers 403.
+- `AI_ALLOWED_ORIGINS`: comma-separated `Origin` allow-list for `POST /api/ai` (e.g. `https://your-host,http://localhost:3302`). Unset = no origin check. Matched verbatim, case-sensitive. `apps/api/wrangler.toml` commits livedesign.app's origins here, so a fork sets its own or deletes the line, or every AI request answers 403.
 - `AI_REQUIRE_CLERK`: set to `"true"` to reject the guest (`X-Owner-Id`) path on `/api/ai` only, requiring a verified Clerk JWT. Unset = guests can use AI (so a Clerk-less fork still works).
 
-The last two are the spend-DoS defence: on a public deployment they stop a third-party site from minting fresh owner ids to drain your model budget. The hosted livepages.app sets `AI_ALLOWED_ORIGINS` and deliberately leaves `AI_REQUIRE_CLERK` unset so guests keep AI; a private or Clerk-less fork can leave both unset. Two further defences live alongside them: the `AI_RATE_LIMITER` binding (declared in `apps/api/wrangler.toml` as a Cloudflare rate-limit binding, 20 requests / 60 s per IP) caps how fast one client can drive the endpoint; absent binding falls through to "allow" so a self-host without the paid Cloudflare feature still works. AI is also per-user opt-in via the Settings dialog even once the key is present.
+The last two are the spend-DoS defence: on a public deployment they stop a third-party site from minting fresh owner ids to drain your model budget. The hosted livedesign.app sets `AI_ALLOWED_ORIGINS` and deliberately leaves `AI_REQUIRE_CLERK` unset so guests keep AI; a private or Clerk-less fork can leave both unset. Two further defences live alongside them: the `AI_RATE_LIMITER` binding (declared in `apps/api/wrangler.toml` as a Cloudflare rate-limit binding, 20 requests / 60 s per IP) caps how fast one client can drive the endpoint; absent binding falls through to "allow" so a self-host without the paid Cloudflare feature still works. AI is also per-user opt-in via the Settings dialog even once the key is present.
 
 ## Email (optional, Resend)
 
@@ -235,13 +235,13 @@ The api worker can send a small set of account emails via [Resend](https://resen
 To turn it on, verify a sending domain in Resend, then:
 
 ```bash
-pnpm --filter @livepages/api exec wrangler secret put RESEND_API_KEY
+pnpm --filter @livedesign/api exec wrangler secret put RESEND_API_KEY
 ```
 
 Optional knobs (plain `[vars]`):
 
-- `RESEND_FROM`: the From identity, e.g. `livepages <hello@livepages.app>` (the default). Must be on your verified domain.
-- `APP_BASE_URL`: public origin for links in emails, defaults to `https://livepages.app`.
+- `RESEND_FROM`: the From identity, e.g. `livedesign <hello@livedesign.app>` (the default). Must be on your verified domain.
+- `APP_BASE_URL`: public origin for links in emails, defaults to `https://livedesign.app`.
 
 If you enable this on a deployment that already has signed-in users, run the one-time backfill in [Transactional & lifecycle email (Resend) §4](../specs/014-identity/transactional-email.md) first, so existing users aren't "welcomed" on their next sign-in.
 
@@ -269,7 +269,7 @@ with the others, and a form link is served by the live worker (`/form/<code>`) a
 
 A workbench is a developer tool that frames the editor signed in, beside an agent ([Workbench embeds](../specs/013-workspace/workbench-embeds.md)). It needs API tokens, so it exists only where Clerk is configured; without Clerk the routes answer as for any caller without a token and nothing breaks.
 
-- `APP_BASE_URL` (api `[vars]`): set it to your deployment's public origin. Besides the links in emails, it builds the workbench frame URLs (`/embed/workbench`, and `/embed/workbench/explorer` for the whole workspace) and the pairing URL (`/workbench/pair`) the CLI prints. Use the origin that serves the app without redirecting (for example `https://www.example.com` when the apex redirects to `www`): a workbench checks the frame's messages against the origin of that URL, and a redirect changes it. Left at its default, those links point at livepages.app.
+- `APP_BASE_URL` (api `[vars]`): set it to your deployment's public origin. Besides the links in emails, it builds the workbench frame URLs (`/embed/workbench`, and `/embed/workbench/explorer` for the whole workspace) and the pairing URL (`/workbench/pair`) the CLI prints. Use the origin that serves the app without redirecting (for example `https://www.example.com` when the apex redirects to `www`): a workbench checks the frame's messages against the origin of that URL, and a redirect changes it. Left at its default, those links point at livedesign.app.
 - `WORKBENCH_TICKET_RATE_LIMITER` (optional binding, declared in `apps/api/wrangler.toml`): caps ticket mints and pairing requests per token. Without the binding every request is allowed.
 - Migration `0077_workbench.sql` creates the four workbench tables; it runs with the others.
 
@@ -282,24 +282,24 @@ Plan-mode Sheets ([Sheet store](../specs/029-sheets/sheet-store.md)) need no set
 Signed-in users can mirror My Documents to their own Google Drive ([Google Drive mirror](../specs/022-drive-mirror/drive-mirror.md)). It is **off until you set a Google OAuth client id**; with none, Settings has no Cloud Sync section and every `/api/drive` route answers `503 drive_not_configured`. The Drive traffic goes from each user's browser straight to Google; your worker only brokers tokens and stores a few small rows in D1.
 
 1. In Google Cloud, create a project, enable the **Google Drive API**, and create an OAuth client of type **Web application**. Add `https://<your-host>/drive/connected` as an authorised redirect URI and `https://<your-host>` as a JavaScript origin. The consent screen needs only the non-sensitive scopes `drive.file` and `drive.install`, so no verification or security assessment is required.
-2. For **Open with**, configure the Drive API's **Drive UI integration**: Open URL `https://<your-host>/drive/open`, default MIME type `application/vnd.livepages+json`, default extension `livepages`.
+2. For **Open with**, configure the Drive API's **Drive UI integration**: Open URL `https://<your-host>/drive/open`, default MIME type `application/vnd.livedesign+json`, default extension `livedesign`.
 3. Set the client id on the api worker as a `[vars]` entry `GOOGLE_CLIENT_ID`, and build the live app with the same value as `NEXT_PUBLIC_GOOGLE_CLIENT_ID`.
 4. For syncing without a click every hour, also set two worker secrets (without them the browser holds hour-long tokens and asks the user to **Resume sync**):
 
 ```sh
-pnpm --filter @livepages/api exec wrangler secret put GOOGLE_CLIENT_SECRET
-pnpm --filter @livepages/api exec wrangler secret put DRIVE_TOKEN_KEY   # openssl rand -base64 32
+pnpm --filter @livedesign/api exec wrangler secret put GOOGLE_CLIENT_SECRET
+pnpm --filter @livedesign/api exec wrangler secret put DRIVE_TOKEN_KEY   # openssl rand -base64 32
 ```
 
-5. Optional: `NEXT_PUBLIC_GOOGLE_API_KEY`, a browser API key (restricted by HTTP referrer) for the Google Picker, which lets users show livepages a folder they made in Drive. Without it the mirror works and that one step is not offered.
+5. Optional: `NEXT_PUBLIC_GOOGLE_API_KEY`, a browser API key (restricted by HTTP referrer) for the Google Picker, which lets users show livedesign a folder they made in Drive. Without it the mirror works and that one step is not offered.
 
-**More than one environment** (a staging beside production): give each its **own Google Cloud project**. A project has one Drive UI integration Open URL, so a shared project could only ever open files on one host; `drive.file` access is per project, so files stay apart; and consent screens and test users stay apart. Each environment then has its own client id (worker var and live build, the same value within an environment), client secret, `DRIVE_TOKEN_KEY` and Picker key. livepages.app does exactly this: its client ids sit per environment in `apps/api/hosted-vars.json` (`environments.production` / `environments.staging`, empty until set, which keeps the mirror off there), its Picker keys are the `NEXT_PUBLIC_GOOGLE_API_KEY` and `NEXT_PUBLIC_GOOGLE_API_KEY_STAGING` GitHub secrets, and every deploy checks that the worker and the live build carry the same client id.
+**More than one environment** (a staging beside production): give each its **own Google Cloud project**. A project has one Drive UI integration Open URL, so a shared project could only ever open files on one host; `drive.file` access is per project, so files stay apart; and consent screens and test users stay apart. Each environment then has its own client id (worker var and live build, the same value within an environment), client secret, `DRIVE_TOKEN_KEY` and Picker key. livedesign.app does exactly this: its client ids sit per environment in `apps/api/hosted-vars.json` (`environments.production` / `environments.staging`, empty until set, which keeps the mirror off there), its Picker keys are the `NEXT_PUBLIC_GOOGLE_API_KEY` and `NEXT_PUBLIC_GOOGLE_API_KEY_STAGING` GitHub secrets, and every deploy checks that the worker and the live build carry the same client id.
 
-If your site redirects one host to another (livepages.app sends the apex to `www`), register both as JavaScript origins with `/drive/connected` redirect URIs: the consent flow uses whichever host the app actually runs on.
+If your site redirects one host to another (livedesign.app sends the apex to `www`), register both as JavaScript origins with `/drive/connected` redirect URIs: the consent flow uses whichever host the app actually runs on.
 
-The mirror's root folder in each user's Drive is named **`livepages (self-hosted)`** on your deployment (livepages.app's own is `livepages`, its staging and local development `livepages (staging)`), so a user of both never gets two folders of the same name. There is no setting: the name comes from the host, is given only when the folder is created, and users may rename or move it freely.
+The mirror's root folder in each user's Drive is named **`livedesign (self-hosted)`** on your deployment (livedesign.app's own is `livedesign`, its staging and local development `livedesign (staging)`), so a user of both never gets two folders of the same name. There is no setting: the name comes from the host, is given only when the folder is created, and users may rename or move it freely.
 
-`DRIVE_TOKEN_KEY` seals the stored refresh tokens; changing it turns every connection into **Needs reconnecting**. Files a different deployment's Google project created are foreign to yours and import as copies. Your privacy policy must describe the Google user data you handle; livepages.app's is in the help centre under Policies.
+`DRIVE_TOKEN_KEY` seals the stored refresh tokens; changing it turns every connection into **Needs reconnecting**. Files a different deployment's Google project created are foreign to yours and import as copies. Your privacy policy must describe the Google user data you handle; livedesign.app's is in the help centre under Policies.
 
 ## Per-owner image gallery caps
 
@@ -308,7 +308,7 @@ The api worker honours two optional `[vars]` that cap how much one owner can kee
 - `IMAGE_MAX_PER_OWNER`: maximum image rows per owner (decimal string).
 - `IMAGE_MAX_BYTES_PER_OWNER`: maximum summed `byte_size` per owner (decimal byte count).
 
-Both default to "no limit" when unset, blank, `0`, or non-numeric, which is the OSS self-host default where the operator runs their own R2 budget. To cap, declare them under `[vars]` in `apps/api/wrangler.toml`, not in the Cloudflare dashboard: every `wrangler deploy` replaces the worker's plain vars with the ones it declares, so a dashboard-only cap is silently gone after the next deploy. The hosted livepages.app sets them to `100` and `104857600` (100 MB) through its hosted profile, which a fork's deploy does not apply. The worker also honours an early `X-Image-Sha256` dedupe check sent by the live editor: if the header matches an existing row at `(owner, sha256)` the upload short-circuits before the body parse, the cap check, or the R2 write, so re-uploading bytes the user already has costs almost nothing.
+Both default to "no limit" when unset, blank, `0`, or non-numeric, which is the OSS self-host default where the operator runs their own R2 budget. To cap, declare them under `[vars]` in `apps/api/wrangler.toml`, not in the Cloudflare dashboard: every `wrangler deploy` replaces the worker's plain vars with the ones it declares, so a dashboard-only cap is silently gone after the next deploy. The hosted livedesign.app sets them to `100` and `104857600` (100 MB) through its hosted profile, which a fork's deploy does not apply. The worker also honours an early `X-Image-Sha256` dedupe check sent by the live editor: if the header matches an existing row at `(owner, sha256)` the upload short-circuits before the body parse, the cap check, or the R2 write, so re-uploading bytes the user already has costs almost nothing.
 
 ## Custom domain
 

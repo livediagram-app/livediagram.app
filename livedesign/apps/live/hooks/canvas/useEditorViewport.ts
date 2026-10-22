@@ -14,7 +14,7 @@ import { createViewportStore, type ViewportStore } from '@/lib/viewport-store';
 import type { Selection } from '@/lib/selection-store';
 import { use, useCallback, useEffect, useEffectEvent, useRef, useState } from 'react';
 import { browser } from 'react-dom';
-import { isBoxed, unionBoxedBounds, type PageRect, type Tab } from '@livepages/document';
+import { isBoxed, unionBoxedBounds, type PageRect, type Tab } from '@livedesign/document';
 import {
   computeFitToScreen,
   computeViewportCanvasRect,

@@ -1,7 +1,7 @@
 // Custom-theme calls (docs/specs/011-theme/custom-themes.md): list / create / update / delete. Owner-
 // scoped like folders; guests included (apiHeaders attaches the Clerk
 // token when signed in, else the X-Owner-Id header).
-import type { CustomTheme, CustomThemeDefinition } from '@livepages/api-schema';
+import type { CustomTheme, CustomThemeDefinition } from '@livedesign/api-schema';
 import { dedupeInFlight } from '../dedupe';
 import {
   API_BASE,

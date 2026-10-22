@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cpuBudgetMs, cpuMsOf } from '@livepages/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@livedesign/vitest-config/cpu-time';
 import {
   createPinnedArrow,
   createShape,
@@ -8,7 +8,7 @@ import {
   type Element,
   type Page,
   type Tab,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { pageElementBuckets } from './page-element-buckets';
 import { slideThumbFor, tabArrowLabels } from './slide-thumb';
 

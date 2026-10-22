@@ -35,7 +35,7 @@ import {
   type ArticleFlow,
   type LaidOutPage,
   type Tab,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { debugLog } from '@/lib/debug-log';
 import { useArticleIntake } from './useArticleIntake';
 import {

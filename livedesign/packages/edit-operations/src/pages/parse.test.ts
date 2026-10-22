@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ARTICLE_MARKDOWN_MAX } from '@livepages/document';
+import { ARTICLE_MARKDOWN_MAX } from '@livedesign/document';
 import { parsePagesRequest } from './parse';
 
 // docs/specs/024-agents/blueprints/pages-for-agents.md "Interfaces and contracts".

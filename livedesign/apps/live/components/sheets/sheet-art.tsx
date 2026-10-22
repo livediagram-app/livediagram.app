@@ -1,6 +1,6 @@
 // The Sheet's glyph (docs/specs/029-sheets/sheet.md "Placing a sheet"): a small grid with a filled header row and
 // one cell ringed, on the 22-unit grid the other Plan glyphs use. Main bundle (the palette draws it).
-import { Glyph } from '@livepages/ui';
+import { Glyph } from '@livedesign/ui';
 
 export function SheetArt({ size }: { size: number }) {
   return (

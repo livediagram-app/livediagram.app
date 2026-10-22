@@ -5,7 +5,7 @@ import {
   pagesOf,
   type PageFill,
   type Tab,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { themeBackgroundPresets } from './page-paint';
 import { motionFill } from './page-motion';
 import { followedFill, withPageBackgroundsFollowingTheme } from './page-theme-follow';

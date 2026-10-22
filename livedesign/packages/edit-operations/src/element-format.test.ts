@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { ELEMENT_FIELD_NAMES } from '@livepages/document';
-import { estimateTokens } from '@livepages/document-views';
+import { ELEMENT_FIELD_NAMES } from '@livedesign/document';
+import { estimateTokens } from '@livedesign/document-views';
 import {
   addableKinds,
   elementFormatText,

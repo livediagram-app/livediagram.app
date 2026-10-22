@@ -4,7 +4,7 @@
 // left out, and how a step lifts a part on the canvas or opens the Flows dialog.
 
 import { describe, expect, it, vi } from 'vitest';
-import { createShape, sankeyFrame, type ShapeElement } from '@livepages/document';
+import { createShape, sankeyFrame, type ShapeElement } from '@livedesign/document';
 import {
   sankeyElementTourSteps,
   sankeyFlowsContextOf,

@@ -9,7 +9,7 @@ import {
   type Selection,
   type SheetJson,
   type SheetWrite,
-} from '@livepages/sheets';
+} from '@livedesign/sheets';
 import { track } from '@/lib/telemetry';
 import { downloadBlob } from '@/lib/download-blob';
 import { SheetStore } from './sheet-store-client';

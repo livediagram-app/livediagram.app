@@ -2,7 +2,7 @@ import type { SavedItemTypes } from '@/lib/api/item-types';
 import { getOnline } from '@/lib/online-status';
 import { useEffect, useState } from 'react';
 
-import { UNTITLED_DOCUMENT_NAME } from '@livepages/templates';
+import { UNTITLED_DOCUMENT_NAME } from '@livedesign/templates';
 import type { SaveStatus } from '@/components/chrome/EditorHeader';
 import type { useToast } from '@/hooks/ui/useToast';
 import {
@@ -47,7 +47,7 @@ export function useEditorPersistence({ toast }: { toast: ReturnType<typeof useTo
   // tabs open can spot the right one. Falls back to the bare brand
   // until hydration lands the real name.
   useEffect(() => {
-    document.title = documentName ? `${documentName} | livepages` : 'livepages';
+    document.title = documentName ? `${documentName} | livedesign` : 'livedesign';
   }, [documentName]);
 
   // Every document in the local store. Used by the Explorer to render its

@@ -5,7 +5,7 @@
 // Never offered: only the button in the page panel runs it. Each kind sends its own literal telemetry, so the
 // dashboard's emitter scan reads every event.
 import { useEffect, useState } from 'react';
-import type { PageKind } from '@livepages/document';
+import type { PageKind } from '@livedesign/document';
 import { useLatest } from '@/hooks/ui/useLatest';
 import type { HelpArticleKey } from '@/lib/help-articles';
 import { requestPagePanel } from '@/lib/page-panel-request';

@@ -27,7 +27,7 @@
 // working even if the pointer leaves the canvas surface mid-drag.
 
 import { useEffect, useRef } from 'react';
-import { arrowReferencesAny, type Element, type Tab } from '@livepages/document';
+import { arrowReferencesAny, type Element, type Tab } from '@livedesign/document';
 
 import { elementHostsAtPoint } from '@/lib/dom-hit-test';
 import {

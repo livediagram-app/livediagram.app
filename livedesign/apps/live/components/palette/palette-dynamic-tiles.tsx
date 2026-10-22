@@ -1,5 +1,5 @@
-import { headlineCase } from '@livepages/api-schema';
-import type { IconDef, StickerDef, TechIconDef } from '@livepages/icons';
+import { headlineCase } from '@livedesign/api-schema';
+import type { IconDef, StickerDef, TechIconDef } from '@livedesign/icons';
 import { StickerArt } from '@/components/canvas/StickerView';
 import { CatalogIconThumb } from '@/components/primitives/icon-glyph';
 import { TechIconArt } from '@/components/primitives/tech-icon-glyph';

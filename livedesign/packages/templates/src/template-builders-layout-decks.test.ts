@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { layOutPages, newSlidePage } from '@livepages/document';
+import { layOutPages, newSlidePage } from '@livedesign/document';
 import { buildPageLayout } from './page-layout-build';
 import {
   buildLayoutDeck,

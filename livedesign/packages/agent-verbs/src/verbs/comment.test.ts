@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { DocumentCommentThread } from '@livepages/api-schema';
+import type { DocumentCommentThread } from '@livedesign/api-schema';
 import { VerbRefusal } from '../define';
 import { contextOf, DOC_A, fakeApi, tabsOfA } from '../testing/fake-api';
 import { commentAdd, commentLs, commentReopen, commentReply, commentResolve } from './comment';

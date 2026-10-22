@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createShape, type Element, type ShapeKind } from '@livepages/document';
+import { createShape, type Element, type ShapeKind } from '@livedesign/document';
 
 const trackMock = vi.fn<typeof import('@/lib/telemetry').track>();
 vi.mock('@/lib/telemetry', () => ({

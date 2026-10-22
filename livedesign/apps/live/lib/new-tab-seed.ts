@@ -3,7 +3,7 @@
 // their visual context. Each tab keeps its own styling once created. Never an editor mode: the mode
 // is newTabOpening's, until a template chosen for it says otherwise (docs/specs/007-editor/editor-modes.md
 // "Where the mode lives").
-import type { EditorMode, Tab } from '@livepages/document';
+import type { EditorMode, Tab } from '@livedesign/document';
 
 export function newTabSeed(source: Tab | undefined): Partial<Tab> {
   if (!source) return {};

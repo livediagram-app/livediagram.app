@@ -5,7 +5,7 @@
 //
 // Pure: () -> Element[], placed on the deck's pages (slideDeckPages) whatever centre is passed.
 
-import type { Element, Page } from '@livepages/document';
+import type { Element, Page } from '@livedesign/document';
 import type { Kit } from './page-layout-kit';
 import { slideType } from './slide-layouts';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';

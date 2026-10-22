@@ -10,7 +10,7 @@ import {
   STATUS_PHASE_LABELS,
   priorityMatrixModel,
   cardsInStatuses,
-} from '@livepages/items';
+} from '@livedesign/items';
 import { PRIORITY_COLOURS } from '../plan-palette';
 import { PHASE_COLOURS, ViewFrame, viewState } from './view-frame';
 import { matrixLayout } from './view-layout';

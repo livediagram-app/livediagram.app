@@ -7,7 +7,7 @@
 // an owner, not a document id, and a browser-only document never reaches
 // the worker, so it has no rows to show.
 
-import type { ActivityReadResult } from '@livepages/api-schema';
+import type { ActivityReadResult } from '@livedesign/api-schema';
 import { API_BASE, apiFetch, apiHeaders } from './core';
 
 // Null means the read FAILED (offline, a lapsed token, a worker 500),

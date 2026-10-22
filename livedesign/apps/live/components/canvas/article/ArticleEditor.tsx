@@ -26,9 +26,9 @@ import {
   type ArticleBlock,
   type ArticleFlow,
   type LaidOutPage,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { blocksToDoc, docToBlocks } from '@/lib/article/article-convert';
-import type { ArticleNotePlace } from '@livepages/document';
+import type { ArticleNotePlace } from '@livedesign/document';
 import { articleKeymap, articleInputRules } from '@/lib/article/article-keys';
 import { blockIdsPlugin, decorationsPlugin, todoTogglePlugin } from '@/lib/article/article-plugins';
 import {

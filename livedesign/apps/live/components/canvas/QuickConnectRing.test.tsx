@@ -2,7 +2,7 @@
 
 import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { MOTION_MS } from '@livepages/tailwind-config/motion';
+import { MOTION_MS } from '@livedesign/tailwind-config/motion';
 import { QuickConnectRing } from './QuickConnectRing';
 
 // The ring's menu (docs/specs/008-canvas/canvas-and-palette.md) unfolds out of the plus on open and folds

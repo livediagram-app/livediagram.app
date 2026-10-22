@@ -1,7 +1,7 @@
 // Narrowing a list by a lens (docs/specs/013-workspace/explorer-filters.md "Dimensions", "Matching").
 // Rows are first reduced to subjects, so one rule serves documents, shared rows and, later, events.
 
-import { isMadeByAiSource } from '@livepages/api-schema';
+import { isMadeByAiSource } from '@livedesign/api-schema';
 import {
   OPENS_IN_VALUES,
   TEMPLATE_VALUES,

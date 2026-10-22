@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createFreehand, createShape, penColourHex, type Element } from '@livepages/document';
+import { createFreehand, createShape, penColourHex, type Element } from '@livedesign/document';
 import { DEFAULT_WHITEBOARD_PREFS } from './whiteboard-prefs';
 import {
   applyPenStyle,

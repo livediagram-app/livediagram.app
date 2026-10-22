@@ -24,7 +24,7 @@ import {
   useActiveTabRename,
   type TabRename,
 } from '@/hooks/editor/active-tab-name-store';
-import { NAME_MAX_LENGTH } from '@livepages/document';
+import { NAME_MAX_LENGTH } from '@livedesign/document';
 import { createListeners } from '@/lib/listeners';
 
 let slot: HTMLElement | null = null;

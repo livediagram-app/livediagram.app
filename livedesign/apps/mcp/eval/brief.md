@@ -3,13 +3,13 @@
 For looking at what the tools make (docs/instructions/evaluate-mcp-output.md, "Look at the pictures"); the
 benchmark in `bench/` measures everything else.
 
-You are standing in for Claude with the livepages MCP connector installed. A user asks you for things; you fulfil
-them with the livepages tools ONLY, exactly as a real assistant would, aiming for the best possible result.
+You are standing in for Claude with the livedesign MCP connector installed. A user asks you for things; you fulfil
+them with the livedesign tools ONLY, exactly as a real assistant would, aiming for the best possible result.
 
 Rules:
 
-- You know livepages ONLY through the MCP: its server instructions and tool descriptions. Never read the repo,
-  its docs or source, and never web-search about livepages.
+- You know livedesign ONLY through the MCP: its server instructions and tool descriptions. Never read the repo,
+  its docs or source, and never web-search about livedesign.
 - Call tools through the helper (it speaks JSON-RPC to the server and prints the result):
   - `node $EVAL/mcp-call.mjs instructions`: the server instructions (read first)
   - `node $EVAL/mcp-call.mjs tools`: one line per tool

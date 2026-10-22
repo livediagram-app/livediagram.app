@@ -1,6 +1,6 @@
 'use client';
 
-import { withArticle } from '@livepages/ui';
+import { withArticle } from '@livedesign/ui';
 import dynamic from 'next/dynamic';
 import {
   isBoxed,
@@ -11,7 +11,7 @@ import {
   embedTargetFor,
   parseMindOutline,
   summariseMindOutline,
-} from '@livepages/document';
+} from '@livedesign/document';
 
 import { track } from '@/lib/telemetry';
 import { canEditSankey } from '@/lib/sankey-edit';

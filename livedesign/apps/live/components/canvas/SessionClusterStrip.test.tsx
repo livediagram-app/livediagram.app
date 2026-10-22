@@ -6,7 +6,7 @@
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { TabTimer } from '@livepages/document';
+import type { TabTimer } from '@livedesign/document';
 import {
   SessionClusterStrip,
   sessionStripTools,

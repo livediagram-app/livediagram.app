@@ -33,7 +33,7 @@ Scope, by file (all under `apps/live/` unless stated):
 | `components/dialogs/settings/settings-catalogue.ts`  | Editor › Draw sub-category: the Dock Position row                                        |
 | `hooks/canvas/useWhiteboardDockPrefs.ts`             | Those preferences as state, written like every synced preference                         |
 | `hooks/canvas/useWhiteboard.ts`                      | `pickShape`, `pickSearchedShape`, `openShapes` and the dock prefs                        |
-| `lib/palette-search.ts`, `lib/search.ts`             | `SHAPE_TILES`, `shapeTileSearchItem`; `paletteRank` from `@livepages/icons`, shared    |
+| `lib/palette-search.ts`, `lib/search.ts`             | `SHAPE_TILES`, `shapeTileSearchItem`; `paletteRank` from `@livedesign/icons`, shared    |
 | `lib/user-preferences.ts`                            | `whiteboardPinnedShapes`, `whiteboardShapePicks`                                         |
 | `components/primitives/SearchInput.tsx`              | `listboxId`: the box as a combobox over an always-shown listbox                          |
 | `apps/telemetry/app/event-explanations.ts`           | Sentences for the new tokens                                                             |
@@ -193,7 +193,7 @@ slots are Most used and Recent), "More shapes" (merged into Shapes), "toolbar" f
   the `SHAPE_PICKS_PROTECTED` most picked (never the kind just picked).
 - `shapeSlots(picks, pinned)`: the [Within reach](../../004-interface-design/within-reach.md) set of the
   unpinned kinds picked, by the shared `withinReach(known, SLOTS_PER_ROW, { uses: picks, lastUsedAt: last pick })`
-  (`@livepages/api-schema`): **Most used** first, by picks (ties to the most recent); then **Recent**, the
+  (`@livedesign/api-schema`): **Most used** first, by picks (ties to the most recent); then **Recent**, the
   unpinned kinds not in Most used, newest first, so a kind that is both shows only in Most used (its icon stays
   put); three each, none twice across pins and slots; an empty slot takes the next fallback kind not already
   showing, Most used filled first (the Shapes flyout order, rectangle to arrow, then the catalogue). With the default pins: Most used Ellipse,

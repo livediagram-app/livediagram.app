@@ -1,6 +1,6 @@
 'use client';
 
-import { HoverCard } from '@livepages/ui';
+import { HoverCard } from '@livedesign/ui';
 import { fmtDay } from './chart-utils';
 
 // A standalone inline-SVG line chart for a 30-day daily series, shared by

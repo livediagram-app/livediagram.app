@@ -32,7 +32,7 @@ import {
   type Padding,
   type ShapeElement,
   type Tab,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { track } from '@/lib/telemetry';
 import {
   withSetAnimationRepeat,

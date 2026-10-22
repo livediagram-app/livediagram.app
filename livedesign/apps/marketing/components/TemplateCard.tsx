@@ -1,14 +1,14 @@
-import { TemplatePreview } from '@livepages/template-previews';
-import { ctaHref, type CtaSource } from '@livepages/api-schema';
-import { templateCreateHref } from '@livepages/templates';
-import { EDITOR_MODE_ICONS } from '@livepages/ui';
+import { TemplatePreview } from '@livedesign/template-previews';
+import { ctaHref, type CtaSource } from '@livedesign/api-schema';
+import { templateCreateHref } from '@livedesign/templates';
+import { EDITOR_MODE_ICONS } from '@livedesign/ui';
 import type { GalleryTemplate } from '@/lib/template-gallery';
 import { BAND_CARD, BAND_CONTROL_HOVER } from '@/components/band-classes';
 import { createLabelPrefix } from '@/lib/create-label';
 
 // One template as a card that creates that document straight away and opens it in the editor
 // (/new?template=<kind>, docs/specs/007-editor/new-document-route.md): the editor picker's own preview
-// (@livepages/template-previews), so a template looks the same here as it does in the app, then its
+// (@livedesign/template-previews), so a template looks the same here as it does in the app, then its
 // mode's glyph beside its title, then its description. Shared by the landing gallery and each category
 // page's "Start from a template" band; `source` is the CTA slot the click is counted under.
 export function TemplateCard({

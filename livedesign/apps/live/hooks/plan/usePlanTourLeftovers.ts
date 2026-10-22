@@ -6,7 +6,7 @@
 // the item store has, with no history (tickTabs, writeQuiet), so Undo never brings them back. The tour today runs on
 // the person's own board or Sheet and places nothing.
 import { useEffect, useRef, useState } from 'react';
-import type { Tab } from '@livepages/document';
+import type { Tab } from '@livedesign/document';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { debugLog } from '@/lib/debug-log';
 import { readLeftover, writeLeftover } from '@/lib/plan-tour';

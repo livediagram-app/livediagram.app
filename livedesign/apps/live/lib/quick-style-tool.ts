@@ -8,7 +8,7 @@ import {
   createText,
   type Element,
   type ThemeDefinition,
-} from '@livepages/document';
+} from '@livedesign/document';
 import type { PendingDraw } from './draw-mode';
 import { buildDrawnArrow } from './draw-commit';
 import { WHITEBOARD_SHAPES, boardShape } from './whiteboard-tool';

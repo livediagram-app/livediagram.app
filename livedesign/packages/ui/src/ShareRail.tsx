@@ -8,7 +8,7 @@ import { useCopiedFlash } from './useCopiedFlash';
 // this rail is shareable from any app that renders the shared SiteHeader.
 
 /** The line we want people to pass along; the URL is the shared site origin. */
-const SHARE_TEXT = `livepages: ${SITE_PITCH}. No sign-up needed.`;
+const SHARE_TEXT = `livedesign: ${SITE_PITCH}. No sign-up needed.`;
 
 // The card each rail sits on, flush against the right edge of the page.
 const RAIL_CARD =
@@ -49,7 +49,7 @@ const TARGETS: ShareTarget[] = [
   },
   {
     label: 'Email',
-    href: `mailto:?subject=${encodeURIComponent('You should try livepages')}&body=${encodeURIComponent(`${SHARE_TEXT}\n\n${SHARE_URL}`)}`,
+    href: `mailto:?subject=${encodeURIComponent('You should try livedesign')}&body=${encodeURIComponent(`${SHARE_TEXT}\n\n${SHARE_URL}`)}`,
     path: 'M3 4.5h18A1.5 1.5 0 0 1 22.5 6v12a1.5 1.5 0 0 1-1.5 1.5H3A1.5 1.5 0 0 1 1.5 18V6A1.5 1.5 0 0 1 3 4.5Zm.42 2.06 8.58 6.06 8.58-6.06H3.42ZM20.5 7.73l-7.92 5.6a1 1 0 0 1-1.16 0L3.5 7.73V17.5h17V7.73Z',
   },
 ];

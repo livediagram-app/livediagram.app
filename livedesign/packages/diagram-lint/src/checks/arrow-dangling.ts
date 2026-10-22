@@ -1,7 +1,7 @@
 // `arrow-dangling` (error): an arrow pinned to a missing element. It takes part in nothing else (N3).
 // A line with both ends free is a drawing, never reported.
 
-import { endpointPosition } from '@livepages/document';
+import { endpointPosition } from '@livedesign/document';
 import { refOf } from '../context';
 import { fixes } from '../fixes';
 import type { Check } from './types';

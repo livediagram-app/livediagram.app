@@ -1,5 +1,5 @@
 // API-worker type surface. The wire-format DTOs are now defined in
-// `@livepages/api-schema` so the api worker and the live editor
+// `@livedesign/api-schema` so the api worker and the live editor
 // share the same source of truth (no more parallel type definitions
 // drifting between them — see AGENTS.md's reuse-over-duplication
 // rule). This file re-exports the canonical names under the
@@ -22,7 +22,7 @@ export type {
   ShareLink as ShareLinkDTO,
   ServerMessage,
   ClientMessage,
-} from '@livepages/api-schema';
+} from '@livedesign/api-schema';
 
 // Worker bindings injected by Cloudflare at runtime. Not part of the
 // wire format (purely a server-side capability handle).
@@ -127,10 +127,10 @@ export type Env = {
   // drop into `apps/api/.dev.vars` for local dev (gitignored, never commit).
   RESEND_API_KEY?: string;
   // From identity for outbound email (optional). Defaults to
-  // "livepages <hello@livepages.app>". The domain must be verified in Resend.
+  // "livedesign <hello@livedesign.app>". The domain must be verified in Resend.
   RESEND_FROM?: string;
   // Public origin used to build links in emails (optional). Defaults to
-  // "https://livepages.app".
+  // "https://livedesign.app".
   APP_BASE_URL?: string;
   // WHOSE model, and where (docs/specs/007-editor/ai-assistance.md). The PROVIDER is inferred from which of
   // these keys is set, because a key is provider-specific and its name should
@@ -173,9 +173,9 @@ export type Env = {
   // header exactly matches one of the entries (trimmed for
   // whitespace). Unset = no check, matching the historical
   // behaviour so self-host upgrades don't break. Hosted
-  // livepages.app sets this in apps/api/wrangler.toml [vars] (NOT the
+  // livedesign.app sets this in apps/api/wrangler.toml [vars] (NOT the
   // dashboard, which a deploy wipes) to BOTH
-  // "https://www.livepages.app" and "https://livepages.app" — `www`
+  // "https://www.livedesign.app" and "https://livedesign.app" — `www`
   // first because the apex 301s to it, so `www` is what a browser sends.
   // This comment previously named the apex alone, which as an actual
   // value would 403 every request the editor makes.
@@ -183,7 +183,7 @@ export type Env = {
   // When the literal string "true", POST /api/ai requires a verified
   // Clerk Bearer JWT and rejects the X-Owner-Id guest path with 401
   // (docs/specs/007-editor/ai-assistance.md). Anything else (unset, "false", any other value) keeps
-  // the guest path open. Hosted livepages.app sets this to "true";
+  // the guest path open. Hosted livedesign.app sets this to "true";
   // OSS self-hosters who run Clerk-less stay on the open path by
   // default.
   AI_REQUIRE_CLERK?: string;
@@ -192,12 +192,12 @@ export type Env = {
   // wrangler.toml [vars]; parsed via parseInt at request time.
   // Unset or non-positive = no limit (the OSS self-host default
   // where the operator runs their own storage budget). Hosted
-  // livepages.app sets this to "100".
+  // livedesign.app sets this to "100".
   IMAGE_MAX_PER_OWNER?: string;
   // Per-owner soft cap on the total bytes one owner may keep in
   // the gallery (docs/specs/009-elements/images.md). Stored as a decimal byte count in
   // wrangler.toml [vars]; parsed via parseInt at request time.
-  // Unset or non-positive = no limit. Hosted livepages.app sets
+  // Unset or non-positive = no limit. Hosted livedesign.app sets
   // this to "104857600" (100 MB).
   IMAGE_MAX_BYTES_PER_OWNER?: string;
   // Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md, "Self-hosting").

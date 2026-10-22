@@ -28,7 +28,7 @@ import {
   rotationOf,
   finishSplitsFace,
   faceFinishOf,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { renderLabel } from '@/components/canvas/element-labels';
 import { ElementFaceRouter } from '@/components/canvas/ElementFaceRouter';
 import { LaneGutter } from '@/components/canvas/LaneGutter';

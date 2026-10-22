@@ -6,7 +6,7 @@ import {
   resolveGraphInput,
   type BoxedElement,
   type Tab,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { applied, lines } from '../fixtures/outcomes';
 import { run } from '../fixtures/run';
 

@@ -12,7 +12,7 @@ import {
   isCollabPanelShape,
   type ShapeElement,
   type TabTimer,
-} from '@livepages/document';
+} from '@livedesign/document';
 import type { Participant } from '@/lib/identity';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { EstimateFace } from './EstimateFace';

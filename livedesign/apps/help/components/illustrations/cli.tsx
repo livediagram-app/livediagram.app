@@ -1,4 +1,4 @@
-// The livepages CLI's sign-in surfaces, drawn for the Developers article on the CLI
+// The livedesign CLI's sign-in surfaces, drawn for the Developers article on the CLI
 // (docs/specs/015-api/cli.md "Authentication"): a terminal running `auth login --device` beside the
 // editor's /oauth/device page, and the approval card the browser sign-in opens. Labels are the real
 // ones from apps/cli and apps/live/app/oauth. Composed from the shared primitives so the house style
@@ -63,7 +63,7 @@ export function CliDeviceSignIn() {
       <g className="help-art-as-drawn">
         <Terminal x={10} y={20} w={206} h={180} />
         <Mono x={22} y={56} className="fill-emerald-400">
-          $ livepages auth
+          $ livedesign auth
         </Mono>
         <Mono x={22} y={72} className="fill-emerald-400">
           {'  login --device'}
@@ -72,7 +72,7 @@ export function CliDeviceSignIn() {
           Open
         </Mono>
         <Mono x={22} y={112} className="fill-brand-300">
-          livepages.app/oauth/device
+          livedesign.app/oauth/device
         </Mono>
         <Mono x={22} y={128}>
           and enter
@@ -131,9 +131,9 @@ export function CliDeviceSignIn() {
 export function CliConsent() {
   return (
     <ConsentCard
-      title="Connect livepages CLI"
+      title="Connect livedesign CLI"
       intro={[
-        'livepages CLI wants to access your livepages',
+        'livedesign CLI wants to access your livedesign',
         'documents on your behalf. Approving creates an API token.',
       ]}
       sentTo="127.0.0.1:53124"

@@ -9,7 +9,7 @@ Some guards read the repo's own TypeScript rather than run it: the light and dar
 and the optical guard (`packages/tailwind-config/src/optical-guard.ts`). They parse source files into
 TypeScript syntax trees and walk them.
 
-They parse with `parseSourceFiles(paths)` from `@livepages/source-ast` (`packages/source-ast`), and
+They parse with `parseSourceFiles(paths)` from `@livedesign/source-ast` (`packages/source-ast`), and
 walk the trees with `typescript/unstable/ast`: its `is*` guards, `SyntaxKind`, and each node's
 `forEachChild`, `parent`, `getStart` and `getText`.
 
@@ -36,7 +36,7 @@ read.
 
 `ts-json-schema-generator` (the api's OpenAPI schema generator, `apps/api/scripts/gen-openapi-schemas.mjs`)
 bundles its own TypeScript 5.9 to read the api-schema types. It runs only in
-`pnpm --filter @livepages/api gen:openapi` and the drift test that checks its output; nothing else
+`pnpm --filter @livedesign/api gen:openapi` and the drift test that checks its output; nothing else
 imports a classic TypeScript.
 
 ## Out of scope

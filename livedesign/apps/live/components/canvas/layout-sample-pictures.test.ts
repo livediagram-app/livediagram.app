@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createImage, createText } from '@livepages/document';
+import { createImage, createText } from '@livedesign/document';
 import { withSamplePictures } from './layout-sample-pictures';
 
 describe('withSamplePictures', () => {

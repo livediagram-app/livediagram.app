@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
-import type { Element } from '@livepages/document';
+import type { Element } from '@livedesign/document';
 import {
   AVATAR_PAD_ARRIVAL_MS,
   avatarPads,

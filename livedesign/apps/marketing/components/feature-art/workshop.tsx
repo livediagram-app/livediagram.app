@@ -4,7 +4,7 @@
 // with the shared fa-pop and features' fa-b-* loops, which settle to the finished frame under
 // reduced motion.
 
-import { EDITOR_MODES, editorModeLabel } from '@livepages/document';
+import { EDITOR_MODES, editorModeLabel } from '@livedesign/document';
 
 import { PANEL, PanelShadow, STRONG, SUBTLE, VoteSticky } from './features-parts';
 import { Frame } from './shared';

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { TAB_VIEW_NAMES, type TabViewName } from '@livepages/api-schema';
-import type { Element, Tab } from '@livepages/document';
+import { TAB_VIEW_NAMES, type TabViewName } from '@livedesign/api-schema';
+import type { Element, Tab } from '@livedesign/document';
 import { arrowBetween, shapeAt } from './__fixtures__/build';
 import { CHECKOUT_REV, checkoutTab } from './__fixtures__/checkout-tab';
 import { renderView, type ViewRequest } from './render-view';

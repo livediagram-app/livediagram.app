@@ -12,7 +12,7 @@ import {
   runsPlainText,
   type Element,
   type TextRun,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { MUTED, checklistHeight, chip, type Tint } from './template-planner-parts';
 
 // The four parts of a well-formed objective, in sentence order. Each has

@@ -1,6 +1,6 @@
-import type { Tab } from '@livepages/document';
+import type { Tab } from '@livedesign/document';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { BUILD_ID_HEADER, DOCUMENT_FORMAT, DOCUMENT_FORMAT_HEADER } from '@livepages/api-schema';
+import { BUILD_ID_HEADER, DOCUMENT_FORMAT, DOCUMENT_FORMAT_HEADER } from '@livedesign/api-schema';
 import { resetServerReleaseForTests, serverBuild, serverDocumentFormat } from '../server-release';
 
 // getGuestSelfSig is the only ../local-identity symbol core.ts uses; mock

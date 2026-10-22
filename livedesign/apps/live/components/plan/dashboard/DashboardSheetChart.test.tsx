@@ -2,7 +2,7 @@
 import { cleanup, render, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { ShapeElement } from '@livepages/document';
+import type { ShapeElement } from '@livedesign/document';
 import { DashboardContext, type DashboardContextValue } from './dashboard-context';
 import { DashboardSheetChart } from './DashboardSheetChart';
 

@@ -105,7 +105,7 @@ export function accentHead(accent: SheetAccent): string {
   return FAMILIES[accent][2];
 }
 
-// The chart palette (@livepages/document's CHART_PALETTES, by id) a template's chart takes, in its accent's family.
+// The chart palette (@livedesign/document's CHART_PALETTES, by id) a template's chart takes, in its accent's family.
 export type TemplateChartPalette = 'forest' | 'ocean' | 'sunset' | 'berry';
 const CHART_PALETTE: Record<SheetAccent, TemplateChartPalette> = {
   emerald: 'forest',

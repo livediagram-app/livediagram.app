@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { POLL_OPTION_MAX } from '@livepages/api-schema';
-import { STICKY_PRESETS } from '@livepages/document';
+import { POLL_OPTION_MAX } from '@livedesign/api-schema';
+import { STICKY_PRESETS } from '@livedesign/document';
 import {
   quizPhase,
   sessionButtonPlan,
   type Element,
   type ShapeElement,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { buildTemplate } from './build-template';
 import { templateCategory } from './template-categories';
 import { templateEditorMode } from './template-modes';

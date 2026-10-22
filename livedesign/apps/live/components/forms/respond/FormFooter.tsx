@@ -1,19 +1,19 @@
 'use client';
 
-// Under a form on its page (docs/specs/030-forms/forms.md "Filling in a form"): "Made with livepages" and Report
+// Under a form on its page (docs/specs/030-forms/forms.md "Filling in a form"): "Made with livedesign" and Report
 // This Form, which opens a short report in place: a reason, an optional note, Send. One report per browser per form,
 // the browser named by a random id kept in local storage (never the editor's identity).
 import { useId, useState } from 'react';
-import { MadeWithLivepages } from './MadeWithLivepages';
+import { MadeWithLivedesign } from './MadeWithLivedesign';
 import {
   FORM_REPORT_NOTE_MAX,
   FORM_REPORT_REASONS,
   FORM_REPORT_REASON_LABELS,
   type FormReportReason,
-} from '@livepages/api-schema';
+} from '@livedesign/api-schema';
 import { reportForm } from '@/lib/api/forms-public';
 
-const BROWSER_KEY = 'livepages:form-browser';
+const BROWSER_KEY = 'livedesign:form-browser';
 
 function browserId(): string {
   try {
@@ -38,7 +38,7 @@ export function FormFooter({ code }: { code: string }) {
       {/* Each part stays whole and the line breaks between them: on a 320px phone it broke inside both ("Made /
           with", "Report This / Form"). There the two take a line each, with no separator left dangling. */}
       <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 whitespace-nowrap">
-        <MadeWithLivepages />
+        <MadeWithLivedesign />
         <span aria-hidden className="max-[359px]:hidden">
           ·
         </span>

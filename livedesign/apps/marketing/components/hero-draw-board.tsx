@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react';
-import type { StickerDef } from '@livepages/icons';
+import type { StickerDef } from '@livedesign/icons';
 import { FONT, at } from '@/components/art-tokens';
 import { DRAW_COPY as COPY } from '@/components/hero-draw-copy';
 import {

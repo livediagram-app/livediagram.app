@@ -10,7 +10,7 @@ import {
   scanSource,
   scanStylesheet,
 } from './motion-budget';
-import { cpuBudgetMs, cpuMsOf } from '@livepages/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@livedesign/vitest-config/cpu-time';
 
 const T = MOTION_TOKENS;
 

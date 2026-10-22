@@ -1,7 +1,7 @@
 'use client';
 
-import { lucideSearch } from '@livepages/icons/lucide';
-import { lucideGlyph } from '@livepages/ui';
+import { lucideSearch } from '@livedesign/icons/lucide';
+import { lucideGlyph } from '@livedesign/ui';
 import { useDeferredValue, useMemo, useState } from 'react';
 
 import { FaqItem } from '@/components/faq/FaqItem';

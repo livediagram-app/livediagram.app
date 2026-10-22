@@ -6,7 +6,7 @@
 // Picking one, with several cells selected, writes it over them into the cell below (=SUM(B2:B6)); else starts it in
 // the active cell, where the formula bar's assist takes over (insertFunction).
 import { useEffect, useRef, useState } from 'react';
-import { FUNCTION_DOCS, FUNCTION_FAMILIES, type FunctionFamily } from '@livepages/sheets';
+import { FUNCTION_DOCS, FUNCTION_FAMILIES, type FunctionFamily } from '@livedesign/sheets';
 import { useMenuItemProps } from '@/components/primitives/menu-item-props';
 
 // The families as the toolbar names them (Title Case).

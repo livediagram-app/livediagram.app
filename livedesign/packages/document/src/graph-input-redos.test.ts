@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@livepages/vitest-config/cpu-time';
+import { cpuMsOf } from '@livedesign/vitest-config/cpu-time';
 import { capLabel } from './graph-input';
 import { parseMermaid } from './mermaid';
 import { decodeLabel } from './mermaid-shared';

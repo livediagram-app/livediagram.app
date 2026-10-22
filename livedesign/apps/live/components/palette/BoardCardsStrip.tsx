@@ -4,8 +4,8 @@
 // screen"): in place of the mode's strip, a card of its own at the header's right end holding only the cards that
 // board takes, each placed the way the Cards tiles are (dragged into a column, or picked then dropped). Apart from the
 // board's controls card (the cog), and wearing the board's hue as the menu box does (BAND_TINT).
-import { boardAddTypes, normaliseBoardSetup } from '@livepages/items';
-import type { Element } from '@livepages/document';
+import { boardAddTypes, normaliseBoardSetup } from '@livedesign/items';
+import type { Element } from '@livedesign/document';
 import { BAND_STRIP_FLUSH, BAND_TINT, TOOLBAR_CARD } from '@/components/chrome/toolbar-surface';
 import { usePlan } from '@/components/plan/PlanContext';
 import { PaletteTile, type PaletteTileActions } from './PaletteTileGrid';

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { metricKey, type TelemetryDaily, type TelemetryWindow } from '@livepages/api-schema';
+import { metricKey, type TelemetryDaily, type TelemetryWindow } from '@livedesign/api-schema';
 import { pct } from './chart-utils';
 import { buildMetrics } from './metrics';
 import { WINDOW_META, buildWindowCounts, windowHighlightFrom, windowLabel } from './windows';

@@ -5,8 +5,8 @@
 // progress and Cancel. Loaded only when the GIF card opens.
 import { useEffect } from 'react';
 import { useLatest } from '@/hooks/ui/useLatest';
-import type { LaidOutPage, Tab } from '@livepages/document';
-import { ACTIVE_SEGMENT, Button, SEGMENT_TRACK } from '@livepages/ui';
+import type { LaidOutPage, Tab } from '@livedesign/document';
+import { ACTIVE_SEGMENT, Button, SEGMENT_TRACK } from '@livedesign/ui';
 import { BackBar } from '@/components/primitives/BackBar';
 import { SegmentSlider } from '@/components/primitives/SegmentSlider';
 import { holdLabel, holdValueText } from '@/lib/gif-export/gif-estimate';

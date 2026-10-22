@@ -1,6 +1,6 @@
 'use client';
 
-import { APPEARANCE_LABEL, useAppearance as useSharedAppearance } from '@livepages/ui';
+import { APPEARANCE_LABEL, useAppearance as useSharedAppearance } from '@livedesign/ui';
 import { track } from '@/lib/telemetry';
 import { debugLog } from '@/lib/debug-log';
 

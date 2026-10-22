@@ -13,7 +13,7 @@ import {
   responseStats,
   responseTally,
   type ShapeElement,
-} from '@livepages/document';
+} from '@livedesign/document';
 import {
   ElementEllipsisMenu,
   ElementMenuItem,

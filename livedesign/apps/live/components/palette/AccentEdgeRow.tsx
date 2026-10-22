@@ -8,8 +8,8 @@ import {
   withAccentEdgeColor,
   type AccentEdge,
   type Element,
-} from '@livepages/document';
-import { Glyph } from '@livepages/ui';
+} from '@livedesign/document';
+import { Glyph } from '@livedesign/ui';
 import { SizeButton } from '@/components/palette/palette-controls';
 import { BorderGrid } from '@/components/palette/context-menu-rows';
 import { ColourRow } from '@/components/palette/context-menu-input-rows';

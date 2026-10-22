@@ -45,14 +45,14 @@ describe('parseConsentSession', () => {
   it('keeps the public client id, which tells the CLI apart', () => {
     expect(
       parseConsentSession({
-        clientName: 'livepages CLI',
+        clientName: 'livedesign CLI',
         redirectHost: '127.0.0.1:5',
-        clientId: 'livepages-cli',
+        clientId: 'livedesign-cli',
       }),
     ).toEqual({
-      clientName: 'livepages CLI',
+      clientName: 'livedesign CLI',
       redirectHost: '127.0.0.1:5',
-      clientId: 'livepages-cli',
+      clientId: 'livedesign-cli',
     });
   });
 

@@ -8,7 +8,7 @@ import { HYPERLINK_URL_MAX, safeHyperlink } from './hyperlink';
 
 describe('safeHyperlink', () => {
   it('keeps http, https and mailto targets', () => {
-    expect(safeHyperlink('https://livepages.app')).toBe('https://livepages.app/');
+    expect(safeHyperlink('https://livedesign.app')).toBe('https://livedesign.app/');
     expect(safeHyperlink(' http://example.com/a?b=1 ')).toBe('http://example.com/a?b=1');
     expect(safeHyperlink('mailto:team@example.com')).toBe('mailto:team@example.com');
   });
@@ -21,7 +21,7 @@ describe('safeHyperlink', () => {
       'file:///etc/passwd',
       'ftp://example.com',
       '/relative/path',
-      'livepages.app',
+      'livedesign.app',
       '',
       'https://' + 'a'.repeat(HYPERLINK_URL_MAX),
     ])
@@ -40,9 +40,9 @@ describe('Workbook.hyperlinkOf', () => {
   };
 
   it('reads the target of a HYPERLINK formula, while the value stays the label', () => {
-    const b = book({ A1: '=HYPERLINK("https://livepages.app", "livepages")' });
-    expect(b.v('A1')).toBe('livepages');
-    expect(at(b, 'A1')).toBe('https://livepages.app/');
+    const b = book({ A1: '=HYPERLINK("https://livedesign.app", "livedesign")' });
+    expect(b.v('A1')).toBe('livedesign');
+    expect(at(b, 'A1')).toBe('https://livedesign.app/');
   });
 
   it('works the target out in the cell, references included, and follows a change', () => {
@@ -70,11 +70,11 @@ describe('Workbook.hyperlinkOf', () => {
 
 describe('the render model', () => {
   it('carries a HYPERLINK cell as a link, underlined, and no other', () => {
-    const b = book({ A1: '=HYPERLINK("https://livepages.app", "livepages")', A2: 'plain' });
+    const b = book({ A1: '=HYPERLINK("https://livedesign.app", "livedesign")', A2: 'plain' });
     const model = renderWindow(b.wb, b.sheets[0]!.id, { width: 600, height: 200 }, 'en-GB')!;
     const cell = (text: string) => model.cells.find((x) => x.text === text)!;
-    expect(cell('livepages')).toMatchObject({
-      link: 'https://livepages.app/',
+    expect(cell('livedesign')).toMatchObject({
+      link: 'https://livedesign.app/',
       underline: true,
     });
     expect(cell('plain').link).toBeUndefined();

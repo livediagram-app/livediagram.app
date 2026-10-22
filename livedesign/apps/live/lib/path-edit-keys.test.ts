@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { PathAnchor } from '@livepages/document';
+import type { PathAnchor } from '@livedesign/document';
 import { pathEditKey } from './path-edit-keys';
 
 const corner = (x: number, y: number): PathAnchor => ({ x, y, mode: 'corner' });

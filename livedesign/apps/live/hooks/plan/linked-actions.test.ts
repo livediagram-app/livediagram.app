@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@livepages/vitest-config/cpu-time';
-import type { ElementAction, Element, Tab } from '@livepages/document';
-import type { PlanBoardSetup } from '@livepages/items';
+import { cpuMsOf } from '@livedesign/vitest-config/cpu-time';
+import type { ElementAction, Element, Tab } from '@livedesign/document';
+import type { PlanBoardSetup } from '@livedesign/items';
 import {
   actionsBoardIn,
   applyActionChanges,

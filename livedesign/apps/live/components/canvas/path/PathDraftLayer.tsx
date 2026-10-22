@@ -7,7 +7,7 @@ import {
   DEFAULT_BORDER_STYLE,
   type PathAnchor,
   type PathElement,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { PathSvg } from './PathSvg';
 import {
   NodeMarker,

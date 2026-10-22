@@ -11,7 +11,7 @@ import {
   LockIcon,
   Select,
   Tooltip,
-} from '@livepages/ui';
+} from '@livedesign/ui';
 import type { ShareLink } from '@/lib/api-client';
 import { buildEmbedSnippet, embedUrlFor } from '@/lib/embed';
 import { liveImageHtml, liveImageMarkdown, liveImageUrlFor } from '@/lib/live-image';

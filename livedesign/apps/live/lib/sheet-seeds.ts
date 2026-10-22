@@ -3,13 +3,13 @@
 // not have, still makes the copy. The sheet chunk registers what it can read; a paste stashes what arrived; the
 // pasted Sheet takes its seed when it first draws. Main bundle, and tiny: from the engine, types and the template
 // catalogue's ids and names only.
-import { isDefaultTabName, newPlanSheetId } from '@livepages/document';
+import { isDefaultTabName, newPlanSheetId } from '@livedesign/document';
 import {
   SHEET_TEMPLATE_IDS,
   SHEET_TEMPLATES,
   type SheetJson,
   type SheetTemplateId,
-} from '@livepages/sheets';
+} from '@livedesign/sheets';
 
 // The clipboard's limit for one sheet (the sheet store's write limit): a larger one pastes only within its
 // document, where the copy is made on the server.

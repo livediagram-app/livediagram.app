@@ -1,4 +1,4 @@
-import type { EditorMode } from '@livepages/document';
+import type { EditorMode } from '@livedesign/document';
 import type { CleanupKind } from '@/lib/tab-cleanup';
 import type { CleanupVerdict } from '@/lib/tidy-verdict';
 

@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react';
-import type { TemplateKind } from '@livepages/templates';
+import type { TemplateKind } from '@livedesign/templates';
 import { templatePreviewGroup1 } from './template-preview-1';
 import { templatePreviewGroup2 } from './template-preview-2';
 import { templatePreviewGroup3 } from './template-preview-3';
@@ -32,7 +32,7 @@ import { templatePreviewGroup26 } from './template-preview-26';
 // (docs/specs/019-marketing/marketing-site.md). Pure-render presentational markup, no hooks. Each branch is
 // independent of the rest: adding a new template kind means appending one
 // switch case in a group file plus adding the kind to TEMPLATES in
-// @livepages/templates; template-preview.test.ts fails until both exist.
+// @livedesign/templates; template-preview.test.ts fails until both exist.
 
 // The per-kind SVGs are split across template-preview-{1..26}.tsx (each a
 // switch returning null for kinds it doesn't own) to keep every file under the

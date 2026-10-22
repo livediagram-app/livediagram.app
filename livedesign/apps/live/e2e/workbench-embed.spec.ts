@@ -61,17 +61,17 @@ test('a paired workbench frames the editor, hears the selection, renews, and end
   await frame.locator('[data-canvas-a11y-root]').waitFor();
   await expect(frame.locator('[data-element-id="el-play"]').first()).toBeVisible();
 
-  // The workbench chrome: no app header, Explorer or Share; the tab bar and Open in livepages stay.
+  // The workbench chrome: no app header, Explorer or Share; the tab bar and Open in livedesign stay.
   await expect(
-    frame.getByRole('link', { name: 'Open in livepages (opens in a new tab)' }),
+    frame.getByRole('link', { name: 'Open in livedesign (opens in a new tab)' }),
   ).toBeVisible();
   await expect(frame.getByRole('button', { name: /^Share/ })).toHaveCount(0);
   await expect(frame.getByText('Explorer', { exact: true })).toHaveCount(0);
   await expect(frame.getByText('Wireframe').first()).toBeVisible();
   await expect
     .poll(async () => (await received(page)).map((m) => m.type))
-    .toEqual(expect.arrayContaining(['livepages:hello', 'livepages:ready']));
-  const ready = (await received(page)).find((m) => m.type === 'livepages:ready');
+    .toEqual(expect.arrayContaining(['livedesign:hello', 'livedesign:ready']));
+  const ready = (await received(page)).find((m) => m.type === 'livedesign:ready');
   expect(ready).toMatchObject({
     documentId: seeded.documentId,
     documentName: 'Home screen',
@@ -108,21 +108,21 @@ test('a paired workbench frames the editor, hears the selection, renews, and end
   const selectionOf = async (label: string) =>
     (await received(page)).find(
       (m) =>
-        m.type === 'livepages:selection' &&
+        m.type === 'livedesign:selection' &&
         m.count === 1 &&
         String(m.reference).includes(`"${label}"`),
     );
   await frame.locator('[data-element-id="el-play"]').first().click();
   await expect.poll(() => selectionOf('Play')).toBeTruthy();
   const selection = (await selectionOf('Play'))!;
-  expect(selection.reference).toMatch(/^\[livepages\] "Home screen" › tab "Wireframe" \(doc /);
+  expect(selection.reference).toMatch(/^\[livedesign\] "Home screen" › tab "Wireframe" \(doc /);
   expect(selection.reference).toContain('"Play"');
-  expect(selection.reference).toContain(`read: livepages tab view ${seeded.documentId}`);
+  expect(selection.reference).toContain(`read: livedesign tab view ${seeded.documentId}`);
 
   // Reveal outlines the element; the theme follows the workbench.
   await page.evaluate(() =>
     (window as unknown as { post: (m: unknown) => void }).post({
-      type: 'livepages:reveal',
+      type: 'livedesign:reveal',
       v: 1,
       refs: ['el-play'],
     }),
@@ -133,7 +133,7 @@ test('a paired workbench frames the editor, hears the selection, renews, and end
     await page.evaluate(
       (scheme) =>
         (window as unknown as { post: (m: unknown) => void }).post({
-          type: 'livepages:theme',
+          type: 'livedesign:theme',
           v: 1,
           colourScheme: scheme,
         }),
@@ -147,7 +147,7 @@ test('a paired workbench frames the editor, hears the selection, renews, and end
   await page.evaluate(
     (ticket) =>
       (window as unknown as { post: (m: unknown) => void }).post({
-        type: 'livepages:ticket',
+        type: 'livedesign:ticket',
         v: 1,
         ticket,
       }),
@@ -174,7 +174,7 @@ test('a paired workbench frames the editor, hears the selection, renews, and end
     frame.getByRole('status').filter({ hasText: 'Reconnect in Fake Workbench to keep editing.' }),
   ).toBeVisible();
   await expect
-    .poll(async () => (await received(page)).find((m) => m.type === 'livepages:ended'))
+    .poll(async () => (await received(page)).find((m) => m.type === 'livedesign:ended'))
     .toMatchObject({ reason: 'revoked' });
 });
 

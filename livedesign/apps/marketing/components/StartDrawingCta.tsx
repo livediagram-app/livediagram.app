@@ -1,5 +1,5 @@
-import { ctaHref } from '@livepages/api-schema';
-import { CheckIcon, ChevronRightIcon } from '@livepages/ui';
+import { ctaHref } from '@livedesign/api-schema';
+import { CheckIcon, ChevronRightIcon } from '@livedesign/ui';
 
 // The closing call to action (docs/specs/019-marketing/marketing-site.md "Closing CTA"), shared by the
 // landing page and every feature category page, so a visitor who drilled into a category can start

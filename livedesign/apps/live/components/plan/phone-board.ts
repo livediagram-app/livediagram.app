@@ -2,7 +2,7 @@
 // its cards are Minimal and its widgets stand aside, and a board that scrolls on its own (maximised, filling its tab
 // or in a Dashboard slot) shows one column a screen, snapping to each, its empty space taking a finger as a scroll.
 // Pure.
-import type { CardSize, QuickFilter } from '@livepages/items';
+import type { CardSize, QuickFilter } from '@livedesign/items';
 import type { BoardColumnLayout } from './plan-board-columns';
 
 export type BoardPlace = {

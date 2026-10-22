@@ -9,7 +9,7 @@ import {
   type HomeGroup,
   type HomePerson,
   type HomeVerb,
-} from '@livepages/api-schema';
+} from '@livedesign/api-schema';
 import { localDay } from './local-day';
 
 /** One event of another person, as the read returns it. */

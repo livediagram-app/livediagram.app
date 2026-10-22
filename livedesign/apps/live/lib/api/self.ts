@@ -91,7 +91,7 @@ export async function apiDeleteAccount(): Promise<{
 // Guest → authed ownership migration. Called once on first sign-in
 // from editor-page.tsx + new/page.tsx when both conditions hold:
 //   - the Clerk session is active (a Bearer token will be sent)
-//   - `livepages:v2:self-id` is still in localStorage
+//   - `livedesign:v2:self-id` is still in localStorage
 // On success the caller clears the localStorage id so subsequent
 // loads use only the Clerk userId.
 //

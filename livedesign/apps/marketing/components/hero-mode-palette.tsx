@@ -6,8 +6,8 @@
 // scale, drawn from the editor's own glyphs where it has them. The strip is ToolbarStrip
 // (hero-editor-chrome.tsx).
 
-import type { EditorMode } from '@livepages/document';
-import { MODE_GLYPHS } from '@livepages/icons/mode-glyphs';
+import type { EditorMode } from '@livedesign/document';
+import { MODE_GLYPHS } from '@livedesign/icons/mode-glyphs';
 import {
   AskGroupIcon,
   BehaviourTabIcon,
@@ -29,7 +29,7 @@ import {
   TechTabIcon,
   WriteTabIcon,
   type IconProps,
-} from '@livepages/ui';
+} from '@livedesign/ui';
 import type { ComponentType, ReactNode } from 'react';
 import { Shape } from './hero-illustration-glyphs';
 
@@ -101,7 +101,7 @@ const DRAW_TILES: Tile[] = [
 // Draw's dock, the one mode whose strip is still tiles.
 export const DRAW_DOCK: readonly Tile[] = DRAW_TILES;
 
-// A category on the bar: its glyph (the editor's own, @livepages/ui) and its one-word name.
+// A category on the bar: its glyph (the editor's own, @livedesign/ui) and its one-word name.
 export type BarCategory = { key: string; label: string; Icon: ComponentType };
 
 // Each bar mode's categories, band by band (a hairline between bands), as the editor lays them out.

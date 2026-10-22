@@ -9,7 +9,7 @@ import {
   WORKBENCH_SESSION_PREFIX,
   WORKBENCH_SESSION_SECRET_BYTES,
   WORKBENCH_TICKET_BYTES,
-} from '@livepages/api-schema';
+} from '@livedesign/api-schema';
 import { readWorkbenchSession, type WorkbenchReach } from '../db/workbench';
 import type { WorkbenchContext } from '../routes/context';
 import type { Env } from '../types';

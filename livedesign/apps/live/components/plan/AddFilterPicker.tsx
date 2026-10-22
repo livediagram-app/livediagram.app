@@ -13,7 +13,7 @@ import {
   SearchIcon,
   TextInput,
   withArticle,
-} from '@livepages/ui';
+} from '@livedesign/ui';
 import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
 
 type FilterField = { id: string; label: string };

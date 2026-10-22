@@ -6,7 +6,7 @@ import {
   resolveStockColours,
   type CanvasSurface,
   type Element,
-} from '@livepages/document';
+} from '@livedesign/document';
 
 export type InkRole = 'line' | 'text';
 

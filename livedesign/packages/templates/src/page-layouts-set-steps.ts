@@ -3,7 +3,7 @@
 // page's content box so each fits every size and orientation, in the tab's theme. The how-to is
 // here; the staircase and customer journey are in part 2, the project plan and decision flow in
 // part 3.
-import type { Element } from '@livepages/document';
+import type { Element } from '@livedesign/document';
 import { heading, kit, type Kit } from './page-layout-kit';
 import { iconRow } from './page-layout-parts';
 import type { PageLayout } from './page-layouts';

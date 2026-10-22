@@ -56,9 +56,9 @@ test('a deck presents slide by slide and leaves the view as it was', async ({
   expect(seeded.ok()).toBe(true);
   await page.addInitScript(
     ({ o, sig }) => {
-      localStorage.setItem('livepages:v2:self-id', o);
-      if (sig) localStorage.setItem('livepages:v2:self-sig', sig);
-      localStorage.setItem('livepages:v2:name-confirmed', '1');
+      localStorage.setItem('livedesign:v2:self-id', o);
+      if (sig) localStorage.setItem('livedesign:v2:self-sig', sig);
+      localStorage.setItem('livedesign:v2:name-confirmed', '1');
     },
     { o: owner, sig: guestSigFor(owner) },
   );

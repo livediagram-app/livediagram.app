@@ -12,7 +12,7 @@
 // reached by name (window, document, location, sessionStorage, performance, fetch, Date, console,
 // console), so a test can run it against stubs. Both of its lines are warnings, always shown: a reload
 // is a recovery worth seeing (docs/specs/003-system-architecture/console-logging.md).
-import { BUILD_ID_HEADER } from '@livepages/api-schema';
+import { BUILD_ID_HEADER } from '@livedesign/api-schema';
 import { API_BASE } from './api/base';
 import {
   APP_RECOVERY_FLAG,
@@ -54,7 +54,7 @@ for(var i=0;i<links.length;i++){if(isAsset(links[i].href)&&!links[i].sheet){relo
 var entries=performance&&performance.getEntriesByType?performance.getEntriesByType('resource'):[];
 for(var j=0;j<entries.length;j++){if(isAsset(entries[j].name)&&entries[j].responseStatus>=400){reloadOnce('a build asset failed to load',entries[j].name);return;}}});
 window.addEventListener('pageshow',function(e){if(!e||!e.persisted)return;
-var meta=document.querySelector('meta[name="livepages-build"]'),own=meta&&meta.content;if(!own)return;
+var meta=document.querySelector('meta[name="livedesign-build"]'),own=meta&&meta.content;if(!own)return;
 fetch(API+'/capabilities',{cache:'no-store'}).then(function(r){var live=r.headers.get(HEADER);
 if(live&&live!==own)reloadOnce('a newer build is live than this restored page',live);}).catch(function(){});});
 })();`;

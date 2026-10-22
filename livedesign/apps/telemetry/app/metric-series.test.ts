@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 // Loaded with the file, not inside the test: the verb catalogue is a large import.
-import { countedVerbs } from '@livepages/agent-verbs';
-import { pascalToken } from '@livepages/api-schema';
+import { countedVerbs } from '@livedesign/agent-verbs';
+import { pascalToken } from '@livedesign/api-schema';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { GROUPS as DASHBOARD } from './DashboardView';
@@ -72,7 +72,7 @@ describe('stack headlines', () => {
 describe('the Elements Added stack', () => {
   it('buckets every element type into exactly one chart', async () => {
     const { ELEMENTS_ADDED } = await import('./metric-catalogue');
-    const { PALETTE_TELEMETRY_TYPES } = await import('@livepages/api-schema');
+    const { PALETTE_TELEMETRY_TYPES } = await import('@livedesign/api-schema');
     const samples = [
       ...Object.values(PALETTE_TELEMETRY_TYPES).flat(),
       'Code-block', // an old spelling folds into its tab
@@ -93,8 +93,8 @@ describe('the Elements Added stack', () => {
 describe('the MCP Tool Calls stack', () => {
   it('has one chart per tool the MCP server registers', async () => {
     const { MCP_TOOL_METRICS } = await import('./metric-catalogue');
-    const { pascalToken } = await import('@livepages/api-schema');
-    const { MCP_TOOL_VERBS } = await import('@livepages/agent-verbs/mcp');
+    const { pascalToken } = await import('@livedesign/api-schema');
+    const { MCP_TOOL_VERBS } = await import('@livedesign/agent-verbs/mcp');
     // The server registers every tool from its verb (apps/mcp verb-parity.test.ts).
     const names = MCP_TOOL_VERBS.map((v) => v.mcp.tool);
     expect(names.length).toBeGreaterThan(5);

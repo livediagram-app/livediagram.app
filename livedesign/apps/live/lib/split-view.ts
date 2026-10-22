@@ -4,7 +4,7 @@
 // here is a function of plain numbers and ids so the gesture, the layout and the persistence can be
 // tested without a DOM.
 
-import { isRecord } from '@livepages/document';
+import { isRecord } from '@livedesign/document';
 import {
   readLocalStorageSafe,
   removeLocalStorageSafe,
@@ -152,8 +152,8 @@ export function pairAfterActivation(
 
 // The persisted shape: which tabs a document was split on and on which side, and the width people chose
 // (one fraction for every document, because it is about their screen, not the document).
-const PAIR_KEY_PREFIX = 'livepages:v2:split-view-pair:';
-const FRACTION_KEY = 'livepages:v2:split-view-fraction';
+const PAIR_KEY_PREFIX = 'livedesign:v2:split-view-pair:';
+const FRACTION_KEY = 'livedesign:v2:split-view-fraction';
 
 export function readStoredPair(documentId: string): SplitPair | null {
   const raw = safeJson(readLocalStorageSafe(PAIR_KEY_PREFIX + documentId) ?? 'null');

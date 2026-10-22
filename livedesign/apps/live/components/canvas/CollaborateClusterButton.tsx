@@ -1,7 +1,7 @@
 'use client';
 
-import { HoverCard } from '@livepages/ui';
-import { CountBadge } from '@livepages/ui';
+import { HoverCard } from '@livedesign/ui';
+import { CountBadge } from '@livedesign/ui';
 import { CollaborateGlyph } from '@/components/panels/collaborate/CollaborateGlyph';
 import { CLUSTER_STRIP, CLUSTER_CONTROL_REST } from '@/components/canvas/cluster-strip';
 

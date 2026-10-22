@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { createShape, type Element } from '@livepages/document';
+import { createShape, type Element } from '@livedesign/document';
 import { EditorContextMenu } from './EditorContextMenu';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 

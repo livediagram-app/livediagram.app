@@ -1,5 +1,5 @@
 // The help-centre catalogue surfaced by the global SearchPanel (docs/specs/008-canvas/canvas-and-palette.md +
-// docs/specs/018-help/contextual-help-links.md): the FULL article registry from @livepages/help-registry, so
+// docs/specs/018-help/contextual-help-links.md): the FULL article registry from @livedesign/help-registry, so
 // every help article is findable from the canvas. Each item matches on its
 // title plus the registry's description + keyword synonyms ("transparency"
 // finds Layer Order and Opacity), resolved to an absolute /help href.
@@ -7,8 +7,8 @@
 // Deep links from editor surfaces (HelpArticleLink etc.) still go through the
 // symbolic-key map in help-articles.ts; this module only feeds search.
 
-import { articleHref, articles } from '@livepages/help-registry';
-import { articleTelemetryId } from '@livepages/help-registry/telemetry';
+import { articleHref, articles } from '@livedesign/help-registry';
+import { articleTelemetryId } from '@livedesign/help-registry/telemetry';
 import type { HelpSearchItem } from './search';
 
 /** The built help catalogue passed to the SearchPanel. Static, so built once. */

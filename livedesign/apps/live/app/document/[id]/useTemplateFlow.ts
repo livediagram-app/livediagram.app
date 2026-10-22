@@ -1,6 +1,6 @@
 import type { Dispatch, SetStateAction } from 'react';
-import type { EditorMode, Tab } from '@livepages/document';
-import type { ItemCreate } from '@livepages/items';
+import type { EditorMode, Tab } from '@livedesign/document';
+import type { ItemCreate } from '@livedesign/items';
 import { track, titleCaseType } from '@/lib/telemetry';
 import { getTheme, recolourElementsForTheme } from '@/lib/themes';
 import {
@@ -9,8 +9,8 @@ import {
   isPlanTemplateKind,
   withBlankPageThemed,
   type TemplateKind,
-} from '@livepages/templates';
-import type { StarterId } from '@livepages/forms';
+} from '@livedesign/templates';
+import type { StarterId } from '@livedesign/forms';
 import { templateTabName } from '@/lib/template-tab-name';
 import type { Participant } from '@/lib/identity';
 import { landTemplateOnTab, templateFollowerTabs } from './template-tab-set';
@@ -195,7 +195,7 @@ export function useTemplateFlow(opts: {
     // A Plan template's boards open on its worked example (docs/specs/026-plan/plan-templates.md "Example cards").
     if (isPlanTemplateKind(kind)) {
       const { planTemplateSeedItems, seedToday } =
-        await import('@livepages/templates/plan-template-seeds');
+        await import('@livedesign/templates/plan-template-seeds');
       const seeds = planTemplateSeedItems(kind, seedToday());
       if (seeds.length) seedCards(seeds);
     }

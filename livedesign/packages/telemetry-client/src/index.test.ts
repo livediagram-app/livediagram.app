@@ -320,30 +320,30 @@ describe('installClientErrorTracking', () => {
   it("skips the edge's bot-detection snippet that Trusted Types refuses by design", () => {
     const track = vi.fn();
     Object.assign(windowTarget, {
-      location: { pathname: '/help/canvas', href: 'https://livepages.app/help/canvas/#top' },
+      location: { pathname: '/help/canvas', href: 'https://livedesign.app/help/canvas/#top' },
     });
     mod.installClientErrorTracking(track);
     // The snippet's throw: an inline script (filename is the page) and a cross-realm error.
     windowTarget.fire('error', {
       message:
         "Uncaught TypeError: Failed to set the 'innerHTML' property on 'Element': This document requires 'TrustedHTML' assignment.",
-      filename: 'https://livepages.app/help/canvas/',
+      filename: 'https://livedesign.app/help/canvas/',
       error: { name: 'TypeError' },
     });
     windowTarget.fire('error', {
       message: 'TypeError: This assignment requires a TrustedHTML',
-      filename: 'https://livepages.app/help/canvas/',
+      filename: 'https://livedesign.app/help/canvas/',
       error: { name: 'TypeError' },
     });
     // The same refusal from one of our own script files still counts, as does anything else inline.
     windowTarget.fire('error', {
       message: 'This assignment requires a TrustedHTML',
-      filename: 'https://livepages.app/help/_next/static/chunks/app.js',
+      filename: 'https://livedesign.app/help/_next/static/chunks/app.js',
       error: new TypeError('x'),
     });
     windowTarget.fire('error', {
       message: 'x is undefined',
-      filename: 'https://livepages.app/help/canvas/',
+      filename: 'https://livedesign.app/help/canvas/',
       error: new RangeError('x'),
     });
     expect(track.mock.calls).toEqual([
@@ -407,7 +407,7 @@ describe('telemetry opt-out contract', () => {
     // change for the editor AND the help centre in the same commit, or an
     // opt-out made in one stops being visible to the other.
     const { USER_PREFERENCES_STORAGE_KEY } = await import('./index');
-    expect(USER_PREFERENCES_STORAGE_KEY).toBe('livepages:user-preferences:v1');
+    expect(USER_PREFERENCES_STORAGE_KEY).toBe('livedesign:user-preferences:v1');
   });
 
   it('is on by default and off only on an explicit false', async () => {
@@ -439,7 +439,7 @@ describe('telemetry opt-out contract', () => {
     expect(readTelemetryOptIn()).toBe(false);
     // A different key must not be mistaken for the preferences blob.
     delete store[USER_PREFERENCES_STORAGE_KEY];
-    store['livepages:user-preferences:v2'] = '{"telemetryEnabled":false}';
+    store['livedesign:user-preferences:v2'] = '{"telemetryEnabled":false}';
     expect(readTelemetryOptIn()).toBe(true);
   });
 });

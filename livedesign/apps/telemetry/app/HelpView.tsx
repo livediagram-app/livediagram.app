@@ -1,6 +1,6 @@
 'use client';
 
-import type { TelemetrySummary, TelemetryWindowKey } from '@livepages/api-schema';
+import type { TelemetrySummary, TelemetryWindowKey } from '@livedesign/api-schema';
 import {
   ARTICLE_VIEWS,
   DRY_HELP_SEARCHES,

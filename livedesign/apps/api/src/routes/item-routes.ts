@@ -1,13 +1,13 @@
 // The item store's endpoints (docs/specs/026-plan/items.md, blueprint item-store.md "Interfaces and
 // contracts"): list, create, bulk create, patch (POST), many patches (item-patches-route.ts), a vote's tally (item-tally-route.ts), move and delete under
 // /api/documents/:id/items, and a card's comment writes (item-comment-routes.ts). People and agents use the
-// same doors. Every write applies the pure functions of @livepages/items, lands guarded by the item's rev
+// same doors. Every write applies the pure functions of @livedesign/items, lands guarded by the item's rev
 // (retried on a lost race), and reaches the room as an ordered `items` op. Comment author ids reach only their
 // author: every answer is redacted for the caller, and the room hears none (docs/specs/026-plan/items.md
 // "Comments").
 
-import type { ItemResponse, ItemsResponse } from '@livepages/api-schema';
-import { itemForViewer, readRestoredThread } from '@livepages/document';
+import type { ItemResponse, ItemsResponse } from '@livedesign/api-schema';
+import { itemForViewer, readRestoredThread } from '@livedesign/document';
 import {
   ITEMS_MAX,
   ITEM_BULK_MAX,
@@ -28,7 +28,7 @@ import {
   type ItemCreate,
   type ItemPerson,
   type ItemRejection,
-} from '@livepages/items';
+} from '@livedesign/items';
 import {
   deleteItemRow,
   getItemStoreHead,

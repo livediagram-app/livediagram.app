@@ -3,7 +3,7 @@
 // writes (sheet-write-route.ts). People and agents use the same doors; every change reaches the room as an
 // ordered `sheets` op.
 
-import type { SheetCreateRequest, SheetResponse, SheetsResponse } from '@livepages/api-schema';
+import type { SheetCreateRequest, SheetResponse, SheetsResponse } from '@livedesign/api-schema';
 import {
   DOCUMENT_CELLS_MAX,
   DOCUMENT_SHEETS_MAX,
@@ -19,7 +19,7 @@ import {
   type SheetJson,
   type SheetLayout,
   type SheetPerson,
-} from '@livepages/sheets';
+} from '@livedesign/sheets';
 import {
   copySheetStatements,
   deleteSheetStatement,

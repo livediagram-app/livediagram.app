@@ -1,5 +1,5 @@
 // What a question's Answer Goes To chip says (docs/specs/030-forms/forms.md "Mapping: where an answer goes").
-import type { ResolvedTarget } from '@livepages/forms';
+import type { ResolvedTarget } from '@livedesign/forms';
 
 export function targetLabel(target: ResolvedTarget): string {
   if (target.broken) return 'Description (its field was removed)';

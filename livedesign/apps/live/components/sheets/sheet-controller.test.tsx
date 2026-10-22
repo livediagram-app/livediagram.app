@@ -11,7 +11,7 @@ import {
   type SheetJson,
   type SheetLayout,
   type SheetWrite,
-} from '@livepages/sheets';
+} from '@livedesign/sheets';
 import { track } from '@/lib/telemetry';
 import type { PlanPalette } from '@/components/plan/plan-palette';
 import { SheetStore } from './sheet-store-client';

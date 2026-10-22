@@ -36,7 +36,7 @@ class RecordingRewriter {
   }
 }
 
-const SHELL = '<html><head><title>livepages</title></head><body></body></html>';
+const SHELL = '<html><head><title>livedesign</title></head><body></body></html>';
 
 function makeEnv(
   api?: (path: string, init?: RequestInit) => Promise<Response> | Response,
@@ -66,7 +66,7 @@ function makeEnv(
 }
 
 const get = (path: string, env: never, init: RequestInit = {}) =>
-  worker.fetch(new Request(`https://www.livepages.app${path}`, init), env);
+  worker.fetch(new Request(`https://www.livedesign.app${path}`, init), env);
 
 beforeEach(() => {
   vi.stubGlobal('HTMLRewriter', RecordingRewriter);
@@ -89,11 +89,11 @@ describe('isSharePagePath', () => {
 
 describe('shareHead', () => {
   it('names the document and points at its share card on this origin', () => {
-    expect(shareHead('Payments flow', 'Ab 12', 'https://staging.livepages.app')).toEqual({
+    expect(shareHead('Payments flow', 'Ab 12', 'https://staging.livedesign.app')).toEqual({
       title: 'Payments flow',
       description: SHARE_PITCH,
-      image: 'https://staging.livepages.app/api/share/Ab%2012/image.png',
-      imageAlt: 'Payments flow, drawn in livepages',
+      image: 'https://staging.livedesign.app/api/share/Ab%2012/image.png',
+      imageAlt: 'Payments flow, drawn in livedesign',
     });
   });
 
@@ -118,14 +118,14 @@ describe('live worker: the share page', () => {
     // Still the editor page's headers.
     expect(res.headers.get('X-Frame-Options')).toBe('DENY');
     const edits = (await res.json()) as Edits;
-    const image = 'https://www.livepages.app/api/share/CODE1234/image.png';
+    const image = 'https://www.livedesign.app/api/share/CODE1234/image.png';
     expect(edits.title!.inner).toBe('Payments flow');
     expect(edits['meta[name="description"]']!.attrs.content).toBe(SHARE_PITCH);
     expect(edits['meta[property="og:title"]']!.attrs.content).toBe('Payments flow');
     expect(edits['meta[property="og:description"]']!.attrs.content).toBe(SHARE_PITCH);
     expect(edits['meta[property="og:image"]']!.attrs.content).toBe(image);
     expect(edits['meta[property="og:image:alt"]']!.attrs.content).toBe(
-      'Payments flow, drawn in livepages',
+      'Payments flow, drawn in livedesign',
     );
     expect(edits['meta[name="twitter:title"]']!.attrs.content).toBe('Payments flow');
     expect(edits['meta[name="twitter:description"]']!.attrs.content).toBe(SHARE_PITCH);
@@ -145,7 +145,7 @@ describe('live worker: the share page', () => {
     expect(new Headers(init!.headers).has('CF-Connecting-IP')).toBe(false);
   });
 
-  it('serves the shell as built when the api says the link previews as livepages', async () => {
+  it('serves the shell as built when the api says the link previews as livedesign', async () => {
     const { env } = makeEnv(() => Response.json({ error: 'not_found' }, { status: 404 }));
     const res = await get('/document/shared?s=GATED', env);
     expect(await res.text()).toBe(SHELL);

@@ -47,8 +47,8 @@ The editor has no history of changesets. Once you close the note, or if the chan
 `changeset ls` lists a document's recent changesets, newest first, 20 by default:
 
 ```bash
-livepages changeset ls "Auth flow"
-livepages changeset ls 3f9c --tab Overview --limit 5
+livedesign changeset ls "Auth flow"
+livedesign changeset ls 3f9c --tab Overview --limit 5
 ```
 
 One changeset a line: its id, the tab revision it produced, the tab, who made it (marked `(agent)` when a token did), its summary, how many elements it added, changed and removed, and when (in UTC):
@@ -61,20 +61,20 @@ cs_3h7v2n9c4p  rev 39  "Overview"  Webber (agent)  +0 ~3 -1  2026-10-11 08:52
 A revert shows as its own line ending in `reverts cs_…`. `changeset show` prints one changeset's line, then what it did, one line per element, the same lines the write printed:
 
 ```bash
-livepages changeset show "Auth flow" cs_8k2m4q7d1x
+livedesign changeset show "Auth flow" cs_8k2m4q7d1x
 ```
 
 ```text
 cs_8k2m4q7d1x  rev 42  "Overview"  Webber (agent)  "add payment service"  +2 ~0 -0  2026-10-11 09:14
 + pay  square "Payment service" @520,120 160×64
 + arrow  n2→pay
-rev 41→42 · cs_8k2m4q7d1x · lint clean · revert: livepages changeset revert abc123 cs_8k2m4q7d1x
+rev 41→42 · cs_8k2m4q7d1x · lint clean · revert: livedesign changeset revert abc123 cs_8k2m4q7d1x
 ```
 
 Every write the CLI makes ends with that same footer, so the command that takes it back is printed beside the change. To undo one:
 
 ```bash
-livepages changeset revert "Auth flow" cs_8k2m4q7d1x
+livedesign changeset revert "Auth flow" cs_8k2m4q7d1x
 ```
 
 ```text
@@ -87,7 +87,7 @@ kept pay (changed)
 To see everything that changed in a tab since you last looked, whoever changed it, use `tab diff` with a revision the CLI has read (the CLI keeps a copy of each tab it reads with `tab view`):
 
 ```bash
-livepages tab diff "Auth flow" --since 41
+livedesign tab diff "Auth flow" --since 41
 ```
 
 ```text

@@ -1,7 +1,7 @@
 'use client';
 
 import { memo, useMemo } from 'react';
-import { imageCornerPx, type ImageElement } from '@livepages/document';
+import { imageCornerPx, type ImageElement } from '@livedesign/document';
 import { useElementFinish } from '@/components/canvas/CanvasFinishContext';
 import { useCanvasTheme, useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { ImageEmptyFace } from '@/components/canvas/ImageEmptyFace';
@@ -14,7 +14,7 @@ import {
 } from '@/components/canvas/image-placeholder-look';
 import { useImageBlobUrl } from '@/hooks/persistence/useImageBlobUrl';
 import { bodySetClass } from '@/lib/animation-classes';
-import { Glyph } from '@livepages/ui';
+import { Glyph } from '@livedesign/ui';
 
 // Renders the bitmap (or upload placeholder) for an ImageElement.
 // Mounted inside BoxedElementView's transformed wrapper so it picks

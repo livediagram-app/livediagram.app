@@ -1,6 +1,6 @@
 import { openerById } from './palette-openers';
 import { describe, expect, it } from 'vitest';
-import { isPlanViewId } from '@livepages/items';
+import { isPlanViewId } from '@livedesign/items';
 import { PALETTE_CATEGORIES } from './palette-categories';
 import {
   CATALOGUE_CATEGORIES,

@@ -1,5 +1,5 @@
 import { useState, type DragEvent as ReactDragEvent } from 'react';
-import { acceptsInlineIcon, type Element, type IconPosition } from '@livepages/document';
+import { acceptsInlineIcon, type Element, type IconPosition } from '@livedesign/document';
 import { iconDropSide } from '@/lib/canvas';
 import { ICON_DND_MIME } from '@/lib/icons';
 

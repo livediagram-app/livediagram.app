@@ -12,7 +12,7 @@
 // builds the link) and the editor (which reads it), so the two halves
 // cannot drift on the parameter names.
 
-import type { ActivityCard, ActivityFormResponses, ActivityPlace } from '@livepages/api-schema';
+import type { ActivityCard, ActivityFormResponses, ActivityPlace } from '@livedesign/api-schema';
 
 export type CollabPopover = 'action' | 'comments';
 

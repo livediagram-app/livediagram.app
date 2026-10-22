@@ -7,9 +7,9 @@
 // Page (AddPagePopover) to choose a page of any kind. At the page limit both are disabled, a Tooltip
 // naming the limit.
 import { useCallback, useRef, useState } from 'react';
-import { MAX_PAGES } from '@livepages/document';
-import { lucideLayoutGrid, lucidePlus } from '@livepages/icons/lucide';
-import { lucideGlyph, Tooltip } from '@livepages/ui';
+import { MAX_PAGES } from '@livedesign/document';
+import { lucideLayoutGrid, lucidePlus } from '@livedesign/icons/lucide';
+import { lucideGlyph, Tooltip } from '@livedesign/ui';
 import type { PageContents } from '@/hooks/ui/usePageContents';
 import { addAnotherLabel } from '@/lib/add-page-labels';
 import { AddPagePopover } from './AddPagePopover';

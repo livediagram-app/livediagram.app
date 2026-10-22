@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@livepages/document';
+import type { Element } from '@livedesign/document';
 import { paletteDragSnapAt } from './palette-drag-snap';
 
 // Alignment help BEFORE the drop (docs/specs/010-palette/palette-drag-ghost.md): while a palette tile is dragged

@@ -11,8 +11,8 @@ import {
   lucideLockOpen,
   lucideTrash2,
   lucideSearch,
-} from '@livepages/icons/lucide';
-import { lucideGlyph, Tooltip, trustedHtml } from '@livepages/ui';
+} from '@livedesign/icons/lucide';
+import { lucideGlyph, Tooltip, trustedHtml } from '@livedesign/ui';
 import { SlideDeckIcon } from '@/components/palette/palette-icons';
 import { DropCaret } from '@/components/primitives/DropCaret';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';

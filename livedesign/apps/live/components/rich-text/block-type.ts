@@ -1,4 +1,4 @@
-import type { ListStyle, RunHeading } from '@livepages/document';
+import type { ListStyle, RunHeading } from '@livedesign/document';
 
 // The block type of the current lines, as one closed vocabulary (docs/specs/009-elements/block-type-picker.md).
 //

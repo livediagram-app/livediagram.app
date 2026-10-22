@@ -1,7 +1,7 @@
 // The card in the headless render (docs/specs/009-elements/card.md). The card's own box is the ordinary bordered
 // rect svgBoxed draws; this is what sits in it, placed from the same cardLayout the canvas face uses.
 
-import { capBandBaselineY } from '@livepages/icons';
+import { capBandBaselineY } from '@livedesign/icons';
 import { cardLayout, cardMediaOf, cardSlotsOf } from './card';
 import { colorWash } from './color-wash';
 import { borderOf } from './svg-render-border';

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { layOutPages, newLogoPage, type ArrowElement, type Element } from '@livepages/document';
+import { layOutPages, newLogoPage, type ArrowElement, type Element } from '@livedesign/document';
 import { resolveArrowEndpointDrag } from './arrow-endpoint-resolve';
 
 // docs/specs/007-editor/pages-mode.md "Arrows stay on one page": an arrow's dragged end pins

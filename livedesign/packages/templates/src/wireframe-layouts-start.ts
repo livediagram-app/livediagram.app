@@ -1,7 +1,7 @@
 // Wireframe layouts, Start and Browse (docs/specs/007-editor/wireframe-pages.md "Wireframe
 // layouts"): each a whole screen, a single column on a phone and a wider arrangement on a tablet
 // or computer. Pure builders over the safe area (wireframe-layout-kit).
-import type { Element } from '@livepages/document';
+import type { Element } from '@livedesign/document';
 import type { LayoutBox } from './page-layout-kit';
 import {
   APP_NAME,

@@ -2,8 +2,8 @@
 // element carries its sheet's cells, so a paste into another document can still make the copy; a paste stashes
 // what arrived for the pasted Sheet to take.
 import { afterEach, describe, expect, it } from 'vitest';
-import type { Element } from '@livepages/document';
-import type { SheetJson } from '@livepages/sheets';
+import type { Element } from '@livedesign/document';
+import type { SheetJson } from '@livedesign/sheets';
 import {
   CLIPBOARD_KIND,
   MAX_CLIPBOARD_BYTES,

@@ -7,8 +7,8 @@
 import { generateKeyPairSync, randomUUID, sign, type KeyObject } from 'node:crypto';
 import { createServer, type Server } from 'node:http';
 import type { Page, Route } from '@playwright/test';
-import { FakeGoogle } from '@livepages/fake-google';
-import { serveFakeGoogle } from '@livepages/fake-google/server';
+import { FakeGoogle } from '@livedesign/fake-google';
+import { serveFakeGoogle } from '@livedesign/fake-google/server';
 
 // The same defaults scripts/e2e-stack.mjs gives the api worker.
 const JWKS_PORT = Number(process.env.E2E_DRIVE_JWKS_PORT ?? 8795);

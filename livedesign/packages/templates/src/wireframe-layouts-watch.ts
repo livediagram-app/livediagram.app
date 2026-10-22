@@ -1,6 +1,6 @@
 // Wireframe layouts for a watch (docs/specs/007-editor/wireframe-pages.md "Wireframe layouts"):
 // Glance, List and Notification, built for a watch face's small safe area.
-import type { Element } from '@livepages/document';
+import type { Element } from '@livedesign/document';
 import type { LayoutBox } from './page-layout-kit';
 import { ui, WF } from './wireframe-layout-kit';
 

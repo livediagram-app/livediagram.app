@@ -17,7 +17,7 @@ import {
   withReadableLabelInks,
   type CanvasSurface,
   type Element,
-} from '@livepages/document';
+} from '@livedesign/document';
 
 const NO_THEME_MAP: ReadonlyMap<string, string> = new Map();
 

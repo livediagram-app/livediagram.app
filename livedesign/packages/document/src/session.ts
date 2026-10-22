@@ -284,7 +284,7 @@ export function isCardVotableInVote(
 // Why this exists at all: `votes` is one map that everybody writes at once, and
 // it used to travel between peers as a whole-object replacement. A peer's
 // snapshot, taken before your dot arrived, put the map back the way it was and
-// your dot was gone — see the `vote` op in @livepages/api-schema. Carrying
+// your dot was gone — see the `vote` op in @livedesign/api-schema. Carrying
 // the CHANGE instead makes concurrent dots commute: apply them in any order and
 // every peer lands on the same map.
 //

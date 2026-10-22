@@ -1,6 +1,6 @@
 // The import image pipeline's vocabulary (docs/specs/020-import-export/import-image-pipeline.md).
 
-import type { AcceptedImageType } from '@livepages/api-schema';
+import type { AcceptedImageType } from '@livedesign/api-schema';
 
 // Bytes an importer found in a file: a `data:` URL (Excalidraw's `files`) or a
 // Blob with its MIME type (archive formats).

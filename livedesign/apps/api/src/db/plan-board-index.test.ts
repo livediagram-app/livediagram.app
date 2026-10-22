@@ -1,4 +1,4 @@
-import { itemPersonId } from '@livepages/items';
+import { itemPersonId } from '@livedesign/items';
 import { describe, expect, it } from 'vitest';
 import type { Env } from '../types';
 import { cardsFromRows, readerPersonIds, type CardRow } from './plan-board-index';

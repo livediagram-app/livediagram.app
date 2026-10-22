@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { emptySheet, sheetToJson } from '@livepages/sheets';
+import { emptySheet, sheetToJson } from '@livedesign/sheets';
 // The resvg WASM renderer cannot load in plain node (see tools.test.ts); the sheet tools never render.
 vi.mock('./image-result', () => ({ imageResult: () => ({ content: [] }) }));
 

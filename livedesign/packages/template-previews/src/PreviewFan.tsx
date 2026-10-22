@@ -1,4 +1,4 @@
-import type { TemplateKind } from '@livepages/templates';
+import type { TemplateKind } from '@livedesign/templates';
 import { TemplatePreview } from './template-preview';
 
 // A category drawn as a fanned stack of its first three templates' previews

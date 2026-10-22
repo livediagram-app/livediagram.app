@@ -1,4 +1,4 @@
-import type { TimingBucket, TimingScaleKey } from '@livepages/api-schema';
+import type { TimingBucket, TimingScaleKey } from '@livedesign/api-schema';
 import { bucketLabel } from './timing-stats';
 
 // The sentence under a timing event (docs/specs/017-telemetry/timing-telemetry.md): what was timed, in

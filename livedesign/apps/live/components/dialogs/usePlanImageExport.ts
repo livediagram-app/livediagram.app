@@ -12,7 +12,7 @@ import {
   type ResolvePlanArt,
   type SheetRenderModel,
   type Tab,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { usePlan } from '@/components/plan/PlanContext';
 import { useSheetsBridgeContext } from '@/hooks/sheets/useSheetsBridge';
 import { tabAsSeen } from '@/lib/export-as-seen';
@@ -25,7 +25,7 @@ import {
   type PlanArtData,
   type PlanImage,
   type SheetMetricArt,
-} from '@livepages/plan-art';
+} from '@livedesign/plan-art';
 import { getTheme } from '@/lib/themes';
 import { debugLog } from '@/lib/debug-log';
 

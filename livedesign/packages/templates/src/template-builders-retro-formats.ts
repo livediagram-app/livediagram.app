@@ -7,7 +7,7 @@
 //
 // Pure: takes a centre (cx, cy), returns a fresh Element[].
 
-import { createShape, createText, type Element } from '@livepages/document';
+import { createShape, createText, type Element } from '@livedesign/document';
 import {
   actionChecklist,
   actionsColumn,

@@ -4,7 +4,7 @@
 // model can write by hand, so the stroke's box is taken from its points and the points are packed by the
 // shared codec, through the stored-tab migration every entry point runs.
 
-import { isRecord, MAX_FREEHAND_POINTS, migrateIncomingElements } from '@livepages/document';
+import { isRecord, MAX_FREEHAND_POINTS, migrateIncomingElements } from '@livedesign/document';
 
 type Rec = Record<string, unknown>;
 

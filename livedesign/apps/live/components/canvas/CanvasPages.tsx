@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useRef, useState, type CSSProperties } from 'react';
-import { lucidePanelsTopLeft, lucideSettings } from '@livepages/icons/lucide';
+import { lucidePanelsTopLeft, lucideSettings } from '@livedesign/icons/lucide';
 import { FirstPageChoice } from './FirstPageChoice';
 import { layoutCardShows, layoutInviteShows, type LayoutCardContext } from './page-layout-card';
 import { EmptyPageLayouts } from './EmptyPageLayouts';
@@ -37,8 +37,8 @@ import {
   resolveArticleStyle,
   resolveFontStack,
   type LaidOutPage,
-} from '@livepages/document';
-import { HoverCard, lucideGlyph, Tooltip } from '@livepages/ui';
+} from '@livedesign/document';
+import { HoverCard, lucideGlyph, Tooltip } from '@livedesign/ui';
 import type { PagesModeView } from '@/hooks/editor/usePagesMode';
 import { InfographicLayoutPreview } from './InfographicLayoutPreview';
 import {

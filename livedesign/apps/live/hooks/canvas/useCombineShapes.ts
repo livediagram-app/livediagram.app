@@ -12,7 +12,7 @@ import {
   type Element,
   type LaidOutPage,
   type Tab,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { combineElements, type CombineOp } from '@/lib/combine/combine';
 import { isCombinable } from '@/lib/combine/outline';
 import { track } from '@/lib/telemetry';

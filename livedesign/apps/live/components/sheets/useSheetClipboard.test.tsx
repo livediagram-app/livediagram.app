@@ -12,7 +12,7 @@ import {
   typeInto,
   type GridRange,
   type SheetJson,
-} from '@livepages/sheets';
+} from '@livedesign/sheets';
 import { track } from '@/lib/telemetry';
 import type { PlanPalette } from '@/components/plan/plan-palette';
 import { SheetStore } from './sheet-store-client';

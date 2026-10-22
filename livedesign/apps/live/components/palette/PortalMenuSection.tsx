@@ -12,12 +12,12 @@
 // hover card, and in the linked portal's label — never drawn on the canvas ring,
 // where a caption over the energy looked like a sticker on a window.
 
-import type { ShapeElement, Tab } from '@livepages/document';
+import type { ShapeElement, Tab } from '@livedesign/document';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { MENU_ICON_PX, ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
 import { portalName, portalSites } from '@/lib/portals';
-import { PlusIcon } from '@livepages/ui';
+import { PlusIcon } from '@livedesign/ui';
 import { useFollowingDraft } from '@/hooks/ui/useFollowingDraft';
 
 function PlusGlyph() {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cpuBudgetMs, cpuMsOf } from '@livepages/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@livedesign/vitest-config/cpu-time';
 import { createPinnedArrow, createShape } from './factories';
 import { createFlowchartStart } from './flowchart';
 import { addFlowchartLane, applyFlowchartStep, planFlowchartStep } from './flowchart-grow';

@@ -5,7 +5,7 @@ import { useSearchShortcut } from './useSearchShortcut';
 import { writeLocalStorageValue } from './useLocalStorageValue';
 import { modalClosed, modalOpened } from '@/lib/modal-guard';
 
-const SHORTCUTS_KEY = 'livepages:v2:shortcuts-enabled';
+const SHORTCUTS_KEY = 'livedesign:v2:shortcuts-enabled';
 
 function press(
   key: string,

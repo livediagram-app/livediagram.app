@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react';
-import { CTA_VIA_PARAM, ctaSourceFromSearch, type CtaSource } from '@livepages/api-schema';
+import { CTA_VIA_PARAM, ctaSourceFromSearch, type CtaSource } from '@livedesign/api-schema';
 import { track } from '@/lib/telemetry';
 
 // Landing funnel (docs/specs/019-marketing/landing-funnel.md): which public-page CTA brought this visit to /new.

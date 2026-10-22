@@ -1,4 +1,4 @@
-import { DOCUMENT_FORMAT } from '@livepages/api-schema';
+import { DOCUMENT_FORMAT } from '@livedesign/api-schema';
 import { aiConfigured } from '../ai-provider';
 import { emailEnabled } from '../email/client';
 import { driveMode } from '../drive/config';

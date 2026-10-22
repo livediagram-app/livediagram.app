@@ -23,7 +23,7 @@
 // warning a reader sees is the same one they'd see on the Tokens,
 // Themes or Team page.
 
-import { CloseIcon } from '@livepages/ui';
+import { CloseIcon } from '@livedesign/ui';
 import {
   CheckIcon,
   DocumentIcon,
@@ -36,8 +36,8 @@ import {
   TrashIcon,
 } from '@/components/primitives/explorer-icons';
 import { useCallback, useMemo, useState, type ReactNode } from 'react';
-import type { TimelineEvent } from '@livepages/ui';
-import type { TeamInvite, TeamListItem } from '@livepages/api-schema';
+import type { TimelineEvent } from '@livedesign/ui';
+import type { TeamInvite, TeamListItem } from '@livedesign/api-schema';
 import { apiDeleteTeam, apiGetTeam, apiRemoveTeamMember, apiUpdateTeam } from '@/lib/api-client';
 import { TeamFormModal } from '@/components/dialogs/TeamFormModal';
 import { useCustomThemes } from '@/components/primitives/CustomThemeProvider';

@@ -17,7 +17,7 @@
 // silently no-op'd.
 
 import { useEffect } from 'react';
-import { isInMenuSurface, isPressableControl } from '@livepages/ui';
+import { isInMenuSurface, isPressableControl } from '@livedesign/ui';
 import { anyModalOpen } from '@/lib/modal-guard';
 import { isMobileViewportSync } from '@/lib/responsive';
 import {

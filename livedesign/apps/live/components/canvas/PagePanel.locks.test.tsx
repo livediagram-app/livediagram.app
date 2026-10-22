@@ -5,7 +5,7 @@
 
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { layOutPages, type Page } from '@livepages/document';
+import { layOutPages, type Page } from '@livedesign/document';
 import type { PageEdits } from '@/hooks/editor/usePagesMode';
 import { PagePanel } from './PagePanel';
 

@@ -6,9 +6,9 @@
 // chunk once it has attached. Before any Sheet is drawn nothing attaches and every op is dropped: the store
 // fetches what it needs when it loads.
 import { createContext, useCallback, useContext, useMemo, useRef } from 'react';
-import type { RoomOp, SheetPresenceOp, SheetsRoomOp } from '@livepages/api-schema';
-import type { SheetPerson } from '@livepages/sheets';
-import type { BoxedElement, Element } from '@livepages/document';
+import type { RoomOp, SheetPresenceOp, SheetsRoomOp } from '@livedesign/api-schema';
+import type { SheetPerson } from '@livedesign/sheets';
+import type { BoxedElement, Element } from '@livedesign/document';
 import type { SheetsScope } from '@/lib/api/sheets';
 import type { ItemUndoStep } from '@/hooks/plan/item-undo-journal';
 import { useLatest } from '@/hooks/ui/useLatest';

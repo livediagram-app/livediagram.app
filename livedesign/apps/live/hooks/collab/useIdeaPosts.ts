@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, type RefObject } from 'react';
-import type { ElementDelta, ShapeElement, Tab } from '@livepages/document';
+import type { ElementDelta, ShapeElement, Tab } from '@livedesign/document';
 import type { connectRoom } from '@/lib/api-client';
 import { applyDeltaToTabs, type PendingIdeaIds } from '@/app/document/[id]/room-op-apply';
 import { useLatest } from '@/hooks/ui/useLatest';

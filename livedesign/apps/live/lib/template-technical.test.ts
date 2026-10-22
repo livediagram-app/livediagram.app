@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { entityHeight, type Element } from '@livepages/document';
-import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from '@livepages/templates';
+import { entityHeight, type Element } from '@livedesign/document';
+import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from '@livedesign/templates';
 import { buildTemplate } from './template-builders';
 
 // Structure pins for the five technical starters redesigned together around

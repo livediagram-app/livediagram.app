@@ -1,9 +1,9 @@
 import { BRAND_MARK_VIEWBOX, brandMarkSvg } from './brand-mark-geometry';
 import type { PrismScheme } from './brand-prism';
 
-// The horizontal lockup (mark + "livepages" wordmark) as a standalone SVG,
+// The horizontal lockup (mark + "livedesign" wordmark) as a standalone SVG,
 // for marketing/media/logo/. The wordmark follows the spec's split: "live" in
-// the accent (brand-600 light, sky-400 dark), "pages" in ink. It is set as
+// the accent (brand-600 light, sky-400 dark), "design" in ink. It is set as
 // live text in the system UI stack the apps use, so it renders in the viewer's
 // font; outline it in a design tool before print use.
 const WORDMARK = {
@@ -25,7 +25,7 @@ export function brandLogoSvg(scheme: PrismScheme): string {
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${BRAND_LOGO_SIZE.width} ${BRAND_LOGO_SIZE.height}">` +
     mark +
     `<text x="294" y="178" font-family="${FONT_STACK}" font-size="128" font-weight="600" letter-spacing="-3">` +
-    `<tspan fill="${accent}">live</tspan><tspan fill="${ink}">pages</tspan></text>` +
+    `<tspan fill="${accent}">live</tspan><tspan fill="${ink}">design</tspan></text>` +
     `</svg>`
   );
 }

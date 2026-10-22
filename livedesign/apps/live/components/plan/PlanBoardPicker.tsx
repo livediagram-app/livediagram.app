@@ -7,7 +7,7 @@
 // for, in the tab's own light or dark look. Blank comes first; the Archive board, never a first board, is
 // left to the palette. Choosing one places that board, empty, in the
 // middle of the view. Gone once the tab has a board; never shown to someone who may only view.
-import type { StarterId } from '@livepages/forms';
+import type { StarterId } from '@livedesign/forms';
 import { useEffect } from 'react';
 import type { PlacedSheetStart } from '@/lib/sheet-seeds';
 import {
@@ -16,14 +16,14 @@ import {
   PLAN_BOARD_PRESETS,
   boardAddTypes,
   type PlanBoardPresetId,
-} from '@livepages/items';
+} from '@livedesign/items';
 import { accentOn, type PlanPalette } from './plan-palette';
 import { BOARD_PREVIEWS } from './board-previews';
 import { StartPlanning } from './start/StartPlanning';
-import type { PlanTemplateKind, TemplateKind } from '@livepages/templates';
-import type { EditorMode, Tab } from '@livepages/document';
+import type { PlanTemplateKind, TemplateKind } from '@livedesign/templates';
+import type { EditorMode, Tab } from '@livedesign/document';
 import type { SuggestedDashboard } from '@/lib/suggested-dashboards';
-import type { PlanVisualisation } from '@livepages/items';
+import type { PlanVisualisation } from '@livedesign/items';
 
 // The most columns a preview draws.
 const PREVIEW_COLUMNS = 5;

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { EDITOR_MODES, editorModeLabel } from '@livepages/document';
+import { EDITOR_MODES, editorModeLabel } from '@livedesign/document';
 
 import { COMPETITOR_LOOK } from '@/components/compare/competitor-look';
 
@@ -23,7 +23,7 @@ const FALSE_CLAIMS: { pattern: RegExp; why: string }[] = [
   {
     pattern:
       /imports? (?:a |an |your )?(?:mermaid|excalidraw|draw\.io|\.drawio|drawio|microsoft whiteboard)|(?:excalidraw|draw\.io|drawio|whiteboard) import|\.excalidraw in|paste an excalidraw/i,
-    why: 'the editor imports a livepages JSON export and a Markdown outline only (help: tabs/import-tabs)',
+    why: 'the editor imports a livedesign JSON export and a Markdown outline only (help: tabs/import-tabs)',
   },
   {
     pattern: /no Figma integration/i,

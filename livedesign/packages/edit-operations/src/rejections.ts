@@ -6,8 +6,8 @@ import {
   CHANGESET_MAX_OPERATIONS,
   type EditRejection,
   type JsonValue,
-} from '@livepages/api-schema';
-import type { Element } from '@livepages/document';
+} from '@livedesign/api-schema';
+import type { Element } from '@livedesign/document';
 import { describeElement, kindOf, labelOf, quoteCut } from './element-text';
 import { nearestName } from './nearest';
 import {
@@ -167,8 +167,8 @@ export function invalidResult(
     code: 'invalid_result',
     details: [`${subject} ${issue.field}: ${issue.rule}`],
     hint: kind
-      ? `see the format: livepages schema ${kind}`
-      : 'see the format: livepages schema',
+      ? `see the format: livedesign schema ${kind}`
+      : 'see the format: livedesign schema',
   };
 }
 

@@ -8,7 +8,7 @@ import {
   type ElementId,
   type Layer,
   type Tab,
-} from '@livepages/document';
+} from '@livedesign/document';
 import type { LockReason } from './rejections';
 
 // The lock of the layer an element with this `layerId` sits on, if that layer is locked.

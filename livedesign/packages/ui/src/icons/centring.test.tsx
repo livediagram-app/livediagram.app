@@ -1,4 +1,4 @@
-import { centreOffsetPx } from '@livepages/icons/centring';
+import { centreOffsetPx } from '@livedesign/icons/centring';
 import type { ComponentType } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';

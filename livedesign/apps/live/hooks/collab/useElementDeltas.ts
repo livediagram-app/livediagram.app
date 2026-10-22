@@ -1,5 +1,5 @@
 import { useCallback, type RefObject } from 'react';
-import type { ElementDelta, Tab } from '@livepages/document';
+import type { ElementDelta, Tab } from '@livedesign/document';
 import type { connectRoom } from '@/lib/api-client';
 import { applyDeltaToTabs } from '@/app/document/[id]/room-op-apply';
 

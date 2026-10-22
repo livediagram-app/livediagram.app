@@ -2,7 +2,7 @@
 
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { LENS_SETTLE_MS, parseLens } from '@livepages/explorer-lens';
+import { LENS_SETTLE_MS, parseLens } from '@livedesign/explorer-lens';
 import {
   FILTERED_EMPTY_TITLE,
   FilteredEmpty,

@@ -10,7 +10,7 @@ import {
   rowHeight,
   type GridRange,
   type SheetLayout,
-} from '@livepages/sheets';
+} from '@livedesign/sheets';
 
 export const ROW_HEADER_PX = 46;
 export const COL_HEADER_PX = 22;

@@ -11,8 +11,8 @@
 >   artifact, two delivery paths.
 > - **Renderer already shared.** The "main work" below (extracting the renderer
 >   into a new package) is moot: `renderElementsToSvg` already lives DOM-free in
->   `@livepages/document` (`packages/document/src/svg-render.ts`) and powers the
->   MCP worker ([MCP server](../015-api/mcp-server.md)), so the worker imports it directly. No `@livepages/render`
+>   `@livedesign/document` (`packages/document/src/svg-render.ts`) and powers the
+>   MCP worker ([MCP server](../015-api/mcp-server.md)), so the worker imports it directly. No `@livedesign/render`
 >   package was created.
 >
 > The rest of this spec (URL shape, password exclusion, share dialog) holds.
@@ -57,7 +57,7 @@ The router already forwards `/api/*` to the api worker, so no router change.
 
 The SVG renderer currently lives in `apps/live/lib/export-tab.ts` (client-only)
 and the worker can't import from an app. So the tab→SVG renderer must move into
-a **new shared, DOM-free package** (`@livepages/render`), imported by **both**
+a **new shared, DOM-free package** (`@livedesign/render`), imported by **both**
 the live editor's export and the api worker. What moves: `renderTabToSvg`,
 `describeBoxedExport`, `contentBounds`, the `svg*` helpers, the label-wrap,
 `arrowHeadRefs`, the iso matrix, `backgroundPatternTile`, and `framesFirst`. The

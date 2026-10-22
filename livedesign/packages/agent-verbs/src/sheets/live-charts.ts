@@ -2,14 +2,14 @@
 // a chart's data is read live; docs/specs/015-api/mcp-server.md §5): each chart element linked to a sheet given here
 // takes the values its range holds now, rather than those it was saved with, so a preview after a change to its cells
 // shows the change. Pure.
-import { chartFieldsFromTable, type Element, type ShapeElement } from '@livepages/document';
+import { chartFieldsFromTable, type Element, type ShapeElement } from '@livedesign/document';
 import {
   AGENT_LOCALE,
   Workbook,
   sheetChartTable,
   sheetFromJson,
   type SheetJson,
-} from '@livepages/sheets';
+} from '@livedesign/sheets';
 
 // The element as a shape, when it is one: narrowing on `type` does not reach through a generic.
 const shapeOf = (el: Element): ShapeElement | undefined => (el.type === 'shape' ? el : undefined);

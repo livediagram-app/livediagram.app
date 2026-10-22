@@ -1,6 +1,6 @@
 // The cell menu's words (docs/specs/029-sheets/sheet.md "Cell menu"): each row names what it will do to this
 // selection, so nothing has to be guessed ("Insert 3 Rows Above", "Delete Columns B to C"). Pure.
-import { columnLetters, formatA1, formatRange, type GridRange } from '@livepages/sheets';
+import { columnLetters, formatA1, formatRange, type GridRange } from '@livedesign/sheets';
 
 type CellMenuLabels = {
   // The header: the selection, and how many cells it covers.

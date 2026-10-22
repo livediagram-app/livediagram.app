@@ -1,7 +1,7 @@
 'use client';
 
 import { track } from '@/lib/telemetry';
-import { HoverCard, Glyph } from '@livepages/ui';
+import { HoverCard, Glyph } from '@livedesign/ui';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { MenuNameSlot, TabNameInBox } from '@/components/plan/menu-name-slot';
 import { ToolbarMenuCard } from './ToolbarMenuCard';

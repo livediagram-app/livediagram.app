@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
-import { MOTION_MS } from '@livepages/tailwind-config/motion';
+import { MOTION_MS } from '@livedesign/tailwind-config/motion';
 import type { Participant } from '@/lib/identity';
 import { ParticipantAvatar } from '@/components/primitives/ParticipantAvatar';
 import { participantBadges } from '@/lib/collaborator-roster';
-import { GlyphDisc } from '@livepages/ui';
-import type { AccessLevel } from '@livepages/api-schema';
+import { GlyphDisc } from '@livedesign/ui';
+import type { AccessLevel } from '@livedesign/api-schema';
 
 // Compact stack of participant initials, sitting between the tab
 // label and the ellipsis menu in TabBar. Rendered smaller than the

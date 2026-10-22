@@ -19,9 +19,9 @@ describe('logo page guides', () => {
     for (let i = 0; i <= LOGO_PAGE_GUIDES_MAX; i++) g = withLogoPageGuides(g, `p${i}`, false);
     expect(Object.keys(g)).toHaveLength(LOGO_PAGE_GUIDES_MAX);
     expect('p0' in g).toBe(false);
-    localStorage.setItem('livepages:v2:logo-page-guides', '{"x":1,"y":true}');
+    localStorage.setItem('livedesign:v2:logo-page-guides', '{"x":1,"y":true}');
     expect(readLogoPageGuides()).toEqual({ y: true });
-    localStorage.setItem('livepages:v2:logo-page-guides', 'not json');
+    localStorage.setItem('livedesign:v2:logo-page-guides', 'not json');
     expect(readLogoPageGuides()).toEqual({});
   });
 });

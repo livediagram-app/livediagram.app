@@ -1,6 +1,6 @@
 'use client';
 
-import type { TelemetryDaily, TelemetryWindowKey } from '@livepages/api-schema';
+import type { TelemetryDaily, TelemetryWindowKey } from '@livedesign/api-schema';
 import { TrendChart } from './TrendChart';
 import { WINDOW_META, windowHighlightFrom, windowLabel } from './windows';
 

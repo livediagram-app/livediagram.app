@@ -1,7 +1,7 @@
 // The Posters layouts' own parts (docs/specs/007-editor/pages-mode.md "Layouts"): a column
 // that shares its height out between fixed and growing blocks, a letter-spaced eyebrow, a headline
 // set centred, accent rules and a thin divider. Pure, on the shared kit; no colours of their own.
-import type { Element, TextElement } from '@livepages/document';
+import type { Element, TextElement } from '@livedesign/document';
 import type { Kit } from './page-layout-kit';
 
 // One block in a column: its base height, a share of any spare room (`grow`, capped at `max`), and

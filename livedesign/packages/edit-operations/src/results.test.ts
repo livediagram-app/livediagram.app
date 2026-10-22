@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { ResultLine } from '@livepages/api-schema';
-import { getBuiltInTheme, type Element } from '@livepages/document';
+import type { ResultLine } from '@livedesign/api-schema';
+import { getBuiltInTheme, type Element } from '@livedesign/document';
 import { formatResultFooter, formatResultLines } from './format-results';
 import { addedLine, buildResultLines, removedLine } from './results';
 import { checkoutFlow } from './fixtures/checkout-flow';
@@ -56,7 +56,7 @@ describe('formatResultLines', () => {
         '+ arrow  verify→n4 (style of a3)',
         '» n4 n5 n6 n7 n8  +0,+160 (make room)',
         'f2  +verify',
-        'rev 41→42 · cs_8k2m4q7d1x · lint clean · revert: livepages changeset revert d-auth cs_8k2m4q7d1x',
+        'rev 41→42 · cs_8k2m4q7d1x · lint clean · revert: livedesign changeset revert d-auth cs_8k2m4q7d1x',
       ].join('\n'),
     );
   });
@@ -150,7 +150,7 @@ describe('formatResultFooter', () => {
       lint: 'x',
     };
     expect(formatResultFooter({ ...write, rev: 44, rebasedOver: 3 })).toBe(
-      'rev 41→44 · rebased over 3 writes · cs_1 · x · revert: livepages changeset revert d1 cs_1',
+      'rev 41→44 · rebased over 3 writes · cs_1 · x · revert: livedesign changeset revert d1 cs_1',
     );
     expect(formatResultFooter({ ...write, rev: 43, rebasedOver: 1 })).toContain(
       'rebased over 1 write ·',

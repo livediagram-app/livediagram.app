@@ -4,7 +4,7 @@
 // before any Sheet has drawn (nothing attached to release them), goes ahead without asking: its sheets are then left
 // as a Cut's are.
 import { useCallback } from 'react';
-import type { Tab } from '@livepages/document';
+import type { Tab } from '@livedesign/document';
 import { sheetsDeletedWith } from '@/lib/sheet-references';
 import { track } from '@/lib/telemetry';
 

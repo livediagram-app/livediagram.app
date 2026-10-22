@@ -1,6 +1,6 @@
 // Document-level calls: load / create / save-meta / delete / list, the
 // copy-into-my-files flow, and the "Shared with you" list.
-import type { ItemCreate, ItemTypeCatalogue } from '@livepages/items';
+import type { ItemCreate, ItemTypeCatalogue } from '@livedesign/items';
 import {
   DOCUMENT_CONVERSION_HEADER,
   scalableSnapshotSvg,
@@ -10,7 +10,7 @@ import {
   type DocumentConversion,
   type SharedTabsSummary,
   type SheetCreateRequest,
-} from '@livepages/api-schema';
+} from '@livedesign/api-schema';
 import type {
   LiveDoc,
   DocumentListResponse,
@@ -18,8 +18,8 @@ import type {
   DocumentSummary,
   SharedWithItem,
   TeamRecentDocument,
-} from '@livepages/api-schema';
-import type { Tab } from '@livepages/document';
+} from '@livedesign/api-schema';
+import type { Tab } from '@livedesign/document';
 import { dedupeInFlight } from '../dedupe';
 import {
   isOfflineId,
@@ -40,7 +40,7 @@ import {
   apiFetch,
   saveTimeoutSignal,
 } from './core';
-import type { RoomTicketResponse } from '@livepages/api-schema';
+import type { RoomTicketResponse } from '@livedesign/api-schema';
 
 // The document-list row every list surface renders: the Explorer
 // panel, the /explorer page, /new, and the editor's document-list
@@ -332,7 +332,7 @@ export async function apiFetchDocumentThumbnailSvg(
 // shared_with — "Shared with you" (migration 0010)
 // ---------------------------------------------------------------------
 
-// The "Shared with you" row shape now lives in @livepages/api-schema
+// The "Shared with you" row shape now lives in @livedesign/api-schema
 // (the api worker emits it via listSharedWith), imported above and
 // re-exported here so the existing `@/lib/api-client` / `./api/documents`
 // import paths keep resolving unchanged. See that package for the

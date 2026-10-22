@@ -11,7 +11,7 @@
 // new palette glyph belongs here unless it's shared across panels
 // (in which case it goes into a sibling icon module).
 
-import type { TextAlignX, TextAlignY } from '@livepages/document';
+import type { TextAlignX, TextAlignY } from '@livedesign/document';
 import {
   lucideArmchair,
   lucideChartNoAxesColumnIncreasing,
@@ -23,11 +23,11 @@ import {
   lucideScanEye,
   lucideSpade,
   lucideThermometer,
-} from '@livepages/icons/lucide';
-import { Glyph, lucideGlyph, Prims } from '@livepages/ui';
+} from '@livedesign/icons/lucide';
+import { Glyph, lucideGlyph, Prims } from '@livedesign/ui';
 
 import { MENU_ICON_PX } from '@/components/palette/context-menu-icons';
-import { MODE_GLYPHS } from '@livepages/icons/mode-glyphs';
+import { MODE_GLYPHS } from '@livedesign/icons/mode-glyphs';
 
 // Palette glyphs draw at 14px in toolbars and menus; the tile grid asks for its own step.
 type IconSizeProps = { size?: number };
@@ -147,13 +147,13 @@ export function EraserIcon({ size = 14 }: IconSizeProps = {}) {
 // 20-unit dock grid (matching LayersStackIcon's stroke weight) that opens
 // the CanvasThemeDialog. Distinct from FormatPainterIcon below (the
 // element-to-element format tool): this one styles the whole tab.
-export { ThemeLookIcon } from '@livepages/ui';
+export { ThemeLookIcon } from '@livedesign/ui';
 
 // Format tool (docs/specs/008-canvas/canvas-and-palette.md): a paintbrush, the same glyph as the top-centre
-// "Copy formatting" chip (drawn once in @livepages/ui): picks one
+// "Copy formatting" chip (drawn once in @livedesign/ui): picks one
 // element's style and paints it onto others. Two-phase persistent mode
 // (pick a base, then tap targets).
-export { FormatPainterIcon } from '@livepages/ui';
+export { FormatPainterIcon } from '@livedesign/ui';
 
 // Spotlight tool (docs/specs/008-canvas/canvas-and-palette.md): a focus glyph — a bright centre dot ringed
 // by a circle with short rays beaming outward, reading as "the cursor
@@ -543,7 +543,7 @@ export function SessionPollIcon() {
 }
 
 // A selection-mode glyph drawn from the shared data (MODE_GLYPHS in
-// @livepages/icons), the ONE drawing the palette, the Mode button face and
+// @livedesign/icons), the ONE drawing the palette, the Mode button face and
 // the export all use (docs/specs/009-elements/mode-button.md).
 function ModeGlyphIcon({ mode, size }: { mode: string; size: number }) {
   const g = MODE_GLYPHS[mode]!;

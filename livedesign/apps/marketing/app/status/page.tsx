@@ -1,11 +1,11 @@
 import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
-import { CONTACT_FORM_URL, pageMetadata, REPO_URL } from '@livepages/ui';
+import { CONTACT_FORM_URL, pageMetadata, REPO_URL } from '@livedesign/ui';
 
-const STATUS_TITLE = 'Status · livepages';
+const STATUS_TITLE = 'Status · livedesign';
 const STATUS_DESCRIPTION =
-  'Operational status of the livepages services: editor, API, realtime room, marketing site, telemetry dashboard, help centre, and database.';
+  'Operational status of the livedesign services: editor, API, realtime room, marketing site, telemetry dashboard, help centre, and database.';
 
 export const metadata = pageMetadata({
   title: STATUS_TITLE,
@@ -31,27 +31,27 @@ const COMPONENTS: Component[] = [
   {
     name: 'Marketing site',
     description:
-      'The public landing site at https://livepages.app/. Static assets served by a Cloudflare Worker.',
+      'The public landing site at https://livedesign.app/. Static assets served by a Cloudflare Worker.',
   },
   {
     name: 'Editor (live app)',
     description:
-      'The diagram editor at https://livepages.app/new. Static export served by a Cloudflare Worker.',
+      'The diagram editor at https://livedesign.app/new. Static export served by a Cloudflare Worker.',
   },
   {
     name: 'Telemetry dashboard',
     description:
-      'The public anonymous-events dashboard at https://livepages.app/telemetry. Static export served by a Cloudflare Worker.',
+      'The public anonymous-events dashboard at https://livedesign.app/telemetry. Static export served by a Cloudflare Worker.',
   },
   {
     name: 'Help centre',
     description:
-      'The help centre at https://livepages.app/help. Static export served by a Cloudflare Worker.',
+      'The help centre at https://livedesign.app/help. Static export served by a Cloudflare Worker.',
   },
   {
     name: 'API',
     description:
-      'The backend at https://livepages.app/api. A Cloudflare Worker that owns the D1 binding.',
+      'The backend at https://livedesign.app/api. A Cloudflare Worker that owns the D1 binding.',
   },
   {
     name: 'Realtime room',
@@ -76,7 +76,7 @@ const COMPONENTS: Component[] = [
   {
     name: 'MCP server',
     description:
-      'The AI-tools endpoint at https://mcp.livepages.app. A Cloudflare Worker wrapping the api via a service binding.',
+      'The AI-tools endpoint at https://mcp.livedesign.app. A Cloudflare Worker wrapping the api via a service binding.',
   },
 ];
 
@@ -90,7 +90,7 @@ export default function StatusPage() {
           Service status
         </h1>
         <p className="mt-3 text-lg text-slate-600 dark:text-slate-300">
-          The pieces livepages runs on, and how they&rsquo;re doing.
+          The pieces livedesign runs on, and how they&rsquo;re doing.
         </p>
 
         <div className="mt-8 flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-5 dark:border-emerald-500/30 dark:bg-emerald-500/10">

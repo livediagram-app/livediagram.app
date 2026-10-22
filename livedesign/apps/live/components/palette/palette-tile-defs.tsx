@@ -1,9 +1,9 @@
 import { BADGE_PRESET_TILES, CARD_PRESET_TILES } from './palette-element-presets';
 import { BadgePresetGlyph } from './BadgePresetGlyph';
-import { badgePresetFace, type PenColour } from '@livepages/document';
+import { badgePresetFace, type PenColour } from '@livedesign/document';
 import type { WhiteboardPenId } from '@/lib/whiteboard-prefs';
-import type { EmbedProvider } from '@livepages/document';
-import { REACTION_EMOJI } from '@livepages/document';
+import type { EmbedProvider } from '@livedesign/document';
+import { REACTION_EMOJI } from '@livedesign/document';
 
 import type {
   ComponentKind,
@@ -12,7 +12,7 @@ import type {
   SelectionMode,
   SessionTool,
   ShapeKind,
-} from '@livepages/document';
+} from '@livedesign/document';
 import {
   AgendaIcon,
   AvatarModeIcon,
@@ -63,8 +63,8 @@ import {
   lucideStickyNote,
   lucideTable,
   lucideType,
-} from '@livepages/icons/lucide';
-import { Glyph, Prims } from '@livepages/ui';
+} from '@livedesign/icons/lucide';
+import { Glyph, Prims } from '@livedesign/ui';
 import { PLAN_TILES } from './palette-plan-tiles';
 import { WIREFRAME_TILES } from './palette-wireframe-tiles';
 import { tileCaption } from './tile-caption';
@@ -179,7 +179,7 @@ type PaletteTileAction =
   // The Path tool (docs/specs/023-draw-mode/path-tool.md): a logo page's Pen (logo-pages.md).
   | { type: 'path' }
   // `ends`: the Line tile's `'none'`; the Arrow tile leaves it to the tool's pointer at its end.
-  | { type: 'arrow'; ends?: import('@livepages/document').ArrowEnds }
+  | { type: 'arrow'; ends?: import('@livedesign/document').ArrowEnds }
   | { type: 'sticky' }
   | { type: 'table' }
   | { type: 'image' }

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it } from 'vitest';
-import { FROM_FORM_FIELD } from '@livepages/forms';
+import { FROM_FORM_FIELD } from '@livedesign/forms';
 import {
   FRESH_OPENED_MAX,
   FRESH_RESPONSE_MS,
@@ -38,13 +38,13 @@ describe('a fresh response', () => {
 
   it('ignores cards no form made, and keeps the newest ids only', () => {
     markResponseOpened(card('x', {}));
-    expect(JSON.parse(localStorage.getItem('livepages:form-responses-opened') ?? '[]')).toEqual(
+    expect(JSON.parse(localStorage.getItem('livedesign:form-responses-opened') ?? '[]')).toEqual(
       [],
     );
     for (let i = 0; i <= FRESH_OPENED_MAX; i += 1) markResponseOpened(card(`c${i}`));
     markResponseOpened(card('c1'));
     const kept: unknown = JSON.parse(
-      localStorage.getItem('livepages:form-responses-opened') ?? '[]',
+      localStorage.getItem('livedesign:form-responses-opened') ?? '[]',
     );
     expect(kept).toHaveLength(FRESH_OPENED_MAX);
     expect(kept).not.toContain('c0');

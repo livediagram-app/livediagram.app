@@ -1,6 +1,6 @@
 'use client';
 
-import { useMediaQuery } from '@livepages/ui';
+import { useMediaQuery } from '@livedesign/ui';
 
 // Is this a touch device? Used where the COPY has to name the gesture ("double-
 // tap" vs "double-click" on the Reveal zone, docs/specs/009-elements/reveal-zone.md), which a viewport

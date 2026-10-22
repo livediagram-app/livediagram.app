@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { REACTIONS } from '@livepages/document';
+import { REACTIONS } from '@livedesign/document';
 import { AVATAR_REACTIONS } from './avatar-reactions';
 import { AVATAR_BEHAVIOUR_KEYS, AVATAR_BURST_KEYS, avatarActionForKey } from './avatar-action-keys';
 import { VIEW_TOOL_KEYS } from '@/hooks/canvas/editor-shortcut-keys';

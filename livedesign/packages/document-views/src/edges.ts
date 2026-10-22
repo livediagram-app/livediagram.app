@@ -1,7 +1,7 @@
 // Arrows as views print them (docs/specs/024-agents/blueprints/document-views.md "Edges", VW26, VW27):
 // on their source's line when pinned to a printed element there, else on their own line.
-import type { ArrowElement, Element, Endpoint, RefTable } from '@livepages/document';
-import type { ViewEdgeJson, ViewEnd } from '@livepages/api-schema';
+import type { ArrowElement, Element, Endpoint, RefTable } from '@livedesign/document';
+import type { ViewEdgeJson, ViewEnd } from '@livedesign/api-schema';
 import { LABEL_CUT_CHARS } from './constants';
 import { textField } from './fields';
 import { attrValue, jsonString } from './text';

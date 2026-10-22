@@ -7,7 +7,7 @@ import {
   flowchartSteps,
   layoutFlowchart,
   type Element,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { buildFlowchart } from './template-builders-flowchart';
 import { buildDecisionTree } from './template-builders-decision-tree';
 import { buildSwimlane } from './template-builders-swimlane';

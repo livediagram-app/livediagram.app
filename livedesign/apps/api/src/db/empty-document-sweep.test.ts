@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { DatabaseSync } from 'node:sqlite';
-import { EMPTY_DOCUMENT_STALE_MS } from '@livepages/api-schema';
+import { EMPTY_DOCUMENT_STALE_MS } from '@livedesign/api-schema';
 import { sqliteD1 } from '../test-sqlite-d1';
 import { trashEmptyDocuments } from './empty-document-sweep';
 import { DAY, liveDoc, insert, team } from './test-trash-fixtures';

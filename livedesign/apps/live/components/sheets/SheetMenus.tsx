@@ -3,7 +3,7 @@
 // The grid's menus (docs/specs/029-sheets/sheet.md "Cell menu", "Rows and columns", "Filter", "Sort"): the cell menu
 // and a header's menu at the pointer, a filter column's values and condition, and Custom Sort. Rows in the shared
 // context menu; every row that changes something only for someone who may edit.
-import { Button } from '@livepages/ui';
+import { Button } from '@livedesign/ui';
 import { useMemo, useState } from 'react';
 import {
   CONDITION_OPS,
@@ -11,7 +11,7 @@ import {
   columnValueCounts,
   type FilterCondition,
   type SortKey,
-} from '@livepages/sheets';
+} from '@livedesign/sheets';
 import { ContextMenu, ContextMenuDivider } from '@/components/palette/ContextMenu';
 import { MenuActionRow, MenuHeader } from '@/components/primitives/PortalMenu';
 import { useSheetController } from './sheet-controller';

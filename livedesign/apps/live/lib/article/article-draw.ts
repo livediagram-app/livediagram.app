@@ -2,7 +2,7 @@
 // rasterising, or straight onto a canvas, whose text then uses the page's own loaded web fonts.
 import type { ArticleDrawOp } from './article-snapshot';
 
-export { articleOpsToSvg } from '@livepages/document';
+export { articleOpsToSvg } from '@livedesign/document';
 
 // A line of several styles: each stretch after the one before, measured in its own font, the whole set at its anchor.
 function drawRuns(ctx: CanvasRenderingContext2D, op: Extract<ArticleDrawOp, { k: 'text' }>): void {

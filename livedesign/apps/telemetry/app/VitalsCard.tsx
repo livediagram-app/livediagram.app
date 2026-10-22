@@ -1,6 +1,6 @@
 'use client';
 
-import type { TelemetrySummary, TelemetryWindowKey, WebVital } from '@livepages/api-schema';
+import type { TelemetrySummary, TelemetryWindowKey, WebVital } from '@livedesign/api-schema';
 import type { TimingChart } from './catalogue/timings';
 import {
   formatPercentile,

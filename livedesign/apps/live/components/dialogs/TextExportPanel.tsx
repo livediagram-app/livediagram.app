@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { BackBar } from '@/components/primitives/BackBar';
-import { Button } from '@livepages/ui';
-import { useCopiedFlash } from '@livepages/ui';
+import { Button } from '@livedesign/ui';
+import { useCopiedFlash } from '@livedesign/ui';
 
 // The view/edit/copy sub-view for a text export format (docs/specs/020-import-export/markdown-import.md):
 // a textarea pre-filled with the tab serialised to text, editable for a

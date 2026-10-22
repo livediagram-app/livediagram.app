@@ -3,7 +3,7 @@
 // `Budget!B4` once the Sheet is drawn, "(Deleted Cell)" when the cell is gone, by the Sheet alone before.
 import { act, cleanup, render, renderHook, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import type { BoxedElement, Comment } from '@livepages/document';
+import type { BoxedElement, Comment } from '@livedesign/document';
 import { commentRowsFromElements } from '@/components/panels/CollaboratePanel';
 import { registerCellNamer } from '@/hooks/sheets/sheet-cell-refs';
 import { CommentRowItem, useCommentRowLabel } from './CollaborateRows';

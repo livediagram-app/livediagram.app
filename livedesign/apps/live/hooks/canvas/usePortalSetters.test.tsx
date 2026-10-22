@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
-import { createShape, type Tab } from '@livepages/document';
+import { createShape, type Tab } from '@livedesign/document';
 import { usePortalSetters } from './usePortalSetters';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));

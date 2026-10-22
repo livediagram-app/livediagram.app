@@ -6,7 +6,7 @@
 // helpers sit several calls below the handler and concurrent tool calls share
 // one isolate: a module-level "current tool" would mislabel them.
 import { AsyncLocalStorage } from 'node:async_hooks';
-import { pascalToken } from '@livepages/api-schema';
+import { pascalToken } from '@livedesign/api-schema';
 
 const scope = new AsyncLocalStorage<string>();
 

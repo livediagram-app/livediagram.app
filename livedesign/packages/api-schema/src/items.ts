@@ -1,5 +1,5 @@
 // The item store on the wire (docs/specs/026-plan/items.md, blueprint item-store.md "Interfaces and
-// contracts"). Item shapes come from @livepages/items; these are the request and response bodies.
+// contracts"). Item shapes come from @livedesign/items; these are the request and response bodies.
 
 import type {
   Item,
@@ -10,7 +10,7 @@ import type {
   ItemTypeDef,
   PlanBoardOutline,
   PlanStatusName,
-} from '@livepages/items';
+} from '@livedesign/items';
 
 // The item shapes the api documents, re-exported so the OpenAPI generator finds them here.
 export type {
@@ -30,7 +30,7 @@ export type {
   PlanBoardKind,
   PlanColumnOutline,
   PlanStatusName,
-} from '@livepages/items';
+} from '@livedesign/items';
 
 // GET /api/documents/:id/items[?tabId=]: the store, or the items one tab shows.
 export type ItemsResponse = { items: Item[]; rev: number };

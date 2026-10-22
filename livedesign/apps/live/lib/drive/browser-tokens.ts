@@ -3,7 +3,7 @@
 // Kept apart from the engine (browser-engine.ts) because every signed-in tab needs a token
 // source, while only the one tab elected to sync loads the engine.
 
-import type { DriveMode } from '@livepages/api-schema';
+import type { DriveMode } from '@livedesign/api-schema';
 import { apiDriveToken } from '../api-client';
 import {
   createBrokerTokenSource,

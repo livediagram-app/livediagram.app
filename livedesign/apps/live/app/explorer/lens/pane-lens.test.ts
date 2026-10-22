@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { emptyLens, parseLens, type LensContext } from '@livepages/explorer-lens';
+import { emptyLens, parseLens, type LensContext } from '@livedesign/explorer-lens';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import { indexFolders } from '@/lib/folder-tree';
 import { isLensSet, lensSubjectOf, narrowRows, scopeDocuments } from './pane-lens';

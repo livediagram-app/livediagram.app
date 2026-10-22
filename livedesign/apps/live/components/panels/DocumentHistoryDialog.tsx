@@ -10,7 +10,7 @@
 // filed.
 
 import { Dialog } from '@/components/dialogs/Dialog';
-import { DialogHeader } from '@livepages/ui';
+import { DialogHeader } from '@livedesign/ui';
 import { DocumentTimeline } from './ScopedTimeline';
 
 export function DocumentHistoryDialog({

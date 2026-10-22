@@ -1,7 +1,7 @@
 'use client';
 
-import { lucideGlyph } from '@livepages/ui';
-import { lucidePalette } from '@livepages/icons/lucide';
+import { lucideGlyph } from '@livedesign/ui';
+import { lucidePalette } from '@livedesign/icons/lucide';
 
 // The Explorer "Themes" section (docs/specs/011-theme/custom-themes.md): manage the owner's saved
 // custom themes. Lists each as a swatch preview + name with icon actions
@@ -24,7 +24,7 @@ import {
   TrashIcon,
   HoverCard,
   SOLID_BRAND_DARK_CONTROL,
-} from '@livepages/ui';
+} from '@livedesign/ui';
 import { ThemeBuilderModal, themeDeleteConfirm } from './ThemeBuilderModal';
 import { ThemeSwatch } from '@/components/primitives/ThemeSwatch';
 

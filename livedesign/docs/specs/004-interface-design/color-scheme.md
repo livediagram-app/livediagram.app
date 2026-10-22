@@ -1,6 +1,6 @@
 # Theme
 
-The livepages brand color is **light blue**. Everything below builds on that.
+The livedesign brand color is **light blue**. Everything below builds on that.
 
 ## Primary palette — Sky blue
 
@@ -20,7 +20,7 @@ A single brand hue with a full 50–950 ramp. Built on Tailwind's `sky` scale.
 | `brand-900`     | `#0C4A6E`     | Dark mode brand text                                       |
 | `brand-950`     | `#082F49`     | Dark mode surfaces                                         |
 
-`brand-500` (`#0EA5E9`) is the canonical "livepages blue": the color of selection highlights, accents and focus rings. It
+`brand-500` (`#0EA5E9`) is the canonical "livedesign blue": the color of selection highlights, accents and focus rings. It
 carries no white text: white on it is 2.8:1, so a primary button sits two steps deeper, on `brand-700`. The logo draws on its own prism palette, sky into deep indigo ([Brand mark](./brand-mark.md)).
 
 ## Neutrals — Slate
@@ -140,11 +140,11 @@ The wordmark's "live" half is the one vivid note: **sky-400 `#38bdf8`** in dark 
 
 - **Solid brand fill with white text** (primary buttons, active segments, filled step circles, avatar discs, count
   badges) sits on `brand-600` in dark mode, and a control hovers to `brand-700`: white on `#3a6599` is 6.0:1. The
-  pairing lives in two shared class constants in `@livepages/ui`, `SOLID_BRAND_DARK` for a static fill and
+  pairing lives in two shared class constants in `@livedesign/ui`, `SOLID_BRAND_DARK` for a static fill and
   `SOLID_BRAND_DARK_CONTROL` for a control, never re-typed per component. In light mode the same fill is `brand-700`
   ([Usage rules](#usage-rules)).
 - **The selected segment of a segmented control** (a two- or more-way switch, a tab strip drawn as segments) is
-  that solid fill, in both appearances: `ACTIVE_SEGMENT` in `@livepages/ui`. A fill that only lifts off the
+  that solid fill, in both appearances: `ACTIVE_SEGMENT` in `@livedesign/ui`. A fill that only lifts off the
   track (white on `slate-100`, `slate-900` on `slate-800`) is about 1.1:1 and does not mark a state; the
   selection is held to 3:1 against its track (WCAG 2.2 SC 1.4.11), measured in the Home switch's end-to-end test. The
   track is `SEGMENT_TRACK`, the deepest surface in dark mode (`slate-950`): `brand-600` reads 3.2:1 there, 2.7:1 on
@@ -210,7 +210,7 @@ Explorer panel and every other page keep Steel.
 - **Muted text in light mode** is `slate-500` on white or `slate-50` (4.8:1, 4.6:1) and `slate-600` on `slate-100` or a
   tint, never `slate-400` (2.6:1), which stays for icons, placeholders and disabled controls. The public sites
   (marketing, help, telemetry), the New Document wizard and the editor's small and uppercase labels follow
-  it ([#863](https://github.com/livepages-app/livepages.app/issues/863)), held by
+  it ([#863](https://github.com/livedesign-app/livedesign.app/issues/863)), held by
   `apps/live/label-contrast.test.ts`, which fails a class string pairing a small size (`text-xs`, `text-sm`,
   `text-[9px]` to `text-[13px]`) or `uppercase` with a light-mode `text-slate-400`. Dark mode keeps `slate-400`.
 - **The active tab's label** is its tab's accent, nudged (hue kept, 10% at a time toward black, or white in dark) until
@@ -220,7 +220,7 @@ Explorer panel and every other page keep Steel.
   text node on the New Document wizard, the editor, its dialogs and panels, and the Explorer in dark mode, composites
   the real background under it, and fails below 4.5:1 (3:1 for large text: 24px, or 18.66px bold). It has no
   allow-list. It covers **dark mode only**: light mode's colours are owned by Thomas
-  ([@tommcclean](https://github.com/tommcclean)) under [#74](https://github.com/livepages-app/livepages.app/issues/74).
+  ([@tommcclean](https://github.com/tommcclean)) under [#74](https://github.com/livedesign-app/livedesign.app/issues/74).
 - **Contrast guard (light mode, brand ramp).** #74's light half is settled: white text on a solid brand fill and brand
   ink on white are both `brand-700` ([Usage rules](#usage-rules)), held by `apps/live/app/light-palette.test.ts`, which
   reads every app's and package's source and checks the light ramp's ratios against white.
@@ -231,7 +231,7 @@ The palette is exposed as a Tailwind v4 theme in `packages/tailwind-config/theme
 
 ```css
 @import 'tailwindcss';
-@import '@livepages/tailwind-config';
+@import '@livedesign/tailwind-config';
 ```
 
 The package's `theme.css` declares the brand ramp as CSS variables inside a `@theme` block, which Tailwind v4 turns into the `brand-50`…`brand-950` utility classes automatically:

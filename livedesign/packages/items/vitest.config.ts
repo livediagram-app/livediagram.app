@@ -1,4 +1,4 @@
-import { defineProject } from '@livepages/vitest-config';
+import { defineProject } from '@livedesign/vitest-config';
 
 // Items are pure and shared by the api, the editor and the offline store
 // (docs/specs/026-plan/blueprints/item-store.md), so every rule is covered.

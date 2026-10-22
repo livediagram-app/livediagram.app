@@ -18,7 +18,7 @@ import { ExplorerShell } from './ExplorerShell';
 // overrides it); `index: false` is inherited from the root layout
 // (docs/specs/007-editor/live-app.md keeps every /live route out of the index).
 export const metadata: Metadata = {
-  title: 'Explorer | livepages',
+  title: 'Explorer | livedesign',
 };
 
 export default function ExplorerLayout({ children }: { children: ReactNode }) {

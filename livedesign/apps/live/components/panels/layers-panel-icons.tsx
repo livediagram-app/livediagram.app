@@ -2,7 +2,7 @@ import {
   EllipsisIcon as SharedEllipsisIcon,
   lucideGlyph,
   PlusIcon as SharedPlusIcon,
-} from '@livepages/ui';
+} from '@livedesign/ui';
 import {
   lucideArrowDownToLine,
   lucideArrowUpToLine,
@@ -18,14 +18,14 @@ import {
   lucideScanEye,
   lucideSendToBack,
   lucideTrash2,
-} from '@livepages/icons/lucide';
+} from '@livedesign/icons/lucide';
 
 // Glyphs for the Layers panel (docs/specs/006-document/layers.md): the row controls (grip, eye,
 // lock, ellipsis), the header's New Layer, the footer's merge + delete, the row menu's verbs, and
 // the LayersStackIcon the CanvasChrome cluster button wears. Row controls draw at 16px inside
 // 32px targets; the footer and menu draw at 14-16px.
 
-export { LayersStackIcon } from '@livepages/ui';
+export { LayersStackIcon } from '@livedesign/ui';
 export const GripIcon = lucideGlyph(lucideGripVertical, 14);
 // 13px: shared with the slide deck rows, the page deck button and the role indicator.
 export const EyeIcon = lucideGlyph(lucideEye, 13);

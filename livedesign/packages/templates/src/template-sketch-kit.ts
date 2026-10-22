@@ -25,7 +25,7 @@ import {
   type StickyElement,
   type TextElement,
   pointDistance,
-} from '@livepages/document';
+} from '@livedesign/document';
 
 export type Pt = { x: number; y: number };
 

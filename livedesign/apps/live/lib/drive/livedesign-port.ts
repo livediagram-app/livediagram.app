@@ -1,11 +1,11 @@
-// What the Drive mirror needs from livepages itself
-// (docs/specs/022-drive-mirror/blueprints/drive-mirror.md, "LivepagesPort"):
+// What the Drive mirror needs from livedesign itself
+// (docs/specs/022-drive-mirror/blueprints/drive-mirror.md, "LivedesignPort"):
 // My Documents reads, the ordinary writes an inbound change goes through
 // (so authorisation, the change log and realtime rooms behave exactly as if
 // the user had done it here), and the mirror's own rows. The engine only ever
-// sees this interface; tests give it an in-memory livepages.
+// sees this interface; tests give it an in-memory livedesign.
 
-import { storeAsCreates } from '@livepages/items';
+import { storeAsCreates } from '@livedesign/items';
 import { fetchItems } from '../api/items';
 import {
   creationIntentOf,
@@ -13,7 +13,7 @@ import {
   type DriveItem,
   type DriveItemKind,
   type DriveLease,
-} from '@livepages/api-schema';
+} from '@livedesign/api-schema';
 import {
   remapTabLinks,
   type StoredPresentation,
@@ -22,7 +22,7 @@ import {
   type DocumentEnvelope,
   type EnvelopeSheet,
   type EnvelopeTab,
-} from '@livepages/document';
+} from '@livedesign/document';
 import {
   ApiError,
   API_BASE,
@@ -48,9 +48,9 @@ import {
   apiUpdateFolder,
 } from '../api-client';
 import { apiFetch, apiHeaders, expectOk } from '../api/core';
-import type { DocumentListResponse } from '@livepages/api-schema';
+import type { DocumentListResponse } from '@livedesign/api-schema';
 import { fetchAllSheets, sheetAsCreate } from '../api/sheets';
-import type { SheetJson } from '@livepages/sheets';
+import type { SheetJson } from '@livedesign/sheets';
 
 export type MirrorDocument = {
   id: string;
@@ -66,12 +66,12 @@ export type MirrorFolder = { id: string; name: string; parentId: string | null; 
 
 export type MirrorTrashed = { id: string; name: string; trashedAt: number };
 
-export interface LivepagesPort {
+export interface LivedesignPort {
   // My Documents: live cloud documents (never team, shared or offline ones).
   listPersonalDocuments(): Promise<MirrorDocument[]>;
   listPersonalFolders(): Promise<MirrorFolder[]>;
   listPersonalTrash(): Promise<MirrorTrashed[]>;
-  // The `.livepages` contents, `exportedAt` pinned to the document's
+  // The `.livedesign` contents, `exportedAt` pinned to the document's
   // savedAt so unchanged content is byte-identical. Null when it is gone.
   loadEnvelope(id: string): Promise<{ text: string; savedAt: number } | null>;
   // The document's cached SVG snapshot, or null (empty document, no R2).
@@ -88,7 +88,7 @@ export interface LivepagesPort {
   moveFolder(id: string, parentId: string | null): Promise<void>;
   deleteFolder(id: string): Promise<void>;
   // A new document in My Documents from an envelope; returns its id. `target`
-  // pins the id, name and folder (a copy opened with livepages).
+  // pins the id, name and folder (a copy opened with livedesign).
   importDocumentCopy(envelope: DocumentEnvelope, target?: CopyTarget): Promise<string>;
 
   getConnection(): Promise<DriveConnection | null>;
@@ -137,7 +137,7 @@ export function copyEnvelope(envelope: DocumentEnvelope): {
 }
 
 // The production port, over lib/api.
-export function createApiLivepagesPort(ownerId: string): LivepagesPort {
+export function createApiLivedesignPort(ownerId: string): LivedesignPort {
   return {
     async listPersonalDocuments() {
       // The raw cloud list: apiListDocuments merges this browser's offline

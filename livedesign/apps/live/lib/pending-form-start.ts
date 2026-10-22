@@ -2,9 +2,9 @@
 // document with an empty Plan tab and leaves the starter here under the tab's id; the editor starts the form on that tab
 // once it can (PendingFormStart). Kept in sessionStorage, as /new hands over to the editor with a page load; a memory
 // copy covers storage refused.
-import type { StarterId } from '@livepages/forms';
+import type { StarterId } from '@livedesign/forms';
 
-const KEY = (tabId: string) => `livepages:pending-form-start:${tabId}`;
+const KEY = (tabId: string) => `livedesign:pending-form-start:${tabId}`;
 const memory = new Map<string, StarterId>();
 
 export function markPendingFormStart(tabId: string, starter: StarterId): void {

@@ -12,7 +12,7 @@ import {
   type MenuKind,
   type MenuTree,
   Portal,
-} from '@livepages/ui';
+} from '@livedesign/ui';
 import { useMenuItemProps } from './menu-item-props';
 import {
   PLACEMENT_TRANSFORM,

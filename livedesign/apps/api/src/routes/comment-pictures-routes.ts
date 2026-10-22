@@ -6,7 +6,7 @@
 // up, and hands back only comment id -> picture URL. Only a signed-in caller gets any: an anonymous
 // share-link visitor reads an empty map, so the URL never reaches them.
 
-import { elementThreads, type Element } from '@livepages/document';
+import { elementThreads, type Element } from '@livedesign/document';
 import { getDocument, getParticipant, getTab } from '../db';
 import { forbidden, json } from '../responses';
 import { gateRead, missingDocument, requireOwner, type RouteContext } from './context';

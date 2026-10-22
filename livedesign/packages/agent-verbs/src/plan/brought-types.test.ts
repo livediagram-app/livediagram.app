@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ITEM_TYPES, defaultCatalogue, presetSetup } from '@livepages/items';
+import { ITEM_TYPES, defaultCatalogue, presetSetup } from '@livedesign/items';
 import { fakeApi } from '../testing/fake-api';
 import { bringBoardCardTypes } from './brought-types';
 

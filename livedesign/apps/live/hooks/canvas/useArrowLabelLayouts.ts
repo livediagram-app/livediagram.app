@@ -20,7 +20,7 @@ import {
   type Element,
   type ElementId,
   type Rect,
-} from '@livepages/document';
+} from '@livedesign/document';
 
 export type ArrowLabelRender = { layout: ArrowLabelLayout | null; knockouts: Rect[] };
 

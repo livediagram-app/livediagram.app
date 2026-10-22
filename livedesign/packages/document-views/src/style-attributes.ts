@@ -11,7 +11,7 @@ import {
   styleKeysFor,
   type Element,
   type ShapeKind,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { fieldOf } from './fields';
 import { attrValue } from './text';
 import { shapeKindOf, type ViewAttribute } from './view-attribute';

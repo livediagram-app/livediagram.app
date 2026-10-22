@@ -1,7 +1,7 @@
 # Import image pipeline
 
 Every path that brings outside pictures in meets the same problem: the source carries image bytes, and a
-livepages image element carries an `imageId` that points into the owner's gallery
+livedesign image element carries an `imageId` that points into the owner's gallery
 ([Image element + per-owner gallery](../009-elements/images.md)). The import image pipeline is the
 one browser-side path that turns those bytes into a stored image, so every importer migrates
 images the same way, under the same limits, with the same named outcomes.
@@ -77,7 +77,7 @@ and dedupes (hosted is free for everyone; server cost stays near zero).
   codec repackaged for the browser; its one dependency is `wasm-feature-detect` (SIMD detection).
 - **Licences:** `@jsquash/webp` and `wasm-feature-detect` are Apache-2.0; the libwebp code
   compiled into the `.wasm` is BSD-3-Clause (Google). Both are permissive and compatible with
-  livepages's MIT licence and neither is copyleft. Both ask that their licence and copyright
+  livedesign's MIT licence and neither is copyleft. Both ask that their licence and copyright
   notices accompany redistributed copies. The deployed bundles carry no third-party notices yet,
   for this or any other bundled dependency; that gap is repo-wide and open.
 - **Quality:** the same 0.85, passed as libwebp's `quality: 85`; everything else is libwebp's

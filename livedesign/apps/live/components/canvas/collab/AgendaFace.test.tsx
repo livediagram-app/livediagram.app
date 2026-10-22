@@ -7,7 +7,7 @@
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { ShapeElement, TabTimer } from '@livepages/document';
+import type { ShapeElement, TabTimer } from '@livedesign/document';
 import { AgendaFace } from './AgendaFace';
 import { agendaStepLabel } from './agenda/AgendaStep';
 

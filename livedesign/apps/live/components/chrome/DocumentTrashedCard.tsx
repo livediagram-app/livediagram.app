@@ -6,8 +6,8 @@
 // share-link visitor only learns that it was deleted. Same card shape as
 // ApiErrorPage, so it drops into the same status chrome.
 import { useState } from 'react';
-import { Button, TrashIcon, buttonClassName } from '@livepages/ui';
-import type { TrashedDocument } from '@livepages/api-schema';
+import { Button, TrashIcon, buttonClassName } from '@livedesign/ui';
+import type { TrashedDocument } from '@livedesign/api-schema';
 import { trashedCardHeading, trashedCardLead } from '@/lib/trash-groups';
 
 export function DocumentTrashedCard({

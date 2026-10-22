@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { ActivityCard, ActivityPlace } from '@livepages/api-schema';
+import type { ActivityCard, ActivityPlace } from '@livedesign/api-schema';
 import { cardDeepLinkHref, collabDeepLinkHref, parseCollabDeepLink } from './collab-deep-link';
 
 // Both halves of the element deep link (docs/specs/013-workspace/inbox.md §1): the Explorer

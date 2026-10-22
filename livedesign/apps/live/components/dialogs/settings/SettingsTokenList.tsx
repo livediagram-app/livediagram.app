@@ -4,7 +4,7 @@
 // newest first, one card each with its paired workbenches, and a revoke that
 // confirms in a popover before anything breaks.
 import { useState } from 'react';
-import type { ApiToken, WorkbenchPairing } from '@livepages/api-schema';
+import type { ApiToken, WorkbenchPairing } from '@livedesign/api-schema';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import { useRelativeNow } from '@/lib/relative-time';
 import { SettingsTokenCard } from './SettingsTokenCard';

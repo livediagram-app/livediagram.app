@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Element, ShapeElement, Tab } from '@livepages/document';
+import type { Element, ShapeElement, Tab } from '@livedesign/document';
 import { useClipboard } from './useClipboard';
 import { useElementDuplication } from './useElementDuplication';
 import { useElementSelectionActions as buildSelectionActions } from './useElementSelectionActions';

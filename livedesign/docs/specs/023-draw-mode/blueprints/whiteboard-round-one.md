@@ -847,7 +847,7 @@ by name so the px can be retuned) → Medium; an unknown `activePenId` or
 | `FreehandElement.strokeColor`        | element (a custom colour)                                                        | document     | yes      |
 | `penColour` (freehand, shape, arrow) | element (a named colour)                                                         | document     | yes      |
 | Custom colours                       | picked with + (`Tab.customColours`, `documentColours`)                           | document     | yes      |
-| `WhiteboardPrefs`                    | `localStorage` `livepages:v2:whiteboard-pens`                                  | device-local | never    |
+| `WhiteboardPrefs`                    | `localStorage` `livedesign:v2:whiteboard-pens`                                  | device-local | never    |
 | pen seen                             | module memory                                                                    | session      | never    |
 
 A tab stored with `kind: 'whiteboard'` is migrated on read (`migrateWhiteboardKind`, the editor-modes
@@ -1036,7 +1036,7 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 | Crossing bisection steps        | 12                               | D7               | 8 to 20         |
 | Recognition threshold           | 0.4                              | Shape Pen        |                 |
 | `RECOGNITION_CHIP_GAP_PX`       | 12 screen px                     | D25              | 8 to 24         |
-| Storage key                     | `livepages:v2:whiteboard-pens` | spec             |                 |
+| Storage key                     | `livedesign:v2:whiteboard-pens` | spec             |                 |
 | `PEN_STREAMLINE`                | mouse 0.5, pen 0.2, touch 0.2    | Excalidraw       | 0 to 1          |
 | `PEN_THINNING`                  | 0.6                              | Excalidraw       | 0 to 1          |
 | `PEN_SMOOTHING`                 | 0.5                              | Excalidraw       | 0 to 1          |

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { TEMPLATES, buildTemplate, templateCanvasOverrides } from '@livepages/templates';
+import { TEMPLATES, buildTemplate, templateCanvasOverrides } from '@livedesign/templates';
 import {
   THEMES,
   canvasSurface,
@@ -9,7 +9,7 @@ import {
   mixHex,
   type Appearance,
   type Element,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { withThemeApplied } from './tab-theme-apply';
 import { tabAsSeen } from './export-as-seen';
 

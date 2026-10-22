@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { resetAppearanceForTests, setAppearance } from '@livepages/ui';
+import { resetAppearanceForTests, setAppearance } from '@livedesign/ui';
 import {
   createFreehand,
   createShape,
@@ -10,7 +10,7 @@ import {
   penColourHex,
   type Element,
   type Tab,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { DEFAULT_WHITEBOARD_PREFS, type WhiteboardPen } from '@/lib/whiteboard-prefs';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { whiteboardShapeIntent } from '@/lib/whiteboard-tool';

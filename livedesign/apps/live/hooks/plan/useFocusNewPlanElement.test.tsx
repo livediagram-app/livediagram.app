@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { createShape, type Element } from '@livepages/document';
+import { createShape, type Element } from '@livedesign/document';
 import { useFocusNewPlanElement } from './useFocusNewPlanElement';
 
 const board = { ...createShape('plan-board', 10, 20), id: 'b1' } as Element;

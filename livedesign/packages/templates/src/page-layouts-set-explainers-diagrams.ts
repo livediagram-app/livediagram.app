@@ -2,7 +2,7 @@
 // image whose parts leader lines name), How It Works (an image with numbered hotspots and their
 // key) and Key Concepts (a hub idea and the six that make it up). Same contract as page-layouts.ts:
 // the page's content box in, uncoloured elements out, laid out in proportions of the box.
-import { createPinnedArrow, type Anchor, type Element } from '@livepages/document';
+import { createPinnedArrow, type Anchor, type Element } from '@livedesign/document';
 import { kit, type Kit, type LayoutBox } from './page-layout-kit';
 import { iconDisc, sourceLine } from './page-layout-parts';
 import { explainerHeading, FOOT, leader, sizeToFit } from './page-layouts-set-explainers-parts';

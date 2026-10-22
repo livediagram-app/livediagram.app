@@ -4,7 +4,7 @@
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createShape, type Element, type ShapeElement } from '@livepages/document';
+import { createShape, type Element, type ShapeElement } from '@livedesign/document';
 import { SequenceMenuSection } from './SequenceMenuSection';
 import type { ElementStyleOps } from '@/lib/element-style-ops';
 

@@ -1,8 +1,8 @@
 // What a check returns before ordering: the finding without its severity, and where its primary
 // subject sits for reading order (null reads first).
 
-import type { LintCode } from '@livepages/api-schema';
-import type { Point } from '@livepages/document';
+import type { LintCode } from '@livedesign/api-schema';
+import type { Point } from '@livedesign/document';
 import type { LintContext } from '../context';
 import type { LintLogger } from '../log';
 import type { Crossings } from '../measures';

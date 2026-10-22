@@ -12,8 +12,8 @@ import {
   serializeRecentDiagrams,
   type DocumentSummary,
   type RecentDiagram,
-} from '@livepages/api-schema';
-import { USER_PREFERENCES_STORAGE_KEY } from '@livepages/telemetry-client';
+} from '@livedesign/api-schema';
+import { USER_PREFERENCES_STORAGE_KEY } from '@livedesign/telemetry-client';
 import {
   readLocalStorageSafe,
   removeLocalStorageSafe,
@@ -73,7 +73,7 @@ function hiddenFromRecent(): string[] {
 
 // lib/user-preferences.ts PREFERENCES_CHANGED_EVENT (same tab) and the browser's storage event (another
 // tab): either may be a diagram hidden from, or returned to, Recent.
-const PREFERENCES_CHANGED_EVENT = 'livepages:preferences-changed';
+const PREFERENCES_CHANGED_EVENT = 'livedesign:preferences-changed';
 
 function listenForHiddenChanges(): void {
   if (listening) return;

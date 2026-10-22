@@ -13,7 +13,7 @@ import {
   type ChartPaletteId,
   type SankeyGraph,
   type SankeyNodeStyle,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { draftFlows, type SankeyDraftRow } from '@/lib/sankey-flow-rows';
 
 /** A draft row and its index in the draft (its flow's position, which the reasons and labels use). */

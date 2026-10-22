@@ -5,7 +5,7 @@
 // anything else, or a second failure inside the loop guard's window, shows this calm page in the
 // app's own look instead of the framework's.
 import { useEffect } from 'react';
-import { Button } from '@livepages/ui';
+import { Button } from '@livedesign/ui';
 import { browserNavigationDeps, recoverInBrowser } from '@/lib/stale-build-navigation';
 import './globals.css';
 

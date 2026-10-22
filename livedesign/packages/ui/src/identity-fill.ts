@@ -3,7 +3,7 @@
 // White falls below AA on every participant colour, so dark mode paints a deeper shade of the same
 // hue and keeps the white text. Light mode keeps the colour exactly.
 import type { CSSProperties } from 'react';
-import { contrastRatio, shade } from '@livepages/document';
+import { contrastRatio, shade } from '@livedesign/document';
 
 // Each participant colour's own Tailwind 700 step: the operator-chosen dark treatment.
 const PARTICIPANT_DEEP: Record<string, string> = {

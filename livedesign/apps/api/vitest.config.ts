@@ -1,4 +1,4 @@
-import { defineProject } from '@livepages/vitest-config';
+import { defineProject } from '@livedesign/vitest-config';
 
 // The identity, token and share-link modules are held at 100% — not as a
 // coverage vanity number, but because they are the only code in the repo that

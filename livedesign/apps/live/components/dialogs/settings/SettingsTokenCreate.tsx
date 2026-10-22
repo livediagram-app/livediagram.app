@@ -6,7 +6,7 @@
 // six-month lifetime is a fact on screen rather than small print. Hands the
 // minted secret up; the reveal is its own card (SettingsTokenReveal).
 import { useState } from 'react';
-import { Button, SOLID_BRAND_DARK_CONTROL } from '@livepages/ui';
+import { Button, SOLID_BRAND_DARK_CONTROL } from '@livedesign/ui';
 import type { TokensController } from '@/hooks/persistence/useTokens';
 import { expiryFrom, formatTokenDate } from './token-status';
 

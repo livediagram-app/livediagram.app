@@ -11,7 +11,7 @@ import {
   type ShapeMarker,
   type Tab,
   type TextSizePreset,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { getTheme, type ShapeColorPreset } from '@/lib/themes';
 import {
   applyRotationToEl,

@@ -15,7 +15,7 @@ import {
   type LaidOutPage,
   type PageRect,
   type Tab,
-} from '@livepages/document';
+} from '@livedesign/document';
 import type { RemoteViewport } from '@/hooks/collab/useFollowMe';
 
 /** A view as either end can describe it: a canvas size, a pan, and a zoom. */

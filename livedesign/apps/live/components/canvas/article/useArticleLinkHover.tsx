@@ -4,13 +4,13 @@
 // its address with Open, Edit and Remove under it; ⌘-press (Ctrl on Windows and Linux) opens it in
 // a new tab. Listens on the writing's own element, so the editor's keyboard handling is untouched.
 import { useEffect, useRef, useState, type RefObject } from 'react';
-import { Portal } from '@livepages/ui';
+import { Portal } from '@livedesign/ui';
 import type { EditorView } from 'prosemirror-view';
 import { TextSelection } from 'prosemirror-state';
 import { markRange } from '@/lib/article/article-commands';
 import { articleSchema } from '@/lib/article/article-schema';
 import { requestArticleLink } from '@/lib/article/article-editor-store';
-import { isSafeArticleHref } from '@livepages/document';
+import { isSafeArticleHref } from '@livedesign/document';
 
 // How long the card stays once the pointer leaves the link, so it can cross to the card (ms).
 const LINK_CARD_GRACE_MS = 250;

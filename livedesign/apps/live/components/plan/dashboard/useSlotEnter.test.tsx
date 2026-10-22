@@ -2,7 +2,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { render } from '@testing-library/react';
 import { useRef } from 'react';
-import { MOTION_MS } from '@livepages/tailwind-config/motion';
+import { MOTION_MS } from '@livedesign/tailwind-config/motion';
 import { useSlotEnter } from './useSlotEnter';
 
 // docs/specs/026-plan/plan-tabs.md "Dashboard tab": a slot added settles into place; a Dashboard opening draws still.

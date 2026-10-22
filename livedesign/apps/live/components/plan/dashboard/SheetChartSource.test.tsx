@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { ShapeElement, Tab } from '@livepages/document';
+import type { ShapeElement, Tab } from '@livedesign/document';
 import { DashboardContext, type DashboardContextValue } from './dashboard-context';
 import { SheetChartSource } from './SheetChartSource';
 import type { SheetRead } from './useSheetReader';

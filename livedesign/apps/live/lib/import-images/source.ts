@@ -1,7 +1,7 @@
 // An image source (a `data:` URL or a Blob from an imported file) to bytes and
 // a MIME type, or a named failure (docs/specs/020-import-export/blueprints/import-image-pipeline.md).
 
-import { sniffImageType } from '@livepages/api-schema';
+import { sniffImageType } from '@livedesign/api-schema';
 import { IMPORT_IMAGE_MAX_SOURCE_BYTES } from './constants';
 import type { ImportImageFailure, ImportImageSource } from './types';
 

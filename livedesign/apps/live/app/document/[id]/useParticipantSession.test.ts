@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
-import type { Tab } from '@livepages/document';
+import type { Tab } from '@livedesign/document';
 import { HELD_BACK_NOTICE, useParticipantSession } from './useParticipantSession';
 
 // A Participant's commit guard (docs/specs/013-workspace/share-roles.md; blueprint "Editor state").

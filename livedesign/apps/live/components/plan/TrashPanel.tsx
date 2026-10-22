@@ -5,8 +5,8 @@
 // Restore puts it back in that status, Delete deletes it for good after asking (the workspace Trash's
 // ConfirmPopover). Empty Trash deletes them all at once. A popover above its button in Plan mode's bottom-right cluster, like Card Types.
 import { useMemo, useState } from 'react';
-import { TRASHED_FROM_FIELD, isTrashed, itemTitle, statusLabel, typeIn } from '@livepages/items';
-import { Button, CountBadge, EmptyState, relativeSince, TrashIcon } from '@livepages/ui';
+import { TRASHED_FROM_FIELD, isTrashed, itemTitle, statusLabel, typeIn } from '@livedesign/items';
+import { Button, CountBadge, EmptyState, relativeSince, TrashIcon } from '@livedesign/ui';
 import type { DockAnchor } from '@/lib/canvas-chrome';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import { MovablePanel } from '@/components/primitives/MovablePanel';

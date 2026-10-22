@@ -12,7 +12,7 @@ import {
   type Page,
   type PageKind,
   type Tab,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { pageInkMemory, rememberPageInk } from '@/lib/page-ink-memory';
 import { debugLog } from '@/lib/debug-log';
 import { track } from '@/lib/telemetry';

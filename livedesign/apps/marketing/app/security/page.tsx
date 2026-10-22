@@ -10,8 +10,8 @@ import { LegalRedirect } from '@/components/LegalRedirect';
 const HELP_SECURITY_URL = '/help/policies/report-a-vulnerability/';
 
 export const metadata: Metadata = {
-  title: 'Security · livepages',
-  description: 'How to report a security vulnerability in livepages.',
+  title: 'Security · livedesign',
+  description: 'How to report a security vulnerability in livedesign.',
   robots: { index: false, follow: true },
   alternates: { canonical: HELP_SECURITY_URL },
 };

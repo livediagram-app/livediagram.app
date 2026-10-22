@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { createShape, type ShapeElement } from '@livepages/document';
-import { ITEM_TYPES, presetSetup, projectBoard, type Item } from '@livepages/items';
+import { createShape, type ShapeElement } from '@livedesign/document';
+import { ITEM_TYPES, presetSetup, projectBoard, type Item } from '@livedesign/items';
 import type { PlanContextValue } from '@/components/plan/PlanContext';
 import { planBoardTarget, sameIncoming } from './plan-board-targets';
 import { usePlanBoardDrop } from './usePlanBoardDrop';

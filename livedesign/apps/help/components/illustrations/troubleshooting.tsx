@@ -58,7 +58,7 @@ export function SignInError() {
     <Scene w={420} h={250} bg="plain">
       <Panel x={98} y={10} w={224} h={230}>
         <Label x={210} y={32} anchor="middle" size={14} weight={700} tone="strong">
-          livepages
+          livedesign
         </Label>
         {/* The error, above the form */}
         <rect

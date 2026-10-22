@@ -3,7 +3,7 @@ import {
   ANIMATED_BACKGROUND_PATTERNS,
   type AnimatedBackgroundPattern,
   type BackgroundPattern,
-} from '@livepages/document';
+} from '@livedesign/document';
 import {
   backgroundPatternTile,
   safeCssColor,

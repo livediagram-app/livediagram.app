@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { SHAPE_KINDS } from '@livepages/document';
+import { SHAPE_KINDS } from '@livedesign/document';
 import {
   ALL_PALETTE_TELEMETRY_TYPES,
   PALETTE_TELEMETRY_TYPES,
   TELEMETRY_TYPE_PATTERN,
-} from '@livepages/api-schema';
+} from '@livedesign/api-schema';
 import { COMPONENT_TELEMETRY, elementTelemetryType } from './element-telemetry';
 
 // Completeness guard for the palette census (docs/specs/017-telemetry/telemetry.md, issue #30).

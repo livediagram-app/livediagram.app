@@ -4,7 +4,7 @@
 //
 // Its own module, like merge-events, so the paging rules are tested without rendering the hook.
 
-import type { TimelineEvent } from '@livepages/ui';
+import type { TimelineEvent } from '@livedesign/ui';
 import type { TimelinePage } from '@/lib/api/timeline';
 
 // The most pages one month is followed through: 10 pages of TIMELINE_PAGE_MAX (200) is 2,000

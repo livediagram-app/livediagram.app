@@ -2,7 +2,7 @@
 // the template step, the landing page's gallery and a /new?template= link as it is from Start Planning. Built from
 // FORM_STARTERS, never listed twice. The template makes an empty Plan tab; the editor then starts the form on it
 // (its board or sheet, its card type), which only the editor can do, so the agents' catalogue leaves them out.
-import { FORM_STARTERS, STARTER_IDS, type StarterId } from '@livepages/forms';
+import { FORM_STARTERS, STARTER_IDS, type StarterId } from '@livedesign/forms';
 import type { TemplateDescriptor } from './templates';
 
 export type FormTemplateKind = `${StarterId}-form`;

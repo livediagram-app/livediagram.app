@@ -9,7 +9,7 @@ import {
   readErrorCode,
   workbenchRouteVerdict,
   type WorkbenchConfinementSession,
-} from '@livepages/api-schema';
+} from '@livedesign/api-schema';
 
 type WorkbenchConfinement = WorkbenchConfinementSession;
 

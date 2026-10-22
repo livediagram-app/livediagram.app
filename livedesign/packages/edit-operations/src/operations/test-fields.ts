@@ -3,8 +3,8 @@
 // label cap or a coercion warning: strings exactly, `key=` holding when the field is absent, colours
 // by slot or the hex case-insensitively. Any difference refuses the changeset; it changes nothing.
 
-import type { EditRejection, JsonValue } from '@livepages/api-schema';
-import type { Element } from '@livepages/document';
+import type { EditRejection, JsonValue } from '@livedesign/api-schema';
+import type { Element } from '@livedesign/document';
 import { isHexColour } from '../colours';
 import { sameValue } from '../equality';
 import { fieldValue, writeFieldsOnto } from '../fields';

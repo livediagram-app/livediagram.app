@@ -1,5 +1,5 @@
-import type { CtaSurface } from '@livepages/api-schema';
-import { SiteHeader } from '@livepages/ui';
+import type { CtaSurface } from '@livedesign/api-schema';
+import { SiteHeader } from '@livedesign/ui';
 
 // The marketing landing header is the shared SiteHeader (packages/ui) with the
 // apps-menu dropdown enabled next to the logo, where the landing page reads as

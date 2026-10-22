@@ -2,8 +2,8 @@
 // the verb's input, the profile and credential, the host's capabilities, the handler, and what it prints. The
 // exit code is one of eight; stdout carries data only.
 
-import { graphLint, renderSkill, type Verb, type VerbContext } from '@livepages/agent-verbs';
-import { DOCUMENT_FORMAT } from '@livepages/api-schema';
+import { graphLint, renderSkill, type Verb, type VerbContext } from '@livedesign/agent-verbs';
+import { DOCUMENT_FORMAT } from '@livedesign/api-schema';
 import { resolveCredential } from './auth/credentials';
 import { callApi, guideOf, installSkill, login, logout, status } from './commands/local';
 import { exportAll, type ExportInput } from './commands/export';
@@ -93,7 +93,7 @@ async function runOnline(
     throw new CliError({
       exit: EXIT.rejected,
       code: 'version',
-      message: `${profile.host} stores documents in format ${caps.documentFormat}; this livepages reads format ${DOCUMENT_FORMAT}`,
+      message: `${profile.host} stores documents in format ${caps.documentFormat}; this livedesign reads format ${DOCUMENT_FORMAT}`,
       hint: UPGRADE_HINT,
     });
   }
@@ -107,7 +107,7 @@ async function runOnline(
       exit: EXIT.auth,
       code: 'auth',
       message: `not signed in to ${profile.host}`,
-      hint: 'livepages auth login --with-token, or set LIVEPAGES_TOKEN',
+      hint: 'livedesign auth login --with-token, or set LIVEDESIGN_TOKEN',
     });
   // `api` writes unless it only reads.
   const writes =
@@ -117,7 +117,7 @@ async function runOnline(
     throw new CliError({
       exit: EXIT.rejected,
       code: 'version',
-      message: `${profile.host} accepts writes from livepages ${caps.minVersion} or later; this is ${CLI_VERSION}`,
+      message: `${profile.host} accepts writes from livedesign ${caps.minVersion} or later; this is ${CLI_VERSION}`,
       hint: UPGRADE_HINT,
     });
   }

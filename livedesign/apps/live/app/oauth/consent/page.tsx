@@ -9,7 +9,7 @@
 import { Suspense, use, useEffect, useState } from 'react';
 import { browser } from 'react-dom';
 import { useSearchParams } from 'next/navigation';
-import { CLI_CLIENT_ID } from '@livepages/api-schema';
+import { CLI_CLIENT_ID } from '@livedesign/api-schema';
 import { OAUTH_PRIMARY, OauthHelpLink, OauthShell, ReadOnlyAccessToggle } from '../oauth-shell';
 import { AUTH_TITLE } from '@/components/chrome/AuthStage';
 import { apiExchangeOauthToken, apiRevokeToken } from '@/lib/api-client';
@@ -197,7 +197,7 @@ function Consent() {
       <h1 className={AUTH_TITLE}>Connect {client}</h1>
       <p className="mt-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
         <span className="font-medium text-slate-700 dark:text-slate-200">{client}</span> wants to
-        access your livepages documents on your behalf. Approving creates an API token, which you
+        access your livedesign documents on your behalf. Approving creates an API token, which you
         can revoke any time from Settings, under Account › API Tokens.
       </p>
       <ReadOnlyAccessToggle readOnly={readOnly} onChange={setReadOnly} />

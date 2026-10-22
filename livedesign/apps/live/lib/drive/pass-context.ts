@@ -2,12 +2,12 @@
 // snapshot (updated as effects land), the item rows waiting to reach D1, and
 // the dependencies both halves call.
 
-import type { DriveItem } from '@livepages/api-schema';
+import type { DriveItem } from '@livedesign/api-schema';
 import { ApiError } from '../api/core';
 import { DRIVE_ITEMS_PUT_BATCH } from './cadence';
 import { driveLog } from './log';
 import type { DriveClient } from './drive-client';
-import type { LivepagesPort } from './livepages-port';
+import type { LivedesignPort } from './livedesign-port';
 import { putSnapshotItem, type MirrorSnapshot } from './snapshot';
 import type { Rasteriser } from './thumbnail';
 
@@ -16,7 +16,7 @@ type DriveTelemetry = (action: 'Applied', type: string) => void;
 export class PassContext {
   private pending = new Map<string, DriveItem>();
   readonly snapshot: MirrorSnapshot;
-  readonly port: LivepagesPort;
+  readonly port: LivedesignPort;
   readonly drive: DriveClient;
   readonly rasterise: Rasteriser;
   readonly track: DriveTelemetry;
@@ -24,7 +24,7 @@ export class PassContext {
 
   constructor(deps: {
     snapshot: MirrorSnapshot;
-    port: LivepagesPort;
+    port: LivedesignPort;
     drive: DriveClient;
     rasterise: Rasteriser;
     track: DriveTelemetry;

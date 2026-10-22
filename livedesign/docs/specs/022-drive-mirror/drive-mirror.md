@@ -1,13 +1,13 @@
 # Google Drive mirror
 
 A signed-in user can **mirror My Documents to their own Google Drive**.
-Every document becomes a `.livepages` file in a folder tree that matches their
-livepages folders, kept in step both ways while a livepages tab is open.
-Double-clicking such a file in Drive opens it in livepages.
+Every document becomes a `.livedesign` file in a folder tree that matches their
+livedesign folders, kept in step both ways while a livedesign tab is open.
+Double-clicking such a file in Drive opens it in livedesign.
 
 The mirror is a **copy**, never the document's home
 ([Save Locations](../006-document/save-locations.md#google-drive-is-a-mirror-not-a-location)).
-livepages's database stays the source of truth, so realtime collaboration
+livedesign's database stays the source of truth, so realtime collaboration
 and share links are untouched by it.
 
 Evidence for every Google claim below (scopes, tokens, quotas, fields) is in
@@ -22,7 +22,7 @@ this spec does not restate it.
 - **My Documents only.** Team libraries are not mirrored (whose Drive would
   hold a team's copy is unresolved). Documents shared with the user, and Offline
   Mode documents, are not mirrored either.
-- **Everyone, free.** Hosted livepages.app offers it to every signed-in user.
+- **Everyone, free.** Hosted livedesign.app offers it to every signed-in user.
   Self-hosters enable it with their own Google project (see
   [Self-hosting](#self-hosting)); without one, the feature is absent, not broken.
 
@@ -33,10 +33,10 @@ this spec does not restate it.
    Google's API. The server only brokers tokens and stores a few small rows.
 2. **Only while a tab is open.** There is no server polling. A tab syncs while
    open and catches up on arrival; nothing happens while nobody is here.
-3. **Content flows one way, structure flows both ways.** livepages writes the
+3. **Content flows one way, structure flows both ways.** livedesign writes the
    file's contents; Drive never writes them back. Names, folders and the bin
    travel both ways.
-4. **Narrow access.** livepages asks only for `drive.file` (files it creates
+4. **Narrow access.** livedesign asks only for `drive.file` (files it creates
    or the user opens with it) and `drive.install` ("Open with"). It never sees
    the rest of the user's Drive.
 
@@ -80,7 +80,7 @@ this spec does not restate it.
     **Reconnect**, or "Syncing paused in this browser. Resume to continue."
     with **Resume**;
   - "Can't reach Google Drive. Trying again automatically.";
-  - a folder notice, "<name>: Moved to a Drive folder livepages can't
+  - a folder notice, "<name>: Moved to a Drive folder livedesign can't
     see." (with "and n more" for several; the next shows once one is
     resolved) with **Show folder**.
     The why (rate limits, reconnecting, the rhythm and its per-document limit,
@@ -99,7 +99,7 @@ this spec does not restate it.
   same browser is the one running it.
 - **Below the card:** not connected, "My Documents, copied to your
   Google Drive in matching folders. Renames, moves and deletions sync both
-  ways. livepages only sees files it created."; connected, "Your documents
+  ways. livedesign only sees files it created."; connected, "Your documents
   are synced to “<root folder name>” in Google Drive." (the root's actual
   name, as the user may have renamed it; "Your documents are synced to Google
   Drive." while unknown).
@@ -151,12 +151,12 @@ this spec does not restate it.
 
   | Host                                                                                                           | Root folder name            |
   | -------------------------------------------------------------------------------------------------------------- | --------------------------- |
-  | `livepages.app`, `www.livepages.app`                                                                       | `livepages`               |
-  | `staging.livepages.app`; loopback (`localhost`, `127.0.0.1`, `::1`, any port), which uses the staging client | `livepages (staging)`     |
-  | any other host (a self-hosted deployment)                                                                      | `livepages (self-hosted)` |
+  | `livedesign.app`, `www.livedesign.app`                                                                       | `livedesign`               |
+  | `staging.livedesign.app`; loopback (`localhost`, `127.0.0.1`, `::1`, any port), which uses the staging client | `livedesign (staging)`     |
+  | any other host (a self-hosted deployment)                                                                      | `livedesign (self-hosted)` |
 
   Hosts compare case-insensitively. The name is given only when the root is
-  **created**; a root the user renamed keeps its name, and livepages never
+  **created**; a root the user renamed keeps its name, and livedesign never
   renames an existing root back.
 
 - The root folder may be **moved anywhere** in Drive and
@@ -209,7 +209,7 @@ this spec does not restate it.
     account meanwhile, and answers with the connection showing the switch.
   - The page Google returns to (`/drive/connected`) then asks, in a dialog
     titled **Switch Google Account?**: "This Google account is not the one
-    livepages syncs with. Switching moves Cloud Sync to the new account and
+    livedesign syncs with. Switching moves Cloud Sync to the new account and
     starts a fresh copy of My Documents in its Drive. The files already in the
     other account's Drive stay there untouched." Buttons **Keep Current
     Account** and **Switch Account**.
@@ -240,16 +240,16 @@ this spec does not restate it.
 
 ## The file
 
-- **Name:** the document name plus `.livepages`. Names that Drive would
+- **Name:** the document name plus `.livedesign`. Names that Drive would
   alter are stored as Drive holds them, and the next inbound rename is
-  compared against that stored form, never against the livepages name.
-- **MIME type:** `application/vnd.livepages+json`, registered as the app's
+  compared against that stored form, never against the livedesign name.
+- **MIME type:** `application/vnd.livedesign+json`, registered as the app's
   default type for "Open with".
 - **Contents:** a whole-document envelope, the sibling of the per-tab export's
-  `livepages.tab` envelope (`packages/document/src/export-tab-text.ts`):
-  `{ kind: 'livepages.document', schemaVersion, exportedAt, document }`, where
+  `livedesign.tab` envelope (`packages/document/src/export-tab-text.ts`):
+  `{ kind: 'livedesign.document', schemaVersion, exportedAt, document }`, where
   `diagram` holds the id, name and every tab with its folders and slide
-  deck. Images stay references to livepages's image store; the file does
+  deck. Images stay references to livedesign's image store; the file does
   not embed image bytes.
 - **Thumbnail:** a PNG of the first tab, rasterised in the browser from the
   existing SVG snapshot, sent as `contentHints.thumbnail` (PNG, at least 220 px
@@ -265,13 +265,13 @@ this spec does not restate it.
 - The root folder is the **root of My Documents**: documents without a folder sit
   directly in it.
 - Every folder in My Documents is a Drive folder at the same place in the tree.
-- **Folders created in Drive** by the user are invisible to livepages under
+- **Folders created in Drive** by the user are invisible to livedesign under
   `drive.file` until the user shows them to it; see
-  [Folders livepages cannot see](#folders-livepages-cannot-see).
+  [Folders livedesign cannot see](#folders-livedesign-cannot-see).
 
-## Outbound: livepages to Drive
+## Outbound: livedesign to Drive
 
-| In livepages                   | In Drive                                                                                                                                                                                        |
+| In livedesign                   | In Drive                                                                                                                                                                                        |
 | -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Document created                 | File created in its folder                                                                                                                                                                      |
 | Document edited                  | File contents and thumbnail rewritten, at the [cadence](#cadence)                                                                                                                               |
@@ -285,20 +285,20 @@ this spec does not restate it.
 | Folder created / renamed / moved | Folder created / renamed / moved                                                                                                                                                                |
 | Folder deleted                   | Its documents and subfolders move to its parent folder (the root for a top-level folder, [Folders](../013-workspace/folders.md#deleting-a-folder)), then the empty Drive folder goes to the bin |
 
-## Inbound: Drive to livepages
+## Inbound: Drive to livedesign
 
 The browser reads `changes.list` from the stored page token and applies each
 change whose file it recognises (by `appProperties.ldDocumentId` or a recorded
 folder id):
 
-| In Drive                                             | In livepages                                                                                         |
+| In Drive                                             | In livedesign                                                                                         |
 | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| File copied (Drive's "Make a copy")                  | Nothing: livepages never sees the copy (**verified**, [Copies made in Drive](#copies-made-in-drive)) |
-| File renamed                                         | Document renamed (the `.livepages` extension is dropped; an empty name keeps the old one)            |
+| File copied (Drive's "Make a copy")                  | Nothing: livedesign never sees the copy (**verified**, [Copies made in Drive](#copies-made-in-drive)) |
+| File renamed                                         | Document renamed (the `.livedesign` extension is dropped; an empty name keeps the old one)            |
 | File moved to another mirrored folder                | Document moved to that folder                                                                          |
 | File moved to the root folder                        | Document moved to the root of My Documents                                                             |
-| File moved to a folder livepages cannot see        | Document moved to the root of My Documents, with a notice (see below)                                  |
-| File moved outside the `livepages` tree entirely   | Same as a folder livepages cannot see                                                                |
+| File moved to a folder livedesign cannot see        | Document moved to the root of My Documents, with a notice (see below)                                  |
+| File moved outside the `livedesign` tree entirely   | Same as a folder livedesign cannot see                                                                |
 | File moved to the bin                                | Document moved to Trash ([Trash](../013-workspace/trash.md))                                           |
 | File restored from the bin                           | Document restored from Trash                                                                           |
 | File permanently deleted (`removed`, or bin emptied) | Document purged from Trash                                                                             |
@@ -307,49 +307,49 @@ folder id):
 | File contents edited                                 | Ignored; the next outbound write replaces them                                                         |
 
 - **Our own writes are not echoes.** For each mirrored item the api stores the
-  last state livepages wrote (`name`, `parents`, `trashed`, `md5Checksum`,
+  last state livedesign wrote (`name`, `parents`, `trashed`, `md5Checksum`,
   `headRevisionId`). A change is foreign only when one of them differs; Drive's
   `version` is not used, since it moves for invisible reasons.
 - **Order.** On arrival, inbound changes are applied before any outbound
   write, so a rename made in Drive while away is not overwritten by a stale
   local name.
 - **Both sides changed the same attribute** since the last sync: the later
-  change wins, by Drive's change `time` against the livepages change's time
+  change wins, by Drive's change `time` against the livedesign change's time
   (a document's `savedAt`, a folder's `updatedAt`). "Changed since the last
   sync" is judged against the item row: Drive's side against the stored Drive
-  state, livepages's side against `ld_name` and the stored parent. A change
-  whose value livepages already holds is recorded, not applied.
-- **A folder deleted in livepages stays deleted.** Drive may still report the create livepages
+  state, livedesign's side against `ld_name` and the stored parent. A change
+  whose value livedesign already holds is recorded, not applied.
+- **A folder deleted in livedesign stays deleted.** Drive may still report the create livedesign
   made for it, when the delete came before the next pass read that create back; a folder this
   browser saw mirrored and then deleted is never brought back by such a change, and its Drive
   folder goes to the bin. A folder restored from the bin in Drive later is still restored.
 - **Restoring from the bin places the document where its file sits** in Drive,
   so restoring a binned folder brings back its documents inside it.
 - **A permanent delete only purges from the Trash.** `removed` also means
-  "livepages lost access", so a live document whose file is removed is not
+  "livedesign lost access", so a live document whose file is removed is not
   deleted; its file is re-created on the next write.
 - **A file whose contents were edited in Drive** (a new `md5Checksum`) is
-  rewritten from livepages on the next outbound pass, so the canonical copy
+  rewritten from livedesign on the next outbound pass, so the canonical copy
   comes back without waiting for the next edit.
 - Inbound changes go through the ordinary api routes (rename, move, delete,
   restore), so authorisation and realtime rooms behave exactly
-  as if the user had done it in livepages.
+  as if the user had done it in livedesign.
 
 ## Copies made in Drive
 
 **Verified** against real Google (the staging client, scopes `drive.file` and
 `drive.install`): a copy the user makes in Drive's own UI ("Make a copy") is
-**invisible to livepages**. It is not a file livepages created, so
+**invisible to livedesign**. It is not a file livedesign created, so
 `files.list` does not show it and it never reaches `changes.list`. Drive-UI
 copies are therefore **not mirrored** automatically: nothing happens in
-livepages when one is made. The way in is **Open with > livepages** on the
-copy (below), or **Duplicate** inside livepages.
+livedesign when one is made. The way in is **Open with > livedesign** on the
+copy (below), or **Duplicate** inside livedesign.
 
-- **Open with on a copy.** Opening the copy with livepages grants access to
+- **Open with on a copy.** Opening the copy with livedesign grants access to
   that one file, and it carries the **original's** `ldDocumentId` and
   `ldOrigin`. It is a different Drive file: recognised because the mirror
   records another file for that `ldDocumentId` (and `ldOrigin` is this
-  host). It is never taken for the original: livepages never opens the
+  host). It is never taken for the original: livedesign never opens the
   original from it and never re-tags or adopts it as the original. It offers
   **Import as new document**, which makes a new document in My Documents from
   the **copy's contents**.
@@ -358,53 +358,53 @@ copy (below), or **Duplicate** inside livepages.
   new document's id and recorded (one someone else owns is imported and left
   as it is), so it mirrors the new document like any mirrored
   file and no second file is made for it. The new document lands in the
-  livepages folder the copy's Drive folder mirrors; at the root of My Documents when the copy
-  sits in the root, and at that root with [the notice](#folders-livepages-cannot-see)
-  when it sits in a folder livepages cannot see.
-- **Afterwards.** Once opened, the copy can reach livepages's change feed.
+  livedesign folder the copy's Drive folder mirrors; at the root of My Documents when the copy
+  sits in the root, and at that root with [the notice](#folders-livedesign-cannot-see)
+  when it sits in a folder livedesign cannot see.
+- **Afterwards.** Once opened, the copy can reach livedesign's change feed.
   An inbound change for a file that carries a mirrored document's id under
   another file id is ignored (logged as `inbound-foreign-copy`), never
   applied, re-tagged or adopted. The same holds when the mirror is re-met after
   a reconnect: two files claiming one document are both left alone, and the next
   write makes a fresh file for it.
-- **Traceable.** A file livepages is shown but does not take as its own
+- **Traceable.** A file livedesign is shown but does not take as its own
   (no `ldOrigin` of this deployment) is logged quietly
   (`[drive-mirror] inbound-not-ours`, with whether it carried any
   `appProperties` at all).
 
-## Folders livepages cannot see
+## Folders livedesign cannot see
 
 Under `drive.file`, a folder the user creates in Drive is invisible to
-livepages: moving a document's file into it shows up only as "moved to an
+livedesign: moving a document's file into it shows up only as "moved to an
 unknown folder". The user's goal is to shape the tree from either side with
 the same result, so the mirror handles this openly, never silently:
 
 - The document moves to the **root of My Documents**, and a notice in the Cloud Sync row (and on
-  the document's Explorer row) says so: "Moved in Drive to a folder livepages
+  the document's Explorer row) says so: "Moved in Drive to a folder livedesign
   can't see." The notice is kept on the item row, so every device shows it; it
   clears when the document is moved again from either side, or when the folder
   is adopted. Until then the file stays where the user put it in Drive. A folder moved into one is placed at
   the top level with the same notice in the Cloud Sync row.
-- **Adopting a folder:** the notice offers **Show this folder to livepages**,
+- **Adopting a folder:** the notice offers **Show this folder to livedesign**,
   which opens the Google Picker with folder selection. Picking the folder
-  grants livepages access to it; livepages then creates a matching
+  grants livedesign access to it; livedesign then creates a matching
   folder in My Documents, places it under its nearest mirrored ancestor (or at
   the root when that is unknown too), and moves the document into it. From then
   on that folder syncs both ways like any other. Widening access to all of
   Drive (a restricted scope with a yearly paid security assessment) is
   deliberately not the answer.
 - Whether picking a folder also grants access to files inside it that
-  livepages did not create is untested; adoption relies only on access to
+  livedesign did not create is untested; adoption relies only on access to
   the folder itself.
-- Folders created **in livepages** always appear in Drive, so building the
-  tree from livepages needs no adoption.
+- Folders created **in livedesign** always appear in Drive, so building the
+  tree from livedesign needs no adoption.
 
 ## Cadence
 
 Named constants in one cadence module of the mirror code, with the values and budget from
 [Migration readiness, proposed sync cadence](../../research/migration-readiness.md#proposed-sync-cadence):
 
-- **Any livepages page may run it** (the Explorer, the editor, the wizard),
+- **Any livedesign page may run it** (the Explorer, the editor, the wizard),
   never an embed and never the Drive routes themselves; it starts once the
   signed-in session has settled.
 - **One tab syncs per browser**, elected with the Web Locks API; across
@@ -414,7 +414,7 @@ Named constants in one cadence module of the mirror code, with the values and bu
   tab hides, so a device that walks away hands over at once.
 - **Arrival:** one `changes.list` catch-up, then re-upload of every document
   saved since its last mirrored revision.
-- **A visible tab is never left unsynced.** While any livepages tab of the
+- **A visible tab is never left unsynced.** While any livedesign tab of the
   browser is visible, Drive is checked every **2 minutes** and when the user
   returns to a tab (at most once every 30 seconds), whichever tab is the one
   that syncs: a visible tab that does not sync asks the one that does, over
@@ -434,7 +434,7 @@ Named constants in one cadence module of the mirror code, with the values and bu
   skips a real change: the start token names the position after the latest
   change, so an equal token means nothing new since the stored one; it only
   saves cost. The arrival catch-up and every requested check use the same gate.
-- **Diagnostic:** with `localStorage['livepages:v2:drive-diagnostics'] = '1'`
+- **Diagnostic:** with `localStorage['livedesign:v2:drive-diagnostics'] = '1'`
   every check logs `drive: start-token moved=<bool> listed=<n>`, which is how
   the unverified point below (research E-A3) is settled against real Drive.
 - **Writes:** a document is mirrored after 60 seconds without edits, at most
@@ -494,14 +494,14 @@ What decides it:
 - **Nothing** before it is known whether Drive is connected, once it is not, or
   on a row whose document has a folder notice (that marker instead).
 - Changes made in Drive while the user was away show after the catch-up check;
-  until then the mark says what livepages last uploaded.
+  until then the mark says what livedesign last uploaded.
 
 ## Open with
 
 - The live app serves `/drive/open`, the Drive UI integration's Open URL.
   Google passes `state={"ids":[...],"action":"open",...}`.
 - The browser reads the file's `appProperties`:
-  - **The user can open the document** in livepages, and the file is the one
+  - **The user can open the document** in livedesign, and the file is the one
     the mirror records for it (or the mirror records none): go to it.
   - **A copy of a mirrored document** (the mirror records a different file for
     that `ldDocumentId`): offer **Import as new document**
@@ -511,12 +511,12 @@ What decides it:
     file's contents.
   - **The file is from another deployment** (`ldOrigin` differs) or has no
     `ldDocumentId`: offer **Import a copy** only.
-  - **Not a livepages file**, or unreadable: a clear error page.
+  - **Not a livedesign file**, or unreadable: a clear error page.
 - A signed-out visitor is asked to sign in first, then continues.
 - A signed-in user with no usable Drive access (never connected, or the grant
   was dropped) is offered **Allow access**, which runs the connect flow and
   comes back to the same file.
-- Opening with "Open with" grants livepages access to that one file, which is
+- Opening with "Open with" grants livedesign access to that one file, which is
   what makes the import possible under `drive.file`.
 - **Double-click** opening is the goal; Google documents only the "Open with"
   menu, so the help article promises "Open with" until a real test confirms
@@ -560,12 +560,12 @@ D1, owned by the api worker:
 - Deleting a document, folder or account deletes its rows in the same batch as
   the rest of the removal.
 - `refresh_token_enc` is empty for a browser-only connection (client id only).
-- `drive_items` also keeps `ld_name` (the livepages name the Drive name
+- `drive_items` also keeps `ld_name` (the livedesign name the Drive name
   mirrors, since Drive may store a name differently), and `notice` with
-  `notice_parent_id` for the [unseen-folder notice](#folders-livepages-cannot-see).
+  `notice_parent_id` for the [unseen-folder notice](#folders-livedesign-cannot-see).
 - **Finishing a removal in Drive.** Because a purge or a folder deletion takes
   the row with it, each browser remembers the rows it last saw. A row that
-  disappears while its document or folder is gone from livepages is finished
+  disappears while its document or folder is gone from livedesign is finished
   in Drive by the next pass in any browser that saw it: a binned file is
   deleted for good, anything else goes to the bin (a document taken offline,
   a deleted folder once its contents have moved up). A file nobody saw go is
@@ -575,7 +575,7 @@ D1, owned by the api worker:
 
 - **Offline or Google unreachable:** the sync pauses and resumes on the next
   arrival or focus; the Cloud Sync row shows **Last synced** honestly.
-- **A mirrored file or folder deleted outside livepages's knowledge**
+- **A mirrored file or folder deleted outside livedesign's knowledge**
   (`404` on write): the item is re-created in its expected place.
 - **Document JSON over 5 MB:** uploaded with a resumable upload instead of
   multipart.
@@ -588,7 +588,7 @@ D1, owned by the api worker:
   failure is traceable from either side. The console lines are trace lines
   ([Console logging](../003-system-architecture/console-logging.md)): shown in
   development, and in production only with the debug flag set
-  (`localStorage['livepages:debug'] = 'drive-mirror'`); its warnings always.
+  (`localStorage['livedesign:debug'] = 'drive-mirror'`); its warnings always.
 
 ## Self-hosting
 
@@ -610,7 +610,7 @@ D1, owned by the api worker:
 
 ## Hosted deployment: one Google project per environment
 
-livepages.app runs **two Google Cloud projects**, one for production and one
+livedesign.app runs **two Google Cloud projects**, one for production and one
 for staging, so each environment has its own OAuth client id, client secret,
 Picker key and Drive UI integration:
 
@@ -634,23 +634,23 @@ What the operator configured (changed only by the operator):
 
 | Setting                                                  | Production                                               | Staging                                                                             |
 | -------------------------------------------------------- | -------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| JavaScript origins                                       | `https://livepages.app`, `https://www.livepages.app` | `https://staging.livepages.app`, `http://localhost:3200`, `http://localhost:3202` |
+| JavaScript origins                                       | `https://livedesign.app`, `https://www.livedesign.app` | `https://staging.livedesign.app`, `http://localhost:3300`, `http://localhost:3302` |
 | Redirect URIs                                            | each origin + `/drive/connected`                         | each origin + `/drive/connected`                                                    |
-| Drive UI Open URL                                        | `https://livepages.app/drive/open`                     | `https://staging.livepages.app/drive/open`                                        |
-| Default MIME type                                        | `application/vnd.livepages+json`                       | the same                                                                            |
-| Default extension                                        | `livepages`                                            | the same                                                                            |
+| Drive UI Open URL                                        | `https://livedesign.app/drive/open`                     | `https://staging.livedesign.app/drive/open`                                        |
+| Default MIME type                                        | `application/vnd.livedesign+json`                       | the same                                                                            |
+| Default extension                                        | `livedesign`                                            | the same                                                                            |
 | Scopes                                                   | `drive.file`, `drive.install`                            | the same                                                                            |
 | Automatic consent                                        | off                                                      | off                                                                                 |
 | Creating files, importing, multiple files, shared drives | off                                                      | off                                                                                 |
 | Mobile browser support                                   | on                                                       | on                                                                                  |
 
-`livepages.app` answers with a permanent redirect to `www.livepages.app`,
+`livedesign.app` answers with a permanent redirect to `www.livedesign.app`,
 keeping path and query, before the app runs. So the app, and with it the
 consent flow, always runs on `www`: it sends
-`https://www.livepages.app/drive/connected` as the redirect URI (registered,
+`https://www.livedesign.app/drive/connected` as the redirect URI (registered,
 and accepted by the api's redirect check, which takes any `https` origin at
 `/drive/connected`), and Drive's Open URL on the apex arrives at
-`https://www.livepages.app/drive/open` with its `state` intact.
+`https://www.livedesign.app/drive/open` with its `state` intact.
 
 ## Costs
 
@@ -669,7 +669,7 @@ users, by the research assumptions (200,000 active connected users a day):
 | 2 minutes, gated on `getStartPageToken` (chosen) | about 95%               | **yes**         |
 
 The gated figure holds only if the start token moves just for changes
-livepages can see (research E-A3, **unverified**). If it also moves for the
+livedesign can see (research E-A3, **unverified**). If it also moves for the
 rest of the user's Drive, a busy Drive makes most checks list anyway and the
 cost drifts back towards the plain 2-minute figure. The diagnostic under
 [Cadence](#cadence) settles it; until then 95% is the planning figure, and
@@ -686,7 +686,7 @@ nothing measurable at 10,000.
 
 ## Privacy
 
-The privacy policy states what livepages does with Google user data under
+The privacy policy states what livedesign does with Google user data under
 Google's Limited Use rules: it writes and reads only the files it created or
 the user opened with it, stores only an encrypted refresh token and file ids,
 and never uses Drive data for anything but the mirror.

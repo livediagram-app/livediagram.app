@@ -1,12 +1,12 @@
-// Inbound: what one Drive change means for livepages
+// Inbound: what one Drive change means for livedesign
 // (docs/specs/022-drive-mirror/drive-mirror.md, "Inbound"; blueprint "Inbound").
 // Pure: the engine applies the decision through the ordinary api routes.
 //
-// The item row is the last Drive state livepages knows. A change is an
-// echo of livepages's own write when nothing it carries differs from the
+// The item row is the last Drive state livedesign knows. A change is an
+// echo of livedesign's own write when nothing it carries differs from the
 // row; otherwise each differing attribute is a foreign change. Whatever is
 // applied, the row is always re-recorded with Drive's state, so a change
-// livepages did not take (a lost conflict) is undone by the next outbound
+// livedesign did not take (a lost conflict) is undone by the next outbound
 // pass rather than lingering.
 
 import {
@@ -15,7 +15,7 @@ import {
   DRIVE_PROP_ORIGIN,
   stripDriveName,
   type DriveItem,
-} from '@livepages/api-schema';
+} from '@livedesign/api-schema';
 import type { DriveChange, DriveFile } from './drive-client';
 import {
   expectedDocumentParent,
@@ -26,7 +26,7 @@ import {
   type MirrorSnapshot,
 } from './snapshot';
 
-// livepages's name ceiling (apps/api MAX_NAME_LEN).
+// livedesign's name ceiling (apps/api MAX_NAME_LEN).
 export const LD_NAME_MAX = 200;
 
 // Telemetry types (docs/specs/022-drive-mirror/drive-mirror.md, "Telemetry").
@@ -68,7 +68,7 @@ function blankItem(
   };
 }
 
-// A file livepages made but holds no row for: a folder deleted here and
+// A file livedesign made but holds no row for: a folder deleted here and
 // restored in Drive, or a document's file seen before its row exists.
 function planUnrecorded(change: DriveChange, snapshot: MirrorSnapshot): InboundDecision {
   const file = change.file;
@@ -88,7 +88,7 @@ function planUnrecorded(change: DriveChange, snapshot: MirrorSnapshot): InboundD
       return { kind: 'ignore', reason: 'duplicate' };
     const folder = snapshot.folders.get(folderId);
     if (folder) {
-      // Adopted as Drive has it; outbound then brings Drive in line with livepages.
+      // Adopted as Drive has it; outbound then brings Drive in line with livedesign.
       const ldName = stripDriveName(file.name, LD_NAME_MAX) ?? folder.name;
       return { kind: 'adopt', item: blankItem('folder', folderId, file, ldName) };
     }
@@ -107,7 +107,7 @@ function planUnrecorded(change: DriveChange, snapshot: MirrorSnapshot): InboundD
   const documentId = file.appProperties[DRIVE_PROP_DOCUMENT_ID];
   if (documentId) {
     // Another file mirrors that document: this one is a copy the user opened
-    // with livepages (docs/specs/022-drive-mirror/drive-mirror.md, "Copies made in Drive").
+    // with livedesign (docs/specs/022-drive-mirror/drive-mirror.md, "Copies made in Drive").
     // Never applied, re-tagged or adopted; Open with offers Import as new document.
     if (snapshot.items.has(itemKey('document', documentId)))
       return { kind: 'ignore', reason: 'foreign-copy' };
@@ -144,7 +144,7 @@ function planDocument(
     ...item,
     ...state,
     // What Drive's name stands for now; outbound renames Drive back whenever
-    // livepages's name differs from it.
+    // livedesign's name differs from it.
     ldName: driveName ?? item.ldName,
   };
   if (contentChanged && item.md5 !== null) record.mirroredSavedAt = 0;
@@ -298,9 +298,9 @@ export function orderChanges(changes: DriveChange[], snapshot: MirrorSnapshot): 
   );
 }
 
-// After a (re)connect, the files livepages made earlier, all at once: the
+// After a (re)connect, the files livedesign made earlier, all at once: the
 // rows to record instead of making second files. A document claimed by more than
-// one file (its file and a copy the user opened with livepages) is left to
+// one file (its file and a copy the user opened with livedesign) is left to
 // neither, so a copy is never taken for the original; the next write makes a
 // fresh file for it.
 export function planAdoption(

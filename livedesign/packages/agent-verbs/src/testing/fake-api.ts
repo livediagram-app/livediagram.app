@@ -1,7 +1,7 @@
 // A scripted api for the verb suites: routes by path (and query), answering JSON, text, or what a function returns
 // for the request (a POST, a refusal, a header); 404 otherwise.
 
-import { createApiClient, type ApiClient } from '@livepages/api-client';
+import { createApiClient, type ApiClient } from '@livedesign/api-client';
 import type { VerbContext } from '../define';
 
 const isText = (a: unknown): a is { text: string } =>
@@ -10,7 +10,7 @@ const isText = (a: unknown): a is { text: string } =>
 export function fakeApi(routes: Record<string, unknown>): ApiClient & { calls: string[] } {
   const calls: string[] = [];
   const api = createApiClient({
-    baseUrl: 'https://livepages.app/api',
+    baseUrl: 'https://livedesign.app/api',
     headers: () => ({}),
     fetch: async (request) => {
       const url = new URL(request.url);
@@ -46,7 +46,7 @@ export function contextOf(
   return {
     log: (line) => void logs.push(line),
     api,
-    host: 'https://livepages.app',
+    host: 'https://livedesign.app',
     useShareCode: (code) => void shareCodes.push(code),
     notice: (line) => void notices.push(line),
     now: () => clock.now,

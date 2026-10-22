@@ -21,7 +21,7 @@ import {
   type PageBackground,
   type PageFill,
   type PagePattern,
-} from '@livepages/document';
+} from '@livedesign/document';
 import type { CSSProperties } from 'react';
 import {
   pageImageCssUrl,
@@ -37,7 +37,7 @@ export {
   pagePatternInk,
   sameFill,
   withBackgroundPatch,
-} from '@livepages/document';
+} from '@livedesign/document';
 
 type GradientPreset = { id: string; label: string; from: string; to: string };
 
@@ -188,7 +188,7 @@ export type ThemeBackgroundPreset = { id: string; label: string; fill: PageFill 
 
 // The theme's accent and its default page background are the document's, shared with every path
 // that makes a page.
-export { themeAccent } from '@livepages/document';
+export { themeAccent } from '@livedesign/document';
 const FALLBACK_ACCENT = FALLBACK_THEME_ACCENT;
 const isHex = (c: string | null | undefined): c is string => !!c && /^#[0-9a-f]{6}$/i.test(c);
 

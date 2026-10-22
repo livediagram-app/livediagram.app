@@ -6,8 +6,8 @@
 // changes the poll's ephemerality: it runs only when the host presses
 // "End & keep results", from tallies already in their own memory.
 
-import { pollOptionTokens, tallyPoll, type LivePoll } from '@livepages/api-schema';
-import { createShape, type ShapeElement } from '@livepages/document';
+import { pollOptionTokens, tallyPoll, type LivePoll } from '@livedesign/api-schema';
+import { createShape, type ShapeElement } from '@livedesign/document';
 
 // A token poll becomes a BAR CHART; a free-text poll becomes an opened IDEA
 // BOX. Neither is a new element kind, which is the point (docs/specs/012-collaboration/poll-result-capture.md): the

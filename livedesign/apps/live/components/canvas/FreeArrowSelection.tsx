@@ -1,5 +1,5 @@
 import type { PointerEvent as ReactPointerEvent } from 'react';
-import type { FrameHandle } from '@livepages/document';
+import type { FrameHandle } from '@livedesign/document';
 import type { DragMode } from '@/lib/canvas';
 import { handlePressStarts } from '@/lib/double-press';
 import { EdgeResizeHandle, ResizeHandles } from './element-parts';

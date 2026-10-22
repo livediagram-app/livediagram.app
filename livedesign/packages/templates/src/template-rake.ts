@@ -2,7 +2,7 @@
 // chart, OKR tree, sitemap). Waypoints are chord-midpoint-relative, the
 // shape an arrow's `curvePoints` expects.
 
-import type { Anchor } from '@livepages/document';
+import type { Anchor } from '@livedesign/document';
 
 type Point = { x: number; y: number };
 

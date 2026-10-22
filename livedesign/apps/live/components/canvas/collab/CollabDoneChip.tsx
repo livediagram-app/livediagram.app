@@ -4,8 +4,8 @@
 // (docs/specs/012-collaboration/comment-pin.md, action-panel.md).
 
 import type { ReactNode } from 'react';
-import { COLLAB_DONE_COLOR } from '@livepages/document';
-import { Chip } from '@livepages/ui';
+import { COLLAB_DONE_COLOR } from '@livedesign/document';
+import { Chip } from '@livedesign/ui';
 import { tint } from './collab-chrome';
 import { CheckGlyph } from './qa/qa-parts';
 

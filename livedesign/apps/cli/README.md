@@ -1,15 +1,15 @@
-# livepages CLI
+# livedesign CLI
 
-`livepages` is the command line agents and scripts read, lint and change livepages documents with. The
+`livedesign` is the command line agents and scripts read, lint and change livedesign documents with. The
 behaviour is specified in [CLI](../../docs/specs/015-api/cli.md) and its
-[blueprint](../../docs/specs/015-api/blueprints/cli.md); the verbs themselves live in `@livepages/agent-verbs`.
+[blueprint](../../docs/specs/015-api/blueprints/cli.md); the verbs themselves live in `@livedesign/agent-verbs`.
 
 ## Develop
 
 ```bash
-pnpm --filter @livepages/cli test        # every suite runs on an in-memory CliIo
-pnpm --filter @livepages/cli build       # dist/livepages.mjs, one ESM file for Node 22+
-LIVEPAGES_TOKEN=lvd_... apps/cli/dist/livepages.mjs --help
+pnpm --filter @livedesign/cli test        # every suite runs on an in-memory CliIo
+pnpm --filter @livedesign/cli build       # dist/livedesign.mjs, one ESM file for Node 22+
+LIVEDESIGN_TOKEN=lvd_... apps/cli/dist/livedesign.mjs --help
 ```
 
 `src/main.ts` runs one command from argv to an exit code; `src/io.ts` is everything it touches outside itself, which

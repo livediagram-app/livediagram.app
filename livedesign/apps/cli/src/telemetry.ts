@@ -3,8 +3,8 @@
 // the active profile's api with no credential, awaited at most TELEMETRY_FLUSH_TIMEOUT_MS. Off by environment or
 // config; the first send prints what is counted, once.
 
-import { errorTypeToken, pascalToken } from '@livepages/api-schema';
-import { ApiError, postEvents } from '@livepages/api-client';
+import { errorTypeToken, pascalToken } from '@livedesign/api-schema';
+import { ApiError, postEvents } from '@livedesign/api-client';
 import type { ConfigFile } from './config/config-file';
 import { cacheDir } from './config/paths';
 import type { DebugLog } from './debug';
@@ -14,13 +14,13 @@ import { isNetworkFailure } from './output/failure-of';
 const TELEMETRY_FLUSH_TIMEOUT_MS = 300;
 
 export const telemetryNotice = (host: string) =>
-  `livepages counts which commands succeed (the command's name only: never arguments, documents or hosts) and sends the count to ${host}. Turn it off: livepages telemetry off, or LIVEPAGES_TELEMETRY=0.`;
+  `livedesign counts which commands succeed (the command's name only: never arguments, documents or hosts) and sends the count to ${host}. Turn it off: livedesign telemetry off, or LIVEDESIGN_TELEMETRY=0.`;
 
 export type TelemetrySink = { io: CliIo; apiBase: string; log: DebugLog };
 
 // Why the count is off, or null when it is on.
 export function telemetryOffReason(io: CliIo, config: ConfigFile): string | null {
-  if (io.env.LIVEPAGES_TELEMETRY === '0') return 'env';
+  if (io.env.LIVEDESIGN_TELEMETRY === '0') return 'env';
   const dnt = io.env.DO_NOT_TRACK;
   if (dnt !== undefined && dnt !== '' && dnt !== '0') return 'do-not-track';
   if (config.telemetry === false) return 'config';

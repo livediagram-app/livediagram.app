@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { AgentPresence } from '@livepages/api-schema';
+import type { AgentPresence } from '@livedesign/api-schema';
 import type { Participant } from './identity';
 import {
   buildAgentFocusByElement,

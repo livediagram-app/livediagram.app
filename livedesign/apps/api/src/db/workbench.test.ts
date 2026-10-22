@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { WORKBENCH_PAIRING_TTL_MS, WORKBENCH_SESSION_GRACE_MS } from '@livepages/api-schema';
+import { WORKBENCH_PAIRING_TTL_MS, WORKBENCH_SESSION_GRACE_MS } from '@livedesign/api-schema';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import {
   answerPairingRequest,
@@ -29,7 +29,7 @@ function arrange(): SqliteD1 {
                VALUES ('doc1', 'user_1', 'Home screen', 0, 1, 1)`);
   db.sql
     .exec(`INSERT INTO api_tokens (id, owner_id, token_hash, name, created_at, expires_at, revoked)
-               VALUES ('tok1', 'user_1', 'h1', 'livepages CLI', 1, ${NOW + 1e9}, 0),
+               VALUES ('tok1', 'user_1', 'h1', 'livedesign CLI', 1, ${NOW + 1e9}, 0),
                       ('tok2', 'user_2', 'h2', NULL, 1, ${NOW + 1e9}, 0)`);
   return db;
 }
@@ -171,7 +171,7 @@ describe('pairing requests', () => {
       tokenId: 'tok1',
       origin: ORIGIN,
       name: 'Acme Editor',
-      tokenName: 'livepages CLI',
+      tokenName: 'livedesign CLI',
       scope: 'document',
       expiresAt: NOW + WORKBENCH_PAIRING_TTL_MS,
       status: 'pending',

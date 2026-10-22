@@ -1,5 +1,5 @@
-import { lucideArrowRight, lucideCheck } from '@livepages/icons/lucide';
-import { lucideGlyph } from '@livepages/ui';
+import { lucideArrowRight, lucideCheck } from '@livedesign/icons/lucide';
+import { lucideGlyph } from '@livedesign/ui';
 
 import { COMPETITOR_LOOK } from '@/components/compare/competitor-look';
 import { VsBadge } from '@/components/compare/VsBadge';

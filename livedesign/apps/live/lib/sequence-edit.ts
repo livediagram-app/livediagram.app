@@ -1,4 +1,4 @@
-import type { Element } from '@livepages/document';
+import type { Element } from '@livedesign/document';
 import type { EditorCapabilities } from '@/lib/editor-capabilities';
 import { canEditSankey } from '@/lib/sankey-edit';
 

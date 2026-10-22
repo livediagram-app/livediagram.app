@@ -18,7 +18,7 @@ import { useUiScale } from '@/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
 import { use, useRef, useState } from 'react';
 import { browser } from 'react-dom';
-import { resolveFinish, type BackgroundPattern, type Finish } from '@livepages/document';
+import { resolveFinish, type BackgroundPattern, type Finish } from '@livedesign/document';
 import {
   useEscape,
   useFocusTrap,
@@ -27,7 +27,7 @@ import {
   SheetHandle,
   safeInset,
   useSheetDrag,
-} from '@livepages/ui';
+} from '@livedesign/ui';
 import { CanvasStyleControls } from '@/components/canvas/CanvasStyleControls';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { BackBar } from '@/components/primitives/BackBar';
@@ -38,7 +38,7 @@ import {
   useTabStyleTour,
 } from '@/components/tour/TabStyleTour';
 import { CustomThemePicker } from '@/components/palette/CustomThemePicker';
-import type { TextSize } from '@livepages/document';
+import type { TextSize } from '@livedesign/document';
 import { useModalGuard } from '@/hooks/ui/useModalGuard';
 import { FinishTab } from './FinishTab';
 import { TextTab } from './TextTab';

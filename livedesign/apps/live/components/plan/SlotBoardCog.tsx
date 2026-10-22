@@ -3,7 +3,7 @@
 // A board's cog in a Dashboard slot (docs/specs/026-plan/plan-board.md "Board Settings cog"): a dashboard opens no
 // element menu, so the cog opens **Board Settings** as a popover (as a Sheet's and a chart's do), the element menu's
 // four board sections, then the slot's **Slot** section (slot-menu.ts), one open at a time.
-import type { ShapeElement } from '@livepages/document';
+import type { ShapeElement } from '@livedesign/document';
 import { PlanBoardSectionsPanel } from '@/components/palette/PlanBoardMenuSection';
 import { track } from '@/lib/telemetry';
 import { SettingsCog } from './SettingsCog';

@@ -1,4 +1,4 @@
-import { Glyph, Prims, TrashIcon as SharedTrashIcon } from '@livepages/ui';
+import { Glyph, Prims, TrashIcon as SharedTrashIcon } from '@livedesign/ui';
 import {
   lucideArrowDown,
   lucideArrowLeft,
@@ -7,7 +7,7 @@ import {
   lucideTextAlignCenter,
   lucideTextAlignEnd,
   lucideTextAlignStart,
-} from '@livepages/icons/lucide';
+} from '@livedesign/icons/lucide';
 
 // Icons of the table editor (TableView) and the text-align controls that borrow its align glyph:
 // row / column move arrows, cell text-align, delete row / column, and the cell-link glyph.

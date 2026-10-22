@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import type { DriveItem } from '@livepages/api-schema';
+import type { DriveItem } from '@livedesign/api-schema';
 import type { DriveChange, DriveFile } from './drive-client';
 import { orderChanges, planAdoption, planInbound } from './plan-inbound';
 import { buildSnapshot } from './snapshot';
 
 // Each row of the spec's Inbound table as a pure decision
-// (docs/specs/022-drive-mirror/drive-mirror.md, "Inbound: Drive to livepages").
+// (docs/specs/022-drive-mirror/drive-mirror.md, "Inbound: Drive to livedesign").
 
-const HOST = 'livepages.test';
+const HOST = 'livedesign.test';
 const T = Date.parse('2026-09-28T12:00:00Z');
 
 function item(over: Partial<DriveItem> = {}): DriveItem {
@@ -15,7 +15,7 @@ function item(over: Partial<DriveItem> = {}): DriveItem {
     kind: 'document',
     ldId: 'd1',
     driveFileId: 'file-d1',
-    name: 'Plan.livepages',
+    name: 'Plan.livedesign',
     ldName: 'Plan',
     parentId: 'root',
     trashed: false,
@@ -42,8 +42,8 @@ const folderItem = item({
 function file(over: Partial<DriveFile> = {}): DriveFile {
   return {
     id: 'file-d1',
-    name: 'Plan.livepages',
-    mimeType: 'application/vnd.livepages+json',
+    name: 'Plan.livedesign',
+    mimeType: 'application/vnd.livedesign+json',
     parents: ['root'],
     trashed: false,
     appProperties: { ldDocumentId: 'd1', ldOrigin: HOST },
@@ -101,30 +101,30 @@ describe('planInbound: documents', () => {
   });
 
   it('renames the document, dropping the extension', () => {
-    const d = planInbound(change(file({ name: 'Roadmap.livepages' })), snap());
+    const d = planInbound(change(file({ name: 'Roadmap.livedesign' })), snap());
     expect(d).toMatchObject({
       kind: 'apply',
       effects: [{ kind: 'rename-document', id: 'd1', name: 'Roadmap' }],
       types: ['Rename'],
-      record: { name: 'Roadmap.livepages', ldName: 'Roadmap' },
+      record: { name: 'Roadmap.livedesign', ldName: 'Roadmap' },
     });
   });
 
   it('keeps the old name when the Drive name is empty once stripped', () => {
-    const d = planInbound(change(file({ name: '.livepages' })), snap());
+    const d = planInbound(change(file({ name: '.livedesign' })), snap());
     expect(d).toMatchObject({ kind: 'apply', effects: [] });
   });
 
   it('lets the later side win when both renamed', () => {
-    // livepages renamed to "Local" after Drive's change: livepages wins.
+    // livedesign renamed to "Local" after Drive's change: livedesign wins.
     const localLater = planInbound(
-      change(file({ name: 'Drive.livepages' })),
+      change(file({ name: 'Drive.livedesign' })),
       snap({ name: 'Local', savedAt: T + 1000 }),
     );
     expect(localLater).toMatchObject({ kind: 'apply', effects: [], record: { ldName: 'Drive' } });
     // Drive's rename is the later one: Drive wins.
     const driveLater = planInbound(
-      change(file({ name: 'Drive.livepages' })),
+      change(file({ name: 'Drive.livedesign' })),
       snap({ name: 'Local', savedAt: T - 1000 }),
     );
     expect(driveLater).toMatchObject({ effects: [{ kind: 'rename-document', name: 'Drive' }] });
@@ -141,7 +141,7 @@ describe('planInbound: documents', () => {
     });
   });
 
-  it('moves to the root of My Documents with a notice for a folder livepages cannot see, or none', () => {
+  it('moves to the root of My Documents with a notice for a folder livedesign cannot see, or none', () => {
     const d = planInbound(
       change(file({ parents: ['hidden'] })),
       snap({ folderId: 'f1', items: [item({ parentId: 'file-f1' }), folderItem] }),
@@ -194,12 +194,12 @@ describe('planInbound: documents', () => {
     });
   });
 
-  it('records a change whose value livepages already holds without applying it', () => {
-    const d = planInbound(change(file({ name: 'Plan2.livepages' })), snap({ name: 'Plan2' }));
+  it('records a change whose value livedesign already holds without applying it', () => {
+    const d = planInbound(change(file({ name: 'Plan2.livedesign' })), snap({ name: 'Plan2' }));
     expect(d).toMatchObject({
       kind: 'apply',
       effects: [],
-      record: { name: 'Plan2.livepages', ldName: 'Plan2' },
+      record: { name: 'Plan2.livedesign', ldName: 'Plan2' },
     });
   });
 });
@@ -304,7 +304,7 @@ describe('planInbound: unrecorded files', () => {
   it('leaves a copy of a mirrored document alone: another file carrying its id', () => {
     // docs/specs/022-drive-mirror/drive-mirror.md, "Copies made in Drive": never applied,
     // re-tagged or adopted.
-    const copy = file({ id: 'file-copy', name: 'Copy of Plan.livepages', parents: ['file-f1'] });
+    const copy = file({ id: 'file-copy', name: 'Copy of Plan.livedesign', parents: ['file-f1'] });
     expect(planInbound(change(copy, { fileId: 'file-copy' }), snap())).toEqual({
       kind: 'ignore',
       reason: 'foreign-copy',
@@ -345,7 +345,7 @@ describe('planAdoption (a reconnect)', () => {
 
   it('adopts neither of two files claiming one document: a copy is never the original', () => {
     const { adopt, ambiguous } = planAdoption(
-      [file(), file({ id: 'file-copy', name: 'Copy of Plan.livepages' })],
+      [file(), file({ id: 'file-copy', name: 'Copy of Plan.livedesign' })],
       snap({ items: [] }),
     );
     expect(adopt).toEqual([]);

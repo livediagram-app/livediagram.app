@@ -1,6 +1,6 @@
 'use client';
 
-import { Glyph } from '@livepages/ui';
+import { Glyph } from '@livedesign/ui';
 
 // A full-width "go back to the overview" bar. Far more obvious than a small
 // pill in the corner: the whole row is the target. One bar for every

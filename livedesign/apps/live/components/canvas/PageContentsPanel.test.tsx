@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { layOutPages, type Page } from '@livepages/document';
+import { layOutPages, type Page } from '@livedesign/document';
 import type { PagesModeView } from '@/hooks/editor/usePagesMode';
 import { PageContentsPanel } from './PageContentsPanel';
 

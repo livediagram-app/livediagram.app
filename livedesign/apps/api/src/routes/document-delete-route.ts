@@ -3,7 +3,7 @@
 // owner's Take Offline bypasses the Trash (docs/specs/006-document/offline-mode.md):
 // it is a move into their browser, not a delete.
 
-import { DOCUMENT_CONVERSION_HEADER, readDocumentConversion } from '@livepages/api-schema';
+import { DOCUMENT_CONVERSION_HEADER, readDocumentConversion } from '@livedesign/api-schema';
 import {
   deleteDocument,
   getDocument,

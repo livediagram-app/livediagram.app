@@ -4,8 +4,8 @@
 // Sheet's header, left of Maximise, a button that glides the view to fit the element, a margin round it. Not drawn
 // while the element is maximised (it already fills the view), outside an editor's canvas, or in a Dashboard's slot
 // (docs/specs/026-plan/plan-tabs.md "Dashboard tab"), where the page covers the canvas it would move.
-import { Tooltip, lucideGlyph } from '@livepages/ui';
-import { lucideScanEye } from '@livepages/icons/lucide';
+import { Tooltip, lucideGlyph } from '@livedesign/ui';
+import { lucideScanEye } from '@livedesign/icons/lucide';
 import { useCanvasFocus } from '@/hooks/canvas/useCanvasFocus';
 import { useContext } from 'react';
 import { track } from '@/lib/telemetry';

@@ -15,7 +15,7 @@ import { SheetToolbar } from './SheetToolbar';
 import { SheetToolbarEnd } from './sheet-toolbar-end';
 import { FUNCTION_FAMILY_LABELS, FUNCTION_HIGHLIGHT_MS } from './SheetFunctionMenu';
 import { FUNCTION_SEARCH_MAX, searchFunctions } from './SheetFunctionSearch';
-import { FUNCTION_FAMILIES } from '@livepages/sheets';
+import { FUNCTION_FAMILIES } from '@livedesign/sheets';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 let phone = false;

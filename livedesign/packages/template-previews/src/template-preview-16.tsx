@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react';
-import type { TemplateKind } from '@livepages/templates';
+import type { TemplateKind } from '@livedesign/templates';
 import { pv } from './motion';
 
 // Group 16: the spreadsheet templates (docs/specs/026-plan/plan-templates.md "Spreadsheet templates"), drawn as the
@@ -10,7 +10,7 @@ import { pv } from './motion';
 const FRAME = 'rgb(203 213 225)';
 const GRID = 'rgb(226 232 240)';
 const RULER = 'rgb(241 245 249)';
-// Each sheet template's accent (@livepages/sheets sheet-templates, sheet.md "Sheet templates"): its header fill
+// Each sheet template's accent (@livedesign/sheets sheet-templates, sheet.md "Sheet templates"): its header fill
 // (the family's 700, white text) and its banded rows' wash.
 const ACCENTS = {
   emerald: { head: '#047857', band: '#ecfdf5', hue: '#10b981' },

@@ -1,12 +1,12 @@
 import type { Metadata } from 'next';
-import { pageMetadata } from '@livepages/ui';
+import { pageMetadata } from '@livedesign/ui';
 import { helpCardImage } from './help-cards';
 
 // The help centre's name in link previews (the OG siteName); everything else
 // about a page's metadata follows the shared pageMetadata rule (docs/specs/018-help/help-app.md "SEO"):
 // the title passes through as given, the canonical and OG url are the page's
 // path, and the card is the large brand card.
-const HELP_SITE_NAME = 'livepages Help';
+const HELP_SITE_NAME = 'livedesign Help';
 
 interface SeoInput {
   title: string;
@@ -22,7 +22,7 @@ interface SeoInput {
 
 /** Per-page metadata with a complete Open Graph block, so each help page
  *  carries its own canonical + OG title/url rather than inheriting the
- *  layout's. The document <title> still reads "<Title> | livepages": the
+ *  layout's. The document <title> still reads "<Title> | livedesign": the
  *  root layout's title template adds the suffix, so link previews get the
  *  bare title and the siteName beside it. */
 export function helpMetadata({ title, description, path }: SeoInput): Metadata {

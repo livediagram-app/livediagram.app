@@ -90,8 +90,8 @@ function assetsOutOfCacheFor(req) {
   return cookiesOf(req).get(OUT_OF_CACHE_COOKIE) === '1';
 }
 
-const LIVE_PORT = Number(process.env.E2E_LIVE_PORT ?? 3202);
-const API_PORT = Number(process.env.E2E_API_PORT ?? 8987);
+const LIVE_PORT = Number(process.env.E2E_LIVE_PORT ?? 3302);
+const API_PORT = Number(process.env.E2E_API_PORT ?? 8989);
 // The other sites, for the audits that open them (docs/specs/004-interface-design/blueprints/
 // optical-alignment.md, "Ink audit"). Help and telemetry sit under their basePath on the
 // live origin, as the router mounts them; marketing owns "/" in production, so it gets its own port.
@@ -230,12 +230,12 @@ async function seedLegacyGuest() {
       'pnpm',
       [
         '--filter',
-        '@livepages/api',
+        '@livedesign/api',
         'exec',
         'wrangler',
         'd1',
         'execute',
-        'livepages',
+        'livedesign',
         '--local',
         '--command',
         sql,
@@ -370,7 +370,7 @@ function filesUnder(dir, out = []) {
   return out;
 }
 function simulateDeploy(from) {
-  const next = mkdtempSync(path.join(tmpdir(), 'livepages-e2e-deploy-'));
+  const next = mkdtempSync(path.join(tmpdir(), 'livedesign-e2e-deploy-'));
   const n = deployDirs.push(next);
   cpSync(from, next, { recursive: true });
   const renames = new Map();
@@ -601,7 +601,7 @@ function startMarketingServer() {
 // --- Boot ---------------------------------------------------------------
 async function main() {
   if (!existsSync(OUT_DIR)) {
-    console.error(`[e2e] ${OUT_DIR} missing — run \`pnpm --filter @livepages/live build\` first`);
+    console.error(`[e2e] ${OUT_DIR} missing — run \`pnpm --filter @livedesign/live build\` first`);
     process.exit(1);
   }
   if (LIVE_ONLY) {
@@ -613,14 +613,14 @@ async function main() {
   }
   console.log('[e2e] applying local D1 migrations…');
   await waitForExit(
-    run('pnpm', ['--filter', '@livepages/api', 'run', 'db:migrate:local'], { cwd: ROOT }),
+    run('pnpm', ['--filter', '@livedesign/api', 'run', 'db:migrate:local'], { cwd: ROOT }),
   );
   console.log('[e2e] starting api worker…');
   run(
     'pnpm',
     [
       '--filter',
-      '@livepages/api',
+      '@livedesign/api',
       'exec',
       'wrangler',
       'dev',

@@ -1,4 +1,4 @@
-import { chartRamp, legendFontPx, type ShapeElement } from '@livepages/document';
+import { chartRamp, legendFontPx, type ShapeElement } from '@livedesign/document';
 
 // The legend's canvas view (docs/specs/009-elements/pie-chart.md): a themed card of colour-coded rows, one
 // dot and one label each. A key, not a chart, so nothing here is clickable:

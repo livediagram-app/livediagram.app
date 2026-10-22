@@ -5,7 +5,7 @@
 // whole query; the control that adds a filter sits inside its right edge, with the clear. Backspace in an empty box
 // takes the last filter off. The caller owns what a chip and the filter control mean.
 import { useRef, type ReactNode } from 'react';
-import { CloseIcon, SearchIcon, Tooltip } from '@livepages/ui';
+import { CloseIcon, SearchIcon, Tooltip } from '@livedesign/ui';
 
 type SearchChip = {
   key: string;

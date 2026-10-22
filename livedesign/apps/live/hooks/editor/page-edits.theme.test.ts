@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { defaultPageBackground, getBuiltInTheme, pagesOf, type Tab } from '@livepages/document';
+import { defaultPageBackground, getBuiltInTheme, pagesOf, type Tab } from '@livedesign/document';
 import { pageEdits } from './page-edits';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));

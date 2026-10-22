@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { createShape, type Element, type Tab } from '@livepages/document';
-import { formStarter } from '@livepages/forms';
-import { ITEM_TYPES, presetSetup, type ItemTypeDef } from '@livepages/items';
+import { createShape, type Element, type Tab } from '@livedesign/document';
+import { formStarter } from '@livedesign/forms';
+import { ITEM_TYPES, presetSetup, type ItemTypeDef } from '@livedesign/items';
 import {
   boardsOf,
   planFormStart,

@@ -13,7 +13,7 @@
 // length you reach for, and the Studio's list is the one that was chosen for
 // that; anything else is a number field away in All settings.
 
-import { SOLID_BRAND_DARK_CONTROL } from '@livepages/ui';
+import { SOLID_BRAND_DARK_CONTROL } from '@livedesign/ui';
 const PRESETS = [1, 3, 5, 10, 15, 30] as const;
 
 export function TimerPresetChips({

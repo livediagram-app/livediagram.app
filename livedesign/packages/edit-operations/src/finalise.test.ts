@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Element, Tab } from '@livepages/document';
+import type { Element, Tab } from '@livedesign/document';
 import { run } from './fixtures/run';
 import { applyEditOperations } from './apply';
 import { containersBehindMembers } from './finalise';

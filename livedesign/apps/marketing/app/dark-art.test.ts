@@ -13,7 +13,7 @@ import {
   type BoxedElement,
   type CanvasSurface,
   type ThemeDefinition,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { describe, expect, it } from 'vitest';
 
 // Every diagram in the mock-ups is drawn as the editor draws it on the Default theme

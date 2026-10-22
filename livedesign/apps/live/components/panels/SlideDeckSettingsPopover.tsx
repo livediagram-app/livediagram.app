@@ -1,6 +1,6 @@
 'use client';
 
-import { HoverCard } from '@livepages/ui';
+import { HoverCard } from '@livedesign/ui';
 import { SettingsPopover, SettingsPopoverResetRow } from '@/components/primitives/SettingsPopover';
 import { SettingsToggleRow } from '@/components/panels/SettingsToggleRow';
 import {

@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState, type ReactNode, type RefObject } from 'react';
-import type { TelemetryWindowKey } from '@livepages/api-schema';
-import { Tooltip, Glyph, useMenu, useMenuButton } from '@livepages/ui';
+import type { TelemetryWindowKey } from '@livedesign/api-schema';
+import { Tooltip, Glyph, useMenu, useMenuButton } from '@livedesign/ui';
 import { WINDOW_META } from './windows';
 
 // Three dots — the "more / switch view" affordance in the sticky bar.

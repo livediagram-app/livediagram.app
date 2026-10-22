@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { articleHref, articles, categories, categoryHref } from '@livepages/help-registry';
+import { articleHref, articles, categories, categoryHref } from '@livedesign/help-registry';
 import { describe, expect, it } from 'vitest';
 
 // Every link marketing makes into the help centre must land on a registered article or category

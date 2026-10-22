@@ -1,5 +1,5 @@
 {
-  "name": "@livepages/icons",
+  "name": "@livedesign/icons",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -28,8 +28,8 @@
     "vendor:lucide": "node scripts/vendor-lucide.ts"
   },
   "devDependencies": {
-    "@livepages/oxlint-config": "workspace:*",
-    "@livepages/vitest-config": "workspace:*",
+    "@livedesign/oxlint-config": "workspace:*",
+    "@livedesign/vitest-config": "workspace:*",
     "@types/node": "^26.6.4",
     "@vitest/coverage-v8": "^5.0.3",
     "lucide-static": "1.52.0",

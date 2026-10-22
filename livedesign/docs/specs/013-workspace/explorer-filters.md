@@ -1,6 +1,6 @@
 # Explorer filters
 
-Status: shipped. The grammar, matching, suggestion engine and view models live in `@livepages/explorer-lens`
+Status: shipped. The grammar, matching, suggestion engine and view models live in `@livedesign/explorer-lens`
 (`packages/explorer-lens`); the Explorer page renders the chips, the field, the states and the routes over it.
 
 ## What

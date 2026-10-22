@@ -1,7 +1,7 @@
 // An offline document's sheet store (docs/specs/029-sheets/sheet-store.md "Offline documents"): the sheets live in
 // the record, every write is the api's own transition, and refusals are the api's.
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { DOCUMENT_SHEETS_MAX, SHEET_SIZED_AXES_MAX, type SheetJson } from '@livepages/sheets';
+import { DOCUMENT_SHEETS_MAX, SHEET_SIZED_AXES_MAX, type SheetJson } from '@livedesign/sheets';
 import { __setOfflineBackend, offlineGetRecord, offlinePutRecord } from './offline-store';
 import { memBackend, testRecord } from './offline-test-utils';
 import {

@@ -1,6 +1,6 @@
 // shared_with — "shared with you" tracking (migration 0010).
 
-import type { SharedWithItem } from '@livepages/api-schema';
+import type { SharedWithItem } from '@livedesign/api-schema';
 import type { Env, ShareRole } from '../types';
 import { firstTabCountSql, isEmptyCount } from './tabs';
 import { legacyRoleColumn, levelColumn, storedLevelOf } from '../share-link-row';

@@ -10,8 +10,8 @@ import {
   boardAddTypes,
   normaliseBoardSetup,
   type ItemTypeDef,
-} from '@livepages/items';
-import type { Element } from '@livepages/document';
+} from '@livedesign/items';
+import type { Element } from '@livedesign/document';
 import { usePlan } from '@/components/plan/PlanContext';
 import { usePlanTabKind } from './plan-cover-store';
 

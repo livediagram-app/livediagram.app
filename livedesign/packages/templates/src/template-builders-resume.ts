@@ -15,7 +15,7 @@
 //
 // Pure: () -> Element[], placed on the résumé's page (resumePages) whatever centre is passed.
 
-import { pageMargin, type Element, type Page } from '@livepages/document';
+import { pageMargin, type Element, type Page } from '@livedesign/document';
 import type { Kit } from './page-layout-kit';
 import { glyph, lockedFill, panel } from './template-page-design';
 import { pageKits, templatePage } from './template-page-kit';

@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { DEFAULT_BACKGROUND_COLOR, DEFAULT_PATTERN_COLOR, type Tab } from '@livepages/document';
-import { resetAppearanceForTests, setAppearance } from '@livepages/ui';
+import { DEFAULT_BACKGROUND_COLOR, DEFAULT_PATTERN_COLOR, type Tab } from '@livedesign/document';
+import { resetAppearanceForTests, setAppearance } from '@livedesign/ui';
 import { resolveTabBackdrop } from './themes';
 import { MODE_PATTERNS, resolveViewBackdrop } from './view-backdrop';
 

@@ -2,7 +2,7 @@
 // and Three Options. Same contract as page-layouts.ts: the page's content box in,
 // uncoloured elements out, in proportions of the box so each fits every size and orientation; a
 // wide page sets things side by side where a stack would be squashed.
-import type { Element } from '@livepages/document';
+import type { Element } from '@livedesign/document';
 import { heading, kit, type Kit, type LayoutBox } from './page-layout-kit';
 import { CROSS_ROSE, iconDisc, iconRow, TICK_GREEN } from './page-layout-parts';
 

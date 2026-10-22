@@ -11,7 +11,7 @@ import {
   type MenuKind,
   type MenuTree,
   Portal,
-} from '@livepages/ui';
+} from '@livedesign/ui';
 
 // A small `…` menu attached to an element's own face.
 //

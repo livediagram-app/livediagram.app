@@ -12,7 +12,7 @@
 // or storage. The room stays the owner of everything stateful: minting the
 // seq, trimming the log, serialising the attachment, broadcasting.
 
-import { isSafeColourValue } from '@livepages/document';
+import { isSafeColourValue } from '@livedesign/document';
 import { MAX_PARTICIPANT_KEY_LEN } from './limits';
 import {
   isProfilePictureUrl,
@@ -20,7 +20,7 @@ import {
   MAX_PARTICIPANT_NAME_LEN,
   type AccessLevel,
   type ParticipantPresence,
-} from '@livepages/api-schema';
+} from '@livedesign/api-schema';
 
 // A tabId is clamped like the name and colour so a hostile hello can't push an
 // oversize string into the socket attachment.
@@ -52,7 +52,7 @@ export function helloPresence(
   const presence: ParticipantPresence = {
     id: session.presenceId,
     name: typeof c.name === 'string' ? c.name.slice(0, MAX_PARTICIPANT_NAME_LEN) : '',
-    // A colour that could load something from outside is no colour (@livepages/document unsafe-colours.ts).
+    // A colour that could load something from outside is no colour (@livedesign/document unsafe-colours.ts).
     color:
       typeof c.color === 'string' && isSafeColourValue(c.color)
         ? c.color.slice(0, MAX_COLOR_LEN)

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { DOCUMENT_FORMAT, parseBuildId } from '@livepages/api-schema';
+import { DOCUMENT_FORMAT, parseBuildId } from '@livedesign/api-schema';
 import {
   EDITOR_BUILD_ID,
   isStaleBuild,

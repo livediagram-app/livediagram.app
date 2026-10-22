@@ -16,7 +16,7 @@ import {
   type ShapeElement,
   type TableCellStyle,
   type TextRun,
-} from '@livepages/document';
+} from '@livedesign/document';
 import {
   matrixAxes,
   CONTENT,

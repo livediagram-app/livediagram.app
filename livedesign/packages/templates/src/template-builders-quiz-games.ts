@@ -11,7 +11,7 @@ import {
   createTable,
   type Element,
   type TableCellStyle,
-} from '@livepages/document';
+} from '@livedesign/document';
 import {
   BUTTON_H,
   BUTTON_W,

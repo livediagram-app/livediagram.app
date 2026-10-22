@@ -1,4 +1,4 @@
-import type { EditorMode } from '@livepages/document';
+import type { EditorMode } from '@livedesign/document';
 
 // What the editor's mode controls show for each editor mode beyond the words, which come from the
 // document's one mode catalogue (editorModeLabel / editorModeDescription), and the shortcut that

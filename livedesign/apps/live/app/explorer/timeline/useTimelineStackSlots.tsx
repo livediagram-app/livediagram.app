@@ -10,7 +10,7 @@
 // is what keeps opening the menu from expanding the run underneath it.
 
 import { useCallback, useState } from 'react';
-import { stackLabel, type TimelineStackSlotsFor } from '@livepages/ui';
+import { stackLabel, type TimelineStackSlotsFor } from '@livedesign/ui';
 import { track } from '@/lib/telemetry';
 import { TimelineCardMenu } from './TimelineCardMenu';
 

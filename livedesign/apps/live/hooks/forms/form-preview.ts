@@ -2,8 +2,8 @@
 // response would, titled "Preview: …", so the whole road from question to card can be tried. A published form takes
 // it as a counted response, through the api; one with no link yet has nothing to count it on, so the editor makes the
 // card itself. The answers are checked as the api checks them.
-import type { ItemCreate, ItemTypeDef } from '@livepages/items';
-import { checkResponse, responseCard, type FormDefinition } from '@livepages/forms';
+import type { ItemCreate, ItemTypeDef } from '@livedesign/items';
+import { checkResponse, responseCard, type FormDefinition } from '@livedesign/forms';
 import type { FillState, SubmitOutcome } from '@/components/forms/respond/useFormFill';
 import type { PreviewSend } from '@/lib/api/forms';
 import { debugLog } from '@/lib/debug-log';

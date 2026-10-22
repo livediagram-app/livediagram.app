@@ -3,8 +3,8 @@
 // A page's lock (docs/specs/007-editor/pages-mode.md "Locking a page"): a padlock in its
 // title bar, before the cog, for someone who may edit. Open: Lock page. Closed and pressed: Unlock
 // page, named Locked beside it on a desktop.
-import { lucideLock, lucideLockOpen } from '@livepages/icons/lucide';
-import { lucideGlyph, Tooltip } from '@livepages/ui';
+import { lucideLock, lucideLockOpen } from '@livedesign/icons/lucide';
+import { lucideGlyph, Tooltip } from '@livedesign/ui';
 
 const LockIcon = lucideGlyph(lucideLock, 14);
 const OpenIcon = lucideGlyph(lucideLockOpen, 14);

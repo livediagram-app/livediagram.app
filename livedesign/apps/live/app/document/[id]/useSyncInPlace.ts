@@ -1,5 +1,5 @@
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
-import type { Tab } from '@livepages/document';
+import type { Tab } from '@livedesign/document';
 import { saveOfflineToCloud, SyncStillSavingError } from '@/lib/offline/offline-convert';
 import { rewriteImageIds } from '@/lib/offline/offline-images';
 import { track } from '@/lib/telemetry';

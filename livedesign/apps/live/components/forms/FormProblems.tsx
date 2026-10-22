@@ -8,7 +8,7 @@ import {
   PUBLISH_PROBLEM_TEXT,
   type DestinationProblem,
   type PublishProblem,
-} from '@livepages/forms';
+} from '@livedesign/forms';
 
 /** How many problems a form has: its destination's, and each failing publish check. */
 export const formProblemCount = (

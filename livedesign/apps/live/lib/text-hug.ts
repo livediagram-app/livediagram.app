@@ -12,7 +12,7 @@ import {
   TEXT_SCALE_MIN,
   type Element,
   type TextElement,
-} from '@livepages/document';
+} from '@livedesign/document';
 import type { DragMode, ShapeBounds } from '@/lib/canvas';
 
 // Canvas px around the text's line box, left and right, then top and bottom.

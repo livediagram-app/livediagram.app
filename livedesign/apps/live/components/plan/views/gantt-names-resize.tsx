@@ -10,7 +10,7 @@ import {
   GANTT_NAMES_MAX_SHARE,
   GANTT_NAMES_STEP_PX,
   ganttNamesWidth,
-} from '@livepages/items';
+} from '@livedesign/items';
 import type { PlanPalette } from '../plan-palette';
 import { followWindowDrag } from '@/lib/window-drag';
 

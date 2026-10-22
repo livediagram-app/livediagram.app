@@ -1,5 +1,5 @@
 // The pull file (docs/specs/015-api/blueprints/cli.md "The pull file", CLI27, CLI28): the editor's
-// `livepages.document` envelope, so "Import a copy" reads it, plus `livepagesSync`, which the envelope parser
+// `livedesign.document` envelope, so "Import a copy" reads it, plus `livedesignSync`, which the envelope parser
 // ignores: the host it came from and each tab's revision and hashes. `hash` covers a tab's elements, which push sends;
 // `settingsHash` covers everything else, which push names as not pushed.
 
@@ -10,14 +10,14 @@ import {
   parseDocumentEnvelope,
   type DocumentEnvelope,
   type Tab,
-} from '@livepages/document';
-import { sha256Hex } from '@livepages/api-schema';
+} from '@livedesign/document';
+import { sha256Hex } from '@livedesign/api-schema';
 
 export type PulledTab = { rev: number; hash: string; settingsHash: string };
 export type PullSync = { host: string; pulledAt: number; tabs: Record<string, PulledTab> };
-export type PullFile = DocumentEnvelope & { livepagesSync: PullSync };
+export type PullFile = DocumentEnvelope & { livedesignSync: PullSync };
 
-export const PULL_FILE_SUFFIX = '.livepages.json';
+export const PULL_FILE_SUFFIX = '.livedesign.json';
 const SLUG_MAX = 60;
 const ID_SLUG_LENGTH = 8;
 
@@ -54,7 +54,7 @@ export function isLocallyChanged(
   file: PullFile,
   hashes: Record<string, { hash: string; settingsHash: string }>,
 ): boolean {
-  const recorded = file.livepagesSync.tabs;
+  const recorded = file.livedesignSync.tabs;
   if (!sameIds(Object.keys(hashes), Object.keys(recorded))) return true;
   return Object.entries(hashes).some(
     ([id, h]) => h.hash !== recorded[id]!.hash || h.settingsHash !== recorded[id]!.settingsHash,
@@ -87,8 +87,8 @@ function syncOf(value: unknown): PullSync | null {
 
 const FAILURES = {
   not_json: 'not JSON',
-  wrong_kind: 'not a livepages document',
-  unsupported_version: 'written by a newer livepages',
+  wrong_kind: 'not a livedesign document',
+  unsupported_version: 'written by a newer livedesign',
   malformed: 'its document is malformed',
 } as const;
 
@@ -99,11 +99,11 @@ export function parsePullFile(
   const parsed = parseDocumentEnvelope(text);
   if (!parsed.ok) return { ok: false, message: FAILURES[parsed.failure] };
   // The envelope parse has already proved the text is a JSON object.
-  const sync = syncOf(Reflect.get(Object(JSON.parse(text)), 'livepagesSync'));
-  if (!sync) return { ok: false, message: 'not pulled by the CLI (no livepagesSync)' };
+  const sync = syncOf(Reflect.get(Object(JSON.parse(text)), 'livedesignSync'));
+  if (!sync) return { ok: false, message: 'not pulled by the CLI (no livedesignSync)' };
   const { tabs } = parsed.envelope.document;
   const invalid = tabs.findIndex((tab: unknown) => !isValidTab(tab));
   if (invalid >= 0)
     return { ok: false, message: `tab ${JSON.stringify(tabs[invalid]!.name)} is not a valid tab` };
-  return { ok: true, file: { ...parsed.envelope, livepagesSync: sync } };
+  return { ok: true, file: { ...parsed.envelope, livedesignSync: sync } };
 }

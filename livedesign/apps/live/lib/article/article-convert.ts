@@ -17,7 +17,7 @@ import {
   type ArticleZoneAt,
   type ArticleZoneKind,
   type ArticleZoneWrap,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { articleSchema } from './article-schema';
 
 const S = articleSchema;

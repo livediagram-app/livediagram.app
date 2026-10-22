@@ -1,6 +1,6 @@
 // Which host a command talks to (docs/specs/015-api/cli.md "Profiles and self-hosting", blueprint CLI7):
-// --host, else --profile, else LIVEPAGES_HOST, else LIVEPAGES_PROFILE, else the config's default profile,
-// else https://livepages.app. --host and --profile together are a usage error.
+// --host, else --profile, else LIVEDESIGN_HOST, else LIVEDESIGN_PROFILE, else the config's default profile,
+// else https://livedesign.app. --host and --profile together are a usage error.
 
 import type { CliIo } from '../io';
 import { CliError } from '../output/cli-error';
@@ -8,7 +8,7 @@ import { EXIT } from '../output/exit-codes';
 import { parseConfig, type ConfigFile } from './config-file';
 import { configDir } from './paths';
 
-export const DEFAULT_HOST = 'https://livepages.app';
+export const DEFAULT_HOST = 'https://livedesign.app';
 export const DEFAULT_PROFILE = 'default';
 
 export type ProfileSource = 'flag' | 'env' | 'config' | 'default';
@@ -44,15 +44,15 @@ export function resolveProfile(
     const host = normaliseHost(flags.host);
     return { name: host, host, source: 'flag' };
   }
-  if (!flags.profile && io.env.LIVEPAGES_HOST) {
-    const host = normaliseHost(io.env.LIVEPAGES_HOST);
+  if (!flags.profile && io.env.LIVEDESIGN_HOST) {
+    const host = normaliseHost(io.env.LIVEDESIGN_HOST);
     return { name: host, host, source: 'env' };
   }
-  const named = flags.profile ?? io.env.LIVEPAGES_PROFILE;
+  const named = flags.profile ?? io.env.LIVEDESIGN_PROFILE;
   const name = named ?? config.defaultProfile ?? DEFAULT_PROFILE;
   const source: ProfileSource = flags.profile
     ? 'flag'
-    : io.env.LIVEPAGES_PROFILE
+    : io.env.LIVEDESIGN_PROFILE
       ? 'env'
       : config.defaultProfile
         ? 'config'

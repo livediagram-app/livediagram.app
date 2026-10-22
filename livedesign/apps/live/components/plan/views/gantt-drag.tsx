@@ -14,7 +14,7 @@ import {
   type GanttModel,
   type GanttRow,
   type ItemPatch,
-} from '@livepages/items';
+} from '@livedesign/items';
 import { followWindowDrag } from '@/lib/window-drag';
 
 // How far the pointer travels before a press counts as a drag (and no longer opens the card).

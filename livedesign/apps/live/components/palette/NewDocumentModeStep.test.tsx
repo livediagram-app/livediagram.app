@@ -5,8 +5,8 @@
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { EDITOR_MODES, editorModeLabel } from '@livepages/document';
-import { popularKindsFor, TEMPLATES } from '@livepages/templates';
+import { EDITOR_MODES, editorModeLabel } from '@livedesign/document';
+import { popularKindsFor, TEMPLATES } from '@livedesign/templates';
 import { NEW_DOCUMENT_MODES, NewDocumentModeStep, modeCardSpan } from './NewDocumentModeStep';
 
 afterEach(cleanup);

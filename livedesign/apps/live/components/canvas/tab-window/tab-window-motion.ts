@@ -16,7 +16,7 @@ import {
   type ArrowLineMotion,
   type BoxedElement,
   type CanvasSurface,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { setAnimationClass } from '@/lib/animation-classes';
 import type { SvgMotion } from '@/lib/export-tab';
 import { FLOW_PATH_CLASS, FLOW_PATH_DASH } from '../arrow-flow';

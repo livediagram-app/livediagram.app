@@ -208,7 +208,7 @@ export function OneTabShare() {
 }
 
 /** A live document embedded in another page: the canvas with the embed's only chrome (the
- *  Open in livepages badge and the tab switcher bottom-left, the zoom dock bottom-right),
+ *  Open in livedesign badge and the tab switcher bottom-left, the zoom dock bottom-right),
  *  beside the iframe snippet the Share dialog copies. */
 export function EmbeddedDocument() {
   return (
@@ -238,10 +238,10 @@ export function EmbeddedDocument() {
       <Shape x={48} y={74} w={64} h={36} kind="rect" label="Web" />
       <Shape x={176} y={74} w={72} h={36} kind="cylinder" label="DB" />
       <Arrow from={[114, 92]} to={[172, 92]} />
-      {/* Bottom-left: Open in livepages, then the tab switcher. */}
+      {/* Bottom-left: Open in livedesign, then the tab switcher. */}
       <rect x={38} y={154} width={128} height={20} rx={10} className="fill-slate-100" />
       <Label x={50} y={165} size={10} weight={600} tone="body">
-        Open in livepages
+        Open in livedesign
       </Label>
       <rect x={172} y={154} width={66} height={20} rx={10} className="fill-slate-100" />
       <Label x={182} y={165} size={10} weight={600} tone="body">

@@ -8,7 +8,7 @@ import {
   standardColours,
   type Appearance,
   type StandardTone,
-} from '@livepages/document';
+} from '@livedesign/document';
 
 export type ColourOption = {
   // What a pick hands back: a surface's own id (a stock name, a slot, 'transparent'), or a hex.

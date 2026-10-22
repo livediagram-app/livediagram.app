@@ -40,8 +40,8 @@ async function personPage(browser: Browser, baseURL: string, who: StubUser | nul
     colorScheme: 'dark',
   });
   await ctx.addInitScript(() => {
-    localStorage.setItem('livepages:v2:name-confirmed', '1');
-    localStorage.setItem('livepages:user-preferences:v1', JSON.stringify({ tourSeen: true }));
+    localStorage.setItem('livedesign:v2:name-confirmed', '1');
+    localStorage.setItem('livedesign:user-preferences:v1', JSON.stringify({ tourSeen: true }));
   });
   const pictureRequests: string[] = [];
   await ctx.route('https://img.clerk.com/stub/**', (route) => {
@@ -174,10 +174,10 @@ test('signed-in collaborators see the picture; anonymous visitors see initials',
 
   // Ann turns the switch off: Bob's roster drops her picture on the next presence update.
   await ann.page.evaluate(() => {
-    const key = 'livepages:user-preferences:v1';
+    const key = 'livedesign:user-preferences:v1';
     const prefs = JSON.parse(localStorage.getItem(key) ?? '{}') as Record<string, unknown>;
     localStorage.setItem(key, JSON.stringify({ ...prefs, showProfilePicture: false }));
-    window.dispatchEvent(new Event('livepages:preferences-changed'));
+    window.dispatchEvent(new Event('livedesign:preferences-changed'));
   });
   await expect(annAvatar(bob.page).locator('xpath=..').locator('img')).toHaveCount(0);
 

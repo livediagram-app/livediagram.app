@@ -5,8 +5,8 @@ import {
   WORKBENCH_SELECTION_SETTLE_MS,
   type PageToWorkbenchMessage,
   type WorkbenchToPageMessage,
-} from '@livepages/api-schema';
-import type { Tab } from '@livepages/document';
+} from '@livedesign/api-schema';
+import type { Tab } from '@livedesign/document';
 import type { WorkbenchDocumentSession } from '@/components/providers/workbench-session-context';
 import { createRevealStore } from '@/lib/changeset-reveals';
 import { createSelectionStore } from '@/lib/selection-store';
@@ -16,7 +16,7 @@ import { createSelectionStore } from '@/lib/selection-store';
 // text changed), reveal, theme.
 
 const { appearance } = vi.hoisted(() => ({ appearance: { setAppearanceOverride: vi.fn() } }));
-vi.mock('@livepages/ui', () => appearance);
+vi.mock('@livedesign/ui', () => appearance);
 
 const { useWorkbenchMessages } = await import('./useWorkbenchMessages');
 
@@ -126,9 +126,9 @@ describe('useWorkbenchMessages', () => {
     });
     rerender({ workbench: session, hydrated: true, activeId: 'tab-a', documentName: 'Renamed' });
 
-    expect(ofType(sent, 'livepages:ready')).toEqual([
+    expect(ofType(sent, 'livedesign:ready')).toEqual([
       {
-        type: 'livepages:ready',
+        type: 'livedesign:ready',
         v: 1,
         documentId: 'doc-1',
         documentName: 'Home screen',
@@ -144,7 +144,7 @@ describe('useWorkbenchMessages', () => {
     mount({ workbench: session });
     settle();
 
-    const [selection] = ofType(sent, 'livepages:selection');
+    const [selection] = ofType(sent, 'livedesign:selection');
     expect(selection).toMatchObject({ documentId: 'doc-1', tabId: 'tab-a', rev: 41, count: 0 });
     expect((selection as { reference: string }).reference).toMatch(/\nwhole tab$/);
   });
@@ -167,7 +167,7 @@ describe('useWorkbenchMessages', () => {
     settle();
 
     expect(sent).toHaveLength(1);
-    expect(sent[0]).toMatchObject({ type: 'livepages:selection', count: 2, rev: 41 });
+    expect(sent[0]).toMatchObject({ type: 'livedesign:selection', count: 2, rev: 41 });
     expect((sent[0] as { reference: string }).reference).toContain('"Play"');
   });
 
@@ -180,7 +180,7 @@ describe('useWorkbenchMessages', () => {
     act(() => selection.setSelectedId('el-play'));
     settle();
 
-    expect(ofType(sent, 'livepages:selection')).toHaveLength(1);
+    expect(ofType(sent, 'livedesign:selection')).toHaveLength(1);
   });
 
   it('sends the tab on every later change, then its selection after the settle', () => {
@@ -195,10 +195,10 @@ describe('useWorkbenchMessages', () => {
       activeId: 'tab-b',
       documentName: 'Home screen',
     });
-    expect(sent).toEqual([{ type: 'livepages:tab', v: 1, tabId: 'tab-b', tabName: 'Flow' }]);
+    expect(sent).toEqual([{ type: 'livedesign:tab', v: 1, tabId: 'tab-b', tabName: 'Flow' }]);
     settle();
 
-    expect(sent[1]).toMatchObject({ type: 'livepages:selection', tabId: 'tab-b', rev: 3 });
+    expect(sent[1]).toMatchObject({ type: 'livedesign:selection', tabId: 'tab-b', rev: 3 });
   });
 
   it('starts the frame on the system scheme, then follows the workbench’s theme', () => {
@@ -206,7 +206,7 @@ describe('useWorkbenchMessages', () => {
     mount({ workbench: session });
     expect(appearance.setAppearanceOverride).toHaveBeenLastCalledWith('system');
 
-    act(() => deliver({ type: 'livepages:theme', v: 1, colourScheme: 'dark' }));
+    act(() => deliver({ type: 'livedesign:theme', v: 1, colourScheme: 'dark' }));
 
     expect(appearance.setAppearanceOverride).toHaveBeenLastCalledWith('dark');
   });
@@ -217,7 +217,7 @@ describe('useWorkbenchMessages', () => {
     const added = vi.spyOn(reveals, 'add');
 
     act(() =>
-      deliver({ type: 'livepages:reveal', v: 1, refs: ['el-play', 'el-grid', 'el-x', 'zz'] }),
+      deliver({ type: 'livedesign:reveal', v: 1, refs: ['el-play', 'el-grid', 'el-x', 'zz'] }),
     );
 
     expect(revealInView).toHaveBeenCalledWith('tab-a', ['el-play', 'el-grid']);
@@ -231,7 +231,7 @@ describe('useWorkbenchMessages', () => {
     const { session, deliver } = fakeSession();
     const { revealInView } = mount({ workbench: session });
 
-    act(() => deliver({ type: 'livepages:reveal', v: 1, refs: ['el-x'] }));
+    act(() => deliver({ type: 'livedesign:reveal', v: 1, refs: ['el-x'] }));
 
     expect(revealInView).not.toHaveBeenCalled();
     expect(warn).toHaveBeenCalledWith('[workbench] reveal-missed', { count: 1 });
@@ -241,7 +241,7 @@ describe('useWorkbenchMessages', () => {
     const { session, deliver } = fakeSession();
     const { revealInView } = mount({ workbench: session });
 
-    act(() => deliver({ type: 'livepages:reveal', v: 1, refs: ['el-play', 'el-play'] }));
+    act(() => deliver({ type: 'livedesign:reveal', v: 1, refs: ['el-play', 'el-play'] }));
 
     expect(revealInView).toHaveBeenCalledWith('tab-a', ['el-play']);
     expect(warn).not.toHaveBeenCalled();
@@ -252,7 +252,7 @@ describe('useWorkbenchMessages', () => {
     const { revealInView, selection } = mount({ workbench: session, activeId: 'tab-gone' });
     act(() => selection.setSelectedId('el-play'));
     settle();
-    act(() => deliver({ type: 'livepages:reveal', v: 1, refs: ['el-play'] }));
+    act(() => deliver({ type: 'livedesign:reveal', v: 1, refs: ['el-play'] }));
 
     expect(sent).toEqual([]);
     expect(revealInView).not.toHaveBeenCalled();
@@ -262,7 +262,7 @@ describe('useWorkbenchMessages', () => {
     const { session, deliver } = fakeSession();
     const { revealInView } = mount({ workbench: session });
 
-    act(() => deliver({ type: 'livepages:reveal', v: 1, refs: ['el-', 'el-play'] }));
+    act(() => deliver({ type: 'livedesign:reveal', v: 1, refs: ['el-', 'el-play'] }));
 
     expect(revealInView).toHaveBeenCalledWith('tab-a', ['el-play']);
   });
@@ -271,7 +271,7 @@ describe('useWorkbenchMessages', () => {
     const { session, deliver, listeners } = fakeSession();
     const { revealInView, unmount } = mount({ workbench: session });
 
-    act(() => deliver({ type: 'livepages:ticket', v: 1, ticket: 'A'.repeat(22) }));
+    act(() => deliver({ type: 'livedesign:ticket', v: 1, ticket: 'A'.repeat(22) }));
     unmount();
 
     expect(revealInView).not.toHaveBeenCalled();
@@ -294,7 +294,7 @@ describe('useWorkbenchMessages in a workspace frame', () => {
     const { session, sent, reportDocumentPlace } = framed();
     const { rerender } = mount({ workbench: session });
 
-    expect(ofType(sent, 'livepages:ready')).toEqual([]);
+    expect(ofType(sent, 'livedesign:ready')).toEqual([]);
     expect(reportDocumentPlace).toHaveBeenLastCalledWith({
       documentId: 'doc-1',
       documentName: 'Home screen',
@@ -309,8 +309,8 @@ describe('useWorkbenchMessages in a workspace frame', () => {
       activeId: 'tab-b',
       documentName: 'Home screen',
     });
-    expect(ofType(sent, 'livepages:tab')).toEqual([
-      { type: 'livepages:tab', v: 1, tabId: 'tab-b', tabName: 'Flow' },
+    expect(ofType(sent, 'livedesign:tab')).toEqual([
+      { type: 'livedesign:tab', v: 1, tabId: 'tab-b', tabName: 'Flow' },
     ]);
     expect(reportDocumentPlace).toHaveBeenLastCalledWith(
       expect.objectContaining({ tabId: 'tab-b', tabName: 'Flow' }),
@@ -326,7 +326,7 @@ describe('useWorkbenchMessages in a workspace frame', () => {
     const { session, deliver } = framed();
     mount({ workbench: session });
 
-    deliver({ type: 'livepages:theme', v: 1, colourScheme: 'dark' });
+    deliver({ type: 'livedesign:theme', v: 1, colourScheme: 'dark' });
 
     expect(appearance.setAppearanceOverride).not.toHaveBeenCalled();
   });

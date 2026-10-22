@@ -1,10 +1,10 @@
 // Document views (docs/specs/024-agents/document-views.md): the view names, the query the api's two
 // doors take, and every view's JSON form, shared by the api, the MCP, the CLI and
-// `@livepages/document-views` (docs/specs/024-agents/blueprints/document-views.md, VW49).
-import type { EditorMode, Finish, PageKind, TabKind } from '@livepages/document';
+// `@livedesign/document-views` (docs/specs/024-agents/blueprints/document-views.md, VW49).
+import type { EditorMode, Finish, PageKind, TabKind } from '@livedesign/document';
 import type { ArticleSummary, PageSummary } from './pages';
 
-// Every view. `lint` is answered by `@livepages/diagram-lint` (docs/specs/024-agents/diagram-lint.md), not
+// Every view. `lint` is answered by `@livedesign/diagram-lint` (docs/specs/024-agents/diagram-lint.md), not
 // by `renderView`; it takes only `json`.
 export const VIEW_NAMES = [
   'overview',

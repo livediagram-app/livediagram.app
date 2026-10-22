@@ -9,7 +9,7 @@ import {
   type PresentationConfig,
 } from '@/lib/presentation-config';
 import type { SettingsCategoryId, SettingsIconId } from './settings-icons';
-import { titleCase, type TelemetryCategory } from '@livepages/api-schema';
+import { titleCase, type TelemetryCategory } from '@livedesign/api-schema';
 import {
   autoRebindArrowsEnabled,
   showProfilePictureEnabled,
@@ -65,7 +65,7 @@ import {
   type LogoGuidePart,
   type LogoGuideStrength,
 } from '@/lib/logo-guide-prefs';
-import type { PlacementDefaultKey } from '@livepages/api-schema';
+import type { PlacementDefaultKey } from '@livedesign/api-schema';
 import { DEFAULT_KEY_ENTRIES } from '@/lib/placement-defaults/default-key-entries';
 import {
   CLOUD_SYNC_PROVIDERS,
@@ -255,7 +255,7 @@ export type SettingsSliderRowSpec = RowBase & {
 };
 
 // Appearance is the one row that is NOT a UserPreference: it is device-local
-// (`livepages:v2:ui-mode`), because a pre-hydration script has to apply it
+// (`livedesign:v2:ui-mode`), because a pre-hydration script has to apply it
 // before first paint to avoid a theme flash (docs/specs/007-editor/live-app.md). It therefore carries
 // no read/write here and is rendered against its own store.
 export type SettingsAppearanceRowSpec = RowBase & { kind: 'appearance' };
@@ -1538,7 +1538,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         label: 'API Tokens',
         cta: 'Manage API Tokens',
         target: 'tokens',
-        description: 'Let your scripts, and AI tools connected over MCP, use livepages as you.',
+        description: 'Let your scripts, and AI tools connected over MCP, use livedesign as you.',
         available: (ctx) => ctx.authEnabled === true,
       },
     ],
@@ -1736,7 +1736,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         keywords: 'api token key mcp integration script developer access create revoke secret',
         label: 'API Tokens',
         description:
-          'Let your scripts, and AI tools connected over MCP, use livepages as you. Treat each like a password: it lasts six months, and you can revoke it any time.',
+          'Let your scripts, and AI tools connected over MCP, use livedesign as you. Treat each like a password: it lasts six months, and you can revoke it any time.',
         helpArticle: 'apiTokens',
         available: (ctx) => ctx.authEnabled === true,
       },

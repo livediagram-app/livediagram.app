@@ -9,15 +9,15 @@ describe('parseMultipartRelated', () => {
       '',
       '{"name":"x"}',
       '--b1',
-      'Content-Type: application/vnd.livepages+json',
+      'Content-Type: application/vnd.livedesign+json',
       '',
-      '{"kind":"livepages.document"}',
+      '{"kind":"livedesign.document"}',
       '--b1--',
       '',
     ].join('\r\n');
     expect(parseMultipartRelated('multipart/related; boundary=b1', body)).toEqual([
       { contentType: 'application/json; charset=UTF-8', body: '{"name":"x"}' },
-      { contentType: 'application/vnd.livepages+json', body: '{"kind":"livepages.document"}' },
+      { contentType: 'application/vnd.livedesign+json', body: '{"kind":"livedesign.document"}' },
     ]);
   });
 

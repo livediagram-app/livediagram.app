@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { TAG_LIMIT, type Tag, type TagsList } from '@livepages/api-schema';
+import { TAG_LIMIT, type Tag, type TagsList } from '@livedesign/api-schema';
 import { tagNameProblem, useDocumentTagsState } from './useDocumentTagsState';
 
 // docs/specs/013-workspace/tags.md "Optimistic changes": every change shows at once, the request goes behind it, and

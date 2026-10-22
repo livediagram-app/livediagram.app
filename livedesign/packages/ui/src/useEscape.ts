@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react';
 
 // Fire `onEscape` when the user presses the Escape key. Sibling to
-// `useClickOutside` (both shared from @livepages/ui, so the editor and the
+// `useClickOutside` (both shared from @livedesign/ui, so the editor and the
 // public sites close surfaces the same way): most modal / popover surfaces
 // pair "Escape closes" with "click-outside closes", and the
 // useEffect to wire up each was being open-coded in every one.

@@ -4,7 +4,7 @@ import {
   getBuiltInTheme,
   type Tab,
   type ThemeDefinition,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { formatResultLines } from './format-results';
 import { checkoutFlow, fixedIds } from './fixtures/checkout-flow';
 import { applied, refused } from './fixtures/outcomes';
@@ -262,7 +262,7 @@ describe('applyReplace refusals', () => {
       'an element id: a non-empty string',
     ]);
     expect(refusal({ elements: [{ id: 'q', type: 7 }] }).hint).toBe(
-      'see the format: livepages schema',
+      'see the format: livedesign schema',
     );
   });
 

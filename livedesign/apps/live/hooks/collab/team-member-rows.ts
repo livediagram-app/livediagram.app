@@ -4,7 +4,7 @@
 // docs/specs/013-workspace/teams.md) is no teammate and is left out. Shared by the Assign Action picker and the
 // comment mention list so the two agree on who "your teammates" are.
 
-import { isOpenTeamMember } from '@livepages/api-schema';
+import { isOpenTeamMember } from '@livedesign/api-schema';
 import type { TeamMember } from '@/lib/api-client';
 import { memberName } from '@/components/panels/team-pane-parts';
 import type { PickableMember } from '@/components/dialogs/AssignActionAssigneePicker';

@@ -1,4 +1,4 @@
-import { defineProject } from '@livepages/vitest-config';
+import { defineProject } from '@livedesign/vitest-config';
 
 // The lint is pure: every line and branch is covered (docs/specs/024-agents/blueprints/diagram-lint.md).
 export default defineProject({

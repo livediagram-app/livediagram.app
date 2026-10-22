@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CHANGESET_MAX_OPERATIONS, type EditRejection } from '@livepages/api-schema';
+import { CHANGESET_MAX_OPERATIONS, type EditRejection } from '@livedesign/api-schema';
 import { formatOperation } from './format-operation';
 import { parseEditOperations } from './parse';
 import { formatRejections } from './rejections';

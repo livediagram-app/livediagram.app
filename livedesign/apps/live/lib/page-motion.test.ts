@@ -6,7 +6,7 @@ import {
   PAGE_MOTIONS,
   sameFill,
   type PageFill,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { backgroundCategoryOf, isCustomGradient } from './page-paint';
 import {
   colouringOf,

@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { buildGraphTab, resolveGraphInput, type GraphInput } from '@livepages/document';
+import { buildGraphTab, resolveGraphInput, type GraphInput } from '@livedesign/document';
 import { routeMeasures, type RouteMeasures } from './route-measures';
 
 // The routing fixtures (plan 0026): the graphs and Mermaid the MCP evals wrote, built as create_document builds them,

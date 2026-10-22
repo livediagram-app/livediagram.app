@@ -1,4 +1,4 @@
-import type { Element, Tab } from '@livepages/document';
+import type { Element, Tab } from '@livedesign/document';
 import { announce } from '@/lib/announcer';
 import { track } from '@/lib/telemetry';
 

@@ -1,4 +1,4 @@
-import type { CustomTheme } from '@livepages/api-schema';
+import type { CustomTheme } from '@livedesign/api-schema';
 import { afterEach, describe, expect, it } from 'vitest';
 import {
   clearCustomThemeRegistry,

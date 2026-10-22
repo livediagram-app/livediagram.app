@@ -5,7 +5,7 @@
 
 import { vi } from 'vitest';
 import type { DatabaseSync } from 'node:sqlite';
-import type { Tab } from '@livepages/document';
+import type { Tab } from '@livedesign/document';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { insertDocumentRow } from './legacy-test-schema';
 import type { Env } from '../types';

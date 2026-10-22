@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createShape, createSticky, createText, type Element } from '@livepages/document';
+import { createShape, createSticky, createText, type Element } from '@livedesign/document';
 import {
   setAnimationState,
   withSetAnimation,

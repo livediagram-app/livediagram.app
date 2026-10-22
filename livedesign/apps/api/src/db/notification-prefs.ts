@@ -5,7 +5,7 @@
 // that blob, used by the api worker to decide whether to send a transactional
 // notification email (docs/specs/014-identity/transactional-email.md) on someone else's request.
 
-import { upgradeLegacyPreferences } from '@livepages/api-schema';
+import { upgradeLegacyPreferences } from '@livedesign/api-schema';
 import type { Env } from '../types';
 
 // Both flags default to true: a missing key / row / corrupt blob means

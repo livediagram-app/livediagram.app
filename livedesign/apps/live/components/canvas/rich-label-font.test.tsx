@@ -5,7 +5,7 @@
 // only, never an undefined font-family over the label's own.
 import { cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import type { BoxedElement } from '@livepages/document';
+import type { BoxedElement } from '@livedesign/document';
 import { RichLabel } from './element-label-views';
 import { wordmarkTextCss } from './label-style';
 

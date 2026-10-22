@@ -1,5 +1,5 @@
 import type { ReactElement, SVGProps } from 'react';
-import type { TemplateKind } from '@livepages/templates';
+import type { TemplateKind } from '@livedesign/templates';
 import { pv } from './motion';
 import { Pop } from './story-parts';
 

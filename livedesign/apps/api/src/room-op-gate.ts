@@ -6,7 +6,7 @@ import {
   isSystemOpKind,
   parseAvatarSay,
   parseStoredLevel,
-} from '@livepages/api-schema';
+} from '@livedesign/api-schema';
 import { answersAsSelf } from './document-room-rules';
 import { scopedSenderMayRelay } from './room-scope';
 

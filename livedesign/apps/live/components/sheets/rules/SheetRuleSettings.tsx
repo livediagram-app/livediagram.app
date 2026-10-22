@@ -3,7 +3,7 @@
 // Sheet Settings' Data Validation and Conditional Formatting sections (docs/specs/029-sheets/data-validation.md,
 // conditional-formatting.md "Making and changing rules"): every rule as a row (its line and range), Edit (Sheet
 // Settings closes, the rule's cells are selected and its editor opens against them), Go To and, for an Editor, Remove.
-import { CloseIcon, Tooltip } from '@livepages/ui';
+import { CloseIcon, Tooltip } from '@livedesign/ui';
 import {
   formatRange,
   formatRuleLine,
@@ -13,7 +13,7 @@ import {
   type FormatRule,
   type IdRange,
   type ValidationRule,
-} from '@livepages/sheets';
+} from '@livedesign/sheets';
 import { useSheetController, type SheetController } from '../sheet-controller';
 import type { SheetActions } from '../useSheetActions';
 

@@ -2,8 +2,8 @@
 // A chart's cog (docs/specs/026-plan/plan-views.md "Settings"): the same settings as its View flyout.
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { ITEM_TYPES, type Item } from '@livepages/items';
-import type { PlanViewRef } from '@livepages/document';
+import { ITEM_TYPES, type Item } from '@livedesign/items';
+import type { PlanViewRef } from '@livedesign/document';
 
 const plan: Record<string, unknown> = {};
 vi.mock('../PlanContext', () => ({ usePlan: () => plan }));

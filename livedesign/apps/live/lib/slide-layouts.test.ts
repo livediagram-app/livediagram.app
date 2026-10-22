@@ -5,7 +5,7 @@ import {
   pageMargin,
   SLIDE_PAGE_SIZE_IDS,
   type Element,
-} from '@livepages/document';
+} from '@livedesign/document';
 import {
   layoutCatalogueFor,
   PAGE_LAYOUT_CATEGORIES,
@@ -13,9 +13,9 @@ import {
   pageLayoutById,
   SLIDE_LAYOUT_CATEGORIES,
   SLIDE_LAYOUTS,
-} from '@livepages/templates';
-import { buildPageLayout } from '@livepages/templates';
-import { isIconId } from '@livepages/icons/search';
+} from '@livedesign/templates';
+import { buildPageLayout } from '@livedesign/templates';
+import { isIconId } from '@livedesign/icons/search';
 
 // docs/specs/007-editor/pages-mode.md "Slide layouts": a slide page's own catalogue, every
 // layout fitting a 16:9 and a 4:3 slide inside its margins, save a full-bleed picture or panel,

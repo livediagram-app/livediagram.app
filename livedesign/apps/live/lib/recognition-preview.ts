@@ -6,7 +6,7 @@ import {
   recogniseShape,
   type PenStroke,
   type RecognisedShape,
-} from '@livepages/document';
+} from '@livedesign/document';
 
 type Point = { x: number; y: number };
 

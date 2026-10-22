@@ -8,7 +8,7 @@ import {
   type ChangesetReplaceBody,
   type ChangesetRequest,
   type ChangesetResponse,
-} from '@livepages/api-schema';
+} from '@livedesign/api-schema';
 import {
   computeRefs,
   elementFingerprint,
@@ -16,7 +16,7 @@ import {
   type Element,
   type Finish,
   type Tab,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { ApiError, apiJson } from './api';
 import { idsOf, resolveArrowEnds } from './arrow-ends';
 import { elementsIssue } from './element-values';
@@ -50,7 +50,7 @@ export function mcpResultText(
   text: string,
   origin: { x: number; y: number } = { x: 0, y: 0 },
 ): string {
-  const plain = text.replace(/ · revert: livepages changeset revert \S+ \S+/g, '');
+  const plain = text.replace(/ · revert: livedesign changeset revert \S+ \S+/g, '');
   const [ox, oy] = [Math.round(origin.x), Math.round(origin.y)];
   if ((ox === 0 && oy === 0) || !/@-?\d+,-?\d+/.test(plain)) return plain;
   const plus = (n: number) => (n < 0 ? `- ${-n}` : `+ ${n}`);

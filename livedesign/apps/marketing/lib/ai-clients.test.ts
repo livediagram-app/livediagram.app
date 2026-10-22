@@ -70,7 +70,7 @@ describe('one-click install links', () => {
   it("builds Cursor's deeplink with the base64 mcp.json entry", () => {
     const link = new URL(cursorInstallLink());
     expect(link.protocol).toBe('cursor:');
-    expect(link.searchParams.get('name')).toBe('livepages');
+    expect(link.searchParams.get('name')).toBe('livedesign');
     expect(JSON.parse(atob(link.searchParams.get('config')!))).toEqual({ url: MCP_URL });
   });
 
@@ -78,7 +78,7 @@ describe('one-click install links', () => {
     const link = vscodeInstallLink();
     expect(link.startsWith('vscode:mcp/install?')).toBe(true);
     expect(JSON.parse(decodeURIComponent(link.slice('vscode:mcp/install?'.length)))).toEqual({
-      name: 'livepages',
+      name: 'livedesign',
       type: 'http',
       url: MCP_URL,
     });
@@ -86,8 +86,8 @@ describe('one-click install links', () => {
 });
 
 describe('starter prompts', () => {
-  it('name livepages, so the AI picks the right tool', () => {
+  it('name livedesign, so the AI picks the right tool', () => {
     expect(STARTER_PROMPTS.length).toBe(6);
-    for (const p of STARTER_PROMPTS) expect(p.prompt).toMatch(/livepages/);
+    for (const p of STARTER_PROMPTS) expect(p.prompt).toMatch(/livedesign/);
   });
 });

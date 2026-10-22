@@ -3,7 +3,7 @@
 // formulas a deletion shrinks), stored in one batch guarded by the sheet's rev (retried on a lost race), answered
 // with the stored state of every cell it touched, and relayed in order.
 
-import type { SheetWriteRequest, SheetWriteResponse } from '@livepages/api-schema';
+import type { SheetWriteRequest, SheetWriteResponse } from '@livedesign/api-schema';
 import {
   DOCUMENT_CELLS_MAX,
   SHEET_BYTES_MAX,
@@ -19,7 +19,7 @@ import {
   type Sheet,
   type SheetPerson,
   type SheetWrite,
-} from '@livepages/sheets';
+} from '@livedesign/sheets';
 import {
   axisDeleteStatement,
   cellWriteStatements,

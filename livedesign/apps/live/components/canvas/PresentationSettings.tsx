@@ -7,7 +7,7 @@
 //
 // The person's own (lib/presentation-config), following their account, not a property of the document.
 
-import { HoverCard } from '@livepages/ui';
+import { HoverCard } from '@livedesign/ui';
 import {
   SLIDE_SPEEDS,
   SLIDE_TRANSITIONS,

@@ -12,8 +12,8 @@ import {
   type FontWeight,
   type TextCase,
   type TextElement,
-} from '@livepages/document';
-import { Glyph } from '@livepages/ui';
+} from '@livedesign/document';
+import { Glyph } from '@livedesign/ui';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
 import { PreviewSliderRow, SliderRowAction } from '@/components/primitives/PreviewSliderRow';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';

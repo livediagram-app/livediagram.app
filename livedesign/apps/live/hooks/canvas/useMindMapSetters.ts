@@ -6,7 +6,7 @@ import {
   type Element,
   type MindFlow,
   type MindSpacing,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { track } from '@/lib/telemetry';
 import { debugLog } from '@/lib/debug-log';
 

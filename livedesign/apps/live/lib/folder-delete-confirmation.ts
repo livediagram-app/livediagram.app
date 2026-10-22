@@ -2,7 +2,7 @@
 // folder-delete.md): one wording for every surface that deletes a folder, personal or team. It
 // names where the contents go, and warns when the folder is one of the reader's default folders
 // (docs/specs/013-workspace/default-folders.md "Deleting a default folder").
-import type { PlacementDefaultKey } from '@livepages/api-schema';
+import type { PlacementDefaultKey } from '@livedesign/api-schema';
 import { defaultKeyEntry, inListOrder, joinNouns } from './placement-defaults/default-key-entries';
 
 type FolderDeleteInput = {

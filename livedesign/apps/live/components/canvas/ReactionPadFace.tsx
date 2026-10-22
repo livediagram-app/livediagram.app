@@ -6,7 +6,7 @@ import {
   REACTION_HUES,
   REACTION_LABEL,
   type Reaction,
-} from '@livepages/document';
+} from '@livedesign/document';
 
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { tint } from '@/lib/element-tint';

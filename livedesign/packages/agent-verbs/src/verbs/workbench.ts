@@ -4,7 +4,7 @@
 // person's browser, so the CLI runs it (CLI55).
 
 import { z } from 'zod';
-import { ApiError } from '@livepages/api-client';
+import { ApiError } from '@livedesign/api-client';
 import {
   normaliseWorkbenchName,
   parseWorkbenchOrigin,
@@ -12,7 +12,7 @@ import {
   type WorkbenchTicketRequest,
   type WorkbenchTicketResponse,
   type WorkbenchWorkspaceTicketResponse,
-} from '@livepages/api-schema';
+} from '@livedesign/api-schema';
 import { readLibraries } from '../find-documents';
 import { folderChoices, resolveFolderRef } from '../folders';
 import { AddressError, parseDocumentUrl, resolveDocument } from '../addressing';
@@ -73,14 +73,14 @@ function checkScope(input: { doc?: string; workspace?: boolean; tab?: string; fo
   if (workspace === (input.doc !== undefined))
     throw usageRefusal(
       'name a document, or --workspace',
-      `livepages workbench open --workspace --origin ${EXAMPLE_ORIGIN}`,
+      `livedesign workbench open --workspace --origin ${EXAMPLE_ORIGIN}`,
     );
   if (workspace && input.tab !== undefined)
     throw usageRefusal('--tab opens a tab of a document, not of the workspace', 'drop --tab');
   if (!workspace && input.folder !== undefined)
     throw usageRefusal(
       '--folder takes --workspace',
-      `livepages workbench open --workspace --folder <f>`,
+      `livedesign workbench open --workspace --folder <f>`,
     );
 }
 
@@ -112,7 +112,7 @@ export const workbenchOpen = defineVerb({
     doc: z
       .string()
       .optional()
-      .describe('A name, id prefix or livepages URL of your own document; or --workspace'),
+      .describe('A name, id prefix or livedesign URL of your own document; or --workspace'),
     workspace: z.boolean().optional().describe('The whole workspace, in the Explorer'),
     folder: z
       .string()
@@ -152,7 +152,7 @@ export const workbenchOpen = defineVerb({
         input: input.doc,
         candidates: [],
         message: 'a workbench opens your own documents, not a share link',
-        hint: 'livepages document ls',
+        hint: 'livedesign document ls',
       });
     }
     const request = await ticketRequestOf(ctx, { doc: input.doc, tab: input.tab }, origin);
@@ -164,8 +164,8 @@ export const workbenchOpen = defineVerb({
   cli: {
     positionals: ['doc'],
     examples: [
-      `livepages workbench open "Home screen" --origin ${EXAMPLE_ORIGIN} --json`,
-      `livepages workbench open --workspace --folder Minigames --origin ${EXAMPLE_ORIGIN} --json`,
+      `livedesign workbench open "Home screen" --origin ${EXAMPLE_ORIGIN} --json`,
+      `livedesign workbench open --workspace --folder Minigames --origin ${EXAMPLE_ORIGIN} --json`,
     ],
     prints:
       'the link; --json { url, documentId, tabId, expiresAt }, or with --workspace { url, scope, folderId, expiresAt }',
@@ -197,7 +197,7 @@ async function mint<T>(
       message: pairFlag
         ? 'this workbench is not paired with your token for your whole workspace'
         : 'this workbench is not paired with your token',
-      hint: `livepages workbench pair --origin ${request.origin}${pairFlag}`,
+      hint: `livedesign workbench pair --origin ${request.origin}${pairFlag}`,
     });
   }
 }
@@ -248,8 +248,8 @@ export const workbenchPair = defineVerb({
   cli: {
     positionals: [],
     examples: [
-      `livepages workbench pair --origin ${EXAMPLE_ORIGIN} --name "Acme Editor"`,
-      `livepages workbench pair --origin ${EXAMPLE_ORIGIN} --workspace`,
+      `livedesign workbench pair --origin ${EXAMPLE_ORIGIN} --name "Acme Editor"`,
+      `livedesign workbench pair --origin ${EXAMPLE_ORIGIN} --workspace`,
     ],
     prints: 'the approval link, then paired <origin> [as <name>]',
   },

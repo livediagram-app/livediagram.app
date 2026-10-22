@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type {
   WorkbenchDocumentSessionResponse,
   WorkbenchWorkspaceSessionResponse,
-} from '@livepages/api-schema';
+} from '@livedesign/api-schema';
 import {
   endReasonOfInvalidSession,
   INITIAL_WORKBENCH_PHASE,

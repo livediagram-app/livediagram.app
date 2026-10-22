@@ -3,11 +3,11 @@
 // READ_COPY_REVS_PER_TAB revisions a tab and READ_COPY_MAX_BYTES in all, the least recently used out first; files
 // 0600 in 0700 directories, as they hold document content.
 
-import type { ReadCopies, ReadCopy } from '@livepages/agent-verbs';
+import type { ReadCopies, ReadCopy } from '@livedesign/agent-verbs';
 import { cacheDir } from '../config/paths';
 import type { DebugLog } from '../debug';
 import type { CliIo } from '../io';
-import { sha256Hex } from '@livepages/api-schema';
+import { sha256Hex } from '@livedesign/api-schema';
 
 export const READ_COPY_REVS_PER_TAB = 3;
 export const READ_COPY_MAX_BYTES = 32 * 1024 * 1024;

@@ -7,8 +7,8 @@ import {
   type RefErrorBody,
   type TabViewName,
   type ViewDoor,
-} from '@livepages/api-schema';
-import { resolveRef, type Element, type Tab } from '@livepages/document';
+} from '@livedesign/api-schema';
+import { resolveRef, type Element, type Tab } from '@livedesign/document';
 import type { ViewFit, ViewResult } from './budget';
 import { commentsView } from './comments';
 import { textField } from './fields';

@@ -4,7 +4,7 @@
 // Range, the Criteria (a rule kind and its fields), Advanced (Reject or Warn, Help Text), and Remove Rule, Cancel and
 // Done. Done writes the rule over its range (taking the range out of every other rule), one change and one undo step.
 import { useState } from 'react';
-import { Button, Select, TextInput, DateInput } from '@livepages/ui';
+import { Button, Select, TextInput, DateInput } from '@livedesign/ui';
 import {
   DROPDOWN_OPTIONS_MAX,
   DROPDOWN_OPTION_MAX,
@@ -21,12 +21,12 @@ import {
   type RuleSettings,
   type ValidationKind,
   type ValidationRule,
-} from '@livepages/sheets';
+} from '@livedesign/sheets';
 import { OptionRows } from '@/components/plan/OptionRows';
 import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
 import { noColour, standardGroup } from '@/components/colour/colour-options';
-import { GREY_PEN_COLOUR, INK_PEN_COLOUR, standardColours } from '@livepages/document';
+import { GREY_PEN_COLOUR, INK_PEN_COLOUR, standardColours } from '@livedesign/document';
 import { useSheetController, type SheetController } from '../sheet-controller';
 import type { SheetActions } from '../useSheetActions';
 

@@ -13,7 +13,7 @@
 // real answer, not a silent drop.
 
 import { Dialog } from '@/components/dialogs/Dialog';
-import { SOLID_BRAND_DARK_CONTROL } from '@livepages/ui';
+import { SOLID_BRAND_DARK_CONTROL } from '@livedesign/ui';
 
 export function FocusInviteDialog({
   from,

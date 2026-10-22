@@ -18,8 +18,8 @@ import {
   type Slide,
   type Tab,
   tabWireframeFrameTheme,
-} from '@livepages/document';
-import type { Item, ItemTypeDef } from '@livepages/items';
+} from '@livedesign/document';
+import type { Item, ItemTypeDef } from '@livedesign/items';
 import { pageRulingOf, pageWritingBars } from '@/lib/article/article-export';
 import { articleOpsToSvg } from '@/lib/article/article-draw';
 import { CANVAS_PAPER } from '@/lib/page-paint';

@@ -13,7 +13,7 @@ import {
   planGlyphLabel,
   type ItemTypeDef,
   type PlanGlyphId,
-} from '@livepages/items';
+} from '@livedesign/items';
 import {
   ChevronDownIcon,
   NoMatches,
@@ -21,7 +21,7 @@ import {
   Select,
   TextInput,
   Tooltip,
-} from '@livepages/ui';
+} from '@livedesign/ui';
 import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { ACCENT_TEXT, ACCENT_TINT, accentVars } from './plan-palette';

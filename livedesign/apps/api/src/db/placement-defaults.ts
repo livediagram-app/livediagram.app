@@ -8,7 +8,7 @@ import {
   parsePlacementDefaultKey,
   type PlacementDefault,
   type PlacementDefaultKey,
-} from '@livepages/api-schema';
+} from '@livedesign/api-schema';
 import type { Env } from '../types';
 
 /** This owner's defaults for the keys in force, in key order. A row under a retired name reads as

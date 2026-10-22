@@ -4,7 +4,7 @@
 // export's own frame markup around a plain screen, fitted to a box, so a device tile shows the
 // frame a page will wear.
 import { memo, useMemo } from 'react';
-import { trustedHtml } from '@livepages/ui';
+import { trustedHtml } from '@livedesign/ui';
 import {
   deviceGeometry,
   deviceScreenPath,
@@ -13,7 +13,7 @@ import {
   type WireframeDeviceId,
   type WireframeFrameLook,
   type WireframeFrameTheme,
-} from '@livepages/document';
+} from '@livedesign/document';
 
 export const DeviceMiniature = memo(function DeviceMiniature({
   device,

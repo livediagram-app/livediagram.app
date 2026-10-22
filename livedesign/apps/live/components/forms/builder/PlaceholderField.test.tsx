@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
-import type { FormDefinition, FormQuestion } from '@livepages/forms';
+import type { FormDefinition, FormQuestion } from '@livedesign/forms';
 import { FormBuilderContext, type FormBuilderValue } from './form-builder-context';
 import { PlaceholderField, takesPlaceholder } from './PlaceholderField';
 

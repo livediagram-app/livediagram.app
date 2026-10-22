@@ -31,7 +31,7 @@ It rides the existing op rather than a second one: the alternative (a separate l
 
 ## Persistence
 
-Device-local, in `localStorage` (`livepages:v2:laser-config`), like the avatar costume and the panel placements: which pen suits you depends on your screen and the room you present in, not on the document. It is never sent to the api and never folded into the synced preferences blob ([User preferences](../007-editor/user-preferences.md)).
+Device-local, in `localStorage` (`livedesign:v2:laser-config`), like the avatar costume and the panel placements: which pen suits you depends on your screen and the room you present in, not on the document. It is never sent to the api and never folded into the synced preferences blob ([User preferences](../007-editor/user-preferences.md)).
 
 ## Telemetry
 

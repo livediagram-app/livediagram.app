@@ -7,8 +7,8 @@ import {
   type ItemTypeDef,
   type MetricKind,
   type PlanVisualisation,
-} from '@livepages/items';
-import type { DashboardSpec } from '@livepages/templates';
+} from '@livedesign/items';
+import type { DashboardSpec } from '@livedesign/templates';
 import { swimlanesNamed } from './change-board';
 
 export type DashboardInput = {

@@ -24,7 +24,7 @@ import {
   type Element,
   type StickyElement,
   type TextRun,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { techHeader, TECH_HEADER_H } from './template-builders-technical-kit';
 import { CONTENT, INK, PAPER, SCAFFOLD } from './template-report-kit';
 

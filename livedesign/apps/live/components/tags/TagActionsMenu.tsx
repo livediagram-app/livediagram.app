@@ -5,7 +5,7 @@
 // opens the colour picker from the same anchor; Delete asks first, saying how many documents it comes off.
 
 import { useState } from 'react';
-import type { Tag } from '@livepages/api-schema';
+import type { Tag } from '@livedesign/api-schema';
 import { PaletteIcon, PencilIcon, TrashIcon } from '@/components/primitives/explorer-icons';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
 import {

@@ -1,4 +1,4 @@
-import { SiteHeader } from '@livepages/ui';
+import { SiteHeader } from '@livedesign/ui';
 import { SearchInput } from '@/components/SearchInput';
 
 // Help-centre header: the shared SiteHeader (packages/ui, also marketing's and

@@ -1,6 +1,6 @@
 import { requestPaletteCategory } from '@/lib/palette-category-request';
-import type { ComponentKind, ShapeKind } from '@livepages/document';
-import type { EmbedProvider } from '@livepages/document';
+import type { ComponentKind, ShapeKind } from '@livedesign/document';
+import type { EmbedProvider } from '@livedesign/document';
 import type { AddShapeOptions, PendingDraw } from '@/lib/draw-mode';
 import { tileCaption } from './tile-caption';
 import { IconButton } from '@/components/palette/palette-controls';
@@ -25,7 +25,7 @@ export type PaletteTileActions = {
   beginShapePen: () => void;
   beginPolygon: () => void;
   beginPath: () => void;
-  addArrow: (ends?: import('@livepages/document').ArrowEnds) => void;
+  addArrow: (ends?: import('@livedesign/document').ArrowEnds) => void;
   addSticky: () => void;
   addTable: () => void;
   addImage: () => void;

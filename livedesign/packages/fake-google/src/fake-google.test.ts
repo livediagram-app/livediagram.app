@@ -72,7 +72,7 @@ async function createFolder(
 function multipart(meta: unknown, media: string) {
   const b = 'bnd';
   return {
-    body: `--${b}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(meta)}\r\n--${b}\r\nContent-Type: application/vnd.livepages+json\r\n\r\n${media}\r\n--${b}--`,
+    body: `--${b}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(meta)}\r\n--${b}\r\nContent-Type: application/vnd.livedesign+json\r\n\r\n${media}\r\n--${b}--`,
     headers: { 'Content-Type': `multipart/related; boundary=${b}` },
   };
 }
@@ -148,13 +148,13 @@ describe('auth', () => {
 describe('files', () => {
   it('creates folders and multipart files, honouring fields', async () => {
     const { call } = setup();
-    const root = await createFolder(call, 'livepages');
+    const root = await createFolder(call, 'livedesign');
     expect(root.parents).toEqual(['mydrive-me']);
     const up = multipart(
       {
-        name: 'A.livepages',
+        name: 'A.livedesign',
         parents: [root.id],
-        mimeType: 'application/vnd.livepages+json',
+        mimeType: 'application/vnd.livedesign+json',
         appProperties: { ldDocumentId: 'd1' },
         contentHints: { thumbnail: { image: fakePngBase64Url(400), mimeType: 'image/png' } },
       },
@@ -168,7 +168,7 @@ describe('files', () => {
     );
     expect(file.status).toBe(200);
     expect(file.body).toMatchObject({
-      name: 'A.livepages',
+      name: 'A.livedesign',
       parents: [root.id],
       trashed: false,
       appProperties: { ldDocumentId: 'd1' },
@@ -245,7 +245,7 @@ describe('files', () => {
       'POST',
       '/upload/drive/v3/files?uploadType=resumable',
       { name: 'Big' },
-      { 'X-Upload-Content-Type': 'application/vnd.livepages+json' },
+      { 'X-Upload-Content-Type': 'application/vnd.livedesign+json' },
     );
     expect(start.status).toBe(200);
     const location = start.headers.get('Location')!;
@@ -409,7 +409,7 @@ describe('userCopy', () => {
     const { fake, call } = setup();
     const folder = await createFolder(call, 'f');
     const up = multipart(
-      { name: 'Plan.livepages', parents: [folder.id], appProperties: { ldDocumentId: 'd1' } },
+      { name: 'Plan.livedesign', parents: [folder.id], appProperties: { ldDocumentId: 'd1' } },
       'body',
     );
     const file = (
@@ -426,7 +426,7 @@ describe('userCopy', () => {
     fake.openWithState('me', copyId);
     const copy = (await call('GET', `/drive/v3/files/${copyId}?fields=${FILE_FIELDS}`)).body!;
     expect(copy).toMatchObject({
-      name: 'Copy of Plan.livepages',
+      name: 'Copy of Plan.livedesign',
       parents: [folder.id],
       appProperties: { ldDocumentId: 'd1' },
       md5Checksum: file.md5Checksum,
@@ -447,7 +447,7 @@ describe('a root the user moves and renames', () => {
     const { fake, call } = setup();
     const root = (
       await call('POST', `/drive/v3/files?fields=${FILE_FIELDS}`, {
-        name: 'livepages',
+        name: 'livedesign',
         mimeType: FOLDER_MIME,
         parents: ['root'],
         appProperties: { ldRoot: 'host' },

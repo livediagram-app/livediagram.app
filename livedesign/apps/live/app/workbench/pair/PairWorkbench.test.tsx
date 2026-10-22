@@ -2,7 +2,7 @@
 // The pairing page (docs/specs/013-workspace/workbench-embeds.md "Pairing"; blueprint "The pairing page"): every
 // state and its copy, the one read after auth settles, the answer, and focus on the heading at each state.
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import type { WorkbenchPairingRequestView } from '@livepages/api-schema';
+import type { WorkbenchPairingRequestView } from '@livedesign/api-schema';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const env = vi.hoisted(() => ({
@@ -38,7 +38,7 @@ const CODE = 'AAAAAAAAAAAAAAAAAAAAAA';
 const REQUEST: WorkbenchPairingRequestView = {
   origin: 'https://127.0.0.1:5175',
   name: 'Acme Editor',
-  tokenName: 'livepages CLI',
+  tokenName: 'livedesign CLI',
   scope: 'document',
   expiresAt: Date.now() + 600_000,
   status: 'pending',
@@ -154,12 +154,12 @@ describe('PairWorkbench', () => {
     expect(await screen.findByRole('heading', { name: 'Allow this workbench?' })).toBeTruthy();
     const question = screen.getByText(/to open your documents with the token/);
     expect(question.textContent).toBe(
-      'Allow Acme Editor at https://127.0.0.1:5175 to open your documents with the token livepages CLI?',
+      'Allow Acme Editor at https://127.0.0.1:5175 to open your documents with the token livedesign CLI?',
     );
     expect(question.querySelector('code')?.textContent).toBe('https://127.0.0.1:5175');
     expect([...question.querySelectorAll('strong')].map((s) => s.textContent)).toEqual([
       'Acme Editor',
-      'livepages CLI',
+      'livedesign CLI',
     ]);
     expect(
       screen.getByText(
@@ -187,12 +187,12 @@ describe('PairWorkbench', () => {
       /and to create, move, share and trash documents and folders in it/,
     );
     expect(question.textContent).toBe(
-      'Allow Acme Editor at https://127.0.0.1:5175 to open your whole workspace, and to create, move, share and trash documents and folders in it, with the token livepages CLI?',
+      'Allow Acme Editor at https://127.0.0.1:5175 to open your whole workspace, and to create, move, share and trash documents and folders in it, with the token livedesign CLI?',
     );
     expect([...question.querySelectorAll('strong')].map((s) => s.textContent)).toEqual([
       'Acme Editor',
       'your whole workspace',
-      'livepages CLI',
+      'livedesign CLI',
     ]);
     expect(question.querySelector('code')?.textContent).toBe('https://127.0.0.1:5175');
     expect(
@@ -225,8 +225,8 @@ describe('PairWorkbench', () => {
     render(<PairWorkbench />);
     expect(await screen.findByRole('heading', { name: 'This request has expired' })).toBeTruthy();
     const body = screen.getByText(/to ask anew/);
-    expect(body.textContent).toBe('Run livepages workbench pair again to ask anew.');
-    expect(body.querySelector('code')?.textContent).toBe('livepages workbench pair');
+    expect(body.textContent).toBe('Run livedesign workbench pair again to ask anew.');
+    expect(body.querySelector('code')?.textContent).toBe('livedesign workbench pair');
   });
 
   it.each(['approved', 'declined'] as const)(
@@ -239,9 +239,9 @@ describe('PairWorkbench', () => {
       ).toBeTruthy();
       const body = screen.getByText(/if you need to ask anew/);
       expect(body.textContent).toBe(
-        'Run livepages workbench pair again if you need to ask anew.',
+        'Run livedesign workbench pair again if you need to ask anew.',
       );
-      expect(body.querySelector('code')?.textContent).toBe('livepages workbench pair');
+      expect(body.querySelector('code')?.textContent).toBe('livedesign workbench pair');
     },
   );
 

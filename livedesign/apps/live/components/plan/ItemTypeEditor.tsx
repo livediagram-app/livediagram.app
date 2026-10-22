@@ -16,7 +16,7 @@ import {
   DETAILS_LABEL_DEFAULT,
   validateItemTypeCatalogue,
   type ItemTypeDef,
-} from '@livepages/items';
+} from '@livedesign/items';
 import {
   Button,
   CheckIcon,
@@ -24,7 +24,7 @@ import {
   DialogCloseButton,
   DuplicateIcon,
   TrashIcon,
-} from '@livepages/ui';
+} from '@livedesign/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';

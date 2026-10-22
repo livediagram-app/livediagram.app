@@ -20,7 +20,7 @@
 // separate **Auto Layout** / Tidy up pass (`packages/document/auto-layout.ts`).
 
 import { MIN_SIZE } from './canvas';
-import { isBoxed, type Element, type ElementId } from '@livepages/document';
+import { isBoxed, type Element, type ElementId } from '@livedesign/document';
 import { alignBoxes } from './auto-align-lines';
 
 // Snap step in canvas pixels. Picked so the rounding is visible

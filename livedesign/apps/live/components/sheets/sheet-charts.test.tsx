@@ -3,8 +3,8 @@
 // placed over the Sheet linked to it, and the live read that draws it and keeps the element's last read.
 import { render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { emptyLayout, Workbook, type SheetJson } from '@livepages/sheets';
-import type { Element, ShapeElement } from '@livepages/document';
+import { emptyLayout, Workbook, type SheetJson } from '@livedesign/sheets';
+import type { Element, ShapeElement } from '@livedesign/document';
 import * as api from '@/lib/api/sheets';
 import { SheetsBridgeContext, type SheetsBridge } from '@/hooks/sheets/useSheetsBridge';
 import { forgetSheetStores, sheetStoreFor } from './sheet-store-client';

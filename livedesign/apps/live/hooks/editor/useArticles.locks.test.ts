@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { ArticleBlock, Tab } from '@livepages/document';
+import type { ArticleBlock, Tab } from '@livedesign/document';
 import { articleEditRefused, useArticles } from './useArticles';
 
 const track = vi.hoisted(() => vi.fn());

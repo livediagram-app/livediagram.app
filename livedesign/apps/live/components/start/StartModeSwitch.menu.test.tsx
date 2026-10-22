@@ -13,7 +13,7 @@ import {
   editorModeLabel,
   type EditorMode,
   type Tab,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { useEditorMode, type EditorModeState } from '@/hooks/editor/useEditorMode';
 import { EditorModeProvider } from '@/components/chrome/editor-mode/editor-mode-context';
 import { StartModeSwitch } from './StartModeSwitch';

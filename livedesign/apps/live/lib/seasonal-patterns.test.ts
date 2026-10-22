@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { cpuBudgetMs, cpuMsOf } from '@livepages/vitest-config/cpu-time';
-import { SEASONAL_BACKGROUND_PATTERNS } from '@livepages/document';
+import { cpuBudgetMs, cpuMsOf } from '@livedesign/vitest-config/cpu-time';
+import { SEASONAL_BACKGROUND_PATTERNS } from '@livedesign/document';
 import { backgroundPatternTile, tabBackgroundStyle } from './canvas-backgrounds';
 import { seasonalPatternTile } from './seasonal-patterns';
 

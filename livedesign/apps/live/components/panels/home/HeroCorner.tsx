@@ -1,6 +1,6 @@
 'use client';
 
-import { CloseIcon, Tooltip } from '@livepages/ui';
+import { CloseIcon, Tooltip } from '@livedesign/ui';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { useExplorer } from '@/app/explorer/ExplorerContext';
 import { commitUserPreferences } from '@/lib/user-preferences';

@@ -10,7 +10,7 @@ import {
   resolveItem,
   type Item,
   type ItemFields,
-} from '@livepages/items';
+} from '@livedesign/items';
 import { defineVerb, VerbRefusal, type VerbContext } from '../define';
 import { applyItemChanges, type ItemChange } from '../plan/item-changes';
 import { FIELD_HINT } from '../plan/api-refusal';
@@ -18,7 +18,7 @@ import { planListing, resolveListingFilter } from '../plan/plan-listing';
 import { readPlanState, type PlanState } from '../plan/plan-state';
 import { columns, documentOf } from './shared';
 
-const docArg = z.string().describe('A name, id prefix or livepages URL');
+const docArg = z.string().describe('A name, id prefix or livedesign URL');
 const itemArg = z.string().describe('The item, by its number (#12) or an id prefix');
 
 const itemOut = z.object({
@@ -57,7 +57,7 @@ async function changeOne(ctx: VerbContext, doc: string, change: ItemChange): Pro
       status: 400,
       code: result.refusal.code,
       message: result.refusal.message,
-      hint: 'list the columns, card types and fields with: livepages item ls <doc>',
+      hint: 'list the columns, card types and fields with: livedesign item ls <doc>',
     });
   // An add, set or move that was not refused always answers its item.
   return result.touched[0]!;
@@ -113,7 +113,7 @@ export const itemLs = defineVerb({
         status: 400,
         code: filter.code,
         message: filter.message,
-        hint: 'list the columns and card types with: livepages item ls <doc>',
+        hint: 'list the columns and card types with: livedesign item ls <doc>',
       });
     const listing = planListing(state, filter);
     const keys = new Map(state.items.map((i) => [i.id, i.key]));
@@ -141,8 +141,8 @@ export const itemLs = defineVerb({
   cli: {
     positionals: ['doc'],
     examples: [
-      'livepages item ls "Sprint 14"',
-      'livepages item ls 3f9c --type task --status new',
+      'livedesign item ls "Sprint 14"',
+      'livedesign item ls 3f9c --type task --status new',
     ],
     prints: 'one item a line: #number, type, status, title',
   },
@@ -180,8 +180,8 @@ export const itemAdd = defineVerb({
   cli: {
     positionals: ['doc', 'title'],
     examples: [
-      'livepages item add "Sprint 14" "Fix login" --type task --status todo --fields labels=bug',
-      'livepages item add 3f9c "Write the brief" --fields priority=high labels=docs',
+      'livedesign item add "Sprint 14" "Fix login" --type task --status todo --fields labels=bug',
+      'livedesign item add 3f9c "Write the brief" --fields priority=high labels=docs',
     ],
     prints: '+ #<number> [<type>] <title>',
   },
@@ -215,8 +215,8 @@ export const itemSet = defineVerb({
   cli: {
     positionals: ['doc', 'item'],
     examples: [
-      'livepages item set "Sprint 14" "#12" --fields priority=urgent',
-      'livepages item set 3f9c 12 --clear due --type project',
+      'livedesign item set "Sprint 14" "#12" --fields priority=urgent',
+      'livedesign item set 3f9c 12 --clear due --type project',
     ],
     prints: '~ #<number> [<type>] <title>',
   },
@@ -249,8 +249,8 @@ export const itemMove = defineVerb({
   cli: {
     positionals: ['doc', 'item', 'status'],
     examples: [
-      'livepages item move "Sprint 14" "#12" done',
-      'livepages item move 3f9c 12 doing --before 9',
+      'livedesign item move "Sprint 14" "#12" done',
+      'livedesign item move 3f9c 12 doing --before 9',
     ],
     prints: '→ #<number> [<type>] <title> in <status>',
   },
@@ -271,7 +271,7 @@ export const itemRm = defineVerb({
         status: 404,
         code: target.code,
         message: target.message,
-        hint: 'list them with: livepages item ls <doc>',
+        hint: 'list them with: livedesign item ls <doc>',
       });
     const id = target.item.id;
     const result = await applyItemChanges(ctx.api, documentId, [{ op: 'delete', item: id }], state);
@@ -280,7 +280,7 @@ export const itemRm = defineVerb({
         status: 400,
         code: result.refusal.code,
         message: result.refusal.message,
-        hint: 'list them with: livepages item ls <doc>',
+        hint: 'list them with: livedesign item ls <doc>',
       });
     return { id, text: `- ${itemSummary(target.item)}` };
   },
@@ -288,7 +288,7 @@ export const itemRm = defineVerb({
   quiet: ({ id }) => [id],
   cli: {
     positionals: ['doc', 'item'],
-    examples: ['livepages item rm "Sprint 14" "#12"', 'livepages item rm 3f9c 12'],
+    examples: ['livedesign item rm "Sprint 14" "#12"', 'livedesign item rm 3f9c 12'],
     prints: '- #<number> [<type>] <title>',
   },
 });

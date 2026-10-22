@@ -5,8 +5,8 @@
 // mode banners do, with Show Templates to open its start again. It goes with the emptiness: the first element ends
 // it. Without a strip on screen (Draw's dock) it is the same message as a top-centre pill, as a mode banner falls
 // back to (ModeBanner). Either way it steps aside while a mode's message is up, which takes the same place.
-import { lucideGlyph } from '@livepages/ui';
-import { lucideSparkles } from '@livepages/icons/lucide';
+import { lucideGlyph } from '@livedesign/ui';
+import { lucideSparkles } from '@livedesign/icons/lucide';
 import {
   PaletteTray,
   PaletteTrayAction,

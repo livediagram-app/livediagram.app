@@ -5,7 +5,7 @@
 // open over it, and the write helper every command goes through. Lives inside MaximisableSlot, so maximising and
 // restoring keep all of it.
 import type { ChartPick, PlaceChartOpts } from './sheet-charts';
-import type { ChartType, SheetAnchor } from '@livepages/document';
+import type { ChartType, SheetAnchor } from '@livedesign/document';
 import type { ItemUndoStep } from '@/hooks/plan/item-undo-journal';
 import { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
 import {
@@ -18,7 +18,7 @@ import {
   type SheetLayout,
   type SheetWrite,
   type Workbook,
-} from '@livepages/sheets';
+} from '@livedesign/sheets';
 import { track } from '@/lib/telemetry';
 import { useLatest } from '@/hooks/ui/useLatest';
 import type { PlanPalette } from '@/components/plan/plan-palette';
@@ -26,10 +26,10 @@ import type { SheetStore } from './sheet-store-client';
 import { geometryOf, mergeAt, type Geometry } from './sheet-geometry';
 import { useFollowLayout } from './useFollowLayout';
 import { useSheetRulesState, type SheetRulesState } from './rules/useSheetRulesState';
-import type { Grid } from '@livepages/sheets';
-import type { SheetChangeKind } from '@livepages/api-schema';
+import type { Grid } from '@livedesign/sheets';
+import type { SheetChangeKind } from '@livedesign/api-schema';
 
-export type { SheetChangeKind } from '@livepages/api-schema';
+export type { SheetChangeKind } from '@livedesign/api-schema';
 
 export type Editing = {
   r: number;

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { PLAN_TEMPLATE_KINDS, templateTabs } from '@livepages/templates';
-import type { Element } from '@livepages/document';
+import { PLAN_TEMPLATE_KINDS, templateTabs } from '@livedesign/templates';
+import type { Element } from '@livedesign/document';
 import { fitsSlot } from './slot-fit';
 import type { DashboardItem } from './dashboard-drop';
 

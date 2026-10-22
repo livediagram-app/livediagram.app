@@ -5,7 +5,7 @@
 // "+N more". Pressing an entry opens its card; someone who may move cards drags it to another day, or moves it
 // with Alt+Arrows while it has focus (CalendarView's moveBy).
 import { memo } from 'react';
-import { CARD_FIELDS, itemTitle, type CalendarDay, type Item } from '@livepages/items';
+import { CARD_FIELDS, itemTitle, type CalendarDay, type Item } from '@livedesign/items';
 import type { PlanPalette } from '../plan-palette';
 import { useGhostPoint, type CalendarGhostPosition } from './useCalendarDrag';
 import { PlanCardFace } from '../PlanCardFace';

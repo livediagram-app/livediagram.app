@@ -11,17 +11,17 @@
 // dispatch can answer "is this id offline?" cheaply (./offline-ids, which keeps
 // every tab of the browser in step).
 
-import type { SheetJson } from '@livepages/sheets';
-import type { LiveDoc, DocumentSummary, RecordedIntent, TabSummary } from '@livepages/api-schema';
-import { utcDay } from '@livepages/api-schema';
-import { drawnCount, migrateStoredTab, stampTabKind } from '@livepages/document';
-import type { Tab } from '@livepages/document';
+import type { SheetJson } from '@livedesign/sheets';
+import type { LiveDoc, DocumentSummary, RecordedIntent, TabSummary } from '@livedesign/api-schema';
+import { utcDay } from '@livedesign/api-schema';
+import { drawnCount, migrateStoredTab, stampTabKind } from '@livedesign/document';
+import type { Tab } from '@livedesign/document';
 import {
   legacyCatalogue,
   readItemTypeCatalogue,
   type Item,
   type ItemTypeCatalogue,
-} from '@livepages/items';
+} from '@livedesign/items';
 import { DocumentTrashedError } from '../document-trashed';
 import {
   offlineBackend,

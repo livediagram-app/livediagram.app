@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { ArticleWrite } from '@livepages/api-schema';
+import type { ArticleWrite } from '@livedesign/api-schema';
 import {
   articlesOf,
   pagesOf,
@@ -11,7 +11,7 @@ import {
   type Element,
   type Page,
   type Tab,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { applyArticleWrite } from './article-write';
 
 // docs/specs/024-agents/pages-for-agents.md "write_article".

@@ -13,7 +13,7 @@ import type {
   TeamMember,
   TeamMemberStatus,
   TeamRole,
-} from '@livepages/api-schema';
+} from '@livedesign/api-schema';
 import type { Env } from '../types';
 import { getParticipant } from './participants';
 import { imageGrantOwnerChangeStatement } from './image-grants';

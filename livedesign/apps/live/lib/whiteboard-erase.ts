@@ -15,7 +15,7 @@ import {
   type Endpoint,
   type FreehandElement,
   type ShapeElement,
-} from '@livepages/document';
+} from '@livedesign/document';
 
 type Point = { x: number; y: number };
 

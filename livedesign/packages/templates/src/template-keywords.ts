@@ -1,8 +1,8 @@
 // The words people search for a template by, beyond its title and description (docs/specs/008-canvas/canvas-and-palette.md
 // "Template categories", Search): other names for it and the job it does. Pure data. A spreadsheet template adds to
-// its sheet's own words (@livepages/sheets SheetTemplateInfo.keywords, which Start Planning searches too), so the
+// its sheet's own words (@livedesign/sheets SheetTemplateInfo.keywords, which Start Planning searches too), so the
 // Quick Start and Start Planning find a sheet by the same words.
-import { TEMPLATE_START_SHEETS, sheetTemplateInfo } from '@livepages/sheets';
+import { TEMPLATE_START_SHEETS, sheetTemplateInfo } from '@livedesign/sheets';
 import type { TemplateKind } from './templates';
 
 const OWN_KEYWORDS: Readonly<Record<TemplateKind, readonly string[]>> = {

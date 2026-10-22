@@ -7,7 +7,7 @@ import {
   type LoggedOp,
   answersAsSelf,
 } from './document-room-rules';
-import { MAX_COLOR_LEN, MAX_PARTICIPANT_NAME_LEN } from '@livepages/api-schema';
+import { MAX_COLOR_LEN, MAX_PARTICIPANT_NAME_LEN } from '@livedesign/api-schema';
 import { MAX_PARTICIPANT_KEY_LEN } from './limits';
 
 const SESSION = { presenceId: 'p-server', verifiedRole: 'view' as const };

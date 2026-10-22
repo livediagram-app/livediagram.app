@@ -5,7 +5,7 @@
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { TextElement } from '@livepages/document';
+import type { TextElement } from '@livedesign/document';
 import { WordmarkSection } from './WordmarkSection';
 
 const text = (over: Partial<TextElement> = {}): TextElement => ({

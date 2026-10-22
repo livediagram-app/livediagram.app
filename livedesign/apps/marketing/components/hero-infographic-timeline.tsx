@@ -1,11 +1,11 @@
-import type { StyledPrim } from '@livepages/icons';
+import type { StyledPrim } from '@livedesign/icons';
 import {
   lucideFlag,
   lucideHouse,
   lucideSmile,
   lucideStar,
   lucideZap,
-} from '@livepages/icons/lucide';
+} from '@livedesign/icons/lucide';
 import { FONT, at } from '@/components/art-tokens';
 import {
   HAIRLINE,

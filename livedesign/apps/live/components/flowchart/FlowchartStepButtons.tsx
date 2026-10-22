@@ -6,7 +6,7 @@ import {
   FLOWCHART_STEP_LABEL,
   FLOWCHART_STEP_TYPES,
   type FlowchartStepType,
-} from '@livepages/document';
+} from '@livedesign/document';
 import {
   FLOWCHART_NEXT_OPTION,
   FLOWCHART_PARALLEL_OPTION,

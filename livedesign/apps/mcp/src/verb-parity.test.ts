@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { MCP_TOOL_VERBS } from '@livepages/agent-verbs/mcp';
-import { VERBS } from '@livepages/agent-verbs';
+import { MCP_TOOL_VERBS } from '@livedesign/agent-verbs/mcp';
+import { VERBS } from '@livedesign/agent-verbs';
 import type { Env } from './env';
 import { legacyToolName } from './legacy-tool-names';
 import { TOOL_ANNOTATIONS } from './tool-annotations';

@@ -4,8 +4,8 @@
 // each option with its colour's dot, the cell's own ticked; over DROPDOWN_SEARCH_FROM options a search field filters
 // them; Clear at the foot empties the cell. Escape closes it and hands the keys back to the grid.
 import { useMemo, useState } from 'react';
-import { TextInput } from '@livepages/ui';
-import { formatA1, optionFor, rangeOptions, type ValidationRule } from '@livepages/sheets';
+import { TextInput } from '@livedesign/ui';
+import { formatA1, optionFor, rangeOptions, type ValidationRule } from '@livedesign/sheets';
 import { OptionRows } from '@/components/plan/OptionRows';
 import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
 import type { SheetController } from '../sheet-controller';

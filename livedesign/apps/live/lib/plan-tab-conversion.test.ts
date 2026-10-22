@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Element, Tab } from '@livepages/document';
+import type { Element, Tab } from '@livedesign/document';
 import { convertPlanTab, isConvertiblePlanTab } from './plan-tab-conversion';
 
 // docs/specs/026-plan/plan-tabs.md "Converting old Plan tabs".

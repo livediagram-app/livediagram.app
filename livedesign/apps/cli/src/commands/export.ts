@@ -1,6 +1,6 @@
 // `export --all --to <dir> [--format json,svg,mermaid,md]` (docs/specs/015-api/blueprints/cli.md "Pull and push",
 // CLI29): every document the token can read, written read-only for backups and docs. `json` is the editor's
-// `livepages.document` envelope; the other formats are one file per tab under `<slug>/`. Two documents at a time;
+// `livedesign.document` envelope; the other formats are one file per tab under `<slug>/`. Two documents at a time;
 // a rate-limited read waits a minute and tries again, up to three times. A document that fails is reported and the
 // rest still go (CLI84).
 
@@ -9,16 +9,16 @@ import {
   listAllDocuments,
   tabPath,
   type VerbContext,
-} from '@livepages/agent-verbs';
-import { ApiError } from '@livepages/api-client';
-import type { DocumentResponse } from '@livepages/api-schema';
+} from '@livedesign/agent-verbs';
+import { ApiError } from '@livedesign/api-client';
+import type { DocumentResponse } from '@livedesign/api-schema';
 import {
   documentToEnvelopeText,
   mermaidFromTab,
   tabToMarkdownText,
   type EnvelopeTab,
   type Tab,
-} from '@livepages/document';
+} from '@livedesign/document';
 import type { CliIo } from '../io';
 import { CliError, formatError } from '../output/cli-error';
 import { EXIT, type ExitCode } from '../output/exit-codes';
@@ -159,7 +159,7 @@ export async function exportAll(
       exit: EXIT.usage,
       code: 'usage',
       message: 'export writes every document: add --all',
-      hint: 'one document: livepages pull <doc>',
+      hint: 'one document: livedesign pull <doc>',
     });
   const formats = formatsOf(input.format);
   const documents = await patiently(ctx, () => listAllDocuments(ctx.api));

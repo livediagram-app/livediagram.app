@@ -16,7 +16,7 @@ import {
   type WorkshopDemo,
   type WorkshopTourApi,
 } from './workshop-tour-steps';
-import { createShape, defaultSessionConfig, type Element } from '@livepages/document';
+import { createShape, defaultSessionConfig, type Element } from '@livedesign/document';
 import { deriveNewBoxedColours } from '@/lib/themes';
 import { computeViewportCenter } from '@/lib/viewport';
 import { WorkshopTourArt } from './WorkshopTourArt';

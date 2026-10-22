@@ -2,8 +2,8 @@
 
 // The Gantt chart's header controls (docs/specs/026-plan/plan-views.md "Scale", "Scrolling the timeline"):
 // Today, the window's steps, and the scale as a pressed one of Month, Quarter and Year.
-import { GANTT_SCALES, GANTT_SCALE_LABELS } from '@livepages/items';
-import { ChevronLeftIcon, ChevronRightIcon } from '@livepages/ui';
+import { GANTT_SCALES, GANTT_SCALE_LABELS } from '@livedesign/items';
+import { ChevronLeftIcon, ChevronRightIcon } from '@livedesign/ui';
 import { track } from '@/lib/telemetry';
 import type { PlanPalette } from '../plan-palette';
 import { ViewStepButton } from './view-frame';

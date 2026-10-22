@@ -3,7 +3,7 @@ import {
   isWorkbenchSessionFormat,
   WORKBENCH_HANDLE_PATTERN,
   WORKBENCH_SESSION_PREFIX,
-} from '@livepages/api-schema';
+} from '@livedesign/api-schema';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { insertWorkbenchSession } from '../db/workbench';
 import {

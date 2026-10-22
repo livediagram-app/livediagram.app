@@ -12,7 +12,7 @@ import {
   type LaidOutPage,
   type Tab,
   type MirrorSettings,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { useTidyUpStrokes } from '@/hooks/canvas/useTidyUpStrokes';
 import { useCombineShapes } from '@/hooks/canvas/useCombineShapes';
 import type { PagesModeView } from '@/hooks/editor/usePagesMode';

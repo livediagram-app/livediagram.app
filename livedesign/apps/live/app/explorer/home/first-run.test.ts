@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isBlankTemplate, isTemplateKind } from '@livepages/templates';
+import { isBlankTemplate, isTemplateKind } from '@livedesign/templates';
 import { isFirstRun, welcomeSearchHref } from './first-run';
 import {
   WELCOME_BLANKS,

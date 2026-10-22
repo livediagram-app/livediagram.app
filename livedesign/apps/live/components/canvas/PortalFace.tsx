@@ -22,7 +22,7 @@
 
 import { useId } from 'react';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
-import { HoverCard } from '@livepages/ui';
+import { HoverCard } from '@livedesign/ui';
 
 function PortalArt({ stroke, open }: { stroke: string; open: boolean }) {
   const id = useId().replace(/:/g, '');

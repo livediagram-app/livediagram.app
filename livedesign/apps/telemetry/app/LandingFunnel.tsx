@@ -1,5 +1,5 @@
-import type { TelemetrySummary, TelemetryWindowKey } from '@livepages/api-schema';
-import { EmptyState } from '@livepages/ui';
+import type { TelemetrySummary, TelemetryWindowKey } from '@livedesign/api-schema';
+import { EmptyState } from '@livedesign/ui';
 import { CardColumns } from './CardColumns';
 import { SURFACE_LABELS, formatRate, landingFunnel, rate, type FunnelCounts } from './cta-funnel';
 import { FunnelSurfaceCard, funnelCardWeight } from './FunnelSurfaceCard';

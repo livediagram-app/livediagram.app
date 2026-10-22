@@ -1,9 +1,9 @@
-import { type TextAlignX, type TextAlignY } from '@livepages/document';
+import { type TextAlignX, type TextAlignY } from '@livedesign/document';
 import { AlignIcon } from '@/components/palette/palette-icons';
 import { onMouseHover } from '@/components/primitives/hover-preview';
 import { useState } from 'react';
-import { HoverCard, Tooltip } from '@livepages/ui';
-import type { StandardTone } from '@livepages/document';
+import { HoverCard, Tooltip } from '@livedesign/ui';
+import type { StandardTone } from '@livedesign/document';
 import { ColourPopover } from '@/components/colour/ColourPopover';
 import { SwatchChip } from '@/components/colour/ColourSwatch';
 import { standardGroup, standardOptions } from '@/components/colour/colour-options';

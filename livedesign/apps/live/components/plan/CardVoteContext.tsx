@@ -6,7 +6,7 @@
 // vote; a board's cards carry the vote's stepper from it, keyed by their card (itemVoteKey). Kept apart from
 // PlanContext, whose identity is held still so boards re-render only when Plan state changes: a dot changes this.
 import { createContext, useContext } from 'react';
-import type { Layer, TabVote } from '@livepages/document';
+import type { Layer, TabVote } from '@livedesign/document';
 
 export type CardVote = {
   vote: TabVote;

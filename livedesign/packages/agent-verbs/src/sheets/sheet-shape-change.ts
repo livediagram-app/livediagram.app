@@ -20,8 +20,8 @@ import {
   type CellChange,
   type SheetWrite,
   type Workbook,
-} from '@livepages/sheets';
-import { plural } from '@livepages/document';
+} from '@livedesign/sheets';
+import { plural } from '@livedesign/document';
 import type { SheetRefusal } from './sheet-state';
 
 export type SheetShapeChange =

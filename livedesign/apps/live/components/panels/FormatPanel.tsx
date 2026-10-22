@@ -21,7 +21,7 @@ import {
 } from '@/lib/format-config';
 import { AccordionSection } from '@/components/primitives/AccordionSection';
 import { ModePanel, type ModePanelProps } from '@/components/panels/ModePanel';
-import { HoverCard } from '@livepages/ui';
+import { HoverCard } from '@livedesign/ui';
 
 type Row = 'copies' | 'mode';
 

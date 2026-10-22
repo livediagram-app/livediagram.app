@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { avatarPadCore, createShape, type Element, type ShapeElement } from '@livepages/document';
+import { avatarPadCore, createShape, type Element, type ShapeElement } from '@livedesign/document';
 import {
   AVATAR_PAD_ARRIVAL_MS,
   AVATAR_PAD_MAX_ARRIVALS,

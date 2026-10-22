@@ -1,7 +1,7 @@
 // The research's 15-node, 16-edge shop architecture (docs/research/agent-cli/authoring-from-scratch.md §1,
 // §10), grouped by tier as an agent first writes it.
 
-import type { GraphInput } from '@livepages/document';
+import type { GraphInput } from '@livedesign/document';
 
 export function shopArchitecture(): GraphInput {
   return {

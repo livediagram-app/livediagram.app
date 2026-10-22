@@ -56,7 +56,7 @@ export const EMBEDDED_WORKS: readonly EmbeddedWork[] = [
     name: 'Lucide',
     version: '1.48.0',
     licence: 'ISC AND MIT',
-    carrier: 'livepages source (icons)',
+    carrier: 'livedesign source (icons)',
     homepage: 'https://lucide.dev',
     trigger: { sources: ['packages/icons/src/lucide.generated.ts'] },
     texts: text('lucide-1.48.0-LICENSE.txt'),
@@ -66,7 +66,7 @@ export const EMBEDDED_WORKS: readonly EmbeddedWork[] = [
     name: 'Feather',
     version: '4.29.2',
     licence: 'MIT',
-    carrier: 'livepages source (icons)',
+    carrier: 'livedesign source (icons)',
     homepage: 'https://feathericons.com',
     trigger: {
       sources: [

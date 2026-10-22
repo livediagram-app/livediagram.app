@@ -1,8 +1,8 @@
 'use client';
 
-import { lucideLayoutGrid } from '@livepages/icons/lucide';
-import type { RecentDiagram } from '@livepages/api-schema';
-import { ChevronRightIcon, EXPLORER_HOME_HREF, lucideGlyph, relativeSince } from '@livepages/ui';
+import { lucideLayoutGrid } from '@livedesign/icons/lucide';
+import type { RecentDiagram } from '@livedesign/api-schema';
+import { ChevronRightIcon, EXPLORER_HOME_HREF, lucideGlyph, relativeSince } from '@livedesign/ui';
 import { useState, type CSSProperties } from 'react';
 import { RecentPreview } from './RecentPreview';
 

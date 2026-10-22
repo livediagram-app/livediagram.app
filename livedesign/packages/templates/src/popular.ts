@@ -2,7 +2,7 @@
 // templates-by-mode.md "The mode filter"): where most people start, a short curated list per mode filter, each
 // opening with its blank(s). Shared by the editor's template step and the marketing gallery, so the two shelves can
 // never disagree.
-import type { EditorMode } from '@livepages/document';
+import type { EditorMode } from '@livedesign/document';
 import { TEMPLATES, type TemplateKind } from './templates';
 
 type PopularChoice = 'all' | EditorMode;

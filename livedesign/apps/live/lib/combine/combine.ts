@@ -9,7 +9,7 @@ import {
   type BoxedElement,
   type PathElement,
   type PathNode,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { debugLog } from '@/lib/debug-log';
 import { elementRings, isCombinable, type Ring } from './outline';
 import { simplifyRing } from './simplify';

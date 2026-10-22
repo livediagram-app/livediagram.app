@@ -3,11 +3,11 @@
 // the static marketing site loading Clerk or calling the api. One contract, written by apps/live and read
 // by apps/marketing on the same origin.
 
-import { parseEditorMode, type EditorMode } from '@livepages/document';
+import { parseEditorMode, type EditorMode } from '@livedesign/document';
 import type { DocumentSummary } from './index';
 
 // The localStorage key the note lives under. Versioned: a change to the shape takes a new key.
-export const RECENT_DIAGRAMS_KEY = 'livepages:recent-diagrams:v1';
+export const RECENT_DIAGRAMS_KEY = 'livedesign:recent-diagrams:v1';
 
 // How many diagrams the note holds: the hero's Welcome back window draws three over two.
 export const RECENT_DIAGRAMS_LIMIT = 6;
@@ -24,10 +24,10 @@ export const TEAM_RECENT_LIMIT = RECENT_DIAGRAMS_LIMIT * 2;
 export type TeamRecentDocument = DocumentSummary & { teamName: string };
 
 // The Cache Storage cache holding each noted diagram's snapshot SVG.
-export const RECENT_THUMBS_CACHE = 'livepages-recent-thumbs-v2';
+export const RECENT_THUMBS_CACHE = 'livedesign-recent-thumbs-v2';
 // The cache before v2, when a document in This Browser was cached as having no preview: dropped by the editor's
 // sync, so every browser draws those previews once (docs/specs/019-marketing/returning-visitor.md).
-export const RECENT_THUMBS_CACHE_LEGACY = 'livepages-recent-thumbs-v1';
+export const RECENT_THUMBS_CACHE_LEGACY = 'livedesign-recent-thumbs-v1';
 
 export type RecentDiagram = {
   id: string;

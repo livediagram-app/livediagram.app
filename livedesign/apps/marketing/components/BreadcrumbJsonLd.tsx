@@ -7,7 +7,7 @@
 // validator is strict about. The BreadcrumbList shape itself comes from the
 // shared breadcrumbJsonLd builder, which the help centre uses too.
 
-import { breadcrumbJsonLd, JsonLd, SITE_URL } from '@livepages/ui';
+import { breadcrumbJsonLd, JsonLd, SITE_URL } from '@livedesign/ui';
 
 type Crumb = { name: string; path: string };
 

@@ -14,9 +14,9 @@ import {
   type SequenceElementMessage,
   type SequenceElementParticipant,
   type SequenceMessageKindName,
-} from '@livepages/document';
-import { CompactEmptyState, lucideGlyph, Select, Tooltip } from '@livepages/ui';
-import { lucideChevronDown, lucideChevronUp, lucidePlus, lucideX } from '@livepages/icons/lucide';
+} from '@livedesign/document';
+import { CompactEmptyState, lucideGlyph, Select, Tooltip } from '@livedesign/ui';
+import { lucideChevronDown, lucideChevronUp, lucidePlus, lucideX } from '@livedesign/icons/lucide';
 
 const UpIcon = lucideGlyph(lucideChevronUp, 15);
 const DownIcon = lucideGlyph(lucideChevronDown, 15);

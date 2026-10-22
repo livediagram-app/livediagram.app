@@ -3,7 +3,7 @@
 // another. The board under the pointer is read from the DOM (`data-plan-board`), as the drop slot
 // is, so the hit test can never disagree with what is drawn. Only the active tab's boards are on
 // screen, so the registry never holds a board the pointer could not reach.
-import type { Item } from '@livepages/items';
+import type { Item } from '@livedesign/items';
 import type { PlanDropSlot } from './usePlanCardDrag';
 
 // What a board under a dragged card shows: the slot it would land in, with the gap's height. `refused` is a palette

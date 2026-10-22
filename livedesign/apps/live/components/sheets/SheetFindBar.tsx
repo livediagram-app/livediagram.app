@@ -3,9 +3,9 @@
 // Find and Replace (docs/specs/029-sheets/sheet.md "Find"): a small bar on the sheet's top right; matches counted and
 // stepped through with Enter and Shift+Enter, in values (and, asked, in inputs), Match Case and Match Entire Cell;
 // Replace and Replace All in inputs only. Escape closes it.
-import { Button, Tooltip } from '@livepages/ui';
+import { Button, Tooltip } from '@livedesign/ui';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { findMatches, replaceAll, type FindOptions } from '@livepages/sheets';
+import { findMatches, replaceAll, type FindOptions } from '@livedesign/sheets';
 import { track } from '@/lib/telemetry';
 import { useSheetController } from './sheet-controller';
 import { useSheetActions } from './useSheetActions';

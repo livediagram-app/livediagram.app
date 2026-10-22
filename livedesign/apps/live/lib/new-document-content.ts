@@ -3,18 +3,18 @@
 // template's example cards; or, for no template, one blank tab in the theme's backdrop. Shared by /new and the
 // workspace frame's New document (docs/specs/013-workspace/blueprints/workbench-embeds.md, WB58), so a document
 // made in either is the same document.
-import type { Tab } from '@livepages/document';
+import type { Tab } from '@livedesign/document';
 import {
   catalogueWithBoardTypes,
   type ItemCreate,
   type ItemTypeCatalogue,
-} from '@livepages/items';
+} from '@livedesign/items';
 import {
   formTemplateStarter,
   isFormTemplateKind,
   isPlanTemplateKind,
   type TemplateKind,
-} from '@livepages/templates';
+} from '@livedesign/templates';
 import { debugLog } from '@/lib/debug-log';
 import { markPendingFormStart } from '@/lib/pending-form-start';
 import { buildTemplatedTabs } from '@/lib/template-builders';
@@ -70,7 +70,7 @@ export async function newDocumentContent(input: {
   // first load.
   const seedItems =
     templateKind && isPlanTemplateKind(templateKind)
-      ? await import('@livepages/templates/plan-template-seeds').then((m) =>
+      ? await import('@livedesign/templates/plan-template-seeds').then((m) =>
           m.planTemplateSeedItems(templateKind, m.seedToday()),
         )
       : [];

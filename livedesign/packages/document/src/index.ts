@@ -3,7 +3,7 @@
 // handles document data. See docs/specs/006-document/document-structure.md and
 // docs/specs/008-canvas/canvas-and-palette.md.
 
-import type { FormDefinition } from '@livepages/forms';
+import type { FormDefinition } from '@livedesign/forms';
 
 // Live session-tool types used by the `Tab.timer` / `Tab.vote` fields
 // below. Type-only import (erased at build) so the index <-> session
@@ -341,7 +341,7 @@ export type Tab = {
   kind?: TabKind;
   // A Dashboard tab's rows and slots (docs/specs/026-plan/plan-tabs.md "Dashboard tab"), read via `readDashboard`.
   dashboard?: DashboardLayout;
-  // A Form tab's form (docs/specs/030-forms/forms.md), read via `readForm` from @livepages/forms.
+  // A Form tab's form (docs/specs/030-forms/forms.md), read via `readForm` from @livedesign/forms.
   form?: FormDefinition;
   // The tab's editor mode, the same for everyone on it and the mode it opens in
   // (docs/specs/007-editor/editor-modes.md "Where the mode lives"). Absent = 'diagram' (read via
@@ -613,7 +613,7 @@ export * from './shape-marker';
 export * from './selection-mode';
 export * from './behaviour-skin';
 // How a poll's answers are shaped (docs/specs/012-collaboration/live-poll.md), shared by the Session button's
-// stored config below and by @livepages/api-schema's wire `LivePoll`.
+// stored config below and by @livedesign/api-schema's wire `LivePoll`.
 export * from './poll-style';
 export * from './comments';
 export * from './collab-index-rows';
@@ -621,7 +621,7 @@ export * from './plan-board-rows';
 export * from './cell-comments';
 export * from './comment-thread';
 export * from './item-comments';
-// The whole-document `livepages.document` envelope and the per-tab JSON and Markdown export (the editor, the
+// The whole-document `livedesign.document` envelope and the per-tab JSON and Markdown export (the editor, the
 // Drive mirror and the CLI's pull files).
 export * from './document-envelope';
 export * from './export-tab-text';
@@ -902,4 +902,4 @@ export * from './session-button-text';
 export { lineChars } from './svg-render-web';
 export * from './drawn-count';
 // The a / an rule for copy built around a name, shared with every package above this one.
-export { indefiniteArticle, withArticle } from '@livepages/items';
+export { indefiniteArticle, withArticle } from '@livedesign/items';

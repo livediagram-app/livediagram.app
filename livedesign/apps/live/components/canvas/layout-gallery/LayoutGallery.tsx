@@ -8,14 +8,14 @@
 // for every place a layout is chosen: the empty page's card, the title bar's Layout popover, the
 // page panel's Layouts tab and a phone's sheet.
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { lucideDices } from '@livepages/icons/lucide';
-import { pageDeviceClass, pageKindOf, type LaidOutPage } from '@livepages/document';
+import { lucideDices } from '@livedesign/icons/lucide';
+import { pageDeviceClass, pageKindOf, type LaidOutPage } from '@livedesign/document';
 import {
   layoutCatalogueFor,
   warmLayoutPlaceholders,
   type PageLayoutId,
-} from '@livepages/templates';
-import { lucideGlyph, NoMatches, Tooltip } from '@livepages/ui';
+} from '@livedesign/templates';
+import { lucideGlyph, NoMatches, Tooltip } from '@livedesign/ui';
 import { FilterSearchBox } from '@/components/primitives/FilterSearchBox';
 import { prefetchWhenIdle } from '@/lib/idle-prefetch';
 import { track } from '@/lib/telemetry';

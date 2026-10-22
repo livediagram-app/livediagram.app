@@ -9,7 +9,7 @@
 // anything structural at once, one undo step each. A store that would change nothing is skipped.
 
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { Button, DialogCloseButton, DialogHeader } from '@livepages/ui';
+import { Button, DialogCloseButton, DialogHeader } from '@livedesign/ui';
 import {
   nextMessageAfter,
   parseSequenceText,
@@ -20,7 +20,7 @@ import {
   type SequenceElementMessage,
   type SequenceElementParticipant,
   type ShapeElement,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { DialogTabs } from '@/components/dialogs/DialogTabs';
 import { useLatest } from '@/hooks/ui/useLatest';

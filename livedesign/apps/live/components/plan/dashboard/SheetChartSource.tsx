@@ -9,9 +9,9 @@ import {
   CHART_TYPES,
   type ChartType,
   type ShapeElement,
-} from '@livepages/document';
-import { CompactEmptyState, lucideGlyph } from '@livepages/ui';
-import { lucideChartColumn } from '@livepages/icons/lucide';
+} from '@livedesign/document';
+import { CompactEmptyState, lucideGlyph } from '@livedesign/ui';
+import { lucideChartColumn } from '@livedesign/icons/lucide';
 import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
 import {
   DONE,

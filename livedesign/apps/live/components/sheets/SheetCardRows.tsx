@@ -11,14 +11,14 @@ import {
   Tooltip,
   lucideGlyph,
   openDatePicker,
-} from '@livepages/ui';
+} from '@livedesign/ui';
 import {
   lucideCheck,
   lucideChevronDown,
   lucideExternalLink,
   lucideList,
   lucideX,
-} from '@livepages/icons/lucide';
+} from '@livedesign/icons/lucide';
 import {
   cellKey,
   displayValue,
@@ -26,7 +26,7 @@ import {
   layoutIndex,
   serialFromIso,
   type CardTable,
-} from '@livepages/sheets';
+} from '@livedesign/sheets';
 import { usePlan, type PlanContextValue } from '@/components/plan/PlanContext';
 import { OptionRows } from '@/components/plan/OptionRows';
 import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';

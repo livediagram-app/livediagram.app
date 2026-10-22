@@ -7,7 +7,7 @@ import {
   isCardDateField,
   type ItemPerson,
   type ItemTypeDef,
-} from '@livepages/items';
+} from '@livedesign/items';
 
 type CardFieldChoice = { kind: 'list'; options: string[] } | { kind: 'date' } | null;
 

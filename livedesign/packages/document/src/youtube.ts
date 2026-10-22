@@ -196,7 +196,7 @@ export function embedTargetFor(url: string | undefined | null): EmbedTarget | nu
     // having to know Figma's file-url grammar.
     return {
       provider: 'figma',
-      embedUrl: `https://www.figma.com/embed?embed_host=livepages&url=${encodeURIComponent(parsed.toString())}`,
+      embedUrl: `https://www.figma.com/embed?embed_host=livedesign&url=${encodeURIComponent(parsed.toString())}`,
       label: 'Figma',
     };
   }

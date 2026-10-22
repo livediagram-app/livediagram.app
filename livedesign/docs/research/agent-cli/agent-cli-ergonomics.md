@@ -1,12 +1,12 @@
 # Agent-facing CLI ergonomics and discoverability
 
-Research for the `livepages` CLI, an interface built mainly for AI agents. Measured on 2026-10-03.
-This report covers one angle: how a CLI should look to an LLM caller, and what that means for livepages.
+Research for the `livedesign` CLI, an interface built mainly for AI agents. Measured on 2026-10-03.
+This report covers one angle: how a CLI should look to an LLM caller, and what that means for livedesign.
 It records evidence and recommendations; the spec, once written, decides.
 
 ## 1. The answer in brief
 
-- **Use a CLI with progressive help, not a CLI that copies the MCP.** The livepages MCP costs about **12.2k tokens**
+- **Use a CLI with progressive help, not a CLI that copies the MCP.** The livedesign MCP costs about **12.2k tokens**
   of tool definitions on every turn (21.5k with the deprecated aliases). A CLI costs nothing until the agent asks.
   Then it pays about 380 tokens for the top-level help and about 350 for one command's help.
 - **Default to a compact, line-per-thing text view.** On the system-architecture template, the outline view
@@ -16,7 +16,7 @@ It records evidence and recommendations; the spec, once written, decides.
 - **Give several views of one tab, each sized for one question.** `outline` covers structure and wording,
   `layout` covers geometry, `comments` covers open threads, `check` covers problems, and `json` covers everything.
 - **Use short refs that stay stable.** Show the shortest unique id prefix, at least 4 characters, the way git
-  shortens SHAs. Also accept an exact label, and a document name or a pasted livepages URL.
+  shortens SHAs. Also accept an exact label, and a document name or a pasted livedesign URL.
   A full UUID costs 23 tokens. A prefix costs 4.
 - **After every write, print the delta**: `+ e7a1 square "Token cache" @520,140 160x60`. In SWE-agent, showing
   the result after each edit, with guardrails, was the largest single interface win (+7.7 pp).
@@ -63,7 +63,7 @@ Ablations on SWE-bench Lite (GPT-4 Turbo, 18.0% baseline):
 | File viewer whole file                             | 12.7%    | -5.3  |
 | Full history instead of last 5 observations        | 15.0%    | -3.0  |
 
-What this means for livepages:
+What this means for livedesign:
 
 - A **window that is too small or too large both hurt**. A tab view should be bounded and pageable, never "the whole JSON".
 - **Summarised search beats iterative search**. SWE-agent caps results at 50 and asks for a narrower query
@@ -134,10 +134,10 @@ the next section shows.
   ("It'll read the skill off `playwright-cli --help` on its own"). It uses short element refs (`click e21`) taken
   from a `snapshot`, and offers `snapshot --depth=N` and `find <text>` to stay small.
 
-The conclusion for livepages: the **audience decides the transport**.
+The conclusion for livedesign: the **audience decides the transport**.
 
 - **Coding agents with a shell** (Claude Code, pi, Codex) are best served by the CLI plus a skill. They can
-  compose it: `git diff | livepages el apply`, Mermaid from a file, render to PNG and look at it.
+  compose it: `git diff | livedesign el apply`, Mermaid from a file, render to PNG and look at it.
 - **Chat agents without a shell** (claude.ai, the "change it while I talk" case) only have MCP. So the MCP stays.
 - Both should sit on **one editing core**: the same refs, ops, views and deltas. Then the CLI's good ideas
   (compact views, deltas, refs) improve the MCP too, and vice versa.
@@ -178,9 +178,9 @@ numbers, but the ratios hold. All local, read-only.
 | `wrangler d1 execute --help`                | 381     | 28    |
 | `jq --help`                                 | 649     | 63    |
 | playwright-cli command list                 | 2,243   | 155   |
-| **mock `livepages --help`** (§6.1)        | **380** | 32    |
-| **mock `livepages el --help`** (§6.2)     | **162** | 14    |
-| **mock `livepages el add --help`** (§6.3) | **349** | 28    |
+| **mock `livedesign --help`** (§6.1)        | **380** | 32    |
+| **mock `livedesign el --help`** (§6.2)     | **162** | 14    |
+| **mock `livedesign el add --help`** (§6.3) | **349** | 28    |
 
 The best-designed CLIs land at **250 to 500 tokens per help screen**, whatever their surface size. gh covers
 a huge API at 485 at the top. Past about 900 tokens, the help is a manual.
@@ -197,10 +197,10 @@ a huge API at 485 at the top. Past about 900 tokens, the help is a manual.
 | the other eight                                                   | 257 to 384 each |
 | **11 current tools**                                              | **≈12.2k**      |
 | **all 19 advertised (with `*_diagram` aliases until 2027-04-30)** | **21.5k**       |
-| schema resource `livepages://schema/elements`                   | 1,898           |
+| schema resource `livedesign://schema/elements`                   | 1,898           |
 
 The element format is repeated inline in each of the three element-taking tools, about 2k tokens each time.
-With a CLI, the agent reads `livepages schema sticky` (about 100 tokens) only when it places a sticky.
+With a CLI, the agent reads `livedesign schema sticky` (about 100 tokens) only when it places a sticky.
 
 ### 3.3 One tab, five representations
 
@@ -249,11 +249,11 @@ readable, but ambiguous and they change. Hence: show prefixes, accept all three,
 Choosing fields is the difference between a cheap call and a context-filling one. The default `--json`
 needs a **default field set**, not "everything".
 
-## 4. Principles for the livepages CLI
+## 4. Principles for the livedesign CLI
 
 ### 4.1 Shape and naming
 
-- `livepages <resource> <verb> [ref] [flags]`. Resources: `doc`, `tab`, `el`, `comment`, `template`, plus
+- `livedesign <resource> <verb> [ref] [flags]`. Resources: `doc`, `tab`, `el`, `comment`, `template`, plus
   `schema`, `guide`, `auth`, `skill`. Seven or fewer verbs per resource.
 - Use the **domain language** exactly (`docs/specs/003-system-architecture/domain-language.md`): document,
   tab, element, comment thread, template, kind. No synonyms such as "board" or "diagram".
@@ -269,12 +269,12 @@ needs a **default field set**, not "everything".
 | Level | Command                                | Content                                                                   | Budget       |
 | ----- | -------------------------------------- | ------------------------------------------------------------------------- | ------------ |
 | 0     | skill frontmatter                      | when to use the CLI                                                       | ≤ 80         |
-| 1     | `livepages` / `--help`               | resources with their verbs, ref syntax, output contract, 4 starting moves | ≤ 500        |
-| 2     | `livepages <resource> --help`        | verbs, one line each                                                      | ≤ 250        |
-| 3     | `livepages <resource> <verb> --help` | usage, flags, 2-3 examples, what it prints                                | ≤ 400        |
-| 4     | `livepages schema [kind]`            | kinds list, or one kind's fields, values and defaults (`kubectl explain`) | ≤ 300 each   |
-| 4     | `livepages guide <topic>`            | how-to: build, edit, layout, comments, refs, sync                         | ≤ 1,200 each |
-| -     | `livepages skill [--install]`        | prints or installs `SKILL.md` (body ≤ 1,500), which links to guide topics | -            |
+| 1     | `livedesign` / `--help`               | resources with their verbs, ref syntax, output contract, 4 starting moves | ≤ 500        |
+| 2     | `livedesign <resource> --help`        | verbs, one line each                                                      | ≤ 250        |
+| 3     | `livedesign <resource> <verb> --help` | usage, flags, 2-3 examples, what it prints                                | ≤ 400        |
+| 4     | `livedesign schema [kind]`            | kinds list, or one kind's fields, values and defaults (`kubectl explain`) | ≤ 300 each   |
+| 4     | `livedesign guide <topic>`            | how-to: build, edit, layout, comments, refs, sync                         | ≤ 1,200 each |
+| -     | `livedesign skill [--install]`        | prints or installs `SKILL.md` (body ≤ 1,500), which links to guide topics | -            |
 
 Rules:
 
@@ -331,7 +331,7 @@ Rules:
 ### 4.5 Refs and ids
 
 - **Documents**: an exact name, a unique case-insensitive substring, an id prefix, or a pasted
-  `livepages.app` URL. The last matters most for chat agents, which get handed links.
+  `livedesign.app` URL. The last matters most for chat agents, which get handed links.
 - **Tabs**: `doc/tab` by name or prefix. A bare `doc` means its first tab.
 - **Elements**: the shortest unique id prefix within the tab (at least 4 characters, git-style), or an
   exact label in quotes. A ref that matches more than one is an error that lists the candidates (§6.5),
@@ -406,13 +406,13 @@ This aligns with gh's 4 for auth. The codes stay few enough to state in the top 
 
 ### 4.10 Destructive verbs, dry runs and undo
 
-- **No interactive prompts unless stdin and stdout are both TTYs.** `LIVEPAGES_NO_PROMPT=1` and `CI` also
+- **No interactive prompts unless stdin and stdout are both TTYs.** `LIVEDESIGN_NO_PROMPT=1` and `CI` also
   disable them. A command that would have asked fails with exit 2 and names the flag (`--yes`).
 - **Prefer reversibility to confirmation.** Confirmation teaches agents to append `--yes` reflexively.
   - `doc rm` moves the document to the Trash (30 days) and prints the `doc restore` command. No prompt.
   - `tab rm`, `tab replace` and `el rm` of more than N elements are irreversible on the server (no tab history).
-    The CLI writes the pre-image to a **local undo journal** (`$XDG_STATE_HOME/livepages/undo/`) and prints
-    `undo: livepages undo 7f2c`. They need `--yes` only when not on a TTY **and** more than N elements would
+    The CLI writes the pre-image to a **local undo journal** (`$XDG_STATE_HOME/livedesign/undo/`) and prints
+    `undo: livedesign undo 7f2c`. They need `--yes` only when not on a TTY **and** more than N elements would
     go.
   - There is no permanent delete in the CLI's default verbs, matching the MCP. Purging stays in Settings.
 - `--dry-run` everywhere a write exists (kubectl's `--dry-run=client`). Later, `--dry-run=server` if the API
@@ -434,17 +434,17 @@ This aligns with gh's 4 for auth. The codes stay few enough to state in the top 
   `= exists` and exit 0. This is kubectl `apply` semantics without a manifest.
 - `el set`, `move` and `rename` are naturally idempotent. `el add` in a batch with `$names` is atomic, so a
   retried batch either wrote all of it or none of it.
-- A declarative path for humans and repos, `livepages apply diagram.mmd --to "Auth flow/Overview"`
+- A declarative path for humans and repos, `livedesign apply diagram.mmd --to "Auth flow/Overview"`
   (create or replace), is the natural home for syncing to local files. It belongs to the sync angle; it is
   only noted here.
 
 ### 4.13 Non-interactive guarantees
 
-- Auth by `LIVEPAGES_TOKEN` (an `lvd_…` token) with no other setup. `auth login` (browser or device flow)
+- Auth by `LIVEDESIGN_TOKEN` (an `lvd_…` token) with no other setup. `auth login` (browser or device flow)
   is for humans and writes the same token to the config file. `auth status` prints the account, the token
   name, whether it is read-only, and when it expires.
 - No pager, no spinner, no update notice, no ANSI and no emoji on stderr when piped (unlike wrangler, §2.5).
-- Stdin is a first-class input (`-` for any file argument), so `mermaid | livepages tab add … --mermaid -`
+- Stdin is a first-class input (`-` for any file argument), so `mermaid | livedesign tab add … --mermaid -`
   works.
 - Deterministic ordering in every list (by position for elements, newest-saved first for documents), so two
   identical calls give identical text and a diff of views is meaningful.
@@ -459,14 +459,14 @@ This aligns with gh's 4 for auth. The codes stay few enough to state in the top 
   - Write about 20 realistic tasks: "add a Redis cache between the gateway and Orders DB", "summarise the open
     comments and reply to the oldest", "turn this README's architecture section into a tab", "the person says
     'make the database boxes cylinders'".
-  - Run fresh agents that know only that `livepages --help` exists, and record calls, tokens, errors and
+  - Run fresh agents that know only that `livedesign --help` exists, and record calls, tokens, errors and
     success.
   - Feed the transcripts back to an agent to rewrite the help. Rerun on a held-out set.
 
 ## 5. Recommendations, ranked
 
 1. **Ship progressive help with tested budgets**: 500, 250, 400 tokens, plus `schema` and `guide`, plus a
-   `SKILL.md` installed by `livepages skill --install`.
+   `SKILL.md` installed by `livedesign skill --install`.
 2. **Make the default `tab view` the outline**, with `layout`, `text`, `comments`, `check` and `json` as
    explicit views, and a default field set for `--json`.
 3. **Use git-style id prefixes, label refs and URL refs**, with loud ambiguity errors.
@@ -481,12 +481,12 @@ This aligns with gh's 4 for auth. The codes stay few enough to state in the top 
 
 Measured with `o200k_base`; mocks only, not a committed interface.
 
-### 6.1 `livepages --help` (380 tokens)
+### 6.1 `livedesign --help` (380 tokens)
 
 ```bash
-livepages - read, edit and comment on livepages documents.
+livedesign - read, edit and comment on livedesign documents.
 
-Usage: livepages <resource> <verb> [ref] [flags]
+Usage: livedesign <resource> <verb> [ref] [flags]
 
 Resources
   doc        documents: ls, view, create, rename, share, rm, restore
@@ -499,7 +499,7 @@ Resources
   auth       login, status, logout
 
 Refs
-  doc  name, id prefix, or livepages.app URL      "Auth flow", 3f9c
+  doc  name, id prefix, or livedesign.app URL      "Auth flow", 3f9c
   tab  doc/tab                                      "Auth flow/Overview"
   el   id prefix or quoted label within a tab        e7a1, "API gateway"
 
@@ -508,19 +508,19 @@ Output
   Writes print the change they made. --dry-run shows it without writing.
 
 Start
-  livepages doc ls "auth"                   find a document
-  livepages tab view "Auth flow"            outline of its first tab
-  livepages tab add "Auth flow" --mermaid - build a tab from Mermaid on stdin
-  livepages guide build                     building a diagram from scratch
+  livedesign doc ls "auth"                   find a document
+  livedesign tab view "Auth flow"            outline of its first tab
+  livedesign tab add "Auth flow" --mermaid - build a tab from Mermaid on stdin
+  livedesign guide build                     building a diagram from scratch
 
-Env: LIVEPAGES_TOKEN (lvd_...), LIVEPAGES_API. Never prompts when piped.
-More: livepages <resource> --help, livepages <resource> <verb> --help
+Env: LIVEDESIGN_TOKEN (lvd_...), LIVEDESIGN_API. Never prompts when piped.
+More: livedesign <resource> --help, livedesign <resource> <verb> --help
 ```
 
 A line for exit codes (`Exit: 0 ok, 2 fix the call, 3 not found, 4 auth, 5 conflict, 6 rate limited`)
 would add about 30 tokens and is worth it.
 
-### 6.2 `livepages el --help` (162 tokens)
+### 6.2 `livedesign el --help` (162 tokens)
 
 ```bash
 Elements on a tab. Ref a tab as doc/tab (tab defaults to the first).
@@ -535,19 +535,19 @@ Verbs
   apply    apply a batch of ops from a file or stdin, all or nothing
 
 Every write prints its delta (+ added, ~ changed, - removed) and accepts
---dry-run. Fields per kind: livepages schema <kind>.
+--dry-run. Fields per kind: livedesign schema <kind>.
 ```
 
-### 6.3 `livepages el add --help` (349 tokens)
+### 6.3 `livedesign el add --help` (349 tokens)
 
 ```bash
 Add an element to a tab.
 
-Usage: livepages el add <doc/tab> <kind> [label] [flags]
+Usage: livedesign el add <doc/tab> <kind> [label] [flags]
 
   <kind>   a shape (square, diamond, cylinder, stadium, circle, ...) or
            text, sticky, table, frame, lane, entity, code-block, bar-chart,
-           pie-chart, line-chart. List: livepages schema
+           pie-chart, line-chart. List: livedesign schema
   [label]  heading text, up to 40 chars; longer text goes in --note
 
 Placement (pick one; default: right of the last added element)
@@ -563,9 +563,9 @@ Flags
   --dry-run            print the delta, write nothing
 
 Examples
-  livepages el add "Auth flow" square "Token cache" --near "API gateway" --side e
-  livepages el add "Auth flow/Data" cylinder "Sessions DB" --in "Data"
-  livepages el add "Retro" sticky "Deploys were slow" --set fillColor=sky
+  livedesign el add "Auth flow" square "Token cache" --near "API gateway" --side e
+  livedesign el add "Auth flow/Data" cylinder "Sessions DB" --in "Data"
+  livedesign el add "Retro" sticky "Deploys were slow" --set fillColor=sky
 
 Prints:  + e7a1 square "Token cache" @520,140 160x60
 ```
@@ -573,7 +573,7 @@ Prints:  + e7a1 square "Token cache" @520,140 160x60
 There is no `--id` flag. A caller-chosen alias would need state across calls. Aliases exist only as `$name`
 inside an `el apply` batch (§4.5).
 
-### 6.4 `livepages tab view "Auth flow"` (279 tokens; the same tab is 2,619 as minified JSON)
+### 6.4 `livedesign tab view "Auth flow"` (279 tokens; the same tab is 2,619 as minified JSON)
 
 ```bash
 tab "Overview" in "Auth flow" (3f9c) · 16 nodes, 11 arrows, 2 open threads
@@ -617,7 +617,7 @@ falls back to the prefix.
 ```bash
 error: unknown shape "rectangle" (exit 2)
 hint: the box is "square"; shapes: square, circle, diamond, cylinder, stadium, hexagon, parallelogram, frame
-hint: livepages el add "Auth flow" square "Token cache" --near "API gateway"
+hint: livedesign el add "Auth flow" square "Token cache" --near "API gateway"
 ```
 
 ```bash
@@ -631,8 +631,8 @@ hint: use an id prefix, e.g. el set 01f8 --label "Edge gateway"
 
 ```yaml
 ---
-name: livepages
-description: Read, build, edit and comment on livepages.app diagrams (flowcharts, architecture, ER, boards) with the livepages CLI. Use when a task mentions a livepages document or link, or asks to draw or change a diagram.
+name: livedesign
+description: Read, build, edit and comment on livedesign.app diagrams (flowcharts, architecture, ER, boards) with the livedesign CLI. Use when a task mentions a livedesign document or link, or asks to draw or change a diagram.
 ---
 ```
 
@@ -675,7 +675,7 @@ must settle.
 - AWS CLI, [output formats](https://docs.aws.amazon.com/cli/latest/userguide/cli-usage-output-format.html);
   gcloud, [formats](https://cloud.google.com/sdk/gcloud/reference/topic/formats);
   [llm usage](https://llm.datasette.io/en/stable/usage.html)
-- Local, read-only measurements: installed `gh`, `kubectl`, `wrangler`, `git`, `jq`; `@livepages/templates`
+- Local, read-only measurements: installed `gh`, `kubectl`, `wrangler`, `git`, `jq`; `@livedesign/templates`
   `buildTemplate`; `apps/mcp` `registerTools` via `mcp-test-client.ts`; `js-tiktoken` `o200k_base`.
 - Repo context: `docs/specs/015-api/mcp-server.md`, `docs/specs/015-api/public-api-and-tokens.md`,
   `docs/specs/015-api/api.md` (tab `PUT` row), `apps/api/src/room-client.ts`, `packages/document/src/comments.ts`,

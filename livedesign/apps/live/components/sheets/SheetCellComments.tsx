@@ -5,7 +5,7 @@
 // the anchor the editor's thread popover sits beside. Ctrl + Alt + M (⌘ ⌥ M) opens the active cell's thread. Nothing
 // draws over the frozen rows or columns a cell has scrolled under, nor outside the editor.
 import { useEffect } from 'react';
-import { formatA1, layoutIndex, single, type SheetLayout } from '@livepages/sheets';
+import { formatA1, layoutIndex, single, type SheetLayout } from '@livedesign/sheets';
 import {
   CELL_COMMENT_ANCHOR_ATTR,
   cellCommentAnchor,

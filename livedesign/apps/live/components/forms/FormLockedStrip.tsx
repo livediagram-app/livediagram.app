@@ -4,8 +4,8 @@
 // sections, heading, cover and where its responses go cannot change, so nobody fills in a form that shifts under them
 // and every answer keeps its meaning. Edit Form stops it taking responses (its link kept) and unlocks it; Accepting
 // Responses opens it again once nothing stops it.
-import { lucideGlyph } from '@livepages/ui';
-import { lucideLock } from '@livepages/icons/lucide';
+import { lucideGlyph } from '@livedesign/ui';
+import { lucideLock } from '@livedesign/icons/lucide';
 
 const LockGlyph = lucideGlyph(lucideLock, 15);
 

@@ -7,7 +7,7 @@ import type {
   Tab,
   FrameHandle,
   LaidOutPage,
-} from '@livepages/document';
+} from '@livedesign/document';
 import type { ArrowEnd, DragMode, DragState } from '@/lib/canvas';
 import type { SnapGuideStore } from './useSnapGuideState';
 

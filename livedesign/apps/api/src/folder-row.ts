@@ -1,4 +1,4 @@
-import type { Folder as FolderDTO } from '@livepages/api-schema';
+import type { Folder as FolderDTO } from '@livedesign/api-schema';
 
 // folders row shape as read from D1 (migration 0007). Pure
 // snake_case to camelCase mapping, no nested JSON to parse, but

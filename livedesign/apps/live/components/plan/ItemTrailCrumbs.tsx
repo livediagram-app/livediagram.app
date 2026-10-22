@@ -4,8 +4,8 @@
 // part"): the cards opened before this one from inside the panel, nearest last, each a link back. Earlier ones past
 // what fits fold into a "…" button whose menu lists them. Draws nothing for a trail of one card.
 import { useState } from 'react';
-import { itemTitle, typeIn, type Item, type ItemTypeDef } from '@livepages/items';
-import { ChevronLeftIcon, ChevronRightIcon, Tooltip } from '@livepages/ui';
+import { itemTitle, typeIn, type Item, type ItemTypeDef } from '@livedesign/items';
+import { ChevronLeftIcon, ChevronRightIcon, Tooltip } from '@livedesign/ui';
 import { PortalMenu, MenuActionRow } from '@/components/primitives/PortalMenu';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { ACCENT_TEXT, accentVars } from './plan-palette';

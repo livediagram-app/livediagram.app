@@ -22,10 +22,10 @@ import {
   SHEET_CHANGE_KINDS,
   pascalToken,
   placementDefaultTelemetryType,
-} from '@livepages/api-schema';
-import { countedVerbs } from '@livepages/agent-verbs';
-import { FORM_STARTERS, QUESTION_TYPE_TELEMETRY } from '@livepages/forms';
-import { MCP_TOOL_VERBS } from '@livepages/agent-verbs/mcp';
+} from '@livedesign/api-schema';
+import { countedVerbs } from '@livedesign/agent-verbs';
+import { FORM_STARTERS, QUESTION_TYPE_TELEMETRY } from '@livedesign/forms';
+import { MCP_TOOL_VERBS } from '@livedesign/agent-verbs/mcp';
 import { CANVAS_CONTROLS } from './event-vocab';
 
 type ComputedValues = {

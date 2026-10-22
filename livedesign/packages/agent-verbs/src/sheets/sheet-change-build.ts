@@ -31,13 +31,13 @@ import {
   type Rand,
   type SheetWrite,
   type Workbook,
-} from '@livepages/sheets';
+} from '@livedesign/sheets';
 import type { SheetRefusal } from './sheet-state';
 import { buildRuleChange, type SheetRuleChange } from './sheet-rule-change';
 import { buildShapeChange, type SheetShapeChange } from './sheet-shape-change';
 import { buildDesign, type SheetDesignInput } from './sheet-design';
 import { buildChartChange, type SheetChartChange, type SheetChartOut } from './sheet-charts';
-import { plural } from '@livepages/document';
+import { plural } from '@livedesign/document';
 
 // How a cell looks, in words; null clears that part (false clears a flag).
 export interface SheetFormatInput {

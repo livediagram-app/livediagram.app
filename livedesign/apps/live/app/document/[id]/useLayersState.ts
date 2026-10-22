@@ -23,7 +23,7 @@ import {
   tabLayers,
   type Layer,
   type Tab,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { track } from '@/lib/telemetry';
 
 // Layers domain slice (docs/specs/006-document/layers.md): the per-tab ACTIVE layer (session-scoped

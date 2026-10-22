@@ -1,4 +1,4 @@
-// The editor-side seam over @livepages/templates: the pure builders
+// The editor-side seam over @livedesign/templates: the pure builders
 // live in the package (shared with the MCP worker, docs/specs/015-api/mcp-server.md); this
 // wrapper adds what only the app can — resolving the theme id (which
 // may be a custom `custom:<uuid>` id, docs/specs/011-theme/custom-themes.md) and the graph-aware
@@ -8,14 +8,14 @@
 // /live/new imports it statically since it's the template-creation
 // page by definition.
 
-import { type Tab } from '@livepages/document';
+import { type Tab } from '@livedesign/document';
 import {
   templateCanvasOverrides,
   templateTabs,
   withBlankPageThemed,
   type TemplateKind,
   type TemplateTabDef,
-} from '@livepages/templates';
+} from '@livedesign/templates';
 import { getTheme, recolourElementsForTheme } from './themes';
 
 export {
@@ -24,7 +24,7 @@ export {
   templateCanvasOverrides,
   templateTabs,
   untitledNameForTemplate,
-} from '@livepages/templates';
+} from '@livedesign/templates';
 
 export function buildTemplatedTab(
   kind: TemplateKind,

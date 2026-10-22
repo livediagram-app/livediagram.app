@@ -1,6 +1,6 @@
 'use client';
 
-import { HoverCard, Glyph } from '@livepages/ui';
+import { HoverCard, Glyph } from '@livedesign/ui';
 
 // The shared search box: a bordered text input with an inline clear (×)
 // button. Used by the Icons + Technology pickers, the palette's Tools tab,

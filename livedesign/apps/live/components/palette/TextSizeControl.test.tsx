@@ -11,7 +11,7 @@ import {
   LABEL_FONT_PX,
   NOTE_FONT_PX,
   type TextSize,
-} from '@livepages/document';
+} from '@livedesign/document';
 import {
   presetPxFor,
   TEXT_SIZE_TICKS,

@@ -29,7 +29,7 @@ import {
   withRelationshipHeads,
   type ArrowElement,
   type Element,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { track } from '@/lib/telemetry';
 import { trackDuplicated } from '@/lib/element-telemetry';
 import { isTechIconId } from '@/lib/tech-icons';

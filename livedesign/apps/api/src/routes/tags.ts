@@ -17,7 +17,7 @@ import {
   isTagId,
   normaliseTagName,
   type TagColour,
-} from '@livepages/api-schema';
+} from '@livedesign/api-schema';
 import { conflict, json, noContent, notFound } from '../responses';
 import {
   addDocumentTag,

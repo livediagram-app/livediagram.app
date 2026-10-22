@@ -9,7 +9,7 @@ import { LANDING_SECTION_IDS } from '@/lib/landing-content';
 // pipeline can't trace re-exported per-route config through a barrel.
 
 export const dynamic = 'force-static';
-export const alt = 'A livepages feature category';
+export const alt = 'A livedesign feature category';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 

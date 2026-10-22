@@ -80,7 +80,7 @@ test.describe('whiteboard dock position', () => {
   }) => {
     await page.addInitScript(() =>
       localStorage.setItem(
-        'livepages:panel-layout:v1',
+        'livedesign:panel-layout:v1',
         JSON.stringify({
           corners: {
             'top-left': ['minimap'],

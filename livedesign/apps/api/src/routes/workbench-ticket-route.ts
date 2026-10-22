@@ -14,7 +14,7 @@ import {
   type WorkbenchScope,
   type WorkbenchTicketResponse,
   type WorkbenchWorkspaceTicketResponse,
-} from '@livepages/api-schema';
+} from '@livedesign/api-schema';
 import {
   generatePairingCode,
   generateWorkbenchTicket,

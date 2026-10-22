@@ -5,7 +5,7 @@ import {
   isBoxed,
   isVotableInVote,
   type Element,
-} from '@livepages/document';
+} from '@livedesign/document';
 import type { ArrowLabels } from '@/hooks/canvas/useArrowLabelLayouts';
 import type {
   LayerDrawn,

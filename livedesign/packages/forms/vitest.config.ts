@@ -1,4 +1,4 @@
-import { defineProject } from '@livepages/vitest-config';
+import { defineProject } from '@livedesign/vitest-config';
 
 // Forms are pure and small: every line and branch is covered (docs/specs/030-forms/blueprints/forms.md §14).
 export default defineProject({

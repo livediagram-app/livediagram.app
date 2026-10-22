@@ -6,8 +6,8 @@
 // Four times the elements, or four times the operations, should cost about four times as much; a
 // quadratic step would cost sixteen.
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@livepages/vitest-config/cpu-time';
-import type { Element, Tab } from '@livepages/document';
+import { cpuMsOf } from '@livedesign/vitest-config/cpu-time';
+import type { Element, Tab } from '@livedesign/document';
 import { applyEditOperations } from './apply';
 import { containersBehindMembers } from './finalise';
 import { createState, noteTarget } from './state';

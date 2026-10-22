@@ -37,14 +37,14 @@ Prose follows the context:
 - **Diagram** is fine when the text is about a document that is, in all likelihood, a diagram tab at heart, such as drawing a flowchart in it.
 - **Diagram types** keep their names: a sequence diagram, an ER diagram,
   an architecture diagram.
-- **Diagramming** and **diagram tool** describe the product and the activity; livepages is built for every kind of diagram, and also does whiteboarding and slideshows well.
+- **Diagramming** and **diagram tool** describe the product and the activity; livedesign is built for every kind of diagram, and also does whiteboarding and slideshows well.
 - A new tab kind joins the table above; the container keeps its name.
 
 ## What keeps its name
 
-- **livepages** stays the product and brand name.
-- A document mirrored to Google Drive is a `.livepages` file of MIME type
-  `application/vnd.livepages+json` ([Google Drive mirror](../022-drive-mirror/drive-mirror.md)):
+- **livedesign** stays the product and brand name.
+- A document mirrored to Google Drive is a `.livedesign` file of MIME type
+  `application/vnd.livedesign+json` ([Google Drive mirror](../022-drive-mirror/drive-mirror.md)):
   both name the app that opens the file, not what is inside it.
 
 <!-- legacy-names -->
@@ -54,7 +54,7 @@ Prose follows the context:
 The container was called a diagram until the domain language settled on document. Everything
 that named it moved in one change:
 
-- **Code:** identifiers, files and packages (`@livepages/document`, `apps/live/app/document/[id]`).
+- **Code:** identifiers, files and packages (`@livedesign/document`, `apps/live/app/document/[id]`).
 - **Database:** migration `0055_documents.sql` renames `diagrams` → `documents`, `diagram_tabs` →
   `document_tabs` and every `diagram_id` → `document_id`, keeps every foreign key and index, and
   rewrites the stored values that named the container: timeline source, scope and event types,

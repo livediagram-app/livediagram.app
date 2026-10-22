@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createSticky, type Element } from '@livepages/document';
+import { createSticky, type Element } from '@livedesign/document';
 import { CHECKOUT_REV, checkoutTab } from './__fixtures__/checkout-tab';
 import { golden } from './__fixtures__/golden-path';
 import { commentHosts, commentsView, threadListingLines } from './comments';

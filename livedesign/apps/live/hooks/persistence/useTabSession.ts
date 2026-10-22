@@ -16,7 +16,7 @@ import {
   type TabVote,
   type TimerMode,
   type VoteSetup,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { track } from '@/lib/telemetry';
 
 type TabSessionDeps = {

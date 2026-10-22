@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { Tab } from '@livepages/document';
-import type { TemplateKind } from '@livepages/templates';
+import type { Tab } from '@livedesign/document';
+import type { TemplateKind } from '@livedesign/templates';
 import { useTemplateFlow } from './useTemplateFlow';
 
 // docs/specs/023-draw-mode/draw-mode.md "Opening tool": a tab with content opens on Select. A template that lands

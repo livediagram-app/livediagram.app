@@ -3,27 +3,27 @@
 // its element's ref, resolved over the plain tab (CLI78).
 
 import { z } from 'zod';
-import { ApiError } from '@livepages/api-client';
+import { ApiError } from '@livedesign/api-client';
 import {
   COMMENT_LIST_STATUSES,
   type CommentListStatus,
   type DocumentCommentsResponse,
-} from '@livepages/api-schema';
+} from '@livedesign/api-schema';
 import {
   computeRefs,
   resolveRef,
   takesCellThreads,
   threadAt,
   type Tab,
-} from '@livepages/document';
-import { parseA1 } from '@livepages/sheets';
-import { threadListingLines } from '@livepages/document-views';
+} from '@livedesign/document';
+import { parseA1 } from '@livedesign/sheets';
+import { threadListingLines } from '@livedesign/document-views';
 import { resolveTab } from '../addressing';
 import { defineVerb, VerbRefusal, type VerbContext } from '../define';
 import { readSheets } from '../sheets/sheet-state';
 import { documentOf, tabOf, tabPath } from './shared';
 
-const docArg = z.string().describe('A name, id prefix or livepages URL');
+const docArg = z.string().describe('A name, id prefix or livedesign URL');
 const tabFlag = z
   .string()
   .optional()
@@ -107,7 +107,7 @@ export const commentLs = defineVerb({
   quiet: ({ threads }) => threads.map((t) => t.ref),
   cli: {
     positionals: ['doc'],
-    examples: ['livepages comment ls "Shop"', 'livepages comment ls "Shop" --status all'],
+    examples: ['livedesign comment ls "Shop"', 'livedesign comment ls "Shop" --status all'],
     prints: 'each thread: its ref, label, state and tab, then its comments',
   },
 });
@@ -135,7 +135,7 @@ async function targetOf(ctx: VerbContext, doc: string, tab: string | undefined, 
       code: 'ref_not_found',
       message: `no element ${ref} ${where}`,
       lines: found.nearest.map((near) => `  ${near}`),
-      hint: `the refs are in: livepages tab view ${JSON.stringify(doc)}`,
+      hint: `the refs are in: livedesign tab view ${JSON.stringify(doc)}`,
     });
   if (found.kind === 'ambiguous')
     throw new VerbRefusal({
@@ -165,7 +165,7 @@ function lastCommentOf(target: Target, ref: string): string {
       status: 404,
       code: 'no_thread',
       message: `no thread on ${where}`,
-      hint: `start one: livepages comment add <doc> ${ref} "<text>"`,
+      hint: `start one: livedesign comment add <doc> ${ref} "<text>"`,
     });
   return last.id;
 }
@@ -230,8 +230,8 @@ export const commentAdd = defineVerb({
   cli: {
     positionals: ['doc', 'ref', 'text'],
     examples: [
-      'livepages comment add "Shop" api "Should this be idempotent?"',
-      'livepages comment add "Shop" --tab Flow 146b "Missing a retry"',
+      'livedesign comment add "Shop" api "Should this be idempotent?"',
+      'livedesign comment add "Shop" --tab Flow 146b "Missing a retry"',
     ],
     prints: 'the new comment\u2019s id',
   },
@@ -258,8 +258,8 @@ export const commentReply = defineVerb({
   cli: {
     positionals: ['doc', 'ref', 'text'],
     examples: [
-      'livepages comment reply "Shop" api "Yes, keyed by order id"',
-      'livepages comment reply 3f9c --tab Flow 146b "Done"',
+      'livedesign comment reply "Shop" api "Yes, keyed by order id"',
+      'livedesign comment reply 3f9c --tab Flow 146b "Done"',
     ],
     prints: 'the reply\u2019s id',
   },
@@ -292,8 +292,8 @@ function threadStateVerb(verb: 'resolve' | 'reopen') {
     cli: {
       positionals: ['doc', 'ref'],
       examples: [
-        `livepages comment ${verb} "Shop" api`,
-        `livepages comment ${verb} 3f9c --tab Flow 146b`,
+        `livedesign comment ${verb} "Shop" api`,
+        `livedesign comment ${verb} 3f9c --tab Flow 146b`,
       ],
       prints: `the thread\u2019s new state`,
     },

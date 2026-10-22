@@ -6,12 +6,12 @@ import {
   type EnvelopeTab,
 } from './document-envelope';
 
-// The `.livepages` file's contents (docs/specs/022-drive-mirror/drive-mirror.md, "The file").
+// The `.livedesign` file's contents (docs/specs/022-drive-mirror/drive-mirror.md, "The file").
 
 const tab: EnvelopeTab = { id: 't1', name: 'Tab 1', elements: [], folder: 'Ideas' };
 
 describe('documentToEnvelopeText', () => {
-  it('wraps the document, its tabs with folders, and the deck in a livepages.document envelope', () => {
+  it('wraps the document, its tabs with folders, and the deck in a livedesign.document envelope', () => {
     const text = documentToEnvelopeText(
       { id: 'd1', name: 'Plan', presentation: '{"slides":[]}' },
       [tab],
@@ -41,17 +41,17 @@ describe('parseDocumentEnvelope', () => {
 
   it('names each failure', () => {
     expect(parseDocumentEnvelope('nope')).toEqual({ ok: false, failure: 'not_json' });
-    expect(parseDocumentEnvelope('{"kind":"livepages.tab","schemaVersion":1}')).toEqual({
+    expect(parseDocumentEnvelope('{"kind":"livedesign.tab","schemaVersion":1}')).toEqual({
       ok: false,
       failure: 'wrong_kind',
     });
-    expect(parseDocumentEnvelope('{"kind":"livepages.document","schemaVersion":2}')).toEqual({
+    expect(parseDocumentEnvelope('{"kind":"livedesign.document","schemaVersion":2}')).toEqual({
       ok: false,
       failure: 'unsupported_version',
     });
     expect(
       parseDocumentEnvelope(
-        '{"kind":"livepages.document","schemaVersion":1,"document":{"id":"d","name":"n","tabs":[{"id":1}]}}',
+        '{"kind":"livedesign.document","schemaVersion":1,"document":{"id":"d","name":"n","tabs":[{"id":1}]}}',
       ),
     ).toEqual({ ok: false, failure: 'malformed' });
     expect(parseDocumentEnvelope('null')).toEqual({ ok: false, failure: 'malformed' });
@@ -59,7 +59,7 @@ describe('parseDocumentEnvelope', () => {
 
   it('reads a missing deck as none', () => {
     const parsed = parseDocumentEnvelope(
-      '{"kind":"livepages.document","schemaVersion":1,"exportedAt":1,"document":{"id":"d","name":"n","tabs":[]}}',
+      '{"kind":"livedesign.document","schemaVersion":1,"exportedAt":1,"document":{"id":"d","name":"n","tabs":[]}}',
     );
     expect(parsed.ok && parsed.envelope.document.presentation).toBeNull();
   });

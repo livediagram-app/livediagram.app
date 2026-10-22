@@ -2,8 +2,8 @@
 // its result lines, and the revert of one.
 
 import { z } from 'zod';
-import type { ChangesetDetail, ChangesetSummary, RevertResponse } from '@livepages/api-schema';
-import { lintFooterPart } from '@livepages/diagram-lint';
+import type { ChangesetDetail, ChangesetSummary, RevertResponse } from '@livedesign/api-schema';
+import { lintFooterPart } from '@livedesign/diagram-lint';
 import { resolveTab } from '../addressing';
 import { defineVerb } from '../define';
 import { documentOf, LIST_DEFAULT_LIMIT, LIST_MAX_LIMIT, minute } from './shared';
@@ -29,7 +29,7 @@ export const changesetLs = defineVerb({
     'Lists the recent changesets of a document, or of one tab with --tab: who, what, when, and its counts.',
   behaviour: 'read',
   input: z.object({
-    doc: z.string().describe('A name, id prefix or livepages URL'),
+    doc: z.string().describe('A name, id prefix or livedesign URL'),
     tab: z.string().optional().describe('Only this tab, by name or id prefix'),
     limit: z.coerce
       .number()
@@ -63,8 +63,8 @@ export const changesetLs = defineVerb({
   cli: {
     positionals: ['doc'],
     examples: [
-      'livepages changeset ls "Auth flow"',
-      'livepages changeset ls 3f9c --tab Overview --limit 5',
+      'livedesign changeset ls "Auth flow"',
+      'livedesign changeset ls 3f9c --tab Overview --limit 5',
     ],
     prints: 'one changeset a line: id, revision, tab, author, summary, counts, time',
   },
@@ -76,7 +76,7 @@ export const changesetShow = defineVerb({
   description: 'Prints one changeset: its summary line, then its result lines.',
   behaviour: 'read',
   input: z.object({
-    doc: z.string().describe('A name, id prefix or livepages URL'),
+    doc: z.string().describe('A name, id prefix or livedesign URL'),
     changeset: z.string().describe('The changeset id, cs_…'),
   }),
   output: z.object({ line: z.string(), text: z.string() }),
@@ -93,8 +93,8 @@ export const changesetShow = defineVerb({
   cli: {
     positionals: ['doc', 'changeset'],
     examples: [
-      'livepages changeset show "Auth flow" cs_8k2m4q7d1x',
-      'livepages changeset show 3f9c cs_8k2m4q7d1x --json',
+      'livedesign changeset show "Auth flow" cs_8k2m4q7d1x',
+      'livedesign changeset show 3f9c cs_8k2m4q7d1x --json',
     ],
     prints: 'the summary line, then the result lines',
   },
@@ -107,7 +107,7 @@ export const changesetRevert = defineVerb({
     'Reverts one changeset as a new changeset, leaving alone each element changed since (kept, with the reason).',
   behaviour: 'write',
   input: z.object({
-    doc: z.string().describe('A name, id prefix or livepages URL'),
+    doc: z.string().describe('A name, id prefix or livedesign URL'),
     changeset: z.string().describe('The changeset id, cs_…'),
   }),
   output: z.object({
@@ -143,8 +143,8 @@ export const changesetRevert = defineVerb({
   cli: {
     positionals: ['doc', 'changeset'],
     examples: [
-      'livepages changeset revert "Auth flow" cs_8k2m4q7d1x',
-      'livepages changeset revert 3f9c cs_8k2m4q7d1x -q',
+      'livedesign changeset revert "Auth flow" cs_8k2m4q7d1x',
+      'livedesign changeset revert 3f9c cs_8k2m4q7d1x -q',
     ],
     prints: 'what it reverted and the new revision, then each element kept and why',
   },

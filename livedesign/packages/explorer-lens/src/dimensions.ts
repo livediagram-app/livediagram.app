@@ -1,8 +1,8 @@
 // The lens's catalogue (docs/specs/013-workspace/explorer-filters.md "Dimensions"): every
 // dimension, its closed values, their British English labels and the closed telemetry types.
 
-import { TEMPLATE_FAMILIES, type TemplateFamily } from '@livepages/api-schema';
-import { EDITOR_MODES, type EditorMode } from '@livepages/document';
+import { TEMPLATE_FAMILIES, type TemplateFamily } from '@livedesign/api-schema';
+import { EDITOR_MODES, type EditorMode } from '@livedesign/document';
 
 /** The dimensions in canonical order: the order tokens are written in and chips are shown in. */
 export const LENS_DIMENSIONS = [

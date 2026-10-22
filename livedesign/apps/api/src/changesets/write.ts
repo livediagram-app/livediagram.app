@@ -3,7 +3,7 @@ import {
   type ChangesetCounts,
   type ChangesetWritten,
   type ResultLine,
-} from '@livepages/api-schema';
+} from '@livedesign/api-schema';
 import {
   diffToElementOps,
   elementFingerprint,
@@ -11,7 +11,7 @@ import {
   type Element,
   type ElementOp,
   type Tab,
-} from '@livepages/document';
+} from '@livedesign/document';
 import {
   insertChangesetPartStatement,
   insertChangesetStatement,

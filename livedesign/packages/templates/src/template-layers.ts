@@ -15,7 +15,7 @@
 // scaffold. Scaffold layers ship named but unlocked; locking is one
 // click in the panel.
 
-import type { Layer } from '@livepages/document';
+import type { Layer } from '@livedesign/document';
 import type { TemplateKind } from './templates';
 
 export const TEMPLATE_SCAFFOLD_LAYER_ID = 'layer:template:scaffold';

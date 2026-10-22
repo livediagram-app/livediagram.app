@@ -4,7 +4,7 @@
 // tab's elements change), published to the store before paint, and the read the editor's keyboard takes (the covered
 // check).
 import { useLayoutEffect, useMemo } from 'react';
-import { isPlanTabKind, type Tab } from '@livepages/document';
+import { isPlanTabKind, type Tab } from '@livedesign/document';
 import { fillTabElementOf } from '@/components/plan/fill-tab';
 import { isCanvasCovered, setPlanCover } from './plan-cover-store';
 import { planTabEntries, setPlanTabList } from './plan-tab-list-store';

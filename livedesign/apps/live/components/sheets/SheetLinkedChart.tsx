@@ -4,8 +4,8 @@
 // sheet store and hands the chart view the element with that data, again whenever the store moves on. Without the
 // sheets bridge (a read-only render), or while the sheet is not there, the element's own data (the last read) draws.
 import { useEffect, useMemo, useSyncExternalStore, type ReactNode } from 'react';
-import { chartFieldsFromTable, type ShapeElement } from '@livepages/document';
-import { AGENT_LOCALE, sheetChartTable } from '@livepages/sheets';
+import { chartFieldsFromTable, type ShapeElement } from '@livedesign/document';
+import { AGENT_LOCALE, sheetChartTable } from '@livedesign/sheets';
 import { useSheetsBridgeContext, type SheetsBridge } from '@/hooks/sheets/useSheetsBridge';
 import { sheetStoreOf } from './sheet-store-client';
 

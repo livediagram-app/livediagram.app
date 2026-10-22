@@ -5,7 +5,7 @@ import { useShortcutsEnabled } from './useShortcutsEnabled';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
-const KEY = 'livepages:v2:shortcuts-enabled';
+const KEY = 'livedesign:v2:shortcuts-enabled';
 
 afterEach(() => window.localStorage.clear());
 

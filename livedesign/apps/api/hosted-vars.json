@@ -4,11 +4,11 @@
   "IMAGE_MAX_BYTES_PER_OWNER": "104857600",
   "environments": {
     "production": {
-      "APP_BASE_URL": "https://www.livepages.app",
+      "APP_BASE_URL": "https://www.livedesign.app",
       "GOOGLE_CLIENT_ID": ""
     },
     "staging": {
-      "APP_BASE_URL": "https://staging.livepages.app",
+      "APP_BASE_URL": "https://staging.livedesign.app",
       "GOOGLE_CLIENT_ID": ""
     }
   }

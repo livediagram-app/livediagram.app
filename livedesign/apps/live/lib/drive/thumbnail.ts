@@ -3,7 +3,7 @@
 // document's existing SVG snapshot is rasterised to PNG in the browser and sent
 // as `contentHints.thumbnail`.
 
-import { bytesToBase64Url } from '@livepages/api-schema';
+import { bytesToBase64Url } from '@livedesign/api-schema';
 import {
   DRIVE_THUMBNAIL_MAX_BYTES,
   DRIVE_THUMBNAIL_MIN_WIDTH_PX,

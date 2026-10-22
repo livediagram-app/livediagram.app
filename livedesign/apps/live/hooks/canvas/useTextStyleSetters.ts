@@ -5,7 +5,7 @@ import {
   type TextAlignX,
   type TextAlignY,
   type TextSize,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { track } from '@/lib/telemetry';
 import { hugsText, hugTextSize } from '@/lib/text-hug';
 import { measureDrawnText } from '@/components/canvas/text-hug-measure';

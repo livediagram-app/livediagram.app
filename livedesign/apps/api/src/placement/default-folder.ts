@@ -3,7 +3,7 @@
 // create with an intent lands in the person's default for it. A dangling default is skipped, never
 // a refusal, and the next key, then the root, answers instead.
 
-import { defaultKeysFor } from '@livepages/api-schema';
+import { defaultKeysFor } from '@livedesign/api-schema';
 import type {
   DefaultSkipReason,
   FolderStep,

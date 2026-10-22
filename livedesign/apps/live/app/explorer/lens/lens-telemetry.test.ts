@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { emptyLens, parseLens, type LensContext } from '@livepages/explorer-lens';
+import { emptyLens, parseLens, type LensContext } from '@livedesign/explorer-lens';
 import { track } from '@/lib/telemetry';
 import { trackLensChange } from './lens-telemetry';
 

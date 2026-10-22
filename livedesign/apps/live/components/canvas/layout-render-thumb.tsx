@@ -16,14 +16,14 @@ import {
   type Appearance,
   type LaidOutPage,
   type Tab,
-} from '@livepages/document';
-import type { PageLayoutId } from '@livepages/templates';
-import { trustedHtml, useAppearance } from '@livepages/ui';
+} from '@livedesign/document';
+import type { PageLayoutId } from '@livedesign/templates';
+import { trustedHtml, useAppearance } from '@livedesign/ui';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
 import { renderTabToSvg } from '@/lib/export-tab';
 import { elementAsSeen } from '@/lib/stock-colour-projector';
 import { themeViewMap } from '@/lib/themes';
-import { buildPageLayout } from '@livepages/templates';
+import { buildPageLayout } from '@livedesign/templates';
 import { withSamplePictures } from './layout-sample-pictures';
 
 // A plain page's paper in dark chrome, as CanvasPages paints it (dark:bg-slate-900).

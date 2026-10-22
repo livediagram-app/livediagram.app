@@ -1,6 +1,6 @@
 // Card tables (docs/specs/029-sheets/sheet.md "Card tables"): cards to rows (pull) and rows to cards (push).
 import { describe, expect, it } from 'vitest';
-import { ITEM_TYPES, type Item } from '@livepages/items';
+import { ITEM_TYPES, type Item } from '@livedesign/items';
 import {
   applySheetWrite,
   cellKey,
@@ -9,7 +9,7 @@ import {
   type CardTable,
   type Sheet,
   type SheetWrite,
-} from '@livepages/sheets';
+} from '@livedesign/sheets';
 import { cardCell, pullChanges, pushPlan, rowSave, type CardPlan } from './card-table-sync';
 
 let seq = 3;

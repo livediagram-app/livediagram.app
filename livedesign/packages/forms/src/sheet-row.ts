@@ -9,7 +9,7 @@ import {
   type CellInput,
   type LayoutChange,
   type SheetWrite,
-} from '@livepages/sheets';
+} from '@livedesign/sheets';
 import type { AnswerValue } from './answers';
 import { answerText } from './card';
 import { promptOf, questionsOf, type FormDefinition, type FormQuestion } from './model';

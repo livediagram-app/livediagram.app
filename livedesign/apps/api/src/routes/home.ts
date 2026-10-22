@@ -11,7 +11,7 @@ import {
   HOME_WHAT_HAPPENED_DAYS,
   type HomeRejection,
   type HomeResponse,
-} from '@livepages/api-schema';
+} from '@livedesign/api-schema';
 import { readJumpBackIn, readMe, readWhatHappenedRows } from '../db/home';
 import { getScopeState, markScopeSeen } from '../db/timeline';
 import { isNewVisit } from '../timeline/seen';
@@ -20,7 +20,7 @@ import { parseTimeZone } from '../home/local-day';
 import { json, missingAuth, notFound, rateLimited } from '../responses';
 import { userScope } from '../timeline';
 import type { RouteContext } from './context';
-import { DAY_MS } from '@livepages/items';
+import { DAY_MS } from '@livedesign/items';
 
 function rejected(reason: HomeRejection): Response {
   console.warn(`home: rejected reason=${reason}`);

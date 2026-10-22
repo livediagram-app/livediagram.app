@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { TELEMETRY_TYPE_PATTERN } from '@livepages/api-schema';
-import { ERROR_EMIT_CAP_PER_TYPE } from '@livepages/telemetry-client';
+import { TELEMETRY_TYPE_PATTERN } from '@livedesign/api-schema';
+import { ERROR_EMIT_CAP_PER_TYPE } from '@livedesign/telemetry-client';
 import {
   apiErrorType,
   networkErrorType,
@@ -95,7 +95,7 @@ describe('network failures', () => {
   });
 
   it('labels the route without ids', () => {
-    expect(networkErrorType('PUT', 'http://localhost:8987/api/documents/abc-123/tabs/t9')).toBe(
+    expect(networkErrorType('PUT', 'http://localhost:8989/api/documents/abc-123/tabs/t9')).toBe(
       'Network.Put.Documents.Tabs',
     );
     expect(networkErrorType('GET', '/api/share/SEKRIT')).toBe('Network.Get.Share');

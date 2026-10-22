@@ -31,7 +31,7 @@ import {
   withAttached,
   type Element,
   type Tab,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { track } from '@/lib/telemetry';
 
 type NudgeDeps = {

@@ -1,8 +1,8 @@
 'use client';
 
 import { useLayoutEffect, useState } from 'react';
-import { Portal } from '@livepages/ui';
-import type { TextRun } from '@livepages/document';
+import { Portal } from '@livedesign/ui';
+import type { TextRun } from '@livedesign/document';
 import { NoteRichText } from '@/components/notes/NoteRichText';
 import { VIEWPORT_EDGE_MARGIN as EDGE_MARGIN } from '@/lib/clamp-to-viewport';
 import { elementSelector } from '@/lib/canvas-selectors';

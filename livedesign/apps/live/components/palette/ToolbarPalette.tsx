@@ -1,7 +1,7 @@
 'use client';
 
 import { onPaletteCategoryRequest } from '@/lib/palette-category-request';
-import type { Element } from '@livepages/document';
+import type { Element } from '@livedesign/document';
 import {
   useEffect,
   useEffectEvent,
@@ -18,7 +18,7 @@ import {
   HoverCard,
   atLeastInset,
   safeInlinePadding,
-} from '@livepages/ui';
+} from '@livedesign/ui';
 import { LANDSCAPE_HANDLE_ROOM } from '@/components/chrome/LandscapeBars';
 import { track } from '@/lib/telemetry';
 import { SnapWidth } from '@/components/primitives/SnapWidth';

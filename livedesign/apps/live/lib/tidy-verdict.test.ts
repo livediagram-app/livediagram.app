@@ -5,8 +5,8 @@ import {
   type ArrowElement,
   type Element,
   type ShapeElement,
-} from '@livepages/document';
-import { buildTemplate } from '@livepages/templates';
+} from '@livedesign/document';
+import { buildTemplate } from '@livedesign/templates';
 import { assessCleanup, cleanupVerdict, verdictLine, verdictNotice } from './tidy-verdict';
 import { cleanupElements, type CleanupKind } from './tab-cleanup';
 

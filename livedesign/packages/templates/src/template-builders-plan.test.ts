@@ -4,8 +4,8 @@ import {
   isPlanViewId,
   normaliseBoardSetup,
   presetSetup,
-} from '@livepages/items';
-import { isValidElement, type Element } from '@livepages/document';
+} from '@livedesign/items';
+import { isValidElement, type Element } from '@livedesign/document';
 import { describe, expect, it } from 'vitest';
 import {
   PLAN_TEMPLATE_KINDS,

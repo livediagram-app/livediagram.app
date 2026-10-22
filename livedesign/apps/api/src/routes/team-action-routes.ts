@@ -4,9 +4,9 @@
 // caller resolves the team + their own membership row once and passes
 // the scope in.
 
-import { isOpenTeamMember } from '@livepages/api-schema';
+import { isOpenTeamMember } from '@livedesign/api-schema';
 import { legacyDocumentIdOf } from '../legacy-request-forms';
-import type { TeamMember } from '@livepages/api-schema';
+import type { TeamMember } from '@livedesign/api-schema';
 import { getDocumentMeta, getMembership, getParticipant, hasSharedAccess } from '../db';
 import { listTeamMembers } from '../db';
 import { badRequest, forbidden, json, notFound } from '../responses';

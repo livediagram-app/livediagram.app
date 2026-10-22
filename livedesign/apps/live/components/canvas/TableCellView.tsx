@@ -6,11 +6,11 @@ import {
   type ElementLink,
   type TableCellStyle,
   type TableElement,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { CellLinkIcon } from '@/components/canvas/table-icons';
 import { TableCellEditor } from '@/components/canvas/TableCellEditor';
 import { describeLink } from '@/lib/link-label';
-import { HoverCard } from '@livepages/ui';
+import { HoverCard } from '@livedesign/ui';
 
 // Key for the shift-click multi-cell selection set.
 export const cellKey = (r: number, c: number): string => `${r}:${c}`;

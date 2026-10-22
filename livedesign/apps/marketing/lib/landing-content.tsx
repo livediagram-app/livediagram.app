@@ -734,7 +734,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'AI & your tools',
         title: 'Build diagrams with AI',
         description:
-          'Hook livepages up to Claude or any MCP client at mcp.livepages.app and let it find, read, create, edit, and share your documents for you. Point it at a system and ask for the diagram; it lands in your account. Signed in, and it runs on the same revocable token (read-only if you prefer), so you can disconnect any time.',
+          'Hook livedesign up to Claude or any MCP client at mcp.livedesign.app and let it find, read, create, edit, and share your documents for you. Point it at a system and ask for the diagram; it lands in your account. Signed in, and it runs on the same revocable token (read-only if you prefer), so you can disconnect any time.',
       },
       {
         art: <AiAssistArt />,
@@ -750,7 +750,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'AI & your tools',
         title: 'Works with Mermaid',
         description:
-          'Hand a Mermaid flowchart to livepages through the API, the CLI or an AI assistant and it lays it out on the canvas, keeping every connection, not just the outline. The CLI exports a tab back out as Mermaid. It is the diagram-as-code format your READMEs, issues, and AI tools already use, so your diagrams travel.',
+          'Hand a Mermaid flowchart to livedesign through the API, the CLI or an AI assistant and it lays it out on the canvas, keeping every connection, not just the outline. The CLI exports a tab back out as Mermaid. It is the diagram-as-code format your READMEs, issues, and AI tools already use, so your diagrams travel.',
       },
       {
         art: <MarkdownImportArt />,
@@ -774,7 +774,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'AI & your tools',
         title: 'Write your own integrations',
         description:
-          'Create an API token and call the same REST API the editor uses, under your account, from your own scripts and integrations, or install the livepages command-line tool from npm to read, edit, share and export documents from your terminal. Signed in, revocable, six-month tokens, no lock-in. Keep the editor open beside your agent in a workbench.',
+          'Create an API token and call the same REST API the editor uses, under your account, from your own scripts and integrations, or install the livedesign command-line tool from npm to read, edit, share and export documents from your terminal. Signed in, revocable, six-month tokens, no lock-in. Keep the editor open beside your agent in a workbench.',
       },
     ],
   },

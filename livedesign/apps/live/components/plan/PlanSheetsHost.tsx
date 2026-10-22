@@ -11,7 +11,7 @@ import {
   linkedCardsOf,
   newItemId,
   typeIn,
-} from '@livepages/items';
+} from '@livedesign/items';
 import { duplicateItem } from './duplicate-item';
 import { mayCreateCardType } from './may-create-card-type';
 import { newCardStatus } from './new-card-status';

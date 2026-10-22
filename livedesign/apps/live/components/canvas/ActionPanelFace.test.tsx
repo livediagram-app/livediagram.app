@@ -14,7 +14,7 @@ import {
   isOpenAction,
   isVotable,
   type ShapeElement,
-} from '@livepages/document';
+} from '@livedesign/document';
 
 import { ActionPanelFace } from './ActionPanelFace';
 

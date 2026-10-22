@@ -1,10 +1,10 @@
 'use client';
 
 import { useId } from 'react';
-import { lucideGlyph, PencilIcon, Tooltip } from '@livepages/ui';
-import { lucideVote } from '@livepages/icons/lucide';
+import { lucideGlyph, PencilIcon, Tooltip } from '@livedesign/ui';
+import { lucideVote } from '@livedesign/icons/lucide';
 import { EyeIcon } from '@/components/panels/layers-panel-icons';
-import type { AccessLevel } from '@livepages/api-schema';
+import type { AccessLevel } from '@livedesign/api-schema';
 
 // Whether you are editing, participating in or viewing this document
 // (docs/specs/013-workspace/share-roles.md), in two shapes

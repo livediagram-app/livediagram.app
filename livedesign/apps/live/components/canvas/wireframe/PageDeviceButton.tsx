@@ -2,9 +2,9 @@
 
 // A wireframe page's Device (docs/specs/007-editor/wireframe-pages.md "Choosing the device"): the
 // button beside its cog, showing its device, opening the Device popover (WireframeDeviceSettings).
-import type { LaidOutPage } from '@livepages/document';
-import { WIREFRAME_DEVICES } from '@livepages/document';
-import type { WireframeDevicePatch, WireframeFrameTheme } from '@livepages/document';
+import type { LaidOutPage } from '@livedesign/document';
+import { WIREFRAME_DEVICES } from '@livedesign/document';
+import type { WireframeDevicePatch, WireframeFrameTheme } from '@livedesign/document';
 import { TitlePopoverButton, titleButtonClass } from '../TitlePopoverButton';
 import { DeviceGlyph } from './DeviceGlyph';
 import { WireframeDeviceSettings } from './WireframeDeviceSettings';

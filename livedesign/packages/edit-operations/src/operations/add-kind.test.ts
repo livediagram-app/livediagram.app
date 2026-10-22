@@ -4,7 +4,7 @@ import {
   getBuiltInTheme,
   type Element,
   type Tab,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { applyEditOperations } from '../apply';
 import { checkoutFlow, fixedIds } from '../fixtures/checkout-flow';
 import { applied, lines, refused } from '../fixtures/outcomes';

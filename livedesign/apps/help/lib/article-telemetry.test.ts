@@ -4,7 +4,7 @@ import {
   articlePath,
   articleTelemetryId,
   helpPathTelemetryId,
-} from '@livepages/help-registry/telemetry';
+} from '@livedesign/help-registry/telemetry';
 import { articles } from './articles';
 
 // Help telemetry (docs/specs/017-telemetry/telemetry.md) names an article by its telemetry id: `Help·View`,

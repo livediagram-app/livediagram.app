@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { itemTitle, readItemCreate, type PlanBoardSetup } from '@livepages/items';
+import { itemTitle, readItemCreate, type PlanBoardSetup } from '@livedesign/items';
 import { planTemplateSeedItems, seedDate, seedToday } from './plan-template-seeds';
 import { PLAN_TEMPLATE_SEEDS } from './plan-template-seed-data';
 import {

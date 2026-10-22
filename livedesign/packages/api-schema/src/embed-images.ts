@@ -27,7 +27,7 @@
 // Any image that is missing, over a limit, fails to load, or isn't one of the
 // accepted raster formats is left out, and the renderer draws its placeholder.
 
-import { pageImageIds, type Tab } from '@livepages/document';
+import { pageImageIds, type Tab } from '@livedesign/document';
 import { bytesToBase64 } from './bytes';
 import { imagePixelSize } from './image-size';
 import { sniffImageType } from './image-sniff';

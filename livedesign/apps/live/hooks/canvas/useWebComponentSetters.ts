@@ -6,7 +6,7 @@ import {
   type Element,
   type HeroCaption,
   type WebRows,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { track } from '@/lib/telemetry';
 import { elementTelemetryType } from '@/lib/element-telemetry';
 

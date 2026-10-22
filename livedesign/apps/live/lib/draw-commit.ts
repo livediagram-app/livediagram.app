@@ -7,12 +7,12 @@ import {
   planBoardHeightFor,
   planBoardWidthFor,
   planViewSize,
-} from '@livepages/items';
+} from '@livedesign/items';
 import {
   defaultSessionConfig,
   isFixedSizeShape,
   REACTION_PAD_LABEL,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { ARROW_SNAP_THRESHOLD_PX, inheritedSizeFor } from '@/lib/canvas';
 import {
   createComponent,
@@ -32,9 +32,9 @@ import {
   type Element,
   type Endpoint,
   type Tab,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { deriveNewBoxedColours } from '@/lib/themes';
-import type { ThemeDefinition } from '@livepages/document';
+import type { ThemeDefinition } from '@livedesign/document';
 import { isTechIconId } from '@/lib/tech-icons';
 import { getSticker, stickerDropSize } from '@/lib/stickers';
 import type { PendingDraw } from '@/lib/draw-mode';

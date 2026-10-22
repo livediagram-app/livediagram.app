@@ -3,7 +3,7 @@
 // The document list leaves the landing page its note of recent diagrams, and the thumbnail calls
 // behind it and the Explorer (docs/specs/019-marketing/returning-visitor.md).
 
-import { RECENT_DIAGRAMS_KEY, parseRecentDiagrams } from '@livepages/api-schema';
+import { RECENT_DIAGRAMS_KEY, parseRecentDiagrams } from '@livedesign/api-schema';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { __setOfflineBackend, offlineCreateDocument } from '../offline/offline-store';
 import { memBackend } from '../offline/offline-test-utils';

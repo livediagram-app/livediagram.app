@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Element } from '@livepages/document';
+import type { Element } from '@livedesign/document';
 import { boundsOfElements, createRevealStore } from './changeset-reveals';
 
 describe('createRevealStore', () => {

@@ -1,7 +1,7 @@
 // What a host offers (blueprint "Capabilities", CLI8): from GET <host>/api/capabilities, cached an hour per
 // profile. An absent field reads as the older worker meant it.
 
-import type { CapabilitiesResponse } from '@livepages/api-schema';
+import type { CapabilitiesResponse } from '@livedesign/api-schema';
 import type { DebugLog } from '../debug';
 import type { CliIo } from '../io';
 import { CliError } from '../output/cli-error';
@@ -71,9 +71,9 @@ export async function loadCapabilities(
   if (typeof capabilities !== 'object' || capabilities === null)
     throw new CliError({
       exit: EXIT.failure,
-      code: 'not_livepages',
-      message: `${profile.host} does not answer as a livepages host`,
-      hint: 'check the host: --host https://<your livepages>',
+      code: 'not_livedesign',
+      message: `${profile.host} does not answer as a livedesign host`,
+      hint: 'check the host: --host https://<your livedesign>',
     });
   const entry: CacheEntry = {
     fetchedAt: io.now(),

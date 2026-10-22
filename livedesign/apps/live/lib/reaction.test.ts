@@ -10,7 +10,7 @@ import {
   REACTION_LABEL,
   REACTIONS,
   SHAPE_KINDS,
-} from '@livepages/document';
+} from '@livedesign/document';
 
 // The reaction pad's model (docs/specs/009-elements/reaction-pad.md).
 

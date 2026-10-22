@@ -1,4 +1,4 @@
-import { migrateStoredTab, type Tab } from '@livepages/document';
+import { migrateStoredTab, type Tab } from '@livedesign/document';
 import type { TabDTO, TabSummaryDTO } from './types';
 
 // tabs row shape as read from D1. The `data` column is the

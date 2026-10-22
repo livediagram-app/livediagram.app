@@ -1,8 +1,8 @@
 'use client';
 
 import { useMemo, useState, type CSSProperties, type ReactNode } from 'react';
-import { EmptyState } from '@livepages/ui';
-import type { TelemetryDaily, TelemetryWindow, TelemetryWindowKey } from '@livepages/api-schema';
+import { EmptyState } from '@livedesign/ui';
+import type { TelemetryDaily, TelemetryWindow, TelemetryWindowKey } from '@livedesign/api-schema';
 import { eventExplanation } from './event-explanation';
 import { ActivityGlyph } from './glyphs';
 import { buildMetrics, type Metric } from './metrics';

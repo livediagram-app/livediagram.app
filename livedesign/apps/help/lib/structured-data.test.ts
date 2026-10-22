@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { articleJsonLd, collectionJsonLd, helpUrl, webSiteJsonLd } from './structured-data';
 
-const PUBLISHER = { '@type': 'Organization', name: 'livepages', url: 'https://livepages.app' };
+const PUBLISHER = { '@type': 'Organization', name: 'livedesign', url: 'https://livedesign.app' };
 
 describe('helpUrl', () => {
   it('prefixes app-relative hrefs with the /help base', () => {
-    expect(helpUrl('/canvas/themes/')).toBe('https://livepages.app/help/canvas/themes/');
-    expect(helpUrl('/')).toBe('https://livepages.app/help/');
+    expect(helpUrl('/canvas/themes/')).toBe('https://livedesign.app/help/canvas/themes/');
+    expect(helpUrl('/')).toBe('https://livedesign.app/help/');
   });
 });
 
@@ -18,7 +18,7 @@ describe('articleJsonLd', () => {
   });
 
   it('builds a TechArticle node with the resolved absolute URL', () => {
-    const url = 'https://livepages.app/help/canvas/themes/';
+    const url = 'https://livedesign.app/help/canvas/themes/';
     expect(node).toMatchObject({
       '@context': 'https://schema.org',
       '@type': 'TechArticle',
@@ -42,8 +42,8 @@ describe('webSiteJsonLd', () => {
     expect(webSiteJsonLd()).toEqual({
       '@context': 'https://schema.org',
       '@type': 'WebSite',
-      name: 'livepages Help',
-      url: 'https://livepages.app/help/',
+      name: 'livedesign Help',
+      url: 'https://livedesign.app/help/',
       publisher: PUBLISHER,
       inLanguage: 'en-GB',
     });
@@ -65,12 +65,12 @@ describe('collectionJsonLd', () => {
     ).toMatchObject({
       '@type': 'CollectionPage',
       name: 'Canvas',
-      url: 'https://livepages.app/help/canvas/',
+      url: 'https://livedesign.app/help/canvas/',
       mainEntity: {
         '@type': 'ItemList',
         itemListElement: [
-          { position: 1, name: 'Themes', url: 'https://livepages.app/help/canvas/themes/' },
-          { position: 2, name: 'Layers', url: 'https://livepages.app/help/canvas/layers/' },
+          { position: 1, name: 'Themes', url: 'https://livedesign.app/help/canvas/themes/' },
+          { position: 2, name: 'Layers', url: 'https://livedesign.app/help/canvas/layers/' },
         ],
       },
     });

@@ -13,10 +13,10 @@ import {
   DRIVE_NAME_MAX,
   isDriveFileId,
   isDriveLeaseHolder,
-  isLivepagesId,
+  isLivedesignId,
   type DriveItem,
   type DriveItemKind,
-} from '@livepages/api-schema';
+} from '@livedesign/api-schema';
 import {
   acquireDriveLease,
   createBrowserConnection,
@@ -85,7 +85,7 @@ function parseItem(raw: unknown): DriveItem | null {
   const r = raw as Record<string, unknown>;
   if (
     !isKind(r.kind) ||
-    !isLivepagesId(r.ldId) ||
+    !isLivedesignId(r.ldId) ||
     !isDriveFileId(r.driveFileId) ||
     !isName(r.name) ||
     !isName(r.ldName) ||
@@ -349,7 +349,7 @@ export async function handleDrive(ctx: RouteContext): Promise<Response> {
   if (route === 'item') {
     const itemKind = segments[3];
     const ldId = segments[4];
-    if (!isKind(itemKind) || !isLivepagesId(ldId)) return invalidRequest();
+    if (!isKind(itemKind) || !isLivedesignId(ldId)) return invalidRequest();
     await deleteDriveItem(env, owner, itemKind, ldId);
     return noContent();
   }

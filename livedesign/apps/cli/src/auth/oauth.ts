@@ -9,7 +9,7 @@ import {
   DEVICE_CODE_GRANT,
   DEVICE_CODE_TTL_S,
   DEVICE_SLOW_DOWN_S,
-} from '@livepages/api-schema';
+} from '@livedesign/api-schema';
 import type { DebugLog } from '../debug';
 import type { CliIo } from '../io';
 import { CliError } from '../output/cli-error';
@@ -67,7 +67,7 @@ export async function discover(io: CliIo, issuer: string, log: DebugLog): Promis
 }
 
 const page = (title: string, body: string) =>
-  `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>livepages CLI</title><meta name="color-scheme" content="light dark"><style>body{font:16px system-ui,sans-serif;max-width:32rem;margin:4rem auto;padding:0 1rem;line-height:1.5}</style></head><body><h1>${title}</h1><p>${body}</p></body></html>`;
+  `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>livedesign CLI</title><meta name="color-scheme" content="light dark"><style>body{font:16px system-ui,sans-serif;max-width:32rem;margin:4rem auto;padding:0 1rem;line-height:1.5}</style></head><body><h1>${title}</h1><p>${body}</p></body></html>`;
 const SIGNED_IN = page("You're signed in", 'Return to your terminal. You can close this tab.');
 const CANCELLED = page('Sign-in cancelled', 'Nothing was connected. You can close this tab.');
 
@@ -124,7 +124,7 @@ export async function loginWithBrowser(
   let query: URLSearchParams;
   try {
     query = await deadline(io, LOGIN_TIMEOUT_MS, callback(), () =>
-      authError('sign-in timed out waiting for the browser', 'livepages auth login --device'),
+      authError('sign-in timed out waiting for the browser', 'livedesign auth login --device'),
     );
   } finally {
     loopback.close();
@@ -151,7 +151,7 @@ export async function loginWithDevice(
   log: DebugLog,
 ): Promise<string> {
   if (!server.device_authorization_endpoint)
-    throw authError('this host offers no device sign-in', 'livepages auth login');
+    throw authError('this host offers no device sign-in', 'livedesign auth login');
   const started = await postForm(io, server.device_authorization_endpoint, {
     client_id: CLI_CLIENT_ID,
   });
@@ -170,7 +170,7 @@ export async function loginWithDevice(
   for (;;) {
     if (io.now() + interval * 1000 > expiresAt) {
       log('oauth device expired');
-      throw authError('the code expired before it was approved', 'livepages auth login --device');
+      throw authError('the code expired before it was approved', 'livedesign auth login --device');
     }
     await io.sleep(interval * 1000);
     const poll = await postForm(io, server.token_endpoint, {
@@ -189,7 +189,7 @@ export async function loginWithDevice(
     }
     if (error === 'access_denied') throw authError('sign-in was refused on the device page');
     if (error === 'expired_token')
-      throw authError('the code expired before it was approved', 'livepages auth login --device');
+      throw authError('the code expired before it was approved', 'livedesign auth login --device');
     throw authError(`device sign-in failed (${error})`);
   }
 }

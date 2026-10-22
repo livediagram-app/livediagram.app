@@ -1,9 +1,9 @@
 // Applying inbound decisions (docs/specs/022-drive-mirror/blueprints/drive-mirror.md,
-// "Inbound"). Every effect goes through the ordinary livepages routes via
+// "Inbound"). Every effect goes through the ordinary livedesign routes via
 // the port, and the snapshot follows along so later changes in the same read
 // see what the earlier ones did.
 
-import { DRIVE_PROP_FOLDER_ID, DRIVE_PROP_ORIGIN } from '@livepages/api-schema';
+import { DRIVE_PROP_FOLDER_ID, DRIVE_PROP_ORIGIN } from '@livedesign/api-schema';
 import { ApiError } from '../api/core';
 import type { DriveChange } from './drive-client';
 import { driveLog, driveWarn } from './log';
@@ -183,7 +183,7 @@ async function applyDecision(
   }
 }
 
-// Apply one read of changes, folders first. Returns whether livepages
+// Apply one read of changes, folders first. Returns whether livedesign
 // changed, so the pass re-reads before planning outbound.
 export async function applyInbound(ctx: PassContext, changes: DriveChange[]): Promise<boolean> {
   const queue = orderChanges(changes, ctx.snapshot);

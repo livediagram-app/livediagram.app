@@ -11,7 +11,7 @@ import {
   type Element,
   type FlowchartStepType,
   type ShapeElement,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { liveFlowchart } from './template-flowchart-live';
 
 // Flowchart: a checkout, the process everyone has been through, drawn with

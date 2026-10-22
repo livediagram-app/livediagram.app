@@ -2,7 +2,7 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { useSyncExternalStore, type ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
-import type { PageToWorkbenchMessage, WorkbenchToPageMessage } from '@livepages/api-schema';
+import type { PageToWorkbenchMessage, WorkbenchToPageMessage } from '@livedesign/api-schema';
 import {
   useWorkbenchSession,
   WorkbenchSessionContext,
@@ -163,14 +163,14 @@ describe('WorkspaceFrame', () => {
 
     expect(screen.getByText(/explorer/)).toBeTruthy();
     expect(send.mock.calls[0]![0]).toEqual({
-      type: 'livepages:ready',
+      type: 'livedesign:ready',
       v: 1,
       scope: 'workspace',
       role: 'edit',
     });
-    expect(sent('livepages:place')).toEqual([
+    expect(sent('livedesign:place')).toEqual([
       {
-        type: 'livepages:place',
+        type: 'livedesign:place',
         v: 1,
         view: 'home',
         folderId: null,
@@ -190,7 +190,7 @@ describe('WorkspaceFrame', () => {
     explorer.state.selected = { kind: 'folder', id: 'f1' };
     explorer.state.loading = true;
     const { rerender } = mount();
-    expect(sent('livepages:place')).toEqual([]);
+    expect(sent('livedesign:place')).toEqual([]);
 
     explorer.state.loading = false;
     rerender(
@@ -199,7 +199,7 @@ describe('WorkspaceFrame', () => {
       </WorkbenchSessionContext.Provider>,
     );
 
-    expect(sent('livepages:place')).toMatchObject([
+    expect(sent('livedesign:place')).toMatchObject([
       { view: 'folder', folderId: 'f1', folderName: 'Minigames', documentCount: 0 },
     ]);
   });
@@ -208,7 +208,7 @@ describe('WorkspaceFrame', () => {
     mount();
 
     act(() =>
-      listeners.forEach((l) => l({ type: 'livepages:open', v: 1, to: { documentId: 'doc-1' } })),
+      listeners.forEach((l) => l({ type: 'livedesign:open', v: 1, to: { documentId: 'doc-1' } })),
     );
 
     expect(window.location.pathname).toBe('/embed/workbench/document/doc-1');
@@ -223,8 +223,8 @@ describe('WorkspaceFrame', () => {
     expect(screen.getByText('editor workbench on doc-2 by CODE2345')).toBeTruthy();
 
     fireEvent.click(screen.getByRole('button', { name: 'report' }));
-    expect(sent('livepages:place').at(-1)).toEqual({
-      type: 'livepages:place',
+    expect(sent('livedesign:place').at(-1)).toEqual({
+      type: 'livedesign:place',
       v: 1,
       view: 'document',
       folderId: null,
@@ -246,12 +246,12 @@ describe('WorkspaceFrame', () => {
     mount();
 
     act(() =>
-      listeners.forEach((l) => l({ type: 'livepages:open', v: 1, to: { folderId: 'f1' } })),
+      listeners.forEach((l) => l({ type: 'livedesign:open', v: 1, to: { folderId: 'f1' } })),
     );
     expect(window.location.pathname).toBe('/embed/workbench/explorer/folder/f1');
 
     act(() =>
-      listeners.forEach((l) => l({ type: 'livepages:open', v: 1, to: { view: 'home' } })),
+      listeners.forEach((l) => l({ type: 'livedesign:open', v: 1, to: { view: 'home' } })),
     );
     expect(window.location.pathname).toBe('/embed/workbench/explorer');
   });
@@ -264,6 +264,6 @@ describe('WorkspaceFrame', () => {
     expect(`${window.location.pathname}${window.location.search}`).toBe(
       '/embed/workbench/explorer/team?id=team1&folder=tf1',
     );
-    expect(sent('livepages:place').filter((m) => 'view' in m && m.view === 'folder')).toEqual([]);
+    expect(sent('livedesign:place').filter((m) => 'view' in m && m.view === 'folder')).toEqual([]);
   });
 });

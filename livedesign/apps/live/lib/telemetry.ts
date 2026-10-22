@@ -1,13 +1,13 @@
 // Anonymous, first-party product telemetry emitter (docs/specs/017-telemetry/telemetry.md).
 //
 // The buffering / flush / page-hide engine lives in
-// @livepages/telemetry-client (shared with the help centre); this
+// @livedesign/telemetry-client (shared with the help centre); this
 // wrapper owns the editor's policy: the build-time
 // NEXT_PUBLIC_TELEMETRY_ENABLED gate and the cached docs/specs/007-editor/user-preferences.md per-user
 // opt-out. See the package for the privacy rules — `type` is always a
 // closed-vocabulary token, never user content.
 
-import { createTelemetryEmitter, type TelemetryEmitter } from '@livepages/telemetry-client';
+import { createTelemetryEmitter, type TelemetryEmitter } from '@livedesign/telemetry-client';
 import { API_BASE } from './api-client';
 import {
   PREFERENCES_CHANGED_EVENT,
@@ -22,7 +22,7 @@ let preferenceListenersAttached = false;
 // User-preference opt-out (docs/specs/007-editor/user-preferences.md). Cached so the hot path doesn't
 // hit localStorage on every track() call (some events fire in bursts:
 // undo/redo, zoom). Invalidated by the same-tab
-// `livepages:preferences-changed` event the writer dispatches, or
+// `livedesign:preferences-changed` event the writer dispatches, or
 // by the browser's native `storage` event for cross-tab updates.
 // `null` means "not yet read; consult localStorage on next track".
 let cachedOptIn: boolean | null = null;

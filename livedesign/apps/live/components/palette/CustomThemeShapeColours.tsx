@@ -7,8 +7,8 @@
 // under its Per-shape colours ExpandRow slot.
 
 import type { CSSProperties } from 'react';
-import { elementKindLabel, type ShapeKind } from '@livepages/document';
-import type { CustomThemeDefinition } from '@livepages/api-schema';
+import { elementKindLabel, type ShapeKind } from '@livedesign/document';
+import type { CustomThemeDefinition } from '@livedesign/api-schema';
 import {
   ColorDot,
   ExpandRow,
@@ -16,7 +16,7 @@ import {
   type Painter,
 } from '@/components/palette/custom-theme-builder-parts';
 import { ShapeIcon } from '@/components/primitives/shape-icon';
-import { HoverCard } from '@livepages/ui';
+import { HoverCard } from '@livedesign/ui';
 
 // The shape kinds offered in the per-shape editor: the flowchart /
 // diagram vocabulary where a per-kind colour is meaningful. Device

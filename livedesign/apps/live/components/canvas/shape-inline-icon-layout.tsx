@@ -10,7 +10,7 @@ import {
   type TextAlignY,
   type TextSize,
   type TextSizePreset,
-} from '@livepages/document';
+} from '@livedesign/document';
 import {
   ALIGN_ITEMS,
   effectiveRunStyle,
@@ -20,7 +20,7 @@ import {
 } from '@/components/canvas/label-style';
 import { IconGlyph } from '@/components/primitives/icon-glyph';
 import { ShapeMarkerGlyph } from '@/components/canvas/ShapeMarker';
-import { HoverCard } from '@livepages/ui';
+import { HoverCard } from '@livedesign/ui';
 
 // Inline-icon + marker + label layout for a shape, split out of
 // BoxedElementView. Arranges an optional glyph and status marker beside
@@ -208,4 +208,4 @@ const X_ALIGN_FLEX: Record<TextAlignX, 'flex-start' | 'center' | 'flex-end'> = {
 
 // The metrics live with the export's inline icon (packages/document svg-render-inline-icon), so the canvas, the
 // element indicators and every export agree on where the icon is.
-export { inlineIconGap, inlineIconMetrics } from '@livepages/document';
+export { inlineIconGap, inlineIconMetrics } from '@livedesign/document';

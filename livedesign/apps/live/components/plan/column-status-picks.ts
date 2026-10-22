@@ -10,7 +10,7 @@ import {
   type PlanBoardSetup,
   type PlanColumn,
   type StatusPick,
-} from '@livepages/items';
+} from '@livedesign/items';
 import { COLUMN_NAME_MAX } from './board-setup-edits';
 
 // A name as the picker compares it (case, spacing and punctuation aside): shared with board placement and renames.

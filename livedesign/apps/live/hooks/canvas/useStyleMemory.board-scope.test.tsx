@@ -7,7 +7,7 @@ import {
   opensInOf,
   type Element,
   type Tab,
-} from '@livepages/document';
+} from '@livedesign/document';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { boardShape, whiteboardShapeIntent } from '@/lib/whiteboard-tool';
 import { useQuickStyle } from './useQuickStyle';

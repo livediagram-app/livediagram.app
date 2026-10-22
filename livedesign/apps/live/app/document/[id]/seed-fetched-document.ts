@@ -1,8 +1,8 @@
-import { readItemTypeCatalogue } from '@livepages/items';
+import { readItemTypeCatalogue } from '@livedesign/items';
 import type { SavedItemTypes } from '@/lib/api/item-types';
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
-import type { Tab } from '@livepages/document';
-import type { LiveDoc } from '@livepages/api-schema';
+import type { Tab } from '@livedesign/document';
+import type { LiveDoc } from '@livedesign/api-schema';
 import { apiLoadTabRevisioned } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
 import { firstTabToLoad, isTabOutOfScope } from '@/lib/tab-scope';

@@ -19,7 +19,7 @@ import {
   moveDashboardDivider,
   setDashboardRowHeight,
   type DashboardRow,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { useDashboard } from './dashboard-context';
 import { DashboardSlotView } from './DashboardSlotView';
 import { useBoxSize } from './DashboardSlotContent';

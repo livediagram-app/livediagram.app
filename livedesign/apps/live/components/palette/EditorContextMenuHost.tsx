@@ -20,7 +20,7 @@ import {
   isFlowchartLane,
   isFlowchartStep,
   tagColoursOf,
-} from '@livepages/document';
+} from '@livedesign/document';
 import type { FlowchartMenuHandlers } from '@/components/flowchart/FlowchartMenuSections';
 import { track } from '@/lib/telemetry';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';

@@ -4,7 +4,7 @@
 
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, expect, it, vi } from 'vitest';
-import type { ShapeElement, Tab } from '@livepages/document';
+import type { ShapeElement, Tab } from '@livedesign/document';
 
 const editor = vi.hoisted(() => ({ value: {} as Record<string, unknown> }));
 vi.mock('@/app/document/[id]/EditorContext', () => ({ useEditorContext: () => editor.value }));

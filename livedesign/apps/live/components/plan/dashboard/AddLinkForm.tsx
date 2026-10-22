@@ -5,8 +5,8 @@
 // address; from 448 px wide (the card's own width, a container query) they share a row, the label a third. Label takes
 // focus as it opens; Enter adds, Escape cancels.
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { Button, TextInput } from '@livepages/ui';
-import { DASHBOARD_LINK_LABEL_MAX, type DashboardLink, type Tab } from '@livepages/document';
+import { Button, TextInput } from '@livedesign/ui';
+import { DASHBOARD_LINK_LABEL_MAX, type DashboardLink, type Tab } from '@livedesign/document';
 import { LinkAddressField } from './LinkAddressField';
 import { resolveLinkAddress } from './link-address';
 

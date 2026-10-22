@@ -5,7 +5,7 @@
 // (docs/specs/004-interface-design/colour-picker.md), the Angle, and Swap. Each previews while
 // changed and commits once.
 import { useState } from 'react';
-import type { PageFill } from '@livepages/document';
+import type { PageFill } from '@livedesign/document';
 import { MenuSliderRow } from '@/components/primitives/MenuSliderRow';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
 import { standardOptions, type ColourGroup } from '@/components/colour/colour-options';

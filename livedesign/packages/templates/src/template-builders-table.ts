@@ -14,7 +14,7 @@ import {
   createText,
   type Element,
   type TableCellStyle,
-} from '@livepages/document';
+} from '@livedesign/document';
 
 const MUTED = '#64748b';
 

@@ -2,9 +2,9 @@
 // expanded What Happened row is. Drawn from the Timeline's own glyphs, so a comment, an edit or a
 // share looks the same in Home and in the Timeline.
 
-import type { HomeVerb, KnownTimelineEventType } from '@livepages/api-schema';
-import { Glyph, lucideGlyph } from '@livepages/ui';
-import { lucideFile } from '@livepages/icons/lucide';
+import type { HomeVerb, KnownTimelineEventType } from '@livedesign/api-schema';
+import { Glyph, lucideGlyph } from '@livedesign/ui';
+import { lucideFile } from '@livedesign/icons/lucide';
 import { EVENT_GLYPH_PATHS } from '@/app/explorer/timeline/icons';
 
 const glyphOf = (type: KnownTimelineEventType) => EVENT_GLYPH_PATHS[type] ?? '';

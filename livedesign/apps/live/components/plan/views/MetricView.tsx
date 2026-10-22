@@ -4,11 +4,11 @@
 // drawn as in a header, over every live card. It narrows nothing and offers no set-up.
 import { useMemo } from 'react';
 import { useToday } from '@/hooks/ui/useToday';
-import { ITEM_TYPES, metricBoard, type MetricKind } from '@livepages/items';
+import { ITEM_TYPES, metricBoard, type MetricKind } from '@livedesign/items';
 import { BoardWidgetView, type WidgetContext } from '../widgets/BoardWidgetView';
 import type { PlanViewProps } from './PlanViewView';
 import { MetricTile } from './MetricTile';
-import { BOARD_WIDGET_INFO, metricModel, metricTier } from '@livepages/plan-art';
+import { BOARD_WIDGET_INFO, metricModel, metricTier } from '@livedesign/plan-art';
 
 const noop = () => {};
 const NO_QUICK = {};

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { pagesOf, layOutPages, type Tab } from '@livepages/document';
+import { pagesOf, layOutPages, type Tab } from '@livedesign/document';
 import { focusPageAt, focusPressOutcome, viewIsCentredOn } from './focus-audience';
 
 const SIZE = { width: 1200, height: 800 };

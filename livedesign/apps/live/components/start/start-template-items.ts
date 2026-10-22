@@ -15,7 +15,7 @@ import {
   templateMatchesQuery,
   type TemplateDescriptor,
   type TemplateKind,
-} from '@livepages/templates';
+} from '@livedesign/templates';
 
 export type TemplateStartMode = 'diagram' | 'draw' | 'workshop' | 'pages';
 

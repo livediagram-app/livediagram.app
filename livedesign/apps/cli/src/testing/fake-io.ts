@@ -9,8 +9,8 @@ import type { CliAsset, CliIo, LoopbackRequest, RoomSocket } from '../io';
 const requireHere = createRequire(import.meta.url);
 const ASSET_PATHS: Record<CliAsset, string> = {
   'resvg.wasm': requireHere.resolve('@resvg/resvg-wasm/index_bg.wasm'),
-  'Inter-Regular.ttf': requireHere.resolve('@livepages/render-png/fonts/Inter-Regular.ttf'),
-  'Inter-Bold.otf': requireHere.resolve('@livepages/render-png/fonts/Inter-Bold.otf'),
+  'Inter-Regular.ttf': requireHere.resolve('@livedesign/render-png/fonts/Inter-Regular.ttf'),
+  'Inter-Bold.otf': requireHere.resolve('@livedesign/render-png/fonts/Inter-Bold.otf'),
 };
 
 // A room socket the suite drives: it opens, delivers frames and closes when told to.
@@ -116,8 +116,8 @@ export function fakeIo(
   const loopbackWaiting: ((r: LoopbackRequest) => void)[] = [];
   const loopbackQueued: LoopbackRequest[] = [];
   return {
-    // Quiet by default: a suite about the usage count turns it on with LIVEPAGES_TELEMETRY: '1'.
-    env: { LIVEPAGES_TELEMETRY: '0', ...options.env },
+    // Quiet by default: a suite about the usage count turns it on with LIVEDESIGN_TELEMETRY: '1'.
+    env: { LIVEDESIGN_TELEMETRY: '0', ...options.env },
     stdout: (text) => void (out += text),
     stderr: (text) => void (err += text),
     readStdin: async () => options.stdin ?? '',
@@ -230,12 +230,12 @@ export function fakeIo(
   };
 }
 
-// A host that has sign-in, at livepages.app.
+// A host that has sign-in, at livedesign.app.
 export const capabilities: Route = (_, url) =>
   url.pathname === '/api/capabilities'
     ? Response.json({
         aiEnabled: false,
-        apiBase: 'https://livepages.app/api',
+        apiBase: 'https://livedesign.app/api',
         authEnabled: true,
         documentFormat: 2,
       })

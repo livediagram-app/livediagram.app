@@ -3,7 +3,7 @@
 // password saved before hashing shipped, still accepted (compared in constant
 // time) until its first correct entry rewrites it.
 
-import { base64ToBytes, bytesToBase64Url } from '@livepages/api-schema';
+import { base64ToBytes, bytesToBase64Url } from '@livedesign/api-schema';
 import { timingSafeEqual } from './timing-safe';
 
 const PREFIX = 'pbkdf2-sha256';

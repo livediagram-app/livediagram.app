@@ -18,7 +18,7 @@ import {
   type PasteMode,
   type PasteResult,
   type SheetClip,
-} from '@livepages/sheets';
+} from '@livedesign/sheets';
 import { track } from '@/lib/telemetry';
 import { useSheetController, type SheetController } from './sheet-controller';
 

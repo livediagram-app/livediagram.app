@@ -1,8 +1,8 @@
 // What gets made: documents, tabs, elements added and edited, undo, export and import (docs/specs/017-telemetry/telemetry.md).
 // Part of the metric catalogue: import from ../metric-catalogue.
 
-import { PALETTE_TELEMETRY_TYPES, SHEET_CHANGE_KINDS } from '@livepages/api-schema';
-import { FORM_STARTERS, QUESTION_TYPE_TELEMETRY } from '@livepages/forms';
+import { PALETTE_TELEMETRY_TYPES, SHEET_CHANGE_KINDS } from '@livedesign/api-schema';
+import { FORM_STARTERS, QUESTION_TYPE_TELEMETRY } from '@livedesign/forms';
 import { canonicalElementType, PALETTE_KINDS, type PaletteTab } from '../palette-types';
 import type { Metric, MetricStack } from '../metric-series';
 import { chart } from './helpers';
@@ -750,14 +750,14 @@ export const TAB_IMPORTS = chart(
   'Tab',
   'Imported',
   'Tabs Imported',
-  'A tab imported from a Markdown outline or a livepages JSON export.',
+  'A tab imported from a Markdown outline or a livedesign JSON export.',
 );
 
 export const EXPORT_AND_IMPORT: MetricStack = {
   stack: true,
   title: 'Export & Import',
   blurb:
-    'Diagrams leaving livepages as files and text, and tabs coming in from Markdown outlines and JSON exports.',
+    'Diagrams leaving livedesign as files and text, and tabs coming in from Markdown outlines and JSON exports.',
   members: [EXPORTS, EXPORT_OPTIONS, TAB_IMPORTS],
   seeAlso: { section: 'editing', label: 'See Each Export Format in Features › Editing' },
 };

@@ -1,4 +1,4 @@
-import { markupBounds } from '@livepages/icons/centring';
+import { markupBounds } from '@livedesign/icons/centring';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { articles, categories } from './articles';

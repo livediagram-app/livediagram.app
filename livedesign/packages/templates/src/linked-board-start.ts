@@ -1,14 +1,14 @@
 // The Actions board (docs/specs/026-plan/linked-boards.md "The Actions board"): the Board tab made the first time a
 // document gets an action. New, Done and Won't Do, Compact Action cards showing who has each and when it is due.
 // Pure: the editor commits it.
-import { SHAPE_DEFAULT_SIZE, createShape, type Element, type Tab } from '@livepages/document';
+import { SHAPE_DEFAULT_SIZE, createShape, type Element, type Tab } from '@livedesign/document';
 import {
   freshSetup,
   planBoardHeightFor,
   planBoardWidthFor,
   statusColumn,
   type PlanBoardSetup,
-} from '@livepages/items';
+} from '@livedesign/items';
 
 export const ACTIONS_BOARD_TITLE = 'Actions';
 

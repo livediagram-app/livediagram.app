@@ -4,8 +4,8 @@ import {
   type Element,
   type ElementOp,
   type Tab,
-} from '@livepages/document';
-import type { RevertKept } from '@livepages/api-schema';
+} from '@livedesign/document';
+import type { RevertKept } from '@livedesign/api-schema';
 import type { ChangesetFingerprints } from '../db/changesets';
 
 // A revert (docs/specs/024-agents/agent-changesets.md "Revert"): the changeset's inverse applied to

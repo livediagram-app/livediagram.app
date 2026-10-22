@@ -1,7 +1,7 @@
 'use client';
 
 import { useId } from 'react';
-import { HoverCard } from '@livepages/ui';
+import { HoverCard } from '@livedesign/ui';
 import { ThisBrowserIcon } from '@/components/primitives/explorer-icons';
 import { helpArticleHref } from '@/lib/help-articles';
 import { trackHelpArticle } from '@/components/primitives/HelpArticleLink';

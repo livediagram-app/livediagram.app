@@ -7,11 +7,11 @@ import {
   renderSkill,
   SKILL_DIRECTORIES,
   SKILL_NAME,
-} from '@livepages/agent-verbs';
+} from '@livedesign/agent-verbs';
 import { discover, loginWithBrowser, loginWithDevice } from '../auth/oauth';
 import type { DebugLog } from '../debug';
-import type { ApiClient } from '@livepages/api-client';
-import { isApiTokenFormat, type CurrentTokenResponse } from '@livepages/api-schema';
+import type { ApiClient } from '@livedesign/api-client';
+import { isApiTokenFormat, type CurrentTokenResponse } from '@livedesign/api-schema';
 import {
   forgetCredential,
   storeCredential,
@@ -29,7 +29,7 @@ export function guideOf(topic: string | undefined): { text: string } {
   if (topic === undefined || !isGuideTopic(topic))
     return {
       text: [
-        'Guides: livepages guide <topic>',
+        'Guides: livedesign guide <topic>',
         ...GUIDE_TOPIC_NAMES.map((t) => `  ${t.padEnd(12)}${GUIDE_TOPICS[t].summary}`),
       ].join('\n'),
     };
@@ -46,7 +46,7 @@ export async function installSkill(io: CliIo, to: string | undefined): Promise<{
       code: 'usage',
       message: 'skill install needs --to <dir>, the skills directory of your agent',
       lines: SKILL_DIRECTORIES.map((d) => `${d.path.padEnd(20)}${d.agent}`),
-      hint: `livepages skill install --to ${SKILL_DIRECTORIES[0]!.path}`,
+      hint: `livedesign skill install --to ${SKILL_DIRECTORIES[0]!.path}`,
     });
   const dir = `${expandHome(io, to)}/${SKILL_NAME}`;
   const path = `${dir}/SKILL.md`;
@@ -73,7 +73,7 @@ export async function callApi(
   input: { method: string; path: string; body?: string },
 ): Promise<{ text: string; status: number }> {
   const method = input.method.toUpperCase();
-  const usage = (message: string, hint = 'livepages api --help') =>
+  const usage = (message: string, hint = 'livedesign api --help') =>
     new CliError({ exit: EXIT.usage, code: 'usage', message, hint });
   if (!API_METHODS.includes(method))
     throw usage(`${input.method} is not one of ${API_METHODS.join(', ')}`);
@@ -83,7 +83,7 @@ export async function callApi(
   if (method === 'PUT' && /^\/documents\/[^/]*\/tabs\/[^/]*\/?$/.test(path.split('?')[0]!))
     throw usage(
       'the CLI never saves a whole tab; change a tab with a changeset',
-      'livepages guide edit',
+      'livedesign guide edit',
     );
   const body = input.body === undefined ? undefined : await inputReader(io)(input.body);
   const res = await api.fetch(path, { method, ...(body ? { body } : {}) });
@@ -97,7 +97,7 @@ async function tokenFromStdin(io: CliIo): Promise<string> {
       exit: EXIT.usage,
       code: 'usage',
       message: '--with-token reads the token from stdin, not a terminal',
-      hint: 'printf %s "$TOKEN" | livepages auth login --with-token',
+      hint: 'printf %s "$TOKEN" | livedesign auth login --with-token',
     });
   const token = (await io.readStdin()).trim();
   if (!isApiTokenFormat(token))
@@ -135,7 +135,7 @@ export async function login(
         exit: EXIT.auth,
         code: 'auth',
         message: `${profile.host} offers no browser sign-in`,
-        hint: 'create a token in Settings › API Tokens, then pipe it to: livepages auth login --with-token',
+        hint: 'create a token in Settings › API Tokens, then pipe it to: livedesign auth login --with-token',
       });
     const server = await discover(io, oauthIssuer, log);
     token = input.device
@@ -189,7 +189,7 @@ export async function status(
   const days =
     current.expiresAt === null ? null : Math.floor((current.expiresAt - io.now()) / DAY_MS);
   if (days !== null && days < TOKEN_EXPIRY_WARN_DAYS)
-    io.stderr(`this token expires in ${days} days: livepages auth login to renew\n`);
+    io.stderr(`this token expires in ${days} days: livedesign auth login to renew\n`);
   return {
     host: profile.host,
     account: current.accountName ?? current.accountId,
@@ -214,8 +214,8 @@ export async function logout(
     throw new CliError({
       exit: EXIT.usage,
       code: 'usage',
-      message: "LIVEPAGES_TOKEN is set; it is not the CLI's to revoke",
-      hint: 'unset LIVEPAGES_TOKEN, or revoke the token in Settings › API Tokens',
+      message: "LIVEDESIGN_TOKEN is set; it is not the CLI's to revoke",
+      hint: 'unset LIVEDESIGN_TOKEN, or revoke the token in Settings › API Tokens',
     });
   const res = await api.fetch('/tokens/current', { method: 'DELETE' });
   if (!res.ok && res.status !== 401 && res.status !== 404)

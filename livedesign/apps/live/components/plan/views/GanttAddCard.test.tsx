@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { ITEM_TYPES } from '@livepages/items';
+import { ITEM_TYPES } from '@livedesign/items';
 import { planPalette } from '../plan-palette';
 import type { PlanContextValue } from '../PlanContext';
 import { GanttAddCard, ganttNewCardDates } from './GanttAddCard';

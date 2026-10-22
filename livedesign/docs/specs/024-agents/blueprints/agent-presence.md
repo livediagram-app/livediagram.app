@@ -176,7 +176,7 @@ resolved full ids are stored, de-duplicated, in request order.
 
 `AgentPresenceResult = { tabId, status: string | null, focus: string[], expiresAt: number }` (PR10).
 
-`parseAgentPresenceRequest(body): { ok: true, value } | { ok: false, code }` lives in `@livepages/api-schema` so
+`parseAgentPresenceRequest(body): { ok: true, value } | { ok: false, code }` lives in `@livedesign/api-schema` so
 the CLI checks a request with the rule the api applies; ref resolution stays in the api.
 
 Reply body: `{ text, mentions? }`, the add's rules (`text` trimmed, 1 to `COMMENT_TEXT_MAX` characters,

@@ -4,8 +4,8 @@ import {
   renderElementsToSvg,
   SHAPE_GEOMETRY_KINDS,
   type Tab,
-} from '@livepages/document';
-import type { ShapeKind } from '@livepages/document';
+} from '@livedesign/document';
+import type { ShapeKind } from '@livedesign/document';
 
 // Canvas and export must agree on which shapes have a real outline.
 //

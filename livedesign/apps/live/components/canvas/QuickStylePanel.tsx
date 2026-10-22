@@ -35,7 +35,7 @@ import {
   type QuickSwatchRole,
   type QuickSwatchSlot,
   type TextAlignX,
-} from '@livepages/document';
+} from '@livedesign/document';
 import type { ShownSwatch } from '@/lib/swatch-overrides';
 import { SwatchOverridePopover } from './SwatchOverridePopover';
 import { BoardColourRow, QuickPenRows } from './QuickPenRows';

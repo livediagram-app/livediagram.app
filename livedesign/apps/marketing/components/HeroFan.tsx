@@ -1,9 +1,9 @@
 'use client';
 
-import { ctaHref, RECENT_FAN_MIN } from '@livepages/api-schema';
-import { TemplatePreview } from '@livepages/template-previews';
-import { templateCreateHref, type TemplateKind } from '@livepages/templates';
-import { PREFERS_REDUCED_MOTION, useMediaQuery } from '@livepages/ui';
+import { ctaHref, RECENT_FAN_MIN } from '@livedesign/api-schema';
+import { TemplatePreview } from '@livedesign/template-previews';
+import { templateCreateHref, type TemplateKind } from '@livedesign/templates';
+import { PREFERS_REDUCED_MOTION, useMediaQuery } from '@livedesign/ui';
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import {
   HERO_FAN_FULL_MIN_PX,

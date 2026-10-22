@@ -66,9 +66,9 @@ export interface Category {
 export const categories: Category[] = [
   {
     slug: 'about',
-    title: 'About livepages',
+    title: 'About livedesign',
     description:
-      'Get to know livepages: what it is, who it helps, and the ideas behind a free, open canvas.',
+      'Get to know livedesign: what it is, who it helps, and the ideas behind a free, open canvas.',
     articleCount: 4,
   },
   {
@@ -103,14 +103,14 @@ export const categories: Category[] = [
     slug: 'self-hosting',
     title: 'Self-Hosting',
     description:
-      'Run livepages on your own infrastructure, with the full feature set, free and open source.',
+      'Run livedesign on your own infrastructure, with the full feature set, free and open source.',
     articleCount: 3,
   },
   {
     slug: 'developers',
     title: 'Developers',
     description:
-      'Call the livepages REST API from your own scripts or the command line: authentication, worked examples, the CLI and developer tools, errors and limits, and the OpenAPI reference.',
+      'Call the livedesign REST API from your own scripts or the command line: authentication, worked examples, the CLI and developer tools, errors and limits, and the OpenAPI reference.',
     articleCount: 8,
   },
   {
@@ -124,14 +124,14 @@ export const categories: Category[] = [
     slug: 'supported-devices',
     title: 'Supported Devices',
     description:
-      'How livepages works on a computer, a tablet, and a phone, and what to expect on each.',
+      'How livedesign works on a computer, a tablet, and a phone, and what to expect on each.',
     articleCount: 3,
   },
   {
     slug: 'policies',
     title: 'Policies',
     description:
-      'The legal terms for the hosted livepages service: the Terms of Service, the full Privacy Policy and how to report a vulnerability.',
+      'The legal terms for the hosted livedesign service: the Terms of Service, the full Privacy Policy and how to report a vulnerability.',
     articleCount: 3,
   },
   {
@@ -326,38 +326,38 @@ export const articles: Article[] = [
 
   // ---- About ----
   {
-    slug: 'what-is-livepages',
-    title: 'What is livepages?',
+    slug: 'what-is-livedesign',
+    title: 'What is livedesign?',
     description: 'An overview of the real-time, multiplayer diagram editor and what it does.',
     keywords: 'overview intro introduction about product whiteboard drawing tool app',
-    category: 'About livepages',
+    category: 'About livedesign',
     categorySlug: 'about',
     parentSlug: 'about',
   },
   {
     slug: 'who-is-it-for',
-    title: 'Who is livepages For?',
-    description: 'The teams and use cases that get the most out of livepages.',
+    title: 'Who is livedesign For?',
+    description: 'The teams and use cases that get the most out of livedesign.',
     keywords: 'audience use cases teams developers designers educators students',
-    category: 'About livepages',
+    category: 'About livedesign',
     categorySlug: 'about',
     parentSlug: 'about',
   },
   {
-    slug: 'why-livepages',
-    title: 'Why Use livepages?',
+    slug: 'why-livedesign',
+    title: 'Why Use livedesign?',
     description: 'Free, open source, no sign-in wall, real-time collaboration. Here is why.',
     keywords: 'benefits reasons comparison alternatives features advantages',
-    category: 'About livepages',
+    category: 'About livedesign',
     categorySlug: 'about',
     parentSlug: 'about',
   },
   {
     slug: 'what-is-open-source',
     title: 'What is Open Source?',
-    description: 'What open source means, and what livepages being MIT-licensed gives you.',
+    description: 'What open source means, and what livedesign being MIT-licensed gives you.',
     keywords: 'mit license free code github oss public repository',
-    category: 'About livepages',
+    category: 'About livedesign',
     categorySlug: 'about',
     parentSlug: 'about',
   },
@@ -543,7 +543,7 @@ export const articles: Article[] = [
   {
     slug: 'api-tokens',
     title: 'API Tokens',
-    description: 'Create signed-in-only tokens to call the livepages API from your own scripts.',
+    description: 'Create signed-in-only tokens to call the livedesign API from your own scripts.',
     keywords: 'token key programmatic rest scripts secret bearer automation',
     category: 'Account and Data',
     categorySlug: 'account-and-data',
@@ -560,7 +560,7 @@ export const articles: Article[] = [
   {
     slug: 'ai-clients',
     title: 'Connecting AI Tools',
-    description: 'Add livepages to Claude, Claude Code, Cursor, ChatGPT or any MCP client',
+    description: 'Add livedesign to Claude, Claude Code, Cursor, ChatGPT or any MCP client',
     keywords:
       'mcp connector claude desktop claude code cursor chatgpt oauth bearer token setup remote server url',
     category: 'Account and Data',
@@ -572,7 +572,7 @@ export const articles: Article[] = [
     title: 'Google Drive',
     description: 'Sync My documents to your own Google Drive, both ways.',
     keywords:
-      'google drive mirror sync backup copy cloud storage open with livepages file folders',
+      'google drive mirror sync backup copy cloud storage open with livedesign file folders',
     category: 'Account and Data',
     categorySlug: 'account-and-data',
   },
@@ -589,7 +589,7 @@ export const articles: Article[] = [
   // ---- Developers ----
   {
     slug: 'api-overview',
-    title: 'The livepages API',
+    title: 'The livedesign API',
     description: 'What the REST API is, the base URL, and how to start calling it with a token.',
     keywords: 'rest api endpoints base url http programmatic developer integrate',
     category: 'Developers',
@@ -642,7 +642,7 @@ export const articles: Article[] = [
   },
   {
     slug: 'cli',
-    title: 'The livepages CLI',
+    title: 'The livedesign CLI',
     description:
       'Read, build, edit and discuss documents from a terminal: install, sign in, the commands, and self-hosting.',
     keywords:
@@ -693,7 +693,7 @@ export const articles: Article[] = [
   {
     slug: 'terms',
     title: 'Terms of Service',
-    description: 'The terms that govern use of the hosted livepages service.',
+    description: 'The terms that govern use of the hosted livedesign service.',
     keywords: 'tos legal terms conditions agreement rules',
     category: 'Policies',
     categorySlug: 'policies',
@@ -702,7 +702,7 @@ export const articles: Article[] = [
   {
     slug: 'privacy-policy',
     title: 'Privacy Policy',
-    description: 'The full privacy policy for the hosted livepages service.',
+    description: 'The full privacy policy for the hosted livedesign service.',
     keywords:
       'legal privacy gdpr data protection personal information openai ai retention security',
     category: 'Policies',
@@ -784,15 +784,15 @@ export const articles: Article[] = [
   {
     slug: 'self-hosting-overview',
     title: 'Self-Hosting Overview',
-    description: 'What it takes to run your own livepages, and why you might.',
+    description: 'What it takes to run your own livedesign, and why you might.',
     keywords: 'host yourself own server on premise deploy install run',
     category: 'Self-Hosting',
     categorySlug: 'self-hosting',
     parentSlug: 'self-hosting',
   },
   {
-    slug: 'deploying-livepages',
-    title: 'Deploying livepages',
+    slug: 'deploying-livedesign',
+    title: 'Deploying livedesign',
     description: 'The apps, the Cloudflare stack, and how a deploy runs.',
     keywords:
       'cloudflare workers deploy install setup infrastructure d1 github actions router mcp wrangler',
@@ -886,7 +886,7 @@ export const articles: Article[] = [
   {
     slug: 'tablet',
     title: 'Tablet',
-    description: 'Using livepages on a tablet, and how a keyboard changes what you can do.',
+    description: 'Using livedesign on a tablet, and how a keyboard changes what you can do.',
     keywords: 'ipad touch stylus pen android surface',
     category: 'Supported Devices',
     categorySlug: 'supported-devices',
@@ -1808,7 +1808,7 @@ export const articles: Article[] = [
     slug: 'import-tabs',
     title: 'Importing a Tab',
     description:
-      'Import a livepages tab exported as JSON, or a Markdown outline, into the active tab, by pasting it or picking the file.',
+      'Import a livedesign tab exported as JSON, or a Markdown outline, into the active tab, by pasting it or picking the file.',
     keywords:
       'import json markdown outline file files paste upload load restore backup copy clipboard replace tab export round trip',
     category: 'Tabs',
@@ -2070,7 +2070,7 @@ export const articles: Article[] = [
     // what a reader searches for even though the control is now three-way.
     slug: 'dark-mode',
     title: 'Appearance: Light, Dark, System',
-    description: 'Set livepages to light, dark, or your device setting, everywhere at once.',
+    description: 'Set livedesign to light, dark, or your device setting, everywhere at once.',
     keywords:
       'night theme appearance dark light system os device switch toggle cycle eyes mode website help header',
     category: 'Tools',

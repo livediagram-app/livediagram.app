@@ -5,7 +5,7 @@
 // Pure: a key in, an action (or null) out. useAvatarActionKeys plays it; useEditorKeyboardShortcuts asks the
 // same question so it stands aside for these keys while walking (S would otherwise open search, 1 pick Select).
 
-import { REACTIONS, type Reaction } from '@livepages/document';
+import { REACTIONS, type Reaction } from '@livedesign/document';
 import type { AvatarReactionKind } from './avatar-reactions';
 
 // The letter each Behaviour answers to: its initial, so the key is the word.

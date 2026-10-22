@@ -42,7 +42,7 @@ describe('useTokens', () => {
   it('never fetches for a guest, even when another controller changes', async () => {
     api.apiListTokens.mockClear();
     renderHook(() => useTokens(null, { enabled: false }));
-    window.dispatchEvent(new Event('livepages:tokens-changed'));
+    window.dispatchEvent(new Event('livedesign:tokens-changed'));
     expect(api.apiListTokens).not.toHaveBeenCalled();
   });
 

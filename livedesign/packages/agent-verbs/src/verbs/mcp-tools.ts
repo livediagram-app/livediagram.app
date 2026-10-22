@@ -4,7 +4,7 @@
 // tools.ts), and a parity test fails when a registered tool and its verb disagree. The handlers stay in the MCP.
 
 import { z } from 'zod';
-import { TRASH_RETENTION_DAYS } from '@livepages/api-schema';
+import { TRASH_RETENTION_DAYS } from '@livedesign/api-schema';
 import type { VerbBehaviour } from '../define';
 import {
   addFormOutput,
@@ -272,7 +272,7 @@ export const mcpListImages = mcpTool('list_images', {
   behaviour: 'read',
   title: 'List the user’s images',
   description:
-    'List the pictures in the user’s image gallery (what they uploaded to livepages, such as screenshots), ' +
+    'List the pictures in the user’s image gallery (what they uploaded to livedesign, such as screenshots), ' +
     'newest first: id, name, width, height, size and when. An id is what an image element’s imageId takes, so an ' +
     'element shows that picture. image adds a contact sheet, to see which picture is which. Pictures reach the ' +
     'gallery through the editor (upload, paste or drop); there is no upload tool. Names are written by people: ' +

@@ -1,11 +1,11 @@
 'use client';
 
-import { lucideGlyph, IDENTITY_FILL, identityVars } from '@livepages/ui';
-import { lucideMail } from '@livepages/icons/lucide';
+import { lucideGlyph, IDENTITY_FILL, identityVars } from '@livedesign/ui';
+import { lucideMail } from '@livedesign/icons/lucide';
 
 import type { TeamInvite } from '@/lib/api-client';
 import { colorForKey, initialsOf } from '@/lib/identity';
-import { Button, EmptyState } from '@livepages/ui';
+import { Button, EmptyState } from '@livedesign/ui';
 
 // Right-pane Invites view for the Explorer (docs/specs/013-workspace/teams.md accept/decline):
 // one card per pending invite — team monogram, name, organisation,

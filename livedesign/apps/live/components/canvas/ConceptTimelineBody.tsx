@@ -4,7 +4,7 @@ import {
   timelineLayout,
   type ConceptRow,
   type LayoutRect,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { ConceptRowLayer } from './concept-row-layer';
 
 // What ConceptFace hands a kind's body to draw its words with (its `line`), so every kind edits in place alike.

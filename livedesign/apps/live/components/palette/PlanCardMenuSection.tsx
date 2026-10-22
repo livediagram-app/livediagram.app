@@ -4,8 +4,8 @@
 // holding a collapsible Card Size row, closed until opened as every menu row is, with the same choice a board makes
 // for its cards (CardSizeOptions). One element edit, through PlanContext; absent is Detailed.
 import type { ComponentProps } from 'react';
-import type { ShapeElement } from '@livepages/document';
-import { PlanIcon } from '@livepages/ui';
+import type { ShapeElement } from '@livedesign/document';
+import { PlanIcon } from '@livedesign/ui';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
 import { CardSizeArt } from '@/components/plan/plan-tile-art';

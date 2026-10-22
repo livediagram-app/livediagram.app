@@ -1,5 +1,5 @@
-import { ctaHref } from '@livepages/api-schema';
-import { RAIL_CLEAR_PADDING } from '@livepages/ui';
+import { ctaHref } from '@livedesign/api-schema';
+import { RAIL_CLEAR_PADDING } from '@livedesign/ui';
 import type { CSSProperties } from 'react';
 import { CtaLink } from '@/components/CtaLink';
 import type { LandingSection } from '@/lib/landing-content';

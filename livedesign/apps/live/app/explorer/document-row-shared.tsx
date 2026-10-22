@@ -7,7 +7,7 @@
 // Extracted so the two view modes can't drift on what a document's badge
 // says or which actions its menu offers.
 
-import { CloseIcon } from '@livepages/ui';
+import { CloseIcon } from '@livedesign/ui';
 import {
   ClockIcon,
   ClockOffIcon,

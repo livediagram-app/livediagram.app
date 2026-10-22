@@ -6,8 +6,8 @@ import {
   announceResults,
   issueMessage,
   type LensIssue,
-} from '@livepages/explorer-lens';
-import { Button, EmptyState, SearchIcon } from '@livepages/ui';
+} from '@livedesign/explorer-lens';
+import { Button, EmptyState, SearchIcon } from '@livedesign/ui';
 import { DocumentIcon } from '@/components/primitives/explorer-icons';
 
 // What a lensed list says when it has nothing to show, or could not load, and what it tells a

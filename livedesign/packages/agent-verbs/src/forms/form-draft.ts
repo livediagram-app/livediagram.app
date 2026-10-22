@@ -2,7 +2,7 @@
 // the card types as they will be saved, the boards and sheets it may send responses to, and the tabs to make or boards
 // to change beside it, built up change by change and written only once every change has been checked. Where responses
 // go and where each answer goes are decided here, as Responses Go To and Answer Goes To decide them.
-import { newPlanSheetId, type Element, type Tab } from '@livepages/document';
+import { newPlanSheetId, type Element, type Tab } from '@livedesign/document';
 import {
   MAPPABLE_KINDS,
   QUESTION_TYPE_NAMES,
@@ -15,7 +15,7 @@ import {
   starterBaseType,
   type FormDefinition,
   type FormQuestion,
-} from '@livepages/forms';
+} from '@livedesign/forms';
 import {
   ITEM_TYPE_CUSTOM_MAX,
   READY_MADE_CARD_TYPES,
@@ -27,13 +27,13 @@ import {
   type CustomFieldDef,
   type ItemTypeDef,
   withArticle,
-} from '@livepages/items';
+} from '@livedesign/items';
 import {
   boardsOf,
   responsesBoardTab,
   responsesSheetTab,
   uniqueTypeLabel,
-} from '@livepages/templates';
+} from '@livedesign/templates';
 import { refuse, resolveBoard, resolveColumn, resolveSheet, type FormRefusal } from './form-names';
 import type { BoardRef, FormWorld, SheetRef } from './form-world';
 

@@ -26,7 +26,7 @@ import {
   type CardSlot,
   type Item,
   type ItemTypeDef,
-} from '@livepages/items';
+} from '@livedesign/items';
 import { FLAG_COLOUR, PRIORITY_COLOURS, type PlanPalette } from './plan-palette';
 import { r2, xmlEscape } from './svg-render-primitives';
 import { personDisc, text as faceText, wrapLines } from './svg-render-face-kit';

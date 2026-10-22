@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Element, Tab } from '@livepages/document';
+import type { Element, Tab } from '@livedesign/document';
 import { arrowBetween, shapeAt } from './__fixtures__/build';
 import { buildViewModel } from './model';
 

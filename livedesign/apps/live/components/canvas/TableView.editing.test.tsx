@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, fireEvent, render } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { TableElement } from '@livepages/document';
+import type { TableElement } from '@livedesign/document';
 import { TableView } from './TableView';
 
 const table = (animation?: string): TableElement =>

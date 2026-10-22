@@ -4,7 +4,7 @@ import type { PointerEvent as ReactPointerEvent, ReactNode, RefObject } from 're
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import type { HelpArticleKey } from '@/lib/help-articles';
 import { ResetPositionGlyph } from '@/components/primitives/ResetPositionGlyph';
-import { HoverCard, Glyph } from '@livepages/ui';
+import { HoverCard, Glyph } from '@livedesign/ui';
 import { useMinimalChrome } from '@/components/providers/minimal-chrome';
 
 // A panel's title. Minimal chrome (docs/specs/007-editor/power-user-mode.md) keeps it for

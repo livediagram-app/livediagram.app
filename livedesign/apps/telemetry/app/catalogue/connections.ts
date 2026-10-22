@@ -27,7 +27,7 @@ export const CLI_SIGN_INS: Metric = {
   action: 'Created',
   type: 'Cli',
   title: 'CLI Sign-ins',
-  blurb: 'The livepages CLI signed in, through the browser or with a code on another device.',
+  blurb: 'The livedesign CLI signed in, through the browser or with a code on another device.',
 };
 
 export const TOKENS_REVOKED: Metric = {
@@ -156,7 +156,7 @@ export const MCP_TOOL_CALLS: MetricStack = {
   stack: true,
   title: 'MCP Tool Calls',
   blurb:
-    'AI assistants calling the livepages MCP server, by tool. Only calls that succeeded count.',
+    'AI assistants calling the livedesign MCP server, by tool. Only calls that succeeded count.',
   members: [...MCP_TOOL_METRICS],
 };
 
@@ -212,7 +212,7 @@ export const DRIVE_OPEN_WITH = chart(
   'Drive',
   'Opened',
   'Opened From Drive',
-  'A file opened with livepages from Google Drive: opened, offered as a copy, or unreadable.',
+  'A file opened with livedesign from Google Drive: opened, offered as a copy, or unreadable.',
 );
 
 // Agent changesets (docs/specs/024-agents/agent-changesets.md "Observability and telemetry"):

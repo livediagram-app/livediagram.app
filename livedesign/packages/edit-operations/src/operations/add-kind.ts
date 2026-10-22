@@ -3,7 +3,7 @@
 // input sizes it, its fields written as `set` writes them, painted with the tab's theme, placed, put
 // on the placement reference's layer (or the active one when that is locked) and appended.
 
-import type { EditRejection } from '@livepages/api-schema';
+import type { EditRejection } from '@livedesign/api-schema';
 import {
   SHAPE_DEFAULT_SIZE,
   SHAPE_KINDS,
@@ -25,7 +25,7 @@ import {
   type ElementId,
   type TextSize,
   type ThemeDefinition,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { writeFieldsOnto } from '../fields';
 import { newElementId } from '../ids';
 import { layerLockOf } from '../locks';

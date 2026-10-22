@@ -1,9 +1,9 @@
 // @vitest-environment jsdom
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { RECENT_DIAGRAMS_KEY, RECENT_FAN_MIN } from '@livepages/api-schema';
+import { RECENT_DIAGRAMS_KEY, RECENT_FAN_MIN } from '@livedesign/api-schema';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { seededRandom } from '@livepages/document';
+import { seededRandom } from '@livedesign/document';
 import {
   HERO_FAN_FULL_MIN_PX,
   HERO_FAN_OPENING,

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DAY_MS } from '@livepages/items';
+import { DAY_MS } from '@livedesign/items';
 import {
   expiryFrom,
   lifetimeElapsed,

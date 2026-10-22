@@ -1,6 +1,6 @@
 'use client';
 
-import { useMediaQuery } from '@livepages/ui';
+import { useMediaQuery } from '@livedesign/ui';
 import { LANDSCAPE_PHONE_MEDIA_QUERY, PHONE_MEDIA_QUERY } from '@/lib/responsive';
 
 // Reactive "is this a mobile viewport?": narrower than Tailwind's `sm` (640px), or a touch screen

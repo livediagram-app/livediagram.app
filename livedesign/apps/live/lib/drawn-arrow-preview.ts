@@ -3,8 +3,8 @@ import {
   type ArrowElement,
   type CanvasSurface,
   type Element,
-} from '@livepages/document';
-import type { ThemeDefinition } from '@livepages/document';
+} from '@livedesign/document';
+import type { ThemeDefinition } from '@livedesign/document';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { buildDressedDrawnArrow } from '@/lib/draw-commit';
 

@@ -1,9 +1,9 @@
 // What a Dashboard slot is filled with when it is made new (docs/specs/026-plan/plan-tabs.md "Filling a slot"): a plan
 // view an element of the dashboard itself, drawn in the slot; a new board or Sheet a tab of its own, made as Start
 // Planning makes a Board or Sheet tab, which the slot then shows. Pure, so the hook (usePlanTabActions) only commits.
-import { createShape, type Element, type Tab } from '@livepages/document';
-import { isPlanViewId, planViewSize } from '@livepages/items';
-import { isSheetTemplateId } from '@livepages/sheets';
+import { createShape, type Element, type Tab } from '@livedesign/document';
+import { isPlanViewId, planViewSize } from '@livedesign/items';
+import { isSheetTemplateId } from '@livedesign/sheets';
 import { planBoardPlacement } from '@/lib/plan-board-placement';
 import { newTabSeed } from '@/lib/new-tab-seed';
 import { placeNewSheet, placedSheetTitle, sheetTitleForTab } from '@/lib/sheet-seeds';

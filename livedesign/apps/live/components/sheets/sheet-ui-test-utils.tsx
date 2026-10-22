@@ -17,7 +17,7 @@ import {
   type Sheet,
   type SheetJson,
   type SheetWrite,
-} from '@livepages/sheets';
+} from '@livedesign/sheets';
 import { planPalette } from '@/components/plan/plan-palette';
 import { SheetStore } from './sheet-store-client';
 import {

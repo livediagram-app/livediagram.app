@@ -1,7 +1,7 @@
 // `image ls` (docs/specs/015-api/cli.md "Commands", docs/specs/009-elements/images.md "Agents"): the caller's image
 // gallery, so an image element's imageId= names a picture the user uploaded. The listing is the MCP's list_images'.
 import { z } from 'zod';
-import type { ImageSummary } from '@livepages/api-schema';
+import type { ImageSummary } from '@livedesign/api-schema';
 import { defineVerb } from '../define';
 import { IMAGE_LIST_DEFAULT_LIMIT, IMAGE_LIST_MAX_LIMIT, galleryListing } from '../images/gallery';
 import { columns } from './shared';
@@ -65,7 +65,7 @@ export const imageLs = defineVerb({
   quiet: ({ images }) => images.map((i) => i.id),
   cli: {
     positionals: ['query'],
-    examples: ['livepages image ls', 'livepages image ls screenshot --limit 5'],
+    examples: ['livedesign image ls', 'livedesign image ls screenshot --limit 5'],
     prints: 'one image a line: id, pixels, size, name',
   },
 });

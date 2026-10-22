@@ -1,7 +1,7 @@
 // The Toolbar strip's Search over Icons, Stickers and Technology
 // (docs/specs/007-editor/toolbar-layout.md "Search: every element type").
 import { beforeAll, describe, expect, it } from 'vitest';
-import type { Element } from '@livepages/document';
+import type { Element } from '@livedesign/document';
 import { ensureIconCatalogs } from '@/lib/icon-registry';
 import { getLineArtIconCatalog } from '@/lib/icons';
 import { getStickerCatalog } from '@/lib/stickers';

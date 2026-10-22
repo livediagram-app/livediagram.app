@@ -9,8 +9,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('./user-preferences', () => ({
   readUserPreferences: vi.fn(() => ({})),
-  PREFERENCES_CHANGED_EVENT: 'livepages:preferences-changed',
-  STORAGE_KEY: 'livepages:user-preferences:v1',
+  PREFERENCES_CHANGED_EVENT: 'livedesign:preferences-changed',
+  STORAGE_KEY: 'livedesign:user-preferences:v1',
 }));
 
 import { readUserPreferences } from './user-preferences';
@@ -206,7 +206,7 @@ describe('track gate', () => {
     expect(mockedReadPrefs).toHaveBeenCalledTimes(1);
     // Flip the preferences and dispatch the same-tab event.
     mockedReadPrefs.mockReturnValue({ telemetryEnabled: false });
-    window.dispatchEvent(new Event('livepages:preferences-changed'));
+    window.dispatchEvent(new Event('livedesign:preferences-changed'));
     track('Element', 'Added', 'Circle');
     // Cache was invalidated, so readPrefs fired a second time and
     // saw the flip. The flush for the FIRST batch still goes through

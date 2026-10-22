@@ -15,7 +15,7 @@ import {
   groupSectionFeatures,
   LANDING_SECTION_IDS,
 } from '@/lib/landing-content';
-import { pageMetadata } from '@livepages/ui';
+import { pageMetadata } from '@livedesign/ui';
 
 // One detail page per feature category at /features/<id>, reading the matching
 // LANDING_SECTIONS entry (see docs/specs/019-marketing/marketing-site.md "Feature category
@@ -37,7 +37,7 @@ export async function generateMetadata({
   const section = getLandingSection(slug);
   if (!section) return {};
   return pageMetadata({
-    title: `${section.label}: ${section.title} | livepages`,
+    title: `${section.label}: ${section.title} | livedesign`,
     description: section.metaDescription,
     path: `/features/${slug}`,
     // This route ships its own per-category opengraph-image / twitter-image.

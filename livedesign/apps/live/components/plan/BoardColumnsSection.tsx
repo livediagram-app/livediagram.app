@@ -6,14 +6,14 @@
 // (before the done column when the board ends with one). The section stays open, so several can be added in a row;
 // the one just added fades in. At 12 columns the picker gives way to a note. Each add is one element edit.
 import { useEffect, useMemo, useState } from 'react';
-import type { ShapeElement } from '@livepages/document';
+import type { ShapeElement } from '@livedesign/document';
 import {
   PLAN_COLUMNS_MAX,
   missingBoardStatuses,
   normaliseBoardSetup,
   type PlanBoardSetup,
-} from '@livepages/items';
-import { ChevronRightIcon } from '@livepages/ui';
+} from '@livedesign/items';
+import { ChevronRightIcon } from '@livedesign/ui';
 import { InfoNote } from '@/components/palette/plan-menu-parts';
 import { AddColumnPicker } from './AddColumnPicker';
 import { addColumnAfter } from './board-setup-edits';

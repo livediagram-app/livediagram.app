@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@livepages/document';
+import type { Element } from '@livedesign/document';
 import { applied, lines, refused } from '../fixtures/outcomes';
 import { boxIn, elementOf, flowWith, lockedFlow, run } from '../fixtures/run';
 import { PLACEMENT_GAP } from '../vocabulary';

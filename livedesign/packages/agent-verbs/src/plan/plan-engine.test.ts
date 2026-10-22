@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { ApiError } from '@livepages/api-client';
-import { ITEM_TYPES, TRASH_STATUS, type Item } from '@livepages/items';
+import { ApiError } from '@livedesign/api-client';
+import { ITEM_TYPES, TRASH_STATUS, type Item } from '@livedesign/items';
 import { fakeApi } from '../testing/fake-api';
 import { addBoard } from './add-board';
 import { apiRefusalOf } from './api-refusal';

@@ -183,14 +183,14 @@ describe('SettingsDialog', () => {
     setViewport(false);
     renderDialog({ tourSeen: false });
     fireEvent.click(screen.getByRole('button', { name: 'Close' }));
-    expect(sessionStorage.getItem('livepages:v2:tour-pending')).toBe('1');
+    expect(sessionStorage.getItem('livedesign:v2:tour-pending')).toBe('1');
   });
 
   it('does not arm the tour once it has been taken', () => {
     setViewport(false);
     renderDialog({ tourSeen: true });
     fireEvent.click(screen.getByRole('button', { name: 'Close' }));
-    expect(sessionStorage.getItem('livepages:v2:tour-pending')).toBeNull();
+    expect(sessionStorage.getItem('livedesign:v2:tour-pending')).toBeNull();
   });
 
   describe('reopening where it was left', () => {

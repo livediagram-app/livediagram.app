@@ -2,7 +2,7 @@
 // forms.css turns them into the accent for the viewer's appearance, the tab font, and boxes drawn in the tab's finish
 // (every box marked `form-box`; its neutral outline `form-ink`).
 import type { CSSProperties } from 'react';
-import { resolveFontStack, type FormLook } from '@livepages/document';
+import { resolveFontStack, type FormLook } from '@livedesign/document';
 
 type FormLookProps = {
   'data-form-look': '';

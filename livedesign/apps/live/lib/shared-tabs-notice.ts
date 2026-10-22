@@ -3,7 +3,7 @@
 // adds when some of the document's tabs are also in other documents, so the user
 // knows those tabs stay before they act.
 
-import type { SharedTabsSummary } from '@livepages/api-schema';
+import type { SharedTabsSummary } from '@livedesign/api-schema';
 import { apiSharedTabs } from './api-client';
 
 type SharedTabsAction = 'delete' | 'offline';

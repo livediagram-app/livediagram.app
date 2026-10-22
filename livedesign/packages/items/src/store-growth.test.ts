@@ -3,7 +3,7 @@
 // which made a 2000-card seed quadratic. Timed as growth in CPU time (cpuMsOf), not against a wall clock: eight times
 // the creates cost about five to six times as much here, and the old per-create sort about fifty.
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@livepages/vitest-config/cpu-time';
+import { cpuMsOf } from '@livedesign/vitest-config/cpu-time';
 import { EMPTY_ITEM_STORE, applyItemWrite } from './store';
 import type { ItemCreate } from './item';
 

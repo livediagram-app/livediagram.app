@@ -4,7 +4,7 @@
 // how many of the ten slots are taken, and the way to make another. The row's own header (SettingsRowShell, with the
 // key tile) says what tokens are for, so this repeats neither the title nor the line. The meter is one pip per slot so "how close am I to the cap"
 // reads at a glance instead of from a sentence.
-import { Button } from '@livepages/ui';
+import { Button } from '@livedesign/ui';
 import { PlusIcon } from '@/components/primitives/explorer-icons';
 
 // Brand while there is room, amber from here, rose at the cap.

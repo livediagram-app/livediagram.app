@@ -13,7 +13,7 @@ import {
   parseEditorMode,
   type EditorMode,
   type TabKind,
-} from '@livepages/document';
+} from '@livedesign/document';
 
 /** The dimensions of a default key, most specific first: the order a create's keys are tried in. */
 export const DEFAULT_KEY_DIMENSIONS = ['template', 'mode'] as const;
@@ -24,7 +24,7 @@ export const CREATION_TAB_KINDS = ['diagram'] as const satisfies readonly TabKin
 export type CreationTabKind = (typeof CREATION_TAB_KINDS)[number];
 
 /** The template families: ordinary diagram tabs made from a family of templates. The map from each
- *  template to its family is `templateFamilyOf` in `@livepages/templates`. */
+ *  template to its family is `templateFamilyOf` in `@livedesign/templates`. */
 export const TEMPLATE_FAMILIES = ['retrospective', 'kanban'] as const;
 export type TemplateFamily = (typeof TEMPLATE_FAMILIES)[number];
 

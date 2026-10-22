@@ -10,7 +10,7 @@
 // Purely presentational: every change is a callback prop applied live to
 // the active tab. The "Show more" expansion is local UI state owned here.
 
-import { isAnimatedPattern, type BackgroundPattern } from '@livepages/document';
+import { isAnimatedPattern, type BackgroundPattern } from '@livedesign/document';
 import { useShowMoreList } from '@/hooks/ui/useShowMoreList';
 import { PatternCarousel } from './PatternCarousel';
 import {
@@ -20,7 +20,7 @@ import {
   type PatternEntry,
 } from '@/components/palette/palette-controls';
 import { ShowMoreButton } from '@/components/primitives/ShowMoreButton';
-import { HoverCard } from '@livepages/ui';
+import { HoverCard } from '@livedesign/ui';
 import { RANGE_SLIDER } from '@/components/primitives/surface-classes';
 
 // Static vs animated split (docs/specs/008-canvas/canvas-and-palette.md): the two render as separate, labelled

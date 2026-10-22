@@ -15,7 +15,7 @@ import {
   typeIn,
   type Item,
   type ItemTypeDef,
-} from '@livepages/items';
+} from '@livedesign/items';
 import {
   ChevronDownIcon,
   ChevronRightIcon,
@@ -23,7 +23,7 @@ import {
   Tooltip,
   useEscape,
   useClickOutside,
-} from '@livepages/ui';
+} from '@livedesign/ui';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { planColourName } from './ColourSwatches';
 import { ACCENT_TEXT, accentVars } from './plan-palette';

@@ -14,7 +14,7 @@ import {
   type PointerEvent,
   type RefObject,
 } from 'react';
-import { DASHBOARD_SLOTS_MAX, type Tab } from '@livepages/document';
+import { DASHBOARD_SLOTS_MAX, type Tab } from '@livedesign/document';
 import {
   dashboardCandidates,
   dashboardZone,

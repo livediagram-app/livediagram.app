@@ -6,7 +6,7 @@
 //
 // Pure: takes a centre (cx, cy) and returns a fresh Element[], rooms first so they lie behind the furniture.
 
-import type { Element } from '@livepages/document';
+import type { Element } from '@livedesign/document';
 import { heading } from './template-session-parts';
 import { officePlan, walkIn, type OfficeRoom } from './template-office-parts';
 

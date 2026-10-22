@@ -3,7 +3,7 @@ import {
   accentEdgeThickness,
   resolvedAccentEdge,
   type Element,
-} from '@livepages/document';
+} from '@livedesign/document';
 
 // The accent edge (docs/specs/008-canvas/accent-edge.md) on the canvas: a bar inside the wrapper's border, clipped by
 // the wrapper's own corner radius (`border-radius: inherit` + `overflow: hidden`), so it follows the corner exactly as

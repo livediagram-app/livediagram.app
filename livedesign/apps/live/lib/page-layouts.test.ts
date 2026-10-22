@@ -5,8 +5,8 @@ import {
   PAGE_ORIENTATIONS,
   PAGE_SIZE_IDS,
   type Element,
-} from '@livepages/document';
-import { PAGE_LAYOUT_CATEGORIES, PAGE_LAYOUTS } from '@livepages/templates';
+} from '@livedesign/document';
+import { PAGE_LAYOUT_CATEGORIES, PAGE_LAYOUTS } from '@livedesign/templates';
 
 // docs/specs/007-editor/pages-mode.md "Layouts": every layout fits inside the page's
 // margins at every size and orientation, and is a complete starting point.

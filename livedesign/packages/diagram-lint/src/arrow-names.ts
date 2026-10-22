@@ -2,7 +2,7 @@
 // (`orders→bus`), and as a selector an edit operation can take in fixes (`orders->bus` when exactly one
 // arrow joins them that way, else the arrow's own ref).
 
-import type { ArrowElement, Element, ElementId } from '@livepages/document';
+import type { ArrowElement, Element, ElementId } from '@livedesign/document';
 import { refOf, type LintContext } from './context';
 
 // The ids an arrow's ends are pinned to, when both are pinned to an element.

@@ -5,9 +5,9 @@
 // button, as a logo page's Guides open theirs. Hovers preview on the page; a press commits and the
 // popover stays for another pick; closing it drops any preview.
 import { useEffect, useRef } from 'react';
-import { lucidePaintRoller } from '@livepages/icons/lucide';
-import type { Page, PageBackground } from '@livepages/document';
-import { lucideGlyph } from '@livepages/ui';
+import { lucidePaintRoller } from '@livedesign/icons/lucide';
+import type { Page, PageBackground } from '@livedesign/document';
+import { lucideGlyph } from '@livedesign/ui';
 import type { ThemeBackgroundPreset } from '@/lib/page-paint';
 import { track } from '@/lib/telemetry';
 import { BackgroundSection } from './page-background-section';

@@ -5,8 +5,8 @@
 
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createShape, type BoxedElement, type Tab } from '@livepages/document';
-import { ITEM_TYPES, presetSetup, type Item } from '@livepages/items';
+import { createShape, type BoxedElement, type Tab } from '@livedesign/document';
+import { ITEM_TYPES, presetSetup, type Item } from '@livedesign/items';
 import { PlanProvider, type PlanContextValue } from '@/components/plan/PlanContext';
 import { ExportTabDialog } from './ExportTabDialog';
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { ChangesetSummary, LintReport } from '@livepages/api-schema';
+import type { ChangesetSummary, LintReport } from '@livedesign/api-schema';
 import { contextOf, DOC_A, DOC_C, fakeApi, library, tabsOfA } from '../testing/fake-api';
 import { changesetLs, changesetRevert, changesetShow } from './changeset';
 import { documentLs, documentView } from './document';
@@ -74,7 +74,7 @@ describe('document view', () => {
       [`/documents/${DOC_C}?view=overview`]: { text: 'document Shop' },
     });
     await documentView.run!(contextOf(api, codes), {
-      doc: 'https://livepages.app/document/shared?s=abc123',
+      doc: 'https://livedesign.app/document/shared?s=abc123',
     });
     expect(codes).toEqual(['abc123']);
   });

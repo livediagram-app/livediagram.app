@@ -6,10 +6,10 @@
 // live from the sheet, as the sheet formats it. Until its source is chosen it offers Choose a Sheet; once chosen, an
 // Editor changes it from Change Source in the slot's cog (SlotSection). Anyone may read it.
 import { useMemo, useRef, useState } from 'react';
-import type { SheetMetricContent } from '@livepages/document';
-import { percentDone } from '@livepages/plan-art';
-import { lucideGlyph } from '@livepages/ui';
-import { lucideTable } from '@livepages/icons/lucide';
+import type { SheetMetricContent } from '@livedesign/document';
+import { percentDone } from '@livedesign/plan-art';
+import { lucideGlyph } from '@livedesign/ui';
+import { lucideTable } from '@livedesign/icons/lucide';
 import { tabsStateOf, useDashboard } from './dashboard-context';
 import { TabWaiting } from './TabWaiting';
 import { Missing, useBoxSize } from './DashboardSlotContent';

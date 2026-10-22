@@ -2,7 +2,7 @@
 
 import { render } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { AVATAR_PAD_PARTS, AVATAR_PALETTE } from '@livepages/document';
+import { AVATAR_PAD_PARTS, AVATAR_PALETTE } from '@livedesign/document';
 import { AvatarPadArrivals } from './AvatarPadArrivals';
 import { AvatarPadView } from './collab/AvatarPadView';
 import type { PadArrival } from '@/lib/avatar-pad';

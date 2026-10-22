@@ -11,7 +11,7 @@
 // self-assigned to-dos, threads on their documents), and it survives
 // sign-up through owner_aliases (docs/specs/013-workspace/inbox.md §2.2).
 
-import { ACTIVITY_LIST_MAX } from '@livepages/api-schema';
+import { ACTIVITY_LIST_MAX } from '@livedesign/api-schema';
 import { getCollabIndexState, readActivity } from '../db';
 import { backfillCollabIndex } from '../collab-index/backfill';
 import { json, missingAuth, notFound } from '../responses';

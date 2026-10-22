@@ -1,9 +1,9 @@
 'use client';
 
 import { useLayoutEffect, useState } from 'react';
-import { Button, CloseIcon, useEscape } from '@livepages/ui';
-import type { EditorMode } from '@livepages/document';
-import { BLANK_TEMPLATE_FOR_MODE, type TemplateKind } from '@livepages/templates';
+import { Button, CloseIcon, useEscape } from '@livedesign/ui';
+import type { EditorMode } from '@livedesign/document';
+import { BLANK_TEMPLATE_FOR_MODE, type TemplateKind } from '@livedesign/templates';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { useModalGuard } from '@/hooks/ui/useModalGuard';
 import { takeEarlyModeChoice } from '@/app/new/early-mode-choice';

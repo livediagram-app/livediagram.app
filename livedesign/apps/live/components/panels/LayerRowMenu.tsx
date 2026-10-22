@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useLayoutEffect, useRef, useState } from 'react';
-import { isLayerLocked, isLayerVisible, layerOpacityOf, type Layer } from '@livepages/document';
+import { isLayerLocked, isLayerVisible, layerOpacityOf, type Layer } from '@livedesign/document';
 import {
   BringToTopIcon,
   ClearIcon,
@@ -25,7 +25,7 @@ import {
   useControlMenu,
   Portal,
   trustedHtml,
-} from '@livepages/ui';
+} from '@livedesign/ui';
 
 // The menu's width (w-64) and its gap from the panel and the viewport edges, in px.
 const MENU_WIDTH = 256;

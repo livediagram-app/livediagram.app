@@ -25,8 +25,8 @@ export const AREAS = [
 export const EXPECTED_SESSIONS = 4;
 
 /** Bound the section of the description this script owns, so a later run replaces only that. */
-export const REPORT_START = '<!-- livepages:coverage-report:start -->';
-export const REPORT_END = '<!-- livepages:coverage-report:end -->';
+export const REPORT_START = '<!-- livedesign:coverage-report:start -->';
+export const REPORT_END = '<!-- livedesign:coverage-report:end -->';
 
 const CODECOV_API = 'https://api.codecov.io/api/v2/github';
 const CODECOV_GRAPHQL = 'https://api.codecov.io/graphql/gh';

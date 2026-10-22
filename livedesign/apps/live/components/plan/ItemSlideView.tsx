@@ -16,7 +16,7 @@ import {
   type Item,
   type ItemTypeDef,
   namedStatus,
-} from '@livepages/items';
+} from '@livedesign/items';
 import { NoteRichText } from '@/components/notes/NoteRichText';
 import { descriptionRuns } from './ItemDescription';
 import { PersonDisc } from './PersonDisc';

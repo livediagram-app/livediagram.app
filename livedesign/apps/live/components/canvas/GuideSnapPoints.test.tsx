@@ -3,7 +3,7 @@
 // docs/specs/007-editor/logo-pages.md "Drawing onto the guides": where a drawing can start.
 import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import { DEFAULT_MIRROR, layOutPages, newLogoPage } from '@livepages/document';
+import { DEFAULT_MIRROR, layOutPages, newLogoPage } from '@livedesign/document';
 import type { LogoToolsView } from '@/hooks/editor/useLogoTools';
 import { logoGuideSnapper } from '@/lib/logo-guide-snapping';
 import { pageMirrorMaps, toScreen } from './MirrorReflection';

@@ -5,7 +5,7 @@
 // for cards dragged over from another board (plan-board-targets.ts). A card dropped on the canvas
 // leaves a Plan card there.
 import { useEffect, useRef, useState } from 'react';
-import type { ShapeElement } from '@livepages/document';
+import type { ShapeElement } from '@livedesign/document';
 import {
   ARCHIVED_FIELD,
   boardAddTypes,
@@ -16,7 +16,7 @@ import {
   type Item,
   type PlanBoardSetup,
   newItemId,
-} from '@livepages/items';
+} from '@livedesign/items';
 import type { PlanContextValue } from '@/components/plan/PlanContext';
 import { boardMoveFor, cellStatus, laneMove } from '@/components/plan/plan-board-moves';
 import { moveStatusRefusal } from './status-refusal';

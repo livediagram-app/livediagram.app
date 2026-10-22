@@ -10,7 +10,7 @@ import {
   type Element,
   type ShapeElement,
   type ShapeKind,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { liveFlowchart } from './template-flowchart-live';
 import { swimlaneKey, type LaneHue } from './template-swimlane-kit';
 

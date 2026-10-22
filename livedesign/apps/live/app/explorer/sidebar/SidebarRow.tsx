@@ -1,7 +1,7 @@
 'use client';
 
 import { useId, type HTMLAttributes, type ReactNode } from 'react';
-import { CountBadge } from '@livepages/ui';
+import { CountBadge } from '@livedesign/ui';
 import { TreeChevronIcon } from '@/components/primitives/explorer-icons';
 import { DROP_TARGET_RING } from '@/components/panels/useDocumentDropTarget';
 import {

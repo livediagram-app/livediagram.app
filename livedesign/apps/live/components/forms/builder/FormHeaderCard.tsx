@@ -4,16 +4,16 @@
 // colour and style changed from Change Cover), then the heading (the tab's name too) and description, edited in
 // place. A later section's header is SectionHeader.
 import { useContext, useMemo, useState } from 'react';
-import type { Page, PageBackground } from '@livepages/document';
+import type { Page, PageBackground } from '@livedesign/document';
 import {
   FORM_DESCRIPTION_MAX,
   FORM_HEADING_MAX,
   SECTION_TITLE_MAX,
   type FormCover,
   type FormSection,
-} from '@livepages/forms';
-import { TrashIcon, Tooltip } from '@livepages/ui';
-import { patchForm, deleteSection, updateSection } from '@livepages/forms';
+} from '@livedesign/forms';
+import { TrashIcon, Tooltip } from '@livedesign/ui';
+import { patchForm, deleteSection, updateSection } from '@livedesign/forms';
 import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
 import { BackgroundSection } from '@/components/canvas/page-background-section';
 import { EditorContext } from '@/app/document/[id]/EditorContext';

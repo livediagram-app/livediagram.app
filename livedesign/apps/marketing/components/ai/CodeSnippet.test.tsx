@@ -5,7 +5,7 @@ import { CodeSnippet } from './CodeSnippet';
 
 describe('CodeSnippet', () => {
   it('keeps a command’s prompt out of its text, so a copy of the block pastes as a command', () => {
-    const { container } = render(<CodeSnippet lang="bash" code="claude mcp add livepages" />);
-    expect(container.querySelector('pre')!.textContent).toBe('claude mcp add livepages');
+    const { container } = render(<CodeSnippet lang="bash" code="claude mcp add livedesign" />);
+    expect(container.querySelector('pre')!.textContent).toBe('claude mcp add livedesign');
   });
 });

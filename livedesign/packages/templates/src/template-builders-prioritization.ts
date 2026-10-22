@@ -4,7 +4,7 @@
 //
 // Pure: takes a centre (cx, cy), returns a fresh Element[].
 
-import { createShape, createSticky, createText, type Element } from '@livepages/document';
+import { createShape, createSticky, createText, type Element } from '@livedesign/document';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
 import { matrixAxes } from './template-discovery-parts';
 import { CANVAS_TONES } from './template-inks';

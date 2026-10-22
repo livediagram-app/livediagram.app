@@ -6,7 +6,7 @@
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createComponent, type ShapeElement, type WebRows } from '@livepages/document';
+import { createComponent, type ShapeElement, type WebRows } from '@livedesign/document';
 
 import { WebComponentFace } from './WebComponentFace';
 

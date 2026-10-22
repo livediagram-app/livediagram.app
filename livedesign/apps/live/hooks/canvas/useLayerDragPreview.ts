@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
-import type { Element, ElementGrid, ElementIndex } from '@livepages/document';
+import type { Element, ElementGrid, ElementIndex } from '@livedesign/document';
 import { dragPreviewFor, subscribeDragPreview, type DragOverlay } from '@/lib/drag-preview';
 import type { ArrowLabelRender, ArrowLabels } from '@/hooks/canvas/useArrowLabelLayouts';
 import { sameArrowViewFrame, type ArrowViewFrame } from '@/components/canvas/arrow-view-frame';
@@ -10,7 +10,7 @@ import {
   previewArrowGeometry,
   type ArrowLinks,
 } from '@/components/canvas/drag-affected-arrows';
-import type { Rect } from '@livepages/document';
+import type { Rect } from '@livedesign/document';
 
 // The element layer's drag preview (docs/specs/008-canvas/drag-preview.md "The preview",
 // docs/specs/008-canvas/canvas-performance.md "A move re-renders what moved"): what each element looks

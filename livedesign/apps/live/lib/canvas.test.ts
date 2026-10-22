@@ -5,7 +5,7 @@ import {
   createTable,
   type ArrowElement,
   type BoxedElement,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { describe, expect, it } from 'vitest';
 import {
   cornerOf,

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { layOutPages, type Element } from '@livepages/document';
+import { layOutPages, type Element } from '@livedesign/document';
 import { combinableSelection } from './useCombineShapes';
 
 // docs/specs/007-editor/logo-pages.md "Combine": offered for two or more combinable, unlocked

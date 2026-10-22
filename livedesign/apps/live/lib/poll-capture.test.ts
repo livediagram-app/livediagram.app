@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { LivePoll } from '@livepages/api-schema';
+import type { LivePoll } from '@livedesign/api-schema';
 import { pollResultElement } from './poll-capture';
 
 const poll = (over: Partial<LivePoll> = {}): LivePoll => ({

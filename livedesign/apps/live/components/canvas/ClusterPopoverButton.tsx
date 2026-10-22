@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { HoverCard } from '@livepages/ui';
+import { HoverCard } from '@livedesign/ui';
 import { CLUSTER_STRIP, CLUSTER_CONTROL_REST } from '@/components/canvas/cluster-strip';
 import { useDockNames } from '@/hooks/ui/useDockNames';
 

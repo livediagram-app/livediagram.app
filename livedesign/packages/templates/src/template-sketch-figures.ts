@@ -4,7 +4,7 @@
 // Every doodle is placed by its own anchor and seeded, so it is the same drawing wherever it
 // lands. The quick portraits live in template-sketch-portrait.ts. Pure.
 
-import type { FreehandElement } from '@livepages/document';
+import type { FreehandElement } from '@livedesign/document';
 import {
   BOLD,
   FINE,

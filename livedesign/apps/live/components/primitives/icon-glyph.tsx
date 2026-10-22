@@ -8,8 +8,8 @@ import {
   type IconAnimation,
   type TextAlignX,
   type TextAlignY,
-} from '@livepages/document';
-import { Glyph } from '@livepages/ui';
+} from '@livedesign/document';
+import { Glyph } from '@livedesign/ui';
 
 import { iconBandClass } from '@/components/primitives/icon-band';
 
@@ -143,7 +143,7 @@ export function IconGlyph({
   strokeWidth?: number;
   hasLabel?: boolean;
   // The label's alignment; the glyph takes the opposite band (see
-  // iconBandBounds in @livepages/document, whose numbers the CSS mirrors).
+  // iconBandBounds in @livedesign/document, whose numbers the CSS mirrors).
   labelAlignX?: TextAlignX;
   labelAlignY?: TextAlignY;
   animation?: IconAnimation;

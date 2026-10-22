@@ -6,7 +6,7 @@
 // not. Loaded with the sheet chunk; nothing shows for a Sheet not drawn here.
 import { useFillsTab } from '@/hooks/plan/plan-cover-store';
 import type { ComponentProps } from 'react';
-import type { ShapeElement } from '@livepages/document';
+import type { ShapeElement } from '@livedesign/document';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
 import { SheetControllerProvider } from './sheet-controller';
 import { SheetSettingsPanel } from './SheetSettingsPanel';

@@ -3,7 +3,7 @@
 // their failures, as a shown tab's do, so the figure and the Sheet picker say so (with Retry) rather than waiting.
 import { act, cleanup, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Tab } from '@livepages/document';
+import type { Tab } from '@livedesign/document';
 import { useDashboard } from './dashboard-context';
 import { DashboardPage } from './DashboardPage';
 import type { PlanTabActions } from '@/hooks/plan/usePlanTabActions';

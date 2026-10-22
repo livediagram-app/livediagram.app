@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isApiTokenFormat } from '@livepages/api-schema';
+import { isApiTokenFormat } from '@livedesign/api-schema';
 import { generateApiToken, hashApiToken, apiTokenExpiry } from './api-token';
 
 describe('generateApiToken', () => {

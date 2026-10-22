@@ -3,7 +3,7 @@
 // canvas's selecting passes it by) and let go when the menu closes; any other element is selected as usual.
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { createShape, type Element } from '@livepages/document';
+import { createShape, type Element } from '@livedesign/document';
 import type { EditorContextMenuState } from '@/components/palette/EditorContextMenu.types';
 import { createSelectionStore } from '@/lib/selection-store';
 import { useSheetChartMenuSelection } from './useSheetChartMenuSelection';

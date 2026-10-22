@@ -1,14 +1,14 @@
 // Icons of the tab bar, the tab / folder context menus and the chrome controls
 // (docs/specs/004-interface-design/iconography.md). Menu glyphs render at the menu size step.
 
-import { Glyph, LockIcon, lucideGlyph, SearchIcon } from '@livepages/ui';
+import { Glyph, LockIcon, lucideGlyph, SearchIcon } from '@livedesign/ui';
 import {
   lucideBrushCleaning,
   lucideEyeOff,
   lucideFileInput,
   lucideFolder,
   lucideScale,
-} from '@livepages/icons/lucide';
+} from '@livedesign/icons/lucide';
 
 import { MENU_ICON_PX } from '@/components/palette/context-menu-icons';
 
@@ -49,4 +49,4 @@ export function GithubIcon() {
 // scales of the law, a row of the Explorer's ⋯ menu.
 export const ScaleIcon = lucideGlyph(lucideScale, MENU_ICON_PX);
 
-export { SettingsIcon } from '@livepages/ui';
+export { SettingsIcon } from '@livedesign/ui';

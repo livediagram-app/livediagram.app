@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { cpuBudgetMs, cpuMsOf } from '@livepages/vitest-config/cpu-time';
-import { bytesToBase64 } from '@livepages/api-schema';
+import { cpuBudgetMs, cpuMsOf } from '@livedesign/vitest-config/cpu-time';
+import { bytesToBase64 } from '@livedesign/api-schema';
 import type { Env } from '../types';
 import { driveMode, googleOAuthBase } from './config';
 

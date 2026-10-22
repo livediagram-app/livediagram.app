@@ -1,5 +1,5 @@
 import { fileURLToPath } from 'node:url';
-import { defineProject } from '@livepages/vitest-config';
+import { defineProject } from '@livedesign/vitest-config';
 
 // Node stays the default environment: most of these suites are documentation-correctness
 // checks (the registry, article links, repo paths in docs), not rendering.

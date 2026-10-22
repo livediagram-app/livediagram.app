@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { MAX_ELEMENTS_PER_TAB } from '@livepages/document';
+import { MAX_ELEMENTS_PER_TAB } from '@livedesign/document';
 import { graphBodyIssue } from './graph-body';
 
 const nodes = [{ id: 'a', label: 'A' }, { id: 'b' }];

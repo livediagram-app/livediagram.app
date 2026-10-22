@@ -2,39 +2,39 @@ import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
 
 export const metadata = helpMetadata({
-  title: 'The livepages API',
+  title: 'The livedesign API',
   description:
-    'Call the livepages REST API from your own scripts and integrations: the base URL, how to authenticate with an API token, and where the full reference is.',
+    'Call the livedesign REST API from your own scripts and integrations: the base URL, how to authenticate with an API token, and where the full reference is.',
   path: '/help/developers/api-overview/',
 });
 
 <ArticleLayout
-  title="The livepages API"
+  title="The livedesign API"
   description="The same REST API the editor uses, callable from your own scripts with an API token."
   categoryTitle="Developers"
   categorySlug="developers"
 >
 
-Everything the livepages editor does, it does by calling a REST API. That API is open to you too: with an [API token](/help/account-and-data/api-tokens/) your own scripts and integrations can read, create, and update documents, tabs, folders, images, themes and more, exactly as the app does. Account administration (teams, tokens, deleting the account) stays with the signed-in app.
+Everything the livedesign editor does, it does by calling a REST API. That API is open to you too: with an [API token](/help/account-and-data/api-tokens/) your own scripts and integrations can read, create, and update documents, tabs, folders, images, themes and more, exactly as the app does. Account administration (teams, tokens, deleting the account) stays with the signed-in app.
 
-If you want to connect an AI assistant rather than write code, you usually want the [MCP server](/help/account-and-data/connect-ai-mcp/) instead. It wraps this API in tools Claude and other MCP clients can call directly. To work from a terminal or a coding agent without writing requests yourself, use [the livepages CLI](/help/developers/cli/).
+If you want to connect an AI assistant rather than write code, you usually want the [MCP server](/help/account-and-data/connect-ai-mcp/) instead. It wraps this API in tools Claude and other MCP clients can call directly. To work from a terminal or a coding agent without writing requests yourself, use [the livedesign CLI](/help/developers/cli/).
 
 ## The base URL
 
-The API lives under `/api` on your livepages host. On the hosted service that is:
+The API lives under `/api` on your livedesign host. On the hosted service that is:
 
 ```
-https://livepages.app/api
+https://livedesign.app/api
 ```
 
-On a self-hosted instance it is `/api` on your own domain. Every path in these docs is relative to that base, so `GET /documents` means `GET https://livepages.app/api/documents`.
+On a self-hosted instance it is `/api` on your own domain. Every path in these docs is relative to that base, so `GET /documents` means `GET https://livedesign.app/api/documents`.
 
 ## Authenticating in one line
 
 Send an API token as a bearer header on each request:
 
 ```bash
-curl https://livepages.app/api/documents \
+curl https://livedesign.app/api/documents \
   -H "Authorization: Bearer lvd_your_token_here"
 ```
 
@@ -60,7 +60,7 @@ The token-callable surface mirrors the app:
 The complete, machine-readable description of every endpoint, request shape, and response shape is published as an **OpenAPI 3.1** document, with no authentication required:
 
 ```bash
-curl https://livepages.app/api/openapi.json
+curl https://livedesign.app/api/openapi.json
 ```
 
 Point Postman, an OpenAPI viewer, or a client generator at that URL to explore the whole surface or scaffold a client. Endpoints an external token can use are tagged `x-token-usable`.

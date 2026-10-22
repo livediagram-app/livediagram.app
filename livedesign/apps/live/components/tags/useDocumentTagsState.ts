@@ -15,7 +15,7 @@ import {
   sortTags,
   tagNameKey,
   type Tag,
-} from '@livepages/api-schema';
+} from '@livedesign/api-schema';
 import {
   apiCreateTag,
   apiDeleteTag,

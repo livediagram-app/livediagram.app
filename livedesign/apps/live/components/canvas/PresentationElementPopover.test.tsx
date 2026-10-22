@@ -5,7 +5,7 @@
 
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import { createElementAction, createShape } from '@livepages/document';
+import { createElementAction, createShape } from '@livedesign/document';
 import { hasReadableDetail, PresentationElementPopover } from './PresentationElementPopover';
 
 afterEach(cleanup);

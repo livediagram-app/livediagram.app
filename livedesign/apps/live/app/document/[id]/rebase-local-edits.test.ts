@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Element, Tab } from '@livepages/document';
+import type { Element, Tab } from '@livedesign/document';
 import { rebaseLocalEdits } from './rebase-local-edits';
 
 // docs/specs/012-collaboration/resync-without-reload.md "Fault 2": a resync keeps what was not saved yet.

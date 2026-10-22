@@ -1,8 +1,8 @@
 // Presence on sheets (docs/specs/029-sheets/sheet.md "Collaboration"): each peer's selection, by ids so it follows
 // rows that move, heard from the room and drawn in their colour; and this person's own, said when it changes
 // (throttled) and said again to a late joiner or after a rejoin. Ephemeral: nothing is stored.
-import type { SheetPresenceOp } from '@livepages/api-schema';
-import type { IdRange } from '@livepages/sheets';
+import type { SheetPresenceOp } from '@livedesign/api-schema';
+import type { IdRange } from '@livedesign/sheets';
 import type { SheetStore } from './sheet-store-client';
 
 export const PRESENCE_THROTTLE_MS = 120;

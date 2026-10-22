@@ -5,8 +5,8 @@
 // (The closed event vocabulary itself lives in docs/specs/017-telemetry/telemetry.md + the api-schema
 // enums; this module only turns it into human-readable strings.)
 
-import { titleCase, type TelemetryCategory, type TelemetryCount } from '@livepages/api-schema';
-import type { Appearance } from '@livepages/ui';
+import { titleCase, type TelemetryCategory, type TelemetryCount } from '@livedesign/api-schema';
+import type { Appearance } from '@livedesign/ui';
 import { forAppearance } from './appearance-colours';
 
 // Per-category colour used by every chart so the category-share bar,

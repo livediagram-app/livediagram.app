@@ -8,7 +8,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { DRIVE_CONNECT_FAILED } from '@/lib/drive/cloud-sync-copy';
 import { usePathname } from 'next/navigation';
-import type { DriveAccessToken, DriveMode } from '@livepages/api-schema';
+import type { DriveAccessToken, DriveMode } from '@livedesign/api-schema';
 import {
   apiDisconnectDrive,
   apiDriveState,
@@ -463,7 +463,7 @@ export function DriveMirrorProvider({ children }: { children: ReactNode }) {
     if (!clerkUserId) return;
     const ok = await confirm({
       title: 'Disconnect Google Drive?',
-      message: 'Your files stay in Drive; livepages stops updating them.',
+      message: 'Your files stay in Drive; livedesign stops updating them.',
       confirmLabel: 'Disconnect',
     });
     if (!ok) return;

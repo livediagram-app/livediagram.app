@@ -6,8 +6,8 @@ import {
   useState,
   type PointerEvent as ReactPointerEvent,
 } from 'react';
-import { MOTION_MS } from '@livepages/tailwind-config/motion';
-import { PlusIcon, HoverCard } from '@livepages/ui';
+import { MOTION_MS } from '@livedesign/tailwind-config/motion';
+import { PlusIcon, HoverCard } from '@livedesign/ui';
 import type { QuickConnectDirection, QuickConnectKind } from '@/lib/canvas';
 import { FLOATING_CONTROL_GAP, FLOATING_CONTROL_SIZE } from '@/components/chrome/floating-controls';
 import {

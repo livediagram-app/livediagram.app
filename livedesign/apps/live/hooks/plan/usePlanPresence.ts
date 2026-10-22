@@ -6,7 +6,7 @@
 // again when someone new joins and when its own connection rejoins (docs/specs/026-plan/plan-mode.md
 // "Collaboration"): a late joiner sees cards already held, and a person holding nothing stays silent.
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { RoomOp } from '@livepages/api-schema';
+import type { RoomOp } from '@livedesign/api-schema';
 import type { PlanCardPresence } from '@/components/plan/PlanContext';
 import { useLatest } from '@/hooks/ui/useLatest';
 

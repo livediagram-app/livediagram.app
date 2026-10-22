@@ -7,7 +7,7 @@ import {
   type AnimationSpeed,
   type TextRun,
   type Element,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { setAnimationClass } from '@/lib/animation-classes';
 import { planTextAnimation, type TextAnimPlan } from './animated-words';
 

@@ -18,7 +18,7 @@ import {
   type ShareLinkExpiry,
   type ShareRole,
 } from '@/lib/api-client';
-import { LEVEL_TELEMETRY_TYPE } from '@livepages/api-schema';
+import { LEVEL_TELEMETRY_TYPE } from '@livedesign/api-schema';
 import { track } from '@/lib/telemetry';
 import { useToast } from '@/hooks/ui/useToast';
 import type { Participant } from '@/lib/identity';

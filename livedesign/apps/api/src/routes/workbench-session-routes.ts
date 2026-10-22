@@ -10,7 +10,7 @@ import {
   WORKBENCH_SESSION_TTL_MS,
   type InvalidTicket,
   type WorkbenchSessionResponse,
-} from '@livepages/api-schema';
+} from '@livedesign/api-schema';
 import {
   generateWorkbenchSecret,
   hashWorkbenchSecret,

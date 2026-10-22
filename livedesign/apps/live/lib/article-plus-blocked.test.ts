@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Element, LaidOutPage } from '@livepages/document';
+import type { Element, LaidOutPage } from '@livedesign/document';
 import { articlePlusBlocked } from './article-plus-blocked';
 
 // docs/specs/007-editor/article-pages.md "Zones": an object in an article's writing gets no quick-connect pluses.

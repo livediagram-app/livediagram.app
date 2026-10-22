@@ -8,7 +8,7 @@ import {
   type ArrowElement,
   type Element,
   type Tab,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { resetMindHandoff } from '@/lib/mind-handoff';
 import { useFlowchartGrowth } from './useFlowchartGrowth';
 import { routeGrowth } from './growth-routing';

@@ -46,7 +46,7 @@ silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
 | Bundle        | `AppBundle`                                          | One app's shipped `sources` (repo-relative paths) and `assets` (emitted file basenames)                       |
 | Work          | `WorkRecord` (collect), `WorkEntry` (manifest)       | Third-party material with its own licence                                                                     |
 | Work kind     | `WorkKind` = `'package' \| 'vendored' \| 'embedded'` | npm package, vendored inside a package, inside a binary or our source                                         |
-| Carrier       | `carrier`                                            | What holds a vendored or embedded work (`next 16.3.6`, `@resvg/resvg-wasm`, `livepages source`) |
+| Carrier       | `carrier`                                            | What holds a vendored or embedded work (`next 16.3.6`, `@resvg/resvg-wasm`, `livedesign source`) |
 | Licence text  | `LicenceText` `{ label, text }`                      | One licence or notice file's normalised content                                                               |
 | Text hash     | `hash`                                               | First 16 hex of the sha256 of a normalised text; its file name                                                |
 | Override      | `Override`                                           | Committed texts for one exact package version                                                                 |
@@ -242,7 +242,7 @@ Route `/licences`, the shared `SiteHeader` without a funnel surface (D15) and ma
 content column `max-w-3xl`.
 
 - Title (h1): "Open-source licences".
-- Lead: "livepages is MIT licensed and built on the work of many open-source projects. These are
+- Lead: "livedesign is MIT licensed and built on the work of many open-source projects. These are
   the ones our apps ship, generated from what each app actually bundles every time the site is
   built."
 - Section h2 "In your browser", intro: "Sent to your browser by the editor, this website, the help

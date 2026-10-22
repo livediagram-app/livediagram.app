@@ -11,7 +11,7 @@
 import dynamic from 'next/dynamic';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
-import { ITEM_TYPES } from '@livepages/items';
+import { ITEM_TYPES } from '@livedesign/items';
 import { loadedPresentationOverlay, loadPresentationOverlay } from '@/lib/editor-deferred-code';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { usePlan } from '@/components/plan/PlanContext';

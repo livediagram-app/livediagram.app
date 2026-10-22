@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { EditorMode } from '@livepages/document';
+import type { EditorMode } from '@livedesign/document';
 import { NewDocumentWizard } from './NewDocumentWizard';
 
 // docs/specs/007-editor/new-document-route.md "One-step wizard": the wizard asks what you are making, and choosing a

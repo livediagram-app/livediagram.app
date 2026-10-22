@@ -1,5 +1,5 @@
-import type { Tab } from '@livepages/document';
-import type { RoomOp } from '@livepages/api-schema';
+import type { Tab } from '@livedesign/document';
+import type { RoomOp } from '@livedesign/api-schema';
 import { applyRoomOpToTabs } from './room-op-apply';
 
 // The autosave's baseline (`lastSavedTabsRef` + `lastSavedNameRef`) is the

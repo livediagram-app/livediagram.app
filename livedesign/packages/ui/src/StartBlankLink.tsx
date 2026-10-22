@@ -1,4 +1,4 @@
-import { ctaHref, isCtaSource, type CtaSurface } from '@livepages/api-schema';
+import { ctaHref, isCtaSource, type CtaSurface } from '@livedesign/api-schema';
 import { ButtonContent, buttonClassName } from './Button';
 
 // Start Blank on the public sites (docs/specs/019-marketing/marketing-site.md "Start Blank"): a plain link to the

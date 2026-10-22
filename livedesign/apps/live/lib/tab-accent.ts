@@ -10,7 +10,7 @@ import {
   shade,
   tint,
   type Tab,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { getTheme } from './themes';
 
 // A theme that paints no stroke — Default, and any unthemed tab —

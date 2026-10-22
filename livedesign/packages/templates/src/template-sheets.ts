@@ -3,7 +3,7 @@
 // tabs runs (the New Document wizard, Quick Start, the MCP's create_document and add_tab, the api's seeded create), so
 // a template's sheet exists the moment its document does. The tabs come back with the mark dropped from each Sheet
 // whose sheet was made, and the sheets to create beside them.
-import type { SheetCreateRequest } from '@livepages/api-schema';
+import type { SheetCreateRequest } from '@livedesign/api-schema';
 import {
   chartFieldsFromTable,
   createShape,
@@ -11,12 +11,12 @@ import {
   type Element,
   type ShapeElement,
   type Tab,
-} from '@livepages/document';
+} from '@livedesign/document';
 import {
   isTemplateStart,
   templateSheetWithCharts,
   type TemplateStartId,
-} from '@livepages/sheets';
+} from '@livedesign/sheets';
 
 type Rand = () => number;
 

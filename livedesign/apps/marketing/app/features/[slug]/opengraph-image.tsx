@@ -1,6 +1,6 @@
 import { ImageResponse } from 'next/og';
 
-import { cardSubtitle, renderSocialCard } from '@livepages/ui';
+import { cardSubtitle, renderSocialCard } from '@livedesign/ui';
 import { getLandingSection, LANDING_SECTION_IDS } from '@/lib/landing-content';
 
 // Per-category social card for /features/<id>: the same branded shell as the
@@ -12,7 +12,7 @@ import { getLandingSection, LANDING_SECTION_IDS } from '@/lib/landing-content';
 // file-convention image is the one Next attaches.
 
 export const dynamic = 'force-static';
-export const alt = 'A livepages feature category';
+export const alt = 'A livedesign feature category';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 

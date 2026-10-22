@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { EditorMode, Tab } from '@livepages/document';
+import type { EditorMode, Tab } from '@livedesign/document';
 import { useTabActions } from './useTabActions';
 
 // docs/specs/007-editor/editor-modes.md "A new tab opens in the mode it was made from".

@@ -1,6 +1,6 @@
 'use client';
 
-import { ctaHref, type CtaSurface } from '@livepages/api-schema';
+import { ctaHref, type CtaSurface } from '@livedesign/api-schema';
 import { useSyncExternalStore } from 'react';
 import { signedInFromCookie } from './browser-repair/identity';
 import { ButtonContent, buttonClassName } from './Button';

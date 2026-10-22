@@ -13,7 +13,7 @@ import {
   savableElements,
   type Element,
   type Tab,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { mergeImportedTab } from '@/lib/import-merge';
 import type { ImportedPlanItems, ImportOutcome } from '@/lib/import-tab';
 import type { PlanTabImportResult } from '@/hooks/plan/usePlanTabImport';

@@ -3,12 +3,12 @@
 // the catalogue's revision it changed; the answer is the catalogue as stored (normalised) with its new
 // revision, which the editor keeps. A revision that moved on throws ItemTypesStaleError with what is stored.
 
-import type { ItemTypesResponse, ItemTypesStale } from '@livepages/api-schema';
+import type { ItemTypesResponse, ItemTypesStale } from '@livedesign/api-schema';
 import {
   readItemTypeCatalogue,
   validateItemTypeCatalogue,
   type ItemTypeCatalogue,
-} from '@livepages/items';
+} from '@livedesign/items';
 import { isOfflineId, offlineSaveItemTypes } from '../offline/offline-store';
 import { API_BASE, apiFetch, apiHeaders, expectOk } from './core';
 

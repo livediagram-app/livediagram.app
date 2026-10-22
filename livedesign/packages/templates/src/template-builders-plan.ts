@@ -11,8 +11,8 @@ import {
   type Element,
   type ShapeElement,
   type Tab,
-} from '@livepages/document';
-import { CARD_FIELDS, presetSetup, type PlanBoardSetup } from '@livepages/items';
+} from '@livedesign/document';
+import { CARD_FIELDS, presetSetup, type PlanBoardSetup } from '@livedesign/items';
 import { dashboardLayoutOf, dashboardViewElements } from './dashboard-builder';
 import {
   PLAN_TEMPLATE_KINDS,

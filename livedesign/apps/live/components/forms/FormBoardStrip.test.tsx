@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { sentUrl } from '@livepages/vitest-config/sent-request';
+import { sentUrl } from '@livedesign/vitest-config/sent-request';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import type { Tab } from '@livepages/document';
+import type { Tab } from '@livedesign/document';
 import { formsFeeding } from '@/hooks/forms/forms-feeding';
 import { FormBoardStrip } from './FormBoardStrip';
 import { FormBoardContext, type FormBoardValue } from './form-board-context';

@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@livepages/document';
+import type { Element } from '@livedesign/document';
 import { coloursSet } from './colours-set';
 import { withoutFindings } from './without-findings';
-import type { LintCode, LintFinding, LintSeverity } from '@livepages/api-schema';
+import type { LintCode, LintFinding, LintSeverity } from '@livedesign/api-schema';
 import { box, lint, tabOf } from './fixtures/build';
 
 describe('coloursSet', () => {

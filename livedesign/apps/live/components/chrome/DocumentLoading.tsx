@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useSyncExternalStore } from 'react';
-import { Button, DiagramBuildAnimation, LoadingSweep, RefreshIcon } from '@livepages/ui';
+import { Button, DiagramBuildAnimation, LoadingSweep, RefreshIcon } from '@livedesign/ui';
 import { getLoadProgress, subscribeLoadProgress } from '@/lib/load-progress';
 import { track } from '@/lib/telemetry';
 import { useOnline } from '@/hooks/ui/useOnline';

@@ -5,7 +5,7 @@
 
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { IDEA_MAX_CARDS, type ShapeElement, type Tab } from '@livepages/document';
+import { IDEA_MAX_CARDS, type ShapeElement, type Tab } from '@livedesign/document';
 
 import type { Participant } from '@/lib/identity';
 import { useCollabElements } from './useCollabElements';

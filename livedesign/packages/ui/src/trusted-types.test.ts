@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { runInlineScript } from '@livepages/vitest-config/inline-script';
+import { runInlineScript } from '@livedesign/vitest-config/inline-script';
 import {
   MARKUP_POLICY,
   TRUSTED_TYPES_CSP,
@@ -38,18 +38,18 @@ afterEach(() => {
 describe('TRUSTED_TYPES_CSP', () => {
   it('enforces Trusted Types and names every policy the pages may create', () => {
     expect(TRUSTED_TYPES_CSP).toBe(
-      "require-trusted-types-for 'script'; trusted-types livepages-markup nextjs ProseMirrorClipboard default",
+      "require-trusted-types-for 'script'; trusted-types livedesign-markup nextjs ProseMirrorClipboard default",
     );
   });
 });
 
 describe('isAllowedScriptUrl', () => {
-  const page = 'https://livepages.app';
+  const page = 'https://livedesign.app';
   it("lets the app's own build scripts through, under its asset prefix", () => {
     expect(isAllowedScriptUrl('/_next/static/chunks/a.js', page, '', [])).toBe(true);
     expect(
       isAllowedScriptUrl(
-        'https://livepages.app/live/_next/static/chunks/b.js',
+        'https://livedesign.app/live/_next/static/chunks/b.js',
         page,
         '/live',
         [],
@@ -67,7 +67,7 @@ describe('isAllowedScriptUrl', () => {
   });
 
   it("lets a worker start from the page's own blob: URL (Clerk's session timers), nothing else from one", () => {
-    const blob = 'blob:https://livepages.app/1234';
+    const blob = 'blob:https://livedesign.app/1234';
     expect(isAllowedScriptUrl(blob, page, '', [], 'Worker constructor')).toBe(true);
     expect(isAllowedScriptUrl(blob, page, '', [], 'HTMLScriptElement src')).toBe(false);
     expect(isAllowedScriptUrl(blob, page, '', [])).toBe(false);
@@ -77,7 +77,7 @@ describe('isAllowedScriptUrl', () => {
   });
 
   it('lets a named third-party origin through', () => {
-    const clerk = 'https://clerk.livepages.app';
+    const clerk = 'https://clerk.livedesign.app';
     expect(
       isAllowedScriptUrl(`${clerk}/npm/@clerk/clerk-js@6/dist/clerk.browser.js`, page, '', [clerk]),
     ).toBe(true);
@@ -89,7 +89,7 @@ describe('isAllowedScriptUrl', () => {
     expect(isAllowedScriptUrl('https://evil.example/_next/a.js', page, '', [])).toBe(false);
     expect(isAllowedScriptUrl('javascript:alert(1)', page, '', [])).toBe(false);
     expect(isAllowedScriptUrl('data:text/javascript,alert(1)', page, '', [])).toBe(false);
-    expect(isAllowedScriptUrl('blob:https://livepages.app/1234', page, '', [])).toBe(false);
+    expect(isAllowedScriptUrl('blob:https://livedesign.app/1234', page, '', [])).toBe(false);
     expect(isAllowedScriptUrl('::not a url', page, '', [])).toBe(false);
   });
 });
@@ -98,9 +98,9 @@ describe('trustedScriptOrigins', () => {
   const key = (host: string) => `pk_test_${btoa(`${host}$`)}`;
   // docs/specs/022-drive-mirror/drive-mirror.md: the Drive mirror's Google libraries, only for a build that offers it.
   it("lets Google's Drive libraries load where the build offers the Drive mirror, and only there", () => {
-    const page = 'https://www.livepages.app';
+    const page = 'https://www.livedesign.app';
     const withDrive = trustedScriptOrigins({
-      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: key('clerk.livepages.app'),
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: key('clerk.livedesign.app'),
       NEXT_PUBLIC_GOOGLE_CLIENT_ID: '123456789012-abc.apps.googleusercontent.com',
     });
     for (const src of [
@@ -112,7 +112,7 @@ describe('trustedScriptOrigins', () => {
       false,
     );
     const without = trustedScriptOrigins({
-      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: key('clerk.livepages.app'),
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: key('clerk.livedesign.app'),
     });
     expect(isAllowedScriptUrl('https://apis.google.com/js/api.js', page, '/live', without)).toBe(
       false,
@@ -121,15 +121,15 @@ describe('trustedScriptOrigins', () => {
 
   it("reads the Clerk frontend API's origin from the publishable key, beside its sign-up CAPTCHA's", () => {
     expect(
-      trustedScriptOrigins({ NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: key('clerk.livepages.app') }),
-    ).toEqual(['https://clerk.livepages.app', 'https://challenges.cloudflare.com']);
+      trustedScriptOrigins({ NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: key('clerk.livedesign.app') }),
+    ).toEqual(['https://clerk.livedesign.app', 'https://challenges.cloudflare.com']);
   });
 
   it("lets Clerk's sign-up CAPTCHA load, and nothing else on its origin's neighbours", () => {
     const origins = trustedScriptOrigins({
-      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: key('clerk.livepages.app'),
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: key('clerk.livedesign.app'),
     });
-    const page = 'https://www.livepages.app';
+    const page = 'https://www.livedesign.app';
     const turnstile = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
     expect(isAllowedScriptUrl(turnstile, page, '/live', origins)).toBe(true);
     expect(isAllowedScriptUrl('https://evil.cloudflare.com/x.js', page, '/live', origins)).toBe(
@@ -149,7 +149,7 @@ describe('trustedHtml', () => {
     expect(trustedHtml('<svg/>')).toBe('<svg/>');
   });
 
-  it('wraps it through livepages-markup, created once', () => {
+  it('wraps it through livedesign-markup, created once', () => {
     const { tt } = stubTrustedTypes();
     expect(trustedHtml('<svg/>')).toEqual({ trusted: MARKUP_POLICY, html: '<svg/>' });
     trustedHtml('<g/>');

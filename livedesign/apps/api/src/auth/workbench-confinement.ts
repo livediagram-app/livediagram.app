@@ -7,7 +7,7 @@ import {
   apiRouteLabel,
   workbenchAmbientHeaders,
   workbenchRouteVerdict,
-} from '@livepages/api-schema';
+} from '@livedesign/api-schema';
 import { forbidden, notFound } from '../responses';
 import type { WorkbenchContext } from '../routes/context';
 import { sessionPrefixOf } from './workbench-session';

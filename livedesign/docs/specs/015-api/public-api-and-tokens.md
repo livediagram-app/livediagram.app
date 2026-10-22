@@ -9,7 +9,7 @@ REST API to external, programmatic callers.
 
 ## 1. Goal
 
-Let **signed-in** people call the livepages API from their own scripts /
+Let **signed-in** people call the livedesign API from their own scripts /
 integrations with a long-lived **API token**, not just from the first-party web
 app. Read their documents, create/update them, manage folders — the same surface
 the app uses, under an explicit, revocable credential.
@@ -386,7 +386,7 @@ escalation. Two options were weighed:
   `X-Owner-Id` only on same-origin requests via the `Origin` / `Sec-Fetch-Site`
   signals (as telemetry does, `origin-check.ts`). This does **not** stop the
   attack: a non-browser client sets the `Origin` header freely, so a `curl`
-  caller forges `Origin: https://livepages.app` and passes the gate. Origin
+  caller forges `Origin: https://livedesign.app` and passes the gate. Origin
   is hygiene, not an authorization boundary.
 - **(b) Require an HMAC proof on the header — chosen.** Extend the guest-id
   HMAC (`auth/owner-signature.ts`, then also carried on the WS upgrade as

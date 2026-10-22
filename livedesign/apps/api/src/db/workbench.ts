@@ -10,7 +10,7 @@ import {
   type WorkbenchPairing,
   type WorkbenchRole,
   type WorkbenchScope,
-} from '@livepages/api-schema';
+} from '@livedesign/api-schema';
 import type { Env } from '../types';
 
 // What a ticket or session reaches: one document, or the workspace from an optional folder. The table CHECKs hold

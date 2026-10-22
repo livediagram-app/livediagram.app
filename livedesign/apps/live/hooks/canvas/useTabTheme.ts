@@ -8,7 +8,7 @@
 import { getTheme, resetThemeElementsToTheme } from '@/lib/themes';
 import { withThemeApplied } from '@/lib/tab-theme-apply';
 import { themeTelemetryLabel } from '@/lib/custom-theme-registry';
-import type { Tab } from '@livepages/document';
+import type { Tab } from '@livedesign/document';
 import { track } from '@/lib/telemetry';
 
 // The default theme a tab reverts to when its custom theme is deleted —

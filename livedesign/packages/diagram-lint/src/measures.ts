@@ -1,7 +1,7 @@
 // The summary line's numbers (blueprint "Behaviour and state" step 2): crossing arrow pairs, shared with
 // `edge-crossings`, and the drawing's extent.
 
-import { contentBounds, pathsCross, type ElementId, type Rect } from '@livepages/document';
+import { contentBounds, pathsCross, type ElementId, type Rect } from '@livedesign/document';
 import { LINT_MAX_ARROWS } from './constants';
 import type { LintContext } from './context';
 

@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { Workbook, sheetFromJson, type Sheet } from '@livepages/sheets';
-import type { DashboardLayout, Tab } from '@livepages/document';
+import { Workbook, sheetFromJson, type Sheet } from '@livedesign/sheets';
+import type { DashboardLayout, Tab } from '@livedesign/document';
 import {
   sheetContentsFor,
   sheetMetricsFor,
   sheetModelsFor,
   sheetTabsToLoad,
 } from './plan-export-sheets';
-import { sheetContentSize } from '@livepages/sheets';
-import { shape } from '@livepages/plan-art/test-fixtures';
+import { sheetContentSize } from '@livedesign/sheets';
+import { shape } from '@livedesign/plan-art/test-fixtures';
 
 // docs/specs/026-plan/plan-tabs.md "Export", docs/specs/029-sheets/sheet.md "Exports and images": an image draws the
 // cells a Sheet shows, read from the editor's sheet store.

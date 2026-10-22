@@ -26,7 +26,7 @@
 //   the image route applies (a share code for the document,
 //   regardless of role).
 
-import { levelAtLeast, type AccessLevel } from '@livepages/api-schema';
+import { levelAtLeast, type AccessLevel } from '@livedesign/api-schema';
 import { getMembership } from '../db';
 import type { Env, ShareRole } from '../types';
 import {

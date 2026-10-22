@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { WHITEBOARD_INK, penColourHex } from '@livepages/document';
+import { WHITEBOARD_INK, penColourHex } from '@livedesign/document';
 import { useWhiteboardPenCursor } from './useWhiteboardPenCursor';
 
 describe('useWhiteboardPenCursor', () => {

@@ -1,4 +1,4 @@
-import { defineProject } from '@livepages/vitest-config';
+import { defineProject } from '@livedesign/vitest-config';
 
 // Node is the environment: both tests call TemplatePreview as a plain
 // function (it is pure render, no hooks) and read its static markup, so

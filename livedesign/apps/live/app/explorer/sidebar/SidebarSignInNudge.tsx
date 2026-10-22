@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { BrandMark } from '@livepages/ui';
+import { BrandMark } from '@livedesign/ui';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
 
 // The guest's sign-in nudge, last in Spaces in place of New Team

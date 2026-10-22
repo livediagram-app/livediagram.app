@@ -25,8 +25,8 @@ import {
   type Element,
   type PlanTabKind,
   type Tab,
-} from '@livepages/document';
-import type { PlanVisualisation } from '@livepages/items';
+} from '@livedesign/document';
+import type { PlanVisualisation } from '@livedesign/items';
 import { track } from '@/lib/telemetry';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { placedSheetTitle } from '@/lib/sheet-seeds';

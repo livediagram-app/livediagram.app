@@ -30,7 +30,7 @@ import {
   selectRows,
   single,
   SHEET_ROWS_MAX,
-} from '@livepages/sheets';
+} from '@livedesign/sheets';
 import { restorePlanElement } from '@/hooks/plan/maximised-plan';
 import { useSheetController } from './sheet-controller';
 import { SheetCells } from './SheetCells';

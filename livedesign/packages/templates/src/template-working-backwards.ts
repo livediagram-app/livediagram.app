@@ -4,7 +4,7 @@
 // to-do list for the review. Written as Markdown and read by the article's own Markdown reader, so the words stay easy
 // to edit here; the first two lines become the title and subtitle, and the one divider the page break.
 // Pure data: the tab's pages and writing, merged in by templateCanvasOverrides.
-import { parseMarkdownBlocks, type ArticleBlock, type Tab } from '@livepages/document';
+import { parseMarkdownBlocks, type ArticleBlock, type Tab } from '@livedesign/document';
 import { articleTabOverrides } from './article-template';
 
 const FLOW_ID = 'art-prfaq';

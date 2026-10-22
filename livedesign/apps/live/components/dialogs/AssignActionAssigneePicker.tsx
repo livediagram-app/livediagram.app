@@ -1,6 +1,6 @@
 import { initialsOf } from '@/lib/identity';
 import { clerkEnabled } from '@/lib/clerk-config';
-import { SOLID_BRAND_DARK, GlyphDisc } from '@livepages/ui';
+import { SOLID_BRAND_DARK, GlyphDisc } from '@livedesign/ui';
 
 // One pickable assignee (docs/specs/012-collaboration/assigned-actions.md): the pinned Myself row, or a joined
 // member of the document's team.

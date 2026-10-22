@@ -8,7 +8,7 @@ import { FormRespondPage } from '@/components/forms/respond/FormRespondPage';
 export const generateStaticParams = async () => [{ code: 'placeholder' }];
 
 export const metadata: Metadata = {
-  title: 'Form | livepages',
+  title: 'Form | livedesign',
   robots: { index: false },
 };
 

@@ -5,7 +5,7 @@ import {
   presetSetup,
   type Item,
   type ItemTypeDef,
-} from '@livepages/items';
+} from '@livedesign/items';
 import { createShape } from './shape-factory';
 import { tabToJsonText, tabToMarkdownText, type ExportedTabEnvelope } from './export-tab-text';
 import { tabExportItems, type TabPlanData } from './export-tab-plan';

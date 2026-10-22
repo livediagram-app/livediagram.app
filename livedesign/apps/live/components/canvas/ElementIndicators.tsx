@@ -19,8 +19,8 @@ import {
   TidyMapIcon,
   IDENTITY_FILL,
   identityVars,
-} from '@livepages/ui';
-import type { BoxedElement } from '@livepages/document';
+} from '@livedesign/ui';
+import type { BoxedElement } from '@livedesign/document';
 import { badgeCornerInset } from '@/lib/badge-anchor';
 import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
 import { ADORNMENT_MIN_ZOOM } from '@/components/canvas/element-badges';

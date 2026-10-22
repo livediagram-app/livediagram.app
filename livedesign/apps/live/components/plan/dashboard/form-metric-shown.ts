@@ -1,8 +1,8 @@
 // What a figure from a form shows (docs/specs/026-plan/plan-tabs.md "Form Metrics"), worked out from the form and its
 // link as the Form tab's status bar reads them. Pure: DashboardFormMetric draws it.
-import type { FormMetricKind } from '@livepages/document';
-import { closedBySettings, type FormDefinition } from '@livepages/forms';
-import type { FormLinkResponse } from '@livepages/api-schema';
+import type { FormMetricKind } from '@livedesign/document';
+import { closedBySettings, type FormDefinition } from '@livedesign/forms';
+import type { FormLinkResponse } from '@livedesign/api-schema';
 
 export type FormMetricTone = 'green' | 'amber' | 'red' | 'slate';
 

@@ -1,7 +1,7 @@
 'use client';
 
-import type { RecentDiagram } from '@livepages/api-schema';
-import { EDITOR_MODE_ICONS } from '@livepages/ui';
+import type { RecentDiagram } from '@livedesign/api-schema';
+import { EDITOR_MODE_ICONS } from '@livedesign/ui';
 import { useRecentThumb } from './useRecentDiagrams';
 
 // A recent diagram's preview (docs/specs/019-marketing/returning-visitor.md): its snapshot from this

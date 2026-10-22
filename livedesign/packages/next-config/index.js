@@ -41,7 +41,7 @@ export function isTurbopack(env = process.env) {
  * @param {{ env?: NodeJS.ProcessEnv, exportInDev?: boolean, reactCompiler?: boolean, now?: Date }} [options]
  * @returns {import('next').NextConfig}
  */
-export function livepagesNextConfig({
+export function livedesignNextConfig({
   env = process.env,
   exportInDev = true,
   reactCompiler = false,

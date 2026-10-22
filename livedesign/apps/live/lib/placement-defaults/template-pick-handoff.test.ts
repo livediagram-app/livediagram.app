@@ -30,9 +30,9 @@ describe('the template pick handoff', () => {
   });
 
   it('reads junk as none', () => {
-    sessionStorage.setItem('livepages:v2:template-pick-handoff', '{"documentId":3}');
+    sessionStorage.setItem('livedesign:v2:template-pick-handoff', '{"documentId":3}');
     expect(readTemplatePick()).toBeNull();
-    sessionStorage.setItem('livepages:v2:template-pick-handoff', 'nope');
+    sessionStorage.setItem('livedesign:v2:template-pick-handoff', 'nope');
     expect(readTemplatePick()).toBeNull();
   });
 });

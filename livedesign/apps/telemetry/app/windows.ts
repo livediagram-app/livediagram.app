@@ -11,7 +11,7 @@ import {
   type TelemetrySummary,
   type TelemetryWindow,
   type TelemetryWindowKey,
-} from '@livepages/api-schema';
+} from '@livedesign/api-schema';
 
 // Whole UTC calendar days ending today (TELEMETRY_WINDOW_DAYS, shared with
 // the api, which counts each window over exactly these days). `hint` says so

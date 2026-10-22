@@ -1,4 +1,4 @@
-import { ctaSurfaceOf, isCtaSource, parseTimingType } from '@livepages/api-schema';
+import { ctaSurfaceOf, isCtaSource, parseTimingType } from '@livedesign/api-schema';
 import { SURFACE_LABELS, ctaSourceLabel } from './cta-funnel';
 import { cliCommandSentence } from './cli-commands';
 import { API_OPERATIONS, BY_ACTION, EXACT } from './event-explanations';
@@ -98,7 +98,7 @@ function pattern(category: string, action: string, type: string): string | null 
 function apiError(type: string): string | null {
   const [kind = '', ...rest] = type.split('.');
   const operation = (op: string | undefined) =>
-    op ? capitalise(API_OPERATIONS[op] ?? words(op)) : 'A request to livepages';
+    op ? capitalise(API_OPERATIONS[op] ?? words(op)) : 'A request to livedesign';
   const http = /^Http(\d{3})$/.exec(kind);
   if (http) return `${operation(rest[0])} ${statusPhrase(Number(http[1]))}.`;
   if (kind === 'Network')
@@ -108,9 +108,9 @@ function apiError(type: string): string | null {
   if (kind === 'SaveFailed')
     return `Saving changes failed with ${errorKind(rest[0])} before any request was answered.`;
   if (kind === 'Internal' && rest.length >= 2)
-    return `A livepages server crashed while handling a request to its ${words(rest.slice(1).join(' '))} endpoint.`;
+    return `A livedesign server crashed while handling a request to its ${words(rest.slice(1).join(' '))} endpoint.`;
   if (kind === 'Internal' && rest.length === 1)
-    return `An AI tool's ${words(rest[0]!)} request never completed, because the livepages server behind it failed.`;
+    return `An AI tool's ${words(rest[0]!)} request never completed, because the livedesign server behind it failed.`;
   return null;
 }
 

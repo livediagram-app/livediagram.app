@@ -6,7 +6,7 @@ import {
   pathElementD,
   type FreehandElement,
   type PathElement,
-} from '@livepages/document';
+} from '@livedesign/document';
 import { bodySetClass } from '@/lib/animation-classes';
 
 // The Drawing animation set (docs/specs/028-animation/element-animations.md "Drawing") for freehand

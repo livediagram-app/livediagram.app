@@ -15,8 +15,8 @@ vi.mock('@/components/panels/DocumentThumbnail', () => ({
     <span data-testid={`thumb-${p.documentId}`} data-offline={String(Boolean(p.offline))} />
   ),
 }));
-vi.mock('@livepages/ui', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@livepages/ui')>()),
+vi.mock('@livedesign/ui', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@livedesign/ui')>()),
   useMediaQuery: () => wide.value,
 }));
 

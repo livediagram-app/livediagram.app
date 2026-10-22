@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Element } from '@livepages/document';
+import type { Element } from '@livedesign/document';
 import { maximisePlanElement, releasePlanElement } from '@/hooks/plan/maximised-plan';
 import { useCanvasSelectionView } from './useCanvasSelectionView';
 import { setPlanCover } from '@/hooks/plan/plan-cover-store';

@@ -177,7 +177,7 @@ describe('HomeHero', () => {
   it('welcomes a person with nothing yet: plain pills, the template search, no document sheets', () => {
     const { container } = renderHero({ documents: [] });
     expect(screen.getByRole('heading', { level: 1 }).textContent).toBe(
-      'Welcome to livepages. What are you making first?',
+      'Welcome to livedesign. What are you making first?',
     );
     expect(screen.queryByRole('link', { name: /documents?$/ })).toBeNull();
     expect(screen.getByText('Free and open source')).toBeTruthy();

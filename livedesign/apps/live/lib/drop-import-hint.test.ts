@@ -4,7 +4,7 @@ import { dropImportHint } from './drop-import-hint';
 describe('dropImportHint', () => {
   it('points a file the Import dialog reads at Import', () => {
     expect(dropImportHint({ name: 'Tab.JSON' })).toBe(
-      'To bring in a livepages export, use Import in the tab menu.',
+      'To bring in a livedesign export, use Import in the tab menu.',
     );
     expect(dropImportHint({ name: 'notes.md' })).toContain('a Markdown file');
   });

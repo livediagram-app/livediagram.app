@@ -21,7 +21,7 @@ describe('thresholds', () => {
   it('are the operator-chosen 20 days and 50 shortcuts', () => {
     expect(POWER_USER_OFFER_DAYS).toBe(20);
     expect(POWER_USER_OFFER_SHORTCUTS).toBe(50);
-    expect(OFFER_COUNTERS_KEY).toBe('livepages:power-user-offer:v1');
+    expect(OFFER_COUNTERS_KEY).toBe('livedesign:power-user-offer:v1');
   });
 });
 

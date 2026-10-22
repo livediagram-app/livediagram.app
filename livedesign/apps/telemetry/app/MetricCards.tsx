@@ -1,9 +1,9 @@
 'use client';
 
 import { Fragment, useState } from 'react';
-import { cascadeDelayMs } from '@livepages/tailwind-config/motion';
-import { useAppearance, Glyph } from '@livepages/ui';
-import type { TelemetrySummary, TelemetryWindowKey } from '@livepages/api-schema';
+import { cascadeDelayMs } from '@livedesign/tailwind-config/motion';
+import { useAppearance, Glyph } from '@livedesign/ui';
+import type { TelemetrySummary, TelemetryWindowKey } from '@livedesign/api-schema';
 import { MetricCard } from './MetricCard';
 import { MetricStackCard } from './MetricStackCard';
 import { stackMemberColors } from './stack-colours';

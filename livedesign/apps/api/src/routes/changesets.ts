@@ -11,7 +11,7 @@ import {
   type ChangesetConflict,
   type ChangesetSummary,
   type ResultLine,
-} from '@livepages/api-schema';
+} from '@livedesign/api-schema';
 import { redactCommentAuthorIds } from '../comments';
 import { getChangeset, getChangesetPart, getDocument, getParticipant, listChangesets } from '../db';
 import type { ChangesetRecord } from '../db';

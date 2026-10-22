@@ -12,13 +12,13 @@ import {
   MIND_SPACING_LABEL,
   type MindFlow,
   type MindSpacing,
-} from '@livepages/document';
-import { lucideGlyph } from '@livepages/ui';
+} from '@livedesign/document';
+import { lucideGlyph } from '@livedesign/ui';
 import {
   lucideBetweenHorizontalStart,
   lucideListTree,
   lucideNetwork,
-} from '@livepages/icons/lucide';
+} from '@livedesign/icons/lucide';
 import { OptionRows } from '@/components/plan/OptionRows';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';

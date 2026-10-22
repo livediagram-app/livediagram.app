@@ -30,7 +30,7 @@ import {
   SANKEY_MAX_FLOWS,
   type ChartPaletteId,
   type SankeyNodeStyle,
-} from '@livepages/document';
+} from '@livedesign/document';
 import {
   draftFlows,
   draftNodeNames,
@@ -44,8 +44,8 @@ import {
 import { flowLevels, flowNodeColors, flowTotals } from '@/lib/sankey-flow-levels';
 import { SankeyFlowRow, type FlowField } from '@/components/dialogs/SankeyFlowRow';
 import { ToggleSwitch } from '@/components/palette/palette-controls';
-import { lucideGlyph } from '@livepages/ui';
-import { lucidePlus } from '@livepages/icons/lucide';
+import { lucideGlyph } from '@livedesign/ui';
+import { lucidePlus } from '@livedesign/icons/lucide';
 
 const LOOSE_FIELDS: FlowField[] = ['from', 'to', 'value'];
 const GROUPED_FIELDS: FlowField[] = ['to', 'value'];

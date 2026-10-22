@@ -6,7 +6,7 @@
 // view it wraps, so a layer render costs what it did.
 
 import { memo, type ComponentProps, type PointerEvent as ReactPointerEvent } from 'react';
-import { arrowRoutePoints, type ArrowElement, type Element } from '@livepages/document';
+import { arrowRoutePoints, type ArrowElement, type Element } from '@livedesign/document';
 import { ArrowView, arrowViewPropsEqual } from '@/components/canvas/ArrowView';
 import { BoxedElementView } from '@/components/canvas/BoxedElementView';
 import { FreeArrowSelection } from '@/components/canvas/FreeArrowSelection';

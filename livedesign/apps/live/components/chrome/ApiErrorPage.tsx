@@ -7,7 +7,7 @@
 // renders as an absolute overlay so anything behind stays interactive.
 
 import type { ReactNode } from 'react';
-import { Button, Glyph } from '@livepages/ui';
+import { Button, Glyph } from '@livedesign/ui';
 
 type ApiErrorPageProps = {
   // Re-attempt the action that failed (reload the editor, retry the

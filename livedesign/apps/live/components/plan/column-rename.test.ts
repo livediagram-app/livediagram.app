@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { PlanBoardSetup } from '@livepages/items';
+import type { PlanBoardSetup } from '@livedesign/items';
 import { columnRename, pickableStatuses } from './column-status-picks';
 
 // docs/specs/026-plan/plan-board.md "The board set-up": one name, one status, when a column is named.

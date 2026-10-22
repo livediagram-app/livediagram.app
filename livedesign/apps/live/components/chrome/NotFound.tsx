@@ -8,8 +8,8 @@
 // The new-document sparkle, shared with the template picker's footer so
 // the two create-new surfaces can't drift.
 import { SparkleIcon } from '@/components/palette/template-picker-icons';
-import { Button, CircleXIcon, lucideGlyph } from '@livepages/ui';
-import { lucideFolder } from '@livepages/icons/lucide';
+import { Button, CircleXIcon, lucideGlyph } from '@livedesign/ui';
+import { lucideFolder } from '@livedesign/icons/lucide';
 
 const FolderIcon = lucideGlyph(lucideFolder, 16);
 

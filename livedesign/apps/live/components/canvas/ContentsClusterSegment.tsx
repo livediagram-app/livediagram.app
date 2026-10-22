@@ -1,7 +1,7 @@
 'use client';
 
-import { lucideListOrdered } from '@livepages/icons/lucide';
-import { lucideGlyph } from '@livepages/ui';
+import { lucideListOrdered } from '@livedesign/icons/lucide';
+import { lucideGlyph } from '@livedesign/ui';
 import { ClusterPopoverSegment } from './ClusterPopoverButton';
 
 const ContentsIcon = lucideGlyph(lucideListOrdered, 16);

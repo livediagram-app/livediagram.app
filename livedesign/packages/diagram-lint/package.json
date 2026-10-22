@@ -1,5 +1,5 @@
 {
-  "name": "@livepages/diagram-lint",
+  "name": "@livedesign/diagram-lint",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -17,14 +17,14 @@
     "clean": "rm -rf node_modules .turbo coverage"
   },
   "dependencies": {
-    "@livepages/api-schema": "workspace:*",
-    "@livepages/document": "workspace:*"
+    "@livedesign/api-schema": "workspace:*",
+    "@livedesign/document": "workspace:*"
   },
   "devDependencies": {
-    "@livepages/edit-operations": "workspace:*",
-    "@livepages/oxlint-config": "workspace:*",
-    "@livepages/templates": "workspace:*",
-    "@livepages/vitest-config": "workspace:*",
+    "@livedesign/edit-operations": "workspace:*",
+    "@livedesign/oxlint-config": "workspace:*",
+    "@livedesign/templates": "workspace:*",
+    "@livedesign/vitest-config": "workspace:*",
     "@types/node": "^26.6.4",
     "@vitest/coverage-v8": "^5.0.3",
     "oxlint": "^1.88.0",

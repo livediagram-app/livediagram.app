@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Participant } from './identity';
-import type { AvatarPresence } from '@livepages/api-schema';
+import type { AvatarPresence } from '@livedesign/api-schema';
 import {
   buildLaserTrailRows,
   buildParticipantsByTab,

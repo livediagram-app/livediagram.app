@@ -13,7 +13,7 @@ import {
   withLocaleNumbers,
   type AnswerError,
   type PublicForm,
-} from '@livepages/forms';
+} from '@livedesign/forms';
 
 export type FillState = { answers: Record<string, unknown>; other: Record<string, string> };
 
@@ -80,7 +80,7 @@ export function useFormFill(
     [form],
   );
   // Number answers as the respondent's locale writes them (`3,5` in German), read before every check and the send
-  // (@livepages/forms locale-number.ts); the field keeps showing what was typed.
+  // (@livedesign/forms locale-number.ts); the field keeps showing what was typed.
   const read = useCallback(
     (s: FillState): FillState => {
       const locale = typeof navigator === 'undefined' ? 'en-GB' : navigator.language || 'en-GB';

@@ -5,7 +5,7 @@
 // that already set things side by side on a landscape page, filed under the slide categories. Pure builders like
 // the page layouts: the slide's content box in, ordinary themed elements out, in proportions of
 // the box so a 16:9 and a 4:3 slide both fit. Type is sized up for reading across a room.
-import type { Element } from '@livepages/document';
+import type { Element } from '@livedesign/document';
 import { heading, kit, type Kit, type LayoutBox } from './page-layout-kit';
 import { bullets, rule, slideType } from './slide-layout-kit';
 import {

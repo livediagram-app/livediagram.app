@@ -1,7 +1,7 @@
 // `edge-crossings` (warning): more crossing pairs than LINT_CROSSINGS_PER_ARROW × arrows, one finding for
 // the tab naming the most-crossed arrows (LN9). Skipped with the pair count above LINT_MAX_ARROWS (N2).
 
-import { pathsCross } from '@livepages/document';
+import { pathsCross } from '@livedesign/document';
 import { arrowName, arrowSelector } from '../arrow-names';
 import { LINT_CROSSINGS_PER_ARROW, LINT_REFS_PER_FINDING_MAX } from '../constants';
 import { framedTab, refOf } from '../context';

@@ -5,7 +5,7 @@ import { writeLocalStorageValue } from '@/hooks/ui/useLocalStorageValue';
 import { PHONE_MEDIA_QUERY } from '@/lib/responsive';
 import { useExplorerViewMode } from './useExplorerViewMode';
 
-const KEY = 'livepages:explorer-view';
+const KEY = 'livedesign:explorer-view';
 
 afterEach(() => {
   window.localStorage.clear();

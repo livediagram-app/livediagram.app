@@ -12,8 +12,8 @@ import {
   type ResolveTabWindow,
   type Tab,
   type TabWindowArt,
-} from '@livepages/document';
-import { planImageOf } from '@livepages/plan-art';
+} from '@livedesign/document';
+import { planImageOf } from '@livedesign/plan-art';
 import { tabAsSeen } from '@/lib/export-as-seen';
 import { loadTabImages, renderTabToSvg } from '@/lib/export-tab';
 import { getTheme } from '@/lib/themes';

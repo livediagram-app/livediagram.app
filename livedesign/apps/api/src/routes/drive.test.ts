@@ -1,10 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { sentForm } from '@livepages/vitest-config/sent-request';
+import { sentForm } from '@livedesign/vitest-config/sent-request';
 import {
   bytesToBase64,
   DRIVE_ACCOUNT_SWITCH_TTL_MS,
   type DriveItem,
-} from '@livepages/api-schema';
+} from '@livedesign/api-schema';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { getSealedRefreshToken } from '../db/drive';
 import { signDriveState } from '../drive/state';
@@ -15,7 +15,7 @@ import { handleDrive } from './drive';
 // /api/drive/* (docs/specs/022-drive-mirror/blueprints/drive-mirror.md, "Routes").
 
 const KEY = bytesToBase64(new Uint8Array(32).map((_, i) => i));
-const URI = 'https://livepages.app/drive/connected';
+const URI = 'https://livedesign.app/drive/connected';
 const BROKER: Partial<Env> = {
   GOOGLE_CLIENT_ID: 'cid',
   GOOGLE_CLIENT_SECRET: 'secret',
@@ -116,7 +116,7 @@ function item(over: Partial<DriveItem> = {}): DriveItem {
     kind: 'document',
     ldId: 'd1',
     driveFileId: 'f1',
-    name: 'One.livepages',
+    name: 'One.livedesign',
     ldName: 'One',
     parentId: 'root',
     trashed: false,

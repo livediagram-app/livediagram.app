@@ -13,7 +13,7 @@ Scope, by file:
 | `packages/api-schema/src/within-reach.test.ts` | The rule, its ties and its merge property                |
 | `packages/api-schema/src/index.ts`             | Re-exports the module                                    |
 
-`@livepages/api-schema` is the home because it is already the one package both the api worker and the live app
+`@livedesign/api-schema` is the home because it is already the one package both the api worker and the live app
 import (`D48`).
 
 ## Domain and naming

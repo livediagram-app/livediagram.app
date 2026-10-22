@@ -1,12 +1,12 @@
 import type { ReactNode } from 'react';
-import type { StyledPrim } from '@livepages/icons';
+import type { StyledPrim } from '@livedesign/icons';
 import {
   lucideChevronLeft,
   lucideChevronRight,
   lucideLock,
   lucideSettings,
-} from '@livepages/icons/lucide';
-import { Prims } from '@livepages/ui';
+} from '@livedesign/icons/lucide';
+import { Prims } from '@livedesign/ui';
 import { FONT } from '@/components/art-tokens';
 
 // The pieces every page of the hero's Infographic window is built from (hero-page.tsx):

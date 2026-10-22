@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { PLAN_COLUMN_MIN_PX } from '@livepages/items';
+import { PLAN_COLUMN_MIN_PX } from '@livedesign/items';
 import {
   MAXIMISED_BOARD_SLOTS,
   PHONE_COLUMN_PEEK_PX,

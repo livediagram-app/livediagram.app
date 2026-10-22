@@ -1,6 +1,6 @@
-# livepages
+# livedesign
 
-Monorepo for the livepages product. Multiple apps share code through internal packages.
+Monorepo for the livedesign product. Multiple apps share code through internal packages.
 
 ## Before you start
 
@@ -199,9 +199,9 @@ apps/
   telemetry/    # public anonymous-events dashboard (Next.js, /telemetry)
   help/         # help centre (Next.js export + MDX, /help)
   api/          # Cloudflare Worker REST + WebSocket API (D1 + Durable Objects, /api)
-  mcp/          # Cloudflare Worker MCP server for AI tools (OAuth + tools, mcp.livepages.app)
+  mcp/          # Cloudflare Worker MCP server for AI tools (OAuth + tools, mcp.livedesign.app)
   router/       # Cloudflare Worker stitching the apps under one hostname
-  cli/          # the livepages command line for agents and scripts (Node, one esbuild bundle)
+  cli/          # the livedesign command line for agents and scripts (Node, one esbuild bundle)
 packages/
   ui/             # shared UI primitives (Brand, SiteHeader, Button, TextInput, Select, Tooltip, hooks) + chrome icons (src/icons)
   document/       # document data model (Tab, Element types + element helpers)
@@ -248,7 +248,7 @@ Workspaces are managed with **pnpm** (`pnpm-workspace.yaml`). Tasks are orchestr
 See [Open source + distribution](docs/specs/002-project-scope/open-source-and-business-model.md).
 
 - The codebase is **MIT-licensed** and **publicly viewable**. Anyone can self-host.
-- A free hosted version runs alongside at livepages.app. **No paid tier and no plan to introduce one.**
+- A free hosted version runs alongside at livedesign.app. **No paid tier and no plan to introduce one.**
 - Don't add code that breaks self-hosting (no required SaaS calls, no license checks gating the core editor). Clerk auth is optional: when unset the api worker and live frontend degrade to pure-guest mode.
 - No "Pro features" flags, no billing integration. If we ship it, every user gets it.
 
@@ -267,7 +267,7 @@ See [Auth + guest access](docs/specs/014-identity/auth-and-guest-access.md).
 
 - **The canvas always works without signing in.** Friction-free engagement is the acquisition strategy. Never put a sign-in wall in front of the editor.
 - **Hybrid identity** — the api accepts two equivalent ways of identifying the owner of a request:
-  - **Guest path**: a per-browser participant id (`livepages:v2:self-id` in `localStorage`) carried as `X-Owner-Id`. Default for unsigned visitors. Full feature set (persistence, share links, real-time collab).
+  - **Guest path**: a per-browser participant id (`livedesign:v2:self-id` in `localStorage`) carried as `X-Owner-Id`. Default for unsigned visitors. Full feature set (persistence, share links, real-time collab).
   - **Authed path**: a Clerk session JWT in `Authorization: Bearer <token>`, verified via `CLERK_JWKS_URL`.
   - The api worker uses the `sub` claim as the owner id.
 - The two paths coexist forever — a signed-in user can still hand a share link to a guest who edits without auth.

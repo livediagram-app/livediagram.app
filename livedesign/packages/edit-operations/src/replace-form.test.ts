@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Tab } from '@livepages/document';
+import type { Tab } from '@livedesign/document';
 import { checkoutFlow, fixedIds } from './fixtures/checkout-flow';
 import { applied, refused } from './fixtures/outcomes';
 import { applyReplace } from './replace';

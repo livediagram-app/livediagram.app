@@ -147,7 +147,7 @@ describe('DriveMirrorProvider', () => {
       </DriveMirrorProvider>,
     );
     await flush();
-    expect(sessionStorage.getItem('livepages:v2:drive-connect-outcome')).toBe('cancelled');
+    expect(sessionStorage.getItem('livedesign:v2:drive-connect-outcome')).toBe('cancelled');
   });
 
   it('starts the mirror once the signed-in user becomes known after mount', async () => {

@@ -35,7 +35,7 @@ import {
   type Deck,
   type Slide,
   type Tab,
-} from '@livepages/document';
+} from '@livedesign/document';
 
 import { track } from '@/lib/telemetry';
 import { useSlideThumbnails, type ThumbnailPlan } from '@/hooks/ui/useSlideThumbnails';

@@ -1,4 +1,4 @@
-import { planPalette, type PlanPalette } from '@livepages/document';
+import { planPalette, type PlanPalette } from '@livedesign/document';
 import { useOptionalEditorContext } from '@/app/document/[id]/EditorContext';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { getTheme, resolveTabBackdrop } from '@/lib/themes';

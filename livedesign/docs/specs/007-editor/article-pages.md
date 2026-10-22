@@ -29,7 +29,7 @@ a text element): the text here is the page's own, one continuous piece of writin
 | **writer**        | The person whose edit changed the writing's layout; only they write the layout's consequences (zone moves, pages added or removed).           |
 
 An **article** is named so to keep **document** for what it already means across the app: the
-livepages file that holds tabs ([Document](../006-document/document.md)). The interface says
+livedesign file that holds tabs ([Document](../006-document/document.md)). The interface says
 **Article** for the kind of page and for the run of pages it writes on ("Duplicate article",
 "Article style"); it never calls the writing a document.
 

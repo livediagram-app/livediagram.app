@@ -11,7 +11,7 @@ test.beforeEach(async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   // The mode tours offer themselves on arrival; their overlay would take the presses below.
   await page.addInitScript(() => {
-    const key = 'livepages:user-preferences:v1';
+    const key = 'livedesign:user-preferences:v1';
     try {
       const prefs = JSON.parse(localStorage.getItem(key) ?? '{}') as Record<string, unknown>;
       localStorage.setItem(

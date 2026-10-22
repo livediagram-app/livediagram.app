@@ -4,7 +4,7 @@
 // the real document id from `window.location.pathname`. See docs/specs/007-editor/new-document-route.md
 // for why we can't enumerate user-minted ids at build time.
 
-import { TRUSTED_TYPES_CSP } from '@livepages/ui/trusted-types';
+import { TRUSTED_TYPES_CSP } from '@livedesign/ui/trusted-types';
 
 type AssetsBinding = { fetch: (request: Request) => Promise<Response> };
 // API is optional: the share page's link preview (./share-page.ts) asks it for the document's name, and without it

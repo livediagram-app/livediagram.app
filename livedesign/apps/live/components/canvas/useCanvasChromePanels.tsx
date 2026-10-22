@@ -8,7 +8,7 @@ import { participantKey } from '@/lib/identity';
 import type { useCornerDocking } from '@/hooks/ui/useCornerDocking';
 import type { PanelId } from '@/lib/panel-layout';
 import { loadLayersPanel } from '@/lib/editor-deferred-code';
-import { visibleLayerElements } from '@livepages/document';
+import { visibleLayerElements } from '@livedesign/document';
 import { CanvasAiPanel } from './CanvasAiPanel';
 import { LazyExplorer } from '@/components/panels/LazyExplorer';
 import { ViewMinimap } from '@/components/canvas/view-readers';

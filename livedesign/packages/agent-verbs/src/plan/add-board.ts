@@ -1,21 +1,21 @@
 // Adding a Plan board (docs/specs/026-plan/plan-agents.md "Adding a board"): placed by placeBoard on the tab named,
 // else the first tab holding a board, else the first tab, which must be in Plan, as one changeset through the api (live to anyone with
 // the tab open). Card types are named as everywhere else.
-import type { ApiClient } from '@livepages/api-client';
+import type { ApiClient } from '@livedesign/api-client';
 import {
   CLIENT_HEADER,
   type ChangesetRequest,
   type ChangesetResponse,
   type DocumentResponse,
   type TabResponse,
-} from '@livepages/api-schema';
-import { tabTakesPlanOnly } from '@livepages/document';
+} from '@livedesign/api-schema';
+import { tabTakesPlanOnly } from '@livedesign/document';
 import {
   READY_MADE_CARD_TYPES,
   placeBoard,
   resolveType,
   type BoardRequest,
-} from '@livepages/items';
+} from '@livedesign/items';
 import { apiRefusalOf } from './api-refusal';
 import { bringBoardCardTypes } from './brought-types';
 import { readPlanState } from './plan-state';
