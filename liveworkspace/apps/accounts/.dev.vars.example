@@ -6,3 +6,7 @@ TURNSTILE_SITE_KEY=1x00000000000000000000AA
 TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA
 ADMIN_TOKEN=local-admin-token
 EMAIL_FROM=sign-in@liveworkspace.app
+# Optional: an OAuth client from Google Cloud with http://localhost:8787/api/auth/callback/google as
+# an authorised redirect URI. Without both, the pages offer email codes only.
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=

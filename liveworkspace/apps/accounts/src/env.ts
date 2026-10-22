@@ -9,6 +9,9 @@ export interface Env {
   BETTER_AUTH_SECRET: string;
   TURNSTILE_SECRET_KEY: string;
   ADMIN_TOKEN: string;
+  // Both set turns on "Continue with Google"; either missing leaves email codes only.
+  GOOGLE_CLIENT_ID?: string;
+  GOOGLE_CLIENT_SECRET?: string;
 
   AUTH_DB: D1Database;
   EMAIL: SendEmail;

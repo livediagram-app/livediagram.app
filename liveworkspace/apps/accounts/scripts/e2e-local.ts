@@ -1,9 +1,10 @@
 // Walks the whole sign-in flow against a local `pnpm dev`, the way an app would:
 // redirect to /oauth2/authorize, register with a code and a name, swap the code for
-// tokens, verify them, sign in again without a code, refresh, and give a nameless
-// account its name after the code.
+// tokens, verify them, sign in again without a code, refresh, give a nameless
+// account its name after the code, and start a Google sign-in.
 //
-//   pnpm dev   (in another terminal; .dev.vars from .dev.vars.example)
+//   pnpm dev   (in another terminal; .dev.vars from .dev.vars.example, with any
+//              GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET: Google itself is never called)
 //   ADMIN_TOKEN=local-admin-token node scripts/e2e-local.ts
 //
 // The emailed code is read back from the local email simulation's log, so pass the
@@ -318,6 +319,29 @@ const namelessClaims = jwtClaims(namelessTokens.idToken);
 assert(
   namelessClaims.given_name === 'Grace' && namelessClaims.name === 'Grace Hopper',
   `that sign-in's id token carries the new name (${JSON.stringify(namelessClaims)})`,
+);
+
+// 9. "Continue with Google" hands the browser to Google, carrying the app's request so the
+// provider can finish it when Google sends the browser back.
+const google = await startSignIn();
+const googlePage = (await redirectOf(google.response))!;
+const toGoogle = await browser(`${ACCOUNTS}/api/auth/sign-in/social`, {
+  method: 'POST',
+  headers: { 'content-type': 'application/json', accept: 'application/json' },
+  body: JSON.stringify({
+    provider: 'google',
+    callbackURL: googlePage.pathname + googlePage.search,
+    errorCallbackURL: googlePage.pathname + googlePage.search,
+    oauth_query: oauthQueryOf(googlePage),
+  }),
+});
+const toGoogleBody = (await toGoogle.json()) as { url?: string };
+const googleUrl = toGoogleBody.url ? new URL(toGoogleBody.url) : null;
+assert(
+  googleUrl?.hostname === 'accounts.google.com' &&
+    googleUrl.searchParams.get('redirect_uri') === `${ACCOUNTS}/api/auth/callback/google` &&
+    googleUrl.searchParams.get('prompt') === 'select_account',
+  `Google sign-in starts at Google, coming back to this Worker (${toGoogle.status})`,
 );
 
 console.log('\nall good');

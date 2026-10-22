@@ -4,7 +4,7 @@ One account across livediagram, liveplanner and the rest of liveworkspace. Peopl
 **liveworkspace.app/sign-in** with a code sent to their email, and every app trusts that sign-in.
 
 It replaces Clerk. It runs on Cloudflare Workers + D1, using [Better Auth](https://www.better-auth.com)
-with its email-code (`emailOTP`) and OAuth 2.1 / OpenID Connect provider plugins.
+with its email-code (`emailOTP`), Google and OAuth 2.1 / OpenID Connect provider plugins.
 
 The accounts Worker shares liveworkspace.app with the marketing site: it is routed only
 `/sign-in`, `/sign-up`, `/consent`, `/accounts-assets/*`, `/api/auth/*`, `/internal/clients` and
@@ -29,8 +29,8 @@ The apps live on different sites (`livediagram.app`, `liveplanner.app`), so they
 cookie. Each app sends the browser to the accounts site and gets it back with a one-time code:
 
 1. The app redirects to `liveworkspace.app/api/auth/oauth2/authorize` (PKCE, `state`).
-2. Not signed in there yet? The person types their email, gets a 6-digit code, and enters it.
-   liveworkspace.app now has its own first-party cookie.
+2. Not signed in there yet? The person continues with Google, or types their email, gets a
+   6-digit code, and enters it. liveworkspace.app now has its own first-party cookie.
 3. The browser lands on the app's `/auth/callback?code=…`. The app's Worker swaps the code for
    an access token, a refresh token and an ID token.
 4. The app's API checks access tokens locally against the published keys
@@ -45,6 +45,14 @@ the card, and beside it what an account adds (`src/pages.ts`). Both ask for an e
 6-digit code. Registration also asks for a **first and last name**, stored as `givenName` and
 `familyName` on the account (with `name` the two joined). Someone who signs in with a code to an
 address that has no name yet is asked for one after the code, before going back to the app.
+
+**Continue with Google** sits above the email form on both pages when the Worker has a Google
+OAuth client (`GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`; without them the button isn't shown).
+It takes Google's first and last name and leaves its picture behind, and an address that already
+has an account (made with a code) signs in to that same account. The page hands the signed OAuth
+request to `/sign-in/social`, and the provider finishes it when Google sends the browser back.
+From `/sign-up`, the provider sends the browser back to `/sign-up`, which sees it is signed in and
+finishes the registration as the email form does.
 
 An app's "Create account" opens `/sign-up` by sending `prompt=create` to the authorize endpoint.
 Once the account is made, the page tells the provider with `POST /oauth2/continue`
@@ -70,7 +78,7 @@ Locally, emails aren't sent. Each code email is printed in the `pnpm dev` output
 Cloudflare's always-pass test keys.
 
 To run the whole flow (register a client, request and enter a code, swap it, verify, sign in again
-without a code, refresh) against the running Worker:
+without a code, refresh, start a Google sign-in) against the running Worker:
 
 ```sh
 corepack pnpm dev > dev.log 2>&1 &
@@ -88,8 +96,11 @@ Other checks, from the repo root: `corepack pnpm test`, `corepack pnpm typecheck
    `TURNSTILE_SITE_KEY`.
 4. Set the secrets: `BETTER_AUTH_SECRET` (`openssl rand -base64 32`), `TURNSTILE_SECRET_KEY`,
    and `ADMIN_TOKEN` (`openssl rand -hex 32`).
-5. `corepack pnpm db:migrate:remote`, then `corepack pnpm deploy`.
-6. Register each app (below).
+5. For Google: create an OAuth client (Web application) in Google Cloud with
+   `https://liveworkspace.app/api/auth/callback/google` as its redirect URI (and the staging one
+   for staging), then set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`.
+6. `corepack pnpm db:migrate:remote`, then `corepack pnpm deploy`.
+7. Register each app (below).
 
 ## Adding an app
 
@@ -131,7 +142,7 @@ the same range.
 
 |                                            |                                                                                                       |
 | ------------------------------------------ | ----------------------------------------------------------------------------------------------------- |
-| Worker bundle                              | 2.95 MB, 491 KiB gzipped (well under the 10 MB limit; Better Auth, zod and kysely make up most of it) |
+| Worker bundle                              | 2.98 MB, 499 KiB gzipped (well under the 10 MB limit; Better Auth, zod and kysely make up most of it) |
 | Startup (`wrangler check startup`)         | 211 ms CPU, inside the 1 s limit. The Better Auth instance is built once per isolate, not per request |
 | Sign-in page / authorize / JWKS            | 5 / 12 / 8 ms                                                                                         |
 | Send code / sign in with code / token swap | 69 / 30 / 32 ms average                                                                               |
@@ -148,7 +159,6 @@ limit, start by checking which plugins are loaded.
 - **Sign-out everywhere:** an app can drop its own tokens and revoke them at
   `/api/auth/oauth2/revoke`. Ending the accounts session as well needs `enable_end_session` on the
   clients and a sign-out link to the provider's end-session endpoint.
-- **Google sign-in:** Better Auth's Google provider can be added next to codes if you want it back.
 - **An account page** for changing your email or deleting your account.
 - **Cleanup of expired rows:** nothing yet sweeps expired codes, sessions and tokens out of D1.
   A daily cron can delete rows past `expiresAt` once the tables grow.

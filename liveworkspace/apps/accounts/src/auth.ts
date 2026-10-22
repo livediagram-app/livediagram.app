@@ -13,6 +13,10 @@ function build(env: Env) {
         resources: RESOURCES[env.ENVIRONMENT],
         turnstileSecretKey: env.TURNSTILE_SECRET_KEY,
         adminToken: env.ADMIN_TOKEN,
+        google:
+          env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET
+            ? { clientId: env.GOOGLE_CLIENT_ID, clientSecret: env.GOOGLE_CLIENT_SECRET }
+            : null,
         sendCode: (email, code) => sendCodeEmail(env, email, code),
       },
       env.AUTH_DB,

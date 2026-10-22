@@ -20,6 +20,8 @@ export interface AuthConfig {
   resources: string[];
   turnstileSecretKey: string;
   adminToken: string;
+  // "Continue with Google", when the Worker has a Google OAuth client.
+  google: { clientId: string; clientSecret: string } | null;
   sendCode: (email: string, code: string) => Promise<void>;
 }
 
@@ -44,6 +46,27 @@ export function authOptions(config: AuthConfig, database: BetterAuthOptions['dat
         familyName: { type: 'string', required: false, input: true },
       },
     },
+    ...(config.google && {
+      socialProviders: {
+        google: {
+          clientId: config.google.clientId,
+          clientSecret: config.google.clientSecret,
+          // Someone signed in to several Google accounts picks one rather than getting whichever
+          // the browser last used.
+          prompt: 'select_account' as const,
+          // Google's first and last name fill the account's; its picture is left behind, since
+          // the apps show initials.
+          mapProfileToUser: (profile) => ({
+            givenName: profile.given_name,
+            familyName: profile.family_name,
+            image: undefined,
+          }),
+        },
+      },
+    }),
+    // Google verifies the address it hands over, so signing in with Google on an address that
+    // already has an account (made with an email code) joins that account rather than failing.
+    account: { accountLinking: { enabled: true, trustedProviders: ['google'] } },
     databaseHooks: {
       user: {
         create: { before: async (user) => ({ data: withNames(user) }) },

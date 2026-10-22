@@ -20,6 +20,8 @@ routes = [
 #   BETTER_AUTH_SECRET    signs cookies and the OAuth query; 32+ random bytes
 #   TURNSTILE_SECRET_KEY  Turnstile on "send code"
 #   ADMIN_TOKEN           guards POST /internal/clients (registering an app)
+#   GOOGLE_CLIENT_ID      "Continue with Google"; optional, the button only shows with both
+#   GOOGLE_CLIENT_SECRET
 [vars]
 ENVIRONMENT = "production"
 BASE_URL = "https://liveworkspace.app"

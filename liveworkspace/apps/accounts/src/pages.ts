@@ -73,20 +73,24 @@ const PITCH_ROWS = [
     lead: 'No password',
     title: 'A code by email',
     line: 'Nothing to remember: we send a code each time you sign in.',
+    withGoogle: 'Nothing to remember: continue with Google, or we email you a code.',
   },
 ];
 
-const PITCH = `<section class="pitch">
+function pitch(google: boolean): string {
+  return `<section class="pitch">
 <p class="eyebrow">Your liveworkspace account</p>
 <h2>One account for every live app.</h2>
 <ul>${PITCH_ROWS.map(
-  (row) => `
-<li><span class="chip ${row.tone}">${row.icon}</span><span><span class="lead ${row.tone}">${row.lead}</span> <span class="row-title">${row.title}</span><span class="row-line">${row.line}</span></span></li>`,
-).join('')}
+    (row) => `
+<li><span class="chip ${row.tone}">${row.icon}</span><span><span class="lead ${row.tone}">${row.lead}</span> <span class="row-title">${row.title}</span><span class="row-line">${(google && row.withGoogle) || row.line}</span></span></li>`,
+  ).join('')}
 </ul>
 </section>`;
+}
 
-function page(title: string, card: string, scripts: string[], pitch: boolean): Response {
+// `aside` is the pitch beside the card, or null for a page that has the card alone.
+function page(title: string, card: string, scripts: string[], aside: string | null): Response {
   const html = `<!doctype html>
 <html lang="en">
 <head>
@@ -99,11 +103,11 @@ ${scripts.map((src) => `<script src="${src}" defer></script>`).join('\n')}
 <body>
 <main class="stage">
 <header class="top">${WORDMARK}</header>
-<div class="${pitch ? 'layout' : 'layout alone'}">
+<div class="${aside ? 'layout' : 'layout alone'}">
 <div class="card">
 ${card}
 </div>
-${pitch ? PITCH : ''}
+${aside ?? ''}
 </div>
 </main>
 </body>
@@ -160,15 +164,33 @@ const NAME_STEP = `<form id="name-step" class="stack" hidden novalidate>
   <button type="submit" class="primary">Continue</button>
 </form>`;
 
+// livediagram's Google button and "or" rule, above the email form.
+const GOOGLE_GLYPH = `<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>`;
+
+function googleBlock(google: boolean): string {
+  if (!google) return '';
+  return `<div id="google-block" class="stack">
+  <button type="button" id="google" class="google">${GOOGLE_GLYPH}<span>Continue with Google</span></button>
+  <div class="or" aria-hidden="true"><span>or</span></div>
+</div>`;
+}
+
+export interface PageOptions {
+  turnstileSiteKey: string;
+  // Whether the Worker has a Google OAuth client, so "Continue with Google" can work.
+  google: boolean;
+}
+
 function heading(title: string, subtitle: string): string {
   return `<div class="heading"><h1 id="title">${title}</h1><p class="muted">${subtitle}</p></div>`;
 }
 
-export function signInPage(turnstileSiteKey: string): Response {
+export function signInPage({ turnstileSiteKey, google }: PageOptions): Response {
   return page(
     'Sign in · liveworkspace',
     `${heading('Sign in', `One account for ${APP_NAMES} and the rest of liveworkspace.`)}
 ${ALERTS}
+${googleBlock(google)}
 <form id="email-step" class="stack" data-flow="sign-in" novalidate>
   <div>
     <label for="email">Email</label>
@@ -182,15 +204,16 @@ ${DONE}
 ${captcha(turnstileSiteKey)}
 <p class="footer">New to liveworkspace? <a id="switch" href="/sign-up">Create an account</a></p>`,
     ['/accounts-assets/sign-in.js', TURNSTILE_SCRIPT],
-    true,
+    pitch(google),
   );
 }
 
-export function signUpPage(turnstileSiteKey: string): Response {
+export function signUpPage({ turnstileSiteKey, google }: PageOptions): Response {
   return page(
     'Create your account · liveworkspace',
     `${heading('Create your account', `One account for ${APP_NAMES} and the rest of liveworkspace.`)}
 ${ALERTS}
+${googleBlock(google)}
 <form id="email-step" class="stack" data-flow="sign-up" novalidate>
   ${nameFields('new', true)}
   <div>
@@ -205,7 +228,7 @@ ${DONE}
 ${captcha(turnstileSiteKey)}
 <p class="footer">Already have an account? <a id="switch" href="/sign-in">Sign in</a></p>`,
     ['/accounts-assets/sign-in.js', TURNSTILE_SCRIPT],
-    true,
+    pitch(google),
   );
 }
 
@@ -219,7 +242,7 @@ export function consentPage(): Response {
 </div>
 <p id="error" class="alert error" role="alert" hidden></p>`,
     ['/accounts-assets/consent.js'],
-    false,
+    null,
   );
 }
 
@@ -291,8 +314,11 @@ function busy(form, on, label) {
   if (!on && form === codeStep) verifyButton.disabled = code().length !== 6;
 }
 
+const googleBlock = document.getElementById('google-block');
+
 function show(step) {
   for (const form of [emailStep, codeStep, nameStep]) form.hidden = form !== step;
+  if (googleBlock) googleBlock.hidden = step !== emailStep;
   document.getElementById('done').hidden = step !== null;
   document.getElementById('switch').parentElement.hidden = step !== emailStep;
 }
@@ -462,6 +488,48 @@ document.getElementById('resend').addEventListener('click', async () => {
   if (sent) showNotice('We sent you a new code.');
 });
 
+// Google: the page leaves for Google and comes back to itself, or straight to the app when the
+// provider can finish the sign-in on the way. A mark in this tab's storage says which visit is
+// the return trip.
+const GOOGLE_MARK = 'liveworkspace:google';
+
+function storage(action) {
+  try { return action(sessionStorage); } catch { return null; }
+}
+
+if (googleBlock) {
+  const button = document.getElementById('google');
+  button.addEventListener('click', async () => {
+    showError('');
+    button.disabled = true;
+    button.lastElementChild.textContent = 'Redirecting…';
+    storage((s) => s.setItem(GOOGLE_MARK, '1'));
+    const here = location.pathname + location.search;
+    const result = await call('/sign-in/social', {
+      provider: 'google',
+      callbackURL: here,
+      errorCallbackURL: here,
+      oauth_query: signedOAuthQuery(),
+    });
+    if (result.ok && result.data && typeof result.data.url === 'string') return location.assign(result.data.url);
+    storage((s) => s.removeItem(GOOGLE_MARK));
+    button.disabled = false;
+    button.lastElementChild.textContent = 'Continue with Google';
+    showError('We could not reach Google. Try again, or use your email.');
+  });
+}
+
+async function returnFromGoogle() {
+  if (storage((s) => s.getItem(GOOGLE_MARK)) !== '1') return;
+  storage((s) => s.removeItem(GOOGLE_MARK));
+  const session = await call('/get-session');
+  if (session.ok && session.data && session.data.user) return finish();
+  if (new URLSearchParams(location.search).has('error')) {
+    showError('Signing in with Google did not finish. Try again, or use your email.');
+  }
+}
+returnFromGoogle();
+
 document.getElementById('back').addEventListener('click', () => {
   showError('');
   show(emailStep);
@@ -496,7 +564,7 @@ export const STYLES = `
   --notice-bg: #ecfdf5; --notice-line: #a7f3d0; --notice-ink: #065f46;
   --emerald-chip: #d1fae5; --emerald: #047857; --violet-chip: #ede9fe; --violet: #6d28d9;
   --sky-chip: #e0f2fe; --sky: #0369a1; --amber-chip: #fef3c7; --amber: #b45309;
-  --tile: #0f172a; --shadow: rgb(15 23 42 / .1); }
+  --tile: #0f172a; --shadow: rgb(15 23 42 / .1); --hover: #f8fafc; }
 @media (prefers-color-scheme: dark) { :root {
   --ground: #0f172a; --card: rgb(30 41 59 / .95); --card-line: #334155; --ink: #f1f5f9;
   --text: #f1f5f9; --muted: #94a3b8; --label: #cbd5e1; --field: #0f172a; --field-line: #334155;
@@ -507,7 +575,8 @@ export const STYLES = `
   --notice-bg: rgb(16 185 129 / .1); --notice-line: rgb(16 185 129 / .3); --notice-ink: #6ee7b7;
   --emerald-chip: rgb(52 211 153 / .1); --emerald: #34d399; --violet-chip: rgb(167 139 250 / .1);
   --violet: #a78bfa; --sky-chip: rgb(56 189 248 / .1); --sky: #38bdf8;
-  --amber-chip: rgb(251 191 36 / .1); --amber: #fbbf24; --tile: #fff; --shadow: rgb(0 0 0 / .4); } }
+  --amber-chip: rgb(251 191 36 / .1); --amber: #fbbf24; --tile: #fff; --shadow: rgb(0 0 0 / .4);
+  --hover: #1e293b; } }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 body { margin: 0; background: var(--ground); color: var(--text);
@@ -569,6 +638,14 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 .alert { margin: 0 0 16px; padding: 8px 12px; border-radius: 8px; font-size: 14px; border: 1px solid; }
 .alert.error { background: var(--error-bg); border-color: var(--error-line); color: var(--error-ink); }
 .alert.notice { background: var(--notice-bg); border-color: var(--notice-line); color: var(--notice-ink); }
+.google { width: 100%; min-height: 44px; display: flex; align-items: center; justify-content: center;
+  gap: 8px; padding: 10px 16px; font-weight: 500; color: var(--label); background: transparent;
+  border: 1px solid var(--field-line); }
+.google:not(:disabled):hover { background: var(--hover); border-color: var(--focus); }
+.or { display: flex; align-items: center; gap: 8px; font-size: 12px; letter-spacing: .05em;
+  text-transform: uppercase; color: var(--muted); }
+.or::before, .or::after { content: ''; flex: 1; border-top: 1px solid var(--field-line); }
+#google-block { margin-bottom: 16px; }
 .cf-turnstile { margin-top: 16px; }
 .cf-turnstile:empty { display: none; }
 .footer { margin: 24px 0 0; text-align: center; font-size: 14px; color: var(--muted); }

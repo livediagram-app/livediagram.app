@@ -19,6 +19,8 @@ const options = authOptions(
     resources: [],
     turnstileSecretKey: 'unused',
     adminToken: '',
+    // On, so the schema covers everything a deployment with Google sign-in needs.
+    google: { clientId: 'unused', clientSecret: 'unused' },
     sendCode: async () => {},
   },
   new DatabaseSync(':memory:'),

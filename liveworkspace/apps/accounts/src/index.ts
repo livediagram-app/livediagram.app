@@ -35,6 +35,13 @@ function asset(path: string): Response | null {
   });
 }
 
+function pageOptions(env: Env) {
+  return {
+    turnstileSiteKey: env.TURNSTILE_SITE_KEY,
+    google: Boolean(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET),
+  };
+}
+
 // Only the paths routed to this Worker reach it (wrangler.toml): it shares liveworkspace.app with
 // the marketing site, so it has no / of its own.
 export default {
@@ -43,8 +50,8 @@ export default {
     const { pathname } = url;
 
     if (request.method === 'GET') {
-      if (pathname === '/sign-in') return signInPage(env.TURNSTILE_SITE_KEY);
-      if (pathname === '/sign-up') return signUpPage(env.TURNSTILE_SITE_KEY);
+      if (pathname === '/sign-in') return signInPage(pageOptions(env));
+      if (pathname === '/sign-up') return signUpPage(pageOptions(env));
       if (pathname === '/consent') return consentPage();
       const file = asset(pathname);
       if (file) return file;
