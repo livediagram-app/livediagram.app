@@ -359,7 +359,6 @@ const CALLS: { tool: string; output: keyof typeof outputs; args: Record<string, 
     args: { documentId: 'd1', tabId: 't1' },
   },
   { tool: 'list_trash', output: 'listTrashOutput', args: {} },
-  { tool: 'list_images', output: 'listImagesOutput', args: { query: 'shot' } },
   { tool: 'restore_document', output: 'restoreDocumentOutput', args: { documentId: 'd2' } },
   { tool: 'list_items', output: 'listItemsOutput', args: { documentId: 'd1' } },
   {

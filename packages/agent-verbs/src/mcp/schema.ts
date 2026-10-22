@@ -66,10 +66,8 @@ const CONTENT_KINDS =
   'type "sticky": a note whose "label" is its text; the theme never recolours it, so its own ' +
   `"fillColor" + "textColor" are kept (palette pairs, fill/text: ${stickyPairs}); unset it is ` +
   'the classic amber note. ' +
-  'type "image": a picture from the user\'s gallery: "imageId" is an id from list_images (one not in the ' +
-  'gallery is refused); without it the element is a placeholder the user fills in the editor. "objectFit" ' +
-  'contain (default, the whole picture) or cover (fills the box, cropping); "alt" describes it. A box in the ' +
-  "picture's own proportions (its width and height from list_images, scaled) shows it uncropped. " +
+  'type "image": an empty picture placeholder; liveplanner keeps no uploaded pictures, so it takes no ' +
+  '"imageId" (one is refused); "alt" describes what it stands for. ' +
   'type "table": "cells" is rows of strings (ragged rows are padded), "headerRow" / ' +
   '"headerColumn" style the first row / column, "zebra" tints alternate rows. ' +
   `shape "code-block": "code" (up to ${CODE_MAX_LENGTH} chars), "codeLanguage" (` +

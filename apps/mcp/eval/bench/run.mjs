@@ -15,7 +15,6 @@ import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
-import { seedGalleries } from './gallery-seed.mjs';
 import { connect, DEFAULT_MCP_URL } from './mcp-client.mjs';
 import { snapshot } from './snapshot.mjs';
 import { selectTasks, taskById } from './tasks/index.mjs';
@@ -145,8 +144,6 @@ async function runJob(job) {
     // An edit task starts from what its first task's prompt takes for granted too ("our Bugs board").
     const setup = task.setup ?? (task.after ? taskById(task.after).setup : undefined);
     const touched = new Set(setup ? await setup(client) : []);
-    // The pictures the prompt says the user has uploaded, seeded into this run's own gallery before the round.
-    const { gallery } = job;
     let resume;
     if (task.after) {
       const base = await claudeTurn({ prompt: taskById(task.after).prompt, model, token, cwd });
@@ -165,7 +162,7 @@ async function runJob(job) {
     writeFileSync(join(OUT, `${name}.jsonl`), turn.transcript);
     if (turn.code !== 0) writeFileSync(join(OUT, `${name}.stderr.txt`), turn.stderr);
     parseTranscript(turn.transcript).documentIds.forEach((id) => touched.add(id));
-    const snap = { ...(await snapshot(client, [...touched])), ...(gallery ? { gallery } : {}) };
+    const snap = await snapshot(client, [...touched]);
     writeFileSync(join(OUT, `${name}.snapshot.json`), JSON.stringify(snap));
     console.log(
       `done ${name} in ${Math.round((Date.now() - started) / 1000)}s (exit ${turn.code})`,
@@ -197,15 +194,6 @@ async function main() {
     else prior[name] = j.token;
   }
   writeFileSync(join(OUT, 'tokens.json'), JSON.stringify(prior, null, 1));
-  // Every gallery a task needs, seeded now: the seeding blocks, so it must finish before any run starts.
-  const toSeed = jobs.filter(
-    (j) => j.task.gallery && !existsSync(join(OUT, `${j.task.id}-${j.model}-${j.n}.snapshot.json`)),
-  );
-  const galleries = seedGalleries(
-    opts['api-dir'],
-    toSeed.map((j) => ({ owner: j.owner, pictures: j.task.gallery })),
-  );
-  for (const j of toSeed) j.gallery = galleries.get(j.owner);
   // The tool list this round ran against, so a later round can compare what the assistant was offered.
   const client = await connect({ url: MCP_URL, token: tokens[0] });
   writeFileSync(

@@ -135,7 +135,7 @@ curl -X POST https://liveplanner.app/api/documents \
   }'
 ```
 
-Arrows, text, images, and the rest of the element types follow the same pattern with their own fields. The OpenAPI document's `Tab` and `Element` schemas describe every one.
+Arrows, text and the rest of the element types follow the same pattern with their own fields. The OpenAPI document's `Tab` and `Element` schemas describe every one.
 
 ## Update a tab
 
@@ -189,7 +189,7 @@ To rename a tab, `PUT` its name: `PUT /documents/$DOC/tabs/$TAB/name` with `{ "n
 
 `GET /documents/$DOC/changesets` lists the recent changesets, and `POST /documents/$DOC/changesets/<id>/revert` undoes one, leaving any element somebody changed since.
 
-Plan cards, Sheet cells, images and pages have endpoints of their own: see [Plan Items, Sheets and Images](/help/developers/working-with-documents/plan-sheets-images/).
+Plan cards, Sheet cells and pages have endpoints of their own: see [Plan Items, Sheets and Pages](/help/developers/working-with-documents/plan-sheets-images/).
 
 ## Organise into folders
 

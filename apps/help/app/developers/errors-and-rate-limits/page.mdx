@@ -61,7 +61,7 @@ On the hosted service the budgets are **300 writes a minute** and **120 token re
 
 ## Payload size
 
-Request bodies are capped at 8 MB (image uploads have their own cap), and one tab's data at about 1.9 MB. A body that declares a larger size is rejected with `413 payload_too_large` before it is read; an oversized tab or changeset is rejected with `413` when it is checked. If you hit this, split the work across more, smaller tabs or documents.
+Request bodies are capped at 8 MB, and one tab's data at about 1.9 MB. A body that declares a larger size is rejected with `413 payload_too_large` before it is read; an oversized tab or changeset is rejected with `413` when it is checked. If you hit this, split the work across more, smaller tabs or documents.
 
 ## Token expiry and revocation
 

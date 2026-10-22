@@ -38,7 +38,7 @@ import type { AddKindOperation, Fields } from '../types';
 // Kinds an edit operation cannot make, and what to use instead.
 export const NOT_ADDED: Readonly<Record<string, string>> = {
   arrow: 'use connect',
-  image: 'images are uploaded in the editor',
+  image: 'liveplanner keeps no uploaded pictures',
   video: 'videos are added in the editor',
   freehand: 'strokes are drawn in the editor',
   path: 'paths are drawn in the editor',

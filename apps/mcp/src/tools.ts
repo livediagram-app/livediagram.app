@@ -46,6 +46,7 @@ import type { Env } from './env';
 import {
   bringBoardCardTypes,
   fetchTeamLibraries,
+  imageIdIssue,
   matchDocuments,
   resolveDashboardInput,
   type DashboardInput,
@@ -68,7 +69,6 @@ import { elementsIssue, graphIconIssue } from './element-values';
 import { packFreehandPoints } from './freehand-points';
 import { searchIcons } from '@liveplanner/icons/search';
 import { imageResult } from './image-result';
-import { imageIdIssue, registerImageTools } from './image-tools';
 import {
   baseFor,
   changesetErrorText,
@@ -106,8 +106,6 @@ export function registerTools(server: McpServer, env: Env): void {
   // Sheets, by title and A1 (docs/specs/029-sheets/sheet-store.md "Agents").
   registerSheetTools(server, env);
   registerPagesTools(server, env);
-  // The user's image gallery, for image elements (docs/specs/015-api/mcp-server.md §4.5b).
-  registerImageTools(server, env);
   registerFormTools(server, env);
   registerTool(server, env, mcpFindDocuments, async (args, extra) => {
     const token = requireToken(extra);
@@ -140,8 +138,8 @@ export function registerTools(server: McpServer, env: Env): void {
 
   registerTool(server, env, mcpCreateDocument, async (args, extra) => {
     const token = requireToken(extra);
-    // An imageId names a picture in the caller's gallery (docs/specs/009-elements/images.md "Agents").
-    const imageIssue = await imageIdIssue(env, token, args);
+    // No uploaded pictures: an image element takes no imageId (docs/specs/015-api/mcp-server.md §4.5b).
+    const imageIssue = imageIdIssue(args);
     if (imageIssue) return errorResult(imageIssue);
     // Accept either `tabs` (preferred) or a single `tab` alias, checked here against the tab shape.
     const single =
@@ -309,8 +307,8 @@ export function registerTools(server: McpServer, env: Env): void {
 
   registerTool(server, env, mcpAddTab, async (args, extra) => {
     const token = requireToken(extra);
-    // An imageId names a picture in the caller's gallery (docs/specs/009-elements/images.md "Agents").
-    const imageIssue = await imageIdIssue(env, token, args);
+    // No uploaded pictures: an image element takes no imageId (docs/specs/015-api/mcp-server.md §4.5b).
+    const imageIssue = imageIdIssue(args);
     if (imageIssue) return errorResult(imageIssue);
     const tabId = crypto.randomUUID();
     // Template tab (docs/specs/015-api/mcp-server.md §4.5): resolved up front so an unknown kind
@@ -402,8 +400,8 @@ export function registerTools(server: McpServer, env: Env): void {
 
   registerTool(server, env, mcpUpdateDocument, async (args, extra) => {
     const token = requireToken(extra);
-    // An imageId names a picture in the caller's gallery (docs/specs/009-elements/images.md "Agents").
-    const imageIssue = await imageIdIssue(env, token, args);
+    // No uploaded pictures: an image element takes no imageId (docs/specs/015-api/mcp-server.md §4.5b).
+    const imageIssue = imageIdIssue(args);
     if (imageIssue) return errorResult(imageIssue);
     const loaded = await loadTab(env, token, args.documentId, args.tabId);
     if (!loaded) return errorResult('That document has no tabs.');
