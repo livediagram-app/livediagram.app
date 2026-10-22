@@ -1,7 +1,7 @@
 // Walks the whole sign-in flow against a local `pnpm dev`, the way an app would:
 // redirect to /oauth2/authorize, register with a code and a name, swap the code for
 // tokens, verify them, sign in again without a code, refresh, give a nameless
-// account its name after the code, and start a Google sign-in.
+// account its name after the code, start a Google sign-in, and close an account.
 //
 //   pnpm dev   (in another terminal; .dev.vars from .dev.vars.example, with any
 //              GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET: Google itself is never called)
@@ -342,6 +342,65 @@ assert(
     googleUrl.searchParams.get('redirect_uri') === `${ACCOUNTS}/api/auth/callback/google` &&
     googleUrl.searchParams.get('prompt') === 'select_account',
   `Google sign-in starts at Google, coming back to this Worker (${toGoogle.status})`,
+);
+
+// 10. Closing the account: only an app's own server can ask (its client credentials and the
+// person's access token, both checked), and it takes the account with it everywhere.
+const closeUrl = `${ACCOUNTS}/api/auth/delete-account`;
+const close = (authorization: string | null, token: string) =>
+  fetch(closeUrl, {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      ...(authorization && { authorization }),
+    },
+    body: JSON.stringify({ token }),
+  });
+const basic = (id: string, secret: string) =>
+  `Basic ${btoa(`${encodeURIComponent(id)}:${encodeURIComponent(secret)}`)}`;
+assert(
+  (await close(null, namelessTokens.accessToken)).status === 400,
+  'closing without client credentials is refused',
+);
+assert(
+  (await close(basic(client.client_id, 'wrong'), namelessTokens.accessToken)).status === 401,
+  'closing with a wrong client secret is refused',
+);
+const otherRegister = await fetch(`${ACCOUNTS}/internal/clients`, {
+  method: 'POST',
+  headers: {
+    'content-type': 'application/json',
+    authorization: `Bearer ${process.env.ADMIN_TOKEN ?? 'local-admin-token'}`,
+  },
+  body: JSON.stringify({ name: 'e2e other', redirectUris: [REDIRECT], resource: RESOURCE }),
+});
+const other = (await otherRegister.json()) as { client_id: string; client_secret: string };
+assert(
+  (await close(basic(other.client_id, other.client_secret), namelessTokens.accessToken)).status ===
+    401,
+  "another app can't close an account with a token it was not given",
+);
+const closed = await close(
+  basic(client.client_id, client.client_secret),
+  namelessTokens.accessToken,
+);
+assert(closed.ok, `the app closes the account (${closed.status} ${await closed.clone().text()})`);
+const afterClose = (await (await browser(`${ACCOUNTS}/api/auth/get-session`)).json()) as {
+  user?: unknown;
+} | null;
+assert(!afterClose?.user, 'its accounts-site session is gone');
+const refreshAfterClose = await refreshTokens(credentials, {
+  refreshToken: namelessTokens.refreshToken!,
+  resource: RESOURCE,
+}).then(
+  () => 'refreshed',
+  () => 'refused',
+);
+assert(refreshAfterClose === 'refused', 'its refresh token no longer works');
+const reopened = await startSignIn();
+assert(
+  (await redirectOf(reopened.response))?.pathname === '/sign-in',
+  'signing in again starts over at the sign-in page',
 );
 
 console.log('\nall good');

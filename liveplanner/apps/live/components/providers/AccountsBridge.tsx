@@ -126,8 +126,8 @@ function stateOf(session: Session | null): DeferredAuthState {
       await endSession();
       window.location.assign(opts?.redirectUrl ?? '/');
     },
-    // The api has already deleted this account's liveplanner data (DeleteAccountDialog); the
-    // liveworkspace account itself stays, since other apps share it.
+    // The api has already deleted this account's liveplanner data and closed its liveworkspace
+    // account (DeleteAccountDialog); what is left is this tab's session.
     deleteAccount: endSession,
   };
 }

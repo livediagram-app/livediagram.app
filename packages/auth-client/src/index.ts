@@ -1,6 +1,7 @@
 export { createVerifier, type AccountClaims, type VerifierOptions } from './verify';
 export {
   authorizeUrl,
+  closeAccount,
   createPkcePair,
   exchangeCode,
   randomState,

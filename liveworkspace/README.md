@@ -64,6 +64,20 @@ Auth's provider normally sends these only from `/userinfo`, so `customIdTokenCla
 Access tokens last an hour and name the app's API as their audience, so a livediagram token is
 refused by liveplanner. They carry `sub` (the account id), `email` and `email_verified`.
 
+## Closing an account
+
+An app's Delete Account closes the whole liveworkspace account, for every app. The app's Worker
+deletes its own data first, then sends `POST /api/auth/delete-account` with its client
+credentials (Basic, as for the token endpoint) and the person's access token
+(`closeAccount` in `@liveworkspace/auth-client`). The Worker checks both through the provider's
+introspection, so a token alone closes nothing, and an app can close only the account of someone
+signed in to it. Deleting the user removes its sessions, its Google link, and every app's tokens
+and consents; refreshing then fails in every app, and an access token already issued runs out
+within the hour.
+
+Apps that keep their own data per account will need telling when another app closes it. Only
+liveplanner signs in here today, so nothing does that yet; the next app to join adds it.
+
 ## Local development
 
 ```sh
@@ -78,7 +92,7 @@ Locally, emails aren't sent. Each code email is printed in the `pnpm dev` output
 Cloudflare's always-pass test keys.
 
 To run the whole flow (register a client, request and enter a code, swap it, verify, sign in again
-without a code, refresh, start a Google sign-in) against the running Worker:
+without a code, refresh, start a Google sign-in, close an account) against the running Worker:
 
 ```sh
 corepack pnpm dev > dev.log 2>&1 &
@@ -131,6 +145,7 @@ Other checks, from the repo root: `corepack pnpm test`, `corepack pnpm typecheck
   `clientPrivileges` refuses everything without the admin token. Dynamic registration stays off.
 - **Account ids** keep Clerk's `user_` prefix (`src/ids.ts`). Imported accounts keep their exact
   Clerk id, and livediagram's guard against an account id sent as a guest id keeps working.
+- **Closing an account** needs an app's client secret and an access token issued to that app.
 - **Names** are trimmed and cut to 80 characters whenever an account is created or updated.
 - **The sign-in pages** can't be framed, send no Referer (the URL carries the signed OAuth
   request), and load scripts only from this origin and Turnstile.
@@ -159,6 +174,7 @@ limit, start by checking which plugins are loaded.
 - **Sign-out everywhere:** an app can drop its own tokens and revoke them at
   `/api/auth/oauth2/revoke`. Ending the accounts session as well needs `enable_end_session` on the
   clients and a sign-out link to the provider's end-session endpoint.
-- **An account page** for changing your email or deleting your account.
+- **An account page** on liveworkspace.app for changing your name or email, or closing the account
+  without going through an app.
 - **Cleanup of expired rows:** nothing yet sweeps expired codes, sessions and tokens out of D1.
   A daily cron can delete rows past `expiresAt` once the tables grow.

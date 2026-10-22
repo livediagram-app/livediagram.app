@@ -1,5 +1,12 @@
 import { describe, expect, it, vi } from 'vitest';
-import { authorizeUrl, createPkcePair, exchangeCode, randomState, refreshTokens } from './oauth';
+import {
+  authorizeUrl,
+  closeAccount,
+  createPkcePair,
+  exchangeCode,
+  randomState,
+  refreshTokens,
+} from './oauth';
 
 const credentials = {
   accountsUrl: 'https://liveworkspace.app',
@@ -153,5 +160,25 @@ describe('refreshTokens', () => {
     const body = new URLSearchParams(String(fetchImpl.mock.calls[0]![1]?.body));
     expect(body.get('grant_type')).toBe('refresh_token');
     expect(body.get('refresh_token')).toBe('rt');
+  });
+});
+
+describe('closeAccount', () => {
+  it('sends the access token with basic client auth', async () => {
+    const fetchImpl = tokenResponse({ deleted: true });
+    await closeAccount(credentials, 'at', fetchImpl);
+    const [url, init] = fetchImpl.mock.calls[0]!;
+    expect(String(url)).toBe('https://liveworkspace.app/api/auth/delete-account');
+    expect(init?.method).toBe('POST');
+    expect(new Headers(init?.headers).get('authorization')).toBe(
+      `Basic ${btoa('client-1:s3cret')}`,
+    );
+    expect(JSON.parse(String(init?.body))).toEqual({ token: 'at' });
+  });
+
+  it('throws when the account was not closed', async () => {
+    await expect(
+      closeAccount(credentials, 'at', tokenResponse({ error: 'invalid_token' }, 401)),
+    ).rejects.toThrow('closing the account failed (401)');
   });
 });

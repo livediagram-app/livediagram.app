@@ -60,7 +60,8 @@ type Configured = {
   resource: string;
 };
 
-function configured(env: Env): Configured | null {
+// The accounts Worker and this app's client there, or null on a guest-only deployment.
+export function configured(env: Env): Configured | null {
   const { ACCOUNTS_URL, ACCOUNTS_CLIENT_ID, ACCOUNTS_CLIENT_SECRET, API_RESOURCE } = env;
   if (!ACCOUNTS_URL || !ACCOUNTS_CLIENT_ID || !ACCOUNTS_CLIENT_SECRET || !API_RESOURCE) return null;
   return {
@@ -116,7 +117,7 @@ const sessionCookies = (refreshToken: string) => [
   cookie(REFRESH_COOKIE, refreshToken, REFRESH_MAX_AGE_SECONDS, 'Strict'),
   hintCookie(true),
 ];
-const signedOutCookies = () => [clearCookie(REFRESH_COOKIE), hintCookie(false)];
+export const signedOutCookies = () => [clearCookie(REFRESH_COOKIE), hintCookie(false)];
 
 // The PKCE verifier, the state and the return path ride one short-lived cookie. It needs no
 // signature: only this browser can present it, and `state` must match what came back.

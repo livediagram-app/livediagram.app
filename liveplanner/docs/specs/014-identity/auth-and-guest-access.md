@@ -163,12 +163,12 @@ A guest's `X-Owner-Id` is a bearer value that **leaks**: it rides in document DT
 
 ## Deleting an account
 
-Settings > Account > Delete Account removes the person's liveplanner data, then ends the session:
+Settings > Account > Delete Account deletes the whole account: the person's liveplanner data and their **liveworkspace account**, which closes it in every liveworkspace app. Then it ends the session:
 
-1. **Delete the server data** (`DELETE /api/account`, [API](../015-api/api.md)): documents, folders, the participant row and the rest of the [owner-keyed data](../015-api/api.md#owner-keyed-data).
+1. **Delete the server data, then close the account** (`DELETE /api/account`, [API](../015-api/api.md)). The worker removes documents, folders, the participant row and the rest of the [owner-keyed data](../015-api/api.md#owner-keyed-data), then asks the accounts Worker to close the account (`closeAccount` from `@liveworkspace/auth-client`: `POST /api/auth/delete-account` with this app's client credentials and the caller's access token). Closing it removes the account's sessions, its Google link, and every app's refresh tokens. The response clears the refresh cookie.
 2. **End the session** (`POST /api/auth/sign-out`), then a full load to the landing page.
 
-The **liveworkspace account itself stays**. It signs the person in to the other liveworkspace apps too, so it is not liveplanner's to delete; the dialog says so, and closing the account is done on the accounts site. A person who signs in to liveplanner again afterwards starts with an empty account.
+The data goes first: closed first, an account whose data delete then failed could never be signed in to again to finish it. If closing fails after the data has gone, the worker answers `502 { error: 'account_not_closed' }`, the dialog says the data is gone but the account is not, and the person, still signed in, can ask again (the data delete is idempotent). Signing in again afterwards with the same email or Google account makes a new, empty account.
 
 There is no separate step-up confirmation: the dialog's own confirmation is the gate, and the session that asks is already a verified one.
 

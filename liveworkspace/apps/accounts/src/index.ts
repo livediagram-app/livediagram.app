@@ -5,6 +5,7 @@ import {
 import { AUTH_BASE_PATH, SEND_CODE_PATH, SIGN_IN_CODE_PATH } from './auth-options.ts';
 import { getAuth } from './auth.ts';
 import { registerClient } from './clients.ts';
+import { DELETE_ACCOUNT_PATH, deleteAccount } from './delete-account.ts';
 import type { Env } from './env.ts';
 import {
   CONSENT_SCRIPT,
@@ -67,6 +68,10 @@ export default {
 
     if (request.method === 'POST' && pathname === '/internal/clients') {
       return registerClient(request, env, getAuth(env));
+    }
+
+    if (request.method === 'POST' && pathname === `${AUTH_BASE_PATH}${DELETE_ACCOUNT_PATH}`) {
+      return deleteAccount(request, getAuth(env));
     }
 
     if (pathname === AUTH_BASE_PATH || pathname.startsWith(`${AUTH_BASE_PATH}/`)) {

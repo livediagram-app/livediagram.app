@@ -106,6 +106,31 @@ minute before `expiresAt`, then send the token as `Authorization: Bearer …` ex
 Refresh tokens rotate, and two tabs refreshing at once is fine: the accounts Worker replays the
 same answer for 30 seconds.
 
+## Deleting an account
+
+An app's Delete Account closes the person's liveworkspace account, for every app, not just
+the app's own data. In the app's Worker, delete the app's data first, then close the account
+with the access token the request came with:
+
+```ts
+import { closeAccount } from '@liveworkspace/auth-client';
+
+await deleteAppData(env, userId);
+await closeAccount(
+  {
+    accountsUrl: env.ACCOUNTS_URL,
+    clientId: env.ACCOUNTS_CLIENT_ID,
+    clientSecret: env.ACCOUNTS_CLIENT_SECRET,
+  },
+  accessToken,
+);
+// then clear the refresh cookie: the refresh token died with the account
+```
+
+In that order, a failure on the second step leaves a signed-in person who can try again; the
+other way round, the app's data would be left with no account to reach it. The accounts Worker
+needs the app's client secret as well as the token, so it runs in the Worker.
+
 ## Checking the token in the API Worker
 
 This replaces the `CLERK_JWKS_URL` check. Build the verifier once at module scope so the key set
