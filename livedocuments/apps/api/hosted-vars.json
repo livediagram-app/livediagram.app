@@ -4,10 +4,12 @@
   "IMAGE_MAX_BYTES_PER_OWNER": "104857600",
   "environments": {
     "production": {
-      "APP_BASE_URL": "https://www.livedocuments.app"
+      "APP_BASE_URL": "https://www.livedocuments.app",
+      "TELEMETRY_URL": "https://liveworkspace.app/api/telemetry"
     },
     "staging": {
-      "APP_BASE_URL": "https://staging.livedocuments.app"
+      "APP_BASE_URL": "https://staging.livedocuments.app",
+      "TELEMETRY_URL": "https://staging.liveworkspace.app/api/telemetry"
     }
   }
 }

@@ -186,7 +186,7 @@ All sends use `ctx.waitUntil` (or are already in the cron) — email is never on
 the request's critical path.
 
 **Counting sends ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).** `sendEmail` writes one
-anonymous `Email·Sent·<kind>` row straight to the events table, and a failure
+anonymous `Email·Sent·<kind>` event (`reportServerEvent`), and a failure
 writes `Error·Api·Http<status>.SendEmail` (or `Network.SendEmail` when the
 request never completed). Server-side rather than through `POST /api/events`
 because nothing about an email reaches a browser: the send happens in a cron or

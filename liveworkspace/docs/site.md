@@ -89,7 +89,7 @@ form are in `lib/legal.ts`. Change them when what an app stores or who it uses c
 The public dashboard for every app's anonymous events, all apps at once or one at a time
 (`?app=livediagram.app`): [telemetry.md](telemetry.md). Each app's filter shows that app's logo
 as its own header does, the prism and the wordmark in the app's accent. It reads its numbers from
-`/api/telemetry/summary`. Its styles (and both apps' shared UI, which its views render) are in
+`/api/telemetry/summary`. Its styles (and each sending app's shared UI, which its views render) are in
 their own stylesheet, `app/telemetry/telemetry.css`, so the other pages don't carry them.
 
 ### Your account (`/account/…`)

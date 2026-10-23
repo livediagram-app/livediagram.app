@@ -32,7 +32,7 @@ type ComputedValues = {
   open?: string;
 };
 
-const APPS = resolve(__dirname, '../..');
+const APPS = resolve(__dirname, '../../../../../../livedocuments/apps');
 const read = (path: string) => readFileSync(resolve(APPS, path), 'utf8');
 
 // Every quoted token in the first block that follows `marker`.

@@ -38,7 +38,7 @@ Scope, by file:
 | `apps/live/components/canvas/SelectionPopover.tsx`          | More actions: `aria-haspopup="dialog"` and the stable id `selection-more-actions`                            |
 | `apps/live/lib/element-names.ts`                            | `shapeKindLabel`: names the Shape tiles of the element and selection menus                                   |
 | `packages/ui/src/SiteSwitcher.tsx`                          | Site switcher command menu (the logo's, [site switcher](../../../../../liveworkspace/docs/site-switcher.md)) |
-| `apps/telemetry/app/StickyWindowBar.tsx`                    | View picker command menu                                                                                     |
+| `../liveworkspace/apps/site/app/telemetry/livedocuments/StickyWindowBar.tsx`                    | View picker command menu                                                                                     |
 
 ## Domain and naming
 

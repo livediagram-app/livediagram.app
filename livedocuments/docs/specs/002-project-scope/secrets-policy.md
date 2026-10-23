@@ -37,9 +37,9 @@ Provisioned with `wrangler secret put` (production), `wrangler secret put --env 
 | `ACCOUNTS_CLIENT_ID` / `ACCOUNTS_CLIENT_SECRET` | api             | Nobody can complete sign-in (`/api/auth/*` cannot swap a code or refresh a token)                         |
 | `GUEST_ID_HMAC_SECRET`                          | api             | Legacy unsigned guest ids; `/api/migrate` accepts any id ([04](../014-identity/auth-and-guest-access.md)) |
 | `RESEND_API_KEY`                                | api             | All transactional + lifecycle email is inert ([64](../014-identity/transactional-email.md))               |
-| `INTERNAL_EVENTS_KEY`                           | api **and** mcp | MCP telemetry falls back to the shared anonymous rate-limit bucket ([22](../017-telemetry/telemetry.md))  |
+| `TELEMETRY_KEY`                                 | api **and** mcp | The workers send no telemetry ([22](../017-telemetry/telemetry.md)) |
 
-`INTERNAL_EVENTS_KEY` is the only one that must hold the **same value on two workers**. A mismatch is silent — the caller simply lands back in the throttled bucket — so verify with `wrangler secret list` on both rather than assuming. Generate it, and `GUEST_ID_HMAC_SECRET`, with `openssl rand -hex 32`.
+`TELEMETRY_KEY` is the only one that must hold the **same value on two workers** (and as liveworkspace's telemetry service's `TELEMETRY_KEY_LIVEDOCUMENTS`). A mismatch is silent — the posts are simply not stored — so verify with `wrangler secret list` on both rather than assuming. Generate it, and `GUEST_ID_HMAC_SECRET`, with `openssl rand -hex 32`.
 
 Non-secret configuration (`TELEMETRY_ENABLED`, `IMAGE_MAX_*`, `RESEND_FROM`, `APP_BASE_URL`, `CONSENT_BASE_URL`) lives in `[vars]` in the relevant `wrangler.toml`, in the open, documented alongside each entry there and in the per-app `.env.example`. What only livedocuments.app runs with (`TELEMETRY_ENABLED`, the `IMAGE_MAX_*` caps) is equally public but lives in the hosted profile, `apps/api/hosted-vars.json`, so it is not every fork's default ([Deployment](../016-platform/deployment.md) "Hosted profile").
 

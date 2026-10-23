@@ -345,9 +345,9 @@ The lens on `/explorer`, over `@livedocuments/explorer-lens`. Files:
 | `apps/live/hooks/persistence/useTeamLibrariesSweep.ts` | Team rows carry `source`, `opensIn`, `tabKind`                                                             |
 | `apps/live/lib/api/documents.ts`                       | `DocumentListItem` carries the recorded intent, optional                                                   |
 | `packages/api-schema/src/telemetry-schema.ts`          | The `Explorer` category                                                                                    |
-| `apps/telemetry/app/catalogue/features.ts`             | `EXPLORER_FILTERS_PICKED`, in the Organisation stack                                                       |
-| `apps/telemetry/app/computed-emitters.ts`              | The facets `Explorer·Selected` sends, read from `LENS_TELEMETRY_TYPES`                                     |
-| `apps/telemetry/app/event-explanations.ts`             | The `Explorer·Selected·<Facet>` sentences                                                                  |
+| `../liveworkspace/apps/site/app/telemetry/livedocuments/catalogue/features.ts`             | `EXPLORER_FILTERS_PICKED`, in the Organisation stack                                                       |
+| `../liveworkspace/apps/site/app/telemetry/livedocuments/computed-emitters.ts`              | The facets `Explorer·Selected` sends, read from `LENS_TELEMETRY_TYPES`                                     |
+| `../liveworkspace/apps/site/app/telemetry/livedocuments/event-explanations.ts`             | The `Explorer·Selected·<Facet>` sentences                                                                  |
 
 ### Views
 

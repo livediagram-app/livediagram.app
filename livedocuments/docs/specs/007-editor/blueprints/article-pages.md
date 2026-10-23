@@ -647,7 +647,7 @@ settled`, `zone changed`, `floating elements put in the writing`, `margin note a
 moved`, `style changed`, `zone took elements in`, `object dropped in the writing`, `zone drag
 ended`, `articles turned into pages`. Page-level edits log `[page] …` (Pages
   pages blueprint).
-- Telemetry as the spec's Telemetry section, charted in `apps/telemetry/app/catalogue/features.ts`
+- Telemetry as the spec's Telemetry section, charted in `../liveworkspace/apps/site/app/telemetry/livedocuments/catalogue/features.ts`
   (`PAGES`: `ArticleAdded`, `PageKind*`; `ARTICLE_INSERTS`;
   `ARTICLE_FORMATTING`; `ARTICLE_LOOKS`), explained in `event-explanations.ts`. Never text.
 

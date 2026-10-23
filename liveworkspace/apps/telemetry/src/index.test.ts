@@ -34,16 +34,17 @@ describe('telemetry worker', () => {
     expect(res.headers.get('Access-Control-Allow-Origin')).toBe('*');
     await send('liveplanner.app');
     await send('liveplanner.app');
+    await send('livedocuments.app');
 
     const all = (await (
       await worker.fetch(get('/api/telemetry/summary'), env, ctx)
     ).json()) as TelemetrySummary;
     expect(all.app).toBe('all');
-    expect(all.windows.today.total).toBe(3);
+    expect(all.windows.today.total).toBe(4);
     expect(all.windows.today.byApp).toEqual({
       'livediagram.app': 1,
       'liveplanner.app': 2,
-      'livedocuments.app': 0,
+      'livedocuments.app': 1,
       'livedesign.app': 0,
     });
 

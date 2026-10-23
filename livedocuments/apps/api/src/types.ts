@@ -82,7 +82,7 @@ export type Env = {
   // feature flag still serve (the check helper returns "allowed"
   // when the binding is absent).
   WRITE_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
-  // Per-IP limiter for the anonymous telemetry ingest (docs/specs/017-telemetry/telemetry.md),
+  // Per-IP limiter for the anonymous telemetry relay (docs/specs/017-telemetry/telemetry.md "The relay"),
   // SEPARATE from WRITE_RATE_LIMITER so it never competes with users'
   // real document writes. Keyed on CF-Connecting-IP. Optional: absent
   // (self-host) falls through to "allow", same as the write limiter.
@@ -101,20 +101,17 @@ export type Env = {
   // email"), keyed `invite-decline:<address range>`: open doors, so the owner-keyed limiter cannot key them.
   // Optional: absent (self-host) → "allow".
   TEAM_INVITE_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
-  // Telemetry on/off switch (docs/specs/017-telemetry/telemetry.md). Authoritative: gates both
-  // POST /api/events and GET /api/telemetry/summary. A plain
+  // Telemetry on/off switch (docs/specs/017-telemetry/telemetry.md) for this worker's own events. A plain
   // wrangler.toml [vars] string; only the literal "true" enables it.
   // Absent/anything-else keeps telemetry fully off — the self-host
-  // default, so OSS forks never ingest or serve analytics unless they
-  // opt in.
+  // default, so OSS forks never send analytics unless they opt in.
   TELEMETRY_ENABLED?: string;
-  // Shared secret proving a /api/events post came from one of our own
-  // workers over a service binding, not the open internet (docs/specs/017-telemetry/telemetry.md, issue
-  // #36). Those calls carry no CF-Connecting-IP, so they all collapsed onto
-  // one 'anonymous' rate-limit key and throttled each other. Optional:
-  // unset means no caller is ever exempt, which is the pre-existing
-  // behaviour and keeps self-hosting working with no configuration.
-  INTERNAL_EVENTS_KEY?: string;
+  // liveworkspace's central telemetry service (liveworkspace/docs/telemetry.md). Unset means
+  // production's, TELEMETRY_URL in @liveworkspace/telemetry.
+  TELEMETRY_URL?: string;
+  // livedocuments' Worker key for that service (a secret, the same value as the mcp worker's),
+  // sent as X-Telemetry-Key. Unset means this worker sends no telemetry.
+  TELEMETRY_KEY?: string;
   // Resend API key for transactional + lifecycle email (docs/specs/014-identity/transactional-email.md). When absent
   // the whole email feature is inert: no sends, and the email_lifecycle table
   // is never touched. Set via `wrangler secret put RESEND_API_KEY` for prod;

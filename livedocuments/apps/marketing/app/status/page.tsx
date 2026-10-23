@@ -5,7 +5,7 @@ import { CONTACT_FORM_URL, pageMetadata, REPO_URL } from '@livedocuments/ui';
 
 const STATUS_TITLE = 'Status · livedocuments';
 const STATUS_DESCRIPTION =
-  'Operational status of the livedocuments services: editor, API, realtime room, marketing site, telemetry dashboard, help centre, and database.';
+  'Operational status of the livedocuments services: editor, API, realtime room, marketing site, help centre, and database.';
 
 export const metadata = pageMetadata({
   title: STATUS_TITLE,
@@ -41,7 +41,7 @@ const COMPONENTS: Component[] = [
   {
     name: 'Telemetry dashboard',
     description:
-      'The public anonymous-events dashboard at https://livedocuments.app/telemetry. Static export served by a Cloudflare Worker.',
+      'The public anonymous-events dashboard at https://liveworkspace.app/telemetry, shared by every liveworkspace app. Served by liveworkspace’s telemetry Worker.',
   },
   {
     name: 'Help centre',
@@ -61,7 +61,7 @@ const COMPONENTS: Component[] = [
   {
     name: 'Database',
     description:
-      'Cloudflare D1 (SQLite at the edge). Holds documents, tabs, change logs, share links, telemetry events.',
+      'Cloudflare D1 (SQLite at the edge). Holds documents, tabs, change logs, share links.',
   },
   {
     name: 'Image storage',
@@ -71,7 +71,7 @@ const COMPONENTS: Component[] = [
   {
     name: 'Edge router',
     description:
-      'Cloudflare Worker that stitches marketing, live, telemetry, help and api under one hostname via service bindings.',
+      'Cloudflare Worker that stitches marketing, live, help and api under one hostname via service bindings.',
   },
   {
     name: 'MCP server',

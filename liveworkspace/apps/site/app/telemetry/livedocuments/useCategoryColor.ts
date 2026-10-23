@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback } from 'react';
-import { useAppearance } from '@livedocuments/ui';
+import { useAppearance } from '@livediagram/ui';
 import { categoryColor } from './event-vocab';
 
 // The category colours as painted right now: the light hues, or in dark the

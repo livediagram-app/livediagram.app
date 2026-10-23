@@ -36,7 +36,7 @@ Scope, by file:
 | `apps/live/app/document/[id]/{useDocumentTrashed,useIdentityBootstrap,...}.ts`   | The deleted state: load, room, autosave                                                     |
 | `apps/live/components/chrome/DocumentTrashedCard.tsx`, `editor-page.tsx`         | The deleted card, Restore when allowed                                                      |
 | `apps/help/app/account-and-data/trash/page.mdx`, help registry, article icon     | The help article                                                                            |
-| `apps/telemetry/app/catalogue/{content,connections}.ts`, explanations, vocab     | The Trash stack; the two MCP tool charts                                                    |
+| `../liveworkspace/apps/site/app/telemetry/livedocuments/catalogue/{content,connections}.ts`, explanations, vocab     | The Trash stack; the two MCP tool charts                                                    |
 
 ## Domain and naming
 
@@ -248,7 +248,7 @@ room`; open sessions still stop at their next save (I5).
 | Room client stops on 4004                               | `apps/live/lib/api/room.test.ts`                           |
 | Grouping and copy                                       | `apps/live/lib/trash-groups.test.ts`                       |
 | End to end                                              | `apps/live/e2e/trash.spec.ts`                              |
-| Telemetry coverage and charts                           | `apps/live` telemetry tests, `apps/telemetry` suites       |
+| Telemetry coverage and charts                           | `apps/live` telemetry tests, `../liveworkspace/apps/site/app/telemetry/livedocuments` suites       |
 
 ## Constants and configuration
 

@@ -18,7 +18,7 @@ const PROMISES: { title: string; description: string; art: React.ReactNode }[] =
   {
     title: 'No third-party analytics',
     description:
-      'No Google Analytics. No Segment. No marketing pixels. The only product telemetry is anonymous, first-party events served from our own API, with every event we measure listed publicly on /telemetry.',
+      'No Google Analytics. No Segment. No marketing pixels. The only product telemetry is anonymous, first-party events sent to our own liveworkspace telemetry service, with every event we measure listed publicly on /telemetry.',
     art: <NoTrackersArt />,
   },
   {

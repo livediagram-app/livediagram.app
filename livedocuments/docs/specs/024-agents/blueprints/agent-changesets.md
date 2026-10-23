@@ -70,7 +70,7 @@ Scope, by file:
 | `apps/live/components/canvas/ChangesetRevealOverlay.tsx`, `CanvasElementsLayer`    | The outline in the author's colour; `ChangesetRevealContext` provided by `EditorView`                                              |
 | `apps/live/e2e/signed-in/agent-changesets.spec.ts`                                 | The end-to-end spec, signed in (only an account mints a token)                                                                     |
 | `apps/live/hooks/ui/useToast.tsx`                                                  | `toast.action`: a keyed info toast with buttons, upserted by key, no timeout                                                       |
-| `apps/telemetry/app/catalogue/collaboration.ts`                                    | The `Agent` stack                                                                                                                  |
+| `../liveworkspace/apps/site/app/telemetry/livedocuments/catalogue/collaboration.ts`                                    | The `Agent` stack                                                                                                                  |
 
 ## Domain and naming
 
@@ -692,7 +692,7 @@ type `frontDoorOf(request)`: `Mcp`, `Cli`, `Api` or, for the toast's Undo, `Edit
 | `CHANGESET_MAX_OPERATIONS`                                                                                    | `changesets.test.ts` "501 operations"                                                                         |
 | Token write limit                                                                                             | `index.test.ts` "a changeset counts against the token's writes"                                               |
 | Logs                                                                                                          | each api test above asserts its fingerprint on a spied `console`                                              |
-| Telemetry, `Editor` type, Show tracked                                                                        | `changesets.test.ts` telemetry rows; `useChangesetFeed.test.tsx`; `apps/telemetry` catalogue suite            |
+| Telemetry, `Editor` type, Show tracked                                                                        | `changesets.test.ts` telemetry rows; `useChangesetFeed.test.tsx`; `../liveworkspace/apps/site/app/telemetry/livedocuments` catalogue suite            |
 | Fingerprint stability across api, CLI and MCP                                                                 | `packages/document/src/element-fingerprint.test.ts` (golden values, key order, live fields)                   |
 | Room op vocabulary                                                                                            | `room-op-vocabulary.test.ts` stays green with the `changeset` branch                                          |
 | OpenAPI parity                                                                                                | `apps/api/src/openapi/*.test.ts`                                                                              |

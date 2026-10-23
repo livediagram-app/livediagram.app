@@ -42,10 +42,10 @@ spread over parallel jobs so the wall time is the slowest job, not the sum:
 | Job                 | Builds                                   | Runs                                                                    |
 | ------------------- | ---------------------------------------- | ----------------------------------------------------------------------- |
 | **Smoke shard i/6** | live                                     | `test:e2e:smoke --shard=i/6`: a sixth of the `chromium` project's tests |
-| **Sites audit**     | live, help, telemetry, then marketing    | `test:e2e:sites`: the `sites` project, `optical-audit-sites.spec.ts`    |
+| **Sites audit**     | live, help, then marketing               | `test:e2e:sites`: the `sites` project, `optical-audit-sites.spec.ts`    |
 | **Signed-in specs** | live with sign-in on (`build:signed-in`) | the `signed-in` project ([Signed-in specs](#signed-in-specs))           |
 
-Only the sites audit opens help, telemetry and marketing, so only its job pays for their builds. Marketing builds after the
+Only the sites audit opens help and marketing, so only its job pays for their builds. Marketing builds after the
 others, as `turbo.json` orders it: its licences page runs Next's analyzer in each other app on that
 app's Turbopack cache, and beside the app's own build the two corrupt it.
 Locally `test:e2e` runs the `chromium` and `sites` projects together, as one run.
@@ -140,7 +140,7 @@ The stack serves whatever `apps/live/out` holds and never rebuilds it, so locall
      URL);
    - proxy `/api/*` to the api worker, WebSocket upgrades included (the realtime room), so the app is same-origin (no CORS
      surprises, mirroring the router);
-   - serve `apps/help/out` under `/help/*` and `apps/telemetry/out` under `/telemetry/*`, their basePaths, as the router mounts them; a missing build answers a logged 404;
+   - serve `apps/help/out` under `/help/*`, its basePath, as the router mounts it (the telemetry dashboard is liveworkspace's, a page of `../liveworkspace/apps/site`); a missing build answers a logged 404;
    - cache as production does ([Stale builds](../016-platform/stale-builds.md) "Caching rules"): every
      file goes out as Cloudflare's asset server sends it (`public, max-age=0, must-revalidate`, an
      ETag, 304 on a match), then through the router's rules, run from the router's own
@@ -271,7 +271,7 @@ tests where it's cheap.
   `startTemplateDocument` exists because the blank helper skips the wizard's category step and so never
   exercises template creation.
 - `apps/live/e2e/fixtures/`: `audit-screens.ts`, `contrast.ts`, `optical.ts` and `optical-discover.ts`: the screens and measurements the dark-mode audits share.
-- `scripts/e2e-stack.mjs`: the stack boot + static serve (live, help, telemetry, marketing).
+- `scripts/e2e-stack.mjs`: the stack boot + static serve (live, help, marketing).
 - `.github/workflows/e2e.yml`: the sharded workflow, run on every pull request;
   `.github/actions/e2e-setup/`: the setup its jobs share (pnpm, Node, install, image check).
 - `test:e2e`, `test:e2e:smoke`, `test:e2e:sites` and `test:e2e:signed-in` scripts in `apps/live/package.json`; `build:signed-in`

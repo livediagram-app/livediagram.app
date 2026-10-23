@@ -109,19 +109,18 @@ jobs:
           paths: |
             apps/live/.next/cache
             apps/help/.next/cache
-            apps/telemetry/.next/cache
             apps/marketing/.next/cache
 
       # The optical audit of the other sites needs their exports, and the stack serves help
-      # and telemetry on the live origin, so live is built beside them. Marketing comes last, as turbo.json
+      # on the live origin, so live is built beside it. Marketing comes last, as turbo.json
       # orders it: its licences page runs Next's analyzer in every other app, on that app's Turbopack
       # cache, and beside the app's own build the two corrupt it (a SIGBUS mid-build).
-      - name: Build live, help and telemetry
+      - name: Build live and help
         env:
           NEXT_PUBLIC_BUILD_ID: e2e-build
         run: >-
           bash scripts/next-build-cold-retry.sh pnpm --filter @livedocuments/live --filter @livedocuments/help
-          --filter @livedocuments/telemetry build
+          build
 
       - name: Build marketing
         run: bash scripts/next-build-cold-retry.sh pnpm --filter @livedocuments/marketing build

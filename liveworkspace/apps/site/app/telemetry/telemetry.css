@@ -4,14 +4,15 @@
 @import './dataviz-motion.css';
 
 /* The telemetry dashboard's own stylesheet, loaded only on /telemetry (app/telemetry/layout.tsx), so
- * the rest of the site doesn't carry both apps' UI. The site's own stylesheet comes first with the
+ * the rest of the site doesn't carry the apps' UI. The site's own stylesheet comes first with the
  * base styles; this one adds the theme values and utilities the dashboard uses, repeating the few
  * both use, which is harmless. Tailwind v4 skips node_modules, where the
- * workspace packages are symlinked, so both apps' shared UI packages are named. */
+ * workspace packages are symlinked, so each app's shared UI package is named. */
 @source './';
 @source '../../components';
 @source '../../../../../livediagram/packages/ui/src';
 @source '../../../../../liveplanner/packages/ui/src';
+@source '../../../../../livedocuments/packages/ui/src';
 
 /* The telemetry dashboard shows the apps' own numbers in the apps' own accents: livediagram's sky
  * (its tailwind-config's brand scale, which the platform's slate replaced above) for every app and

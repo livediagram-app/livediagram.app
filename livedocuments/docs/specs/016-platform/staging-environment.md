@@ -171,7 +171,7 @@ value the deploy workflow syncs:
 | `ACCOUNTS_CLIENT_ID_STAGING`     | staging api, build step         | Staging's own OAuth client; set, it also turns sign-in on in the staging build.                                                  |
 | `ACCOUNTS_CLIENT_SECRET_STAGING` | staging api                     | That client's secret.                                                                                                            |
 | `GUEST_ID_HMAC_SECRET_STAGING`   | staging api                     | Own value — `openssl rand -hex 32`. Never production's.                                                                          |
-| `INTERNAL_EVENTS_KEY_STAGING`    | staging api **and** staging mcp | Same value on both or telemetry silently throttles ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)). |
+| `TELEMETRY_KEY_STAGING`          | staging api **and** staging mcp | Same value on both, and as staging telemetry's `TELEMETRY_KEY_LIVEDOCUMENTS` ([Telemetry](../017-telemetry/telemetry.md)). |
 
 `CF_API_TOKEN` and `CF_ACCOUNT_ID` are shared — same account.
 

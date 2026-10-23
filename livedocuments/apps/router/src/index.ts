@@ -5,24 +5,26 @@
 
 import { applyCachePolicy } from './cache-policy';
 import { LIVE_ROUTE_SEGMENTS } from '@livedocuments/api-schema';
+import { TELEMETRY_DASHBOARD_URL } from '@liveworkspace/telemetry';
 
 export interface Env {
   // Production service bindings (absent in the `local` env).
   MARKETING?: Fetcher;
   LIVE?: Fetcher;
   API?: Fetcher;
-  TELEMETRY?: Fetcher;
   HELP?: Fetcher;
   // Local-dev origins (absent in production).
   MARKETING_ORIGIN?: string;
   LIVE_ORIGIN?: string;
   API_ORIGIN?: string;
-  TELEMETRY_ORIGIN?: string;
   HELP_ORIGIN?: string;
   // Set to "staging" on the staging router only (docs/specs/016-platform/staging-environment.md). Marks every
   // response noindex so the public staging mirror can't compete with
   // production in search results. Absent in production and in local dev.
   DEPLOY_ENV?: string;
+  // The central telemetry dashboard /telemetry redirects to (liveworkspace/docs/telemetry.md): unset means
+  // production's, staging and local dev name their own.
+  TELEMETRY_DASHBOARD_URL?: string;
 }
 
 const LIVE_PATH = '/live';
@@ -107,7 +109,7 @@ export function withPrefixedRedirect(res: Response, prefix: string): Response {
 // files and the router presents `/<prefix>/foo` to them as `/foo`.
 //
 // Local dev (origin): swap the origin and keep the path UNstripped — the
-// Next dev servers serve their own prefixes (basePath for telemetry/help,
+// Next dev servers serve their own prefixes (basePath for help,
 // the live app's `/live` assetPrefix, which applies in dev too).
 function forward(
   request: Request,
@@ -195,13 +197,13 @@ async function route(request: Request, env: Env): Promise<Response> {
     return forward(request, url, env.LIVE, env.LIVE_ORIGIN, LIVE_PATH);
   }
   if (hasPrefix(url.pathname, TELEMETRY_PATH)) {
-    // The public transparency dashboard (docs/specs/017-telemetry/telemetry.md), a basePath:'/telemetry'
-    // static app — same prefix-strip as the live app's assets.
-    return forward(request, url, env.TELEMETRY, env.TELEMETRY_ORIGIN, TELEMETRY_PATH);
+    // The public transparency dashboard (docs/specs/017-telemetry/telemetry.md) is liveworkspace's now, one
+    // for every app: an old link lands on it with livedocuments picked.
+    return telemetryRedirect(env);
   }
   if (hasPrefix(url.pathname, HELP_PATH)) {
     // The help centre (docs/specs/018-help/help-app.md), a basePath:'/help' static app — same
-    // prefix-strip as telemetry.
+    // prefix-strip as the live app's assets.
     return forward(request, url, env.HELP, env.HELP_ORIGIN, HELP_PATH);
   }
   // Clean live-app page routes (/document, /explorer, /new, ...) and
@@ -218,4 +220,12 @@ async function route(request: Request, env: Env): Promise<Response> {
     return Response.redirect(url.toString(), 308);
   }
   return forward(request, url, env.MARKETING, env.MARKETING_ORIGIN);
+}
+
+// Where /telemetry and everything under it now lives: the central dashboard, filtered to livedocuments.
+export function telemetryRedirect(env: Env): Response {
+  const target = new URL(env.TELEMETRY_DASHBOARD_URL || TELEMETRY_DASHBOARD_URL);
+  target.searchParams.set('app', 'livedocuments.app');
+  // Built by hand: Response.redirect's headers are immutable, and the caching rules still stamp this one.
+  return new Response(null, { status: 301, headers: { Location: target.toString() } });
 }

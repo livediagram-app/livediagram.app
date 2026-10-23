@@ -36,7 +36,6 @@ const WORKSPACE_ROOTS = [
   'apps/marketing/',
   'apps/mcp/src/',
   'apps/mcp/',
-  'apps/telemetry/',
   'apps/router/src/',
   'apps/router/',
   'packages/document/',
@@ -104,12 +103,21 @@ function trackedTextFiles(): string[] {
 // What git tracks, files and the directories holding them. The disk is not the
 // answer: a local build leaves outputs there that a fresh CI checkout lacks, so
 // a check against it passes or fails by whatever was last built.
+//
+// livedocuments sits in the liveworkspace monorepo, and a few specs name what moved
+// out to it (the telemetry dashboard's livedocuments catalogue,
+// liveworkspace/docs/telemetry.md): those are quoted from here, `../liveworkspace/…`,
+// and checked against what the monorepo tracks.
 function trackedPaths(): Set<string> {
   const paths = new Set<string>();
-  for (const f of execFileSync('git', ['ls-files'], { cwd: ROOT, encoding: 'utf8' }).split('\n')) {
-    const parts = f.split('/');
-    for (let i = 1; i <= parts.length; i++) paths.add(parts.slice(0, i).join('/'));
-  }
+  const add = (cwd: string, prefix: string) => {
+    for (const f of execFileSync('git', ['ls-files'], { cwd, encoding: 'utf8' }).split('\n')) {
+      const parts = `${prefix}${f}`.split('/');
+      for (let i = 1; i <= parts.length; i++) paths.add(parts.slice(0, i).join('/'));
+    }
+  };
+  add(ROOT, '');
+  add(resolve(ROOT, '../liveworkspace'), '../liveworkspace/');
   return paths;
 }
 

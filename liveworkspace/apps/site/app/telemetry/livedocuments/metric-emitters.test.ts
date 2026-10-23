@@ -48,7 +48,7 @@ import { SELECTION_MODES } from './PaletteView';
 // send in computed-emitters.ts, and every check below reads those values as
 // if they were literals.
 
-const REPO = resolve(__dirname, '../../..');
+const REPO = resolve(__dirname, '../../../../../../livedocuments');
 // The dashboard reads events, it never emits them.
 const EMITS = scanEmitters(REPO, ['apps', 'packages'], join(REPO, 'apps', 'telemetry'));
 
@@ -64,9 +64,6 @@ const KNOWN = EMITS.filter(
 const DYNAMIC_EMITTERS: Record<string, string> = {
   'apps/live/components/dialogs/settings/SettingsCategoryPane.tsx':
     'emits each Settings catalogue row; the rows themselves are scanned',
-  'apps/api/src/routes/events.ts': 'the ingest endpoint, writing validated client events',
-  'apps/api/src/server-telemetry.ts':
-    'reportServerEvent, the api worker helper; its callers are scanned as emitters',
 };
 
 // A computed emitter's values (computed-emitters.ts), by its site key.

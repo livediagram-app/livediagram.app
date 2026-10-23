@@ -27,6 +27,20 @@ describe('ingest', () => {
     expect(env.rows[0]!.ts).toBeGreaterThan(0);
   });
 
+  it('checks each app against its own vocabulary: livedocuments’, and nothing yet from livedesign', async () => {
+    const env = testEnv({ ENVIRONMENT: 'production' });
+    await handleIngest(
+      post({ app: 'livedocuments.app', events: [created] }, fromPage('https://livedocuments.app')),
+      env,
+    );
+    await handleIngest(
+      post({ app: 'livedesign.app', events: [created] }, fromPage('https://livedesign.app')),
+      env,
+    );
+    expect(env.rows).toHaveLength(1);
+    expect(env.rows[0]).toMatchObject({ app: 'livedocuments.app', category: 'Document' });
+  });
+
   it('refuses a page speaking for another app', async () => {
     const env = testEnv({ ENVIRONMENT: 'production' });
     await handleIngest(

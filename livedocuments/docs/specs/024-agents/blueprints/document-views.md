@@ -61,7 +61,7 @@ Scope, by file:
 | `apps/mcp/src/read-document.ts`                                         | `readDocument`: the view (the outline by default), `format: "json"`, `image: true`, ref refusals as results                 |
 | `apps/mcp/src/{tools,schema,output-schema}.ts`                          | `read_document` registered on `readDocument`; its input and output schemas; `READ_DOCUMENT_DEFAULT_BUDGET`                  |
 | `apps/mcp/src/image-result.ts`                                          | `tabPreview`: the PNG on its own, which `imageResult` and `readDocument` attach                                             |
-| `apps/telemetry/app/catalogue/connections.ts`                           | The `Agent·Viewed` chart, by view                                                                                           |
+| `../liveworkspace/apps/site/app/telemetry/livedocuments/catalogue/connections.ts`                           | The `Agent·Viewed` chart, by view                                                                                           |
 | `docs/development/architecture.md`, `README.md`                         | The new package in the layout and the package list                                                                          |
 | `@livedocuments/edit-operations`, `@livedocuments/diagram-lint` (own)   | Import refs, slug ids, kind words, `deriveContainers` and `contentOrigin` from `@livedocuments/document`                    |
 | The cross-tab comments route (agent-presence's blueprint)               | Imports `computeRefs` from `@livedocuments/document`                                                                        |
@@ -848,7 +848,7 @@ Every rule maps to a deterministic test; the spec's rules are numbered here.
 | R23 `?view=` answers `text/plain`; overview on the document; no diff | `document-views-route.test.ts` (real SQLite: gates, scope, 400s, `diff` refused, headers)                                                |
 | R24 `read_document` reads a view; JSON and the PNG only on request   | `apps/mcp/src/read-document.test.ts`, `output-schema.test.ts` (text block layout, no image by default)                                   |
 | R25 Unknown kinds print `?`, counted, never dropped                  | `outline.test.ts`, `fixtures-goldens.test.ts` (the edge-case tab)                                                                        |
-| R26 One `Agent·Viewed` event per answered view                       | `document-views-route.test.ts`; `packages/api-schema/src/telemetry-schema.test.ts`; `apps/telemetry` catalogue suite                     |
+| R26 One `Agent·Viewed` event per answered view                       | `document-views-route.test.ts`; `packages/api-schema/src/telemetry-schema.test.ts`; `../liveworkspace/apps/site/app/telemetry/livedocuments` catalogue suite                     |
 | R27 `show selected`: the owner's selection, tab order, refusals      | `packages/document-views/src/show-selected.test.ts`, `document-views-route.test.ts`, `room-client.test.ts`                               |
 | OpenAPI parity                                                       | `apps/api/src/openapi/*.test.ts`                                                                                                         |
 

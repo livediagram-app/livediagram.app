@@ -316,7 +316,7 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
     through to marketing's 404.
   - `apps/marketing`: the content registries (alternatives, landing beats,
     template gallery, feature anchors), brand and category icons, dark art.
-  - `apps/telemetry`: the dashboard's event-vocab layer and maths:
+  - `liveworkspace/apps/site/app/telemetry/livedocuments`: the dashboard's event-vocab layer and maths:
     category grouping/ordering, row labels, colours, metric series and
     emitters, ranking rules, the CTA funnel, and the hover-card explanations'
     never-blank guarantee.

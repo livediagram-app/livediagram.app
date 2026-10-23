@@ -16,7 +16,8 @@
     "clean": "rm -rf node_modules .turbo"
   },
   "dependencies": {
-    "@livedocuments/api-schema": "workspace:*"
+    "@livedocuments/api-schema": "workspace:*",
+    "@liveworkspace/telemetry": "workspace:*"
   },
   "devDependencies": {
     "@livedocuments/oxlint-config": "workspace:*",

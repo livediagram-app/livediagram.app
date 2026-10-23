@@ -2916,6 +2916,9 @@ importers:
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../../../packages/auth-client
+      '@liveworkspace/telemetry':
+        specifier: workspace:*
+        version: link:../../../packages/telemetry
       jose:
         specifier: ^6.2.12
         version: 6.2.13
@@ -3332,6 +3335,9 @@ importers:
       '@livedocuments/templates':
         specifier: workspace:*
         version: link:../../packages/templates
+      '@liveworkspace/telemetry':
+        specifier: workspace:*
+        version: link:../../../packages/telemetry
       '@modelcontextprotocol/sdk':
         specifier: ^1.32.1
         version: 1.32.1(zod@4.6.7)
@@ -3374,6 +3380,10 @@ importers:
         version: 4.151.3(@cloudflare/workers-types@5.20261021.1)(@types/node@26.6.5)
 
   livedocuments/apps/router:
+    dependencies:
+      '@liveworkspace/telemetry':
+        specifier: workspace:*
+        version: link:../../../packages/telemetry
     devDependencies:
       '@cloudflare/workers-types':
         specifier: ^5.20261007.1
@@ -3405,70 +3415,6 @@ importers:
       wrangler:
         specifier: ^4.148.0
         version: 4.151.3(@cloudflare/workers-types@5.20261021.1)(@types/node@26.6.5)
-
-  livedocuments/apps/telemetry:
-    dependencies:
-      '@livedocuments/api-schema':
-        specifier: workspace:*
-        version: link:../../packages/api-schema
-      '@livedocuments/icons':
-        specifier: workspace:*
-        version: link:../../packages/icons
-      '@livedocuments/ui':
-        specifier: workspace:*
-        version: link:../../packages/ui
-      next:
-        specifier: ^16.4.1
-        version: 16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
-      react:
-        specifier: ^19.3.1
-        version: 19.3.1
-      react-dom:
-        specifier: ^19.3.1
-        version: 19.3.1(react@19.3.1)
-    devDependencies:
-      '@livedocuments/agent-verbs':
-        specifier: workspace:*
-        version: link:../../packages/agent-verbs
-      '@livedocuments/next-config':
-        specifier: workspace:*
-        version: link:../../packages/next-config
-      '@livedocuments/oxlint-config':
-        specifier: workspace:*
-        version: link:../../packages/oxlint-config
-      '@livedocuments/source-ast':
-        specifier: workspace:*
-        version: link:../../packages/source-ast
-      '@livedocuments/tailwind-config':
-        specifier: workspace:*
-        version: link:../../packages/tailwind-config
-      '@livedocuments/vitest-config':
-        specifier: workspace:*
-        version: link:../../packages/vitest-config
-      '@tailwindcss/postcss':
-        specifier: ^4.3.3
-        version: 4.3.3
-      '@types/node':
-        specifier: ^26.6.4
-        version: 26.6.5
-      '@types/react':
-        specifier: ^19.3.0
-        version: 19.3.0
-      '@types/react-dom':
-        specifier: ^19.3.0
-        version: 19.3.0(@types/react@19.3.0)
-      oxlint:
-        specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
-      tailwindcss:
-        specifier: ^4.3.3
-        version: 4.3.3
-      typescript:
-        specifier: ^7.0.2
-        version: 7.0.2
-      vitest:
-        specifier: ^5.0.1
-        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
 
   livedocuments/packages/agent-verbs:
     dependencies:
@@ -3545,6 +3491,9 @@ importers:
       '@livedocuments/document':
         specifier: workspace:*
         version: link:../document
+      '@liveworkspace/telemetry':
+        specifier: workspace:*
+        version: link:../../../packages/telemetry
     devDependencies:
       '@livedocuments/oxlint-config':
         specifier: workspace:*
@@ -3943,6 +3892,9 @@ importers:
       '@livedocuments/api-schema':
         specifier: workspace:*
         version: link:../api-schema
+      '@liveworkspace/telemetry':
+        specifier: workspace:*
+        version: link:../../../packages/telemetry
     devDependencies:
       '@livedocuments/oxlint-config':
         specifier: workspace:*
@@ -5542,6 +5494,12 @@ importers:
       '@livediagram/ui':
         specifier: workspace:*
         version: link:../../../livediagram/packages/ui
+      '@livedocuments/api-schema':
+        specifier: workspace:*
+        version: link:../../../livedocuments/packages/api-schema
+      '@livedocuments/icons':
+        specifier: workspace:*
+        version: link:../../../livedocuments/packages/icons
       '@livedocuments/ui':
         specifier: workspace:^
         version: link:../../../livedocuments/packages/ui
@@ -5591,6 +5549,15 @@ importers:
       '@livediagram/vitest-config':
         specifier: workspace:*
         version: link:../../../livediagram/packages/vitest-config
+      '@livedocuments/agent-verbs':
+        specifier: workspace:*
+        version: link:../../../livedocuments/packages/agent-verbs
+      '@livedocuments/source-ast':
+        specifier: workspace:*
+        version: link:../../../livedocuments/packages/source-ast
+      '@livedocuments/tailwind-config':
+        specifier: workspace:*
+        version: link:../../../livedocuments/packages/tailwind-config
       '@liveplanner/agent-verbs':
         specifier: workspace:*
         version: link:../../../liveplanner/packages/agent-verbs
@@ -5633,6 +5600,9 @@ importers:
       '@livediagram/api-schema':
         specifier: workspace:*
         version: link:../../../livediagram/packages/api-schema
+      '@livedocuments/api-schema':
+        specifier: workspace:*
+        version: link:../../../livedocuments/packages/api-schema
       '@liveplanner/api-schema':
         specifier: workspace:*
         version: link:../../../liveplanner/packages/api-schema

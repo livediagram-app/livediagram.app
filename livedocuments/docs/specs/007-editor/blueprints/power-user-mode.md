@@ -45,8 +45,8 @@ Scope, by file:
 | `apps/live/components/dialogs/SettingsDialog.tsx`                                            | Computes `powerUserMode` for the row context                                     |
 | `apps/live/hooks/canvas/useEditorKeyboardShortcuts.ts`                                       | `onShortcutUsed` after a key the handler claimed                                 |
 | `apps/live/hooks/ui/useToast.tsx`                                                            | `toast.offer`: an info toast with two actions and no timeout                     |
-| `apps/telemetry/app/catalogue/settings.ts`, `visitors.ts`, `features.ts`                     | Charts for the new events; the offer is a Visitors stack                         |
-| `apps/telemetry/app/event-explanations.ts`                                                   | A sentence per new event                                                         |
+| `../liveworkspace/apps/site/app/telemetry/livedocuments/catalogue/settings.ts`, `../liveworkspace/apps/site/app/telemetry/livedocuments/catalogue/visitors.ts`, `../liveworkspace/apps/site/app/telemetry/livedocuments/catalogue/features.ts` | Charts for the new events; the offer is a Visitors stack                         |
+| `../liveworkspace/apps/site/app/telemetry/livedocuments/event-explanations.ts`                                                   | A sentence per new event                                                         |
 | `apps/live/lib/telemetry-manifest.ts`                                                        | `UI·Declined` joins the emitted pairs                                            |
 | `apps/help/lib/featureIcons.tsx`, `featureColours.ts`, `packages/help-registry/src/index.ts` | The article card and its registry entry                                          |
 | `apps/help/app/user-interface/power-user-mode/page.mdx`                                      | The help article, registered per the instruction set                             |

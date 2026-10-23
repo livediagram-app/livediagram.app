@@ -11,7 +11,7 @@ import * as CATALOGUE from './metric-catalogue';
 // last resort, and that the copy stays readable to someone who has never seen
 // the code.
 
-const REPO = resolve(__dirname, '../../..');
+const REPO = resolve(__dirname, '../../../../../../livedocuments');
 const EMITS = scanEmitters(REPO, ['apps', 'packages'], join(REPO, 'apps', 'telemetry'));
 const LAST_RESORT = /^Someone did /;
 

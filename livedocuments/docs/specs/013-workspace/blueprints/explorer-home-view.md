@@ -58,8 +58,8 @@ Scope, by file:
 | `apps/live/app/explorer/useTimelineUnread.ts`                           | A clear outlives a count still in flight                                                |
 | `packages/ui/src/timeline/useTimelineGrouping.ts`                       | `formatDay` exported, shared by the day headings                                        |
 | `packages/api-schema/src/telemetry-schema.ts`                           | The `Home` category                                                                     |
-| `apps/telemetry/app/{catalogue/collaboration.ts,event-explanations.ts}` | Home's charts and sentences                                                             |
-| `apps/telemetry/app/event-vocab.ts`                                     | The `Home` category's description and colour                                            |
+| `../liveworkspace/apps/site/app/telemetry/livedocuments/{catalogue/collaboration.ts,event-explanations.ts}` | Home's charts and sentences                                                             |
+| `../liveworkspace/apps/site/app/telemetry/livedocuments/event-vocab.ts`                                     | The `Home` category's description and colour                                            |
 | `apps/help/app/explorer/timeline/page.mdx`, `packages/help-registry`    | The Home article: Home, then the Timeline                                               |
 | `apps/live/e2e/home-seed.ts`                                            | e2e seeding through the api: drawn documents, opens, edits through a link               |
 
@@ -479,7 +479,7 @@ tracking-[0.08em] text-slate-500 pt-3`), entries in a `ul` with 4 px between.
 | Entries: one-person links, summary disclosure, telemetry, See Timeline              | `apps/live/components/panels/home/WhatHappened.test.tsx`                               |
 | One column, two sections, no Timeline, the error state                              | `apps/live/components/panels/home/HomePane.test.tsx`                                   |
 | Routes, titles, crumbs (Recent under Home), the landing 302                         | `routes.test.ts`, `view-titles.test.ts`, `apps/live/src/worker.test.ts`                |
-| Telemetry charted and explained                                                     | `apps/telemetry` `metric-emitters.test.ts`, `event-explanation.test.ts`                |
+| Telemetry charted and explained                                                     | `../liveworkspace/apps/site/app/telemetry/livedocuments` `metric-emitters.test.ts`, `event-explanation.test.ts`                |
 | Real browser: guest and signed in, desktop and phone, dark                          | `apps/live/e2e/explorer-home.spec.ts`, `apps/live/e2e/signed-in/explorer-home.spec.ts` |
 
 ## Constants and configuration

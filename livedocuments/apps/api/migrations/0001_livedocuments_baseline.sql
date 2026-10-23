@@ -590,16 +590,3 @@ CREATE TABLE workbench_session_rooms (
   PRIMARY KEY (session_id, document_id)
 );
 CREATE INDEX workbench_session_rooms_document_idx ON workbench_session_rooms (document_id);
-
--- ---------------------------------------------------------------------------------------------------------------
--- Telemetry (docs/specs/017-telemetry/telemetry.md): anonymous events, never user content.
--- ---------------------------------------------------------------------------------------------------------------
-
-CREATE TABLE events (
-  id       INTEGER PRIMARY KEY AUTOINCREMENT,
-  category TEXT    NOT NULL,
-  action   TEXT    NOT NULL,
-  type     TEXT,
-  ts       INTEGER NOT NULL
-);
-CREATE INDEX events_ts_idx ON events (ts);

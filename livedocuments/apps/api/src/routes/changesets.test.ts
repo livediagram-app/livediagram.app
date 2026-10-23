@@ -4,6 +4,7 @@ import { CHANGESET_MAX_OPERATIONS } from '@livedocuments/api-schema';
 import { elementFingerprint, type Element } from '@livedocuments/document';
 import { createShareLink } from '../db/share';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
+import { stubTelemetry, TELEMETRY_ON } from '../test-telemetry';
 import type { Env } from '../types';
 import { makeTestRouteContext } from './test-route-context';
 import { handleDocuments } from './documents';
@@ -73,8 +74,9 @@ async function setUp(
   const r = room(selections);
   const db = sqliteD1({
     DOCUMENT_ROOM: r.binding,
-    TELEMETRY_ENABLED: 'true',
+    ...TELEMETRY_ON,
   } as unknown as Partial<Env>);
+  sent = stubTelemetry();
   db.sql.exec(
     `INSERT INTO participants (id, name, color, created_at) VALUES ('${OWNER}', 'Webber', '#123456', 1)`,
   );
@@ -97,13 +99,15 @@ const stored = (db: SqliteD1, tab = 't1') =>
   ).elements ?? [];
 const records = (db: SqliteD1) =>
   db.sql.prepare('SELECT * FROM agent_changesets ORDER BY rev').all() as Record<string, unknown>[];
-const events = (db: SqliteD1) =>
-  db.sql
-    .prepare("SELECT action, type FROM events WHERE category = 'Agent'")
-    .all()
-    .map((r) => ({ ...r }));
+// The Agent events posted to the telemetry service since setUp.
+let sent: ReturnType<typeof stubTelemetry> = [];
+const events = () =>
+  sent.filter((e) => e.category === 'Agent').map((e) => ({ action: e.action, type: e.type }));
 
-afterEach(() => vi.restoreAllMocks());
+afterEach(() => {
+  vi.restoreAllMocks();
+  vi.unstubAllGlobals();
+});
 const quiet = () => {
   vi.spyOn(console, 'info').mockImplementation(() => {});
   vi.spyOn(console, 'warn').mockImplementation(() => {});
@@ -157,7 +161,7 @@ describe('submitting a changeset', () => {
       expect.objectContaining({ documentId: 'D', rev: 2, agent: true }),
     );
     await settled();
-    expect(events(db)).toContainEqual({ action: 'Applied', type: 'Mcp' });
+    expect(events()).toContainEqual({ action: 'Applied', type: 'Mcp' });
   });
 
   it("records no token for a person's session, and holds nothing against them", async () => {
@@ -348,7 +352,7 @@ describe('held elements', () => {
     });
     expect(records(db)).toEqual([]);
     await settled();
-    expect(events(db)).toContainEqual({ action: 'Held', type: 'Api' });
+    expect(events()).toContainEqual({ action: 'Held', type: 'Api' });
   });
 
   it("never holds against the agent's owner", async () => {
@@ -399,7 +403,7 @@ describe('conflicts', () => {
       conflicts: [{ id: 'a', reason: 'changed', now: { label: 'person' } }],
     });
     await settled();
-    expect(events(db)).toContainEqual({ action: 'Conflicted', type: 'Api' });
+    expect(events()).toContainEqual({ action: 'Conflicted', type: 'Api' });
   });
 
   it('answers stale_tab for strict on a moved tab', async () => {
@@ -477,7 +481,7 @@ describe('reverting', () => {
     expect(records(db)[1]).toMatchObject({ revert_of: cs.changeset.id, token_id: null, added: 1 });
     expect(r.calls.filter((c) => c.url.endsWith('/mutation'))).toHaveLength(2);
     await settled();
-    expect(events(db)).toContainEqual({ action: 'Reverted', type: 'Editor' });
+    expect(events()).toContainEqual({ action: 'Reverted', type: 'Editor' });
     const again = await call(db, 'POST', `/api/documents/D/changesets/${cs.changeset.id}/revert`);
     expect(await again.json()).toMatchObject({
       changeset: null,

@@ -24,12 +24,15 @@ import {
 } from './apps';
 import { ActivityGlyph } from './livediagram/glyphs';
 
-// Each app's own dashboard loads only when it is picked, so "All apps" ships neither app's
+// Each app's own dashboard loads only when it is picked, so "All apps" ships none of the apps'
 // catalogues of event names and explanations.
 const LivediagramBody = dynamic(() => import('./livediagram/Body').then((m) => m.Body), {
   ssr: false,
 });
 const LiveplannerBody = dynamic(() => import('./liveplanner/Body').then((m) => m.Body), {
+  ssr: false,
+});
+const LivedocumentsBody = dynamic(() => import('./livedocuments/Body').then((m) => m.Body), {
   ssr: false,
 });
 
@@ -150,7 +153,9 @@ export default function TelemetryDashboard() {
             <LivediagramBody summary={loaded} />
           ) : app === 'liveplanner.app' ? (
             <LiveplannerBody summary={loaded} />
-          ) : app === 'livedocuments.app' || app === 'livedesign.app' ? (
+          ) : app === 'livedocuments.app' ? (
+            <LivedocumentsBody summary={loaded} />
+          ) : app === 'livedesign.app' ? (
             <div className="mt-12">
               <EmptyState
                 icon={<ActivityGlyph />}

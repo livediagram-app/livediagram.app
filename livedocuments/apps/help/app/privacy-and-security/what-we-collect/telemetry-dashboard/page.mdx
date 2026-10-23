@@ -6,13 +6,13 @@ import { TelemetryDashboardOverview } from '@/components/illustrations/telemetry
 export const metadata = helpMetadata({
   title: 'The Public Telemetry Dashboard',
   description:
-    'Read the public telemetry dashboard at /telemetry: views, Today, 7-day and 30-day windows, timing percentiles and Core Web Vitals from anonymous events.',
+    'Read the public telemetry dashboard at liveworkspace.app: views, Today, 7-day and 30-day windows, timing percentiles and Core Web Vitals from anonymous events.',
   path: '/help/privacy-and-security/what-we-collect/telemetry-dashboard/',
 });
 
 <ArticleLayout title="The Public Telemetry Dashboard" description="Everything livedocuments measures, published as anonymous counts anyone can read." categoryTitle="Privacy and Security" categorySlug="privacy-and-security" parentArticle={{ title: "What We Collect", slug: "what-we-collect" }} subArticles={getSubArticles("what-we-collect").filter((a) => a.slug !== "telemetry-dashboard")}>
 
-The [telemetry dashboard](/telemetry) is a public page, headed **Telemetry, in the open**, that shows everything livedocuments measures. There is no sign-in and nothing hidden behind it: the page reads the same anonymous counts the project itself uses to decide what to build next. This article walks through what it shows and how to read it. For what an event is and how to switch it off, see [What We Collect](/help/privacy-and-security/what-we-collect/).
+The [telemetry dashboard](/telemetry) is a public page, headed **Telemetry, in the open**, that shows everything livedocuments measures. It lives at liveworkspace.app, one dashboard for every liveworkspace app: the link opens it with **livedocuments.app** picked, and **All apps** shows every app's events together. There is no sign-in and nothing hidden behind it: the page reads the same anonymous counts the project itself uses to decide what to build next. This article walks through what it shows and how to read it. For what an event is and how to switch it off, see [What We Collect](/help/privacy-and-security/what-we-collect/).
 
 ## What the numbers are made of
 
@@ -56,7 +56,7 @@ Browsers never send an exact time, only the range a timing fell in (such as "und
 
 The view opens with **Editor Timings**, one card each for **Document Load**, **Tab Switch**, **Save**, **Live Connect** and **Live Reconnect**. Each card leads with the **p75** (three timings in four were at least this quick), shows the **Median** and **p95** beside it, draws how many timings fell in each range, and plots each day's p75 across the last 30 days. A card with fewer than 20 timings in the window says it has too few to read a percentile, rather than showing a misleading number.
 
-Below that, **Core Web Vitals** gives one card per app (Marketing, Live, Help and Dashboard) with the 75th percentile of three measures, each rated **Good**, **Needs Work** or **Poor** against Google's thresholds:
+Below that, **Core Web Vitals** gives one card per part of livedocuments (Marketing, Live and Help) with the 75th percentile of three measures, each rated **Good**, **Needs Work** or **Poor** against Google's thresholds:
 
 | Measure | What it tracks                                    |
 | ------- | ------------------------------------------------- |
