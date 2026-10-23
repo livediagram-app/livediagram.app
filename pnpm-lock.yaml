@@ -1230,6 +1230,9 @@ importers:
       '@livedesign/telemetry-client':
         specifier: workspace:*
         version: link:../telemetry-client
+      '@liveworkspace/settings':
+        specifier: workspace:*
+        version: link:../../../packages/settings
       '@liveworkspace/sites':
         specifier: workspace:*
         version: link:../../../packages/sites
