@@ -271,8 +271,9 @@ describe('settings catalogue', () => {
     // The category survives either way: in-editor notifications are not
     // gated on email, so Notifications never becomes a dead end.
     expect(notifyRows(without)).toContain('notificationsEnabled');
-    // Nothing in Plan assigns an action, so there is no email for one.
-    expect(notifyRows(withEmail)).not.toContain('notifyActionAssigned');
+    // A teammate assigning you an action emails you (docs/specs/012-collaboration/assigned-actions.md).
+    expect(notifyRows(withEmail)).toContain('notifyActionAssigned');
+    expect(notifyRows(without)).not.toContain('notifyActionAssigned');
   });
 
   it('offers Minimal chrome only while power user mode is on', () => {

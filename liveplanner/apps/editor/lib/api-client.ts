@@ -47,3 +47,4 @@ export * from './api/capabilities';
 export * from './api/unfurl';
 // Workbench embeds (docs/specs/013-workspace/workbench-embeds.md).
 export * from './api/workbench';
+export * from './api/team-people';

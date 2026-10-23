@@ -112,7 +112,7 @@ import { useCanvasPinchZoom } from '@/hooks/canvas/useCanvasPinchZoom';
 import { useCapabilities } from '@/hooks/persistence/useCapabilities';
 import { participantKey, type Participant } from '@/lib/identity';
 import { markNameConfirmed } from '@/lib/local-identity';
-import { apiSaveSelf } from '@/lib/api-client';
+import { apiNotifyActionAssigned, apiSaveSelf } from '@/lib/api-client';
 import { usePlanList } from '@/hooks/persistence/usePlanList';
 import { usePlanShareState } from '@/hooks/persistence/usePlanShareState';
 import { useTokenTeams } from '@/lib/explorer-host';
@@ -1247,8 +1247,16 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       userId: accountUserId ?? (hydrated ? selfParticipant.id : null),
       name: accountDisplayName ?? (hydrated ? selfParticipant.name : null),
     },
-    // An assignee is told on the item itself; team email notices went with liveplanner's own teams.
-    notify: () => {},
+    notify: (input) => {
+      if (!accountUserId || !projectId) return;
+      void apiNotifyActionAssigned(accountUserId, projectId, {
+        teamId: input.teamId,
+        assigneeUserId: input.assigneeUserId,
+        assigneeMemberId: input.assigneeMemberId,
+        actionName: input.actionName,
+        ...(input.description ? { description: input.description } : {}),
+      }).catch(() => {});
+    },
   });
 
   // Action rows (open AND done — the panel filters between Outstanding
@@ -1532,7 +1540,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     [linkedActions.placeOf, linkedActions.showOnCanvas],
   );
   // Assignees: the members of your teams (docs/specs/026-plan/items.md "Who may do what").
-  const teamPeople = useTeamPeople(selfParticipant.id, !workbenchMode, !!accountUserId);
+  const teamPeople = useTeamPeople(selfParticipant.id, !workbenchMode, !!accountUserId, teams);
   // Whether a Plan board covers the canvas (docs/specs/026-plan/plan-board.md "Fill Tab"): see usePlanCoverWiring.
   const planCover = usePlanCoverWiring({ activeTab, tabs });
   // Board, Sheet and Dashboard tabs (docs/specs/026-plan/plan-tabs.md).

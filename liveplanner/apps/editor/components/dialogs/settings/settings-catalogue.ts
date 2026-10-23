@@ -26,6 +26,7 @@ type EmailKey =
   | 'notifyInviteResponse'
   | 'notifyComments'
   | 'notifyMentions'
+  | 'notifyActionAssigned'
   | 'notifyFormResponses'
   | 'notifyTips'
   | 'notifyMilestones';
@@ -751,6 +752,12 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         keywords: 'email mention tag at comment',
         label: 'Someone Mentions Me in a Comment',
         description: 'A teammate @mentions you in a comment.',
+      }),
+      emailSwitch('notifyActionAssigned', {
+        event: { category: 'UI', on: 'NotifyActionAssignedOn', off: 'NotifyActionAssignedOff' },
+        keywords: 'email action assigned task todo',
+        label: 'Someone Assigns Me an Action',
+        description: 'A teammate assigns you an action on a plan.',
       }),
       emailSwitch('notifyFormResponses', {
         event: { category: 'UI', on: 'NotifyFormResponsesOn', off: 'NotifyFormResponsesOff' },
