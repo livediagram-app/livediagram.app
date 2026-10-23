@@ -1,7 +1,7 @@
 'use client';
 
 // The editor's deleted state (docs/specs/013-workspace/trash.md, "While a
-// document is in the Trash"). Set when the load answers document_trashed, when
+// canvas is in the Trash"). Set when the load answers document_trashed, when
 // the room says the document was trashed, or when a save is refused because
 // of it. Whether the reader may restore it is the index's answer
 // (liveworkspace/docs/one-explorer-contracts.md): the item, which outlives the trashing, at edit for them (its owner,

@@ -1,6 +1,6 @@
 'use client';
 
-// The deleted state (docs/specs/013-workspace/trash.md, "While a document is
+// The deleted state (docs/specs/013-workspace/trash.md, "While a canvas is
 // in the Trash"): shown when the open document, or the one a link points at,
 // is in the Trash. Someone who may restore it gets Restore right here; a
 // share-link visitor only learns that it was deleted. Same card shape as

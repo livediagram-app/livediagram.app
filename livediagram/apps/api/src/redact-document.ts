@@ -14,7 +14,7 @@
 // document), and it returned `ownerId` intact — so the redaction guarded one
 // door of two. Hence a module: the rule now has one home, both doors, and a
 // test surface of its own, matching the precedent set by
-// origin-check / share-link-row.
+// origin-check.
 //
 // Every non-owner reader already behaved as though this value might be blank:
 // the client reads it only to compute `isOwner` (correctly false for a blank),

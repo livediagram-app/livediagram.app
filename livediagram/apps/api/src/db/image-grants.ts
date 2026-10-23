@@ -14,26 +14,26 @@ import { mediaClient, mediaOwner } from '../media';
 import type { DocumentEnv } from '../types';
 
 // One per isolate, so a team's people are remembered across canvases and requests. The service's and accounts'
-// settings are the worker's, the same for every canvas: the latest env is the one asked.
-let current: DocumentEnv | null = null;
+// settings are the worker's, the same for every canvas: the latest env is the one asked (grantsFor sets it before
+// the grants that read it exist).
+let current!: DocumentEnv;
 let grants: ReturnType<typeof createImageGrants> | null = null;
 
 function grantsFor(env: DocumentEnv) {
   current = env;
   grants ??= createImageGrants({
     lookupOwner: async (id) => {
-      const media = current && mediaClient(current);
+      const media = mediaClient(current);
       return media ? ((await media.get(id))?.owner ?? null) : null;
     },
     mediaOwnerOf: (personId) => mediaOwner(personId),
-    teamMembers: async (teamId) => (current ? joinedMembers(current, teamId) : []),
+    teamMembers: async (teamId) => joinedMembers(current, teamId),
   });
   return grants;
 }
 
 export function clearImageGrantCachesForTests(): void {
   grants = null;
-  current = null;
 }
 
 const sqlOf = (env: DocumentEnv) => imageGrantSqlOfD1(env.DOCUMENT_DB);

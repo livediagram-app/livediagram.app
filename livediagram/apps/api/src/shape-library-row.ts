@@ -2,7 +2,7 @@ import type { ShapeLibrary, ShapeLibraryItem, ShapeLibrarySource } from '@livedi
 
 // shape_libraries row shape as read from D1 (migration 0060). The `items` column is a JSON string
 // (the validated item list); every read parses it here so the rest of the worker handles a
-// structured list. Its own module, like folder-row.ts, so the mapping has its own tests.
+// structured list. Its own module, like tab-row.ts, so the mapping has its own tests.
 
 export type ShapeLibraryRow = {
   id: string;

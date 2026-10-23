@@ -11,7 +11,7 @@
 //
 // Lives in its own module so the rule has a test surface separate
 // from the route handler: matches the precedent set by image-strip,
-// image-sniff, tab-row, folder-row, share-link-row.
+// image-sniff, tab-row.
 
 import { isLoopbackHostname } from '@livediagram/api-schema';
 
