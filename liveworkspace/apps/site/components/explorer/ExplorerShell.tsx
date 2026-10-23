@@ -71,8 +71,8 @@ const TRASHED_PARAM = 'trashed';
 const TITLE_PARAM = 'title';
 
 const client = createIndexClient({ getToken: workspaceToken });
-// The signed-in person's own accounts routes on this origin: people's names (owners, who did what, one cache), a
-// team's members and count, and the invitations waiting.
+// The person's own accounts routes on this origin: people's names (owners, who did what, one cache; a guest's too),
+// and, signed in, a team's members and count and the invitations waiting.
 const accounts = createExplorerAccounts();
 
 const NO_ARRIVAL: Arrival = { app: null, via: null };
@@ -291,7 +291,8 @@ export function ExplorerShell() {
           welcome={welcome}
           sidebarLinks={sidebarLinks}
           allLabel="All Apps"
-          accounts={signedIn ? accounts : null}
+          // A guest is named people too: accounts answers this browser's guest for names alone.
+          accounts={accounts}
           signedIn={signedIn}
           signInHref={signInHref(pathname || '/explorer')}
           signInBanner={signInBanner}

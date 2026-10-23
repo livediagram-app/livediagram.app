@@ -567,7 +567,7 @@ For the signed-in person, by their session cookie. Writes must come from the sit
 | `GET` / `POST /api/account/tokens`                      | lists / makes a token (the secret once)                                                 |
 | `DELETE /api/account/tokens/:id`                        | revokes one                                                                             |
 | `GET /api/account/profile`                              | their profile: `{ profile }`                                                            |
-| `GET /api/account/people?ids=a,b`                       | other people's display names (up to 100): `{ people: [{ id, name }] }`, ids found only  |
+| `GET /api/account/people?ids=a,b`                       | names (up to 100): `{ people: [{ id, name }] }`, found ids only; a guest may ask too    |
 | `PATCH /api/account/profile` `{ name?, color? }`        | sets their display name or colour (null clears); answers `{ profile }`                  |
 | `GET /api/account/settings`                             | their `all` settings: `{ all, updatedAt }`                                              |
 | `PATCH /api/account/settings` `{ all }`                 | patches `all`; answers `{ all, updatedAt }`                                             |

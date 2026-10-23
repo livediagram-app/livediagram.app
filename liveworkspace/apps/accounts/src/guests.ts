@@ -79,6 +79,11 @@ export async function readGuestCookie(
   return valid ? guestId : null;
 }
 
+/** The browser's own guest, from its signed `lw_guest` cookie on this request, or null. */
+export function guestOfRequest(request: Request, secret: string): Promise<string | null> {
+  return readGuestCookie(cookieValue(request.headers.get('cookie'), GUEST_COOKIE), secret);
+}
+
 function cookieValue(header: string | null, name: string): string | null {
   for (const part of header?.split(';') ?? []) {
     const eq = part.indexOf('=');

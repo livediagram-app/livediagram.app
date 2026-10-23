@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { handleAccountApi } from './account-api.ts';
 import type { Auth } from './auth.ts';
 import type { Env } from './env.ts';
+import { signGuestCookie } from './guests.ts';
 import { addClient, addUser, testD1 } from './test-d1.ts';
 
 const BASE = 'https://liveworkspace.app';
@@ -162,6 +163,21 @@ describe('the account API, signed in', () => {
     expect((await call(`/people?ids=${many}`)).status).toBe(400);
     signedIn = null;
     expect((await call('/people?ids=user_bea')).status).toBe(401);
+  });
+
+  it('names people for this browser’s guest too, and nobody else signed out', async () => {
+    signedIn = null;
+    env.BETTER_AUTH_SECRET = 'guest-secret';
+    const guest = await signGuestCookie('guest_00000000-0000-4000-8000-000000000001', 'guest-secret');
+    const res = await call('/people?ids=user_bea', { headers: { cookie: `lw_guest=${guest}` } });
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ people: [{ id: 'user_bea', name: 'Bea' }] });
+    const forged = await signGuestCookie('guest_00000000-0000-4000-8000-000000000001', 'other');
+    expect(
+      (await call('/people?ids=user_bea', { headers: { cookie: `lw_guest=${forged}` } })).status,
+    ).toBe(401);
+    // Still only names: the guest's door opens nothing else.
+    expect((await call('/teams', { headers: { cookie: `lw_guest=${guest}` } })).status).toBe(401);
   });
 
   it('reads and patches the settings every app shows', async () => {

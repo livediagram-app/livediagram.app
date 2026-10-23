@@ -140,7 +140,8 @@ lives here once, rather than at each app's `/explorer`. The apps' Explorer links
   200 blob URLs, least recently used out. The app's answer is cached by the browser for a day per version.
   Other apps' items show their kind's icon, with no request.
 - **Names.** Owners and who did what are named through `/api/account/people`, gathered into one request per
-  beat (at most 100 ids) and kept in one bounded cache. Guests see no names: that route needs a session.
+  beat (at most 100 ids) and kept in one bounded cache. A guest is named too: the route answers this
+  browser's guest cookie, rate limited ([accounts.md](accounts.md)).
 - **Guests.** A guest sees a sign-in banner at the foot of the page, with Sign In, Learn More (why an account
   helps, loaded on first press) and a close this browser remembers, one for every app.
 - **The Inbox.** Plan cards wear their type's glyph, and its empty state points at liveplanner's help on actions.

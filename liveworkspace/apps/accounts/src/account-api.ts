@@ -8,6 +8,7 @@
 //     for notification emails, many people's notify switches at once and a team's people.
 import { AUTH_BASE_PATH } from './auth-options.ts';
 import { noteGuestSeen } from './guest-sweep.ts';
+import { guestOfRequest } from './guests.ts';
 import type { Auth } from './auth.ts';
 import type { Env } from './env.ts';
 import { sendInviteResponseEmails, sendTeamInviteEmail } from './email.ts';
@@ -154,6 +155,16 @@ async function handleOpen(
   const [section, id, sub, token] = parts;
   const db = env.AUTH_DB;
 
+  // Other people's names for a guest on liveworkspace.app, whose Explorer names owners and who did what as it does
+  // for an account: the browser's own guest (its signed cookie) may read them, limited per network. Anyone with
+  // neither a session nor a guest is signed out. A session's read goes on to the signed-in door.
+  if (section === 'people' && !id && method === 'GET') {
+    if (await sessionActor(request, auth)) return null;
+    if (!(await guestOfRequest(request, env.BETTER_AUTH_SECRET))) return error(401, 'signed_out');
+    if (await overLinkLimit(request, env, 'people')) return error(429, 'rate_limited');
+    return peopleNames(request, db);
+  }
+
   if (section === 'join' && id && !sub && method === 'GET') {
     if (await overLinkLimit(request, env)) return error(429, 'rate_limited');
     const actor = await sessionActor(request, auth);
@@ -193,10 +204,21 @@ function network(ip: string): string {
   return ip.split('.').slice(0, 3).join('.');
 }
 
-async function overLinkLimit(request: Request, env: Env): Promise<boolean> {
+async function overLinkLimit(request: Request, env: Env, door = 'team-link'): Promise<boolean> {
   if (!env.TEAM_LINK_LIMITER) return false;
   const ip = request.headers.get('cf-connecting-ip') ?? 'unknown';
-  return !(await env.TEAM_LINK_LIMITER.limit({ key: `team-link:${network(ip)}` })).success;
+  return !(await env.TEAM_LINK_LIMITER.limit({ key: `${door}:${network(ip)}` })).success;
+}
+
+// Display names by id: what collaborators see on a cursor or a comment anyway. Names only, up to MAX_PROFILE_IDS
+// a read; ids not found are left out.
+async function peopleNames(request: Request, db: Env['AUTH_DB']): Promise<Response> {
+  const ids = (new URL(request.url).searchParams.get('ids') ?? '')
+    .split(',')
+    .filter((v) => USER_ID.test(v) || GUEST_ID.test(v));
+  if (ids.length > MAX_PROFILE_IDS) return error(400, 'too_many_ids');
+  const profiles = await readProfiles(db, ids);
+  return json({ people: profiles.map((p) => ({ id: p.id, name: p.name })) });
 }
 
 // Someone answered an invitation: the team's admins hear of it, unless they turned it off. A failed
@@ -343,16 +365,8 @@ async function handleSignedIn(
     }
   }
 
-  // Other people's display names, by id (the Explorer's Owner column): what collaborators see on a cursor or a
-  // comment anyway. Names only, up to MAX_PROFILE_IDS a read; ids not found are left out.
-  if (section === 'people' && !id && method === 'GET') {
-    const ids = (new URL(request.url).searchParams.get('ids') ?? '')
-      .split(',')
-      .filter((v) => USER_ID.test(v) || GUEST_ID.test(v));
-    if (ids.length > MAX_PROFILE_IDS) return error(400, 'too_many_ids');
-    const profiles = await readProfiles(db, ids);
-    return json({ people: profiles.map((p) => ({ id: p.id, name: p.name })) });
-  }
+  // Other people's display names, by id (the Explorer's Owner column).
+  if (section === 'people' && !id && method === 'GET') return peopleNames(request, db);
 
   // Their display name and colour, the ones collaborators see in every app.
   if (section === 'profile' && !id) {
