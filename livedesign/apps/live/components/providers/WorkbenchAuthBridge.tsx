@@ -44,7 +44,6 @@ export function WorkbenchAuthBridge({
         username: null,
         email: null,
         createdAt: null,
-        pictureUrl: person.pictureUrl,
       },
       getToken: async () => secretRef.current,
       signOut: async () => {},

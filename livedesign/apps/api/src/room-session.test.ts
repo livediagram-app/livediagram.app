@@ -11,7 +11,6 @@ describe('verifiedSessionOf', () => {
         'X-Verified-Role': 'participate',
         'X-Verified-Tab-Scope': 't1',
         'X-Verified-Share-Code': '',
-        'X-Verified-Account': '1',
         'X-Verified-Person': 'p',
         'X-Verified-Workbench-Pairing': 'w',
         'X-Verified-Adder': 'a',
@@ -22,7 +21,6 @@ describe('verifiedSessionOf', () => {
       verifiedRole: 'participate',
       tabScope: 't1',
       shareCode: null,
-      account: true,
       personTag: 'p',
       workbenchPairing: 'w',
       adderKey: 'a',
@@ -42,7 +40,6 @@ describe('newSessionAttachment', () => {
       {
         tabScope: null,
         shareCode: null,
-        account: false,
         personTag: long,
         workbenchPairing: long,
         adderKey: long,
@@ -52,9 +49,9 @@ describe('newSessionAttachment', () => {
     );
     expect(a.presenceId).toBe('presence-1');
     expect(a.presence).toBeNull();
-    expect(
-      [a.personTag, a.workbenchPairing, a.adderKey, a.designId].map((s) => s?.length),
-    ).toEqual([64, 36, 32, 64]);
+    expect([a.personTag, a.workbenchPairing, a.adderKey, a.designId].map((s) => s?.length)).toEqual(
+      [64, 36, 32, 64],
+    );
   });
 });
 

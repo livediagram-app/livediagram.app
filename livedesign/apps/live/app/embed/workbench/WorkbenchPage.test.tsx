@@ -74,7 +74,7 @@ const SESSION: WorkbenchDesignSessionResponse = {
   origin: 'https://127.0.0.1:5175',
   role: 'edit',
   expiresAt: Date.now() + 60_000,
-  person: { id: 'user_1', name: 'Webber', color: '#0ea5e9', pictureUrl: null },
+  person: { id: 'user_1', name: 'Webber', color: '#0ea5e9' },
 };
 
 function fakePort(): WorkbenchPort {

@@ -145,7 +145,6 @@ export type WorkbenchPerson = {
   id: string;
   name: string | null;
   color: string | null;
-  pictureUrl: string | null;
 };
 export type WorkbenchSessionResponse = {
   session: string;
@@ -157,10 +156,7 @@ export type WorkbenchSessionResponse = {
   | { scope: 'design'; designId: string; folderId: null; tabId: string | null }
   | { scope: 'workspace'; designId: null; folderId: string | null; tabId: null }
 );
-export type WorkbenchDesignSessionResponse = Extract<
-  WorkbenchSessionResponse,
-  { scope: 'design' }
->;
+export type WorkbenchDesignSessionResponse = Extract<WorkbenchSessionResponse, { scope: 'design' }>;
 export type WorkbenchWorkspaceSessionResponse = Extract<
   WorkbenchSessionResponse,
   { scope: 'workspace' }
@@ -259,7 +255,6 @@ const WORKBENCH_ROUTES: readonly RouteShape[] = [
   shape('GET', 'designs/:doc/changesets/:p'),
   shape('GET', 'designs/:doc/comments'),
   shape('GET', 'designs/:doc/tabs/:p/render.svg'),
-  shape('GET', 'designs/:doc/tabs/:p/comment-pictures'),
   shape('POST', 'designs/:doc/tabs/:p/comments'),
   shape('POST', 'designs/:doc/tabs/:p/comments/:p/reply'),
   shape('POST', 'designs/:doc/tabs/:p/comments/:p/resolve'),
@@ -303,9 +298,7 @@ const WORKSPACE_ROUTES: readonly RouteShape[] = [
 ];
 
 // Inside an allowed workspace resource, the door that stays closed: an agent's presence.
-const WORKSPACE_CLOSED: readonly RouteShape[] = [
-  shape(ALL_METHODS, 'designs/:p/tabs/:p/presence'),
-];
+const WORKSPACE_CLOSED: readonly RouteShape[] = [shape(ALL_METHODS, 'designs/:p/tabs/:p/presence')];
 
 // Words a `:p` never matches: sibling routes that share a prefix with an allowed shape but are confined
 // (`GET images/usage` beside `GET images/:id`, `GET teams/invites` beside `GET teams/:id`).

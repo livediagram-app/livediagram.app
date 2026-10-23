@@ -8,10 +8,6 @@
 // that knows which presence belongs to which socket, so it excludes it here.
 // Presence comes off each socket's attachment (deserialized once per
 // socket, then reused for every recipient's roster).
-//
-// Profile pictures go only to account sessions (docs/specs/014-identity/profile-picture.md §5): an
-// anonymous share-link visitor gets the same roster with every picture removed, so the URL
-// never reaches them.
 import {
   agentRosterFor,
   type AgentPresenceRecord,
@@ -23,7 +19,6 @@ import type { ParticipantPresence } from './types';
 export type RosterEntry = {
   ws: WebSocket;
   presence: ParticipantPresence | null;
-  account: boolean;
   personTag: string | null;
 };
 
@@ -41,7 +36,7 @@ export function* rosterFrames(
   const sessions: RosterSession[] = entries.flatMap(({ presence, personTag }) =>
     presence ? [{ presenceId: presence.id, personTag }] : [],
   );
-  for (const { ws, presence: self, account, personTag } of entries) {
+  for (const { ws, presence: self, personTag } of entries) {
     const agents = agentRosterFor(
       self ? { presenceId: self.id, personTag } : null,
       sessions,
@@ -50,12 +45,7 @@ export function* rosterFrames(
     const participants: ParticipantPresence[] = [];
     for (const { ws: peer, presence } of entries) {
       if (peer === ws || !presence) continue;
-      if (account || presence.picture === undefined) {
-        participants.push(presence);
-        continue;
-      }
-      const { picture: _hidden, ...withoutPicture } = presence;
-      participants.push(withoutPicture);
+      participants.push(presence);
     }
     yield { ws, participants, agents };
   }

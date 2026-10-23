@@ -34,7 +34,7 @@ import { useIdentityBootstrap } from './useIdentityBootstrap';
 import { resetLoadProgressForTests } from '@/lib/load-progress';
 import { DesignTrashedError } from '@/lib/design-trashed';
 
-const PERSON = { id: 'user_1', name: 'Webber', color: '#0ea5e9', pictureUrl: null };
+const PERSON = { id: 'user_1', name: 'Webber', color: '#0ea5e9' };
 const DOC = {
   id: 'doc-1',
   ownerId: 'user_1',
@@ -156,9 +156,7 @@ describe('useIdentityBootstrap in a workbench', () => {
 
   it('shows the person under a random name when they have no record, and still writes none', async () => {
     api.apiLoadSelf.mockRejectedValue(new Error('offline'));
-    const { set } = run(
-      workbenchOf({ person: { id: 'user_1', name: null, color: null, pictureUrl: null } }),
-    );
+    const { set } = run(workbenchOf({ person: { id: 'user_1', name: null, color: null } }));
 
     await vi.waitFor(() => expect(set.setHydrated).toHaveBeenCalledWith(true));
 

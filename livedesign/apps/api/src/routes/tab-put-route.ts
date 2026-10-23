@@ -123,7 +123,6 @@ export async function handleTabPut(
             name: existing.ownerName,
             color: existing.ownerColor ?? '#0ea5e9',
             createdAt: existing.createdAt,
-            pictureUrl: null,
           }
         : await getParticipant(env, owner);
     const sanitised: Tab = writerParticipant

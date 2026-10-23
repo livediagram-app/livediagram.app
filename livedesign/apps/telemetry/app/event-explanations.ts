@@ -513,8 +513,7 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone with no designs yet started a blank diagram from the field at the top of the first-run Home.',
   'Home|Selected|Welcome.Template':
     'Someone with no designs yet started a popular template from the first-run Home.',
-  'Home|Selected|Hero.Designs':
-    'Someone followed the designs pill at the top of Home to My Work.',
+  'Home|Selected|Hero.Designs': 'Someone followed the designs pill at the top of Home to My Work.',
   'Home|Selected|Hero.Inbox': 'Someone followed the Inbox pill at the top of Home to their Inbox.',
   'Home|Selected|Hero.NewDesign':
     'Someone started a new design from the New design button in the search field at the top of Home.',
@@ -556,8 +555,7 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Somebody pressed Show on the toast an agent's change raised, to see what it touched.",
   'Mcp|Used|AddTab': 'An AI tool connected over MCP added a new tab to a design.',
   'Mcp|Used|CreateDesign': 'An AI tool connected over MCP created a new design.',
-  'Mcp|Used|FindDesigns':
-    "An AI tool connected over MCP searched for one of the user's designs.",
+  'Mcp|Used|FindDesigns': "An AI tool connected over MCP searched for one of the user's designs.",
   'Mcp|Used|ReadDesign': "An AI tool connected over MCP read a design's contents.",
   'Mcp|Used|RenameDesign': 'An AI tool connected over MCP renamed a design.',
   'Mcp|Used|ShareDesign': 'An AI tool connected over MCP generated a share link for a design.',
@@ -726,8 +724,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Explorer|Selected|Template':
     'Someone filtered an Explorer list by the template family designs were made from (Retrospective, Kanban).',
   'Explorer|Selected|MadeBy': 'Someone filtered an Explorer list to the designs an AI made.',
-  'Explorer|Selected|Edited':
-    'Someone filtered an Explorer list by when designs were last edited.',
+  'Explorer|Selected|Edited': 'Someone filtered an Explorer list by when designs were last edited.',
   'Explorer|Selected|People':
     'Someone filtered an Explorer list by who owns the designs (Me or Others).',
   'Explorer|Created|Tag':
@@ -1161,10 +1158,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone turned off the email that arrives when a teammate assigns them an action, in Settings > Notifications.',
   'UI|Toggled|NotifyActionAssignedOn':
     'Someone turned on the email that arrives when a teammate assigns them an action, in Settings > Notifications.',
-  'UI|Toggled|ShowProfilePictureOff':
-    'Someone stopped showing their profile picture to collaborators, in Settings > Account.',
-  'UI|Toggled|ShowProfilePictureOn':
-    'Someone started showing their profile picture to collaborators again, in Settings > Account.',
   'UI|Toggled|NotifyMentionsOff':
     'Someone turned off the email that arrives when a teammate @-mentions them in a comment, in Settings > Notifications.',
   'UI|Toggled|NotifyMentionsOn':
@@ -1735,8 +1728,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
     'Someone picked an option from a dropdown, or clicked through on a banner, somewhere in the editor.',
   'UI|Started': 'Someone started a presentation or the welcome tour.',
   'UI|Toggled': 'Someone turned an editor setting on or off.',
-  'UI|Used':
-    'Someone used a wizard-skipping entry point into a new design, or accepted an offer.',
+  'UI|Used': 'Someone used a wizard-skipping entry point into a new design, or accepted an offer.',
   'UI|Declined': 'Someone turned down an offer the editor made them.',
   'UI|View': 'The welcome tour advanced to (or back to) a particular stage.',
 };
