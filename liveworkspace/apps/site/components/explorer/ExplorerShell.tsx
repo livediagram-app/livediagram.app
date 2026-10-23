@@ -89,6 +89,7 @@ import {
   trackHome,
   trackInbox,
   trackLens,
+  trackOrganise,
   trackSignInBanner,
   trackTimeline,
   trackViewToggled,
@@ -456,6 +457,7 @@ export function ExplorerShell() {
           onHideHero={settings.onHideHero}
           onTimeline={trackTimeline}
           onHome={trackHome}
+          onOrganise={trackOrganise}
           lensTemplates={lensTemplatesFor(app)}
           onLensSelected={trackLens}
           onViewToggled={trackViewToggled}

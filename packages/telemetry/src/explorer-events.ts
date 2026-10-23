@@ -10,6 +10,24 @@
 
 import type { TelemetryWireEvent } from './wire';
 
+// The Share dialog's `Shared` tokens, the apps' own: a level, a lifetime, one tab, then the changes.
+const SHARE_TYPES = [
+  'Edit',
+  'Participate',
+  'View',
+  'ExpiryWeek',
+  'ExpiryMonth',
+  'ExpirySixMonths',
+  'TabScoped',
+  'Extended',
+  'Rescoped',
+  'PasswordSet',
+  'PasswordCleared',
+] as const;
+
+// An item's noun in its app's team events: liveplanner's Project, livedesign's Design, the others' Document.
+export const TEAM_ITEM_TYPES = ['Project', 'Design', 'Document'] as const;
+
 export const EXPLORER_TELEMETRY_EVENTS = {
   // The Timeline view: its mode, a category or the actor filter, a page read, a card, stack or menu opened, an
   // entry or a stack removed.
@@ -41,6 +59,8 @@ export const EXPLORER_TELEMETRY_EVENTS = {
     'Welcome.SignIn',
   ],
   'Home·Opened': ['Group', 'Welcome'],
+  // A failed read of Home retried.
+  'Home·Loaded': ['Retry'],
   // The filter lens: a facet that gained a value, never the value.
   'Explorer·Selected': ['Text', 'OpensIn', 'Template', 'MadeBy', 'Edited', 'People', 'Space'],
   // The Inbox: opened, a row followed, a failed read retried.
@@ -58,6 +78,26 @@ export const EXPLORER_TELEMETRY_EVENTS = {
   'UI·Ended': ['ShareTourCompleted', 'ShareTourSkipped'],
   'Project·Removed': ['ShareLink'],
   'Document·Removed': ['ShareLink'],
+  // A link made (its level, then its lifetime and one tab when it has them, an event each) or changed: under the
+  // item's own noun, as the revoked pass.
+  'Project·Shared': SHARE_TYPES,
+  'Document·Shared': SHARE_TYPES,
+  // Folders made (in a team's library: Team), re-parented and deleted; a default folder set or cleared, for the
+  // app's own kind or a template family.
+  'Folder·Created': [null, 'Team'],
+  'Folder·Moved': [null],
+  'Folder·Deleted': [null],
+  'Folder·Changed': ['Kind', 'Template'],
+  'Folder·Cleared': ['Kind', 'Template'],
+  // The Trash: an item restored or deleted for good, a Trash emptied, by whose Trash it was.
+  'Trash·Restored': ['Personal', 'Team'],
+  'Trash·Deleted': ['Personal', 'Team'],
+  'Trash·Cleared': ['Personal', 'Team'],
+  // An item moved into a team, within one or between two, or out to My Work, under its app's noun (liveplanner's
+  // Project, livedesign's Design, the others' Document).
+  'Team·Added': TEAM_ITEM_TYPES,
+  'Team·Moved': TEAM_ITEM_TYPES,
+  'Team·Removed': TEAM_ITEM_TYPES,
   // A guest's sign-in banner: its reasons opened, the banner closed.
   'UI·Opened': ['SignInReasonsExplorer'],
   'UI·Closed': ['SignInBannerExplorer'],

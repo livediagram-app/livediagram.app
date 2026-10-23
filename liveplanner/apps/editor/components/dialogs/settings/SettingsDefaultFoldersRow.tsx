@@ -4,6 +4,7 @@ import { DefaultFoldersSettings } from '@liveworkspace/explorer';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useTokenTeams } from '@/lib/explorer-host';
 import { indexClient } from '@/lib/index-client';
+import { trackOrganise } from '@/lib/explorer-organise';
 import { PLAN_TEMPLATE_FAMILIES } from '@/lib/plan-template-families';
 import { SettingsRowShell } from './SettingsRowShell';
 import type { SettingsDefaultFoldersRowSpec } from './settings-catalogue';
@@ -22,6 +23,7 @@ export function SettingsDefaultFoldersRow({ row }: { row: SettingsDefaultFolders
           app="liveplanner"
           teams={teams}
           templates={PLAN_TEMPLATE_FAMILIES}
+          onOrganise={trackOrganise}
         />
       </div>
     </SettingsRowShell>

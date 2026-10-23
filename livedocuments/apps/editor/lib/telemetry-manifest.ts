@@ -52,6 +52,7 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   // A share link revoked in the Share dialog (type ShareLink).
   'Document·Removed',
   'Document·Renamed',
+  'Document·Shared',
   'Document·Undone',
   'Element·Added',
   'Element·Changed',
@@ -79,8 +80,13 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   // An editor freed an element somebody else was holding (docs/specs/007-editor/editor-app.md lock), type
   // 'Unlocked'. The category keeps the name the dashboard already counts it under.
   'Facilitator·Changed',
+  'Folder·Changed',
+  'Folder·Cleared',
   'Folder·Created',
+  'Folder·Deleted',
+  'Folder·Moved',
   'Folder·Renamed',
+  'Home·Loaded',
   'Home·Opened',
   'Home·Selected',
   'Layer·Added',
@@ -126,6 +132,8 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Tab·Selected',
   'Tab·Unlocked',
   'Team·Added',
+  'Team·Moved',
+  'Team·Removed',
   'Template·Used',
   'Theme·Changed',
   // The shared Explorer's Timeline (docs/specs/013-workspace/timeline.md): Changed (Cards or Calendar), Selected (a
@@ -139,6 +147,8 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Token·Created',
   // A token's owner allowed a workbench on the pairing page (docs/specs/013-workspace/workbench-embeds.md).
   'Token·Linked',
+  'Trash·Cleared',
+  'Trash·Deleted',
   // Trash (docs/specs/013-workspace/trash.md): a trashed document's card, and the document restored from it.
   'Trash·Opened',
   'Trash·Restored',

@@ -55,6 +55,7 @@ import type {
   TeamRef,
   TimelineTelemetry,
   HomeTelemetry,
+  OrganiseTelemetry,
 } from '../types';
 
 export type DialogTarget =
@@ -204,6 +205,8 @@ export type ExplorerProviderProps = {
   onHome?: HomeTelemetry;
   lensTemplates?: readonly LensOption[];
   onLensSelected?: (type: LensTelemetryType) => void;
+  // Folders, default folders, the Trash and team libraries (OrganiseTelemetry), for the host's telemetry; stable.
+  onOrganise?: OrganiseTelemetry;
   // Trashes an item the host handles itself (see HostTrash); stable, or the actions are rebuilt.
   hostTrash?: HostTrash;
   // After an item took a new title (the host follows it for the item it has open); stable.
@@ -242,6 +245,7 @@ export function ExplorerProvider({
   onHome,
   lensTemplates = NO_TEMPLATES,
   onLensSelected,
+  onOrganise,
   hostTrash,
   onItemRenamed,
   children,
@@ -250,8 +254,8 @@ export function ExplorerProvider({
   const [overlay] = useState(createItemOverlay);
   const [epoch, setEpoch] = useState(0);
   const reloadLists = useCallback(() => setEpoch((n) => n + 1), []);
-  const folders = useFolderStore(client, toast.error, reloadLists);
-  const defaults = usePlacementDefaults(client, toast.error);
+  const folders = useFolderStore(client, toast.error, reloadLists, onOrganise);
+  const defaults = usePlacementDefaults(client, toast.error, onOrganise);
   const entries = useMemo(
     () => defaultEntries(app, kindWords(app), lensTemplates),
     [app, lensTemplates],
@@ -277,6 +281,7 @@ export function ExplorerProvider({
     onPlaced,
     onRenamed: onItemRenamed,
     placeName,
+    onOrganise,
   });
   const inbox = useInbox(client, app, filter, inboxHost);
   const [renamingId, setRenamingId] = useState<string | null>(null);

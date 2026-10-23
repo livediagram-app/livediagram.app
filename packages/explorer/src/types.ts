@@ -2,7 +2,7 @@
 // importing the app's router.
 
 import type { ComponentType, MouseEventHandler, ReactNode } from 'react';
-import type { InboxAction, InboxThread, Item, ShareLink } from '@liveworkspace/index-client';
+import type { App, InboxAction, InboxThread, Item, ShareLink } from '@liveworkspace/index-client';
 import type { ShareHandOver } from './dialogs/share/handover';
 import type { ShareHelpHref, ShareTelemetry } from './dialogs/share/types';
 
@@ -50,8 +50,37 @@ export type TimelineTelemetry = (
 ) => void;
 
 /** What Home's What Happened reports: an entry opened its item (`Selected`, `WhatHappened`), a summary dealt out
- *  (`Opened`, `Group`), See Timeline followed (`Selected`, `SeeTimeline`). */
-export type HomeTelemetry = (action: 'Selected' | 'Opened', type: string) => void;
+ *  (`Opened`, `Group`), See Timeline followed (`Selected`, `SeeTimeline`); and a failed read of Home retried
+ *  (`Loaded`, `Retry`). */
+export type HomeTelemetry = (action: 'Selected' | 'Opened' | 'Loaded', type: string) => void;
+
+/** What the Explorer reports about keeping things in order, as `Category·Action`, the names the apps' own Explorers
+ *  always sent:
+ *  - `Folder·Created` (null, or `Team` in a team's library), `Folder·Moved` (re-parented), `Folder·Deleted`;
+ *  - `Folder·Changed` / `Folder·Cleared`: a default folder set or cleared, `Kind` for the app's own entry and
+ *    `Template` for a template family's;
+ *  - `Trash·Restored`, `Trash·Deleted` (for good), `Trash·Cleared` (emptied): `Personal` or `Team`, whose Trash;
+ *  - `Team·Added` (an item moved into a team), `Team·Moved` (within one), `Team·Removed` (taken out to My Work).
+ *  `app` is the app of the one item it acted on, or of the default folder's entry; without it the event counts
+ *  for the page's app. */
+export type OrganiseEvent =
+  | 'Folder·Created'
+  | 'Folder·Moved'
+  | 'Folder·Deleted'
+  | 'Folder·Changed'
+  | 'Folder·Cleared'
+  | 'Trash·Restored'
+  | 'Trash·Deleted'
+  | 'Trash·Cleared'
+  | 'Team·Added'
+  | 'Team·Moved'
+  | 'Team·Removed';
+export type OrganiseTelemetry = (event: OrganiseEvent, type: string | null, app?: App) => void;
+
+/** A default folder's entry, as Folder·Changed / Cleared report it: the app's own kind, or a template family. */
+export function placementDefaultTelemetry(key: string): 'Kind' | 'Template' {
+  return key.includes(':template:') ? 'Template' : 'Kind';
+}
 
 /** An Inbox row the host read itself, marked `local`: from an item kept only in this browser, which the index never
  *  sees. Shown with the This Browser pill. */

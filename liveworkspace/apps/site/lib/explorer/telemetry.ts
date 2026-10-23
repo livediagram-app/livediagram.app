@@ -23,6 +23,7 @@ import type {
   HomeTelemetry,
   InboxTelemetry,
   LensTelemetryType,
+  OrganiseTelemetry,
   ShareHostTelemetry,
   SignInBannerTelemetry,
   TimelineTelemetry,
@@ -126,6 +127,45 @@ export const trackHome: HomeTelemetry = (action, type) => {
       return track('Home', 'Selected', type);
     case 'Opened':
       return track('Home', 'Opened', type);
+    case 'Loaded':
+      return track('Home', 'Loaded', type);
+  }
+};
+
+// Folders, default folders, the Trash and team libraries. An event about one item (or one app's default folder)
+// counts for that app, whatever the page is filtered to; a folder's for the page's app. An item's team events name
+// it by its app's noun, a literal per app so the dashboards read each.
+export const trackOrganise: OrganiseTelemetry = (event, type, itemApp) => {
+  const app = itemApp && isAppName(itemApp) ? senderOfApp(itemApp) : sender;
+  switch (event) {
+    case 'Folder·Created':
+      return track('Folder', 'Created', type, app);
+    case 'Folder·Moved':
+      return track('Folder', 'Moved', type, app);
+    case 'Folder·Deleted':
+      return track('Folder', 'Deleted', type, app);
+    case 'Folder·Changed':
+      return track('Folder', 'Changed', type, app);
+    case 'Folder·Cleared':
+      return track('Folder', 'Cleared', type, app);
+    case 'Trash·Restored':
+      return track('Trash', 'Restored', type, app);
+    case 'Trash·Deleted':
+      return track('Trash', 'Deleted', type, app);
+    case 'Trash·Cleared':
+      return track('Trash', 'Cleared', type, app);
+    case 'Team·Added':
+      if (itemApp === 'liveplanner') return track('Team', 'Added', 'Project', app);
+      if (itemApp === 'livedesign') return track('Team', 'Added', 'Design', app);
+      return track('Team', 'Added', 'Document', app);
+    case 'Team·Moved':
+      if (itemApp === 'liveplanner') return track('Team', 'Moved', 'Project', app);
+      if (itemApp === 'livedesign') return track('Team', 'Moved', 'Design', app);
+      return track('Team', 'Moved', 'Document', app);
+    case 'Team·Removed':
+      if (itemApp === 'liveplanner') return track('Team', 'Removed', 'Project', app);
+      if (itemApp === 'livedesign') return track('Team', 'Removed', 'Design', app);
+      return track('Team', 'Removed', 'Document', app);
   }
 };
 
@@ -177,6 +217,10 @@ export const trackShare: ShareHostTelemetry = (action, type, item) => {
       return item.app === 'liveplanner'
         ? track('Project', 'Removed', type, app)
         : track('Document', 'Removed', type, app);
+    case 'Shared':
+      return item.app === 'liveplanner'
+        ? track('Project', 'Shared', type, app)
+        : track('Document', 'Shared', type, app);
   }
 };
 

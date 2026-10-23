@@ -2,6 +2,7 @@
 
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { ExplorerPanel, explorerPath } from '@liveworkspace/explorer';
+import { trackOrganise } from '@/lib/explorer-organise';
 import type { Item } from '@liveworkspace/index-client';
 import Link from 'next/link';
 import { ProductNavLinks } from '@liveplanner/ui';
@@ -138,6 +139,7 @@ function ExplorerImpl({
         shareUrl={shareUrl}
         share={shareHost}
         inbox={inboxHost}
+        onOrganise={trackOrganise}
         // Side by side in a desktop popover; chips over the pane on a phone and in the corner panel that stands
         // beside the new-plan wizard and the status screens, which must stay narrow or it covers their card.
         layout={sheet ? 'sheet' : isMobile || !asPopover ? 'stacked' : 'side'}

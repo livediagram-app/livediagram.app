@@ -76,7 +76,11 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Error·Warning',
   // The Explorer's filter lens (docs/specs/013-workspace/explorer-filters.md "Telemetry"): a facet that gained a value.
   'Explorer·Selected',
+  'Folder·Changed',
+  'Folder·Cleared',
   'Folder·Created',
+  'Folder·Deleted',
+  'Folder·Moved',
   'Folder·Renamed',
   'Form·Added',
   'Form·Created',
@@ -86,6 +90,7 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Form·Opened',
   'Form·Shared',
   'Form·Toggled',
+  'Home·Loaded',
   // Explorer Home's What Happened (docs/specs/013-workspace/explorer-home.md): Selected (an entry opened its plan,
   // WhatHappened; See Timeline followed, SeeTimeline), Opened (a summary dealt out, Group).
   'Home·Opened',
@@ -121,6 +126,7 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Plan·Toggled',
   'Participant·Created',
   'Participant·Returned',
+  'Project·Shared',
   'Search·Opened',
   'Search·Searched',
   'Search·Selected',
@@ -161,6 +167,8 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Tab·Toggled',
   'Tab·Unlocked',
   'Team·Added',
+  'Team·Moved',
+  'Team·Removed',
   'Template·Used',
   'Theme·Changed',
   // The shared Explorer's Timeline (docs/specs/013-workspace/timeline.md): Changed (Cards or Calendar), Selected (a
@@ -174,6 +182,8 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Token·Created',
   // A token's owner allowed a workbench on the pairing page (docs/specs/013-workspace/workbench-embeds.md).
   'Token·Linked',
+  'Trash·Cleared',
+  'Trash·Deleted',
   // Trash (docs/specs/013-workspace/trash.md): a trashed plan's card, and the plan restored from it.
   'Trash·Opened',
   'Trash·Restored',

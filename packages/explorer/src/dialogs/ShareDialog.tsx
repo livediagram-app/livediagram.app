@@ -27,7 +27,14 @@ import { PasswordSection } from './share/PasswordSection';
 import { ShareComposer } from './share/ShareComposer';
 import { ShareStatus } from './share/ShareStatus';
 import { ShareTourStage, ShowMeButton, useShareTour } from './share/ShareTour';
-import type { ShareHelpHref, ShareIdentity, ShareNotify, ShareTelemetry } from './share/types';
+import {
+  SHARE_EXPIRY_TELEMETRY,
+  SHARE_LEVEL_TELEMETRY,
+  type ShareHelpHref,
+  type ShareIdentity,
+  type ShareNotify,
+  type ShareTelemetry,
+} from './share/types';
 
 export type { ShareTab } from './share/parts';
 export type { ShareHandOver } from './share/handover';
@@ -145,6 +152,9 @@ export function ShareDialog({
     await saveName();
     const link = await share.create({ level, tabId, expiry });
     if (!link) return;
+    onTelemetry?.('Shared', SHARE_LEVEL_TELEMETRY[level]);
+    if (expiry !== 'never') onTelemetry?.('Shared', SHARE_EXPIRY_TELEMETRY[expiry]);
+    if (tabId) onTelemetry?.('Shared', 'TabScoped');
     setFreshCode(link.code);
     setHighlightCode(link.code);
     later(() => setHighlightCode((c) => (c === link.code ? null : c)), PASS_HIGHLIGHT_MS);
@@ -238,7 +248,14 @@ export function ShareDialog({
                         if (ok) onTelemetry?.('Removed', 'ShareLink');
                       })
                     }
-                    onRescope={multiTab ? (tabId) => void share.update(link.code, { tabId }) : null}
+                    onRescope={
+                      multiTab
+                        ? (tabId) =>
+                            void share.update(link.code, { tabId }).then((ok) => {
+                              if (ok) onTelemetry?.('Shared', 'Rescoped');
+                            })
+                        : null
+                    }
                   />
                 );
               })}
@@ -260,7 +277,11 @@ export function ShareDialog({
                   link={link}
                   url={shareUrl(link, item)}
                   busy={share.busy}
-                  onExtend={() => void share.extend(link.code)}
+                  onExtend={() =>
+                    void share.extend(link.code).then((ok) => {
+                      if (ok) onTelemetry?.('Shared', 'Extended');
+                    })
+                  }
                   onDelete={() => void share.revoke(link.code)}
                 />
               ))}
@@ -272,7 +293,11 @@ export function ShareDialog({
           passwordSet={share.passwordSet}
           busy={share.busy}
           helpHref={helpHref}
-          onSet={(p) => share.setPassword(p)}
+          onSet={async (p) => {
+            const ok = await share.setPassword(p);
+            if (ok) onTelemetry?.('Shared', p ? 'PasswordSet' : 'PasswordCleared');
+            return ok;
+          }}
         />
         {note ? (
           <p

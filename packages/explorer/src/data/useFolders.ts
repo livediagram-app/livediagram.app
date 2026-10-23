@@ -8,6 +8,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Folder, IndexClient } from '@liveworkspace/index-client';
 import { LIST_LIMIT_MAX } from '@liveworkspace/index-client';
+import type { OrganiseTelemetry } from '../types';
 import { failureText, isAbort } from './errors';
 
 export type FolderStore = {
@@ -35,6 +36,8 @@ export function useFolderStore(
   client: IndexClient,
   onError: (text: string) => void,
   onTreeChanged: () => void,
+  // Folder·Created / Moved / Deleted, once the index took the change.
+  onOrganise?: OrganiseTelemetry,
 ): FolderStore {
   const [folders, setFolders] = useState<Folder[]>([]);
   const [loading, setLoading] = useState(true);
@@ -127,10 +130,11 @@ export function useFolderStore(
         'Couldn’t make that folder. Try again.',
       );
       if (!res) return null;
+      onOrganise?.('Folder·Created', teamId ? 'Team' : null);
       setFolders((all) => all.map((f) => (f.id === id ? res.folder : f)));
       return res.folder;
     },
-    [client, optimistic],
+    [client, optimistic, onOrganise],
   );
 
   const patchOne = useCallback(
@@ -167,14 +171,17 @@ export function useFolderStore(
   );
 
   const move = useCallback<FolderStore['move']>(
-    (id, parentId) =>
-      patchOne(
+    async (id, parentId) => {
+      const ok = await patchOne(
         id,
         { parentId },
         () => client.updateFolder(id, { parentId }),
         'Couldn’t move that folder. Try again.',
-      ),
-    [client, patchOne],
+      );
+      if (ok) onOrganise?.('Folder·Moved', null);
+      return ok;
+    },
+    [client, patchOne, onOrganise],
   );
 
   // The index moves a deleted folder's children (folders and items) up a level; the tree does the same at
@@ -197,10 +204,13 @@ export function useFolderStore(
           },
           'Couldn’t delete that folder. Try again.',
         )) === true;
-      if (ok) onTreeChanged();
+      if (ok) {
+        onOrganise?.('Folder·Deleted', null);
+        onTreeChanged();
+      }
       return ok;
     },
-    [client, optimistic, onTreeChanged],
+    [client, optimistic, onTreeChanged, onOrganise],
   );
 
   const reload = useCallback(() => setAttempt((n) => n + 1), []);

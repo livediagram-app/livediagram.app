@@ -28,6 +28,7 @@ import type {
   TeamRef,
   TimelineTelemetry,
   HomeTelemetry,
+  OrganiseTelemetry,
 } from '../types';
 import type { LensOption, LensTelemetryType } from '../lens';
 import {
@@ -113,8 +114,12 @@ export type ExplorerProps = {
   trashedOnArrival?: { id: string; title: string | null } | null;
   /** The Timeline's reports (a mode or filter changed, a page read, a card opened), for the host's telemetry. */
   onTimeline?: TimelineTelemetry;
-  /** Home's What Happened reports (an entry opened, a summary dealt out), for the host's telemetry. */
+  /** Home's What Happened reports (an entry opened, a summary dealt out, a failed read retried), for the host's
+   *  telemetry. */
   onHome?: HomeTelemetry;
+  /** Folders made, moved and deleted, default folders set and cleared, the Trash restored from, deleted from and
+   *  emptied, and items moved into, within and out of a team (OrganiseTelemetry), for the host's telemetry. */
+  onOrganise?: OrganiseTelemetry;
   /** The filter lens's Template values: the host app's template families, matched against the last word of each
    *  item's creation intent. Without them there is no Template filter. */
   lensTemplates?: readonly LensOption[];
@@ -262,6 +267,7 @@ function ExplorerInner({
   trashedOnArrival,
   onTimeline,
   onHome,
+  onOrganise,
   lensTemplates,
   onLensSelected,
   welcome,
@@ -324,6 +330,7 @@ function ExplorerInner({
       heroWords={heroWords}
       onTimeline={onTimeline}
       onHome={onHome}
+      onOrganise={onOrganise}
       lensTemplates={lensTemplates}
       onLensSelected={onLensSelected}
     >

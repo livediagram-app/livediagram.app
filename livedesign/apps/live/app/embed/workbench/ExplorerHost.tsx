@@ -73,13 +73,16 @@ const trackTimeline: TimelineTelemetry = (action, type) => {
   }
 };
 
-// Home's What Happened: literal calls, so the telemetry manifest scan sees each pair.
+// Home's What Happened, and a failed read of Home retried: literal calls, so the telemetry manifest scan sees each
+// pair.
 const trackHome: HomeTelemetry = (action, type) => {
   switch (action) {
     case 'Selected':
       return track('Home', 'Selected', type);
     case 'Opened':
       return track('Home', 'Opened', type);
+    case 'Loaded':
+      return track('Home', 'Loaded', type);
   }
 };
 

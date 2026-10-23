@@ -48,7 +48,10 @@ export type {
   TeamRef,
   TimelineTelemetry,
   HomeTelemetry,
+  OrganiseEvent,
+  OrganiseTelemetry,
 } from './types';
+export { placementDefaultTelemetry } from './types';
 export {
   DefaultFoldersSettings,
   type DefaultFoldersSettingsProps,

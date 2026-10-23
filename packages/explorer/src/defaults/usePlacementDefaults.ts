@@ -8,6 +8,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { IndexClient } from '@liveworkspace/index-client';
 import { isAbort } from '../data/errors';
+import { placementDefaultTelemetry, type OrganiseTelemetry } from '../types';
+import { isApp } from '@liveworkspace/index-client';
 
 export type PlacementDefaultsStatus = 'loading' | 'ready' | 'failed';
 
@@ -27,6 +29,8 @@ const EMPTY: ReadonlyMap<string, string> = new Map();
 export function usePlacementDefaults(
   client: IndexClient,
   onError: (text: string) => void,
+  // Folder·Changed / Cleared, once the index took the change, for the entry's app.
+  onOrganise?: OrganiseTelemetry,
 ): PlacementDefaultsStore {
   const [status, setStatus] = useState<PlacementDefaultsStatus>('loading');
   const [defaults, setDefaults] = useState<ReadonlyMap<string, string>>(EMPTY);
@@ -69,6 +73,12 @@ export function usePlacementDefaults(
       try {
         if (folderId) await client.setPlacementDefault(key, folderId);
         else await client.clearPlacementDefault(key);
+        const app = key.split(':')[0];
+        onOrganise?.(
+          folderId ? 'Folder·Changed' : 'Folder·Cleared',
+          placementDefaultTelemetry(key),
+          isApp(app) ? app : undefined,
+        );
         return true;
       } catch {
         apply(previous);
@@ -76,7 +86,7 @@ export function usePlacementDefaults(
         return false;
       }
     },
-    [client, onError],
+    [client, onError, onOrganise],
   );
   const set = useCallback((key: string, folderId: string) => write(key, folderId), [write]);
   const clear = useCallback((key: string) => write(key, null), [write]);

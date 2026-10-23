@@ -132,6 +132,13 @@ export function HomePane({ onOpenNav, hero }: { onOpenNav?: () => void; hero: bo
   );
   const empty = !recent.loading && recent.items.length === 0 && localOpened.length === 0;
   const { firstRun } = useFirstRun();
+  // A failed read of Jump Back In says so, with Try again, never "nothing yet".
+  const failed = !recent.loading && recent.error;
+  const retry = () => {
+    onHome?.('Loaded', 'Retry');
+    recent.retry();
+    shared.retry();
+  };
 
   // A first run (the host's welcome, and nothing the person can open yet): starting points in place of the lists.
   if (firstRun)
@@ -164,12 +171,22 @@ export function HomePane({ onOpenNav, hero }: { onOpenNav?: () => void; hero: bo
           title={HOME_COPY.jumpBackIn}
           busy={recent.loading}
           link={
-            wide && !recent.loading && !empty
+            wide && !recent.loading && !empty && !failed
               ? { view: { kind: 'recent' }, label: HOME_COPY.seeMore }
               : undefined
           }
         >
-          {!wide ? (
+          {failed ? (
+            <div
+              role="alert"
+              className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-200"
+            >
+              Couldn’t load Home.{' '}
+              <button type="button" className="font-semibold underline" onClick={retry}>
+                Try again
+              </button>
+            </div>
+          ) : !wide ? (
             recent.loading ? (
               <StripSkeleton />
             ) : (

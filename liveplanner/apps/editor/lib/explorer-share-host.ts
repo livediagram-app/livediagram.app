@@ -47,6 +47,8 @@ export const trackShare: ShareTelemetry = (action, type) => {
       return track('UI', 'Started', type);
     case 'Ended':
       return track('UI', 'Ended', type);
+    case 'Shared':
+      return track('Project', 'Shared', type);
   }
 };
 

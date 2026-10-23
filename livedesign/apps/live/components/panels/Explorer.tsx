@@ -3,6 +3,7 @@
 import { explorerHref } from '@/lib/explorer-redirect';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { ExplorerPanel, explorerPath } from '@liveworkspace/explorer';
+import { trackOrganise } from '@/lib/explorer-organise';
 import type { Item } from '@liveworkspace/index-client';
 import Link from 'next/link';
 import { ProductNavLinks } from '@livedesign/ui';
@@ -158,6 +159,7 @@ function ExplorerImpl({
         // The Library section: the Image Gallery over this app's API.
         {...explorerLibrary}
         onCreateTeam={onCreateTeam}
+        onOrganise={trackOrganise}
         // Side by side in a desktop popover; chips over the pane on a phone and in the corner panel that stands
         // beside the new-design wizard and the status screens, which must stay narrow or it covers their card.
         layout={sheet ? 'sheet' : isMobile || !asPopover ? 'stacked' : 'side'}

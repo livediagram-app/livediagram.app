@@ -22,7 +22,7 @@ import {
 import { useFolderStore } from '../data/useFolders';
 import { useExplorer } from '../explorer/context';
 import type { LensOption } from '../lens';
-import type { TeamRef } from '../types';
+import type { OrganiseTelemetry, TeamRef } from '../types';
 import { kindWords } from '../words';
 import { defaultEntries, destinationOf, type DefaultEntry } from './entries';
 import { usePlacementDefaults, type PlacementDefaultsStore } from './usePlacementDefaults';
@@ -267,6 +267,8 @@ export type DefaultFoldersSettingsProps = {
   teams?: readonly TeamRef[];
   // The host's template families, each an entry of its own (the Explorer's `lensTemplates`).
   templates?: readonly LensOption[];
+  // A folder made here, and a default set or cleared (OrganiseTelemetry), for the host's telemetry; stable.
+  onOrganise?: OrganiseTelemetry;
 };
 
 const NO_TEAMS: readonly TeamRef[] = [];
@@ -286,10 +288,11 @@ function DefaultFoldersSettingsInner({
   app,
   teams = NO_TEAMS,
   templates = NO_TEMPLATES,
+  onOrganise,
 }: DefaultFoldersSettingsProps) {
   const toast = useToast();
-  const folders = useFolderStore(client, toast.error, NOOP);
-  const defaults = usePlacementDefaults(client, toast.error);
+  const folders = useFolderStore(client, toast.error, NOOP, onOrganise);
+  const defaults = usePlacementDefaults(client, toast.error, onOrganise);
   const entries = useMemo(() => defaultEntries(app, kindWords(app), templates), [app, templates]);
   const lists = useMemo<Lists>(
     () => ({

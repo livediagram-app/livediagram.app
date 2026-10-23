@@ -10,6 +10,10 @@ import type { App, IndexClient, Item } from '@liveworkspace/index-client';
 import type { ItemOverlay, ItemPatch } from './overlay';
 import { failureText } from './errors';
 import type { ToastApi } from '../ui/Toasts';
+import type { OrganiseTelemetry } from '../types';
+
+// Whose Trash an item sits in, as Trash events report it.
+const trashOf = (item: { teamId: string | null }) => (item.teamId ? 'Team' : 'Personal');
 
 export type ItemActions = {
   rename: (item: Item, title: string) => Promise<boolean>;
@@ -39,6 +43,7 @@ export function createItemActions({
   onPlaced,
   onRenamed,
   placeName,
+  onOrganise,
 }: {
   client: IndexClient;
   overlay: ItemOverlay;
@@ -51,6 +56,8 @@ export function createItemActions({
   onRenamed?: (item: Item, title: string) => void;
   // A place's name for "moved to" ("My Work", a folder's, a team's). Without it, a move says nothing.
   placeName?: (to: { folderId: string | null; teamId: string | null }) => string;
+  // Trash and team-library events, once the index took the change (OrganiseTelemetry).
+  onOrganise?: OrganiseTelemetry;
 }): ItemActions {
   // Every toast names what it acted on.
   const named = (item: Item) => `“${item.title || 'Untitled'}”`;
@@ -113,6 +120,14 @@ export function createItemActions({
         () => client.updateItem(item.id, input),
         `Couldn’t move ${named(item)}. Try again.`,
       );
+      // Into a team, within or between teams, or out of one to My Work.
+      if (ok && (item.teamId || to.teamId)) {
+        onOrganise?.(
+          item.teamId === null ? 'Team·Added' : to.teamId === null ? 'Team·Removed' : 'Team·Moved',
+          null,
+          item.app,
+        );
+      }
       // Said with an Undo that moves it back, from Change Folder and a drop alike.
       if (ok && placeName) {
         toast.show(`Moved ${named(item)} to ${placeName(to)}.`, {
@@ -152,6 +167,7 @@ export function createItemActions({
         () => client.restoreItem(item.id),
         `Couldn’t restore ${named(item)}. It is still in the Trash.`,
       );
+      if (ok) onOrganise?.('Trash·Restored', trashOf(item), item.app);
       if (ok) toast.show(`${named(item)} restored.`, { tone: 'success' });
       return ok;
     },
@@ -162,7 +178,10 @@ export function createItemActions({
         () => client.deleteItem(item.id, { permanent: true }),
         `Couldn’t delete ${named(item)}. Try again.`,
       );
-      if (ok) toast.show(`${named(item)} deleted for good.`);
+      if (ok) {
+        onOrganise?.('Trash·Deleted', trashOf(item), item.app);
+        toast.show(`${named(item)} deleted for good.`);
+      }
       return ok;
     },
     duplicate: async (item, title) => {
@@ -189,6 +208,7 @@ export function createItemActions({
         if (teamId) query.team = teamId;
         if (app) query.app = app;
         const { purged } = await client.emptyTrash(query);
+        onOrganise?.('Trash·Cleared', teamId ? 'Team' : 'Personal', app ?? undefined);
         reloadLists();
         toast.show(purged === 1 ? 'Deleted 1 item for good.' : `Deleted ${purged} items for good.`);
         return true;
@@ -206,7 +226,17 @@ function sharedAccess(item: Item) {
 }
 
 export function useItemActions(deps: Parameters<typeof createItemActions>[0]): ItemActions {
-  const { client, overlay, toast, reloadLists, hostTrash, onPlaced, onRenamed, placeName } = deps;
+  const {
+    client,
+    overlay,
+    toast,
+    reloadLists,
+    hostTrash,
+    onPlaced,
+    onRenamed,
+    placeName,
+    onOrganise,
+  } = deps;
   return useMemo(
     () =>
       createItemActions({
@@ -218,7 +248,8 @@ export function useItemActions(deps: Parameters<typeof createItemActions>[0]): I
         onPlaced,
         onRenamed,
         placeName,
+        onOrganise,
       }),
-    [client, overlay, toast, reloadLists, hostTrash, onPlaced, onRenamed, placeName],
+    [client, overlay, toast, reloadLists, hostTrash, onPlaced, onRenamed, placeName, onOrganise],
   );
 }
