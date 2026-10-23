@@ -22,7 +22,7 @@ import {
 } from './participant-write';
 import type { PlanEnv } from './types';
 
-// How soon a Participant's answers reach D1 (blueprint SR9).
+// How soon a Participant's answers reach the plan's storage (blueprint SR9).
 export const ANSWERS_FLUSH_MS = 1500;
 // How many of one socket's writes may wait on the queue (blueprint SR12): far above a person's pace (the autosave
 // sends one op per changed element every 600 ms), and a crafted flood is refused rather than starving everyone.

@@ -131,8 +131,8 @@ function holds(
   return grant.tabScope === null || grant.tabScope === tabId;
 }
 
-// The gates every plan route runs. The owner and team arguments are what the D1 projects row used to answer;
-// the grant now carries the whole decision, so they are accepted and unused.
+// The gates every plan route runs. The grant carries the whole decision; the owner and team arguments are
+// accepted and unused.
 export async function gateRead(
   ctx: RouteContext,
   projectId: string,

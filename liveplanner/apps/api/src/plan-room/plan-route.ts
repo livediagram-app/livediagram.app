@@ -2,8 +2,7 @@
 // "Storage"). The worker resolves who is calling (accounts or guest token, API token, workbench session) and the
 // index's grant on the plan (routes/plan-grant.ts), runs the cross-cutting gates (rate limits, read-only tokens,
 // workbench confinement, body caps), then hands the request and that identity to the plan's room (`route` RPC).
-// The room rebuilds the RouteContext and runs the handlers against its own SQLite for content and D1 for
-// everything else; every access check (gateRead / gateEdit / gateParticipate) reads the grant.
+// The room rebuilds the RouteContext and runs the handlers against its own SQLite; every access check (gateRead / gateEdit / gateParticipate) reads the grant.
 
 import type { PlanRouteContext, RouteContext, WorkbenchContext } from '../routes/context';
 import { handleForms } from '../routes/forms';

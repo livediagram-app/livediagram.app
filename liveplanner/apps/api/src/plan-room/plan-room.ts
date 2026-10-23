@@ -81,8 +81,8 @@ import { answerPlanRequest, type RouteIdentity } from './plan-route';
 //   - The plan's content: tabs (with their stats), items, board columns, sheets and their cells, the changeset
 //     log, in its own SQLite (plan-schema.ts), which the content modules reach as `env.PLAN_DB`
 //     (plan-db.ts). Every API request about the plan runs here (`route`, plan-route.ts), so a save is one call
-//     to this object and one SQLite transaction, with no D1 round trip on its path. What D1's cross-plan reads
-//     need (the Inbox's index, the listing summary, saved_at) is pushed from the outbox on idle
+//     to this object and one SQLite transaction, with no other database on its path. What the index's cross-plan
+//     reads need (the Inbox, the listing summary, saved_at) is pushed from the outbox on idle
 //     (plan-outbox.ts).
 //   - The realtime room: connected WebSockets and their identity, presence, and the ordered op stream. It
 //     classifies each op by kind, orders mutations (seq within an epoch, kept in storage), rewrites comment
@@ -132,7 +132,7 @@ const MAX_MESSAGE_CHARS = 256 * 1024;
 
 // How many recent mutation ops the room keeps for reconnect catch-up
 // (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 1). A reconnecting client within this many ops of the
-// live tail replays the delta; further behind, it re-hydrates from D1.
+// live tail replays the delta; further behind, it re-hydrates from the plan's stored content.
 // Bounded so an idle-but-connected room can't grow the buffer without end;
 // the log lives in memory (like opRates) and resets on hibernation, which
 // only ever forces the safe path (a resync), never data loss.
@@ -151,7 +151,7 @@ const SHARE_LINK_CHANGED_CLOSE = 4003;
 // How long the outbox waits after a write before it pushes, the least gap between two pushes, and the retry after a
 // failed one: @liveworkspace/index-app's (outbox.ts), the same for every app's items.
 export { FLUSH_IDLE_MS, FLUSH_MIN_GAP_MS } from '@liveworkspace/index-app';
-// The plan's own daily upkeep: unreferenced sheets expire, old changesets go (both were D1 crons).
+// The plan's own daily upkeep: unreferenced sheets expire, old changesets go (both used to be crons).
 export const MAINTENANCE_EVERY_MS = 24 * 60 * 60 * 1000;
 const MAINTENANCE_KEY = 'maintenance-at';
 
@@ -224,7 +224,7 @@ export class PlanRoom extends DurableObject<Env> {
   private maintenanceAt: number | null = null;
 
   // The tab write queue (blueprint SR2): a Participant's writes, ONE AT A TIME per project. A Durable Object
-  // only serialises the synchronous parts of its handlers: while one write is awaiting D1, the runtime happily
+  // only serialises the synchronous parts of its handlers: while one write is awaiting storage, the runtime happily
   // starts the next request, and two read-modify-writes of the same row would race. In memory because a queue
   // only matters while requests are in flight; a hibernation wake has none.
   private tabWriteQueue: Promise<unknown> = Promise.resolve();
@@ -325,7 +325,7 @@ export class PlanRoom extends DurableObject<Env> {
 
   // ---------- The plan's content --------------------------------------------------------------------------
 
-  // After a wake: the plan id and anything the outbox still owes D1. Reads only; a plan with no schema yet
+  // After a wake: the plan id and anything the outbox still owes the index. Reads only; a plan with no schema yet
   // (an id nothing has written) stays without one.
   private restoreContentState(maintenanceAt: number | undefined): void {
     this.maintenanceAt = maintenanceAt ?? null;
@@ -362,7 +362,7 @@ export class PlanRoom extends DurableObject<Env> {
     }
   }
 
-  // A content write happened: push to D1 on idle, at most once a minute (plan-outbox.ts). Writes the drain
+  // A content write happened: push to the index on idle, at most once a minute (plan-outbox.ts). Writes the drain
   // itself makes (its outbox delete) schedule nothing.
   private noteWrite(): void {
     if (this.draining) return;
@@ -379,7 +379,7 @@ export class PlanRoom extends DurableObject<Env> {
     this.armAlarm();
   }
 
-  // Push what the outbox holds to D1 now. A failure keeps it and retries later.
+  // Push what the outbox holds to the index now. A failure keeps it and retries later.
   async drain(): Promise<void> {
     const env = this.roomEnv;
     const planId = this.planId;

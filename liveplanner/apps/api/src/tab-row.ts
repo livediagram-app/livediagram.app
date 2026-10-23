@@ -1,7 +1,7 @@
 import { migrateStoredTab, type Tab } from '@liveplanner/project';
 import type { TabDTO, TabSummaryDTO } from './types';
 
-// tabs row shape as read from D1. The `data` column is the
+// tabs row shape as read from the plan's SQLite. The `data` column is the
 // JSON-serialised Tab body, MINUS the `id` and `name` fields, which
 // live as real columns alongside the project link's `order_index` and
 // the tab's `updated_at`. The parser below reassembles the canonical
@@ -23,9 +23,9 @@ export type TabRow = {
   folder?: string | null;
 };
 
-// Pure mapper from D1 tab row to wire-format DTO. Pulled out of db.ts
+// Pure mapper from a tab row to wire-format DTO. Pulled out of db.ts
 // so the JSON.parse + camelCase reassembly contract has a test surface
-// of its own without dragging the rest of the D1 module along (same
+// of its own without dragging the rest of the storage module along (same
 // pattern as share-link-row.ts, folder-row.ts).
 //
 // Critical because every tab read in the editor passes through this:

@@ -500,7 +500,7 @@ function sheetRefsOfData(data: string): string[] {
   }
 }
 
-// Owe D1 a tab's derived rows again (plan-outbox.ts), for a D1 row made outside the plan that carries them: a new
+// Owe the index a tab's derived rows again (plan-outbox.ts), for a row made outside the tab that carries them: a new
 // form link takes its tab's name and heading from the next drain.
 export async function resendPlanTab(env: PlanEnv, tabId: string): Promise<void> {
   const rows = "SELECT plan_id, 'tab', tab_id FROM plan_tabs WHERE tab_id = ?1";
