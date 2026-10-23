@@ -21,6 +21,7 @@ Documents and folders a team holds are livediagram's own, tagged with the team's
 The api worker follows liveworkspace's team change feed (`GET /api/account/internal/teams/changes`, client-credentials) in `apps/api/src/db/team-sync.ts`:
 
 - **Every five minutes** (the `*/5 * * * *` cron), and **at once** when a caller's access token or API token carries a `teams` claim that differs from what this isolate last saw for them (`catchUpTeams`). The steady-state cost of that check is one Map lookup per request.
+- One run per isolate at a time: a caller arriving mid-run waits for it. That run may have read the feed before the caller's change was on it (they made or joined a team a moment ago), so when the mirror still differs from the claim afterwards, `catchUpTeams` reads the feed once more. At most two runs per new claim, so a claim the feed never matches costs no more than that.
 - A page of changes applies teams first, then members, then saves the cursor; at most 20 pages a run.
 - A deleted team goes through `deleteTeam`: its documents go back to whoever made them and its folders are dropped.
 - A member who joined is upserted (only if the team exists). A member who left, was removed or whose team went has their team work handed to an heir (`handTeamWorkToHeir`), is put out of the team's live rooms (`closeMemberTeamSessions`), and the row goes.

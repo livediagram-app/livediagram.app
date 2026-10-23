@@ -1,10 +1,11 @@
 import type { Page } from '@playwright/test';
+import { seedTeam } from '../accounts-stub';
 import { test, expect, expectNoPageErrors } from '../fixtures';
 import { freshUserId, installSession, type StubUser } from './session';
 
 // The Explorer sidebar on a deployment with sign-in (docs/specs/013-workspace/explorer-structure.md),
-// against the signed-in export: a signed-in member sees each team as a root folder and New Team
-// last; a signed-out visitor sees the sign-in nudge in New Team's place.
+// against the signed-in export: a signed-in member sees each team as a root folder and Manage Teams
+// last; a signed-out visitor sees the sign-in nudge in its place.
 
 test.use({ colorScheme: 'dark', viewport: { width: 1280, height: 800 } });
 
@@ -34,14 +35,16 @@ async function asMember(page: Page, userId: string, path: string, data: unknown)
   expect(res.ok(), `${path} failed: ${res.status()}`).toBe(true);
 }
 
-test('a signed-in member sees teams as root folders and New Team last', async ({
+test('a signed-in member sees teams as root folders and Manage Teams last', async ({
   page,
   pageErrors,
 }) => {
   const userId = freshUserId('sidebar');
   const team = crypto.randomUUID();
-  await asMember(page, userId, '/teams', { id: team, name: 'Design guild' });
-  await asMember(page, userId, '/teams', { id: crypto.randomUUID(), name: 'Platform' });
+  // Both teams are made on liveworkspace.app; the member's tokens name them, so the api picks them up.
+  const admin = { userId, email: member(userId).email };
+  await seedTeam(page.request, { id: team, name: 'Design guild', admin });
+  await seedTeam(page.request, { name: 'Platform', admin });
   await asMember(page, userId, '/folders', {
     id: crypto.randomUUID(),
     name: 'Roadmaps',
@@ -57,22 +60,25 @@ test('a signed-in member sees teams as root folders and New Team last', async ({
     'My Work',
     'Design guild',
     'Platform',
-    'New Team',
+    'Manage Teams',
   ]);
   await expect(nav(page).getByRole('link', { name: /Sign in to access Teams/ })).toHaveCount(0);
 
-  // A team with folders expands to them; New Team opens the form.
+  // A team with folders expands to them; Manage Teams goes to liveworkspace.app, where teams are made.
   const guild = nav(page).getByRole('treeitem', { name: 'Design guild' });
   await expect(guild).toHaveAttribute('aria-expanded', 'false');
   await guild.focus();
   await page.keyboard.press('ArrowRight');
   await expect(nav(page).getByRole('treeitem', { name: 'Roadmaps' })).toBeVisible();
-  await nav(page).getByRole('treeitem', { name: 'New Team' }).click();
-  await expect(page.getByRole('dialog', { name: /New Team/i })).toBeVisible();
+  await page.route('https://liveworkspace.app/account/teams', (route) =>
+    route.fulfill({ contentType: 'text/html', body: '<title>Teams</title>' }),
+  );
+  await nav(page).getByRole('treeitem', { name: 'Manage Teams' }).click();
+  await expect(page).toHaveURL('https://liveworkspace.app/account/teams');
   expectNoPageErrors(pageErrors);
 });
 
-test('a signed-out visitor sees the sign-in nudge instead of New Team', async ({
+test('a signed-out visitor sees the sign-in nudge instead of Manage Teams', async ({
   page,
   pageErrors,
 }) => {

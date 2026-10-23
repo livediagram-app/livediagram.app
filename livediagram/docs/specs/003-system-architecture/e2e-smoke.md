@@ -39,11 +39,11 @@ pull request never queues two runs of the suite.
 It runs **every** spec file in `apps/editor/e2e/` (bar the opt-in Drive, perf and WebKit projects),
 spread over parallel jobs so the wall time is the slowest job, not the sum:
 
-| Job                 | Builds                                           | Runs                                                                      |
-| ------------------- | ------------------------------------------------ | ------------------------------------------------------------------------- |
-| **Smoke shard i/6** | live                                             | `test:e2e:smoke --shard=i/6`: a sixth of the `chromium` project's tests   |
-| **Sites audit**     | live, help, telemetry, community, then marketing | `test:e2e:sites`: the `sites` project, `optical-audit-sites.spec.ts`      |
-| **Signed-in specs** | live with sign-in on (`build:signed-in`)         | the `signed-in` project ([Signed-in specs](#signed-in-specs))             |
+| Job                 | Builds                                           | Runs                                                                    |
+| ------------------- | ------------------------------------------------ | ----------------------------------------------------------------------- |
+| **Smoke shard i/6** | live                                             | `test:e2e:smoke --shard=i/6`: a sixth of the `chromium` project's tests |
+| **Sites audit**     | live, help, telemetry, community, then marketing | `test:e2e:sites`: the `sites` project, `optical-audit-sites.spec.ts`    |
+| **Signed-in specs** | live with sign-in on (`build:signed-in`)         | the `signed-in` project ([Signed-in specs](#signed-in-specs))           |
 
 Only the sites audit opens help, telemetry, the Community and marketing, so only its job pays for their builds. Marketing builds after the
 others, as `turbo.json` orders it: its licences page runs Next's analyzer in each other app on that
@@ -190,6 +190,27 @@ token with that issuer and audience for any test account on `/e2e/token?sub=user
 `installSession` hands the bridge. So a stub account is a real verified account to the api and the
 realtime room, and two or three stub browsers can collaborate in one document. A test that changes an
 account's synced settings takes a fresh id (`freshUserId`), since the stack's D1 outlives a test. `e2e.yml` builds and runs them in their own job, beside the smoke shards.
+
+Teams and API tokens are the liveworkspace account's, so the stand-in keeps them too, in memory, as
+liveworkspace.app does. The api worker is started with a test client (`ACCOUNTS_CLIENT_ID`,
+`ACCOUNTS_CLIENT_SECRET`) and calls the stand-in's account API with it, as it calls the real one:
+
+- `GET /e2e/accounts/api/account/internal/teams/changes?cursor=…`: the teams change feed, every team
+  and member changed after the cursor. Feed positions start at the stack's boot time, so a cursor the
+  D1 kept from an earlier run never sits ahead of the feed.
+- `POST …/tokens/verify`, `…/tokens`, `…/tokens/revoke`, `…/tokens/live`: an `lwt_` token checked,
+  made for an access token, revoked by itself, and asked after by the token sweep.
+
+An access token from `/e2e/token` carries the account's `teams` claim as it stands when the token is
+minted, so a request naming a team the api hasn't seen catches the api's copy up at once
+(`catchUpTeams`), as in production.
+
+A spec does what a person does on liveworkspace.app through the stand-in's test-only seeding routes,
+wrapped by `e2e/accounts-stub.ts`: `POST /e2e/accounts/__seed/team` (a team and its admin),
+`…/__seed/member` (someone joining) and `…/__seed/token` (an API token; its `secret` is the `lwt_…` a
+CLI or agent sends). A spec makes the team before minting the token its requests send, so that token
+names the team. Making a team, inviting and making tokens in livediagram's own UI are gone (they
+link to liveworkspace.app), so no spec covers them here.
 
 The sign-in round trip itself (`/api/auth/*` against the accounts Worker) is covered by the api's unit
 tests (`apps/api/src/routes/auth.test.ts`), not here.

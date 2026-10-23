@@ -8,7 +8,7 @@ test.use({ colorScheme: 'dark' });
 
 test('the account menu walks by keyboard and returns focus', async ({ page, pageErrors }) => {
   await installSession(page, {
-    id: freshUserId('menu-keys'),
+    id: freshUserId('menukeys'),
     firstName: 'Ariel',
     lastName: 'Keys',
     email: 'ariel@example.com',

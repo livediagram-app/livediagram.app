@@ -1,4 +1,5 @@
 import type { Page } from '@playwright/test';
+import { seedTeam } from '../accounts-stub';
 import { expect, test } from '../fixtures';
 import { freshUserId, installSession, type StubUser } from './session';
 
@@ -7,7 +8,8 @@ import { freshUserId, installSession, type StubUser } from './session';
 // the document there in the one create, with no follow-up placement request, and a refused
 // placement shows its own card instead of a document filed somewhere else.
 
-const NEW_EDITOR = /\/document\/[0-9a-f-]{36}$/;
+// The editor adds the open tab as a fragment (#t=...).
+const NEW_EDITOR = /\/document\/[0-9a-f-]{36}(#.*)?$/;
 
 function stubUser(id: string): StubUser {
   return {
@@ -39,12 +41,15 @@ function placementRequests(page: Page): string[] {
 
 test('a create into a team folder lands there in one write', async ({ page, baseURL }) => {
   const userId = freshUserId('placer');
-  const headers = await signedIn(page, baseURL!, userId);
   const teamId = crypto.randomUUID();
   const folderId = crypto.randomUUID();
-  expect(
-    (await page.request.post('/api/teams', { headers, data: { id: teamId, name: 'Atlas' } })).ok(),
-  ).toBe(true);
+  // The team is made on liveworkspace.app before the session, so its access token names the team.
+  await seedTeam(page.request, {
+    id: teamId,
+    name: 'Atlas',
+    admin: { userId, email: stubUser(userId).email },
+  });
+  const headers = await signedIn(page, baseURL!, userId);
   expect(
     (
       await page.request.post('/api/folders', {
@@ -57,7 +62,7 @@ test('a create into a team folder lands there in one write', async ({ page, base
 
   await page.goto(`/new?blank=1&team=${teamId}&folder=${folderId}`);
   await expect(page).toHaveURL(NEW_EDITOR, { timeout: 20_000 });
-  const documentId = page.url().split('/').pop()!;
+  const documentId = new URL(page.url()).pathname.split('/').pop()!;
 
   const library = (await (
     await page.request.get(`/api/teams/${teamId}/library`, { headers })

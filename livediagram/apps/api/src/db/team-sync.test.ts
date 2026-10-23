@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest';
 import type { MemberChange, TeamChange, TeamChanges } from '@liveworkspace/auth-client';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { catchUpTeams, syncTeams } from './team-sync';
@@ -138,6 +138,33 @@ describe('catchUpTeams', () => {
     // The same claim again, in this isolate: no read, no query.
     await catchUpTeams(db.env, CREDENTIALS, 'user_ada', claim);
     expect(asked).toHaveLength(1);
+  });
+
+  // The cron's run read the feed just before Eve made her team; her request, waiting on that run,
+  // reads the feed again rather than going on without the team.
+  it('reads the feed again when a run already under way missed the change', async () => {
+    let release!: () => void;
+    const gate = new Promise<void>((resolve) => (release = resolve));
+    const feed = globalThis.fetch;
+    onTestFinished(() => void vi.stubGlobal('fetch', feed));
+    vi.stubGlobal('fetch', async (input: string) => {
+      asked.push(new URL(input).searchParams.get('cursor'));
+      if (asked.length === 1) {
+        await gate;
+        return Response.json(page([], [], 'a'));
+      }
+      return Response.json(
+        page([team('team1')], [member('m1', 'user_eve', { role: 'admin' })], 'b'),
+      );
+    });
+    const cron = syncTeams(db.env, CREDENTIALS);
+    const caughtUp = catchUpTeams(db.env, CREDENTIALS, 'user_eve', [
+      { id: 'team1', name: 'Design', role: 'admin' },
+    ]);
+    release();
+    await Promise.all([cron, caughtUp]);
+    expect(membersOf('team1')).toHaveLength(1);
+    expect(asked).toEqual([null, 'a']);
   });
 
   it('leaves a matching copy alone', async () => {

@@ -7,6 +7,7 @@ import { readFileSync } from 'node:fs';
 import { createServer, type Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import type { APIRequestContext, BrowserContext, Page } from '@playwright/test';
+import { seedToken } from './accounts-stub';
 
 const FAKE_WORKBENCH_HTML = readFileSync(
   new URL('./fixtures/fake-workbench.html', import.meta.url),
@@ -133,11 +134,13 @@ export async function seedDocumentAndToken(
     ],
   });
   if (created.status >= 300) throw new Error(`creating the document failed: ${created.status}`);
-  const token = await apiJson<{ token: string }>(request, 'POST', '/tokens', person.jwt, {
+  // The CLI's API token, made on liveworkspace.app (the stack's accounts stand-in).
+  const token = await seedToken(request, {
+    userId: person.userId,
+    email: `${person.userId}@example.test`,
     name: 'livediagram CLI',
   });
-  if (token.status >= 300) throw new Error(`creating the token failed: ${token.status}`);
-  return { documentId, tabId, token: token.body.token };
+  return { documentId, tabId, token: token.secret };
 }
 
 // `livediagram workbench open`: POST /api/workbench/tickets with the token.

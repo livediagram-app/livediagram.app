@@ -1,4 +1,5 @@
 import type { Page } from '@playwright/test';
+import { seedTeam } from '../accounts-stub';
 import { test, expect, expectNoPageErrors } from '../fixtures';
 import { freshUserId, installSession, type StubUser } from './session';
 
@@ -27,11 +28,16 @@ async function asMember(page: Page, userId: string, path: string, data: unknown)
   expect(res.ok(), `${path} failed: ${res.status()}`).toBe(true);
 }
 
-async function seedTeam(page: Page, userId: string) {
+async function seedTeamWork(page: Page, userId: string) {
   const team = crypto.randomUUID();
   const folder = crypto.randomUUID();
   const tabs = () => [{ id: crypto.randomUUID(), name: 'Tab 1', elements: [] }];
-  await asMember(page, userId, '/teams', { id: team, name: 'Design guild' });
+  // Made on liveworkspace.app; the member's next token names it, so the api picks it up.
+  await seedTeam(page.request, {
+    id: team,
+    name: 'Design guild',
+    admin: { userId, email: member(userId).email },
+  });
   await asMember(page, userId, '/folders', { id: folder, name: 'Roadmaps', teamId: team });
   const doc = (name: string, extra: Record<string, unknown>) =>
     asMember(page, userId, '/documents', {
@@ -57,7 +63,7 @@ test('a team root lists its documents, and its lens reaches its folders', async 
   pageErrors,
 }) => {
   const userId = freshUserId('filters');
-  const { team } = await seedTeam(page, userId);
+  const { team } = await seedTeamWork(page, userId);
   await installSession(page, member(userId));
   await page.goto(`/explorer/team?id=${team}`);
   await expect(docLink(page, 'Team charter')).toBeVisible({ timeout: 30_000 });
@@ -85,7 +91,7 @@ test('Search results names a team in the Space chip, its pill by name', async ({
   pageErrors,
 }) => {
   const userId = freshUserId('filters');
-  const { team } = await seedTeam(page, userId);
+  const { team } = await seedTeamWork(page, userId);
   await installSession(page, member(userId));
   await page.goto('/explorer/search');
   await expect(docLink(page, 'My own notes')).toBeVisible({ timeout: 30_000 });

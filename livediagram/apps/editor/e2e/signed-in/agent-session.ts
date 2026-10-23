@@ -1,4 +1,5 @@
 import type { Page } from '@playwright/test';
+import { seedToken } from '../accounts-stub';
 import { expect } from '../fixtures';
 import type { StubUser } from './session';
 
@@ -51,12 +52,12 @@ export async function arrange(page: Page, baseURL: string, userId: string): Prom
     },
   });
   expect(created.ok()).toBe(true);
-  const minted = await page.request.post('/api/tokens', {
-    headers: session,
-    data: { name: 'agent' },
+  // The agent's API token, made on liveworkspace.app.
+  const { secret: token } = await seedToken(page.request, {
+    userId,
+    email: WEBBER.email,
+    name: 'agent',
   });
-  expect(minted.ok()).toBe(true);
-  const { token } = (await minted.json()) as { token: string };
   return { id, tabId, token, session };
 }
 

@@ -1,4 +1,5 @@
 import type { Page } from '@playwright/test';
+import { seedMember, seedTeam } from '../accounts-stub';
 import { test, expect, expectNoPageErrors } from '../fixtures';
 import { freshUserId, installSession, type StubUser } from './session';
 
@@ -43,11 +44,14 @@ test('a teammate’s work on a team document reaches Home, named and placed', as
   const ann = freshUserId('ann');
   const bob = freshUserId('bob');
   const team = crypto.randomUUID();
-  await api(page, ann, 'POST', '/teams', { id: team, name: 'Platform team' });
-  const link = (await (await api(page, ann, 'POST', `/teams/${team}/invite-link`)).json()) as {
-    inviteLink: { token: string };
-  };
-  await api(page, bob, 'POST', `/teams/invite-link/${link.inviteLink.token}/join`);
+  // Ann makes the team on liveworkspace.app and Bob joins it there; each api call below mints a fresh
+  // token, which names the team, so the api catches its copy of the team up on the first one.
+  await seedTeam(page.request, {
+    id: team,
+    name: 'Platform team',
+    admin: { userId: ann, email: member(ann, 'Ann').email },
+  });
+  await seedMember(page.request, { teamId: team, userId: bob, email: member(bob, 'Bob').email });
   await api(page, bob, 'PUT', `/participants/${bob}`, { name: 'Bob', color: '#f59e0b' });
 
   const doc = crypto.randomUUID();

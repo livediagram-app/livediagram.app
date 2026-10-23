@@ -17,7 +17,7 @@
 // live port. SIGINT/SIGTERM tears the whole tree down.
 
 import { spawn } from 'node:child_process';
-import { generateKeyPairSync, randomUUID, sign } from 'node:crypto';
+import { generateKeyPairSync, randomBytes, randomUUID, sign, verify } from 'node:crypto';
 import http from 'node:http';
 import net from 'node:net';
 import {
@@ -136,8 +136,12 @@ const DRIVE_E2E_VARS = {
 //                    (docs/specs/003-system-architecture/e2e-smoke.md): a key made at boot, its JWKS
 //                    on the issuer's own path (/e2e/accounts/api/auth/jwks) for the api worker to
 //                    verify against, and /e2e/token?sub=<id> minting an access token for any test
-//                    account, with the issuer and audience the api expects. Test-only: nothing
-//                    outside this stack trusts the key.
+//                    account, with the issuer and audience the api expects, and its teams claim.
+//                    It also answers the account API the api calls with its client credentials
+//                    (/api/account/internal: the teams change feed and the API token routes) from
+//                    its own records, which the signed-in specs fill through /e2e/accounts/__seed/*
+//                    (e2e/accounts-stub.ts). Test-only: nothing outside this stack trusts the key
+//                    or the records.
 //   E2E_WORKBENCH=1  the workbench embed e2e (docs/specs/013-workspace/blueprints/workbench-embeds.md,
 //                    "Testing"): the stack acts as the accounts Worker as under E2E_ACCOUNTS_STUB,
 //                    for the signed-in pairing page and the api calls the CLI makes, and the api
@@ -159,7 +163,198 @@ const API_RESOURCE = 'https://e2e.livediagram.test/api';
 
 const b64url = (buf) => Buffer.from(buf).toString('base64url');
 
-// An RS256 access token shaped like the accounts Worker's: sub, email (verified), iss, aud.
+// The client the api worker is started with (below), as register-client.ts would make it.
+const ACCOUNTS_CLIENT = { id: 'e2e-livediagram', secret: 'e2e-client-secret' };
+
+// The stand-in's records, as liveworkspace.app keeps them (liveworkspace/docs/accounts.md "Teams" and
+// "API tokens"). Every team and member carries the feed position of its last change, so the change
+// feed is "everything after the cursor" and the api follows it as it follows the real one. Positions
+// start at the boot time: the api's D1 keeps its cursor from an earlier run of the stack, and a feed
+// that started again at 0 would sit behind it.
+const accountsRecords = {
+  seq: Date.now(),
+  teams: new Map(),
+  members: new Map(),
+  tokens: new Map(),
+};
+
+// The teams an account is in, ordered by team id, as liveworkspace puts them in a token.
+function teamsClaim(userId) {
+  const claim = [];
+  for (const m of accountsRecords.members.values()) {
+    if (m.userId !== userId || m.status !== 'joined') continue;
+    const team = accountsRecords.teams.get(m.teamId);
+    if (team && !team.deleted) claim.push({ id: team.id, name: team.name, role: m.role });
+  }
+  return claim.sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+}
+
+function seedTeam({ id = randomUUID(), name, admin }) {
+  const at = Date.now();
+  const team = {
+    id,
+    name,
+    deleted: false,
+    createdAt: at,
+    updatedAt: at,
+    seq: ++accountsRecords.seq,
+  };
+  accountsRecords.teams.set(id, team);
+  if (admin) seedMember({ teamId: id, userId: admin.userId, email: admin.email, role: 'admin' });
+  return team;
+}
+
+// A member joining (or, with another status, leaving) a team. The same person in the same team keeps
+// their member id, as on liveworkspace.app.
+function seedMember({ teamId, userId = null, email, role = 'member', status = 'joined' }) {
+  const at = Date.now();
+  const existing = [...accountsRecords.members.values()].find(
+    (m) => m.teamId === teamId && (m.email === email || (userId && m.userId === userId)),
+  );
+  const member = {
+    id: existing?.id ?? randomUUID(),
+    teamId,
+    userId,
+    email,
+    role,
+    status,
+    createdAt: existing?.createdAt ?? at,
+    updatedAt: at,
+    seq: ++accountsRecords.seq,
+  };
+  accountsRecords.members.set(member.id, member);
+  return member;
+}
+
+function seedToken({ userId, email = null, name = 'API token', readOnly = false }) {
+  const secret = `lwt_${b64url(randomBytes(32))}`;
+  const token = {
+    id: randomUUID(),
+    userId,
+    email,
+    name,
+    readOnly,
+    expiresAt: Date.now() + 90 * 24 * 3600 * 1000,
+    revoked: false,
+  };
+  accountsRecords.tokens.set(secret, token);
+  return { id: token.id, name, readOnly, expiresAt: token.expiresAt, secret };
+}
+
+// The claims of an access token this stack minted and that hasn't expired, or null.
+function accessTokenClaims(jwt) {
+  const [header, payload, signature] = String(jwt ?? '').split('.');
+  if (!signature) return null;
+  const signed = verify(
+    'sha256',
+    Buffer.from(`${header}.${payload}`),
+    accountsKey.publicKey,
+    Buffer.from(signature, 'base64url'),
+  );
+  if (!signed) return null;
+  const claims = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8'));
+  return claims.exp * 1000 > Date.now() ? claims : null;
+}
+
+function readJson(req) {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    req.on('data', (c) => chunks.push(c));
+    req.on('end', () => {
+      try {
+        resolve(chunks.length ? JSON.parse(Buffer.concat(chunks).toString('utf8')) : {});
+      } catch (err) {
+        reject(err);
+      }
+    });
+    req.on('error', reject);
+  });
+}
+
+function sendJson(res, status, body) {
+  res.writeHead(status, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
+  res.end(body === undefined ? '' : JSON.stringify(body));
+}
+
+const withoutSeq = ({ seq: _seq, ...record }) => record;
+
+// The account API (packages/auth-client/src/account.ts), behind the client's Basic credentials.
+async function answerAccountApi(req, route, url, res) {
+  const expected = `Basic ${btoa(`${ACCOUNTS_CLIENT.id}:${ACCOUNTS_CLIENT.secret}`)}`;
+  if (req.headers.authorization !== expected)
+    return sendJson(res, 401, { error: 'invalid_client' });
+  if (req.method === 'GET' && route === '/teams/changes') {
+    const after = Number(url.searchParams.get('cursor') ?? 0) || 0;
+    const since = (records) =>
+      [...records.values()].filter((r) => r.seq > after).sort((a, b) => a.seq - b.seq);
+    const teams = since(accountsRecords.teams);
+    const members = since(accountsRecords.members);
+    const last = Math.max(after, ...teams.map((t) => t.seq), ...members.map((m) => m.seq));
+    return sendJson(res, 200, {
+      teams: teams.map(withoutSeq),
+      members: members.map(withoutSeq),
+      cursor: String(last),
+      more: false,
+    });
+  }
+  if (req.method !== 'POST') return sendJson(res, 404, { error: 'not_found' });
+  const body = await readJson(req);
+  if (route === '/tokens/verify') {
+    const token = accountsRecords.tokens.get(body.token);
+    if (!token || token.revoked || token.expiresAt <= Date.now()) {
+      return sendJson(res, 404, { error: 'unknown_token' });
+    }
+    return sendJson(res, 200, {
+      tokenId: token.id,
+      userId: token.userId,
+      name: token.name,
+      email: token.email,
+      readOnly: token.readOnly,
+      expiresAt: token.expiresAt,
+      teams: teamsClaim(token.userId),
+    });
+  }
+  if (route === '/tokens') {
+    const claims = accessTokenClaims(body.accessToken);
+    if (!claims) return sendJson(res, 401, { error: 'invalid_token' });
+    const minted = seedToken({
+      userId: claims.sub,
+      email: claims.email ?? null,
+      name: body.name,
+      readOnly: Boolean(body.readOnly),
+    });
+    return sendJson(res, 201, minted);
+  }
+  if (route === '/tokens/revoke') {
+    const token = accountsRecords.tokens.get(body.token);
+    if (!token || token.revoked) return sendJson(res, 404, { error: 'unknown_token' });
+    token.revoked = true;
+    return sendJson(res, 204);
+  }
+  if (route === '/tokens/live') {
+    const live = new Set(
+      [...accountsRecords.tokens.values()]
+        .filter((t) => !t.revoked && t.expiresAt > Date.now())
+        .map((t) => t.id),
+    );
+    return sendJson(res, 200, { live: (body.ids ?? []).filter((id) => live.has(id)) });
+  }
+  return sendJson(res, 404, { error: 'not_found' });
+}
+
+// The specs' own way in (e2e/accounts-stub.ts): what a person does on liveworkspace.app (making a
+// team, joining one, making an API token), done to the records directly.
+async function answerSeed(req, route, res) {
+  if (req.method !== 'POST') return sendJson(res, 405, { error: 'method_not_allowed' });
+  const body = await readJson(req);
+  if (route === 'team') return sendJson(res, 200, withoutSeq(seedTeam(body)));
+  if (route === 'member') return sendJson(res, 200, withoutSeq(seedMember(body)));
+  if (route === 'token') return sendJson(res, 200, seedToken(body));
+  return sendJson(res, 404, { error: 'not_found' });
+}
+
+// An RS256 access token shaped like the accounts Worker's: sub, email (verified), iss, aud, and the
+// teams the account is in at the moment it is minted.
 function mintAccessToken(sub, email) {
   const now = Math.floor(Date.now() / 1000);
   const header = b64url(JSON.stringify({ alg: 'RS256', kid: ACCOUNTS_KID, typ: 'JWT' }));
@@ -172,15 +367,28 @@ function mintAccessToken(sub, email) {
       nbf: now - 5,
       exp: now + 3600,
       ...(email ? { email, email_verified: true } : {}),
+      teams: teamsClaim(sub),
     }),
   );
   const signature = sign('sha256', Buffer.from(`${header}.${payload}`), accountsKey.privateKey);
   return `${header}.${payload}.${b64url(signature)}`;
 }
 
-// Answers the two accounts stand-in routes, or returns false for anything else.
-function serveAccountsStandIn(pathname, url, res) {
+// Answers the accounts stand-in's routes, or returns false for anything else.
+function serveAccountsStandIn(req, pathname, url, res) {
   if (!ACCOUNTS_STUB) return false;
+  const internal = `${ACCOUNTS_PATH}/api/account/internal`;
+  const seed = `${ACCOUNTS_PATH}/__seed/`;
+  if (pathname.startsWith(internal) || pathname.startsWith(seed)) {
+    const answer = pathname.startsWith(internal)
+      ? answerAccountApi(req, pathname.slice(internal.length), url, res)
+      : answerSeed(req, pathname.slice(seed.length), res);
+    answer.catch((err) => {
+      console.error('[e2e] accounts stand-in failed', err);
+      if (!res.headersSent) sendJson(res, 500, { error: 'stand_in_failed' });
+    });
+    return true;
+  }
   if (pathname === `${ACCOUNTS_PATH}/api/auth/jwks`) {
     const jwk = accountsKey.publicKey.export({ format: 'jwk' });
     res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -531,7 +739,7 @@ function startLiveServer() {
       });
       return;
     }
-    if (serveAccountsStandIn(pathname, new URL(req.url, 'http://localhost'), res)) return;
+    if (serveAccountsStandIn(req, pathname, new URL(req.url, 'http://localhost'), res)) return;
     if (pathname === '/__e2e/assets-out-of-cache' && req.method === 'POST') {
       res.writeHead(204, {
         'Cache-Control': 'no-store',
@@ -624,7 +832,9 @@ function startMarketingServer() {
 // --- Boot ---------------------------------------------------------------
 async function main() {
   if (!existsSync(OUT_DIR)) {
-    console.error(`[e2e] ${OUT_DIR} missing — run \`pnpm --filter @livediagram/editor build\` first`);
+    console.error(
+      `[e2e] ${OUT_DIR} missing — run \`pnpm --filter @livediagram/editor build\` first`,
+    );
     process.exit(1);
   }
   if (EDITOR_ONLY) {
@@ -679,6 +889,10 @@ async function main() {
             `ACCOUNTS_URL:http://127.0.0.1:${EDITOR_PORT}${ACCOUNTS_PATH}`,
             '--var',
             `API_RESOURCE:${API_RESOURCE}`,
+            '--var',
+            `ACCOUNTS_CLIENT_ID:${ACCOUNTS_CLIENT.id}`,
+            '--var',
+            `ACCOUNTS_CLIENT_SECRET:${ACCOUNTS_CLIENT.secret}`,
           ]
         : []),
       ...(WORKBENCH ? ['--var', `APP_BASE_URL:http://localhost:${EDITOR_PORT}`] : []),

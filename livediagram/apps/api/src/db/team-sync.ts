@@ -152,14 +152,19 @@ export async function catchUpTeams(
   const last = seen.get(userId);
   if (last && sameClaim(last, claim)) return;
   try {
-    const { results } = await env.DB.prepare(
-      `SELECT t.id, t.name, m.role FROM teams t
-         JOIN team_members m ON m.team_id = t.id AND m.user_id = ? AND m.status = 'joined'
-         ORDER BY t.id`,
-    )
-      .bind(userId)
-      .all<TeamClaim>();
-    if (!sameClaim(results ?? [], claim)) {
+    const mirror = async () =>
+      (
+        await env.DB.prepare(
+          `SELECT t.id, t.name, m.role FROM teams t
+             JOIN team_members m ON m.team_id = t.id AND m.user_id = ? AND m.status = 'joined'
+             ORDER BY t.id`,
+        )
+          .bind(userId)
+          .all<TeamClaim>()
+      ).results ?? [];
+    // Joining a run already under way can miss this caller's change, if that run read the feed
+    // before the change was on it: a second run, after it, reads the feed again. Two at most.
+    for (let run = 0; run < 2 && !sameClaim(await mirror(), claim); run++) {
       const applied = await syncTeams(env, credentials, ctx);
       console.info('[team-sync] caught up on a claim', { applied });
     }

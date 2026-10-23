@@ -1,4 +1,5 @@
 import type { Page } from '@playwright/test';
+import { seedTeam } from '../accounts-stub';
 import { expect, expectNoPageErrors, test, untilHydrated } from '../fixtures';
 import { freshUserId, installSession, type StubUser } from './session';
 
@@ -34,12 +35,16 @@ test('a team folder becomes a member’s default, and new boards land in it', as
 }) => {
   await page.emulateMedia({ colorScheme: 'dark' });
   await page.setViewportSize({ width: 1280, height: 800 });
-  const headers = await signedIn(page, baseURL!, freshUserId('defaults'));
+  const userId = freshUserId('defaults');
   const teamId = crypto.randomUUID();
   const folderId = crypto.randomUUID();
-  expect(
-    (await page.request.post('/api/teams', { headers, data: { id: teamId, name: 'Atlas' } })).ok(),
-  ).toBe(true);
+  // The team is made on liveworkspace.app before the session, so its access token names the team.
+  await seedTeam(page.request, {
+    id: teamId,
+    name: 'Atlas',
+    admin: { userId, email: stubUser(userId).email },
+  });
+  const headers = await signedIn(page, baseURL!, userId);
   expect(
     (
       await page.request.post('/api/folders', {
