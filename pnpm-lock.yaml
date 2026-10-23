@@ -5346,6 +5346,9 @@ importers:
       '@liveplanner/icons':
         specifier: workspace:*
         version: link:../../../liveplanner/packages/icons
+      '@liveplanner/items':
+        specifier: workspace:*
+        version: link:../../../liveplanner/packages/items
       '@liveplanner/ui':
         specifier: workspace:*
         version: link:../../../liveplanner/packages/ui

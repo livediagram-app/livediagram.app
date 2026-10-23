@@ -51,6 +51,7 @@ import {
   workspaceToken,
   type WorkspaceIdentity,
 } from '@/lib/explorer/token';
+import { inboxHost } from '@/lib/explorer/inbox';
 import { prefetchPreview, renderPreview } from '@/lib/explorer/previews';
 import { loadWelcome } from '@/lib/explorer/welcome';
 import { ExplorerHeader } from './ExplorerHeader';
@@ -252,6 +253,7 @@ export function ExplorerShell() {
           signedIn={signedIn}
           signInHref={signInHref(pathname || '/explorer')}
           arrivalNotice={notice}
+          inbox={inboxHost}
         />
       ) : (
         <>

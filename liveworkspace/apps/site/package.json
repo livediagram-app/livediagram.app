@@ -25,6 +25,7 @@
     "@liveplanner/api-schema": "workspace:*",
     "@liveplanner/forms": "workspace:*",
     "@liveplanner/icons": "workspace:*",
+    "@liveplanner/items": "workspace:*",
     "@liveplanner/ui": "workspace:*",
     "@liveworkspace/explorer": "workspace:*",
     "@liveworkspace/index-client": "workspace:*",
