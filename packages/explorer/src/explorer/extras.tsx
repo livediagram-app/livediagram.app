@@ -57,6 +57,9 @@ export type ExtrasProps = {
 // The exit's length (the row's slide-row-out).
 export const SLIDE_OUT_MS = 160;
 
+// Items whose snapshot was asked for, kept for the page; past this the record starts again.
+const PREFETCHED_MAX = 5000;
+
 const Ctx = createContext<ExplorerExtras | null>(null);
 
 const NO_LEAVING: ReadonlySet<string> = new Set();
@@ -124,6 +127,18 @@ export function ExtrasProvider({
       }, SLIDE_OUT_MS),
     );
   }, []);
+  // Each item's snapshot is asked for once per page, however often its row scrolls back into view (bounded).
+  const prefetched = useRef(new Set<string>());
+  const prefetchOnce = useMemo(() => {
+    if (!prefetchThumbnail) return undefined;
+    return (item: Item) => {
+      const seen = prefetched.current;
+      if (seen.has(item.id)) return;
+      if (seen.size >= PREFETCHED_MAX) seen.clear();
+      seen.add(item.id);
+      prefetchThumbnail(item);
+    };
+  }, [prefetchThumbnail]);
   const teamManageHref = useCallback(
     (teamId: string) => teamManageUrl?.(teamId) ?? core?.manageTeamsUrl,
     [teamManageUrl, core?.manageTeamsUrl],
@@ -136,7 +151,7 @@ export function ExtrasProvider({
       signedIn,
       signInHref,
       teamManageHref,
-      prefetchThumbnail,
+      prefetchThumbnail: prefetchOnce,
       onViewToggled,
       sharedCount,
       leaving,
@@ -149,7 +164,7 @@ export function ExtrasProvider({
       signedIn,
       signInHref,
       teamManageHref,
-      prefetchThumbnail,
+      prefetchOnce,
       onViewToggled,
       sharedCount,
       leaving,
