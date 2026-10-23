@@ -8,9 +8,15 @@ import {
   indexApiUrl,
   linkCodeOf,
   type GrantCaller,
+  type GrantOutcome,
   type ItemGrant,
 } from '@liveworkspace/index-app';
-import type { GrantClaims, IndexAppClient, IndexClient } from '@liveworkspace/index-client';
+import type {
+  GrantClaims,
+  IndexAppClient,
+  IndexClient,
+  ShareAccess,
+} from '@liveworkspace/index-client';
 import type { Env } from './types';
 
 export { indexApiUrl, linkCodeOf };
@@ -35,7 +41,12 @@ export const verifyPlanGrant = (
 
 export { itemGrantOf as planGrantOf } from '@liveworkspace/index-app';
 
-export const requestGrant = indexService.requestGrant;
+export const requestGrant = (
+  env: Env,
+  caller: GrantCaller,
+  planId: string,
+  share: ShareAccess | null,
+): Promise<GrantOutcome> => indexService.requestGrant(env, caller, planId, share);
 
 // The index as a caller reaches it: delegated with this app's key, or with the browser's own bearer.
 export const indexFor: (env: Env, caller: GrantCaller) => IndexClient | null =

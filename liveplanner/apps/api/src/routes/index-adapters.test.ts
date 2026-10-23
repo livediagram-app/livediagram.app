@@ -221,10 +221,7 @@ describe('the Trash, folders, teams and links', () => {
 
   it('answers index_unavailable for a share code on a deployment without an index', async () => {
     const c = ctx('GET', '/api/share/CODE2345');
-    const res = await handleShare({
-      ...c,
-      env: { ...c.env, INDEX_ORIGIN: undefined },
-    } as RouteContext);
+    const res = await handleShare({ ...c, env: { ...c.env, INDEX_ORIGIN: undefined } });
     expect(res.status).toBe(503);
     expect(await res.json()).toEqual({ error: 'index_unavailable' });
   });
