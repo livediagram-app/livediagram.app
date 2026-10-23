@@ -7,6 +7,7 @@
 
 import type { DocumentCopy, DocumentOutline } from './document-room/document-content';
 import type { RouteIdentity } from './document-room/document-route';
+import type { ShareAnswer, ShareMessage, SharedTabCopy } from './document-room/tab-shares';
 import type { ThumbnailSubject } from './thumbnail';
 import type { Env } from './types';
 
@@ -37,6 +38,11 @@ export type DocumentRoomClient = {
   purge(): Promise<void>;
   // Share links revoked elsewhere (the index): their sessions end now.
   revokeCodes(codes: string[]): Promise<number>;
+  // A tab shared between documents (document-room/tab-shares.ts): the tab and its holders for one joining, the
+  // join recorded, and what another holder (`from`) sends.
+  sharedTabCopy(tabId: string): Promise<SharedTabCopy | null>;
+  shareJoined(tabId: string, member: string, seenUpdatedAt: number): Promise<boolean>;
+  receiveShares(from: string, messages: ShareMessage[]): Promise<ShareAnswer[]>;
 };
 
 export function documentRoom(
@@ -58,6 +64,9 @@ export function documentRoom(
     importCopy: (copy) => room.importCopy(documentId, copy),
     purge: () => room.purge(documentId),
     revokeCodes: (codes) => room.revokeCodes(documentId, codes),
+    sharedTabCopy: (tabId) => room.sharedTabCopy(documentId, tabId),
+    shareJoined: (tabId, member, seen) => room.shareJoined(documentId, tabId, member, seen),
+    receiveShares: (from, messages) => room.receiveShares(documentId, from, messages),
   };
 }
 
@@ -82,5 +91,13 @@ export type DocumentRoomRpc = {
   importCopy(documentId: string, copy: DocumentCopy): Promise<void>;
   purge(documentId: string): Promise<void>;
   revokeCodes(documentId: string, codes: string[]): Promise<number>;
+  sharedTabCopy(documentId: string, tabId: string): Promise<SharedTabCopy | null>;
+  shareJoined(
+    documentId: string,
+    tabId: string,
+    member: string,
+    seenUpdatedAt: number,
+  ): Promise<boolean>;
+  receiveShares(documentId: string, from: string, messages: ShareMessage[]): Promise<ShareAnswer[]>;
   fetch(request: Request): Promise<Response>;
 };

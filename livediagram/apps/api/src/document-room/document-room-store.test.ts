@@ -295,6 +295,191 @@ describe("a document's content lives in its own Durable Object", () => {
   });
 });
 
+// A tab shared between documents (docs/specs/006-document/tab-document-many-to-many.md): each holder keeps a copy
+// under the same tab id, and a write in one reaches the others when its room drains (document-room/tab-shares.ts).
+describe('a tab shared between documents', () => {
+  const link = (w: World, target: string, tabId: string, from: string, owner = 'owner') =>
+    w.send(
+      'POST',
+      `/api/documents/${target}/tabs/${tabId}/link`,
+      { from },
+      { 'X-Owner-Id': owner },
+    );
+  const labels = (w: World, documentId: string, tabId = 't1') => {
+    const row = w.documents
+      .get(documentId)!
+      .db.prepare('SELECT data FROM tabs WHERE id = ?')
+      .get(tabId);
+    if (!row) return null;
+    return (JSON.parse(String(row.data)) as { elements: { label?: string }[] }).elements.map(
+      (e) => e.label,
+    );
+  };
+  const holders = (w: World, documentId: string, tabId = 't1') =>
+    w.documents
+      .get(documentId)!
+      .db.prepare('SELECT document_id FROM tab_shares WHERE tab_id = ? ORDER BY document_id')
+      .all(tabId)
+      .map((r) => r.document_id);
+  const save = (w: World, documentId: string, label: string, tabId = 't1') =>
+    w.send('PUT', `/api/documents/${documentId}/tabs/${tabId}`, {
+      id: tabId,
+      name: 'Board',
+      elements: [box('a', label)],
+    });
+  const drain = async (w: World, ...documentIds: string[]) => {
+    for (const id of documentIds) await w.documents.get(id)!.room.drain();
+  };
+  const sharedTabs = async (w: World, documentId: string) => {
+    const body: { sharedTabs: unknown } = await (
+      await w.send('GET', `/api/documents/${documentId}/shared-tabs`)
+    ).json();
+    return body.sharedTabs;
+  };
+
+  async function twoDocuments() {
+    const w = world();
+    await createDocument(w, 'A', [{ id: 't1', name: 'Board', elements: [box('a', 'From A')] }]);
+    await createDocument(w, 'B', [{ id: 'tb', name: 'Own', elements: [] }]);
+    return w;
+  }
+
+  it('adds the tab to the other document, the same tab in both', async () => {
+    const w = await twoDocuments();
+    const res = await link(w, 'B', 't1', 'A');
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({ tab: { id: 't1', name: 'Board', orderIndex: 1 } });
+    expect(labels(w, 'B')).toEqual(['From A']);
+    expect(holders(w, 'A')).toEqual(['B']);
+    expect(holders(w, 'B')).toEqual(['A']);
+    expect(await sharedTabs(w, 'A')).toEqual({ tabs: 1, documents: 1 });
+    expect(await sharedTabs(w, 'B')).toEqual({ tabs: 1, documents: 1 });
+    // A repeat is answered as it is.
+    expect((await link(w, 'B', 't1', 'A')).status).toBe(200);
+    expect(count(w.documents.get('B')!.db, 'tabs')).toBe(2);
+  });
+
+  it('carries an edit in either document to the other, without sending it back', async () => {
+    const w = await twoDocuments();
+    await link(w, 'B', 't1', 'A');
+    await drain(w, 'A', 'B');
+
+    await save(w, 'A', 'Edited in A');
+    expect(labels(w, 'B')).toEqual(['From A']);
+    await drain(w, 'A');
+    expect(labels(w, 'B')).toEqual(['Edited in A']);
+    expect(count(w.documents.get('B')!.db, 'share_outbox')).toBe(0);
+
+    await new Promise((r) => setTimeout(r, 2));
+    const renamed = await w.send('PUT', '/api/documents/B/tabs/t1/name', { name: 'Renamed in B' });
+    expect(renamed.status).toBe(200);
+    await save(w, 'B', 'Edited in B');
+    await drain(w, 'B');
+    expect(labels(w, 'A')).toEqual(['Edited in B']);
+    expect(count(w.documents.get('A')!.db, 'share_outbox')).toBe(0);
+    // The Inbox and listing pushes still follow the copy taken in.
+    expect(count(w.documents.get('A')!.db, 'outbox')).toBeGreaterThan(0);
+  });
+
+  it('keeps the later of two writes in every document', async () => {
+    const w = await twoDocuments();
+    await link(w, 'B', 't1', 'A');
+    await save(w, 'B', 'Earlier');
+    await new Promise((r) => setTimeout(r, 2));
+    await save(w, 'A', 'Later');
+    // B sends its earlier write first: A keeps its own, later one, and B takes A's.
+    await drain(w, 'B', 'A');
+    expect(labels(w, 'A')).toEqual(['Later']);
+    expect(labels(w, 'B')).toEqual(['Later']);
+  });
+
+  it('shares on through a third document, which every holder then hears of', async () => {
+    const w = await twoDocuments();
+    await createDocument(w, 'C', [{ id: 'tc', name: 'Own', elements: [] }]);
+    await link(w, 'B', 't1', 'A');
+    expect((await link(w, 'C', 't1', 'B')).status).toBe(200);
+    expect(holders(w, 'C')).toEqual(['A', 'B']);
+    // A hears of C from B's drain.
+    expect(holders(w, 'A')).toEqual(['B']);
+    await drain(w, 'B');
+    expect(holders(w, 'A')).toEqual(['B', 'C']);
+
+    await new Promise((r) => setTimeout(r, 2));
+    await save(w, 'C', 'Edited in C');
+    await drain(w, 'C');
+    expect(labels(w, 'A')).toEqual(['Edited in C']);
+    expect(labels(w, 'B')).toEqual(['Edited in C']);
+    expect(await sharedTabs(w, 'A')).toEqual({ tabs: 1, documents: 2 });
+  });
+
+  it('passes a write on to a holder the writer had not heard of yet', async () => {
+    const w = await twoDocuments();
+    await createDocument(w, 'C', [{ id: 'tc', name: 'Own', elements: [] }]);
+    await link(w, 'B', 't1', 'A');
+    await link(w, 'C', 't1', 'B');
+    // A writes before B's drain has told it of C: B, taking A's write, passes it on to C.
+    await new Promise((r) => setTimeout(r, 2));
+    await save(w, 'A', 'Edited in A');
+    await drain(w, 'A');
+    expect(labels(w, 'C')).toEqual(['From A']);
+    await drain(w, 'B');
+    expect(labels(w, 'C')).toEqual(['Edited in A']);
+  });
+
+  it('leaves the others their copy when one document drops the tab, or goes for good', async () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const w = world({ INDEX_KEY: 'index-key' });
+    await createDocument(w, 'A', [{ id: 't1', name: 'Board', elements: [box('a', 'From A')] }]);
+    for (const id of ['B', 'C']) {
+      await createDocument(w, id, [{ id: `t${id}`, name: 'Own', elements: [] }]);
+      await link(w, id, 't1', 'A');
+    }
+    await drain(w, 'A');
+
+    expect((await w.send('DELETE', '/api/documents/B/tabs/t1')).status).toBe(204);
+    await drain(w, 'B');
+    expect(holders(w, 'A')).toEqual(['C']);
+    expect(holders(w, 'C')).toEqual(['A']);
+    expect(labels(w, 'A')).toEqual(['From A']);
+
+    const purged = await w.send('DELETE', '/api/internal/items/C', undefined, {
+      Authorization: 'Bearer index-key',
+    });
+    expect(purged.status).toBe(200);
+    expect(holders(w, 'A')).toEqual([]);
+    expect(await sharedTabs(w, 'A')).toEqual({ tabs: 0, documents: 0 });
+    expect(labels(w, 'A')).toEqual(['From A']);
+  });
+
+  it('drops a holder that no longer has the tab when it says so', async () => {
+    const w = await twoDocuments();
+    await link(w, 'B', 't1', 'A');
+    // B lost the tab without a word (its leave never arrived).
+    w.documents.get('B')!.db.prepare("DELETE FROM tabs WHERE id = 't1'").run();
+    await save(w, 'A', 'Edited in A');
+    await drain(w, 'A');
+    expect(holders(w, 'A')).toEqual([]);
+    expect(count(w.documents.get('A')!.db, 'share_outbox')).toBe(0);
+  });
+
+  it('is only for the owner of both documents, and a tab the other one holds', async () => {
+    const w = await twoDocuments();
+    expect((await link(w, 'B', 't1', 'A', 'stranger')).status).toBe(403);
+    await w.send(
+      'POST',
+      '/api/documents',
+      { id: 'S', name: 'S', tabs: [{ id: 's1', name: 'S', elements: [] }] },
+      { 'X-Owner-Id': 'stranger' },
+    );
+    expect((await link(w, 'B', 's1', 'S')).status).toBe(403);
+    expect((await link(w, 'B', 'nope', 'A')).status).toBe(404);
+    expect((await link(w, 'B', 't1', 'missing')).status).toBe(404);
+    expect((await w.send('POST', '/api/documents/B/tabs/t1/link', {})).status).toBe(400);
+    expect((await link(w, 'A', 't1', 'A')).status).toBe(400);
+    expect(count(w.documents.get('B')!.db, 'tabs')).toBe(1);
+  });
+});
+
 describe('/api/internal/items (docs/specs/015-api/api.md "Internal")', () => {
   const auth = { Authorization: 'Bearer index-key' };
 
@@ -385,6 +570,36 @@ describe('speed', () => {
     expect(saveMs).toBeLessThan(cpuBudgetMs(200));
     expect(readMs).toBeLessThan(cpuBudgetMs(100));
     expect(drainMs).toBeLessThan(cpuBudgetMs(200));
+  });
+
+  it('sends an edit of a 1 MB tab shared with 20 documents within budget', async () => {
+    const w = world();
+    await createDocument(w, 'A');
+    for (let i = 0; i < 20; i++) {
+      await createDocument(w, `S${i}`, [{ id: `own${i}`, name: 'Own', elements: [] }]);
+      const res = await w.send('POST', `/api/documents/S${i}/tabs/t1/link`, { from: 'A' });
+      expect(res.status).toBe(200);
+    }
+    // Each join told the holders before it: 190 messages, a drain of 50 at a time.
+    const a = w.documents.get('A')!;
+    while (count(a.db, 'share_outbox') > 0) await a.room.drain();
+    const elements = Array.from({ length: 2_500 }, (_, i) => box(`e${i}`, 'x'.repeat(320)));
+    await new Promise((r) => setTimeout(r, 2));
+    let status = 0;
+    const saveMs = await cpuMsOfAsync(async () => {
+      status = (
+        await w.send('PUT', '/api/documents/A/tabs/t1', { id: 't1', name: 'Board', elements })
+      ).status;
+    });
+    expect(status).toBe(200);
+    const fanOutMs = await cpuMsOfAsync(() => w.documents.get('A')!.room.drain());
+    console.info('[perf] 1 MB tab shared with 20', { saveMs, fanOutMs });
+    const last = w.documents
+      .get('S19')!
+      .db.prepare("SELECT element_count FROM tabs WHERE id = 't1'");
+    expect(last.get()!.element_count).toBe(2_500);
+    expect(saveMs).toBeLessThan(cpuBudgetMs(200));
+    expect(fanOutMs).toBeLessThan(cpuBudgetMs(2_000));
   });
 
   it('saves a tab placing 500 images and pushes the set within budget', async () => {

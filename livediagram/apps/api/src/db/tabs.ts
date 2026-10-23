@@ -317,8 +317,9 @@ export async function seedTabs(
   await env.DOCUMENT_DB.batch(stmts);
 }
 
-// Remove the tab from the document: its `document_tabs` row and its body (its stats, image references and
-// changesets go with it by the foreign keys), in one transaction.
+// Remove the tab from the document: its `document_tabs` row and its body (its stats, image references,
+// changesets and the documents it was shared with go with it by the foreign keys), in one transaction. Other
+// documents sharing the tab keep their copies.
 //
 // Answers the tab's stored body as it was removed (null when this document did not hold it), read
 // by the delete itself so a comment written a moment before cannot slip between a read and the
@@ -333,6 +334,15 @@ export async function deleteTabRow(
       `DELETE FROM document_tabs WHERE document_id = ? AND tab_id = ?
         RETURNING (SELECT t.data FROM tabs t WHERE t.id = document_tabs.tab_id) AS data`,
     ).bind(documentId, tabId),
+    // A shared tab (document-room/tab-shares.ts): every other holder hears that this document left, and nothing
+    // else it owed them about the tab is sent. Before the tab's delete, which takes its `tab_shares` rows.
+    env.DOCUMENT_DB.prepare(
+      "DELETE FROM share_outbox WHERE tab_id = ? AND kind IN ('body', 'join')",
+    ).bind(tabId),
+    env.DOCUMENT_DB.prepare(
+      `INSERT OR REPLACE INTO share_outbox (kind, tab_id, to_document)
+       SELECT 'leave', tab_id, document_id FROM tab_shares WHERE tab_id = ?`,
+    ).bind(tabId),
     env.DOCUMENT_DB.prepare(
       'DELETE FROM tabs WHERE id = ? AND NOT EXISTS (SELECT 1 FROM document_tabs WHERE tab_id = ?)',
     ).bind(tabId, tabId),

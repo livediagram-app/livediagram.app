@@ -1,9 +1,10 @@
 // Per-tab calls: lazy load, upsert (the autosave path), comment append,
-// a copy into another document, and delete.
+// cross-document link, and delete.
 import {
   CHANGESET_SEEN_HEADER,
   DOCUMENT_OPEN_HEADER,
   type TabResponse,
+  type TabSummary,
 } from '@livediagram/api-schema';
 import { normalizeTable, type CommentMention, type Tab } from '@livediagram/document';
 import { dedupeInFlight } from '../dedupe';
@@ -374,13 +375,24 @@ export async function apiSetThreadResolved(
   await expectOkVoid(res, `${verb} thread`);
 }
 
-// Copy a tab into another of the caller's documents, as a new tab there (appended last). Each document keeps its own
-// content (docs/specs/015-api/api.md "Storage"), so a tab cannot be shared between two documents: the copy is the
-// caller's loaded tab under fresh ids, saved like any new tab. Answers the copy's id.
-export async function apiCopyTabTo(ownerId: string, documentId: string, tab: Tab): Promise<string> {
-  const copy: Tab = { ...tab, id: crypto.randomUUID() };
-  await apiSaveTab(ownerId, documentId, copy);
-  return copy.id;
+// Share a tab of `fromDocumentId` into another of the caller's documents (docs/specs/006-document/tab-document-many-to-many.md).
+// After this returns both documents hold the tab, and an edit in either reaches the other. Answers the tab as the
+// target document now holds it, so the caller can show it without a full document refetch.
+export async function apiLinkTab(
+  ownerId: string,
+  documentId: string,
+  tabId: string,
+  fromDocumentId: string,
+): Promise<TabSummary> {
+  const res = await apiFetch(
+    `${API_BASE}/documents/${encodeURIComponent(documentId)}/tabs/${encodeURIComponent(tabId)}/link`,
+    {
+      method: 'POST',
+      headers: { ...(await apiHeaders(ownerId)), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ from: fromDocumentId }),
+    },
+  );
+  return expectOk<{ tab: TabSummary }>(res, 'link tab').then((b) => b.tab);
 }
 
 export async function apiDeleteTab(

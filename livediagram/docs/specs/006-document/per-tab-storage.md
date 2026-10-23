@@ -328,7 +328,7 @@ How this rolled out, recorded here so future schema changes can repeat the patte
 ## What this does NOT change
 
 - Realtime presence (still room-level).
-- Sharing (per-document share codes; no per-tab sharing yet). A tab belongs to one document ([Tab ↔ document many-to-many](tab-document-many-to-many.md)).
+- Sharing (per-document share codes; no per-tab sharing yet). A tab in several documents is a copy in each, kept in step ([Tab ↔ document many-to-many](tab-document-many-to-many.md)).
 - The frontend `Tab` type shape (just where it's persisted).
 
 ## Import carries identity, not just content

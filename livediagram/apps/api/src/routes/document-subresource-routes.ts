@@ -37,6 +37,7 @@ import {
   type DocumentRouteContext,
 } from './context';
 import { answerTabView, parseViewQuery } from './document-views-route';
+import { handleTabLink } from './tab-link-route';
 
 // Tab-content sub-resource routes for /api/documents/<id>/...,
 // split out of documents.ts. Returns a Response when it handles the path, or
@@ -202,6 +203,10 @@ export async function handleDocumentSubresources(
   // /api/documents/<id>/tabs/<tabId>/link — owner only.
   // A tab belongs to exactly one document (its Durable Object holds it), so there is no linking an existing tab into
   // another document any more: POST …/tabs/<tabId>/link is gone (docs/specs/015-api/api.md "Storage").
+
+  // /api/documents/<id>/tabs/<tabId>/link — share a tab from another of the caller's documents into this one.
+  const linked = await handleTabLink(ctx);
+  if (linked) return linked;
 
   // /api/documents/<id>/share* — the share-link family lives in
   // document-share-routes.ts.

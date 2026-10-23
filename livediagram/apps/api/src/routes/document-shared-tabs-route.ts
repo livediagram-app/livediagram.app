@@ -3,16 +3,23 @@
 // notice"): how many of the document's tabs are also in other documents, and how
 // many documents, so the user hears that those tabs stay before they act.
 //
-// A tab is held by exactly one document now (each document's content is its own Durable Object, docs/specs/015-api/api.md
-// "Storage"), so the answer is always none; the route stays for the editors that still ask.
+// Runs in the document's room: its `tab_shares` list the other documents each shared tab is in
+// (document-room/tab-shares.ts).
 
-import type { SharedTabsSummary } from '@livediagram/api-schema';
 import { getDocument } from '../db';
+import { sharedTabsSummary } from '../document-room/tab-shares';
 import { forbidden, json } from '../responses';
-import { mayDeleteDocument, missingDocument, requireOwner, type RouteContext } from './context';
+import {
+  mayDeleteDocument,
+  missingDocument,
+  requireOwner,
+  type DocumentRouteContext,
+} from './context';
 
 // Returns null when the request isn't this route.
-export async function handleDocumentSharedTabs(ctx: RouteContext): Promise<Response | null> {
+export async function handleDocumentSharedTabs(
+  ctx: DocumentRouteContext,
+): Promise<Response | null> {
   const { request, env, segments } = ctx;
   if (segments.length !== 4 || segments[3] !== 'shared-tabs' || request.method !== 'GET') {
     return null;
@@ -24,6 +31,5 @@ export async function handleDocumentSharedTabs(ctx: RouteContext): Promise<Respo
   const existing = await getDocument(env, segments[2]!);
   if (!existing) return missingDocument(ctx, segments[2]!);
   if (!(await mayDeleteDocument(ctx, existing))) return forbidden();
-  const sharedTabs: SharedTabsSummary = { tabs: 0, documents: 0 };
-  return json({ sharedTabs });
+  return json({ sharedTabs: await sharedTabsSummary(env, existing.id) });
 }
