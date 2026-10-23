@@ -32,6 +32,7 @@ export {
   ProfileError,
   readProfiles,
   recordSighting,
+  reportActivity,
   readSettings,
   readTeamsClaim,
   revokeAccountToken,

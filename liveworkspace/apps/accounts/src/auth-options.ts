@@ -30,6 +30,9 @@ export interface AuthConfig {
   // Telling the index when a guest signs in (guests.ts). Left out where there is no index, as when
   // generating the schema.
   guestMerge?: Omit<MergeConfig, 'secret'>;
+  // A new account starts its onboarding series (lifecycle.ts). Left out where there is no database, as
+  // when generating the schema. A failure is logged and never fails the sign-up.
+  onUserCreated?: (user: { id: string; email: string }) => Promise<void>;
 }
 
 export function authOptions(config: AuthConfig, database: BetterAuthOptions['database']) {
@@ -76,7 +79,16 @@ export function authOptions(config: AuthConfig, database: BetterAuthOptions['dat
     account: { accountLinking: { enabled: true, trustedProviders: ['google'] } },
     databaseHooks: {
       user: {
-        create: { before: async (user) => ({ data: withNames(user) }) },
+        create: {
+          before: async (user) => ({ data: withNames(user) }),
+          after: async (user) => {
+            await config
+              .onUserCreated?.(user)
+              .catch((error: unknown) =>
+                console.error('Starting the onboarding series failed:', error),
+              );
+          },
+        },
         update: { before: async (user) => ({ data: withNames(user) }) },
       },
       session: {

@@ -67,8 +67,8 @@ const SECTIONS: LegalSection[] = [
           <li>
             <strong>Signing in to an app.</strong> When an app sends you to liveworkspace.app to
             sign in, we give that app a short-lived token naming your account, your email and your
-            name, and keep a record of which apps you have signed in to so you aren&rsquo;t asked
-            again.
+            name, and keep a record of which apps you have signed in to, and when you first did, so
+            you aren&rsquo;t asked again.
           </li>
           <li>
             <strong>Your teams.</strong> Each team&rsquo;s name, and for each member their account,
@@ -83,6 +83,11 @@ const SECTIONS: LegalSection[] = [
             A token works in every app, expires after six months and is deleted with your account.
             An app that a token is used with keeps a note of that token (never the secret) and of
             anything paired through it, such as a workbench.
+          </li>
+          <li>
+            <strong>Your onboarding emails.</strong> Which of the onboarding emails we have sent
+            you, which milestone emails each app has sent you, and when you last saved something in
+            any app, which is how we know whether to nudge you.
           </li>
           <li>
             <strong>Keeping abuse out.</strong> The sign-in pages use Cloudflare Turnstile to check

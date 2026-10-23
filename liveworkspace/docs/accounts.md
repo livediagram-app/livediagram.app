@@ -269,6 +269,46 @@ The app is always the calling client's own ([Which app a client is](#which-app-a
   `{ emails: { [id]: address } }`, verified addresses only, in one query: where an app sends its
   notifications (a comment on what someone owns, a form response). An app keeps no addresses of its own.
 
+## Onboarding emails
+
+A short series that introduces liveworkspace, one per account rather than one per app, so someone who
+uses all four apps hears it once (`migrations/0008_email_lifecycle.sql`, `src/lifecycle.ts`, the
+emails in `src/lifecycle-email.ts`). It is sent by this Worker, through Resend like every other email
+it sends, with the same timings and tips each app's own series had:
+
+| Stage      | When                                                                           | Can be turned off |
+| ---------- | ------------------------------------------------------------------------------ | ----------------- |
+| Welcome    | when the account is made, after the sign-up's response has gone                | no                |
+| Activation | ~3 days in, to someone who hasn't made anything in any app, before week 1 goes | yes               |
+| Week 1     | ~7 days in: the Explorer, across every app                                     | yes               |
+| Week 2     | ~14 days in: teams, made on liveworkspace.app                                  | yes               |
+| Win-back   | once, ~4 weeks after their last save in any app                                | yes               |
+
+- **The row** is made with the account (Better Auth's `user.create.after` hook), and goes with it. The
+  client registrar and accounts imported from Clerk (written as SQL) have none, so they are never sent
+  the series.
+- **Turning tips off** is the `notifyTips` setting, `false`, in the `all` scope
+  ([Settings](#settings)), so it holds in every app. A stage someone has turned off is stamped and
+  not sent. Each email that can be turned off links (and sends `List-Unsubscribe`) to the
+  notification settings of the app they first used (`<app>/explorer?settings=notifications`), as do
+  its other links; someone who has used no app yet is sent to livediagram.
+- **Activity.** The apps report when someone saves something they own
+  (`POST /api/account/internal/activity` `{ userId, at? }`, at most once a minute an item, as the
+  item's summary push does). It only moves forward, never past now, and writes nothing when it
+  wouldn't move. A guest's is accepted and ignored. Until the first one the account counts as having
+  made nothing.
+- **Sending.** The welcome goes from the request that made the account, in `waitUntil`; the
+  15-minute cron catches up one that failed, and the daily cron (`17 9 * * *`) runs every stage, up
+  to 100 accounts a stage, the longest-waiting first, one email at a time. Each stage is claimed
+  (stamped) before it is sent, so two runs can't both send it; a failed send takes the stamp back
+  and counts against the row, and after three in a row the account leaves every list (a dead
+  address). A success resets the count. Only a verified address is ever sent to.
+- **Each due list** is one query on a partial index holding only the accounts still owed that stage,
+  joined by primary key to the account, its `all` settings and its first app.
+
+An app's own one-time milestones (its tenth item, its first share link) stay that app's to send:
+[Sign-ups and milestones per app](#sign-ups-and-milestones-per-app).
+
 ## Closing an account
 
 An app's server asks (`POST /api/auth/delete-account`, with its client credentials and the person's
@@ -279,8 +319,8 @@ access token, `src/delete-account.ts`), and the account closes for every app at 
 2. Its settings rows and its profile are deleted.
 3. A purge request for the index is written to `pending_purges` (`migrations/0004_pending_purges.sql`),
    naming the teams deleted in step 1.
-4. The user is deleted, and with it its sessions, linked sign-ins, OAuth tokens and consents, and API
-   tokens.
+4. The user is deleted, and with it its sessions, linked sign-ins, OAuth tokens and consents, API
+   tokens, its onboarding series and what each app recorded of it (sign-ups and milestones).
 5. The request is sent to the index (`POST ${INDEX_URL}/internal/purge-person` `{ personId, teamIds }`,
    `Bearer ${INDEX_MERGE_KEY}`, the same key and binding as the guest merge; `src/index-purge.ts`), which
    purges every item the person owns, with its content in each app, and everything else it holds for
@@ -361,6 +401,7 @@ provider's own introspection and remembered per isolate for five minutes):
 | `POST /api/account/internal/sightings`        | `{ userId }` → `{ first }`, for the client's own app                                     |
 | `POST /api/account/internal/milestones/claim` | `{ userId, milestone }` → `{ claimed }`, for the client's own app                        |
 | `POST /api/account/internal/emails`           | `{ ids }` (up to 100 accounts) → `{ emails }`, verified addresses only                   |
+| `POST /api/account/internal/activity`         | `{ userId, at? }` → `{ ok }`: they saved something they own (a guest's is ignored)       |
 
 `Profile` is `{ id, name, color, createdAt, updatedAt }`: `name` and `color` may be null, and the two
 times are null for an account that has never set either.

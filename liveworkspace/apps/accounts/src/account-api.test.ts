@@ -285,6 +285,25 @@ describe('the account API, for the apps', () => {
     expect((await internal('/sightings', { userId: 'user_ada' }, NO_APP)).status).toBe(403);
   });
 
+  it('takes activity for an account, and ignores a guest', async () => {
+    await env.AUTH_DB.prepare('INSERT INTO email_lifecycle (user_id, created_at) VALUES (?, 1)')
+      .bind('user_ada')
+      .run();
+    expect((await internal('/activity', { userId: 'user_ada', at: 5000 })).status).toBe(200);
+    // A time in the future is held to now.
+    await internal('/activity', { userId: 'user_ada', at: Date.now() + 1e9 });
+    const at = await env.AUTH_DB.prepare('SELECT active_at FROM email_lifecycle').first<number>(
+      'active_at',
+    );
+    expect(at).toBeLessThanOrEqual(Date.now());
+    expect(
+      (await internal('/activity', { userId: 'guest_0b0e8c9a-6d7e-4f3b-9a51-2c1d0e9f8a7b' }))
+        .status,
+    ).toBe(200);
+    expect((await internal('/activity', { userId: 'user_ada', at: 'soon' })).status).toBe(400);
+    expect((await internal('/activity', { userId: 'nobody' })).status).toBe(400);
+  });
+
   it("answers accounts' verified emails, a bounded batch", async () => {
     const response = await internal('/emails', { ids: ['user_ada', 'user_bea'] });
     expect(await response.json()).toEqual({

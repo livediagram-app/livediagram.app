@@ -2,7 +2,7 @@
 // "API tokens" and "Settings"), with its OAuth client credentials: checking an API token, making one
 // for an AI tool someone connects, making a team for someone, reading the teams change feed,
 // reading and writing someone's settings, reading profiles and setting one's own, this app's
-// sign-ups and milestones, and accounts' emails. These send the client secret, so they run
+// sign-ups and milestones, accounts' emails, and reporting activity for the onboarding series. These send the client secret, so they run
 // in the app's Worker only.
 import type { SiteId } from '@liveworkspace/sites';
 import type { ClientCredentials } from './oauth';
@@ -490,4 +490,18 @@ export async function accountEmails(
     }),
   );
   return Object.assign({}, ...pages) as Record<string, string>;
+}
+
+// --- The onboarding series ---
+
+// Someone saved something they own at `at` (default now), for the onboarding series liveworkspace
+// sends: whether they have made anything yet, and when they were last active, across every app. Send it
+// at most once a minute an item (as its summary push goes). A guest's is accepted and ignored.
+export async function reportActivity(
+  credentials: ClientCredentials,
+  request: { userId: string; at?: number },
+  fetcher: typeof fetch = fetch,
+): Promise<void> {
+  const response = await call(credentials, '/activity', { method: 'POST', body: request }, fetcher);
+  if (!response.ok) throw new Error(`activity failed: ${response.status}`);
 }

@@ -13,14 +13,15 @@ import { GUEST_PATH, guestHandoff } from './guests.ts';
 import { indexPurgeConfig, PURGE_RETRY_CRON, retryPendingPurges } from './index-purge.ts';
 import { overCodeLimit } from './rate-limit.ts';
 import { SIGN_IN_OPTIONS_PATH, signInOptions } from './sign-in-options.ts';
-import { sendTeamInviteEmail } from './email.ts';
+import { sendEmail, sendTeamInviteEmail } from './email.ts';
+import { runLifecycle, sendWelcomes, takeWelcomes, type SendEmail } from './lifecycle.ts';
 import { sweepInvitations } from './teams.ts';
 
 // The accounts API. Only the paths routed to this Worker reach it (wrangler.toml): /api/auth/*,
 // /api/account/* (teams and API tokens, account-api.ts) and the two discovery documents. Every page, the sign-in pages included, is the static site's
 // (liveworkspace/apps/site), on the same origin.
 export default {
-  async fetch(request: Request, env: Env): Promise<Response> {
+  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
     const { pathname } = url;
 
@@ -67,21 +68,44 @@ export default {
           { status: 429 },
         );
       }
-      return getAuth(env).handler(request);
+      const response = await getAuth(env).handler(request);
+      // An account made by this request (or another in this isolate) hears its welcome now, after the
+      // response, rather than holding the sign-up on the email (lifecycle.ts).
+      const welcomes = takeWelcomes();
+      if (welcomes.length > 0) {
+        ctx.waitUntil(
+          sendWelcomes(env.AUTH_DB, env, lifecycleSender(env), welcomes).catch((error: unknown) =>
+            console.error('[lifecycle] welcome failed', error),
+          ),
+        );
+      }
+      return response;
     }
 
     return new Response('Not found', { status: 404 });
   },
 
   // Every 15 minutes (wrangler.toml): closed accounts' purges the index hasn't taken yet are sent
-  // again. Once a day as well: team invitations nobody answered expire, and the rest hear their
+  // again, and welcomes that failed are tried again; once a day the rest of the onboarding series goes
+  // (liveworkspace/docs/accounts.md "Onboarding emails"). Once a day as well: team invitations nobody answered expire, and the rest hear their
   // reminders (liveworkspace/docs/accounts.md "Reminders and expiry"); and the settings and profiles
   // of guests who can never come back are deleted ("Guests who never come back").
   async scheduled(controller: ScheduledController, env: Env): Promise<void> {
     const purges = await retryPendingPurges(env.AUTH_DB, indexPurgeConfig(env));
     if (purges.sent + purges.failed > 0)
       console.log('[accounts] index purges', JSON.stringify(purges));
-    if (controller.cron === PURGE_RETRY_CRON) return;
+    // Every run: a welcome that failed is tried again within 15 minutes. Once a day: the whole series.
+    const daily = controller.cron !== PURGE_RETRY_CRON;
+    const lifecycle = await runLifecycle(
+      env.AUTH_DB,
+      env,
+      lifecycleSender(env),
+      daily ? undefined : ['welcome'],
+    );
+    if (daily || (lifecycle.welcome?.sent ?? 0) + (lifecycle.welcome?.failed ?? 0) > 0) {
+      console.log('[lifecycle] onboarding emails', JSON.stringify(lifecycle));
+    }
+    if (!daily) return;
     const result = await sweepInvitations(env.AUTH_DB, (reminder) =>
       sendTeamInviteEmail(env, {
         to: reminder.to,
@@ -97,3 +121,8 @@ export default {
     if (guests > 0) console.log('[guests] idle guests swept', guests);
   },
 } satisfies ExportedHandler<Env>;
+
+const lifecycleSender =
+  (env: Env): SendEmail =>
+  (email) =>
+    sendEmail(env, email);

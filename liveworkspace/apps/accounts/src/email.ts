@@ -9,7 +9,14 @@ const RESEND_ENDPOINT = 'https://api.resend.com/emails';
 // sent while the person waits on the page, so a hung call must not hold the request for long.
 export const EMAIL_SEND_TIMEOUT_MS = 10_000;
 
-type Email = { to: string; subject: string; text: string; html: string };
+type Email = {
+  to: string;
+  subject: string;
+  text: string;
+  html: string;
+  // Where to turn this kind of email off, sent as List-Unsubscribe so mail clients can offer it.
+  unsubscribeUrl?: string;
+};
 
 export async function sendEmail(env: Env, email: Email): Promise<void> {
   if (!env.RESEND_API_KEY) {
@@ -26,6 +33,9 @@ export async function sendEmail(env: Env, email: Email): Promise<void> {
       subject: email.subject,
       text: email.text,
       html: email.html,
+      ...(email.unsubscribeUrl && {
+        headers: { 'List-Unsubscribe': `<${email.unsubscribeUrl}>` },
+      }),
     }),
     signal: AbortSignal.timeout(EMAIL_SEND_TIMEOUT_MS),
   });

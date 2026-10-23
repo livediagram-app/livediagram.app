@@ -10,6 +10,7 @@ import {
   readProfiles,
   readSettings,
   recordSighting,
+  reportActivity,
   SettingsError,
   TeamError,
   writeProfile,
@@ -281,5 +282,18 @@ describe('accountEmails', () => {
     const emails = await accountEmails(CREDENTIALS, ids, fetcher);
     expect(Object.keys(emails)).toHaveLength(150);
     expect(calls).toHaveLength(2);
+  });
+});
+
+describe('reportActivity', () => {
+  it('posts the save, and throws when refused', async () => {
+    const { fetcher, calls } = fakeFetch(() => Response.json({ ok: true }));
+    await reportActivity(CREDENTIALS, { userId: 'user_1', at: 5 }, fetcher);
+    expect(calls[0]!.url).toBe('https://liveworkspace.app/api/account/internal/activity');
+    expect(JSON.parse(String(calls[0]!.init.body))).toEqual({ userId: 'user_1', at: 5 });
+    const refused = fakeFetch(() => Response.json({ error: 'invalid_user' }, { status: 400 }));
+    await expect(reportActivity(CREDENTIALS, { userId: 'x' }, refused.fetcher)).rejects.toThrow(
+      '400',
+    );
   });
 });

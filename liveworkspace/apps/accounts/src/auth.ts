@@ -2,6 +2,7 @@ import { betterAuth } from 'better-auth';
 import { authOptions } from './auth-options.ts';
 import { sendCodeEmail } from './email.ts';
 import type { Env } from './env.ts';
+import { queueWelcome, startLifecycle } from './lifecycle.ts';
 import { RESOURCES } from './resources.ts';
 import { teamsClaim } from './teams.ts';
 
@@ -26,6 +27,10 @@ function build(env: Env) {
           indexService: env.INDEX,
           indexMergeKey: env.INDEX_MERGE_KEY,
           db: env.AUTH_DB,
+        },
+        // The welcome goes once the sign-up's response has (index.ts takeWelcomes).
+        onUserCreated: async (user) => {
+          if (await startLifecycle(env.AUTH_DB, user)) queueWelcome(user.id);
         },
       },
       env.AUTH_DB,

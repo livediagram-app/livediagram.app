@@ -17,7 +17,8 @@ import {
   verifiedEmails,
 } from './account-apps.ts';
 import { clientApp } from './clients.ts';
-import { USER_ID } from './ids.ts';
+import { GUEST_ID, USER_ID } from './ids.ts';
+import { recordActivity } from './lifecycle.ts';
 import {
   checkProfilePatch,
   isProfileOwner,
@@ -561,6 +562,22 @@ async function handleInternal(
     if (!isMilestone(milestone)) return error(400, 'invalid_milestone');
     if (!client.app) return error(403, 'client_has_no_app');
     return json({ claimed: await claimMilestone(db, userId, client.app, milestone) });
+  }
+
+  // Someone saved something they own at `at` (default now), in this app: the onboarding series' sense
+  // of whether they have made anything, and when they were last active. A guest has no series: a no-op.
+  if (route === 'POST activity') {
+    const { userId, at } = await readBody(request);
+    if (typeof userId !== 'string' || !(USER_ID.test(userId) || GUEST_ID.test(userId))) {
+      return error(400, 'invalid_user');
+    }
+    const now = Date.now();
+    if (at !== undefined && (typeof at !== 'number' || !Number.isFinite(at) || at <= 0)) {
+      return error(400, 'invalid_at');
+    }
+    // Never in the future, so a skewed clock can't hold off the win-back.
+    if (USER_ID.test(userId)) await recordActivity(db, userId, Math.min(at ?? now, now));
+    return json({ ok: true });
   }
 
   // Where to reach these accounts by email, for the app's notifications: verified addresses only.

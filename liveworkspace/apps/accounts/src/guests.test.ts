@@ -10,6 +10,7 @@ import {
   readGuestCookie,
   signGuestCookie,
 } from './guests.ts';
+import { startLifecycle } from './lifecycle.ts';
 import { readProfiles, writeProfile } from './profiles.ts';
 import { readSettings, writeSettings } from './settings.ts';
 import { testD1 } from './test-d1.ts';
@@ -26,6 +27,7 @@ let auth: Auth;
 let codes: Map<string, string>;
 let merges: { url: string; authorization: string | null; body: unknown }[];
 let mergeStatus: number;
+let created: string[];
 
 // A real Better Auth over an in-memory D1, with one client registered for liveplanner. fetch is
 // stubbed for Turnstile (always passes) and the index (records each merge).
@@ -56,6 +58,7 @@ beforeEach(() => {
 
   codes = new Map();
   merges = [];
+  created = [];
   mergeStatus = 204;
   vi.stubGlobal('fetch', async (input: string | URL | Request, init?: RequestInit) => {
     const url = String(input instanceof Request ? input.url : input);
@@ -91,6 +94,10 @@ function buildAuth(guestMerge: { secure: boolean; indexUrl?: string; indexMergeK
         google: null,
         sendCode: async (email, code) => void codes.set(email, code),
         guestMerge: { ...guestMerge, db: env.AUTH_DB },
+        onUserCreated: async (user) => {
+          created.push(user.id);
+          await startLifecycle(env.AUTH_DB, user);
+        },
       },
       env.AUTH_DB,
     ),
@@ -323,6 +330,16 @@ describe('signing in as a guest', () => {
       'n',
     );
     expect(seen).toBe(0);
+  });
+
+  it('starts the onboarding series when an account is made, and not on a later sign-in', async () => {
+    const { user } = (await (await signIn()).json()) as { user: { id: string } };
+    await signIn();
+    expect(created).toEqual([user.id]);
+    const row = await env.AUTH_DB.prepare('SELECT user_id FROM email_lifecycle').first<string>(
+      'user_id',
+    );
+    expect(row).toBe(user.id);
   });
 
   it('leaves the index alone without a guest cookie, or with a forged one', async () => {
