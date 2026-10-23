@@ -4,9 +4,14 @@
 //
 // An event is counted under the app the email speaks for, the one its links go to (livediagram for
 // someone who has used no app yet), with that app's own Worker key, so each app's dashboard keeps its
-// Emails Sent stack. Events wait in this isolate until the run that sent them ends, then go as one
-// batch per app: a cron run of a few hundred emails is at most four requests. Fire and forget: a
-// failure, a missing key or a slow service is logged at most and never holds up or fails a send.
+// Emails Sent stack. The same goes for what only accounts sees of teams and API tokens on
+// liveworkspace.app (a team made, renamed or closed, an invitation sent, answered or withdrawn, the join
+// link on or off, a member's role, a token made or revoked by hand): each is counted under the app the
+// person acting signed up through (an email Decline, with no account behind it, under the inviter's),
+// looked up only when the batch goes, so the request never waits on it; someone with no app isn't counted.
+// Events wait in this isolate until the run that sent them ends, then go as one batch per app: a cron
+// run of a few hundred emails is at most four requests. Fire and forget: a failure, a missing key or a
+// slow service is logged at most and never holds up or fails a send.
 import type { Env } from './env.ts';
 import type { SettingsApp } from './settings.ts';
 
@@ -39,7 +44,10 @@ const KEYS: Record<SettingsApp, keyof TelemetryEnv> = {
 
 type WireEvent = { category: string; action: string; type?: string };
 
-const waiting: { app: SettingsApp; event: WireEvent }[] = [];
+// The app an event is counted under, or how to find it when the batch goes (null: not counted).
+export type EventApp = SettingsApp | (() => Promise<SettingsApp | null>);
+
+const waiting: { app: EventApp; event: WireEvent }[] = [];
 
 // One event, held until the next flush; nothing is held when no service is configured. It takes the
 // Env first, as every Worker's helper of this name does: the dashboards' emitter scan reads its calls
@@ -49,11 +57,11 @@ export function reportServerEvent(
   env: Partial<TelemetryEnv>,
   category: string,
   action: string,
-  type: string,
-  app: SettingsApp,
+  type: string | null,
+  app: EventApp,
 ): void {
   if (!env.TELEMETRY_URL || waiting.length >= MAX_WAITING) return;
-  waiting.push({ app, event: { category, action, type } });
+  waiting.push({ app, event: type === null ? { category, action } : { category, action, type } });
 }
 
 // Sends what is waiting, one batch per app (in chunks of the service's batch size), all at once and
@@ -61,8 +69,13 @@ export function reportServerEvent(
 export async function flushServerEvents(env: Partial<TelemetryEnv>): Promise<void> {
   const taken = waiting.splice(0);
   if (taken.length === 0 || !env.TELEMETRY_URL) return;
+  const apps = await Promise.all(
+    taken.map(({ app }) => (typeof app === 'function' ? app().catch(() => null) : app)),
+  );
   const byApp = new Map<SettingsApp, WireEvent[]>();
-  for (const { app, event } of taken) {
+  for (const [i, { event }] of taken.entries()) {
+    const app = apps[i];
+    if (!app) continue;
     const list = byApp.get(app) ?? [];
     list.push(event);
     byApp.set(app, list);
@@ -111,6 +124,6 @@ async function post(
 }
 
 // For tests: what is waiting, without taking it.
-export function waitingServerEvents(): readonly { app: SettingsApp; event: WireEvent }[] {
+export function waitingServerEvents(): readonly { app: EventApp; event: WireEvent }[] {
   return waiting;
 }

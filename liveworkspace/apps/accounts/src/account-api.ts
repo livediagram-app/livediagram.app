@@ -81,6 +81,7 @@ import {
   revokeApiTokenBySecret,
   verifyApiToken,
 } from './tokens.ts';
+import { reportServerEvent } from './telemetry.ts';
 
 export const ACCOUNT_API_PATH = '/api/account';
 
@@ -185,6 +186,10 @@ async function handleOpen(
       return found ? json(found) : error(404, 'invite_not_found');
     }
     const result = await declineByToken(db, sub);
+    if (result.ok && result.value.declined && result.value.inviterApp) {
+      // No account need be behind an email's Decline: counted under the inviter's app.
+      reportServerEvent(env, 'Team', 'Declined', 'Email', result.value.inviterApp);
+    }
     if (result.ok && result.value.declined) {
       await tellAdmins(env, result.value.teamId, {
         teamName: result.value.teamName,
@@ -200,6 +205,9 @@ async function handleOpen(
 
   return null;
 }
+
+// Team·Removed's type for who went (removeMember), as the apps have always named it.
+const REMOVED_TYPES = { self: 'Self', invite: 'Invite', member: 'Member' } as const;
 
 // A network: an IPv4 /24 or an IPv6 /48, so one machine can't dodge the limit by changing address.
 function network(ip: string): string {
@@ -253,28 +261,46 @@ async function handleSignedIn(
   if (!actor) return error(401, 'signed_out');
   const db = env.AUTH_DB;
   const [section, id, sub, subId, action] = parts;
+  // Team and token events are counted under the app the actor signed up through, found when the batch
+  // goes (telemetry.ts).
+  const home = () => signupAppOf(db, actor.id);
 
   if (section === 'teams') {
     if (!id) {
       if (method === 'GET') return myTeams(db, actor);
       if (method === 'POST') {
         const body = await readBody(request);
-        return answer(await createTeam(db, actor, body.name, Date.now(), body.organisation), 201);
+        const result = await createTeam(db, actor, body.name, Date.now(), body.organisation);
+        if (result.ok) reportServerEvent(env, 'Team', 'Created', null, home);
+        return answer(result, 201);
       }
     } else if (!sub) {
       if (method === 'PATCH') {
         const body = await readBody(request);
-        return answer(
-          await updateTeam(db, actor, id, { name: body.name, organisation: body.organisation }),
-        );
+        const result = await updateTeam(db, actor, id, {
+          name: body.name,
+          organisation: body.organisation,
+        });
+        if (result.ok) reportServerEvent(env, 'Team', 'Changed', null, home);
+        return answer(result);
       }
-      if (method === 'DELETE') return answer(await deleteTeam(db, actor, id));
+      if (method === 'DELETE') {
+        const result = await deleteTeam(db, actor, id);
+        if (result.ok) reportServerEvent(env, 'Team', 'Deleted', null, home);
+        return answer(result);
+      }
     } else if (sub === 'invite-link' && !subId) {
       // The team's join link: on (or a new one, ending the old), and off. Admins only.
       if (method === 'POST') {
-        return answer(await makeInviteLink(db, actor, id, env.BETTER_AUTH_SECRET, env.BASE_URL));
+        const result = await makeInviteLink(db, actor, id, env.BETTER_AUTH_SECRET, env.BASE_URL);
+        if (result.ok) reportServerEvent(env, 'Team', 'Shared', 'Link', home);
+        return answer(result);
       }
-      if (method === 'DELETE') return answer(await clearInviteLink(db, actor, id));
+      if (method === 'DELETE') {
+        const result = await clearInviteLink(db, actor, id);
+        if (result.ok) reportServerEvent(env, 'Team', 'Removed', 'Link', home);
+        return answer(result);
+      }
     } else if (sub === 'members' && !action) {
       if (!subId) {
         if (method === 'GET') return teamMembers(db, env, actor, id);
@@ -282,6 +308,7 @@ async function handleSignedIn(
           const body = await readBody(request);
           const result = await inviteMember(db, actor, id, body.email, body.role);
           if (result.ok) {
+            reportServerEvent(env, 'Team', 'Added', 'Member', home);
             await sendTeamInviteEmail(env, {
               to: result.value.member.email,
               teamName: result.value.teamName,
@@ -295,9 +322,17 @@ async function handleSignedIn(
         }
       } else {
         if (method === 'PATCH') {
-          return answer(await setMemberRole(db, actor, id, subId, (await readBody(request)).role));
+          const result = await setMemberRole(db, actor, id, subId, (await readBody(request)).role);
+          if (result.ok) reportServerEvent(env, 'Team', 'Changed', 'Role', home);
+          return answer(result);
         }
-        if (method === 'DELETE') return answer(await removeMember(db, actor, id, subId));
+        if (method === 'DELETE') {
+          const result = await removeMember(db, actor, id, subId);
+          if (result.ok) {
+            reportServerEvent(env, 'Team', 'Removed', REMOVED_TYPES[result.value.removed], home);
+          }
+          return answer(result);
+        }
       }
     }
   }
@@ -309,6 +344,11 @@ async function handleSignedIn(
     method === 'POST'
   ) {
     const result = await answerInvitation(db, actor, id, sub === 'accept');
+    if (result.ok && result.value.status === 'joined') {
+      reportServerEvent(env, 'Team', 'Joined', null, home);
+    } else if (result.ok) {
+      reportServerEvent(env, 'Team', 'Declined', 'Invite', home);
+    }
     if (result.ok) {
       await tellAdmins(env, result.value.teamId, {
         teamName: result.value.teamName,
@@ -323,7 +363,10 @@ async function handleSignedIn(
   // Joining through a team's join link. Its preview (GET) is open: handleOpen.
   if (section === 'join' && id && !sub && method === 'POST') {
     if (await overLinkLimit(request, env)) return error(429, 'rate_limited');
-    return answer(await joinByInviteLink(db, actor, id));
+    const result = await joinByInviteLink(db, actor, id);
+    if (result.ok && !result.value.alreadyMember)
+      reportServerEvent(env, 'Team', 'Joined', null, home);
+    return answer(result);
   }
 
   if (section === 'tokens') {
@@ -334,10 +377,14 @@ async function handleSignedIn(
         name: cleanTokenName(body.name, 'API token'),
         readOnly: body.readOnly === true,
       });
-      return token ? json(token, 201) : error(409, 'token_limit_reached');
+      if (!token) return error(409, 'token_limit_reached');
+      reportServerEvent(env, 'Token', 'Created', 'Manual', home);
+      return json(token, 201);
     }
     if (id && !sub && method === 'DELETE') {
-      return (await revokeApiToken(db, actor.id, id)) ? json({ id }) : error(404, 'not_found');
+      if (!(await revokeApiToken(db, actor.id, id))) return error(404, 'not_found');
+      reportServerEvent(env, 'Token', 'Removed', null, home);
+      return json({ id });
     }
   }
 

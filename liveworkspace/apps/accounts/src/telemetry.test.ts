@@ -121,4 +121,25 @@ describe('server events', () => {
       reportServerEvent(env, 'Email', 'Sent', 'Welcome', 'livediagram.app');
     expect(waitingServerEvents()).toHaveLength(1_000);
   });
+
+  it('finds an app given as a lookup when the batch goes, and leaves out someone with none', async () => {
+    const { sent, fetcher } = service();
+    let looked = 0;
+    const lookup = (app: 'liveplanner.app' | null) => async () => {
+      looked++;
+      return app;
+    };
+    reportServerEvent(env, 'Team', 'Created', null, lookup('liveplanner.app'));
+    reportServerEvent(env, 'Team', 'Changed', 'Role', lookup(null));
+    reportServerEvent(env, 'Token', 'Removed', null, async () => {
+      throw new Error('db down');
+    });
+    // Nothing is looked up until the flush.
+    expect(looked).toBe(0);
+    await flushServerEvents({ ...env, TELEMETRY: fetcher });
+    expect(looked).toBe(2);
+    expect(sent.map((s) => [s.body.app, s.body.events])).toEqual([
+      ['liveplanner.app', [{ category: 'Team', action: 'Created' }]],
+    ]);
+  });
 });

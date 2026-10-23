@@ -668,7 +668,7 @@ export async function removeMember(
   teamId: string,
   memberId: string,
   now = Date.now(),
-): Promise<Result<{ id: string; teamDeleted: boolean }>> {
+): Promise<Result<{ id: string; teamDeleted: boolean; removed: 'self' | 'invite' | 'member' }>> {
   const me = await getMembership(db, teamId, actor.id);
   if (!me) return fail(404, 'not_found');
   const self = me.memberId === memberId;
@@ -676,6 +676,8 @@ export async function removeMember(
   const target =
     (await openMember(db, teamId, memberId)) ?? (await declinedMember(db, teamId, memberId));
   if (!target) return fail(404, 'not_found');
+  // Who went: the person themselves leaving, an invitation withdrawn, or a member removed.
+  const removed = self ? 'self' : target.status === 'joined' ? 'member' : 'invite';
   if (target.status === 'joined' && target.role === 'admin') {
     const joined = await db
       .prepare(`SELECT COUNT(*) AS n FROM team_member WHERE teamId = ? AND status = 'joined'`)
@@ -683,7 +685,7 @@ export async function removeMember(
       .first<{ n: number }>();
     if ((joined?.n ?? 0) <= 1) {
       await db.batch(await deleteTeamStatements(db, actor, teamId, me.teamName, now));
-      return ok({ id: memberId, teamDeleted: true });
+      return ok({ id: memberId, teamDeleted: true, removed });
     }
     if ((await adminCount(db, teamId)) <= 1) return fail(409, 'last_admin');
   }
@@ -718,7 +720,7 @@ export async function removeMember(
         ]
       : []),
   ]);
-  return ok({ id: memberId, teamDeleted: false });
+  return ok({ id: memberId, teamDeleted: false, removed });
 }
 
 // The invited person's yes or no. Only an account whose verified address is the one invited may

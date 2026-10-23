@@ -9,14 +9,17 @@ describe('server-emitted telemetry pairs (docs/specs/017-telemetry/telemetry.md)
     expect(isServerEmittedEvent({ category: 'Document', action: 'Joined' })).toBe(true);
     expect(isServerEmittedEvent({ category: 'Document', action: 'Used' })).toBe(true);
     expect(isServerEmittedEvent({ category: 'Email', action: 'Sent' })).toBe(true);
+    expect(isServerEmittedEvent({ category: 'Team', action: 'Joined' })).toBe(true);
+    expect(isServerEmittedEvent({ category: 'Token', action: 'Removed' })).toBe(true);
   });
 
   it('leaves the client-owned neighbours alone', () => {
-    // SignedOut / Deleted still come from the browser, and Team·Joined is a
-    // different event from Document·Joined.
+    // SignedOut / Deleted still come from the browser, and so do Team·Created and Team·Added
+    // (a team made in an app, an item moved into a team).
     expect(isServerEmittedEvent({ category: 'Session', action: 'SignedOut' })).toBe(false);
     expect(isServerEmittedEvent({ category: 'Session', action: 'Deleted' })).toBe(false);
-    expect(isServerEmittedEvent({ category: 'Team', action: 'Joined' })).toBe(false);
+    expect(isServerEmittedEvent({ category: 'Team', action: 'Created' })).toBe(false);
+    expect(isServerEmittedEvent({ category: 'Team', action: 'Added' })).toBe(false);
   });
 
   it('only names pairs from the closed vocabulary', () => {

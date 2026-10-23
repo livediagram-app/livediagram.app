@@ -408,9 +408,9 @@ describe('the account API routes', () => {
   });
 });
 
-describe('counting the team emails', () => {
+describe('counting team emails, teams and tokens', () => {
   let env: Env;
-  let posted: { app: string; events: { category: string; action: string; type: string }[] }[];
+  let posted: { app: string; events: { category: string; action: string; type?: string }[] }[];
   let mail: string[];
   let signedIn: { id: string; name: string; email: string; emailVerified: boolean } | null;
   const auth = {
@@ -459,9 +459,14 @@ describe('counting the team emails', () => {
       auth,
     );
 
-  const counted = () =>
+  // What was counted in one category, as `<app> <Category>·<Action>[·<Type>]`.
+  const counted = (category = 'Email') =>
     posted
-      .flatMap((b) => b.events.map((e) => `${b.app} ${e.category}·${e.action}·${e.type}`))
+      .flatMap((b) =>
+        b.events
+          .filter((e) => e.category === category)
+          .map((e) => [`${b.app} ${e.category}`, e.action, e.type].filter(Boolean).join('·')),
+      )
       .sort();
 
   it('counts invitations and answers under the app the inviter signed up through', async () => {
@@ -488,6 +493,81 @@ describe('counting the team emails', () => {
       'livedesign.app Email·Sent·InviteResponse',
       'livedesign.app Email·Sent·TeamInvite',
       'livedesign.app Email·Sent·TeamInvite',
+    ]);
+  });
+
+  it('counts what is done to teams and tokens under the app each actor signed up through', async () => {
+    await startLifecycle(db, { id: ADA.id, email: ADA.email! }, T0, 'livedesign.app');
+    await startLifecycle(db, { id: BEA.id, email: BEA.email! }, T0, 'livediagram.app');
+    const made = await call('/teams', 'POST', { name: 'Design' });
+    const { id } = (await made.json()) as { id: string };
+    await call(`/teams/${id}`, 'PATCH', { name: 'Design Team' });
+    await call(`/teams/${id}/invite-link`, 'POST', {});
+    await call(`/teams/${id}/invite-link`, 'DELETE');
+    await call(`/teams/${id}/members`, 'POST', { email: BEA.email });
+    const cy = (await (await call(`/teams/${id}/members`, 'POST', { email: CY.email })).json()) as {
+      id: string;
+    };
+    await call(`/teams/${id}/members/${cy.id}`, 'DELETE');
+    signedIn = { id: BEA.id, name: 'Bea', email: BEA.email!, emailVerified: true };
+    const { invitations } = (await (await call('/teams')).json()) as {
+      invitations: { id: string }[];
+    };
+    await call(`/invitations/${invitations[0]!.id}/accept`, 'POST', {});
+    const tokenMade = (await (await call('/tokens', 'POST', { name: 'Script' })).json()) as {
+      id: string;
+    };
+    await call(`/tokens/${tokenMade.id}`, 'DELETE');
+    signedIn = { id: ADA.id, name: 'Ada', email: ADA.email!, emailVerified: true };
+    const detail = (await (await call(`/teams/${id}/members`)).json()) as {
+      members: { id: string; email: string }[];
+    };
+    const bea = detail.members.find((m) => m.email === BEA.email)!;
+    await call(`/teams/${id}/members/${bea.id}`, 'PATCH', { role: 'admin' });
+    await call(`/teams/${id}/members/${bea.id}`, 'DELETE');
+    await call(`/teams/${id}`, 'DELETE');
+    // A refused change counts nothing.
+    signedIn = { id: CY.id, name: 'Cy', email: CY.email!, emailVerified: true };
+    expect((await call(`/teams/${id}`, 'PATCH', { name: 'Mine' })).status).toBe(404);
+    expect(posted).toEqual([]);
+    await flushServerEvents(env);
+    expect([...counted('Team'), ...counted('Token')]).toEqual([
+      'livedesign.app Team·Added·Member',
+      'livedesign.app Team·Added·Member',
+      'livedesign.app Team·Changed',
+      'livedesign.app Team·Changed·Role',
+      'livedesign.app Team·Created',
+      'livedesign.app Team·Deleted',
+      'livedesign.app Team·Removed·Invite',
+      'livedesign.app Team·Removed·Link',
+      'livedesign.app Team·Removed·Member',
+      'livedesign.app Team·Shared·Link',
+      'livediagram.app Team·Joined',
+      'livediagram.app Token·Created·Manual',
+      'livediagram.app Token·Removed',
+    ]);
+  });
+
+  it('counts a decline under who answered, and an email’s under the inviter’s app', async () => {
+    await startLifecycle(db, { id: ADA.id, email: ADA.email! }, T0, 'livedesign.app');
+    await startLifecycle(db, { id: BEA.id, email: BEA.email! }, T0, 'livediagram.app');
+    const id = await team();
+    await call(`/teams/${id}/members`, 'POST', { email: BEA.email });
+    await call(`/teams/${id}/members`, 'POST', { email: CY.email });
+    signedIn = { id: BEA.id, name: 'Bea', email: BEA.email!, emailVerified: true };
+    const { invitations } = (await (await call('/teams')).json()) as {
+      invitations: { id: string }[];
+    };
+    await call(`/invitations/${invitations[0]!.id}/decline`, 'POST', {});
+    signedIn = null;
+    const token = /join\/decline\?token=([^\s"\\]+)/.exec(mail[1]!)![1]!;
+    await call(`/invitations/decline/${decodeURIComponent(token)}`, 'POST', {});
+    // A second Decline of the same invitation counts nothing more.
+    await call(`/invitations/decline/${decodeURIComponent(token)}`, 'POST', {});
+    await flushServerEvents(env);
+    expect(counted('Team').filter((e) => e.includes('Declined'))).toEqual([
+      'livedesign.app Team·Declined·Email',
+      'livediagram.app Team·Declined·Invite',
     ]);
   });
 
