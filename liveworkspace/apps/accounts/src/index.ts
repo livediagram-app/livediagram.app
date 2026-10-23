@@ -5,6 +5,7 @@ import {
 import { ACCOUNT_API_PATH, handleAccountApi } from './account-api.ts';
 import { AUTH_BASE_PATH, SEND_CODE_PATH, SIGN_IN_CODE_PATH } from './auth-options.ts';
 import { getAuth } from './auth.ts';
+import { BENCH_ACCOUNTS_PATH, benchAccounts } from './bench-accounts.ts';
 import { CLIENTS_PATH, registerClient } from './clients.ts';
 import { DELETE_ACCOUNT_PATH, deleteAccount } from './delete-account.ts';
 import type { Env } from './env.ts';
@@ -69,6 +70,10 @@ export default {
 
     if (request.method === 'POST' && pathname === CLIENTS_PATH) {
       return registerClient(request, env, getAuth(env));
+    }
+
+    if (request.method === 'POST' && pathname === BENCH_ACCOUNTS_PATH) {
+      return benchAccounts(request, env);
     }
 
     if (request.method === 'POST' && pathname === `${AUTH_BASE_PATH}${DELETE_ACCOUNT_PATH}`) {

@@ -153,6 +153,11 @@ the account, its verified email, read-only and the account's teams. `createToken
 ten seconds), so a burst of MCP calls costs one check; it is also how long a revoked token can go on
 working in an isolate that had just checked it.
 
+A local stack has one more door, for the apps' MCP evaluation benches: `POST /api/auth/internal/bench-accounts`
+`{count, name?}` makes `count` throwaway accounts (up to 200) with one API token each and answers
+`{accounts: [{userId, token}]}`. It needs `ADMIN_TOKEN`, as registering a client does, and exists only where
+`ENVIRONMENT` is `development` (`src/bench-accounts.ts`).
+
 ### Expiry warnings
 
 A week before a token expires, its owner is emailed once about it, so a script or connected AI tool

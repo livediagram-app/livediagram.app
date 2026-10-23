@@ -22,8 +22,9 @@ The kit lives in `apps/mcp/eval/`:
 ## Set up
 
 1. Work in a worktree on a branch cut from a fresh `origin/main`, never in the main checkout.
-2. Give the worktree's api its local state: copy main's `apps/api/.wrangler/state` and `apps/api/.dev.vars`, then
-   `corepack pnpm exec wrangler d1 migrations apply DB --local --persist-to .wrangler/state` from `apps/api`.
+2. Give the worktree's api its local state: copy main's `apps/api/.wrangler/state` and `apps/api/.dev.vars`. The api
+   has no database of its own: liveworkspace's accounts, index and media (for a task's gallery) run locally beside it (`pnpm dev` in each of
+   `liveworkspace/apps/accounts`, `liveworkspace/apps/index`, `liveworkspace/apps/media`), at the origins `.dev.vars` names.
 3. Start the MCP and the api in ONE wrangler session, so the MCP's service binding reaches this branch's api, from
    `apps/mcp`:
    `nohup corepack pnpm exec wrangler dev -c wrangler.toml -c ../api/wrangler.toml --port 8798 --inspector-port 9398 --persist-to ../api/.wrangler/state > <scratchpad>/mcp.log 2>&1 &`
@@ -35,9 +36,10 @@ The kit lives in `apps/mcp/eval/`:
 6. Run from `apps/mcp/eval`: `node bench/run.mjs --round <name> --tasks all --models haiku,sonnet,opus --repeat 2
 --concurrency 6`. `--tasks` takes `all`, an area (`pages`) or ids (`I1,I4`), mixed. A whole-bank round takes
    about a minute per run at that concurrency.
-7. Each run gets a token minted into local D1 for a throwaway owner, so it starts in an empty library and never sees
-   another run's documents ("our launch deck" finds its own). The tokens are kept in `runs/<round>/tokens.json` so a
-   run's library can be read again.
+7. Each run gets its own throwaway account and API token from the local accounts Worker (its development-only
+   `POST /api/auth/internal/bench-accounts`, with the accounts Worker's `ADMIN_TOKEN`, `local-admin-token` by default),
+   so it starts in an empty library and never sees another run's documents ("our Bugs board" finds its own). The tokens are
+   kept in `runs/<round>/tokens.json` so a run's library can be read again.
 8. Each run is `claude -p` from an empty temp directory outside the repo, with `--strict-mcp-config`, `--tools ""`,
    `--setting-sources ""`, a short chat-app system prompt (with a fixed date) and `ENABLE_TOOL_SEARCH=false`, so the
    assistant sees every tool schema up front, as a connector in a chat app does, and nothing of the repo.
@@ -108,8 +110,8 @@ The kit lives in `apps/mcp/eval/`:
 - A tool result can carry its JSON and then a lint as separate text parts; read the first part that parses, not the
   joined text (`resultJson` in `apps/mcp/eval/bench/mcp-client.mjs`).
 - `read_document` with `format: "json"` puts the elements under `tab.elements`, not at the top.
-- A token minted into an earlier session's D1 copy is refused after copying main's state again ("the token is not
-  accepted"); `run.mjs` mints its own into the copy each round.
+- A token minted by an earlier session's local accounts is refused after its state is reset ("the token is not
+  accepted"); `run.mjs` mints its own each round.
 - A check written from one model's output can quietly fit that model: the cross-test (step 16) and a second model's
   runs are what show a check is about the prompt.
 - The per-token limits count api requests (reads 120 a minute), and every run has its own token, so runs do not
@@ -123,8 +125,8 @@ The kit lives in `apps/mcp/eval/`:
   a fourteen-box tab and took 1.8 s there.
 - When a fix moves where a row's members sit (stores under services), replay every past input of that shape from the
   rounds' transcripts and compare box geometry before and after: only the inputs the fix was for should move.
-- The gallery seeding runs wrangler commands that block Node's event loop; seeded while runs were talking to the
-  server, it made their requests time out ("fetch failed"). `run.mjs` seeds every gallery before the first run starts.
+- The gallery is seeded through the local media service, as an upload, before the first run starts, so no upload
+  competes with a run's requests.
 - The local dev server now and then drops a request ("Error: Network connection lost"); the bench client retries a
   request twice before the error stands. One such drop in a transcript is the server, not the tools.
 - To measure a change before and after, run the before half on a detached worktree of the last commit started on the
