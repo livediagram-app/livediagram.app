@@ -128,8 +128,8 @@ export type AppItems = {
   share: AppShare;
   // The person's Library in the app's API, which the Explorer on liveworkspace.app reads by the workspace token: their
   // images (`GET`/`POST`, `GET usage`, `GET`/`DELETE <id>`; the media service behind it) and their shape libraries
-  // (`GET`, `PUT`/`DELETE <id>`; a Durable Object behind it). Null where the app keeps none, and the Library leaves
-  // that page out.
+  // (`GET`, `PUT`/`DELETE <id>`, `GET <id>/previews` for every shape drawn as an SVG; a Durable Object behind it).
+  // Null where the app keeps none, and the Library leaves that page out.
   imagesPath: string | null;
   shapeLibrariesPath: string | null;
   // "Import from": the other tools the app reads files from, and its page that does it (`${url}${importPath}` with

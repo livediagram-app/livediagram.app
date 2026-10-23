@@ -10,6 +10,7 @@ import { ConfirmDialog } from '../ui/ConfirmDialog';
 import { EmptyState } from '../ui/EmptyState';
 import { ShapesIcon } from '../ui/library-icons';
 import { isAbort } from '../data/errors';
+import { PlainShapeTile } from './ShapePreview';
 import type { LibraryShape, ShapeLibrariesHost, ShapeLibrary } from './types';
 
 /** How many shapes a closed card shows. */
@@ -280,22 +281,9 @@ function ShapeTile({
   render?: (shape: LibraryShape) => ReactNode;
   className: string;
 }) {
-  const ratio = shape.width && shape.height ? shape.width / shape.height : 1;
   return (
     <span className={`flex items-center justify-center overflow-hidden ${className}`}>
-      {render ? (
-        render(shape)
-      ) : (
-        <span
-          aria-hidden
-          className="block max-h-[70%] max-w-[70%] rounded-sm border border-slate-300 bg-slate-100 dark:border-slate-600 dark:bg-slate-800"
-          style={{
-            aspectRatio: String(ratio),
-            height: ratio >= 1 ? undefined : '70%',
-            width: ratio >= 1 ? '70%' : undefined,
-          }}
-        />
-      )}
+      {render ? render(shape) : <PlainShapeTile shape={shape} />}
     </span>
   );
 }

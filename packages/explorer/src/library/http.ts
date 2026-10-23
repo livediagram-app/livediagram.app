@@ -1,10 +1,13 @@
 // The Library's hosts over an app's API (the sites registry's `imagesPath` and `shapeLibrariesPath`): the person's
 // images (`GET`/`POST`, `GET usage`, `GET`/`DELETE <id>`; the media service behind it) and their shape libraries
-// (`GET`, `PUT`/`DELETE <id>`; a Durable Object behind it), read by a bearer every app's API accepts. liveworkspace.app
+// (`GET`, `PUT`/`DELETE <id>`, `GET <id>/previews`; a Durable Object behind it), read by a bearer every app's API accepts. liveworkspace.app
 // reads them cross-origin with the workspace token; an app's editor passes its own origin and token. Nothing is
-// stored here. Drawing a shape takes the app's editor, so shapes show as plain tiles unless the host draws them.
+// stored here. A shape is drawn by the app's API (one request a library, its every shape as an SVG), since drawing one
+// takes the app's renderer.
 
+import { createElement } from 'react';
 import { APP_ITEMS, siteOfApp, type AppName } from '@liveworkspace/sites';
+import { ShapePreview } from './ShapePreview';
 import type {
   GalleryHost,
   GalleryImage,
@@ -136,6 +139,9 @@ function galleryHost(app: AppName, path: string, token: Token, origin: string): 
   };
 }
 
+// How many library versions' drawings a host keeps at once.
+const PREVIEWS_KEPT = 20;
+
 // A library as the app keeps it: its shapes carry their drawing, which a change sends back whole.
 type WireLibrary = ShapeLibrary & { items: (LibraryShape & Record<string, unknown>)[] };
 
@@ -147,12 +153,38 @@ function shapeLibrariesHost(path: string, token: Token, origin: string): ShapeLi
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     });
+  // Which library each listed shape is in, and each library version's drawings, so a library is drawn once per
+  // version however many tiles show it. At most PREVIEWS_KEPT versions are kept; a failed read is forgotten.
+  const libraryOf = new WeakMap<LibraryShape, WireLibrary>();
+  const drawings = new Map<string, Promise<Record<string, string>>>();
+  const drawn = (library: WireLibrary) => {
+    const key = `${library.id}@${library.updatedAt ?? 0}`;
+    let pending = drawings.get(key);
+    if (!pending) {
+      const url = `${base}/${encodeURIComponent(library.id)}/previews?v=${library.updatedAt ?? 0}`;
+      pending = call(token, url)
+        .then((res) => (res.ok ? res.json() : { previews: {} }))
+        .then((body) => (body as { previews: Record<string, string> }).previews);
+      pending.catch(() => drawings.delete(key));
+      drawings.set(key, pending);
+      if (drawings.size > PREVIEWS_KEPT) drawings.delete(drawings.keys().next().value!);
+    }
+    return pending;
+  };
+  const load = async (shape: LibraryShape): Promise<string | null> => {
+    const library = libraryOf.get(shape);
+    if (!library) return null;
+    return (await drawn(library))[shape.id] ?? null;
+  };
   return {
     list: async (signal) => {
       const res = await call(token, base, {}, signal);
       const body = (await res.json()) as { libraries: WireLibrary[] };
+      for (const library of body.libraries)
+        for (const shape of library.items) libraryOf.set(shape, library);
       return [...body.libraries].sort((a, b) => (b.updatedAt ?? 0) - (a.updatedAt ?? 0));
     },
+    renderShape: (shape) => createElement(ShapePreview, { shape, load }),
     rename: async (library, name) => {
       try {
         await put(library, { name });
