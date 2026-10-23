@@ -18,18 +18,17 @@ shared configuration, and which Next.js features they use or decline, with the r
 
 `@livediagram/next-config` holds every setting the apps share; an app's `next.config.ts` adds only what is its own.
 
-| Setting                                    | Value                                                                                                     | Why                                                                                                   |
-| ------------------------------------------ | --------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `output`                                   | `'export'` (the editor in production builds only)                                                         | Every site is static ([Deployment](deployment.md))                                                    |
-| `distDir`                                  | `NEXT_DISTDIR`, else `.next`                                                                              | Dev builds into `.next-dev` so a concurrent build never races it                                      |
-| `images.unoptimized`                       | `true`                                                                                                    | No image server on a static export                                                                    |
-| `typescript`                               | `typescriptConfig()`                                                                                      | E2E builds skip Next's own type check ([E2E smoke](../003-system-architecture/e2e-smoke.md))          |
-| `reactCompiler`                            | the editor alone (`reactCompiler: true` passed in), Rust port (`experimental.turbopackRustReactCompiler`) | [React state and effects](../003-system-architecture/react-state-and-effects.md) "The React Compiler" |
-| `experimental.turbopackGc`                 | `true`                                                                                                    | Drops unreachable work from Turbopack's memory and disk cache                                         |
-| `experimental.turbopackLazyDynamicImports` | `true`                                                                                                    | Dev compiles a dynamic import when the browser asks for it                                            |
-| `experimental.agentUpgrade`                | `'latest'`                                                                                                | Coding agents are pointed at new stable releases                                                      |
-| `agentRules`                               | `false`                                                                                                   | `next dev` writes no `AGENTS.md`: the repository's agent files are written by hand                    |
-| `env.NEXT_PUBLIC_BUILD_YEAR`               | the build's year                                                                                          | The footer's year, the same in the prerender and the browser                                          |
+| Setting                      | Value                                                                                                     | Why                                                                                                   |
+| ---------------------------- | --------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `output`                     | `'export'` (the editor in production builds only)                                                         | Every site is static ([Deployment](deployment.md))                                                    |
+| `distDir`                    | `NEXT_DISTDIR`, else `.next`                                                                              | Dev builds into `.next-dev` so a concurrent build never races it                                      |
+| `images.unoptimized`         | `true`                                                                                                    | No image server on a static export                                                                    |
+| `typescript`                 | `typescriptConfig()`                                                                                      | E2E builds skip Next's own type check ([E2E smoke](../003-system-architecture/e2e-smoke.md))          |
+| `reactCompiler`              | the editor alone (`reactCompiler: true` passed in), Rust port (`experimental.turbopackRustReactCompiler`) | [React state and effects](../003-system-architecture/react-state-and-effects.md) "The React Compiler" |
+| `experimental.turbopackGc`   | `true`                                                                                                    | Drops unreachable work from Turbopack's memory and disk cache                                         |
+| `experimental.agentUpgrade`  | `'latest'`                                                                                                | Coding agents are pointed at new stable releases                                                      |
+| `agentRules`                 | `false`                                                                                                   | `next dev` writes no `AGENTS.md`: the repository's agent files are written by hand                    |
+| `env.NEXT_PUBLIC_BUILD_YEAR` | the build's year                                                                                          | The footer's year, the same in the prerender and the browser                                          |
 
 - **An app's own settings**: `basePath`, `assetPrefix`, `trailingSlash`, `pageExtensions`, MDX and `transpilePackages`.
 - **The React Compiler runs in the editor alone.** The four static sites' pages rarely re-render, and on them it added
@@ -37,6 +36,10 @@ shared configuration, and which Next.js features they use or decline, with the r
 - **The React Compiler needs Turbopack.** Under the webpack escape hatch (`dev:webpack`) it is left off.
 - **An experimental flag stays only while it measures a gain.** Each row above records what it was adopted for;
   one that stops paying is removed.
+- **No `turbopackLazyDynamicImports`.** It was on to compile a dynamic import only when the browser asked for it, but
+  under Next 16.4.2 dev it left some dynamic imports without their chunk: in livedocuments, creating a document asked
+  for a lazy-compilation chunk the server never wrote (`ChunkLoadError`, 2026-10-23), and a clean `.next-dev` did not
+  cure it. It stays off until a Next release fixes that.
 
 ## The Turbopack cache
 

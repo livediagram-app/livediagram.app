@@ -39,12 +39,7 @@ export function livediagramNextConfig({
     experimental: {
       agentUpgrade: 'latest',
       ...(compiler ? { turbopackRustReactCompiler: true } : {}),
-      ...(turbopack
-        ? {
-            turbopackGc: true,
-            turbopackLazyDynamicImports: true,
-          }
-        : {}),
+      ...(turbopack ? { turbopackGc: true } : {}),
     },
   };
 }

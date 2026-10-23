@@ -68,12 +68,9 @@ export function livedocumentsNextConfig({
     experimental: {
       agentUpgrade: 'latest',
       ...(compiler ? { turbopackRustReactCompiler: true } : {}),
-      ...(turbopack
-        ? {
-            turbopackGc: true,
-            turbopackLazyDynamicImports: true,
-          }
-        : {}),
+      // No turbopackLazyDynamicImports: in dev it left dynamic imports without their chunk (a ChunkLoadError creating
+      // a document, docs/specs/016-platform/nextjs.md).
+      ...(turbopack ? { turbopackGc: true } : {}),
     },
   };
 }

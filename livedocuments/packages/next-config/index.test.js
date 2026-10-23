@@ -86,7 +86,6 @@ describe('livedocumentsNextConfig', () => {
       agentUpgrade: 'latest',
       turbopackRustReactCompiler: true,
       turbopackGc: true,
-      turbopackLazyDynamicImports: true,
     });
   });
 
@@ -99,7 +98,6 @@ describe('livedocumentsNextConfig', () => {
     expect(config.experimental).toEqual({
       agentUpgrade: 'latest',
       turbopackGc: true,
-      turbopackLazyDynamicImports: true,
     });
   });
 

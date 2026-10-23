@@ -86,7 +86,6 @@ describe('livediagramNextConfig', () => {
       agentUpgrade: 'latest',
       turbopackRustReactCompiler: true,
       turbopackGc: true,
-      turbopackLazyDynamicImports: true,
     });
   });
 
@@ -99,7 +98,6 @@ describe('livediagramNextConfig', () => {
     expect(config.experimental).toEqual({
       agentUpgrade: 'latest',
       turbopackGc: true,
-      turbopackLazyDynamicImports: true,
     });
   });
 
