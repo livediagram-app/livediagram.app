@@ -115,7 +115,7 @@ pnpm --filter @livedesign/live build:signed-in
 pnpm --filter @livedesign/live test:e2e:signed-in
 ```
 
-The armed guest-signature specs (`apps/live/e2e/armed/`) run against the usual build, on their own stack with guest signature enforcement on (`:3117`):
+The armed guest-signature specs (`apps/live/e2e/armed/`) run against the usual build, on their own stack with guest signature enforcement on (`:3417`):
 
 ```sh
 pnpm --filter @livedesign/live test:e2e:armed
@@ -128,7 +128,7 @@ Those ports are defaults, not fixtures. Three environment variables move them, w
 | `E2E_BASE_URL`       | `http://localhost:3402` | Where Playwright points, and the URL it waits on before starting      |
 | `E2E_LIVE_PORT`      | `3402`                  | The port `e2e-stack.mjs` serves the built live app on                 |
 | `E2E_API_PORT`       | `8989`                  | The api worker's port, and the target its `/api/*` proxy forwards to  |
-| `E2E_MARKETING_PORT` | `3013`                  | The port the stack serves the built marketing site on (optical audit) |
+| `E2E_MARKETING_PORT` | `3413`                  | The port the stack serves the built marketing site on (optical audit) |
 
 `E2E_API_PORT` is self-contained: it sets the worker's port and the proxy that reaches it together. The other two are **not**. Playwright waits on `E2E_BASE_URL` while the stack binds `E2E_LIVE_PORT`, so moving the live app means setting both. Set only one and the run hangs until the 180-second `webServer` timeout, with nothing said about why.
 

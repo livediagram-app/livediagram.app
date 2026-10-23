@@ -11,17 +11,17 @@ const CI_WORKERS = 4;
 // (`pnpm test:e2e:signed-in`) on their own ports, so a guest stack already up on :3402 is never
 // mistaken for it.
 const signedIn = process.env.E2E_SIGNED_IN === '1';
-const SIGNED_IN_PORTS = { live: '3415', api: '8999', marketing: '3416' };
+const SIGNED_IN_PORTS = { live: '3415', api: '8415', marketing: '3416' };
 // The armed specs (e2e/armed/, docs/specs/003-system-architecture/e2e-smoke.md "Armed guest
 // signatures") need guest signature enforcement on, so they run as their own invocation
 // (`pnpm test:e2e:armed`) on their own ports, against the guest-mode export.
 const armed = process.env.E2E_GUEST_SIG_ENFORCE === '1';
-const ARMED_PORTS = { live: '3117', api: '8789', marketing: '3118' };
+const ARMED_PORTS = { live: '3417', api: '8417', marketing: '3418' };
 // The workbench embed e2e (docs/specs/013-workspace/blueprints/workbench-embeds.md "Testing") needs the
 // NEXT_PUBLIC_E2E_AUTH export and the stack acting as the accounts Worker, so it runs as its own invocation
 // (`pnpm test:e2e:workbench`) on its own ports.
 const workbench = process.env.E2E_WORKBENCH === '1';
-const WORKBENCH_PORTS = { live: '3121', api: '8791', marketing: '3122' };
+const WORKBENCH_PORTS = { live: '3421', api: '8421', marketing: '3422' };
 const BASE_URL =
   process.env.E2E_BASE_URL ??
   (signedIn

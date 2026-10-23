@@ -239,7 +239,7 @@ center`, or shrink-wrapped content (its in-flow children, text and gaps fill the
 editor with a seeded diagram and its default panels, a shape selected, Settings, Share; the Join dialog;
 the Explorer; help home, a category and an article; the telemetry dashboard; the Community gallery; marketing home
 and a feature page. Help, telemetry and the Community are same-origin under the e2e stack; marketing is on
-`E2E_MARKETING_PORT` (default `3013`). Against dev servers: `E2E_HELP_URL`, `E2E_TELEMETRY_URL`,
+`E2E_MARKETING_PORT` (default `3113`). Against dev servers: `E2E_HELP_URL`, `E2E_TELEMETRY_URL`,
 `E2E_COMMUNITY_URL`, `E2E_MARKETING_URL`. A site that is not built fails with the build command to run.
 
 ## Static guard

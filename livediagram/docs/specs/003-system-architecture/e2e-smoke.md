@@ -157,7 +157,7 @@ The stack serves whatever `apps/editor/out` holds and never rebuilds it, so loca
      keeps a page but not its chunks. Both hold only for the browser context that asked (a cookie
      each, `e2e-deploy` and `e2e-assets-out-of-cache`, which `page.request` shares with its page):
      the suite runs in parallel, and the tests beside it keep the build they loaded.
-3. **marketing**: `apps/marketing/out` on its own port (`E2E_MARKETING_PORT`, default `3013`),
+3. **marketing**: `apps/marketing/out` on its own port (`E2E_MARKETING_PORT`, default `3113`),
    since marketing owns `/` in production.
 
 The stack also runs the editor alone beside a running one (`E2E_EDITOR_ONLY`,
@@ -166,7 +166,7 @@ key (`E2E_NO_AI`) or with its AI budget spent (`E2E_AI_BUDGET_SPENT`); see
 [Local development](../../development/local-development.md).
 
 Locally the same `playwright.config.ts` sets `reuseExistingServer`, so a
-developer with `pnpm dev` already running (live :3002 + api :8687) runs
+developer with `pnpm dev` already running (live :3102 + api :8687) runs
 `pnpm --filter @livediagram/editor test:e2e` against that stack with no
 extra boot.
 
@@ -183,7 +183,7 @@ Clerk account, secret or network.
 
 `pnpm --filter @livediagram/editor test:e2e:clerk-stub` sets `E2E_CLERK_STUB=1`, which adds the
 `clerk-stub` project and boots the stack with `E2E_EDITOR_OUT=.next/out-clerk-stub` on its own ports
-(live `:3115`, api `:8788`, marketing `:3116`), so a guest stack already up on `:3102` is never
+(live `:3115`, api `:8115`, marketing `:3116`), so a guest stack already up on `:3102` is never
 reused for it. The stack also stands in for Clerk (`E2E_CLERK_JWKS=1`): it makes a signing key at
 boot, serves its JWKS on `/e2e/jwks.json`, starts the api worker with `CLERK_JWKS_URL` pointing at
 it, and mints a session token for any test account on `/e2e/token?sub=user_…`, which the fake
@@ -198,7 +198,7 @@ The specs in `apps/editor/e2e/armed/` focus on the entry paths: a first-time gue
 Explorer first, gets a signed id before any owner-scoped call, creates a document (`201`) and sees
 the canvas, and no api response is `401`. `pnpm --filter @livediagram/editor test:e2e:armed` sets
 `E2E_GUEST_SIG_ENFORCE=1`, which adds the `armed` project and boots the stack on its own ports
-(live `:3117`, api `:8789`, marketing `:3118`). It
+(live `:3117`, api `:8117`, marketing `:3118`). It
 reuses the guest-mode export, so `e2e.yml` runs it as a second step of the Sites audit job, which
 has built it already.
 

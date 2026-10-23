@@ -100,7 +100,7 @@ const SITES = [
   { prefix: '/telemetry', dir: path.join(ROOT, 'apps', 'telemetry', 'out') },
 ];
 const MARKETING_DIR = path.join(ROOT, 'apps', 'marketing', 'out');
-const MARKETING_PORT = Number(process.env.E2E_MARKETING_PORT ?? 3013);
+const MARKETING_PORT = Number(process.env.E2E_MARKETING_PORT ?? 3413);
 // Two switches for trying the editor as a DIFFERENT deployment would run it,
 // beside a stack that is already up:
 //   E2E_LIVE_ONLY=1  serve the static editor only, proxying to the api

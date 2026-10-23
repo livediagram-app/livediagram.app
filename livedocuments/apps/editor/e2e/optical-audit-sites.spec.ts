@@ -14,7 +14,7 @@ test.use({
   deviceScaleFactor: 4,
 });
 
-const marketingPort = process.env.E2E_MARKETING_PORT ?? '3013';
+const marketingPort = process.env.E2E_MARKETING_PORT ?? '3313';
 const site = (name: 'help' | 'marketing', baseURL: string) =>
   ({
     help: process.env.E2E_HELP_URL ?? `${baseURL}/help`,
