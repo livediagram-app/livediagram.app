@@ -25,9 +25,9 @@ import {
 import {
   INTENT_INVALID,
   MARK_USED_INVALID,
+  indexIntentOf,
   readCreationIntent,
   readMarkUsed,
-  type CreationIntent,
 } from '@livediagram/api-schema';
 import { getDocument, readReorderEntries, reorderTabs, seedTabs } from '../db';
 import {
@@ -90,13 +90,6 @@ const MAX_DOCUMENT_ID = 200;
 
 function intentRejected(): Response {
   return json({ error: INTENT_INVALID }, { status: 400 });
-}
-
-// The intent the index files a create by (its default folders, docs/specs/013-workspace/default-folders.md):
-// `mode:tabKind:templateFamily`, whose last part names the template family the index's defaults key on.
-export function indexIntentOf(intent: CreationIntent | null): string | null {
-  if (!intent) return null;
-  return [intent.mode, intent.tabKind, intent.templateFamily].filter(Boolean).join(':');
 }
 
 // /api/documents in the worker. The list and the index's doors (delete, copy, share) are answered from the index;

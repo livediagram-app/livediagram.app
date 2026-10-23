@@ -159,7 +159,7 @@ describe('DELETE /api/trash/:id', () => {
 });
 
 describe('DELETE /api/trash', () => {
-  it("empties the personal Trash of canvases and answers how many went", async () => {
+  it('empties the personal Trash of canvases and answers how many went', async () => {
     index['DELETE /trash'] = () => Response.json({ purged: 3 });
     const res = await call('DELETE', '/api/trash');
     expect(res.status).toBe(200);
