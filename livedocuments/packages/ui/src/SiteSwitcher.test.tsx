@@ -27,7 +27,9 @@ describe('SiteSwitcher', () => {
   });
 
   it('names each site without ".app"', () => {
-    for (const site of SITES) expect(html).toContain(`>${site.name}</span>`);
+    // "live" in the site's colour, then the rest of its name.
+    for (const site of SITES)
+      expect(html).toContain(`>live</span>${site.name.replace(/^live/, '')}</span>`);
     expect(html).not.toMatch(/>[a-z]+\.app<\/span>/);
   });
 });

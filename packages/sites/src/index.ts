@@ -15,8 +15,10 @@ export type Site = {
   url: string;
   // One line under the name: what the site is for.
   pitch: string;
-  // The site's accent, for its dot in the list (its brand-500).
+  // The site's accent (its brand-500): its prism's tint, and "live" in its wordmark on dark.
   accent: string;
+  // Its deep shade (brand-700): "live" in its wordmark on light, where the accent is too pale.
+  deep: string;
 };
 
 // Running the apps locally (the root AGENTS.md port blocks): each site's router, or the liveworkspace
@@ -43,6 +45,7 @@ export const PLATFORM_SITE: Site = {
   url: siteUrl('liveworkspace.app', 'https://liveworkspace.app'),
   pitch: 'One account across every app',
   accent: '#64748b',
+  deep: '#334155',
 };
 
 export const APP_SITES: readonly Site[] = [
@@ -52,6 +55,7 @@ export const APP_SITES: readonly Site[] = [
     url: siteUrl('livediagram.app', 'https://www.livediagram.app'),
     pitch: 'Diagram and draw together',
     accent: '#0ea5e9',
+    deep: '#0369a1',
   },
   {
     id: 'liveplanner.app',
@@ -59,6 +63,7 @@ export const APP_SITES: readonly Site[] = [
     url: siteUrl('liveplanner.app', 'https://www.liveplanner.app'),
     pitch: 'Plan the work together',
     accent: '#8b5cf6',
+    deep: '#6d28d9',
   },
   {
     id: 'livedocuments.app',
@@ -66,6 +71,7 @@ export const APP_SITES: readonly Site[] = [
     url: siteUrl('livedocuments.app', 'https://www.livedocuments.app'),
     pitch: 'Write and present together',
     accent: '#f59e0b',
+    deep: '#b45309',
   },
   {
     id: 'livedesign.app',
@@ -73,6 +79,7 @@ export const APP_SITES: readonly Site[] = [
     url: siteUrl('livedesign.app', 'https://www.livedesign.app'),
     pitch: 'Design logos, wireframes and photos together',
     accent: '#f43f5e',
+    deep: '#be123c',
   },
 ];
 

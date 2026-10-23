@@ -10,6 +10,7 @@ describe('sites', () => {
       const host = site.id === 'liveworkspace.app' ? site.id : `www.${site.id}`;
       expect(new URL(site.url).origin).toBe(`https://${host}`);
       expect(site.accent).toMatch(/^#[0-9a-f]{6}$/);
+      expect(site.deep).toMatch(/^#[0-9a-f]{6}$/);
     }
   });
 

@@ -10,7 +10,8 @@
 // own origin: every site is a different one.
 
 import { APP_SITES, PLATFORM_SITE, type Site, type SiteId } from '@liveworkspace/sites';
-import { useRef, type ReactNode } from 'react';
+import { useRef, type CSSProperties, type ReactNode } from 'react';
+import { BrandMark } from './Brand';
 import { ChevronDownIcon } from './icons';
 import { useMenu } from './menu/useMenu';
 import { useMenuButton } from './menu/useMenuButton';
@@ -98,15 +99,16 @@ function SiteRow({ site, current, onPick }: { site: Site; current: SiteId; onPic
           : 'hover:bg-slate-100 dark:hover:bg-slate-700'
       }`}
     >
-      <span
-        aria-hidden
-        className="mt-1.5 size-2 shrink-0 rounded-full"
-        style={{ backgroundColor: site.accent }}
-      />
+      <BrandMark accentColor={site.accent} className="mt-0.5 size-5 shrink-0" />
       <span className="flex min-w-0 flex-col gap-0.5">
-        {/* The name, without ".app": the row already links to the site. */}
-        <span className="text-sm font-semibold text-slate-800 dark:text-slate-100">
-          {site.name}
+        {/* The wordmark, without ".app" (the row already links to the site): "live" in the site's
+            colour, deep on light and its accent on dark, as each site's own header draws it. */}
+        <span
+          className="text-sm font-semibold text-slate-800 dark:text-slate-100"
+          style={{ '--site-ink': site.deep, '--site-ink-dark': site.accent } as CSSProperties}
+        >
+          <span className="text-[var(--site-ink)] dark:text-[var(--site-ink-dark)]">live</span>
+          {site.name.replace(/^live/, '')}
         </span>
         <span className="text-xs text-slate-500 dark:text-slate-400">{site.pitch}</span>
       </span>
