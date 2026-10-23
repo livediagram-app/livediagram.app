@@ -13,6 +13,7 @@
 import {
   IndexError,
   type CreateItemInput,
+  type Item,
   type ItemSource,
   type ShareAccess,
 } from '@liveworkspace/index-client';
@@ -91,9 +92,12 @@ export function itemSourceOf(source: unknown): ItemSource | null {
 }
 
 // An API client's create (a create that carries no grant): the app's worker makes the index's item for the caller,
-// under the id the client minted, and the item's Durable Object then opens with the grant that comes back. The id
-// already taken is the same client re-committing its own item: the grant it holds decides (resolveItemGrant). Any
+// under the id the client minted, and the item's Durable Object then opens with the grant that comes back; `item`
+// is where the index filed it (the person's default folder, say), for the create's answer. The id already taken is
+// the same client re-committing its own item: the grant it holds decides (resolveItemGrant), with no `item`. Any
 // other refusal is the index's, answered as `respond` answers.
+export type CreatedItemGrant = { grant: ItemGrant; item: Item | null };
+
 export async function createItemGrant(
   service: IndexService,
   env: IndexEnv,
@@ -102,16 +106,18 @@ export async function createItemGrant(
   itemId: string,
   create: ItemCreateRequest,
   respond: (body: { error: string }, status: number) => Response = jsonResponse,
-): Promise<ItemGrant | null | Response> {
+): Promise<CreatedItemGrant | null | Response> {
   const client = service.clientFor(env, caller);
   if (!client) return respond({ error: 'index_unavailable' }, 503);
   try {
-    const { grant } = await client.createItem({ ...create, id: itemId, app: service.app });
+    const { item, grant } = await client.createItem({ ...create, id: itemId, app: service.app });
     const claims = await service.verifyGrant(env, grant.grant, itemId);
-    return claims ? itemGrantOf(claims, null, grant.grant) : null;
+    return claims ? { grant: itemGrantOf(claims, null, grant.grant), item } : null;
   } catch (err) {
-    if (err instanceof IndexError && err.code === 'item_exists')
-      return resolveItemGrant(service, env, request, caller, itemId, respond);
+    if (err instanceof IndexError && err.code === 'item_exists') {
+      const held = await resolveItemGrant(service, env, request, caller, itemId, respond);
+      return held && !(held instanceof Response) ? { grant: held, item: null } : held;
+    }
     if (err instanceof IndexError) return respond({ error: err.code }, err.status);
     console.error('[index] create failed', { itemId, error: String(err) });
     return respond({ error: 'index_unavailable' }, 503);

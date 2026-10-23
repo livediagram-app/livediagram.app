@@ -138,7 +138,10 @@ describe('createItemGrant', () => {
       source: itemSourceOf('mcp'),
     });
     answer = before;
-    expect(grant).toMatchObject({ item: 'N', level: 'edit', shareCode: null });
+    expect(grant).toMatchObject({
+      grant: { item: 'N', level: 'edit', shareCode: null },
+      item: { id: 'N' },
+    });
     expect(calls).toHaveLength(1);
     expect(await calls[0]!.json()).toEqual({
       title: 'Plan',
@@ -159,9 +162,9 @@ describe('createItemGrant', () => {
             tabId: null,
             expiresAt: (NOW_S + 600) * 1000,
           });
-    expect(await createItemGrant(service, ENV, req(), caller, 'N', {})).toMatchObject({
-      item: 'N',
-      level: 'edit',
+    expect(await createItemGrant(service, ENV, req(), caller, 'N', {})).toEqual({
+      grant: expect.objectContaining({ item: 'N', level: 'edit' }),
+      item: null,
     });
     answer = () => Response.json({ error: 'not_team_member' }, { status: 403 });
     const res = await createItemGrant(service, ENV, req(), caller, 'M', { teamId: 't' });
