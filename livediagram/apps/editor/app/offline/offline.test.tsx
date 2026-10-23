@@ -7,6 +7,7 @@ const store = vi.hoisted(() => ({
   accountUserId: null as string | null,
   sync: vi.fn(),
   deleted: vi.fn(),
+  handoff: vi.fn<(ownerId: string | null, signedIn: boolean) => void>(),
 }));
 vi.mock('@/lib/offline/offline-store', () => ({
   offlineListDocuments: async () => store.documents,
@@ -19,6 +20,13 @@ vi.mock('@/lib/offline/offline-store', () => ({
 vi.mock('@/hooks/persistence/useAccountBootstrap', () => ({
   useAccountBootstrap: () => ({ accountUserId: store.accountUserId }),
 }));
+vi.mock('@/hooks/persistence/useGuestId', () => ({ useGuestId: () => null }));
+vi.mock('@/hooks/persistence/useConversionHandoff', () => ({
+  useConversionHandoff: (ownerId: string | null, signedIn: boolean) => {
+    store.handoff(ownerId, signedIn);
+  },
+}));
+vi.mock('@/components/dialogs/LocalMovePrompt', () => ({ LocalMovePrompt: () => null }));
 vi.mock('@/hooks/persistence/useOfflineConversion', () => ({
   useOfflineConversion: (doc: { id: string }) => ({
     syncToCloud: async () => {
@@ -36,9 +44,16 @@ beforeEach(() => {
   store.accountUserId = null;
   store.sync.mockClear();
   store.deleted.mockClear();
+  store.handoff.mockClear();
 });
 
 describe('This Browser', () => {
+  it('runs a Take Offline or Sync the Explorer hands over, as the person', async () => {
+    store.accountUserId = 'user_ada';
+    render(<OfflineDocuments />);
+    await waitFor(() => expect(store.handoff).toHaveBeenCalledWith('user_ada', true));
+  });
+
   it('lists the canvases kept only in this browser, newest first, each opening in the editor', async () => {
     store.documents = [
       { id: 'a', name: 'Older', savedAt: 1 },

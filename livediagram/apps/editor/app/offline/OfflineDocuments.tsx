@@ -5,7 +5,10 @@ import type { DocumentSummary } from '@livediagram/api-schema';
 import { Brand, SITE_ID, SiteSwitcher } from '@livediagram/ui';
 import { ConfirmDialog } from '@/components/dialogs/ConfirmDialog';
 import { ThisBrowserIcon } from '@/components/primitives/explorer-icons';
+import { LocalMovePrompt } from '@/components/dialogs/LocalMovePrompt';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
+import { useConversionHandoff } from '@/hooks/persistence/useConversionHandoff';
+import { useGuestId } from '@/hooks/persistence/useGuestId';
 import { useOfflineConversion } from '@/hooks/persistence/useOfflineConversion';
 import { explorerHref } from '@/lib/explorer-href';
 import {
@@ -20,7 +23,10 @@ import {
 // Canvas, docs/specs/006-document/offline-mode.md) or deleted for good: nothing else holds it, so there is no Trash.
 export function OfflineDocuments() {
   const [documents, setDocuments] = useState<DocumentSummary[] | null>(null);
-  const { accountUserId } = useAccountBootstrap();
+  const { accountUserId, authLoaded } = useAccountBootstrap();
+  const guestId = useGuestId(authLoaded, accountUserId);
+  // Take Offline and Sync handed over by the Explorer on this address.
+  useConversionHandoff(accountUserId ?? guestId, !!accountUserId);
   useEffect(() => {
     let live = true;
     const read = () =>
@@ -74,6 +80,9 @@ export function OfflineDocuments() {
           </ul>
         )}
       </main>
+      {/* Moving this browser's canvases into the account after signing in
+          (docs/specs/014-identity/auth-and-guest-access.md). */}
+      <LocalMovePrompt />
     </div>
   );
 }

@@ -189,7 +189,7 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     itemPath: '/document/',
     newPath: '/new',
     offlinePath: '/offline',
-    offlineConversions: false,
+    offlineConversions: true,
     teamsPath: '/api/teams',
     onIndex: true,
     sharePath: '/document/shared?s=',

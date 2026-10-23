@@ -213,7 +213,11 @@ wherever the document is listed: This Browser's page and Home's Jump Back In.
 Conversion works **both directions**, from a canvas's menu in the editor's Explorer panel:
 **Take Offline** on a canvas in the person's library or a team's, **Sync Canvas** on one this browser holds
 (`hooks/persistence/useOfflineItemMenu.tsx`, the shared Explorer's `itemMenu`), and Sync Canvas on This Browser's
-page (`/offline`). In the editor, the offline to cloud
+page (`/offline`). The Explorer page at livediagram.app/explorer offers both too: it cannot reach this browser's
+store, so it hands each to This Browser's page (`/offline?convert=take-offline|sync&item=<id>`,
+`hooks/persistence/useConversionHandoff.ts`), which checks the canvas is the person's to move and asks the same
+confirmation (Sync with its own). A canvas taken offline on purpose is never offered back by the move prompt after
+signing in. In the editor, the offline to cloud
 direction is also offered by the Share dialog (below), and after signing in by
 the move prompt ([Auth + guest access → Moving documents in This Browser after signing in](../014-identity/auth-and-guest-access.md#moving-documents-in-this-browser-after-signing-in)).
 
