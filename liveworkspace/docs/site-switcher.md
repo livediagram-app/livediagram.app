@@ -33,6 +33,12 @@ liveworkspace.app.
 accent colour. Every app's switcher reads it, so adding an app is one row there, not an edit in each
 app. It lists livediagram, liveplanner, livedocuments and livedesign.
 
+Running locally, every link between the sites stays on this machine: `siteUrl` gives each site its
+port block's first port (`LOCAL_PORTS`: liveworkspace 3000, livediagram 3100, liveplanner 3200,
+livedocuments 3300, livedesign 3400, as in the root AGENTS.md) whenever a dev server renders it
+(`NODE_ENV=development`), and its live address in a build. The switcher, the landing page, the app
+footers' liveworkspace links and the Explorer's cross-app items all read it.
+
 Every app shows **the same switcher**. Each app's UI package holds its own copy of `SiteSwitcher.tsx`
 (the packages are forks), and `packages/sites/src/switcher-copies.test.ts` fails if the copies differ,
 so a change to one is a change to all. All four apps have it.

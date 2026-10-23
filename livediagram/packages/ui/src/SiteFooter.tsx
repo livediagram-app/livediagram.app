@@ -6,6 +6,7 @@ import { CONTRIBUTORS } from './contributors';
 import { Glyph } from './icons/Glyph';
 import { lucideGlyph } from './icons/lucide-glyph';
 import { REPO_URL } from './site';
+import { PLATFORM_SITE } from '@liveworkspace/sites';
 
 // NEXT_PUBLIC_BUILD_YEAR (docs/specs/016-platform/nextjs.md "One configuration"); empty outside a Next build.
 const buildYear = () => process.env.NEXT_PUBLIC_BUILD_YEAR ?? '';
@@ -36,7 +37,7 @@ const COLUMNS: { title: string; links: (FooterLink | typeof COMMUNITY | typeof G
         icon: lucideGlyph(lucideSparkles, ICON_SIZE),
       },
       // Every app's comparisons live on liveworkspace.app (liveworkspace/docs/comparison-pages.md).
-      { href: 'https://liveworkspace.app/alternatives', label: 'Product Comparison' },
+      { href: `${PLATFORM_SITE.url}/alternatives`, label: 'Product Comparison' },
       // The public gallery of shared documents (docs/specs/025-community/community.md), unless switched off.
       COMMUNITY,
       { href: '/faq', label: 'FAQ' },
@@ -54,8 +55,8 @@ const COLUMNS: { title: string; links: (FooterLink | typeof COMMUNITY | typeof G
   {
     title: 'Legal',
     links: [
-      { href: 'https://liveworkspace.app/terms', label: 'Terms' },
-      { href: 'https://liveworkspace.app/privacy', label: 'Privacy Policy' },
+      { href: `${PLATFORM_SITE.url}/terms`, label: 'Terms' },
+      { href: `${PLATFORM_SITE.url}/privacy`, label: 'Privacy Policy' },
       { href: '/help/privacy-and-security/', label: 'Data & Security' },
       // Vulnerability disclosure (docs/specs/002-project-scope/vulnerability-disclosure.md).
       { href: '/help/policies/report-a-vulnerability/', label: 'Report a Vulnerability' },
