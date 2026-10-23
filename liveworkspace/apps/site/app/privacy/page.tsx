@@ -74,9 +74,8 @@ const SECTIONS: LegalSection[] = [
             <strong>Your teams.</strong> Each team&rsquo;s name, and for each member their account,
             email address and role. If you invite someone, we store the address you typed and email
             them the invitation; it waits on liveworkspace.app until they accept or decline it. The
-            token an app gets when you sign in also lists the teams you are in, and each app keeps a
-            copy of the teams its people are in, with their members, so it can show them and decide
-            who may open a team&rsquo;s work.
+            token an app gets when you sign in also lists the teams you are in, which is how we
+            decide who may open a team&rsquo;s work. The apps keep no copy of your teams.
           </li>
           <li>
             <strong>API tokens, if you create them.</strong> We store a one-way hash of each token
@@ -102,8 +101,16 @@ const SECTIONS: LegalSection[] = [
       <ul>
         <li>
           <strong>Your documents.</strong> What you make is saved so it is there when you come back,
-          and so the people you share it with can see it. It is stored in the app&rsquo;s database
-          on Cloudflare.
+          and so the people you share it with can see it. Each document is stored on its own on
+          Cloudflare, with its comments beside what they are about.
+        </li>
+        <li>
+          <strong>Your Explorer.</strong> liveworkspace.app keeps one list of what you make in every
+          app, so the Explorer in each app can show all of it: each document&rsquo;s title, app,
+          owner, team, folder, tags, favourite and Trash state, its share links, when you last
+          opened it, and a small summary for its card (such as how many elements it has). For the
+          Inbox it also keeps, for each comment thread and action, who is in it, whether it is
+          resolved or done, and the start of the latest comment (up to 500 characters).
         </li>
         <li>
           <strong>Images you upload</strong> are kept in Cloudflare object storage. Before a JPEG is
@@ -111,13 +118,14 @@ const SECTIONS: LegalSection[] = [
           An uploaded image that no document uses is removed once it is more than 30 days old.
         </li>
         <li>
-          <strong>A browser id.</strong> If you use an app without an account, it keeps a random
-          identifier in your browser to link your documents to your browser. It is not tied to your
-          name or email.
+          <strong>A guest id.</strong> If you use an app without an account, liveworkspace.app gives
+          your browser a random guest id, the same in every app, to link your documents to your
+          browser. It is not tied to your name or email. If you later sign in or create an account,
+          what you made as a guest becomes your account&rsquo;s.
         </li>
         <li>
           <strong>Your display name and colour</strong>, the ones collaborators see, against your
-          browser id or account.
+          guest id or account.
         </li>
         <li>
           <strong>Connected AI tools, if you connect one.</strong> If you connect a tool through an
@@ -136,10 +144,6 @@ const SECTIONS: LegalSection[] = [
           <strong>Votes from guests.</strong> To stop one person voting many times, a guest&rsquo;s
           vote stores a one-way hash of their network address combined with the document&rsquo;s id.
           It is deleted with the document.
-        </li>
-        <li>
-          <strong>Document activity.</strong> What happened to your documents (created, renamed,
-          shared, commented on) and which ones you opened, so the app can show you. Kept for a year.
         </li>
         <li>
           <strong>Operational logs.</strong> Our host, Cloudflare, keeps standard request logs that
@@ -249,7 +253,8 @@ const SECTIONS: LegalSection[] = [
     body: (
       <p>
         If you sign in, liveworkspace.app sets a cookie to keep you signed in, and each app you use
-        sets its own to remember that you are. The apps keep your browser id, your preferences (also
+        sets its own to remember that you are. If you use an app without an account,
+        liveworkspace.app sets a cookie holding your guest id. The apps keep your guest id, your preferences (also
         saved to our database so they follow you) and your Community key in local storage, and
         liveworkspace.app keeps your light or dark choice there. We do not use advertising or
         tracking cookies.
@@ -298,11 +303,11 @@ const SECTIONS: LegalSection[] = [
       <>
         <ul>
           <li>
-            <strong>Cloudflare</strong>: hosting, databases, image storage, sending sign-in codes,
-            and Turnstile on the sign-in pages.
+            <strong>Cloudflare</strong>: hosting, databases, image storage, and Turnstile on the
+            sign-in pages.
           </li>
           <li>
-            <strong>Resend</strong>: delivering the apps&rsquo; other emails.
+            <strong>Resend</strong>: delivering every email we send, sign-in codes included.
           </li>
           <li>
             <strong>Google</strong>: sign-in with Google, if you choose it.
@@ -342,20 +347,18 @@ const SECTIONS: LegalSection[] = [
         </p>
         <p>
           You can delete your account yourself from <strong>Settings</strong>, then{' '}
-          <strong>Account</strong>, then <strong>Delete Account</strong>, in any app. That app
-          deletes your documents, folders, images, preferences and API tokens straight away, and
-          your liveworkspace account closes, for every app at once: your account details, sessions,
-          API tokens and every app&rsquo;s sign-in records are deleted, and you leave every team (a
-          team you ran alone goes; one you were the only admin of passes to its longest-standing
-          member). Documents in a team&rsquo;s shared library pass to another member of the team.
-          What you made in the other apps stays there until you delete it in each one, or ask us to
-          and we will.
+          <strong>Account</strong>, then <strong>Delete Account</strong>, in any app. Your
+          liveworkspace account closes, for every app at once: the documents you own in every app
+          (the Trash included), your folders, tags, favourites, images and preferences, your account
+          details, sessions, API tokens and sign-in records are deleted straight away, and you leave
+          every team (a team you ran alone goes; one you were the only admin of passes to its
+          longest-standing member). Documents that belong to a team stay with the team.
         </p>
         <p>
           Other things are kept only as long as they are useful: anonymous product events for 60
-          days, document activity for a year, and changes made by connected AI tools for 30 days, so
+          days, and changes made by connected AI tools for 30 days, so
           they can be undone. A guest&rsquo;s documents have no account to delete: remove them in
-          the app, or ask us.
+          the Explorer, or ask us.
         </p>
       </>
     ),

@@ -16,15 +16,15 @@ livedocuments is built to need as little of your data as possible, and the whole
 
 ## What we store
 
-- **Your documents.** The content you create is saved so it is there when you come back, and so the people you share it with can see it. It is stored in our database on Cloudflare. A document you create in [Offline Mode](/help/privacy-and-security/offline-mode/) is the exception: it stays in your browser and never reaches our servers, unless you add a web link to it (our server fetches the link's preview).
+- **Your documents.** The content you create is saved so it is there when you come back, and so the people you share it with can see it. Each document is stored on its own on Cloudflare, with its comments beside what they are about. A document you create in [Offline Mode](/help/privacy-and-security/offline-mode/) is the exception: it stays in your browser and never reaches our servers, unless you add a web link to it (our server fetches the link's preview).
 - **Images you upload.** Images placed in a document are kept in Cloudflare object storage and served back through the same API. Before a JPEG is stored, identifying metadata such as GPS location and camera details is stripped from it, so it never reaches anyone you share the document with.
-- **A browser id.** If you use livedocuments without an account, we keep a random identifier in your browser's local storage to link documents to your browser. It is not tied to your name or email.
-- **Your display name and colour.** The name and cursor colour collaborators see are stored on our server against your browser id or account.
+- **A guest id.** If you use livedocuments without an account, liveworkspace.app gives your browser a random guest id, the same in every liveworkspace app, to link your documents to your browser. It is not tied to your name or email. If you later sign in or create an account, what you made as a guest becomes your account's.
+- **Your display name and colour.** The name and cursor colour collaborators see are stored on our server against your guest id or account.
 - **Account details, if you sign in.** Sign-in is handled by liveworkspace accounts (liveworkspace.app), the one sign-in shared by our apps, which emails you a code to confirm your address. If you create an account we receive your email address and the name on your account. We use these to identify your account and to send you the account and onboarding emails described under **Emails we send** below.
 - **API tokens, if you create them.** [API tokens](/help/account-and-data/api-tokens/) are made on liveworkspace.app and work in every liveworkspace app. liveworkspace stores a one-way hash of each token (never the token itself), its name, whether it is read-only, and when it was last used. Tokens expire after six months and are deleted with your account. When a token is used with livedocuments, livedocuments keeps a note of that token (never the secret) and of anything paired through it, such as a workbench.
 - **Connecting an AI tool, if you do.** If you connect an AI tool via our [MCP server](/help/account-and-data/connect-ai-mcp/), we store the app's registration (its name and redirect address, kept for 30 days), short-lived authorization sessions and codes that expire within minutes, and, for an hour, a count of registrations from your IP address to stop abuse. The connection itself is an API token, covered above, and you can revoke it any time.
-- **Your teams.** Teams are run on liveworkspace.app, which stores each team's name and its members' accounts, email addresses and roles, and sends team invitations. livedocuments keeps a copy of the teams its people are in, with their members, so it can show them and decide who may open a team's work.
-- **Document activity.** Your [Timeline](/help/explorer/timeline/) records what happened to your documents (created, renamed, shared, commented on) and which ones you opened, so the Explorer can show you. These records are kept for a year.
+- **Your teams.** Teams are run on liveworkspace.app, which stores each team's name and its members' accounts, email addresses and roles, and sends team invitations. livedocuments keeps no copy of your teams: liveworkspace decides who may open a team's work.
+- **Your Explorer.** liveworkspace.app keeps one list of what you make in every liveworkspace app, so the [Explorer](/help/explorer/) can show all of it: each document's title, owner, team, folder, tags, favourite and Trash state, its share links, when you last opened it, and a small summary for its card. For the Inbox it also keeps, for each comment thread and action, who is in it, whether it is resolved or done, and the start of the latest comment (up to 500 characters).
 - **Basic operational logs.** Our host, Cloudflare, keeps standard request logs that help us run the service securely.
 
 ## Connected AI tools
@@ -47,7 +47,7 @@ We collect this ourselves, through liveworkspace's own telemetry service (livewo
 
 ## Cookies and local storage
 
-We use local storage to keep your browser id, and your preferences (also saved to our database so they follow you). If you sign in, we set cookies to keep you signed in and to remember that you are; no sign-in script loads for visitors who don't sign in. We do not use advertising or tracking cookies.
+If you use livedocuments without an account, liveworkspace.app sets a cookie holding your guest id. We use local storage to keep your guest id, and your preferences (also saved to our database so they follow you). If you sign in, we set cookies to keep you signed in and to remember that you are; no sign-in script loads for visitors who don't sign in. We do not use advertising or tracking cookies.
 
 ## Emails we send
 
@@ -63,8 +63,8 @@ You can turn off every notification, tip and milestone email in **Settings**, un
 
 We rely on a small number of providers to run the service:
 
-- **Cloudflare**, for hosting, database storage, image storage, and the sign-in codes we email you.
-- **Resend**, for delivering the emails described above to account holders.
+- **Cloudflare**, for hosting, database storage and image storage.
+- **Resend**, for delivering every email described above, and the sign-in codes liveworkspace.app emails you.
 
 These providers process data on our behalf so that we can run the service.
 
@@ -74,15 +74,15 @@ Your browser also loads the editor's fonts from **Google Fonts**. A YouTube vide
 
 ## Sharing and visibility
 
-Anything you put in a document you share becomes visible to people who have the share link. You can protect a link with a password or give it an expiry, and revoking a link stops further access through it. See [Share Link Security](/help/privacy-and-security/share-link-security/).
+Anything you put in a document you share becomes visible to people who have the share link. Share links are kept on liveworkspace.app, with the rest of your Explorer. You can protect a link with a password or give it an expiry, and revoking a link stops further access through it. See [Share Link Security](/help/privacy-and-security/share-link-security/).
 
 ## Keeping and deleting your data
 
-You can delete any document you own at any time. A deleted document waits in the [Trash](/help/account-and-data/trash/) for 30 days, so you can restore it, and is then removed for good; you can also delete it permanently from the Trash sooner. Comments that passed through a live collaboration session are also kept in that session's own storage on Cloudflare, and that copy is removed with the document. A document left empty and untouched for 30 days moves to the Trash on its own.
+You can delete any document you own at any time. A deleted document waits in the [Trash](/help/account-and-data/trash/) for 30 days, so you can restore it, and is then removed for good; you can also delete it permanently from the Trash sooner. Its comments are removed with it. A document left empty and untouched for 30 days moves to the Trash on its own.
 
-You can delete your account, and the data associated with it, yourself: open **Settings**, then **Account**, then **Delete Account**. This removes your documents (the Trash and their collaboration-session copies included), folders, images, themes and preferences straight away, then closes your liveworkspace account, for every app at once: your account details, sessions and API tokens are deleted, and you leave every team. What you made in the other apps stays there until you delete it in each one. Documents in a team's shared library pass to another member of that team rather than being deleted. See [Deleting Your Data](/help/account-and-data/deleting-your-data/).
+You can delete your account, and the data associated with it, yourself: open **Settings**, then **Account**, then **Delete Account**. This closes your liveworkspace account for every app at once: the documents and everything else you own in every liveworkspace app (the Trash included), your folders, tags, favourites, images, themes and preferences, your account details, sessions and API tokens are deleted straight away, and you leave every team. Documents that belong to a team stay with the team. See [Deleting Your Data](/help/account-and-data/deleting-your-data/).
 
-Other things are kept only as long as they are useful: anonymous product events for 60 days, Timeline activity for a year, changes made by connected AI tools for 30 days (so they can be undone), and an uploaded image that no document uses is removed once it is more than 30 days old. A guest's documents have no account to delete: remove them from the Explorer, or ask us.
+Other things are kept only as long as they are useful: anonymous product events for 60 days, changes made by connected AI tools for 30 days (so they can be undone), and an uploaded image that no document uses is removed once it is more than 30 days old. A guest's documents have no account to delete: remove them in the Explorer, or ask us.
 
 ## Security
 
