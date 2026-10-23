@@ -171,14 +171,17 @@ renamed_classes = [{ from = "DiagramRoom", to = "DocumentRoom" }]
 #     liveworkspace service, docs/specs/017-telemetry/telemetry.md "Where events are stored").
 #   - images, 30-day floor for UNUSED images only (docs/specs/009-elements/images.md): reaped
 #     from R2 + D1 once nothing references them.
-# Plus the docs/specs/014-identity/transactional-email.md email sweeps (lifecycle onboarding + token-expiry
-# warnings), both no-ops when RESEND_API_KEY is unset.
+# Plus the docs/specs/014-identity/transactional-email.md lifecycle onboarding emails, a no-op when
+# RESEND_API_KEY is unset.
+#
+# `*/5 * * * *`: every five minutes, follow liveworkspace's teams change feed into this app's copy
+# and mark tokens revoked on liveworkspace.app (liveworkspace/docs/accounts.md "How an app keeps up").
 #
 # `* * * * *`: every minute, the Community sync (docs/specs/025-community/community.md "Keeping in step"): what
 # changed about published documents goes to the liveworkspace Community service, and the posts it hid after reports
 # close their links here. One indexed D1 read and one request when nothing changed; a no-op without COMMUNITY_KEY.
 [triggers]
-crons = ["0 3 * * *", "* * * * *"]
+crons = ["0 3 * * *", "*/5 * * * *", "* * * * *"]
 
 # Per-IP rate limiter for the AI assistance endpoint (POST /api/ai,
 # docs/specs/007-editor/ai-assistance.md). Separate namespace so AI abuse never eats into document-write
@@ -522,7 +525,7 @@ renamed_classes = [{ from = "DiagramRoom", to = "DocumentRoom" }]
 # staging too, against staging's own data. Restated rather than inherited so
 # that reading this block tells you what the staging worker actually does.
 [env.staging.triggers]
-crons = ["0 3 * * *", "* * * * *"]
+crons = ["0 3 * * *", "*/5 * * * *", "* * * * *"]
 
 # The four ACCOUNTS_* / API_RESOURCE values, GUEST_ID_HMAC_SECRET and
 # TELEMETRY_KEY come from the

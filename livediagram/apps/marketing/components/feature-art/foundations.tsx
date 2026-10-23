@@ -59,7 +59,7 @@ export function ApiArt() {
         </text>
         <text x="42" y="43" {...mono}>
           <tspan fill={TERM.flag}>-H </tspan>
-          <tspan fill={TERM.string}>&quot;Authorization: Bearer lvd_7Kq2…&quot;</tspan>
+          <tspan fill={TERM.string}>&quot;Authorization: Bearer lwt_7Kq2…&quot;</tspan>
         </text>
 
         {/* The response, once the call returns. */}

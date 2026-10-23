@@ -142,14 +142,14 @@ describe('worker refusal of an account id in X-Owner-Id', () => {
       readOnly: false,
     });
     const res = await worker.fetch(
-      get('/api/documents', { Authorization: `Bearer lvd_${'a'.repeat(40)}` }),
+      get('/api/documents', { Authorization: `Bearer lwt_${'a'.repeat(40)}` }),
       noEnforcement(),
     );
     expect(res.status).not.toBe(401);
   });
 });
 
-const LVD = `lvd_${'a'.repeat(40)}`;
+const LVD = `lwt_${'a'.repeat(40)}`;
 
 describe('read-only API token enforcement (docs/specs/015-api/mcp-server.md §4.11)', () => {
   beforeEach(() => {
@@ -244,15 +244,15 @@ describe('read-only API token enforcement (docs/specs/015-api/mcp-server.md §4.
   });
 });
 
-// An `lvd_` bearer is a claim to be a token; one that resolves to no live row (unknown, revoked or expired) is
+// An `lwt_` bearer is a claim to be a token; one that resolves to no live row (unknown, revoked or expired) is
 // refused at the front door with 401 `invalid_token`, never treated as a guest or as nobody
 // (docs/specs/015-api/public-api-and-tokens.md §3.3).
 describe('worker refusal of an unknown API token', () => {
   const noEnforcement = () => ({}) as unknown as Env;
-  const TOKEN = `lvd_${'x'.repeat(43)}`;
+  const TOKEN = `lwt_${'x'.repeat(43)}`;
   beforeEach(() => resolveApiTokenMock.mockResolvedValue(null));
 
-  it('401s an lvd_ bearer that resolves to no live token, on owner-scoped and token routes alike', async () => {
+  it('401s an lwt_ bearer that resolves to no live token, on owner-scoped and token routes alike', async () => {
     for (const path of ['/api/documents', '/api/tokens/current', '/api/teams']) {
       const res = await worker.fetch(
         get(path, { Authorization: `Bearer ${TOKEN}` }),
@@ -273,7 +273,7 @@ describe('worker refusal of an unknown API token', () => {
   });
 
   it('refuses a token cut short or mistyped as a token, not as a request with no credential', async () => {
-    for (const bearer of ['lvd_', 'lvd_notreal', `lvd_${'x'.repeat(12)}`]) {
+    for (const bearer of ['lwt_', 'lwt_notreal', `lwt_${'x'.repeat(12)}`]) {
       const res = await worker.fetch(
         get('/api/documents', { Authorization: `Bearer ${bearer}`, 'X-Owner-Id': 'guest-1' }),
         noEnforcement(),
@@ -447,7 +447,7 @@ describe('workbench sessions at the front door', () => {
     await worker.fetch(
       new Request('https://api.test/api/workbench/tickets', {
         method: 'POST',
-        headers: { Authorization: `Bearer lvd_${'x'.repeat(43)}` },
+        headers: { Authorization: `Bearer lwt_${'x'.repeat(43)}` },
       }),
       {} as unknown as Env,
     );

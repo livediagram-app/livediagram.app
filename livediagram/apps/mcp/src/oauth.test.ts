@@ -194,7 +194,7 @@ describe('GET /oauth/session/:id (what the consent screen may believe)', () => {
       '/oauth/complete',
       {
         method: 'POST',
-        body: JSON.stringify({ session, token: 'lvd_secret' }),
+        body: JSON.stringify({ session, token: 'lwt_secret' }),
         headers: { 'Content-Type': 'application/json' },
       },
       env,
@@ -256,7 +256,7 @@ describe('full authorize -> complete -> token flow', () => {
       '/oauth/complete',
       {
         method: 'POST',
-        body: JSON.stringify({ session, token: 'lvd_secret', expiresAt }),
+        body: JSON.stringify({ session, token: 'lwt_secret', expiresAt }),
         headers: { 'Content-Type': 'application/json' },
       },
       env,
@@ -281,7 +281,7 @@ describe('full authorize -> complete -> token flow', () => {
       env,
     );
     const token = (await tok.json()) as { access_token: string; expires_in: number };
-    expect(token.access_token).toBe('lvd_secret');
+    expect(token.access_token).toBe('lwt_secret');
     // expires_in reflects the ~6-month token life (docs/specs/015-api/mcp-server.md §3.5).
     expect(token.expires_in).toBeGreaterThan(60 * 60 * 24 * 179);
   });
@@ -300,7 +300,7 @@ describe('full authorize -> complete -> token flow', () => {
       '/oauth/complete',
       {
         method: 'POST',
-        body: JSON.stringify({ session, token: 'lvd_secret' }),
+        body: JSON.stringify({ session, token: 'lwt_secret' }),
         headers: { 'Content-Type': 'application/json' },
       },
       env,
@@ -354,7 +354,7 @@ describe('full authorize -> complete -> token flow', () => {
       '/oauth/complete',
       {
         method: 'POST',
-        body: JSON.stringify({ session, token: 'lvd_secret' }),
+        body: JSON.stringify({ session, token: 'lwt_secret' }),
         headers: { 'Content-Type': 'application/json' },
       },
       env,
@@ -411,7 +411,7 @@ describe('full authorize -> complete -> token flow', () => {
       '/oauth/complete',
       {
         method: 'POST',
-        body: JSON.stringify({ session, token: 'lvd_x' }),
+        body: JSON.stringify({ session, token: 'lwt_x' }),
         headers: { 'Content-Type': 'application/json' },
       },
       env,

@@ -1,5 +1,5 @@
 // OAuth 2.1 + PKCE (S256) + dynamic client registration for the MCP (docs/specs/015-api/mcp-server.md
-// §3). The flow mints an ordinary lvd_ token under the hood (via the api
+// §3). The flow mints an ordinary lwt_ token under the hood (via the api
 // worker's /api/oauth/exchange, called by the signed-in consent page in
 // apps/editor) and hands it to the client through the standard code+PKCE exchange.
 // All transient state lives in OAUTH_KV with short TTLs; no parallel credential
@@ -269,7 +269,7 @@ export function registerOauthRoutes(app: Hono<{ Bindings: Env }>): void {
     return c.json({ redirectTo: url.toString(), clientName: session.clientName });
   });
 
-  // --- Token: redeem code + PKCE verifier for the lvd_ access token ---
+  // --- Token: redeem code + PKCE verifier for the lwt_ access token ---
   app.post('/oauth/token', async (c) => {
     const form: Record<string, unknown> = await c.req.parseBody().catch(() => ({}));
     const grantType = formText(form, 'grant_type');

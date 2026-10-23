@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { ApiError } from './api/core';
 import { handoverFailureCopy, mintAndHandOver, type HandoverSteps } from './oauth-handover';
 
-const MINTED = { token: 'lvd_secret', id: 'tok-1', expiresAt: 1_800_000_000_000 };
+const MINTED = { token: 'lwt_secret', id: 'tok-1', expiresAt: 1_800_000_000_000 };
 
 function steps(over: Partial<HandoverSteps<string>> = {}) {
   return {
@@ -60,13 +60,13 @@ describe('mintAndHandOver', () => {
   it('revokes the minted token when the MCP refuses it', async () => {
     const s = steps({ complete: vi.fn(async () => null) });
     expect(await mintAndHandOver(s)).toEqual({ ok: false, reason: 'failed' });
-    expect(s.revoke).toHaveBeenCalledWith(MINTED.id);
+    expect(s.revoke).toHaveBeenCalledWith(MINTED.token);
   });
 
   it('revokes the minted token when the hand-over throws', async () => {
     const s = steps({ complete: vi.fn(async () => Promise.reject(new Error('network'))) });
     expect(await mintAndHandOver(s)).toEqual({ ok: false, reason: 'failed' });
-    expect(s.revoke).toHaveBeenCalledWith(MINTED.id);
+    expect(s.revoke).toHaveBeenCalledWith(MINTED.token);
   });
 
   it('still reports the failure when the revoke itself fails', async () => {

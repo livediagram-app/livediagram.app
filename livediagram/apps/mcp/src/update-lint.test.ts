@@ -79,7 +79,7 @@ function updateDocument(changed: boolean) {
     run: () =>
       handler!(
         { documentId: 'd_1', mode: 'edits', edits: 'set bea4 label="Same"' },
-        { authInfo: { token: 'lvd_test' } },
+        { authInfo: { token: 'lwt_test' } },
       ),
   };
 }

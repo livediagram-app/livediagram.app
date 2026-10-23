@@ -106,7 +106,7 @@ export const CONNECT_PITCH_ROWS: readonly PitchRow[] = [
     icon: UNDO,
     lead: 'Revoke',
     title: 'Access, any time',
-    line: 'In Settings, under Account › API Tokens.',
+    line: 'On liveworkspace.app, under API tokens.',
   },
 ];
 

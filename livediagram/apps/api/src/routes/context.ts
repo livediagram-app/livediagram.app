@@ -46,7 +46,7 @@ export type RouteContext = {
   // no X-Owner-Id fallback.
   accountUserId: string | null;
   // The server-verified account id from EITHER credential: an account
-  // access token, or an `lvd_` API token (whose owner is always an
+  // access token, or an `lwt_` API token (whose owner is always an
   // account, docs/specs/015-api/public-api-and-tokens.md §3.3). This is the identity for team-membership
   // CONTENT access — gateRead/gateEdit and the teams-surface reads — so a
   // token reaches the same documents the app does (docs/specs/015-api/public-api-and-tokens.md §3.4). Account

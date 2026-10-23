@@ -1,335 +1,166 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Env } from '../types';
-import { fakeD1 } from '../test-d1';
-import { sqliteD1 } from '../test-sqlite-d1';
+import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import {
-  apiTokensExpiringSoon,
-  LAST_USED_STAMP_WINDOW_MS,
+  AccountsUnavailable,
   listApiTokensByOwner,
-  markApiTokenExpiryWarned,
-  MAX_API_TOKENS_PER_OWNER,
   mintApiToken,
   resolveApiToken,
-  revokeApiToken,
+  revokePresentedToken,
+  sweepRevokedTokens,
 } from './api-tokens';
 
-// Minting is the one place docs/specs/015-api/public-api-and-tokens.md's rules are enforced, now that both ways in
-// share it: `POST /api/tokens` for a person in the Explorer, and the OAuth
-// exchange for an MCP client (docs/specs/015-api/mcp-server.md). Each used to carry its own copy of the
-// cap, the expiry and the hashing, so this is where those are tested rather
-// than twice over in the route suites.
-//
-// Mostly a D1 stub, not a real database: the INSERT records its bindings and
-// reports a row written while the test's count is under the cap, which is
-// enough to see what would have been written. The cap itself lives in the
-// INSERT's WHERE, so it is tested against a real table below.
+// API tokens are the liveworkspace account's (liveworkspace/docs/accounts.md "API tokens"): these
+// stand liveworkspace up at `fetch` and check what this app does with its answers, and the mirror
+// rows it keeps in api_tokens for the workbench.
 
-type Recorded = { sql: string; bindings: unknown[] };
+const ACCOUNTS = {
+  ACCOUNTS_URL: 'https://accounts.example',
+  ACCOUNTS_CLIENT_ID: 'livediagram',
+  ACCOUNTS_CLIENT_SECRET: 'secret',
+} satisfies Partial<Env>;
 
-function envWithTokenCount(count: number): { env: Env; writes: Recorded[] } {
-  const writes: Recorded[] = [];
-  const env = {
-    DB: {
-      prepare: (sql: string) => ({
-        bind: (...bindings: unknown[]) => ({
-          run: async () => {
-            writes.push({ sql, bindings });
-            return { meta: { changes: count < MAX_API_TOKENS_PER_OWNER ? 1 : 0 } };
-          },
-        }),
-      }),
-    },
-  } as unknown as Env;
-  return { env, writes };
-}
-
-const insert = (writes: Recorded[]) => writes.find((w) => w.sql.includes('INSERT INTO api_tokens'));
-
-describe('mintApiToken (docs/specs/015-api/public-api-and-tokens.md)', () => {
-  it('refuses once the owner is at the cap, and writes nothing', async () => {
-    const db = sqliteD1();
-    for (let i = 0; i < MAX_API_TOKENS_PER_OWNER; i++) {
-      expect(await mintApiToken(db.env, { ownerId: 'u1', name: `t${i}` })).not.toBeNull();
-    }
-    expect(await mintApiToken(db.env, { ownerId: 'u1', name: 'one too many' })).toBeNull();
-    // Null is not enough on its own: a mint that refused but still inserted
-    // would hand the caller a 409 for a token that exists.
-    const rows = db.sql.prepare("SELECT COUNT(*) AS n FROM api_tokens WHERE owner_id = 'u1'").get();
-    expect(rows).toEqual({ n: MAX_API_TOKENS_PER_OWNER });
-  });
-
-  it('never lets concurrent mints overshoot the cap', async () => {
-    // Counting then inserting let two requests both see 9 and both insert. The count is now part of the INSERT.
-    const db = sqliteD1();
-    const results = await Promise.all(
-      Array.from({ length: MAX_API_TOKENS_PER_OWNER + 5 }, (_, i) =>
-        mintApiToken(db.env, { ownerId: 'u1', name: `t${i}` }),
-      ),
-    );
-    expect(results.filter((r) => r !== null)).toHaveLength(MAX_API_TOKENS_PER_OWNER);
-    const rows = db.sql.prepare("SELECT COUNT(*) AS n FROM api_tokens WHERE owner_id = 'u1'").get();
-    expect(rows).toEqual({ n: MAX_API_TOKENS_PER_OWNER });
-  });
-
-  it('counts only live tokens towards the cap, and only the owner’s own', async () => {
-    const db = sqliteD1();
-    for (let i = 0; i < MAX_API_TOKENS_PER_OWNER; i++) {
-      await mintApiToken(db.env, { ownerId: 'u1', name: `t${i}` });
-    }
-    // Someone else's full set does not block u2.
-    expect(await mintApiToken(db.env, { ownerId: 'u2', name: 'mine' })).not.toBeNull();
-    // A revoked token and an expired one each free a slot.
-    const ids = db.sql.prepare("SELECT id FROM api_tokens WHERE owner_id = 'u1' LIMIT 2").all() as {
-      id: string;
-    }[];
-    db.sql.prepare('UPDATE api_tokens SET revoked = 1 WHERE id = ?').run(ids[0]!.id);
-    db.sql.prepare('UPDATE api_tokens SET expires_at = 1 WHERE id = ?').run(ids[1]!.id);
-    expect(await mintApiToken(db.env, { ownerId: 'u1', name: 'a' })).not.toBeNull();
-    expect(await mintApiToken(db.env, { ownerId: 'u1', name: 'b' })).not.toBeNull();
-    expect(await mintApiToken(db.env, { ownerId: 'u1', name: 'c' })).toBeNull();
-  });
-
-  it('mints below the cap', async () => {
-    const { env, writes } = envWithTokenCount(MAX_API_TOKENS_PER_OWNER - 1);
-    const minted = await mintApiToken(env, { ownerId: 'u1', name: 'CI' });
-    expect(minted).not.toBeNull();
-    expect(insert(writes)).toBeDefined();
-  });
-
-  it('stores the HASH and never the secret it returns', async () => {
-    // The whole security posture of docs/specs/015-api/public-api-and-tokens.md: the plaintext leaves once, in the
-    // return value, and the row keeps only a digest of it.
-    const { env, writes } = envWithTokenCount(0);
-    const minted = await mintApiToken(env, { ownerId: 'u1', name: 'CI' });
-    const bound = insert(writes)!.bindings.map(String);
-    expect(bound).not.toContain(minted!.secret);
-    expect(bound.some((b) => /^[0-9a-f]{64}$/.test(b))).toBe(true);
-  });
-
-  it('always sets an expiry, and one in the future', async () => {
-    // docs/specs/015-api/public-api-and-tokens.md: `expires_at` is never null. A token that never expires is the
-    // one thing the design refuses.
-    const { env } = envWithTokenCount(0);
-    const minted = await mintApiToken(env, { ownerId: 'u1', name: null });
-    expect(minted!.expiresAt).toBeGreaterThan(Date.now());
-  });
-
-  it('defaults to a read-write token and honours read-only when asked', async () => {
-    for (const [readOnly, expected] of [
-      [undefined, 0],
-      [false, 0],
-      [true, 1],
-    ] as const) {
-      const { env, writes } = envWithTokenCount(0);
-      await mintApiToken(env, { ownerId: 'u1', name: null, readOnly });
-      // The seventh binding is read_only in the INSERT's column order (the cap's bindings follow it).
-      expect(insert(writes)!.bindings[6], `readOnly=${String(readOnly)}`).toBe(expected);
-    }
-  });
-
-  it('gives each token its own id and secret', async () => {
-    const { env } = envWithTokenCount(0);
-    const a = await mintApiToken(env, { ownerId: 'u1', name: null });
-    const b = await mintApiToken(env, { ownerId: 'u1', name: null });
-    expect(a!.id).not.toBe(b!.id);
-    expect(a!.secret).not.toBe(b!.secret);
-  });
-
-  it('refuses when the driver reports no change count at all', async () => {
-    // An INSERT that may not have written must not hand back a secret: the
-    // caller would show a token that cannot authenticate anything.
-    const db = fakeD1();
-    expect(await mintApiToken(db.env, { ownerId: 'u1', name: null })).toBeNull();
-    expect(db.one('INSERT INTO api_tokens').method).toBe('run');
-  });
+type Handler = (path: string, body: Record<string, unknown>) => Response;
+let handle: Handler;
+const calls: string[] = [];
+// The token checker keeps its fetch for the life of the module, so the stub stays and the handler
+// changes. Each test uses its own tokens, since the checker remembers answers for a minute.
+vi.stubGlobal('fetch', async (input: string, init: RequestInit) => {
+  const path = new URL(input).pathname.replace('/api/account/internal', '');
+  calls.push(path);
+  return handle(
+    path,
+    typeof init.body === 'string' ? (JSON.parse(init.body) as Record<string, unknown>) : {},
+  );
 });
 
-// The rest of the table's life: listing, the cap's counter, the auth hot path
-// that turns a presented secret into an owner, revocation, and the expiry
-// warning sweep. `resolveApiToken` is the one that matters most — it is the
-// whole of "who is this caller" for every programmatic request (docs/specs/015-api/public-api-and-tokens.md).
-
-describe('listApiTokensByOwner (docs/specs/015-api/public-api-and-tokens.md)', () => {
-  it('maps live rows to DTOs, newest first, scoped to the owner', async () => {
-    const db = fakeD1(() => ({
-      all: [
-        {
-          id: 't1',
-          owner_id: 'u1',
-          token_hash: 'deadbeef',
-          name: 'CI',
-          created_at: 5,
-          last_used_at: 9,
-          expires_at: 99,
-          revoked: 0,
-          read_only: 1,
-        },
-      ],
-    }));
-    expect(await listApiTokensByOwner(db.env, 'u1')).toEqual([
-      { id: 't1', name: 'CI', createdAt: 5, lastUsedAt: 9, expiresAt: 99, readOnly: true },
-    ]);
-    const query = db.one('FROM api_tokens');
-    expect(query.bindings).toEqual(['u1']);
-    expect(query.sql).toContain('revoked = 0');
-    expect(query.sql).toContain('ORDER BY created_at DESC');
-  });
-
-  it('never selects the hash it stores', async () => {
-    // The listing is the one place a token row reaches a browser; the digest
-    // must not travel with it even by accident of SELECT *.
-    const db = fakeD1(() => ({ all: [] }));
-    await listApiTokensByOwner(db.env, 'u1');
-    expect(db.one('FROM api_tokens').sql).not.toContain('*');
-  });
-
-  it('survives a query that answers without results', async () => {
-    const db = fakeD1(() => ({ all: undefined }));
-    expect(await listApiTokensByOwner(db.env, 'u1')).toEqual([]);
-  });
+const account = (tokenId: string, over: Record<string, unknown> = {}) => ({
+  tokenId,
+  userId: 'user_ada',
+  name: 'Script',
+  email: 'ada@example.com',
+  readOnly: false,
+  expiresAt: Date.now() + 86_400_000,
+  teams: [{ id: 'team1', name: 'Design', role: 'admin' }],
+  ...over,
 });
 
-describe('resolveApiToken (the auth hot path, docs/specs/015-api/public-api-and-tokens.md)', () => {
-  it('resolves a live token to its owner and stamps last_used_at', async () => {
-    const db = fakeD1(({ sql }) =>
-      sql.includes('SELECT') ? { first: { id: 't1', owner_id: 'u1', read_only: 0 } } : {},
-    );
-    expect(await resolveApiToken(db.env, 'ld_secret')).toEqual({
-      ownerId: 'u1',
-      tokenId: 't1',
-      readOnly: false,
+let db: SqliteD1;
+beforeEach(() => {
+  db = sqliteD1(ACCOUNTS);
+  calls.length = 0;
+  handle = () => new Response(null, { status: 404 });
+});
+
+const mirrorRow = (id: string) =>
+  db.sql.prepare('SELECT owner_id, name, revoked, read_only FROM api_tokens WHERE id = ?').get(id);
+
+describe('resolveApiToken', () => {
+  it('answers the account liveworkspace vouches for, and mirrors the token', async () => {
+    handle = () => Response.json(account('tok-a', { readOnly: true }));
+    const token = `lwt_${'a'.repeat(43)}`;
+    expect(await resolveApiToken(db.env, token)).toEqual({
+      ownerId: 'user_ada',
+      tokenId: 'tok-a',
+      readOnly: true,
+      teams: [{ id: 'team1', name: 'Design', role: 'admin' }],
     });
-    expect(db.one('UPDATE api_tokens SET last_used_at').bindings[1]).toBe('t1');
+    expect(mirrorRow('tok-a')).toEqual({
+      owner_id: 'user_ada',
+      name: 'Script',
+      revoked: 0,
+      read_only: 1,
+    });
+    // The hash is mirrored, never the secret.
+    expect(JSON.stringify(db.sql.prepare('SELECT * FROM api_tokens').all())).not.toContain(token);
   });
 
-  it('skips the stamp while last_used_at is fresher than the window', async () => {
-    // One MCP tool call is 3 to 6 api requests; stamping each was 3 to 6 D1 writes for a value read at day grain.
-    const db = fakeD1(({ sql }) =>
-      sql.includes('SELECT')
-        ? { first: { id: 't1', owner_id: 'u1', read_only: 0, last_used_at: Date.now() - 1_000 } }
-        : {},
+  it('asks liveworkspace once for a burst of requests', async () => {
+    handle = () => Response.json(account('tok-b'));
+    const token = `lwt_${'b'.repeat(43)}`;
+    for (let i = 0; i < 5; i++) await resolveApiToken(db.env, token);
+    expect(calls.filter((c) => c === '/tokens/verify')).toHaveLength(1);
+  });
+
+  it('refuses a token liveworkspace refuses, and marks its mirror row revoked', async () => {
+    handle = () => Response.json(account('tok-c'));
+    const token = `lwt_${'c'.repeat(43)}`;
+    await resolveApiToken(db.env, token);
+    handle = () => new Response(null, { status: 404 });
+    // A fresh isolate's view: the same secret, refused.
+    const { resolveApiToken: fresh } = await reimport();
+    expect(await fresh(db.env, token)).toBeNull();
+    expect(mirrorRow('tok-c')).toMatchObject({ revoked: 1 });
+  });
+
+  it('throws AccountsUnavailable when liveworkspace cannot answer, so the caller can 503', async () => {
+    handle = () => new Response(null, { status: 502 });
+    await expect(resolveApiToken(db.env, `lwt_${'d'.repeat(43)}`)).rejects.toBeInstanceOf(
+      AccountsUnavailable,
     );
-    expect(await resolveApiToken(db.env, 'ld_secret')).not.toBeNull();
-    expect(db.matching('UPDATE api_tokens')).toEqual([]);
   });
 
-  it('stamps once per window against a real table, however many requests land', async () => {
-    const db = sqliteD1();
-    const owner = { ownerId: 'u1', name: 'CI' };
-    const minted = (await mintApiToken(db.env, owner))!;
-    const lastUsed = () =>
-      (
-        db.sql.prepare('SELECT last_used_at FROM api_tokens WHERE id = ?').get(minted.id) as {
-          last_used_at: number | null;
-        }
-      ).last_used_at;
-    expect(lastUsed()).toBeNull();
-    await resolveApiToken(db.env, minted.secret);
-    const first = lastUsed();
-    expect(first).not.toBeNull();
-    // Back-date to just inside the window: the next requests leave it alone.
-    const inside = Date.now() - LAST_USED_STAMP_WINDOW_MS + 5_000;
-    db.sql.prepare('UPDATE api_tokens SET last_used_at = ? WHERE id = ?').run(inside, minted.id);
-    await Promise.all([1, 2, 3].map(() => resolveApiToken(db.env, minted.secret)));
-    expect(lastUsed()).toBe(inside);
-    // Past the window: the next request stamps it again.
-    const outside = Date.now() - LAST_USED_STAMP_WINDOW_MS - 5_000;
-    db.sql.prepare('UPDATE api_tokens SET last_used_at = ? WHERE id = ?').run(outside, minted.id);
-    await resolveApiToken(db.env, minted.secret);
-    expect(lastUsed()).toBeGreaterThan(outside + LAST_USED_STAMP_WINDOW_MS);
+  it('is null on a deployment without sign-in', async () => {
+    expect(await resolveApiToken(sqliteD1().env, `lwt_${'e'.repeat(43)}`)).toBeNull();
+  });
+});
+
+describe('mintApiToken', () => {
+  it('asks liveworkspace for a token for whoever the access token is', async () => {
+    let asked: Record<string, unknown> = {};
+    handle = (path, body) => {
+      asked = { path, ...body };
+      return Response.json(
+        { id: 'tok-m', name: 'Claude', readOnly: false, expiresAt: 5, secret: 'lwt_x' },
+        { status: 201 },
+      );
+    };
+    expect(
+      await mintApiToken(db.env, { accessToken: 'jwt', name: 'Claude', readOnly: false }),
+    ).toEqual({ secret: 'lwt_x', id: 'tok-m', expiresAt: 5 });
+    expect(asked).toEqual({ path: '/tokens', accessToken: 'jwt', name: 'Claude', readOnly: false });
   });
 
-  it('looks up the hash, never the presented secret', async () => {
-    // The plaintext exists only in the request; a query that bound it would
-    // put it in logs and turn a leaked query log into account access.
-    const db = fakeD1(() => ({ first: null }));
-    await resolveApiToken(db.env, 'ld_secret');
-    const query = db.one('SELECT id, owner_id, read_only');
-    expect(query.bindings[0]).not.toBe('ld_secret');
-    expect(query.bindings[0]).toMatch(/^[0-9a-f]{64}$/);
+  it('is null at the account’s token cap', async () => {
+    handle = () => new Response(null, { status: 409 });
+    expect(
+      await mintApiToken(db.env, { accessToken: 'jwt', name: 'x', readOnly: false }),
+    ).toBeNull();
+  });
+});
+
+describe('revokePresentedToken and sweepRevokedTokens', () => {
+  it('revokes a token at liveworkspace and in the mirror', async () => {
+    handle = () => Response.json(account('tok-r'));
+    const token = `lwt_${'r'.repeat(43)}`;
+    await resolveApiToken(db.env, token);
+    handle = () => Response.json({ ok: true });
+    await revokePresentedToken(db.env, { id: 'tok-r', secret: token });
+    expect(calls).toContain('/tokens/revoke');
+    expect(await listApiTokensByOwner(db.env, 'user_ada')).toEqual([]);
   });
 
-  it('collapses revoked, expired and unknown into "not authenticated"', async () => {
-    const db = fakeD1(() => ({ first: null }));
-    expect(await resolveApiToken(db.env, 'ld_secret')).toBeNull();
-    // No row, no stamp: a miss must not write.
-    expect(db.matching('UPDATE api_tokens')).toEqual([]);
-  });
-
-  it('enforces revoked and expiry in the lookup itself', async () => {
-    const db = fakeD1(() => ({ first: null }));
-    await resolveApiToken(db.env, 'ld_secret');
-    const query = db.one('SELECT id, owner_id, read_only');
-    expect(query.sql).toContain('revoked = 0');
-    expect(query.sql).toContain('expires_at > ?');
-  });
-
-  it('carries the read-only flag through, so writes can be refused', async () => {
-    const db = fakeD1(({ sql }) =>
-      sql.includes('SELECT') ? { first: { id: 't1', owner_id: 'u1', read_only: 1 } } : {},
+  it('marks the tokens liveworkspace no longer knows, in batches', async () => {
+    const insert = db.sql.prepare(
+      `INSERT INTO api_tokens (id, owner_id, token_hash, name, created_at, last_used_at, expires_at, revoked, read_only)
+       VALUES (?, 'user_ada', ?, 'x', 0, ?, ?, 0, 0)`,
     );
-    expect((await resolveApiToken(db.env, 'ld_secret'))?.readOnly).toBe(true);
+    for (let i = 0; i < 150; i++) insert.run(`t${i}`, `h${i}`, i, Date.now() + 86_400_000);
+    const asked: number[] = [];
+    handle = (_path, body) => {
+      const ids = body.ids as string[];
+      asked.push(ids.length);
+      return Response.json({ live: ids.filter((id) => id !== 't7' && id !== 't140') });
+    };
+    expect((await sweepRevokedTokens(db.env)).sort()).toEqual(['t140', 't7']);
+    expect(asked).toEqual([100, 50]);
+    expect(mirrorRow('t7')).toMatchObject({ revoked: 1 });
+    expect(mirrorRow('t8')).toMatchObject({ revoked: 0 });
   });
 });
 
-describe('revokeApiToken (docs/specs/015-api/public-api-and-tokens.md)', () => {
-  it('reports success when a live row was flipped', async () => {
-    const db = fakeD1(() => ({ changes: 1 }));
-    expect(await revokeApiToken(db.env, 'u1', 't1')).toBe(true);
-  });
-
-  it('scopes the update to the caller’s own token', async () => {
-    // The ownership check IS the WHERE clause — there is no prior SELECT to
-    // fall back on, so losing it would let anyone revoke anyone's token.
-    const db = fakeD1(() => ({ changes: 1 }));
-    await revokeApiToken(db.env, 'u1', 't1');
-    const update = db.one('UPDATE api_tokens SET revoked = 1');
-    expect(update.sql).toContain('owner_id = ?');
-    expect(update.bindings).toEqual(['t1', 'u1']);
-  });
-
-  it('reports failure when nothing matched, including a second revoke', async () => {
-    const db = fakeD1(() => ({ changes: 0 }));
-    expect(await revokeApiToken(db.env, 'u1', 't1')).toBe(false);
-  });
-
-  it('fails closed when the driver reports no change count at all', async () => {
-    // "Probably worked" is the wrong reading of an ambiguous write here: the
-    // caller turns true into a 200 that tells someone their token is dead.
-    const db = fakeD1();
-    expect(await revokeApiToken(db.env, 'u1', 't1')).toBe(false);
-  });
-});
-
-describe('apiTokensExpiringSoon (docs/specs/014-identity/transactional-email.md heads-up)', () => {
-  it('maps rows and bounds the window, the batch and the order', async () => {
-    const db = fakeD1(() => ({
-      all: [{ id: 't1', owner_id: 'u1', name: 'CI', expires_at: 500 }],
-    }));
-    expect(await apiTokensExpiringSoon(db.env, 100, 400, 25)).toEqual([
-      { id: 't1', ownerId: 'u1', name: 'CI', expiresAt: 500 },
-    ]);
-    const query = db.one('FROM api_tokens');
-    expect(query.bindings).toEqual([100, 500, 25]);
-    expect(query.sql).toContain('ORDER BY expires_at ASC');
-  });
-
-  it('skips tokens already warned, so the cron mails once', async () => {
-    const db = fakeD1(() => ({ all: [] }));
-    await apiTokensExpiringSoon(db.env, 100, 400, 25);
-    expect(db.one('FROM api_tokens').sql).toContain('expiry_warned_at IS NULL');
-  });
-
-  it('survives a query that answers without results', async () => {
-    const db = fakeD1(() => ({ all: undefined }));
-    expect(await apiTokensExpiringSoon(db.env, 100, 400, 25)).toEqual([]);
-  });
-});
-
-describe('markApiTokenExpiryWarned (docs/specs/014-identity/transactional-email.md)', () => {
-  it('stamps the row so the next sweep passes it over', async () => {
-    const db = fakeD1();
-    await markApiTokenExpiryWarned(db.env, 't1');
-    expect(db.one('expiry_warned_at = ?').bindings[1]).toBe('t1');
-  });
-});
+// A second copy of the module, with nothing remembered: what another isolate would see.
+async function reimport() {
+  vi.resetModules();
+  return import('./api-tokens');
+}

@@ -1,13 +1,5 @@
-import {
-  CloseIcon,
-  Select,
-  HoverCard,
-  Glyph,
-  GlyphDisc,
-  IDENTITY_FILL,
-  identityVars,
-} from '@livediagram/ui';
-import type { TeamMember, TeamRole } from '@/lib/api-client';
+import { GlyphDisc, IDENTITY_FILL, identityVars } from '@livediagram/ui';
+import type { TeamMember } from '@/lib/api-client';
 import { colorForKey, initialsOf } from '@/lib/identity';
 
 // What a member row is called. Self rows use the account display name
@@ -36,8 +28,8 @@ function prettifyEmailLocalPart(email: string): string {
   return words.map((w) => w[0]!.toUpperCase() + w.slice(1)).join(' ');
 }
 
-function RolePill({ member, pinned }: { member: TeamMember; pinned: boolean }) {
-  const pill = (
+function RolePill({ member }: { member: TeamMember }) {
+  return (
     <span
       className={`inline-flex w-fit shrink-0 items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium ring-1 ${
         member.role === 'admin'
@@ -48,48 +40,19 @@ function RolePill({ member, pinned }: { member: TeamMember; pinned: boolean }) {
       {member.role === 'admin' ? 'Admin' : 'Member'}
     </span>
   );
-  if (!pinned) return pill;
-  // The only Admin: explain why there's no role select here.
-  return (
-    <HoverCard
-      title="Last Admin"
-      description="A team always needs at least one Admin. Promote someone else before changing this role, removing this member, or leaving."
-    >
-      {pill}
-    </HoverCard>
-  );
-}
-
-export function LinkIcon() {
-  return (
-    <Glyph size={15} units={24}>
-      <path d="M10 13a5 5 0 0 0 7.07 0l1.41-1.41a5 5 0 0 0-7.07-7.07L10 5.93M14 11a5 5 0 0 0-7.07 0L5.5 12.4a5 5 0 0 0 7.07 7.07L13.9 18.2" />
-    </Glyph>
-  );
 }
 
 // One member row (docs/specs/013-workspace/teams.md): avatar bubble, name + you / Invited / Rejected badges,
-// the email identifier line, the admin's role select (or the pinned
-// RolePill), and the hover-reveal remove button. Lifted out of
-// TeamPane's list; every mutation comes through the pane's handlers.
+// the email identifier line and the role. Roles and membership are changed on liveworkspace.app
+// (liveworkspace/docs/accounts.md "Teams"), so the row only reads.
 export function TeamMemberRow({
   m,
   accountUserId,
   accountDisplayName,
-  isAdmin,
-  pinnedAdmin,
-  onChangeRole,
-  onRemove,
 }: {
   m: TeamMember;
   accountUserId: string | null;
   accountDisplayName: string | null;
-  isAdmin: boolean;
-  // True when this member is the team's last admin — their role select
-  // and remove button are withheld so a team can't orphan itself.
-  pinnedAdmin: boolean;
-  onChangeRole: (member: TeamMember, role: TeamRole) => void;
-  onRemove: (member: TeamMember) => void;
 }) {
   const isSelf = m.userId !== null && m.userId === accountUserId;
   const name = memberName(m, isSelf, accountDisplayName);
@@ -99,7 +62,6 @@ export function TeamMemberRow({
   // Rejected = declined or expired: a record of the answer, kept until an Admin clears it. It holds no
   // role worth changing, and clearing it is the only thing left to do with it, so its Remove stays in view.
   const rejected = m.status === 'declined' || m.status === 'expired';
-  const removable = isAdmin && !isSelf && !pinnedAdmin;
   return (
     <li key={m.id} className="group flex items-center gap-3 px-4 py-2.5">
       <GlyphDisc
@@ -151,36 +113,7 @@ export function TeamMemberRow({
           </span>
         ) : null}
       </span>
-      {rejected ? null : isAdmin && !pinnedAdmin ? (
-        <Select
-          variant="ghost"
-          value={m.role}
-          onChange={(e) => onChangeRole(m, e.target.value as TeamRole)}
-          aria-label={`Role for ${name}`}
-          className="shrink-0"
-        >
-          <option value="admin">Admin</option>
-          <option value="member">Member</option>
-        </Select>
-      ) : (
-        <RolePill member={m} pinned={pinnedAdmin && isAdmin} />
-      )}
-      <span className="flex h-7 w-7 shrink-0 items-center justify-center">
-        {removable ? (
-          <button
-            type="button"
-            onClick={() => onRemove(m)}
-            aria-label={`Remove ${name}`}
-            className={`inline-flex h-7 w-7 items-center justify-center rounded transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300 ${
-              rejected
-                ? 'text-slate-400 dark:text-slate-400'
-                : 'text-slate-300 opacity-0 focus-visible:opacity-100 group-hover:opacity-100 dark:text-slate-600 [@media(hover:none)]:opacity-100'
-            }`}
-          >
-            <CloseIcon size={11} />
-          </button>
-        ) : null}
-      </span>
+      {rejected ? null : <RolePill member={m} />}
     </li>
   );
 }

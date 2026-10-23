@@ -26,7 +26,6 @@ import { useFolders } from '@/hooks/persistence/useFolders';
 import { useAfterDriveChange } from '@/hooks/persistence/useAfterDriveChange';
 import { useTeamLibrariesSweep } from '@/hooks/persistence/useTeamLibrariesSweep';
 import { useTeams } from '@/hooks/persistence/useTeams';
-import { useTokens } from '@/hooks/persistence/useTokens';
 import { useConfirm } from '@/hooks/ui/useConfirm';
 import { useDocumentListActions } from '@/hooks/persistence/useDocumentListActions';
 import { useToast } from '@/hooks/ui/useToast';
@@ -127,7 +126,6 @@ export function useExplorerState() {
   const {
     teams,
     invites,
-    createTeam: hookCreateTeam,
     acceptInvite,
     declineInvite,
     refresh: refreshTeams,
@@ -140,11 +138,6 @@ export function useExplorerState() {
     search: searchParams?.toString() ?? '',
     router,
   });
-  // API tokens (docs/specs/015-api/public-api-and-tokens.md): signed-in only, same gate as teams. Loaded here for
-  // the timeline's token-card menus, which offer Revoke for a token that is
-  // still live. Managing them is the Settings API Tokens category.
-  const tokens = useTokens(ownerId, { enabled: teamsEnabled && surface.administration });
-  const [teamModalOpen, setTeamModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   // Which list read failed last, so a view says Failed rather than Empty.
   const [failedReads, setFailedReads] = useState({ documents: false, shared: false });
@@ -561,7 +554,6 @@ export function useExplorerState() {
     // My Work' own menu: "Use as Default for" only.
     rootDefaults: defaultFolders.forRoot,
     invites,
-    tokens,
     loading,
     // Re-read the owner's lists (after an import made documents).
     refreshPersonal: refresh,
@@ -631,7 +623,6 @@ export function useExplorerState() {
     moveTeamDests,
     dismissShared,
     // Teams
-    hookCreateTeam,
     acceptInvite,
     declineInvite,
     refreshTeams,
@@ -648,8 +639,6 @@ export function useExplorerState() {
       if (teamId) refreshTeamLibraries();
       else void refreshFolders();
     },
-    teamModalOpen,
-    setTeamModalOpen,
   };
 }
 

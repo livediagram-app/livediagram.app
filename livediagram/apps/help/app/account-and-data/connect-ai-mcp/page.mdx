@@ -35,7 +35,7 @@ In your AI tool, add a connector (an MCP server) pointing at **`https://mcp.live
   <McpConsent />
 </Figure>
 
-Approving creates an [API token](/help/account-and-data/api-tokens/) behind the scenes and hands it to your tool. From then on the connection just works. The token is an ordinary API token: it appears in **Settings**, under **Account**, then **API Tokens**, named after the tool, and you can revoke it there any time to disconnect the tool. Like all tokens, it lasts six months; you get a reminder in its last week (by email, where email is set up), and reconnecting the tool then creates a fresh one.
+Approving creates an [API token](/help/account-and-data/api-tokens/) behind the scenes and hands it to your tool. From then on the connection just works. The token is an ordinary API token: it appears with your other tokens on [liveworkspace.app](https://liveworkspace.app/account/tokens), named after the tool, and you can revoke it there any time to disconnect the tool. Like all tokens, it lasts six months; reconnecting the tool then creates a fresh one.
 
 ## What the AI can do
 
@@ -64,13 +64,14 @@ The AI does the thinking; livediagram validates, lays out, saves, and renders wh
 
 By default the token behind a connection has full read and write access to your documents, including the documents in your teams' shared libraries, so only connect tools you trust, and revoke the token if you stop using one. If you'd rather a tool could look but not change anything, switch on **Read-only access** on the approval page when you connect it: the connection can then find and read your documents (and list your Trash) but can't create, edit, share, rename, delete or restore anything. The block is enforced by our server, not just the tool. Its token shows a **Read-only** badge in the [API Tokens](/help/account-and-data/api-tokens/) list.
 
-Either way, a connection can't manage your teams or your account: inviting members, changing roles, and deleting things other than documents stay in the app. It can never delete a document for good either; that stays with you, in the Trash. (A tab it deletes is gone for good.)
+Either way, a connection can't manage your teams or your account: inviting members, changing roles, and deleting things other than documents stay with you, signed in. It can never delete a document for good either; that stays with you, in the Trash. (A tab it deletes is gone for good.)
 
-Approving a connection creates a token, so it fails if you already have ten tokens that haven't expired; revoke one in **API Tokens** first. Some tools list each document tool twice, once under an older _diagram_ name marked deprecated: they do the same thing.
+Approving a connection creates a token, so it fails if you already have 20 tokens that haven't expired; revoke one on liveworkspace.app first. Some tools list each document tool twice, once under an older _diagram_ name marked deprecated: they do the same thing.
 
 <Tip>
-  Connected a tool you no longer use? Open **Settings**, then **Account**, then **API Tokens**, and
-  revoke its token. That cuts off its access at once.
+  Connected a tool you no longer use? Revoke its token on
+  [liveworkspace.app](https://liveworkspace.app/account/tokens). livediagram stops accepting it
+  within a minute.
 </Tip>
 
 </ArticleLayout>

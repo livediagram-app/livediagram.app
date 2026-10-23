@@ -231,7 +231,7 @@ export const AI_CLIENTS: readonly AiClient[] = [
       },
       {
         text: 'If it can’t, create an API token in livediagram’s **Settings**, under **Account**, **API Tokens**, and send it as a header:',
-        code: { lang: 'text', code: 'Authorization: Bearer lvd_…', label: 'Header' },
+        code: { lang: 'text', code: 'Authorization: Bearer lwt_…', label: 'Header' },
       },
     ],
     note: 'Running your own livediagram? Use your own MCP host in place of mcp.livediagram.app, still ending in /mcp.',

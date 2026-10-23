@@ -1,6 +1,6 @@
 // The CLI's OAuth client (docs/specs/015-api/blueprints/cli.md "The CLI's OAuth client", CLI34 to CLI36): a token
 // from the host's authorization server, by the browser (loopback PKCE with the built-in client) or by the device
-// grant, for the profile's host. Both end in an ordinary lvd_ API token; what happens with it is login's.
+// grant, for the profile's host. Both end in an ordinary lwt_ API token; what happens with it is login's.
 
 import {
   randomBase64Url,

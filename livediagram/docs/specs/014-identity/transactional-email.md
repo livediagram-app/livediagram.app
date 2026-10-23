@@ -22,11 +22,9 @@ Five messages, two kinds:
 
 **Transactional — always send (when the feature is on):**
 
-4. **Team invite** — when an email address is invited to a team ([Teams](../013-workspace/teams.md)), the
-   invitee gets a message with a link to sign in and view/accept the invite
-   (`/explorer/invites`), and a quieter **Decline invite** link to
-   `/join/decline?token=<token>` that turns it down with no account and no
-   sign-in ([Teams → Declining from the email](../013-workspace/teams.md#declining-from-the-email)).
+4. **Team invite** — no longer sent by livediagram: teams, their invitations
+   and those emails belong to the liveworkspace account and come from
+   liveworkspace ([Teams](../013-workspace/teams.md)).
 5. **Account deleted** — after a user deletes their account (spec: account
    self-deletion), a confirmation that their livediagram data and their
    liveworkspace account are gone.
@@ -46,9 +44,9 @@ invite** — read from the [User preferences](../007-editor/user-preferences.md)
 8. **Milestone** (#6, opt-out `notifyMilestones`) — a celebration when an owner's
    document count reaches 10, fired on a genuine create. Atomic `claimMilestone`
    dedups a burst of saves. `milestone_sent_at`, migration 0033.
-9. **API-token expiry** (#3, transactional) — 7 days before a token's 6-month
-   expiry, so a script / connected tool doesn't silently break. Daily cron.
-   `api_tokens.expiry_warned_at`, migration 0030.
+9. **API-token expiry** — no longer sent by livediagram: API tokens belong to the
+   liveworkspace account ([Public API + tokens](../015-api/public-api-and-tokens.md)),
+   and liveworkspace does not send an expiry reminder yet.
 10. **New comment** (#1, opt-out `notifyComments`) — when someone other than the
     owner comments on a document (either comment path), the owner is emailed
     **immediately** (no cron). Never includes the comment text. On the tab save
@@ -61,13 +59,7 @@ invite** — read from the [User preferences](../007-editor/user-preferences.md)
     recipient in a comment ([Comment mentions](../012-collaboration/comment-mentions.md)). Unlike the owner's new-comment email it
     quotes the comment (the first 280 characters): the recipient was named in
     it, and the document is in their own team's library.
-13. **Team invite reminders** (transactional, kinds `TeamInviteReminder1` /
-    `TeamInviteReminder2` / `TeamInviteReminder3`) — 1, 7 and 21 days after an
-    invite nobody has answered, from the daily cron, each with its own Decline
-    invite link. The invite expires (is rejected) 28 days after it was sent. Not
-    opt-out: the recipient may have no account to hold a preference, and the
-    Decline link is the one-click way to stop them. Stamps on the invite's own
-    `team_members` row (`reminder1_sent_at` to `reminder3_sent_at`, `reminder_attempts`, `clock_started_at`, migration 0095); see [Teams → Reminders and expiry](../013-workspace/teams.md#reminders-and-expiry).
+13. **Team invite reminders** — gone with the invitations themselves (item 4).
 
 The three opt-out lifecycle/notification categories (`notifyComments`,
 `notifyTips`, `notifyMilestones`) join the [Account settings & email notifications](profile-and-email-notifications.md) pair in `getNotificationPrefs`
@@ -188,8 +180,7 @@ sighting with a changed address (§4), resets the count to zero.
   refreshes a returning owner's address), the
   two due-queries + mark-sent, and row deletion (called from `deleteAccount`).
 - Hooks: welcome in the request path (`index.ts`), week1/week2 in `scheduled()`,
-  invite in `routes/teams.ts` (invite create), invite reminders + expiry in
-  `scheduled()` via `email/team-invite-reminders.ts`, deletion in `routes/account.ts`.
+  deletion in `routes/account.ts`.
 
 All sends use `ctx.waitUntil` (or are already in the cron) — email is never on
 the request's critical path.
@@ -211,12 +202,7 @@ name, or a recipient count.
 
 - Authenticated-only; the address is the verified token claim, never input.
 - No document content, names, or anything the user typed is ever in an email
-  beyond the team name (already known to the invitee's inviter) and the user's
-  own email.
-- The team invite and its reminders go to an address an Admin typed, which may
-  have no account: that is why they carry no account footer, and why their only
-  credential is the single-purpose decline token, stored hashed
-  ([Teams → Declining from the email](../013-workspace/teams.md#declining-from-the-email)).
+  beyond the team name and the user's own email.
 - Off by default; self-hosters opt in by providing their own Resend key + domain
   (keeps [Open source + distribution](../002-project-scope/open-source-and-business-model.md) self-hosting intact — no required SaaS call).
 

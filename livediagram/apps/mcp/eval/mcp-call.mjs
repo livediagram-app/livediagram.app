@@ -6,7 +6,7 @@
 //   node mcp-call.mjs tools [<name> ...]      one line per tool, or the full description and schema of those named
 //   node mcp-call.mjs <tool> '<json args>'    call a tool and print its result
 //
-// Environment: LIVEDIAGRAM_TOKEN (an lvd_ API token; else read from token.env beside this file), MCP_URL (default
+// Environment: LIVEDIAGRAM_TOKEN (an lwt_ API token; else read from token.env beside this file), MCP_URL (default
 // http://127.0.0.1:8798/mcp), EVAL_LOG (a jsonl of every call; default runs/calls.jsonl) and EVAL_IMG_DIR (where
 // image results are saved; default runs/shots). Never commit a token: token.env and runs/ are gitignored.
 
@@ -24,7 +24,7 @@ function token() {
   if (process.env.LIVEDIAGRAM_TOKEN) return process.env.LIVEDIAGRAM_TOKEN;
   const file = join(HERE, 'token.env');
   if (!existsSync(file))
-    throw new Error('No token: set LIVEDIAGRAM_TOKEN or write TOKEN=lvd_… to eval/token.env');
+    throw new Error('No token: set LIVEDIAGRAM_TOKEN or write TOKEN=lwt_… to eval/token.env');
   const line = readFileSync(file, 'utf8')
     .split('\n')
     .find((l) => l.startsWith('TOKEN='));

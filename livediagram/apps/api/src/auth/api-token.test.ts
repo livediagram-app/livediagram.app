@@ -3,9 +3,9 @@ import { isApiTokenFormat } from '@livediagram/api-schema';
 import { generateApiToken, hashApiToken, apiTokenExpiry } from './api-token';
 
 describe('generateApiToken', () => {
-  it('mints an lvd_-prefixed token that passes the format check', () => {
+  it('mints an lwt_-prefixed token that passes the format check', () => {
     const t = generateApiToken();
-    expect(t.startsWith('lvd_')).toBe(true);
+    expect(t.startsWith('lwt_')).toBe(true);
     expect(isApiTokenFormat(t)).toBe(true);
   });
 
@@ -17,13 +17,13 @@ describe('generateApiToken', () => {
 
 describe('hashApiToken', () => {
   it('is deterministic and 64 hex chars', async () => {
-    const a = await hashApiToken('lvd_abc');
-    const b = await hashApiToken('lvd_abc');
+    const a = await hashApiToken('lwt_abc');
+    const b = await hashApiToken('lwt_abc');
     expect(a).toBe(b);
     expect(a).toMatch(/^[0-9a-f]{64}$/);
   });
   it('differs for different tokens', async () => {
-    expect(await hashApiToken('lvd_a')).not.toBe(await hashApiToken('lvd_b'));
+    expect(await hashApiToken('lwt_a')).not.toBe(await hashApiToken('lwt_b'));
   });
 });
 

@@ -1,34 +1,12 @@
-// API token calls (docs/specs/015-api/public-api-and-tokens.md). Signed-in only: the routes reject a
-// guest, and apiHeaders attaches the account Bearer when signed in. Used by the
-// Explorer "API tokens" library section.
-import type { ApiToken } from '@livediagram/api-schema';
-import {
-  API_BASE,
-  apiDelete,
-  apiHeaders,
-  expectOk,
-  type CreateTokenResponse,
-  type TokensResponse,
-  apiFetch,
-} from './core';
+// API token calls (docs/specs/015-api/public-api-and-tokens.md). Tokens belong to the liveworkspace
+// account and are made, listed and revoked on liveworkspace.app; this app only ends a token it just
+// minted for an AI tool that did not take it (lib/oauth-handover.ts), by presenting the token itself.
+import { API_BASE, apiFetch, expectOkVoid } from './core';
 
-export async function apiListTokens(ownerId: string): Promise<ApiToken[]> {
-  const res = await apiFetch(`${API_BASE}/tokens`, { headers: await apiHeaders(ownerId) });
-  const { tokens } = await expectOk<TokensResponse>(res, 'list tokens');
-  return tokens;
-}
-
-// Mint a token. The returned `token` is the one-time plaintext secret — show
-// it to the user to copy, then drop it (it's never retrievable again).
-export async function apiCreateToken(ownerId: string, name: string): Promise<CreateTokenResponse> {
-  const res = await apiFetch(`${API_BASE}/tokens`, {
-    method: 'POST',
-    headers: await apiHeaders(ownerId, { body: true }),
-    body: JSON.stringify({ name }),
+export async function apiRevokeTokenAsItself(token: string): Promise<void> {
+  const res = await apiFetch(`${API_BASE}/tokens/current`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` },
   });
-  return expectOk<CreateTokenResponse>(res, 'create token');
-}
-
-export async function apiRevokeToken(ownerId: string, id: string): Promise<void> {
-  await apiDelete(`${API_BASE}/tokens/${id}`, ownerId, { action: 'revoke token' });
+  await expectOkVoid(res, 'revoke token');
 }

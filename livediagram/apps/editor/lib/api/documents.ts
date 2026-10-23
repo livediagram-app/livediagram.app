@@ -86,10 +86,7 @@ async function _apiLoadDocument(ownerId: string, id: string): Promise<LiveDoc | 
   const body = await expectOkOrNull<DocumentResponse>(res, 'load');
   return body?.document ?? null;
 }
-export const apiLoadDocument = dedupeInFlight(
-  _apiLoadDocument,
-  (ownerId, id) => `${ownerId}|${id}`,
-);
+export const apiLoadDocument = dedupeInFlight(_apiLoadDocument, (ownerId, id) => `${ownerId}|${id}`);
 
 // How many of the document's tabs are also in other documents, and how many
 // documents (docs/specs/006-document/tab-document-many-to-many.md, "Shared-tab

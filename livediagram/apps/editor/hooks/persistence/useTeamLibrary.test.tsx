@@ -14,8 +14,7 @@ vi.mock('@/lib/api-client', () => ({
   apiCreateFolder: (...a: Parameters<typeof apiCreateFolder>) => apiCreateFolder(...a),
   apiUpdateFolder: (...a: Parameters<typeof apiUpdateFolder>) => apiUpdateFolder(...a),
   apiDeleteFolder: (...a: Parameters<typeof apiDeleteFolder>) => apiDeleteFolder(...a),
-  apiSetDocumentFolder: (...a: Parameters<typeof apiSetDocumentFolder>) =>
-    apiSetDocumentFolder(...a),
+  apiSetDocumentFolder: (...a: Parameters<typeof apiSetDocumentFolder>) => apiSetDocumentFolder(...a),
   apiSaveDocumentMeta: (...a: Parameters<typeof apiSaveDocumentMeta>) => apiSaveDocumentMeta(...a),
 }));
 const duplicateDocument = vi.fn<typeof import('@/lib/duplicate-document').duplicateDocument>();
