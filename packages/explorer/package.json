@@ -8,6 +8,7 @@
   ],
   "exports": {
     ".": "./src/index.ts",
+    "./hero-manifest": "./src/hero/manifest.tsx",
     "./explorer.css": "./explorer.css"
   },
   "scripts": {
