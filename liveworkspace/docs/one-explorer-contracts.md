@@ -104,7 +104,7 @@ type ItemSummary = {
 | ------------------------------ | ------------------- | ---------------------------------------------------------------------------- |
 | `GET /items`                   | person              | Lists. Filters: `app`, `view` (`all`, `recent`, `favourites`,                |
 |                                |                     | `shared`, `trash`, `unsorted`), `folder`, `team`, `tag`, `q`                 |
-|                                |                     | (title, tag and folder search). Sorted by `updatedAt`, or by                 |
+|                                |                     | (title and folder search). Sorted by `updatedAt`, or by                      |
 |                                |                     | `lastOpenedAt` for `recent`. `used=N` (1 to 8, `recent` only, first          |
 |                                |                     | page) adds `mostUsed`: up to N items ranked by the days used in the last     |
 |                                |                     | 90, each with `useDays`, in the same response (Jump Back In).                |

@@ -118,7 +118,7 @@ describe('views and filters', () => {
 });
 
 describe('search', () => {
-  it('matches titles, tag names and folder names', async () => {
+  it('matches titles and folder names, never tag names', async () => {
     const ada = await person('user_a');
     const f = await body<{ folder: { id: string } }>(
       await call('/folders', { method: 'POST', auth: ada.auth, body: { name: 'Budgets' } }),
@@ -135,7 +135,7 @@ describe('search', () => {
     await call(`/tags/t1/items/${tagged.id}`, { method: 'PUT', auth: ada.auth });
     expect(titles(await list(ada.auth, 'q=roadmap'))).toEqual(['Roadmap 2027']);
     expect(titles(await list(ada.auth, 'q=budget'))).toEqual(['Plain']);
-    expect(titles(await list(ada.auth, 'q=LAUNCH'))).toEqual(['Tagged']);
+    expect(titles(await list(ada.auth, 'q=LAUNCH'))).toEqual([]);
     expect(titles(await list(ada.auth, 'q=zzz'))).toEqual([]);
   });
 
@@ -154,17 +154,11 @@ describe('search', () => {
     expect(titles(await list(ada.auth, 'q=%'))).toEqual(['100% done']);
   });
 
-  it('never finds through someone else’s tags or folders', async () => {
+  it('never finds through someone else’s folders', async () => {
     const ada = await person('user_a');
     const eve = await person('user_e');
-    const item = await makeItem(ada.auth, { title: 'Quiet' });
+    await makeItem(ada.auth, { title: 'Quiet' });
     await call('/folders', { method: 'POST', auth: eve.auth, body: { name: 'Quiet place' } });
-    await call('/tags', {
-      method: 'POST',
-      auth: eve.auth,
-      body: { id: 'te', name: 'Quiet', colour: 'red' },
-    });
-    await call(`/tags/te/items/${item.id}`, { method: 'PUT', auth: eve.auth });
     expect((await list(eve.auth, 'q=quiet')).items).toEqual([]);
   });
 });

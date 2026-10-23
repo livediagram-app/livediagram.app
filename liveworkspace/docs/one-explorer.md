@@ -55,7 +55,7 @@ index. Moving, tagging, sharing, trashing and restoring happen only in the index
 "feed D1 from every object" problem the RFC reply called the bulk of the work: the only things an
 app pushes are its content-derived summary (see 5) and a thumbnail.
 
-Search is title, tag and folder search over the index. It does not search inside content.
+Search is title and folder search over the index. It does not search inside content.
 
 ### 2. Who may open an item: short-lived grants
 

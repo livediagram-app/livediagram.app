@@ -148,15 +148,14 @@ export function buildListQuery(person: Person, spec: ListSpec, now = Date.now())
     args.push(spec.tag);
   }
   if (spec.q) {
-    // Title, tag-name and folder-name search, the person's text taken literally.
+    // Title and folder-name search, the person's text taken literally. Tags are no part of it: the Explorer
+    // shows none.
     const pattern = containsPattern(spec.q);
     where.push(
       `(i.title LIKE ? ESCAPE '\\'
-        OR i.id IN (SELECT it.item_id FROM item_tags it JOIN tags t ON t.id = it.tag_id
-                    WHERE t.owner_id = ? AND t.name LIKE ? ESCAPE '\\')
         OR i.folder_id IN (SELECT f.id FROM folders f WHERE f.scope ${IN_JSON} AND f.name LIKE ? ESCAPE '\\'))`,
     );
-    args.push(pattern, person.id, pattern, allScopes, pattern);
+    args.push(pattern, allScopes, pattern);
   }
   if (spec.cursor) {
     where.push(`(${sortCol}, ${idCol}) < (?, ?)`);
