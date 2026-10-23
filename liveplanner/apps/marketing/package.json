@@ -20,6 +20,7 @@
     "@liveplanner/template-previews": "workspace:*",
     "@liveplanner/templates": "workspace:*",
     "@liveplanner/ui": "workspace:*",
+    "@liveworkspace/comparisons": "workspace:*",
     "next": "^16.4.1",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"

@@ -2,7 +2,6 @@ import { lucideBookOpen, lucideSparkles, lucideSquareKanban } from '@liveplanner
 
 import { Brand } from './Brand';
 import { lucideGlyph } from './icons/lucide-glyph';
-import { PLATFORM_SITE } from '@liveworkspace/sites';
 
 // NEXT_PUBLIC_BUILD_YEAR (docs/specs/016-platform/nextjs.md "One configuration"); empty outside a Next build.
 const buildYear = () => process.env.NEXT_PUBLIC_BUILD_YEAR ?? '';
@@ -29,8 +28,8 @@ const COLUMNS: { title: string; links: FooterLink[] }[] = [
         label: 'AI & MCP',
         icon: lucideGlyph(lucideSparkles, ICON_SIZE),
       },
-      // Every app's comparisons live on liveworkspace.app (liveworkspace/docs/comparison-pages.md).
-      { href: `${PLATFORM_SITE.url}/alternatives`, label: 'Product Comparison' },
+      // This app's own comparisons (packages/comparisons/README.md).
+      { href: '/alternatives', label: 'Product Comparison' },
       { href: '/faq', label: 'FAQ' },
     ],
   },

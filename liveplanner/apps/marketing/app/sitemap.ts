@@ -1,5 +1,8 @@
 import type { MetadataRoute } from 'next';
 
+import { comparisonSitemap } from '@liveworkspace/comparisons';
+
+import { COMPARISONS } from '@/lib/alternatives';
 import { LANDING_SECTION_IDS } from '@/lib/landing-content';
 import { SITE_URL } from '@liveplanner/ui';
 
@@ -88,6 +91,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: now,
       changeFrequency: 'monthly',
       priority: 0.2,
-    },
+    }, // The comparisons (packages/comparisons/README.md "Metadata"): the hub and one page per
+    // competitor, from the same list as the routes, dated by their last review rather than the build.
+    ...comparisonSitemap(COMPARISONS),
   ];
 }
