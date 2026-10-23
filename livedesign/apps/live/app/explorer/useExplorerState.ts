@@ -125,6 +125,7 @@ export function useExplorerState() {
   const {
     teams,
     invites,
+    createTeam: hookCreateTeam,
     refresh: refreshTeams,
   } = useTeams(ownerId, { enabled: teamsEnabled, invites: surface.administration });
   // The lens (docs/specs/013-workspace/explorer-filters.md): one string narrowing every design
@@ -615,6 +616,7 @@ export function useExplorerState() {
     moveTeamDests,
     dismissShared,
     // Teams
+    hookCreateTeam,
     refreshTeams,
     // After a restore from the Trash (docs/specs/013-workspace/trash.md): the
     // design is back in a personal or team list.

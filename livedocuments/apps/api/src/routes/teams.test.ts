@@ -122,7 +122,6 @@ describe('team administration is on liveworkspace.app', () => {
       { accountUserId: null, verifiedUserId: null },
     ]) {
       for (const [method, path] of [
-        ['POST', '/api/teams'],
         ['PUT', '/api/teams/t1'],
         ['DELETE', '/api/teams/t1'],
         ['POST', '/api/teams/t1/members'],

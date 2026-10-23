@@ -119,6 +119,8 @@ function ShellChrome({ children }: { children: ReactNode }) {
     moveDesignTo,
     moveFolderToParent,
     createMoveFolder,
+    teamsEnabled,
+    hookCreateTeam,
     accountUserId,
     ownerId,
     prefs,
@@ -328,6 +330,17 @@ function ShellChrome({ children }: { children: ReactNode }) {
                 currentTeamId={currentTeamId}
                 currentFolderId={currentFolderId}
                 onCreateFolder={createMoveFolder}
+                // A design can be moved into a team made on the spot (docs/specs/013-workspace/
+                // teams.md "Making a team"), made on liveworkspace so it is the same team in every
+                // app; folder moves stay personal, and guests have no teams.
+                onCreateTeam={
+                  teamsEnabled && moveTarget.kind === 'design'
+                    ? async (name) => {
+                        const team = await hookCreateTeam({ name });
+                        return team ? { id: team.id, name: team.name } : null;
+                      }
+                    : undefined
+                }
                 onPick={(dest) => {
                   if (moveTarget.kind === 'folder')
                     moveFolderToParent(moveTarget.id, dest.folderId);

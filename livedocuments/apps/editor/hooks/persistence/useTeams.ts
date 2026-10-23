@@ -86,7 +86,6 @@ export function useTeams(
       if (!name) return undefined;
       try {
         const team = await apiCreateTeam(ownerId, {
-          id: crypto.randomUUID(),
           name,
           organisation: input.organisation?.trim() || null,
         });

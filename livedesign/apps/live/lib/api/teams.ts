@@ -64,13 +64,12 @@ async function fetchTeamLibrary(ownerId: string, teamId: string): Promise<TeamLi
 
 export async function apiCreateTeam(
   ownerId: string,
-  input: { id: string; name: string; organisation?: string | null },
+  input: { name: string; organisation?: string | null },
 ): Promise<Team> {
   const res = await apiFetch(`${API_BASE}/teams`, {
     method: 'POST',
     headers: await apiHeaders(ownerId, { body: true }),
     body: JSON.stringify({
-      id: input.id,
       name: input.name,
       organisation: input.organisation ?? null,
     }),

@@ -1620,19 +1620,19 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/teams',
     segment: 'teams',
     tag: 'Teams',
-    summary: 'Create a team.',
+    summary:
+      'Make a team on liveworkspace with you as its admin: the same team in every app, managed on liveworkspace.app.',
     auth: 'clerk',
     requestSchema: {
       type: 'object',
       properties: {
-        id: { type: 'string' },
         name: { type: 'string' },
         organisation: { type: ['string', 'null'] },
       },
-      required: ['id', 'name'],
+      required: ['name'],
     },
     responseSchema: wrap('team', 'Team'),
-    statuses: [201, 400, 401],
+    statuses: [201, 400, 401, 409, 503],
   },
   {
     method: 'GET',

@@ -1,5 +1,5 @@
 // Tests' view of the liveworkspace accounts Worker's internal routes (liveworkspace/docs/accounts.md
-// "The API"): settings, profiles, sightings, milestones, emails and activity, kept in memory with the
+// "The API"): settings, profiles, sightings, milestones, emails, activity and the teams it makes, kept in memory with the
 // same rules (a write is a patch per key, null deletes; a milestone claims once, and only after a
 // sighting). Stubs the global fetch; batches posted to the telemetry service are kept too. Pair with
 // ACCOUNTS_ON in the env, and restore with vi.unstubAllGlobals.
@@ -27,6 +27,8 @@ export type FakeAccounts = {
   milestones: Set<string>;
   emails: Map<string, string>;
   activity: { userId: string; at?: number }[];
+  // Teams made through POST internal/teams, the admin read off the stand-in's `token-for-<id>` tokens.
+  teams: { id: string; name: string; organisation: string | null; admin: string }[];
   // Every internal call, as `<path> <json body>`.
   calls: { path: string; body: Record<string, unknown> }[];
   telemetry: TelemetryBatch['events'];
@@ -53,6 +55,7 @@ export function stubAccounts(): FakeAccounts {
     milestones: new Set(),
     emails: new Map(),
     activity: [],
+    teams: [],
     calls: [],
     telemetry: [],
     failWith: null,
@@ -131,6 +134,37 @@ export function stubAccounts(): FakeAccounts {
       case '/activity':
         fake.activity.push(body as { userId: string; at?: number });
         return answer({ ok: true });
+      case '/teams': {
+        const admin = String(body.accessToken).replace(/^token-for-/, '');
+        const name = typeof body.name === 'string' ? body.name.trim() : '';
+        if (!name) return answer({ error: 'name_required' }, 400);
+        const team = {
+          id: `team_${fake.teams.length + 1}`,
+          name,
+          organisation: (body.organisation as string | null) ?? null,
+          admin,
+        };
+        fake.teams.push(team);
+        return answer(
+          {
+            id: team.id,
+            name: team.name,
+            organisation: team.organisation,
+            role: 'admin',
+            memberCount: 1,
+            invitedCount: 0,
+            members: [
+              {
+                id: `member_${team.id}`,
+                name: null,
+                email: fake.emails.get(admin) ?? `${admin}@example.test`,
+                role: 'admin',
+              },
+            ],
+          },
+          201,
+        );
+      }
       default:
         return new Response(null, { status: 404 });
     }
