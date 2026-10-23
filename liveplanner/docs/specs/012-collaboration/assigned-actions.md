@@ -124,9 +124,9 @@ Clicking it opens the **Assign Action dialog** (its own component under
 - **Assignee**: a pinned **Myself** row (every session — the signed-in
   account, or the guest participant identity), then the **joined members
   of the team whose shared library holds this project** (`GET
-/api/teams/<projectTeamId>` members, via the existing api-client
-  helper), each row showing the member's avatar bubble and display name
-  (email local-part fallback, as TeamPane does). Members of the user's
+/api/teams/<projectTeamId>/members`, which the api answers from the team as liveworkspace keeps it, for a
+  caller whose token names the team), each row showing the member's avatar bubble and display name
+  (email local-part fallback, prettified). Members of the user's
   OTHER teams are deliberately not offered: they aren't members of this
   project's team, so they almost certainly can't open the project to
   complete the action — offering them just manufactures the §4 access
@@ -136,8 +136,7 @@ Clicking it opens the **Assign Action dialog** (its own component under
   membership `memberId` (their `userId` when the lazy claim has already
   identified an account, else null), and picking one shows an
   informational hint — "{name} hasn't accepted the team invite yet;
-  they'll get access when they join" — instead of the §4 access check,
-  which needs an account to ask about. **Myself is preselected** when
+  they'll get access when they join". **Myself is preselected** when
   creating, so the common self-assignment is zero-click and handing off
   is one.
   Myself-only states, each with its own nudge: a **personal project**
@@ -150,7 +149,7 @@ Clicking it opens the **Assign Action dialog** (its own component under
   signed-in user **not a member of the project's team** (a share-link
   editor) gets a plain Myself-only picker; a signed-out user sees Myself
   plus the sign-in nudge (§2).
-  The §4 access check stays as belt-and-braces on the picked assignee.
+  The api checks the picked assignee again when it sends the email (§4).
 - **Action name**: required single-line text, **pre-filled from the
   element's label** (a table's first non-empty cell) when creating, so
   the default action reads as the work item it sits on; the text is
@@ -203,46 +202,46 @@ state; nothing is added to `useEditorState.ts` beyond the wiring call.
 
 ## 4. Email notification
 
-A new **signed-in-only** endpoint on the api worker (account access token required,
-401 otherwise):
+A **signed-in-only** endpoint on the api worker, answered inside the plan's Durable Object (an account access
+token required; an API token is refused):
 
 ```
-POST /api/teams/<teamId>/notify-action
-body: { assigneeUserId?, assigneeMemberId?, projectId, actionName, description? }
+POST /api/projects/<projectId>/notify-action
+body: { teamId, assigneeUserId?, assigneeMemberId?, actionName, description? }
+answer: 202, the email worked out in the background
 ```
 
 The server, not the client, establishes every fact that matters:
 
-- verifies the **caller** is a joined member of `<teamId>`;
+- verifies the **caller** can open the plan (the index's grant) and is a joined member of `teamId`: their
+  token names the team, and the team as liveworkspace keeps it now (`POST /api/account/internal/teams/members`,
+  [liveworkspace accounts](../../../../liveworkspace/docs/accounts.md) "Notification emails") still holds them;
 - verifies the **assignee** (`assigneeUserId`, or `assigneeMemberId` for
-  an invited member) is a joined OR invited member of `<teamId>` (404
+  an invited member) is a joined OR invited member of `teamId`, and not the caller (404
   otherwise, so there is no probing which users exist);
-- verifies the caller can access `projectId` (owner, team library, or
-  shared-with), and reads the **project name from D1**, not the body;
-- resolves the assignee's address from trusted server state
-  (`team_members.email` / the account's verified address at the accounts Worker), never a client header
+- reads the **plan name from the plan**, not the body;
+- resolves the assignee's address from liveworkspace: an account's verified address, or an invited
+  person's invite address; never a client header
   ([Transactional email (Resend)](../014-identity/transactional-email.md) §5, [Account settings & email notifications](../014-identity/profile-and-email-notifications.md) §5);
-- resolves the assigner's display name from the caller's own identity, so a
+- resolves the assigner's display name from the caller's own profile (then their verified address), so a
   spoofed `assignerName` in a tab blob can never sign an email;
 - no-ops silently unless `emailEnabled(env)` and the assignee's
-  `notifyActionAssigned` pref (§6) is on; an invited member with no
-  account has no prefs yet, so the pref defaults to on and the invite
-  email from the membership row is the destination;
-- checks whether the **assignee** can open the project, by the access
-  check's legs below plus one: a project in this team's library counts as
-  open to an invited member too (they get in on accepting). When they cannot,
-  the email names no project and its button opens the Explorer instead, with
-  "ask them to share it" in place of the project name;
+  `notifyActionAssigned` setting (§6) is on; an invited member with no
+  account has no settings yet, so it counts as on and their invite address is the destination;
+- checks whether the **assignee** can open the plan: it is in this team's library (an invited member gets in
+  on accepting), they own it, they have joined the plan's own team, or the index would let them in (a link they
+  opened before). When they cannot,
+  the email names no plan and its button opens the Explorer instead, with
+  "ask them to share it" in place of the plan name;
 - **claims** the email before sending, since the action name and description
-  come from the body: the same email (assigner, project, recipient, action
+  come from the body: the same email (assigner, plan, recipient, action
   name, description) goes at most once per 24 hours, and one sender's
-  action-assigned and mention emails are capped at 60 an hour, both in
-  `notify_email_claims` ([Comment mentions](comment-mentions.md) "The email" has the
+  action-assigned and mention emails on a plan are capped at 60 an hour, both in
+  the plan's own `notify_claims` table ([Comment mentions](comment-mentions.md) "The email" has the
   detail).
 
-Then it sends the **action-assigned** email (new template in
-`email/templates.ts`, dispatcher in `email/notifications.ts` following the
-`notifyProjectJoin` shape, best-effort in `ctx.waitUntil`): "{assigner}
+Then it sends the **action-assigned** email (template in
+`email/templates.ts`, dispatcher in `email/notifications.ts`, best-effort in `ctx.waitUntil`): "{assigner}
 assigned you an action on _{project name}_", the action name, the first
 ~200 characters of the description, and a CTA linking to the project (when
 the assignee can open it, see above). All
@@ -258,20 +257,11 @@ accept — acceptable v1: the action is still on the canvas, and reassigning
 (or completing) it works for anyone with edit access. Invitees the lazy
 claim already identified carry their real `userId` and match normally.
 
-**Access caveat:** assigning is allowed on any project the assigner can
-edit, including ones the assignee cannot open. The dialog does a REAL
-check rather than guessing: picking an assignee fires
-`GET /api/teams/<teamId>/access-check?assigneeUserId=&projectId=`, which
-applies the same gates as notify-action (caller + assignee joined members
-of the team, caller can access the project, 404s that never probe) and
-answers `{ canAccess }` from the three legs the server can actually see —
-the assignee owns the project, is a joined member of the project's
-team-library team, or has previously opened it through a share link
-(`shared_with`). Only a definite "no" shows the hint ("{name} can't open
-this project yet: share it or move it to the team library"); while the
-check is in flight nothing shows, and if it errors the dialog falls back
-to the old heuristic (picked team ≠ the project's team → hedged "may not
-be able to open" wording). Auto-sharing on assign is explicitly not done
+**Access caveat:** assigning is allowed on any plan the assigner can
+edit, including ones the assignee cannot open. The picker only offers the people of the plan's own team, who
+can open it by being in it, so the dialog knows without asking: a joined teammate can, an invited one will on
+accepting (the hint above). An action kept from before the plan moved may name someone else; the dialog then
+says nothing, and the email (§4) decides from what the server can see. Auto-sharing on assign is explicitly not done
 (v1): quietly widening access as a side effect of an assignment is worse
 than a dead CTA, and the email to an assignee who cannot open the project
 names no project and links to none.
@@ -363,11 +353,11 @@ One new opt-out flag in the [User preferences](../007-editor/user-preferences.md
 notifyActionAssigned?: boolean; // someone assigns me an action
 ```
 
-- Server-side it joins `NotificationPrefs`
-  (`apps/api/src/person/settings.ts`), read by the notify dispatcher.
-- Client-side the profile page (`ProfilePane.tsx`, [Account settings & email notifications](../014-identity/profile-and-email-notifications.md)) gains a
-  `NotificationRow`: "Someone assigns me an action", gated with the others
-  on `emailEnabled`, flipping through the same `setFlag` round-trip.
+- It is one of the settings every app shares (`all` scope at liveworkspace, `@liveworkspace/settings`): the
+  notify dispatcher reads it for the recipient with their address (`apps/api/src/person/notify.ts`).
+- Client-side the Settings dialog's Notifications category ([Account settings & email notifications](../014-identity/profile-and-email-notifications.md)) has a
+  switch: **Someone Assigns Me an Action**, shown with the other email switches when the deployment sends email
+  and you are signed in.
 
 This is the recipient-side kill switch the dialog checkbox cannot be: the
 checkbox is the assigner's courtesy, the preference is the assignee's
@@ -385,9 +375,9 @@ consent.
   before anyone grants them edit. They get no mutating controls. Dedicated
   view-role mutation routes (the comments `POST`/`DELETE` pattern) are a
   known follow-up, not v1.
-- The notify endpoint leaks nothing across team boundaries: both parties
-  must be joined members of the named team, and the response never includes
-  the resolved address.
+- The notify endpoint leaks nothing across team boundaries: the caller must be a joined member of the named
+  team, the assignee one of its joined or invited people, and the response never includes the resolved
+  address.
 
 ## 8. Telemetry
 

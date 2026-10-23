@@ -92,10 +92,12 @@ app; `notifyProjectJoin` and `notifyFormResponses` are liveplanner's own:
 notifyProjectJoin?: boolean;     // someone first opens one of my shared projects
 notifyInviteResponse?: boolean;  // someone accepts/declines a team invite I (an admin) sent
 notifyMentions?: boolean;        // a teammate @-mentions me in a comment (docs/specs/012-collaboration/comment-mentions.md)
+notifyActionAssigned?: boolean;  // a teammate assigns me an action (docs/specs/012-collaboration/assigned-actions.md)
+notifyMilestones?: boolean;      // my tenth plan, and my first share link (transactional-email.md #7)
 notifyFormResponses?: boolean;   // someone fills in one of my forms (docs/specs/030-forms/forms.md)
 ```
 
-Both **default on** (undefined === true): the user asked to be told, so the
+All **default on** (undefined === true): the user asked to be told, so the
 toggle is an opt-**out**, mirroring [User preferences](../007-editor/user-preferences.md)'s `notificationsEnabled`. The
 profile page reads/writes them through the existing
 `readUserPreferences` / `writeUserPreferences(prefs, ownerId)` round-trip, so
@@ -114,12 +116,17 @@ notify) when nothing is stored or the read fails. A missing key means
 the default (on), so a user who has never touched the toggle still gets
 notified.
 
+The emails that can reach several people at once (a mention, an assignment, someone joining, the milestones)
+read the switch together with the address, for everyone in one go: `notifyRecipients(env, ids, key)`
+(`apps/api/src/person/notify.ts`, on `notificationRecipients` from `@liveworkspace/auth-client`) asks the
+accounts Worker for the verified addresses and for that one key in the scope it lives in (`all`, or
+`liveplanner.app` for `notifyProjectJoin`), two requests whatever the number of people
+([liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md) "Notification emails"). A switch read
+that fails counts as on; an address read that fails reaches nobody.
+
 ## 4. The two notifications
 
-**liveplanner sends neither (October 2026).** The first visit through a share link was recorded in liveplanner's
-`shared_with`, and visits and shares are the index's now ([one-explorer.md](../../../../liveworkspace/docs/one-explorer.md)),
-so the join email has no signal; its switch (`notifyProjectJoin`) and template kind remain, and §a describes how it
-was sent, for when a signal returns. The invite answer (§b) is the accounts Worker's.
+liveplanner sends the first (§a); the invite answer (§b) is the accounts Worker's.
 
 Both are **transactional** (sent whenever email is on AND the recipient
 hasn't opted out), best-effort in `ctx.waitUntil`, and never on the
@@ -128,30 +135,25 @@ addresses come only from trusted server state (the account's verified
 address, looked up at the accounts Worker with `accountEmails`), never from a
 client header.
 
-### a. Someone joins my project — `notifyProjectJoin`
+### a. Someone joins my plan — `notifyProjectJoin`
 
-The signal is **a new person opening one of my shared projects for the first
-time**: the share-resolve path (`GET /api/share/<code>`) already records a
-visitor in `shared_with` via `recordSharedAccess`, but only when the visitor
-identifies and isn't the owner. `recordSharedAccess` now reports whether the
-row was **new** (first visit) vs a repeat. On a new visit by a **verified**
-visitor (a signed-in session or API token, `ctx.verifiedUserId`) the worker fires
-`notifyProjectJoin(env, liveDoc, joinerName)`. A guest id was
-unproven and free to mint then, so every fresh one would be another first visit;
-a guest visit is still recorded in `shared_with` and counted as
-`Project·Joined`, but never emails. `notifyProjectJoin`:
+The signal is **a new person opening one of my shared plans for the first
+time**, which the index sees: it records who came in through a link (its `shared_with`), whether by resolving
+the link's code or by opening the plan with it, and when that row is new it tells liveplanner, after the write and
+off its own request's path: `POST /api/internal/items/<id>/notices` with `{ type: 'joined', personId, level }`
+and liveplanner's index key ([One Explorer contracts](../../../../liveworkspace/docs/one-explorer-contracts.md)
+"Notices"). liveplanner answers `202` at once and hands it to the plan's room, which runs
+`notifyProjectJoin(env, plan, personId)`. A guest is no one joining (a guest id is free to mint, so every fresh
+one would be another first visit), and neither is the owner. `notifyProjectJoin`:
 
-- no-ops unless `emailEnabled(env)`;
-- resolves the owner's email at the accounts Worker (so it only fires for an
-  owner with an account and a verified address — a guest-owned project has
-  no address and is silently skipped);
-- no-ops when the owner's `notifyProjectJoin` pref is `false`;
-- no-ops unless it wins the per-project throttle: at most one join email per
-  project per 15 minutes (`claimJoinNotify`, an atomic conditional `UPDATE` of
-  `projects.join_notified_at`; the new-comment email's rule
-  on its own column);
-- otherwise sends the **project-joined** email: "Someone just opened
-  _{project name}_", with a CTA back to the project.
+- no-ops unless `emailEnabled(env)`, and for a guest or the owner;
+- resolves the owner's address and switch at the accounts Worker in one go (so it only fires for an
+  owner with an account and a verified address);
+- no-ops when the owner's `notifyProjectJoin` switch is `false`;
+- no-ops unless it wins the per-plan throttle: at most one join email per
+  plan per 15 minutes (a `join` claim in the plan's own `notify_claims`, the new-comment email's rule);
+- otherwise sends the **project-joined** email: "{joiner} opened one of your plans", naming the plan, with a
+  CTA to the Explorer.
 
 The project **name** is the recipient owner's _own_ content going back to
 them, so including it does not widen the [Transactional email (Resend)](transactional-email.md) §5 content rule (which is
@@ -182,8 +184,8 @@ Settings because it is a setting every app shares.
 - Signed-in only; every recipient address comes from verified server state,
   never a client header (consistent with [Teams](../013-workspace/teams.md)'s removal of
   `X-Owner-Email` and [Transactional email (Resend)](transactional-email.md) §5).
-- The only user-influenced strings in a notification body (a project name, a
-  joiner name, a responder email, a team name) are HTML-escaped, and each is
+- The only user-influenced strings in a notification body (a plan name, a
+  joiner name, an assigner's or author's name, an action, a quoted comment) are HTML-escaped, and each is
   either the recipient's own content or already known to the recipient.
 - Off by default at the deployment level (no `RESEND_API_KEY` → no sends, no
   UI), and off per-notification when the recipient opts out. Nothing

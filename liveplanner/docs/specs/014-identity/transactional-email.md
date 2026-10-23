@@ -36,19 +36,36 @@ room at most once a minute) so the series knows who is active.
    the first) — someone filled in one of the owner's forms, or a form was
    suspended after reports ([Forms](../030-forms/forms.md) "Hearing about
    responses").
-5. **API-token expiry** — no longer sent by liveplanner: API tokens belong to the
+5. **API-token expiry** — not sent by liveplanner: API tokens belong to the
    liveworkspace account ([Public API + tokens](../015-api/public-api-and-tokens.md)),
-   and liveworkspace does not send an expiry reminder yet.
+   and liveworkspace warns the owner a week before one expires, for every app
+   ([liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md) "Expiry warnings").
+6. **Someone joined my plan** (opt-out `notifyProjectJoin`) — a signed-in person
+   opened one of the owner's plans through a share link for the first time. The
+   index says so (its `joined` notice, [One Explorer contracts](../../../../liveworkspace/docs/one-explorer-contracts.md)
+   "Notices"), and the plan's room emails the owner, at most once a plan per 15
+   minutes. Never for a guest or the owner.
+7. **Milestones** (opt-out `notifyMilestones`) — the owner's **tenth plan** (the
+   index's count of the plans they have made, the Trash's included, asked when
+   they make one), and the **first share link** they make (the index's `shared`
+   notice). Each goes once per account, claimed at liveworkspace
+   (`milestones/claim`) before it is sent.
+8. **Action assigned** (opt-out `notifyActionAssigned`) and **mentioned**
+   (opt-out `notifyMentions`) — a teammate assigned you an action, or
+   @-mentioned you in a comment, on a team plan ([Assigned actions](../012-collaboration/assigned-actions.md) §4,
+   [Comment mentions](../012-collaboration/comment-mentions.md) "The email"). The recipient is
+   one of the plan's team's people as liveworkspace keeps the team; the same
+   email goes once a day, and one sender's are capped at 60 an hour a plan.
 
-**Not sent by liveplanner.** The milestone and first-share notes, someone
-joined my project, action assigned and mentioned have template kinds in the
-`EmailKind` union, and three have switches in Settings (`notifyMilestones`,
-`notifyProjectJoin`, `notifyMentions`), but liveplanner has no sender for any of
-them. Since teams moved to liveworkspace and plans to its index (October 2026),
-liveplanner keeps no list of a team's members, so the team emails have nobody
-to reach until a member source returns ([Teams](../013-workspace/teams.md)).
+How each is sent, and what it asks of liveworkspace: addresses and switches for
+many people in one go (`notificationRecipients`), a team's people
+(`readTeamPeople`), and the milestone claim, all in `@liveworkspace/auth-client`
+(`notify.ts`), which every app shares, with the windows and caps. The once-only
+state of the join, assignment and mention emails is the plan's own
+(`notify_claims` in its SQLite, pruned to a day); liveplanner's D1 holds none.
 
-The opt-out categories liveplanner reads (`notifyComments`, `notifyFormResponses`)
+The opt-out categories liveplanner reads (`notifyComments`, `notifyFormResponses`,
+`notifyProjectJoin`, `notifyMilestones`, `notifyActionAssigned`, `notifyMentions`)
 join the [Account settings & email notifications](profile-and-email-notifications.md)
 switches in Settings > Notifications, beside `notifyTips` and `notifyInviteResponse`,
 which the accounts Worker reads for onboarding and team invites. Most are settings
@@ -78,9 +95,12 @@ Production: `wrangler secret put RESEND_API_KEY`.
 
 ## 3. Data model
 
-None in liveplanner. An owner's address is looked up when an email is sent
+None in liveplanner's D1. An owner's address is looked up when an email is sent
 (`accountEmails` from `@liveworkspace/auth-client`, up to 100 ids in one call,
-verified addresses only, accounts only). A guest is never emailed.
+verified addresses only, accounts only). A guest is never emailed. Each plan
+keeps its own `notify_claims` rows (key, sender, time) for the join, assignment
+and mention emails, a day at most; no text, address or name is in them (the
+keys of the last two are SHA-256 hashes).
 
 ## 4. Code shape
 
@@ -109,6 +129,10 @@ verified addresses only, accounts only). A guest is never emailed.
 - `apps/api/src/person/account-app.ts` — what the accounts Worker keeps of an
   account for liveplanner: `ownerEmails` / `ownerEmail`, `recordOwnerSighting`,
   `reportOwnerActivity`. None throws; a failure reads as "no address".
+- `apps/api/src/person/notify.ts` — what the notification emails ask of
+  liveworkspace: recipients with a switch on (`notifyRecipients`), a team's
+  people (`teamPeople`), the milestone claim and the index's count of plans made.
+- `apps/api/src/plan-room/notify-claims.ts` — the plan's once-only claims.
 - `apps/api/src/email/notifications.ts` — the notification sends.
 
 All sends use `ctx.waitUntil` — email is never on the request's critical path.
