@@ -62,7 +62,14 @@ emails it sends once per account under the app each one speaks for
 under the app the inviter signed up through ([accounts.md](accounts.md#reminders-and-expiry)), and
 the expiring-token warnings under the app the token's owner signed up through
 ([accounts.md](accounts.md#expiry-warnings)), so
-each app's dashboard reads them from `Email·Sent` as before. One that speaks for liveworkspace.app
+each app's dashboard reads them from `Email·Sent` as before. It also counts what is done to teams and
+API tokens on liveworkspace.app, under the app the person acting signed up through (an email's
+Decline, which needs no account, under the inviter's): `Team·Created`, `Team·Changed` (a rename, or
+`Role`), `Team·Deleted`, `Team·Added·Member` (an invitation sent), `Team·Shared·Link` and
+`Team·Removed·Link` (the join link on and off), `Team·Removed·Member` / `Invite` / `Self`,
+`Team·Joined`, `Team·Declined·Invite` / `Email`, `Token·Created·Manual` and `Token·Removed`. Each is
+reported after the change succeeds and the app is looked up only when the batch goes, after the
+response, so a request does no extra query or request for it. One that speaks for liveworkspace.app
 itself isn't counted, since no dashboard charts the platform. The dashboard's emitter checks scan
 the accounts Worker beside each app (`apps/site/app/telemetry/platform-emitters.ts`). Worker batches skip the rate limit, and they are the only way to send
 the events an app marks as server-only (its `server-emitted-events.ts`), so a stale browser bundle
@@ -87,19 +94,33 @@ sent.
 
 The one Explorer lives on liveworkspace.app ([site.md](site.md#the-explorer-explorer)), so the events
 each app's own Explorer used to send now come from there: the Timeline, Home and its first run, the
-filter lens, the Inbox, the List / Card / Details toggle, Home's banner closed, the Share dialog and a
+filter lens, the Inbox, the List / Card / Details toggle, Home's banner closed and its Try Again
+(`Home·Loaded·Retry`), the Share dialog (links copied and revoked, and each link made by level,
+lifetime and tab, extended, rescoped or given a password: `<Noun>·Shared`), folders made,
+re-parented and deleted, default folders set and cleared (`Folder·Changed` / `Cleared`, `Kind` or
+`Template`), the Trash (`Trash·Restored` / `Deleted` / `Cleared`, `Personal` or `Team`), items moved
+into, within and out of a team (`Team·Added` / `Moved` / `Removed` with the item's noun) and a
 guest's sign-in banner. They keep the names the apps always gave them, so each app's dashboard keeps
-counting them.
+counting them. An app that draws the shared Explorer itself (its panel, its Explorer page, the
+Workbench) reports the same events through its own hosts, so each is counted once, where it happened.
+
+Settings changed on liveworkspace.app count for their app too. In an app's dialog on the settings
+page, a change reports the event the app's own Settings sends for that row; on the settings page, a
+switch every app shares counts for the app the page was opened for (`?app=`), and opened on its own
+the page counts for no app. The events come from the app's settings catalogue
+(`packages/settings/src/catalogues`, `catalogueEvents`), and a change made in the app's own Settings is
+the app's to report, so each change is counted once.
 
 - **Whose they are.** An event counts for the app the page is filtered to, or, filtered to All Apps,
   for `liveworkspace.app` itself (`PLATFORM_TELEMETRY_APP`). A Share dialog's events count for the
   app of the item it shares, and a revoked pass under that app's noun (liveplanner's `Project`, the
   others' `Document`).
-- **What it may send.** Only the Explorer's events, each with its closed set of type tokens:
-  `EXPLORER_TELEMETRY_EVENTS` in `packages/telemetry/src/explorer-events.ts`. The site's emitter
-  (`apps/site/lib/explorer/telemetry.ts`) drops anything else before it is kept, and the ingest takes
-  a batch from liveworkspace.app's origin (`PLATFORM_TELEMETRY_ORIGINS`) only for these events, in an
-  app's name (and in that app's vocabulary) or in its own. No app's page or Worker key can speak for
+- **What it may send.** The Explorer's events, each with its closed set of type tokens:
+  `EXPLORER_TELEMETRY_EVENTS` in `packages/telemetry/src/explorer-events.ts`, and in an app's name
+  that app's settings events. The site's emitter (`apps/site/lib/explorer/telemetry.ts`) drops any
+  other Explorer event before it is kept, and the ingest takes a batch from liveworkspace.app's origin
+  (`PLATFORM_TELEMETRY_ORIGINS`) only for these events, in an app's name (and in that app's
+  vocabulary) or, for the Explorer's, in its own. No app's page or Worker key can speak for
   `liveworkspace.app`.
 - **Batching.** The same engine as the apps': one request per app every 10 seconds, sooner once 25
   events wait, and a beacon on page hide. Never one request per event.
@@ -195,6 +216,12 @@ HTTPS, not a service binding. Only the key has to be copied across.
 - **Dashboard**: "All apps" loads none of the apps' catalogues. Each app's dashboard is split out and
   loads when picked. Its styles are its own stylesheet, loaded only on `/telemetry`: the site's
   other pages carry 9.5 KB of CSS (gzipped), and the dashboard adds 16.6 KB.
+- **Accounts' team and token events**: reporting one is an array push on the request; the app it
+  counts for is read (one primary-key read each) and the batch sent, one per app, in `waitUntil` after
+  the response, bounded at two seconds. No query or request is added to the request itself.
+- **Telemetry Worker**: taking settings events from liveworkspace.app bundles the four settings
+  catalogues: 112 KiB to 182 KiB (19.4 to 25.0 KiB gzipped). Their 300 events become one set per app
+  once per isolate, in about 0.3 ms.
 - **Apps**: a browser batch is now cross-site, so it can't reuse the app's own connection; the first
   send on a page opens one more connection, to liveworkspace.app. Sends are batched (every 10
   seconds, and on page hide), so this is one connection per page view, off the critical path.
