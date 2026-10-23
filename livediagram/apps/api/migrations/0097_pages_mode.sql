@@ -2,15 +2,6 @@
 -- Tab bodies keep `"opensIn":"illustrate"`: every read goes through parseEditorMode, which reads it
 -- as Pages. What is renamed here is what would otherwise be lost or split in two.
 
--- The Pages tour's seen-guard and tracks: a lost one would offer the tour again. When both names
--- are somehow present the new one is kept (upgradeLegacyPreferences drops the old on read).
-UPDATE user_preferences
-  SET prefs = replace(prefs, '"illustrateTourSeen":', '"pagesTourSeen":')
-  WHERE prefs LIKE '%"illustrateTourSeen":%' AND prefs NOT LIKE '%"pagesTourSeen":%';
-UPDATE user_preferences
-  SET prefs = replace(prefs, '"illustrateTourKinds":', '"pagesTourKinds":')
-  WHERE prefs LIKE '%"illustrateTourKinds":%' AND prefs NOT LIKE '%"pagesTourKinds":%';
-
 -- Telemetry history, so the public dashboard's lines continue under the new names: the mode
 -- switch, opens-in, leave, tour, Settings and export events (ModeIllustrate, OpensInIllustrate,
 -- LeaveIllustrateConfirmed, IllustrateTour*, IllustrateTourStep*, IllustrateModeOn/Off,

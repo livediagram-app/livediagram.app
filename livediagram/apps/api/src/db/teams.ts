@@ -5,7 +5,7 @@
 
 import type { Team, TeamListItem, TeamMember, TeamMemberStatus } from '@livediagram/api-schema';
 import type { Env } from '../types';
-import { getParticipant } from './participants';
+import { getParticipants } from '../liveworkspace/profiles';
 import { imageGrantOwnerChangeStatement } from './image-grants';
 
 // TEAM_COLS / JOINED_COUNT / TeamRow / rowToTeam: the columns and row shape every team read here shares.
@@ -115,14 +115,12 @@ export async function listTeamMembers(env: Env, teamId: string): Promise<TeamMem
   // Resolve each connected member's display name from their participant
   // profile (docs/specs/013-workspace/teams.md) so the list shows real names ("Anna Smith"), not
   // just the prettified invite email. Pending / profile-less rows stay
-  // null and the client falls back to the email.
-  return Promise.all(
-    members.map(async (m) => {
-      if (!m.userId) return m;
-      const p = await getParticipant(env, m.userId);
-      return { ...m, name: p?.name ?? null };
-    }),
+  // null and the client falls back to the email. One batched read for the whole list.
+  const profiles = await getParticipants(
+    env,
+    members.flatMap((m) => (m.userId ? [m.userId] : [])),
   );
+  return members.map((m) => (m.userId ? { ...m, name: profiles.get(m.userId)?.name ?? null } : m));
 }
 
 // The caller's own membership row in a team — the permission check
@@ -163,7 +161,7 @@ export async function deleteTeam(env: Env, id: string): Promise<void> {
 // when someone responds to an invite. Only `joined` rows with a connected
 // user_id qualify — a pending-admin invite has no identity to email yet,
 // and a member isn't an admin. The notification layer resolves each id to a
-// verified address via email_lifecycle.
+// verified address at liveworkspace (liveworkspace/emails.ts).
 export async function listTeamAdminUserIds(env: Env, teamId: string): Promise<string[]> {
   const { results } = await env.DB.prepare(
     `SELECT user_id FROM team_members

@@ -1,5 +1,6 @@
-import { makeTestRouteContext } from './test-route-context';
+import { ProfileError } from '@liveworkspace/auth-client';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { makeTestRouteContext } from './test-route-context';
 
 // Characterisation tests for handleParticipants (docs/specs/014-identity/auth-and-guest-access.md). GET is
 // deliberately open (ids + display fields already leak through the WS
@@ -12,10 +13,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const { db } = vi.hoisted(() => ({
   db: {
     getParticipant: vi.fn(),
-    upsertParticipant: vi.fn(),
+    setParticipant: vi.fn(),
   },
 }));
-vi.mock('../db', () => db);
+vi.mock('../liveworkspace/profiles', () => db);
 
 import type { RouteContext } from './context';
 import { handleParticipants } from './participants';
@@ -87,7 +88,7 @@ describe('handleParticipants', () => {
       }),
     );
     expect(res.status).toBe(403);
-    expect(db.upsertParticipant).not.toHaveBeenCalled();
+    expect(db.setParticipant).not.toHaveBeenCalled();
   });
 
   it('PUT 400 on missing name/color', async () => {
@@ -108,11 +109,11 @@ describe('handleParticipants', () => {
       );
       expect(res.status).toBe(400);
     }
-    expect(db.upsertParticipant).not.toHaveBeenCalled();
+    expect(db.setParticipant).not.toHaveBeenCalled();
   });
 
-  it('PUT 200 when the caller updates their own participant', async () => {
-    db.getParticipant.mockResolvedValue(null);
+  it('PUT 200 when the caller updates their own participant, kept by liveworkspace', async () => {
+    db.setParticipant.mockResolvedValue({ id: 'owner-1', name: 'Ann', color: '#abc', createdAt: 5 });
     const res = await handleParticipants(
       makeCtx('PUT', '/api/participants/owner-1', {
         owner: 'owner-1',
@@ -120,6 +121,35 @@ describe('handleParticipants', () => {
       }),
     );
     expect(res.status).toBe(200);
-    expect(db.upsertParticipant).toHaveBeenCalled();
+    expect(db.setParticipant).toHaveBeenCalledWith(expect.anything(), 'owner-1', {
+      name: 'Ann',
+      color: '#abc',
+    });
+    expect(await res.json()).toEqual({
+      participant: { id: 'owner-1', name: 'Ann', color: '#abc', createdAt: 5 },
+    });
+  });
+
+  it('PUT echoes the values when this deployment keeps no profiles (guest-only)', async () => {
+    db.setParticipant.mockResolvedValue(null);
+    const res = await handleParticipants(
+      makeCtx('PUT', '/api/participants/owner-1', {
+        owner: 'owner-1',
+        body: { name: 'Ann', color: '#abc' },
+      }),
+    );
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({ participant: { id: 'owner-1', name: 'Ann' } });
+  });
+
+  it('PUT 400 when liveworkspace refuses the values', async () => {
+    db.setParticipant.mockRejectedValue(new ProfileError(400, 'invalid_name'));
+    const res = await handleParticipants(
+      makeCtx('PUT', '/api/participants/owner-1', {
+        owner: 'owner-1',
+        body: { name: 'Ann', color: '#abc' },
+      }),
+    );
+    expect(res.status).toBe(400);
   });
 });

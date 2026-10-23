@@ -70,10 +70,6 @@ function seed(sql: DatabaseSync) {
     sql,
     "INSERT INTO timeline_scope_state (scope_type, scope_id, backfilled_at) VALUES ('diagram', 'A', 1)",
   );
-  run(
-    sql,
-    'INSERT INTO user_preferences (owner_id, prefs, updated_at) VALUES (\'o\', \'{"notifyDiagramJoin":false,"theme":"dark"}\', 1)',
-  );
   const events: [string, string, string | null][] = [
     ['Diagram', 'Created', 'Cloud'],
     ['Team', 'Added', 'Diagram'],
@@ -170,14 +166,6 @@ describe('migration 0055 (the container is a document)', () => {
     });
     expect(one(sql, 'SELECT scope_type FROM timeline_scope_state')).toEqual({
       scope_type: 'document',
-    });
-  });
-
-  it('carries the notification opt-out to its new key', () => {
-    const { sql } = migrated();
-    expect(JSON.parse(one(sql, 'SELECT prefs FROM user_preferences')!.prefs as string)).toEqual({
-      notifyDocumentJoin: false,
-      theme: 'dark',
     });
   });
 

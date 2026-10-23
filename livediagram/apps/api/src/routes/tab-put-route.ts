@@ -14,12 +14,12 @@ import { mergeChangesetsIntoSave } from '../changesets/merge-on-save';
 import { hasNewComments, rewriteCommentAuthors } from '../comments';
 import {
   changesetMergePages,
-  getParticipant,
   getTab,
   isTabRevStale,
   upsertTabAtRev,
   tabBelongsElsewhere,
 } from '../db';
+import { getParticipant } from '../liveworkspace/profiles';
 import { emailEnabled } from '../email/client';
 import { notifyNewComment } from '../email/notifications';
 import { MAX_TAB_BYTES, bodyExceedsCap, storeTab } from '../limits';
@@ -27,6 +27,7 @@ import { capStoredName } from '../names';
 import { badRequest, conflict, json, payloadTooLarge } from '../responses';
 import { applyRoomLedger, fetchRoomLedger } from '../room-client';
 import { recordTabSave } from '../timeline';
+import { reportOwnerActivity } from '../liveworkspace/activity';
 import type { TabSaveDocument } from '../db/tab-save-document';
 import { readBody, type RouteContext } from './context';
 
@@ -116,29 +117,21 @@ export async function handleTabPut(
     // keep whichever copy has the higher `qaRev`.
     if (existingTab) body.elements = preferNewerQaAll(existingTab.elements, body.elements);
     const orderIndex = existingTab?.orderIndex ?? existing.tabCount;
-    // Newly added comments carry the resolved owner's participant record, never the client's claim
-    // (docs/specs/014-identity/auth-and-guest-access.md). getDocument already joined the owner's
-    // row: reused when the writer IS the owner, the common autosave case.
-    const writerParticipant =
-      owner === existing.ownerId && existing.ownerName !== null
-        ? {
-            id: owner,
-            name: existing.ownerName,
-            color: existing.ownerColor ?? '#0ea5e9',
-            createdAt: existing.createdAt,
-          }
-        : await getParticipant(env, owner);
-    const sanitised: Tab = writerParticipant
-      ? {
-          ...body,
-          elements: rewriteCommentAuthors(
-            body.elements,
-            existingTab?.elements ?? [],
-            writerParticipant,
-            commentAuthors,
-          ),
-        }
-      : body;
+    // Newly added comments carry the resolved owner's profile, never the client's claim
+    // (docs/specs/014-identity/auth-and-guest-access.md). Remembered per isolate for a minute
+    // (liveworkspace/profiles.ts), so an autosave costs no accounts call. Without a profile (a
+    // guest-only self-host, or liveworkspace out of reach) the writer's own new comments keep the
+    // name they were posted under, still tied to the writer's id.
+    const writerParticipant = await getParticipant(env, owner);
+    const sanitised: Tab = {
+      ...body,
+      elements: rewriteCommentAuthors(
+        body.elements,
+        existingTab?.elements ?? [],
+        writerParticipant ?? { id: owner, name: null, color: null },
+        commentAuthors,
+      ),
+    };
     let rev = 0;
     try {
       // The merged tab may outgrow the request: the storage layer measures what it stores
@@ -153,6 +146,12 @@ export async function handleTabPut(
       continue;
     }
     logMerge(id, tabId, merge);
+    // liveworkspace's onboarding series: the owner saved something they own, at most once a minute a
+    // document (liveworkspace/activity.ts).
+    if (owner === existing.ownerId) {
+      const activity = reportOwnerActivity(env, owner, id);
+      if (activity) ctx.waitUntil?.(activity);
+    }
     // docs/specs/013-workspace/timeline.md: the coalesced "worked on" event plus anything the save
     // added that the feed cares about. Off the response path: this fires on every autosave.
     ctx.waitUntil?.(

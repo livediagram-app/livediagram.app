@@ -5,7 +5,7 @@
 import { remapTabLinks, type Element } from '@livediagram/document';
 import { rowToTabSummary, type TabRow } from '../tab-row';
 import type { DocumentDTO, DocumentSummary, Env, TabSummaryDTO } from '../types';
-import { getParticipant } from './participants';
+import { getParticipant } from '../liveworkspace/profiles';
 import { imageRefIdsFromData } from '../image-refs/extract';
 import { collabIndexCopyStatements, collabIndexStatements } from './collab-index';
 import { redactTabDataForCommunity } from '../community-redact';

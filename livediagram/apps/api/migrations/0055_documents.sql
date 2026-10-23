@@ -58,11 +58,6 @@ UPDATE change_log
       after_state = replace(after_state, '"kind":"diagram","diagramId":', '"kind":"document","documentId":')
   WHERE before_state LIKE '%"diagramId":%' OR after_state LIKE '%"diagramId":%';
 
--- The notification opt-out: a lost `false` would start sending emails someone turned off.
-UPDATE user_preferences
-  SET prefs = replace(prefs, '"notifyDiagramJoin":', '"notifyDocumentJoin":')
-  WHERE prefs LIKE '%"notifyDiagramJoin":%' AND prefs NOT LIKE '%"notifyDocumentJoin":%';
-
 -- Telemetry history, so the public dashboard's lines continue under the new names.
 UPDATE events SET category = 'Document' WHERE category = 'Diagram';
 UPDATE events SET type = 'Document'

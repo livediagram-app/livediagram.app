@@ -1,4 +1,5 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { accountsServiceFor } from '../test-accounts-service';
 import { fakeD1 } from '../test-d1';
 import {
   dropSharedAccess,
@@ -20,8 +21,7 @@ const sharedRow = (over: Record<string, unknown> = {}) => ({
   saved_at: 42,
   role: 'edit',
   share_code: 'code-1',
-  owner_name: 'Ada',
-  owner_color: '#ff0000',
+  owner_id: 'user_ada',
   tab_id: null,
   first_tab_count: 3,
   ...over,
@@ -103,8 +103,12 @@ describe('hasSharedAccess (docs/specs/012-collaboration/assigned-actions.md acce
 });
 
 describe('listSharedWith (docs/specs/008-canvas/canvas-and-palette.md Shared with you)', () => {
-  it('maps a row to the DTO the Explorer renders', async () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('maps a row to the DTO the Explorer renders, its owner named from liveworkspace', async () => {
     const db = fakeD1(() => ({ all: [sharedRow()] }));
+    const accounts = accountsServiceFor(db.env);
+    accounts.profiles.set('user_ada', { name: 'Ada', color: '#ff0000', createdAt: 1 });
     expect(await listSharedWith(db.env, 'visitor-1')).toEqual([
       {
         id: 'diag-1',
@@ -118,6 +122,22 @@ describe('listSharedWith (docs/specs/008-canvas/canvas-and-palette.md Shared wit
         empty: false,
       },
     ]);
+  });
+
+  it('names every owner of the list in one read, and leaves an unknown owner unnamed', async () => {
+    const db = fakeD1(() => ({
+      all: [
+        sharedRow(),
+        sharedRow({ id: 'diag-2', owner_id: 'user_ada' }),
+        sharedRow({ id: 'diag-3', owner_id: 'user_gone' }),
+      ],
+    }));
+    const accounts = accountsServiceFor(db.env);
+    accounts.profiles.set('user_ada', { name: 'Ada', color: '#ff0000', createdAt: 1 });
+    const listed = await listSharedWith(db.env, 'visitor-1');
+    expect(listed.map((d) => d.ownerName)).toEqual(['Ada', 'Ada', null]);
+    expect(listed[2]!.ownerColor).toBeNull();
+    expect(accounts.calls).toEqual(['POST /profiles/read']);
   });
 
   // docs/specs/013-workspace/tab-scoped-share-links.md: the code handed back must carry exactly the scope the

@@ -19,6 +19,7 @@ const { db } = vi.hoisted(() => ({
   },
 }));
 vi.mock('../db', () => db);
+vi.mock('../liveworkspace/profiles', () => ({ getParticipant: db.getParticipant }));
 // Observe the docs/specs/012-collaboration/assigned-actions.md notify dispatch without exercising the email stack.
 vi.mock('../email/notifications', () => ({
   notifyActionAssigned: vi.fn().mockResolvedValue(undefined),
@@ -121,7 +122,6 @@ describe('team administration is on liveworkspace.app', () => {
       { accountUserId: null, verifiedUserId: null },
     ]) {
       for (const [method, path] of [
-        ['POST', '/api/teams'],
         ['PUT', '/api/teams/t1'],
         ['DELETE', '/api/teams/t1'],
         ['POST', '/api/teams/t1/members'],

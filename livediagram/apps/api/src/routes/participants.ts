@@ -1,8 +1,10 @@
-// /api/participants/<id> — read / update a participant's display row.
+// /api/participants/<id> — read / update a participant's display name and colour, kept by
+// liveworkspace as the person's profile in every app (liveworkspace/profiles.ts).
 
 import { MAX_COLOR_LEN, MAX_PARTICIPANT_NAME_LEN } from '@livediagram/api-schema';
 import { isSafeColourValue } from '@livediagram/document';
-import { getParticipant, upsertParticipant } from '../db';
+import { ProfileError } from '@liveworkspace/auth-client';
+import { getParticipant, setParticipant } from '../liveworkspace/profiles';
 import { badRequest, forbidden, json, notFound } from '../responses';
 import type { ParticipantDTO } from '../types';
 import { requireOwner, type RouteContext, readBody } from './context';
@@ -59,16 +61,17 @@ export async function handleParticipants(ctx: RouteContext): Promise<Response> {
     if (body.name.length > MAX_PARTICIPANT_NAME_LEN || body.color.length > MAX_COLOR_LEN) {
       return badRequest('name/color too long');
     }
-    const existing = await getParticipant(env, id);
-    const now = Date.now();
-    const p: ParticipantDTO = {
-      id,
-      name: body.name,
-      color: body.color,
-      createdAt: existing?.createdAt ?? now,
-    };
-    await upsertParticipant(env, p);
-    return json({ participant: p });
+    let p: ParticipantDTO | null;
+    try {
+      p = await setParticipant(env, id, { name: body.name, color: body.color });
+    } catch (err) {
+      // liveworkspace refused the values (its own checks match the ones above): a 400 like ours.
+      if (err instanceof ProfileError) return badRequest(`invalid ${err.code}`);
+      throw err;
+    }
+    // Nowhere to keep it (a guest-only self-host, docs/specs/015-api/api.md "participants"): the
+    // editor keeps the name it chose, and presence carries it to everyone in the room.
+    return json({ participant: p ?? { id, name: body.name, color: body.color, createdAt: Date.now() } });
   }
   return notFound();
 }

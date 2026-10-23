@@ -7,6 +7,8 @@ import {
 import { hashWorkbenchSecret } from '../auth/workbench-session';
 import type { SqliteD1 } from '../test-sqlite-d1';
 import type { WorkbenchContext } from './context';
+import { __resetProfileCache } from '../liveworkspace/profiles';
+import { accountsServiceFor } from '../test-accounts-service';
 import { makeTestRouteContext } from './test-route-context';
 import { handleWorkbench } from './workbench';
 import {
@@ -63,13 +65,15 @@ describe('POST /api/workbench/sessions', () => {
   afterEach(() => {
     vi.useRealTimers();
     vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+    __resetProfileCache();
   });
 
   it('opens a session as the person, with their display identity', async () => {
     const db = await workbenchDb();
     pairToken(db);
-    db.sql.exec(`INSERT INTO participants (id, name, color, created_at)
-                 VALUES ('user_1', 'Webber', '#ff8800', 1)`);
+    const accounts = accountsServiceFor(db.env);
+    accounts.profiles.set('user_1', { name: 'Webber', color: '#ff8800', createdAt: 1 });
     const ticket = await mintTicket(db);
 
     const res = await redeem(db, { ticket });

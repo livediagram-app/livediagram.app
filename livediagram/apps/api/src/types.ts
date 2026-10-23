@@ -130,9 +130,9 @@ export type Env = {
   // livediagram's secret on that service, sent as X-Telemetry-Key: it proves a batch with no Origin
   // is this app's own. A secret (wrangler secret put TELEMETRY_KEY); unset sends nothing.
   TELEMETRY_KEY?: string;
-  // Resend API key for transactional + lifecycle email (docs/specs/014-identity/transactional-email.md). When absent
-  // the whole email feature is inert: no sends, and the email_lifecycle table
-  // is never touched. Set via `wrangler secret put RESEND_API_KEY` for prod;
+  // Resend API key for this app's notification and milestone emails
+  // (docs/specs/014-identity/transactional-email.md; the onboarding series is liveworkspace's). When
+  // absent the whole email feature is inert: no sends. Set via `wrangler secret put RESEND_API_KEY` for prod;
   // drop into `apps/api/.dev.vars` for local dev (gitignored, never commit).
   RESEND_API_KEY?: string;
   // From identity for outbound email (optional). Defaults to

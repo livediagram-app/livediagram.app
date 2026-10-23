@@ -255,7 +255,7 @@ export function withServerRules(tab: Tab, stored: StoredTab | null, author: Auth
   const elements = rewriteCommentAuthors(
     stored ? preferNewerQaAll(previous, migrated.elements) : migrated.elements,
     previous,
-    { id: author.id, name: author.name, color: author.color, createdAt: 0 },
+    { id: author.id, name: author.name, color: author.color },
   );
   const name = stored ? stored.tab.name : capStoredName(migrated.name, null, 'tab');
   return { ...migrated, name, elements };

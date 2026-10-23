@@ -18,7 +18,8 @@ import {
   publishServicePost,
   removeServicePost,
 } from '../community-service';
-import { firstTabElementCount, getDocumentSharePassword, getParticipant } from '../db';
+import { firstTabElementCount, getDocumentSharePassword } from '../db';
+import { getParticipant } from '../liveworkspace/profiles';
 import {
   deleteCommunityLink,
   newCommunityLinkCode,

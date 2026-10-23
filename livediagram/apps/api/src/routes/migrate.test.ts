@@ -9,7 +9,9 @@ const { migrateOwnerId, getParticipant } = vi.hoisted(() => ({
   migrateOwnerId: vi.fn(),
   getParticipant: vi.fn(),
 }));
-vi.mock('../db', () => ({ migrateOwnerId, getParticipant }));
+vi.mock('../db', () => ({ migrateOwnerId }));
+vi.mock('../liveworkspace/profiles', () => ({ getParticipant }));
+vi.mock('../liveworkspace/guest-merge', () => ({ mergeGuestIntoOwner: vi.fn(async () => {}) }));
 
 import { signOwnerId } from '../auth/owner-signature';
 import type { Env } from '../types';

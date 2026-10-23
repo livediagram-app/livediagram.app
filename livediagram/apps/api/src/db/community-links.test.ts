@@ -1,7 +1,8 @@
 // What this api keeps of the Community, against a real schema (docs/specs/025-community/community.md): the community
 // link a publish makes, the one rule every link door reads, what the sync finds to send, and a copy taken through a
 // link. The posts themselves are the liveworkspace service's, tested there.
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { accountsServiceFor } from '../test-accounts-service';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import {
   communityLinkAccess,
@@ -37,12 +38,13 @@ const link = (documentId: string, authorId = 'user_author', anonymous = false) =
 
 beforeEach(() => {
   db = sqliteD1();
-  db.sql
-    .prepare(
-      "INSERT INTO participants (id, name, color, created_at) VALUES ('user_author', 'Ada', '#f97316', 1)",
-    )
-    .run();
+  accountsServiceFor(db.env).profiles.set('user_author', {
+    name: 'Ada',
+    color: '#f97316',
+    createdAt: 1,
+  });
 });
+afterEach(() => vi.unstubAllGlobals());
 
 describe('a community link', () => {
   it('is a view link that never expires, never listed with the owner’s links', async () => {

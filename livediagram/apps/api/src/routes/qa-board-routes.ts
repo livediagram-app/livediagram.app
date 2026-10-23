@@ -22,7 +22,8 @@ import {
   qaVoterId,
   type QaNote,
 } from '@livediagram/document';
-import { getDocument, getParticipant } from '../db';
+import { getDocument } from '../db';
+import { getParticipant } from '../liveworkspace/profiles';
 import type { QaWriteRequest } from '../qa-board-write';
 import { badRequest, conflict, forbidden, json, notFound, payloadTooLarge } from '../responses';
 import { refuseGuestVoteOverCap } from '../vote-integrity';

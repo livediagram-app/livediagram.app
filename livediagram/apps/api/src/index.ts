@@ -10,8 +10,6 @@ import { AccountsUnavailable, sweepRevokedTokens, type ResolvedApiToken } from '
 import { catchUpTeams, syncTeams } from './db/team-sync';
 import { endWorkbenchAccess } from './workbench-end';
 import { handleAuth } from './routes/auth';
-import { emailEnabled } from './email/client';
-import { runLifecycleSweep, welcomeOnSighting } from './email/lifecycle';
 import { NOTIFY_EMAIL_DEDUPE_MS } from './email/notifications';
 import { runTimelineExpirySweep } from './timeline';
 import { runImageRetention } from './image-refs/retention';
@@ -98,10 +96,6 @@ async function isWriteRateLimited(env: Env, ownerId: string): Promise<boolean> {
   return !result.success;
 }
 
-// Owners whose first-sighting write already ran in this isolate — see
-// the welcomeOnSighting call below.
-const sightedThisIsolate = new Set<string>();
-
 // Every request the worker answers; `fetch` below stamps the document format number on it.
 async function routeApiRequest(
   request: Request,
@@ -141,23 +135,6 @@ async function routeApiRequest(
   // `X-Owner-Email` fallback used to exist here, and it let a signed-in caller forge another
   // address and claim that address's pending team invites. See auth/accounts.ts.
   const accountEmail = accountIdentity?.email ?? null;
-  // docs/specs/014-identity/transactional-email.md: first authenticated sighting => sign-up. Fire-and-forget (the
-  // sighting + welcome run in the background) so it never delays the response;
-  // a no-op when RESEND_API_KEY is unset.
-  if (
-    accountUserId &&
-    accountEmail &&
-    emailEnabled(env) &&
-    !sightedThisIsolate.has(accountUserId)
-  ) {
-    // Once per isolate, not per request: a signed-in editor autosaves
-    // every ~600ms, and each request was scheduling a (no-op after the
-    // first) INSERT OR IGNORE into email_lifecycle — ~100 wasted D1
-    // writes a minute. The INSERT stays idempotent, so a cold isolate
-    // simply pays it once more.
-    sightedThisIsolate.add(accountUserId);
-    executionCtx?.waitUntil(welcomeOnSighting(env, accountUserId, accountEmail));
-  }
   // API token (docs/specs/015-api/public-api-and-tokens.md): a `Bearer lwt_…` resolves to its owner — always a
   // account — via the hashed-token lookup. Only consulted when no account
   // access token verified (a token and a JWT can't both be the bearer). The resolved
@@ -588,9 +565,6 @@ const worker = {
         now - NOTIFY_EMAIL_DEDUPE_MS,
         deleteOldNotifyEmailClaims,
       );
-      // docs/specs/014-identity/transactional-email.md: send any due onboarding emails (welcome catch-up + week 1 / 2).
-      // No-op when RESEND_API_KEY is unset.
-      ctx.waitUntil(runLifecycleSweep(env));
       // docs/specs/013-workspace/timeline.md §4.5: tokens (those seen here) and share links about to
       // expire, on the Timeline.
       ctx.waitUntil(

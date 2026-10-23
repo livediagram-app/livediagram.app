@@ -12,11 +12,11 @@ import {
   documentsContainingTab,
   getDocument,
   getDocumentForSave,
-  getParticipant,
   getTab,
   linkTabToDocument,
   tabLinkedToOwnedDocument,
 } from '../db';
+import { getParticipant } from '../liveworkspace/profiles';
 import { conflict, forbidden, json, noContent, notFound } from '../responses';
 import { recordVisitorOpened, retractTabComments } from '../timeline';
 import { DOCUMENT_OPEN_HEADER, readDocumentOpen, tabEtag } from '@livediagram/api-schema';

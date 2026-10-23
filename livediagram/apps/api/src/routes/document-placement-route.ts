@@ -3,14 +3,8 @@
 // block under the document resource, so it owns its own module the way
 // the tab / share sub-paths own document-subresource-routes.ts.
 
-import {
-  getDocument,
-  getFolder,
-  getMembership,
-  getParticipant,
-  getTeam,
-  setDocumentFolder,
-} from '../db';
+import { getDocument, getFolder, getMembership, getTeam, setDocumentFolder } from '../db';
+import { getParticipant } from '../liveworkspace/profiles';
 import { syncCommunity } from '../community-service';
 import { badRequest, forbidden, noContent, notFound } from '../responses';
 import {

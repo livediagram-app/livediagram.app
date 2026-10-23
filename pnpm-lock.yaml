@@ -1337,6 +1337,9 @@ importers:
       '@liveworkspace/media':
         specifier: workspace:*
         version: link:../../../packages/media
+      '@liveworkspace/settings':
+        specifier: workspace:*
+        version: link:../../../packages/settings
       '@liveworkspace/telemetry':
         specifier: workspace:*
         version: link:../../../packages/telemetry

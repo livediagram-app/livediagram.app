@@ -5,6 +5,7 @@
 // caching) are tested with the service.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { syncCommunity } from '../community-service';
+import { accountsServiceFor, type TestAccountsService } from '../test-accounts-service';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { communityServiceFor, type TestCommunityService } from '../test-community-service';
 import type { Env } from '../types';
@@ -31,6 +32,7 @@ import { handleTabRender } from './tab-render-route';
 const KEY = '3f2b8c1e-9a4d-4e7f-8b21-0c5d6e7f8a9b';
 const AUTHOR = 'user_author';
 
+let accounts: TestAccountsService;
 let db: SqliteD1;
 let env: Env;
 let service: TestCommunityService;
@@ -80,11 +82,8 @@ beforeEach(() => {
   env = db.env;
   service = communityServiceFor(env);
   thumbnail.svg = '<svg/>';
-  db.sql
-    .prepare(
-      "INSERT INTO participants (id, name, color, created_at) VALUES (?, 'Ada', '#f97316', 1)",
-    )
-    .run(AUTHOR);
+  accounts = accountsServiceFor(env);
+  accounts.profiles.set(AUTHOR, { name: 'Ada', color: '#f97316', createdAt: 1 });
   for (const id of ['d1', 'd2']) {
     db.sql
       .prepare(
@@ -592,11 +591,7 @@ describe('what a community link reveals', () => {
 describe('a document that changes hands', () => {
   it("closes its previous owner's post, and lets the new owner publish their own", async () => {
     const post = await publish();
-    db.sql
-      .prepare(
-        "INSERT INTO participants (id, name, color, created_at) VALUES ('user_bob', 'Bob', '#000000', 1)",
-      )
-      .run();
+    accounts.profiles.set('user_bob', { name: 'Bob', color: '#000000', createdAt: 1 });
     db.sql.prepare("UPDATE documents SET owner_id = 'user_bob' WHERE id = 'd1'").run();
     await syncCommunity(env);
 

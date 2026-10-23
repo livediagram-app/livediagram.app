@@ -30,12 +30,14 @@ vi.mock('../db', () => ({
   // The first correct entry of a legacy plain-text password stores its hash.
   upgradeDocumentSharePassword: vi.fn(async () => {}),
   getShareLink: vi.fn(),
-  getParticipant: vi.fn(),
   recordSharedAccess: vi.fn(),
   getCommunityLinkByShareCode: vi.fn(),
   communityLinkAccess: vi.fn(),
   communityLinkAuthor: vi.fn(),
 }));
+
+// Display names come from liveworkspace profiles (liveworkspace/profiles.ts).
+vi.mock('../liveworkspace/profiles', () => ({ getParticipant: vi.fn() }));
 
 // The live-image endpoint (docs/specs/013-workspace/live-image-share.md + docs/specs/006-document/document-snapshots.md) delegates the actual
 // render-cache to ./thumbnail; stub it so this suite pins the route's
@@ -72,10 +74,10 @@ import {
   communityLinkAccess,
   getCommunityLinkByShareCode,
   getDocument,
-  getParticipant,
   getShareLink,
   recordSharedAccess,
 } from '../db';
+import { getParticipant } from '../liveworkspace/profiles';
 import { notifyDocumentJoin } from '../email/notifications';
 import { reportServerEvent } from '../server-telemetry';
 import { getDocumentTabImageSvg, getDocumentThumbnailSvg } from '../thumbnail';

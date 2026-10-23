@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { HomeResponse } from '@livediagram/api-schema';
+import { accountsServiceFor } from '../test-accounts-service';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { recordDocumentOpen } from '../home/record-open';
 import {
@@ -83,10 +84,16 @@ function seed() {
       ('m4', 'team-2', '${ME}', 'member', 'invited', 1, 1);
     INSERT INTO folders (id, owner_id, parent_id, team_id, name, created_at, updated_at)
       VALUES ('f1', '${ME}', NULL, NULL, 'Architecture', 1, 1);
-    INSERT INTO participants (id, name, color, created_at) VALUES
-      ('user_priya', 'Priya', '#e11d48', 1), ('user_sam', 'Sam', '#0ea5e9', 1), ('user_lee', 'Lee', '#22c55e', 1);
     INSERT INTO owner_aliases (owner_id, alias_id, created_at) VALUES ('${ME}', 'guest-me', 1);
   `);
+  const accounts = accountsServiceFor(db.env);
+  for (const [id, name, color] of [
+    ['user_priya', 'Priya', '#e11d48'],
+    ['user_sam', 'Sam', '#0ea5e9'],
+    ['user_lee', 'Lee', '#22c55e'],
+  ] as const) {
+    accounts.profiles.set(id, { name, color, createdAt: 1 });
+  }
   addDoc('own1', ME, { folderId: 'f1' });
   addDoc('own2', ME);
   addDoc('team1', 'user_priya', { teamId: 'team-1' });
@@ -142,6 +149,7 @@ beforeEach(() => {
 afterEach(() => {
   vi.useRealTimers();
   vi.restoreAllMocks();
+  vi.unstubAllGlobals();
 });
 
 describe('Jump back in', () => {

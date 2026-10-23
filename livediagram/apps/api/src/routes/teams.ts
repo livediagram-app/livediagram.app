@@ -2,8 +2,9 @@
 //
 // Teams are run on liveworkspace.app (liveworkspace/docs/accounts.md "Teams"), the same team in every
 // app. This app reads its copy (db/team-sync.ts): the list, a team and its members, its library, and
-// the access checks and notices its documents use. Making, renaming and deleting a team,
-// invitations, roles and leaving answer 410 with where to go.
+// the access checks and notices its documents use. Making a team is the one write: liveworkspace makes
+// it for the person signed in (createTeamFor), and the copy takes it at once (team-create.ts).
+// Renaming and deleting a team, invitations, roles and leaving answer 410 with where to go.
 //
 // Two verified credentials reach it (docs/specs/015-api/public-api-and-tokens.md §3.4): an account
 // access token, or an API token (its owner is always an account), so an integration can list the
@@ -19,6 +20,7 @@ import {
 } from '../db';
 import { forbidden, json, notFound, signInRequired } from '../responses';
 import { handleTeamActionRoutes } from './team-action-routes';
+import { createTeam } from './team-create';
 import { handleTeamMentionRoutes } from './team-mention-routes';
 import type { RouteContext } from './context';
 
@@ -32,8 +34,9 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
   // writes left here (a team's notices) need the interactive signed-in session.
   if (request.method !== 'GET' && !accountUserId) return signInRequired();
 
-  // /api/teams — the teams the caller has joined.
+  // /api/teams — the teams the caller has joined; POST makes one.
   if (segments.length === 2) {
+    if (request.method === 'POST') return createTeam(ctx);
     if (request.method !== 'GET') return notFound();
     return json({ teams: await listTeamsByUser(env, userId) });
   }
@@ -107,7 +110,7 @@ function managedOnLiveworkspace(method: string, segments: string[]): boolean {
     case 6:
       return segments[3] === 'members' && segments[5] === 'accept' && method === 'POST';
     default:
-      return segments.length === 2 && method === 'POST';
+      return false;
   }
 }
 

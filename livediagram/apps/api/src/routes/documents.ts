@@ -31,7 +31,6 @@ import {
   getDocumentThumbMeta,
   getTrashedDocumentMeta,
   countDocumentsByOwner,
-  getParticipant,
   listDocumentsByOwner,
   listRecentTeamDocuments,
   listSharedWith,
@@ -42,6 +41,7 @@ import {
   tabIdsHeldElsewhere,
   upsertDocumentMeta,
 } from '../db';
+import { getParticipant } from '../liveworkspace/profiles';
 import {
   badRequest,
   documentTrashed,
@@ -64,6 +64,7 @@ import {
 import { answerOverview, parseViewQuery } from './document-views-route';
 import { emailEnabled } from '../email/client';
 import { notifyMilestone } from '../email/notifications';
+import { reportOwnerActivity } from '../liveworkspace/activity';
 import {
   recordDocumentCreated,
   recordDocumentDuplicated,
@@ -328,6 +329,9 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
           countDocumentsByOwner(env, owner).then((count) => notifyMilestone(env, owner, count)),
         );
       }
+      // liveworkspace's onboarding series: they made something (liveworkspace/activity.ts).
+      const activity = reportOwnerActivity(env, owner, body.id);
+      if (activity) ctx.waitUntil?.(activity);
       return json({ document: liveDoc }, { status: 201 });
     }
   }

@@ -28,15 +28,16 @@
     "@livediagram/templates": "workspace:*",
     "@liveworkspace/auth-client": "workspace:*",
     "@liveworkspace/media": "workspace:*",
+    "@liveworkspace/settings": "workspace:*",
     "@liveworkspace/telemetry": "workspace:*",
     "jose": "^6.2.12"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20261007.1",
     "@livediagram/oxlint-config": "workspace:*",
+    "@livediagram/vitest-config": "workspace:*",
     "@liveworkspace/community-service": "workspace:*",
     "@liveworkspace/media-service": "workspace:*",
-    "@livediagram/vitest-config": "workspace:*",
     "@types/node": "^26.6.4",
     "@vitest/coverage-v8": "^5.0.3",
     "oxlint": "^1.88.0",

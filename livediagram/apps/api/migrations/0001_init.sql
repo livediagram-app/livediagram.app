@@ -14,14 +14,3 @@ CREATE TABLE diagrams (
 
 -- Owner-scoped list queries are the only multi-row pattern today.
 CREATE INDEX idx_diagrams_owner_recent ON diagrams (owner_id, saved_at DESC);
-
--- Participants: one row per local identity. Mirrors the
--- `Participant` type in apps/live/lib/identity.ts (id, name, color).
--- Status is volatile (online/away/stale) and stays client-side until
--- websockets propagate it, so it's not stored here.
-CREATE TABLE participants (
-  id          TEXT    PRIMARY KEY,
-  name        TEXT    NOT NULL,
-  color       TEXT    NOT NULL,
-  created_at  INTEGER NOT NULL
-);

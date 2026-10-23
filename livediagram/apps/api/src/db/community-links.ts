@@ -10,7 +10,7 @@ import {
 } from '@livediagram/api-schema';
 import { communityEnabled } from '../community-enabled';
 import type { Env } from '../types';
-import { getParticipant } from './participants';
+import { getParticipant } from '../liveworkspace/profiles';
 import { generateShareCode } from './share';
 
 export type CommunityLinkRow = {

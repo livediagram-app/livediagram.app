@@ -88,7 +88,7 @@ export async function handleDocumentShareRoutes(ctx: RouteContext): Promise<Resp
       const sharer = ctx.verifiedUserId ?? access.ownerId;
       ctx.waitUntil?.(recordShareLinkCreated(env, access, role, sharer));
       // docs/specs/014-identity/transactional-email.md (#6): a first-ever share link is a milestone. Best-effort,
-      // off the response path; claimFirstShare dedups so it fires only once.
+      // off the response path; liveworkspace's firstShare claim dedups so it fires only once.
       if (emailEnabled(env)) {
         ctx.waitUntil?.(notifyFirstShare(env, sharer));
       }

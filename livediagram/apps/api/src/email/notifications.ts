@@ -2,22 +2,16 @@
 // docs/specs/014-identity/transactional-email.md email feature. Both are best-effort, fired from `ctx.waitUntil` on a
 // request made by SOMEONE OTHER than the recipient (a visitor opening a shared
 // document; an invitee responding to an invite), so the recipient's address
-// comes from trusted server state (email_lifecycle / team_members), never the
-// caller's headers, and their opt-out is read from user_preferences (docs/specs/007-editor/user-preferences.md).
+// comes from trusted server state (the account's verified address at liveworkspace, or a team
+// member's), never the caller's headers, and their opt-out is read from their preferences
+// (docs/specs/007-editor/user-preferences.md), which liveworkspace keeps.
 //
 // Like every docs/specs/014-identity/transactional-email.md send these never throw — sendEmail swallows failures — so
 // a notification problem can't break the request that triggered it.
 
-import {
-  claimCommentNotify,
-  claimFirstShare,
-  claimJoinNotify,
-  claimMilestone,
-  claimNotifyEmail,
-  getNotificationPrefs,
-  getOwnerEmail,
-  listTeamAdminUserIds,
-} from '../db';
+import { claimCommentNotify, claimJoinNotify, claimNotifyEmail, listTeamAdminUserIds } from '../db';
+import { claimMilestone, getOwnerEmail, getOwnerEmails } from '../liveworkspace/emails';
+import { getNotificationPrefs } from '../liveworkspace/notification-prefs';
 import type { Env } from '../types';
 import { emailEnabled, sendEmail } from './client';
 
@@ -80,7 +74,7 @@ async function claimTeamNotifyEmail(
 // Fired by the notify-action route AFTER it has verified both parties are
 // joined members of the same team and resolved every string server-side.
 // Opt-out (notifyActionAssigned). The assignee's address prefers their
-// verified email_lifecycle row, falling back to the team_members invite
+// account's verified address, falling back to the team_members invite
 // address (both trusted server state, never a client header).
 export async function notifyActionAssigned(
   env: Env,
@@ -206,13 +200,16 @@ export async function notifyInviteResponse(
   responderUserId: string | null,
 ): Promise<void> {
   if (!emailEnabled(env)) return;
-  const adminIds = await listTeamAdminUserIds(env, team.id);
+  // Don't notify the responder about their own action (an admin can be
+  // re-invited as a member and respond to that).
+  const adminIds = (await listTeamAdminUserIds(env, team.id)).filter(
+    (adminId) => !(responderUserId && adminId === responderUserId),
+  );
+  // Every admin's address in one accounts call.
+  const emails = await getOwnerEmails(env, adminIds);
   await Promise.all(
     adminIds.map(async (adminId) => {
-      // Don't notify the responder about their own action (an admin can be
-      // re-invited as a member and respond to that).
-      if (responderUserId && adminId === responderUserId) return;
-      const to = await getOwnerEmail(env, adminId);
+      const to = emails[adminId];
       if (!to) return;
       const prefs = await getNotificationPrefs(env, adminId);
       if (!prefs.notifyInviteResponse) return;
@@ -247,7 +244,7 @@ export async function notifyNewComment(
 }
 
 // docs/specs/014-identity/transactional-email.md (#6): the document counts that trigger a milestone email. Just the
-// tenth for now; the single milestone_sent_at column fires once per owner.
+// tenth for now; liveworkspace's one `milestone` claim per account and app fires it once.
 const MILESTONE_DOCUMENT_COUNTS = [10];
 
 // Celebrate when an owner reaches a document-count milestone (docs/specs/014-identity/transactional-email.md #6).
@@ -264,7 +261,7 @@ export async function notifyMilestone(
   if (!to) return;
   const prefs = await getNotificationPrefs(env, ownerId);
   if (!prefs.notifyMilestones) return;
-  if (!(await claimMilestone(env, ownerId))) return;
+  if (!(await claimMilestone(env, ownerId, 'milestone'))) return;
   await sendEmail(env, { to, ...milestoneEmail(env, documentCount) });
 }
 
@@ -276,6 +273,6 @@ export async function notifyFirstShare(env: Env, ownerId: string): Promise<void>
   if (!to) return;
   const prefs = await getNotificationPrefs(env, ownerId);
   if (!prefs.notifyMilestones) return;
-  if (!(await claimFirstShare(env, ownerId))) return;
+  if (!(await claimMilestone(env, ownerId, 'firstShare'))) return;
   await sendEmail(env, { to, ...firstShareEmail(env) });
 }

@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { DocumentCommentsResponse } from '@livediagram/api-schema';
 import type { Comment, Element } from '@livediagram/document';
+import { accountsServiceFor } from '../test-accounts-service';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import * as db from '../db';
 import { makeTestRouteContext } from './test-route-context';
@@ -53,7 +54,7 @@ type Call = {
   token?: string;
 };
 
-function call({ method = 'POST', path, body, owner = 'owner', code, token }: Call) {
+function call({ method = 'POST', path, body, owner = '00000000-0000-4000-8000-000000000001', code, token }: Call) {
   return handleDocuments(
     makeTestRouteContext(method, `/api/documents/d1${path}`, {
       env: sql.env,
@@ -79,8 +80,7 @@ beforeEach(() => {
   pending = [];
   sql.sql.exec(`
     INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at)
-      VALUES ('d1', 'owner', 'Payments', 1, 1, 1);
-    INSERT INTO participants (id, name, color, created_at) VALUES ('owner', 'Webber', '#3b82f6', 1);
+      VALUES ('d1', '00000000-0000-4000-8000-000000000001', 'Payments', 1, 1, 1);
     INSERT INTO tabs (id, name, data, updated_at) VALUES ('t1', 'Main', '{"elements":[]}', 1);
     INSERT INTO tabs (id, name, data, updated_at) VALUES ('t2', 'Detail', '{"elements":[]}', 1);
     INSERT INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES ('d1', 't1', 0, 1);
@@ -89,10 +89,18 @@ beforeEach(() => {
     INSERT INTO share_links (code, document_id, role, level, tab_id, created_at) VALUES ('TAB2', 'd1', 'view', 'participate', 't2', 1);
     INSERT INTO share_links (code, document_id, role, tab_id, created_at) VALUES ('LOOK', 'd1', 'view', NULL, 1);
   `);
+  accountsServiceFor(sql.env).profiles.set('guest_00000000-0000-4000-8000-000000000001', {
+    name: 'Webber',
+    color: '#3b82f6',
+    createdAt: 1,
+  });
   vi.spyOn(console, 'info').mockImplementation(() => undefined);
 });
 
-afterEach(() => vi.restoreAllMocks());
+afterEach(() => {
+  vi.restoreAllMocks();
+  vi.unstubAllGlobals();
+});
 
 describe('add', () => {
   it('stamps the author and, for an agent, the token, and bumps the revision', async () => {
@@ -109,7 +117,7 @@ describe('add', () => {
       text: 'hello',
       authorName: 'Webber',
       authorColor: '#3b82f6',
-      authorId: 'owner',
+      authorId: '00000000-0000-4000-8000-000000000001',
       tokenId: 'tok_1',
     });
     expect((await stored()).rev).toBe(before + 1);
@@ -220,7 +228,7 @@ describe('delete-own', () => {
       shape('a', {
         commentThread: {
           resolved: false,
-          comments: [comment('c1', { authorId: 'owner' }), comment('c2')],
+          comments: [comment('c1', { authorId: '00000000-0000-4000-8000-000000000001' }), comment('c2')],
         },
       }),
     ]);
@@ -233,7 +241,7 @@ describe('delete-own', () => {
   it('takes the comment’s words off the Timeline, with its thread’s resolved snippet', async () => {
     seed([
       shape('a', {
-        commentThread: { resolved: false, comments: [comment('c1', { authorId: 'owner' })] },
+        commentThread: { resolved: false, comments: [comment('c1', { authorId: '00000000-0000-4000-8000-000000000001' })] },
       }),
     ]);
     // Posted and resolved: two events carrying c1's text.
@@ -243,7 +251,7 @@ describe('delete-own', () => {
     const insert = sql.sql.prepare(
       `INSERT INTO timeline_events (id, actor_id, source_type, source_id, event_type, title,
          description, occurred_at, snapshot, created_at)
-       VALUES (?, 'owner', 'document', ?, ?, 't', 'text c1', 1, ?, 1)`,
+       VALUES (?, '00000000-0000-4000-8000-000000000001', 'document', ?, ?, 't', 'text c1', 1, ?, 1)`,
     );
     insert.run('e-c1', 'c1', 'comment_added', JSON.stringify({ documentId: 'd1' }));
     insert.run('e-res', 'd1:a', 'comment_resolved', JSON.stringify({ documentId: 'd1' }));
@@ -276,13 +284,13 @@ describe('deleting the tab', () => {
     ]);
     sql.sql.exec(`
       INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at)
-        VALUES ('d2', 'owner', 'Linked', 1, 1, 1);
+        VALUES ('d2', '00000000-0000-4000-8000-000000000001', 'Linked', 1, 1, 1);
       INSERT INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES ('d2', 't1', 0, 1);
     `);
     const insert = sql.sql.prepare(
       `INSERT INTO timeline_events (id, actor_id, source_type, source_id, event_type, title,
          description, occurred_at, snapshot, created_at)
-       VALUES (?, 'owner', 'document', ?, ?, 't', 'text', 1, ?, 1)`,
+       VALUES (?, '00000000-0000-4000-8000-000000000001', 'document', ?, ?, 't', 'text', 1, ?, 1)`,
     );
     const on = (doc: string) => JSON.stringify({ documentId: doc });
     // A comment's event is pinned to the document whose save recorded it: c1 through d1, c2 through d2.
@@ -305,7 +313,7 @@ describe('deleting the tab', () => {
     const res = await handleDocuments(
       makeTestRouteContext('DELETE', '/api/documents/d2/tabs/t1', {
         env: sql.env,
-        owner: 'owner',
+        owner: '00000000-0000-4000-8000-000000000001',
         waitUntil: (p) => void pending.push(p),
       }),
     );
@@ -339,7 +347,7 @@ describe('the thread listing', () => {
         shape('a', {
           commentThread: {
             resolved: false,
-            comments: [comment('c1', { authorId: 'owner', tokenId: 'tok_1' })],
+            comments: [comment('c1', { authorId: '00000000-0000-4000-8000-000000000001', tokenId: 'tok_1' })],
           },
         }),
         shape('b', { commentThread: { resolved: true, comments: [comment('c2')] } }),
@@ -349,7 +357,7 @@ describe('the thread listing', () => {
     ),
   );
 
-  const list = async (query = '', owner: string | null = 'owner', code?: string) => {
+  const list = async (query = '', owner: string | null = '00000000-0000-4000-8000-000000000001', code?: string) => {
     const res = await call({
       method: 'GET',
       path: `/comments${query}`,
@@ -370,7 +378,7 @@ describe('the thread listing', () => {
       ['Detail', 'd', 'D'],
     ]);
     expect(body.threads[0]!.ref).toBeTypeOf('string');
-    expect(body.threads[0]!.comments[0]).toMatchObject({ authorId: 'owner', tokenId: 'tok_1' });
+    expect(body.threads[0]!.comments[0]).toMatchObject({ authorId: '00000000-0000-4000-8000-000000000001', tokenId: 'tok_1' });
     expect(body.threads[1]!.comments[0]).not.toHaveProperty('authorId');
   });
 

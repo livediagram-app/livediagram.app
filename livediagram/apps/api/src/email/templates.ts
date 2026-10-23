@@ -40,27 +40,12 @@ function manageNotificationsFooter(env: Env, reason: string): string {
   return `${reason} <a href="${href}" style="color:${BRAND};text-decoration:underline">Manage your notifications</a> to turn these off.`;
 }
 
-// docs/specs/014-identity/transactional-email.md: every tip / check-in after the welcome (week 1, week 2, the
-// activation nudge, win-back) respects notifyTips, so each carries the same opt-out footer and the
-// List-Unsubscribe header pointing at the toggle that stops it.
-function tipsFooter(env: Env): string {
-  return manageNotificationsFooter(
-    env,
-    'You’re receiving this because you have a livediagram account and tips and check-ins are on.',
-  );
-}
-
 // `kind` is the template's telemetry token (docs/specs/017-telemetry/telemetry.md 'Email' category): it rides
 // along on the builder's return so it reaches `sendEmail` through the same
 // spread every caller already writes, rather than being re-stated (and
-// forgotten) at each of the fourteen call sites. A fixed literal, never a
+// forgotten) at each call site. A fixed literal, never a
 // subject line or anything the recipient wrote.
 export type EmailKind =
-  | 'Welcome'
-  | 'Week1'
-  | 'Week2'
-  | 'Activation'
-  | 'WinBack'
   | 'Milestone'
   | 'FirstShare'
   | 'TeamInvite'
@@ -170,71 +155,6 @@ function shell(env: Env, section: Section): string {
     </table>
   </td></tr></table>
 </body></html>`;
-}
-
-export function welcomeEmail(env: Env): RenderedEmail {
-  const base = appBaseUrl(env);
-  return {
-    kind: 'Welcome',
-    subject: 'Welcome to livediagram',
-    html: shell(env, {
-      heading: 'Welcome, let’s draw something',
-      intro:
-        'livediagram is a fast, no-friction canvas for diagrams. Here’s how to get your first one going:',
-      points: [
-        '<strong>Drop a shape</strong> from the palette, double-click it to type, and drag the corners to resize.',
-        '<strong>Connect things</strong> by hovering an element’s edge and dragging an arrow to another, and the arrow stays pinned as you move them.',
-        '<strong>Start from a template</strong> (flowchart, mind map, kanban, SWOT and more) or pick one of the built-in themes for an instant look.',
-      ],
-      outro: 'Everything autosaves as you go, so you can just start and come back later.',
-      ctaText: 'Start drawing',
-      ctaHref: `${base}/new`,
-    }),
-  };
-}
-
-export function week1Email(env: Env): RenderedEmail {
-  const base = appBaseUrl(env);
-  return {
-    kind: 'Week1',
-    subject: 'Find your way around the Explorer',
-    html: shell(env, {
-      heading: 'Your documents, organised',
-      intro: 'Now that you’ve made a few documents, the Explorer is where you keep them tidy:',
-      points: [
-        '<strong>Folders</strong> group related documents; drag to sort, and collapse folders you’re not using.',
-        '<strong>Search and Recents</strong> jump you straight back to what you were working on.',
-        '<strong>Share</strong> right from the grid with a view-only or editor link, and open a document to export a PDF / PNG / SVG / Markdown copy.',
-      ],
-      ctaText: 'Open your Explorer',
-      ctaHref: `${base}/explorer`,
-      footer: tipsFooter(env),
-    }),
-    unsubscribeUrl: profilePath(env),
-  };
-}
-
-export function week2Email(env: Env): RenderedEmail {
-  const base = appBaseUrl(env);
-  return {
-    kind: 'Week2',
-    subject: 'Bring your team onto the canvas',
-    html: shell(env, {
-      heading: 'Diagrams are better together',
-      intro:
-        'If you’re working with other people, a team gives everyone a shared home for documents:',
-      points: [
-        '<strong>Create a team</strong> from the Explorer and invite people by email.',
-        '<strong>A shared folder</strong> every member can open and edit (no more passing links around).',
-        '<strong>Admin and Member roles</strong>: admins manage who’s in the team, everyone else just gets to work.',
-      ],
-      outro: 'The canvas itself still needs no account. Teams just add a shared home on top.',
-      ctaText: 'Create a team',
-      ctaHref: `${base}/explorer/team`,
-      footer: tipsFooter(env),
-    }),
-    unsubscribeUrl: profilePath(env),
-  };
 }
 
 // docs/specs/013-workspace/teams.md "Declining from the email": where an invite email's Decline link lands. The
@@ -573,31 +493,6 @@ export function tokenExpiringEmail(
   };
 }
 
-// docs/specs/014-identity/transactional-email.md (#4): a gentle nudge for someone who signed up but hasn't created a
-// document yet (fires once, ~3 days in). Opt-out (notifyTips).
-export function activationEmail(env: Env): RenderedEmail {
-  const base = appBaseUrl(env);
-  return {
-    kind: 'Activation',
-    subject: 'Your canvas is waiting',
-    html: shell(env, {
-      heading: 'Ready when you are',
-      intro:
-        'You signed up for livediagram but haven’t made a diagram yet. It takes about thirty seconds to get going:',
-      points: [
-        'Open a blank canvas and drop a shape, or start from a template (flowchart, mind map, kanban and more).',
-        'Double-click to type, drag from an edge to connect, and it all autosaves as you go.',
-        'Pick a theme for an instant look you can change any time.',
-      ],
-      outro: 'No pressure: the canvas is free and always here.',
-      ctaText: 'Make your first diagram',
-      ctaHref: `${base}/new`,
-      footer: tipsFooter(env),
-    }),
-    unsubscribeUrl: profilePath(env),
-  };
-}
-
 // docs/specs/014-identity/transactional-email.md (#1): someone other than the owner left a comment on a document the
 // recipient owns. Opt-out (notifyComments). Never includes the comment text
 // (privacy): just who, which document, and a link to open it.
@@ -627,31 +522,6 @@ export function commentNotificationEmail(
         env,
         'You’re receiving this because someone commented on a document you own.',
       ),
-    }),
-    unsubscribeUrl: profilePath(env),
-  };
-}
-
-// docs/specs/014-identity/transactional-email.md (#5): a friendly re-engagement nudge for someone who's been away for
-// a few weeks. Opt-out (notifyTips).
-export function winBackEmail(env: Env): RenderedEmail {
-  const base = appBaseUrl(env);
-  return {
-    kind: 'WinBack',
-    subject: 'Your documents are waiting',
-    html: shell(env, {
-      heading: 'It’s been a while',
-      intro:
-        'You haven’t opened livediagram in a few weeks, and your documents are right where you left them. A few things you can pick back up:',
-      points: [
-        'Start something new in seconds from a template or theme.',
-        'Share a document with a live link, or bring a team onto the canvas.',
-        'Export to PDF / PNG / SVG / Markdown whenever you need a copy.',
-      ],
-      outro: 'No rush: it’s all still here whenever you want it.',
-      ctaText: 'Open your documents',
-      ctaHref: `${base}/explorer`,
-      footer: tipsFooter(env),
     }),
     unsubscribeUrl: profilePath(env),
   };

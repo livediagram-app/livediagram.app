@@ -3,6 +3,7 @@ import { sentJson } from '@livediagram/vitest-config/sent-request';
 import { CHANGESET_MAX_OPERATIONS } from '@livediagram/api-schema';
 import { elementFingerprint, type Element } from '@livediagram/document';
 import { createShareLink } from '../db/share';
+import { accountsServiceFor } from '../test-accounts-service';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import type { Env } from '../types';
 import { captureTelemetry, TELEMETRY_ON } from '../test-telemetry';
@@ -78,9 +79,9 @@ async function setUp(
     DOCUMENT_ROOM: r.binding,
     ...TELEMETRY_ON,
   } as unknown as Partial<Env>);
-  db.sql.exec(
-    `INSERT INTO participants (id, name, color, created_at) VALUES ('${OWNER}', 'Webber', '#123456', 1)`,
-  );
+  const accounts = accountsServiceFor(db.env);
+  accounts.accounts.set(OWNER, { name: 'Webber', email: null });
+  accounts.profiles.set(OWNER, { name: 'Webber', color: '#123456', createdAt: 1 });
   const created = await call(db, 'POST', '/api/documents', {
     id: 'D',
     name: 'Board',

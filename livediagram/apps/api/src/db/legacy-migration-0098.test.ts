@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import type { DatabaseSync } from 'node:sqlite';
 import { applyMigration, sqliteD1 } from '../test-sqlite-d1';
 
 // Migration 0098: Facilitate mode is Workshop mode (docs/specs/007-editor/editor-modes.md "Naming in
@@ -23,10 +22,9 @@ const EVENTS: [string, string, string][] = [
   ['Error', 'Client', 'Uncaught.FacilitateTourHost.TypeError'],
 ];
 
-function migrated(prefs: string) {
+function migrated() {
   const db = sqliteD1({}, { before: '0098' });
   const run = (q: string, ...args: string[]) => db.sql.prepare(q).run(...args);
-  run("INSERT INTO user_preferences (owner_id, prefs, updated_at) VALUES ('o', ?, 1)", prefs);
   for (const [category, action, type] of EVENTS)
     run(
       'INSERT INTO events (category, action, type, ts) VALUES (?, ?, ?, 1)',
@@ -38,22 +36,10 @@ function migrated(prefs: string) {
   return db.sql;
 }
 
-const prefsOf = (sql: DatabaseSync): unknown =>
-  JSON.parse((sql.prepare('SELECT prefs FROM user_preferences').get() as { prefs: string }).prefs);
-
 describe('migration 0098 (Facilitate mode is Workshop mode)', () => {
-  it('renames the tour preference, keeping its value', () => {
-    const sql = migrated('{"facilitateTourSeen":true,"theme":"dark"}');
-    expect(prefsOf(sql)).toEqual({ workshopTourSeen: true, theme: 'dark' });
-  });
-
-  it('keeps the new name when both are stored', () => {
-    const sql = migrated('{"facilitateTourSeen":true,"workshopTourSeen":false}');
-    expect(prefsOf(sql)).toEqual({ facilitateTourSeen: true, workshopTourSeen: false });
-  });
 
   it("carries the telemetry history over to the new names, leaving the facilitator's and errors alone", () => {
-    const sql = migrated('{}');
+    const sql = migrated();
     const types = (
       sql.prepare('SELECT type FROM events ORDER BY id').all() as { type: string }[]
     ).map((r) => r.type);

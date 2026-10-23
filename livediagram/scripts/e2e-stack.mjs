@@ -132,13 +132,16 @@ const DRIVE_E2E_VARS = {
   DRIVE_TOKEN_KEY: Buffer.alloc(32, 7).toString('base64'),
   GOOGLE_OAUTH_BASE_URL: `http://127.0.0.1:${DRIVE_GOOGLE_PORT}`,
 };
-//   E2E_ACCOUNTS_STUB=1  act as the liveworkspace accounts Worker for the signed-in specs
+//   E2E_ACCOUNTS_STUB  act as the liveworkspace accounts Worker (on unless set to 0, and off under
+//                    E2E_DRIVE, which serves its own): the api keeps no settings or profiles of its
+//                    own, so every spec needs one. For the signed-in specs
 //                    (docs/specs/003-system-architecture/e2e-smoke.md): a key made at boot, its JWKS
 //                    on the issuer's own path (/e2e/accounts/api/auth/jwks) for the api worker to
 //                    verify against, and /e2e/token?sub=<id> minting an access token for any test
 //                    account, with the issuer and audience the api expects, and its teams claim.
 //                    It also answers the account API the api calls with its client credentials
-//                    (/api/account/internal: the teams change feed and the API token routes) from
+//                    (/api/account/internal: settings, profiles, sightings, milestones, emails,
+//                    activity, making a team, the teams change feed and the API token routes) from
 //                    its own records, which the signed-in specs fill through /e2e/accounts/__seed/*
 //                    (e2e/accounts-stub.ts). Test-only: nothing outside this stack trusts the key
 //                    or the records.
@@ -148,7 +151,7 @@ const DRIVE_E2E_VARS = {
 //                    builds its workbench and pairing URLs on this live origin (APP_BASE_URL). The
 //                    live build must carry NEXT_PUBLIC_E2E_AUTH=1, as under E2E_DRIVE.
 const WORKBENCH = process.env.E2E_WORKBENCH === '1';
-const ACCOUNTS_STUB = process.env.E2E_ACCOUNTS_STUB === '1' || WORKBENCH;
+const ACCOUNTS_STUB = WORKBENCH || (!DRIVE && process.env.E2E_ACCOUNTS_STUB !== '0');
 //   E2E_GUEST_SIG_ENFORCE  guest signature enforcement, as production runs once armed
 //                    (docs/specs/003-system-architecture/e2e-smoke.md "Armed guest signatures").
 //                    On unless set to 0: every spec seeds through signed guests. `=1` also selects
@@ -176,7 +179,20 @@ const accountsRecords = {
   teams: new Map(),
   members: new Map(),
   tokens: new Map(),
+  // `${owner} ${scope}` → that scope's settings; owner → { name, color, createdAt }.
+  settings: new Map(),
+  profiles: new Map(),
+  sightings: new Set(),
+  milestones: new Set(),
 };
+
+// A profile as the account API answers one. An account with no profile of its own has no account
+// name here either (the stand-in keeps none), so it is left out, as an unknown id is.
+function profileOf(id) {
+  const own = accountsRecords.profiles.get(id);
+  if (!own) return null;
+  return { id, ...own, updatedAt: own.createdAt };
+}
 
 // The teams an account is in, ordered by team id, as liveworkspace puts them in a token.
 function teamsClaim(userId) {
@@ -299,6 +315,74 @@ async function answerAccountApi(req, route, url, res) {
   }
   if (req.method !== 'POST') return sendJson(res, 404, { error: 'not_found' });
   const body = await readJson(req);
+  const scopes = (owner, app) => ({
+    all: accountsRecords.settings.get(`${owner} all`) ?? {},
+    app: accountsRecords.settings.get(`${owner} ${app}`) ?? {},
+    updatedAt: null,
+  });
+  if (route === '/settings/read') return sendJson(res, 200, scopes(body.owner, body.app));
+  if (route === '/settings/write') {
+    for (const [scope, values] of [
+      ['all', body.patch?.all],
+      [body.app, body.patch?.app],
+    ]) {
+      if (!values) continue;
+      const next = { ...(accountsRecords.settings.get(`${body.owner} ${scope}`) ?? {}) };
+      for (const [key, value] of Object.entries(values)) {
+        if (value === null) delete next[key];
+        else next[key] = value;
+      }
+      accountsRecords.settings.set(`${body.owner} ${scope}`, next);
+    }
+    return sendJson(res, 200, scopes(body.owner, body.app));
+  }
+  if (route === '/profiles/read') {
+    return sendJson(res, 200, { profiles: (body.ids ?? []).map(profileOf).filter(Boolean) });
+  }
+  if (route === '/profiles/write') {
+    const prior = accountsRecords.profiles.get(body.owner);
+    accountsRecords.profiles.set(body.owner, {
+      name: 'name' in body ? body.name : (prior?.name ?? null),
+      color: 'color' in body ? body.color : (prior?.color ?? null),
+      createdAt: prior?.createdAt ?? Date.now(),
+    });
+    return sendJson(res, 200, { profile: profileOf(body.owner) });
+  }
+  if (route === '/sightings') {
+    const first = !accountsRecords.sightings.has(body.userId);
+    accountsRecords.sightings.add(body.userId);
+    return sendJson(res, 200, { first });
+  }
+  if (route === '/milestones/claim') {
+    const key = `${body.userId} ${body.milestone}`;
+    const claimed =
+      accountsRecords.sightings.has(body.userId) && !accountsRecords.milestones.has(key);
+    accountsRecords.milestones.add(key);
+    return sendJson(res, 200, { claimed });
+  }
+  // The stand-in keeps no addresses: nobody is emailed.
+  if (route === '/emails') return sendJson(res, 200, { emails: {} });
+  if (route === '/activity') return sendJson(res, 200, { ok: true });
+  if (route === '/teams') {
+    const claims = accessTokenClaims(body.accessToken);
+    if (!claims) return sendJson(res, 401, { error: 'invalid_token' });
+    const name = String(body.name ?? '').trim();
+    if (!name) return sendJson(res, 400, { error: 'name_required' });
+    const email = claims.email ?? `${claims.sub}@e2e.test`;
+    const team = seedTeam({ name, admin: { userId: claims.sub, email } });
+    const me = [...accountsRecords.members.values()].find(
+      (m) => m.teamId === team.id && m.userId === claims.sub,
+    );
+    return sendJson(res, 201, {
+      id: team.id,
+      name,
+      organisation: body.organisation ?? null,
+      role: 'admin',
+      memberCount: 1,
+      invitedCount: 0,
+      members: [{ id: me.id, name: null, email, role: 'admin' }],
+    });
+  }
   if (route === '/tokens/verify') {
     const token = accountsRecords.tokens.get(body.token);
     if (!token || token.revoked || token.expiresAt <= Date.now()) {
@@ -436,16 +520,20 @@ function waitForExit(child) {
   });
 }
 
-// A legacy guest (docs/specs/015-api/public-api-and-tokens.md §6): an unsigned id whose participant
-// row predates GUEST_SIGNING_LIVE_AT, owning one folder, written straight into the stack's local
-// D1. With signatures enforced the api cannot make one (an unsigned id writes nothing), and only
+// A legacy guest (docs/specs/015-api/public-api-and-tokens.md §6): an unsigned id whose profile
+// predates GUEST_SIGNING_LIVE_AT (kept by the accounts stand-in), owning one folder, written straight
+// into the stack's local D1. With signatures enforced the api cannot make one (an unsigned id writes nothing), and only
 // such a guest still runs the one-time upgrade onto a signed id, which e2e/guest-upgrade.spec.ts
 // exercises. Ids are server-made UUIDs, so the statement carries no outside input.
 async function seedLegacyGuest() {
   const ownerId = randomUUID();
   const folderId = randomUUID();
+  accountsRecords.profiles.set(`guest_${ownerId}`, {
+    name: 'Legacy guest',
+    color: '#336699',
+    createdAt: 1,
+  });
   const sql =
-    `INSERT INTO participants (id, name, color, created_at) VALUES ('${ownerId}', 'Legacy guest', '#336699', 1);` +
     `INSERT INTO folders (id, owner_id, name, created_at, updated_at) VALUES ('${folderId}', '${ownerId}', 'Legacy folder', 1, 1);`;
   await waitForExit(
     spawn(
@@ -877,7 +965,7 @@ async function main() {
       // [vars] value can be blank while it is not armed.
       '--var',
       `GUEST_SIG_ENFORCE_AFTER:${GUEST_SIG_ENFORCE ? '1' : ''}`,
-      // Only a participant row older than this counts as a legacy guest: the one
+      // Only a profile older than this counts as a legacy guest: the one
       // /__e2e/legacy-guest writes (created_at 1), never one the app makes during a run.
       '--var',
       'GUEST_SIGNING_LIVE_AT:1000',

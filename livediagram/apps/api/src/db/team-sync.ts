@@ -7,6 +7,7 @@
 import {
   fetchTeamChanges,
   type ClientCredentials,
+  type CreatedTeam,
   type MemberChange,
   type TeamChange,
   type TeamClaim,
@@ -88,6 +89,31 @@ async function applyMember(env: Env, member: MemberChange, ctx?: ExecutionContex
     ctx?.waitUntil(closeMemberTeamSessions(env, member.teamId, held.user_id).catch(() => {}));
   }
   await env.DB.prepare('DELETE FROM team_members WHERE id = ?').bind(member.id).run();
+}
+
+// A team liveworkspace has just made for `userId` (routes/team-create.ts), into the copy at once, so
+// the Move dialog and the Explorer can file into it on the next request rather than after the next
+// feed read. The same rows the feed will bring (same ids), so reading it later changes nothing.
+export async function mirrorCreatedTeam(
+  env: Env,
+  userId: string,
+  team: CreatedTeam,
+  now = Date.now(),
+): Promise<void> {
+  const me = team.members.find((m) => m.role === 'admin') ?? team.members[0];
+  await applyTeam(env, { id: team.id, name: team.name, deleted: false, createdAt: now, updatedAt: now });
+  if (me) {
+    await applyMember(env, {
+      id: me.id,
+      teamId: team.id,
+      userId,
+      email: me.email,
+      role: 'admin',
+      status: 'joined',
+      createdAt: now,
+      updatedAt: now,
+    });
+  }
 }
 
 let running: Promise<number> | null = null;

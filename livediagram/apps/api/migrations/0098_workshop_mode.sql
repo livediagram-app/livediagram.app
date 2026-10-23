@@ -2,12 +2,6 @@
 -- Tab bodies keep `"opensIn":"facilitate"`: every read goes through parseEditorMode, which reads it
 -- as Workshop. What is renamed here is what would otherwise be lost or split in two.
 
--- The Workshop tour's seen-guard: a lost one would offer the tour again. When both names are
--- somehow present the new one is kept (upgradeLegacyPreferences drops the old on read).
-UPDATE user_preferences
-  SET prefs = replace(prefs, '"facilitateTourSeen":', '"workshopTourSeen":')
-  WHERE prefs LIKE '%"facilitateTourSeen":%' AND prefs NOT LIKE '%"workshopTourSeen":%';
-
 -- Telemetry history, so the public dashboard's lines continue under the new names: the mode
 -- switch, template-mode, default-folder, tour and Settings events (ModeFacilitate,
 -- TemplateModeFacilitate, DefaultModeFacilitate, FacilitateTour*, FacilitateTourStep*,
