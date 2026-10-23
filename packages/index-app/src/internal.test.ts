@@ -140,3 +140,42 @@ describe('handleInternalItems', () => {
     );
   });
 });
+
+describe('the person door', () => {
+  it('drops what the app keeps for a closed account and anonymises their items', async () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const personClosed = vi.fn(async () => {});
+    const anonymise = vi.fn(async () => {});
+    const res = await send(
+      'POST',
+      '/api/internal/people/user_a/purge',
+      { items: ['A', 'B'] },
+      { personClosed, anonymise },
+    );
+    expect(await res.json()).toEqual({ ok: true, anonymised: 2, unreached: [] });
+    expect(personClosed).toHaveBeenCalledWith('user_a');
+    expect(anonymise).toHaveBeenCalledWith('B', 'user_a');
+  });
+
+  it('answers 503 while an item was not reached, and refuses a bad person or list', async () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const anonymise = async (id: string) => {
+      if (id === 'B') throw new Error('down');
+    };
+    expect(
+      (
+        await send(
+          'POST',
+          '/api/internal/people/user_a/purge',
+          { items: ['A', 'B'] },
+          { anonymise },
+        )
+      ).status,
+    ).toBe(503);
+    expect((await send('POST', '/api/internal/people/robert/purge', {}, {})).status).toBe(404);
+    expect(
+      (await send('POST', '/api/internal/people/user_a/purge', { items: 'A' }, {})).status,
+    ).toBe(400);
+  });
+});

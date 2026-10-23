@@ -336,7 +336,8 @@ describe('/api/internal/items (docs/specs/015-api/api.md "Internal")', () => {
     const w = world({ INDEX_KEY: 'index-key' });
     await createPlan(w, 'A');
     const plan = w.plans.get('A')!;
-    w.d1.sql.exec(`INSERT INTO form_links (code, project_id, tab_id, created_at) VALUES ('f1', 'A', 't1', 1),
+    w.d1.sql
+      .exec(`INSERT INTO form_links (code, project_id, tab_id, created_at) VALUES ('f1', 'A', 't1', 1),
                    ('f2', 'B', 't1', 1);
                    INSERT INTO form_reads (code, owner_id, seen_number) VALUES ('f1', 'u', 1);`);
     const res = await w.send('DELETE', '/api/internal/items/A', undefined, auth);
@@ -346,6 +347,46 @@ describe('/api/internal/items (docs/specs/015-api/api.md "Internal")', () => {
     ).toBe(0);
     expect(w.d1.sql.prepare('SELECT code FROM form_links').all()).toEqual([{ code: 'f2' }]);
     expect(count(w.d1.sql, 'form_reads')).toBe(0);
+  });
+
+  it("takes a closed account's name off the plans that name them, and starts none", async () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const w = world({ INDEX_KEY: 'index-key' });
+    await createPlan(w, 'A');
+    const plan = w.plans.get('A')!;
+    const data = JSON.stringify({
+      elements: [
+        {
+          ...box('a'),
+          comments: [
+            { id: 'c1', authorId: 'user_ada', authorName: 'Ada', text: 'hi' },
+            { id: 'c2', authorId: 'user_bea', authorName: 'Bea', text: 'yo' },
+          ],
+        },
+      ],
+    });
+    plan.db.prepare('UPDATE tabs SET data = ?, rev = rev + 1').run(data);
+    plan.db.prepare(`UPDATE plan SET owner_id = 'user_ada'`).run();
+    const res = await w.send(
+      'POST',
+      '/api/internal/people/user_ada/purge',
+      { items: ['A', 'Z'] },
+      auth,
+    );
+    expect(await res.json()).toEqual({ ok: true, anonymised: 2, unreached: [] });
+    const stored = JSON.parse(String(plan.db.prepare('SELECT data FROM tabs').get()!.data)) as {
+      elements: { comments: { authorId: string; authorName: string }[] }[];
+    };
+    expect(stored.elements[0]!.comments.map((c) => [c.authorId, c.authorName])).toEqual([
+      ['deleted', 'Deleted account'],
+      ['user_bea', 'Bea'],
+    ]);
+    expect(plan.db.prepare('SELECT owner_id FROM plan').get()).toEqual({ owner_id: 'deleted' });
+    // Z was never started: its storage stays empty.
+    const z = w.plans.get('Z');
+    expect(
+      z ? z.db.prepare("SELECT COUNT(*) AS n FROM sqlite_master WHERE type = 'table'").get()!.n : 0,
+    ).toBe(0);
   });
 
   it('ends the sessions of revoked codes, refusing a body that is not codes', async () => {

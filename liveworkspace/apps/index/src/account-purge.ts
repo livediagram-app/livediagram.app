@@ -25,6 +25,7 @@ import { isId } from './codec';
 import { PURGE_NOW_MAX } from './config';
 import type { Env } from './env';
 import { badRequest, json, notFound, readObject, unauthorized } from './http';
+import { drainPersonNotices, recordPersonNotices } from './person-notices';
 import { drainTombstones } from './purge';
 
 // What a reference to a closed account becomes. Shaped like neither an account (`user_…`) nor a guest
@@ -250,6 +251,10 @@ export async function purgePerson(
 ): Promise<PurgeOutcome> {
   const db = env.INDEX_DB;
   const teams = JSON.stringify(teamIds);
+  // What each app must hear (person-notices.ts), recorded before the rows that name them are rewritten.
+  if (spent(budget)) return { done: false, items: 0, purged: [] };
+  budget.calls--;
+  await db.batch(recordPersonNotices(db, person, teams, now));
   if (!(await anonymiseTeamWork(db, budget, person, teams))) {
     return { done: false, items: 0, purged: [] };
   }
@@ -348,6 +353,12 @@ export async function handlePersonPurge(
   if (outcome.purged.length > 0) {
     waitUntil(drainTombstones(env, { ids: outcome.purged.slice(0, PURGE_NOW_MAX) }));
   }
+  // And the apps hear of the person (person-notices.ts).
+  waitUntil(
+    drainPersonNotices(env, now).catch((err: unknown) =>
+      console.warn('[index] person notices', String(err)),
+    ),
+  );
   console.log('[index] purged a closed account', { items: outcome.items, done: outcome.done });
   return json({ done: outcome.done, items: outcome.items });
 }
@@ -357,7 +368,7 @@ export async function handlePersonPurge(
 export async function continuePurges(
   env: Env,
   now = Date.now(),
-): Promise<{ persons: number; finished: number; confirmed: number }> {
+): Promise<{ persons: number; finished: number; confirmed: number; told: number }> {
   const db = env.INDEX_DB;
   const budget = budgetOf(CRON_BUDGET, now);
   const { results } = await db
@@ -383,5 +394,6 @@ export async function continuePurges(
   const ids = due.results.map((r) => r.item_id);
   const confirmed =
     ids.length > 0 ? await drainTombstones(env, { ids, limit: ids.length }, now) : 0;
-  return { persons: results.length, finished, confirmed };
+  const told = await drainPersonNotices(env, now);
+  return { persons: results.length, finished, confirmed, told };
 }

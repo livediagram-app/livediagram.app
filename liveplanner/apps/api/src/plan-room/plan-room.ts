@@ -65,6 +65,7 @@ import {
   type PlanOutline,
 } from './plan-content';
 import { notifyProjectJoin } from '../email/notifications';
+import { anonymisePlan } from './plan-anonymise';
 import { drainOutbox, recordEditor } from './plan-outbox';
 import { answerPlanRequest, type RouteIdentity } from './plan-route';
 
@@ -497,6 +498,22 @@ export class PlanRoom extends DurableObject<Env> {
     this.state.waitUntil(
       notifyProjectJoin(env, { id: planId, ownerId: meta.ownerId, name: meta.name }, personId),
     );
+  }
+
+  // A closed account's name off this plan (plan-anonymise.ts): the index's person purge, through the api.
+  async anonymise(planId: string, personId: string): Promise<number> {
+    this.bindPlan(planId);
+    // A plan never started (or purged) holds nothing of anyone: read its storage as it is, without making the
+    // schema and plan row a first query would.
+    const sql = this.state.storage.sql;
+    const started =
+      sql.exec(`SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'plan'`).toArray()
+        .length > 0 &&
+      sql.exec('SELECT 1 FROM plan WHERE id = ? AND created_at > 0', planId).toArray().length > 0;
+    if (!started) return 0;
+    const changed = await anonymisePlan(this.requireEnv(), planId, personId);
+    if (changed > 0) console.info('[room] anonymised a closed account', { rows: changed });
+    return changed;
   }
 
   private requireEnv(): PlanEnv {

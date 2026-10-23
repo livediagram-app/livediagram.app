@@ -8,3 +8,4 @@ export * from './purge';
 export * from './internal';
 export * from './outbox';
 export * from './activity';
+export * from './anonymise';

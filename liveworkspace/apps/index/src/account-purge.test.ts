@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   ANONYMISED_PERSON,
   budgetOf,
@@ -7,6 +7,7 @@ import {
   purgePerson,
   TOMBSTONE_RETRY_AFTER_MS,
 } from './account-purge';
+import { drainPersonNotices, NOTICE_GIVE_UP_MS, NOTICE_RETRY_AFTER_MS } from './person-notices';
 import { body, call, h, settle, useHarness } from './test-support';
 
 useHarness();
@@ -194,12 +195,27 @@ describe('POST /internal/purge-person', () => {
     ]);
     expect(count(`SELECT COUNT(*) AS n FROM share_links WHERE code = 'code-ada'`)).toBe(0);
     expect(count(`SELECT COUNT(*) AS n FROM collab_threads WHERE item_id = 'ada-1'`)).toBe(0);
-    expect(h.appCalls.map((c) => `${c.method} ${c.url}`).sort()).toEqual([
+    expect(
+      h.appCalls
+        .filter((c) => c.method === 'DELETE')
+        .map((c) => `${c.method} ${c.url}`)
+        .sort(),
+    ).toEqual([
       'DELETE https://livediagram.app/api/internal/items/ada-2',
       'DELETE https://liveplanner.app/api/internal/items/ada-1',
       'DELETE https://liveplanner.app/api/internal/items/ada-gone',
     ]);
     expect(count('SELECT COUNT(*) AS n FROM purge_tombstones')).toBe(0);
+    // Each app heard of her once, with the items of others that name her: her team plan (her own work in it
+    // stays with the team) and Bea's, where she commented and was given and gave actions.
+    const told = h.appCalls.filter((c) => c.url.includes('/api/internal/people/'));
+    expect(told.map((c) => c.url)).toContain(
+      `https://livediagram.app/api/internal/people/${ADA}/purge`,
+    );
+    expect(new Set(told.map((c) => c.url)).size).toBe(told.length);
+    const planner = told.find((c) => c.url.startsWith('https://liveplanner.app'))!;
+    expect(planner.body).toEqual({ items: ['ada-team', 'bea-1'] });
+    expect(count('SELECT COUNT(*) AS n FROM person_app_notices')).toBe(0);
 
     // Team work stays with the team, under an anonymised owner.
     expect(rows(`SELECT owner_id, folder_id FROM items WHERE id = 'ada-team'`)).toEqual([
@@ -424,4 +440,32 @@ describe('POST /internal/purge-person', () => {
     // A generous ceiling for a slow CI machine; locally it is a few seconds.
     expect(ms).toBeLessThan(60_000);
   }, 180_000);
+});
+
+describe('telling the apps about a closed account', () => {
+  it('keeps what an app did not take, tries again an hour later, and gives up after a week', async () => {
+    arrange();
+    h.appAnswer = (c) =>
+      new Response(null, { status: c.url.includes('/api/internal/people/') ? 503 : 200 });
+    await purge({ personId: ADA, teamIds: ['D'] });
+    await settle();
+    const waiting = count('SELECT COUNT(*) AS n FROM person_app_notices');
+    expect(waiting).toBeGreaterThan(0);
+    const now = Date.now();
+    h.appCalls = [];
+    await drainPersonNotices(h.db.env, now + 1000);
+    expect(h.appCalls.filter((c) => c.url.includes('/people/'))).toHaveLength(0);
+    h.appAnswer = () => new Response(null, { status: 200 });
+    await drainPersonNotices(h.db.env, now + NOTICE_RETRY_AFTER_MS + 1);
+    expect(count('SELECT COUNT(*) AS n FROM person_app_notices')).toBe(0);
+
+    run(
+      `INSERT INTO person_app_notices (person_id, app, item_id, created_at) VALUES (?, 'liveplanner', '', 1)`,
+      BEA,
+    );
+    h.appAnswer = () => new Response(null, { status: 503 });
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    await drainPersonNotices(h.db.env, 1 + NOTICE_GIVE_UP_MS + 1);
+    expect(count('SELECT COUNT(*) AS n FROM person_app_notices')).toBe(0);
+  });
 });

@@ -28,7 +28,8 @@ describe('GET /folders/previews', () => {
     const f2 = await folder(ada.auth, 'Two', 'team1');
     const empty = await folder(ada.auth, 'Empty');
     const made = [];
-    for (let i = 0; i < 6; i++) made.push(await makeItem(ada.auth, { title: `A${i}`, folderId: f1 }));
+    for (let i = 0; i < 6; i++)
+      made.push(await makeItem(ada.auth, { title: `A${i}`, folderId: f1 }));
     await makeItem(ada.auth, { title: 'D', folderId: f1, app: 'livediagram' });
     const t = await makeItem(ada.auth, { title: 'T', folderId: f2, teamId: 'team1' });
     const set = h.db.sql.prepare('UPDATE items SET updated_at = ? WHERE id = ?');
@@ -83,7 +84,10 @@ describe('GET /folders/previews', () => {
           lines.filter((l) => /\bSCAN (i|x|items)\b/.test(l)),
           lines.join('\n'),
         ).toEqual([]);
-        expect(lines.some((l) => l.includes('items_folder')), lines.join('\n')).toBe(true);
+        expect(
+          lines.some((l) => l.includes('items_folder')),
+          lines.join('\n'),
+        ).toBe(true);
       }
     }
   });
@@ -116,7 +120,12 @@ describe('GET /folders/previews', () => {
     expect(got.previews).toHaveLength(60);
     for (const p of got.previews) {
       expect(p.itemCount).toBe(1000);
-      expect(p.items.map((i) => i.title)).toEqual(['Item 1999', 'Item 1998', 'Item 1997', 'Item 1996']);
+      expect(p.items.map((i) => i.title)).toEqual([
+        'Item 1999',
+        'Item 1998',
+        'Item 1997',
+        'Item 1996',
+      ]);
     }
     // eslint-disable-next-line no-console
     console.log(`[folder previews] 60 folders x 2,000 items: ${took.toFixed(1)}ms`);

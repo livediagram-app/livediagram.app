@@ -33,6 +33,9 @@ export function handleInternalItems(
         notice.type === 'shared'
           ? notifyFirstShare(env, notice.actorId)
           : planRoom(env, id).joined(notice.personId),
+      // A closed account: their name off each plan of someone else's that names them. What liveplanner keeps
+      // for them beside their plans goes with their account (routes/account.ts).
+      anonymise: (id, personId) => planRoom(env, id).anonymise(personId),
       copy: async (from, to, tabId) => {
         const copy = await planRoom(env, from).exportCopy(tabId, null);
         // No such plan, or no such tab in it.

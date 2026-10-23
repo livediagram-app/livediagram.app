@@ -56,7 +56,7 @@ describe('an app acting for a person', () => {
       method: 'PATCH',
       body: { title: 'Roadmap 2' },
     });
-    expect(((await body<{ item: Item }>(renamed)).item.title)).toBe('Roadmap 2');
+    expect((await body<{ item: Item }>(renamed)).item.title).toBe('Roadmap 2');
     expect((await asDelegate(`/items/${plan.id}`, { method: 'DELETE' })).status).toBe(204);
     const trash = await body<{ items: Item[] }>(await asDelegate('/trash'));
     expect(trash.items.map((i) => i.id)).toEqual([plan.id]);
@@ -100,9 +100,7 @@ describe('an app acting for a person', () => {
     expect((await asDelegate('/items', { app: 'nope' })).status).toBe(401);
     expect((await asDelegate('/items', { personId: 'guest_123' })).status).toBe(401);
     expect((await asDelegate('/items', { personId: 'link:ABCD' })).status).toBe(401);
-    expect((await asDelegate('/items', { teams: Array(60).fill('t').join(',') })).status).toBe(
-      401,
-    );
+    expect((await asDelegate('/items', { teams: Array(60).fill('t').join(',') })).status).toBe(401);
     // A person's own token cannot name someone else.
     const ada = await person('user_a');
     const res = await call('/items', {

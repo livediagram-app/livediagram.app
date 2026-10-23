@@ -161,6 +161,16 @@ holds for that person:
   assigned to or by them, and a Timeline event they did (in a team, or an edit of someone else's item),
   keeps its row, naming `deleted` (no account or guest) in their place, with no name.
 
+- **Told to each app**: their name is also in the content of items that outlive them (their comments,
+  cards, assignments and edits), which only the item's app holds, and an app may keep something of theirs
+  beside their items (images, a workbench). Before it rewrites its own rows, the index records one notice
+  per app, and one per item of someone else's (or of a team that outlives them) that names them. It then
+  sends each app `POST /api/internal/people/:id/purge {items}` with the app's key, at most 100 items a
+  call. The app drops what it keeps for the person and takes their name off each item: their id becomes
+  `deleted` and the name kept beside it becomes "Deleted account" (`@liveworkspace/index-app`,
+  `anonymiseJson`). The notices go when the app confirms. An app that answers anything else is asked
+  again an hour later, and given up on after a week.
+
 Grants are not stored (they lapse within 10 minutes), and the link codes of their own items go with the
 items. The request is recorded first and done in chunks of 500 rows, so it holds for any number of items:
 what one call leaves, the 15-minute cron finishes. It answers `{done, items}`; running it again changes

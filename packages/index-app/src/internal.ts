@@ -7,6 +7,8 @@
 //   POST   /api/internal/items/:id/revoke     {codes, reason?}  end the sessions of revoked or rescoped links
 //   POST   /api/internal/items/:id/notices    {type, ...}    what happened, for an email (index-client notices.ts)
 //   POST   /api/internal/items/:from/copy-to/:to  {tabId?}   copy an item's content (or one tab) into a new item
+//   POST   /api/internal/people/:id/purge     {items}        a closed account: drop what the app keeps for the
+//                                                            person, and anonymise them in up to 100 items
 //
 // The app supplies what each does to its own content (`InternalItemHandlers`); a door with no handler is a 404.
 
@@ -28,6 +30,11 @@ export type InternalItemHandlers = {
   copy?: (from: string, to: string, tabId: string | null) => Promise<CopyOutcome>;
   // A notice for the app's emails, run off the index's path (waitUntil).
   notice?: (itemId: string, notice: ItemNotice) => Promise<unknown>;
+  // A closed account (the index's person purge): what the app keeps for the person beside their items (images,
+  // their workbench, claims), dropped. Idempotent.
+  personClosed?: (personId: string) => Promise<unknown>;
+  // Their name off one item they worked in that outlives them (anonymise.ts). Idempotent.
+  anonymise?: (itemId: string, personId: string) => Promise<unknown>;
 };
 
 export type InternalItemsOptions = {
@@ -56,9 +63,31 @@ async function bodyOf(request: Request): Promise<Record<string, unknown> | null>
   }
 }
 
-// Whether a path is one of these doors (`/api/internal/items...`).
+// Whether a path is one of these doors (`/api/internal/items...` or `/api/internal/people...`).
 export function isInternalItemsPath(pathname: string): boolean {
-  return /^\/api\/internal\/items(\/|$)/.test(pathname);
+  return /^\/api\/internal\/(items|people)(\/|$)/.test(pathname);
+}
+
+// The most items one person purge names.
+export const PERSON_ITEMS_MAX = 100;
+const PERSON_ID = /^(user|guest)_[A-Za-z0-9-]{1,64}$/;
+
+async function personClosed(request: Request, person: string, handlers: InternalItemHandlers) {
+  if (!PERSON_ID.test(person)) return notFound();
+  const items = ((await bodyOf(request)) ?? {})['items'] ?? [];
+  if (!Array.isArray(items) || items.length > PERSON_ITEMS_MAX || !items.every(validId)) {
+    return badRequest(`items must be up to ${PERSON_ITEMS_MAX} item ids`);
+  }
+  await handlers.personClosed?.(person);
+  const anonymise = handlers.anonymise;
+  const { purged, unreached } = anonymise
+    ? await purgeEach([...new Set(items)], (id) => anonymise(id, person))
+    : { purged: [], unreached: [] };
+  // The index asks again (every item is safe to do twice) until each was reached.
+  return json(
+    { ok: unreached.length === 0, anonymised: purged.length, unreached },
+    unreached.length ? 503 : 200,
+  );
 }
 
 export async function handleInternalItems(
@@ -68,8 +97,16 @@ export async function handleInternalItems(
   const pathname = new URL(request.url).pathname;
   if (!key || !isInternalItemsPath(pathname)) return notFound();
   if (!(await bearerMatches(request, key))) return json({ error: 'unauthorized' }, 401);
+  const parts = pathname.split('/');
+  if (parts[3] === 'people') {
+    const person = parts[4] ?? '';
+    if (parts.length === 6 && parts[5] === 'purge' && request.method === 'POST') {
+      return personClosed(request, person, handlers);
+    }
+    return notFound();
+  }
   // After `api/internal/items/`.
-  const rest = pathname.split('/').slice(4);
+  const rest = parts.slice(4);
   const id = rest[0];
   if (!validId(id)) return notFound();
 
