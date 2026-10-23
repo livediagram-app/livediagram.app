@@ -112,6 +112,10 @@ export type AppItems = {
   // (`?convert=take-offline|sync&item=<id>`, @liveworkspace/explorer/this-browser `thisBrowserConvertHref`): it asks
   // the person to confirm and moves the item with the app's own offline code. False: the Explorer offers neither.
   offlineConversions: boolean;
+  // Where the app's API makes a team for the person signed in (`POST { name }`, answering `{ team }`): New Team in the
+  // Explorer on the app's address. The app's API vouches for the person to liveworkspace with their access token, as
+  // its own Move dialog does. Null: the app makes none, and New Team there is left out.
+  teamsPath: string | null;
   // Whether the app's items are listed by the index yet. Until they are, the app keeps its own /explorer.
   onIndex: boolean;
   // Its share link: `${url}${sharePath}<code>`.
@@ -186,6 +190,7 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     newPath: '/new',
     offlinePath: '/explorer/offline',
     offlineConversions: false,
+    teamsPath: '/api/teams',
     onIndex: false,
     sharePath: '/document/shared?s=',
     previewPath: null,
@@ -207,6 +212,7 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     newPath: '/new',
     offlinePath: '/offline',
     offlineConversions: false,
+    teamsPath: null,
     onIndex: true,
     sharePath: '/project/shared?s=',
     previewPath: '/api/projects/:id/thumbnail',
@@ -224,6 +230,7 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     newPath: '/new',
     offlinePath: '/offline',
     offlineConversions: true,
+    teamsPath: '/api/teams',
     onIndex: true,
     sharePath: '/document/shared?s=',
     previewPath: null,
@@ -241,6 +248,7 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     newPath: '/new',
     offlinePath: '/offline',
     offlineConversions: true,
+    teamsPath: '/api/teams',
     onIndex: true,
     sharePath: '/design/shared?s=',
     previewPath: '/api/designs/:id/thumbnail',

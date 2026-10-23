@@ -13,7 +13,8 @@
 // lib/explorer/page-app.ts). There it is that app's Explorer: it asks as the app's session, shows the app's items kept
 // only in this browser (This Browser), keeps its links on the app's address and sends liveworkspace's own pages
 // (account, teams, settings) to liveworkspace.app. Where the app supplies them (the sites registry), it also offers the
-// app's Take Offline and Sync (lib/explorer/offline-moves.tsx).
+// app's Take Offline and Sync (lib/explorer/offline-moves.tsx) and makes New Team through the app's API
+// (lib/explorer/new-team.ts).
 
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
@@ -82,7 +83,7 @@ import {
 import { inboxHost } from '@/lib/explorer/inbox';
 import { libraryHosts } from '@/lib/explorer/library';
 import { importsHost } from '@/lib/explorer/imports';
-import { makeTeam } from '@/lib/explorer/new-team';
+import { canMakeTeam, makeTeam } from '@/lib/explorer/new-team';
 import { offlineItemMenu, offlineSyncHref } from '@/lib/explorer/offline-moves';
 import { useExplorerSettings } from '@/lib/explorer/settings';
 import { shareHostFor } from '@/lib/explorer/share';
@@ -459,7 +460,7 @@ export function ExplorerShell() {
           shapeLibraries={library.shapeLibraries}
           imports={imports}
           itemMenu={itemMenu}
-          {...(signedIn && !host ? { onCreateTeam } : {})}
+          {...(signedIn && canMakeTeam(host) ? { onCreateTeam } : {})}
           heroHidden={settings.heroHidden}
           onHideHero={settings.onHideHero}
           onTimeline={trackTimeline}

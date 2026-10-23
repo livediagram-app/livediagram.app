@@ -94,6 +94,12 @@ export function appAccount(now = Date.now()): Promise<AppAccount | null> {
   return accountPending;
 }
 
+/** Asks the app for a fresh token next time (a team made since the last one, which the new token names). */
+export function forgetAppAccount() {
+  account = null;
+  accountPending = null;
+}
+
 /** Signs out of the app (its API clears its cookies, and remembers not to sign in silently again). */
 export async function appSignOut(): Promise<boolean> {
   try {
