@@ -1,6 +1,7 @@
 # One Explorer, and content in Durable Objects
 
-Status: plan, October 2026. Nothing here is built yet.
+Status: plan, October 2026, being built in the order below. The calls, types and tokens are in
+[one-explorer-contracts.md](one-explorer-contracts.md).
 
 Today each app (livediagram, liveplanner, livedocuments, livedesign) runs its own copy of the same
 Explorer over its own D1 database: its own folders, tags, favourites, Trash, sharing, Recent,
@@ -58,11 +59,10 @@ Search is title, tag and folder search over the index. It does not search inside
 
 ### 2. Who may open an item: short-lived grants
 
-When the editor opens an item, it asks liveworkspace for a grant: a token signed by liveworkspace
-naming the person (or guest), the item, the app and the access (view, comment or edit), valid for a
-few minutes. The app's Durable Object checks it against liveworkspace's published keys (the same
-keys access tokens already use) without calling liveworkspace, and asks for a fresh one before it
-runs out. Share-link visitors get a grant from the link. Removing someone's access takes effect
+When the editor opens an item, it asks liveworkspace for a grant: a token signed by the index
+naming the person (or guest), the item, the app and the access (view, participate or edit), valid for
+ten minutes. The app's Durable Object checks it against the index's published keys without calling
+liveworkspace, and the editor asks for a fresh one before it runs out. Share-link visitors get a grant from the link. Removing someone's access takes effect
 within those few minutes.
 
 Because the index decides access, including team access, each app's copy of the teams (the mirror
@@ -95,10 +95,10 @@ The editors' floating Explorer panel and move-to-folder picker use the same pack
 
 ### 5. Comments, actions and the Inbox live in liveworkspace
 
-Comments and actions are stored in liveworkspace, keyed by app, item, tab and element, rather than in
-each item. The editor reads and writes them through liveworkspace's API, and the item's Durable Object
-broadcasts changes to whoever has it open. The Inbox in the Explorer is then one query across every
-app: threads you are in, mentions, and actions assigned to you or by you. Comment and mention emails
+What the Inbox needs about comments and actions is stored in liveworkspace, keyed by app, item, tab and
+element: each item pushes its threads and actions there as they change. The comment text itself stays in
+the item's content, beside what it is about, so it saves, undoes and copies with it. The Inbox in the
+Explorer is then one query across every app: threads you are in, mentions, and actions assigned to you or by you. Comment and mention emails
 are sent from liveworkspace too.
 
 The Timeline (and its Activity view) is removed rather than moved.
