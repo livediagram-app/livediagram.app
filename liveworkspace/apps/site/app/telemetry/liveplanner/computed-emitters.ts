@@ -305,8 +305,10 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   },
   // The shared Explorer's Timeline, through its onTimeline prop (@liveworkspace/explorer TimelinePane.tsx): each a
   // fixed token from the package.
-  'apps/editor/app/explorer/ExplorerShell.tsx Timeline·Changed': { values: ['List', 'Calendar'] },
-  'apps/editor/app/explorer/ExplorerShell.tsx Timeline·Selected': {
+  'apps/editor/app/embed/workbench/ExplorerHost.tsx Timeline·Changed': {
+    values: ['List', 'Calendar'],
+  },
+  'apps/editor/app/embed/workbench/ExplorerHost.tsx Timeline·Selected': {
     values: [
       'Everyone',
       'Others',
@@ -320,18 +322,20 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
       'other',
     ],
   },
-  'apps/editor/app/explorer/ExplorerShell.tsx Timeline·Loaded': { values: ['More', 'Retry'] },
-  'apps/editor/app/explorer/ExplorerShell.tsx Timeline·Opened': {
+  'apps/editor/app/embed/workbench/ExplorerHost.tsx Timeline·Loaded': { values: ['More', 'Retry'] },
+  'apps/editor/app/embed/workbench/ExplorerHost.tsx Timeline·Opened': {
     values: ['Card', 'Stack', 'Menu'],
   },
-  'apps/editor/app/explorer/ExplorerShell.tsx Timeline·Removed': { values: ['Entry', 'Stack'] },
+  'apps/editor/app/embed/workbench/ExplorerHost.tsx Timeline·Removed': {
+    values: ['Entry', 'Stack'],
+  },
   // Home's What Happened, through the Explorer's onHome prop (@liveworkspace/explorer WhatHappened.tsx).
-  'apps/editor/app/explorer/ExplorerShell.tsx Home·Selected': {
+  'apps/editor/app/embed/workbench/ExplorerHost.tsx Home·Selected': {
     values: ['WhatHappened', 'SeeTimeline'],
   },
-  'apps/editor/app/explorer/ExplorerShell.tsx Home·Opened': { values: ['Group'] },
+  'apps/editor/app/embed/workbench/ExplorerHost.tsx Home·Opened': { values: ['Group'] },
   // The filter lens, through the Explorer's onLensSelected prop.
-  'apps/editor/app/explorer/ExplorerShell.tsx Explorer·Selected': { values: LENS_FACETS },
+  'apps/editor/app/embed/workbench/ExplorerHost.tsx Explorer·Selected': { values: LENS_FACETS },
   'apps/editor/app/new/page.tsx Theme·Changed': { values: THEMES, open: THEME_WHY },
   'apps/editor/app/new/page.tsx Template·Used': { values: TEMPLATES, open: TEMPLATE_WHY },
   // The landing funnel (docs/specs/019-marketing/landing-funnel.md): the CTA a /new visit came from.
