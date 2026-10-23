@@ -9,6 +9,8 @@
 //   POST   /api/internal/items/:from/copy-to/:to  {tabId?}   copy an item's content (or one tab) into a new item
 //   POST   /api/internal/people/:id/purge     {items}        a closed account: drop what the app keeps for the
 //                                                            person, and anonymise them in up to 100 items
+//   POST   /api/internal/people/:guest/merge  {into}         a guest became an account: move what the app keeps
+//                                                            for the guest to the account
 //
 // The app supplies what each does to its own content (`InternalItemHandlers`); a door with no handler is a 404.
 
@@ -33,6 +35,10 @@ export type InternalItemHandlers = {
   // A closed account (the index's person purge): what the app keeps for the person beside their items (images,
   // their workbench, claims), dropped. Idempotent.
   personClosed?: (personId: string) => Promise<unknown>;
+  // A guest became an account (the index's merge): what the app keeps for the guest beside their items (images,
+  // a per-person store) moves to the account. Idempotent. An app with nothing to move leaves it out and the door
+  // just confirms.
+  personMerged?: (guestId: string, userId: string) => Promise<unknown>;
   // Their name off one item they worked in that outlives them (anonymise.ts). Idempotent.
   anonymise?: (itemId: string, personId: string) => Promise<unknown>;
 };
@@ -71,6 +77,23 @@ export function isInternalItemsPath(pathname: string): boolean {
 // The most items one person purge names.
 export const PERSON_ITEMS_MAX = 100;
 const PERSON_ID = /^(user|guest)_[A-Za-z0-9-]{1,64}$/;
+const GUEST_ID = /^guest_[A-Za-z0-9-]{1,64}$/;
+const USER_ID = /^user_[A-Za-z0-9-]{1,64}$/;
+
+async function personMerged(request: Request, guest: string, handlers: InternalItemHandlers) {
+  if (!GUEST_ID.test(guest)) return notFound();
+  const into = ((await bodyOf(request)) ?? {})['into'];
+  if (typeof into !== 'string' || !USER_ID.test(into))
+    return badRequest('into must be an account id');
+  try {
+    await handlers.personMerged?.(guest, into);
+  } catch (err) {
+    // The index asks again (a merge is safe to do twice).
+    console.warn('[internal] person merge failed', { error: String(err) });
+    return json({ ok: false }, 503);
+  }
+  return json({ ok: true });
+}
 
 async function personClosed(request: Request, person: string, handlers: InternalItemHandlers) {
   if (!PERSON_ID.test(person)) return notFound();
@@ -102,6 +125,9 @@ export async function handleInternalItems(
     const person = parts[4] ?? '';
     if (parts.length === 6 && parts[5] === 'purge' && request.method === 'POST') {
       return personClosed(request, person, handlers);
+    }
+    if (parts.length === 6 && parts[5] === 'merge' && request.method === 'POST') {
+      return personMerged(request, person, handlers);
     }
     return notFound();
   }

@@ -179,3 +179,45 @@ describe('the person door', () => {
     ).toBe(400);
   });
 });
+
+describe('the guest-merge door', () => {
+  it("moves what the app keeps for the guest to the account, and confirms when there's nothing to move", async () => {
+    const personMerged = vi.fn(async () => {});
+    const res = await send(
+      'POST',
+      '/api/internal/people/guest_g1/merge',
+      { into: 'user_u1' },
+      { personMerged },
+    );
+    expect(res.status).toBe(200);
+    expect(personMerged).toHaveBeenCalledWith('guest_g1', 'user_u1');
+    expect(
+      (await send('POST', '/api/internal/people/guest_g1/merge', { into: 'user_u1' }, {})).status,
+    ).toBe(200);
+  });
+
+  it('answers 503 when the move fails, and refuses anything but a guest into an account', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const personMerged = async () => {
+      throw new Error('down');
+    };
+    expect(
+      (
+        await send(
+          'POST',
+          '/api/internal/people/guest_g1/merge',
+          { into: 'user_u1' },
+          { personMerged },
+        )
+      ).status,
+    ).toBe(503);
+    expect(
+      (await send('POST', '/api/internal/people/user_a/merge', { into: 'user_u1' }, {})).status,
+    ).toBe(404);
+    for (const into of ['guest_g2', '', 7, undefined]) {
+      expect((await send('POST', '/api/internal/people/guest_g1/merge', { into }, {})).status).toBe(
+        400,
+      );
+    }
+  });
+});
