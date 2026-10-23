@@ -13,11 +13,9 @@ import type { Env } from './env.ts';
 import { noteGuestSeen } from './guest-sweep.ts';
 import { GUEST_COOKIE, readGuestCookie, signGuestCookie } from './guests.ts';
 import { RESOURCES } from './resources.ts';
-import { isProfileOwner, MAX_PROFILE_IDS, readProfiles } from './profiles.ts';
 import { teamsClaim } from './teams.ts';
 
 export const WORKSPACE_TOKEN_PATH = '/workspace-token';
-export const WORKSPACE_PROFILES_PATH = '/workspace-profiles';
 // Short: the page asks again a minute before it runs out (as an editor renews a grant), and a token that leaks
 // from the page is good for minutes, not the year a guest hand-off's is.
 export const WORKSPACE_TOKEN_TTL_SECONDS = 15 * 60;
@@ -108,39 +106,4 @@ export async function workspaceToken(
     }`,
   );
   return Response.json(body, { headers });
-}
-
-// The names the Explorer shows for who did what (What Happened, the Timeline): the index keeps ids only, so the
-// page reads them here, up to MAX_PROFILE_IDS at a time, in one query.
-//
-// POST /api/auth/workspace-profiles { ids } → { profiles: [{ id, name }] }. Same-origin only, and only for a
-// signed-in person or a guest this browser already is (it never makes one): a profile's name is what every
-// collaborator already sees on a cursor or a comment, and nothing else of the profile is answered.
-export async function workspaceProfiles(request: Request, env: Env, auth: Auth): Promise<Response> {
-  if (
-    request.headers.get('sec-fetch-site') === 'cross-site' ||
-    request.headers.get('origin') !== new URL(env.BASE_URL).origin
-  ) {
-    return Response.json({ error: 'cross_site' }, { status: 403, headers: NO_STORE });
-  }
-  const session = await auth.api.getSession({ headers: request.headers }).catch(() => null);
-  const guest = session?.user
-    ? null
-    : await readGuestCookie(
-        cookieValue(request.headers.get('cookie'), GUEST_COOKIE),
-        env.BETTER_AUTH_SECRET,
-      );
-  if (!session?.user && !guest) {
-    return Response.json({ error: 'signed_out' }, { status: 401, headers: NO_STORE });
-  }
-  const body: unknown = await request.json().catch(() => null);
-  const ids = (body as { ids?: unknown } | null)?.ids;
-  if (!Array.isArray(ids) || ids.length === 0 || !ids.every(isProfileOwner)) {
-    return Response.json({ error: 'ids_required' }, { status: 400, headers: NO_STORE });
-  }
-  if (ids.length > MAX_PROFILE_IDS) {
-    return Response.json({ error: 'too_many_ids' }, { status: 400, headers: NO_STORE });
-  }
-  const profiles = (await readProfiles(env.AUTH_DB, ids)).map(({ id, name }) => ({ id, name }));
-  return Response.json({ profiles }, { headers: NO_STORE });
 }

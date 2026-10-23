@@ -1,69 +1,68 @@
-import { act, render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
-import { createNameStore, NAME_BATCH, NamesProvider, useNamedEvents } from './names';
+// Who did what, by name: What Happened and the Timeline ask the Explorer's one people store (the Owner column's)
+// for the actors the index names by id only, in one gathered request.
+import { render, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { createFakeIndex, makeEvent } from '../test/fakeClient';
+import { Explorer } from '../explorer/Explorer';
+import type { ExplorerAccounts } from './accounts';
 
-const ids = (n: number, from = 0) => Array.from({ length: n }, (_, i) => `user_${from + i}`);
-const flush = () =>
-  act(async () => {
-    await Promise.resolve();
-    await Promise.resolve();
+function fakeAccounts(names: Record<string, string>) {
+  const people = vi.fn(async (ids: readonly string[]) => {
+    return new Map(ids.flatMap((id) => (names[id] ? [[id, names[id]] as const] : [])));
   });
+  const accounts: ExplorerAccounts = {
+    people,
+    teamMembers: async () => null,
+    myTeams: async () => ({ teams: [], invitations: [] }),
+  };
+  return { accounts, people };
+}
 
 describe('names for who did what', () => {
-  it('asks for every id a tick wants in batches of at most a hundred, and never twice', async () => {
-    const lookup = vi.fn(async (asked: readonly string[]) =>
-      Object.fromEntries(asked.map((id) => [id, `Name of ${id}`])),
-    );
-    const store = createNameStore(lookup);
-    store.want(ids(120));
-    store.want([...ids(30, 120), 'user_0', null, 'deleted']);
-    await flush();
-    expect(lookup).toHaveBeenCalledTimes(2);
-    expect(lookup.mock.calls[0]![0]).toHaveLength(NAME_BATCH);
-    expect(lookup.mock.calls[1]![0]).toHaveLength(50);
-    expect(store.name('user_7')).toBe('Name of user_7');
-    store.want(ids(150));
-    await flush();
-    expect(lookup).toHaveBeenCalledTimes(2);
-  });
+  beforeEach(() => localStorage.clear());
 
-  it('asks again after a failed read, and knows nothing without a lookup', async () => {
-    let fail = true;
-    const lookup = vi.fn(async () => {
-      if (fail) throw new Error('offline');
-      return { user_1: 'Sam' };
+  it('names What Happened’s actors through the people store, all in one request', async () => {
+    const now = Date.now();
+    const index = createFakeIndex({
+      events: [
+        makeEvent(1, {
+          actorId: 'user_sam',
+          type: 'renamed',
+          detail: { from: 'A' },
+          occurredAt: now - 60_000,
+        }),
+        makeEvent(2, { actorId: 'user_ana', type: 'trashed', occurredAt: now - 120_000 }),
+        makeEvent(3, {
+          actorId: 'user_kim',
+          actorName: 'Kim Kept',
+          type: 'trashed',
+          occurredAt: now - 180_000,
+        }),
+      ],
     });
-    const store = createNameStore(lookup);
-    store.want(['user_1']);
-    await flush();
-    expect(store.name('user_1')).toBeNull();
-    fail = false;
-    store.want(['user_1']);
-    await flush();
-    expect(store.name('user_1')).toBe('Sam');
-    const none = createNameStore(undefined);
-    none.want(['user_1']);
-    expect(none.name('user_1')).toBeNull();
-  });
-
-  it('fills the names into the events on screen, keeping any the event carries', async () => {
-    const store = createNameStore(async () => ({ user_1: 'Sam Lee', user_2: 'Ignored' }));
-    function Names() {
-      const events = useNamedEvents(EVENTS);
-      return <p>{events.map((e) => e.actorName ?? 'A teammate').join(', ')}</p>;
-    }
+    const { accounts, people } = fakeAccounts({ user_sam: 'Sam Lee', user_ana: 'Ana Ruiz' });
     render(
-      <NamesProvider value={store}>
-        <Names />
-      </NamesProvider>,
+      <Explorer
+        app="liveplanner"
+        client={index.client}
+        view={{ kind: 'home' }}
+        onNavigate={vi.fn()}
+        itemHref={(i) => `/open/${i.id}`}
+        onCreate={vi.fn()}
+        viewerId="user_me"
+        heroHidden
+        accounts={accounts}
+      />,
     );
-    expect(screen.getByText('A teammate, Kept')).toBeTruthy();
-    await flush();
-    expect(screen.getByText('Sam Lee, Kept')).toBeTruthy();
+    await waitFor(() => {
+      const text = document.querySelector('[data-home-section="what-happened"]')?.textContent ?? '';
+      expect(text).toContain('Sam Lee renamed');
+      expect(text).toContain('Ana Ruiz moved');
+      expect(text).toContain('Kim Kept moved');
+    });
+    const asked = people.mock.calls.flatMap((c) => c[0]);
+    expect(asked).toEqual(expect.arrayContaining(['user_sam', 'user_ana']));
+    expect(asked).not.toContain('user_kim');
+    expect(new Set(asked).size).toBe(asked.length);
   });
 });
-
-const EVENTS = [
-  { actorId: 'user_1', actorName: null },
-  { actorId: 'user_2', actorName: 'Kept' },
-];

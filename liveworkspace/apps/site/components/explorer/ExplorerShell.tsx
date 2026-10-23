@@ -13,6 +13,7 @@ import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
+  createExplorerAccounts,
   Explorer,
   viewFromLocation,
   type AppFilter,
@@ -43,7 +44,6 @@ import {
   shareUrl,
   type Arrival,
 } from '@/lib/explorer/host';
-import { lookupNames } from '@/lib/explorer/names';
 import {
   resetWorkspaceIdentity,
   teamsOfToken,
@@ -61,6 +61,9 @@ const TRASHED_PARAM = 'trashed';
 const TITLE_PARAM = 'title';
 
 const client = createIndexClient({ getToken: workspaceToken });
+// The signed-in person's own accounts routes on this origin: people's names (owners, who did what, one cache), a
+// team's members and count, and the invitations waiting.
+const accounts = createExplorerAccounts();
 
 const NO_ARRIVAL: Arrival = { app: null, via: null };
 
@@ -240,7 +243,9 @@ export function ExplorerShell() {
           welcome={welcome}
           sidebarLinks={sidebarLinks}
           allLabel="All Apps"
-          lookupNames={lookupNames}
+          accounts={signedIn ? accounts : null}
+          signedIn={signedIn}
+          signInHref={signInHref(pathname || '/explorer')}
           arrivalNotice={notice}
         />
       ) : (
