@@ -34,6 +34,7 @@ import { explorerShareHost } from '@/lib/explorer-share-host';
 import { explorerInboxHost } from '@/lib/explorer-inbox-host';
 import { renderDesignThumbnail } from '@/lib/explorer-thumbnail';
 import { arrivedTrashed } from '@/lib/design-delete-undo';
+import { trackOrganise } from '@/lib/explorer-organise';
 import { track } from '@/lib/telemetry';
 import { commitUserPreferences, type UserPreferences } from '@/lib/user-preferences';
 import {
@@ -193,6 +194,7 @@ export function ExplorerHost({
         onHideHero={hideHero}
         onTimeline={trackTimeline}
         onHome={trackHome}
+        onOrganise={trackOrganise}
         onLensSelected={trackLens}
         header={header ? ({ search }) => header(search, chrome) : undefined}
         sidebarLinks={sidebarLinks}

@@ -29,6 +29,7 @@ import { explorerShareHost } from '@/lib/explorer-share-host';
 import { explorerInboxHost } from '@/lib/explorer-inbox-host';
 import { renderPlanThumbnail } from '@/lib/explorer-thumbnail';
 import { arrivedTrashed } from '@/lib/project-delete-undo';
+import { trackOrganise } from '@/lib/explorer-organise';
 import { track } from '@/lib/telemetry';
 import { commitUserPreferences, type UserPreferences } from '@/lib/user-preferences';
 import {
@@ -161,6 +162,7 @@ export function ExplorerHost({
         onHideHero={hideHero}
         onTimeline={trackTimeline}
         onHome={trackHome}
+        onOrganise={trackOrganise}
         lensTemplates={PLAN_TEMPLATE_FAMILIES}
         onLensSelected={trackLens}
         header={header ? ({ search }) => header(search, chrome) : undefined}

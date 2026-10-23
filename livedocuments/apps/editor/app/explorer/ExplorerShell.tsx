@@ -43,6 +43,7 @@ import { explorerShareHost } from '@/lib/explorer-share-host';
 import { explorerInboxHost } from '@/lib/explorer-inbox-host';
 import { renderDocumentThumbnail } from '@/lib/explorer-thumbnail';
 import { arrivedTrashed } from '@/lib/document-delete-undo';
+import { trackOrganise } from '@/lib/explorer-organise';
 import { track } from '@/lib/telemetry';
 import { commitUserPreferences, type UserPreferences } from '@/lib/user-preferences';
 import {
@@ -123,6 +124,8 @@ const trackHome: HomeTelemetry = (action, type) => {
       return track('Home', 'Selected', type);
     case 'Opened':
       return track('Home', 'Opened', type);
+    case 'Loaded':
+      return track('Home', 'Loaded', type);
   }
 };
 
@@ -229,6 +232,7 @@ export function ExplorerHost({
         onHideHero={hideHero}
         onTimeline={trackTimeline}
         onHome={trackHome}
+        onOrganise={trackOrganise}
         onLensSelected={trackLens}
         header={header ? ({ search }) => header(search, chrome) : undefined}
       />

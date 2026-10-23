@@ -306,6 +306,45 @@ export const JOINING: MetricStack = {
   headline: [COLLABORATORS_JOINED, PARTICIPANTS_JOINED, VIEWERS_JOINED],
 };
 
+// Share links made in the Share dialog, by level, and their settings (the people who come in through them are the
+// Joining stack's).
+export const EDIT_LINKS_SHARED: Metric = {
+  category: 'Document',
+  action: 'Shared',
+  type: 'Edit',
+  title: 'Edit Links Shared',
+};
+
+export const VIEW_LINKS_SHARED: Metric = {
+  category: 'Document',
+  action: 'Shared',
+  type: 'View',
+  title: 'View Links Shared',
+};
+
+// Participant links: take part and write, never reshape the document.
+export const PARTICIPATE_LINKS_SHARED: Metric = {
+  category: 'Document',
+  action: 'Shared',
+  type: 'Participate',
+  title: 'Participant Links Shared',
+};
+
+export const SHARE_SETTINGS = chart(
+  'Document',
+  'Shared',
+  'Share Link Settings',
+  'A share link given a lifetime or one tab when made, extended, rescoped, or given or cleared a password.',
+  { typeIn: (t) => t !== 'Edit' && t !== 'View' && t !== 'Participate' },
+);
+
+export const SHARE_LINKS_MADE: MetricStack = {
+  stack: true,
+  title: 'Share Links Made',
+  blurb: 'Edit, Participant and view links made in the Share dialog, and their settings.',
+  members: [EDIT_LINKS_SHARED, PARTICIPATE_LINKS_SHARED, VIEW_LINKS_SHARED, SHARE_SETTINGS],
+};
+
 export const SHARING_AND_EMBEDS: MetricStack = {
   stack: true,
   title: 'Sharing & Embeds',
@@ -435,6 +474,17 @@ export const HOME_GROUPS_EXPANDED = chart(
   { types: ['Group'] },
 );
 
+export const HOME_LOADS = chart(
+  'Home',
+  'Loaded',
+  'Home Retries',
+  'A failed read of Home retried.',
+  {
+    types: ['Retry'],
+    rising: 'bad',
+  },
+);
+
 export const TIMELINE_AND_ACTIVITY: MetricStack = {
   stack: true,
   title: 'Timeline & Activity',
@@ -444,6 +494,7 @@ export const TIMELINE_AND_ACTIVITY: MetricStack = {
     HOME_WELCOMES,
     HOME_DOCUMENTS_OPENED,
     HOME_GROUPS_EXPANDED,
+    HOME_LOADS,
     TIMELINE_MENUS,
     TIMELINE_STACKS_EXPANDED,
     TIMELINE_CARDS_OPENED,

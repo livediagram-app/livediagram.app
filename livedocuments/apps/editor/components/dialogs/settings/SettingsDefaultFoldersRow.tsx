@@ -3,6 +3,7 @@
 import { DefaultFoldersSettings } from '@liveworkspace/explorer';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useTokenTeams } from '@/lib/explorer-host';
+import { trackOrganise } from '@/lib/explorer-organise';
 import { indexClient } from '@/lib/index-client';
 import { SettingsRowShell } from './SettingsRowShell';
 import type { SettingsDefaultFoldersRowSpec } from './settings-catalogue';
@@ -15,7 +16,12 @@ export function SettingsDefaultFoldersRow({ row }: { row: SettingsDefaultFolders
   return (
     <SettingsRowShell row={row}>
       <div className="mt-2">
-        <DefaultFoldersSettings client={indexClient} app="livedocuments" teams={teams} />
+        <DefaultFoldersSettings
+          client={indexClient}
+          app="livedocuments"
+          teams={teams}
+          onOrganise={trackOrganise}
+        />
       </div>
     </SettingsRowShell>
   );

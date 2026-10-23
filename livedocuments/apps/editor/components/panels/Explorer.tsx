@@ -22,6 +22,7 @@ import { useExplorerNewTeam } from '@/lib/explorer-new-team';
 import { itemHref, newDocumentHref, shareUrl, useTokenTeams } from '@/lib/explorer-host';
 import { explorerShareHost } from '@/lib/explorer-share-host';
 import { explorerInboxHost } from '@/lib/explorer-inbox-host';
+import { trackOrganise } from '@/lib/explorer-organise';
 import { renderDocumentThumbnail } from '@/lib/explorer-thumbnail';
 import { trashOpenDocument } from '@/lib/document-delete-undo';
 import type { ExplorerProps } from './Explorer.types';
@@ -128,6 +129,7 @@ function ExplorerImpl({
     >
       <ExplorerPanel
         app="livedocuments"
+        onOrganise={trackOrganise}
         client={indexClient}
         itemHref={itemHref}
         current={currentDocumentId ? current : null}

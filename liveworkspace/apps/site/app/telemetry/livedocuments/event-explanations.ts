@@ -1446,6 +1446,35 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|View|SankeyTourStepFlowsPreview':
     'The Sankey tour reached its "Live Preview" step, inside the Flows dialog.',
   'UI|View|SankeyTourStepOutro': 'The Sankey tour reached its closing "That Is a Sankey" card.',
+  'Document|Shared|ExpiryMonth':
+    'Someone set a share link to expire after a month, when making it.',
+  'Document|Shared|ExpirySixMonths':
+    'Someone set a share link to expire after six months, when making it.',
+  'Document|Shared|TabScoped': 'Someone made a share link that opens on one tab only.',
+  'Document|Shared|Rescoped': 'Someone changed which tab an existing share link opens on.',
+  'Document|Joined|View':
+    'Someone came into a document through a view-only share link. Counted once per person per document, not on every revisit.',
+  'Folder|Changed|Kind':
+    'Someone chose a default folder: where new documents land when they pick no place.',
+  'Folder|Changed|Template':
+    'Someone chose a default folder for one template family: where new documents from it land.',
+  'Folder|Cleared|Kind':
+    'Someone cleared a default folder, so new documents land in My Work again.',
+  'Folder|Cleared|Template':
+    "Someone cleared a template family's default folder, so its new documents land in My Work again.",
+  'Trash|Deleted|Personal':
+    'Someone deleted one of their own documents in the Trash for good, before its 30 days were up.',
+  'Trash|Deleted|Team':
+    "Someone deleted a team's document in the Trash for good, before its 30 days were up.",
+  'Trash|Cleared|Personal':
+    'Someone emptied their own Trash, deleting every document in it for good.',
+  'Trash|Cleared|Team': "Someone emptied a team's Trash, deleting every document in it for good.",
+  'Trash|Restored|Personal':
+    'Someone brought one of their own deleted documents back, putting it back where it was.',
+  'Trash|Restored|Team':
+    "Someone brought a team's deleted document back, putting it back where it was.",
+  'Team|Removed|Member': 'An admin removed a member who had joined the team.',
+  'Team|Removed|Invite': 'An admin withdrew a pending team invite.',
 };
 
 export const BY_ACTION: Readonly<Record<string, string>> = {
