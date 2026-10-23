@@ -97,6 +97,19 @@ describe('guestHandoffUrl', () => {
     });
   });
 
+  it('keeps a path the accounts URL carries (a stand-in served under one)', () => {
+    const url = new URL(
+      guestHandoffUrl({
+        accountsUrl: 'http://127.0.0.1:3132/e2e/accounts',
+        clientId: 'client-1',
+        redirectUri: 'http://127.0.0.1:3132/auth/guest',
+        state: 'abcdefgh',
+        resource: 'http://127.0.0.1:8732',
+      }),
+    );
+    expect(url.origin + url.pathname).toBe('http://127.0.0.1:3132/e2e/accounts/api/auth/guest');
+  });
+
   it('takes only a state shaped like one the editor makes', () => {
     expect(isGuestHandoffState(randomState())).toBe(true);
     expect(isGuestHandoffState('short')).toBe(false);
