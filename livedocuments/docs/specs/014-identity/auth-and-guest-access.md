@@ -186,11 +186,11 @@ The `ldoc_signed_in` hint cookie (`apps/editor/lib/signed-in-hint.ts`) still tel
 
 ### Moving documents in This Browser after signing in
 
-Signing in never moves a document in This Browser by itself ([Offline Mode → Auth / guest interaction](../006-document/offline-mode.md#auth--guest-interaction)). Instead, once auth has settled signed in, a page that shows the Explorer or the editor checks this browser's documents in This Browser. If there are any, it offers to move them:
+Signing in never moves a document in This Browser by itself ([Offline Mode → Auth / guest interaction](../006-document/offline-mode.md#auth--guest-interaction)). Instead, once auth has settled signed in, the editor and This Browser's page (`/offline`) check this browser's documents in This Browser. If there are any, it offers to move them:
 
 - **Move Documents in This Browser to Your Account?** A dialog lists each document in This Browser (name, last edited), every one ticked, with **Move** and **Not Now**.
 - **Move** runs Sync Document ([Offline Mode → Save to server](../006-document/offline-mode.md#save-to-server-offline--cloud)) on each ticked document in turn, showing progress. A document that fails stays This Browser and is named in the result; the rest move.
-- **Not Now** is remembered for this account in this browser (`livedocuments:v2:local-move-dismissed:<userId>`), with the count of documents in This Browser at the time. The dialog comes back only when that count grows, so a person who keeps a deliberate document in This Browser is not asked again about it.
+- **Not Now** is remembered for this account in this browser (`livedocuments:v2:local-move-dismissed:<userId>`), with the count of documents in This Browser at the time. The dialog comes back only when that count grows, so a person who keeps a deliberate document in This Browser is not asked again about it. Taking a document offline counts the same way: the count is remembered as it lands, so a document taken offline on purpose is never offered back.
 - The same move is always reachable by hand: **Sync Document** on any document in This Browser.
 
 ## Implications for how we build

@@ -301,8 +301,7 @@ empty takes its separator with it (the Explorer behind an error screen
 has no design, so no Share / Export). This replaced a **+ New** chip
 whose hover-open popover held only band 1, and took GitHub off the
 editor's bottom bar, which keeps Search, Settings and the appearance
-toggle ([Live app](../007-editor/live-app.md)). The full-page Explorer's bottom bar keeps its GitHub
-link.
+toggle ([Live app](../007-editor/live-app.md)).
 
 - A "Current Design" card sits at the top. Beneath it, the panel shows
   the sidebar's three groups, Overview, Spaces and More, built from the

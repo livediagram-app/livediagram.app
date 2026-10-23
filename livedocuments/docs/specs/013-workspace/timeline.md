@@ -64,7 +64,8 @@ the This app / All filter (the Explorer's one filter, remembered per app in this
 
 `Timeline·Changed` (`Cards` is reported as `List`, and `Calendar`), `Timeline·Selected` (a category switched off,
 `Everyone`, `Others`), `Timeline·Loaded` (`More`, `Retry`), `Timeline·Opened` (`Card`, `Stack`, `Menu`) and
-`Timeline·Removed` (`Entry`, `Stack`), through the Explorer's `onTimeline` prop (`app/explorer/ExplorerShell.tsx`).
+`Timeline·Removed` (`Entry`, `Stack`), through the Explorer's `onTimeline` prop: in a workbench frame `apps/editor/app/embed/workbench/ExplorerHost.tsx`; the
+Explorer page on livedocuments's address is liveworkspace's, which reports the same for livedocuments (`liveworkspace/apps/site/lib/explorer/telemetry.ts`).
 
 ## 5. Performance
 

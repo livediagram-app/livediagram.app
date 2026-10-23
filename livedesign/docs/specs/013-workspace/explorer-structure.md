@@ -2,6 +2,16 @@
 
 Status: shipped
 
+The Explorer page is liveworkspace's shared Explorer ([`@liveworkspace/explorer`](../../../../packages/explorer/README.md)),
+served at livedesign's own `/explorer` by livedesign's router ([one-explorer.md](../../../../liveworkspace/docs/one-explorer.md)
+"The Explorer on each app's address"): the address bar keeps livedesign's name, it asks the index as livedesign's
+session and wears livedesign's colours. What is livedesign's own reaches it through the sites registry
+(`@liveworkspace/sites` `APP_ITEMS.livedesign`): its addresses, its Image Gallery (`imagesPath`, `/explorer/images`),
+its This Browser page (`offlinePath`, which also runs Take Offline and Sync, `offlineConversions`) and where its API
+makes a team (`teamsPath`, for New Team). Signed in, the header has a **Settings** button beside Appearance that opens
+livedesign's settings on liveworkspace.app, and any `?settings=` address opens them there too. A workbench's
+workspace frame keeps its own copy of the Explorer (`apps/live/app/embed/workbench/ExplorerHost.tsx`).
+
 ## What
 
 The Explorer's sidebar is one navigation tree in three **groups**. It answers two questions at once: where a
@@ -101,18 +111,16 @@ reached from Home's What Happened (**See Timeline**). The retired `/explorer/act
 
 | Row          | Opens                                  | Children            | Badge                   |
 | ------------ | -------------------------------------- | ------------------- | ----------------------- |
+| Library      | Nothing: the row expands and collapses | Recent, Favourites, Unsorted, Image Gallery | None |
 | This Browser | `/explorer/offline`                    | None                | Designs in this browser |
-| Library      | Nothing: the row expands and collapses | Tags, Image Gallery | None                    |
 | Trash        | `/explorer/trash` ([Trash](trash.md))  | None                | None                    |
 
 - **This Browser** shows only while this browser holds at least one offline design, or while its view is the current
   one (so the highlighted row never vanishes under the reader). Its designs are the reader's own
   ([designs in This Browser](#designs-in-this-browser)).
 - **Library** has no view of its own: activating it expands or collapses it. It opens by itself when one of its
-  pages is the current view, the Tags pages included.
-- **Tags** is Library's first row, always shown (so it can be found before the first tag). It opens the Tags page and
-  expands to one row per tag, each carrying its colour, its design count as its badge and its menu
-  ([Tags: The sidebar](tags.md#the-sidebar)). The editor's Explorer panel keeps Tags as its own rail entry.
+  pages is the current view. Its **Image Gallery** is the person's images, read from livedesign's API
+  (`/api/images`) with the designs each is used in; images are uploaded and deleted there.
 
 The group's title is **More**.
 

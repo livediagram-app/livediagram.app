@@ -164,13 +164,15 @@ Explorer lists follow after the paint.
   foot opens Share, and the badge itself is a button that opens Share; for anyone else it is a focusable
   pill and the legend has no button. For the eye only: the badge carries the current state's words for
   assistive technology.
-- **Explorer.** The shared Explorer lists what liveworkspace's index holds, so an offline document is in none
-  of its lists, Home or search. They have a page of their own, **This Browser** at `/offline`
-  (`apps/editor/app/offline`): every offline document in this browser, newest first, each opening in the editor,
-  read from this browser alone, never a server fetch. For a signed-in person each row has **Sync Document**, which
-  moves it to the account. The Explorer's sidebar carries a **This Browser** link to it (a host link of
-  `@liveworkspace/explorer`), and the editor's Explorer panel a **This Browser** row with the count, shown while this
-  browser holds at least one. `/explorer/offline` replaces itself with `/offline`
+- **Explorer.** The shared Explorer lists what liveworkspace's index holds, and offline documents never reach it.
+  livedocuments keeps a small list of them in this browser (id, title and dates, never their content,
+  `@liveworkspace/explorer/this-browser`), which the Explorer on livedocuments' own address reads: a **This Browser**
+  sidebar row with their count, a view of its own (`/explorer/offline`), a This Browser group in the Trash and a
+  place in Home's Jump Back In, each opening in the editor, and **Sync Document** on each live row for a signed-in
+  person. They also have a page of their own, **This Browser** at `/offline` (`apps/editor/app/offline`): every
+  offline document in this browser, newest first, read from this browser alone, never a server fetch, with **Sync
+  Document** on each row for a signed-in person and the move prompt after signing in. The editor's Explorer panel
+  has a **This Browser** row with the count, shown while this browser holds at least one
   ([Explorer structure](../013-workspace/explorer-structure.md#this-browser)).
 
 ### This Browser pill
@@ -304,7 +306,9 @@ page (`/offline`), the Share dialog gate and the move prompt after signing in).
 
 Action: **"Take Offline"**, on a document's menu in the editor's Explorer panel (the shared Explorer's
 `itemMenu`, `hooks/persistence/useOfflineItemMenu.ts`: only a page on this app's origin reaches the browser's
-store). It is offered on a document the person can edit in their library or a team's, never on one reached
+store) and in the Explorer on livedocuments's address, which hands it to This Browser's page
+(`/offline?convert=take-offline&item=<id>`, `hooks/persistence/useConversionHandoff.ts`): the page checks the document
+is the person's to move, then asks the same confirmation. It is offered on a document the person can edit in their library or a team's, never on one reached
 through a link. This is **destructive on the server** and gated by a
 confirmation:
 

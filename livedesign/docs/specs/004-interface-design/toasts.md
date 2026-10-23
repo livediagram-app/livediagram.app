@@ -93,7 +93,7 @@ lists its decline before its confirm.
   where that is wider, so it is easy to read and to tap.
 - **Clear of the bottom chrome, and of banners.** The stack sits 16px above the bottom edge (clear of the home
   indicator), and above anything that occupies the bottom of the screen beneath it: the editor's tab bar, its
-  bottom-right cluster (Undo, Layers, Zoom), the Explorer's bottom bar, and the
+  bottom-right cluster (Undo, Layers, Zoom), and the
   [sign-in banner](../014-identity/sign-in-encouragement.md). It lifts 8px clear of the highest of those that
   overlaps its column, measured as they move or resize, so a toast never lands on a button or on a banner's words.
   Chrome off to the side of the column (the cluster on a wide desktop) does not lift it.

@@ -4,7 +4,7 @@
 
 ## The hero
 
-The shared Explorer draws Home's hero ([`@liveworkspace/explorer`'s `HomeHero`](../../../../packages/explorer/src/explorer/HomeHero.tsx)); livedocuments gives it its words, its art, its Help article and its setting ([`apps/editor/app/explorer/ExplorerShell.tsx`](../../../apps/editor/app/explorer/ExplorerShell.tsx)). It is a band the page's full width, under the Explorer header and above the sidebar and Home's sections, on Home only. Its ground is a soft wash of the app's accent under a dotted grid, a hairline under it; in dark mode, the dark ground with a soft glow from the top. Its content sits in the Explorer's content width.
+The shared Explorer draws Home's hero ([`@liveworkspace/explorer`'s `HomeHero`](../../../../packages/explorer/src/explorer/HomeHero.tsx)); livedocuments gives it its words, its art, its Help article and its setting: on the Explorer page, liveworkspace's, served on livedocuments' address (`liveworkspace/apps/site/lib/explorer/hero.ts`, `welcome.ts`, `settings.ts`), and in a workbench frame its own copy ([`apps/editor/app/embed/workbench/ExplorerHost.tsx`](../../../apps/editor/app/embed/workbench/ExplorerHost.tsx)). It is a band the page's full width, under the Explorer header and above the sidebar and Home's sections, on Home only. Its ground is a soft wash of the app's accent under a dotted grid, a hairline under it; in dark mode, the dark ground with a soft glow from the top. Its content sits in the Explorer's content width.
 
 Top to bottom, left column:
 
@@ -26,7 +26,8 @@ Top to bottom, left column:
 
 **The first run.** When Home finds nothing yet, the shared Explorer shows its welcome in place of empty lists, from
 livedocuments' welcome manifest (`packages/templates/welcome.json`, the templates it offers to start from),
-loaded once, only then, in a chunk of its own (`welcome` in `apps/editor/app/explorer/ExplorerShell.tsx`).
+loaded once, only then, in a chunk of its own (`liveworkspace/apps/site/lib/explorer/welcome.ts` on the Explorer page, `loadWelcome` in
+`apps/editor/app/embed/workbench/ExplorerHost.tsx` in a workbench frame).
 
 The right column, on a wide screen only (`lg` and up), shows livedocuments' **hero art**, the Explorer's `heroArt`
 ([`apps/editor/components/panels/home/HeroTemplateFan.tsx`](../../../apps/editor/components/panels/home/HeroTemplateFan.tsx)):

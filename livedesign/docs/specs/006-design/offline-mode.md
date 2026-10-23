@@ -173,19 +173,15 @@ Explorer lists follow after the paint.
   foot opens Share, and the badge itself is a button that opens Share; for anyone else it is a focusable
   pill and the legend has no button. For the eye only: the badge carries the current state's words for
   assistive technology.
-- **Explorer.** Offline designs appear in Recent (and the other lists)
-  alongside cloud designs, each with the **This Browser** pill (below) and the
-  fixed offline thumbnail, so a design in This Browser is recognisable at a glance.
-  The Explorer view merges the API-fetched cloud list with the local index of
-  offline designs; offline rows never trigger a server fetch (list, thumbnail,
-  or otherwise).
-- **The reader's own.** An offline design counts as one of the reader's own
-  designs: Space `mine` and owner "You", like a design in My Work
-  ([Explorer structure: designs in This Browser](../013-workspace/explorer-structure.md#designs-in-this-browser)).
-- **Sidebar.** The full-page Explorer's **This Browser** row (the More group,
-  [Explorer structure](../013-workspace/explorer-structure.md)) opens
-  `/explorer/offline`, the list of every offline design, titled **This
-  browser**; the row shows while this browser holds at least one.
+- **Explorer.** The Explorer lists what liveworkspace's index holds, and offline designs never reach it. livedesign
+  keeps a small list of them in this browser (id, title and dates, never their content,
+  `@liveworkspace/explorer/this-browser`), which the Explorer on livedesign's own address reads: a **This Browser**
+  sidebar row with their count, a view of its own (`/explorer/offline`), a This Browser group in the Trash and a
+  place in Home's Jump Back In, each with the **This Browser** pill (below), opening in the editor. Each live row has
+  **Sync Design** for a signed-in person. They also have a page of their own, **This Browser** at `/offline`
+  (`app/offline`): every offline design in this browser, newest first, read from this browser alone, never a server
+  fetch, with **Sync Design** on each row for a signed-in person and the move prompt after signing in. The editor's
+  Explorer panel has a **This Browser** row with the count, shown while this browser holds at least one.
 - **Home.** An offline design's opens are counted in its own local record, never
   sent anywhere, so Home's Jump Back In places it among the reader's other
   designs by the same rule, with the **This Browser** pill on its thumbnail
@@ -326,7 +322,9 @@ page (`/offline`), the Share dialog gate and the move prompt after signing in).
 
 Action: **"Take Offline"**, on a design's menu in the editor's Explorer panel (the shared Explorer's
 `itemMenu`, `hooks/persistence/useOfflineItemMenu.ts`: only a page on this app's origin reaches the browser's
-store). It is offered on a design the person can edit in their library or a team's, never on one reached
+store) and in the Explorer on livedesign's address, which hands it to This Browser's page
+(`/offline?convert=take-offline&item=<id>`, `hooks/persistence/useConversionHandoff.ts`): the page checks the design
+is the person's to move, then asks the same confirmation. It is offered on a design the person can edit in their library or a team's, never on one reached
 through a link. This is **destructive on the server** and gated by a
 confirmation:
 

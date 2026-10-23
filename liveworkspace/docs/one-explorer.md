@@ -127,6 +127,19 @@ The page reads where it is from its own address and there is that app's page:
   localStorage under `liveworkspace:this-browser:<app>` (`@liveworkspace/explorer/this-browser`), written by its
   offline store as it writes. The Explorer reads it: a sidebar row with the count, `/explorer/offline`, a This
   Browser group in the Trash, and the opened ones in Home's Jump Back In. Each opens in the app's editor.
+- **Take Offline and Sync.** Where the app's This Browser page runs them (the registry's `offlineConversions`),
+  each of the app's own items the person edits and holds themselves has **Take Offline** on its menu, and each live
+  This Browser row has **Sync** for a person signed in. Only the app can write its offline store, so both hand over
+  to that page (`<offlinePath>?convert=take-offline|sync&item=<id>`, `thisBrowserConvertHref`), which takes the
+  request out of the address, checks the item is the person's to move, asks them to confirm, and runs the app's own
+  conversion. A link alone never moves anything.
+- **New Team.** The app's token is not one accounts makes teams from, so the Move dialog's New Team asks the app's
+  own API (the registry's `teamsPath`, `POST { name }`), which checks the person's token and vouches for them to
+  liveworkspace with it (`createTeamFor`), as its editor's Move dialog does. The app is then asked for a fresh token,
+  which names the team. An app that makes no teams (`teamsPath: null`) has no New Team on its address.
+- **The Library and Settings.** The Image Gallery and Shape Libraries are read from the app's own API on the same
+  origin (`imagesPath`, `shapeLibrariesPath`). Signed in, the header has a Settings button beside Appearance, opening
+  the app's own settings on liveworkspace.app (`/account/settings?app=<app>`), where `?settings=` addresses go too.
 - **Telemetry.** Every event counts for the app, sent to liveworkspace.app's telemetry service.
 
 The extra hop costs one Worker-to-Worker fetch on the HTML and payloads (assets are cached at the edge); see

@@ -191,11 +191,11 @@ The session loads deferred, so `/new` cannot wait for the token request without 
 
 ### Moving designs in This Browser after signing in
 
-Signing in never moves a design in This Browser by itself ([Offline Mode → Auth / guest interaction](../006-design/offline-mode.md#auth--guest-interaction)). Instead, once auth has settled signed in, a page that shows the Explorer or the editor checks this browser's designs in This Browser. If there are any, it offers to move them:
+Signing in never moves a design in This Browser by itself ([Offline Mode → Auth / guest interaction](../006-design/offline-mode.md#auth--guest-interaction)). Instead, once auth has settled signed in, the editor and This Browser's page (`/offline`) check this browser's designs in This Browser. If there are any, it offers to move them:
 
 - **Move Designs in This Browser to Your Account?** A dialog lists each design in This Browser (name, last edited), every one ticked, with **Move** and **Not Now**.
 - **Move** runs Sync Design ([Offline Mode → Save to server](../006-design/offline-mode.md#save-to-server-offline--cloud)) on each ticked design in turn, showing progress. A design that fails stays This Browser and is named in the result; the rest move.
-- **Not Now** is remembered for this account in this browser (`livedesign:v2:local-move-dismissed:<userId>`), with the count of designs in This Browser at the time. The dialog comes back only when that count grows, so a person who keeps a deliberate design in This Browser is not asked again about it.
+- **Not Now** is remembered for this account in this browser (`livedesign:v2:local-move-dismissed:<userId>`), with the count of designs in This Browser at the time. The dialog comes back only when that count grows, so a person who keeps a deliberate design in This Browser is not asked again about it. Taking a design offline counts the same way: the count is remembered as it lands, so a design taken offline on purpose is never offered back.
 - The same move is always reachable by hand: **Sync Design** on any design in This Browser.
 
 ## Implications for how we build
