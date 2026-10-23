@@ -30,6 +30,7 @@ import type {
   ShareUrl,
   TeamRef,
   TimelineTelemetry,
+  HomeTelemetry,
 } from '../types';
 
 export type DialogTarget =
@@ -84,6 +85,8 @@ export type ExplorerContextValue = {
   heroWords: HeroWords;
   // The Timeline's reports, for the host's telemetry.
   onTimeline?: TimelineTelemetry;
+  // Home's What Happened reports, for the host's telemetry.
+  onHome?: HomeTelemetry;
 };
 
 export type HelpHref = (view: ExplorerView) => string | undefined;
@@ -136,6 +139,7 @@ export type ExplorerProviderProps = {
   helpHref?: HelpHref;
   heroWords?: HeroWords;
   onTimeline?: TimelineTelemetry;
+  onHome?: HomeTelemetry;
   // Trashes an item the host handles itself (see HostTrash); stable, or the actions are rebuilt.
   hostTrash?: HostTrash;
   // After an item took a new title (the host follows it for the item it has open); stable.
@@ -168,6 +172,7 @@ export function ExplorerProvider({
   helpHref,
   heroWords,
   onTimeline,
+  onHome,
   hostTrash,
   onItemRenamed,
   children,
@@ -248,6 +253,7 @@ export function ExplorerProvider({
       helpHref,
       heroWords: heroWords ?? heroWordsFor(app),
       onTimeline,
+      onHome,
     }),
     [
       app,
@@ -281,6 +287,7 @@ export function ExplorerProvider({
       helpHref,
       heroWords,
       onTimeline,
+      onHome,
     ],
   );
   return (

@@ -22,6 +22,7 @@ import type {
   ShareUrl,
   TeamRef,
   TimelineTelemetry,
+  HomeTelemetry,
 } from '../types';
 import { ExplorerProvider, useExplorer as useExplorerContext, type HelpHref } from './context';
 import { ExplorerDialogs } from './Dialogs';
@@ -85,6 +86,8 @@ export type ExplorerProps = {
   trashedOnArrival?: { id: string; title: string | null } | null;
   /** The Timeline's reports (a mode or filter changed, a page read, a card opened), for the host's telemetry. */
   onTimeline?: TimelineTelemetry;
+  /** Home's What Happened reports (an entry opened, a summary dealt out), for the host's telemetry. */
+  onHome?: HomeTelemetry;
 };
 
 const FILTER_KEY = (app: App) => `liveworkspace:explorer-filter:${app}`;
@@ -177,6 +180,7 @@ function ExplorerInner({
   helpHref,
   trashedOnArrival,
   onTimeline,
+  onHome,
 }: ExplorerProps) {
   const [filter, setFilter] = useFilter(app, controlledFilter, onFilterChange);
   const [heroHidden, hideHero] = useHeroHidden(app, controlledHeroHidden, onHideHero);
@@ -213,6 +217,7 @@ function ExplorerInner({
       helpHref={helpHref}
       heroWords={heroWords}
       onTimeline={onTimeline}
+      onHome={onHome}
     >
       <div data-explorer="" className="flex min-w-0 flex-1 flex-col">
         {header ? (

@@ -317,6 +317,11 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     values: ['Card', 'Stack', 'Menu'],
   },
   'apps/editor/app/explorer/ExplorerShell.tsx Timeline·Removed': { values: ['Entry', 'Stack'] },
+  // Home's What Happened, through the Explorer's onHome prop (@liveworkspace/explorer WhatHappened.tsx).
+  'apps/editor/app/explorer/ExplorerShell.tsx Home·Selected': {
+    values: ['WhatHappened', 'SeeTimeline'],
+  },
+  'apps/editor/app/explorer/ExplorerShell.tsx Home·Opened': { values: ['Group'] },
   'apps/editor/app/new/page.tsx Theme·Changed': { values: THEMES, open: THEME_WHY },
   'apps/editor/app/new/page.tsx Template·Used': { values: TEMPLATES, open: TEMPLATE_WHY },
   // The landing funnel (docs/specs/019-marketing/landing-funnel.md): the CTA a /new visit came from.

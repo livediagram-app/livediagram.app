@@ -1,6 +1,6 @@
 # Explorer Home
 
-**Moved to liveworkspace's index (October 2026).** liveplanner's own Home (Jump Back In with its Within reach set, then What Happened, read from `/api/home`) is gone. `/explorer` and `/explorer/home` render the shared Explorer's Home view: the hero, Jump Back In (Most Used: the items you used on the most days in the last 90, then your most recently opened, up to eight from every app, each with a line such as "Used on 6 days" or "Opened 2 hours ago") and Shared With You Recently, read from the index. What Happened went with the [Timeline](timeline.md).
+**Moved to liveworkspace's index (October 2026).** liveplanner's own Home (Jump Back In with its Within reach set, then What Happened, read from `/api/home`) is gone. `/explorer` and `/explorer/home` render the shared Explorer's Home view: the hero, Jump Back In (Most Used: the items you used on the most days in the last 90, then your most recently opened, up to eight from every app, each with a line such as "Used on 6 days" or "Opened 2 hours ago") Shared With You Recently, and What Happened, read from the index.
 
 ## The hero
 
@@ -52,6 +52,29 @@ Either flip reports `UI / Toggled / HomeBannerOff` or `HomeBannerOn` before the 
 With the banner hidden, Home is drawn like every other Explorer page: the header's search field is drawn on Home too,
 and Home takes the ordinary page header (the title "Home", its Help link and, on a phone, the menu button), so it
 keeps its `h1`.
+
+## What Happened
+
+Home's last section is what other people did to the items the person can open, from one page (30 events) of the
+index's [Timeline](timeline.md) (`GET /timeline`, in Home's This app / All filter), read once per visit and filter.
+It keeps others' doings only: never the reader's own, never one nobody did, never a favourite (only its person's).
+
+- One group per item per local day, under day headings ("Today", "Yesterday", "Tue, 14 Oct").
+- A group with one person lists each doing as a link that opens the item in its app (a plan in the Trash opens the
+  Trash): an initials avatar (the person glyph when the index has no name), "**Sam Lee** renamed **Budget 2027**",
+  what it changed ("Was “Budget”", "To Launch plans", the share level, "Made by AI"), then where it lives (its space
+  › its folder), the time and, under All, the app's mark.
+- A group with several people is one button: "**Sam Lee and Ana Ruiz** edited and renamed **Budget 2027**", "2
+  updates", dealing out every doing (collapsed each visit, never remembered).
+- **New** marks a doing since the person last looked at the Timeline; reading Home does not mark it seen.
+- **See Timeline** at the heading's end opens the Timeline, once the entries are in.
+- With nothing from anyone, or a failed read, the section is left out. It is the page's last, so nothing moves.
+
+Comments, replies, resolved threads and actions are not Timeline events: they are in the [Inbox](inbox.md), and the
+index's names come only from what an app reports (liveplanner's edits carry none yet, so they read "A teammate").
+
+Telemetry, through the Explorer's `onHome` prop: `Home·Selected` (`WhatHappened`, `SeeTimeline`) and `Home·Opened`
+(`Group`).
 
 What liveplanner still does is say when a plan is opened: the editor records the open with the index (`POST /items/:id/open`, debounced there to one write a minute) when it loads the plan. The index keeps the time for Recent and the day as a use day for Most Used, and Jump Back In reads both in one request.
 

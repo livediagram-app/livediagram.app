@@ -31,4 +31,5 @@ export type {
   ShareUrl,
   TeamRef,
   TimelineTelemetry,
+  HomeTelemetry,
 } from './types';

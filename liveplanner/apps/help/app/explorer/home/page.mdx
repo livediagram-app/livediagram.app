@@ -4,13 +4,13 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Home',
   description:
-    'The Explorer opens on Home: the items you opened last, and what other people shared with you recently.',
+    'The Explorer opens on Home: the items you opened last, what other people shared with you recently, and what they did to your plans.',
   path: '/help/explorer/home/',
 });
 
 <ArticleLayout
   title="Home"
-  description="Where the Explorer opens: a greeting with your counts and search, the items you were last in, and what was shared with you recently."
+  description="Where the Explorer opens: a greeting with your counts and search, the items you were last in, what was shared with you recently, and what other people did."
   categoryTitle="Explorer"
   categorySlug="explorer"
 >
@@ -35,9 +35,13 @@ Before you have opened anything, the section offers **New Plan** instead.
 
 Below it, **Shared With You Recently** shows the latest items other people shared with you through a link. **See All** opens [Shared With Me](/help/explorer/shared-with-you/). The section is left out until something has been shared with you.
 
-## What Home no longer shows
+## What Happened
 
-Home used to carry a feed of what other people did while you were away, and each plan and team had a history. The Explorer is now shared by every liveworkspace app, and that feed was not carried over. To see what is waiting on you, open the [Inbox](/help/explorer/activity/).
+Last comes **What Happened**: what other people did to the plans you can open while you were away, newest first, under a heading for each day. Each entry says who did what to which plan, such as **Sam Lee renamed Budget 2027**, with what changed ("Was “Budget”"), where the plan lives and when. Click an entry to open the plan. Anything since you last looked at your [Timeline](/help/explorer/timeline/) carries a **New** pill.
+
+When several people worked on one plan on the same day, they share one entry, such as **Sam Lee and Ana Ruiz edited and renamed Budget 2027**. Click it to see each change.
+
+What you did yourself is never listed here. **See Timeline** opens the full [Timeline](/help/explorer/timeline/), with your own doings too. Comments and actions waiting on you are in the [Inbox](/help/explorer/activity/). The section is left out until someone else has done something.
 
 <Tip>
   Opening an item is private: it counts towards your own Jump Back In, and nobody else sees that you

@@ -18,6 +18,7 @@ import {
   viewFromLocation,
   type ExplorerView,
   type TimelineTelemetry,
+  type HomeTelemetry,
 } from '@liveworkspace/explorer';
 import { Brand, SITE_ID, SiteSwitcher } from '@liveplanner/ui';
 import { AuthControls } from '@/components/chrome/AuthControls';
@@ -75,6 +76,16 @@ const trackTimeline: TimelineTelemetry = (action, type) => {
       return track('Timeline', 'Opened', type);
     case 'Removed':
       return track('Timeline', 'Removed', type);
+  }
+};
+
+// Home's What Happened: literal calls, so the telemetry manifest scan sees each pair.
+const trackHome: HomeTelemetry = (action, type) => {
+  switch (action) {
+    case 'Selected':
+      return track('Home', 'Selected', type);
+    case 'Opened':
+      return track('Home', 'Opened', type);
   }
 };
 
@@ -150,6 +161,7 @@ export function ExplorerHost({
         heroHidden={prefs.homeBanner === false}
         onHideHero={hideHero}
         onTimeline={trackTimeline}
+        onHome={trackHome}
         header={header ? ({ search }) => header(search, chrome) : undefined}
       />
       {children?.(chrome)}

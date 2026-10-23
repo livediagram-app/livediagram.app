@@ -928,9 +928,9 @@ export const articles: Article[] = [
     slug: 'home',
     title: 'Home',
     description:
-      'The Explorer’s landing view: what you opened last, and what was shared with you recently.',
+      'The Explorer’s landing view: what you opened last, what was shared with you recently, and what happened.',
     keywords:
-      'home jump back in recent last opened most used see more shared with you recently landing start plan',
+      'home jump back in recent last opened most used see more shared with you recently what happened while away teammates others changes see timeline landing start plan',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Activity',

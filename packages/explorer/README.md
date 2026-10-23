@@ -85,12 +85,13 @@ Dark mode follows the host's `.dark` variant. The empty-state art animates only 
 | `heroHidden?`/`onHideHero` | `boolean` / `() => void`               | Controls the hero from the host's setting. Without them the close is remembered per app in this browser.                                             |
 | `helpHref?`                | `(view) => string \| undefined`        | A Help article for a view. Shows a Help button in that view's header and the hero's corner.                                                          |
 | `onTimeline?`              | `(action, type) => void`               | The Timeline's reports for telemetry: `Changed`, `Selected`, `Loaded`, `Opened` or `Removed`, by a fixed token.                                      |
+| `onHome?`                  | `(action, type) => void`               | Home's What Happened reports for telemetry: `Selected` (`WhatHappened`, `SeeTimeline`) or `Opened` (`Group`).                                        |
 
 Views (`ExplorerView`) and their addresses under `basePath`:
 
 | View                              | Address                         | Shows                                                                    |
 | --------------------------------- | ------------------------------- | ------------------------------------------------------------------------ |
-| `{ kind: 'home' }`                | `/explorer` or `/explorer/home` | The hero, Jump Back In (Most Used, Recent) and Shared With You Recently  |
+| `{ kind: 'home' }`                | `/explorer` or `/explorer/home` | The hero, Jump Back In, Shared With You Recently and What Happened       |
 | `{ kind: 'all' }`                 | `/explorer/all`                 | My Work: your root folders and your items that are in no folder          |
 | `{ kind: 'unsorted' }`            | `/explorer/unsorted`            | Every item in no folder, yours and your teams'                           |
 | `{ kind: 'recent' }`              | `/explorer/recent`              | By last opened                                                           |
@@ -173,7 +174,7 @@ the list scrolls near.
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Folders               | Once, paging if needed. The sidebar, breadcrumbs, folder rows and Move all read this copy.                                                                                                 |
 | Inbox                 | Once per filter. The sidebar's counts (Inbox, and the Timeline's new events) and the Inbox view share it.                                                                                  |
-| Home                  | Two small requests: Recent (8, carrying Most Used via `used`) and Shared (4).                                                                                                              |
+| Home                  | Three small requests: Recent (8, carrying Most Used via `used`), Shared (4) and one Timeline page (30) for What Happened.                                                                  |
 | Folder cards and rows | One `GET /folders/previews` per batch of up to 60 cards (or list rows on screen) not yet answered, for their mosaics and counts ("1 folder · 5 plans"); again after an item changes place. |
 | Timeline              | One `GET /timeline` page of 30 on arrival and per filter, then one per Show More (5 at most for an `#event=` link). One `POST /timeline/seen` a visit. Removing: 100 ids a call.           |
 | Home's hero           | One count request while it shows (My Work, one page of up to 200; "200+" past that). The Inbox pill reuses the sidebar's Inbox. None when the hero is hidden.                              |
@@ -200,6 +201,9 @@ Search waits 250 ms after typing stops, and a newer search cancels the older req
 
 - The hooks' optimistic paths are tested against an in-memory fake index (`src/test/fakeClient.ts`).
 - `HomeHero.test.tsx` covers the hero: greeting, pills, New, art, Help and close, and its one count request.
+- `what-happened.test.tsx` covers What Happened: others' doings only from one page, groups and summaries, New,
+  no seen mark, the section left out when empty or failed, All with app marks, and See Timeline. Its rules, and
+  10,000 events grouped under a budget, are in `timeline/whatHappened.test.ts`.
 - `perf.test.tsx` renders 2,000 items in each layout under a time budget.
 - `timeline.test.tsx` covers the Timeline view: this app's events by default, All with each app's mark, New and
   the seen mark, Show More and stacks, the failed read, the filters, one page however long the history, the card

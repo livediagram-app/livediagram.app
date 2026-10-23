@@ -294,11 +294,26 @@ export const TIMELINE_FILTERED = chart(
   'The Timeline narrowed to everyone, other people, or switched off a kind of event.',
 );
 
+// Explorer Home's What Happened (docs/specs/013-workspace/explorer-home.md), reported through its onHome prop.
+export const WHAT_HAPPENED_OPENED = chart(
+  'Home',
+  'Selected',
+  'What Happened Entries Opened',
+  'A plan opened from Home’s What Happened, or See Timeline followed from it.',
+);
+
+export const WHAT_HAPPENED_GROUPS = chart(
+  'Home',
+  'Opened',
+  'What Happened Summaries Opened',
+  'A summary of several people’s doings on one plan dealt out on Home.',
+);
+
 export const TIMELINE: MetricStack = {
   stack: true,
   title: 'Timeline',
   blurb:
-    'What happened to people’s plans, read in the Explorer: cards opened, runs expanded, menus, removals, filters and pages.',
+    'What happened to people’s plans, read in the Explorer’s Timeline and Home’s What Happened: cards opened, runs expanded, menus, removals, filters and pages.',
   members: [
     TIMELINE_CARDS_OPENED,
     TIMELINE_STACKS_EXPANDED,
@@ -307,6 +322,8 @@ export const TIMELINE: MetricStack = {
     TIMELINE_LOADS,
     TIMELINE_VIEW_SWITCHED,
     TIMELINE_FILTERED,
+    WHAT_HAPPENED_OPENED,
+    WHAT_HAPPENED_GROUPS,
   ],
   headline: TIMELINE_CARDS_OPENED,
 };

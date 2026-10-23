@@ -3,8 +3,9 @@
 // Home (livediagram's HomePane): under the hero, Jump Back In as livediagram draws it, Most Used (four large cards,
 // the items opened on the most days of the last 90, "Used on N days") then Recent (four compact ones, the latest
 // opened of the rest), and Shared With You Recently. On a phone Jump Back In is one scrolling strip, the two groups
-// alternating. With the hero hidden, Home takes the ordinary page header. Two requests, each one small page: Recent
-// carries Most Used beside it (the index's `used`).
+// alternating. Last, What Happened: what other people did to the items the person can open, from the index's
+// Timeline. With the hero hidden, Home takes the ordinary page header. Three requests, each one small page: Recent
+// carries Most Used beside it (the index's `used`), Shared, and one Timeline page.
 
 import { memo, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { ShownItem } from '../data/overlay';
@@ -28,6 +29,12 @@ import { useExplorer } from './context';
 import { ItemMenu } from './menus';
 import { PaneHeader } from './PaneHeader';
 import { useItemBits } from './rows';
+import {
+  useWhatHappened,
+  useWhatHappenedGroups,
+  WhatHappenedFeed,
+  WhatHappenedSkeleton,
+} from './WhatHappened';
 
 export const HOME_SHARED = 4;
 
@@ -38,6 +45,8 @@ export const HOME_COPY = {
   seeAll: 'See All',
   mostUsed: 'Most Used',
   recent: 'Recent',
+  whatHappened: 'What Happened',
+  seeTimeline: 'See Timeline',
 } as const;
 
 const SECTION_HEADING =
@@ -77,7 +86,7 @@ function useWide(): boolean {
 }
 
 export function HomePane({ onOpenNav, hero }: { onOpenNav?: () => void; hero: boolean }) {
-  const { client, app, filter, overlay, epoch, onCreate } = useExplorer();
+  const { client, app, filter, overlay, epoch, onCreate, onHome } = useExplorer();
   const recentLoad = useMemo(() => jumpBackInLoader(client, app, filter), [client, app, filter]);
   const sharedLoad = useMemo(
     () => sharedRecentlyLoader(client, app, filter, HOME_SHARED),
@@ -97,6 +106,8 @@ export function HomePane({ onOpenNav, hero }: { onOpenNav?: () => void; hero: bo
     belongs: live,
     epoch,
   });
+  const happened = useWhatHappened(client, app, filter, epoch);
+  const happenedGroups = useWhatHappenedGroups(happened);
   const wide = useWide();
   const showApp = filter === 'all';
   const empty = !recent.loading && recent.items.length === 0;
@@ -168,6 +179,30 @@ export function HomePane({ onOpenNav, hero }: { onOpenNav?: () => void; hero: bo
             <CardGroup items={shared.items} large showApp={showApp} />
           </HomeSection>
         ) : null}
+        {/* Nothing from anyone, or a failed read: the section is left out rather than a second empty state. It is
+            the page's last, so nothing moves when it goes. */}
+        {happened.loading || happenedGroups.length > 0 ? (
+          <HomeSection
+            id="what-happened"
+            title={HOME_COPY.whatHappened}
+            busy={happened.loading}
+            link={
+              happened.loading
+                ? undefined
+                : {
+                    view: { kind: 'timeline' },
+                    label: HOME_COPY.seeTimeline,
+                    onFollow: () => onHome?.('Selected', 'SeeTimeline'),
+                  }
+            }
+          >
+            {happened.loading ? (
+              <WhatHappenedSkeleton />
+            ) : (
+              <WhatHappenedFeed groups={happenedGroups} seenAt={happened.seenAt} />
+            )}
+          </HomeSection>
+        ) : null}
       </div>
     </div>
   );
@@ -208,7 +243,7 @@ function HomeSection({
 }: {
   id: string;
   title: string;
-  link?: { view: ExplorerView; label: string };
+  link?: { view: ExplorerView; label: string; onFollow?: () => void };
   busy: boolean;
   children: ReactNode;
 }) {
@@ -224,6 +259,7 @@ function HomeSection({
           <a
             href={viewHref(link.view)}
             onClick={(e) => {
+              link.onFollow?.();
               if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
               e.preventDefault();
               navigate(link.view);

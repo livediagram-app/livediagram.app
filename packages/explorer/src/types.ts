@@ -33,8 +33,13 @@ export type ShareUrl = (link: ShareLink, item: ItemRef) => string;
 export type RenderThumbnail = (item: Item, size: 'row' | 'card') => ReactNode;
 
 /** What the Timeline reports, for the host's telemetry: a mode or filter changed (`Changed`, `Selected`), a page
- *  read (`Loaded`: More or Retry), a card or a stack opened (`Opened`). `type` is always a fixed token. */
+ *  read (`Loaded`: More or Retry), a card, a stack or a card's menu opened (`Opened`), an entry or a stack taken
+ *  off the reader's Timeline (`Removed`). `type` is always a fixed token. */
 export type TimelineTelemetry = (
   action: 'Changed' | 'Selected' | 'Loaded' | 'Opened' | 'Removed',
   type: string,
 ) => void;
+
+/** What Home's What Happened reports: an entry opened its item (`Selected`, `WhatHappened`), a summary dealt out
+ *  (`Opened`, `Group`), See Timeline followed (`Selected`, `SeeTimeline`). */
+export type HomeTelemetry = (action: 'Selected' | 'Opened', type: string) => void;

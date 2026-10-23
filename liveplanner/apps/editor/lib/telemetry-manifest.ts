@@ -77,6 +77,10 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Form·Opened',
   'Form·Shared',
   'Form·Toggled',
+  // Explorer Home's What Happened (docs/specs/013-workspace/explorer-home.md): Selected (an entry opened its plan,
+  // WhatHappened; See Timeline followed, SeeTimeline), Opened (a summary dealt out, Group).
+  'Home·Opened',
+  'Home·Selected',
   'Layer·Added',
   'Layer·Changed',
   'Layer·Cleared',

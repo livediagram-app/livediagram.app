@@ -516,6 +516,11 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone searched the help centre and found no matching article: a direct list of articles worth writing. The search words are never recorded.',
   'Help|Searched|Results':
     'Someone searched the help centre and got at least one matching article. Counted once per finished search; the search words are never recorded.',
+  'Home|Selected|WhatHappened':
+    "Someone opened a plan from an entry in Explorer Home's What Happened: what other people did to their plans.",
+  'Home|Selected|SeeTimeline': "Someone followed See Timeline from Explorer Home's What Happened.",
+  'Home|Opened|Group':
+    "Someone dealt out a What Happened summary on Explorer Home, where several people's doings on one plan in a day fold into one sentence.",
   'Layer|Added|': 'A new layer was added in the Layers panel.',
   'Layer|Changed|Opacity': "A layer's opacity was adjusted.",
   'Layer|Cleared|': 'A layer was emptied (its elements deleted, the layer kept).',
@@ -2184,6 +2189,9 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
     'Someone searched the help centre. Counted once per finished search; the search words are never recorded.',
   'Help|Unhelpful':
     'Someone said a help-centre article was not helpful, using the "Was this helpful?" control at the end of the article. Counted once per article per visit, using whichever answer the reader leaves the page on.',
+  'Home|Selected':
+    "Someone acted on Explorer Home's What Happened: opened a plan from one of its entries, or followed See Timeline.",
+  'Home|Opened': "Someone dealt out a summary in Explorer Home's What Happened.",
   'Layer|Added': 'A new layer was added in the Layers panel.',
   'Layer|Changed': 'Someone adjusted a setting on a layer, such as its opacity.',
   'Layer|Cleared': 'A layer was emptied (its elements deleted, the layer kept).',
