@@ -45,13 +45,13 @@ All under `/api/teams`, account Bearer or API token required, handled by `apps/a
 
 - `GET /api/teams` — teams the caller has joined, each with `myRole` and `memberCount`.
 - `POST /api/teams` `{ name, organisation? }` — makes a team ([Making a team](#making-a-team)). A signed-in session only.
-- `GET /api/teams/invites` — always `[]`: invitations are answered on liveworkspace.app.
+- `GET /api/teams/invites` — the invitations waiting for the caller on liveworkspace.app ([Invitations](#invitations)).
 - `GET /api/teams/:id` — team + member list + `myRole` (`inviteLink` is always null). Members only.
 - `GET /api/teams/:id/library` — the team's folders and documents ([Team Shared Documents](team-shared-documents.md)).
 - `GET /api/teams/:id/access-check`, `POST /api/teams/:id/notify-action`, `POST /api/teams/:id/notify-mention` — as [Assigned actions](../012-collaboration/assigned-actions.md) and [Comment mentions](../012-collaboration/comment-mentions.md) describe; the two notices need a signed-in session.
 - The routes that would administer a team (rename, delete, invite, change a role, remove, an invite link, accept, decline) answer **`410 { error: 'teams_moved', manageAt }`**, where `manageAt` is liveworkspace.app's teams page.
 
-Wire DTOs (`Team`, `TeamListItem`, `TeamMember`, `TeamRole`) live in `@livedocuments/api-schema`.
+Wire DTOs (`Team`, `TeamListItem`, `TeamMember`, `TeamRole`, `TeamInvite`) live in `@livedocuments/api-schema`.
 
 ## Making a team
 
@@ -61,13 +61,23 @@ The **New Team** tile in the Move dialog makes a team without leaving livedocume
 - An API token or a workbench can't make one: `401 sign_in_required` without a signed-in session and its access token.
 - liveworkspace's refusal is passed on (`409 team_limit_reached` at 50 teams), and nothing is mirrored. Without accounts configured, or with liveworkspace out of reach, it is `503`.
 
+## Invitations
+
+Invitations are made, reminded, expired and answered on liveworkspace.app ([liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md) "Invitations"); livedocuments shows the ones waiting for the person signed in, so they hear of an invitation where they work.
+
+- `GET /api/teams/invites` (`apps/api/src/routes/team-invites.ts`) reads them from liveworkspace (`pendingInvitationsFor` in `@liveworkspace/auth-client`, `POST /api/account/internal/invitations`): each with the team's name, organisation and joined-member count, the role offered, who invited them and when (`TeamInvite` in `@livedocuments/api-schema`). An account with no verified address has none.
+- The answer is remembered per isolate for 30 seconds, and calls for the same account at once share one request, so the Explorer's load (one `GET /api/teams/invites`, beside `GET /api/teams`) costs at most one call to liveworkspace. An invitation answered on liveworkspace.app leaves the list within that.
+- Without accounts configured, or with liveworkspace out of reach, the list is empty rather than an error.
+- The Explorer's **Invites** view lists them, newest first, each with **Answer on liveworkspace.app**, which opens `/account/teams#invitations` there. The sidebar's Invites row shows while any wait, with their count as its badge. Once accepted, the team reaches the mirror through the token's claim or the feed ([Keeping the mirror](#keeping-the-mirror)) and shows in the sidebar.
+
 ## Explorer UI
 
 In the Explorer sidebar, each team is a root-level folder row in the **Spaces** group, after **My Work**: the two kinds of space read as the same noun ([Explorer structure](explorer-structure.md)).
 
 - One row per team the user has joined; selecting it shows the team in the right pane, and it expands to the team's folders.
 - **Manage Teams**, the group's last row (signed-in only), opens liveworkspace.app's teams page. A guest sees the sign-in nudge in its place.
-- `/explorer/invites`, `/join` and `/join/decline` (old links from invitation emails) say teams are run on liveworkspace.app and link there.
+- **Invites** (`/explorer/invites`), in the Spaces group with a count badge while any invitation waits: the invitations, each linking to liveworkspace.app to answer it ([Invitations](#invitations)).
+- `/join` and `/join/decline` (old links from invitation emails) say teams are run on liveworkspace.app and link there.
 
 The right-pane team view is **one calm card**:
 

@@ -20,6 +20,7 @@ import {
 } from './account-apps.ts';
 import { clientApp } from './clients.ts';
 import { GUEST_ID, USER_ID } from './ids.ts';
+import { pendingInvitations } from './internal-invitations.ts';
 import { recordActivity, signupAppOf } from './lifecycle.ts';
 import {
   isNotifyKey,
@@ -518,6 +519,12 @@ async function handleInternal(
       email: user.emailVerified ? user.email.toLowerCase() : null,
     };
     return answer(await createTeam(db, actor, body.name, Date.now(), body.organisation), 201);
+  }
+
+  // The invitations waiting for an account, for an app's Invites view (internal-invitations.ts).
+  if (route === 'POST invitations') {
+    const found = await pendingInvitations(db, await readBody(request));
+    return found.ok ? json({ invitations: found.invitations }) : error(found.status, found.error);
   }
 
   if (route === 'POST tokens/revoke') {

@@ -89,11 +89,11 @@ reached from Home's What Happened (**See Timeline**). The retired `/explorer/act
   always shows. The editor's Explorer rows behave the same.
 - A folder that is one of the reader's default folders shows the **default marker** after its name
   ([Default folders](default-folders.md#the-default-marker)), personal and team folder rows alike.
-- **Invites** shows only while the reader has a pending invite (or is on the Invites view). An invite also reaches the
-  reader through Home and email.
+- **Invites** shows only while the reader has an invitation waiting on liveworkspace.app (or is on the Invites view),
+  with their count as its badge; each links to liveworkspace.app to answer it ([Teams](teams.md#invitations)). An
+  invite also reaches the reader by email.
 - **Manage Teams** is the group's last row, for signed-in readers only. Teams are made and run on liveworkspace.app
-  ([Teams](teams.md)), so it opens liveworkspace.app's teams page. Invites shows only while invites are pending, which
-  the mirror never has now (invitations are answered on liveworkspace.app).
+  ([Teams](teams.md)), so it opens liveworkspace.app's teams page.
 - A **guest**, on a deployment with sign-in configured, sees the sign-in nudge ("Sign in to access Teams") as the
   group's last item instead of Manage Teams. A deployment without sign-in shows neither.
 

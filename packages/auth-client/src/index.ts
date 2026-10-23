@@ -65,6 +65,12 @@ export {
   type TokenCheckerOptions,
 } from './account';
 export {
+  INVITATIONS_CACHE_MAX,
+  INVITATIONS_TTL_MS,
+  pendingInvitationsFor,
+  type PendingInvitation,
+} from './invitations';
+export {
   isAccountId,
   JOIN_NOTIFY_THROTTLE_MS,
   MILESTONE_ITEM_COUNTS,

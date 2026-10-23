@@ -1,13 +1,14 @@
 import type { Metadata } from 'next';
-import { InvitationsOnLiveworkspace } from '@/components/panels/ManagedOnLiveworkspace';
+import { ExplorerPane } from '../ExplorerPane';
 import { viewDesignTitle } from '../view-titles';
 
-// /explorer/invites — team invitations are answered on liveworkspace.app now
-// (liveworkspace/docs/accounts.md), the same team in every app, so this points there.
+// /explorer/invites — the team invitations waiting for the person, answered on liveworkspace.app
+// (docs/specs/013-workspace/teams.md "Invitations"). The layout's ExplorerShell provides the chrome and
+// state; this page pins the route and the tab title.
 export const metadata: Metadata = {
   title: viewDesignTitle('invites'),
 };
 
 export default function Page() {
-  return <InvitationsOnLiveworkspace />;
+  return <ExplorerPane />;
 }

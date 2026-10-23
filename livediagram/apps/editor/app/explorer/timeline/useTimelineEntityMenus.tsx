@@ -92,7 +92,7 @@ export function useTimelineEntityMenus(): {
 
       if (sourceType === 'team') {
         if (eventType === 'team_invite_received') {
-          // Invites are answered on liveworkspace.app; the Invites page says so and links there.
+          // Invites are answered on liveworkspace.app; the Invites view lists them with a link there.
           return {
             items: [
               { label: 'Open Invites', icon: <InviteIcon />, onClick: () => go({ kind: 'invites' }) },

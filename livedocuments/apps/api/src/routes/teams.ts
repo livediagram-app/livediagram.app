@@ -21,6 +21,7 @@ import {
 import { forbidden, json, notFound, signInRequired } from '../responses';
 import { handleTeamActionRoutes } from './team-action-routes';
 import { createTeam } from './team-create';
+import { listTeamInvites } from './team-invites';
 import { handleTeamMentionRoutes } from './team-mention-routes';
 import type { RouteContext } from './context';
 
@@ -41,9 +42,9 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
     return json({ teams: await listTeamsByUser(env, userId) });
   }
 
-  // /api/teams/invites — invitations are answered on liveworkspace.app, so there are none here.
+  // /api/teams/invites — the invitations waiting for the caller, answered on liveworkspace.app.
   if (segments.length === 3 && segments[2] === 'invites') {
-    return request.method === 'GET' ? json({ invites: [] }) : notFound();
+    return request.method === 'GET' ? listTeamInvites(ctx, userId) : notFound();
   }
 
   // Everything below is team-scoped: resolve the team and the caller's membership once. Non-members

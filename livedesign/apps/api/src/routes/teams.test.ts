@@ -145,7 +145,7 @@ describe('team administration is on liveworkspace.app', () => {
     expect(db.getTeam).not.toHaveBeenCalled();
   });
 
-  it('has no invitations to show: they are answered on liveworkspace.app', async () => {
+  it('lists no invitations without accounts configured (routes/team-invites.test.ts has the rest)', async () => {
     const res = await handleTeams(makeCtx('GET', '/api/teams/invites'));
     expect(await res.json()).toEqual({ invites: [] });
   });

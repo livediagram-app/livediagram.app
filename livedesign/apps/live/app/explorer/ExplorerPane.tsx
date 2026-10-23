@@ -73,9 +73,8 @@ const TrashSection = dynamic(() => import('./TrashSection').then((m) => m.TrashS
 const TeamPane = dynamic(() => import('@/components/panels/TeamPane').then((m) => m.TeamPane), {
   ssr: false,
 });
-const InvitationsOnLiveworkspace = dynamic(
-  () =>
-    import('@/components/panels/ManagedOnLiveworkspace').then((m) => m.InvitationsOnLiveworkspace),
+const TeamInvitesPane = dynamic(
+  () => import('@/components/panels/TeamInvitesPane').then((m) => m.TeamInvitesPane),
   { ssr: false },
 );
 // The Timeline is the landing route, so it's the one lazy pane most
@@ -146,6 +145,7 @@ export function ExplorerPane() {
     folderActions,
     shared,
     dismissShared,
+    invites,
     movePersonalFolders,
     moveTeamDests,
     moveDesignTo,
@@ -327,7 +327,7 @@ export function ExplorerPane() {
       ) : loading ? (
         <SkeletonRows />
       ) : selected.kind === 'invites' ? (
-        <InvitationsOnLiveworkspace />
+        <TeamInvitesPane invites={invites} />
       ) : selected.kind === 'team' ? (
         ownerId ? (
           <TeamPane

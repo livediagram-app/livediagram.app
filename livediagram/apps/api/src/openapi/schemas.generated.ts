@@ -8225,11 +8225,20 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "invitedAt": {
         "type": "number"
       },
+      "invitedByName": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
       "memberCount": {
         "type": "number"
       },
       "memberId": {
         "type": "string"
+      },
+      "role": {
+        "$ref": "#/components/schemas/TeamRole"
       },
       "team": {
         "$ref": "#/components/schemas/Team"
@@ -8239,7 +8248,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "memberId",
       "team",
       "memberCount",
-      "invitedAt"
+      "invitedAt",
+      "role",
+      "invitedByName"
     ],
     "type": "object"
   },

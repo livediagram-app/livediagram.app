@@ -1,5 +1,4 @@
 import { ButtonContent, buttonClassName } from '@livediagram/ui';
-import { manageTeamsUrl } from '@/lib/auth-config';
 
 // Where a page that used to manage teams lands now (the invite, join and decline pages): teams are
 // run on liveworkspace.app (liveworkspace/docs/accounts.md "Teams"), the same team in every app, so
@@ -25,18 +24,5 @@ export function ManagedOnLiveworkspace({
         </a>
       </div>
     </div>
-  );
-}
-
-// The Invites view (/explorer/invites, the old invitation emails' landing): invitations are answered on
-// liveworkspace.app.
-export function InvitationsOnLiveworkspace() {
-  return (
-    <ManagedOnLiveworkspace
-      title="Invitations are on liveworkspace.app"
-      body="Team invitations are answered on liveworkspace.app. Once you join, the team's work shows up here."
-      href={manageTeamsUrl}
-      cta="Open your invitations"
-    />
   );
 }

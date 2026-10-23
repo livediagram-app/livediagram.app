@@ -295,14 +295,16 @@ export type TeamMember = {
   updatedAt: number;
 };
 
-// One row of `GET /api/teams/invites`: the caller's own pending
-// member row plus enough of the team to decide (name, organisation,
-// how many people have actually joined).
+// One row of `GET /api/teams/invites`: an invitation waiting for the caller on liveworkspace.app, where
+// it is answered (liveworkspace/docs/accounts.md "Invitations"), with enough of the team to decide:
+// its name and organisation, how many people have joined, the role offered, who invited them and when.
 export type TeamInvite = {
   memberId: string;
   team: Team;
   memberCount: number;
   invitedAt: number;
+  role: TeamRole;
+  invitedByName: string | null;
 };
 
 // The team's shareable invite link (docs/specs/013-workspace/teams.md): an admin turns it on, it

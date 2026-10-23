@@ -38,6 +38,13 @@ email, unless an admin has turned that off (the `notifyInviteResponse` setting, 
 `all` scope; [Settings](#settings)). That email links to the account's settings on liveworkspace.app,
 where it is turned off, and sends it as `List-Unsubscribe`.
 
+The apps show the invitations waiting for someone too, in their Explorer's Invites view with a count
+on its sidebar row, each linking here to answer it: `POST /api/account/internal/invitations`
+`{ userId }` answers the same list `/account/teams` shows (team name, organisation, member count, role,
+who invited them and when), for the account's verified address, in two indexed reads
+(`src/internal-invitations.ts`). The app vouches for the account, as it does for settings, and
+remembers the answer for 30 seconds (`pendingInvitationsFor` in `@liveworkspace/auth-client`).
+
 An invitation turned down is `declined`. It grants nothing and counts toward nothing, but stays on
 the team's list so the admins can see the answer, until an admin clears it or invites the address
 again, which replaces it with a fresh invitation.
@@ -498,6 +505,7 @@ provider's own introspection and remembered per isolate for five minutes):
 | `POST /api/account/internal/tokens/verify`    | `{ token }` → the account and its teams, or 404                                          |
 | `POST /api/account/internal/tokens`           | `{ accessToken, name, readOnly }` → a token, shown once                                  |
 | `POST /api/account/internal/teams`            | `{ accessToken, name, organisation? }` → 201 the team made, the person its admin         |
+| `POST /api/account/internal/invitations`      | `{ userId }` → `{ invitations }`: those waiting for the account's verified address       |
 | `GET /api/account/internal/teams/changes`     | `?cursor=` → the next page of the change feed                                            |
 | `POST /api/account/internal/tokens/revoke`    | `{ token }` → revokes it (a CLI signing out), or 404                                     |
 | `POST /api/account/internal/tokens/live`      | `{ ids }` (up to 100) → which still work, so an app can end what hangs off a revoked one |
