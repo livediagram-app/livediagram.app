@@ -13,5 +13,20 @@ The liveworkspace monorepo. Read README.md and docs/structure.md first.
 - Code both products need goes in `packages/` as `@liveworkspace/*`. Don't copy it into a
   product, and don't add a third copy of something that already exists in both. Follow the
   order in docs/structure.md.
+- When asked to run the apps locally, run each in its own port block, the same on every
+  machine, so they never collide and their links to each other line up:
+
+  | Product                       | Ports       |
+  | ----------------------------- | ----------- |
+  | liveworkspace                 | 3000 onward |
+  | livediagram                   | 3100 onward |
+  | liveplanner                   | 3200 onward |
+  | livedocuments (was livepages) | 3300 onward |
+  | livedesign                    | 3400 onward |
+
+  Each product's router (or the liveworkspace site) takes the first port of its block, and its
+  other apps the next ones. If a port is taken, find what holds it rather than shifting into
+  another product's block.
+
 - The product folders came in with `git subtree add`. Until the switch-over, refresh them with
   `git subtree pull` rather than editing both sides by hand.
