@@ -110,10 +110,10 @@ const SECTIONS: LegalSection[] = [
         <li>
           <strong>Your Explorer.</strong> liveworkspace.app keeps one list of what you make in every
           app, so the Explorer in each app can show all of it: each document&rsquo;s title, app,
-          owner, team, folder, tags, favourite and Trash state, its share links, when you last
-          opened it, and a small summary for its card (such as how many elements it has). For the
-          Inbox it also keeps, for each comment thread and action, who is in it, whether it is
-          resolved or done, and the start of the latest comment (up to 500 characters).
+          owner, team, folder, favourite and Trash state, its share links, when you last opened it,
+          and a small summary for its card (such as how many elements it has). For the Inbox it also
+          keeps, for each comment thread and action, who is in it, whether it is resolved or done,
+          and the start of the latest comment (up to 500 characters).
         </li>
         <li>
           <strong>Images you upload</strong> are kept in Cloudflare object storage. Before a JPEG is
@@ -356,7 +356,7 @@ const SECTIONS: LegalSection[] = [
           You can delete your account yourself from <strong>Settings</strong>, then{' '}
           <strong>Account</strong>, then <strong>Delete Account</strong>, in any app. Your
           liveworkspace account closes, for every app at once: the documents you own in every app
-          (the Trash included), your folders, tags, favourites, images and preferences, your account
+          (the Trash included), your folders, favourites, images and preferences, your account
           details, sessions, API tokens and sign-in records are deleted straight away, and you leave
           every team (a team you ran alone goes; one you were the only admin of passes to its
           longest-standing member). Documents that belong to a team stay with the team.
