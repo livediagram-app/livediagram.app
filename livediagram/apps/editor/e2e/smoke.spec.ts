@@ -19,10 +19,10 @@ test('the new-document wizard renders', async ({ page, pageErrors }) => {
   await page.goto('/new');
   await expect(page.getByText('New Document', { exact: false })).toBeVisible();
   // The Mode step is the client-rendered heart of the wizard (docs/specs/007-editor/new-document-route.md
-  // "Choosing a mode"); its five mode cards prove the picker mounted, not just the shell.
+  // "Choosing a mode"); its three mode cards (Diagram, Draw, Workshop) prove the picker mounted, not just the shell.
   const modes = page.getByRole('group', { name: 'What are you making?' });
   await expect(modes).toBeVisible();
-  await expect(modes.locator('[data-new-mode]')).toHaveCount(5);
+  await expect(modes.locator('[data-new-mode]')).toHaveCount(3);
   expectNoPageErrors(pageErrors);
 });
 

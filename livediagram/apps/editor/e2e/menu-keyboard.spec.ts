@@ -261,11 +261,11 @@ test.describe('menus by keyboard', () => {
     pageErrors,
   }) => {
     await page.goto('/explorer');
-    const switcher = page.getByRole('button', { name: /^Switch section/ });
+    const switcher = page.getByRole('button', { name: 'Switch site' });
     await switcher.focus();
     await expect(page.getByRole('menu')).toHaveCount(0);
     await page.keyboard.press('Enter');
-    const menu = page.getByRole('menu', { name: /^Switch section/ });
+    const menu = page.getByRole('menu', { name: 'Switch site' });
     await expect(menu).toBeVisible();
     await expect(menu.getByRole('menuitem').first()).toBeFocused();
     await page.keyboard.press('ArrowDown');
