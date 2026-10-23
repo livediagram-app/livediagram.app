@@ -31,7 +31,7 @@ Administering a team (rename, delete, invite, change a role, remove, leave) happ
 
 ## Making a team
 
-The **New Team** tile in the Move dialog makes a team without leaving livedocuments, and files the document being moved into it. `POST /api/teams` (`apps/api/src/routes/team-create.ts`) asks liveworkspace to make it for the person signed in, vouching for them with the access token they sent (`createTeamFor` in `@liveworkspace/auth-client`); they become its admin. It is usable on the very next request: a team the caller's token does not name yet is asked of accounts. It is the same team on liveworkspace.app and in every app, and managed there.
+The **New Team** tile in the Move dialog makes a team without leaving livedocuments, and files the document being moved into it. `POST /api/teams` (`apps/api/src/routes/team-create.ts`) asks liveworkspace to make it for the person signed in, vouching for them with the access token they sent (`createTeamFor` in `@liveworkspace/auth-client`); they become its admin. It is usable on the very next request: a team the caller's token does not name yet is asked of accounts. It is the same team on liveworkspace.app and in every app, and managed there. The editor's Explorer panel offers it in the shared Explorer's Move dialog (`onCreateTeam`, `apps/editor/lib/explorer-new-team.ts`) to a signed-in person, never a guest; the made team joins the panel's rail at once, before their token names it.
 
 - The name is trimmed and cut at 80 characters, as liveworkspace cuts it; an empty one is `400 name_required`. The organisation, likewise, or null.
 - An API token or a workbench can't make one: `401 sign_in_required` without a signed-in session and its access token.

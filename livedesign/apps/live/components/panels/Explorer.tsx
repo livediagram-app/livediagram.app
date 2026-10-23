@@ -19,6 +19,7 @@ import { useAppNavigation } from '@/hooks/navigation/useAppNavigation';
 import { getSessionSharePassword } from '@/lib/api-client';
 import { indexClient } from '@/lib/index-client';
 import { explorerLibrary } from '@/lib/explorer-library';
+import { useExplorerNewTeam } from '@/lib/explorer-new-team';
 import { itemHref, newDesignHref, shareUrl, useTokenTeams } from '@/lib/explorer-host';
 import { explorerShareHost } from '@/lib/explorer-share-host';
 import { explorerInboxHost } from '@/lib/explorer-inbox-host';
@@ -56,7 +57,9 @@ function ExplorerImpl({
   const itemMenu = useOfflineItemMenu(accountUserId ?? guestId);
   const shareHost = useMemo(() => explorerShareHost(accountUserId ?? null), [accountUserId]);
   const inboxHost = useMemo(() => explorerInboxHost(accountUserId ?? null), [accountUserId]);
-  const teams = useTokenTeams(isSignedIn);
+  // The person's teams, with New Team in the Move dialog making one on the spot.
+  const tokenTeams = useTokenTeams(isSignedIn);
+  const { teams, onCreateTeam } = useExplorerNewTeam(!!isSignedIn, tokenTeams);
 
   // The open design as the index has it (its title, place and star), for the card on top.
   const [current, setCurrent] = useState<Item | null>(null);
@@ -151,6 +154,7 @@ function ExplorerImpl({
         itemMenu={itemMenu}
         // The Library section: the Image Gallery over this app's API.
         {...explorerLibrary}
+        onCreateTeam={onCreateTeam}
         // Side by side in a desktop popover; chips over the pane on a phone and in the corner panel that stands
         // beside the new-design wizard and the status screens, which must stay narrow or it covers their card.
         layout={sheet ? 'sheet' : isMobile || !asPopover ? 'stacked' : 'side'}
