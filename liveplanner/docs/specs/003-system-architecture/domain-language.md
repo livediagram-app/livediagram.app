@@ -101,7 +101,7 @@ The words for a program working on projects for a person ([Agents](../024-agents
 | **access level**   | What a share link, embed or token admits: Viewer, Participant or Editor (`view`, `participate`, `edit`) | permission, scope (the field is `role`) |
 | **ownership**      | The owner's powers over a project (sharing, delete, move), apart from any level                         | admin, edit level                       |
 
-- **Participant** is the access level; a person's name and colour (the `participants` table) are their
+- **Participant** is the access level; a person's name and colour (their accounts profile, served as `/api/participants`) are their
   **display identity**.
 - An **element op** (`ElementOp`) stays the room's unit; an edit operation is the agent's, and compiles into them.
 - A CLI **command** and an MCP **tool** are the two front doors to one **verb** (`tab.view`, `element.set`).

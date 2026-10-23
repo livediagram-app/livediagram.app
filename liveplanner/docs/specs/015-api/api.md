@@ -13,7 +13,7 @@ The first prototype phase ([spec 02](../005-project-roadmap/prototype-scope.md))
 ## Tech
 
 - **Runtime:** Cloudflare Workers.
-- **DB:** Cloudflare D1 (binding `DB`) for what is liveplanner's own and not a plan's content: participants, preferences, tokens, form links, workbench pairings and sessions, lifecycle email. Schema lives in `apps/api/migrations/`.
+- **DB:** Cloudflare D1 (binding `DB`) for what is liveplanner's own and not a plan's content: tokens, form links, workbench pairings and sessions. A person's settings, name and colour, sign-in sighting and email address are the liveworkspace accounts Worker's ([liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md)), read through its internal API as `liveplanner.app`. Schema lives in `apps/api/migrations/`.
 - **Index:** where every plan is, who may open it, its sharing, folders, tags, favourites, Trash and Inbox are liveworkspace's index ([one-explorer.md](../../../../liveworkspace/docs/one-explorer.md), [one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md)). The api reaches it at `INDEX_ORIGIN` (`apps/api/src/index-service.ts`).
 - **Plans:** one SQLite-backed Durable Object per plan (`PlanRoom`, binding `PLAN_ROOM`, `new_sqlite_classes`), named by the plan's id via `idFromName`. It holds the plan's content and is its realtime room (see **Storage** and **Realtime model**).
 
@@ -144,8 +144,8 @@ the index mints is long enough, from the CSPRNG, that guessing one is out of rea
 | ------ | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | GET    | `/api/projects/:id/ws`          | WebSocket upgrade — connects to the plan's `PlanRoom`.                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | POST   | `/api/projects/:id/room-ticket` | The room ticket for a caller that holds no grant of its own (an API token's CLI, a workbench session) or wants its adder key: the index's grant, the one the request carries or one fetched for it (`resolvePlanGrant`), as `{ ticket, adderKey? }`. A workbench session's ticket seals its pairing and level cap to the grant with this app's key (`<grant>~<pairing>~<cap>~<hmac>`, `apps/api/src/room-ticket.ts`). The editor needs none: its own grant is its ticket. 404 with no grant. |
-| GET    | `/api/participants/:id`         | Fetch a participant by id. A caller asking for its own id (the `sub` of its Bearer, equal to `:id`) before it has saved a profile gets `200 { participant: null }`: an absent profile of your own is expected state, never an error. Any other absent id is 404.                                                                                                                                                                                                                             |
-| PUT    | `/api/participants/:id`         | Upsert `{ name, color }`. Owner-gated — the `sub` of the caller's Bearer (an account's or a guest's) must match `:id`.                                                                                                                                                                                                                                                                                                                                                                       |
+| GET    | `/api/participants/:id`         | Fetch a participant (the accounts Worker's profile: name, and colour or the default `#0ea5e9`) by id. A caller asking for its own id (the `sub` of its Bearer, equal to `:id`) before it has saved a profile gets `200 { participant: null }`: an absent profile of your own is expected state, never an error. Any other absent id is 404.                                                                                                                                                  |
+| PUT    | `/api/participants/:id`         | Upsert `{ name, color }` into the accounts Worker's profile; 400 for a name or colour it refuses, 503 when it cannot be reached. Owner-gated — the `sub` of the caller's Bearer (an account's or a guest's) must match `:id`.                                                                                                                                                                                                                                                                |
 
 **Account self-delete**
 
@@ -161,10 +161,10 @@ the index mints is long enough, from the CSPRNG, that guessing one is out of rea
 
 **User preferences** (see [User preferences](../007-editor/user-preferences.md))
 
-| Method | Path               | Auth             | Notes                                                                                                                                                                                                                                                                                                                               |
-| ------ | ------------------ | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| GET    | `/api/preferences` | owner (any path) | Returns `{ prefs }` for the resolved owner (the `sub` of the account's or the guest's token). Empty object when no row exists. The blob is opaque to the worker; the client owns the shape (`apps/editor/lib/user-preferences.ts`'s `UserPreferences` type).                                                                        |
-| PUT    | `/api/preferences` | owner (any path) | Body `{ prefs }`. Upserts the row for the resolved owner. Returns 204. Size-capped at 4 KB to defend against runaway clients; no per-field validation otherwise. Same hybrid auth as `GET`. Last-write-wins per device, the client tolerates failure by keeping its localStorage cache authoritative until the next successful PUT. |
+| Method | Path               | Auth             | Notes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| ------ | ------------------ | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| GET    | `/api/preferences` | owner (any path) | Returns `{ prefs }` for the resolved owner (the `sub` of the account's or the guest's token): the `all` and `liveplanner.app` scopes at the accounts Worker joined, in one call. Empty object when nothing is stored; `{ prefs: null }` when the api keeps no preferences (no accounts client, or an owner id the accounts database has no place for); 503 `preferences_unavailable` when the accounts Worker cannot be reached. The values are opaque to the worker; the client owns the shape (`apps/editor/lib/user-preferences.ts`'s `UserPreferences` type). |
+| PUT    | `/api/preferences` | owner (any path) | Body `{ prefs: <patch> }`: each key named takes its value whole, `null` deletes the key, keys not named stay. Split into the two scopes and written in one call. Returns 204; 400 for a body that is not an object or is over 16 KB; 404 `preferences_not_stored` where nothing is kept server-side; the accounts Worker's 400 / 413 refusals passed on; 503 when it cannot be reached. The editor debounces its saves (400 ms) and keeps its localStorage cache authoritative until one lands.                                                                   |
 
 ### Project dates
 
@@ -200,9 +200,10 @@ A plan's Trash state is the index's. A trashed plan is reached only by its owner
 ### Tab save
 
 The whole-tab autosave (`PUT /api/projects/<id>/tabs/<tabId>`, about every 600 ms while someone edits) reads
-only what it needs of the project, in one query (`getProjectForSave`: owner, team, name, the owner's participant
-name and colour, and the tab count), where it ran the full project read (the row with its share-code
-subqueries, then the owner's participant and the tab summaries) as two sequential round trips. The stored
+only what it needs of the project, in one query (`getProjectForSave`: owner, team, name and the tab count), where it ran the full project read (the row
+with its share-code subqueries, then the owner's participant and the tab summaries) as two sequential round
+trips. The owner's name and colour come from the profile cache (one batched accounts read a minute per person,
+`apps/api/src/person/profiles.ts`), not from each save. The stored
 tab, the changesets the editor had not seen and the realtime room's ledger are then read together; the ledger is
 merged after the changesets, as before. A denied save still answers 403.
 
@@ -284,7 +285,7 @@ plan id. D1 keeps only what is liveplanner's own and not content; where a plan i
 A tab is one row. A tab over 2 MB does not fit a SQLite row in a Durable Object either, so the cap in **Tab size**
 stands; storing a large tab in chunks is the follow-up.
 
-**What D1 keeps**: `participants`, `auth_accounts`, `user_preferences`, `api_tokens`, `email_lifecycle`, `form_links`, `form_reads`, `form_reports` and the workbench tables. No plan row, tab body, card, cell or changeset is in D1, and nothing about folders, sharing, teams, the Trash or the Inbox.
+**What D1 keeps**: `api_tokens`, `form_links`, `form_reads`, `form_reports` and the workbench tables. No plan row, tab body, card, cell or changeset is in D1, and nothing about folders, sharing, teams, the Trash or the Inbox.
 
 **Routing.** The worker authenticates the caller, applies its cross-cutting gates (rate limits, read-only tokens,
 workbench confinement, body caps) and hands every request under `/api/projects/:id/...` and `/api/forms/:code/...`
@@ -423,9 +424,7 @@ Every tab the api receives (project create, tab save) runs the stored-tab migrat
 The schema is one baseline migration, `apps/api/migrations/0001_liveplanner_baseline.sql`, which creates every D1 table the worker reads and writes. liveplanner has no data, so the baseline is the schema as it stands, without the tables of removed or moved features (the projects table, share links and passwords, `shared_with`, folders, favourites, tags, placement defaults, the Trash state, teams and their members, the Timeline, the Inbox's collab index, opens, owner aliases, the room tickets). A later change adds a numbered migration after it. In broad strokes:
 
 - **Plan content** (`plan`, `tabs`, `plan_tabs`, `tab_stats`, `items`, `sheets`, `sheet_cells`, `sheet_refs`, `agent_changesets`, `agent_changeset_parts`, `outbox`) is in each plan's Durable Object, `apps/api/src/plan-room/plan-schema.ts`, not in this migration. The plan's own row holds its name, owner and provenance.
-- **`participants`** — id, name, color: a person's display identity. Volatile presence/status state stays on the wire.
-- **`user_preferences`** — a person's synced settings.
-- **`api_tokens`**, **`auth_accounts`**, **`email_lifecycle`** — account-only rows: tokens, first sighting, lifecycle email.
+- **`api_tokens`** — account-only rows.
 - **`form_links`**, **`form_reads`**, **`form_reports`** — a Form tab's public link and what readers have seen ([Forms](../030-forms/forms.md)).
 - **`workbench_pairing_requests`**, **`workbench_pairings`**, **`workbench_tickets`**, **`workbench_sessions`**, **`workbench_session_rooms`** — [Workbench embeds](../013-workspace/workbench-embeds.md).
 
@@ -439,16 +438,14 @@ This is the one list of columns that hold an owner id (a guest id or an account 
 | ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
 | `plan.owner_id`                       | In each plan's own store: the account's own plans are deleted for good through the index first, which purges each store |
 | `agent_changesets.author_id`          | In each plan's own store: those on someone else's plan stay until the 30-day changeset retention ages them out          |
-| `participants.id`                     | Deleted                                                                                                                 |
-| `user_preferences.owner_id`           | Deleted                                                                                                                 |
 | `form_reads.owner_id`                 | Deleted ([Forms](../030-forms/forms.md#hearing-about-responses))                                                        |
 | `api_tokens.owner_id`                 | Deleted ([Public API and API tokens](public-api-and-tokens.md))                                                         |
-| `email_lifecycle.owner_id`            | Deleted ([Transactional email](../014-identity/transactional-email.md))                                                 |
-| `auth_accounts.owner_id`              | Deleted ([Telemetry](../017-telemetry/telemetry.md))                                                                    |
 | `workbench_pairing_requests.owner_id` | Deleted, before the tokens ([Workbench embeds](../013-workspace/workbench-embeds.md))                                   |
 | `workbench_pairings.owner_id`         | Deleted, before the tokens                                                                                              |
 | `workbench_tickets.owner_id`          | Deleted, before the tokens                                                                                              |
 | `workbench_sessions.owner_id`         | Deleted, before the tokens                                                                                              |
+
+**Kept by the accounts Worker, not here.** A person's settings ([User preferences](../007-editor/user-preferences.md)), name and colour (`GET`/`PUT /api/participants`), sign-in sighting and email address live in the liveworkspace accounts database ([liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md)), under the account's user id or, for a guest, the `guest_<uuid>` id its guest token names. Closing an account deletes them there, and a guest's move to an account on sign-in is the accounts Worker's too.
 
 A new owner-keyed table adds a row here, a statement to `deleteAccount`, and an entry in the test, in the same change.
 

@@ -117,7 +117,7 @@ auth has settled, the path names a project registered in the local index
 - **The reader resolves in the background** once auth answers, exactly as a
   cloud open resolves it (`resolveParticipant` in
   `app/project/[id]/resolve-participant.ts`: the account id or the guest token's id,
-  then the participant row), followed by the Explorer lists and the guest naming
+  then the profile), followed by the Explorer lists and the guest naming
   nudge. The project is not reloaded: an offline project is the reader's own
   whoever they turn out to be.
 - **`/new` does not wait either.** For a project created in This Browser, the create writes to IndexedDB and hands off without

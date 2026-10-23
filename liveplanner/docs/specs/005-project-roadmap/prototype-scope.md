@@ -68,8 +68,9 @@ The planner is real:
   ([Agent changesets](../024-agents/agent-changesets.md)), agent presence, and the CLI.
 - **Anonymous first-party telemetry** and the public `/telemetry` dashboard, off unless a deployment turns it on, with a
   per-person opt-out ([Telemetry](../017-telemetry/telemetry.md)).
-- **Transactional and lifecycle email** (optional; [Transactional & lifecycle email (Resend)](../014-identity/transactional-email.md)):
-  onboarding, team invites, form responses and account messages, off until a `RESEND_API_KEY` is set.
+- **Transactional email** (optional; [Transactional email (Resend)](../014-identity/transactional-email.md)):
+  new comments, form responses and account messages, off until a `RESEND_API_KEY` is set; onboarding and team
+  emails come from liveworkspace.
 
 **No project content lives in `localStorage`.** A project is stored on the server, or in IndexedDB for an Offline
 Mode project, and `apps/editor/lib/api-client.ts` is the single persistence boundary over both. `localStorage` holds
