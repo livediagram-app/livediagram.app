@@ -16,8 +16,7 @@ export function useLibraryHost(): LibraryHost {
 }
 
 /** Whether the Library holds any page of the host's. */
-export const hasLibrary = (host: LibraryHostProps) =>
-  Boolean(host.gallery || host.shapeLibraries);
+export const hasLibrary = (host: LibraryHostProps) => Boolean(host.gallery || host.shapeLibraries);
 
 export function LibraryHostProvider({
   gallery,

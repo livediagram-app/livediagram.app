@@ -32,16 +32,11 @@ import { ListView } from './ListView';
 import { SharedList } from './SharedList';
 import { TeamPage } from './TeamPane';
 import { PaneHeader, type Crumb } from './PaneHeader';
+import { ImportToolbar } from '../library/ImportToolbar';
 import { useViewMode } from './useViewMode';
 import type { RowOptions } from './rows';
 
-export function ItemsPane({
-  view,
-  onOpenNav,
-}: {
-  view: ItemsView;
-  onOpenNav?: () => void;
-}) {
+export function ItemsPane({ view, onOpenNav }: { view: ItemsView; onOpenNav?: () => void }) {
   const ctx = useExplorer();
   const { client, app, filter, overlay, epoch, folders, words, onCreate, viewerId } = ctx;
   const [mode, setMode] = useViewMode();
@@ -177,6 +172,8 @@ export function ItemsPane({
         onOpenNav={onOpenNav}
         onCreateItem={createItem}
         onCreateFolder={createFolder}
+        // Imports land where New files an item, so they sit beside it: in the person's own space, as livediagram's.
+        actions={place && place.teamId === null ? <ImportToolbar placement={place} /> : undefined}
         folderLabel={
           view.kind === 'folder' || (view.kind === 'team' && view.folderId)
             ? 'New Subfolder'

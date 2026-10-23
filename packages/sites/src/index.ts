@@ -124,7 +124,15 @@ export type AppItems = {
   // that page out.
   imagesPath: string | null;
   shapeLibrariesPath: string | null;
+  // "Import from": the other tools the app reads files from, and its page that does it (`${url}${importPath}` with
+  // `?source=<id>&what=items|libraries&folder=<id>`), which opens that source's import and comes back to the Explorer.
+  // `libraries` marks a source whose files can also become shape libraries. Empty where the app imports nothing.
+  imports: readonly AppImportSource[];
+  importPath: string | null;
 };
+
+/** One tool an app imports from, by its id on the app's /import page. */
+export type AppImportSource = { id: string; name: string; libraries?: boolean };
 
 /** The Share dialog's extras an app serves, so the Explorer on liveworkspace.app offers them for its items without
  *  any of the app's code. Each is a pattern on the app's site: `:code` is a share link's code, `:id` an item's. */
@@ -178,6 +186,12 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     previewPath: null,
     imagesPath: '/api/images',
     shapeLibrariesPath: '/api/shape-libraries',
+    imports: [
+      { id: 'microsoft-whiteboard', name: 'Microsoft Whiteboard' },
+      { id: 'excalidraw', name: 'Excalidraw' },
+      { id: 'drawio', name: 'draw.io', libraries: true },
+    ],
+    importPath: '/import',
     share: shareOf('/api/documents/:id', 'document', 'livediagram tab'),
   },
   liveplanner: {
@@ -192,6 +206,8 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     previewPath: '/api/projects/:id/thumbnail',
     imagesPath: null,
     shapeLibrariesPath: null,
+    imports: [],
+    importPath: null,
     share: shareOf(itemTabsPath('projects'), null, 'liveplanner tab'),
   },
   livedocuments: {
@@ -206,6 +222,8 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     previewPath: null,
     imagesPath: '/api/images',
     shapeLibrariesPath: null,
+    imports: [],
+    importPath: null,
     share: shareOf(itemTabsPath('documents'), null, 'livedocuments tab'),
   },
   livedesign: {
@@ -220,6 +238,8 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     previewPath: '/api/designs/:id/thumbnail',
     imagesPath: '/api/images',
     shapeLibrariesPath: null,
+    imports: [],
+    importPath: null,
     share: shareOf('/api/designs/:id', 'design', 'livedesign tab'),
   },
 };

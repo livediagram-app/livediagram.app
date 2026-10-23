@@ -12,6 +12,7 @@ import { useLibraryHost } from './context';
 import { GalleryPane } from './GalleryPane';
 import { ShapeLibrariesPane } from './ShapeLibrariesPane';
 import { HelpButton } from '../explorer/HomeHero';
+import { ImportToolbar } from './ImportToolbar';
 
 export function GalleryView({ onOpenNav }: { onOpenNav?: () => void }) {
   const { kind } = useExplorer();
@@ -37,6 +38,8 @@ export function GalleryView({ onOpenNav }: { onOpenNav?: () => void }) {
   );
 }
 
+const ROOT = { folderId: null, teamId: null };
+
 export function ShapeLibrariesView({ onOpenNav }: { onOpenNav?: () => void }) {
   const { kind } = useExplorer();
   const { shapeLibraries } = useLibraryHost();
@@ -47,11 +50,17 @@ export function ShapeLibrariesView({ onOpenNav }: { onOpenNav?: () => void }) {
         onOpenNav={onOpenNav}
         showFilter={false}
         actions={
-          shapeLibraries?.helpHref ? <HelpButton href={shapeLibraries.helpHref} /> : undefined
+          <>
+            {shapeLibraries ? <ImportToolbar placement={ROOT} what="libraries" /> : null}
+            {shapeLibraries?.helpHref ? <HelpButton href={shapeLibraries.helpHref} /> : null}
+          </>
         }
       />
       {shapeLibraries ? (
-        <ShapeLibrariesPane host={shapeLibraries} />
+        <ShapeLibrariesPane
+          host={shapeLibraries}
+          emptyAction={<ImportToolbar placement={ROOT} what="libraries" />}
+        />
       ) : (
         <EmptyState
           icon={<ShapesIcon size={28} />}

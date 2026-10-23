@@ -69,8 +69,16 @@ export const WELCOME_COPY = {
   haveWorkTitle: 'Already Have Work?',
   signInTitle: 'Nothing here yet? Sign in',
   signIn: 'Sign In',
+  importTitle: 'Bring It With You',
 } as const;
 
 /** "If you have used liveplanner before, sign in and your plans come back with you." */
 export const signInLine = (name: string, lowerMany: string) =>
   `If you have used ${name} before, sign in and your ${lowerMany} come back with you.`;
+
+/** The import card's line: the host's tools by name, and what each board becomes. */
+export function importLine(names: readonly string[], kind: string): string {
+  const tools =
+    names.length > 1 ? `${names.slice(0, -1).join(', ')} or ${names.at(-1)}` : (names[0] ?? '');
+  return `Import boards from ${tools}; each becomes its own ${kind}.`;
+}

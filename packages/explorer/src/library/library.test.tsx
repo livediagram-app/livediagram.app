@@ -80,7 +80,10 @@ describe('the Image Gallery', () => {
 
   it('uploads a chosen file and reads the gallery again; a refusal is said as it is', async () => {
     const host = galleryHost([], {
-      upload: vi.fn().mockResolvedValueOnce(undefined).mockRejectedValueOnce(new Error('Your gallery is full.')),
+      upload: vi
+        .fn()
+        .mockResolvedValueOnce(undefined)
+        .mockRejectedValueOnce(new Error('Your gallery is full.')),
     });
     page({ kind: 'gallery' }, { gallery: host });
     expect(await screen.findByText('No images yet')).toBeTruthy();
@@ -168,7 +171,9 @@ describe('Shape Libraries', () => {
     page({ kind: 'shape-libraries' }, { shapeLibraries: host });
     expect(await screen.findAllByTestId('library-preview')).toHaveLength(2);
     fireEvent.click(screen.getByRole('button', { name: 'Delete Network' }));
-    fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Delete' }));
+    fireEvent.click(
+      within(await screen.findByRole('dialog')).getByRole('button', { name: 'Delete' }),
+    );
     await waitFor(() => expect(host.remove).toHaveBeenCalled());
     expect(await screen.findByText('No shape libraries yet')).toBeTruthy();
   });

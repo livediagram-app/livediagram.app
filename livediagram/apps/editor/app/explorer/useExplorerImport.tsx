@@ -22,7 +22,7 @@ export function useExplorerImport(opts: {
   ownerId: string | null;
   folderId: string | null;
   onDocumentsCreated: () => void;
-}): { toolbar: ReactNode; dialogs: ReactNode } {
+}): { toolbar: ReactNode; dialogs: ReactNode; open: (id: ImportSourceId) => boolean } {
   const { ownerId, folderId, onDocumentsCreated } = opts;
   const importScenes = useCallback<ImportScenes>(
     async (scenes, onProgress) => {
@@ -89,6 +89,13 @@ export function useExplorerImport(opts: {
   };
   const sources = IMPORT_SOURCES.filter((s) => openers[s.id]);
   return {
+    // Opens one source's import, as its toolbar button does (the /import page, from the liveworkspace Explorer);
+    // false when that source can't open here.
+    open: (id) => {
+      const opener = openers[id];
+      opener?.();
+      return Boolean(opener);
+    },
     toolbar: sources.length ? (
       <ImportFromToolbar sources={sources} onImport={(id) => openers[id]?.()} />
     ) : null,

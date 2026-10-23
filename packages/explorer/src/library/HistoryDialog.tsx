@@ -13,13 +13,7 @@ import { SkeletonRows } from '../explorer/EmptyPane';
 import { Dialog, DialogCloseButton, DialogHeader } from '../ui/Dialog';
 import { EmptyState } from '../ui/EmptyState';
 import { HistoryIcon } from '../ui/library-icons';
-import {
-  eventLabel,
-  eventTone,
-  groupByDay,
-  timeLabel,
-  toneColor,
-} from '../timeline/model';
+import { eventLabel, eventTone, groupByDay, timeLabel, toneColor } from '../timeline/model';
 import { isAbort } from '../data/errors';
 
 export const HISTORY_PAGE = 30;
@@ -39,10 +33,7 @@ export function HistoryDialog({ item, onClose }: { item: Item; onClose: () => vo
     (cursor: string | null, signal?: AbortSignal) => {
       setState((s) => ({ ...s, loading: true, failed: false }));
       client
-        .timeline(
-          { item: item.id, limit: HISTORY_PAGE, ...(cursor ? { cursor } : {}) },
-          { signal },
-        )
+        .timeline({ item: item.id, limit: HISTORY_PAGE, ...(cursor ? { cursor } : {}) }, { signal })
         .then(
           (page) =>
             setState((s) => ({
@@ -118,7 +109,10 @@ export function HistoryDialog({ item, onClose }: { item: Item; onClose: () => vo
                             {eventLabel(event)}
                           </span>
                           {card.meta ? (
-                            <span className="text-slate-500 dark:text-slate-400"> · {card.meta}</span>
+                            <span className="text-slate-500 dark:text-slate-400">
+                              {' '}
+                              · {card.meta}
+                            </span>
                           ) : null}
                         </span>
                         <span className="shrink-0 text-xs tabular-nums text-slate-500 dark:text-slate-400">

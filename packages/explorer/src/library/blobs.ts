@@ -27,7 +27,8 @@ function release() {
   waiting.shift()?.();
 }
 
-export type BlobState = { status: 'loading' } | { status: 'ready'; src: string } | { status: 'broken' };
+export type BlobState =
+  { status: 'loading' } | { status: 'ready'; src: string } | { status: 'broken' };
 
 /** The tile's picture, read once `ref`'s element nears the screen (at once where there is no IntersectionObserver). */
 export function useBlobUrl<T extends Element>(

@@ -69,7 +69,10 @@ export type ImportSource = { id: string; name: string; icon?: ReactNode; librari
 export type ImportHost = {
   sources: readonly ImportSource[];
   /** Import from `source`: `items` land at `placement`, as New's do; `libraries` go to Shape Libraries. */
-  onImport: (source: ImportSource, target: { what: 'items' | 'libraries'; placement: Placement }) => void;
+  onImport: (
+    source: ImportSource,
+    target: { what: 'items' | 'libraries'; placement: Placement },
+  ) => void;
 };
 
 // ---------- The host's verbs on an item's menu -----------------------------------------------------------------

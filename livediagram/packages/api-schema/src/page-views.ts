@@ -19,6 +19,8 @@ export const LIVE_ROUTE_SEGMENTS: ReadonlySet<string> = new Set([
   // A retired form link's page, /form/<code>: old links still arrive, their code is never recorded.
   'form',
   'get-started',
+  // The liveworkspace Explorer's "Import from", /import (docs/specs/013-workspace/folders.md "Import from").
+  'import',
   'join',
   'new',
   'oauth',

@@ -41,17 +41,13 @@ describe('History', () => {
     await openMenu();
     fireEvent.click(await screen.findByRole('menuitem', { name: 'History' }));
     const dialog = await screen.findByRole('dialog', { name: 'History of Item 1' });
-    await waitFor(() =>
-      expect(dialog.querySelectorAll('[data-history-event]')).toHaveLength(30),
-    );
+    await waitFor(() => expect(dialog.querySelectorAll('[data-history-event]')).toHaveLength(30));
     expect(within(dialog).getByText('Plan Renamed')).toBeTruthy();
     expect(within(dialog).getAllByText(/by you/).length).toBeGreaterThan(0);
     const asked = index.calls.filter((c) => c.method === 'timeline').map((c) => c.args[0]);
     expect(asked).toEqual([{ item: 'item-1', limit: 30 }]);
     fireEvent.click(within(dialog).getByRole('button', { name: 'Show More' }));
-    await waitFor(() =>
-      expect(dialog.querySelectorAll('[data-history-event]')).toHaveLength(31),
-    );
+    await waitFor(() => expect(dialog.querySelectorAll('[data-history-event]')).toHaveLength(31));
     expect(within(dialog).queryByRole('button', { name: 'Show More' })).toBeNull();
   });
 

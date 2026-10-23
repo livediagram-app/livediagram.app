@@ -64,6 +64,7 @@ import {
 } from '@/lib/explorer/token';
 import { inboxHost } from '@/lib/explorer/inbox';
 import { libraryHosts } from '@/lib/explorer/library';
+import { importsHost } from '@/lib/explorer/imports';
 import { useExplorerSettings } from '@/lib/explorer/settings';
 import { shareHostFor } from '@/lib/explorer/share';
 import {
@@ -227,6 +228,8 @@ export function ExplorerShell() {
   const helpHref = useMemo(() => helpHrefFor(app), [app]);
   // The app's Image Gallery and Shape Libraries, where it keeps them (stable per app).
   const library = libraryHosts(app);
+  // Its "Import from" sources, each opening the app's /import page (stable per app).
+  const imports = importsHost(app);
 
   // Home's first run: the app's starts, loaded only once Home finds nothing.
   const [loaded, setLoaded] = useState<{ app: AppName; manifest: WelcomeManifest } | null>(null);
@@ -356,6 +359,7 @@ export function ExplorerShell() {
           inbox={inbox}
           gallery={library.gallery}
           shapeLibraries={library.shapeLibraries}
+          imports={imports}
           heroHidden={settings.heroHidden}
           onHideHero={settings.onHideHero}
           onTimeline={trackTimeline}

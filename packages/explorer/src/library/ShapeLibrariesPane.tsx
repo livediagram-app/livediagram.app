@@ -23,9 +23,7 @@ const BUTTON =
   'rounded-md border border-slate-200 px-2 py-1 text-xs font-medium text-slate-600 transition hover:border-brand-300 hover:text-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:border-slate-700 dark:text-slate-300';
 
 type Loaded =
-  | { status: 'loading' }
-  | { status: 'failed' }
-  | { status: 'ready'; libraries: ShapeLibrary[] };
+  { status: 'loading' } | { status: 'failed' } | { status: 'ready'; libraries: ShapeLibrary[] };
 
 export function ShapeLibrariesPane({
   host,
@@ -291,7 +289,11 @@ function ShapeTile({
         <span
           aria-hidden
           className="block max-h-[70%] max-w-[70%] rounded-sm border border-slate-300 bg-slate-100 dark:border-slate-600 dark:bg-slate-800"
-          style={{ aspectRatio: String(ratio), height: ratio >= 1 ? undefined : '70%', width: ratio >= 1 ? '70%' : undefined }}
+          style={{
+            aspectRatio: String(ratio),
+            height: ratio >= 1 ? undefined : '70%',
+            width: ratio >= 1 ? '70%' : undefined,
+          }}
         />
       )}
     </span>
