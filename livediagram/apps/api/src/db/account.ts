@@ -137,9 +137,6 @@ export async function deleteAccount(
   // shared_with. Stars on this owner's documents cascade; the stars they put on
   // teammates' and other people's documents are theirs and go here.
   await env.DB.prepare('DELETE FROM favourites WHERE owner_id = ?').bind(ownerId).run();
-  // form_reads (Plan's forms, now in liveplanner; the table is no longer read but still holds rows): what they had
-  // seen of other people's forms; reads of forms on their own documents cascade with the documents.
-  await env.DB.prepare('DELETE FROM form_reads WHERE owner_id = ?').bind(ownerId).run();
   // placement_defaults (docs/specs/013-workspace/default-folders.md): no foreign key reaches them.
   await env.DB.prepare('DELETE FROM placement_defaults WHERE owner_id = ?').bind(ownerId).run();
   // agent_changesets (docs/specs/024-agents/agent-changesets.md, CS27): the ones they wrote on other
@@ -271,17 +268,6 @@ export async function migrateOwnerId(
       fromOwnerId,
     ),
     favouritesDrop: move('DELETE FROM favourites WHERE owner_id = ?', fromOwnerId),
-    // form_reads (Plan's forms, now in liveplanner; rows remain): the primary key is (code, owner_id); where both
-    // identities read one form, the account's row stays.
-    formReads: move(
-      `INSERT OR IGNORE INTO form_reads (code, owner_id, seen_number)
-       SELECT code, ?, seen_number
-       FROM form_reads
-       WHERE owner_id = ?`,
-      toOwnerId,
-      fromOwnerId,
-    ),
-    formReadsDrop: move('DELETE FROM form_reads WHERE owner_id = ?', fromOwnerId),
     // placement_defaults (docs/specs/013-workspace/default-folders.md): the primary key is
     // (owner_id, default_key), so INSERT OR IGNORE then DELETE: where both identities set a default
     // for one key, the account's stays. The guest's folders move above, so its defaults stay valid.

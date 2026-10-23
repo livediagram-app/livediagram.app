@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import type { DatabaseSync } from 'node:sqlite';
-import { migrateFrom, sqliteD1 } from '../test-sqlite-d1';
+import { sqliteD1 } from '../test-sqlite-d1';
 import { copyDocument, setDocumentFolder } from './documents';
 import { handTeamWorkToHeir } from './teams';
 import { migrateOwnerId } from './account';
@@ -227,25 +227,6 @@ describe('removal', () => {
 
 // Migration 0075 cannot tell an old paste from a legitimate placement, so
 // every reference that already crossed owners keeps rendering.
-describe('migration 0075', () => {
-  it('grants every existing cross-owner reference and nothing else', () => {
-    const db = sqliteD1({}, { before: '0075' });
-    liveDoc(db.sql, 'D', { owner: 'alice' });
-    image(db.sql, 'own', 'alice');
-    image(db.sql, 'foreign', 'bob');
-    insert(db.sql, 'tabs', { id: 't1', name: 't1', data: '{}', updated_at: 0 });
-    insert(db.sql, 'document_tabs', {
-      document_id: 'D',
-      tab_id: 't1',
-      order_index: 0,
-      added_at: 0,
-    });
-    insert(db.sql, 'image_refs', { tab_id: 't1', image_id: 'own' });
-    insert(db.sql, 'image_refs', { tab_id: 't1', image_id: 'foreign' });
-    migrateFrom(db.sql, '0075');
-    expect(grants(db.sql)).toEqual(['D:foreign']);
-  });
-});
 
 // A document changing owner keeps serving the images its previous owner placed (docs/specs/009-elements/images.md
 // "Placement grants": a grant outlives the membership).

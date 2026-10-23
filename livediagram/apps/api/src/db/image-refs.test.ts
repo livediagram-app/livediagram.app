@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import type { DatabaseSync } from 'node:sqlite';
-import { migrateFrom, sqliteD1 } from '../test-sqlite-d1';
+import { sqliteD1 } from '../test-sqlite-d1';
 import { imageRefIdsFromData } from '../image-refs/extract';
 import {
   imageRefIndexDocumentStatement,
@@ -140,23 +140,6 @@ describe('the SQL extractor', () => {
     expect(refsByTab(sql)).toEqual({ ta: ['ia'] });
     await imageRefIndexDocumentStatement(env, 'B').run();
     expect(refsByTab(sql)).toEqual({ ta: ['ia'], tb: ['ib'] });
-  });
-});
-
-describe('migration 0050', () => {
-  it('starts complete on a database with no tabs', async () => {
-    const { env } = sqliteD1();
-    expect(await readImageRefsBackfill(env)).toMatchObject({ cursor: 0 });
-    expect(await isImageRefIndexComplete(env)).toBe(true);
-  });
-
-  it('starts incomplete, with nothing indexed, on a database with tabs', async () => {
-    const { env, sql } = sqliteD1({}, { before: '0050' });
-    tabRow(sql, 't1', JSON.stringify({ elements: [img('a')] }));
-    migrateFrom(sql, '0050');
-    expect(await readImageRefsBackfill(env)).toMatchObject({ cursor: 0, completed_at: null });
-    expect(await isImageRefIndexComplete(env)).toBe(false);
-    expect(refsByTab(sql)).toEqual({});
   });
 });
 

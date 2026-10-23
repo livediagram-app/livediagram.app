@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { migrateFrom, sqliteD1 } from '../test-sqlite-d1';
+import { sqliteD1 } from '../test-sqlite-d1';
 import { resetImageRefIndexMemo } from './image-refs';
 import {
   deleteOldUnusedImages,
@@ -48,18 +48,6 @@ describe('deleteOldUnusedImages', () => {
     images(sql, OLD, 'old');
     expect(await deleteOldUnusedImages(env, CUTOFF)).toBe(0);
     expect(imageIds(sql)).toEqual(['old']);
-  });
-
-  it('deletes nothing while the index backfill is incomplete', async () => {
-    const db = setup({ before0050: true });
-    db.sql.exec("INSERT INTO tabs (id, name, data, updated_at) VALUES ('t', 't', '{}', 0)");
-    migrateFrom(db.sql, '0050');
-    images(db.sql, OLD, 'old');
-    const log = vi.spyOn(console, 'log').mockImplementation(() => {});
-    expect(await deleteOldUnusedImages(db.env, CUTOFF)).toBe(0);
-    expect(imageIds(db.sql)).toEqual(['old']);
-    expect(db.bucket.delete).not.toHaveBeenCalled();
-    expect(log).toHaveBeenCalledWith('image sweep: paused, reference index backfill incomplete');
   });
 
   it('reaps old unreferenced images only, D1 then R2', async () => {

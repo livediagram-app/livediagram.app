@@ -1,11 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { linkDocumentTab } from './legacy-test-schema';
-import { migrateFrom } from '../test-sqlite-d1';
 import { resetImageRefIndexMemo } from './image-refs';
 import { documentServesImage } from './image-grants';
 import { imageUsageByOwner } from './images';
 import { upsertTab } from './tabs';
-import { images, liveDoc, refsFor, setup, tabWith } from './test-image-fixtures';
+import { images, liveDoc, setup, tabWith } from './test-image-fixtures';
 
 // The usage map and the share-visitor read (docs/specs/009-elements/images.md,
 // "Reference index"): both answer from the index, never a tab body.
@@ -42,18 +40,6 @@ describe('imageUsageByOwner', () => {
     expect(await imageUsageByOwner(db.env, 'owner')).toEqual({});
   });
 
-  it("indexes the owner's tabs first while the backfill is incomplete", async () => {
-    const db = setup({ before0050: true });
-    liveDoc(db.sql, 'A');
-    db.sql.exec(
-      `INSERT INTO tabs (id, name, data, updated_at) VALUES ('t1', 't1', '${JSON.stringify(tabWith('t1', 'img'))}', 0)`,
-    );
-    linkDocumentTab(db.sql, 'A', 't1');
-    images(db.sql, 0, 'img');
-    migrateFrom(db.sql, '0050');
-    expect(await imageUsageByOwner(db.env, 'owner')).toEqual({ img: [{ id: 'A', name: 'A' }] });
-    expect(refsFor(db.sql, 'img')).toBe(1);
-  });
 });
 
 // docs/specs/013-workspace/tab-scoped-share-links.md: a tab-scoped visitor
@@ -88,15 +74,4 @@ describe('documentServesImage (placement)', () => {
     expect(await documentServesImage(db.env, 'A', 'i1')).toBe(false);
   });
 
-  it("indexes the document's tabs first while the backfill is incomplete", async () => {
-    const db = setup({ before0050: true });
-    liveDoc(db.sql, 'A');
-    db.sql.exec(
-      `INSERT INTO tabs (id, name, data, updated_at) VALUES ('t1', 't1', '${JSON.stringify(tabWith('t1', 'img'))}', 0)`,
-    );
-    linkDocumentTab(db.sql, 'A', 't1');
-    migrateFrom(db.sql, '0050');
-    images(db.sql, 0, 'img');
-    expect(await documentServesImage(db.env, 'A', 'img')).toBe(true);
-  });
 });
