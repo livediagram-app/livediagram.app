@@ -1,5 +1,6 @@
 'use client';
 
+import { APP_ITEMS, explorerUrl } from '@liveworkspace/sites';
 import { ctaHref, type CtaSurface } from '@livedocuments/api-schema';
 import { useSyncExternalStore } from 'react';
 import { signedInFromCookie } from './browser-repair/identity';
@@ -12,7 +13,11 @@ import { ButtonContent, buttonClassName } from './Button';
 // HTML is Choose Template for everyone, and both labels share one cell sized to the wider, so the swap
 // after hydration moves nothing in the bar.
 
-export const EXPLORER_HOME_HREF = '/explorer/home';
+// The Explorer lives on liveworkspace.app, once for every app, opened from livedocuments (its logo in the header, its
+// items first). An app whose items the index doesn't list yet keeps its own Explorer until it does.
+export const EXPLORER_HOME_HREF = APP_ITEMS.livedocuments.onIndex
+  ? explorerUrl('livedocuments')
+  : '/explorer/home';
 
 const noSubscription = () => () => {};
 const signedInNow = () => signedInFromCookie(document.cookie) === true;
