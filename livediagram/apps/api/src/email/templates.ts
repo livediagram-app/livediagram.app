@@ -48,11 +48,6 @@ function manageNotificationsFooter(env: Env, reason: string): string {
 export type EmailKind =
   | 'Milestone'
   | 'FirstShare'
-  | 'TeamInvite'
-  | 'TeamInviteReminder1'
-  | 'TeamInviteReminder2'
-  | 'TeamInviteReminder3'
-  | 'InviteResponse'
   | 'DocumentJoined'
   | 'CommentNotification'
   | 'ActionAssigned'
@@ -157,98 +152,6 @@ function shell(env: Env, section: Section): string {
 </body></html>`;
 }
 
-// docs/specs/013-workspace/teams.md "Declining from the email": where an invite email's Decline link lands. The
-// token rides in the query like /join's; the page only reads until its button is pressed.
-function declineInviteHref(env: Env, declineToken: string): string {
-  return `${appBaseUrl(env)}/join/decline?token=${encodeURIComponent(declineToken)}`;
-}
-
-type TeamInviteCopy = { subject: string; heading: string; intro: string; preheader?: string };
-
-// The invite and its reminders share one body (docs/specs/014-identity/transactional-email.md #4, #13): what the
-// team is, how to accept, and a quiet Decline link that needs no account. Only the opening lines differ.
-function teamInviteSection(
-  env: Env,
-  copy: Omit<TeamInviteCopy, 'subject'>,
-  declineToken: string | null,
-): Section {
-  const decline = declineToken
-    ? ` Not for you? <a href="${declineInviteHref(env, declineToken)}" style="color:${BRAND};text-decoration:underline">Decline the invite</a>, no account needed.`
-    : '';
-  return {
-    ...copy,
-    outro: `Sign in (or sign up, it’s free) with this email address and the invite will be waiting on your invites page.${decline}`,
-    ctaText: 'View your invite',
-    ctaHref: `${appBaseUrl(env)}/explorer/invites`,
-    footer:
-      'You’re receiving this because someone invited you to a team on livediagram. If it wasn’t expected, you can safely ignore it, nothing happens unless you accept.',
-  };
-}
-
-function teamNames(teamName: string | null): { html: string; text: string } {
-  const trimmed = teamName?.trim();
-  return trimmed
-    ? { html: escapeHtml(trimmed), text: escapeText(trimmed) }
-    : { html: 'a team', text: 'a team' };
-}
-
-export function teamInviteEmail(
-  env: Env,
-  teamName: string | null,
-  declineToken: string | null = null,
-): RenderedEmail {
-  const name = teamNames(teamName);
-  return {
-    kind: 'TeamInvite',
-    subject: `You’ve been invited to ${name.text} on livediagram`,
-    html: shell(
-      env,
-      teamInviteSection(
-        env,
-        {
-          heading: `You’re invited to ${name.html}`,
-          intro: `Someone invited you to join <strong>${name.html}</strong> on livediagram, a shared space for documents you and your teammates can open and edit together.`,
-        },
-        declineToken,
-      ),
-    ),
-  };
-}
-
-// docs/specs/013-workspace/teams.md "Reminders and expiry": the three follow-ups, 1, 7 and 21 days in. The last
-// one says the invite closes in a week, which is when it expires.
-const REMINDER_COPY: Record<1 | 2 | 3, (team: { html: string; text: string }) => TeamInviteCopy> = {
-  1: (team) => ({
-    subject: `Reminder: you’re invited to ${team.text} on livediagram`,
-    heading: `Your invite to ${team.html} is waiting`,
-    intro: `Yesterday someone invited you to join <strong>${team.html}</strong> on livediagram, a shared space for documents you and your teammates can open and edit together.`,
-  }),
-  2: (team) => ({
-    subject: `Your invite to ${team.text} is still waiting`,
-    heading: `Still thinking about ${team.html}?`,
-    intro: `A week ago someone invited you to join <strong>${team.html}</strong> on livediagram. The invite is still open whenever you are ready.`,
-  }),
-  3: (team) => ({
-    subject: `Last reminder: your invite to ${team.text} closes in a week`,
-    heading: `Your invite to ${team.html} closes soon`,
-    intro: `Someone invited you to join <strong>${team.html}</strong> on livediagram three weeks ago. This is the last reminder: the invite closes in a week if nobody answers it.`,
-  }),
-};
-
-export function teamInviteReminderEmail(
-  env: Env,
-  teamName: string | null,
-  stage: 1 | 2 | 3,
-  declineToken: string,
-): RenderedEmail {
-  const { subject, ...copy } = REMINDER_COPY[stage](teamNames(teamName));
-  return {
-    kind: `TeamInviteReminder${stage}`,
-    subject,
-    html: shell(env, teamInviteSection(env, copy, declineToken)),
-  };
-}
-
 export function accountDeletedEmail(env: Env): RenderedEmail {
   const base = appBaseUrl(env);
   return {
@@ -296,40 +199,6 @@ export function documentJoinedEmail(
       footer: manageNotificationsFooter(
         env,
         'You’re receiving this because someone opened a document you shared.',
-      ),
-    }),
-    unsubscribeUrl: profilePath(env),
-  };
-}
-
-// docs/specs/014-identity/profile-and-email-notifications.md: an invitee accepted or declined a team invite. Sent to the team's
-// admins. The responder address + team name are both already known to the
-// inviting admin (they typed the address, they named the team), so this stays
-// within docs/specs/014-identity/transactional-email.md §7.
-export function inviteResponseEmail(
-  env: Env,
-  teamName: string | null,
-  responderEmail: string,
-  accepted: boolean,
-): RenderedEmail {
-  const base = appBaseUrl(env);
-  const team = teamName && teamName.trim() ? escapeHtml(teamName.trim()) : 'your team';
-  const teamText = teamName && teamName.trim() ? escapeText(teamName.trim()) : 'your team';
-  const who = escapeHtml(responderEmail);
-  const verb = accepted ? 'accepted' : 'declined';
-  return {
-    kind: 'InviteResponse',
-    subject: `${escapeText(responderEmail)} ${verb} your invitation to ${teamText}`,
-    html: shell(env, {
-      heading: accepted ? 'Invitation accepted' : 'Invitation declined',
-      intro: accepted
-        ? `<strong>${who}</strong> accepted your invitation and is now a member of <strong>${team}</strong>.`
-        : `<strong>${who}</strong> declined your invitation to <strong>${team}</strong>. You can invite them again any time.`,
-      ctaText: 'Open the team',
-      ctaHref: `${base}/explorer/team`,
-      footer: manageNotificationsFooter(
-        env,
-        'You’re receiving this because you’re an admin of this team.',
       ),
     }),
     unsubscribeUrl: profilePath(env),

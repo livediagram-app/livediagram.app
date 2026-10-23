@@ -2,7 +2,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Env } from '../types';
 
 vi.mock('../db', () => ({
-  listTeamAdminUserIds: vi.fn(),
   claimCommentNotify: vi.fn(),
   claimJoinNotify: vi.fn(),
   claimNotifyEmail: vi.fn(),
@@ -39,7 +38,6 @@ const env = { RESEND_API_KEY: 're', APP_BASE_URL: 'https://app.test' } as unknow
 const liveDoc = { id: 'd1', ownerId: 'u1', name: 'Roadmap' };
 const allowAll = {
   notifyDocumentJoin: true,
-  notifyInviteResponse: true,
   notifyComments: true,
   notifyMilestones: true,
   notifyActionAssigned: true,

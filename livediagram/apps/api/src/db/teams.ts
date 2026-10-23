@@ -157,21 +157,6 @@ export async function deleteTeam(env: Env, id: string): Promise<void> {
   await env.DB.prepare('DELETE FROM teams WHERE id = ?').bind(id).run();
 }
 
-// The account ids of a team's joined admins (docs/specs/014-identity/profile-and-email-notifications.md): who gets told
-// when someone responds to an invite. Only `joined` rows with a connected
-// user_id qualify — a pending-admin invite has no identity to email yet,
-// and a member isn't an admin. The notification layer resolves each id to a
-// verified address at liveworkspace (liveworkspace/emails.ts).
-export async function listTeamAdminUserIds(env: Env, teamId: string): Promise<string[]> {
-  const { results } = await env.DB.prepare(
-    `SELECT user_id FROM team_members
-      WHERE team_id = ? AND role = 'admin' AND status = 'joined' AND user_id IS NOT NULL`,
-  )
-    .bind(teamId)
-    .all<{ user_id: string }>();
-  return (results ?? []).map((r) => r.user_id);
-}
-
 // Account deletion (docs/specs/014-identity/profile-and-email-notifications.md): detach a user from every team BEFORE
 // their rows are wiped. Without this the dead account id lingered as a
 // ghost member — and when it was the only joined admin, the team

@@ -2,7 +2,8 @@
 // profile-and-email-notifications.md), read before this app sends them a notification
 // (docs/specs/014-identity/transactional-email.md) on somebody else's request. They are preferences
 // like any other, kept by liveworkspace (liveworkspace/settings.ts): most in the `all` scope, so
-// turning one off in any app turns it off here; `notifyDocumentJoin` is this app's own.
+// turning one off in any app turns it off here; `notifyDocumentJoin` is this app's own. The team
+// emails' switch (`notifyInviteResponse`) is liveworkspace's to read: it sends those.
 
 import { upgradeLegacyPreferences } from '@livediagram/api-schema';
 import type { Env } from '../types';
@@ -13,7 +14,6 @@ import { readPreferences } from './settings';
 // notificationsEnabled).
 export type NotificationPrefs = {
   notifyDocumentJoin: boolean;
-  notifyInviteResponse: boolean;
   notifyComments: boolean;
   notifyMilestones: boolean;
   notifyActionAssigned: boolean;
@@ -22,7 +22,6 @@ export type NotificationPrefs = {
 
 const DEFAULTS: NotificationPrefs = {
   notifyDocumentJoin: true,
-  notifyInviteResponse: true,
   notifyComments: true,
   notifyMilestones: true,
   notifyActionAssigned: true,
@@ -44,7 +43,6 @@ export async function getNotificationPrefs(env: Env, ownerId: string): Promise<N
   // client wrote) means notify.
   return {
     notifyDocumentJoin: blob.notifyDocumentJoin !== false,
-    notifyInviteResponse: blob.notifyInviteResponse !== false,
     notifyComments: blob.notifyComments !== false,
     notifyMilestones: blob.notifyMilestones !== false,
     notifyActionAssigned: blob.notifyActionAssigned !== false,
