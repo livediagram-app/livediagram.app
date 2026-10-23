@@ -5,7 +5,7 @@ the production build and the real api worker. It is the layer Vitest cannot
 reach ([Testing](testing.md)): unit tests exercise pure helpers, and jsdom
 tests render single hooks and components, but none of them runs the whole
 editor with real layout, real pointer and keyboard input, the static export
-and a round trip through the api and D1. Every regression chased by hand in
+and a round trip through the api and its Durable Objects. Every regression chased by hand in
 that layer (the "maximum update depth" pan-loop report, panel-gating bugs,
 dialog behaviour, a board losing its kind on reload) is the reason a focused
 test lives here.
@@ -121,20 +121,26 @@ Cost controls, all in `e2e.yml` and `playwright.config.ts`:
 ## The stack under test
 
 The suite runs against the **real production build**, the editor app's
-`output: 'export'` static bundle plus the real api worker on local D1,
+`output: 'export'` static bundle plus the real api worker on local Durable Objects and a local liveworkspace index,
 so it exercises exactly what ships, not a dev-only code path.
 The stack serves whatever `apps/editor/out` holds and never rebuilds it, so locally run
 `pnpm --filter @livediagram/editor build` first; an old `out/` fails audits for code that has since changed.
 
 `scripts/e2e-stack.mjs` boots the stack Playwright's `webServer` waits on:
 
-1. **api**: `wrangler dev --local` (`apps/api`) on a fixed port, with
-   `db:migrate:local` applied to a fresh local D1 so persistence works.
+1. **index**: `wrangler dev --local` (liveworkspace/apps/index) on `E2E_INDEX_PORT` (8119), its D1 a fresh
+   `liveworkspace/apps/index/.wrangler/e2e-state` each boot (migrations applied first), kept apart from a
+   developer's own, sharing a test-only key with the api (the api's `INDEX_KEY`, the index's
+   `INDEX_KEY_LIVEDIAGRAM`). It trusts the same accounts the api does (the stand-in below, or the Drive spec's
+   own), takes tokens addressed to the api's `API_RESOURCE`, and calls this api for its internal item routes.
+   The stack forwards `/api/index/*` to it, cookies dropped, as the router does.
+2. **api**: `wrangler dev --local` (`apps/api`) on a fixed port, with
+   each document's content in its own local Durable Object (no migration to apply).
    `TELEMETRY_ENABLED` unset (the suite asserts on the app, not the
    events pipe), and `AI_ALLOWED_ORIGINS` blanked with `--var` (production
    declares it in `[vars]`, which would refuse the localhost editor).
-2. **live**: the static `apps/editor/out` served by a minimal Node
-   server that reproduces the three things the production router +
+3. **live**: the static `apps/editor/out` served by a minimal Node
+   server that reproduces what the production router +
    editor worker do (so clean routes and the document placeholder resolve
    identically to prod):
    - strip the `/live` `assetPrefix` so `/live/_next/*` resolves to
@@ -142,8 +148,11 @@ The stack serves whatever `apps/editor/out` holds and never rebuilds it, so loca
    - rewrite every `/document/<id>` to the single placeholder
      `out/document/[id].html` ([Dedicated route for new-document creation](../007-editor/new-document-route.md): one HTML backs every document
      URL);
-   - proxy `/api/*` to the api worker, WebSocket upgrades included (the realtime room), so the app is same-origin (no CORS
-     surprises, mirroring the router);
+   - forward `/api/index/*` to the index, and proxy the rest of `/api/*` to the api worker, WebSocket upgrades
+     included (the realtime room), so the app is same-origin (no CORS surprises, mirroring the router);
+   - serve liveworkspace's Explorer at `/explorer/*` and its assets at `/_liveworkspace/*` from
+     `liveworkspace/apps/site/out` when that site is built, as the router's `routeToWorkspace` does; without
+     the build they answer a logged 404, so only the specs that open the Explorer page need it;
    - serve `apps/help/out` under `/help/*` and `apps/community/out` under `/community/*`, their basePaths, as the router mounts them; a missing build answers a logged 404;
    - cache as production does ([Stale builds](../016-platform/stale-builds.md) "Caching rules"): every
      file goes out as Cloudflare's asset server sends it (`public, max-age=0, must-revalidate`, an
@@ -157,7 +166,7 @@ The stack serves whatever `apps/editor/out` holds and never rebuilds it, so loca
      keeps a page but not its chunks. Both hold only for the browser context that asked (a cookie
      each, `e2e-deploy` and `e2e-assets-out-of-cache`, which `page.request` shares with its page):
      the suite runs in parallel, and the tests beside it keep the build they loaded.
-3. **marketing**: `apps/marketing/out` on its own port (`E2E_MARKETING_PORT`, default `3113`),
+4. **marketing**: `apps/marketing/out` on its own port (`E2E_MARKETING_PORT`, default `3113`),
    since marketing owns `/` in production.
 
 The stack also runs the editor alone beside a running one (`E2E_EDITOR_ONLY`,
@@ -182,34 +191,32 @@ page loads, so a chosen user (name, email) is signed in with no accounts Worker,
 
 `pnpm --filter @livediagram/editor test:e2e:signed-in` sets `E2E_SIGNED_IN=1`, which adds the
 `signed-in` project and boots the stack with `E2E_EDITOR_OUT=.next/out-signed-in` on its own ports
-(live `:3115`, api `:8115`, marketing `:3116`), so a guest stack already up on `:3102` is never
-reused for it. The stack also stands in for the accounts Worker (on in every run but the Drive one,
-`E2E_ACCOUNTS_STUB=0` turns it off; guests get their identity from it and the api keeps no settings
-or profiles of its own, so guest runs need it too, and it answers the settings, profile, sighting,
-milestone, email, activity and team-making routes from memory): it makes a
+(live `:3115`, api `:8115`, marketing `:3116`, index `:8117`), so a guest stack already up on `:3102` is never
+reused for it; the workbench run has its own too (live `:3121`, api `:8121`, marketing `:3122`, index `:8118`).
+The stack also stands in for the accounts Worker (in every run but the Drive one, whose spec serves its own
+key and JWKS, which the api and the index then trust instead; guests get their identity from it and the api
+keeps no settings or profiles of its own, so guest runs need it too, and it answers the settings, profile,
+sighting, milestone, email, activity and team-making routes from memory, and the index's
+`POST /api/account/index/teams` for a person's teams as they are now): it makes a
 signing key at boot, serves its JWKS on the issuer's own path (`/e2e/accounts/api/auth/jwks`),
-starts the api worker with `ACCOUNTS_URL` and `API_RESOURCE` pointing at it, and mints an access
+starts the api worker and the index with `ACCOUNTS_URL` (and the api with `API_RESOURCE`) pointing at it, and mints an access
 token with that issuer and audience for any test account on `/e2e/token?sub=user_…`, which
 `installSession` hands the bridge. It mints guest tokens with the same key: one per visitor on the
 guest handoff (`/e2e/accounts/api/auth/guest`, which redirects back to `/auth/guest` with the token
 in the fragment, refusing any `redirect_uri` that is not this stack's), and one per call on
 `/e2e/guest-token` for specs. So a stub account is a real verified account to the api and the
 realtime room, and two or three stub browsers can collaborate in one document. A test that changes an
-account's synced settings takes a fresh id (`freshUserId`), since the stack's D1 outlives a test. `e2e.yml` builds and runs them in their own job, beside the smoke shards.
+account's synced settings takes a fresh id (`freshUserId`), since the stack's state outlives a test. `e2e.yml` builds and runs them in their own job, beside the smoke shards.
 
 Teams and API tokens are the liveworkspace account's, so the stand-in keeps them too, in memory, as
 liveworkspace.app does. The api worker is started with a test client (`ACCOUNTS_CLIENT_ID`,
 `ACCOUNTS_CLIENT_SECRET`) and calls the stand-in's account API with it, as it calls the real one:
 
-- `GET /e2e/accounts/api/account/internal/teams/changes?cursor=…`: the teams change feed, every team
-  and member changed after the cursor. Feed positions start at the stack's boot time, so a cursor the
-  D1 kept from an earlier run never sits ahead of the feed.
 - `POST …/tokens/verify`, `…/tokens`, `…/tokens/revoke`, `…/tokens/live`: an `lwt_` token checked,
   made for an access token, revoked by itself, and asked after by the token sweep.
 
 An access token from `/e2e/token` carries the account's `teams` claim as it stands when the token is
-minted, so a request naming a team the api hasn't seen catches the api's copy up at once
-(`catchUpTeams`), as in production.
+minted, and the api reads a person's teams from it, as in production.
 
 A spec does what a person does on liveworkspace.app through the stand-in's test-only seeding routes,
 wrapped by `e2e/accounts-stub.ts`: `POST /e2e/accounts/__seed/team` (a team and its admin),
