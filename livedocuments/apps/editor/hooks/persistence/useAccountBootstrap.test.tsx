@@ -13,7 +13,7 @@ import { useEffect, type ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { apiHeaders, setTokenProvider } from '@/lib/api/core';
 import { GUEST_TOKEN_STORAGE_KEY } from '@/lib/guest-token-key';
-import { guestTokenFor } from '@/lib/testing/guest-token';
+import { guestTokenFor } from '@liveworkspace/index-client/testing';
 
 vi.mock('@/lib/auth-config', () => ({ signInEnabled: true, sessionsEnabled: true }));
 const { getToken } = vi.hoisted(() => ({

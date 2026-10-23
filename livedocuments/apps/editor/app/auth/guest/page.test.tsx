@@ -2,7 +2,7 @@
 import { render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { GUEST_TOKEN_STORAGE_KEY } from '@/lib/guest-token-key';
-import { guestTokenFor } from '@/lib/testing/guest-token';
+import { guestTokenFor } from '@liveworkspace/index-client/testing';
 import GuestHandoffPage from './page';
 
 // The page the accounts site's guest handoff comes back to (liveworkspace/docs/one-explorer-contracts.md "Guests"):

@@ -21,7 +21,7 @@ import {
 import { apiHeaders, setWorkbenchConfinement } from './api/core';
 import { resetDisplayCacheForTests } from './image-display';
 import { GUEST_TOKEN_STORAGE_KEY } from './guest-token-key';
-import { guestTokenFor } from './testing/guest-token';
+import { guestTokenFor } from '@liveworkspace/index-client/testing';
 
 // A document's grant and the index are their own modules (document-grants.test.ts, the index client's tests): here every
 // request goes straight to the stubbed fetch, and the grant asked for is the one the test names.

@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { storageEvent } from '@/lib/testing/storage-event';
 import { GUEST_TOKEN_STORAGE_KEY } from './guest-token-key';
 import { getGuestSelfId, subscribeGuestSelfId } from './local-identity';
-import { guestTokenFor } from './testing/guest-token';
+import { guestTokenFor } from '@liveworkspace/index-client/testing';
 
 // The guest id is an external store that render reads with useSyncExternalStore
 // (docs/specs/003-system-architecture/react-state-and-effects.md): it is the guest token's id, and another tab's new
