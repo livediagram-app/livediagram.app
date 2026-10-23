@@ -10,7 +10,6 @@ import { AuthControls } from '@/components/chrome/AuthControls';
 import { LensField } from './lens/LensField';
 import { LensAnnouncer } from './lens/LensStates';
 import { ChromeControls } from '@/components/chrome/ChromeControls';
-import { TeamFormModal } from '@/components/dialogs/TeamFormModal';
 import { SignInBanner, SIGNIN_BANNER_DISMISS_KEY } from '@/components/chrome/SignInBanner';
 import { useAccessEndedToast } from './useAccessEndedToast';
 import { signInEnabled } from '@/lib/auth-config';
@@ -126,10 +125,6 @@ function ShellChrome({ children }: { children: ReactNode }) {
     moveDocumentTo,
     moveFolderToParent,
     createMoveFolder,
-    teamsEnabled,
-    teamModalOpen,
-    setTeamModalOpen,
-    hookCreateTeam,
     accountUserId,
     ownerId,
     prefs,
@@ -339,16 +334,6 @@ function ShellChrome({ children }: { children: ReactNode }) {
                 currentTeamId={currentTeamId}
                 currentFolderId={currentFolderId}
                 onCreateFolder={createMoveFolder}
-                // A document can be moved into a team made on the spot;
-                // folder moves stay personal, and guests have no teams.
-                onCreateTeam={
-                  teamsEnabled && moveTarget.kind === 'document'
-                    ? async (name) => {
-                        const team = await hookCreateTeam({ name });
-                        return team ? { id: team.id, name: team.name } : null;
-                      }
-                    : undefined
-                }
                 onPick={(dest) => {
                   if (moveTarget.kind === 'folder')
                     moveFolderToParent(moveTarget.id, dest.folderId);
@@ -359,18 +344,6 @@ function ShellChrome({ children }: { children: ReactNode }) {
             );
           })()
         : null}
-      <TeamFormModal
-        open={surface.administration && teamModalOpen}
-        title="New Team"
-        submitLabel="Create Team"
-        onSubmit={(values) => {
-          setTeamModalOpen(false);
-          void hookCreateTeam(values).then((team) => {
-            if (team) go({ kind: 'team', id: team.id });
-          });
-        }}
-        onCancel={() => setTeamModalOpen(false)}
-      />
       {searchOpen ? (
         <SearchPanel
           {...searchPanelSources({ documents: liveDocs, folders, shared, teams, teamDocuments })}

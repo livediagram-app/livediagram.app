@@ -102,7 +102,7 @@ Scope, by file:
 | Host                | `Profile.host`                                                             | The origin a profile talks to (`https://livedocuments.app`)              |
 | Api base            | `Capabilities.apiBase`                                                     | Where the api answers for that host                                      |
 | Capabilities        | `CapabilitiesResponse`, `loadCapabilities`                                 | What a host offers, from `GET /api/capabilities`                         |
-| Credential          | `StoredCredential`, `CredentialSource` (`env`, `keychain`, `file`)         | The `lvd_` token the CLI presents, and where it came from                |
+| Credential          | `StoredCredential`, `CredentialSource` (`env`, `keychain`, `file`)         | The `lwt_` token the CLI presents, and where it came from                |
 | Version floor       | `cli.minVersion`, `isBelow`                                                | The oldest CLI a host accepts writes from                                |
 | Read copy           | `ReadCopy`, `ReadCopies`, `recordCopy`, `baseFromCopy`                     | The plain tab as the CLI last read it at one revision                    |
 | Base                | `baseFromCopy(copy)` → `ChangesetBase`                                     | A read copy's revision and every element's fingerprint, sent with writes |
@@ -159,7 +159,7 @@ Invariants:
   line. Every hint, warning, error, notice and progress line goes to stderr.
 - **I2** The CLI never prompts. It reads stdin only for `-` file arguments, `--body -` and `auth login --with-token`
   (CLI66).
-- **I3** No secret reaches stdout, stderr or a debug line: `Authorization` is printed as `Bearer lvd_…`, tokens never.
+- **I3** No secret reaches stdout, stderr or a debug line: `Authorization` is printed as `Bearer lwt_…`, tokens never.
 - **I4** The CLI never does a whole-tab save. Element and tab content is written by changesets (a new tab is a
   `replace` changeset on a new tab id), a tab's name by `PUT .../tabs/:tabId/name`, a new document by
   `POST /api/documents` compiling its tabs. `api` refuses `PUT /documents/:id/tabs/:tabId` locally (exit 2), and the
@@ -785,7 +785,7 @@ nothing in D1.
   says "We couldn't find that code yet" with Try again, and the CLI keeps polling until expiry.
 - **E13** The platform's tool is missing, or refuses a store: the file store, with the one-line notice. A stored keychain token the tool cannot read back: exit 4, hint `livedocuments auth login`.
 - **E14** `credentials.json` readable by group or others: stderr warning, mode set to 0600, read continues.
-- **E15** `LIVEDOCUMENTS_TOKEN` is set but not `lvd_`-shaped: exit 4 "LIVEDOCUMENTS_TOKEN is not an API token".
+- **E15** `LIVEDOCUMENTS_TOKEN` is set but not `lwt_`-shaped: exit 4 "LIVEDOCUMENTS_TOKEN is not an API token".
 - **E16** `--host` and `--profile` together: exit 2 (CLI7).
 - **E17** A pasted URL on another host than the profile's: exit 2, hint `--host <origin>` (CLI21).
 - **E18** `push` of a file pulled from another host: exit 2.

@@ -7,7 +7,7 @@ The spec decides; this file adds engineering precision. Defaults are ledgered in
 
 | File                                                          | Role                                                                                    |
 | ------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| `apps/api/migrations/0001_livedocuments_baseline.sql`             | The `tab_stats` table                                                                   |
+| `apps/api/migrations/0001_livedocuments_baseline.sql`         | The `tab_stats` table                                                                   |
 | `packages/document/src/tab-stats.ts`                          | `tabStatsOf`, `TabStats`: one counting rule for the api and the browser                 |
 | `apps/api/src/db/tab-stats.ts`                                | `tabStatsOfData`, `tabStatsStatement`, `documentStatsSql`, `readDocumentStats`          |
 | `apps/api/src/tab-stats-backfill.ts`                          | `runTabStatsBackfill`: the cron's bounded count of tabs without stats                   |
@@ -257,14 +257,14 @@ CREATE TABLE tab_stats (
 
 ## Constants and configuration
 
-| Constant                       | Value                             | Provenance                                                    | Safe range     |
-| ------------------------------ | --------------------------------- | ------------------------------------------------------------- | -------------- |
-| `PREVIEW_OPEN_DELAY_MS`        | 600                               | Spec                                                          | 400-1000       |
-| `PREVIEW_WARMUP_MS`            | 500                               | Spec, as the tooltip's                                        | 300-800        |
-| `TAB_STATS_BACKFILL_PAGE_ROWS` | 10                                | `D147`: 10 bodies of at most `MAX_TAB_BYTES` stay under 20 MB | 1-20           |
-| `TAB_STATS_BACKFILL_MAX_ROWS`  | 5000                              | `D148`                                                        | 500-20000      |
-| `TAB_STATS_BACKFILL_BUDGET_MS` | 60 000                            | As the image-refs backfill                                    | 10 000-120 000 |
-| `DETAILS_SORT_STORAGE_KEY`     | `livedocuments:explorer-details-sort` | Beside `livedocuments:explorer-view`                              | n/a            |
+| Constant                       | Value                                 | Provenance                                                    | Safe range     |
+| ------------------------------ | ------------------------------------- | ------------------------------------------------------------- | -------------- |
+| `PREVIEW_OPEN_DELAY_MS`        | 600                                   | Spec                                                          | 400-1000       |
+| `PREVIEW_WARMUP_MS`            | 500                                   | Spec, as the tooltip's                                        | 300-800        |
+| `TAB_STATS_BACKFILL_PAGE_ROWS` | 10                                    | `D147`: 10 bodies of at most `MAX_TAB_BYTES` stay under 20 MB | 1-20           |
+| `TAB_STATS_BACKFILL_MAX_ROWS`  | 5000                                  | `D148`                                                        | 500-20000      |
+| `TAB_STATS_BACKFILL_BUDGET_MS` | 60 000                                | As the image-refs backfill                                    | 10 000-120 000 |
+| `DETAILS_SORT_STORAGE_KEY`     | `livedocuments:explorer-details-sort` | Beside `livedocuments:explorer-view`                          | n/a            |
 
 ## Defaults ledger
 

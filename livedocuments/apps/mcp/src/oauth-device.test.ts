@@ -157,13 +157,13 @@ describe('polling', () => {
     expect((await poll(s.device_code)).body).toEqual({ error: 'authorization_pending' });
     const done = await app.request(
       '/oauth/device/complete',
-      json({ userCode: s.user_code, token: 'lvd_x', expiresAt: now + 3_600_000 }),
+      json({ userCode: s.user_code, token: 'lwt_x', expiresAt: now + 3_600_000 }),
       env,
     );
     expect(await done.json()).toEqual({ ok: true });
     expect((await app.request(`/oauth/device/session/${s.user_code}`, {}, env)).status).toBe(404);
     expect((await poll(s.device_code)).body).toEqual({
-      access_token: 'lvd_x',
+      access_token: 'lwt_x',
       token_type: 'Bearer',
       expires_in: 3600,
     });
@@ -180,14 +180,14 @@ describe('polling', () => {
       afterGet = null;
       const done = await app.request(
         '/oauth/device/complete',
-        json({ userCode: s.user_code, token: 'lvd_race', expiresAt: now + 3_600_000 }),
+        json({ userCode: s.user_code, token: 'lwt_race', expiresAt: now + 3_600_000 }),
         env,
       );
       expect(await done.json()).toEqual({ ok: true });
     };
     expect((await poll(s.device_code)).body).toEqual({ error: 'slow_down' });
     now += 60_000;
-    expect((await poll(s.device_code)).body).toMatchObject({ access_token: 'lvd_race' });
+    expect((await poll(s.device_code)).body).toMatchObject({ access_token: 'lwt_race' });
   });
 
   it('reports a denial once, and an expired or foreign code', async () => {
@@ -208,7 +208,7 @@ describe('polling', () => {
     const s = await start();
     await app.request(
       '/oauth/device/complete',
-      json({ userCode: s.user_code, token: 'lvd_y' }),
+      json({ userCode: s.user_code, token: 'lwt_y' }),
       env,
     );
     expect((await poll(s.device_code)).body).toMatchObject({ expires_in: 60 * 60 * 24 * 180 });

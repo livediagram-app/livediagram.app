@@ -9,7 +9,7 @@ behaviour is specified in [CLI](../../docs/specs/015-api/cli.md) and its
 ```bash
 pnpm --filter @livedocuments/cli test        # every suite runs on an in-memory CliIo
 pnpm --filter @livedocuments/cli build       # dist/livedocuments.mjs, one ESM file for Node 22+
-LIVEDOCUMENTS_TOKEN=lvd_... apps/cli/dist/livedocuments.mjs --help
+LIVEDOCUMENTS_TOKEN=lwt_... apps/cli/dist/livedocuments.mjs --help
 ```
 
 `src/main.ts` runs one command from argv to an exit code; `src/io.ts` is everything it touches outside itself, which

@@ -16,7 +16,8 @@ export type HandoverSteps<T> = {
   mint: () => Promise<{ token: string; id: string; expiresAt: number }>;
   // Hands the token over; null (or a throw) when the MCP refused it.
   complete: (token: string, expiresAt: number) => Promise<T | null>;
-  revoke: (id: string) => Promise<void>;
+  // Ends the minted token, presenting the token itself (DELETE /api/tokens/current).
+  revoke: (token: string) => Promise<void>;
 };
 
 // The api's answer when the account already holds the most live tokens it may.
@@ -34,7 +35,7 @@ export async function mintAndHandOver<T>(steps: HandoverSteps<T>): Promise<Hando
   const value = await steps.complete(minted.token, minted.expiresAt).catch(() => null);
   if (value !== null) return { ok: true, value };
   // The MCP did not take it: nothing else holds this secret, so it must not stay live.
-  await steps.revoke(minted.id).catch(() => {
+  await steps.revoke(minted.token).catch(() => {
     console.warn('[oauth] handover revoke failed');
   });
   debugLog('[oauth] handover refused; minted token revoked');
@@ -47,7 +48,7 @@ export function handoverFailureCopy(reason: HandoverFailure, restart: string): s
     case 'expired':
       return `This request has expired. ${restart}`;
     case 'token_limit':
-      return 'Your account has reached its limit of API tokens. Revoke one in Settings, under Account › API Tokens, then try again.';
+      return 'Your account has reached its limit of API tokens. Revoke one on liveworkspace.app, under API tokens, then try again.';
     case 'failed':
       return 'Something went wrong. Please try again.';
   }

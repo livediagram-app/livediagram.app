@@ -28,7 +28,7 @@ export function renderSkill(): string {
     '',
     '# livedocuments',
     '',
-    'Sign in with LIVEDOCUMENTS_TOKEN (an lvd_ API token), or `livedocuments auth login`. The CLI never prompts.',
+    'Sign in with LIVEDOCUMENTS_TOKEN (an lwt_ API token), or `livedocuments auth login`. The CLI never prompts.',
     '',
     'Start:',
     '',

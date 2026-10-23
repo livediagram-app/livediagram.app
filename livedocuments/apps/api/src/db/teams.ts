@@ -1,25 +1,14 @@
-// teams + team_members (docs/specs/013-workspace/teams.md). Membership doubles as the invite
-// store: a row with status 'invited' is a pending invite waiting in
-// its owner's Invites section; `connectInvitesByEmail` fills in WHO
-// the person is the first time their address shows up in a verified
-// JWT, and `acceptTeamMember` is the explicit yes that makes them a
-// member. Declining marks the row 'declined', and an unanswered invite
-// becomes 'expired' after 28 days (team-invite-decline.ts, team-invite-reminders.ts): both are
-// rejected records an Admin sees on the list, never memberships.
+// teams + team_members (docs/specs/013-workspace/teams.md): this app's copy of the liveworkspace
+// teams its people are in, and their joined members (liveworkspace/docs/accounts.md "Teams"), kept by
+// db/team-sync.ts. Every access check joins on it; nothing here writes a membership but the sync and
+// account deletion.
 
-import type {
-  Team,
-  TeamListItem,
-  TeamMember,
-  TeamMemberStatus,
-  TeamRole,
-} from '@livedocuments/api-schema';
+import type { Team, TeamListItem, TeamMember, TeamMemberStatus } from '@livedocuments/api-schema';
 import type { Env } from '../types';
 import { getParticipant } from './participants';
 import { imageGrantOwnerChangeStatement } from './image-grants';
 
-// TEAM_COLS / JOINED_COUNT / TeamRow / rowToTeam are shared with the
-// invite machinery in team-invites.ts.
+// TEAM_COLS / JOINED_COUNT / TeamRow / rowToTeam: the columns and row shape every team read here shares.
 export const TEAM_COLS = 'id, name, organisation, created_at, updated_at';
 const MEMBER_COLS = 'id, team_id, user_id, email, role, status, created_at, updated_at';
 
@@ -153,53 +142,6 @@ export async function getMembership(
   return row ? rowToMember(row) : null;
 }
 
-export async function getTeamMember(env: Env, memberId: string): Promise<TeamMember | null> {
-  const row = await env.DB.prepare(`SELECT ${MEMBER_COLS} FROM team_members WHERE id = ?`)
-    .bind(memberId)
-    .first<MemberRow>();
-  return row ? rowToMember(row) : null;
-}
-
-// Create the team plus the creator's Admin member row in one batch so
-// a half-created team (no admin) can't exist.
-export async function createTeam(
-  env: Env,
-  t: { id: string; name: string; organisation: string | null },
-  creator: { userId: string; email: string | null },
-): Promise<Team> {
-  const now = Date.now();
-  await env.DB.batch([
-    env.DB.prepare(
-      `INSERT INTO teams (id, name, organisation, created_at, updated_at) VALUES (?, ?, ?, ?, ?)`,
-    ).bind(t.id, t.name, t.organisation, now, now),
-    env.DB.prepare(
-      `INSERT INTO team_members (id, team_id, user_id, email, role, status, created_at, updated_at)
-       VALUES (?, ?, ?, ?, 'admin', 'joined', ?, ?)`,
-    ).bind(crypto.randomUUID(), t.id, creator.userId, creator.email, now, now),
-  ]);
-  return { id: t.id, name: t.name, organisation: t.organisation, createdAt: now, updatedAt: now };
-}
-
-export async function updateTeam(
-  env: Env,
-  id: string,
-  patch: { name?: string; organisation?: string | null },
-): Promise<void> {
-  const now = Date.now();
-  // Partial UPDATE, same semantics as a folder rename: undefined = leave
-  // the column alone (organisation may be set to null explicitly).
-  if (patch.name !== undefined) {
-    await env.DB.prepare('UPDATE teams SET name = ?, updated_at = ? WHERE id = ?')
-      .bind(patch.name, now, id)
-      .run();
-  }
-  if (patch.organisation !== undefined) {
-    await env.DB.prepare('UPDATE teams SET organisation = ?, updated_at = ? WHERE id = ?')
-      .bind(patch.organisation, now, id)
-      .run();
-  }
-}
-
 export async function deleteTeam(env: Env, id: string): Promise<void> {
   // Re-home the team's documents to the root of their owners' My Work FIRST
   // (docs/specs/013-workspace/team-shared-documents.md): deleting a team must never destroy members' work. Each
@@ -215,65 +157,6 @@ export async function deleteTeam(env: Env, id: string): Promise<void> {
   await env.DB.prepare('DELETE FROM folders WHERE team_id = ?').bind(id).run();
   await env.DB.prepare('DELETE FROM team_members WHERE team_id = ?').bind(id).run();
   await env.DB.prepare('DELETE FROM teams WHERE id = ?').bind(id).run();
-}
-
-// The last-admin guard inside the write itself (docs/specs/013-workspace/teams.md): a row that is a joined admin
-// changes only while another joined admin remains, checked in the same statement. Counting first and writing
-// after let two admins demoting each other, or one leaving while removed, both pass and leave none.
-// The other admin must be another PERSON, not a second row of the same user, so removing every row a
-// user holds can never take the last admin with it.
-const KEEPS_AN_ADMIN = `(role != 'admin' OR status != 'joined' OR EXISTS (
-    SELECT 1 FROM team_members other
-     WHERE other.team_id = team_members.team_id AND other.id != team_members.id
-       AND (team_members.user_id IS NULL OR other.user_id IS NOT team_members.user_id)
-       AND other.role = 'admin' AND other.status = 'joined'))`;
-
-/** The member's role set, unless that would leave the team no joined admin; whether it changed. */
-export async function updateTeamMemberRoleKeepingAdmin(
-  env: Env,
-  memberId: string,
-  role: TeamRole,
-): Promise<boolean> {
-  const guard = role === 'admin' ? '1' : KEEPS_AN_ADMIN;
-  const res = await env.DB.prepare(
-    `UPDATE team_members SET role = ?, updated_at = ? WHERE id = ? AND ${guard}`,
-  )
-    .bind(role, Date.now(), memberId)
-    .run();
-  return (res.meta?.changes ?? 0) > 0;
-}
-
-/**
- * The member removed, unless that would leave the team no joined admin; whether it went. Every other
- * row the same user holds in that team goes with it, in the same batch and only once the guarded row
- * is gone, so a duplicate left over from before the unique (team_id, user_id) index (the baseline migration)
- * cannot keep a removed person in the team.
- */
-export async function removeTeamMemberKeepingAdmin(
-  env: Env,
-  member: { id: string; teamId: string; userId: string | null },
-): Promise<boolean> {
-  const [removed] = await env.DB.batch<unknown>([
-    env.DB.prepare(`DELETE FROM team_members WHERE id = ? AND ${KEEPS_AN_ADMIN}`).bind(member.id),
-    env.DB.prepare(
-      `DELETE FROM team_members WHERE team_id = ?1 AND user_id = ?2
-          AND NOT EXISTS (SELECT 1 FROM team_members WHERE id = ?3)`,
-    ).bind(member.teamId, member.userId, member.id),
-  ]);
-  return (removed?.meta.changes ?? 0) > 0;
-}
-
-// The last-admin guard's input (docs/specs/013-workspace/teams.md): how many JOINED admin rows
-// the team has. Status-filtered on purpose — a pending invite that
-// was promoted to admin hasn't accepted responsibility for the team,
-// so it must not satisfy the "someone can still manage this" check.
-export async function countTeamAdmins(env: Env, teamId: string): Promise<number> {
-  const row = await env.DB.prepare(
-    `SELECT COUNT(*) AS n FROM team_members WHERE team_id = ? AND role = 'admin' AND status = 'joined'`,
-  )
-    .bind(teamId)
-    .first<{ n: number }>();
-  return row?.n ?? 0;
 }
 
 // The account ids of a team's joined admins (docs/specs/014-identity/profile-and-email-notifications.md): who gets told
@@ -377,15 +260,4 @@ export async function detachUserFromTeams(env: Env, userId: string): Promise<voi
         .run();
     }
   }
-}
-
-// Joined-member count for a team (the public "N members" number the
-// invite-link landing shows). Excludes pending invites.
-export async function countJoinedMembers(env: Env, teamId: string): Promise<number> {
-  const row = await env.DB.prepare(
-    `SELECT COUNT(*) AS n FROM team_members WHERE team_id = ? AND status = 'joined'`,
-  )
-    .bind(teamId)
-    .first<{ n: number }>();
-  return row?.n ?? 0;
 }

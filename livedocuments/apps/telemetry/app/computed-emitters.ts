@@ -358,9 +358,6 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/live/components/panels/SearchPanel.tsx Search·Selected': {
     values: ['Document', 'Shared', 'Folder', 'Team', 'Tab', 'Element', 'Palette', 'Command'],
   },
-  'apps/live/components/panels/useTeamPaneActions.ts Team·Removed': {
-    values: ['Invite', 'Member', 'Self'],
-  },
   'apps/live/hooks/ui/useImageSearch.ts Error·Warning': {
     values: IMAGE_SEARCH_WARNINGS,
   },

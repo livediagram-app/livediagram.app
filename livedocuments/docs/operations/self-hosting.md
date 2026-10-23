@@ -100,7 +100,7 @@ The hosted version signs people in with their liveworkspace account, through the
 
    Set them in the file rather than the Cloudflare dashboard: every `wrangler deploy` replaces plain vars with the ones the file declares. Both are no-ops without `GUEST_ID_HMAC_SECRET`. `pnpm dev` blanks `GUEST_SIG_ENFORCE_AFTER`, so local guests made before your local secret keep working; every e2e stack enforces it.
 
-5. **API tokens ([Public API and API tokens](../specs/015-api/public-api-and-tokens.md)) come with sign-in.** They're a signed-in-only feature, so a self-host with sign-in configured gets the API Tokens category in Settings automatically; a guest-only self-host has no accounts and therefore no tokens (nothing to configure). Each token lasts six months and is stored hashed.
+5. **API tokens ([Public API and API tokens](../specs/015-api/public-api-and-tokens.md)) come with sign-in.** They're a signed-in-only feature: tokens are liveworkspace account tokens (`lwt_`), made and revoked on liveworkspace.app, and the api worker checks each one with liveworkspace. A guest-only self-host has no accounts and therefore no tokens (nothing to configure).
 
 Without the sign-in values set, the api worker treats every request as a guest (resolves owner from `X-Owner-Id`), and the live frontend mounts no session bridge, so it renders the editor without any auth UI. Self-host without sign-in is a fully-supported path; the canvas works identically (and guest-id signing is moot, since there's no migrate without accounts).
 
@@ -170,8 +170,8 @@ nothing. To run it:
 
 3. **Deploy after the api worker** (it reaches api over a service binding). The
    deploy workflow already orders `mcp` after `api`. Tokens minted via the MCP
-   are ordinary `lvd_` API tokens — they appear in the API Tokens category of
-   Settings and are revocable there.
+   are ordinary `lwt_` API tokens — they appear with the account's other tokens on
+   liveworkspace.app and are revocable there.
 
 4. **Only if you've turned telemetry on:** set the same `INTERNAL_EVENTS_KEY` on
    both workers — see [Telemetry](#telemetry-off-by-default-for-self-hosters)
@@ -205,16 +205,11 @@ Optional knobs (plain `[vars]`):
 
 If you enable this on a deployment that already has signed-in users, run the one-time backfill in [Transactional & lifecycle email (Resend) §4](../specs/014-identity/transactional-email.md) first, so existing users aren't "welcomed" on their next sign-in.
 
-## Team invite reminders and expiry
+## Teams
 
-Teams need sign-in. With it on, the daily cron expires team invites nobody answered within 28 days (whether or not
-email is configured) and, with `RESEND_API_KEY` set, sends the three reminders first
-([Teams](../specs/013-workspace/teams.md#reminders-and-expiry)). The baseline migration
-holds the columns; nothing else to configure.
-
-- `TEAM_INVITE_RATE_LIMITER` (optional binding, declared in `apps/api/wrangler.toml`): 20 requests a minute per
-  network on the invite email's open Decline doors (`/api/teams/invite-decline/...`). Without the binding every
-  request is allowed; the token is 256 random bits either way.
+Teams need sign-in. They are liveworkspace teams, made and run on liveworkspace.app; the api worker keeps a copy of
+the ones its people are in, following liveworkspace's change feed every five minutes
+([Teams](../specs/013-workspace/teams.md)). There are no team invite emails, reminders or expiry to configure here.
 
 ## Workbenches (optional, needs sign-in)
 

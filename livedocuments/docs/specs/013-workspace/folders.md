@@ -377,7 +377,7 @@ it stays in view as the dashboard scrolls; Settings opens the same synced
 - **Sidebar (left, fixed width):** the navigation tree of [Explorer structure](explorer-structure.md):
   Overview (Home, Inbox, Timeline, Shared With Me), Spaces (My Work with
   its root folders beneath it, each team with its
-  folders, New Team), and More (This Browser, Tags, Library, Trash). Each folder
+  folders, Manage Teams), and More (This Browser, Tags, Library, Trash). Each folder
   row carries an ellipsis menu with Rename, New subfolder, Change Folder,
   Use as Default for ([Default folders](default-folders.md#use-as-default-for)), Delete. The Image gallery (under Library) degrades to an empty state
   when the api worker reports 503, e.g. a self-host without R2.

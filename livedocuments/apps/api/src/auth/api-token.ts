@@ -10,7 +10,7 @@ import { API_TOKEN_PREFIX, randomBase64Url, sha256Hex } from '@livedocuments/api
 const TOKEN_PREFIX = API_TOKEN_PREFIX;
 const TOKEN_RANDOM_BYTES = 32; // 256 bits
 
-// `lvd_<base64url(32 random bytes)>`. The prefix is greppable for leak
+// `lwt_<base64url(32 random bytes)>`. The prefix is greppable for leak
 // scanning and disambiguates a token from an account access token in the same
 // `Authorization: Bearer` header.
 export function generateApiToken(): string {

@@ -4,16 +4,6 @@
 import type { Metric, MetricStack } from '../metric-series';
 import { chart } from './helpers';
 
-// Programmatic access (Dashboard, Connections): the API-token lifecycle and
-// what the MCP server's tools actually get used for.
-export const TOKENS_CREATED: Metric = {
-  category: 'Token',
-  action: 'Created',
-  type: 'Manual',
-  title: 'Tokens Created',
-  blurb: 'Personal API tokens created by hand from the Explorer.',
-};
-
 export const AI_TOOLS_CONNECTED: Metric = {
   category: 'Token',
   action: 'Created',
@@ -30,15 +20,6 @@ export const CLI_SIGN_INS: Metric = {
   blurb: 'The livedocuments CLI signed in, through the browser or with a code on another device.',
 };
 
-export const TOKENS_REVOKED: Metric = {
-  rising: 'neutral',
-  category: 'Token',
-  action: 'Removed',
-  type: null,
-  title: 'Tokens Revoked',
-  blurb: 'API tokens revoked, whether created by hand or by an AI tool.',
-};
-
 export const WORKBENCHES_PAIRED: Metric = {
   category: 'Token',
   action: 'Linked',
@@ -52,8 +33,8 @@ export const API_TOKEN_ACTIVITY: MetricStack = {
   stack: true,
   title: 'API Token Activity',
   blurb:
-    'Every token event: created by hand, by an AI tool connecting over MCP, by the CLI signing in, paired with a workbench, and revoked.',
-  members: [TOKENS_CREATED, AI_TOOLS_CONNECTED, CLI_SIGN_INS, WORKBENCHES_PAIRED, TOKENS_REVOKED],
+    'Every token event livedocuments sees: one made for an AI tool connecting over MCP, for the CLI signing in, and a workbench paired. Tokens are made by hand and revoked on liveworkspace.app.',
+  members: [AI_TOOLS_CONNECTED, CLI_SIGN_INS, WORKBENCHES_PAIRED],
 };
 
 // MCP tool calls, one chart per tool the MCP server registers (apps/mcp

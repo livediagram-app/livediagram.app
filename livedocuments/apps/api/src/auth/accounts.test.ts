@@ -58,7 +58,7 @@ describe('getAccountIdentity (guest fall-through)', () => {
   });
 
   it.each([
-    ['an API token', `lvd_${'a'.repeat(43)}`],
+    ['an API token', `lwt_${'a'.repeat(43)}`],
     ['a workbench session', `lvw_${'w'.repeat(43)}`],
   ])('passes %s through to the token paths without verifying', async (_kind, bearer) => {
     expect(await getAccountIdentity(CONFIGURED, request(`Bearer ${bearer}`))).toBeNull();
@@ -94,7 +94,14 @@ describe('getAccountIdentity (verified token)', () => {
     expect(await getAccountIdentity(CONFIGURED, request('Bearer t'))).toEqual({
       userId: 'user_abc',
       email: null,
+      teams: null,
     });
+  });
+
+  it('carries the teams claim through, for the teams mirror', async () => {
+    const teams = [{ id: 'team1', name: 'Design', role: 'admin' as const }];
+    verifyMock.mockResolvedValue(claims({ teams }));
+    expect(await getAccountIdentity(CONFIGURED, request('Bearer t'))).toMatchObject({ teams });
   });
 
   it('trusts the email only once verified, as trimmed lowercase', async () => {

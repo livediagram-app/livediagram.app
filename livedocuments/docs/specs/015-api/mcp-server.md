@@ -4,7 +4,7 @@
 verified end-to-end from Claude. Builds directly on [Public API and API tokens](public-api-and-tokens.md)
 (API tokens), which it picks up where §7 left off: [Public API and API tokens](public-api-and-tokens.md) deferred "OAuth /
 third-party app authorization" — this spec adds exactly that, scoped to one
-client (an MCP server), reusing the `lvd_` token as the credential it ultimately
+client (an MCP server), reusing the `lwt_` token as the credential it ultimately
 mints. No new authorization model; an OAuth front door onto the existing token.
 
 ## 1. Goal
@@ -51,8 +51,8 @@ stays a pure REST/WS surface.
   schemas.
 - **Talks to `apps/api` over a Cloudflare service binding** (`API`), not public
   DNS. Every tool resolves to one or more `/api/*` calls carrying
-  `Authorization: Bearer lvd_…` — the caller's token, passed straight through.
-  The api worker already accepts `lvd_` tokens on every route
+  `Authorization: Bearer lwt_…` — the caller's token, passed straight through.
+  The api worker already accepts `lwt_` tokens on every route
   ([Public API and API tokens §3.3](public-api-and-tokens.md)), so **no api authorization
   changes are needed** for the tools themselves.
 - **Reuses `packages/document`** headless: element factories, `validate.ts`
@@ -73,14 +73,14 @@ stays a pure REST/WS surface.
 
 The MCP authenticates with **OAuth 2.1 + PKCE (S256) + dynamic client
 registration**, so a user gets a one-click "Connect" in their AI tool rather
-than pasting a raw token. The flow **mints an `lvd_` token** under the hood and
+than pasting a raw token. The flow **mints an `lwt_` token** under the hood and
 hands it to the client; from then on every request is just
-`Authorization: Bearer lvd_…`. This deliberately reuses the entire token model
+`Authorization: Bearer lwt_…`. This deliberately reuses the entire token model
 from [Public API and API tokens](public-api-and-tokens.md) — storage, hashing, 6-month expiry,
 per-account cap, revoke, account-deletion cascade, rate limiting — instead of
-inventing a parallel credential. An MCP-minted token is an ordinary API token;
-it appears in the Settings API Tokens category and can be revoked there like any
-other.
+inventing a parallel credential. An MCP-minted token is an ordinary liveworkspace
+account token: it is listed on liveworkspace.app and can be revoked there like any
+other, and it works with every liveworkspace app's MCP server.
 
 This implements the OAuth flow Manager Toolkit uses:
 
@@ -124,28 +124,25 @@ This implements the OAuth flow Manager Toolkit uses:
    `apps/live/lib/mcp-consent-session.ts`. The screen is never frameable
    (`X-Frame-Options: DENY`, [Embeds](../013-workspace/embeds.md)), so the
    Connect click can't be clickjacked from an attacker's page.
-4. **Consent + mint** — on approve, `apps/live` calls a **new
-   `POST /api/oauth/exchange`** on the api worker. This is the one api change: an
-   endpoint that requires a verified account identity (gated exactly like
-   `/api/tokens`), and on success **reuses the existing token-mint path**
-   (`generateApiToken` → `hashApiToken` → `createApiToken`,
-   `apps/api/src/auth/api-token.ts` + `db/api-tokens.ts`) to create an `lvd_`
-   token owned by that account, named for the connecting client (e.g. "Claude
-   (MCP)"). It binds the PKCE challenge so only the holder of the verifier can
-   redeem it. A minted token is never left orphaned: the page re-checks the
-   session (`GET /oauth/session/<id>`) before minting, and when the MCP's
-   `/oauth/complete` refuses the token (the session expired or was used, a 429)
-   it revokes it at once (`DELETE /api/tokens/<id>`), so retries never pile up
-   six-month tokens against the per-account cap. The failure line names the
-   cause: an expired request ("This request has expired. Start the connection
-   again from your app."), the token cap (409 `token_limit_reached`: "Your
-   account has reached its limit of API tokens. Revoke one in Settings, under
-   Account › API Tokens, then try again."), or anything else ("Something went
-   wrong. Please try again."). The device page does the same
+4. **Consent + mint** — on approve, `apps/live` calls `POST /api/oauth/exchange`
+   on the api worker with the person's account access token. It asks liveworkspace
+   to mint an `lwt_` account token named for the connecting client (e.g. "Claude
+   (MCP)"), read-only if the person ticked that (`POST /api/account/internal/tokens`,
+   [Public API and API tokens](public-api-and-tokens.md) §3). It binds the PKCE
+   challenge so only the holder of the verifier can redeem it. A minted token is
+   never left orphaned: the page re-checks the session (`GET /oauth/session/<id>`)
+   before minting, and when the MCP's `/oauth/complete` refuses the token (the
+   session expired or was used, a 429) it revokes it at once by presenting it to
+   `DELETE /api/tokens/current`, so retries never pile up six-month tokens against
+   the per-account cap. The failure line names the cause: an expired request ("This
+   request has expired. Start the connection again from your app."), the token cap
+   (409 `token_limit_reached`: "Your account has reached its limit of API tokens.
+   Revoke one on liveworkspace.app, under API tokens, then try again."), or anything
+   else ("Something went wrong. Please try again."). The device page does the same
    (`apps/live/lib/oauth-handover.ts`).
 5. **Callback + token exchange** — the MCP redirects back to the client with a
    code; `POST /oauth/token` (with the PKCE `code_verifier`) exchanges it for the
-   `access_token` (= the `lvd_` secret). `expires_in` reflects the token's
+   `access_token` (= the `lwt_` secret). `expires_in` reflects the token's
    remaining 6-month lifetime.
 
 **State storage.** Add a **KV namespace binding (`OAUTH_KV`) to `apps/mcp`** for
@@ -155,7 +152,7 @@ needs no KV — minting stays in D1 via the existing token table.
 **Why OAuth and not just token-paste.** A static-token-paste connector works in
 Claude Code / custom connectors, but the polished "Connect" button in claude.ai
 web connectors expects OAuth, and the user chose the OAuth path. Because it still
-resolves to an `lvd_` token, the heavy lifting (verification, gating, revoke,
+resolves to an `lwt_` token, the heavy lifting (verification, gating, revoke,
 caps) is already built — OAuth is the front door, not a new lock.
 
 **Self-hosting / sign-in gating.** OAuth depends on the consent page authenticating
@@ -568,7 +565,7 @@ and schema resource.
 ### 4.11 Read-only tokens (the one scope)
 
 A trust story for cautious users: the MCP consent screen offers a **"read-only
-access"** checkbox. When ticked, the minted `lvd_` token carries `read_only = 1`
+access"** checkbox. When ticked, the minted `lwt_` token carries `read_only = 1`
 ([Public API and API tokens](public-api-and-tokens.md) §3.4, migration 0039), and the api worker rejects every write it
 presents — `POST`/`PUT`/`DELETE` → `403 read_only_token` — at a **single
 dispatch choke point** in `apps/api/src/index.ts`, so no write route can be
@@ -894,7 +891,7 @@ Worker (no DOM, no React).
 5. **OAuth** — `/api/oauth/exchange` on the api worker (reusing the token-mint
    path, signed-in only like `/api/tokens`); `apps/live` consent page; the MCP
    OAuth endpoints + `OAUTH_KV`. Until this lands, the worker can be exercised
-   with a hand-pasted `lvd_` Bearer for development.
+   with a hand-pasted `lwt_` Bearer for development.
 6. **Docs + help, shipped WITH the feature** (per the help-centre + docs rules in
    `AGENTS.md`):
    - A help article (e.g. `account-and-data/connect-ai-mcp`) — what the MCP is,

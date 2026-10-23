@@ -96,10 +96,36 @@ account_id_not_a_guest_credential`, unconditionally ([§4.1](#41-an-account-id-i
 
 ## 3. Design: API tokens
 
+**API tokens belong to the liveworkspace account** ([liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md)
+"API tokens"). They are made, listed and revoked on liveworkspace.app, and one token works on every app's API and
+MCP server. liveworkspace holds the hash, the name, the read-only flag, the 6-month expiry and the cap (20 per
+account). What follows records how livedocuments uses them; where it describes livedocuments minting, listing or
+storing tokens itself, the account-level design below supersedes it.
+
+- **Verifying.** An `lwt_` bearer is checked with liveworkspace (`POST /api/account/internal/tokens/verify`,
+  client-credentials) by `createTokenChecker` in `apps/api/src/db/api-tokens.ts`. A verified token is cached for
+  `MIRROR_REFRESH_MS` (60 s) per isolate, so a burst of MCP tool calls costs one round trip a minute. A token
+  liveworkspace refuses gets `401 invalid_token`; if liveworkspace can't be reached, `503 accounts_unavailable`
+  with `Retry-After: 5`.
+- **The mirror.** `api_tokens` keeps a row per account token livedocuments has seen (id, owner, name, read-only,
+  expiry, last used; never the secret), upserted on verify at most once a minute, because workbench pairings and
+  sessions hang off it by foreign key. Every five minutes the cron asks liveworkspace which of the most recently
+  used tokens (up to 1000, in batches of 100: `POST /api/account/internal/tokens/live`) still work, marks the rest
+  revoked and ends what was paired through them.
+- **Minting for an AI tool.** The OAuth exchange (`POST /api/oauth/exchange`) asks liveworkspace to mint the
+  token with the person's access token (`POST /api/account/internal/tokens`). A token the MCP then refuses is
+  revoked by presenting it to `DELETE /api/tokens/current`.
+- **Management** is on liveworkspace.app. `GET/POST /api/tokens` and `DELETE /api/tokens/:id` answer
+  `410 { error: 'tokens_moved', manageAt }`. The Settings dialog's API Tokens row links to liveworkspace.app and
+  lists the account's paired workbenches with Unpair.
+- **Self-revoke.** `DELETE /api/tokens/current` revokes the presenting token on liveworkspace
+  (`POST /api/account/internal/tokens/revoke`) and ends its pairings here.
+- **Expiry reminders** are not sent: liveworkspace sends none yet.
+
 ### 3.1 Token format
 
 - An opaque secret with a visible prefix for greppability + leak-scanning:
-  `lvd_<base64url(32 random bytes)>`. The prefix also disambiguates it from a
+  `lwt_<base64url(32 random bytes)>`. The prefix also disambiguates it from a
   account access token (a JWT) in the same `Authorization: Bearer` header.
 - Shown **once** at creation; never retrievable again.
 - Stored **hashed** (SHA-256), never in plaintext. Auth hashes the presented
@@ -144,14 +170,14 @@ A token authenticates as a third identity path, resolved once in `fetch`
 alongside the account access token + the guest header:
 
 1. An account access token in `Authorization: Bearer`, when it verifies.
-2. Else `Authorization: Bearer lvd_…` → hash → look up a non-revoked,
+2. Else `Authorization: Bearer lwt_…` → hash → look up a non-revoked,
    non-expired row → the request's owner id is the row's `owner_id`; stamp
    `last_used_at`. The column means "the last request this token made, to
    within a minute": a request writes it only when the stored value is older
    than `LAST_USED_STAMP_WINDOW_MS` (60 s, `apps/api/src/db/api-tokens.ts`),
    checked again in the UPDATE's WHERE, so a burst of MCP tool calls (3 to 6
    api requests each) costs one write a minute rather than one per request.
-   Its only reader, the Settings token card, works at day grain. (A token and a JWT can't both be the bearer.) An `lvd_`
+   Its only reader, the Settings token card, works at day grain. (A token and a JWT can't both be the bearer.) An `lwt_`
    bearer with no such row (unknown, revoked or expired), or one too short to be a token at all (cut short or
    mistyped when pasted), is refused there and then with `401 invalid_token` and `WWW-Authenticate: Bearer
 error="invalid_token"`, on every route: it never falls through to the guest
@@ -222,6 +248,8 @@ backstop.
 
 ### 3.6 Management — the Settings dialog's API Tokens category
 
+> **Superseded**: tokens are managed on liveworkspace.app (see the head of §3). This section records the manager livedocuments had.
+
 Tokens are created, viewed and revoked in the **Settings dialog**
 ([User preferences](../007-editor/user-preferences.md)), in the **API Tokens**
 sub-category of **Account** (id `tokens`, `parent: 'account'`, shown as
@@ -245,7 +273,7 @@ out top to bottom:
   **Create Token**. Enter submits, Escape cancels.
 - **Reveal.** After a create, the composer becomes an emerald-edged "Token
   Created" card that follows the theme (light in light mode): a "Shown once"
-  label and the secret in a monospace field with its `lvd_` prefix picked out.
+  label and the secret in a monospace field with its `lwt_` prefix picked out.
   The field copies the way the Share dialog's pass link does: an icon-only copy button inside the field's right edge, with
   a tooltip, that turns into a check once the clipboard write resolves.
   **Done** drops the secret for good; it becomes the primary action once the
@@ -321,7 +349,7 @@ out cleanly:
 - A session or guest has no token to describe and is refused `403 not_a_token`; a revoked token is refused at the
   front door like any dead token (§3.3).
 
-Every other `/api/tokens` route stays session-only.
+Every other `/api/tokens` route answers `410 tokens_moved` (see the head of §3).
 
 ### 3.7 Self-hosting
 

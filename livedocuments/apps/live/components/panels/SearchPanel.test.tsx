@@ -35,9 +35,7 @@ describe('SearchPanel', () => {
   // A touch screen has no Esc key: its close button shows a × there, the Esc key cap on a keyboard's screen.
   it('closes with a button that reads Esc on a fine pointer and shows a × on a coarse one', () => {
     const onClose = vi.fn();
-    render(
-      <SearchPanel documents={[]} folders={[]} onSelectDocument={vi.fn()} onClose={onClose} />,
-    );
+    render(<SearchPanel documents={[]} folders={[]} onSelectDocument={vi.fn()} onClose={onClose} />);
     const close = screen.getByRole('button', { name: 'Close' });
     expect(close.querySelector('kbd')!.className).toContain('pointer-coarse:hidden');
     expect(close.querySelector('svg')!.getAttribute('class')).toContain('pointer-coarse:block');

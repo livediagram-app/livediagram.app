@@ -1,5 +1,5 @@
 // MCP OAuth consent (docs/specs/015-api/mcp-server.md §3): the consent page calls this to mint the
-// lvd_ token that gets handed to the connecting MCP client. Signed-in only —
+// lwt_ token that gets handed to the connecting MCP client. Signed-in only —
 // apiHeaders attaches the account Bearer, and the api's /api/oauth/exchange
 // rejects a guest.
 import { API_BASE, apiHeaders, expectOk, apiFetch } from './core';

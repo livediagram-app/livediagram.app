@@ -4,12 +4,13 @@ import {
   toLegacyResponse,
 } from './legacy-documents-alias';
 import { runTabStatsBackfill } from './tab-stats-backfill';
-import { getAccountIdentity } from './auth/accounts';
+import { accountCredentials, getAccountIdentity } from './auth/accounts';
+import { AccountsUnavailable, sweepRevokedTokens, type ResolvedApiToken } from './db/api-tokens';
+import { catchUpTeams, syncTeams } from './db/team-sync';
+import { endWorkbenchAccess } from './workbench-end';
 import { handleAuth } from './routes/auth';
 import { emailEnabled } from './email/client';
 import { runLifecycleSweep, welcomeOnSighting } from './email/lifecycle';
-import { runTokenExpirySweep } from './email/token-expiry';
-import { runTeamInviteSweep } from './email/team-invite-reminders';
 import { NOTIFY_EMAIL_DEDUPE_MS } from './email/notifications';
 import { runTimelineExpirySweep } from './timeline';
 import { runImageRetention } from './image-refs/retention';
@@ -153,18 +154,29 @@ async function routeApiRequest(
     sightedThisIsolate.add(accountUserId);
     executionCtx?.waitUntil(welcomeOnSighting(env, accountUserId, accountEmail));
   }
-  // API token (docs/specs/015-api/public-api-and-tokens.md): a `Bearer lvd_…` resolves to its owner — always a
+  // API token (docs/specs/015-api/public-api-and-tokens.md): a `Bearer lwt_…` resolves to its owner — always a
   // account — via the hashed-token lookup. Only consulted when no account
   // access token verified (a token and a JWT can't both be the bearer). The resolved
   // owner is the token's account id, so a token request flows through the
   // exact same ownership / gate checks as a signed-in one.
-  let tokenAuth: { ownerId: string; tokenId: string; readOnly: boolean } | null = null;
+  let tokenAuth: ResolvedApiToken | null = null;
   if (!accountUserId) {
     const bearer = bearerTokenOf(request.headers.get('Authorization'));
     // A bearer that carries the token prefix claims to be a token even when it is cut short or mistyped (a
     // copy-paste slip): it is refused as one below, never read as a guest or handed to the account path.
     if (bearer?.startsWith(API_TOKEN_PREFIX)) {
-      tokenAuth = isApiTokenFormat(bearer) ? await resolveApiToken(env, bearer) : null;
+      // The token is the liveworkspace account's, checked with liveworkspace (db/api-tokens.ts). When
+      // liveworkspace can't answer, the token is neither good nor bad: 503, so a client retries rather
+      // than drops its credential.
+      try {
+        tokenAuth = isApiTokenFormat(bearer) ? await resolveApiToken(env, bearer) : null;
+      } catch (err) {
+        if (!(err instanceof AccountsUnavailable)) throw err;
+        return json(
+          { error: 'accounts_unavailable' },
+          { status: 503, headers: { 'Retry-After': '5' } },
+        );
+      }
       // A token-shaped bearer claims to be a token: unknown, revoked or expired, it is refused here, never
       // read as a guest or as nobody (docs/specs/015-api/public-api-and-tokens.md §3.3).
       if (!tokenAuth) {
@@ -216,6 +228,13 @@ async function routeApiRequest(
   // reads (see RouteContext.verifiedUserId); administration surfaces keep
   // reading `accountUserId` directly.
   const verifiedUserId = accountUserId ?? tokenAuth?.ownerId ?? workbench?.ownerId ?? null;
+  // Teams are run on liveworkspace.app; the caller's token carries the teams they're in. When that
+  // differs from this app's copy, catch the copy up before anything below reads it (db/team-sync.ts).
+  // Remembered per isolate, so this is a Map lookup unless their teams just changed.
+  const teamsClaim = accountIdentity?.teams ?? tokenAuth?.teams ?? null;
+  if (verifiedUserId && teamsClaim) {
+    await catchUpTeams(env, accountCredentials(env), verifiedUserId, teamsClaim, executionCtx);
+  }
 
   // An account id presented as the GUEST header is always a replay of
   // a harvested id, never a real client (see auth/guest-rest.ts): the guest
@@ -502,6 +521,26 @@ const worker = {
   // `ctx.waitUntil` so they run concurrently and the worker can
   // exit as soon as the schedule callback returns.
   async scheduled(event: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
+    // liveworkspace/docs/accounts.md "How an app keeps up": follow the teams change feed, and end the
+    // workbench access of any token revoked on liveworkspace.app.
+    if (event.cron === '*/5 * * * *') {
+      const credentials = accountCredentials(env);
+      if (!credentials) return;
+      ctx.waitUntil(
+        syncTeams(env, credentials, ctx)
+          .then((count) => console.log(`team sync: applied ${count} changes`))
+          .catch((err) => console.error('team sync failed', err)),
+      );
+      ctx.waitUntil(
+        sweepRevokedTokens(env)
+          .then(async (gone) => {
+            for (const tokenId of gone) await endWorkbenchAccess(env, { tokenId }, 'revoked');
+            if (gone.length > 0) console.log(`token sweep: ${gone.length} revoked`);
+          })
+          .catch((err) => console.error('token sweep failed', err)),
+      );
+      return;
+    }
     if (event.cron === '0 3 * * *') {
       const now = Date.now();
       scheduleSweep(ctx, env, 'events', 'rows', now - EVENTS_RETENTION_MS, deleteOldEvents);
@@ -547,19 +586,8 @@ const worker = {
       // docs/specs/014-identity/transactional-email.md: send any due onboarding emails (welcome catch-up + week 1 / 2).
       // No-op when RESEND_API_KEY is unset.
       ctx.waitUntil(runLifecycleSweep(env));
-      // docs/specs/013-workspace/teams.md "Reminders and expiry": expire invites nobody answered in 28 days
-      // (always), then send the 1 / 7 / 21-day reminders (email only). Logs its own outcome.
-      ctx.waitUntil(
-        runTeamInviteSweep(env, now)
-          .then(() => undefined)
-          .catch((err) => console.error('[team-invites] sweep failed', err)),
-      );
-      // docs/specs/014-identity/transactional-email.md (#3): warn owners whose API token is within a week of expiry.
-      ctx.waitUntil(runTokenExpirySweep(env));
-      // docs/specs/013-workspace/timeline.md §4.5: the same window, on the Timeline. Separate from
-      // the email sweep above because that one no-ops without a Resend
-      // key, and a self-host with no email provider still needs to know
-      // its integration is about to break.
+      // docs/specs/013-workspace/timeline.md §4.5: tokens (those seen here) and share links about to
+      // expire, on the Timeline.
       ctx.waitUntil(
         runTimelineExpirySweep(env)
           .then((count) => console.log(`timeline expiry sweep: emitted ${count} events`))
