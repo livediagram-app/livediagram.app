@@ -130,12 +130,7 @@ describe('GET /api/share/<code>/image.png', () => {
     expect(res.headers.get('Content-Type')).toBe('image/png');
     expect(res.headers.get('Cache-Control')).toBe(SHARE_CARD_CACHE);
     expect(new Uint8Array(await res.arrayBuffer())).toEqual(PNG);
-    expect(documentImageSvg).toHaveBeenCalledWith(
-      expect.anything(),
-      doc,
-      null,
-      expect.objectContaining({ defer: expect.any(Function) }),
-    );
+    expect(documentImageSvg).toHaveBeenCalledWith(expect.anything(), doc, null);
     await Promise.all(waits);
     expect(images.put).toHaveBeenCalledWith('og/d1', PNG, {
       httpMetadata: { contentType: 'image/png' },
@@ -174,7 +169,7 @@ describe('GET /api/share/<code>/image.png', () => {
     const { result, waits } = call('/share/CODE1234/image.png', { images });
     expect((await result)!.status).toBe(200);
     await Promise.all(waits);
-    expect(documentImageSvg).toHaveBeenCalledWith(expect.anything(), doc, 't2', expect.anything());
+    expect(documentImageSvg).toHaveBeenCalledWith(expect.anything(), doc, 't2');
     expect(images.get).not.toHaveBeenCalled();
     expect(images.put).not.toHaveBeenCalled();
   });

@@ -690,16 +690,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [200, 400, 401, 403, 404, 405, 410],
   },
   {
-    method: 'POST',
-    path: '/documents/{id}/tabs/{tabId}/link',
-    segment: 'documents',
-    tag: 'Documents',
-    summary: 'Add (link) an existing tab into this document.',
-    auth: 'guest-or-clerk',
-    responseSchema: wrap('tab', 'TabSummary'),
-    statuses: [200, 401, 403, 404, 410],
-  },
-  {
     method: 'GET',
     path: '/documents/{id}/share',
     segment: 'documents',

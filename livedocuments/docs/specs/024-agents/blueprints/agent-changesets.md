@@ -49,7 +49,7 @@ Scope, by file:
 | `apps/api/src/room-client.ts`                                                             | `roomStubFor(env, documentId)` for every document; `relayChangeset`, `relayTabRename`, `relayDocumentRename`, `readRoomSelections` |
 | `apps/api/src/room-selections.ts`                                                         | `RoomSelectionStore`: each session's selection in DO storage                                                                       |
 | `apps/api/src/person-tag.ts`, `db/ws-tickets.ts`, `routes/document-room-routes.ts`        | The person tag ([agent presence](agent-presence.md)): minted into the ticket, forwarded on the upgrade                             |
-| `apps/api/src/document-room.ts`, `room-internal.ts`                                       | `/mutation` accepts `changeset` and `tab-meta`; `GET /selections`; `select` recorded; close prunes                                 |
+| `apps/api/src/document-room/document-room.ts`, `room-internal.ts`                         | `/mutation` accepts `changeset` and `tab-meta`; `GET /selections`; `select` recorded; close prunes                                 |
 | `apps/api/src/responses.ts`                                                               | CORS allows `X-Changeset-Seen`, `X-Livedocuments-Client`; exposes `ETag`                                                           |
 | `apps/api/src/openapi/{manifest,document}.ts`, `apps/api/scripts/gen-openapi-schemas.mjs` | The five routes, `Tab.rev`, the header, the error bodies, the PUT's 405                                                            |
 | `apps/mcp/src/changeset-client.ts`                                                        | `submitChangeset`, `mcpOpsToEditOperations`, `changesetErrorText`                                                                  |
@@ -284,15 +284,15 @@ editor`; the toast then reads the outcome.
 
 ### REST
 
-| Method | Path                                                | Gate                                   | Success                                              | Failures                                                                                                                                                                                                                      |
-| ------ | --------------------------------------------------- | -------------------------------------- | ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| POST   | `/api/documents/:id/tabs/:tabId/changesets`         | `gateEdit(..., tabId)`                 | 200 `ChangesetResponse`                              | 400 `invalid_body`, `parse_error`, `unknown_operation`, `invalid_base`, `strict_needs_base`; 403; 404; 409 `changeset_conflict`, `elements_held`, `tab_busy`, `tab_id_taken`; 410; 412 `stale_tab`; 413 `too_large`; 422; 429 |
-| GET    | `/api/documents/:id/changesets[?tab=&limit=]`       | `gateRead`; a scoped link its tab only | 200 `{ changesets: ChangesetSummary[] }`             | 400 bad `limit`; 404; 410                                                                                                                                                                                                     |
-| GET    | `/api/documents/:id/changesets/:changesetId`        | `gateRead` on the record's tab         | 200 `{ changeset: ChangesetSummary, results, text }` | 404 (no record for this document, or its tab outside a scoped link); 410                                                                                                                                                      |
-| POST   | `/api/documents/:id/changesets/:changesetId/revert` | `gateEdit` on the record's tab         | 200 `RevertResponse`                                 | 403; 404 (no record for this document, or tab unlinked); 409 `tab_busy`; 410                                                                                                                                                  |
-| PUT    | `/api/documents/:id/tabs/:tabId/name`               | `gateEdit(..., tabId)`                 | 200 `{ tab: TabSummary }`                            | 400 `invalid_name`; 403; 404; 410                                                                                                                                                                                             |
-| GET    | `/api/documents/:id/tabs/:tabId`                    | unchanged                              | `tab.rev`; header `ETag: W/"<rev>"` (CS5)            | unchanged                                                                                                                                                                                                                     |
-| PUT    | `/api/documents/:id/tabs/:tabId`                    | unchanged; tokens refused              | `tab.rev` in the echo                                | adds 405 `use_changesets` (any token), 409 `tab_busy`                                                                                                                                                                         |
+| Method | Path                                                | Gate                                   | Success                                              | Failures                                                                                                                                                                                                      |
+| ------ | --------------------------------------------------- | -------------------------------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| POST   | `/api/documents/:id/tabs/:tabId/changesets`         | `gateEdit(..., tabId)`                 | 200 `ChangesetResponse`                              | 400 `invalid_body`, `parse_error`, `unknown_operation`, `invalid_base`, `strict_needs_base`; 403; 404; 409 `changeset_conflict`, `elements_held`, `tab_busy`; 410; 412 `stale_tab`; 413 `too_large`; 422; 429 |
+| GET    | `/api/documents/:id/changesets[?tab=&limit=]`       | `gateRead`; a scoped link its tab only | 200 `{ changesets: ChangesetSummary[] }`             | 400 bad `limit`; 404; 410                                                                                                                                                                                     |
+| GET    | `/api/documents/:id/changesets/:changesetId`        | `gateRead` on the record's tab         | 200 `{ changeset: ChangesetSummary, results, text }` | 404 (no record for this document, or its tab outside a scoped link); 410                                                                                                                                      |
+| POST   | `/api/documents/:id/changesets/:changesetId/revert` | `gateEdit` on the record's tab         | 200 `RevertResponse`                                 | 403; 404 (no record for this document, or tab unlinked); 409 `tab_busy`; 410                                                                                                                                  |
+| PUT    | `/api/documents/:id/tabs/:tabId/name`               | `gateEdit(..., tabId)`                 | 200 `{ tab: TabSummary }`                            | 400 `invalid_name`; 403; 404; 410                                                                                                                                                                             |
+| GET    | `/api/documents/:id/tabs/:tabId`                    | unchanged                              | `tab.rev`; header `ETag: W/"<rev>"` (CS5)            | unchanged                                                                                                                                                                                                     |
+| PUT    | `/api/documents/:id/tabs/:tabId`                    | unchanged; tokens refused              | `tab.rev` in the echo                                | adds 405 `use_changesets` (any token), 409 `tab_busy`                                                                                                                                                         |
 
 The role a token or a share link needs is exactly the named gate's; this file names no role. `?dryRun=1` on the
 submit answers the same 200 shape with `dryRun: true`, `changeset: null`; any other value of `dryRun` is false.
@@ -488,16 +488,17 @@ the comment routes), `upsertTabAtRev` (`rev = expected + 1` on both the insert a
 The trigger is the compare-and-swap: a batch whose tab statement does not advance `rev` by exactly one aborts whole,
 so the record, its parts and the index rows never land without their tab write (CS3).
 
+The records live in the document's own SQLite, beside its tabs ([API app, Storage](../../015-api/api.md#storage)).
 Snapshot and restore: the record and its parts are the snapshot of its change; nothing else is copied. Trash: the
-rows wait with their document and go with its purge (cascade). A tab unlinked from every document takes its records
-(cascade). Retention: `deleteOldChangesets(env, cutoff)` from the daily cron through
-`scheduleSweep(ctx, env, 'changesets', 'rows', now - CHANGESET_RETENTION_MS, ...)`; parts follow by cascade (CS28).
+rows wait with their document and go with its purge (the document's object deletes everything it stores). A deleted
+tab takes its records (cascade). Retention: `deleteOldChangesets(env, now - CHANGESET_RETENTION_MS)`, run by each
+document's object from its alarm once a day (`MAINTENANCE_EVERY_MS`); parts follow by cascade (CS28).
 
 ## Errors and edge cases
 
 - **E1** Submit to a trashed document: 410 through `missingDocument`. A stranger: 404.
-- **E2** `replace` on a tab id this document lacks but `tabs` holds (another document's tab): `409 tab_id_taken`;
-  an id over 128 characters: 422 `invalid_value` (CS31).
+- **E2** `replace` on a tab id this document lacks: a new tab (each document stores only its own tabs, so the id
+  cannot name another document's); an id over 128 characters: 422 `invalid_value` (CS31).
 - **E3** Both `operations` and `replace`, or neither: `400 invalid_body`. More than `CHANGESET_MAX_OPERATIONS`
   operations (comment lines excluded; a `replace` counts as one): 413 `too_large` before compile.
 - **E4** Engine refusal: nothing written; codes and the engine's text returned; `[changeset] rejected` logged.
@@ -616,29 +617,29 @@ rows wait with their document and go with its purge (cascade). A tab unlinked fr
 
 Every api line carries `documentId`, `tabId`, `changesetId` (when one exists) and counts, never content.
 
-| Fingerprint                                                   | Where                       | Level |
-| ------------------------------------------------------------- | --------------------------- | ----- |
-| `[changeset] applied` (`rev`, `rebasedOver`, counts, `agent`) | api, step 8                 | info  |
-| `[changeset] dry-run` (counts)                                | api, step 5                 | info  |
-| `[changeset] conflict` (conflict count, `strict`)             | api, base check             | info  |
-| `[changeset] held` (held count)                               | api, held check             | info  |
-| `[changeset] rejected` (codes)                                | api, engine refusal         | info  |
-| `[changeset] lost-race` (attempt)                             | api, step 9                 | warn  |
-| `[changeset] relay-failed` (error)                            | api, step 10                | warn  |
-| `[changeset] selections-unreachable` (error)                  | api, step 1                 | warn  |
-| `[changeset] merged-on-save` (records, elements)              | api, tab PUT                | info  |
-| `[changeset] superseded-on-save` (elements)                   | api, tab PUT                | info  |
-| `[changeset] seen-invalid` (raw length)                       | api, tab PUT                | warn  |
-| `[changeset] whole-tab-refused` (token id)                    | api, tab PUT 405            | info  |
-| `[changeset] reverted` (`revertOf`, reverted, kept)           | api, revert                 | info  |
-| `[changeset] tab-renamed` (`rev`)                             | api, rename                 | info  |
-| `[changeset] after-work failed` (error)                       | api, step 11                | warn  |
-| `changesets sweep: deleted <n> rows older than <cutoff>`      | api, cron (`scheduleSweep`) | info  |
-| `[changeset] received` (`rev`, decision)                      | editor, `debugLog`          | trace |
-| `[changeset] gap-refetch` (`prevRev`, seen)                   | editor, `debugLog`          | trace |
-| `[changeset] join-refetch` (tabs)                             | editor, `debugLog`          | trace |
-| `[changeset] join-check-failed` (error)                       | editor                      | warn  |
-| `[changeset] undo-failed` (status)                            | editor                      | warn  |
+| Fingerprint                                                   | Where                                   | Level |
+| ------------------------------------------------------------- | --------------------------------------- | ----- |
+| `[changeset] applied` (`rev`, `rebasedOver`, counts, `agent`) | api, step 8                             | info  |
+| `[changeset] dry-run` (counts)                                | api, step 5                             | info  |
+| `[changeset] conflict` (conflict count, `strict`)             | api, base check                         | info  |
+| `[changeset] held` (held count)                               | api, held check                         | info  |
+| `[changeset] rejected` (codes)                                | api, engine refusal                     | info  |
+| `[changeset] lost-race` (attempt)                             | api, step 9                             | warn  |
+| `[changeset] relay-failed` (error)                            | api, step 10                            | warn  |
+| `[changeset] selections-unreachable` (error)                  | api, step 1                             | warn  |
+| `[changeset] merged-on-save` (records, elements)              | api, tab PUT                            | info  |
+| `[changeset] superseded-on-save` (elements)                   | api, tab PUT                            | info  |
+| `[changeset] seen-invalid` (raw length)                       | api, tab PUT                            | warn  |
+| `[changeset] whole-tab-refused` (token id)                    | api, tab PUT 405                        | info  |
+| `[changeset] reverted` (`revertOf`, reverted, kept)           | api, revert                             | info  |
+| `[changeset] tab-renamed` (`rev`)                             | api, rename                             | info  |
+| `[changeset] after-work failed` (error)                       | api, step 11                            | warn  |
+| `[changeset] retention` `{ documentId, deleted }`             | the document's object, its daily upkeep | info  |
+| `[changeset] received` (`rev`, decision)                      | editor, `debugLog`                      | trace |
+| `[changeset] gap-refetch` (`prevRev`, seen)                   | editor, `debugLog`                      | trace |
+| `[changeset] join-refetch` (tabs)                             | editor, `debugLog`                      | trace |
+| `[changeset] join-check-failed` (error)                       | editor                                  | warn  |
+| `[changeset] undo-failed` (status)                            | editor                                  | warn  |
 
 Telemetry, server-side through `reportServerEvent`, never for a dry run (CS12): `Agent` / `Applied`, `Conflicted`
 (409 conflict and 412), `Held` for an agent changeset; `Agent` / `Reverted` for a revert of an agent changeset;

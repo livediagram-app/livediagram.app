@@ -4,7 +4,7 @@
 
 import type { ElementOp } from '@livedocuments/document';
 import { CHANGESET_MERGE_PAGE, type ChangesetCounts } from '@livedocuments/api-schema';
-import type { Env } from '../types';
+import type { DocumentEnv } from '../types';
 
 type ChangesetPart = 'ops' | 'inverse' | 'results';
 
@@ -90,8 +90,11 @@ function parseFingerprints(json: string): ChangesetFingerprints {
   };
 }
 
-export function insertChangesetStatement(env: Env, r: ChangesetRecord): D1PreparedStatement {
-  return env.DB.prepare(
+export function insertChangesetStatement(
+  env: DocumentEnv,
+  r: ChangesetRecord,
+): D1PreparedStatement {
+  return env.DOCUMENT_DB.prepare(
     `INSERT INTO agent_changesets (${COLUMNS}) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   ).bind(
     r.id,
@@ -115,19 +118,21 @@ export function insertChangesetStatement(env: Env, r: ChangesetRecord): D1Prepar
 }
 
 export function insertChangesetPartStatement(
-  env: Env,
+  env: DocumentEnv,
   changesetId: string,
   part: ChangesetPart,
   data: string,
 ): D1PreparedStatement {
-  return env.DB.prepare(
+  return env.DOCUMENT_DB.prepare(
     'INSERT INTO agent_changeset_parts (changeset_id, part, data) VALUES (?, ?, ?)',
   ).bind(changesetId, part, data);
 }
 
 // The revision of the tab's latest changeset: the relay's `prevRev` (CS21). Null when none.
-export async function lastChangesetRev(env: Env, tabId: string): Promise<number | null> {
-  const row = await env.DB.prepare('SELECT MAX(rev) AS rev FROM agent_changesets WHERE tab_id = ?')
+export async function lastChangesetRev(env: DocumentEnv, tabId: string): Promise<number | null> {
+  const row = await env.DOCUMENT_DB.prepare(
+    'SELECT MAX(rev) AS rev FROM agent_changesets WHERE tab_id = ?',
+  )
     .bind(tabId)
     .first<{ rev: number | null }>();
   return row?.rev ?? null;
@@ -135,11 +140,11 @@ export async function lastChangesetRev(env: Env, tabId: string): Promise<number 
 
 // One changeset of this document; null when the document holds no such record.
 export async function getChangeset(
-  env: Env,
+  env: DocumentEnv,
   documentId: string,
   changesetId: string,
 ): Promise<ChangesetRecord | null> {
-  const row = await env.DB.prepare(
+  const row = await env.DOCUMENT_DB.prepare(
     `SELECT ${COLUMNS} FROM agent_changesets WHERE id = ? AND document_id = ?`,
   )
     .bind(changesetId, documentId)
@@ -148,11 +153,11 @@ export async function getChangeset(
 }
 
 export async function getChangesetPart(
-  env: Env,
+  env: DocumentEnv,
   changesetId: string,
   part: ChangesetPart,
 ): Promise<string | null> {
-  const row = await env.DB.prepare(
+  const row = await env.DOCUMENT_DB.prepare(
     'SELECT data FROM agent_changeset_parts WHERE changeset_id = ? AND part = ?',
   )
     .bind(changesetId, part)
@@ -162,12 +167,12 @@ export async function getChangesetPart(
 
 // A document's changesets, newest first (CS26).
 export async function listChangesets(
-  env: Env,
+  env: DocumentEnv,
   documentId: string,
   opts: { tabId?: string; limit: number },
 ): Promise<ChangesetRecord[]> {
   const byTab = opts.tabId !== undefined;
-  const res = await env.DB.prepare(
+  const res = await env.DOCUMENT_DB.prepare(
     `SELECT ${COLUMNS} FROM agent_changesets
       WHERE document_id = ?${byTab ? ' AND tab_id = ?' : ''}
       ORDER BY created_at DESC, rev DESC
@@ -186,14 +191,14 @@ export type MergeEntry = { record: ChangesetRecord; ops: ElementOp[] };
 // CHANGESET_MERGE_PAGE so a long-offline editor never holds them all at once (CS18). Keyed by tab,
 // not document: a tab linked into several documents merges every one of its changesets.
 export async function* changesetMergePages(
-  env: Env,
+  env: DocumentEnv,
   tabId: string,
   after: { afterRev: number } | { since: number },
 ): AsyncGenerator<MergeEntry[]> {
   let floor = 'afterRev' in after ? after.afterRev : -1;
   const since = 'since' in after ? after.since : null;
   for (;;) {
-    const res = await env.DB.prepare(
+    const res = await env.DOCUMENT_DB.prepare(
       `SELECT ${PREFIXED}, p.data AS ops
          FROM agent_changesets c
          JOIN agent_changeset_parts p ON p.changeset_id = c.id AND p.part = 'ops'
@@ -219,8 +224,8 @@ export async function* changesetMergePages(
 }
 
 // The daily retention sweep (CS28): records older than the cutoff; their parts follow by cascade.
-export async function deleteOldChangesets(env: Env, cutoff: number): Promise<number> {
-  const res = await env.DB.prepare('DELETE FROM agent_changesets WHERE created_at < ?')
+export async function deleteOldChangesets(env: DocumentEnv, cutoff: number): Promise<number> {
+  const res = await env.DOCUMENT_DB.prepare('DELETE FROM agent_changesets WHERE created_at < ?')
     .bind(cutoff)
     .run();
   return res.meta.changes ?? 0;

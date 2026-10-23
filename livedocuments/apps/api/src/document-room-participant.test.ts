@@ -19,7 +19,7 @@ vi.mock('./db', async (orig) => ({
   },
 }));
 
-import { DocumentRoom } from './document-room';
+import { DocumentRoom } from './document-room/document-room';
 
 const box = { x: 0, y: 0, width: 100, height: 80 };
 const sticky = (id: string, extra: Record<string, unknown> = {}) => ({

@@ -450,14 +450,14 @@ Positionals in `<>`, optional in `[]`. `<doc>` and `--tab` resolve as above. "Wr
 `EXIT = { done: 0, rejected: 1, usage: 2, notFound: 3, auth: 4, conflict: 5, rateLimited: 6, failure: 7 }`.
 `exitCodeForStatus(status)` (CLI14); `failureOf(err, host)` adds the message, the candidates and the hint:
 
-| Answer                                                                       | Exit |
-| ---------------------------------------------------------------------------- | ---- |
-| 400, 405 (`use_changesets`), 413, 422                                        | 1    |
-| 401, 403 (`read_only_token` and every other refusal)                         | 4    |
-| 404, 410                                                                     | 3    |
-| 409 (`changeset_conflict`, `elements_held`, `tab_busy`, `tab_id_taken`), 412 | 5    |
-| 429                                                                          | 6    |
-| 5xx, a timeout, a network failure                                            | 7    |
+| Answer                                                       | Exit |
+| ------------------------------------------------------------ | ---- |
+| 400, 405 (`use_changesets`), 413, 422                        | 1    |
+| 401, 403 (`read_only_token` and every other refusal)         | 4    |
+| 404, 410                                                     | 3    |
+| 409 (`changeset_conflict`, `elements_held`, `tab_busy`), 412 | 5    |
+| 429                                                          | 6    |
+| 5xx, a timeout, a network failure                            | 7    |
 
 ### Output
 

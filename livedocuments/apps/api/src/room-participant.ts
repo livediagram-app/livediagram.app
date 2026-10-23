@@ -1,5 +1,5 @@
 // A Participant's writes in the room (docs/specs/013-workspace/share-roles.md "Integrity"; blueprint "Behaviour
-// and state"). Split out of document-room.ts, which owns the sockets and hands this module what it needs.
+// and state"). Split out of document-room/document-room.ts, which owns the sockets and hands this module what it needs.
 //
 // A Participant edits text only. Its `el` op and its `article` frame are never relayed as sent. Each joins the
 // room's tab write queue, is applied to the stored tab by the participant rules, and only what the rule produced
@@ -24,14 +24,14 @@ import {
   writeParticipantOp,
   type ParticipantWriteFailure,
 } from './participant-write';
-import type { Env } from './types';
+import type { DocumentEnv } from './types';
 
 // How many of one socket's writes may wait on the queue (blueprint SR12): far above a person's pace (the autosave
 // sends one op per changed element every 600 ms), and a crafted flood is refused rather than starving everyone.
 export const PARTICIPANT_PENDING_MAX = 64;
 
 type ParticipantRoomHooks = {
-  env: Env | undefined;
+  env: DocumentEnv | undefined;
   // Run one step on the room's tab write queue, after every step before it.
   enqueue: <T>(step: () => Promise<T>) => Promise<T>;
   // Sequence one mutation into the ordered stream; answers its seq.
@@ -134,7 +134,7 @@ export class RoomParticipantWrites {
   private async queued<T extends { ok: true } | ParticipantWriteFailure>(
     sender: ParticipantSender,
     tabId: string,
-    write: (env: Env, documentId: string) => Promise<T>,
+    write: (env: DocumentEnv, documentId: string) => Promise<T>,
   ): Promise<Extract<T, { ok: true }> | null> {
     const env = this.hooks.env;
     const documentId = sender.documentId;

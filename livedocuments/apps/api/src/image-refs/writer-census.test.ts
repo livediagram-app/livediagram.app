@@ -21,14 +21,15 @@ const KNOWN_WRITERS: Record<string, number> = {
   // tabWriteStatements (upsertTab, upsertTabAtRev), seedTabs, deleteTabRow, swapTabData; and
   // renameTab, which writes the name, never `data`, so it has no image reference to keep.
   'api/src/db/tabs.ts': 5,
-  // copyDocument
-  'api/src/db/documents.ts': 1,
-  // documentRemovalStatements
-  'api/src/db/document-removal.ts': 1,
+  // importDocumentCopy (a copy lands in its new document's own store)
+  'api/src/document-room/document-content.ts': 1,
+  // The test database's stand-in for a document's purge (its object deletes everything it stores); the
+  // references go with the tabs by their foreign key.
+  'api/src/test-sqlite-d1.ts': 1,
 };
 
-// The baseline creates `tabs` empty; any migration after it that writes `tabs` must maintain
-// `image_refs` and be listed here.
+// `tabs` lives in each document's own SQLite (document-room/document-schema.ts), not in D1; any D1 migration that
+// wrote `tabs` would be a mistake, and must maintain `image_refs` and be listed here.
 const LAST_UNINDEXED_MIGRATION = '0001';
 const KNOWN_MIGRATION_WRITERS: string[] = [];
 

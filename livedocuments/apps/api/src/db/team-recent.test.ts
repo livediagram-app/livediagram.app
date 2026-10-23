@@ -47,7 +47,8 @@ function setUp() {
         opts.trashed ? 1 : null,
       );
     await seedTabs(db.env, id, [tab(`t-${id}`, opts.empty ? [] : [rect])]);
-    // Seeding counts as a save; set the one each test means.
+    // Seeding counts as a save; set the one each test means, on the document too (its push carries it to D1).
+    db.sql.prepare('UPDATE document SET saved_at = ? WHERE id = ?').run(savedAt, id);
     db.sql.prepare('UPDATE documents SET saved_at = ? WHERE id = ?').run(savedAt, id);
   };
   return { ...db, team, member, doc };
@@ -112,21 +113,20 @@ describe('listRecentTeamDocuments', () => {
     const { env, sql, team, member } = setUp();
     team('big', 'Big');
     member('big', ME, 'joined');
+    // D1's rows as the documents' pushes leave them, written directly: the read is D1's alone, and pushing 5,000
+    // documents one by one through the test store would time the arrangement rather than the read.
+    const summary = JSON.stringify({
+      firstTabCount: 1,
+      tabCounts: { t: 1 },
+      stats: null,
+      hasContent: true,
+    });
     const insertDoc = sql.prepare(
-      `INSERT INTO documents (id, owner_id, name, shareable, team_id, saved_at, created_at)
-       VALUES (?, 'someone', ?, 0, 'big', ?, 0)`,
+      `INSERT INTO documents (id, owner_id, name, shareable, team_id, saved_at, created_at, content_summary)
+       VALUES (?, 'someone', ?, 0, 'big', ?, 0, ?)`,
     );
-    const insertTab = sql.prepare(
-      `INSERT INTO tabs (id, name, data, updated_at, element_count) VALUES (?, 't', '{}', 0, 1)`,
-    );
-    const link = sql.prepare(
-      `INSERT INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES (?, ?, 0, 0)`,
-    );
-    for (let i = 0; i < 5000; i++) {
-      insertDoc.run(`d${i}`, `Doc ${i}`, i);
-      insertTab.run(`t${i}`);
-      link.run(`d${i}`, `t${i}`);
-    }
+    for (let i = 0; i < 5000; i++) insertDoc.run(`d${i}`, `Doc ${i}`, i, summary);
+    sql.exec('DELETE FROM outbox');
     const t = performance.now();
     const list = await listRecentTeamDocuments(env, ME, 12);
     const ms = performance.now() - t;

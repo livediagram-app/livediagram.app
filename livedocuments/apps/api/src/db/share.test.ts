@@ -101,14 +101,12 @@ describe('getShareLink (the access gate, docs/specs/013-workspace/share-link-exp
     });
   });
 
-  // docs/specs/013-workspace/tab-scoped-share-links.md: a scoped link is only a link while its tab is still in
-  // the document, in the same query, so no caller can skip the check.
-  it('only resolves a scoped link while its tab is still in the document', async () => {
+  // A tab-scoped link of a tab that has gone is dropped by the document's push (document-room/document-outbox.ts), and the
+  // tab delete route drops it at once; the tabs are the document's own, so this lookup cannot see them.
+  it('resolves a link by its code and expiry alone', async () => {
     const db = fakeD1(() => ({ first: null }));
     await getShareLink(db.env, 'ABCD2345');
-    expect(db.one('FROM share_links').sql).toMatch(
-      /tab_id IS NULL OR EXISTS \(SELECT 1 FROM document_tabs dt WHERE dt\.document_id = share_links\.document_id AND dt\.tab_id = share_links\.tab_id\)/,
-    );
+    expect(db.one('FROM share_links').sql).not.toMatch(/document_tabs|document_tabs/);
   });
 
   it('filters expiry in SQL, against now', async () => {

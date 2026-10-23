@@ -100,7 +100,16 @@ export default defineProject({ test: { environment: 'jsdom' } });
   with which bindings, and has no schema. `src/test-sqlite-d1.ts` is a real
   in-memory SQLite (`node:sqlite`) with every migration applied and foreign
   keys on, as D1 has them. Use the second wherever the behaviour lives in the
-  schema: cascades, primary-key collisions, `INSERT OR IGNORE` outcomes.
+  schema: cascades, primary-key collisions, `INSERT OR IGNORE` outcomes. It also
+  carries the documents' schema (`document-room/document-schema.ts`) in the same database,
+  behind `env.DOCUMENT_DB`, answers the `DOCUMENT_ROOM` RPCs from it, and pushes each
+  document's outbox before every D1 call, so a handler test reads D1 as it would be
+  once the push landed.
+- **A document's own Durable Object in tests.** `src/test-document-sql.ts` puts
+  `ctx.storage.sql` (`exec`) and `transactionSync` over `node:sqlite`, and
+  `vitest.config.ts` aliases `cloudflare:workers` to a stub base class, so
+  `document-room/document-room-store.test.ts` runs the real worker against one real
+  `DocumentRoom` per document, each on its own database.
 
 ## Scripts
 

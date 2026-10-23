@@ -3,7 +3,7 @@ import { mediaGuestOwner } from '@liveworkspace/media';
 import { sqliteD1, type SqliteD1 } from './test-sqlite-d1';
 import { mediaServiceFor, type TestMediaService } from './test-media-service';
 import { liveDoc, tabWith } from './db/test-image-fixtures';
-import { deleteTabRow, linkTabToDocument, upsertTab } from './db/tabs';
+import { deleteTabRow, upsertTab } from './db/tabs';
 import { documentRemovalStatements } from './db/document-removal';
 import { deleteAccount, migrateOwnerId } from './db/account';
 import { flushMediaRefs, mediaOwner } from './media';
@@ -20,12 +20,15 @@ beforeEach(() => {
 });
 afterEach(() => vi.unstubAllGlobals());
 
-const queued = () =>
-  (
+// What is queued once the documents' pushes have landed (a document queues its set as it pushes it to D1).
+const queued = async () => {
+  await db.flush();
+  return (
     db.sql.prepare('SELECT document_id FROM media_ref_outbox ORDER BY document_id').all() as {
       document_id: string;
     }[]
   ).map((r) => r.document_id);
+};
 
 const serviceRefs = () =>
   (
@@ -42,29 +45,27 @@ describe('the reference queue', () => {
   it('queues a document when a save changes its images, and only then', async () => {
     liveDoc(db.sql, 'D', 'user_ada');
     await upsertTab(db.env, 'D', tabWith('t1'), 0);
-    expect(queued()).toEqual([]);
+    expect(await queued()).toEqual([]);
     await upsertTab(db.env, 'D', tabWith('t1', 'img-1'), 0);
-    expect(queued()).toEqual(['D']);
+    expect(await queued()).toEqual(['D']);
+    await db.flush();
     db.sql.exec('DELETE FROM media_ref_outbox');
     await upsertTab(db.env, 'D', tabWith('t1', 'img-1'), 0);
-    expect(queued()).toEqual([]);
+    expect(await queued()).toEqual([]);
     await upsertTab(db.env, 'D', tabWith('t1'), 0);
-    expect(queued()).toEqual(['D']);
+    expect(await queued()).toEqual(['D']);
   });
 
-  it('queues every document holding a shared tab, and a document a tab is linked into or out of', async () => {
+  it('queues a document when a tab placing images goes, and not for one that placed none', async () => {
     liveDoc(db.sql, 'A', 'user_ada');
-    liveDoc(db.sql, 'B', 'user_ada');
     await upsertTab(db.env, 'A', tabWith('t1', 'img-1'), 0);
+    await upsertTab(db.env, 'A', tabWith('t2'), 1);
+    await db.flush();
     db.sql.exec('DELETE FROM media_ref_outbox');
-    await linkTabToDocument(db.env, 'B', 't1');
-    expect(queued()).toEqual(['B']);
-    db.sql.exec('DELETE FROM media_ref_outbox');
-    await upsertTab(db.env, 'A', tabWith('t1', 'img-2'), 0);
-    expect(queued()).toEqual(['A', 'B']);
-    db.sql.exec('DELETE FROM media_ref_outbox');
-    await deleteTabRow(db.env, 'B', 't1');
-    expect(queued()).toEqual(['B']);
+    await deleteTabRow(db.env, 'A', 't2');
+    expect(await queued()).toEqual([]);
+    await deleteTabRow(db.env, 'A', 't1');
+    expect(await queued()).toEqual(['A']);
   });
 
   it('queues a removed document that placed images', async () => {
@@ -72,9 +73,10 @@ describe('the reference queue', () => {
     liveDoc(db.sql, 'E', 'user_ada');
     await upsertTab(db.env, 'D', tabWith('t1', 'img-1'), 0);
     await upsertTab(db.env, 'E', tabWith('t2'), 0);
+    await db.flush();
     db.sql.exec('DELETE FROM media_ref_outbox');
     await db.env.DB.batch(documentRemovalStatements(db.env, { ids: ['D', 'E'] }));
-    expect(queued()).toEqual(['D']);
+    expect(await queued()).toEqual(['D']);
   });
 });
 
@@ -85,7 +87,7 @@ describe('flushMediaRefs', () => {
     await upsertTab(db.env, 'D', tabWith('t2', 'img-2'), 1);
     expect(await flushMediaRefs(db.env)).toBe(1);
     expect(serviceRefs()).toEqual(['D:img-1', 'D:img-2']);
-    expect(queued()).toEqual([]);
+    expect(await queued()).toEqual([]);
     expect(completed()).toHaveLength(1);
   });
 
@@ -101,6 +103,7 @@ describe('flushMediaRefs', () => {
   it('keeps a document queued again while it was sending', async () => {
     liveDoc(db.sql, 'D', 'user_ada');
     await upsertTab(db.env, 'D', tabWith('t1', 'img-1'), 0);
+    await db.flush();
     db.sql.prepare('UPDATE media_ref_outbox SET queued_at = queued_at - 10').run();
     const inner = globalThis.fetch;
     vi.stubGlobal('fetch', async (input: RequestInfo | URL, init?: RequestInit) => {
@@ -108,7 +111,7 @@ describe('flushMediaRefs', () => {
       return inner(input, init);
     });
     await flushMediaRefs(db.env);
-    expect(queued()).toEqual(['D']);
+    expect(await queued()).toEqual(['D']);
   });
 
   it('sends nothing when nothing is queued, except the daily run that says complete', async () => {
@@ -123,7 +126,7 @@ describe('flushMediaRefs', () => {
     liveDoc(db.sql, 'D', 'user_ada');
     await upsertTab(db.env, 'D', tabWith('t1', 'img-1'), 0);
     await flushMediaRefs({ ...db.env, MEDIA_KEY: undefined });
-    expect(queued()).toEqual([]);
+    expect(await queued()).toEqual([]);
     expect(media.calls).toEqual([]);
   });
 });

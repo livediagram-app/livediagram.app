@@ -192,21 +192,6 @@ describe('submitting a changeset', () => {
       op: { tab?: { name: string } };
     };
     expect(relay.op.tab).toMatchObject({ name: 'Detail' });
-
-    await call(db, 'POST', '/api/documents', {
-      id: 'E',
-      name: 'Other',
-      tabs: [{ id: 'theirs', name: 'T', elements: [] }],
-    });
-    const taken = await call(
-      db,
-      'POST',
-      '/api/documents/D/tabs/theirs/changesets',
-      { replace: { elements: [] } },
-      { token: true },
-    );
-    expect(taken.status).toBe(409);
-    expect(await taken.json()).toMatchObject({ error: 'tab_id_taken' });
   });
 
   it('writes nothing on any refusal, and says why', async () => {

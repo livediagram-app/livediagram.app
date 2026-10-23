@@ -10,7 +10,6 @@ import { NOTIFY_EMAIL_DEDUPE_MS } from './email/notifications';
 import { runTimelineExpirySweep } from './timeline';
 import { flushMediaRefs } from './media';
 import {
-  deleteOldChangesets,
   deleteOldNotifyEmailClaims,
   deleteOldTimelineEvents,
   purgeExpiredTrash,
@@ -19,7 +18,6 @@ import {
 } from './db';
 import {
   apiRouteLabel,
-  CHANGESET_RETENTION_MS,
   bearerTokenOf,
   errorTypeToken,
   isAccountIdShape,
@@ -35,7 +33,8 @@ import { verifyOwnerId } from './auth/owner-signature';
 import { guestSignatureEnforced, OWNER_SCOPED_SEGMENTS } from './auth/guest-rest';
 import { handleTokens } from './routes/tokens';
 import { handleOauthExchange } from './routes/oauth';
-import { DocumentRoom } from './document-room';
+import { DocumentRoom } from './document-room/document-room';
+import { handleInternalItems } from './routes/internal-items';
 import { CORS_HEADERS, forbidden, json, notFound, payloadTooLarge, rateLimited } from './responses';
 import { deleteOldDocumentOpens } from './db/document-opens';
 import { clientIp, clientNetwork, clientRateKey } from './client-ip';
@@ -108,6 +107,10 @@ async function routeApiRequest(
   if (segments[1] === 'auth') {
     return handleAuth(request, env, segments, (p) => executionCtx?.waitUntil(p));
   }
+
+  // The One Explorer index's server-to-server doors into a document's content (routes/internal-items.ts): their
+  // own key, never a person's identity, so answered before identity and the per-owner limits.
+  if (segments[1] === 'internal') return handleInternalItems(request, env);
 
   // Hybrid identity (docs/specs/014-identity/auth-and-guest-access.md). Verify the accounts
   // access token once at the top of the handler: null when sign-in isn't configured, no Bearer
@@ -545,16 +548,8 @@ const worker = {
         now - TIMELINE_RETENTION_MS,
         deleteOldDocumentOpens,
       );
-      // docs/specs/024-agents/agent-changesets.md "Revert": a changeset can be reverted while its
-      // record exists, as long as the Trash keeps a document (CS28).
-      scheduleSweep(
-        ctx,
-        env,
-        'changesets',
-        'rows',
-        now - CHANGESET_RETENTION_MS,
-        deleteOldChangesets,
-      );
+      // A document's changesets are kept by the document's own Durable Object, swept by its daily upkeep alarm
+      // (document-room/document-room.ts `maintain`), not from here.
       // docs/specs/012-collaboration/assigned-actions.md §4: a notify-email claim past its dedupe window
       // decides nothing any more.
       scheduleSweep(

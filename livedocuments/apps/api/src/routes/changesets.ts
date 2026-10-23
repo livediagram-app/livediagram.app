@@ -32,14 +32,14 @@ import {
   missingDocument,
   requireOwner,
   shareCodeOf,
-  type RouteContext,
+  type DocumentRouteContext,
 } from './context';
 
 // The author's name and colour when they have no participant row (CS16).
 const FALLBACK_AUTHOR = { name: 'Someone', color: '#0ea5e9' };
 
 // Null when the path is not a changeset route.
-export async function handleChangesetRoutes(ctx: RouteContext): Promise<Response | null> {
+export async function handleChangesetRoutes(ctx: DocumentRouteContext): Promise<Response | null> {
   const { request, segments } = ctx;
   const id = segments[2];
   if (!id || segments[1] !== 'documents') return null;
@@ -70,7 +70,7 @@ export async function handleChangesetRoutes(ctx: RouteContext): Promise<Response
 }
 
 async function handleSubmit(
-  ctx: RouteContext,
+  ctx: DocumentRouteContext,
   document: DocumentDTO,
   tabId: string,
   owner: string,
@@ -97,7 +97,7 @@ async function handleSubmit(
 }
 
 async function handleList(
-  ctx: RouteContext,
+  ctx: DocumentRouteContext,
   document: DocumentDTO,
   owner: string,
 ): Promise<Response> {
@@ -124,7 +124,7 @@ async function handleList(
 }
 
 async function handleOne(
-  ctx: RouteContext,
+  ctx: DocumentRouteContext,
   document: DocumentDTO,
   record: ChangesetRecord,
   owner: string,
@@ -140,7 +140,7 @@ async function handleOne(
 }
 
 async function handleRevert(
-  ctx: RouteContext,
+  ctx: DocumentRouteContext,
   document: DocumentDTO,
   record: ChangesetRecord,
   owner: string,
@@ -165,7 +165,7 @@ async function handleRevert(
 // A token's written changeset or revert keeps its presence on the tab (docs/specs/024-agents/agent-presence.md
 // "Presence"); a dry run, a refusal and a session's write leave presence alone. Off the response path.
 export function refreshAfterWrite(
-  ctx: RouteContext,
+  ctx: DocumentRouteContext,
   documentId: string,
   tabId: string,
   author: Author,
@@ -193,7 +193,7 @@ export function refreshAfterWrite(
 
 // The resolved owner of the request: the token's owner for an agent. Nothing in the body names an
 // author.
-export async function authorOf(ctx: RouteContext, owner: string): Promise<Author> {
+export async function authorOf(ctx: DocumentRouteContext, owner: string): Promise<Author> {
   const participant = await getParticipant(ctx.env, owner);
   return {
     id: owner,

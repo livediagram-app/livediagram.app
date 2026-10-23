@@ -1,19 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { Element } from '@livedocuments/document';
 import type { Env } from '../types';
-import {
-  collabIndexCopyStatements,
-  collabIndexStatements,
-  readActivity,
-  recordOwnerAlias,
-} from './collab-index';
+import { readActivity, recordOwnerAlias } from './collab-index';
 
-// The statements a tab write contributes to the collaboration index
-// (docs/specs/013-workspace/inbox.md §2.1), and the read's row -> DTO mapping (§3, §4). A fake
-// D1 binding records SQL + binds; the SQL itself needs a live D1 to
-// prove, so these pin the CONTRACT every write path relies on: a full
-// replace per tab, the FK-safe ordering, and the dedupe/drop rules on
-// read.
+// The collaboration index's read (docs/specs/013-workspace/inbox.md §3, §4): its row -> DTO mapping and
+// the dedupe/drop rules. A fake D1 binding records SQL + binds. The rows are written by each document's push
+// (document-room/document-outbox.test.ts).
 
 type Bound = { sql: string; args: unknown[] };
 
@@ -36,110 +27,6 @@ function fakeEnv(results: unknown[][] = []) {
   } as unknown as Env;
   return { env, batches };
 }
-
-const shape = (id: string, extra: Record<string, unknown>): Element =>
-  ({
-    id,
-    type: 'shape',
-    shape: 'square',
-    x: 0,
-    y: 0,
-    width: 1,
-    height: 1,
-    label: id,
-    ...extra,
-  }) as never;
-
-describe('collabIndexStatements', () => {
-  it('always clears the tab first, even with nothing to insert', () => {
-    const { env } = fakeEnv();
-    const stmts = collabIndexStatements(env, 'tab-1', []) as unknown as Bound[];
-    expect(stmts.map((s) => s.sql)).toEqual([
-      'DELETE FROM collab_actions WHERE tab_id = ?',
-      'DELETE FROM collab_threads WHERE tab_id = ?',
-    ]);
-    expect(stmts.every((s) => s.args[0] === 'tab-1')).toBe(true);
-  });
-
-  it('inserts one row per action and per thread after the deletes', () => {
-    const { env } = fakeEnv();
-    const stmts = collabIndexStatements(env, 'tab-1', [
-      shape('s1', {
-        action: {
-          id: 'a1',
-          name: 'Confirm',
-          description: 'd',
-          assignee: { userId: 'u2', name: 'Priya' },
-          teamId: null,
-          assignerId: 'u1',
-          assignerName: 'Sam',
-          status: 'open',
-          createdAt: 1,
-          updatedAt: 2,
-        },
-        commentThread: {
-          resolved: false,
-          comments: [
-            {
-              id: 'c1',
-              text: 'hi',
-              createdAt: 5,
-              authorName: 'A',
-              authorColor: '#a',
-              authorId: 'u1',
-            },
-          ],
-        },
-      }),
-    ]) as unknown as Bound[];
-    expect(stmts).toHaveLength(4);
-    expect(stmts[2]!.sql).toMatch(/INSERT INTO collab_actions/);
-    expect(stmts[2]!.args).toEqual([
-      'tab-1',
-      's1',
-      'a1',
-      's1',
-      'Confirm',
-      'd',
-      'open',
-      'u2',
-      null,
-      'Priya',
-      'u1',
-      'Sam',
-      null,
-      1,
-      2,
-    ]);
-    expect(stmts[3]!.sql).toMatch(/INSERT INTO collab_threads/);
-    expect(stmts[3]!.args).toEqual([
-      'tab-1',
-      's1',
-      's1',
-      0,
-      1,
-      '["u1"]',
-      '[]',
-      'hi',
-      'A',
-      '#a',
-      5,
-      5,
-    ]);
-  });
-});
-
-describe('collabIndexCopyStatements', () => {
-  it('copies every table from the source tab under the new id', () => {
-    const { env } = fakeEnv();
-    const stmts = collabIndexCopyStatements(env, 'old', 'new') as unknown as Bound[];
-    expect(stmts).toHaveLength(2);
-    for (const s of stmts) {
-      expect(s.sql).toMatch(/INSERT INTO collab_\w+[\s\S]*SELECT \?1[\s\S]*WHERE tab_id = \?2/);
-      expect(s.args).toEqual(['new', 'old']);
-    }
-  });
-});
 
 describe('readActivity', () => {
   const place = {

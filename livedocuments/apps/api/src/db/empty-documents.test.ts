@@ -83,13 +83,14 @@ describe('a document list says which documents are empty', () => {
 
   it('keeps the count in the write itself: no trigger re-parses the body', () => {
     const { sql } = setUp();
-    // The one trigger on tabs is the revision guard (docs/specs/024-agents/agent-changesets.md,
-    // CS3), which compares two integers and never reads the body.
+    // The triggers on tabs are the revision guard (docs/specs/024-agents/agent-changesets.md, CS3),
+    // which compares two integers, and the outbox's key (document-room/document-schema.ts), which notes the tab
+    // id: neither reads the body.
     const triggers = sql
       .prepare("SELECT name, sql FROM sqlite_master WHERE type = 'trigger' AND tbl_name = 'tabs'")
       .all();
-    expect(triggers.map((t) => t.name)).toEqual(['tabs_rev_advances']);
-    for (const t of triggers) expect(String(t.sql)).not.toMatch(/json|\bdata\b\s*[,)=]/i);
+    expect(triggers.map((t) => t.name).sort()).toEqual(['outbox_tab_update', 'tabs_rev_advances']);
+    for (const t of triggers) expect(String(t.sql)).not.toMatch(/json|(NEW|OLD)\.data\b/i);
   });
 
   it('says the same on the team library', async () => {

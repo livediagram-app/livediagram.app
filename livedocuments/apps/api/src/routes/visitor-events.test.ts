@@ -36,9 +36,6 @@ const db = vi.hoisted(() => ({
   listSharedWith: vi.fn(async () => [] as unknown[]),
   upsertTab: vi.fn(async () => {}),
   deleteTabRow: vi.fn(),
-  documentsContainingTab: vi.fn(),
-  linkTabToDocument: vi.fn(),
-  tabLinkedToOwnedDocument: vi.fn(),
   getShareLink: vi.fn(async () => null),
 }));
 vi.mock('../db', () => db);

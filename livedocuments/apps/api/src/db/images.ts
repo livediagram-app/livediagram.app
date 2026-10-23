@@ -1,14 +1,14 @@
 // images — the reference-index reader over the gallery (docs/specs/009-elements/images.md). The gallery rows
 // and bytes live in liveworkspace's media service (src/media.ts). Which documents place each image comes
-// from the image reference index (db/image-refs.ts), never from a tab body.
+// from `document_images`, which each document's Durable Object pushes from its own reference index
+// (db/image-refs.ts, document-room/document-outbox.ts), never from a tab body.
 
 import type { Env } from '../types';
 
 // Map of imageId → the owner's documents that place it, each document once,
 // ordered by name. Drives the Explorer Image Gallery's "Used in N documents"
 // badge, so an image with no entry reads as unused. One query over the
-// reference index; a shared tab (docs/specs/006-document/tab-document-many-to-many.md)
-// is attributed to every one of the owner's documents that links it.
+// pushed index of each document's images.
 export async function imageUsageByOwner(
   env: Env,
   ownerId: string,
@@ -16,8 +16,7 @@ export async function imageUsageByOwner(
   const rows = await env.DB.prepare(
     `SELECT DISTINCT r.image_id, d.id AS document_id, d.name AS document_name
        FROM documents d
-       JOIN document_tabs dt ON dt.document_id = d.id
-       JOIN image_refs r ON r.tab_id = dt.tab_id
+       JOIN document_images r ON r.document_id = d.id
       WHERE d.owner_id = ?
       ORDER BY d.name, d.id`,
   )

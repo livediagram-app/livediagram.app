@@ -65,9 +65,15 @@ const OWNER_COLUMNS: OwnerColumn[] = [
     column: 'alias_id',
     migrate: { kind: 'stays', why: 'the guest id is recorded as an alias of the account' },
   },
-  // Agent changesets (docs/specs/024-agents/agent-changesets.md, CS27): a guest with an edit link
-  // writes and reverts changesets too.
-  { table: 'agent_changesets', column: 'author_id', migrate: { kind: 'moves' } },
+  // Agent changesets (docs/specs/024-agents/agent-changesets.md, CS27): a guest with an edit link writes and
+  // reverts changesets too. They are each document's own (its Durable Object; one database holds every document here),
+  // out of reach of the account's D1 sweep: those on someone else's document stay until its retention ages them out.
+  {
+    table: 'agent_changesets',
+    column: 'author_id',
+    deleteKeeps: { when: '1 = 1', why: "a document's own store, aged out after 30 days" },
+    migrate: { kind: 'stays', why: "a document's own store, aged out after 30 days" },
+  },
   { table: 'api_tokens', column: 'owner_id', migrate: { kind: 'account-only' } },
   { table: 'email_lifecycle', column: 'owner_id', migrate: { kind: 'account-only' } },
   { table: 'auth_accounts', column: 'owner_id', migrate: { kind: 'account-only' } },

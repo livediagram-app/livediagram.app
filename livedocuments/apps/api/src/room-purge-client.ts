@@ -1,9 +1,10 @@
-// Removing a document for good removes what its realtime room kept too (docs/specs/015-api/api.md "Purging a
-// room"): the collaboration ledger holds the text of every comment, idea and answer the room sequenced, which
-// outlived the document in DO storage before this. Best-effort, like the other room calls: the D1 removal before
-// it is the delete, so a room that can't be reached is logged rather than failing the request or the cron.
+// Removing a document for good removes everything its document's Durable Object stored (docs/specs/015-api/api.md
+// "Purging a room"): the content (tabs, image references, changesets) and the collaboration ledger, which holds the
+// text of every comment, idea and answer the room sequenced. The D1 removal before it is the delete, so a document
+// that can't be reached is logged rather than failing the request or the cron; its content is unreachable from
+// then on (no document row names it), and the next purge of the same id (the internal DELETE) finishes it.
 
-import { roomFetch } from './room-client';
+import { documentRoom } from './document-client';
 import type { Env } from './types';
 
 // The api never waits on one room longer than this.
@@ -21,8 +22,15 @@ export async function purgeRooms(
     const reached = await Promise.all(
       batch.map(async (id) => {
         try {
-          const res = await roomFetch(env, id, '/purge', { method: 'POST' }, ROOM_PURGE_TIMEOUT_MS);
-          if (!res.ok) throw new Error(`status ${res.status}`);
+          let timer: ReturnType<typeof setTimeout> | undefined;
+          const timeout = new Promise<never>((_, reject) => {
+            timer = setTimeout(() => reject(new Error('purge timeout')), ROOM_PURGE_TIMEOUT_MS);
+          });
+          try {
+            await Promise.race([documentRoom(env, id).purge(), timeout]);
+          } finally {
+            clearTimeout(timer);
+          }
           return true;
         } catch (err) {
           console.warn('[room-purge] did not reach the room', {

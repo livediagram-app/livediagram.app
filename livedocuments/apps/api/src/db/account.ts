@@ -23,9 +23,8 @@ const R2_DELETE_CHUNK = 1000;
 // liveworkspace's media service (src/media.ts). account-owner-columns.test.ts holds
 // both functions here to that list against the real schema. Called from
 // DELETE /api/account when the user opts in via the "Delete account"
-// dialog. The documents go through documentRemovalStatements, which drops
-// the tabs (and their history) no other owner's document still holds;
-// share links and the other per-document rows cascade from `documents.id`.
+// dialog. The documents go through documentRemovalStatements, and their content with each document's own
+// Durable Object (purgeRooms); share links and the other per-document rows cascade from `documents.id`.
 // Folders carry their own owner_id and need their
 // own DELETE. Participants are owner-less in the schema but their id
 // IS the owner id, so a single id-match delete clears the display-
@@ -131,15 +130,15 @@ export async function deleteAccount(
   await env.DB.prepare('DELETE FROM tags WHERE owner_id = ?').bind(ownerId).run();
   // placement_defaults (docs/specs/013-workspace/default-folders.md): no foreign key reaches them.
   await env.DB.prepare('DELETE FROM placement_defaults WHERE owner_id = ?').bind(ownerId).run();
-  // agent_changesets (docs/specs/024-agents/agent-changesets.md, CS27): the ones they wrote on other
-  // people's documents; those on their own went with the documents. Parts follow by cascade.
-  await env.DB.prepare('DELETE FROM agent_changesets WHERE author_id = ?').bind(ownerId).run();
+  // agent_changesets (docs/specs/024-agents/agent-changesets.md, CS27): those on their own documents went with
+  // the documents. The ones they wrote on other people's are in those documents' own stores now (each document's
+  // Durable Object), out of reach of one D1 statement; they age out with the 30-day changeset retention there.
   // timeline (docs/specs/013-workspace/timeline.md §3.5): the feed, the events this owner authored,
   // and the scope-state row. Hard, not soft — soft delete is a
   // user-facing affordance in this product, never a retention strategy.
   await deleteTimelineForOwner(env, ownerId);
-  // Activity (docs/specs/013-workspace/inbox.md): the alias rows. The index
-  // rows themselves went with the tabs documentRemovalStatements dropped above.
+  // Activity (docs/specs/013-workspace/inbox.md): the alias rows. The index rows themselves went with the
+  // documents documentRemovalStatements dropped above.
   await deleteCollabIndexForOwner(env, ownerId);
   // Explorer Home (docs/specs/013-workspace/explorer-home.md "Opens"): this owner's opens. Other
   // people's opens of this owner's documents went with the documents (foreign key cascade);
@@ -178,7 +177,7 @@ export async function deleteAccount(
 // (docs/specs/009-elements/images.md "Placement grants"), so the canvas keeps
 // rendering it.
 //
-// Other tables (`share_links`, `tabs`) don't carry
+// Other tables (`share_links`, `document_images`) don't carry
 // their own owner_id, they link via `document_id` which is
 // owner-bound, so updating the documents cascade-fixes them
 // implicitly.
@@ -311,13 +310,8 @@ export async function migrateOwnerId(
       toOwnerId,
       fromOwnerId,
     ),
-    // agent_changesets (docs/specs/024-agents/agent-changesets.md, CS27): what they wrote and reverted
-    // as a guest stays theirs.
-    changesets: move(
-      'UPDATE agent_changesets SET author_id = ? WHERE author_id = ?',
-      toOwnerId,
-      fromOwnerId,
-    ),
+    // agent_changesets (docs/specs/024-agents/agent-changesets.md, CS27) are each document's own now (its Durable
+    // Object): a guest's stay under the guest id there until they age out (30 days).
   };
   const keys = Object.keys(statements) as (keyof typeof statements)[];
   const results = await env.DB.batch(keys.map((key) => statements[key]));

@@ -1,11 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { documentServesImage } from './image-grants';
+import { documentPlacesImage } from './image-refs';
 import { imageUsageByOwner } from './images';
 import { upsertTab } from './tabs';
 import { images, liveDoc, setup, tabWith } from './test-image-fixtures';
 
 // The usage map and the share-visitor read (docs/specs/009-elements/images.md,
-// "Reference index"): both answer from the index, never a tab body.
+// "Reference index"): both answer from the index, never a tab body. The usage map reads D1's document_images,
+// which each document's push keeps; the placement is asked of the document itself.
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -41,7 +42,7 @@ describe('imageUsageByOwner', () => {
 
 // docs/specs/013-workspace/tab-scoped-share-links.md: a tab-scoped visitor
 // may read an image only when THEIR tab uses it.
-describe('documentServesImage (placement)', () => {
+describe('documentPlacesImage (placement)', () => {
   async function twoTabs() {
     const db = setup();
     liveDoc(db.sql, 'A');
@@ -55,19 +56,19 @@ describe('documentServesImage (placement)', () => {
 
   it('looks across every tab of the document by default', async () => {
     const db = await twoTabs();
-    expect(await documentServesImage(db.env, 'A', 'i2')).toBe(true);
-    expect(await documentServesImage(db.env, 'A', 'i3')).toBe(false);
+    expect(await documentPlacesImage(db.env, 'A', 'i2')).toBe(true);
+    expect(await documentPlacesImage(db.env, 'A', 'i3')).toBe(false);
   });
 
   it('looks at one tab when scoped', async () => {
     const db = await twoTabs();
-    expect(await documentServesImage(db.env, 'A', 'i1', 't1')).toBe(true);
-    expect(await documentServesImage(db.env, 'A', 'i2', 't1')).toBe(false);
+    expect(await documentPlacesImage(db.env, 'A', 'i1', 't1')).toBe(true);
+    expect(await documentPlacesImage(db.env, 'A', 'i2', 't1')).toBe(false);
   });
 
   it('answers from the index', async () => {
     const db = await twoTabs();
     db.sql.exec('DELETE FROM image_refs');
-    expect(await documentServesImage(db.env, 'A', 'i1')).toBe(false);
+    expect(await documentPlacesImage(db.env, 'A', 'i1')).toBe(false);
   });
 });

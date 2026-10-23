@@ -2,6 +2,7 @@
 
 Follow the references below only as needed; never upfront.
 
+- ../015-api/api.md#storage - when touching where a document's content is stored or read: one SQLite-backed Durable Object per document (`DocumentRoom`) holds its tabs, slide deck, image references and changesets; the worker routes every content request to it by RPC; D1 keeps only non-content data and the cross-document indexes the document's outbox pushes
 - ./domain-language.md - when naming or adding anything that distinguishes documents or tabs: mode (Pages, the one mode), kind (the general tab) and template (what a document was made from), never interchangeable; and This Browser, the one name for a document saved only in this browser
 - ./testing.md - when working on Testing: Vitest across the monorepo; shared config; co-located unit tests plus jsdom hook and component tests; per-workspace coverage shape
 - ./source-layout.md - when working on Source layout: group `apps/editor` components + hooks by domain: `apps/editor` components + hooks grouped into domain subdirectories (canvas/dialogs/panels/…)

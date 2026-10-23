@@ -24,11 +24,20 @@ export type {
   ClientMessage,
 } from '@livedocuments/api-schema';
 
+import type { DocumentRoom } from './document-room/document-room';
+
 // Worker bindings injected by Cloudflare at runtime. Not part of the
 // wire format (purely a server-side capability handle).
 export type Env = {
+  // Everything about a document that is not its content (docs/specs/015-api/api.md "Storage"): the documents
+  // row, folders, sharing, people, the timeline and the Inbox's index tables.
   DB: D1Database;
-  DOCUMENT_ROOM: DurableObjectNamespace;
+  // Each document's Durable Object (src/document-room/document-room.ts): its content, in its own SQLite, and its
+  // realtime room. Reached through document-client.ts `documentRoom(env, documentId)`.
+  DOCUMENT_ROOM: DurableObjectNamespace<DocumentRoom>;
+  // The key liveworkspace's index presents on this app's internal endpoints (`/api/internal/items/*`,
+  // liveworkspace/docs/one-explorer-contracts.md). A secret; unset, those endpoints answer 404.
+  INDEX_KEY?: string;
   // The live build id: the deploy's commit, the same one baked into the editor build as
   // NEXT_PUBLIC_BUILD_ID (docs/specs/016-platform/stale-builds.md). Unset (local dev, a self-host that
   // sets neither) leaves it off the server release signal.
@@ -144,3 +153,9 @@ export type Env = {
     limit: (input: { key: string }) => Promise<{ success: boolean }>;
   };
 };
+
+// The env a document's own code runs with, inside its Durable Object (src/document-room/document-room.ts): the
+// worker's bindings plus `DOCUMENT_DB`, the document's own SQLite behind the D1 surface (document-room/document-db.ts).
+// Only the Durable Object can make one, so a content read or write the worker attempts is a type error:
+// the worker reaches content through the document's Durable Object instead.
+export type DocumentEnv = Env & { DOCUMENT_DB: D1Database };

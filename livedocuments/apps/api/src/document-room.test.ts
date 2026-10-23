@@ -8,7 +8,7 @@ import {
   ROOM_OP_KINDS,
   SYSTEM_OP_KINDS,
 } from '@livedocuments/api-schema';
-import { DocumentRoom } from './document-room';
+import { DocumentRoom } from './document-room/document-room';
 import type { Env } from './types';
 
 // PRESENCE_OP_KINDS is a readonly array (it has to be, to derive the type), so

@@ -1,7 +1,6 @@
 import {
   getDocumentTabImageSvg,
   getDocumentThumbnailSvg,
-  type ThumbnailOptions,
   type ThumbnailSubject,
 } from './thumbnail';
 import type { Env } from './types';
@@ -12,8 +11,7 @@ export async function documentImageSvg(
   env: Env,
   liveDoc: ThumbnailSubject,
   tabId: string | null,
-  opts: ThumbnailOptions = {},
 ): Promise<string | null> {
   if (tabId) return getDocumentTabImageSvg(env, liveDoc, tabId);
-  return getDocumentThumbnailSvg(env, liveDoc, opts);
+  return getDocumentThumbnailSvg(env, liveDoc);
 }

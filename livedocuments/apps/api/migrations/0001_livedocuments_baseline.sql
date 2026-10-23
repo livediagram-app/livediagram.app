@@ -148,8 +148,9 @@ CREATE INDEX folders_owner_idx ON folders (owner_id);
 CREATE INDEX folders_parent_idx ON folders (parent_id);
 CREATE INDEX folders_team_idx ON folders (team_id);
 
--- A document (docs/specs/006-document/document.md): its name, owner, place, slide deck and Trash state. Its tabs
--- are rows of `tabs`, joined through `document_tabs`.
+-- A document (docs/specs/006-document/document.md): its name, owner, place and Trash state. Its content (tabs, the
+-- slide deck, changesets, image references) is not here: it lives in the document's own Durable Object
+-- (docs/specs/015-api/api.md "Storage"), which pushes `content_summary` and `saved_at` back for the listings.
 CREATE TABLE documents (
   id                  TEXT    PRIMARY KEY,
   owner_id            TEXT    NOT NULL,
@@ -164,54 +165,19 @@ CREATE TABLE documents (
   source              TEXT    NULL,
   comment_notified_at INTEGER,
   thumb_rendered_at   INTEGER,
-  -- The slide deck (docs/specs/012-collaboration/presentation-mode.md), serialised JSON, or NULL for none.
-  presentation        TEXT    NULL,
   trashed_at          INTEGER NULL,
   trash_reason        TEXT    NULL,
-  join_notified_at    INTEGER
+  join_notified_at    INTEGER,
+  -- What the listings show of the content, pushed by the document's Durable Object
+  -- (src/document-room/document-outbox.ts): JSON {firstTabCount, tabCounts, stats, hasContent}. NULL until its
+  -- first push.
+  content_summary     TEXT    NULL
 );
 CREATE INDEX idx_documents_owner_recent ON documents (owner_id, saved_at DESC);
 CREATE INDEX documents_folder_idx ON documents (folder_id);
 CREATE INDEX documents_team_idx ON documents (team_id);
 CREATE INDEX documents_source_idx ON documents (source);
 CREATE INDEX documents_trashed_idx ON documents (trashed_at) WHERE trashed_at IS NOT NULL;
-
--- One tab's body (docs/specs/006-document/per-tab-storage.md): the live app's Tab minus { id, name }, elements and
--- per-tab settings, as JSON. `rev` advances by exactly one on every body write (the trigger below).
-CREATE TABLE tabs (
-  id            TEXT    PRIMARY KEY,
-  name          TEXT    NOT NULL,
-  data          TEXT    NOT NULL,
-  updated_at    INTEGER NOT NULL,
-  element_count INTEGER NOT NULL,
-  rev           INTEGER NOT NULL DEFAULT 0
-);
-CREATE TRIGGER tabs_rev_advances BEFORE UPDATE OF data ON tabs
-  WHEN NEW.rev IS NOT OLD.rev + 1
-  BEGIN SELECT RAISE(ABORT, 'tab_rev_stale'); END;
-
--- Which tabs a document holds, in order, with each tab's folder in the tab bar.
-CREATE TABLE document_tabs (
-  document_id TEXT    NOT NULL,
-  tab_id      TEXT    NOT NULL,
-  order_index INTEGER NOT NULL,
-  added_at    INTEGER NOT NULL,
-  folder      TEXT,
-  PRIMARY KEY (document_id, tab_id),
-  FOREIGN KEY (document_id) REFERENCES documents (id) ON DELETE CASCADE,
-  FOREIGN KEY (tab_id) REFERENCES tabs (id) ON DELETE CASCADE
-);
-CREATE INDEX document_tabs_by_document ON document_tabs (document_id, order_index);
-CREATE INDEX document_tabs_by_tab ON document_tabs (tab_id);
-
--- Counts written with each tab body, so listings never read a body.
-CREATE TABLE tab_stats (
-  tab_id        TEXT    PRIMARY KEY REFERENCES tabs (id) ON DELETE CASCADE,
-  element_count INTEGER NOT NULL,
-  comment_count INTEGER NOT NULL,
-  data_bytes    INTEGER NOT NULL,
-  written_at    INTEGER NOT NULL
-);
 
 -- When each person last opened each document (Home's recents, the Explorer's Opened column).
 CREATE TABLE document_opens (
@@ -325,9 +291,14 @@ CREATE INDEX ws_tickets_expires_at ON ws_tickets (expires_at);
 -- Comments, actions and the timeline
 -- ---------------------------------------------------------------------------------------------------------------
 
--- One row per comment thread, kept from the tab bodies for the Inbox (docs/specs/012-collaboration/assigned-actions.md).
+-- The Inbox's index of the comment threads and assigned actions inside each document's tabs
+-- (docs/specs/013-workspace/inbox.md §2), one tab's rows replaced at a time by the document's Durable Object
+-- (src/document-room/document-outbox.ts `onTabCollabChanged`). It carries the tab's name, as the tab itself is
+-- not here.
 CREATE TABLE collab_threads (
+  document_id         TEXT    NOT NULL REFERENCES documents (id) ON DELETE CASCADE,
   tab_id              TEXT    NOT NULL,
+  tab_name            TEXT    NOT NULL,
   element_id          TEXT    NOT NULL,
   element_label       TEXT    NOT NULL,
   resolved            INTEGER NOT NULL,
@@ -341,14 +312,15 @@ CREATE TABLE collab_threads (
   first_at            INTEGER NOT NULL,
   latest_at           INTEGER NOT NULL,
   mentioned_ids       TEXT    NOT NULL DEFAULT '[]',
-  PRIMARY KEY (tab_id, element_id),
-  FOREIGN KEY (tab_id) REFERENCES tabs (id) ON DELETE CASCADE
+  PRIMARY KEY (document_id, tab_id, element_id)
 );
 CREATE INDEX collab_threads_open_idx ON collab_threads (resolved, latest_at);
 
 -- One row per assigned action.
 CREATE TABLE collab_actions (
+  document_id        TEXT    NOT NULL REFERENCES documents (id) ON DELETE CASCADE,
   tab_id             TEXT    NOT NULL,
+  tab_name           TEXT    NOT NULL,
   element_id         TEXT    NOT NULL,
   action_id          TEXT    NOT NULL,
   element_label      TEXT    NOT NULL,
@@ -363,8 +335,7 @@ CREATE TABLE collab_actions (
   team_id            TEXT,
   created_at         INTEGER NOT NULL,
   updated_at         INTEGER NOT NULL,
-  PRIMARY KEY (tab_id, element_id, action_id),
-  FOREIGN KEY (tab_id) REFERENCES tabs (id) ON DELETE CASCADE
+  PRIMARY KEY (document_id, tab_id, element_id, action_id)
 );
 CREATE INDEX collab_actions_assignee_idx ON collab_actions (assignee_user_id, status);
 CREATE INDEX collab_actions_assigner_idx ON collab_actions (assigner_id, status);
@@ -415,42 +386,6 @@ CREATE TABLE timeline_scope_state (
 );
 
 -- ---------------------------------------------------------------------------------------------------------------
--- Agent changesets (docs/specs/024-agents/agent-changesets.md)
--- ---------------------------------------------------------------------------------------------------------------
-
-CREATE TABLE agent_changesets (
-  id           TEXT    PRIMARY KEY,
-  document_id  TEXT    NOT NULL REFERENCES documents (id) ON DELETE CASCADE,
-  tab_id       TEXT    NOT NULL REFERENCES tabs (id) ON DELETE CASCADE,
-  rev          INTEGER NOT NULL,
-  base_rev     INTEGER,
-  author_id    TEXT    NOT NULL,
-  author_name  TEXT    NOT NULL,
-  author_color TEXT    NOT NULL,
-  token_id     TEXT,
-  summary      TEXT,
-  fingerprints TEXT    NOT NULL,
-  added        INTEGER NOT NULL,
-  changed      INTEGER NOT NULL,
-  removed      INTEGER NOT NULL,
-  created_tab  INTEGER NOT NULL DEFAULT 0,
-  revert_of    TEXT,
-  created_at   INTEGER NOT NULL
-);
-CREATE UNIQUE INDEX agent_changesets_tab_rev ON agent_changesets (tab_id, rev);
-CREATE INDEX agent_changesets_document_created ON agent_changesets (document_id, created_at);
-CREATE INDEX agent_changesets_created ON agent_changesets (created_at);
-CREATE INDEX agent_changesets_author_idx ON agent_changesets (author_id);
-
--- A changeset's operations, inverse and results, kept apart from its row so listings stay small.
-CREATE TABLE agent_changeset_parts (
-  changeset_id TEXT NOT NULL REFERENCES agent_changesets (id) ON DELETE CASCADE,
-  part         TEXT NOT NULL CHECK (part IN ('ops', 'inverse', 'results')),
-  data         TEXT NOT NULL,
-  PRIMARY KEY (changeset_id, part)
-);
-
--- ---------------------------------------------------------------------------------------------------------------
 -- Images (docs/specs/009-elements/images.md)
 -- ---------------------------------------------------------------------------------------------------------------
 
@@ -468,24 +403,26 @@ CREATE TABLE media_images (
 CREATE INDEX media_images_owner_idx ON media_images (owner_id);
 
 -- The documents whose images changed since the service last heard (liveworkspace/docs/media.md "References"):
--- written in the same batch as the change, sent by the every-minute cron. `queued_at` moves on each change, so
--- the cron deletes only the rows it sent.
+-- written by the document's Durable Object as it pushes `document_images`, or by a document's removal, and sent by
+-- the every-minute cron. `queued_at` moves on each change, so the cron deletes only the rows it sent.
 CREATE TABLE media_ref_outbox (
   document_id TEXT PRIMARY KEY,
   queued_at   INTEGER NOT NULL
 ) WITHOUT ROWID;
 
--- Which images each tab places ("Reference index"), kept from the tab bodies in the same batch as each write, so
--- the media service's references, the usage map and share-visitor reads never read a body. No foreign keys: the
--- delete paths prune it.
-CREATE TABLE image_refs (
-  tab_id   TEXT NOT NULL,
-  image_id TEXT NOT NULL,
-  PRIMARY KEY (tab_id, image_id)
+-- Which images each document places, pushed by its Durable Object from its own per-tab reference index
+-- (src/document-room/document-outbox.ts; docs/specs/009-elements/images.md "Reference index"), so the media
+-- service's references, the usage map and an owner change never read a body or wake a document. Behind the
+-- document by at most one push; the byte endpoint's share check asks the document itself. No foreign key: the
+-- document-removal batch deletes them.
+CREATE TABLE document_images (
+  document_id TEXT NOT NULL,
+  image_id    TEXT NOT NULL,
+  PRIMARY KEY (document_id, image_id)
 ) WITHOUT ROWID;
-CREATE INDEX image_refs_image_idx ON image_refs (image_id);
+CREATE INDEX document_images_image_idx ON document_images (image_id);
 
--- The images a document may serve beyond its owner's own ("Placement grants"). No foreign keys, like image_refs:
+-- The images a document may serve beyond its owner's own ("Placement grants"). No foreign keys, like document_images:
 -- the document-removal batch deletes them.
 CREATE TABLE image_grants (
   document_id TEXT    NOT NULL,

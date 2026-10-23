@@ -1,5 +1,5 @@
-import type { RouteContext, WorkbenchContext } from './context';
-import type { Env } from '../types';
+import type { DocumentRouteContext, WorkbenchContext } from './context';
+import type { Env, DocumentEnv } from '../types';
 
 // Shared test builder for RouteContext (docs/specs/003-system-architecture/testing.md). Eight route test
 // files used to hand-roll the same URL → segments → JSON Request →
@@ -36,12 +36,12 @@ export function makeTestRouteContext(
     headers?: Record<string, string>;
     // Per-test bindings (e.g. the images tests' IMAGES stub); an empty
     // Env otherwise.
-    env?: Env;
+    env?: Env | DocumentEnv;
     // Provide to observe background dispatches; absent = the unit-test
     // default where `ctx.waitUntil?.(...)` skips its argument.
     waitUntil?: (promise: Promise<unknown>) => void;
   } = {},
-): RouteContext {
+): DocumentRouteContext {
   const url = new URL(`https://api.test${path}`);
   const segments = url.pathname.replace(/^\//, '').split('/');
   const request = new Request(url, {
@@ -53,7 +53,7 @@ export function makeTestRouteContext(
   const verifiedUserId = opts.verifiedUserId === undefined ? accountUserId : opts.verifiedUserId;
   return {
     request,
-    env: opts.env ?? ({} as Env),
+    env: documentEnvFor(segments, opts.env),
     url,
     segments,
     accountUserId,
@@ -64,4 +64,35 @@ export function makeTestRouteContext(
     workbench: opts.workbench ?? null,
     ...(opts.waitUntil ? { waitUntil: opts.waitUntil } : {}),
   };
+}
+
+// A request about a document (/api/documents/<id>/…) runs inside the document's Durable Object
+// (routes/documents.ts), whose env carries the document's store: an env without one gets a stand-in,
+// so the handler under test takes the in-document path. Any other path keeps the env it was given.
+//
+// The stand-in answers nothing (no rows, no changes) and is not enumerable, so a test asserting the env a
+// mocked module was handed (`toHaveBeenCalledWith({}, …)`) still sees the bindings it gave.
+function documentEnvFor(segments: string[], env: Env | DocumentEnv | undefined): DocumentEnv {
+  const base = env ?? ({} as Env);
+  if ('DOCUMENT_DB' in base) return base as DocumentEnv;
+  if (segments[1] !== 'documents') return base as DocumentEnv;
+  return Object.defineProperty({ ...base }, 'DOCUMENT_DB', {
+    value: emptyDocumentDb(),
+    enumerable: false,
+  }) as DocumentEnv;
+}
+
+function emptyDocumentDb(): D1Database {
+  const statement = {
+    bind: () => statement,
+    first: async () => null,
+    all: async () => ({ results: [], success: true, meta: {} }),
+    run: async () => ({ results: [], success: true, meta: { changes: 0 } }),
+    raw: async () => [],
+  };
+  return {
+    prepare: () => statement,
+    batch: async (statements: unknown[]) =>
+      statements.map(() => ({ results: [], success: true, meta: { changes: 0 } })),
+  } as unknown as D1Database;
 }

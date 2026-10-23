@@ -13,27 +13,17 @@ const EMPTY_SWEEP_BATCH = 500;
 // order. A larger backlog drains over the following days, oldest save first.
 const EMPTY_SWEEP_MAX_BATCHES = 4;
 
-// The checks are a CASE, not an OR chain: SQLite stops a CASE at its first match (an OR it may evaluate whole), so a
-// tab with elements is parsed once and a body that is not JSON is never parsed.
-// Select and move in one statement, so a document saved a moment before it runs
-// is judged on that save. A tab whose data is not valid JSON counts as content:
-// the sweep fails safe. So does a tab with any article: an article's writing
-// lives in `articles`, not in `elements`. A tab shared with another document counts in
-// both.
+// Judged on the content summary each document pushes (document-room/document-outbox.ts `readContentSummary`): no
+// tab with an element or an article, and none whose body is not JSON. A document whose summary has not arrived
+// (NULL) counts as content: the sweep fails safe. Select and move in one statement, so a document saved a moment
+// before it runs is judged on that save (its summary follows within a minute; a document unsaved for 30 days has
+// long had it).
 const MOVE_EMPTY_STALE = `
   UPDATE documents SET trashed_at = ?1, trash_reason = 'empty'
    WHERE id IN (
      SELECT d.id FROM documents d
       WHERE d.trashed_at IS NULL AND d.saved_at <= ?2
-        AND NOT EXISTS (
-          SELECT 1 FROM document_tabs dt JOIN tabs t ON t.id = dt.tab_id
-           WHERE dt.document_id = d.id
-             AND CASE
-                   WHEN NOT json_valid(t.data) THEN 1
-                   WHEN COALESCE(json_array_length(t.data, '$.elements'), 0) > 0 THEN 1
-                   WHEN EXISTS (SELECT 1 FROM json_each(t.data, '$.articles')) THEN 1
-                   ELSE 0
-                 END = 1)
+        AND COALESCE(json_extract(d.content_summary, '$.hasContent'), 1) = 0
       ORDER BY d.saved_at ASC, d.id ASC
       LIMIT ?3)`;
 

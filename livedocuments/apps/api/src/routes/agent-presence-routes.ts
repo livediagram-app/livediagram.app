@@ -23,7 +23,7 @@ import {
   gateRead,
   missingDocument,
   shareCodeOf,
-  type RouteContext,
+  type DocumentRouteContext,
 } from './context';
 
 const refuse = (status: number, body: Record<string, unknown>) => json(body, { status });
@@ -54,7 +54,9 @@ function resolveFocus(tab: TabDTO, refs: readonly string[]): string[] | Response
 }
 
 // Every refusal of a presence request is logged here, once, with its code.
-export async function handleAgentPresenceRoute(ctx: RouteContext): Promise<Response | null> {
+export async function handleAgentPresenceRoute(
+  ctx: DocumentRouteContext,
+): Promise<Response | null> {
   const res = await presenceRoute(ctx);
   if (res && res.status >= 400)
     await logRefusal('[agent-presence] refused', res, {
@@ -66,7 +68,7 @@ export async function handleAgentPresenceRoute(ctx: RouteContext): Promise<Respo
   return res;
 }
 
-async function presenceRoute(ctx: RouteContext): Promise<Response | null> {
+async function presenceRoute(ctx: DocumentRouteContext): Promise<Response | null> {
   const { segments, request, env } = ctx;
   if (segments.length !== 6 || segments[3] !== 'tabs' || segments[5] !== 'presence') return null;
   if (request.method !== 'PUT' && request.method !== 'DELETE') return null;

@@ -1,3 +1,4 @@
+import { DurableObject } from 'cloudflare:workers';
 import {
   ACCESS_CHANGED_CLOSE,
   WORKBENCH_ENDED_CLOSE,
@@ -10,53 +11,74 @@ import {
   type AccessLevel,
 } from '@livedocuments/api-schema';
 import { opForTheWire, stampCommentAuthor } from '@livedocuments/document';
-import { RoomParticipantWrites } from './room-participant';
-import { RoomLedgerStore } from './room-ledger-store';
-import { RoomSelectionStore, selectionFromOp, type LiveSession } from './room-selections';
+import { RoomParticipantWrites } from '../room-participant';
+import { RoomLedgerStore } from '../room-ledger-store';
+import { RoomSelectionStore, selectionFromOp, type LiveSession } from '../room-selections';
 import {
   agentPresenceLog,
   answerAgentPresence,
   clearAgentsForOp,
   RoomAgentPresence,
-} from './room-agent-presence';
-import type { ClientMessage, Env, ParticipantPresence, ServerMessage } from './types';
-import { reportServerEvent } from './server-telemetry';
-import { multiplayerDecision } from './room-multiplayer';
+} from '../room-agent-presence';
+import type { ClientMessage, DocumentEnv, Env, ParticipantPresence, ServerMessage } from '../types';
+import { reportServerEvent } from '../server-telemetry';
+import { multiplayerDecision } from '../room-multiplayer';
 import {
   type LoggedOp,
   MAX_TAB_ID_LEN,
   admitFrame,
   helloPresence,
   resolveCatchup,
-} from './document-room-rules';
-import { followerIdsOf, followTargetOf } from './room-follows';
-import { opForScope } from './room-scope';
-import { recheckAdmittedLink } from './room-link-recheck';
-import { gateClientOp } from './room-op-gate';
-import { answerInternal, type InternalRoom } from './room-internal';
-import { rosterFrames, type RosterEntry } from './room-roster';
-import { sessionMatchesAccessClose, type AccessCloseMatch } from './room-access';
+} from '../document-room-rules';
+import { followerIdsOf, followTargetOf } from '../room-follows';
+import { opForScope } from '../room-scope';
+import { recheckAdmittedLink } from '../room-link-recheck';
+import { gateClientOp } from '../room-op-gate';
+import { answerInternal, type InternalRoom } from '../room-internal';
+import { rosterFrames, type RosterEntry } from '../room-roster';
+import { sessionMatchesAccessClose, type AccessCloseMatch } from '../room-access';
 
 import {
   newSessionAttachment,
   readSessionAttachment,
   verifiedSessionOf,
   type SessionAttachment,
-} from './room-session';
+} from '../room-session';
 
-// One Durable Object instance per document id. Holds the set of currently
-// connected WebSockets plus their participant identity, and broadcasts
-// presence + op messages so every client sees what every other client is
-// doing in real time.
+import { CHANGESET_RETENTION_MS } from '@livedocuments/api-schema';
+import { deleteOldChangesets } from '../db/changesets';
+import { documentHasTab } from '../db/tabs';
+import { documentPlacesImage } from '../db/image-refs';
+import { renderDocumentImage, type ThumbnailSubject } from '../thumbnail';
+import { DocumentDb } from './document-db';
+import { hasDocumentSchema, migrateDocumentSchema } from './document-schema';
+import {
+  exportDocumentCopy,
+  importDocumentCopy,
+  readDocumentOutline,
+  type DocumentCopy,
+  type DocumentOutline,
+} from './document-content';
+import { drainOutbox } from './document-outbox';
+import { answerDocumentRequest, type RouteIdentity } from './document-route';
+
+// One SQLite-backed Durable Object per document id (docs/specs/015-api/api.md "Storage" and "Realtime model"). It
+// is two things at once:
 //
-// State and conflict model (docs/specs/015-api/api.md, Realtime model): the room
-// classifies each op by kind, orders mutations (seq within an epoch, kept in
-// storage), rewrites comment authors, and keeps collaboration state in DO
-// storage (the ledger). It never holds
-// the document: D1 does, written by clients over REST, except a Participant's
-// writes this room performs itself. Payloads stay `op: unknown` so the
-// editor can evolve its vocabulary without changing the room. Two edits to
-// the same element are last-writer-wins in room order.
+//   - The document's content: tabs (with their stats) and the changeset log, in its own SQLite
+//     (document-schema.ts), which the content modules reach as `env.DOCUMENT_DB` (document-db.ts). Every API
+//     request about the document runs here (`route`, document-route.ts), so a save is one call to this object and
+//     one SQLite transaction, with no D1 round trip on its path. What D1's cross-document reads need (the Inbox's
+//     index, the listing summary, saved_at, the media service's image references) is pushed from the outbox on
+//     idle (document-outbox.ts).
+//   - The realtime room: connected WebSockets and their identity, presence, and the ordered op stream. It
+//     classifies each op by kind, orders mutations (seq within an epoch, kept in storage), rewrites comment
+//     authors, and keeps collaboration state (the ledger). Payloads stay `op: unknown` so the editor can evolve
+//     its vocabulary without changing the room. Two edits to the same element are last-writer-wins in room order.
+//
+// Duration cost: the object is billed while it runs a request or an alarm, not while sockets idle (hibernation,
+// below). Content requests and thumbnail renders now run here rather than in the worker, so a document with heavy
+// API traffic keeps its object awake for that traffic; an idle document costs nothing.
 //
 // WebSocket HIBERNATION (why this shape): sockets are accepted via
 // `state.acceptWebSocket()` and events arrive through the class-level
@@ -113,7 +135,17 @@ const SHARE_LINK_OPS = new Set(['share-revoked', 'share-rescoped']);
 // 4000-4999 application range; the client reloads or leaves on the op itself.
 const SHARE_LINK_CHANGED_CLOSE = 4003;
 
-export class DocumentRoom implements DurableObject {
+// How long the outbox waits after a write before it pushes (the contract's "on idle"), and the least gap between
+// two pushes (its "at most once a minute"). A failed push retries after FLUSH_RETRY_MS.
+export const FLUSH_IDLE_MS = 2_000;
+export const FLUSH_MIN_GAP_MS = 60_000;
+const FLUSH_RETRY_MS = 60_000;
+// The document's own daily upkeep: old changesets go (a D1 cron before).
+export const MAINTENANCE_EVERY_MS = 24 * 60 * 60 * 1000;
+const MAINTENANCE_KEY = 'maintenance-at';
+
+export class DocumentRoom extends DurableObject<Env> {
+  // The object's state under the name the room's code has always used for it (`this.ctx` is the same).
   state: DurableObjectState;
   // Per-session op-rate window (sliding 1s) so one connected peer can't
   // flood the room. Legit cursor / laser / edit ops are client-throttled
@@ -161,10 +193,22 @@ export class DocumentRoom implements DurableObject {
   // Agent presence entries (docs/specs/024-agents/agent-presence.md "Presence").
   agents: RoomAgentPresence;
 
-  // The worker env, for the one server-side telemetry emit the room owns
-  // (Document·Used·Multiplayer). Optional so unit tests can build a room
-  // from a fake state alone; without it the emit is skipped.
-  env: Env | undefined;
+  // The env the document's code runs with here: the worker's bindings, its own SQLite as `DOCUMENT_DB`, and a
+  // DOCUMENT_ROOM that answers this document's own id with this object (no hop). Undefined only for a unit test that
+  // builds a room from a fake state alone; then the content and telemetry paths are skipped.
+  roomEnv: DocumentEnv | undefined;
+  // The document's SQLite behind the D1 surface (document-db.ts).
+  readonly db: DocumentDb;
+  // The document this object is, from the first call that names it (every RPC and room join does).
+  private documentId: string | null = null;
+  private schemaReady = false;
+  private documentRowReady = false;
+  // The outbox's next push (null: nothing pending), the last one, and whether one is running now.
+  private flushAt: number | null = null;
+  private lastFlushAt = 0;
+  private draining = false;
+  // The next daily upkeep (persisted, so a wake keeps the day).
+  private maintenanceAt: number | null = null;
 
   // The tab write queue. Every write this room makes to this document's tabs
   // runs through here ONE AT A TIME. A Durable Object only serialises the
@@ -181,11 +225,23 @@ export class DocumentRoom implements DurableObject {
   private participantWrites: RoomParticipantWrites;
 
   constructor(state: DurableObjectState, env?: Env) {
+    super(state, env as Env);
     this.state = state;
-    this.env = env;
+    this.db = new DocumentDb(state.storage.sql, {
+      transaction: (fn) => state.storage.transactionSync(fn),
+      ensureSchema: () => this.ensureSchema(),
+      onWrite: () => this.noteWrite(),
+    });
+    this.roomEnv = env
+      ? {
+          ...env,
+          DOCUMENT_DB: this.db.asD1(),
+          DOCUMENT_ROOM: this.localNamespace(env.DOCUMENT_ROOM),
+        }
+      : undefined;
     this.ledger = new RoomLedgerStore(state.storage);
     this.participantWrites = new RoomParticipantWrites({
-      env,
+      env: this.roomEnv,
       enqueue: (step) => this.queueTabWrite(step),
       sequence: (from, op, except) => this.sequenceMutation(from, op, except),
       sendTo: (ws, payload) => this.sendTo(ws, payload),
@@ -227,8 +283,201 @@ export class DocumentRoom implements DurableObject {
         await state.storage.put(ORDER_STATE_KEY, { epoch: this.epoch, seq: this.seq });
       }
       for (const r of await this.agents.restore()) agentPresenceLog('expired', r);
+      this.restoreContentState(await state.storage.get<number>(MAINTENANCE_KEY));
       this.armAlarm();
     });
+  }
+
+  // ---------- The document's content ----------------------------------------------------------------------
+
+  // After a wake: the document id and anything the outbox still owes D1. Reads only; a document with no schema yet
+  // (an id nothing has written) stays without one.
+  private restoreContentState(maintenanceAt: number | undefined): void {
+    this.maintenanceAt = maintenanceAt ?? null;
+    const sql = this.state.storage.sql;
+    if (!sql || !hasDocumentSchema((q) => sql.exec(q))) return;
+    this.ensureSchema();
+    const row = sql.exec('SELECT id FROM document LIMIT 1').toArray()[0];
+    if (typeof row?.id === 'string' && this.documentId === null) this.documentId = row.id;
+    if (sql.exec('SELECT 1 FROM outbox LIMIT 1').toArray().length > 0) this.flushAt = Date.now();
+  }
+
+  // Every call names its document; an object answers for one document only.
+  private bindDocument(documentId: string): void {
+    if (this.documentId === null) this.documentId = documentId;
+    else if (this.documentId !== documentId)
+      throw new Error('document id does not match this object');
+  }
+
+  // The schema on first use (document-schema.ts), and the document's row once its id is known, so the content's
+  // foreign keys always find it. A row made here has no dates (0): a create or a copy sets them, and the
+  // summary push never moves saved_at back.
+  private ensureSchema(): void {
+    if (this.schemaReady && (this.documentRowReady || this.documentId === null)) return;
+    const sql = this.state.storage.sql;
+    if (!this.schemaReady) {
+      migrateDocumentSchema((q) => sql.exec(q));
+      this.schemaReady = true;
+    }
+    if (this.documentId !== null && !this.documentRowReady) {
+      sql.exec(
+        'INSERT OR IGNORE INTO document (id, saved_at, created_at) VALUES (?, 0, 0)',
+        this.documentId,
+      );
+      this.documentRowReady = true;
+    }
+  }
+
+  // A content write happened: push to D1 on idle, at most once a minute (document-outbox.ts). Writes the drain
+  // itself makes (its outbox delete) schedule nothing.
+  private noteWrite(): void {
+    if (this.draining) return;
+    if (this.maintenanceAt === null) {
+      this.maintenanceAt = Date.now() + MAINTENANCE_EVERY_MS;
+      void this.state.storage.put(MAINTENANCE_KEY, this.maintenanceAt);
+      this.armAlarm();
+    }
+    if (this.flushAt !== null) return;
+    if (this.state.storage.sql.exec('SELECT 1 FROM outbox LIMIT 1').toArray().length === 0) return;
+    const now = Date.now();
+    this.flushAt = Math.max(now + FLUSH_IDLE_MS, this.lastFlushAt + FLUSH_MIN_GAP_MS);
+    this.armAlarm();
+  }
+
+  // Push what the outbox holds to D1 now. A failure keeps it and retries later.
+  async drain(): Promise<void> {
+    const env = this.roomEnv;
+    const documentId = this.documentId;
+    this.flushAt = null;
+    if (!env || !documentId || !this.schemaReady) return;
+    this.draining = true;
+    try {
+      const { keys, statements, more } = await drainOutbox(env, documentId);
+      this.lastFlushAt = Date.now();
+      if (keys > 0) console.debug('[document-outbox] pushed', { documentId, keys, statements });
+      // A big import's tabs go a batch at a time, back to back, not a minute apart.
+      if (more) this.flushAt = Date.now() + FLUSH_IDLE_MS;
+    } catch (error) {
+      console.warn('[document-outbox] push failed', { documentId, error: String(error) });
+      this.flushAt = Date.now() + FLUSH_RETRY_MS;
+    } finally {
+      this.draining = false;
+    }
+    // Anything written while the push was in flight goes next time.
+    if (
+      this.flushAt === null &&
+      this.state.storage.sql.exec('SELECT 1 FROM outbox LIMIT 1').toArray().length > 0
+    ) {
+      this.flushAt = Math.max(Date.now() + FLUSH_IDLE_MS, this.lastFlushAt + FLUSH_MIN_GAP_MS);
+    }
+  }
+
+  // The document's daily upkeep, once a day per document with content: changesets past their retention go (CS28).
+  private async maintain(now: number): Promise<void> {
+    const env = this.roomEnv;
+    const documentId = this.documentId;
+    this.maintenanceAt = now + MAINTENANCE_EVERY_MS;
+    await this.state.storage.put(MAINTENANCE_KEY, this.maintenanceAt);
+    if (!env || !documentId || !this.schemaReady) return;
+    try {
+      const gone = await deleteOldChangesets(env, now - CHANGESET_RETENTION_MS);
+      if (gone > 0) console.info('[changeset] retention', { documentId, deleted: gone });
+    } catch (error) {
+      console.warn('[document-room] upkeep failed', { documentId, error: String(error) });
+    }
+  }
+
+  // This env's DOCUMENT_ROOM, answering this document's own id with this object: the code shared with the worker (a
+  // document read's outline, the room relays) then calls straight in rather than through a stub.
+  private localNamespace(
+    real: DurableObjectNamespace<DocumentRoom> | undefined,
+  ): DurableObjectNamespace<DocumentRoom> {
+    const ns = (real ?? {}) as DurableObjectNamespace<DocumentRoom>;
+    return new Proxy(ns, {
+      get: (target, prop, receiver) => {
+        if (prop === 'get') {
+          return (id: DurableObjectId, opts?: DurableObjectNamespaceGetDurableObjectOptions) =>
+            id.equals(this.state.id) ? this : target.get(id, opts);
+        }
+        const value: unknown = Reflect.get(target, prop, receiver);
+        return typeof value === 'function'
+          ? (value as (...a: unknown[]) => unknown).bind(target)
+          : value;
+      },
+    });
+  }
+
+  // ---------- RPC: what the worker asks of a document (document-client.ts) ---------------------------------------
+
+  async outline(documentId: string): Promise<DocumentOutline> {
+    this.bindDocument(documentId);
+    return readDocumentOutline(this.requireEnv(), documentId);
+  }
+
+  async route(documentId: string, request: Request, identity: RouteIdentity): Promise<Response> {
+    this.bindDocument(documentId);
+    return answerDocumentRequest(this.requireEnv(), request, identity, (p) =>
+      this.state.waitUntil(p),
+    );
+  }
+
+  async image(
+    documentId: string,
+    subject: ThumbnailSubject,
+    tabId: string | null,
+  ): Promise<string | null> {
+    this.bindDocument(documentId);
+    return renderDocumentImage(this.requireEnv(), subject, tabId, {
+      defer: (p) => this.state.waitUntil(p),
+    });
+  }
+
+  async hasTab(documentId: string, tabId: string): Promise<boolean> {
+    this.bindDocument(documentId);
+    return documentHasTab(this.requireEnv(), documentId, tabId);
+  }
+
+  async placesImage(
+    documentId: string,
+    imageId: string,
+    onlyTabId: string | null,
+  ): Promise<boolean> {
+    this.bindDocument(documentId);
+    return documentPlacesImage(this.requireEnv(), documentId, imageId, onlyTabId);
+  }
+
+  async exportCopy(
+    documentId: string,
+    onlyTabId: string | null,
+    redactAuthorsFor: string | null,
+  ): Promise<DocumentCopy | null> {
+    this.bindDocument(documentId);
+    return exportDocumentCopy(this.requireEnv(), documentId, onlyTabId, redactAuthorsFor);
+  }
+
+  async importCopy(documentId: string, copy: DocumentCopy): Promise<void> {
+    this.bindDocument(documentId);
+    await importDocumentCopy(this.requireEnv(), documentId, copy);
+  }
+
+  // Share links the index revoked: each one's sessions hear it and end now, as the worker's own revoke does.
+  async revokeCodes(documentId: string, codes: string[]): Promise<number> {
+    this.bindDocument(documentId);
+    let closed = 0;
+    for (const code of codes) {
+      const op = { kind: 'share-revoked', code };
+      const before = this.state.getWebSockets().length;
+      this.broadcastSystemOp(op);
+      this.closeSessionsOfChangedLink(op);
+      await this.clearAgentsFor(op);
+      closed += before - this.state.getWebSockets().length;
+    }
+    return closed;
+  }
+
+  private requireEnv(): DocumentEnv {
+    if (!this.roomEnv) throw new Error('document room has no env');
+    return this.roomEnv;
   }
 
   // Record the seq we just handed out. Not awaited: the DO output gate holds
@@ -238,7 +487,10 @@ export class DocumentRoom implements DurableObject {
     void this.state.storage.put(ORDER_STATE_KEY, { epoch: this.epoch, seq: this.seq });
   }
 
-  async fetch(request: Request): Promise<Response> {
+  // The room's own doors: its internal endpoints (room-internal.ts) and the WebSocket upgrade. Takes what a
+  // stub's fetch takes, so the worker's relays (room-client.ts) call it the same way here as through a stub.
+  override async fetch(input: Request | string, init?: RequestInit): Promise<Response> {
+    const request = typeof input === 'string' || init ? new Request(input, init) : input;
     const url = new URL(request.url);
     const internal = await answerInternal(this.internal, request, url);
     if (internal) return internal;
@@ -262,6 +514,7 @@ export class DocumentRoom implements DurableObject {
       v.workbenchPairing,
       v.documentId,
     );
+    if (v.documentId) this.bindDocument(v.documentId);
     // A share session whose link changed while it was joining is told now (room-link-recheck.ts).
     this.state.waitUntil(this.recheckJoinedLink(server));
     return new Response(null, { status: 101, webSocket: client });
@@ -272,7 +525,7 @@ export class DocumentRoom implements DurableObject {
   // Owner and team sessions carry no code and are left alone.
   async recheckJoinedLink(ws: WebSocket): Promise<void> {
     const session = this.readSession(ws);
-    const env = this.env;
+    const env = this.roomEnv;
     if (!env || !session?.shareCode || !session.documentId) return;
     let op: Awaited<ReturnType<typeof recheckAdmittedLink>>;
     try {
@@ -444,12 +697,18 @@ export class DocumentRoom implements DurableObject {
   // The document is gone for good: end every session, then drop everything stored here, which includes the
   // collaboration ledger's comment, idea and answer text, the order state and the alarm.
   // The ledger's queued writes land first, so none of them can re-create a key after the wipe.
-  private async purge(): Promise<void> {
+  // That includes the document's content: its SQLite goes with everything else.
+  async purge(documentId?: string): Promise<void> {
+    if (documentId !== undefined) this.bindDocument(documentId);
     this.closeSockets(() => [DOCUMENT_TRASHED_CLOSE, 'document-purged']);
     this.opLog = [];
     await this.ledger.settled();
     await this.state.storage.deleteAlarm();
     await this.state.storage.deleteAll();
+    this.schemaReady = false;
+    this.documentRowReady = false;
+    this.flushAt = null;
+    this.maintenanceAt = null;
     console.info('[room] purged');
   }
 
@@ -491,7 +750,7 @@ export class DocumentRoom implements DurableObject {
   // Hibernation event handler: one inbound frame from one socket. The DO
   // may have just been re-materialized from cold — everything this needs
   // beyond flood control comes from the socket's attachment.
-  webSocketMessage(ws: WebSocket, message: string | ArrayBuffer): void {
+  override webSocketMessage(ws: WebSocket, message: string | ArrayBuffer): void {
     // Drop an oversized frame before parsing / broadcasting it: ops are
     // re-broadcast opaquely to every peer, so without a cap one socket
     // could fan a multi-MB payload out to the whole room. Far above any
@@ -529,7 +788,7 @@ export class DocumentRoom implements DurableObject {
       this.sendTo(ws, { kind: 'cursor', epoch: this.epoch, seq: this.seq });
       // The server's document format number (docs/specs/016-platform/new-version-prompt.md): an editor
       // older than it offers a reload. With the live build id (docs/specs/016-platform/stale-builds.md).
-      const build = parseBuildId(this.env?.BUILD_ID);
+      const build = parseBuildId(this.roomEnv?.BUILD_ID);
       this.sendTo(ws, { kind: 'format', format: DOCUMENT_FORMAT, ...(build ? { build } : {}) });
       this.broadcastPresence();
       this.noteMultiplayer();
@@ -735,19 +994,24 @@ export class DocumentRoom implements DurableObject {
     this.sendToPresence(target, { kind: 'selection-released', elementId, by: asker });
   }
 
-  // The room's one alarm, at the earliest agent presence expiry, or none when there is none (agent-presence I5,
-  // PR29).
+  // The room's one alarm, at the earliest of: an agent presence expiry (agent-presence I5, PR29), the outbox's
+  // next push, the document's next upkeep. None when nothing is due.
   private armAlarm(): void {
-    const next = this.agents.nextExpiry();
-    if (next === null) void this.state.storage.deleteAlarm();
-    else void this.state.storage.setAlarm(next);
+    const due = [this.agents.nextExpiry(), this.flushAt, this.maintenanceAt].filter(
+      (t): t is number => t !== null,
+    );
+    if (due.length === 0) void this.state.storage.deleteAlarm();
+    else void this.state.storage.setAlarm(Math.min(...due));
   }
 
-  /** Agent entries past their expiry go. */
-  async alarm(): Promise<void> {
+  /** Agent entries past their expiry go; the outbox pushes and the upkeep runs when due. Safe to call early. */
+  override async alarm(): Promise<void> {
     const expired = await this.agents.sweep();
     for (const r of expired) agentPresenceLog('expired', r);
     if (expired.length > 0) this.broadcastPresence();
+    const now = Date.now();
+    if (this.flushAt !== null && this.flushAt <= now) await this.drain();
+    if (this.maintenanceAt !== null && this.maintenanceAt <= now) await this.maintain(now);
     this.armAlarm();
   }
 
@@ -769,11 +1033,11 @@ export class DocumentRoom implements DurableObject {
   // Hibernation event handlers for a session ending. The runtime removes
   // the socket from getWebSockets() itself; our job is only to shed the
   // rate window (so the map can't leak) and re-announce the roster.
-  webSocketClose(ws: WebSocket): void {
+  override webSocketClose(ws: WebSocket): void {
     this.dropSession(ws);
   }
 
-  webSocketError(ws: WebSocket): void {
+  override webSocketError(ws: WebSocket): void {
     this.dropSession(ws);
   }
 
@@ -825,7 +1089,7 @@ export class DocumentRoom implements DurableObject {
         // A socket that died mid-loop: the runtime reaps it, nothing to mark.
       }
     }
-    const env = this.env;
+    const env = this.roomEnv;
     if (decision.report && env) {
       const write = reportServerEvent(env, 'Document', 'Used', 'Multiplayer');
       // Keep the DO alive until the row lands; the write swallows its own error.

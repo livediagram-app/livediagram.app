@@ -22,13 +22,13 @@ import {
 import { isTabRevStale, lastChangesetRev, upsertTabAtRev } from '../db';
 import { TabTooLargeError } from '../limits';
 import { relayPages } from '../room-client';
-import type { DocumentDTO, Env } from '../types';
+import type { DocumentDTO, DocumentEnv } from '../types';
 import { readStoredTab } from './stored-tab';
 import { SUBMIT_ATTEMPTS, withServerRules } from './submit';
 import { writeChangeset, type Author } from './write';
 
 type PagesArgs = {
-  env: Env;
+  env: DocumentEnv;
   document: DocumentDTO;
   tabId: string;
   request: PagesRequest;

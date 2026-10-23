@@ -22,7 +22,7 @@ Scope, by file:
 | `apps/api/src/routes/document-delete-route.ts`                                                                   | `DELETE /api/documents/:id`: trash, `?permanent=true`, Take Offline                         |
 | `apps/api/src/routes/trash.ts`                                                                                   | `/api/trash` list, restore, purge one, empty                                                |
 | `apps/api/src/routes/{documents,share,document-room-routes,...}.ts`                                              | The doors: 410 through `missingDocument`; the ws upgrade refuses                            |
-| `apps/api/src/room-client.ts`, `document-room.ts`, `room-scope.ts`                                               | `broadcastDocumentTrashed`; the room closes every socket with 4004                          |
+| `apps/api/src/room-client.ts`, `document-room/document-room.ts`, `room-scope.ts`                                               | `broadcastDocumentTrashed`; the room closes every socket with 4004                          |
 | `apps/api/src/index.ts`, `auth/guest-rest.ts`                                                                    | `trash` dispatch + guest-signature scope; the cron's `purgeExpiredTrash`                    |
 | `apps/api/src/openapi/manifest.ts`, `document.ts`, `apps/api/scripts/gen-openapi-schemas.mjs`                    | The Trash tag and routes; 410 on the document doors; `TrashedDocument` schema               |
 | `apps/mcp/src/tools.ts`, `packages/agent-verbs/src/mcp/schema.ts`                                                | `delete_document` to the Trash only; `list_trash`, `restore_document`                       |

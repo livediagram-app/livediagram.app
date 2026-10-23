@@ -3,7 +3,8 @@
 // who may do what, and the service keeps the bytes, the dedupe and the caps.
 
 import { ACCEPTED_IMAGE_TYPES, MAX_IMAGE_BYTES, ORIGINAL_NAME_MAX } from '@liveworkspace/media';
-import { documentServesImage, getDocumentMeta, imageUsageByOwner } from '../db';
+import { documentMayServeImage, getDocumentMeta, imageUsageByOwner } from '../db';
+import { documentRoom } from '../document-client';
 import {
   imageSummary,
   mediaClient,
@@ -137,8 +138,14 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
           const grant = await gateGrant(ctx, d, liveDoc.ownerId, liveDoc.teamId);
           if (grant) {
             // Placed by the document AND servable by it (docs/specs/009-elements/images.md,
-            // "Placement grants"): an id pasted into an unrelated document serves nothing.
-            allowed = await documentServesImage(env, d, imageId, grant.tabScope);
+            // "Placement grants"): an id pasted into an unrelated document serves nothing. The placement is the
+            // document's own to answer (its Durable Object, so an image placed a moment ago serves at once); who
+            // may serve whose image is D1's. Asked together.
+            const [places, serves] = await Promise.all([
+              documentRoom(env, d).placesImage(imageId, grant.tabScope),
+              documentMayServeImage(env, d, imageId),
+            ]);
+            allowed = places && serves;
             if (!allowed) {
               console.warn('[images] not servable by document', { documentId: d, imageId });
             }

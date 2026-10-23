@@ -21,7 +21,7 @@ Derived from [New version prompt](../new-version-prompt.md).
 | `apps/api/src/server-release-header.ts`              | `withServerRelease(response, buildId)`: the headers on every response but a 101                       |
 | `apps/api/src/index.ts`                              | The worker's `fetch` returns `withServerRelease(..., env.BUILD_ID)`                                   |
 | `apps/api/src/responses.ts`                          | `CORS_HEADERS` exposes the header                                                                     |
-| `apps/api/src/document-room.ts`                      | Sends the room format message on `hello`                                                              |
+| `apps/api/src/document-room/document-room.ts`                      | Sends the room format message on `hello`                                                              |
 | `packages/api-schema/src/room-messages.ts`           | The `format` kind on `ServerMessage` and `RoomIncoming`                                               |
 | `apps/editor/lib/server-release.ts`                  | The page's server release store (format number and build id, docs/specs/016-platform/stale-builds.md) |
 | `apps/editor/lib/api/core.ts`                        | `apiFetch` notes the header                                                                           |

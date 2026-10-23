@@ -43,7 +43,6 @@ const { db, canReadDocument, canEditDocument, resolveDocumentGrant } = vi.hoiste
     // event: it reads the outgoing team's name for the bubble.
     getTeam: vi.fn(async () => ({ id: 'team-1', name: 'Design' })),
     getTab: vi.fn(),
-    tabBelongsElsewhere: vi.fn(async () => false),
     upsertTab: vi.fn(),
     // The tab PUT writes at the revision it read and merges unseen changesets
     // (docs/specs/024-agents/agent-changesets.md); none are recorded here.
@@ -61,7 +60,6 @@ const { db, canReadDocument, canEditDocument, resolveDocumentGrant } = vi.hoiste
     // covered in expiry-retraction.test.ts.
     retractTimelineWarning: vi.fn(),
     // Slide deck write (docs/specs/012-collaboration/presentation-mode.md).
-    setDocumentPresentation: vi.fn(),
     reorderTabs: vi.fn(),
     // Tab-scoped share links (docs/specs/013-workspace/tab-scoped-share-links.md).
     copyDocument: vi.fn(),
@@ -100,6 +98,15 @@ vi.mock('../thumbnail', () => ({ getDocumentThumbnailSvg, getDocumentTabImageSvg
 // The share password (docs/specs/013-workspace/share-password.md): met unless a case says otherwise.
 const { sharePasswordOk } = vi.hoisted(() => ({ sharePasswordOk: vi.fn(async () => true) }));
 vi.mock('../auth/share-access', () => ({ sharePasswordOk }));
+// The document's own row and slide deck live in its Durable Object (document-room/document-content.ts).
+const content = vi.hoisted(() => ({
+  initDocument: vi.fn(async () => {}),
+  setDocumentPresentation: vi.fn(async () => {}),
+}));
+vi.mock('../document-room/document-content', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../document-room/document-content')>()),
+  ...content,
+}));
 
 import type { RouteContext } from './context';
 import { handleDocuments } from './documents';
@@ -129,6 +136,8 @@ function fakeDocument(ownerId: string, teamId: string | null = null): DocumentDT
 
 beforeEach(() => {
   for (const fn of Object.values(db)) fn.mockReset();
+  content.initDocument.mockClear();
+  content.setDocumentPresentation.mockClear();
   db.setDocumentFolder.mockResolvedValue(true);
   db.getDocumentForSave.mockImplementation(async (...args: unknown[]) => {
     const doc = (await db.getDocument(...args)) as DocumentDTO | null;
@@ -257,7 +266,7 @@ describe('handleDocuments metadata PUT (PUT /documents/:id)', () => {
     db.getDocument.mockResolvedValue(fakeDocument('owner-1'));
     canEditDocument.mockResolvedValue(true);
     await handleDocuments(makeCtx('PUT', '/api/documents/d1', { body: { name: 'Renamed' } }));
-    expect(db.setDocumentPresentation).not.toHaveBeenCalled();
+    expect(content.setDocumentPresentation).not.toHaveBeenCalled();
   });
 
   it('writes the deck when one is sent', async () => {
@@ -265,7 +274,7 @@ describe('handleDocuments metadata PUT (PUT /documents/:id)', () => {
     canEditDocument.mockResolvedValue(true);
     const deck = JSON.stringify({ decks: [{ slides: [] }] });
     await handleDocuments(makeCtx('PUT', '/api/documents/d1', { body: { presentation: deck } }));
-    expect(db.setDocumentPresentation).toHaveBeenCalledWith({}, 'd1', deck);
+    expect(content.setDocumentPresentation).toHaveBeenCalledWith(expect.anything(), 'd1', deck);
   });
 
   it('blanks ownerId in the response for an edit-role share visitor (docs/specs/014-identity/auth-and-guest-access.md)', async () => {
@@ -299,7 +308,7 @@ describe('handleDocuments metadata PUT (PUT /documents/:id)', () => {
     db.getDocument.mockResolvedValue(fakeDocument('owner-1'));
     canEditDocument.mockResolvedValue(true);
     await handleDocuments(makeCtx('PUT', '/api/documents/d1', { body: { presentation: null } }));
-    expect(db.setDocumentPresentation).toHaveBeenCalledWith({}, 'd1', null);
+    expect(content.setDocumentPresentation).toHaveBeenCalledWith(expect.anything(), 'd1', null);
   });
 
   it('400s a deck past the size cap, without writing', async () => {
@@ -310,7 +319,7 @@ describe('handleDocuments metadata PUT (PUT /documents/:id)', () => {
       makeCtx('PUT', '/api/documents/d1', { body: { presentation: huge } }),
     );
     expect(res.status).toBe(400);
-    expect(db.setDocumentPresentation).not.toHaveBeenCalled();
+    expect(content.setDocumentPresentation).not.toHaveBeenCalled();
   });
 
   it('404s an unknown id instead of create-on-first-write (ghost-row guard)', async () => {
@@ -664,10 +673,16 @@ describe('POST /documents carrying an Offline Mode sync (docs/specs/006-document
     );
   const stored = () => db.upsertDocumentMeta.mock.calls[0]![1] as Record<string, unknown>;
 
-  it('stores the deck it was sent', async () => {
+  it('stores the deck it was sent, in the document itself', async () => {
     db.getDocument.mockResolvedValue(null);
     await create({ presentation: '{"decks":[]}' });
-    expect(stored().presentation).toBe('{"decks":[]}');
+    const [, id, row] = content.initDocument.mock.calls[0] as unknown as [
+      unknown,
+      string,
+      { presentation?: string | null },
+    ];
+    expect(id).toBe('d1');
+    expect(row.presentation).toBe('{"decks":[]}');
   });
 
   it("keeps a folder that is the caller's own personal folder", async () => {

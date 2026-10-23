@@ -35,7 +35,41 @@ vi.mock('./media', () => ({
   },
 }));
 
-import { getDocumentTabImageSvg, getDocumentThumbnailSvg } from './thumbnail';
+import {
+  getDocumentTabImageSvg as workerTabImage,
+  getDocumentThumbnailSvg as workerThumbnail,
+  renderDocumentImage,
+  type ThumbnailOptions,
+  type ThumbnailSubject,
+} from './thumbnail';
+
+// The worker's reads, with the document's Durable Object answered in place: a stale snapshot (or one tab) is
+// drawn by the document (renderDocumentImage), with the options its room would give it.
+function withRoom(env: Env, opts: ThumbnailOptions = {}): Env {
+  const room = {
+    image: (_documentId: string, subject: ThumbnailSubject, tabId: string | null) =>
+      renderDocumentImage(env as never, subject, tabId, opts),
+  };
+  return Object.assign(env, {
+    DOCUMENT_ROOM: { idFromName: (n: string) => n, get: () => room },
+  });
+}
+
+function getDocumentThumbnailSvg(
+  env: Env,
+  liveDoc: ThumbnailSubject,
+  opts: ThumbnailOptions = {},
+): Promise<string | null> {
+  return workerThumbnail(withRoom(env, opts), liveDoc);
+}
+
+function getDocumentTabImageSvg(
+  env: Env,
+  liveDoc: ThumbnailSubject,
+  tabId: string,
+): Promise<string | null> {
+  return workerTabImage(withRoom(env), liveDoc, tabId);
+}
 
 function r2() {
   return { get: vi.fn(), put: vi.fn().mockResolvedValue(undefined), delete: vi.fn() };
