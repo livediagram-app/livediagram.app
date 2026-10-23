@@ -101,7 +101,7 @@ export type ExplorerChrome = { prefs: UserPreferences; ownerId: string | null; s
 /** The person the Explorer pages are for (an account, or a guest from liveworkspace, which the first visit fetches)
  *  and their synced preferences (docs/specs/007-editor/user-preferences.md): the device cache at once, the server's
  *  copy merged in once the person is known. */
-export function useExplorerChrome(): { chrome: ExplorerChrome; isSignedIn: boolean } {
+function useExplorerChrome(): { chrome: ExplorerChrome; isSignedIn: boolean } {
   const { isSignedIn, authLoaded, accountUserId } = useAccountBootstrap();
   const guestId = useSignedGuestId(authLoaded, accountUserId);
   const viewerId = accountUserId ?? guestId ?? null;
@@ -115,10 +115,9 @@ export function useExplorerChrome(): { chrome: ExplorerChrome; isSignedIn: boole
   };
 }
 
-// The Explorer for the person, in whatever frame holds it: the /explorer pages (app/explorer/ExplorerShell.tsx) or a
-// workbench's workspace frame (WorkspaceFrame.tsx), which names the view itself and catches the Explorer's moves
-// through the app's navigation interceptor. A frame draws the Explorer's own slim search bar; the pages hand it their
-// header (`header`) and draw their bottom bar and Settings after it (`children`).
+// The Explorer for the person in a workbench's workspace frame (WorkspaceFrame.tsx), which names the view itself and
+// catches the Explorer's moves through the app's navigation interceptor. A frame draws the Explorer's own slim search
+// bar; a host may hand it a header (`header`), sidebar links (`sidebarLinks`) and draw after it (`children`).
 export function ExplorerHost({
   view,
   header,

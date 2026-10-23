@@ -1,21 +1,18 @@
 'use client';
 
-// The Explorer page: the shared Explorer (@liveworkspace/explorer, liveworkspace/docs/one-explorer.md) in
-// livedocuments's chrome, laid out as livediagram's Explorer is: the header with the search field centred between the
-// brand and the account, Home's hero under it, and the bottom bar with Search, Settings and Appearance. Everything
-// it lists comes from the index through /api/index; livedocuments supplies the addresses and Help articles
+// The Explorer inside a workbench's workspace frame (WorkspaceFrame.tsx): the shared Explorer
+// (@liveworkspace/explorer, liveworkspace/docs/one-explorer.md) for the person. The Explorer page itself is
+// liveworkspace's, served on this app's own address by its router; a frame keeps its own. Everything it lists comes
+// from the index through /api/index; livedocuments supplies the addresses and Help articles
 // (lib/explorer-host.ts), New (the /new flow), the hero's art (the fanned previews) and its setting (the synced
 // `homeBanner` preference, docs/specs/013-workspace/explorer-home.md "Hiding the banner"), and the person: an
 // account's teams from its token, or a guest's identity from liveworkspace, which the first visit fetches before the
 // Explorer asks for anything.
 
-import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { usePathname, useSearchParams } from 'next/navigation';
 import { lazy, Suspense, useCallback, useMemo, useState, type ReactNode } from 'react';
 import {
   Explorer,
-  viewFromLocation,
   type ExplorerView,
   type LensTelemetryType,
   type TimelineTelemetry,
@@ -25,20 +22,12 @@ import {
   type WelcomeOptions,
 } from '@liveworkspace/explorer';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
-import { Brand, SITE_ID, SiteSwitcher } from '@livedocuments/ui';
-import { AuthControls } from '@/components/chrome/AuthControls';
-import { ChromeControls } from '@/components/chrome/ChromeControls';
-import { SignInBanner, SIGNIN_BANNER_DISMISS_KEY } from '@/components/chrome/SignInBanner';
-import { useDismissibleBanner } from '@/hooks/ui/useDismissibleBanner';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useEditorPreferences } from '@/hooks/persistence/useEditorPreferences';
 import { useSignedGuestId } from '@/hooks/persistence/useSignedGuestId';
 import { useAppNavigation } from '@/hooks/navigation/useAppNavigation';
-import { useSearchShortcut } from '@/hooks/ui/useSearchShortcut';
 import { manageTeamsUrl, signInEnabled } from '@/lib/auth-config';
 import { indexClient } from '@/lib/index-client';
-import { isPowerUserMode } from '@/lib/power-user-mode';
-import { dropSettingsLink, readSettingsLink } from '@/lib/settings-link';
 import { explorerShareHost } from '@/lib/explorer-share-host';
 import { explorerInboxHost } from '@/lib/explorer-inbox-host';
 import { renderDocumentThumbnail } from '@/lib/explorer-thumbnail';
@@ -92,13 +81,6 @@ function loadWelcome(): Promise<WelcomeManifest> {
   return welcomeLoad;
 }
 
-// Settings mount only while open, so they load on first open rather than with every Explorer page: Settings alone
-// carries every category's panes.
-const SettingsDialog = dynamic(
-  () => import('@/components/dialogs/SettingsDialog').then((m) => m.SettingsDialog),
-  { ssr: false },
-);
-
 // The Timeline's reports (docs/specs/017-telemetry/telemetry.md "Timeline"), each a literal pair so the telemetry
 // manifest's coverage test sees it. The type is a fixed token from the Explorer: a mode, a filter, More or Retry,
 // Card or Stack.
@@ -136,10 +118,9 @@ const trackLens = (type: LensTelemetryType) => track('Explorer', 'Selected', typ
 /** What the host's chrome around the Explorer needs: the person's synced preferences and whose they are. */
 export type ExplorerChrome = { prefs: UserPreferences; ownerId: string | null; signedIn: boolean };
 
-// The Explorer for the person, in whatever frame holds it: the /explorer pages (ExplorerShell) or a workbench's
-// workspace frame (app/embed/workbench/WorkspaceFrame.tsx), which names the view itself and catches the Explorer's
-// moves through the app's navigation interceptor. A frame draws the Explorer's own slim search bar; the pages hand
-// it their header (`header`) and draw their bottom bar and Settings after it (`children`).
+// The Explorer for the person in a workbench's workspace frame (WorkspaceFrame.tsx), which names the view itself and
+// catches the Explorer's moves through the app's navigation interceptor. A frame draws the Explorer's own slim search
+// bar; a host may hand it a header (`header`) and draw after it (`children`).
 export function ExplorerHost({
   view,
   header,
@@ -237,105 +218,6 @@ export function ExplorerHost({
         header={header ? ({ search }) => header(search, chrome) : undefined}
       />
       {children?.(chrome)}
-    </>
-  );
-}
-
-// Search from the bottom bar or Cmd/Ctrl+K: the page's one search field, the header's or Home's hero's.
-function focusSearch() {
-  const field = document.querySelector<HTMLInputElement>('input[data-search-field]');
-  field?.focus();
-  field?.select();
-}
-
-export function ExplorerShell() {
-  const pathname = usePathname();
-  const search = useSearchParams();
-  const view = viewFromLocation(pathname, search);
-  // Opens on the Settings deep link (`?settings=<category>`, lib/settings-link.ts) that mail and the account menu use.
-  const [settings, setSettings] = useState<{
-    category: string | null;
-    section: string | null;
-  } | null>(() => readSettingsLink(search.toString()));
-  useSearchShortcut(focusSearch);
-
-  return (
-    <div className="relative flex min-h-dvh flex-col bg-slate-50 dark:bg-slate-900">
-      <ExplorerHost
-        view={view}
-        header={(field) => (
-          // On a desktop the header is three columns, the field centred between the brand and the account on every
-          // page; each side grows to its content first. Below `sm` the field wraps onto its own full-width row.
-          // pr-0 so the account control sits flush to the right edge.
-          <header className="sticky top-0 z-[var(--z-chrome)] flex shrink-0 flex-wrap items-center justify-between gap-x-4 border-y border-slate-200 bg-white/85 pl-4 pr-0 backdrop-blur sm:h-14 sm:flex-nowrap lg:grid lg:grid-cols-[minmax(max-content,1fr)_auto_minmax(max-content,1fr)] dark:border-slate-700 dark:bg-slate-900/85">
-            <div className="flex h-14 items-center gap-3 lg:col-start-1">
-              {/* Hover the logo for liveworkspace's other sites (liveworkspace/docs/site-switcher.md). */}
-              <SiteSwitcher current={SITE_ID}>
-                <Brand href="/" size="md" />
-              </SiteSwitcher>
-            </div>
-            {/* While Home shows its hero the field sits there instead, so the page never has two. */}
-            {field ? (
-              <div className="order-last w-full pb-2 pr-4 sm:order-none sm:ml-auto sm:w-auto sm:pb-0 sm:pr-0 lg:col-start-2 lg:ml-0">
-                {field}
-              </div>
-            ) : null}
-            <div className="flex h-14 items-stretch lg:col-start-3 lg:justify-self-end">
-              <AuthControls
-                onOpenAccount={() => setSettings({ category: 'account', section: null })}
-              />
-            </div>
-          </header>
-        )}
-      >
-        {({ prefs, ownerId, signedIn }) => (
-          <>
-            <GuestSignInBanner signedIn={signedIn} />
-            {/* The bottom bar (docs/specs/007-editor/editor-app.md): the editor's right-hand controls, Search,
-                Settings and Appearance. The toasts stand on it (docs/specs/004-interface-design/toasts.md). */}
-            <div
-              data-toast-floor=""
-              className="sticky bottom-0 z-[var(--z-chrome)] flex h-12 shrink-0 items-center justify-end gap-2 border-t border-slate-200 bg-white px-3 dark:border-slate-800 dark:bg-slate-900"
-            >
-              <ChromeControls
-                onOpenSearch={focusSearch}
-                onOpenSettings={() => setSettings({ category: null, section: null })}
-                powerUser={isPowerUserMode(prefs)}
-              />
-            </div>
-            {settings ? (
-              <SettingsDialog
-                settings={prefs}
-                onChange={(next) => {
-                  // The row built `next` on this render's preferences; only its change is written, onto the
-                  // freshest, so another tab's change since is kept. The cache drives `prefs`.
-                  commitUserPreferences(prefs, next, ownerId);
-                }}
-                onClose={() => {
-                  setSettings(null);
-                  dropSettingsLink();
-                }}
-                initialCategoryId={settings.category}
-                initialSectionId={settings.section}
-              />
-            ) : null}
-          </>
-        )}
-      </ExplorerHost>
-    </div>
-  );
-}
-
-// The guest's sign-in banner (docs/specs/014-identity/sign-in-encouragement.md): a floating card over the bottom bar,
-// only where sign-in is wired up, for a visitor not signed in (a guest id does not count) who has not closed it. While
-// it shows, a spacer lets the last row scroll clear of it.
-function GuestSignInBanner({ signedIn }: { signedIn: boolean }) {
-  const { dismissed, dismiss } = useDismissibleBanner(SIGNIN_BANNER_DISMISS_KEY);
-  if (!signInEnabled || signedIn || dismissed) return null;
-  return (
-    <>
-      <div aria-hidden className="h-28 shrink-0 sm:h-12" />
-      <SignInBanner surface="Explorer" onDismiss={dismiss} />
     </>
   );
 }

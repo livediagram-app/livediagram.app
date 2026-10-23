@@ -1,7 +1,7 @@
 'use client';
 
 // Home's hero art (docs/specs/013-workspace/explorer-home.md): three template previews fanned as sheets, so a person
-// sees what livedocuments makes. Loaded lazily with Home's hero (app/explorer/ExplorerShell.tsx), with the previews it
+// sees what livedocuments makes. Loaded lazily with Home's hero (app/embed/workbench/ExplorerHost.tsx), with the previews it
 // draws.
 
 import type { HeroSheet } from '@liveworkspace/explorer';

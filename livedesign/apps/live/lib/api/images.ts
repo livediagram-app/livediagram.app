@@ -81,32 +81,6 @@ export async function apiDeleteImage(ownerId: string, imageId: string): Promise<
   });
 }
 
-// Inverse-index of which designs reference each owned image.
-// Backs the Explorer Image Gallery's "Used in" badge. Images that
-// aren't placed on any canvas yet are absent from the map (treat a
-// missing key as "0 uses, safe to delete"). 503 collapses to an
-// empty map so a self-host without R2 still renders an empty
-// gallery rather than a hard error.
-//
-// Deduped alongside apiListImages: the GalleryPane fires both in a
-// Promise.all on mount, and React Strict Mode doubles the effect.
-// The endpoint does a full join + JSON parse per call on the
-// server, so squashing concurrent identical fetches matters even
-// more than for the cheap list endpoint.
-async function _apiImageUsage(
-  ownerId: string,
-): Promise<Record<string, { id: string; name: string }[]>> {
-  const res = await apiFetch(`${API_BASE}/images/usage`, {
-    headers: await apiHeaders(ownerId),
-  });
-  if (res.status === 503) return {};
-  return expectOk<{ usage: Record<string, { id: string; name: string }[]> }>(
-    res,
-    'image usage',
-  ).then((b) => b.usage);
-}
-export const apiImageUsage = dedupeInFlight(_apiImageUsage, (ownerId) => ownerId);
-
 // Fetch the bytes of one image (authenticated) and return a blob
 // URL the caller can stick on an `<img>`. The caller gives it back with
 // releaseImageBlobUrl when the element unmounts (the URL is shared by

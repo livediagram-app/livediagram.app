@@ -398,9 +398,9 @@ export const TEAM_ACTIVITY: MetricStack = {
 };
 
 // The shared Explorer's Timeline (docs/specs/013-workspace/timeline.md) and Inbox (docs/specs/013-workspace/inbox.md),
-// reported through ExplorerHost's onTimeline prop and the Inbox host's onTelemetry (apps/editor
-// app/explorer/ExplorerShell.tsx, lib/explorer-inbox-host.tsx), and by the Explorer on liveworkspace.app in this
-// app's name. Timeline·Opened carries what was done in the feed by type: a card, a card or stack menu, a stacked run.
+// reported through a workbench frame's onTimeline prop and the Inbox host's onTelemetry (apps/editor
+// app/embed/workbench/ExplorerHost.tsx, lib/explorer-inbox-host.tsx), and by liveworkspace's Explorer page (on
+// liveworkspace.app and on this app's address) in this app's name. Timeline·Opened carries what was done in the feed by type: a card, a card or stack menu, a stacked run.
 
 export const TIMELINE_MENUS = chart(
   'Timeline',

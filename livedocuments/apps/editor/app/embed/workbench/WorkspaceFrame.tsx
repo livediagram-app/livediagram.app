@@ -22,7 +22,7 @@ import { debugLog } from '@/lib/debug-log';
 import { track } from '@/lib/telemetry';
 import { workspacePlaceOf, type WorkspacePlace } from '@/lib/workbench/workspace-place';
 import { VIEW_TITLES, type ExplorerView } from '@liveworkspace/explorer';
-import { ExplorerHost } from '../../explorer/ExplorerShell';
+import { ExplorerHost } from './ExplorerHost';
 import { useWorkspaceNavigation } from './useWorkspaceNavigation';
 import {
   explorerPlaceFields,

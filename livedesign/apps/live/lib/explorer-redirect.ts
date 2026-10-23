@@ -1,7 +1,6 @@
-// Where livedesign's Explorer is. The Explorer moves to liveworkspace.app (liveworkspace/docs/site.md "The
-// Explorer"), once for every app, as soon as the shared Explorer holds everything livedesign's own Explorer did
-// (the Image Gallery, Invites, Tags and an item's History among them). Until then livedesign hosts the shared
-// Explorer at its own /explorer (app/explorer/ExplorerShell.tsx), and every link here opens it there.
+// Where livedesign's Explorer is: liveworkspace's shared Explorer (liveworkspace/docs/site.md "The Explorer"), which
+// livedesign's router serves at livedesign's own /explorer (@liveworkspace/sites/workspace-proxy), so every link here
+// opens it there.
 // EXPLORER_ON_LIVEWORKSPACE is the one switch: on, the editor worker answers every /explorer address with a 302 to
 // the same place on liveworkspace.app (`@liveworkspace/sites` oldExplorerRedirectUrl), naming livedesign, and these
 // links go there directly.
