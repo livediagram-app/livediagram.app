@@ -110,6 +110,14 @@ corepack pnpm dev:workspace           # http://localhost:3000/sign-in
 accounts Worker, so the pages and the API share one origin, as on liveworkspace.app. That origin,
 `http://localhost:3000`, is the Worker's `BASE_URL` and the issuer apps check locally.
 
+The index's schema is one baseline migration, `apps/index/migrations/0001_index.sql`, edited in place
+until launch, so `wrangler d1 migrations apply` sees nothing new when it changes. A local index
+database built before a change misses its tables: one built before `0e171391c` has no `use_days`, and
+every open fails with a D1 error. Rebuild it (`rm -rf apps/index/.wrangler/state/v3/d1`, then
+`corepack pnpm db:migrate:local` in `apps/index`), which drops your local index rows, or keep them by
+running just the new statements against the local file (`sqlite3
+apps/index/.wrangler/state/v3/d1/miniflare-D1DatabaseObject/<hash>.sqlite < statements.sql`).
+
 Locally, emails aren't sent. Each code email is printed in the accounts Worker's output. Turnstile
 uses Cloudflare's always-pass test keys.
 
