@@ -5,6 +5,7 @@
 // offline view), and the filter's words.
 
 import { createContext, useContext, type ReactNode } from 'react';
+import type { ThisBrowserHost } from './ThisBrowser';
 
 /** A sidebar row of the host's: it leaves the Explorer for `href` (another app's page, say). */
 export type SidebarLink = {
@@ -20,9 +21,11 @@ export type ExplorerHostExtras = {
   sidebarLinks: readonly SidebarLink[];
   /** The filter's every-app choice ("All" by default). */
   allLabel: string;
+  /** The host app's items kept only in this browser, where the host can read them (ThisBrowser.tsx). */
+  thisBrowser: ThisBrowserHost | null;
 };
 
-const DEFAULTS: ExplorerHostExtras = { sidebarLinks: [], allLabel: 'All' };
+const DEFAULTS: ExplorerHostExtras = { sidebarLinks: [], allLabel: 'All', thisBrowser: null };
 const Ctx = createContext<ExplorerHostExtras>(DEFAULTS);
 
 export function useHostExtras(): ExplorerHostExtras {

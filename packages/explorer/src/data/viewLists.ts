@@ -99,6 +99,7 @@ export function viewList(
     case 'invites':
     case 'gallery':
     case 'shape-libraries':
+    case 'offline':
       return null;
     case 'all':
       // With a lens: every item of mine, at any depth.

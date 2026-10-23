@@ -22,6 +22,7 @@ import {
 import { ImageIcon, MailIcon, ShapesIcon } from '../ui/library-icons';
 import type { ExplorerView } from '../views';
 import type { Words } from '../words';
+import { BrowserIcon } from './host';
 
 export function emptyCopy(
   view: ExplorerView,
@@ -131,6 +132,13 @@ export function emptyCopy(
         icon: <ShapesIcon />,
         title: 'No shape libraries yet',
         description: 'Import a draw.io library and its shapes collect here.',
+        cta: false,
+      };
+    case 'offline':
+      return {
+        icon: <BrowserIcon />,
+        title: 'Nothing kept only in this browser',
+        description: `${w.many} you keep only in this browser show up here.`,
         cta: false,
       };
     case 'home':

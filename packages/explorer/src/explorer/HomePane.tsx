@@ -31,6 +31,9 @@ import { PaneHeader } from './PaneHeader';
 import { useItemBits } from './rows';
 import { useFirstRun } from '../welcome/context';
 import { HomeWelcome } from '../welcome/HomeWelcome';
+import type { ThisBrowserItem } from '../this-browser';
+import { mergeOpened, ThisBrowserCard, useThisBrowserItems } from './ThisBrowser';
+import { BrowserIcon } from './host';
 import {
   useWhatHappened,
   useWhatHappenedGroups,
@@ -39,6 +42,8 @@ import {
 } from './WhatHappened';
 
 export const HOME_SHARED = 4;
+// Jump Back In's Recent group with this browser's own items merged in.
+const HOME_RECENT_MAX = 8;
 
 export const HOME_COPY = {
   jumpBackIn: 'Jump Back In',
@@ -112,7 +117,20 @@ export function HomePane({ onOpenNav, hero }: { onOpenNav?: () => void; hero: bo
   const happenedGroups = useWhatHappenedGroups(happened);
   const wide = useWide();
   const showApp = filter === 'all';
-  const empty = !recent.loading && recent.items.length === 0;
+  // What this browser keeps of the host app's, by the same rule as Recent (last opened first): only where the host
+  // can read it (the Explorer on the app's own address).
+  const { live: local } = useThisBrowserItems();
+  const localOpened = useMemo(() => local.filter((i) => i.lastOpenedAt !== null), [local]);
+  const recentRest = useMemo(
+    () =>
+      mergeOpened(
+        recent.items.filter((i) => !isMostUsed(i)),
+        localOpened,
+        HOME_RECENT_MAX,
+      ),
+    [recent.items, localOpened],
+  );
+  const empty = !recent.loading && recent.items.length === 0 && localOpened.length === 0;
   const { firstRun } = useFirstRun();
 
   // A first run (the host's welcome, and nothing the person can open yet): starting points in place of the lists.
@@ -155,7 +173,7 @@ export function HomePane({ onOpenNav, hero }: { onOpenNav?: () => void; hero: bo
             recent.loading ? (
               <StripSkeleton />
             ) : (
-              <Strip items={phoneOrder(recent.items)} empty={empty} />
+              <Strip items={phoneOrder(recent.items)} local={localOpened} empty={empty} />
             )
           ) : recent.loading ? (
             <GridSkeleton />
@@ -180,7 +198,7 @@ export function HomePane({ onOpenNav, hero }: { onOpenNav?: () => void; hero: bo
               />
               <CardGroup
                 label={HOME_COPY.recent}
-                items={recent.items.filter((i) => !isMostUsed(i))}
+                items={recentRest}
                 large={false}
                 showApp={showApp}
               />
@@ -303,7 +321,7 @@ function CardGroup({
   showApp,
 }: {
   label?: string;
-  items: ShownItem[];
+  items: readonly (ShownItem | ThisBrowserItem)[];
   large: boolean;
   showApp: boolean;
 }) {
@@ -314,7 +332,11 @@ function CardGroup({
       <ul className={large ? LARGE_GRID : COMPACT_GRID}>
         {items.map((item) => (
           <li key={item.id} className="min-w-0">
-            <JumpBackInCard item={item} large={large} showApp={showApp} />
+            {'app' in item ? (
+              <JumpBackInCard item={item} large={large} showApp={showApp} />
+            ) : (
+              <ThisBrowserCard item={item} />
+            )}
           </li>
         ))}
       </ul>
@@ -430,8 +452,17 @@ const JumpBackInCard = memo(function JumpBackInCard({
 });
 
 /** A phone's Jump Back In: one strip of small tiles, then See More. */
-function Strip({ items, empty }: { items: ShownItem[]; empty: boolean }) {
+function Strip({
+  items,
+  local,
+  empty,
+}: {
+  items: ShownItem[];
+  local: readonly ThisBrowserItem[];
+  empty: boolean;
+}) {
   const { Link, itemHref, viewHref, navigate } = useExplorer();
+  const { host } = useThisBrowserItems();
   return (
     <div className="relative -mx-4 sm:mx-0">
       <div className="flex h-28 snap-x scroll-px-4 gap-3 overflow-x-auto px-4 pb-2 pt-1 sm:-mx-1 sm:scroll-px-1 sm:px-1">
@@ -454,6 +485,22 @@ function Strip({ items, empty }: { items: ShownItem[]; empty: boolean }) {
                       {item.title || 'Untitled'}
                     </span>
                   </Link>
+                </li>
+              ))}
+              {local.map((item) => (
+                <li key={item.id} className="w-32 shrink-0 snap-start" data-this-browser-card="">
+                  <a
+                    href={host?.itemHref(item)}
+                    aria-label={item.title || 'Untitled'}
+                    className={`group block min-w-0 rounded-md ${FOCUS_RING}`}
+                  >
+                    <span className="flex h-20 w-32 items-center justify-center rounded-md bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-200">
+                      <BrowserIcon size={20} />
+                    </span>
+                    <span className="mt-1 block h-4 truncate text-xs leading-4 text-slate-700 group-hover:text-slate-900 dark:text-slate-300 dark:group-hover:text-slate-100">
+                      {item.title || 'Untitled'}
+                    </span>
+                  </a>
                 </li>
               ))}
             </ul>

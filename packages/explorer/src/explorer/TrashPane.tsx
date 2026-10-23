@@ -14,6 +14,7 @@ import { InfoIcon, ItemIcon } from '../ui/icons';
 import type { Words } from '../words';
 import { useExplorer } from './context';
 import { EmptyPane } from './EmptyPane';
+import { ThisBrowserTrashGroup, useThisBrowserTrashed } from './ThisBrowser';
 
 export const TRASH_DAYS = 30;
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -89,7 +90,10 @@ export function TrashPane({
   const [purging, setPurging] = useState<ShownItem | null>(null);
   const groups = useMemo(() => trashGroups(items, teamName, words), [items, teamName, words]);
 
-  if (groups.length === 0) return <EmptyPane view={{ kind: 'trash' }} words={words} />;
+  const localTrashed = useThisBrowserTrashed();
+
+  if (groups.length === 0 && localTrashed === 0)
+    return <EmptyPane view={{ kind: 'trash' }} words={words} />;
   return (
     <div className="flex flex-col gap-5">
       {groups.map((group) => (
@@ -156,6 +160,7 @@ export function TrashPane({
           </ul>
         </section>
       ))}
+      <ThisBrowserTrashGroup />
       {hasMore ? (
         <div className="flex justify-center">
           <Button variant="secondary" size="sm" onClick={onLoadMore} disabled={loadingMore}>

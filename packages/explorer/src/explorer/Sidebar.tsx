@@ -52,6 +52,7 @@ import { InlineRenameInput } from '../ui/InlineRenameInput';
 import { sameView, SIDEBAR_LABELS, type ExplorerView } from '../views';
 import { useExplorer } from './context';
 import { BrowserIcon, useHostExtras } from './host';
+import { useThisBrowserItems } from './ThisBrowser';
 import { DefaultFolderMarker } from '../defaults/DefaultFolderMarker';
 import { LIBRARY, MY_WORK, teamKey } from './sidebar/expansion';
 import { useFolderRowMenu, useMyWorkMenu } from './sidebar/rowMenus';
@@ -625,6 +626,7 @@ export function Sidebar() {
             />
           ) : null}
         </SidebarRow>
+        <ThisBrowserRow />
         {/* The host's own rows (This Browser on liveworkspace.app): each leaves for its page. */}
         {sidebarLinks.map((link) => (
           <SidebarRow
@@ -639,5 +641,25 @@ export function Sidebar() {
         <TrashRow />
       </SidebarGroup>
     </nav>
+  );
+}
+
+/** This Browser, where the host can read the app's items kept only here: shown while there is one, or while its view
+ *  is open, with their count. */
+function ThisBrowserRow() {
+  const { view, navigate } = useExplorer();
+  const { host, live } = useThisBrowserItems();
+  if (!host || (live.length === 0 && view.kind !== 'offline')) return null;
+  return (
+    <SidebarRow
+      icon={<BrowserIcon />}
+      tone="amber"
+      label={SIDEBAR_LABELS.thisBrowser}
+      selected={view.kind === 'offline'}
+      onActivate={() => navigate({ kind: 'offline' })}
+      depth={0}
+      badge={live.length || undefined}
+      badgeLabel={`${live.length} in this browser`}
+    />
   );
 }

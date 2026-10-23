@@ -34,7 +34,9 @@ export type ExplorerView =
   // The person's images, from the host's media source (only where the host has one).
   | { kind: 'gallery' }
   // The person's shape libraries, from the host's store (only where the host has one).
-  | { kind: 'shape-libraries' };
+  | { kind: 'shape-libraries' }
+  // What the host app keeps only in this browser (only where the host can read it: the app's own address).
+  | { kind: 'offline' };
 
 /** How a view takes the lens: `scoped` (its breadcrumb is the place), `aggregate` (it lists every place), or
  *  null for a view that lists no items of its own (typing there opens Search results). */
@@ -74,7 +76,7 @@ export type ExplorerViewKind = ExplorerView['kind'];
 /** The views that list items (and folders): every view but those drawn by panes of their own. */
 export type ItemsView = Exclude<
   ExplorerView,
-  { kind: 'home' | 'inbox' | 'timeline' | 'invites' | 'gallery' | 'shape-libraries' }
+  { kind: 'home' | 'inbox' | 'timeline' | 'invites' | 'gallery' | 'shape-libraries' | 'offline' }
 >;
 
 export const DEFAULT_BASE_PATH = '/explorer';
@@ -129,6 +131,7 @@ export function viewFromLocation(
     case 'home':
     case 'invites':
     case 'shape-libraries':
+    case 'offline':
       return { kind: section };
     case 'images':
       return { kind: 'gallery' };
@@ -168,6 +171,7 @@ export const SIDEBAR_LABELS = {
   invites: 'Invites',
   gallery: 'Image Gallery',
   shapeLibraries: 'Shape Libraries',
+  thisBrowser: 'This Browser',
 } as const;
 
 export const VIEW_TITLES: Record<Exclude<ExplorerViewKind, 'folder' | 'team'>, string> = {
@@ -184,4 +188,5 @@ export const VIEW_TITLES: Record<Exclude<ExplorerViewKind, 'folder' | 'team'>, s
   invites: SIDEBAR_LABELS.invites,
   gallery: SIDEBAR_LABELS.gallery,
   'shape-libraries': SIDEBAR_LABELS.shapeLibraries,
+  offline: SIDEBAR_LABELS.thisBrowser,
 };

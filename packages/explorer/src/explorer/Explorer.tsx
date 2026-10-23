@@ -48,6 +48,7 @@ import { Sidebar } from './Sidebar';
 import { TimelinePane } from './TimelinePane';
 import { useHeroPresence } from './useHeroPresence';
 import { HostExtrasProvider, type SidebarLink } from './host';
+import { ThisBrowserPane, type ThisBrowserHost } from './ThisBrowser';
 import { SignInBanner } from './SignInBanner';
 import { WelcomeProvider, useFirstRun } from '../welcome/context';
 import { WelcomeFan } from '../welcome/HomeWelcome';
@@ -124,6 +125,9 @@ export type ExplorerProps = {
   welcome?: WelcomeOptions;
   /** The host's own rows in the sidebar's More group, before the Trash (This Browser, say). */
   sidebarLinks?: readonly SidebarLink[];
+  /** The host app's items kept only in this browser, where the host can read them (the Explorer on the app's own
+   *  address): a sidebar row with their count, `/explorer/offline`, a Trash group and Jump Back In. */
+  thisBrowser?: ThisBrowserHost | null;
   /** The filter's every-app choice, "All" by default ("All apps" where the Explorer is no one app's). */
   allLabel?: string;
   /** A sentence said once on arrival, as a toast (why the person was sent here: a revoked link, say). */
@@ -262,6 +266,7 @@ function ExplorerInner({
   onLensSelected,
   welcome,
   sidebarLinks,
+  thisBrowser,
   allLabel,
   arrivalNotice,
   accounts,
@@ -287,8 +292,12 @@ function ExplorerInner({
   );
   const openNav = useCallback(() => setNavOpen(true), []);
   const extras = useMemo(
-    () => ({ sidebarLinks: sidebarLinks ?? [], allLabel: allLabel ?? 'All' }),
-    [sidebarLinks, allLabel],
+    () => ({
+      sidebarLinks: sidebarLinks ?? [],
+      allLabel: allLabel ?? 'All',
+      thisBrowser: thisBrowser ?? null,
+    }),
+    [sidebarLinks, allLabel, thisBrowser],
   );
   return (
     <ExplorerProvider
@@ -458,6 +467,8 @@ function Pane({
       return <GalleryView onOpenNav={onOpenNav} />;
     case 'shape-libraries':
       return <ShapeLibrariesView onOpenNav={onOpenNav} />;
+    case 'offline':
+      return <ThisBrowserPane onOpenNav={onOpenNav} />;
     default:
       return <ItemsPane view={view} onOpenNav={onOpenNav} />;
   }

@@ -9,6 +9,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./hero-manifest": "./src/hero/manifest.tsx",
+    "./this-browser": "./src/this-browser.ts",
     "./explorer.css": "./explorer.css"
   },
   "scripts": {
