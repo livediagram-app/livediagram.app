@@ -386,6 +386,41 @@ describe('a mention', () => {
     expect(sent()).toHaveLength(60);
   });
 
+  it('holds a sender to the hourly cap across every plan, each in its own Durable Object', async () => {
+    const people = Array.from({ length: 80 }, (_, i) =>
+      person(`m-${i}`, null, `p${i}@x.test`, 'invited'),
+    );
+    fake.teams.set(TEAM, [person('m-owner', OWNER, 'owner@x.test'), ...people]);
+    // A second plan: its own SQLite, the same people's stores.
+    const other = sqliteD1({
+      ...ACCOUNTS_ON,
+      ...INDEX_ON,
+      RESEND_API_KEY: 're',
+      APP_BASE_URL: 'https://app.test',
+    });
+    Reflect.set(other.env, 'WORKBENCH', db.env.WORKBENCH);
+    const comment = (id: string, from: number) =>
+      ({
+        id,
+        text: 'all of you',
+        createdAt: 1,
+        authorName: 'Owen',
+        authorColor: '#000',
+        mentions: people.slice(from, from + 20).map((p) => mention(null, p.id)),
+      }) as Comment;
+    await notifyMentions(db.env, {
+      plan: { id: 'd1', name: 'Roadmap', teamId: TEAM },
+      authorId: OWNER,
+      comments: [comment('c0', 0), comment('c1', 20)],
+    });
+    await notifyMentions(other.env, {
+      plan: { id: 'd2', name: 'Launch', teamId: TEAM },
+      authorId: OWNER,
+      comments: [comment('c2', 40), comment('c3', 60)],
+    });
+    expect(sent()).toHaveLength(60);
+  });
+
   // Mentions ride on every comment and save: however many comments and people, one team read, one address read
   // and one switch read, and the claims are the plan's own SQLite.
   it('stays cheap: a constant number of calls, within budget, for the most a save can mention', async () => {

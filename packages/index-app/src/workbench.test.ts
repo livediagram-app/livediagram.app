@@ -461,3 +461,73 @@ describe('the workbench store', () => {
     expect(await store.readSession(s.secret)).toBeNull();
   });
 });
+
+describe("a person's allowances", () => {
+  const take = async (store: ReturnType<typeof arrange>['store'], now: number, max = 3) =>
+    (await store.takeQuota({
+      personId: 'user_1',
+      kind: 'notify-email',
+      max,
+      windowMs: 3_600_000,
+      now,
+    })) === 1;
+
+  it('counts uses in the window and refuses at the cap, whatever item they came from', async () => {
+    const { store } = arrange();
+    expect([
+      await take(store, NOW),
+      await take(store, NOW + 1),
+      await take(store, NOW + 2),
+    ]).toEqual([true, true, true]);
+    expect(await take(store, NOW + 3)).toBe(false);
+    // The first use leaves the window an hour on: one more fits.
+    expect(await take(store, NOW + 3_600_000)).toBe(true);
+    expect(await take(store, NOW + 3_600_000)).toBe(false);
+  });
+
+  it('keeps each kind apart, and refuses a cap that cannot be meant', async () => {
+    const { store } = arrange();
+    await take(store, NOW, 1);
+    expect(
+      await store.takeQuota({
+        personId: 'user_1',
+        kind: 'other',
+        max: 1,
+        windowMs: 1000,
+        now: NOW,
+      }),
+    ).toBe(1);
+    await expect(
+      store.takeQuota({ personId: 'user_1', kind: 'k', max: 0, windowMs: 1000, now: NOW }),
+    ).rejects.toThrow();
+  });
+
+  it('holds its uses through the daily sweep while they count, and the store goes once they do not', async () => {
+    const { ns, store } = arrange();
+    await take(store, NOW + WORKBENCH_SWEEP_MS - 1000, 1);
+    await store.alarm(NOW + WORKBENCH_SWEEP_MS);
+    expect(await take(store, NOW + WORKBENCH_SWEEP_MS + 1, 1)).toBe(false);
+    await store.alarm(NOW + 2 * WORKBENCH_SWEEP_MS);
+    const storage = [...ns.stores.values()][0]!.storage;
+    expect(
+      storage.sql.exec("SELECT name FROM sqlite_master WHERE type = 'table'").toArray(),
+    ).toEqual([]);
+  });
+
+  it("takes a whole save's uses in one call, up to the cap", async () => {
+    const { store } = arrange();
+    const takeMany = (count: number, now = NOW) =>
+      store.takeQuota({ personId: 'user_1', kind: 'k', max: 60, windowMs: 3_600_000, now, count });
+    expect(await takeMany(45)).toBe(45);
+    expect(await takeMany(45, NOW + 1)).toBe(15);
+    expect(await takeMany(1, NOW + 2)).toBe(0);
+  });
+
+  it('takes a use in well under a millisecond at the cap', async () => {
+    const { store } = arrange();
+    for (let i = 0; i < 1_000; i++) await take(store, NOW + i, 1_000);
+    const started = performance.now();
+    for (let i = 0; i < 200; i++) await take(store, NOW + 2_000 + i, 1_000);
+    expect((performance.now() - started) / 200).toBeLessThan(1);
+  });
+});

@@ -107,8 +107,9 @@ The server decides everything that matters:
   quotes the first 280, cut at a word with an ellipsis.
 - Each email is **claimed** before it goes (`notify_email_claims`): a hash of the author, design, recipient and the comment's text is sent at most once per 24 hours
   (`NOTIFY_EMAIL_DEDUPE_MS`), so a replayed request emails nobody twice, and one
-  author's action-assigned and mention emails together are capped at 60 an hour
-  (`NOTIFY_EMAILS_PER_SENDER_PER_HOUR`). A refused claim sends nothing and logs
+  author's action-assigned and mention emails together are capped at 60 an hour across all their designs
+  (`NOTIFY_EMAILS_PER_SENDER_PER_HOUR`, counted in the author's own per-person store by `@liveworkspace/index-app`
+  `claimNotice`). A refused claim sends nothing and logs
   `[notify-email] skipped`; the daily cron deletes claims past the 24 hours, and
   deleting an account deletes the claims it sent ([Owner-keyed data](../015-api/api.md#owner-keyed-data)).
 - A comment and an

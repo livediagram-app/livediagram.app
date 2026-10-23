@@ -55,7 +55,7 @@ room at most once a minute) so the series knows who is active.
    @-mentioned you in a comment, on a team plan ([Assigned actions](../012-collaboration/assigned-actions.md) §4,
    [Comment mentions](../012-collaboration/comment-mentions.md) "The email"). The recipient is
    one of the plan's team's people as liveworkspace keeps the team; the same
-   email goes once a day, and one sender's are capped at 60 an hour a plan.
+   email goes once a day, and one sender's are capped at 60 an hour across all their plans.
 
 How each is sent, and what it asks of liveworkspace: addresses and switches for
 many people in one go (`notificationRecipients`), a team's people

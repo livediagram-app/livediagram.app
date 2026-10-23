@@ -236,8 +236,8 @@ The server, not the client, establishes every fact that matters:
 - **claims** the email before sending, since the action name and description
   come from the body: the same email (assigner, plan, recipient, action
   name, description) goes at most once per 24 hours, and one sender's
-  action-assigned and mention emails on a plan are capped at 60 an hour, both in
-  the plan's own `notify_claims` table ([Comment mentions](comment-mentions.md) "The email" has the
+  action-assigned and mention emails are capped at 60 an hour across all their plans
+  (the once-a-day rule in the plan's own `notify_claims` table, the cap in the sender's own store) ([Comment mentions](comment-mentions.md) "The email" has the
   detail).
 
 Then it sends the **action-assigned** email (template in

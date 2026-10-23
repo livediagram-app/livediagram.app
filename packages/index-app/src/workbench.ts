@@ -169,6 +169,19 @@ export type WorkbenchStorage = {
 
 // ---------- Schema ---------------------------------------------------------------------------------------------
 
+// What the person used of a capped allowance (takeQuota): one row per use, gone once its window has passed.
+const QUOTA_SCHEMA = `
+CREATE TABLE IF NOT EXISTS wb_quota (
+  kind  TEXT    NOT NULL,
+  at    INTEGER NOT NULL,
+  until INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS wb_quota_kind ON wb_quota (kind, at);
+CREATE INDEX IF NOT EXISTS wb_quota_until ON wb_quota (until)`;
+
+// The most uses one allowance counts: a cap above it is refused as a mistake.
+export const WORKBENCH_QUOTA_MAX = 1_000;
+
 const SCHEMA = `
 CREATE TABLE IF NOT EXISTS wb_tokens (
   id         TEXT    PRIMARY KEY,
@@ -242,6 +255,7 @@ CREATE TABLE IF NOT EXISTS wb_meta (
   key   TEXT PRIMARY KEY,
   value      NOT NULL
 );
+${QUOTA_SCHEMA}
 `;
 
 type Row = Record<string, unknown>;
@@ -772,7 +786,57 @@ export class WorkbenchCore<S extends string = string> {
     await this.#storage.deleteAlarm();
     await this.#storage.deleteAll();
     this.#ready = false;
+    this.#quotaReady = false;
     this.#person = null;
+  }
+
+  // ----- Allowances -----
+
+  #quotaReady = false;
+
+  #hasQuotaTable(): boolean {
+    return !!this.#first("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'wb_quota'");
+  }
+
+  // A cap on something the person does across every item of the app, such as the notification emails they cause
+  // (@liveworkspace/index-app notify-claims.ts): at most `max` uses of `kind` in any `windowMs`. Takes up to `count`
+  // uses at once (one call for a whole save's emails) and answers how many it took; none are written past the cap.
+  async takeQuota(input: {
+    personId: string;
+    kind: string;
+    max: number;
+    windowMs: number;
+    now: number;
+    count?: number;
+  }): Promise<number> {
+    const { personId, kind, max, windowMs, now, count = 1 } = input;
+    if (!Number.isInteger(max) || max < 1 || max > WORKBENCH_QUOTA_MAX || !(windowMs > 0)) {
+      throw new Error('workbench: an allowance needs a cap of 1 to 1,000 and a window');
+    }
+    if (!Number.isInteger(count) || count < 1) throw new Error('workbench: take at least one use');
+    this.#ensure(now, personId);
+    // A store made before allowances has no table for them yet.
+    if (!this.#quotaReady) {
+      for (const statement of QUOTA_SCHEMA.split(';')) this.#sql.exec(statement);
+      this.#quotaReady = true;
+    }
+    this.#sql.exec('DELETE FROM wb_quota WHERE kind = ? AND at <= ?', kind, now - windowMs);
+    const used = Number(
+      this.#first('SELECT COUNT(*) AS n FROM wb_quota WHERE kind = ?', kind)?.n ?? 0,
+    );
+    const taken = Math.max(0, Math.min(count, max - used));
+    if (taken === 0) return 0;
+    this.#sql.exec(
+      `INSERT INTO wb_quota (kind, at, until)
+       WITH RECURSIVE n(i) AS (SELECT 1 UNION ALL SELECT i + 1 FROM n WHERE i < ?)
+       SELECT ?, ?, ? FROM n`,
+      taken,
+      kind,
+      now,
+      now + windowMs,
+    );
+    await this.#schedule(now);
+    return taken;
   }
 
   // ----- Upkeep -----
@@ -805,6 +869,7 @@ export class WorkbenchCore<S extends string = string> {
       deleted += this.#rows(`${query} RETURNING 1`, ...bindings).length;
     };
     run('DELETE FROM wb_tickets WHERE expires_at <= ?', now);
+    if (this.#hasQuotaTable()) run('DELETE FROM wb_quota WHERE until <= ?', now);
     run('DELETE FROM wb_pairing_requests WHERE expires_at <= ?', now);
     run('DELETE FROM wb_sessions WHERE expires_at <= ?', now - WORKBENCH_SESSION_GRACE_MS);
     run(
@@ -844,13 +909,15 @@ export class WorkbenchCore<S extends string = string> {
         "INSERT INTO wb_meta (key, value) VALUES ('swept_at', ?) ON CONFLICT (key) DO UPDATE SET value = excluded.value",
         now,
       );
-      const left = this.#first(
-        `SELECT 1 FROM wb_tokens UNION ALL SELECT 1 FROM wb_pairings UNION ALL SELECT 1 FROM wb_pairing_requests
+      const left =
+        this.#first(
+          `SELECT 1 FROM wb_tokens UNION ALL SELECT 1 FROM wb_pairings UNION ALL SELECT 1 FROM wb_pairing_requests
          UNION ALL SELECT 1 FROM wb_tickets UNION ALL SELECT 1 FROM wb_sessions LIMIT 1`,
-      );
+        ) ?? (this.#hasQuotaTable() ? this.#first('SELECT 1 FROM wb_quota LIMIT 1') : null);
       if (!left) {
         await this.#storage.deleteAll();
         this.#ready = false;
+        this.#quotaReady = false;
         this.#person = null;
         return { revoked, swept };
       }
@@ -878,6 +945,7 @@ export type WorkbenchStoreApi<S extends string = string> = Pick<
   | 'endSession'
   | 'noteSessionRoom'
   | 'endAccess'
+  | 'takeQuota'
   | 'close'
 >;
 
@@ -944,6 +1012,9 @@ export function workbenchStoreClass<E, S extends string = string>(
     }
     endAccess(...a: Parameters<WorkbenchCore<S>['endAccess']>) {
       return this.core.endAccess(...a);
+    }
+    takeQuota(...a: Parameters<WorkbenchCore<S>['takeQuota']>) {
+      return this.core.takeQuota(...a);
     }
     close() {
       return this.core.close();

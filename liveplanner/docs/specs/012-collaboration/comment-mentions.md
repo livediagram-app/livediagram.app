@@ -114,10 +114,11 @@ The server decides everything that matters:
 - Each email is **claimed** before it goes, in the plan's own `notify_claims` table: a hash of the author,
   plan, card, recipient and the stored comment's id is sent at most once per 24 hours
   (`NOTIFY_EMAIL_DEDUPE_MS`), so a saved-again comment emails nobody twice, and one
-  author's action-assigned and mention emails on a plan together are capped at 60 an hour
-  (`NOTIFY_EMAILS_PER_SENDER_PER_HOUR`, `@liveworkspace/auth-client`). A refused claim sends nothing and logs
-  `[notify-email] skipped`; a claim past the 24 hours is deleted by the next claim, so the table holds a day at
-  most, and it goes with the plan.
+  author's action-assigned and mention emails are capped at 60 an hour across all their plans
+  (`NOTIFY_EMAILS_PER_SENDER_PER_HOUR`, `@liveworkspace/auth-client`), counted in the author's own per-person store
+  (`@liveworkspace/index-app` `claimNotice`). A refused claim sends nothing, is released so the email may go once
+  the hour allows, and logs `[notify-email] skipped`; a claim past the 24 hours is deleted by the next claim, so the
+  table holds a day at most, and it goes with the plan.
 
 The email reads **"{author} mentioned you in {project}"**, quotes the
 comment, and has one button, **Open the plan** (for a card's comment, **Open the card**, linking

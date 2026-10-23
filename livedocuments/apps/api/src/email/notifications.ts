@@ -10,6 +10,7 @@
 // Like every docs/specs/014-identity/transactional-email.md send these never throw — sendEmail swallows failures — so
 // a notification problem can't break the request that triggered it.
 
+import { claimNotice, claimNotices, workbenchAllowance } from '@liveworkspace/index-app';
 import {
   JOIN_NOTIFY_THROTTLE_MS,
   MILESTONE_ITEM_COUNTS,
@@ -32,7 +33,6 @@ import { isAccountOwner } from '../person/owner';
 import { getParticipant } from '../person/profiles';
 import { getNotificationPrefs } from '../person/settings';
 import { claimCommentNotify } from '../document-room/document-content';
-import { claimNotice } from '../document-room/notify-claims';
 import type { Env, DocumentEnv } from '../types';
 import { emailEnabled, sendEmail } from './client';
 
@@ -123,7 +123,7 @@ export async function notifyDocumentJoin(
   );
   if (!to) return;
   const now = Date.now();
-  const claimed = await claimNotice(env, {
+  const claimed = await claimNotice(env.DOCUMENT_DB, {
     key: 'join',
     sender: document.ownerId,
     now,
@@ -138,25 +138,40 @@ export async function notifyDocumentJoin(
 
 // The action-assigned and mentioned emails carry the sender's words, so each is claimed in the document before it
 // goes: the same email (sender, document, recipient, wording) once a day, and NOTIFY_EMAILS_PER_SENDER_PER_HOUR per
-// sender at most.
+// sender at most, counted across every document in the sender's own store (@liveworkspace/index-app notify-claims.ts).
+async function claimTeamNotices(
+  env: DocumentEnv,
+  senderId: string,
+  emails: (string | null)[][],
+): Promise<boolean[]> {
+  const now = Date.now();
+  const keys = await Promise.all(emails.map((parts) => notifyClaimKey([senderId, ...parts])));
+  const allowed = await claimNotices(
+    env.DOCUMENT_DB,
+    keys.map((key) => ({
+      key,
+      sender: senderId,
+      now,
+      dedupeSince: now - NOTIFY_EMAIL_DEDUPE_MS,
+      rate: { max: NOTIFY_EMAILS_PER_SENDER_PER_HOUR, windowMs: NOTIFY_RATE_WINDOW_MS },
+    })),
+    workbenchAllowance(env.WORKBENCH),
+  );
+  const skipped = allowed.filter((ok) => !ok).length;
+  if (skipped > 0)
+    console.warn(
+      `[notify-email] skipped ${skipped} ${String(emails[0]?.[0])} email(s): duplicate or sender over the hourly cap`,
+    );
+  return allowed;
+}
+
 async function claimTeamNotice(
   env: DocumentEnv,
   senderId: string,
   parts: (string | null)[],
 ): Promise<boolean> {
-  const now = Date.now();
-  const claimed = await claimNotice(env, {
-    key: await notifyClaimKey([senderId, ...parts]),
-    sender: senderId,
-    now,
-    dedupeSince: now - NOTIFY_EMAIL_DEDUPE_MS,
-    rate: { since: now - NOTIFY_RATE_WINDOW_MS, max: NOTIFY_EMAILS_PER_SENDER_PER_HOUR },
-  });
-  if (!claimed)
-    console.warn(
-      `[notify-email] skipped a ${String(parts[0])} email: duplicate or sender over the hourly cap`,
-    );
-  return claimed;
+  const [allowed] = await claimTeamNotices(env, senderId, [parts]);
+  return allowed === true;
 }
 
 // Where each of these team people's email goes: an account's verified address unless they turned `setting` off,
@@ -253,25 +268,32 @@ export async function notifyMentions(
     getParticipant(env, authorId),
   ]);
   const authorName = author?.name ?? input.authorFallbackName ?? null;
-  const work: Promise<unknown>[] = [];
+  // Every email this save may send, claimed together: one batch in the document and one call to the author's store.
+  const pending: { to: string; comment: Comment; parts: (string | null)[] }[] = [];
   for (const { comment, to: recipients } of sends) {
     for (const person of recipients) {
       const to = addresses.get(person.id);
       if (!to) continue;
-      const claimed = await claimTeamNotice(env, authorId, [
-        'mention',
-        document.id,
-        person.userId ?? `mail:${to}`,
-        `comment:${comment.id}`,
-      ]);
-      if (!claimed) continue;
-      work.push(
+      pending.push({
+        to,
+        comment,
+        parts: ['mention', document.id, person.userId ?? `mail:${to}`, `comment:${comment.id}`],
+      });
+    }
+  }
+  const allowed = await claimTeamNotices(
+    env,
+    authorId,
+    pending.map((p) => p.parts),
+  );
+  await Promise.all(
+    pending
+      .filter((_, i) => allowed[i])
+      .map(({ to, comment }) =>
         sendEmail(env, {
           to,
           ...mentionedEmail(env, authorName, document.name, document.id, comment.text),
         }),
-      );
-    }
-  }
-  await Promise.all(work);
+      ),
+  );
 }
