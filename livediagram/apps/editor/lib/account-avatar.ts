@@ -1,5 +1,4 @@
-// The initials avatar's letter (docs/specs/014-identity/profile-picture.md). Pure, so every avatar
-// surface and the tests share one answer.
+// The account avatar's letter. Pure, so every avatar surface and the tests share one answer.
 
 /** The letter on the initials avatar: first name, else username, else '?'. */
 export function accountInitial(

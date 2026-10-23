@@ -49,7 +49,6 @@ export type AuthUser = {
   id: string;
   email: string | null;
   name: string | null;
-  picture: string | null;
 };
 
 type Configured = {
@@ -150,7 +149,6 @@ function userOf(tokens: TokenSet): AuthUser | null {
     id: payload.sub,
     email: text(payload.email),
     name: text(payload.name),
-    picture: text(payload.picture),
   };
 }
 

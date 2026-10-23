@@ -47,10 +47,6 @@ export type SessionAttachment = {
   //     so revoking or rescoping that code can close exactly its sockets.
   tabScope?: string | null;
   shareCode?: string | null;
-  //   - `account`: a verified account holds this session, from X-Verified-Account
-  //     (docs/specs/014-identity/profile-picture.md §6). Only such a session may put a picture on the
-  //     roster, and only such a session receives the pictures on it.
-  account?: boolean;
   //   - `personTag`: the verified account's per-document person tag, from X-Verified-Person
   //     (docs/specs/024-agents/agent-changesets.md "Held elements", CS39): how the room tells an
   //     agent's owner's own sessions apart without holding an owner id. 64 hex characters.
@@ -90,7 +86,6 @@ type VerifiedSession = {
   isOwner: boolean;
   tabScope: string | null;
   shareCode: string | null;
-  account: boolean;
   personTag: string | null;
   networkTag: string | null;
   workbenchPairing: string | null;
@@ -112,7 +107,6 @@ export function verifiedSessionOf(request: Request): VerifiedSession {
     isOwner: request.headers.get('X-Verified-Owner') === '1',
     tabScope: header('X-Verified-Tab-Scope'),
     shareCode: header('X-Verified-Share-Code'),
-    account: request.headers.get('X-Verified-Account') === '1',
     personTag: header('X-Verified-Person'),
     networkTag: header('X-Verified-Network'),
     workbenchPairing: header('X-Verified-Workbench-Pairing'),
@@ -138,7 +132,6 @@ export function newSessionAttachment(v: VerifiedSession, presenceId: string): Se
     isOwner: v.isOwner,
     tabScope: v.tabScope,
     shareCode: v.shareCode,
-    account: v.account,
     personTag: v.personTag?.slice(0, MAX_PERSON_TAG_LEN) ?? null,
     networkTag: v.networkTag?.slice(0, MAX_NETWORK_TAG_LEN) ?? null,
     pollAnsweredAs: null,

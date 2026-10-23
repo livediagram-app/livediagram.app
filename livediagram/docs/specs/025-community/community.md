@@ -30,8 +30,8 @@ better start than a blank canvas).
   describe it stay plain descriptions, not second names: the **gallery** is its browsing page (`GalleryView`), the
   landing page **showcases** it (`CommunityShowcase`) and invites people to **Explore the Community**.
 - **Post** (`CommunityPost`): one document published to Community. A document has at most one post.
-- **Author**: the signed-in owner who published the post. Shown by their participant name, colour and picture
-  ([Profile picture](../014-identity/profile-picture.md)); their owner id is never exposed.
+- **Author**: the signed-in owner who published the post. Shown by their participant name and colour; their owner id is never
+  exposed.
   An author may share anonymously, and is then shown as "Anonymous".
 - **Category**: exactly one per post, from a closed set (below). The coarse filter.
 - **Tag**: zero to five per post, free-form but normalised (below). The fine filter.

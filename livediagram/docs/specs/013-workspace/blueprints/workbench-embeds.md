@@ -299,7 +299,7 @@ RETURNING ...`. No row: `SELECT used_at, expires_at` classifies `used`, `expired
    level is the ticket's `role` lowered by the grant (`edit` only when both are `edit`).
 5. Insert the session: `id` a UUID, the secret `lvw_` + 43 base64url characters (32 random bytes), its hash,
    `expires_at = min(now + WORKBENCH_SESSION_TTL_MS, token.expires_at)` (WB6).
-6. `person`: the owner's `participants` row as `{ id, name, color, pictureUrl }`; no row gives `name` and `color`
+6. `person`: the owner's `participants` row as `{ id, name, color }`; no row gives `name` and `color`
    null (WB7). Answer `201 WorkbenchSessionResponse`. Log `[workbench] session-opened`.
 
 ### A request bearing `lvw_` (the choke point, `index.ts`)
@@ -337,7 +337,7 @@ ON t.id = s.token_id WHERE s.secret_hash = ?`. No row → `unknown`; token revok
 | PUT              | `documents/:doc/tabs/:tabId/name`                                                                                                                                              |
 | POST             | `documents/:doc/tabs/:tabId/changesets`, `documents/:doc/changesets/:changesetId/revert`                                                                                       |
 | GET              | `documents/:doc/changesets`, `documents/:doc/changesets/:changesetId`, `documents/:doc/comments`                                                                               |
-| GET              | `documents/:doc/tabs/:tabId/render.svg`, `documents/:doc/tabs/:tabId/comment-pictures`                                                                                         |
+| GET              | `documents/:doc/tabs/:tabId/render.svg`                                                                                                                                        |
 | POST             | `documents/:doc/tabs/:tabId/comments`, `.../comments/:commentId/reply`, `.../resolve`, `.../reopen`                                                                            |
 | DELETE           | `documents/:doc/tabs/:tabId/comments/:commentId`                                                                                                                               |
 | POST             | `documents/:doc/tabs/:tabId/qa`, `documents/:doc/room-ticket`                                                                                                                  |
@@ -429,7 +429,7 @@ window.parent` and `parseWorkbenchMessage` gives `hello-ack`. None: `unbound`, `
 ### The editor in a workbench
 
 `WorkbenchAuthBridge` publishes `{ authLoaded: true, isSignedIn: true, userId: person.id, user: { id, firstName:
-person.name, lastName: null, fullName: person.name, username: null, email: null, createdAt: null, pictureUrl },
+person.name, lastName: null, fullName: person.name, username: null, email: null, createdAt: null },
 getToken: async () => currentSecret, signOut: noop, deleteAccount: null }` and registers
 `registerTokenProvider(() => currentSecret)` in a layout effect, before the editor's first fetch.
 
@@ -466,7 +466,7 @@ The Surface table, every gate `workbenchMode` touches (`appChrome` is `surface =
 | TabBar "copy to another document"                                                                                                           | `EditorView.tsx` `otherDocuments`                            | `[]`                                                      |
 | Image picker gallery                                                                                                                        | `ImagePicker.tsx`, `useEditorImages`                         | Upload only; `apiListImages` never called                 |
 | Shape library and custom theme writes (save to My shapes, theme builder save and delete)                                                    | their hosts                                                  | Absent; reads stay                                        |
-| `useDriveFollow`, `useFolders`, `useFavourites`, `useTeams`, `useTeamPeople`, `useTeamLibrariesSweep`, `useShareLinks`, `usePublishPicture` | `useEditorState.ts`                                          | `enabled: false`                                          |
+| `useDriveFollow`, `useFolders`, `useFavourites`, `useTeams`, `useTeamPeople`, `useTeamLibrariesSweep`, `useShareLinks` | `useEditorState.ts`                                          | `enabled: false`                                          |
 | `useCommentMentions`, `useAssigneeOptions`                                                                                                  | `hooks/collab`                                               | Candidates from presence only; no team read, no notify    |
 | Identity screen                                                                                                                             | `useEditorState.ts` `joinScreenOpen`                         | Never                                                     |
 | `defaultPan`, `useModeDefaultTool` embed arguments                                                                                          | `useEditorState.ts`                                          | As the app (`false`)                                      |
@@ -729,7 +729,7 @@ Explorer view, the same control at the right end of the Explorer's bottom bar li
 | Settings dialog, `?settings=` links, `useOpenSettingsRequests`            | `useExplorerState.ts`, `ExplorerShell`  | Never opens                                                 |
 | Search panel's settings rows                                              | `ExplorerShell.tsx`                     | `[]`                                                        |
 | Sign-in banner, `LocalMovePrompt`                                         | `ExplorerShell.tsx`                     | Not rendered                                                |
-| `useTokens`, `usePublishPicture`, `useDriveFollow`, `useAfterDriveChange` | `useExplorerState.ts`                   | `enabled: false`                                            |
+| `useTokens`, `useDriveFollow`, `useAfterDriveChange` | `useExplorerState.ts`                   | `enabled: false`                                            |
 | Teams administration: New team, the Invites row and view, team settings   | `sidebar/*`, `TeamLibraryHeader`, views | Absent (WB62)                                               |
 | Timeline token cards' Revoke, Drive cards                                 | `timeline/*`                            | Absent                                                      |
 | Every `window.location.assign`, `<a href>`, `router.push`/`replace`       | the Explorer                            | Through `assignAppLocation` / `useAppNavigation`: the frame |
@@ -805,7 +805,6 @@ export type WorkbenchPerson = {
   id: string;
   name: string | null;
   color: string | null;
-  pictureUrl: string | null;
 };
 export type WorkbenchSessionResponse = {
   session: string;

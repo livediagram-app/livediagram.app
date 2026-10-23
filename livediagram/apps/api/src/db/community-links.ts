@@ -90,7 +90,7 @@ export async function communityLinkAuthor(
   if (link.anonymous) return COMMUNITY_ANONYMOUS_AUTHOR;
   const p = await getParticipant(env, link.author_id);
   if (!p) return COMMUNITY_UNKNOWN_AUTHOR;
-  return { name: p.name, color: p.color, picture: p.pictureUrl };
+  return { name: p.name, color: p.color, picture: null };
 }
 
 // A fresh community link code. Nothing is written until liveworkspace has taken the post (saveNewCommunityLink).

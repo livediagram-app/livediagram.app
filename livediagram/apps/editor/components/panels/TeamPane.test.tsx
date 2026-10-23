@@ -119,7 +119,6 @@ describe('TeamPane rejected invites', () => {
     role,
     status,
     name: null,
-    pictureUrl: null,
     createdAt: 0,
     updatedAt: 0,
   });

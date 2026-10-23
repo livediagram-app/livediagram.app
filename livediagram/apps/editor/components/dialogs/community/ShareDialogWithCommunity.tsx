@@ -7,7 +7,6 @@ import { ShareDialog } from '@/components/dialogs/ShareDialog';
 import type { ShareDialogProps } from '@/components/dialogs/ShareDialog.types';
 import { authHrefWithReturn } from '@/components/chrome/auth-shared';
 import { useCommunityPost } from '@/hooks/persistence/useCommunityPost';
-import { usePublishedPicture } from '@/hooks/persistence/usePublishedPicture';
 import { communityCodeMessage } from '@/lib/community-errors';
 import { CommunityPublishDialog } from './CommunityPublishDialog';
 import { CommunitySection } from './CommunitySection';
@@ -38,7 +37,6 @@ export function ShareDialogWithCommunity({
   // Only a signed-in owner's personal, cloud document can have a post, so only then is it read.
   const eligible = communityOn && signedIn && !teamDocument && !share.offline;
   const community = useCommunityPost({ ownerId, documentId, open: eligible });
-  const picture = usePublishedPicture();
   const [publishing, setPublishing] = useState(false);
   // Back from writing a listing, the Share dialog opens on Community, where it was left.
   const [backFromListing, setBackFromListing] = useState(false);
@@ -55,7 +53,7 @@ export function ShareDialogWithCommunity({
         author={{
           name: share.lockedName || share.participant.name,
           color: share.participant.color,
-          picture,
+          picture: null,
         }}
         onPublish={community.publish}
         onClose={() => {

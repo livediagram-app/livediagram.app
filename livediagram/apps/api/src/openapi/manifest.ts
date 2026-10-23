@@ -697,20 +697,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [200, 400, 401, 403, 404, 405, 410],
   },
   {
-    method: 'GET',
-    path: '/documents/{id}/tabs/{tabId}/comment-pictures',
-    segment: 'documents',
-    tag: 'Documents',
-    summary:
-      "The published profile pictures of a tab's comment authors, keyed by comment id. Empty unless the caller is signed in.",
-    auth: 'guest-or-clerk',
-    responseSchema: {
-      type: 'object',
-      properties: { pictures: { type: 'object', additionalProperties: { type: 'string' } } },
-    },
-    statuses: [200, 403, 404],
-  },
-  {
     method: 'POST',
     path: '/documents/{id}/tabs/{tabId}/qa',
     segment: 'documents',
@@ -1346,7 +1332,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'participants',
     tag: 'Participants',
     summary:
-      "Get a participant's display name and colour; their published picture only for a signed-in caller. Your own id before you have saved a profile answers { participant: null }.",
+      "Get a participant's display name and colour. Your own id before you have saved a profile answers { participant: null }.",
     auth: 'public',
     responseSchema: {
       type: 'object',
@@ -1368,25 +1354,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
       required: ['name', 'color'],
     },
     responseSchema: wrap('participant', 'ParticipantRecord'),
-    statuses: [200, 400, 401, 403, 404],
-  },
-  {
-    method: 'PUT',
-    path: '/participants/{id}/picture',
-    segment: 'participants',
-    tag: 'Participants',
-    summary:
-      'Set or clear your published profile picture (a Clerk image URL; signed-in session only).',
-    auth: 'clerk',
-    requestSchema: {
-      type: 'object',
-      properties: { pictureUrl: { type: ['string', 'null'] } },
-      required: ['pictureUrl'],
-    },
-    responseSchema: {
-      type: 'object',
-      properties: { pictureUrl: { type: ['string', 'null'] } },
-    },
     statuses: [200, 400, 401, 403, 404],
   },
 
@@ -2095,7 +2062,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'drive',
     tag: 'Google Drive',
     summary:
-      'Mint the signed consent `state` for a redirect URI (broker mode). Clerk session only.',
+      'Mint the signed consent `state` for a redirect URI (broker mode). Signed-in session only.',
     auth: 'clerk',
     requestSchema: {
       type: 'object',
@@ -2115,7 +2082,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'drive',
     tag: 'Google Drive',
     summary:
-      'Redeem a Google consent code: the refresh token is sealed and stored, never returned. Clerk session only.',
+      'Redeem a Google consent code: the refresh token is sealed and stored, never returned. Signed-in session only.',
     auth: 'clerk',
     requestSchema: {
       type: 'object',
@@ -2131,7 +2098,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'drive',
     tag: 'Google Drive',
     summary:
-      'Confirm a pending switch to another Google account: the mirror state is cleared and the new account takes over. 409 drive_account_switch_expired when none is pending. Clerk session only.',
+      'Confirm a pending switch to another Google account: the mirror state is cleared and the new account takes over. 409 drive_account_switch_expired when none is pending. Signed-in session only.',
     auth: 'clerk',
     responseSchema: wrap('connection', 'DriveConnection'),
     statuses: [200, 401, 409, 503],
@@ -2142,7 +2109,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'drive',
     tag: 'Google Drive',
     summary:
-      'Cancel a pending switch to another Google account: its grant is revoked and the connection stays as it was. Clerk session only.',
+      'Cancel a pending switch to another Google account: its grant is revoked and the connection stays as it was. Signed-in session only.',
     auth: 'clerk',
     statuses: [204, 401, 503],
   },

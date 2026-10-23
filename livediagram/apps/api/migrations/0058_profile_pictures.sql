@@ -1,4 +1,4 @@
--- Profile pictures for collaborators (docs/specs/014-identity/profile-picture.md §6).
+-- Profile pictures for collaborators (the profile picture spec, retired with the columns in 0103).
 --
 -- participants.picture_url: the participant's published picture, a Clerk image URL (never bytes).
 -- Set only by the participant's own verified Clerk session through

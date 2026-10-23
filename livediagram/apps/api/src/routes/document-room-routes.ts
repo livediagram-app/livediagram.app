@@ -60,9 +60,7 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     // A Community visitor never joins the author's room (docs/specs/025-community/community.md): no presence, no
     // cursors on the author's board, no live stream.
     if (grant.community) return forbidden('community_link');
-    // A verified session (not an API token, not a guest header) marks the ticket as an
-    // account session: the room lets it publish a profile picture and see others'
-    // (docs/specs/014-identity/profile-picture.md §6).
+    // The person is a verified session's account (not an API token, not a guest header).
     // A workbench session (docs/specs/013-workspace/workbench-embeds.md) joins as its owner: an account session
     // carrying the owner's person tag, so their agent's `selected` reads its selection, at most at its level, and
     // tagged with its pairing so unpairing closes exactly its sockets.
@@ -77,8 +75,7 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
       role,
       tabScope: grant.tabScope,
       shareCode: grant.shareCode,
-      account: personId !== null,
-      // The same verified session carries its person tag, so the room can tell this owner's
+      // A verified session carries its person tag, so the room can tell this owner's
       // sessions from everyone else's without holding the owner id
       // (docs/specs/024-agents/agent-changesets.md "Held elements").
       personTag: personId === null ? null : await personTagFor(id, personId),
@@ -111,8 +108,6 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     // (docs/specs/013-workspace/tab-scoped-share-links.md). Null for the owner and a team member.
     let tabScope: string | null = null;
     let shareCode: string | null = null;
-    // Only a ticket can say the session is a verified account; every other leg is anonymous.
-    let account = false;
     // Only a ticket carries a person tag; every other leg has none.
     let personTag: string | null = null;
     // Only a workbench session's ticket carries its pairing; every other leg has none.
@@ -168,7 +163,7 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
       ownerSigOk &&
       isPersonalOwner(claimedOwnerId, liveDoc.ownerId, liveDoc.teamId);
     if (admission) {
-      ({ role, tabScope, shareCode, account, personTag, workbenchPairing, adderKey } = admission);
+      ({ role, tabScope, shareCode, personTag, workbenchPairing, adderKey } = admission);
       ownerSession = admission.owner;
     } else if (isOwnerUpgrade) {
       role = 'edit';
@@ -230,9 +225,6 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     // none (docs/specs/013-workspace/tab-scoped-share-links.md).
     forwarded.headers.set('X-Verified-Tab-Scope', tabScope ?? '');
     forwarded.headers.set('X-Verified-Share-Code', shareCode ?? '');
-    // Whether a verified account holds this session (docs/specs/014-identity/profile-picture.md §6),
-    // set on every path for the same reason as the headers above.
-    forwarded.headers.set('X-Verified-Account', account ? '1' : '0');
     // The person tag (docs/specs/024-agents/agent-changesets.md, CS39), set on every path for the
     // same reason as the headers above. Empty = none.
     forwarded.headers.set('X-Verified-Person', personTag ?? '');

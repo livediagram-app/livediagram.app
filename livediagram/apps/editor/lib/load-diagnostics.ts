@@ -26,7 +26,7 @@ export type DiagnosticsInput = {
   identity: BrowserIdentity;
 };
 
-// The shared identity lines, with the account the editor resolved: a account-shaped owner id is the
+// The shared identity lines, with the account the editor resolved: an account-shaped owner id is the
 // signed-in account (not a credential on its own), anything else is the guest the lines already cover.
 function identityLines(input: DiagnosticsInput): string[] {
   const account = input.ownerId && isAccountIdShape(input.ownerId) ? input.ownerId : null;

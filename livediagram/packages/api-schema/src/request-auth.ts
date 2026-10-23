@@ -36,10 +36,10 @@ export function oauthRedirectUrl(uri: string): URL | null {
   return url.protocol === 'http:' && isLoopbackHostname(url.hostname) ? url : null;
 }
 
-// A account id, the shape that is never a legitimate GUEST header.
+// An account id, the shape that is never a legitimate GUEST header.
 //
 // The guest credential is always a server-minted UUID (POST /api/guest-id).
-// A account `sub` in `X-Owner-Id` is therefore a replay of a harvested account
+// An account `sub` in `X-Owner-Id` is therefore a replay of a harvested account
 // id (team member lists expose them), and the api worker refuses it outright
 // (apps/api/src/index.ts). The editor applies the same rule from the other
 // side: a signed-in client with no session token never sends its account id

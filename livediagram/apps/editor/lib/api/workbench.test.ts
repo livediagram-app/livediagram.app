@@ -25,7 +25,7 @@ const SESSION: WorkbenchSessionResponse = {
   origin: 'https://127.0.0.1:5175',
   role: 'edit',
   expiresAt: 1_000,
-  person: { id: 'user_1', name: 'Webber', color: '#0ea5e9', pictureUrl: null },
+  person: { id: 'user_1', name: 'Webber', color: '#0ea5e9' },
 };
 
 let seen: Seen[];

@@ -132,7 +132,6 @@ const join = (r: DocumentRoom, ws: Socket, tabScope: string | null, code: string
     false,
     tabScope,
     code,
-    false,
     null,
     null,
     null,

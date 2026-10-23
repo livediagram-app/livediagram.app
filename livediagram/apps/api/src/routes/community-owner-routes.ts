@@ -33,14 +33,15 @@ function ownPost(post: CommunityAppPost): CommunityOwnPost {
   return rest;
 }
 
-// How the owner is shown on a post that is not anonymous: their participant name, colour and picture.
+// How the owner is shown on a post that is not anonymous: their participant name and colour (no picture: accounts
+// have none).
 async function authorOf(ctx: RouteContext, ownerId: string): Promise<CommunityAuthor> {
   const p = await getParticipant(ctx.env, ownerId);
   if (!p) return COMMUNITY_UNKNOWN_AUTHOR;
   return {
     name: p.name,
     color: /^#[0-9a-f]{6}$/i.test(p.color) ? p.color : COMMUNITY_UNKNOWN_AUTHOR.color,
-    picture: p.pictureUrl,
+    picture: null,
   };
 }
 

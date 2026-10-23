@@ -107,7 +107,6 @@ describe('workbenchRouteVerdict', () => {
     ['GET', 'documents/doc1/changesets/cs_1'],
     ['GET', 'documents/doc1/comments'],
     ['GET', 'documents/doc1/tabs/t1/render.svg'],
-    ['GET', 'documents/doc1/tabs/t1/comment-pictures'],
     ['POST', 'documents/doc1/tabs/t1/comments'],
     ['POST', 'documents/doc1/tabs/t1/comments/c1/reply'],
     ['POST', 'documents/doc1/tabs/t1/comments/c1/resolve'],

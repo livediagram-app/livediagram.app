@@ -18,14 +18,10 @@ const WS_TICKET_TTL_MS = 60_000;
 // What a ticket admits its holder with: the role, and for a share-link
 // visitor the tab scope and the code (docs/specs/013-workspace/tab-scoped-share-links.md), so the room can
 // confine the session and close it when that code is revoked or rescoped.
-//
-// `account` records that a verified session minted it, so the room knows which sessions may
-// publish a profile picture and which may receive one (docs/specs/014-identity/profile-picture.md §6).
 type WsAdmission = {
   role: ShareRole;
   tabScope: string | null;
   shareCode: string | null;
-  account: boolean;
   // The minting account's person tag (personTagFor), so the room can tell an agent's owner's own
   // sessions apart (docs/specs/024-agents/agent-changesets.md "Held elements"). Null for a guest,
   // a share-link visitor without an account, or an API token.
@@ -52,7 +48,7 @@ export async function createWsTicket(
   await env.DB.prepare('DELETE FROM ws_tickets WHERE expires_at <= ?').bind(now).run();
   const ticket = crypto.randomUUID();
   await env.DB.prepare(
-    'INSERT INTO ws_tickets (ticket, document_id, role, expires_at, tab_scope, share_code, account, person_tag, workbench_pairing, adder_key, owner) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    'INSERT INTO ws_tickets (ticket, document_id, role, expires_at, tab_scope, share_code, person_tag, workbench_pairing, adder_key, owner) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
   )
     .bind(
       ticket,
@@ -61,7 +57,6 @@ export async function createWsTicket(
       now + WS_TICKET_TTL_MS,
       admission.tabScope,
       admission.shareCode,
-      admission.account ? 1 : 0,
       admission.personTag,
       admission.workbenchPairing,
       admission.adderKey,
@@ -82,14 +77,13 @@ export async function consumeWsTicket(
   now = Date.now(),
 ): Promise<WsAdmission | null> {
   const row = await env.DB.prepare(
-    'DELETE FROM ws_tickets WHERE ticket = ? AND document_id = ? AND expires_at > ? RETURNING role, tab_scope, share_code, account, person_tag, workbench_pairing, adder_key, owner',
+    'DELETE FROM ws_tickets WHERE ticket = ? AND document_id = ? AND expires_at > ? RETURNING role, tab_scope, share_code, person_tag, workbench_pairing, adder_key, owner',
   )
     .bind(ticket, documentId, now)
     .first<{
       role: string;
       tab_scope?: string | null;
       share_code?: string | null;
-      account?: number | null;
       person_tag?: string | null;
       workbench_pairing?: string | null;
       adder_key?: string | null;
@@ -101,7 +95,6 @@ export async function consumeWsTicket(
     role: row.role,
     tabScope: row.tab_scope ?? null,
     shareCode: row.share_code ?? null,
-    account: row.account === 1,
     personTag: row.person_tag ?? null,
     workbenchPairing: row.workbench_pairing ?? null,
     adderKey: row.adder_key ?? null,

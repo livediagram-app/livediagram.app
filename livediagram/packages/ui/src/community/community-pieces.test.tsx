@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { communityPostFixture } from '@livediagram/api-schema/testing';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { CommunityAuthorBadge, communityAuthorInitial } from './CommunityAuthorBadge';
 import { CommunityCopyCount, CommunityLikeCount } from './CommunityCounts';
@@ -85,27 +85,23 @@ describe('CommunityPostTile', () => {
 });
 
 describe('CommunityAuthorBadge', () => {
-  it("shows the author's initial in their colour, or their picture, falling back when it fails", () => {
+  it("shows the author's initial in their colour, never a picture", () => {
     expect(communityAuthorInitial(' ada')).toBe('A');
     expect(communityAuthorInitial('  ')).toBe('?');
     const { container, rerender } = render(<CommunityAuthorBadge author={post.author} />);
     expect(screen.getByText('A')).toBeTruthy();
     expect(screen.getByText('ada lovelace')).toBeTruthy();
 
+    // A post an older author published with a picture still draws the initial.
     rerender(
       <CommunityAuthorBadge
         author={{ ...post.author, picture: 'https://img.clerk.com/a.png' }}
         showName={false}
       />,
     );
-    const img = container.querySelector('img')!;
-    // Asked for at the disc's size, as every profile picture is; the initial holds the box meanwhile.
-    expect(img.getAttribute('src')).toBe('https://img.clerk.com/a.png?width=96&height=96');
-    expect(screen.getByText('A')).toBeTruthy();
-    expect(screen.queryByText('ada lovelace')).toBeNull();
-    fireEvent.error(img);
     expect(container.querySelector('img')).toBeNull();
     expect(screen.getByText('A')).toBeTruthy();
+    expect(screen.queryByText('ada lovelace')).toBeNull();
   });
 });
 

@@ -50,10 +50,6 @@ export type Participant = {
   // hover card uses it to tag a peer as 'Editor' / 'Viewer' alongside
   // their name.
   role?: AccessLevel;
-  // Their published profile picture (docs/specs/014-identity/profile-picture.md §5), as the room
-  // relayed it; absent for guests, for anyone who turned it off, and on an anonymous viewer's
-  // screen. Our own entry carries our picture whatever the switch says.
-  picture?: string;
   // What their agent is doing on this tab (docs/specs/024-agents/agent-presence.md "In the editor"): the status
   // line an agent set, shown in the hover card, the Collaborators row and the accessible name.
   statusLine?: string;

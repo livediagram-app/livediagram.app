@@ -3,11 +3,10 @@ import {
   Select,
   HoverCard,
   Glyph,
-  PictureDisc,
+  GlyphDisc,
   IDENTITY_FILL,
   identityVars,
 } from '@livediagram/ui';
-import { useDeferredAuth } from '@/components/providers/deferred-auth';
 import type { TeamMember, TeamRole } from '@/lib/api-client';
 import { colorForKey, initialsOf } from '@/lib/identity';
 
@@ -101,13 +100,9 @@ export function TeamMemberRow({
   // role worth changing, and clearing it is the only thing left to do with it, so its Remove stays in view.
   const rejected = m.status === 'declined' || m.status === 'expired';
   const removable = isAdmin && !isSelf && !pinnedAdmin;
-  // Our own row shows our picture to us whatever the switch says; everyone else's shows what they
-  // published (docs/specs/014-identity/profile-picture.md §5).
-  const ownPicture = useDeferredAuth().user?.pictureUrl ?? null;
   return (
     <li key={m.id} className="group flex items-center gap-3 px-4 py-2.5">
-      <PictureDisc
-        pictureUrl={isSelf ? ownPicture : m.pictureUrl}
+      <GlyphDisc
         size={32}
         aria-hidden
         style={{
@@ -118,7 +113,7 @@ export function TeamMemberRow({
         } ${IDENTITY_FILL}`}
       >
         {initialsOf(name)}
-      </PictureDisc>
+      </GlyphDisc>
       <span className="min-w-0 flex-1">
         <span className="flex items-center gap-1.5">
           <span className="truncate text-sm font-medium text-slate-900 dark:text-slate-100">

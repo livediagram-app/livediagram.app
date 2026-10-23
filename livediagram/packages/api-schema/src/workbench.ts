@@ -145,7 +145,6 @@ export type WorkbenchPerson = {
   id: string;
   name: string | null;
   color: string | null;
-  pictureUrl: string | null;
 };
 export type WorkbenchSessionResponse = {
   session: string;
@@ -260,7 +259,6 @@ const WORKBENCH_ROUTES: readonly RouteShape[] = [
   shape('GET', 'documents/:doc/changesets/:p'),
   shape('GET', 'documents/:doc/comments'),
   shape('GET', 'documents/:doc/tabs/:p/render.svg'),
-  shape('GET', 'documents/:doc/tabs/:p/comment-pictures'),
   shape('POST', 'documents/:doc/tabs/:p/comments'),
   shape('POST', 'documents/:doc/tabs/:p/comments/:p/reply'),
   shape('POST', 'documents/:doc/tabs/:p/comments/:p/resolve'),

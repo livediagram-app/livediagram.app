@@ -78,8 +78,6 @@ import { FOCUS_PRESS_MESSAGE, focusPressOutcome } from '@/lib/focus-audience';
 import type { CanvasTool } from '@/components/palette/palette.types';
 import { useCellLinkPicker } from '@/hooks/canvas/useCellLinkPicker';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
-import { usePublishPicture } from '@/hooks/persistence/usePublishedPicture';
-import { useCommentPicturesLoader } from '@/lib/comment-pictures';
 import { useBoardSceneInsert } from '@/hooks/canvas/useBoardSceneInsert';
 import { useLibraryShapeInsert } from '@/hooks/canvas/useLibraryShapeInsert';
 import { useClipboard } from '@/hooks/canvas/useClipboard';
@@ -221,8 +219,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // returns are the same ones `useAuth()` would; we read them via the
   // hook so the page has one source of truth.
   const { authLoaded, accountUserId, accountDisplayName } = useAccountBootstrap();
-  // Keep the participant record's profile picture current (docs/specs/014-identity/profile-picture.md §6).
-  usePublishPicture(workbenchMode ? null : accountUserId);
 
   const {
     tabs,
@@ -1230,8 +1226,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const drawMode = editorMode.mode === 'draw';
   // The tool a mode starts with: Select, or Hand on a phone (docs/specs/007-editor/editor-modes.md).
   useModeDefaultTool(editorMode.mode, canvasTool, setCanvasTool, embedMode);
-  // Comment authors' pictures for the open tab (docs/specs/014-identity/profile-picture.md §5).
-  useCommentPicturesLoader(documentId, activeTab?.id, activeTab?.elements, sessionShareCode);
 
   // Vote privacy (docs/specs/012-collaboration/session-tools.md): while a hide-cursors vote is open on this tab,
   // peer cursors + laser trails are neither sent nor drawn. Derived here so

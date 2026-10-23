@@ -115,7 +115,7 @@ function sessionOf(): WorkbenchSession {
     origin: 'https://127.0.0.1:5175',
     level: 'edit',
     expiresAt: Date.now() + 60_000,
-    person: { id: 'user_1', name: 'Webber', color: '#0ea5e9', pictureUrl: null },
+    person: { id: 'user_1', name: 'Webber', color: '#0ea5e9' },
     workbenchName: 'Acme Editor',
     port,
     ended: null,
@@ -208,7 +208,9 @@ describe('WorkspaceFrame', () => {
     mount();
 
     act(() =>
-      listeners.forEach((l) => l({ type: 'livediagram:open', v: 1, to: { documentId: 'doc-1' } })),
+      listeners.forEach((l) =>
+        l({ type: 'livediagram:open', v: 1, to: { documentId: 'doc-1' } }),
+      ),
     );
 
     expect(window.location.pathname).toBe('/embed/workbench/document/doc-1');
@@ -264,6 +266,8 @@ describe('WorkspaceFrame', () => {
     expect(`${window.location.pathname}${window.location.search}`).toBe(
       '/embed/workbench/explorer/team?id=team1&folder=tf1',
     );
-    expect(sent('livediagram:place').filter((m) => 'view' in m && m.view === 'folder')).toEqual([]);
+    expect(sent('livediagram:place').filter((m) => 'view' in m && m.view === 'folder')).toEqual(
+      [],
+    );
   });
 });
