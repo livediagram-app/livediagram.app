@@ -105,7 +105,7 @@ describe("the Library's hosts over an app's API", () => {
   });
 
   it("reads an app's own origin when its editor gives one, as its own host", async () => {
-    const fetch = vi.fn(async () => json({ images: [] }));
+    const fetch = vi.fn(async (_url: string) => json({ images: [] }));
     vi.stubGlobal('fetch', fetch);
     const local = appLibraryHosts('livedocuments', { token, origin: 'http://localhost:3000' });
     expect(local.gallery).not.toBe(libraryHosts('livedocuments').gallery);

@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useEffect, useMemo, useState } from 'react';
+import { Suspense, useEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { explorerUrl } from '@liveworkspace/sites';
 import { ShapeLibraryProvider } from '@/components/primitives/ShapeLibraryProvider';
@@ -45,16 +45,22 @@ function OpenImport({ ownerId, request }: { ownerId: string; request: ImportRequ
     folderId: request.folderId,
     onDocumentsCreated: () => {},
   });
-  // Set alongside the dialog's own open state, so the render after opening already shows it.
-  const [opened, setOpened] = useState(false);
+  // Asked once (an effect run twice in development must not open it twice); left once its dialog has shown and closed.
+  const asked = useRef(false);
+  const shown = useRef(false);
   useEffect(() => {
-    if (opened) return;
-    if (open(request.source)) setOpened(true);
-    else replaceAppLocation(importReturnUrl(request));
-  }, [opened, open, request]);
-  useEffect(() => {
-    if (opened && !dialogs) replaceAppLocation(importReturnUrl(request));
-  }, [opened, dialogs, request]);
+    if (dialogs) {
+      shown.current = true;
+      return;
+    }
+    if (shown.current) {
+      replaceAppLocation(importReturnUrl(request));
+      return;
+    }
+    if (asked.current) return;
+    asked.current = true;
+    if (!open(request.source)) replaceAppLocation(importReturnUrl(request));
+  }, [dialogs, open, request]);
   return (
     <main className="min-h-screen bg-slate-50 dark:bg-slate-950" aria-label="Import">
       {dialogs}
