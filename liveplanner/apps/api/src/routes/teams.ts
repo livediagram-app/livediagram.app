@@ -1,12 +1,15 @@
-// The caller's teams (from its token: liveworkspace manages them) and a team's library, for API clients
-// (index-adapters.ts).
+// The caller's teams (from its token: liveworkspace manages them), a team's library, for API clients
+// (index-adapters.ts), and a team's people, for the editor's assignee picker and @-mention list
+// (assigned-actions.md, comment-mentions.md).
 
-import type { TeamListItem } from '@liveplanner/api-schema';
+import type { TeamListItem, TeamMember } from '@liveplanner/api-schema';
+import { teamPeople } from '../person/notify';
 import { json, notFound } from '../responses';
 import { requireOwner, type RouteContext } from './context';
 import { clientFor, folderOf, listFolders, listItems, refusal, summaryOf } from './index-adapters';
 
-// GET /api/teams and /api/teams/:id/library. Teams are the caller's token's (liveworkspace manages them).
+// GET /api/teams, /api/teams/:id/library and /api/teams/:id/members. Teams are the caller's token's
+// (liveworkspace manages them).
 export async function handleTeams(ctx: RouteContext): Promise<Response> {
   const { request, segments } = ctx;
   if (request.method !== 'GET') return notFound();
@@ -39,6 +42,28 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
     } catch (err) {
       return refusal(err);
     }
+  }
+  // A team's joined and invited people, for someone in it (never an API token: the people are not part of the
+  // public API). Their names are accounts' profiles; an invited person's is null until they join.
+  if (segments.length === 4 && segments[3] === 'members') {
+    const teamId = segments[2]!;
+    // A team the caller is not in answers as missing, by name, whoever asks.
+    const noTeam = () => json({ error: 'team_not_found' }, { status: 404 });
+    if (ctx.token || !teams.some((t) => t.id === teamId)) return noTeam();
+    const people = await teamPeople(ctx.env, teamId);
+    if (!people) return noTeam();
+    const members: TeamMember[] = people.map((p) => ({
+      id: p.id,
+      teamId,
+      userId: p.userId,
+      email: p.email,
+      role: p.role,
+      status: p.status,
+      name: p.name,
+      createdAt: 0,
+      updatedAt: 0,
+    }));
+    return json({ members });
   }
   return notFound();
 }

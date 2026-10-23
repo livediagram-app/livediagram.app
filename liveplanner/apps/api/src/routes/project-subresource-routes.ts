@@ -11,6 +11,7 @@ import { handleTabRename } from './tab-name-route';
 import { handleTabForm } from './tab-form-route';
 import { handleChangesetRoutes } from './changesets';
 import { handleCommentRoutes } from './comment-routes';
+import { handleNotifyAction } from './notify-action-route';
 import { handleAgentPresenceRoute } from './agent-presence-routes';
 import { handleTabRender } from './tab-render-route';
 import { handleItemRoutes } from './item-routes';
@@ -145,6 +146,10 @@ export async function handleProjectSubresources(ctx: PlanRouteContext): Promise<
   }
 
   // The comment endpoints (docs/specs/024-agents/agent-presence.md "Comments").
+  // /api/projects/<id>/notify-action: the email for an action just assigned (assigned-actions.md).
+  if (segments.length === 4 && segments[3] === 'notify-action') {
+    return handleNotifyAction(ctx, segments[2]!);
+  }
   const comments = await handleCommentRoutes(ctx);
   if (comments) return comments;
   // Agent presence (docs/specs/024-agents/agent-presence.md "Presence").

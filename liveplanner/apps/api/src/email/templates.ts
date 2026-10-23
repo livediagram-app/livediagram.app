@@ -270,3 +270,190 @@ export function formSuspendedEmail(
     }),
   };
 }
+
+// docs/specs/014-identity/profile-and-email-notifications.md: a new person opened one of the owner's shared projects for the
+// first time. Sent to the project OWNER, so the project name is their own
+// content coming back to them (not a docs/specs/014-identity/transactional-email.md §7 leak). `joinerName` is the
+// visitor's display name when known (already visible to the owner in live
+// presence / the Shared list); null falls back to "Someone".
+export function projectJoinedEmail(
+  env: Env,
+  projectName: string,
+  joinerName: string | null,
+): RenderedEmail {
+  const base = appBaseUrl(env);
+  const who = joinerName && joinerName.trim() ? escapeHtml(joinerName.trim()) : 'Someone';
+  const named = projectName && projectName.trim() ? escapeHtml(projectName.trim()) : 'your plan';
+  const whoText = joinerName && joinerName.trim() ? escapeText(joinerName.trim()) : 'Someone';
+  return {
+    kind: 'ProjectJoined',
+    subject: `${whoText} opened one of your plans`,
+    html: shell(env, {
+      heading: 'Someone joined your plan',
+      intro: `<strong>${who}</strong> just opened <strong>${named}</strong>, a plan you shared. They can collaborate on it with the access you granted.`,
+      outro:
+        'Join notifications are on by default for plans you share. You can turn them off any time in your notification settings.',
+      ctaText: 'Open the plan',
+      ctaHref: `${base}/explorer`,
+      footer: manageNotificationsFooter(
+        env,
+        'You’re receiving this because someone opened a plan you shared.',
+      ),
+    }),
+    unsubscribeUrl: profilePath(env),
+  };
+}
+
+// docs/specs/012-collaboration/assigned-actions.md: someone assigned the recipient an action on a project element.
+// Sent to the assignee (a joined teammate of the assigner). Opt-out
+// (notifyActionAssigned). Everything user-influenced here (assigner name,
+// project name, action name, description) is either the assigner's own words
+// being delivered on their behalf or a project/team fact the two already
+// share (docs/specs/014-identity/transactional-email.md §7), and all of it is escaped.
+const ACTION_DESCRIPTION_PREVIEW_CHARS = 200;
+
+export function actionAssignedEmail(
+  env: Env,
+  assignerName: string | null,
+  // Null when the assignee cannot open the project (docs/specs/012-collaboration/assigned-actions.md §4): the
+  // email names no project and its button opens the Explorer instead of a page they would be refused.
+  project: { id: string; name: string } | null,
+  actionName: string,
+  description: string | null,
+): RenderedEmail {
+  const base = appBaseUrl(env);
+  const who = assignerName && assignerName.trim() ? escapeHtml(assignerName.trim()) : 'A teammate';
+  const whoText =
+    assignerName && assignerName.trim() ? escapeText(assignerName.trim()) : 'A teammate';
+  const liveDoc =
+    project && project.name.trim() ? escapeHtml(project.name.trim()) : 'a shared plan';
+  const action = escapeHtml(actionName.trim());
+  const detail = description?.trim()
+    ? escapeHtml(
+        description.trim().length > ACTION_DESCRIPTION_PREVIEW_CHARS
+          ? `${description.trim().slice(0, ACTION_DESCRIPTION_PREVIEW_CHARS)}…`
+          : description.trim(),
+      )
+    : null;
+  const intro = project
+    ? `<strong>${who}</strong> assigned you an action on <strong>${liveDoc}</strong>: <strong>${action}</strong>.`
+    : `<strong>${who}</strong> assigned you an action: <strong>${action}</strong>. You can’t open its plan yet, so ask them to share it with you.`;
+  return {
+    kind: 'ActionAssigned',
+    subject: `${whoText} assigned you an action`,
+    html: shell(env, {
+      heading: 'You have a new action',
+      intro,
+      ...(detail ? { outro: detail } : {}),
+      ...(project
+        ? {
+            ctaText: 'Open the plan',
+            ctaHref: `${base}/project/${encodeURIComponent(project.id)}`,
+          }
+        : { ctaText: 'Open liveplanner', ctaHref: `${base}/explorer` }),
+      footer: manageNotificationsFooter(
+        env,
+        'You’re receiving this because a teammate assigned you an action.',
+      ),
+    }),
+    unsubscribeUrl: profilePath(env),
+  };
+}
+
+// docs/specs/012-collaboration/comment-mentions.md: a teammate @-mentioned the recipient in a comment. The
+// author and project name come from server state (the plan the comment is on);
+// the quote is the author's own words, escaped and cut at a word.
+export const MENTION_QUOTE_CHARS = 280;
+
+export function mentionQuote(text: string): string {
+  const flat = text.trim().replace(/\s+/g, ' ');
+  if (flat.length <= MENTION_QUOTE_CHARS) return flat;
+  const cut = flat.slice(0, MENTION_QUOTE_CHARS);
+  const space = cut.lastIndexOf(' ');
+  return `${(space > MENTION_QUOTE_CHARS / 2 ? cut.slice(0, space) : cut).trimEnd()}…`;
+}
+
+export function mentionedEmail(
+  env: Env,
+  authorName: string | null,
+  projectName: string,
+  projectId: string,
+  commentText: string,
+  // A Plan card's comment: the button opens the card (docs/specs/012-collaboration/comment-mentions.md).
+  itemId?: string,
+): RenderedEmail {
+  const base = appBaseUrl(env);
+  const docHref = `${base}/project/${encodeURIComponent(projectId)}`;
+  const who = authorName && authorName.trim() ? escapeHtml(authorName.trim()) : 'A teammate';
+  const whoText = authorName && authorName.trim() ? escapeText(authorName.trim()) : 'A teammate';
+  const liveDoc =
+    projectName && projectName.trim() ? escapeHtml(projectName.trim()) : 'a shared plan';
+  const projectText = projectName && projectName.trim() ? escapeText(projectName.trim()) : 'a plan';
+  return {
+    kind: 'Mentioned',
+    subject: `${whoText} mentioned you in ${projectText}`,
+    html: shell(env, {
+      heading: 'You were mentioned',
+      intro: `<strong>${who}</strong> mentioned you in a comment on <strong>${liveDoc}</strong>:`,
+      outro: `“${escapeHtml(mentionQuote(commentText))}”`,
+      ctaText: itemId ? 'Open the card' : 'Open the plan',
+      ctaHref: itemId ? `${docHref}#item=${encodeURIComponent(itemId)}` : docHref,
+      footer: manageNotificationsFooter(
+        env,
+        'You’re receiving this because a teammate mentioned you in a comment.',
+      ),
+    }),
+    unsubscribeUrl: profilePath(env),
+  };
+}
+
+// docs/specs/014-identity/transactional-email.md (#6): a small celebration when an owner reaches a project-count
+// milestone. Opt-out (notifyMilestones).
+export function milestoneEmail(env: Env, count: number): RenderedEmail {
+  const base = appBaseUrl(env);
+  return {
+    kind: 'Milestone',
+    subject: `You’ve made ${count} plans on liveplanner`,
+    html: shell(env, {
+      heading: `That’s ${count} plans`,
+      intro: `Nice work, you’ve created <strong>${count}</strong> plans on liveplanner. Thanks for building with us.`,
+      outro: 'Here’s to the next one.',
+      ctaText: 'Open your Explorer',
+      ctaHref: `${base}/explorer`,
+      footer: manageNotificationsFooter(
+        env,
+        'You’re receiving this because you reached a milestone and milestone emails are on.',
+      ),
+    }),
+    unsubscribeUrl: profilePath(env),
+  };
+}
+
+// docs/specs/014-identity/transactional-email.md (#6): the first time an owner creates a share link. Opt-out
+// (notifyMilestones), same category as the project-count milestone.
+export function firstShareEmail(env: Env): RenderedEmail {
+  const base = appBaseUrl(env);
+  return {
+    kind: 'FirstShare',
+    subject: 'You shared your first plan',
+    html: shell(env, {
+      heading: 'Your first shared plan',
+      preheader: 'Anyone with the link can open it now, and you stay in control.',
+      intro:
+        'Nice work, you just shared a plan for the first time. Anyone with the link can open it, and you stay in control:',
+      points: [
+        'Hand out a <strong>view-only</strong> or an <strong>editor</strong> link, whichever fits.',
+        'Set a link to <strong>expire</strong> after a week, a month, or six months.',
+        'Revoke a link any time from the Share dialog, and it stops working instantly.',
+      ],
+      outro: 'Collaboration needs no account, so whoever you share with can jump straight in.',
+      ctaText: 'Open your Explorer',
+      ctaHref: `${base}/explorer`,
+      footer: manageNotificationsFooter(
+        env,
+        'You’re receiving this because you reached a milestone and milestone emails are on.',
+      ),
+    }),
+    unsubscribeUrl: profilePath(env),
+  };
+}

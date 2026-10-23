@@ -1,14 +1,15 @@
 // Tests' view of the liveworkspace accounts Worker's internal routes (liveworkspace/docs/accounts.md
-// "The API"): settings, profiles, sightings, milestones, emails and activity, kept in memory with the
-// same rules (a write is a patch per key, null deletes; a milestone claims once, and only after a
-// sighting). Stubs the global fetch; batches posted to the telemetry service are kept too. Pair with
-// ACCOUNTS_ON in the env, and restore with vi.unstubAllGlobals.
+// "The API"): settings, profiles, sightings, milestones, emails, teams' people and activity, kept in
+// memory with the same rules (a write is a patch per key, null deletes; a milestone claims once, and only
+// after a sighting). Stubs the global fetch; batches posted to the telemetry service are kept too, and the
+// index's count of a person's plans (`planCounts`, at INDEX_ON's origin) is answered as well. Pair with
+// ACCOUNTS_ON (and INDEX_ON) in the env, and restore with vi.unstubAllGlobals.
 //
 // Not a `.test.ts` file, so vitest doesn't collect it as a suite.
 
 import { vi } from 'vitest';
 import { TELEMETRY_EVENTS_PATH, type TelemetryBatch } from '@liveworkspace/telemetry';
-import type { Profile } from '@liveworkspace/auth-client';
+import type { Profile, TeamPerson } from '@liveworkspace/auth-client';
 import type { Env } from './types';
 
 export const ACCOUNTS_URL = 'https://accounts.test';
@@ -17,6 +18,9 @@ export const ACCOUNTS_ON = {
   ACCOUNTS_CLIENT_ID: 'liveplanner',
   ACCOUNTS_CLIENT_SECRET: 'secret',
 } as Partial<Env>;
+
+export const INDEX_ORIGIN = 'https://index.test';
+export const INDEX_ON = { INDEX_ORIGIN, INDEX_KEY: 'lp-key' } as Partial<Env>;
 
 type Prefs = Record<string, unknown>;
 
@@ -27,6 +31,10 @@ export type FakeAccounts = {
   milestones: Set<string>;
   emails: Map<string, string>;
   activity: { userId: string; at?: number }[];
+  // Each team's joined and invited people, by team id.
+  teams: Map<string, TeamPerson[]>;
+  // How many plans each person has made, as the index counts them.
+  planCounts: Map<string, number>;
   // Every internal call, as `<path> <json body>`.
   calls: { path: string; body: Record<string, unknown> }[];
   telemetry: TelemetryBatch['events'];
@@ -53,6 +61,8 @@ export function stubAccounts(): FakeAccounts {
     milestones: new Set(),
     emails: new Map(),
     activity: [],
+    teams: new Map(),
+    planCounts: new Map(),
     calls: [],
     telemetry: [],
     failWith: null,
@@ -66,6 +76,16 @@ export function stubAccounts(): FakeAccounts {
     if (url.pathname.endsWith(TELEMETRY_EVENTS_PATH)) {
       fake.telemetry.push(...(JSON.parse(text) as TelemetryBatch).events);
       return new Response(null, { status: 204 });
+    }
+    const counted = /\/app\/people\/([^/]+)\/count$/.exec(url.pathname);
+    if (url.origin === INDEX_ORIGIN && counted) {
+      fake.calls.push({
+        path: '/index/count',
+        body: { personId: decodeURIComponent(counted[1]!) },
+      });
+      const limit = Number(url.searchParams.get('limit') ?? '1000');
+      const n = fake.planCounts.get(decodeURIComponent(counted[1]!)) ?? 0;
+      return answer({ count: Math.min(n, limit) });
     }
     if (url.origin !== ACCOUNTS_URL || !url.pathname.startsWith(INTERNAL)) {
       return new Response(null, { status: 404 });
@@ -90,6 +110,23 @@ export function stubAccounts(): FakeAccounts {
           return answer({ ...next, updatedAt: now });
         }
         return answer({ ...stored, updatedAt: null });
+      }
+      case '/settings/notify': {
+        const owners = body.owners as string[];
+        const keys = body.keys as string[];
+        const pick = (prefs: Prefs) =>
+          Object.fromEntries(Object.entries(prefs).filter(([k]) => keys.includes(k)));
+        const settings: Record<string, { all: Prefs; app: Prefs }> = {};
+        for (const owner of owners) {
+          const stored = fake.settings.get(owner);
+          if (stored) settings[owner] = { all: pick(stored.all), app: pick(stored.app) };
+        }
+        return answer({ settings });
+      }
+      case '/teams/members': {
+        const members = fake.teams.get(body.teamId as string);
+        if (!members) return answer({ error: 'not_found' }, 404);
+        return answer({ team: { id: body.teamId, name: 'Team' }, members });
       }
       case '/profiles/read': {
         const ids = body.ids as string[];

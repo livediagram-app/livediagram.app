@@ -11,7 +11,7 @@ import {
 } from '@liveplanner/api-schema';
 import { isValidTab, migrateIncomingTab, type Tab } from '@liveplanner/project';
 import { mergeChangesetsIntoSave } from '../changesets/merge-on-save';
-import { hasNewComments, rewriteCommentAuthors } from '../comments';
+import { newCommentsBy, rewriteCommentAuthors } from '../comments';
 import {
   changesetMergePages,
   getTab,
@@ -20,7 +20,7 @@ import {
 } from '../db';
 import { getParticipant } from '../person/profiles';
 import { emailEnabled } from '../email/client';
-import { notifyNewComment } from '../email/notifications';
+import { notifyMentions, notifyNewComment } from '../email/notifications';
 import { MAX_TAB_BYTES, bodyExceedsCap, storeTab } from '../limits';
 import { capStoredName } from '../names';
 import { badRequest, conflict, json, payloadTooLarge } from '../responses';
@@ -142,18 +142,31 @@ export async function handleTabPut(
     }
     logMerge(id, tabId, merge);
     // docs/specs/014-identity/transactional-email.md (#1): an edit-role visitor adding a comment
-    // notifies the owner. Their own comment only, read from the authors the server just set.
-    if (
-      emailEnabled(env) &&
-      owner !== existing.ownerId &&
-      hasNewComments(sanitised.elements, existingTab?.elements ?? [], owner)
-    ) {
+    // notifies the owner; on a team plan, the teammates the writer's new comments @-mention hear of it
+    // (docs/specs/012-collaboration/comment-mentions.md). Their own comments only, read from the authors the
+    // server just set.
+    // Only a save that could email anyone looks: a visitor's (the owner's email), or any on a team plan (mentions).
+    const fresh =
+      emailEnabled(env) && (owner !== existing.ownerId || existing.teamId)
+        ? newCommentsBy(sanitised.elements, existingTab?.elements ?? [], owner)
+        : [];
+    if (fresh.length > 0 && owner !== existing.ownerId) {
       ctx.waitUntil?.(
         notifyNewComment(
           env,
           { id, ownerId: existing.ownerId, name: existing.name },
           writerParticipant?.name ?? null,
         ),
+      );
+    }
+    if (existing.teamId && fresh.some((c) => c.mentions?.length)) {
+      ctx.waitUntil?.(
+        notifyMentions(env, {
+          plan: { id, name: existing.name, teamId: existing.teamId },
+          authorId: owner,
+          authorFallbackName: ctx.accountEmail,
+          comments: fresh,
+        }),
       );
     }
     // Echo what was just written instead of reading it back; folder is link metadata the client

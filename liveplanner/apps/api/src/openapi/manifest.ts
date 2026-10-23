@@ -650,6 +650,27 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     responseSchema: listOf('threads', 'ProjectCommentThread'),
     statuses: [200, 400, 401, 403, 404, 405, 410],
   },
+  {
+    method: 'POST',
+    path: '/projects/{id}/notify-action',
+    segment: 'projects',
+    tag: 'Plans',
+    summary:
+      'Email a teammate that an action on this plan was assigned to them (docs/specs/012-collaboration/assigned-actions.md). The caller has joined the team and can open the plan; the assignee is one of the team\'s joined or invited people. Best-effort; the assignee may have turned these emails off.',
+    auth: 'clerk',
+    requestSchema: {
+      type: 'object',
+      properties: {
+        teamId: { type: 'string' },
+        assigneeUserId: { type: 'string' },
+        assigneeMemberId: { type: 'string' },
+        actionName: { type: 'string' },
+        description: { type: 'string' },
+      },
+      required: ['teamId', 'actionName'],
+    },
+    statuses: [202, 400, 401, 403, 404],
+  },
   // The project's type catalogue (docs/specs/026-plan/item-types.md).
   {
     method: 'PUT',
@@ -1381,6 +1402,17 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
       },
     },
     statuses: [200, 401, 403, 404],
+  },
+  {
+    method: 'GET',
+    path: '/teams/{id}/members',
+    segment: 'teams',
+    tag: 'Teams',
+    summary:
+      "A team's joined and invited people (joined member), for the assignee picker and @-mentions. Not for API tokens.",
+    auth: 'clerk',
+    responseSchema: listOf('members', 'TeamMember'),
+    statuses: [200, 401, 404],
   },
 
   // ---- OAuth (MCP) ----

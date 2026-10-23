@@ -240,7 +240,20 @@ BEGIN
 END;
 `;
 
-const STEPS: readonly string[] = [V1];
+// The once-only state of the plan's notification emails (plan-room/notify-claims.ts): one row per email
+// claimed, keyed by what makes two the same (a hash, never text or an address), with its sender for the
+// hourly cap. Rows past the longest window are dropped as new ones are claimed.
+const V2 = `
+CREATE TABLE IF NOT EXISTS notify_claims (
+  key    TEXT    PRIMARY KEY,
+  sender TEXT    NOT NULL,
+  at     INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS notify_claims_sender ON notify_claims (sender, at);
+CREATE INDEX IF NOT EXISTS notify_claims_at ON notify_claims (at);
+`;
+
+const STEPS: readonly string[] = [V1, V2];
 
 export const PLAN_SCHEMA_VERSION = STEPS.length;
 

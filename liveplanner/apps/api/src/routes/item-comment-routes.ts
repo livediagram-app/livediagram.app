@@ -47,9 +47,9 @@ async function add(ctx: PlanRouteContext, projectId: string, itemId: string): Pr
   const change = commentWrite({ kind: 'add', comment });
   const res = await writeItem(ctx, caller, itemId, change);
   if (res.status !== 200) return res;
-  afterCommentPosted(ctx, asCommenter(caller), comment);
+  afterCommentPosted(ctx, asCommenter(caller), comment, itemId);
   console.info('[items] comment added', { projectId, agent: ctx.token !== null });
-  // The comment's id, so a mention email can name the stored comment rather than carry its text.
+  // The comment's id, for the editor to find it in the card's thread.
   const answer: ItemCommentAddResponse = {
     ...(await res.json<ItemResponse>()),
     commentId: comment.id,

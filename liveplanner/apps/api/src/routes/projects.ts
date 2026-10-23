@@ -38,6 +38,7 @@ import { compileSeededTabs } from './project-seed';
 import { hasTemplateSheets } from '@liveplanner/templates';
 import { materialiseTemplateSheets } from '@liveplanner/templates/template-sheets';
 import type { ProjectDTO } from '../types';
+import { notifyMilestone } from '../email/notifications';
 import { initPlan, readPlanMeta, renamePlan } from '../plan-room/plan-content';
 import { identityOf } from '../plan-room/plan-route';
 import { planRoom } from '../plan-client';
@@ -181,6 +182,7 @@ async function startedProject(ctx: PlanRouteContext, id: string): Promise<Projec
     createdAt: now,
   });
   console.info('[projects] started on open', { projectId: id });
+  ctx.waitUntil?.(notifyMilestone(ctx.env, grant.sub));
   return getProject(ctx.env, id);
 }
 
@@ -402,6 +404,8 @@ export async function handlePlanRequest(ctx: PlanRouteContext): Promise<Response
       }
       const liveDoc = await getProject(env, body.id);
       if (!clash) console.info('[projects] created', { projectId: body.id, marked: making.markUsed });
+      // A genuine create may be the owner's tenth plan (docs/specs/014-identity/transactional-email.md #6).
+      if (!clash) ctx.waitUntil?.(notifyMilestone(env, owner));
       return json({ project: liveDoc }, { status: 201 });
     }
   }

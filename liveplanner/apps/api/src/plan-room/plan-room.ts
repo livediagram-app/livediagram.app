@@ -58,10 +58,12 @@ import { hasPlanSchema, migratePlanSchema } from './plan-schema';
 import {
   exportPlanCopy,
   importPlanCopy,
+  readPlanMeta,
   readPlanOutline,
   type PlanCopy,
   type PlanOutline,
 } from './plan-content';
+import { notifyProjectJoin } from '../email/notifications';
 import { drainOutbox, recordEditor } from './plan-outbox';
 import { answerPlanRequest, type RouteIdentity } from './plan-route';
 
@@ -480,6 +482,18 @@ export class PlanRoom extends DurableObject<Env> {
       closed += before - this.state.getWebSockets().length;
     }
     return closed;
+  }
+
+  // Someone opened the plan through a share link for the first time: the owner hears of it (email/notifications.ts
+  // notifyProjectJoin), off the caller's path. A plan never started has no owner to tell.
+  async joined(planId: string, personId: string): Promise<void> {
+    this.bindPlan(planId);
+    const env = this.requireEnv();
+    const meta = await readPlanMeta(env, planId);
+    if (!meta) return;
+    this.state.waitUntil(
+      notifyProjectJoin(env, { id: planId, ownerId: meta.ownerId, name: meta.name }, personId),
+    );
   }
 
   private requireEnv(): PlanEnv {

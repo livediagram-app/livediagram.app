@@ -30,6 +30,9 @@ export type PlanRoomClient = {
   purge(): Promise<void>;
   // Share links revoked elsewhere (the index): their sessions end now.
   revokeCodes(codes: string[], reason?: 'revoked' | 'rescoped'): Promise<number>;
+  // Someone opened the plan through a share link for the first time (the index's notice): the owner's
+  // "someone joined" email, sent from the room, which keeps its once-per-window claim.
+  joined(personId: string): Promise<void>;
 };
 
 export function planRoom(env: Pick<Env, 'PLAN_ROOM'>, planId: string): PlanRoomClient {
@@ -47,6 +50,7 @@ export function planRoom(env: Pick<Env, 'PLAN_ROOM'>, planId: string): PlanRoomC
     importCopy: (copy) => room.importCopy(planId, copy),
     purge: () => room.purge(planId),
     revokeCodes: (codes, reason) => room.revokeCodes(planId, codes, reason),
+    joined: (personId) => room.joined(planId, personId),
   };
 }
 
@@ -61,5 +65,6 @@ export type PlanRoomRpc = {
   importCopy(planId: string, copy: PlanCopy): Promise<void>;
   purge(planId: string): Promise<void>;
   revokeCodes(planId: string, codes: string[], reason?: 'revoked' | 'rescoped'): Promise<number>;
+  joined(planId: string, personId: string): Promise<void>;
   fetch(request: Request): Promise<Response>;
 };

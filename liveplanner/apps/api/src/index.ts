@@ -75,7 +75,8 @@ async function routeApiRequest(
 
   // The One Explorer index's server-to-server doors into a plan's content (routes/internal-items.ts): their own
   // key, never a person's identity, so answered before identity and the per-owner limits.
-  if (segments[1] === 'internal') return handleInternalItems(request, env);
+  if (segments[1] === 'internal')
+    return handleInternalItems(request, env, (p) => executionCtx?.waitUntil(p));
 
   // Who is calling (docs/specs/014-identity/auth-and-guest-access.md): a liveworkspace access token or guest token,
   // verified once here against the accounts Worker's keys. Null when sign-in isn't configured, no Bearer was sent

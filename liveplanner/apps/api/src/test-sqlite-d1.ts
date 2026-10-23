@@ -348,6 +348,15 @@ function testPlanRooms(
         (await import('./db/items')).readItem(env, planId, itemId),
       exportCopy: async (planId: string, onlyTabId: string | null, redact: string | null) =>
         (await import('./plan-room/plan-content')).exportPlanCopy(env, planId, onlyTabId, redact),
+      joined: async (planId: string, personId: string) => {
+        const meta = await (await import('./plan-room/plan-content')).readPlanMeta(env, planId);
+        if (!meta) return;
+        await (await import('./email/notifications')).notifyProjectJoin(
+          env,
+          { id: planId, ownerId: meta.ownerId, name: meta.name },
+          personId,
+        );
+      },
       importCopy: async (planId: string, copy: unknown) =>
         (await import('./plan-room/plan-content')).importPlanCopy(env, planId, copy as never),
       // Everything the plan stored goes, and the room hears it as it did (its `/purge`).

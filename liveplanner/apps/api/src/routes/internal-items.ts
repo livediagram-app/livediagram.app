@@ -5,11 +5,16 @@
 //   POST   /api/internal/items/:from/copy-to/:to  {tabId?}  copy a plan's content (or one tab) into a new plan
 //   DELETE /api/internal/items/:id                          drop everything the plan stores, end its sessions
 //   POST   /api/internal/items/:id/revoke         {codes, reason?}  end the sessions of revoked or rescoped links
+//   POST   /api/internal/items/:id/notices        {type, ...}  what happened for an email (index-client notices.ts):
+//                                                  a share link made (the first-share milestone), or someone's first
+//                                                  time in through a link (the owner's "someone joined" email)
 //
 // Each is one call to the plan's Durable Object (plan-client.ts). Where the plan is filed, its sharing and its
 // Trash are the index's; a purge also drops what D1 and R2 keep about the plan (its form links, the workbench
 // tickets and sessions scoped to it, its cached snapshots: db/projects.ts `purgePlanRows`).
+import { parseItemNotice } from '@liveworkspace/index-client';
 import { timingSafeEqual } from '../auth/timing-safe';
+import { notifyFirstShare } from '../email/notifications';
 import { purgePlanRows } from '../db/projects';
 import { planRoom } from '../plan-client';
 import { badRequest, json, notFound } from '../responses';
@@ -39,7 +44,11 @@ async function bodyOf(request: Request): Promise<Record<string, unknown> | null>
   }
 }
 
-export async function handleInternalItems(request: Request, env: Env): Promise<Response> {
+export async function handleInternalItems(
+  request: Request,
+  env: Env,
+  waitUntil: (promise: Promise<unknown>) => void = (p) => void p,
+): Promise<Response> {
   // `api/internal/items/...`, as index.ts splits it.
   const segments = new URL(request.url).pathname.replace(/^\//, '').split('/');
   const key = env.INDEX_KEY;
@@ -72,6 +81,21 @@ export async function handleInternalItems(request: Request, env: Env): Promise<R
     const rescoped = body?.['reason'] === 'rescoped';
     const closed = await planRoom(env, id).revokeCodes(codes, rescoped ? 'rescoped' : 'revoked');
     return json({ ok: true, closed });
+  }
+
+  // POST /api/internal/items/:id/notices: accepted at once, the email worked out off the index's path.
+  if (segments.length === 5 && segments[4] === 'notices' && request.method === 'POST') {
+    const notice = parseItemNotice(await bodyOf(request));
+    if (!notice) return badRequest('invalid notice');
+    waitUntil(
+      (notice.type === 'shared'
+        ? notifyFirstShare(env, notice.actorId)
+        : planRoom(env, id).joined(notice.personId)
+      ).catch((err: unknown) => {
+        console.warn('[internal] notice failed', { type: notice.type, error: String(err) });
+      }),
+    );
+    return json({ ok: true }, { status: 202 });
   }
 
   // POST /api/internal/items/:from/copy-to/:to {tabId?}

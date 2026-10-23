@@ -32,7 +32,7 @@ import {
 } from '../db';
 import { getParticipant } from '../person/profiles';
 import { emailEnabled } from '../email/client';
-import { notifyNewComment } from '../email/notifications';
+import { notifyMentions, notifyNewComment } from '../email/notifications';
 import { storeTab } from '../limits';
 import {
   badRequest,
@@ -156,16 +156,34 @@ function appended(tab: TabDTO, elementId: string, comment: Comment, cell?: strin
   };
 }
 
-// The owner's email for a posted comment (add and reply alike, on the canvas or on a card).
-export function afterCommentPosted(ctx: PlanRouteContext, caller: Caller, comment: Comment): void {
+// The emails a posted comment sends (add and reply alike, on the canvas or on a card, `itemId` naming the card):
+// the owner's new-comment email, and on a team plan one to each teammate it @-mentions
+// (docs/specs/012-collaboration/comment-mentions.md), for a signed-in person's comment (never an API token's).
+export function afterCommentPosted(
+  ctx: PlanRouteContext,
+  caller: Caller,
+  comment: Comment,
+  itemId?: string,
+): void {
   const { doc, owner } = caller;
-  if (emailEnabled(ctx.env) && owner !== doc.ownerId)
+  if (!emailEnabled(ctx.env)) return;
+  if (owner !== doc.ownerId)
     ctx.waitUntil?.(
       notifyNewComment(
         ctx.env,
         { id: doc.id, ownerId: doc.ownerId, name: doc.name },
         comment.authorName,
       ),
+    );
+  if (doc.teamId && comment.mentions?.length && !ctx.token)
+    ctx.waitUntil?.(
+      notifyMentions(ctx.env, {
+        plan: { id: doc.id, name: doc.name, teamId: doc.teamId },
+        authorId: owner,
+        authorFallbackName: ctx.accountEmail,
+        comments: [comment],
+        ...(itemId ? { itemId } : {}),
+      }),
     );
 }
 
