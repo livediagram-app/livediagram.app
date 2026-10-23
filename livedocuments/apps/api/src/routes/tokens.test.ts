@@ -138,6 +138,24 @@ describe('/api/tokens/current (docs/specs/015-api/blueprints/cli.md "Token self-
     );
   });
 
+  it('still ends its workbench access when no bearer secret came with it', async () => {
+    db.listApiTokensByOwner.mockResolvedValue([live]);
+    const res = await handleTokens(
+      makeTestRouteContext('DELETE', '/api/tokens/current', {
+        accountUserId: null,
+        owner: 'user_1',
+        token: { id: 'tok_1', readOnly: false },
+      }),
+    );
+    expect(res.status).toBe(204);
+    expect(db.revokePresentedToken).not.toHaveBeenCalled();
+    expect(workbenchEnd.endWorkbenchAccess).toHaveBeenCalledWith(
+      expect.anything(),
+      { tokenId: 'tok_1' },
+      'revoked',
+    );
+  });
+
   it('answers not_a_token to a session, a guest, or a revoked token, and refuses other methods', async () => {
     const session = await handleTokens(makeCtx('GET', '/api/tokens/current'));
     expect(session.status).toBe(403);
