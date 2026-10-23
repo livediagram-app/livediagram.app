@@ -67,6 +67,15 @@ Worker's daily cron (`17 9 * * *`, `sweepInvitations` in `src/teams.ts`):
 
 Reminders stop the moment the row is no longer `invited`.
 
+**Counting them.** Each invitation, reminder and answer email sent is counted on the telemetry
+service as `Email·Sent·<kind>` (`TeamInvite`, `TeamInviteReminder1` to `3`, and `InviteResponse`
+for each admin told of an answer, the kinds the apps' own team emails used), under the app the
+invitation's sender [signed up through](#onboarding-emails), so that app's dashboard keeps its team
+email charts. A sender who signed up on liveworkspace.app (or before the app was recorded) isn't
+counted. They are reported the way the onboarding emails are: held until the request's response has
+gone (or the cron's sweep ends), then one batch per app, each request given two seconds, never
+holding up or failing a send.
+
 ### The join link
 
 A second way in: one link per team that an admin turns on, good for **7 days**. Anyone signed in

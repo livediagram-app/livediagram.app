@@ -79,6 +79,15 @@ export async function flushServerEvents(env: Partial<TelemetryEnv>): Promise<voi
   await Promise.all(sends);
 }
 
+// After a request: sends what it reported (a team email, say) once the response has gone, so the
+// person never waits on the telemetry service. Nothing to send costs nothing.
+export function flushServerEventsAfter(
+  env: Partial<TelemetryEnv>,
+  ctx: Pick<ExecutionContext, 'waitUntil'>,
+): void {
+  if (waiting.length > 0) ctx.waitUntil(flushServerEvents(env));
+}
+
 async function post(
   env: Partial<TelemetryEnv>,
   url: string,

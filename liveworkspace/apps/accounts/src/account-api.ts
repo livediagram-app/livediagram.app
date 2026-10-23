@@ -18,7 +18,7 @@ import {
 } from './account-apps.ts';
 import { clientApp } from './clients.ts';
 import { GUEST_ID, USER_ID } from './ids.ts';
-import { recordActivity } from './lifecycle.ts';
+import { recordActivity, signupAppOf } from './lifecycle.ts';
 import {
   checkProfilePatch,
   isProfileOwner,
@@ -148,6 +148,7 @@ async function handleOpen(
         teamName: result.value.teamName,
         responder: result.value.email,
         accepted: false,
+        app: result.value.inviterApp,
       });
     }
     return result.ok
@@ -175,7 +176,7 @@ async function overLinkLimit(request: Request, env: Env): Promise<boolean> {
 async function tellAdmins(
   env: Env,
   teamId: string,
-  response: { teamName: string; responder: string; accepted: boolean },
+  response: { teamName: string; responder: string; accepted: boolean; app: SettingsApp | null },
 ): Promise<void> {
   try {
     const recipients = await inviteResponseRecipients(env.AUTH_DB, teamId);
@@ -260,6 +261,7 @@ async function handleSignedIn(
               teamName: result.value.teamName,
               inviterName: actor.name,
               declineToken: result.value.declineToken,
+              app: await signupAppOf(db, actor.id),
             }).catch((cause: unknown) => console.error('[teams] invite email failed', cause));
             return json(result.value.member, 201);
           }
@@ -286,6 +288,7 @@ async function handleSignedIn(
         teamName: result.value.teamName,
         responder: actor.email ?? actor.name,
         accepted: result.value.status === 'joined',
+        app: result.value.inviterApp,
       });
     }
     return answer(result);

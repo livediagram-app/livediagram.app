@@ -56,9 +56,11 @@ stored.
 email sent or a 500), the request carries `X-Telemetry-Key` with that app's own secret. A key only
 ever speaks for its own app. The accounts Worker holds each app's key too: it counts the onboarding
 emails it sends once per account under the app each one speaks for
-([accounts.md](accounts.md#onboarding-emails)), so each app's dashboard reads them from
-`Email·Sent` as before, and the dashboard's emitter checks scan it beside each app
-(`apps/site/app/telemetry/platform-emitters.ts`). Worker batches skip the rate limit, and they are the only way to send
+([accounts.md](accounts.md#onboarding-emails)), and the team invitation, reminder and answer emails
+under the app the inviter signed up through ([accounts.md](accounts.md#reminders-and-expiry)), so
+each app's dashboard reads them from `Email·Sent` as before. One that speaks for liveworkspace.app
+itself isn't counted, since no dashboard charts the platform. The dashboard's emitter checks scan
+the accounts Worker beside each app (`apps/site/app/telemetry/platform-emitters.ts`). Worker batches skip the rate limit, and they are the only way to send
 the events an app marks as server-only (its `server-emitted-events.ts`), so a stale browser bundle
 can't count those twice.
 

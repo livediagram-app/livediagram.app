@@ -1,4 +1,6 @@
 import type { Env } from './env.ts';
+import type { SettingsApp } from './settings.ts';
+import { reportServerEvent } from './telemetry.ts';
 
 // Every email goes through Resend, the same provider the apps use. Without RESEND_API_KEY a
 // development Worker prints the message to its log instead (the code is in the subject), so local
@@ -114,6 +116,18 @@ export function teamInviteEmail(
   return { subject, text, html };
 }
 
+// Each invitation email's kind on `Email·Sent`, by its stage, as the apps' own team emails named them,
+// so each app's dashboard keeps counting them in the same charts.
+const TEAM_INVITE_SENT_TYPE: Record<number, string> = {
+  0: 'TeamInvite',
+  1: 'TeamInviteReminder1',
+  2: 'TeamInviteReminder2',
+  3: 'TeamInviteReminder3',
+};
+
+// Sends an invitation, and counts it under `app`, the app the inviter signed up through
+// (lifecycle.ts signupAppOf); null, for liveworkspace.app or not known, isn't counted. The count goes
+// with the Worker's next flush (telemetry.ts), never holding up the send.
 export async function sendTeamInviteEmail(
   env: Env,
   invite: {
@@ -122,8 +136,10 @@ export async function sendTeamInviteEmail(
     inviterName: string;
     declineToken: string;
     stage?: number;
+    app: SettingsApp | null;
   },
 ): Promise<void> {
+  const stage = invite.stage ?? 0;
   await sendEmail(env, {
     to: invite.to,
     ...teamInviteEmail(
@@ -131,9 +147,11 @@ export async function sendTeamInviteEmail(
       invite.teamName,
       invite.inviterName,
       invite.declineToken,
-      invite.stage,
+      stage,
     ),
   });
+  const type = TEAM_INVITE_SENT_TYPE[stage];
+  if (invite.app && type) reportServerEvent(env, 'Email', 'Sent', type, invite.app);
 }
 
 // To a team's admins when someone accepts or declines an invitation (each can turn it off).
@@ -162,10 +180,12 @@ export function inviteResponseEmail(
   return { subject, text, html, unsubscribeUrl };
 }
 
+// Each admin's email counts once under `app`, the app the invitation's sender signed up through (null
+// isn't counted), as sendTeamInviteEmail does.
 export async function sendInviteResponseEmails(
   env: Env,
   recipients: { email: string }[],
-  response: { teamName: string; responder: string; accepted: boolean },
+  response: { teamName: string; responder: string; accepted: boolean; app: SettingsApp | null },
 ): Promise<void> {
   const email = inviteResponseEmail(
     env.BASE_URL,
@@ -173,5 +193,10 @@ export async function sendInviteResponseEmails(
     response.responder,
     response.accepted,
   );
-  await Promise.all(recipients.map((r) => sendEmail(env, { to: r.email, ...email })));
+  await Promise.all(
+    recipients.map(async (r) => {
+      await sendEmail(env, { to: r.email, ...email });
+      if (response.app) reportServerEvent(env, 'Email', 'Sent', 'InviteResponse', response.app);
+    }),
+  );
 }

@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   flushServerEvents,
+  flushServerEventsAfter,
   reportServerEvent,
   TELEMETRY_TIMEOUT_MS,
   waitingServerEvents,
@@ -98,6 +99,21 @@ describe('server events', () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+
+  it('flushes after a response only when something waits', async () => {
+    const { sent, fetcher } = service();
+    const later: Promise<unknown>[] = [];
+    const ctx = { waitUntil: (p: Promise<unknown>) => void later.push(p) };
+    flushServerEventsAfter({ ...env, TELEMETRY: fetcher }, ctx);
+    expect(later).toHaveLength(0);
+    reportServerEvent(env, 'Email', 'Sent', 'TeamInvite', 'livediagram.app');
+    flushServerEventsAfter({ ...env, TELEMETRY: fetcher }, ctx);
+    expect(later).toHaveLength(1);
+    await Promise.all(later);
+    expect(sent.map((s) => s.body.events)).toEqual([
+      [{ category: 'Email', action: 'Sent', type: 'TeamInvite' }],
+    ]);
   });
 
   it('holds a bounded number between flushes', () => {

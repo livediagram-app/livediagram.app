@@ -43,6 +43,14 @@ export type Result<T> = { ok: true; value: T } | { ok: false; status: number; er
 const ok = <T>(value: T): Result<T> => ({ ok: true, value });
 const fail = (status: number, error: string): Result<never> => ({ ok: false, status, error });
 
+import { isSettingsApp, type SettingsApp } from './settings.ts';
+
+// The app an invitation's sender signed up through (migrations/0009_signup_app.sql), one primary-key
+// read beside the member row: its emails are counted under it (email.ts). Null for liveworkspace.app,
+// or an account with no series.
+const INVITER_APP = '(SELECT l.signup_app FROM email_lifecycle l WHERE l.user_id = m.invitedBy)';
+const appOrNull = (value: unknown): SettingsApp | null => (isSettingsApp(value) ? value : null);
+
 // The rev the statement after it writes: bump first, then read it back, in one batch.
 const BUMP = 'UPDATE team_seq SET value = value + 1 WHERE id = 1';
 const REV = '(SELECT value FROM team_seq WHERE id = 1)';
@@ -570,17 +578,25 @@ export async function answerInvitation(
   accept: boolean,
   now = Date.now(),
 ): Promise<
-  Result<{ id: string; teamId: string; teamName: string; status: 'joined' | 'declined' }>
+  Result<{
+    id: string;
+    teamId: string;
+    teamName: string;
+    status: 'joined' | 'declined';
+    inviterApp: SettingsApp | null;
+  }>
 > {
   if (!actor.email) return fail(403, 'email_unverified');
   const row = await db
     .prepare(
-      `SELECT m.id, m.teamId, t.name AS teamName FROM team_member m JOIN team t ON t.id = m.teamId
+      `SELECT m.id, m.teamId, t.name AS teamName, ${INVITER_APP} AS inviterApp
+       FROM team_member m JOIN team t ON t.id = m.teamId
        WHERE m.id = ? AND m.email = ? AND m.status = 'invited' AND t.deletedAt IS NULL`,
     )
     .bind(memberId, actor.email)
-    .first<{ id: string; teamId: string; teamName: string }>();
+    .first<{ id: string; teamId: string; teamName: string; inviterApp: string | null }>();
   if (!row) return fail(404, 'not_found');
+  const inviterApp = appOrNull(row.inviterApp);
   if (accept) {
     if ((await joinedTeamCount(db, actor.id)) >= MAX_TEAMS_PER_ACCOUNT) {
       return fail(409, 'team_limit_reached');
@@ -595,7 +611,13 @@ export async function answerInvitation(
           )
           .bind(now, memberId),
       ]);
-      return ok({ id: memberId, teamId: row.teamId, teamName: row.teamName, status: 'joined' });
+      return ok({
+        id: memberId,
+        teamId: row.teamId,
+        teamName: row.teamName,
+        status: 'joined',
+        inviterApp,
+      });
     }
   }
   const status = accept ? 'joined' : 'declined';
@@ -608,7 +630,7 @@ export async function answerInvitation(
       )
       .bind(status, accept ? actor.id : null, now, memberId),
   ]);
-  return ok({ id: memberId, teamId: row.teamId, teamName: row.teamName, status });
+  return ok({ id: memberId, teamId: row.teamId, teamName: row.teamName, status, inviterApp });
 }
 
 // Before an account is deleted: it leaves every team. A team it ran alone goes with it; one where it
@@ -802,6 +824,7 @@ interface DeclineRow {
   status: MemberStatus;
   expiredAt: number | null;
   declineTokenHashes: string;
+  inviterApp: string | null;
 }
 
 // The invitation a decline token names, or null for any token that doesn't match one (unknown,
@@ -813,7 +836,8 @@ async function declineRow(db: D1Database, token: unknown): Promise<DeclineRow | 
   const memberId = token.slice(0, dot);
   const row = await db
     .prepare(
-      `SELECT m.id, m.teamId, t.name AS teamName, m.email, m.status, m.expiredAt, m.declineTokenHashes
+      `SELECT m.id, m.teamId, t.name AS teamName, m.email, m.status, m.expiredAt, m.declineTokenHashes,
+              ${INVITER_APP} AS inviterApp
        FROM team_member m JOIN team t ON t.id = m.teamId
        WHERE m.id = ? AND t.deletedAt IS NULL AND m.status != 'removed'`,
     )
@@ -856,13 +880,19 @@ export async function declineByToken(
     email: string;
     status: 'declined' | 'expired';
     declined: boolean;
+    inviterApp: SettingsApp | null;
   }>
 > {
   const row = await declineRow(db, token);
   if (!row) return fail(404, 'invite_not_found');
   const status = declineStatus(row);
   if (status === 'joined') return fail(409, 'already_joined');
-  const base = { teamId: row.teamId, teamName: row.teamName, email: row.email };
+  const base = {
+    teamId: row.teamId,
+    teamName: row.teamName,
+    email: row.email,
+    inviterApp: appOrNull(row.inviterApp),
+  };
   if (status !== 'invited') return ok({ ...base, status, declined: false });
   const [, changed] = await db.batch<unknown>([
     db.prepare(BUMP),
@@ -1082,6 +1112,8 @@ export interface ReminderEmail {
   to: string;
   teamName: string;
   inviterName: string | null;
+  // The app the inviter signed up through, which the reminder is counted under; null isn't counted.
+  inviterApp: SettingsApp | null;
   // 1, 2 or 3.
   stage: number;
   declineToken: string;
@@ -1119,7 +1151,8 @@ export async function sweepInvitations(
     const column = `reminder${stage}SentAt`;
     const { results } = await db
       .prepare(
-        `SELECT m.id, m.email, m.declineTokenHashes, t.name AS teamName, u.name AS inviterName
+        `SELECT m.id, m.email, m.declineTokenHashes, t.name AS teamName, u.name AS inviterName,
+                ${INVITER_APP} AS inviterApp
          FROM team_member m JOIN team t ON t.id = m.teamId LEFT JOIN "user" u ON u.id = m.invitedBy
          WHERE m.status = 'invited' AND t.deletedAt IS NULL
            AND m.clockStartedAt <= ? AND m.clockStartedAt > ?
@@ -1133,6 +1166,7 @@ export async function sweepInvitations(
         declineTokenHashes: string;
         teamName: string;
         inviterName: string | null;
+        inviterApp: string | null;
       }>();
     for (const row of results) {
       const decline = await newDeclineToken(row.id);
@@ -1141,6 +1175,7 @@ export async function sweepInvitations(
           to: row.email,
           teamName: row.teamName,
           inviterName: row.inviterName,
+          inviterApp: appOrNull(row.inviterApp),
           stage,
           declineToken: decline.token,
         });

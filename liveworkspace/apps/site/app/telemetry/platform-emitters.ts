@@ -2,7 +2,8 @@
 // in an app's name. The accounts Worker sends the onboarding series once per account, and counts each
 // email under the app it speaks for (liveworkspace/apps/accounts src/telemetry.ts), so an app's
 // Welcome, Week 1, Week 2, Activation and Win-Back charts are fed from there as well as, or instead
-// of, the app's own api. Each app's scan covers only its own folder, so it adds these.
+// of, the app's own api. Its team invitations, reminders and answers likewise feed the Team Invites,
+// Invite Reminders and Invite Responses charts, under the app the inviter signed up through. Each app's scan covers only its own folder, so it adds these.
 
 import { resolve } from 'node:path';
 import { scanEmitters, type Emit } from './livediagram/emitter-scan';

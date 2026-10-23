@@ -27,6 +27,9 @@ import {
   type ReminderEmail,
 } from './teams.ts';
 import { addUser, testD1 } from './test-d1.ts';
+import { sendTeamInviteEmail } from './email.ts';
+import { startLifecycle } from './lifecycle.ts';
+import { flushServerEvents } from './telemetry.ts';
 
 // The parts of teams that came back from livediagram (liveworkspace/docs/accounts.md "Teams"): the
 // join link, the organisation line, declining from the email, reminders and expiry, invitations
@@ -402,6 +405,124 @@ describe('the account API routes', () => {
       team: { name: string; organisation: string };
     };
     expect(detail.team).toMatchObject({ name: 'Design', organisation: 'Northwind Ltd' });
+  });
+});
+
+describe('counting the team emails', () => {
+  let env: Env;
+  let posted: { app: string; events: { category: string; action: string; type: string }[] }[];
+  let mail: string[];
+  let signedIn: { id: string; name: string; email: string; emailVerified: boolean } | null;
+  const auth = {
+    api: { getSession: async () => (signedIn ? { user: signedIn, session: {} } : null) },
+  } as unknown as Auth;
+
+  beforeEach(() => {
+    posted = [];
+    mail = [];
+    vi.stubGlobal('fetch', async (_url: string, init: RequestInit) => {
+      mail.push(String(init.body));
+      return new Response('{}');
+    });
+    env = {
+      BASE_URL: BASE,
+      EMAIL_FROM: 'sign-in@liveworkspace.app',
+      AUTH_DB: db,
+      ENVIRONMENT: 'production',
+      RESEND_API_KEY: 're_test',
+      BETTER_AUTH_SECRET: SECRET,
+      TELEMETRY_URL: 'https://liveworkspace.app/api/telemetry',
+      TELEMETRY_KEY_LIVEDESIGN: 'lds',
+      TELEMETRY_KEY_LIVEDIAGRAM: 'ld',
+      TELEMETRY: {
+        fetch: async (request: Request) => {
+          posted.push((await request.json()) as (typeof posted)[number]);
+          return new Response(null, { status: 204 });
+        },
+      },
+    } as unknown as Env;
+    signedIn = { id: ADA.id, name: 'Ada', email: ADA.email!, emailVerified: true };
+  });
+  afterEach(async () => {
+    vi.unstubAllGlobals();
+    await flushServerEvents({});
+  });
+
+  const call = (path: string, method = 'GET', body?: unknown) =>
+    handleAccountApi(
+      new Request(`${BASE}/api/account${path}`, {
+        method,
+        headers: { 'content-type': 'application/json', origin: BASE },
+        ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+      }),
+      env,
+      auth,
+    );
+
+  const counted = () =>
+    posted
+      .flatMap((b) => b.events.map((e) => `${b.app} ${e.category}·${e.action}·${e.type}`))
+      .sort();
+
+  it('counts invitations and answers under the app the inviter signed up through', async () => {
+    await startLifecycle(db, { id: ADA.id, email: ADA.email! }, T0, 'livedesign.app');
+    const id = await team();
+    await call(`/teams/${id}/members`, 'POST', { email: BEA.email });
+    await call(`/teams/${id}/members`, 'POST', { email: CY.email });
+    // Bea accepts on the site; Cy declines from the email, signed out.
+    signedIn = { id: BEA.id, name: 'Bea', email: BEA.email!, emailVerified: true };
+    const { invitations } = (await (await call('/teams')).json()) as {
+      invitations: { id: string }[];
+    };
+    expect((await call(`/invitations/${invitations[0]!.id}/accept`, 'POST', {})).status).toBe(200);
+    signedIn = null;
+    const token = /join\/decline\?token=([^\s"\\]+)/.exec(mail[1]!)![1]!;
+    const declined = await call(`/invitations/decline/${decodeURIComponent(token)}`, 'POST', {});
+    expect(await declined.json()).toMatchObject({ status: 'declined' });
+    // Nothing goes until the flush the Worker runs after the response, then one batch.
+    expect(posted).toEqual([]);
+    await flushServerEvents(env);
+    expect(posted).toHaveLength(1);
+    expect(counted()).toEqual([
+      'livedesign.app Email·Sent·InviteResponse',
+      'livedesign.app Email·Sent·InviteResponse',
+      'livedesign.app Email·Sent·TeamInvite',
+      'livedesign.app Email·Sent·TeamInvite',
+    ]);
+  });
+
+  it('counts nothing for an inviter who signed up on liveworkspace.app', async () => {
+    await startLifecycle(db, { id: ADA.id, email: ADA.email! }, T0, 'liveworkspace.app');
+    const id = await team();
+    await call(`/teams/${id}/members`, 'POST', { email: BEA.email });
+    await flushServerEvents(env);
+    expect(posted).toEqual([]);
+  });
+
+  it('counts each reminder by its stage, and not one that failed', async () => {
+    await startLifecycle(db, { id: ADA.id, email: ADA.email! }, T0, 'livediagram.app');
+    const id = await team();
+    await invite(id, BEA.email!);
+    // As index.ts sends them.
+    const send = (reminder: ReminderEmail) =>
+      sendTeamInviteEmail(env, {
+        to: reminder.to,
+        teamName: reminder.teamName,
+        inviterName: reminder.inviterName ?? '',
+        declineToken: reminder.declineToken,
+        stage: reminder.stage,
+        app: reminder.inviterApp,
+      });
+    await sweepInvitations(db, send, T0 + DAY);
+    vi.stubGlobal('fetch', async () => new Response('down', { status: 500 }));
+    expect(await sweepInvitations(db, send, T0 + 7 * DAY)).toMatchObject({ failed: 1 });
+    vi.stubGlobal('fetch', async () => new Response('{}'));
+    await sweepInvitations(db, send, T0 + 21 * DAY);
+    await flushServerEvents(env);
+    expect(counted()).toEqual([
+      'livediagram.app Email·Sent·TeamInviteReminder1',
+      'livediagram.app Email·Sent·TeamInviteReminder3',
+    ]);
   });
 });
 

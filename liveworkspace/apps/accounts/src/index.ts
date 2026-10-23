@@ -16,6 +16,7 @@ import { SIGN_IN_OPTIONS_PATH, signInOptions } from './sign-in-options.ts';
 import { sendEmail, sendTeamInviteEmail } from './email.ts';
 import { runLifecycle, sendWelcomes, takeWelcomes, type SendEmail } from './lifecycle.ts';
 import { sweepInvitations } from './teams.ts';
+import { flushServerEvents, flushServerEventsAfter } from './telemetry.ts';
 
 // The accounts API. Only the paths routed to this Worker reach it (wrangler.toml): /api/auth/*,
 // /api/account/* (teams and API tokens, account-api.ts) and the two discovery documents. Every page, the sign-in pages included, is the static site's
@@ -45,7 +46,10 @@ export default {
     }
 
     if (pathname === ACCOUNT_API_PATH || pathname.startsWith(`${ACCOUNT_API_PATH}/`)) {
-      return handleAccountApi(request, env, getAuth(env));
+      const response = await handleAccountApi(request, env, getAuth(env));
+      // The team emails it sent are counted after the response (telemetry.ts).
+      flushServerEventsAfter(env, ctx);
+      return response;
     }
 
     if (request.method === 'POST' && pathname === CLIENTS_PATH) {
@@ -113,8 +117,11 @@ export default {
         inviterName: reminder.inviterName ?? '',
         declineToken: reminder.declineToken,
         stage: reminder.stage,
+        app: reminder.inviterApp,
       }),
     );
+    // The reminders that went, one batch per app once the sweep is done.
+    await flushServerEvents(env);
     console.log('[teams] invitation sweep', JSON.stringify(result));
     // Guests who can never come back: what is kept against their ids goes (src/guest-sweep.ts).
     const guests = await sweepIdleGuests(env.AUTH_DB);
