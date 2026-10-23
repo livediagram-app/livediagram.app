@@ -18,7 +18,7 @@ The Explorer, and everything it lists, lives in liveworkspace's index and its sh
 - ./trash.md - when working on the Trash or a trashed plan's refusals (moved)
 - ./empty-project-cleanup.md - when looking for the empty-project sweep (removed)
 - ./explorer-home.md - when working on Explorer Home and recording a plan's opens (moved)
-- ./hide-from-recent.md - when looking for Hide from Recent (removed)
+- ./hide-from-recent.md - when looking for Hide from Recent / Show in Recent
 - ./explorer-filters.md - when looking for the Explorer's filter lens (removed; `packages/explorer-lens` remains)
 - ./explorer-details-view.md - when working on the per-tab stats a plan pushes to the index for the Details view (moved)
 - ./inbox.md - when working on what a plan pushes for the Inbox (moved)

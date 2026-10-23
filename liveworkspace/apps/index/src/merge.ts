@@ -64,10 +64,11 @@ export async function handleMerge(request: Request, env: Env): Promise<Response>
     db.prepare('DELETE FROM favourites WHERE person_id = ?').bind(guest),
     db
       .prepare(
-        `INSERT INTO opens (person_id, item_id, last_opened_at)
-         SELECT ?, item_id, last_opened_at FROM opens WHERE person_id = ?
+        `INSERT INTO opens (person_id, item_id, last_opened_at, hidden)
+         SELECT ?, item_id, last_opened_at, hidden FROM opens WHERE person_id = ?
          ON CONFLICT (person_id, item_id) DO UPDATE
-           SET last_opened_at = MAX(opens.last_opened_at, excluded.last_opened_at)`,
+           SET last_opened_at = MAX(opens.last_opened_at, excluded.last_opened_at),
+               hidden = MAX(opens.hidden, excluded.hidden)`,
       )
       .bind(user, guest),
     db.prepare('DELETE FROM opens WHERE person_id = ?').bind(guest),

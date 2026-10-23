@@ -19,6 +19,8 @@ import {
   RestoreIcon,
   ShareIcon,
   StarIcon,
+  ClockIcon,
+  ClockOffIcon,
   TeamIcon,
   TrashIcon,
 } from '../ui/icons';
@@ -106,6 +108,12 @@ export function ItemMenu({
         label={item.favourite ? 'Remove from Favourites' : 'Add to Favourites'}
         icon={<StarIcon filled={item.favourite} />}
         onClick={run(() => void actions.setFavourite(item, !item.favourite))}
+      />
+      {/* The label says what the click does, and so the state: no badge anywhere else. */}
+      <MenuActionRow
+        label={item.hiddenFromRecent ? 'Show in Recent' : 'Hide from Recent'}
+        icon={item.hiddenFromRecent ? <ClockOffIcon /> : <ClockIcon />}
+        onClick={run(() => void actions.setHiddenFromRecent(item, !item.hiddenFromRecent))}
       />
       {item.teamId && !item.sharedVia ? (
         <MenuActionRow

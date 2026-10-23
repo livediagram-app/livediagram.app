@@ -12,7 +12,6 @@ import {
 } from '@liveplanner/ui';
 import {
   lucideAppWindow,
-  lucideClock,
   lucideCloudUpload,
   lucideDownload,
   lucideExternalLink,
@@ -120,22 +119,6 @@ export function InboxIcon({ size = 13 }: IconProps) {
       <path d="M2 9h3.2l1 1.8h3.6l1-1.8H14" />
       <path d="M5.5 4.7 7.2 6.5l3.3-3.6" />
     </G16>
-  );
-}
-
-// Clock: the Recent list, and the row menu's hide / show in Recent
-// (docs/specs/013-workspace/hide-from-recent.md); the label carries the direction, the glyph the topic.
-export const ClockIcon = lucideGlyph(lucideClock, 13);
-
-// The clock with a strike-through: a project hidden from Recent
-// (docs/specs/013-workspace/hide-from-recent.md). Paired with ClockIcon so the menu row's glyph flips with
-// its label rather than relying on the wording alone.
-export function ClockOffIcon({ size = 13 }: IconProps) {
-  return (
-    <Glyph size={size} units={24}>
-      <Prims prims={lucideClock} />
-      <path d="M4 20 20 4" />
-    </Glyph>
   );
 }
 

@@ -96,7 +96,7 @@ export function HomePane({ onOpenNav, hero }: { onOpenNav?: () => void; hero: bo
     key: `home-recent:${filter}`,
     load: recentLoad,
     overlay,
-    belongs: live,
+    belongs: notHidden,
     epoch,
   });
   const shared = useItemList({
@@ -209,6 +209,8 @@ export function HomePane({ onOpenNav, hero }: { onOpenNav?: () => void; hero: bo
 }
 
 const live = (i: ShownItem) => i.trashedAt === null;
+// Jump Back In leaves out what the person hid from Recent (the index does too; this catches a change made here).
+const notHidden = (i: ShownItem) => live(i) && !i.hiddenFromRecent;
 
 /** The phone's strip: most used and recent alternating, the rest of the longer group after. */
 export function phoneOrder(items: ShownItem[]): ShownItem[] {

@@ -85,6 +85,7 @@ export function ItemsPane({
     load: list?.load ?? NO_LOAD,
     overlay,
     belongs: list?.belongs,
+    cap: list?.cap,
     epoch,
     enabled: Boolean(list?.enabled),
   });
@@ -326,6 +327,15 @@ function heading(
         }),
       };
     }
+    case 'recent':
+      // Reached from Home (Jump Back In's See All), and leads back to it.
+      return {
+        title: VIEW_TITLES.recent,
+        crumbs: [
+          { name: VIEW_TITLES.home, onClick: () => navigate({ kind: 'home' }) },
+          { name: VIEW_TITLES.recent },
+        ],
+      };
     default:
       return { title: VIEW_TITLES[view.kind], crumbs: [] };
   }

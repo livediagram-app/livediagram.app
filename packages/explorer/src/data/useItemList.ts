@@ -40,6 +40,7 @@ export function useItemList({
   load,
   overlay,
   belongs,
+  cap,
   epoch = 0,
   enabled = true,
 }: {
@@ -48,6 +49,8 @@ export function useItemList({
   load: ListLoader;
   overlay: ItemOverlay;
   belongs?: (item: ShownItem) => boolean;
+  // At most this many shown, counted after `belongs`: a row that leaves lets the next one in.
+  cap?: number;
   // Bumped to reload every list (after a copy, a restore, a folder delete).
   epoch?: number;
   enabled?: boolean;
@@ -125,11 +128,12 @@ export function useItemList({
       if (shown.gone) continue;
       if (belongs && !belongs(shown)) continue;
       out.push(shown);
+      if (out.length === cap) break;
     }
     return out;
     // `version` re-runs the overlay when a patch lands.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [raw, version, belongs, overlay]);
+  }, [raw, version, belongs, overlay, cap]);
 
   const retry = useCallback(() => setAttempt((n) => n + 1), []);
 

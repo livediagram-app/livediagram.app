@@ -88,14 +88,17 @@ CREATE TABLE favourites (
 CREATE INDEX favourites_person_created ON favourites (person_id, created_at DESC, item_id DESC);
 CREATE INDEX favourites_item ON favourites (item_id);
 
--- When each person last opened each item: Recent. Written at most once a minute per pair.
+-- When each person last opened each item: Recent. Written at most once a minute per pair. `hidden`: the person
+-- hid it from Recent (Hide from Recent), theirs alone; an item hidden before it was ever opened has a row with
+-- last_opened_at 0, which Show in Recent removes again.
 CREATE TABLE opens (
   person_id      TEXT    NOT NULL,
   item_id        TEXT    NOT NULL REFERENCES items (id) ON DELETE CASCADE,
   last_opened_at INTEGER NOT NULL,
+  hidden         INTEGER NOT NULL DEFAULT 0 CHECK (hidden IN (0, 1)),
   PRIMARY KEY (person_id, item_id)
 );
-CREATE INDEX opens_recent ON opens (person_id, last_opened_at DESC, item_id DESC);
+CREATE INDEX opens_recent ON opens (person_id, last_opened_at DESC, item_id DESC) WHERE hidden = 0;
 CREATE INDEX opens_item ON opens (item_id);
 
 -- The UTC days (ms / 86,400,000) each person opened each item: Most Used counts them over USE_WINDOW_DAYS. One row

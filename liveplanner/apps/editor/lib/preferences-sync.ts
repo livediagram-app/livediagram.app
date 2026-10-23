@@ -3,8 +3,8 @@
 // Four rules, each from a way settings used to be lost or a cost worth avoiding:
 //
 // - It fits. The whole blob stays within PREFERENCES_BODY_MAX, so a save is never refused for its
-//   size and both of its scopes stay well inside the accounts database's limit; the growable lists
-//   give up their oldest entries first.
+//   size and both of its scopes stay well inside the accounts database's limit; the keys nothing reads
+//   any more go first.
 // - Only what changed, coalesced. A save waits SAVE_DEBOUNCE_MS for the next one, then sends one
 //   patch: each key that differs from what the server last held, its value whole, and null for a
 //   key that went. A key another app changed meanwhile is never sent back, so it is never undone.
@@ -39,40 +39,27 @@ export function preferencesBodyLength(prefs: UserPreferences): number {
   return JSON.stringify({ prefs }).length;
 }
 
-// How many entries, taken in order, free at least `excess` characters: each costs its serialised
-// size plus a comma. Off by at most one character (the last entry has no comma), which the next
-// measurement catches.
-function entriesFreeing(sizes: readonly number[], excess: number): number {
-  let saved = 0;
-  let n = 0;
-  while (n < sizes.length && saved < excess) saved += sizes[n++]! + 1;
-  return n;
-}
+// Keys nothing reads any more, in the order they go when the blob does not fit.
+const DEAD_KEYS = ['customSwatches', 'drawPattern'] as const;
 
-// The blob, trimmed to fit: the oldest hidden-from-Recent ids go (newest are kept at the front,
-// docs/specs/013-workspace/hide-from-recent.md). Every other key is a choice the person made once
-// and stays whole. Unchanged (the same object) when it already fits. Each pass drops as many
-// entries as the excess needs and measures once, so trimming is linear in the blob rather than one
-// serialisation per dropped entry.
+// The blob, trimmed to fit: the keys nothing reads go first, one at a time. Every other key is a
+// choice the person made and stays whole; none grows without bound (Hide from Recent is the index's,
+// docs/specs/013-workspace/hide-from-recent.md, and the swatch overrides keep their own budget).
+// Unchanged (the same object) when it already fits.
 export function fitPreferences(prefs: UserPreferences): UserPreferences {
   let length = preferencesBodyLength(prefs);
   if (length <= PREFERENCES_BODY_MAX) return prefs;
   let next = prefs;
-  let dropped = 0;
-  while (length > PREFERENCES_BODY_MAX) {
-    const excess = length - PREFERENCES_BODY_MAX;
-    const hidden = next.recentExcludedIds ?? [];
-    if (hidden.length > 0) {
-      const oldestFirst = [...hidden].reverse().map((id) => JSON.stringify(id).length);
-      const n = entriesFreeing(oldestFirst, excess);
-      next = { ...next, recentExcludedIds: hidden.slice(0, hidden.length - n) };
-      dropped += n;
-    } else {
-      break;
-    }
+  const dropped: string[] = [];
+  for (const key of DEAD_KEYS) {
+    if (length <= PREFERENCES_BODY_MAX) break;
+    if (!(key in next)) continue;
+    const { [key]: _gone, ...rest } = next;
+    next = rest;
+    dropped.push(key);
     length = preferencesBodyLength(next);
   }
-  console.warn(`[preferences] trimmed to fit dropped=${dropped} length=${length}`);
+  console.warn(`[preferences] trimmed to fit dropped=${dropped.join(',')} length=${length}`);
   return next;
 }
 

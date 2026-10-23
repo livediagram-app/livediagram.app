@@ -1,9 +1,9 @@
 'use client';
 
 // What a person does to an item from the Explorer. Each change shows at once through the overlay (rename,
-// favourite, move, Trash, restore, dismiss) and is taken back, with a toast saying why, when the index
-// refuses. A copy or an emptied Trash cannot be guessed, so those reload the lists instead. Every action is
-// a stable function, so memoised rows keep their props.
+// favourite, hide from Recent, move, Trash, restore, dismiss) and is taken back, with a toast saying why, when
+// the index refuses. A copy or an emptied Trash cannot be guessed, so those reload the lists instead. Every
+// action is a stable function, so memoised rows keep their props.
 
 import { useMemo } from 'react';
 import type { App, IndexClient, Item } from '@liveworkspace/index-client';
@@ -14,6 +14,8 @@ import type { ToastApi } from '../ui/Toasts';
 export type ItemActions = {
   rename: (item: Item, title: string) => Promise<boolean>;
   setFavourite: (item: Item, favourite: boolean) => Promise<boolean>;
+  /** Hide from Recent / Show in Recent: the person's own Recent and Jump Back In. */
+  setHiddenFromRecent: (item: Item, hidden: boolean) => Promise<boolean>;
   move: (item: Item, to: { folderId: string | null; teamId: string | null }) => Promise<boolean>;
   trash: (item: Item) => Promise<boolean>;
   restore: (item: Item) => Promise<boolean>;
@@ -85,6 +87,13 @@ export function createItemActions({
         { favourite },
         () => (favourite ? client.favourite(item.id) : client.unfavourite(item.id)),
         favourite ? 'Couldn’t add it to Favourites.' : 'Couldn’t remove it from Favourites.',
+      ),
+    setHiddenFromRecent: (item, hidden) =>
+      optimistic(
+        item,
+        { hiddenFromRecent: hidden },
+        () => (hidden ? client.hideFromRecent(item.id) : client.showInRecent(item.id)),
+        hidden ? 'Couldn’t hide it from Recent.' : 'Couldn’t show it in Recent again.',
       ),
     move: (item, to) => {
       // The index drops the folder when an item changes team; send the team only when it changes.

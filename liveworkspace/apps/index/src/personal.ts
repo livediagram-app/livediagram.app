@@ -1,6 +1,6 @@
 // A person's own things about items (liveworkspace/docs/one-explorer-contracts.md "Folders, tags,
-// favourites, defaults"): tags, favourites, and the folder New files each kind of item into. Like a star,
-// putting a tag on an item grants and reveals nothing, so it checks only that the item exists.
+// favourites, defaults"): tags, favourites, what they hid from Recent, and the folder New files each kind of item
+// into. Like a star, putting a tag on an item grants and reveals nothing, so it checks only that the item exists.
 
 import { isTagColour, TAG_LIMIT, TAG_NAME_MAX, type Tag } from '@liveworkspace/index-client';
 import { personalScope, scopesOf } from './auth';
@@ -211,6 +211,43 @@ export async function handleFavourites(ctx: PersonContext): Promise<Response> {
         .run();
       return noContent();
     }
+  }
+  return notFound();
+}
+
+// PUT / DELETE /recent-hidden/:itemId: Hide from Recent and Show in Recent. The person's own view of the item, like a
+// star: it leaves Recent and Jump Back In, and nothing else. Kept on the person's `opens` row; one made by hiding an
+// item never opened (last_opened_at 0) goes again when it is shown.
+export async function handleRecentHidden(ctx: PersonContext): Promise<Response> {
+  const { request, env, segments, person } = ctx;
+  const db = env.INDEX_DB;
+  if (segments.length !== 2 || !isId(segments[1])) return notFound();
+  const itemId = segments[1];
+  if (request.method === 'PUT') {
+    try {
+      await db
+        .prepare(
+          `INSERT INTO opens (person_id, item_id, last_opened_at, hidden) VALUES (?, ?, 0, 1)
+           ON CONFLICT (person_id, item_id) DO UPDATE SET hidden = 1`,
+        )
+        .bind(person.id, itemId)
+        .run();
+    } catch (err) {
+      if (isForeignKeyError(err)) return notFound();
+      throw err;
+    }
+    return noContent();
+  }
+  if (request.method === 'DELETE') {
+    await db.batch([
+      db
+        .prepare('DELETE FROM opens WHERE person_id = ? AND item_id = ? AND last_opened_at = 0')
+        .bind(person.id, itemId),
+      db
+        .prepare('UPDATE opens SET hidden = 0 WHERE person_id = ? AND item_id = ?')
+        .bind(person.id, itemId),
+    ]);
+    return noContent();
   }
   return notFound();
 }

@@ -66,6 +66,8 @@ export function buildMostUsedQuery(
   const from = Math.floor(now / DAY_MS) - USE_WINDOW_DAYS + 1;
   const where = [
     'i.trashed_at IS NULL',
+    // Jump Back In leaves out what the person hid from Recent, as Recent does.
+    'COALESCE(o.hidden, 0) = 0',
     `(i.owner_id = ? OR i.scope ${IN_JSON} OR EXISTS (SELECT 1 FROM shared_with sw2 JOIN share_links sl2
       ON sl2.code = sw2.share_code AND sl2.item_id = sw2.item_id
       WHERE sw2.person_id = ? AND sw2.item_id = i.id AND ${LIVE_LINK('sl2')}))`,
@@ -210,7 +212,8 @@ export function buildListQuery(person: Person, spec: ListSpec, now = Date.now())
       from = 'opens o JOIN items i ON i.id = o.item_id';
       sortCol = 'o.last_opened_at';
       idCol = 'o.item_id';
-      where.push('o.person_id = ?', 'i.trashed_at IS NULL');
+      // Hidden from Recent: the partial opens_recent index holds only the rest.
+      where.push('o.person_id = ?', 'o.hidden = 0', 'i.trashed_at IS NULL');
       args.push(person.id);
       reachable();
       break;

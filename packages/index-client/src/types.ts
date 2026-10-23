@@ -50,6 +50,8 @@ export type Item = {
   favourite: boolean;
   tagIds: string[];
   lastOpenedAt: number | null;
+  // Hidden from the person's Recent (and Jump Back In) by Hide from Recent. Always sent by the index.
+  hiddenFromRecent?: boolean;
   // The share code, when they reach it only through a link.
   sharedVia: string | null;
   // Most Used only: the distinct days in the window the person opened it.

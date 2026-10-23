@@ -37,8 +37,8 @@ on the same origin (the router serves `/` and `/explorer` from one host).
   back in card shows the same merge. Projects shared with you by link are not in it: they open through
   their link, which the note does not hold.
 - **When:** every time the editor lists your projects (the Explorer, the editor, the /new page), so it
-  is as fresh as your last visit to the app, and again at once when you hide a diagram from Recent or
-  return one to it. With none left to show, the note is removed.
+  is as fresh as your last visit to the app; a diagram hidden from Recent or returned to it changes the
+  note at the next list. With none left to show, the note is removed.
 - **Thumbnails:** each diagram's snapshot SVG ([Project snapshots](../006-project/project-snapshots.md))
   is kept beside the note in the browser's Cache Storage (`liveplanner-recent-thumbs-v1`), keyed by id
   and save time, fetched by the editor through its authenticated client when a listed diagram's entry is

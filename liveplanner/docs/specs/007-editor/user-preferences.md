@@ -65,11 +65,11 @@ table of its own for them.
 - **Saving to the server** (`apps/editor/lib/preferences-sync.ts`):
   - **It fits.** The blob is trimmed to the api's cap (4,096
     characters of `{"prefs":...}`) before it is cached or sent:
-    the oldest hidden-from-Recent ids go first
-    ([Hide from Recent](../013-workspace/hide-from-recent.md)); every
-    other key stays whole. A full account once measured 4,967 characters,
-    past which every save was refused. A trim logs
-    `[preferences] trimmed to fit dropped=<n> length=<n>`.
+    the keys nothing reads any more (`customSwatches`, then
+    `drawPattern`) go first; every other key stays whole, and none
+    grows without bound (Hide from Recent is the index's,
+    [Hide from Recent](../013-workspace/hide-from-recent.md)). A trim logs
+    `[preferences] trimmed to fit dropped=<keys> length=<n>`.
   - **Only what changed, coalesced.** As above: one patch per
     400 ms of changes, measured against the server's last copy.
   - **One save at a time, the latest wins.** A save made while one

@@ -153,3 +153,62 @@ describe('the bound', () => {
     expect(ms).toBeLessThan(250);
   });
 });
+
+describe('Hide from Recent', () => {
+  it('takes an item out of Recent and Most Used for that person alone, and Show in Recent brings it back', async () => {
+    vi.useFakeTimers({ toFake: ['Date'], now: TODAY * DAY + 1000 });
+    const ada = await person('user_hr1', { teams: [{ id: 'team1' }] });
+    const bob = await person('user_hr2', { teams: [{ id: 'team1' }] });
+    const [a, b] = await Promise.all(
+      ['A', 'B'].map((title) => makeItem(ada.auth, { title, teamId: 'team1' })),
+    );
+    for (const who of ['user_hr1', 'user_hr2']) {
+      opened(who, a!.id, 3000);
+      opened(who, b!.id, 2000);
+      use(who, a!.id, TODAY);
+    }
+    const hide = (id: string, method: 'PUT' | 'DELETE') =>
+      call(`/recent-hidden/${id}`, { method, auth: ada.auth });
+    expect((await hide(a!.id, 'PUT')).status).toBe(204);
+    const page = await recent(ada.auth);
+    expect(page.items.map((i) => i.title)).toEqual(['B']);
+    expect(page.mostUsed).toEqual([]);
+    // Bob's Recent is his own.
+    expect((await recent(bob.auth)).items.map((i) => i.title)).toEqual(['A', 'B']);
+    // Everywhere else it stays, saying so; opening it again keeps it hidden.
+    const one = await body<{ item: Item }>(await call(`/items/${a!.id}`, { auth: ada.auth }));
+    expect(one.item).toMatchObject({ hiddenFromRecent: true, lastOpenedAt: 3000 });
+    vi.setSystemTime(TODAY * DAY + 600_000);
+    // Later, with a fresh token.
+    const later = await person('user_hr1', { teams: [{ id: 'team1' }] });
+    await call(`/items/${a!.id}/open`, { method: 'POST', auth: later.auth });
+    expect((await recent(later.auth)).items.map((i) => i.title)).toEqual(['B']);
+    const show = await call(`/recent-hidden/${a!.id}`, { method: 'DELETE', auth: later.auth });
+    expect(show.status).toBe(204);
+    expect((await recent(later.auth)).items.map((i) => i.title)).toEqual(['A', 'B']);
+    expect((await call('/recent-hidden/missing', { method: 'PUT', auth: later.auth })).status).toBe(
+      404,
+    );
+  });
+
+  it('hides an item never opened without putting it in Recent, and showing it leaves no trace', async () => {
+    const ada = await person('user_hr3');
+    const item = await makeItem(ada.auth, { title: 'Never opened' });
+    await call(`/recent-hidden/${item.id}`, { method: 'PUT', auth: ada.auth });
+    const one = await body<{ item: Item }>(await call(`/items/${item.id}`, { auth: ada.auth }));
+    expect(one.item).toMatchObject({ hiddenFromRecent: true, lastOpenedAt: null });
+    await call(`/recent-hidden/${item.id}`, { method: 'DELETE', auth: ada.auth });
+    expect((await recent(ada.auth)).items).toEqual([]);
+    expect(h.db.sql.prepare('SELECT COUNT(*) AS n FROM opens').get()).toEqual({ n: 0 });
+  });
+
+  it('reads Recent from the partial index', () => {
+    const plan = h.db.sql
+      .prepare(
+        `EXPLAIN QUERY PLAN SELECT o.item_id FROM opens o WHERE o.person_id = ? AND o.hidden = 0
+         ORDER BY o.last_opened_at DESC, o.item_id DESC LIMIT 12`,
+      )
+      .all('user_x') as { detail: string }[];
+    expect(plan.map((r) => r.detail).join('\n')).toContain('opens_recent');
+  });
+});

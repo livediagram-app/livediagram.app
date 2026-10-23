@@ -198,7 +198,7 @@ function parseDetail(text: string | null): Record<string, string | null> | null 
 // What the person may do with the item now: as owner or team member, or (a favourite of an item shared
 // with them) view.
 const LINK_VIEW: Access = { level: 'view', tabId: null, via: 'link', code: null };
-const NO_EXTRAS = { favourite: false, tagIds: [], lastOpenedAt: null };
+const NO_EXTRAS = { favourite: false, tagIds: [], lastOpenedAt: null, hiddenFromRecent: false };
 
 function toEvent(row: EventRow, person: Person): TimelineEvent {
   const access = directAccess(row, person) ?? LINK_VIEW;

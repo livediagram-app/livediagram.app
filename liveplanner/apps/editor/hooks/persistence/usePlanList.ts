@@ -41,6 +41,7 @@ export async function fetchPlanList(ownerId: string): Promise<ProjectListItem[]>
       savedAt: item.updatedAt,
       empty: item.summary.empty === true,
       opensIn: null,
+      hiddenFromRecent: item.hiddenFromRecent === true,
     })),
     (id, savedAt) => apiFetchProjectThumbnailSvg(ownerId, id, { version: savedAt }),
   );

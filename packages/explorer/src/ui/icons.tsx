@@ -134,6 +134,14 @@ const CLOCK = (
   </>
 );
 export const ClockIcon = lucide(CLOCK, 13);
+// The clock struck through: hidden from Recent.
+export const ClockOffIcon = lucide(
+  <>
+    {CLOCK}
+    <path d="m2 2 20 20" />
+  </>,
+  13,
+);
 
 export function StarIcon({ filled = false, size = 13 }: { filled?: boolean; size?: number }) {
   return (

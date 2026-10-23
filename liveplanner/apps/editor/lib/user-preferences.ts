@@ -184,14 +184,6 @@ export type UserPreferences = {
   // The Forms tour's seen-guard (docs/specs/030-forms/forms.md "The Forms tour"), as `planTourSeen`; Show Me in the
   // form's cog panel reruns it. Missing / undefined === not seen.
   formTourSeen?: boolean;
-  // Projects this user has hidden from the Explorer's Recent list
-  // (docs/specs/013-workspace/hide-from-recent.md). PER-USER rather than a field on the project: your Recent
-  // is your view of your own work, and on a shared project one
-  // collaborator hiding it must not hide it from everyone else.
-  //
-  // Ids only, so the list stays small; the whole preferences blob has a
-  // 4 KB budget (lib/preferences-sync PREFERENCES_BODY_MAX), which `toggleRecentExcluded` below budgets for.
-  // Missing / undefined === nothing excluded.
   // DEAD as of docs/specs/004-interface-design/colour-picker.md: Custom colours are the colours
   // picked with + in the project, kept with its tabs, not a per-user list. Nothing reads or writes this any
   // more; it stays in the type because it is already stored for existing users.
@@ -201,7 +193,6 @@ export type UserPreferences = {
   // colour of your own. Read and written through lib/swatch-overrides, which
   // validates it and keeps it inside its share of the 4 KB budget.
   quickSwatchOverrides?: SwatchOverrideStore;
-  recentExcludedIds?: string[];
   // Power user mode (docs/specs/007-editor/power-user-mode.md). Read and written through
   // lib/power-user-mode.ts, never directly: switching it applies or restores
   // the preset, recorded in `powerUserBaseline` while the mode is on.
@@ -219,22 +210,6 @@ export type UserPreferences = {
   // Nothing reads or writes it; it stays in the type because it may already be stored.
   drawPattern?: 'blank' | 'grid' | 'graph';
 };
-
-// How many excluded ids we keep. A project id is a 36-char UUID, so 200
-// of them is ~7.4 KB of JSON on its own — well past the 4 KB budget for
-// the serialised preferences blob (lib/preferences-sync), which would
-// crowd out every other preference. 60 is far more than anyone will
-// hide by hand and leaves plenty of room for the other flags.
-export const RECENT_EXCLUDED_LIMIT = 60;
-
-// Flip a project's Recent exclusion, returning the NEXT id list. Newest
-// exclusions are kept at the front so the cap drops the oldest choice
-// rather than the one just made.
-export function toggleRecentExcluded(prefs: UserPreferences, projectId: string): string[] {
-  const current = prefs.recentExcludedIds ?? [];
-  if (current.includes(projectId)) return current.filter((id) => id !== projectId);
-  return [projectId, ...current].slice(0, RECENT_EXCLUDED_LIMIT);
-}
 
 // Re-exported under this module's own name because everything here reads it
 // as "the preferences key". It's DEFINED in telemetry-client because the help

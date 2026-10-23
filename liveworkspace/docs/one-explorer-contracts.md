@@ -87,6 +87,7 @@ type Item = {
   favourite: boolean;
   tagIds: string[];
   lastOpenedAt: number | null;
+  hiddenFromRecent: boolean; // the person hid it from Recent
   sharedVia: string | null; // the share code, when they reach it only through a link
 };
 type ItemSummary = {
@@ -178,6 +179,8 @@ updatedAt}`; 409 `folder_exists`, `cycle`. Deleting moves children (folders and 
 - `GET/POST /tags`, `PATCH/DELETE /tags/:id`, `PUT/DELETE /tags/:id/items/:itemId` — personal; `{id, name,
 colour}`; 409 `tag_name_taken`, `tag_limit`.
 - `GET /favourites`, `PUT/DELETE /favourites/:itemId`.
+- `PUT/DELETE /recent-hidden/:itemId` — Hide from Recent and Show in Recent: the person's own; a hidden item
+  leaves their `view=recent` and Most Used, and says `hiddenFromRecent: true` everywhere else.
 - `GET /placement-defaults`, `PUT/DELETE /placement-defaults/:key` — where New files an item, per key.
 
 ## Sharing and access

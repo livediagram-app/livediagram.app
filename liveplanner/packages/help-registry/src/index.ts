@@ -974,7 +974,7 @@ export const articles: Article[] = [
     description:
       'Everything you can open, by when you last opened it, across every folder, team and share.',
     keywords:
-      'history last opened latest previously recently opened folder location where filed chip project plan',
+      'history last opened latest previously recently opened folder location where filed chip hide from recent show in recent exclude remove twelve project plan',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Activity',

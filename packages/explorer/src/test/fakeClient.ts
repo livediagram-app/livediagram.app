@@ -175,7 +175,9 @@ export function createFakeIndex(
     if (q.app) out = out.filter((i) => i.app === q.app);
     if (q.view === 'unsorted') out = out.filter((i) => i.folderId === null);
     if (q.view === 'favourites') out = out.filter((i) => i.favourite);
-    if (q.view === 'recent') out = out.filter((i) => i.lastOpenedAt !== null);
+    if (q.view === 'recent') {
+      out = out.filter((i) => i.lastOpenedAt !== null && !i.hiddenFromRecent);
+    }
     if (q.team === 'personal') out = out.filter((i) => i.teamId === null);
     else if (q.team) out = out.filter((i) => i.teamId === q.team);
     if (q.folder) {
@@ -312,6 +314,14 @@ export function createFakeIndex(
     unfavourite: (id: string) =>
       answer('unfavourite', [id], undefined, () => {
         find(id).favourite = false;
+      }),
+    hideFromRecent: (id: string) =>
+      answer('hideFromRecent', [id], undefined, () => {
+        find(id).hiddenFromRecent = true;
+      }),
+    showInRecent: (id: string) =>
+      answer('showInRecent', [id], undefined, () => {
+        find(id).hiddenFromRecent = false;
       }),
     deleteItem: (id: string, options: { permanent?: boolean } = {}) =>
       answer('deleteItem', [id, options], undefined, () => {

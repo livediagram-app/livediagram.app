@@ -23,7 +23,6 @@ import {
 import {
   __forgetPreferenceLoads,
   fetchUserPreferences,
-  RECENT_EXCLUDED_LIMIT,
   rebaseUserPreferences,
   STORAGE_KEY,
   writeUserPreferences,
@@ -35,20 +34,17 @@ import {
 const mockedGet = vi.mocked(apiGetPreferences);
 const mockedPut = vi.mocked(apiPutPreferences);
 
-const uuid = (i: number) => `00000000-0000-4000-8000-${String(i).padStart(12, '0')}`;
-
-// A full account: 60 hidden projects and the usual flags, with stored older-client colours padding it past the
-// api's cap, after which every save was refused.
+// A full account: the usual flags, with a stored list nothing reads padding it past the api's cap, after which
+// every save was refused.
 function fullAccount(): UserPreferences {
   return {
-    recentExcludedIds: Array.from({ length: RECENT_EXCLUDED_LIMIT }, (_, i) => uuid(i)),
     quickSwatchOverrides: { brand: { fill: ['#112233', null, '#445566'] } } as never,
     powerUserBaseline: {
       showMinimap: { before: { showMinimap: true }, applied: { showMinimap: false } },
       notificationsEnabled: { before: {}, applied: { notificationsEnabled: false } },
     },
     // Stored by older clients and kept (docs/specs/004-interface-design/colour-picker.md).
-    customSwatches: Array.from({ length: 150 }, (_, i) => `#${String(i).padStart(6, '0')}`),
+    customSwatches: Array.from({ length: 400 }, (_, i) => `#${String(i).padStart(6, '0')}`),
     telemetryEnabled: false,
     planTourSeen: true,
     uiScale: 1.1,
@@ -81,27 +77,25 @@ describe('fitPreferences', () => {
     expect(fitPreferences(prefs)).toBe(prefs);
   });
 
-  it('trims the oldest hidden ids until it fits', () => {
+  it('drops the keys nothing reads until it fits, keeping every choice', () => {
     const prefs = fullAccount();
     expect(preferencesBodyLength(prefs)).toBeGreaterThan(PREFERENCES_BODY_MAX);
     const fitted = fitPreferences(prefs);
     expect(preferencesBodyLength(fitted)).toBeLessThanOrEqual(PREFERENCES_BODY_MAX);
-    const kept = fitted.recentExcludedIds ?? [];
-    expect(kept.length).toBeGreaterThan(0);
-    expect(kept.length).toBeLessThan(prefs.recentExcludedIds!.length);
-    // The newest stay: what went was the oldest, at the end.
-    expect(kept).toEqual(prefs.recentExcludedIds!.slice(0, kept.length));
-    expect(fitted.customSwatches).toEqual(prefs.customSwatches);
+    expect(fitted.customSwatches).toBeUndefined();
+    // It fitted once the colours went: the next dead key stays.
+    expect(fitted.drawPattern).toBe('graph');
+    expect(fitted.powerUserBaseline).toEqual(prefs.powerUserBaseline);
   });
 
   it('stays fast on the largest blob it can be handed', () => {
     const prefs = {
       ...fullAccount(),
-      customSwatches: Array.from({ length: 280 }, () => '#abcdef'),
+      customSwatches: Array.from({ length: 1000 }, () => '#abcdef'),
     };
     const start = performance.now();
     for (let i = 0; i < 20; i++) fitPreferences(prefs);
-    // Measured ~0.06 ms; a trim that re-serialised per dropped entry took ~6 ms. Generous for CI.
+    // One serialisation a dropped key: well under a millisecond. Generous for CI.
     expect((performance.now() - start) / 20).toBeLessThan(3);
   });
 });

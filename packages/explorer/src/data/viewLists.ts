@@ -23,7 +23,12 @@ export type ViewList = {
   load: ListLoader;
   belongs: (item: ShownItem) => boolean;
   enabled: boolean;
+  // At most this many shown (Recent's RECENT_LIMIT).
+  cap?: number;
 };
+
+/** Recent shows the 12 most recently opened. It reads twice that, so hiding one from Recent lets the next in. */
+export const RECENT_LIMIT = 12;
 
 const live = (i: ShownItem) => i.trashedAt === null;
 
@@ -116,10 +121,18 @@ export function viewList(
         enabled: true,
       };
     case 'recent':
+      // The RECENT_LIMIT most recently opened, from one page with room to spare.
       return {
         key: key('recent'),
-        load: items({ view: 'recent' }),
-        belongs: (i) => live(i) && ofApp(i),
+        load: async (_cursor, signal) => {
+          const res = await client.listItems(
+            { view: 'recent', ...page(null), limit: 2 * RECENT_LIMIT },
+            { signal },
+          );
+          return { items: res.items, nextCursor: null };
+        },
+        belongs: (i) => live(i) && ofApp(i) && !i.hiddenFromRecent,
+        cap: RECENT_LIMIT,
         enabled: true,
       };
     case 'favourites':

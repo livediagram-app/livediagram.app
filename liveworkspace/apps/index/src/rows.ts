@@ -72,7 +72,12 @@ function parseSummary(text: string): ItemSummary {
   }
 }
 
-type Extras = { favourite: boolean; tagIds: string[]; lastOpenedAt: number | null };
+type Extras = {
+  favourite: boolean;
+  tagIds: string[];
+  lastOpenedAt: number | null;
+  hiddenFromRecent: boolean;
+};
 
 export function toItem(row: ItemRow, access: Access, extras: Extras): Item {
   return {
@@ -94,6 +99,7 @@ export function toItem(row: ItemRow, access: Access, extras: Extras): Item {
     favourite: extras.favourite,
     tagIds: extras.tagIds,
     lastOpenedAt: extras.lastOpenedAt,
+    hiddenFromRecent: extras.hiddenFromRecent,
     sharedVia: access.via === 'link' ? access.code : null,
   };
 }
@@ -117,7 +123,12 @@ export async function decorate(
     const direct = directAccess(row, person);
     if (direct) access.set(row.id, direct);
   }
-  const none: Extras = { favourite: false, tagIds: [], lastOpenedAt: null };
+  const none: Extras = {
+    favourite: false,
+    tagIds: [],
+    lastOpenedAt: null,
+    hiddenFromRecent: false,
+  };
   if (!person) {
     return rows.flatMap((row) => {
       const a = access.get(row.id);
@@ -142,7 +153,7 @@ export async function decorate(
       .bind(ids, person.id),
     db
       .prepare(
-        'SELECT item_id, last_opened_at FROM opens WHERE person_id = ? AND item_id IN (SELECT value FROM json_each(?))',
+        'SELECT item_id, last_opened_at, hidden FROM opens WHERE person_id = ? AND item_id IN (SELECT value FROM json_each(?))',
       )
       .bind(person.id, ids),
     db
@@ -161,9 +172,14 @@ export async function decorate(
     list.push(r.tag_id as string);
     tagIds.set(r.item_id as string, list);
   }
-  const opened = new Map(
-    opens!.results.map((r) => [r.item_id as string, r.last_opened_at as number]),
-  );
+  // An item hidden before it was ever opened has last_opened_at 0: never opened.
+  const opened = new Map<string, number>();
+  const hidden = new Set<string>();
+  for (const r of opens!.results) {
+    if ((r.last_opened_at as number) > 0)
+      opened.set(r.item_id as string, r.last_opened_at as number);
+    if (r.hidden === 1) hidden.add(r.item_id as string);
+  }
   for (const r of links!.results) {
     access.set(r.item_id as string, {
       level: r.level as Level,
@@ -180,6 +196,7 @@ export async function decorate(
         favourite: favourite.has(row.id),
         tagIds: tagIds.get(row.id) ?? [],
         lastOpenedAt: opened.get(row.id) ?? null,
+        hiddenFromRecent: hidden.has(row.id),
       }),
     ];
   });

@@ -15,7 +15,12 @@ import { fail, json, notFound, unauthorized } from './http';
 import { handleInbox } from './inbox';
 import { createItem, handleItem, handleItemList, handleTrash } from './items';
 import { handleMerge } from './merge';
-import { handleFavourites, handlePlacementDefaults, handleTags } from './personal';
+import {
+  handleFavourites,
+  handlePlacementDefaults,
+  handleRecentHidden,
+  handleTags,
+} from './personal';
 import { sweep } from './purge';
 import { handleTimeline } from './timeline';
 import { handleItemShare, handleShareCode, handleShared } from './sharing';
@@ -39,6 +44,7 @@ const PERSON_ROUTES: Record<string, (ctx: PersonContext) => Promise<Response>> =
   folders: handleFolders,
   tags: handleTags,
   favourites: handleFavourites,
+  'recent-hidden': handleRecentHidden,
   'placement-defaults': handlePlacementDefaults,
   shared: handleShared,
   inbox: handleInbox,

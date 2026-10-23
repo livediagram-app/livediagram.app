@@ -219,6 +219,12 @@ export function createIndexClient({
     favourite: (itemId: string) => call<void>(`/favourites/${enc(itemId)}`, { method: 'PUT' }),
     unfavourite: (itemId: string) => call<void>(`/favourites/${enc(itemId)}`, { method: 'DELETE' }),
 
+    // Hide from Recent / Show in Recent: the person's own Recent and Jump Back In only.
+    hideFromRecent: (itemId: string) =>
+      call<void>(`/recent-hidden/${enc(itemId)}`, { method: 'PUT' }),
+    showInRecent: (itemId: string) =>
+      call<void>(`/recent-hidden/${enc(itemId)}`, { method: 'DELETE' }),
+
     // Where New files an item
     listPlacementDefaults: () => call<{ defaults: PlacementDefault[] }>('/placement-defaults'),
     setPlacementDefault: (key: string, folderId: string) =>

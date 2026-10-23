@@ -776,6 +776,7 @@ function FilterToggle() {
 // How many items Home's Jump Back In lists in the pane.
 const JUMP_BACK_IN_ROWS = 6;
 const live = (i: ShownItem) => i.trashedAt === null;
+const notHidden = (i: ShownItem) => live(i) && !i.hiddenFromRecent;
 
 function HomeSection({
   currentId,
@@ -794,7 +795,7 @@ function HomeSection({
     key: `panel-home:${filter}`,
     load,
     overlay,
-    belongs: live,
+    belongs: notHidden,
     epoch,
   });
   if (list.error)
@@ -959,6 +960,7 @@ function PlaceSection({
     load: list?.load ?? (async () => ({ items: [], nextCursor: null })),
     overlay,
     belongs: list?.belongs,
+    cap: list?.cap,
     epoch,
     enabled: Boolean(list?.enabled),
   });
