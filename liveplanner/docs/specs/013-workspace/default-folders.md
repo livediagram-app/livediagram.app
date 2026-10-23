@@ -39,6 +39,10 @@ folder drops the defaults that point at it.
 
 - **Use as Default for…** in a folder's menu opens the entries as checkboxes; it stays open so several can be set
   in one visit. A key points at one folder, so checking an entry moves it from the folder that held it.
+- **My Work's own menu** (the sidebar's My Work row) carries the same Use as Default for…, for the top of My Work:
+  an entry is checked while it has no working default (none, or one whose folder is gone) and is then
+  unavailable; checking another clears its default, so those plans land at the top again. A team's top offers
+  none: it cannot be a default.
 - **The default marker**: a pin after a default folder's name (rows, cards, Details, the sidebar), with a count
   when it holds more than one entry. Its words ("Default folder for new Kanban plans") are its tooltip and a
   hidden line for screen readers.

@@ -8,7 +8,7 @@
 import type { Folder } from '@liveworkspace/index-client';
 import { MenuActionRow, MenuHeader, PortalMenu } from '../../ui/Menu';
 import { EllipsisTriggerButton, useRowMenu } from '../../ui/RowMenu';
-import { NewFolderIcon, OpenIcon } from '../../ui/icons';
+import { DefaultPinIcon, NewFolderIcon, OpenIcon } from '../../ui/icons';
 import { SIDEBAR_LABELS } from '../../views';
 import { useExplorer } from '../context';
 import { FolderMenu } from '../menus';
@@ -50,7 +50,8 @@ export function useFolderRowMenu(
   };
 }
 
-/** My Work's own menu: Open, and New Folder at its root (named in the row, My Work opened to show it). */
+/** My Work's own menu: Open, New Folder at its root (named in the row, My Work opened to show it), and Use as
+ *  Default for… (the root of My Work as where those creates land). */
 export function useMyWorkMenu({
   onRename,
 }: {
@@ -85,7 +86,7 @@ function MyWorkMenu({
   onClose: () => void;
   onRename: (folderId: string) => void;
 }) {
-  const { folders, navigate, expansion } = useExplorer();
+  const { folders, navigate, expansion, openDialog } = useExplorer();
   const run = (fn: () => void) => () => {
     onClose();
     fn();
@@ -107,6 +108,11 @@ function MyWorkMenu({
             .create({ name: 'New Folder', parentId: null, teamId: null })
             .then((made) => made && onRename(made.id));
         })}
+      />
+      <MenuActionRow
+        label="Use as Default for…"
+        icon={<DefaultPinIcon />}
+        onClick={run(() => openDialog({ kind: 'use-as-default', folderId: null }))}
       />
     </PortalMenu>
   );

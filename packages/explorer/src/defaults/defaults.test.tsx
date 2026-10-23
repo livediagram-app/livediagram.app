@@ -122,6 +122,42 @@ describe('in the Explorer', () => {
     );
   });
 
+  it('sends an entry back to the root of My Work from My Work’s own menu', async () => {
+    const index = createFakeIndex({
+      folders: [folder('Boards')],
+      // Kanban files into Boards; Retrospective's folder is gone, so it already lands at the root.
+      defaults: {
+        'liveplanner:template:kanban': 'Boards',
+        'liveplanner:template:retrospective': 'gone',
+      },
+    });
+    page(index);
+    fireEvent.click(await screen.findByRole('button', { name: 'Menu for My Work' }));
+    fireEvent.click(await screen.findByRole('menuitem', { name: 'Use as Default for…' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Use “My Work” as Default for' });
+    const plans = within(dialog).getByRole('checkbox', { name: 'Plans' }) as HTMLInputElement;
+    const retro = within(dialog).getByRole('checkbox', {
+      name: 'Retrospective plans',
+    }) as HTMLInputElement;
+    const kanban = within(dialog).getByRole('checkbox', {
+      name: 'Kanban plans',
+    }) as HTMLInputElement;
+    await waitFor(() => expect(kanban.disabled).toBe(false));
+    // Already the root's: checked, and nothing to undo.
+    expect([plans.checked, plans.disabled, retro.checked, retro.disabled]).toEqual([
+      true,
+      true,
+      true,
+      true,
+    ]);
+    expect(kanban.checked).toBe(false);
+    fireEvent.click(kanban);
+    await waitFor(() =>
+      expect(index.placementDefaults.has('liveplanner:template:kanban')).toBe(false),
+    );
+    expect(kanban.checked).toBe(true);
+  });
+
   it('warns before deleting a default folder, and forgets the default with it', async () => {
     const index = createFakeIndex({
       folders: [folder('Boards')],

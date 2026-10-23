@@ -3,26 +3,38 @@
 // Use as Default for…: from a folder's menu, the entries of "New <kind> that open as", each a checkbox. It stays
 // open after a choice, so several entries can be set in one visit; the checks follow the store at once. A key
 // points at one folder, so checking an entry here takes it from whichever folder held it.
+//
+// From My Work's own menu (folderId null) the same entries speak for the root of My Work, where a create lands
+// without a default: an entry is checked while its key has no working default (none, or one whose folder is
+// gone), and is then unavailable; checking another clears its default, sending those back to the root. A team's
+// root is never a default.
 
 import { Button } from '../ui/Button';
 import { Dialog, DialogCloseButton, DialogFooter, DialogHeader } from '../ui/Dialog';
 import { useExplorer } from '../explorer/context';
+import { SIDEBAR_LABELS } from '../views';
 
 export function UseAsDefaultDialog({
   folderId,
   onClose,
 }: {
-  folderId: string;
+  folderId: string | null;
   onClose: () => void;
 }) {
   const { folders, defaults, defaultEntries, kind, openDialog } = useExplorer();
-  const folder = folders.byId.get(folderId);
-  if (!folder) return null;
+  const folder = folderId === null ? null : folders.byId.get(folderId);
+  if (folderId !== null && !folder) return null;
+  const name = folder ? folder.name : SIDEBAR_LABELS.myWork;
   const ready = defaults.status === 'ready';
+  // Whether a key's default points at a folder still there (a dangling one files at the root).
+  const working = (key: string) => {
+    const at = defaults.defaults.get(key);
+    return at !== undefined && folders.byId.has(at);
+  };
   return (
-    <Dialog onClose={onClose} ariaLabel={`Use “${folder.name}” as Default for`} size="sm">
+    <Dialog onClose={onClose} ariaLabel={`Use “${name}” as Default for`} size="sm">
       <DialogHeader
-        title={`Use “${folder.name}” as Default for`}
+        title={`Use “${name}” as Default for`}
         subtitle={`New ${kind.lowerMany} you make without choosing a place are saved in your default folder.`}
       >
         <DialogCloseButton onClick={onClose} />
@@ -38,16 +50,20 @@ export function UseAsDefaultDialog({
         ) : null}
         <ul className="flex flex-col gap-1">
           {defaultEntries.map((entry) => {
-            const checked = defaults.defaults.get(entry.key) === folder.id;
+            const checked = folder
+              ? defaults.defaults.get(entry.key) === folder.id
+              : !working(entry.key);
+            // At the root a checked entry is already the root's: nothing to undo there.
+            const locked = !folder && checked;
             return (
               <li key={entry.key}>
                 <label className="flex cursor-pointer items-center gap-2.5 rounded-md px-2 py-1.5 text-sm text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800">
                   <input
                     type="checkbox"
-                    disabled={!ready}
+                    disabled={!ready || locked}
                     checked={checked}
                     onChange={() =>
-                      void (checked
+                      void (checked || !folder
                         ? defaults.clear(entry.key)
                         : defaults.set(entry.key, folder.id))
                     }

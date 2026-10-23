@@ -64,7 +64,8 @@ export type DialogTarget =
   // Delete Forever from an item's menu in the Trash: always confirmed.
   | { kind: 'purge-item'; item: Item }
   // Use as Default for…: the entries this folder is the reader's default for, each a checkbox.
-  | { kind: 'use-as-default'; folderId: string }
+  // A folder, or null for the root of My Work (where a create lands without a default).
+  | { kind: 'use-as-default'; folderId: string | null }
   // Default Folders: every entry, where its new items go, Change and Clear.
   | { kind: 'default-folders' }
   // A Trash group's: the person's own (teamId null) or a team's, named for the confirmation.
