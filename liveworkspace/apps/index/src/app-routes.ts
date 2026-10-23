@@ -14,6 +14,7 @@ import { callerApp } from './auth';
 import { isId } from './codec';
 import type { Env } from './env';
 import { badRequest, fail, noContent, notFound, readObject, unauthorized } from './http';
+import { handleAppPeople } from './notices';
 import { pushAppEvents } from './timeline';
 
 // Shown text is cut to these rather than refused.
@@ -109,6 +110,8 @@ function parseAction(value: unknown): CollabActionInput | null {
 export async function handleApp(request: Request, env: Env, segments: string[]): Promise<Response> {
   const app = await callerApp(request, env);
   if (!app) return unauthorized();
+  // /app/people/:id/count (notices.ts).
+  if (segments[1] === 'people') return handleAppPeople(request, env, app, segments);
   // /app/items/:id/summary, /app/items/:id/collab/:tabId, /app/items/:id/events
   if (segments[1] !== 'items' || !isId(segments[2]) || request.method !== 'PUT') return notFound();
   const itemId = segments[2];

@@ -320,6 +320,39 @@ describe('the account API, for the apps', () => {
     expect((await internal('/emails', { ids: ['guest_x'] })).status).toBe(400);
   });
 
+  it("answers many accounts' notify switches for the client's own app only", async () => {
+    await env.AUTH_DB.prepare(
+      `INSERT INTO settings (owner_id, scope, prefs, updated_at) VALUES ('user_ada', 'all', '{"notifyMentions":false,"theme":"dark"}', 0)`,
+    ).run();
+    const body = {
+      owners: ['user_ada', 'user_bea'],
+      app: 'liveplanner.app',
+      keys: ['notifyMentions'],
+    };
+    expect(await (await internal('/settings/notify', body)).json()).toEqual({
+      settings: { user_ada: { all: { notifyMentions: false }, app: {} } },
+    });
+    expect((await internal('/settings/notify', { ...body, keys: ['theme'] })).status).toBe(400);
+    expect((await internal('/settings/notify', { ...body, keys: [] })).status).toBe(400);
+    expect((await internal('/settings/notify', { ...body, owners: ['guest_x'] })).status).toBe(400);
+    const many = Array.from({ length: 101 }, (_, i) => `user_${i}`);
+    expect((await internal('/settings/notify', { ...body, owners: many })).status).toBe(400);
+    expect((await internal('/settings/notify', body, DIAGRAM)).status).toBe(403);
+    expect((await internal('/settings/notify', body, NO_APP)).status).toBe(403);
+  });
+
+  it("answers a team's people, or 404", async () => {
+    const made = await call('/teams', { method: 'POST', body: { name: 'Design' } });
+    const team = (await made.json()) as { id: string };
+    const found = await internal('/teams/members', { teamId: team.id });
+    expect(await found.json()).toMatchObject({
+      team: { id: team.id, name: 'Design' },
+      members: [{ userId: 'user_ada', email: 'ada@example.com', status: 'joined', role: 'admin' }],
+    });
+    expect((await internal('/teams/members', { teamId: 'nope' })).status).toBe(404);
+    expect((await internal('/teams/members', {})).status).toBe(400);
+  });
+
   it('refuses wrong client credentials', async () => {
     const response = await internal(
       '/teams/changes',

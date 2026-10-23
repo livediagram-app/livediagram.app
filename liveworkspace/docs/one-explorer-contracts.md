@@ -263,6 +263,26 @@ assigneeId, assignerId, teamId, createdAt, updatedAt}]}`. The comment text itsel
   open does. liveplanner sends one per person who wrote since its last push, with the time of their latest
   write.
 
+## Notices
+
+What the index tells an item's app, and answers it, for the app's notification emails
+([accounts.md](accounts.md) "Notification emails"). The index sends no email: it says what happened, once,
+after the change is written and off its own request's path (`waitUntil`). A notice that can't be delivered is
+logged and dropped; an email is best-effort. Types and helpers are in `@liveworkspace/index-client`
+(`notices.ts`); the index side is `apps/index/src/notices.ts`.
+
+- `POST <app>/api/internal/items/:id/notices`, with the app's key, `{type: 'shared', actorId}`: someone made a
+  share link on the item (the app's first-share milestone).
+- The same, `{type: 'joined', personId, level}`: a person (an account or a guest) came into the item through a
+  share link for the first time, whether by resolving the link's code or by opening the item with it. Read in
+  the same batch as the `shared_with` write, so a person's first time is told once however the two doors race;
+  the owner and someone with no identity are no one joining. The app decides who that emails (liveplanner: the
+  owner, for an account visitor only).
+- `GET /app/people/:id/count?limit=`, with the app's key: how many items that person has made in the calling
+  app, the Trash's included, counted up to `limit` (1 to 1000, default 1000) → `{count}`. One walk of the
+  owner index that stops at the limit, so an app asking whether the tenth was just made (`limit=10`) pays the
+  same however many the person has. `countOwnedItems` makes the call.
+
 ## Timeline
 
 What happened to the items a person reaches as owner or team member, newest first: in their own space,

@@ -309,6 +309,40 @@ The app is always the calling client's own ([Which app a client is](#which-app-a
   `{ emails: { [id]: address } }`, verified addresses only, in one query: where an app sends its
   notifications (a comment on what someone owns, a form response). An app keeps no addresses of its own.
 
+## Notification emails
+
+An app's notification emails (someone commented on, joined or filled in something you own; a teammate
+mentioned you or assigned you an action; your tenth item and your first share link) are the app's to send,
+and accounts holds what they need: addresses, the switches, teams' people and the milestone claims. The
+rules every app keeps, and the two questions it asks before it writes, are shared in
+`@liveworkspace/auth-client` (`src/notify.ts`), so the apps send them the same way.
+
+- **Who gets one.** `notificationRecipients(credentials, { app, ids, setting, scope })` answers the
+  verified addresses of those accounts who have not turned `setting` off, in two requests at once
+  whatever the count: the emails above, and
+  `POST /api/account/internal/settings/notify` `{ owners, app, keys }` (up to 100 owners, 1 to 8 keys,
+  each a `notify…` key), which answers just those keys for each owner, in the `all` scope and the
+  calling app's (`{ settings: { [owner]: { all, app } } }`, an owner with nothing stored left out). One
+  query over the settings' primary key and their JSON, so a mention of twenty people costs what one
+  does. A switch read that fails counts as on; an address read that fails reaches nobody. Guests are
+  dropped first: they have no address.
+- **A team's people.** `POST /api/account/internal/teams/members` `{ teamId }` (`readTeamPeople`)
+  answers the team's name and its joined and invited people (`{ id, userId, email, name, role, status }`,
+  `id` the membership row, `name` the profile's, else the account's, null for someone invited), or 404
+  for no such team. One query. The app shows it only to someone its token says is in the team, and an
+  app sends a mention or an assignment only to these people (`teamTargets`), never to anyone a request
+  names.
+- **Once only.** The milestone and the first share go once per account and app, claimed here
+  (`milestones/claim`, above) before the email goes. The rest are the app's to keep once only, where its
+  item lives (liveplanner keeps them in each plan's own store): at most one "someone joined" email per
+  item per 15 minutes (`JOIN_NOTIFY_THROTTLE_MS`), and the same assignment or mention once a day
+  (`NOTIFY_EMAIL_DEDUPE_MS`), with at most 60 a sender an hour (`NOTIFY_EMAILS_PER_SENDER_PER_HOUR`).
+  Claim keys for text an email carries are SHA-256 hashes (`notifyClaimKey`), so no store holds the
+  words.
+- **What happened.** The index tells an item's app that someone made a share link on it or opened it
+  through one for the first time, and counts the items a person has made in it
+  ([one-explorer-contracts.md](one-explorer-contracts.md) "Notices").
+
 ## Onboarding emails
 
 A short series that introduces liveworkspace, one per account rather than one per app, so someone who
@@ -454,6 +488,8 @@ provider's own introspection and remembered per isolate for five minutes):
 | `POST /api/account/internal/tokens/live`      | `{ ids }` (up to 100) → which still work, so an app can end what hangs off a revoked one |
 | `POST /api/account/internal/settings/read`    | `{ owner, app }` → `{ all, app, updatedAt }`                                             |
 | `POST /api/account/internal/settings/write`   | `{ owner, app, patch: { all?, app? } }` → `{ all, app, updatedAt }`                      |
+| `POST /api/account/internal/settings/notify`  | `{ owners, app, keys }` (up to 100 accounts, 8 `notify…` keys) → `{ settings }`          |
+| `POST /api/account/internal/teams/members`    | `{ teamId }` → `{ team, members }`, joined and invited, or 404                           |
 | `POST /api/account/internal/profiles/read`    | `{ ids }` (up to 100) → `{ profiles: Profile[] }`, the ids found                         |
 | `POST /api/account/internal/profiles/write`   | `{ owner, name?, color? }` → `{ profile }`; null clears a field                          |
 | `POST /api/account/internal/sightings`        | `{ userId }` → `{ first }`, for the client's own app                                     |

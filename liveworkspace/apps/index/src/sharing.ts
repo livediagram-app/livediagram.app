@@ -31,6 +31,7 @@ import type { Env } from './env';
 import { badRequest, conflict, json, noContent, notFound, readObject } from './http';
 import { parseListFilters, sharedWithUpsert } from './items';
 import { filterClauses } from './lists';
+import { firstVisitStatement, tellApp, wasFirstVisit } from './notices';
 import { hashSharePassword } from './password-hash';
 import { eventStatements } from './timeline';
 import {
@@ -198,6 +199,10 @@ export async function handleItemShare(ctx: RouteContext, id: string): Promise<Re
       }),
     ]);
     if (res!.meta.changes === 0) return conflict('share_link_limit');
+    // The app's first-share email (notices.ts).
+    if (caller.person) {
+      tellApp(ctx.waitUntil, env, row, { type: 'shared', actorId: caller.person.id });
+    }
     return json({ link: toLink(link) }, { status: 201 });
   }
 
@@ -323,7 +328,20 @@ async function resolveShare(ctx: RouteContext, code: string): Promise<Response> 
     const password = ctx.request.headers.get(SHARE_PASSWORD_HEADER) || null;
     access = await linkAccess(link, password);
     if (access instanceof Response) return access;
-    if (person) await sharedWithUpsert(env, person.id, row.id, code, Date.now()).run();
+    if (person) {
+      const [visit] = await env.INDEX_DB.batch([
+        firstVisitStatement(env, person.id, row.id),
+        sharedWithUpsert(env, person.id, row.id, code, Date.now()),
+      ]);
+      // Their first time in: the app's "someone joined" email (notices.ts).
+      if (wasFirstVisit(visit)) {
+        tellApp(ctx.waitUntil, env, row, {
+          type: 'joined',
+          personId: person.id,
+          level: access.level,
+        });
+      }
+    }
   }
   const [item] = await decorate(env, person, [row], new Map([[row.id, access]]));
   return json({ item, level: access.level, tabId: access.tabId });

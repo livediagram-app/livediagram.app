@@ -508,3 +508,72 @@ export async function reportActivity(
   const response = await call(credentials, '/activity', { method: 'POST', body: request }, fetcher);
   if (!response.ok) throw new Error(`activity failed: ${response.status}`);
 }
+
+// --- Notification emails ---
+
+// The most accounts one switch read names; readNotifySettings splits a longer list.
+export const MAX_NOTIFY_OWNERS = 100;
+
+// Each account's stored value of these `notify…` switches, in `all` and this app's scope. An account
+// with none of them set is left out (the switches are opt-out: missing reads as on). Accounts only.
+export type NotifySettings = Record<
+  string,
+  { all: Record<string, unknown>; app: Record<string, unknown> }
+>;
+
+export async function readNotifySettings(
+  credentials: ClientCredentials,
+  request: { owners: string[]; app: SettingsApp; keys: string[] },
+  fetcher: typeof fetch = fetch,
+): Promise<NotifySettings> {
+  const unique = [...new Set(request.owners)];
+  const batches: string[][] = [];
+  for (let at = 0; at < unique.length; at += MAX_NOTIFY_OWNERS) {
+    batches.push(unique.slice(at, at + MAX_NOTIFY_OWNERS));
+  }
+  const pages = await Promise.all(
+    batches.map(async (owners) => {
+      const response = await call(
+        credentials,
+        '/settings/notify',
+        { method: 'POST', body: { owners, app: request.app, keys: request.keys } },
+        fetcher,
+      );
+      if (!response.ok) throw new Error(`notify settings failed: ${response.status}`);
+      return ((await response.json()) as { settings: NotifySettings }).settings;
+    }),
+  );
+  return Object.assign({}, ...pages) as NotifySettings;
+}
+
+// Someone in a team, joined or invited: `id` is the membership row (the only key for an invitation
+// with no account yet), `name` their display name (null for an invitation not yet answered).
+export interface TeamPerson {
+  id: string;
+  userId: string | null;
+  email: string;
+  name: string | null;
+  role: TeamRole;
+  status: 'invited' | 'joined';
+}
+
+// A live team's name and its joined and invited people, or null when there is no such team. Show it
+// only to someone the app has checked is in the team (their token's `teams` claim).
+export async function readTeamPeople(
+  credentials: ClientCredentials,
+  teamId: string,
+  fetcher: typeof fetch = fetch,
+): Promise<{ team: { id: string; name: string }; members: TeamPerson[] } | null> {
+  const response = await call(
+    credentials,
+    '/teams/members',
+    { method: 'POST', body: { teamId } },
+    fetcher,
+  );
+  if (response.status === 404) return null;
+  if (!response.ok) throw new Error(`team members failed: ${response.status}`);
+  return (await response.json()) as {
+    team: { id: string; name: string };
+    members: TeamPerson[];
+  };
+}

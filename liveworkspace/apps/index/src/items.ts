@@ -43,6 +43,7 @@ import {
   readObject,
 } from './http';
 import { listItems, type ListFilters, type ListSpec } from './lists';
+import { firstVisitStatement, tellApp, wasFirstVisit } from './notices';
 import { drainTombstones, purgeRows } from './purge';
 import { decorate, getItemRow, type Access, type ItemRow } from './rows';
 import { eventStatements, moveScopeStatements } from './timeline';
@@ -662,10 +663,20 @@ async function recordOpen(ctx: RouteContext, id: string): Promise<Response> {
     // Most Used: today counts once, however many opens.
     ...useDayStatements(env, person.id, id, now),
   ];
-  if (loaded.access.via === 'link' && loaded.access.code) {
-    statements.push(sharedWithUpsert(env, person.id, id, loaded.access.code, now));
+  // Through a link: kept for Shared with me, and a first time in tells the app (notices.ts).
+  const visitAt = loaded.access.via === 'link' && loaded.access.code ? statements.length : -1;
+  if (visitAt >= 0) {
+    statements.push(firstVisitStatement(env, person.id, id));
+    statements.push(sharedWithUpsert(env, person.id, id, loaded.access.code!, now));
   }
-  await db.batch(statements);
+  const results = await db.batch(statements);
+  if (visitAt >= 0 && wasFirstVisit(results[visitAt])) {
+    tellApp(ctx.waitUntil, env, loaded.row, {
+      type: 'joined',
+      personId: person.id,
+      level: loaded.access.level,
+    });
+  }
   return noContent();
 }
 

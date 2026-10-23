@@ -4,7 +4,8 @@
 //   - for the apps' servers, by their OAuth client credentials (/api/account/internal/*): checking an
 //     API token, making one for a connecting AI tool, a token revoking itself, which tokens still
 //     work, the teams change feed, a team made in an app, reading and writing someone's settings, and
-//     reading profiles and setting one's own, an app's sign-ups and milestones, and accounts' emails.
+//     reading profiles and setting one's own, an app's sign-ups and milestones, accounts' emails, and
+//     for notification emails, many people's notify switches at once and a team's people.
 import { AUTH_BASE_PATH } from './auth-options.ts';
 import { noteGuestSeen } from './guest-sweep.ts';
 import type { Auth } from './auth.ts';
@@ -20,6 +21,13 @@ import {
 import { clientApp } from './clients.ts';
 import { GUEST_ID, USER_ID } from './ids.ts';
 import { recordActivity, signupAppOf } from './lifecycle.ts';
+import {
+  isNotifyKey,
+  MAX_NOTIFY_KEYS,
+  MAX_NOTIFY_OWNERS,
+  readNotifySettings,
+  teamPeople,
+} from './notify.ts';
 import {
   checkProfilePatch,
   isProfileOwner,
@@ -600,6 +608,40 @@ async function handleInternal(
     }
     if (ids.length > MAX_EMAIL_IDS) return error(400, 'too_many_ids');
     return json({ emails: await verifiedEmails(db, ids as string[]) });
+  }
+
+  // Whether each of these accounts has turned a notification email off, for an email to many people
+  // (a comment mentioning several teammates) in one read: their stored values of these `notify…`
+  // switches, in `all` and the client's own app's scope.
+  if (route === 'POST settings/notify') {
+    const { owners, app, keys } = await readBody(request);
+    if (
+      !Array.isArray(owners) ||
+      !owners.every((id) => typeof id === 'string' && USER_ID.test(id))
+    ) {
+      return error(400, 'owners_required');
+    }
+    if (owners.length > MAX_NOTIFY_OWNERS) return error(400, 'too_many_owners');
+    if (!Array.isArray(keys) || keys.length === 0 || keys.length > MAX_NOTIFY_KEYS) {
+      return error(400, 'keys_required');
+    }
+    if (!keys.every(isNotifyKey)) return error(400, 'invalid_key');
+    if (!isSettingsApp(app)) return error(400, 'invalid_app');
+    if (!client.app) return error(403, 'client_has_no_app');
+    if (app !== client.app) return error(403, 'wrong_app');
+    return json({ settings: await readNotifySettings(db, owners as string[], app, keys) });
+  }
+
+  // A team's people, joined and invited, with their names: what an app checks a mention or an
+  // assignment against, and offers a member of the team to pick from. The app shows them only to
+  // someone its own token check says is in the team.
+  if (route === 'POST teams/members') {
+    const { teamId } = await readBody(request);
+    if (typeof teamId !== 'string' || teamId.length === 0 || teamId.length > 100) {
+      return error(400, 'invalid_team');
+    }
+    const found = await teamPeople(db, teamId);
+    return found ? json(found) : error(404, 'not_found');
   }
 
   if (route === 'GET teams/changes') {

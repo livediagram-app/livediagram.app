@@ -9,6 +9,9 @@ useHarness();
 async function share(auth: string, itemId: string, input: Record<string, unknown> = {}) {
   const res = await call(`/items/${itemId}/share`, { method: 'POST', auth, body: input });
   expect(res.status).toBe(201);
+  // The app's notice of the new link is notices.test.ts's: these tests follow the revokes.
+  await settle();
+  h.appCalls = h.appCalls.filter((c) => !c.url.endsWith('/notices'));
   return (await body<{ link: ShareLink }>(res)).link;
 }
 
