@@ -1,4 +1,5 @@
 import { listedApps } from '@/lib/apps';
+import { AppLogo } from './landing/AppLogo';
 import { Wordmark } from './Wordmark';
 
 const linkClass =
@@ -19,8 +20,13 @@ export function Footer() {
         </div>
         <FooterColumn title="Our Apps">
           {listedApps().map((app) => (
-            <a key={app.id} href={app.url} className={linkClass}>
-              {app.id}
+            <a
+              key={app.id}
+              href={app.url}
+              aria-label={app.id}
+              className="relative touch-target-y rounded-md focus-visible:outline-2 focus-visible:outline-offset-2"
+            >
+              <AppLogo app={app} size="sm" />
             </a>
           ))}
         </FooterColumn>

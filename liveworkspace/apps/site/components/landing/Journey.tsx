@@ -171,12 +171,11 @@ export function Journey() {
           {/* Full width, so the tiles fill whole rows: 15 cells over 3 columns, 12 over 2. */}
           <Tile
             className="sm:col-span-2 lg:col-span-3"
+            side={<ExplorerArt />}
             icon={<FolderIcon />}
             title="One Explorer for everything"
             body="Every diagram, plan, document and design you make is in one Explorer, which every app shows. One folder can hold work from all of them."
-          >
-            <ExplorerArt />
-          </Tile>
+          />
           <Tile
             icon={<InboxIcon />}
             title="One Inbox"
@@ -225,18 +224,19 @@ function Tile({
   title,
   body,
   className = '',
+  side,
   children,
 }: {
   icon: ReactNode;
   title: string;
   body: string;
   className?: string;
+  // Beside the words from lg, half and half; below them before that.
+  side?: ReactNode;
   children?: ReactNode;
 }) {
-  return (
-    <div
-      className={`flex flex-col rounded-3xl border border-slate-200 bg-slate-50 p-6 dark:border-slate-800 dark:bg-slate-900 ${className}`}
-    >
+  const words = (
+    <>
       {icon ? (
         <span className="flex size-10 items-center justify-center rounded-xl bg-white text-slate-700 shadow-sm ring-1 ring-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:ring-slate-700">
           {icon}
@@ -247,6 +247,20 @@ function Tile({
       </h4>
       <p className="mt-1.5 leading-relaxed text-slate-600 dark:text-slate-300">{body}</p>
       {children}
+    </>
+  );
+  return (
+    <div
+      className={`flex flex-col rounded-3xl border border-slate-200 bg-slate-50 p-6 dark:border-slate-800 dark:bg-slate-900 ${className}`}
+    >
+      {side ? (
+        <div className="grid items-center gap-6 lg:grid-cols-2 lg:gap-10">
+          <div>{words}</div>
+          {side}
+        </div>
+      ) : (
+        words
+      )}
     </div>
   );
 }
@@ -263,7 +277,7 @@ function ExplorerArt() {
   return (
     <div
       aria-hidden
-      className="mt-6 rounded-2xl bg-white p-4 ring-1 ring-slate-200 select-none sm:p-5 dark:bg-slate-950/50 dark:ring-slate-800"
+      className="rounded-2xl bg-white p-4 ring-1 ring-slate-200 select-none sm:p-5 dark:bg-slate-950/50 dark:ring-slate-800"
     >
       <div className="flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white">
         <span className="text-slate-400 dark:text-slate-500">
@@ -271,7 +285,7 @@ function ExplorerArt() {
         </span>
         Launch
       </div>
-      <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-3 grid gap-2 sm:grid-cols-2">
         {listedApps().flatMap((app) => {
           const item = EXPLORER_ITEMS[app.id];
           return item

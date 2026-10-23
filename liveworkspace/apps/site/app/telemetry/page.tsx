@@ -4,6 +4,8 @@ import { useEffect, useState, useSyncExternalStore } from 'react';
 import dynamic from 'next/dynamic';
 import { Brand as LivediagramBrand, EmptyState } from '@livediagram/ui';
 import { Brand as LiveplannerBrand } from '@liveplanner/ui';
+import { Brand as LivedocumentsBrand } from '@livedocuments/ui';
+import { Brand as LivedesignBrand } from '@livedesign/ui';
 import {
   type TelemetryAppFilter,
   type TelemetryDisabled,
@@ -47,6 +49,8 @@ type Loaded = TelemetrySummary | TelemetryDisabled;
 const APP_LOGOS: Partial<Record<TelemetryAppFilter, typeof LivediagramBrand>> = {
   'livediagram.app': LivediagramBrand,
   'liveplanner.app': LiveplannerBrand,
+  'livedocuments.app': LivedocumentsBrand,
+  'livedesign.app': LivedesignBrand,
 };
 
 // The liveworkspace telemetry dashboard (liveworkspace/docs/telemetry.md "The dashboard"): every app's

@@ -60,21 +60,20 @@ moves between them, and the one account that joins them.
    it (a flowchart; a board with a card on the move; an article with its slides; a logo, a wireframe
    and a photo being cropped), **Open <app>** in its deep accent, and "Signs in with your
    liveworkspace account". Below `lg` the window sits between the summary and the three things it does.
-   livedocuments' and livedesign's logos are their own prisms with the wordmark
-   drawn here (`components/landing/AppLogo.tsx`), since their Brand colours "live" with a brand scale
-   this site doesn't have. The copy is
+   Every logo is the app's own UI package `Brand`, with its hover
+   shimmer, "live" pointed at the app's deep and accent colours (`components/landing/AppLogo.tsx`). The copy is
    `lib/apps.ts`; tests require it for every app and that white text on each deep accent passes
    WCAG AA.
 3. **How it fits together** (`#how-it-fits`): the path a piece of work takes, one step per app
    (sketch the idea, plan the work, write it up, make it look right), each a link to its app's New
    page (**Build a diagram**, **Start planning**, **Start writing**, **Start designing**), then
    "share one link", and what every app shares: one account (the large tile, with Create your
-   account), live by default, share by link, one Explorer for everything (full width, a folder holding a Canvas,
-   a Plan, a Document and a Design), one Inbox, teams across every app, one key for scripts and AI,
+   account), live by default, share by link, one Explorer for everything (full width: the words beside a folder holding a
+   Canvas, a Plan, a Document and a Design, two by two), one Inbox, teams across every app, one key for scripts and AI,
    open about data (linking `/telemetry`), yours to keep
    (closing the account closes it everywhere), completely free (no paywalls or subscriptions).
 4. **Closing call to action**: "One account. Every app. Always live."
-5. **Footer**: Our Apps (each app's site), Platform (Product Comparison and the telemetry dashboard) and Legal (the
+5. **Footer**: Our Apps (each app's logo, linking to its site), Platform (Product Comparison and the telemetry dashboard) and Legal (the
    privacy policy and terms).
 
 The illustrations are drawn in the page (HTML and SVG with the apps' own logos), not images. Their

@@ -1,6 +1,6 @@
 import { Brand as LivediagramBrand, BrandMark } from '@livediagram/ui';
-import { BrandMark as LivedesignMark } from '@livedesign/ui';
-import { BrandMark as LivedocumentsMark } from '@livedocuments/ui';
+import { Brand as LivedesignBrand, BrandMark as LivedesignMark } from '@livedesign/ui';
+import { Brand as LivedocumentsBrand, BrandMark as LivedocumentsMark } from '@livedocuments/ui';
 import { Brand as LiveplannerBrand, BrandMark as LiveplannerMark } from '@liveplanner/ui';
 import type { CSSProperties } from 'react';
 import type { ListedApp } from '@/lib/apps';
@@ -8,36 +8,30 @@ import type { ListedApp } from '@/lib/apps';
 const BRANDS: Record<string, typeof LivediagramBrand> = {
   'livediagram.app': LivediagramBrand,
   'liveplanner.app': LiveplannerBrand,
+  'livedocuments.app': LivedocumentsBrand,
+  'livedesign.app': LivedesignBrand,
 };
 
-// An app's logo as its own header draws it. livediagram's and liveplanner's are their UI packages'
-// Brand. livedocuments' and livedesign's Brand colour "live" with their own brand scale, which this
-// site doesn't have, so theirs is their own prism with the wordmark drawn here, "live" in the app's
-// accent.
-const SIZES = {
-  sm: { text: 'gap-2 text-base', mark: 'size-5' },
-  md: { text: 'gap-2.5 text-lg', mark: 'size-7' },
-  lg: { text: 'gap-3 text-2xl', mark: 'size-10' },
-} as const;
-
-export function AppLogo({ app, size = 'lg' }: { app: ListedApp; size?: keyof typeof SIZES }) {
-  const Brand = BRANDS[app.id];
-  if (Brand) return <Brand size={size} />;
-  const Mark = MARKS[app.id];
+// An app's logo as its own header draws it: its UI package's Brand, with the prism, the hover
+// shimmer and "live" in its accent. Each Brand colours "live" with its own brand-700 (light) and
+// its accent's 400 (dark); this site's scales are not the apps', so the wrapper points those at
+// the app's deep and accent colours.
+export function AppLogo({ app, size = 'lg' }: { app: ListedApp; size?: 'sm' | 'md' | 'lg' }) {
+  const Brand = BRANDS[app.id] ?? LivediagramBrand;
   return (
     <span
-      className={`inline-flex items-center ${SIZES[size].text} font-semibold tracking-tight text-slate-900 dark:text-slate-100`}
-      style={{ '--lw-ink': app.deep, '--lw-ink-dark': app.accent } as CSSProperties}
+      className="inline-flex"
+      style={
+        {
+          '--color-brand-700': app.deep,
+          '--color-sky-400': app.accent,
+          '--color-violet-400': app.accent,
+          '--color-amber-400': app.accent,
+          '--color-rose-400': app.accent,
+        } as CSSProperties
+      }
     >
-      {Mark ? (
-        <Mark className={`${SIZES[size].mark} shrink-0`} />
-      ) : (
-        <BrandMark accentColor={app.accent} className={`${SIZES[size].mark} shrink-0`} />
-      )}
-      <span data-logotype="">
-        <span className="text-[var(--lw-ink)] dark:text-[var(--lw-ink-dark)]">live</span>
-        {app.name.replace(/^live/, '')}
-      </span>
+      <Brand size={size} />
     </span>
   );
 }
