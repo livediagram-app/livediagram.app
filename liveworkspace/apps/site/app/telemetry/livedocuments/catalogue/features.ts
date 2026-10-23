@@ -29,19 +29,11 @@ export const LAYERS_REORDERED = chart(
   'Layers dragged into a new order.',
 );
 
-export const FOLDERS_DELETED = chart(
-  'Folder',
-  'Deleted',
-  'Folders Deleted',
-  'A folder removed, in your Explorer or a team library.',
-  { rising: 'neutral' },
-);
-
 export const FOLDERS_RENAMED = chart(
   'Folder',
   'Renamed',
-  'Folders Renamed',
-  'A folder renamed, in your Explorer or a team library.',
+  'Tab Folders Renamed',
+  'A folder of tab pills renamed inside one document.',
 );
 
 export const NOTES_DELETED = chart(
@@ -447,22 +439,6 @@ export const ACTIONS_WONT_DO: Metric = {
     'Actions someone decided against: closed without being done, from the canvas or the Actions board.',
 };
 
-export const FOLDERS_CREATED: Metric = {
-  category: 'Folder',
-  action: 'Created',
-  typeIn: (type) => type !== 'Tab',
-  title: 'Folders Created',
-  blurb: 'Folders of documents, in your own Explorer or a team library.',
-};
-
-export const FOLDERS_RE_PARENTED: Metric = {
-  category: 'Folder',
-  action: 'Moved',
-  allTypes: true,
-  title: 'Folders Re-parented',
-  blurb: 'A folder nested under another, or promoted back to the root.',
-};
-
 export const TAB_FOLDERS_CREATED: Metric = {
   category: 'Folder',
   action: 'Created',
@@ -478,16 +454,6 @@ export const TABS_FILED: Metric = {
   title: 'Tabs Filed',
   blurb:
     'A tab filed into a tab folder, by the ellipsis menu or by a drag (both report identically).',
-};
-
-export const DOCUMENTS_FILED: Metric = {
-  category: 'Document',
-  action: 'Moved',
-  // The Offline Mode conversions are Document·Moved too, charted in their own
-  // stack (Taken Offline, Saved to Cloud).
-  typeIn: (type) => type !== 'TakenOffline' && type !== 'SavedToCloud',
-  title: 'Documents Filed',
-  blurb: 'A document moved into a folder, or back to the top level.',
 };
 
 export const NOTES: MetricStack = {
@@ -516,93 +482,27 @@ export const ASSIGNED_ACTIONS: MetricStack = {
   headline: ACTIONS_ASSIGNED,
 };
 
-// The Explorer sidebar and the editor's Explorer panel (docs/specs/013-workspace/explorer-structure.md):
-// UI·Selected·Sidebar.<Row> / ExplorerPanel.<Row>, one per row activated, by kind (never a name).
-export const EXPLORER_SIDEBAR_PICKS = chart(
-  'UI',
-  'Selected',
-  'Explorer Sidebar Picks',
-  "A row picked in the Explorer sidebar or the editor's Explorer panel: Home, Inbox, Timeline, a space or folder, This Browser, the Library pages, or Trash. Picks of the Activity row, the Inbox's old name, still count here as history.",
-  {
-    typeIn: (type) =>
-      (type ?? '').startsWith('Sidebar.') || (type ?? '').startsWith('ExplorerPanel.'),
-    rising: 'neutral',
-  },
-);
-
-// The Explorer's filters (docs/specs/013-workspace/explorer-filters.md "Telemetry"):
-// Explorer·Selected·<Facet>, one per filter that gained a value, by kind (never what was picked).
+// The shared Explorer's filter lens (docs/specs/013-workspace/explorer-filters.md "Telemetry"), through ExplorerHost's
+// onLensSelected prop: Explorer·Selected·<Facet>, one per facet that gained a value, by kind (never what was picked).
 export const EXPLORER_FILTERS_PICKED = chart(
   'Explorer',
   'Selected',
   'Explorer Filters Used',
-  'A filter reached for in the Explorer, by kind: words, Opens in, Kind, Template, Made by AI, Edited, People or Space, from a chip, a suggestion or a typed token.',
+  'A filter reached for on an Explorer list, by kind: words, Opens in, Template, Made by AI, Edited, People or Space, from a chip, a suggestion or a typed token.',
   { rising: 'good' },
-);
-
-// Tags (docs/specs/013-workspace/tags.md "Telemetry"): coloured labels people put on their documents. Never a name.
-export const TAGS_CREATED = chart(
-  'Explorer',
-  'Created',
-  'Tags Made',
-  'A tag made, from the tag picker on a document or New Tag on the Tags page.',
-  { types: ['Tag'], rising: 'good' },
-);
-
-export const TAGS_APPLIED = chart(
-  'Explorer',
-  'Added',
-  'Tags Put On or Taken Off',
-  'A tag ticked on or off a document in the tag picker.',
-  { actionIn: ['Added', 'Removed'], types: ['Tag'], rising: 'good' },
-);
-
-export const TAGS_EDITED = chart(
-  'Explorer',
-  'Renamed',
-  'Tags Renamed, Recoloured or Deleted',
-  'A tag renamed or recoloured, or deleted (which takes it off every document).',
-  { actionIn: ['Renamed', 'Changed', 'Deleted'], types: ['Tag', 'TagColour'], rising: 'neutral' },
-);
-
-// Default folders (docs/specs/013-workspace/default-folders.md "Telemetry"): one type per key.
-export const DEFAULT_FOLDERS_SET = chart(
-  'Folder',
-  'Changed',
-  'Default Folders Set',
-  'A folder chosen as where new documents of one kind land: from a folder menu, the New Document wizard or Settings.',
-  { rising: 'good' },
-);
-
-export const DEFAULT_FOLDERS_CLEARED = chart(
-  'Folder',
-  'Cleared',
-  'Default Folders Cleared',
-  'A default folder cleared, so new documents of that kind land in My Work again.',
-  { rising: 'neutral' },
 );
 
 export const ORGANISATION: MetricStack = {
   stack: true,
   title: 'Organisation',
   blurb:
-    'Folders made and nested, tab folders, tabs and documents filed, tags, default folders, the Explorer sidebar and its filters.',
+    'Tab folders made and renamed inside a document, tabs filed into and out of them, and the Explorer’s filters.',
   members: [
-    FOLDERS_CREATED,
-    FOLDERS_RE_PARENTED,
     TAB_FOLDERS_CREATED,
     TABS_FILED,
-    DOCUMENTS_FILED,
-    FOLDERS_DELETED,
     FOLDERS_RENAMED,
     TABS_UNFILED,
-    EXPLORER_SIDEBAR_PICKS,
     EXPLORER_FILTERS_PICKED,
-    TAGS_CREATED,
-    TAGS_APPLIED,
-    TAGS_EDITED,
-    DEFAULT_FOLDERS_SET,
-    DEFAULT_FOLDERS_CLEARED,
   ],
 };
 

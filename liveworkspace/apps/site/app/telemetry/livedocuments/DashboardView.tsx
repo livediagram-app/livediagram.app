@@ -28,7 +28,7 @@ import {
   PANELS_OPENED,
   PRESENTATIONS,
   RETURNING_VISITORS,
-  SHARING_AND_JOINING,
+  SHARING_AND_EMBEDS,
   SIGN_IN_PROMPTS,
   SIGN_UPS,
   TAB_ACTIONS,
@@ -79,11 +79,11 @@ export const GROUPS: MetricGroup[] = [
     metrics: [PAGE_WORK, PALETTE_USE, CANVAS_MODES, LOOK_AND_FEEL, PANELS_OPENED, OFFLINE_MODE],
   },
   // Live Together is the only stack that counts two people on one canvas at
-  // the same moment; the rest of Collaboration counts invitations to be there,
-  // so read them against it.
+  // the same moment; the rest of Collaboration counts the ways in and keeping
+  // up, so read them against it.
   {
     title: 'Collaboration',
-    metrics: [LIVE_TOGETHER, SHARING_AND_JOINING, TIMELINE_AND_ACTIVITY, PRESENTATIONS],
+    metrics: [LIVE_TOGETHER, SHARING_AND_EMBEDS, TIMELINE_AND_ACTIVITY, PRESENTATIONS],
   },
   {
     title: 'Connections',
