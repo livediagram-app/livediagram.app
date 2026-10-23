@@ -90,7 +90,7 @@ function assetsOutOfCacheFor(req) {
   return cookiesOf(req).get(OUT_OF_CACHE_COOKIE) === '1';
 }
 
-const EDITOR_PORT = Number(process.env.E2E_EDITOR_PORT ?? 3002);
+const EDITOR_PORT = Number(process.env.E2E_EDITOR_PORT ?? 3102);
 const API_PORT = Number(process.env.E2E_API_PORT ?? 8687);
 // The other sites, for the audits that open them (docs/specs/004-interface-design/blueprints/
 // optical-alignment.md, "Ink audit"). Help and the Community sit under their basePath on the
@@ -100,7 +100,7 @@ const SITES = [
   { prefix: '/community', dir: path.join(ROOT, 'apps', 'community', 'out') },
 ];
 const MARKETING_DIR = path.join(ROOT, 'apps', 'marketing', 'out');
-const MARKETING_PORT = Number(process.env.E2E_MARKETING_PORT ?? 3013);
+const MARKETING_PORT = Number(process.env.E2E_MARKETING_PORT ?? 3113);
 // Two switches for trying the editor as a DIFFERENT deployment would run it,
 // beside a stack that is already up:
 //   E2E_EDITOR_ONLY=1  serve the static editor only, proxying to the api

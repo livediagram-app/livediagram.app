@@ -8,20 +8,20 @@ const isCI = !!process.env.CI;
 const CI_WORKERS = 4;
 // The signed-in specs (e2e/clerk-stub/, docs/specs/014-identity/blueprints/profile-picture.md) need
 // the Clerk-enabled export (`pnpm build:clerk-stub`). They run as their own invocation
-// (`pnpm test:e2e:clerk-stub`) on their own ports, so a guest stack already up on :3002 is never
+// (`pnpm test:e2e:clerk-stub`) on their own ports, so a guest stack already up on :3102 is never
 // mistaken for it.
 const clerkStub = process.env.E2E_CLERK_STUB === '1';
-const STUB_PORTS = { live: '3115', api: '8788', marketing: '3116' };
+const STUB_PORTS = { live: '3115', api: '8115', marketing: '3116' };
 // The armed specs (e2e/armed/, docs/specs/003-system-architecture/e2e-smoke.md "Armed guest
 // signatures") need guest signature enforcement on, so they run as their own invocation
 // (`pnpm test:e2e:armed`) on their own ports, against the guest-mode export.
 const armed = process.env.E2E_GUEST_SIG_ENFORCE === '1';
-const ARMED_PORTS = { live: '3117', api: '8789', marketing: '3118' };
+const ARMED_PORTS = { live: '3117', api: '8117', marketing: '3118' };
 // The workbench embed e2e (docs/specs/013-workspace/blueprints/workbench-embeds.md "Testing") needs the
 // NEXT_PUBLIC_E2E_AUTH export and the stack acting as Clerk, so it runs as its own invocation
 // (`pnpm test:e2e:workbench`) on its own ports.
 const workbench = process.env.E2E_WORKBENCH === '1';
-const WORKBENCH_PORTS = { live: '3121', api: '8791', marketing: '3122' };
+const WORKBENCH_PORTS = { live: '3121', api: '8121', marketing: '3122' };
 const BASE_URL =
   process.env.E2E_BASE_URL ??
   (clerkStub

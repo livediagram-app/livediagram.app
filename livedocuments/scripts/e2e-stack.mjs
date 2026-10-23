@@ -90,7 +90,7 @@ function assetsOutOfCacheFor(req) {
   return cookiesOf(req).get(OUT_OF_CACHE_COOKIE) === '1';
 }
 
-const LIVE_PORT = Number(process.env.E2E_LIVE_PORT ?? 3202);
+const LIVE_PORT = Number(process.env.E2E_LIVE_PORT ?? 3302);
 const API_PORT = Number(process.env.E2E_API_PORT ?? 8987);
 // The other sites, for the audits that open them (docs/specs/004-interface-design/blueprints/
 // optical-alignment.md, "Ink audit"). Help sits under its basePath on the live origin, as the
@@ -98,7 +98,7 @@ const API_PORT = Number(process.env.E2E_API_PORT ?? 8987);
 // dashboard is liveworkspace's now, liveworkspace/docs/telemetry.md.)
 const SITES = [{ prefix: '/help', dir: path.join(ROOT, 'apps', 'help', 'out') }];
 const MARKETING_DIR = path.join(ROOT, 'apps', 'marketing', 'out');
-const MARKETING_PORT = Number(process.env.E2E_MARKETING_PORT ?? 3013);
+const MARKETING_PORT = Number(process.env.E2E_MARKETING_PORT ?? 3313);
 // A switch for trying the editor beside a stack that is already up:
 //   E2E_LIVE_ONLY=1  serve the static editor only, proxying to the api
 //                    already listening on E2E_API_PORT (no second worker).

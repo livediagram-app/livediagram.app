@@ -9,7 +9,7 @@ so nobody has to reverse-engineer the timeline from AGENTS.md and git history.
 **Not deployed.** Nothing runs at liveplanner.app yet. The Cloudflare resource ids in every wrangler config are
 placeholders for the liveplanner account, the Google client ids are empty, and the staging deploy, CLI publish and MCP
 registry workflows run only by hand ([Deployment](../016-platform/deployment.md)). The stack runs locally on its own
-ports (router 3100, marketing 3101, live 3102, help 3104, api 8887, mcp 8888), so it sits beside a
+ports (router 3200, marketing 3201, editor 3202, help 3204, api 8887, mcp 8888), so it sits beside a
 livediagram checkout ([Local development](../../development/local-development.md)).
 
 Eight apps, all built for Cloudflare Workers (with Static Assets for the five Next.js apps):

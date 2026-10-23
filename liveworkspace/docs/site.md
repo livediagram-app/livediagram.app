@@ -145,7 +145,7 @@ Worker, and everything else here. Security headers come from `public/_headers`.
 corepack pnpm dev:workspace           # from the repo root: http://localhost:3000
 ```
 
-That runs the site's dev server on 3300 and both APIs behind it (accounts on 8787, telemetry on
+That runs the site's dev server on 3000 and both APIs behind it (accounts on 8787, telemetry on
 8790; first-time setup for each is in [the README](../README.md#local-development) and
 [telemetry.md](telemetry.md#running-it-locally)). The dev server forwards `/api/auth/*`,
 `/.well-known/*` and `/api/telemetry/*` to them (`next.config.ts`), so the whole site works from
