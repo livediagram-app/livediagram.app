@@ -138,8 +138,24 @@ turned off links here, so someone signed out signs in and comes back.
   invitation answers, tips and check-ins, milestones) and the apps' in-editor notes, worded as in the
   apps' own Settings.
 - **Privacy and accessibility**: anonymous usage events, and Reduce Motion.
-- **Your apps**: a link to each app's own Settings (`<app>/explorer?settings=editor`), where
-  everything that only means something in an editor lives (its scale, panels and the rest).
+- **Your apps**: a card per app that opens that app's own settings in a dialog on this page
+  (`components/settings/AppSettingsDialog.tsx`, `lib/app-settings.ts`): the settings in the app's
+  scope, with the labels, descriptions, sections and order of the app's own Settings, from its
+  plain-data catalogue (`@liveworkspace/settings/catalogues/<app>`, [accounts.md](accounts.md#scopes)).
+  It has the app's switches, choices, sliders and groups of switches, hides a nested row while its
+  switch is off as the app does, and leaves the shared settings to the cards above. What only makes
+  sense inside the editor (appearance, shortcuts, the shared editor chrome such as UI scale and your
+  colours, lists such as tours seen) stays in the app: the dialog ends with "More in <app> Settings"
+  and a link to it (`<app>/explorer?settings=editor`). `?app=<name>` opens a dialog as the page
+  loads, and the address follows the open dialog. The dialog traps focus, closes on Escape, a click
+  outside or its close button, gives focus back to its card, and is a sheet from the bottom at phone
+  width. Its code and each app's catalogue load only when one first opens (or the pointer reaches
+  its card); the app's settings are read once when its dialog first opens
+  (`GET /api/account/settings/:app`) and kept for the page's lifetime. Each change is shown at once and
+  written alone as a patch of just its key in the app's scope (`PATCH { app }`), and put back with a
+  note if the write fails; a slider saves once it rests. The app picks the change up the next time
+  it opens: each app reads its settings once per load, and the server's copy wins over its cached
+  one, and it only ever sends back the keys it changed itself.
 
 The page reads the settings and the profile once each as it opens. Each switch and colour is shown
 changed at once and written alone (one `PATCH`), and put back with a note if the write fails. The

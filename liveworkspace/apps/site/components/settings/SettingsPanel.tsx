@@ -1,9 +1,17 @@
 'use client';
 
-import { useId, useRef, useState, type ReactNode } from 'react';
+import {
+  lazy,
+  Suspense,
+  useId,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type ReactNode,
+} from 'react';
 import { lucideGlyph } from '@livediagram/ui';
 import {
-  lucideArrowUpRight,
+  lucideChevronRight,
   lucideMail,
   lucideShieldCheck,
   lucideSlidersHorizontal,
@@ -18,7 +26,8 @@ import {
   type ToggleRow,
   type ToggleSection,
 } from '@/lib/account-settings';
-import { listedApps } from '@/lib/apps';
+import { appFromParam, loadCatalogue, type AppId } from '@/lib/app-settings';
+import { listedApps, type ListedApp } from '@/lib/apps';
 import { AppMark } from '../landing/AppLogo';
 import { ErrorNote } from './AccountShell';
 import { ProfileCard, type Profile } from './ProfileCard';
@@ -29,7 +38,13 @@ const UserIcon = lucideGlyph(lucideUser, 16);
 const MailIcon = lucideGlyph(lucideMail, 16);
 const ShieldIcon = lucideGlyph(lucideShieldCheck, 16);
 const AppsIcon = lucideGlyph(lucideSlidersHorizontal, 16);
-const OutIcon = lucideGlyph(lucideArrowUpRight, 16);
+const OpenIcon = lucideGlyph(lucideChevronRight, 16);
+
+const noChange = () => () => {};
+
+// The app settings dialog, loaded only when one first opens (or the pointer heads for a card).
+const loadDialog = () => import('./AppSettingsDialog');
+const AppSettingsDialog = lazy(loadDialog);
 
 const SECTION_ICONS: Record<string, typeof MailIcon> = {
   notifications: MailIcon,
@@ -82,9 +97,9 @@ export function SettingsPanel() {
         id="apps"
         title="Your apps"
         icon={<AppsIcon aria-hidden className="size-4" />}
-        hint="Everything else is set in each app, in its own Settings: how its editor looks and handles, and what only it has."
+        hint="Each app’s own settings: how its editor looks and handles, and what only it has."
       >
-        <AppLinks />
+        <AppCards />
       </SettingsCard>
     </div>
   );
@@ -251,36 +266,99 @@ export function Switch({
   );
 }
 
-// Each app's own Settings, a tile per app in its colours.
-function AppLinks() {
+// A card per app, in its colours, each opening that app's own settings in a dialog here
+// (AppSettingsDialog). `?app=<name>` opens one as the page loads, and the address follows the dialog,
+// so it can be linked to. Closing it gives focus back to its card.
+function AppCards() {
   const apps = listedApps();
+  const links = appSettingsLinks();
+  // The app the address names until a card is opened or the dialog closed (undefined till then).
+  const deepLinked = useSyncExternalStore(
+    noChange,
+    () => appFromParam(new URLSearchParams(window.location.search).get('app')),
+    () => null,
+  );
+  const [chosen, setChosen] = useState<AppId | null | undefined>(undefined);
+  const open = chosen === undefined ? deepLinked : chosen;
+  const cards = useRef(new Map<AppId, HTMLButtonElement>());
+
+  function follow(app: AppId | null) {
+    const url = new URL(window.location.href);
+    const name = app && apps.find((a) => a.id === app)?.name;
+    if (name) url.searchParams.set('app', name);
+    else url.searchParams.delete('app');
+    window.history.replaceState(window.history.state, '', url);
+  }
+
+  function show(app: AppId) {
+    setChosen(app);
+    follow(app);
+  }
+
+  function close() {
+    const app = open;
+    setChosen(null);
+    follow(null);
+    if (app) cards.current.get(app)?.focus();
+  }
+
+  // Fetching the dialog's code and the app's catalogue as the pointer arrives, so it opens at once.
+  function prefetch(app: AppId) {
+    void loadDialog();
+    void loadCatalogue(app);
+  }
+
+  const openApp = open ? apps.find((a) => a.id === open) : undefined;
+  const openLink = open ? links.find((l) => l.id === open) : undefined;
+
   return (
-    <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-      {appSettingsLinks().map((link) => {
-        const app = apps.find((a) => a.id === link.id);
-        return (
-          <li key={link.id}>
-            <a
-              href={link.href}
-              className="group flex items-center gap-3 rounded-2xl border border-slate-200 px-4 py-3 transition-colors duration-micro hover:border-slate-300 hover:bg-slate-50 dark:border-slate-800 dark:hover:border-slate-700 dark:hover:bg-slate-800/60"
-            >
-              {app && <AppMark app={app} className="size-8 shrink-0" />}
-              <span className="min-w-0 flex-1">
-                <span className="block text-sm font-semibold text-slate-900 dark:text-white">
-                  {link.name} Settings
+    <>
+      <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        {links.map((link) => {
+          const app = apps.find((a) => a.id === link.id);
+          const id = link.id as AppId;
+          return (
+            <li key={link.id}>
+              <button
+                ref={(node) => {
+                  if (node) cards.current.set(id, node);
+                  else cards.current.delete(id);
+                }}
+                type="button"
+                aria-haspopup="dialog"
+                aria-expanded={open === id}
+                onClick={() => show(id)}
+                onPointerEnter={() => prefetch(id)}
+                onFocus={() => prefetch(id)}
+                className="group flex w-full cursor-pointer items-center gap-3 rounded-2xl border border-slate-200 px-4 py-3 text-left transition-colors duration-micro hover:border-slate-300 hover:bg-slate-50 focus-visible:ring-2 focus-visible:ring-slate-900/20 focus-visible:outline-none dark:border-slate-800 dark:hover:border-slate-700 dark:hover:bg-slate-800/60 dark:focus-visible:ring-white/30"
+              >
+                {app && <AppMark app={app} className="size-8 shrink-0" />}
+                <span className="min-w-0 flex-1">
+                  <span className="block text-sm font-semibold text-slate-900 dark:text-white">
+                    {link.name} Settings
+                  </span>
+                  <span className="block truncate text-xs text-slate-500 dark:text-slate-400">
+                    {link.pitch}
+                  </span>
                 </span>
-                <span className="block truncate text-xs text-slate-500 dark:text-slate-400">
-                  {link.pitch}
-                </span>
-              </span>
-              <OutIcon
-                aria-hidden
-                className="size-4 shrink-0 text-slate-400 transition-transform duration-micro group-hover:translate-x-0.5 group-hover:-translate-y-0.5 motion-reduce:transition-none"
-              />
-            </a>
-          </li>
-        );
-      })}
-    </ul>
+                <OpenIcon
+                  aria-hidden
+                  className="size-4 shrink-0 text-slate-400 transition-transform duration-micro group-hover:translate-x-0.5 motion-reduce:transition-none"
+                />
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+      {openApp && openLink && (
+        <Suspense fallback={null}>
+          <AppSettingsDialog
+            app={openApp as ListedApp & { id: AppId }}
+            settingsHref={openLink.href}
+            onClose={close}
+          />
+        </Suspense>
+      )}
+    </>
   );
 }
