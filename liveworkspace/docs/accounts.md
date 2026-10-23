@@ -163,7 +163,11 @@ their guest id. An app keeps no settings table of its own.
 
 Each setting is stored in one scope:
 
-- **`all`**: shown by every app (a theme, say). Changing it in one app changes it everywhere.
+- **`all`**: shown by every app that has the setting. Changing it in one app changes it everywhere.
+  Which keys are shared is one list, `ALL_SETTING_KEYS` in `@liveworkspace/settings`
+  (`packages/settings`): privacy and accessibility, notifications, the editors' chrome and your own
+  colours. Its `splitSettings` and `joinSettings` turn an editor's flat preferences into the two
+  scopes and back.
 - **an app's site id** (`livediagram.app`, `liveplanner.app`, `livedocuments.app`, `livedesign.app`,
   as `APP_SITES` in `@liveworkspace/sites` spells them): shown by that app only.
 
