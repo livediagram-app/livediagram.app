@@ -92,7 +92,12 @@ export async function deleteAccount(
     .run();
   // Their name, colour and preferences are liveworkspace's (src/liveworkspace/), and go when the route
   // closes the account there, with what liveworkspace kept of their sign-up and milestones here.
-  // Their own store (person-store.ts): their shape libraries (docs/specs/013-workspace/shape-libraries.md) go too.
+  // Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md): revoke the grant
+  // at Google and drop the connection and every mirror row. The Drive files are
+  // the user's and stay.
+  await disconnectDrive(env, ownerId);
+  // Their own store (person-store.ts): their shape libraries (docs/specs/013-workspace/shape-libraries.md) and what
+  // is left of the Drive mirror go too. After the Drive disconnect above, which reads the sealed token from it.
   await personStore(env, ownerId).purge();
   // Their workbench store (docs/specs/013-workspace/workbench-embeds.md): pairings, tickets and sessions, whose
   // rooms it closes. Their API tokens are liveworkspace's, which deletes them when it closes the account.
@@ -100,10 +105,6 @@ export async function deleteAccount(
   // notify_email_claims (docs/specs/012-collaboration/comment-mentions.md "The email"): the claims of the
   // mention and action-assigned emails they sent. Hashes only, but keyed on their id.
   await env.DB.prepare('DELETE FROM notify_email_claims WHERE sender_id = ?').bind(ownerId).run();
-  // Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md): revoke the grant
-  // at Google and drop the connection and every mirror row. The Drive files are
-  // the user's and stay.
-  await disconnectDrive(env, ownerId);
   // shared_with rows POINTING AT this owner's documents die with the
   // documents (FK cascade), but the rows this owner accumulated by
   // visiting OTHER people's documents are keyed on their owner_id and

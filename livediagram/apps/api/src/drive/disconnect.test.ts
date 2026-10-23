@@ -3,7 +3,12 @@ import { sentForm } from '@livediagram/vitest-config/sent-request';
 import { bytesToBase64 } from '@livediagram/api-schema';
 import { sqliteD1 } from '../test-sqlite-d1';
 import { deleteAccount } from '../db/account';
-import { getDriveConnection, putDriveItems, upsertBrokerConnection } from '../db/drive';
+import {
+  getDriveConnection,
+  listDriveItems,
+  putDriveItems,
+  upsertBrokerConnection,
+} from '../db/drive';
 import { importDriveKey, sealRefreshToken } from './crypto';
 import { disconnectDrive } from './disconnect';
 
@@ -69,7 +74,7 @@ describe('disconnectDrive', () => {
     expect(await disconnectDrive(db.env, 'user_a')).toEqual({ revoked: true });
     expect(revoked).toEqual(['rt-1']);
     expect(await getDriveConnection(db.env, 'user_a')).toBeNull();
-    expect(db.sql.prepare('SELECT COUNT(*) AS n FROM drive_items').get()!.n).toBe(0);
+    expect(await listDriveItems(db.env, 'user_a')).toEqual([]);
   });
 
   it('still deletes the rows when Google refuses the revoke', async () => {

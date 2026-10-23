@@ -88,9 +88,6 @@ const OWNER_COLUMNS: OwnerColumn[] = [
   // only a joined team member sends them.
   { table: 'notify_email_claims', column: 'sender_id', migrate: { kind: 'account-only' } },
   { table: 'team_members', column: 'user_id', migrate: { kind: 'account-only' } },
-  // Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md): signed-in only.
-  { table: 'drive_connections', column: 'owner_id', migrate: { kind: 'account-only' } },
-  { table: 'drive_items', column: 'owner_id', migrate: { kind: 'account-only' } },
 ];
 
 // Column names that mark an owner-keyed column wherever they appear.
@@ -218,20 +215,11 @@ function seedGuestHoldable(sql: DatabaseSync, id: string, peerDocument: string) 
   });
 }
 
-// The account-only rows: the email claims, the Drive mirror, and a membership of a team `peer` has joined too.
+// The account-only rows: the email claims and a membership of a team `peer` has joined too.
 function seedAccountOnly(sql: DatabaseSync, id: string, peer: string) {
   // A Community post of their own document.
   communityPost(sql, `d-${id}`, id);
   insert(sql, 'notify_email_claims', { claim_key: `claim-${id}`, sender_id: id, created_at: T0 });
-  insert(sql, 'drive_connections', { owner_id: id, status: 'connected', connected_at: T0 });
-  insert(sql, 'drive_items', {
-    owner_id: id,
-    item_kind: 'document',
-    ld_id: `d-`,
-    drive_file_id: `file-`,
-    name: 'x.livediagram',
-    ld_name: 'x',
-  });
   insert(sql, 'teams', { id: 'team-1', name: 'Team', created_at: T0, updated_at: T0 });
   for (const [n, userId] of [id, peer].entries()) {
     insert(sql, 'team_members', {
@@ -315,16 +303,20 @@ describe('deleteAccount erases every owner-keyed row (docs/specs/015-api/api.md)
     }
   });
 
-  it("empties the owner's own store (their shape libraries), and no one else's", async () => {
+  it("empties the owner's own store (shape libraries, Drive mirror), and no one else's", async () => {
     const { env } = arrange();
     const lib = { id: 'l-1', name: 'Team icons', source: 'drawio' as const, items: [] };
-    await personStore(env, ACCOUNT).createShapeLibrary(lib, 10);
-    await personStore(env, OTHER).createShapeLibrary(lib, 10);
+    for (const person of [ACCOUNT, OTHER]) {
+      await personStore(env, person).createShapeLibrary(lib, 10);
+      await personStore(env, person).driveCreateBrowser(T0);
+    }
 
     await deleteAccount(env, ACCOUNT);
 
     expect(await personStore(env, ACCOUNT).shapeLibraries()).toEqual([]);
+    expect(await personStore(env, ACCOUNT).driveConnection(T0)).toBeNull();
     expect(await personStore(env, OTHER).shapeLibraries()).toHaveLength(1);
+    expect(await personStore(env, OTHER).driveConnection(T0)).not.toBeNull();
   });
 
   it("erases the stars the owner placed on other people's documents", async () => {

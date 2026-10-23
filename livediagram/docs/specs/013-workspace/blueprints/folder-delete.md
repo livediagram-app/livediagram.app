@@ -25,8 +25,10 @@ file adds engineering precision. Defaults are ledgered in [DEFAULTS.md](DEFAULTS
 WHERE parent_id = ?1`
 2. `UPDATE documents SET folder_id = (SELECT parent_id FROM folders WHERE id = ?1) WHERE
 folder_id = ?1` (live and trashed rows alike)
-3. `DELETE FROM drive_items WHERE item_kind = 'folder' AND ld_id = ?1`
-4. `DELETE FROM folders WHERE id = ?1`
+3. `DELETE FROM folders WHERE id = ?1`
+
+A Drive mirror row of the folder goes the next time that person's mirror is listed (it lives in their own store,
+docs/specs/022-drive-mirror/drive-mirror.md "Data").
 
 The parent is read by the subqueries inside the batch, never before it (`D121`), so a move of the
 folder between the read and the write cannot strand its contents. Statements 1 and 2 run while the

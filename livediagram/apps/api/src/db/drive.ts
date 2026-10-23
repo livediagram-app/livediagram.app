@@ -1,50 +1,18 @@
-// Google Drive mirror rows (docs/specs/022-drive-mirror/drive-mirror.md, "Data";
-// blueprint "Data and persistence"). Every statement is scoped to one owner,
-// the verified account id the route resolved.
+// Google Drive mirror rows (docs/specs/022-drive-mirror/drive-mirror.md, "Data"; blueprint "Data and persistence"):
+// the person's connection and the items it mirrors, in their own store (person-store/drive-store.ts). Every call is
+// scoped to one owner, the verified account id the route resolved, by reaching that owner's store.
 
-import {
-  DRIVE_LEASE_MS,
-  type DriveConnection,
-  type DriveConnectionStatus,
-  type DriveItem,
-  type DriveItemKind,
-  type DriveLease,
+import type {
+  DriveConnection,
+  DriveConnectionStatus,
+  DriveItem,
+  DriveItemKind,
+  DriveLease,
 } from '@livediagram/api-schema';
+import { personStore } from '../person-client';
 import type { Env } from '../types';
 
-type ConnectionRow = {
-  owner_id: string;
-  refresh_token_enc: string | null;
-  root_folder_id: string | null;
-  page_token: string | null;
-  page_token_saved_at: number | null;
-  status: DriveConnectionStatus;
-  connected_at: number;
-  lease_holder: string | null;
-  lease_expires_at: number | null;
-  google_account_id: string | null;
-  pending_refresh_token_enc: string | null;
-  pending_google_account_id: string | null;
-  pending_expires_at: number | null;
-};
-
-type ItemRow = {
-  item_kind: DriveItemKind;
-  ld_id: string;
-  drive_file_id: string;
-  name: string;
-  ld_name: string;
-  parent_id: string | null;
-  trashed: number;
-  md5: string | null;
-  head_revision_id: string | null;
-  mirrored_saved_at: number | null;
-  notice: 'unseen_folder' | null;
-  notice_parent_id: string | null;
-};
-
-// Raised when an item names a Drive file another item of the same owner
-// already holds (UNIQUE (owner_id, drive_file_id)).
+// Raised when an item names a Drive file another item of the same owner already holds.
 export class DriveItemConflictError extends Error {
   constructor() {
     super('drive_item_conflict');
@@ -52,77 +20,29 @@ export class DriveItemConflictError extends Error {
   }
 }
 
-function toConnection(row: ConnectionRow, now: number): DriveConnection {
-  const pendingLive =
-    row.pending_refresh_token_enc !== null &&
-    row.pending_expires_at !== null &&
-    row.pending_expires_at > now;
-  return {
-    status: row.status,
-    hasRefreshToken: row.refresh_token_enc !== null,
-    rootFolderId: row.root_folder_id,
-    pageToken: row.page_token,
-    pageTokenSavedAt: row.page_token_saved_at,
-    connectedAt: row.connected_at,
-    pendingAccountSwitch: pendingLive ? { expiresAt: row.pending_expires_at! } : null,
-  };
-}
-
-function toItem(row: ItemRow): DriveItem {
-  return {
-    kind: row.item_kind,
-    ldId: row.ld_id,
-    driveFileId: row.drive_file_id,
-    name: row.name,
-    ldName: row.ld_name,
-    parentId: row.parent_id,
-    trashed: row.trashed === 1,
-    md5: row.md5,
-    headRevisionId: row.head_revision_id,
-    mirroredSavedAt: row.mirrored_saved_at,
-    notice: row.notice,
-    noticeParentId: row.notice_parent_id,
-  };
-}
-
-async function connectionRow(env: Env, ownerId: string): Promise<ConnectionRow | null> {
-  return env.DB.prepare('SELECT * FROM drive_connections WHERE owner_id = ?')
-    .bind(ownerId)
-    .first<ConnectionRow>();
-}
-
 export async function getDriveConnection(
   env: Env,
   ownerId: string,
   now: number = Date.now(),
 ): Promise<DriveConnection | null> {
-  const row = await connectionRow(env, ownerId);
-  return row ? toConnection(row, now) : null;
+  return personStore(env, ownerId).driveConnection(now);
 }
 
 // The sealed refresh token, for the broker only. Never part of a response.
 export async function getSealedRefreshToken(env: Env, ownerId: string): Promise<string | null> {
-  return (await connectionRow(env, ownerId))?.refresh_token_enc ?? null;
+  return personStore(env, ownerId).driveSealedRefreshToken();
 }
 
-// A consent in broker mode: store the sealed token, mark the connection
-// connected. A reconnect keeps the root folder and page token, which are
-// still valid for the same Google account's files. A consent by another
-// account never reaches here: it waits as a pending switch (db/drive-account.ts).
+// A consent in broker mode: store the sealed token, mark the connection connected. A reconnect keeps the root folder
+// and page token, which are still valid for the same Google account's files. A consent by another account never
+// reaches here: it waits as a pending switch (db/drive-account.ts).
 export async function upsertBrokerConnection(
   env: Env,
   ownerId: string,
   sealedRefreshToken: string,
   now: number,
 ): Promise<void> {
-  await env.DB.prepare(
-    `INSERT INTO drive_connections (owner_id, refresh_token_enc, status, connected_at)
-     VALUES (?, ?, 'connected', ?)
-     ON CONFLICT (owner_id) DO UPDATE
-       SET refresh_token_enc = excluded.refresh_token_enc, status = 'connected'`,
-  )
-    .bind(ownerId, sealedRefreshToken, now)
-    .run();
+  await personStore(env, ownerId).driveUpsertBroker(sealedRefreshToken, now);
 }
 
 // Browser-only mode: the connection exists without a refresh token.
@@ -131,11 +51,7 @@ export async function createBrowserConnection(
   ownerId: string,
   now: number,
 ): Promise<void> {
-  await env.DB.prepare(
-    `INSERT OR IGNORE INTO drive_connections (owner_id, status, connected_at) VALUES (?, 'connected', ?)`,
-  )
-    .bind(ownerId, now)
-    .run();
+  await personStore(env, ownerId).driveCreateBrowser(now);
 }
 
 export async function updateDriveConnectionState(
@@ -144,20 +60,8 @@ export async function updateDriveConnectionState(
   patch: { rootFolderId?: string | null; pageToken?: string },
   now: number,
 ): Promise<void> {
-  const sets: string[] = [];
-  const binds: (string | number | null)[] = [];
-  if (patch.rootFolderId !== undefined) {
-    sets.push('root_folder_id = ?');
-    binds.push(patch.rootFolderId);
-  }
-  if (patch.pageToken !== undefined) {
-    sets.push('page_token = ?', 'page_token_saved_at = ?');
-    binds.push(patch.pageToken, now);
-  }
-  if (sets.length === 0) return;
-  await env.DB.prepare(`UPDATE drive_connections SET ${sets.join(', ')} WHERE owner_id = ?`)
-    .bind(...binds, ownerId)
-    .run();
+  if (patch.rootFolderId === undefined && patch.pageToken === undefined) return;
+  await personStore(env, ownerId).driveUpdateState(patch, now);
 }
 
 export async function setDriveConnectionStatus(
@@ -165,73 +69,57 @@ export async function setDriveConnectionStatus(
   ownerId: string,
   status: DriveConnectionStatus,
 ): Promise<void> {
-  await env.DB.prepare('UPDATE drive_connections SET status = ? WHERE owner_id = ?')
-    .bind(status, ownerId)
-    .run();
+  await personStore(env, ownerId).driveSetStatus(status);
 }
 
-// The connection and every mirrored item of the owner, in one batch. The
-// Drive files themselves stay (docs/specs/022-drive-mirror/drive-mirror.md).
-function driveOwnerRemovalStatements(env: Env, ownerId: string): D1PreparedStatement[] {
-  return [
-    env.DB.prepare('DELETE FROM drive_items WHERE owner_id = ?').bind(ownerId),
-    env.DB.prepare('DELETE FROM drive_connections WHERE owner_id = ?').bind(ownerId),
-  ];
-}
-
+// The connection and every mirrored item of the owner, at once. The Drive files themselves stay
+// (docs/specs/022-drive-mirror/drive-mirror.md).
 export async function deleteDriveConnection(env: Env, ownerId: string): Promise<void> {
-  await env.DB.batch(driveOwnerRemovalStatements(env, ownerId));
+  await personStore(env, ownerId).driveDisconnect();
 }
 
+// The owner's mirrored items. An item whose canvas or folder was removed for good is no longer mirrored: it is
+// dropped here, the first time the list is read after the removal, and the browser finishes the Drive side from its
+// own memory of the rows it saw. One indexed read per kind present, of ids the mirror already holds.
 export async function listDriveItems(env: Env, ownerId: string): Promise<DriveItem[]> {
-  const res = await env.DB.prepare(
-    'SELECT * FROM drive_items WHERE owner_id = ? ORDER BY item_kind, ld_id',
-  )
-    .bind(ownerId)
-    .all<ItemRow>();
-  return (res.results ?? []).map(toItem);
+  const store = personStore(env, ownerId);
+  const items = await store.driveItems();
+  if (items.length === 0) return items;
+  const gone = await removedItems(env, items);
+  if (gone.length === 0) return items;
+  await store.driveDeleteItems(gone);
+  const dropped = new Set(gone.map((g) => `${g.kind}:${g.ldId}`));
+  return items.filter((i) => !dropped.has(`${i.kind}:${i.ldId}`));
 }
 
-// Upsert on (owner, kind, ld id), all rows in one batch.
+// Which of these items name a canvas or folder that no longer exists (the Trash keeps a canvas, so a trashed one is
+// still mirrored).
+async function removedItems(
+  env: Env,
+  items: readonly DriveItem[],
+): Promise<{ kind: DriveItemKind; ldId: string }[]> {
+  const gone: { kind: DriveItemKind; ldId: string }[] = [];
+  for (const [kind, table] of [
+    ['document', 'documents'],
+    ['folder', 'folders'],
+  ] as const) {
+    const ids = items.filter((i) => i.kind === kind).map((i) => i.ldId);
+    if (ids.length === 0) continue;
+    const found = await env.DB.prepare(
+      `SELECT id FROM ${table} WHERE id IN (SELECT value FROM json_each(?))`,
+    )
+      .bind(JSON.stringify(ids))
+      .all<{ id: string }>();
+    const live = new Set((found.results ?? []).map((r) => r.id));
+    for (const ldId of ids) if (!live.has(ldId)) gone.push({ kind, ldId });
+  }
+  return gone;
+}
+
+// Upsert on (owner, kind, ld id), all rows at once: a conflict writes none of them.
 export async function putDriveItems(env: Env, ownerId: string, items: DriveItem[]): Promise<void> {
-  const statements = items.map((i) =>
-    env.DB.prepare(
-      `INSERT INTO drive_items (owner_id, item_kind, ld_id, drive_file_id, name, ld_name, parent_id,
-                                trashed, md5, head_revision_id, mirrored_saved_at, notice, notice_parent_id)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-       ON CONFLICT (owner_id, item_kind, ld_id) DO UPDATE SET
-         drive_file_id = excluded.drive_file_id, name = excluded.name, ld_name = excluded.ld_name,
-         parent_id = excluded.parent_id, trashed = excluded.trashed, md5 = excluded.md5,
-         head_revision_id = excluded.head_revision_id, mirrored_saved_at = excluded.mirrored_saved_at,
-         notice = excluded.notice, notice_parent_id = excluded.notice_parent_id`,
-    ).bind(
-      ownerId,
-      i.kind,
-      i.ldId,
-      i.driveFileId,
-      i.name,
-      i.ldName,
-      i.parentId,
-      i.trashed ? 1 : 0,
-      i.md5,
-      i.headRevisionId,
-      i.mirroredSavedAt,
-      i.notice,
-      i.noticeParentId,
-    ),
-  );
-  try {
-    await env.DB.batch(statements);
-  } catch (err) {
-    if (
-      err instanceof Error &&
-      /UNIQUE constraint failed: drive_items\.owner_id, drive_items\.drive_file_id/.test(
-        err.message,
-      )
-    ) {
-      throw new DriveItemConflictError();
-    }
-    throw err;
+  if ((await personStore(env, ownerId).drivePutItems(items)) === 'conflict') {
+    throw new DriveItemConflictError();
   }
 }
 
@@ -241,38 +129,20 @@ export async function deleteDriveItem(
   kind: DriveItemKind,
   ldId: string,
 ): Promise<void> {
-  await env.DB.prepare('DELETE FROM drive_items WHERE owner_id = ? AND item_kind = ? AND ld_id = ?')
-    .bind(ownerId, kind, ldId)
-    .run();
+  await personStore(env, ownerId).driveDeleteItems([{ kind, ldId }]);
 }
 
-// Take or renew the cross-device lease: granted when it is free, already this
-// holder's, or expired. Null when the owner has no connection.
+// Take or renew the cross-device lease: granted when it is free, already this holder's, or expired. Null when the
+// owner has no connection.
 export async function acquireDriveLease(
   env: Env,
   ownerId: string,
   holder: string,
   now: number,
 ): Promise<DriveLease | null> {
-  const expiresAt = now + DRIVE_LEASE_MS;
-  const res = await env.DB.prepare(
-    `UPDATE drive_connections SET lease_holder = ?, lease_expires_at = ?
-      WHERE owner_id = ?
-        AND (lease_holder IS NULL OR lease_holder = ? OR lease_expires_at IS NULL OR lease_expires_at <= ?)`,
-  )
-    .bind(holder, expiresAt, ownerId, holder, now)
-    .run();
-  if (res.meta.changes === 1) return { acquired: true, holder, expiresAt };
-  const row = await connectionRow(env, ownerId);
-  if (!row) return null;
-  return { acquired: false, holder: row.lease_holder, expiresAt: row.lease_expires_at };
+  return personStore(env, ownerId).driveAcquireLease(holder, now);
 }
 
 export async function releaseDriveLease(env: Env, ownerId: string, holder: string): Promise<void> {
-  await env.DB.prepare(
-    `UPDATE drive_connections SET lease_holder = NULL, lease_expires_at = NULL
-      WHERE owner_id = ? AND lease_holder = ?`,
-  )
-    .bind(ownerId, holder)
-    .run();
+  await personStore(env, ownerId).driveReleaseLease(holder);
 }

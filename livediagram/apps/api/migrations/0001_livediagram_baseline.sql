@@ -199,36 +199,6 @@ CREATE TABLE collab_actions (
   PRIMARY KEY (document_id, tab_id, element_id, action_id)
 );
 
-CREATE TABLE drive_connections (
-  owner_id TEXT PRIMARY KEY,
-  refresh_token_enc TEXT,
-  root_folder_id TEXT,
-  page_token TEXT,
-  page_token_saved_at INTEGER,
-  status TEXT NOT NULL DEFAULT 'connected' CHECK (status IN ('connected', 'needs_reconnect')),
-  connected_at INTEGER NOT NULL,
-  lease_holder TEXT,
-  lease_expires_at INTEGER
-, google_account_id TEXT, pending_refresh_token_enc TEXT, pending_google_account_id TEXT, pending_expires_at INTEGER);
-
-CREATE TABLE drive_items (
-  owner_id TEXT NOT NULL,
-  item_kind TEXT NOT NULL CHECK (item_kind IN ('document', 'folder')),
-  ld_id TEXT NOT NULL,
-  drive_file_id TEXT NOT NULL,
-  name TEXT NOT NULL,
-  ld_name TEXT NOT NULL,
-  parent_id TEXT,
-  trashed INTEGER NOT NULL DEFAULT 0,
-  md5 TEXT,
-  head_revision_id TEXT,
-  mirrored_saved_at INTEGER,
-  notice TEXT CHECK (notice IS NULL OR notice = 'unseen_folder'),
-  notice_parent_id TEXT,
-  PRIMARY KEY (owner_id, item_kind, ld_id),
-  UNIQUE (owner_id, drive_file_id)
-);
-
 CREATE TABLE placement_defaults (
   owner_id    TEXT NOT NULL,
   default_key TEXT NOT NULL,
@@ -335,8 +305,6 @@ CREATE INDEX documents_trashed_idx ON documents (trashed_at) WHERE trashed_at IS
 CREATE INDEX idx_share_links_document_created ON share_links (document_id, created_at);
 
 CREATE INDEX idx_share_links_document_role_created ON share_links (document_id, role, created_at);
-
-CREATE INDEX drive_items_ld_idx ON drive_items (item_kind, ld_id);
 
 
 CREATE INDEX document_opens_last_idx ON document_opens (last_opened_at);

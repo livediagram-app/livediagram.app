@@ -8,6 +8,7 @@ import { imageGrantCopyStatements } from '../db/image-grants';
 import { documentRoom } from '../document-client';
 import { copyImageIds } from '../document-room/document-content';
 import { migrateShapeLibraries } from '../db/account';
+import { disconnectDrive } from '../drive/disconnect';
 import { mediaClient, mediaOwner } from '../media';
 import { personStore } from '../person-client';
 import { workbenchStore } from '../workbench-store';
@@ -36,9 +37,11 @@ export function handleInternalItems(
         return { tabs: copy.tabs.length, items: 0 };
       },
       // A closed account, wherever it was closed: what livediagram keeps for them in their own stores. Their
-      // workbench (pairings, tickets and sessions, whose rooms it closes) and their shape libraries.
+      // workbench (pairings, tickets and sessions, whose rooms it closes), their Drive mirror and shape libraries.
       personClosed: async (personId) => {
         await workbenchStore(env, personId).close();
+        // The Drive grant is revoked at Google first, while the store still holds its sealed token.
+        await disconnectDrive(env, personId);
         await personStore(env, personId).purge();
       },
       // A guest who became an account (accounts merged them; the index tells each app): what livediagram keeps for

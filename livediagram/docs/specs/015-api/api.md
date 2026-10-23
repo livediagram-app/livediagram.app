@@ -368,7 +368,8 @@ reads: `collab_actions`, `collab_threads`. No tab body, slide deck, image refere
 **What each person's object holds.** What livediagram keeps for one person rather than for one canvas lives in
 their own SQLite-backed Durable Object, `PersonStore` (`apps/api/src/person-store/`, binding `PERSON_STORE`, one per
 person id, reached through `person-client.ts`): their shape libraries
-([Shape libraries](../013-workspace/shape-libraries.md)). Deleting an account purges it; a guest signing in has
+([Shape libraries](../013-workspace/shape-libraries.md)) and their Google Drive mirror
+([Google Drive mirror](../022-drive-mirror/drive-mirror.md#data)). Deleting an account purges it; a guest signing in has
 theirs adopted by the account's.
 
 **What each person's workbench holds.** A person's workbench (pairing requests, pairings, tickets, sessions and the

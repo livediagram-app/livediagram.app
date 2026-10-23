@@ -542,29 +542,29 @@ What decides it:
 
 ## Data
 
-D1, owned by the api worker:
+Each person's own store (`PersonStore`, a SQLite-backed Durable Object per person,
+`apps/api/src/person-store/drive-store.ts`), so no row names an owner:
 
-- `drive_connections`: `owner_id` (account id, primary key),
-  `refresh_token_enc`, `root_folder_id`, `page_token`, `page_token_saved_at`,
-  `status` (`connected` | `needs_reconnect`), `connected_at`, `lease_holder`,
-  `lease_expires_at`, `google_account_id` (the consenting Google account's
-  `permissionId`, migration `0088`; null until a broker consent records it),
-  and a pending account switch's `pending_refresh_token_enc`,
-  `pending_google_account_id` and `pending_expires_at` (migration `0089`; all
-  null when none is pending).
-- `drive_items`: `owner_id`, `item_kind` (`diagram` | `folder`), `ld_id`,
+- `drive_connections`: one row, `refresh_token_enc`, `root_folder_id`,
+  `page_token`, `page_token_saved_at`, `status` (`connected` |
+  `needs_reconnect`), `connected_at`, `lease_holder`, `lease_expires_at`,
+  `google_account_id` (the consenting Google account's `permissionId`; null
+  until a broker consent records it), and a pending account switch's
+  `pending_refresh_token_enc`, `pending_google_account_id` and
+  `pending_expires_at` (all null when none is pending).
+- `drive_items`: `item_kind` (`document` | `folder`), `ld_id`,
   `drive_file_id`, and the last written `name`, `parent_id`, `trashed`,
   `md5`, `head_revision_id`, plus `mirrored_saved_at` (the document revision
-  last uploaded). Unique on `(owner_id, item_kind, ld_id)` and on
-  `(owner_id, drive_file_id)`.
-- Deleting a document, folder or account deletes its rows in the same batch as
-  the rest of the removal.
+  last uploaded). Unique on `(item_kind, ld_id)` and on `drive_file_id`.
+- A document or folder removed for good is no longer mirrored: its row goes
+  the next time the person's mirror is listed. Deleting the account revokes
+  the grant at Google and empties the store.
 - `refresh_token_enc` is empty for a browser-only connection (client id only).
 - `drive_items` also keeps `ld_name` (the livediagram name the Drive name
   mirrors, since Drive may store a name differently), and `notice` with
   `notice_parent_id` for the [unseen-folder notice](#folders-livediagram-cannot-see).
 - **Finishing a removal in Drive.** Because a purge or a folder deletion takes
-  the row with it, each browser remembers the rows it last saw. A row that
+  the row with it (the next time the mirror is listed), each browser remembers the rows it last saw. A row that
   disappears while its document or folder is gone from livediagram is finished
   in Drive by the next pass in any browser that saw it: a binned file is
   deleted for good, anything else goes to the bin (a document taken offline,

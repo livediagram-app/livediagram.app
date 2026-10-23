@@ -35,12 +35,8 @@ export function documentRemovalStatements(
     // (docs/specs/009-elements/images.md, "Reference index", "Placement grants").
     env.DB.prepare(`DELETE FROM document_images WHERE document_id IN (${doomed})`).bind(value),
     imageGrantRemovalStatement(env, doomed, [value]),
-    // The Google Drive mirror's rows (docs/specs/022-drive-mirror/drive-mirror.md, "Data"):
-    // a removed document is no longer mirrored. The browser finishes the Drive
-    // side from its own memory of the rows it saw.
-    env.DB.prepare(
-      `DELETE FROM drive_items WHERE item_kind = 'document' AND ld_id IN (${doomed})`,
-    ).bind(value),
+    // The Google Drive mirror's rows (docs/specs/022-drive-mirror/drive-mirror.md, "Data") are each person's own
+    // (person-store/drive-store.ts): a removed document's goes the next time its mirror is listed (db/drive.ts).
     env.DB.prepare(`DELETE FROM documents WHERE ${where}`).bind(value),
   ];
 }
