@@ -217,7 +217,7 @@ Importers depend on `index.ts` (the types, `attachImportImages`, `describeImport
 ## Data and persistence
 
 No new persisted fields. A stored image sets the existing `ImageElement.imageId`, `naturalWidth`,
-`naturalHeight`. Cloud: a gallery row + R2 object through the existing endpoint. Offline: the
+`naturalHeight`. Cloud: an image in the media service through the existing endpoint. Offline: the
 `data:` URL lives in the tab body in IndexedDB and re-homes on Sync Document (existing
 `uploadEmbeddedImages`). No migration.
 
@@ -258,7 +258,7 @@ No new persisted fields. A stored image sets the existing `ImageElement.imageId`
 - WASM encoder, only without canvas WebP: one chunk (~20 KB) plus one `.wasm` (340 KB SIMD, 280 KB
   plain), fetched once per page. Never in the editor's first bundle (verified against the built
   `document/placeholder.html`'s chunk list).
-- Hosted server cost per image: one D1 sha lookup, one totals query, one R2 put (new) or none.
+- Hosted server cost per image: one media service upload (a hash lookup, a totals query, and an R2 put when new) and one owner-index upsert.
 - Offline budget caps the tab body growth from one import at 8 MB.
 
 ## Observability

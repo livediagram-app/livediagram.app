@@ -50,7 +50,7 @@ beforeEach(() => {
 describe('GET comment-pictures', () => {
   it('maps comment ids to their authors pictures for a signed-in reader, without author ids', async () => {
     const res = await handleCommentPicturesRoute(
-      makeTestRouteContext('GET', PATH, { owner: 'user_bob', clerkUserId: 'user_bob' }),
+      makeTestRouteContext('GET', PATH, { owner: 'user_bob', accountUserId: 'user_bob' }),
     );
     const body = await res!.json();
     expect(body).toEqual({ pictures: { c1: ANN } });
@@ -68,7 +68,7 @@ describe('GET comment-pictures', () => {
   it('refuses a reader without access', async () => {
     gates.gateRead.mockResolvedValue(false);
     const res = await handleCommentPicturesRoute(
-      makeTestRouteContext('GET', PATH, { owner: 'user_eve', clerkUserId: 'user_eve' }),
+      makeTestRouteContext('GET', PATH, { owner: 'user_eve', accountUserId: 'user_eve' }),
     );
     expect(res!.status).toBe(403);
   });

@@ -9,10 +9,10 @@ anywhere an image does (a chat message, an email, a README, a social post), whic
 ## Where it is offered
 
 - **Tabs with pages.** The Export dialog's formats ([Pages](../007-editor/pages-mode.md) "Export") include a **GIF**
-  card after SVG: PDF, PNG, SVG, GIF, JSON (then Logo Kit while the tab has a logo page). A tab with no page yet, and
+  card after SVG: PDF, PNG, SVG, GIF, JSON. A tab with no page yet, and
   an export of a selection, show no GIF card.
 - Card copy: **GIF**, "An animated image of the pages, moving as they move on the canvas."
-- Every page kind exports: slides, infographic, article and logo pages. A logo page's see-through paper exports white
+- Every page kind exports: slides, infographic and article pages. The paper is always opaque
   (GIF transparency is one bit and would fringe every soft edge).
 - **Share roles**: as every Export dialog format. Whoever can open the Export dialog (an Editor, a Participant and a
   Viewer alike) can export a GIF; it reads the tab and changes nothing.

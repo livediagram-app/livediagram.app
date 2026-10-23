@@ -100,7 +100,7 @@ export const pageLs = defineVerb({
 const sizeArg = z
   .string()
   .optional()
-  .describe('A page size id: a4, letter, a3, square, slide, logo, ...');
+  .describe('A page size id: a4, letter, a3, square, slide, ...');
 
 export const pageSet = defineVerb({
   id: 'page.set',
@@ -112,7 +112,7 @@ export const pageSet = defineVerb({
     doc: docArg,
     tab: tabFlag,
     changes: z.string().optional().describe('A JSON file of page changes, or - for stdin'),
-    add: z.enum(['infographic', 'slide', 'logo']).optional().describe('Add a page of this kind'),
+    add: z.enum(['infographic', 'slide']).optional().describe('Add a page of this kind'),
     page: z.string().optional().describe('The page to change: its id, place or name'),
     name: z.string().optional().describe('Name the page'),
     size: sizeArg,
@@ -174,7 +174,7 @@ async function changesFrom(ctx: VerbContext, source: string): Promise<PageChange
 }
 
 type ChangeFlags = {
-  add?: 'infographic' | 'slide' | 'logo';
+  add?: 'infographic' | 'slide';
   page?: string;
   name?: string;
   size?: string;

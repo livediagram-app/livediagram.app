@@ -8,19 +8,19 @@ the routes and the telemetry emit, consuming the module unchanged.
 
 Scope, by file (all under `packages/explorer-lens/src/`):
 
-| File                                        | Role                                                                                                      |
-| ------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| `packages/explorer-lens/src/dimensions.ts`  | The catalogue: dimensions, values, labels, telemetry types, constants                                     |
-| `packages/explorer-lens/src/types.ts`       | `Lens`, `LensTerm`, `LensIssue`, `WordProblem`, `LensContext`, `LensSubject`, `LensSuggestion`            |
-| `packages/explorer-lens/src/parse.ts`       | `parseLens`, `readWord`, `orderValues`, `tokenKeyOf`, `normaliseInput`, `emptyLens`                       |
-| `packages/explorer-lens/src/serialise.ts`   | `serialiseLens`, `tokenOf`, `setDimension`, `setDimensionValues`, `toggleDimensionValue`, `removeTerm`    |
+| File                                        | Role                                                                                                    |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `packages/explorer-lens/src/dimensions.ts`  | The catalogue: dimensions, values, labels, telemetry types, constants                                   |
+| `packages/explorer-lens/src/types.ts`       | `Lens`, `LensTerm`, `LensIssue`, `WordProblem`, `LensContext`, `LensSubject`, `LensSuggestion`          |
+| `packages/explorer-lens/src/parse.ts`       | `parseLens`, `readWord`, `orderValues`, `tokenKeyOf`, `normaliseInput`, `emptyLens`                     |
+| `packages/explorer-lens/src/serialise.ts`   | `serialiseLens`, `tokenOf`, `setDimension`, `setDimensionValues`, `toggleDimensionValue`, `removeTerm`  |
 | `packages/explorer-lens/src/match.ts`       | `designSubject`, `sharedSubject`, `compileLens`, `matchesLens`, `applyLens`, `editedCutoff`, `foldText` |
-| `packages/explorer-lens/src/suggest.ts`     | `suggestTokens`, `acceptSuggestion`                                                                       |
-| `packages/explorer-lens/src/view-models.ts` | `lensChips`, `lensPills`, `issueMessage`, `announceResults`                                               |
-| `packages/explorer-lens/src/labels.ts`      | `valueLabel`, `valueOptions`: one source of labels for chips, pills and suggestions                       |
-| `packages/explorer-lens/src/url.ts`         | `readLensQuery`, `withLensQuery`, `carryLensQuery`                                                        |
-| `packages/explorer-lens/src/telemetry.ts`   | `selectedFacets`                                                                                          |
-| `packages/explorer-lens/src/index.ts`       | The public surface (re-exports only)                                                                      |
+| `packages/explorer-lens/src/suggest.ts`     | `suggestTokens`, `acceptSuggestion`                                                                     |
+| `packages/explorer-lens/src/view-models.ts` | `lensChips`, `lensPills`, `issueMessage`, `announceResults`                                             |
+| `packages/explorer-lens/src/labels.ts`      | `valueLabel`, `valueOptions`: one source of labels for chips, pills and suggestions                     |
+| `packages/explorer-lens/src/url.ts`         | `readLensQuery`, `withLensQuery`, `carryLensQuery`                                                      |
+| `packages/explorer-lens/src/telemetry.ts`   | `selectedFacets`                                                                                        |
+| `packages/explorer-lens/src/index.ts`       | The public surface (re-exports only)                                                                    |
 
 ## Domain and naming
 
@@ -326,7 +326,7 @@ The lens on `/explorer`, over `@livedesign/explorer-lens`. Files:
 | ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------- |
 | `apps/live/app/explorer/lens/lens-views.ts`            | `lensViewOf`, `SEARCH_RESULTS_PATH`, `lensHref`, `carriedHref`                                             |
 | `apps/live/app/explorer/lens/field-model.ts`           | `splitField`, `composeField`, `settleField`, `writeDraft`, `removePill`, `chooseChipValue`                 |
-| `apps/live/app/explorer/lens/pane-lens.ts`             | `lensSubjectOf`, `isLensSet`, `narrowRows`, `scopeDesigns`, `RECENT_LIMIT`, `LibraryLens`                |
+| `apps/live/app/explorer/lens/pane-lens.ts`             | `lensSubjectOf`, `isLensSet`, `narrowRows`, `scopeDesigns`, `RECENT_LIMIT`, `LibraryLens`                  |
 | `apps/live/app/explorer/lens/lens-telemetry.ts`        | `trackLensChange`: `Explorer / Selected / <Facet>` per gained facet                                        |
 | `apps/live/app/explorer/lens/useExplorerLens.ts`       | `useExplorerLens`, `ExplorerLens`: the string, the caret, the URL kept in step, Search results             |
 | `apps/live/app/explorer/lens/LensField.tsx`            | `LensField`, `FIELD_PLACEHOLDER`: the header field, its pills and its suggestion listbox                   |
@@ -341,9 +341,9 @@ The lens on `/explorer`, over `@livedesign/explorer-lens`. Files:
 | `apps/live/app/explorer/useExplorerState.ts`           | Composes `useExplorerLens`; carries the lens in `go`; `failedReads`                                        |
 | `apps/live/app/explorer/ExplorerShell.tsx`             | Mounts `LensField` in the header and `LensAnnouncer` beside it                                             |
 | `apps/live/app/explorer/ExplorerPane.tsx`              | `PaneLensBar` under the header; Failed, Empty, Filtered empty, the list; the folder chips                  |
-| `apps/live/components/panels/TeamSharedDesigns.tsx`  | Narrows the team library it reads (`LibraryLens`), its own announcer and filtered-empty state              |
+| `apps/live/components/panels/TeamSharedDesigns.tsx`    | Narrows the team library it reads (`LibraryLens`), its own announcer and filtered-empty state              |
 | `apps/live/hooks/persistence/useTeamLibrariesSweep.ts` | Team rows carry `source`, `opensIn`, `tabKind`                                                             |
-| `apps/live/lib/api/designs.ts`                       | `DesignListItem` carries the recorded intent, optional                                                   |
+| `apps/live/lib/api/designs.ts`                         | `DesignListItem` carries the recorded intent, optional                                                     |
 | `packages/api-schema/src/telemetry-schema.ts`          | The `Explorer` category                                                                                    |
 | `apps/telemetry/app/catalogue/features.ts`             | `EXPLORER_FILTERS_PICKED`, in the Organisation stack                                                       |
 | `apps/telemetry/app/computed-emitters.ts`              | The facets `Explorer·Selected` sends, read from `LENS_TELEMETRY_TYPES`                                     |
@@ -354,16 +354,16 @@ The lens on `/explorer`, over `@livedesign/explorer-lens`. Files:
 `lensViewOf(kind)` is `'scoped'` for `all`, `folder`, `team`, `offline`; `'aggregate'` for `recent`, `favourites`,
 `search`, `shared`; `null` (no lens) for every other view. The base list each view narrows:
 
-| View         | Base list (before the lens)                                                                                                                            |
-| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| View         | Base list (before the lens)                                                                                                                        |
+| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `all`        | Unset: root folders, then root designs (`folderId === null`, not This Browser). Set: every own design in the tree, This Browser root ones excepted |
-| `folder`     | Unset: subfolders and designs in the folder. Set: every design in the folder's subtree (`scopeDesigns`)                                          |
-| `team`       | The team library at the open spot; set: every design in the spot's subtree                                                                           |
-| `offline`    | Every design in This Browser                                                                                                                         |
-| `recent`     | Own, team and shared rows not hidden from Recent, newest first; the first `RECENT_LIMIT` (12) after the lens                                           |
-| `favourites` | Starred own and team rows                                                                                                                              |
-| `search`     | Own, team and shared rows, newest first, no cap                                                                                                        |
-| `shared`     | Shared With Me                                                                                                                                         |
+| `folder`     | Unset: subfolders and designs in the folder. Set: every design in the folder's subtree (`scopeDesigns`)                                            |
+| `team`       | The team library at the open spot; set: every design in the spot's subtree                                                                         |
+| `offline`    | Every design in This Browser                                                                                                                       |
+| `recent`     | Own, team and shared rows not hidden from Recent, newest first; the first `RECENT_LIMIT` (12) after the lens                                       |
+| `favourites` | Starred own and team rows                                                                                                                          |
+| `search`     | Own, team and shared rows, newest first, no cap                                                                                                    |
+| `shared`     | Shared With Me                                                                                                                                     |
 
 The subjects suggestions mark against are the rows a set lens would reach: a scoped view's whole scope, the team
 sweep's rows of the open team, and on a view with no lens the `search` list. `lensSubjectOf(row, viewerId)`: a
@@ -509,10 +509,10 @@ list=designs|shared')`. Never a word of the lens or an id.
 | States copy and the announcer's settle                     | `apps/live/app/explorer/lens/LensStates.test.tsx`                      |
 | The Made by AI badge                                       | `apps/live/components/primitives/MadeByAiPill.test.tsx`                |
 | Routes, retired views, titles                              | `apps/live/app/explorer/routes.test.ts`, `view-titles.test.ts`         |
-| The panel's My Work: folders then designs                | `apps/live/components/panels/explorer-tree/PanelExplorerTree.test.tsx` |
-| A move to a root names the space                           | `apps/api/src/routes/design-placement-route.test.ts`                 |
+| The panel's My Work: folders then designs                  | `apps/live/components/panels/explorer-tree/PanelExplorerTree.test.tsx` |
+| A move to a root names the space                           | `apps/api/src/routes/design-placement-route.test.ts`                   |
 | Real browser as a guest, desktop and phone                 | `apps/live/e2e/explorer-filters.spec.ts`                               |
-| Real browser signed in: team root, team lens, Space chip   | `apps/live/e2e/clerk-stub/explorer-filters.spec.ts`                    |
+| Real browser signed in: team root, team lens, Space chip   | `apps/live/e2e/signed-in/explorer-filters.spec.ts`                     |
 
 ## Defaults ledger
 

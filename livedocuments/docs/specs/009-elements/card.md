@@ -88,8 +88,7 @@ their own.
 
 ## Palette
 
-**Components**: Card and Callout. A wireframe page's **Elements** holds the Card instead
-([Wireframe pages](../007-editor/wireframe-pages.md)).
+**Components**: Card and Callout.
 
 The Card tile drops a card with a tile, a title, a meta line, a body and two tags, so the first one shows what the
 slots are; switching a slot off is quicker than discovering one exists.

@@ -22,7 +22,7 @@ export function IdentityPrompt({
   participant: Participant;
   // Greets the visitor by the design ("Welcome to 'API sketch'").
   designName?: string;
-  // The Clerk account's name: the input reads it, locked.
+  // The account's name: the input reads it, locked.
   lockedName?: string | null;
   onJoin: (name: string) => void;
   onCancel: () => void;

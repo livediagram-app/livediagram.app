@@ -3,7 +3,6 @@
 // An empty tab's template start (docs/specs/007-editor/start-diagramming.md): Start Making Pages, a start panel
 // (StartPanel). Recommended and its groups beside a grid of the templates, each its preview over its name and line; a
 // search across them; the × starts from nothing. Choosing a template lands it on the tab at once.
-import { DeviceGlyph } from '@/components/canvas/wireframe/DeviceGlyph';
 import { useEffect, useMemo } from 'react';
 import { lucideGlyph } from '@livedocuments/ui';
 import {
@@ -13,7 +12,6 @@ import {
   lucideLayers,
   lucideLightbulb,
   lucidePenTool,
-  lucideShapes,
   lucideStar,
 } from '@livedocuments/icons/lucide';
 import type { TemplateKind } from '@livedocuments/templates';
@@ -36,16 +34,9 @@ const RAIL_ICONS: Readonly<Record<string, ReturnType<typeof lucideGlyph>>> = {
   infographics: glyph(lucideChartPie),
   articles: glyph(lucideFileText),
   posters: glyph(lucideImage),
-  logos: glyph(lucideShapes),
-  // A phone, the device a wireframe is most often for (docs/specs/007-editor/wireframe-pages.md).
-  wireframes: WireframesIcon,
   design: glyph(lucidePenTool),
 };
 const FALLBACK_ICON = glyph(lucideLightbulb);
-
-function WireframesIcon() {
-  return <DeviceGlyph device="iphone" size={16} />;
-}
 
 const COPY: { title: string; line: string; noMatch: string; help: HelpArticleKey } = {
   title: 'Start Making Pages',

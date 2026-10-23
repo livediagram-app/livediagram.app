@@ -94,9 +94,6 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   build: 3,
   write: 3,
   draw: 3,
-  // A screen's parts (docs/specs/007-editor/wireframe-pages.md "The Elements palette"); the layout
-  // adds the Badge, the Card and the Checklist.
-  wireframe: 8,
   devices: 7,
   icons: 0,
   stickers: 0,

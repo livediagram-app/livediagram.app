@@ -1,5 +1,4 @@
 import type { ElementStyleOps } from '@/lib/element-style-ops';
-import type { WordmarkPatch } from '@/lib/style-presets';
 import type {
   AnimationSpeed,
   ArrowEnds,
@@ -269,14 +268,6 @@ export type EditorContextMenuProps = {
   onPreviewFont: (font: string | null) => void;
   onSetPadding: (padding: Padding) => void;
   onPreviewPadding: (padding: Padding) => void;
-  // Wordmark type (docs/specs/007-editor/logo-pages.md "Wordmark type"): offered for a text
-  // element on a logo page; tiles and sliders preview, a press or a let-go commits.
-  wordmarkOffered?: boolean;
-  // Mirror Copy (docs/specs/007-editor/logo-pages.md "Mirror"): present only while the selection
-  // has an element on a logo page to reflect.
-  onMirrorCopy?: () => void;
-  onSetWordmark?: (patch: WordmarkPatch) => void;
-  onPreviewWordmark?: (patch: WordmarkPatch) => void;
   // Arrow Line + Pointer controls (docs/specs/008-canvas/canvas-and-palette.md), surfaced for arrows via the
   // shared ArrowLine / Pointer controls.
   onSetArrowThickness: (v: ArrowThickness) => void;

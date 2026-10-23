@@ -33,14 +33,13 @@ export type FaqCategory = {
 const ICON = 18;
 // Written out rather than read from @livedocuments/templates: this module ships in the FAQ's client bundle, and the
 // catalogue is ~15 KB for one number. faq-content.test.tsx pins it to TEMPLATES.length.
-export const TEMPLATE_COUNT = 35;
+export const TEMPLATE_COUNT = 23;
 // The template categories, pinned to TEMPLATE_CATEGORIES.length by faq-content.test.tsx the same way.
 export const TEMPLATE_CATEGORY_COUNT = 2;
 // The slide layouts, pinned to the catalogue by faq-content.test.tsx like the template count.
 export const SLIDE_LAYOUT_COUNT = 61;
-// The infographic page layouts and logo layouts, pinned the same way.
+// The infographic page layouts, pinned the same way.
 export const PAGE_LAYOUT_COUNT = 92;
-export const LOGO_LAYOUT_COUNT = 25;
 
 export const FAQ_CATEGORIES: FaqCategory[] = [
   {
@@ -51,7 +50,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'What is livedocuments?',
-        a: 'A free, real-time editor for documents made of pages: articles you write like a doc, slide decks you present, infographics and posters for print or social, and logos and wireframes on artboards of their own. Every document is a stack of tabs, each holding its pages, and your team can work on any of them with you live.',
+        a: 'A free, real-time editor for documents made of pages: articles you write like a doc, slide decks you present, and infographics and posters for print or social. Every document is a stack of tabs, each holding its pages, and your team can work on any of them with you live.',
       },
       {
         q: 'Do I need an account to use livedocuments?',
@@ -69,7 +68,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'How do I start my first document?',
-        a: `Press Start and choose what you are making: an article, a slide deck, an infographic, a logo or a wireframe. Begin from a blank page or one of ${TEMPLATE_COUNT} templates, and a short tour offers to show you round.`,
+        a: `Press Start and choose what you are making: an article, a slide deck or an infographic. Begin from a blank page or one of ${TEMPLATE_COUNT} templates, and a short tour offers to show you round.`,
       },
       {
         q: 'Does it work on my phone or tablet?',
@@ -154,16 +153,16 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
   {
     id: 'creating',
     title: 'Creating',
-    blurb: 'Articles, decks, infographics and logos.',
+    blurb: 'Articles, decks and infographics.',
     icon: lucideGlyph(lucideShapes, ICON),
     items: [
       {
         q: 'What can I make with it?',
-        a: 'Articles, project briefs and reports, slide decks and keynotes, posters, one-pagers and social posts, infographics and data stories, résumés and recipe cards, logos, app and website wireframes, storyboards and a to-scale floor plan. Pages hold shapes, text, pictures, icons, tables and charts.',
+        a: 'Articles, project briefs and reports, slide decks and keynotes, posters, one-pagers and social posts, infographics and data stories, résumés and recipe cards, storyboards and a to-scale floor plan. Pages hold shapes, text, pictures, icons, tables and charts.',
       },
       {
         q: 'How many templates and themes are there?',
-        a: `${TEMPLATE_COUNT} starter templates across ${TEMPLATE_CATEGORY_COUNT} categories, and twenty-four themes that recolour every page in one click, including dark and multi-colour schemes. On top of the templates, a page starts from ${PAGE_LAYOUT_COUNT} infographic layouts, ${SLIDE_LAYOUT_COUNT} slide layouts or ${LOGO_LAYOUT_COUNT} logo layouts. You can also build and save a colour scheme of your own.`,
+        a: `${TEMPLATE_COUNT} starter templates across ${TEMPLATE_CATEGORY_COUNT} categories, and twenty-four themes that recolour every page in one click, including dark and multi-colour schemes. On top of the templates, a page starts from ${PAGE_LAYOUT_COUNT} infographic layouts or ${SLIDE_LAYOUT_COUNT} slide layouts. You can also build and save a colour scheme of your own.`,
       },
       {
         q: 'Can I write documents in it?',
@@ -193,30 +192,15 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         aText: `Yes. Add 16:9 or 4:3 slide pages, each started from one of ${SLIDE_LAYOUT_COUNT} layouts, and present the deck full screen. Any page can join the deck, from any tab. Each slide can carry presenter notes and a time budget, and a laser pointer and spotlight help you guide the room. Presenting happens on your screen only, so collaborators carry on working. See slide pages.`,
       },
       {
-        q: 'Can I design infographics, posters or a logo?',
+        q: 'Can I design infographics or posters?',
         a: (
           <>
             Yes. Lay out pages in print sizes (A4, US Letter, A3) or social sizes, starting from one
-            of {PAGE_LAYOUT_COUNT} layouts, and export them print-ready as PDF, PNG or SVG. A logo
-            page is a square artboard with {LOGO_LAYOUT_COUNT} logo layouts, construction guides,
-            mirror drawing and wordmark type, and it exports a logo kit. See{' '}
+            of {PAGE_LAYOUT_COUNT} layouts, and export them print-ready as PDF, PNG or SVG. See{' '}
             <a href="/help/pages/working-with-pages/">working with pages</a>.
           </>
         ),
-        aText: `Yes. Lay out pages in print sizes (A4, US Letter, A3) or social sizes, starting from one of ${PAGE_LAYOUT_COUNT} layouts, and export them print-ready as PDF, PNG or SVG. A logo page is a square artboard with ${LOGO_LAYOUT_COUNT} logo layouts, construction guides, mirror drawing and wordmark type, and it exports a logo kit. See working with pages.`,
-      },
-      {
-        q: 'Can I wireframe an app or a website?',
-        a: (
-          <>
-            Yes. A wireframe page draws a phone, a tablet, a browser, a laptop or a watch round the
-            screen you are planning, and starts from a ready-made screen. Five templates lay out
-            whole flows, from a mobile app to a web dashboard. See{' '}
-            <a href="/help/pages/wireframe-pages/">wireframe pages</a>.
-          </>
-        ),
-        aText:
-          'Yes. A wireframe page draws a phone, a tablet, a browser, a laptop or a watch round the screen you are planning, and starts from a ready-made screen. Five templates lay out whole flows, from a mobile app to a web dashboard. See wireframe pages.',
+        aText: `Yes. Lay out pages in print sizes (A4, US Letter, A3) or social sizes, starting from one of ${PAGE_LAYOUT_COUNT} layouts, and export them print-ready as PDF, PNG or SVG. See working with pages.`,
       },
       {
         q: 'Can I organise a big document?',
@@ -373,14 +357,14 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
           <>
             Yes. livedocuments runs an MCP server at mcp.livedocuments.app. Connect a compatible AI
             tool and, after a one-time authorisation, it can find, read, create and edit the
-            documents in your account, including writing articles, building slide decks and
-            designing logos. Its changes appear live for anyone on the tab, outlined so you can see
+            documents in your account, including writing articles, building slide decks and laying
+            out infographics. Its changes appear live for anyone on the tab, outlined so you can see
             them and undo them. <a href="/ai">Build with AI</a> walks you through connecting Claude,
             ChatGPT, Cursor and more.
           </>
         ),
         aText:
-          'Yes. livedocuments runs an MCP server at mcp.livedocuments.app. Connect a compatible AI tool and, after a one-time authorisation, it can find, read, create and edit the documents in your account, including writing articles, building slide decks and designing logos. Its changes appear live for anyone on the tab, outlined so you can see them and undo them. Build with AI walks you through connecting Claude, ChatGPT, Cursor and more.',
+          'Yes. livedocuments runs an MCP server at mcp.livedocuments.app. Connect a compatible AI tool and, after a one-time authorisation, it can find, read, create and edit the documents in your account, including writing articles, building slide decks and laying out infographics. Its changes appear live for anyone on the tab, outlined so you can see them and undo them. Build with AI walks you through connecting Claude, ChatGPT, Cursor and more.',
       },
       {
         q: 'Is there an API?',
@@ -408,7 +392,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'Can I export my work?',
-        a: 'Yes. Export pages as PNG, SVG, one print-ready PDF or an animated GIF, a logo page as a logo kit, and any tab as a portable JSON file to import back with full fidelity. Hidden layers stay out of image exports unless you switch them on.',
+        a: 'Yes. Export pages as PNG, SVG, one print-ready PDF or an animated GIF, and any tab as a portable JSON file to import back with full fidelity. Hidden layers stay out of image exports unless you switch them on.',
       },
       {
         q: 'Can I bring in writing from elsewhere?',

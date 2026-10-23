@@ -47,7 +47,6 @@ describe('the starts', () => {
       'blank-slide-deck',
       'blank-article',
       'blank-infographic',
-      'blank-logo',
     ]);
   });
 

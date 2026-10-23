@@ -69,16 +69,15 @@ describe('page lock', () => {
     expect(laid[0]!.locked).toBe(true);
   });
 
-  it('reads a page lock and Started Blank back only as true', () => {
+  it('reads a page lock back only as true', () => {
     const tab = {
       pages: [
-        { id: 'x', orientation: 'portrait', locked: true, startedBlank: true },
-        { id: 'y', orientation: 'portrait', locked: 'yes', startedBlank: 1 },
+        { id: 'x', orientation: 'portrait', locked: true },
+        { id: 'y', orientation: 'portrait', locked: 'yes' },
       ],
     } as never;
     const [x, y] = pagesOf(tab);
-    expect(x).toMatchObject({ locked: true, startedBlank: true });
+    expect(x).toMatchObject({ locked: true });
     expect(y!.locked).toBeUndefined();
-    expect(y!.startedBlank).toBeUndefined();
   });
 });

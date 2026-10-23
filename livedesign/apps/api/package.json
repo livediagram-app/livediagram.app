@@ -27,6 +27,7 @@
     "@livedesign/photo-engine": "workspace:*",
     "@livedesign/render-png": "workspace:*",
     "@livedesign/templates": "workspace:*",
+    "@liveworkspace/auth-client": "workspace:*",
     "@liveworkspace/media": "workspace:*",
     "jose": "^6.2.12"
   },

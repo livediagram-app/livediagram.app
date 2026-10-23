@@ -491,7 +491,7 @@ export function EditorCanvasHost() {
                         pageId,
                         formatConfig.mode === 'keep',
                       );
-                      // A refused paint (a locked page, a picture onto a logo page) keeps the brush:
+                      // A refused paint (a locked page) keeps the brush:
                       // only a paint empties a Paint once brush.
                       if (
                         press.paint &&

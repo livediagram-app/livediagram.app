@@ -32,17 +32,6 @@ export const SECTION_TEMPLATE_KINDS: Readonly<Record<string, readonly TemplateKi
     'live-card',
     'blank-infographic',
   ],
-  logos: [
-    'logo-design',
-    'wireframe-mobile-app',
-    'wireframe-website',
-    'wireframe-dashboard',
-    'wireframe-tablet-app',
-    'wireframe-watch-app',
-    'storyboard',
-    'floor-plan',
-    'blank-logo',
-  ],
   collaboration: ['live-card', 'workshop-kickoff', 'article', 'team-welcome', 'storyboard'],
 };
 

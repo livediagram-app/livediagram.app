@@ -40,8 +40,6 @@ export type CommandContext = {
   // True when the single selection can be rotated (`supportsRotation`): boxed, minus a
   // margin note or a pointer note. Gates the Rotate commands.
   singleRotates: boolean;
-  // True when the selection has an element on a logo page to reflect (Mirror Copy).
-  canMirrorCopy?: boolean;
   // True when the single selection is a plain shape (markers are shape-only).
   singleIsShape: boolean;
   // True when the single selection already carries a looping animation
@@ -85,7 +83,6 @@ export type CommandHandlers = {
   bringToFront: () => void;
   sendToBack: () => void;
   rotate: (deg: number) => void;
-  mirrorCopy: () => void;
   clearAnimation: () => void;
   setMarker: (marker: ShapeMarker | null) => void;
   addComment: () => void;

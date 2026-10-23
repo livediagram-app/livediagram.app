@@ -1,12 +1,7 @@
 'use client';
 
 import { useCallback, useRef, useState } from 'react';
-import {
-  PAGE_GAP,
-  type LaidOutPage,
-  type PageKind,
-  type WireframeDeviceId,
-} from '@livedocuments/document';
+import { PAGE_GAP, type LaidOutPage, type PageKind } from '@livedocuments/document';
 import { lucideLayoutGrid } from '@livedocuments/icons/lucide';
 import { lucideGlyph, PlusIcon, Tooltip } from '@livedocuments/ui';
 import { addAnotherLabel } from '@/lib/add-page-labels';
@@ -26,8 +21,8 @@ const IDLE =
 const PRESSED = 'bg-brand-700 text-white ring-brand-700 dark:bg-brand-600';
 
 // After the last page (docs/specs/007-editor/pages-mode.md "Adding a page"), two buttons, held at
-// one screen size whatever the zoom: the + adds another page like the last one (its kind and shape;
-// a wireframe page's device and frame too), named for what it adds ("Add Another Slide"); the
+// one screen size whatever the zoom: the + adds another page like the last one (its kind and shape),
+// named for what it adds ("Add Another Slide"); the
 // button under it opens Add a Page (AddPagePopover) to choose a page of any kind.
 export function AddPageButton({
   last,
@@ -37,9 +32,9 @@ export function AddPageButton({
 }: {
   // The last page: where the pair sits (in the gap after it, level with its middle) and what the +
   // adds another of.
-  last: Pick<LaidOutPage, 'id' | 'rect' | 'kind' | 'device'>;
+  last: Pick<LaidOutPage, 'id' | 'rect' | 'kind'>;
   zoom: number;
-  onAdd: (kind: PageKind, device?: WireframeDeviceId) => void;
+  onAdd: (kind: PageKind) => void;
   onAddLike: (pageId: string) => void;
 }) {
   const lastRight = last.rect.x + last.rect.width;

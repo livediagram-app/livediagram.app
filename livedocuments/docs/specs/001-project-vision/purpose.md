@@ -1,7 +1,7 @@
 # Purpose
 
-livedocuments is a web app where teams make **documents of pages together, in real time**: articles, slide decks,
-infographics, logos and wireframes.
+livedocuments is a web app where teams make **documents of pages together, in real time**: articles, slide decks
+and infographics.
 
 This is the root of the spec tree: every other spec is a decision taken inside
 the boundaries set here. That only works if it stays true, so it carries a
@@ -12,7 +12,7 @@ than quietly describing a product that no longer exists.
 
 A multiplayer page editor in the browser. A document holds tabs, and every tab is a run of pages on a
 surround ([Pages mode](../007-editor/pages-mode.md)): an article that flows across linked pages, a deck of
-slides, an infographic, a logo artboard or a wireframe of a screen. Anyone with access to a document can join,
+slides or an infographic. Anyone with access to a document can join,
 see other collaborators' cursors and edits live, and contribute simultaneously.
 
 The page is the product. Everything else exists because a team making a document together usually ends by
@@ -28,7 +28,7 @@ Teams who need to write, show and design together:
 
 - Anyone writing a report, a brief or a how-to, and wanting it laid out on real pages.
 - Teams building a talk, a pitch or a review deck, and presenting it from the same place.
-- Marketing, product and design people making infographics, social cards, logos and screen wireframes.
+- Marketing, product and design people making infographics, posters and social cards.
 
 The unit of value is the **team**. The entry point is one person: the editor
 works fully without signing in, and a guest gets persistence, share links and
@@ -44,8 +44,7 @@ never arrives.
   awareness, per-element merge so concurrent edits don't clobber, and an ordered
   room with reconnect catch-up, plus Follow Me ([Follow-me viewport](../012-collaboration/follow-me-viewport.md)).
 - **Pages** ([Pages mode](../007-editor/pages-mode.md)): page sizes, backgrounds, layouts and page snapping;
-  [articles](../007-editor/article-pages.md) that flow text across pages,
-  [logo artboards](../007-editor/logo-pages.md) and [wireframes](../007-editor/wireframe-pages.md). On a page:
+  [articles](../007-editor/article-pages.md) that flow text across pages. On a page:
   text, shapes, images, charts, concept graphics, tables, code blocks, checklists, stickers, icons and embeds, plus
   web components that lay themselves out
   ([Web components are elements; groups are gone](../009-elements/web-components-and-no-groups.md)).
@@ -90,6 +89,8 @@ here in the same change, with the spec that moved it.
   unsupported state.
 - **Pages only**: livedocuments began as livediagram with every mode, and was cut down to Pages. A feature that serves
   only a diagram, a whiteboard, a workshop or a plan does not belong here.
+- **Articles, slides and infographics**: logos and wireframes are livedesign's. A page kind, layout or tool that
+  serves only a logo or a screen wireframe does not belong here.
 
 ## Why it matters
 

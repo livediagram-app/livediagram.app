@@ -4,7 +4,6 @@
 // (the picker, /new, the MCP worker) lands the pages and the elements together.
 import type { Page } from '@livedocuments/document';
 import { liveCardPages } from './template-builders-livecard';
-import { logoDesignPages } from './template-builders-logo';
 import { slideDeckPages } from './template-builders-slides';
 import { eventPosterPages } from './template-builders-poster';
 import { yearInReviewPages } from './template-builders-year-review';
@@ -15,7 +14,6 @@ import { howItWorksPages } from './template-builders-how-it-works';
 import { versusPages } from './template-builders-versus';
 import { socialCarouselPages } from './template-builders-social-carousel';
 import { layoutDeckPages } from './template-builders-layout-decks';
-import { wireframeFlowPages } from './template-builders-wireframe-flows';
 import type { TemplateKind } from './templates';
 import { designTemplatePages, isDesignTemplate } from './template-design-pages';
 
@@ -24,8 +22,6 @@ export function templatePages(kind: TemplateKind): Page[] | undefined {
   switch (kind) {
     case 'slide-deck':
       return slideDeckPages();
-    case 'logo-design':
-      return logoDesignPages();
     case 'live-card':
       return liveCardPages();
     case 'event-poster':
@@ -44,12 +40,6 @@ export function templatePages(kind: TemplateKind): Page[] | undefined {
       return versusPages();
     case 'social-carousel':
       return socialCarouselPages();
-    case 'wireframe-mobile-app':
-    case 'wireframe-website':
-    case 'wireframe-dashboard':
-    case 'wireframe-tablet-app':
-    case 'wireframe-watch-app':
-      return wireframeFlowPages(kind);
     case 'launch-keynote':
     case 'quarterly-review':
     case 'team-welcome':

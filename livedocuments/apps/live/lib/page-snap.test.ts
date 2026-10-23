@@ -154,56 +154,6 @@ describe('pageSnap: swiping to the next page', () => {
   });
 });
 
-// A watch fits far closer than an article: moving on from one seen whole lands on the next at its
-// own fit, never at the watch's zoom.
-describe('pageSnap: pages of different fits', () => {
-  const mixed = layOutPages([
-    { id: 'w', kind: 'wireframe', size: 'device', device: 'watch' },
-    { id: 'a', kind: 'article', size: 'a4' },
-  ] as never);
-  const at = (id: string) => mixed.find((p) => p.id === id)!;
-  // A wireframe page may zoom in past 100% to fill the screen (usePagesMode).
-  const mixedFit = (p: LaidOutPage): SnapFrame =>
-    computeFitBelow(SCREEN, p.rect, 0, p.kind === 'wireframe' ? 2.5 : undefined);
-  const watch = mixedFit(at('w'));
-
-  it('swipes from a watch seen whole to the article at the article’s fit', () => {
-    const view = {
-      zoom: watch.zoom,
-      offset: {
-        x: watch.offset.x - (SNAP_SWIPE_FRACTION * SCREEN.width + 1) / watch.zoom,
-        y: watch.offset.y,
-      },
-    };
-    const result = pageSnap({
-      pages: mixed,
-      view,
-      screen: SCREEN,
-      band: BAND,
-      fitOf: mixedFit,
-      from: 'w',
-      velocity: 0,
-    });
-    expect(watch.zoom).toBeGreaterThan(mixedFit(at('a')).zoom * 2);
-    expect(result).toMatchObject({ pageId: 'a', frame: mixedFit(at('a')) });
-  });
-
-  it('pans from a watch seen whole onto the article at the article’s fit', () => {
-    const a = mixedFit(at('a'));
-    // The view's middle over the article, still at the watch's zoom.
-    const view = { zoom: watch.zoom, offset: { x: a.offset.x, y: a.offset.y } };
-    const result = pageSnap({
-      pages: mixed,
-      view,
-      screen: SCREEN,
-      band: BAND,
-      fitOf: mixedFit,
-      from: 'w',
-    });
-    expect(result).toMatchObject({ pageId: 'a', frame: a });
-  });
-});
-
 describe('pageSnap: zoomed in', () => {
   it('stays zoomed in, the page kept across what shows', () => {
     const fit = fitOf(page('p2'));

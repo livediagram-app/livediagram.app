@@ -5,7 +5,7 @@
 // from the bottom on a phone, a centred dialog on a desktop zoomed out; a press (or Surprise Me)
 // places the layout and closes it, so the page is seen with it. Like the card it stands in for, it
 // keeps to its layouts (no Change Theme).
-import { pageDeviceClass, pageKindOf, type LaidOutPage } from '@livedocuments/document';
+import { pageKindOf, type LaidOutPage } from '@livedocuments/document';
 import { layoutCatalogueFor, type PageLayoutId } from '@livedocuments/templates';
 import { CloseIcon, Tooltip } from '@livedocuments/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
@@ -20,7 +20,7 @@ export function LayoutGalleryDialog({
   onApply: (layout: PageLayoutId) => void;
   onClose: () => void;
 }) {
-  const count = layoutCatalogueFor(pageKindOf(page), pageDeviceClass(page)).layouts.length;
+  const count = layoutCatalogueFor(pageKindOf(page)).layouts.length;
   const titleId = `layout-gallery-${page.id}`;
   return (
     <Dialog

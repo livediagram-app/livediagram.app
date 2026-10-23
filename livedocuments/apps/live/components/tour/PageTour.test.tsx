@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-// Show Me on a page (docs/specs/007-editor/pages-tour.md, show-me.md, logo-pages.md "Show Me"): every page's panel
+// Show Me on a page (docs/specs/007-editor/pages-tour.md, show-me.md): every page's panel
 // runs its kind's track on that page, opening the real controls a step is about and closing them again.
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { readPinnedPageToolbar } from '@/components/canvas/article/page-toolbar-presence';
@@ -28,7 +28,6 @@ const page = (kind: Page['kind'], over: Partial<Page> = {}): Page => ({
   id: `${kind}-1`,
   orientation: kind === 'slide' ? 'landscape' : 'portrait',
   kind,
-  ...(kind === 'logo' ? { size: 'logo' as const } : {}),
   ...(kind === 'article' ? { flow: 'f1' } : {}),
   ...over,
 });
@@ -98,7 +97,7 @@ function SlidesButton() {
 function Page({ of, deleted = false }: { of: Page; deleted?: boolean }) {
   const [opened, setOpened] = useState<{ id: string; tab: PagePanelTab; seq?: number } | null>({
     id: of.id,
-    tab: of.kind === 'logo' ? 'background' : 'page',
+    tab: 'page',
   });
   useFollowPagePanelRequests(setOpened);
   const { tour, kind, freeze } = usePageTour((id) => id === of.id && !deleted);
@@ -117,10 +116,6 @@ function Page({ of, deleted = false }: { of: Page; deleted?: boolean }) {
           <TitlePopover name="Text" />
           <button type="button" data-page-deck-button="add" aria-label="Add to Slides" />
           <button type="button" data-tour-id="page-cog" aria-label="Page settings" />
-          <div data-logo-title-bar={of.id}>
-            <button type="button" aria-label="Mirror" />
-            <button type="button" aria-label="Guides" />
-          </div>
         </div>
       )}
       <button type="button" data-tour-id="add-page" aria-label="Add Page" />
@@ -135,7 +130,6 @@ function Page({ of, deleted = false }: { of: Page; deleted?: boolean }) {
           themeBackgrounds={[]}
           edit={edits()}
           onPreview={vi.fn()}
-          onLayoutPreview={vi.fn()}
           onClose={() => setOpened(null)}
           showMe={{
             button: (
@@ -172,7 +166,6 @@ describe('Show Me on every page', () => {
     ['slide', '/help/pages/slide-pages/'],
     ['infographic', '/help/pages/infographic-layouts/'],
     ['article', '/help/pages/articles/'],
-    ['logo', '/help/pages/logo-pages/'],
   ] as const)('heads a %s page’s panel beside its own Help', (kind, href) => {
     render(<Page of={page(kind)} />);
     expect(screen.getByRole('button', { name: 'Show Me' })).toBeTruthy();
@@ -251,6 +244,16 @@ describe('an infographic’s Show Me', () => {
     await shows(() => expect(document.querySelector('[data-page-panel]')).toBeNull());
     await shows(() => expect(stepDialog(/Add a Page/)).toBeTruthy());
   });
+
+  it('ends with its page, sending no Ended event', async () => {
+    const { rerender } = render(<Page of={page('infographic')} />);
+    await showMe();
+    await shows(() => expect(stepDialog(/^Show Me step 1 of 6: Your Page/)).toBeTruthy());
+    rerender(<Page of={page('infographic')} deleted />);
+    await settle();
+    expect(screen.queryByRole('dialog', { name: /^Show Me step/ })).toBeNull();
+    expect(track).not.toHaveBeenCalledWith('UI', 'Ended', expect.anything());
+  });
 });
 
 describe('an article’s Show Me', () => {
@@ -285,38 +288,5 @@ describe('an article’s Show Me', () => {
     );
     fireEvent.click(screen.getByRole('button', { name: 'Done' }));
     expect(track).toHaveBeenCalledWith('UI', 'Ended', 'ArticleTourCompleted');
-  });
-});
-
-describe('a logo page’s Show Me', () => {
-  it('reopens the panel on Layouts, then closes it for the title bar’s steps', async () => {
-    render(<Page of={page('logo')} />);
-    await showMe();
-    expect(track).toHaveBeenCalledWith('UI', 'Started', 'LogoTour');
-    await shows(() =>
-      expect(stepDialog(/^Show Me step 1 of 3: Start From a Logo Layout/)).toBeTruthy(),
-    );
-    expect(screen.getByRole('button', { name: 'Layouts' }).getAttribute('aria-pressed')).toBe(
-      'true',
-    );
-    await next();
-    expect(screen.queryByRole('textbox', { name: 'Page name' })).toBeNull();
-    await shows(() => expect(stepDialog(/Draw on Guides/)).toBeTruthy());
-    await next();
-    await shows(() => expect(stepDialog(/Mirror As You Draw/)).toBeTruthy());
-    await next();
-    fireEvent.click(screen.getByRole('button', { name: 'Done' }));
-    expect(track).toHaveBeenCalledWith('UI', 'Ended', 'LogoTourCompleted');
-  });
-
-  it('ends with its page, sending no Ended event', async () => {
-    const { rerender } = render(<Page of={page('logo')} />);
-    await showMe();
-    await next(); // Guides
-    await shows(() => expect(stepDialog(/Draw on Guides/)).toBeTruthy());
-    rerender(<Page of={page('logo')} deleted />);
-    await settle();
-    expect(screen.queryByRole('dialog', { name: /^Show Me step/ })).toBeNull();
-    expect(track).not.toHaveBeenCalledWith('UI', 'Ended', expect.anything());
   });
 });

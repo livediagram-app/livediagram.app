@@ -150,7 +150,7 @@ export function renderLabel(
     );
   }
 
-  // Arched wordmark type (docs/specs/007-editor/logo-pages.md "Wordmark type"): one line along an
+  // Arched wordmark type (docs/specs/006-document/document-structure.md "Text type"): one line along an
   // arc, drawn as an SVG face. Editing shows it flat (above); the arc returns on commit.
   if (element.type === 'text' && element.textArc) {
     if (!label) return null;

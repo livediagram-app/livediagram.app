@@ -13,8 +13,6 @@ import {
   layOutPages,
   pageHasOrientation,
   pageKindOf,
-  pageContentBox,
-  pageShowsSystemBars,
   type PageBackground,
   type Tab,
 } from '@livedocuments/document';
@@ -58,24 +56,11 @@ export function pageSummaries(tab: PagesTab): PageSummary[] {
     kind: pageKindOf(p),
     size: p.size ?? 'a4',
     orientation: pageHasOrientation(p) ? p.orientation : null,
-    rect: {
-      x: Math.round(p.rect.x),
-      y: Math.round(p.rect.y),
-      width: Math.round(p.rect.width),
-      height: Math.round(p.rect.height),
-    },
+    rect: roundRect(p.rect),
     background: describeBackground(p.background),
     locked: p.locked === true,
     flow: p.flow ?? null,
     elements: elementIdsOnPage(tab.elements, laid, p.id).size,
-    ...(p.kind === 'wireframe'
-      ? {
-          device: p.device ?? 'iphone',
-          frameLook: p.frameLook ?? 'theme',
-          systemBars: pageShowsSystemBars(p),
-          screen: roundRect(pageContentBox(p)),
-        }
-      : {}),
   }));
 }
 

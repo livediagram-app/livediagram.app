@@ -458,7 +458,7 @@ a checklist's `checklistItems`, a stat row's `stats`, a callout's `pageTitle` ov
 `pageTitle` and `pageSubtitle`, and a sticker's `stickerId`. A bare `text` is centred in its box unless it sets
 `textAlignX`.
 
-**Outlines.** A `freehand` element (a logo's polygon outline) is written with `points` as canvas coordinates, `[[x, y], ...]` in
+**Outlines.** A `freehand` element (a polygon outline) is written with `points` as canvas coordinates, `[[x, y], ...]` in
 drawing order, `closed` to close and fill it, and a `penColour` (ink, grey or a hued pen). The stored form is a box
 with the points packed inside it ([Stroke points](../006-document/stroke-points.md)), which no model can write, so
 the MCP takes the box from the points and packs them through the stored-tab migration, before the element is
@@ -537,7 +537,7 @@ Pages are named by id, place (`2`) or name; articles by flow id or title. Both t
 `packages/agent-verbs/src/pages/`) and the editor's own page edits, and reach open editors at once.
 
 - **`change_pages`** (destructive, as it deletes and replaces page content): up to 50 page changes in order,
-  `add` `{ kind, size, orientation, name, background, layout, at }` (infographic, slide or logo), `set`
+  `add` `{ kind, size, orientation, name, background, layout, at }` (infographic or slide), `set`
   `{ page, name, size, orientation, background, locked }`, `layout` `{ page, layout }`, `move` `{ page, to }`,
   `duplicate` `{ page }`, `delete` `{ page }` and `apply_background_to_all` `{ page }` (every other page of its kind
   takes its background), written as one edit; a refusal writes nothing and names the
@@ -600,10 +600,10 @@ Every post (these reports and `Mcp·Used`) is handed to the request's
 The MCP worker reads three bindings and two out-of-band values. Bindings
 (`API` service binding, `OAUTH_KV`) are declared in `wrangler.toml`; the rest:
 
-| Name               | Where                          | Absent means |
-| ------------------ | ------------------------------ | ------------ |
+| Name               | Where                          | Absent means                                                                                                                                                                       |
+| ------------------ | ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `CONSENT_BASE_URL` | `[vars]` (not secret)          | Defaults to `https://livedocuments.app`, so a self-host's OAuth callers land on the hosted consent screen instead of their own. Also the host of every tool's `url` and share link |
-| `TELEMETRY_KEY`    | worker secret, **also on api** | This worker sends no telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)) |
+| `TELEMETRY_KEY`    | worker secret, **also on api** | This worker sends no telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))                                                                        |
 
 `TELEMETRY_KEY` is livedocuments' Worker key for liveworkspace's central telemetry service
 (liveworkspace/docs/telemetry.md): §4.12's posts go there directly, with no Origin, and the key is what

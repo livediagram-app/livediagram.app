@@ -219,18 +219,18 @@ describe('page ls and page set', () => {
   it('adds a page with no layout, and lists an unnamed page without a name', async () => {
     const unnamed = { ...ANSWER, pages: [{ ...ANSWER.pages[0]!, name: null }] };
     const { ctx, sent } = setUp(undefined, () => Response.json(unnamed));
-    const out = await pageSet.run!(ctx, pageSet.input.parse({ doc: DOC_A, add: 'logo' }));
-    expect(sent).toEqual([{ pages: [{ op: 'add', kind: 'logo' }] }]);
+    const out = await pageSet.run!(ctx, pageSet.input.parse({ doc: DOC_A, add: 'slide' }));
+    expect(sent).toEqual([{ pages: [{ op: 'add', kind: 'slide' }] }]);
     expect(pageSet.text!(out)[1]).toBe('1  slide  slide  -960,-540 1920x1080');
   });
 
   it('takes a JSON list of changes, on the tab named', async () => {
-    const { ctx, sent } = setUp(undefined, undefined, '[{"op":"add","kind":"logo"}]');
+    const { ctx, sent } = setUp(undefined, undefined, '[{"op":"add","kind":"slide"}]');
     await pageSet.run!(ctx, pageSet.input.parse({ doc: DOC_A, tab: 'Details', changes: 'c.json' }));
-    expect(sent).toEqual([{ pages: [{ op: 'add', kind: 'logo' }] }]);
-    const one = setUp(undefined, undefined, '{"op":"add","kind":"logo"}');
+    expect(sent).toEqual([{ pages: [{ op: 'add', kind: 'slide' }] }]);
+    const one = setUp(undefined, undefined, '{"op":"add","kind":"slide"}');
     await pageSet.run!(one.ctx, pageSet.input.parse({ doc: DOC_A, changes: '-' }));
-    expect(one.sent).toEqual([{ pages: [{ op: 'add', kind: 'logo' }] }]);
+    expect(one.sent).toEqual([{ pages: [{ op: 'add', kind: 'slide' }] }]);
   });
 
   it('refuses no change, bad JSON, too many changes and the api’s refusal', async () => {

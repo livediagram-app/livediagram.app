@@ -191,7 +191,7 @@ What the person meant when they typed. A workbench attaches it to the message th
 reads exactly what was selected then, even when the selection has moved on since:
 
 ```text
-[livedocuments] "Home screen" › tab "Wireframe" (doc 3h9x2a, tab 0b34, rev 41)
+[livedocuments] "Home screen" › tab "Screens" (doc 3h9x2a, tab 0b34, rev 41)
 selected: button 146b "Play", frame e4a8 "Game grid", sticky 0c84 "Daily streak goes here"
 read: livedocuments tab view 3h9x2a --tab 0b34 --view show --ref 146b
 ```

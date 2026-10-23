@@ -13,8 +13,8 @@ export const POPULAR_TEMPLATE_KINDS: readonly TemplateKind[] = [
   'event-poster',
   'year-in-review',
   'social-carousel',
-  'wireframe-mobile-app',
-  'logo-design',
+  'how-it-works',
+  'launch-keynote',
 ];
 
 // The editor's template step: a shorter list, Blank Illustration first.

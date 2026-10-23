@@ -16,8 +16,6 @@ import {
   InfographicLayoutArt,
   LaserArt,
   LiveImageArt,
-  LogoLayoutsArt,
-  LogoPageArt,
   MarginCommentsArt,
   McpArt,
   PagesArt,
@@ -41,7 +39,6 @@ import {
   TidyPageArt,
   TimelineFeedArt,
   UndoRedoArt,
-  WireframePagesArt,
   ZenModeArt,
 } from '@/components/FeatureArt';
 import type { FeatureProps } from '@/components/Section';
@@ -73,8 +70,8 @@ export type LandingSection = {
 };
 
 /**
- * The feature categories, in the order the landing page tells them: the four kinds of page a
- * document is made of (articles, slide decks, infographics, then logos and wireframes), then working
+ * The feature categories, in the order the landing page tells them: the three kinds of page a
+ * document is made of (articles, slide decks, then infographics), then working
  * on them together. `page.tsx` renders one beat per entry and alternates its background by index;
  * `/features/<id>` renders each one's cards.
  */
@@ -302,49 +299,6 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Pages as an animated GIF',
         description:
           'Export the pages as one animated GIF for a chat, an email, a README or a social post. Every animation on a page plays in it, each page holds for 1 to 20 seconds, and it comes in three sizes up to 1440 pixels.',
-      },
-    ],
-  },
-  {
-    id: 'logos',
-    label: 'Logos & wireframes',
-    scene: 'logo',
-    cta: 'Explore logos and wireframes',
-    title: 'Design a logo, sketch the screens',
-    description:
-      'A logo page is a square artboard with construction guides: start from a layout, draw with Mirror for a symmetrical mark, then download every size you need. Wireframe pages put a phone, a tablet or a browser round the screens you are planning.',
-    metaDescription:
-      'Design a logo on an artboard with guides and Mirror, download a logo kit, and sketch app and website screens on wireframe pages.',
-    highlights: [
-      'Design a logo',
-      'Start from a logo layout',
-      'Wireframe the screens',
-      'Your brand as a theme',
-    ],
-    items: [
-      {
-        art: <LogoPageArt />,
-        href: '/help/pages/logo-pages/',
-        group: 'Logos',
-        title: 'Design a logo',
-        description:
-          'A logo page is a square artboard with construction guides to build on. Draw with Mirror and one side mirrors the other, or round the centre; combine shapes into one, and set the name in wordmark type. Then export a Logo Kit: an SVG, PNGs from 16 to 1024 pixels and a favicon, in one .zip.',
-      },
-      {
-        art: <LogoLayoutsArt />,
-        href: '/help/pages/logo-pages/',
-        group: 'Logos',
-        title: 'Start from a logo layout',
-        description:
-          'Start from one of twenty-five logo layouts in four kinds, from emblems and monograms to lockups and wordmarks, each painted from your theme. Pick one, then make it yours, or start from a blank board.',
-      },
-      {
-        art: <WireframePagesArt />,
-        href: '/help/pages/wireframe-pages/',
-        group: 'Wireframes',
-        title: 'Wireframe the screens',
-        description:
-          'A wireframe page draws a phone, a tablet, a browser, a laptop or a watch round the screen you are planning. Start from a ready-made screen, a sign-in, a feed or a checkout, and lay out the flow page by page.',
       },
       {
         art: <ThemesArt />,

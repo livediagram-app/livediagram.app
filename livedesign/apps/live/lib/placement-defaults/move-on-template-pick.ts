@@ -32,7 +32,7 @@ export async function moveOnTemplatePick(at: {
   // The wizard's handoff, taken at the pick (useTemplatePickMove).
   handoff: TemplatePickHandoff;
   kind: TemplateKind;
-  // Teams are Clerk-only: a guest's team folders are never read.
+  // Teams are signed-in only: a guest's team folders are never read.
   signedIn: boolean;
 }): Promise<string | null> {
   const { handoff } = at;

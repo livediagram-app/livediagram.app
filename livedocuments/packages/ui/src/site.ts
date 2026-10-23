@@ -23,9 +23,9 @@ export const SITE_NAME = 'livedocuments';
 // and the share rail build on. It names every kind of page a document is made of.
 export const SITE_TITLE = 'livedocuments: Write, present and design on pages together, live';
 export const SITE_DESCRIPTION =
-  'A free, real-time editor for documents made of pages: articles, slide decks, infographics and logos. Built for teams who write and present together.';
+  'A free, real-time editor for documents made of pages: articles, slide decks and infographics. Built for teams who write and present together.';
 // Lower case: it follows "livedocuments: " or starts a sentence through sentencePitch.
-export const SITE_PITCH = 'a real-time editor for articles, slide decks, infographics and logos';
+export const SITE_PITCH = 'a real-time editor for articles, slide decks and infographics';
 export const sentencePitch = () => `${SITE_PITCH[0]!.toUpperCase()}${SITE_PITCH.slice(1)}.`;
 
 // The open-source repository (docs/specs/002-project-scope/open-source-and-business-model.md: the codebase is public + MIT), linked

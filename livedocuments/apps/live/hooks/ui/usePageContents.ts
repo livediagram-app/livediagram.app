@@ -5,12 +5,7 @@
 // left. The rows, Find a Page, the thumbnails, the page marked as here, going to a page, the
 // keyboard, reordering by drag and adding a page live here once; each home lays them out.
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
-import {
-  MAX_PAGES,
-  pageKindOf,
-  type PageKind,
-  type WireframeDeviceId,
-} from '@livedocuments/document';
+import { MAX_PAGES, pageKindOf, type PageKind } from '@livedocuments/document';
 import { usePageThumbnails, type PageThumbTab } from '@/hooks/ui/usePageThumbnails';
 import type { PagesModeView } from '@/hooks/editor/usePagesMode';
 import {
@@ -175,13 +170,12 @@ export function usePageContents({
   const lastKind = pages.length ? pageKindOf(pages[pages.length - 1]!) : undefined;
   const add =
     view.edit?.addPage && !full
-      ? (kind: PageKind, device?: WireframeDeviceId) => {
+      ? (kind: PageKind) => {
           setAdded(pages.length);
-          if (device) view.edit!.addPage!(kind, device);
-          else view.edit!.addPage!(kind);
+          view.edit!.addPage!(kind);
         }
       : undefined;
-  // Another page like the last (its kind and shape; a wireframe page's device and frame too).
+  // Another page like the last (its kind and shape).
   const lastPage = pages.at(-1);
   const addLike =
     view.edit?.addPageLike && lastPage && !full

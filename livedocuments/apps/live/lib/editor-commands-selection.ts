@@ -62,16 +62,6 @@ export function selectionCommands(ctx: CommandContext, h: CommandHandlers): Edit
     });
   }
 
-  // Mirror Copy (docs/specs/007-editor/logo-pages.md "Mirror").
-  if (ctx.canMirrorCopy) {
-    out.push({
-      id: 'mirror-copy',
-      name: 'Mirror Copy',
-      keywords: 'mirror reflect flip symmetry logo copy twin',
-      run: h.mirrorCopy,
-    });
-  }
-
   // Rotation is for a single element that can turn (a margin note cannot).
   if (isSingle && ctx.singleRotates) {
     for (const deg of [90, 180, 270] as const) {

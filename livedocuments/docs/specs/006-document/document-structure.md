@@ -142,6 +142,25 @@ An element's style fields are read by name or done arithmetic with: `padding`, `
 that is no colour is, and the element draws with that style's default. Only the type is checked: a name this build
 does not know is still a name and is kept, so an older browser never drops what a newer one wrote.
 
+### Text type
+
+A text element carries four optional fields that set its type. They render wherever the text is (on any page,
+in every export); page layouts set them (a poster's spaced capitals), and an element keeps them when copied. A
+value out of its range is refused by the document's validation, as any malformed field is.
+
+- **Tracking** (`letterSpacing`): the space added between letters, in em, from -0.2 to 1 (absent is 0).
+- **Weight** (`fontWeight`): 400, 500 or 700, the weights every catalogue font loads. When present it wins over
+  `textBold`.
+- **Case** (`textCase`): `upper` or `lower` (absent is as typed). The text keeps what was typed; only its display
+  changes.
+- **Arc** (`textArc`): bends the text along a circle, from -360 to 360 degrees (absent is flat). Positive bows up
+  (text over the top of a circle, letters outward), negative bows down (text along the bottom, letters upright).
+  The arc's span is set by the element's box: under 180 degrees the arc's ends meet the box's sides; from 180 its
+  circle is the largest that fits the box; at 360 the text may run the whole circle. The text is centred on the
+  arc's midpoint at the element's size. Arched text is one line: line breaks are read as spaces and per-range
+  formatting yields to the element's own. Editing arched text shows it flat in the editor; the arc returns when
+  editing ends.
+
 ### Why element IDs are unique across the whole document, not per tab
 
 Element IDs are document-scoped so cross-tab links are stable even if elements move between tabs (e.g. cut from Tab A, paste into Tab B). The id doesn't change; the link still resolves.

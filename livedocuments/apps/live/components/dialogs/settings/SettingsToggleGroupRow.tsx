@@ -3,8 +3,8 @@
 import { SettingsRowShell } from './SettingsRowShell';
 import type { SettingsToggleGroupRowSpec } from './settings-catalogue';
 
-// Several related switches as one control (a logo page's construction guides,
-// docs/specs/007-editor/user-preferences.md "Toggle groups"): the group's label and one description
+// Several related switches as one control (docs/specs/007-editor/user-preferences.md "Toggle
+// groups"): the group's label and one description
 // over a row of switch chips, one per preference, where a row per switch would repeat the same
 // sentence six times.
 export function SettingsToggleGroupRow({

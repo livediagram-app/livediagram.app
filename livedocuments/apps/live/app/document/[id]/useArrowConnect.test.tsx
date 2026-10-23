@@ -3,7 +3,7 @@ import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import {
   layOutPages,
-  newLogoPage,
+  newSlidePage,
   type Element,
   type LaidOutPage,
   type Tab,
@@ -13,7 +13,7 @@ import { useArrowConnect } from './useArrowConnect';
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
 // docs/specs/007-editor/pages-mode.md "Arrows stay on one page": Connect never joins two pages.
-const pages = layOutPages([newLogoPage('a'), newLogoPage('b')]);
+const pages = layOutPages([newSlidePage('a'), newSlidePage('b')]);
 const box = (id: string, page: number) => {
   const r = pages[page]!.rect;
   return {

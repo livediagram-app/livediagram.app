@@ -173,8 +173,8 @@ const ELEMENT_SCHEMA_HINT =
 export function elementSchemaDoc(): string {
   return `# livedocuments element schema
 
-A tab is { name, elements: Element[] }, and its pages (infographics, slides, logo
-artboards and articles) sit on its canvas; an element is on the page whose
+A tab is { name, elements: Element[] }, and its pages (infographics, slides and
+articles) sit on its canvas; an element is on the page whose
 rectangle holds it. Every element needs a unique string "id". A document has one
 or more tabs. create_document makes a document with one or more tabs at once;
 add_tab appends another tab to an existing document. change_pages answers each
@@ -247,7 +247,7 @@ tabs in a create_document call.
 - Size sibling nodes consistently (e.g. every box 160x64).
 - Prefer pinned arrows (node -> node) so they track their shapes when moved.
 - Give every node an id and a short, clear label.
-- For a deck, an article, a logo, a poster or another ready-made page,
+- For a deck, an article, a poster or another ready-made page,
   list_templates has ready-made pages to pass as "template", then replace their
   sample text with update_document.
 `;
@@ -258,15 +258,15 @@ tabs in a create_document call.
 // with what you send, and where the format is written down), not as rules for
 // the calling model (docs/specs/015-api/mcp-server.md §4.15).
 export const SERVER_INSTRUCTIONS = `Tools to find, view, create, add tabs to, edit, share, rename, delete (to the Trash) and restore the user's livedocuments documents.
-A document holds tabs, and each tab holds pages: infographics, slides, logo artboards and articles (documents of text on
-pages). change_pages adds, changes, lays out (from a ready-made layout), moves, copies and deletes infographic, slide
-and logo pages and answers each page's rectangle on the canvas, where update_document puts elements; write_article
+A document holds tabs, and each tab holds pages: infographics, slides and articles (documents of text on pages).
+change_pages adds, changes, lays out (from a ready-made layout), moves, copies and deletes infographic and slide pages
+and answers each page's rectangle on the canvas, where update_document puts elements; write_article
 writes an article from Markdown, new or over an existing one, and the editor flows it onto pages. Asked to write a
-document, a report or a brief, write an article; asked for a deck, add slide pages; asked for a logo, add a logo page;
+document, a report or a brief, write an article; asked for a deck, add slide pages;
 asked for a poster or an infographic, add an infographic page. A new document starts with create_document and one tab
 whose template is "blank-slide-deck" for a deck (one empty slide; change_pages adds the rest, each change an object
-such as {"op": "add", "kind": "slide", "layout": ...}), "blank-article" for an article, "blank-logo" for a logo, or
-"blank-infographic" otherwise; the other templates (slide-deck, article, logo-design, event-poster, resume, ...) start
+such as {"op": "add", "kind": "slide", "layout": ...}), "blank-article" for an article, or "blank-infographic"
+otherwise; the other templates (slide-deck, article, event-poster, resume, ...) start
 from ready-made pages, and list_templates lists them all. A layout's elements hold sample text: read_document with view
 "pages" lists each page's elements with their refs and text, to replace with update_document. It also shows each
 article as Markdown.
@@ -299,7 +299,7 @@ const templateField = z
   .optional()
   .describe(
     'Start from a template\u2019s ready-made pages instead of providing elements: a template ' +
-      'kind from list_templates (e.g. "blank-slide-deck", "slide-deck", "article", "logo-design"). The server ' +
+      'kind from list_templates (e.g. "blank-slide-deck", "slide-deck", "article", "event-poster"). The server ' +
       'builds its pages ("layout" is ignored for a template tab) and paints ' +
       'them with the chosen theme. Replace the sample text afterwards with ' +
       'update_document mode "ops". Provide template OR elements, not both.',

@@ -126,15 +126,6 @@ describe('painting one page from another', () => {
     );
   });
 
-  it('refuses a picture onto a logo page', () => {
-    const h = harness([
-      slide('a', { background: { fill: { kind: 'image', imageId: 'img-1' } } }),
-      { id: 'l', orientation: 'portrait', kind: 'logo', size: 'logo' },
-    ]);
-    expect(h.edits().copyBackground('a', 'l')).toBe(false);
-    expect(h.toastInfo).toHaveBeenCalledWith('A logo page takes no picture background.');
-  });
-
   it('is no edit onto the source itself', () => {
     const h = harness([slide('a', { background: { fill: dusk } })]);
     expect(h.edits().copyBackground('a', 'a')).toBe(false);

@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { crossesPages, layOutPages, newLogoPage, pageIdAt, pageIdOf } from './index';
+import { crossesPages, layOutPages, newSlidePage, pageIdAt, pageIdOf } from './index';
 import type { Element } from './index';
 
 // docs/specs/007-editor/pages-mode.md "Arrows stay on one page".
-const pages = layOutPages([newLogoPage('a'), newLogoPage('b')]);
+const pages = layOutPages([newSlidePage('a'), newSlidePage('b')]);
 const centre = (i: number) => {
   const r = pages[i]!.rect;
   return { x: r.x + r.width / 2, y: r.y + r.height / 2 };

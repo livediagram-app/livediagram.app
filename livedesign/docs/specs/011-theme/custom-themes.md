@@ -8,7 +8,7 @@ The catalogue ships a fixed set of themes. Teams want their own palette (brand c
 
 ## Ownership + storage
 
-- Custom themes are **owner-scoped**, exactly like designs and folders ([API app](../015-api/api.md)): keyed by the request owner id, which is the Clerk `sub` for signed-in users or the `X-Owner-Id` guest id otherwise ([Auth + guest access](../014-identity/auth-and-guest-access.md)). **Guests get them too** — consistent with the canvas-works-without-sign-in principle — and a guest who signs up carries them over via the existing `POST /api/migrate` owner-id remap.
+- Custom themes are **owner-scoped**, exactly like designs and folders ([API app](../015-api/api.md)): keyed by the request owner id, which is the account `sub` for signed-in users or the `X-Owner-Id` guest id otherwise ([Auth + guest access](../014-identity/auth-and-guest-access.md)). **Guests get them too** — consistent with the canvas-works-without-sign-in principle — and a guest who signs up carries them over via the existing `POST /api/migrate` owner-id remap.
 - Stored in **D1** via the api worker (the browser never touches D1 directly). New table `custom_themes`:
 
   ```sql

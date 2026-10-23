@@ -144,13 +144,13 @@ describe('adding', () => {
     );
   });
 
-  it('adds logo and infographic pages, sized and turned', () => {
+  it('adds slide and infographic pages, sized and turned', () => {
     const tab = tabOf({ pages: [page('p1')] });
     const out = run(tab, [
-      { op: 'add', kind: 'logo' },
+      { op: 'add', kind: 'slide' },
       { op: 'add', kind: 'infographic', size: 'a3', orientation: 'landscape' },
     ]);
-    expect(kinds(out.tab)).toEqual(['infographic', 'logo', 'infographic']);
+    expect(kinds(out.tab)).toEqual(['infographic', 'slide', 'infographic']);
     expect(out.lines[1]).toBe('Added page 3 (infographic, A3 landscape): size a3, landscape.');
   });
 
@@ -163,10 +163,10 @@ describe('adding', () => {
 
   it('refuses a layout of another kind, and any on an article page', () => {
     const r = refusal(tabOf({ pages: [page('p1')] }), [
-      { op: 'add', kind: 'logo', layout: 'title' },
+      { op: 'add', kind: 'slide', layout: 'title' },
     ]);
     expect(r.code).toBe('layout_unknown');
-    expect(r.message).toContain('A logo page takes the layouts');
+    expect(r.message).toContain('A slide page takes the layouts');
     const withArticle = tabOf({
       pages: [page('a', { kind: 'article', flow: 'f' })],
       articles: { f: { blocks: [] } },
@@ -258,18 +258,12 @@ describe('setting', () => {
     expect(pagesOf(out.tab)[0]!.locked).toBeUndefined();
   });
 
-  it('refuses a turn of a slide and a pattern on a logo', () => {
+  it('refuses a turn of a slide', () => {
     const tab = tabOf({
-      pages: [
-        page('s', { kind: 'slide', size: 'slide', orientation: 'landscape' }),
-        page('l', { kind: 'logo', size: 'logo' }),
-      ],
+      pages: [page('s', { kind: 'slide', size: 'slide', orientation: 'landscape' })],
     });
     expect(refusal(tab, [{ op: 'set', page: 1, orientation: 'portrait' }]).code).toBe(
       'no_orientation',
-    );
-    expect(refusal(tab, [{ op: 'set', page: 2, background: { pattern: 'dots' } }]).code).toBe(
-      'pattern_not_offered',
     );
   });
 
@@ -355,10 +349,10 @@ describe('laying out, moving, duplicating, deleting', () => {
   // The benchmark's I4: an agent replacing a starter page wrote [add, delete 1], and the add had taken that page.
   it('takes a delete of the blank an earlier add took as done, deleting nothing', () => {
     const fresh = run(tabOf(), [
-      { op: 'add', kind: 'logo', name: 'Badge' },
+      { op: 'add', kind: 'slide', name: 'Badge' },
       { op: 'delete', page: 1 },
     ]);
-    expect(pagesOf(fresh.tab).map((p) => [p.kind, p.name])).toEqual([['logo', 'Badge']]);
+    expect(pagesOf(fresh.tab).map((p) => [p.kind, p.name])).toEqual([['slide', 'Badge']]);
     expect(fresh.lines[1]).toBe(
       'Page 1 was the empty first page, which change 1 made the page it added; nothing deleted.',
     );
@@ -521,68 +515,5 @@ describe('giving every page of a kind one background', () => {
       code: 'no_other_pages',
       change: 0,
     });
-  });
-});
-
-// docs/specs/007-editor/wireframe-pages.md: an agent adds a wireframe page in its device and sets its
-// frame look and system bars.
-describe('wireframe pages', () => {
-  it('adds a page in its device, saying the device, the frame look and the bars', () => {
-    const out = run(tabOf({ pages: [page('p1')] }), [
-      { op: 'add', kind: 'wireframe', device: 'watch', frameLook: 'dark', systemBars: false },
-    ]);
-    const added = pagesOf(out.tab)[1]!;
-    expect(added).toMatchObject({
-      kind: 'wireframe',
-      device: 'watch',
-      frameLook: 'dark',
-      systemBars: false,
-    });
-    expect(out.lines.join(' ')).toContain('device watch');
-    expect(out.lines.join(' ')).toContain('frame dark');
-    expect(out.lines.join(' ')).toContain('no system bars');
-  });
-
-  it('sets a wireframe page’s look and bars back on', () => {
-    const tab = tabOf({
-      pages: [
-        page('w', { kind: 'wireframe', size: 'device', device: 'iphone', systemBars: false }),
-      ],
-    });
-    const out = run(tab, [{ op: 'set', page: 1, frameLook: 'outline', systemBars: true }]);
-    expect(pagesOf(out.tab)[0]).toMatchObject({ frameLook: 'outline' });
-    expect(pagesOf(out.tab)[0]!.systemBars).toBeUndefined();
-    expect(out.lines.join(' ')).toContain('frame outline');
-    expect(out.lines.join(' ')).toContain('system bars');
-    const barsOnly = run(tab, [{ op: 'set', page: 1, systemBars: true }]);
-    expect(barsOnly.lines.join(' ')).not.toContain('frame');
-    const lookOnly = run(tab, [{ op: 'set', page: 1, frameLook: 'light' }]);
-    expect(lookOnly.lines.join(' ')).not.toContain('system bars');
-  });
-
-  it('refuses a frame look on a page that is not a wireframe', () => {
-    expect(
-      refusal(tabOf({ pages: [page('p1')] }), [{ op: 'set', page: 1, frameLook: 'dark' }]).code,
-    ).toBe('not_a_wireframe');
-  });
-
-  it('refuses a device on a page added as another kind, rather than saying it was set', () => {
-    const why = refusal(tabOf({ pages: [page('p1')] }), [
-      { op: 'add', kind: 'slide', device: 'watch' },
-    ]);
-    expect(why.code).toBe('not_a_wireframe');
-    expect(why.message).toMatch(/^A slide page has no device/);
-    expect(
-      refusal(tabOf({ pages: [page('p1')] }), [{ op: 'set', page: 1, frameLook: 'dark' }]).message,
-    ).toMatch(/^An infographic page has no device/);
-  });
-
-  it("names the page's size by its device", () => {
-    const out = run(tabOf({ pages: [page('p1')] }), [
-      { op: 'add', kind: 'wireframe', device: 'ipad', orientation: 'landscape' },
-      { op: 'add', kind: 'wireframe', device: 'laptop' },
-    ]);
-    expect(out.lines[0]).toContain('(wireframe, iPad landscape)');
-    expect(out.lines[1]).toContain('(wireframe, Laptop)');
   });
 });

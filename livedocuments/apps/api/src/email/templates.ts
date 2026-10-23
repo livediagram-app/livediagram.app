@@ -182,7 +182,7 @@ export function welcomeEmail(env: Env): RenderedEmail {
       intro:
         'livedocuments is a fast, no-friction way to make articles, slide decks and infographics. Here’s how to get your first one going:',
       points: [
-        '<strong>Start from a template</strong> (slide deck, article, infographic, logo and more) or a blank page, and pick one of the built-in themes for an instant look.',
+        '<strong>Start from a template</strong> (slide deck, article, infographic and more) or a blank page, and pick one of the built-in themes for an instant look.',
         '<strong>Write an article</strong> by typing or importing Markdown, and it flows onto as many pages as it needs.',
         '<strong>Present a slide deck</strong> full screen, with a laser and a spotlight to point things out.',
       ],

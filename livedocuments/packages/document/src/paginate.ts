@@ -179,7 +179,7 @@ export function withContentOnAPage<T extends Pick<Tab, 'elements'>>(
     if (fits) return null;
   } else {
     // Only pages nobody has made anything of are replaced: a page with a kind of its own (an
-    // article, a slide, a logo), a name, a paint or a lock is kept, and the content stays where it is.
+    // article, a slide), a name, a paint or a lock is kept, and the content stays where it is.
     if (
       stored.some(
         (p) => p.flow || p.locked || (p.kind && p.kind !== 'infographic') || p.name || p.background,

@@ -40,14 +40,6 @@ export const CATEGORY_ICONS: Record<string, Icon> = {
       <path d="M5.5 4h5M6 12V9.5M8 12V8M10 12v-1.5" />
     </>,
   ),
-  // Logos and wireframes: a square artboard with a mark on its keyline circle.
-  logos: glyph(
-    <>
-      <rect x="1.5" y="1.5" width="13" height="13" rx="1.5" />
-      <circle cx="8" cy="8" r="3.5" />
-      <path d="M8 4.5v7" />
-    </>,
-  ),
   // Collaboration: two people.
   collaboration: glyph(
     <>

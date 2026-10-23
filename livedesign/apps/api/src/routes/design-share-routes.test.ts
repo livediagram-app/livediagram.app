@@ -69,7 +69,7 @@ function ctxFor(
   opts: {
     body?: unknown;
     owner?: string | null;
-    clerkUserId?: string | null;
+    accountUserId?: string | null;
     env?: Env;
     waitUntil?: boolean;
   } = {},
@@ -78,7 +78,7 @@ function ctxFor(
   const ctx = makeTestRouteContext(method, path, {
     body: opts.body,
     owner: opts.owner === undefined ? 'user_1' : opts.owner,
-    clerkUserId: opts.clerkUserId,
+    accountUserId: opts.accountUserId,
     env: opts.env,
     ...(opts.waitUntil
       ? {
@@ -181,7 +181,7 @@ describe('handleDesignShareRoutes — a team design', () => {
   it('lets a joined member list, mint and revoke, and records them as the sharer', async () => {
     db.getMembership.mockResolvedValue({ status: 'joined' });
     email.emailEnabled.mockReturnValue(true);
-    const member = { owner: 'user_member', clerkUserId: 'user_member', env: roomEnv().env };
+    const member = { owner: 'user_member', accountUserId: 'user_member', env: roomEnv().env };
     expect(
       (await handleDesignShareRoutes(ctxFor('GET', '/api/designs/d_1/share', member).ctx))
         ?.status,
@@ -210,7 +210,7 @@ describe('handleDesignShareRoutes — a team design', () => {
       db.getMembership.mockResolvedValue(membership);
       const { ctx } = ctxFor('POST', '/api/designs/d_1/share', {
         owner: 'user_member',
-        clerkUserId: 'user_member',
+        accountUserId: 'user_member',
         body: {},
       });
       expect((await handleDesignShareRoutes(ctx))?.status).toBe(403);

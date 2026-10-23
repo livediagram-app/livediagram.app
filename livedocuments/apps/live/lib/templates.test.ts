@@ -36,19 +36,7 @@ describe('TEMPLATES catalogue', () => {
     'blank-slide-deck',
     'blank-article',
     'blank-infographic',
-    'blank-logo',
-    'blank-wireframe-phone',
-    'blank-wireframe-tablet',
-    'blank-wireframe-browser',
-    'blank-wireframe-laptop',
-    'blank-wireframe-watch',
     'slide-deck',
-    'logo-design',
-    'wireframe-mobile-app',
-    'wireframe-website',
-    'wireframe-dashboard',
-    'wireframe-tablet-app',
-    'wireframe-watch-app',
     'live-card',
     'storyboard',
     'floor-plan',
@@ -73,15 +61,15 @@ describe('TEMPLATES catalogue', () => {
   // The mechanism is generic; nothing ships hidden today.
   const listed = TEMPLATES.filter((t) => !t.hidden);
 
-  it('lists exactly 35 templates (1 default + 34 extra)', () => {
-    expect(listed).toHaveLength(35);
+  it('lists exactly 23 templates (1 default + 22 extra)', () => {
+    expect(listed).toHaveLength(23);
   });
 
-  it('splits cleanly into 1 default + 34 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
+  it('splits cleanly into 1 default + 22 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
     const defaults = listed.filter((t) => !t.extra);
     const extras = listed.filter((t) => t.extra);
     expect(defaults).toHaveLength(1);
-    expect(extras).toHaveLength(34);
+    expect(extras).toHaveLength(22);
   });
 
   it('ships no hidden templates', () => {
@@ -177,24 +165,6 @@ describe('templateCanvasOverrides', () => {
       'page-5',
       'page-6',
     ]);
-  });
-
-  it('opens the logo exploration on Logo pages', () => {
-    const o = templateCanvasOverrides('logo-design');
-    expect(o).toMatchObject({ backgroundPattern: 'blank' });
-    // Six lockup artboards, then the palette.
-    expect(o.pages?.map((p) => p.name)).toEqual([
-      'Horizontal',
-      'Stacked',
-      'App Icon',
-      'Horizontal + Tagline',
-      'Stacked + Tagline',
-      'One Colour',
-      'Palette',
-    ]);
-    // Each lockup on the logo artboard; the palette on a Square infographic page.
-    expect(o.pages!.slice(0, 6).every((p) => p.size === 'logo' && p.kind === 'logo')).toBe(true);
-    expect(o.pages![6]).toMatchObject({ size: 'square', kind: 'infographic' });
   });
 
   it('opens the group card on a cover and an inside, both Portrait post (4:5) pages', () => {

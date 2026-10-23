@@ -8,7 +8,7 @@ infographic on its own tab, put a window onto it on a slide, and the slide follo
 
 ## Why
 
-A deck explains the work done on the document's other tabs: the infographic, the article, the logo. Copying those
+A deck explains the work done on the document's other tabs: the infographic, the article. Copying those
 elements onto a slide makes a second copy that goes stale the moment the original changes, and someone has to
 remember to paste it again. A window is one source of truth: the tab is edited where it lives and every slide
 showing it is up to date.

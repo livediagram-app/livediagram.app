@@ -41,15 +41,13 @@ describe('the Pages template start', () => {
 });
 
 describe('Start Making Pages', () => {
-  it('groups by what is made: Slides, Infographics, Articles, Posters and Social, Logos, Wireframes, Design', () => {
+  it('groups by what is made: Slides, Infographics, Articles, Posters and Social, Design', () => {
     expect(TEMPLATE_START.groups.map((g) => g.name)).toEqual([
       'Recommended',
       'Slides',
       'Infographics',
       'Articles',
       'Posters and Social',
-      'Logos',
-      'Wireframes',
       'Design',
     ]);
     // A carousel is posted, not presented.
@@ -59,25 +57,23 @@ describe('Start Making Pages', () => {
     expect(group('design')).toEqual(['storyboard', 'floor-plan']);
   });
 
-  it('leads Slides, Infographics, Articles and Logos with their blank of a page kind', () => {
+  it('leads Slides, Infographics and Articles with their blank of a page kind', () => {
     // docs/specs/007-editor/start-diagramming.md "Recommended and groups".
     const first = Object.fromEntries(TEMPLATE_START.groups.map((g) => [g.id, g.kinds[0]]));
     expect(first).toMatchObject({
       slides: 'blank-slide-deck',
       infographics: 'blank-infographic',
       articles: 'blank-article',
-      logos: 'blank-logo',
     });
     // Recommended leads with Blank Infographic and Blank Article, then Blank Slide Deck in the Slide Deck's place;
-    // Blank Illustration and the Project Brief template are left out of it, and Blank Logo stays in its group alone.
+    // Blank Illustration and the Project Brief template are left out of it.
     const recommended = TEMPLATE_START.groups[0]!.kinds;
     expect(recommended.slice(0, 3)).toEqual([
       'blank-infographic',
       'blank-article',
       'blank-slide-deck',
     ]);
-    for (const k of ['blank-illustration', 'article', 'slide-deck', 'blank-logo'] as const)
+    for (const k of ['blank-illustration', 'article', 'slide-deck'] as const)
       expect(recommended).not.toContain(k);
-    expect(TEMPLATE_START.groups.filter((g) => g.kinds.includes('blank-logo'))).toHaveLength(1);
   });
 });

@@ -3,7 +3,7 @@
 // A page's panel (docs/specs/007-editor/pages-mode.md "page panel"): opened from the cog
 // above the page's top-right corner, in screen space so it reads at one size whatever the zoom.
 // Its name, then its tabs: Page (size, orientation; absent where the page has neither), Background
-// (every hover over a swatch previews on the page itself) and a logo page's Layouts; then the page's
+// (every hover over a swatch previews on the page itself); then the page's
 // actions. An article page's Style, Text and Background sit beside its cog (PageArticleButtons). It closes on an outside press, Escape, or the canvas
 // panning or zooming under it (it would no longer sit by its cog).
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
@@ -34,9 +34,6 @@ import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
 import type { PageEdits } from '@/hooks/editor/usePagesMode';
 import type { ThemeBackgroundPreset } from '@/lib/page-paint';
-import type { PageLayoutId } from '@livedocuments/templates';
-import { LayoutsSection } from './infographic-page-layouts-section';
-import { WireframeDeviceSettings } from './wireframe/WireframeDeviceSettings';
 import { OrientationSection, SizeSection } from './page-panel-sections';
 import { ApplyBackgroundToAll } from './page-background-apply-all';
 import { BackgroundSection } from './page-background-section';
@@ -49,23 +46,17 @@ const GAP = 6;
 const PAGE_EASE_MS = 200;
 
 type PagePreview = { pageId: string; patch: Partial<PageBackground> } | null;
-export type PagePanelTab = 'page' | 'device' | 'background' | 'layouts';
+export type PagePanelTab = 'page' | 'background';
 
 const TAB_LABEL: Record<PagePanelTab, string> = {
   page: 'Page',
-  device: 'Device',
   background: 'Background',
-  layouts: 'Layouts',
 };
 
-// The page's tabs: Page while it has a size or orientation to choose (a logo page has neither),
-// Background (not on an infographic or article page, whose Background sits beside its cog), then a
-// logo page's Layouts (an infographic or slide page's Layouts, and an article's Style and Text, sit
-// beside its cog).
+// The page's tabs: Page while it has a size or orientation to choose, then Background (not on an
+// infographic or article page, whose Background sits beside its cog). An infographic or slide
+// page's Layouts, and an article's Style and Text, sit beside its cog.
 export function pagePanelTabs(page: LaidOutPage): PagePanelTab[] {
-  // A wireframe page's size is its device (docs/specs/007-editor/wireframe-pages.md); its
-  // Background and Layouts sit beside its cog, as an infographic page's.
-  if (page.kind === 'wireframe') return ['device'];
   const hasPage = pageSizeChoices(page).length > 1 || pageHasOrientation(page);
   // An infographic page's Background, and an infographic or slide page's Layouts, are beside its
   // cog (PageBackgroundButton, PageLayoutsButton), so not here too.
@@ -73,7 +64,6 @@ export function pagePanelTabs(page: LaidOutPage): PagePanelTab[] {
   return [
     ...(hasPage ? (['page'] as const) : []),
     ...(kind !== 'infographic' && !page.flow ? (['background'] as const) : []),
-    ...(kind === 'logo' ? (['layouts'] as const) : []),
   ];
 }
 
@@ -86,7 +76,6 @@ export function PagePanel({
   themeBackgrounds,
   edit,
   onPreview,
-  onLayoutPreview,
   onClose,
   showMe,
 }: {
@@ -103,14 +92,12 @@ export function PagePanel({
   themeBackgrounds: ThemeBackgroundPreset[];
   edit: PageEdits;
   onPreview: (preview: PagePreview) => void;
-  // A layout shown on the page while its tile is hovered (InfographicLayoutPreview); null clears.
-  onLayoutPreview: (layout: PageLayoutId | null) => void;
   onClose: (restoreFocus: boolean) => void;
 }) {
   const panel = useRef<HTMLDivElement>(null);
   const mobile = useIsMobileViewport();
   const tabs = pagePanelTabs(page);
-  // A tab a page of this kind lacks (Layouts on an article page) opens as its first.
+  // A tab a page of this kind lacks (Background on an infographic page) opens as its first.
   const [tab, setTab] = useState<PagePanelTab>(tabs.includes(initialTab) ? initialTab : tabs[0]!);
   const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
 
@@ -180,12 +167,6 @@ export function PagePanel({
   }, [onClose]);
   // The previews are the panel's: closing it puts the page back.
   useEffect(() => () => onPreview(null), [onPreview]);
-  // Only on close: the callback is a fresh closure each render, so it is read through a ref.
-  const clearLayoutPreview = useRef(onLayoutPreview);
-  useEffect(() => {
-    clearLayoutPreview.current = onLayoutPreview;
-  });
-  useEffect(() => () => clearLayoutPreview.current(null), []);
 
   const preview = (patch: Partial<PageBackground> | null) =>
     onPreview(patch ? { pageId: page.id, patch } : null);
@@ -229,22 +210,13 @@ export function PagePanel({
             tab={tab}
             tabs={tabs}
             onTab={(next) => {
-              // Leaving Layouts takes its preview (a pending Replace's too) off the page.
-              if (next !== 'layouts') onLayoutPreview(null);
               // Leaving Background takes a hovered swatch's preview off the page.
               if (next !== 'background') onPreview(null);
               setTab(next);
             }}
           />
         ) : null}
-        {tab === 'device' ? (
-          <div className="px-3 py-2">
-            <WireframeDeviceSettings
-              page={page}
-              onDevice={(patch) => edit.setDevice(page.id, patch)}
-            />
-          </div>
-        ) : tab === 'page' ? (
+        {tab === 'page' ? (
           <>
             <SizeSection page={page} onSize={(size) => edit.setSize(page.id, size)} />
             <OrientationSection
@@ -272,16 +244,6 @@ export function PagePanel({
               }}
             />
           </>
-        ) : tab === 'layouts' ? (
-          <LayoutsSection
-            page={page}
-            onApply={(layout) => {
-              onLayoutPreview(null);
-              void edit.applyLayout(page.id, layout);
-              onClose(false);
-            }}
-            onPreview={onLayoutPreview}
-          />
         ) : null}
       </div>
       <PageActions page={page} locked={locked} edit={edit} onClose={() => onClose(false)} />

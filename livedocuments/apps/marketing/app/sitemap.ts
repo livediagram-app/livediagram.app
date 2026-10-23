@@ -31,7 +31,7 @@ export const dynamic = 'force-static';
 // ALTERNATIVES_LAST_UPDATED lives alongside the ALTERNATIVES array
 // in lib/alternatives.ts so the sitemap, the per-competitor pages'
 // article:modified_time OG meta, and the data revision all share
-// one constant. See docs/specs/019-marketing/comparison-pages.md "Metadata".
+// one constant. See liveworkspace/docs/comparison-pages.md "Metadata".
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
@@ -95,7 +95,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'monthly',
       priority: 0.2,
     },
-    // Comparison / "alternative" pages (docs/specs/019-marketing/comparison-pages.md). Derived from the same
+    // Comparison / "alternative" pages (liveworkspace/docs/comparison-pages.md). Derived from the same
     // ALTERNATIVES list the route + metadata use, so adding a competitor
     // updates the sitemap automatically.
     {

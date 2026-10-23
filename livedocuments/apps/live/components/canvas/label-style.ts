@@ -56,7 +56,8 @@ const FIXED_FONT_PX: Record<
   number
 > = LABEL_FONT_PX;
 
-const MULTI_FONT_PX: Record<import('@livedocuments/document').TextSizePreset, number> = NOTE_FONT_PX;
+const MULTI_FONT_PX: Record<import('@livedocuments/document').TextSizePreset, number> =
+  NOTE_FONT_PX;
 
 // Per-run sm/md/lg map to the same px table the element's base size uses,
 // so a run's size override reads consistently against its neighbours; xs is RUN_XS_PX on every
@@ -106,7 +107,7 @@ export type LabelTextStyle = {
   // label keeps the author's casing, and the live editor wears the same rule so typing
   // shows the label as it will read.
   uppercase?: boolean;
-  // Wordmark type (docs/specs/007-editor/logo-pages.md "Wordmark type"): shown in lower case,
+  // Wordmark type (docs/specs/006-document/document-structure.md "Text type"): shown in lower case,
   // tracked (em between letters), and painted in its own weight over bold's.
   lowercase?: boolean;
   letterSpacing?: number;
@@ -139,8 +140,8 @@ export function wordmarkTextCss(style: LabelTextStyle): React.CSSProperties {
   };
 }
 
-/** A text element's wordmark type as label style (docs/specs/007-editor/logo-pages.md "Wordmark
- *  type"); empty for every other element. The display label and the live editor both wear it, so
+/** A text element's wordmark type as label style (docs/specs/006-document/document-structure.md
+ *  "Text type"); empty for every other element. The display label and the live editor both wear it, so
  *  editing never shifts the text. */
 export function wordmarkTextStyle(el: BoxedElement): LabelTextStyle {
   if (el.type !== 'text') return {};

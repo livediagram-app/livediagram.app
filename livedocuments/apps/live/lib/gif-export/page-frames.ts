@@ -4,7 +4,7 @@ import { GifExportError } from './gif-export-error';
 import type { GifFrame } from './gif-timeline';
 import type { PageSnapshot } from './page-snapshot';
 
-// A logo page's see-through paper exports white (GIF transparency is one bit and fringes every soft edge).
+// White under every page, so nothing is left see-through (GIF transparency is one bit and fringes every soft edge).
 const PAPER = '#ffffff';
 
 /** The 2D context calls a frame's composition makes. */

@@ -64,14 +64,14 @@ export function SettingsCategoryPane({
   // Section to scroll to and focus the heading of (settingsSectionId).
   focusSectionId?: string | null;
   // Who is reading: the Designs rows list their folders (docs/specs/013-workspace/default-folders.md).
-  owner?: { ownerId: string; clerkUserId: string | null } | null;
+  owner?: { ownerId: string; accountUserId: string | null } | null;
 }) {
   const isMobile = useIsMobileViewport();
   // The folders the Designs rows choose from and name, fetched only for a pane that shows them.
   const showsDefaults = category.rows.some((r) => r.kind === 'placementDefault');
   const placementLists = usePlacementOptions({
     selfId: owner?.ownerId ?? 'pending',
-    clerkUserId: owner?.clerkUserId ?? null,
+    accountUserId: owner?.accountUserId ?? null,
     skip: useCallback(() => !showsDefaults, [showsDefaults]),
   });
   // Group CONSECUTIVE rows by section, so a category holding several

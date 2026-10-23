@@ -19,9 +19,9 @@ import { colorForKey, initialsOf } from '@/lib/identity';
 export function memberName(
   m: TeamMember,
   isSelf: boolean,
-  clerkDisplayName: string | null,
+  accountDisplayName: string | null,
 ): string {
-  if (isSelf && clerkDisplayName) return clerkDisplayName;
+  if (isSelf && accountDisplayName) return accountDisplayName;
   // Real display name once they've joined + used the app (docs/specs/013-workspace/teams.md),
   // resolved server-side from their participant profile. Falls back to
   // the prettified invite email for pending / profile-less rows.
@@ -75,16 +75,16 @@ export function LinkIcon() {
 // TeamPane's list; every mutation comes through the pane's handlers.
 export function TeamMemberRow({
   m,
-  clerkUserId,
-  clerkDisplayName,
+  accountUserId,
+  accountDisplayName,
   isAdmin,
   pinnedAdmin,
   onChangeRole,
   onRemove,
 }: {
   m: TeamMember;
-  clerkUserId: string | null;
-  clerkDisplayName: string | null;
+  accountUserId: string | null;
+  accountDisplayName: string | null;
   isAdmin: boolean;
   // True when this member is the team's last admin — their role select
   // and remove button are withheld so a team can't orphan itself.
@@ -92,8 +92,8 @@ export function TeamMemberRow({
   onChangeRole: (member: TeamMember, role: TeamRole) => void;
   onRemove: (member: TeamMember) => void;
 }) {
-  const isSelf = m.userId !== null && m.userId === clerkUserId;
-  const name = memberName(m, isSelf, clerkDisplayName);
+  const isSelf = m.userId !== null && m.userId === accountUserId;
+  const name = memberName(m, isSelf, accountDisplayName);
   // Pending = hasn't accepted (docs/specs/013-workspace/teams.md handshake), regardless
   // of whether the lazy claim has identified them yet.
   const pending = m.status === 'invited';

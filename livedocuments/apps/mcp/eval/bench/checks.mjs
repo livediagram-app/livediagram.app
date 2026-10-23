@@ -101,7 +101,7 @@ export function inside(snap, word, group) {
 }
 
 // A Pages tab's pages, from its pages view: `page 2 "Tip 2" page-99 · infographic Square · at … · 16 elements`
-// (a logo page adds `· background #fff` before its count; an article page ends `· article art-1 · its writing below`).
+// (a painted page adds `· background #fff` before its count; an article page ends `· article art-1 · its writing below`).
 // A page line's rectangle on the canvas: `at -960,-540 1920x1080`.
 function rectOf(line) {
   const r = / · at (-?[\d.]+),(-?[\d.]+) ([\d.]+)x([\d.]+)/.exec(line);

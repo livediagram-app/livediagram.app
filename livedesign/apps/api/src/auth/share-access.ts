@@ -11,10 +11,10 @@ import { getDesignSharePassword, getShareLink, upgradeDesignSharePassword } from
 import type { Env } from '../types';
 import { hashSharePassword, verifySharePassword } from './share-password-hash';
 
-// The personal-design owner rule. The hybrid `owner` id (Clerk sub OR the
+// The personal-design owner rule. The hybrid `owner` id (account id OR the
 // unsigned X-Owner-Id guest header, or the room's `?o=`) is trusted ONLY on a
 // personal design, where a guest id is an unguessable UUID. A TEAM design's
-// owner id is a Clerk id deliberately visible to every teammate, so a removed
+// owner id is an account id deliberately visible to every teammate, so a removed
 // member could present it; team access goes through verified membership.
 export function isPersonalOwner(
   owner: string | null,

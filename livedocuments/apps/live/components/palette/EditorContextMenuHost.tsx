@@ -4,7 +4,7 @@ import { useCallback } from 'react';
 import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
 import { EMPTY_SELECTION, type Selection } from '@/lib/selection-store';
 import dynamic from 'next/dynamic';
-import { logoPageAt, resolveLayerId, tagColoursOf } from '@livedocuments/document';
+import { resolveLayerId, tagColoursOf } from '@livedocuments/document';
 import { track } from '@/lib/telemetry';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useColourPalette } from '@/hooks/ui/useColourPalette';
@@ -149,9 +149,6 @@ export function EditorContextMenuHost() {
     toggleTextStyleSelected,
     commitTextSize,
     previewTextSize,
-    commitWordmark,
-    previewWordmark,
-    pagesMode,
     commitFont,
     previewFont,
     commitPadding,
@@ -220,16 +217,6 @@ export function EditorContextMenuHost() {
       .map((el) => resolveLayerId(el.layerId, layers)),
   );
   const selectionLayerId = ctxLayerIds.size === 1 ? [...ctxLayerIds][0]! : null;
-
-  // Wordmark type is offered for a text element whose centre is on a logo page
-  // (docs/specs/007-editor/logo-pages.md "Wordmark type").
-  const wordmarkOffered =
-    !!pagesMode &&
-    ctxSelectedEl?.type === 'text' &&
-    !!logoPageAt(pagesMode.pages, {
-      x: ctxSelectedEl.x + ctxSelectedEl.width / 2,
-      y: ctxSelectedEl.y + ctxSelectedEl.height / 2,
-    });
 
   return (
     <EditorContextMenu
@@ -377,10 +364,6 @@ export function EditorContextMenuHost() {
       onToggleTextStrikethrough={() => toggleTextStyleSelected('textStrikethrough')}
       onSetTextSize={commitTextSize}
       onPreviewTextSize={previewTextSize}
-      wordmarkOffered={wordmarkOffered}
-      onMirrorCopy={pagesMode?.logo?.canMirrorCopy() ? pagesMode.logo.mirrorCopy : undefined}
-      onSetWordmark={commitWordmark}
-      onPreviewWordmark={previewWordmark}
       onSetFont={commitFont}
       onPreviewFont={previewFont}
       onSetPadding={commitPadding}

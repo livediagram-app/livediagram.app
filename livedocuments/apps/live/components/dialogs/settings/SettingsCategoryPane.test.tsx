@@ -128,17 +128,17 @@ describe('SettingsCategoryPane link rows', () => {
 describe('SettingsCategoryPane tours', () => {
   const TOURS = SETTINGS_CATEGORIES.find((c) => c.id === 'tours')!;
 
-  it('turns the Slides tour back on alone, leaving the Logo tour answered', () => {
+  it('turns the Slides tour back on alone, leaving the Article tour answered', () => {
     const onChange = vi.fn();
     render(
       <SettingsCategoryPane
         category={TOURS}
-        settings={{ pagesTourSeen: true, pagesTourKinds: ['slide', 'logo'] }}
+        settings={{ pagesTourSeen: true, pagesTourKinds: ['slide', 'article'] }}
         onChange={onChange}
       />,
     );
     const slides = screen.getByRole('switch', { name: 'Slides Tour' });
-    expect(screen.getByRole('switch', { name: 'Logo Tour' }).getAttribute('aria-checked')).toBe(
+    expect(screen.getByRole('switch', { name: 'Article Tour' }).getAttribute('aria-checked')).toBe(
       'false',
     );
     expect(slides.getAttribute('aria-checked')).toBe('false');
@@ -149,7 +149,7 @@ describe('SettingsCategoryPane tours', () => {
     expect(track).toHaveBeenCalledWith('UI', 'Toggled', 'SlidesTourSeenOff');
     expect(onChange).toHaveBeenCalledWith({
       pagesTourSeen: false,
-      pagesTourKinds: ['logo'],
+      pagesTourKinds: ['article'],
     });
   });
 });

@@ -36,18 +36,13 @@ import { COMPARE_SET_LAYOUTS, type CompareSetLayoutId } from './page-layouts-set
 import { PEOPLE_SET_LAYOUTS, type PeopleSetLayoutId } from './page-layouts-set-people';
 import { SOCIAL_SET_LAYOUTS, type SocialSetLayoutId } from './page-layouts-set-social';
 import { EXPLAINERS_SET_LAYOUTS, type ExplainersSetLayoutId } from './page-layouts-set-explainers';
-import type { LogoLayoutId } from './logo-layouts';
-import type { WireframeLayoutId } from './wireframe-layouts';
 import type { SlideLayoutId } from './slide-layouts';
 
 export type { LayoutBox } from './page-layout-kit';
 
-// Every layout's id: the infographic layouts', the slide layouts' (SlideLayoutId) and the logo
-// layouts' (LogoLayoutId).
+// Every layout's id: the infographic layouts' and the slide layouts' (SlideLayoutId).
 export type PageLayoutId =
   | SlideLayoutId
-  | LogoLayoutId
-  | WireframeLayoutId
   | CoversSetLayoutId
   | PostersSetLayoutId
   | DataSetLayoutId

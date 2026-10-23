@@ -5,7 +5,7 @@ import type { RouteContext } from './context';
 
 // Per-user editor preference flags (docs/specs/007-editor/user-preferences.md). Stored as a single
 // JSON blob per owner so adding a flag never needs a migration.
-// Hybrid identity: Clerk userId when signed in, X-Owner-Id
+// Hybrid identity: account id when signed in, X-Owner-Id
 // otherwise, matching the rest of the api. The blob is opaque
 // to the worker beyond a small size cap, so a malformed client
 // reflects malformed prefs back to itself; no per-field

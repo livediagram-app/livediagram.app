@@ -8,7 +8,7 @@ const pages = layOutPages([
   { id: 'a', orientation: 'portrait', kind: 'infographic', name: 'Cover' },
   { id: 'b', orientation: 'landscape', kind: 'slide', size: 'slide' },
   { id: 'c', orientation: 'portrait', kind: 'article', flow: 'f1', locked: true },
-  { id: 'd', orientation: 'portrait', kind: 'logo', size: 'logo' },
+  { id: 'd', orientation: 'portrait', kind: 'slide', size: 'slide-classic' },
 ] as Page[]);
 
 describe('the Contents list', () => {
@@ -26,14 +26,14 @@ describe('the Contents list', () => {
       [1, 'Cover', 'Infographic · A4 Portrait'],
       [2, 'Page 2', 'Slide · In the deck'],
       [3, 'Page 3', 'Article · Field Notes'],
-      [4, 'Page 4', 'Logo'],
+      [4, 'Page 4', 'Slide · Not in the deck'],
     ]);
     expect(rows[2]!.locked).toBe(true);
     expect(rows[1]!.aspect).toBeGreaterThan(1.7);
   });
 
   it('finds pages by name, kind or number, every word', () => {
-    expect(filterContents(rows, 'slide').map((r) => r.id)).toEqual(['b']);
+    expect(filterContents(rows, 'slide').map((r) => r.id)).toEqual(['b', 'd']);
     expect(filterContents(rows, '3').map((r) => r.id)).toEqual(['c']);
     expect(filterContents(rows, 'cover portrait').map((r) => r.id)).toEqual(['a']);
     expect(filterContents(rows, '  ')).toHaveLength(4);

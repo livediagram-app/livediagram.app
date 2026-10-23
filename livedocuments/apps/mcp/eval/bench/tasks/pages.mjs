@@ -109,9 +109,12 @@ export default [
   {
     id: 'I4',
     level: 'medium',
-    prompt: 'Design a logo for a bakery called Crumb & Co.',
+    prompt: 'Design a poster for the opening of a bakery called Crumb & Co.',
     checks: [
-      ['a logo page', ({ snap }) => atLeast(1, pagesOfKind(snap, 'logo').length, 'logo pages')],
+      [
+        'an infographic page',
+        ({ snap }) => atLeast(1, pagesOfKind(snap, 'infographic').length, 'infographic pages'),
+      ],
       ['says Crumb & Co', ({ snap }) => mentionsAll(snap, [/crumb\s*(&|and)\s*co/i])],
       [
         'a mark beside the words (an icon or a shape)',
@@ -119,9 +122,9 @@ export default [
           atLeast(
             2,
             pagesOf(snap)
-              .filter((p) => p.kind === 'logo')
+              .filter((p) => p.kind === 'infographic')
               .reduce((n, p) => n + (p.elements ?? 0), 0),
-            'logo elements',
+            'poster elements',
           ),
       ],
     ],

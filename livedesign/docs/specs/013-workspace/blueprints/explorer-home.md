@@ -17,59 +17,59 @@ Scope, by file:
 | `packages/api-schema/src/within-reach.ts`                                      | `withinReach`, `utcDay`; shared with the view and the Shapes flyout                            |
 | `packages/api-schema/src/creation-use.ts`                                      | `readMarkUsed`, `MARK_USED_INVALID`                                                            |
 | `packages/api-schema/src/error-telemetry.ts`                                   | `home` resource                                                                                |
-| `apps/api/migrations/0001_livedesign_baseline.sql`                             | `design_opens`, its indexes, `timeline_events_actor_idx`                                     |
+| `apps/api/migrations/0001_livedesign_baseline.sql`                             | `design_opens`, its indexes, `timeline_events_actor_idx`                                       |
 | `apps/api/migrations/0001_livedesign_baseline.sql`                             | Drops frecency: the rank index, `frecency_key`, `open_days`, `first_opened_at`, the seed stamp |
 | `apps/api/src/home/local-day.ts`                                               | `parseTimeZone`, `localDay`                                                                    |
 | `apps/api/src/home/what-happened.ts`                                           | `verbOf`, `groupWhatHappened` (pure)                                                           |
-| `apps/api/src/home/record-open.ts`                                             | `recordDesignOpen`: the dedupe, the write, the last open, the fingerprints                   |
+| `apps/api/src/home/record-open.ts`                                             | `recordDesignOpen`: the dedupe, the write, the last open, the fingerprints                     |
 | `apps/api/src/timeline/seen.ts`                                                | `SEEN_WINDOW_MS`, `isNewVisit`: the unread mark's visit rule, shared with the Timeline route   |
 | `apps/api/src/timeline/backfill.ts`                                            | The reconstructed edit says `backfilled: true`; it and the reconstructed creation keep a row   |
-| `apps/api/src/db/design-visibility.ts`                                       | `VISIBLE_DESIGNS_CTES`: the designs a person can open, shared with the Inbox               |
-| `apps/api/src/db/design-opens.ts`                                            | The `design_opens` statements: read, record, touch, migrate, delete, sweep                   |
+| `apps/api/src/db/design-visibility.ts`                                         | `VISIBLE_DESIGNS_CTES`: the designs a person can open, shared with the Inbox                   |
+| `apps/api/src/db/design-opens.ts`                                              | The `design_opens` statements: read, record, touch, migrate, delete, sweep                     |
 | `apps/api/src/db/home.ts`                                                      | `readJumpBackIn`, `REAL_EDIT`, `MARKED_MAKING`, `readWhatHappenedRows`, `readMe`               |
-| `apps/api/src/db/collab-index.ts`                                              | The Inbox's `SCOPE_CTES` composed from `VISIBLE_DESIGNS_CTES`                                |
-| `apps/api/src/db/timeline.ts`                                                  | `NOT_IN_FEED`: the feed and the unread count leave `design_opened` out                       |
-| `apps/api/src/db/account.ts`                                                   | Account deletion and sign-up migration of `design_opens`                                     |
-| `apps/api/src/timeline/design-events.ts`, `tab-save.ts`                      | `recordDesignOpened`; `markUsed`, `reply` and `assigneeId` on the snapshots                  |
-| `apps/api/src/routes/designs.ts`                                             | The create reads `markUsed` and marks a genuine create; the copy route marks the copy          |
+| `apps/api/src/db/collab-index.ts`                                              | The Inbox's `SCOPE_CTES` composed from `VISIBLE_DESIGNS_CTES`                                  |
+| `apps/api/src/db/timeline.ts`                                                  | `NOT_IN_FEED`: the feed and the unread count leave `design_opened` out                         |
+| `apps/api/src/db/account.ts`                                                   | Account deletion and sign-up migration of `design_opens`                                       |
+| `apps/api/src/timeline/design-events.ts`, `tab-save.ts`                        | `recordDesignOpened`; `markUsed`, `reply` and `assigneeId` on the snapshots                    |
+| `apps/api/src/routes/designs.ts`                                               | The create reads `markUsed` and marks a genuine create; the copy route marks the copy          |
 | `apps/api/src/timeline/tab-diff.ts`                                            | `newComments` says whether each new comment is a reply                                         |
-| `apps/api/src/routes/design-subresource-routes.ts`                           | The tab read records a marked open; the comment POST stamps `reply`                            |
+| `apps/api/src/routes/design-subresource-routes.ts`                             | The tab read records a marked open; the comment POST stamps `reply`                            |
 | `apps/api/src/routes/home.ts`                                                  | `GET /api/home`                                                                                |
 | `apps/api/src/index.ts`, `auth/guest-rest.ts`, `types.ts`                      | Dispatch, `HOME_RATE_LIMITER`, the `home_opens` sweep, `home` owner-scoped                     |
-| `apps/api/src/responses.ts`                                                    | CORS allows `X-Design-Open`                                                                  |
+| `apps/api/src/responses.ts`                                                    | CORS allows `X-Design-Open`                                                                    |
 | `apps/api/wrangler.toml`                                                       | `HOME_RATE_LIMITER` in the default and `[env.staging]` blocks                                  |
 | `apps/api/src/openapi/manifest.ts`, `apps/api/scripts/gen-openapi-schemas.mjs` | The route; the `HomeResponse` schema; the create body's `markUsed`                             |
-| `packages/agent-verbs/src/mcp/schema.ts`, `apps/mcp/src/tools.ts`              | `create_design`'s optional `markUsed`, passed through to the create                          |
-| `apps/live/lib/api/designs.ts`                                               | `apiCreateDesign(..., { markUsed })` sends `markUsed: false` only                            |
+| `packages/agent-verbs/src/mcp/schema.ts`, `apps/mcp/src/tools.ts`              | `create_design`'s optional `markUsed`, passed through to the create                            |
+| `apps/live/lib/api/designs.ts`                                                 | `apiCreateDesign(..., { markUsed })` sends `markUsed: false` only                              |
 | `apps/live/lib/api/home.ts`                                                    | `apiReadHome`                                                                                  |
 | `apps/live/lib/api/tabs.ts`                                                    | `apiLoadTab(..., { open })` sends the marker                                                   |
-| `apps/live/app/design/[id]/seed-fetched-design.ts`                         | The editor's first-tab read is the marked one, unless embedded                                 |
-| `apps/live/app/design/[id]/{useIdentityBootstrap,useEditorState}.ts`         | `embed` reaches the seed                                                                       |
+| `apps/live/app/design/[id]/seed-fetched-design.ts`                             | The editor's first-tab read is the marked one, unless embedded                                 |
+| `apps/live/app/design/[id]/{useIdentityBootstrap,useEditorState}.ts`           | `embed` reaches the seed                                                                       |
 
 ## Domain and naming
 
-| Term              | Identifier                                                      | Meaning                                                            |
-| ----------------- | --------------------------------------------------------------- | ------------------------------------------------------------------ |
-| Home              | `home` (route segment, log prefix `home:`)                      | The Explorer landing view's data                                   |
-| Open              | `design_opens` row, `design_opened` event                   | The editor loading a design for a person                         |
-| Open marker       | `DESIGN_OPEN_HEADER` `X-Design-Open: 1`, `readDesignOpen` | The editor's declaration that this tab read is an open             |
-| Open day          | `last_open_day` (`YYYY-MM-DD`, UTC), `design_opened` event    | A UTC day with at least one open: one event per person per doc/day |
-| Last open         | `design_opens.last_opened_at`                                 | The person's latest open of a design, moved by every open        |
-| Use day           | `useDays`, CTE `used`                                           | A UTC day with an open, a real edit or a marked making             |
-| Making            | `design_created`, `design_duplicated` events                | The person making a design: a create, a duplicate, a copy        |
-| Marked making     | snapshot `markUsed: true`, `MARKED_MAKING`                      | A making that counts as a use                                      |
-| Mark used         | body `markUsed`, `readMarkUsed`                                 | The create's say on whether its making counts (default true)       |
-| Use window        | `WITHIN_REACH_USE_WINDOW_DAYS`, `windowStartOf(now)`            | The last 90 UTC days, today included, over which use days count    |
-| Last use          | `lastUsedAt`                                                    | The latest of the last open, last real edit and marked making      |
-| Jump Back In      | `jumpBackIn`, `HomeJumpBackInItem`, `HOME_WITHIN_REACH_PER_ROW` | A [Within reach](../../004-interface-design/within-reach.md) set   |
-| What Happened     | `whatHappened`, `HomeGroup`, `HomeAction`, `HomePerson`         | Others' actions, grouped                                           |
-| Group             | `HomeGroup`, id `<designId>:<day>`                            | One design's actions on one local day                            |
-| Summary           | `HomeGroup.summary`                                             | A group with more than one person: one entry with a sentence       |
-| Verb              | `HomeVerb`, `HOME_VERBS`                                        | The closed action vocabulary, in sentence order                    |
-| Visible designs | `VISIBLE_DESIGNS_CTES`, CTE `visible`                         | Own, joined-team, shared with a live link; never trashed           |
-| Via               | `via`: `own` / `team` / `shared`                                | How the person reaches a design                                  |
-| Local day         | `localDay(at, tz)`, `day`                                       | The reader's calendar day for an instant                           |
-| Me                | CTE `me`                                                        | The person's id plus every alias (`owner_aliases`)                 |
+| Term            | Identifier                                                      | Meaning                                                            |
+| --------------- | --------------------------------------------------------------- | ------------------------------------------------------------------ |
+| Home            | `home` (route segment, log prefix `home:`)                      | The Explorer landing view's data                                   |
+| Open            | `design_opens` row, `design_opened` event                       | The editor loading a design for a person                           |
+| Open marker     | `DESIGN_OPEN_HEADER` `X-Design-Open: 1`, `readDesignOpen`       | The editor's declaration that this tab read is an open             |
+| Open day        | `last_open_day` (`YYYY-MM-DD`, UTC), `design_opened` event      | A UTC day with at least one open: one event per person per doc/day |
+| Last open       | `design_opens.last_opened_at`                                   | The person's latest open of a design, moved by every open          |
+| Use day         | `useDays`, CTE `used`                                           | A UTC day with an open, a real edit or a marked making             |
+| Making          | `design_created`, `design_duplicated` events                    | The person making a design: a create, a duplicate, a copy          |
+| Marked making   | snapshot `markUsed: true`, `MARKED_MAKING`                      | A making that counts as a use                                      |
+| Mark used       | body `markUsed`, `readMarkUsed`                                 | The create's say on whether its making counts (default true)       |
+| Use window      | `WITHIN_REACH_USE_WINDOW_DAYS`, `windowStartOf(now)`            | The last 90 UTC days, today included, over which use days count    |
+| Last use        | `lastUsedAt`                                                    | The latest of the last open, last real edit and marked making      |
+| Jump Back In    | `jumpBackIn`, `HomeJumpBackInItem`, `HOME_WITHIN_REACH_PER_ROW` | A [Within reach](../../004-interface-design/within-reach.md) set   |
+| What Happened   | `whatHappened`, `HomeGroup`, `HomeAction`, `HomePerson`         | Others' actions, grouped                                           |
+| Group           | `HomeGroup`, id `<designId>:<day>`                              | One design's actions on one local day                              |
+| Summary         | `HomeGroup.summary`                                             | A group with more than one person: one entry with a sentence       |
+| Verb            | `HomeVerb`, `HOME_VERBS`                                        | The closed action vocabulary, in sentence order                    |
+| Visible designs | `VISIBLE_DESIGNS_CTES`, CTE `visible`                           | Own, joined-team, shared with a live link; never trashed           |
+| Via             | `via`: `own` / `team` / `shared`                                | How the person reaches a design                                    |
+| Local day       | `localDay(at, tz)`, `day`                                       | The reader's calendar day for an instant                           |
+| Me              | CTE `me`                                                        | The person's id plus every alias (`owner_aliases`)                 |
 
 Banned: "visit" or "view" for an open, "frecency" (the rule has no decay), "notification" for a What Happened
 action, "timeline" for anything on Home but the link that leaves for the Timeline (`GET /api/timeline`).
@@ -163,13 +163,13 @@ DESC`, limit `HOME_WHAT_HAPPENED_ACTION_MAX` (`D68`).
 
 `verbOf(eventType, snapshot, me)`:
 
-| Event                 | Verb                                                                          | Detail                 |
-| --------------------- | ----------------------------------------------------------------------------- | ---------------------- |
-| `comment_added`       | `replied` when `snapshot.reply === true`, else `commented`                    | the stored description |
-| `comment_resolved`    | `resolved`                                                                    | the stored description |
+| Event               | Verb                                                                          | Detail                 |
+| ------------------- | ----------------------------------------------------------------------------- | ---------------------- |
+| `comment_added`     | `replied` when `snapshot.reply === true`, else `commented`                    | the stored description |
+| `comment_resolved`  | `resolved`                                                                    | the stored description |
 | `design_edited`     | `edited`                                                                      | null                   |
-| `action_assigned`     | `assigned_you` when `snapshot.assigneeId` is in `me` (`D74`), else `assigned` | `actionName`           |
-| `action_completed`    | `completed`                                                                   | `actionName`           |
+| `action_assigned`   | `assigned_you` when `snapshot.assigneeId` is in `me` (`D74`), else `assigned` | `actionName`           |
+| `action_completed`  | `completed`                                                                   | `actionName`           |
 | `team_design_added` | `shared`                                                                      | `teamName`             |
 
 `HOME_VERBS` order: `commented, replied, resolved, edited, assigned_you, assigned, completed, shared`.
@@ -303,7 +303,7 @@ The baseline migration, `0001_livedesign_baseline.sql`, creates `design_opens` a
 
 ```sql
 CREATE TABLE design_opens (
-  owner_id       TEXT NOT NULL,   -- the person: guest id or Clerk id
+  owner_id       TEXT NOT NULL,   -- the person: guest id or account id
   design_id    TEXT NOT NULL REFERENCES designs(id) ON DELETE CASCADE,
   last_opened_at INTEGER NOT NULL,
   last_open_day  TEXT NOT NULL,   -- 'YYYY-MM-DD', UTC
@@ -316,7 +316,7 @@ CREATE INDEX timeline_events_actor_idx ON timeline_events (actor_id, occurred_at
 | Field            | Class                                       |
 | ---------------- | ------------------------------------------- |
 | `owner_id`       | Identity (owner-keyed: deletion, migration) |
-| `design_id`    | Reference, cascades with the design       |
+| `design_id`      | Reference, cascades with the design         |
 | `last_opened_at` | Fact, the recent measure and retention key  |
 | `last_open_day`  | Derived, the dedupe key                     |
 
@@ -341,44 +341,44 @@ from` moves every row the account does not already hold; each leftover (opened u
 
 ## Errors and edge cases
 
-| Case                                                 | Handling                                                                    |
-| ---------------------------------------------------- | --------------------------------------------------------------------------- |
-| Tab read refused (403 / 404 / 410)                   | Nothing recorded: the gate runs first                                       |
-| Marker on a resync / lazy load                       | Not sent; if a client sends it anyway, it only moves the last open          |
-| Two first opens of the day race                      | The guarded upsert lets one through; the other logs `reason=race`, no event |
-| Two opens race the last open                         | `last_opened_at` only moves forwards                                        |
-| D1 failure while recording                           | `open-failed` logged, the tab read already answered                         |
-| Opened across UTC midnight                           | Two open days, as the spec's UTC rule says                                  |
-| Opened and edited on one day                         | One use day (`COUNT(DISTINCT day)`)                                         |
-| A reconstructed edit                                 | Not a use day (`REAL_EDIT`)                                                 |
-| Opened more than 90 days ago only                    | `use_days = 0`: never most used, still recent by its last open              |
-| Created, never opened or edited                      | In Jump Back In: the marked making is a use day and the last use            |
-| Created with `markUsed: false` (an API client's)     | Not in `candidates` until its first open or edit; on the Recent page        |
-| Created before makings were marked                   | No mark: joins at its next open or edit                                     |
-| Created and opened on one UTC day                    | One use day                                                                 |
-| `markUsed` not a boolean                             | 400 `invalid markUsed`; nothing created                                     |
-| Re-commit or sync with `markUsed`                    | Not a making: no mark                                                       |
-| Backfill over a marked creation                      | `keepExisting`: the mark stays                                              |
-| Creation event emit fails                            | `timeline emit failed` logged; the design is made, its making not counted |
+| Case                                               | Handling                                                                    |
+| -------------------------------------------------- | --------------------------------------------------------------------------- |
+| Tab read refused (403 / 404 / 410)                 | Nothing recorded: the gate runs first                                       |
+| Marker on a resync / lazy load                     | Not sent; if a client sends it anyway, it only moves the last open          |
+| Two first opens of the day race                    | The guarded upsert lets one through; the other logs `reason=race`, no event |
+| Two opens race the last open                       | `last_opened_at` only moves forwards                                        |
+| D1 failure while recording                         | `open-failed` logged, the tab read already answered                         |
+| Opened across UTC midnight                         | Two open days, as the spec's UTC rule says                                  |
+| Opened and edited on one day                       | One use day (`COUNT(DISTINCT day)`)                                         |
+| A reconstructed edit                               | Not a use day (`REAL_EDIT`)                                                 |
+| Opened more than 90 days ago only                  | `use_days = 0`: never most used, still recent by its last open              |
+| Created, never opened or edited                    | In Jump Back In: the marked making is a use day and the last use            |
+| Created with `markUsed: false` (an API client's)   | Not in `candidates` until its first open or edit; on the Recent page        |
+| Created before makings were marked                 | No mark: joins at its next open or edit                                     |
+| Created and opened on one UTC day                  | One use day                                                                 |
+| `markUsed` not a boolean                           | 400 `invalid markUsed`; nothing created                                     |
+| Re-commit or sync with `markUsed`                  | Not a making: no mark                                                       |
+| Backfill over a marked creation                    | `keepExisting`: the mark stays                                              |
+| Creation event emit fails                          | `timeline emit failed` logged; the design is made, its making not counted   |
 | Design trashed, team left, link revoked or expired | Dropped by `visible`; its rows remain until purge / sweep                   |
 | Tab-scoped shared design                           | In Jump Back In; never in What Happened                                     |
 | Own action on someone else's design                | Not in What Happened (`me`); a use day when it is an edit                   |
-| Guest-era action of the person (aliased id)          | Excluded from What Happened by `me`                                         |
-| Actor without a participant row                      | `HomePerson.name` / `color` / `pictureUrl` null                             |
-| Legacy `comment_added` / `action_assigned` rows      | `commented` / `assigned`                                                    |
-| Future-dated event                                   | Excluded (`occurred_at <= now`)                                             |
-| What Happened over its cap                           | First 200 actions newest first; `what-happened-capped` logged               |
-| `tz` with a DST change inside the window             | `Intl` resolves each instant's own offset                                   |
-| A person with no opens and no edits                  | Empty arrays                                                                |
+| Guest-era action of the person (aliased id)        | Excluded from What Happened by `me`                                         |
+| Actor without a participant row                    | `HomePerson.name` / `color` / `pictureUrl` null                             |
+| Legacy `comment_added` / `action_assigned` rows    | `commented` / `assigned`                                                    |
+| Future-dated event                                 | Excluded (`occurred_at <= now`)                                             |
+| What Happened over its cap                         | First 200 actions newest first; `what-happened-capped` logged               |
+| `tz` with a DST change inside the window           | `Intl` resolves each instant's own offset                                   |
+| A person with no opens and no edits                | Empty arrays                                                                |
 | `design_opened` in `GET /api/timeline`             | Left out by `NOT_IN_FEED`; never counted unread                             |
-| A client still asking `GET /api/home/timeline`       | 404                                                                         |
+| A client still asking `GET /api/home/timeline`     | 404                                                                         |
 
 ## Security and trust
 
-- `home` is in `OWNER_SCOPED_SEGMENTS`: a Clerk-shaped `X-Owner-Id` is refused and, when armed, the guest signature
+- `home` is in `OWNER_SCOPED_SEGMENTS`: an account-shaped `X-Owner-Id` is refused and, when armed, the guest signature
   is required.
 - `visible` is the boundary: an event, an open or an entry about a design the person cannot open is never read.
-  Team membership is matched on the resolved owner id, as the Inbox does; teams are Clerk-only and a Clerk-shaped
+  Team membership is matched on the resolved owner id, as the Inbox does; teams are for accounts only and an account-shaped
   guest header never reaches a route.
 - Opens are private: the event is scoped to `user:<person>` only, left out of the feed, and not a What Happened
   verb. Nobody's open is in anybody else's response.
@@ -397,14 +397,14 @@ from` moves every row the account does not already hold; each leftover (opened u
 
 Let `L` be the person's library (own + joined-team + shared designs).
 
-| Path                  | Cost                                                                                                 |
-| --------------------- | ---------------------------------------------------------------------------------------------------- |
-| Tab read, marked      | Response path: nothing. `waitUntil`: 1 point read; then 1 update (same day) or 1 upsert + the emit   |
-| Tab read, unmarked    | Nothing                                                                                              |
-| Jump Back In          | `L` + the person's events in 90 days on `timeline_events_actor_idx` (a heavy user: 40 a day, 3,600)  |
-| What Happened         | `L` + every design-scope row of `L` within retention (worst case `L = 2,000`, 20 events each: 40k) |
-| `design_opens` size | One row per person per design opened in the last 365 days, ~100 B; 2,000 designs ≈ 200 KB        |
-| Response              | Worst 8 designs at ~0.4 KB, 200 actions at ~0.3 KB: ~65 KB; typical under 15 KB                    |
+| Path                | Cost                                                                                                |
+| ------------------- | --------------------------------------------------------------------------------------------------- |
+| Tab read, marked    | Response path: nothing. `waitUntil`: 1 point read; then 1 update (same day) or 1 upsert + the emit  |
+| Tab read, unmarked  | Nothing                                                                                             |
+| Jump Back In        | `L` + the person's events in 90 days on `timeline_events_actor_idx` (a heavy user: 40 a day, 3,600) |
+| What Happened       | `L` + every design-scope row of `L` within retention (worst case `L = 2,000`, 20 events each: 40k)  |
+| `design_opens` size | One row per person per design opened in the last 365 days, ~100 B; 2,000 designs ≈ 200 KB           |
+| Response            | Worst 8 designs at ~0.4 KB, 200 actions at ~0.3 KB: ~65 KB; typical under 15 KB                     |
 
 The What Happened scan is the one that grows with a team's history. The measured remedy, if it bites, is an
 `added_at` range on the design-scope membership, not a cleverer query (as [Timeline](../timeline.md) §3.2 says of
@@ -424,7 +424,7 @@ stay on their own lazy route.
 | `home: open-skipped reason=race doc=<id>`                        | api, info     |
 | `home: open-failed doc=<id>` + error                             | api, error    |
 | `home: making doc=<id> marked=<true/false>`                      | api, info     |
-| `designs: rejected reason=mark_used_invalid`                   | api, warn     |
+| `designs: rejected reason=mark_used_invalid`                     | api, warn     |
 | `home: read jump=<n> used=<n> recent=<n> groups=<n> actions=<n>` | api, info     |
 | `home: what-happened-capped max=<n>`                             | api, warn     |
 | `home: rejected reason=<token>`                                  | api, warn     |
@@ -444,23 +444,23 @@ stay on their own lazy route.
 | Time zone parse and local day                                                           | `apps/api/src/home/local-day.test.ts`                                                     |
 | Verbs, grouping, summary, order, counts                                                 | `apps/api/src/home/what-happened.test.ts`                                                 |
 | Record, same-day touch, next day, race, private scope, failure log                      | `apps/api/src/home/record-open.test.ts` (real SQLite)                                     |
-| The tab read records a marked open only, never an unmarked or refused one               | `apps/api/src/routes/design-open-marker.test.ts` (real SQLite)                          |
+| The tab read records a marked open only, never an unmarked or refused one               | `apps/api/src/routes/design-open-marker.test.ts` (real SQLite)                            |
 | Jump Back In: use days in the window, edit days, dedupe, the split, access, ties        | `apps/api/src/routes/home.test.ts` (real SQLite)                                          |
-| A making counts once, an opted-out one does not, a sync or re-commit never              | `apps/api/src/routes/design-create-use.test.ts` (real SQLite)                           |
+| A making counts once, an opted-out one does not, a sync or re-commit never              | `apps/api/src/routes/design-create-use.test.ts` (real SQLite)                             |
 | `readMarkUsed`                                                                          | `packages/api-schema/src/creation-use.test.ts`                                            |
-| `create_design` passes `markUsed` through only when given                             | `apps/mcp/src/create-design-placement.test.ts`                                          |
-| Signed in: an API create is in Jump Back In unopened; one with `markUsed: false` is not | `apps/live/e2e/clerk-stub/creation-use.spec.ts`                                           |
+| `create_design` passes `markUsed` through only when given                               | `apps/mcp/src/create-design-placement.test.ts`                                            |
+| Signed in: an API create is in Jump Back In unopened; one with `markUsed: false` is not | `apps/live/e2e/signed-in/creation-use.spec.ts`                                            |
 | Reads: others only, opens private, rejections, rate limit, the unread mark, no timeline | `apps/api/src/routes/home.test.ts` (real SQLite)                                          |
 | The backfill marks its edit, never marks a real one                                     | `apps/api/src/home/real-edits.test.ts` (real SQLite)                                      |
 | The feed and the unread count leave opens out                                           | `apps/api/src/db/timeline-opens.test.ts` (real SQLite)                                    |
-| Migration merge and account deletion                                                    | `apps/api/src/db/design-opens.test.ts`, `account-owner-columns.test.ts`                 |
+| Migration merge and account deletion                                                    | `apps/api/src/db/design-opens.test.ts`, `account-owner-columns.test.ts`                   |
 | Reply flag on both comment paths, `assigneeId` on assignment                            | `apps/api/src/timeline/tab-diff.test.ts`, `apps/api/src/routes/home-snapshots.test.ts`    |
 | CORS allows the marker                                                                  | `apps/api/src/responses.test.ts`                                                          |
 | The Inbox unchanged on the shared visibility                                            | `apps/api/src/db/activity-mentions.test.ts`, `apps/api/src/db/trash-surfaces.test.ts`     |
 | OpenAPI parity and schemas                                                              | `apps/api/src/openapi/*.test.ts`                                                          |
 | Route labels know `home`                                                                | `apps/api/src/route-resources.test.ts`, `packages/api-schema/src/error-telemetry.test.ts` |
 | Client wrapper: null on failure; the marker header and its dedupe key                   | `apps/live/lib/api/home.test.ts`, `apps/live/lib/api-client.test.ts`                      |
-| The seed marks the first-tab read unless embedded                                       | `apps/live/app/design/[id]/seed-fetched-design.test.ts`                               |
+| The seed marks the first-tab read unless embedded                                       | `apps/live/app/design/[id]/seed-fetched-design.test.ts`                                   |
 
 ## Constants and configuration
 

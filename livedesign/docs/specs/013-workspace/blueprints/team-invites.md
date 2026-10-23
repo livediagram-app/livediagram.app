@@ -38,14 +38,14 @@ The baseline migration, `0001_livedesign_baseline.sql`, on `team_members`:
 
 ## Interfaces and contracts
 
-| Route                                            | Auth          | Answers                                                                                        |
-| ------------------------------------------------ | ------------- | ---------------------------------------------------------------------------------------------- |
-| `GET /api/teams/invite-decline/:token`           | none          | 200 `TeamInviteDecline`; 404 `invite_not_found`                                                |
-| `POST /api/teams/invite-decline/:token`          | none          | 200 `TeamInviteDecline` (`declined` / `expired`); 409 `already_joined`; 404 `invite_not_found` |
-| other methods on that path                       | none          | 404 `not_found`                                                                                |
-| `DELETE /api/teams/:id/members/:own invited`     | Clerk session | 204; marks `declined` (no delete)                                                              |
-| `PUT /api/teams/:id/members/:rejected`           | admin         | 409 `invite_rejected`                                                                          |
-| `POST /api/teams/:id/members` (rejected address) | admin         | 201; the rejected row is deleted and a fresh `invited` row inserted in one batch               |
+| Route                                            | Auth      | Answers                                                                                        |
+| ------------------------------------------------ | --------- | ---------------------------------------------------------------------------------------------- |
+| `GET /api/teams/invite-decline/:token`           | none      | 200 `TeamInviteDecline`; 404 `invite_not_found`                                                |
+| `POST /api/teams/invite-decline/:token`          | none      | 200 `TeamInviteDecline` (`declined` / `expired`); 409 `already_joined`; 404 `invite_not_found` |
+| other methods on that path                       | none      | 404 `not_found`                                                                                |
+| `DELETE /api/teams/:id/members/:own invited`     | signed in | 204; marks `declined` (no delete)                                                              |
+| `PUT /api/teams/:id/members/:rejected`           | admin     | 409 `invite_rejected`                                                                          |
+| `POST /api/teams/:id/members` (rejected address) | admin     | 201; the rejected row is deleted and a fresh `invited` row inserted in one batch               |
 
 - Token grammar: `^<uuid v4 lowercase>\.[A-Za-z0-9_-]{43}$`. Anything else is 404 before any read.
 - `addTeamMember` returns `{ member, declineToken }`; the token goes only into `teamInviteEmail(env, name, token)`.

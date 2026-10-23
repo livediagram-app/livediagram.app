@@ -42,7 +42,7 @@ export function Hero() {
           className="mx-auto mt-6 max-w-2xl text-pretty text-lg leading-relaxed text-(--hero-muted) sm:text-xl"
         >
           Pick a starting point and make it on pages. Write an article, build a deck, lay out an
-          infographic or design a logo, then share one link and finish it together.
+          infographic, then share one link and finish it together.
         </p>
         <HeroSearch />
       </div>

@@ -82,24 +82,6 @@ export const EDITOR_SETTINGS = settingsStack(
     ),
     toggle(
       'UI',
-      'LogoGuidesOn',
-      'LogoGuidesOff',
-      'Logo Guides',
-      "A logo page's construction guides.",
-    ),
-    changed('LogoGuideStrength', 'Logo Guide Strength', 'Logo guides set Faint, Medium or Strong.'),
-    {
-      category: 'UI',
-      action: 'Toggled',
-      typeIn: (type) =>
-        /^LogoGuide(CentreLines|Diagonals|SafeArea|Circles|Square|Grid)(On|Off)$/.test(type ?? ''),
-      title: 'Logo Guide Parts',
-      blurb:
-        'One of the logo guides (centre lines, diagonals, safe area, circles, square, grid) shown or hidden.',
-      rising: 'neutral',
-    },
-    toggle(
-      'UI',
       'PowerUserModeOn',
       'PowerUserModeOff',
       'Power User Mode',
@@ -294,7 +276,7 @@ export const TOURS_SETTINGS = settingsStack(
       'PagesTourSeenOff',
       'PagesTourSeenOn',
       'Pages Tours',
-      'Every Pages tour (slides, infographics, articles and logos) switched back on or off at once.',
+      'Every Pages tour (slides, infographics and articles) switched back on or off at once.',
     ),
     toggle(
       'UI',
@@ -316,13 +298,6 @@ export const TOURS_SETTINGS = settingsStack(
       'ArticleTourSeenOn',
       'Article Tour',
       "The Pages tour's article track switched back on or off.",
-    ),
-    toggle(
-      'UI',
-      'LogoTourSeenOff',
-      'LogoTourSeenOn',
-      'Logo Tour',
-      "The Pages tour's logo track switched back on or off.",
     ),
   ],
 );

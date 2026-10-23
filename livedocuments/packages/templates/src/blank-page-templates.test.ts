@@ -28,9 +28,6 @@ describe('blanks of a page kind', () => {
     expect(blankPageTemplateOverrides('blank-infographic')!.pages).toEqual([
       { id: 'page-1', orientation: 'portrait', kind: 'infographic' },
     ]);
-    expect(blankPageTemplateOverrides('blank-logo')!.pages).toEqual([
-      { id: 'page-1', orientation: 'portrait', size: 'logo', kind: 'logo' },
-    ]);
     const article = blankPageTemplateOverrides('blank-article')!;
     expect(article.pages).toEqual([
       { id: 'page-1', orientation: 'portrait', kind: 'article', flow: 'art-1' },
@@ -53,7 +50,7 @@ describe('blanks of a page kind', () => {
       expect(templateCategory(kind)).toBeNull();
     }
     expect(untitledNameForTemplate('blank-slide-deck')).toBe('Untitled Slide Deck');
-    expect(untitledNameForTemplate('blank-logo')).toBe('Untitled Logo');
+    expect(untitledNameForTemplate('blank-infographic')).toBe('Untitled Infographic');
   });
 
   it('answers nothing for any other template', () => {

@@ -104,13 +104,13 @@ vi.mock('../auth/share-access', () => ({ sharePasswordOk }));
 import type { RouteContext } from './context';
 import { handleDesigns } from './designs';
 
-// Guest-shaped context ('owner-1') with optional Clerk identity + headers.
+// Guest-shaped context ('owner-1') with optional account identity + headers.
 const makeCtx = (
   method: string,
   path: string,
   opts: {
     owner?: string | null;
-    clerkUserId?: string | null;
+    accountUserId?: string | null;
     body?: unknown;
     headers?: Record<string, string>;
   } = {},
@@ -118,7 +118,7 @@ const makeCtx = (
   makeTestRouteContext(method, path, {
     body: opts.body,
     headers: opts.headers,
-    clerkUserId: opts.clerkUserId,
+    accountUserId: opts.accountUserId,
     owner: opts.owner === undefined ? 'owner-1' : opts.owner,
   });
 
@@ -378,7 +378,7 @@ describe('GET /designs/:id owner-id redaction (docs/specs/014-identity/auth-and-
     db.getDesign.mockResolvedValue(fakeDesign('user_owner', 'team-1'));
     canReadDesign.mockResolvedValue(true);
     const res = await handleDesigns(
-      makeCtx('GET', '/api/designs/d1', { owner: 'user_member', clerkUserId: 'user_member' }),
+      makeCtx('GET', '/api/designs/d1', { owner: 'user_member', accountUserId: 'user_member' }),
     );
     const { design: liveDoc } = (await res.json()) as { design: DesignDTO };
     // No regression for them: a teammate already computed isOwner=false from
@@ -423,7 +423,7 @@ describe('handleDesigns folder assignment (PUT /designs/:id/folder)', () => {
     const res = await handleDesigns(
       makeCtx('PUT', '/api/designs/d1/folder', {
         owner: 'member-1',
-        clerkUserId: 'member-1',
+        accountUserId: 'member-1',
         body: { folderId: 'f1', teamId: null },
       }),
     );
@@ -437,7 +437,7 @@ describe('handleDesigns folder assignment (PUT /designs/:id/folder)', () => {
     const res = await handleDesigns(
       makeCtx('PUT', '/api/designs/d1/folder', {
         owner: 'stranger',
-        clerkUserId: 'stranger',
+        accountUserId: 'stranger',
         body: { folderId: null, teamId: null },
       }),
     );

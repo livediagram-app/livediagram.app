@@ -6,7 +6,7 @@
 
 import { createShape, createText, type Element } from '@livedocuments/document';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
-import { uiAt } from './template-wireframe-kit';
+import { uiAt } from './template-ui-kit';
 
 const MUTED = '#64748b';
 

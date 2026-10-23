@@ -110,7 +110,7 @@ export const RESOURCES: readonly { name: string; alias?: string; summary: string
   { name: 'folder', summary: 'Folders: their paths and ids, and a new one' },
   { name: 'tab', summary: 'Tabs: their views, their lint, and what changed' },
   { name: 'element', alias: 'el', summary: 'Elements: one edit operation a call' },
-  { name: 'page', summary: 'Pages: slides, logos, infographics' },
+  { name: 'page', summary: 'Pages: slides, infographics' },
   { name: 'article', summary: 'Articles as Markdown' },
   { name: 'changeset', summary: 'Changesets: what changed, by whom, and undoing one' },
   { name: 'comment', summary: 'Comment threads' },

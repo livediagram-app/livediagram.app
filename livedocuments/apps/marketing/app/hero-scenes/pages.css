@@ -1,5 +1,5 @@
 /* The scenes' shared build (components/hero-article-page.tsx, hero-slides-board.tsx, hero-page.tsx,
-   hero-logo-board.tsx, hero-together-board.tsx; docs/specs/019-marketing/marketing-site.md "Story
+   hero-together-board.tsx; docs/specs/019-marketing/marketing-site.md "Story
    beats"). Every mark plays once at its own delay (--d): the window's group is remounted each time it
    plays, and its veil (hero-fade) covers the last second, so nothing has to clear on a loop. Settled
    (.hero-static) and under reduced motion every mark shows its finished frame. */

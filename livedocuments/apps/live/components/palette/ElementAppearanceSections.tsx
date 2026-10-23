@@ -50,7 +50,6 @@ import { MenuTile } from '@/components/primitives/MenuTiles';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
 import { TypographySections } from './TypographySections';
 import { presetPxFor } from './TextSizeControl';
-import { WordmarkSection } from './WordmarkSection';
 
 import { IconSizeTiles, IconWeightTiles } from '@/components/palette/context-menu-tiles';
 import { isTechIconId } from '@/lib/tech-icons';
@@ -335,20 +334,6 @@ export function ElementAppearanceSections({
               onPreviewPadding={props.onPreviewPadding}
               onPreviewEnd={props.onPreviewStyleEnd}
               sectionProps={sectionProps}
-            />
-          ) : null}
-          {/* Wordmark type on a logo page (docs/specs/007-editor/logo-pages.md). */}
-          {showAlignment &&
-          target.type === 'text' &&
-          props.wordmarkOffered &&
-          props.onSetWordmark &&
-          props.onPreviewWordmark ? (
-            <WordmarkSection
-              element={target}
-              section={sectionProps('wordmark')}
-              onSet={props.onSetWordmark}
-              onPreview={props.onPreviewWordmark}
-              onPreviewEnd={props.onPreviewStyleEnd}
             />
           ) : null}
           {/* Alignment — the text toolbar's 3×3 grid, here too for discovery. */}

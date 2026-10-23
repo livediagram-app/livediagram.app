@@ -51,32 +51,8 @@ import {
   type ContentsPlacement,
 } from '@/lib/contents-placement';
 import type { SettingsIllustrationId } from './settings-illustrations';
-import {
-  LOGO_GUIDE_PARTS,
-  readLogoGuideParts,
-  readLogoGuideStrength,
-  withLogoGuidePart,
-  type LogoGuidePart,
-  type LogoGuideStrength,
-} from '@/lib/logo-guide-prefs';
 import type { PlacementDefaultKey } from '@livedocuments/api-schema';
 import { DEFAULT_KEY_ENTRIES } from '@/lib/placement-defaults/default-key-entries';
-
-// One logo guide's switch (docs/specs/007-editor/logo-pages.md "Construction guides"): a tile in
-// Settings > Editor > Pages mode's Guides Shown grid, as in a logo page's Guides popover. The token
-// is written out per guide so the telemetry dashboard reads it.
-function logoGuidePart(
-  part: LogoGuidePart,
-  event: SettingsToggleOptionSpec['event'],
-): SettingsToggleOptionSpec {
-  return {
-    key: `logoGuide-${part}`,
-    label: LOGO_GUIDE_PARTS.find((p) => p.id === part)!.label,
-    read: (p) => readLogoGuideParts(p).has(part),
-    write: (p, v) => withLogoGuidePart(p, part, v),
-    event,
-  };
-}
 
 // One email notification switch (docs/specs/014-identity/profile-and-email-notifications.md): only
 // where the deployment sends email AND the reader is signed in, since a guest has no address.
@@ -644,8 +620,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     ],
   },
   {
-    // Pages mode's own settings (docs/specs/007-editor/logo-pages.md "Construction guides"):
-    // the master switch, then how strong and which guides, nested under it.
+    // Pages mode's own settings (docs/specs/007-editor/pages-mode.md "Contents").
     id: 'pages',
     label: 'Pages',
     parent: 'editor',
@@ -668,77 +643,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         read: readContentsPlacement,
         write: (p, v) => withContentsPlacement(p, v as ContentsPlacement),
         event: { category: 'UI', changed: 'ContentsPlacement' },
-      },
-      {
-        kind: 'toggle',
-        key: 'logoGuides',
-        keywords: 'logo guides construction grid keylines safe area centre lines snap artboard',
-        section: 'Logo Pages',
-        label: 'Logo Guides',
-        description:
-          'Draws centre lines, keylines, the safe area and a grid over a logo page; the keylines snap. A page you set on its own keeps its choice.',
-        helpArticle: 'logoPages',
-        alsoIn: "a logo page's Guides button",
-        read: (p) => p.logoGuides !== false,
-        write: (p, v) => ({ ...p, logoGuides: v }),
-        event: { category: 'UI', on: 'LogoGuidesOn', off: 'LogoGuidesOff' },
-      },
-      {
-        kind: 'choice',
-        key: 'logoGuideStrength',
-        keywords: 'logo guides strength opacity faint strong contrast',
-        section: 'Logo Pages',
-        parent: 'logoGuides',
-        label: 'Logo Guide Strength',
-        description: 'How strongly the guides show over the artwork.',
-        options: [
-          { id: 'faint', label: 'Faint' },
-          { id: 'medium', label: 'Medium' },
-          { id: 'strong', label: 'Strong' },
-        ],
-        read: readLogoGuideStrength,
-        write: (p, v) => ({ ...p, logoGuideStrength: v as LogoGuideStrength }),
-        event: { category: 'UI', changed: 'LogoGuideStrength' },
-      },
-      {
-        // One switch per guide (docs/specs/007-editor/logo-pages.md "Construction guides") as one
-        // grid; each event written out, so the telemetry dashboard reads its tokens.
-        kind: 'toggleGroup',
-        key: 'logoGuideParts',
-        keywords:
-          'logo guides centre lines diagonals safe area circles square grid construction keylines',
-        section: 'Logo Pages',
-        parent: 'logoGuides',
-        label: 'Guides Shown',
-        description: 'Which guides draw while they are on.',
-        toggles: [
-          logoGuidePart('centre', {
-            category: 'UI',
-            on: 'LogoGuideCentreLinesOn',
-            off: 'LogoGuideCentreLinesOff',
-          }),
-          logoGuidePart('diagonals', {
-            category: 'UI',
-            on: 'LogoGuideDiagonalsOn',
-            off: 'LogoGuideDiagonalsOff',
-          }),
-          logoGuidePart('safe', {
-            category: 'UI',
-            on: 'LogoGuideSafeAreaOn',
-            off: 'LogoGuideSafeAreaOff',
-          }),
-          logoGuidePart('circles', {
-            category: 'UI',
-            on: 'LogoGuideCirclesOn',
-            off: 'LogoGuideCirclesOff',
-          }),
-          logoGuidePart('square', {
-            category: 'UI',
-            on: 'LogoGuideSquareOn',
-            off: 'LogoGuideSquareOff',
-          }),
-          logoGuidePart('grid', { category: 'UI', on: 'LogoGuideGridOn', off: 'LogoGuideGridOff' }),
-        ],
       },
     ],
   },
@@ -1132,8 +1036,8 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
           label: 'Pages Tours',
           event: { category: 'UI', on: 'PagesTourSeenOff', off: 'PagesTourSeenOn' },
           keywords:
-            'tour walkthrough onboarding tutorial pages slides infographic article logo all replay',
-          description: 'Every Pages tour at once: slides, infographics, articles and logos.',
+            'tour walkthrough onboarding tutorial pages slides infographic article all replay',
+          description: 'Every Pages tour at once: slides, infographics and articles.',
           helpArticle: 'pagesTour',
         },
       ),
@@ -1156,13 +1060,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         event: { category: 'UI', on: 'ArticleTourSeenOff', off: 'ArticleTourSeenOn' },
         keywords: 'tour walkthrough onboarding tutorial pages article document writing replay',
         description: 'On an article: writing, the page toolbar, its style and fonts.',
-        helpArticle: 'pagesTour',
-      }),
-      pagesTourTrackSwitch('logo', {
-        label: 'Logo Tour',
-        event: { category: 'UI', on: 'LogoTourSeenOff', off: 'LogoTourSeenOn' },
-        keywords: 'tour walkthrough onboarding tutorial pages logo artboard brand replay',
-        description: 'On a logo artboard: layouts, guides, mirroring and combining shapes.',
         helpArticle: 'pagesTour',
       }),
       // Element tours (docs/specs/007-editor/element-tours.md "Settings"): their own closed section, one switch for

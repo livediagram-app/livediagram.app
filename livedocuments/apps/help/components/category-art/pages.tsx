@@ -2,7 +2,7 @@ import { Label } from '@/components/illustrations/primitives';
 import { Card, Stage } from './parts';
 
 // Pages: a document as a row of pages. An article page of flowing text, a slide with its title and a chart, and a
-// square logo artboard with its construction circle, each labelled above its corner the way the editor labels them.
+// square infographic with a big number, each labelled above its corner the way the editor labels them.
 export function PagesArt() {
   return (
     <Stage>
@@ -66,26 +66,15 @@ export function PagesArt() {
         <path d="M158 137 H274" className="fill-none stroke-slate-300" strokeWidth={1} />
       </Card>
 
-      {/* A logo artboard: a square with its construction guide and a mark. */}
+      {/* A square infographic: a big number over a caption. */}
       <Label x={300} y={52} size={8.5} weight={600} tone="muted">
-        Square · Logo
+        Square
       </Label>
       <Card x={300} y={60} w={78} h={78} r={4}>
-        <circle
-          cx={339}
-          cy={99}
-          r={28}
-          className="fill-none stroke-sky-300"
-          strokeWidth={1}
-          strokeDasharray="3 3"
-        />
-        <path
-          d="M339 60 V138 M300 99 H378"
-          className="fill-none stroke-sky-200"
-          strokeWidth={0.8}
-        />
-        <path d="M339 78 L358 112 H320 Z" className="fill-brand-500" />
-        <circle cx={339} cy={101} r={7} className="fill-white" />
+        <rect x={312} y={72} width={40} height={6} rx={3} className="fill-slate-700" />
+        <rect x={312} y={88} width={54} height={20} rx={3} className="fill-brand-500" />
+        <rect x={312} y={116} width={46} height={4} rx={2} className="fill-slate-200" />
+        <rect x={312} y={124} width={30} height={4} rx={2} className="fill-slate-200" />
       </Card>
 
       {/* The add-page buttons after the last page. */}

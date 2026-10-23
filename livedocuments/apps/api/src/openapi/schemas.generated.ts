@@ -5411,13 +5411,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
                   "infographic": {
                     "type": "number"
                   },
-                  "logo": {
-                    "type": "number"
-                  },
                   "slide": {
-                    "type": "number"
-                  },
-                  "wireframe": {
                     "type": "number"
                   }
                 },
@@ -5556,17 +5550,11 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "background": {
         "$ref": "#/components/schemas/PageBackground"
       },
-      "device": {
-        "$ref": "#/components/schemas/WireframeDeviceId"
-      },
       "fit": {
         "$ref": "#/components/schemas/PageSides"
       },
       "flow": {
         "type": "string"
-      },
-      "frameLook": {
-        "$ref": "#/components/schemas/WireframeFrameLook"
       },
       "id": {
         "type": "string"
@@ -5589,14 +5577,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "size": {
         "$ref": "#/components/schemas/PageSizeId"
-      },
-      "startedBlank": {
-        "const": true,
-        "type": "boolean"
-      },
-      "systemBars": {
-        "const": false,
-        "type": "boolean"
       }
     },
     "required": [
@@ -5663,12 +5643,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "background": {
             "$ref": "#/components/schemas/PageBackgroundInput"
           },
-          "device": {
-            "$ref": "#/components/schemas/WireframeDeviceId"
-          },
-          "frameLook": {
-            "$ref": "#/components/schemas/WireframeFrameLook"
-          },
           "kind": {
             "$ref": "#/components/schemas/PageKind"
           },
@@ -5687,14 +5661,11 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           },
           "size": {
             "$ref": "#/components/schemas/PageSizeId"
-          },
-          "systemBars": {
-            "type": "boolean"
           }
         },
         "required": [
-          "kind",
-          "op"
+          "op",
+          "kind"
         ],
         "type": "object"
       },
@@ -5703,9 +5674,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "properties": {
           "background": {
             "$ref": "#/components/schemas/PageBackgroundInput"
-          },
-          "frameLook": {
-            "$ref": "#/components/schemas/WireframeFrameLook"
           },
           "locked": {
             "type": "boolean"
@@ -5725,9 +5693,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           },
           "size": {
             "$ref": "#/components/schemas/PageSizeId"
-          },
-          "systemBars": {
-            "type": "boolean"
           }
         },
         "required": [
@@ -5964,9 +5929,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "enum": [
       "infographic",
       "article",
-      "slide",
-      "logo",
-      "wireframe"
+      "slide"
     ],
     "type": "string"
   },
@@ -6070,8 +6033,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "wide",
       "slide",
       "slide-classic",
-      "logo",
-      "device",
       "fit"
     ],
     "type": "string"
@@ -6085,9 +6046,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "null"
         ]
       },
-      "device": {
-        "$ref": "#/components/schemas/WireframeDeviceId"
-      },
       "elements": {
         "type": "number"
       },
@@ -6096,9 +6054,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "string",
           "null"
         ]
-      },
-      "frameLook": {
-        "$ref": "#/components/schemas/WireframeFrameLook"
       },
       "id": {
         "type": "string"
@@ -6131,14 +6086,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "rect": {
         "$ref": "#/components/schemas/PageRect"
       },
-      "screen": {
-        "$ref": "#/components/schemas/PageRect"
-      },
       "size": {
         "$ref": "#/components/schemas/PageSizeId"
-      },
-      "systemBars": {
-        "type": "boolean"
       }
     },
     "required": [
@@ -6397,9 +6346,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
                 "null"
               ]
             },
-            "device": {
-              "$ref": "#/components/schemas/WireframeDeviceId"
-            },
             "elements": {
               "type": "number"
             },
@@ -6408,9 +6354,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
                 "string",
                 "null"
               ]
-            },
-            "frameLook": {
-              "$ref": "#/components/schemas/WireframeFrameLook"
             },
             "id": {
               "type": "string"
@@ -6449,14 +6392,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
               },
               "type": "array"
             },
-            "screen": {
-              "$ref": "#/components/schemas/PageRect"
-            },
             "size": {
               "$ref": "#/components/schemas/PageSizeId"
-            },
-            "systemBars": {
-              "type": "boolean"
             }
           },
           "required": [
@@ -9554,13 +9491,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
               "infographic": {
                 "type": "number"
               },
-              "logo": {
-                "type": "number"
-              },
               "slide": {
-                "type": "number"
-              },
-              "wireframe": {
                 "type": "number"
               }
             },
@@ -9649,29 +9580,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "diff",
       "lint",
       "pages"
-    ],
-    "type": "string"
-  },
-  "WireframeDeviceId": {
-    "enum": [
-      "iphone",
-      "iphone-duo",
-      "android",
-      "ipad",
-      "android-tablet",
-      "laptop",
-      "desktop",
-      "browser",
-      "watch"
-    ],
-    "type": "string"
-  },
-  "WireframeFrameLook": {
-    "enum": [
-      "theme",
-      "dark",
-      "light",
-      "outline"
     ],
     "type": "string"
   },

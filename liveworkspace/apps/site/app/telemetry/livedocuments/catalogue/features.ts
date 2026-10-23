@@ -7,7 +7,6 @@ import { CUSTOM_THEME_TYPES, NON_PATTERN_CANVAS_TYPES, isNonThemePick } from '..
 import type { Metric, MetricStack } from '../metric-series';
 import { chart } from './helpers';
 import { elementTourTokens } from '../element-tour-kinds';
-import { LOGO_TOOL_TYPES } from '../logo-types';
 
 export const LAYERS_RENAMED = chart(
   'Layer',
@@ -163,97 +162,7 @@ export const PAGES = chart(
       'PageKindInfographic',
       'PageKindArticle',
       'PageKindSlide',
-      'LogoPageAdded',
-      'PageKindLogo',
-      'WireframePageAdded',
-      'PageKindWireframe',
       'PageAddedLikeLast',
-    ],
-  },
-);
-
-// A wireframe page's device and frame chosen (docs/specs/007-editor/wireframe-pages.md).
-export const WIREFRAME_DEVICES_CHOSEN = chart(
-  'Tab',
-  'Changed',
-  'Wireframe Devices',
-  'The device a wireframe page was framed as, chosen as it was added or afterwards, and its frame look.',
-  {
-    types: [
-      'WireframeDeviceIphone',
-      'WireframeDeviceIphoneDuo',
-      'WireframeDeviceAndroid',
-      'WireframeDeviceIpad',
-      'WireframeDeviceAndroidTablet',
-      'WireframeDeviceLaptop',
-      'WireframeDeviceDesktop',
-      'WireframeDeviceBrowser',
-      'WireframeDeviceWatch',
-      'WireframeFrameTheme',
-      'WireframeFrameDark',
-      'WireframeFrameLight',
-      'WireframeFrameOutline',
-    ],
-  },
-);
-
-// A wireframe page's system bars turned on or off.
-export const WIREFRAME_SYSTEM_BARS = chart(
-  'UI',
-  'Toggled',
-  'Wireframe System Bars',
-  'A wireframe page’s status bar and home indicator turned on or off.',
-  { types: ['WireframeSystemBarsOn', 'WireframeSystemBarsOff'] },
-);
-
-// A logo page's tools (docs/specs/007-editor/logo-pages.md): shapes combined into one, Mirror
-// Copy, and wordmark type set on a text.
-export const LOGO_TOOLS = chart(
-  'Element',
-  'Changed',
-  'Logo Tools Used',
-  'On a logo page: shapes combined (Unite, Subtract, Intersect, Exclude), a Mirror Copy, and wordmark type (tracking, weight, case, arc) set on a text.',
-  { types: [...LOGO_TOOL_TYPES] },
-);
-
-// Drawing with Mirror on: each drawing that got its reflected twin.
-export const LOGO_MIRROR_TWINS = chart(
-  'Element',
-  'Created',
-  'Mirrored Drawings',
-  'A shape, path or stroke drawn on a logo page with Mirror While Drawing on, so it got a reflected twin.',
-  { types: ['MirrorTwin'] },
-);
-
-// A logo page's own switches, each person's (Show Guides is a Setting, charted there).
-export const LOGO_SWITCHES = chart(
-  'UI',
-  'Toggled',
-  'Logo Mirror Switched',
-  'Mirror While Drawing turned on or off on a logo page.',
-  { types: ['LogoMirrorOn', 'LogoMirrorOff'] },
-);
-
-// How a logo page mirrors (docs/specs/007-editor/logo-pages.md "Mirror"): the axis, a radial
-// mirror's copies and Merge Into One, from the Mirror popover.
-export const LOGO_MIRROR_SETTINGS = chart(
-  'UI',
-  'Changed',
-  'Logo Mirror Set Up',
-  "A logo page's mirror axis, radial copies or Merge Into One changed in its Mirror popover.",
-  {
-    types: [
-      'LogoMirrorAxisVertical',
-      'LogoMirrorAxisHorizontal',
-      'LogoMirrorAxisBoth',
-      'LogoMirrorAxisRadial',
-      'LogoMirrorCopies3',
-      'LogoMirrorCopies4',
-      'LogoMirrorCopies5',
-      'LogoMirrorCopies6',
-      'LogoMirrorCopies8',
-      'LogoMirrorMergeOn',
-      'LogoMirrorMergeOff',
     ],
   },
 );
@@ -334,8 +243,8 @@ export const EMPTY_PAGE_LAYOUTS_HIDDEN = chart(
   'UI',
   'Closed',
   'Empty Page Layouts Hidden',
-  'Someone hid the Start From a Layout card an empty page shows inside itself, or chose Start From Scratch on it.',
-  { types: ['EmptyPageLayouts', 'EmptyPageLayoutsBlank'] },
+  'Someone hid the Start From a Layout card an empty page shows inside itself.',
+  { types: ['EmptyPageLayouts'] },
 );
 
 // Writing articles (docs/specs/007-editor/article-pages.md "Telemetry").
@@ -400,11 +309,11 @@ export const ARTICLE_LOOKS = chart(
   },
 );
 
-// Pages (docs/specs/007-editor/pages-mode.md): pages made and set up, logos, wireframes and articles.
+// Pages (docs/specs/007-editor/pages-mode.md): pages made and set up, and articles.
 export const PAGE_WORK: MetricStack = {
   stack: true,
   title: 'Pages',
-  blurb: 'Pages added and set up, logo and wireframe tools, and articles written and styled.',
+  blurb: 'Pages added and set up, and articles written and styled.',
   members: [
     PAGE_ORIENTATION,
     PAGES,
@@ -413,12 +322,6 @@ export const PAGE_WORK: MetricStack = {
     PAGE_CONTENTS_JUMPS,
     PAGE_SWIPES,
     TAB_WINDOW_USE,
-    LOGO_TOOLS,
-    LOGO_MIRROR_TWINS,
-    LOGO_SWITCHES,
-    LOGO_MIRROR_SETTINGS,
-    WIREFRAME_DEVICES_CHOSEN,
-    WIREFRAME_SYSTEM_BARS,
     EMPTY_PAGE_LAYOUTS_HIDDEN,
     ARTICLE_INSERTS,
     ARTICLE_FORMATTING,

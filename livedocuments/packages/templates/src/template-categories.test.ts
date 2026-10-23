@@ -43,8 +43,8 @@ describe('template categories', () => {
   it('pins the primary counts', () => {
     const counts = ids.map((id) => TEMPLATES.filter((t) => templateCategory(t.kind) === id).length);
     expect(Object.fromEntries(ids.map((id, i) => [id, counts[i]]))).toEqual({
-      design: 7,
-      presentations: 17,
+      design: 2,
+      presentations: 16,
     });
   });
 
@@ -87,7 +87,6 @@ describe('template search words', () => {
     expect(find('cv')).toContain('resume');
     expect(find('prfaq')).toEqual(['working-backwards']);
     expect(find('instagram')).toContain('social-carousel');
-    expect(find('iphone')).toEqual(expect.arrayContaining(['blank-wireframe-phone']));
     expect(find('floorplan')).toContain('floor-plan');
     // A category label finds what is in it; every word must match.
     expect(find('design storyboard')).toContain('storyboard');

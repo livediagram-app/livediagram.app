@@ -6,7 +6,7 @@ import { PagesScene, PagePanelScene } from '@/components/illustrations/pages';
 export const metadata = helpMetadata({
   title: 'Working with Pages',
   description:
-    'Every tab is a row of pages: infographics, slides, articles and logos in print and social sizes, with layouts and photo backgrounds, to export or present.',
+    'Every tab is a row of pages: infographics, slides and articles in print and social sizes, with layouts and photo backgrounds, to export or present.',
   path: '/help/pages/working-with-pages/',
 });
 
@@ -20,18 +20,17 @@ export const metadata = helpMetadata({
 
 Every tab in livedocuments is a row of **pages**, made for building finished work: a poster, a one-pager, a set of social posts, an article or a short deck. Instead of an endless canvas you work on pages, sheets laid out in a row, each one a picture you build up and then export or present.
 
-## Four Kinds of Page
+## Three Kinds of Page
 
 - **Infographic**: a sheet to lay out freely, starting from a layout if you like. Everything on this page is about infographic pages unless it says otherwise.
 - **Article**: a page to write on, like a document, its writing flowing onto new pages as it grows. See [Writing Articles](/help/pages/articles/).
 - **Slide**: one slide of a deck, always landscape in a slide size (16:9, or the classic 4:3). It starts from its own **slide layouts** (Title Slide, Section Header, Title and Bullets, Two Columns, Image and Text, Statement, Thank You and more), has no portrait to turn to, and joins the slide deck in one press. See [Slide Pages](/help/pages/slide-pages/).
-- **Logo**: a square artboard (1024 x 1024) to design a logo on, with construction guides, mirror drawing, wordmark type, combining shapes and a logo kit export. See [Logo Pages](/help/pages/logo-pages/).
 
 A tab's first page asks **What Is This Page For?** while it is the only page and still empty; after that, every page keeps the kind it was made with.
 
 ## Starting From a Template
 
-A new, empty tab opens on **Start Making Pages**: every Pages template, grouped by what it makes (**Slides**, **Infographics**, **Articles**, **Posters**, **Logos**), with **Recommended** first and a search. No page is drawn behind it until you choose. **Recommended** leads with **Blank Infographic**, **Blank Article** and **Blank Slide Deck**, each one empty page of that kind with nothing to choose; **Blank Logo** is first under **Logos**, and the **Project Brief** template, one article page written as a short project brief, is under **Articles** ([Templates](/help/canvas/templates/)). The **×** leaves one empty page, ready to ask what it is for. Deleting the last page empties the tab and brings Start Making Pages back.
+A new, empty tab opens on **Start Making Pages**: every Pages template, grouped by what it makes (**Slides**, **Infographics**, **Articles**, **Posters**), with **Recommended** first and a search. No page is drawn behind it until you choose. **Recommended** leads with **Blank Infographic**, **Blank Article** and **Blank Slide Deck**, each one empty page of that kind with nothing to choose, and the **Project Brief** template, one article page written as a short project brief, is under **Articles** ([Templates](/help/canvas/templates/)). The **×** leaves one empty page, ready to ask what it is for. Deleting the last page empties the tab and brings Start Making Pages back.
 
 ## Content That Does Not Fit a Page
 
@@ -45,8 +44,8 @@ Open a tab whose content does not fit on its first page (an imported tab, say), 
   <PagesScene />
 </Figure>
 
-- **Add a page** with the **+** after the last page, or the **+** at the end of the palette strip, and choose **Infographic**, **Article**, **Slide** or **Logo** in **Add a Page**. A new infographic page takes the last one's size and orientation, and every new page **carries over the background** of the page before it (its colour, gradient or picture, and its pattern; a logo page takes the fill without the pattern), so a series keeps its look. It is the new page's own from then on. With no background to carry over, a new infographic page starts on a deep gradient in your theme's colours (the Theme Dusk gradient), and the slide of a new slide deck on the light grey Steel gradient; a new article or logo page starts on plain paper. A tab holds up to 100 pages.
-- **Each page's label** sits above its top-left corner: its name, or "Page 2", then its size ("A4 · Portrait", "Square", "Story (9:16)"), then "Article", "Slide" or "Logo" on those kinds of page. An infographic page, the plain page, leaves its kind off, so its title bar keeps the room for its buttons. **Press the label** to fit that page to the screen.
+- **Add a page** with the **+** after the last page, or the **+** at the end of the palette strip, and choose **Infographic**, **Article** or **Slide** in **Add a Page**. A new infographic page takes the last one's size and orientation, and every new page **carries over the background** of the page before it (its colour, gradient or picture, and its pattern), so a series keeps its look. It is the new page's own from then on. With no background to carry over, a new infographic page starts on a deep gradient in your theme's colours (the Theme Dusk gradient), and the slide of a new slide deck on the light grey Steel gradient; a new article page starts on plain paper. A tab holds up to 100 pages.
+- **Each page's label** sits above its top-left corner: its name, or "Page 2", then its size ("A4 · Portrait", "Square", "Story (9:16)"), then "Article" or "Slide" on those kinds of page. An infographic page, the plain page, leaves its kind off, so its title bar keeps the room for its buttons. **Press the label** to fit that page to the screen.
 - **Drag a label sideways to reorder the pages.** A blue bar in the gap shows where the page will land; let go and it moves there with everything on it. **Escape** cancels.
 - **Content belongs to its page.** Anything whose centre is on a page moves with it when the pages around it change, and whatever hangs off a page's edge is cut off at the edge, on screen and in exports, as if the pages were the only paper.
 - **Arrows stay on one page.** An arrow's end pins to an element only when that element is on the same page as the arrow's other end; elements on another page show no connection points, so the end stays free where you drop it.
@@ -83,7 +82,7 @@ An infographic or slide page's title bar, above its top-right corner, holds the 
 
 While the page is wide enough on screen, each button shows its name beside its icon; zoom out, or use a phone, and they drop to their icons (hover one for its name). On a phone, Layout and Background open as a sheet from the bottom of the screen. A locked page shows no Layout, Tidy Up or Background button. Only Editors see these buttons: Participants and Viewers see the pages without them.
 
-A logo page has its own buttons here instead (**Tidy** for a drawing, **Mirror** and **Guides**, and **Start From a Layout** while it is empty): see [Logo Pages](/help/pages/logo-pages/). An article page keeps its background in its panel.
+An article page keeps its background in its panel.
 
 ## The Page Panel
 
@@ -92,7 +91,6 @@ Press the cog above a page's top-right corner to open its panel, which opens bes
 - An **infographic** page: its size and orientation. Its layouts and background are on the **Layout** and **Background** buttons beside the cog.
 - A **slide** page: the **Page** and **Background** tabs. Its layouts are on the **Layout** button.
 - An **article** page: the **Page**, **Background**, **Style** and **Text** tabs (see [Writing Articles](/help/pages/articles/)).
-- A **logo** page: the **Background** and **Layouts** tabs, with no size to choose (see [Logo Pages](/help/pages/logo-pages/)).
 
 Along the bottom are the page's actions.
 
@@ -114,13 +112,13 @@ The page's settings start with the **Size** tiles, each drawn to scale:
 | Story  | Stories (9:16); turned landscape it reads Widescreen (16:9) |
 | Fit    | Fit to Content: sized around the content it was made for    |
 
-**Fit** shows only on a page already in it, a page made around content that did not fit (see [Content That Does Not Fit a Page](#content-that-does-not-fit-a-page)); choose another size and it is gone for good. Slide sizes belong to slide pages: a deck is made of [slide pages](/help/pages/slide-pages/), which offer only **Slide** (16:9) and **Classic** (4:3), and no orientation. (An infographic page made before this, still on the Slide size, keeps that tile until you move it off.) A logo page is always its 1024 x 1024 artboard, so it shows no sizes at all.
+**Fit** shows only on a page already in it, a page made around content that did not fit (see [Content That Does Not Fit a Page](#content-that-does-not-fit-a-page)); choose another size and it is gone for good. Slide sizes belong to slide pages: a deck is made of [slide pages](/help/pages/slide-pages/), which offer only **Slide** (16:9) and **Classic** (4:3), and no orientation. (An infographic page made before this, still on the Slide size, keeps that tile until you move it off.)
 
 Below them, **Portrait** and **Landscape** turn the page (a square page, a slide size and Fit to Content have no orientation). Changing a page's size or orientation keeps everything on it: content that still fits stays as it is, and content that no longer fits is scaled down as one to fit inside the margins, its text with it. Nothing is cut off.
 
 ### Backgrounds and Patterns
 
-Every kind of page has the same backgrounds, sorted into **Solid**, **Gradient** and **Image** at the top of the backgrounds (a logo page has no Image); they open on the kind the page has now. An infographic page keeps them on the **Background** button beside its cog; a slide page has that button and its panel's **Background** tab; article and logo pages have the **Background** tab.
+Every kind of page has the same backgrounds, sorted into **Solid**, **Gradient** and **Image** at the top of the backgrounds; they open on the kind the page has now. An infographic page keeps them on the **Background** button beside its cog; a slide page has that button and its panel's **Background** tab; an article page has the **Background** tab.
 
 - **Solid**: **Paper** (the plain page) leading your tab theme's colours, then a row of light colours and a row of dark ones (the same colours every colour picker in livedocuments offers), the colours already used in the document, and **Add a custom colour** (four coloured dots) for a **custom colour** of your own.
 - **Gradient**: a **Theme** group of fourteen gradients drawn from your tab's theme colours, light ones first, then bold and deep ones (change the tab's theme and these follow it), then a **Gradients** group of thirteen presets, from Sunrise and Peach to Night, Forest and Ember, plus the rainbow swatch for a **custom gradient**: pick its **From** and **To** colours from the same colours, turn its **Angle**, or **Swap** the two.

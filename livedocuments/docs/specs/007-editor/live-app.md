@@ -1,6 +1,6 @@
 # Live app
 
-The Pages editor: where people build articles, slide decks, infographics, logos and wireframes on pages.
+The Pages editor: where people build articles, slide decks and infographics on pages.
 
 - **Workspace:** `apps/live` (`@livedocuments/live`).
 - **Public URL:** `https://livedocuments.app` — the app serves at **clean routes** (`/document/...`, `/explorer/...`, `/new`, ...); the [router app](../016-platform/router-app.md) selects it by route. There's no `/live` URL prefix.

@@ -8,19 +8,17 @@
 // once anything lands there. Where the card has no room, the page shows EmptyPageInvite instead.
 // The card keeps to its layouts: Change Theme is the Layout popover's alone.
 import { lucideSparkles } from '@livedocuments/icons/lucide';
-import { pageDeviceClass, pageKindOf, type LaidOutPage } from '@livedocuments/document';
+import { pageKindOf, type LaidOutPage } from '@livedocuments/document';
 import { layoutCatalogueFor, type PageLayoutId } from '@livedocuments/templates';
 import { CloseIcon, lucideGlyph, Tooltip } from '@livedocuments/ui';
-import { DashedAddButton } from '@/components/primitives/DashedAddButton';
 import { LayoutGallery } from './layout-gallery/LayoutGallery';
 import { layoutCardSize } from './page-layout-card';
 
 const SparklesIcon = lucideGlyph(lucideSparkles, 18);
 
-// The card's header, search and chips (and a logo page's Start From Scratch): what the gallery's
-// scrolling area leaves of the card's height.
+// The card's header, search and chips: what the gallery's scrolling area leaves of the card's
+// height.
 const CARD_CHROME_HEIGHT = 168;
-const LOGO_SCRATCH_HEIGHT = 48;
 // Wide enough to read each tile's description under its name, and for the header's badge beside
 // its title (narrower, the title takes the room).
 const DESCRIBED_MIN_WIDTH = 520;
@@ -28,8 +26,6 @@ const DESCRIBED_MIN_WIDTH = 520;
 // What the card calls a page's layouts, by its kind.
 const KIND_NOUN = {
   slide: 'slide',
-  logo: 'logo',
-  wireframe: 'screen',
   infographic: 'page',
   article: 'page',
 } as const;
@@ -39,19 +35,15 @@ export function EmptyPageLayouts({
   zoom,
   onApply,
   onHide,
-  onBlank,
 }: {
   page: LaidOutPage;
   zoom: number;
   onApply: (layout: PageLayoutId) => void;
   onHide: () => void;
-  // Start From Scratch: the page starts from nothing, and the card is not offered on it again.
-  onBlank: () => void;
 }) {
   const { width, height } = layoutCardSize(page, zoom);
   const kind = pageKindOf(page);
-  const count = layoutCatalogueFor(kind, pageDeviceClass(page)).layouts.length;
-  const logo = page.kind === 'logo';
+  const count = layoutCatalogueFor(kind).layouts.length;
   return (
     <div className="absolute inset-0 flex items-center justify-center">
       <div
@@ -115,14 +107,9 @@ export function EmptyPageLayouts({
             onApply={onApply}
             onPreview={() => {}}
             described={width >= DESCRIBED_MIN_WIDTH}
-            maxHeight={`${Math.max(160, height - CARD_CHROME_HEIGHT - (logo ? LOGO_SCRATCH_HEIGHT : 0))}px`}
+            maxHeight={`${Math.max(160, height - CARD_CHROME_HEIGHT)}px`}
           />
         </div>
-        {/* A logo page can start from nothing: the card goes for good on that page, its layouts
-            still in its panel (docs/specs/007-editor/logo-pages.md "Logo layouts"). */}
-        {logo ? (
-          <DashedAddButton label="Start From Scratch" className="mt-2" onClick={onBlank} />
-        ) : null}
       </div>
     </div>
   );

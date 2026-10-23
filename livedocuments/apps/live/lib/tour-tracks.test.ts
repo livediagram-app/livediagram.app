@@ -23,15 +23,15 @@ describe('tour tracks', () => {
 });
 
 describe('the Pages tour’s tracks', () => {
-  it('offers Logo after Slides is answered, and nothing once both are', () => {
+  it('offers Article after Slides is answered, and nothing once both are', () => {
     const slides = markPagesKindSeen({}, 'slide');
     expect(pagesKindSeen(slides, 'slide')).toBe(true);
-    expect(pagesKindSeen(slides, 'logo')).toBe(false);
-    expect(pagesKindSeen(markPagesKindSeen(slides, 'logo'), 'logo')).toBe(true);
+    expect(pagesKindSeen(slides, 'article')).toBe(false);
+    expect(pagesKindSeen(markPagesKindSeen(slides, 'article'), 'article')).toBe(true);
   });
 
   it('counts the single seen flag as every kind only for a power user', () => {
     expect(pagesKindSeen({ pagesTourSeen: true }, 'slide')).toBe(false);
-    expect(pagesKindSeen({ pagesTourSeen: true, powerUserMode: true }, 'logo')).toBe(true);
+    expect(pagesKindSeen({ pagesTourSeen: true, powerUserMode: true }, 'article')).toBe(true);
   });
 });

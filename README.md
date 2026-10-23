@@ -1,14 +1,15 @@
 # liveworkspace
 
-The monorepo for liveworkspace and its products, livediagram, liveplanner and livedocuments, plus what
-they share.
+The monorepo for liveworkspace and its products, livediagram, liveplanner, livedocuments and
+livedesign, plus what they share.
 
 ```
 packages/        shared by every product (@liveworkspace/*)
 liveworkspace/   the platform's own apps: the liveworkspace.app site, accounts (sign-in), telemetry and Community
 livediagram/     livediagram.app
 liveplanner/     liveplanner.app
-livedocuments/   livedocuments.app: articles, slides, infographics, logos and wireframes
+livedocuments/   livedocuments.app: articles, slides and infographics
+livedesign/      livedesign.app: logos, wireframes and photos
 docs/            how this repo is laid out and where it's heading
 ```
 
@@ -24,6 +25,7 @@ corepack pnpm install
 corepack pnpm dev:diagram        # livediagram's apps
 corepack pnpm dev:planner        # liveplanner's apps
 corepack pnpm dev:documents      # livedocuments' apps, on the 32xx ports
+corepack pnpm dev:design         # livedesign's apps, on the 34xx ports
 corepack pnpm dev:workspace      # liveworkspace.app on :3300, with its four APIs behind it
 corepack pnpm dev:site           # liveworkspace.app's pages alone on :3300
 corepack pnpm dev:accounts       # the accounts API alone on :8787
@@ -39,5 +41,5 @@ livediagram's tests), its own docs, and its own AGENTS.md for product-specific r
 ## Deploys
 
 Nothing deploys from here yet. livediagram still deploys from its own repo, and liveplanner from
-its own, now to the liveworkspace Cloudflare account it shares with liveworkspace. livedocuments has never been deployed and has no Cloudflare
-resources yet. The switch is described in docs/structure.md.
+its own, now to the liveworkspace Cloudflare account it shares with liveworkspace. livedocuments and livedesign have never been deployed and have no
+Cloudflare resources yet. The switch is described in docs/structure.md.

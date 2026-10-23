@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { TextElement } from '@livedocuments/document';
 import { withTextStyle } from './useTextStyleSetters';
 
-// docs/specs/007-editor/logo-pages.md "Wordmark type": the Bold button sets bold and clears a
+// docs/specs/006-document/document-structure.md "Text type": the Bold button sets bold and clears a
 // wordmark weight, so it always shows its result.
 describe('withTextStyle', () => {
   const text: TextElement = { id: 't', type: 'text', x: 0, y: 0, width: 1, height: 1 };

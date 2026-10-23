@@ -7,7 +7,7 @@ import { selectionReference } from './selection-reference';
 // The selection reference (docs/specs/013-workspace/workbench-embeds.md "The selection reference",
 // blueprint "The selection reference"): what the person meant when they typed.
 
-const tabOf = (elements: Element[]): Tab => ({ id: 'tab-1', name: 'Wireframe', elements });
+const tabOf = (elements: Element[]): Tab => ({ id: 'tab-1', name: 'Overview', elements });
 
 const play = shapeAt('square', 'el-play', 0, 0, 100, 50, { label: 'Play' });
 const grid = shapeAt('square', 'el-grid', 200, 0, 100, 50, { label: 'Game grid' });
@@ -40,7 +40,7 @@ describe('selectionReference', () => {
     const { text } = selectionReference(input([]));
 
     expect(text.split('\n')[0]).toBe(
-      `[livedocuments] "Home screen" › tab "Wireframe" (doc doc-3h9x2a, tab ${tabRef()}, rev 41)`,
+      `[livedocuments] "Home screen" › tab "Overview" (doc doc-3h9x2a, tab ${tabRef()}, rev 41)`,
     );
   });
 
@@ -136,6 +136,6 @@ describe('selectionReference', () => {
   it('quotes the document and tab names as JSON', () => {
     const ref = selectionReference({ ...input([]), documentName: 'A "quoted" name' });
 
-    expect(ref.text).toMatch(/^\[livedocuments\] "A \\"quoted\\" name" › tab "Wireframe"/);
+    expect(ref.text).toMatch(/^\[livedocuments\] "A \\"quoted\\" name" › tab "Overview"/);
   });
 });

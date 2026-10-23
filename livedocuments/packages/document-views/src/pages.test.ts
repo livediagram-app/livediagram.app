@@ -9,7 +9,7 @@ import { renderView } from './render-view';
 
 const pages: Page[] = [
   { id: 'page-cover', orientation: 'landscape', size: 'slide', kind: 'slide', name: 'Cover' },
-  { id: 'page-logo', orientation: 'portrait', size: 'logo', kind: 'logo', locked: true },
+  { id: 'page-poster', orientation: 'portrait', kind: 'infographic', locked: true },
   { id: 'page-art1', orientation: 'portrait', kind: 'article', flow: 'art-1' },
   { id: 'page-art2', orientation: 'portrait', kind: 'article', flow: 'art-1' },
 ];
@@ -64,7 +64,7 @@ describe('the pages view', () => {
     const out = pagesOf(pagesTab());
     const lines = out.text.split('\n');
     expect(lines[0]).toBe(
-      'tab tab-deck "Deck" · 1 element: 1 box · 4 pages: 1 slide, 1 logo, 2 article (view pages) · rev 7',
+      'tab tab-deck "Deck" · 1 element: 1 box · 4 pages: 1 slide, 1 infographic, 2 article (view pages) · rev 7',
     );
     expect(lines[1]).toBe(
       `page 1 "Cover" page-cover · slide Slide (16:9) · at ${cover.x},${cover.y} 1920x1080 · 1 element`,
@@ -73,7 +73,7 @@ describe('the pages view', () => {
     expect(lines[1]).toBe(
       `page 1 "Cover" page-cover · slide Slide (16:9) · at ${cover.x},${cover.y} 1920x1080 · 1 element`,
     );
-    expect(lines[3]).toMatch(/^page 2 page-logo · logo 1024 x 1024 · at .* · locked · empty$/);
+    expect(lines[3]).toMatch(/^page 2 page-poster · infographic A4 · at .* · locked · empty$/);
     expect(lines[4]).toMatch(
       /^page 3 page-art1 · article A4 · at .* · article art-1 · its writing below$/,
     );
@@ -85,12 +85,12 @@ describe('the pages view', () => {
     );
     expect(out.text).toContain('  ---\n  title: Brief\n  ---\n  \n  # Goals\n  \n  - Ship it');
     expect(out.text).toMatch(/layouts slide: slide-title, /);
-    expect(out.text).toMatch(/layouts logo: /);
+    expect(out.text).toMatch(/layouts infographic: /);
     const json = out.json as PagesView;
     expect(json.pagesMode).toBe(true);
     expect(json.pages[0]).toMatchObject({ place: 1, kind: 'slide', refs: ['aaaa1111'] });
     expect(json.articles[0]!.markdown.startsWith('---\ntitle: Brief')).toBe(true);
-    expect(json.layouts.map((l) => l.kind)).toEqual(['slide', 'logo']);
+    expect(json.layouts.map((l) => l.kind)).toEqual(['infographic', 'slide']);
   });
 
   it('names a landscape page, its paint, its elements; a one-page article; no layouts for articles alone', () => {

@@ -34,7 +34,7 @@ describe('heroSearch', () => {
   });
 
   it('finds the blanks too, and through search words, as the editor does', () => {
-    expect(heroSearch('blank logo').map((t) => t.kind)).toContain('blank-logo');
+    expect(heroSearch('blank article').map((t) => t.kind)).toContain('blank-article');
     expect(heroSearch('powerpoint').map((t) => t.kind)).toContain('blank-slide-deck');
   });
 

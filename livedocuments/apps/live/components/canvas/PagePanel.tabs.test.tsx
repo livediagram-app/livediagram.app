@@ -16,7 +16,6 @@ const laidOut = (page: Page) => layOutPages([page])[0]!;
 const edits = (): PageEdits => ({
   setOrientation: vi.fn(),
   setSize: vi.fn(),
-  setDevice: vi.fn(),
   rename: vi.fn(),
   setBackground: vi.fn(),
   applyToAllReach: vi.fn(() => 0),
@@ -32,7 +31,6 @@ const edits = (): PageEdits => ({
   previewInk: vi.fn(),
   isLocked: () => false,
   setLocked: vi.fn(),
-  startBlank: vi.fn(),
   splitPage: vi.fn(),
   removePage: vi.fn(),
 });
@@ -47,7 +45,6 @@ function renderPanel(page: Page, initialTab: PagePanelTab, onPreview = vi.fn()) 
       themeBackgrounds={[]}
       edit={edits()}
       onPreview={onPreview}
-      onLayoutPreview={vi.fn()}
       onClose={vi.fn()}
     />,
   );
@@ -72,12 +69,6 @@ describe('pagePanelTabs', () => {
       pagePanelTabs(laidOut({ id: 'p', orientation: 'portrait', kind: 'article', flow: 'f' })),
     ).toEqual(['page']);
   });
-
-  it('drops Page from a logo page, which has no size or orientation to choose', () => {
-    expect(
-      pagePanelTabs(laidOut({ id: 'p', orientation: 'portrait', kind: 'logo', size: 'logo' })),
-    ).toEqual(['background', 'layouts']);
-  });
 });
 
 describe('the Background tab', () => {
@@ -98,21 +89,10 @@ describe('the Background tab', () => {
     expect(screen.getByText('Size')).toBeTruthy();
   });
 
-  it('opens a logo page on Background, its first tab', () => {
-    renderPanel({ id: 'p', orientation: 'portrait', kind: 'logo', size: 'logo' }, 'page');
-    expect(screen.queryByRole('button', { name: 'Page' })).toBeNull();
-    expect(screen.getByRole('button', { name: 'Background' }).getAttribute('aria-pressed')).toBe(
-      'true',
-    );
-  });
-
   it('takes a hovered preview off the page when leaving it', () => {
-    const onPreview = renderPanel(
-      { id: 'p', orientation: 'portrait', kind: 'logo', size: 'logo' },
-      'background',
-    );
+    const onPreview = renderPanel(slide, 'background');
     onPreview.mockClear();
-    fireEvent.click(screen.getByRole('button', { name: 'Layouts' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Page' }));
     expect(onPreview).toHaveBeenCalledWith(null);
   });
 });

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 // A rich label keeps its element's face with or without wordmark type
-// (docs/specs/007-editor/logo-pages.md "Wordmark type"): the wordmark CSS adds tracking and weight
+// (docs/specs/006-document/document-structure.md "Text type"): the wordmark CSS adds tracking and weight
 // only, never an undefined font-family over the label's own.
 import { cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';

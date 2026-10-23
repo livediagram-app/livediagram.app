@@ -1,11 +1,10 @@
 # Pages for agents
 
 How an agent (the MCP tools and the CLI's verbs, [Agents](README.md)) reads and makes the pages of a tab:
-infographic, slide and logo pages ([Pages](../007-editor/pages-mode.md),
-[Logo pages](../007-editor/logo-pages.md)) and articles ([Article pages](../007-editor/article-pages.md)). People
+infographic and slide pages ([Pages](../007-editor/pages-mode.md)) and articles ([Article pages](../007-editor/article-pages.md)). People
 with the document open see an agent's pages and writing arrive at once, as anyone's.
 
-The bar: an agent asked to "write a document", "make a deck" or "design a logo" makes it on the right kind of page
+The bar: an agent asked to "write a document", "make a deck" or "lay out an infographic" makes it on the right kind of page
 on the first try, writes an article in Markdown, and is never told a change worked when it shows on no page.
 
 ## Domain language
@@ -29,7 +28,7 @@ The interface's words are kept: an agent writes an **article**, never a "documen
   `article set` (`write_article`) ([CLI](../015-api/cli.md)).
 - Both go through one api route, `POST /api/documents/:id/tabs/:tabId/pages`, over one pure engine shared with
   the editor, so an agent's page edit is exactly the edit the page panel makes.
-- `create_document` and `add_tab` with a Pages template (`article`, `slide-deck`, `logo-design`, the poster
+- `create_document` and `add_tab` with a Pages template (`article`, `slide-deck`, the poster
   family, `blank-illustration`, ...) still make a tab on its pages; the new tools then change it.
 
 ## Which tab
@@ -42,7 +41,7 @@ The interface's words are kept: an agent writes an **article**, never a "documen
 - A page is named by its **id** (`page-3f2a91c0`), its **place** (`2`, or `"2"`), or its **name** (case and spacing
   aside). An id wins over a place, a place over a name.
 - An unknown page is refused (`page_unknown`) with the pages there are ("Pages: 1 Cover (slide), 2 (slide),
-  3 Logo (logo)").
+  3 Numbers (infographic)").
 - Places are read against the pages as the changes before it left them, so `[delete 2, set 2]` sets the page that
   was third.
 
@@ -52,15 +51,15 @@ Up to **50** page changes, applied in order, each to the tab as the ones before 
 edit. A refused change stops the batch and nothing is written; the answer names the change and why, and what the
 changes before it would have done.
 
-| Change                    | Fields                                                                                               | Does                                                                                                                                                                                                                                |
-| ------------------------- | ---------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `add`                     | `kind` (infographic, slide, logo), `size?`, `orientation?`, `name?`, `background?`, `layout?`, `at?` | A new page of the kind, sized as the editor's **+** sizes it unless told, at place `at` (default the end)                                                                                                                           |
-| `set`                     | `page`, `name?`, `size?`, `orientation?`, `background?`, `locked?`                                   | The page panel's edits; on an article page size, orientation and background change every page of the article                                                                                                                        |
-| `layout`                  | `page`, `layout`                                                                                     | Puts a layout onto the page in place of everything on it, as the panel's Layouts do                                                                                                                                                 |
-| `move`                    | `page`, `to`                                                                                         | Moves the page (an article page: its whole article) to place `to`, its content with it                                                                                                                                              |
-| `duplicate`               | `page`                                                                                               | A copy after it, content and all (an article: the whole article and its writing)                                                                                                                                                    |
-| `delete`                  | `page`                                                                                               | Removes the page and everything on it (an article page: the whole article, writing and all); never the last page. A later delete in the same change naming, by id, a page an earlier one took is done already, never a missing page |
-| `apply_background_to_all` | `page`                                                                                               | Every other page of the page's kind takes its background, as the Background tab's **Apply to All** does                                                                                                                             |
+| Change                    | Fields                                                                                         | Does                                                                                                                                                                                                                                |
+| ------------------------- | ---------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `add`                     | `kind` (infographic, slide), `size?`, `orientation?`, `name?`, `background?`, `layout?`, `at?` | A new page of the kind, sized as the editor's **+** sizes it unless told, at place `at` (default the end)                                                                                                                           |
+| `set`                     | `page`, `name?`, `size?`, `orientation?`, `background?`, `locked?`                             | The page panel's edits; on an article page size, orientation and background change every page of the article                                                                                                                        |
+| `layout`                  | `page`, `layout`                                                                               | Puts a layout onto the page in place of everything on it, as the panel's Layouts do                                                                                                                                                 |
+| `move`                    | `page`, `to`                                                                                   | Moves the page (an article page: its whole article) to place `to`, its content with it                                                                                                                                              |
+| `duplicate`               | `page`                                                                                         | A copy after it, content and all (an article: the whole article and its writing)                                                                                                                                                    |
+| `delete`                  | `page`                                                                                         | Removes the page and everything on it (an article page: the whole article, writing and all); never the last page. A later delete in the same change naming, by id, a page an earlier one took is done already, never a missing page |
+| `apply_background_to_all` | `page`                                                                                         | Every other page of the page's kind takes its background, as the Background tab's **Apply to All** does                                                                                                                             |
 
 - **Article pages are made by `write_article`**, never by `add`: an `add` of kind `article` is refused
   (`article_by_write`) with that hint.
@@ -75,11 +74,11 @@ changes before it would have done.
 deleted.`). An agent replacing a starter page writes `[add, delete 1]`, and without this the delete would remove the
   page it just added, or be refused as the tab's only page.
 - **Sizes**: a page takes only the sizes its kind offers (`pageSizesFor`); any other is refused (`size_not_offered`)
-  naming the ones it takes. Fit to Content is never chosen (`size_not_offered`). A slide or logo page has no
+  naming the ones it takes. Fit to Content is never chosen (`size_not_offered`). A slide page has no
   orientation; turning one is refused (`no_orientation`).
 - **Backgrounds**: `{ color }` (a hex) is a solid fill, `{ gradient: [from, to], angle? }` a two-stop gradient
   (angle in degrees, default 160, the panel's), `pattern` one of `dots`, `grid`, `lines` or `none`, `{ paper: true }` back to the
-  plain paper. A logo page takes no pattern (`pattern_not_offered`). A new fill re-inks what is on the page as the panel does
+  plain paper. A new fill re-inks what is on the page as the panel does
   (`pageInkFor`, [Re-inking](../007-editor/pages-mode.md#re-inking)), from the colours as they are (the
   editor's session memory is the editor's).
 - **Apply to all**: `apply_background_to_all` gives every other page of the page's kind (every slide, say) its

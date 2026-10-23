@@ -9,7 +9,7 @@ import {
 
 // A failed autosave names its real cause (docs/specs/006-design/per-tab-storage.md). Production showed
 // `Http401.SaveTab` reading as "Check your connection" on a wired fibre line.
-// The worker's exact 401 is replayed on the tab PUT, since no Clerk session
+// The worker's exact 401 is replayed on the tab PUT, since no signed-in session
 // exists in the e2e stack; lifting it proves the next edit saves again.
 test('a save refused as unauthenticated says so, then recovers', async ({ page, pageErrors }) => {
   await startBlankDesign(page);

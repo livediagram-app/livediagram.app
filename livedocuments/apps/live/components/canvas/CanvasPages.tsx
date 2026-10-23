@@ -1,21 +1,17 @@
 'use client';
 
 import { useCallback, useRef, useState, type CSSProperties } from 'react';
-import { lucidePanelsTopLeft, lucideSettings } from '@livedocuments/icons/lucide';
+import { lucideSettings } from '@livedocuments/icons/lucide';
 import { FirstPageChoice } from './FirstPageChoice';
 import { layoutCardShows, layoutInviteShows, type LayoutCardContext } from './page-layout-card';
 import { EmptyPageLayouts } from './EmptyPageLayouts';
 import { EmptyPageInvite } from './EmptyPageInvite';
 import { LayoutGalleryDialog } from './LayoutGalleryDialog';
 import { PageDeckButton } from './PageDeckButton';
-import { LogoGuidesSvg, showsLogoGuides } from './LogoPageGuides';
-import { LogoTitleBar } from './LogoTitleBar';
 import { PageLockButton } from './PageLockButton';
 import { PageBackgroundButton } from './PageBackgroundButton';
 import { PageLayoutsButton } from './PageLayoutsButton';
 import { PageMotionLayer } from './PageMotionLayer';
-import { WireframeDeviceSheet } from './WireframeDeviceSheet';
-import { PageDeviceButton } from './wireframe/PageDeviceButton';
 import { PageNotesButton } from './PageNotesButton';
 import { PageTidyUpButton } from './PageTidyUpButton';
 import { PageArticleButtons } from './PageArticleButtons';
@@ -32,7 +28,6 @@ import {
   pageIsDark,
   pageKindOf,
   pageLabel,
-  pageScreenRect,
   pageUnits,
   resolveArticleStyle,
   resolveFontStack,
@@ -47,7 +42,7 @@ import {
   type PageReorder,
 } from '@/hooks/canvas/usePageReorderDrag';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
-import { useLogoPaletteSwitch } from '@/hooks/canvas/useLogoPaletteSwitch';
+import { useCurrentPageFollow } from '@/hooks/canvas/useCurrentPageFollow';
 import { pageSheetStyle } from '@/lib/page-paint';
 import { usePageImageSources } from './page-image-access';
 import { PagePanel, type PagePanelTab } from './PagePanel';
@@ -68,13 +63,9 @@ import {
 } from '@/lib/page-background-preview';
 
 const CogIcon = lucideGlyph(lucideSettings, 16);
-const LayoutIcon = lucideGlyph(lucidePanelsTopLeft, 14);
 
 // Canvas px the letterbox's black reaches past the presented sheet: past any screen at any zoom.
 const LETTERBOX_SPREAD = 100_000;
-// The empty page's layout button beside the cog: with its words, or just its icon.
-const INVITE_WIDE = 150;
-const INVITE_ICON = 30;
 
 // Held at one screen size whatever the zoom: counter-scaled about the given corner.
 const steady = (zoom: number, origin: string): CSSProperties => ({
@@ -147,12 +138,12 @@ export function CanvasPages({
   );
   const cogs = useRef(new Map<string, HTMLButtonElement>());
   const mobile = useIsMobileViewport();
-  // Being on a logo page (opened on one, adding one, going to one, pressing into one) turns the
-  // palette to its kind (lib/palette-kind.ts).
-  const logoPalette = useLogoPaletteSwitch(pages, !!edit && !bare);
+  // Being on a page (opened on one, adding one, going to one, pressing into one) turns the palette
+  // to its kind (lib/palette-kind.ts).
+  const pageFollow = useCurrentPageFollow(pages, !!edit && !bare);
   const goToPage = (page: (typeof pages)[number]) => {
     focusPage(page.id);
-    logoPalette.pageShown(page);
+    pageFollow.pageShown(page);
   };
   // A background hovered in a page's panel: a shared preview (page-background-preview), so the
   // writing and the elements on the page take its ink too.
@@ -192,8 +183,6 @@ export function CanvasPages({
   // The article toolbar's Style command opens the Style beside that page's cog (PageArticleButtons).
   const styleRequestFor = (pageId: string) =>
     styleRequest.pageId === pageId ? styleRequest.seq : 0;
-  // The empty page's own invitation opens its panel on Layouts.
-  const openLayouts = (id: string) => setOpened({ id, tab: 'layouts' });
   // The pages whose in-page layout card was hidden, until the tab is next opened.
   const [layoutsHidden, setLayoutsHidden] = useState<ReadonlySet<string>>(() => new Set());
   // An empty infographic page shows its layouts inside itself (EmptyPageLayouts): never on the first
@@ -239,8 +228,7 @@ export function CanvasPages({
         const number = pageNumberOf(page);
         // The label fits the page's on-screen width, less the title bar's buttons; too narrow, it
         // hides. The title bar's room on screen: the page's width at this zoom. The cog takes its
-        // corner; an empty logo page's layout invite sits beside it, with its words while there is
-        // room for them and the label, as an icon while there is room for that, else not at all.
+        // corner.
         const room = page.rect.width * zoom;
         // A locked page offers nothing to add (docs/specs/007-editor/pages-mode.md
         // "Locking a page"): no Layouts, no layout invite, no kind choice.
@@ -251,19 +239,13 @@ export function CanvasPages({
           !!edit &&
           !locked &&
           !page.flow &&
-          (page.kind === 'slide' ||
-            page.kind === 'wireframe' ||
-            pageKindOf(page) === 'infographic');
-        // A wireframe page's Device, first beside its Layouts (PageDeviceButton).
-        const deviceButton = pageButtons && page.kind === 'wireframe';
+          (page.kind === 'slide' || pageKindOf(page) === 'infographic');
         // An infographic or slide page's Tidy, left of its Background, shown only while it would
         // change something.
         const tidyButton = pageButtons && edit.canTidy?.(page.id) === true;
         // An article page's Style, Text and Background sit beside its cog (PageArticleButtons); a locked page
         // offers none.
         const articleButtons = !!edit && !locked && !!page.flow && !!articles?.flows[page.flow];
-        // A logo page's empty artboard invites its layouts (its panel's Layouts tab).
-        const empty = !!edit && !locked && page.kind === 'logo' && edit.contentCount(page.id) === 0;
         // The first page, unchosen and empty, offers its kind first (FirstPageChoice).
         const choosing =
           !!edit &&
@@ -279,38 +261,22 @@ export function CanvasPages({
           (page.kind === 'slide' || !!view.deck.slideOf(page.id));
         // Add Notes beside it once the deck has a slide of the page (PageNotesButton).
         const notesButton = deckButton && !!view.deck!.slideOf(page.id);
-        const logoButtons = !!edit && page.kind === 'logo' && !!view.logo;
-        // The title bar's fixed buttons (the cog, the lock, the deck button, a logo page's own and
-        // an infographic or slide page's): the invite and the label share what they leave.
+        // The title bar's fixed buttons (the cog, the lock, the deck button and an infographic or
+        // slide page's): the label has what they leave.
         const buttons = {
           edit: !!edit,
           locked,
           deck: deckButton,
           notes: notesButton,
-          logo: logoButtons,
           page: pageButtons,
           article: articleButtons,
           tidy: tidyButton,
-          device: deviceButton,
         };
         // The buttons name themselves on a desktop while the page is wide enough on screen to hold
         // them named; zoomed out further they drop to their icons, as a phone shows them.
         const labelled = titleBarNamed(room, buttons, mobile);
         const fixedRoom = titleBarFixedRoom(buttons, labelled);
-        const invite =
-          !empty || choosing
-            ? null
-            : !mobile && room - fixedRoom >= INVITE_WIDE + LABEL_MIN * 2
-              ? 'wide'
-              : room - fixedRoom >= INVITE_ICON + LABEL_MIN
-                ? 'icon'
-                : null;
-        // A wireframe page's sheet is its device (WireframeDeviceSheet): the paint is its screen's.
-        const device = page.kind === 'wireframe';
-        const labelRoom =
-          room -
-          fixedRoom -
-          (invite === 'wide' ? INVITE_WIDE : invite === 'icon' ? INVITE_ICON : 0);
+        const labelRoom = room - fixedRoom;
         return (
           <div
             key={page.id}
@@ -322,7 +288,7 @@ export function CanvasPages({
             className={`pointer-events-none absolute transition-[left,top,width,height,opacity] duration-200 ease-out motion-reduce:transition-none ${
               drag.reorder?.pageIds.includes(page.id) ? 'opacity-60' : ''
             } ${
-              background?.fill || device
+              background?.fill
                 ? ''
                 : 'bg-white text-slate-900/10 dark:bg-slate-900 dark:text-white/10'
             }`}
@@ -334,52 +300,18 @@ export function CanvasPages({
               // Presenting a page slide, a spread shadow blacks out the whole surround.
               boxShadow: view.letterbox
                 ? `0 0 0 ${LETTERBOX_SPREAD}px #000`
-                : device
-                  ? undefined
-                  : '0 1px 3px rgb(15 23 42 / 0.14), 0 12px 32px rgb(15 23 42 / 0.12)',
-              ...(device ? {} : pageSheetStyle(background, rulingOf(page), pictureOf)),
+                : '0 1px 3px rgb(15 23 42 / 0.14), 0 12px 32px rgb(15 23 42 / 0.12)',
+              ...pageSheetStyle(background, rulingOf(page), pictureOf),
             }}
           >
-            {device ? (
-              <WireframeDeviceSheet
-                page={page}
-                background={background}
-                resolveImage={pictureOf}
-                frameTheme={view.frameTheme}
-              >
-                {/* Its screen's animated background, sized to the screen. */}
-                {background?.fill?.kind === 'gradient' && background.fill.motion ? (
-                  <PageMotionLayer
-                    motion={background.fill.motion}
-                    fill={background.fill}
-                    width={pageScreenRect(page).width}
-                    height={pageScreenRect(page).height}
-                  />
-                ) : null}
-              </WireframeDeviceSheet>
-            ) : null}
             {/* A slide's animated background, over its gradient and under all on it. */}
-            {!device && background?.fill?.kind === 'gradient' && background.fill.motion ? (
+            {background?.fill?.kind === 'gradient' && background.fill.motion ? (
               <PageMotionLayer
                 motion={background.fill.motion}
                 fill={background.fill}
                 width={page.rect.width}
                 height={page.rect.height}
               />
-            ) : null}
-            {/* An empty logo page's guides, under its own cards (LogoPageGuides draws them over
-                the artwork once the page has some). */}
-            {page.kind === 'logo' &&
-            edit &&
-            edit.contentCount(page.id) === 0 &&
-            showsLogoGuides(view, bare, page.id) ? (
-              <div
-                {...{ [GIF_OMIT_ATTR]: '' }}
-                className="pointer-events-none absolute"
-                style={{ left: -page.rect.x, top: -page.rect.y }}
-              >
-                <LogoGuidesSvg page={page} tools={view.logo!} />
-              </div>
             ) : null}
             <div
               className={`absolute left-0 flex items-center ${labelRoom < LABEL_MIN || bare ? 'hidden' : ''}`}
@@ -419,13 +351,6 @@ export function CanvasPages({
                 className="absolute right-0 flex items-center gap-1"
                 style={{ bottom: '100%', marginBottom: 6 / zoom, ...steady(zoom, 'bottom right') }}
               >
-                {invite && openId !== page.id ? (
-                  <LayoutInvite wide={invite === 'wide'} onOpen={() => openLayouts(page.id)} />
-                ) : null}
-                {/* A logo page's Tidy Up, Mirror and Guides (LogoTitleBar). */}
-                {logoButtons && view.logo ? (
-                  <LogoTitleBar pageId={page.id} tools={view.logo} labelled={labelled} />
-                ) : null}
                 {/* First, left of Layout and Background: this slide's place in the deck, and its
                     notes once it is in it. */}
                 {deckButton && view.deck ? (
@@ -442,23 +367,13 @@ export function CanvasPages({
                     section={(part) => articleSection(page.flow!, part)}
                   />
                 ) : null}
-                {/* A wireframe page's Device (PageDeviceButton). */}
-                {deviceButton ? (
-                  <PageDeviceButton
-                    page={page}
-                    labelled={labelled}
-                    onDevice={(patch) => edit.setDevice(page.id, patch)}
-                    frameTheme={view.frameTheme}
-                  />
-                ) : null}
                 {/* An infographic or slide page's Layouts (PageLayoutsButton). */}
                 {pageButtons ? (
                   <PageLayoutsButton
                     page={page}
                     labelled={labelled}
                     onApply={(layout) => void edit.applyLayout(page.id, layout)}
-                    // A wireframe is drawn in wireframe greys: the theme is no choice of its layouts.
-                    onChangeTheme={page.kind === 'wireframe' ? undefined : onOpenTheme}
+                    onChangeTheme={onOpenTheme}
                     onPreview={(layout) =>
                       view.setLayoutPreview(layout ? { pageId: page.id, layout } : null)
                     }
@@ -503,7 +418,7 @@ export function CanvasPages({
             {choosing && edit ? (
               <FirstPageChoice
                 zoom={zoom}
-                onChoose={(kind, device) => edit.choosePageKind(page.id, kind, device)}
+                onChoose={(kind) => edit.choosePageKind(page.id, kind)}
               />
             ) : null}
             {number ? (
@@ -534,7 +449,6 @@ export function CanvasPages({
           tabFont={view.tabFont}
           elements={view.elements}
           pages={view.pages}
-          frameTheme={view.frameTheme}
         />
       ) : null}
       {edit
@@ -558,10 +472,6 @@ export function CanvasPages({
                 onHide={() => {
                   track('UI', 'Closed', 'EmptyPageLayouts');
                   setLayoutsHidden((hidden) => new Set(hidden).add(page.id));
-                }}
-                onBlank={() => {
-                  track('UI', 'Closed', 'EmptyPageLayoutsBlank');
-                  edit.startBlank(page.id);
                 }}
               />
             </div>
@@ -612,9 +522,6 @@ export function CanvasPages({
           themeBackgrounds={view.themeBackgrounds}
           edit={edit}
           onPreview={setPreview}
-          onLayoutPreview={(layout) =>
-            view.setLayoutPreview(layout ? { pageId: open.id, layout } : null)
-          }
           onClose={close}
           // A locked page has nothing to show: its controls are held (pages-mode.md "Locking a page").
           showMe={
@@ -673,32 +580,6 @@ function PageCog({
           }`}
         >
           <CogIcon />
-        </button>
-      </Tooltip>
-    </div>
-  );
-}
-
-// On an empty page, beside its cog: start it from a layout. Its words show on a wide screen with
-// room in the title bar; on a phone, or when the page is small on screen, just the icon.
-function LayoutInvite({ wide, onOpen }: { wide: boolean; onOpen: () => void }) {
-  return (
-    <div
-      className="pointer-events-auto"
-      onPointerDown={(e) => e.stopPropagation()}
-      onDoubleClick={(e) => e.stopPropagation()}
-    >
-      <Tooltip label="Start From a Layout">
-        <button
-          type="button"
-          aria-label="Start From a Layout"
-          onClick={onOpen}
-          className="flex h-6 items-center gap-1.5 rounded-md px-1.5 text-xs font-medium text-slate-500 transition hover:bg-white hover:text-slate-800 focus-visible:outline-2 focus-visible:outline-brand-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
-        >
-          <LayoutIcon />
-          {wide ? (
-            <span className="hidden whitespace-nowrap sm:inline">Start From a Layout</span>
-          ) : null}
         </button>
       </Tooltip>
     </div>

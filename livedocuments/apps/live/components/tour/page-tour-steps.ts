@@ -4,7 +4,6 @@
 import type { PageKind } from '@livedocuments/document';
 import { ARTICLE_WELCOME, articleTourSteps } from './article-tour-steps';
 import { INFOGRAPHIC_WELCOME, infographicTourSteps } from './infographic-tour-steps';
-import { LOGO_WELCOME, logoTourSteps } from './logo-tour-steps';
 import type { PageTourApi, PageTourStep } from './page-tour-api';
 import { SLIDE_WELCOME, slideTourSteps } from './slide-tour-steps';
 import { stepTelemetryType } from './tour-step';
@@ -19,19 +18,6 @@ export function pageTourSteps(kind: PageKind): PageTourStep[] {
       return slideTourSteps();
     case 'article':
       return articleTourSteps();
-    case 'logo':
-      return logoTourSteps();
-    // A wireframe page takes the infographic track, save that its cog sets a device rather than a page size.
-    case 'wireframe':
-      return infographicTourSteps().map((step) =>
-        step.id === 'page-size'
-          ? {
-              ...step,
-              title: 'Device',
-              body: 'The cog picks the device, turns it and sets its frame, and duplicates or deletes the page.',
-            }
-          : step,
-      );
     default:
       return infographicTourSteps();
   }
@@ -41,13 +27,6 @@ const WELCOMES: Record<PageKind, PageTourStep> = {
   slide: SLIDE_WELCOME,
   infographic: INFOGRAPHIC_WELCOME,
   article: ARTICLE_WELCOME,
-  logo: LOGO_WELCOME,
-  // A wireframe page is laid out as an infographic page is, and takes its track under its own welcome.
-  wireframe: {
-    ...INFOGRAPHIC_WELCOME,
-    title: 'Getting started with wireframes?',
-    body: 'A quick look at screen layouts, backgrounds and presenting?',
-  },
 };
 
 /** Whether a step's control is on screen as the tour starts (spec "Filtering"): what it needs to open, else its own

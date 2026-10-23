@@ -14,7 +14,7 @@ import {
 // The workbench embed end to end (docs/specs/013-workspace/blueprints/workbench-embeds.md, "Testing"):
 // a fake workbench on http://127.0.0.1:<port> frames the live app on http://localhost:<port>. Opt-in
 // (E2E_WORKBENCH=1, `pnpm test:e2e:workbench`): it needs the NEXT_PUBLIC_E2E_AUTH build and the stack
-// acting as Clerk for the signed-in pairing page.
+// acting as the accounts Worker for the signed-in pairing page.
 
 let workbench: FakeWorkbench;
 let elsewhere: FakeWorkbench;

@@ -49,7 +49,7 @@ function subscribeCachedPreferences(onChange: () => void): () => void {
 const getNoPreferences = (): UserPreferences => NO_PREFERENCES;
 
 type EditorPreferencesDeps = {
-  // The resolved owner id: Clerk userId for signed-in users, the
+  // The resolved owner id: account id for signed-in users, the
   // per-browser participant id for guests. 'self' is the pre-hydration
   // placeholder, which blocks the server sync until the real id lands.
   ownerId: string;

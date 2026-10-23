@@ -1,10 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@livedocuments/vitest-config/cpu-time';
-import {
-  backgroundPatchFor,
-  pageBackgroundCopied,
-  pageBackgroundSpread,
-} from './pages-background-copy';
+import { pageBackgroundCopied, pageBackgroundSpread } from './pages-background-copy';
 import { pagesOf, layOutPages, type Page } from './page';
 import { pageBackgroundSet } from './pages-edits';
 import type { Element, Tab } from './index';
@@ -125,20 +121,6 @@ describe('pageBackgroundSpread', () => {
     });
     expect(pageBackgroundSpread(tabOf([slide('a')]), 'zz')).toEqual({ refused: 'unknown_page' });
   });
-
-  it('copies a logo page’s fill to other logo pages, never a pattern', () => {
-    const logo = (id: string, extra: Partial<Page> = {}): Page => ({
-      id,
-      orientation: 'portrait',
-      kind: 'logo',
-      size: 'logo',
-      ...extra,
-    });
-    const tab = tabOf([logo('a', { background: { fill: dusk } }), logo('b')]);
-    const out = pageBackgroundSpread(tab, 'a');
-    if (!('tab' in out)) throw new Error('refused');
-    expect(backgrounds(out.tab).b).toEqual({ fill: dusk });
-  });
 });
 
 describe('pageBackgroundCopied', () => {
@@ -167,30 +149,13 @@ describe('pageBackgroundCopied', () => {
     expect(pageBackgroundCopied(tab, 'a', 'a')).toEqual({ tab });
   });
 
-  it('refuses a locked page and a picture onto a logo page', () => {
+  it('refuses a locked page and an unknown one', () => {
     const tab = tabOf([
       slide('a', { background: { fill: picture } }),
       slide('b', { locked: true }),
-      { id: 'l', orientation: 'portrait', kind: 'logo', size: 'logo' },
     ]);
     expect(pageBackgroundCopied(tab, 'a', 'b')).toEqual({ refused: 'locked' });
-    expect(pageBackgroundCopied(tab, 'a', 'l')).toEqual({ refused: 'picture_not_offered' });
     expect(pageBackgroundCopied(tab, 'a', 'zz')).toEqual({ refused: 'unknown_page' });
-  });
-});
-
-describe('backgroundPatchFor', () => {
-  it('carries the fill and the pattern, absent ones clearing the target’s', () => {
-    expect(backgroundPatchFor({ kind: 'slide' }, undefined)).toEqual({
-      fill: undefined,
-      pattern: undefined,
-    });
-  });
-
-  it('leaves a logo page’s pattern out', () => {
-    expect(backgroundPatchFor({ kind: 'logo' }, { fill: dusk, pattern: 'dots' })).toEqual({
-      fill: dusk,
-    });
   });
 });
 

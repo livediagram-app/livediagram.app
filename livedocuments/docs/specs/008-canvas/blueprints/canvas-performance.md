@@ -158,7 +158,7 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
     restyles the board;
   - the spotlight, whose own rules match every `[data-element-id]`, so switching to or from it restyles each
     element once;
-  - the world's other children (`IsometricDepthLayer`, `ArticleFlows`, `CanvasPages`, `LogoCanvasOverlays`),
+  - the world's other children (`IsometricDepthLayer`, `ArticleFlows`, `CanvasPages`),
     which sit outside the plane and inherit the world's cursor (pages rely on it: no cursor of their own), so a
     pan restyles isometric depth blocks and an article's text.
 

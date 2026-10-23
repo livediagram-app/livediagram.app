@@ -1,8 +1,7 @@
 'use client';
 
-// A page's title-bar control that opens a popover: a logo page's Guides and Mirror
-// (docs/specs/007-editor/logo-pages.md "Beside the cog") and an infographic or slide page's
-// Background and Layouts (pages-mode.md "Beside the cog"). Pressed while its tool is on for
+// A page's title-bar control that opens a popover: an infographic or slide page's Background and
+// Layouts, and an article's Style and Text (docs/specs/007-editor/pages-mode.md "Beside the cog"). Pressed while its tool is on for
 // the page (or, with no `on`, tinted while its popover is open), named beside its icon on a
 // desktop, the popover anchored under it; on a phone it opens as a bottom sheet instead.
 import { useRef, useState, type ReactNode } from 'react';

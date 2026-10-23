@@ -25,7 +25,7 @@ interchangeable. These are design decisions, taken before any feature that uses 
 
 - A **tab kind** is what a tab is. livedocuments has one kind, the general tab (`'diagram'` in code, kept for stored
   tabs); a kind this build does not have, such as a livediagram Board tab, reads as a general tab (`tabKindOf`).
-- What a **page** is (a design page, a slide, an article page, a logo or a wireframe) is the page's kind, not the
+- What a **page** is (a design page, a slide or an article page) is the page's kind, not the
   tab's ([Pages mode](../007-editor/pages-mode.md)).
 
 ### Template

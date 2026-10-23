@@ -89,8 +89,6 @@ export const HELP_ARTICLES = {
   offlineMode: 'privacy-and-security/offline-mode',
   // Onboarding / empty states
   templates: 'canvas/templates',
-  logoPages: 'pages/logo-pages',
-  wireframePages: 'pages/wireframe-pages',
   // Each page kind's Show Me links its own article (docs/specs/007-editor/pages-tour.md).
   slidePages: 'pages/slide-pages',
   infographicLayouts: 'pages/infographic-layouts',
@@ -319,14 +317,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   templates: {
     title: 'Learn about templates',
     description: 'How templates give you a themed starting point.',
-  },
-  logoPages: {
-    title: 'Learn about logo pages',
-    description: 'Guides, mirror drawing, wordmarks, combining shapes and the logo kit.',
-  },
-  wireframePages: {
-    title: 'Learn about wireframe pages',
-    description: 'Device frames, ready-made screens, the Elements palette and mockup export.',
   },
   slidePages: {
     title: 'Learn about slide pages',

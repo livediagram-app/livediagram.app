@@ -112,7 +112,7 @@ export const mcpListTemplates = mcpTool('list_templates', {
   title: 'List templates',
   description:
     'Browse the template library: the same ready-made pages the editor\u2019s Quick Start offers ' +
-    '(slide decks, articles, logos, posters, infographics, résumés, wireframes, ...). Returns categories ' +
+    '(slide decks, articles, posters, infographics, résumés, ...). Returns categories ' +
     'plus { kind, title, description, category } per template. Pass a kind as "template" on ' +
     'create_document / add_tab to start from it, then replace its sample text with update_document.',
   inputSchema: {},
@@ -137,7 +137,7 @@ export const mcpCreateDocument = mcpTool('create_document', {
   description:
     'Create a new document of pages: a slide deck or presentation (a tab from the "blank-slide-deck" template, then ' +
     'change_pages adds the slides), an article or report (a tab from "blank-article", then write_article), an ' +
-    'infographic, a poster or a logo. Each tab holds pages; a tab may start from a "template" (a kind from ' +
+    'infographic or a poster. Each tab holds pages; a tab may start from a "template" (a kind from ' +
     'list_templates: ready-made pages with sample text) or take "elements" for its first page (the ' +
     'full format is documented inline on the "tabs" argument below). Pass one tab, or several to build a ' +
     'multi-tab document in one call. The server validates, lays ' +
@@ -247,9 +247,9 @@ export const mcpChangePages = mcpTool('change_pages', {
   behaviour: 'destructive',
   title: 'Change pages',
   description:
-    'Build a slide deck or presentation, an infographic or a logo: change the pages of a tab, in ' +
+    'Build a slide deck or presentation or an infographic: change the pages of a tab, in ' +
     'order, as one edit. Each change is an object with its "op" (never a bare string): add {kind, layout, ...} an ' +
-    'infographic, slide or logo page, set {page, name, size, orientation, background, locked}, layout ' +
+    'infographic or slide page, set {page, name, size, orientation, background, locked}, layout ' +
     '{page, layout}, move {page, to}, duplicate {page}, delete {page}, apply_background_to_all {page} (every ' +
     "other page of its kind, every slide say, takes that page's background). The answer gives every page with its rectangle in canvas " +
     'coordinates, the ' +

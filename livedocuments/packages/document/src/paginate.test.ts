@@ -137,11 +137,10 @@ describe('withContentOnAPage', () => {
     ).toBeNull();
   });
 
-  it('never replaces a page someone made something of: a slide, a logo, a name, a paint', () => {
+  it('never replaces a page someone made something of: a slide, a name, a paint', () => {
     const stray = [box('s', 9000, 9000, 40, 40)];
     const kept: Page[] = [
       { id: 's', orientation: 'landscape', kind: 'slide', size: 'slide' },
-      { id: 'g', orientation: 'portrait', kind: 'logo', size: 'logo' },
       { id: 'n', orientation: 'portrait', name: 'Cover' },
       {
         id: 'b',

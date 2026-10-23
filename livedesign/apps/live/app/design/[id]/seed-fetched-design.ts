@@ -85,7 +85,7 @@ export function makeSeedFetchedDesign(deps: {
       const first = loaded?.tab ?? null;
       // Only mark the tab loaded when the eager fetch actually
       // returned content. If it failed (e.g. a transient 403 from
-      // a request that raced ahead of the Clerk token / session
+      // a request that raced ahead of the account token / session
       // share code being wired up), leave it OUT of the loaded set
       // so the lazy-load effect retries it once auth is in place.
       // Marking it loaded regardless used to leave the first tab

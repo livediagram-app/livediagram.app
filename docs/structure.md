@@ -22,13 +22,20 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 ├─ liveplanner/                imported with full history (main at d5c8bed2)
 │  ├─ apps/                    the same set minus community
 │  └─ packages/                @liveplanner/*
-└─ livedocuments/              forked from livediagram in-tree (Pages mode only)
-   ├─ apps/                    the same set minus community
-   └─ packages/                @livedocuments/*
+├─ livedocuments/              forked from livediagram in-tree (Pages mode only)
+│  ├─ apps/                    the same set minus community
+│  └─ packages/                @livedocuments/*
+└─ livedesign/                 forked from livedocuments in-tree (logo, wireframe and photo pages)
+   ├─ apps/                    live, api, mcp, cli, marketing, help, telemetry, router
+   └─ packages/                @livedesign/*, with photo-engine of its own
 ```
 
 livedocuments (first called livepages) was forked from livediagram `main` at `82e6ed79a` on 2026-10-22
 and cut down to Pages mode (livedocuments/plans/0001-livedocuments-fork.md); Phase 8 takes Pages out of livediagram.
+
+livedesign was forked from livepages (`livepages-phase-2` at `1eb2877a5`) on 2026-10-22 and cut down to
+logo and wireframe pages, plus the photo pages ported from livediagram. What it makes is a design, never
+a document. Logos and wireframes then left livedocuments, which keeps articles, slides and infographics.
 
 liveplanner was forked from livediagram on 2026-10-21, so today most of it is a renamed copy.
 I compared each file with the product name ignored, and these counts are from that:

@@ -24,9 +24,6 @@ export * from './feature-art/slide-layouts';
 export * from './feature-art/infographics';
 export * from './feature-art/infographics-export';
 export * from './feature-art/pages-more';
-// Logo and wireframe pages.
-export * from './feature-art/logo';
-export * from './feature-art/logo-more';
 // Articles: writing on pages, its flow, its looks.
 export * from './feature-art/article';
 export * from './feature-art/documents';

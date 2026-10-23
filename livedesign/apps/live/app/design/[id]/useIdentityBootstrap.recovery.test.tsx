@@ -60,8 +60,8 @@ function render(passwordRetry = 0) {
       authLoaded: true,
       passwordRetry,
       hydrated: false,
-      clerkUserId: null,
-      clerkDisplayName: null,
+      accountUserId: null,
+      accountDisplayName: null,
       embed: false,
       workbench: null,
       activeId: 't1',
@@ -148,7 +148,7 @@ describe('useIdentityBootstrap recovery', () => {
     expect(s.setLoadingDesign).toHaveBeenCalledWith(false);
   });
 
-  // Clerk answering after the guest timeout settles auth twice: the second run wins, the first's late answer is
+  // sign-in answering after the guest timeout settles auth twice: the second run wins, the first's late answer is
   // dropped rather than overwriting it.
   it('drops the writes of a load superseded by a later run', async () => {
     seed.mockClear();
@@ -162,8 +162,8 @@ describe('useIdentityBootstrap recovery', () => {
       authLoaded,
       passwordRetry: 0,
       hydrated: false,
-      clerkUserId: null,
-      clerkDisplayName: null,
+      accountUserId: null,
+      accountDisplayName: null,
       embed: false,
       workbench: null,
       activeId: 't1',

@@ -5,7 +5,7 @@ import { makeTestRouteContext } from './test-route-context';
 // here is keyed off the RESOLVED owner rather than anything the caller names,
 // which is what stops one visitor listing — or dismissing — another's shared
 // designs. The guest path has to keep working too: shared_with rows are keyed
-// off the same resolved string whether it came from a Clerk session or an
+// off the same resolved string whether it came from a signed-in session or an
 // X-Owner-Id header (docs/specs/014-identity/auth-and-guest-access.md).
 
 const { db } = vi.hoisted(() => ({

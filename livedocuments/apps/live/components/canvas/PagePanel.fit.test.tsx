@@ -15,7 +15,6 @@ afterEach(cleanup);
 const edits = (): PageEdits => ({
   setOrientation: vi.fn(),
   setSize: vi.fn(),
-  setDevice: vi.fn(),
   rename: vi.fn(),
   setBackground: vi.fn(),
   applyToAllReach: vi.fn(() => 0),
@@ -31,7 +30,6 @@ const edits = (): PageEdits => ({
   previewInk: vi.fn(),
   isLocked: () => false,
   setLocked: vi.fn(),
-  startBlank: vi.fn(),
   splitPage: vi.fn(),
 });
 
@@ -45,7 +43,6 @@ const panel = (page: Page, edit = edits()) => {
       themeBackgrounds={[]}
       edit={edit}
       onPreview={vi.fn()}
-      onLayoutPreview={vi.fn()}
       onClose={vi.fn()}
     />,
   );

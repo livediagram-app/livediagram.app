@@ -22,7 +22,7 @@ import { Header } from '@/components/Header';
 export const metadata = pageMetadata({
   title: 'Build with AI · livedocuments',
   description:
-    'Connect Claude, ChatGPT, Cursor, VS Code or any MCP client to livedocuments in a minute, then ask your AI for articles, decks, infographics and logos.',
+    'Connect Claude, ChatGPT, Cursor, VS Code or any MCP client to livedocuments in a minute, then ask your AI for articles, decks and infographics.',
   path: '/ai',
 });
 
@@ -78,9 +78,9 @@ export default function BuildWithAiPage() {
                 Your AI, building in livedocuments
               </h1>
               <p className="mt-4 max-w-xl text-lg leading-relaxed text-slate-600 dark:text-slate-300">
-                Connect the AI tool you already use, then ask it for an article, a slide deck, an
-                infographic or a logo. It lands in your account, ready to edit together. Set up
-                takes about a minute.
+                Connect the AI tool you already use, then ask it for an article, a slide deck or an
+                infographic. It lands in your account, ready to edit together. Set up takes about a
+                minute.
               </p>
               <div className="mt-8">
                 <McpAddressCard />
@@ -194,8 +194,8 @@ export default function BuildWithAiPage() {
                 Safe to connect
               </h2>
               <p className={BAND_LEAD}>
-                Connecting needs a free livedocuments account, so your AI&apos;s work is saved to you.
-                The canvas itself never needs one.
+                Connecting needs a free livedocuments account, so your AI&apos;s work is saved to
+                you. The canvas itself never needs one.
               </p>
               <div className="mt-6 flex flex-wrap gap-3">
                 <a

@@ -45,8 +45,8 @@ listing body uses the ~500-word description).
 ## Tone & brand
 
 Inherits [16](marketing-site.md) and [00-purpose](../001-project-vision/purpose.md): plain,
-confident, understated; multiplayer-from-the-start pages (articles, decks,
-infographics and logos) for teams who make things together. Lead with the hook:
+confident, understated; multiplayer-from-the-start pages (articles, decks
+and infographics) for teams who make things together. Lead with the hook:
 the editor works without signing in (open a link, make, share). Be honest about trade-offs (realtime is last-write-wins,
 not CRDT). Say "free, MIT-licensed, self-hostable, no paid tier" where the
 format allows ([03](../002-project-scope/open-source-and-business-model.md)). Product name

@@ -68,7 +68,7 @@ export async function handleDesignPlacement(ctx: RouteContext): Promise<Response
       const folderId = rawFolderId ?? null;
       const teamId = rawTeamId !== undefined ? rawTeamId : existing.teamId;
       // `ownsDesign`, not a bare id compare: a TEAM design's owner id is a
-      // Clerk id every teammate can read, and `isOwner` below decides whether
+      // account id every teammate can read, and `isOwner` below decides whether
       // the caller may change the design's SCOPE — including moving it out of
       // the team into their own library, which transfers ownership.
       const isOwner = await ownsDesign(ctx, existing);

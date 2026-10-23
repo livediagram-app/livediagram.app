@@ -35,8 +35,7 @@ value is the team, not the individual.
   from 92 infographic layouts.
 - On every page: shapes, connectors, text, sticky notes, images, icons, tables,
   charts, Sankey diagrams and embeds.
-- 35 templates, including logo and wireframe templates, and twenty-four themes
-  that recolour every page in one click.
+- 23 templates and twenty-four themes that recolour every page in one click.
 - Real-time collaboration: live cursors, selection rings, presence on each tab,
   comment threads and assigned actions.
 - Undo and redo (Cmd/Ctrl+Z, Cmd/Ctrl+Shift+Z), personal to each editor.

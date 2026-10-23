@@ -148,8 +148,8 @@ export const categories: Category[] = [
     slug: 'pages',
     title: 'Pages',
     description:
-      'Build documents out of pages: articles, slide decks, infographics, logos and wireframes, with layouts, backgrounds and exports.',
-    articleCount: 9,
+      'Build documents out of pages: articles, slide decks and infographics, with layouts, backgrounds and exports.',
+    articleCount: 7,
     kind: 'feature',
     groups: ['Basics', 'Kinds of Page'],
   },
@@ -332,9 +332,9 @@ export const articles: Article[] = [
     slug: 'what-is-livedocuments',
     title: 'What is livedocuments?',
     description:
-      'An overview of the real-time, multiplayer editor for articles, decks, infographics and logos.',
+      'An overview of the real-time, multiplayer editor for articles, decks and infographics.',
     keywords:
-      'overview intro introduction about product articles slides deck infographics logos wireframes presenting app',
+      'overview intro introduction about product articles slides deck infographics presenting app',
     category: 'About livedocuments',
     categorySlug: 'about',
     parentSlug: 'about',
@@ -514,7 +514,7 @@ export const articles: Article[] = [
     description:
       'Take your pages with you as a PDF, images, a GIF or a portable file, or embed a live view.',
     keywords:
-      'export download png svg pdf gif animated logo kit image save picture screenshot json embed backup',
+      'export download png svg pdf gif animated image save picture screenshot json embed backup',
     category: 'Account and Data',
     categorySlug: 'account-and-data',
   },
@@ -1014,7 +1014,7 @@ export const articles: Article[] = [
     description:
       'The palette categories on each kind of page, and what only the search panel adds.',
     keywords:
-      'tools tab category where find text table chart sticky note image write components media data concepts devices icons stickers search panel slide wireframe logo moved',
+      'tools tab category where find text table chart sticky note image write components media data concepts devices icons stickers search panel slide article moved',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Everyday Elements',
@@ -1126,7 +1126,7 @@ export const articles: Article[] = [
     title: 'Devices',
     description: 'Browser, phone, laptop and other wireframing frames.',
     keywords:
-      'browser phone laptop wireframe mockup frame window screen monitor smartwatch watch tablet foldable fold unfolded desktop device pages',
+      'browser phone laptop mockup mock up frame window screen monitor smartwatch watch tablet foldable fold unfolded desktop device pages',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Everyday Elements',
@@ -1166,8 +1166,7 @@ export const articles: Article[] = [
     slug: 'drawing',
     title: 'Drawing with the Polygon',
     description: 'Place clean, straight-edged outlines point by point with the Polygon.',
-    keywords:
-      'polygon outline point by point straight edges shape draw logo vertex vertices close path',
+    keywords: 'polygon outline point by point straight edges shape draw vertex vertices close path',
     category: 'Palette',
     categorySlug: 'palette/tools',
     parentSlug: 'tools',
@@ -1215,7 +1214,7 @@ export const articles: Article[] = [
     title: 'Toolbar Layout',
     description: 'The palette strip across the top of the canvas, its category bar and its Search.',
     keywords:
-      'toolbar strip top bar excalidraw panel layout floating palette compact menu button explorer more tiles recent recently used order reorder search find element per page kind slide wireframe logo',
+      'toolbar strip top bar excalidraw panel layout floating palette compact menu button explorer more tiles recent recently used order reorder search find element per page kind slide article',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Palette Settings',
@@ -1262,7 +1261,7 @@ export const articles: Article[] = [
     title: 'Templates',
     description: 'Start a document from a ready-made template instead of a blank page.',
     keywords:
-      'template templates starter scaffold quick start prebuilt blank slide deck blank article blank infographic blank logo blank tab blank illustration empty slide empty page artboard wireframe phone tablet website laptop watch app slide deck logo design group card storyboard floor plan working backwards pr faq project brief event poster year in review resume cv recipe card data story how it works versus social carousel launch keynote quarterly review team welcome workshop kickoff design presentations search find a template start making pages recommended',
+      'template templates starter scaffold quick start prebuilt blank slide deck blank article blank infographic blank tab blank illustration empty slide empty page slide deck group card storyboard floor plan working backwards pr faq project brief event poster year in review resume cv recipe card data story how it works versus social carousel launch keynote quarterly review team welcome workshop kickoff design presentations search find a template start making pages recommended',
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Basics',
@@ -1290,28 +1289,6 @@ export const articles: Article[] = [
     group: 'Kinds of Page',
   },
   {
-    slug: 'logo-pages',
-    title: 'Logo Pages',
-    description:
-      'Design a logo on a square artboard with guides, mirror, wordmarks, combined shapes and a logo kit.',
-    keywords:
-      'logo logos brand branding mark wordmark lettermark monogram icon favicon app icon avatar artboard guides keyline grid safe area symmetry mirror reflect flip radial rotational kaleidoscope four way horizontal vertical axis copies merge combine boolean union unite subtract intersect exclude merge shapes tracking letter spacing kerning arc curved text circle text badge emblem logo kit export png svg ico transparent',
-    category: 'Pages',
-    categorySlug: 'pages',
-    group: 'Kinds of Page',
-  },
-  {
-    slug: 'wireframe-pages',
-    title: 'Wireframe Pages',
-    description:
-      'Wireframe a screen inside a phone, tablet, laptop, desktop, browser or watch frame, from ready-made screens.',
-    keywords:
-      'wireframe wireframes mockup mock up mockups prototype ui ux screen screens app design device frame phone iphone android mobile tablet ipad laptop desktop monitor browser website web page watch smartwatch status bar dynamic island notch home indicator landscape portrait safe area sign in login onboarding dashboard settings profile checkout pricing chat feed landing page button text field input search switch toggle placeholder',
-    category: 'Pages',
-    categorySlug: 'pages',
-    group: 'Kinds of Page',
-  },
-  {
     slug: 'articles',
     title: 'Writing Articles',
     description:
@@ -1328,7 +1305,7 @@ export const articles: Article[] = [
     description:
       'A short, optional walkthrough for each kind of page, offered the first time you work on one and replayable from Settings or Show Me.',
     keywords:
-      'pages tour tour walkthrough onboarding intro introduction getting started guide tutorial first time learn pages page name cog page settings layout background add page slides slide deck add to slides present presentation infographic article logo show me replay rerun settings accessibility',
+      'pages tour tour walkthrough onboarding intro introduction getting started guide tutorial first time learn pages page name cog page settings layout background add page slides slide deck add to slides present presentation infographic article show me replay rerun settings accessibility',
     category: 'Pages',
     categorySlug: 'pages',
     group: 'Basics',
@@ -1431,8 +1408,7 @@ export const articles: Article[] = [
     title: 'Exporting a Tab',
     description:
       "Export a tab's pages as PDF, PNG, SVG or GIF, or as JSON; a selection also exports as Markdown.",
-    keywords:
-      'export download save png svg pdf gif animated json markdown image picture pages logo kit',
+    keywords: 'export download save png svg pdf gif animated json markdown image picture pages',
     category: 'Tabs',
     categorySlug: 'tabs',
   },

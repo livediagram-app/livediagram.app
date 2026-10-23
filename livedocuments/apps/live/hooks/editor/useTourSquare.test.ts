@@ -43,21 +43,18 @@ describe('useTourSquare', () => {
     expect(h.tabs()[0]!.elements).toHaveLength(1);
   });
 
-  it('places several, swaps two for one in place, and takes them all away', () => {
+  it('places several and takes them all away', () => {
     const keep = createShape('circle', 0, 0);
     const h = harness([tab('a', [keep])]);
     const a = createShape('square', 0, 0);
     const b = createShape('circle', 5, 5);
-    const merged = createShape('square', 1, 1);
     act(() => h.result.current.place(a, b));
     expect(h.tabs()[0]!.elements.map((e) => e.id)).toEqual([keep.id, a.id, b.id]);
-    act(() => h.result.current.replace([a.id, b.id], merged));
-    expect(h.tabs()[0]!.elements.map((e) => e.id)).toEqual([keep.id, merged.id]);
     let removed: string[] = [];
     act(() => {
       removed = h.result.current.remove();
     });
-    expect(removed).toEqual([merged.id]);
+    expect(removed).toEqual([a.id, b.id]);
     expect(h.tabs()[0]!.elements.map((e) => e.id)).toEqual([keep.id]);
   });
 });

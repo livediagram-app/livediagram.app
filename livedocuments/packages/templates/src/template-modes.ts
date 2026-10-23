@@ -11,12 +11,6 @@ export const EXTRA_BLANK_TEMPLATES: readonly TemplateKind[] = [
   'blank-slide-deck',
   'blank-article',
   'blank-infographic',
-  'blank-logo',
-  'blank-wireframe-phone',
-  'blank-wireframe-tablet',
-  'blank-wireframe-browser',
-  'blank-wireframe-laptop',
-  'blank-wireframe-watch',
 ];
 
 /** True for the blanks: Blank Illustration, the blanks of a page kind, and Blank Tab (the plain empty tab an agent or a

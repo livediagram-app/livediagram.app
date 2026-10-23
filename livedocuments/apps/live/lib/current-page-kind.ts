@@ -1,5 +1,5 @@
-// The page someone is on in Pages mode, its kind and its id (docs/specs/007-editor/wireframe-pages.md
-// "The Elements palette"): set where the palette follows the page (useLogoPaletteSwitch), read by
+// The page someone is on in Pages mode, its kind and its id (docs/specs/007-editor/pages-mode.md
+// "The palette's kind"): set where the palette follows the page (useCurrentPageFollow), read by
 // the palette, whose kind defaults to the page's (palette-kind.ts).
 // One per browser tab; null off Pages mode or before any page is known.
 import { useSyncExternalStore } from 'react';

@@ -1,7 +1,6 @@
 // The room a page's title bar takes on screen (docs/specs/007-editor/pages-mode.md "Beside the
 // cog", "The label fits its page"): its fixed buttons, named or as icons, and whether they can be
-// named at all, so the page's label and an empty logo page's invite share what is left.
-import { logoTitleBarRoom } from './LogoTitleBar';
+// named at all, so the page's label has what is left.
 import { pageArticleRoom } from './PageArticleButtons';
 import { pageBackgroundRoom } from './PageBackgroundButton';
 import { pageLayoutsRoom } from './PageLayoutsButton';
@@ -9,7 +8,6 @@ import { pageDeckRoom } from './PageDeckButton';
 import { pageLockRoom } from './PageLockButton';
 import { pageNotesRoom } from './PageNotesButton';
 import { pageTidyUpRoom } from './PageTidyUpButton';
-import { pageDeviceRoom } from './wireframe/PageDeviceButton';
 
 // Screen px: the cog's width plus a gap, and the narrowest a label is still worth showing.
 const COG_ROOM = 32;
@@ -22,14 +20,11 @@ type TitleBarButtons = {
   deck: boolean;
   // A slide in the deck: its Add Notes.
   notes: boolean;
-  logo: boolean;
   // An infographic or slide page's Layout and Background.
   page: boolean;
   // An article page's Style, Text and Background.
   article?: boolean;
   tidy: boolean;
-  // A wireframe page's Device.
-  device?: boolean;
 };
 
 /** The fixed buttons' room, each named beside its icon or not. */
@@ -38,11 +33,9 @@ export function titleBarFixedRoom(b: TitleBarButtons, named: boolean): number {
     (b.edit ? COG_ROOM + pageLockRoom(b.locked, named) : 0) +
     (b.deck ? pageDeckRoom(named) : 0) +
     (b.notes ? pageNotesRoom(named) : 0) +
-    (b.logo ? logoTitleBarRoom(named) : 0) +
     (b.page ? pageLayoutsRoom(named) + pageBackgroundRoom(named) : 0) +
     (b.article ? pageArticleRoom(named) + pageBackgroundRoom(named) : 0) +
-    (b.tidy ? pageTidyUpRoom() : 0) +
-    (b.device ? pageDeviceRoom(named) : 0)
+    (b.tidy ? pageTidyUpRoom() : 0)
   );
 }
 

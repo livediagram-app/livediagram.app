@@ -112,7 +112,7 @@ describe('turning and resizing', () => {
     expect(ok(pageTurned(turned, 'p1', 'landscape'))).toBe(turned);
   });
 
-  it('refuses to turn a slide or a logo, or a locked page', () => {
+  it('refuses to turn a slide, or a locked page', () => {
     const tab = tabOf([a4('s', { kind: 'slide', size: 'slide', orientation: 'landscape' })]);
     expect(pageTurned(tab, 's', 'portrait')).toEqual({ refused: 'no_orientation' });
     expect(pageTurned(tabOf([a4('p', { locked: true })]), 'p', 'landscape')).toEqual({
@@ -169,18 +169,13 @@ describe('painting', () => {
     ).toBeUndefined();
   });
 
-  it('refuses a pattern on a logo page, a locked page and an unknown one', () => {
-    const logo = tabOf([a4('l', { kind: 'logo', size: 'logo' })]);
-    expect(pageBackgroundSet(logo, 'l', { pattern: 'grid' })).toEqual({
-      refused: 'pattern_not_offered',
-    });
-    expect(pagesAfter(pageBackgroundSet(logo, 'l', { fill: solid }))[0]!.background?.fill).toEqual(
-      solid,
-    );
+  it('refuses a locked page and an unknown one', () => {
     expect(pageBackgroundSet(tabOf([a4('p', { locked: true })]), 'p', { fill: solid })).toEqual({
       refused: 'locked',
     });
-    expect(pageBackgroundSet(logo, 'nope', { fill: solid })).toEqual({ refused: 'unknown_page' });
+    expect(pageBackgroundSet(tabOf([a4('p')]), 'nope', { fill: solid })).toEqual({
+      refused: 'unknown_page',
+    });
   });
 });
 
@@ -210,7 +205,7 @@ describe('adding', () => {
     });
   });
 
-  it('carries the last page’s background onto a new page of any kind, a logo without pattern', () => {
+  it('carries the last page’s background onto a new page of any kind', () => {
     const fill = { kind: 'gradient' as const, from: '#fde68a', to: '#fca5a5', angle: 160 };
     const tab = tabOf([a4('p', { background: { fill, pattern: 'dots' } })]);
     for (const kind of ['infographic', 'slide', 'article'] as const) {
@@ -219,16 +214,13 @@ describe('adding', () => {
         pattern: 'dots',
       });
     }
-    expect(pagesOf(ok(pageAdded(tab, 'logo', 'n', 'f')))[1]!.background).toEqual({
-      fill,
-    });
     // The paper carries nothing over.
     expect(pagesAfter(pageAdded(tabOf([a4('p')]), 'slide', 'n', 'f'))[1]!.background).toBe(
       undefined,
     );
   });
 
-  it('adds a slide in the last slide size, and a logo artboard', () => {
+  it('adds a slide in the last slide size', () => {
     const tab = tabOf([
       a4('s', { kind: 'slide', size: 'slide-classic', orientation: 'landscape' }),
     ]);
@@ -236,10 +228,6 @@ describe('adding', () => {
       kind: 'slide',
       size: 'slide-classic',
       orientation: 'landscape',
-    });
-    expect(pagesAfter(pageAdded(tab, 'logo', 'n', 'f'))[1]).toMatchObject({
-      kind: 'logo',
-      size: 'logo',
     });
   });
 

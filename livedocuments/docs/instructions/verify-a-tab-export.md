@@ -5,8 +5,8 @@ renderer), in the browser, without saving files to the Downloads folder. Spec: [
 for what an image draws.
 
 1. Use the running dev server and a document of your own (never someone's real document). Make it from `/new`
-   with a template that has the page kind you are checking (a slide deck, an article, an infographic, a logo or a
-   wireframe).
+   with a template that has the page kind you are checking (a slide deck, an article or an
+   infographic).
 2. Put real content in first: a few pages with text, a chart and a picture. An empty page only proves the empty
    state.
 3. Open the tab, then its tab menu (the ⋯ on its pill), then **Export**. Check the format cards against the spec:

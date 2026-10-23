@@ -4,7 +4,7 @@ Follow the references below only as needed; never upfront.
 
 Documentation for livedocuments, the open-source real-time editor for documents made of pages.
 
-livedocuments is a multiplayer page editor in the browser: teams write articles, build slide decks, lay out infographics and design logos and wireframes together in real time, with shared cursors and live selections, then present them full screen. The editor works without signing in, so starting is "open the link, start writing". The hosted product runs free at [livedocuments.app](https://livedocuments.app), and the MIT-licensed codebase is self-hostable end to end. Who it is for lives in [Purpose](./specs/001-project-vision/purpose.md), what is built and still ahead in [Build phase](./specs/005-project-roadmap/prototype-scope.md).
+livedocuments is a multiplayer page editor in the browser: teams write articles, build slide decks and lay out infographics together in real time, with shared cursors and live selections, then present them full screen. The editor works without signing in, so starting is "open the link, start writing". The hosted product runs free at [livedocuments.app](https://livedocuments.app), and the MIT-licensed codebase is self-hostable end to end. Who it is for lives in [Purpose](./specs/001-project-vision/purpose.md), what is built and still ahead in [Build phase](./specs/005-project-roadmap/prototype-scope.md).
 
 These docs are the practical guide: what the app does, how to run it locally, how to host it on your own Cloudflare account, and how to contribute. For the why-behind-the-what (product decisions, constraints, behaviour contracts), read the [specs](specs/). Specs are normative; these docs explain.
 

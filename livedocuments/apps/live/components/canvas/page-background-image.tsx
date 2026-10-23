@@ -4,7 +4,7 @@
 // backgrounds"): the page's picture with its credit, its Overlay, Strength and Position, then the
 // image search (asking for the page's shape), Choose From My Images and Upload an Image to pick or replace it. A
 // hovered result, overlay or position previews on the page; a pick, an upload or a press commits
-// one edit. Not offered on a logo page (page-background-section).
+// one edit.
 import { useRef, useState, type ReactNode } from 'react';
 import {
   defaultPageImageOverlay,

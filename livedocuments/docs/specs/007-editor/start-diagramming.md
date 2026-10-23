@@ -49,9 +49,9 @@ first**, less **Timeline**, which is left to its group. The start swaps two of t
 kind, a page already of its kind being the quicker start: **Blank Infographic** in place of Blank Illustration and
 **Blank Article** in place of the Project Brief template, so it leads Blank Infographic, Blank Article, Blank Slide
 Deck. The shelf itself (the gallery's) is unchanged. The groups (`components/start/start-template-items.ts`), by
-what each makes: **Slides**, **Infographics**, **Articles**, **Posters and Social**, **Logos** and **Design**
-(wireframes, storyboards and floor plans). Slides, Infographics, Articles and Logos each lead with their blank of
-that page kind (Blank Slide Deck, Blank Infographic, Blank Article, Blank Logo), one empty page of the kind meant.
+what each makes: **Slides**, **Infographics**, **Articles**, **Posters and Social** and **Design**
+(storyboards and floor plans). Slides, Infographics and Articles each lead with their blank of
+that page kind (Blank Slide Deck, Blank Infographic, Blank Article), one empty page of the kind meant.
 
 A template in none of the groups is placed in the last group, so every listed template is reachable. Blank
 Illustration is not offered: closing the panel leaves the same empty tab.
@@ -95,7 +95,7 @@ closed list is shared state: the panel and the tray read the same key and follow
 The tab's first page is drawn only once the start is done: while Start Making Pages is open there is no page behind
 it (`EditorCanvasHost` passes no pages), so nothing waits under the panel. Picking a template lands its pages;
 closing the panel shows the first page with its own **What Is This Page For?** ([Pages](pages-mode.md)). A blank of
-a page kind (Blank Slide Deck, Blank Article, Blank Infographic, Blank Logo) lands one page of that kind, already
+a page kind (Blank Slide Deck, Blank Article, Blank Infographic) lands one page of that kind, already
 chosen, so it asks nothing and the start does not come back over it.
 
 **The last page can be deleted.** Deleting it (or the last article) clears the tab, its pages, its writing and its

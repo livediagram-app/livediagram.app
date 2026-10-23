@@ -168,9 +168,11 @@ describe('PageContentsSidebar', () => {
     expect(screen.queryByRole('dialog', { name: 'Add a Page' })).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Add a Page of Any Kind' }));
     fireEvent.click(
-      screen.getByRole('dialog', { name: 'Add a Page' }).querySelector('[data-add-kind="logo"]')!,
+      screen
+        .getByRole('dialog', { name: 'Add a Page' })
+        .querySelector('[data-add-kind="article"]')!,
     );
-    expect(h.addPage).toHaveBeenCalledWith('logo');
+    expect(h.addPage).toHaveBeenCalledWith('article');
     cleanup();
     show({ canEdit: false });
     expect(screen.queryByRole('button', { name: 'Add a Page of Any Kind' })).toBeNull();

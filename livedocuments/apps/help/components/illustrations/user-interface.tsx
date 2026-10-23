@@ -533,7 +533,7 @@ export function ElementContextMenu() {
   );
 }
 
-/** The bottom-left Map panel: a zoomed-out wireframe of the canvas, the area
+/** The bottom-left Map panel: a zoomed-out outline of the canvas, the area
  *  outside your view dimmed, and a brand rectangle marking what you see. */
 export function Minimap() {
   return (

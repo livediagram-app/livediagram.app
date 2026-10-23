@@ -74,7 +74,7 @@ export const MCP_TOOL_METRICS: readonly Metric[] = [
   mcpTool(
     'ChangePages',
     'Change Pages',
-    'Adding, changing, laying out, moving or deleting pages: slides, logos, infographics.',
+    'Adding, changing, laying out, moving or deleting pages: slides and infographics.',
   ),
   mcpTool('WriteArticle', 'Write Article', 'Writing an article on pages from Markdown.'),
 ];

@@ -363,7 +363,7 @@ export function RichLabel({
   // Paint in capitals (a text's Upper case) — whole-label, so
   // it sits on the wrapper rather than on each run's style.
   uppercase?: boolean;
-  // Wordmark type (docs/specs/007-editor/logo-pages.md): tracking, weight and case on the wrapper.
+  // Wordmark type (docs/specs/006-document/document-structure.md "Text type"): tracking, weight and case on the wrapper.
   wordmark?: LabelTextStyle;
   className?: string;
   // Text-native animation class for the glyphs (docs/specs/008-canvas/canvas-and-palette.md); see renderLabel.

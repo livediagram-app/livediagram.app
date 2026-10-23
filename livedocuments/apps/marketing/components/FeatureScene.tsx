@@ -23,14 +23,12 @@ const BOARD_LOADERS: Record<HeroSceneKey, () => Promise<ComponentType>> = {
   article: () => import('./hero-article-page').then((m) => m.ArticlePage),
   slides: () => import('./hero-slides-board').then((m) => m.SlidesBoard),
   infographic: () => import('./hero-page').then((m) => m.InfographicPages),
-  logo: () => import('./hero-logo-board').then((m) => m.LogoBoard),
   together: () => import('./hero-together-board').then((m) => m.TogetherBoard),
 };
 const BOARDS: Record<HeroSceneKey, ComponentType> = {
   article: dynamic(BOARD_LOADERS.article, { ssr: false }),
   slides: dynamic(BOARD_LOADERS.slides, { ssr: false }),
   infographic: dynamic(BOARD_LOADERS.infographic, { ssr: false }),
-  logo: dynamic(BOARD_LOADERS.logo, { ssr: false }),
   together: dynamic(BOARD_LOADERS.together, { ssr: false }),
 };
 

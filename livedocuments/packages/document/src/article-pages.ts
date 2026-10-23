@@ -17,9 +17,7 @@ import {
   MAX_PAGES,
   nextPageId,
   PAGE_NAME_MAX,
-  newLogoPage,
   newSlidePage,
-  newWireframePage,
   pageSizesFor,
   withPages,
   type Page,
@@ -27,7 +25,6 @@ import {
 } from './page';
 import { elementIdsOnPage, withPageContentReplaced } from './page-content';
 import type { Tab } from './index';
-import type { WireframeDeviceId } from './wireframe-device';
 
 type PagesTab = Pick<Tab, 'elements'> & {
   pages?: unknown;
@@ -258,16 +255,13 @@ export function offersPageKindChoice(
 }
 
 /** The tab with its first page's kind chosen: an infographic page (kept, now chosen), an article
- *  (the page becomes its first page, its writing a new Title and paragraph),, a slide (the page
- *  turned into a 16:9 landscape slide) or a logo page (the 1024 artboard). Null when the page no
- *  longer offers the choice. */
+ *  (the page becomes its first page, its writing a new Title and paragraph), or a slide (the page
+ *  turned into a 16:9 landscape slide). Null when the page no longer offers the choice. */
 export function withPageKindChosen<T extends PagesTab>(
   tab: T,
   pageId: string,
   kind: PageKind,
   flow: string,
-  // A wireframe page's device (docs/specs/007-editor/wireframe-pages.md "Choosing the device").
-  device?: WireframeDeviceId,
 ): (T & { pages: Page[] }) | null {
   const pages = pagesOf(tab);
   const page = pages.find((p) => p.id === pageId);
@@ -278,29 +272,6 @@ export function withPageKindChosen<T extends PagesTab>(
     return withPages(tab, [
       {
         ...newSlidePage(page.id),
-        ...(page.background ? { background: page.background } : {}),
-        ...(name ? { name } : {}),
-      },
-    ]);
-  }
-  if (kind === 'logo') {
-    // The artboard keeps the page's name and fill; a logo page takes no pattern.
-    const { name } = page;
-    const fill = page.background?.fill;
-    return withPages(tab, [
-      {
-        ...newLogoPage(page.id),
-        ...(fill ? { background: { fill } } : {}),
-        ...(name ? { name } : {}),
-      },
-    ]);
-  }
-  if (kind === 'wireframe') {
-    // The device keeps the page's name and background, which paints its screen.
-    const { name } = page;
-    return withPages(tab, [
-      {
-        ...newWireframePage(page.id, device),
         ...(page.background ? { background: page.background } : {}),
         ...(name ? { name } : {}),
       },

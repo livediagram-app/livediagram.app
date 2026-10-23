@@ -38,7 +38,6 @@ describe('sizes and labels', () => {
       'Landscape post (5:4) landscape',
     );
     expect(sizeLabel(page('p', { size: 'square' }))).toBe('Square');
-    expect(sizeLabel(page('l', { size: 'logo', kind: 'logo' }))).toBe('1024 x 1024');
   });
 
   it('labels a page by place, name and kind', () => {

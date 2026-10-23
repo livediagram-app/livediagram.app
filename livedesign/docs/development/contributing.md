@@ -108,11 +108,11 @@ pnpm --filter @livedesign/live test:e2e
 
 Without a dev stack, it boots its own (`scripts/e2e-stack.mjs`) over the existing `apps/live/out`, which it never rebuilds: run `pnpm --filter @livedesign/live build` first, or it exits naming the missing build.
 
-The signed-in specs (`apps/live/e2e/clerk-stub/`) need Clerk switched on, so they have their own build and run, on their own ports:
+The signed-in specs (`apps/live/e2e/signed-in/`) need sign-in switched on, so they have their own build and run, on their own ports:
 
 ```sh
-pnpm --filter @livedesign/live build:clerk-stub
-pnpm --filter @livedesign/live test:e2e:clerk-stub
+pnpm --filter @livedesign/live build:signed-in
+pnpm --filter @livedesign/live test:e2e:signed-in
 ```
 
 The armed guest-signature specs (`apps/live/e2e/armed/`) run against the usual build, on their own stack with guest signature enforcement on (`:3017`):

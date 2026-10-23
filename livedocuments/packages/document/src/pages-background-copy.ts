@@ -4,7 +4,7 @@
 // lock stay each page's own. Pure, shared by the page panel, the canvas Format tool and the agents'
 // page changes, so each copies the same way.
 import type { Tab } from './index';
-import { pagesOf, pageKindOf, type Page, type PageBackground } from './page';
+import { pagesOf, pageKindOf, type PageBackground } from './page';
 import {
   pageBackgroundSet,
   pageBackgroundStored,
@@ -20,19 +20,12 @@ type PagesTab = Pick<Tab, 'elements'> & {
   articles?: unknown;
 };
 
-/** Why a background cannot go onto a page: a logo page takes no picture. */
-type BackgroundCopyRefusal = 'unknown_page' | 'locked' | 'picture_not_offered';
+type BackgroundCopyRefusal = 'unknown_page' | 'locked';
 
-/** The patch that gives `target` this whole background, the paper included (an absent fill or
- *  pattern clears the target's), or null when the target cannot take it. A logo page takes no
- *  pattern, so its own is left alone, and no picture. */
-export function backgroundPatchFor(
-  target: Pick<Page, 'kind'>,
-  background: PageBackground | undefined,
-): Partial<PageBackground> | null {
-  if (target.kind !== 'logo') return { fill: background?.fill, pattern: background?.pattern };
-  if (background?.fill?.kind === 'image') return null;
-  return { fill: background?.fill };
+/** The patch that gives a page this whole background, the paper included (an absent fill or
+ *  pattern clears the target's). */
+function backgroundPatchFor(background: PageBackground | undefined): Partial<PageBackground> {
+  return { fill: background?.fill, pattern: background?.pattern };
 }
 
 /** One page's background onto another (the page format painter): one edit, the target re-inked.
@@ -49,9 +42,7 @@ export function pageBackgroundCopied<T extends PagesTab>(
   if (!from || !to) return { refused: 'unknown_page' };
   if (pagesSharing(pages, fromPageId).has(toPageId)) return { tab };
   if (pageLockRefuses(pages, toPageId)) return { refused: 'locked' };
-  const patch = backgroundPatchFor(to, from.background);
-  if (!patch) return { refused: 'picture_not_offered' };
-  return pageBackgroundSet(tab, toPageId, patch, memory);
+  return pageBackgroundSet(tab, toPageId, backgroundPatchFor(from.background), memory);
 }
 
 type BackgroundSpread<T> =
@@ -87,9 +78,8 @@ export function pageBackgroundSpread<T extends PagesTab>(
   let applied = 0;
   let skipped = 0;
   for (const target of targets) {
-    const patch = backgroundPatchFor(target, source.background);
-    const edit = patch ? pageBackgroundStored(out, target.id, patch) : null;
-    if (!edit || 'refused' in edit) {
+    const edit = pageBackgroundStored(out, target.id, backgroundPatchFor(source.background));
+    if ('refused' in edit) {
       skipped += 1;
       continue;
     }

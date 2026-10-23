@@ -82,7 +82,7 @@ export function useAssigneeOptions({
   }
 
   // The pinned Myself row: every session has one once identity has
-  // hydrated (Clerk account or guest participant id).
+  // hydrated (account or guest participant id).
   const selfRow = useMemo<PickableMember | null>(
     () =>
       selfUserId

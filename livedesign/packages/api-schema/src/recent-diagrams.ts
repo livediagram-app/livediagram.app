@@ -1,6 +1,6 @@
 // Returning visitor (docs/specs/019-marketing/returning-visitor.md): the note the editor leaves in the
 // browser for the landing page, so the hero can show a returning visitor their recent diagrams without
-// the static marketing site loading Clerk or calling the api. One contract, written by apps/live and read
+// the static marketing site loading the session or calling the api. One contract, written by apps/live and read
 // by apps/marketing on the same origin.
 
 import { parseEditorMode, type EditorMode } from '@livedesign/design';

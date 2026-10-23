@@ -5,7 +5,7 @@ import { showsSlidesButton } from './SlidesClusterSegment';
 describe('showsSlidesButton', () => {
   it('hides the button while no page is a slide', () => {
     expect(showsSlidesButton([])).toBe(false);
-    expect(showsSlidesButton([{ kind: 'infographic' }, { kind: 'logo' }, {}])).toBe(false);
+    expect(showsSlidesButton([{ kind: 'infographic' }, { kind: 'article' }, {}])).toBe(false);
   });
 
   it('shows it once one page is a slide', () => {

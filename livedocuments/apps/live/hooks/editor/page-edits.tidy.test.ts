@@ -161,7 +161,7 @@ describe('Tidy Up a page', () => {
     expect(xOf(layered.tab(), 'b')).toBe(-341);
   });
 
-  it('tidies infographic and slide pages, never a logo page', () => {
+  it('tidies infographic and slide pages', () => {
     const slide = harness(
       pageTab([box('a', -200, -100), box('b', -196, 60)], {
         kind: 'slide',
@@ -171,10 +171,6 @@ describe('Tidy Up a page', () => {
     expect(slide.edits().canTidy!('page-1')).toBe(true);
     slide.edits().tidyPage!('page-1');
     expect(xOf(slide.tab(), 'a')).toBe(xOf(slide.tab(), 'b'));
-    const logo = harness(pageTab([box('a', -200, -300), box('b', -196, -100)], { kind: 'logo' }));
-    expect(logo.edits().canTidy!('page-1')).toBe(false);
-    logo.edits().tidyPage!('page-1');
-    expect(xOf(logo.tab(), 'b')).toBe(-196);
   });
 
   it('previews the tidied page without writing, and puts it back', () => {

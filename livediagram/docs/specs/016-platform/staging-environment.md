@@ -286,7 +286,7 @@ leaves no trace either way, and no amount of reading the repo would have reveale
 `AI_ALLOWED_ORIGINS` is therefore declared in production's `[vars]` too. The image gallery
 caps (`IMAGE_MAX_PER_OWNER`, `IMAGE_MAX_BYTES_PER_OWNER`) went the same way: documented as
 hosted-set, set by nothing, so the R2 quota guard was off. They are in the hosted profile now,
-and the deploy's verify step is the probe that fails when one is not live.
+and the deploy's verify step is the probe that fails when one is not live. (The caps have since moved to liveworkspace's media service, which keeps them for every app; the hosted profile now carries the media service's URL instead.)
 `AI_REQUIRE_CLERK` is deliberately unset in **both** environments (the editor offers AI to
 guests; see the comment above production's `AI_ALLOWED_ORIGINS`). Staging set it until
 September 2026, which made staging refuse AI to guests that production serves: exactly the

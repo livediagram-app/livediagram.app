@@ -18,7 +18,6 @@ import {
   lucideType,
 } from '@livedocuments/icons/lucide';
 import { Glyph, Prims } from '@livedocuments/ui';
-import { WIREFRAME_TILES } from './palette-wireframe-tiles';
 import { tileCaption } from './tile-caption';
 
 import {
@@ -60,10 +59,6 @@ export type PaletteTileSection =
   // scattered across Write, Draw, Data and Components, filed by what they look
   // like; what they have in common is that they hold other work.
   | 'build'
-  // A logo page's drawing tools (docs/specs/007-editor/logo-pages.md "The Logo palette").
-  | 'logo'
-  // A screen's parts (docs/specs/007-editor/wireframe-pages.md "The Elements palette").
-  | 'wireframe'
   | 'tools'
   | 'data'
   | 'media'
@@ -1142,7 +1137,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     section: 'devices',
     label: 'Add Web Browser',
     caption: 'Browser',
-    description: 'Browser window. Wireframe a web page or a web-app screen.',
+    description: 'Browser window. Frame a web page or a web-app screen.',
     filled: true,
     action: { type: 'shape', kind: 'browser' },
     icon: (
@@ -1158,7 +1153,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     section: 'devices',
     label: 'Add Computer Monitor',
     caption: 'Monitor',
-    description: 'Desktop monitor with stand. Wireframe a desktop app.',
+    description: 'Desktop monitor with stand. Frame a desktop app.',
     filled: true,
     action: { type: 'shape', kind: 'monitor' },
     icon: (
@@ -1190,7 +1185,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     blurb: 'A mobile app or page',
     section: 'devices',
     label: 'Add Phone',
-    description: 'Phone. Wireframe a mobile screen.',
+    description: 'Phone. Frame a mobile screen.',
     filled: true,
     action: { type: 'shape', kind: 'phone' },
     icon: (
@@ -1235,7 +1230,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     section: 'devices',
     label: 'Add Smartwatch',
     caption: 'Watch',
-    description: 'Smartwatch. A wrist-device frame for watch-app wireframes.',
+    description: 'Smartwatch. A wrist-device frame for watch-app screens.',
     filled: true,
     action: { type: 'shape', kind: 'smartwatch' },
     icon: (
@@ -1245,8 +1240,6 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       </Glyph>
     ),
   },
-  // A wireframe page's parts (docs/specs/007-editor/wireframe-pages.md "The Elements palette").
-  ...WIREFRAME_TILES,
 ];
 
 export function tilesInSection(section: PaletteTileSection): PaletteTileDef[] {

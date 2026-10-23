@@ -3,7 +3,7 @@
 // design, which designs may serve whose image) and serves the bytes to the people they let in. Every call
 // carries MEDIA_KEY as a bearer token and names this app.
 //
-// What this api keeps (migration 0101):
+// What this api keeps (in migrations/0001_livedesign_baseline.sql):
 //   - media_images: whose each image is, as this api names owners, for the placement grants
 //     (db/image-grants.ts). Filled when an image is uploaded here, listed in a gallery here, or asked for.
 //   - media_ref_outbox: the designs whose images changed since the service last heard. The ref writers

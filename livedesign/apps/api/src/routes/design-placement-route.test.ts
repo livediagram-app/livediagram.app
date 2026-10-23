@@ -52,7 +52,7 @@ function ctxWith(body: unknown, owner = 'bob') {
   return {
     ctx: makeTestRouteContext('PUT', '/api/designs/d1/folder', {
       owner,
-      clerkUserId: owner,
+      accountUserId: owner,
       body,
       waitUntil: (p: Promise<unknown>) => void pending.push(p),
     }),

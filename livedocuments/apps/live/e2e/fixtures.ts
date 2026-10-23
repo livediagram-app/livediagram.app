@@ -70,7 +70,7 @@ export async function markModeToursSeen(context: BrowserContext): Promise<void> 
           JSON.stringify({
             ...prefs,
             pagesTourSeen: true,
-            pagesTourKinds: ['slide', 'infographic', 'article', 'logo'],
+            pagesTourKinds: ['slide', 'infographic', 'article'],
             // Element tours (docs/specs/007-editor/element-tours.md): the offer beside a Sankey's toolbar.
             elementTourKinds: [
               'sankey',

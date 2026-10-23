@@ -41,11 +41,11 @@ On a read of either delivery path:
   glyph (line art + Technology brand tiles) via the
   `@livediagram/icons/resolve` resolver the worker passes in — see
   [Technology icons](../010-palette/technology-icons.md) "Rendering". Image elements render their real picture: the
-  worker reads each upload from R2 and inlines it as a base64 data URL
+  worker reads each upload from the media service and inlines it as a base64 data URL
   through `embedTabImages` (`@livediagram/api-schema`, shared with the
   MCP preview, [MCP server](../015-api/mcp-server.md) §5), in document order under a 3 MB total budget
   so a tab of large photos can't produce a multi-megabyte snapshot. An
-  image past the budget, missing from R2, or not a recognised raster
+  image past the budget, unknown to the media service, or not a recognised raster
   format keeps its placeholder box.
 
 This is **render-on-read**, not render-on-save, on purpose:
