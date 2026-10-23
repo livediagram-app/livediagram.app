@@ -30,8 +30,9 @@ export interface AuthorizeUrlOptions {
   // The app's API resource; it becomes the access token's audience.
   resource: string;
   scope?: string;
-  // `create` opens the accounts site's registration page instead of sign-in.
-  prompt?: 'create' | 'login';
+  // `create` opens the accounts site's registration page instead of sign-in. `none` never shows a page: a code
+  // when there is a session, `error=login_required` when not (silent.ts).
+  prompt?: 'create' | 'login' | 'none';
 }
 
 export interface TokenSet {
