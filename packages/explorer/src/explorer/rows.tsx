@@ -4,7 +4,7 @@
 // FolderCard). Rows are memoised on their item: the overlay hands a new object only to the item that
 // changed, and the context's callbacks are stable, so a rename or a star re-renders one row, not the list.
 
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 import type { Folder, FolderPreview } from '@liveworkspace/index-client';
 import type { ShownItem } from '../data/overlay';
 import { CountBadge } from '../ui/CountBadge';
@@ -19,32 +19,72 @@ import { useExplorer } from './context';
 import { FolderMosaic } from './FolderMosaic';
 import { FolderMenu, ItemMenu } from './menus';
 import { folderCountLabel } from '../words';
+import { SIDEBAR_LABELS } from '../views';
 
 // Every list row is this tall, so a long list can be windowed by arithmetic.
 export const ROW_HEIGHT = 48;
 
 export const ROW_GRID = 'grid grid-cols-[1fr_140px_40px] sm:grid-cols-[1fr_90px_140px_40px]';
+// With the Owner column (Recent and Search, as livediagram's list).
+export const ROW_GRID_OWNER =
+  'grid grid-cols-[1fr_140px_40px] sm:grid-cols-[1fr_110px_90px_140px_40px]';
+export const rowGrid = (showOwner: boolean) => (showOwner ? ROW_GRID_OWNER : ROW_GRID);
 
 const ROW = 'group items-center gap-2 px-4 transition hover:bg-slate-50 dark:hover:bg-slate-700';
 
 export type RowOptions = {
   // The app's mark beside the name (the All filter).
   showApp: boolean;
-  // The folder chip (Recent, Favourites, Search: lists that span folders).
+  // The location chip (Recent, Favourites, Search: lists that span places).
   showFolder: boolean;
+  // The Owner column, and the owner line on a card (Recent, Search): You, the team, or Shared with you.
+  showOwner?: boolean;
 };
 
+export type ItemPlace = { label: string; open: () => void };
+
+/** Who a row's Owner cell names: the team for a team item, "Shared with you" for one reached through a link or
+ * owned by someone else, otherwise "You". The index keeps no names, so a sharer is not named. */
+export function ownerLabel(
+  item: Pick<ShownItem, 'teamId' | 'ownerId' | 'sharedVia'>,
+  viewerId: string | null,
+  teamName: (id: string | null) => string | null,
+): string {
+  if (item.teamId) return teamName(item.teamId) ?? 'Team';
+  if (item.sharedVia || (viewerId && item.ownerId !== viewerId)) return 'Shared with you';
+  return 'You';
+}
+
 export function useItemBits(item: ShownItem) {
-  const { folders, navigate, actions, setRenamingId, itemHref } = useExplorer();
+  const { folders, navigate, actions, setRenamingId, itemHref, teamName } = useExplorer();
   const folder = item.folderId ? folders.byId.get(item.folderId) : undefined;
-  const openFolder = useCallback(() => {
-    if (!folder) return;
-    navigate(
-      folder.teamId
-        ? { kind: 'team', id: folder.teamId, folderId: folder.id }
-        : { kind: 'folder', id: folder.id },
-    );
-  }, [folder, navigate]);
+  // Where the item lives, for the location chip (livediagram's rowLocation): its folder, its team's library for a
+  // team item in no folder, My Work for one of yours in none; nothing for an item reached through a link, which
+  // lives in someone else's library.
+  const placeLabel = item.sharedVia
+    ? null
+    : folder
+      ? folder.name
+      : item.folderId
+        ? null
+        : item.teamId
+          ? teamName(item.teamId)
+          : SIDEBAR_LABELS.myWork;
+  const placeTeam = item.teamId;
+  const placeFolderId = folder?.id ?? null;
+  const open = useCallback(() => {
+    if (placeFolderId)
+      navigate(
+        placeTeam
+          ? { kind: 'team', id: placeTeam, folderId: placeFolderId }
+          : { kind: 'folder', id: placeFolderId },
+      );
+    else navigate(placeTeam ? { kind: 'team', id: placeTeam } : { kind: 'all' });
+  }, [navigate, placeFolderId, placeTeam]);
+  const place: ItemPlace | null = useMemo(
+    () => (placeLabel ? { label: placeLabel, open } : null),
+    [placeLabel, open],
+  );
   const commitRename = useCallback(
     (title: string) => {
       setRenamingId(null);
@@ -53,7 +93,7 @@ export function useItemBits(item: ShownItem) {
     [actions, item, setRenamingId],
   );
   const cancelRename = useCallback(() => setRenamingId(null), [setRenamingId]);
-  return { folder, openFolder, commitRename, cancelRename, href: itemHref(item) };
+  return { folder, place, commitRename, cancelRename, href: itemHref(item) };
 }
 
 export const ItemRow = memo(function ItemRow({
@@ -65,15 +105,16 @@ export const ItemRow = memo(function ItemRow({
   renaming: boolean;
   options: RowOptions;
 }) {
-  const { Link } = useExplorer();
+  const { Link, viewerId, teamName } = useExplorer();
   const bits = useItemBits(item);
   const menu = useRowMenu({ disabled: renaming });
   const drag = useItemDrag(item, renaming);
   const title = item.title || 'Untitled';
+  const showOwner = options.showOwner === true;
   return (
     <li
       data-item-row={item.id}
-      className={`${ROW_GRID} ${ROW}`}
+      className={`${rowGrid(showOwner)} ${ROW}`}
       style={{ height: ROW_HEIGHT }}
       onContextMenu={menu.onContextMenu}
       {...drag}
@@ -98,12 +139,17 @@ export const ItemRow = memo(function ItemRow({
             {title}
           </Link>
         )}
-        {options.showFolder && bits.folder ? (
+        {options.showFolder && bits.place ? (
           <span className="hidden shrink-0 sm:inline-flex">
-            <FolderChip label={bits.folder.name} onOpen={bits.openFolder} />
+            <FolderChip label={bits.place.label} onOpen={bits.place.open} />
           </span>
         ) : null}
       </span>
+      {showOwner ? (
+        <span className="hidden truncate text-xs text-slate-500 sm:block dark:text-slate-400">
+          {ownerLabel(item, viewerId, teamName)}
+        </span>
+      ) : null}
       <span className="hidden sm:flex sm:items-center">
         <VisibilityBadge item={item} />
       </span>
@@ -178,9 +224,12 @@ export const FolderRow = memo(function FolderRow({
   folder,
   renaming,
   itemCount,
+  showOwner = false,
 }: {
   folder: Folder;
   renaming: boolean;
+  // The list has an Owner column (a folder's cell stays empty).
+  showOwner?: boolean;
   // How many items it holds, once the previews have said.
   itemCount?: number;
 }) {
@@ -213,7 +262,7 @@ export const FolderRow = memo(function FolderRow({
     <li
       data-folder-row={folder.id}
       data-drop-over={drop.over || undefined}
-      className={`${ROW_GRID} ${ROW} ${drop.over ? DROP_ROW : ''}`}
+      className={`${rowGrid(showOwner)} ${ROW} ${drop.over ? DROP_ROW : ''}`}
       style={{ height: ROW_HEIGHT }}
       onContextMenu={menu.onContextMenu}
       {...drop.handlers}
@@ -230,6 +279,7 @@ export const FolderRow = memo(function FolderRow({
           {label}
         </button>
       )}
+      {showOwner ? <span className="hidden sm:block" /> : null}
       <span className="hidden sm:block" />
       <RelativeTimeChip at={folder.updatedAt} />
       {renaming ? (
@@ -253,7 +303,7 @@ export const ItemCard = memo(function ItemCard({
   renaming: boolean;
   options: RowOptions;
 }) {
-  const { Link, renderThumbnail } = useExplorer();
+  const { Link, renderThumbnail, viewerId, teamName } = useExplorer();
   const bits = useItemBits(item);
   const menu = useRowMenu({ disabled: renaming });
   const drag = useItemDrag(item, renaming);
@@ -307,13 +357,18 @@ export const ItemCard = memo(function ItemCard({
         <div className="flex min-w-0 items-center gap-x-2 [&>*]:shrink-0">
           <VisibilityBadge item={item} />
           {item.favourite ? <FavouriteMarker /> : null}
-          {options.showFolder && bits.folder ? (
-            <FolderChip label={bits.folder.name} onOpen={bits.openFolder} />
+          {options.showFolder && bits.place ? (
+            <FolderChip label={bits.place.label} onOpen={bits.place.open} />
           ) : null}
           <span className="flex min-w-0 !shrink items-center">
             <RelativeTimeChip at={item.trashedAt ?? item.updatedAt} />
           </span>
         </div>
+        {options.showOwner ? (
+          <span className="truncate text-xs text-slate-500 dark:text-slate-400">
+            {ownerLabel(item, viewerId, teamName)}
+          </span>
+        ) : null}
       </div>
       {menu.open ? (
         <ItemMenu item={item} anchor={menu.triggerRef.current} onClose={menu.close} />

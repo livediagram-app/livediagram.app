@@ -86,19 +86,23 @@ export function ItemsPane({
 
   const { title, crumbs } = heading(view, ctx);
   const layouts = !FIXED_LAYOUT.has(view.kind);
-  const showFolder = ['recent', 'favourites', 'search', 'unsorted', 'shared'].includes(view.kind);
+  // Lists that span places name where each item lives (livediagram's location chip) and, on Recent and Search,
+  // whose it is.
+  const showFolder = ['recent', 'favourites', 'search', 'shared'].includes(view.kind);
+  const showOwner = view.kind === 'recent' || view.kind === 'search';
   const options = useMemo<RowOptions>(
-    () => ({ showApp: filter === 'all', showFolder }),
-    [filter, showFolder],
+    () => ({ showApp: filter === 'all', showFolder, showOwner }),
+    [filter, showFolder, showOwner],
   );
 
-  const createFolder = place && FOLDER_VIEWS.has(view.kind)
-    ? () => {
-        void folders
-          .create({ name: 'New Folder', parentId: place.folderId, teamId: place.teamId })
-          .then((made) => made && ctx.setRenamingId(made.id));
-      }
-    : undefined;
+  const createFolder =
+    place && FOLDER_VIEWS.has(view.kind)
+      ? () => {
+          void folders
+            .create({ name: 'New Folder', parentId: place.folderId, teamId: place.teamId })
+            .then((made) => made && ctx.setRenamingId(made.id));
+        }
+      : undefined;
   const createItem = place ? () => onCreate(place) : undefined;
 
   const empty = !state.loading && state.items.length === 0 && folderRows.length === 0;

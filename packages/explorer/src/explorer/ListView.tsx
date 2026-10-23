@@ -10,7 +10,7 @@ import type { ShownItem } from '../data/overlay';
 import { useFolderPreviews } from '../data/useFolderPreviews';
 import { LIST_CARD, LIST_HEADER } from '../ui/classes';
 import { useExplorer } from './context';
-import { FolderRow, ItemRow, ROW_GRID, ROW_HEIGHT, type RowOptions } from './rows';
+import { FolderRow, ItemRow, ROW_HEIGHT, rowGrid, type RowOptions } from './rows';
 import { useWindowedRange } from './useWindow';
 
 // Ask for the next page this many rows before the end.
@@ -70,6 +70,7 @@ export function ListView({
           folder={f}
           renaming={renamingId === f.id}
           itemCount={previews.get(f.id)?.itemCount}
+          showOwner={options.showOwner}
         />,
       );
     } else {
@@ -82,8 +83,9 @@ export function ListView({
 
   return (
     <div className={LIST_CARD}>
-      <div className={`${ROW_GRID} ${LIST_HEADER}`}>
+      <div className={`${rowGrid(options.showOwner === true)} ${LIST_HEADER}`}>
         <span>Name</span>
+        {options.showOwner ? <span className="hidden sm:block">Owner</span> : null}
         <span className="hidden sm:block">Visibility</span>
         <span>Updated</span>
         <span aria-hidden />

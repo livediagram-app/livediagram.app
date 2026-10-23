@@ -17,12 +17,14 @@ import { Explorer, viewFromLocation, type ExplorerView } from '@liveworkspace/ex
 import { Brand, SITE_ID, SiteSwitcher } from '@liveplanner/ui';
 import { AuthControls } from '@/components/chrome/AuthControls';
 import { ChromeControls } from '@/components/chrome/ChromeControls';
+import { SignInBanner, SIGNIN_BANNER_DISMISS_KEY } from '@/components/chrome/SignInBanner';
+import { useDismissibleBanner } from '@/hooks/ui/useDismissibleBanner';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useEditorPreferences } from '@/hooks/persistence/useEditorPreferences';
 import { useSignedGuestId } from '@/hooks/persistence/useSignedGuestId';
 import { useAppNavigation } from '@/hooks/navigation/useAppNavigation';
 import { useSearchShortcut } from '@/hooks/ui/useSearchShortcut';
-import { manageTeamsUrl } from '@/lib/auth-config';
+import { manageTeamsUrl, signInEnabled } from '@/lib/auth-config';
 import { indexClient } from '@/lib/index-client';
 import { isPowerUserMode } from '@/lib/power-user-mode';
 import { dropSettingsLink, readSettingsLink } from '@/lib/settings-link';
@@ -54,7 +56,7 @@ const SettingsDialog = dynamic(
 );
 
 /** What the host's chrome around the Explorer needs: the person's synced preferences and whose they are. */
-export type ExplorerChrome = { prefs: UserPreferences; ownerId: string | null };
+export type ExplorerChrome = { prefs: UserPreferences; ownerId: string | null; signedIn: boolean };
 
 // The Explorer for the person, in whatever frame holds it: the /explorer pages (ExplorerShell) or a workbench's
 // workspace frame (app/embed/workbench/WorkspaceFrame.tsx), which names the view itself and catches the Explorer's
@@ -80,7 +82,7 @@ export function ExplorerHost({
     ownerId: viewerId ?? 'self',
     passwordGated: false,
   });
-  const chrome: ExplorerChrome = { prefs, ownerId: viewerId ?? null };
+  const chrome: ExplorerChrome = { prefs, ownerId: viewerId ?? null, signedIn: !!accountUserId };
   // The open plan deleted from the editor lands here with its Undo (lib/project-delete-undo.ts), taken once.
   const [trashedOnArrival] = useState(arrivedTrashed);
   // The hero's close (docs/specs/013-workspace/explorer-home.md "Hiding the banner"): reported, then written, so
@@ -143,9 +145,10 @@ export function ExplorerShell() {
   const search = useSearchParams();
   const view = viewFromLocation(pathname, search);
   // Opens on the Settings deep link (`?settings=<category>`, lib/settings-link.ts) that mail and the account menu use.
-  const [settings, setSettings] = useState<{ category: string | null; section: string | null } | null>(
-    () => readSettingsLink(search.toString()),
-  );
+  const [settings, setSettings] = useState<{
+    category: string | null;
+    section: string | null;
+  } | null>(() => readSettingsLink(search.toString()));
   useSearchShortcut(focusSearch);
 
   return (
@@ -177,8 +180,9 @@ export function ExplorerShell() {
           </header>
         )}
       >
-        {({ prefs, ownerId }) => (
+        {({ prefs, ownerId, signedIn }) => (
           <>
+            <GuestSignInBanner signedIn={signedIn} />
             {/* The bottom bar (docs/specs/007-editor/editor-app.md): the editor's right-hand controls, Search,
                 Settings and Appearance. The toasts stand on it (docs/specs/004-interface-design/toasts.md). */}
             <div
@@ -211,5 +215,19 @@ export function ExplorerShell() {
         )}
       </ExplorerHost>
     </div>
+  );
+}
+
+// The guest's sign-in banner (docs/specs/014-identity/sign-in-encouragement.md): a floating card over the bottom bar,
+// only where sign-in is wired up, for a visitor not signed in (a guest id does not count) who has not closed it. While
+// it shows, a spacer lets the last row scroll clear of it.
+function GuestSignInBanner({ signedIn }: { signedIn: boolean }) {
+  const { dismissed, dismiss } = useDismissibleBanner(SIGNIN_BANNER_DISMISS_KEY);
+  if (!signInEnabled || signedIn || dismissed) return null;
+  return (
+    <>
+      <div aria-hidden className="h-28 shrink-0 sm:h-12" />
+      <SignInBanner surface="Explorer" onDismiss={dismiss} />
+    </>
   );
 }

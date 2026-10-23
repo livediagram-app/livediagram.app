@@ -133,6 +133,11 @@ follows), and the same optional props as `<Explorer>`.
 
 Rename works in place wherever an item shows: list rows, cards, Details rows, Home's Jump Back In and the panel.
 
+Lists that span places (Recent, Favourites, Search, Shared With Me) carry a location chip on each row and card: its
+folder, its team for a team item in no folder, or My Work for one of yours in none; an item reached through a link
+lives in someone else's library and has none. Recent and Search add an Owner column (and a line on each card): You,
+the team's name, or Shared with you (the index keeps no names, so a sharer is not named).
+
 ## Drag and drop
 
 On the page and in the panel, an item the person manages (their own or a team's; never one reached through a
