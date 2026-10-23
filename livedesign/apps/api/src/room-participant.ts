@@ -13,14 +13,14 @@
 import { isRoomOpRef, type ServerMessage } from '@livedesign/api-schema';
 import type { ElementOp } from '@livedesign/design';
 import { writeParticipantOp, type ParticipantWriteResult } from './participant-write';
-import type { DesignEnv } from './types';
+import type { Env } from './types';
 
 // How many of one socket's writes may wait on the queue (blueprint SR12): far above a person's pace (the autosave
 // sends one op per changed element every 600 ms), and a crafted flood is refused rather than starving everyone.
 export const PARTICIPANT_PENDING_MAX = 64;
 
 type ParticipantRoomHooks = {
-  env: DesignEnv | undefined;
+  env: Env | undefined;
   // Run one step on the room's tab write queue, after every step before it.
   enqueue: <T>(step: () => Promise<T>) => Promise<T>;
   // Sequence one mutation into the ordered stream; answers its seq.

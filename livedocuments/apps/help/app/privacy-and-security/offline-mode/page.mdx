@@ -10,20 +10,19 @@ export const metadata = helpMetadata({
 
 <ArticleLayout title="Offline Mode" description="Documents saved only in this browser, never on the server, and how to move them to and from your account." categoryTitle="Privacy and Security" categorySlug="privacy-and-security">
 
-Most documents are saved to livedocuments's servers so you can reach them from any device and share them. **Offline Mode** is the opposite choice: a document saved **only in the browser you made it in**, that is never stored on the server. It suits private, local-first work, or simply wanting a document that physically never leaves your machine.
+Most documents are saved to livedocuments' servers so you can reach them from any device and share them. **Offline Mode** is the opposite choice: a document saved **only in the browser you made it in**, that is never stored on the server. It suits private, local-first work, or simply wanting a document that physically never leaves your machine.
 
 ## Creating a document in This Browser
 
 Offline Mode is chosen per document, so you can keep normal documents and ones in This Browser side by side.
 
-- **If you haven't signed in**, your new documents start in This Browser (on a deployment with sign-in; a guest-only self-host saves to the server by default). Nothing you try out is sent to our servers until you choose to share it, sync it, or sign in and move it to your account. Everything you make from the [New Document](/new) screen, and from the links that create a document straight away (a template from the home page, **Start Blank**), starts in This Browser. Use **Sync Document** on one if you would rather it went to the server now.
-- **Once you've signed in**, new documents go to your account. To keep one only in this browser, choose **Take Offline** from its menu (see below).
-- The document is written to your browser's own storage (IndexedDB) and opens like any other. A **This Browser** badge next to its name in the editor, and the matching **This Browser** pill wherever it is listed (Explorer lists and cards, search results, the Explorer panel and the Trash), mark it so you always know which documents live only in this browser. Hover or focus the pill to read that the document lives only in this browser and that clearing this browser's site data deletes it; click it (in the Explorer lists, the Explorer panel and the Trash) to come back to this guide. The Explorer sidebar's **This Browser** row lists them all.
+- New documents go to livedocuments, whether you are signed in or a guest. To keep one only in this browser, choose **Take Offline** from its menu (see below).
+- The document is written to your browser's own storage (IndexedDB) and opens like any other. A **This Browser** badge next to its name in the editor marks it, so you always know which documents live only in this browser. Hover or focus the badge to read that clearing this browser's site data deletes the document. The rest of the Explorer lists only documents on the server, so **This Browser**, in the **More** group of the Explorer sidebar, is where you find them all.
 
 <Note>
   A document in This Browser is **not synced and not backed up**. It lives only in this browser:
   clearing your site data, or the browser reclaiming storage, will delete it. Keep anything
-  important on the cloud, or export a copy.
+  important on livedocuments, or export a copy.
 </Note>
 
 ## What's different
@@ -34,11 +33,11 @@ A document in This Browser is a normal document: every editor feature works, inc
 - **Live collaboration** and **teams** don't apply; a document in This Browser is yours alone. Comments still work, but only you see them.
 - Images you add are stored **inside the document**, so it stays fully local.
 - **Add a Tab to Another Document** is unavailable for a document in This Browser in either direction, and **Duplicate** makes another copy in This Browser rather than uploading one.
-- In the Explorer it shows a fixed This Browser picture instead of a thumbnail, because there is no server copy to draw one from.
+- It is listed only under **This Browser** in the Explorer, not in My Work, Recent or search, because the Explorer lists what is on the server.
 
-## Moving to and from your account
+## Moving to your account
 
-You can change your mind at any time, from the document's **⋯** menu in the Explorer.
+You can change your mind at any time, from the document's **⋯** menu.
 
 - **When you sign in** with documents in This Browser, we offer to move them to your account. Every one is ticked; untick any you want to keep in this browser, then **Move**. **Not Now** leaves them where they are, and we only ask again when there are more.
 
@@ -51,8 +50,8 @@ You can change your mind at any time, from the document's **⋯** menu in the Ex
   Browser it exists only in the browser you took it offline in. If it was shared, taking it offline
   also revokes the share links, and a team document leaves the team library. For the owner it is a
   move, not a delete, so it skips the [Trash](/help/account-and-data/trash/); a teammate taking a
-  team document offline sends the team's copy to the team Trash. A document in This Browser you
-  delete goes to this browser's own Trash.
+  team document offline sends the team's copy to the team Trash. Deleting a document in This Browser
+  removes it from this browser.
 </Note>
 
 </ArticleLayout>

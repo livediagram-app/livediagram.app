@@ -23,6 +23,9 @@ const KNOWN_WRITERS: Record<string, number> = {
   'api/src/db/tabs.ts': 5,
   // importDocumentCopy (a copy lands in its new document's own store)
   'api/src/document-room/document-content.ts': 1,
+  // anonymiseDocument: a closed account's name off the comments in a body; it changes no image id, so the body's
+  // references stay as they were.
+  'api/src/document-room/document-anonymise.ts': 1,
   // The test database's stand-in for a document's purge (its object deletes everything it stores); the
   // references go with the tabs by their foreign key.
   'api/src/test-sqlite-d1.ts': 1,

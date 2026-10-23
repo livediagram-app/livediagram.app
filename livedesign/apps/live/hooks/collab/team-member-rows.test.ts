@@ -2,7 +2,7 @@
 // invited members, never the caller, and never a rejected invite (docs/specs/013-workspace/teams.md).
 import { describe, expect, it } from 'vitest';
 import type { TeamMember } from '@/lib/api-client';
-import { teamMemberName, teamMemberRows } from './team-member-rows';
+import { teamMemberRows } from './team-member-rows';
 
 const member = (
   id: string,
@@ -37,13 +37,5 @@ describe('teamMemberRows', () => {
       ['a', false],
       ['b', true],
     ]);
-  });
-});
-
-describe('teamMemberName', () => {
-  it('prefers the profile name, then the address made readable', () => {
-    expect(teamMemberName({ name: 'Ada', email: 'x@y.test' })).toBe('Ada');
-    expect(teamMemberName({ name: null, email: 'ada.lovelace@y.test' })).toBe('Ada Lovelace');
-    expect(teamMemberName({ name: null, email: null })).toBe('Member');
   });
 });

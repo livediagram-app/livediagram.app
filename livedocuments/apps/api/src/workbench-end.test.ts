@@ -28,7 +28,7 @@ function arrange(roomOk = true): {
       }),
     },
   } as unknown as Env;
-  db.sql.exec(`INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at)
+  db.sql.exec(`INSERT INTO test_documents (id, owner_id, name, shareable, saved_at, created_at)
                VALUES ('doc1', 'u1', 'A', 0, 1, 1), ('doc2', 'u1', 'B', 0, 1, 1)`);
   db.sql
     .exec(`INSERT INTO api_tokens (id, owner_id, token_hash, name, created_at, expires_at, revoked)

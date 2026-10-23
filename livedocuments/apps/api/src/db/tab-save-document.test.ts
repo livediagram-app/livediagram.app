@@ -8,7 +8,7 @@ import { getDocumentForSave } from './tab-save-document';
 function setUp() {
   const db = sqliteD1();
   db.sql.exec(`
-    INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at, team_id)
+    INSERT INTO test_documents (id, owner_id, name, shareable, saved_at, created_at, team_id)
       VALUES ('d1', 'owner', 'Plan', 0, 5, 3, NULL);
     INSERT INTO tabs (id, name, data, updated_at, element_count) VALUES ('t1', 'One', '{"elements":[]}', 1, 0), ('t2', 'Two', '{"elements":[]}', 1, 0);
     INSERT INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES ('d1', 't1', 0, 1), ('d1', 't2', 1, 1);
@@ -36,10 +36,8 @@ describe('getDocumentForSave', () => {
     });
   });
 
-  it('reads a trashed or unknown document as missing', async () => {
-    const { env, sql } = setUp();
+  it('reads an unknown document as missing', async () => {
+    const { env } = setUp();
     expect(await getDocumentForSave(env, 'nope')).toBeNull();
-    sql.exec(`UPDATE documents SET trashed_at = 9 WHERE id = 'd1'`);
-    expect(await getDocumentForSave(env, 'd1')).toBeNull();
   });
 });

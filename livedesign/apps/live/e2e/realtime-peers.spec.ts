@@ -3,10 +3,9 @@ import {
   dismissQuickTour,
   expect,
   test,
-  adoptGuest,
-  designHeaders,
-  mintGuest,
-  seedDesign,
+  guestSigFor,
+  mintSignedGuest,
+  ownerHeaders,
   paletteTile,
 } from './fixtures';
 
@@ -24,17 +23,20 @@ async function openAs(
   owner: string | null,
 ): Promise<Page> {
   const ctx = await browser.newContext({ baseURL, viewport: { width: 1440, height: 860 } });
-  if (owner) await adoptGuest(ctx, owner);
   await ctx.addInitScript(
-    ({ o }) => {
-      if (o) localStorage.setItem('livedesign:v2:name-confirmed', '1');
+    ({ o, sig }) => {
+      if (o) {
+        localStorage.setItem('livedesign:v2:self-id', o);
+        if (sig) localStorage.setItem('livedesign:v2:self-sig', sig);
+        localStorage.setItem('livedesign:v2:name-confirmed', '1');
+      }
       // The Workshop tour offers itself over the board (fixtures openBlankSession); its overlay would take the presses.
       localStorage.setItem(
         'livedesign:user-preferences:v1',
         JSON.stringify({ workshopTourSeen: true }),
       );
     },
-    { o: owner },
+    { o: owner, sig: owner ? guestSigFor(owner) : null },
   );
   const page = await ctx.newPage();
   await page.goto(url);
@@ -48,27 +50,28 @@ test('two peers see each other, edit live, and every edit is kept', async ({
   browser,
   baseURL,
 }) => {
-  const owner = await mintGuest(page.request);
+  const owner = await mintSignedGuest(page.request);
   const id = crypto.randomUUID();
   const tabId = crypto.randomUUID();
-  const seeded = await seedDesign(page.request, owner, {
-    id,
-    name: 'Room',
-    tabs: [
-      {
-        id: tabId,
-        name: 'Board',
-        opensIn: 'workshop',
-        elements: [
-          { id: 'a', type: 'shape', shape: 'square', x: 100, y: 100, width: 200, height: 100 },
-        ],
-      },
-    ],
+  const headers = ownerHeaders(owner, { Origin: new URL(baseURL!).origin });
+  const seeded = await page.request.post(`${apiBase}/designs`, {
+    headers,
+    data: {
+      id,
+      name: 'Room',
+      tabs: [
+        {
+          id: tabId,
+          name: 'Board',
+          opensIn: 'workshop',
+          elements: [
+            { id: 'a', type: 'shape', shape: 'square', x: 100, y: 100, width: 200, height: 100 },
+          ],
+        },
+      ],
+    },
   });
   expect(seeded.ok()).toBe(true);
-  const headers = await designHeaders(page.request, owner, id, {
-    Origin: new URL(baseURL!).origin,
-  });
   const share = await page.request.post(`${apiBase}/designs/${id}/share`, {
     headers,
     data: { role: 'edit' },

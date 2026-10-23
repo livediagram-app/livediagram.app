@@ -26,15 +26,11 @@ export const WORKBENCH_NAME_MAX_LENGTH = 40;
 export const WORKBENCH_ORIGIN_MAX_LENGTH = 255;
 export const WORKBENCH_SESSION_GRACE_MS = 24 * 60 * 60 * 1000;
 
-// A pairing code is 16 random bytes, base64url without padding.
+// A ticket and a pairing code are 16 random bytes, base64url without padding.
 export const WORKBENCH_HANDLE_PATTERN = /^[A-Za-z0-9_-]{22}$/;
 
-// A ticket is 16 random bytes, base64url without padding, then a dot and the id of the person's workbench store
-// (64 hex), so it reaches their store with no one signed in.
-export const WORKBENCH_TICKET_PATTERN = /^[A-Za-z0-9_-]{22}\.[0-9a-f]{64}$/;
-
-// `lvw_` and 32 random bytes as base64url without padding, then a dot and the store's id, as a ticket.
-const SESSION_PATTERN = /^lvw_[A-Za-z0-9_-]{43}\.[0-9a-f]{64}$/;
+// `lvw_` and 32 random bytes as base64url without padding.
+const SESSION_PATTERN = /^lvw_[A-Za-z0-9_-]{43}$/;
 
 export function isWorkbenchSessionFormat(value: string): boolean {
   return SESSION_PATTERN.test(value);
@@ -282,11 +278,20 @@ const WORKSPACE_ROUTES: readonly RouteShape[] = [
   ...[
     'designs',
     'folders',
+    'shared',
+    'favourites',
+    'tags',
+    'home',
+    'timeline',
+    'activity',
     'trash',
+    'placement-defaults',
     'images',
   ].map((resource) => shape(ALL_METHODS, `${resource}/**`)),
   shape('GET', 'teams'),
+  shape('GET', 'teams/:p'),
   shape('GET', 'teams/:p/library'),
+  shape('GET', 'teams/:p/members'),
   shape('DELETE', 'workbench/sessions/current'),
 ];
 

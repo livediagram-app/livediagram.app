@@ -1,11 +1,5 @@
 # Image reference index: blueprint
 
-> **Partly superseded (October 2026).** Each design keeps its own `image_refs` in its Durable Object's SQLite
-> (`apps/api/src/design-room/design-schema.ts`), filled from the start, and its outbox tells liveworkspace's media
-> service which images it places; the service sweeps the unplaced ones
-> ([media.md](../../../../../liveworkspace/docs/media.md) "Retention"). The backfill, the SQL extractor and this
-> api's own daily sweep are gone, and files marked (removed) below went with them.
-
 Derived from [Images](../images.md), sections [Reference index](../images.md#reference-index),
 [Retention](../images.md#retention-unused-image-cleanup) and the `GET /api/images/:id` and `GET /api/images/usage`
 rows of [API endpoints](../images.md#api-endpoints). The spec decides; this file only adds engineering precision.
@@ -13,20 +7,20 @@ Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS
 
 Scope, by file (all under `apps/api/`):
 
-| File                                                       | Role                                                                           |
-| ---------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| apps/api/migrations/0001_livedesign_baseline.sql (removed) | `image_refs`, `image_refs_image_idx`, `image_refs_backfill` and its single row |
-| `src/image-refs/extract.ts`                                | The JavaScript extractor: what a reference is                                  |
-| `src/db/image-refs.ts`                                     | Every statement on `image_refs` / `image_refs_backfill`; the SQL extractor     |
-| src/image-refs/backfill.ts (removed)                       | One backfill run                                                               |
-| src/image-refs/retention.ts (removed)                      | The daily image job: backfill, then sweep                                      |
-| src/db/image-retention.ts (removed)                        | The sweep and its tripwire                                                     |
-| src/db/images.ts (removed)                                 | The usage map and the share-read check, reading the index                      |
-| `src/db/tabs.ts`                                           | `upsertTab`, `seedTabs`, `swapTabData`, `deleteTabRow` carry index statements  |
-| `src/db/designs.ts`                                        | `copyDesign` carries index statements                                          |
-| src/db/design-removal.ts (removed)                         | `designRemovalStatements` prunes the dropped tabs' references                  |
-| `src/index.ts`                                             | `scheduled()` hands the daily run to `runImageRetention`                       |
-| `src/image-refs/writer-census.test.ts`                     | Fails when SQL writing `tabs` appears outside the known writers                |
+| File                                               | Role                                                                           |
+| -------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `apps/api/migrations/0001_livedesign_baseline.sql` | `image_refs`, `image_refs_image_idx`, `image_refs_backfill` and its single row |
+| `src/image-refs/extract.ts`                        | The JavaScript extractor: what a reference is                                  |
+| `src/db/image-refs.ts`                             | Every statement on `image_refs` / `image_refs_backfill`; the SQL extractor     |
+| `src/image-refs/backfill.ts`                       | One backfill run                                                               |
+| `src/image-refs/retention.ts`                      | The daily image job: backfill, then sweep                                      |
+| `src/db/image-retention.ts`                        | The sweep and its tripwire                                                     |
+| `src/db/images.ts`                                 | The usage map and the share-read check, reading the index                      |
+| `src/db/tabs.ts`                                   | `upsertTab`, `seedTabs`, `swapTabData`, `deleteTabRow` carry index statements  |
+| `src/db/designs.ts`                              | `copyDesign` carries index statements                                        |
+| `src/db/design-removal.ts`                       | `designRemovalStatements` prunes the dropped tabs' references                |
+| `src/index.ts`                                     | `scheduled()` hands the daily run to `runImageRetention`                       |
+| `src/image-refs/writer-census.test.ts`             | Fails when SQL writing `tabs` appears outside the known writers                |
 
 ## Domain and naming
 
@@ -51,14 +45,14 @@ Banned synonyms: "image usage table", "image links", "refcount". A reference is 
 
 Each writer appends statements to the D1 batch that writes the body.
 
-| Writer                    | Statements, in the body's batch                                                                              |
-| ------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| `upsertTab`               | after the collab statements: `imageRefReplaceStatements(env, id, imageRefIds(tab.elements))`                 |
-| `seedTabs`                | the same, per seeded tab                                                                                     |
+| Writer                      | Statements, in the body's batch                                                                              |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `upsertTab`                 | after the collab statements: `imageRefReplaceStatements(env, id, imageRefIds(tab.elements))`                 |
+| `seedTabs`                  | the same, per seeded tab                                                                                     |
 | `copyDesign`              | per copied tab: `imageRefAddStatements(env, freshTabId, imageRefIdsFromData(data))`                          |
-| `swapTabData`             | batch `[UPDATE tabs … WHERE data = ?, ...imageRefAddStatements(nextData ids)]`; result 0's `changes` decides |
-| `deleteTabRow`            | when no link is left: batch `[imageRefPruneTabStatement, DELETE tabs]`                                       |
-| `designRemovalStatements` | first: `DELETE FROM image_refs WHERE tab_id IN (doomed tabs)`; then the tabs and designs deletes             |
+| `swapTabData`               | batch `[UPDATE tabs … WHERE data = ?, ...imageRefAddStatements(nextData ids)]`; result 0's `changes` decides |
+| `deleteTabRow`              | when no link is left: batch `[imageRefPruneTabStatement, DELETE tabs]`                                       |
+| `designRemovalStatements` | first: `DELETE FROM image_refs WHERE tab_id IN (doomed tabs)`; then the tabs and designs deletes           |
 
 `imageRefReplaceStatements(env, tabId, ids)`, with `ids` bound as one JSON array:
 
@@ -80,11 +74,11 @@ while the links still exist; the `DELETE FROM designs` stays last, its `meta.cha
 body failing the statement whatever order SQLite evaluates the join in, and keeps `json_each` off image-free tabs
 (D1 bills each element it walks). Three statements use it:
 
-| Statement                      | `tabWhere`                                                                                                   |
-| ------------------------------ | ------------------------------------------------------------------------------------------------------------ |
-| `imageRefIndexPageStatement`   | `t.rowid > ?1 AND t.rowid <= ?2`                                                                             |
-| `imageRefIndexOwnerStatement`  | `t.id IN (SELECT dt.tab_id FROM design_tabs dt JOIN designs d ON d.id = dt.design_id WHERE d.owner_id = ?1)` |
-| `imageRefIndexDesignStatement` | `t.id IN (SELECT tab_id FROM design_tabs WHERE design_id = ?1)`                                              |
+| Statement                        | `tabWhere`                                                                                                         |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `imageRefIndexPageStatement`     | `t.rowid > ?1 AND t.rowid <= ?2`                                                                                   |
+| `imageRefIndexOwnerStatement`    | `t.id IN (SELECT dt.tab_id FROM design_tabs dt JOIN designs d ON d.id = dt.design_id WHERE d.owner_id = ?1)` |
+| `imageRefIndexDesignStatement` | `t.id IN (SELECT tab_id FROM design_tabs WHERE design_id = ?1)`                                                |
 
 ### Backfill
 
@@ -270,7 +264,7 @@ rebuilds `tabs` must keep tab ids (the index is keyed on them); nothing cascades
 | `elements` is an object, or missing                    | No references, on both extractors                                         |
 | Corrupt body at backfill                               | Text scan; every id after `"imageId"` counts, image or not (over-keeps)   |
 | Corrupt body with no usable id                         | Warned with `(0 ids)`; nothing written                                    |
-| Corrupt body at the lazy owner / design index          | No references from it; the backfill still covers it                       |
+| Corrupt body at the lazy owner / design index        | No references from it; the backfill still covers it                       |
 | Swap loses its compare                                 | Add-only statements may add references the stored body lacks: over-keeps  |
 | Backfill races a save                                  | `INSERT OR IGNORE` from an older body: an extra reference until next save |
 | Worker from before 0050 still saving                   | The settle hour; its writes precede the backfill's reads                  |
@@ -335,18 +329,18 @@ bodies inside D1; the run stops after 60 s of wall clock, inside the cron's limi
 
 ## Testing
 
-| Rule                                                        | Test                                                    |
-| ----------------------------------------------------------- | ------------------------------------------------------- |
-| What a reference is                                         | `src/image-refs/extract.test.ts`                        |
-| SQL extraction equals the JavaScript extractor              | src/db/image-refs.test.ts (removed) "the SQL extractor" |
-| Migration on an empty and a populated database              | src/db/image-refs.test.ts (removed) "migration 0050"    |
-| Each writer maintains the index (I1), routes included       | `src/db/image-refs-writers.test.ts`                     |
-| Deleting a tab / design / account prunes; shared tab keeps  | `src/db/image-refs-writers.test.ts`                     |
-| No unknown writer of `tabs`, code or migration              | `src/image-refs/writer-census.test.ts`                  |
-| Backfill states, pages, chase, corrupt body, idempotence    | src/image-refs/backfill.test.ts (removed)               |
-| Backfill before sweep; failures logged                      | src/image-refs/retention.test.ts (removed)              |
-| Sweep gate, live vs dangling, tripwire, re-check (I2 to I4) | src/db/image-retention.test.ts (removed)                |
-| Usage and share read from the index, lazy index             | src/db/images.test.ts (removed)                         |
+| Rule                                                         | Test                                            |
+| ------------------------------------------------------------ | ----------------------------------------------- |
+| What a reference is                                          | `src/image-refs/extract.test.ts`                |
+| SQL extraction equals the JavaScript extractor               | `src/db/image-refs.test.ts` "the SQL extractor" |
+| Migration on an empty and a populated database               | `src/db/image-refs.test.ts` "migration 0050"    |
+| Each writer maintains the index (I1), routes included        | `src/db/image-refs-writers.test.ts`             |
+| Deleting a tab / design / account prunes; shared tab keeps | `src/db/image-refs-writers.test.ts`             |
+| No unknown writer of `tabs`, code or migration               | `src/image-refs/writer-census.test.ts`          |
+| Backfill states, pages, chase, corrupt body, idempotence     | `src/image-refs/backfill.test.ts`               |
+| Backfill before sweep; failures logged                       | `src/image-refs/retention.test.ts`              |
+| Sweep gate, live vs dangling, tripwire, re-check (I2 to I4)  | `src/db/image-retention.test.ts`                |
+| Usage and share read from the index, lazy index              | `src/db/images.test.ts`                         |
 
 All run against `src/test-sqlite-d1.ts` (real SQLite, every migration); shared arrangement in
 `src/db/test-image-fixtures.ts`.

@@ -1,0 +1,76 @@
+'use client';
+
+// The folder card's content preview (docs/specs/013-workspace/folder-content-previews.md): a centred 2x2 mosaic of
+// up to four small sheets — the designs the folder holds (the same
+// cached SVG snapshot the design cards use, so nothing new is fetched
+// or rendered server-side), its subfolders, and a "+N" tile when there
+// is more inside than fits.
+//
+// An empty folder shows the empty state's art: the folder on its floating badge
+// over the pulsing rings, as the editor's Explorer shows an empty folder, so an
+// empty card reads as waiting rather than broken.
+
+import { EmptyStateArt } from '@livedesign/ui';
+import { FolderSolidIcon } from '@/components/primitives/explorer-icons';
+import { DesignThumbnail } from '@/components/panels/DesignThumbnail';
+import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
+import { folderPreviewTiles, type FolderPreviewContents } from './folder-preview-tiles';
+
+// Half the box each way whatever the count, so a one-design folder and
+// a four-design folder use the same tile scale across the grid. The
+// flex-wrap centring is what puts one tile in the middle and two side by
+// side without a per-count layout.
+const tileBox =
+  'flex h-[calc(50%-0.25rem)] w-[calc(50%-0.25rem)] items-center justify-center overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800';
+
+export function FolderPreview({
+  contents,
+  ownerId,
+}: {
+  contents: FolderPreviewContents;
+  // Viewer identity for each tile's authenticated thumbnail fetch.
+  ownerId: string | null;
+}) {
+  const { tiles, hidden } = folderPreviewTiles(contents);
+  if (tiles.length === 0) {
+    return (
+      <span
+        data-folder-empty=""
+        className="relative flex h-full w-full items-center justify-center overflow-hidden"
+      >
+        <EmptyStateArt compact icon={<FolderSolidIcon open={false} />} />
+      </span>
+    );
+  }
+  return (
+    <span className="flex h-full w-full flex-wrap content-center items-center justify-center gap-2 p-3">
+      {tiles.map((tile) =>
+        tile.kind === 'design' ? (
+          <span key={`d:${tile.design.id}`} className={tileBox}>
+            <DesignThumbnail
+              ownerId={ownerId}
+              designId={tile.design.id}
+              version={tile.design.savedAt}
+              empty={tile.design.empty}
+              shareCode={tile.design.shared?.shareCode}
+              offline={tile.design.ownerId === OFFLINE_OWNER_ID}
+              className="h-full w-full"
+            />
+          </span>
+        ) : (
+          <span
+            key={`f:${tile.folder.id}`}
+            className={`${tileBox} text-brand-400 dark:text-brand-300 [&_svg]:h-5 [&_svg]:w-5`}
+          >
+            <FolderSolidIcon open={false} />
+          </span>
+        ),
+      )}
+      {hidden > 0 ? (
+        <span
+          className={`${tileBox} text-xs font-medium text-slate-500 dark:text-slate-400`}
+        >{`+${hidden}`}</span>
+      ) : null}
+    </span>
+  );
+}

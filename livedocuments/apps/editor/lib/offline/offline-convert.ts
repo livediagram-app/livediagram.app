@@ -6,8 +6,8 @@
 // destructive on the server (the whole point — it must leave the account and
 // every other device), so the UI gates it behind a confirmation.
 
-import { apiLoadDocument, apiLoadTab, fetchCloudFavouriteIds } from '@/lib/api-client';
-import { fetchCloudTags } from '@/lib/api/tags';
+import { apiLoadDocument, apiLoadTab } from '@/lib/api-client';
+import { indexClient } from '@/lib/index-client';
 import { DOCUMENT_CONVERSION_HEADER } from '@livedocuments/api-schema';
 import { API_BASE, ApiError, apiDelete } from '@/lib/api/core';
 import { embedTabImages, isDataImageId, tabImageIds } from './offline-images';
@@ -109,15 +109,14 @@ async function downloadAndRemoveCloudCopy(
   const unembedded = tabs.some((t) => tabImageIds(t).some((id) => !isDataImageId(id)));
   if (unembedded) throw new Error('image embed incomplete');
 
-  // The cloud star is a row keyed on the document, so the server delete below
-  // takes it too; carry it onto the offline record (docs/specs/013-workspace/favourites.md). A failed
-  // read aborts here, before anything is written: taken as "not starred" it would drop the star.
-  const starred = (await fetchCloudFavouriteIds(ownerId)).includes(liveDoc.id);
-  // Its tags too (docs/specs/013-workspace/tags.md "An offline document's tags live in the browser"), read the same
-  // way: a failed read aborts rather than dropping them with the server row.
-  const tagIds = (await fetchCloudTags(ownerId)).links
-    .filter((l) => l.documentId === liveDoc.id)
-    .map((l) => l.tagId);
+  // The person's star and tags are the index's, on the document's item, which the server delete below takes too; carry it onto
+  // the offline record (docs/specs/013-workspace/favourites.md). A failed read aborts here, before anything is
+  // written: taken as "none" it would drop it.
+  const { item } = await indexClient.getItem(liveDoc.id);
+  const starred = item.favourite;
+  // Its tags too (docs/specs/013-workspace/tags.md "An offline document's tags live in the browser"), from the same
+  // item.
+  const tagIds = item.tagIds ?? [];
   const now = Date.now();
   const rec: OfflineDocumentRecord = {
     id: liveDoc.id,

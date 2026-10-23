@@ -1,28 +1,16 @@
-// /api/documents — document metadata, per-tab content, copy, folder
-// assignment, tab linking, comments, share links, the realtime WS
-// upgrade. The largest resource: every sub-path
-// under a document id lives here.
+// /api/documents/<id>/... inside the document's Durable Object: per-tab content, comments, agent presence and
+// changesets.
 
-import { broadcastShareOp } from '../room-client';
 import { redactCommentAuthorIds } from '../comments';
-import {
-  deleteShareLinksForTab,
-  deleteTabRow,
-  getDocument,
-  getDocumentForSave,
-  getTab,
-} from '../db';
-import { getParticipant } from '../person/profiles';
+import { deleteTabRow, getDocument, getDocumentForSave, getTab } from '../db';
 import { conflict, forbidden, json, noContent, notFound } from '../responses';
-import { recordVisitorOpened, retractTabComments } from '../timeline';
-import { DOCUMENT_OPEN_HEADER, readDocumentOpen, tabEtag } from '@livedocuments/api-schema';
-import { recordDocumentOpen } from '../home/record-open';
-import { handleDocumentShareRoutes } from './document-share-routes';
+import { tabEtag } from '@livedocuments/api-schema';
 import { handleTabPut, refuseTokenTabPut } from './tab-put-route';
 import { handleTabRename } from './tab-name-route';
 import { handleTabPages } from './tab-pages-route';
 import { handleChangesetRoutes } from './changesets';
 import { handleCommentRoutes } from './comment-routes';
+import { handleNotifyAction } from './notify-action-route';
 import { handleAgentPresenceRoute } from './agent-presence-routes';
 import { handleTabRender } from './tab-render-route';
 import {
@@ -31,7 +19,6 @@ import {
   gateGrant,
   missingDocument,
   requireOwner,
-  shareCodeOf,
   type DocumentRouteContext,
 } from './context';
 import { answerTabView, parseViewQuery } from './document-views-route';
@@ -120,34 +107,6 @@ export async function handleDocumentSubresources(
           ? tab
           : { ...tab, elements: redactCommentAuthorIds(tab.elements, owner) };
       if (view) return answerTabView(ctx, view, existing, safe, owner);
-      // docs/specs/013-workspace/timeline.md §4.3: somebody arrived through a SHARE LINK and opened this.
-      // The tab read is the honest signal for "opened" — the document GET is hit
-      // by link previews and polls, whereas fetching tab content means a person
-      // is looking at the canvas. Coalesced per visitor per day inside the
-      // emit, so a stranger with a link can't flood the owner's feed by
-      // refreshing.
-      //
-      // Gated on a share code being PRESENT, not merely on the caller not being
-      // the owner. The read gate also admits any joined member of the document's
-      // team (docs/specs/013-workspace/team-shared-documents.md), who presents no code — so the looser test reported
-      // teammates browsing their own library as visitors. The bubble reads
-      // "opened by a visitor · Someone with the share link" and files under the
-      // sharing filter, so an owner saw that for a document they had never
-      // shared a link for, once per teammate per day.
-      if (owner !== existing.ownerId && shareCodeOf(request) !== null) {
-        ctx.waitUntil?.(
-          getParticipant(env, owner).then((p) =>
-            recordVisitorOpened(env, existing, owner, p?.name ?? null),
-          ),
-        );
-      }
-      // docs/specs/013-workspace/explorer-home.md "Opens": the reader's own open, for their Home.
-      // Only when the editor declares this read an open: a resync, a duplicate, Take Offline and
-      // an embed read the same tab and are not opens. The read gate above has
-      // already admitted the reader, and the open is theirs whoever they are.
-      if (readDocumentOpen(request.headers.get(DOCUMENT_OPEN_HEADER))) {
-        ctx.waitUntil?.(recordDocumentOpen(env, existing, owner, Date.now()));
-      }
       // The revision as a weak ETag too (docs/specs/024-agents/agent-changesets.md "The tab
       // revision", CS5): what an agent read, for its changeset base.
       return json({ tab: safe }, { headers: { ETag: tabEtag(tab.rev) } });
@@ -168,20 +127,17 @@ export async function handleDocumentSubresources(
       // §4.17). The editor is let through: its saves and deletes race, so adding a tab and deleting
       // the other in one save can reach here first.
       if (ctx.token && existing.tabs.length <= 1) return conflict('last_tab');
-      const removed = await deleteTabRow(env, id, tabId);
-      // Its comments' words leave this document's feed with it (docs/specs/013-workspace/timeline.md §4.3).
-      if (removed) ctx.waitUntil?.(retractTabComments(env, id, removed));
-      // The links scoped to it die with it (docs/specs/013-workspace/tab-scoped-share-links.md), and their
-      // holders leave the editor as on a revoke.
-      const revoked = await deleteShareLinksForTab(env, id, tabId);
-      for (const code of revoked) {
-        ctx.waitUntil?.(broadcastShareOp(env, id, { kind: 'share-revoked', code }));
-      }
+      await deleteTabRow(env, id, tabId);
+      // A link scoped to it (the index's) now opens nothing here: the tab reads as missing.
       return noContent();
     }
   }
 
   // The comment endpoints (docs/specs/024-agents/agent-presence.md "Comments").
+  // /api/documents/<id>/notify-action: the email for an action just assigned (assigned-actions.md).
+  if (segments.length === 4 && segments[3] === 'notify-action') {
+    return handleNotifyAction(ctx, segments[2]!);
+  }
   const comments = await handleCommentRoutes(ctx);
   if (comments) return comments;
   // Agent presence (docs/specs/024-agents/agent-presence.md "Presence").
@@ -194,13 +150,6 @@ export async function handleDocumentSubresources(
   // /api/documents/<id>/tabs/<tabId>/link — owner only.
   // A tab belongs to exactly one document (its Durable Object holds it), so there is no linking an existing tab into
   // another document any more: POST …/tabs/<tabId>/link is gone (docs/specs/015-api/api.md "Storage").
-
-  // /api/documents/<id>/share* — the share-link family lives in
-  // document-share-routes.ts.
-  {
-    const shareResp = await handleDocumentShareRoutes(ctx);
-    if (shareResp) return shareResp;
-  }
 
   return null;
 }

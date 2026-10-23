@@ -318,12 +318,12 @@ describe('settings catalogue', () => {
   });
 
   // The editor in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table).
-  it('leaves the account and tokens, and the Appearance choice, out of a workbench', () => {
+  it('leaves the account, designs and tokens, and the Appearance choice, out of a workbench', () => {
     const ctx = { emailEnabled: true, signedIn: true, authEnabled: true, workbench: true };
     const categories = visibleCategories(ctx);
     const ids = categories.map((c) => c.id);
 
-    for (const hidden of ['account', 'notifications', 'tokens']) {
+    for (const hidden of ['designs', 'account', 'notifications', 'tokens']) {
       expect(ids).not.toContain(hidden);
     }
     expect(ids).toContain('editor');
@@ -331,7 +331,7 @@ describe('settings catalogue', () => {
     expect(appearance.rows.some((r) => r.kind === 'appearance')).toBe(false);
     expect(appearance.rows.length).toBeGreaterThan(0);
     const app = visibleCategories({ ...ctx, workbench: false }).map((c) => c.id);
-    expect(app).toEqual(expect.arrayContaining(['account', 'tokens']));
+    expect(app).toEqual(expect.arrayContaining(['designs', 'account', 'tokens']));
   });
 
   it('nests Notifications and API Tokens under Account, directly after it', () => {
@@ -382,9 +382,6 @@ describe('settings catalogue', () => {
     // The category survives either way: in-editor notifications are not
     // gated on email, so Notifications never becomes a dead end.
     expect(notifyRows(without)).toContain('notificationsEnabled');
-    // A teammate assigning you an action emails you (docs/specs/012-collaboration/assigned-actions.md).
-    expect(notifyRows(withEmail)).toContain('notifyActionAssigned');
-    expect(notifyRows(without)).not.toContain('notifyActionAssigned');
   });
 
   it('offers Minimal chrome only while power user mode is on', () => {

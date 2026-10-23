@@ -14,9 +14,9 @@ import {
 // The page machine (docs/specs/013-workspace/blueprints/workbench-embeds.md "The workbench page"):
 // every transition of the phase table.
 
-const TICKET = `Ab3_-xYz0123456789abcd.${'0f'.repeat(32)}`;
+const TICKET = 'Ab3_-xYz0123456789abcd';
 const SESSION: WorkbenchDesignSessionResponse = {
-  session: `lvw_${'a'.repeat(43)}.${'0f'.repeat(32)}`,
+  session: `lvw_${'a'.repeat(43)}`,
   scope: 'design',
   designId: 'doc-1',
   folderId: null,
@@ -26,10 +26,7 @@ const SESSION: WorkbenchDesignSessionResponse = {
   expiresAt: 10_000,
   person: { id: 'user_1', name: 'Webber', color: '#0ea5e9' },
 };
-const RENEWED: WorkbenchDesignSessionResponse = {
-  ...SESSION,
-  session: `lvw_${'b'.repeat(43)}.${'0f'.repeat(32)}`,
-};
+const RENEWED: WorkbenchDesignSessionResponse = { ...SESSION, session: `lvw_${'b'.repeat(43)}` };
 
 const redeeming: WorkbenchPhase = {
   phase: 'redeeming',
@@ -225,7 +222,7 @@ describe('workbenchTransition, workspace scope', () => {
 
   it('renews a workspace session with another of the same scope and origin only', () => {
     const on: WorkbenchPhase = { phase: 'mounted', session: WORKSPACE, name: 'Acme Editor' };
-    const next = { ...WORKSPACE, session: `lvw_${'c'.repeat(43)}.${'0f'.repeat(32)}` };
+    const next = { ...WORKSPACE, session: `lvw_${'c'.repeat(43)}` };
 
     expect(run(on, { type: 'renewed', session: next })).toEqual({ ...on, session: next });
     expect(run(on, { type: 'renewed', session: SESSION })).toEqual(on);

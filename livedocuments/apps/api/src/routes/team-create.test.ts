@@ -1,5 +1,4 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { getMembership, getTeam } from '../db/teams';
 import { ACCOUNTS_ON, stubAccounts, type FakeAccounts } from '../test-accounts';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import type { Env } from '../types';
@@ -39,19 +38,14 @@ const create = (
 };
 
 describe('POST /api/teams (docs/specs/013-workspace/teams.md "Making a team")', () => {
-  it('makes the team on liveworkspace with the caller as admin, and files it here at once', async () => {
+  it('makes the team on liveworkspace with the caller as admin', async () => {
     const res = await create({ name: '  Writers  ', organisation: 'Acme' });
     expect(res.status).toBe(201);
     const { team } = (await res.json()) as { team: { id: string; name: string } };
     expect(team).toMatchObject({ id: 'team_1', name: 'Writers', organisation: 'Acme' });
-    expect(accounts.teams).toEqual([
+    expect(accounts.madeTeams).toEqual([
       { id: 'team_1', name: 'Writers', organisation: 'Acme', admin: 'user_a' },
     ]);
-    expect(await getTeam(db.env, 'team_1')).toMatchObject({ name: 'Writers' });
-    expect(await getMembership(db.env, 'team_1', 'user_a')).toMatchObject({
-      role: 'admin',
-      status: 'joined',
-    });
   });
 
   it('cuts a long name as liveworkspace does, and refuses an empty one', async () => {
@@ -61,7 +55,7 @@ describe('POST /api/teams (docs/specs/013-workspace/teams.md "Making a team")', 
     expect(made.team.organisation).toBeNull();
     expect((await create({ name: '   ' })).status).toBe(400);
     expect((await create({})).status).toBe(400);
-    expect(accounts.teams).toHaveLength(1);
+    expect(accounts.madeTeams).toHaveLength(1);
   });
 
   it('needs a signed-in session with its access token', async () => {
@@ -79,10 +73,10 @@ describe('POST /api/teams (docs/specs/013-workspace/teams.md "Making a team")', 
     expect((await create({ name: 'A' })).status).toBe(503);
   });
 
-  it('passes liveworkspace’s refusal on, and files nothing', async () => {
+  it('passes liveworkspace’s refusal on', async () => {
     accounts.failWith = 409;
     const res = await create({ name: 'A' });
     expect(res.status).toBe(409);
-    expect(await getTeam(db.env, 'team_1')).toBeNull();
+    expect(accounts.madeTeams).toEqual([]);
   });
 });

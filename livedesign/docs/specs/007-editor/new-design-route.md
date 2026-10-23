@@ -225,8 +225,8 @@ Kept on the editor route:
 
 The new route owns:
 
-- The participant-identity bootstrap (the same guest token under
-  `livedesign:v2:guest-token`, same `apiLoadSelf` / `apiSaveSelf` API).
+- The participant-identity bootstrap (same `livedesign:v2:self-id`
+  localStorage key, same `apiLoadSelf` / `apiSaveSelf` API).
 - The "name confirmed" persistence (same
   `livedesign:v2:name-confirmed` localStorage key).
 - The create: mint a UUID, POST `/api/designs` with the

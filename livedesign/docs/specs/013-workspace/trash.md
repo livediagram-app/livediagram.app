@@ -1,7 +1,6 @@
 # Trash
 
-Status: shipped, on liveworkspace's index and the shared Explorer
-([`@liveworkspace/explorer`](../../../../packages/explorer/README.md)).
+Status: shipped
 
 ## What
 
@@ -210,11 +209,11 @@ permanent delete stays with the person and the REST API.
 
 ## One operation each
 
-Trashing, restoring and purging are the index's operations, each with its own guard (only a live design is
-trashed, only a trashed one restored or purged), so a caller uses them directly without re-checking state
-([one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "Items"). The api reaches
-them for API clients in `apps/api/src/routes/trash.ts`, and a purge tells the design's Durable Object to drop its
-content.
+The three operations are plain calls with no HTTP concerns (`trashDesign`,
+`restoreDesign`, `purgeDesigns`) in `apps/api/src/db/trash.ts`: trash takes
+an id and the time, restore an id, purge a list of ids. Each keeps its own guard
+(only a live design is trashed, only a trashed one restored or purged), so a
+caller uses them directly without re-checking state.
 
 ## Telemetry
 

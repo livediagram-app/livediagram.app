@@ -25,10 +25,15 @@ export interface Env {
   // The central telemetry dashboard /telemetry redirects to (liveworkspace/docs/telemetry.md): unset means
   // production's, staging and local dev name their own.
   TELEMETRY_DASHBOARD_URL?: string;
+  // The central index (liveworkspace/docs/one-explorer.md): `/api/index/*` goes there, not to the api. Unset means
+  // production's; staging and local dev name their own.
+  INDEX_ORIGIN?: string;
 }
 
 const LIVE_PATH = '/live';
 const API_PATH = '/api';
+const INDEX_PATH = '/api/index';
+const PRODUCTION_INDEX_ORIGIN = 'https://liveworkspace.app';
 const TELEMETRY_PATH = '/telemetry';
 const HELP_PATH = '/help';
 
@@ -140,6 +145,15 @@ function forward(
   );
 }
 
+// The index is another site: the same request (method, body, Authorization, the share headers) at its origin,
+// minus this site's cookies, which are not the index's to read. Its redirects pass back as they are.
+export function forwardToIndex(request: Request, url: URL, origin: string): Promise<Response> {
+  const target = new URL(`${url.pathname}${url.search}`, origin);
+  const forwarded = new Request(target.toString(), request);
+  forwarded.headers.delete('Cookie');
+  return fetch(forwarded);
+}
+
 // Stamp `X-Robots-Tag: noindex, nofollow` on a staging response (docs/specs/016-platform/staging-environment.md).
 //
 // Staging is deliberately public — no auth wall, so a change can be shared
@@ -185,6 +199,11 @@ export default {
 // has a single return value to decorate instead of nine.
 async function route(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url);
+  // The Explorer's own calls (liveworkspace/docs/one-explorer-contracts.md): the index answers them, so the editor
+  // reaches it on its own origin with no CORS preflight. Path and query kept, Authorization passed through.
+  if (hasPrefix(url.pathname, INDEX_PATH)) {
+    return forwardToIndex(request, url, env.INDEX_ORIGIN || PRODUCTION_INDEX_ORIGIN);
+  }
   // /api/* is forwarded as-is to the api worker. The API worker handles
   // the full pathname (it expects `/api/...`) so there's no prefix
   // stripping here, unlike the basePath apps.

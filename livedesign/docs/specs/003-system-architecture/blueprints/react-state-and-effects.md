@@ -27,10 +27,10 @@ page) never suspends whole: its URL reads use an external store whose server sna
 
 | Site                                                                          | Reads                               | Becomes                                                                           |
 | ----------------------------------------------------------------------------- | ----------------------------------- | --------------------------------------------------------------------------------- |
-| apps/live/app/explorer/useExplorerState.ts (removed)                          | the URL, preferences                | `use(browser())`; no hydration flag                                               |
+| `apps/live/app/explorer/useExplorerState.ts`                                  | the URL, preferences                | `use(browser())`; no hydration flag                                               |
 | `apps/live/app/oauth/consent/page.tsx`, `apps/live/app/oauth/device/page.tsx` | `location` (return path)            | `use(browser())` in the signed-out branch, under the page's Suspense              |
 | `apps/live/app/new/page.tsx` (`initialPlacement`)                             | `location.search`                   | `useSyncExternalStore` (`placementContextFromSearch`), like the bypass            |
-| apps/live/components/panels/TeamSharedDesigns.tsx (removed) (`spot`)          | `location.search`                   | `use(browser())` before the state                                                 |
+| `apps/live/components/panels/TeamSharedDesigns.tsx` (`spot`)                  | `location.search`                   | `use(browser())` before the state                                                 |
 | `ShareDialog`                                                                 | `location.origin`                   | `use(browser())`, then `window.location.origin`                                   |
 | `CanvasThemeDialog` (`useBrushAnchor`)                                        | `innerWidth`, a box                 | `use(browser())` before the state (read once as it opens)                         |
 | `useEditorDialogs`, `useEyeDropper`, `useShareLinks`, `useEditorViewport`     | the URL, `EyeDropper`, `innerWidth` | `use(browser())` (`useShareLinks`: the guard goes; its URL is built in handlers)  |

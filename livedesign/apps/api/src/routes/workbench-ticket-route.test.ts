@@ -7,21 +7,15 @@ import { makeTestRouteContext } from './test-route-context';
 import { handleWorkbench } from './workbench';
 import {
   arrangeFolders,
-  USER_1_TEAMS,
   NOW,
   ORIGIN,
   pairToken,
   rows,
-  tokenOf,
   workbenchDb,
 } from './workbench-test-fixtures';
 
-vi.mock('../index-service', async (original) =>
-  (await import('./workbench-test-fixtures')).indexServiceWithTestIndex(original as never),
-);
-
 type Opts = {
-  token?: ReturnType<typeof tokenOf> | null;
+  token?: { id: string; readOnly?: boolean } | null;
   owner?: string | null;
   body?: unknown;
   rawBody?: string;
@@ -31,7 +25,7 @@ type Opts = {
 };
 
 function mint(db: SqliteD1, opts: Opts = {}) {
-  const token = opts.token === undefined ? tokenOf('tok1') : opts.token;
+  const token = opts.token === undefined ? { id: 'tok1' } : opts.token;
   return handleWorkbench(
     makeTestRouteContext('POST', '/api/workbench/tickets', {
       env: opts.env ?? db.env,
@@ -45,7 +39,6 @@ function mint(db: SqliteD1, opts: Opts = {}) {
       rawBody: opts.rawBody,
       workbench: opts.workbench ?? null,
       headers: opts.headers,
-      teams: USER_1_TEAMS,
     }),
   );
 }
@@ -64,7 +57,7 @@ describe('POST /api/workbench/tickets', () => {
 
   it('mints a ticket for a paired token and answers the frame URL', async () => {
     const db = await workbenchDb();
-    await pairToken(db);
+    pairToken(db);
 
     const res = await mint(db, { body: { designId: 'doc1', tabId: 't1', origin: ORIGIN } });
     const body = (await res.json()) as { url: string };
@@ -72,20 +65,22 @@ describe('POST /api/workbench/tickets', () => {
     expect(res.status).toBe(201);
     expect(body).toEqual({
       url: expect.stringMatching(
-        /^https:\/\/app\.test\/embed\/workbench\?d=doc1#ticket=[A-Za-z0-9_-]{22}\.[0-9a-f]{64}$/,
+        /^https:\/\/app\.test\/embed\/workbench\?d=doc1#ticket=[A-Za-z0-9_-]{22}$/,
       ),
       designId: 'doc1',
       tabId: 't1',
       expiresAt: NOW + WORKBENCH_TICKET_TTL_MS,
     });
-    expect(rows(db, 'SELECT role, pairing_id, origin, ticket_hash FROM wb_tickets')).toEqual([
-      {
-        role: 'edit',
-        pairing_id: 'pair1',
-        origin: ORIGIN,
-        ticket_hash: expect.stringMatching(/^[0-9a-f]{64}$/),
-      },
-    ]);
+    expect(rows(db, 'SELECT role, pairing_id, origin, ticket_hash FROM workbench_tickets')).toEqual(
+      [
+        {
+          role: 'edit',
+          pairing_id: 'pair1',
+          origin: ORIGIN,
+          ticket_hash: expect.stringMatching(/^[0-9a-f]{64}$/),
+        },
+      ],
+    );
     expect(console.log).toHaveBeenCalledWith('[workbench] ticket-minted', {
       scope: 'design',
       designId: 'doc1',
@@ -97,7 +92,7 @@ describe('POST /api/workbench/tickets', () => {
 
   it('answers tabId null when none was asked for', async () => {
     const db = await workbenchDb();
-    await pairToken(db);
+    pairToken(db);
 
     const body = (await (await mint(db)).json()) as { tabId: string | null };
 
@@ -106,12 +101,12 @@ describe('POST /api/workbench/tickets', () => {
 
   it('mints a view ticket for a read-only token', async () => {
     const db = await workbenchDb();
-    await pairToken(db, 'tok_ro', 'user_1', 'pair_ro');
+    pairToken(db, 'tok_ro', 'user_1', 'pair_ro');
 
-    const res = await mint(db, { token: tokenOf('tok_ro') });
+    const res = await mint(db, { token: { id: 'tok_ro', readOnly: true } });
 
     expect(res.status).toBe(201);
-    expect(rows(db, 'SELECT role FROM wb_tickets')).toEqual([{ role: 'view' }]);
+    expect(rows(db, 'SELECT role FROM workbench_tickets')).toEqual([{ role: 'view' }]);
   });
 
   it('asks for pairing when the origin is not paired, reusing one request', async () => {
@@ -131,15 +126,15 @@ describe('POST /api/workbench/tickets', () => {
       expiresAt: NOW + WORKBENCH_PAIRING_TTL_MS,
     });
     expect(b.pairingUrl).toBe(a.pairingUrl);
-    expect(rows(db, 'SELECT name, status FROM wb_pairing_requests')).toEqual([
+    expect(rows(db, 'SELECT name, status FROM workbench_pairing_requests')).toEqual([
       { name: null, status: 'pending' },
     ]);
-    expect(rows(db, 'SELECT * FROM wb_tickets')).toEqual([]);
+    expect(rows(db, 'SELECT * FROM workbench_tickets')).toEqual([]);
   });
 
   it('requires a token: a signed-in session or a guest is refused', async () => {
     const db = await workbenchDb();
-    await pairToken(db);
+    pairToken(db);
 
     const res = await mint(db, { token: null });
 
@@ -156,7 +151,7 @@ describe('POST /api/workbench/tickets', () => {
     ['a bad tab id', { designId: 'doc1', tabId: 5, origin: ORIGIN }, 'invalid tabId'],
   ])('refuses %s', async (_why, body, message) => {
     const db = await workbenchDb();
-    await pairToken(db);
+    pairToken(db);
 
     const res = await mint(db, { body });
 
@@ -176,7 +171,7 @@ describe('POST /api/workbench/tickets', () => {
     'refuses the origin %s',
     async (origin) => {
       const db = await workbenchDb();
-      await pairToken(db);
+      pairToken(db);
 
       const res = await mint(db, { body: { designId: 'doc1', origin } });
 
@@ -192,7 +187,7 @@ describe('POST /api/workbench/tickets', () => {
 
   it('answers 404 for a design the owner cannot open, and for a tab it does not link', async () => {
     const db = await workbenchDb();
-    await pairToken(db);
+    pairToken(db);
 
     const foreign = await mint(db, { body: { designId: 'doc2', origin: ORIGIN } });
     const missing = await mint(db, { body: { designId: 'nope', origin: ORIGIN } });
@@ -201,10 +196,30 @@ describe('POST /api/workbench/tickets', () => {
     expect([foreign.status, missing.status, tab.status]).toEqual([404, 404, 404]);
   });
 
+  it('answers 410 for the owner own trashed design', async () => {
+    const db = await workbenchDb();
+    pairToken(db);
+    db.sql.exec(`UPDATE designs SET trashed_at = 1 WHERE id = 'doc1'`);
+
+    const res = await mint(db);
+
+    expect(res.status).toBe(410);
+  });
+
+  it('answers 404, not 410, for a trashed design the owner could never open', async () => {
+    const db = await workbenchDb();
+    pairToken(db);
+    db.sql.exec(`UPDATE designs SET trashed_at = 1 WHERE id = 'doc2'`);
+
+    const res = await mint(db, { body: { designId: 'doc2', origin: ORIGIN } });
+
+    expect(res.status).toBe(404);
+  });
+
   it('ignores a share code: only the owner own access counts', async () => {
     const db = await workbenchDb();
-    await pairToken(db);
-    db.sql.exec(`INSERT INTO test_share_links (code, design_id, role, created_at)
+    pairToken(db);
+    db.sql.exec(`INSERT INTO share_links (code, design_id, role, created_at)
                  VALUES ('code1', 'doc2', 'edit', 1)`);
 
     const res = await mint(db, {
@@ -217,7 +232,7 @@ describe('POST /api/workbench/tickets', () => {
 
   it('is rate limited per token', async () => {
     const db = await workbenchDb();
-    await pairToken(db);
+    pairToken(db);
     const limit = vi.fn(async () => ({ success: false }));
 
     const res = await mint(db, { env: { ...db.env, WORKBENCH_TICKET_RATE_LIMITER: { limit } } });
@@ -247,7 +262,7 @@ describe('POST /api/workbench/tickets, workspace scope', () => {
 
   it('asks for a second approval when the origin is paired for the design scope only', async () => {
     const db = await workbenchDb();
-    await pairToken(db);
+    pairToken(db);
 
     const res = await mint(db, { body: workspaceBody() });
 
@@ -257,7 +272,9 @@ describe('POST /api/workbench/tickets, workspace scope', () => {
       pairingUrl: expect.stringMatching(/^https:\/\/app\.test\/workbench\/pair\?code=/),
       expiresAt: NOW + WORKBENCH_PAIRING_TTL_MS,
     });
-    expect(rows(db, 'SELECT scope FROM wb_pairing_requests')).toEqual([{ scope: 'workspace' }]);
+    expect(rows(db, 'SELECT scope FROM workbench_pairing_requests')).toEqual([
+      { scope: 'workspace' },
+    ]);
     expect(console.log).toHaveBeenCalledWith('[workbench] pairing-requested', {
       tokenId: 'tok1',
       originHost: '127.0.0.1',
@@ -269,21 +286,21 @@ describe('POST /api/workbench/tickets, workspace scope', () => {
 
   it('mints a workspace ticket on a workspace pairing, on Home', async () => {
     const db = await workbenchDb();
-    await pairToken(db, 'tok1', 'user_1', 'pair1', 'workspace');
+    pairToken(db, 'tok1', 'user_1', 'pair1', 'workspace');
 
     const res = await mint(db, { body: workspaceBody() });
 
     expect(res.status).toBe(201);
     expect(await res.json()).toEqual({
       url: expect.stringMatching(
-        /^https:\/\/app\.test\/embed\/workbench\/explorer#ticket=[A-Za-z0-9_-]{22}\.[0-9a-f]{64}$/,
+        /^https:\/\/app\.test\/embed\/workbench\/explorer#ticket=[A-Za-z0-9_-]{22}$/,
       ),
       scope: 'workspace',
       folderId: null,
       expiresAt: NOW + WORKBENCH_TICKET_TTL_MS,
     });
-    expect(rows(db, 'SELECT scope, item_id, folder_id, role FROM wb_tickets')).toEqual([
-      { scope: 'workspace', item_id: null, folder_id: null, role: 'edit' },
+    expect(rows(db, 'SELECT scope, design_id, folder_id, role FROM workbench_tickets')).toEqual([
+      { scope: 'workspace', design_id: null, folder_id: null, role: 'edit' },
     ]);
     expect(console.log).toHaveBeenCalledWith('[workbench] ticket-minted', {
       scope: 'workspace',
@@ -296,7 +313,7 @@ describe('POST /api/workbench/tickets, workspace scope', () => {
 
   it.each(['f-own', 'f-team'])('starts on a folder the owner reaches: %s', async (folderId) => {
     const db = await workbenchDb();
-    await pairToken(db, 'tok1', 'user_1', 'pair1', 'workspace');
+    pairToken(db, 'tok1', 'user_1', 'pair1', 'workspace');
     arrangeFolders(db);
 
     const res = await mint(db, { body: workspaceBody({ folderId }) });
@@ -311,36 +328,36 @@ describe('POST /api/workbench/tickets, workspace scope', () => {
     'answers 404 for a folder the owner cannot reach: %s',
     async (folderId) => {
       const db = await workbenchDb();
-      await pairToken(db, 'tok1', 'user_1', 'pair1', 'workspace');
+      pairToken(db, 'tok1', 'user_1', 'pair1', 'workspace');
       arrangeFolders(db);
 
       const res = await mint(db, { body: workspaceBody({ folderId }) });
 
       expect(res.status).toBe(404);
-      expect(rows(db, 'SELECT * FROM wb_tickets')).toEqual([]);
+      expect(rows(db, 'SELECT * FROM workbench_tickets')).toEqual([]);
     },
   );
 
   it('mints a design ticket on a workspace pairing: the workspace covers the design scope', async () => {
     const db = await workbenchDb();
-    await pairToken(db, 'tok1', 'user_1', 'pair1', 'workspace');
+    pairToken(db, 'tok1', 'user_1', 'pair1', 'workspace');
 
     const res = await mint(db);
 
     expect(res.status).toBe(201);
-    expect(rows(db, 'SELECT scope, item_id FROM wb_tickets')).toEqual([
-      { scope: 'design', item_id: 'doc1' },
+    expect(rows(db, 'SELECT scope, design_id FROM workbench_tickets')).toEqual([
+      { scope: 'design', design_id: 'doc1' },
     ]);
   });
 
   it('mints a view workspace ticket for a read-only token', async () => {
     const db = await workbenchDb();
-    await pairToken(db, 'tok_ro', 'user_1', 'pair1', 'workspace');
+    pairToken(db, 'tok_ro', 'user_1', 'pair1', 'workspace');
 
-    const res = await mint(db, { token: tokenOf('tok_ro'), body: workspaceBody() });
+    const res = await mint(db, { token: { id: 'tok_ro', readOnly: true }, body: workspaceBody() });
 
     expect(res.status).toBe(201);
-    expect(rows(db, 'SELECT role FROM wb_tickets')).toEqual([{ role: 'view' }]);
+    expect(rows(db, 'SELECT role FROM workbench_tickets')).toEqual([{ role: 'view' }]);
   });
 
   it.each([
@@ -364,7 +381,7 @@ describe('POST /api/workbench/tickets, workspace scope', () => {
     ['an unknown scope', { scope: 'galaxy', origin: ORIGIN }, 'invalid scope'],
   ])('refuses %s with invalid_value', async (_why, body, message) => {
     const db = await workbenchDb();
-    await pairToken(db, 'tok1', 'user_1', 'pair1', 'workspace');
+    pairToken(db, 'tok1', 'user_1', 'pair1', 'workspace');
 
     const res = await mint(db, { body });
 

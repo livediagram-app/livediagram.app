@@ -231,16 +231,28 @@ export function hasNewComments(
   prevElements: Element[],
   authorId: string,
 ): boolean {
+  return newCommentsBy(nextElements, prevElements, authorId).length > 0;
+}
+
+// The comments `nextElements` adds over `prevElements` that `authorId` wrote, in order: what a save's
+// new-comment email and mention emails (docs/specs/012-collaboration/comment-mentions.md) are about. One pass
+// over each side's threads.
+export function newCommentsBy(
+  nextElements: Element[],
+  prevElements: Element[],
+  authorId: string,
+): Comment[] {
   const seen = new Set<string>();
   for (const el of prevElements) {
     for (const c of commentThreadOf(el)?.comments ?? []) seen.add(c.id);
   }
+  const out: Comment[] = [];
   for (const el of nextElements) {
     for (const c of commentThreadOf(el)?.comments ?? []) {
-      if (!seen.has(c.id) && c.authorId === authorId) return true;
+      if (!seen.has(c.id) && c.authorId === authorId) out.push(c);
     }
   }
-  return false;
+  return out;
 }
 
 // One tab's threads as the document listing serves them (agent-presence blueprint "REST"): in the outline's order,

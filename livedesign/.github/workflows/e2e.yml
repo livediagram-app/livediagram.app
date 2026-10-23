@@ -65,7 +65,7 @@ jobs:
           NEXT_PUBLIC_BUILD_ID: e2e-build
         run: bash scripts/next-build-cold-retry.sh pnpm --filter @livedesign/live build
 
-      # Playwright's webServer boots scripts/e2e-stack.mjs (api worker on local storage + the static
+      # Playwright's webServer boots scripts/e2e-stack.mjs (api worker on local D1 + the static
       # serve). CI=1 makes it always start fresh.
       - name: Run smoke shard
         run: pnpm --filter @livedesign/live test:e2e:smoke --shard=${{ matrix.shard }}/${{ strategy.job-total }}
@@ -127,6 +127,12 @@ jobs:
 
       - name: Run sites audit
         run: pnpm --filter @livedesign/live test:e2e:sites
+      # The armed guest-signature specs (docs/specs/003-system-architecture/e2e-smoke.md "Armed guest
+      # signatures") reuse this job's guest-mode build, on their own stack with enforcement on.
+      - name: Run armed guest-signature specs
+        if: always()
+        run: pnpm --filter @livedesign/live test:e2e:armed
+
       - name: Save build cache
         uses: ./.github/actions/next-cache-save
 
@@ -138,6 +144,8 @@ jobs:
           path: |
             apps/live/playwright-report
             apps/live/test-results
+            apps/live/playwright-report-armed
+            apps/live/test-results-armed
           retention-days: 7
 
   signed-in:

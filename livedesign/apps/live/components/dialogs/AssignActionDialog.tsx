@@ -11,6 +11,7 @@ import {
 import { SegmentedRadio } from '@/components/primitives/SegmentedRadio';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
+import type { TeamListItem } from '@/lib/api-client';
 import type { SaveActionInput } from '@/hooks/collab/useEditorActions';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
 import { useAssigneeOptions } from '@/hooks/collab/useAssigneeOptions';
@@ -51,7 +52,7 @@ type AssignActionDialogProps = {
   elementLabel: string | null;
   // Teams the current user has joined (useTeams already filters to
   // joined memberships server-side via listTeamsByUser).
-  teams: { id: string; name: string }[];
+  teams: TeamListItem[];
   // The signed-in account id, or null for a guest session (guests get the
   // Myself-only picker).
   ownerId: string | null;

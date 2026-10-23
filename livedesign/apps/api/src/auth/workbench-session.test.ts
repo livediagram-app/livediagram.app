@@ -1,66 +1,88 @@
 import { describe, expect, it } from 'vitest';
-import { isWorkbenchSessionFormat } from '@livedesign/api-schema';
-import { sqliteD1 } from '../test-sqlite-d1';
-import { workbenchStore } from '../workbench-store';
-import { resolveWorkbenchSession, sessionPrefixOf } from './workbench-session';
+import {
+  isWorkbenchSessionFormat,
+  WORKBENCH_HANDLE_PATTERN,
+  WORKBENCH_SESSION_PREFIX,
+} from '@livedesign/api-schema';
+import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
+import { insertWorkbenchSession } from '../db/workbench';
+import {
+  generatePairingCode,
+  generateWorkbenchSecret,
+  generateWorkbenchTicket,
+  hashWorkbenchSecret,
+  resolveWorkbenchSession,
+} from './workbench-session';
 
 const NOW = 1_800_000_000_000;
+
+describe('workbench secrets', () => {
+  it('mints tickets and pairing codes as 22 base64url characters, never twice alike', () => {
+    const tickets = new Set(Array.from({ length: 50 }, () => generateWorkbenchTicket()));
+    const codes = new Set(Array.from({ length: 50 }, () => generatePairingCode()));
+
+    expect(tickets.size).toBe(50);
+    expect(codes.size).toBe(50);
+    for (const value of [...tickets, ...codes]) expect(value).toMatch(WORKBENCH_HANDLE_PATTERN);
+  });
+
+  it('mints sessions in the lvw_ format', () => {
+    const secret = generateWorkbenchSecret();
+
+    expect(secret.startsWith(WORKBENCH_SESSION_PREFIX)).toBe(true);
+    expect(isWorkbenchSessionFormat(secret)).toBe(true);
+  });
+
+  it('hashes as SHA-256 hex, deterministically', async () => {
+    const hash = await hashWorkbenchSecret('lvw_abc');
+
+    expect(hash).toMatch(/^[0-9a-f]{64}$/);
+    expect(await hashWorkbenchSecret('lvw_abc')).toBe(hash);
+    expect(await hashWorkbenchSecret('lvw_abd')).not.toBe(hash);
+  });
+});
 
 describe('resolveWorkbenchSession', () => {
   async function arrange(
     over: { tokenRevoked?: boolean; tokenReadOnly?: boolean; workspace?: boolean } = {},
   ) {
-    const db = sqliteD1();
-    const store = workbenchStore(db.env, 'user_1');
-    const token = {
-      id: 'tok1',
-      name: null,
-      readOnly: over.tokenReadOnly ?? false,
-      expiresAt: NOW + 1e9,
-    };
-    const { code } = await store.openPairingRequest({
-      personId: 'user_1',
-      token,
-      origin: 'https://w.example',
-      scope: over.workspace ? 'workspace' : 'design',
-      name: 'Acme Editor',
-      now: NOW,
-    });
-    const answer = await store.answerPairingRequest({ code, answer: 'approve', now: NOW });
-    if (answer.outcome !== 'approved') throw new Error('not paired');
-    const session = await store.openSession({
-      personId: 'user_1',
+    const db: SqliteD1 = sqliteD1();
+    db.sql.exec(`INSERT INTO designs (id, owner_id, name, shareable, saved_at, created_at)
+                 VALUES ('doc1', 'user_1', 'Doc', 0, 1, 1)`);
+    db.sql
+      .exec(`INSERT INTO api_tokens (id, owner_id, token_hash, name, created_at, expires_at, revoked, read_only)
+                 VALUES ('tok1', 'user_1', 'h', NULL, 1, ${NOW + 1e9}, ${over.tokenRevoked ? 1 : 0},
+                         ${over.tokenReadOnly ? 1 : 0})`);
+    db.sql.exec(`INSERT INTO workbench_pairings (id, owner_id, token_id, origin, name, created_at)
+                 VALUES ('pair1', 'user_1', 'tok1', 'https://w.example', 'Acme Editor', 1)`);
+    const secret = generateWorkbenchSecret();
+    await insertWorkbenchSession(db.env, {
+      id: 'abcdef12-0000-4000-8000-000000000000',
+      secretHash: await hashWorkbenchSecret(secret),
+      ownerId: 'user_1',
       tokenId: 'tok1',
-      pairingId: answer.pairing.id,
-      reach: over.workspace
-        ? { scope: 'workspace', itemId: null, folderId: 'fold1' }
-        : { scope: 'design', itemId: 'doc1', folderId: null },
-      tabId: over.workspace ? null : 't1',
+      pairingId: 'pair1',
+      ...(over.workspace
+        ? { scope: 'workspace' as const, designId: null, folderId: 'fold1', tabId: null }
+        : { scope: 'design' as const, designId: 'doc1', folderId: null, tabId: 't1' }),
       origin: 'https://w.example',
       role: 'edit',
-      now: NOW,
+      createdAt: NOW,
       expiresAt: NOW + 1000,
     });
-    if (over.tokenRevoked) await store.endAccess({ tokenId: 'tok1' }, 'revoked');
-    return { db, secret: session.secret, id: session.id, pairingId: answer.pairing.id };
+    return { db, secret };
   }
 
-  it('issues secrets in the lvw_ format, naming their store', async () => {
-    const { secret } = await arrange();
-
-    expect(isWorkbenchSessionFormat(secret)).toBe(true);
-  });
-
   it('resolves a live session to its context', async () => {
-    const { db, secret, id, pairingId } = await arrange();
+    const { db, secret } = await arrange();
 
     expect(await resolveWorkbenchSession(db.env, secret, NOW)).toEqual({
       ok: true,
       workbench: {
-        sessionId: id,
+        sessionId: 'abcdef12-0000-4000-8000-000000000000',
         ownerId: 'user_1',
         tokenId: 'tok1',
-        pairingId,
+        pairingId: 'pair1',
         scope: 'design',
         designId: 'doc1',
         folderId: null,
@@ -91,33 +113,23 @@ describe('resolveWorkbenchSession', () => {
     expect(resolved.ok && resolved.workbench.level).toBe('view');
   });
 
-  it('refuses an unknown, an unrouted, a revoked token and an expired session', async () => {
-    const { db, secret, id } = await arrange();
+  it('refuses an unknown, a revoked and an expired session', async () => {
+    const { db, secret } = await arrange();
     const revoked = await arrange({ tokenRevoked: true });
-    const elsewhere = `lvw_${'a'.repeat(43)}.${'0f'.repeat(32)}`;
 
-    expect(await resolveWorkbenchSession(db.env, elsewhere, NOW)).toEqual({
+    expect(await resolveWorkbenchSession(db.env, generateWorkbenchSecret(), NOW)).toEqual({
       ok: false,
       reason: 'unknown',
     });
-    expect(await resolveWorkbenchSession(db.env, `lvw_${'a'.repeat(43)}`, NOW)).toEqual({
-      ok: false,
-      reason: 'unknown',
-    });
-    // Ending a token's access removes its sessions, so its secret is unknown from then on.
     expect(await resolveWorkbenchSession(revoked.db.env, revoked.secret, NOW)).toEqual({
       ok: false,
-      reason: 'unknown',
+      reason: 'revoked',
+      sessionPrefix: 'abcdef12',
     });
     expect(await resolveWorkbenchSession(db.env, secret, NOW + 1000)).toEqual({
       ok: false,
       reason: 'expired',
-      sessionPrefix: sessionPrefixOf(id),
-    });
-    expect(await resolveWorkbenchSession(db.env, secret, NOW + 2e9)).toEqual({
-      ok: false,
-      reason: 'revoked',
-      sessionPrefix: sessionPrefixOf(id),
+      sessionPrefix: 'abcdef12',
     });
   });
 });

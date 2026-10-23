@@ -1,16 +1,10 @@
 import type { Metadata } from 'next';
-import { ExplorerPane } from '../ExplorerPane';
-import { viewDocumentTitle } from '../view-titles';
 
-// /explorer/inbox — what is outstanding for the reader across every
-// document they can open: open actions assigned to them or by them, and
-// unresolved comment threads they are in (docs/specs/013-workspace/inbox.md). The layout's
-// ExplorerShell provides the chrome + state; this page only pins the
-// route and the tab title.
+// The Explorer's Inbox view: ExplorerShell (the layout) renders it from the address.
 export const metadata: Metadata = {
-  title: viewDocumentTitle('inbox'),
+  title: 'Inbox | livedocuments',
 };
 
 export default function Page() {
-  return <ExplorerPane />;
+  return null;
 }

@@ -96,12 +96,16 @@ export default defineProject({ test: { environment: 'jsdom' } });
   with a base64 value decodes it, flips a bit, and re-encodes: the last
   base64 character carries padding bits, so editing the text can decode to the
   very same bytes.
-- **A real store in `apps/api`.** `src/test-sqlite-d1.ts` is a real in-memory
-  SQLite (`node:sqlite`) holding the designs' tables under the design schema,
-  with foreign keys on, as each design's Durable Object has them, and with
-  what the index holds in production scaffolded beside them. Use it wherever
-  the behaviour lives in the schema: cascades, primary-key collisions,
-  `INSERT OR IGNORE` outcomes.
+- **Two D1 doubles in `apps/api`.** `src/test-d1.ts` records which SQL ran
+  with which bindings, and has no schema. `src/test-sqlite-d1.ts` is a real
+  in-memory SQLite (`node:sqlite`) with every migration applied and foreign
+  keys on, as D1 has them. Use the second wherever the behaviour lives in the
+  schema: cascades, primary-key collisions, `INSERT OR IGNORE` outcomes.
+  A migration that rebuilds a table is tested the same way: stop short of it
+  (`sqliteD1({}, { before: '0049' })`), seed rows under the old schema, run it
+  with `applyMigration`, and compare every row. A rebuilt **parent** table
+  cascades into its children on `DROP TABLE`, so this is the only test that
+  can see that loss.
 
 ## Scripts
 
@@ -140,12 +144,13 @@ tests," not a number.
 One set of files is the exception, held at **100% statements, branches,
 functions and lines** by per-glob thresholds in `apps/api/vitest.config.ts`:
 
-| Files                                                                 | Why                                                                                                                                                                                                          |
-| --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `src/auth/**`                                                         | Decides WHO a request is — access-token checks, guest-id signatures, api tokens, the read/edit gates                                                                                                         |
-| `src/db/api-tokens.ts`, `src/routes/tokens.ts`                        | Check the liveworkspace tokens that act as an account                                                                                                                                                        |
-| `src/routes/share.ts`, `src/routes/share-preview.ts`                  | The unauthenticated reads a share code opens: what the link opens and what it shows without opening                                                                                                          |
-| `src/image-refs/**`, `src/db/image-refs.ts`, `src/db/image-grants.ts` | Decide whether an uploaded image is still placed anywhere, which the media service's sweep trusts, and which designs may serve an image they don't own ([Images](../009-elements/images.md#reference-index)) |
+| Files                                                                                                | Why                                                                                                                                                           |
+| ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/auth/**`                                                                                        | Decides WHO a request is — access-token checks, guest-id signatures, api tokens, the read/edit gates                                                          |
+| `src/api-token-row.ts`, `src/db/api-tokens.ts`, `src/routes/tokens.ts`                               | Mint, resolve and revoke the credentials that act as an account                                                                                               |
+| `src/db/share.ts`, `src/db/shared.ts`, `src/db/ws-tickets.ts`                                        | Share links, the "shared with you" record, and the one-time realtime room tickets                                                                             |
+| `src/routes/share.ts`, `src/routes/shared.ts`, `src/routes/design-share-routes.ts`                   | The only unauthenticated read path into a design, and the owner-only routes that grant it                                                                     |
+| `src/image-refs/**`, `src/db/image-refs.ts`, `src/db/image-retention.ts`, `src/db/design-removal.ts` | Decide whether an uploaded image is still placed anywhere, and so whether the daily sweep may delete it ([Images](../009-elements/images.md#reference-index)) |
 
 The rest of the worker fails visibly. These fail by serving the right response
 to the **wrong person**, or by deleting a picture someone placed: an outcome no amount of production monitoring
@@ -265,7 +270,7 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
     `optical-guard.test.ts` (no untrimmed text in a centring circle or pill;
     [Optical alignment](../004-interface-design/optical-alignment.md)), and every
     UI workspace's `motion-budget.test.ts` ([Motion](../004-interface-design/motion.md)).
-  - `apps/api`: auth guards (account access tokens, guest tokens, index grants, API tokens),
+  - `apps/api`: auth guards (account access tokens, guest signatures, design access, tokens),
     every defensive D1 row mapper, the D1 modules against real SQLite
     (cascades, migrations), the `DesignRoom` Durable Object's rules, ledger
     and multiplayer paths, every route family (designs, tabs, share, images,

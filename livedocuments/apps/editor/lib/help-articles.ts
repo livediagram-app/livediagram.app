@@ -45,10 +45,8 @@ export const HELP_ARTICLES = {
   trash: 'account-and-data/trash',
   importTabs: 'tabs/import-tabs',
   markdownImport: 'tools/markdown-import',
-  tags: 'explorer/tags',
   linkingTabs: 'tabs/linking-tabs',
   // Teams
-  teamRolesAndInvites: 'collaboration/teams/roles-and-invites',
   // Canvas / themes
   changingTheBackground: 'canvas/the-canvas/changing-the-background',
   changingTheme: 'canvas/themes/changing-theme',
@@ -66,13 +64,20 @@ export const HELP_ARTICLES = {
   layers: 'canvas/layers',
   minimap: 'user-interface/minimap',
   imageGallery: 'explorer/image-gallery',
-  timeline: 'explorer/timeline',
-  // The Inbox's article keeps the slug it had as Activity, so links already out there keep working.
-  inbox: 'explorer/activity',
+  // Home and the Timeline share an article.
+  home: 'explorer/timeline',
   recentDocuments: 'explorer/recent',
-  sharedWithYou: 'explorer/shared-with-you',
   folders: 'explorer/folders',
   defaultFolders: 'explorer/folders/default-folders',
+  // The shared Explorer's other views, each its page header's Help (lib/explorer-host.ts explorerHelpHref).
+  myWork: 'explorer/my-work',
+  recent: 'explorer/recent',
+  unsorted: 'explorer/unsorted',
+  sharedWithYou: 'explorer/shared-with-you',
+  inbox: 'explorer/activity',
+  timeline: 'explorer/timeline',
+  teamSpaces: 'explorer/team-spaces',
+  explorerPage: 'explorer/explorer-page',
   explorerFilters: 'explorer/filters',
   dataElements: 'palette/tools/data-elements',
   sankeyDiagram: 'palette/concept-graphics/sankey-diagram',
@@ -106,6 +111,10 @@ export type HelpArticleKey = keyof typeof HELP_ARTICLES;
 // the same article say the same thing, and a `?` never falls back to a bare
 // "Learn more" that tells the reader nothing about where it goes.
 export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description: string }> = {
+  recentDocuments: {
+    title: 'Learn about Recent',
+    description: 'Your most recently opened documents, personal and team, in one list.',
+  },
   pagesTour: {
     title: 'Learn about the Pages Tour',
     description: 'What the tour shows you and how replaying works.',
@@ -120,7 +129,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   sharePasswords: {
     title: 'Learn about share passwords',
-    description: 'How the optional password gate protects every link.',
+    description: 'One password that guards every link to a document, embeds included.',
   },
   autoAttachArrows: {
     title: 'Learn about auto-attach arrows',
@@ -190,10 +199,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about linking tabs',
     description: 'How linking to another tab works.',
   },
-  teamRolesAndInvites: {
-    title: 'Learn about teams',
-    description: 'Admin and Member roles, and how invites work.',
-  },
   changingTheBackground: {
     title: 'Learn about the canvas',
     description: 'Tips for the background, patterns and the canvas behind what you draw.',
@@ -242,21 +247,29 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about Home and the Timeline',
     description: 'Jump Back In, what others did while you were away, and your own Timeline.',
   },
-  inbox: {
-    title: 'Learn about the Inbox',
-    description: 'Open actions assigned to you or by you, and comment threads you are in.',
+  home: {
+    title: 'Learn about Home and the Timeline',
+    description: 'Jump Back In, what others did while you were away, and your own Timeline.',
   },
-  recentDocuments: {
+  myWork: {
+    title: 'Learn about My Work',
+    description: 'Your own documents and folders, in one place.',
+  },
+  recent: {
     title: 'Learn about Recent',
     description: 'Your most recently opened documents, personal and team, in one list.',
   },
-  tags: {
-    title: 'Learn about tags',
-    description: 'Coloured labels that group related documents across folders and teams.',
+  unsorted: {
+    title: 'Learn about Unsorted',
+    description: 'Every document that is in no folder, yours and your teams’.',
   },
   sharedWithYou: {
     title: 'Learn about Shared With Me',
     description: 'Documents other people have shared with you, collected here.',
+  },
+  inbox: {
+    title: 'Learn about the Inbox',
+    description: 'Comments and actions that wait on you, from every app.',
   },
   folders: {
     title: 'Learn about folders',
@@ -269,6 +282,14 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   explorerFilters: {
     title: 'Learn about search and filters',
     description: 'Narrow any list with words, chips or typed filters like made-by:ai.',
+  },
+  teamSpaces: {
+    title: 'Learn about team spaces',
+    description: 'A team’s shared library of documents and folders.',
+  },
+  explorerPage: {
+    title: 'Learn about the Explorer',
+    description: 'The library every liveworkspace app shares: sections, views and search.',
   },
   dataElements: {
     title: 'Learn about data elements',

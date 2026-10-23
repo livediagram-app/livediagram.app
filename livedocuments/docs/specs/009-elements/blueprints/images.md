@@ -24,7 +24,7 @@ Scope, by file:
 | `apps/api/migrations/0001_livedocuments_baseline.sql`  | `media_images` (owner index) and `media_ref_outbox` (reference queue)   |
 | `apps/api/src/media.ts`                                | The service client, owner naming, the owner index, the reference queue  |
 | `apps/api/src/routes/images.ts`                        | `handleImages`: the five `/api/images*` routes; `originalNameOf`        |
-| `apps/api/src/db/images.ts`                            | `imageUsageByOwner`                                                     |
+| `apps/api/src/routes/images.ts`                        | `usageOf`, the Gallery's usage map                                      |
 | `apps/api/src/db/image-grants.ts`                      | `documentMayServeImage`, `servableImageIds`: read `media_images`        |
 | `apps/api/src/index.ts`                                | Pre-dispatch size gate, write limiter, `scheduled()` refs flush         |
 | `apps/api/src/thumbnail.ts`                            | `loadEmbeddedImages` for the preview and live image                     |
@@ -261,10 +261,11 @@ export function embedTabImages(
   limits?: EmbedImageLimits,
 ): Promise<Map<string, string>>;
 
-// apps/api/src/db/images.ts
-export function imageUsageByOwner(
-  env: Env,
-  ownerId: string,
+// apps/api/src/routes/images.ts (module-private)
+async function usageOf(
+  ctx: RouteContext,
+  media: MediaClient,
+  owner: string,
 ): Promise<Record<string, { id: string; name: string }[]>>;
 
 // apps/api/src/db/image-grants.ts
@@ -512,7 +513,7 @@ O6 to O9 exist; the cap, R2 and sweep failures are the service's own logs ([medi
 | Hosted profile points at the media service           | `turns telemetry on and points each environment…`         | `apps/api/src/hosted-vars.test.ts`               |
 | Sniff, strip, caps, dedupe, racing inserts           | the service's suites                                      | `liveworkspace/apps/media/src/*.test.ts`         |
 | Whitelist, cap, no SVG                               | `MAX_IMAGE_BYTES`, `ACCEPTED_IMAGE_TYPES`                 | `packages/api-schema/src/image-limits.test.ts`   |
-| Usage from the index                                 | `imageUsageByOwner`                                       | `apps/api/src/db/images.test.ts`                 |
+| Usage from the media service                         | `usageOf`                                                 | `apps/api/src/routes/images.test.ts`             |
 | Reference index and its writers                      | [Image reference index](image-reference-index.md#testing) |                                                  |
 | Snapshot embeds, missing or unservable placeholder   | three `getDocumentThumbnailSvg` tests                     | `apps/api/src/thumbnail.test.ts`                 |
 | Embed budget in document order                       | `spends a total budget in document order…`                | `packages/api-schema/src/embed-images.test.ts`   |

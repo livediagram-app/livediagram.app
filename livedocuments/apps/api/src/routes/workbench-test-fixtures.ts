@@ -11,7 +11,7 @@ export const ORIGIN = 'https://127.0.0.1:5175';
 
 export async function workbenchDb(base: Partial<Env> = {}): Promise<SqliteD1> {
   const db = sqliteD1({ APP_BASE_URL: 'https://app.test', ...base });
-  db.sql.exec(`INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at)
+  db.sql.exec(`INSERT INTO test_documents (id, owner_id, name, shareable, saved_at, created_at)
                VALUES ('doc1', 'user_1', 'Home screen', 0, 1, 1),
                       ('doc2', 'user_2', 'Not yours', 0, 1, 1)`);
   await upsertTab(db.env, 'doc1', { id: 't1', name: 'Overview', elements: [] }, 0);
@@ -35,19 +35,25 @@ export function pairToken(
                VALUES ('${id}', '${ownerId}', '${tokenId}', '${ORIGIN}', 'Acme Editor', '${scope}', ${NOW})`);
 }
 
-// Folders for a workspace ticket to start on: `f-own` (user_1's), `f-team` (a team user_1 joined), `f-left` (a
-// team user_1 left) and `f-other` (user_2's).
+// Folders for a workspace ticket to start on (the index's, test-sqlite-d1.ts `test_folders`): `f-own` (user_1's),
+// `f-team` (team1's, which user_1's token says they joined), `f-left` (team2's, which it does not) and `f-other`
+// (user_2's).
+export const USER_1_TEAMS = [{ id: 'team1', name: 'T', role: 'member' as const }];
+
 export function arrangeFolders(db: SqliteD1): void {
-  db.sql
-    .exec(`INSERT INTO teams (id, name, created_at, updated_at) VALUES ('team1', 'T', 0, 0), ('team2', 'U', 0, 0);
-    INSERT INTO team_members (id, team_id, user_id, role, status, created_at, updated_at)
-      VALUES ('m1', 'team1', 'user_1', 'member', 'joined', 0, 0),
-             ('m2', 'team2', 'user_1', 'member', 'left', 0, 0);
-    INSERT INTO folders (id, owner_id, team_id, parent_id, name, created_at, updated_at)
-      VALUES ('f-own', 'user_1', NULL, NULL, 'Minigames', 0, 0),
-             ('f-team', 'user_9', 'team1', NULL, 'Shared', 0, 0),
-             ('f-left', 'user_9', 'team2', NULL, 'Gone', 0, 0),
-             ('f-other', 'user_2', NULL, NULL, 'Theirs', 0, 0);`);
+  db.sql.exec(`INSERT INTO test_folders (id, owner_id, team_id, parent_id, name)
+      VALUES ('f-own', 'user_1', NULL, NULL, 'Minigames'),
+             ('f-team', 'user_9', 'team1', NULL, 'Shared'),
+             ('f-left', 'user_9', 'team2', NULL, 'Gone'),
+             ('f-other', 'user_2', NULL, NULL, 'Theirs');`);
+}
+
+// The workbench suites reach the index through the test harness's fake (test-sqlite-d1.ts).
+export async function indexServiceWithTestIndex(
+  original: () => Promise<typeof import('../index-service')>,
+): Promise<typeof import('../index-service')> {
+  const { testIndexFor, testRequestGrant } = await import('../test-sqlite-d1');
+  return { ...(await original()), indexFor: testIndexFor, requestGrant: testRequestGrant };
 }
 
 export const rows = (db: SqliteD1, sql: string) =>

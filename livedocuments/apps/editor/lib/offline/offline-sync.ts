@@ -8,8 +8,8 @@
 // deleted in one transaction; a change in between takes the cloud copy back and uploads again.
 
 import { DOCUMENT_CONVERSION_HEADER } from '@livedocuments/api-schema';
-import { apiCreateDocument, apiSetFavourite } from '@/lib/api-client';
-import { apiSetDocumentTag } from '@/lib/api/tags';
+import { apiCreateDocument } from '@/lib/api-client';
+import { indexClient } from '@/lib/index-client';
 import { API_BASE, ApiError, apiDelete } from '@/lib/api/core';
 import { uploadEmbeddedImages } from './offline-images';
 import {
@@ -112,16 +112,12 @@ export async function syncOfflineDocument(
     // Gone already: another tab finished a sync of it first. Nothing here is left to move.
     if (done.outcome === 'missing') return { id: rec.id, imageIds };
     if (done.outcome === 'deleted') {
-      // The star lived on the offline record (docs/specs/013-workspace/favourites.md), which just went. Re-star
-      // on the server AFTER the delete: while the id is still registered offline,
-      // apiSetFavourite would route the star straight back to the local store.
-      if (done.rec.favourite) await apiSetFavourite(ownerId, rec.id, true);
-      // Its tags the same way (docs/specs/013-workspace/tags.md). One deleted meanwhile is refused and left off;
-      // the document is synced either way.
+      // The star and tags lived on the offline record (docs/specs/013-workspace/favourites.md, tags.md), which just
+      // went: they go onto the document's index item, which the upload made. A failed star, or a tag deleted
+      // meanwhile, leaves the document synced without it.
+      if (done.rec.favourite) await indexClient.favourite(rec.id).catch(() => {});
       await Promise.allSettled(
-        (done.rec.tagIds ?? []).map((tagId) =>
-          apiSetDocumentTag(ownerId, tagId, done.rec.id, true),
-        ),
+        (done.rec.tagIds ?? []).map((tagId: string) => indexClient.tagItem(tagId, done.rec.id)),
       );
       return { id: rec.id, imageIds };
     }

@@ -23,6 +23,9 @@ import type {
 import type { ArrowEnd, DragMode, QuickConnectDirection, QuickConnectKind } from '@/lib/canvas';
 import type { PendingDraw } from '@/lib/draw-mode';
 import type { UserPreferences } from '@/lib/user-preferences';
+import type { DesignListItem, Folder, SharedWithItem } from '@/lib/api-client';
+import type { TeamFolderHandlers } from '@/components/panels/Explorer.types';
+import type { TeamDesignRow, TeamFolderRow } from '@/hooks/persistence/useTeamLibrariesSweep';
 import type { CanvasTool } from '@/components/palette/palette.types';
 import type { WorkspaceFrameHooks } from '@/components/providers/workbench-session-context';
 
@@ -290,6 +293,7 @@ export type CanvasProps = {
   onCancelDraw: () => void;
   onUndo: () => void;
   onRedo: () => void;
+  designList: DesignListItem[];
   // Lightweight id + name of this design's tabs, so a link badge's
   // hover card can name the tab/element a link points at (docs/specs/008-canvas/canvas-and-palette.md). Kept
   // minimal + memoised by the caller so element edits don't churn it.
@@ -299,6 +303,19 @@ export type CanvasProps = {
   // False while the active tab's content is still on its way (a tab never opened before): its elements arrive with
   // the board once it lands, not as additions. Omitted, the tab is loaded.
   activeTabLoaded?: boolean;
+  folders: Folder[];
+  // Shared-with-you list. Empty by default so legacy callers can
+  // omit it.
+  sharedDesigns?: SharedWithItem[];
+  onDismissShared?: (designId: string) => void;
+  // Teams the signed-in user belongs to + their swept libraries
+  // (docs/specs/013-workspace/team-shared-designs.md), forwarded to the Explorer popover for its Teams
+  // accordion, team rows in Recent, and the current team design.
+  // Empty by default so guest / legacy callers can omit them.
+  teams?: { id: string; name: string }[];
+  teamFolders?: TeamFolderRow[];
+  teamDesigns?: TeamDesignRow[];
+  designListLoading: boolean;
   // Map panel (docs/specs/008-canvas/minimap.md) position + move/reset, shared with the other panels.
   mapPosition: { x: number; y: number } | null;
   onMoveMap: (x: number, y: number) => void;
@@ -310,8 +327,13 @@ export type CanvasProps = {
   layers: Layer[];
   activeLayerId: string;
   layerCounts: Map<string, number>;
-  // Per-user preferences (docs/specs/007-editor/user-preferences.md): where the Contents panel sits.
-  userPreferences: UserPreferences;
+  // Per-user preferences (docs/specs/007-editor/user-preferences.md) + the Recent exclusion toggle
+  // (docs/specs/013-workspace/hide-from-recent.md), for the Explorer panel's Recent list.
+  userPreferences: import('@/lib/user-preferences').UserPreferences;
+  onToggleRecentExclusion: (designId: string) => void;
+  // Per-user stars (docs/specs/013-workspace/favourites.md).
+  favouriteIds: Set<string>;
+  onToggleFavourite: (designId: string) => void;
   // Bottom-dock "Theme & canvas" button (docs/specs/011-theme/canvas-and-theme-dialog.md): opens the
   // CanvasThemeDialog. Omitted in read-only / embed sessions (no button).
   onOpenCanvasTheme?: () => void;
@@ -350,13 +372,32 @@ export type CanvasProps = {
   // (done) or reopen the action in place. Absent for a read-only visitor.
   onToggleActionDone?: (elementId: string, done: boolean, actionId: string) => void;
   currentDesignId: string | null;
-  // The link this session came in on, so the Explorer panel reads the open design as the link allows.
-  currentShareCode?: string | null;
-  // The open design renamed from the Explorer panel: the editor's title follows at once.
-  onRenameCurrentDesign?: (name: string) => void;
+  onOpenDesign: (id: string, shareCode?: string) => void;
   onNewDesign: () => void;
   // The Explorer panel's ⋯ menu verbs beyond new / open (docs/specs/013-workspace/folders.md).
   explorerMenuActions?: import('@/components/panels/Explorer.types').ExplorerMenuActions;
+  onRenameCurrent: (name: string) => void;
+  onDeleteDesign: (id: string) => void;
+  // The Explorer panel's Trash restored or deleted a design: refetch the lists.
+  onLibraryChanged?: () => void;
+  onDuplicateDesign: (id: string) => void;
+  onCreateFolder: (input: { name: string; parentId: string | null }) => Promise<Folder | void>;
+  onRenameFolder: (id: string, name: string) => void;
+  onDeleteFolder: (id: string) => void;
+  // Team-library folder mutations for the Explorer panel's team tree
+  // (docs/specs/013-workspace/team-shared-designs.md); absent while signed out or without teams.
+  onTeamFolders?: TeamFolderHandlers;
+  onMoveDesignToFolder: (designId: string, folderId: string | null) => void;
+  // Scope-crossing move (docs/specs/013-workspace/team-shared-designs.md): the Explorer panel's move picker routes
+  // any pick that involves a team (either side) here — re-folder within a
+  // team, personal -> team, or team -> personal.
+  onMoveDesignTo?: (
+    designId: string,
+    dest: { teamId: string | null; folderId: string | null },
+    // Where the design is coming from (null = the personal tree), so a
+    // personal -> team move counts as Team·Added·Document (docs/specs/017-telemetry/telemetry.md).
+    fromTeamId?: string | null,
+  ) => void;
   onDeselect: () => void;
   onSelect: (id: string) => void;
   // Right-click on the canvas background. Receives the cursor's

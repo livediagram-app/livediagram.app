@@ -12,6 +12,7 @@ import {
 } from '@livedesign/ui';
 import {
   lucideAppWindow,
+  lucideClock,
   lucideCloudUpload,
   lucideDownload,
   lucideExternalLink,
@@ -120,6 +121,35 @@ export function InboxIcon({ size = 13 }: IconProps) {
       <path d="M2 9h3.2l1 1.8h3.6l1-1.8H14" />
       <path d="M5.5 4.7 7.2 6.5l3.3-3.6" />
     </G16>
+  );
+}
+
+// The Timeline (docs/specs/013-workspace/timeline.md): a spine with what landed against it, the
+// help centre's Timeline card glyph on this set's 16-unit grid.
+export function TimelineIcon({ size = 13 }: IconProps) {
+  return (
+    <G16 size={size}>
+      <path d="M4 2.5v11" />
+      <circle cx="4" cy="5" r="1.1" />
+      <circle cx="4" cy="11" r="1.1" />
+      <path d="M6.5 5h6M6.5 11h4M6.5 8h2.8" />
+    </G16>
+  );
+}
+
+// Clock: the Recent list, and the row menu's hide / show in Recent
+// (docs/specs/013-workspace/hide-from-recent.md); the label carries the direction, the glyph the topic.
+export const ClockIcon = lucideGlyph(lucideClock, 13);
+
+// The clock with a strike-through: a design hidden from Recent
+// (docs/specs/013-workspace/hide-from-recent.md). Paired with ClockIcon so the menu row's glyph flips with
+// its label rather than relying on the wording alone.
+export function ClockOffIcon({ size = 13 }: IconProps) {
+  return (
+    <Glyph size={size} units={24}>
+      <Prims prims={lucideClock} />
+      <path d="M4 20 20 4" />
+    </Glyph>
   );
 }
 

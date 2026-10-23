@@ -12,8 +12,9 @@ const { api, guest, offline, seed } = vi.hoisted(() => ({
     apiSaveSelf: vi.fn(),
     apiLoadDesign: vi.fn(),
     apiLoadShared: vi.fn(),
+    apiListShareLinks: vi.fn(),
   },
-  guest: { ensureGuestIdentity: vi.fn() },
+  guest: { ensureSignedGuestIdentity: vi.fn() },
   offline: { isOfflineId: vi.fn() },
   seed: vi.fn(async () => {}),
 }));
@@ -45,6 +46,7 @@ function render(initial: Props) {
   const set = new Proxy({} as Record<string, ReturnType<typeof vi.fn>>, {
     get: (t, k: string) => (t[k] ??= vi.fn()),
   });
+  const lists = { designs: vi.fn(), shared: vi.fn() };
   const hook = renderHook(
     ({ authLoaded }: Props) =>
       useIdentityBootstrap({
@@ -57,6 +59,8 @@ function render(initial: Props) {
         workbench: null,
         activeId: 't1',
         selfParticipant: { id: 'self', name: 'x', color: '#000', status: 'online' },
+        refreshDesignList: lists.designs,
+        refreshSharedList: lists.shared,
         resetTabs: () => {},
         refs: {
           lastPersistedSelfRef: { current: null },
@@ -69,7 +73,7 @@ function render(initial: Props) {
       }),
     { initialProps: initial },
   );
-  return { hook, set };
+  return { hook, set, lists };
 }
 const flush = () => new Promise((r) => setTimeout(r, 0));
 
@@ -79,27 +83,28 @@ beforeEach(() => {
   api.apiLoadDesign.mockResolvedValue(LOCAL_DOC);
   api.apiLoadSelf.mockResolvedValue(GUEST);
   api.apiSaveSelf.mockResolvedValue(undefined);
-  guest.ensureGuestIdentity.mockResolvedValue({ id: 'guest-1', sig: 's' });
+  guest.ensureSignedGuestIdentity.mockResolvedValue({ id: 'guest-1', sig: 's' });
   offline.isOfflineId.mockResolvedValue(true);
 });
 afterEach(() => vi.clearAllMocks());
 
 describe('useIdentityBootstrap early open', () => {
   it('opens a design in This Browser before auth settles, without the server', async () => {
-    const { set } = render({ authLoaded: false });
+    const { set, lists } = render({ authLoaded: false });
     await flush();
     expect(api.apiLoadDesign).toHaveBeenCalledExactlyOnceWith('self', 'doc-1');
     expect(set.setHydrated).toHaveBeenCalledWith(true);
     expect(set.setIsOwner).toHaveBeenCalledWith(true);
     expect(set.setDesignServerStored).toHaveBeenCalledWith(false);
-    expect(guest.ensureGuestIdentity).not.toHaveBeenCalled();
+    expect(guest.ensureSignedGuestIdentity).not.toHaveBeenCalled();
     expect(api.apiLoadSelf).not.toHaveBeenCalled();
+    expect(lists.designs).not.toHaveBeenCalled();
     // The naming nudge waits for the real participant.
     expect(set.setIdentityPromptOpen).not.toHaveBeenCalled();
   });
 
   it('resolves the reader once auth answers, without loading the design again', async () => {
-    const { hook, set } = render({ authLoaded: false });
+    const { hook, set, lists } = render({ authLoaded: false });
     await flush();
     hook.rerender({ authLoaded: true });
     await flush();
@@ -107,6 +112,8 @@ describe('useIdentityBootstrap early open', () => {
     expect(set.setSelfParticipant).toHaveBeenCalledWith(
       expect.objectContaining({ id: 'guest-1', key: 'collab' }),
     );
+    expect(lists.designs).toHaveBeenCalledWith('guest-1');
+    expect(lists.shared).toHaveBeenCalledWith('guest-1');
     expect(set.setIdentityPromptOpen).toHaveBeenCalledWith(true);
   });
 
@@ -132,7 +139,7 @@ describe('useIdentityBootstrap early open', () => {
   it('runs the ordinary load when auth has already answered', async () => {
     render({ authLoaded: true });
     await flush();
-    expect(guest.ensureGuestIdentity).toHaveBeenCalled();
+    expect(guest.ensureSignedGuestIdentity).toHaveBeenCalled();
     expect(api.apiLoadDesign).toHaveBeenCalledExactlyOnceWith('guest-1', 'doc-1');
   });
 });

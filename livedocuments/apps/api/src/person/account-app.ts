@@ -9,9 +9,9 @@ import {
   accountEmails,
   claimMilestone,
   recordSighting,
-  reportActivity,
   type Milestone,
 } from '@liveworkspace/auth-client';
+import { reportOwnerActivity as reportActivityOf } from '@liveworkspace/index-app';
 import { accountCredentials } from '../auth/accounts';
 import type { Env } from '../types';
 import { isAccountOwner } from './owner';
@@ -68,15 +68,9 @@ export async function recordOwnerSighting(env: Env, ownerId: string): Promise<bo
   }
 }
 
-// The owner saved something they own at `at`, for liveworkspace's onboarding series (whether they have
-// made anything yet, and when they were last active, in any app). Sent at most once a minute a
-// document, with its summary push (document-room/document-room.ts).
-export async function reportOwnerActivity(env: Env, ownerId: string, at: number): Promise<void> {
-  const credentials = accountCredentials(env);
-  if (!credentials || !isAccountOwner(ownerId)) return;
-  try {
-    await reportActivity(credentials, { userId: ownerId, at });
-  } catch (error) {
-    console.warn('[account-app] activity_failed', { error: String(error) });
-  }
+// The owner saved something they own at `at`, for liveworkspace's onboarding series: @liveworkspace/index-app's
+// reportOwnerActivity, sent with a document's summary push (document-room/document-outbox.ts), so at most once a
+// minute a document.
+export function reportOwnerActivity(env: Env, ownerId: string, at: number): Promise<void> {
+  return reportActivityOf(accountCredentials(env), ownerId, at);
 }

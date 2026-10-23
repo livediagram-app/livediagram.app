@@ -30,28 +30,10 @@ globs = ["**/*.ttf", "**/*.otf"]
 # `TELEMETRY_URL=http://localhost:8790/api/telemetry` in .dev.vars.
 [vars]
 
-# Guest signature enforcement (docs/specs/015-api/public-api-and-tokens.md §4). Stated here,
-# never only in the dashboard: every `wrangler deploy` replaces the worker's
-# plain vars with the ones this file declares, so a dashboard-only value is
-# silently wiped by the next deploy.
-#
-# GUEST_SIGNING_LIVE_AT: when production started signing guest ids. The
-# GUEST_ID_HMAC_SECRET sync shipped with the deploy that started
-# 2026-09-25T12:00:41Z, and the first signed upgrade landed at 12:03:44Z, so
-# 12:00:00Z is the latest instant at which every existing id was unsigned. An id
-# whose participant row is older may still run its one-time upgrade unsigned.
-#
-# GUEST_SIG_ENFORCE_AFTER: from this instant, owner-scoped routes, the room's
-# owner leg and the legacy upgrade require a valid guest signature. Blank: not
-# armed. Every entry path now resolves a signed id before its first api call,
-# and every e2e stack runs with enforcement on (scripts/e2e-stack.mjs), so a
-# regression fails the suite; re-arming production is Tom's or Webber's call
-# (docs/specs/015-api/public-api-and-tokens.md §6).
-# `pnpm dev` keeps it blank (apps/api/package.json): a developer's local guests
-# can predate their local signing secret and would be locked out of their own
-# test data.
-GUEST_SIGNING_LIVE_AT = "1790337600000"
-GUEST_SIG_ENFORCE_AFTER = ""
+# The central index (liveworkspace/docs/one-explorer.md): where every document is filed and who may open it. The
+# grants this api checks are signed by `${INDEX_ORIGIN}/api/index/jwks`, and the document rooms push their summaries
+# there with INDEX_KEY (a secret, below). Local dev: `INDEX_ORIGIN=http://127.0.0.1:8793` in `.dev.vars`.
+INDEX_ORIGIN = "https://liveworkspace.app"
 
 # The CLI signs in through the MCP worker's OAuth server (docs/specs/015-api/cli.md "Authentication"); the
 # api names it in /api/capabilities. CLI_MIN_VERSION (unset until a release needs a floor) refuses writes
@@ -120,18 +102,16 @@ new_sqlite_classes = ["DocumentRoom"]
 # entry per cron; each fires the same handler with `event.cron` set
 # to the matching pattern so the body can dispatch.
 #
-# `0 3 * * *`: daily at 03:00 UTC. Fires independent retention sweeps
-# on this trigger (telemetry's retention is liveworkspace's, liveworkspace/docs/telemetry.md; unused
-# images are swept by liveworkspace's media service; the onboarding emails are liveworkspace's,
-# liveworkspace/docs/accounts.md "Onboarding emails").
+# `0 3 * * *`: daily at 03:00 UTC, the workbench's retention sweep. The Trash, the Timeline and the
+# empty-document sweep are liveworkspace's index's; telemetry's retention is liveworkspace's
+# (liveworkspace/docs/telemetry.md); unused images are swept by liveworkspace's media service, which each
+# document keeps told as its images change; the onboarding emails are liveworkspace's
+# (liveworkspace/docs/accounts.md "Onboarding emails").
 #
-# `*/5 * * * *`: every five minutes, follow liveworkspace's teams change feed into this app's copy
-# and mark tokens revoked on liveworkspace.app (liveworkspace/docs/accounts.md "How an app keeps up").
-#
-# `* * * * *`: every minute, the documents whose images changed go to liveworkspace's media service
-# (src/media.ts, liveworkspace/docs/media.md "References").
+# `*/5 * * * *`: every five minutes, end the workbench access of any token revoked on liveworkspace.app
+# (liveworkspace/docs/accounts.md "How an app keeps up").
 [triggers]
-crons = ["0 3 * * *", "*/5 * * * *", "* * * * *"]
+crons = ["0 3 * * *", "*/5 * * * *"]
 
 # Per-IP limiter for share-code resolution (GET /api/share/<code>). That
 # read carries the optional share password and is otherwise unauthed +
@@ -163,16 +143,6 @@ name = "API_TOKEN_READ_RATE_LIMITER"
 type = "ratelimit"
 namespace_id = "1006"
 simple = { limit = 120, period = 60 }
-
-# Per-owner limiter for Explorer Home's reads (GET /api/home and /api/home/timeline,
-# docs/specs/013-workspace/explorer-home.md): one read answers a whole screen, and a healthy client
-# reads on mount, on return to the tab and after its own writes, a handful a minute. 60 / 60s bounds a
-# looping client. Separate namespace. Absent binding → allow (self-host).
-[[unsafe.bindings]]
-name = "HOME_RATE_LIMITER"
-type = "ratelimit"
-namespace_id = "1008"
-simple = { limit = 60, period = 60 }
 
 # Per-token limiter for workbench ticket mints and pairing requests (docs/specs/013-workspace/workbench-embeds.md,
 # WORKBENCH_TICKETS_PER_MINUTE), keyed workbench-ticket:<token id>. A workbench opens a few documents, never a stream.
@@ -220,19 +190,16 @@ simple = { limit = 30, period = 60 }
 #     editing the GitHub secret. Secrets persist across deploys
 #     independently of this file.
 #
-# With ACCOUNTS_URL or API_RESOURCE unset the api worker stays in
-# pure-guest mode and trusts `X-Owner-Id` exclusively
-# (docs/specs/014-identity/auth-and-guest-access.md + docs/specs/015-api/api.md).
-# The client id and secret come from registering livedocuments with the
-# accounts Worker (liveworkspace/docs/integrating-an-app.md).
+# ACCOUNTS_URL, ACCOUNTS_CLIENT_ID, ACCOUNTS_CLIENT_SECRET and API_RESOURCE name livedocuments's client at the
+# liveworkspace accounts Worker (liveworkspace/docs/integrating-an-app.md): every caller, a guest included, is a
+# token it minted (docs/specs/014-identity/auth-and-guest-access.md). Unset, nobody is signed in or a guest, and
+# only share links open documents.
 #
-# GUEST_ID_HMAC_SECRET is provisioned the same way (`.dev.vars` locally,
-# `wrangler secret put GUEST_ID_HMAC_SECRET` + a matching GitHub repo
-# secret in prod; never in [vars] — it's secret material). When set, the
-# worker mints signed guest ids and /api/migrate requires a valid
-# signature, closing the "observe a guest id, claim its data" hole
-# (docs/specs/014-identity/auth-and-guest-access.md). Generate with `openssl rand -hex 32`. Unset = legacy unsigned
-# migrate (pure-guest / single-user self-host).
+# INDEX_KEY is livedocuments's key at the central index (liveworkspace/docs/one-explorer-contracts.md "Reaching the index"):
+# what the document rooms push their summaries with, what the api asks for an API token's grants with, and what the
+# index calls this api's internal doors with. Secret material: `INDEX_KEY=dev-livedocuments-index-key` in
+# `.dev.vars` locally, `wrangler secret put INDEX_KEY` in production, the same value as the index's key for
+# livedocuments. Unset, no document opens.
 
 # TELEMETRY_KEY is livedocuments' Worker key for liveworkspace's central
 # telemetry service (docs/specs/017-telemetry/telemetry.md, liveworkspace/docs/telemetry.md), sent as
@@ -290,11 +257,8 @@ name = "livedocuments-api-staging"
 # back at staging (docs/specs/014-identity/transactional-email.md, docs/specs/013-workspace/workbench-embeds.md).
 RESEND_FROM = "livedocuments staging <hello@livedocuments.app>"
 
-# Guest signature enforcement, matching production (see the top-level [vars]).
-# Staging's own database dates from 2026-09-17 and signs with its own secret;
-# its test guests take the same dates rather than drift from production.
-GUEST_SIGNING_LIVE_AT = "1790337600000"
-GUEST_SIG_ENFORCE_AFTER = ""
+# Staging's own index (see the top-level [vars]).
+INDEX_ORIGIN = "https://staging.liveworkspace.app"
 
 # The staging MCP worker's OAuth server, for the CLI against staging.
 OAUTH_ISSUER = "https://mcp-staging.livedocuments.app"
@@ -349,12 +313,6 @@ namespace_id = "1006"
 simple = { limit = 120, period = 60 }
 
 [[env.staging.unsafe.bindings]]
-name = "HOME_RATE_LIMITER"
-type = "ratelimit"
-namespace_id = "1008"
-simple = { limit = 60, period = 60 }
-
-[[env.staging.unsafe.bindings]]
 name = "WORKBENCH_TICKET_RATE_LIMITER"
 type = "ratelimit"
 namespace_id = "1010"
@@ -375,9 +333,9 @@ new_sqlite_classes = ["DocumentRoom"]
 # staging too, against staging's own data. Restated rather than inherited so
 # that reading this block tells you what the staging worker actually does.
 [env.staging.triggers]
-crons = ["0 3 * * *", "*/5 * * * *", "* * * * *"]
+crons = ["0 3 * * *", "*/5 * * * *"]
 
-# The four ACCOUNTS_* / API_RESOURCE values, GUEST_ID_HMAC_SECRET,
+# The four ACCOUNTS_* / API_RESOURCE values, INDEX_KEY,
 # TELEMETRY_KEY and MEDIA_KEY come from the
 # `_STAGING` GitHub secrets via the deploy workflow. RESEND_API_KEY is provisioned by
 # hand exactly as it is for production:

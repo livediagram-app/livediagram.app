@@ -34,6 +34,10 @@ vi.mock('./media', () => ({
     };
   },
 }));
+// The freshness stamp lives on the document's own row (document-content.ts).
+vi.mock('./document-room/document-content', () => ({
+  markThumbRendered: db.markThumbRendered,
+}));
 
 import {
   getDocumentTabImageSvg as workerTabImage,
@@ -47,6 +51,10 @@ import {
 // drawn by the document (renderDocumentImage), with the options its room would give it.
 function withRoom(env: Env, opts: ThumbnailOptions = {}): Env {
   const room = {
+    // The freshness stamp lives on the document's own row (document-content.ts).
+    outline: async () => ({
+      meta: { thumbRenderedAt: ((await db.getThumbRenderedAt()) as number | null) ?? null },
+    }),
     image: (_documentId: string, subject: ThumbnailSubject, tabId: string | null) =>
       renderDocumentImage(env as never, subject, tabId, opts),
   };

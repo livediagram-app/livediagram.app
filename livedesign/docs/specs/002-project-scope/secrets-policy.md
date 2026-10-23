@@ -25,21 +25,22 @@ Required by the CI/CD pipeline (see [10-deployment.md](../016-platform/deploymen
 | `CF_API_TOKEN`  | Cloudflare API token scoped to the account that owns the workers. Required permissions: Workers Scripts:Edit, D1:Edit, Workers Routes:Edit, Account Settings:Read, User Details:Read. Full list in [10-deployment.md](../016-platform/deployment.md). |
 | `CF_ACCOUNT_ID` | Cloudflare account ID (not a secret per se, but kept in the same store).                                                                                                                                                                              |
 
-The deploy workflow also **syncs** the sign-in values, `MEDIA_KEY` and `TELEMETRY_KEY` below from GitHub repo secrets into `wrangler secret put` on every deploy, so they rotate by editing the GitHub secret: `ACCOUNTS_URL`, `API_RESOURCE`, `ACCOUNTS_CLIENT_ID`, `ACCOUNTS_CLIENT_SECRET`, `MEDIA_KEY` and `TELEMETRY_KEY`. Each sync is guarded on the GitHub secret being non-empty, so a fork that sets none still deploys.
+The deploy workflow also **syncs** the sign-in values, `GUEST_ID_HMAC_SECRET`, `MEDIA_KEY` and `TELEMETRY_KEY` below from GitHub repo secrets into `wrangler secret put` on every deploy, so they rotate by editing the GitHub secret: `ACCOUNTS_URL`, `API_RESOURCE`, `ACCOUNTS_CLIENT_ID`, `ACCOUNTS_CLIENT_SECRET`, `GUEST_ID_HMAC_SECRET`, `MEDIA_KEY` and `TELEMETRY_KEY`. Each sync is guarded on the GitHub secret being non-empty, so a fork that sets none still deploys.
 
 ## Worker secrets in use today
 
 Provisioned with `wrangler secret put` (production), `wrangler secret put --env staging` ([Staging environment](../016-platform/staging-environment.md) — worker secrets are per-environment, so staging's copy of a value is never production's), or `.dev.vars` (local dev, gitignored) — **never** `[vars]`, which is plain text in a public repo. Every one is optional: absent, its feature degrades rather than breaking, which is what keeps self-hosting viable (see [03](open-source-and-business-model.md)).
 
-| Secret                                          | Worker          | Absent means                                                                                                               |
-| ----------------------------------------------- | --------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `ACCOUNTS_URL` / `API_RESOURCE`                 | api             | Pure-guest mode: no Bearer is verified, so every caller is a link visitor ([04](../014-identity/auth-and-guest-access.md)) |
-| `ACCOUNTS_CLIENT_ID` / `ACCOUNTS_CLIENT_SECRET` | api             | Nobody can complete sign-in (`/api/auth/*` cannot swap a code or refresh a token)                                          |
-| `RESEND_API_KEY`                                | api             | All transactional + lifecycle email is inert ([64](../014-identity/transactional-email.md))                                |
-| `MEDIA_KEY`                                     | api             | Image uploads and the gallery are off: every `/api/images*` endpoint answers 503 ([Images](../009-elements/images.md))     |
-| `TELEMETRY_KEY`                                 | api **and** mcp | The workers send no telemetry ([22](../017-telemetry/telemetry.md))                                                        |
+| Secret                                          | Worker          | Absent means                                                                                                           |
+| ----------------------------------------------- | --------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `ACCOUNTS_URL` / `API_RESOURCE`                 | api             | Pure-guest mode: `X-Owner-Id` is trusted exclusively ([04](../014-identity/auth-and-guest-access.md))                  |
+| `ACCOUNTS_CLIENT_ID` / `ACCOUNTS_CLIENT_SECRET` | api             | Nobody can complete sign-in (`/api/auth/*` cannot swap a code or refresh a token)                                      |
+| `GUEST_ID_HMAC_SECRET`                          | api             | Legacy unsigned guest ids; `/api/migrate` accepts any id ([04](../014-identity/auth-and-guest-access.md))              |
+| `RESEND_API_KEY`                                | api             | All transactional + lifecycle email is inert ([64](../014-identity/transactional-email.md))                            |
+| `MEDIA_KEY`                                     | api             | Image uploads and the gallery are off: every `/api/images*` endpoint answers 503 ([Images](../009-elements/images.md)) |
+| `TELEMETRY_KEY`                                 | api **and** mcp | The workers send no telemetry ([22](../017-telemetry/telemetry.md))                                                    |
 
-`TELEMETRY_KEY` is the only one that must hold the **same value on two workers** (and as liveworkspace's telemetry service's `TELEMETRY_KEY_LIVEDESIGN`). A mismatch is silent — the posts are simply not stored — so verify with `wrangler secret list` on both rather than assuming. Generate it with `openssl rand -hex 32`.
+`TELEMETRY_KEY` is the only one that must hold the **same value on two workers** (and as liveworkspace's telemetry service's `TELEMETRY_KEY_LIVEDESIGN`). A mismatch is silent — the posts are simply not stored — so verify with `wrangler secret list` on both rather than assuming. Generate it, and `GUEST_ID_HMAC_SECRET`, with `openssl rand -hex 32`.
 
 Non-secret configuration (`TELEMETRY_ENABLED`, `RESEND_FROM`, `APP_BASE_URL`, `CONSENT_BASE_URL`) lives in `[vars]` in the relevant `wrangler.toml`, in the open, documented alongside each entry there and in the per-app `.env.example`. What only livedesign.app runs with (`TELEMETRY_ENABLED`, the photo store cap `PHOTO_MAX_BYTES_PER_TAB`, the media service's `MEDIA_URL`) is equally public but lives in the hosted profile, `apps/api/hosted-vars.json`, so it is not every fork's default ([Deployment](../016-platform/deployment.md) "Hosted profile").
 

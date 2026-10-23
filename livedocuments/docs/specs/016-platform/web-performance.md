@@ -150,8 +150,7 @@ seen on the document).
 - A query that serves one person starts from that person's rows (their visible documents, their
   candidates) and seeks everything else by index. A query led by a table-wide index (all open
   threads, every document in id order, every document-scoped event) slows as the database grows,
-  not as the person's work does. `apps/api/src/db/home-plans.test.ts` pins the plans of the Home and
-  Inbox reads against the real migrations.
+  not as the person's work does. (The Home and Inbox reads this rule was written for moved to liveworkspace's index.)
 - A check that needs only a document's owner and team reads that row, not the full document.
 - A realtime room reads a socket's fixed session facts once, not on every frame.
 - The tab save reads its document in one query and fetches the room's ledger alongside its other

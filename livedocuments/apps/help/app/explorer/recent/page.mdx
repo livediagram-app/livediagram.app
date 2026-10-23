@@ -1,65 +1,48 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { RecentView } from '@/components/illustrations/explorer-feeds';
 
 export const metadata = helpMetadata({
-  title: 'Recent Documents',
+  title: 'Recent',
   description:
-    "Recent lists the twelve documents you can open that changed most recently, your own, your teams' and those shared with you, each with where it lives.",
+    'Recent lists everything you can open by when you last opened it, your own items, your teams’ and those shared with you, each with where it lives.',
   path: '/help/explorer/recent/',
 });
 
 <ArticleLayout
-  title="Recent Documents"
-  description="The documents that changed most recently, across every folder, team and share, reached from See More on Home."
+  title="Recent"
+  description="Everything you opened lately, newest first, across every folder, team and share."
   categoryTitle="Explorer"
   categorySlug="explorer"
 >
 
-**Recent** lists the documents that changed most recently, newest first, so the work in progress is always one click away. It has no row in the [Explorer](/explorer) sidebar, where [Home](/help/explorer/timeline/) answers "what was I working on" and "what happened": open it from **See More** in Home's Jump Back In (the last tile of the strip on a phone), or at [/explorer/recent](/explorer/recent). Its breadcrumb reads **Home › Recent** and leads back to Home.
-
-<Figure caption="Recent, reached from Home: the newest documents first, each naming where it lives.">
-  <RecentView />
-</Figure>
+**Recent** lists the 12 items you opened most recently, newest first, so the work in progress is always one click away. Find it under **Library** in the **More** group of the [Explorer](/explorer) sidebar, or press **See more** beside Jump back in on [Home](/help/explorer/timeline/). The breadcrumb at the top, **Home › Recent**, leads back.
 
 ## What lands here
 
-Recent draws on every document you can open: your own, your teams', and the ones [shared with you](/help/explorer/shared-with-you/). It shows the **12** that were saved most recently, by you or by anyone you work with, so a teammate's edit to a team document brings it up the list too.
+Recent goes by when **you** last opened something: your own items, your teams' and the ones [shared with you](/help/explorer/shared-with-you/). Opening an item is private, so your Recent is yours alone, and nobody else sees what you opened.
 
-It is a view across your whole library, not a folder of its own: a document appearing in Recent has not been moved or copied, and you will still find it in its folder (or at the root of My Work).
+It is a view across your whole library, not a folder of its own: an item appearing in Recent has not been moved or copied, and you will still find it in its folder.
 
-<Note>
-  Recent goes by when a document last changed, not when you last looked at it: simply opening a
-  document does not move it. For the documents you open most and last, look at Jump Back In on
-  [Home](/help/explorer/timeline/#jump-back-in).
-</Note>
+With **Documents** chosen at the top of the page, Recent shows only documents; with **All**, it shows what you opened in every liveworkspace app.
 
 ## Working from Recent
 
-- **Open** a document by clicking it.
-- Switch between [List, Card and Details views](/help/explorer/list-and-card-views/) with the toggle in the header; on a computer, List view adds an owner column, since Recent mixes your documents with other people's.
-- Type in the Explorer's search box to [filter](/help/explorer/filters/) the list: Recent then shows the 12 newest documents that match.
-- Each document's **⋯** menu (or a right-click) carries the same actions as anywhere else in the Explorer: Rename, Duplicate, Change Folder, Favourite, History, Hide from Recent, and Delete, plus **Open Team** on a team document.
-- [Documents in This Browser](/help/privacy-and-security/offline-mode/) appear here too, and their menu adds **Sync Document** (or **Take Offline** on a cloud document).
-- A document shared with you has a shorter menu: **Open** and **Dismiss**.
+- **Open** an item by clicking it.
+- Switch between [List, Card and Details views](/help/explorer/list-and-card-views/) with the buttons at the top right.
+- Each item's **⋯** menu (or a right-click) carries the same actions as anywhere else in the Explorer.
+- **New Document** makes a document in My Work.
 
-## Seeing where a document lives
+## Hide from Recent
 
-Recent spans every folder, so each document shows a small chip naming the folder it sits in, beside its name. Click the chip to jump straight to that folder instead of opening the document, which is the quickest way to see what else you filed alongside it. (In List and Details views on a phone the chip is hidden to save room.)
+To keep an item out of Recent, choose **Hide from Recent** from its **⋯** menu. It leaves Recent and Jump back in on Home, and the next most recent takes its place; it stays everywhere else, in its folder, in search and in Favourites. Hiding is yours alone: on a shared or team document, nobody else's Recent changes. To bring it back, choose **Show in Recent** from the same menu, wherever the item is listed.
 
-Documents at the root show **My Work**. Team documents name the team, and the chip opens the team's library. Documents shared with you don't show one at all: they sit in the other person's library rather than yours.
+## Seeing where an item lives
 
-## Hiding a document from Recent
-
-Some documents you open now and then but never want cluttering the list. Choose **Hide from Recent** in a document's menu and it stops appearing here, no matter how recently it changed; the next newest document takes its place. The same menu then reads **Show in Recent**, so it is easy to put back. The menu item is also in the editor's Explorer panel.
-
-The document itself is untouched: it stays in its folder, in search, on its share links, and opens normally. Only this list changes, which is why there is no badge on it anywhere else: the menu item tells you the state where you would change it.
-
-**The choice is yours alone.** Hiding a team document from your Recent doesn't hide it from your teammates'. (Documents shared with you can't be hidden; use **Dismiss** instead.) It travels with your account, so it applies on your other devices too, and works the same whether or not you're signed in. Up to 60 documents can be hidden at once; past that, the one you hid longest ago comes back.
+Recent spans every folder, so each item shows a small chip naming the folder it sits in. Click the chip to jump straight to that folder instead of opening the item.
 
 <Tip>
-  Recent is owner-scoped like the rest of the Explorer: a guest sees the documents their own browser
-  can open, and signing in carries them into your account.
+  A guest's Recent is kept for their guest identity, and signing in carries it into the account with
+  everything else.
 </Tip>
 
 </ArticleLayout>

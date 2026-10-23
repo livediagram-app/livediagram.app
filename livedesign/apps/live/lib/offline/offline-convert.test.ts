@@ -18,16 +18,17 @@ vi.mock('@/lib/api-client', () => ({
   }),
   apiLoadDesign: vi.fn(async () => ({ id: 'd1', name: 'Roadmap', tabs: [{ id: 't1' }] })),
   apiLoadTab: vi.fn(async () => ({ id: 't1', name: 'Tab 1', elements: [] })),
+  fetchCloudFavouriteIds: vi.fn(async () => [] as string[]),
+  apiSetFavourite: vi.fn(async () => {
+    calls.push('apiSetFavourite');
+  }),
 }));
 
-// The person's star on a design is the index's (liveworkspace/docs/one-explorer-contracts.md).
-vi.mock('@/lib/index-client', () => ({
-  indexClient: {
-    getItem: vi.fn(async () => ({ item: { id: 'd1', favourite: false } })),
-    favourite: vi.fn(async () => {
-      calls.push('favourite');
-    }),
-  },
+vi.mock('@/lib/api/tags', () => ({
+  fetchCloudTags: vi.fn(async () => ({ tags: [], links: [] })),
+  apiSetDesignTag: vi.fn(async () => {
+    calls.push('apiSetDesignTag');
+  }),
 }));
 
 vi.mock('@/lib/api/core', () => ({
@@ -89,7 +90,7 @@ const apiClient = await import('@/lib/api-client');
 const core = await import('@/lib/api/core');
 const images = await import('./offline-images');
 const store = await import('./offline-store');
-const { indexClient } = await import('@/lib/index-client');
+const tagsApi = await import('@/lib/api/tags');
 const {
   ConversionInProgressError,
   conversionInProgress,
@@ -128,8 +129,23 @@ describe('saveOfflineToCloud (offline -> cloud)', () => {
       favourite: true,
     } as never);
     await saveOfflineToCloud('d1', 'owner');
-    expect(calls).toEqual(['apiCreateDesign', 'offlineDeleteDesign', 'favourite']);
-    expect(indexClient.favourite).toHaveBeenCalledWith('d1');
+    expect(calls).toEqual(['apiCreateDesign', 'offlineDeleteDesign', 'apiSetFavourite']);
+    expect(apiClient.apiSetFavourite).toHaveBeenCalledWith('owner', 'd1', true);
+  });
+
+  it('puts the tags back on the server copy once the local copy is gone', async () => {
+    vi.mocked(store.offlineGetRecord).mockResolvedValueOnce({
+      id: 'd1',
+      name: 'Roadmap',
+      tabs: [],
+      tagIds: ['a', 'b'],
+    } as never);
+    vi.mocked(tagsApi.apiSetDesignTag).mockRejectedValueOnce(new Error('tag gone'));
+    await saveOfflineToCloud('d1', 'owner');
+    // One refused (a tag deleted meanwhile) leaves the sync done all the same.
+    expect(calls).toEqual(['apiCreateDesign', 'offlineDeleteDesign', 'apiSetDesignTag']);
+    expect(tagsApi.apiSetDesignTag).toHaveBeenCalledWith('owner', 'a', 'd1', true);
+    expect(tagsApi.apiSetDesignTag).toHaveBeenCalledWith('owner', 'b', 'd1', true);
   });
 
   it('carries the deck, folder and created date, not just the tabs', async () => {
@@ -194,7 +210,7 @@ describe('saveOfflineToCloud (offline -> cloud)', () => {
 
   it('stars nothing for an unstarred design', async () => {
     await saveOfflineToCloud('d1', 'owner');
-    expect(indexClient.favourite).not.toHaveBeenCalled();
+    expect(apiClient.apiSetFavourite).not.toHaveBeenCalled();
   });
 
   it('uploads again when the design changed during the upload, removing the local copy only then', async () => {
@@ -259,16 +275,36 @@ describe('takeCloudOffline (cloud -> offline)', () => {
   });
 
   it('keeps a starred design starred on the offline record', async () => {
-    vi.mocked(indexClient.getItem).mockResolvedValueOnce({
-      item: { id: 'd1', favourite: true },
-    } as never);
+    vi.mocked(apiClient.fetchCloudFavouriteIds).mockResolvedValueOnce(['d1']);
     await takeCloudOffline('d1', 'owner');
     expect(vi.mocked(store.offlinePutRecord).mock.calls[0]![0]).toMatchObject({ favourite: true });
   });
 
-  it('aborts before writing anything when the star could not be read', async () => {
-    // Taken as "none", they would go with the server row.
-    vi.mocked(indexClient.getItem).mockRejectedValueOnce(new Error('offline'));
+  // docs/specs/013-workspace/tags.md "An offline design's tags live in the browser".
+  it('carries the design tags onto the offline record, and only its own', async () => {
+    vi.mocked(tagsApi.fetchCloudTags).mockResolvedValueOnce({
+      tags: [],
+      links: [
+        { tagId: 'a', designId: 'd1' },
+        { tagId: 'b', designId: 'other' },
+        { tagId: 'c', designId: 'd1' },
+      ],
+    });
+    await takeCloudOffline('d1', 'owner');
+    expect(vi.mocked(store.offlinePutRecord).mock.calls[0]![0]).toMatchObject({
+      tagIds: ['a', 'c'],
+    });
+  });
+
+  it('aborts before writing anything when the tags could not be read', async () => {
+    vi.mocked(tagsApi.fetchCloudTags).mockRejectedValueOnce(new Error('offline'));
+    await expect(takeCloudOffline('d1', 'owner')).rejects.toThrow('offline');
+    expect(calls).toEqual([]);
+  });
+
+  it('aborts before writing anything when the stars could not be read', async () => {
+    // Taken as "not starred", the star would go with the server row.
+    vi.mocked(apiClient.fetchCloudFavouriteIds).mockRejectedValueOnce(new Error('offline'));
     await expect(takeCloudOffline('d1', 'owner')).rejects.toThrow('offline');
     expect(calls).toEqual([]);
   });

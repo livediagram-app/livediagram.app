@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
+  DESIGN_OPEN_HEADER,
   HOME_REJECTIONS,
   HOME_VERBS,
   isHomeRejection,
+  readDesignOpen,
   windowStartOf,
   WITHIN_REACH_USE_WINDOW_DAYS,
 } from './home';
@@ -34,6 +36,19 @@ describe('home verbs', () => {
       'completed',
       'shared',
     ]);
+  });
+});
+
+describe('the open marker', () => {
+  it('is one header with one value', () => {
+    expect(DESIGN_OPEN_HEADER).toBe('X-Design-Open');
+    expect(readDesignOpen('1')).toBe(true);
+  });
+
+  it('reads anything else as not an open', () => {
+    expect(readDesignOpen(null)).toBe(false);
+    expect(readDesignOpen('true')).toBe(false);
+    expect(readDesignOpen('')).toBe(false);
   });
 });
 

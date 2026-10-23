@@ -165,7 +165,7 @@ export const categories: Category[] = [
     slug: 'explorer',
     title: 'Explorer',
     description:
-      'Organise everything you build: one library, shared by every liveworkspace app, that keeps your designs, folders, teams and images easy to find and manage.',
+      'Organise everything you build: how the Explorer keeps your designs, folders, teams, and assets easy to find and manage.',
     articleCount: 14,
     kind: 'feature',
     groups: ['Your Library', 'Activity', 'Assets and Imports'],
@@ -493,17 +493,15 @@ export const articles: Article[] = [
   {
     slug: 'guest-identity',
     title: 'How Guest Identity Works',
-    description:
-      'The liveworkspace guest identity that owns your designs when you are not signed in.',
-    keywords:
-      'anonymous browser guest id token identity owner without account liveworkspace redirect every app design',
+    description: 'The per-browser id that owns your designs when you are not signed in.',
+    keywords: 'anonymous browser id localstorage owner identity without account',
     category: 'Account and Data',
     categorySlug: 'account-and-data',
   },
   {
     slug: 'signing-in',
     title: 'Signing In',
-    description: 'Create an account, sign in, and bring your guest designs with you.',
+    description: 'Create an account, sign in, and migrate your guest designs.',
     keywords:
       'login log in sign up register email code google oauth account create migrate avatar initials',
     category: 'Account and Data',
@@ -718,7 +716,7 @@ export const articles: Article[] = [
   {
     slug: 'offline-mode',
     title: 'Offline Mode',
-    description: 'Designs kept only in this browser, and moving them to your account.',
+    description: 'Save a design only in this browser, and move it to or from your account.',
     keywords:
       'local only pill this browser private no sync device localstorage disconnect save location clear site data lost guest default start move to account after sign in share upload',
     category: 'Privacy and Security',
@@ -748,7 +746,7 @@ export const articles: Article[] = [
   {
     slug: 'share-link-security',
     title: 'Share Link Security',
-    description: 'A password and lifetimes for the links you hand out.',
+    description: 'Passwords and expiry for the links you hand out.',
     keywords:
       'password protect expire lock secure links safety access pass expiry extend revoke viewer editor',
     category: 'Privacy and Security',
@@ -1480,7 +1478,7 @@ export const articles: Article[] = [
     slug: 'explorer-page',
     title: 'Explorer Page',
     description:
-      "The full-page library every liveworkspace app shares: Designs or All, the sidebar's Overview, Spaces and More, views and search.",
+      "The full-page library: the sidebar's Overview, Spaces and More, views, and folders.",
     keywords:
       'library home dashboard files my designs my diagrams list manage browse sidebar overview spaces more keyboard navigation tree',
     category: 'Explorer',
@@ -1491,7 +1489,7 @@ export const articles: Article[] = [
     slug: 'tags',
     title: 'Tags',
     description:
-      'Coloured labels you put on your items to group related ones together, across folders, teams and apps.',
+      'Coloured labels you put on your designs to group related ones together, across folders and teams.',
     keywords:
       'tag tags label labels labelling categorise categorize group grouping colour color code coded organise organize project client status filter chip chips rename delete',
     category: 'Explorer',
@@ -1502,7 +1500,7 @@ export const articles: Article[] = [
     slug: 'explorer-panel',
     title: 'Explorer Panel',
     description:
-      'The compact in-editor Explorer: a rail of sections beside a list, opening designs in place.',
+      'The compact in-editor Explorer: the same Overview, Spaces and More, opening designs in place.',
     keywords:
       'sidebar overview spaces more tree keyboard switch designs diagrams files library in editor menu button hamburger popover open more menu new share export github',
     category: 'Explorer',
@@ -1512,9 +1510,10 @@ export const articles: Article[] = [
   {
     slug: 'list-and-card-views',
     title: 'List, Card and Details Views',
-    description: 'Toggle browse views between compact rows, cards and a sortable details table.',
+    description:
+      'Toggle browse views between compact rows, preview cards and a sortable details table.',
     keywords:
-      'card grid view toggle layout rows tiles gallery details table columns sort type comments access size created updated date',
+      'card grid view toggle thumbnail preview snapshot layout rows tiles gallery details table columns sort type mode comments access permission size objects created updated date',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Your Library',
@@ -1543,9 +1542,8 @@ export const articles: Article[] = [
   },
   {
     slug: 'recent',
-    title: 'Recent',
-    description:
-      'Everything you can open, by when you last opened it, across every folder, team and share.',
+    title: 'Recent Designs',
+    description: 'The designs that changed most recently, across every folder, team and share.',
     keywords:
       'history last opened latest edited previously hide exclude remove clutter show restore visible folder location where filed root breadcrumb diagrams filter newest twelve',
     category: 'Explorer',
@@ -1555,7 +1553,7 @@ export const articles: Article[] = [
   {
     slug: 'shared-with-you',
     title: 'Shared With Me',
-    description: 'Items other people have shared with you through a link, collected in one place.',
+    description: 'Designs other people have shared with you, collected in one place.',
     keywords:
       'shared with me received from others incoming shares collaborations dismiss role owner',
     category: 'Explorer',
@@ -1595,8 +1593,7 @@ export const articles: Article[] = [
   {
     slug: 'personal-space',
     title: 'My Work and Folders',
-    description:
-      'Your own library: the folders you create, your unfiled items, Unsorted and Favourites.',
+    description: 'Your own library: the folders you create, and your unfiled designs at its root.',
     keywords:
       'my designs personal space library my work your designs your diagrams own files root folder organise organize unsorted unfiled made by ai generated favourite favorite star starred bookmark pin quick access',
     category: 'Explorer',
@@ -1606,9 +1603,8 @@ export const articles: Article[] = [
   {
     slug: 'team-spaces',
     title: 'Team Spaces',
-    description: 'Each team as a space beside My Work, with its shared folders, and Manage Teams.',
-    keywords:
-      'teams team spaces shared workspace library manage teams liveworkspace membership group',
+    description: 'Each team as a space beside My Work, its shared folders, and your invites.',
+    keywords: 'teams team spaces shared workspace invites membership group new team',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Your Library',
@@ -1644,10 +1640,8 @@ export const articles: Article[] = [
   {
     slug: 'sharing',
     title: 'Sharing and Embeds',
-    description:
-      'Share links at Viewer, Participant or Editor level, a password, lifetimes, embeds and live images.',
-    keywords:
-      'share link collaborate invite embed read only publish url send viewer participant editor create and copy link turn off',
+    description: 'Share links, passwords, expiry, embeds, and live images.',
+    keywords: 'share link collaborate invite embed read only publish url send',
     category: 'Collaboration',
     categorySlug: 'collaboration',
   },
@@ -2094,7 +2088,7 @@ export const articles: Article[] = [
   {
     slug: 'share-passwords',
     title: 'Share Passwords',
-    description: 'Guard every share link to a design with one password.',
+    description: 'Gate view or edit access behind a password.',
     keywords: 'protect lock secure gate private restrict access remember',
     category: 'Collaboration',
     categorySlug: 'collaboration/sharing',

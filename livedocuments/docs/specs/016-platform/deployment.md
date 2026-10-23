@@ -122,15 +122,15 @@ Set in the repo under **Settings → Secrets and variables → Actions**:
 
 **Optional**, each synced into `wrangler secret put` by the deploy workflow and skipped when unset, so a fork that sets none still deploys:
 
-| Secret                   | Synced to       | See                                                                                      |
-| ------------------------ | --------------- | ---------------------------------------------------------------------------------------- |
-| `ACCOUNTS_URL`           | api             | [04](../014-identity/auth-and-guest-access.md)                                           |
-| `API_RESOURCE`           | api             | [04](../014-identity/auth-and-guest-access.md)                                           |
-| `ACCOUNTS_CLIENT_ID`     | api             | [04](../014-identity/auth-and-guest-access.md) — also turns sign-in on in the live build |
-| `ACCOUNTS_CLIENT_SECRET` | api             | [04](../014-identity/auth-and-guest-access.md)                                           |
-| `GUEST_ID_HMAC_SECRET`   | api             | [04](../014-identity/auth-and-guest-access.md)                                           |
-| `TELEMETRY_KEY`          | api **and** mcp | [22](../017-telemetry/telemetry.md) — one GitHub secret drives both, so they can't drift |
-| `MEDIA_KEY`              | api             | [Images](../009-elements/images.md) — the media service's `MEDIA_KEY_LIVEDOCUMENTS`      |
+| Secret                   | Synced to       | See                                                                                                                                                   |
+| ------------------------ | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ACCOUNTS_URL`           | api             | [04](../014-identity/auth-and-guest-access.md)                                                                                                        |
+| `API_RESOURCE`           | api             | [04](../014-identity/auth-and-guest-access.md)                                                                                                        |
+| `ACCOUNTS_CLIENT_ID`     | api             | [04](../014-identity/auth-and-guest-access.md) — also turns sign-in on in the live build                                                              |
+| `ACCOUNTS_CLIENT_SECRET` | api             | [04](../014-identity/auth-and-guest-access.md)                                                                                                        |
+| `INDEX_KEY`              | api             | [One Explorer](../../../../liveworkspace/docs/one-explorer-contracts.md#reaching-the-index) — the same value as the index's `INDEX_KEY_LIVEDOCUMENTS` |
+| `TELEMETRY_KEY`          | api **and** mcp | [22](../017-telemetry/telemetry.md) — one GitHub secret drives both, so they can't drift                                                              |
+| `MEDIA_KEY`              | api             | [Images](../009-elements/images.md) — the media service's `MEDIA_KEY_LIVEDOCUMENTS`                                                                   |
 
 The live build sets `NEXT_PUBLIC_SIGN_IN_ENABLED=true` exactly when `ACCOUNTS_CLIENT_ID` is set, so the editor offers sign-in only when the api can complete it.
 

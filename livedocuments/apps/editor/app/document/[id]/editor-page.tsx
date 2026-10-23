@@ -18,7 +18,6 @@ import { OpeningScreen } from '@/components/chrome/OpeningScreen';
 // Static, unlike the other status cards: it must render offline (docs/specs/007-editor/load-recovery.md
 // "Offline"); its recovery tools are the lazy part.
 import { LoadErrorCard } from '@/components/chrome/LoadErrorCard';
-import { DocumentTagsProvider } from '@/components/tags/DocumentTagsProvider';
 import { LocalMovePrompt } from '@/components/dialogs/LocalMovePrompt';
 import { EditorContext } from './EditorContext';
 import { EditorView } from './EditorView';
@@ -92,19 +91,7 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
     sharePasswordGate,
     loadingDocument,
     explorerPosition,
-    documentList,
-    folders,
-    documentListLoading,
-    sharedDocuments,
-    dismissSharedDocument,
-    openDocument,
     newDocument,
-    deleteDocument,
-    duplicateDocument,
-    createFolder,
-    renameFolder,
-    deleteFolder,
-    moveDocumentToFolder,
     setExplorerPosition,
     documentOwnerName,
     setSharePasswordGate,
@@ -120,28 +107,11 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
   // free when no status screen shows.
   const fullExplorer = (
     <LazyExplorer
-      recentExcludedIds={state.userPreferences?.recentExcludedIds ?? []}
-      onToggleRecentExclusion={state.toggleRecentExclusion}
-      favouriteIds={state.favouriteIds ?? new Set()}
-      onToggleFavourite={state.toggleFavourite}
       position={explorerPosition}
-      documents={documentList}
-      ownerId={ownerId}
-      folders={folders}
-      loading={documentListLoading}
-      shared={sharedDocuments}
-      onDismissShared={(id) => void dismissSharedDocument(id)}
       currentDocumentId={null}
       onMoveTo={(x, y) => setExplorerPosition({ x, y })}
       onReset={() => setExplorerPosition(null)}
-      onOpenDocument={openDocument}
       onNewDocument={newDocument}
-      onDeleteDocument={(id) => void deleteDocument(id)}
-      onDuplicateDocument={(id) => void duplicateDocument(id)}
-      onCreateFolder={createFolder}
-      onRenameFolder={renameFolder}
-      onDeleteFolder={(id) => void deleteFolder(id)}
-      onMoveDocumentToFolder={moveDocumentToFolder}
     />
   );
 
@@ -249,11 +219,7 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
     <EditorContext.Provider value={state}>
       {/* Who the comment composers can @-mention (docs/specs/012-collaboration/comment-mentions.md). */}
       <MentionContext.Provider value={state.commentMentions}>
-        {/* The reader's tags for the Explorer panel's rows and menus (docs/specs/013-workspace/tags.md), loaded
-            the first time one of them shows, so opening a document costs no extra request. */}
-        <DocumentTagsProvider ownerId={ownerId} lazy>
-          <EditorView />
-        </DocumentTagsProvider>
+        <EditorView />
       </MentionContext.Provider>
       {/* Moving this browser's documents in This Browser after signing in
           (docs/specs/014-identity/auth-and-guest-access.md); never inside someone else's page. */}

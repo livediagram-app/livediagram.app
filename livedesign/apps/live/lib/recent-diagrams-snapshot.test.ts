@@ -11,6 +11,7 @@ import {
   recentThumbPath,
   type DesignSummary,
 } from '@livedesign/api-schema';
+import { USER_PREFERENCES_STORAGE_KEY } from '@livedesign/telemetry-client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // A Cache Storage stand-in: jsdom has none. One map of url → Response per named cache.
@@ -48,9 +49,15 @@ const thumbUrl = (id: string, savedAt: number) =>
 
 const note = () => parseRecentDiagrams(localStorage.getItem(RECENT_DIAGRAMS_KEY));
 
+// Another tab's write, as the browser reports it: a `storage` event naming the key. Built as a plain
+// event with `key` set, which is all the listener reads.
+function storageEvent(key: string): Event {
+  return Object.defineProperty(new Event('storage'), 'key', { value: key });
+}
+
 let caches: ReturnType<typeof fakeCaches>;
 
-// The module keeps per-page state (forgotten, the latest list), so each test loads a
+// The module keeps per-page state (forgotten, the latest list, its listeners), so each test loads a
 // fresh copy.
 async function load() {
   vi.resetModules();
@@ -74,9 +81,13 @@ afterEach(() => {
 
 describe('rememberRecentDiagrams', () => {
   it('notes the six newest saves, leaving out empty designs and those hidden from Recent', async () => {
+    localStorage.setItem(
+      USER_PREFERENCES_STORAGE_KEY,
+      JSON.stringify({ recentExcludedIds: ['d7'] }),
+    );
     const { rememberRecentDiagrams } = await load();
     const docs = [
-      ...Array.from({ length: 8 }, (_, i) => ({ ...doc(`d${i}`, i), hiddenFromRecent: i === 7 })),
+      ...Array.from({ length: 8 }, (_, i) => doc(`d${i}`, i)),
       doc('blank', 99, { empty: true }),
     ];
 
@@ -93,6 +104,15 @@ describe('rememberRecentDiagrams', () => {
     rememberRecentDiagrams([doc('a', 1, { empty: true })], async () => null);
 
     expect(localStorage.getItem(RECENT_DIAGRAMS_KEY)).toBeNull();
+  });
+
+  it('reads a malformed preferences blob as nothing hidden', async () => {
+    localStorage.setItem(USER_PREFERENCES_STORAGE_KEY, '{not json');
+    const { rememberRecentDiagrams } = await load();
+
+    rememberRecentDiagrams([doc('a', 1)], async () => null);
+
+    expect(note().map((d) => d.id)).toEqual(['a']);
   });
 
   it('caches each snapshot, remembers one the server has none for, and prunes the rest', async () => {
@@ -162,6 +182,32 @@ describe('rememberRecentDiagrams', () => {
 
     expect(note()).toHaveLength(1);
     expect(fetchSvg).not.toHaveBeenCalled();
+  });
+});
+
+describe('hiding from Recent', () => {
+  it('takes a diagram off the note at once, in this tab or another', async () => {
+    const { rememberRecentDiagrams } = await load();
+    rememberRecentDiagrams([doc('a', 2), doc('b', 1)], async () => null);
+
+    localStorage.setItem(
+      USER_PREFERENCES_STORAGE_KEY,
+      JSON.stringify({ recentExcludedIds: ['a'] }),
+    );
+    window.dispatchEvent(new Event('livedesign:preferences-changed'));
+    expect(note().map((d) => d.id)).toEqual(['b']);
+
+    localStorage.setItem(
+      USER_PREFERENCES_STORAGE_KEY,
+      JSON.stringify({ recentExcludedIds: ['b'] }),
+    );
+    window.dispatchEvent(storageEvent(USER_PREFERENCES_STORAGE_KEY));
+    expect(note().map((d) => d.id)).toEqual(['a']);
+
+    // Another key changing is not a preference change.
+    localStorage.setItem(USER_PREFERENCES_STORAGE_KEY, '{}');
+    window.dispatchEvent(storageEvent('something-else'));
+    expect(note().map((d) => d.id)).toEqual(['a']);
   });
 });
 

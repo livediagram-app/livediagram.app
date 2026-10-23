@@ -29,14 +29,13 @@ import { resolveIconExportArt, resolveStickerArt } from '@livedocuments/icons/re
 import {
   getTab,
   getTabBody,
-  getThumbRenderedAt,
-  markThumbRendered,
   thumbnailKey,
   type StoredTabBody,
   servableImageIds,
 } from './db';
 import { imageRefIds } from './image-refs/extract';
 import { mediaClient } from './media';
+import { markThumbRendered } from './document-room/document-content';
 import { documentRoom } from './document-client';
 import type { DocumentDTO, DocumentEnv, Env } from './types';
 
@@ -56,7 +55,7 @@ const IMAGE_EMBED_BUDGET_BYTES = 3 * 1024 * 1024;
 
 // The document fields a snapshot needs. `thumbRenderedAt` is optional: a
 // caller that already read it alongside the document row (the Explorer
-// thumbnail route, via getDocumentThumbMeta) passes it and saves a query;
+// thumbnail route, from the document's own row) passes it and saves a read;
 // one that didn't leaves it out and it is read here.
 export type ThumbnailSubject = Pick<DocumentDTO, 'id' | 'name' | 'savedAt'> & {
   thumbRenderedAt?: number | null;
@@ -88,7 +87,7 @@ export async function getDocumentThumbnailSvg(
   const renderedAt =
     liveDoc.thumbRenderedAt !== undefined
       ? liveDoc.thumbRenderedAt
-      : await getThumbRenderedAt(env, liveDoc.id);
+      : ((await documentRoom(env, liveDoc.id).outline()).meta?.thumbRenderedAt ?? null);
   if (renderedAt !== null && renderedAt >= liveDoc.savedAt) {
     const cached = await env.IMAGES.get(key);
     // A present object is the happy path. A miss here means the object

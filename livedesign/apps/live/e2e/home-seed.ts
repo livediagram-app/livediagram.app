@@ -1,0 +1,214 @@
+// Seeding for the Explorer Home specs (docs/specs/013-workspace/explorer-home.md): an owner with
+// drawn designs and opens, and other people acting on one of them through an edit link, all
+// through the api, as the product writes them.
+
+import type { APIRequestContext, Page } from '@playwright/test';
+import { expect, guestSigFor, mintSignedGuest, ownerHeaders } from './fixtures';
+
+export const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
+
+type Element = Record<string, unknown>;
+
+export function box(id: string, label: string, x: number, y: number): Element {
+  return { id, type: 'shape', shape: 'square', x, y, width: 200, height: 100, label };
+}
+
+/** A drawn design; returns its id and its first tab's id. */
+export async function seedHomeDesign(
+  request: APIRequestContext,
+  owner: string,
+  origin: string,
+  name: string,
+  elements: Element[] = [box('a', name, 40, 40), box('b', 'Next', 320, 160)],
+): Promise<{ id: string; tabId: string }> {
+  const id = crypto.randomUUID();
+  const tabId = crypto.randomUUID();
+  const res = await request.post(`${apiBase}/designs`, {
+    headers: ownerHeaders(owner, { Origin: origin }),
+    data: { id, name, tabs: [{ id: tabId, name: 'Tab 1', elements }] },
+  });
+  expect(res.ok(), `seeding ${name}: ${res.status()}`).toBe(true);
+  return { id, tabId };
+}
+
+/** The editor's marked first-tab read: one open for today. */
+export async function openDesign(
+  request: APIRequestContext,
+  owner: string,
+  doc: { id: string; tabId: string },
+): Promise<void> {
+  const res = await request.get(`${apiBase}/designs/${doc.id}/tabs/${doc.tabId}`, {
+    headers: ownerHeaders(owner, { 'X-Design-Open': '1' }),
+  });
+  expect(res.ok()).toBe(true);
+}
+
+async function nameParticipant(
+  request: APIRequestContext,
+  id: string,
+  name: string,
+  color: string,
+): Promise<void> {
+  const res = await request.put(`${apiBase}/participants/${id}`, {
+    headers: ownerHeaders(id),
+    data: { name, color },
+  });
+  expect(res.ok()).toBe(true);
+}
+
+export async function editLink(
+  request: APIRequestContext,
+  owner: string,
+  origin: string,
+  id: string,
+): Promise<string> {
+  const res = await request.post(`${apiBase}/designs/${id}/share`, {
+    headers: ownerHeaders(owner, { Origin: origin }),
+    data: { role: 'edit' },
+  });
+  expect(res.ok()).toBe(true);
+  return ((await res.json()) as { link: { code: string } }).link.code;
+}
+
+/** Someone else saves the tab through the edit link: an edit, and a comment when given. */
+export async function visitorSaves(
+  request: APIRequestContext,
+  visitor: string,
+  code: string,
+  doc: { id: string; tabId: string },
+  elements: Element[],
+): Promise<void> {
+  const res = await request.put(`${apiBase}/designs/${doc.id}/tabs/${doc.tabId}`, {
+    headers: ownerHeaders(visitor, { 'X-Share-Code': code }),
+    data: { id: doc.tabId, name: 'Tab 1', elements },
+  });
+  expect(res.ok(), `visitor save: ${res.status()}`).toBe(true);
+}
+
+export function commented(el: Element, id: string, text: string, author: string): Element {
+  return {
+    ...el,
+    commentThread: {
+      resolved: false,
+      comments: [{ id, text, createdAt: Date.now(), authorName: author, authorColor: '#10b981' }],
+    },
+  };
+}
+
+/** A minted, signed guest who is a named person. */
+export async function person(
+  request: APIRequestContext,
+  name: string,
+  color: string,
+): Promise<string> {
+  const id = await mintSignedGuest(request);
+  await nameParticipant(request, id, name, color);
+  return id;
+}
+
+/** The browser as this guest, in dark mode. */
+export async function asGuest(page: Page, owner: string): Promise<void> {
+  await page.addInitScript(
+    ({ id, sig }) => {
+      localStorage.setItem('livedesign:v2:self-id', id);
+      if (sig) localStorage.setItem('livedesign:v2:self-sig', sig);
+      localStorage.setItem('livedesign:v2:name-confirmed', '1');
+      localStorage.setItem('livedesign:v2:ui-mode', 'dark');
+    },
+    { id: owner, sig: guestSigFor(owner) },
+  );
+}
+
+/**
+ * An owner whose Home has everything: three drawn designs opened today, and on the first one
+ * two other people at work (Priya comments, Sam edits), so What Happened holds a summary.
+ */
+export async function seedBusyHome(
+  request: APIRequestContext,
+  origin: string,
+): Promise<{ owner: string; payments: string; onboarding: string; roadmap: string }> {
+  const owner = await mintSignedGuest(request);
+  const payments = await seedHomeDesign(request, owner, origin, 'Payments architecture');
+  const onboarding = await seedHomeDesign(request, owner, origin, 'Onboarding flow');
+  const roadmap = await seedHomeDesign(request, owner, origin, 'Roadmap 2027');
+  for (const doc of [payments, onboarding, roadmap]) await openDesign(request, owner, doc);
+
+  const code = await editLink(request, owner, origin, payments.id);
+  const priya = await person(request, 'Priya', '#8b5cf6');
+  const sam = await person(request, 'Sam', '#f59e0b');
+  const thread = commented(
+    box('a', 'Payments architecture', 40, 40),
+    crypto.randomUUID(),
+    'Should the ledger be its own service?',
+    'Priya',
+  );
+  await visitorSaves(request, priya, code, payments, [thread, box('b', 'Next', 320, 160)]);
+  await visitorSaves(request, sam, code, payments, [thread, box('b', 'Ledger', 320, 160)]);
+  return { owner, payments: payments.id, onboarding: onboarding.id, roadmap: roadmap.id };
+}
+
+/** A design stored only in this browser, written as the editor writes it. */
+type LocalSeed = {
+  name: string;
+  /** Days before today (UTC) the design was opened on. */
+  daysAgo: number[];
+  /** Its last open, ms after now (negative: before). */
+  lastOpenedIn: number;
+};
+
+/** Writes local designs into this browser's store; the page must be on the app's origin. */
+export async function seedLocalDesigns(page: Page, docs: LocalSeed[]): Promise<void> {
+  await page.evaluate(async (seeds) => {
+    const now = Date.now();
+    const day = (ago: number) => new Date(now - ago * 86_400_000).toISOString().slice(0, 10);
+    await new Promise<void>((resolve, reject) => {
+      const open = indexedDB.open('livedesign-offline', 2);
+      open.onerror = () => reject(open.error ?? new Error('IndexedDB open failed'));
+      open.onsuccess = () => {
+        const tx = open.result.transaction('designs', 'readwrite');
+        for (const seed of seeds) {
+          tx.objectStore('designs').put({
+            id: crypto.randomUUID(),
+            name: seed.name,
+            folderId: null,
+            createdAt: now - 60 * 86_400_000,
+            savedAt: now - 30 * 86_400_000,
+            tabs: [{ id: 't1', name: 'Tab 1', elements: [] }],
+            opens: { days: seed.daysAgo.map(day), lastOpenedAt: now + seed.lastOpenedIn },
+          });
+        }
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error ?? new Error('IndexedDB transaction failed'));
+      };
+    });
+  }, docs);
+}
+
+const DAY_MS = 86_400_000;
+
+/**
+ * Ten designs, so Within reach has to choose: four used on many days (the first also the newest
+ * of all, so it is both most used and recent), two opened today on the server, four opened once a
+ * few days ago. Expect most used [Atlas, Beacon, Compass, Delta], recent [Server two, Server one,
+ * Echo, Foxtrot]; Golf and Hotel stay out.
+ */
+export async function seedWithinReach(page: Page, origin: string, owner: string) {
+  const one = await seedHomeDesign(page.request, owner, origin, 'Server one');
+  const two = await seedHomeDesign(page.request, owner, origin, 'Server two');
+  await openDesign(page.request, owner, one);
+  await openDesign(page.request, owner, two);
+  await page.goto('/explorer/home');
+  // Home has read this browser's store by now, so the store exists and is not being opened.
+  await expect(page.getByRole('region', { name: 'Jump Back In' })).toBeVisible();
+  await seedLocalDesigns(page, [
+    { name: 'Atlas', daysAgo: [0, 1, 2, 3, 4, 5], lastOpenedIn: 60_000 },
+    { name: 'Beacon', daysAgo: [1, 2, 3, 4, 5], lastOpenedIn: -1 * DAY_MS },
+    { name: 'Compass', daysAgo: [2, 3, 4, 5], lastOpenedIn: -2 * DAY_MS },
+    { name: 'Delta', daysAgo: [3, 4, 5], lastOpenedIn: -3 * DAY_MS },
+    { name: 'Echo', daysAgo: [4], lastOpenedIn: -4 * DAY_MS },
+    { name: 'Foxtrot', daysAgo: [5], lastOpenedIn: -5 * DAY_MS },
+    { name: 'Golf', daysAgo: [6], lastOpenedIn: -6 * DAY_MS },
+    { name: 'Hotel', daysAgo: [7], lastOpenedIn: -7 * DAY_MS },
+  ]);
+  await page.reload();
+}

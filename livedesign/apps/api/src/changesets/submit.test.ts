@@ -36,7 +36,7 @@ function roomThat(relay: 'ok' | 'throws') {
 
 async function setUp(relay: 'ok' | 'throws' = 'ok'): Promise<SqliteD1> {
   const db = sqliteD1({ DESIGN_ROOM: roomThat(relay) } as unknown as Partial<Env>);
-  db.sql.exec(`INSERT INTO test_designs (id, owner_id, name, shareable, saved_at, created_at)
+  db.sql.exec(`INSERT INTO designs (id, owner_id, name, shareable, saved_at, created_at)
                VALUES ('D', 'user_o', 'Doc', 0, 1, 1)`);
   await seedTabs(db.env, 'D', [{ id: 't1', name: 'T', elements: [box('a'), box('b')] }]);
   return db;
@@ -66,12 +66,10 @@ const labels = (db: SqliteD1) =>
 
 // Every batch the pipeline sends meets a person's save first, `times` times.
 function interleave(db: SqliteD1, times: number) {
-  const batch = db.env.DESIGN_DB.batch.bind(db.env.DESIGN_DB);
+  const batch = db.env.DB.batch.bind(db.env.DB);
   let left = times;
-  db.env.DESIGN_DB.batch = async (statements: D1PreparedStatement[]) => {
-    // Only a tab write meets the race: the design's reads (its outline, the outbox drain) batch too.
-    const writesTab = statements.some((st) => /INSERT INTO tabs\b/.test((st as unknown as { query: string }).query));
-    if (writesTab && left > 0) {
+  db.env.DB.batch = async (statements: D1PreparedStatement[]) => {
+    if (left > 0) {
       left -= 1;
       const row = db.sql.prepare("SELECT data FROM tabs WHERE id = 't1'").get()!;
       const data = JSON.parse(row.data as string) as { elements: Element[] };

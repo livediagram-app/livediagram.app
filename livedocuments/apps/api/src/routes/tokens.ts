@@ -8,9 +8,8 @@
 import { bearerTokenOf, type CurrentTokenResponse } from '@livedocuments/api-schema';
 import { forbidden, json, methodNotAllowed, noContent, notFound } from '../responses';
 import type { RouteContext } from './context';
-import { listApiTokensByOwner, retractTimelineWarning, revokePresentedToken } from '../db';
+import { listApiTokensByOwner, revokePresentedToken } from '../db';
 import { getParticipant } from '../person/profiles';
-import { recordTokenRevoked } from '../timeline';
 import { endWorkbenchAccess } from '../workbench-end';
 
 export async function handleTokens(ctx: RouteContext): Promise<Response> {
@@ -57,10 +56,5 @@ async function handleCurrentToken(ctx: RouteContext): Promise<Response> {
   if (secret) await revokePresentedToken(env, { id: token.id, secret });
   await endWorkbenchAccess(env, { tokenId: token.id }, 'revoked');
   console.info('[tokens] current revoked', { tokenId: token.id });
-  ctx.waitUntil?.(
-    retractTimelineWarning(env, 'account', token.id, 'token_expiring').then(() =>
-      recordTokenRevoked(env, { id: token.id, name: current.name || 'API token' }, owner),
-    ),
-  );
   return noContent();
 }

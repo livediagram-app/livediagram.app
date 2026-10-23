@@ -261,7 +261,7 @@ export function actionAssignedEmail(
 }
 
 // docs/specs/012-collaboration/comment-mentions.md: a teammate @-mentioned the recipient in a comment. The
-// author and document name come from server state (the notify-mention route);
+// author and document name come from server state (the document the comment is on);
 // the quote is the author's own words, escaped and cut at a word.
 export const MENTION_QUOTE_CHARS = 280;
 

@@ -1,33 +1,35 @@
-// Design-level calls: load, create and save-meta, the shared-tabs summary, the snapshot, and the room ticket. Listing,
-// copying, deleting and sharing designs are the index's (lib/index-client.ts, the shared Explorer).
+// Design-level calls: load / create / save-meta / delete / list, the
+// copy-into-my-files flow, and the "Shared with you" list.
 import {
-  INDEX_GRANT_HEADER,
   DESIGN_CONVERSION_HEADER,
   scalableSnapshotSvg,
   svgBackgroundColor,
+  TEAM_RECENT_INCLUDE,
   type CreationIntent,
   type DesignConversion,
   type SharedTabsSummary,
 } from '@livedesign/api-schema';
 import type {
   LiveDoc,
+  DesignListResponse,
   DesignResponse,
   DesignSummary,
+  SharedWithItem,
+  TeamRecentDesign,
 } from '@livedesign/api-schema';
 import type { Tab } from '@livedesign/design';
 import { dedupeInFlight } from '../dedupe';
 import {
   isOfflineId,
+  offlineListDesigns,
   offlineLoadDesign,
   offlineSaveDesignMeta,
 } from '../offline/offline-store';
-import { IndexError } from '@liveworkspace/index-client';
-import { indexClient } from '../index-client';
-import { markReported, reportApiError } from './error-report';
-import { seedDesignGrant } from './design-grants';
+import { offlinePurgeExpiredTrash, offlineTrashDesign } from '../offline/offline-trash';
+import { rememberRecentDiagrams } from '../recent-diagrams-snapshot';
 import {
   API_BASE,
-  ApiError,
+  apiDelete,
   apiHeaders,
   expectOk,
   expectOkOrNull,
@@ -78,21 +80,7 @@ async function _apiLoadDesign(ownerId: string, id: string): Promise<LiveDoc | nu
     headers: await apiHeaders(ownerId),
   });
   const body = await expectOkOrNull<DesignResponse>(res, 'load');
-  if (body?.design) indexTitles.set(id, body.design.name);
   return body?.design ?? null;
-}
-
-// The title the index holds for each design this page has read or named, so a meta save tells the index only when
-// the name changed: never on a save that merely carries it (liveworkspace/docs/one-explorer-contracts.md "Items").
-const indexTitles = new Map<string, string>();
-
-function renameInIndex(id: string, name: string, shareCode: string | null): void {
-  if (indexTitles.get(id) === name) return;
-  indexTitles.set(id, name);
-  void indexClient.updateItem(id, { title: name }).catch((err: unknown) => {
-    indexTitles.delete(id);
-    console.warn('[index] rename not recorded', { shareCode: !!shareCode, err });
-  });
 }
 export const apiLoadDesign = dedupeInFlight(_apiLoadDesign, (ownerId, id) => `${ownerId}|${id}`);
 
@@ -154,7 +142,6 @@ export async function apiSaveDesignMeta(
     signal: saveTimeoutSignal(body),
   });
   await expectOkVoid(res, 'save design meta');
-  if (typeof d.name === 'string' && d.name) renameInIndex(d.id, d.name, shareCode);
 }
 
 // Create a brand-new design with an optional initial set of tabs.
@@ -188,43 +175,20 @@ export async function apiCreateDesign(
   // without this the worker records it as a brand-new design being created.
   opts: { conversion?: DesignConversion } = {},
 ): Promise<LiveDoc> {
-  // The index makes the design first (liveworkspace/docs/one-explorer-contracts.md "Items"): its place, its title
-  // and the grant on it come back together. The content is then started in the design's room with that grant.
-  let created: Awaited<ReturnType<typeof indexClient.createItem>>;
-  try {
-    created = await indexClient.createItem({
-      id: d.id,
-      app: 'livedesign',
-      title: d.name,
-      ...(d.teamId ? { teamId: d.teamId } : {}),
-      ...(d.folderId !== undefined ? { folderId: d.folderId } : {}),
-      // The index keeps the intent as a word for filters and defaults: "logo:diagram", "photo:diagram".
-      ...(d.intent ? { intent: intentWord(d.intent) } : {}),
-    });
-  } catch (err) {
-    if (err instanceof IndexError) {
-      reportApiError(err.status, 'create design in index', err.code);
-      const apiErr = new ApiError('create design', err.status, err.code);
-      markReported(apiErr);
-      throw apiErr;
-    }
-    throw err;
-  }
-  seedDesignGrant(d.id, created.grant);
-  indexTitles.set(d.id, created.item.title);
   const res = await apiFetch(`${API_BASE}/designs`, {
     method: 'POST',
-    headers: {
-      ...(await apiHeaders(ownerId, {
-        body: true,
-        ...(opts.conversion ? { extra: { [DESIGN_CONVERSION_HEADER]: opts.conversion } } : {}),
-      })),
-      [INDEX_GRANT_HEADER]: created.grant.grant,
-    },
+    headers: await apiHeaders(ownerId, {
+      body: true,
+      ...(opts.conversion ? { extra: { [DESIGN_CONVERSION_HEADER]: opts.conversion } } : {}),
+    }),
     body: JSON.stringify({
       id: d.id,
       name: d.name,
       tabs: (d.tabs ?? []).map(tabForWire),
+      ...(d.teamId ? { teamId: d.teamId } : {}),
+      // `null` is the space's root chosen on purpose; absent is no choice, where a default folder
+      // may answer (docs/specs/013-workspace/folders.md "Placement on create").
+      ...(d.folderId !== undefined ? { folderId: d.folderId } : {}),
       ...(d.intent ? { intent: d.intent } : {}),
       ...(d.createdAt !== undefined ? { createdAt: d.createdAt } : {}),
       ...(d.savedAt !== undefined ? { savedAt: d.savedAt } : {}),
@@ -235,15 +199,75 @@ export async function apiCreateDesign(
   return liveDoc;
 }
 
-/** The intent as the index keeps it, one word for filters and defaults: "pages:logo". */
-export function intentWord(intent: CreationIntent): string {
-  return [intent.mode, intent.tabKind].filter(Boolean).join(':');
+// Moves the design to the Trash (docs/specs/013-workspace/trash.md): the
+// api's for a cloud design, this browser's for an Offline Mode one.
+export async function apiDeleteDesign(ownerId: string, id: string): Promise<void> {
+  if (await isOfflineId(id)) return offlineTrashDesign(id, Date.now());
+  // Owner-gated server-side as of the security fix — without the
+  // identity headers the worker would 400 / 403. apiHeaders prefers
+  // the account Bearer when a token provider is registered, falls
+  // through to X-Owner-Id otherwise (docs/specs/014-identity/auth-and-guest-access.md, docs/specs/015-api/api.md).
+  return apiDelete(`${API_BASE}/designs/${id}`, ownerId, {
+    action: 'delete design',
+    purge: { sourceType: 'design', sourceId: id },
+  });
+}
+
+// The personal library and, beside it, the newest designs of the teams the caller has joined: the
+// team ones feed only the recent lists (Welcome back, Jump Back In), never the personal library views.
+export type DesignListing = {
+  designs: DesignSummary[];
+  teamRecent: TeamRecentDesign[];
+};
+
+async function _apiListDesignsWithTeamRecent(ownerId: string): Promise<DesignListing> {
+  // Offline designs (docs/specs/006-design/offline-mode.md) are browser-local; list them alongside the
+  // cloud ones. If the cloud fetch fails but offline designs exist (e.g. no
+  // network), still return those rather than failing the whole Explorer.
+  // The local Trash keeps its 30 days by being swept whenever the app lists
+  // designs (docs/specs/013-workspace/trash.md, "The local Trash").
+  await offlinePurgeExpiredTrash(Date.now()).catch(() => 0);
+  const offline = await offlineListDesigns().catch(() => [] as DesignSummary[]);
+  try {
+    const res = await apiFetch(`${API_BASE}/designs?include=${TEAM_RECENT_INCLUDE}`, {
+      headers: await apiHeaders(ownerId),
+    });
+    const { designs: liveDocs, teamRecent = [] } = await expectOk<DesignListResponse>(res, 'list');
+    // Dedupe by id: legacy data (pre ghost-row fix) can hold BOTH an offline
+    // record and a same-id server row. The offline copy wins — it is what the
+    // dispatch loads for that id — and dropping the twin keeps React keys
+    // unique in every list.
+    const offlineIds = new Set(offline.map((o) => o.id));
+    const designs = [...offline, ...liveDocs.filter((d) => !offlineIds.has(d.id))];
+    // The landing page's returning-visitor fan reads this (docs/specs/019-marketing/returning-visitor.md).
+    // A design in This Browser has no server snapshot, so it is drawn here from the offline store
+    // (lib/local-snapshot.ts, loaded only when one is wanted) rather than asked of the server, where it
+    // could only 404 (once per save, since the version is in the key). A guest's designs start local.
+    rememberRecentDiagrams([...designs, ...teamRecent], (id, savedAt) =>
+      offlineIds.has(id)
+        ? import('@/lib/local-snapshot').then((m) => m.localSnapshotSvg(id))
+        : apiFetchDesignThumbnailSvg(ownerId, id, { version: savedAt }),
+    );
+    return { designs, teamRecent };
+  } catch (e) {
+    if (offline.length > 0) return { designs: offline, teamRecent: [] };
+    throw e;
+  }
+}
+export const apiListDesignsWithTeamRecent = dedupeInFlight(
+  _apiListDesignsWithTeamRecent,
+  (ownerId) => ownerId,
+);
+
+// The personal library (and this browser's Offline Mode designs).
+export async function apiListDesigns(ownerId: string): Promise<DesignSummary[]> {
+  return (await apiListDesignsWithTeamRecent(ownerId)).designs;
 }
 
 // Fetch a design's cached SVG snapshot (docs/specs/006-design/design-snapshots.md) and return a blob URL
 // for an `<img src>` plus the design's background colour. Native `<img>`
 // can't send auth headers, so — like apiFetchImageBlobUrl — the bytes
-// come through the authenticated client (the Authorization Bearer, plus
+// come through the authenticated client (Authorization / X-Owner-Id, plus
 // X-Share-Code for a shared row) and get wrapped in a blob URL the caller
 // revokes on unmount. `version` (the design's savedAt) rides as `?v=`
 // purely to bust the browser/edge cache when the design changes; the
@@ -282,6 +306,37 @@ export async function apiFetchDesignThumbnailSvg(
   return res.text();
 }
 
+// ---------------------------------------------------------------------
+// shared_with — "Shared with you" (migration 0010)
+// ---------------------------------------------------------------------
+
+// The "Shared with you" row shape now lives in @livedesign/api-schema
+// (the api worker emits it via listSharedWith), imported above and
+// re-exported here so the existing `@/lib/api-client` / `./api/designs`
+// import paths keep resolving unchanged. See that package for the
+// per-field rationale.
+export type { SharedWithItem };
+
+// List designs that have been shared with this owner (i.e. the
+// owner previously opened a share link for them and was identified
+// to the api at the time). Returns newest-interaction-first.
+// Same dedupe rationale as apiListDesigns: editor + /new +
+// /explorer all mount surfaces that fire this on first paint.
+async function _apiListSharedWith(ownerId: string): Promise<SharedWithItem[]> {
+  const res = await apiFetch(`${API_BASE}/shared`, { headers: await apiHeaders(ownerId) });
+  const { shared } = await expectOk<{ shared: SharedWithItem[] }>(res, 'list shared');
+  return shared;
+}
+export const apiListSharedWith = dedupeInFlight(_apiListSharedWith, (ownerId) => ownerId);
+
+// Dismiss a single "shared with you" row.
+export async function apiDismissSharedWith(ownerId: string, designId: string): Promise<void> {
+  return apiDelete(`${API_BASE}/shared/${designId}`, ownerId, {
+    action: 'dismiss shared',
+    allow404: false,
+  });
+}
+
 // Mint a one-time WebSocket room ticket (docs/specs/015-api/api.md "Realtime model"). The WS upgrade
 // can't carry headers, so every session proves access here over normal REST (the Bearer token, the
 // signed guest id, the share code and its password) and rides the returned ticket on the upgrade URL as
@@ -315,4 +370,23 @@ export async function apiCreateRoomTicket(
     }
   }
   return null;
+}
+
+// Copy a design (typically one shared with the caller) into the
+// caller's own files. Returns the new design. Optional shareCode
+// covers the "visitor just arrived via share URL, no shared_with
+// row yet" path — when present the api worker uses it as the
+// authorisation proof instead of looking up shared_with.
+export async function apiCopyDesign(
+  ownerId: string,
+  sourceId: string,
+  opts: { name?: string; shareCode?: string | null } = {},
+): Promise<LiveDoc> {
+  const res = await apiFetch(`${API_BASE}/designs/${sourceId}/copy`, {
+    method: 'POST',
+    headers: await apiHeaders(ownerId, { body: true, share: opts.shareCode ?? null }),
+    body: JSON.stringify({ name: opts.name }),
+  });
+  const { design: liveDoc } = await expectOk<DesignResponse>(res, 'copy design');
+  return liveDoc;
 }

@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import type { DatabaseSync } from 'node:sqlite';
 import type { Tab } from '@livedesign/design';
-import { sqliteD1, type SqliteD1, testCopyDesign } from '../test-sqlite-d1';
+import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
+import { copyDesign } from './designs';
 import { tabStatsOf } from './tab-stats';
 import { seedTabs, swapTabData, upsertTab, upsertTabAtRev } from './tabs';
 
@@ -15,7 +16,7 @@ function withDesign(id = 'A'): SqliteD1 {
   const db = sqliteD1();
   db.sql
     .prepare(
-      'INSERT INTO test_designs (id, owner_id, name, shareable, saved_at, created_at) VALUES (?, ?, ?, 0, ?, ?)',
+      'INSERT INTO designs (id, owner_id, name, shareable, saved_at, created_at) VALUES (?, ?, ?, 0, ?, ?)',
     )
     .run(id, 'owner', id, T0, T0);
   return db;
@@ -122,11 +123,11 @@ describe('swapTabData (participant writes)', () => {
   });
 });
 
-describe('a copy', () => {
+describe('copyDesign', () => {
   it("counts the copy's tabs from the copied bodies", async () => {
     const db = withDesign();
     await upsertTab(db.env, 'A', tab('t1', 'pages', 2), 0);
-    const copy = await testCopyDesign(db.env, 'A', 'B', 'visitor', 'Copy of A');
+    const copy = await copyDesign(db.env, 'A', 'B', 'visitor', 'Copy of A');
     const copied = copy!.tabs[0]!.id;
     expect(statsRow(db.sql, copied)).toEqual(expected(db.sql, copied));
   });

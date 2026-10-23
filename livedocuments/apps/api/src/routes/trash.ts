@@ -1,72 +1,54 @@
-// /api/trash (docs/specs/013-workspace/trash.md, "The API"):
-//   GET    /api/trash               what the caller may restore (personal + joined teams)
-//   POST   /api/trash/<id>/restore  bring one back
-//   DELETE /api/trash/<id>          purge one for good
-//   DELETE /api/trash[?team=<id>]   empty the personal Trash, or one team's
-//
-// The authority is exactly the delete authority (mayDeleteDocument): the owner
-// of a personal document, any joined member of a team document's team. Anything
-// else, like a document that isn't in the Trash, answers the 404 of a missing id.
+// The Trash (own and every joined team's), for API clients (index-adapters.ts).
 
-import {
-  getDocument,
-  getMembership,
-  getTrashedDocumentMeta,
-  listTrash,
-  purgeDocuments,
-  restoreDocument,
-  trashIdsFor,
-} from '../db';
-import { json, noContent, notFound } from '../responses';
-import { redactDocumentForReader } from '../redact-document';
-import { mayDeleteDocument, requireOwner, type RouteContext } from './context';
+import { trashPurgeDueAt, type TrashedDocument } from '@livedocuments/api-schema';
+import { LIST_LIMIT_MAX } from '@liveworkspace/index-client';
+import { INDEX_APP } from '../index-service';
+import { json, notFound } from '../responses';
+import { requireOwner, type RouteContext } from './context';
+import { allPages, clientFor, refusal } from './index-adapters';
 
+// GET /api/trash, POST /api/trash/:id/restore, DELETE /api/trash/:id.
 export async function handleTrash(ctx: RouteContext): Promise<Response> {
-  const { request, env, segments, url } = ctx;
-  if (segments[1] !== 'trash') return notFound();
+  const { request, segments } = ctx;
+  const id = segments[2];
+  const isList = segments.length === 2 && request.method === 'GET';
+  const isRestore =
+    !!id && segments.length === 4 && segments[3] === 'restore' && request.method === 'POST';
+  const isPurge = !!id && segments.length === 3 && request.method === 'DELETE';
+  if (!isList && !isRestore && !isPurge) return notFound();
   const owner = requireOwner(ctx);
   if (owner instanceof Response) return owner;
-
-  if (segments.length === 2) {
-    if (request.method === 'GET') {
-      return json({ trash: await listTrash(env, { owner, verifiedUserId: ctx.verifiedUserId }) });
+  const client = clientFor(ctx);
+  if (client instanceof Response) return client;
+  const names = new Map((ctx.teams ?? []).map((t) => [t.id, t.name]));
+  try {
+    if (isList) {
+      const items = await allPages((cursor) =>
+        client
+          .listTrash({ app: INDEX_APP, limit: LIST_LIMIT_MAX, ...(cursor ? { cursor } : {}) })
+          .then((p) => ({ list: p.items, nextCursor: p.nextCursor })),
+      );
+      const trash: TrashedDocument[] = items.map((item) => {
+        const trashedAt = item.trashedAt ?? item.updatedAt;
+        return {
+          id: item.id,
+          name: item.title,
+          teamId: item.teamId,
+          teamName: item.teamId ? (names.get(item.teamId) ?? null) : null,
+          trashedAt,
+          purgeAt: trashPurgeDueAt(trashedAt),
+          reason: item.trashReason ?? 'deleted',
+        };
+      });
+      return json({ trash });
     }
-    if (request.method === 'DELETE') {
-      const teamId = url.searchParams.get('team');
-      if (teamId !== null && !(await joined(ctx, teamId))) return notFound();
-      const ids = await trashIdsFor(env, teamId !== null ? { teamId } : { owner });
-      const purged = await purgeDocuments(env, ids);
-      console.info('[trash] emptied', teamId !== null ? `team:${teamId}` : 'personal', purged);
-      return json({ purged });
+    if (isRestore) {
+      const { item } = await client.restoreItem(id);
+      return json({ document: { id: item.id, name: item.title } });
     }
-    return notFound();
+    await client.deleteItem(id!, { permanent: true });
+    return new Response(null, { status: 204 });
+  } catch (err) {
+    return refusal(err);
   }
-
-  const restore = segments.length === 4 && segments[3] === 'restore' && request.method === 'POST';
-  const purge = segments.length === 3 && request.method === 'DELETE';
-  if (!restore && !purge) return notFound();
-
-  const id = segments[2]!;
-  const binned = await getTrashedDocumentMeta(env, id);
-  const allowed = binned !== null && (await mayDeleteDocument(ctx, binned));
-  if (!allowed) return notFound();
-
-  if (restore) {
-    await restoreDocument(env, id, Date.now());
-    const liveDoc = await getDocument(env, id);
-    console.info('[trash] restored', id);
-    return json({ document: liveDoc ? redactDocumentForReader(liveDoc, owner) : null });
-  }
-
-  await purgeDocuments(env, [id]);
-  console.info('[trash] purged from the Trash', id);
-  return noContent();
-}
-
-// A team Trash belongs to the team's joined members, checked against the
-// server-verified account id only (docs/specs/013-workspace/team-shared-documents.md).
-async function joined(ctx: RouteContext, teamId: string): Promise<boolean> {
-  if (!ctx.verifiedUserId) return false;
-  const membership = await getMembership(ctx.env, teamId, ctx.verifiedUserId);
-  return membership?.status === 'joined';
 }

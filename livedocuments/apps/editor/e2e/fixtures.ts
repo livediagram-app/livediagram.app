@@ -163,7 +163,6 @@ export async function dismissQuickTour(page: Page): Promise<void> {
 export async function openStartBlank(page: Page): Promise<void> {
   await page.goto('/new?blank=1');
   await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
-  await dismissQuickTour(page);
 }
 
 // A blank document whose page is chosen as an Infographic, so the page's choice is put away and the page takes
@@ -208,7 +207,8 @@ export type Seed = Record<string, unknown>[];
 // Write the seed into the new document's first tab through the api, reload.
 export async function seedTab(page: Page, elements: Seed): Promise<void> {
   const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
-  const headers = await pageOwnerHeaders(page, { 'Content-Type': 'application/json' });
+  const documentId = new URL(page.url()).pathname.split('/').filter(Boolean).pop()!;
+  const headers = await pageOwnerHeaders(page, { 'Content-Type': 'application/json' }, documentId);
   await page.evaluate(
     async ({ base, elements, headers }) => {
       const id = location.pathname.split('/').filter(Boolean).pop()!;
@@ -246,48 +246,104 @@ export async function seedTab(page: Page, elements: Seed): Promise<void> {
   if (first) await settledBox(page.locator(`[data-element-id="${String(first.id)}"]`).first());
 }
 
-// A guest as production makes one: minted and signed by the api worker
-// (docs/specs/014-identity/auth-and-guest-access.md). The e2e stack signs guest ids, so a hand-made
-// unsigned id would be upgraded (and its data moved) the moment the app opens.
-const guestSigs = new Map<string, string>();
+// A guest as production makes one: a guest token from liveworkspace (liveworkspace/docs/accounts.md "Guests"), here
+// from the e2e stack's accounts stand-in (scripts/e2e-stack.mjs, /e2e/guest-token). Answers the guest id
+// (`guest_<uuid>`); ownerHeaders sends its token.
+const guestTokens = new Map<string, string>();
 
-export async function mintSignedGuest(
+export async function mintGuest(
   request: import('@playwright/test').APIRequestContext,
 ): Promise<string> {
-  const res = await request.post(`${process.env.NEXT_PUBLIC_API_BASE ?? '/api'}/guest-id`, {
-    data: {},
-  });
+  const res = await request.get('/e2e/guest-token');
   expect(res.ok()).toBe(true);
-  const { ownerId, ownerSig } = (await res.json()) as { ownerId: string; ownerSig: string | null };
-  if (ownerSig) guestSigs.set(ownerId, ownerSig);
-  return ownerId;
+  const { token, guestId } = (await res.json()) as { token: string; guestId: string };
+  guestTokens.set(guestId, token);
+  return guestId;
 }
 
-export function guestSigFor(owner: string): string | null {
-  return guestSigs.get(owner) ?? null;
+export function guestTokenFor(owner: string): string | null {
+  return guestTokens.get(owner) ?? null;
+}
+
+// The page (or every page of a context) opens as this guest: its token is where the app keeps it.
+export async function adoptGuest(target: Page | BrowserContext, owner: string): Promise<void> {
+  const token = guestTokens.get(owner);
+  if (!token) throw new Error(`no guest token for ${owner}: mint it with mintGuest`);
+  await target.addInitScript((t) => {
+    try {
+      localStorage.setItem('livedocuments:v2:guest-token', t);
+    } catch {
+      // A page with no storage keeps none.
+    }
+  }, token);
 }
 
 export function ownerHeaders(
   owner: string,
   extra: Record<string, string> = {},
 ): Record<string, string> {
-  const sig = guestSigs.get(owner);
-  return { 'X-Owner-Id': owner, ...(sig ? { 'X-Owner-Sig': sig } : {}), ...extra };
+  const token = guestTokens.get(owner);
+  return { ...(token ? { Authorization: `Bearer ${token}` } : {}), ...extra };
+}
+
+// The index's grant on a plan for whoever `headers` names (liveworkspace/docs/one-explorer-contracts.md "Grants"):
+// every api request about one plan carries it as X-Index-Grant.
+export async function documentGrant(
+  request: import('@playwright/test').APIRequestContext,
+  headers: Record<string, string>,
+  documentId: string,
+): Promise<string> {
+  const res = await request.post(`/api/index/items/${encodeURIComponent(documentId)}/grant`, {
+    headers,
+  });
+  expect(res.ok(), `grant on ${documentId}: ${res.status()}`).toBe(true);
+  return ((await res.json()) as { grant: string }).grant;
+}
+
+// ownerHeaders plus the grant on one plan.
+export async function documentHeaders(
+  request: import('@playwright/test').APIRequestContext,
+  owner: string,
+  documentId: string,
+  extra: Record<string, string> = {},
+): Promise<Record<string, string>> {
+  const headers = ownerHeaders(owner);
+  return { ...headers, 'X-Index-Grant': await documentGrant(request, headers, documentId), ...extra };
+}
+
+// A plan made as the app makes one: the item at the index first, then its content with the grant the create
+// answers (liveworkspace/docs/one-explorer-contracts.md "Items"). `data` is the api's create body ({ id, name,
+// tabs, ... }). Answers the content create's response.
+export async function seedDocumentItem(
+  request: import('@playwright/test').APIRequestContext,
+  owner: string | Record<string, string>,
+  data: { id: string; name: string } & Record<string, unknown>,
+): Promise<import('@playwright/test').APIResponse> {
+  const headers = typeof owner === 'string' ? ownerHeaders(owner) : owner;
+  const made = await request.post('/api/index/items', {
+    headers,
+    data: { id: data.id, app: 'livedocuments', title: data.name },
+  });
+  expect(made.ok(), `index create: ${made.status()}`).toBe(true);
+  const { grant } = (await made.json()) as { grant: { grant: string } };
+  return request.post('/api/documents', {
+    headers: { ...headers, 'X-Index-Grant': grant.grant, 'Content-Type': 'application/json' },
+    data,
+  });
 }
 
 // The page's OWN guest identity as request headers, for api calls a spec makes from inside the page
-// (`page.evaluate`, which cannot import this module). The stack enforces guest signatures as
-// production does, so the id travels with the signature the app stored beside it. Read once, before
-// the evaluate, and passed in as an argument.
+// (`page.evaluate`, which cannot import this module): its guest token, and with `documentId` the grant on that plan.
+// Read once, before the evaluate, and passed in as an argument.
 export async function pageOwnerHeaders(
   page: Page,
   extra: Record<string, string> = {},
+  documentId?: string,
 ): Promise<Record<string, string>> {
-  const { id, sig } = await page.evaluate(() => ({
-    id: localStorage.getItem('livedocuments:v2:self-id') ?? '',
-    sig: localStorage.getItem('livedocuments:v2:self-sig'),
-  }));
-  return { 'X-Owner-Id': id, ...(sig ? { 'X-Owner-Sig': sig } : {}), ...extra };
+  const token = await page.evaluate(() => localStorage.getItem('livedocuments:v2:guest-token') ?? '');
+  const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+  if (documentId) headers['X-Index-Grant'] = await documentGrant(page.request, headers, documentId);
+  return { ...headers, ...extra };
 }
 
 // A box once it has stopped moving: a surface that pops in (the `pop-in` scale animation) reports a

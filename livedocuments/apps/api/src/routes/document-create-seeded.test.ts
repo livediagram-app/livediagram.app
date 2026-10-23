@@ -3,7 +3,7 @@ import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { getDocument, getTab } from '../db';
 import { makeTestRouteContext } from './test-route-context';
 import { handleDocuments } from './documents';
-import { asUser } from './placement-test-support';
+import { asUser } from './test-route-context';
 import { compileSeededTabs } from './document-seed';
 
 // A create's seeded tabs given as a template (docs/specs/015-api/api.md): compiled by

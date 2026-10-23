@@ -9,6 +9,8 @@
 // worker (docs/specs/016-platform/router-app.md). Marketing owns every other first segment.
 export const LIVE_ROUTE_SEGMENTS: ReadonlySet<string> = new Set([
   'document',
+  // The guest handoff's way back, /auth/guest (liveworkspace/docs/one-explorer-contracts.md "Guests").
+  'auth',
   'embed',
   'explorer',
   'get-started',

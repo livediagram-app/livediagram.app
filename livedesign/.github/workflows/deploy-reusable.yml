@@ -18,7 +18,7 @@ on:
         description: >-
           Wrangler environment name. Empty deploys the top-level config
           (production). "staging" deploys the `[env.staging]` blocks, which
-          name every worker `-staging` and bind staging's own R2 / KV.
+          name every worker `-staging` and bind staging's own D1 / R2 / KV.
         type: string
         default: ''
       environment_name:
@@ -63,6 +63,8 @@ on:
       ACCOUNTS_CLIENT_ID:
         required: false
       ACCOUNTS_CLIENT_SECRET:
+        required: false
+      GUEST_ID_HMAC_SECRET:
         required: false
       MEDIA_KEY:
         required: false
@@ -123,7 +125,7 @@ jobs:
 
       # The hosted profile's build-time half: NEXT_PUBLIC_TELEMETRY_ENABLED,
       # mirrored from hosted-vars.json so the frontends emit exactly when the api
-      # ingests. On in staging too, against staging's own telemetry service — that is how you
+      # ingests. On in staging too, against staging's own D1 — that is how you
       # verify a new event lands before production sees it. Skipped on a fork,
       # whose frontends then emit nothing unless its own build env opts in.
       - name: Apply hosted profile to the build
@@ -251,7 +253,7 @@ jobs:
   deploy-live:
     name: Deploy live
     # After the api, so a new editor never calls an api that lacks its routes
-    # (docs/specs/016-platform/deployment.md, "Old and new workers side by side").
+    # (docs/specs/016-platform/deployment.md, "Renaming migrations").
     needs: [build, deploy-api]
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -303,6 +305,7 @@ jobs:
       API_RESOURCE: ${{ secrets.API_RESOURCE }}
       ACCOUNTS_CLIENT_ID: ${{ secrets.ACCOUNTS_CLIENT_ID }}
       ACCOUNTS_CLIENT_SECRET: ${{ secrets.ACCOUNTS_CLIENT_SECRET }}
+      GUEST_ID_HMAC_SECRET: ${{ secrets.GUEST_ID_HMAC_SECRET }}
       MEDIA_KEY: ${{ secrets.MEDIA_KEY }}
       TELEMETRY_KEY: ${{ secrets.TELEMETRY_KEY }}
       WRANGLER_ENV: ${{ inputs.wrangler_env }}
@@ -324,10 +327,11 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       # `whoami` prints which Cloudflare account the API token sees,
-      # so when a deploy fails with a 7403 "account not authorized"
-      # the log shows immediately whether (a) the token lacks a
-      # scope, or (b) the token belongs to a different account than
-      # CF_ACCOUNT_ID. Without this the error is too generic to act on.
+      # so when migrations fail with a 7403 "account not authorized"
+      # the log shows immediately whether (a) the token doesn't have
+      # D1 Edit scope, or (b) the token belongs to a different
+      # account than CF_ACCOUNT_ID. Without this the error is too
+      # generic to act on.
       - name: Verify Cloudflare token
         working-directory: apps/api
         env:
@@ -360,6 +364,19 @@ jobs:
               | pnpm exec wrangler secret put "$name" ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
           done
 
+      # Same provisioning story for the guest-id HMAC secret (docs/specs/014-identity/auth-and-guest-access.md):
+      # when present it makes /api/migrate require a signed guest id;
+      # empty/unset leaves the worker on legacy unsigned migrate.
+      - name: Sync GUEST_ID_HMAC_SECRET secret
+        if: ${{ env.GUEST_ID_HMAC_SECRET != '' }}
+        working-directory: apps/api
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+        run: |
+          printf '%s' "$GUEST_ID_HMAC_SECRET" \
+            | pnpm exec wrangler secret put GUEST_ID_HMAC_SECRET ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
+
       # TELEMETRY_KEY (docs/specs/017-telemetry/telemetry.md) is livedesign's Worker key for liveworkspace's
       # central telemetry service, and has to hold the SAME value on the api and mcp workers as the
       # service's TELEMETRY_KEY_LIVEDESIGN; a mismatch is silent — the posts are simply not stored.
@@ -388,6 +405,41 @@ jobs:
           printf '%s' "$MEDIA_KEY" \
             | pnpm exec wrangler secret put MEDIA_KEY ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
 
+      # Runs straight before the deploy, after the secret syncs, so the time the
+      # live worker runs against a schema newer than its code is only the deploy
+      # itself (docs/specs/016-platform/deployment.md, "Renaming migrations").
+      # Apply any pending D1 migrations before the new worker code is
+      # deployed. Idempotent: wrangler tracks applied migrations in a
+      # bookkeeping table and skips any it's already run. Has to
+      # happen BEFORE the worker deploy so the new code doesn't
+      # briefly run against a schema it doesn't understand.
+      #
+      # If a migration's bad, this step will fail and the deploy
+      # halts before the worker is updated — that's the desired
+      # safety: we'd rather block the deploy than leave this
+      # environment's database half-migrated.
+      #
+      # This is also the step staging exists for: on the staging
+      # caller it runs against `livedesign-staging`, so every merge
+      # to main rehearses the migration against a real remote D1 one
+      # deploy before it reaches the database holding real diagrams
+      # (docs/specs/016-platform/staging-environment.md).
+      - name: Apply D1 migrations (remote)
+        working-directory: apps/api
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+        # Database arg is the binding name (`DB`) — wrangler resolves
+        # it via wrangler.toml, and `--env` decides WHICH database that
+        # binding points at. Wrangler 4 auto-skips the confirmation
+        # prompt in non-interactive CI environments, so no flag is
+        # needed (the `--yes` flag from wrangler 3 was removed).
+        # If this step fails, the most common cause is the CF_API_TOKEN
+        # secret missing the D1: Edit permission on the account that
+        # owns the database — but the `Verify Cloudflare token` step
+        # above is the authoritative diagnostic.
+        run: pnpm exec wrangler d1 migrations apply DB --remote ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
+
       - name: Deploy to Cloudflare Workers
         working-directory: apps/api
         env:
@@ -395,6 +447,14 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           # The build id the editor of this run was built with (docs/specs/016-platform/stale-builds.md).
           BUILD_ID: ${{ needs.build.outputs.build_id }}
+        # The D1 binding's `database_id` placeholder in wrangler.toml
+        # must be filled in before the first deploy succeeds. Run
+        # `wrangler d1 create livedesign` locally once and commit the
+        # resulting id — and again as `livedesign-staging` for the
+        # staging environment (docs/specs/016-platform/staging-environment.md "One-time setup"). Migrations
+        # run via `pnpm db:migrate:remote` for ad-hoc local runs; the
+        # deploy applies them automatically in the step above.
+        #
         # On the hosted repository the hosted profile rides along as `--var`
         # flags. Sent on EVERY deploy, because `wrangler deploy` replaces the
         # worker's plain vars with exactly the ones it declares: a value set

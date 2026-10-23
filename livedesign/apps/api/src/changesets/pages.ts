@@ -10,13 +10,13 @@ import { applyPageChanges, pageSummaries } from '@livedesign/edit-operations';
 import { isTabRevStale, lastChangesetRev, upsertTabAtRev } from '../db';
 import { TabTooLargeError } from '../limits';
 import { relayPages } from '../room-client';
-import type { DesignDTO, DesignEnv } from '../types';
+import type { DesignDTO, Env } from '../types';
 import { readStoredTab } from './stored-tab';
 import { SUBMIT_ATTEMPTS, withServerRules } from './submit';
 import { writeChangeset, type Author } from './write';
 
 type PagesArgs = {
-  env: DesignEnv;
+  env: Env;
   design: DesignDTO;
   tabId: string;
   request: PagesRequest;

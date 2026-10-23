@@ -4,12 +4,10 @@ import {
   darkVisitor,
   documentRow,
   freshDarkPage,
-  jumpBackIn,
   seedDocument,
-  seedOpenedDocument,
   shareLink,
 } from './audit-screens';
-import { dismissQuickTour, expect, expectNoPageErrors, test, mintSignedGuest } from './fixtures';
+import { dismissQuickTour, expect, expectNoPageErrors, test, mintGuest } from './fixtures';
 import { auditOptical, OPTICAL_TOLERANCE_PX } from './optical';
 
 // Optical alignment audit (docs/specs/004-interface-design/optical-alignment.md): on each screen, every glyph
@@ -38,7 +36,7 @@ async function expectCentred(page: Page, screen: string): Promise<void> {
 
 // A seeded document open in the editor, its quick tour dismissed; returns the seeded Spinner shape.
 async function openSeededEditor(page: Page, baseURL: string): Promise<Locator> {
-  const owner = await mintSignedGuest(page.request);
+  const owner = await mintGuest(page.request);
   const id = await seedDocument(page, owner, new URL(baseURL).origin);
   await darkVisitor(page, owner);
   await page.goto(`/document/${id}`);
@@ -82,28 +80,22 @@ test.describe('Optical alignment audit', () => {
   });
 
   test('the Join dialog a share link opens', async ({ page, browser, baseURL }) => {
-    const owner = await mintSignedGuest(page.request);
+    const owner = await mintGuest(page.request);
     const origin = new URL(baseURL!).origin;
     const id = await seedDocument(page, owner, origin);
     const code = await shareLink(page, owner, origin, id);
     const visitor = await freshDarkPage(browser, 4);
-    await visitor.goto(`/document/shared?s=${code}`);
+    await visitor.goto(`/document/${id}?s=${code}`);
     await visitor.getByRole('button', { name: /^join$/i }).waitFor();
     await expectCentred(visitor, 'Join dialog');
     await visitor.context().close();
   });
 
-  // Home as a returning owner meets it (the document they opened in Jump Back In), then My
-  // documents, which lists it as a row.
+  // My Work, which lists the seeded plan as a row.
   test('the Explorer', async ({ page, pageErrors, baseURL }) => {
-    // Signed, so the identity holds across the two page loads.
-    const owner = await mintSignedGuest(page.request);
-    await seedOpenedDocument(page, owner, new URL(baseURL!).origin);
+    const owner = await mintGuest(page.request);
+    await seedDocument(page, owner, new URL(baseURL!).origin);
     await darkVisitor(page, owner);
-    await page.goto('/explorer');
-    await jumpBackIn(page, 'Contrast').waitFor();
-    await expectCentred(page, 'Explorer Home');
-
     await page.goto('/explorer/all');
     await documentRow(page, 'Contrast').waitFor();
     await expectCentred(page, 'Explorer, My Work');
@@ -115,8 +107,8 @@ test.describe('Optical alignment audit', () => {
 // holding one is judged by its cap band, not its ink. Participant names are random, so this is pinned here
 // rather than left to the day a "Q" comes up.
 test('initials with a tailed capital centre on their cap band', async ({ page }) => {
-  await page.goto('/explorer');
-  await page.getByRole('treeitem', { name: /^Home/ }).waitFor();
+  await page.goto('/new');
+  await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
   await page.evaluate(() => {
     const disc = document.createElement('span');
     disc.setAttribute('aria-label', 'Tailed initials');

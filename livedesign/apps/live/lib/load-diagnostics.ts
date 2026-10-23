@@ -1,7 +1,7 @@
 // The diagnostics report a person copies from the load-error screen (docs/specs/007-editor/load-recovery.md
 // "Diagnostics"). Identifiers and states only, never design content. Two credentials are kept out on
 // purpose: a share code (the path's `?s=` is reported as "share link: yes") and a full guest id (an
-// identifier; @livedesign/ui's identity lines carry only its first 8 characters).
+// `X-Owner-Id` credential; @livedesign/ui's identity lines carry only its first 8 characters).
 
 import { isAccountIdShape } from '@livedesign/api-schema';
 import {

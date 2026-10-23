@@ -4,8 +4,6 @@ import {
   type ChangesetWritten,
   type ResultLine,
 } from '@livedesign/api-schema';
-import { learnMediaOwners } from '../media';
-import { imageRefIds } from '../image-refs/extract';
 import {
   diffToElementOps,
   elementFingerprint,
@@ -25,7 +23,7 @@ import {
 } from '../db';
 import { TabTooLargeError } from '../limits';
 import { relayChangeset } from '../room-client';
-import type { DesignEnv } from '../types';
+import type { Env } from '../types';
 import { mintChangesetId } from './changeset-id';
 import { agentKeyFor, changesetRoomOp } from './room-op';
 import type { StoredTab } from './stored-tab';
@@ -63,7 +61,7 @@ type WriteOutcome =
   | { kind: 'stale' }
   | { kind: 'too_large' };
 
-export async function writeChangeset(env: DesignEnv, w: ChangesetWrite): Promise<WriteOutcome> {
+export async function writeChangeset(env: Env, w: ChangesetWrite): Promise<WriteOutcome> {
   const before = w.stored?.tab.elements ?? [];
   // What turns the stored elements into the next ones, so the record, the relay and the merge on
   // save all say exactly what landed (server rules included).
@@ -107,12 +105,10 @@ export async function writeChangeset(env: DesignEnv, w: ChangesetWrite): Promise
   if (Object.values(parts).some((p) => byteLength(p) > CHANGESET_PART_MAX_BYTES)) {
     return { kind: 'too_large' };
   }
-  // Whose the images it places are, before the statements that grant them (db/image-grants.ts).
-  await learnMediaOwners(env, imageRefIds(w.next.elements, w.next.pages));
   // One re-mint inside the attempt on an id collision (CS7, E21).
   for (let mint = 0; mint < 2; mint += 1) {
     try {
-      const results = await env.DESIGN_DB.batch([
+      const results = await env.DB.batch([
         ...tabWriteStatements(env, w.designId, w.next, w.orderIndex, { expected }, now),
         insertChangesetStatement(env, record),
         insertChangesetPartStatement(env, record.id, 'ops', parts.ops),

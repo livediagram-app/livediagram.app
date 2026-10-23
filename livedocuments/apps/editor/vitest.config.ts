@@ -32,7 +32,8 @@ export default defineProject({
     // Testing Library registering its own cleanup, and a tree left mounted
     // when jsdom is torn down crashes a later file in the same worker with
     // `window is not defined`. The shared setup file says why in full.
-    setupFiles: ['@livedocuments/vitest-config/react-cleanup'],
+    // test/no-document-grants.ts keeps the index's grant requests out of every stubbed fetch but their own tests'.
+    setupFiles: ['@livedocuments/vitest-config/react-cleanup', './test/no-document-grants.ts'],
     // The editor's source spans app/, components/ and hooks/ beside lib/ and src/: the report counts
     // all of it, so untested components show as such rather than vanishing from the total.
     coverage: {

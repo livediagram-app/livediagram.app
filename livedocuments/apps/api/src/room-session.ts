@@ -53,6 +53,11 @@ export type SessionAttachment = {
   //   - `documentId`: the document this room serves, from X-Verified-Document, so a Participant's write knows its
   //     row. The room is named after it, so every session carries the same value.
   documentId?: string | null;
+  //   - `grantExp`: when the index's grant this session holds lapses (epoch ms), from X-Verified-Grant-Exp; the
+  //     room asks for a fresh one ROOM_GRANT_ASK_BEFORE_MS before (`renewAsked`) and drops the socket after.
+  //     Absent for a session admitted without one (tests).
+  grantExp?: number | null;
+  renewAsked?: boolean;
 };
 
 // A person tag is a SHA-256 hex digest; the clamp keeps a forged header from bloating the attachment.
@@ -70,7 +75,14 @@ type VerifiedSession = {
   personTag: string | null;
   workbenchPairing: string | null;
   documentId: string | null;
+  grantExp?: number | null;
 };
+
+// The grant's `exp` (epoch seconds) as epoch ms, or null.
+function grantExpOf(header: string | null): number | null {
+  const seconds = header ? Number(header) : NaN;
+  return Number.isFinite(seconds) && seconds > 0 ? seconds * 1000 : null;
+}
 
 /**
  * Read the upgrade's verified headers. The room trusts them because only the worker can set them:
@@ -88,6 +100,7 @@ export function verifiedSessionOf(request: Request): VerifiedSession {
     personTag: header('X-Verified-Person'),
     workbenchPairing: header('X-Verified-Workbench-Pairing'),
     documentId: header('X-Verified-Document'),
+    grantExp: grantExpOf(request.headers.get('X-Verified-Grant-Exp')),
   };
 }
 
@@ -110,6 +123,7 @@ export function newSessionAttachment(v: VerifiedSession, presenceId: string): Se
     personTag: v.personTag?.slice(0, MAX_PERSON_TAG_LEN) ?? null,
     workbenchPairing: v.workbenchPairing?.slice(0, MAX_PAIRING_ID_LEN) ?? null,
     documentId: v.documentId?.slice(0, MAX_DOCUMENT_ID_LEN) ?? null,
+    grantExp: v.grantExp ?? null,
   };
 }
 

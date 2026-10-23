@@ -31,11 +31,6 @@ vi.mock('next/dynamic', () => ({
       return null;
     },
 }));
-const { apiMigrateGuestData } = vi.hoisted(() => ({ apiMigrateGuestData: vi.fn() }));
-vi.mock('@/lib/api-client', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/lib/api-client')>()),
-  apiMigrateGuestData,
-}));
 
 const SECRET = `lvw_${'a'.repeat(43)}`;
 const RENEWED = `lvw_${'b'.repeat(43)}`;
@@ -62,16 +57,15 @@ function sessionOf(secret = SECRET): WorkbenchSession {
 // A fresh module graph per configuration: the bootstrap picks its variant when it loads.
 async function load() {
   vi.resetModules();
-  const [{ AuthProvider }, { WorkbenchAuthBridge }, auth, boot, core, migration] =
+  const [{ AuthProvider }, { WorkbenchAuthBridge }, auth, boot, core] =
     await Promise.all([
       import('./AuthProvider'),
       import('./WorkbenchAuthBridge'),
       import('./deferred-auth'),
       import('@/hooks/persistence/useAccountBootstrap'),
       import('@/lib/api/core'),
-      import('@/lib/guest-migration'),
     ]);
-  return { AuthProvider, WorkbenchAuthBridge, auth, boot, core, migration };
+  return { AuthProvider, WorkbenchAuthBridge, auth, boot, core };
 }
 
 // The first load transforms the module graph; every later one reuses it.
@@ -81,7 +75,6 @@ beforeAll(async () => {
 
 beforeEach(() => {
   bridges.mounted = 0;
-  apiMigrateGuestData.mockReset();
   localStorage.clear();
 });
 
@@ -156,7 +149,7 @@ describe('WorkbenchAuthBridge', () => {
     expect(await core.apiHeaders('user_1')).toEqual({ Authorization: `Bearer ${RENEWED}` });
 
     unmount();
-    expect(await core.apiHeaders('guest-1')).toEqual({ 'X-Owner-Id': 'guest-1' });
+    expect(await core.apiHeaders('guest-1')).toEqual({});
     core.setWorkbenchConfinement(null);
   });
 });
@@ -195,8 +188,7 @@ describe('the workbench page’s surroundings', () => {
         expect(bridges.mounted).toBe(0);
       });
 
-      it('let the editor beneath settle as the person, with no guest migration', async () => {
-        localStorage.setItem('livedocuments:v2:self-id', 'guest-1');
+      it('let the editor beneath settle as the person, as the person', async () => {
         const { AuthProvider, WorkbenchAuthBridge, boot, core } = await load();
         let result: ReturnType<typeof boot.useAccountBootstrap> | null = null;
         function Editor() {
@@ -218,7 +210,6 @@ describe('the workbench page’s surroundings', () => {
           accountUserId: 'user_1',
           accountDisplayName: 'Webber',
         });
-        expect(apiMigrateGuestData).not.toHaveBeenCalled();
         expect(await core.apiHeaders('user_1')).toEqual({ Authorization: `Bearer ${SECRET}` });
         core.setTokenProvider(null);
         core.setWorkbenchConfinement(null);

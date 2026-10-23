@@ -1,10 +1,14 @@
 import type { Metadata } from 'next';
+import { ExplorerPane } from '../ExplorerPane';
+import { viewDesignTitle } from '../view-titles';
 
-// The Explorer's Search view: ExplorerShell (the layout) renders it from the address.
+// /explorer/search: every design the reader can open, narrowed by the lens in `q`
+// (docs/specs/013-workspace/explorer-filters.md#views). The layout's ExplorerShell provides the
+// chrome and state; this page only pins the route and the tab title.
 export const metadata: Metadata = {
-  title: 'Search | livedesign',
+  title: viewDesignTitle('search'),
 };
 
 export default function Page() {
-  return null;
+  return <ExplorerPane />;
 }

@@ -1,10 +1,14 @@
 import type { Metadata } from 'next';
+import { ExplorerPane } from '../ExplorerPane';
+import { viewDesignTitle } from '../view-titles';
 
-// The Explorer's My Work view: ExplorerShell (the layout) renders it from the address.
+// /explorer/all: the My Work root, its root folders then its root designs.
+// The layout's ExplorerShell provides the chrome + state; this page
+// only pins the route and the tab title (docs/specs/013-workspace/folders.md, routes.ts).
 export const metadata: Metadata = {
-  title: 'My Work | livedesign',
+  title: viewDesignTitle('all'),
 };
 
 export default function Page() {
-  return null;
+  return <ExplorerPane />;
 }

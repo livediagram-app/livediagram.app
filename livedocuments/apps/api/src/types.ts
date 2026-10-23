@@ -27,14 +27,19 @@ import type { DocumentRoom } from './document-room/document-room';
 // Worker bindings injected by Cloudflare at runtime. Not part of the
 // wire format (purely a server-side capability handle).
 export type Env = {
-  // Everything about a document that is not its content (docs/specs/015-api/api.md "Storage"): the documents
-  // row, folders, sharing, people, the timeline and the Inbox's index tables.
+  // What is neither a document's content nor the index's (docs/specs/015-api/api.md "Storage"): people and their
+  // settings, form links and workbench embeds.
   DB: D1Database;
   // Each document's Durable Object (src/document-room/document-room.ts): its content, in its own SQLite, and its
   // realtime room. Reached through document-client.ts `documentRoom(env, documentId)`.
   DOCUMENT_ROOM: DurableObjectNamespace<DocumentRoom>;
-  // The key liveworkspace's index presents on this app's internal endpoints (`/api/internal/items/*`,
-  // liveworkspace/docs/one-explorer-contracts.md). A secret; unset, those endpoints answer 404.
+  // liveworkspace's index (liveworkspace/docs/one-explorer.md, src/index-service.ts): where every document is and who
+  // may open it. INDEX_ORIGIN is its origin (`https://liveworkspace.app`; locally `http://127.0.0.1:8793`): the
+  // grants this api checks are signed by `${INDEX_ORIGIN}/api/index/jwks`. INDEX_KEY is this app's key there, a
+  // secret, the same both ways: the index presents it on this app's internal endpoints (`/api/internal/items/*`),
+  // and this app presents it to push a document's summary and to act for an API token's account. Unset, the document
+  // doors answer as missing and the internal endpoints 404.
+  INDEX_ORIGIN?: string;
   INDEX_KEY?: string;
   // The live build id: the deploy's commit, the same one baked into the editor build as
   // NEXT_PUBLIC_BUILD_ID (docs/specs/016-platform/stale-builds.md). Unset (local dev, a self-host that
@@ -58,26 +63,6 @@ export type Env = {
   OAUTH_ISSUER?: string;
   // The oldest CLI the api accepts writes from, x.y.z; unset for no floor.
   CLI_MIN_VERSION?: string;
-  // HMAC secret for signing guest owner-ids (docs/specs/014-identity/auth-and-guest-access.md + auth/
-  // owner-signature.ts). When set, POST /api/guest-id mints a signed id
-  // and /api/migrate requires a valid signature before reassigning a
-  // guest's data to an account — closing the "observe a guest id,
-  // claim its data" hole. Unset → migrate keeps its legacy unsigned
-  // behaviour (OSS self-host that hasn't configured it).
-  GUEST_ID_HMAC_SECRET?: string;
-  // Guest REST signature enforcement cutoff (docs/specs/015-api/public-api-and-tokens.md §4), epoch ms. While
-  // unset (or in the future) the guest `X-Owner-Id` REST path keeps its
-  // legacy unsigned behaviour — the grace window that lets pre-signing guests
-  // self-heal to a signed id. Set to a past timestamp (once active guests have
-  // rotated) to require a valid `X-Owner-Sig` on owner-scoped routes. No-op
-  // without GUEST_ID_HMAC_SECRET.
-  GUEST_SIG_ENFORCE_AFTER?: string;
-  // When this deployment started signing guest ids, epoch ms (docs/specs/015-api/public-api-and-tokens.md §4).
-  // Once enforcement is armed, an id whose participant row is older than this
-  // is a legacy (pre-signing) guest and may still run the one-time upgrade onto
-  // a signed id unsigned; every newer id must prove possession. Unset = no
-  // legacy exception.
-  GUEST_SIGNING_LIVE_AT?: string;
   // R2 bucket holding document snapshots and share cards (thumb/<documentId>, og/<documentId>,
   // docs/specs/006-document/document-snapshots.md). Unbound, none are cached.
   IMAGES?: R2Bucket;
@@ -130,9 +115,6 @@ export type Env = {
   // Public origin used to build links in emails (optional). Defaults to
   // "https://livedocuments.app".
   APP_BASE_URL?: string;
-  // Explorer Home's reads (docs/specs/013-workspace/explorer-home.md), per owner. Absent binding
-  // (a self-host) allows every read.
-  HOME_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // Workbench ticket mints and pairing requests (docs/specs/013-workspace/workbench-embeds.md), keyed on the
   // token id: WORKBENCH_TICKETS_PER_MINUTE a minute. Absent binding (a self-host) allows every mint.
   WORKBENCH_TICKET_RATE_LIMITER?: {

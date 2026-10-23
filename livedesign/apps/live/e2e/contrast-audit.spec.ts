@@ -1,12 +1,21 @@
 import { auditContrast, type ContrastReport } from './contrast';
-import { CANVAS, darkVisitor, freshDarkPage, seedDesign, shareLink } from './audit-screens';
+import {
+  CANVAS,
+  darkVisitor,
+  designRow,
+  freshDarkPage,
+  jumpBackIn,
+  seedDesign,
+  seedOpenedDesign,
+  shareLink,
+} from './audit-screens';
 import {
   dismissQuickTour,
   expect,
   expectNoPageErrors,
   test,
   untilHydrated,
-  mintGuest,
+  mintSignedGuest,
 } from './fixtures';
 
 // Contrast audit, dark mode (docs/specs/003-system-architecture/e2e-smoke.md; the palette it guards is
@@ -41,7 +50,7 @@ test.describe('Contrast audit, dark mode', () => {
   });
 
   test('the editor, its panels and dialogs', async ({ page, pageErrors, baseURL }) => {
-    const owner = await mintGuest(page.request);
+    const owner = await mintSignedGuest(page.request);
     const origin = new URL(baseURL!).origin;
     const id = await seedDesign(page, owner, origin);
     await darkVisitor(page, owner);
@@ -71,7 +80,7 @@ test.describe('Contrast audit, dark mode', () => {
   });
 
   test('the Join dialog a share link opens', async ({ page, browser, baseURL }) => {
-    const owner = await mintGuest(page.request);
+    const owner = await mintSignedGuest(page.request);
     const origin = new URL(baseURL!).origin;
     const id = await seedDesign(page, owner, origin);
     const code = await shareLink(page, owner, origin, id);
@@ -80,5 +89,22 @@ test.describe('Contrast audit, dark mode', () => {
     await visitor.getByRole('button', { name: /^join$/i }).waitFor();
     expectAA(await auditContrast(visitor), 'Join dialog');
     await visitor.context().close();
+  });
+
+  // Home as a returning owner meets it (the design they opened in Jump Back In), then My
+  // designs, which lists it as a row.
+  test('the Explorer', async ({ page, pageErrors, baseURL }) => {
+    // Signed, so the identity holds across the two page loads.
+    const owner = await mintSignedGuest(page.request);
+    await seedOpenedDesign(page, owner, new URL(baseURL!).origin);
+    await darkVisitor(page, owner);
+    await page.goto('/explorer');
+    await jumpBackIn(page, 'Contrast').waitFor();
+    expectAA(await auditContrast(page), 'Explorer Home');
+
+    await page.goto('/explorer/all');
+    await designRow(page, 'Contrast').waitFor();
+    expectAA(await auditContrast(page), 'Explorer, My Work');
+    expectNoPageErrors(pageErrors);
   });
 });

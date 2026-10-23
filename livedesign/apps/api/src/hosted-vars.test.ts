@@ -90,8 +90,8 @@ describe('hosted profile', () => {
       expect(declared, `[${table}] declares hosted-only vars`).toEqual([]);
     }
     // Vacuity guard: the table reader must still see what IS committed.
-    expect(tomlTableKeys(toml, 'vars')).toContain('INDEX_ORIGIN');
-    expect(tomlTableKeys(toml, 'env.staging.vars')).toContain('INDEX_ORIGIN');
+    expect(tomlTableKeys(toml, 'vars')).toContain('GUEST_SIG_ENFORCE_AFTER');
+    expect(tomlTableKeys(toml, 'env.staging.vars')).toContain('GUEST_SIG_ENFORCE_AFTER');
   });
 });
 
@@ -159,7 +159,7 @@ describe('hosted-vars script', () => {
         { type: 'plain_text', name: 'TELEMETRY_ENABLED', text: 'true' },
         { type: 'plain_text', name: 'IMAGE_MAX_PER_OWNER', text: '50' },
         { type: 'secret_text', name: 'ACCOUNTS_CLIENT_SECRET' },
-        { type: 'durable_object_namespace', name: 'DESIGN_ROOM' },
+        { type: 'd1', name: 'DB' },
       ],
     },
   };

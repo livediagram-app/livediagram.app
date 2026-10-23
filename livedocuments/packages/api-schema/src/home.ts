@@ -27,15 +27,6 @@ export const HOME_TZ_MAX_LENGTH = 64;
  *  (docs/specs/013-workspace/timeline.md §4.2). */
 export const HOME_OPENED_EVENT_TYPE = 'document_opened';
 
-/** The editor's declaration that a tab read is an open (docs/specs/013-workspace/explorer-home.md
- *  "Opens"). Nothing else sends it, so a duplicate, an embed or a resync is never counted. */
-export const DOCUMENT_OPEN_HEADER = 'X-Document-Open';
-
-/** True when a request's `X-Document-Open` value declares an open. */
-export function readDocumentOpen(value: string | null): boolean {
-  return value === '1';
-}
-
 /** What other people did, in the order a summary sentence names them. */
 export const HOME_VERBS = [
   'commented',

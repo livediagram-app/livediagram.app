@@ -1,0 +1,383 @@
+'use client';
+
+import { BackBar } from '@/components/primitives/BackBar';
+import {
+  FolderPlaceIcon,
+  FolderStackIcon,
+  PersonalSpaceIcon,
+  NewFolderTile,
+  NewTeamTile,
+  PlacementCard,
+  TeamPlaceIcon,
+  type PlacementLayout,
+} from './PlacementCard';
+import {
+  PERSONAL_SPACE,
+  hasSpaceOverview,
+  placementViewFor,
+  type PlacementView,
+} from './placement-view';
+import { usePlacementView } from './usePlacementView';
+
+// The standardised folder-placement browser (docs/specs/006-design/offline-mode.md, extended by docs/specs/013-workspace/folders.md):
+// a two-level tile-grid browse. Pick a SPACE first (My Work, or one of your
+// teams), then drill into its folder tree; every level shows a "here" card
+// (Unsorted / Team Library / the open folder itself) plus the folders
+// directly inside it, with an optional inline New Folder tile. One space
+// collapses the overview away and the browser opens straight inside it.
+//
+// Shared by the New Design wizard's folder step (docs/specs/006-design/offline-mode.md, docs/specs/006-design/save-locations.md) and the
+// Move-to-folder dialog on every move surface (docs/specs/013-workspace/folders.md + docs/specs/013-workspace/team-shared-designs.md), so the
+// product has exactly ONE way to choose where a design lives. Two layouts
+// of the same browse: `tiles` (icon over label, a grid) for the move dialog,
+// `list` (icon beside label, stacked rows, the file-explorer idiom) for the
+// wizard, where a tile grid would read as a twin of the Save location row
+// directly above it.
+
+// A folder as the browser sees it: parentId drives the drill-down (root
+// folders show at the space level; subfolders only inside their parent).
+export type PickerFolder = { id: string; name: string; parentId: string | null };
+
+// Direct subfolders of a folder (null = a space's root). Drives both the
+// count badge and whether a folder card drills in rather than selects.
+function countChildren(list: PickerFolder[], parentId: string | null): number {
+  return list.filter((f) => f.parentId === parentId).length;
+}
+
+// Placement strings are the browser's selection wire format:
+// 'unsorted' | `folder:<id>` | `team:<teamId>` | `team:<teamId>:folder:<id>`.
+// These two helpers convert to / from the `{ teamId, folderId }` pair the
+// API layer speaks, so callers never re-parse the string by hand.
+export function placementValue(teamId: string | null, folderId: string | null): string {
+  if (teamId) return folderId ? `team:${teamId}:folder:${folderId}` : `team:${teamId}`;
+  return folderId ? `folder:${folderId}` : 'unsorted';
+}
+
+export function parsePlacement(placement: string): {
+  teamId: string | null;
+  folderId: string | null;
+} {
+  if (placement.startsWith('folder:')) {
+    return { teamId: null, folderId: placement.slice('folder:'.length) };
+  }
+  if (placement.startsWith('team:')) {
+    // `team:<teamId>` (library root) or `team:<teamId>:folder:<folderId>`.
+    const rest = placement.slice('team:'.length);
+    const sep = rest.indexOf(':folder:');
+    if (sep >= 0) {
+      return { teamId: rest.slice(0, sep), folderId: rest.slice(sep + ':folder:'.length) };
+    }
+    return { teamId: rest, folderId: null };
+  }
+  return { teamId: null, folderId: null };
+}
+
+// The space -> folder browser. `space` is view state: null shows the space
+// overview, 'personal-space' the personal tree, a team id that team's tree. It
+// opens where its selection is (usePlacementView): a selected folder opens the
+// level that lists it, a space's root the overview. Within a space, `stack` is the
+// folder drill-down: each level lists a "save at this level" card (Unsorted /
+// Team Library / the open folder itself) plus the folders directly inside
+// it — subfolders only appear inside their parent, mirroring the Explorer
+// tree. Clicking a folder WITH subfolders drills in; a leaf folder just
+// selects.
+export function PlacementBrowser({
+  placement,
+  onPlacement,
+  onCommitPlacement,
+  folders,
+  teams,
+  teamFolders,
+  showPersonal = true,
+  onCreateFolder,
+  onCreateTeam,
+  layout = 'tiles',
+}: {
+  placement: string;
+  onPlacement: (v: string) => void;
+  // Double-click on a destination card: select it AND commit the host flow
+  // in one gesture (create the design / perform the move). Absent =
+  // double-click ignored.
+  onCommitPlacement?: (v: string) => void;
+  folders: PickerFolder[];
+  teams: { id: string; name: string }[];
+  // Per-team folder lists, keyed by team id. Empty / missing while the team
+  // libraries are still loading.
+  teamFolders: Record<string, PickerFolder[]>;
+  // Whether the personal ("My Work") space is offered. Team-scoped surfaces
+  // (the team library's own move picker) turn it off and pass exactly one
+  // team, so the browser opens directly inside that team's tree.
+  showPersonal?: boolean;
+  // Inline folder creation (the "New Folder" tile). Absent = tile hidden.
+  onCreateFolder?: (
+    name: string,
+    parentId: string | null,
+    teamId: string | null,
+  ) => Promise<PickerFolder | null>;
+  // Inline team creation (the overview's "New Team" tile). Absent = tile
+  // hidden; hosts pass it only for signed-in users, since teams are
+  // signed-in only (docs/specs/013-workspace/teams.md).
+  onCreateTeam?: (name: string) => Promise<{ id: string; name: string } | null>;
+  // Tile grid (default) or stacked rows; see the header comment.
+  layout?: PlacementLayout;
+}) {
+  const levelClass =
+    layout === 'list' ? 'flex flex-col gap-1' : 'grid grid-cols-3 gap-2 sm:grid-cols-4';
+  // Rows enter as a cascade, each a beat after the one above (the entrance
+  // is on the card, see `enterIndex`). The level container is keyed on
+  // WHICH level is showing, so every drill in / back / space change
+  // remounts its rows and they cascade in again; a folder created in place
+  // only mounts its own row.
+  const spaceCount = (showPersonal ? 1 : 0) + teams.length;
+  // The space overview is shown wherever the personal space is on offer,
+  // even when it is the only space: choosing where a design lives starts
+  // with choosing the space, deliberately, and the overview is where a
+  // "create a team" option belongs for someone who has none yet. Only a
+  // team-scoped surface (one team, no personal space) skips it and opens
+  // straight inside that team, since there is nothing to choose. The view
+  // is DERIVED per render until the reader moves: teams and folders load
+  // asynchronously, so a reader who arrives before them still sees them,
+  // and a selected folder is opened to once its list lands.
+  const spaces = { showPersonal, teams, folders, teamFolders };
+  const hasOverview = hasSpaceOverview(spaces);
+  const { view, move } = usePlacementView(
+    placement,
+    placementViewFor(parsePlacement(placement), spaces),
+  );
+  const { space, stack } = view;
+  const placementSpace = placement.startsWith('team:') ? placement.split(':')[1] : PERSONAL_SPACE;
+
+  // Every reader move pins the view it leads to, with the placement it
+  // leaves selected, so the view never jumps under the reader.
+  const go = (next: PlacementView, select?: string) => {
+    move(next, select ?? placement);
+    if (select !== undefined) onPlacement(select);
+  };
+  const setStack = (next: PickerFolder[], select?: string) => go({ space, stack: next }, select);
+  // Choose a card on the level shown, staying on it.
+  const choose = (value: string) => setStack(stack, value);
+
+  // Entering a space also selects its root when the current choice lives
+  // elsewhere, so the level never renders with nothing highlighted (the
+  // "always something selected" rule; see selectionChain below for the
+  // within-space half of it).
+  const enterSpace = (next: string | null) => {
+    const select =
+      next === PERSONAL_SPACE && placementSpace !== PERSONAL_SPACE
+        ? 'unsorted'
+        : next && next !== PERSONAL_SPACE && placementSpace !== next
+          ? `team:${next}`
+          : undefined;
+    go({ space: next, stack: [] }, select);
+  };
+
+  // The bar above the rows is at EVERY level (see BackBar): a back button
+  // where there is a level above, a static heading where there is not, so
+  // it never appears and disappears under the rows as you move about.
+  if (hasOverview && space === null) {
+    return (
+      <div className="flex flex-col">
+        <BackBar label="Choose a Space" gap="tight" />
+        <div key="overview" className={levelClass}>
+          {showPersonal ? (
+            <PlacementCard
+              label="My Work"
+              sub="Your folders"
+              icon={<PersonalSpaceIcon />}
+              count={countChildren(folders, null)}
+              selected={placementSpace === 'personal-space'}
+              onSelect={() => enterSpace('personal-space')}
+              layout={layout}
+              enterIndex={0}
+            />
+          ) : null}
+          {teams.map((t, i) => (
+            <PlacementCard
+              key={t.id}
+              label={t.name}
+              sub="Team"
+              icon={<TeamPlaceIcon />}
+              count={countChildren(teamFolders[t.id] ?? [], null)}
+              selected={placementSpace === t.id}
+              onSelect={() => enterSpace(t.id)}
+              layout={layout}
+              enterIndex={(showPersonal ? 1 : 0) + i}
+            />
+          ))}
+          {onCreateTeam ? (
+            <NewTeamTile
+              layout={layout}
+              enterIndex={spaceCount}
+              onCreate={async (name) => {
+                const created = await onCreateTeam(name);
+                if (!created) return false;
+                // Straight into the new team, its root selected: the point
+                // of making a team here is to file this design in it.
+                enterSpace(created.id);
+                return true;
+              }}
+            />
+          ) : null}
+        </div>
+      </div>
+    );
+  }
+
+  const isPersonalSpace = space === PERSONAL_SPACE;
+  const teamId = isPersonalSpace ? null : (space as string);
+  const team = teamId ? teams.find((t) => t.id === teamId) : undefined;
+  const spaceFolders = isPersonalSpace ? folders : (teamFolders[teamId!] ?? []);
+  const spaceName = isPersonalSpace ? 'My Work' : (team?.name ?? 'Team');
+
+  // Placement value for a folder in this space.
+  const valueFor = (folderId: string) =>
+    isPersonalSpace ? `folder:${folderId}` : `team:${teamId}:folder:${folderId}`;
+  const rootValue = isPersonalSpace ? 'unsorted' : `team:${teamId}`;
+
+  const openFolder = stack[stack.length - 1];
+  const children = spaceFolders.filter((f) => f.parentId === (openFolder?.id ?? null));
+  const hasKids = (id: string) => countChildren(spaceFolders, id) > 0;
+
+  // The chosen destination folder and its ancestor chain within this space.
+  // Keeps something visibly selected at EVERY level: a folder card is shown
+  // selected when the destination IS it or lives inside it, so backing out
+  // of a subfolder still highlights the branch that holds the choice.
+  const selectionChain = new Set<string>();
+  const byId = new Map(spaceFolders.map((f) => [f.id, f]));
+  // The folder the destination currently points at, if it's a folder in
+  // this space (undefined when the space's root is the choice).
+  let chosenFolder: PickerFolder | undefined;
+  if (placementSpace === (isPersonalSpace ? 'personal-space' : teamId)) {
+    const ix = placement.indexOf('folder:');
+    const chosenId = ix >= 0 ? placement.slice(ix + 'folder:'.length) : null;
+    chosenFolder = chosenId ? byId.get(chosenId) : undefined;
+    let cur = chosenFolder;
+    while (cur) {
+      selectionChain.add(cur.id);
+      cur = cur.parentId ? byId.get(cur.parentId) : undefined;
+    }
+  }
+
+  // Where the New Folder tile creates. A folder is created UNDER the
+  // selected destination: pick a folder and the tile reads "New
+  // Subfolder"; pick the space's root and it's "New Folder" again. With
+  // nothing chosen in this space, the open folder (if any) is the parent,
+  // so drilling in never creates back at the root behind your back.
+  const newFolderParent = chosenFolder ?? openFolder;
+  // Root inward, so the browser can open the parent after creating in it.
+  const pathTo = (folder: PickerFolder): PickerFolder[] => {
+    const path: PickerFolder[] = [];
+    let cur: PickerFolder | undefined = folder;
+    while (cur) {
+      path.unshift(cur);
+      cur = cur.parentId ? byId.get(cur.parentId) : undefined;
+    }
+    return path;
+  };
+
+  // Back: pop one folder level; at the space root, back to the overview.
+  // On a team-scoped surface with nothing open there is no level above,
+  // and the bar reads as a heading instead.
+  const showBack = hasOverview || stack.length > 0;
+  const onBack = () => (stack.length > 0 ? setStack(stack.slice(0, -1)) : enterSpace(null));
+  const backLabel =
+    stack.length > 1
+      ? stack[stack.length - 2]!.name
+      : stack.length === 1
+        ? spaceName
+        : 'All spaces';
+
+  return (
+    <div className="flex flex-col">
+      <BackBar
+        label={showBack ? backLabel : 'Choose a Folder'}
+        current={openFolder?.name ?? spaceName}
+        onClick={showBack ? onBack : undefined}
+        gap="tight"
+      />
+      <div key={`${space}:${openFolder?.id ?? 'root'}`} className={levelClass}>
+        {openFolder ? (
+          // Save directly in the open folder.
+          <PlacementCard
+            label={openFolder.name}
+            sub="This folder"
+            icon={<FolderPlaceIcon />}
+            count={children.length}
+            selected={placement === valueFor(openFolder.id)}
+            onSelect={() => choose(valueFor(openFolder.id))}
+            onCommit={() => onCommitPlacement?.(valueFor(openFolder.id))}
+            layout={layout}
+            enterIndex={0}
+          />
+        ) : (
+          <PlacementCard
+            label={isPersonalSpace ? 'My Work' : 'Team Library'}
+            sub={isPersonalSpace ? 'Top level' : (team?.name ?? 'Team')}
+            icon={isPersonalSpace ? <PersonalSpaceIcon /> : <TeamPlaceIcon />}
+            count={children.length}
+            selected={placement === rootValue}
+            onSelect={() => choose(rootValue)}
+            onCommit={() => onCommitPlacement?.(rootValue)}
+            layout={layout}
+            enterIndex={0}
+          />
+        )}
+        {children.map((f, i) =>
+          hasKids(f.id) ? (
+            // A folder with subfolders drills in (its "save here" card is the
+            // first tile of the next level) and gets the stacked-folders
+            // glyph so it reads as "contains more" before you click. Drilling
+            // also selects it (unless the choice already lives inside it), so
+            // the next level opens with its first card highlighted.
+            <PlacementCard
+              key={f.id}
+              label={f.name}
+              sub="Open folder"
+              icon={<FolderStackIcon />}
+              count={countChildren(spaceFolders, f.id)}
+              selected={selectionChain.has(f.id)}
+              onSelect={() =>
+                setStack([...stack, f], selectionChain.has(f.id) ? undefined : valueFor(f.id))
+              }
+              layout={layout}
+              enterIndex={i + 1}
+            />
+          ) : (
+            // A leaf: "Folder" at a space's root, "Subfolder" once you are
+            // inside a folder, so the caption says where you are.
+            <PlacementCard
+              key={f.id}
+              label={f.name}
+              sub={openFolder ? 'Subfolder' : 'Folder'}
+              icon={<FolderPlaceIcon />}
+              selected={placement === valueFor(f.id)}
+              onSelect={() => choose(valueFor(f.id))}
+              onCommit={() => onCommitPlacement?.(valueFor(f.id))}
+              layout={layout}
+              enterIndex={i + 1}
+            />
+          ),
+        )}
+        {onCreateFolder ? (
+          <NewFolderTile
+            layout={layout}
+            enterIndex={children.length + 1}
+            label={newFolderParent ? 'New Subfolder' : 'New Folder'}
+            sub={newFolderParent ? `In ${newFolderParent.name}` : 'Create here'}
+            onCreate={async (name) => {
+              const created = await onCreateFolder(name, newFolderParent?.id ?? null, teamId);
+              if (!created) return false;
+              // Select the fresh folder as the destination straight away,
+              // and open its parent if that isn't the level on screen, so
+              // the new row is the one highlighted rather than hidden
+              // inside a folder the reader hasn't opened.
+              const opensParent = newFolderParent && newFolderParent.id !== openFolder?.id;
+              setStack(opensParent ? pathTo(newFolderParent) : stack, valueFor(created.id));
+              return true;
+            }}
+          />
+        ) : null}
+      </div>
+    </div>
+  );
+}

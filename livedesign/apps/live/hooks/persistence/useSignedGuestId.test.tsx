@@ -3,10 +3,10 @@
 import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const ensureGuestIdentity =
-  vi.fn<typeof import('@/lib/guest-identity').ensureGuestIdentity>();
+const ensureSignedGuestIdentity =
+  vi.fn<typeof import('@/lib/guest-identity').ensureSignedGuestIdentity>();
 vi.mock('@/lib/guest-identity', () => ({
-  ensureGuestIdentity: () => ensureGuestIdentity(),
+  ensureSignedGuestIdentity: () => ensureSignedGuestIdentity(),
 }));
 
 const { useSignedGuestId } = await import('./useSignedGuestId');
@@ -15,35 +15,35 @@ const { useSignedGuestId } = await import('./useSignedGuestId');
 // (docs/specs/014-identity/auth-and-guest-access.md "Signed guest ids").
 describe('useSignedGuestId', () => {
   beforeEach(() => {
-    ensureGuestIdentity.mockReset();
+    ensureSignedGuestIdentity.mockReset();
   });
 
   it('holds no id until the signed identity resolves', async () => {
-    let resolve!: (v: { id: string }) => void;
-    ensureGuestIdentity.mockReturnValue(new Promise((r) => (resolve = r)));
+    let resolve!: (v: { id: string; sig: string }) => void;
+    ensureSignedGuestIdentity.mockReturnValue(new Promise((r) => (resolve = r)));
     const { result } = renderHook(() => useSignedGuestId(true, null));
     expect(result.current).toBeNull();
-    await act(async () => resolve({ id: 'guest-signed' }));
+    await act(async () => resolve({ id: 'guest-signed', sig: 'sig' }));
     expect(result.current).toBe('guest-signed');
   });
 
   it('waits for auth to settle before resolving anything', () => {
     renderHook(() => useSignedGuestId(false, null));
-    expect(ensureGuestIdentity).not.toHaveBeenCalled();
+    expect(ensureSignedGuestIdentity).not.toHaveBeenCalled();
   });
 
   it('resolves nothing for a signed-in user', () => {
     const { result } = renderHook(() => useSignedGuestId(true, 'user_1'));
-    expect(ensureGuestIdentity).not.toHaveBeenCalled();
+    expect(ensureSignedGuestIdentity).not.toHaveBeenCalled();
     expect(result.current).toBeNull();
   });
 
   it('drops a resolution that lands after unmount', async () => {
-    let resolve!: (v: { id: string }) => void;
-    ensureGuestIdentity.mockReturnValue(new Promise((r) => (resolve = r)));
+    let resolve!: (v: { id: string; sig: string }) => void;
+    ensureSignedGuestIdentity.mockReturnValue(new Promise((r) => (resolve = r)));
     const { result, unmount } = renderHook(() => useSignedGuestId(true, null));
     unmount();
-    await act(async () => resolve({ id: 'late' }));
+    await act(async () => resolve({ id: 'late', sig: 'sig' }));
     expect(result.current).toBeNull();
   });
 });

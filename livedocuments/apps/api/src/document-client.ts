@@ -20,8 +20,9 @@ export type DocumentRoomClient = {
   image(subject: ThumbnailSubject, tabId: string | null): Promise<string | null>;
   // Whether the document holds this tab (a workbench ticket's check).
   hasTab(tabId: string): Promise<boolean>;
-  // Whether the document places an image (on one tab, for a tab-scoped visitor): the byte endpoint's share check.
-  placesImage(imageId: string, onlyTabId: string | null): Promise<boolean>;
+  // Whether the document places an image (on one tab, for a tab-scoped visitor) and may serve it: the byte
+  // endpoint's share check.
+  servesImage(imageId: string, onlyTabId: string | null): Promise<boolean>;
   // A copy's two halves (document-content.ts).
   exportCopy(
     onlyTabId: string | null,
@@ -31,7 +32,12 @@ export type DocumentRoomClient = {
   // The document is gone for good: end every session and drop everything it stored.
   purge(): Promise<void>;
   // Share links revoked elsewhere (the index): their sessions end now.
-  revokeCodes(codes: string[]): Promise<number>;
+  revokeCodes(codes: string[], reason?: 'revoked' | 'rescoped'): Promise<number>;
+  // Someone opened the document through a share link for the first time (the index's notice): the owner's
+  // "someone joined" email, sent from the room, which keeps its once-per-window claim.
+  joined(personId: string): Promise<void>;
+  // A closed account's name off the document (document-anonymise.ts): answers the rows changed.
+  anonymise(personId: string): Promise<number>;
 };
 
 export function documentRoom(
@@ -47,11 +53,13 @@ export function documentRoom(
     route: (request, identity) => room.route(documentId, request, identity),
     image: (subject, tabId) => room.image(documentId, subject, tabId),
     hasTab: (tabId) => room.hasTab(documentId, tabId),
-    placesImage: (imageId, onlyTabId) => room.placesImage(documentId, imageId, onlyTabId),
+    servesImage: (imageId, onlyTabId) => room.servesImage(documentId, imageId, onlyTabId),
     exportCopy: (onlyTabId, redact) => room.exportCopy(documentId, onlyTabId, redact),
     importCopy: (copy) => room.importCopy(documentId, copy),
     purge: () => room.purge(documentId),
-    revokeCodes: (codes) => room.revokeCodes(documentId, codes),
+    revokeCodes: (codes, reason) => room.revokeCodes(documentId, codes, reason),
+    joined: (personId) => room.joined(documentId, personId),
+    anonymise: (personId) => room.anonymise(documentId, personId),
   };
 }
 
@@ -65,7 +73,7 @@ export type DocumentRoomRpc = {
     tabId: string | null,
   ): Promise<string | null>;
   hasTab(documentId: string, tabId: string): Promise<boolean>;
-  placesImage(documentId: string, imageId: string, onlyTabId: string | null): Promise<boolean>;
+  servesImage(documentId: string, imageId: string, onlyTabId: string | null): Promise<boolean>;
   exportCopy(
     documentId: string,
     onlyTabId: string | null,
@@ -73,6 +81,8 @@ export type DocumentRoomRpc = {
   ): Promise<DocumentCopy | null>;
   importCopy(documentId: string, copy: DocumentCopy): Promise<void>;
   purge(documentId: string): Promise<void>;
-  revokeCodes(documentId: string, codes: string[]): Promise<number>;
+  revokeCodes(documentId: string, codes: string[], reason?: 'revoked' | 'rescoped'): Promise<number>;
+  joined(documentId: string, personId: string): Promise<void>;
+  anonymise(documentId: string, personId: string): Promise<number>;
   fetch(request: Request): Promise<Response>;
 };

@@ -3,18 +3,24 @@
 // who may do what, and the service keeps the bytes, the dedupe and the caps.
 
 import { ACCEPTED_IMAGE_TYPES, MAX_IMAGE_BYTES, ORIGINAL_NAME_MAX } from '@liveworkspace/media';
-import { documentMayServeImage, getDocumentMeta, imageUsageByOwner } from '../db';
+import type { MediaClient } from '@liveworkspace/media';
 import { documentRoom } from '../document-client';
+import { indexFor } from '../index-service';
 import {
   imageSummary,
+  MEDIA_APP,
   mediaClient,
   mediaImageOwner,
   mediaOwner,
-  rememberMediaImages,
+  rememberMediaOwner,
 } from '../media';
 import { badRequest, CORS_HEADERS, imagesUnavailable, json, notFound } from '../responses';
-import { recordImageUploaded } from '../timeline';
-import { gateGrant, requireOwner, type RouteContext } from './context';
+import { grantCallerOf, requireOwner, type RouteContext } from './context';
+import { resolveDocumentGrant } from './document-grant';
+
+// The Gallery's "Used in" names: at most this many documents are looked up in the index, this many at once.
+export const USAGE_DOCUMENTS_MAX = 200;
+const USAGE_LOOKUPS_IN_FLIGHT = 6;
 
 // Without the service (a self-host without MEDIA_KEY) every endpoint answers 503, so the editor hides
 // images rather than falling through to a generic 500.
@@ -24,19 +30,16 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
   const media = mediaClient(env);
   if (!media) return imagesUnavailable();
 
-  // GET /api/images: the owner's gallery, from every app. Owner only. Each image is remembered as
-  // theirs, so a document of theirs placing one uploaded in another app serves it.
+  // GET /api/images: the owner's gallery, from every app. Owner only. Each image's owner is remembered as the
+  // service has it now (src/media.ts), so their own reads of it take the owner shortcut without asking again.
   if (segments.length === 2 && request.method === 'GET') {
     const owner = requireOwner(ctx);
     if (owner instanceof Response) return owner;
-    const listed = await media.list(await mediaOwner(owner));
+    const named = await mediaOwner(owner);
+    const listed = await media.list(named);
     if (!listed.ok) return serviceAnswer(listed);
     const images = listed.value.images;
-    await rememberMediaImages(
-      env,
-      owner,
-      images.map((i) => i.id),
-    );
+    for (const image of images) rememberMediaOwner(image.id, named);
     return json({ images: images.map(imageSummary) });
   }
 
@@ -73,8 +76,9 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
       // Content-Length is the client's word; the body is the truth.
       return json({ error: 'file_too_large', limitBytes: MAX_IMAGE_BYTES }, { status: 413 });
     }
+    const named = await mediaOwner(owner);
     const uploaded = await media.upload({
-      owner: await mediaOwner(owner),
+      owner: named,
       bytes,
       contentType: declaredType,
       byteSize: bytes.byteLength,
@@ -85,24 +89,18 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
     });
     if (!uploaded.ok) return serviceAnswer(uploaded);
     const { image, deduped } = uploaded.value;
-    await rememberMediaImages(env, owner, [image.id]);
-    // docs/specs/013-workspace/timeline.md §4.5: only a genuinely NEW upload, so pasting the same
-    // screenshot twice is one event, and the day's uploads coalesce into one counted bubble.
-    if (!deduped) ctx.waitUntil?.(recordImageUploaded(env, owner));
+    rememberMediaOwner(image.id, named);
     return json({ image: imageSummary(image), deduped });
   }
 
-  // GET /api/images/usage: owner-only. Returns the inverse
-  // index used by the Explorer Image Gallery: imageId →
-  // [{ id, name }] for every owned document that references
-  // it. Empty arrays for images that aren't placed on any
-  // canvas yet (the entry simply doesn't appear in the map).
-  // See docs/specs/013-workspace/folders.md + docs/specs/009-elements/images.md.
+  // GET /api/images/usage: owner-only. The Explorer Image Gallery's "Used in" badge: imageId → [{ id, name }] for
+  // every document of theirs that places it, ordered by name. An image no document places has no entry. Which
+  // documents place each image is the media service's (each document tells it, document-outbox.ts); their names
+  // and owners are the index's (docs/specs/009-elements/images.md).
   if (segments.length === 3 && segments[2] === 'usage' && request.method === 'GET') {
     const owner = requireOwner(ctx);
     if (owner instanceof Response) return owner;
-    const usage = await imageUsageByOwner(env, owner);
-    return json({ usage });
+    return json({ usage: await usageOf(ctx, media, owner) });
   }
 
   // GET /api/images/:id: byte read. Auth: owner of the
@@ -112,44 +110,28 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
   if (segments.length === 3 && request.method === 'GET') {
     const imageId = segments[2]!;
     const callerOwner = resolveOwner();
-    const imageOwner = await mediaImageOwner(env, media, imageId, callerOwner);
-    if (imageOwner === null) return notFound();
+    const imageOwner = await mediaImageOwner(media, imageId);
+    if (imageOwner === '') return notFound();
     // A document-scope workbench session (docs/specs/013-workspace/workbench-embeds.md) never takes the owner
     // shortcut and reads through its own document only, so it cannot walk its owner's gallery by id. A workspace
     // session reaches the gallery, as the Explorer does, so it reads as its person.
     const workbench = ctx.workbench?.scope === 'document' ? ctx.workbench : null;
-    let allowed = !workbench && callerOwner === imageOwner;
+    let allowed =
+      !workbench && callerOwner !== null && (await mediaOwner(callerOwner)) === imageOwner;
     if (!allowed) {
       const d = url.searchParams.get('d');
       if (d && (!workbench || d === workbench.documentId)) {
-        // Reader must be able to read document `d` (owner OR
-        // a valid share code that resolves to it), AND that
-        // document must place this image AND may serve it: the
-        // image's owner owns `d`, or `d` holds a placement grant
-        // (a teammate's or collaborator's upload, or a copy).
-        // The owner and team are all the gate needs: one row, not the full document load (its
-        // participants and tab summary), which ran once for every image a visitor's board shows.
-        const liveDoc = await getDocumentMeta(env, d);
-        if (liveDoc) {
-          // The same access policy as the tab read (auth/document-access.ts), so a tightening of the
-          // share-code check lands once and both routes follow. A tab-scoped visitor
-          // (docs/specs/013-workspace/tab-scoped-share-links.md) reads the images their own tab uses,
-          // not every image in the document.
-          const grant = await gateGrant(ctx, d, liveDoc.ownerId, liveDoc.teamId);
-          if (grant) {
-            // Placed by the document AND servable by it (docs/specs/009-elements/images.md,
-            // "Placement grants"): an id pasted into an unrelated document serves nothing. The placement is the
-            // document's own to answer (its Durable Object, so an image placed a moment ago serves at once); who
-            // may serve whose image is D1's. Asked together.
-            const [places, serves] = await Promise.all([
-              documentRoom(env, d).placesImage(imageId, grant.tabScope),
-              documentMayServeImage(env, d, imageId),
-            ]);
-            allowed = places && serves;
-            if (!allowed) {
-              console.warn('[images] not servable by document', { documentId: d, imageId });
-            }
-          }
+        // The reader must be able to read document `d` (the index's grant: the X-Index-Grant the editor sends, or
+        // one asked for the caller and the share code they carry), and `d` must place this image AND
+        // may serve it (docs/specs/009-elements/images.md, "Placement grants"): the image's owner owns `d`, or `d`
+        // holds a placement grant (a teammate's or collaborator's upload, or a copy's). Both are the document's own
+        // to answer, in one call to its Durable Object, so an image placed a moment ago serves at once. A
+        // tab-scoped visitor (docs/specs/013-workspace/tab-scoped-share-links.md) reads the images their own tab
+        // uses, not every image in the document.
+        const grant = await resolveDocumentGrant(ctx, d);
+        if (grant && !(grant instanceof Response)) {
+          allowed = await documentRoom(env, d).servesImage(imageId, grant.tab);
+          if (!allowed) console.warn('[images] not servable by document', { documentId: d, imageId });
         }
       }
     }
@@ -176,11 +158,58 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
     if (owner instanceof Response) return owner;
     const removed = await media.remove(await mediaOwner(owner), imageId);
     if (!removed.ok) return serviceAnswer(removed);
-    await env.DB.prepare('DELETE FROM media_images WHERE id = ?').bind(imageId).run();
+    rememberMediaOwner(imageId, null);
     return json({ ok: true });
   }
 
   return notFound();
+}
+
+// The Gallery's usage map: the documents of this app the media service says place each of the owner's images,
+// kept to those the index answers as theirs and not in the Trash, named as the index has them. At most
+// USAGE_DOCUMENTS_MAX documents are looked up (USAGE_LOOKUPS_IN_FLIGHT at a time); a document past that, or one the
+// index cannot answer, is left out of the badge rather than failing the Gallery.
+async function usageOf(
+  ctx: RouteContext,
+  media: MediaClient,
+  owner: string,
+): Promise<Record<string, { id: string; name: string }[]>> {
+  const usage: Record<string, { id: string; name: string }[]> = {};
+  const answered = await media.usage(await mediaOwner(owner));
+  if (!answered.ok) {
+    console.error('[images] media usage answered', answered.status);
+    return usage;
+  }
+  const placed = Object.entries(answered.value.usage);
+  const documents = [
+    ...new Set(placed.flatMap(([, refs]) => refs.filter((r) => r.app === MEDIA_APP).map((r) => r.document))),
+  ].slice(0, USAGE_DOCUMENTS_MAX);
+  const client = indexFor(ctx.env, grantCallerOf(ctx));
+  if (!client || documents.length === 0) return usage;
+  const names = new Map<string, string>();
+  for (let i = 0; i < documents.length; i += USAGE_LOOKUPS_IN_FLIGHT) {
+    await Promise.all(
+      documents.slice(i, i + USAGE_LOOKUPS_IN_FLIGHT).map(async (id) => {
+        try {
+          const { item } = await client.getItem(id);
+          if (item.ownerId === owner && item.trashedAt === null) names.set(id, item.title);
+        } catch {
+          // Gone, or not theirs to read: not in the badge.
+        }
+      }),
+    );
+  }
+  for (const [imageId, refs] of placed) {
+    const docs = refs
+      .filter((r) => r.app === MEDIA_APP && names.has(r.document))
+      .map((r) => ({ id: r.document, name: names.get(r.document)! }));
+    if (docs.length === 0) continue;
+    const seen = new Set<string>();
+    usage[imageId] = docs
+      .filter((d) => (seen.has(d.id) ? false : (seen.add(d.id), true)))
+      .sort((a, b) => a.name.localeCompare(b.name) || a.id.localeCompare(b.id));
+  }
+  return usage;
 }
 
 // A refusal from the service, passed on as it came (a full gallery, an unsupported file), except one

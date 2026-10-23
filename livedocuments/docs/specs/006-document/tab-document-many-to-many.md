@@ -29,14 +29,10 @@ It holds the tab's place in its document: `order_index`, and the per-document `f
 
 ### Tab lifecycle
 
-- **Create tab**: one row in `tabs` and one in `document_tabs`, in one transaction.
-- **Remove a tab**: its link and its row go in one batch (`deleteTabRow`, `apps/api/src/db/tabs.ts`); its stats,
-  image references and changesets go with the row by their foreign keys, and the document's outbox pushes the
-  change to D1's indexes.
-- **Delete a document**: the D1 removal (`documentRemovalStatements`, `apps/api/src/db/document-removal.ts`), then
-  the document's object deletes everything it stores (`purgeRooms`, [API app](../015-api/api.md), "Purging a
-  room"). Every path that removes a document takes this route: the [Trash](../013-workspace/trash.md) purge, Take
-  Offline ([Offline Mode](offline-mode.md)) and account deletion.
+- **Create tab** — insert one row into `tabs`, one row into `document_tabs` pointing it at the owning document.
+- **Add tab to another document** — `INSERT INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES (?, ?, ?, ?)`. No change to `tabs`. Edits to the tab propagate to every document referencing it.
+- **Remove tab from a document** — `DELETE FROM document_tabs WHERE document_id = ? AND tab_id = ?`. If no rows remain referencing the tab, the `tabs` row AND every collaboration-index row keyed by that tab id are dropped in the same call (atomic on the server). When other documents still link the tab, the body stays, so any document that still surfaces the tab still surfaces its content. The server handles it with full knowledge of the link-count.
+- **Delete a document** — a delete moves the document to the index's Trash, touching no tab. It is purged 30 days later, or at once on Delete permanently / Empty Trash / `?permanent=true`: the index drops its rows and asks livedocuments to drop the content (`DELETE /api/internal/items/:id`), which empties the document's Durable Object. Take Offline ([Offline Mode](offline-mode.md)) and account deletion take the same purge. While a document waits in the Trash its tabs stay where they are.
 
 ### Shared-tab notice
 

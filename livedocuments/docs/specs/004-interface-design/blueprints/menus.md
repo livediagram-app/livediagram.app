@@ -29,11 +29,9 @@ Scope, by file:
 | `apps/editor/components/palette/ContextMenu.tsx`                             | Control menu at a point (element, selection, cell)                                                           |
 | `apps/editor/components/chrome/TabPortalMenu.tsx`                            | Tab and Canvas control menu                                                                                  |
 | `apps/editor/components/panels/LayerRowMenu.tsx`                             | Layer control menu                                                                                           |
-| `apps/editor/components/canvas/LockedElementMenu.tsx`                        | Command menu, no trigger                                                                                     |
 | `apps/editor/components/chrome/ZoomMenu.tsx`                                 | Hover-open command menu with a button of its own                                                             |
 | `apps/editor/components/chrome/AuthControls.tsx`                             | Account command menu                                                                                         |
 | `apps/editor/components/chrome/EmbedChrome.tsx`                              | Embed tab command menu                                                                                       |
-| `apps/editor/components/dialogs/ShareCopyMenu.tsx`                           | Command menu, or control menu when it carries a header control                                               |
 | `apps/editor/hooks/canvas/useEditorKeyboardShortcuts.ts`                     | Canvas shortcuts stand down inside a menu surface                                                            |
 | `apps/editor/components/canvas/SelectionPopover.tsx`                         | More actions: `aria-haspopup="dialog"` and the stable id `selection-more-actions`                            |
 | `apps/editor/lib/element-names.ts`                                           | `shapeKindLabel`: names the Shape tiles of the element and selection menus                                   |
@@ -146,7 +144,6 @@ Options: `onClose()`, `onEscape?()` (default `onClose`), `trigger?`, `label: str
 | `ContextMenu`                                                    | Control, `label` prop                                | None: the focused element at open |
 | `TabPortalMenu` `PortalMenu`                                     | Control, "Tab menu" / "Canvas menu"                  | `anchor` (tab ⋯) or none (canvas) |
 | `LayerRowMenu`                                                   | Control, "<layer> layer menu"                        | None                              |
-| `ShareCopyMenu`                                                  | Control with a header control, else command          | Its button                        |
 | Custom colour menu (`ColourPicker`)                              | Command, "<colour> menu"                             | The swatch                        |
 | `LockedElementMenu`                                              | Command, labelled by "In use"                        | None                              |
 | `ZoomMenu`                                                       | Command, `initialFocus` `none` on hover              | The percentage button             |

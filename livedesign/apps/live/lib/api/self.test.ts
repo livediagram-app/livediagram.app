@@ -68,7 +68,7 @@ describe('loading your own profile before you have saved one', () => {
   it('asks as yourself and reads no profile as null', async () => {
     expect(await apiLoadSelf('p-fresh')).toBeNull();
     expect(requests).toHaveLength(1);
-    expect(requests[0]!.headers.get('X-Owner-Id')).toBeNull();
+    expect(requests[0]!.headers.get('X-Owner-Id')).toBe('p-fresh');
   });
 
   it('still loads a signed-in profile, anonymously, while the session token is unavailable', async () => {

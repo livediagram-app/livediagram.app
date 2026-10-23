@@ -9,7 +9,7 @@ import {
   type PresentationConfig,
 } from '@/lib/presentation-config';
 import type { SettingsCategoryId, SettingsIconId } from './settings-icons';
-import type { TelemetryCategory } from '@livedesign/api-schema';
+import { titleCase, type TelemetryCategory } from '@livedesign/api-schema';
 import {
   autoRebindArrowsEnabled,
   panelEnabled,
@@ -59,6 +59,8 @@ import {
   type LogoGuidePart,
   type LogoGuideStrength,
 } from '@/lib/logo-guide-prefs';
+import type { PlacementDefaultKey } from '@livedesign/api-schema';
+import { DEFAULT_KEY_ENTRIES } from '@/lib/placement-defaults/default-key-entries';
 
 // One logo guide's switch (docs/specs/007-editor/logo-pages.md "Construction guides"): a tile in
 // Settings > Editor > Pages mode's Guides Shown grid, as in a logo page's Guides popover. The token
@@ -289,13 +291,17 @@ export type SettingsDeleteAccountRowSpec = RowBase & { kind: 'deleteAccount' };
 // Settings is the one menu every deployment has.
 export type SettingsTrashRowSpec = RowBase & { kind: 'trash' };
 
-// Default Folders (docs/specs/013-workspace/default-folders.md "Settings"): where new designs go when made without
-// a place. Not a preference: the shared Explorer reads and writes them on the index.
-export type SettingsDefaultFoldersRowSpec = RowBase & { kind: 'defaultFolders' };
-
 // What power user mode's preset set, as a live readout: each line's value is
 // its own row's, changed in that row (docs/specs/007-editor/power-user-mode.md#in-settings).
 export type SettingsPresetSummaryRowSpec = RowBase & { kind: 'presetSummary' };
+
+// One default folder entry (docs/specs/013-workspace/default-folders.md "Settings"): where new
+// designs of that key go, with Change and Clear. Not a preference: it reads and writes
+// `/api/placement-defaults` through the page's store, so it carries no read/write pair.
+export type SettingsPlacementDefaultRowSpec = RowBase & {
+  kind: 'placementDefault';
+  placementKey: PlacementDefaultKey;
+};
 
 export type SettingsRowSpec =
   | SettingsToggleRowSpec
@@ -311,8 +317,8 @@ export type SettingsRowSpec =
   | SettingsIdentityRowSpec
   | SettingsDeleteAccountRowSpec
   | SettingsTrashRowSpec
-  | SettingsDefaultFoldersRowSpec
-  | SettingsPresetSummaryRowSpec;
+  | SettingsPresetSummaryRowSpec
+  | SettingsPlacementDefaultRowSpec;
 
 export type SettingsCategorySpec = {
   id: SettingsCategoryId;
@@ -1261,10 +1267,28 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
   {
     id: 'designs',
     label: 'Designs',
+    sectionNotes: {
+      'Default Folders': {
+        note: 'Where each kind of new design is saved when you create it without choosing a place.',
+        helpArticle: 'defaultFolders',
+      },
+    },
     rows: [
+      // One row per default folder entry, in list order: guests have defaults too.
+      ...DEFAULT_KEY_ENTRIES.map((entry): SettingsPlacementDefaultRowSpec => ({
+        kind: 'placementDefault',
+        key: `placementDefault-${entry.key}`,
+        placementKey: entry.key,
+        section: 'Default Folders',
+        // Settings labels are title case; the entries' own labels are sentence case.
+        label: titleCase(entry.label),
+        keywords:
+          'default folder where new designs go save location place file automatically always save placement',
+        description: `Where new ${entry.noun} go when you create one without choosing a place.`,
+      })),
       {
         // Home's banner (docs/specs/013-workspace/explorer-home.md "Hiding the banner"): its own close writes `false`,
-        // and this switch brings it back. The shared Explorer draws it (@liveworkspace/explorer's HomeHero).
+        // and this switch brings it back.
         kind: 'toggle',
         key: 'homeBanner',
         section: 'Explorer',
@@ -1275,16 +1299,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         read: (p) => p.homeBanner !== false,
         write: (p, v) => ({ ...p, homeBanner: v }),
         event: { category: 'UI', on: 'HomeBannerOn', off: 'HomeBannerOff' },
-      },
-      {
-        kind: 'defaultFolders',
-        key: 'defaultFolders',
-        section: 'Default Folders',
-        label: 'Where New Designs Go',
-        keywords:
-          'default folder where new designs go save location place file automatically always save placement designs kanban retrospective template',
-        description:
-          'New designs you make without choosing a place are saved in these folders. Kanban and Retrospective designs can have their own.',
       },
     ],
   },

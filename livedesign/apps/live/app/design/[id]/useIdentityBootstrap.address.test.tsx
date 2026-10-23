@@ -12,6 +12,7 @@ const { api, identity, seed } = vi.hoisted(() => ({
     apiSaveSelf: vi.fn(),
     apiLoadDesign: vi.fn(),
     apiLoadShared: vi.fn(),
+    apiListShareLinks: vi.fn(),
   },
   identity: { ensureCollabKey: vi.fn(() => 'collab'), hasConfirmedName: vi.fn(() => true) },
   seed: vi.fn(async () => {}),
@@ -26,7 +27,7 @@ vi.mock('@/lib/api-client', () => ({
 }));
 vi.mock('@/lib/local-identity', () => identity);
 vi.mock('@/lib/guest-identity', () => ({
-  ensureGuestIdentity: async () => ({ id: 'guest-1' }),
+  ensureSignedGuestIdentity: async () => ({ id: 'guest-1' }),
 }));
 vi.mock('@/lib/daily-return', () => ({ trackDailyReturn: () => {} }));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
@@ -65,6 +66,8 @@ function render(passwordRetry = 0) {
       workbench: null,
       activeId: 't1',
       selfParticipant: { id: 'self', name: 'x', color: '#000', status: 'online' },
+      refreshDesignList: () => {},
+      refreshSharedList: () => {},
       resetTabs: () => {},
       refs: {
         lastPersistedSelfRef: { current: null },

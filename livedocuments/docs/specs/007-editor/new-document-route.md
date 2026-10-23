@@ -148,7 +148,7 @@ missing document the condition is expected to clear on its own. The
 same card serves the failed-create path on `/new`, with one exception: a
 create refused for its **placement** (`team_forbidden`, `folder_not_found`,
 `folder_scope_mismatch`, `placement_invalid`, see
-[Folders → Placement on create](../013-workspace/folders.md#placement-on-create)) will not clear on
+[Folders → Placement on create](../013-workspace/folders.md)) will not clear on
 a retry, so the card says why and offers **Choose another place** instead.
 On `/new`, **Retry** re-runs the same create under the same document and tab
 ids it first tried: a create that reached the server but whose answer was lost
@@ -244,12 +244,9 @@ page), logging `[new] restored, back out <target>`.
 - **Which document:** the template `?template=<kind>` names (`newDocumentKind`), a blank for `?blank=1`, else one
   empty tab that opens on its start (Start Making Pages). An unknown template kind is ignored rather than guessed,
   so a stale link makes a document, not a 404; a retired kind opens its replacement.
-- **Stored** where [Save Locations → The default depends on who is creating](../006-document/save-locations.md#the-default-depends-on-who-is-creating)
-  says: This Browser for a guest (with sign-in enabled), livedocuments for everyone else. Decided at commit by
-  `resolveSaveLocation` (`app/new/useNewDocumentLocation.ts`): a guest never waits, a browser that looks signed in
-  waits for identity, so a signed-in person is never handed a document in This Browser. A guest's This Browser
-  document is created without waiting for identity at all ([Offline Mode → Instant
-  open](../006-document/offline-mode.md#instant-open)). A placement param (`folder` / `team`) names a server place,
+- **Stored** where [Save Locations → The default](../006-document/save-locations.md#the-default) says: livedocuments,
+  for everyone (`defaultSaveLocationFor`). Decided at commit by `resolveSaveLocation`
+  (`app/new/useNewDocumentLocation.ts`), which never waits on sign-in. A placement param (`folder` / `team`) names a server place,
   so it makes the create a cloud one whoever is creating.
 - **Filed** (livedocuments) in the `/new?folder=` / `?team=` context when there is one, an explicit placement;
   otherwise the create carries no placement and the server files it in the person's
@@ -385,7 +382,7 @@ Every create from `/new` honours the URL placement context (the `?folder` /
 
 The URL's placement context travels in the create body as
 `{ teamId?, folderId? }`, and the server files the document in the same write
-([Folders → Placement on create](../013-workspace/folders.md#placement-on-create)). There is no
+([Folders → Placement on create](../013-workspace/folders.md)). There is no
 follow-up placement request, so a document asked for in a team can never be left personal
 by a request that failed quietly.
 
@@ -419,8 +416,8 @@ carries a theme id (`onPick`, `commitNewDocument`, `buildTemplatedTab` take a `s
 ## API impact
 
 - No new endpoints. `POST /api/documents` already accepts an
-  optional `tabs` array per [Per-tab storage](../006-document/per-tab-storage.md) — the new route uses it,
-  and the placement `{ teamId?, folderId? }` ([Folders → Placement on create](../013-workspace/folders.md#placement-on-create)).
+  optional `tabs` array per [Per-tab storage](../006-document/per-tab-storage.md) — the route uses it,
+  and the placement `{ teamId?, folderId? }` ([Folders → Placement on create](../013-workspace/folders.md)).
 
 ## Tests / sanity-check checklist
 
@@ -430,7 +427,7 @@ carries a theme id (`onPick`, `commitNewDocument`, `buildTemplatedTab` take a `s
 - `/document/shared?s=<code>` (visitor) → editor + identity-confirm modal.
 - NotFound CTA → goes to `/new`.
 - "New Document" from Explorer → goes to `/new`.
-- `/new` → created at once, This Browser for a guest, filed in the signed-in person's default folder for it.
+- `/new` → created at once on livedocuments, filed in the person's default folder for it.
 - `/new?blank=1` → blank document created, its start closed.
 - `/new?blank=1&folder=<id>` → the blank document files into that folder.
 - `/new?template=slide-deck` → a slide deck created and the editor loads on `/document/<id>`.

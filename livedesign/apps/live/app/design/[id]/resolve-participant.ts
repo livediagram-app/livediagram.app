@@ -1,5 +1,5 @@
 import { apiLoadSelf, apiSaveSelf } from '@/lib/api-client';
-import { ensureGuestIdentity } from '@/lib/guest-identity';
+import { ensureSignedGuestIdentity } from '@/lib/guest-identity';
 import { randomColor, randomName, type Participant } from '@/lib/identity';
 
 // Who is opening the editor (docs/specs/014-identity/auth-and-guest-access.md), resolved once auth has
@@ -15,7 +15,7 @@ export async function resolveParticipant(opts: {
   onParticipantStep?: () => void;
 }): Promise<Participant> {
   const { accountUserId, accountDisplayName } = opts;
-  const selfId = accountUserId ?? (await ensureGuestIdentity()).id;
+  const selfId = accountUserId ?? (await ensureSignedGuestIdentity()).id;
   opts.onParticipantStep?.();
   // `undefined` when the profile could not be read (the api or the accounts Worker unreachable):
   // the session goes on under a stand-in, and nothing is saved over a profile that may well exist.

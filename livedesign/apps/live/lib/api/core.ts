@@ -13,11 +13,10 @@ import {
 import { noteServerBuild, noteServerDesignFormat } from '../server-release';
 import { stampTabKind, type Tab } from '@livedesign/design';
 import { readLocalStorageSafe, writeLocalStorageSafe } from '../local-storage-safe';
-import { readGuestToken } from '../guest-token';
+import { getGuestSelfSig } from '../local-identity';
 import { notifyApiWrite } from './write-signal';
 import { API_BASE } from './base';
 import { confinementRefusal, noteWorkbenchResponse } from './workbench-confinement';
-import { withDesignGrant } from './design-grants';
 // A workbench session's confinement (workbench-confinement.ts), part of this module's surface.
 export {
   getWorkbenchConfinement,
@@ -45,8 +44,10 @@ import {
 //      production (router stitches the api worker onto the same
 //      hostname). This is what the deployed live app uses.
 //
-// Every request carries the person's Bearer: an account's access token when signed in, else the guest token
-// liveworkspace issued (lib/guest-token.ts).
+// All requests carry an `X-Owner-Id` header set to the current
+// participant's id — the API uses it as the design-owner filter and
+// for create-time `owner_id` — unless an account token provider is wired
+// up (see below), in which case a Bearer token replaces it.
 // Where the api lives (lib/api/base.ts).
 export { API_BASE };
 
@@ -99,24 +100,14 @@ export function wsUrl(path: string): string {
 //
 // Transparent otherwise: same arguments, same Response, and a network
 // failure still throws to the caller before any signal is raised.
-// `designGrant: false` sends the request as it is, at once: the unload flush, which adds the grant it holds itself and
-// cannot wait for one (a beforeunload handler runs to its end before anything it awaits).
-export async function apiFetch(
-  input: string,
-  init?: RequestInit,
-  opts: { designGrant?: boolean } = {},
-): Promise<Response> {
+export async function apiFetch(input: string, init?: RequestInit): Promise<Response> {
   const method = (init?.method ?? 'GET').toUpperCase();
   // A workbench session's request outside its allow-list is refused unsent, and is no network error.
   const refusal = confinementRefusal(input, init);
   if (refusal) throw refusal;
   let res: Response;
   try {
-    // A request about one design carries the index's grant on it (design-grants.ts), fetched once per ten minutes.
-    res = await fetch(
-      input,
-      opts.designGrant === false ? init : await withDesignGrant(API_BASE, input, init),
-    );
+    res = await fetch(input, init);
   } catch (err) {
     // The one place that sees a request fail before any response exists.
     reportNetworkError(method, input, err);
@@ -177,10 +168,14 @@ export type SharedDesignResolution =
   | { design: LiveDoc; role: ShareRole; tabId: string | null }
   | { passwordRequired: true; invalid: boolean };
 
-// Identity (liveworkspace/docs/one-explorer-contracts.md "Reaching the index"). A signed-in page registers a
-// token provider (`setTokenProvider`) whose account access token goes out as `Authorization: Bearer <jwt>`;
-// without one (a guest, or signed out) the guest token goes out the same way. A link visitor with neither sends
-// only its share code in `X-Share-Code`, which is enough for the index to grant what the link allows.
+// Hybrid identity (docs/specs/014-identity/auth-and-guest-access.md, docs/specs/015-api/api.md). When a token provider has been
+// registered via `setTokenProvider` and resolves to a non-null account
+// access token, every request goes out with
+// `Authorization: Bearer <jwt>` and NO `X-Owner-Id` — the api worker
+// verifies the token, derives the owner from the `sub` claim, and
+// ignores the legacy header. Without a provider (or when the provider
+// resolves to null — guest, or signed out), requests go out with
+// `X-Owner-Id: <participant-id>` as before.
 //
 // Module-level state (rather than threading a tokenProvider through
 // 22 function signatures) because livedesign ships only as a static
@@ -188,6 +183,12 @@ export type SharedDesignResolution =
 // per page load. useAccountBootstrap wires it up once in a layout effect
 // (`setTokenProvider((opts) => getToken(opts))`) and clears on unmount.
 // Tests reset between cases via the same setter.
+//
+// Visitors on a share URL include their own participant id PLUS the
+// share code that admitted them in `X-Share-Code` — the api checks
+// the code's role before allowing the write. Share-code visitors who
+// happen to also be signed in send Bearer + X-Share-Code; the
+// per-link role still gates write access.
 //
 // `body: true` adds `Content-Type: application/json` for write
 // requests; GETs / DELETEs omit it.
@@ -272,7 +273,7 @@ export function getSessionSharePassword(): string | null {
 // protection of user data; storing plain text mirrors what the api
 // worker already does in D1. The owner cleartext-reads it on the
 // Share dialog anyway.
-export const SHARE_PASSWORD_CACHE_PREFIX = 'livedesign:share-password:';
+const SHARE_PASSWORD_CACHE_PREFIX = 'livedesign:share-password:';
 export function readCachedSharePassword(shareCode: string): string | null {
   const raw = readLocalStorageSafe(`${SHARE_PASSWORD_CACHE_PREFIX}${shareCode}`);
   return raw && raw.length > 0 ? raw : null;
@@ -283,9 +284,18 @@ export function writeCachedSharePassword(shareCode: string, password: string | n
   else writeLocalStorageSafe(key, '');
 }
 
+// Exported for direct testing of the hybrid identity gate (docs/specs/014-identity/auth-and-guest-access.md):
+// Bearer token wins when present, X-Owner-Id is the fallback, and the
+// two MUST NOT coexist on a single request (an api worker that sees
+// both would derive owner from the JWT and silently ignore the header
+// , which is fine for happy paths but leaves a confusing footprint in
+// audit logs). Internal callers still get the same return type, so
+// the export is additive.
 // Thrown instead of sending a request that is certain to be refused: a
 // signed-in client (its owner id is an account id) that has no session
-// token to prove it.
+// token to prove it. The worker rejects an account id in the guest header
+// (401 account_id_not_a_guest_credential), so sending it only turns an auth
+// problem into what looks like a network one.
 export class SessionTokenUnavailableError extends Error {
   constructor() {
     super('no session token for a signed-in owner');
@@ -293,21 +303,18 @@ export class SessionTokenUnavailableError extends Error {
   }
 }
 
-// The identity half of every request, shared by apiHeaders (async) and the unload beacon (sync, off the cached
-// token): the account's token, else the guest's, else nothing (a link visitor). An account id with no account
-// token is refused here rather than sent as a guest.
+// The identity half of every request, shared by apiHeaders (async) and the
+// unload beacon (sync, off the cached token). Bearer and X-Owner-Id are
+// mutually exclusive, and an account id never rides as the guest header.
 export function identityHeaders(ownerId: string, token: string | null): Record<string, string> {
   if (token) return { Authorization: `Bearer ${token}` };
   if (isAccountIdShape(ownerId)) throw new SessionTokenUnavailableError();
-  const guest = readGuestToken();
-  return guest ? { Authorization: `Bearer ${guest.token}` } : {};
-}
-
-// The Bearer this page sends, for the index client (lib/index-client.ts): the account's, else the guest's.
-export async function currentBearer(): Promise<string | null> {
-  const token = await resolveToken();
-  lastKnownToken = token;
-  return token ?? readGuestToken()?.token ?? null;
+  // Proof of possession for the guest id (docs/specs/015-api/public-api-and-tokens.md
+  // section 4): the api worker can require a valid signature on owner-scoped
+  // routes, which a harvested id wouldn't have. Absent for legacy unsigned
+  // guests and self-hosts with signing disabled.
+  const sig = getGuestSelfSig();
+  return sig ? { 'X-Owner-Id': ownerId, 'X-Owner-Sig': sig } : { 'X-Owner-Id': ownerId };
 }
 
 // How long one token request may take (docs/specs/007-editor/load-recovery.md "The load always ends").

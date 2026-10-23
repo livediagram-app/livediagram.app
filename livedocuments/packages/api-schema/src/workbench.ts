@@ -281,20 +281,11 @@ const WORKSPACE_ROUTES: readonly RouteShape[] = [
   ...[
     'documents',
     'folders',
-    'shared',
-    'favourites',
-    'tags',
-    'home',
-    'timeline',
-    'activity',
     'trash',
-    'placement-defaults',
     'images',
   ].map((resource) => shape(ALL_METHODS, `${resource}/**`)),
   shape('GET', 'teams'),
-  shape('GET', 'teams/:p'),
   shape('GET', 'teams/:p/library'),
-  shape('GET', 'teams/:p/members'),
   shape('DELETE', 'workbench/sessions/current'),
 ];
 

@@ -1,15 +1,11 @@
 import type { Metadata } from 'next';
-import { ExplorerPane } from '../ExplorerPane';
-import { viewDocumentTitle } from '../view-titles';
 
-// /explorer/timeline: the Timeline, the day-grouped feed of everything that has happened across
-// the user's documents, teams and account (docs/specs/013-workspace/timeline.md), reached from its
-// sidebar row and Home's See Timeline. The layout's ExplorerShell provides the chrome +
-// state; this page only pins the route and the tab title.
+// The Explorer's Timeline view (docs/specs/013-workspace/timeline.md): ExplorerShell (the layout) renders it from the
+// address.
 export const metadata: Metadata = {
-  title: viewDocumentTitle('timeline'),
+  title: 'Timeline | livedocuments',
 };
 
 export default function Page() {
-  return <ExplorerPane />;
+  return null;
 }

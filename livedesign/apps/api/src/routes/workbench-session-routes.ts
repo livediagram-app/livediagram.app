@@ -6,20 +6,23 @@
 
 import {
   capWorkbenchRole,
-  WORKBENCH_TICKET_PATTERN,
+  WORKBENCH_HANDLE_PATTERN,
   WORKBENCH_SESSION_TTL_MS,
   type InvalidTicket,
   type WorkbenchSessionResponse,
 } from '@livedesign/api-schema';
-import { sessionPrefixOf } from '../auth/workbench-session';
+import {
+  generateWorkbenchSecret,
+  hashWorkbenchSecret,
+  sessionPrefixOf,
+} from '../auth/workbench-session';
 import { getParticipant } from '../accounts/profiles';
 import {
-  itemReachOf,
-  designReachOf,
-  workbenchStore,
-  workbenchStoreOfSecretIn,
+  consumeWorkbenchTicket,
+  deleteWorkbenchSession,
+  insertWorkbenchSession,
   type WorkbenchReach,
-} from '../workbench-store';
+} from '../db/workbench';
 import { badRequest, forbidden, json, noContent } from '../responses';
 import { readBody, type RouteContext } from './context';
 import { ownerDesignAccess } from './workbench-access';
@@ -29,21 +32,17 @@ export async function redeemWorkbenchTicket(ctx: RouteContext): Promise<Response
   const body = await readBody(ctx);
   if (body instanceof Response) return body;
   const ticket = body.ticket;
-  if (typeof ticket !== 'string' || !WORKBENCH_TICKET_PATTERN.test(ticket))
+  if (typeof ticket !== 'string' || !WORKBENCH_HANDLE_PATTERN.test(ticket))
     return badRequest('invalid ticket');
   const now = Date.now();
 
-  const store = workbenchStoreOfSecretIn(ctx.env, ticket);
-  const consumed = store
-    ? await store.consumeTicket(ticket, now)
-    : ({ ok: false, reason: 'unknown' } as const);
-  if (!store || !consumed.ok) {
-    const reason = consumed.ok ? 'unknown' : consumed.reason;
-    console.warn('[workbench] session-refused', { reason, scope: null });
-    const answer: InvalidTicket = { error: 'invalid_ticket', reason };
+  const consumed = await consumeWorkbenchTicket(ctx.env, await hashWorkbenchSecret(ticket), now);
+  if (!consumed.ok) {
+    console.warn('[workbench] session-refused', { reason: consumed.reason, scope: null });
+    const answer: InvalidTicket = { error: 'invalid_ticket', reason: consumed.reason };
     return json(answer, { status: 401 });
   }
-  const t = { ...consumed.ticket, ...designReachOf(consumed.ticket) };
+  const t = consumed.ticket;
   let ceiling = t.role;
   if (t.scope === 'design') {
     const access = await ownerDesignAccess(ctx.env, t.designId, t.ownerId);
@@ -64,16 +63,20 @@ export async function redeemWorkbenchTicket(ctx: RouteContext): Promise<Response
     t.scope === 'design'
       ? { scope: 'design', designId: t.designId, folderId: null }
       : { scope: 'workspace', designId: null, folderId: t.folderId };
+  const session = generateWorkbenchSecret();
+  const id = crypto.randomUUID();
   const expiresAt = Math.min(now + WORKBENCH_SESSION_TTL_MS, t.tokenExpiresAt);
-  const { id, secret: session } = await store.openSession({
-    personId: t.ownerId,
+  await insertWorkbenchSession(ctx.env, {
+    id,
+    secretHash: await hashWorkbenchSecret(session),
+    ownerId: t.ownerId,
     tokenId: t.tokenId,
     pairingId: t.pairingId,
-    reach: itemReachOf(reach),
+    ...reach,
     tabId: t.tabId,
     origin: t.origin,
     role,
-    now,
+    createdAt: now,
     expiresAt,
   });
   const participant = await getParticipant(ctx.env, t.ownerId);
@@ -104,7 +107,7 @@ export async function redeemWorkbenchTicket(ctx: RouteContext): Promise<Response
 export async function endCurrentWorkbenchSession(ctx: RouteContext): Promise<Response> {
   const workbench = ctx.workbench;
   if (!workbench) return forbidden('not_a_workbench_session');
-  await workbenchStore(ctx.env, workbench.ownerId).endSession(workbench.sessionId);
+  await deleteWorkbenchSession(ctx.env, workbench.sessionId);
   console.log('[workbench] session-ended', {
     reason: 'ended',
     scope: workbench.scope,

@@ -29,7 +29,7 @@ const modules = readdirSync(API_DIR)
 describe('the api client fetch funnel', () => {
   it('sees the modules at all (guard against this test going blind)', () => {
     expect(modules.length).toBeGreaterThan(15);
-    expect(modules).toContain('activity.ts');
+    expect(modules).toContain('documents.ts');
   });
 
   it('routes every request through apiFetch', () => {

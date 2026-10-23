@@ -13,9 +13,8 @@ const { api, guest, seed } = vi.hoisted(() => ({
     apiSaveSelf: vi.fn(),
     apiLoadDocument: vi.fn(),
     apiLoadShared: vi.fn(),
-    apiListShareLinks: vi.fn(),
   },
-  guest: { ensureSignedGuestIdentity: vi.fn() },
+  guest: { ensureGuestIdentity: vi.fn() },
   seed: vi.fn(async () => {}),
 }));
 vi.mock('@/lib/api-client', () => ({
@@ -66,7 +65,6 @@ function run(workbench: WorkbenchDocumentSession) {
   const set = new Proxy({} as Record<string, ReturnType<typeof vi.fn>>, {
     get: (t, k: string) => (t[k] ??= vi.fn()),
   });
-  const lists = { documents: vi.fn(), shared: vi.fn() };
   const lastPersistedSelfRef = { current: null as { name: string; color: string } | null };
   renderHook(() =>
     useIdentityBootstrap({
@@ -79,8 +77,6 @@ function run(workbench: WorkbenchDocumentSession) {
       workbench,
       activeId: 't1',
       selfParticipant: { id: 'self', name: 'x', color: '#000', status: 'online' },
-      refreshDocumentList: lists.documents,
-      refreshSharedList: lists.shared,
       resetTabs: () => {},
       refs: {
         lastPersistedSelfRef,
@@ -92,7 +88,7 @@ function run(workbench: WorkbenchDocumentSession) {
       set: set as never,
     }),
   );
-  return { set, lists, lastPersistedSelfRef };
+  return { set, lastPersistedSelfRef };
 }
 
 beforeEach(() => {
@@ -111,7 +107,7 @@ afterEach(() => {
 
 describe('useIdentityBootstrap in a workbench', () => {
   it('loads the session’s document as the person, writing nothing and listing nothing', async () => {
-    const { set, lists, lastPersistedSelfRef } = run(workbenchOf());
+    const { set, lastPersistedSelfRef } = run(workbenchOf());
 
     await vi.waitFor(() => expect(set.setHydrated).toHaveBeenCalledWith(true));
 
@@ -119,10 +115,7 @@ describe('useIdentityBootstrap in a workbench', () => {
     expect(api.apiLoadDocument).toHaveBeenCalledWith('user_1', 'doc-1');
     expect(api.apiSaveSelf).not.toHaveBeenCalled();
     expect(api.apiLoadShared).not.toHaveBeenCalled();
-    expect(api.apiListShareLinks).not.toHaveBeenCalled();
-    expect(guest.ensureSignedGuestIdentity).not.toHaveBeenCalled();
-    expect(lists.documents).not.toHaveBeenCalled();
-    expect(lists.shared).not.toHaveBeenCalled();
+    expect(guest.ensureGuestIdentity).not.toHaveBeenCalled();
     expect(set.setSelfParticipant).toHaveBeenCalledWith(
       expect.objectContaining({ id: 'user_1', name: 'Stored', status: 'online' }),
     );
@@ -181,11 +174,10 @@ describe('useIdentityBootstrap in a workbench', () => {
 
   it('shows the document missing when the load finds none', async () => {
     api.apiLoadDocument.mockResolvedValue(null);
-    const { set, lists } = run(workbenchOf());
+    const { set } = run(workbenchOf());
 
     await vi.waitFor(() => expect(set.setDocumentNotFound).toHaveBeenCalledWith(true));
     expect(set.setHydrated).toHaveBeenCalledWith(true);
-    expect(lists.documents).not.toHaveBeenCalled();
   });
 
   it('shows the deleted card for a trashed document, the load error otherwise', async () => {
@@ -213,7 +205,7 @@ describe('useIdentityBootstrap in a workspace frame, a document shared with the 
 
     await vi.waitFor(() => expect(set.setHydrated).toHaveBeenCalledWith(true));
 
-    expect(api.apiLoadShared).toHaveBeenCalledWith('CODE2345', 'user_1');
+    expect(api.apiLoadShared).toHaveBeenCalledWith('CODE2345', 'user_1', 'doc-1');
     expect(api.apiLoadDocument).not.toHaveBeenCalled();
     expect(seed).toHaveBeenCalledWith('user_1', SHARED, 'CODE2345', null);
     expect(set.setSessionShareCode).toHaveBeenCalledWith('CODE2345');

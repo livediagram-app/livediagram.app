@@ -1,63 +1,58 @@
 # Self-hosting
 
-livedesign is designed to be self-hostable. Its own stack runs on Cloudflare Workers, and it builds on a **liveworkspace deployment** for the things every liveworkspace app shares: sign-in and guests (the accounts Worker), the index where every design is filed, and the media service that keeps uploaded images. So a self-hoster needs a Cloudflare account and a liveworkspace deployment to point it at, either liveworkspace.app's or one of their own.
+livedesign is designed to be self-hostable end-to-end. The whole stack runs on Cloudflare Workers, so a self-hoster needs a Cloudflare account and not much else.
 
-This guide is the practical path: provision Cloudflare resources, connect liveworkspace, configure secrets, deploy. For the why-behind-the-shape, read [Deployment](../specs/016-platform/deployment.md) (deployment) and [Secrets policy](../specs/002-project-scope/secrets-policy.md) (secrets).
+This guide is the practical path: provision Cloudflare resources, configure secrets, deploy. For the why-behind-the-shape, read [Deployment](../specs/016-platform/deployment.md) (deployment) and [Secrets policy](../specs/002-project-scope/secrets-policy.md) (secrets).
 
 ## What you'll provision on Cloudflare
 
-| Resource                               | Used by           | Why                                                                                                                                                                                                                                                   |
-| -------------------------------------- | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Workers paid plan**                  | All seven workers | Durable Objects need the paid plan.                                                                                                                                                                                                                   |
-| **Durable Objects**                    | `apps/api`        | `DESIGN_ROOM` (`DesignRoom`): one per design, holding its content in its own SQLite and running its realtime room. `WORKBENCH` (`WorkbenchStore`): one per person, holding their workbench pairings, tickets and sessions. Both come with the deploy. |
-| **R2 bucket `SNAPSHOTS`** (optional)   | `apps/api`        | Design SVG snapshots ([Design SVG snapshots](../specs/006-design/design-snapshots.md): Explorer thumbnails + the live image share) and share cards. Without it, snapshot endpoints `404` (the Explorer row shows a generic icon).                     |
-| **R2 bucket `PHOTO_BLOBS`** (optional) | `apps/api`        | Photo pages' tiles, sources and previews ([Photo store](../specs/031-photo/photo-store.md)). Without it, every photo blob route answers `503`.                                                                                                        |
-| **Rate Limiter bindings** (optional)   | `apps/api`        | Abuse throttles: per-owner writes, plus the CLI's telemetry relay, share-code lookups, link unfurls, API-token reads and workbench tickets. Any binding you don't provision falls through to "allow", so none are required.                           |
-| **Custom domain**                      | `apps/router`     | The router worker serves your hostname; downstream workers don't need their own domain.                                                                                                                                                               |
-
-The api worker also runs one cron, `0 3 * * *`, which tells the media service each day which images its designs still use. It is declared in `apps/api/wrangler.toml` and needs nothing provisioned.
-
-## What you need from liveworkspace
-
-livedesign keeps no database of its own: each design's content lives in its Durable Object, and everything about where a design is and who may open it lives in liveworkspace. A self-host connects to these three services:
-
-- **The accounts Worker** (`ACCOUNTS_URL`, `API_RESOURCE`, `ACCOUNTS_CLIENT_ID`, `ACCOUNTS_CLIENT_SECRET`): signing in, and guests. A guest is a liveworkspace guest, the same person in every liveworkspace app, carried as a signed guest token the accounts Worker hands out; the api worker checks it against the accounts Worker's public keys, as it does an account's access token. See [Sign-in and guests](#sign-in-and-guests).
-- **The index** (`INDEX_ORIGIN` in `apps/api/wrangler.toml` `[vars]`, and the `INDEX_KEY` secret): where every design is filed, plus sharing, share links, folders, Trash and teams. The api worker checks the grants it signs (`${INDEX_ORIGIN}/api/index/jwks`) and pushes each design's summary to it with `INDEX_KEY`, which the index holds as `INDEX_KEY_LIVEDESIGN` ([liveworkspace/docs/index-service.md](../../../liveworkspace/docs/index-service.md)). Without `INDEX_KEY` the design endpoints answer as missing.
-- **The media service** (`MEDIA_URL`, and the `MEDIA_KEY` secret): uploaded images. See [Images](#images).
-
-`INDEX_ORIGIN` ships as `https://liveworkspace.app`; point it at your own liveworkspace deployment if you run one.
+| Resource                             | Used by           | Why                                                                                                                                                                                                                                                                                                                |
+| ------------------------------------ | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Workers paid plan**                | All seven workers | Durable Objects (per-design realtime room) need the paid plan.                                                                                                                                                                                                                                                     |
+| **D1 database**                      | `apps/api`        | Designs, tabs, comments, folders, share links, shared-with index, image metadata, teams + membership + team library. (Preferences, names and colours are kept by liveworkspace accounts when sign-in is configured, and in the browser otherwise.)                                                                 |
+| **Durable Object namespace**         | `apps/api`        | One stateful room per design for realtime presence + ops.                                                                                                                                                                                                                                                          |
+| **R2 bucket** (optional)             | `apps/api`        | Design SVG snapshots ([Design SVG snapshots](../specs/006-design/design-snapshots.md): Explorer thumbnails + the live image share) and the images uploaded before images moved to liveworkspace's media service ([Images](#images)). Without it, snapshot endpoints `404` (the Explorer row shows a generic icon). |
+| **Rate Limiter bindings** (optional) | `apps/api`        | Abuse throttles: per-owner writes, plus the CLI's telemetry relay, share-code lookups, link unfurls and API-token reads. Any binding you don't provision falls through to "allow", so none are required.                                                                                                           |
+| **Custom domain**                    | `apps/router`     | The router worker serves your hostname; downstream workers don't need their own domain.                                                                                                                                                                                                                            |
 
 What you do NOT need:
 
-- A database. There is no database to create, no migration to apply and no separate database host: Durable Objects and R2 hold livedesign's own data, and liveworkspace holds the rest.
-- No _required_ SaaS beyond liveworkspace: no Stripe (no paid tier) and no analytics vendor. The other integration is optional and stays off until you add a key: Resend for transactional email ([Transactional email (Resend)](../specs/014-identity/transactional-email.md)), covered in its own section below. The telemetry endpoint is first-party only and off by default.
+- Sign-in: it is optional. Without it, every user is a guest (a per-browser id stored in `localStorage`, carried as `X-Owner-Id`). With sign-in configured, the api worker fetches the accounts Worker's public keys (`${ACCOUNTS_URL}/api/auth/jwks`) to check access tokens, and calls it when someone signs in or a session refreshes.
+- No _required_ SaaS: no Stripe (no paid tier) and no analytics vendor. The other integration is optional and stays off until you add a key: Resend for transactional email ([Transactional email (Resend)](../specs/014-identity/transactional-email.md)), covered in its own section below. The telemetry endpoint is first-party only and off by default.
+- A separate database host: D1 covers everything.
 
 ## One-time Cloudflare setup
 
 1. **Create a Cloudflare account** and sign up for the Workers paid plan ($5/mo at the time of writing).
-2. **Create the R2 buckets** (optional, for design snapshots and photo pages):
+2. **Create a D1 database**:
 
    ```sh
-   pnpm exec wrangler r2 bucket create livedesign-snapshots
-   pnpm exec wrangler r2 bucket create livedesign-photo-blobs
+   pnpm exec wrangler d1 create livedesign
    ```
 
-   They are bound to `SNAPSHOTS` and `PHOTO_BLOBS` in `apps/api/wrangler.toml`. To run without one, remove its `[[r2_buckets]]` block.
+   Copy the `database_id` from the output into `apps/api/wrangler.toml` under the `[[d1_databases]]` block (it already has the binding name `DB`; you only need to update the id).
 
-3. **Nothing else to create for the api.** Its Durable Object classes are declared through the `[[migrations]]` tag in `apps/api/wrangler.toml`, and `wrangler deploy` applies it itself on the first deploy. Each design's tables are made inside its Durable Object on first use.
+3. **Apply migrations to the new D1**:
 
-4. **Get an API token + account id**:
+   ```sh
+   pnpm --filter @livedesign/api db:migrate:remote
+   ```
+
+   (this runs `wrangler d1 migrations apply livedesign --remote` — note it takes the database **name**, `livedesign`, not the binding name `DB`).
+
+   This creates every table the worker expects. The same command runs in the deploy workflow on every release, so you only need it once for the first deploy.
+
+4. **Create an R2 bucket** (optional, for design snapshots):
+
+   ```sh
+   pnpm exec wrangler r2 bucket create livedesign-images
+   ```
+
+   The bucket name is bound to `IMAGES` in `apps/api/wrangler.toml`.
+
+5. **Get an API token + account id**:
    - Account id is at the bottom-right of any Cloudflare dashboard page.
-   - API token: create one with **Workers Scripts: Edit**, **R2: Edit** (only if using the R2 buckets), **Workers KV Storage: Edit** (only for the optional MCP server's KV namespace), and **Account → Account Settings: Read** on your account. Save it.
-
-5. **Set the liveworkspace keys** on the api worker (see [What you need from liveworkspace](#what-you-need-from-liveworkspace)):
-
-   ```sh
-   pnpm --filter @livedesign/api exec wrangler secret put INDEX_KEY
-   pnpm --filter @livedesign/api exec wrangler secret put MEDIA_KEY
-   ```
-
-   Each is the value liveworkspace holds for livedesign (`INDEX_KEY_LIVEDESIGN` on the index, `MEDIA_KEY_LIVEDESIGN` on the media service). `INDEX_KEY` is set by hand and persists across deploys; `MEDIA_KEY` can also come from the deploy workflow (below).
+   - API token: create one with **Workers Scripts: Edit**, **D1: Edit**, **R2: Edit** (only if using the R2 bucket), **Workers KV: Edit** (for Durable Objects), and **Account → Account Settings: Read** on your account. Save it.
 
 ## Required GitHub Actions secrets
 
@@ -66,15 +61,15 @@ If you're deploying via GitHub Actions (the default workflow), set two repo secr
 - `CF_API_TOKEN`: the token from the step above.
 - `CF_ACCOUNT_ID`: your Cloudflare account id.
 
-Those two are the only **required** ones — the deploy workflow uses raw `pnpm exec wrangler deploy` against them. It also syncs worker secrets from repo secrets of the same name, each skipped when unset: the four sign-in values (`ACCOUNTS_URL`, `API_RESOURCE`, `ACCOUNTS_CLIENT_ID`, `ACCOUNTS_CLIENT_SECRET`), `MEDIA_KEY` ([Images](#images)), and `TELEMETRY_KEY`. Setting them here rather than by hand means they rotate by editing the GitHub secret — and, for `TELEMETRY_KEY`, that the api and mcp workers can't drift apart. See [Secrets policy](../specs/002-project-scope/secrets-policy.md) for the full table.
+Those two are the only **required** ones — the deploy workflow uses raw `pnpm exec wrangler deploy` against them. Optionally, it also syncs four worker secrets from repo secrets of the same name, each skipped when unset: the four sign-in values (`ACCOUNTS_URL`, `API_RESOURCE`, `ACCOUNTS_CLIENT_ID`, `ACCOUNTS_CLIENT_SECRET`), `GUEST_ID_HMAC_SECRET`, `MEDIA_KEY` ([Images](#images)), and `TELEMETRY_KEY`. Setting them here rather than by hand means they rotate by editing the GitHub secret — and, for `TELEMETRY_KEY`, that the api and mcp workers can't drift apart. See [Secrets policy](../specs/002-project-scope/secrets-policy.md) for the full table.
 
-## Sign-in and guests
+## Optional sign-in
 
-Everyone who uses livedesign is either signed in to their liveworkspace account or a liveworkspace guest, and both identities come from the liveworkspace accounts Worker. To connect your self-host to one:
+The hosted version signs people in with their liveworkspace account, through the liveworkspace accounts Worker. To enable sign-in on your self-host:
 
-1. Register your deployment as an OAuth client of the accounts Worker. Its redirect URI is `https://<your-host>/api/auth/callback`, and it needs its own resource (the audience its access tokens carry). You get a client id and a client secret.
+1. Register your deployment as an OAuth client of an accounts Worker. Its redirect URI is `https://<your-host>/api/auth/callback`, and it needs its own resource (the audience its access tokens carry). You get a client id and a client secret.
 2. Set the values on the two apps:
-   - **Live (build-time, browser-side)**: set `NEXT_PUBLIC_SIGN_IN_ENABLED=true` in your CI build env, or in `apps/live/.env.production`. The deploy workflow sets it for you when the `ACCOUNTS_CLIENT_ID` repo secret is set.
+   - **Live (build-time, browser-side)**: set `NEXT_PUBLIC_SIGN_IN_ENABLED=true` in your CI build env, or in `apps/live/.env.production`.
    - **API (worker secrets)**:
 
      ```sh
@@ -86,15 +81,29 @@ Everyone who uses livedesign is either signed in to their liveworkspace account 
 
      Paste each value when prompted.
 
-3. **Guests need nothing extra.** The first time a browser needs an identity, the editor goes through `GET /api/auth/guest` to the accounts Worker, which hands back a signed guest token; the editor sends it as the Bearer, and the api worker checks it like an access token. When a guest signs in, liveworkspace moves their designs to the account in the index, so nothing on the api worker is involved ([Auth + guest access](../specs/014-identity/auth-and-guest-access.md)).
+3. **Teams ([Teams](../specs/013-workspace/teams.md)) need nothing extra.** They are the accounts Worker's: the api worker follows its teams change feed with the same client credentials (see [Teams](#teams) below).
 
-4. **Teams ([Teams](../specs/013-workspace/teams.md)) need nothing extra.** They are liveworkspace's: made and run on liveworkspace.app, carried in each access token, and granted through the index (see [Teams](#teams) below).
+4. **Recommended when sign-in is on — sign guest ids.** Set a random HMAC secret so the worker mints signed guest ids and `POST /api/migrate` requires a valid signature before moving a guest's data into an account. Without it, anyone who observed a guest's id (it appears in shared-design DTOs / presence) could claim that guest's data at sign-up. Generate and set:
 
-5. **API tokens ([Public API and API tokens](../specs/015-api/public-api-and-tokens.md)) come with sign-in.** Tokens are liveworkspace account tokens (`lwt_`), made and revoked on liveworkspace.app, and the api worker checks each one with liveworkspace.
+   ```sh
+   openssl rand -hex 32 | pnpm --filter @livedesign/api exec wrangler secret put GUEST_ID_HMAC_SECRET
+   ```
 
-Without `ACCOUNTS_URL` and `API_RESOURCE`, the api worker can verify no one: every request reaches it with no identity, as a link visitor's does, so nobody can create or own a design. A working self-host therefore always has the accounts Worker connected.
+   Leaving it unset keeps the legacy unsigned migrate, which is fine for a single-user self-host (no one else to claim from). See [Auth + guest access](../specs/014-identity/auth-and-guest-access.md).
 
-See [Auth + guest access](../specs/014-identity/auth-and-guest-access.md) for the identity model.
+   With the secret set, you can also require a valid signature on the guest `X-Owner-Id` REST path ([Public API and API tokens](../specs/015-api/public-api-and-tokens.md) §4), which closes the "observe a guest id, use it as a credential" hole for shared designs. A plain var in `apps/api/wrangler.toml` `[vars]` controls it, and **the file ships the hosted value, so edit it for your deployment** (blank leaves enforcement off):
+
+   - `GUEST_SIG_ENFORCE_AFTER`: epoch ms from which owner-scoped routes, the realtime room's owner leg and the signing upgrade require a valid signature. Guests made before you set `GUEST_ID_HMAC_SECRET` have unsigned ids and move onto signed ones on their next visit; set this far enough ahead that returning guests have upgraded, since after it an unsigned id can no longer move its designs.
+
+   Arm it only on a build where every entry path signs first: before that, `/new` minted a local unsigned id, and with enforcement armed a first-time visitor who opened it could not create a design ([Public API and API tokens](../specs/015-api/public-api-and-tokens.md) §6). Every entry path now signs first, and every e2e stack runs with enforcement on, so a regression of that kind fails the suite.
+
+   Set them in the file rather than the Cloudflare dashboard: every `wrangler deploy` replaces plain vars with the ones the file declares. Both are no-ops without `GUEST_ID_HMAC_SECRET`. `pnpm dev` blanks `GUEST_SIG_ENFORCE_AFTER`, so local guests made before your local secret keep working; every e2e stack enforces it.
+
+5. **API tokens ([Public API and API tokens](../specs/015-api/public-api-and-tokens.md)) come with sign-in.** They're a signed-in-only feature: tokens are liveworkspace account tokens (`lwt_`), made and revoked on liveworkspace.app, and the api worker checks each one with liveworkspace. A guest-only self-host has no accounts and therefore no tokens (nothing to configure).
+
+Without the sign-in values set, the api worker treats every request as a guest (resolves owner from `X-Owner-Id`), and the live frontend mounts no session bridge, so it renders the editor without any auth UI. Self-host without sign-in is a fully-supported path; the canvas works identically (and guest-id signing is moot, since there's no migrate without accounts).
+
+See [Auth + guest access](../specs/014-identity/auth-and-guest-access.md) for the hybrid auth model.
 
 ## Deploy
 
@@ -127,9 +136,9 @@ Or just push to `main` and use the bundled GitHub Actions workflows:
 - `.github/workflows/deploy.yml` calls it for **production**, **manually** from the Actions tab.
 - `.github/workflows/deploy-staging.yml` calls it for **staging**, automatically, whenever CI goes green on `main`.
 
-Self-hosting needs only the production pair: staging is a second copy of the platform the hosted deployment runs for its own rehearsals (own hostname, own Durable Objects / R2 / KV, and staging liveworkspace), and deleting `deploy-staging.yml` costs a fork nothing. Keeping it means adding the `_STAGING` secrets and staging resources from [Staging environment](../specs/016-platform/staging-environment.md); without them the workflow simply fails on every merge.
+Self-hosting needs only the production pair: staging is a second copy of the platform the hosted deployment runs for its own rehearsals (own hostname, own D1 / R2 / KV), and deleting `deploy-staging.yml` costs a fork nothing. Keeping it means adding the `_STAGING` secrets and staging resources from [Staging environment](../specs/016-platform/staging-environment.md); without them the workflow simply fails on every merge.
 
-See [Deployment](../specs/016-platform/deployment.md) for the deeper deploy mechanics, including how `wrangler deploy` applies the Durable Object `[[migrations]]` tags itself, so there is no migration step before it.
+See [Deployment](../specs/016-platform/deployment.md) for the deeper deploy mechanics, including how D1 migrations run BEFORE the worker deploy so the new code never briefly runs against the old schema.
 
 Serve the editor over HTTPS (Cloudflare does by default, on `workers.dev` and on a custom domain). It also works over plain http, on a LAN address for instance: ids and hashes fall back to plain code there, and only the clipboard buttons need HTTPS ([Secure context](../specs/016-platform/secure-context.md)).
 
@@ -139,7 +148,7 @@ The `apps/mcp` worker ([MCP server](../specs/015-api/mcp-server.md)) lets people
 client) to drive their designs. It's **optional** — don't deploy it and nothing
 else references it — and **needs sign-in**, exactly like API tokens and teams: the
 OAuth consent page authenticates the user through sign-in and the api's
-`/api/oauth/exchange` requires an account identity, so a guest can mint
+`/api/oauth/exchange` requires an account identity, so a no-auth self-host can mint
 nothing. To run it:
 
 1. **Create a KV namespace** for OAuth state and put the id in `apps/mcp/wrangler.toml`:
@@ -192,8 +201,8 @@ Optional knobs (plain `[vars]`):
 
 ## Teams
 
-Teams need sign-in. They are liveworkspace teams, made and run on liveworkspace.app: each access token carries the
-teams its person is in, and the index grants access to team designs
+Teams need sign-in. They are liveworkspace teams, made and run on liveworkspace.app; the api worker keeps a copy of
+the ones its people are in, following liveworkspace's change feed every five minutes
 ([Teams](../specs/013-workspace/teams.md)). Team invitations and their emails are the accounts Worker's, so there is nothing to configure here.
 
 ## Workbenches (optional, needs sign-in)
@@ -202,7 +211,7 @@ A workbench is a developer tool that frames the editor signed in, beside an agen
 
 - `APP_BASE_URL` (api `[vars]`): set it to your deployment's public origin. Besides the links in emails, it builds the workbench frame URLs (`/embed/workbench`, and `/embed/workbench/explorer` for the whole workspace) and the pairing URL (`/workbench/pair`) the CLI prints. Use the origin that serves the app without redirecting (for example `https://www.example.com` when the apex redirects to `www`): a workbench checks the frame's messages against the origin of that URL, and a redirect changes it. Left at its default, those links point at livedesign.app.
 - `WORKBENCH_TICKET_RATE_LIMITER` (optional binding, declared in `apps/api/wrangler.toml`): caps ticket mints and pairing requests per token. Without the binding every request is allowed.
-- Each person's workbench lives in their own `WorkbenchStore` Durable Object (the `WORKBENCH` binding), which comes with the deploy; there is nothing to create.
+- The baseline migration creates the four workbench tables; it runs with the others.
 
 ## Images
 
@@ -210,7 +219,7 @@ Images live in liveworkspace's media service ([liveworkspace/docs/media.md](../.
 
 ## Photo store cap
 
-The api worker honours an optional `[vars]` entry, `PHOTO_MAX_BYTES_PER_TAB`: the most bytes of photo page pixels one tab may hold ([Photo store](../specs/031-photo/photo-store.md) "Limits"), answered as a 403 `{ error: "photo_full", limit, current }` on an upload past it. Photo pages store their pixels in the `PHOTO_BLOBS` bucket; without the binding every photo blob route answers 503 and photo pages are offered in Offline Mode designs only.
+The api worker honours an optional `[vars]` entry, `PHOTO_MAX_BYTES_PER_TAB`: the most bytes of photo page pixels one tab may hold ([Photo store](../specs/031-photo/photo-store.md) "Limits"), answered as a 403 `{ error: "photo_full", limit, current }` on an upload past it. Photo pages store their pixels in the `PHOTO_BLOBS` bucket; without the binding they are offered in Offline Mode designs only.
 
 It defaults to "no limit" when unset, blank, `0`, or non-numeric, which is the OSS self-host default where the operator runs their own R2 budget. To cap, declare it under `[vars]` in `apps/api/wrangler.toml`, not in the Cloudflare dashboard: every `wrangler deploy` replaces the worker's plain vars with the ones it declares, so a dashboard-only cap is silently gone after the next deploy. The hosted livedesign.app sets it to `536870912` (512 MB) through its hosted profile, which a fork's deploy does not apply.
 
@@ -229,5 +238,5 @@ The five downstream workers don't need their own domain; the router fans out via
 ## What can break, and how to debug
 
 - **`account not authorized` from wrangler**: the API token is missing a scope. See the token list above; most often it's missing **Account → Account Settings: Read**, which wrangler uses to look up your account.
-- **`Durable Object class is not exported`**: the api worker's `wrangler.toml` references `DesignRoom` and `WorkbenchStore` as its DO classes. Both are exported from `apps/api/src/index.ts`; if you've forked + renamed one, keep the export name in step with the binding, and add a new `[[migrations]]` tag with `renamed_classes` rather than editing the existing tag.
-- **Editor loads but no design opens or saves**: the api worker can't reach liveworkspace. Check that `ACCOUNTS_URL` and `API_RESOURCE` are set (without them no one has an identity), that `INDEX_ORIGIN` names your liveworkspace deployment, and that `INDEX_KEY` matches the index's `INDEX_KEY_LIVEDESIGN` (without it the design endpoints answer as missing). See [What you need from liveworkspace](#what-you-need-from-liveworkspace).
+- **`Durable Object class is not exported`**: the api worker's `wrangler.toml` references `DesignRoom` as the DO class. It IS exported from `apps/api/src/index.ts`; if you've forked + renamed, keep the export name in step with the binding.
+- **Editor loads but every request 403s**: the resolved owner doesn't match the design's stored owner. If you migrated from one auth setup to another (added sign-in after running guest-only), the old guest designs still belong to the old guest id. The `/api/migrate` endpoint moves rows from a guest id to an account id after sign-up; see [Auth + guest access](../specs/014-identity/auth-and-guest-access.md).

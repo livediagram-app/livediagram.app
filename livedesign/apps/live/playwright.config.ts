@@ -11,20 +11,27 @@ const CI_WORKERS = 4;
 // (`pnpm test:e2e:signed-in`) on their own ports, so a guest stack already up on :3402 is never
 // mistaken for it.
 const signedIn = process.env.E2E_SIGNED_IN === '1';
-const SIGNED_IN_PORTS = { live: '3415', api: '8415', marketing: '3416', index: '8416' };
+const SIGNED_IN_PORTS = { live: '3415', api: '8415', marketing: '3416' };
+// The armed specs (e2e/armed/, docs/specs/003-system-architecture/e2e-smoke.md "Armed guest
+// signatures") need guest signature enforcement on, so they run as their own invocation
+// (`pnpm test:e2e:armed`) on their own ports, against the guest-mode export.
+const armed = process.env.E2E_GUEST_SIG_ENFORCE === '1';
+const ARMED_PORTS = { live: '3417', api: '8417', marketing: '3418' };
 // The workbench embed e2e (docs/specs/013-workspace/blueprints/workbench-embeds.md "Testing") needs the
 // NEXT_PUBLIC_E2E_AUTH export and the stack acting as the accounts Worker, so it runs as its own invocation
 // (`pnpm test:e2e:workbench`) on its own ports.
 const workbench = process.env.E2E_WORKBENCH === '1';
-const WORKBENCH_PORTS = { live: '3421', api: '8421', marketing: '3422', index: '8422' };
+const WORKBENCH_PORTS = { live: '3421', api: '8421', marketing: '3422' };
 const BASE_URL =
   process.env.E2E_BASE_URL ??
   (signedIn
     ? `http://localhost:${SIGNED_IN_PORTS.live}`
-    : workbench
-      ? `http://localhost:${WORKBENCH_PORTS.live}`
-      : 'http://localhost:3402');
-const runName = signedIn ? '-signed-in' : workbench ? '-workbench' : '';
+    : armed
+      ? `http://localhost:${ARMED_PORTS.live}`
+      : workbench
+        ? `http://localhost:${WORKBENCH_PORTS.live}`
+        : 'http://localhost:3402');
+const runName = signedIn ? '-signed-in' : armed ? '-armed' : workbench ? '-workbench' : '';
 
 export default defineConfig({
   testDir: './e2e',
@@ -69,6 +76,7 @@ export default defineConfig({
       // The signed-in, sites and workbench suites need their own builds and stacks; see below.
       testIgnore: [
         /signed-in\//,
+        /armed\//,
         /perf\//,
         /optical-audit-sites\.spec\.ts/,
         /workbench-(embed|workspace)\.spec\.ts/,
@@ -100,6 +108,15 @@ export default defineConfig({
           },
         ]
       : []),
+    ...(armed
+      ? [
+          {
+            name: 'armed',
+            use: { ...devices['Desktop Chrome'] },
+            testMatch: /armed\/.*\.spec\.ts/,
+          },
+        ]
+      : []),
     // Opt-in (E2E_PERF=1, pnpm perf:canvas): the canvas performance probe
     // (docs/specs/008-canvas/canvas-performance.md "Measuring"). Reports against the budget and never
     // fails on a miss; it runs nightly (canvas-perf.yml), not on every push.
@@ -111,6 +128,19 @@ export default defineConfig({
             testMatch: /perf\/.*\.perf\.ts/,
             // One long measurement: a retry would only run it all again (and double the time).
             retries: 0,
+          },
+        ]
+      : []),
+    // Opt-in (E2E_WEBKIT=1, after `playwright install webkit`): the quick style panel's swatch
+    // rows, which fit or wrap by the engine's layout
+    // (docs/specs/008-canvas/quick-style-panel.md). Kept out of CI's default run to spare its
+    // minutes; the same specs run in Chromium.
+    ...(process.env.E2E_WEBKIT === '1'
+      ? [
+          {
+            name: 'webkit',
+            use: { ...devices['Desktop Safari'] },
+            testMatch: /quick-style-swatch-rows\.spec\.ts/,
           },
         ]
       : []),
@@ -130,15 +160,22 @@ export default defineConfig({
           E2E_LIVE_PORT: SIGNED_IN_PORTS.live,
           E2E_API_PORT: SIGNED_IN_PORTS.api,
           E2E_MARKETING_PORT: SIGNED_IN_PORTS.marketing,
-          E2E_INDEX_PORT: SIGNED_IN_PORTS.index,
+          // The stack stands in for the accounts Worker: it mints the stub's session tokens and the api verifies them.
+          E2E_ACCOUNTS_STUB: '1',
         }
-      : workbench
+      : armed
         ? {
-            E2E_LIVE_PORT: WORKBENCH_PORTS.live,
-            E2E_API_PORT: WORKBENCH_PORTS.api,
-            E2E_MARKETING_PORT: WORKBENCH_PORTS.marketing,
-            E2E_INDEX_PORT: WORKBENCH_PORTS.index,
+            E2E_LIVE_PORT: ARMED_PORTS.live,
+            E2E_API_PORT: ARMED_PORTS.api,
+            E2E_MARKETING_PORT: ARMED_PORTS.marketing,
+            E2E_GUEST_SIG_ENFORCE: '1',
           }
-        : {},
+        : workbench
+          ? {
+              E2E_LIVE_PORT: WORKBENCH_PORTS.live,
+              E2E_API_PORT: WORKBENCH_PORTS.api,
+              E2E_MARKETING_PORT: WORKBENCH_PORTS.marketing,
+            }
+          : {},
   },
 });

@@ -13,10 +13,6 @@ const { db } = vi.hoisted(() => ({
 vi.mock('../db', () => db);
 vi.mock('../person/profiles', () => ({ getParticipant: db.getParticipant }));
 
-const { timeline } = vi.hoisted(() => ({
-  timeline: { recordTokenRevoked: vi.fn() },
-}));
-vi.mock('../timeline', () => timeline);
 
 const { workbenchEnd } = vi.hoisted(() => ({ workbenchEnd: { endWorkbenchAccess: vi.fn() } }));
 vi.mock('../workbench-end', () => workbenchEnd);
@@ -43,7 +39,6 @@ beforeEach(() => {
   db.listApiTokensByOwner.mockResolvedValue([]);
   db.revokePresentedToken.mockResolvedValue(undefined);
   db.retractTimelineWarning.mockResolvedValue(undefined);
-  for (const fn of Object.values(timeline)) fn.mockReset();
   workbenchEnd.endWorkbenchAccess.mockReset();
 });
 
@@ -112,7 +107,7 @@ describe('/api/tokens/current (docs/specs/015-api/blueprints/cli.md "Token self-
     });
   });
 
-  it('revokes itself, recording it', async () => {
+  it('revokes itself, ending its workbench access', async () => {
     db.listApiTokensByOwner.mockResolvedValue([live]);
     const work: Promise<unknown>[] = [];
     const res = await handleTokens(tokenCtx('DELETE', false, (p) => void work.push(p)));
@@ -127,15 +122,6 @@ describe('/api/tokens/current (docs/specs/015-api/blueprints/cli.md "Token self-
       'revoked',
     );
     await Promise.all(work);
-    expect(timeline.recordTokenRevoked).toHaveBeenCalled();
-    db.listApiTokensByOwner.mockResolvedValue([{ ...live, name: null }]);
-    await handleTokens(tokenCtx('DELETE', false, (p) => void work.push(p)));
-    await Promise.all(work);
-    expect(timeline.recordTokenRevoked).toHaveBeenLastCalledWith(
-      expect.anything(),
-      { id: 'tok_1', name: 'API token' },
-      'user_1',
-    );
   });
 
   it('still ends its workbench access when no bearer secret came with it', async () => {

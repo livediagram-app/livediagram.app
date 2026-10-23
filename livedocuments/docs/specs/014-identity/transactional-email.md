@@ -26,40 +26,48 @@ is active.
 2. **Account deleted** — after a user deletes their account (spec: account
    self-deletion), a confirmation that their livedocuments data and their
    liveworkspace account are gone.
-
-[Account settings & email notifications](profile-and-email-notifications.md) adds a further opt-out
-notification — **someone joined my document** — and the **someone responded to
-my team invite** switch the accounts Worker honours, read from the [User preferences](../007-editor/user-preferences.md) preference blob, set in the Settings dialog.
-
-**Later additions (same gate + best-effort `ctx.waitUntil` contract):**
-
-3. **Milestone** (opt-out `notifyMilestones`) — a celebration when an owner's
-   document count reaches 10, fired on a genuine create, and one on the owner's
-   first share link. Each is claimed at the accounts Worker before it is sent
-   (`claimMilestone`, `milestone` or `firstShare`, for `livedocuments.app`), so
-   a burst of saves sends one; a claim needs a recorded sign-in sighting.
-4. **API-token expiry** — no longer sent by livedocuments: API tokens belong to the
-   liveworkspace account ([Public API + tokens](../015-api/public-api-and-tokens.md)),
-   and liveworkspace does not send an expiry reminder yet.
-5. **New comment** ( opt-out `notifyComments`) — when someone other than the
+3. **New comment** (#1, opt-out `notifyComments`) — when someone other than the
    owner comments on a document (either comment path), the owner is emailed
-   **immediately** (no cron). Never includes the comment text. On the tab save
-   it counts only the saver's own new comments: a save can carry a peer's
-   comment that reached the saver live first, and that is not the saver
-   commenting.
-6. **Action assigned** (opt-out `notifyActionAssigned`) — a teammate assigned
-   the recipient an action ([Assigned actions](../012-collaboration/assigned-actions.md)).
-7. **Mentioned** (opt-out `notifyMentions`) — a teammate @-mentioned the
-   recipient in a comment ([Comment mentions](../012-collaboration/comment-mentions.md)). Unlike the owner's new-comment email it
-   quotes the comment (the first 280 characters): the recipient was named in
-   it, and the document is in their own team's library.
-8. **Team invite reminders** — gone with the invitations themselves (item 1).
+   **immediately** (no cron), at most once a document per 15 minutes. Never
+   includes the comment text. On the tab save it counts only the saver's own
+   new comments: a save can carry a peer's comment that reached the saver live
+   first, and that is not the saver commenting.
+4. **API-token expiry** — not sent by livedocuments: API tokens belong to the
+   liveworkspace account ([Public API + tokens](../015-api/public-api-and-tokens.md)),
+   and liveworkspace warns the owner a week before one expires, for every app
+   ([liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md) "Expiry warnings").
+5. **Someone joined my document** (opt-out `notifyDocumentJoin`) — a signed-in person
+   opened one of the owner's documents through a share link for the first time. The
+   index says so (its `joined` notice, [One Explorer contracts](../../../../liveworkspace/docs/one-explorer-contracts.md)
+   "Notices"), and the document's room emails the owner, at most once a document per 15
+   minutes. Never for a guest or the owner.
+6. **Milestones** (opt-out `notifyMilestones`) — the owner's **tenth document** (the
+   index's count of the documents they have made, the Trash's included, asked when
+   they make one), and the **first share link** they make (the index's `shared`
+   notice). Each goes once per account, claimed at liveworkspace
+   (`milestones/claim`) before it is sent.
+7. **Action assigned** (opt-out `notifyActionAssigned`) and **mentioned**
+   (opt-out `notifyMentions`) — a teammate assigned you an action, or
+   @-mentioned you in a comment, on a team document ([Assigned actions](../012-collaboration/assigned-actions.md) §4,
+   [Comment mentions](../012-collaboration/comment-mentions.md) "The email"). The recipient is
+   one of the document's team's people as liveworkspace keeps the team; the same
+   email goes once a day, and one sender's are capped at 60 an hour a document.
 
-The opt-out categories (`notifyComments`, `notifyMilestones`, and `notifyTips`,
-which the accounts Worker's onboarding series reads) join the [Account settings & email notifications](profile-and-email-notifications.md)
-pair in `getNotificationPrefs` and as switches in Settings > Notifications. They
-are settings every liveworkspace app shares (the `all` scope), so turning one off
-here turns it off in every app. Every opt-out email's footer links to
+How each is sent, and what it asks of liveworkspace: addresses and switches for
+many people in one go (`notificationRecipients`), a team's people
+(`readTeamPeople`), and the milestone claim, all in `@liveworkspace/auth-client`
+(`notify.ts`), which every app shares, with the windows and caps. The once-only
+state of the join, assignment and mention emails is the document's own
+(`notify_claims` in its SQLite, pruned to a day); livedocuments' D1 holds none.
+
+The opt-out categories livedocuments reads (`notifyComments`,
+`notifyDocumentJoin`, `notifyMilestones`, `notifyActionAssigned`, `notifyMentions`)
+join the [Account settings & email notifications](profile-and-email-notifications.md)
+switches in Settings > Notifications, beside `notifyTips` and `notifyInviteResponse`,
+which the accounts Worker reads for onboarding and team invites. Most are settings
+every liveworkspace app shares (the `all` scope, marked "All apps" in Settings),
+so turning one off here turns it off in every app; `notifyDocumentJoin` is
+livedocuments' own. Every opt-out email's footer links to
 `/explorer?settings=notifications` (also emitted as a `List-Unsubscribe` header; the old `/explorer/profile` URL in already-sent mail redirects there, see [Account settings & email notifications](profile-and-email-notifications.md)) so the
 recipient can turn it off in one click. The opt-out toggles are
 documented for users in the [Email Notifications](../../../apps/help/app/account-and-data/email-notifications/page.mdx)
@@ -83,12 +91,12 @@ Production: `wrangler secret put RESEND_API_KEY`.
 
 ## 3. Data model
 
-None in livedocuments. An owner's address is looked up when an email is sent
+None in livedocuments' D1. An owner's address is looked up when an email is sent
 (`accountEmails` from `@liveworkspace/auth-client`, up to 100 ids in one call,
-verified addresses only, accounts only), milestone claims are kept per account
-and app by the accounts Worker, and so is the sign-in sighting a claim needs
-(recorded at `GET /api/auth/callback`, [Telemetry](../017-telemetry/telemetry.md)).
-A guest is never emailed.
+verified addresses only, accounts only). A guest is never emailed. Each document
+keeps its own `notify_claims` rows (key, sender, time) for the join, assignment
+and mention emails, a day at most; no text, address or name is in them (the
+keys of the last two are SHA-256 hashes).
 
 ## 4. Code shape
 
@@ -115,9 +123,12 @@ A guest is never emailed.
   images are blocked. The path is permanent: every email already sent points
   at it.
 - `apps/api/src/person/account-app.ts` — what the accounts Worker keeps of an
-  account for livedocuments: `ownerEmails` / `ownerEmail`, `claimOwnerMilestone`,
-  `recordOwnerSighting`, `reportOwnerActivity`. None throws; a failure reads as
-  "no address" or "not claimed".
+  account for livedocuments: `ownerEmails` / `ownerEmail`, `recordOwnerSighting`,
+  `reportOwnerActivity`. None throws; a failure reads as "no address".
+- `apps/api/src/person/notify.ts` — what the notification emails ask of
+  liveworkspace: recipients with a switch on (`notifyRecipients`), a team's
+  people (`teamPeople`), the milestone claim and the index's count of documents made.
+- `apps/api/src/document-room/notify-claims.ts` — the document's once-only claims.
 - `apps/api/src/email/notifications.ts` — the notification sends.
 
 All sends use `ctx.waitUntil` — email is never on the request's critical path.

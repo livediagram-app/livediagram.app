@@ -63,8 +63,8 @@ not design: where a spec is silent the default is in [DEFAULTS.md](DEFAULTS.md).
 - **`packages/api-schema`**: the `photo` room op in `room-messages.ts` (`MUTATION_OP_KINDS`), `photo-frames.ts`
   (`tabPhotoOps(before, after)`), the blob-batch framing (`photo-blob-batch.ts`: `encodeBlobBatch`,
   `decodeBlobBatch`), and the route DTOs.
-- **`apps/api`**: the `photo_blob_refs` table in the design's schema (`design-schema.ts`); `src/db/photo-blobs.ts`; `src/routes/photo-blob-routes.ts`
-  (dispatched from `design-subresource-routes.ts`); the design's own daily upkeep, which drops unnamed photo blobs (`src/design-room/design-room.ts`); copy support in
+- **`apps/api`**: the `photo_blobs` and `photo_blob_refs` tables in the baseline migration; `src/db/photo-blobs.ts`; `src/routes/photo-blob-routes.ts`
+  (dispatched from `design-subresource-routes.ts`); `src/photo-sweep.ts` (from `scheduled()`); copy support in
   the design copy path; `PHOTO_MAX_BYTES_PER_TAB` in `types.ts`, `.env.example`, `hosted-vars.json`; the
   thumbnail renderer's photo preview embed.
 - **`apps/live`**:

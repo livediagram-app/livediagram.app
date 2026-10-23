@@ -47,7 +47,7 @@ describe('resolveWorkbenchSession', () => {
     over: { tokenRevoked?: boolean; tokenReadOnly?: boolean; workspace?: boolean } = {},
   ) {
     const db: SqliteD1 = sqliteD1();
-    db.sql.exec(`INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at)
+    db.sql.exec(`INSERT INTO test_documents (id, owner_id, name, shareable, saved_at, created_at)
                  VALUES ('doc1', 'user_1', 'Doc', 0, 1, 1)`);
     db.sql
       .exec(`INSERT INTO api_tokens (id, owner_id, token_hash, name, created_at, expires_at, revoked, read_only)

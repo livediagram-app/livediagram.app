@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { useSyncExternalStore } from 'react';
+import { useSyncExternalStore, type ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 import type { PageToWorkbenchMessage, WorkbenchToPageMessage } from '@livedesign/api-schema';
 import {
@@ -40,13 +40,28 @@ vi.mock('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams(useAddress().split('?')[1] ?? ''),
 }));
 
-vi.mock('./ExplorerHost', () => ({
-  ExplorerHost: ({ view }: { view: { kind: string; id?: string } }) => (
-    <p>
-      explorer {view.kind} {view.id ?? ''}
-    </p>
-  ),
+type FakeExplorer = {
+  selected: { kind: string; id?: string };
+  loading: boolean;
+  folderById: Map<string, { id: string; name: string }>;
+  designsByFolder: Map<string | null, unknown[]>;
+  teamFolders: { id: string; teamId: string }[];
+};
+const explorer = vi.hoisted(() => {
+  const state: FakeExplorer = {
+    selected: { kind: 'home' },
+    loading: false,
+    folderById: new Map([['f1', { id: 'f1', name: 'Minigames' }]]),
+    designsByFolder: new Map([['f1', []]]),
+    teamFolders: [{ id: 'tf1', teamId: 'team1' }],
+  };
+  return { state };
+});
+vi.mock('../../explorer/ExplorerContext', () => ({ useExplorer: () => explorer.state }));
+vi.mock('../../explorer/ExplorerShell', () => ({
+  ExplorerShell: ({ children }: { children: ReactNode }) => <div>explorer {children}</div>,
 }));
+vi.mock('../../explorer/ExplorerPane', () => ({ ExplorerPane: () => <p>pane</p> }));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 vi.mock('next/dynamic', () => ({
   default: () =>
@@ -93,7 +108,7 @@ let end: Mock<WorkbenchSession['end']>;
 function sessionOf(): WorkbenchSession {
   return {
     scope: 'workspace',
-    secret: `lvw_${'a'.repeat(43)}.${'0f'.repeat(32)}`,
+    secret: `lvw_${'a'.repeat(43)}`,
     designId: null,
     tabId: null,
     shareCode: null,
@@ -133,6 +148,8 @@ beforeEach(() => {
     close: () => {},
   };
   end = vi.fn<WorkbenchSession['end']>();
+  explorer.state.selected = { kind: 'home' };
+  explorer.state.loading = false;
 });
 
 afterEach(() => {
@@ -169,13 +186,21 @@ describe('WorkspaceFrame', () => {
     expect(track).toHaveBeenCalledWith('Session', 'Opened', 'WorkbenchWorkspace');
   });
 
-  it('names the folder shown by id; its name and contents are the index’s, read inside the Explorer', () => {
-    window.history.replaceState(null, '', '/embed/workbench/explorer/folder/f1');
-    mount();
+  it('names the folder shown and its own designs, once the lists are in', () => {
+    explorer.state.selected = { kind: 'folder', id: 'f1' };
+    explorer.state.loading = true;
+    const { rerender } = mount();
+    expect(sent('livedesign:place')).toEqual([]);
 
-    expect(screen.getByText('explorer folder f1')).toBeTruthy();
+    explorer.state.loading = false;
+    rerender(
+      <WorkbenchSessionContext.Provider value={sessionOf()}>
+        <WorkspaceFrame />
+      </WorkbenchSessionContext.Provider>,
+    );
+
     expect(sent('livedesign:place')).toMatchObject([
-      { view: 'folder', folderId: 'f1', folderName: null, designCount: null },
+      { view: 'folder', folderId: 'f1', folderName: 'Minigames', designCount: 0 },
     ]);
   });
 
@@ -227,5 +252,16 @@ describe('WorkspaceFrame', () => {
 
     act(() => listeners.forEach((l) => l({ type: 'livedesign:open', v: 1, to: { view: 'home' } })));
     expect(window.location.pathname).toBe('/embed/workbench/explorer');
+  });
+
+  it('moves a frame started on a team’s folder to that team’s page, in place', () => {
+    window.history.replaceState(null, '', '/embed/workbench/explorer/folder/tf1');
+    explorer.state.selected = { kind: 'folder', id: 'tf1' };
+    mount();
+
+    expect(`${window.location.pathname}${window.location.search}`).toBe(
+      '/embed/workbench/explorer/team?id=team1&folder=tf1',
+    );
+    expect(sent('livedesign:place').filter((m) => 'view' in m && m.view === 'folder')).toEqual([]);
   });
 });

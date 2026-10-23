@@ -80,17 +80,12 @@ export function useCanvasChromePanels({
     commentRows,
     commentsPanelPosition,
     currentDocumentId,
-    documentList,
-    documentListLoading,
+    currentShareCode,
+    onRenameCurrentDocument,
     elements,
-    folders,
     layers,
     activeLayerId,
     layerCounts,
-    userPreferences,
-    onToggleRecentExclusion,
-    favouriteIds,
-    onToggleFavourite,
     onSelectLayer,
     onAddLayer,
     onRemoveLayer,
@@ -103,56 +98,26 @@ export function useCanvasChromePanels({
     onClearLayer,
     onHideOtherLayers,
     onPreviewLayer,
-    onCreateFolder,
-    onDeleteDocument,
-    onDeleteFolder,
-    onDismissShared,
-    onDuplicateDocument,
     onMoveCommentsPanel,
-    onMoveDocumentToFolder,
-    onMoveDocumentTo,
-    onLibraryChanged,
     onNewDocument,
     explorerMenuActions,
     onOpenActionForElement,
     onToggleActionDone,
     onOpenCommentsForElement,
-    onOpenDocument,
-    onRenameCurrent,
-    onRenameFolder,
-    onTeamFolders,
     onResetCommentsPanel,
     readOnly,
-    selfParticipant,
     setActiveDockAnchor,
     setActiveDockPanel,
     settings,
-    sharedDocuments,
     tabThemeId,
-    teamDocuments,
-    teamFolders,
-    teams,
     zenMode,
   } = props;
   // Stable handler identities for the React.memo'd Explorer so it skips re-rendering on every drag frame even
   // though this chrome host re-renders with the canvas. useStableCallbacks
   // keeps each reference fixed while always invoking the latest prop, so
   // there's no stale-closure risk despite the parent's per-frame churn.
-  // (The panels' data props are already stable: list state doesn't change
-  // mid-drag, and EditorView memoises the `teams` array.)
   const explorerHandlers = useStableCallbacks({
-    onDismissShared,
-    onOpenDocument,
     onNewDocument,
-    onRenameCurrent,
-    onDeleteDocument,
-    onDuplicateDocument,
-    onCreateFolder,
-    onRenameFolder,
-    onDeleteFolder,
-    onMoveDocumentToFolder,
-    onMoveDocumentTo,
-    onLibraryChanged,
     onMenuShare: explorerMenuActions?.onShare,
     onMenuExport: explorerMenuActions?.onExport,
     onMenuSearch: explorerMenuActions?.onSearch,
@@ -225,36 +190,14 @@ export function useCanvasChromePanels({
   const explorerEl =
     zenMode || explorerHidden || !explorerOpened ? null : (
       <LazyExplorer
-        recentExcludedIds={userPreferences.recentExcludedIds ?? []}
-        onToggleRecentExclusion={onToggleRecentExclusion}
-        favouriteIds={favouriteIds}
-        onToggleFavourite={onToggleFavourite}
         // A popover under the menu button (docs/specs/007-editor/toolbar-layout.md): never placed or dragged.
         position={null}
-        documents={documentList}
-        ownerId={selfParticipant?.id ?? null}
-        folders={folders}
-        loading={documentListLoading}
-        shared={sharedDocuments}
-        teams={teams}
-        teamFolders={teamFolders}
-        teamDocuments={teamDocuments}
-        onDismissShared={explorerHandlers.onDismissShared}
         currentDocumentId={currentDocumentId}
+        currentShareCode={currentShareCode ?? null}
+        onRenameCurrent={onRenameCurrentDocument}
         onMoveTo={NO_MOVE}
-        onOpenDocument={explorerHandlers.onOpenDocument}
         onNewDocument={explorerHandlers.onNewDocument}
         menuActions={explorerMenu}
-        onRenameCurrent={explorerHandlers.onRenameCurrent}
-        onDeleteDocument={explorerHandlers.onDeleteDocument}
-        onLibraryChanged={explorerHandlers.onLibraryChanged}
-        onDuplicateDocument={explorerHandlers.onDuplicateDocument}
-        onCreateFolder={explorerHandlers.onCreateFolder}
-        onRenameFolder={explorerHandlers.onRenameFolder}
-        onDeleteFolder={explorerHandlers.onDeleteFolder}
-        onTeamFolders={onTeamFolders}
-        onMoveDocumentToFolder={explorerHandlers.onMoveDocumentToFolder}
-        onMoveDocumentTo={onMoveDocumentTo ? explorerHandlers.onMoveDocumentTo : undefined}
         popoverOpen={explorerOpen}
         popoverAnchor={activeDockAnchor ?? undefined}
         asPopover

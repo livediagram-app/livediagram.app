@@ -141,9 +141,8 @@ is.
 - `apps/live/lib/save-locations.ts` (+ test): the ids and helpers above.
 - `apps/live/app/new/useNewDesignLocation.ts`: `resolveSaveLocation`, the location every create from `/new` uses.
 - `apps/live/app/new/page.tsx`: derives the offline create branch from the location id.
-- `apps/live/components/placement/PlacementCard.tsx`: the selectable destination card and the inline New Folder
-  card a placement level is built from. The Move dialog's browser is the shared Explorer's `PlacementBrowser`
-  (`@liveworkspace/explorer`).
+- `apps/live/components/placement/PlacementBrowser.tsx`: the `layout` prop
+  (`tiles` | `list`) on the browser, its `PlacementCard`, and `NewFolderTile`.
 
 ## References
 

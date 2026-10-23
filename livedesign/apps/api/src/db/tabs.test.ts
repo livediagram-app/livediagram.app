@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Tab } from '@livedesign/design';
-import { sqliteD1, type SqliteD1, testCopyDesign } from '../test-sqlite-d1';
+import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
+import { copyDesign } from './designs';
 import {
   getTab,
   isTabRevStale,
@@ -56,7 +57,7 @@ describe('tab revisions', () => {
 
   function designWith(): SqliteD1 {
     const db = sqliteD1();
-    db.sql.exec(`INSERT INTO test_designs (id, owner_id, name, shareable, saved_at, created_at)
+    db.sql.exec(`INSERT INTO designs (id, owner_id, name, shareable, saved_at, created_at)
                  VALUES ('D', 'o', 'Doc', 0, 1, 1)`);
     return db;
   }
@@ -109,7 +110,7 @@ describe('tab revisions', () => {
       ),
     ).toBe(true);
     expect(revOf(db, 't1')).toBe(3);
-    await testCopyDesign(db.env, 'D', 'D2', 'o', 'Copy');
+    await copyDesign(db.env, 'D', 'D2', 'o', 'Copy');
     const copied = db.sql
       .prepare(
         "SELECT t.rev FROM tabs t JOIN design_tabs dt ON dt.tab_id = t.id WHERE dt.design_id = 'D2'",

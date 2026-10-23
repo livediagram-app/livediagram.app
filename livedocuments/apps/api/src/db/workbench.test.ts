@@ -25,7 +25,7 @@ const ORIGIN = 'https://127.0.0.1:5175';
 
 function arrange(): SqliteD1 {
   const db = sqliteD1();
-  db.sql.exec(`INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at)
+  db.sql.exec(`INSERT INTO test_documents (id, owner_id, name, shareable, saved_at, created_at)
                VALUES ('doc1', 'user_1', 'Home screen', 0, 1, 1)`);
   db.sql
     .exec(`INSERT INTO api_tokens (id, owner_id, token_hash, name, created_at, expires_at, revoked)
@@ -469,18 +469,6 @@ describe('tickets', () => {
     expect(count(db, 'workbench_sessions')).toBe(0);
   });
 
-  it('goes with a purged document', async () => {
-    const db = arrange();
-    await paired(db);
-    await insertWorkbenchTicket(db.env, ticket());
-    await insertWorkbenchSession(db.env, session());
-
-    db.sql.exec(`DELETE FROM documents WHERE id = 'doc1'`);
-
-    expect(count(db, 'workbench_tickets')).toBe(0);
-    expect(count(db, 'workbench_sessions')).toBe(0);
-    expect(count(db, 'workbench_pairings')).toBe(1);
-  });
 });
 
 describe('sessions', () => {

@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { OVERVIEW_TAB_BATCH } from '@livedocuments/document-views';
 import type { Element } from '@livedocuments/document';
-import { createShareLink } from '../db/share';
+import { testShareLink } from '../test-sqlite-d1';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { stubTelemetry, TELEMETRY_ON } from '../test-telemetry';
 import type { Env } from '../types';
@@ -515,7 +515,7 @@ describe('views behind the read gate (E22, E23, E25)', () => {
   it('scopes a tab-scoped visitor to its tab, never reading the others', async () => {
     quiet();
     const db = await setUp();
-    await createShareLink(db.env, 'D', 'SCOPED', 'view', 'never', 't2');
+    testShareLink(db, 'D', 'SCOPED', 'view', 'never', 't2');
     const who = { owner: 'guest', headers: { 'X-Share-Code': 'SCOPED' } };
     expect((await tabView(db, 'view=outline', who)).status).toBe(404);
     const lines = (await (await docView(db, 'view=overview', who)).text()).split('\n');
@@ -526,11 +526,4 @@ describe('views behind the read gate (E22, E23, E25)', () => {
     expect(logged('[views] overview')).toMatchObject({ batches: 1 });
   });
 
-  it('answers a trashed document as the plain read does', async () => {
-    quiet();
-    const db = await setUp();
-    expect((await call(db, 'DELETE', '/api/documents/D')).status).toBe(204);
-    const plain = await call(db, 'GET', '/api/documents/D/tabs/t1');
-    expect((await tabView(db, 'view=outline')).status).toBe(plain.status);
-  });
 });

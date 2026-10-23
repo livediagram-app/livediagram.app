@@ -13,7 +13,7 @@ import {
 import { AuthControls } from '@/components/chrome/AuthControls';
 import { SharedBadge } from '@/components/chrome/SharedBadge';
 import { HEADER_ACTION_BTN, HeaderGlyph } from '@/components/chrome/header-action';
-import { explorerHref } from '@/lib/explorer-redirect';
+import { EXPLORER_LANDING_PATH } from '@/lib/explorer-landing';
 
 // The autosave's sync state. No header pill shows it any more: the failure
 // states each raise a toast (editor-persistence.ts), so silent failures
@@ -126,7 +126,7 @@ export function EditorHeader({
             Hovering it lists liveworkspace's other sites (liveworkspace/docs/site-switcher.md). */}
         <SiteSwitcher current={SITE_ID}>
           <Brand
-            href={explorerHref()}
+            href={EXPLORER_LANDING_PATH}
             size="md"
             wordmarkClassName="hidden sm:inline"
             className="relative touch-target"

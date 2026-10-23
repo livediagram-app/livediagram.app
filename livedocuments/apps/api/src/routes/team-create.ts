@@ -1,8 +1,9 @@
 // POST /api/teams `{ name, organisation? }` (docs/specs/013-workspace/teams.md "Making a team"): makes a
 // team for the person signed in, on liveworkspace, with them as its admin (liveworkspace/docs/
 // accounts.md "Teams", createTeamFor). It is the same team on liveworkspace.app and in every app; it is
-// managed there. The team goes into this app's copy at once (mirrorCreatedTeam), so a document can be
-// filed into it straight away.
+// managed there. It is usable at once: a team the caller's token does not name yet is asked of accounts
+// (@liveworkspace/index-app createTeamAccess, and the index's own check), so a document can be filed into it
+// straight away.
 //
 // The interactive session only (an API token or a workbench can't make one), and the app vouches for
 // the person with the access token they sent.
@@ -10,7 +11,6 @@
 import { bearerTokenOf, type Team } from '@livedocuments/api-schema';
 import { createTeamFor, TeamError } from '@liveworkspace/auth-client';
 import { accountCredentials } from '../auth/accounts';
-import { mirrorCreatedTeam } from '../db/team-sync';
 import { badRequest, json, signInRequired } from '../responses';
 import { readBody, type RouteContext } from './context';
 
@@ -45,7 +45,6 @@ export async function createTeam(ctx: RouteContext): Promise<Response> {
     return json({ error: 'teams_unavailable' }, { status: 503 });
   }
   const now = Date.now();
-  await mirrorCreatedTeam(env, accountUserId, made, now);
   console.info('[teams] created');
   const team: Team = {
     id: made.id,

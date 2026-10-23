@@ -25,7 +25,7 @@ describe('POST /documents with its own dates', () => {
       }),
     );
     expect(res.status).toBe(201);
-    const row = db.sql.prepare('SELECT created_at, saved_at FROM documents WHERE id = ?').get('d1');
+    const row = db.sql.prepare('SELECT created_at, saved_at FROM document WHERE id = ?').get('d1');
     expect(row).toEqual({ created_at: createdAt, saved_at: savedAt });
   });
 
@@ -40,7 +40,7 @@ describe('POST /documents with its own dates', () => {
       }),
     );
     const row = db.sql
-      .prepare('SELECT created_at, saved_at FROM documents WHERE id = ?')
+      .prepare('SELECT created_at, saved_at FROM document WHERE id = ?')
       .get('d2') as {
       created_at: number;
       saved_at: number;

@@ -5,7 +5,7 @@ import {
   type WorkbenchMessageDirection,
 } from './workbench-messages';
 
-const TICKET = 'A'.repeat(21) + '_.' + '0f'.repeat(32);
+const TICKET = 'A'.repeat(21) + '_';
 
 describe('WORKBENCH_MESSAGE_TYPES', () => {
   it('holds the twelve types of the spec', () => {

@@ -104,7 +104,7 @@ describe('OpenAPI manifest ↔ dispatch parity', () => {
 
     // Vacuity guard: if the source walk stops finding verbs, every assertion
     // below passes without checking anything.
-    expect(handled.size).toBeGreaterThan(12);
+    expect(handled.size).toBeGreaterThan(15);
     for (const [segment, methods] of handled) {
       expect(methods.size, `${segment}: no HTTP method found in its handler`).toBeGreaterThan(0);
     }
@@ -320,6 +320,6 @@ describe('OpenAPI teams surface', () => {
   it('marks the team reads token-usable and no team write', () => {
     const teams = ROUTE_MANIFEST.filter((r) => r.segment === 'teams');
     const usable = teams.filter((r) => r.tokenUsable).map((r) => `${r.method} ${r.path}`);
-    expect(usable).toEqual(['GET /teams', 'GET /teams/{id}/library']);
+    expect(usable).toEqual(['GET /teams', 'GET /teams/{id}', 'GET /teams/{id}/library']);
   });
 });

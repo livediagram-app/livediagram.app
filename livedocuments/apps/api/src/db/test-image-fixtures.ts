@@ -1,27 +1,40 @@
-// Shared arrangement for the image reference index readers' tests (db/images.test.ts,
-// db/image-grants.test.ts): a real SQLite with the baseline migration, and row builders. Not a
+// Shared arrangement for the image tests (db/image-grants.test.ts, media.test.ts, routes/images.test.ts): a started
+// document (its own `document` row, as a create writes it), the media service's images, and tab builders. Not a
 // `.test.ts` file, so vitest doesn't collect it as a suite.
 
 import type { DatabaseSync } from 'node:sqlite';
 import type { Tab } from '@livedocuments/document';
-import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
+import type { TestMediaService } from '../test-media-service';
 
-export function setup(): SqliteD1 {
-  return sqliteD1();
-}
-
-export function liveDoc(sql: DatabaseSync, id: string, ownerId = 'owner', name = id) {
+// A started document, as its create writes it (test-sqlite-d1.ts `test_documents`).
+export function liveDoc(
+  sql: DatabaseSync,
+  id: string,
+  ownerId = 'owner',
+  name = id,
+  teamId: string | null = null,
+) {
   sql
-    .prepare(
-      'INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at) VALUES (?, ?, ?, 0, 0, 0)',
-    )
-    .run(id, ownerId, name);
+    .prepare('INSERT INTO test_documents (id, owner_id, name, team_id, saved_at, created_at) VALUES (?, ?, ?, ?, 0, 1)')
+    .run(id, ownerId, name, teamId);
 }
 
-// Images owned by 'owner', as the media service's images are known here (src/media.ts).
-export function images(sql: DatabaseSync, ...ids: string[]) {
-  const stmt = sql.prepare("INSERT INTO media_images (id, owner_id) VALUES (?, 'owner')");
-  for (const id of ids) stmt.run(id);
+// Images in the media service, owned by `owner` as the service names owners (an account's id, a guest's hash:
+// src/media.ts mediaOwner), with bytes to serve.
+export function mediaImages(
+  media: TestMediaService,
+  owner: string,
+  ids: string[],
+  app = 'livedocuments.app',
+) {
+  const stmt = media.sql.prepare(
+    `INSERT INTO images (id, owner, app, content_type, byte_size, width, height, sha256, created_at)
+     VALUES (?, ?, ?, 'image/png', 4, 1, 1, ?, 1)`,
+  );
+  for (const id of ids) {
+    stmt.run(id, owner, app, `sha-${id}`);
+    media.objects.set(id, { bytes: new Uint8Array([1, 2, 3, 4]), contentType: 'image/png' });
+  }
 }
 
 export const tabWith = (id: string, ...imageIds: string[]): Tab =>

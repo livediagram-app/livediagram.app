@@ -1,6 +1,9 @@
+import { FLUSH_IDLE_MS, FLUSH_RETRY_MS, nextFlushAt } from '@liveworkspace/index-app';
 import { DurableObject } from 'cloudflare:workers';
 import {
   ACCESS_CHANGED_CLOSE,
+  GRANT_LAPSED_CLOSE,
+  ROOM_GRANT_ASK_BEFORE_MS,
   WORKBENCH_ENDED_CLOSE,
   DOCUMENT_FORMAT,
   DOCUMENT_TRASHED_CLOSE,
@@ -8,6 +11,7 @@ import {
   parseBuildId,
   ROOM_PING,
   ROOM_PONG,
+  capWorkbenchRole,
   type AccessLevel,
 } from '@livedocuments/api-schema';
 import { opForTheWire, stampCommentAuthor } from '@livedocuments/document';
@@ -32,7 +36,7 @@ import {
 } from '../document-room-rules';
 import { followerIdsOf, followTargetOf } from '../room-follows';
 import { opForScope } from '../room-scope';
-import { recheckAdmittedLink } from '../room-link-recheck';
+import { openRoomTicket } from '../room-ticket';
 import { gateClientOp } from '../room-op-gate';
 import { answerInternal, type InternalRoom } from '../room-internal';
 import { rosterFrames, type RosterEntry } from '../room-roster';
@@ -48,6 +52,7 @@ import {
 import { CHANGESET_RETENTION_MS } from '@livedocuments/api-schema';
 import { deleteOldChangesets } from '../db/changesets';
 import { documentHasTab } from '../db/tabs';
+import { documentMayServeImage } from '../db/image-grants';
 import { documentPlacesImage } from '../db/image-refs';
 import { renderDocumentImage, type ThumbnailSubject } from '../thumbnail';
 import { DocumentDb } from './document-db';
@@ -55,12 +60,14 @@ import { hasDocumentSchema, migrateDocumentSchema } from './document-schema';
 import {
   exportDocumentCopy,
   importDocumentCopy,
+  readDocumentMeta,
   readDocumentOutline,
   type DocumentCopy,
   type DocumentOutline,
 } from './document-content';
-import { drainOutbox } from './document-outbox';
-import { reportOwnerActivity } from '../person/account-app';
+import { notifyDocumentJoin } from '../email/notifications';
+import { anonymiseDocument } from './document-anonymise';
+import { drainOutbox, recordEditor } from './document-outbox';
 import { answerDocumentRequest, type RouteIdentity } from './document-route';
 
 // One SQLite-backed Durable Object per document id (docs/specs/015-api/api.md "Storage" and "Realtime model"). It
@@ -136,11 +143,9 @@ const SHARE_LINK_OPS = new Set(['share-revoked', 'share-rescoped']);
 // 4000-4999 application range; the client reloads or leaves on the op itself.
 const SHARE_LINK_CHANGED_CLOSE = 4003;
 
-// How long the outbox waits after a write before it pushes (the contract's "on idle"), and the least gap between
-// two pushes (its "at most once a minute"). A failed push retries after FLUSH_RETRY_MS.
-export const FLUSH_IDLE_MS = 2_000;
-export const FLUSH_MIN_GAP_MS = 60_000;
-const FLUSH_RETRY_MS = 60_000;
+// How long the outbox waits after a write before it pushes, the least gap between two pushes, and the retry after a
+// failed one: @liveworkspace/index-app's (outbox.ts), the same for every app's items.
+export { FLUSH_IDLE_MS, FLUSH_MIN_GAP_MS } from '@liveworkspace/index-app';
 // The document's own daily upkeep: old changesets go (a D1 cron before).
 export const MAINTENANCE_EVERY_MS = 24 * 60 * 60 * 1000;
 const MAINTENANCE_KEY = 'maintenance-at';
@@ -208,6 +213,8 @@ export class DocumentRoom extends DurableObject<Env> {
   private flushAt: number | null = null;
   private lastFlushAt = 0;
   private draining = false;
+  // Content writes so far (noteWrite), so route() can tell a request that wrote from one that didn't.
+  private writes = 0;
   // The next daily upkeep (persisted, so a wake keeps the day).
   private maintenanceAt: number | null = null;
 
@@ -333,6 +340,7 @@ export class DocumentRoom extends DurableObject<Env> {
   // itself makes (its outbox delete) schedule nothing.
   private noteWrite(): void {
     if (this.draining) return;
+    this.writes++;
     if (this.maintenanceAt === null) {
       this.maintenanceAt = Date.now() + MAINTENANCE_EVERY_MS;
       void this.state.storage.put(MAINTENANCE_KEY, this.maintenanceAt);
@@ -341,7 +349,7 @@ export class DocumentRoom extends DurableObject<Env> {
     if (this.flushAt !== null) return;
     if (this.state.storage.sql.exec('SELECT 1 FROM outbox LIMIT 1').toArray().length === 0) return;
     const now = Date.now();
-    this.flushAt = Math.max(now + FLUSH_IDLE_MS, this.lastFlushAt + FLUSH_MIN_GAP_MS);
+    this.flushAt = nextFlushAt(now, this.lastFlushAt);
     this.armAlarm();
   }
 
@@ -353,13 +361,9 @@ export class DocumentRoom extends DurableObject<Env> {
     if (!env || !documentId || !this.schemaReady) return;
     this.draining = true;
     try {
-      const { keys, statements, more, saved } = await drainOutbox(env, documentId);
+      const { keys, pushes, more } = await drainOutbox(env, documentId);
       this.lastFlushAt = Date.now();
-      // The owner saved something: liveworkspace's onboarding series counts it as activity
-      // (liveworkspace/docs/accounts.md "Onboarding emails"), at most once a minute a document, with
-      // this push. Never holds up the drain.
-      if (saved) this.state.waitUntil(reportOwnerActivity(env, saved.ownerId, saved.savedAt));
-      if (keys > 0) console.debug('[document-outbox] pushed', { documentId, keys, statements });
+      if (keys > 0) console.debug('[document-outbox] pushed', { documentId, keys, pushes });
       // A big import's tabs go a batch at a time, back to back, not a minute apart.
       if (more) this.flushAt = Date.now() + FLUSH_IDLE_MS;
     } catch (error) {
@@ -373,7 +377,7 @@ export class DocumentRoom extends DurableObject<Env> {
       this.flushAt === null &&
       this.state.storage.sql.exec('SELECT 1 FROM outbox LIMIT 1').toArray().length > 0
     ) {
-      this.flushAt = Math.max(Date.now() + FLUSH_IDLE_MS, this.lastFlushAt + FLUSH_MIN_GAP_MS);
+      this.flushAt = nextFlushAt(Date.now(), this.lastFlushAt);
     }
   }
 
@@ -421,9 +425,19 @@ export class DocumentRoom extends DurableObject<Env> {
 
   async route(documentId: string, request: Request, identity: RouteIdentity): Promise<Response> {
     this.bindDocument(documentId);
-    return answerDocumentRequest(this.requireEnv(), request, identity, (p) =>
+    const env = this.requireEnv();
+    const writesBefore = this.writes;
+    const response = await answerDocumentRequest(env, request, identity, (p) =>
       this.state.waitUntil(p),
     );
+    // A request that wrote is an edit by whoever asked: their Timeline entry and a Most Used day
+    // (document-outbox.ts recordEditor). Reads, refusals and requests that changed nothing are not.
+    if (response.ok && identity.owner && this.writes > writesBefore) {
+      const sql = this.state.storage.sql;
+      recordEditor((q, ...b) => sql.exec(q, ...b), documentId, identity.owner, Date.now());
+      this.noteWrite();
+    }
+    return response;
   }
 
   async image(
@@ -442,13 +456,17 @@ export class DocumentRoom extends DurableObject<Env> {
     return documentHasTab(this.requireEnv(), documentId, tabId);
   }
 
-  async placesImage(
+  // Whether the document places this image (on one tab, for a tab-scoped visitor) and may serve it
+  // (db/image-grants.ts): the byte endpoint's share check, answered where both live.
+  async servesImage(
     documentId: string,
     imageId: string,
     onlyTabId: string | null,
   ): Promise<boolean> {
     this.bindDocument(documentId);
-    return documentPlacesImage(this.requireEnv(), documentId, imageId, onlyTabId);
+    const env = this.requireEnv();
+    if (!(await documentPlacesImage(env, documentId, imageId, onlyTabId))) return false;
+    return documentMayServeImage(env, documentId, imageId);
   }
 
   async exportCopy(
@@ -466,11 +484,15 @@ export class DocumentRoom extends DurableObject<Env> {
   }
 
   // Share links the index revoked: each one's sessions hear it and end now, as the worker's own revoke does.
-  async revokeCodes(documentId: string, codes: string[]): Promise<number> {
+  async revokeCodes(
+    documentId: string,
+    codes: string[],
+    reason: 'revoked' | 'rescoped' = 'revoked',
+  ): Promise<number> {
     this.bindDocument(documentId);
     let closed = 0;
     for (const code of codes) {
-      const op = { kind: 'share-revoked', code };
+      const op = { kind: reason === 'rescoped' ? 'share-rescoped' : 'share-revoked', code };
       const before = this.state.getWebSockets().length;
       this.broadcastSystemOp(op);
       this.closeSessionsOfChangedLink(op);
@@ -478,6 +500,34 @@ export class DocumentRoom extends DurableObject<Env> {
       closed += before - this.state.getWebSockets().length;
     }
     return closed;
+  }
+
+  // Someone opened the document through a share link for the first time: the owner hears of it (email/notifications.ts
+  // notifyDocumentJoin), off the caller's path. A document never started has no owner to tell.
+  async joined(documentId: string, personId: string): Promise<void> {
+    this.bindDocument(documentId);
+    const env = this.requireEnv();
+    const meta = await readDocumentMeta(env, documentId);
+    if (!meta) return;
+    this.state.waitUntil(
+      notifyDocumentJoin(env, { id: documentId, ownerId: meta.ownerId, name: meta.name }, personId),
+    );
+  }
+
+  // A closed account's name off this document (document-anonymise.ts): the index's person purge, through the api.
+  async anonymise(documentId: string, personId: string): Promise<number> {
+    this.bindDocument(documentId);
+    // A document never started (or purged) holds nothing of anyone: read its storage as it is, without making the
+    // schema and document row a first query would.
+    const sql = this.state.storage.sql;
+    const started =
+      sql.exec(`SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'document'`).toArray()
+        .length > 0 &&
+      sql.exec('SELECT 1 FROM document WHERE id = ? AND created_at > 0', documentId).toArray().length > 0;
+    if (!started) return 0;
+    const changed = await anonymiseDocument(this.requireEnv(), documentId, personId);
+    if (changed > 0) console.info('[room] anonymised a closed account', { rows: changed });
+    return changed;
   }
 
   private requireEnv(): DocumentEnv {
@@ -518,36 +568,91 @@ export class DocumentRoom extends DurableObject<Env> {
       v.personTag,
       v.workbenchPairing,
       v.documentId,
+      v.grantExp ?? null,
     );
     if (v.documentId) this.bindDocument(v.documentId);
-    // A share session whose link changed while it was joining is told now (room-link-recheck.ts).
-    this.state.waitUntil(this.recheckJoinedLink(server));
+    this.armAlarm();
     return new Response(null, { status: 101, webSocket: client });
   }
 
-  // Read an accepted share session's link again and, when it was revoked or rescoped since the
-  // ticket was minted, send this one session that op and close it, as the broadcast would have.
-  // Owner and team sessions carry no code and are left alone.
-  async recheckJoinedLink(ws: WebSocket): Promise<void> {
-    const session = this.readSession(ws);
+  // ---------- Grants (liveworkspace/docs/one-explorer-contracts.md "Grants") ---------------------------------
+  //
+  // Every session joined with the index's grant, which lapses after ten minutes. ROOM_GRANT_ASK_BEFORE_MS before
+  // it does, the room asks the session for a fresh one (`grant-renew`); the session answers with a `grant` frame
+  // (its editor renews a minute early anyway, and sends each new grant unasked). A session still holding a
+  // lapsed grant is closed with GRANT_LAPSED_CLOSE, and its editor rejoins with a fresh one, or not at all.
+
+  // The earliest moment a session's grant needs the room: its ask, or its lapse once asked.
+  private nextGrantDue(): number | null {
+    let due: number | null = null;
+    for (const ws of this.state.getWebSockets()) {
+      const s = this.readSession(ws);
+      if (!s?.grantExp) continue;
+      const at = s.renewAsked ? s.grantExp : s.grantExp - ROOM_GRANT_ASK_BEFORE_MS;
+      if (due === null || at < due) due = at;
+    }
+    return due;
+  }
+
+  // Ask the sessions whose grant is about to lapse, and close those whose grant has.
+  private checkGrants(now: number): void {
+    let lapsed = 0;
+    for (const ws of this.state.getWebSockets()) {
+      const s = this.readSession(ws);
+      if (!s?.grantExp) continue;
+      if (s.grantExp <= now) {
+        try {
+          ws.close(GRANT_LAPSED_CLOSE, 'grant-lapsed');
+        } catch {
+          // Already gone.
+        }
+        this.opRates.delete(ws);
+        lapsed++;
+        continue;
+      }
+      if (!s.renewAsked && s.grantExp - ROOM_GRANT_ASK_BEFORE_MS <= now) {
+        this.sendTo(ws, { kind: 'grant-renew', expiresAt: s.grantExp });
+        try {
+          ws.serializeAttachment({ ...s, renewAsked: true } satisfies SessionAttachment);
+        } catch {
+          // The socket is going; its lapse closes it.
+        }
+      }
+    }
+    if (lapsed > 0) console.info('[grant] sessions lapsed', { closed: lapsed });
+  }
+
+  // A session's fresh grant (the `grant` frame): the same document, level and tab move its lapse on. One that says
+  // something else (a level changed, a tab rescoped) ends the session, and the editor rejoins with what it holds
+  // now. A grant that does not check is ignored; the old one still lapses.
+  async renewGrant(ws: WebSocket, ticket: unknown): Promise<void> {
     const env = this.roomEnv;
-    if (!env || !session?.shareCode || !session.documentId) return;
-    let op: Awaited<ReturnType<typeof recheckAdmittedLink>>;
-    try {
-      op = await recheckAdmittedLink(env, {
-        shareCode: session.shareCode,
-        tabScope: session.tabScope ?? null,
-        documentId: session.documentId,
-      });
-    } catch (err) {
-      // The session keeps its ticket's link, as before this check; a later change still broadcasts.
-      console.warn('[room-link] join recheck failed', { error: String(err) });
+    const session = this.readSession(ws);
+    if (!env || !session?.documentId || typeof ticket !== 'string' || ticket.length > 8192) return;
+    const opened = await openRoomTicket(env, ticket, session.documentId);
+    if (!opened) {
+      console.warn('[grant] renewal refused', { reason: 'invalid' });
       return;
     }
-    if (!op) return;
-    console.info('[room-link] joined on a changed link', { kind: op.kind });
-    this.sendTo(ws, { kind: 'op', from: 'system', op });
-    this.closeSockets((each) => (each === ws ? [SHARE_LINK_CHANGED_CLOSE, op.kind] : null));
+    const { claims, workbench } = opened;
+    const level = workbench ? capWorkbenchRole(claims.level, workbench.cap) : claims.level;
+    if (level !== session.verifiedRole || (claims.tab ?? null) !== (session.tabScope ?? null)) {
+      console.info('[grant] renewal changed access', { from: session.verifiedRole, to: level });
+      this.closeSockets((each) => (each === ws ? [ACCESS_CHANGED_CLOSE, 'access-changed'] : null));
+      return;
+    }
+    const current = this.readSession(ws);
+    if (!current) return;
+    try {
+      ws.serializeAttachment({
+        ...current,
+        grantExp: claims.exp * 1000,
+        renewAsked: false,
+      } satisfies SessionAttachment);
+    } catch {
+      return;
+    }
+    this.armAlarm();
   }
 
   // Admit one server-side socket into the room: pin its hibernation-proof
@@ -561,6 +666,7 @@ export class DocumentRoom extends DurableObject<Env> {
     personTag: string | null = null,
     workbenchPairing: string | null = null,
     documentId: string | null = null,
+    grantExp: number | null = null,
   ): void {
     ws.serializeAttachment(
       newSessionAttachment(
@@ -571,6 +677,7 @@ export class DocumentRoom extends DurableObject<Env> {
           personTag,
           workbenchPairing,
           documentId,
+          grantExp,
         },
         crypto.randomUUID(),
       ),
@@ -776,6 +883,10 @@ export class DocumentRoom extends DurableObject<Env> {
     if (!decision.admit) return;
     const session = this.readSession(ws);
     if (!session) return;
+    if (msg.kind === 'grant') {
+      this.state.waitUntil(this.renewGrant(ws, (msg as { grant?: unknown }).grant));
+      return;
+    }
     if (msg.kind === 'hello') {
       // Force the server-resolved role AND the server-assigned ephemeral id
       // onto the stored presence: the hello frame's own `role` / `id` are
@@ -1002,9 +1113,12 @@ export class DocumentRoom extends DurableObject<Env> {
   // The room's one alarm, at the earliest of: an agent presence expiry (agent-presence I5, PR29), the outbox's
   // next push, the document's next upkeep. None when nothing is due.
   private armAlarm(): void {
-    const due = [this.agents.nextExpiry(), this.flushAt, this.maintenanceAt].filter(
-      (t): t is number => t !== null,
-    );
+    const due = [
+      this.agents.nextExpiry(),
+      this.flushAt,
+      this.maintenanceAt,
+      this.nextGrantDue(),
+    ].filter((t): t is number => t !== null);
     if (due.length === 0) void this.state.storage.deleteAlarm();
     else void this.state.storage.setAlarm(Math.min(...due));
   }
@@ -1015,6 +1129,7 @@ export class DocumentRoom extends DurableObject<Env> {
     for (const r of expired) agentPresenceLog('expired', r);
     if (expired.length > 0) this.broadcastPresence();
     const now = Date.now();
+    this.checkGrants(now);
     if (this.flushAt !== null && this.flushAt <= now) await this.drain();
     if (this.maintenanceAt !== null && this.maintenanceAt <= now) await this.maintain(now);
     this.armAlarm();

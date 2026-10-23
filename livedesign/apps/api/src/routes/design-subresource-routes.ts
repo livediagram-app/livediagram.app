@@ -1,17 +1,32 @@
-// /api/designs/<id>/... inside the design's Durable Object: per-tab content, pages, photo blobs, comments, agent
-// presence and changesets.
+// /api/designs — design metadata, per-tab content, copy, folder
+// assignment, tab linking, comments, share links, the realtime WS
+// upgrade. The largest resource: every sub-path
+// under a design id lives here.
 
+import { broadcastShareOp } from '../room-client';
 import { redactCommentAuthorIds } from '../comments';
-import { deleteTabRow, getDesign, getDesignForSave, getTab } from '../db';
+import {
+  deleteShareLinksForTab,
+  deleteTabRow,
+  designsContainingTab,
+  getDesign,
+  getDesignForSave,
+  getTab,
+  linkTabToDesign,
+  tabLinkedToOwnedDesign,
+} from '../db';
+import { getParticipant } from '../accounts/profiles';
 import { conflict, forbidden, json, noContent, notFound } from '../responses';
-import { tabEtag } from '@livedesign/api-schema';
+import { recordVisitorOpened, retractTabComments } from '../timeline';
+import { DESIGN_OPEN_HEADER, readDesignOpen, tabEtag } from '@livedesign/api-schema';
+import { recordDesignOpen } from '../home/record-open';
+import { handleDesignShareRoutes } from './design-share-routes';
 import { handlePhotoBlobRoutes } from './photo-blob-routes';
 import { handleTabPut, refuseTokenTabPut } from './tab-put-route';
 import { handleTabRename } from './tab-name-route';
 import { handleTabPages } from './tab-pages-route';
 import { handleChangesetRoutes } from './changesets';
 import { handleCommentRoutes } from './comment-routes';
-import { handleNotifyAction } from './notify-action-route';
 import { handleAgentPresenceRoute } from './agent-presence-routes';
 import { handleTabRender } from './tab-render-route';
 import {
@@ -19,15 +34,17 @@ import {
   gateEdit,
   gateGrant,
   missingDesign,
+  ownsDesign,
   requireOwner,
-  type DesignRouteContext,
+  shareCodeOf,
+  type RouteContext,
 } from './context';
 import { answerTabView, parseViewQuery } from './design-views-route';
 
 // Tab-content sub-resource routes for /api/designs/<id>/...,
 // split out of designs.ts. Returns a Response when it handles the path, or
 // null to let the main dispatcher fall through to the remaining routes.
-export async function handleDesignSubresources(ctx: DesignRouteContext): Promise<Response | null> {
+export async function handleDesignSubresources(ctx: RouteContext): Promise<Response | null> {
   const { request, env, segments } = ctx;
   // Agent changesets (docs/specs/024-agents/agent-changesets.md).
   const changesets = await handleChangesetRoutes(ctx);
@@ -109,6 +126,34 @@ export async function handleDesignSubresources(ctx: DesignRouteContext): Promise
           ? tab
           : { ...tab, elements: redactCommentAuthorIds(tab.elements, owner) };
       if (view) return answerTabView(ctx, view, existing, safe, owner);
+      // docs/specs/013-workspace/timeline.md §4.3: somebody arrived through a SHARE LINK and opened this.
+      // The tab read is the honest signal for "opened" — the design GET is hit
+      // by link previews and polls, whereas fetching tab content means a person
+      // is looking at the canvas. Coalesced per visitor per day inside the
+      // emit, so a stranger with a link can't flood the owner's feed by
+      // refreshing.
+      //
+      // Gated on a share code being PRESENT, not merely on the caller not being
+      // the owner. The read gate also admits any joined member of the design's
+      // team (docs/specs/013-workspace/team-shared-designs.md), who presents no code — so the looser test reported
+      // teammates browsing their own library as visitors. The bubble reads
+      // "opened by a visitor · Someone with the share link" and files under the
+      // sharing filter, so an owner saw that for a design they had never
+      // shared a link for, once per teammate per day.
+      if (owner !== existing.ownerId && shareCodeOf(request) !== null) {
+        ctx.waitUntil?.(
+          getParticipant(env, owner).then((p) =>
+            recordVisitorOpened(env, existing, owner, p?.name ?? null),
+          ),
+        );
+      }
+      // docs/specs/013-workspace/explorer-home.md "Opens": the reader's own open, for their Home.
+      // Only when the editor declares this read an open: a resync, a duplicate, Take Offline and
+      // an embed read the same tab and are not opens. The read gate above has
+      // already admitted the reader, and the open is theirs whoever they are.
+      if (readDesignOpen(request.headers.get(DESIGN_OPEN_HEADER))) {
+        ctx.waitUntil?.(recordDesignOpen(env, existing, owner, Date.now()));
+      }
       // The revision as a weak ETag too (docs/specs/024-agents/agent-changesets.md "The tab
       // revision", CS5): what an agent read, for its changeset base.
       return json({ tab: safe }, { headers: { ETag: tabEtag(tab.rev) } });
@@ -129,17 +174,20 @@ export async function handleDesignSubresources(ctx: DesignRouteContext): Promise
       // §4.17). The editor is let through: its saves and deletes race, so adding a tab and deleting
       // the other in one save can reach here first.
       if (ctx.token && existing.tabs.length <= 1) return conflict('last_tab');
-      await deleteTabRow(env, id, tabId);
-      // A link scoped to it (the index's) now opens nothing here: the tab reads as missing.
+      const removed = await deleteTabRow(env, id, tabId);
+      // Its comments' words leave this design's feed with it (docs/specs/013-workspace/timeline.md §4.3).
+      if (removed) ctx.waitUntil?.(retractTabComments(env, id, removed));
+      // The links scoped to it die with it (docs/specs/013-workspace/tab-scoped-share-links.md), and their
+      // holders leave the editor as on a revoke.
+      const revoked = await deleteShareLinksForTab(env, id, tabId);
+      for (const code of revoked) {
+        ctx.waitUntil?.(broadcastShareOp(env, id, { kind: 'share-revoked', code }));
+      }
       return noContent();
     }
   }
 
   // The comment endpoints (docs/specs/024-agents/agent-presence.md "Comments").
-  // /api/designs/<id>/notify-action: the email for an action just assigned (assigned-actions.md).
-  if (segments.length === 4 && segments[3] === 'notify-action') {
-    return handleNotifyAction(ctx, segments[2]!);
-  }
   const comments = await handleCommentRoutes(ctx);
   if (comments) return comments;
   // Agent presence (docs/specs/024-agents/agent-presence.md "Presence").
@@ -150,8 +198,56 @@ export async function handleDesignSubresources(ctx: DesignRouteContext): Promise
   if (rendered) return rendered;
 
   // /api/designs/<id>/tabs/<tabId>/link — owner only.
-  // A tab belongs to exactly one design (its Durable Object holds it), so there is no linking an existing tab into
-  // another design any more: POST …/tabs/<tabId>/link is gone (docs/specs/015-api/api.md "Storage").
+  //   POST — add an existing tab to this design (docs/specs/006-design/tab-design-many-to-many.md).
+  // Auth: the caller must own this design AND own at least
+  // one design that already contains the tab. The second
+  // half stops a stranger from grafting a tab they have no
+  // read access to. The `existing.ownerId !== owner` guard
+  // above the dispatch (canEditDesign on this design) only
+  // covers the destination side.
+  if (
+    segments.length === 6 &&
+    segments[3] === 'tabs' &&
+    segments[5] === 'link' &&
+    request.method === 'POST'
+  ) {
+    const id = segments[2]!;
+    const tabId = segments[4]!;
+    const owner = requireOwner(ctx);
+    if (owner instanceof Response) return owner;
+    const existing = await getDesign(env, id);
+    if (!existing) return missingDesign(ctx, id);
+    // `ownsDesign`, not a bare id compare: on a TEAM design the owner id is
+    // an account id every teammate can read, so it must be proven with a verified
+    // account id rather than the X-Owner-Id header (see routes/context.ts).
+    // The second half of this route's auth doesn't help here — it re-uses the
+    // SAME resolved owner, so a forged identity satisfies it with the victim's
+    // own designs.
+    if (!(await ownsDesign(ctx, existing))) return forbidden();
+    // The tab must already live in at least one of the caller's
+    // owned designs. One JOIN answers that (LIMIT 1 on the first
+    // owned match). On the failure path we fall back to listing the
+    // containing designs once, purely to tell "tab doesn't exist
+    // anywhere" (404) apart from "exists but you don't own it" (403).
+    if (!(await tabLinkedToOwnedDesign(env, tabId, owner))) {
+      const sourceIds = await designsContainingTab(env, tabId);
+      return sourceIds.length === 0 ? notFound() : forbidden();
+    }
+    await linkTabToDesign(env, id, tabId);
+    // Return the tab summary the client uses to render the
+    // new pill in its TabBar without re-fetching the whole
+    // design. Pulled fresh so the order_index reflects the
+    // append we just performed.
+    const tab = await getTab(env, id, tabId);
+    return tab ? json({ tab }) : notFound();
+  }
+
+  // /api/designs/<id>/share* — the share-link family lives in
+  // design-share-routes.ts.
+  {
+    const shareResp = await handleDesignShareRoutes(ctx);
+    if (shareResp) return shareResp;
+  }
 
   return null;
 }

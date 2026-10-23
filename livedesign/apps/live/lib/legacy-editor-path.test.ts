@@ -12,8 +12,6 @@ describe('designIdFromPath', () => {
   });
   it('ignores the static placeholder and other paths', () => {
     expect(designIdFromPath('/design/placeholder')).toEqual({ id: null, legacy: false });
-    // A share link's own address names no design: the code does.
-    expect(designIdFromPath('/design/shared')).toEqual({ id: null, legacy: false });
     expect(designIdFromPath('/explorer/recent')).toEqual({ id: null, legacy: false });
   });
 });

@@ -1,0 +1,99 @@
+'use client';
+
+// A Timeline for something other than the reader's own feed (docs/specs/013-workspace/timeline.md
+// §3.4) — a team's activity, or one design's history.
+//
+// Self-contained, unlike the Explorer's landing pane: it owns its
+// controls as well as its data, because it drops into a card on a
+// detail page rather than into a page whose header it can borrow.
+//
+// The team case is the one that fixes a real gap. Per-member scopes are
+// written when an event happens, so somebody who joins in March has
+// nothing from February; the team's own scope carries the whole history
+// and is readable by any joined member.
+
+import { CompactEmptyState, Timeline, TimelineControls, lucideGlyph } from '@livedesign/ui';
+import { lucideHistory } from '@livedesign/icons/lucide';
+import type { TimelineScopeRef } from '@livedesign/api-schema';
+import { track } from '@/lib/telemetry';
+import { TIMELINE_RENDERERS } from '@/app/explorer/timeline/renderers';
+import { useTimelineFeed } from '@/app/explorer/useTimelineFeed';
+
+const ActivityIcon = lucideGlyph(lucideHistory, 18);
+
+export function ScopedTimeline({
+  ownerId,
+  scope,
+  title,
+  emptyMessage,
+}: {
+  ownerId: string;
+  scope: TimelineScopeRef;
+  title: string;
+  emptyMessage: string;
+}) {
+  const feed = useTimelineFeed(ownerId, true, scope);
+
+  return (
+    <section className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900/40">
+      <header className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100">{title}</h2>
+        <div className="flex items-center gap-2">
+          <TimelineControls controls={feed.controls} />
+        </div>
+      </header>
+      <Timeline
+        controls={feed.controls}
+        viewerId={ownerId}
+        renderers={TIMELINE_RENDERERS}
+        loading={feed.loading}
+        isEmpty={feed.events.length === 0}
+        emptyState={
+          // The shared empty state (docs/specs/004-interface-design/empty-states.md).
+          <CompactEmptyState
+            className="py-8"
+            icon={<ActivityIcon />}
+            title="No activity yet"
+            description={emptyMessage}
+          />
+        }
+        // A team's activity or a design's history can fail to read for
+        // exactly the reasons the landing feed can, and "nothing has
+        // happened to this design yet" is just as wrong an answer.
+        error={feed.error}
+        onRetry={feed.retry}
+        hasMore={feed.hasMore}
+        loadingMore={feed.loadingMore}
+        onLoadMore={feed.loadMore}
+        // No unread markers here. "Since I was last here" is a question
+        // about one reader and one feed; a shared team history has no
+        // single "here" to have been last at.
+        onStackExpand={() => track('Timeline', 'Opened', 'Stack')}
+      />
+    </section>
+  );
+}
+
+// Convenience wrappers so call sites don't re-type the scope shape or
+// the empty copy.
+export function TeamTimeline({ ownerId, teamId }: { ownerId: string; teamId: string }) {
+  return (
+    <ScopedTimeline
+      ownerId={ownerId}
+      scope={{ scopeType: 'team', scopeId: teamId }}
+      title="Team Activity"
+      emptyMessage="What the team does will show here."
+    />
+  );
+}
+
+export function DocumentTimeline({ ownerId, designId }: { ownerId: string; designId: string }) {
+  return (
+    <ScopedTimeline
+      ownerId={ownerId}
+      scope={{ scopeType: 'design', scopeId: designId }}
+      title="History"
+      emptyMessage="What happens to this design will show here."
+    />
+  );
+}

@@ -16,36 +16,25 @@ anything on the canvas. A document in This Browser still says what it is on the 
 | **livedocuments** | A normal cloud document, saved to the api (D1), reachable from any device.                                   |
 | **This Browser**  | Offline Mode ([Offline Mode](offline-mode.md)): saved only in this browser's IndexedDB, never to the server. |
 
-## The default depends on who is creating
+## The default
 
-| Who                               | Default           |
-| --------------------------------- | ----------------- |
-| A guest, with sign-in enabled     | **This Browser**  |
-| A signed-in person                | **livedocuments** |
-| Anyone on a guest-only deployment | **livedocuments** |
+Every new document starts on **livedocuments**, whoever is creating it. A guest has a liveworkspace guest identity
+([liveworkspace/docs/accounts.md "Guests"](../../../../liveworkspace/docs/accounts.md)), so a guest's documents are index
+items like anyone's: listed in the shared Explorer ([liveworkspace/docs/one-explorer.md](../../../../liveworkspace/docs/one-explorer.md)),
+and moved to the account when the guest signs in. This Browser is chosen only on purpose, with **Take Offline**.
 
-Why a guest starts local: [Auth + guest access → Guest documents start local](../014-identity/auth-and-guest-access.md#guest-documents-start-local).
-
-- One function answers it: `defaultSaveLocationFor({ signedIn, signInEnabled })` in
-  `apps/editor/lib/save-locations.ts`. Every create from `/new` asks it at commit, through
-  `resolveSaveLocation` in `useNewDocumentLocation` (`apps/editor/app/new/useNewDocumentLocation.ts`): a mode chosen
-  in the wizard, its **Create** and **Skip**, and the wizard-less links (`/new?template=`, `/new?blank=1`).
-- A `/new?folder=` / `?team=` context names a server place, so it is
-  livedocuments whoever is creating.
-- Before sign-in has answered, `signedIn` is the `ldoc_signed_in` hint cookie
-  ([Who is a guest, before sign-in answers](../014-identity/auth-and-guest-access.md#who-is-a-guest-before-sign-in-answers)).
-  A browser that looks signed in waits for the settled answer before creating, so a signed-in person is never handed
-  a document in This Browser; a guest never waits.
-- There is no per-person override: no setting chooses the store. Where a document is **filed** on livedocuments is the
-  person's to set, in Settings > Documents > Default Folders ([Default folders](../013-workspace/default-folders.md)).
-  A preference that once did both, "Always save new documents in <place> and skip this step" (`skipLocationStep`),
+- One function answers it: `defaultSaveLocationFor()` in `apps/editor/lib/save-locations.ts`. Every create from
+  `/new` asks it at commit, through `resolveSaveLocation` in `useNewDocumentLocation`
+  (`apps/editor/app/new/useNewDocumentLocation.ts`), so the create never waits on sign-in to decide.
+- There is no per-person override: no setting chooses the store. A preference that once did both, "Always save new documents in <place> and skip this step" (`skipLocationStep`),
   is retired and no longer read ([User preferences](../007-editor/user-preferences.md)).
 
 ## The folder browser
 
-Where a document goes within livedocuments is chosen with the shared `PlacementBrowser`, in the Explorer's Move dialog
-([Folders](../013-workspace/folders.md)) and the default folder picker ([Default folders](../013-workspace/default-folders.md)).
-Both render it in its **`list` layout**: stacked
+Where a document goes within livedocuments is chosen with the shared Explorer's `PlacementBrowser`
+(in `@liveworkspace/explorer`), in its Move dialog
+([liveworkspace/docs/one-explorer.md](../../../../liveworkspace/docs/one-explorer.md)).
+It renders in its **`list` layout**: stacked
 rows, icon beside label, the kind caption ("Top level", "Folder", "Open
 folder") pinned right like a file explorer's Type column, with the inline New
 Folder row last. Same browse, same placement strings, same double-click
@@ -132,8 +121,7 @@ its own preset `type`; the location id itself never leaves as content.
 
 ## Help centre ([Help app](../018-help/help-app.md))
 
-The Offline Mode article says a guest's new documents start in this browser and a signed-in person's on livedocuments,
-and how to move one either way. No article of its own: each location's article (offline today) is where the substance
+The Offline Mode article says every new document starts on livedocuments, and how to move one either way. No article of its own: each location's article (offline today) is where the substance
 is.
 
 ## Implementation map
@@ -141,8 +129,7 @@ is.
 - `apps/editor/lib/save-locations.ts` (+ test): the ids and helpers above.
 - `apps/editor/app/new/useNewDocumentLocation.ts`: `resolveSaveLocation`, the location every create from `/new` uses.
 - `apps/editor/app/new/page.tsx`: derives the offline create branch from the location id.
-- `apps/editor/components/placement/PlacementBrowser.tsx`: the `layout` prop
-  (`tiles` | `list`) on the browser, its `PlacementCard`, and `NewFolderTile`.
+- `@liveworkspace/explorer`: the `PlacementBrowser` the Move dialog uses.
 
 ## References
 

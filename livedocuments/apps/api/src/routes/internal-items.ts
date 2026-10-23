@@ -1,102 +1,53 @@
 // /api/internal/items/**: the One Explorer index's doors into a document's content (docs/specs/015-api/api.md
-// "Internal"). Server to server only: the caller sends `Authorization: Bearer <INDEX_KEY>`, compared in constant
-// time; without INDEX_KEY configured every path here is a plain 404, as if it did not exist.
+// "Internal"), served by @liveworkspace/index-app's handleInternalItems with the app's key (INDEX_KEY). See it for
+// the doors: a purge (one document, or up to a hundred for a closed account), revoked links, notices for the emails,
+// and a copy into a new document.
 //
-//   POST   /api/internal/items/:from/copy-to/:to  {tabId?}  copy a document's content (or one tab) into a new document
-//   DELETE /api/internal/items/:id                          drop everything the document stores, end its sessions
-//   POST   /api/internal/items/:id/revoke         {codes}   end the sessions of revoked share links
-//
-// Each is one call to the document's Durable Object (document-client.ts). The document row and its D1 side (sharing,
-// placement, trash) are the index's to manage; these touch the document's own store only, but for the image grants
-// a copy carries in D1 (docs/specs/009-elements/images.md "Placement grants").
-import { timingSafeEqual } from '../auth/timing-safe';
-import { imageGrantCopyStatements } from '../db/image-grants';
+// Each is a call to the document's Durable Object (document-client.ts). Where the document is filed, its sharing and its
+// Trash are the index's; a purge also drops what the api keeps about the document beside it (db/documents.ts
+// `purgeDocumentRows`). A notice is worked out off the index's path: a share link made (the first-share milestone),
+// or someone's first time in through a link (the owner's "someone joined" email).
+import { handleInternalItems as handle } from '@liveworkspace/index-app';
+import { notifyFirstShare } from '../email/notifications';
+import { purgeDocumentRows } from '../db/documents';
+import { forgetImageRefs } from '../document-room/document-outbox';
 import { documentRoom } from '../document-client';
-import { copyImageIds } from '../document-room/document-content';
-import { badRequest, json, notFound } from '../responses';
 import type { Env } from '../types';
 
-const MAX_ID = 200;
-const MAX_CODES = 500;
-
-function validId(value: unknown): value is string {
-  return typeof value === 'string' && value.length > 0 && value.length <= MAX_ID;
-}
-
-async function authorised(request: Request, key: string): Promise<boolean> {
-  const header = request.headers.get('Authorization') ?? '';
-  const sent = header.startsWith('Bearer ') ? header.slice(7) : '';
-  return sent.length > 0 && (await timingSafeEqual(sent, key));
-}
-
-async function bodyOf(request: Request): Promise<Record<string, unknown> | null> {
-  try {
-    const body: unknown = await request.json();
-    return body && typeof body === 'object' && !Array.isArray(body)
-      ? (body as Record<string, unknown>)
-      : null;
-  } catch {
-    return null;
-  }
-}
-
-export async function handleInternalItems(request: Request, env: Env): Promise<Response> {
-  // `api/internal/items/...`, as index.ts splits it.
-  const segments = new URL(request.url).pathname.replace(/^\//, '').split('/');
-  const key = env.INDEX_KEY;
-  if (!key || segments[2] !== 'items') return notFound();
-  if (!(await authorised(request, key))) {
-    return json({ error: 'unauthorized' }, { status: 401 });
-  }
-  const id = segments[3];
-  if (!validId(id)) return notFound();
-
-  // DELETE /api/internal/items/:id
-  if (segments.length === 4 && request.method === 'DELETE') {
-    await documentRoom(env, id).purge();
-    return json({ ok: true });
-  }
-
-  // POST /api/internal/items/:id/revoke {codes}
-  if (segments.length === 5 && segments[4] === 'revoke' && request.method === 'POST') {
-    const body = await bodyOf(request);
-    const codes = body?.['codes'];
-    if (
-      !Array.isArray(codes) ||
-      codes.length > MAX_CODES ||
-      !codes.every((c): c is string => typeof c === 'string' && c.length > 0 && c.length <= MAX_ID)
-    ) {
-      return badRequest('codes must be an array of share codes');
-    }
-    const closed = await documentRoom(env, id).revokeCodes(codes);
-    return json({ ok: true, closed });
-  }
-
-  // POST /api/internal/items/:from/copy-to/:to {tabId?}
-  if (segments.length === 6 && segments[4] === 'copy-to' && request.method === 'POST') {
-    const to = segments[5];
-    if (!validId(to) || to === id) return badRequest('invalid copy target');
-    const body = (await bodyOf(request)) ?? {};
-    const tabId = body['tabId'];
-    if (tabId !== undefined && tabId !== null && !validId(tabId)) {
-      return badRequest('invalid tabId');
-    }
-    const copy = await documentRoom(env, id).exportCopy(validId(tabId) ? tabId : null, null);
-    // No such document, or no such tab in it.
-    if (!copy || (validId(tabId) && copy.tabs.length === 0)) return notFound();
-    // The target is a new document: a copy into one that already holds this content fails its keys, and nothing is
-    // written (importCopy is one transaction).
-    try {
-      await documentRoom(env, to).importCopy(copy);
-    } catch (err) {
-      console.error('[internal] copy-to failed', err);
-      return json({ error: 'copy_conflict' }, { status: 409 });
-    }
-    // The copy may serve the images its source could (docs/specs/009-elements/images.md "Placement grants").
-    const grants = imageGrantCopyStatements(env, id, to, copyImageIds(copy), Date.now());
-    if (grants.length > 0) await env.DB.batch(grants);
-    return json({ ok: true, tabs: copy.tabs.length }, { status: 201 });
-  }
-
-  return notFound();
+export function handleInternalItems(
+  request: Request,
+  env: Env,
+  waitUntil: (promise: Promise<unknown>) => void = (p) => void p,
+): Promise<Response> {
+  return handle(request, {
+    key: env.INDEX_KEY,
+    waitUntil,
+    handlers: {
+      purge: async (id) => {
+        await documentRoom(env, id).purge();
+        // The media service hears the document places nothing now, so an image only it placed can be swept.
+        await Promise.all([purgeDocumentRows(env, id), forgetImageRefs(env, id)]);
+      },
+      // A rescoped link (another level or tab) reloads its visitors into what it now opens; a revoked one sends
+      // them away.
+      revoke: (id, codes, reason) => documentRoom(env, id).revokeCodes(codes, reason),
+      notice: (id, notice) =>
+        notice.type === 'shared'
+          ? notifyFirstShare(env, notice.actorId)
+          : documentRoom(env, id).joined(notice.personId),
+      // A closed account: their name off each document of someone else's that names them. What livedocuments keeps
+      // for them beside their documents goes with their account (routes/account.ts).
+      anonymise: (id, personId) => documentRoom(env, id).anonymise(personId),
+      copy: async (from, to, tabId) => {
+        const copy = await documentRoom(env, from).exportCopy(tabId, null);
+        // No such document, or no such tab in it.
+        if (!copy || (tabId && copy.tabs.length === 0)) return 'not_found';
+        // The target is a new document: a copy into one that already holds this content fails its keys, and nothing
+        // is written (importCopy is one transaction); the kit answers that as a conflict. The copy carries a grant for
+        // each image its source could serve, so it serves them too (docs/specs/009-elements/images.md).
+        await documentRoom(env, to).importCopy(copy);
+        return { tabs: copy.tabs.length, items: 0 };
+      },
+    },
+  });
 }

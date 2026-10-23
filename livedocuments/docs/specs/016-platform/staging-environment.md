@@ -163,15 +163,15 @@ first deploy it returns `{"emailEnabled":false}` on staging against
 Production's secrets are untouched. Staging adds a `_STAGING`-suffixed twin for each
 value the deploy workflow syncs:
 
-| GitHub secret                    | Synced to                       | Notes                                                                                                                      |
-| -------------------------------- | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `ACCOUNTS_URL_STAGING`           | staging api                     | The accounts Worker staging signs in through.                                                                              |
-| `API_RESOURCE_STAGING`           | staging api                     | Staging's own resource (the access-token audience). Never production's.                                                    |
-| `ACCOUNTS_CLIENT_ID_STAGING`     | staging api, build step         | Staging's own OAuth client; set, it also turns sign-in on in the staging build.                                            |
-| `ACCOUNTS_CLIENT_SECRET_STAGING` | staging api                     | That client's secret.                                                                                                      |
-| `GUEST_ID_HMAC_SECRET_STAGING`   | staging api                     | Own value — `openssl rand -hex 32`. Never production's.                                                                    |
-| `TELEMETRY_KEY_STAGING`          | staging api **and** staging mcp | Same value on both, and as staging telemetry's `TELEMETRY_KEY_LIVEDOCUMENTS` ([Telemetry](../017-telemetry/telemetry.md)). |
-| `MEDIA_KEY_STAGING`              | staging api                     | Staging media service's `MEDIA_KEY_LIVEDOCUMENTS` ([Images](../009-elements/images.md)); unset, staging has no images.     |
+| GitHub secret                    | Synced to                       | Notes                                                                                                                             |
+| -------------------------------- | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `ACCOUNTS_URL_STAGING`           | staging api                     | The accounts Worker staging signs in through.                                                                                     |
+| `API_RESOURCE_STAGING`           | staging api                     | Staging's own resource (the access-token audience). Never production's.                                                           |
+| `ACCOUNTS_CLIENT_ID_STAGING`     | staging api, build step         | Staging's own OAuth client; set, it also turns sign-in on in the staging build.                                                   |
+| `ACCOUNTS_CLIENT_SECRET_STAGING` | staging api                     | That client's secret.                                                                                                             |
+| `INDEX_KEY_STAGING`              | staging api                     | livedocuments' key at the staging index: the same value as staging liveworkspace's `INDEX_KEY_LIVEDOCUMENTS`. Never production's. |
+| `TELEMETRY_KEY_STAGING`          | staging api **and** staging mcp | Same value on both, and as staging telemetry's `TELEMETRY_KEY_LIVEDOCUMENTS` ([Telemetry](../017-telemetry/telemetry.md)).        |
+| `MEDIA_KEY_STAGING`              | staging api                     | Staging media service's `MEDIA_KEY_LIVEDOCUMENTS` ([Images](../009-elements/images.md)); unset, staging has no images.            |
 
 `CF_API_TOKEN` and `CF_ACCOUNT_ID` are shared — same account.
 

@@ -16,15 +16,20 @@ export type TestMediaService = TestDb & {
   calls: string[];
 };
 
-// Points `env` at a fresh service and routes its calls there. Undo with vi.unstubAllGlobals().
-export function mediaServiceFor(env: Env): TestMediaService {
+// Points `env` at a fresh service and routes its calls there. Undo with vi.unstubAllGlobals(). `passOn`: any other
+// call goes to the fetch stubbed before this one (stubAccounts, say) instead of failing the test.
+export function mediaServiceFor(env: Env, opts: { passOn?: boolean } = {}): TestMediaService {
+  const before = globalThis.fetch;
   const service = testDb({ MEDIA_KEY_LIVEDOCUMENTS: KEY });
   const calls: string[] = [];
   env.MEDIA_URL = URL_BASE;
   env.MEDIA_KEY = KEY;
   vi.stubGlobal('fetch', async (input: RequestInfo | URL, init?: RequestInit) => {
     const request = new Request(input, init);
-    if (!request.url.startsWith(URL_BASE)) throw new Error(`unexpected fetch ${request.url}`);
+    if (!request.url.startsWith(URL_BASE)) {
+      if (opts.passOn) return before(input, init);
+      throw new Error(`unexpected fetch ${request.url}`);
+    }
     calls.push(
       `${request.method} ${new URL(request.url).pathname.slice(URL_BASE.length - 'https://media.test'.length)}`,
     );

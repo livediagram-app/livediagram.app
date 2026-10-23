@@ -1,9 +1,14 @@
 import { DatabaseSync } from 'node:sqlite';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { GrantClaims } from '@liveworkspace/index-client';
+import { setGrantVerifierForTests } from '../index-service';
 import { cpuBudgetMs, cpuMsOfAsync } from '@livedocuments/vitest-config/cpu-time';
 import type { Element } from '@livedocuments/document';
 import worker from '../index';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
+import { mediaServiceFor } from '../test-media-service';
+import { mediaImages } from '../db/test-image-fixtures';
+import { mediaOwner } from '../media';
 import { nodeDocumentSql, nodeTransaction } from '../test-document-sql';
 import type { Env } from '../types';
 import { DRAIN_TABS } from './document-outbox';
@@ -16,9 +21,29 @@ import { MAINTENANCE_EVERY_MS, DocumentRoom } from './document-room';
 // D1, as in production.
 
 vi.mock('../auth/accounts', () => ({
-  getAccountIdentity: async () => null,
+  getPersonIdentity: async () => ({ kind: 'guest', guestId: 'guest_owner' }),
   accountCredentials: () => null,
 }));
+
+// The index's grants, signed by a stand-in (`G.<claims>`): the owner edits every document it names.
+const grantOf = (item: string) =>
+  `G.${btoa(JSON.stringify({ item, sub: 'guest_owner', level: 'edit', tab: null, team: null, exp: 9e9 }))}`;
+beforeEach(() => {
+  setGrantVerifierForTests(async (token: string) =>
+    token.startsWith('G.') ? (JSON.parse(atob(token.slice(2))) as GrantClaims) : null,
+  );
+});
+
+// What reached the index: every push the documents made, answered as stored.
+const indexCalls: string[] = [];
+beforeEach(() => {
+  indexCalls.length = 0;
+  vi.stubGlobal('fetch', async (input: RequestInfo | URL, init?: RequestInit) => {
+    const req = new Request(input, init);
+    indexCalls.push(`${req.method} ${new URL(req.url).pathname}`);
+    return Response.json({ ok: true });
+  });
+});
 
 const box = (id: string, label = id): Element => ({
   id,
@@ -124,7 +149,7 @@ type World = {
 
 function world(extra: Partial<Env> = {}): World {
   const d1 = sqliteD1();
-  const env = { DB: d1.env.DB, ...extra } as unknown as Env;
+  const env = { DB: d1.env.DB, INDEX_ORIGIN: 'https://index.test', ...extra } as unknown as Env;
   const { ns, documents, calls } = documentNamespace(() => env);
   Reflect.set(env, 'DOCUMENT_ROOM', ns);
   const executionCtx = {
@@ -137,16 +162,23 @@ function world(extra: Partial<Env> = {}): World {
     path: string,
     body?: unknown,
     headers: Record<string, string> = {},
-  ) =>
-    worker.fetch(
+  ) => {
+    const documentId = path.split('/')[3] ?? (body as { id?: string } | undefined)?.id ?? '';
+    return worker.fetch(
       new Request(`https://api.test${path}`, {
         method,
-        headers: { 'X-Owner-Id': 'owner', 'Content-Type': 'application/json', ...headers },
+        headers: {
+          Authorization: 'Bearer guest-token',
+          'X-Index-Grant': grantOf(documentId),
+          'Content-Type': 'application/json',
+          ...headers,
+        },
         ...(body === undefined ? {} : { body: JSON.stringify(body) }),
       }),
       env,
       executionCtx,
     );
+  };
   return { d1, env, documents, calls, send };
 }
 
@@ -165,10 +197,12 @@ const count = (db: DatabaseSync, table: string) =>
 afterEach(() => {
   vi.useRealTimers();
   vi.restoreAllMocks();
+  vi.unstubAllGlobals();
+  setGrantVerifierForTests(null);
 });
 
 describe("a document's content lives in its own Durable Object", () => {
-  it('keeps each document in its own SQLite, D1 holding only the document row', async () => {
+  it('keeps each document in its own SQLite, D1 holding none of it', async () => {
     const w = world();
     await createDocument(w, 'A');
     await createDocument(w, 'B', [
@@ -176,13 +210,10 @@ describe("a document's content lives in its own Durable Object", () => {
     ]);
     expect(count(w.documents.get('A')!.db, 'tabs')).toBe(1);
     expect(count(w.documents.get('B')!.db, 'tabs')).toBe(1);
-    // D1 has the rows, and none of the content (its document tables are the test store's, never written here).
-    expect(
-      w.d1.sql
-        .prepare('SELECT id FROM documents ORDER BY id')
-        .all()
-        .map((r) => r.id),
-    ).toEqual(['A', 'B']);
+    // Each document knows itself (its own `document` row); D1 has none of the content.
+    expect(w.documents.get('A')!.db.prepare('SELECT owner_id FROM document').all()).toEqual([
+      { owner_id: 'guest_owner' },
+    ]);
     expect(count(w.d1.sql, 'tabs')).toBe(0);
   });
 
@@ -209,8 +240,8 @@ describe("a document's content lives in its own Durable Object", () => {
     expect(tab.tab.elements.map((e) => e.label)).toEqual(['Edited', 'c']);
   });
 
-  it('pushes what D1 indexes (the listing summary, the Inbox) from its outbox', async () => {
-    const w = world();
+  it('pushes its summary and Inbox rows to the index from its outbox, never on the save itself', async () => {
+    const w = world({ INDEX_KEY: 'index-key' });
     await createDocument(w, 'A', [{ id: 't1', name: 'Board', elements: [] }]);
     const action = {
       ...box('act'),
@@ -227,53 +258,59 @@ describe("a document's content lives in its own Durable Object", () => {
         updatedAt: 1,
       },
     } as unknown as Element;
-    await w.send('PUT', '/api/documents/A/tabs/t1', {
-      id: 't1',
-      name: 'Board',
-      elements: [action],
-    });
+    indexCalls.length = 0;
+    await w.send('PUT', '/api/documents/A/tabs/t1', { id: 't1', name: 'Board', elements: [action] });
     const document = w.documents.get('A')!;
     expect(count(document.db, 'outbox')).toBeGreaterThan(0);
-    expect(count(w.d1.sql, 'collab_actions')).toBe(0);
+    expect(indexCalls).toEqual([]);
+    // The save was the person's who asked: one edit key for them, at its time.
+    const editors = document.db.prepare("SELECT key FROM outbox WHERE kind = 'edit'").all();
+    expect(editors.map((r) => String(r.key))).toEqual([expect.stringMatching(/^guest_owner@\d+$/)]);
 
     await document.room.drain();
 
     expect(count(document.db, 'outbox')).toBe(0);
-    expect(
-      w.d1.sql.prepare('SELECT document_id, tab_id, tab_name FROM collab_actions').all(),
-    ).toEqual([{ document_id: 'A', tab_id: 't1', tab_name: 'Board' }]);
-    const summary = w.d1.sql.prepare("SELECT content_summary FROM documents WHERE id = 'A'").get()!;
-    expect(JSON.parse(String(summary.content_summary))).toMatchObject({ hasContent: true });
+    expect(indexCalls.sort()).toEqual([
+      'PUT /api/index/app/items/A/collab/t1',
+      'PUT /api/index/app/items/A/events',
+      'PUT /api/index/app/items/A/summary',
+    ]);
   });
 
-  it('keeps the images its tabs place, answers the share check itself, and pushes the set to D1', async () => {
+  it('keeps the images its tabs place, answers the share check itself, and pushes the set to the media service', async () => {
     const w = world();
+    const media = mediaServiceFor(w.env, { passOn: true });
+    mediaImages(media, await mediaOwner('guest_owner'), ['img-1', 'img-2']);
+    mediaImages(media, 'user_mallory', ['img-3']);
     const picture = (id: string, imageId: string) =>
       ({ id, type: 'image', x: 0, y: 0, width: 10, height: 10, imageId }) as unknown as Element;
     await createDocument(w, 'A', [
-      { id: 't1', name: 'One', elements: [picture('p1', 'img-1')] },
+      { id: 't1', name: 'One', elements: [picture('p1', 'img-1'), picture('p3', 'img-3')] },
       { id: 't2', name: 'Two', elements: [picture('p2', 'img-2')] },
     ]);
     const document = w.documents.get('A')!;
     expect(
-      document.db.prepare('SELECT tab_id, image_id FROM image_refs ORDER BY tab_id').all(),
+      document.db.prepare('SELECT tab_id, image_id FROM image_refs ORDER BY tab_id, image_id').all(),
     ).toEqual([
       { tab_id: 't1', image_id: 'img-1' },
+      { tab_id: 't1', image_id: 'img-3' },
       { tab_id: 't2', image_id: 'img-2' },
     ]);
-    // Placed a moment ago, before any push: the document itself answers, for the whole document or one tab.
-    expect(await document.room.placesImage('A', 'img-2', null)).toBe(true);
-    expect(await document.room.placesImage('A', 'img-2', 't1')).toBe(false);
-    expect(await document.room.placesImage('A', 'img-3', null)).toBe(false);
-    expect(count(w.d1.sql, 'document_images')).toBe(0);
+    // Placed a moment ago, before any push: the document itself answers, for the whole document or one tab, and
+    // serves only what it may (its owner's images; someone else's pasted id serves nothing).
+    expect(await document.room.servesImage('A', 'img-2', null)).toBe(true);
+    expect(await document.room.servesImage('A', 'img-2', 't1')).toBe(false);
+    expect(await document.room.servesImage('A', 'img-3', null)).toBe(false);
+    expect(await document.room.servesImage('A', 'img-4', null)).toBe(false);
+    expect(media.sql.prepare('SELECT 1 FROM refs').all()).toEqual([]);
 
     await document.room.drain();
     expect(
-      w.d1.sql
-        .prepare('SELECT image_id FROM document_images ORDER BY image_id')
+      media.sql
+        .prepare(`SELECT image_id FROM refs WHERE document = 'A' ORDER BY image_id`)
         .all()
         .map((r) => r.image_id),
-    ).toEqual(['img-1', 'img-2']);
+    ).toEqual(['img-1', 'img-2', 'img-3']);
   });
 
   it('runs its daily upkeep from its alarm: old changesets go', async () => {
@@ -337,15 +374,60 @@ describe('/api/internal/items (docs/specs/015-api/api.md "Internal")', () => {
     expect(again.status).toBe(409);
   });
 
-  it('purges a document: every row, every session', async () => {
+  it('purges a document: every row, every session, and what D1 keeps about it', async () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     const w = world({ INDEX_KEY: 'index-key' });
     await createDocument(w, 'A');
     const document = w.documents.get('A')!;
+    w.d1.sql.exec(`PRAGMA foreign_keys = OFF;
+      INSERT INTO workbench_session_rooms (session_id, document_id) VALUES ('s1', 'A'), ('s1', 'B');`);
     const res = await w.send('DELETE', '/api/internal/items/A', undefined, auth);
     expect(res.status).toBe(200);
     expect(
       document.db.prepare("SELECT COUNT(*) AS n FROM sqlite_master WHERE type = 'table'").get()!.n,
+    ).toBe(0);
+    expect(w.d1.sql.prepare('SELECT document_id FROM workbench_session_rooms').all()).toEqual([
+      { document_id: 'B' },
+    ]);
+  });
+
+  it("takes a closed account's name off the documents that name them, and starts none", async () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const w = world({ INDEX_KEY: 'index-key' });
+    await createDocument(w, 'A');
+    const document = w.documents.get('A')!;
+    const data = JSON.stringify({
+      elements: [
+        {
+          ...box('a'),
+          comments: [
+            { id: 'c1', authorId: 'user_ada', authorName: 'Ada', text: 'hi' },
+            { id: 'c2', authorId: 'user_bea', authorName: 'Bea', text: 'yo' },
+          ],
+        },
+      ],
+    });
+    document.db.prepare('UPDATE tabs SET data = ?, rev = rev + 1').run(data);
+    document.db.prepare(`UPDATE document SET owner_id = 'user_ada'`).run();
+    const res = await w.send(
+      'POST',
+      '/api/internal/people/user_ada/purge',
+      { items: ['A', 'Z'] },
+      auth,
+    );
+    expect(await res.json()).toEqual({ ok: true, anonymised: 2, unreached: [] });
+    const stored = JSON.parse(String(document.db.prepare('SELECT data FROM tabs').get()!.data)) as {
+      elements: { comments: { authorId: string; authorName: string }[] }[];
+    };
+    expect(stored.elements[0]!.comments.map((c) => [c.authorId, c.authorName])).toEqual([
+      ['deleted', 'Deleted account'],
+      ['user_bea', 'Bea'],
+    ]);
+    expect(document.db.prepare('SELECT owner_id FROM document').get()).toEqual({ owner_id: 'deleted' });
+    // Z was never started: its storage stays empty.
+    const z = w.documents.get('Z');
+    expect(
+      z ? z.db.prepare("SELECT COUNT(*) AS n FROM sqlite_master WHERE type = 'table'").get()!.n : 0,
     ).toBe(0);
   });
 
@@ -389,6 +471,12 @@ describe('speed', () => {
 
   it('saves a tab placing 500 images and pushes the set within budget', async () => {
     const w = world();
+    const media = mediaServiceFor(w.env, { passOn: true });
+    mediaImages(
+      media,
+      await mediaOwner('guest_owner'),
+      Array.from({ length: 500 }, (_, i) => `img-${i}`),
+    );
     await createDocument(w, 'A');
     const picture = (i: number) =>
       ({
@@ -411,8 +499,8 @@ describe('speed', () => {
     });
     expect(status).toBe(200);
     const drainMs = await cpuMsOfAsync(() => w.documents.get('A')!.room.drain());
-    expect(count(w.d1.sql, 'document_images')).toBe(500);
-    // A save that keeps the set writes no reference and owes D1 no image push.
+    expect(count(media.sql, 'refs')).toBe(500);
+    // A save that keeps the set writes no reference and owes the media service no push.
     const again = {
       ...body,
       elements: body.elements.map((e) => ({ ...e, x: (e as { x: number }).x + 1 })),
@@ -434,7 +522,7 @@ describe('speed', () => {
   });
 
   it('reads a 200-tab document in one call within budget', async () => {
-    const w = world();
+    const w = world({ INDEX_KEY: 'index-key' });
     const tabs = Array.from({ length: 200 }, (_, i) => ({
       id: `t${i}`,
       name: `Tab ${i}`,
@@ -452,21 +540,21 @@ describe('speed', () => {
     expect(status).toBe(200);
     expect(listed).toBe(200);
     expect(w.calls).toEqual(['route']);
-    // The push to D1 goes DRAIN_TABS tabs at a time, each batch bounded whatever the document's size.
+    // The push to the index goes DRAIN_TABS tabs a drain, so each drain's requests are bounded whatever the
+    // document's size.
     const document = w.documents.get('A')!;
-    const d1 = w.env.DB as unknown as { batch: (s: unknown[]) => Promise<unknown> };
-    const batch = d1.batch.bind(d1);
     const sizes: number[] = [];
-    d1.batch = (statements) => {
-      sizes.push(statements.length);
-      return batch(statements);
-    };
     const drainMs = await cpuMsOfAsync(async () => {
-      while (count(document.db, 'outbox') > 0) await document.room.drain();
+      while (count(document.db, 'outbox') > 0) {
+        indexCalls.length = 0;
+        await document.room.drain();
+        sizes.push(indexCalls.length);
+      }
     });
-    console.info('[perf] 200-tab document', { readMs, drainMs, batches: sizes });
+    console.info('[perf] 200-tab document', { readMs, drainMs, requestsPerDrain: sizes });
     expect(sizes).toHaveLength(Math.ceil(200 / DRAIN_TABS));
-    expect(Math.max(...sizes)).toBeLessThanOrEqual(DRAIN_TABS * 4 + 2);
+    // DRAIN_TABS tabs, the summary and who edited.
+    expect(Math.max(...sizes)).toBeLessThanOrEqual(DRAIN_TABS + 2);
     expect(readMs).toBeLessThan(cpuBudgetMs(50));
     expect(drainMs).toBeLessThan(cpuBudgetMs(200));
   });

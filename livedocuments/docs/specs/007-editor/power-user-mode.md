@@ -96,7 +96,7 @@ Kept as they are:
 
 The mode also makes, whatever the Minimal chrome option says:
 
-- **Dense Explorer rows.** The Explorer's [Details view](../013-workspace/explorer-details-view.md#dense-rows)
+- **Dense Explorer rows.** The Explorer's [Details view](../013-workspace/explorer-details-view.md)
   draws its rows at half height.
 
 And it drops, whatever the Minimal chrome option says:

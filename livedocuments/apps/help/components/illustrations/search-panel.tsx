@@ -179,60 +179,6 @@ function SearchOverlay({
 
 const GLYPH = 'fill-none stroke-slate-500';
 
-/** A document glyph: a small framed canvas with two nodes. */
-function DocumentIcon() {
-  return (
-    <g>
-      <rect
-        x={-7}
-        y={-6}
-        width={14}
-        height={12}
-        rx={2.5}
-        className="fill-white stroke-brand-400"
-        strokeWidth={1.5}
-      />
-      <rect x={-4.5} y={-3.5} width={4} height={3.5} rx={1} className="fill-brand-300" />
-      <rect x={1} y={0.5} width={4} height={3.5} rx={1} className="fill-brand-200" />
-    </g>
-  );
-}
-
-/** A folder glyph. */
-function FolderIcon() {
-  return (
-    <path
-      d="M-7 -5 h4.5 l2 2 h7.5 v8 h-14 Z"
-      className={GLYPH}
-      strokeWidth={1.5}
-      strokeLinejoin="round"
-    />
-  );
-}
-
-/** The share glyph the Shared with You rows wear: three linked dots. */
-function SharedIcon() {
-  return (
-    <g className={GLYPH} strokeWidth={1.5}>
-      <circle cx={4.5} cy={-4.5} r={2.2} />
-      <circle cx={-4.5} cy={0} r={2.2} />
-      <circle cx={4.5} cy={4.5} r={2.2} />
-      <path d="M-2.5 -1 L2.5 -3.5 M-2.5 1 L2.5 3.5" />
-    </g>
-  );
-}
-
-/** A people / team glyph (two heads). */
-function TeamIcon() {
-  return (
-    <g className={GLYPH} strokeWidth={1.5}>
-      <circle cx={-2.5} cy={-3} r={2.6} />
-      <path d="M-7 6 a4.5 4.5 0 0 1 9 0" />
-      <path d="M2.5 -5.5 a2.6 2.6 0 0 1 0 5.2 M4 1.5 a4.5 4.5 0 0 1 3 4.5" />
-    </g>
-  );
-}
-
 /** A tab glyph: a panel with a top bar and a side column. */
 function TabIcon() {
   return (

@@ -6,7 +6,7 @@
 // PKCE flow in its own KV; the token works on every liveworkspace app and is listed and revoked on
 // liveworkspace.app like any other.
 //
-// A guest (a guest token only) or a no-auth deployment has no verified account identity, so nothing
+// A guest (X-Owner-Id only) or a no-auth deployment has no verified account identity, so nothing
 // can be minted.
 import { bearerTokenOf } from '@livedesign/api-schema';
 import { badRequest, conflict, forbidden, json, notFound } from '../responses';

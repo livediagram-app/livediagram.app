@@ -9,11 +9,6 @@ import { useEditorContext } from '@/app/design/[id]/EditorContext';
 import { useIsOfflineDesign } from '@/hooks/persistence/useIsOfflineDesign';
 import { tabAsSeen } from '@/lib/export-as-seen';
 import { panelEnabled } from '@/lib/user-preferences';
-import { indexClient } from '@/lib/index-client';
-import { shareUrl } from '@/lib/explorer-host';
-import { designHandOver, shareHelpHref, trackShare } from '@/lib/explorer-share-host';
-import { randomName } from '@/lib/identity';
-import { useToast } from '@/hooks/ui/useToast';
 
 const ExportTabDialog = dynamic(
   () => import('@/components/dialogs/ExportTabDialog').then((m) => m.ExportTabDialog),
@@ -23,12 +18,8 @@ const ImportTabDialog = dynamic(
   () => import('@/components/dialogs/ImportTabDialog').then((m) => m.ImportTabDialog),
   { ssr: false },
 );
-// The shared Explorer's Share dialog (@liveworkspace/explorer): links are the index's, managed there.
-const ShareDialog = dynamic(() => import('@liveworkspace/explorer').then((m) => m.ShareDialog), {
-  ssr: false,
-});
-const ShareOfflineGate = dynamic(
-  () => import('@/components/dialogs/ShareOfflineGate').then((m) => m.ShareOfflineGate),
+const ShareDialog = dynamic(
+  () => import('@/components/dialogs/ShareDialog').then((m) => m.ShareDialog),
   { ssr: false },
 );
 
@@ -55,14 +46,22 @@ export function EditorTabDialogs() {
     setImportOpen,
     shareDialogOpen,
     selfParticipant,
+    shareLinks,
+    sharePasswordSet,
+    shareUrlFor,
+    accountUserId,
+    accountDisplayName,
     designId,
+    designTeamId,
+    updateParticipantName,
+    createShareLink,
+    revokeShareLink,
+    extendShareLink,
+    rescopeShareLink,
+    setDesignSharePassword,
     setShareDialogOpen,
     syncToCloud,
-    accountUserId,
-    designTeamId,
-    setSelfParticipant,
   } = useEditorContext();
-  const toast = useToast();
   // The selection the export covers, read from the store while a selection export is open
   // (docs/specs/008-canvas/blueprints/selection-store.md).
   const exportingSelection = exportOpen && exportScope === 'selection';
@@ -117,40 +116,27 @@ export function EditorTabDialogs() {
           onClose={() => setImportOpen(false)}
         />
       ) : null}
-      {shareDialogOpen && isOffline ? (
-        <ShareOfflineGate
-          onSyncToCloud={syncToCloud}
-          ready={readerKnown}
-          onClose={() => setShareDialogOpen(false)}
-        />
-      ) : shareDialogOpen && designId ? (
+      {shareDialogOpen ? (
         <ShareDialog
-          client={indexClient}
-          item={{
-            id: designId,
-            app: 'livedesign',
-            kind: 'design',
-            sharedVia: null,
-            title: designName,
-            teamId: designTeamId,
-          }}
-          tabs={tabs.map((t) => ({ id: t.id, name: t.name }))}
-          shareUrl={shareUrl}
-          handOver={designHandOver}
-          helpHref={shareHelpHref}
-          onTelemetry={trackShare}
-          notify={(text, tone) => toast[tone](text)}
-          // A guest's name is theirs to change here; an account's is the account's (auth-and-guest-access.md).
-          identity={
-            accountUserId
-              ? undefined
-              : {
-                  name: selfParticipant.name,
-                  color: selfParticipant.color,
-                  randomName,
-                  onSave: (name) => setSelfParticipant((p) => ({ ...p, name })),
-                }
-          }
+          participant={selfParticipant}
+          links={shareLinks}
+          sharePasswordSet={sharePasswordSet}
+          shareUrlFor={shareUrlFor}
+          tabs={tabs}
+          // Signed-in to an account → name is locked to the account
+          // display name (same rule as the welcome modal, docs/specs/014-identity/auth-and-guest-access.md).
+          // Guests pass undefined so the input + shuffle stay live.
+          lockedName={accountUserId ? accountDisplayName : null}
+          onSaveName={updateParticipantName}
+          onCreateLink={createShareLink}
+          onRevokeLink={revokeShareLink}
+          onRescopeLink={rescopeShareLink}
+          onExtendLink={extendShareLink}
+          onSetPassword={setDesignSharePassword}
+          offline={isOffline}
+          onSyncToCloud={syncToCloud}
+          syncReady={readerKnown}
+          teamDesign={!!designTeamId}
           onClose={() => setShareDialogOpen(false)}
         />
       ) : null}

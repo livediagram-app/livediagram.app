@@ -52,10 +52,7 @@ Locally `test:e2e` runs the `chromium` and `sites` projects together, as one run
 
 Cost controls, all in `e2e.yml` and `playwright.config.ts`:
 
-- **Chromium only** (`--project=chromium`); no Firefox / WebKit. A `webkit` project exists
-  only when `E2E_WEBKIT=1` is set (after `playwright install webkit`) and runs just
-  `quick-style-swatch-rows.spec.ts`, whose swatch rows fit or wrap by the engine's layout; CI
-  never sets it.
+- **Chromium only** (`--project=chromium`); no Firefox / WebKit.
 - **Playwright's container image** (`mcr.microsoft.com/playwright:v<version>-noble`) runs the job:
   Chromium and its system libraries come with it, so no run downloads a browser or apt-installs its
   dependencies. The tag is the locked `@playwright/test` version; the workflow's first check fails,
@@ -66,16 +63,10 @@ Cost controls, all in `e2e.yml` and `playwright.config.ts`:
 - **Parallel everywhere** (`fullyParallel`): 4 workers in CI, one per vCPU of the GitHub runner,
   and Playwright's default locally. Tests stay independent because each opens a fresh browser
   context, so a fresh guest owner whose documents no other test sees.
-- **Guest signatures enforced** by default (`E2E_GUEST_SIG_ENFORCE`, unless `0`, sets
-  `GUEST_SIG_ENFORCE_AFTER=1` in `scripts/e2e-stack.mjs`), as
-  production runs once armed ([Public API and API tokens](../015-api/public-api-and-tokens.md) §4).
-  A spec seeds through a signed guest: `mintSignedGuest` + `ownerHeaders` for Playwright
-  requests, `pageOwnerHeaders` for calls made inside the page (`apps/editor/e2e/fixtures.ts`). A
-  hand-made `crypto.randomUUID()` owner is refused (401), and so is any entry path that sends an
-  unsigned id. The api cannot make a legacy guest under enforcement, so the stack writes one:
-  `POST /__e2e/legacy-guest` puts a participant row dated before `GUEST_SIGNING_LIVE_AT` (1000 on
-  the stack) and one folder straight into the local D1, for `guest-upgrade.spec.ts`.
-- **Sharded** (`--shard=i/6`, the matrix in `e2e.yml`): Playwright splits the `chromium` project's
+- **Guests as production makes them**: a spec seeds through a guest token from the stack's accounts
+  stand-in (`mintGuest`, `adoptGuest`), with the index's grant on each plan (`planHeaders`, `seedPlan`;
+  `pageOwnerHeaders` for calls made inside the page, `apps/editor/e2e/fixtures.ts`).
+- **Sharded** (`--shard=i/6`, the matrix in `e2e.yml`): Playwright splits the `chromium` document's
   tests evenly by count across six jobs; each boots its own stack, so shards share nothing.
 - **Shards sized to the floor, not beyond.** Every shard pays about two minutes before its first
   test (container, install, the live build), and the Sites audit, which cannot be split, takes
@@ -189,17 +180,6 @@ account's synced settings takes a fresh id (`freshUserId`), since the stack's D1
 The sign-in round trip itself (`/api/auth/*` against the accounts Worker) is covered by the api's unit
 tests (`apps/api/src/routes/auth.test.ts`), not here.
 
-## Armed guest signatures
-
-Every stack enforces guest signatures (above), so every spec runs as production does once armed.
-The specs in `apps/editor/e2e/armed/` focus on the entry paths: a first-time guest who arrives on `/` or `/new`, or opens the
-Explorer first, gets a signed id before any owner-scoped call, creates a document (`201`) and sees
-the canvas, and no api response is `401`. `pnpm --filter @livedocuments/editor test:e2e:armed` sets
-`E2E_GUEST_SIG_ENFORCE=1`, which adds the `armed` project and boots the stack on its own ports
-(live `:3317`, api `:8317`, marketing `:3318`). It
-reuses the guest-mode export, so `e2e.yml` runs it as a second step of the Sites audit job, which
-has built it already.
-
 ## No uncaught errors
 
 The suite's standing assertion is that a flow produces **no uncaught
@@ -223,14 +203,13 @@ A spec that opens its own context with `browser.newContext()` sets it there with
 
 ## What the suite asserts
 
-One spec file per feature in `apps/editor/e2e/`, each linking the spec it proves (the signed-in specs in `signed-in/`
-and the armed guest specs in `armed/` are in their own sections above):
+One spec file per feature in `apps/editor/e2e/`, each linking the spec it proves (the signed-in specs in `signed-in/` are in their own section above):
 
 | File                            | What only a browser can show                                                                                                                                                                                                                                                                                                                                                      | Spec                                                                                                          |
 | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
 | `smoke.spec.ts`                 | `/new` makes a document and opens it on its start; the editor header switches sites from its logo (Switch site) and has no apps menu; `/explorer` renders for a guest; create a blank document, add a shape, label it, and it survives a reload; at phone width the bottom-right cluster keeps Undo on screen in one row                                                          | this spec, [Canvas accessibility](../004-interface-design/canvas-accessibility.md)                            |
 | `save-failure.spec.ts`          | an autosave refused as unauthenticated says so, then the next edit saves again                                                                                                                                                                                                                                                                                                    | [Per-tab storage](../006-document/per-tab-storage.md)                                                         |
-| `trash.spec.ts`                 | delete, find it in Settings › Trash, restore it; the deleted card; permanent delete and Empty Trash; an open editor, or one refused its room, is told                                                                                                                                                                                                                             | [Trash](../013-workspace/trash.md)                                                                            |
+| `explorer.spec.ts`              | the shared Explorer as livedocuments hosts it, for a guest: make a document, rename it, open it, find it in Recent, star it, file it in a new folder, delete it and restore it                                                                                                                                                                                                    |
 | `article-paste.spec.ts`         | a rich paste into an article keeps its text and bold and italic, with no Trusted Types refusal                                                                                                                                                                                                                                                                                    | [Trusted Types](../016-platform/trusted-types.md)                                                             |
 | `realtime-peers.spec.ts`        | an owner and an edit-link visitor see each other, edit live, keep both people's edits across a reload                                                                                                                                                                                                                                                                             | [Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md)                          |
 | `realtime-same-element.spec.ts` | two peers dragging the same element at once end on the same position on both screens                                                                                                                                                                                                                                                                                              | [Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md)                          |
@@ -265,13 +244,6 @@ and the armed guest specs in `armed/` are in their own sections above):
 | `quick-style-mixed.spec.ts`     | on a mixed selection, named stock colours draw in the dark canvas's versions                                                                                                                                                                                                                                                                                                      | [Quick style panel](../008-canvas/quick-style-panel.md)                                                       |
 | `menu-keyboard.spec.ts`         | menus by keyboard alone: one tab stop, the arrows, typeahead, submenus, focus back on Escape; a control menu takes focus                                                                                                                                                                                                                                                          | [Menus](../004-interface-design/menus.md)                                                                     |
 | `optical-snap.spec.ts`          | the browser paints text baselines on the nearest whole CSS pixel, which the ink audit relies on                                                                                                                                                                                                                                                                                   | [Optical alignment](../004-interface-design/optical-alignment.md)                                             |
-| `explorer-home.spec.ts`         | the Explorer lands on Home: Jump Back In, then What Happened; See More opens Recent; nothing shifts as Home lands                                                                                                                                                                                                                                                                 | [Explorer Home](../013-workspace/explorer-home.md)                                                            |
-| `explorer-sidebar.spec.ts`      | the sidebar's groups as ARIA trees, one tab stop walked with the arrow keys, Minimal chrome, the mobile drawer                                                                                                                                                                                                                                                                    | [Explorer structure](../013-workspace/explorer-structure.md)                                                  |
-| `explorer-filters.spec.ts`      | My Work lists its documents directly; chips and the field write one lens; a scoped lens reaches subfolders                                                                                                                                                                                                                                                                        | [Explorer filters](../013-workspace/explorer-filters.md)                                                      |
-| `explorer-move-failure.spec.ts` | a folder move the api refuses shows the error toast and leaves the folder where it was                                                                                                                                                                                                                                                                                            | [Folders](../013-workspace/folders.md)                                                                        |
-| `explorer-thumbnails.spec.ts`   | an empty document is never asked for its thumbnail; a drawn one is                                                                                                                                                                                                                                                                                                                | [Document snapshots](../006-document/document-snapshots.md)                                                   |
-| `default-folders.spec.ts`       | a folder becomes a default from its menu, `/new` files there, Settings lists it, and deleting the folder leaves it dangling                                                                                                                                                                                                                                                       | [Default folders](../013-workspace/default-folders.md)                                                        |
-| `tags.spec.ts`                  | tag a document from its menu or the Tags page, see its chips, find it on the Tags page and under the sidebar's Tags row                                                                                                                                                                                                                                                           | [Tags](../013-workspace/tags.md)                                                                              |
 | `new-version-prompt.spec.ts`    | a newer server format offers a reload, saves the edit first, never reloads over unsaved changes, steps aside on Not now                                                                                                                                                                                                                                                           | [New version prompt](../016-platform/new-version-prompt.md)                                                   |
 | `stale-builds.spec.ts`          | after a simulated deploy, a missing code chunk or a newer build id loads the page fresh rather than breaking                                                                                                                                                                                                                                                                      | [Stale builds](../016-platform/stale-builds.md)                                                               |
 | `stale-html.spec.ts`            | pressing Back after a deploy never shows a white screen from a cached page naming removed chunks                                                                                                                                                                                                                                                                                  | [Stale builds](../016-platform/stale-builds.md)                                                               |
@@ -302,7 +274,6 @@ tests where it's cheap.
 - `test:e2e`, `test:e2e:smoke`, `test:e2e:sites` and `test:e2e:signed-in` scripts in `apps/editor/package.json`; `build:signed-in`
   (`apps/editor/scripts/build-signed-in.mjs`) builds the export the latter runs against.
 - `apps/editor/e2e/signed-in/`: the session helper and the signed-in specs.
-- `apps/editor/e2e/armed/`: the armed guest signature specs (`guest-signatures.spec.ts`).
 
 Playwright is an `apps/editor` dev dependency; it is **not** wired into
 `pnpm test` / `turbo run test` (that stays the fast unit gate), so

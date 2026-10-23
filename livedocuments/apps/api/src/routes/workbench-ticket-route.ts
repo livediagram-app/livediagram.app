@@ -126,7 +126,7 @@ export async function mintWorkbenchTicket(ctx: RouteContext): Promise<Response> 
 
   const ceiling = token.readOnly ? 'view' : undefined;
   if (asked.scope === 'workspace') {
-    if (asked.folderId !== null && !(await ownerReachesFolder(ctx.env, ownerId, asked.folderId)))
+    if (asked.folderId !== null && !(await ownerReachesFolder(ctx.env, ownerId, asked.folderId, (ctx.teams ?? []).map((t) => t.id))))
       return refused('not_found', asked.scope, notFound());
     const minted = await insertTicket(ctx, pairing, ownerId, {
       reach: { scope: 'workspace', documentId: null, folderId: asked.folderId },
@@ -146,7 +146,12 @@ export async function mintWorkbenchTicket(ctx: RouteContext): Promise<Response> 
   }
 
   const { documentId, tabId } = asked;
-  const access = await ownerDocumentAccess(ctx.env, documentId, ownerId);
+  const access = await ownerDocumentAccess(
+    ctx.env,
+    documentId,
+    ownerId,
+    (ctx.teams ?? []).map((t) => t.id),
+  );
   if (access instanceof Response) return refused('not_found', asked.scope, access);
   if (tabId !== null && !(await documentRoom(ctx.env, documentId).hasTab(tabId)))
     return refused('not_found', asked.scope, notFound());

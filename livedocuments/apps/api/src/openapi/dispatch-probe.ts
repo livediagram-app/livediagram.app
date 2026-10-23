@@ -28,6 +28,7 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import worker from '../index';
+import { setGrantVerifierForTests } from '../index-service';
 import { answerDocumentRequest, type RouteIdentity } from '../document-room/document-route';
 import type { Env, DocumentEnv } from '../types';
 
@@ -174,6 +175,8 @@ export async function probeDispatch(
     );
   // Feature gates open, so a handler reaches its own routing instead of
   // answering "not configured" for every path: telemetry on.
+  // An index configured (its calls are the trapped `fetch`), and every request carrying an edit grant on the
+  // placeholder document, so a document route reaches its own routing instead of answering "no access".
   const env = {
     DB: trap('DB'),
     IMAGES: trap('IMAGES'),
@@ -181,11 +184,30 @@ export async function probeDispatch(
     MEDIA_URL: 'http://media.invalid/api/media',
     MEDIA_KEY: 'probe-key',
     TELEMETRY_ENABLED: 'true',
+    INDEX_ORIGIN: 'https://index.probe',
   } as unknown as Env;
+  const now = Math.floor(Date.now() / 1000);
+  setGrantVerifierForTests(async () => ({
+    iss: 'probe',
+    aud: 'livedocuments',
+    sub: 'user_probe',
+    item: PARAM,
+    level: 'edit',
+    tab: null,
+    team: null,
+    iat: now,
+    exp: now + 600,
+    jti: 'probe',
+  }));
   // The worker hands every request about one document to the document's Durable Object (`route`), which answers it with
   // the same handlers against its own store. The probe runs that answer in process, the document's store a trap too,
   // so a path the document does not serve is still a clean 404; any other use of the room is storage.
-  const documentEnv = { ...env, DOCUMENT_DB: trap('DOCUMENT_DB') } as unknown as DocumentEnv;
+  // Inside the room, a call back to the document itself (document-room.ts `localNamespace`) reads its store: a trap too.
+  const documentEnv = {
+    ...env,
+    DOCUMENT_DB: trap('DOCUMENT_DB'),
+    DOCUMENT_ROOM: { idFromName: (name: string) => name, get: () => trap('DOCUMENT_ROOM (local)') },
+  } as unknown as DocumentEnv;
   const room = new Proxy(
     {},
     {
@@ -222,7 +244,11 @@ export async function probeDispatch(
         const res = await worker.fetch(
           new Request(`https://probe.test/api/${path.join('/')}`, {
             method,
-            headers: { 'X-Owner-Id': 'probe-owner', 'Content-Type': 'application/json' },
+            headers: {
+              Authorization: 'Bearer probe-token',
+              'X-Index-Grant': 'probe-grant',
+              'Content-Type': 'application/json',
+            },
           }),
           env,
           executionCtx,
@@ -236,6 +262,7 @@ export async function probeDispatch(
     }
   } finally {
     globalThis.fetch = realFetch;
+    setGrantVerifierForTests(null);
   }
   return results;
 }

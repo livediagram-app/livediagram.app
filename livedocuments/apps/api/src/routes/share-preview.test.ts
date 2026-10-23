@@ -1,25 +1,39 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Env } from '../types';
 
-// Share-link previews (docs/specs/013-workspace/share-link-previews.md): the card and the share card answer exactly
-// where the live image answers, and the share card is cached per save.
+// Share-link previews (docs/specs/013-workspace/share-link-previews.md) and the live image: each door answers
+// exactly where the index opens the link to an anonymous visitor, and the share card is cached per save.
 
-vi.mock('../db', () => ({
+const { getShareLink, getDocumentThumbMeta } = vi.hoisted(() => ({
+  // The index's answer to an anonymous resolve: the link, or its refusal.
   getShareLink: vi.fn(),
   getDocumentThumbMeta: vi.fn(),
-  getDocumentSharePassword: vi.fn(),
+}));
+vi.mock('../db/documents', () => ({
+  getDocumentThumbMeta,
   shareCardKey: (id: string) => `og/${id}`,
+}));
+vi.mock('../index-service', () => ({
+  indexFor: () => ({
+    resolveShare: async (code: string, password: string | null) => {
+      const link = (await getShareLink(code, password)) as Link | 'password' | null;
+      if (!link) throw new IndexError(404, 'not_found');
+      if (link === 'password') throw new IndexError(401, 'password_required');
+      return { item: { id: link.documentId }, level: link.role, tabId: link.tabId };
+    },
+  }),
 }));
 vi.mock('../document-image', () => ({ documentImageSvg: vi.fn() }));
 vi.mock('../share-card-png', () => ({ shareCardPng: vi.fn() }));
 
-import { getDocumentSharePassword, getDocumentThumbMeta, getShareLink } from '../db';
+import { IndexError } from '@liveworkspace/index-client';
 import { documentImageSvg } from '../document-image';
 import { shareCardPng } from '../share-card-png';
 import { makeTestRouteContext } from './test-route-context';
 import {
   BRAND_CARD_REDIRECT_CACHE,
   SHARE_CARD_CACHE,
+  SHARE_IMAGE_CACHE,
   handleSharePreview,
   isSharePreviewPath,
 } from './share-preview';
@@ -27,19 +41,16 @@ import {
 const SAVED_AT = 1_000;
 const PNG = new Uint8Array([137, 80, 78, 71]);
 
-type Link = NonNullable<Awaited<ReturnType<typeof getShareLink>>>;
-const link = (over: Partial<Link> = {}) =>
-  ({
-    code: 'CODE1234',
-    documentId: 'd1',
-    role: 'view',
-    tabId: null,
-    ...over,
-  }) as Link;
+type Link = { code: string; documentId: string; role: string; tabId: string | null };
+const link = (over: Partial<Link> = {}): Link => ({
+  code: 'CODE1234',
+  documentId: 'd1',
+  role: 'view',
+  tabId: null,
+  ...over,
+});
 const doc = {
   id: 'd1',
-  ownerId: 'o',
-  teamId: null,
   name: 'Payments flow',
   savedAt: SAVED_AT,
   thumbRenderedAt: null,
@@ -68,17 +79,16 @@ beforeEach(() => {
   vi.spyOn(console, 'warn').mockImplementation(() => {});
   vi.mocked(getShareLink).mockResolvedValue(link());
   vi.mocked(getDocumentThumbMeta).mockResolvedValue(doc);
-  vi.mocked(getDocumentSharePassword).mockResolvedValue(null);
   vi.mocked(documentImageSvg).mockResolvedValue('<svg width="10" height="10"/>');
   vi.mocked(shareCardPng).mockResolvedValue(PNG);
 });
 
 describe('isSharePreviewPath: the rate limiter keeps previews apart', () => {
-  it('is the card and the share card only', () => {
+  it('is the live image, the card and the share card only', () => {
     expect(isSharePreviewPath(['api', 'share', 'C', 'card'])).toBe(true);
     expect(isSharePreviewPath(['api', 'share', 'C', 'image.png'])).toBe(true);
     expect(isSharePreviewPath(['api', 'share', 'C'])).toBe(false);
-    expect(isSharePreviewPath(['api', 'share', 'C', 'image.svg'])).toBe(false);
+    expect(isSharePreviewPath(['api', 'share', 'C', 'image.svg'])).toBe(true);
     expect(isSharePreviewPath(['api', 'forms', 'C', 'card'])).toBe(false);
   });
 });
@@ -86,7 +96,6 @@ describe('isSharePreviewPath: the rate limiter keeps previews apart', () => {
 describe('handleSharePreview: the paths it owns', () => {
   it('leaves every other share path to the share router', async () => {
     expect(await call('/share/CODE1234').result).toBeNull();
-    expect(await call('/share/CODE1234/image.svg').result).toBeNull();
     expect(await call('/share/CODE1234/card', { method: 'POST' }).result).toBeNull();
     expect(await call('/share/CODE1234/card/x').result).toBeNull();
     expect(getShareLink).not.toHaveBeenCalled();
@@ -98,7 +107,7 @@ describe('GET /api/share/<code>/card', () => {
     const res = (await call('/share/CODE1234/card').result)!;
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ name: 'Payments flow' });
-    expect(getShareLink).toHaveBeenCalledWith(expect.anything(), 'CODE1234');
+    expect(getShareLink).toHaveBeenCalledWith('CODE1234', null);
     expect(getDocumentThumbMeta).toHaveBeenCalledWith(expect.anything(), 'd1');
   });
 
@@ -113,7 +122,7 @@ describe('GET /api/share/<code>/card', () => {
   });
 
   it('never names a document with a share password', async () => {
-    vi.mocked(getDocumentSharePassword).mockResolvedValue('hash');
+    vi.mocked(getShareLink).mockResolvedValue('password');
     const res = (await call('/share/CODE1234/card').result)!;
     expect(res.status).toBe(404);
     expect(await res.text()).not.toContain('Payments');
@@ -175,9 +184,9 @@ describe('GET /api/share/<code>/image.png', () => {
   });
 
   it('is 404 wherever the card is: a dead code, a password', async () => {
-    vi.mocked(getDocumentSharePassword).mockResolvedValue('hash');
+    vi.mocked(getShareLink).mockResolvedValue('password');
     expect((await call('/share/CODE1234/image.png').result)!.status).toBe(404);
-    vi.mocked(getShareLink).mockResolvedValue(null);
+    vi.mocked(getShareLink).mockResolvedValueOnce(null);
     expect((await call('/share/CODE1234/image.png').result)!.status).toBe(404);
     expect(documentImageSvg).not.toHaveBeenCalled();
   });
@@ -219,5 +228,31 @@ describe('GET /api/share/<code>/image.png', () => {
   it('draws without storing on a deploy with no image store', async () => {
     const res = (await call('/share/CODE1234/image.png').result)!;
     expect(res.status).toBe(200);
+  });
+});
+
+describe('GET /api/share/<code>/image.svg', () => {
+  it("serves the link's drawing for a bare <img>, live", async () => {
+    const res = (await call('/share/CODE1234/image.svg').result)!;
+    expect(res.status).toBe(200);
+    expect(res.headers.get('Cache-Control')).toBe(SHARE_IMAGE_CACHE);
+    expect(documentImageSvg).toHaveBeenCalledWith(expect.anything(), doc, null);
+  });
+
+  it('draws the tab a whole-document link asks for, and only its own tab on a scoped link', async () => {
+    await call('/share/CODE1234/image.svg?tab=t3').result;
+    expect(documentImageSvg).toHaveBeenLastCalledWith(expect.anything(), doc, 't3');
+    vi.mocked(getShareLink).mockResolvedValue(link({ tabId: 't2' }));
+    await call('/share/CODE1234/image.svg?tab=t3').result;
+    expect(documentImageSvg).toHaveBeenLastCalledWith(expect.anything(), doc, 't2');
+  });
+
+  it('is 404 for a password, a dead code, or nothing to draw', async () => {
+    vi.mocked(getShareLink).mockResolvedValueOnce('password');
+    expect((await call('/share/CODE1234/image.svg').result)!.status).toBe(404);
+    vi.mocked(getShareLink).mockResolvedValueOnce(null);
+    expect((await call('/share/CODE1234/image.svg').result)!.status).toBe(404);
+    vi.mocked(documentImageSvg).mockResolvedValue(null);
+    expect((await call('/share/CODE1234/image.svg').result)!.status).toBe(404);
   });
 });

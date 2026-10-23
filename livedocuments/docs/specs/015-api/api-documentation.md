@@ -45,7 +45,7 @@ The worker uses vanilla `fetch` handlers with segment-based dispatch (`apps/api/
 
 - **Route manifest** — `apps/api/src/openapi/manifest.ts`: an array, one entry per endpoint. Each entry carries the method, the path template (`/api/...` with `{param}` placeholders), a summary, the auth mode (public / guest / clerk / either; `clerk` is the manifest's name for Bearer-only, kept from before sign-in moved to the accounts Worker), optional request and response schema names, and the meaningful status codes. The manifest is plain data referencing DTO names from `@livedocuments/api-schema`; it is the single declaration of the surface.
 - **Component schemas** — generated from the api-schema TS types into JSON Schema (e.g. `ts-json-schema-generator` as a build step in `packages/api-schema` or the api worker), emitted into the OpenAPI `components.schemas`. Shapes are never re-typed; the manifest only references them by name.
-- **Assembly** — a build step composes the manifest + generated schemas + the auth-scheme definitions (the guest `X-Owner-Id` header and the account Bearer, per [Auth + guest access](../014-identity/auth-and-guest-access.md)) into one OpenAPI 3.1 object, written to a TS constant the worker serves verbatim at `GET /api/openapi.json`. Build-time generation keeps the request path a constant lookup, no per-request work.
+- **Assembly** — a build step composes the manifest + generated schemas + the auth-scheme definition (one Bearer: an account access token, a guest token or an API token, per [Auth + guest access](../014-identity/auth-and-guest-access.md)) into one OpenAPI 3.1 object, written to a TS constant the worker serves verbatim at `GET /api/openapi.json`. Build-time generation keeps the request path a constant lookup, no per-request work.
 - **Drift test** — the dispatch is segment-based and imperative, not declarative, so there is no route table to diff; the manifest is the declaration and the test pins it to the running dispatch (see "Drift test" below). Every `requestSchema` / `responseSchema` name must also exist in `@livedocuments/api-schema`. This is the anti-drift guarantee; without it the doc is just another thing that rots.
 
 ### Drift test
@@ -70,7 +70,7 @@ Two consequences for route code: every handler matches its **full** path, so an 
 
 ### Auth + secrets
 
-The doc declares the two auth schemes (guest `X-Owner-Id` header; account `Authorization: Bearer`) and tags each endpoint with which it accepts, but carries **no secrets, keys, or URLs** ([Secrets policy](../002-project-scope/secrets-policy.md)). The `/api/openapi.json` endpoint is public and unauthenticated, like `GET /api/capabilities`.
+The doc declares one auth scheme (`Authorization: Bearer`, carrying an account access token, a guest token or an API token) and marks each endpoint public or not, but carries **no secrets, keys, or URLs** ([Secrets policy](../002-project-scope/secrets-policy.md)). The `/api/openapi.json` endpoint is public and unauthenticated, like `GET /api/capabilities`.
 
 ### Optional viewer
 
@@ -104,8 +104,8 @@ The recommended route-manifest approach shipped. Concrete layout, all under
   utilities inline). The generator is a dev dependency only and is **not** in the
   worker bundle — nothing on the runtime path imports it.
 - **`document.ts`** — `buildOpenApiDocument()` assembles the manifest + generated
-  schemas + the two security schemes (`Bearer` = account access token **or** API token;
-  `GuestId` = the `X-Owner-Id` header) + a shared `Error` envelope into the 3.1
+  schemas + the one security scheme (`Bearer` = account access token, guest token
+  **or** API token) + a shared `Error` envelope into the 3.1
   object. Path parameters are derived from the `{param}` placeholders, so the
   manifest doesn't repeat them. Pure and deterministic.
 - **`routes/openapi.ts`** — `handleOpenapi`, dispatched from `index.ts` on the

@@ -268,12 +268,11 @@ See [Auth + guest access](docs/specs/014-identity/auth-and-guest-access.md).
 
 - **The editor always works without signing in.** Friction-free engagement is the acquisition strategy. Never put a sign-in wall in front of the editor.
 - **Hybrid identity** — the api accepts two equivalent ways of identifying the owner of a request:
-  - **Guest path**: a liveworkspace guest token (minted by the accounts Worker, kept in `localStorage`) in `Authorization: Bearer <token>`. Default for unsigned visitors. Full feature set (persistence, share links, real-time collab).
+  - **Guest path**: a per-browser participant id (`livedesign:v2:self-id` in `localStorage`) carried as `X-Owner-Id`. Default for unsigned visitors. Full feature set (persistence, share links, real-time collab).
   - **Authed path**: an account access token in `Authorization: Bearer <token>`, verified against the accounts Worker's published keys (`ACCOUNTS_URL`) and this API's audience (`API_RESOURCE`).
   - The api worker uses the `sub` claim as the owner id.
-- Every request about one design also carries the index's grant on it (`X-Index-Grant`), which the api and the design's room check.
 - The two paths coexist forever — a signed-in user can still hand a share link to a guest who edits without auth.
-- Sign-in lives at `/sign-in/` and sign-up at `/get-started/` (both hand off to the liveworkspace accounts site; email code). On sign-up the accounts Worker merges the guest into the account: the index moves their designs and the media service their images.
+- Sign-in lives at `/sign-in/` and sign-up at `/get-started/` (both hand off to the liveworkspace accounts site; email code). On sign-up, guest designs migrate from the localStorage id to the account id via `POST /api/migrate`.
 
 ## Core principle: reuse over duplication
 

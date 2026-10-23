@@ -70,10 +70,15 @@ export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
     const frameable = url.pathname === '/embed' || url.pathname.startsWith('/embed/');
-    // Once the Explorer lives on liveworkspace.app (../lib/explorer-redirect.ts), every /explorer address goes there,
-    // keeping its path and query (the browser keeps the hash), before any HTML is served.
-    if (EXPLORER_ON_LIVEWORKSPACE && isOldExplorerPath(url.pathname)) {
-      return Response.redirect(explorerRedirectUrl(url.pathname, url.search), 302);
+    // /explorer is an index with no content of its own (docs/specs/013-workspace/folders.md):
+    // every section lives at /explorer/<section>, default Home
+    // (docs/specs/013-workspace/timeline.md §8.1). 302 here so the address bar lands on the real
+    // section before any HTML is served; the page's client-side
+    // replace covers dev where this worker isn't in front. The
+    // Location is a clean (`/live`-free) path — the router selects the
+    // live app for /explorer routes directly (docs/specs/016-platform/router-app.md).
+    if (url.pathname === '/explorer' || url.pathname === '/explorer/') {
+      return Response.redirect(`${url.origin}${EXPLORER_LANDING_PATH}`, 302);
     }
     // `/design` (and the editor's address before the rename, see ../lib/legacy-editor-path) shares one HTML file. We
     // rewrite the request rather than redirect so the browser URL
@@ -108,9 +113,5 @@ export default {
 };
 import { isEditorPath } from '../lib/legacy-editor-path';
 import { isWorkspaceFramePath, WORKSPACE_FRAME_PAGE } from '../lib/workbench/workbench-frame-path';
-import {
-  EXPLORER_ON_LIVEWORKSPACE,
-  explorerRedirectUrl,
-  isOldExplorerPath,
-} from '../lib/explorer-redirect';
+import { EXPLORER_LANDING_PATH } from '../lib/explorer-landing';
 import { isSharePagePath, sharePage, type Fetcher } from './share-page';

@@ -4,7 +4,7 @@ import { takeTicketFromAddress } from './workbench-fragment';
 // The ticket travels in the fragment (docs/specs/013-workspace/workbench-embeds.md "The handoff"); the
 // page reads it and clears it from its address before any request.
 
-const TICKET = `Ab3_-xYz0123456789abcd.${'0f'.repeat(32)}`;
+const TICKET = 'Ab3_-xYz0123456789abcd';
 
 function address(href: string) {
   const url = new URL(href);

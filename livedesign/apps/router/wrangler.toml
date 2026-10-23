@@ -38,9 +38,6 @@ API_ORIGIN = "http://127.0.0.1:8989"
 # liveworkspace/apps/site; production's needs no var.
 TELEMETRY_DASHBOARD_URL = "http://localhost:3000/telemetry"
 HELP_ORIGIN = "http://127.0.0.1:3404"
-# The central index `/api/index/*` forwards to (liveworkspace/docs/one-explorer.md), run locally by
-# liveworkspace/apps/index; production's (https://liveworkspace.app) needs no var.
-INDEX_ORIGIN = "http://127.0.0.1:8793"
 
 # ---------------------------------------------------------------------------
 # Staging (docs/specs/016-platform/staging-environment.md). Deploys as `livedesign-router-staging` and fronts
@@ -85,4 +82,3 @@ service = "livedesign-help-staging"
 [env.staging.vars]
 DEPLOY_ENV = "staging"
 TELEMETRY_DASHBOARD_URL = "https://staging.liveworkspace.app/telemetry"
-INDEX_ORIGIN = "https://staging.liveworkspace.app"

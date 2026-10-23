@@ -16,7 +16,6 @@ import {
   apiSaveTab,
   connectRoom,
   reportSaveFailure,
-  type DocumentListItem,
 } from '@/lib/api-client';
 import type { SaveStatus } from '@/components/chrome/EditorHeader';
 import { saveFailureStatus } from './save-failure';
@@ -34,7 +33,6 @@ import {
   tabsChangedByPeersSince,
   type RemoteOpJournal,
 } from './save-baseline';
-import { emptyAfterSave } from '@/lib/list-row-empty';
 import { createTabSaveQueue, type TabSaveQueue } from './tab-save-queue';
 import { useUnloadFlush } from './useUnloadFlush';
 import { sampleSaveTiming, startEditorTiming } from '@/lib/timing';
@@ -75,7 +73,6 @@ export function useAutosave(opts: {
   roomRef: RefObject<ReturnType<typeof connectRoom> | null>;
   setSaveStatus: Dispatch<SetStateAction<SaveStatus>>;
   setSavedAt: Dispatch<SetStateAction<number | null>>;
-  setDocumentList: Dispatch<SetStateAction<DocumentListItem[]>>;
   // A save refused because the document is in the Trash
   // (docs/specs/013-workspace/trash.md): writes stop, the editor shows why.
   onDocumentTrashed: () => void;
@@ -106,7 +103,6 @@ export function useAutosave(opts: {
     roomRef,
     setSaveStatus,
     setSavedAt,
-    setDocumentList,
     onDocumentTrashed,
     changesetSeen,
     noteTabRevision,
@@ -426,21 +422,6 @@ export function useAutosave(opts: {
           retryAttemptsRef.current = 0;
           const now = Date.now();
           setSavedAt(now);
-          // Bump the current document's row locally so the Explorer's
-          // "Updated X ago" stays fresh — used to refetch the whole
-          // list here, which hit /api/documents on every autosave.
-          setDocumentList((prev) =>
-            prev.map((d) =>
-              d.id === documentId
-                ? {
-                    ...d,
-                    savedAt: now,
-                    name: documentName,
-                    empty: emptyAfterSave(tabs, loadedTabIdsRef.current, d.empty),
-                  }
-                : d,
-            ),
-          );
         })
         .catch((err: unknown) => {
           timing.cancel();
@@ -494,7 +475,6 @@ export function useAutosave(opts: {
     remoteOpJournalRef,
     ownWrites,
     roomRef,
-    setDocumentList,
     setSaveStatus,
     setSavedAt,
   ]);

@@ -1,7 +1,6 @@
 # Folder location on Recent rows
 
-Status: shipped, in the shared Explorer
-([`@liveworkspace/explorer`](../../../../packages/explorer/README.md)).
+Status: shipped
 
 ## What
 
@@ -66,6 +65,9 @@ Worth revisiting if the panel ever grows a routable folder view.
 
 ## Where it lives
 
-In the shared Explorer package: [`FolderChip`](../../../../packages/explorer/src/explorer/badges.tsx), beside `VisibilityBadge`, so the list
-row and the card can't drift; the [rows and cards](../../../../packages/explorer/src/explorer/rows.tsx) take a ready-made place (label and open) from
-the item, so the naming rules stay in one place.
+- `FolderChip`: `apps/live/app/explorer/design-badges.tsx`, beside
+  `VisibilityBadge`, so the list row and the card can't drift.
+- The resolver — `folderChipFor` in `apps/live/app/explorer/ExplorerPane.tsx`,
+  which is also where the "Recent only" gate lives. Rows and cards take a
+  ready-made `{ label, onOpen }` (or null) rather than resolving names
+  themselves, so the naming rules stay in one place.

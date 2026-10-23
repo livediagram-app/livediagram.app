@@ -48,20 +48,17 @@ test.describe('Viewport on add', () => {
     ).dragTo(canvas, { targetPosition: { x: 80, y: box.height - 80 } });
     await page.keyboard.press('Escape');
     // Let the autosave land before reloading.
-    const designId = new URL(page.url()).pathname.split('/').filter(Boolean).pop()!;
-    const headers = await pageOwnerHeaders(page, {}, designId);
     await expect
       .poll(async () => {
-        return page.evaluate(
-          async ({ id, headers }) => {
-            const tabId = new URLSearchParams(location.hash.slice(1)).get('t');
-            const res = await fetch(`/api/designs/${id}/tabs/${tabId}`, { headers });
-            if (!res.ok) return 0;
-            const got = (await res.json()) as { tab?: { elements?: unknown[] } };
-            return got.tab?.elements?.length ?? 0;
-          },
-          { id: designId, headers },
-        );
+        const headers = await pageOwnerHeaders(page);
+        return page.evaluate(async (headers) => {
+          const id = location.pathname.split('/').filter(Boolean).pop();
+          const tabId = new URLSearchParams(location.hash.slice(1)).get('t');
+          const res = await fetch(`/api/designs/${id}/tabs/${tabId}`, { headers });
+          if (!res.ok) return 0;
+          const got = (await res.json()) as { tab?: { elements?: unknown[] } };
+          return got.tab?.elements?.length ?? 0;
+        }, headers);
       })
       .toBe(1);
     await page.reload();

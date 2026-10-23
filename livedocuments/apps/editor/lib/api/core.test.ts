@@ -7,12 +7,12 @@ import {
 } from '@livedocuments/api-schema';
 import { resetServerReleaseForTests, serverBuild, serverDocumentFormat } from '../server-release';
 
-// getGuestSelfSig is the only ../local-identity symbol core.ts uses; mock
-// it so the guest-signature header is deterministic per case.
-const { identity } = vi.hoisted(() => ({
-  identity: { getGuestSelfSig: vi.fn((): string | null => null) },
+// The guest token is the only identity core.ts reads besides the session's (liveworkspace/docs/one-explorer-
+// contracts.md "Guests"); mock it so each case says whether there is one.
+const { guest } = vi.hoisted(() => ({
+  guest: { readGuestToken: vi.fn((): { token: string; id: string; expiresAt: number } | null => null) },
 }));
-vi.mock('../local-identity', () => identity);
+vi.mock('../guest-token', () => guest);
 
 import {
   API_BASE,
@@ -42,34 +42,33 @@ const H = (h: HeadersInit) => h as Record<string, string>;
 beforeEach(() => {
   setTokenProvider(null);
   setSessionSharePassword(null);
-  identity.getGuestSelfSig.mockReturnValue(null);
+  guest.readGuestToken.mockReturnValue(null);
 });
 
-describe('apiHeaders (hybrid identity gate, docs/specs/014-identity/auth-and-guest-access.md)', () => {
-  it('sends X-Owner-Id for a guest, no Authorization', async () => {
-    const h = H(await apiHeaders('guest-1'));
-    expect(h['X-Owner-Id']).toBe('guest-1');
-    expect(h['Authorization']).toBeUndefined();
-  });
+const GUEST = { token: 'guest-jwt', id: 'guest_1', expiresAt: Date.now() + 1e9 };
 
-  it('attaches the guest signature when one is held', async () => {
-    identity.getGuestSelfSig.mockReturnValue('sig-abc');
-    expect(H(await apiHeaders('guest-1'))['X-Owner-Sig']).toBe('sig-abc');
-  });
-
-  it('sends Bearer and NOT X-Owner-Id when a token resolves (never both)', async () => {
-    setTokenProvider(() => Promise.resolve('jwt-xyz'));
-    const h = H(await apiHeaders('guest-1'));
-    expect(h['Authorization']).toBe('Bearer jwt-xyz');
+describe('apiHeaders (docs/specs/014-identity/auth-and-guest-access.md)', () => {
+  it('sends the guest token as the Bearer for a guest', async () => {
+    guest.readGuestToken.mockReturnValue(GUEST);
+    const h = H(await apiHeaders('guest_1'));
+    expect(h['Authorization']).toBe('Bearer guest-jwt');
     expect(h['X-Owner-Id']).toBeUndefined();
-    expect(h['X-Owner-Sig']).toBeUndefined();
   });
 
-  it('falls back to X-Owner-Id when the provider resolves null', async () => {
+  it('sends no identity for a visitor with no token of either kind', async () => {
+    expect(H(await apiHeaders('guest_1'))).toEqual({});
+  });
+
+  it('sends the account token over the guest one', async () => {
+    guest.readGuestToken.mockReturnValue(GUEST);
+    setTokenProvider(() => Promise.resolve('jwt-xyz'));
+    expect(H(await apiHeaders('guest_1'))['Authorization']).toBe('Bearer jwt-xyz');
+  });
+
+  it('falls back to the guest token when the provider resolves null', async () => {
+    guest.readGuestToken.mockReturnValue(GUEST);
     setTokenProvider(() => Promise.resolve(null));
-    const h = H(await apiHeaders('guest-1'));
-    expect(h['X-Owner-Id']).toBe('guest-1');
-    expect(h['Authorization']).toBeUndefined();
+    expect(H(await apiHeaders('guest_1'))['Authorization']).toBe('Bearer guest-jwt');
   });
 
   // The session's getToken() can resolve null for a moment on a live session. A
@@ -155,12 +154,9 @@ describe('identityHeaders', () => {
     expect(identityHeaders('user_abc', 'jwt')).toEqual({ Authorization: 'Bearer jwt' });
   });
 
-  it('sends the guest id and its signature without a token', () => {
-    identity.getGuestSelfSig.mockReturnValue('sig-abc');
-    expect(identityHeaders('guest-1', null)).toEqual({
-      'X-Owner-Id': 'guest-1',
-      'X-Owner-Sig': 'sig-abc',
-    });
+  it('sends the guest token without an account token', () => {
+    guest.readGuestToken.mockReturnValue(GUEST);
+    expect(identityHeaders('guest_1', null)).toEqual({ Authorization: 'Bearer guest-jwt' });
   });
 
   it('throws rather than present an account id as a guest credential', () => {

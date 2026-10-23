@@ -1,14 +1,10 @@
 import type { Metadata } from 'next';
-import { ExplorerPane } from '../ExplorerPane';
-import { viewDocumentTitle } from '../view-titles';
 
-// /explorer/shared — documents opened via someone else's share link.
-// The layout's ExplorerShell provides the chrome + state; this page
-// only pins the route and the tab title (docs/specs/013-workspace/folders.md, routes.ts).
+// The Explorer's Shared With Me view: ExplorerShell (the layout) renders it from the address.
 export const metadata: Metadata = {
-  title: viewDocumentTitle('shared'),
+  title: 'Shared With Me | livedocuments',
 };
 
 export default function Page() {
-  return <ExplorerPane />;
+  return null;
 }

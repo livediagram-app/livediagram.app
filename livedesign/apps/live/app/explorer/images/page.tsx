@@ -1,11 +1,14 @@
 import type { Metadata } from 'next';
+import { ExplorerPane } from '../ExplorerPane';
+import { viewDesignTitle } from '../view-titles';
 
-// /explorer/images: the person's Image Gallery (docs/specs/009-elements/images.md). ExplorerShell (the layout) draws it
-// from the address; this page pins the route and the tab title.
+// /explorer/images — the per-owner image gallery (docs/specs/009-elements/images.md).
+// The layout's ExplorerShell provides the chrome + state; this page
+// only pins the route and the tab title (docs/specs/013-workspace/folders.md, routes.ts).
 export const metadata: Metadata = {
-  title: 'Image Gallery | livedesign',
+  title: viewDesignTitle('gallery'),
 };
 
 export default function Page() {
-  return null;
+  return <ExplorerPane />;
 }

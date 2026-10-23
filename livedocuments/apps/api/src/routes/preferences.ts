@@ -24,6 +24,7 @@ export const PREFERENCES_PATCH_MAX = 16 * 1024;
 export async function handlePreferences(ctx: RouteContext): Promise<Response> {
   const { request, env, segments, resolveOwner } = ctx;
   if (!(segments[1] === 'preferences' && segments.length === 2)) return notFound();
+  if (request.method !== 'GET' && request.method !== 'PUT') return notFound();
   const ownerId = resolveOwner();
   if (!ownerId) return missingAuth();
   const stored = accountCredentials(env) !== null && accountsOwnerOf(ownerId) !== null;

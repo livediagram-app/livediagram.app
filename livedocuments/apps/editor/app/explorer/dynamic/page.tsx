@@ -1,8 +1,7 @@
 import type { Metadata } from 'next';
 import { RetiredViewRedirect } from '../RetiredViewRedirect';
 
-// /explorer/dynamic is retired (docs/specs/013-workspace/folders.md#the-root-and-the-retired-buckets):
-// it replaces itself with its successor, so links to it keep working.
+// /explorer/dynamic is retired: it replaces itself with its successor (RetiredViewRedirect), so links to it keep working.
 export const metadata: Metadata = {
   title: 'Explorer | livedocuments',
   robots: { index: false, follow: false },

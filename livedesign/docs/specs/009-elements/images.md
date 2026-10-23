@@ -45,7 +45,7 @@ Resizing aspect-locks by default (the image's `naturalWidth:naturalHeight` ratio
 ## Storage
 
 - **The media service** holds the bytes, one row per image, the dedupe (per person and bytes, across every app), the per-person caps and the EXIF stripping ([media.md](../../../../liveworkspace/docs/media.md) "Uploads"). The api calls it with `MEDIA_KEY` (`apps/api/src/media.ts`); a guest's id never leaves this api, which names a guest to the service by a hash of it.
-- **`media_images`** (in the design's own SQLite, `apps/api/src/design-room/design-schema.ts`): whose each image is, as this api names owners, for every image it has met: one uploaded here, one listed in someone's gallery here, or one a design asked for (asked of the service once, and remembered, `''` for an id it doesn't know). The [placement grants](#placement-grants) read it.
+- **`media_images`** (in `apps/api/migrations/0001_livedesign_baseline.sql`): whose each image is, as this api names owners, for every image it has met: one uploaded here, one listed in someone's gallery here, or one a design asked for (asked of the service once, and remembered, `''` for an id it doesn't know). The [placement grants](#placement-grants) read it.
 - **Images from before the move** stay in the `images` table and the `livedesign-images` bucket (`livedesign-images-staging` on staging), unserved, until they are migrated. The bucket also keeps design snapshots (`thumb/`).
 
 ## Accepted formats and limits

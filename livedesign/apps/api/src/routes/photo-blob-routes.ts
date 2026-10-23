@@ -11,28 +11,25 @@ import {
   PHOTO_BATCH_BYTES,
   PHOTO_HAS_MAX_IDS,
 } from '@livedesign/photo-engine';
-import { levelAtLeast } from '@liveworkspace/index-client';
-import { designRoom } from '../design-client';
-import { designHasTab } from '../db/tabs';
+import { designLinksTab, getDesign, tabBelongsElsewhere } from '../db';
 import {
+  adoptBlobs,
   blobForTab,
-  heldBlobs,
   photoBlobKey,
   recordBlobs,
+  storedBlobs,
   tabHoldsBlobs,
   tabPhotoBytes,
-  type PhotoBlobMeta,
 } from '../db/photo-blobs';
-import { indexService } from '../index-service';
 import { CORS_HEADERS, forbidden, json, notFound } from '../responses';
 import { parsePositiveCap } from '../limits';
 import {
   gateEdit,
   gateRead,
-  grantCallerOf,
+  missingDesign,
   readBody,
   requireOwner,
-  type DesignRouteContext,
+  type RouteContext,
 } from './context';
 
 function refuse(
@@ -48,7 +45,7 @@ function refuse(
 const idList = (v: unknown, max: number): string[] | null =>
   Array.isArray(v) && v.length <= max && v.every(isBlobId) ? [...new Set(v)] : null;
 
-export async function handlePhotoBlobRoutes(ctx: DesignRouteContext): Promise<Response | null> {
+export async function handlePhotoBlobRoutes(ctx: RouteContext): Promise<Response | null> {
   const { request, env, segments } = ctx;
   if (segments[3] !== 'tabs') return null;
   // The four shapes this serves; anything else falls through to the dispatcher's own 404.
@@ -64,13 +61,15 @@ export async function handlePhotoBlobRoutes(ctx: DesignRouteContext): Promise<Re
   if (!env.PHOTO_BLOBS) return json({ error: 'photos_unavailable' }, { status: 503 });
   const owner = requireOwner(ctx);
   if (owner instanceof Response) return owner;
+  const doc = await getDesign(env, designId);
+  if (!doc) return missingDesign(ctx, designId);
 
   // GET .../photo-blobs/<blobId>: the bytes, through a tab the caller may read.
   if (read) {
     const blobId = segments[6]!;
     if (!isBlobId(blobId)) return notFound();
-    if (!(await gateRead(ctx, designId, undefined, undefined, tabId))) return notFound();
-    if (!(await designHasTab(env, designId, tabId))) return notFound();
+    if (!(await gateRead(ctx, designId, doc.ownerId, doc.teamId, tabId))) return notFound();
+    if (!(await designLinksTab(env, designId, tabId))) return notFound();
     const blob = await blobForTab(env, tabId, blobId);
     if (!blob) return notFound();
     const object = await env.PHOTO_BLOBS.get(photoBlobKey(blobId));
@@ -86,10 +85,10 @@ export async function handlePhotoBlobRoutes(ctx: DesignRouteContext): Promise<Re
     return new Response(object.body, { headers });
   }
   // Writes: an editor of the tab (never a token: agents do not edit pixels), on a tab of this
-  // design or one not yet saved (a new tab's first save waits for its pixels). Tab ids are the design's own: a
-  // design's object holds no other design's tabs.
+  // design or one not yet saved anywhere (a new tab's first save waits for its pixels).
   if (ctx.token) return refuse('photos_unavailable', 403, where);
-  if (!(await gateEdit(ctx, designId, undefined, undefined, tabId))) return forbidden();
+  if (!(await gateEdit(ctx, designId, doc.ownerId, doc.teamId, tabId))) return forbidden();
+  if (await tabBelongsElsewhere(env, tabId, designId)) return forbidden();
 
   if (has) {
     const body = await readBody(ctx);
@@ -106,10 +105,15 @@ export async function handlePhotoBlobRoutes(ctx: DesignRouteContext): Promise<Re
     const fromDesign = typeof body.fromDesign === 'string' ? body.fromDesign : null;
     const fromTab = typeof body.fromTab === 'string' ? body.fromTab : null;
     if (!ids || !fromDesign || !fromTab) return refuse('too_many', 400, where);
-    const found = await sourceBlobs(ctx, fromDesign, fromTab, ids);
-    if (found === null) return forbidden();
-    await recordBlobs(env, designId, tabId, found);
-    return json({ adopted: found.map((b) => b.id) });
+    const source = await getDesign(env, fromDesign);
+    // Read access to the source now: a lost link adopts nothing.
+    if (
+      !source ||
+      !(await gateRead(ctx, fromDesign, source.ownerId, source.teamId, fromTab)) ||
+      !(await designLinksTab(env, fromDesign, fromTab))
+    )
+      return forbidden();
+    return json({ adopted: await adoptBlobs(env, fromTab, tabId, ids) });
   }
 
   // POST .../photo-blobs: a blob batch.
@@ -132,37 +136,17 @@ export async function handlePhotoBlobRoutes(ctx: DesignRouteContext): Promise<Re
     const incoming = entries.filter((e) => !held.has(e.id)).reduce((n, e) => n + e.bytes.length, 0);
     if (current + incoming > cap) return refuse('photo_full', 403, where, { limit: cap, current });
   }
-  // Markers, then bytes, then refs (db/photo-blobs.ts): a failure part-way leaves bytes no ref names, never a
-  // ref with nothing behind it. The bytes are written every time, even when another design stored them first:
-  // they are in hand, and a write is what keeps a blob another design is releasing right now.
-  const blobs = entries.map((e) => ({ id: e.id, type: e.type, size: e.bytes.length }));
-  await Promise.all(
-    entries.map((e) =>
-      env.PHOTO_BLOBS!.put(photoBlobKey(e.id), e.bytes, { httpMetadata: { contentType: e.type } }),
-    ),
+  // Bytes first, then rows: a failure part-way leaves bytes no row names (the sweep's), never a
+  // row with nothing behind it.
+  const stored = await storedBlobs(env, ids);
+  for (const e of entries)
+    if (!stored.has(e.id))
+      await env.PHOTO_BLOBS.put(photoBlobKey(e.id), e.bytes, { httpMetadata: { contentType: e.type } });
+  await recordBlobs(
+    env,
+    tabId,
+    entries.map((e) => ({ id: e.id, type: e.type, size: e.bytes.length })),
   );
-  await recordBlobs(env, designId, tabId, blobs);
   console.info('[photo-blobs] stored', { ...where, blobs: entries.length, bytes: raw.length });
   return json({ stored: ids });
-}
-
-// The blobs of `ids` the source tab holds, for an adoption: this design's own tab, or another design's the caller
-// may read now (its grant from the index; a lost link adopts nothing). Null when the source is out of reach.
-async function sourceBlobs(
-  ctx: DesignRouteContext,
-  fromDesign: string,
-  fromTab: string,
-  ids: readonly string[],
-): Promise<PhotoBlobMeta[] | null> {
-  const { env } = ctx;
-  if (fromDesign === ctx.segments[2]) {
-    if (!(await gateRead(ctx, fromDesign, undefined, undefined, fromTab))) return null;
-    if (!(await designHasTab(env, fromDesign, fromTab))) return null;
-    return heldBlobs(env, fromTab, ids);
-  }
-  const outcome = await indexService.requestGrant(env, grantCallerOf(ctx), fromDesign, null);
-  if (!outcome.ok) return null;
-  const grant = outcome.grant;
-  if (!levelAtLeast(grant.level, 'view') || (grant.tabId !== null && grant.tabId !== fromTab)) return null;
-  return designRoom(env, fromDesign).heldBlobs(fromTab, [...ids]);
 }

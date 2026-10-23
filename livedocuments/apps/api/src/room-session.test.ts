@@ -23,6 +23,7 @@ describe('verifiedSessionOf', () => {
       personTag: 'p',
       workbenchPairing: 'w',
       documentId: 'd',
+      grantExp: null,
     });
   });
 

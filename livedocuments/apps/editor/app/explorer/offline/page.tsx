@@ -1,15 +1,13 @@
 import type { Metadata } from 'next';
-import { ExplorerPane } from '../ExplorerPane';
-import { viewDocumentTitle } from '../view-titles';
+import { RetiredViewRedirect } from '../RetiredViewRedirect';
 
-// /explorer/offline — documents saved only in this browser (docs/specs/006-document/offline-mode.md): a
-// view the app gathers, no folder row behind it. The layout's ExplorerShell
-// provides the chrome + state; this page only pins the route and the tab
-// title (docs/specs/013-workspace/folders.md, routes.ts).
+// /explorer/offline: This Browser is its own page now, /offline (app/offline); links to this address replace
+// themselves with it.
 export const metadata: Metadata = {
-  title: viewDocumentTitle('offline'),
+  title: 'This Browser | livedocuments',
+  robots: { index: false, follow: false },
 };
 
 export default function Page() {
-  return <ExplorerPane />;
+  return <RetiredViewRedirect from="offline" />;
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment, useEffect, useRef, useState, type ReactNode } from 'react';
+import { Fragment, useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { AccordionSection } from '@/components/primitives/AccordionSection';
 import type { HelpArticleKey } from '@/lib/help-articles';
 import { SettingsPresetSummaryRow } from './SettingsPresetSummaryRow';
@@ -17,9 +17,10 @@ import { SettingsNoteRow } from './SettingsNoteRow';
 import { SettingsLinkRow } from './SettingsLinkRow';
 import { SettingsTokensRow } from './SettingsTokensRow';
 import { SettingsTrashRow } from './SettingsTrashRow';
-import { SettingsDefaultFoldersRow } from './SettingsDefaultFoldersRow';
+import { SettingsPlacementDefaultRow } from './SettingsPlacementDefaultRow';
 import { SETTINGS_CARD_SLOT, SettingsGroup, SettingsGroupChildren } from './SettingsGroup';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
+import { usePlacementOptions } from '@/hooks/persistence/usePlacementOptions';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { track } from '@/lib/telemetry';
@@ -47,6 +48,7 @@ export function SettingsCategoryPane({
   onOpenCategory,
   offeredRowKeys,
   focusSectionId = null,
+  owner = null,
 }: {
   category: SettingsCategorySpec;
   settings: UserPreferences;
@@ -61,8 +63,17 @@ export function SettingsCategoryPane({
   offeredRowKeys?: ReadonlySet<string>;
   // Section to scroll to and focus the heading of (settingsSectionId).
   focusSectionId?: string | null;
+  // Who is reading: the Designs rows list their folders (docs/specs/013-workspace/default-folders.md).
+  owner?: { ownerId: string; accountUserId: string | null } | null;
 }) {
   const isMobile = useIsMobileViewport();
+  // The folders the Designs rows choose from and name, fetched only for a pane that shows them.
+  const showsDefaults = category.rows.some((r) => r.kind === 'placementDefault');
+  const placementLists = usePlacementOptions({
+    selfId: owner?.ownerId ?? 'pending',
+    accountUserId: owner?.accountUserId ?? null,
+    skip: useCallback(() => !showsDefaults, [showsDefaults]),
+  });
   // Group CONSECUTIVE rows by section, so a category holding several
   // clusters (Editor's Power User rows) gets a heading
   // per cluster instead of one undifferentiated list. Consecutive rather than
@@ -252,8 +263,8 @@ export function SettingsCategoryPane({
         return <SettingsDeleteAccountRow row={row} />;
       case 'trash':
         return <SettingsTrashRow row={row} />;
-      case 'defaultFolders':
-        return <SettingsDefaultFoldersRow row={row} />;
+      case 'placementDefault':
+        return <SettingsPlacementDefaultRow row={row} lists={placementLists} />;
       case 'presetSummary':
         return (
           <SettingsPresetSummaryRow

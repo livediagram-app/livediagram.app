@@ -55,18 +55,10 @@ describe('parseWorkbenchOrigin', () => {
 
 describe('isWorkbenchSessionFormat', () => {
   it('tells an lvw_ session from a token and from a malformed one', () => {
-    const store = `.${'0f'.repeat(32)}`;
-    expect(isWorkbenchSessionFormat(`${WORKBENCH_SESSION_PREFIX}${'a'.repeat(43)}${store}`)).toBe(
-      true,
-    );
-    expect(isWorkbenchSessionFormat(`${WORKBENCH_SESSION_PREFIX}${'a'.repeat(43)}`)).toBe(false);
-    expect(isWorkbenchSessionFormat(`lwt_${'a'.repeat(43)}${store}`)).toBe(false);
-    expect(isWorkbenchSessionFormat(`${WORKBENCH_SESSION_PREFIX}${'a'.repeat(42)}${store}`)).toBe(
-      false,
-    );
-    expect(isWorkbenchSessionFormat(`${WORKBENCH_SESSION_PREFIX}${'a'.repeat(42)}!${store}`)).toBe(
-      false,
-    );
+    expect(isWorkbenchSessionFormat(`${WORKBENCH_SESSION_PREFIX}${'a'.repeat(43)}`)).toBe(true);
+    expect(isWorkbenchSessionFormat(`lwt_${'a'.repeat(43)}`)).toBe(false);
+    expect(isWorkbenchSessionFormat(`${WORKBENCH_SESSION_PREFIX}${'a'.repeat(42)}`)).toBe(false);
+    expect(isWorkbenchSessionFormat(`${WORKBENCH_SESSION_PREFIX}${'a'.repeat(42)}!`)).toBe(false);
   });
 });
 
@@ -240,13 +232,23 @@ describe('workbenchRouteVerdict, workspace scope', () => {
     ['POST', 'folders'],
     ['PUT', 'folders/f1'],
     ['DELETE', 'folders/f1'],
+    ['GET', 'shared'],
+    ['DELETE', 'shared/doc1'],
+    ['PUT', 'favourites/doc1'],
+    ['GET', 'tags'],
+    ['GET', 'home'],
+    ['GET', 'timeline'],
+    ['GET', 'activity'],
     ['GET', 'trash'],
     ['POST', 'trash/doc1/restore'],
+    ['GET', 'placement-defaults'],
     ['GET', 'images'],
     ['GET', 'images/usage'],
     ['DELETE', 'images/img1'],
     ['GET', 'teams'],
+    ['GET', 'teams/team1'],
     ['GET', 'teams/team1/library'],
+    ['GET', 'teams/team1/members'],
     ['DELETE', 'workbench/sessions/current'],
   ])('allows %s %s', (method, path) => {
     expect(verdict(method, path)).toBe('allow');

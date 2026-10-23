@@ -6,58 +6,6 @@
 import { Scene, Panel, Dialog, Button, Label } from './primitives';
 import { Switch } from './settings-dialog';
 
-/** The Trash view: one group per scope, each row with when it was deleted, the
- *  days it has left, Restore and Delete permanently, and Empty Trash per group. */
-export function TrashView() {
-  const rows: [string, string][] = [
-    ['Service map', 'Deleted 2 Oct · 25 days left'],
-    ['Untitled document', 'Moved here 1 Oct because it was empty · 24 days left'],
-  ];
-  return (
-    <Scene w={420} h={230} bg="plain">
-      <Panel x={14} y={14} w={392} h={128}>
-        <Label x={30} y={36} size={11} weight={700} tone="strong">
-          Your documents
-        </Label>
-        <Label x={392} y={36} anchor="end" size={10} weight={600} tone="muted">
-          Empty Trash
-        </Label>
-        <line x1={14} y1={52} x2={406} y2={52} className="stroke-slate-200" strokeWidth={1.5} />
-        {rows.map(([name, meta], i) => {
-          const y = 58 + i * 42;
-          return (
-            <g key={name}>
-              <rect x={28} y={y + 6} width={22} height={22} rx={5} className="fill-slate-100" />
-              <Label x={60} y={y + 11} size={11} weight={600} tone="strong">
-                {name}
-              </Label>
-              <Label x={60} y={y + 31} size={10} tone="muted">
-                {meta}
-              </Label>
-              {/* Restore and Delete permanently sit together at the right, on the name's line. */}
-              <Button x={220} y={y} w={58} h={18} label="Restore" />
-              <Label x={392} y={y + 10} anchor="end" size={10} weight={600} tone="muted">
-                Delete permanently
-              </Label>
-            </g>
-          );
-        })}
-      </Panel>
-      <Panel x={14} y={154} w={392} h={62}>
-        <Label x={30} y={176} size={11} weight={700} tone="strong">
-          This Browser only
-        </Label>
-        <Label x={30} y={198} size={10} tone="muted">
-          Offline sketch · Deleted 3 Oct · 26 days left
-        </Label>
-        <Label x={392} y={176} anchor="end" size={10} weight={600} tone="muted">
-          Empty Trash
-        </Label>
-      </Panel>
-    </Scene>
-  );
-}
-
 /** The API Tokens category of Settings: the slot meter, then a token card with
  *  its badge, dates, the last-used dot, the Revoke bin and the lifetime bar with its status. */
 export function ConsentCard({

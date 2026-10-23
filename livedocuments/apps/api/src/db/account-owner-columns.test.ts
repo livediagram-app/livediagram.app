@@ -1,96 +1,57 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import type { DatabaseSync } from 'node:sqlite';
 import { sqliteD1 } from '../test-sqlite-d1';
-import { ACCOUNTS_ON, profileOf, stubAccounts } from '../test-accounts';
-import { __forgetProfiles } from '../person/profiles';
-import { deleteAccount, migrateOwnerId } from './account';
+import { deleteAccount } from './account';
 
-// Every column that holds an owner id, and what account deletion and the
-// guest -> account migration do with it (docs/specs/015-api/api.md, "Owner-keyed
-// data"). The ledger is checked against the migrated schema, so a new table
-// keyed on an owner fails here until it is classified; each entry is then
-// proven against a real SQLite database, so a classification the code does
-// not honour fails too.
+// Every column that holds an owner id, and what account deletion does with it (docs/specs/015-api/api.md,
+// "Owner-keyed data"). The ledger is checked against the migrated schema, so a new table keyed on an owner fails
+// here until it is classified; each entry is then proven against a real SQLite database, so a classification the
+// code does not honour fails too. Where a person's documents are, and everything the Explorer keeps about them, is
+// liveworkspace's index: account deletion has the index purge the documents (routes/account.ts).
 
 type OwnerColumn = {
   table: string;
   column: string;
-  // Narrows the rows the column keys, where one table holds several kinds.
-  scope?: string;
   // Rows account deletion deliberately leaves behind, and why.
   deleteKeeps?: { when: string; why: string };
-  migrate:
-    | { kind: 'moves' }
-    // The migration source is always a guest id (docs/specs/014-identity/auth-and-guest-access.md),
-    // which never holds this row.
-    | { kind: 'account-only' }
-    | { kind: 'stays'; why: string };
 };
 
 const OWNER_COLUMNS: OwnerColumn[] = [
-  { table: 'documents', column: 'owner_id', migrate: { kind: 'moves' } },
+  // API tokens (docs/specs/015-api/public-api-and-tokens.md).
+  { table: 'api_tokens', column: 'owner_id' },
+  // Workbench embeds (docs/specs/013-workspace/workbench-embeds.md).
+  { table: 'workbench_pairing_requests', column: 'owner_id' },
+  { table: 'workbench_pairings', column: 'owner_id' },
+  { table: 'workbench_tickets', column: 'owner_id' },
+  { table: 'workbench_sessions', column: 'owner_id' },
+  // A document's own row (its Durable Object; one database holds every document here): the index purges the owner's
+  // documents, and each purge drops the document's whole store.
   {
-    table: 'folders',
+    table: 'document',
     column: 'owner_id',
-    deleteKeeps: { when: 'team_id IS NOT NULL', why: 'a team folder belongs to the team' },
-    migrate: { kind: 'moves' },
+    deleteKeeps: { when: '1 = 1', why: "a document's own store, purged through the index" },
   },
-  { table: 'shared_with', column: 'owner_id', migrate: { kind: 'moves' } },
-  { table: 'favourites', column: 'owner_id', migrate: { kind: 'moves' } },
-  // Tags (docs/specs/013-workspace/tags.md): guests tag documents too.
-  { table: 'tags', column: 'owner_id', migrate: { kind: 'moves' } },
-  // Default folders (docs/specs/013-workspace/default-folders.md): guests have them too.
-  { table: 'placement_defaults', column: 'owner_id', migrate: { kind: 'moves' } },
-  // Explorer Home's opens (docs/specs/013-workspace/explorer-home.md): guests open documents too.
-  { table: 'document_opens', column: 'owner_id', migrate: { kind: 'moves' } },
-  // Whose each media-service image is (src/media.ts): guests upload too.
-  { table: 'media_images', column: 'owner_id', migrate: { kind: 'moves' } },
-  { table: 'timeline_events', column: 'actor_id', migrate: { kind: 'moves' } },
+  // Whose each placed image is, as the media service names them (db/image-grants.ts), in each document's own store:
+  // the service deletes the account's images, and a document then serves nothing of theirs.
   {
-    table: 'timeline_event_scopes',
-    column: 'scope_id',
-    scope: "scope_type = 'user'",
-    migrate: { kind: 'moves' },
+    table: 'image_owners',
+    column: 'owner_id',
+    deleteKeeps: { when: '1 = 1', why: "a document's own store; the images themselves go from the media service" },
   },
-  {
-    table: 'timeline_scope_state',
-    column: 'scope_id',
-    scope: "scope_type = 'user'",
-    migrate: { kind: 'moves' },
-  },
-  { table: 'owner_aliases', column: 'owner_id', migrate: { kind: 'moves' } },
-  {
-    table: 'owner_aliases',
-    column: 'alias_id',
-    migrate: { kind: 'stays', why: 'the guest id is recorded as an alias of the account' },
-  },
-  // Agent changesets (docs/specs/024-agents/agent-changesets.md, CS27): a guest with an edit link writes and
-  // reverts changesets too. They are each document's own (its Durable Object; one database holds every document here),
-  // out of reach of the account's D1 sweep: those on someone else's document stay until its retention ages them out.
+  // Agent changesets (docs/specs/024-agents/agent-changesets.md, CS27), in each document's own store: those on
+  // someone else's document stay until its retention ages them out.
   {
     table: 'agent_changesets',
     column: 'author_id',
     deleteKeeps: { when: '1 = 1', why: "a document's own store, aged out after 30 days" },
-    migrate: { kind: 'stays', why: "a document's own store, aged out after 30 days" },
   },
-  { table: 'api_tokens', column: 'owner_id', migrate: { kind: 'account-only' } },
-  // Mention and action-assigned email claims (docs/specs/012-collaboration/comment-mentions.md "The email"):
-  // only a joined team member sends them.
-  { table: 'notify_email_claims', column: 'sender_id', migrate: { kind: 'account-only' } },
-  { table: 'team_members', column: 'user_id', migrate: { kind: 'account-only' } },
-  // Workbench embeds (docs/specs/013-workspace/workbench-embeds.md): minted from a token, so account-only.
-  { table: 'workbench_pairing_requests', column: 'owner_id', migrate: { kind: 'account-only' } },
-  { table: 'workbench_pairings', column: 'owner_id', migrate: { kind: 'account-only' } },
-  { table: 'workbench_tickets', column: 'owner_id', migrate: { kind: 'account-only' } },
-  { table: 'workbench_sessions', column: 'owner_id', migrate: { kind: 'account-only' } },
 ];
 
 // Column names that mark an owner-keyed column wherever they appear.
-const OWNER_COLUMN_NAMES = ['owner_id', 'user_id', 'sender_id'];
+const OWNER_COLUMN_NAMES = ['owner_id', 'user_id', 'sender_id', 'author_id'];
 
 const ACCOUNT = 'user_account';
 const OTHER = 'user_other';
-const GUEST = '0f5ca4af-9a8a-4a60-be5e-1179e5555880';
 const T0 = 1_700_000_000_000;
 
 function label(c: OwnerColumn): string {
@@ -98,7 +59,7 @@ function label(c: OwnerColumn): string {
 }
 
 function count(sql: DatabaseSync, c: OwnerColumn, ownerId: string, extra?: string): number {
-  const where = [`${c.column} = ?`, c.scope, extra].filter(Boolean).join(' AND ');
+  const where = [`${c.column} = ?`, extra].filter(Boolean).join(' AND ');
   const row = sql.prepare(`SELECT COUNT(*) AS n FROM ${c.table} WHERE ${where}`).get(ownerId);
   return Number(row?.n);
 }
@@ -110,91 +71,14 @@ function insert(sql: DatabaseSync, table: string, row: Record<string, string | n
     .run(...Object.values(row));
 }
 
-function liveDoc(sql: DatabaseSync, id: string, ownerId: string, teamId: string | null = null) {
-  insert(sql, 'documents', {
-    id,
-    owner_id: ownerId,
-    name: id,
-    saved_at: T0,
-    created_at: T0,
-    shareable: 0,
-    team_id: teamId,
-  });
-}
-
-// One row in every guest-holdable owner-keyed column, keyed on `id`, starring
-// and visiting a document `peer` owns as well as its own.
-function seedGuestHoldable(sql: DatabaseSync, id: string, peerDocument: string) {
-  liveDoc(sql, `d-${id}`, id);
-  insert(sql, 'folders', {
-    id: `f-${id}`,
-    owner_id: id,
-    name: 'Mine',
-    created_at: T0,
-    updated_at: T0,
-  });
-  insert(sql, 'favourites', { owner_id: id, document_id: `d-${id}`, created_at: T0 });
-  insert(sql, 'favourites', { owner_id: id, document_id: peerDocument, created_at: T0 });
-  insert(sql, 'shared_with', {
-    owner_id: id,
-    document_id: peerDocument,
-    role: 'view',
-    last_seen: T0,
-  });
-  for (const documentId of [`d-${id}`, peerDocument]) {
-    insert(sql, 'document_opens', {
-      owner_id: id,
-      document_id: documentId,
-      last_opened_at: T0,
-      last_open_day: '2023-11-14',
-    });
-  }
-  insert(sql, 'placement_defaults', {
-    owner_id: id,
-    default_key: 'mode:draw',
-    folder_id: `f-${id}`,
-    updated_at: T0,
-  });
-  insert(sql, 'tags', {
-    id: `tag-${id}`,
-    owner_id: id,
-    name: `Tag ${id}`,
-    colour: 'blue',
-    created_at: T0,
-    updated_at: T0,
-  });
-  insert(sql, 'document_tags', { tag_id: `tag-${id}`, document_id: peerDocument, created_at: T0 });
-  insert(sql, 'media_images', { id: `media-${id}`, owner_id: id });
-  insert(sql, 'timeline_events', {
-    id: `e-${id}`,
-    actor_id: id,
-    source_type: 'document',
-    source_id: `d-${id}`,
-    event_type: 'created',
-    title: 'Created',
-    occurred_at: T0,
-    snapshot: '{}',
-    created_at: T0,
-  });
-  insert(sql, 'timeline_event_scopes', {
-    event_id: `e-${id}`,
-    scope_type: 'user',
-    scope_id: id,
-    added_at: T0,
-  });
-  insert(sql, 'timeline_scope_state', { scope_type: 'user', scope_id: id, last_seen_at: T0 });
-  insert(sql, 'owner_aliases', { owner_id: id, alias_id: `legacy-${id}`, created_at: T0 });
-  // A changeset they wrote on the peer's document, which outlives their own documents.
-  insert(sql, 'tabs', {
-    id: `tab-${id}`,
-    name: 'Board',
-    data: '{"elements":[]}',
-    updated_at: T0,
-    element_count: 0,
-  });
+// One row in every owner-keyed column, keyed on `id`.
+function seed(sql: DatabaseSync, id: string) {
+  insert(sql, 'test_documents', { id: `d-${id}`, owner_id: id, name: id, saved_at: T0, created_at: T0 });
+  insert(sql, 'image_owners', { image_id: `img-${id}`, owner_id: id });
+  insert(sql, 'tabs', { id: `tab-${id}`, name: 'Board', data: '{"elements":[]}', updated_at: T0, element_count: 0 });
   insert(sql, 'agent_changesets', {
     id: `cs-${id}`,
-    document_id: peerDocument,
+    document_id: `d-${id}`,
     tab_id: `tab-${id}`,
     rev: 1,
     author_id: id,
@@ -206,10 +90,6 @@ function seedGuestHoldable(sql: DatabaseSync, id: string, peerDocument: string) 
     removed: 0,
     created_at: T0,
   });
-}
-
-// The account-only rows: an API token, an email claim, and a membership of a team `peer` has joined too.
-function seedAccountOnly(sql: DatabaseSync, id: string, peer: string) {
   insert(sql, 'api_tokens', {
     id: `tok-${id}`,
     owner_id: id,
@@ -219,21 +99,6 @@ function seedAccountOnly(sql: DatabaseSync, id: string, peer: string) {
     revoked: 0,
     read_only: 0,
   });
-  insert(sql, 'notify_email_claims', { claim_key: `claim-${id}`, sender_id: id, created_at: T0 });
-  insert(sql, 'teams', { id: 'team-1', name: 'Team', created_at: T0, updated_at: T0 });
-  for (const [n, userId] of [id, peer].entries()) {
-    insert(sql, 'team_members', {
-      id: `m-${userId}`,
-      team_id: 'team-1',
-      user_id: userId,
-      role: 'admin',
-      status: 'joined',
-      created_at: T0 + n,
-      updated_at: T0,
-    });
-  }
-  liveDoc(sql, `d-team-${id}`, id, 'team-1');
-  // A workbench pairing of their token, its pending request, a ticket and an open session.
   const workbenchRow = { owner_id: id, token_id: `tok-${id}`, origin: 'https://w.example' };
   insert(sql, 'workbench_pairing_requests', {
     ...workbenchRow,
@@ -247,23 +112,13 @@ function seedAccountOnly(sql: DatabaseSync, id: string, peer: string) {
   const opened = {
     ...workbenchRow,
     pairing_id: `wp-${id}`,
-    document_id: `d-team-${id}`,
+    document_id: `d-${id}`,
     role: 'edit',
     created_at: T0,
     expires_at: T0 * 2,
   };
   insert(sql, 'workbench_tickets', { ...opened, ticket_hash: `th-${id}` });
   insert(sql, 'workbench_sessions', { ...opened, id: `ws-${id}`, secret_hash: `sh-${id}` });
-  // A folder in a team this user already left: it stays with the team.
-  insert(sql, 'teams', { id: 'team-left', name: 'Old team', created_at: T0, updated_at: T0 });
-  insert(sql, 'folders', {
-    id: `f-left-${id}`,
-    owner_id: id,
-    name: 'Shared',
-    created_at: T0,
-    updated_at: T0,
-    team_id: 'team-left',
-  });
 }
 
 function schemaOwnerColumns(sql: DatabaseSync): string[] {
@@ -303,12 +158,8 @@ describe('owner-keyed columns (docs/specs/015-api/api.md)', () => {
 describe('deleteAccount erases every owner-keyed row (docs/specs/015-api/api.md)', () => {
   function arrange() {
     const db = sqliteD1();
-    liveDoc(db.sql, 'd-other', OTHER);
-    seedGuestHoldable(db.sql, ACCOUNT, 'd-other');
-    seedAccountOnly(db.sql, ACCOUNT, OTHER);
-    insert(db.sql, 'favourites', { owner_id: OTHER, document_id: 'd-other', created_at: T0 });
-    // The sweep matches the owner on either side of an alias pair.
-    insert(db.sql, 'owner_aliases', { owner_id: OTHER, alias_id: ACCOUNT, created_at: T0 });
+    seed(db.sql, ACCOUNT);
+    seed(db.sql, OTHER);
     return db;
   }
 
@@ -324,165 +175,11 @@ describe('deleteAccount erases every owner-keyed row (docs/specs/015-api/api.md)
     }
   });
 
-  it("erases the stars the owner placed on other people's documents", async () => {
+  it('keeps what belongs to someone else', async () => {
     const { env, sql } = arrange();
 
     await deleteAccount(env, ACCOUNT);
 
-    const stars = sql.prepare('SELECT owner_id, document_id FROM favourites').all();
-    expect(stars.map((s) => ({ ...s }))).toEqual([{ owner_id: OTHER, document_id: 'd-other' }]);
-  });
-
-  it("keeps what belongs to someone else, a left team's folder included", async () => {
-    const { env, sql } = arrange();
-
-    await deleteAccount(env, ACCOUNT);
-
-    const liveDocs = sql.prepare('SELECT id, owner_id FROM documents ORDER BY id').all();
-    expect(liveDocs.map((d) => ({ ...d }))).toEqual([
-      { id: 'd-other', owner_id: OTHER },
-      { id: `d-team-${ACCOUNT}`, owner_id: OTHER },
-    ]);
-    const folders = sql.prepare('SELECT id FROM folders').all();
-    expect(folders.map((f) => f.id)).toEqual([`f-left-${ACCOUNT}`]);
-  });
-});
-
-describe('migrateOwnerId moves every guest-holdable row (docs/specs/015-api/api.md)', () => {
-  function arrange() {
-    const db = sqliteD1();
-    liveDoc(db.sql, 'd-other', OTHER);
-    seedGuestHoldable(db.sql, GUEST, 'd-other');
-    return db;
-  }
-
-  it('leaves no guest-keyed row behind but the alias', async () => {
-    const { env, sql } = arrange();
-    const moves = OWNER_COLUMNS.filter((c) => c.migrate.kind === 'moves');
-    for (const c of moves) expect(count(sql, c, GUEST), label(c)).toBeGreaterThan(0);
-
-    await migrateOwnerId(env, GUEST, ACCOUNT);
-
-    for (const c of moves) {
-      expect(count(sql, c, GUEST), `${label(c)} left on the guest`).toBe(0);
-      expect(count(sql, c, ACCOUNT), `${label(c)} missing on the account`).toBeGreaterThan(0);
-    }
-    for (const c of OWNER_COLUMNS.filter((c) => c.migrate.kind === 'stays')) {
-      expect(count(sql, c, GUEST), label(c)).toBeGreaterThan(0);
-    }
-  });
-
-  it('keeps the account star when both identities starred the same document', async () => {
-    const { env, sql } = arrange();
-    // The account starred d-other first, from another device.
-    insert(sql, 'favourites', { owner_id: ACCOUNT, document_id: 'd-other', created_at: T0 - 5 });
-
-    await migrateOwnerId(env, GUEST, ACCOUNT);
-
-    const stars = sql
-      .prepare('SELECT owner_id, document_id, created_at FROM favourites ORDER BY document_id')
-      .all();
-    expect(stars.map((s) => ({ ...s }))).toEqual([
-      { owner_id: ACCOUNT, document_id: `d-${GUEST}`, created_at: T0 },
-      { owner_id: ACCOUNT, document_id: 'd-other', created_at: T0 - 5 },
-    ]);
-  });
-
-  it('keeps a tab-scoped visit scoped to its tab (docs/specs/013-workspace/tab-scoped-share-links.md)', async () => {
-    const { env, sql } = arrange();
-    sql.prepare("UPDATE shared_with SET tab_id = 't-2' WHERE owner_id = ?").run(GUEST);
-
-    await migrateOwnerId(env, GUEST, ACCOUNT);
-
-    const rows = sql.prepare('SELECT tab_id FROM shared_with WHERE owner_id = ?').all(ACCOUNT);
-    expect(rows.length).toBeGreaterThan(0);
-    for (const r of rows) expect(r.tab_id).toBe('t-2');
-  });
-
-  // A visit is to someone else's document, so a visit the guest paid to the account's document, or
-  // the account to the guest's, would list the account's own document under its "Shared with you".
-  it('drops visits to documents the account now owns', async () => {
-    const { env, sql } = arrange();
-    liveDoc(sql, 'd-account', ACCOUNT);
-    insert(sql, 'shared_with', {
-      owner_id: GUEST,
-      document_id: 'd-account',
-      role: 'view',
-      last_seen: T0,
-    });
-    insert(sql, 'shared_with', {
-      owner_id: ACCOUNT,
-      document_id: `d-${GUEST}`,
-      role: 'edit',
-      last_seen: T0,
-    });
-
-    await migrateOwnerId(env, GUEST, ACCOUNT);
-
-    const visits = sql.prepare('SELECT owner_id, document_id FROM shared_with').all();
-    expect(visits.map((v) => ({ ...v }))).toEqual([{ owner_id: ACCOUNT, document_id: 'd-other' }]);
-  });
-
-  // A person's settings and profile are the accounts Worker's (person/settings.ts, person/profiles.ts):
-  // they follow the guest the way the accounts Worker merges its own guests on sign-in.
-  it("moves the guest's settings and profile to the account, keeping the account's own", async () => {
-    __forgetProfiles();
-    const accounts = stubAccounts();
-    const guest = `guest_${GUEST}`;
-    accounts.settings.set(guest, {
-      all: { reduceMotion: true, uiScale: 1.1 },
-      app: { mapSize: 'tall' },
-    });
-    accounts.settings.set(ACCOUNT, { all: { reduceMotion: false }, app: {} });
-    accounts.profiles.set(guest, profileOf(guest, 'Otter', '#ff8800', T0));
-    accounts.profiles.set(ACCOUNT, profileOf(ACCOUNT, 'Ada', null, T0));
-    const { env } = sqliteD1(ACCOUNTS_ON);
-    try {
-      await migrateOwnerId(env, GUEST, ACCOUNT);
-    } finally {
-      vi.unstubAllGlobals();
-    }
-
-    expect(accounts.settings.get(ACCOUNT)).toEqual({
-      all: { reduceMotion: false, uiScale: 1.1 },
-      app: { mapSize: 'tall' },
-    });
-    expect(accounts.settings.get(guest)).toEqual({ all: {}, app: {} });
-    expect(accounts.profiles.get(ACCOUNT)).toMatchObject({ name: 'Ada', color: '#ff8800' });
-    expect(accounts.profiles.get(guest)).toMatchObject({ name: null, color: null });
-  });
-
-  // An old profile marks a legacy id that may upgrade unsigned, so the new id must never inherit the
-  // old date (docs/specs/015-api/public-api-and-tokens.md §6): the accounts Worker stamps its first write.
-  it("stamps a new guest's profile with the time of the move, never the old date", async () => {
-    __forgetProfiles();
-    const accounts = stubAccounts();
-    const NEXT = '7d1f0c2e-6a51-4c3b-9f0e-2b8c4d5e6f70';
-    accounts.profiles.set(`guest_${GUEST}`, profileOf(`guest_${GUEST}`, 'Otter', '#ff8800', T0));
-    const { env } = sqliteD1(ACCOUNTS_ON);
-    const before = Date.now();
-    try {
-      await migrateOwnerId(env, GUEST, NEXT);
-    } finally {
-      vi.unstubAllGlobals();
-    }
-
-    const moved = accounts.profiles.get(`guest_${NEXT}`)!;
-    expect(moved).toMatchObject({ name: 'Otter', color: '#ff8800' });
-    expect(moved.createdAt).toBeGreaterThanOrEqual(before);
-  });
-
-  it('is a no-op on a second run', async () => {
-    const { env, sql } = arrange();
-    await migrateOwnerId(env, GUEST, ACCOUNT);
-    const before = sql.prepare('SELECT * FROM favourites ORDER BY document_id').all();
-
-    await expect(migrateOwnerId(env, GUEST, ACCOUNT)).resolves.toEqual({
-      documents: 0,
-      folders: 0,
-      shared: 0,
-      images: 0,
-    });
-    expect(sql.prepare('SELECT * FROM favourites ORDER BY document_id').all()).toEqual(before);
+    for (const c of OWNER_COLUMNS) expect(count(sql, c, OTHER), label(c)).toBeGreaterThan(0);
   });
 });

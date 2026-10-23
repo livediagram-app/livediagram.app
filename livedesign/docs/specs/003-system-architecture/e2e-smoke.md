@@ -5,7 +5,7 @@ the production build and the real api worker. It is the layer Vitest cannot
 reach ([Testing](testing.md)): unit tests exercise pure helpers, and jsdom
 tests render single hooks and components, but none of them runs the whole
 editor with real layout, real pointer and keyboard input, the static export
-and a round trip through the api and its Durable Objects. Every regression chased by hand in
+and a round trip through the api and D1. Every regression chased by hand in
 that layer (the "maximum update depth" pan-loop report, panel-gating bugs,
 dialog behaviour, a board losing its kind on reload) is the reason a focused
 test lives here.
@@ -66,12 +66,13 @@ Cost controls, all in `e2e.yml` and `playwright.config.ts`:
 - **Parallel everywhere** (`fullyParallel`): 4 workers in CI, one per vCPU of the GitHub runner,
   and Playwright's default locally. Tests stay independent because each opens a fresh browser
   context, so a fresh guest owner whose designs no other test sees.
-- **Guests are liveworkspace guests**, as in production
-  ([Auth + guest access](../014-identity/auth-and-guest-access.md) "Guests"). The stack's accounts
-  stand-in answers the guest handoff with a guest token, and a spec seeds through one: `mintGuest` +
-  `ownerHeaders` (its token as the Bearer) for Playwright requests, `adoptGuest` to put it where the
-  page keeps it, and `designHeaders` to add the index's grant on a design as `X-Index-Grant`
-  (`apps/live/e2e/fixtures.ts`).
+- **Guest signatures enforced** by default (`E2E_GUEST_SIG_ENFORCE`, unless `0`, sets
+  `GUEST_SIG_ENFORCE_AFTER=1` in `scripts/e2e-stack.mjs`), as
+  production runs once armed ([Public API and API tokens](../015-api/public-api-and-tokens.md) §4).
+  A spec seeds through a signed guest: `mintSignedGuest` + `ownerHeaders` for Playwright
+  requests, `pageOwnerHeaders` for calls made inside the page (`apps/live/e2e/fixtures.ts`). A
+  hand-made `crypto.randomUUID()` owner is refused (401), and so is any entry path that sends an
+  unsigned id.
 - **Sharded** (`--shard=i/6`, the matrix in `e2e.yml`): Playwright splits the `chromium` project's
   tests evenly by count across six jobs; each boots its own stack, so shards share nothing.
 - **Shards sized to the floor, not beyond.** Every shard pays about two minutes before its first
@@ -115,16 +116,15 @@ Cost controls, all in `e2e.yml` and `playwright.config.ts`:
 ## The stack under test
 
 The suite runs against the **real production build**, the live app's
-`output: 'export'` static bundle plus the real api worker with its Durable Objects in local storage,
+`output: 'export'` static bundle plus the real api worker on local D1,
 so it exercises exactly what ships, not a dev-only code path.
 The stack serves whatever `apps/live/out` holds and never rebuilds it, so locally run
 `pnpm --filter @livedesign/live build` first; an old `out/` fails audits for code that has since changed.
 
 `scripts/e2e-stack.mjs` boots the stack Playwright's `webServer` waits on:
 
-1. **api**: `wrangler dev --local` (`apps/api`) on a fixed port. Each design's
-   and each person's Durable Object keeps its own SQLite in wrangler's local
-   storage, so persistence works with no setup step.
+1. **api**: `wrangler dev --local` (`apps/api`) on a fixed port, with
+   `db:migrate:local` applied to a fresh local D1 so persistence works.
    `TELEMETRY_ENABLED` unset (the suite asserts on the app, not the
    events pipe).
 2. **live**: the static `apps/live/out` served by a minimal Node
@@ -182,10 +182,21 @@ starts the api worker with `ACCOUNTS_URL` and `API_RESOURCE` pointing at it, and
 token with that issuer and audience for any test account on `/e2e/token?sub=user_…`, which
 `installSession` hands the bridge. So a stub account is a real verified account to the api and the
 realtime room, and two or three stub browsers can collaborate in one design. A test that changes an
-account's synced settings takes a fresh id (`freshUserId`), since the stack outlives a test. `e2e.yml` builds and runs them in their own job, beside the smoke shards.
+account's synced settings takes a fresh id (`freshUserId`), since the stack's D1 outlives a test. `e2e.yml` builds and runs them in their own job, beside the smoke shards.
 
 The sign-in round trip itself (`/api/auth/*` against the accounts Worker) is covered by the api's unit
 tests (`apps/api/src/routes/auth.test.ts`), not here.
+
+## Armed guest signatures
+
+Every stack enforces guest signatures (above), so every spec runs as production does once armed.
+The specs in `apps/live/e2e/armed/` focus on the entry paths: a first-time guest who arrives on `/` or `/new`, or opens the
+Explorer first, gets a signed id before any owner-scoped call, creates a design (`201`) and sees
+the canvas, and no api response is `401`. `pnpm --filter @livedesign/live test:e2e:armed` sets
+`E2E_GUEST_SIG_ENFORCE=1`, which adds the `armed` project and boots the stack on its own ports
+(live `:3417`, api `:8417`, marketing `:3418`). It
+reuses the guest-mode export, so `e2e.yml` runs it as a second step of the Sites audit job, which
+has built it already.
 
 ## No uncaught errors
 

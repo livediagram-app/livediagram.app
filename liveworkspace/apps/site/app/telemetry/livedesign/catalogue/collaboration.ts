@@ -5,6 +5,13 @@ import type { Metric, MetricStack } from '../metric-series';
 import { SLIDE_DECK_OPENED } from './features';
 import { chart } from './helpers';
 
+export const TEAM_DESIGNS_MOVED = chart(
+  'Team',
+  'Moved',
+  'Team Designs Moved',
+  'A design moved within a team library.',
+);
+
 export const SHARE_LINKS_COPIED = chart(
   'UI',
   'Copied',
@@ -13,6 +20,14 @@ export const SHARE_LINKS_COPIED = chart(
   {
     typeIn: (t) => t !== 'TeamInviteLink' && t !== 'Diagnostics' && t !== 'Diagnostics.Help',
   },
+);
+
+export const SHARE_SETTINGS = chart(
+  'Document',
+  'Shared',
+  'Share Link Settings',
+  'A password or an expiry set on a share link.',
+  { typeIn: (t) => t !== 'Edit' && t !== 'View' && t !== 'Participate' },
 );
 
 export const SHARE_LINKS_REMOVED = chart(
@@ -102,6 +117,14 @@ export const WORKBENCH_WORKSPACES = chart(
   { types: ['WorkbenchWorkspace'] },
 );
 
+export const TEAM_REMOVALS = chart(
+  'Team',
+  'Removed',
+  'Team Removals',
+  'A design taken out of a team to its owner’s My Work. Members, invitations and leaving are run on liveworkspace.app.',
+  { rising: 'neutral' },
+);
+
 export const SLIDE_NOTES = chart(
   'UI',
   'Changed',
@@ -141,6 +164,55 @@ export const VIEWPORTS_FOLLOWED: Metric = {
     "Someone pinned their view to a teammate's, following their pan, zoom and tab: the strongest signal that a session is being presented rather than just co-edited.",
 };
 
+export const EDIT_LINKS_SHARED: Metric = {
+  category: 'Document',
+  action: 'Shared',
+  type: 'Edit',
+  title: 'Edit Links Shared',
+};
+
+export const VIEW_LINKS_SHARED: Metric = {
+  category: 'Document',
+  action: 'Shared',
+  type: 'View',
+  title: 'View Links Shared',
+};
+
+// Participant links (docs/specs/013-workspace/share-roles.md): take part and write, never reshape the board.
+export const PARTICIPATE_LINKS_SHARED: Metric = {
+  category: 'Document',
+  action: 'Shared',
+  type: 'Participate',
+  title: 'Participant Links Shared',
+};
+
+export const PARTICIPANTS_JOINED: Metric = {
+  category: 'Document',
+  action: 'Joined',
+  type: 'Participate',
+  title: 'Participants Joined',
+  blurb:
+    'People who came into a design through a Participant link. Counted once per person per design, not on every revisit.',
+};
+
+export const COLLABORATORS_JOINED: Metric = {
+  category: 'Document',
+  action: 'Joined',
+  type: 'Edit',
+  title: 'Collaborators Joined',
+  blurb:
+    'People who came into a design through an edit link. Counted once per person per design, not on every revisit.',
+};
+
+export const VIEWERS_JOINED: Metric = {
+  category: 'Document',
+  action: 'Joined',
+  type: 'View',
+  title: 'Viewers Joined',
+  blurb:
+    'People who came into a design through a view-only link. Counted once per person per design, not on every revisit.',
+};
+
 export const COMMENTS_ADDED: Metric = {
   category: 'Comment',
   action: 'Added',
@@ -172,6 +244,14 @@ export const COMMENTS_MENTIONED: Metric = {
   blurb: 'A comment was sent that @-mentioned at least one teammate.',
 };
 
+export const TEAMS_CREATED: Metric = {
+  category: 'Team',
+  action: 'Created',
+  type: null,
+  title: 'Teams Created',
+  blurb: "A team made from the Move dialog's New Team tile, on liveworkspace.",
+};
+
 export const DESIGNS_SHARED_TO_A_TEAM: Metric = {
   category: 'Team',
   action: 'Added',
@@ -190,18 +270,24 @@ export const LIVE_TOGETHER: MetricStack = {
 
 export const SHARING_AND_JOINING: MetricStack = {
   stack: true,
-  title: 'Sharing & Embeds',
-  blurb:
-    'Share links, embed codes and live images copied or switched off, embeds viewed, and the Workbench. Links are made and joined through liveworkspace.',
+  title: 'Sharing & Joining',
+  blurb: 'Edit, Participant and view links made, and the people who came in through them.',
   members: [
+    EDIT_LINKS_SHARED,
+    PARTICIPATE_LINKS_SHARED,
+    VIEW_LINKS_SHARED,
+    COLLABORATORS_JOINED,
+    PARTICIPANTS_JOINED,
+    VIEWERS_JOINED,
     SHARE_LINKS_COPIED,
+    SHARE_SETTINGS,
     SHARE_LINKS_REMOVED,
     EMBEDS_VIEWED,
     WORKBENCH_SESSIONS,
     WORKBENCH_WORKSPACES,
     LIVE_IMAGE_TABS,
   ],
-  headline: SHARE_LINKS_COPIED,
+  headline: [COLLABORATORS_JOINED, PARTICIPANTS_JOINED, VIEWERS_JOINED],
 };
 
 export const DISCUSSION: MetricStack = {
@@ -223,9 +309,9 @@ export const TEAM_ACTIVITY: MetricStack = {
   stack: true,
   title: 'Team Activity',
   blurb:
-    'Designs shared to a team. Teams, members and invitations are run on liveworkspace.app.',
-  members: [DESIGNS_SHARED_TO_A_TEAM],
-  headline: DESIGNS_SHARED_TO_A_TEAM,
+    'Teams made, and designs shared to a team or moved between teams. Invitations are answered on liveworkspace.app.',
+  members: [TEAMS_CREATED, DESIGNS_SHARED_TO_A_TEAM, TEAM_DESIGNS_MOVED, TEAM_REMOVALS],
+  headline: TEAMS_CREATED,
 };
 
 // The Explorer Timeline (docs/specs/013-workspace/timeline.md) and the Explorer's Inbox (docs/specs/013-workspace/inbox.md).
@@ -336,6 +422,8 @@ export const HOME_GROUPS_EXPANDED = chart(
   { types: ['Group'] },
 );
 
+export const HOME_LOADS = chart('Home', 'Loaded', 'Home Retries', 'A failed read of Home retried.');
+
 export const TIMELINE_AND_ACTIVITY: MetricStack = {
   stack: true,
   title: 'Timeline & Activity',
@@ -347,6 +435,7 @@ export const TIMELINE_AND_ACTIVITY: MetricStack = {
     HOME_WELCOMES,
     HOME_DESIGNS_OPENED,
     HOME_GROUPS_EXPANDED,
+    HOME_LOADS,
     TIMELINE_LANDINGS,
     TIMELINE_VISITS,
     TIMELINE_MENUS,

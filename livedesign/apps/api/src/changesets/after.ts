@@ -1,15 +1,16 @@
 import type { Tab } from '@livedesign/design';
-import { newCommentsBy } from '../comments';
+import { hasNewComments } from '../comments';
 import { emailEnabled } from '../email/client';
-import { notifyMentions, notifyNewComment } from '../email/notifications';
+import { notifyNewComment } from '../email/notifications';
 import { reportServerEvent } from '../server-telemetry';
-import type { DesignDTO, Env, DesignEnv } from '../types';
+import { recordTabSave } from '../timeline';
+import type { DesignDTO, Env } from '../types';
 import type { FrontDoor } from './front-door';
 import type { Author } from './write';
 
 // What follows a written changeset, off the response path (docs/specs/024-agents/blueprints/
-// agent-changesets.md "The pipeline" step 11): the new-comment and mention emails exactly as a
-// save sends them, with the author as the actor (CS29), and the Agent telemetry for a token's changeset.
+// agent-changesets.md "The pipeline" step 11): the Timeline and the new-comment email exactly as a
+// save does, with the author as the actor (CS29), and the Agent telemetry for a token's changeset.
 // Never for a dry run (CS12).
 
 type AgentAction = 'Applied' | 'Conflicted' | 'Held' | 'Reverted';
@@ -29,7 +30,7 @@ function telemetry(env: Env, action: AgentAction, frontDoor: FrontDoor): Promise
 }
 
 async function run(
-  env: DesignEnv,
+  env: Env,
   w: {
     design: DesignDTO;
     author: Author;
@@ -41,29 +42,20 @@ async function run(
   },
 ): Promise<void> {
   const previous = w.stored?.elements ?? [];
-  const work: Promise<unknown>[] = [];
-  const fresh =
-    emailEnabled(env) && (w.author.id !== w.design.ownerId || (!w.agent && w.design.teamId))
-      ? newCommentsBy(w.next.elements, previous, w.author.id)
-      : [];
-  if (fresh.length > 0 && w.author.id !== w.design.ownerId) {
+  const work: Promise<unknown>[] = [
+    recordTabSave(env, w.design, w.author.id, w.next.elements, previous),
+  ];
+  if (
+    emailEnabled(env) &&
+    w.author.id !== w.design.ownerId &&
+    hasNewComments(w.next.elements, previous, w.author.id)
+  ) {
     work.push(
       notifyNewComment(
         env,
         { id: w.design.id, ownerId: w.design.ownerId, name: w.design.name },
         w.author.name,
       ),
-    );
-  }
-  // The teammates the author's new comments @-mention (docs/specs/012-collaboration/comment-mentions.md): a
-  // person's own changeset only, never an API token's, as only a signed-in person's mention emails.
-  if (!w.agent && w.design.teamId && fresh.some((c) => c.mentions?.length)) {
-    work.push(
-      notifyMentions(env, {
-        design: { id: w.design.id, name: w.design.name, teamId: w.design.teamId },
-        authorId: w.author.id,
-        comments: fresh,
-      }),
     );
   }
   if (w.agent) work.push(telemetry(env, w.action, w.frontDoor));

@@ -8,8 +8,8 @@
 // deleted in one transaction; a change in between takes the cloud copy back and uploads again.
 
 import { DESIGN_CONVERSION_HEADER } from '@livedesign/api-schema';
-import { apiCreateDesign } from '@/lib/api-client';
-import { indexClient } from '@/lib/index-client';
+import { apiCreateDesign, apiSetFavourite } from '@/lib/api-client';
+import { apiSetDesignTag } from '@/lib/api/tags';
 import { API_BASE, ApiError, apiDelete } from '@/lib/api/core';
 import { uploadEmbeddedImages } from './offline-images';
 import {
@@ -112,9 +112,17 @@ export async function syncOfflineDesign(
     // Gone already: another tab finished a sync of it first. Nothing here is left to move.
     if (done.outcome === 'missing') return { id: rec.id, imageIds };
     if (done.outcome === 'deleted') {
-      // The star lived on the offline record (docs/specs/013-workspace/favourites.md), which just went: it goes onto
-      // the design's index item, which the upload made. A failed star leaves the design synced, unstarred.
-      if (done.rec.favourite) await indexClient.favourite(rec.id).catch(() => {});
+      // The star lived on the offline record (docs/specs/013-workspace/favourites.md), which just went. Re-star
+      // on the server AFTER the delete: while the id is still registered offline,
+      // apiSetFavourite would route the star straight back to the local store.
+      if (done.rec.favourite) await apiSetFavourite(ownerId, rec.id, true);
+      // Its tags the same way (docs/specs/013-workspace/tags.md). One deleted meanwhile is refused and left off;
+      // the design is synced either way.
+      await Promise.allSettled(
+        (done.rec.tagIds ?? []).map((tagId) =>
+          apiSetDesignTag(ownerId, tagId, done.rec.id, true),
+        ),
+      );
       return { id: rec.id, imageIds };
     }
     console.warn(`[offline-sync] changed-during-upload attempt=${attempt}`);

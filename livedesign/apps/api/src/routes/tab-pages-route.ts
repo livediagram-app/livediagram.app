@@ -8,10 +8,10 @@ import { frontDoorOf } from '../changesets/front-door';
 import { submitPages } from '../changesets/pages';
 import { forbidden, json } from '../responses';
 import { authorOf, refreshAfterWrite } from './changesets';
-import { gateEdit, missingDesign, requireOwner, type DesignRouteContext } from './context';
+import { gateEdit, missingDesign, requireOwner, type RouteContext } from './context';
 
 export async function handleTabPages(
-  ctx: DesignRouteContext,
+  ctx: RouteContext,
   id: string,
   tabId: string,
 ): Promise<Response> {

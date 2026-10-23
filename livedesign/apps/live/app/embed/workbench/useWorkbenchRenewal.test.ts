@@ -30,9 +30,9 @@ const { useWorkbenchRenewal } = await import('./useWorkbenchRenewal');
 const NOW = 1_000_000;
 const TTL = 60 * 60 * 1000;
 const ORIGIN = 'https://127.0.0.1:5175';
-const TICKET = `Ab3_-xYz0123456789abcd.${'0f'.repeat(32)}`;
+const TICKET = 'Ab3_-xYz0123456789abcd';
 const SESSION: WorkbenchDesignSessionResponse = {
-  session: `lvw_${'a'.repeat(43)}.${'0f'.repeat(32)}`,
+  session: `lvw_${'a'.repeat(43)}`,
   scope: 'design',
   designId: 'doc-1',
   folderId: null,
@@ -44,7 +44,7 @@ const SESSION: WorkbenchDesignSessionResponse = {
 };
 const RENEWED: WorkbenchDesignSessionResponse = {
   ...SESSION,
-  session: `lvw_${'b'.repeat(43)}.${'0f'.repeat(32)}`,
+  session: `lvw_${'b'.repeat(43)}`,
   expiresAt: NOW + 2 * TTL,
 };
 

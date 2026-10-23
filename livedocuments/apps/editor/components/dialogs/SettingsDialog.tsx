@@ -31,7 +31,6 @@ import {
 import type { UserPreferences } from '@/lib/user-preferences';
 import { isPowerUserMode } from '@/lib/power-user-mode';
 import { signInEnabled } from '@/lib/auth-config';
-import { usePlacementDefaults } from '@/hooks/persistence/usePlacementDefaults';
 import { useWorkbenchSession } from '@/components/providers/workbench-session-context';
 
 type SettingsDialogProps = {
@@ -47,9 +46,6 @@ type SettingsDialogProps = {
   initialCategoryId?: string | null;
   // Section of that category to scroll to and focus (settingsSectionId).
   initialSectionId?: string | null;
-  // The reader's owner id, for the Documents rows (docs/specs/013-workspace/default-folders.md);
-  // the owner the page loaded its default folders for when absent.
-  ownerId?: string | null;
 };
 
 // The Settings dialog (docs/specs/007-editor/user-preferences.md), shaped like the iOS Settings app because it
@@ -70,7 +66,6 @@ export function SettingsDialog({
   focus,
   initialCategoryId,
   initialSectionId = null,
-  ownerId = null,
 }: SettingsDialogProps) {
   const isMobile = useIsMobileViewport();
   // Email rows need Resend configured AND a signed-in account: a guest has
@@ -81,13 +76,6 @@ export function SettingsDialog({
   // A workbench's Settings reach nothing beyond its one document (docs/specs/013-workspace/
   // blueprints/workbench-embeds.md, Surface table).
   const workbench = useWorkbenchSession() !== null;
-  // Loads the reader's default folders when the page has not (a no-op when it has).
-  const defaultsOwner = usePlacementDefaults(workbench ? null : ownerId).ownerId;
-  const readerId = ownerId ?? defaultsOwner;
-  const owner = useMemo(
-    () => (readerId ? { ownerId: readerId, accountUserId: accountUserId ?? null } : null),
-    [readerId, accountUserId],
-  );
   // Power-user-only rows appear the moment the mode's own row switches on
   // (docs/specs/007-editor/power-user-mode.md), so this reads the live settings, not a snapshot.
   const powerUserMode = isPowerUserMode(settings);
@@ -264,7 +252,6 @@ export function SettingsDialog({
           >
             <SettingsCategoryPane
               category={selected}
-              owner={owner}
               settings={settings}
               onChange={onChange}
               focusRowKey={goTo?.categoryId === selected.id ? goTo.rowKey : null}

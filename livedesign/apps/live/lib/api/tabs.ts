@@ -1,9 +1,10 @@
 // Per-tab calls: lazy load, upsert (the autosave path), comment append,
-// a copy into another design, and delete.
+// cross-design link, and delete.
 import {
   CHANGESET_SEEN_HEADER,
-  INDEX_GRANT_HEADER,
+  DESIGN_OPEN_HEADER,
   type TabResponse,
+  type TabSummary,
 } from '@livedesign/api-schema';
 import { normalizeTable, type CommentMention, type Tab } from '@livedesign/design';
 import { dedupeInFlight } from '../dedupe';
@@ -16,8 +17,6 @@ import {
   offlineSaveTab,
 } from '../offline/offline-store';
 import { offlineRecordOpen } from '../offline/offline-opens';
-import { heldDesignGrant } from './design-grants';
-import { indexClient } from '../index-client';
 import {
   API_BASE,
   apiDelete,
@@ -37,10 +36,10 @@ import {
 // lazily when the user opens a tab; the design-summary fetch only
 // carries TabSummary rows.
 //
-// `open` declares this read an open of the design, for the reader's Recent
-// (liveworkspace/docs/one-explorer-contracts.md "Items", `POST /items/:id/open`): only the
+// `open` declares this read an open of the design, for the reader's
+// Home (docs/specs/013-workspace/explorer-home.md "Opens"): only the
 // editor's first-tab read sets it, never a resync, a duplicate, Take
-// Offline or an embed. Told to the index beside the read, never waited on.
+// Offline or an embed.
 //
 // The tab's revision rides beside it (docs/specs/024-agents/agent-changesets.md "The tab revision",
 // CS41), never inside it: the editor's tabs hold content only, and the revision tells the changeset
@@ -59,14 +58,11 @@ async function _apiLoadTabRevisioned(
     const tab = await offlineLoadTab(designId, tabId);
     return tab ? { tab, rev: 0 } : null;
   }
-  if (opts.open) {
-    const share = shareCode ? { code: shareCode, password: getSessionSharePassword() } : null;
-    void indexClient.recordOpen(designId, share).catch((err: unknown) => {
-      console.warn('[index] open not recorded', err);
-    });
-  }
   const res = await apiFetch(`${API_BASE}/designs/${designId}/tabs/${tabId}`, {
-    headers: await apiHeaders(ownerId, { share: shareCode }),
+    headers: await apiHeaders(ownerId, {
+      share: shareCode,
+      ...(opts.open ? { extra: { [DESIGN_OPEN_HEADER]: '1' } } : {}),
+    }),
   });
   const body = await expectOkOrNull<TabResponse>(res, 'load tab');
   if (!body) return null;
@@ -178,16 +174,13 @@ async function savedRevOf(res: Response): Promise<number | null> {
 // path builds headers synchronously and uses `keepalive: true` to let
 // each request outlive the teardown. Identity comes from the sync
 // sources: the Bearer token apiHeaders cached on its last fetch for
-// signed-in sessions, else the guest token. The debounced
+// signed-in sessions, else X-Owner-Id + guest signature. The debounced
 // save carries the freshly-fetched hybrid identity for the common
 // (non-unload) case. Callers pass an already-diffed change set
 // (computeTabSaveDiff); empty sets fire nothing.
 // The keepalive bodies an unload flush sends at most: browsers allow 64 KB in all per page; the rest is
 // headroom for another keepalive request in flight. Safe range: 32 KB to 63 KB.
 const KEEPALIVE_BUDGET_BYTES = 60 * 1024;
-
-// The unload flush's requests go at once, with the grant it holds (apiFetch `designGrant: false`).
-const NO_GRANT_WAIT = { designGrant: false } as const;
 
 export function flushDesignSavesBeacon(args: {
   ownerId: string;
@@ -227,9 +220,11 @@ export function flushDesignSavesBeacon(args: {
   // Identity, synchronously (a beforeunload handler can't await):
   // signed-in sessions ride the token apiHeaders cached on its last
   // fetch — the autosave loop refreshes it every ~600ms while editing,
-  // so it's seconds old at teardown. Guests ride their guest token (a sync
-  // localStorage read), and the design's grant is the one held (design-grants.ts),
-  // so nothing here waits on the network. The rule is apiHeaders' own
+  // so it's seconds old at teardown. Guests ride X-Owner-Id plus the
+  // guest signature (a sync localStorage read); without the sig these
+  // writes 401 (signature_required) once guest-sig enforcement is on,
+  // silently losing the final debounce window's edits — the exact loss
+  // this flush exists to prevent. The rule is apiHeaders' own
   // (identityHeaders). A signed-in owner with no cached token has nothing the worker accepts, so
   // skip the flush rather than fire writes that are certain to 401.
   let base: Record<string, string>;
@@ -240,8 +235,6 @@ export function flushDesignSavesBeacon(args: {
     return;
   }
   if (args.shareCode) base['X-Share-Code'] = args.shareCode;
-  const grant = heldDesignGrant(args.designId, args.shareCode ? { code: args.shareCode } : null);
-  if (grant) base[INDEX_GRANT_HEADER] = grant;
   // The share password (docs/specs/013-workspace/share-password.md) is a synchronous session read too —
   // without it an edit-role visitor's flush 403s on a protected
   // design, losing the final debounce window's edits.
@@ -266,43 +259,31 @@ export function flushDesignSavesBeacon(args: {
       ...(seen !== undefined ? { [CHANGESET_SEEN_HEADER]: String(seen) } : {}),
     };
     const body = JSON.stringify(tabForWire(t));
-    void apiFetch(
-      `${API_BASE}/designs/${args.designId}/tabs/${t.id}`,
-      {
-        method: 'PUT',
-        headers,
-        body,
-        keepalive: keepaliveFor(body),
-      },
-      NO_GRANT_WAIT,
-    ).catch(() => {});
+    void apiFetch(`${API_BASE}/designs/${args.designId}/tabs/${t.id}`, {
+      method: 'PUT',
+      headers,
+      body,
+      keepalive: keepaliveFor(body),
+    }).catch(() => {});
   }
   for (const tabId of args.deletedIds) {
-    void apiFetch(
-      `${API_BASE}/designs/${args.designId}/tabs/${tabId}`,
-      {
-        method: 'DELETE',
-        headers: base,
-        keepalive: keepaliveFor(undefined),
-      },
-      NO_GRANT_WAIT,
-    ).catch(() => {});
+    void apiFetch(`${API_BASE}/designs/${args.designId}/tabs/${tabId}`, {
+      method: 'DELETE',
+      headers: base,
+      keepalive: keepaliveFor(undefined),
+    }).catch(() => {});
   }
   if (args.orderChanged || args.nameChanged) {
     const body = JSON.stringify({
       name: args.name,
       tabs: args.tabs.map((t) => ({ id: t.id, folder: t.folder })),
     });
-    void apiFetch(
-      `${API_BASE}/designs/${args.designId}`,
-      {
-        method: 'PUT',
-        headers: jsonHeaders,
-        body,
-        keepalive: keepaliveFor(body),
-      },
-      NO_GRANT_WAIT,
-    ).catch(() => {});
+    void apiFetch(`${API_BASE}/designs/${args.designId}`, {
+      method: 'PUT',
+      headers: jsonHeaders,
+      body,
+      keepalive: keepaliveFor(body),
+    }).catch(() => {});
   }
 }
 
@@ -397,13 +378,25 @@ export async function apiSetThreadResolved(
   await expectOkVoid(res, `${verb} thread`);
 }
 
-// Copy a tab into another of the caller's designs, as a new tab there (appended last). Each design keeps its own
-// content (docs/specs/015-api/api.md "Storage"), so a tab cannot be shared between two designs: the copy is the
-// caller's loaded tab under fresh ids, saved like any new tab. Answers the copy's id.
-export async function apiCopyTabTo(ownerId: string, designId: string, tab: Tab): Promise<string> {
-  const copy: Tab = { ...tab, id: crypto.randomUUID() };
-  await apiSaveTab(ownerId, designId, copy);
-  return copy.id;
+// Link an existing tab into another of the caller's designs
+// (docs/specs/006-design/tab-design-many-to-many.md). After this returns, the tab body is shared: edits
+// from either design write to the same `tabs.data` row. Returns
+// the target design's summary view of the now-attached tab so
+// the caller can update its TabBar without a full design
+// refetch.
+export async function apiLinkTab(
+  ownerId: string,
+  designId: string,
+  tabId: string,
+): Promise<TabSummary> {
+  const res = await apiFetch(
+    `${API_BASE}/designs/${encodeURIComponent(designId)}/tabs/${encodeURIComponent(tabId)}/link`,
+    {
+      method: 'POST',
+      headers: await apiHeaders(ownerId),
+    },
+  );
+  return expectOk<{ tab: TabSummary }>(res, 'link tab').then((b) => b.tab);
 }
 
 export async function apiDeleteTab(

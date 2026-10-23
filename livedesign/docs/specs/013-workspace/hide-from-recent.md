@@ -1,45 +1,70 @@
 # Hide a design from Recent
 
-Status: shipped, on liveworkspace's index and the shared Explorer
-([`@liveworkspace/explorer`](../../../../packages/explorer/README.md)).
+Status: shipped
 
 ## What
 
-Every item's menu, wherever it is listed (the Explorer page, the editor's Explorer panel, Home's cards), has
-**Hide from Recent**, or **Show in Recent** once it is hidden. A hidden item never appears in **Recent** or in
-Home's **Jump Back In** however recently it was opened, and behaves exactly as before everywhere else: folders,
-search, Favourites, direct links, sharing, teams.
+A per-design menu item, **Hide from Recent** / **Show in Recent**, in both
+Explorer surfaces (the `/explorer` route and the editor's Explorer). A hidden design never appears in Recent however recently it was
+opened or edited, and behaves exactly as before everywhere else — folders,
+search, direct links, sharing, teams.
 
-## Per person, not per item
+## Per-user, not per-design
 
-Recent is your view of your own work, so the choice belongs to the reader, not the item. On a shared or team design,
-one collaborator tidying their Recent leaves everyone else's alone. The index keeps it on the person's own `opens`
-row (`hidden`), beside when they last opened the item
-([one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "Folders, tags, favourites,
-defaults"):
+Stored as `recentExcludedIds` in the synced `UserPreferences` blob ([User preferences](../007-editor/user-preferences.md)).
 
-- `PUT /recent-hidden/:itemId` hides it, `DELETE /recent-hidden/:itemId` shows it again. Hiding an item never
-  opened makes a row with no open, which showing it removes again; opening a hidden item keeps it hidden.
-- Every item the index returns says `hiddenFromRecent`, so the menu reads the right label.
-- A guest's choices move to their account with their opens when they sign in, and go with the account when it
-  closes.
-- There is no cap: a row per item the person hid, removed with the item.
+Recent is **your view of your own work**, so the choice belongs to the viewer,
+not the design. On a shared or team design, one collaborator tidying their
+Recent must not tidy everyone else's. Preferences already do exactly the right
+thing here: the same blob syncs to D1 for **guests** (via the per-browser
+`X-Owner-Id`) and for **signed-in users** (via the account `sub`), so the choice
+follows the account across devices with no migration and no api-schema change.
+
+`recentExcludedIds` is **capped at 60** (`RECENT_EXCLUDED_LIMIT`), newest
+first. The api caps the serialised preferences blob at 4 KB; a 36-char UUID
+means ~200 ids would blow that on their own, and the failure mode is nasty —
+the PUT starts rejecting **every** preference write, not just this one. 60 is
+far more than anyone hides by hand and leaves room for the other flags. When
+the cap bites it drops the **oldest** exclusion, so the choice just made always
+survives. The cap alone does not guarantee the fit (60 ids plus a full account's
+other keys measured 4,967 characters), so every save is also trimmed to the api's
+cap, oldest exclusions first ([User preferences, Saving to the server](../007-editor/user-preferences.md#sync-flow)).
 
 ## Where it is enforced
 
-- **Recent** leaves hidden items out in the index, before the page is cut, so hiding one lets the next in.
-- **Jump Back In's** Most Used leaves them out too.
-- The Explorer lays the change over every loaded list at once, and takes it back with a toast when the index
-  refuses.
+Both Recent lists filter on it, and both filter **before** the cap so hiding
+one design promotes the next one in rather than leaving a gap:
+
+- `apps/live/app/explorer/useExplorerPane.ts` — the route's Recent list, and
+  the sidebar's **Recent badge count**, which counts what Recent will actually
+  show. (It previously counted all sources without re-running the filter,
+  which would have made the badge promise rows the pane then dropped.)
+- `apps/live/components/panels/useExplorerViewModel.ts` — the editor panel's
+  Recent list, alongside the existing "not the currently-open design" rule.
+
+Preference ownership moved into `useExplorerState` for the route. It was in
+`ExplorerShell`, but the pane needs it too, and two `useState` copies of the
+same blob drift the moment either writes.
+
+Both toggles read-modify-write from the **localStorage cache**, not a React
+snapshot: the PUT sends the whole blob, so a stale snapshot would silently
+clobber sibling flags another tab had written. Same rule `ProfilePane` follows.
 
 ## No badge anywhere else
 
-Deliberate. The menu item's label states what the click will do, and so the current state, right where you would
-change it. A badge on every row would compete with Private, Team, Shared and Made by AI, which describe the item;
-this describes your view of it.
+Deliberate. The menu item's label states what the click will do — and by doing
+so tells you the current state — right where you would change it. A chip on
+every folder row would compete with the existing Offline / Shared / Team /
+Private badges, which describe the **design**; this describes _your view of_
+the design, which is a different kind of fact and a rarer one.
 
 ## Out of scope
 
-- **Bulk hide or a management list.** You show an item again from its own menu wherever it lives.
-- **Hiding Shared With Me rows.** Those have their own way out of the list, which ends the share for you.
-- **Hiding from search or folders.** This is about Recent only.
+- **Bulk hide / a management list.** Nothing surfaces the hidden set as a
+  whole; you un-hide from the design's own menu wherever it lives. Worth
+  revisiting if the 60 cap ever feels near.
+- **Hiding shared-with-you rows.** Those already have **Dismiss**, which
+  removes the share outright (a server-side row delete) — a different and
+  more destructive action, left alone.
+- **Hiding from search or folders.** The issue is explicit that this affects
+  Recent only.
