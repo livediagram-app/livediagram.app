@@ -4,9 +4,10 @@
 // windowed: every row is ROW_HEIGHT tall, only the rows on screen (and OVERSCAN either side) are in the
 // DOM, spacers keep the scroll height, and the next page loads as the end comes near.
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import type { Folder } from '@liveworkspace/index-client';
 import type { ShownItem } from '../data/overlay';
+import { useFolderPreviews } from '../data/useFolderPreviews';
 import { LIST_CARD, LIST_HEADER } from '../ui/classes';
 import { useExplorer } from './context';
 import { FolderRow, ItemRow, ROW_GRID, ROW_HEIGHT, type RowOptions } from './rows';
@@ -30,7 +31,7 @@ export function ListView({
   loadingMore: boolean;
   onLoadMore: () => void;
 }) {
-  const { renamingId } = useExplorer();
+  const { renamingId, client, app, filter, epoch, placedEpoch } = useExplorer();
   const body = useRef<HTMLUListElement>(null);
   const count = folders.length + items.length;
   const range = useWindowedRange(body, count, ROW_HEIGHT);
@@ -42,11 +43,35 @@ export function ListView({
     if (hasMore && !loadingMore && end >= count - LOAD_AHEAD) onLoadMore();
   }, [end, count, hasMore, loadingMore, onLoadMore]);
 
+  // The folder rows on screen, asked about together (one request per batch, only for rows not yet answered), so
+  // each counts its items as well as its subfolders.
+  const shownFolderIds = useMemo(
+    () =>
+      folders
+        .slice(Math.min(start, folders.length), Math.min(end, folders.length))
+        .map((f) => f.id),
+    [folders, start, end],
+  );
+  const previews = useFolderPreviews({
+    client,
+    folderIds: shownFolderIds,
+    app: filter === 'all' ? null : app,
+    epoch,
+    placedEpoch,
+  });
+
   const rows = [];
   for (let i = start; i < end; i++) {
     if (i < folders.length) {
       const f = folders[i]!;
-      rows.push(<FolderRow key={`f:${f.id}`} folder={f} renaming={renamingId === f.id} />);
+      rows.push(
+        <FolderRow
+          key={`f:${f.id}`}
+          folder={f}
+          renaming={renamingId === f.id}
+          itemCount={previews.get(f.id)?.itemCount}
+        />,
+      );
     } else {
       const item = items[i - folders.length]!;
       rows.push(

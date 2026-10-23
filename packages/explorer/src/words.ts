@@ -2,7 +2,12 @@
 // app's own kind (Canvas, Plan, Document, Design) takes its place, and the All filter, which mixes every app,
 // says "item". New always makes the host app's kind, whatever the filter shows.
 
-import { APP_KINDS, type App, type Kind } from '@liveworkspace/index-client';
+import {
+  APP_KINDS,
+  FOLDER_PREVIEW_COUNT_CAP,
+  type App,
+  type Kind,
+} from '@liveworkspace/index-client';
 import { APP_SITES, type Site } from '@liveworkspace/sites';
 
 // What the Explorer lists: this app's items, or every app's.
@@ -70,5 +75,31 @@ export function heroGreeting(hour: number): string {
 export function siteOf(app: App): Site {
   const site = APP_SITES.find((s) => s.id === `${app}.app`);
   // Every app has a site (a test pins it); the fallback keeps a new app from crashing a row.
-  return site ?? { id: 'liveworkspace.app', name: app, url: '', pitch: '', accent: '#64748b', deep: '#334155' };
+  return (
+    site ?? {
+      id: 'liveworkspace.app',
+      name: app,
+      url: '',
+      pitch: '',
+      accent: '#64748b',
+      deep: '#334155',
+    }
+  );
+}
+
+/** "2 folders · 5 plans", as the panel's folder cards always read; just "Folder" until anything is known. */
+export function folderCountLabel(
+  subfolders: number,
+  items: number | undefined,
+  words: Pick<Words, 'lowerOne' | 'lowerMany'>,
+): string {
+  const parts = [
+    subfolders ? `${subfolders} ${subfolders === 1 ? 'folder' : 'folders'}` : '',
+    items === undefined
+      ? ''
+      : `${items >= FOLDER_PREVIEW_COUNT_CAP ? `${FOLDER_PREVIEW_COUNT_CAP}+` : items} ${
+          items === 1 ? words.lowerOne : words.lowerMany
+        }`,
+  ].filter(Boolean);
+  return parts.length ? parts.join(' · ') : 'Folder';
 }

@@ -2,7 +2,7 @@ import { render, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Folder } from '@liveworkspace/index-client';
 import { createFakeIndex, makeItem } from '../test/fakeClient';
-import { folderCountLabel } from '../panel/ExplorerPanel';
+import { folderCountLabel } from '../words';
 import { Explorer } from './Explorer';
 import { folderTiles } from './FolderMosaic';
 
@@ -85,6 +85,33 @@ describe('folder cards on the Explorer page', () => {
 
 describe('rows and cards', () => {
   beforeEach(() => localStorage.setItem('liveworkspace:explorer-view-mode', 'list'));
+
+  it("count a folder row's items as well as its subfolders, from one request for the rows shown", async () => {
+    const folders = [folder('f1'), folder('f2'), folder('sub', 'f1')];
+    const items = [1, 2, 3, 4, 5].map((i) => makeItem(i, { folderId: 'f1' }));
+    const index = createFakeIndex({ items, folders });
+    render(
+      <Explorer
+        app="liveplanner"
+        client={index.client}
+        view={{ kind: 'all' }}
+        onNavigate={vi.fn()}
+        itemHref={(i) => `/p/${i.id}`}
+        onCreate={vi.fn()}
+      />,
+    );
+    await waitFor(() =>
+      expect(
+        document.querySelector('[data-folder-row="f1"] [data-folder-count]')?.textContent,
+      ).toBe('61 folder · 5 plans'),
+    );
+    expect(
+      document.querySelector('[data-folder-row="f1"] [data-folder-count]')!.getAttribute('title'),
+    ).toBe('1 folder · 5 plans');
+    // An empty folder shows no pill.
+    expect(document.querySelector('[data-folder-row="f2"] [data-folder-count]')).toBeNull();
+    expect(index.count('folderPreviews')).toBe(1);
+  });
 
   it("box the host's snapshot on a row, and fall back to the kind's icon when it draws none", async () => {
     const items = [makeItem(1), makeItem(2, { app: 'livediagram', kind: 'canvas' })];

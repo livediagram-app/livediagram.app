@@ -18,13 +18,7 @@ import {
   type KeyboardEvent,
   type ReactNode,
 } from 'react';
-import {
-  FOLDER_PREVIEW_COUNT_CAP,
-  type App,
-  type Folder,
-  type IndexClient,
-  type Item,
-} from '@liveworkspace/index-client';
+import { type App, type Folder, type IndexClient, type Item } from '@liveworkspace/index-client';
 import { useFolderPreviews } from '../data/useFolderPreviews';
 import { useItemList } from '../data/useItemList';
 import { recentLoader, viewList } from '../data/viewLists';
@@ -71,7 +65,9 @@ import {
 } from '../ui/icons';
 import { relativeSince, useNow } from '../time';
 import { explorerPath, type ExplorerView } from '../views';
-import type { AppFilter } from '../words';
+import { folderCountLabel, type AppFilter } from '../words';
+
+export { folderCountLabel } from '../words';
 import type {
   ItemHref,
   LinkComponent,
@@ -329,23 +325,6 @@ function sectionOfView(v: ExplorerView): { section: PanelSection; folderId: stri
     default:
       return null;
   }
-}
-
-/** "2 folders · 5 plans", as the panel's folder cards always read; just "Folder" until anything is known. */
-export function folderCountLabel(
-  subfolders: number,
-  items: number | undefined,
-  words: { lowerOne: string; lowerMany: string },
-): string {
-  const parts = [
-    subfolders ? `${subfolders} ${subfolders === 1 ? 'folder' : 'folders'}` : '',
-    items === undefined
-      ? ''
-      : `${items >= FOLDER_PREVIEW_COUNT_CAP ? `${FOLDER_PREVIEW_COUNT_CAP}+` : items} ${
-          items === 1 ? words.lowerOne : words.lowerMany
-        }`,
-  ].filter(Boolean);
-  return parts.length ? parts.join(' · ') : 'Folder';
 }
 
 // ---- The current item's card ----------------------------------------------------------------------------

@@ -167,7 +167,7 @@ the list scrolls near.
 | Folders       | Once, paging if needed. The sidebar, breadcrumbs, folder rows and Move all read this copy. |
 | Inbox         | Once per filter. The sidebar's count and the Inbox view share it.                          |
 | Home          | Two small requests: Recent (8) and Shared (4).                                             |
-| Folder cards  | One `GET /folders/previews` per batch of up to 60 cards shown, for their mosaics and counts; again after an item changes place. |
+| Folder cards and rows | One `GET /folders/previews` per batch of up to 60 cards (or list rows on screen) not yet answered, for their mosaics and counts ("1 folder · 5 plans"); again after an item changes place. |
 | Home's hero   | One count request while it shows (My Work, one page of up to 200; "200+" past that). The Inbox pill reuses the sidebar's Inbox. None when the hero is hidden. |
 
 Nothing is fetched per row, or per folder.

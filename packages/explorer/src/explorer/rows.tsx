@@ -18,6 +18,7 @@ import { AppMark, FavouriteMarker, FolderChip, VisibilityBadge } from './badges'
 import { useExplorer } from './context';
 import { FolderMosaic } from './FolderMosaic';
 import { FolderMenu, ItemMenu } from './menus';
+import { folderCountLabel } from '../words';
 
 // Every list row is this tall, so a long list can be windowed by arithmetic.
 export const ROW_HEIGHT = 48;
@@ -141,17 +142,47 @@ function useFolderBits(folder: Folder) {
     [folder.id, folder.name, folders, setRenamingId],
   );
   const cancelRename = useCallback(() => setRenamingId(null), [setRenamingId]);
-  // Subfolders only: counting a folder's items would be a request per folder.
+  // Its subfolders, from the folders already loaded; its items come from the batched previews.
   const childCount = folders.childrenOf(folder.id, folder.teamId).length;
   return { open, commitRename, cancelRename, childCount };
+}
+
+/**
+ * A folder's count pill: its subfolders and items together, as liveplanner's rows and cards counted them, read out
+ * (and shown on hover) as "2 folders · 5 plans". Until the previews answer it counts the subfolders alone.
+ */
+function FolderCount({
+  subfolders,
+  items,
+  className,
+}: {
+  subfolders: number;
+  items: number | undefined;
+  className?: string;
+}) {
+  const { words } = useExplorer();
+  const count = subfolders + (items ?? 0);
+  if (count === 0) return null;
+  const label = folderCountLabel(subfolders, items, words);
+  return (
+    <span title={label} data-folder-count className={`inline-flex shrink-0 ${className ?? ''}`}>
+      <span aria-hidden className="inline-flex">
+        <CountBadge count={count} />
+      </span>
+      <span className="sr-only">{label}</span>
+    </span>
+  );
 }
 
 export const FolderRow = memo(function FolderRow({
   folder,
   renaming,
+  itemCount,
 }: {
   folder: Folder;
   renaming: boolean;
+  // How many items it holds, once the previews have said.
+  itemCount?: number;
 }) {
   const bits = useFolderBits(folder);
   const menu = useRowMenu({ disabled: renaming });
@@ -175,7 +206,7 @@ export const FolderRow = memo(function FolderRow({
           {folder.name}
         </span>
       )}
-      {bits.childCount > 0 ? <CountBadge count={bits.childCount} className="ml-1" /> : null}
+      <FolderCount subfolders={bits.childCount} items={itemCount} className="ml-1" />
     </>
   );
   return (
@@ -323,8 +354,6 @@ export const FolderCard = memo(function FolderCard({
   const menu = useRowMenu({ disabled: renaming });
   const drop = useDropTarget({ teamId: folder.teamId, folderId: folder.id });
   const drag = useFolderDrag(folder, renaming);
-  // Subfolders and items, as the card's badge always counted them.
-  const count = bits.childCount + (preview?.itemCount ?? 0);
   return (
     <div
       data-folder-card={folder.id}
@@ -369,7 +398,7 @@ export const FolderCard = memo(function FolderCard({
             {folder.name}
           </button>
         )}
-        {count > 0 ? <CountBadge count={count} /> : null}
+        <FolderCount subfolders={bits.childCount} items={preview?.itemCount} />
         {renaming ? null : (
           <EllipsisTriggerButton {...menu.triggerProps} tuck label={`Menu for ${folder.name}`} />
         )}
