@@ -70,11 +70,16 @@ export type Env = {
   // a signed id unsigned; every newer id must prove possession. Unset = no
   // legacy exception.
   GUEST_SIGNING_LIVE_AT?: string;
-  // R2 bucket holding image-element bytes (docs/specs/009-elements/images.md). Optional so
-  // self-hosters who haven't provisioned R2 can still deploy the
-  // api worker: when unbound, the image endpoints all return 503
-  // and the live app hides the Image palette entry.
+  // R2 bucket holding design snapshots (thumb/<designId>), and the image bytes uploaded before images moved
+  // to liveworkspace's media service, until they are migrated.
   IMAGES?: R2Bucket;
+  // liveworkspace's media service (liveworkspace/docs/media.md, src/media.ts), which keeps every app's uploaded
+  // images. Unset means production's, https://liveworkspace.app/api/media; staging and local development name
+  // their own.
+  MEDIA_URL?: string;
+  // livedesign's secret on that service, sent as a bearer token. A secret (wrangler secret put MEDIA_KEY); unset,
+  // this deploy has no images, and the image endpoints answer 503 so the editor hides them.
+  MEDIA_KEY?: string;
   // R2 bucket holding photo pages' blobs (docs/specs/031-photo/photo-store.md "The photo blob store"),
   // apart from IMAGES. Unbound, every photo blob route answers 503 photos_unavailable.
   PHOTO_BLOBS?: R2Bucket;
@@ -183,19 +188,6 @@ export type Env = {
   // OSS self-hosters who run Clerk-less stay on the open path by
   // default.
   AI_REQUIRE_CLERK?: string;
-  // Per-owner soft cap on the number of images one owner may keep
-  // in the gallery (docs/specs/009-elements/images.md). Stored as a decimal string in
-  // wrangler.toml [vars]; parsed via parseInt at request time.
-  // Unset or non-positive = no limit (the OSS self-host default
-  // where the operator runs their own storage budget). Hosted
-  // livedesign.app sets this to "100".
-  IMAGE_MAX_PER_OWNER?: string;
-  // Per-owner soft cap on the total bytes one owner may keep in
-  // the gallery (docs/specs/009-elements/images.md). Stored as a decimal byte count in
-  // wrangler.toml [vars]; parsed via parseInt at request time.
-  // Unset or non-positive = no limit. Hosted livedesign.app sets
-  // this to "104857600" (100 MB).
-  IMAGE_MAX_BYTES_PER_OWNER?: string;
   // The most bytes of photo blobs one tab may hold (docs/specs/031-photo/photo-store.md "Limits").
   // Unset, blank or non-positive = no limit (the self-host default). Hosted livedesign.app sets
   // "536870912" (512 MB).

@@ -44,6 +44,8 @@ const OWNER_COLUMNS: OwnerColumn[] = [
   // Explorer Home's opens (docs/specs/013-workspace/explorer-home.md): guests open designs too.
   { table: 'design_opens', column: 'owner_id', migrate: { kind: 'moves' } },
   { table: 'images', column: 'owner_id', migrate: { kind: 'moves' } },
+  // Whose each media-service image is (src/media.ts): guests upload too.
+  { table: 'media_images', column: 'owner_id', migrate: { kind: 'moves' } },
   { table: 'participants', column: 'id', migrate: { kind: 'moves' } },
   { table: 'timeline_events', column: 'actor_id', migrate: { kind: 'moves' } },
   {
@@ -171,6 +173,7 @@ function seedGuestHoldable(sql: DatabaseSync, id: string, peerDesign: string) {
     updated_at: T0,
   });
   insert(sql, 'design_tags', { tag_id: `tag-${id}`, design_id: peerDesign, created_at: T0 });
+  insert(sql, 'media_images', { id: `media-${id}`, owner_id: id });
   insert(sql, 'images', {
     id: `i-${id}`,
     owner_id: id,

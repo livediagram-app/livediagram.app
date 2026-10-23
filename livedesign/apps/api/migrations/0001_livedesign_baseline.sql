@@ -620,3 +620,25 @@ CREATE TABLE photo_blob_refs (
 ) WITHOUT ROWID;
 CREATE INDEX photo_blob_refs_blob_idx ON photo_blob_refs (blob_id);
 CREATE INDEX photo_blob_refs_created_idx ON photo_blob_refs (created_at);
+
+-- Images live in liveworkspace's media service (liveworkspace/docs/media.md): the bytes, the gallery, dedupe and
+-- the caps are its, and this api keeps what its own access rules need (src/media.ts).
+--
+-- Whose each image is, as this api names owners (an account id or a guest id), for every image this api has
+-- met: one uploaded here, one listed in someone's gallery here, or one a design asked for. The placement grants
+-- read it. An owner of '' is an id the service doesn't know, so a design placing it doesn't ask again on every
+-- read.
+CREATE TABLE media_images (
+  id       TEXT PRIMARY KEY,
+  owner_id TEXT NOT NULL
+) WITHOUT ROWID;
+
+CREATE INDEX media_images_owner_idx ON media_images (owner_id);
+
+-- The designs whose images changed since the service last heard (liveworkspace/docs/media.md "References"):
+-- written in the same batch as the change, sent by the every-minute cron. `queued_at` moves on each change, so
+-- the cron deletes only the rows it sent.
+CREATE TABLE media_ref_outbox (
+  design_id TEXT PRIMARY KEY,
+  queued_at INTEGER NOT NULL
+) WITHOUT ROWID;

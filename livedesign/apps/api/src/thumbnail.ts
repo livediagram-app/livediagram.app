@@ -40,6 +40,7 @@ import {
 import { imageRefIds } from './image-refs/extract';
 import { photoBlobKey, tabHoldsBlobs } from './db/photo-blobs';
 import { photosOf } from '@livedesign/photo-engine';
+import { mediaClient } from './media';
 import type { DesignDTO, Env } from './types';
 
 // Content type for the cached SVG snapshot. Local to this module — the
@@ -283,12 +284,12 @@ async function loadPhotoPreviews(
   return out;
 }
 
-// Read each image element's bytes from R2 and return them keyed by imageId
+// Read each image element's bytes from the media service and return them keyed by imageId
 // as base64 data URLs, ready for the renderer to inline. The shared embedder
 // (@livedesign/api-schema embedTabImages) reads ids in document order until
 // IMAGE_EMBED_BUDGET_BYTES is spent, after which (or on a missing object) the
-// element keeps its placeholder. R2 is the same store the authenticated image
-// endpoint reads (key = imageId), so a shared design's images embed without
+// element keeps its placeholder. The service is the same store the authenticated image
+// endpoint reads (src/media.ts), so a shared design's images embed without
 // re-auth, and the same rule decides which: only an image the design may serve
 // (docs/specs/009-elements/images.md, "Placement grants") is read, one query for the tab.
 async function loadEmbeddedImages(
@@ -296,8 +297,8 @@ async function loadEmbeddedImages(
   designId: string,
   tab: Tab,
 ): Promise<Map<string, string>> {
-  const images = env.IMAGES;
-  if (!images) return new Map();
+  const media = mediaClient(env);
+  if (!media) return new Map();
   // The elements' images and any page's picture background, as embedTabImages reads them.
   const ids = imageRefIds(tab.elements, tab.pages);
   const servable = await servableImageIds(env, designId, ids);
@@ -311,11 +312,11 @@ async function loadEmbeddedImages(
     tab,
     async (id) => {
       if (!servable.has(id)) return null;
-      const object = await images.get(id);
-      if (!object) return null;
+      const object = await media.bytes(id);
+      if (!object?.body) return null;
       return {
-        bytes: await object.arrayBuffer(),
-        contentType: object.httpMetadata?.contentType ?? null,
+        bytes: await new Response(object.body).arrayBuffer(),
+        contentType: object.contentType,
       };
     },
     { totalBudgetBytes: IMAGE_EMBED_BUDGET_BYTES },

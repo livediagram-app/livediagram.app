@@ -107,6 +107,9 @@ importers:
       '@livedesign/templates':
         specifier: workspace:*
         version: link:../../packages/templates
+      '@liveworkspace/media':
+        specifier: workspace:*
+        version: link:../../../packages/media
       jose:
         specifier: ^6.2.12
         version: 6.2.13
@@ -120,6 +123,9 @@ importers:
       '@livedesign/vitest-config':
         specifier: workspace:*
         version: link:../../packages/vitest-config
+      '@liveworkspace/media-service':
+        specifier: workspace:*
+        version: link:../../../liveworkspace/apps/media
       '@types/node':
         specifier: ^26.6.4
         version: 26.6.5

@@ -1,6 +1,9 @@
 // image_grants: which designs may serve an image their owner does not own
 // (docs/specs/009-elements/images.md, "Placement grants").
 //
+// Whose an image is comes from media_images (src/media.ts): the images live in liveworkspace's media
+// service, and an image this api has never met joins nothing, so it serves nowhere.
+//
 // A reference alone (image_refs) does not let a design serve an image: an id
 // pasted into an unrelated design must not keep the bytes reachable after its
 // reader loses access to the original. A design serves image X when X's
@@ -38,7 +41,7 @@ export function imageGrantOwnerChangeStatement(
        FROM designs d
        JOIN design_tabs dt ON dt.design_id = d.id
        JOIN image_refs r ON r.tab_id = dt.tab_id
-       JOIN images i ON i.id = r.image_id AND i.owner_id = d.owner_id
+       JOIN media_images i ON i.id = r.image_id AND i.owner_id = d.owner_id
       WHERE ${where}`,
   ).bind(now, ...params);
 }
@@ -64,7 +67,7 @@ export function imageGrantPlacementStatements(
        SELECT d.id, i.id, ?3
          FROM design_tabs dt
          JOIN designs d ON d.id = dt.design_id
-         JOIN images i ON i.id IN (SELECT value FROM json_each(?2))
+         JOIN media_images i ON i.id IN (SELECT value FROM json_each(?2))
         WHERE dt.tab_id = ?1
           AND i.owner_id <> d.owner_id
           AND ((d.team_id IS NOT NULL AND EXISTS (
@@ -95,7 +98,7 @@ export function imageGrantCopyStatements(
       `INSERT OR IGNORE INTO image_grants (design_id, image_id, created_at)
        SELECT ?2, i.id, ?4
          FROM designs d
-         JOIN images i ON i.id IN (SELECT value FROM json_each(?3))
+         JOIN media_images i ON i.id IN (SELECT value FROM json_each(?3))
         WHERE d.id = ?1
           AND ${SERVES}`,
     ).bind(sourceId, targetId, JSON.stringify(ids), now),
@@ -116,7 +119,7 @@ export function imageGrantLinkStatement(
     `INSERT OR IGNORE INTO image_grants (design_id, image_id, created_at)
      SELECT DISTINCT ?1, i.id, ?3
        FROM image_refs r
-       JOIN images i ON i.id = r.image_id
+       JOIN media_images i ON i.id = r.image_id
        JOIN design_tabs dt ON dt.tab_id = r.tab_id AND dt.design_id <> ?1
        JOIN designs d ON d.id = dt.design_id
       WHERE r.tab_id = ?2
@@ -155,7 +158,7 @@ export async function designServesImage(
        FROM design_tabs dt
        JOIN image_refs r ON r.tab_id = dt.tab_id AND r.image_id = ?1
        JOIN designs d ON d.id = dt.design_id
-       JOIN images i ON i.id = r.image_id
+       JOIN media_images i ON i.id = r.image_id
       WHERE dt.design_id = ?2${onlyTabId === null ? '' : ' AND dt.tab_id = ?3'}
         AND ${SERVES}
       LIMIT 1`,
@@ -176,7 +179,7 @@ export async function servableImageIds(
   const rows = await env.DB.prepare(
     `SELECT i.id AS id
        FROM designs d
-       JOIN images i ON i.id IN (SELECT value FROM json_each(?2))
+       JOIN media_images i ON i.id IN (SELECT value FROM json_each(?2))
       WHERE d.id = ?1
         AND ${SERVES}`,
   )

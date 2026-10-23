@@ -1,3 +1,4 @@
+import { flushMediaRefs } from './media';
 import { runTabStatsBackfill } from './tab-stats-backfill';
 import { getClerkIdentity } from './auth/clerk';
 import { noteAuthSighting } from './auth/session-telemetry';
@@ -609,8 +610,19 @@ const worker = {
           .catch((err) => console.error('workbench sweep failed', err)),
       );
     }
+    // liveworkspace/docs/media.md "References": every minute, the designs whose images changed go to the
+    // media service; the daily run also says nothing is left, when nothing is.
+    if (event.cron === MEDIA_SYNC_CRON || event.cron === '0 3 * * *') {
+      ctx.waitUntil(
+        flushMediaRefs(env, event.cron === '0 3 * * *')
+          .then(() => undefined)
+          .catch((err) => console.error('[media] refs sync failed', err)),
+      );
+    }
   },
 } satisfies ExportedHandler<Env>;
+
+const MEDIA_SYNC_CRON = '* * * * *';
 
 export default worker;
 
