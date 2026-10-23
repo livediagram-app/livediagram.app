@@ -1,16 +1,23 @@
-import { SiteAppearanceToggle, SiteSwitcher } from '@livediagram/ui';
+import { lucideGlyph, SiteAppearanceToggle, SiteSwitcher } from '@livediagram/ui';
+import { lucideChartLine, lucideLayoutGrid, lucideSparkles } from '@livediagram/icons/lucide';
+import type { ReactNode } from 'react';
 import { AccountControl } from './AccountControl';
 import { Wordmark } from './Wordmark';
 
 // Left out on a phone, where the wordmark, the Appearance toggle and the account control fill the
 // bar; the footer lists them all.
-const NAV: { href: string; label: string }[] = [
-  { href: '/#apps', label: 'Our Apps' },
-  { href: '/telemetry', label: 'Telemetry' },
+const AppsIcon = lucideGlyph(lucideLayoutGrid, 16);
+const PromisesIcon = lucideGlyph(lucideSparkles, 16);
+const TelemetryIcon = lucideGlyph(lucideChartLine, 16);
+
+const NAV: { href: string; label: string; icon: ReactNode }[] = [
+  { href: '/#apps', label: 'Our Apps', icon: <AppsIcon /> },
+  { href: '/#what-you-get', label: 'What You Get', icon: <PromisesIcon /> },
+  { href: '/telemetry', label: 'Telemetry', icon: <TelemetryIcon /> },
 ];
 
 // The header on every page (liveworkspace/docs/site.md "The header"): the wordmark, whose hover lists
-// every site (liveworkspace/docs/site-switcher.md), three links, the
+// every site (liveworkspace/docs/site-switcher.md), three links, each with its icon, the
 // Light / Dark / System toggle the apps' sites have, and Sign in or Sign out. The sign-in
 // pages leave the account control out: they are the sign-in.
 export function Header({ account = true }: { account?: boolean }) {
@@ -27,8 +34,9 @@ export function Header({ account = true }: { account?: boolean }) {
             <a
               key={item.href}
               href={item.href}
-              className="relative touch-target-y rounded-md px-2.5 py-1.5 text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 max-sm:hidden dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+              className="relative touch-target-y inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 max-sm:hidden dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
             >
+              <span className="text-slate-400 dark:text-slate-500">{item.icon}</span>
               {item.label}
             </a>
           ))}

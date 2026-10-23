@@ -7,7 +7,7 @@ import { Header } from '@/components/Header';
 import { Apps } from '@/components/landing/Apps';
 import { HeroActions } from '@/components/landing/HeroActions';
 import { HubArt } from '@/components/landing/HubArt';
-import { Journey } from '@/components/landing/Journey';
+import { Promises } from '@/components/landing/Promises';
 import { listedApps } from '@/lib/apps';
 import './landing-motion.css';
 
@@ -88,7 +88,7 @@ export default function Home() {
         </section>
 
         <Apps />
-        <Journey />
+        <Promises />
 
         <section className="px-4 py-20 sm:px-6 sm:py-28">
           <div className="relative mx-auto max-w-7xl overflow-hidden rounded-[2rem] bg-slate-950 px-6 py-16 text-center sm:px-12 sm:py-20">

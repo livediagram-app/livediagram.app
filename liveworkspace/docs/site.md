@@ -26,7 +26,7 @@ The two APIs are Workers on more specific routes of the same origin, so the page
 ### The header
 
 Every page has the same header: the liveworkspace wordmark, with the site switcher on hover
-(the current site highlighted), links to Our Apps, How it fits and Telemetry, the Appearance toggle (Light, Dark, System, as on the
+(the current site highlighted), links to Our Apps, What You Get and Telemetry, each with its icon, the Appearance toggle (Light, Dark, System, as on the
 apps' sites; the boot script applies the choice before paint), and the account control. On a phone the wordmark, the Appearance toggle and the account control show; the footer has
 the rest.
 
@@ -64,14 +64,15 @@ moves between them, and the one account that joins them.
    shimmer, "live" pointed at the app's deep and accent colours (`components/landing/AppLogo.tsx`). The copy is
    `lib/apps.ts`; tests require it for every app and that white text on each deep accent passes
    WCAG AA.
-3. **How it fits together** (`#how-it-fits`): the path a piece of work takes, one step per app
-   (sketch the idea, plan the work, write it up, make it look right), each a link to its app's New
-   page (**Build a diagram**, **Start planning**, **Start writing**, **Start designing**), then
-   "share one link", and what every app shares: one account (the large tile, with Create your
-   account), live by default, share by link, one Explorer for everything (full width: the words beside a folder holding a
-   Canvas, a Plan, a Document and a Design, two by two), one Inbox, teams across every app, one key for scripts and AI,
-   open about data (linking `/telemetry`), yours to keep
-   (closing the account closes it everywhere), completely free (no paywalls or subscriptions).
+3. **What every app shares** (`#what-you-get`, `components/landing/Promises.tsx`): "Different apps,
+   the same promises", ten tiles that fill every row, each with a small piece of the product drawn
+   in the apps' colours (`components/landing/PromiseArt.tsx`) above its words and no icon: one
+   account (the large tile, the sign-in box beside each app signed in, with Create your account);
+   live by default (a canvas with people in it); share by link (the share box); one Explorer for
+   everything (full width: the words beside a folder holding a Canvas, a Plan, a Document and a
+   Design, two by two); one Inbox; teams across every app; one key for scripts and AI (a token in a
+   terminal); open about data (a public chart, linking `/telemetry`); yours to keep (a sign-in code
+   and one close for every app); completely free.
 4. **Closing call to action**: "One account. Every app. Always live."
 5. **Footer**: Our Apps (each app's logo, linking to its site), Platform (Product Comparison and the telemetry dashboard) and Legal (the
    privacy policy and terms).
