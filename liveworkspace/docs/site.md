@@ -142,7 +142,7 @@ Worker, and everything else here. Security headers come from `public/_headers`.
 ## Running it locally
 
 ```sh
-corepack pnpm dev:workspace           # from the repo root: http://localhost:3300
+corepack pnpm dev:workspace           # from the repo root: http://localhost:3000
 ```
 
 That runs the site's dev server on 3300 and both APIs behind it (accounts on 8787, telemetry on

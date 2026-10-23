@@ -183,7 +183,7 @@ Clerk account, secret or network.
 
 `pnpm --filter @livediagram/editor test:e2e:clerk-stub` sets `E2E_CLERK_STUB=1`, which adds the
 `clerk-stub` project and boots the stack with `E2E_EDITOR_OUT=.next/out-clerk-stub` on its own ports
-(live `:3015`, api `:8788`, marketing `:3016`), so a guest stack already up on `:3002` is never
+(live `:3115`, api `:8788`, marketing `:3116`), so a guest stack already up on `:3102` is never
 reused for it. The stack also stands in for Clerk (`E2E_CLERK_JWKS=1`): it makes a signing key at
 boot, serves its JWKS on `/e2e/jwks.json`, starts the api worker with `CLERK_JWKS_URL` pointing at
 it, and mints a session token for any test account on `/e2e/token?sub=user_…`, which the fake
@@ -198,7 +198,7 @@ The specs in `apps/editor/e2e/armed/` focus on the entry paths: a first-time gue
 Explorer first, gets a signed id before any owner-scoped call, creates a document (`201`) and sees
 the canvas, and no api response is `401`. `pnpm --filter @livediagram/editor test:e2e:armed` sets
 `E2E_GUEST_SIG_ENFORCE=1`, which adds the `armed` project and boots the stack on its own ports
-(live `:3017`, api `:8789`, marketing `:3018`). It
+(live `:3117`, api `:8789`, marketing `:3118`). It
 reuses the guest-mode export, so `e2e.yml` runs it as a second step of the Sites audit job, which
 has built it already.
 

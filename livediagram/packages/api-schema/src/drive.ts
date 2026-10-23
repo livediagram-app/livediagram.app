@@ -120,7 +120,7 @@ const PRODUCTION_HOSTS = new Set(['livediagram.app', 'www.livediagram.app']);
 const STAGING_HOSTS = new Set(['staging.livediagram.app', 'localhost', '127.0.0.1', '::1']);
 
 // A host as `location.host` gives it, lower-cased, without its port:
-// `[::1]:3000` → `::1`, `localhost:3000` → `localhost`.
+// `[::1]:3000` → `::1`, `localhost:3100` → `localhost`.
 function hostName(host: string): string {
   const lower = host.trim().toLowerCase();
   if (lower.startsWith('[')) return lower.slice(1, lower.indexOf(']'));

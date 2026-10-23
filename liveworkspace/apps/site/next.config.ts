@@ -10,7 +10,7 @@ import { livediagramNextConfig } from '@livediagram/next-config';
 // whose UI package the site's switcher and the dashboard come from.
 
 // In development the dev server stands in for those routes, so the whole site works from one
-// origin, http://localhost:3300, as it does in production. Not exported in dev, since a static
+// origin, http://localhost:3000, as it does in production. Not exported in dev, since a static
 // export can't proxy.
 const ACCOUNTS_DEV = process.env.ACCOUNTS_DEV_ORIGIN ?? 'http://localhost:8787';
 const TELEMETRY_DEV = process.env.TELEMETRY_DEV_ORIGIN ?? 'http://localhost:8790';

@@ -159,10 +159,10 @@ describe('local-dev dispatch (origin proxy)', () => {
     const fetchMock = vi.fn((_req: Request) => Promise.resolve(new Response('ok')));
     vi.stubGlobal('fetch', fetchMock);
     try {
-      await dispatch('/help/data', { HELP_ORIGIN: 'http://localhost:3004' });
+      await dispatch('/help/data', { HELP_ORIGIN: 'http://localhost:3104' });
       const req = fetchMock.mock.calls[0]![0];
       // Dev servers serve their own basePath, so no strip on this path.
-      expect(req.url).toBe('http://localhost:3004/help/data');
+      expect(req.url).toBe('http://localhost:3104/help/data');
     } finally {
       vi.unstubAllGlobals();
     }

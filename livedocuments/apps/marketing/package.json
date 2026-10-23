@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node ../../scripts/next-dev.mjs --port 3201",
+    "dev": "node ../../scripts/next-dev.mjs --port 3301",
     "build": "node ../../packages/licences/scripts/generate.ts --out . && next build && node ../../packages/licences/scripts/verify.ts .",
     "licences": "node ../../packages/licences/scripts/generate.ts --out .",
     "lint": "oxlint",

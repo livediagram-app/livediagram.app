@@ -23,7 +23,7 @@ service = "livedocuments-api"
 binding = "HELP"
 service = "livedocuments-help"
 
-# Local dev (`wrangler dev --env local --port 3200`, the workspace `dev`
+# Local dev (`wrangler dev --env local --port 3300`, the workspace `dev`
 # script): service bindings can't reach the local Next dev servers, so this
 # environment defines none and sets plain HTTP origins instead. The worker
 # falls back to proxying these when a binding is absent. See docs/specs/016-platform/router-app.md.
@@ -31,13 +31,13 @@ service = "livedocuments-help"
 # Tells the router it fronts `next dev`, whose chunks are not content-hashed, so their own
 # no-cache header passes through (docs/specs/016-platform/stale-builds.md "Caching rules").
 DEPLOY_ENV = "local"
-MARKETING_ORIGIN = "http://127.0.0.1:3201"
-LIVE_ORIGIN = "http://127.0.0.1:3202"
+MARKETING_ORIGIN = "http://127.0.0.1:3301"
+LIVE_ORIGIN = "http://127.0.0.1:3302"
 API_ORIGIN = "http://127.0.0.1:8987"
 # /telemetry redirects to the central dashboard (liveworkspace/docs/telemetry.md), run locally by
 # liveworkspace/apps/site; production's needs no var.
-TELEMETRY_DASHBOARD_URL = "http://localhost:3300/telemetry"
-HELP_ORIGIN = "http://127.0.0.1:3204"
+TELEMETRY_DASHBOARD_URL = "http://localhost:3000/telemetry"
+HELP_ORIGIN = "http://127.0.0.1:3304"
 
 # ---------------------------------------------------------------------------
 # Staging (docs/specs/016-platform/staging-environment.md). Deploys as `livedocuments-router-staging` and fronts

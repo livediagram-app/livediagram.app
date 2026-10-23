@@ -98,13 +98,13 @@ cd apps/accounts
 cp .dev.vars.example .dev.vars
 corepack pnpm db:migrate:local
 cd ../..
-corepack pnpm dev:workspace           # http://localhost:3300/sign-in
+corepack pnpm dev:workspace           # http://localhost:3000/sign-in
 ```
 
 `dev:workspace` runs the site on 3300 with the accounts Worker (8787), the telemetry Worker
 (8790) and the Community Worker (8791) behind it: the site's dev server forwards `/api/auth/*` and `/.well-known/*` to the
 accounts Worker, so the pages and the API share one origin, as on liveworkspace.app. That origin,
-`http://localhost:3300`, is the Worker's `BASE_URL` and the issuer apps check locally.
+`http://localhost:3000`, is the Worker's `BASE_URL` and the issuer apps check locally.
 
 Locally, emails aren't sent. Each code email is printed in the accounts Worker's output. Turnstile
 uses Cloudflare's always-pass test keys.

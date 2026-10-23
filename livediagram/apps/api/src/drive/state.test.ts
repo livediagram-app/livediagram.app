@@ -49,8 +49,8 @@ describe('isAllowedRedirectUri', () => {
     // consent flow sends the www origin; both hosts are registered at Google.
     expect(isAllowedRedirectUri('https://www.livediagram.app/drive/connected')).toBe(true);
     expect(isAllowedRedirectUri('https://staging.livediagram.app/drive/connected')).toBe(true);
-    expect(isAllowedRedirectUri('http://localhost:3000/drive/connected')).toBe(true);
-    expect(isAllowedRedirectUri('http://127.0.0.1:3002/drive/connected')).toBe(true);
+    expect(isAllowedRedirectUri('http://localhost:3100/drive/connected')).toBe(true);
+    expect(isAllowedRedirectUri('http://127.0.0.1:3102/drive/connected')).toBe(true);
   });
 
   it('refuses other paths, schemes, query strings and plain http', () => {

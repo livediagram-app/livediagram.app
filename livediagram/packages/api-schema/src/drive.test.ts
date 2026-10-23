@@ -68,7 +68,7 @@ describe('driveRootName (docs/specs/022-drive-mirror/drive-mirror.md, "The root 
     ['staging.livediagram.app', 'livediagram (staging)'],
     ['Staging.LIVEDIAGRAM.app', 'livediagram (staging)'],
     ['localhost', 'livediagram (staging)'],
-    ['localhost:3000', 'livediagram (staging)'],
+    ['localhost:3100', 'livediagram (staging)'],
     ['LOCALHOST:3002', 'livediagram (staging)'],
     ['127.0.0.1', 'livediagram (staging)'],
     ['127.0.0.1:3771', 'livediagram (staging)'],

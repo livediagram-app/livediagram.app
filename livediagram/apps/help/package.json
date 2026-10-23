@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node ../../scripts/next-dev.mjs --port 3004",
+    "dev": "node ../../scripts/next-dev.mjs --port 3104",
     "build": "next build",
     "lint": "oxlint",
     "typecheck": "tsc --noEmit",

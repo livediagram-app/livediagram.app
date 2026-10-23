@@ -634,7 +634,7 @@ What the operator configured (changed only by the operator):
 
 | Setting                                                  | Production                                               | Staging                                                                             |
 | -------------------------------------------------------- | -------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| JavaScript origins                                       | `https://livediagram.app`, `https://www.livediagram.app` | `https://staging.livediagram.app`, `http://localhost:3000`, `http://localhost:3002` |
+| JavaScript origins                                       | `https://livediagram.app`, `https://www.livediagram.app` | `https://staging.livediagram.app`, `http://localhost:3100`, `http://localhost:3102` |
 | Redirect URIs                                            | each origin + `/drive/connected`                         | each origin + `/drive/connected`                                                    |
 | Drive UI Open URL                                        | `https://livediagram.app/drive/open`                     | `https://staging.livediagram.app/drive/open`                                        |
 | Default MIME type                                        | `application/vnd.livediagram+json`                       | the same                                                                            |

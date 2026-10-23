@@ -58,7 +58,7 @@ describe('ingest', () => {
     const prod = testEnv({ ENVIRONMENT: 'production' });
     const dev = testEnv();
     const req = () =>
-      post({ app: 'liveplanner.app', events: [projectCreated] }, fromPage('http://localhost:3100'));
+      post({ app: 'liveplanner.app', events: [projectCreated] }, fromPage('http://localhost:3200'));
     await handleIngest(req(), prod);
     await handleIngest(req(), dev);
     expect(prod.rows).toHaveLength(0);

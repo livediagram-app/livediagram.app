@@ -107,7 +107,7 @@ corepack pnpm dev                     # the API, http://localhost:8790/api/telem
 Development accepts events from any `localhost` page. Point an app at it with
 `NEXT_PUBLIC_TELEMETRY_URL=http://localhost:8790/api/telemetry` (and `TELEMETRY_URL`, plus the dev key
 from `.dev.vars`, for its Workers). The dashboard is the site's: `corepack pnpm dev:workspace` from
-the repo root runs the site with this Worker behind it, at http://localhost:3300/telemetry.
+the repo root runs the site with this Worker behind it, at http://localhost:3000/telemetry.
 
 ## Which apps send
 

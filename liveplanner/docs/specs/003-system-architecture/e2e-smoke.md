@@ -174,7 +174,7 @@ page loads, so a chosen user (name, email) is signed in with no accounts Worker,
 
 `pnpm --filter @liveplanner/editor test:e2e:signed-in` sets `E2E_SIGNED_IN=1`, which adds the
 `signed-in` project and boots the stack with `E2E_EDITOR_OUT=.next/out-signed-in` on its own ports
-(live `:3115`, api `:8888`, marketing `:3116`), so a guest stack already up on `:3102` is never
+(live `:3215`, api `:8888`, marketing `:3216`), so a guest stack already up on `:3202` is never
 reused for it. The stack also stands in for the accounts Worker (`E2E_ACCOUNTS_STUB=1`): it makes a
 signing key at boot, serves its JWKS on the issuer's own path (`/e2e/accounts/api/auth/jwks`),
 starts the api worker with `ACCOUNTS_URL` and `API_RESOURCE` pointing at it, and mints an access
@@ -193,7 +193,7 @@ The specs in `apps/editor/e2e/armed/` focus on the entry paths: a first-time gue
 Explorer first, gets a signed id before any owner-scoped call, creates a project (`201`) and sees
 the canvas, and no api response is `401`. `pnpm --filter @liveplanner/editor test:e2e:armed` sets
 `E2E_GUEST_SIG_ENFORCE=1`, which adds the `armed` project and boots the stack on its own ports
-(live `:3017`, api `:8789`, marketing `:3018`). It
+(live `:3117`, api `:8789`, marketing `:3118`). It
 reuses the guest-mode export, so `e2e.yml` runs it as a second step of the Sites audit job, which
 has built it already.
 
