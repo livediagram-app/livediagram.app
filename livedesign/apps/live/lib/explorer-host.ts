@@ -60,7 +60,7 @@ export function useTokenTeams(signedIn: boolean | undefined): TeamRef[] {
 
 // Each Explorer view's Help article: the Help button in its page header, and Home's in the hero's corner. Search opens
 // Search and Filter Designs; Favourites, with no article of its own, the Explorer's.
-const VIEW_HELP: Record<ExplorerView['kind'], HelpArticleKey> = {
+const VIEW_HELP: Partial<Record<ExplorerView['kind'], HelpArticleKey>> = {
   home: 'explorerPage',
   all: 'myWork',
   folder: 'folders',
@@ -75,4 +75,8 @@ const VIEW_HELP: Record<ExplorerView['kind'], HelpArticleKey> = {
   search: 'explorerFilters',
 };
 
-export const explorerHelpHref: HelpHref = (view) => helpArticleHref(VIEW_HELP[view.kind]);
+// A view with no article of its own (the Library's, Invites, This Browser) shows no Help button.
+export const explorerHelpHref: HelpHref = (view) => {
+  const key = VIEW_HELP[view.kind];
+  return key ? helpArticleHref(key) : undefined;
+};

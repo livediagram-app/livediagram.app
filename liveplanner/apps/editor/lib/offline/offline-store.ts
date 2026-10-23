@@ -36,6 +36,7 @@ import {
   resetOfflineIds,
 } from './offline-ids';
 import { offlineProjectStats } from './offline-stats';
+import { noteThisBrowser } from './this-browser';
 
 // Sentinel owner id stamped on offline projects. They have no server owner;
 // this keeps the wire shape valid and is never sent anywhere.
@@ -263,7 +264,11 @@ export function serializeOfflineWrite<T>(op: () => Promise<T>): Promise<T> {
 // Read-modify-write one record in a single transaction (see OfflineRecordChange). Callers run it
 // inside serializeOfflineWrite.
 export function offlineUpdateRecord(id: string, change: OfflineRecordChange): Promise<void> {
-  return offlineBackend().update(id, change);
+  // What the change left, for This Browser's list (this-browser.ts).
+  let after: ReturnType<OfflineRecordChange>;
+  return offlineBackend()
+    .update(id, (rec) => (after = change(rec)))
+    .then(() => noteThisBrowser(id, after));
 }
 
 // The editor's writes to a live record: `change` runs on it when it is writable. A missing record
@@ -342,6 +347,7 @@ export async function offlineCreateProject(
   };
   await offlineBackend().put(rec);
   rememberOfflineId(rec.id);
+  noteThisBrowser(rec.id, rec);
   return recordToProject(rec);
 }
 
@@ -409,6 +415,7 @@ export async function offlineDeleteProject(id: string): Promise<void> {
   await serializeOfflineWrite(async () => {
     await offlineBackend().delete(id);
     forgetOfflineId(id);
+    noteThisBrowser(id, 'delete');
   });
 }
 
@@ -445,4 +452,5 @@ export async function offlineGetRecord(id: string): Promise<OfflineProjectRecord
 export async function offlinePutRecord(rec: OfflineProjectRecord): Promise<void> {
   await offlineBackend().put(rec);
   rememberOfflineId(rec.id);
+  noteThisBrowser(rec.id, rec);
 }

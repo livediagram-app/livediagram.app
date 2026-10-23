@@ -82,6 +82,8 @@ describe('the list an app keeps', () => {
     const stop = subscribeThisBrowser('liveplanner', heard);
     putThisBrowserItem('liveplanner', local(1));
     putThisBrowserItem('liveplanner', local(1, { title: 'Renamed' }));
+    // The same again (an autosave that changed nothing listed) writes nothing.
+    putThisBrowserItem('liveplanner', local(1, { title: 'Renamed' }));
     expect(readThisBrowser('liveplanner')).toEqual([local(1, { title: 'Renamed' })]);
     dropThisBrowserItem('liveplanner', 'local-1');
     expect(localStorage.getItem(thisBrowserKey('liveplanner'))).toBeNull();

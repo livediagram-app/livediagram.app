@@ -102,14 +102,25 @@ export function writeThisBrowser(
   }
 }
 
+const sameItem = (a: ThisBrowserItem, b: ThisBrowserItem) =>
+  a.title === b.title &&
+  a.createdAt === b.createdAt &&
+  a.updatedAt === b.updatedAt &&
+  a.lastOpenedAt === b.lastOpenedAt &&
+  a.trashedAt === b.trashedAt &&
+  a.favourite === b.favourite;
+
 /** One item changed (written, renamed, trashed, restored, opened). */
 export function putThisBrowserItem(
   app: App,
   item: ThisBrowserItem,
   store: Storage | null = storage(),
 ): void {
-  const rest = readThisBrowser(app, store).filter((i) => i.id !== item.id);
-  writeThisBrowser(app, [item, ...rest], store);
+  const items = readThisBrowser(app, store);
+  const kept = items.find((i) => i.id === item.id);
+  // An autosave that changed nothing listed here writes nothing (and wakes no Explorer).
+  if (kept && sameItem(kept, item)) return;
+  writeThisBrowser(app, [item, ...items.filter((i) => i.id !== item.id)], store);
 }
 
 /** One item gone from this browser (deleted, or moved to the account). */
