@@ -220,10 +220,10 @@ the list scrolls near.
 | Folders               | Once, paging if needed. The sidebar, breadcrumbs, folder rows and Move all read this copy.                                                                                                 |
 | Default folders       | Once per page (`GET /placement-defaults`), shared by the markers, Use as Default for… and the delete warning. A dev server shows two: React StrictMode runs effects twice; a production build asks once. |
 | Inbox                 | Once per filter, and again on returning to the browser tab (at most every 30 s). The sidebar's counts (Inbox, and the Timeline's new events) and the Inbox view share it.                  |
-| Home                  | Three small requests: Recent (8, carrying Most Used via `used`), Shared (4) and one Timeline page (30) for What Happened.                                                                  |
+| Home                  | Three requests: one items read (Recent's 8, carrying Most Used via `used`, the hero's My Work count via `mine` and the first-run question via `any`), Shared With You Recently (the sidebar's Shared With Me page, read once for both) and one Timeline page (30) for What Happened (`data/homeReads.ts`; `homeReads.test.tsx` counts them). |
 | Folder cards and rows | One `GET /folders/previews` per batch of up to 60 cards (or list rows on screen) not yet answered, for their mosaics and counts ("1 folder · 5 plans"); again after an item changes place. |
 | Timeline              | One `GET /timeline` page of 30 on arrival and per filter, then one per Show More (5 at most for an `#event=` link). One `POST /timeline/seen` a visit. Removing: 100 ids a call.           |
-| Home's hero           | One count request while it shows (My Work, one page of up to 200; "200+" past that). The Inbox pill reuses the sidebar's Inbox. None when the hero is hidden.                              |
+| Home's hero           | My Work's count while it shows, counted by the index up to 200 ("200+" past that) beside Home's items read, so no request of its own. The Inbox pill reuses the sidebar's Inbox. None when the hero is hidden. |
 
 Nothing is fetched per row, or per folder.
 
@@ -253,7 +253,8 @@ the history entry, and a newer list read cancels the older one.
 `corepack pnpm --filter @liveworkspace/explorer test` (vitest with jsdom).
 
 - The hooks' optimistic paths are tested against an in-memory fake index (`src/test/fakeClient.ts`).
-- `HomeHero.test.tsx` covers the hero: greeting, pills, New, art, Help and close, and its one count request.
+- `HomeHero.test.tsx` covers the hero: greeting, pills, New, art, Help and close, and its count asked beside Home's items read.
+- `data/homeReads.test.tsx` counts Home's requests (one items read, one Shared page) and holds the folding: one request a tick, cancelled only when every asker lets go, and the old reads from an index that answers no fold.
 - `what-happened.test.tsx` covers What Happened: others' doings only from one page, groups and summaries, New,
   no seen mark, the section left out when empty or failed, All with app marks, and See Timeline. Its rules, and
   10,000 events grouped under a budget, are in `timeline/whatHappened.test.ts`.

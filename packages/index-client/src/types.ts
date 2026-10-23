@@ -296,7 +296,14 @@ export type ItemListQuery = ItemFilters & {
   cursor?: string;
   // Recent's first page only: also up to this many (MOST_USED_MAX) Most Used items, as `mostUsed`.
   used?: number;
+  // A first page only, Home's other reads in the same request: My Work's live items (yours, in `app`) counted up to
+  // this many (LIST_LIMIT_MAX), as `mine`; and whether you can open anything at all in `app`, as `any`.
+  mine?: number;
+  any?: boolean;
 };
+
+/** My Work's count beside a first page (`mine`): up to the cap asked, and whether there are more. */
+export type MineCount = { count: number; more: boolean };
 
 export type SharedListQuery = ItemFilters & { app?: App; limit?: number; cursor?: string };
 

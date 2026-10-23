@@ -33,10 +33,12 @@ function renderHome(
   return { ...utils, onNavigate, onCreate };
 }
 
+// My Work's count is asked as `mine` beside Jump Back In's read (data/homeReads.ts), or alone as a page of My Work.
 const countCalls = (index: ReturnType<typeof createFakeIndex>) =>
-  index.calls.filter(
-    (c) => c.method === 'listItems' && (c.args[0] as { view?: string }).view === 'all',
-  );
+  index.calls.filter((c) => {
+    const q = c.args[0] as { view?: string; mine?: number };
+    return c.method === 'listItems' && (q.mine !== undefined || q.view === 'all');
+  });
 
 describe('heroGreeting', () => {
   it('says good morning from 5 to 11, good afternoon from 12 to 17, good evening otherwise', () => {
@@ -128,14 +130,15 @@ describe('Home’s hero', () => {
     expect(onNavigate).toHaveBeenLastCalledWith({ kind: 'all' }, '/explorer/all');
     fireEvent.click(screen.getByRole('link', { name: '1 open in your Inbox' }));
     expect(onNavigate).toHaveBeenLastCalledWith({ kind: 'inbox' }, '/explorer/inbox');
-    // One count request, at most a page, for My Work in this app.
+    // No request of its own: My Work's count, up to a page, rides on Jump Back In's read, in this app.
     expect(countCalls(index)).toHaveLength(1);
-    expect(countCalls(index)[0]!.args[0]).toEqual({
-      view: 'all',
-      team: 'personal',
-      limit: LIST_LIMIT_MAX,
+    expect(countCalls(index)[0]!.args[0]).toMatchObject({
+      view: 'recent',
+      used: 4,
+      mine: LIST_LIMIT_MAX,
       app: 'liveplanner',
     });
+    expect(index.count('listItems')).toBe(1);
   });
 
   it('draws no pill while its count is unknown, and none for a count that failed', async () => {

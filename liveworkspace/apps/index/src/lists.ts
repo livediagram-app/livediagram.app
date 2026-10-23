@@ -10,6 +10,7 @@ import {
   type ItemOwner,
   type ItemSource,
   type ItemView,
+  type MineCount,
 } from '@liveworkspace/index-client';
 import { personalScope, scopesOf, teamScope, type Person } from './auth';
 import { containsPattern, encodeCursor, type Cursor } from './codec';
@@ -46,6 +47,11 @@ export type ListSpec = ListFilters & {
   cursor?: Cursor;
   // Recent's first page only: also this many Most Used items, from the same request (Home's Jump Back In).
   used?: number;
+  // A first page only: also how many live items are the person's own (My Work, in the app asked), counted up to
+  // this many (Home's hero pill), and whether they can open anything at all there (Home's first run). Home's
+  // three reads in one request.
+  mine?: number;
+  any?: boolean;
 };
 
 export type BuiltQuery = { sql: string; args: unknown[] };
@@ -271,22 +277,32 @@ export function buildListQuery(person: Person, spec: ListSpec, now = Date.now())
   return { sql, args: [...fromArgs, ...args] };
 }
 
-export async function listItems(
-  env: Env,
-  person: Person,
-  spec: ListSpec,
-): Promise<{ items: Item[]; nextCursor: string | null; mostUsed?: Item[] }> {
+export async function listItems(env: Env, person: Person, spec: ListSpec): Promise<ListAnswer> {
   const now = Date.now();
   const { sql, args } = buildListQuery(person, spec, now);
   const db = env.INDEX_DB;
-  const withUsed = spec.view === 'recent' && !spec.cursor && (spec.used ?? 0) > 0;
-  // Recent and Most Used in one round trip, decorated together.
+  const first = !spec.cursor;
+  const withUsed = spec.view === 'recent' && first && (spec.used ?? 0) > 0;
+  const withMine = first && (spec.mine ?? 0) > 0;
+  const withAny = first && spec.any === true;
+  // The page, and what Home asks beside it, in one round trip; the items decorated together.
   const statements = [db.prepare(sql).bind(...args)];
   if (withUsed) {
     const used = buildMostUsedQuery(person, { ...spec, limit: spec.used! }, now);
     statements.push(db.prepare(used.sql).bind(...used.args));
   }
-  const [listed, usedRows] = (await db.batch(statements)) as [
+  const mineAt = statements.length;
+  if (withMine) {
+    const mine = buildMineCountQuery(person, spec.app, spec.mine!, now);
+    statements.push(db.prepare(mine.sql).bind(...mine.args));
+  }
+  const anyAt = statements.length;
+  if (withAny) {
+    const any = buildAnyQuery(person, spec.app, now);
+    statements.push(db.prepare(any.sql).bind(...any.args));
+  }
+  const answers = await db.batch(statements);
+  const [listed, usedRows] = [answers[0], withUsed ? answers[1] : undefined] as [
     D1Result<ItemRow & { sort_at: number }>,
     D1Result<ItemRow & { use_days: number }> | undefined,
   ];
@@ -300,7 +316,7 @@ export async function listItems(
   const decorated = await decorate(env, person, all);
   const byId = new Map(decorated.map((item) => [item.id, item]));
   const items = page.flatMap((r) => byId.get(r.id) ?? []);
-  const out: { items: Item[]; nextCursor: string | null; mostUsed?: Item[] } = {
+  const out: ListAnswer = {
     items,
     nextCursor: more && last ? encodeCursor({ at: last.sort_at, id: last.id }) : null,
   };
@@ -310,5 +326,42 @@ export async function listItems(
       return item ? [{ ...item, useDays: r.use_days }] : [];
     });
   }
+  if (withMine) {
+    const n = (answers[mineAt] as D1Result<{ n: number }>).results[0]?.n ?? 0;
+    out.mine = { count: Math.min(n, spec.mine!), more: n > spec.mine! };
+  }
+  if (withAny) out.any = Boolean((answers[anyAt] as D1Result<{ found: number }>).results[0]?.found);
   return out;
+}
+
+export type ListAnswer = {
+  items: Item[];
+  nextCursor: string | null;
+  mostUsed?: Item[];
+  mine?: MineCount;
+  any?: boolean;
+};
+
+/**
+ * My Work's count: the person's own live items (their personal scope, in the app asked), the same rows My Work's
+ * first page of `limit` would list, counted in SQL rather than sent. One more than the cap says there are more.
+ */
+export function buildMineCountQuery(
+  person: Person,
+  app: App | undefined,
+  limit: number,
+  now = Date.now(),
+): BuiltQuery {
+  const page = buildListQuery(
+    person,
+    { view: 'all', scopes: [personalScope(person.id)], limit, ...(app ? { app } : {}) },
+    now,
+  );
+  return { sql: `SELECT COUNT(*) AS n FROM (${page.sql})`, args: page.args };
+}
+
+/** Whether the person can open anything at all (Search's reach, in the app asked): Home's first-run question. */
+export function buildAnyQuery(person: Person, app: App | undefined, now = Date.now()): BuiltQuery {
+  const page = buildListQuery(person, { view: 'search', limit: 1, ...(app ? { app } : {}) }, now);
+  return { sql: `SELECT EXISTS (${page.sql}) AS found`, args: page.args };
 }

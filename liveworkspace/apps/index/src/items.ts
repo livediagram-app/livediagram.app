@@ -9,6 +9,7 @@ import {
   ITEM_OWNERS,
   ITEM_SOURCES,
   ITEM_VIEWS,
+  LIST_LIMIT_MAX,
   isApp,
   MOST_USED_MAX,
   OPEN_DEBOUNCE_MS,
@@ -162,6 +163,18 @@ export async function parseListSpec(
     if (view !== 'recent' || !Number.isInteger(n) || n < 1 || n > MOST_USED_MAX)
       return badRequest('invalid_query');
     spec.used = n;
+  }
+  // Home's other reads, answered beside the first page (lists.ts `mine`, `any`).
+  const mine = params.get('mine');
+  if (mine !== null) {
+    const n = Number(mine);
+    if (!Number.isInteger(n) || n < 1 || n > LIST_LIMIT_MAX) return badRequest('invalid_query');
+    spec.mine = n;
+  }
+  const any = params.get('any');
+  if (any !== null) {
+    if (any !== '1') return badRequest('invalid_query');
+    spec.any = true;
   }
   return spec;
 }

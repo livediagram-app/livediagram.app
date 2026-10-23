@@ -29,6 +29,7 @@ import type {
   InboxResponse,
   Item,
   ItemListQuery,
+  MineCount,
   SharedListQuery,
   ItemSummary,
   Page,
@@ -78,7 +79,7 @@ function listQuery(query: ItemListQuery | SharedListQuery): Query {
   const out: Query = {};
   for (const [key, value] of Object.entries(query)) {
     if (Array.isArray(value)) out[key] = value.length > 0 ? value.join(',') : undefined;
-    else if (key === 'deep') out[key] = value ? 1 : undefined;
+    else if (key === 'deep' || key === 'any') out[key] = value ? 1 : undefined;
     else out[key] = value as Query[string];
   }
   return out;
@@ -146,7 +147,7 @@ export function createIndexClient({
   return {
     // Items
     listItems: (query: ItemListQuery = {}, options: RequestOptions = {}) =>
-      call<Page<Item, 'items'> & { mostUsed?: Item[] }>('/items', {
+      call<Page<Item, 'items'> & { mostUsed?: Item[]; mine?: MineCount; any?: boolean }>('/items', {
         query: listQuery(query),
         signal: options.signal,
       }),

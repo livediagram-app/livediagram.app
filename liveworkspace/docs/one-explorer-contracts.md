@@ -111,7 +111,10 @@ type ItemSummary = {
 |                                |                     | `tag`, and the lens's (below). Sorted by `updatedAt`, or by                  |
 |                                |                     | `lastOpenedAt` for `recent`. `used=N` (1 to 8, `recent` only, first          |
 |                                |                     | page) adds `mostUsed`: up to N items ranked by the days used in the last     |
-|                                |                     | 90, each with `useDays`, in the same response (Jump Back In).                |
+|                                |                     | 90, each with `useDays`, in the same response (Jump Back In). On any first   |
+|                                |                     | page, `mine=N` (1 to 200) adds `mine: {count, more}`, the person's own live  |
+|                                |                     | items in `app` counted up to N (Home's pill), and `any=1` adds `any`, whether |
+|                                |                     | they can open anything in `app` (Home's first run): Home's reads in one.     |
 | `POST /items`                  | person              | `{app, id?, title?, folderId?, teamId?, intent?, source?}` → 201             |
 |                                |                     | `{item, grant}`. The index makes the id unless the client names the one it   |
 |                                |                     | minted (409 `item_exists` when taken); the item's Durable Object             |

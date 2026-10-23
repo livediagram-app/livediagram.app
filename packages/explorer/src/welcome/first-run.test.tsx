@@ -84,18 +84,20 @@ describe('Home’s first run', () => {
     expect(onFirstRun).toHaveBeenCalled();
     fireEvent.click(start);
     expect(onSelected).toHaveBeenCalledWith('Welcome.Blank');
-    // One small question for the answer: a single item, in this app.
+    // One small question for the answer, in this app, asked beside Jump Back In's read (data/homeReads.ts).
     const probe = index.calls.find(
-      (c) => c.method === 'listItems' && (c.args[0] as { view?: string }).view === 'search',
+      (c) => c.method === 'listItems' && (c.args[0] as { any?: boolean }).any === true,
     );
-    expect(probe?.args[0]).toMatchObject({ view: 'search', limit: 1, app: 'liveplanner' });
+    expect(probe?.args[0]).toMatchObject({ view: 'recent', any: true, app: 'liveplanner' });
+    expect(index.count('listItems')).toBe(1);
   });
 
   it('shows the ordinary Home to someone with anything to open', async () => {
     const index = createFakeIndex({ items: [makeItem(1)] });
     renderHome(index);
     expect(await screen.findByRole('heading', { name: 'Jump Back In' })).toBeTruthy();
-    await waitFor(() => expect(index.count('listItems')).toBeGreaterThan(1));
+    // Jump Back In, the hero's count and the first-run question: one request.
+    await waitFor(() => expect(index.count('listItems')).toBe(1));
     expect(screen.queryByRole('heading', { name: 'Start Blank' })).toBeNull();
     expect(screen.getByRole('heading', { level: 1 }).textContent).not.toMatch(/Welcome/);
   });
@@ -106,7 +108,10 @@ describe('Home’s first run', () => {
     expect(await screen.findByRole('heading', { name: 'Jump Back In' })).toBeTruthy();
     expect(
       index.calls.some(
-        (c) => c.method === 'listItems' && (c.args[0] as { view?: string }).view === 'search',
+        (c) =>
+          c.method === 'listItems' &&
+          ((c.args[0] as { view?: string }).view === 'search' ||
+            (c.args[0] as { any?: boolean }).any !== undefined),
       ),
     ).toBe(false);
   });

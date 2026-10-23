@@ -10,6 +10,7 @@
 
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { isAbort } from '../data/errors';
+import { readAnyItem } from '../data/homeReads';
 import { useExplorer } from '../explorer/context';
 import type { WelcomeOptions } from './types';
 
@@ -69,13 +70,10 @@ export function WelcomeProvider({
   useEffect(() => {
     if (!enabled) return;
     const controller = new AbortController();
-    client
-      .listItems(
-        { view: 'search', limit: 1, ...(filter === 'app' ? { app } : {}) },
-        { signal: controller.signal },
-      )
-      .then((page) => {
-        const empty = page.items.length === 0;
+    // Answered by the index beside Jump Back In's read when Home asks both at once (homeReads.ts).
+    readAnyItem(client, app, filter, controller.signal)
+      .then((found) => {
+        const empty = !found;
         remember(viewerId, scope, !empty);
         setAnswer({ key, empty });
       })

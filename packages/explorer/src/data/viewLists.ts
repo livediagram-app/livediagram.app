@@ -14,6 +14,7 @@ import {
   type LensView,
 } from '../lens';
 import { relativeSince } from '../time';
+import { readRecentForHome, readSharedFirstPage } from './homeReads';
 import { LIST_PAGE, type ListLoader } from './useItemList';
 
 export type SharedMeta = { level: Level; tabId: string | null; lastSeenAt: number };
@@ -260,11 +261,15 @@ export function jumpBackInLoader(
   extra = 0,
 ): ListLoader {
   return async (_cursor, signal) => {
-    const res = await client.listItems(
-      { view: 'recent', limit: 2 * n + extra, used: n, ...(filter === 'app' ? { app } : {}) },
-      { signal },
+    // Folded with Home's other reads asked with it (homeReads.ts).
+    const res = await readRecentForHome(
+      client,
+      app,
+      filter,
+      { limit: 2 * n + extra, used: n },
+      signal,
     );
-    return { items: jumpBackInSet(res.mostUsed ?? [], res.items, n, extra), nextCursor: null };
+    return { items: jumpBackInSet(res.mostUsed, res.items, n, extra), nextCursor: null };
   };
 }
 
@@ -276,10 +281,8 @@ export function sharedRecentlyLoader(
   limit: number,
 ): ListLoader {
   return async (_cursor, signal) => {
-    const res = await client.listShared(
-      { limit, ...(filter === 'app' ? { app } : {}) },
-      { signal },
-    );
+    // One page with the sidebar's Shared With Me count when both ask at once (homeReads.ts).
+    const res = await readSharedFirstPage(client, app, filter, limit, signal);
     return {
       items: res.shared.map((s) => (s.item.sharedVia ? s.item : { ...s.item, sharedVia: s.code })),
       nextCursor: null,

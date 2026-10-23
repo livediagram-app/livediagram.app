@@ -183,7 +183,7 @@ export function createFakeIndex(
     if (q.view === 'recent') {
       out = out.filter((i) => i.lastOpenedAt !== null && !i.hiddenFromRecent);
     }
-    if (q.team === 'personal') out = out.filter((i) => i.teamId === null);
+    if (q.team === 'personal') out = out.filter((i) => i.teamId === null && !i.sharedVia);
     else if (q.team) out = out.filter((i) => i.teamId === q.team);
     if (q.folder) {
       const reach = q.deep ? subtree(q.folder) : new Set([q.folder]);
@@ -204,10 +204,23 @@ export function createFakeIndex(
         const { slice, next } = page(select(query), query.limit, query.cursor);
         // A seeded item's `useDays` is the index's use_days for it: only Most Used carries it.
         const bare = ({ useDays: _days, ...i }: Item) => i;
-        const result: { items: Item[]; nextCursor: string | null; mostUsed?: Item[] } = {
+        const result: {
+          items: Item[];
+          nextCursor: string | null;
+          mostUsed?: Item[];
+          mine?: { count: number; more: boolean };
+          any?: boolean;
+        } = {
           items: slice.map(bare),
           nextCursor: next,
         };
+        // Home's reads beside a first page: My Work's count (yours, in no team) and whether anything opens.
+        if (query.mine && !query.cursor) {
+          const own = select({ view: 'all', team: 'personal', app: query.app }).length;
+          result.mine = { count: Math.min(own, query.mine), more: own > query.mine };
+        }
+        if (query.any && !query.cursor)
+          result.any = select({ view: 'search', app: query.app }).length > 0;
         if (query.used && query.view === 'recent' && !query.cursor) {
           result.mostUsed = select(query)
             .filter((i) => (i.useDays ?? 0) > 0)

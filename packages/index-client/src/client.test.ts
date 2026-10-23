@@ -53,6 +53,17 @@ describe('createIndexClient', () => {
     expect(seen[0]!.headers.get('Authorization')).toBe('Bearer tok');
   });
 
+  it("asks Home's folded reads beside Recent's page: `mine` as a cap, `any` as 1", async () => {
+    const { seen, doFetch } = fakeFetch(() => Response.json({ items: [], nextCursor: null }));
+    const client = createIndexClient({ getToken: () => 'tok', fetch: doFetch });
+    await client.listItems({ view: 'recent', limit: 8, used: 4, mine: 200, any: true });
+    await client.listItems({ view: 'recent', any: false });
+    expect(seen.map((s) => s.url)).toEqual([
+      '/api/index/items?view=recent&limit=8&used=4&mine=200&any=1',
+      '/api/index/items?view=recent',
+    ]);
+  });
+
   it('builds each path, method and body', async () => {
     const { seen, doFetch } = fakeFetch((s) =>
       s.method === 'DELETE' || s.url.includes('/open')
