@@ -1,5 +1,9 @@
 # Share roles: blueprint
 
+> **Partly superseded (October 2026).** Share links, their levels and who may reach a design are the index's now
+> ([One Explorer: contracts](../../../../../liveworkspace/docs/one-explorer-contracts.md#sharing-and-access)), and the Share dialog is the
+> shared one from `@liveworkspace/explorer`. Files marked (removed) below went with livedesign's own copies.
+
 Derived from [Share roles](../share-roles.md), with the room of
 [Realtime conflict resolution](../../012-collaboration/realtime-conflict-resolution.md) and
 [Collab race hardening](../../012-collaboration/collab-race-hardening.md), the room's queued tab write,
@@ -13,28 +17,28 @@ socket) are not derived here.
 
 ## Scope, by file
 
-| File                                                                                                         | Role                                                                                        |
-| ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------- |
-| `packages/api-schema/src/access-levels.ts` (new)                                                             | `ACCESS_LEVELS`, `AccessLevel`, the ladder, `parseStoredLevel`, `LEVEL_TELEMETRY_TYPE`      |
-| `packages/api-schema/src/index.ts`                                                                           | `ShareRole` becomes an alias of `AccessLevel`                                               |
-| `packages/api-schema/src/room-messages.ts`                                                                   | `PARTICIPATION_OP_KINDS`, `PARTICIPATION_DELTA_KINDS`, `isParticipationOp`                  |
+| File                                                                                                       | Role                                                                                        |
+| ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `packages/api-schema/src/access-levels.ts` (new)                                                           | `ACCESS_LEVELS`, `AccessLevel`, the ladder, `parseStoredLevel`, `LEVEL_TELEMETRY_TYPE`      |
+| `packages/api-schema/src/index.ts`                                                                         | `ShareRole` becomes an alias of `AccessLevel`                                               |
+| `packages/api-schema/src/room-messages.ts`                                                                 | `PARTICIPATION_OP_KINDS`, `PARTICIPATION_DELTA_KINDS`, `isParticipationOp`                  |
 | `packages/design/src/participant-content.ts` (new)                                                         | The participant content rule: `applyParticipantOp`, `PARTICIPANT_ADDABLE_TYPES`, field sets |
 | `packages/design/src/element-types.ts`, `validate.ts`                                                      | `addedBy?: string` on `StickyElement` and `TextElement`; validated                          |
-| `apps/api/migrations/0001_livedesign_baseline.sql` (new)                                                     | A `level` column on `share_links` and `shared_with`; `ws_tickets.adder_key`                 |
-| `apps/api/src/share-link-row.ts`, `db/ws-tickets.ts`, `db/shared.ts`                                         | Readers through `parseStoredLevel`; the ticket's `adderKey`                                 |
-| `apps/api/src/auth/design-access.ts`                                                                       | Gates compare levels; `canParticipateDesign`                                              |
-| `apps/api/src/routes/context.ts`                                                                             | `gateParticipate` is the Participant check                                                  |
-| `apps/api/src/routes/design-share-routes.ts`                                                               | `POST /share` takes three levels                                                            |
-| `apps/api/src/adder-key.ts` (new)                                                                            | `adderKeyFor(designId, ownerId)`                                                          |
+| apps/api/migrations/0001_livedesign_baseline.sql (removed)                                                 | A `level` column on `share_links` and `shared_with`; `ws_tickets.adder_key`                 |
+| apps/api/src/share-link-row.ts (removed), db/ws-tickets.ts (removed), db/shared.ts (removed)               | Readers through `parseStoredLevel`; the ticket's `adderKey`                                 |
+| apps/api/src/auth/design-access.ts (removed)                                                               | Gates compare levels; `canParticipateDesign`                                                |
+| `apps/api/src/routes/context.ts`                                                                           | `gateParticipate` is the Participant check                                                  |
+| apps/api/src/routes/design-share-routes.ts (removed)                                                       | `POST /share` takes three levels                                                            |
+| `apps/api/src/adder-key.ts` (new)                                                                          | `adderKeyFor(designId, ownerId)`                                                            |
 | `apps/api/src/routes/design-room-routes.ts`                                                                | The ticket carries `adderKey` for a Participant; the upgrade forwards `X-Verified-Adder`    |
-| `apps/api/src/design-room.ts`, `room-op-gate.ts`, `design-room-rules.ts`                                 | Level on the session; op gate by class; participant `el` ops through the tab write queue    |
-| `apps/api/src/participant-write.ts` (new)                                                                    | `writeParticipantOps`: compare-and-swap writes of the rule's output                         |
-| `packages/agent-verbs/src/mcp/*`                                                                             | `share_design.role` takes three levels, default `participate`                             |
-| `apps/live/lib/editor-capabilities.ts` (new)                                                                 | `resolveEditorCapabilities`, `EditorCapabilities`                                           |
+| `apps/api/src/design-room/design-room.ts`, `room-op-gate.ts`, `design-room-rules.ts`                       | Level on the session; op gate by class; participant `el` ops through the tab write queue    |
+| `apps/api/src/participant-write.ts` (new)                                                                  | `writeParticipantOps`: compare-and-swap writes of the rule's output                         |
+| `packages/agent-verbs/src/mcp/*`                                                                           | `share_design.role` takes three levels, default `participate`                               |
+| `apps/live/lib/editor-capabilities.ts` (new)                                                               | `resolveEditorCapabilities`, `EditorCapabilities`                                           |
 | `apps/live/app/design/[id]/*` (`useViewPreview`, `useEditorState`, `tab-save-flow`, `editor-page-helpers`) | `sessionRole: AccessLevel`; `can`; the participant save flow                                |
-| `apps/live/components/dialogs/ShareComposer.tsx`, `share-dialog-parts.tsx`                                   | Three cards                                                                                 |
+| apps/live/components/dialogs/ShareComposer.tsx (removed), `share-dialog-parts.tsx`                         | Three cards                                                                                 |
 | `apps/live/components/chrome/RoleIndicator.tsx`, `app/design/[id]/useRoleIndicator.ts`                     | Participating pill                                                                          |
-| `apps/live/lib/collaborator-roster.ts`, `app/explorer/views.tsx`                                             | Participant badge; Participate chip                                                         |
+| `apps/live/lib/collaborator-roster.ts`, app/explorer/views.tsx (removed)                                   | Participant badge; Participate chip                                                         |
 
 ## Domain and naming
 
@@ -58,15 +62,15 @@ when it is one of the three, else `view`.
 
 Doors by level (server):
 
-| Door                                                                                       | Needs                             |
-| ------------------------------------------------------------------------------------------ | --------------------------------- |
-| Reads (design, tabs, images, comment threads, the Timeline); share resolve; make a copy  | view                              |
-| Room: presence (cursor, select, laser, follow, focus); never `reaction`                    | view                              |
-| Comments: add, reply, resolve, reopen, delete own                                          | participate (`deniedParticipate`) |
-| Room: `reaction`                                                                           | participate                       |
-| Room: `el` (`add`, `update`, `remove`) through the participant rule                        | participate                       |
-| Tab PUT, tab DELETE, design PUT; room `tab`, `tab-meta`, `design-meta`, `el` `reorder` | edit                              |
-| Room: `el-delta` `check`, `comment-*`; `drag-preview`                                      | edit                              |
+| Door                                                                                    | Needs                             |
+| --------------------------------------------------------------------------------------- | --------------------------------- |
+| Reads (design, tabs, images, comment threads, the Timeline); share resolve; make a copy | view                              |
+| Room: presence (cursor, select, laser, follow, focus); never `reaction`                 | view                              |
+| Comments: add, reply, resolve, reopen, delete own                                       | participate (`deniedParticipate`) |
+| Room: `reaction`                                                                        | participate                       |
+| Room: `el` (`add`, `update`, `remove`) through the participant rule                     | participate                       |
+| Tab PUT, tab DELETE, design PUT; room `tab`, `tab-meta`, `design-meta`, `el` `reorder`  | edit                              |
+| Room: `el-delta` `check`, `comment-*`; `drag-preview`                                   | edit                              |
 
 An Editor's `el` op is relayed as today. A Participant's `el` op takes the participant path:
 
@@ -354,31 +358,31 @@ The Share dialog is a lazy chunk; a third card adds no request. A Participant's 
 
 ## Observability
 
-| Fingerprint                                                 | Where                    |
-| ----------------------------------------------------------- | ------------------------ |
-| `[access-levels] invalid role <value>`                      | api, share create (warn) |
+| Fingerprint                                               | Where                    |
+| --------------------------------------------------------- | ------------------------ |
+| `[access-levels] invalid role <value>`                    | api, share create (warn) |
 | `[participant-write] refused <designId> <tabId> <reason>` | room (info)              |
 | `[participant-write] failed <designId> <tabId> <status>`  | room (error)             |
-| `[participant] change held back <tabId>`                    | editor (debugLog)        |
+| `[participant] change held back <tabId>`                  | editor (debugLog)        |
 
 ## Testing
 
-| Rule                                                            | Test                                                                 |
-| --------------------------------------------------------------- | -------------------------------------------------------------------- |
-| Ladder, `parseStoredLevel`, telemetry types                     | `packages/api-schema/src/access-levels.test.ts`                      |
-| Op classes                                                      | `packages/api-schema/src/room-messages.test.ts`                      |
-| Every row of the participant rule, every refusal and correction | `packages/design/src/participant-content.test.ts`                  |
-| `addedBy` validation                                            | `packages/design/src/validate.test.ts`                             |
-| `mergeLedgerAnswersIntoTab`                                     | `packages/design/src/collab-ledger.test.ts`                        |
-| Gates compare levels                                            | `apps/api/src/auth/design-access.test.ts`                          |
-| Share create validates three levels                             | `apps/api/src/routes/design-share-routes.test.ts`                  |
-| Write: applied, unchanged, refused, CAS retry, 404, 409, 413    | `apps/api/src/participant-write.test.ts`                             |
+| Rule                                                            | Test                                                             |
+| --------------------------------------------------------------- | ---------------------------------------------------------------- |
+| Ladder, `parseStoredLevel`, telemetry types                     | `packages/api-schema/src/access-levels.test.ts`                  |
+| Op classes                                                      | `packages/api-schema/src/room-messages.test.ts`                  |
+| Every row of the participant rule, every refusal and correction | `packages/design/src/participant-content.test.ts`                |
+| `addedBy` validation                                            | `packages/design/src/validate.test.ts`                           |
+| `mergeLedgerAnswersIntoTab`                                     | `packages/design/src/collab-ledger.test.ts`                      |
+| Gates compare levels                                            | apps/api/src/auth/design-access.test.ts (removed)                |
+| Share create validates three levels                             | apps/api/src/routes/design-share-routes.test.ts (removed)        |
+| Write: applied, unchanged, refused, CAS retry, 404, 409, 413    | `apps/api/src/participant-write.test.ts`                         |
 | Room: op gate per level; participant path; adder header         | `apps/api/src/design-room.test.ts`, `design-room-routes.test.ts` |
-| Capabilities per level                                          | `apps/live/lib/editor-capabilities.test.ts`                          |
-| Participant save branch                                         | `apps/live/app/design/[id]/tab-save-flow.test.ts`                  |
-| Three cards and keys                                            | `apps/live/components/dialogs/ShareDialog.test.tsx`                  |
-| Pill per level                                                  | `apps/live/components/chrome/RoleIndicator.test.tsx`                 |
-| MCP default and enum                                            | `packages/agent-verbs` MCP schema tests                              |
+| Capabilities per level                                          | `apps/live/lib/editor-capabilities.test.ts`                      |
+| Participant save branch                                         | `apps/live/app/design/[id]/tab-save-flow.test.ts`                |
+| Three cards and keys                                            | apps/live/components/dialogs/ShareDialog.test.tsx (removed)      |
+| Pill per level                                                  | `apps/live/components/chrome/RoleIndicator.test.tsx`             |
+| MCP default and enum                                            | `packages/agent-verbs` MCP schema tests                          |
 
 ## Constants and configuration
 

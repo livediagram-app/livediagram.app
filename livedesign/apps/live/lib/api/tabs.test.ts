@@ -86,7 +86,7 @@ describe('flushDesignSavesBeacon', () => {
     expect(calls[0]!.url).toBe('/api/designs/diag-1/tabs/t1');
     expect(calls[0]!.init.method).toBe('PUT');
     expect(calls[0]!.init.keepalive).toBe(true);
-    expect((calls[0]!.init.headers as Record<string, string>)['X-Owner-Id']).toBe('owner-1');
+    expect((calls[0]!.init.headers as Record<string, string>)['X-Owner-Id']).toBeUndefined();
   });
 
   it('keeps writes alive only while they fit the browser keepalive budget, sending the rest plainly', () => {

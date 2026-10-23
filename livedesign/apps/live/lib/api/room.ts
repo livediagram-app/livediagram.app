@@ -71,6 +71,10 @@ type RoomConnectOptions = {
   mintTicket?: () => Promise<string | null>;
   // Who we follow, read at every (re)connect: the room keeps a follow on the socket, so a new socket says it again.
   readFollowing?: () => string | null;
+  // A fresh grant for the room when it asks (GrantRenewMessage, liveworkspace/docs/one-explorer-contracts.md
+  // "Carrying a grant to the app"): without one before the old lapses, the room drops the socket and the
+  // reconnect mints anew.
+  renewGrant?: () => Promise<string | null>;
 };
 
 // The room WebSocket's query string. Browsers can't set headers on a WebSocket upgrade, so whatever
@@ -291,6 +295,14 @@ export function connectRoom(
           noteServerDesignFormat(msg.format);
           noteServerBuild(msg.build);
         } else if (msg.kind === 'op') applyOp(msg.from, msg.op, msg.seq, msg.epoch);
+        else if (msg.kind === 'grant-renew') {
+          const asking = socket;
+          void options.renewGrant?.().then((grant) => {
+            if (grant && asking.readyState === WebSocket.OPEN) {
+              asking.send(JSON.stringify({ kind: 'grant', grant } satisfies RoomOutgoing));
+            }
+          });
+        }
         else if (msg.kind === 'cursor') {
           // Our own op's seq, or where the stream stood when we joined. A
           // different epoch is a restarted room: leave the cursor for the

@@ -17,7 +17,6 @@ import {
   apiSaveTab,
   connectRoom,
   reportSaveFailure,
-  type DesignListItem,
 } from '@/lib/api-client';
 import type { SaveStatus } from '@/components/chrome/EditorHeader';
 import { saveFailureStatus } from './save-failure';
@@ -35,7 +34,6 @@ import {
   tabsChangedByPeersSince,
   type RemoteOpJournal,
 } from './save-baseline';
-import { emptyAfterSave } from '@/lib/list-row-empty';
 import { createTabSaveQueue, type TabSaveQueue } from './tab-save-queue';
 import { useUnloadFlush } from './useUnloadFlush';
 import { sampleSaveTiming, startEditorTiming } from '@/lib/timing';
@@ -76,7 +74,6 @@ export function useAutosave(opts: {
   roomRef: RefObject<ReturnType<typeof connectRoom> | null>;
   setSaveStatus: Dispatch<SetStateAction<SaveStatus>>;
   setSavedAt: Dispatch<SetStateAction<number | null>>;
-  setDesignList: Dispatch<SetStateAction<DesignListItem[]>>;
   // A save refused because the design is in the Trash
   // (docs/specs/013-workspace/trash.md): writes stop, the editor shows why.
   onDesignTrashed: () => void;
@@ -107,7 +104,6 @@ export function useAutosave(opts: {
     roomRef,
     setSaveStatus,
     setSavedAt,
-    setDesignList,
     onDesignTrashed,
     changesetSeen,
     noteTabRevision,
@@ -431,21 +427,6 @@ export function useAutosave(opts: {
           retryAttemptsRef.current = 0;
           const now = Date.now();
           setSavedAt(now);
-          // Bump the current design's row locally so the Explorer's
-          // "Updated X ago" stays fresh — used to refetch the whole
-          // list here, which hit /api/designs on every autosave.
-          setDesignList((prev) =>
-            prev.map((d) =>
-              d.id === designId
-                ? {
-                    ...d,
-                    savedAt: now,
-                    name: designName,
-                    empty: emptyAfterSave(tabs, loadedTabIdsRef.current, d.empty),
-                  }
-                : d,
-            ),
-          );
         })
         .catch((err: unknown) => {
           timing.cancel();
@@ -499,7 +480,6 @@ export function useAutosave(opts: {
     remoteOpJournalRef,
     ownWrites,
     roomRef,
-    setDesignList,
     setSaveStatus,
     setSavedAt,
   ]);

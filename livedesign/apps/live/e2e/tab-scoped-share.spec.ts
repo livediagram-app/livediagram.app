@@ -2,9 +2,10 @@ import {
   test,
   expect,
   expectNoPageErrors,
-  guestSigFor,
-  mintSignedGuest,
+  adoptGuest,
+  mintGuest,
   ownerHeaders,
+  seedDesign,
 } from './fixtures';
 
 // Tab-scoped share links (docs/specs/013-workspace/tab-scoped-share-links.md), end to end: the owner scopes a
@@ -13,10 +14,9 @@ import {
 // realtime frame; rescoping to All tabs reloads the visitor into every tab.
 
 const SECRET = 'TOP SECRET PRICING';
-const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
 
 test('a tab-scoped link opens its tab and nothing else', async ({ page, browser, baseURL }) => {
-  const owner = await mintSignedGuest(page.request);
+  const owner = await mintGuest(page.request);
   const liveDoc = crypto.randomUUID();
   const [pricing, roadmap, hiring] = [
     crypto.randomUUID(),
@@ -33,9 +33,10 @@ test('a tab-scoped link opens its tab and nothing else', async ({ page, browser,
     height: 110,
     label,
   });
-  const seeded = await page.request.post(`${apiBase}/designs`, {
-    headers: ownerHeaders(owner, { Origin: new URL(baseURL!).origin }),
-    data: {
+  const seeded = await seedDesign(
+    page.request,
+    ownerHeaders(owner, { Origin: new URL(baseURL!).origin }),
+    {
       id: liveDoc,
       name: 'Launch plan',
       tabs: [
@@ -44,18 +45,12 @@ test('a tab-scoped link opens its tab and nothing else', async ({ page, browser,
         { id: hiring, name: 'Hiring', elements: [] },
       ],
     },
-  });
+  );
   expect(seeded.ok()).toBe(true);
 
   // The owner scopes a new link to Roadmap.
-  await page.addInitScript(
-    ({ id, sig }) => {
-      localStorage.setItem('livedesign:v2:self-id', id);
-      if (sig) localStorage.setItem('livedesign:v2:self-sig', sig);
-      localStorage.setItem('livedesign:v2:name-confirmed', '1');
-    },
-    { id: owner, sig: guestSigFor(owner) },
-  );
+  await adoptGuest(page, owner);
+  await page.addInitScript(() => localStorage.setItem('livedesign:v2:name-confirmed', '1'));
   await page.goto(`/design/${liveDoc}`);
   await page.getByRole('button', { name: /^Share$/ }).click();
   const dialog = page.getByRole('dialog', { name: 'Share This Design' });

@@ -18,10 +18,7 @@ import { platformComputedEmitters } from '../platform-emitters';
 import {
   ALL_CTA_SOURCES,
   ALL_TIMING_TYPES,
-  LEVEL_TELEMETRY_TYPE,
-  PLACEMENT_DEFAULT_KEYS,
   pascalToken,
-  placementDefaultTelemetryType,
   isValidTelemetryEvent,
 } from '@livedesign/api-schema';
 import { countedVerbs } from '@livedesign/agent-verbs';
@@ -84,6 +81,14 @@ function tokensAfter(source: string, marker: string, close: string): string[] {
   return [...block.matchAll(/'([A-Za-z0-9-]+)'/g)].map((m) => m[1]!);
 }
 
+// The Explorer filter lens's facets (docs/specs/013-workspace/explorer-filters.md "Telemetry"): the values of the shared
+// Explorer's LENS_TELEMETRY_TYPES, whose keys are lower case.
+const LENS_FACETS = tokensAfter(
+  read('../../packages/explorer/src/lens/dimensions.ts'),
+  'export const LENS_TELEMETRY_TYPES',
+  '}',
+).filter((token) => /^[A-Z]/.test(token));
+
 // The api's email templates: `export type EmailKind = 'Welcome' | ...;`.
 const EMAIL_KINDS = tokensAfter(read('api/src/email/templates.ts'), 'export type EmailKind', ';');
 
@@ -101,30 +106,8 @@ const APPEARANCE_LABELS = tokensAfter(
   '};',
 );
 
-// The Explorer sidebar row kinds: `Sidebar.<Row>` on the page and `ExplorerPanel.<Row>` in the
-// editor's panel, per SidebarTelemetryRow member.
-const SIDEBAR_ROW_KINDS = tokensAfter(
-  read('live/app/explorer/sidebar/sidebar-telemetry.ts'),
-  'export type SidebarTelemetryRow',
-  ';',
-);
-const SIDEBAR_ROWS = ['Sidebar', 'ExplorerPanel'].flatMap((prefix) =>
-  SIDEBAR_ROW_KINDS.map((row) => `${prefix}.${row}`),
-);
-
-// The Explorer filters' facets (docs/specs/013-workspace/explorer-filters.md "Telemetry"): the
-// values of LENS_TELEMETRY_TYPES, whose keys are lower case.
-const LENS_FACETS = tokensAfter(
-  read('../packages/explorer-lens/src/dimensions.ts'),
-  'export const LENS_TELEMETRY_TYPES',
-  '}',
-).filter((token) => /^[A-Z]/.test(token));
-
-// The Trash a Trash action happened in: TrashGroup's `telemetryType`.
-const TRASH_TYPES = tokensAfter(read('live/lib/trash-groups.ts'), 'telemetryType:', ';');
-
-// One closed value per default folder key (placementDefaultTelemetryType).
-const DEFAULT_FOLDER_TYPES = PLACEMENT_DEFAULT_KEYS.map(placementDefaultTelemetryType);
+// The Trash a restored design sat in: useDesignTrashed's `from`.
+const TRASH_TYPES = ['Personal', 'Team'];
 
 // The presenter settings: `Presentation-<field>` per PresentationConfig key.
 const PRESENTATION_FIELDS = (() => {
@@ -265,8 +248,6 @@ const AGENT_FRONT_DOORS = tokensAfter(
 export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   // The Explorer on liveworkspace.app, in this app's name: its closed token lists (../platform-emitters.ts).
   ...platformComputedEmitters(isValidTelemetryEvent),
-  // A share link's access level (docs/specs/013-workspace/share-roles.md), from LEVEL_TELEMETRY_TYPE.
-  'apps/api/src/routes/share.ts Document·Joined': { values: Object.values(LEVEL_TELEMETRY_TYPE) },
   // The api worker.
   'apps/api/src/email/client.ts Email·Sent': { values: EMAIL_KINDS },
   'apps/api/src/email/client.ts Error·Api': {
@@ -333,38 +314,40 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     values: TEMPLATES,
     open: TEMPLATE_WHY,
   },
-  'apps/live/app/explorer/useTimelineFeed.ts Timeline·Selected': {
+  'apps/live/app/design/[id]/useDesignTrashed.ts Trash·Restored': { values: TRASH_TYPES },
+  // The shared Explorer's Timeline, through its onTimeline prop (@liveworkspace/explorer TimelinePane.tsx): each a
+  // fixed token from the package.
+  'apps/live/app/embed/workbench/ExplorerHost.tsx Timeline·Changed': {
+    values: ['List', 'Calendar'],
+  },
+  'apps/live/app/embed/workbench/ExplorerHost.tsx Timeline·Selected': {
     values: [
-      'comments',
+      'Everyone',
+      'Others',
       'new',
       'edits',
       'renames',
       'deletions',
       'sharing',
-      'actions',
-      'teams',
       'filing',
-      'account',
+      'favourites',
       'other',
     ],
   },
-  // Which Trash (docs/specs/013-workspace/trash.md): lib/trash-groups.ts's
-  // telemetryType, the one closed set every site sends.
-  'apps/live/hooks/persistence/useTrash.ts Trash·Restored': { values: TRASH_TYPES },
-  'apps/live/hooks/persistence/useTrash.ts Trash·Deleted': { values: TRASH_TYPES },
-  'apps/live/hooks/persistence/useTrash.ts Trash·Cleared': { values: TRASH_TYPES },
-  'apps/live/app/design/[id]/useDesignTrashed.ts Trash·Restored': { values: TRASH_TYPES },
-  // A delete toast's Undo (lib/design-delete-undo.ts DeletedTrash, the same three).
-  'apps/live/lib/design-delete-undo.ts Trash·Restored': { values: TRASH_TYPES },
-  'apps/live/app/explorer/sidebar/sidebar-telemetry.ts UI·Selected': { values: SIDEBAR_ROWS },
-  // Default folders (docs/specs/013-workspace/default-folders.md "Telemetry"): one value per key.
-  'apps/live/lib/placement-defaults/placement-defaults-store.ts Folder·Changed': {
-    values: DEFAULT_FOLDER_TYPES,
+  'apps/live/app/embed/workbench/ExplorerHost.tsx Timeline·Loaded': { values: ['More', 'Retry'] },
+  'apps/live/app/embed/workbench/ExplorerHost.tsx Timeline·Opened': {
+    values: ['Card', 'Stack', 'Menu'],
   },
-  'apps/live/lib/placement-defaults/placement-defaults-store.ts Folder·Cleared': {
-    values: DEFAULT_FOLDER_TYPES,
+  'apps/live/app/embed/workbench/ExplorerHost.tsx Timeline·Removed': {
+    values: ['Entry', 'Stack'],
   },
-  'apps/live/app/explorer/lens/lens-telemetry.ts Explorer·Selected': { values: LENS_FACETS },
+  // Home's What Happened, through the Explorer's onHome prop (@liveworkspace/explorer WhatHappened.tsx).
+  'apps/live/app/embed/workbench/ExplorerHost.tsx Home·Selected': {
+    values: ['WhatHappened', 'SeeTimeline'],
+  },
+  'apps/live/app/embed/workbench/ExplorerHost.tsx Home·Opened': { values: ['Group'] },
+  // The filter lens, through the Explorer's onLensSelected prop.
+  'apps/live/app/embed/workbench/ExplorerHost.tsx Explorer·Selected': { values: LENS_FACETS },
   'apps/live/app/new/page.tsx Theme·Changed': { values: THEMES, open: THEME_WHY },
   'apps/live/app/new/page.tsx Template·Used': { values: TEMPLATES, open: TEMPLATE_WHY },
   // The landing funnel (docs/specs/019-marketing/landing-funnel.md): the CTA a /new visit came from.
@@ -373,9 +356,6 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/live/components/dialogs/SettingsDialog.tsx UI·Opened': {
     values: ['SettingsAppearance', 'SettingsEditor', 'SettingsAccount', 'SettingsPrivacy'],
     open: 'Settings<Category>, one per Settings category',
-  },
-  'apps/live/components/dialogs/ShareCopyMenu.tsx UI·Copied': {
-    values: ['EmbedCode', 'LiveImage'],
   },
   'apps/live/components/notes/useNoteRichTextSession.ts Note·Used': {
     values: ['Bold', 'Italic', 'List', 'Heading'],
@@ -547,15 +527,23 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     open: 'elementTelemetryType of the web component a row was added to',
   },
   'apps/live/hooks/ui/useAppearance.ts UI·Toggled': { values: APPEARANCE_LABELS },
-  // A new link's level (LEVEL_TELEMETRY_TYPE) and its expiry, the file's two computed sites.
-  'apps/live/hooks/persistence/useShareLinks.ts Document·Shared': {
-    values: [
-      ...Object.values(LEVEL_TELEMETRY_TYPE),
-      'ExpiryWeek',
-      'ExpiryMonth',
-      'ExpirySixMonths',
-    ],
+  // The Share dialog's reports, through its onTelemetry prop (@liveworkspace/explorer ShareDialog.tsx): each a fixed
+  // token from the package.
+  'apps/live/lib/explorer-share-host.ts UI·Copied': {
+    values: ['ShareLink', 'EmbedCode', 'LiveImage'],
   },
+  'apps/live/lib/explorer-share-host.ts Document·Removed': { values: ['ShareLink'] },
+  'apps/live/lib/explorer-share-host.ts UI·Selected': { values: ['LiveImageTab'] },
+  'apps/live/lib/explorer-share-host.ts UI·Started': { values: ['ShareTour'] },
+  'apps/live/lib/explorer-share-host.ts UI·Ended': {
+    values: ['ShareTourCompleted', 'ShareTourSkipped'],
+  },
+  // The Inbox's reports, through its onTelemetry prop (@liveworkspace/explorer InboxPane.tsx, inbox/InboxRows.tsx).
+  'apps/live/lib/explorer-inbox-host.ts Activity·Opened': { values: [null] },
+  'apps/live/lib/explorer-inbox-host.ts Activity·Selected': {
+    values: ['Action', 'Card', 'Thread', 'CardThread', 'FormResponses'],
+  },
+  'apps/live/lib/explorer-inbox-host.ts Activity·Loaded': { values: ['Retry'] },
   'apps/live/lib/element-telemetry.ts Element·Duplicated': { values: [null, 'ShiftDrag'] },
   'apps/live/lib/element-telemetry.ts Element·Added': { values: ELEMENT_KINDS, open: ELEMENT_WHY },
   // Timings (docs/specs/017-telemetry/timing-telemetry.md): every editor timing and every app's Web

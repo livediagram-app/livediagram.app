@@ -19,7 +19,7 @@ vi.mock('./db', async (orig) => ({
   },
 }));
 
-import { DesignRoom } from './design-room';
+import { DesignRoom } from './design-room/design-room';
 
 const ME = 'a'.repeat(32);
 const box = { x: 0, y: 0, width: 100, height: 80 };

@@ -22,12 +22,6 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Action·Opened',
   'Action·Resolved',
   'Action·Unresolved',
-  // Activity (docs/specs/013-workspace/inbox.md): the Explorer's cross-design inbox. 'Opened'
-  // once per visit, 'Selected' with type 'Action' | 'Thread' on a row
-  // click, 'Loaded'/'Retry' after a failed read.
-  'Activity·Loaded',
-  'Activity·Opened',
-  'Activity·Selected',
   'Agent·Opened',
   'Canvas·Changed',
   'Canvas·Used',
@@ -43,6 +37,11 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   // CTA's source from the closed CTA_SOURCES table.
   'Cta·Created',
   'Cta·Opened',
+  // The Explorer's Inbox (lib/explorer-inbox-host.tsx): 'Opened' once a visit, 'Selected' a row followed (by its
+  // kind), 'Loaded' a failed read retried.
+  'Activity·Loaded',
+  'Activity·Opened',
+  'Activity·Selected',
   'Document·Created',
   'Document·Deleted',
   'Document·Duplicated',
@@ -50,24 +49,14 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Document·Loaded',
   'Document·Moved',
   'Document·Redone',
+  // A share link revoked in the Share dialog (type ShareLink).
   'Document·Removed',
   'Document·Renamed',
-  'Document·Shared',
   // The markers (docs/specs/023-draw-mode/drawing-tools.md): a marker's colour or width changed,
   // a stroke flipped between ink and a shape.
   'Draw·Changed',
   'Draw·Toggled',
   'Document·Undone',
-  // Explorer filters (docs/specs/013-workspace/explorer-filters.md "Telemetry"): a facet gained a value.
-  'Explorer·Selected',
-  // Tags (docs/specs/013-workspace/tags.md "Telemetry"): a tag made, put on or taken off a design, renamed,
-  // recoloured, deleted. Never its name.
-  'Explorer·Added',
-  'Explorer·Changed',
-  'Explorer·Created',
-  'Explorer·Deleted',
-  'Explorer·Removed',
-  'Explorer·Renamed',
   'Element·Added',
   'Element·Changed',
   'Element·Copied',
@@ -93,13 +82,12 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   // An editor freed an element somebody else was holding (docs/specs/007-editor/live-app.md lock), type
   // 'Unlocked'. The category keeps the name the dashboard already counts it under.
   'Facilitator·Changed',
-  'Folder·Changed',
-  'Folder·Cleared',
+  // The Explorer's filter lens (docs/specs/013-workspace/explorer-filters.md "Telemetry"): a facet that gained a value.
+  'Explorer·Selected',
   'Folder·Created',
-  'Folder·Deleted',
-  'Folder·Moved',
   'Folder·Renamed',
-  'Home·Loaded',
+  // Explorer Home's What Happened (docs/specs/013-workspace/explorer-home.md): Selected (an entry opened its design,
+  // WhatHappened; See Timeline followed, SeeTimeline), Opened (a summary dealt out, Group).
   'Home·Opened',
   'Home·Selected',
   'Layer·Added',
@@ -145,17 +133,11 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Tab·Selected',
   'Tab·Unlocked',
   'Team·Added',
-  'Team·Created',
-  'Team·Moved',
-  'Team·Removed',
   'Template·Used',
   'Theme·Changed',
-  // Timeline (docs/specs/013-workspace/timeline.md): 'Opened' with type 'Landing' | 'Nav' | 'Stack'
-  // — the first two measure the landing-page change, the third tells us
-  // whether the stacking thresholds are right. 'Changed' carries the
-  // view mode, 'Selected' a filter chip's source type, 'Loaded'/'More'
-  // a Show-more click, 'Removed'/'Entry' a card taken off the feed
-  // (docs/specs/013-workspace/timeline.md §2.9).
+  // The shared Explorer's Timeline (docs/specs/013-workspace/timeline.md): Changed (Cards or Calendar), Selected (a
+  // kind of event switched off, Everyone or Others), Loaded (More or Retry), Opened (a Card, a Stack or a card's
+  // Menu), Removed (an Entry or a whole Stack taken off the reader's own Timeline).
   'Timeline·Changed',
   'Timeline·Loaded',
   'Timeline·Opened',
@@ -164,10 +146,7 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Token·Created',
   // A token's owner allowed a workbench on the pairing page (docs/specs/013-workspace/workbench-embeds.md).
   'Token·Linked',
-  // Trash (docs/specs/013-workspace/trash.md): opened from Settings, and a
-  // design restored / deleted for good / a group emptied, typed by which Trash.
-  'Trash·Cleared',
-  'Trash·Deleted',
+  // Trash (docs/specs/013-workspace/trash.md): a trashed design's card, and the design restored from it.
   'Trash·Opened',
   'Trash·Restored',
   'UI·Added',

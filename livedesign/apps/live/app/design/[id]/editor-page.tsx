@@ -18,7 +18,6 @@ import { OpeningScreen } from '@/components/chrome/OpeningScreen';
 // Static, unlike the other status cards: it must render offline (docs/specs/007-editor/load-recovery.md
 // "Offline"); its recovery tools are the lazy part.
 import { LoadErrorCard } from '@/components/chrome/LoadErrorCard';
-import { DesignTagsProvider } from '@/components/tags/DesignTagsProvider';
 import { LocalMovePrompt } from '@/components/dialogs/LocalMovePrompt';
 import { EditorContext } from './EditorContext';
 import { EditorView } from './EditorView';
@@ -92,19 +91,7 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
     sharePasswordGate,
     loadingDesign,
     explorerPosition,
-    designList,
-    folders,
-    designListLoading,
-    sharedDesigns,
-    dismissSharedDesign,
-    openDesign,
     newDesign,
-    deleteDesign,
-    duplicateDesign,
-    createFolder,
-    renameFolder,
-    deleteFolder,
-    moveDesignToFolder,
     setExplorerPosition,
     designOwnerName,
     setSharePasswordGate,
@@ -120,28 +107,11 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
   // free when no status screen shows.
   const fullExplorer = (
     <LazyExplorer
-      recentExcludedIds={state.userPreferences?.recentExcludedIds ?? []}
-      onToggleRecentExclusion={state.toggleRecentExclusion}
-      favouriteIds={state.favouriteIds ?? new Set()}
-      onToggleFavourite={state.toggleFavourite}
       position={explorerPosition}
-      designs={designList}
-      ownerId={ownerId}
-      folders={folders}
-      loading={designListLoading}
-      shared={sharedDesigns}
-      onDismissShared={(id) => void dismissSharedDesign(id)}
       currentDesignId={null}
       onMoveTo={(x, y) => setExplorerPosition({ x, y })}
       onReset={() => setExplorerPosition(null)}
-      onOpenDesign={openDesign}
       onNewDesign={newDesign}
-      onDeleteDesign={(id) => void deleteDesign(id)}
-      onDuplicateDesign={(id) => void duplicateDesign(id)}
-      onCreateFolder={createFolder}
-      onRenameFolder={renameFolder}
-      onDeleteFolder={(id) => void deleteFolder(id)}
-      onMoveDesignToFolder={moveDesignToFolder}
     />
   );
 
@@ -249,11 +219,7 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
     <EditorContext.Provider value={state}>
       {/* Who the comment composers can @-mention (docs/specs/012-collaboration/comment-mentions.md). */}
       <MentionContext.Provider value={state.commentMentions}>
-        {/* The reader's tags for the Explorer panel's rows and menus (docs/specs/013-workspace/tags.md), loaded
-              the first time one of them shows, so opening a design costs no extra request. */}
-        <DesignTagsProvider ownerId={ownerId} lazy>
-          <EditorView />
-        </DesignTagsProvider>
+        <EditorView />
       </MentionContext.Provider>
       {/* Moving this browser's designs in This Browser after signing in
           (docs/specs/014-identity/auth-and-guest-access.md); never inside someone else's page. */}

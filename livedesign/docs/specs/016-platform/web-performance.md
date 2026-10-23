@@ -22,7 +22,7 @@ Measured 2026-10-11 (gzip level 9), before and after the changes that set these 
 | Editor: `/explorer/home` (and most sections) | 1,780 KiB | 570 KiB   |
 | Editor: `/new`                               | 1,877 KiB | 669 KiB   |
 | Editor: `/join`, `/oauth/*`                  | ~1,500    | 316–354   |
-| Editor: `/design/<id>`                     | 1,493 KiB | 1,489 KiB |
+| Editor: `/design/<id>`                       | 1,493 KiB | 1,489 KiB |
 | Help: an article                             | 238 KiB   | 207 KiB   |
 | Telemetry: the dashboard                     | 287 KiB   | 280 KiB   |
 | Marketing: `/` (HTML, gzipped)               | 114 KiB   | 93 KiB    |
@@ -31,7 +31,7 @@ Then the design page's own first load (measured 2026-10-11 the same way, on top 
 
 | Page                          | Before    | After     |
 | ----------------------------- | --------- | --------- |
-| Editor: `/design/<id>`      | 1,489 KiB | 1,240 KiB |
+| Editor: `/design/<id>`        | 1,489 KiB | 1,240 KiB |
 | Marketing: a `/features` page | 221 KiB   | 207 KiB   |
 
 ## Rules
@@ -150,8 +150,7 @@ seen on the design).
 - A query that serves one person starts from that person's rows (their visible designs, their
   candidates) and seeks everything else by index. A query led by a table-wide index (all open
   threads, every design in id order, every design-scoped event) slows as the database grows,
-  not as the person's work does. `apps/api/src/db/home-plans.test.ts` pins the plans of the Home and
-  Inbox reads against the real migrations.
+  not as the person's work does.
 - A check that needs only a design's owner and team reads that row, not the full design.
 - A realtime room reads a socket's fixed session facts once, not on every frame.
 - The tab save reads its design in one query and fetches the room's ledger alongside its other

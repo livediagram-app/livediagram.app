@@ -13,7 +13,7 @@ import type { StoredProfile } from './accounts/profiles';
 
 const seeded = new Map<string, ParticipantDTO>();
 
-export function seedProfile(id: string, name: string, color: string, createdAt = 1): void {
+export function seedProfile(id: string, name: string, color = '#0ea5e9', createdAt = 1): void {
   seeded.set(id, { id, name, color, createdAt });
 }
 

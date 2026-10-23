@@ -2,48 +2,33 @@
 
 import { useEffect, useMemo, useState, type Dispatch, type SetStateAction } from 'react';
 import type { ElementAction } from '@livedesign/design';
-import { apiCheckAssigneeAccess, apiGetTeam, type TeamListItem } from '@/lib/api-client';
+import { apiTeamMembers } from '@/lib/api-client';
 import { teamMemberRows } from './team-member-rows';
 import type { PickableMember } from '@/components/dialogs/AssignActionAssigneePicker';
 
-// The Assign Action dialog's assignee dataset (docs/specs/012-collaboration/assigned-actions.md §2 + §4), lifted
-// out of AssignActionDialog: the pinned Myself row, the design team's
-// member list (joined AND invited), the preselect-on-edit resolution,
-// the per-pick server access check, and the by-team grouping the picker
-// renders. The dialog keeps the `assignee` selection state itself (and
-// seeds it on open, alongside the name / description fields)
-// and passes it through.
-// Whether the picked teammate can actually open this design
-// (docs/specs/012-collaboration/assigned-actions.md §4), asked of the server per selection. 'error'
-// falls back to the picked-team heuristic with hedged wording.
+// The Assign Action dialog's assignee dataset (docs/specs/012-collaboration/assigned-actions.md §2 + §4): the pinned
+// Myself row, the design team's people (joined AND invited), the preselect-on-edit resolution, whether the pick can
+// open the design, and the by-team grouping the picker renders. The dialog keeps the `assignee` selection itself.
+//
+// Only the team whose library holds this design is pickable, and its people can open the design by being in it: a
+// joined teammate is a yes, an invited one gets in on accepting. Anyone else (an action kept from before the design
+// moved) is unknown, and the email names no design they cannot open (the api decides).
 type Access = 'unknown' | 'yes' | 'no' | 'error' | 'invited';
 
-// A server answer, kept with the question it answers.
-type CheckedAccess = {
-  assignee: PickableMember;
-  ownerId: string;
-  designId: string;
-  access: Access;
-};
-
-// A member list, kept with the owner and teams it was loaded for.
-type LoadedMembers = { ownerId: string; teams: TeamListItem[]; members: PickableMember[] };
+// A member list, kept with the owner and team it was loaded for.
+type LoadedMembers = { key: string; members: PickableMember[] };
 
 const NO_MEMBERS: PickableMember[] = [];
 
-// The answer knowable without the server, or null when it must be asked.
-function localAccess(
+function accessOf(
   assignee: PickableMember,
-  ids: { ownerId: string | null; selfUserId: string | null; designId: string | null },
-): Access | null {
+  selfUserId: string | null,
+  designTeamId: string | null,
+): Access {
   // Self-assignment is a yes: the assigner is right here, editing it.
-  if (assignee.userId !== null && assignee.userId === ids.selfUserId) return 'yes';
-  // Invited member: there may be no account to ask about, and the
-  // answer is knowable without the server — they get access when they
-  // accept the invite. The hint says exactly that.
-  if (assignee.pending) return 'invited';
-  if (!ids.ownerId || !ids.designId || !assignee.teamId || !assignee.userId) return 'error';
-  return null;
+  if (assignee.userId !== null && assignee.userId === selfUserId) return 'yes';
+  if (assignee.teamId === null || assignee.teamId !== designTeamId) return 'unknown';
+  return assignee.pending ? 'invited' : 'yes';
 }
 
 export function useAssigneeOptions({
@@ -53,14 +38,13 @@ export function useAssigneeOptions({
   ownerId,
   selfUserId,
   selfName,
-  designId,
   designTeamId,
   assignee,
   setAssignee,
 }: {
   open: boolean;
   existing: ElementAction | null;
-  teams: TeamListItem[];
+  teams: readonly { id: string; name: string }[];
   ownerId: string | null;
   selfUserId: string | null;
   selfName: string | null;
@@ -69,20 +53,9 @@ export function useAssigneeOptions({
   assignee: PickableMember | null;
   setAssignee: Dispatch<SetStateAction<PickableMember | null>>;
 }) {
-  const [checked, setChecked] = useState<CheckedAccess | null>(null);
   const [loaded, setLoaded] = useState<LoadedMembers | null>(null);
-  // Every open starts afresh: members reload and each pick is asked again.
-  const [wasOpen, setWasOpen] = useState(open);
-  if (open !== wasOpen) {
-    setWasOpen(open);
-    if (open) {
-      setLoaded(null);
-      setChecked(null);
-    }
-  }
 
-  // The pinned Myself row: every session has one once identity has
-  // hydrated (account or guest participant id).
+  // The pinned Myself row: every session has one once identity has hydrated (account or guest participant id).
   const selfRow = useMemo<PickableMember | null>(
     () =>
       selfUserId
@@ -97,52 +70,35 @@ export function useAssigneeOptions({
     [selfUserId, selfName],
   );
 
-  // Only the team whose shared library holds this design is pickable
-  // (docs/specs/012-collaboration/assigned-actions.md §2): members of the user's other teams almost certainly
-  // can't open the design to complete the action, so offering them
-  // just manufactures the access warning. Empty for a personal design
-  // and for a share-link editor who isn't a member of the team.
-  const pickableTeams = useMemo(
-    () => teams.filter((t) => t.id === designTeamId),
-    [teams, designTeamId],
+  // The design's team, when the caller is in it; none for a personal design, a guest, or a share-link editor
+  // outside the team.
+  const team = useMemo(
+    () => (ownerId ? (teams.find((t) => t.id === designTeamId) ?? null) : null),
+    [ownerId, teams, designTeamId],
   );
-  const memberOfDesignTeam = pickableTeams.length > 0;
-  // Null while loading. A guest picker is Myself alone.
-  const members = !ownerId
-    ? NO_MEMBERS
-    : loaded?.ownerId === ownerId && loaded.teams === pickableTeams
-      ? loaded.members
-      : null;
+  const memberOfDesignTeam = team !== null;
+  const key = team && ownerId ? `${ownerId}:${team.id}` : null;
+  // Null while loading. A guest picker, or a design with no team, is Myself alone.
+  const members = !key ? NO_MEMBERS : loaded?.key === key ? loaded.members : null;
 
-  // Load the design team's joined members once per open (signed-in
-  // only; a guest picker is Myself alone). One GET per pickable team
-  // (zero or one); a failure just leaves its members out.
+  // Load the team's people when the dialog opens (one request, shared with the mention list's). A failure
+  // leaves them out.
   useEffect(() => {
-    if (!open || !ownerId) return;
+    if (!open || !key || !team || !ownerId) return;
     let cancelled = false;
-    void Promise.all(
-      pickableTeams.map(async (team) => {
-        try {
-          const detail = await apiGetTeam(ownerId, team.id);
-          // Everyone on the team — joined AND invited (docs/specs/012-collaboration/assigned-actions.md: work
-          // gets divided while invites are in flight) — except the assigner
-          // themselves, whom the pinned Myself row covers.
-          return teamMemberRows(detail.members, team, ownerId);
-        } catch {
-          return [];
-        }
-      }),
-    ).then((lists) => {
-      if (!cancelled) setLoaded({ ownerId, teams: pickableTeams, members: lists.flat() });
-    });
+    void apiTeamMembers(ownerId, team.id)
+      .then((list) => teamMemberRows(list, team, ownerId))
+      .catch(() => NO_MEMBERS)
+      .then((rows) => {
+        if (!cancelled) setLoaded({ key, members: rows });
+      });
     return () => {
       cancelled = true;
     };
-  }, [open, ownerId, pickableTeams]);
+  }, [open, key, team, ownerId]);
 
-  // Preselect the existing assignee on edit: the Myself row when the
-  // action is self-assigned, else the matching member row once loaded
-  // (prefer the row from the action's own team).
+  // Preselect the existing assignee on edit: the Myself row when the action is self-assigned, else the matching
+  // member row once loaded (by membership row first, which holds across an invitation being accepted).
   useEffect(() => {
     if (!open || !existing) return;
     if (selfRow && existing.assignee.userId === selfRow.userId) {
@@ -150,8 +106,6 @@ export function useAssigneeOptions({
       return;
     }
     if (!members) return;
-    // Match by memberId first (stable across the invited -> joined
-    // transition), then by userId.
     setAssignee(
       (cur) =>
         cur ??
@@ -159,44 +113,13 @@ export function useAssigneeOptions({
           ? members.find((m) => m.memberId === existing.assignee.memberId)
           : undefined) ??
         (existing.assignee.userId
-          ? (members.find(
-              (m) => m.userId === existing.assignee.userId && m.teamId === existing.teamId,
-            ) ?? members.find((m) => m.userId === existing.assignee.userId))
+          ? members.find((m) => m.userId === existing.assignee.userId)
           : undefined) ??
         null,
     );
   }, [open, existing, members, selfRow, setAssignee]);
 
-  // Ask the server whether the picked teammate can open this design,
-  // unless the answer is knowable without it (localAccess). Stale responses
-  // are ignored via the cancelled flag.
-  const local = open && assignee ? localAccess(assignee, { ownerId, selfUserId, designId }) : null;
-  const askServer = open && assignee !== null && local === null;
-  useEffect(() => {
-    if (!askServer || !assignee?.teamId || !assignee.userId || !ownerId || !designId) return;
-    let cancelled = false;
-    void apiCheckAssigneeAccess(ownerId, assignee.teamId, {
-      assigneeUserId: assignee.userId,
-      designId,
-    }).then((canAccess) => {
-      if (cancelled) return;
-      setChecked({
-        assignee,
-        ownerId,
-        designId,
-        access: canAccess === null ? 'error' : canAccess ? 'yes' : 'no',
-      });
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [askServer, assignee, ownerId, designId]);
-  // 'unknown' while in flight (show nothing).
-  const assigneeAccess: Access =
-    local ??
-    (checked?.assignee === assignee && checked.ownerId === ownerId && checked.designId === designId
-      ? checked.access
-      : 'unknown');
+  const assigneeAccess: Access = assignee ? accessOf(assignee, selfUserId, designTeamId) : 'unknown';
 
   const grouped = useMemo(() => {
     const byTeam = new Map<string, { teamName: string; members: PickableMember[] }>();

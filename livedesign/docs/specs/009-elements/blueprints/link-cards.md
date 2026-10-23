@@ -201,7 +201,7 @@ export function apiUnfurl(url: string): Promise<UnfurlResult | null>;
 ## Security and trust
 
 - **Unauthenticated outbound fetch.** The endpoint needs no owner, so it is throttled per IP
-  (`UNFURL_RATE_LIMITER`) and exempt from guest signatures (`OWNER_SCOPED_SEGMENTS` excludes it).
+  (`UNFURL_RATE_LIMITER`) and needs no Bearer.
 - **SSRF.** Scheme and host validated before the fetch and again on the final URL. DNS names that
   resolve to private addresses are not resolved here; Workers `fetch` cannot reach a private
   network, which is the residual control. Hostnames are never matched by IPv6 prefix `[QB12]`.

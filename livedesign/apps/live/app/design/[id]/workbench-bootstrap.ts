@@ -93,7 +93,7 @@ export async function loadWorkbenchDesign({
   let loaded: Loaded | 'gone' | PasswordAsked;
   try {
     loaded = shareCode
-      ? await loadByLink(self.id, shareCode)
+      ? await loadByLink(self.id, shareCode, designId)
       : await loadAsOwner(self.id, designId);
   } catch (err) {
     if (isDesignTrashedError(err)) set.setDesignTrashed(true);
@@ -140,10 +140,11 @@ async function loadAsOwner(selfId: string, designId: string): Promise<Loaded | '
 async function loadByLink(
   selfId: string,
   shareCode: string,
+  designId: string,
 ): Promise<Loaded | 'gone' | PasswordAsked> {
   const cached = readCachedSharePassword(shareCode);
   if (cached && getSessionSharePassword() === null) setSessionSharePassword(cached);
-  const resolution = await apiLoadShared(shareCode, selfId);
+  const resolution = await apiLoadShared(shareCode, selfId, designId);
   if (!resolution) return 'gone';
   if ('passwordRequired' in resolution) {
     if (cached) {

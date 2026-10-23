@@ -20,7 +20,7 @@ A guest can open `/new`, create a design, and use the full canvas without an acc
 
 The editor talks to the Cloudflare Worker API documented in [11-api.md](../015-api/api.md). `apps/live/lib/api-client.ts` is the single boundary — the editor never reads or writes design state to `localStorage`. D1 holds the durable snapshot; per-tab content is split into its own rows (see [13-per-tab-storage.md](../006-design/per-tab-storage.md)) so autosave scope shrinks to the tab being edited.
 
-`localStorage` is still used for **identity bootstrap only** — a `crypto.randomUUID()` participant id under `livedesign:v2:self-id`, plus a `livedesign:v2:name-confirmed` flag once the user has named themselves. Everything else flows through the API.
+`localStorage` is still used for **identity bootstrap only** — the liveworkspace guest token under `livedesign:v2:guest-token` ([Auth + guest access](../014-identity/auth-and-guest-access.md) "Guests"), plus a `livedesign:v2:name-confirmed` flag once the user has named themselves. Everything else flows through the API.
 
 The design shape follows [Design structure](../006-design/design-structure.md) — a design has tabs, and elements can link across tabs.
 
@@ -136,7 +136,7 @@ The account menu's **Account** item opens the host page's own Settings dialog on
 
 ## Share dialog
 
-The "Share This Design" modal (`apps/live/components/dialogs/ShareDialog.tsx`, opened from the header Share button, for the owner and, on a team design, every joined member: [Team shared designs](../013-workspace/team-shared-designs.md)) follows the same dialog conventions as Settings / Export: a dimmed blurred backdrop (`bg-slate-900/40 backdrop-blur-sm`, click-to-close, Esc closes), a centred panel with dark-mode styling, and a scrollable body capped to the viewport.
+The Share dialog (the shared `@liveworkspace/explorer` `ShareDialog`, given livedesign's embed, live image and help by `apps/live/lib/explorer-share-host.ts`, opened from the header Share button, for the owner and, on a team design, every joined member: [Team shared designs](../013-workspace/team-shared-designs.md)) follows the same dialog conventions as Settings / Export: a dimmed blurred backdrop (`bg-slate-900/40 backdrop-blur-sm`, click-to-close, Esc closes), a centred panel with dark-mode styling, and a scrollable body capped to the viewport.
 
 ### The pass metaphor
 

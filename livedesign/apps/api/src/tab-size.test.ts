@@ -30,7 +30,7 @@ function tabOf(bytes: number, id = 't1'): Tab {
 function liveDoc(db: SqliteD1, id: string, owner = 'owner') {
   db.sql
     .prepare(
-      'INSERT INTO designs (id, owner_id, name, shareable, saved_at, created_at) VALUES (?, ?, ?, 0, ?, ?)',
+      'INSERT INTO test_designs (id, owner_id, name, shareable, saved_at, created_at) VALUES (?, ?, ?, 0, ?, ?)',
     )
     .run(id, owner, id, T0, T0);
 }
@@ -106,7 +106,7 @@ describe('the routes answer the named 413', () => {
     );
     expect(res?.status).toBe(413);
     expect((await res.json<{ error: string }>()).error).toBe('payload_too_large');
-    expect(db.sql.prepare('SELECT id FROM designs WHERE id = ?').get('d1')).toBeUndefined();
+    expect(db.sql.prepare('SELECT id FROM test_designs WHERE id = ?').get('d1')).toBeUndefined();
     expect(warn).toHaveBeenCalledWith(
       '[tab-size] refused',
       expect.objectContaining({ write: 'create', bytes: MAX_TAB_BYTES + 1 }),

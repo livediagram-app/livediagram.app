@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DESIGN_CONVERSION_HEADER, DESIGN_OPEN_HEADER } from '@livedesign/api-schema';
+import { DESIGN_CONVERSION_HEADER } from '@livedesign/api-schema';
 import {
   badRequest,
   CORS_HEADERS,
@@ -154,19 +154,15 @@ describe('signInRequired', () => {
 });
 
 describe('missingAuth', () => {
-  it('returns a 400 naming both legitimate identity sources in the message', async () => {
-    // The message text is load-bearing for developer debugging:
-    // before sign-in it just said "missing X-Owner-Id", which
-    // misdirected signed-in users debugging auth failures. The
-    // current copy names BOTH paths so the caller can tell which
-    // one they're missing. Asserting the substrings rather than
-    // exact equality keeps room for future polish.
+  it('returns a 400 naming the tokens a caller may send', async () => {
+    // The message text is load-bearing for developer debugging: it names every credential the api takes
+    // (an account's, a guest's, an API token), so a caller can tell which one it is missing.
     const res = missingAuth();
     expect(res.status).toBe(400);
     const body = (await readJson(res)) as { error: string; message: string };
     expect(body.error).toBe('bad_request');
-    expect(body.message).toContain('account access token');
-    expect(body.message).toContain('X-Owner-Id');
+    expect(body.message).toContain('access, guest or API token');
+    expect(body.message).not.toContain('X-Owner-Id');
   });
 });
 
@@ -179,7 +175,8 @@ describe('CORS_HEADERS', () => {
     // accidentally" diff.
     const allowHeaders = CORS_HEADERS['Access-Control-Allow-Headers'];
     expect(allowHeaders).toContain('Authorization');
-    expect(allowHeaders).toContain('X-Owner-Id');
+    expect(allowHeaders).toContain('X-Index-Grant');
+    expect(allowHeaders).not.toContain('X-Owner-Id');
     expect(allowHeaders).toContain('X-Share-Code');
     expect(allowHeaders).toContain('X-Image-Sha256');
     expect(allowHeaders).toContain('X-Image-Width');
@@ -192,11 +189,6 @@ describe('CORS_HEADERS', () => {
     // Missing, a cross-origin editor (dev on its own port, or a self-host
     // with the api elsewhere) had both conversions fail at the preflight.
     expect(CORS_HEADERS['Access-Control-Allow-Headers']).toContain(DESIGN_CONVERSION_HEADER);
-  });
-
-  it('allows the open marker the editor sends on its first tab read', () => {
-    // Missing, a cross-origin editor would fail the preflight of every design it opens.
-    expect(CORS_HEADERS['Access-Control-Allow-Headers']).toContain(DESIGN_OPEN_HEADER);
   });
 
   it('allows the five HTTP methods the live editor uses', () => {

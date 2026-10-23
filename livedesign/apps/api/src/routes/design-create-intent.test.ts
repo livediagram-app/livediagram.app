@@ -1,10 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { DesignSummary } from '@livedesign/api-schema';
-import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
-import { copyDesign, getDesign, listDesignsByOwner } from '../db';
+import { sqliteD1, testCopyDesign, type SqliteD1 } from '../test-sqlite-d1';
+import { getDesign } from '../db';
 import { makeTestRouteContext } from './test-route-context';
 import { handleDesigns } from './designs';
-import { asUser } from './placement-test-support';
+import { asUser } from './test-route-context';
 
 // The recorded creation intent against a real schema (docs/specs/013-workspace/default-folders.md
 // "Recorded intent"): written by the create insert, never rewritten, read back on the summary, null
@@ -26,11 +25,10 @@ function create(id: string, extra: Record<string, unknown> = {}) {
 }
 
 const stored = (id: string) =>
-  db.sql.prepare('SELECT opens_in, tab_kind FROM designs WHERE id = ?').get(id);
+  db.sql.prepare('SELECT opens_in, tab_kind FROM design WHERE id = ?').get(id);
 
-async function summary(id: string): Promise<DesignSummary | undefined> {
-  return (await listDesignsByOwner(db.env, 'user_alice')).find((d) => d.id === id);
-}
+// The record as a design read carries it.
+const summary = (id: string) => getDesign(db.env, id);
 
 beforeEach(() => {
   db = sqliteD1();
@@ -52,7 +50,7 @@ describe('recorded creation intent', () => {
     vi.spyOn(console, 'warn').mockImplementation(() => {});
     const res = await create('d1', { intent: { mode: 'draw' } });
     expect(res.status).toBe(400);
-    expect(await summary('d1')).toBeUndefined();
+    expect(await summary('d1')).toBeNull();
   });
 
   it('records nothing for a create without an intent', async () => {
@@ -62,7 +60,7 @@ describe('recorded creation intent', () => {
 
   it('records the intent of a create filed at an explicit root', async () => {
     await create('d1', { folderId: null, intent: { mode: 'pages' } });
-    expect(await summary('d1')).toMatchObject({ opensIn: 'pages', folderId: null });
+    expect(await summary('d1')).toMatchObject({ opensIn: 'pages' });
   });
 
   it('never rewrites the record on a re-commit', async () => {
@@ -79,7 +77,7 @@ describe('recorded creation intent', () => {
   it('reads a row with no intent recorded as unknown', async () => {
     db.sql
       .prepare(
-        `INSERT INTO designs (id, owner_id, name, shareable, saved_at, created_at)
+        `INSERT INTO test_designs (id, owner_id, name, shareable, saved_at, created_at)
          VALUES ('old', 'user_alice', 'Old', 0, 1, 1)`,
       )
       .run();
@@ -88,13 +86,13 @@ describe('recorded creation intent', () => {
 
   it('reads a stored value outside the enums as unknown', async () => {
     await create('d1', { intent: { mode: 'pages' } });
-    db.sql.prepare("UPDATE designs SET opens_in = 'retired' WHERE id = 'd1'").run();
+    db.sql.prepare("UPDATE design SET opens_in = 'retired' WHERE id = 'd1'").run();
     expect(await summary('d1')).toMatchObject(UNKNOWN);
   });
 
   it("carries the source's record into a copy", async () => {
     await create('d1', { intent: { mode: 'pages' } });
-    await copyDesign(db.env, 'd1', 'd2', 'user_alice', 'Copy');
+    await testCopyDesign(db.env, 'd1', 'd2', 'user_alice', 'Copy');
     expect({ ...stored('d2') }).toEqual({ opens_in: 'pages', tab_kind: 'diagram' });
   });
 });

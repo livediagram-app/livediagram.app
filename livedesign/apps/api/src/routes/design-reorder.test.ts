@@ -34,7 +34,7 @@ const order = (db: SqliteD1) =>
     .all()
     .map((r) => [r.tab_id, r.folder]);
 const name = (db: SqliteD1) =>
-  db.sql.prepare("SELECT name FROM designs WHERE id = 'D'").get()!.name;
+  db.sql.prepare("SELECT name FROM design WHERE id = 'D'").get()!.name;
 
 beforeEach(() => {
   vi.spyOn(console, 'info').mockImplementation(() => {});

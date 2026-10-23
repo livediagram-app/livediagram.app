@@ -39,8 +39,8 @@ import { readRoomSelections } from '../room-client';
 import { getTab, tabBodiesInOrder } from '../db/tabs';
 import { json, textPlain } from '../responses';
 import { reportServerEvent } from '../server-telemetry';
-import type { DesignDTO, Env, TabDTO } from '../types';
-import type { RouteContext } from './context';
+import type { DesignDTO, DesignEnv, TabDTO } from '../types';
+import type { DesignRouteContext } from './context';
 
 export type ParsedView = { request: ViewRequest; json: boolean };
 // `view=lint` (docs/specs/024-agents/page-lint.md): answered by the lint, not by `renderView`.
@@ -190,7 +190,7 @@ const TITLE_CASE: Record<DesignViewName | TabViewName | typeof LINT_VIEW_NAME, s
 };
 
 function countViewed(
-  ctx: RouteContext,
+  ctx: DesignRouteContext,
   view: DesignViewName | TabViewName | typeof LINT_VIEW_NAME,
 ): void {
   const { env } = ctx;
@@ -212,7 +212,7 @@ function logUnknownKinds(tab: TabDTO): void {
 // The lint of a tab (docs/specs/024-agents/page-lint.md "Where it runs"), as text or (`json=1`) the
 // report. A lint that throws answers 500 with `lint unavailable` and logs `[lint] failed` (LN23).
 function answerLintView(
-  ctx: RouteContext,
+  ctx: DesignRouteContext,
   parsed: ParsedLintView,
   design: DesignDTO,
   tab: TabDTO,
@@ -232,7 +232,7 @@ function answerLintView(
 // What the caller has selected on the tab now, for `show selected` only (blueprint "REST"): the `mine` selections
 // of the room, as the changeset submit reads them; null when the room could not answer. No other view asks.
 async function ownerSelection(
-  ctx: RouteContext,
+  ctx: DesignRouteContext,
   request: ViewRequest,
   designId: string,
   tabId: string,
@@ -258,7 +258,7 @@ async function ownerSelection(
 
 // A tab view, after the tab GET's gate and redaction; `owner` is the caller the GET resolved.
 export async function answerTabView(
-  ctx: RouteContext,
+  ctx: DesignRouteContext,
   parsed: ParsedView | ParsedLintView,
   design: DesignDTO,
   tab: TabDTO,
@@ -308,7 +308,7 @@ export async function answerTabView(
   return parsed.json ? json(rendered.json, { headers }) : textPlain(rendered.text, { headers });
 }
 
-async function inScopeFacts(env: Env, design: DesignDTO, tabScope: string | null) {
+async function inScopeFacts(env: DesignEnv, design: DesignDTO, tabScope: string | null) {
   const tabIds = design.tabs.map((t) => t.id);
   const facts = new Map<string, ReturnType<typeof headerFactsOf>>();
   let batches = 0;
@@ -334,7 +334,7 @@ async function inScopeFacts(env: Env, design: DesignDTO, tabScope: string | null
 // The design overview, after the design GET's gate and scope redaction: in-scope tab bodies are
 // read a batch at a time and reduced to their header facts; out-of-scope tabs are never read.
 export async function answerOverview(
-  ctx: RouteContext,
+  ctx: DesignRouteContext,
   parsed: ParsedView,
   design: DesignDTO,
   tabScope: string | null,

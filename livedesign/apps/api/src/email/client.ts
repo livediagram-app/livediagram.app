@@ -1,6 +1,5 @@
 // docs/specs/014-identity/transactional-email.md: Resend client. The whole email feature is gated on RESEND_API_KEY:
-// absent, every send is a no-op and the lifecycle table is never touched, so a
-// deployment with email off does zero extra work. Sends are best-effort: this never throws, so an email or
+// absent, every send is a no-op, so a deployment with email off does zero extra work. Sends are best-effort: this never throws, so an email or
 // network failure can't fail or delay the request that triggered it (callers
 // run sends inside ctx.waitUntil or the daily cron).
 
@@ -73,8 +72,8 @@ export async function sendEmail(env: Env, msg: EmailMessage): Promise<{ sent: bo
     });
     // One anonymous telemetry row per outcome (docs/specs/017-telemetry/telemetry.md), written server-side
     // because nothing about an email reaches a browser: the send happens in a
-    // cron or a waitUntil after the response has gone. Without it the lifecycle
-    // series (docs/specs/014-identity/transactional-email.md) was unmeasurable and a dead RESEND_API_KEY was invisible.
+    // cron or a waitUntil after the response has gone. Without it the notifications
+    // (docs/specs/014-identity/transactional-email.md) were unmeasurable and a dead RESEND_API_KEY was invisible.
     // reportServerEvent gates on TELEMETRY_ENABLED and swallows its own failure.
     if (!res.ok) {
       console.error(

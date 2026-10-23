@@ -2,9 +2,10 @@ import {
   dismissQuickTour,
   expect,
   expectNoPageErrors,
-  guestSigFor,
-  mintSignedGuest,
+  adoptGuest,
+  mintGuest,
   ownerHeaders,
+  seedDesign,
   test,
 } from './fixtures';
 
@@ -13,7 +14,6 @@ import {
 // was (docs/specs/003-system-architecture/react-state-and-effects.md: captured and restored on the
 // transition, in the same commit).
 
-const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
 const CANVAS = '[data-canvas-a11y-root]';
 
 test('a deck presents slide by slide and leaves the view as it was', async ({
@@ -21,7 +21,7 @@ test('a deck presents slide by slide and leaves the view as it was', async ({
   pageErrors,
   baseURL,
 }) => {
-  const owner = await mintSignedGuest(page.request);
+  const owner = await mintGuest(page.request);
   const id = crypto.randomUUID();
   const tabId = crypto.randomUUID();
   const box = (bid: string, x: number, y: number) => ({
@@ -44,24 +44,19 @@ test('a deck presents slide by slide and leaves the view as it was', async ({
       },
     ],
   };
-  const seeded = await page.request.post(`${apiBase}/designs`, {
-    headers: ownerHeaders(owner, { Origin: new URL(baseURL!).origin }),
-    data: {
+  const seeded = await seedDesign(
+    page.request,
+    ownerHeaders(owner, { Origin: new URL(baseURL!).origin }),
+    {
       id,
       name: 'Deck',
       tabs: [{ id: tabId, name: 'Slides', elements: [box('a', 0, 0), box('b', 2000, 1500)] }],
       presentation: JSON.stringify(deck),
     },
-  });
-  expect(seeded.ok()).toBe(true);
-  await page.addInitScript(
-    ({ o, sig }) => {
-      localStorage.setItem('livedesign:v2:self-id', o);
-      if (sig) localStorage.setItem('livedesign:v2:self-sig', sig);
-      localStorage.setItem('livedesign:v2:name-confirmed', '1');
-    },
-    { o: owner, sig: guestSigFor(owner) },
   );
+  expect(seeded.ok()).toBe(true);
+  await adoptGuest(page, owner);
+  await page.addInitScript(() => localStorage.setItem('livedesign:v2:name-confirmed', '1'));
   await page.goto(`/design/${id}`);
   await page.locator(CANVAS).waitFor();
   await dismissQuickTour(page);

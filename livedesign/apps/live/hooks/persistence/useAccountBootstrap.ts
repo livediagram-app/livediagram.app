@@ -5,36 +5,22 @@ import {
   useWorkbenchSession,
   type WorkbenchSession,
 } from '@/components/providers/workbench-session-context';
-import { useEffect, useLayoutEffect, useMemo, useState, useSyncExternalStore } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { registerTokenProvider } from '@/lib/api-client';
 import { sessionsEnabled } from '@/lib/auth-config';
-import {
-  guestMigrationPending,
-  settleGuestMigration,
-  subscribeGuestMigration,
-} from '@/lib/guest-migration';
+import { clearGuestToken } from '@/lib/guest-token';
 
 // Two things every page that talks to the api needs to do once a
 // session can exist:
 //
 //   1. Register `() => getToken()` as the api-client's token provider
-//      so every request ships `Authorization: Bearer <jwt>` instead of
-//      the legacy `X-Owner-Id` (docs/specs/014-identity/auth-and-guest-access.md + docs/specs/015-api/api.md). Clear on sign-out
+//      so every request ships the account's `Authorization: Bearer <jwt>` instead of
+//      the guest's (docs/specs/014-identity/auth-and-guest-access.md + docs/specs/015-api/api.md). Clear on sign-out
 //      / unmount so the guest path resumes cleanly.
 //
-//   2. Run the guest → authed migration the first time the user is
-//      signed in AND `livedesign:v2:self-id` is still in localStorage.
-//      `POST /api/migrate` reassigns every `designs.owner_id` +
-//      `folders.owner_id` row from the guest id to the account id
-//      (docs/specs/014-identity/auth-and-guest-access.md + docs/specs/015-api/api.md). On success we drop the localStorage key so
-//      subsequent loads skip the call entirely. `authLoaded` stays
-//      false until the migration settles, so no page reads owner data
-//      as the account id while it still belongs to the guest id
-//      (issue #67). lib/guest-migration.ts runs it once per page load.
-//
-// Both Stage 3 (token provider) and Stage 4 (migration) lived as
-// identical copy-paste pairs in editor-page.tsx and new/page.tsx until
-// this hook collapsed them — AGENTS.md's reuse rule kicks in.
+//   2. Drop the guest token once signed in. The guest's things became the account's when it signed in on
+//      liveworkspace.app, which tells the index before the session exists (liveworkspace/docs/accounts.md
+//      "Signing in keeps a guest's things"), so there is nothing left to move from here.
 //
 // Returns the relevant `useAuth` fields so callers don't need to also
 // destructure them — there's exactly one place those values come from
@@ -64,7 +50,7 @@ type BootstrapResult = {
 };
 
 // The editor in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md "The editor in a
-// workbench", I9) is the session's person, settled at once: no guest migration, no timeout, no token
+// workbench", I9) is the session's person, settled at once: no guest token, no timeout, no token
 // provider here (WorkbenchAuthBridge registers the session's).
 function workbenchResult(session: WorkbenchSession): BootstrapResult {
   return {
@@ -95,7 +81,7 @@ function useAccountBootstrapEnabled(): BootstrapResult {
   // (e.g. Zscaler) sometimes hold connections open for tens of seconds
   // before failing, which blocks rendering. When the
   // timer fires isSignedIn is still undefined so the token provider stays
-  // null and the guest X-Owner-Id path is used. If the session eventually loads
+  // null and the guest token is sent. If the session eventually loads
   // after the timeout, isSignedIn updates and the token provider effect
   // below re-runs, switching subsequent API calls to the JWT path.
   const [timedOut, setTimedOut] = useState(false);
@@ -104,20 +90,12 @@ function useAccountBootstrapEnabled(): BootstrapResult {
     const id = window.setTimeout(() => setTimedOut(true), 5000);
     return () => window.clearTimeout(id);
   }, [sessionLoaded, held]);
-  // 2. Guest → authed migration. Read as an external store, so the very
-  // first signed-in render already holds `authLoaded` and settling
-  // releases it (see subscribeGuestMigration for why a re-render alone
-  // is not enough under the React Compiler).
-  const migrating = useSyncExternalStore(
-    subscribeGuestMigration,
-    () => !held && !!isSignedIn && !!accountUserId && guestMigrationPending(accountUserId),
-    () => false,
-  );
+  // 2. The guest token is spent once signed in (see above).
   useEffect(() => {
     if (held || !isSignedIn || !accountUserId) return;
-    void settleGuestMigration(accountUserId);
+    clearGuestToken();
   }, [held, isSignedIn, accountUserId]);
-  const authLoaded = (sessionLoaded || timedOut) && !migrating;
+  const authLoaded = sessionLoaded || timedOut;
 
   // First+Last takes precedence so we always present the form the
   // user picked at sign-up. Falls back to fullName and finally the
@@ -135,10 +113,9 @@ function useAccountBootstrapEnabled(): BootstrapResult {
   //
   // A LAYOUT effect on purpose. React runs a child's passive effects before
   // its parent's, and the render that flips `isSignedIn` is the same one that
-  // hands children the account id as their owner (the Explorer's
-  // DesignTagsProvider, say). With a plain useEffect, that child's first
+  // hands children the account id as their owner. With a plain useEffect, that child's first
   // fetch went out before the provider existed, so apiHeaders fell back to
-  // `X-Owner-Id: <account id>`, which the worker refuses with a 401 (an account id
+  // no identity for an account id, which the worker refuses with a 401 (an account id
   // is never a guest credential). Every layout effect runs before any
   // passive one, so the provider is in place by the time a child fetches.
   //

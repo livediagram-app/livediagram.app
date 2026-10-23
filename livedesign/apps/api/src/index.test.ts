@@ -1,9 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-// Mock the two async deps the request path touches before dispatch, so we can
-// drive the worker's top-level §4 guest-signature gate (docs/specs/015-api/public-api-and-tokens.md) directly.
+// Mock the async deps the request path touches before dispatch, so the worker's front-door gates run alone.
 vi.mock('./auth/accounts', () => ({
-  getAccountIdentity: async () => null,
+  getPersonIdentity: async () => null,
   accountCredentials: () => null,
 }));
 const { resolveApiTokenMock } = vi.hoisted(() => ({ resolveApiTokenMock: vi.fn() }));
@@ -24,132 +23,14 @@ vi.mock('./routes/workbench', () => ({ handleWorkbench: handleWorkbenchMock }));
 
 import worker from './index';
 import type { RouteContext, WorkbenchContext } from './routes/context';
-import { signOwnerId } from './auth/owner-signature';
 import type { Env } from './types';
 
-const SECRET = 'test-hmac-secret';
-
-// Enforcement on: secret set + a cutoff in the past.
 function env(): Env {
-  return { GUEST_ID_HMAC_SECRET: SECRET, GUEST_SIG_ENFORCE_AFTER: '1' } as unknown as Env;
+  return {} as unknown as Env;
 }
 function get(path: string, headers: Record<string, string> = {}): Request {
   return new Request(`https://api.test${path}`, { method: 'GET', headers });
 }
-
-describe('worker §4 guest X-Owner-Id signature gate', () => {
-  beforeEach(() => resolveApiTokenMock.mockResolvedValue(null));
-  it('401s an unsigned X-Owner-Id on an owner-scoped route when enforcing', async () => {
-    const res = await worker.fetch(get('/api/designs', { 'X-Owner-Id': 'guest-1' }), env());
-    expect(res.status).toBe(401);
-  });
-
-  it('401s an X-Owner-Id carrying an account id with no signature (signed-up Bearer-only)', async () => {
-    const res = await worker.fetch(get('/api/designs', { 'X-Owner-Id': 'user_abc' }), env());
-    expect(res.status).toBe(401);
-  });
-
-  it('401s an invalid signature', async () => {
-    const res = await worker.fetch(
-      get('/api/designs', { 'X-Owner-Id': 'guest-1', 'X-Owner-Sig': 'bogus' }),
-      env(),
-    );
-    expect(res.status).toBe(401);
-  });
-
-  it('lets a validly signed X-Owner-Id through the gate', async () => {
-    const sig = (await signOwnerId(SECRET, 'guest-1'))!;
-    const res = await worker.fetch(
-      get('/api/designs', { 'X-Owner-Id': 'guest-1', 'X-Owner-Sig': sig }),
-      env(),
-    );
-    expect(res.status).not.toBe(401);
-  });
-
-  it('does not gate when no X-Owner-Id is presented (public reads still resolve)', async () => {
-    const res = await worker.fetch(get('/api/designs'), env());
-    expect(res.status).not.toBe(401);
-  });
-});
-
-// The account-id-shape refusal sits BEFORE the signature gate above and, unlike it,
-// is unconditional — the shape has never been a legitimate guest credential, so
-// there is no legacy caller to grandfather and nothing to arm. That matters
-// because the signature gate ships OFF by default (`GUEST_SIG_ENFORCE_AFTER`
-// unset), which is the configuration these tests use.
-describe('worker refusal of an account id in X-Owner-Id', () => {
-  // Enforcement OFF: no secret, no cutoff. The gate above cannot fire here.
-  const noEnforcement = () => ({}) as unknown as Env;
-
-  beforeEach(() => resolveApiTokenMock.mockResolvedValue(null));
-
-  it('401s an account id presented as the guest header, with the gate disarmed', async () => {
-    const res = await worker.fetch(
-      get('/api/designs', { 'X-Owner-Id': 'user_2abcDEF' }),
-      noEnforcement(),
-    );
-    expect(res.status).toBe(401);
-    expect(await res.json()).toEqual({ error: 'account_id_not_a_guest_credential' });
-  });
-
-  it('covers every owner-scoped resource, not just designs', async () => {
-    for (const seg of ['folders', 'images', 'preferences', 'shared', 'timeline']) {
-      const res = await worker.fetch(
-        get(`/api/${seg}`, { 'X-Owner-Id': 'user_2abcDEF' }),
-        noEnforcement(),
-      );
-      expect(res.status, seg).toBe(401);
-    }
-  });
-
-  // The share resolver compares the header with the design owner, so a
-  // harvested account id must not reach it either.
-  it('refuses an account id as the guest header on the share resolver', async () => {
-    const res = await worker.fetch(
-      get('/api/share/abc', { 'X-Owner-Id': 'user_2abcDEF' }),
-      noEnforcement(),
-    );
-    expect(res.status).toBe(401);
-  });
-
-  // An empty header must not be a shared owner everyone can write as.
-  it('treats an empty guest header as no owner at all', async () => {
-    const res = await worker.fetch(
-      new Request('https://x.test/api/folders', {
-        method: 'POST',
-        headers: { 'X-Owner-Id': '', 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: 'f' }),
-      }),
-      noEnforcement(),
-    );
-    expect(res.status).toBe(400);
-    expect(JSON.stringify(await res.json())).toContain('authentication required');
-  });
-
-  it('lets a real guest UUID through (the shape the server actually mints)', async () => {
-    const res = await worker.fetch(
-      get('/api/designs', { 'X-Owner-Id': crypto.randomUUID() }),
-      noEnforcement(),
-    );
-    expect(res.status).not.toBe(401);
-  });
-
-  it('does not touch a Bearer caller, whose owner id IS an account id', async () => {
-    // A token request resolves its owner from the hashed-token lookup, so the
-    // account id never arrives as a header and must not be penalised for
-    // being one.
-    resolveApiTokenMock.mockResolvedValue({
-      ownerId: 'user_2abcDEF',
-      tokenId: 'tok-1',
-      readOnly: false,
-    });
-    const res = await worker.fetch(
-      get('/api/designs', { Authorization: `Bearer lwt_${'a'.repeat(40)}` }),
-      noEnforcement(),
-    );
-    expect(res.status).not.toBe(401);
-  });
-});
 
 const LVD = `lwt_${'a'.repeat(40)}`;
 
@@ -187,16 +68,6 @@ describe('read-only API token enforcement (docs/specs/015-api/mcp-server.md §4.
       env(),
     );
     expect(res.status).toBe(403);
-  });
-
-  it('403s the share-link list, which holds every code and the password', async () => {
-    // A read-only token must not be able to lift an edit link.
-    const res = await worker.fetch(
-      new Request('https://api.test/api/designs/d1/share', { headers: RO }),
-      env(),
-    );
-    expect(res.status).toBe(403);
-    expect(await res.json()).toEqual({ error: 'read_only_token' });
   });
 
   it('lets a read-only token revoke itself, and only itself', async () => {
@@ -304,7 +175,7 @@ describe('worker room-ticket throttle', () => {
     const res = await worker.fetch(
       new Request('https://api.test/api/designs/d1/room-ticket', {
         method: 'POST',
-        headers: { 'X-Owner-Id': crypto.randomUUID(), 'CF-Connecting-IP': '2001:db8:0:1::9' },
+        headers: { 'CF-Connecting-IP': '2001:db8:0:1::9' },
       }),
       { WRITE_RATE_LIMITER: { limit } } as unknown as Env,
     );
@@ -316,7 +187,7 @@ describe('worker room-ticket throttle', () => {
 // docs/specs/013-workspace/workbench-embeds.md: a `Bearer lvw_` is a person's editor on one design, confined at
 // the front door before any route runs.
 describe('workbench sessions at the front door', () => {
-  const LVW = `lvw_${'w'.repeat(43)}`;
+  const LVW = `lvw_${'w'.repeat(43)}.${'0f'.repeat(32)}`;
   const SESSION: WorkbenchContext = {
     sessionId: 'abcdef12-0000-4000-8000-000000000000',
     ownerId: 'user_1',

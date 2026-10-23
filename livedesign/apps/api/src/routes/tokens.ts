@@ -8,10 +8,9 @@
 import { bearerTokenOf, type CurrentTokenResponse } from '@livedesign/api-schema';
 import { forbidden, json, methodNotAllowed, noContent, notFound } from '../responses';
 import type { RouteContext } from './context';
-import { listApiTokensByOwner, retractTimelineWarning, revokePresentedToken } from '../db';
+import { revokePresentedToken } from '../db';
 import { getParticipant } from '../accounts/profiles';
-import { recordTokenRevoked } from '../timeline';
-import { endWorkbenchAccess } from '../workbench-end';
+import { workbenchStore } from '../workbench-store';
 
 export async function handleTokens(ctx: RouteContext): Promise<Response> {
   const { request, env, segments } = ctx;
@@ -30,15 +29,16 @@ export async function handleTokens(ctx: RouteContext): Promise<Response> {
   );
 }
 
-// The token the request presented (docs/specs/015-api/blueprints/cli.md "Token self-service"). Only a token
-// has one: a signed-in session or a guest is refused `403 not_a_token`; a token since revoked is 404.
+// The token the request presented (docs/specs/015-api/blueprints/cli.md "Token self-service"), as liveworkspace
+// described it when it checked it. Only a token has one: a signed-in session or a guest is refused
+// `403 not_a_token`; a token since revoked never got this far (401).
 async function handleCurrentToken(ctx: RouteContext): Promise<Response> {
   const { request, env, token } = ctx;
   if (request.method !== 'GET' && request.method !== 'DELETE') return methodNotAllowed();
   const owner = ctx.resolveOwner();
   if (!token || !owner) return forbidden('not_a_token');
-  const current = (await listApiTokensByOwner(env, owner)).find((t) => t.id === token.id);
-  if (!current) return notFound();
+  if (token.expiresAt === undefined) return notFound();
+  const current = { id: token.id, name: token.name ?? null, expiresAt: token.expiresAt };
   if (request.method === 'GET') {
     console.info('[tokens] current read', { tokenId: token.id });
     const participant = await getParticipant(env, owner);
@@ -54,13 +54,8 @@ async function handleCurrentToken(ctx: RouteContext): Promise<Response> {
   }
   // DELETE: the token revokes itself, at liveworkspace too, so it stops in every app.
   const secret = bearerTokenOf(request.headers.get('Authorization'));
-  if (secret) await revokePresentedToken(env, { id: token.id, secret });
-  await endWorkbenchAccess(env, { tokenId: token.id }, 'revoked');
+  if (secret) await revokePresentedToken(env, secret);
+  await workbenchStore(env, owner).endAccess({ tokenId: token.id }, 'revoked');
   console.info('[tokens] current revoked', { tokenId: token.id });
-  ctx.waitUntil?.(
-    retractTimelineWarning(env, 'account', token.id, 'token_expiring').then(() =>
-      recordTokenRevoked(env, { id: token.id, name: current.name || 'API token' }, owner),
-    ),
-  );
   return noContent();
 }

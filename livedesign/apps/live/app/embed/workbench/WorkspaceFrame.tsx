@@ -1,7 +1,7 @@
 'use client';
 
 // The mounted workspace frame (docs/specs/013-workspace/workbench-embeds.md "What renders", blueprint "The workspace
-// frame"): the Explorer as it is at /explorer, without the app's surroundings, or the editor of the design opened
+// frame"): the Explorer (@liveworkspace/explorer) as it is at /explorer, without the app's surroundings, or the editor of the design opened
 // in it, with Back. The place is the frame's own address; every move is the frame's own (useWorkspaceNavigation),
 // told to the workbench as `livedesign:place`, and the workbench may move it with `livedesign:open`. The
 // Explorer unmounts while a design is open, so the editor's shortcuts and panels are the only ones listening.
@@ -21,13 +21,8 @@ import { useToast } from '@/hooks/ui/useToast';
 import { debugLog } from '@/lib/debug-log';
 import { track } from '@/lib/telemetry';
 import { workspacePlaceOf, type WorkspacePlace } from '@/lib/workbench/workspace-place';
-import { useExplorer } from '../../explorer/ExplorerContext';
-import { ExplorerPane } from '../../explorer/ExplorerPane';
-import { ExplorerShell } from '../../explorer/ExplorerShell';
-import type { SelectedNode } from '../../explorer/views';
-import { VIEW_TITLES } from '../../explorer/view-titles';
-import { teamFolderPath } from '../../explorer/routes';
-import { replaceAppLocation } from '@/lib/app-location';
+import { VIEW_TITLES, type ExplorerView } from '@liveworkspace/explorer';
+import { ExplorerHost } from './ExplorerHost';
 import { useWorkspaceNavigation } from './useWorkspaceNavigation';
 import {
   explorerPlaceFields,
@@ -64,7 +59,7 @@ function backTitleOf(win: Window): string {
   return titleOfNode(place.node);
 }
 
-function titleOfNode(node: SelectedNode): string {
+function titleOfNode(node: ExplorerView): string {
   if (node.kind === 'folder') return 'the folder';
   if (node.kind === 'team') return 'the team';
   return VIEW_TITLES[node.kind];
@@ -146,12 +141,6 @@ function MountedFrame({ session }: { session: WorkbenchSession }) {
     };
   }, [place, session, report, back, toast]);
 
-  // A team page reads its folder when it mounts, as each /explorer page does: a move remounts the pane.
-  const paneKey =
-    place.kind === 'explorer'
-      ? `${pathname}?${new URLSearchParams(search).get('id') ?? ''}&${new URLSearchParams(search).get('folder') ?? ''}`
-      : '';
-
   return (
     <div ref={rootRef}>
       {designSession && place.kind === 'design' ? (
@@ -160,10 +149,12 @@ function MountedFrame({ session }: { session: WorkbenchSession }) {
         </WorkbenchSessionContext.Provider>
       ) : (
         <>
-          <ExplorerShell>
-            <ExplorerPane key={paneKey} />
-            <ExplorerPlaceReporter report={report} role={level} />
-          </ExplorerShell>
+          <div className="flex min-h-dvh bg-slate-50 px-4 pb-16 pt-6 dark:bg-slate-900">
+            {place.kind === 'explorer' ? <ExplorerHost view={place.node} /> : null}
+          </div>
+          {place.kind === 'explorer' ? (
+            <ExplorerPlaceReporter view={place.node} report={report} role={level} />
+          ) : null}
           <WorkbenchReconnectLine workbenchName={session.workbenchName} ended={session.ended} />
         </>
       )}
@@ -171,30 +162,29 @@ function MountedFrame({ session }: { session: WorkbenchSession }) {
   );
 }
 
-// Tells the workbench which Explorer view the frame shows, once its lists are in: the folder shown and how many
-// designs sit directly in it, so a workbench can offer something of its own beside an empty folder.
+// Tells the workbench which Explorer view the frame shows, and the folder when it is one. The Explorer's lists are the
+// index's, read inside the Explorer, so the frame names the folder by id only.
 function ExplorerPlaceReporter({
+  view,
   report,
   role,
 }: {
+  view: ExplorerView;
   report: (fields: PlaceFields) => void;
   role: WorkbenchRole;
 }) {
-  const { selected, loading, folderById, designsByFolder, teamFolders } = useExplorer();
-  const folderId = selected.kind === 'folder' ? selected.id : null;
-  // A team's folder lives on its team's page (WB52): a frame started on one moves there, in place.
-  const teamFolder =
-    folderId && !loading && !folderById.has(folderId)
-      ? (teamFolders.find((f) => f.id === folderId) ?? null)
-      : null;
+  const folderId =
+    view.kind === 'folder' ? view.id : view.kind === 'team' ? (view.folderId ?? null) : null;
   useEffect(() => {
-    if (teamFolder) replaceAppLocation(teamFolderPath(teamFolder.teamId, teamFolder.id));
-  }, [teamFolder]);
-  const folderName = folderId ? (folderById.get(folderId)?.name ?? null) : null;
-  const designCount = folderId ? (designsByFolder.get(folderId)?.length ?? 0) : null;
-  useEffect(() => {
-    if (loading || teamFolder) return;
-    report(explorerPlaceFields({ view: selected.kind, folderId, folderName, designCount, role }));
-  }, [report, loading, teamFolder, selected.kind, folderId, folderName, designCount, role]);
+    report(
+      explorerPlaceFields({
+        view: view.kind,
+        folderId,
+        folderName: null,
+        designCount: null,
+        role,
+      }),
+    );
+  }, [report, view.kind, folderId, role]);
   return null;
 }

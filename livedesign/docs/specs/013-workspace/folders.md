@@ -191,7 +191,7 @@ the `folder_id` column.
 
 ## API
 
-All endpoints continue the existing `X-Owner-Id` convention.
+All endpoints take the caller's Bearer, an account's or a guest's ([Auth + guest access](../014-identity/auth-and-guest-access.md)).
 
 | Method | Path                      | Body                                 | Returns                 |
 | ------ | ------------------------- | ------------------------------------ | ----------------------- |
@@ -229,8 +229,8 @@ for.
   the defaults. A dangling default is skipped, never a rejection
   ([Default folders](default-folders.md#dangling-defaults)).
 - **Team space.** Only a **verified account id** (a signed-in session or an API token) may place
-  into a team, and only when it is a **joined** member of that team. The guest `X-Owner-Id`
-  header never counts. A guest, an invited-but-not-joined member, or an unknown team is
+  into a team, and only when it is a **joined** member of that team. A guest token
+  never counts. A guest, an invited-but-not-joined member, or an unknown team is
   refused with `team_forbidden`.
 - **Folder.** The folder must exist and belong to the resolved space: in My Work the
   caller's own personal folder, in a team a folder of that team.
@@ -360,9 +360,9 @@ link.
 
 This is the full-page library view. Open to both guests and signed-in
 users: the owner id resolves the same way every other surface in the
-live app does (the account userId when signed in, the `livedesign:v2:self-id`
-localStorage UUID otherwise), so a guest sees the designs + folders +
-Image Gallery their per-browser id owns. AuthControls in the page header
+live app does (the account userId when signed in, the guest token's `guest_…` id
+otherwise), so a guest sees the designs + folders + Image Gallery their
+guest id owns. AuthControls in the page header
 surfaces a "Sign in" CTA for guests who want to upgrade. The page is
 modelled on Windows Explorer: a sidebar tree drives navigation, a
 breadcrumb + list view on the right shows the focused folder's

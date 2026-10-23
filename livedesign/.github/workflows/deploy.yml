@@ -27,7 +27,7 @@ jobs:
     uses: ./.github/workflows/deploy-reusable.yml
     with:
       # Empty: the top-level wrangler.toml config, unsuffixed worker names,
-      # the production D1 / R2 / KV.
+      # the production R2 / KV and Durable Objects.
       wrangler_env: ''
       environment_name: production
       environment_url: https://livedesign.app
@@ -40,6 +40,5 @@ jobs:
       API_RESOURCE: ${{ secrets.API_RESOURCE }}
       ACCOUNTS_CLIENT_ID: ${{ secrets.ACCOUNTS_CLIENT_ID }}
       ACCOUNTS_CLIENT_SECRET: ${{ secrets.ACCOUNTS_CLIENT_SECRET }}
-      GUEST_ID_HMAC_SECRET: ${{ secrets.GUEST_ID_HMAC_SECRET }}
       MEDIA_KEY: ${{ secrets.MEDIA_KEY }}
       TELEMETRY_KEY: ${{ secrets.TELEMETRY_KEY }}

@@ -2,9 +2,10 @@ import type { Browser, Page } from '@playwright/test';
 import {
   dismissQuickTour,
   expect,
-  guestSigFor,
-  mintSignedGuest,
-  ownerHeaders,
+  adoptGuest,
+  designHeaders,
+  mintGuest,
+  seedDesign,
   test,
 } from './fixtures';
 
@@ -52,16 +53,10 @@ async function openAs(browser: Browser, baseURL: string, url: string, owner: str
     viewport: { width: 1440, height: 900 },
     colorScheme: 'dark',
   });
-  await ctx.addInitScript(
-    ({ o, sig }) => {
-      if (o) {
-        localStorage.setItem('livedesign:v2:name-confirmed', '1');
-        localStorage.setItem('livedesign:v2:self-id', o);
-        if (sig) localStorage.setItem('livedesign:v2:self-sig', sig);
-      }
-    },
-    { o: owner, sig: owner ? guestSigFor(owner) : null },
-  );
+  if (owner) {
+    await adoptGuest(ctx, owner);
+    await ctx.addInitScript(() => localStorage.setItem('livedesign:v2:name-confirmed', '1'));
+  }
   const page = await ctx.newPage();
   await page.goto(url);
   return page;
@@ -74,15 +69,18 @@ const leftOf = async (page: Page, id: string) =>
   parseFloat((await box(page, id).evaluate((el) => (el as HTMLElement).style.left)) || 'NaN');
 
 test('a collaborator sees a drag live, and where it lands', async ({ page, browser, baseURL }) => {
-  const owner = await mintSignedGuest(page.request);
+  const owner = await mintGuest(page.request);
   const id = crypto.randomUUID();
   const tabId = crypto.randomUUID();
-  const headers = ownerHeaders(owner, { Origin: new URL(baseURL!).origin });
-  const seeded = await page.request.post(`${apiBase}/designs`, {
-    headers,
-    data: { id, name: 'Board', tabs: [{ id: tabId, name: 'Board', elements: BOARD }] },
+  const seeded = await seedDesign(page.request, owner, {
+    id,
+    name: 'Board',
+    tabs: [{ id: tabId, name: 'Board', elements: BOARD }],
   });
   expect(seeded.ok()).toBe(true);
+  const headers = await designHeaders(page.request, owner, id, {
+    Origin: new URL(baseURL!).origin,
+  });
   const share = await page.request.post(`${apiBase}/designs/${id}/share`, {
     headers,
     data: { role: 'edit' },

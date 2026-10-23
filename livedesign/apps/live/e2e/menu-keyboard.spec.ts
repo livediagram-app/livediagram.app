@@ -1,13 +1,9 @@
 import { mkdirSync } from 'node:fs';
 import type { Page } from '@playwright/test';
-import { apiBase } from './audit-screens';
 import {
   dismissQuickTour,
   expect,
   expectNoPageErrors,
-  guestSigFor,
-  mintSignedGuest,
-  ownerHeaders,
   startBlankDesign,
   test,
   paletteTile,
@@ -27,107 +23,10 @@ const shot = async (page: Page, name: string) => {
   await page.screenshot({ path: `${SHOTS}/${name}.png` });
 };
 
-async function guestWithFolder(page: Page, baseURL: string, name: string) {
-  const owner = await mintSignedGuest(page.request);
-  await page.addInitScript(
-    ({ id, sig }) => {
-      localStorage.setItem('livedesign:v2:ui-mode', 'dark');
-      localStorage.setItem('livedesign:v2:name-confirmed', '1');
-      localStorage.setItem('livedesign:v2:self-id', id);
-      if (sig) localStorage.setItem('livedesign:v2:self-sig', sig);
-    },
-    { id: owner, sig: guestSigFor(owner) },
-  );
-  const headers = ownerHeaders(owner, {
-    Origin: new URL(baseURL).origin,
-    'Content-Type': 'application/json',
-  });
-  const res = await page.request.post(`${apiBase}/folders`, {
-    headers,
-    data: { id: crypto.randomUUID(), name, parentId: null },
-  });
-  expect(res.ok()).toBe(true);
-}
-
-const focusedName = (page: Page) =>
-  page.evaluate(() => {
-    const el = document.activeElement;
-    return el
-      ? `${el.getAttribute('role') ?? el.tagName.toLowerCase()}:${el.textContent?.trim()}`
-      : '';
-  });
-
 test.describe('menus by keyboard', () => {
   test.beforeEach(async ({ page }) => {
     await page.emulateMedia({ colorScheme: 'dark' });
     await page.setViewportSize({ width: 1280, height: 800 });
-  });
-
-  test('the folder menu and its Use as Default for submenu', async ({
-    page,
-    pageErrors,
-    baseURL,
-  }) => {
-    await guestWithFolder(page, baseURL!, 'Retros');
-    await page.goto('/explorer/all');
-    const nav = page.getByRole('navigation', { name: 'Explorer' }).first();
-    const row = nav.getByRole('treeitem', { name: 'Retros' });
-    await expect(row).toBeVisible({ timeout: 30_000 });
-
-    await row.focus();
-    await page.keyboard.press('Shift+F10');
-    const menu = page.getByRole('menu', { name: 'Retros' });
-    await expect(menu).toBeVisible();
-    await expect(menu).toMatchAriaSnapshot(`
-      - menu "Retros":
-        - menuitem "Rename"
-        - menuitem "New Subfolder"
-        - menuitem "Change Folder"
-        - menuitem "Use as Default for"
-        - separator
-        - menuitem "Delete"
-    `);
-    // Focus is on the first item; the arrows wrap, typeahead finds by first letters.
-    await expect(menu.getByRole('menuitem', { name: 'Rename' })).toBeFocused();
-    await page.keyboard.press('ArrowUp');
-    await expect(menu.getByRole('menuitem', { name: 'Delete' })).toBeFocused();
-    await page.keyboard.press('Home');
-    await page.keyboard.press('u');
-    const useAs = menu.getByRole('menuitem', { name: 'Use as Default for' });
-    await expect(useAs).toBeFocused();
-    await expect(useAs).toHaveAttribute('aria-haspopup', 'menu');
-    await shot(page, 'after-folder-menu-focus');
-
-    // Right opens the submenu on its first entry; Left comes back to its trigger.
-    await page.keyboard.press('ArrowRight');
-    const sub = page.getByRole('menu', { name: 'New designs that open as' });
-    await expect(sub).toBeVisible();
-    await expect(useAs).toHaveAttribute('aria-expanded', 'true');
-    await expect(useAs).toHaveAttribute('aria-controls', (await sub.getAttribute('id'))!);
-    await expect(sub.getByRole('menuitemcheckbox', { name: 'Diagrams' })).toBeFocused();
-    await page.keyboard.press('ArrowDown');
-    await page.keyboard.press(' ');
-    await expect(sub.getByRole('menuitemcheckbox', { name: 'Whiteboards' })).toHaveAttribute(
-      'aria-checked',
-      'true',
-    );
-    await shot(page, 'after-folder-submenu-focus');
-    await page.keyboard.press('ArrowLeft');
-    await expect(sub).toHaveCount(0);
-    await expect(useAs).toBeFocused();
-
-    // Escape closes the menu and puts focus back on the tree row Shift+F10 was pressed on.
-    await page.keyboard.press('Escape');
-    await expect(menu).toHaveCount(0);
-    await expect(row).toBeFocused();
-
-    // Tab closes it and moves on from there.
-    await page.keyboard.press('Shift+F10');
-    await expect(menu).toBeVisible();
-    await page.keyboard.press('Tab');
-    await expect(menu).toHaveCount(0);
-    expect(await focusedName(page)).not.toMatch(/^menuitem/);
-    expectNoPageErrors(pageErrors);
   });
 
   test('the element menu is a control menu that takes focus from the keyboard', async ({
@@ -222,37 +121,6 @@ test.describe('menus by keyboard', () => {
     await page.keyboard.press('Escape');
     await expect(presets).toHaveCount(0);
     await expect(zoom).toBeFocused();
-    expectNoPageErrors(pageErrors);
-  });
-
-  test('on a phone the submenu covers its parent, its Close read last', async ({
-    page,
-    pageErrors,
-    baseURL,
-  }) => {
-    await page.setViewportSize({ width: 390, height: 844 });
-    await guestWithFolder(page, baseURL!, 'Retros');
-    await page.goto('/explorer/all');
-    const trigger = page.getByRole('button', { name: 'Menu for folder Retros' });
-    await expect(trigger).toBeVisible({ timeout: 30_000 });
-    await expect(trigger).toHaveAttribute('aria-haspopup', 'menu');
-    await trigger.focus();
-    await page.keyboard.press('ArrowDown');
-    const menu = page.getByRole('menu', { name: 'Retros' });
-    await expect(menu.getByRole('menuitem', { name: 'Rename' })).toBeFocused();
-    await page.keyboard.press('u');
-    await page.keyboard.press('Enter');
-    const sub = page.getByRole('menu', { name: 'New designs that open as' });
-    await expect(sub.getByRole('menuitemcheckbox', { name: 'Diagrams' })).toBeFocused();
-    // The drill-down's header draws first but reads last, so focus opened on the first entry.
-    const items = await sub.getByRole('menuitem').or(sub.getByRole('menuitemcheckbox')).all();
-    expect(await items.at(-1)!.getAttribute('aria-label')).toBe('Close Use as Default for');
-    await shot(page, 'after-phone-folder-submenu');
-    await page.keyboard.press('Escape');
-    await expect(sub).toHaveCount(0);
-    await page.keyboard.press('Escape');
-    await expect(menu).toHaveCount(0);
-    await expect(trigger).toBeFocused();
     expectNoPageErrors(pageErrors);
   });
 

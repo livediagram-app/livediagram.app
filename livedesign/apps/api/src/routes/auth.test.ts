@@ -220,6 +220,36 @@ describe('POST /api/auth/sign-out', () => {
   });
 });
 
+describe('GET /api/auth/guest', () => {
+  it("sends the browser to the accounts site's guest handoff with this app's client, coming back to /auth/guest", async () => {
+    const res = await call('/api/auth/guest?state=abcdefgh12');
+    expect(res.status).toBe(302);
+    const to = new URL(res.headers.get('Location')!);
+    expect(`${to.origin}${to.pathname}`).toBe('https://accounts.example/api/auth/guest');
+    expect(Object.fromEntries(to.searchParams)).toEqual({
+      client_id: 'client-lp',
+      redirect_uri: 'https://lp.example/auth/guest',
+      state: 'abcdefgh12',
+      resource: 'https://lp.example/api',
+    });
+    expect(setCookies(res)).toEqual([]);
+  });
+
+  it('comes straight back, saying so, on a deployment with no accounts site', async () => {
+    const res = await call('/api/auth/guest?state=abcdefgh12', { env: {} as Env });
+    expect(res.status).toBe(302);
+    expect(res.headers.get('Location')).toBe(
+      'https://lp.example/auth/guest#error=guest_not_configured&state=abcdefgh12',
+    );
+  });
+
+  it('refuses a missing or odd state rather than redirect with it', async () => {
+    for (const q of ['', '?state=short', '?state=has%20space%20in%20it']) {
+      expect((await call(`/api/auth/guest${q}`)).status, q).toBe(400);
+    }
+  });
+});
+
 describe('the /api/auth surface', () => {
   it('answers 404 on a guest-only deployment', async () => {
     const res = await call('/api/auth/sign-in', { env: {} as Env });

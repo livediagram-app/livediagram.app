@@ -1,20 +1,18 @@
 // @vitest-environment jsdom
 
-// A production 401 on an owner-scoped list: the Explorer mounts a data
-// provider (the tags list, say) in the same render that makes the signed-in user's
-// account id the owner, and React runs that child's effect (its fetch)
+// A child mounted in the same render that makes the signed-in user's
+// account id the owner has its effect (its first fetch) run by React
 // before the parent's. When the token provider was registered in a passive
-// effect, the fetch went out without a Bearer and put the account id in
-// `X-Owner-Id`, which the worker refuses. The provider must be in place
+// effect, the fetch went out without the account's Bearer, which the worker
+// refuses. The provider must be in place
 // before any child's first fetch.
 
 import { act, render } from '@testing-library/react';
 import { useEffect, type ReactNode } from 'react';
-import { renderToString } from 'react-dom/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { apiHeaders, setTokenProvider } from '@/lib/api/core';
-import { resetGuestMigrationForTests } from '@/lib/guest-migration';
-import { setGuestIdentity } from '@/lib/local-identity';
+import { GUEST_TOKEN_STORAGE_KEY } from '@/lib/guest-token-key';
+import { guestTokenFor } from '@/lib/testing/guest-token';
 
 vi.mock('@/lib/auth-config', () => ({ signInEnabled: true, sessionsEnabled: true }));
 const { getToken } = vi.hoisted(() => ({
@@ -36,13 +34,6 @@ vi.mock('@/components/providers/deferred-auth', () => {
     }),
   };
 });
-
-const MIGRATED = { designs: 1, folders: 0, shared: 0, images: 0 };
-const { apiMigrateGuestData } = vi.hoisted(() => ({ apiMigrateGuestData: vi.fn() }));
-vi.mock('@/lib/api-client', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/lib/api-client')>()),
-  apiMigrateGuestData,
-}));
 
 const { useAccountBootstrap } = await import('./useAccountBootstrap');
 
@@ -86,59 +77,22 @@ describe('useAccountBootstrap token provider', () => {
   });
 });
 
-// Issue #67: signing in with a guest design open showed "diagram does not
-// exist", because the editor loaded it as the account before
-// POST /api/migrate had moved it. Owner data waits for the migration.
-describe('useAccountBootstrap guest migration', () => {
-  it('holds authLoaded until the guest data has migrated', async () => {
-    resetGuestMigrationForTests();
-    setGuestIdentity('guest-1', 'sig-1');
-    let finish: (v: typeof MIGRATED) => void = () => {};
-    apiMigrateGuestData.mockReturnValue(new Promise((r) => (finish = r)));
+// A guest who signs in becomes the account (liveworkspace/docs/one-explorer-contracts.md "Guests"): the accounts
+// site merges the guest's items into the account at sign-in, so the editor only lets go of the guest token, and
+// nothing waits on a migration of its own.
+describe('useAccountBootstrap after sign-in', () => {
+  it('lets go of the guest token and settles at once', async () => {
+    localStorage.setItem(GUEST_TOKEN_STORAGE_KEY, guestTokenFor('guest_1'));
     const seen: boolean[] = [];
     function Probe() {
       seen.push(useAccountBootstrap().authLoaded);
       return null;
     }
-
-    render(<Probe />);
-    expect(seen.at(-1)).toBe(false);
-    expect(apiMigrateGuestData).toHaveBeenCalledWith('guest-1', 'sig-1');
-
-    await act(async () => finish(MIGRATED));
-    expect(seen.at(-1)).toBe(true);
-    expect(seen.indexOf(true)).toBeGreaterThan(0);
-  });
-
-  // The static export prerenders without storage: the server snapshot reads
-  // "not migrating", and the client's first render takes over from there.
-  it('prerenders without a pending migration', () => {
-    resetGuestMigrationForTests();
-    setGuestIdentity('guest-1', 'sig-1');
-    function Probe() {
-      return <>{String(useAccountBootstrap().authLoaded)}</>;
-    }
-    expect(renderToString(<Probe />)).toBe('true');
-  });
-
-  it('migrates once however many components mount the hook', async () => {
-    resetGuestMigrationForTests();
-    setGuestIdentity('guest-1', 'sig-1');
-    apiMigrateGuestData.mockResolvedValue(MIGRATED);
-    function Probe() {
-      useAccountBootstrap();
-      return null;
-    }
-
     await act(async () => {
-      render(
-        <>
-          <Probe />
-          <Probe />
-        </>,
-      );
+      render(<Probe />);
     });
-    expect(apiMigrateGuestData).toHaveBeenCalledTimes(1);
+    expect(seen.at(-1)).toBe(true);
+    expect(localStorage.getItem(GUEST_TOKEN_STORAGE_KEY)).toBeNull();
   });
 });
 

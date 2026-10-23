@@ -1,3 +1,4 @@
+import type { TeamPerson } from '@liveworkspace/auth-client';
 import type { Env } from './types';
 
 // A stand-in for the liveworkspace accounts Worker's internal API (liveworkspace/docs/accounts.md "The
@@ -12,6 +13,12 @@ export const ACCOUNTS_ENV = {
   ACCOUNTS_URL: 'https://accounts.test',
   ACCOUNTS_CLIENT_ID: 'livedesign-test',
   ACCOUNTS_CLIENT_SECRET: 'secret',
+} satisfies Partial<Env>;
+
+// The index this app reports to, for the tests that count a person's designs there (the milestones).
+export const INDEX_ENV = {
+  INDEX_ORIGIN: 'https://index.test',
+  INDEX_KEY: 'ld-key',
 } satisfies Partial<Env>;
 
 type Scoped = {
@@ -41,6 +48,10 @@ export type FakeAccounts = {
   activity: { userId: string; at?: number }[];
   // Teams made through POST internal/teams, the admin read off the stand-in's `token-for-<id>` tokens.
   teams: { id: string; name: string; organisation: string | null; admin: string }[];
+  // Each liveworkspace team's joined and invited people, by team id (internal/teams/members).
+  teamPeople: Map<string, TeamPerson[]>;
+  // How many designs each person has made, as the index counts them (INDEX_ENV's origin).
+  designCounts: Map<string, number>;
   // Makes the next calls to a path fail with this status.
   failing: Map<string, number>;
 };
@@ -65,6 +76,8 @@ export function fakeAccounts(fallback?: typeof fetch): FakeAccounts {
     milestones: new Set(),
     activity: [],
     teams: [],
+    teamPeople: new Map(),
+    designCounts: new Map(),
     failing: new Map(),
   };
   const prefix = `${ACCOUNTS_ENV.ACCOUNTS_URL}/api/account/internal/`;
@@ -90,6 +103,15 @@ export function fakeAccounts(fallback?: typeof fetch): FakeAccounts {
 
   state.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+    const counted = url.startsWith(INDEX_ENV.INDEX_ORIGIN)
+      ? /\/app\/people\/([^/?]+)\/count(?:\?|$)/.exec(url)
+      : null;
+    if (counted) {
+      const personId = decodeURIComponent(counted[1]!);
+      state.calls.push({ path: 'index/count', body: { personId } });
+      const limit = Number(new URL(url).searchParams.get('limit') ?? '1000');
+      return json({ count: Math.min(state.designCounts.get(personId) ?? 0, limit) });
+    }
     if (!url.startsWith(prefix)) {
       if (fallback) return fallback(input, init);
       throw new Error(`unexpected fetch ${url}`);
@@ -120,6 +142,23 @@ export function fakeAccounts(fallback?: typeof fetch): FakeAccounts {
         apply(next.app, patch.app);
         state.settings.set(owner, next);
         return json(next);
+      }
+      case 'settings/notify': {
+        const keys = body.keys as string[];
+        const pick = (prefs: Record<string, unknown>) =>
+          Object.fromEntries(Object.entries(prefs).filter(([k]) => keys.includes(k)));
+        const settings: Record<string, { all: Record<string, unknown>; app: Record<string, unknown> }> =
+          {};
+        for (const owner of body.owners as string[]) {
+          const stored = state.settings.get(owner);
+          if (stored) settings[owner] = { all: pick(stored.all), app: pick(stored.app) };
+        }
+        return json({ settings });
+      }
+      case 'teams/members': {
+        const members = state.teamPeople.get(String(body.teamId));
+        if (!members) return json({ error: 'not_found' }, 404);
+        return json({ team: { id: body.teamId, name: 'Team' }, members });
       }
       case 'profiles/read': {
         const ids = body.ids as string[];

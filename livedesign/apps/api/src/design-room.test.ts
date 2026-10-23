@@ -8,7 +8,7 @@ import {
   ROOM_OP_KINDS,
   SYSTEM_OP_KINDS,
 } from '@livedesign/api-schema';
-import { DesignRoom } from './design-room';
+import { DesignRoom } from './design-room/design-room';
 import type { Env } from './types';
 
 // PRESENCE_OP_KINDS is a readonly array (it has to be, to derive the type), so

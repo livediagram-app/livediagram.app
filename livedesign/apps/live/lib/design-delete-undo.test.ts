@@ -1,92 +1,51 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('@/lib/api/trash', () => ({ apiRestoreDesign: vi.fn() }));
+const index = vi.hoisted(() => ({ deleteItem: vi.fn() }));
+vi.mock('@/lib/index-client', () => ({ indexClient: index }));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
-const { apiRestoreDesign } = await import('@/lib/api/trash');
-const { track } = await import('@/lib/telemetry');
-const { handOffDeleteUndo, offerDeleteUndo, takeDeleteUndo } =
-  await import('./design-delete-undo');
+const { handOffDeleteUndo, takeDeleteUndo, trashOpenDesign } = await import('./design-delete-undo');
+const { isDesignDeleted } = await import('./design-tombstones');
 
-// docs/specs/013-workspace/trash.md "Deleting": the Undo on "“Roadmap” deleted", and its hand-over from the editor.
 afterEach(() => {
   vi.clearAllMocks();
   sessionStorage.clear();
 });
 
-const toast = () => ({ action: vi.fn(), dismissAction: vi.fn(), success: vi.fn(), error: vi.fn() });
-
-describe('offerDeleteUndo', () => {
-  it('restores on Undo, closes the toast, counts it by its Trash and says so', async () => {
-    vi.mocked(apiRestoreDesign).mockResolvedValueOnce(null);
-    const t = toast();
-    const onRestored = vi.fn();
-    offerDeleteUndo(t as never, { ownerId: 'me', id: 'd1', trash: 'Team', onRestored });
-    const spec = t.action.mock.calls[0]![0] as {
-      key: string;
-      message: string;
-      actions: { onSelect: () => void; ariaLabel: string }[];
-    };
-    expect(spec.message).toBe('Design deleted');
-    expect(spec.actions[0]!.ariaLabel).toBe('Undo: restore the design');
-    spec.actions[0]!.onSelect();
-    expect(t.dismissAction).toHaveBeenCalledWith(spec.key);
-    await vi.waitFor(() => expect(t.success).toHaveBeenCalledWith('Design restored'));
-    expect(onRestored).toHaveBeenCalled();
-    expect(track).toHaveBeenCalledWith('Trash', 'Restored', 'Team');
-  });
-
-  it('says where it still is when the restore fails', async () => {
-    vi.mocked(apiRestoreDesign).mockRejectedValueOnce(new Error('503'));
-    const t = toast();
-    offerDeleteUndo(t as never, { ownerId: 'me', id: 'd1', trash: 'Personal' });
-    (t.action.mock.calls[0]![0] as { actions: { onSelect: () => void }[] }).actions[0]!.onSelect();
-    await vi.waitFor(() => expect(t.error).toHaveBeenCalled());
-    expect(t.success).not.toHaveBeenCalled();
-  });
-
-  it('names the design it deleted, restored or could not restore', async () => {
-    vi.mocked(apiRestoreDesign)
-      .mockResolvedValueOnce(null)
-      .mockRejectedValueOnce(new Error('503'));
-    const t = toast();
-    offerDeleteUndo(t as never, { ownerId: 'me', id: 'd1', name: 'Roadmap', trash: 'Personal' });
-    const spec = t.action.mock.calls[0]![0] as {
-      message: string;
-      actions: { onSelect: () => void; ariaLabel: string }[];
-    };
-    expect(spec.message).toBe('“Roadmap” deleted');
-    expect(spec.actions[0]!.ariaLabel).toBe('Undo: restore “Roadmap”');
-    spec.actions[0]!.onSelect();
-    await vi.waitFor(() => expect(t.success).toHaveBeenCalledWith('“Roadmap” restored'));
-    spec.actions[0]!.onSelect();
-    await vi.waitFor(() =>
-      expect(t.error).toHaveBeenCalledWith(
-        'Could not restore “Roadmap”. It is in the Trash, in Settings.',
-      ),
+describe('trashOpenDesign', () => {
+  it('tombstones the design before the delete, so autosave cannot write it back, then leaves with the Undo', async () => {
+    const seen: boolean[] = [];
+    index.deleteItem.mockImplementation(async () => void seen.push(isDesignDeleted('a')));
+    const leave = vi.fn();
+    expect(await trashOpenDesign('a', 'Roadmap', leave)).toBe(true);
+    expect(seen).toEqual([true]);
+    // To the Explorer, the design in the address for its Undo.
+    expect(leave).toHaveBeenCalledWith(
+      expect.stringMatching(/^\/explorer\?trashed=a&title=Roadmap$/),
     );
+    expect(takeDeleteUndo()).toEqual({ id: 'a', title: 'Roadmap' });
+  });
+
+  it('lifts the tombstone and stays when the index refuses', async () => {
+    index.deleteItem.mockRejectedValue(new Error('no'));
+    const leave = vi.fn();
+    expect(await trashOpenDesign('b', 'Roadmap', leave)).toBe(false);
+    expect(isDesignDeleted('b')).toBe(false);
+    expect(leave).not.toHaveBeenCalled();
+    expect(takeDeleteUndo()).toBeNull();
   });
 });
 
-describe('the hand-over from the editor', () => {
+describe('the Undo handoff', () => {
   it('is taken once', () => {
-    handOffDeleteUndo('d1', 'Personal', 'Roadmap', 1_000);
-    expect(takeDeleteUndo(2_000)).toEqual({ id: 'd1', name: 'Roadmap', trash: 'Personal' });
-    expect(takeDeleteUndo(2_000)).toBeNull();
+    handOffDeleteUndo('c', null);
+    expect(takeDeleteUndo()).toEqual({ id: 'c', title: null });
+    expect(takeDeleteUndo()).toBeNull();
   });
 
-  it('carries no name for an unnamed design', () => {
-    handOffDeleteUndo('d1', 'Local', '', 1_000);
-    expect(takeDeleteUndo(2_000)).toEqual({ id: 'd1', name: null, trash: 'Local' });
-  });
-
-  it('is dropped when stale or malformed', () => {
-    handOffDeleteUndo('d1', 'Personal', 'Roadmap', 1_000);
-    expect(takeDeleteUndo(60_000)).toBeNull();
-    sessionStorage.setItem('livedesign:deleted-design', '{"id":1}');
-    expect(takeDeleteUndo()).toBeNull();
-    sessionStorage.setItem('livedesign:deleted-design', 'not json');
-    expect(takeDeleteUndo()).toBeNull();
+  it('offers nothing once stale', () => {
+    handOffDeleteUndo('d', 'Old', 1_000);
+    expect(takeDeleteUndo(1_000 + 31_000)).toBeNull();
   });
 });

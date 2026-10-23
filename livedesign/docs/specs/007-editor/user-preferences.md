@@ -104,12 +104,11 @@ set. Don't fold panel placement into `UserPreferences`.
 
 ### Sign-up migration
 
-`POST /api/migrate` ([Auth + guest access](../014-identity/auth-and-guest-access.md))
-moves a guest's settings to the account they sign up with, alongside the
-designs, folders and shared-with rows: the account keeps what it already
-has, the guest's values fill its gaps, then the guest's are cleared
-(`apps/api/src/accounts/guest-move.ts`, the accounts Worker's own merge
-rule). A second call finds nothing left to move.
+When a guest signs up, the accounts Worker merges the guest into the
+account ([Auth + guest access](../014-identity/auth-and-guest-access.md)
+"Guest → account migration"), settings included: the account keeps what it
+already has, the guest's values fill its gaps, then the guest's are
+cleared. A second merge finds nothing left to move.
 
 ### Without liveworkspace accounts
 
@@ -785,8 +784,8 @@ event on the preferences key.
 
 - **`GET /api/preferences`** — returns `{ prefs: UserPreferences }`
   for the resolved owner: both scopes joined, `{}` when nothing is
-  stored. Auth: the standard hybrid identity (account Bearer OR
-  `X-Owner-Id`). 404 `preferences_not_stored` without liveworkspace
+  stored. Auth: the standard hybrid identity (an account's or a
+  guest's Bearer token). 404 `preferences_not_stored` without liveworkspace
   accounts; 503 `preferences_unavailable` when the accounts Worker
   can't be reached.
 - **`PUT /api/preferences`** — body `{ prefs: PreferencesPatch }`: the

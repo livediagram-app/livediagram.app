@@ -4,22 +4,13 @@ import { useEffect, useState } from 'react';
 import { UNTITLED_DESIGN_NAME } from '@livedesign/templates';
 import type { SaveStatus } from '@/components/chrome/EditorHeader';
 import type { useToast } from '@/hooks/ui/useToast';
-import {
-  apiListDesigns,
-  apiListSharedWith,
-  type DesignListItem,
-  type SharedWithItem,
-  DESIGN_LIST_LOAD_SAFETY_MS,
-} from '@/lib/api-client';
 
 // Persistence-facing state for the editor: the autosave status pill, the
-// design name (mirrored into the browser tab title), the Explorer's
-// owned + shared design lists, and the transient import-error toast. Plus the two list-refresh helpers the
-// hydration + autosave paths call. A cohesive slice lifted out of
+// design name (mirrored into the browser tab title) and the transient import-error toast. The Explorer's lists
+// are the index's, read by the shared Explorer itself. A cohesive slice lifted out of
 // useEditorState — same pattern as usePanelLayout / useEditorDialogs.
 //
-// The values render the header pill, footer "Saved X ago", Explorer
-// lists; the setters are written by the autosave,
+// The values render the header pill and the footer "Saved X ago"; the setters are written by the autosave,
 // hydration/bootstrap and room-op paths via the returned setters.
 export function useEditorPersistence({ toast }: { toast: ReturnType<typeof useToast> }) {
   // Surfaced in the footer (bottom-right of the TabBar). The autosave
@@ -42,21 +33,6 @@ export function useEditorPersistence({ toast }: { toast: ReturnType<typeof useTo
     document.title = designName ? `${designName} | livedesign` : 'livedesign';
   }, [designName]);
 
-  // Every design in the local store. Used by the Explorer to render its
-  // list. Refreshed on hydration and after we save the current design
-  // (so the Explorer's "Your designs" section reflects renames + first
-  // saves in real time).
-  const [designList, setDesignList] = useState<DesignListItem[]>([]);
-  // True while the very first design-list fetch is in flight, so the
-  // Explorer can render a skeleton instead of an empty "no designs"
-  // state. We only flip this off — subsequent refreshes don't reset it
-  // because they're triggered by saves and shouldn't blank the list.
-  const [designListLoading, setDesignListLoading] = useState(true);
-  // Designs shared with the current owner. Surfaced in the
-  // Explorer's "Shared with you" accordion. Fetched alongside the
-  // owned-design list and refreshed when the owner opens a new
-  // share link in this tab.
-  const [sharedDesigns, setSharedDesigns] = useState<SharedWithItem[]>([]);
   // Brief error string surfaced by the Import-tab flow when the
   // picked file is malformed or its schema is newer than this
   // editor understands. Rendered as a transient toast under the
@@ -103,49 +79,6 @@ export function useEditorPersistence({ toast }: { toast: ReturnType<typeof useTo
     }
   }, [saveStatus, toast]);
 
-  // Design-list refresh, fired after every autosave so the
-  // Explorer's "Updated X ago" timestamps stay fresh. Folders are
-  // explicitly NOT refetched here — they only change via folder
-  // mutations (create / rename / delete / move) which manage state
-  // optimistically themselves. Pulling them every save spammed
-  // /api/folders on every edit.
-  const refreshDesignList = (ownerId: string) => {
-    const safety = window.setTimeout(
-      () => setDesignListLoading(false),
-      DESIGN_LIST_LOAD_SAFETY_MS,
-    );
-    apiListDesigns(ownerId)
-      .then((list) => {
-        window.clearTimeout(safety);
-        setDesignList(list);
-        setDesignListLoading(false);
-      })
-      .catch(() => {
-        // Network glitch — the next save will retry. List staleness
-        // for a beat is acceptable; we don't want a transient error
-        // to wipe the rendered list. Drop the loading flag so the
-        // Explorer doesn't spin forever on a dead network.
-        window.clearTimeout(safety);
-        setDesignListLoading(false);
-      });
-    // Shared-with-you is deliberately NOT fetched here. The list
-    // only changes when the user opens a NEW share URL (which
-    // navigates the page → hydration picks it up) or when the
-    // owner revokes shares (which the visitor won't see until
-    // their next page load anyway). Fetching it on every
-    // autosave-triggered refresh was burning a wasted GET
-    // /api/shared per ~500ms of active editing.
-  };
-  // One-shot shared-list fetch, called from the hydration IIFE
-  // alongside refreshDesignList. Silent failure: the section
-  // hides when empty so a network glitch just leaves the
-  // accordion absent for this session.
-  const refreshSharedList = (ownerId: string) => {
-    apiListSharedWith(ownerId)
-      .then((items) => setSharedDesigns(items))
-      .catch(() => {});
-  };
-
   return {
     saveStatus,
     setSaveStatus,
@@ -155,15 +88,7 @@ export function useEditorPersistence({ toast }: { toast: ReturnType<typeof useTo
     setDesignName,
     designPresentation,
     setDesignPresentation,
-    designList,
-    setDesignList,
-    designListLoading,
-    setDesignListLoading,
-    sharedDesigns,
-    setSharedDesigns,
     importError,
     setImportError,
-    refreshDesignList,
-    refreshSharedList,
   };
 }

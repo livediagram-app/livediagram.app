@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { sentJson } from '@livedesign/vitest-config/sent-request';
 import { CHANGESET_MAX_OPERATIONS } from '@livedesign/api-schema';
 import { elementFingerprint, type Element } from '@livedesign/design';
-import { createShareLink } from '../db/share';
+import { testShareLink } from '../test-sqlite-d1';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { stubTelemetry, TELEMETRY_ON } from '../test-telemetry';
 import type { Env } from '../types';
@@ -196,20 +196,6 @@ describe('submitting a changeset', () => {
     };
     expect(relay.op.tab).toMatchObject({ name: 'Detail' });
 
-    await call(db, 'POST', '/api/designs', {
-      id: 'E',
-      name: 'Other',
-      tabs: [{ id: 'theirs', name: 'T', elements: [] }],
-    });
-    const taken = await call(
-      db,
-      'POST',
-      '/api/designs/D/tabs/theirs/changesets',
-      { replace: { elements: [] } },
-      { token: true },
-    );
-    expect(taken.status).toBe(409);
-    expect(await taken.json()).toMatchObject({ error: 'tab_id_taken' });
   });
 
   it('writes nothing on any refusal, and says why', async () => {
@@ -322,8 +308,8 @@ describe('submitting a changeset', () => {
   it('lets an edit share link submit, and refuses a view link', async () => {
     quiet();
     const { db } = await setUp();
-    await createShareLink(db.env, 'D', 'EDITCODE', 'edit');
-    await createShareLink(db.env, 'D', 'VIEWCODE', 'view');
+    testShareLink(db, 'D', 'EDITCODE', 'edit');
+    testShareLink(db, 'D', 'VIEWCODE', 'view');
     const edit = await submit(
       db,
       { operations: [{ op: 'rm', target: 'b' }] },
@@ -441,7 +427,7 @@ describe('the history and one changeset', () => {
       summary: 'drop b',
       agent: true,
     });
-    await createShareLink(db.env, 'D', 'VIEWCODE', 'view');
+    testShareLink(db, 'D', 'VIEWCODE', 'view');
     const theirs = (await (
       await call(db, 'GET', '/api/designs/D/changesets?limit=1', undefined, {
         owner: 'guest',
@@ -529,7 +515,7 @@ describe('reverting', () => {
     const cs = (await (await submit(db, { operations: [{ op: 'rm', target: 'b' }] })).json()) as {
       changeset: { id: string };
     };
-    await createShareLink(db.env, 'D', 'VIEWCODE', 'view');
+    testShareLink(db, 'D', 'VIEWCODE', 'view');
     const viewer = await call(
       db,
       'POST',

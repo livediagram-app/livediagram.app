@@ -48,7 +48,6 @@ export const HELP_ARTICLES = {
   tags: 'explorer/tags',
   linkingTabs: 'tabs/linking-tabs',
   // Teams
-  teamRolesAndInvites: 'collaboration/teams/roles-and-invites',
   // Canvas / themes
   changingTheBackground: 'canvas/the-canvas/changing-the-background',
   changingTheme: 'canvas/themes/changing-theme',
@@ -74,6 +73,11 @@ export const HELP_ARTICLES = {
   folders: 'explorer/folders',
   defaultFolders: 'explorer/folders/default-folders',
   explorerFilters: 'explorer/filters',
+  // The shared Explorer's other views, each its page header's Help (lib/explorer-host.ts explorerHelpHref).
+  myWork: 'explorer/my-work',
+  unsorted: 'explorer/unsorted',
+  teamSpaces: 'explorer/team-spaces',
+  explorerPage: 'explorer/explorer-page',
   dataElements: 'palette/tools/data-elements',
   sankeyDiagram: 'palette/concept-graphics/sankey-diagram',
   // The round-two element tours' closing cards (docs/specs/007-editor/element-tours.md).
@@ -190,10 +194,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about linking tabs',
     description: 'How linking to another tab works.',
   },
-  teamRolesAndInvites: {
-    title: 'Learn about teams',
-    description: 'Admin and Member roles, and how invites work.',
-  },
   changingTheBackground: {
     title: 'Learn about the canvas',
     description: 'Tips for the background, patterns and the canvas behind what you draw.',
@@ -261,6 +261,22 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   folders: {
     title: 'Learn about folders',
     description: 'Tips for organising designs into a nestable tree of folders.',
+  },
+  myWork: {
+    title: 'Learn about My Work',
+    description: 'Every design you made, in folders or none.',
+  },
+  unsorted: {
+    title: 'Learn about Unsorted',
+    description: 'Every design that is in no folder, yours and your teams’.',
+  },
+  teamSpaces: {
+    title: 'Learn about team spaces',
+    description: 'The designs and folders a team shares.',
+  },
+  explorerPage: {
+    title: 'Learn about the Explorer',
+    description: 'Find, open and organise every design.',
   },
   defaultFolders: {
     title: 'Learn about default folders',

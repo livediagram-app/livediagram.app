@@ -115,12 +115,6 @@ pnpm --filter @livedesign/live build:signed-in
 pnpm --filter @livedesign/live test:e2e:signed-in
 ```
 
-The armed guest-signature specs (`apps/live/e2e/armed/`) run against the usual build, on their own stack with guest signature enforcement on (`:3417`):
-
-```sh
-pnpm --filter @livedesign/live test:e2e:armed
-```
-
 Those ports are defaults, not fixtures. Three environment variables move them, which is what you want when `:3402` is already taken (a second checkout, a worktree):
 
 | Variable             | Default                 | What it moves                                                         |

@@ -11,7 +11,6 @@ const { api, identity, seed } = vi.hoisted(() => ({
     apiSaveSelf: vi.fn(),
     apiLoadDesign: vi.fn(),
     apiLoadShared: vi.fn(),
-    apiListShareLinks: vi.fn(),
   },
   identity: { ensureCollabKey: vi.fn(() => 'collab'), hasConfirmedName: vi.fn(() => true) },
   seed: vi.fn(async () => {}),
@@ -26,7 +25,7 @@ vi.mock('@/lib/api-client', () => ({
 }));
 vi.mock('@/lib/local-identity', () => identity);
 vi.mock('@/lib/guest-identity', () => ({
-  ensureSignedGuestIdentity: async () => ({ id: 'guest-1' }),
+  ensureGuestIdentity: async () => ({ id: 'guest-1' }),
 }));
 vi.mock('@/lib/daily-return', () => ({ trackDailyReturn: () => {} }));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
@@ -66,8 +65,6 @@ function render(passwordRetry = 0) {
       workbench: null,
       activeId: 't1',
       selfParticipant: { id: 'self', name: 'x', color: '#000', status: 'online' },
-      refreshDesignList: () => {},
-      refreshSharedList: () => {},
       resetTabs: () => {},
       refs: {
         lastPersistedSelfRef: { current: null },
@@ -97,7 +94,6 @@ beforeEach(() => {
   );
   api.apiLoadSelf.mockResolvedValue({ id: 'guest-1', name: 'G', color: '#111', status: 'online' });
   api.apiSaveSelf.mockResolvedValue(undefined);
-  api.apiListShareLinks.mockResolvedValue({ links: [], passwordSet: false });
   identity.ensureCollabKey.mockReturnValue('collab');
 });
 
@@ -168,8 +164,6 @@ describe('useIdentityBootstrap recovery', () => {
       workbench: null,
       activeId: 't1',
       selfParticipant: { id: 'self', name: 'x', color: '#000', status: 'online' as const },
-      refreshDesignList: () => {},
-      refreshSharedList: () => {},
       resetTabs: () => {},
       refs: {
         lastPersistedSelfRef: { current: null },

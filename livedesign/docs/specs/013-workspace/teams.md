@@ -1,36 +1,24 @@
 # Teams
 
-Groups of signed-in people. Teams belong to the liveworkspace account, not to livedesign: a team is the same in every liveworkspace app, and it is made, renamed, deleted and staffed on liveworkspace.app ([liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md) "Teams"). livedesign keeps a copy of the teams its people are in, shows them, and gives each a shared library of designs ([Team Shared Designs](team-shared-designs.md)).
+Groups of signed-in people. Teams belong to the liveworkspace account, not to livedesign: a team is the same in every liveworkspace app, and it is made, renamed, deleted and staffed on liveworkspace.app ([liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md) "Teams"). livedesign keeps no copy of them: it shows the teams its people are in and gives each a shared library of designs ([Team Shared Designs](team-shared-designs.md)).
 
 ## Why
 
 Multi-user team permissions have been "still ahead" since [Build phase](../005-project-roadmap/prototype-scope.md). One team across every app means someone sets a team up once, on liveworkspace.app, and finds it in each app they use.
 
-## Data model
+## Where teams come from
 
-Two D1 tables, owned by the api worker, are a **mirror** of liveworkspace's teams. Nothing in livedesign writes them except the sync below, and a team made from livedesign going in at once ([Making a team](#making-a-team)).
-
-- **`teams`**: `id` (the liveworkspace team id), `name`, `organisation` (its organisation line, a company or department, or null), `created_at`, `updated_at`.
-- **`team_members`**: `id` (the liveworkspace member row id), `team_id`, `user_id`, `email`, `role` (`'admin' | 'member'`), `status` (always `'joined'`), `created_at`, `updated_at`. Only joined members are mirrored: invitations live and are answered on liveworkspace.app.
-- **`team_sync_state`**: one row holding the change-feed cursor and when it last ran.
-
-Designs and folders a team holds are livedesign's own, tagged with the team's id.
-
-## Keeping the mirror
-
-The api worker follows liveworkspace's team change feed (`GET /api/account/internal/teams/changes`, client-credentials) in `apps/api/src/db/team-sync.ts`:
-
-- **Every five minutes** (the `*/5 * * * *` cron), and **at once** when a caller's access token or API token carries a `teams` claim that differs from what this isolate last saw for them (`catchUpTeams`). The steady-state cost of that check is one Map lookup per request.
-- A page of changes applies teams first, then members, then saves the cursor; at most 20 pages a run.
-- A deleted team goes through `deleteTeam`: its designs go back to whoever made them and its folders are dropped.
-- A member who joined is upserted (only if the team exists). A member who left, was removed or whose team went has their team work handed to an heir (`handTeamWorkToHeir`), is put out of the team's live rooms (`closeMemberTeamSessions`), and the row goes.
-- If liveworkspace can't be reached, the mirror stays as it was and the next run catches up. Changes show within five minutes at worst.
+livedesign keeps no table of teams. An account's teams come from its access token's `teams` claim, and from
+liveworkspace for a team made or joined since the token was minted (`createTeamAccess` in
+`@liveworkspace/index-app`). A team's people, for the assignee picker and @-mentions, are asked of liveworkspace
+when needed. Designs and folders a team holds are the index's, in the team's own tree
+([Team Shared Designs](team-shared-designs.md)).
 
 ## Identity: signed-in only
 
 Teams are keyed by account user ids, so the whole feature requires a verified signed-in session:
 
-- Every `/api/teams*` endpoint requires a verified account access token or API token. The guest `X-Owner-Id` path gets `401 sign_in_required`. This does NOT violate [Auth + guest access](../014-identity/auth-and-guest-access.md)'s no-sign-in-wall rule: the canvas and everything else stays guest-accessible; only the Teams surface asks for an account.
+- Every `/api/teams*` endpoint requires a verified account access token or API token. A guest token gets `401 sign_in_required`. This does NOT violate [Auth + guest access](../014-identity/auth-and-guest-access.md)'s no-sign-in-wall rule: the canvas and everything else stays guest-accessible; only the Teams surface asks for an account.
 - In the Explorer sidebar, guests see the sign-in nudge ("Sign in to access Teams") at the end of the Spaces group instead of team rows ([Explorer structure](explorer-structure.md)). Deployments without sign-in ([Open source + distribution](../002-project-scope/open-source-and-business-model.md)) show neither.
 
 ## Roles

@@ -79,18 +79,14 @@ import { useDesignHistory } from '@/hooks/canvas/useDesignHistory';
 import { useCanvasA11y } from '@/hooks/canvas/useCanvasA11y';
 import { useBurstCheckpoint } from '@/hooks/canvas/useBurstCheckpoint';
 import { useNudgeSelection } from '@/hooks/canvas/useNudgeSelection';
-import { useFolders } from '@/hooks/persistence/useFolders';
 import { useConfirm } from '@/hooks/ui/useConfirm';
 import { useToast } from '@/hooks/ui/useToast';
 import {
   commitUserPreferences,
-  readUserPreferences,
-  toggleRecentExcluded,
   writeUserPreferences,
 } from '@/lib/user-preferences';
 import { track } from '@/lib/telemetry';
 import { useEditorBroadcast } from '@/hooks/collab/useEditorBroadcast';
-import { useFavourites } from '@/hooks/persistence/useFavourites';
 import { useShortcutsEnabled } from '@/hooks/ui/useShortcutsEnabled';
 import { useEditorComments } from '@/hooks/collab/useEditorComments';
 import { useEditorDrag } from '@/hooks/canvas/useEditorDrag';
@@ -102,10 +98,7 @@ import { useElementStyle } from '@/hooks/canvas/useElementStyle';
 import { useStylePreview } from '@/hooks/canvas/useStylePreview';
 import { useCleanupPreview } from '@/hooks/canvas/useCleanupPreview';
 import { useShapeDrawing } from '@/hooks/canvas/useShapeDrawing';
-import { useShareLinks } from '@/hooks/persistence/useShareLinks';
 import { useTabActions } from '@/hooks/persistence/useTabActions';
-import { useTeamLibrariesSweep } from '@/hooks/persistence/useTeamLibrariesSweep';
-import { useTeams } from '@/hooks/persistence/useTeams';
 import { useTabFolders } from '@/hooks/persistence/useTabFolders';
 import { useTabCanvas } from '@/hooks/canvas/useTabCanvas';
 import { useEditorKeyboardShortcuts } from '@/hooks/canvas/useEditorKeyboardShortcuts';
@@ -118,6 +111,9 @@ import { useCapabilities } from '@/hooks/persistence/useCapabilities';
 import type { Participant } from '@/lib/identity';
 import { markNameConfirmed } from '@/lib/local-identity';
 import { apiNotifyActionAssigned, apiSaveDesignMeta, apiSaveSelf } from '@/lib/api-client';
+import { useDesignList } from '@/hooks/persistence/useDesignList';
+import { useDesignShareState } from '@/hooks/persistence/useDesignShareState';
+import { useTokenTeams } from '@/lib/explorer-host';
 import {
   actionRowsFromElements,
   commentRowsFromElements,
@@ -450,7 +446,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setDesignShareable,
     designTeamId,
     setDesignTeamId,
-    designShareCode,
     setDesignShareCode,
     setIsOwner,
     setDesignOwnerId,
@@ -458,8 +453,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setDesignOwnerColor,
     copying,
     setCopying,
-    setShareLinks,
-    setSharePasswordSet,
     passwordRetry,
     sharePasswordGate,
     setSharePasswordGate,
@@ -511,25 +504,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     passwordGated: sharePasswordGate !== null,
   });
 
-  // Hide / show a design in the Explorer panel's Recent list (docs/specs/013-workspace/hide-from-recent.md).
-  // Read-modify-writes from the CACHE, not the React snapshot: the PUT
-  // sends the whole preferences blob, so a stale snapshot would clobber
-  // flags another tab wrote.
-  // Per-user design stars (docs/specs/013-workspace/favourites.md), for the Explorer panel's rows.
-  // Not for the pre-hydration placeholder id, like the folders and preferences
-  // hooks: that fetched the stars once for "self" and again for the real id.
-  const { favouriteIds, toggleFavourite } = useFavourites(
-    selfParticipant.id === 'self' || workbenchMode ? null : selfParticipant.id,
-  );
-
-  const toggleRecentExclusion = (designId: string) => {
-    const latest = readUserPreferences();
-    setUserPreferences({
-      ...latest,
-      recentExcludedIds: toggleRecentExcluded(latest, designId),
-    });
-  };
-
   // Per-element note popover (state + open/close/setNote handlers)
   // lives in useEditorNotes. Invoked further down, after `commit`
   // exists.
@@ -542,18 +516,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // handlers live in useElementLinks. Invoked further down, after
   // `openDesign` + the selection helpers exist.
 
-  // Folders for the owner — state + the mutation triple
-  // (create / rename / delete) come from the shared useFolders
-  // hook so editor-page, /new, and /explorer all share the same
-  // behaviour. The hook handles its own autoLoad fetch on
-  // mount, so we don't have to manually pull /api/folders here
-  // anymore.
-  const {
-    folders,
-    createFolder,
-    renameFolder,
-    deleteFolder: hookDeleteFolder,
-  } = useFolders(selfParticipant.id === 'self' || workbenchMode ? null : selfParticipant.id);
   const confirm = useConfirm();
   const toast = useToast();
   // Persistence-facing state: autosave status pill + savedAt, design
@@ -570,13 +532,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setDesignName,
     designPresentation,
     setDesignPresentation,
-    designList,
-    setDesignList,
-    sharedDesigns,
-    setSharedDesigns,
     setImportError,
-    refreshDesignList,
-    refreshSharedList,
   } = persistence;
   // Realtime presence state (who's connected + their cursors / selections
   // / laser trails / tab focus). See usePresenceState; the room writes it
@@ -666,11 +622,24 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Saves are gated on `hydrated` so we never overwrite stored data
   // with the empty initial render.
   const [designId, setDesignId] = useState<string | null>(null);
+  // The design's links are the index's: the badge and the presence stack read them from there.
+  useDesignShareState({
+    designId,
+    serverStored: realtime.designServerStored,
+    sessionShareCode,
+    shareDialogOpen: dialogs.shareDialogOpen,
+    setShareable: setDesignShareable,
+  });
   const [hydrated, setHydrated] = useState(false);
+  // The person's designs, for the pickers that name another design: read from the index once the design is open and the
+  // browser idle (useDesignList), never inside a workbench, which reaches its one design only.
+  const { designList, refreshDesignList } = useDesignList(
+    hydrated && !workbenchMode && !embedMode,
+    selfParticipant.id,
+  );
   // The deleted state (docs/specs/013-workspace/trash.md): the design is in
   // the Trash. Set by the load, the room and the autosave.
   const designTrashed = useDesignTrashed({
-    ownerId: selfParticipant.id,
     designId,
     viaShareLink: sessionShareCode !== null,
   });
@@ -780,7 +749,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     roomRef,
     setSaveStatus,
     setSavedAt,
-    setDesignList,
     onDesignTrashed: () => designTrashed.setDesignTrashed(true),
     changesetSeen: realtime.changesetSeen.seen,
     noteTabRevision: tabRevisions.noteSaved,
@@ -794,7 +762,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     resetTabs,
     lastSavedTabsRef,
     setDesignServerStored: realtime.setDesignServerStored,
-    refreshDesignList,
+    refreshDesignList: () => refreshDesignList(),
   });
 
   // Persist self only when name or color actually changed. Without
@@ -817,8 +785,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     workbench,
     activeId,
     selfParticipant,
-    refreshDesignList,
-    refreshSharedList,
     resetTabs,
     refs: {
       lastPersistedSelfRef,
@@ -852,9 +818,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       setSessionRole,
       setSessionShareCode,
       setSessionTabScope,
-      setSharedDesigns,
-      setShareLinks,
-      setSharePasswordSet,
       setSharePasswordGate,
       setIdentityPromptOpen,
     },
@@ -1031,9 +994,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Explorer panel now surfaces teams + their designs (a Teams
   // accordion, team rows in Recent, the current team design —
   // docs/specs/013-workspace/team-shared-designs.md), so the data has to be present whenever the panel is.
-  const { teams } = useTeams(accountUserId ?? null, {
-    enabled: !!accountUserId && !workbenchMode,
-  });
+  const teams = useTokenTeams(!!accountUserId && !workbenchMode);
   // Comment @-mentions (docs/specs/012-collaboration/comment-mentions.md): the design team's members as
   // candidates, and the notify a mentioning comment fires.
   const commentMentions = useCommentMentions({
@@ -1044,17 +1005,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     designId,
   });
   useAssignRef(mentionNotifyRef, commentMentions.notifyMentioned);
-  // Their libraries (docs/specs/013-workspace/team-shared-designs.md): one sweep per team. Feeds the search
-  // panel's folder group AND the Explorer popover (team folder
-  // tree + team designs in Recent + the current team design).
-  const {
-    teamFolders,
-    teamDesigns,
-    refresh: refreshTeamLibraries,
-  } = useTeamLibrariesSweep(accountUserId ?? null, teams, {
-    enabled: !!accountUserId && !workbenchMode,
-  });
-
   const activeTab = tabs.find((t) => t.id === activeId) ?? tabs[0]!;
   // The tab's editor mode (docs/specs/007-editor/pages-mode.md "One mode"): Pages, the one mode.
   const editorMode = useEditorMode(canEdit);
@@ -1447,10 +1397,10 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     },
     notify: (input) => {
       if (!accountUserId || !designId) return;
-      void apiNotifyActionAssigned(accountUserId, input.teamId, {
+      void apiNotifyActionAssigned(accountUserId, designId, {
+        teamId: input.teamId,
         assigneeUserId: input.assigneeUserId,
         assigneeMemberId: input.assigneeMemberId,
-        designId,
         actionName: input.actionName,
         ...(input.description ? { description: input.description } : {}),
       }).catch(() => {});
@@ -1787,7 +1737,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setFormatSourceId,
     setImportError,
     requestFit,
-    refreshDesignList,
+    refreshDesignList: () => refreshDesignList(),
     confirm,
     toast,
   });
@@ -1810,37 +1760,13 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // full-page-load helpers). Operates on whole designs + the Explorer
   // list, distinct from per-tab lifecycle in useTabActions. See
   // useDesignActions.
-  const {
-    deleteDesign,
-    deleteFolder,
-    moveDesignToFolder,
-    moveDesignTo,
-    duplicateDesign,
-    dismissSharedDesign,
-    newDesign,
-    openDesign,
-    makeCopy,
-  } = useDesignActions({
+  const { deleteDesign, newDesign, openDesign, makeCopy } = useDesignActions({
     designId,
     designName,
-    designList,
-    setDesignList,
     confirm,
-    ownerId: selfParticipant.id,
-    hookDeleteFolder,
-    folders,
-    sharedDesigns,
-    setSharedDesigns,
     copying,
     setCopying,
     sessionShareCode,
-    refreshTeamLibraries,
-    refreshDesignList: () => refreshDesignList(selfParticipant.id),
-    // Keep the header's Private / Team badge honest when the OPEN design
-    // changes scope via the move picker (docs/specs/013-workspace/team-shared-designs.md).
-    onDesignScopeChanged: (id, teamId) => {
-      if (id === designId) setDesignTeamId(teamId);
-    },
   });
 
   // Mark the participant's name as "confirmed" — they explicitly
@@ -1858,37 +1784,12 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     if (wasOpen) track('UI', 'Closed', 'Welcome');
   };
 
-  // Share-dialog actions (create / revoke link, build the visitor URL,
-  // save the participant name). The share-link list + shareable flags
-  // stay as page state since the hydration / save effects also write
-  // them; the hook reconciles via the setters. See useShareLinks.
-  const {
-    updateParticipantName,
-    createShareLink,
-    extendShareLink,
-    rescopeShareLink,
-    revokeShareLink,
-    setDesignSharePassword,
-    shareUrlFor,
-  } = useShareLinks({
-    designId,
-    selfParticipant,
-    setSelfParticipant,
-    setShareLinks,
-    setSharePasswordSet,
-    setDesignShareable,
-    setDesignShareCode,
-    designShareCode,
-    confirmName,
-  });
 
   // Name the open design: its own name, and its row in the Explorer panel's in-memory list, which would otherwise
   // show the old name until a reload (autosave persists the name). Shared by the header's rename and a template naming
   // a still-untitled design after itself.
   const nameDesign = (name: string) => {
     setDesignName(name);
-    if (name && designId)
-      setDesignList((prev) => prev.map((d) => (d.id === designId ? { ...d, name } : d)));
   };
 
   // Template and identity actions. See useTemplateFlow. confirmName
@@ -2726,11 +2627,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     viewPreview,
     canToggleRole,
     toggleViewPreview,
-    // Re-sweep the team libraries after a team-folder mutation made from
-    // the Explorer panel (docs/specs/013-workspace/team-shared-designs.md), and the confirm dialog its delete uses.
-    refreshTeamLibraries,
-    // Refetch the reader's own design list: the Explorer panel's Trash restored or deleted one.
-    refreshOwnDesigns: () => refreshDesignList(selfParticipant.id),
     confirm,
     // Clipboard copy, plus paste + its enabled flag for the canvas menu's Paste row.
     copySelection,
@@ -2877,11 +2773,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     commitLabel,
     commitTable,
     contextMenu,
-    createFolder,
-    createShareLink,
     deleteComment,
     deleteDesign,
-    deleteFolder,
     deleteMultiSelected,
     deleteSelected,
     deleteTab: deleteTab,
@@ -2889,9 +2782,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     designNotFound,
     loadError,
     designTrashed,
-    dismissSharedDesign,
     spawnConnectSelected,
-    duplicateDesign,
     duplicateMultiSelected,
     duplicateSelected,
     // Intra-layer z-order for the selection popover (docs/specs/006-design/layers.md).
@@ -2899,10 +2790,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     stackSelectedBack,
     duplicateTab,
     embedMode,
-    extendShareLink,
-    rescopeShareLink,
     fitToScreen,
-    folders,
     followLink,
     handleCanvasDoubleClick,
     hydrated,
@@ -2946,8 +2834,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     loadedTabIds,
     loadingDesign,
     makeCopy,
-    moveDesignToFolder,
-    moveDesignTo,
     nameConfirmed,
     narrowMultiSelection,
     newDesign,
@@ -2962,7 +2848,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     remoteCursorRows,
     remoteSelectionsByElement,
     removeImageFromElement,
-    renameFolder,
     renameTab,
     renameTabFolder,
     moveTabToFolder,
@@ -3041,11 +2926,12 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     commitInlineIcon,
     resolveThread,
     retryActiveTabLoad,
-    revokeShareLink,
     lockedByOther,
     selectElement,
     selectMarquee,
     selfParticipant,
+    // The Share dialog's "Sharing as" renames a guest.
+    setSelfParticipant,
     sendSelectedToBack,
     setArrowEndsSelected,
     setArrowStrokeStyleSelected,
@@ -3128,7 +3014,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     onToggleFormatGroup: formatSettings.toggleGroup,
     onSetFormatMode: formatSettings.setMode,
     setContextMenu,
-    setDesignSharePassword,
     setFillColorSelected,
     setLinkPickerOpenForId,
     setLoadingDesign,
@@ -3152,7 +3037,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setUserPreferences,
     setViewportOffset,
     setViewportZoom,
-    shareUrlFor,
     shortcutsEnabled,
     confirmIdentity,
     cancelIdentity,
@@ -3179,9 +3063,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     reopenAction,
     wontDoAction,
     saveAction,
-    teamFolders,
-    teamDesigns,
     teams,
+    designList,
     toggleActiveTabLock,
     toggleZenMode,
     toggleAspectLockSelected,
@@ -3191,14 +3074,10 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     toggleTextStyleSelected,
     undo,
     unresolveThread,
-    updateParticipantName,
     userPreferences,
     // The server copy merged in (or failed to arrive): a once-ever offer (the tours) waits for it, so a
     // returning user on a new device is not offered what another device already answered.
     prefsSettled,
-    toggleRecentExclusion,
-    favouriteIds,
-    toggleFavourite,
     viewport,
     writeUserPreferences,
   };

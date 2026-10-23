@@ -202,7 +202,7 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     nouns: 'Designs',
     itemPath: '/design/',
     newPath: '/new',
-    offlinePath: '/explorer/offline',
+    offlinePath: '/offline',
     onIndex: true,
     sharePath: '/design/shared?s=',
     previewPath: '/api/designs/:id/thumbnail',

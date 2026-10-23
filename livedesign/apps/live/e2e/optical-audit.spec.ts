@@ -1,21 +1,12 @@
 import type { Locator, Page } from '@playwright/test';
-import {
-  CANVAS,
-  darkVisitor,
-  designRow,
-  freshDarkPage,
-  jumpBackIn,
-  seedDesign,
-  seedOpenedDesign,
-  shareLink,
-} from './audit-screens';
+import { CANVAS, darkVisitor, freshDarkPage, seedDesign, shareLink } from './audit-screens';
 import {
   dismissQuickTour,
   expect,
   expectNoPageErrors,
   test,
   untilHydrated,
-  mintSignedGuest,
+  mintGuest,
 } from './fixtures';
 import { auditOptical, OPTICAL_TOLERANCE_PX } from './optical';
 
@@ -45,7 +36,7 @@ async function expectCentred(page: Page, screen: string): Promise<void> {
 
 // A seeded design open in the editor, its quick tour dismissed; returns the seeded Spinner shape.
 async function openSeededEditor(page: Page, baseURL: string): Promise<Locator> {
-  const owner = await mintSignedGuest(page.request);
+  const owner = await mintGuest(page.request);
   const id = await seedDesign(page, owner, new URL(baseURL).origin);
   await darkVisitor(page, owner);
   await page.goto(`/design/${id}`);
@@ -98,7 +89,7 @@ test.describe('Optical alignment audit', () => {
   });
 
   test('the Join dialog a share link opens', async ({ page, browser, baseURL }) => {
-    const owner = await mintSignedGuest(page.request);
+    const owner = await mintGuest(page.request);
     const origin = new URL(baseURL!).origin;
     const id = await seedDesign(page, owner, origin);
     const code = await shareLink(page, owner, origin, id);
@@ -107,23 +98,6 @@ test.describe('Optical alignment audit', () => {
     await visitor.getByRole('button', { name: /^join$/i }).waitFor();
     await expectCentred(visitor, 'Join dialog');
     await visitor.context().close();
-  });
-
-  // Home as a returning owner meets it (the design they opened in Jump Back In), then My
-  // designs, which lists it as a row.
-  test('the Explorer', async ({ page, pageErrors, baseURL }) => {
-    // Signed, so the identity holds across the two page loads.
-    const owner = await mintSignedGuest(page.request);
-    await seedOpenedDesign(page, owner, new URL(baseURL!).origin);
-    await darkVisitor(page, owner);
-    await page.goto('/explorer');
-    await jumpBackIn(page, 'Contrast').waitFor();
-    await expectCentred(page, 'Explorer Home');
-
-    await page.goto('/explorer/all');
-    await designRow(page, 'Contrast').waitFor();
-    await expectCentred(page, 'Explorer, My Work');
-    expectNoPageErrors(pageErrors);
   });
 });
 

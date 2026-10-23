@@ -6,26 +6,23 @@ import type { Env } from '../types';
 import { makeTestRouteContext } from './test-route-context';
 
 // The photo blob store's routes (docs/specs/031-photo/photo-store.md "The routes"): the access
-// gates are stubbed (they have their own tests); the rows are a real SQLite with every migration,
-// the bytes an in-memory R2.
+// gates (the index's grants) are stubbed, as they have their own tests; the refs are a real SQLite with the
+// design's schema, the bytes and the designs' markers an in-memory R2.
 
-const { db, access } = vi.hoisted(() => ({
-  db: {
-    getDesign: vi.fn(),
-    designLinksTab: vi.fn(),
-    tabBelongsElsewhere: vi.fn(),
-  },
-  access: {
-    canReadDesign: vi.fn(),
-    canEditDesign: vi.fn(),
-    resolveDesignGrant: vi.fn(),
-  },
+const { db, access, index } = vi.hoisted(() => ({
+  db: { designHasTab: vi.fn() },
+  access: { gateRead: vi.fn(), gateEdit: vi.fn() },
+  index: { requestGrant: vi.fn() },
 }));
-vi.mock('../db', async (importOriginal) => ({ ...(await importOriginal<object>()), ...db }));
-vi.mock('../auth/design-access', async (importOriginal) => ({
+vi.mock('../db/tabs', async (importOriginal) => ({ ...(await importOriginal<object>()), ...db }));
+vi.mock('./context', async (importOriginal) => ({
   ...(await importOriginal<object>()),
   ...access,
 }));
+vi.mock('../index-service', async (importOriginal) => {
+  const original = await importOriginal<typeof import('../index-service')>();
+  return { ...original, indexService: { ...original.indexService, ...index } };
+});
 
 import { handlePhotoBlobRoutes } from './photo-blob-routes';
 
@@ -38,14 +35,23 @@ function r2() {
   return {
     store,
     put: vi.fn(
-      async (key: string, bytes: Uint8Array, opts: { httpMetadata: { contentType: string } }) => {
-        store.set(key, { bytes: new Uint8Array(bytes), type: opts.httpMetadata.contentType });
+      async (key: string, bytes: Uint8Array, opts?: { httpMetadata: { contentType: string } }) => {
+        store.set(key, { bytes: new Uint8Array(bytes), type: opts?.httpMetadata.contentType ?? '' });
       },
     ),
     get: vi.fn(async (key: string) => {
       const v = store.get(key);
       return v ? { body: v.bytes, httpMetadata: { contentType: v.type } } : null;
     }),
+    delete: vi.fn(async (keys: string | string[]) => {
+      for (const key of Array.isArray(keys) ? keys : [keys]) store.delete(key);
+    }),
+    list: vi.fn(async ({ prefix, limit }: { prefix: string; limit?: number }) => ({
+      objects: [...store.keys()]
+        .filter((k) => k.startsWith(prefix))
+        .slice(0, limit ?? 1000)
+        .map((key) => ({ key })),
+    })),
   };
 }
 
@@ -58,12 +64,12 @@ beforeEach(() => {
   const made = sqliteD1({ PHOTO_BLOBS: bucket } as unknown as Partial<Env>);
   env = made.env;
   sql = made.sql;
-  for (const fn of [...Object.values(db), ...Object.values(access)]) fn.mockReset();
-  db.getDesign.mockResolvedValue({ id: 'd1', ownerId: 'owner-1', teamId: null });
-  db.designLinksTab.mockResolvedValue(true);
-  db.tabBelongsElsewhere.mockResolvedValue(false);
-  access.canReadDesign.mockResolvedValue(true);
-  access.canEditDesign.mockResolvedValue(true);
+  for (const fn of [...Object.values(db), ...Object.values(access), ...Object.values(index)])
+    fn.mockReset();
+  db.designHasTab.mockResolvedValue(true);
+  access.gateRead.mockResolvedValue(true);
+  access.gateEdit.mockResolvedValue(true);
+  index.requestGrant.mockResolvedValue({ ok: false, status: 404 });
 });
 
 const ctx = (method: string, path: string, opts: Parameters<typeof makeTestRouteContext>[2] = {}) =>
@@ -100,7 +106,7 @@ describe('photo blob routes', () => {
     const c = makeTestRouteContext(
       'GET',
       '/api/designs/d1/tabs/t1/photo-blobs/abcdefghijklmnopqrstuv',
-      { owner: 'owner-1', env: { DB: env.DB } as Env },
+      { owner: 'owner-1', env: {} as Env },
     );
     expect((await handlePhotoBlobRoutes(c))!.status).toBe(503);
   });
@@ -112,10 +118,13 @@ describe('photo blob routes', () => {
     ]);
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ stored: ids });
-    expect(bucket.put).toHaveBeenCalledTimes(2);
-    // The same bytes again write nothing new.
+    const bytes = () => [...bucket.store.keys()].filter((k) => k.startsWith('photo/'));
+    expect(bytes()).toHaveLength(2);
+    // The same bytes again are the same object: stored once by content.
     await upload([{ bytes: PNG(1), type: 'image/png' }], 't2');
-    expect(bucket.put).toHaveBeenCalledTimes(2);
+    expect(bytes()).toHaveLength(2);
+    // And the design marks each blob it holds once (db/photo-blobs.ts).
+    expect([...bucket.store.keys()].filter((k) => k.startsWith('photo-refs/'))).toHaveLength(2);
     const got = (await handlePhotoBlobRoutes(
       ctx('GET', `/api/designs/d1/tabs/t1/photo-blobs/${ids[0]}`),
     ))!;
@@ -190,39 +199,31 @@ describe('photo blob routes', () => {
     expect((await upload([{ bytes: PNG(4), type: 'image/png' }])).res.status).toBe(200);
   });
 
-  it('refuses writes from those who may not edit, from tokens, and onto another design’s tab', async () => {
-    access.canEditDesign.mockResolvedValue(false);
+  it('refuses writes from those who may not edit, and from tokens', async () => {
+    access.gateEdit.mockResolvedValue(false);
     expect((await upload([{ bytes: PNG(6), type: 'image/png' }])).res.status).toBe(403);
-    access.canEditDesign.mockResolvedValue(true);
+    access.gateEdit.mockResolvedValue(true);
     const token = ctx('POST', '/api/designs/d1/tabs/t1/photo-blobs-held', {
       body: { ids: [] },
       token: { id: 'tok' },
     });
     expect((await handlePhotoBlobRoutes(token))!.status).toBe(403);
-    db.tabBelongsElsewhere.mockResolvedValue(true);
-    expect((await upload([{ bytes: PNG(6), type: 'image/png' }])).res.status).toBe(403);
-    db.getDesign.mockResolvedValue(null);
-    expect(
-      (await handlePhotoBlobRoutes(
-        ctx('POST', '/api/designs/d1/tabs/t1/photo-blobs-held', { body: { ids: [] } }),
-      ))!.status,
-    ).toBeGreaterThanOrEqual(400);
   });
 
   it('refuses reads to those who may not read, and of a tab not in the design', async () => {
     const { ids } = await upload([{ bytes: PNG(7), type: 'image/png' }]);
-    access.canReadDesign.mockResolvedValue(false);
+    access.gateRead.mockResolvedValue(false);
     expect(
       (await handlePhotoBlobRoutes(ctx('GET', `/api/designs/d1/tabs/t1/photo-blobs/${ids[0]}`)))!
         .status,
     ).toBe(404);
-    access.canReadDesign.mockResolvedValue(true);
-    db.designLinksTab.mockResolvedValue(false);
+    access.gateRead.mockResolvedValue(true);
+    db.designHasTab.mockResolvedValue(false);
     expect(
       (await handlePhotoBlobRoutes(ctx('GET', `/api/designs/d1/tabs/t1/photo-blobs/${ids[0]}`)))!
         .status,
     ).toBe(404);
-    db.designLinksTab.mockResolvedValue(true);
+    db.designHasTab.mockResolvedValue(true);
     bucket.store.clear();
     expect(
       (await handlePhotoBlobRoutes(ctx('GET', `/api/designs/d1/tabs/t1/photo-blobs/${ids[0]}`)))!
@@ -242,7 +243,7 @@ describe('photo blob routes', () => {
       (await handlePhotoBlobRoutes(ctx('GET', `/api/designs/d1/tabs/t9/photo-blobs/${ids[0]}`)))!
         .status,
     ).toBe(200);
-    access.canReadDesign.mockResolvedValue(false);
+    access.gateRead.mockResolvedValue(false);
     const refused = (await handlePhotoBlobRoutes(
       ctx('POST', '/api/designs/d1/tabs/t8/photo-blobs-adopt', {
         body: { fromDesign: 'd1', fromTab: 't1', ids },
@@ -254,5 +255,25 @@ describe('photo blob routes', () => {
     ))!;
     expect(bad.status).toBe(400);
     expect(sql.prepare('SELECT COUNT(*) AS n FROM photo_blob_refs').get()!.n).toBe(2);
+  });
+
+  // Another design's tab: its blobs come from that design's own store, once the index grants the caller a read of
+  // that tab; a lost link or another tab's scope adopts nothing.
+  it('adopts from another design the caller may read, by the index’s grant', async () => {
+    const { ids } = await upload([{ bytes: PNG(9), type: 'image/png' }]);
+    const adopt = () =>
+      handlePhotoBlobRoutes(
+        ctx('POST', '/api/designs/d2/tabs/t2/photo-blobs-adopt', {
+          body: { fromDesign: 'd1', fromTab: 't1', ids },
+        }),
+      );
+    expect((await adopt())!.status).toBe(403);
+    index.requestGrant.mockResolvedValue({ ok: true, grant: { level: 'view', tabId: 't3' } });
+    expect((await adopt())!.status).toBe(403);
+    index.requestGrant.mockResolvedValue({ ok: true, grant: { level: 'view', tabId: null } });
+    expect(await (await adopt())!.json()).toEqual({ adopted: ids });
+    expect(
+      sql.prepare("SELECT blob_id FROM photo_blob_refs WHERE tab_id = 't2'").all(),
+    ).toEqual([{ blob_id: ids[0] }]);
   });
 });
