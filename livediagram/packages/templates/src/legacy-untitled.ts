@@ -9,6 +9,14 @@ export const UNTITLED_DOCUMENT_NAME = 'Untitled document';
 
 const LEGACY_UNTITLED_NAME = 'Untitled diagram';
 
+// Workshop's blank was "Blank Session" before it became "Blank Workshop", so documents made from it were
+// named "Untitled Session". They still count as unnamed, so picking a template renames them.
+const LEGACY_UNTITLED_WORKSHOP_NAME = 'Untitled Session';
+
 export function isUntitledDocumentName(name: string): boolean {
-  return name === UNTITLED_DOCUMENT_NAME || name === LEGACY_UNTITLED_NAME;
+  return (
+    name === UNTITLED_DOCUMENT_NAME ||
+    name === LEGACY_UNTITLED_NAME ||
+    name === LEGACY_UNTITLED_WORKSHOP_NAME
+  );
 }

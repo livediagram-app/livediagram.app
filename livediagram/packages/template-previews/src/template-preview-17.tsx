@@ -15,7 +15,7 @@ const DOT = 'rgb(139 92 246)';
 export function templatePreviewGroup17(kind: TemplateKind): ReactElement | null {
   switch (kind) {
     case 'blank-session':
-      // Blank Session: an empty canvas framed like the other blanks, a timer ring at the top right
+      // Blank Workshop: an empty canvas framed like the other blanks, a timer ring at the top right
       // and two sticky notes waiting for the room. Hover story: the timer runs down and the room's
       // dot votes land on the notes.
       return (

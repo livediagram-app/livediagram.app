@@ -207,8 +207,8 @@ export const TEMPLATES: TemplateDescriptor[] = [
   },
   {
     kind: 'blank-session',
-    title: 'Blank Session',
-    description: 'An empty tab to run a session on: timers, votes, polls and reveals to hand.',
+    title: 'Blank Workshop',
+    description: 'An empty tab to run a workshop on: timers, votes, polls and reveals to hand.',
     extra: true,
   },
   {
@@ -625,8 +625,7 @@ export const TEMPLATES: TemplateDescriptor[] = [
   {
     kind: 'threat-model',
     title: 'Threat Model',
-    description:
-      'A data-flow diagram with its trust boundaries and STRIDE threats marked.',
+    description: 'A data-flow diagram with its trust boundaries and STRIDE threats marked.',
     extra: true,
   },
   {
@@ -639,8 +638,7 @@ export const TEMPLATES: TemplateDescriptor[] = [
   {
     kind: 'metric-tree',
     title: 'Metric Tree',
-    description:
-      'A north-star metric broken into the inputs teams own.',
+    description: 'A north-star metric broken into the inputs teams own.',
     extra: true,
   },
   {
@@ -660,8 +658,7 @@ export const TEMPLATES: TemplateDescriptor[] = [
   {
     kind: 'value-stream-map',
     title: 'Value Stream Map',
-    description:
-      'Idea to production with its waits, process times and kaizen bursts.',
+    description: 'Idea to production with its waits, process times and kaizen bursts.',
     extra: true,
   },
 

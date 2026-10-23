@@ -89,7 +89,7 @@ The slots:
   stay so their stored history still reads): the menu's five rows beside Choose Template: Blank Diagram
   (`/new?blank=1`, keeping `HeaderDraw` so the old Start Blank series carries on), Blank
   Whiteboard (`/new?template=whiteboard`), Blank Illustration
-  (`/new?template=blank-illustration`), Blank Plan (`/new?template=blank-plan`) and Blank Session
+  (`/new?template=blank-illustration`), Blank Plan (`/new?template=blank-plan`) and Blank Workshop
   (`/new?template=blank-session`). The help centre's header has one
   Start drawing button, its `Header`.
 - `Ai` ([Build with AI](build-with-ai.md)) has the header slots only: its own buttons open an AI tool, sign-up or the help centre, never `/new`.

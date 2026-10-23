@@ -13,7 +13,7 @@ this blueprint adds only what the fifth mode changes.
 | Its mark                   | `FlipchartIcon` in `packages/ui/src/icons/drawing-kinds.tsx`, `EDITOR_MODE_ICONS.workshop`    |
 | Its palette layout         | `WORKSHOP: PaletteLayout` in `apps/editor/components/palette/palette-layouts.ts`              |
 | The strip's tools per mode | `sessionStripTools(mode, esBoard)` in `apps/editor/components/canvas/SessionClusterStrip.tsx` |
-| Its blank                  | template kind `'blank-session'`, label "Blank Session", document name "Untitled Session"      |
+| Its blank                  | template kind `'blank-session'`, label "Blank Workshop", document name "Untitled Workshop"    |
 | Its default folder key     | `'mode:workshop'`, words `{ label: 'Sessions', noun: 'sessions' }` (`MODE_WORDS`)             |
 
 Banned as names for the mode, in code and copy: "Session mode", "Collaborate mode", and its old
@@ -97,7 +97,7 @@ export const EDITOR_MODE_ICONS: Record<EditorMode, IconComponent>; // key type d
 | A session button pressed in Diagram                   | Starts its tool as today; no strip appears (spec)                        |
 | A strip popover open when the tab switches to Diagram | Closes (existing `useCanvasChromePanels` re-check)                       |
 | Older client opens a Workshop tab                     | Reads Diagram (unknown mode), shows Diagram's palette; content intact    |
-| `/new?mode=workshop`                                  | `new-document-params` accepts any `EditorMode`; selects Blank Session    |
+| `/new?mode=workshop`                                  | `new-document-params` accepts any `EditorMode`; selects Blank Workshop   |
 | Event-storming board                                  | Always Diagram; no switch (unchanged)                                    |
 | Participant in Workshop                               | `participantTiles('workshop')`: sticky and text from Popular, plus image |
 
@@ -128,8 +128,8 @@ export const EDITOR_MODE_ICONS: Record<EditorMode, IconComponent>; // key type d
 ## Assets and external resources
 
 - `FlipchartIcon`: hand-authored SVG path in `drawing-kinds.tsx` (MIT, this repo), D7.
-- `blank-session` preview: hand-authored SVG in `packages/template-previews/src/template-preview-16.tsx`
-  (Group 16, chained last in `template-preview.tsx`), with its hover story (the timer runs down, dots land).
+- `blank-session` preview: hand-authored SVG in `packages/template-previews/src/template-preview-17.tsx`
+  (Group 17, chained last in `template-preview.tsx`), with its hover story (the timer runs down, dots land).
 - The help card glyph `workshop-mode` in `apps/help/lib/featureIcons.tsx` (three people round a
   speech bubble), hue `#c2410c` in `featureColours.ts`.
 - The funnel slot `HeaderSession` on every surface (`packages/api-schema/src/cta-sources.ts`), retired

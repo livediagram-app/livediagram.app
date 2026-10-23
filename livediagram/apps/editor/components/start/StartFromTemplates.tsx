@@ -88,7 +88,7 @@ const COPY: Record<
   },
   workshop: {
     title: 'Start a Workshop',
-    line: 'Pick a session format to run, or close this to start from a blank session.',
+    line: 'Pick a session format to run, or close this to start from a blank workshop.',
     noMatch: 'session templates',
     help: 'templates',
   },

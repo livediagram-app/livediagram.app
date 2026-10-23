@@ -721,7 +721,7 @@ Primary counts, in the table's order: 8, 8, 5, 15, 7, 5, 14, 10 and 7 (79 templa
   the primary followed by these. A cross-listed template appears as a card on each of its categories' shelves and
   counts in each tile's badge; never twice on one shelf, never in its primary's "Also shown". The category browser's
   "N more categories, M more templates" line counts each template once.
-- **The blanks are in no category.** Blank Diagram, Blank Whiteboard and Blank Session have no primary
+- **The blanks are in no category.** Blank Diagram, Blank Whiteboard and Blank Workshop have no primary
   (`templateCategory` answers `null`), appear on no category shelf or tile, and are reached only from Popular. The agents' catalogue lists them under a `blanks` entry ("Blanks", "An empty tab in each mode,
   to start from nothing.") so an agent still finds them.
 - **Ids.** Ids survive where the meaning did: `mindmaps` (Brainstorm), `flowcharts`, `hierarchies` (Org and
@@ -738,10 +738,10 @@ the mode chosen:
 
 | Filter     | Popular                                                                                                                                                  |
 | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Everything | Blank Diagram, Blank Whiteboard, Blank Session, Mind map, Flowchart, Sailboat retrospective, Org chart, Sketchnote, Gantt Chart, Retrospective, Timeline |
+| Everything | Blank Diagram, Blank Whiteboard, Blank Workshop, Mind map, Flowchart, Sailboat retrospective, Org chart, Sketchnote, Gantt Chart, Retrospective, Timeline |
 | Diagram    | Blank Diagram, Flowchart, Mind map, Org chart, Gantt Chart, Timeline, System architecture                                                                |
 | Draw       | Blank Whiteboard, Sketchnote, Journey Doodle, Comic Strip, Idea Garden, Rich Picture                                                                     |
-| Workshop   | Blank Session, Sailboat retrospective, Retrospective, Town Hall Q&A, Lean Coffee, Crazy 8s, Pub Quiz                                                     |
+| Workshop   | Blank Workshop, Sailboat retrospective, Retrospective, Town Hall Q&A, Lean Coffee, Crazy 8s, Pub Quiz                                                     |
 
 **Search** (a start's search box; also the marketing gallery's) matches a template when **every word
 typed** is found, case ignored, in its title, description, kind id, the labels of every category it is shown in, or

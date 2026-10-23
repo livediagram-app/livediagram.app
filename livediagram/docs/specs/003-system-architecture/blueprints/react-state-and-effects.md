@@ -63,8 +63,7 @@ What stays, with where it runs, is the allow-list in `apps/editor/render-browser
 | `apps/editor/components/panels/LayerRowMenu.tsx` (two rows) | the confirm popover's anchor | the click's `currentTarget` (`MenuActionRow` hands its click on) |
 
 Stay, carrying more than a ref: `packages/ui/src/Tooltip.tsx` (React pointer and focus handlers, capture-phase
-ones among them), `apps/help/components/ArticleShell.tsx` (reads `textContent`),
-`apps/editor/components/plan/AddCardPopover.tsx` (catches React events bubbling out of a portal) and
+ones among them), `apps/help/components/ArticleShell.tsx` (reads `textContent`) and
 `packages/ui/src/timeline/TimelineCalendarView.tsx` (the component's own box).
 
 ### The React Compiler's reach

@@ -14,7 +14,7 @@ what starts there. A search on a start also finds the other modes' templates, ea
   canvas overrides (`templateCanvasOverrides`) take `opensIn` from it, so the mode a card shows and
   the mode the tab opens in can never disagree.
 - Draw templates: Blank Whiteboard and the eight [Draw templates](#draw-templates) below.
-- Workshop templates: Blank Session and the [Workshop templates](#workshop-templates)
+- Workshop templates: Blank Workshop and the [Workshop templates](#workshop-templates)
   below.
 - Every other template is a Diagram template.
 
@@ -31,11 +31,11 @@ what starts there. A search on a start also finds the other modes' templates, ea
 Popular opens with one blank per mode, in mode order. Each blank also leads its mode's Recommended in that mode's
 start ([Template starts](start-diagramming.md)), and is what the New Document wizard creates for the mode chosen:
 
-| Template         | Kind id         | Opens in | What it makes                                       |
-| ---------------- | --------------- | -------- | --------------------------------------------------- |
-| Blank Diagram    | `blank`         | Diagram  | An empty canvas (was "Blank Canvas").               |
-| Blank Whiteboard | `whiteboard`    | Draw     | An empty board to draw on (was "Whiteboard").       |
-| Blank Session    | `blank-session` | Workshop | An empty tab in Workshop, named "Untitled Session". |
+| Template         | Kind id         | Opens in | What it makes                                                                                  |
+| ---------------- | --------------- | -------- | ---------------------------------------------------------------------------------------------- |
+| Blank Diagram    | `blank`         | Diagram  | An empty canvas (was "Blank Canvas").                                                          |
+| Blank Whiteboard | `whiteboard`    | Draw     | An empty board to draw on (was "Whiteboard").                                                  |
+| Blank Workshop   | `blank-session` | Workshop | An empty tab in Workshop, named "Untitled Workshop" (was "Blank Session", "Untitled Session"). |
 
 The Plan templates (Blank Plan, Blank Spreadsheet, the forms and the twenty-two Plan templates, Kanban Board among
 them) moved to liveplanner with Plan mode ([Editor modes](editor-modes.md) "Plan moved to liveplanner"). A link, an
@@ -44,7 +44,7 @@ agent or a seed naming one is answered as any unknown kind is (`retired-template
 - The kind ids of the first two are unchanged, so `/new?template=blank` and
   `/new?template=whiteboard` links keep working.
 - None of the blanks is on a category shelf or a category tile.
-- Popular under Everything, in order: Blank Diagram, Blank Whiteboard, Blank Session,
+- Popular under Everything, in order: Blank Diagram, Blank Whiteboard, Blank Workshop,
   Mind map, Flowchart, Sailboat retrospective, Org chart, Sketchnote, Gantt chart, Retrospective, Timeline. Under a
   mode, its own list ([Template categories](../008-canvas/canvas-and-palette.md#template-categories)).
 

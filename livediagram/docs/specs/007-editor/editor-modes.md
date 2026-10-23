@@ -392,7 +392,7 @@ out into its own product, livedocuments (https://livedocuments.app). livediagram
   **Draw mode** in prose: the help article (**Draw mode**, at a new address,
   the old one redirecting) and the command palette.
 - The template card is **Blank Whiteboard**, one of three blanks (Blank Diagram,
-  Blank Whiteboard, Blank Session), one per mode, that lead Popular
+  Blank Whiteboard, Blank Workshop), one per mode, that lead Popular
   ([Templates by mode](templates-by-mode.md)); the document it makes is named "Untitled
   Whiteboard", for the activity a person comes for.
 - **Workshop** is the mode for running a session ([Workshop mode](../012-collaboration/workshop-mode.md)), its name

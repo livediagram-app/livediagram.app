@@ -8,6 +8,7 @@ describe('untitledNameForTemplate', () => {
     expect(untitledNameForTemplate('flowchart')).toBe('Untitled Flowchart');
     expect(untitledNameForTemplate('orgchart')).toBe('Untitled Org Chart');
     expect(untitledNameForTemplate('whiteboard')).toBe('Untitled Whiteboard');
+    expect(untitledNameForTemplate('blank-session')).toBe('Untitled Workshop');
     expect(untitledNameForTemplate('blank')).toBe('Untitled document');
   });
 });
@@ -18,6 +19,7 @@ describe('isDefaultDocumentName', () => {
       'Untitled document',
       'Untitled diagram',
       'Untitled Session',
+      'Untitled Workshop',
       'Untitled Whiteboard',
       'Untitled Flowchart',
     ])
