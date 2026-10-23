@@ -7,7 +7,7 @@
 // opens and applies each change at once, taking it back if the index refuses. Everything app-specific (the links'
 // address, the embed and live image, help articles, telemetry, the guest's name) comes from the host.
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { IndexClient, Level, ShareLinkExpiry } from '@liveworkspace/index-client';
 import { useShareLinks } from '../data/useShareLinks';
 import { useNow } from '../time';
@@ -73,6 +73,14 @@ export type ShareDialogProps = {
   notify?: ShareNotify;
   // A refusal said in words; `notify` covers it when given.
   onError?: (text: string) => void;
+  // Why Password Protection cannot be switched on (a rule of the host's, livediagram's listed Community post); null
+  // or absent, it can.
+  passwordLockedReason?: string | null;
+  // Whether the item's links ask for a password, each time that is read or changed, so a host rule that hangs on it
+  // (a canvas behind a password cannot be published) follows the dialog.
+  onPasswordSetChange?: (set: boolean) => void;
+  // A section of the host's own below Password Protection (livediagram's Community band).
+  appSection?: ReactNode;
 };
 
 const NO_TABS: ShareTab[] = [];
@@ -91,6 +99,9 @@ export function ShareDialog({
   onClose,
   notify: hostNotify,
   onError,
+  passwordLockedReason = null,
+  onPasswordSetChange,
+  appSection,
 }: ShareDialogProps) {
   const [note, setNote] = useState<{ text: string; tone: 'success' | 'info' | 'error' } | null>(
     null,
@@ -105,6 +116,11 @@ export function ShareDialog({
   );
   const notifyError = useCallback((text: string) => notify(text, 'error'), [notify]);
   const share = useShareLinks(client, item.id, notifyError);
+  const passwordSetChanged = useRef(onPasswordSetChange);
+  passwordSetChanged.current = onPasswordSetChange;
+  useEffect(() => {
+    passwordSetChanged.current?.(share.passwordSet);
+  }, [share.passwordSet]);
   const tabs = useLoadedTabs(givenTabs, loadTabs);
   const multiTab = tabs.length > 1;
   const word = kindWords(item.app).lowerOne;
@@ -293,12 +309,14 @@ export function ShareDialog({
           passwordSet={share.passwordSet}
           busy={share.busy}
           helpHref={helpHref}
+          lockedReason={passwordLockedReason}
           onSet={async (p) => {
             const ok = await share.setPassword(p);
             if (ok) onTelemetry?.('Shared', p ? 'PasswordSet' : 'PasswordCleared');
             return ok;
           }}
         />
+        {appSection}
         {note ? (
           <p
             role={note.tone === 'error' ? 'alert' : 'status'}

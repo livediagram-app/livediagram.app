@@ -25,11 +25,14 @@ export function PasswordSection({
   passwordSet,
   busy,
   helpHref,
+  lockedReason = null,
   onSet,
 }: {
   passwordSet: boolean;
   busy: boolean;
   helpHref?: ShareHelpHref;
+  // Why it cannot be switched on now; a password already set can still be removed.
+  lockedReason?: string | null;
   // Resolves true once the index took it; false when it refused (the dialog has said so).
   onSet: (password: string | null) => Promise<boolean>;
 }) {
@@ -84,7 +87,9 @@ export function PasswordSection({
             <HelpLink href={helpHref?.('sharePasswords')} label="How share passwords work" />
           </p>
           <p className="text-xs text-slate-500 dark:text-slate-400">
-            Everyone opening a pass must enter it first, embeds included.
+            {lockedReason && !on
+              ? lockedReason
+              : 'Everyone opening a pass must enter it first, embeds included.'}
           </p>
         </div>
         <button
@@ -92,7 +97,7 @@ export function PasswordSection({
           role="switch"
           aria-checked={on}
           aria-label="Password Protection"
-          disabled={busy}
+          disabled={busy || (!!lockedReason && !on)}
           onClick={toggle}
           className={`relative mt-0.5 inline-flex h-5 w-9 shrink-0 items-center rounded-full transition disabled:opacity-50 ${
             on ? 'bg-brand-700 dark:bg-brand-600' : 'bg-slate-300 dark:bg-slate-600'

@@ -17,6 +17,7 @@ export {
   type ShareNotify,
   type ShareTelemetry,
 } from './dialogs/ShareDialog';
+export { SECTION_LABEL as SHARE_SECTION_LABEL } from './dialogs/share/parts';
 export {
   explorerPath,
   viewFromLocation,

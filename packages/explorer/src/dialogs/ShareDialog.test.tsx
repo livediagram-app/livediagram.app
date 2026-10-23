@@ -183,6 +183,38 @@ describe('ShareDialog', () => {
     expect(screen.getByRole('status').textContent).toContain('with the password');
   });
 
+  it("locks Password Protection with the host's reason, and shows the host's own section below it", async () => {
+    renderDialog({
+      passwordLockedReason: 'Remove the canvas from the Community first.',
+      appSection: <section aria-label="Community">Published</section>,
+    });
+    const toggle = (await screen.findByRole('switch', {
+      name: 'Password Protection',
+    })) as HTMLButtonElement;
+    expect(toggle.disabled).toBe(true);
+    expect(screen.getByText('Remove the canvas from the Community first.')).toBeTruthy();
+    expect(screen.getByRole('region', { name: 'Community' }).textContent).toBe('Published');
+  });
+
+  it('still lets a password already set be removed while locked', async () => {
+    const { calls } = renderDialog({ passwordLockedReason: 'Locked.' }, { passwordSet: true });
+    await screen.findByText('Password Set');
+    fireEvent.click(screen.getByRole('button', { name: 'Remove' }));
+    await waitFor(() => expect(calls).toContainEqual({ method: 'setSharePassword', args: [null] }));
+  });
+
+  it('tells the host whether a password is set, as read and as changed', async () => {
+    const onPasswordSetChange = vi.fn();
+    renderDialog({ onPasswordSetChange });
+    fireEvent.click(await screen.findByRole('switch', { name: 'Password Protection' }));
+    fireEvent.change(screen.getByRole('textbox', { name: 'Share password' }), {
+      target: { value: 'hunter2' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    await waitFor(() => expect(onPasswordSetChange).toHaveBeenLastCalledWith(true));
+    expect(onPasswordSetChange).toHaveBeenCalledWith(false);
+  });
+
   it('copies the embed and live image snippets from their menus', async () => {
     const { notify, onTelemetry } = renderDialog(
       {
