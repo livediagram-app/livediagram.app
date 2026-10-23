@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
+  createTeamFor,
   createTokenChecker,
   fetchTeamChanges,
   mintAccountToken,
   readSettings,
   SettingsError,
+  TeamError,
   writeSettings,
 } from './account';
 
@@ -162,5 +164,41 @@ describe('settings', () => {
     await expect(
       readSettings(CREDENTIALS, { owner, app: 'liveplanner.app' }, down.fetcher),
     ).rejects.toThrow('settings read failed: 503');
+  });
+});
+
+describe('createTeamFor', () => {
+  it('sends the access token that vouches for the person, and answers the team', async () => {
+    const { fetcher, calls } = fakeFetch(() =>
+      Response.json({ id: 't1', name: 'Design', role: 'admin' }, { status: 201 }),
+    );
+    const team = await createTeamFor(
+      CREDENTIALS,
+      { accessToken: 'jwt', name: 'Design', organisation: 'Acme' },
+      fetcher,
+    );
+    expect(team).toMatchObject({ id: 't1', role: 'admin' });
+    expect(calls[0]!.url).toBe('https://liveworkspace.app/api/account/internal/teams');
+    expect(JSON.parse(String(calls[0]!.init.body))).toEqual({
+      accessToken: 'jwt',
+      name: 'Design',
+      organisation: 'Acme',
+    });
+  });
+
+  it('throws a TeamError with the code when refused', async () => {
+    const { fetcher } = fakeFetch(() =>
+      Response.json({ error: 'team_limit_reached' }, { status: 409 }),
+    );
+    const refused = createTeamFor(CREDENTIALS, { accessToken: 'jwt', name: 'x' }, fetcher);
+    await expect(refused).rejects.toBeInstanceOf(TeamError);
+    await expect(refused).rejects.toMatchObject({ status: 409, code: 'team_limit_reached' });
+  });
+
+  it('throws a plain error when the account API fails', async () => {
+    const { fetcher } = fakeFetch(() => new Response('', { status: 502 }));
+    await expect(
+      createTeamFor(CREDENTIALS, { accessToken: 'jwt', name: 'x' }, fetcher),
+    ).rejects.toThrow('team create failed: 502');
   });
 });

@@ -3,7 +3,7 @@
 //     invitations, their API tokens, and their settings shared by every app;
 //   - for the apps' servers, by their OAuth client credentials (/api/account/internal/*): checking an
 //     API token, making one for a connecting AI tool, a token revoking itself, which tokens still
-//     work, the teams change feed, and reading and writing someone's settings.
+//     work, the teams change feed, a team made in an app, and reading and writing someone's settings.
 import { AUTH_BASE_PATH } from './auth-options.ts';
 import type { Auth } from './auth.ts';
 import type { Env } from './env.ts';
@@ -370,6 +370,38 @@ interface Introspection {
   client_id?: unknown;
 }
 
+// The account an access token belongs to, when it was minted for this very client and is still
+// live (the provider's introspection checks both): how an app vouches for the person it acts for.
+async function vouchedPerson(
+  request: Request,
+  auth: Auth,
+  clientId: string,
+  accessToken: unknown,
+): Promise<string | Response> {
+  if (typeof accessToken !== 'string') return error(400, 'access_token_required');
+  const checked = await auth.handler(
+    new Request(new URL(`${AUTH_BASE_PATH}/oauth2/introspect`, request.url), {
+      method: 'POST',
+      headers: {
+        authorization: request.headers.get('authorization') ?? '',
+        accept: 'application/json',
+        'content-type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({ token: accessToken, token_type_hint: 'access_token' }).toString(),
+    }),
+  );
+  const result = (await checked.json().catch(() => ({}))) as Introspection;
+  if (
+    !checked.ok ||
+    result.active !== true ||
+    typeof result.sub !== 'string' ||
+    result.client_id !== clientId
+  ) {
+    return error(401, 'invalid_token');
+  }
+  return result.sub;
+}
+
 async function handleInternal(
   request: Request,
   env: Env,
@@ -393,35 +425,32 @@ async function handleInternal(
   // access token it holds for them, so it can only make tokens for someone signed in to it.
   if (route === 'POST tokens') {
     const body = await readBody(request);
-    if (typeof body.accessToken !== 'string') return error(400, 'access_token_required');
-    const checked = await auth.handler(
-      new Request(new URL(`${AUTH_BASE_PATH}/oauth2/introspect`, request.url), {
-        method: 'POST',
-        headers: {
-          authorization: request.headers.get('authorization') ?? '',
-          accept: 'application/json',
-          'content-type': 'application/x-www-form-urlencoded',
-        },
-        body: new URLSearchParams({
-          token: body.accessToken,
-          token_type_hint: 'access_token',
-        }).toString(),
-      }),
-    );
-    const result = (await checked.json().catch(() => ({}))) as Introspection;
-    if (
-      !checked.ok ||
-      result.active !== true ||
-      typeof result.sub !== 'string' ||
-      result.client_id !== clientId
-    ) {
-      return error(401, 'invalid_token');
-    }
-    const token = await mintApiToken(db, result.sub, {
+    const person = await vouchedPerson(request, auth, clientId, body.accessToken);
+    if (person instanceof Response) return person;
+    const token = await mintApiToken(db, person, {
       name: cleanTokenName(body.name, 'MCP client'),
       readOnly: body.readOnly === true,
     });
     return token ? json(token, 201) : error(409, 'token_limit_reached');
+  }
+
+  // A team made in an app (livediagram's Move dialog has a New team tile), for the person signed in
+  // to it, vouched for as above. The same team, and the same limits, as one made on the site: the
+  // person becomes its admin.
+  if (route === 'POST teams') {
+    const body = await readBody(request);
+    const person = await vouchedPerson(request, auth, clientId, body.accessToken);
+    if (person instanceof Response) return person;
+    const user = await db
+      .prepare('SELECT email, emailVerified FROM "user" WHERE id = ?')
+      .bind(person)
+      .first<{ email: string; emailVerified: number }>();
+    if (!user) return error(401, 'invalid_token');
+    const actor: Actor = {
+      id: person,
+      email: user.emailVerified ? user.email.toLowerCase() : null,
+    };
+    return answer(await createTeam(db, actor, body.name, Date.now(), body.organisation), 201);
   }
 
   if (route === 'POST tokens/revoke') {

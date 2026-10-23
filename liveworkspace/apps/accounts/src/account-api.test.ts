@@ -231,6 +231,33 @@ describe('the account API, for the apps', () => {
     expect((await internal('/tokens', { accessToken: 'forged', name: 'x' })).status).toBe(401);
   });
 
+  it('makes a team in an app for the person the access token vouches for, as its admin', async () => {
+    const made = await internal('/teams', {
+      accessToken: 'jwt-ada',
+      name: '  Design ',
+      organisation: 'Acme',
+    });
+    expect(made.status).toBe(201);
+    const team = (await made.json()) as { id: string; role: string; members: unknown[] };
+    expect(team).toMatchObject({
+      name: 'Design',
+      organisation: 'Acme',
+      role: 'admin',
+      memberCount: 1,
+    });
+    // The same team the site shows.
+    const mine = (await (await call('/teams')).json()) as { teams: { id: string }[] };
+    expect(mine.teams.map((t) => t.id)).toEqual([team.id]);
+
+    expect((await internal('/teams', { accessToken: 'forged', name: 'x' })).status).toBe(401);
+    expect((await internal('/teams', { name: 'x' })).status).toBe(400);
+    expect((await internal('/teams', { accessToken: 'jwt-ada', name: ' ' })).status).toBe(400);
+    expect(
+      (await internal('/teams', { accessToken: 'jwt-ada', name: 'x' }, `Basic ${btoa('x:y')}`))
+        .status,
+    ).toBe(401);
+  });
+
   it('lets a token revoke itself, and says which tokens still work', async () => {
     const made = (await (
       await call('/tokens', { method: 'POST', body: { name: 'cli' } })

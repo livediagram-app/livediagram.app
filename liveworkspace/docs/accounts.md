@@ -9,7 +9,9 @@ and kept by the accounts Worker (`apps/accounts`), in its own D1 beside the acco
 ## Teams
 
 A team has a name, an optional organisation line (a company or department, up to 80 characters),
-admins and members. Anyone signed in can make one (up to 50 per account) and becomes its admin.
+admins and members. Anyone signed in can make one (up to 50 per account) and becomes its admin, on
+liveworkspace.app or from inside an app (`POST /api/account/internal/teams`, the app vouching for them
+with their access token, as it does for a token; `createTeamFor` in `@liveworkspace/auth-client`).
 Admins rename it, change its organisation, invite people by email, turn its join link on and off,
 change roles (making someone else admin is how a team changes hands), remove people, clear
 answered invitations and delete it; anyone can leave. A team always keeps an admin: the last one
@@ -269,6 +271,7 @@ provider's own introspection and remembered per isolate for five minutes):
 | ------------------------------------------- | ---------------------------------------------------------------------------------------- |
 | `POST /api/account/internal/tokens/verify`  | `{ token }` → the account and its teams, or 404                                          |
 | `POST /api/account/internal/tokens`         | `{ accessToken, name, readOnly }` → a token, shown once                                  |
+| `POST /api/account/internal/teams`          | `{ accessToken, name, organisation? }` → 201 the team made, the person its admin         |
 | `GET /api/account/internal/teams/changes`   | `?cursor=` → the next page of the change feed                                            |
 | `POST /api/account/internal/tokens/revoke`  | `{ token }` → revokes it (a CLI signing out), or 404                                     |
 | `POST /api/account/internal/tokens/live`    | `{ ids }` (up to 100) → which still work, so an app can end what hangs off a revoked one |

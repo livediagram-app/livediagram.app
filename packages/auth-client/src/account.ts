@@ -1,7 +1,7 @@
 // An app's server talking to the liveworkspace account API (liveworkspace/docs/accounts.md "Teams",
 // "API tokens" and "Settings"), with its OAuth client credentials: checking an API token, making one
-// for an AI tool someone connects, reading the teams change feed, and reading and writing someone's
-// settings. These send the client secret, so they run
+// for an AI tool someone connects, making a team for someone, reading the teams change feed, and
+// reading and writing someone's settings. These send the client secret, so they run
 // in the app's Worker only.
 import type { SiteId } from '@liveworkspace/sites';
 import type { ClientCredentials } from './oauth';
@@ -176,6 +176,47 @@ export async function mintAccountToken(
   if (response.status === 409) return null;
   if (!response.ok) throw new Error(`token mint failed: ${response.status}`);
   return (await response.json()) as MintedToken;
+}
+
+// A team as the account API answers one just made: the person is its admin and only member.
+export interface CreatedTeam {
+  id: string;
+  name: string;
+  organisation: string | null;
+  role: TeamRole;
+  memberCount: number;
+  invitedCount: number;
+  members: { id: string; name: string | null; email: string; role: TeamRole }[];
+}
+
+// Why making a team was refused, from the account API's error code: `name_required`, or
+// `team_limit_reached` (409) at the most teams an account may be in.
+export class TeamError extends Error {
+  readonly status: number;
+  readonly code: string;
+  constructor(status: number, code: string) {
+    super(`team create refused: ${status} ${code}`);
+    this.name = 'TeamError';
+    this.status = status;
+    this.code = code;
+  }
+}
+
+// Makes a team for the person signed in to this app, who becomes its admin: the same team on
+// liveworkspace.app and in every app. The app vouches for them with the access token it holds for
+// them. Throws a TeamError when refused.
+export async function createTeamFor(
+  credentials: ClientCredentials,
+  request: { accessToken: string; name: string; organisation?: string | null },
+  fetcher: typeof fetch = fetch,
+): Promise<CreatedTeam> {
+  const response = await call(credentials, '/teams', { method: 'POST', body: request }, fetcher);
+  if (response.status === 400 || response.status === 401 || response.status === 409) {
+    const { error } = (await response.json().catch(() => ({}))) as { error?: string };
+    throw new TeamError(response.status, error ?? 'invalid_request');
+  }
+  if (!response.ok) throw new Error(`team create failed: ${response.status}`);
+  return (await response.json()) as CreatedTeam;
 }
 
 // A token revoking itself (a CLI signing out). False when it was already gone.

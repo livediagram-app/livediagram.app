@@ -19,6 +19,7 @@ export {
   type TokenSet,
 } from './oauth';
 export {
+  createTeamFor,
   createTokenChecker,
   fetchTeamChanges,
   liveTokenIds,
@@ -28,10 +29,12 @@ export {
   readTeamsClaim,
   revokeAccountToken,
   SettingsError,
+  TeamError,
   TOKEN_INVALID_FOR_MS,
   TOKEN_VALID_FOR_MS,
   writeSettings,
   type AccountSettings,
+  type CreatedTeam,
   type MemberChange,
   type MintedToken,
   type SettingsApp,
