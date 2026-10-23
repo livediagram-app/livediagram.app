@@ -15,18 +15,9 @@ import {
   type WorkbenchTicketResponse,
   type WorkbenchWorkspaceTicketResponse,
 } from '@livedesign/api-schema';
-import {
-  generatePairingCode,
-  generateWorkbenchTicket,
-  hashWorkbenchSecret,
-} from '../auth/workbench-session';
-import { designLinksTab } from '../db/tabs';
-import {
-  findWorkbenchPairing,
-  insertWorkbenchTicket,
-  openPairingRequest,
-  type WorkbenchReach,
-} from '../db/workbench';
+import type { WorkbenchToken } from '@liveworkspace/index-app';
+import { designRoom } from '../design-client';
+import { itemReachOf, workbenchStore, type WorkbenchReach } from '../workbench-store';
 import { appBaseUrl } from '../email/client';
 import { badRequest, forbidden, json, notFound, rateLimited } from '../responses';
 import { readBody, type RouteContext } from './context';
@@ -43,6 +34,14 @@ const invalidValue = (message: string) =>
 
 export const pairingUrlOf = (ctx: RouteContext, code: string) =>
   `${appBaseUrl(ctx.env)}/workbench/pair?code=${code}`;
+
+// The token as liveworkspace described it when this request presented it, as the workbench store notes it.
+export const workbenchTokenOf = (token: NonNullable<RouteContext['token']>): WorkbenchToken => ({
+  id: token.id,
+  name: token.name ?? null,
+  readOnly: token.readOnly ?? false,
+  expiresAt: token.expiresAt ?? 0,
+});
 
 // The mint and the pairing request share one bucket per token (WB42).
 export async function workbenchRateLimited(ctx: RouteContext, tokenId: string): Promise<boolean> {
@@ -98,15 +97,15 @@ export async function mintWorkbenchTicket(ctx: RouteContext): Promise<Response> 
   const origin = parsed.origin;
   const now = Date.now();
 
-  const pairing = await findWorkbenchPairing(ctx.env, token.id, origin);
+  const store = workbenchStore(ctx.env, ownerId);
+  const pairing = await store.findPairing(token.id, origin);
   if (!pairing || !pairingCoversScope(pairing.scope, asked.scope)) {
-    const request = await openPairingRequest(ctx.env, {
-      ownerId,
-      tokenId: token.id,
+    const request = await store.openPairingRequest({
+      personId: ownerId,
+      token: workbenchTokenOf(token),
       origin,
       scope: asked.scope,
       name: null,
-      code: generatePairingCode(),
       now,
     });
     console.log('[workbench] pairing-requested', {
@@ -126,7 +125,15 @@ export async function mintWorkbenchTicket(ctx: RouteContext): Promise<Response> 
 
   const ceiling = token.readOnly ? 'view' : undefined;
   if (asked.scope === 'workspace') {
-    if (asked.folderId !== null && !(await ownerReachesFolder(ctx.env, ownerId, asked.folderId)))
+    if (
+      asked.folderId !== null &&
+      !(await ownerReachesFolder(
+        ctx.env,
+        ownerId,
+        asked.folderId,
+        (ctx.teams ?? []).map((t) => t.id),
+      ))
+    )
       return refused('not_found', asked.scope, notFound());
     const minted = await insertTicket(ctx, pairing, ownerId, {
       reach: { scope: 'workspace', designId: null, folderId: asked.folderId },
@@ -146,9 +153,14 @@ export async function mintWorkbenchTicket(ctx: RouteContext): Promise<Response> 
   }
 
   const { designId, tabId } = asked;
-  const access = await ownerDesignAccess(ctx.env, designId, ownerId);
+  const access = await ownerDesignAccess(
+    ctx.env,
+    designId,
+    ownerId,
+    (ctx.teams ?? []).map((t) => t.id),
+  );
   if (access instanceof Response) return refused('not_found', asked.scope, access);
-  if (tabId !== null && !(await designLinksTab(ctx.env, designId, tabId)))
+  if (tabId !== null && !(await designRoom(ctx.env, designId).hasTab(tabId)))
     return refused('not_found', asked.scope, notFound());
 
   const minted = await insertTicket(ctx, pairing, ownerId, {
@@ -173,19 +185,16 @@ async function insertTicket(
   input: { reach: WorkbenchReach; tabId: string | null; role: WorkbenchRole; now: number },
 ): Promise<{ ticket: string; expiresAt: number }> {
   const { reach, tabId, role, now } = input;
-  const ticket = generateWorkbenchTicket();
-  const expiresAt = now + WORKBENCH_TICKET_TTL_MS;
-  await insertWorkbenchTicket(ctx.env, {
-    ticketHash: await hashWorkbenchSecret(ticket),
-    ownerId,
-    tokenId: pairing.tokenId,
+  const { ticket, expiresAt } = await workbenchStore(ctx.env, ownerId).mintTicket({
+    personId: ownerId,
+    token: workbenchTokenOf(ctx.token!),
     pairingId: pairing.id,
-    ...reach,
+    reach: itemReachOf(reach),
     tabId,
     origin: pairing.origin,
     role,
-    createdAt: now,
-    expiresAt,
+    now,
+    expiresAt: now + WORKBENCH_TICKET_TTL_MS,
   });
   console.log('[workbench] ticket-minted', {
     scope: reach.scope,

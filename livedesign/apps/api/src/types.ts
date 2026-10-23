@@ -12,7 +12,6 @@ export type {
   TabSummary as TabSummaryDTO,
   TabRecord as TabDTO,
   Folder as FolderDTO,
-  ApiToken as ApiTokenDTO,
   ImageSummary,
   ParticipantRecord as ParticipantDTO,
   ParticipantPresence,
@@ -22,11 +21,25 @@ export type {
   ClientMessage,
 } from '@livedesign/api-schema';
 
+import type { DesignRoom } from './design-room/design-room';
+
 // Worker bindings injected by Cloudflare at runtime. Not part of the
 // wire format (purely a server-side capability handle).
 export type Env = {
-  DB: D1Database;
-  DESIGN_ROOM: DurableObjectNamespace;
+  // Each design's Durable Object (src/design-room/design-room.ts): its content, in its own SQLite, and its
+  // realtime room. Reached through design-client.ts `designRoom(env, designId)`.
+  DESIGN_ROOM: DurableObjectNamespace<DesignRoom>;
+  // Each person's workbench (src/workbench-store.ts, @liveworkspace/index-app workbench.ts): their pairing
+  // requests, pairings, tickets and sessions, in its own SQLite.
+  WORKBENCH: DurableObjectNamespace;
+  // liveworkspace's index (liveworkspace/docs/one-explorer.md, src/index-service.ts): where every design is and who
+  // may open it. INDEX_ORIGIN is its origin (`https://liveworkspace.app`; locally `http://127.0.0.1:8793`): the
+  // grants this api checks are signed by `${INDEX_ORIGIN}/api/index/jwks`. INDEX_KEY is this app's key there, a
+  // secret, the same both ways: the index presents it on this app's internal endpoints (`/api/internal/items/*`),
+  // and this app presents it to push a design's summary and to act for an API token's account. Unset, the design
+  // doors answer as missing and the internal endpoints 404.
+  INDEX_ORIGIN?: string;
+  INDEX_KEY?: string;
   // The live build id: the deploy's commit, the same one baked into the editor build as
   // NEXT_PUBLIC_BUILD_ID (docs/specs/016-platform/stale-builds.md). Unset (local dev, a self-host that
   // sets neither) leaves it off the server release signal.
@@ -49,23 +62,10 @@ export type Env = {
   OAUTH_ISSUER?: string;
   // The oldest CLI the api accepts writes from, x.y.z; unset for no floor.
   CLI_MIN_VERSION?: string;
-  // HMAC secret for signing guest owner-ids (docs/specs/014-identity/auth-and-guest-access.md + auth/
-  // owner-signature.ts). When set, POST /api/guest-id mints a signed id
-  // and /api/migrate requires a valid signature before reassigning a
-  // guest's data to an account — closing the "observe a guest id,
-  // claim its data" hole. Unset → migrate keeps its legacy unsigned
-  // behaviour (OSS self-host that hasn't configured it).
-  GUEST_ID_HMAC_SECRET?: string;
-  // Guest REST signature enforcement cutoff (docs/specs/015-api/public-api-and-tokens.md §4), epoch ms. While
-  // unset (or in the future) the guest `X-Owner-Id` REST path keeps its
-  // legacy unsigned behaviour — the grace window that lets pre-signing guests
-  // self-heal to a signed id. Set to a past timestamp (once active guests have
-  // rotated) to require a valid `X-Owner-Sig` on owner-scoped routes. No-op
-  // without GUEST_ID_HMAC_SECRET.
-  GUEST_SIG_ENFORCE_AFTER?: string;
-  // R2 bucket holding design snapshots (thumb/<designId>), and the image bytes uploaded before images moved
-  // to liveworkspace's media service, until they are migrated.
-  IMAGES?: R2Bucket;
+  // R2 bucket caching each design's SVG snapshot (`thumb/<id>`) and share card
+  // (docs/specs/006-design/design-snapshots.md). Optional so a deploy without R2 still runs:
+  // unbound, the snapshot doors answer 404 and the Explorer row keeps its icon.
+  SNAPSHOTS?: R2Bucket;
   // liveworkspace's media service (liveworkspace/docs/media.md, src/media.ts), which keeps every app's uploaded
   // images. Unset means production's, https://liveworkspace.app/api/media; staging and local development name
   // their own.
@@ -74,7 +74,7 @@ export type Env = {
   // this deploy has no images, and the image endpoints answer 503 so the editor hides them.
   MEDIA_KEY?: string;
   // R2 bucket holding photo pages' blobs (docs/specs/031-photo/photo-store.md "The photo blob store"),
-  // apart from IMAGES. Unbound, every photo blob route answers 503 photos_unavailable.
+  // apart from SNAPSHOTS. Unbound, every photo blob route answers 503 photos_unavailable.
   PHOTO_BLOBS?: R2Bucket;
   // Cloudflare Workers Rate Limiting API binding. Caps per-owner
   // writes (POST / PUT / DELETE) at the configured limit/period in
@@ -120,9 +120,6 @@ export type Env = {
   // Public origin used to build links in emails (optional). Defaults to
   // "https://livedesign.app".
   APP_BASE_URL?: string;
-  // Explorer Home's reads (docs/specs/013-workspace/explorer-home.md), per owner. Absent binding
-  // (a self-host) allows every read.
-  HOME_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // Workbench ticket mints and pairing requests (docs/specs/013-workspace/workbench-embeds.md), keyed on the
   // token id: WORKBENCH_TICKETS_PER_MINUTE a minute. Absent binding (a self-host) allows every mint.
   WORKBENCH_TICKET_RATE_LIMITER?: {
@@ -140,3 +137,9 @@ export type Env = {
   // "536870912" (512 MB).
   PHOTO_MAX_BYTES_PER_TAB?: string;
 };
+
+// The env a design's own code runs with, inside its Durable Object (src/design-room/design-room.ts): the
+// worker's bindings plus `DESIGN_DB`, the design's own SQLite behind the D1 surface (design-room/design-db.ts).
+// Only the Durable Object can make one, so a content read or write the worker attempts is a type error:
+// the worker reaches content through the design's Durable Object instead.
+export type DesignEnv = Env & { DESIGN_DB: D1Database };

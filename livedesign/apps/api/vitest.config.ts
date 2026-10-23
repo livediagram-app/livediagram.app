@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 import { defineProject } from '@livedesign/vitest-config';
 
 // The identity, token and share-link modules are held at 100% — not as a
@@ -13,7 +14,6 @@ import { defineProject } from '@livedesign/vitest-config';
 // has no threshold yet (docs/specs/003-system-architecture/testing.md) — this is the first ratchet, not the last.
 const GATE_KEEPERS = [
   'src/auth/**',
-  'src/api-token-row.ts',
   'src/db/api-tokens.ts',
   'src/db/share.ts',
   'src/db/shared.ts',
@@ -35,6 +35,13 @@ const GATE_KEEPERS = [
 ];
 
 export default defineProject({
+  // The Workers runtime's own module, which node has not: the Durable Object base class the design's room extends
+  // (src/test-cloudflare-workers.ts).
+  resolve: {
+    alias: {
+      'cloudflare:workers': fileURLToPath(new URL('./src/test-cloudflare-workers.ts', import.meta.url)),
+    },
+  },
   test: {
     coverage: {
       thresholds: Object.fromEntries(

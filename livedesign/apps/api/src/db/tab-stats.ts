@@ -3,7 +3,7 @@
 // (the baseline migration) beside each tab so a design list reads them without reading any tab body.
 import type { DesignStats } from '@livedesign/api-schema';
 import { parseEditorMode, tabStatsOf, type TabStats } from '@livedesign/design';
-import type { Env } from '../types';
+import type { DesignEnv } from '../types';
 
 // The counting itself is the design model's, shared with the browser's own designs.
 export { tabStatsOf, type TabStats };
@@ -24,7 +24,7 @@ export function tabStatsOfData(data: string): { stats: TabStats; corrupt: boolea
 // `ifStoredData`: only when the tab now stores exactly that body, for a conditional write (a swap)
 // whose stats must land only if the write did.
 export function tabStatsStatement(
-  env: Env,
+  env: DesignEnv,
   tabId: string,
   stats: TabStats,
   writtenAt: number,
@@ -34,7 +34,7 @@ export function tabStatsStatement(
     ifStoredData === undefined
       ? 'WHERE true'
       : 'WHERE EXISTS (SELECT 1 FROM tabs WHERE id = ?1 AND data = ?7)';
-  return env.DB.prepare(
+  return env.DESIGN_DB.prepare(
     `INSERT INTO tab_stats (tab_id, mode, element_count, comment_count, data_bytes, written_at)
      SELECT ?1, ?2, ?3, ?4, ?5, ?6 ${guard}
      ON CONFLICT(tab_id) DO UPDATE SET

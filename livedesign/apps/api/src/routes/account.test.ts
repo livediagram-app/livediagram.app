@@ -12,7 +12,7 @@ const { db, authClient, order } = vi.hoisted(() => {
     db: {
       deleteAccount: vi.fn(async () => {
         order.push('data');
-        return { designs: 2, folders: 1 };
+        return { folders: 1 };
       }),
     },
     authClient: {
@@ -23,6 +23,27 @@ const { db, authClient, order } = vi.hoisted(() => {
   };
 });
 vi.mock('../db', () => db);
+
+// The index as the purge reaches it: the person's own designs (live and trashed), and what it deleted.
+const { index } = vi.hoisted(() => ({
+  index: {
+    items: [] as { id: string; ownerId: string }[],
+    trash: [] as { id: string; ownerId: string }[],
+    deleted: [] as string[],
+  },
+}));
+vi.mock('../index-service', async (original) => ({
+  ...(await original<typeof import('../index-service')>()),
+  indexFor: () => ({
+    listItems: async () => ({ items: index.items, nextCursor: null }),
+    listTrash: async () => ({ items: index.trash, nextCursor: null }),
+    deleteItem: async (id: string) => {
+      index.deleted.push(id);
+      index.items = index.items.filter((i) => i.id !== id);
+      index.trash = index.trash.filter((i) => i.id !== id);
+    },
+  }),
+}));
 vi.mock('@liveworkspace/auth-client', async (original) => ({
   ...(await original<typeof import('@liveworkspace/auth-client')>()),
   ...authClient,
@@ -49,6 +70,12 @@ function remove(opts: { env?: Partial<Env>; accountUserId?: string | null } = {}
 
 beforeEach(() => {
   order.length = 0;
+  index.items = [
+    { id: 'p1', ownerId: 'user_1' },
+    { id: 'shared', ownerId: 'user_2' },
+  ];
+  index.trash = [{ id: 'p2', ownerId: 'user_1' }];
+  index.deleted = [];
   vi.clearAllMocks();
 });
 
@@ -56,7 +83,9 @@ describe('DELETE /api/account', () => {
   it('deletes the data, then closes the liveworkspace account with the caller’s token', async () => {
     const res = await remove();
     expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({ deleted: { designs: 2, folders: 1 } });
+    expect(await res.json()).toEqual({ deleted: { designs: 2 } });
+    // The person's own designs, live or trashed, go for good through the index; someone else's stay.
+    expect(index.deleted.sort()).toEqual(['p1', 'p2']);
     expect(order).toEqual(['data', 'account']);
     expect(db.deleteAccount).toHaveBeenCalledWith(expect.anything(), 'user_1');
     expect(authClient.closeAccount).toHaveBeenCalledWith(
@@ -81,7 +110,7 @@ describe('DELETE /api/account', () => {
     expect(res.status).toBe(502);
     expect(await res.json()).toEqual({
       error: 'account_not_closed',
-      deleted: { designs: 2, folders: 1 },
+      deleted: { designs: 2 },
     });
     expect(res.headers.getSetCookie()).toEqual([]);
   });
@@ -96,6 +125,7 @@ describe('DELETE /api/account', () => {
     const res = await remove({ accountUserId: null });
     expect(res.status).toBe(400);
     expect(db.deleteAccount).not.toHaveBeenCalled();
+    expect(index.deleted).toEqual([]);
     expect(authClient.closeAccount).not.toHaveBeenCalled();
   });
 });

@@ -34,6 +34,9 @@ describe('previews on liveworkspace.app', () => {
   it("asks the item's own app, cache-busted by its version, and only apps that serve one", () => {
     expect(previewUrl(item())).toBe('https://www.liveplanner.app/api/projects/p1/thumbnail?v=5');
     expect(previewUrl(item({ app: 'livediagram' }))).toBeNull();
+    expect(previewUrl(item({ app: 'livedesign' }))).toBe(
+      'https://www.livedesign.app/api/designs/p1/thumbnail?v=5',
+    );
     expect(renderPreview(item({ app: 'livedocuments' }), 'card')).toBeNull();
     expect(renderPreview(item({ summary: { empty: true } }), 'card')).toBeNull();
     expect(loadPreview(item({ summary: { empty: true } }))).toBeNull();
@@ -52,14 +55,14 @@ describe('previews on liveworkspace.app', () => {
     });
     vi.stubGlobal('fetch', fetch);
     const items = Array.from({ length: 10 }, (_, i) => item({ id: `p${i}` }));
-    await Promise.all([...items, ...items].map((it) => loadPreview(it) ?? Promise.resolve(null)));
+    await Promise.all([...items, ...items].map((it) => loadPreview(it)));
     expect(fetch).toHaveBeenCalledTimes(10);
     expect(most).toBeLessThanOrEqual(PREVIEW_CONCURRENCY);
     await loadPreview(items[0]!);
     expect(fetch).toHaveBeenCalledTimes(10);
     await loadPreview(item({ id: 'p0', updatedAt: 6 }));
     expect(fetch).toHaveBeenCalledTimes(11);
-    await loadPreview(item({ id: 's', sharedVia: 'code' }));
+    await loadPreview(item({ id: 's', sharedVia: 'code' } as never));
     expect(new Headers(fetch.mock.calls.at(-1)![1].headers).get('X-Share-Code')).toBe('code');
   });
 });

@@ -1,13 +1,13 @@
 import type { Tab } from '@livedesign/design';
 import { getTab } from '../db';
-import type { Env } from '../types';
+import type { DesignEnv } from '../types';
 
 // A tab as a changeset reads it: its body, apart from the row's fields (revision, position, link
 // folder, timestamps), so the engine never copies them into what gets stored.
 export type StoredTab = { tab: Tab; rev: number; orderIndex: number };
 
 export async function readStoredTab(
-  env: Env,
+  env: DesignEnv,
   designId: string,
   tabId: string,
 ): Promise<StoredTab | null> {

@@ -13,16 +13,6 @@ import {
   type WorkbenchPairingRequestView,
   type WorkbenchPairingStatusResponse,
 } from '@livedesign/api-schema';
-import { generatePairingCode } from '../auth/workbench-session';
-import {
-  answerPairingRequest,
-  findWorkbenchPairing,
-  listWorkbenchPairings,
-  openPairingRequest,
-  pairingRequestStatus,
-  readPairingRequest,
-  workbenchPairingOwner,
-} from '../db/workbench';
 import {
   conflict,
   forbidden,
@@ -32,9 +22,9 @@ import {
   rateLimited,
   signInRequired,
 } from '../responses';
-import { endWorkbenchAccess } from '../workbench-end';
+import { workbenchStore } from '../workbench-store';
 import { readBody, type RouteContext } from './context';
-import { pairingUrlOf, workbenchRateLimited } from './workbench-ticket-route';
+import { pairingUrlOf, workbenchRateLimited, workbenchTokenOf } from './workbench-ticket-route';
 
 // POST /api/workbench/pairing-requests: `workbench pair` asks, by token, for one scope (absent: `design`).
 export async function openPairing(ctx: RouteContext): Promise<Response> {
@@ -51,18 +41,18 @@ export async function openPairing(ctx: RouteContext): Promise<Response> {
   if (!isWorkbenchScope(scope))
     return json({ error: 'invalid_value', message: 'invalid scope' }, { status: 400 });
 
-  const pairing = await findWorkbenchPairing(ctx.env, token.id, origin);
+  const store = workbenchStore(ctx.env, ownerId);
+  const pairing = await store.findPairing(token.id, origin);
   if (pairing && pairingCoversScope(pairing.scope, scope)) {
     const answer: WorkbenchPairingRequestCreated = { status: 'paired', pairing };
     return json(answer);
   }
-  const request = await openPairingRequest(ctx.env, {
-    ownerId,
-    tokenId: token.id,
+  const request = await store.openPairingRequest({
+    personId: ownerId,
+    token: workbenchTokenOf(token),
     origin,
     scope,
     name: normaliseWorkbenchName(body.name),
-    code: generatePairingCode(),
     now: Date.now(),
   });
   console.log('[workbench] pairing-requested', {
@@ -84,8 +74,13 @@ export async function openPairing(ctx: RouteContext): Promise<Response> {
 
 // GET /api/workbench/pairing-requests/:code/status: the waiting CLI's poll, by the token that asked.
 export async function pollPairing(ctx: RouteContext, code: string): Promise<Response> {
-  if (!ctx.token) return forbidden('token_required');
-  const status = await pairingRequestStatus(ctx.env, code, ctx.token.id, Date.now());
+  const ownerId = ctx.resolveOwner();
+  if (!ctx.token || !ownerId) return forbidden('token_required');
+  const status = await workbenchStore(ctx.env, ownerId).pairingRequestStatus(
+    code,
+    ctx.token.id,
+    Date.now(),
+  );
   if (!status) return notFound();
   const answer: WorkbenchPairingStatusResponse = { ...status, interval: DEVICE_POLL_INTERVAL_S };
   return json(answer);
@@ -95,8 +90,8 @@ export async function pollPairing(ctx: RouteContext, code: string): Promise<Resp
 export async function readPairing(ctx: RouteContext, code: string): Promise<Response> {
   const userId = ctx.accountUserId;
   if (!userId) return signInRequired();
-  const request = await readPairingRequest(ctx.env, code, Date.now());
-  if (!request || request.ownerId !== userId) return notFound();
+  const request = await workbenchStore(ctx.env, userId).readPairingRequest(code, Date.now());
+  if (!request) return notFound();
   const view: WorkbenchPairingRequestView = {
     origin: request.origin,
     name: request.name,
@@ -116,11 +111,9 @@ export async function answerPairing(
 ): Promise<Response> {
   const userId = ctx.accountUserId;
   if (!userId) return signInRequired();
-  const result = await answerPairingRequest(ctx.env, {
+  const result = await workbenchStore(ctx.env, userId).answerPairingRequest({
     code,
-    ownerId: userId,
     answer,
-    pairingId: crypto.randomUUID(),
     now: Date.now(),
   });
   switch (result.outcome) {
@@ -147,14 +140,15 @@ export async function answerPairing(
 export async function listPairings(ctx: RouteContext): Promise<Response> {
   const userId = ctx.accountUserId;
   if (!userId) return signInRequired();
-  return json({ pairings: await listWorkbenchPairings(ctx.env, userId, Date.now()) });
+  return json({ pairings: await workbenchStore(ctx.env, userId).listPairings(Date.now()) });
 }
 
 // DELETE /api/workbench/pairings/:id: Unpair, ending that pairing's sessions.
 export async function unpair(ctx: RouteContext, id: string): Promise<Response> {
   const userId = ctx.accountUserId;
   if (!userId) return signInRequired();
-  if ((await workbenchPairingOwner(ctx.env, id)) !== userId) return notFound();
-  await endWorkbenchAccess(ctx.env, { pairingId: id }, 'unpaired');
+  const store = workbenchStore(ctx.env, userId);
+  if (!(await store.hasPairing(id))) return notFound();
+  await store.endAccess({ pairingId: id }, 'unpaired');
   return noContent();
 }

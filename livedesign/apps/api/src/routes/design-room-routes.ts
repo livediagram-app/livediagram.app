@@ -1,218 +1,79 @@
-// /api/designs/<id>/room-ticket + /ws — realtime-room admission
-// (docs/specs/015-api/api.md), split out of designs.ts the same way the share family
-// owns design-share-routes.ts: the one-time WS ticket mint and the
-// Durable Object WebSocket upgrade with its role / password trust
-// boundary.
+// /api/designs/<id>/room-ticket + /ws: joining a design's realtime room (docs/specs/015-api/api.md "Realtime
+// model"). The index's grant is the whole admission (liveworkspace/docs/one-explorer-contracts.md "Grants"): the
+// upgrade carries it as `?t=` (room-ticket.ts), the worker checks it offline and stamps what it says on the
+// headers only it can set, and the room asks for a fresh one before it lapses (design-room.ts).
 
 import {
   capWorkbenchRole,
-  isAccountIdShape,
   type AccessLevel,
   type RoomTicketResponse,
 } from '@livedesign/api-schema';
 import { adderKeyFor } from '../adder-key';
-import { guestSignatureEnforced } from '../auth/guest-rest';
-import { verifyOwnerId } from '../auth/owner-signature';
-import { isPersonalOwner, shareLinkForDesign, sharePasswordOk } from '../auth/share-access';
-import { clientRateKey } from '../client-ip';
-import { consumeWsTicket, createWsTicket, getDesignMeta } from '../db';
-import { noteWorkbenchSessionRoom } from '../db/workbench';
+import { workbenchStore } from '../workbench-store';
+import { linkCodeOf } from '../index-service';
 import { forbidden, json, notFound } from '../responses';
-import { gateGrant, missingDesign, type RouteContext } from './context';
+import { openRoomTicket, sealRoomTicket } from '../room-ticket';
+import { type RouteContext } from './context';
+import { resolveDesignGrant } from './design-grant';
 import { personTagFor } from '../person-tag';
 
 // Returns null when the request isn't a room route.
 export async function handleDesignRoomRoutes(ctx: RouteContext): Promise<Response | null> {
   const { request, env, url, segments } = ctx;
-  // /api/designs/<id>/ws — Durable Object WebSocket. Resolve
-  // the visitor's role server-side before handing the request
-  // to the DO so peer avatars can show "Editor" / "Viewer"
-  // badges that the client can't lie about: clients sending a
-  // crafted `hello` frame still get their role re-stamped from
-  // the X-Verified-Role header below. Falls through to no role
-  // when we can't resolve (e.g. owner request with no share
-  // code and no auth) — the DO leaves role undefined and the
-  // UI hides the badge for that peer.
-  // POST /api/designs/<id>/room-ticket — mint a one-time WS room ticket
-  // (docs/specs/015-api/api.md). The WS upgrade can't carry the Bearer token, so identified
-  // callers (team members above all: membership MUST be checked against
-  // the VERIFIED account id, docs/specs/013-workspace/team-shared-designs.md) prove their access here over normal
-  // authenticated REST and hand the resulting short-lived ticket to the
-  // upgrade as `?t=`. gateGrant runs the exact same access policy
-  // as every REST read/write, including the share-password gate.
+  // POST /api/designs/<id>/room-ticket: the ticket for a caller that holds no grant of its own (an API token's
+  // CLI, a workbench session) or wants its adder key: the grant the request carries or one fetched for it.
   if (segments.length === 4 && segments[3] === 'room-ticket' && request.method === 'POST') {
     const id = segments[2]!;
-    // Gate-only projection — 1 query instead of getDesign's 3; this
-    // runs on every room join.
-    const liveDoc = await getDesignMeta(env, id);
-    if (!liveDoc) return missingDesign(ctx, id);
-    // The grant carries the role, a tab-scoped link's scope and the code that
-    // granted it (docs/specs/013-workspace/tab-scoped-share-links.md); the ticket takes all three to the room.
-    const grant = await gateGrant(ctx, id, liveDoc.ownerId, liveDoc.teamId);
+    const grant = await resolveDesignGrant(ctx, id);
+    if (grant instanceof Response) return grant;
     if (!grant) return notFound();
-    // The person is a verified session's account (not an API token, not a guest header).
-    // A workbench session (docs/specs/013-workspace/workbench-embeds.md) joins as its owner: an account session
-    // carrying the owner's person tag, so their agent's `selected` reads its selection, at most at its level, and
-    // tagged with its pairing so unpairing closes exactly its sockets.
     const workbench = ctx.workbench ?? null;
-    const personId = ctx.accountUserId ?? workbench?.ownerId ?? null;
-    const role = workbench ? capWorkbenchRole(grant.role, workbench.level) : grant.role;
-    // A Participant's adder key (docs/specs/013-workspace/share-roles.md "Integrity"): what the room stamps on the
-    // stickies and text it adds. Only a Participant needs one; no identity, no key (it may then edit, never add).
-    const caller = ctx.resolveOwner();
-    const adderKey = role === 'participate' && caller ? await adderKeyFor(id, caller) : null;
-    const ticket = await createWsTicket(env, id, {
-      role,
-      tabScope: grant.tabScope,
-      shareCode: grant.shareCode,
-      // A verified session carries its person tag, so the room can tell this owner's
-      // sessions from everyone else's without holding the owner id
-      // (docs/specs/024-agents/agent-changesets.md "Held elements").
-      personTag: personId === null ? null : await personTagFor(id, personId),
-      workbenchPairing: workbench?.pairingId ?? null,
-      adderKey,
-    });
+    const role = workbench ? capWorkbenchRole(grant.level, workbench.level) : grant.level;
+    const ticket = await sealRoomTicket(
+      env,
+      grant.token,
+      workbench ? { pairing: workbench.pairingId, cap: workbench.level } : null,
+    );
     // A workspace session joins many rooms; each is recorded so ending its access closes them all (WB55).
     if (workbench?.scope === 'workspace')
-      await noteWorkbenchSessionRoom(env, workbench.sessionId, id);
-    // The caller's own adder key comes back with its ticket, so its editor knows which stickies are its own
-    // to delete (docs/specs/013-workspace/share-roles.md). It says nothing about anybody else.
+      await workbenchStore(env, workbench.ownerId).noteSessionRoom(workbench.sessionId, id);
+    // A Participant's adder key (docs/specs/013-workspace/share-roles.md "Integrity"): what the room stamps on the
+    // stickies and text it adds, so its editor knows which are its own.
+    const person = linkCodeOf(grant.sub) ? null : grant.sub;
+    const adderKey = role === 'participate' && person ? await adderKeyFor(id, person) : null;
     const answer: RoomTicketResponse = adderKey ? { ticket, adderKey } : { ticket };
     return json(answer);
   }
 
-  if (segments.length === 4 && segments[3] === 'ws') {
+  if (segments.length === 4 && segments[3] === 'ws' && request.method === 'GET') {
     const id = segments[2]!;
-    const stub = env.DESIGN_ROOM.get(env.DESIGN_ROOM.idFromName(id));
-    // Browsers can't put custom headers on a WebSocket upgrade,
-    // so the client passes a one-time ticket / share code / owner id
-    // as query params (`?t=...&s=...&o=...`). We resolve role here and
-    // forward it to the Durable Object via X-Verified-Role; the DO
-    // ignores any role the client might set in its own hello
-    // payload, so this header is the trust boundary.
-    let role: AccessLevel | null = null;
-    // A tab-scoped link's tab, and the code that admitted a share visitor
-    // (docs/specs/013-workspace/tab-scoped-share-links.md). Null for the owner and a team member.
-    let tabScope: string | null = null;
-    let shareCode: string | null = null;
-    // Only a ticket carries a person tag; every other leg has none.
-    let personTag: string | null = null;
-    // Only a workbench session's ticket carries its pairing; every other leg has none.
-    let workbenchPairing: string | null = null;
-    // Only a Participant's ticket carries an adder key; every other leg has none.
-    let adderKey: string | null = null;
-    const claimedOwnerId = url.searchParams.get('o');
-    // Gate-only projection — the upgrade uses only ownerId/teamId. A design
-    // in the Trash (docs/specs/013-workspace/trash.md) reads as missing, so no
-    // leg below can admit anyone: not a ticket minted before the delete, not
-    // a share code, not the owner.
-    const liveDoc = await getDesignMeta(env, id);
-    if (!liveDoc) return notFound();
-    // One-time ticket (docs/specs/015-api/api.md): minted seconds ago over authenticated
-    // REST, single-use and design-scoped, carrying the server-resolved
-    // role. This is the ONLY leg that can admit a team member — the old
-    // fallback that granted edit to any `?o=` matching a JOINED member id
-    // trusted an unverified, teammate-visible value, so a removed member
-    // (or anyone who learned a member id) could keep joining the room.
-    const ticket = url.searchParams.get('t');
-    const admission = ticket ? await consumeWsTicket(env, ticket, id) : null;
-    const ticketRole = admission?.role ?? null;
-    // The bare-`o` owner match is PERSONAL designs only, mirroring the
-    // REST access rule (auth/design-access.ts): a TEAM design's owner
-    // id is an account id deliberately visible to every teammate, so a
-    // removed member could present it here — the exact hole the ticket
-    // closed for the membership leg. Team owners come in via the ticket
-    // (its mint admits them through the verified callerId === ownerId
-    // leg); a personal guest owner's id stays an unguessable UUID. An ACCOUNT id is
-    // refused here outright for the same reason REST refuses it as `X-Owner-Id`
-    // (docs/specs/015-api/public-api-and-tokens.md §4.1): teammates can read it, so
-    // it proves nothing. A signed-in owner of a personal design comes in through
-    // the ticket like a team owner.
-    const accountIdClaimed = !!claimedOwnerId && isAccountIdShape(claimedOwnerId);
-    if (accountIdClaimed)
-      console.warn('[room-upgrade] account id refused as ?o=', { designId: id });
-    // The guest owner id is the same bearer value REST carries as X-Owner-Id,
-    // so once the guest signature gate is armed (auth/guest-rest.ts) this leg
-    // needs the same proof, on `os`; otherwise a harvested guest id would
-    // still seat its holder as the owner, password gate bypassed.
-    const ownerSigOk =
-      !guestSignatureEnforced(env, Date.now()) ||
-      (!!claimedOwnerId &&
-        (await verifyOwnerId(
-          env.GUEST_ID_HMAC_SECRET,
-          claimedOwnerId,
-          url.searchParams.get('os'),
-        )));
-    const isOwnerUpgrade =
-      !accountIdClaimed &&
-      ownerSigOk &&
-      isPersonalOwner(claimedOwnerId, liveDoc.ownerId, liveDoc.teamId);
-    if (admission) {
-      ({ role, tabScope, shareCode, personTag, workbenchPairing, adderKey } = admission);
-    } else if (isOwnerUpgrade) {
-      role = 'edit';
-      // The legacy legs put credentials in the URL (docs/specs/015-api/api.md "Realtime model"); every editor
-      // now rides a ticket, so this counts what is left before they are retired.
-      console.info('[room-upgrade] legacy leg admitted', { leg: 'owner', designId: id });
-    } else {
-      const link = await shareLinkForDesign(env, url.searchParams.get('s'), id);
-      if (link) {
-        role = link.role;
-        tabScope = link.tabId;
-        shareCode = link.code;
-        console.info('[room-upgrade] legacy leg admitted', { leg: 'share', designId: id });
-      }
-    }
-    // Refuse the upgrade unless the caller is the owner or holds a valid
-    // share code for THIS design. Without this, a design with no share
-    // password forwarded every upgrade (role === null) to the room, so
-    // anyone who learned the design id could read live ops; and the DO
-    // additionally drops op frames from non-edit sessions.
-    if (!role) return forbidden();
-    // Password gate (docs/specs/013-workspace/share-password.md): a non-owner joining the realtime room of
-    // a password-protected design must carry the matching password on
-    // the `p` query param (WS upgrades can't set headers). Owners
-    // bypass, and so do ticket holders — the mint already ran the full
-    // REST access policy, including this same password gate for
-    // share-code visitors (owners / team members read without it over
-    // REST, so the room matches). A bad / missing password refuses the
-    // upgrade outright so the room never even sees the peer.
-    if (!isOwnerUpgrade && !ticketRole) {
-      const p = url.searchParams.get('p');
-      const attempt = p === null ? null : { value: p, rateKey: clientRateKey(request) };
-      if (!(await sharePasswordOk(env, id, attempt))) return forbidden();
-    }
-    // Presence identity is no longer forwarded: the DO assigns each session a
-    // fresh ephemeral id for its broadcast presence / cursor (docs/specs/015-api/public-api-and-tokens.md §6), so
-    // the real owner id never reaches the room and a joiner can't spoof
-    // another peer's presence (there's no real id to claim). Only the
-    // server-resolved role is forwarded; it still gates edit vs view ops.
+    const opened = await openRoomTicket(env, url.searchParams.get('t'), id);
+    if (!opened) return forbidden();
+    const { claims, workbench } = opened;
+    const role: AccessLevel = workbench
+      ? capWorkbenchRole(claims.level, workbench.cap)
+      : claims.level;
+    const person = linkCodeOf(claims.sub) ? null : claims.sub;
+    // The share code a session came in by, so revoking it closes exactly its sockets: a link visitor's grant
+    // names it; a person who opened a link says so on `?s=` (it only ever closes, so it needs no proof).
+    const shareCode = linkCodeOf(claims.sub) ?? (url.searchParams.get('s')?.slice(0, 64) || null);
     const forwarded = new Request(request);
-    // Every trust header is stamped UNCONDITIONALLY, because `new Request`
-    // copies the client's own headers and the DO believes whatever arrives
-    // under these names. `set` on every path is what makes that belief true:
-    // a `delete`-then-conditional-`set` would be equivalent, but the
-    // always-set form can't regress the way a path-only header can, where a
-    // non-browser client (websocat, curl: browsers can't put headers on an
-    // upgrade) could send the header itself on every other path.
+    // Every trust header is stamped UNCONDITIONALLY: `new Request` copies the client's own headers, and the room
+    // believes whatever arrives under these names (room-session.ts).
     forwarded.headers.set('X-Verified-Role', role);
-    // The session's tab scope and admitting code, set on every path for the
-    // same reason as the role: the room believes these names. Empty =
-    // none (docs/specs/013-workspace/tab-scoped-share-links.md).
-    forwarded.headers.set('X-Verified-Tab-Scope', tabScope ?? '');
+    forwarded.headers.set('X-Verified-Tab-Scope', claims.tab ?? '');
     forwarded.headers.set('X-Verified-Share-Code', shareCode ?? '');
-    // The person tag (docs/specs/024-agents/agent-changesets.md, CS39), set on every path for the
-    // same reason as the headers above. Empty = none.
-    forwarded.headers.set('X-Verified-Person', personTag ?? '');
-    // The workbench pairing that opened the session (docs/specs/013-workspace/workbench-embeds.md), set on every
-    // path for the same reason as the headers above. Empty = none.
-    forwarded.headers.set('X-Verified-Workbench-Pairing', workbenchPairing ?? '');
-    // A Participant's adder key (docs/specs/013-workspace/share-roles.md "Integrity"), set on every path for the
-    // same reason as the headers above. Empty = none.
-    forwarded.headers.set('X-Verified-Adder', adderKey ?? '');
-    // The design this room serves, so a Participant's write knows its row; the room is named after it, and the
-    // header is set on every path for the same reason as the headers above.
+    forwarded.headers.set('X-Verified-Person', person ? await personTagFor(id, person) : '');
+    forwarded.headers.set('X-Verified-Workbench-Pairing', workbench?.pairing ?? '');
+    forwarded.headers.set(
+      'X-Verified-Adder',
+      role === 'participate' && person ? await adderKeyFor(id, person) : '',
+    );
     forwarded.headers.set('X-Verified-Design', id);
+    // When the grant lapses (epoch seconds): the room asks for a fresh one before then, and drops the socket
+    // after (design-room.ts).
+    forwarded.headers.set('X-Verified-Grant-Exp', String(claims.exp));
+    const stub = env.DESIGN_ROOM.get(env.DESIGN_ROOM.idFromName(id));
     return stub.fetch(forwarded);
   }
 

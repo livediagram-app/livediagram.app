@@ -1,16 +1,21 @@
 // The tab save's one-query design read (db/tab-save-design.ts), against the real migrations: the fields the
-// save uses, the tab count, and a trashed design reading as missing. The owner's name is no longer joined in:
-// it is their liveworkspace profile, read by the save itself (accounts/profiles.ts).
-import { describe, expect, it } from 'vitest';
+// save uses, the tab count, and an unknown design reading as missing.
+import { describe, expect, it, vi } from 'vitest';
+vi.mock('../accounts/profiles', async () =>
+  (await import('../test-profiles')).fakeProfilesModule(),
+);
+import { resetProfiles, seedProfile } from '../test-profiles';
 import { sqliteD1 } from '../test-sqlite-d1';
 import { getDesign } from './designs';
 import { getDesignForSave } from './tab-save-design';
 
 function setUp() {
   const db = sqliteD1();
+  resetProfiles();
+  seedProfile('owner', 'Ada', '#ff0000');
   db.sql.exec(`
-    INSERT INTO designs (id, owner_id, name, shareable, saved_at, created_at, team_id)
-      VALUES ('d1', 'owner', 'Plan', 0, 5, 3, NULL);
+    INSERT INTO test_designs (id, owner_id, name, shareable, saved_at, created_at, team_id)
+      VALUES ('d1', 'owner', 'Design', 0, 5, 3, NULL);
     INSERT INTO tabs (id, name, data, updated_at) VALUES ('t1', 'One', '{"elements":[]}', 1), ('t2', 'Two', '{"elements":[]}', 1);
     INSERT INTO design_tabs (design_id, tab_id, order_index, added_at) VALUES ('d1', 't1', 0, 1), ('d1', 't2', 1, 1);
   `);
@@ -26,7 +31,7 @@ describe('getDesignForSave', () => {
       id: 'd1',
       ownerId: 'owner',
       teamId: null,
-      name: 'Plan',
+      name: 'Design',
       createdAt: 3,
       tabCount: 2,
     });
@@ -37,10 +42,9 @@ describe('getDesignForSave', () => {
     });
   });
 
-  it('reads a trashed or unknown design as missing', async () => {
-    const { env, sql } = setUp();
+  it('reads an unknown design as missing', async () => {
+    const { env } = setUp();
     expect(await getDesignForSave(env, 'nope')).toBeNull();
-    sql.exec(`UPDATE designs SET trashed_at = 9 WHERE id = 'd1'`);
-    expect(await getDesignForSave(env, 'd1')).toBeNull();
   });
+
 });

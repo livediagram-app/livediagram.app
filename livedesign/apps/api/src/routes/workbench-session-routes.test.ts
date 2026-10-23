@@ -4,7 +4,7 @@ import {
   WORKBENCH_SESSION_TTL_MS,
   WORKBENCH_TICKET_TTL_MS,
 } from '@livedesign/api-schema';
-import { hashWorkbenchSecret } from '../auth/workbench-session';
+import { sha256Hex as hashWorkbenchSecret } from '@liveworkspace/index-app';
 import type { SqliteD1 } from '../test-sqlite-d1';
 import type { WorkbenchContext } from './context';
 import { makeTestRouteContext } from './test-route-context';
@@ -15,6 +15,9 @@ import {
   ORIGIN,
   pairToken,
   rows,
+  storeSql,
+  tokenOf,
+  USER_1_TEAMS,
   workbenchDb,
 } from './workbench-test-fixtures';
 import { resetProfiles, seedProfile } from '../test-profiles';
@@ -22,6 +25,10 @@ vi.mock('../accounts/profiles', async () =>
   (await import('../test-profiles')).fakeProfilesModule(),
 );
 beforeEach(() => resetProfiles());
+
+vi.mock('../index-service', async (original) =>
+  (await import('./workbench-test-fixtures')).indexServiceWithTestIndex(original as never),
+);
 
 const SESSION_CONTEXT: WorkbenchContext = {
   sessionId: 'sess1',
@@ -39,7 +46,7 @@ const SESSION_CONTEXT: WorkbenchContext = {
 
 async function mintTicket(
   db: SqliteD1,
-  token: { id: string; readOnly?: boolean } = { id: 'tok1' },
+  token = tokenOf('tok1'),
   body: Record<string, unknown> = { designId: 'doc1', tabId: 't1', origin: ORIGIN },
 ) {
   const res = await handleWorkbench(
@@ -49,6 +56,7 @@ async function mintTicket(
       verifiedUserId: 'user_1',
       token,
       body,
+      teams: USER_1_TEAMS,
     }),
   );
   const { url } = (await res.json()) as { url: string };
@@ -57,6 +65,9 @@ async function mintTicket(
 
 const redeem = (db: SqliteD1, body: unknown) =>
   handleWorkbench(makeTestRouteContext('POST', '/api/workbench/sessions', { env: db.env, body }));
+
+// A person's name and colour come from their profile (accounts/profiles.ts); each test starts with no one named.
+beforeEach(() => resetProfiles());
 
 describe('POST /api/workbench/sessions', () => {
   beforeEach(() => {
@@ -72,7 +83,7 @@ describe('POST /api/workbench/sessions', () => {
 
   it('opens a session as the person, with their display identity', async () => {
     const db = await workbenchDb();
-    pairToken(db);
+    await pairToken(db);
     seedProfile('user_1', 'Webber', '#ff8800');
     const ticket = await mintTicket(db);
 
@@ -92,7 +103,7 @@ describe('POST /api/workbench/sessions', () => {
       person: { id: 'user_1', name: 'Webber', color: '#ff8800' },
     });
     expect(isWorkbenchSessionFormat(body.session)).toBe(true);
-    expect(rows(db, 'SELECT secret_hash, pairing_id FROM workbench_sessions')).toEqual([
+    expect(rows(db, 'SELECT secret_hash, pairing_id FROM wb_sessions')).toEqual([
       { secret_hash: await hashWorkbenchSecret(body.session), pairing_id: 'pair1' },
     ]);
     expect(console.log).toHaveBeenCalledWith('[workbench] session-opened', {
@@ -106,7 +117,7 @@ describe('POST /api/workbench/sessions', () => {
 
   it('answers a person without a profile with a null name and colour', async () => {
     const db = await workbenchDb();
-    pairToken(db);
+    await pairToken(db);
     const ticket = await mintTicket(db);
 
     const body = (await (await redeem(db, { ticket })).json()) as { person: unknown };
@@ -116,9 +127,8 @@ describe('POST /api/workbench/sessions', () => {
 
   it('caps the session at the token expiry', async () => {
     const db = await workbenchDb();
-    pairToken(db);
-    db.sql.exec(`UPDATE api_tokens SET expires_at = ${NOW + 1000 * 60 * 5} WHERE id = 'tok1'`);
-    const ticket = await mintTicket(db);
+    await pairToken(db);
+    const ticket = await mintTicket(db, { ...tokenOf('tok1'), expiresAt: NOW + 1000 * 60 * 5 });
 
     const body = (await (await redeem(db, { ticket })).json()) as { expiresAt: number };
 
@@ -127,8 +137,8 @@ describe('POST /api/workbench/sessions', () => {
 
   it('opens a view session from a read-only token', async () => {
     const db = await workbenchDb();
-    pairToken(db, 'tok_ro', 'user_1', 'pair_ro');
-    const ticket = await mintTicket(db, { id: 'tok_ro', readOnly: true });
+    await pairToken(db, 'tok_ro', 'user_1', 'pair_ro');
+    const ticket = await mintTicket(db, tokenOf('tok_ro'));
 
     const body = (await (await redeem(db, { ticket })).json()) as { role: string };
 
@@ -137,7 +147,7 @@ describe('POST /api/workbench/sessions', () => {
 
   it('opens one session per ticket', async () => {
     const db = await workbenchDb();
-    pairToken(db);
+    await pairToken(db);
     const ticket = await mintTicket(db);
     await redeem(db, { ticket });
 
@@ -153,12 +163,12 @@ describe('POST /api/workbench/sessions', () => {
 
   it('refuses an expired and an unknown ticket', async () => {
     const db = await workbenchDb();
-    pairToken(db);
+    await pairToken(db);
     const ticket = await mintTicket(db);
     vi.setSystemTime(NOW + WORKBENCH_TICKET_TTL_MS);
 
     const late = await redeem(db, { ticket });
-    const unknown = await redeem(db, { ticket: 'A'.repeat(22) });
+    const unknown = await redeem(db, { ticket: `${'A'.repeat(22)}.${'0f'.repeat(32)}` });
 
     expect(await late.json()).toEqual({ error: 'invalid_ticket', reason: 'expired' });
     expect(await unknown.json()).toEqual({ error: 'invalid_ticket', reason: 'unknown' });
@@ -166,9 +176,9 @@ describe('POST /api/workbench/sessions', () => {
 
   it('refuses a ticket whose pairing was removed meanwhile', async () => {
     const db = await workbenchDb();
-    pairToken(db);
+    await pairToken(db);
     const ticket = await mintTicket(db);
-    db.sql.exec(`DELETE FROM workbench_pairings WHERE id = 'pair1'`);
+    storeSql(db).exec(`DELETE FROM wb_pairings WHERE id = 'pair1'`);
 
     const res = await redeem(db, { ticket });
 
@@ -177,14 +187,14 @@ describe('POST /api/workbench/sessions', () => {
 
   it('answers 404 when the owner lost access between mint and redemption', async () => {
     const db = await workbenchDb();
-    pairToken(db);
+    await pairToken(db);
     const ticket = await mintTicket(db);
-    db.sql.exec(`UPDATE designs SET owner_id = 'user_2' WHERE id = 'doc1'`);
+    db.sql.exec(`UPDATE design SET owner_id = 'user_2' WHERE id = 'doc1'`);
 
     const res = await redeem(db, { ticket });
 
     expect(res.status).toBe(404);
-    expect(rows(db, 'SELECT * FROM workbench_sessions')).toEqual([]);
+    expect(rows(db, 'SELECT * FROM wb_sessions')).toEqual([]);
   });
 
   it.each([{}, { ticket: 'short' }, { ticket: 42 }])('refuses the body %j', async (body) => {
@@ -228,10 +238,10 @@ describe('DELETE /api/workbench/sessions/current', () => {
 
   it('ends the presenting session', async () => {
     const db = await workbenchDb();
-    pairToken(db);
-    db.sql.exec(`INSERT INTO workbench_sessions
-                   (id, secret_hash, owner_id, token_id, pairing_id, design_id, tab_id, origin, role, created_at, expires_at)
-                 VALUES ('sess1', 'h', 'user_1', 'tok1', 'pair1', 'doc1', NULL, '${ORIGIN}', 'edit', 1, ${NOW})`);
+    await pairToken(db);
+    storeSql(db).exec(`INSERT INTO wb_sessions
+                   (id, secret_hash, token_id, pairing_id, scope, item_id, tab_id, origin, role, created_at, expires_at)
+                 VALUES ('sess1', 'h', 'tok1', 'pair1', 'design', 'doc1', NULL, '${ORIGIN}', 'edit', 1, ${NOW})`);
     const log = vi.spyOn(console, 'log').mockImplementation(() => {});
 
     const res = await handleWorkbench(
@@ -242,7 +252,7 @@ describe('DELETE /api/workbench/sessions/current', () => {
     );
 
     expect(res.status).toBe(204);
-    expect(rows(db, 'SELECT * FROM workbench_sessions')).toEqual([]);
+    expect(rows(db, 'SELECT * FROM wb_sessions')).toEqual([]);
     expect(log).toHaveBeenCalledWith('[workbench] session-ended', {
       reason: 'ended',
       scope: 'design',
@@ -258,7 +268,7 @@ describe('DELETE /api/workbench/sessions/current', () => {
     const res = await handleWorkbench(
       makeTestRouteContext('DELETE', '/api/workbench/sessions/current', {
         env: db.env,
-        token: { id: 'tok1' },
+        token: tokenOf('tok1'),
       }),
     );
 
@@ -281,17 +291,13 @@ describe('POST /api/workbench/sessions, workspace scope', () => {
 
   it('opens a workspace session with no design, its folder and the ticket level', async () => {
     const db = await workbenchDb();
-    pairToken(db, 'tok1', 'user_1', 'pair1', 'workspace');
+    await pairToken(db, 'tok1', 'user_1', 'pair1', 'workspace');
     arrangeFolders(db);
-    const ticket = await mintTicket(
-      db,
-      { id: 'tok1' },
-      {
-        scope: 'workspace',
-        folderId: 'f-own',
-        origin: ORIGIN,
-      },
-    );
+    const ticket = await mintTicket(db, tokenOf('tok1'), {
+      scope: 'workspace',
+      folderId: 'f-own',
+      origin: ORIGIN,
+    });
 
     const res = await redeem(db, { ticket });
 
@@ -307,8 +313,8 @@ describe('POST /api/workbench/sessions, workspace scope', () => {
       expiresAt: NOW + WORKBENCH_SESSION_TTL_MS,
       person: { id: 'user_1', name: null, color: null },
     });
-    expect(rows(db, 'SELECT scope, design_id, folder_id FROM workbench_sessions')).toEqual([
-      { scope: 'workspace', design_id: null, folder_id: 'f-own' },
+    expect(rows(db, 'SELECT scope, item_id, folder_id FROM wb_sessions')).toEqual([
+      { scope: 'workspace', item_id: null, folder_id: 'f-own' },
     ]);
     expect(console.log).toHaveBeenCalledWith('[workbench] session-opened', {
       scope: 'workspace',
@@ -321,15 +327,11 @@ describe('POST /api/workbench/sessions, workspace scope', () => {
 
   it('opens a view workspace session for a read-only token', async () => {
     const db = await workbenchDb();
-    pairToken(db, 'tok_ro', 'user_1', 'pair1', 'workspace');
-    const ticket = await mintTicket(
-      db,
-      { id: 'tok_ro', readOnly: true },
-      {
-        scope: 'workspace',
-        origin: ORIGIN,
-      },
-    );
+    await pairToken(db, 'tok_ro', 'user_1', 'pair1', 'workspace');
+    const ticket = await mintTicket(db, tokenOf('tok_ro'), {
+      scope: 'workspace',
+      origin: ORIGIN,
+    });
 
     const res = await redeem(db, { ticket });
 

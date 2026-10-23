@@ -238,10 +238,12 @@ describe('the tab PUT', () => {
     const db = await designWith([box('a')]);
     const seen = String(revOf(db));
     // A changeset lands between the save's read and its write, once.
-    const batch = db.env.DB.batch.bind(db.env.DB);
+    const batch = db.env.DESIGN_DB.batch.bind(db.env.DESIGN_DB);
     let interleave = 1;
-    db.env.DB.batch = async (statements: D1PreparedStatement[]) => {
-      if (interleave > 0) {
+    db.env.DESIGN_DB.batch = async (statements: D1PreparedStatement[]) => {
+      // Only a tab write meets the race: the design's reads (its outline, the outbox drain) batch too.
+    const writesTab = statements.some((st) => /INSERT INTO tabs\b/.test((st as unknown as { query: string }).query));
+    if (writesTab && interleave > 0) {
         interleave -= 1;
         recordAdd(db, box(`raced${interleave}`));
       }
@@ -266,53 +268,9 @@ describe('the tab read', () => {
   });
 });
 
-// A save upserts by tab id: an id that names another design's tab is refused, never overwritten or adopted.
-// A share link makes tab ids visible (its design lists them), so this is what keeps a shared board safe.
-describe("someone else's tab id", () => {
-  it('is refused, leaving the tab and its design as they were', async () => {
-    const db = await designWith([box('a', 'Original')]);
-    // A tab from before revisions (the baseline migration), at rev 0 as most stored tabs are: the revision trigger alone
-    // would let an overwrite through.
-    db.sql
-      .prepare("INSERT INTO tabs (id, name, data, updated_at, rev) VALUES ('old', 'Old', ?, 1, 0)")
-      .run(JSON.stringify({ elements: [box('v', 'Original')] }));
-    db.sql
-      .prepare(
-        "INSERT INTO design_tabs (design_id, tab_id, order_index, added_at) VALUES ('D', 'old', 1, 1)",
-      )
-      .run();
-    const attacker = (method: string, path: string, body?: unknown) =>
-      handleDesigns(
-        makeTestRouteContext(method, path, {
-          env: db.env,
-          owner: 'user_attacker',
-          accountUserId: 'user_attacker',
-          verifiedUserId: 'user_attacker',
-          body,
-        }),
-      );
-    const own = await attacker('POST', '/api/designs', {
-      id: 'E',
-      name: 'Mine',
-      tabs: [{ id: 'e1', name: 'Mine', elements: [] }],
-    });
-    expect(own.status).toBe(201);
-    const res = await attacker('PUT', '/api/designs/E/tabs/old', {
-      id: 'old',
-      name: 'Taken',
-      elements: [box('x', 'Overwritten')],
-    });
-    expect(res.status).toBe(409);
-    expect(await res.json()).toEqual({ error: 'tab_id_taken' });
-    const oldData = JSON.parse(
-      db.sql.prepare("SELECT data FROM tabs WHERE id = 'old'").get()!.data as string,
-    ) as { elements: { label?: string }[] };
-    expect(oldData.elements.map((e) => e.label)).toEqual(['Original']);
-    expect(
-      db.sql.prepare("SELECT design_id FROM design_tabs WHERE tab_id = 'old'").all(),
-    ).toEqual([{ design_id: 'D' }]);
-  });
-
+// Each design stores its own tabs (its Durable Object), so a tab id is the design's own: a save makes a new tab or
+// revises one of this design's.
+describe('a tab id', () => {
   it('still saves a brand new tab, and the owner keeps saving their own', async () => {
     const db = await designWith([box('a')]);
     const fresh = await call(db, 'PUT', '/api/designs/D/tabs/t2', {

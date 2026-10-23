@@ -1,5 +1,8 @@
-import type { RouteContext, WorkbenchContext } from './context';
-import type { Env } from '../types';
+import type { TeamClaim } from '@liveworkspace/auth-client';
+import type { DesignGrant } from '../index-service';
+import { TEST_GRANT_HOOK, type TestGrantCaller } from '../test-sqlite-d1';
+import type { DesignRouteContext, RouteContext, WorkbenchContext } from './context';
+import type { Env, DesignEnv } from '../types';
 
 // Shared test builder for RouteContext (docs/specs/003-system-architecture/testing.md). Eight route test
 // files used to hand-roll the same URL → segments → JSON Request →
@@ -26,7 +29,7 @@ export function makeTestRouteContext(
     verifiedUserId?: string | null;
     accountEmail?: string | null;
     // The API token the request presented (docs/specs/024-agents/agent-changesets.md).
-    token?: { id: string; readOnly?: boolean } | null;
+    token?: RouteContext['token'];
     // The workbench session the request presented (docs/specs/013-workspace/workbench-embeds.md).
     workbench?: WorkbenchContext | null;
     // JSON-encoded into the request body when present.
@@ -34,14 +37,19 @@ export function makeTestRouteContext(
     // Sent as is, for a body that does not parse.
     rawBody?: string;
     headers?: Record<string, string>;
-    // Per-test bindings (e.g. the images tests' IMAGES stub); an empty
+    // The caller's joined teams, as its token carries them.
+    teams?: TeamClaim[] | null;
+    // The index's grant on the design: given, or (undefined) worked out from a sqliteD1 env as the index would
+    // (test-sqlite-d1.ts `testGrantFor`).
+    grant?: DesignGrant | null;
+    // Per-test bindings (e.g. a SNAPSHOTS stub); an empty
     // Env otherwise.
-    env?: Env;
+    env?: Env | DesignEnv;
     // Provide to observe background dispatches; absent = the unit-test
     // default where `ctx.waitUntil?.(...)` skips its argument.
     waitUntil?: (promise: Promise<unknown>) => void;
   } = {},
-): RouteContext {
+): DesignRouteContext {
   const url = new URL(`https://api.test${path}`);
   const segments = url.pathname.replace(/^\//, '').split('/');
   const request = new Request(url, {
@@ -51,9 +59,12 @@ export function makeTestRouteContext(
   });
   const accountUserId = opts.accountUserId ?? null;
   const verifiedUserId = opts.verifiedUserId === undefined ? accountUserId : opts.verifiedUserId;
+  const env = designEnvFor(segments, opts.env);
+  const grant =
+    opts.grant !== undefined ? opts.grant : testGrant(env, segments, method, opts, verifiedUserId);
   return {
     request,
-    env: opts.env ?? ({} as Env),
+    env,
     url,
     segments,
     accountUserId,
@@ -62,6 +73,73 @@ export function makeTestRouteContext(
     resolveOwner: () => opts.owner ?? null,
     token: opts.token ?? null,
     workbench: opts.workbench ?? null,
+    teams: opts.teams ?? null,
+    bearer: null,
+    grant,
     ...(opts.waitUntil ? { waitUntil: opts.waitUntil } : {}),
   };
 }
+
+// The grant the index would give this caller on the design the path names (or, for a create, the body names).
+function testGrant(
+  env: Env | DesignEnv,
+  segments: string[],
+  method: string,
+  opts: {
+    owner?: string | null;
+    teams?: TeamClaim[] | null;
+    headers?: Record<string, string>;
+    body?: unknown;
+  },
+  verifiedUserId: string | null,
+): DesignGrant | null {
+  const hook = (env as unknown as Record<string, unknown>)[TEST_GRANT_HOOK] as
+    ((designId: string, who: TestGrantCaller) => DesignGrant | null) | undefined;
+  if (!hook || segments[1] !== 'designs') return null;
+  const create = segments.length === 2 && method === 'POST';
+  const designId = create
+    ? ((opts.body as { id?: unknown } | undefined)?.id as string | undefined)
+    : segments[2];
+  if (typeof designId !== 'string' || !designId) return null;
+  const headers = new Headers(opts.headers);
+  return hook(designId, {
+    person: opts.owner ?? verifiedUserId ?? null,
+    teams: (opts.teams ?? []).map((t) => t.id),
+    code: headers.get('X-Share-Code'),
+    create,
+  });
+}
+
+// A request about a design (/api/designs/<id>/…, /api/forms/<code>/…) runs inside the design's Durable Object
+// (routes/designs.ts, routes/forms.ts), whose env carries the design's store: an env without one gets a stand-in,
+// so the handler under test takes the in-design path. Any other path keeps the env it was given.
+//
+// The stand-in answers nothing (no rows, no changes) and is not enumerable, so a test asserting the env a
+// mocked module was handed (`toHaveBeenCalledWith({}, …)`) still sees the bindings it gave.
+function designEnvFor(segments: string[], env: Env | DesignEnv | undefined): DesignEnv {
+  const base = env ?? ({} as Env);
+  if ('DESIGN_DB' in base) return base as DesignEnv;
+  if (segments[1] !== 'designs' && segments[1] !== 'forms') return base as DesignEnv;
+  return Object.defineProperty({ ...base }, 'DESIGN_DB', {
+    value: emptyDesignDb(),
+    enumerable: false,
+  }) as DesignEnv;
+}
+
+function emptyDesignDb(): D1Database {
+  const statement = {
+    bind: () => statement,
+    first: async () => null,
+    all: async () => ({ results: [], success: true, meta: {} }),
+    run: async () => ({ results: [], success: true, meta: { changes: 0 } }),
+    raw: async () => [],
+  };
+  return {
+    prepare: () => statement,
+    batch: async (statements: unknown[]) =>
+      statements.map(() => ({ results: [], success: true, meta: { changes: 0 } })),
+  } as unknown as D1Database;
+}
+
+/** A signed-in caller: the owner and the verified id are the same account id. */
+export const asUser = (userId: string) => ({ owner: userId, accountUserId: userId });

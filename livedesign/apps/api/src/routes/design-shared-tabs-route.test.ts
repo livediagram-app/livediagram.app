@@ -19,11 +19,10 @@ function row(sql: DatabaseSync, table: string, values: Record<string, string | n
 }
 
 function liveDoc(sql: DatabaseSync, id: string, ownerId = 'owner', teamId: string | null = null) {
-  row(sql, 'designs', {
+  row(sql, 'test_designs', {
     id,
     owner_id: ownerId,
     name: id,
-    shareable: 0,
     team_id: teamId,
     saved_at: T0,
     created_at: T0,
@@ -44,20 +43,8 @@ function get(db: SqliteD1, opts: Parameters<typeof makeTestRouteContext>[2] = {}
 }
 
 describe('GET /api/designs/:id/shared-tabs', () => {
-  it('counts the tabs also in other designs, and those designs', async () => {
-    const db = sqliteD1();
-    for (const id of ['A', 'B', 'C']) liveDoc(db.sql, id);
-    tabIn(db.sql, 'glossary', 'A', 'B');
-    tabIn(db.sql, 'timeline', 'A', 'B', 'C');
-    tabIn(db.sql, 'solo', 'A');
-    tabIn(db.sql, 'elsewhere', 'B', 'C');
-
-    const res = await get(db, { owner: 'owner' });
-
-    expect(res?.status).toBe(200);
-    expect(await res.json()).toEqual({ sharedTabs: { tabs: 2, designs: 2 } });
-  });
-
+  // Each design holds its own tabs (docs/specs/015-api/api.md "Storage"): nothing is ever shared, so the answer is
+  // always none.
   it('answers zero for a design that shares nothing', async () => {
     const db = sqliteD1();
     liveDoc(db.sql, 'A');
@@ -70,19 +57,13 @@ describe('GET /api/designs/:id/shared-tabs', () => {
 
   it('answers a joined teammate, who may delete a team design', async () => {
     const db = sqliteD1();
-    row(db.sql, 'teams', { id: 'team', name: 'Team', created_at: T0, updated_at: T0 });
-    row(db.sql, 'team_members', {
-      id: 'm-bob',
-      team_id: 'team',
-      user_id: 'user_bob',
-      role: 'member',
-      status: 'joined',
-      created_at: T0,
-      updated_at: T0,
-    });
     liveDoc(db.sql, 'A', 'user_alice', 'team');
 
-    const res = await get(db, { owner: 'user_bob', accountUserId: 'user_bob' });
+    const res = await get(db, {
+      owner: 'user_bob',
+      accountUserId: 'user_bob',
+      teams: [{ id: 'team', name: 'Team', role: 'member' }],
+    });
 
     expect(res?.status).toBe(200);
   });
@@ -95,9 +76,9 @@ describe('GET /api/designs/:id/shared-tabs', () => {
     expect((await get(db))?.status).toBe(400);
   });
 
-  it('is a 404 for a missing design', async () => {
+  it('answers a missing design as one the caller may not edit (no existence leak)', async () => {
     const db = sqliteD1();
 
-    expect((await get(db, { owner: 'owner' }))?.status).toBe(404);
+    expect((await get(db, { owner: 'owner' }))?.status).toBe(403);
   });
 });
