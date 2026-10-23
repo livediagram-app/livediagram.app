@@ -285,6 +285,15 @@ export function ExplorerShell() {
     [arrived.app],
   );
 
+  // Dialogs and menus render into <body>, outside the page's wrapper: they wear the app's colours from there too.
+  useEffect(() => {
+    if (!arrived.app) return;
+    document.body.dataset.explorerApp = arrived.app;
+    return () => {
+      delete document.body.dataset.explorerApp;
+    };
+  }, [arrived.app]);
+
   if (!ready) return null;
   return (
     <div
