@@ -19,17 +19,12 @@ const apiCreateFolder = vi.fn(
     input: { id: string; name: string; parentId: string | null; teamId: string | null },
   ) => ({ ...input }),
 );
-const apiCreateTeam = vi.fn(async (_owner: string, input: { id: string; name: string }) => ({
-  id: input.id,
-  name: input.name,
-}));
 
 vi.mock('@/lib/api-client', () => ({
   apiListFolders: (...a: unknown[]) => apiListFolders(...(a as [])),
   apiListTeams: (...a: unknown[]) => apiListTeams(...(a as [])),
   apiGetTeamLibrary: (...a: unknown[]) => apiGetTeamLibrary(...(a as [])),
   apiCreateFolder: (...a: unknown[]) => apiCreateFolder(...(a as [string, never])),
-  apiCreateTeam: (...a: unknown[]) => apiCreateTeam(...(a as [string, never])),
 }));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
@@ -46,34 +41,6 @@ describe('usePlacementOptions', () => {
       expect(user.result.current.teams).toEqual([{ id: 't1', name: 'Zeta Team' }]),
     );
     await waitFor(() => expect(user.result.current.teamFolders).toEqual({ t1: [] }));
-  });
-
-  it('adds a created team to the overview, sorted, with an empty library', async () => {
-    const { result } = renderHook(() =>
-      usePlacementOptions({ selfId: 'u1', accountUserId: 'clerk_1' }),
-    );
-    await waitFor(() => expect(result.current.teams).toHaveLength(1));
-    let created: { id: string; name: string } | null = null;
-    await act(async () => {
-      created = await result.current.createPickerTeam('Design');
-    });
-    expect(created).toMatchObject({ name: 'Design' });
-    expect(result.current.teams.map((t) => t.name)).toEqual(['Design', 'Zeta Team']);
-    expect(result.current.teamFolders[created!.id]).toEqual([]);
-  });
-
-  it('returns null when the api refuses, leaving the lists as they were', async () => {
-    apiCreateTeam.mockRejectedValueOnce(new Error('401'));
-    const { result } = renderHook(() =>
-      usePlacementOptions({ selfId: 'u1', accountUserId: 'clerk_1' }),
-    );
-    await waitFor(() => expect(result.current.teams).toHaveLength(1));
-    let created: unknown = 'unset';
-    await act(async () => {
-      created = await result.current.createPickerTeam('Design');
-    });
-    expect(created).toBeNull();
-    expect(result.current.teams).toHaveLength(1);
   });
 
   it('files a created folder into the list it was made in', async () => {

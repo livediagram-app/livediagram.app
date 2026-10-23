@@ -35,18 +35,13 @@ export function TimelinePane({
   /** Opens one design's History dialog, which the pane above owns. */
   onShowHistory: (id: string, name: string) => void;
 }) {
-  const entityMenus = useTimelineEntityMenus();
+  const entityMenu = useTimelineEntityMenus();
   const cardSlots = useTimelineCardSlots({
     onShowHistory,
     onDismiss: feed.dismiss,
-    entityMenu: entityMenus.menuFor,
+    entityMenu,
   });
-  return (
-    <>
-      {entityMenus.dialogs}
-      <TimelineFeedView feed={feed} ownerId={ownerId} cardSlots={cardSlots} />
-    </>
-  );
+  return <TimelineFeedView feed={feed} ownerId={ownerId} cardSlots={cardSlots} />;
 }
 
 // The feed itself, without the card menus: the editor's Explorer shows it outside the Explorer page's context, which

@@ -28,7 +28,7 @@ export function renderSkill(): string {
     '',
     '# livedesign',
     '',
-    'Sign in with LIVEDESIGN_TOKEN (an lvd_ API token), or `livedesign auth login`. The CLI never prompts.',
+    'Sign in with LIVEDESIGN_TOKEN (an lwt_ API token), or `livedesign auth login`. The CLI never prompts.',
     '',
     'Start:',
     '',

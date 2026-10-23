@@ -170,8 +170,7 @@ export function useAssigneeOptions({
   // Ask the server whether the picked teammate can open this design,
   // unless the answer is knowable without it (localAccess). Stale responses
   // are ignored via the cancelled flag.
-  const local =
-    open && assignee ? localAccess(assignee, { ownerId, selfUserId, designId }) : null;
+  const local = open && assignee ? localAccess(assignee, { ownerId, selfUserId, designId }) : null;
   const askServer = open && assignee !== null && local === null;
   useEffect(() => {
     if (!askServer || !assignee?.teamId || !assignee.userId || !ownerId || !designId) return;
@@ -195,9 +194,7 @@ export function useAssigneeOptions({
   // 'unknown' while in flight (show nothing).
   const assigneeAccess: Access =
     local ??
-    (checked?.assignee === assignee &&
-    checked.ownerId === ownerId &&
-    checked.designId === designId
+    (checked?.assignee === assignee && checked.ownerId === ownerId && checked.designId === designId
       ? checked.access
       : 'unknown');
 

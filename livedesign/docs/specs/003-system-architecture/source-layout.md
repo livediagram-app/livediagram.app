@@ -32,7 +32,7 @@ exhaustive — each file lands in the bucket that owns its concern):
 - `canvas/` — `Canvas*`, element views (`BoxedElementView`, `ArrowView`,
   `LinkCardView`, …), overlays, marquee, layers.
 - `dialogs/` — modal surfaces (`Dialog`, `ConfirmDialog`, `ShareDialog`,
-  `ImportTabDialog`, `ExportTabDialog`, `SettingsDialog`, `TeamFormModal`).
+  `ImportTabDialog`, `ExportTabDialog`, `SettingsDialog`).
 - `panels/` — side/floating panels (`CollaboratePanel`,
   `GalleryPane`, Explorer surfaces).
 - `palette/` — palette + context-menu tiles/rows.

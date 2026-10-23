@@ -43,7 +43,7 @@ CONSENT_BASE_URL = "https://livedesign.app"
 # CONSENT_BASE_URL + the live app's NEXT_PUBLIC_MCP_ORIGIN at it.
 
 # Reach the api worker over a service binding (not public DNS). Every tool
-# forwards to /api/* carrying the caller's `Authorization: Bearer lvd_…`
+# forwards to /api/* carrying the caller's `Authorization: Bearer lwt_…`
 # token, which the api already accepts on every route (docs/specs/015-api/public-api-and-tokens.md §3.3), so no
 # api authorization change is needed for the tools (docs/specs/015-api/mcp-server.md §2).
 [[services]]

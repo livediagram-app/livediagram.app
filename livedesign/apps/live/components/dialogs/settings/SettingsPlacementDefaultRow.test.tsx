@@ -36,7 +36,6 @@ const lists = (over: Partial<SettingsPlacementLists> = {}): SettingsPlacementLis
   teams: [{ id: 't', name: 'Design' }],
   teamFolders: { t: [{ id: 's', name: 'Sprints', parentId: null }] },
   createPickerFolder: async () => null,
-  createPickerTeam: async () => null,
   ready: true,
   failed: false,
   ...over,
@@ -73,9 +72,7 @@ describe('SettingsPlacementDefaultRow', () => {
     await withDefaults([]);
     render(<SettingsPlacementDefaultRow row={rowFor('mode:pages')} lists={lists()} />);
     expect(screen.getByText('My Work')).toBeTruthy();
-    expect(
-      screen.getByRole('button', { name: 'Change default folder for designs' }),
-    ).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Change default folder for designs' })).toBeTruthy();
     expect(screen.queryByRole('button', { name: /Clear/ })).toBeNull();
   });
 

@@ -14,8 +14,7 @@ vi.mock('@/lib/api-client', () => ({
   apiCreateFolder: (...a: Parameters<typeof apiCreateFolder>) => apiCreateFolder(...a),
   apiUpdateFolder: (...a: Parameters<typeof apiUpdateFolder>) => apiUpdateFolder(...a),
   apiDeleteFolder: (...a: Parameters<typeof apiDeleteFolder>) => apiDeleteFolder(...a),
-  apiSetDesignFolder: (...a: Parameters<typeof apiSetDesignFolder>) =>
-    apiSetDesignFolder(...a),
+  apiSetDesignFolder: (...a: Parameters<typeof apiSetDesignFolder>) => apiSetDesignFolder(...a),
   apiSaveDesignMeta: (...a: Parameters<typeof apiSaveDesignMeta>) => apiSaveDesignMeta(...a),
 }));
 const duplicateDesign = vi.fn<typeof import('@/lib/duplicate-design').duplicateDesign>();

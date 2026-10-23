@@ -17,53 +17,44 @@ sends one series per account, whichever app it signed up through
 before each. livedesign reports what it takes to schedule it: a sign-up
 sighting (§4) and the owner's activity (§5).
 
+Teams and API tokens belong to the liveworkspace account
+([Teams](../013-workspace/teams.md), [Public API + tokens](../015-api/public-api-and-tokens.md)), and so
+do their emails: team invitations, their reminders and Decline links, the answer an invitation's
+admins are told, and the warning a week before an API token expires all come from the accounts Worker
+([liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md) "Teams", "API tokens").
+
 livedesign sends the rest, two kinds:
 
 **Transactional — always send (when the feature is on):**
 
-1. **Team invite** — when an email address is invited to a team ([Teams](../013-workspace/teams.md)), the
-   invitee gets a message with a link to sign in and view/accept the invite
-   (`/explorer/invites`), and a quieter **Decline invite** link to
-   `/join/decline?token=<token>` that turns it down with no account and no
-   sign-in ([Teams → Declining from the email](../013-workspace/teams.md#declining-from-the-email)).
-2. **Account deleted** — after a user deletes their account (spec: account
+1. **Account deleted** — after a user deletes their account (spec: account
    self-deletion), a confirmation that their livedesign data and their
    liveworkspace account are gone.
 
-[Account settings & email notifications](profile-and-email-notifications.md) adds two further opt-out
-notifications — **someone joined my design** and **someone responded to my team
-invite** — read from the person's [User preferences](../007-editor/user-preferences.md), set in the Settings dialog.
+[Account settings & email notifications](profile-and-email-notifications.md) adds a further opt-out
+notification — **someone joined my design** — read from the person's
+[User preferences](../007-editor/user-preferences.md), set in the Settings dialog.
 
 **Later additions (same gate + best-effort `ctx.waitUntil` contract):**
 
-3. **Milestone** (#6, opt-out `notifyMilestones`) — a celebration when an owner's
+2. **Milestone** (#6, opt-out `notifyMilestones`) — a celebration when an owner's
    design count reaches 10, fired on a genuine create. Claimed once per account
    from the accounts Worker before it is sent (`claimMilestone`, milestone
    `milestone`), which dedups a burst of saves across isolates.
    **First share** (opt-out `notifyMilestones`) is the same, claimed as
    `firstShare` when an owner makes their first share link.
-4. **API-token expiry** (#3, transactional) — 7 days before a token's 6-month
-   expiry, so a script / connected tool doesn't silently break. Daily cron.
-   `api_tokens.expiry_warned_at`, the baseline migration.
-5. **New comment** (#1, opt-out `notifyComments`) — when someone other than the
+3. **New comment** (#1, opt-out `notifyComments`) — when someone other than the
    owner comments on a design (either comment path), the owner is emailed
    **immediately** (no cron). Never includes the comment text. On the tab save
    it counts only the saver's own new comments: a save can carry a peer's
    comment that reached the saver live first, and that is not the saver
    commenting.
-6. **Action assigned** (opt-out `notifyActionAssigned`) — a teammate assigned
+4. **Action assigned** (opt-out `notifyActionAssigned`) — a teammate assigned
    the recipient an action ([Assigned actions](../012-collaboration/assigned-actions.md)).
-7. **Mentioned** (opt-out `notifyMentions`) — a teammate @-mentioned the
+5. **Mentioned** (opt-out `notifyMentions`) — a teammate @-mentioned the
    recipient in a comment ([Comment mentions](../012-collaboration/comment-mentions.md)). Unlike the owner's new-comment email it
    quotes the comment (the first 280 characters): the recipient was named in
    it, and the design is in their own team's library.
-8. **Team invite reminders** (transactional, kinds `TeamInviteReminder1` /
-   `TeamInviteReminder2` / `TeamInviteReminder3`) — 1, 7 and 21 days after an
-   invite nobody has answered, from the daily cron, each with its own Decline
-   invite link. The invite expires (is rejected) 28 days after it was sent. Not
-   opt-out: the recipient may have no account to hold a preference, and the
-   Decline link is the one-click way to stop them. Stamps on the invite's own
-   `team_members` row (`reminder1_sent_at` to `reminder3_sent_at`, `reminder_attempts`, `clock_started_at`, the baseline migration); see [Teams → Reminders and expiry](../013-workspace/teams.md#reminders-and-expiry).
 
 The opt-out notification categories (`notifyComments`, `notifyMilestones`,
 `notifyMentions`, `notifyActionAssigned`) join the [Account settings & email notifications](profile-and-email-notifications.md) pair in `getNotificationPrefs`
@@ -91,10 +82,7 @@ Production: `wrangler secret put RESEND_API_KEY`.
 livedesign stores no address of its own. A person's address is their
 liveworkspace account's **verified** email, asked of the accounts Worker
 (`accountEmails`, `emailsOf` / `emailOf` in `apps/api/src/accounts/people.ts`).
-A send that names several people (the admins told of an invite response, the
-owners of expiring tokens) asks for all of their addresses in one request.
-Guests have no address and never receive email; an invitee who has no account
-yet is written to at the address an Admin typed.
+Guests have no address and never receive email.
 
 ## 4. Sign-ups
 
@@ -140,10 +128,8 @@ autosaves is one request, and a guest's is never sent.
   at it.
 - `apps/api/src/accounts/people.ts` — addresses, milestone claims and activity,
   through the accounts Worker.
-- Hooks: invite in `routes/teams.ts` (invite create), invite reminders + expiry
-  and token expiry in `scheduled()` (`email/team-invite-reminders.ts`,
-  `email/token-expiry.ts`), notifications in `email/notifications.ts`, deletion
-  in `routes/account.ts`.
+- Hooks: notifications in `email/notifications.ts`, deletion in
+  `routes/account.ts`.
 
 All sends use `ctx.waitUntil` (or are already in the cron) — email is never on
 the request's critical path.
@@ -165,19 +151,15 @@ name, or a recipient count.
 
 - Authenticated-only; the address is the verified token claim, never input.
 - No design content, names, or anything the user typed is ever in an email
-  beyond the team name (already known to the invitee's inviter) and the user's
-  own email.
-- The team invite and its reminders go to an address an Admin typed, which may
-  have no account: that is why they carry no account footer, and why their only
-  credential is the single-purpose decline token, stored hashed
-  ([Teams → Declining from the email](../013-workspace/teams.md#declining-from-the-email)).
+  beyond what the notification is about (a design's name, a team the two share)
+  and the user's own email.
 - Off by default; self-hosters opt in by providing their own Resend key + domain
   (keeps [Open source + distribution](../002-project-scope/open-source-and-business-model.md) self-hosting intact — no required SaaS call).
 
 ## 8. Out of scope (for now)
 
-Dark-mode email variants, bounce handling beyond the invite reminders' attempt cap (Resend handles
+Dark-mode email variants, bounce handling (Resend handles
 delivery; sends are best-effort, and one-time ones are idempotent through their claims and stamps). Per-notification
 **email preferences** are no longer out of scope — [Account settings & email notifications](profile-and-email-notifications.md)
-adds an opt-out toggle for each of its two transactional notifications, stored
+adds an opt-out toggle for its notification, stored
 with the person's [User preferences](../007-editor/user-preferences.md).

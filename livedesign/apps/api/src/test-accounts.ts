@@ -2,7 +2,7 @@ import type { Env } from './types';
 
 // A stand-in for the liveworkspace accounts Worker's internal API (liveworkspace/docs/accounts.md "The
 // API"), for the tests of what livedesign keeps there: settings, profiles, sightings, milestones, verified
-// addresses and activity. Answers the same shapes from memory, following the same rules (a patch per key,
+// addresses, activity and the teams it makes. Answers the same shapes from memory, following the same rules (a patch per key,
 // null deletes; a profile read answers an account's name until it sets one; a claim wins once; a milestone
 // needs a sighting), and records every call so a test can count them.
 //
@@ -39,6 +39,8 @@ export type FakeAccounts = {
   sightings: Set<string>;
   milestones: Set<string>;
   activity: { userId: string; at?: number }[];
+  // Teams made through POST internal/teams, the admin read off the stand-in's `token-for-<id>` tokens.
+  teams: { id: string; name: string; organisation: string | null; admin: string }[];
   // Makes the next calls to a path fail with this status.
   failing: Map<string, number>;
 };
@@ -62,6 +64,7 @@ export function fakeAccounts(fallback?: typeof fetch): FakeAccounts {
     sightings: new Set(),
     milestones: new Set(),
     activity: [],
+    teams: [],
     failing: new Map(),
   };
   const prefix = `${ACCOUNTS_ENV.ACCOUNTS_URL}/api/account/internal/`;
@@ -156,6 +159,35 @@ export function fakeAccounts(fallback?: typeof fetch): FakeAccounts {
       case 'activity':
         state.activity.push({ userId: String(body.userId), at: body.at as number | undefined });
         return json({ ok: true });
+      case 'teams': {
+        const admin = String(body.accessToken).replace(/^token-for-/, '');
+        const name = typeof body.name === 'string' ? body.name.trim() : '';
+        if (!name) return json({ error: 'name_required' }, 400);
+        const team = {
+          id: `team_${state.teams.length + 1}`,
+          name,
+          organisation: (body.organisation as string | null) ?? null,
+          admin,
+        };
+        state.teams.push(team);
+        return json(
+          {
+            ...team,
+            role: 'admin',
+            memberCount: 1,
+            invitedCount: 0,
+            members: [
+              {
+                id: `member_${team.id}`,
+                name: null,
+                email: `${admin}@example.test`,
+                role: 'admin',
+              },
+            ],
+          },
+          201,
+        );
+      }
       default:
         return json({ error: 'not_found' }, 404);
     }

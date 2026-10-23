@@ -3,14 +3,14 @@
 // request made by SOMEONE OTHER than the recipient (a visitor opening a shared
 // design; an invitee responding to an invite), so the recipient's address
 // comes from trusted server state (the liveworkspace accounts Worker's verified
-// address, or a team_members invite address), never the caller's headers, and
+// address, or team_members), never the caller's headers, and
 // their opt-out is read from their settings there (docs/specs/007-editor/user-preferences.md).
 //
 // Like every docs/specs/014-identity/transactional-email.md send these never throw — sendEmail swallows failures — so
 // a notification problem can't break the request that triggered it.
 
-import { claimCommentNotify, claimJoinNotify, claimNotifyEmail, listTeamAdminUserIds } from '../db';
-import { claimAccountMilestone, emailOf, emailsOf } from '../accounts/people';
+import { claimCommentNotify, claimJoinNotify, claimNotifyEmail } from '../db';
+import { claimAccountMilestone, emailOf } from '../accounts/people';
 import { getNotificationPrefs } from '../accounts/settings';
 import type { Env } from '../types';
 import { emailEnabled, sendEmail } from './client';
@@ -26,7 +26,6 @@ import {
   mentionedEmail,
   commentNotificationEmail,
   designJoinedEmail,
-  inviteResponseEmail,
   firstShareEmail,
   milestoneEmail,
 } from './templates';
@@ -158,13 +157,7 @@ export async function notifyMentioned(
   if (!claimed) return;
   await sendEmail(env, {
     to,
-    ...mentionedEmail(
-      env,
-      input.authorName,
-      input.design.name,
-      input.design.id,
-      input.commentText,
-    ),
+    ...mentionedEmail(env, input.authorName, input.design.name, input.design.id, input.commentText),
   });
 }
 
@@ -186,38 +179,6 @@ export async function notifyDesignJoin(
   const now = Date.now();
   if (!(await claimJoinNotify(env, liveDoc.id, now, now - JOIN_NOTIFY_THROTTLE_MS))) return;
   await sendEmail(env, { to, ...designJoinedEmail(env, liveDoc.name, joinerName) });
-}
-
-// An invitee accepted / declined a team invite. Tells each JOINED admin of the
-// team (other than the responder themselves) who has a known address and
-// hasn't opted out. Sends run concurrently; each is independently best-effort.
-export async function notifyInviteResponse(
-  env: Env,
-  team: { id: string; name: string },
-  responderEmail: string,
-  accepted: boolean,
-  responderUserId: string | null,
-): Promise<void> {
-  if (!emailEnabled(env)) return;
-  // Don't notify the responder about their own action (an admin can be
-  // re-invited as a member and respond to that).
-  const adminIds = (await listTeamAdminUserIds(env, team.id)).filter(
-    (adminId) => !responderUserId || adminId !== responderUserId,
-  );
-  // Every admin's address in one accounts request.
-  const addresses = await emailsOf(env, adminIds);
-  await Promise.all(
-    adminIds.map(async (adminId) => {
-      const to = addresses.get(adminId);
-      if (!to) return;
-      const prefs = await getNotificationPrefs(env, adminId);
-      if (!prefs.notifyInviteResponse) return;
-      await sendEmail(env, {
-        to,
-        ...inviteResponseEmail(env, team.name, responderEmail, accepted),
-      });
-    }),
-  );
 }
 
 // Someone OTHER than the owner left a comment on a design the owner owns

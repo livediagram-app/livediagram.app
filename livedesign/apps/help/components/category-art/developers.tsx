@@ -51,7 +51,7 @@ export function DevelopersArt() {
           y={80}
           parts={[
             ['Authorization: ', 'fill-slate-400'],
-            ['Bearer lvd_…', 'fill-amber-300'],
+            ['Bearer lwt_…', 'fill-amber-300'],
           ]}
         />
         <Code x={32} y={102} parts={[['{', 'fill-slate-400']]} />

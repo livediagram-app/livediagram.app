@@ -40,6 +40,9 @@ export interface MintedToken {
 export interface TeamChange {
   id: string;
   name: string;
+  // The team's organisation line (a company or department), null when it has none. The feed always
+  // carries it; optional so a caller building a change of its own may leave it out.
+  organisation?: string | null;
   deleted: boolean;
   createdAt: number;
   updatedAt: number;

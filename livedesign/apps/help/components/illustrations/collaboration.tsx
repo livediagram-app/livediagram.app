@@ -416,55 +416,6 @@ export function TeamMembers() {
   );
 }
 
-/** An Admin's view of the members: the only Admin's fixed badge, a role picker on every other
- *  row, a pending invite, and the invite-by-email row at the foot of the list. */
-export function RolesAndInvites() {
-  return (
-    <Scene w={420} h={236} bg="plain">
-      <Panel x={46} y={12} w={328} h={214}>
-        <Label x={62} y={32} size={10} tone="muted">
-          Acme · 2 members · 1 invited
-        </Label>
-        <MemberRow
-          y={64}
-          left={60}
-          right={358}
-          m={{ initial: 'A', name: 'Aria', role: 'Admin', colour: 'brand' }}
-          email="aria@acme.com"
-        />
-        <line x1={62} y1={86} x2={358} y2={86} className="stroke-slate-100" strokeWidth={1.5} />
-        <MemberRow
-          y={108}
-          left={60}
-          right={358}
-          m={{ initial: 'J', name: 'Jae', role: 'Member', colour: 'violet' }}
-          email="jae@acme.com"
-          select
-        />
-        <line x1={62} y1={130} x2={358} y2={130} className="stroke-slate-100" strokeWidth={1.5} />
-        <MemberRow
-          y={152}
-          left={60}
-          right={358}
-          m={{ initial: 'M', name: 'Mara', role: 'Member', colour: 'amber' }}
-          email="mara@acme.com"
-          invited
-          select
-        />
-        {/* Invite-by-email row */}
-        <line x1={46} y1={178} x2={374} y2={178} className="stroke-slate-200" strokeWidth={1.5} />
-        <Label x={66} y={201} anchor="middle" size={14} weight={600} tone="muted">
-          +
-        </Label>
-        <Label x={80} y={201} size={10} tone="muted">
-          Add your team by email address…
-        </Label>
-        <Button x={298} y={188} w={62} h={26} label="Invite" variant="primary" />
-      </Panel>
-    </Scene>
-  );
-}
-
 /** A team's shared library: the Team designs breadcrumb with the view toggle and Create, above
  *  the folders and designs of the level you are in. */
 export function TeamSharedTree() {

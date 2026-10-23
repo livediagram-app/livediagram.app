@@ -117,30 +117,12 @@ export const WORKBENCH_WORKSPACES = chart(
   { types: ['WorkbenchWorkspace'] },
 );
 
-export const TEAM_CHANGES = chart(
-  'Team',
-  'Changed',
-  'Team Changes',
-  'A team renamed or a member’s role changed.',
-);
-
-export const TEAMS_DELETED = chart('Team', 'Deleted', 'Teams Deleted', 'A team removed.', {
-  rising: 'neutral',
-});
-
 export const TEAM_REMOVALS = chart(
   'Team',
   'Removed',
   'Team Removals',
   'A member removed, an invite withdrawn, a design or an invite link taken out of a team, or someone leaving.',
   { rising: 'neutral' },
-);
-
-export const INVITE_LINKS_SHARED = chart(
-  'Team',
-  'Shared',
-  'Invite Links Shared',
-  'A team invite link made to share.',
 );
 
 export const SLIDE_NOTES = chart(
@@ -270,15 +252,6 @@ export const TEAMS_CREATED: Metric = {
   blurb: 'A new team workspace was created.',
 };
 
-export const INVITES_SENT: Metric = {
-  category: 'Team',
-  action: 'Added',
-  type: 'Member',
-  title: 'Invites Sent',
-  blurb:
-    'An admin invited someone to a team by email. The invitation, not the acceptance: that is the next card.',
-};
-
 export const INVITES_ACCEPTED: Metric = {
   category: 'Team',
   action: 'Joined',
@@ -294,17 +267,6 @@ export const INVITES_DECLINED: Metric = {
   rising: 'neutral',
   title: 'Invites Declined',
   blurb: 'The recipient turned an invitation down. Read against accepted, not against sent.',
-};
-
-// docs/specs/013-workspace/teams.md "Declining from the email": the same answer, given from the inbox.
-export const INVITES_DECLINED_FROM_EMAIL: Metric = {
-  category: 'Team',
-  action: 'Declined',
-  type: 'Email',
-  rising: 'neutral',
-  title: 'Invites Declined From Email',
-  blurb:
-    "The recipient turned an invitation down from the email's Decline link, without signing in.",
 };
 
 export const DESIGNS_SHARED_TO_A_TEAM: Metric = {
@@ -373,16 +335,11 @@ export const TEAM_ACTIVITY: MetricStack = {
   blurb: 'Teams made, the invite funnel (sent, accepted, declined), and designs shared to a team.',
   members: [
     TEAMS_CREATED,
-    INVITES_SENT,
     INVITES_ACCEPTED,
     INVITES_DECLINED,
-    INVITES_DECLINED_FROM_EMAIL,
     DESIGNS_SHARED_TO_A_TEAM,
     TEAM_DESIGNS_MOVED,
-    INVITE_LINKS_SHARED,
-    TEAM_CHANGES,
     TEAM_REMOVALS,
-    TEAMS_DELETED,
     INVITE_LINKS_COPIED,
   ],
   headline: INVITES_ACCEPTED,

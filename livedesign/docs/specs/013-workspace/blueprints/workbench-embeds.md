@@ -58,7 +58,7 @@ It provides these names to sibling blueprints ([CLI](../../015-api/blueprints/cl
 | `apps/api/src/routes/workbench-access.ts`                                                                                                                                    | `ownerDesignAccess`: the owner's own access to a design, shared by the mint and redemption (WB3)                                                                                                       |
 | `apps/api/src/routes/workbench-test-fixtures.ts`                                                                                                                             | The route suites' shared real-SQLite arrangement (not a suite)                                                                                                                                         |
 | `apps/api/src/routes/context.ts`                                                                                                                                             | `RouteContext.workbench`; `WorkbenchContext`                                                                                                                                                           |
-| `apps/api/src/index.ts`                                                                                                                                                      | `lvw_` resolution beside `lvd_`; confinement; level refusal; rate limiter; `case 'workbench'`; the daily sweep                                                                                         |
+| `apps/api/src/index.ts`                                                                                                                                                      | `lvw_` resolution beside `lwt_`; confinement; level refusal; rate limiter; `case 'workbench'`; the daily sweep                                                                                         |
 | `apps/api/src/routes/design-room-routes.ts`                                                                                                                                  | Ticket mint under a session: `account` true, owner's person tag, role capped at the session's level, `workbenchPairing`; upgrade forwards `X-Verified-Workbench-Pairing`                               |
 | `apps/api/src/db/ws-tickets.ts`                                                                                                                                              | `WsAdmission.workbenchPairing`; insert and consume the column                                                                                                                                          |
 | `apps/api/src/design-room.ts`, `room-session.ts`                                                                                                                             | Attachment `workbenchPairing` from the header; `/close-sessions` closes a `workbench` match with 4006                                                                                                  |
@@ -111,7 +111,7 @@ It provides these names to sibling blueprints ([CLI](../../015-api/blueprints/cl
 | `packages/ui/src/appearance/appearance-store.ts` (+ test)                                                                                                                    | `setAppearanceOverride(appearance \| null)`: wins over the setting, never stored                                                                                                                       |
 | `apps/live/app/workbench/pair/page.tsx`, `PairWorkbench.tsx` (new, + test)                                                                                                   | The pairing page; `OAUTH_PRIMARY` from `apps/live/app/oauth/oauth-shell.tsx`                                                                                                                           |
 | `apps/live/components/dialogs/settings/SettingsTokenPairings.tsx` (new, + test)                                                                                              | A token card's paired workbenches with **Unpair**                                                                                                                                                      |
-| `apps/live/components/dialogs/settings/SettingsTokenCard.tsx`, `SettingsTokenList.tsx`, `SettingsTokensRow.tsx`                                                              | The card renders its pairings; the list passes them; the row loads them                                                                                                                                |
+| `apps/live/components/dialogs/settings/SettingsTokensRow.tsx`                                                                                                                | The API Tokens row loads every pairing and lists them (tokens themselves are managed on liveworkspace.app)                                                                                             |
 | `apps/live/hooks/persistence/useWorkbenchPairings.ts` (new, + test)                                                                                                          | List, group by token, unpair                                                                                                                                                                           |
 | `apps/live/e2e/signed-in/workbench-contrast.spec.ts` (new)                                                                                                                   | The pairing page (pending), the device page (entry, consent) and a paired-workbench row, light and dark, to WCAG 2.2 AA                                                                                |
 | `apps/live/src/worker.ts` (+ test)                                                                                                                                           | Unchanged code; the test pins `/embed/workbench` frameable and `/workbench/pair` `DENY`                                                                                                                |
@@ -203,7 +203,7 @@ The workspace scope adds or changes, by file:
 | Explorer surface    | `ExplorerSurface` `'app' \| 'workbench'`                              | Where the Explorer runs; `workbench` drops the app's surroundings        |
 
 Banned: "workspace" for a design-scope frame, and "scope" for anything but `WorkbenchScope` here (the end of
-access names its `target`, a share link its `tabScope`); "integration", "host app" or "client" for a workbench; "link" or "connect" for pairing; "token" for a workbench session or a ticket (`lvd_` is the token); "share", "embed code" or
+access names its `target`, a share link its `tabScope`); "integration", "host app" or "client" for a workbench; "link" or "connect" for pairing; "token" for a workbench session or a ticket (`lwt_` is the token); "share", "embed code" or
 "share code" for a ticket; "iframe mode" for the surface; "authorise" for approve (the page's verbs are Allow and
 Don't allow).
 
@@ -302,7 +302,7 @@ RETURNING ...`. No row: `SELECT used_at, expires_at` classifies `used`, `expired
 
 ### A request bearing `lvw_` (the choke point, `index.ts`)
 
-Resolved where `lvd_` is, only when no account access token verified:
+Resolved where `lwt_` is, only when no account access token verified:
 
 1. `bearer` matching `isWorkbenchSessionFormat` → `resolveWorkbenchSession(env, bearer, now)`:
    `SELECT s.*, t.read_only, t.revoked, t.expires_at AS token_expires_at FROM workbench_sessions s JOIN api_tokens t
@@ -723,9 +723,7 @@ Explorer view, the same control at the right end of the Explorer's bottom bar li
 | Settings dialog, `?settings=` links, `useOpenSettingsRequests`          | `useExplorerState.ts`, `ExplorerShell`  | Never opens                                                 |
 | Search panel's settings rows                                            | `ExplorerShell.tsx`                     | `[]`                                                        |
 | Sign-in banner, `LocalMovePrompt`                                       | `ExplorerShell.tsx`                     | Not rendered                                                |
-| `useTokens`                                                             | `useExplorerState.ts`                   | `enabled: false`                                            |
 | Teams administration: New team, the Invites row and view, team settings | `sidebar/*`, `TeamLibraryHeader`, views | Absent (WB62)                                               |
-| Timeline token cards' Revoke                                            | `timeline/*`                            | Absent                                                      |
 | Every `window.location.assign`, `<a href>`, `router.push`/`replace`     | the Explorer                            | Through `assignAppLocation` / `useAppNavigation`: the frame |
 
 #### The CLI, workspace scope
@@ -1107,7 +1105,7 @@ CREATE TABLE workbench_session_rooms (
 - **E4** Approve after Don't allow, or twice: `409 pairing_answered`; nothing changes.
 - **E5** Approve after expiry: `410 pairing_expired`; the CLI reads `expired`.
 - **E6** Another signed-in account opens the pairing URL: `404`; the page says it cannot find the request.
-- **E7** A token approving its own request (`lvd_` on approve): `401 sign_in_required`.
+- **E7** A token approving its own request (`lwt_` on approve): `401 sign_in_required`.
 - **E8** Token revoked while a request is pending: the request is deleted; the CLI's next poll gets 404, exit 4.
 - **E9** Token revoked while the pair page is open: approve answers 404.
 - **E10** A ticket redeemed twice: the second `401 invalid_ticket { reason: 'used' }`.
@@ -1279,10 +1277,10 @@ Every other state is the design request's.
 
 ### Settings > API tokens
 
-Each `SettingsTokenCard` with pairings shows, under its lifetime bar, a "Paired workbenches" list (none: nothing,
-WB35). A row: the name (or "Unnamed workbench"), the origin in monospace, its scope ("One design at a time" or
+The API Tokens row (whose tokens are run on liveworkspace.app) shows, under its link there, one "Paired workbenches"
+list for the account (none: nothing, WB35). A row: the name (or "Unnamed workbench"), the origin in monospace, its scope ("One design at a time" or
 "Whole workspace", WB67), "Paired <relative time>", and an
-**Unpair** text button. Unpair opens the same confirm popover as Revoke: "Unpair <name>? Its open designs stop
+**Unpair** text button. Unpair opens a confirm popover: "Unpair <name>? Its open designs stop
 editing until you allow it again." with **Unpair** and **Cancel** (WB36). After Unpair the row leaves the list.
 
 ## Accessibility

@@ -140,11 +140,11 @@ Without these set: the api worker silently treats every request as a guest (the 
 ## Running the CLI from source (optional)
 
 The [CLI](../specs/015-api/cli.md) acts only with an API token, so it needs a host with sign-in: enable sign-in as
-above, sign in, and create a token in Settings › API Tokens. Then build the bundle and point it at the local api:
+above, sign in, and create a token on your local liveworkspace site (Settings › API Tokens links there). Then build the bundle and point it at the local api:
 
 ```bash
 pnpm --filter @livedesign/cli build
-export LIVEDESIGN_HOST=http://localhost:8989 LIVEDESIGN_TOKEN=lvd_...
+export LIVEDESIGN_HOST=http://localhost:8989 LIVEDESIGN_TOKEN=lwt_...
 apps/cli/dist/livedesign.mjs design ls
 ```
 

@@ -18,7 +18,8 @@ CREATE TABLE owner_aliases (
 );
 CREATE INDEX owner_aliases_alias_idx ON owner_aliases (alias_id);
 
--- Personal API tokens (docs/specs/015-api/public-api-and-tokens.md): only the hash is kept.
+-- The liveworkspace account tokens this app has seen (src/db/api-tokens.ts): its mirror, which workbench
+-- pairings and sessions hang off. Only the hash is kept.
 CREATE TABLE api_tokens (
   id               TEXT    PRIMARY KEY,
   owner_id         TEXT    NOT NULL,
@@ -28,7 +29,6 @@ CREATE TABLE api_tokens (
   last_used_at     INTEGER,
   expires_at       INTEGER NOT NULL,
   revoked          INTEGER NOT NULL DEFAULT 0,
-  expiry_warned_at INTEGER,
   read_only        INTEGER NOT NULL DEFAULT 0
 );
 CREATE INDEX api_tokens_owner_idx ON api_tokens (owner_id);
@@ -46,35 +46,34 @@ CREATE INDEX notify_email_claims_sender ON notify_email_claims (sender_id, creat
 -- Teams and the workspace
 -- ---------------------------------------------------------------------------------------------------------------
 
-CREATE TABLE teams (
-  id                     TEXT    PRIMARY KEY,
-  name                   TEXT    NOT NULL,
-  organisation           TEXT    NULL,
-  created_at             INTEGER NOT NULL,
-  updated_at             INTEGER NOT NULL,
-  invite_link_token      TEXT    NULL,
-  invite_link_expires_at INTEGER NULL
+-- Teams are run on liveworkspace.app (liveworkspace/docs/accounts.md): teams and team_members are this
+-- app's copy of each team and its joined members, kept by following liveworkspace's change feed from
+-- this cursor (src/db/team-sync.ts).
+CREATE TABLE team_sync_state (
+  id        INTEGER PRIMARY KEY CHECK (id = 1),
+  cursor    TEXT    NOT NULL,
+  synced_at INTEGER NOT NULL
 );
-CREATE INDEX teams_invite_link_token_idx ON teams (invite_link_token);
 
--- A member, or an invitation by email until it is accepted (docs/specs/013-workspace/teams.md).
+CREATE TABLE teams (
+  id           TEXT    PRIMARY KEY,
+  name         TEXT    NOT NULL,
+  organisation TEXT    NULL,
+  created_at   INTEGER NOT NULL,
+  updated_at   INTEGER NOT NULL
+);
+
+-- A joined member of a team (docs/specs/013-workspace/teams.md). Invitations live on liveworkspace.app,
+-- so every row here is 'joined'.
 CREATE TABLE team_members (
-  id                   TEXT    PRIMARY KEY,
-  team_id              TEXT    NOT NULL,
-  user_id              TEXT    NULL,
-  email                TEXT    NULL,
-  role                 TEXT    NOT NULL,
-  created_at           INTEGER NOT NULL,
-  updated_at           INTEGER NOT NULL,
-  status               TEXT    NULL,
-  -- Space-separated hashes of the decline links an invitation's emails carried.
-  decline_token_hashes TEXT,
-  reminder1_sent_at    INTEGER,
-  reminder2_sent_at    INTEGER,
-  reminder3_sent_at    INTEGER,
-  reminder_attempts    INTEGER NOT NULL DEFAULT 0,
-  -- When the reminder clock started for a pending invitation.
-  clock_started_at     INTEGER,
+  id         TEXT    PRIMARY KEY,
+  team_id    TEXT    NOT NULL,
+  user_id    TEXT    NULL,
+  email      TEXT    NULL,
+  role       TEXT    NOT NULL,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  status     TEXT    NULL,
   FOREIGN KEY (team_id) REFERENCES teams (id) ON DELETE CASCADE
 );
 CREATE INDEX team_members_team_idx ON team_members (team_id);
@@ -83,7 +82,6 @@ CREATE INDEX team_members_email_idx ON team_members (email);
 CREATE INDEX team_members_team_user_idx ON team_members (team_id, user_id);
 CREATE UNIQUE INDEX team_members_team_email_uq ON team_members (team_id, email);
 CREATE UNIQUE INDEX team_members_team_user_unique ON team_members (team_id, user_id) WHERE user_id IS NOT NULL;
-CREATE INDEX team_members_pending_idx ON team_members (clock_started_at) WHERE status = 'invited';
 
 CREATE TABLE folders (
   id         TEXT    PRIMARY KEY,

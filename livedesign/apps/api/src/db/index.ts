@@ -15,7 +15,6 @@ export * from './folders';
 export * from './favourites';
 export * from './tags';
 export * from './placement-defaults';
-export * from './team-invites';
 export * from './teams';
 export * from './api-tokens';
 export * from './notify-email-claims';

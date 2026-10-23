@@ -136,11 +136,14 @@ renamed_classes = [{ from = "DiagramRoom", to = "DesignRoom" }]
 # on this trigger (telemetry's retention is liveworkspace's, liveworkspace/docs/telemetry.md), among them:
 #   - images, 30-day floor for UNUSED images only (docs/specs/009-elements/images.md): reaped
 #     from R2 + D1 once nothing references them.
-# Plus the docs/specs/014-identity/transactional-email.md email sweeps (lifecycle onboarding + token-expiry
-# warnings), both no-ops when RESEND_API_KEY is unset. Every minute, the designs whose images changed go to
-# liveworkspace's media service (src/media.ts).
+# Plus the docs/specs/014-identity/transactional-email.md lifecycle onboarding emails, a no-op when
+# RESEND_API_KEY is unset. Every minute, the designs whose images changed go to liveworkspace's media
+# service (src/media.ts).
+#
+# `*/5 * * * *`: every five minutes, follow liveworkspace's teams change feed into this app's copy
+# and mark tokens revoked on liveworkspace.app (liveworkspace/docs/accounts.md "How an app keeps up").
 [triggers]
-crons = ["0 3 * * *", "* * * * *"]
+crons = ["0 3 * * *", "* * * * *", "*/5 * * * *"]
 
 # Per-IP limiter for share-code resolution (GET /api/share/<code>). That
 # read carries the optional share password and is otherwise unauthed +
@@ -409,7 +412,7 @@ renamed_classes = [{ from = "DiagramRoom", to = "DesignRoom" }]
 # staging too, against staging's own data. Restated rather than inherited so
 # that reading this block tells you what the staging worker actually does.
 [env.staging.triggers]
-crons = ["0 3 * * *", "* * * * *"]
+crons = ["0 3 * * *", "* * * * *", "*/5 * * * *"]
 
 # The four ACCOUNTS_* / API_RESOURCE values, GUEST_ID_HMAC_SECRET and
 # TELEMETRY_KEY come from the

@@ -19,7 +19,7 @@ livedesign --help
 Create an API token in livedesign (Settings › API Tokens), then either set it for a command:
 
 ```bash
-export LIVEDESIGN_TOKEN=lvd_...
+export LIVEDESIGN_TOKEN=lwt_...
 ```
 
 or store it for this machine:

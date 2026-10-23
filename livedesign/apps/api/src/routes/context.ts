@@ -46,7 +46,7 @@ export type RouteContext = {
   // no X-Owner-Id fallback.
   accountUserId: string | null;
   // The server-verified account id from EITHER credential: an account
-  // access token, or an `lvd_` API token (whose owner is always an
+  // access token, or an `lwt_` API token (whose owner is always an
   // account, docs/specs/015-api/public-api-and-tokens.md §3.3). This is the identity for team-membership
   // CONTENT access — gateRead/gateEdit and the teams-surface reads — so a
   // token reaches the same designs the app does (docs/specs/015-api/public-api-and-tokens.md §3.4). Account
@@ -341,8 +341,7 @@ export async function deniedParticipate(
 ): Promise<Response> {
   const grant = await gateGrant(ctx, liveDoc.id, liveDoc.ownerId, liveDoc.teamId);
   if (grant && grant.tabScope !== null && grant.tabScope !== tabId) return notFound();
-  if (grant)
-    console.info('[access-levels] participation refused', { designId: liveDoc.id, tabId });
+  if (grant) console.info('[access-levels] participation refused', { designId: liveDoc.id, tabId });
   return forbidden();
 }
 

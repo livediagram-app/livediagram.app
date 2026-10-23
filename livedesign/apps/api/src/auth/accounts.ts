@@ -1,5 +1,5 @@
 import { bearerTokenOf, isApiTokenFormat, isWorkbenchSessionFormat } from '@livedesign/api-schema';
-import { createVerifier } from '@liveworkspace/auth-client';
+import { createVerifier, type ClientCredentials, type TeamClaim } from '@liveworkspace/auth-client';
 import type { Env } from '../types';
 
 // Checks the access token a signed-in browser sends, minted by the liveworkspace accounts Worker
@@ -19,7 +19,24 @@ export function accountsIssuer(env: Pick<Env, 'ACCOUNTS_URL'>): string | null {
 export type AccountIdentity = {
   userId: string;
   email: string | null;
+  // The account's teams as liveworkspace saw them when it minted the token (null from an older
+  // token): a nudge to catch the teams mirror up (db/team-sync.ts), never what decides access.
+  teams: TeamClaim[] | null;
 };
+
+// This app's client at the accounts Worker, for the account API (liveworkspace/docs/accounts.md):
+// checking API tokens and following teams. Null on a guest-only deployment.
+export function accountCredentials(
+  env: Pick<Env, 'ACCOUNTS_URL' | 'ACCOUNTS_CLIENT_ID' | 'ACCOUNTS_CLIENT_SECRET'>,
+): ClientCredentials | null {
+  const { ACCOUNTS_URL, ACCOUNTS_CLIENT_ID, ACCOUNTS_CLIENT_SECRET } = env;
+  if (!ACCOUNTS_URL || !ACCOUNTS_CLIENT_ID || !ACCOUNTS_CLIENT_SECRET) return null;
+  return {
+    accountsUrl: ACCOUNTS_URL,
+    clientId: ACCOUNTS_CLIENT_ID,
+    clientSecret: ACCOUNTS_CLIENT_SECRET,
+  };
+}
 
 type Verify = ReturnType<typeof createVerifier>;
 
@@ -61,5 +78,5 @@ export async function getAccountIdentity(
   }
   const email =
     claims.emailVerified && claims.email ? claims.email.trim().toLowerCase() || null : null;
-  return { userId: claims.userId, email };
+  return { userId: claims.userId, email, teams: claims.teams };
 }

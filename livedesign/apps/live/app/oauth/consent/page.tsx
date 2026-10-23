@@ -2,7 +2,7 @@
 
 // MCP OAuth consent screen (docs/specs/015-api/mcp-server.md §3). The MCP authorize endpoint redirects
 // the signed-in user here with a `session` (and a display-only `client` name +
-// `to` redirect host). On approve we mint an lvd_ token via the api
+// `to` redirect host). On approve we mint an lwt_ token via the api
 // (signed-in) and hand it to the MCP's /oauth/complete bound to a one-time
 // PKCE code, then bounce the browser to the client's redirect. Signed-in only;
 // absent end-to-end without sign-in.
@@ -12,7 +12,7 @@ import { useSearchParams } from 'next/navigation';
 import { CLI_CLIENT_ID } from '@livedesign/api-schema';
 import { OAUTH_PRIMARY, OauthHelpLink, OauthShell, ReadOnlyAccessToggle } from '../oauth-shell';
 import { AUTH_TITLE } from '@/components/chrome/AuthStage';
-import { apiExchangeOauthToken, apiRevokeToken } from '@/lib/api-client';
+import { apiExchangeOauthToken, apiRevokeTokenAsItself } from '@/lib/api-client';
 import { signInEnabled } from '@/lib/auth-config';
 import { MCP_ORIGIN } from '@/lib/mcp-config';
 import { fetchConsentSession, type McpConsentSession } from '@/lib/mcp-consent-session';
@@ -167,7 +167,7 @@ function Consent() {
         const { redirectTo } = (await res.json()) as { redirectTo: string };
         return redirectTo;
       },
-      revoke: (id) => apiRevokeToken(accountUserId, id),
+      revoke: (token) => apiRevokeTokenAsItself(token),
     });
     if (!result.ok) {
       setFailure(result.reason);
@@ -197,8 +197,8 @@ function Consent() {
       <h1 className={AUTH_TITLE}>Connect {client}</h1>
       <p className="mt-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
         <span className="font-medium text-slate-700 dark:text-slate-200">{client}</span> wants to
-        access your livedesign designs on your behalf. Approving creates an API token, which you
-        can revoke any time from Settings, under Account › API Tokens.
+        act as you in your liveworkspace apps, livedesign among them. Approving creates an API token
+        for your liveworkspace account, which you can revoke any time on liveworkspace.app.
       </p>
       <ReadOnlyAccessToggle readOnly={readOnly} onChange={setReadOnly} />
       {/* The one fact worth checking before approving, and now the server's

@@ -122,12 +122,12 @@ an agent through the CLI is designing their own pages.
 
 In order of precedence:
 
-1. **`LIVEDESIGN_TOKEN`**, an `lvd_` token from the environment: agents, CI, sandboxes. There is no `--token` flag;
+1. **`LIVEDESIGN_TOKEN`**, an `lwt_` token from the environment: agents, CI, sandboxes. There is no `--token` flag;
    it would land in shell history and transcripts.
 2. **The stored credential** of the active profile, from `auth login`.
 
 - `auth login` runs OAuth 2.1 with PKCE through the MCP worker's authorisation server
-  ([MCP server](mcp-server.md) §3) with a loopback redirect, and stores the minted `lvd_` token. `--device` uses the
+  ([MCP server](mcp-server.md) §3) with a loopback redirect, and stores the minted `lwt_` token. `--device` uses the
   device authorisation grant for machines without a browser. `--with-token` reads a token from stdin, for hosts that
   do not run the MCP worker. The token is named "livedesign CLI"; its work shows as its owner's. A new login on a
   profile that holds a token revokes the old one once the new one works.

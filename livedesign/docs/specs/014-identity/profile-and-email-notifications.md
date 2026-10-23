@@ -122,8 +122,7 @@ Both are **transactional** (sent whenever email is on AND the recipient
 hasn't opted out), best-effort in `ctx.waitUntil`, and never on the
 request's critical path — same contract as every [Transactional email (Resend)](transactional-email.md) send. Recipients'
 addresses come only from trusted server state (the account's verified
-address, asked of the accounts Worker, or the inviter-typed
-`team_members.email`), never from a client header.
+address, asked of the accounts Worker), never from a client header.
 
 ### a. Someone joins my design — `notifyDesignJoin`
 
@@ -166,22 +165,13 @@ Object are deliberately **not** wired (they'd be far too chatty).
 
 ### b. Someone responds to a team invite — `notifyInviteResponse`
 
-When an invitee **accepts** (`POST …/members/<id>/accept`) or **declines**
-(the `DELETE …/members/<id>` on a still-`invited` row), the worker fires
-`notifyInviteResponse(env, team, responderEmail, accepted)` which:
-
-- no-ops unless `emailEnabled(env)`;
-- finds the team's **joined admins** (`listTeamAdminUserIds`) and resolves all
-  of their addresses in one accounts request;
-- skips any admin whose `notifyInviteResponse` pref is `false`;
-- sends each remaining admin the **invite-response** email: "_{email}_
-  accepted / declined your invitation to _{team name}_".
-
-The responder address and team name are both already known to the inviting
-admin (they typed the address, they named the team), so this stays within
-[Transactional email (Resend)](transactional-email.md) §7. **Leaving** a team (removing a `joined` row) is not an invite
-_response_ and does not notify; only the invited→accepted / invited→declined
-transitions do.
+Sent by liveworkspace, not livedesign: teams, their invitations and the
+answer emails belong to the liveworkspace account, and the accounts Worker
+tells each joined admin when an invitee accepts or declines, unless they have
+turned `notifyInviteResponse` off ([liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md)
+"Invitations"). It also counts those emails (`Email·Sent·InviteResponse`) under
+the app the inviter signed up through. The switch stays in livedesign's
+Settings because it is a setting every app shares.
 
 ## 5. Privacy / security
 
@@ -189,7 +179,7 @@ transitions do.
   never a client header (consistent with [Teams](../013-workspace/teams.md)'s removal of
   `X-Owner-Email` and [Transactional email (Resend)](transactional-email.md) §7).
 - The only user-influenced strings in a notification body (a design name, a
-  joiner name, a responder email, a team name) are HTML-escaped, and each is
+  joiner name) are HTML-escaped, and each is
   either the recipient's own content or already known to the recipient.
 - Off by default at the deployment level (no `RESEND_API_KEY` → no sends, no
   UI), and off per-notification when the recipient opts out. Self-hosting

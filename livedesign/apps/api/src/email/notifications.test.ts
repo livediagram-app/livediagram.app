@@ -2,7 +2,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Env } from '../types';
 
 vi.mock('../db', () => ({
-  listTeamAdminUserIds: vi.fn(),
   claimCommentNotify: vi.fn(),
   claimJoinNotify: vi.fn(),
   claimNotifyEmail: vi.fn(),
@@ -11,7 +10,6 @@ vi.mock('../db', () => ({
 // tested against its stand-in in accounts/*.test.ts.
 const people = vi.hoisted(() => ({
   emailOf: vi.fn(),
-  emailsOf: vi.fn(),
   claimAccountMilestone: vi.fn(),
 }));
 vi.mock('../accounts/people', () => people);
@@ -21,9 +19,9 @@ vi.mock('./client', async (importOriginal) => ({
   sendEmail: vi.fn(),
 }));
 
-import { claimCommentNotify, claimJoinNotify, claimNotifyEmail, listTeamAdminUserIds } from '../db';
+import { claimCommentNotify, claimJoinNotify, claimNotifyEmail } from '../db';
 import { getNotificationPrefs } from '../accounts/settings';
-const { emailOf: getOwnerEmail, emailsOf, claimAccountMilestone } = people;
+const { emailOf: getOwnerEmail, claimAccountMilestone } = people;
 import { sendEmail } from './client';
 import { actionAssignedEmail, commentNotificationEmail } from './templates';
 import {
@@ -31,7 +29,6 @@ import {
   notifyDesignJoin,
   notifyMentioned,
   notifyFirstShare,
-  notifyInviteResponse,
   notifyMilestone,
   notifyNewComment,
   NOTIFY_EMAIL_DEDUPE_MS,
@@ -382,32 +379,6 @@ describe('notifyFirstShare (docs/specs/014-identity/transactional-email.md #6)',
     vi.mocked(getOwnerEmail).mockResolvedValue('owner@x.com');
     vi.mocked(getNotificationPrefs).mockResolvedValue({ ...allowAll, notifyMilestones: false });
     await notifyFirstShare(env, 'u1');
-    expect(sendEmail).not.toHaveBeenCalled();
-  });
-});
-
-describe('notifyInviteResponse (docs/specs/014-identity/profile-and-email-notifications.md)', () => {
-  it('reads every admin’s address in one request and skips the responder', async () => {
-    vi.mocked(listTeamAdminUserIds).mockResolvedValue(['u1', 'u2', 'u3']);
-    vi.mocked(emailsOf).mockResolvedValue(
-      new Map([
-        ['u1', 'one@x.test'],
-        ['u2', 'two@x.test'],
-      ]),
-    );
-    vi.mocked(getNotificationPrefs).mockResolvedValue(allowAll);
-    vi.mocked(sendEmail).mockResolvedValue({ sent: true });
-    await notifyInviteResponse(env, { id: 't1', name: 'Design' }, 'new@x.test', true, 'u2');
-    expect(emailsOf).toHaveBeenCalledOnce();
-    expect(emailsOf).toHaveBeenCalledWith(env, ['u1', 'u3']);
-    expect(vi.mocked(sendEmail).mock.calls.map((c) => c[1].to)).toEqual(['one@x.test']);
-  });
-
-  it('skips an admin who opted out', async () => {
-    vi.mocked(listTeamAdminUserIds).mockResolvedValue(['u1']);
-    vi.mocked(emailsOf).mockResolvedValue(new Map([['u1', 'one@x.test']]));
-    vi.mocked(getNotificationPrefs).mockResolvedValue({ ...allowAll, notifyInviteResponse: false });
-    await notifyInviteResponse(env, { id: 't1', name: 'Design' }, 'new@x.test', false, null);
     expect(sendEmail).not.toHaveBeenCalled();
   });
 });

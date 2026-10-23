@@ -1,6 +1,7 @@
 'use client';
 
 import { InviteIcon, MyDesignsIcon, PlusIcon } from '@/components/primitives/explorer-icons';
+import { manageTeamsUrl } from '@/lib/auth-config';
 import { useExplorer } from '../ExplorerContext';
 import {
   MY_DESIGNS_EXPAND_KEY,
@@ -41,8 +42,6 @@ export function SpacesGroup({
     setRenamingFolderId,
     folderActions,
     invites,
-    setTeamModalOpen,
-    setMobileNavOpen,
     rootDefaults,
   } = useExplorer();
   const myDesignsMenu = useMyDesignsMenu(rootDefaults, { reveal: true });
@@ -119,10 +118,11 @@ export function SpacesGroup({
           label={SIDEBAR_LABELS.newTeam}
           textLabel={SIDEBAR_LABELS.newTeam}
           selected={false}
+          // Teams are made on liveworkspace.app, the same team in every app
+          // (liveworkspace/docs/accounts.md "Teams").
           onActivate={() => {
             trackSidebar('NewTeam');
-            setTeamModalOpen(true);
-            setMobileNavOpen(false);
+            window.location.assign(manageTeamsUrl);
           }}
           depth={0}
         />

@@ -148,7 +148,6 @@ export function ExplorerPane() {
     invites,
     acceptInvite,
     declineInvite,
-    refreshTeams,
     movePersonalFolders,
     moveTeamDests,
     moveDesignTo,
@@ -346,7 +345,6 @@ export function ExplorerPane() {
             teamId={selected.id}
             accountUserId={accountUserId ?? null}
             accountDisplayName={accountDisplayName}
-            onTeamsChanged={() => void refreshTeams()}
             onLeftTeam={() => go({ kind: 'home' })}
             onLoadResult={(found) => setNotFoundIn(found ? null : selected)}
             // The shared-designs move picker offers every space (docs/specs/013-workspace/team-shared-designs.md):

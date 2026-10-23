@@ -2,7 +2,7 @@
 // can import the type without cycling through the Hono entrypoint.
 export type Env = {
   // Service binding to livedesign-api — tools forward to /api/* through it,
-  // carrying the caller's Bearer lvd_ token.
+  // carrying the caller's Bearer lwt_ token.
   API: Fetcher;
   // OAuth 2.1 state: client registrations, authorize sessions, codes.
   OAUTH_KV: KVNamespace;

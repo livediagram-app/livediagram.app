@@ -82,10 +82,7 @@ async function _apiLoadDesign(ownerId: string, id: string): Promise<LiveDoc | nu
   const body = await expectOkOrNull<DesignResponse>(res, 'load');
   return body?.design ?? null;
 }
-export const apiLoadDesign = dedupeInFlight(
-  _apiLoadDesign,
-  (ownerId, id) => `${ownerId}|${id}`,
-);
+export const apiLoadDesign = dedupeInFlight(_apiLoadDesign, (ownerId, id) => `${ownerId}|${id}`);
 
 // How many of the design's tabs are also in other designs, and how many
 // designs (docs/specs/006-design/tab-design-many-to-many.md, "Shared-tab
@@ -235,10 +232,7 @@ async function _apiListDesignsWithTeamRecent(ownerId: string): Promise<DesignLis
     const res = await apiFetch(`${API_BASE}/designs?include=${TEAM_RECENT_INCLUDE}`, {
       headers: await apiHeaders(ownerId),
     });
-    const { designs: liveDocs, teamRecent = [] } = await expectOk<DesignListResponse>(
-      res,
-      'list',
-    );
+    const { designs: liveDocs, teamRecent = [] } = await expectOk<DesignListResponse>(res, 'list');
     // Dedupe by id: legacy data (pre ghost-row fix) can hold BOTH an offline
     // record and a same-id server row. The offline copy wins — it is what the
     // dispatch loads for that id — and dropping the twin keeps React keys

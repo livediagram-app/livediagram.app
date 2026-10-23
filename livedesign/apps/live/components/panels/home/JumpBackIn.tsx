@@ -56,8 +56,7 @@ export function JumpBackIn({
   const wide = useMediaQuery(HOME_WIDE_QUERY);
   const set = useMemo(() => {
     if (!designMenus) return fullSet;
-    const here = (item: JumpBackInSet['mostUsed'][number]) =>
-      !designMenus.isGone(item.designId);
+    const here = (item: JumpBackInSet['mostUsed'][number]) => !designMenus.isGone(item.designId);
     return { mostUsed: fullSet.mostUsed.filter(here), recent: fullSet.recent.filter(here) };
   }, [fullSet, designMenus]);
   const menuFor = designMenus?.entryFor;

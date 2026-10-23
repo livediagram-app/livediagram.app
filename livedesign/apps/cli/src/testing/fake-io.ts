@@ -240,4 +240,4 @@ export const capabilities: Route = (_, url) =>
       })
     : undefined;
 
-export const TOKEN = `lvd_${'a'.repeat(43)}`;
+export const TOKEN = `lwt_${'a'.repeat(43)}`;

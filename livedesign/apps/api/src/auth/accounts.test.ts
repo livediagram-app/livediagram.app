@@ -10,7 +10,7 @@ vi.mock('@liveworkspace/auth-client', () => ({
   createVerifier: (options: VerifierOptions) => createVerifierMock(options),
 }));
 
-import { accountsIssuer, getAccountIdentity } from './accounts';
+import { accountCredentials, accountsIssuer, getAccountIdentity } from './accounts';
 
 const CONFIGURED = {
   ACCOUNTS_URL: 'https://accounts.example',
@@ -41,6 +41,24 @@ beforeEach(() => {
 
 // When it returns null the caller falls through to the legacy `X-Owner-Id` header, so the guest
 // path keeps serving (docs/specs/014-identity/auth-and-guest-access.md): none of these may throw.
+describe('accountCredentials', () => {
+  it('is this app’s client at the accounts Worker, or null when any part is unset', () => {
+    const env = {
+      ACCOUNTS_URL: 'https://accounts.test',
+      ACCOUNTS_CLIENT_ID: 'livedesign',
+      ACCOUNTS_CLIENT_SECRET: 'secret',
+    };
+    expect(accountCredentials(env)).toEqual({
+      accountsUrl: 'https://accounts.test',
+      clientId: 'livedesign',
+      clientSecret: 'secret',
+    });
+    expect(accountCredentials({ ...env, ACCOUNTS_URL: undefined })).toBeNull();
+    expect(accountCredentials({ ...env, ACCOUNTS_CLIENT_ID: undefined })).toBeNull();
+    expect(accountCredentials({ ...env, ACCOUNTS_CLIENT_SECRET: undefined })).toBeNull();
+  });
+});
+
 describe('getAccountIdentity (guest fall-through)', () => {
   it('returns null when sign-in is not configured', async () => {
     expect(await getAccountIdentity({} as Env, request('Bearer anything'))).toBeNull();
@@ -58,7 +76,7 @@ describe('getAccountIdentity (guest fall-through)', () => {
   });
 
   it.each([
-    ['an API token', `lvd_${'a'.repeat(43)}`],
+    ['an API token', `lwt_${'a'.repeat(43)}`],
     ['a workbench session', `lvw_${'w'.repeat(43)}`],
   ])('passes %s through to the token paths without verifying', async (_kind, bearer) => {
     expect(await getAccountIdentity(CONFIGURED, request(`Bearer ${bearer}`))).toBeNull();
@@ -94,7 +112,14 @@ describe('getAccountIdentity (verified token)', () => {
     expect(await getAccountIdentity(CONFIGURED, request('Bearer t'))).toEqual({
       userId: 'user_abc',
       email: null,
+      teams: null,
     });
+  });
+
+  it('carries the teams claim through, for the teams mirror', async () => {
+    const teams = [{ id: 'team1', name: 'Design', role: 'admin' as const }];
+    verifyMock.mockResolvedValue(claims({ teams }));
+    expect(await getAccountIdentity(CONFIGURED, request('Bearer t'))).toMatchObject({ teams });
   });
 
   it('trusts the email only once verified, as trimmed lowercase', async () => {
@@ -104,6 +129,13 @@ describe('getAccountIdentity (verified token)', () => {
       email: 'ada@example.com',
     });
     verifyMock.mockResolvedValue(claims({ email: 'ada@example.com', emailVerified: false }));
+    expect(await getAccountIdentity(CONFIGURED, request('Bearer t'))).toMatchObject({
+      email: null,
+    });
+  });
+
+  it('reads a verified email that is only whitespace as no email', async () => {
+    verifyMock.mockResolvedValue(claims({ email: '   ', emailVerified: true }));
     expect(await getAccountIdentity(CONFIGURED, request('Bearer t'))).toMatchObject({
       email: null,
     });
