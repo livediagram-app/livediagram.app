@@ -1,6 +1,6 @@
 // /api/documents/<id>/room-ticket + /ws: joining a document's realtime room (docs/specs/015-api/api.md "Realtime
 // model"). The index's grant is the whole admission (liveworkspace/docs/one-explorer-contracts.md "Grants"): the
-// upgrade carries it as `?t=` (room-ticket.ts), the worker checks it offline and stamps what it says on the
+// upgrade carries it as `?t=` (@liveworkspace/index-app's room tickets), the worker checks it offline and stamps what it says on the
 // headers only it can set, and the room asks for a fresh one before it lapses (document-room.ts).
 
 import {
@@ -9,9 +9,9 @@ import {
   type RoomTicketResponse,
 } from '@livedocuments/api-schema';
 import { workbenchStore } from '../workbench-store';
-import { linkCodeOf } from '../index-service';
+import { indexService, linkCodeOf } from '../index-service';
 import { forbidden, json, notFound } from '../responses';
-import { openRoomTicket, sealRoomTicket } from '../room-ticket';
+import { openRoomTicket, sealRoomTicket } from '@liveworkspace/index-app';
 import { type RouteContext } from './context';
 import { resolveDocumentGrant } from './document-grant';
 import { personTagFor } from '../person-tag';
@@ -41,7 +41,7 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
 
   if (segments.length === 4 && segments[3] === 'ws' && request.method === 'GET') {
     const id = segments[2]!;
-    const opened = await openRoomTicket(env, url.searchParams.get('t'), id);
+    const opened = await openRoomTicket(indexService, env, url.searchParams.get('t'), id);
     if (!opened) return forbidden();
     const { claims, workbench } = opened;
     const role: AccessLevel = workbench

@@ -145,13 +145,13 @@ tests," not a number.
 One set of files is the exception, held at **100% statements, branches,
 functions and lines** by per-glob thresholds in `apps/api/vitest.config.ts`:
 
-| Files                                                            | Why                                                                                                                                            |
-| ---------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/auth/**`                                                    | Decides WHO a request is — access-token checks, guest-id signatures, api tokens, the read/edit gates                                           |
-| `src/db/api-tokens.ts`, `src/routes/tokens.ts`                   | Mint, resolve and revoke the credentials that act as an account                                                                                |
-| `src/room-ticket.ts`, `src/routes/document-grant.ts`             | The index's grant as the room ticket, and settling a request's grant before it reaches the document                                            |
-| `src/routes/share.ts`                                            | The only unauthenticated read path into a document                                                                                             |
-| `src/db/image-refs.ts`, `src/db/image-grants.ts`, `src/media.ts` | Which images a document places and may serve, and so what the media service hears before its daily sweep ([Images](../009-elements/images.md)) |
+| Files                                                                     | Why                                                                                                                                            |
+| ------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/auth/**`                                                             | Decides WHO a request is — access-token checks, guest-id signatures, api tokens, the read/edit gates                                           |
+| `src/db/api-tokens.ts`, `src/routes/tokens.ts`                            | Mint, resolve and revoke the credentials that act as an account                                                                                |
+| `src/routes/document-grant.ts` (room tickets: `@liveworkspace/index-app`) | The index's grant as the room ticket, and settling a request's grant before it reaches the document                                            |
+| `src/routes/share.ts`                                                     | The only unauthenticated read path into a document                                                                                             |
+| `src/db/image-refs.ts`, `src/db/image-grants.ts`, `src/media.ts`          | Which images a document places and may serve, and so what the media service hears before its daily sweep ([Images](../009-elements/images.md)) |
 
 The rest of the worker fails visibly. These fail by serving the right response
 to the **wrong person**, or by deleting a picture someone placed: an outcome no amount of production monitoring

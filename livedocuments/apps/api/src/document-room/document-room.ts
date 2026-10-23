@@ -1,4 +1,10 @@
-import { FLUSH_IDLE_MS, FLUSH_RETRY_MS, nextFlushAt } from '@liveworkspace/index-app';
+import {
+  FLUSH_IDLE_MS,
+  FLUSH_RETRY_MS,
+  nextFlushAt,
+  openRoomTicket,
+} from '@liveworkspace/index-app';
+import { indexService } from '../index-service';
 import { DurableObject } from 'cloudflare:workers';
 import {
   ACCESS_CHANGED_CLOSE,
@@ -36,7 +42,6 @@ import {
 } from '../document-room-rules';
 import { followerIdsOf, followTargetOf } from '../room-follows';
 import { opForScope } from '../room-scope';
-import { openRoomTicket } from '../room-ticket';
 import { gateClientOp } from '../room-op-gate';
 import { answerInternal, type InternalRoom } from '../room-internal';
 import { rosterFrames, type RosterEntry } from '../room-roster';
@@ -630,7 +635,7 @@ export class DocumentRoom extends DurableObject<Env> {
     const env = this.roomEnv;
     const session = this.readSession(ws);
     if (!env || !session?.documentId || typeof ticket !== 'string' || ticket.length > 8192) return;
-    const opened = await openRoomTicket(env, ticket, session.documentId);
+    const opened = await openRoomTicket(indexService, env, ticket, session.documentId);
     if (!opened) {
       console.warn('[grant] renewal refused', { reason: 'invalid' });
       return;
