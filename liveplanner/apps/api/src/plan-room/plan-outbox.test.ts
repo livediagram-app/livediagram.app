@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { Element } from '@liveplanner/project';
 import { deleteTabRow, upsertTab } from '../db/tabs';
+import { insertItems } from '../db/items';
+import { itemPersonId, presetSetup, type Item } from '@liveplanner/items';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { ACCOUNTS_ON, stubAccounts } from '../test-accounts';
 import { DRAIN_TABS, drainOutbox, readContentSummary, recordEditor } from './plan-outbox';
@@ -196,6 +198,101 @@ describe('the outbox', () => {
     const second = await drainOutbox(db.env, 'P', index.client);
     expect(second.more).toBe(false);
     expect(keys(db)).toEqual([]);
+  });
+});
+
+describe('the cards push', () => {
+  const person = async (id: string) => ({ id: await itemPersonId(id), name: id, color: '#000' });
+  const card = async (
+    id: string,
+    key: number,
+    fields: Item['fields'],
+    by = 'owner',
+  ): Promise<Item> => ({
+    id,
+    type: 'task',
+    key,
+    rank: 'i',
+    fields: { title: `Card ${key}`, ...fields },
+    rev: 1,
+    createdAt: T0,
+    updatedAt: T0 + key,
+    createdBy: await person(by),
+    updatedBy: await person(by),
+  });
+  const board = (): Element =>
+    box('b1', {
+      shape: 'plan-board',
+      width: 800,
+      height: 500,
+      planBoard: presetSetup('bug-triage'),
+    });
+
+  it('keys a card write, and names its hashed assignee from the people the plan knows', async () => {
+    const db = plan();
+    await upsertTab(db.env, 'P', { id: 't1', name: 'Sprint', elements: [board()] }, 0);
+    await drainOutbox(db.env, 'P', fakeIndex().client);
+    const exec = (q: string, ...b: (string | number)[]) => db.sql.prepare(q).run(...b);
+    // user_b edited the plan once: known from then on.
+    recordEditor(exec, 'P', 'user_b', T0);
+    await drainOutbox(db.env, 'P', fakeIndex().client);
+    await insertItems(db.env, 'P', [
+      await card('c1', 1, { status: 'new', assignee: await person('user_b') }),
+      await card('c2', 2, { status: 'new', assignee: await person('user_stranger') }),
+      await card('c3', 3, {
+        comments: {
+          resolved: false,
+          comments: [
+            {
+              id: 'm1',
+              authorId: 'user_c',
+              authorName: 'Cat',
+              authorColor: '#f00',
+              text: 'hi',
+              createdAt: T0 + 5,
+            },
+          ],
+        },
+      }),
+    ]);
+    expect(keys(db)).toContain('tab:~cards');
+    const info = vi.spyOn(console, 'info').mockImplementation(() => {});
+    const index = fakeIndex();
+    await drainOutbox(db.env, 'P', index.client);
+    info.mockRestore();
+    const cards = index.collab.find((c) => c.tab === '~cards')!.push;
+    expect(cards.actions.map((a) => [a.actionId, a.assigneeId, a.assignerId])).toEqual([
+      ['c1', 'user_b', 'owner'],
+    ]);
+    expect(cards.actions[0]!.card).toMatchObject({
+      key: 1,
+      title: 'Card 1',
+      board: { tabId: 't1', elementId: 'b1', tabName: 'Sprint' },
+    });
+    expect(cards.threads.map((t) => [t.elementId, t.participantIds])).toEqual([['c3', ['user_c']]]);
+    expect(rows(db, 'SELECT person_id FROM known_people')).toEqual([{ person_id: 'user_b' }]);
+  });
+
+  it('pushes 1,000 cards among 500 known people within budget', async () => {
+    const db = plan();
+    await upsertTab(db.env, 'P', { id: 't1', name: 'Sprint', elements: [board()] }, 0);
+    const people = Array.from({ length: 500 }, (_, i) => `user_${i}`);
+    const exec = (q: string, ...b: (string | number)[]) => db.sql.prepare(q).run(...b);
+    people.forEach((p, i) => recordEditor(exec, 'P', p, T0 + i));
+    await drainOutbox(db.env, 'P', fakeIndex().client);
+    const cards = await Promise.all(
+      Array.from({ length: 1_000 }, async (_, i) =>
+        card(`c${i}`, i + 1, { status: 'new', assignee: await person(people[i % 500]!) }),
+      ),
+    );
+    await insertItems(db.env, 'P', cards);
+    const index = fakeIndex();
+    const start = performance.now();
+    await drainOutbox(db.env, 'P', index.client);
+    const took = performance.now() - start;
+    expect(index.collab.find((c) => c.tab === '~cards')!.push.actions).toHaveLength(500);
+    // Measured about 17 ms on a laptop (500 hashes, 1,000 cards); the budget leaves room for a slow CI runner.
+    expect(took).toBeLessThan(1_000);
   });
 });
 

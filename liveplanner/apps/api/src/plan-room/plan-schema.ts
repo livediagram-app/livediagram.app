@@ -297,7 +297,46 @@ CREATE TABLE IF NOT EXISTS form_reports (
 );
 `;
 
-const STEPS: readonly string[] = [V1, V2, V3];
+// The plan's cards in the Inbox (plan-outbox.ts cardsPushOf, @liveworkspace/index-app cardsCollabPush): a card
+// changed, a board's tab saved, or the type catalogue changed keys the `~cards` push. `known_people` holds the
+// person ids the plan has seen write to it (its editors), so a card's hashed assignee can be named to the index;
+// the oldest past KNOWN_PEOPLE_MAX go as new ones arrive.
+const V4 = `
+CREATE TABLE IF NOT EXISTS known_people (
+  person_id TEXT    PRIMARY KEY,
+  seen_at   INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS known_people_seen ON known_people (seen_at);
+
+CREATE TRIGGER IF NOT EXISTS outbox_cards_insert AFTER INSERT ON items
+BEGIN
+  DELETE FROM outbox WHERE plan_id = NEW.plan_id AND kind = 'tab' AND key = '~cards';
+  INSERT INTO outbox (plan_id, kind, key) VALUES (NEW.plan_id, 'tab', '~cards');
+END;
+CREATE TRIGGER IF NOT EXISTS outbox_cards_update AFTER UPDATE ON items
+BEGIN
+  DELETE FROM outbox WHERE plan_id = NEW.plan_id AND kind = 'tab' AND key = '~cards';
+  INSERT INTO outbox (plan_id, kind, key) VALUES (NEW.plan_id, 'tab', '~cards');
+END;
+CREATE TRIGGER IF NOT EXISTS outbox_cards_delete AFTER DELETE ON items
+BEGIN
+  DELETE FROM outbox WHERE plan_id = OLD.plan_id AND kind = 'tab' AND key = '~cards';
+  INSERT INTO outbox (plan_id, kind, key) VALUES (OLD.plan_id, 'tab', '~cards');
+END;
+CREATE TRIGGER IF NOT EXISTS outbox_cards_boards AFTER UPDATE OF data, name ON tabs
+  WHEN NEW.data LIKE '%"plan-board"%' OR OLD.data LIKE '%"plan-board"%'
+BEGIN
+  DELETE FROM outbox WHERE (plan_id, kind, key) IN (SELECT plan_id, 'tab', '~cards' FROM plan_tabs WHERE tab_id = NEW.id);
+  INSERT INTO outbox (plan_id, kind, key) SELECT plan_id, 'tab', '~cards' FROM plan_tabs WHERE tab_id = NEW.id;
+END;
+CREATE TRIGGER IF NOT EXISTS outbox_cards_types AFTER UPDATE OF item_types ON plan
+BEGIN
+  DELETE FROM outbox WHERE plan_id = NEW.id AND kind = 'tab' AND key = '~cards';
+  INSERT INTO outbox (plan_id, kind, key) VALUES (NEW.id, 'tab', '~cards');
+END;
+`;
+
+const STEPS: readonly string[] = [V1, V2, V3, V4];
 
 export const PLAN_SCHEMA_VERSION = STEPS.length;
 

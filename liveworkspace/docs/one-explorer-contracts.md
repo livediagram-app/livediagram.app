@@ -287,13 +287,20 @@ assignerName?, teamId, doneById?, card?, createdAt, updatedAt}]}`. The same push
 - Cards and their threads go under the tab id `~cards` (`COLLAB_CARDS_TAB`): each card assigned to someone is an
   action whose `elementId` is the card's id, and each card's thread a thread, both with `card: {key, type,
 typeLabel, title, board: {tabId, elementId, title, tabName} | null}` (`board` is where the row opens it; null
-  when no board shows it).
-- `PUT /app/items/:id/forms/:tabId` — `{form: {heading, boardTabId, responses, latestAt} | null}`: a form's
+  when no board shows it). An app whose cards name people by a hash matches it to a person id before pushing
+  (`@liveworkspace/index-app` `cardsCollabPush`); a card whose assignee it cannot name is left out.
+- `PUT /app/items/:id/forms/:tabId` — `{form: {heading, boardTabId, responses, latestAt, code?} | null}`: a form's
   heading, the tab its responses land on, how many it has taken and when the last came; `null` takes it off the
   Inbox (deleted, or the tab gone). Pushed by the app's server when a response lands, the form is published,
   deleted or renamed. `PUT /app/items/:id/forms/:tabId/seen` — `{personId, seen}`: that person has seen the
   first `seen` responses (a count only grows). Opening the form marks every response so far seen; publishing
-  marks them seen for the publisher.
+  marks them seen for the publisher. `code` is the live link's public code, sent when the link is published
+  (before anyone is given it); a push without one keeps the code held, and `null` drops it with the row.
+- `GET /app/forms/:code` — `{itemId, tabId}`: the item and tab a live form's code names, for the app that pushed
+  it (404 otherwise), so the app's Worker routes a public form request to its item without a table of its own
+  (`@liveworkspace/index-app` `createFormPlaces` caches the answer a minute). `GET
+  /app/items/:id/forms/:tabId/seen/:personId` — `{seen}`: how many of the form's responses that person has seen
+  (0 when none), for the app's own unseen count.
 
 - `PUT /app/items/:id/events` — `{events: [{type: 'edited', actorId, actorName?, at}]}`, up to 100: who
   wrote to the item and when, for the Timeline and Most Used. Each person's `edited` lands on one event per

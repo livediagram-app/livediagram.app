@@ -20,11 +20,18 @@ import {
 import {
   capCollabPush,
   drainIndexOutbox,
+  editedOf,
   editKeyOf,
   editKeyRange,
   type OutboxRow,
 } from '@liveworkspace/index-app';
-import type { CollabPush, IndexAppClient, ItemSummary } from '@liveworkspace/index-client';
+import {
+  COLLAB_CARDS_TAB,
+  type CollabPush,
+  type IndexAppClient,
+  type ItemSummary,
+} from '@liveworkspace/index-client';
+import { cardsPushOf, noteKnownPeople } from './plan-cards-push';
 import { projectStatsSql } from '../db/tab-stats';
 import { isEmptyCount, type ContentSummary } from '../db/content-summary';
 import { pushFormInbox } from '../forms/form-inbox';
@@ -227,8 +234,18 @@ export async function drainOutbox(
   ).results;
   const formStmts: D1PreparedStatement[] = [];
   const formTabs: string[] = [];
+  // Who wrote to the plan, remembered so a card assigned to them can be named to the index.
+  const editors = rows.flatMap((r) => (r.kind === 'edit' ? [editedOf(r.key)?.actorId ?? ''] : []));
+  await noteKnownPeople(env, editors.filter(Boolean), Date.now());
   const outcome = await drainIndexOutbox(planId, rows, client, {
     collab: async (tabId) => {
+      // The plan's cards and their threads (plan-cards-push.ts).
+      if (tabId === COLLAB_CARDS_TAB) {
+        const cards = await cardsPushOf(env, planId);
+        if (cards.unmatched > 0)
+          console.info('[outbox] cards-unmatched', { planId, unmatched: cards.unmatched });
+        return cards.push;
+      }
       const tab = await env.PLAN_DB.prepare(
         `SELECT t.id, t.name, t.data, dt.order_index FROM tabs t JOIN plan_tabs dt ON dt.tab_id = t.id
           WHERE dt.plan_id = ? AND t.id = ?`,

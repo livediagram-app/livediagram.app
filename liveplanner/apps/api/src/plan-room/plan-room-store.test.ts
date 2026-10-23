@@ -269,8 +269,10 @@ describe("a plan's content lives in its own Durable Object", () => {
     await plan.room.drain();
 
     expect(count(plan.db, 'outbox')).toBe(0);
+    // The tab holds a board, so the plan's cards (none yet) are pushed too.
     expect(indexCalls.sort()).toEqual([
       'PUT /api/index/app/items/A/collab/t1',
+      'PUT /api/index/app/items/A/collab/~cards',
       'PUT /api/index/app/items/A/events',
       'PUT /api/index/app/items/A/summary',
     ]);
@@ -459,7 +461,8 @@ describe('speed', () => {
       }
     });
     console.info('[perf] 200-tab plan', { readMs, drainMs, requestsPerDrain: sizes });
-    expect(sizes).toHaveLength(Math.ceil(200 / DRAIN_TABS));
+    // 200 tabs and the plan's cards (its tabs hold boards).
+    expect(sizes).toHaveLength(Math.ceil(201 / DRAIN_TABS));
     // DRAIN_TABS tabs, the summary and who edited.
     expect(Math.max(...sizes)).toBeLessThanOrEqual(DRAIN_TABS + 2);
     expect(readMs).toBeLessThan(cpuBudgetMs(50));
