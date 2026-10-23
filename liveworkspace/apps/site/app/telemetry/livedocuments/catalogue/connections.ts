@@ -4,6 +4,25 @@
 import type { Metric, MetricStack } from '../metric-series';
 import { chart } from './helpers';
 
+// Tokens made by hand and revoked on liveworkspace.app, counted by accounts under the app their owner signed up
+// through.
+export const TOKENS_CREATED: Metric = {
+  category: 'Token',
+  action: 'Created',
+  type: 'Manual',
+  title: 'Tokens Created',
+  blurb: 'Personal API tokens created by hand on liveworkspace.app.',
+};
+
+export const TOKENS_REVOKED: Metric = {
+  rising: 'neutral',
+  category: 'Token',
+  action: 'Removed',
+  type: null,
+  title: 'Tokens Revoked',
+  blurb: 'API tokens revoked by hand on liveworkspace.app.',
+};
+
 export const AI_TOOLS_CONNECTED: Metric = {
   category: 'Token',
   action: 'Created',
@@ -33,8 +52,8 @@ export const API_TOKEN_ACTIVITY: MetricStack = {
   stack: true,
   title: 'API Token Activity',
   blurb:
-    'Every token event livedocuments sees: one made for an AI tool connecting over MCP, for the CLI signing in, and a workbench paired. Tokens are made by hand and revoked on liveworkspace.app.',
-  members: [AI_TOOLS_CONNECTED, CLI_SIGN_INS, WORKBENCHES_PAIRED],
+    'Every token event: created by hand, by an AI tool connecting over MCP, by the CLI signing in, paired with a workbench, and revoked.',
+  members: [TOKENS_CREATED, AI_TOOLS_CONNECTED, CLI_SIGN_INS, WORKBENCHES_PAIRED, TOKENS_REVOKED],
 };
 
 // MCP tool calls, one chart per tool the MCP server registers (apps/mcp

@@ -548,6 +548,40 @@ export const FOLDERS_CREATED: Metric = {
   blurb: 'Folders of designs, in your own Explorer or a team library.',
 };
 
+export const FOLDERS_RE_PARENTED: Metric = {
+  category: 'Folder',
+  action: 'Moved',
+  allTypes: true,
+  title: 'Folders Re-parented',
+  blurb: 'A folder nested under another, or promoted back to the root.',
+};
+
+export const FOLDERS_DELETED = chart(
+  'Folder',
+  'Deleted',
+  'Folders Deleted',
+  'A folder removed, in your Explorer or a team library.',
+  { rising: 'neutral' },
+);
+
+// Default folders (docs/specs/013-workspace/default-folders.md "Telemetry"): by what the default is for, a kind of
+// design or one template (Kind, Template).
+export const DEFAULT_FOLDERS_SET = chart(
+  'Folder',
+  'Changed',
+  'Default Folders Set',
+  'A folder chosen as where new designs of one kind or template land: from a folder menu or Settings.',
+  { rising: 'good' },
+);
+
+export const DEFAULT_FOLDERS_CLEARED = chart(
+  'Folder',
+  'Cleared',
+  'Default Folders Cleared',
+  'A default folder cleared, so new designs of that kind land in My Work again.',
+  { rising: 'neutral' },
+);
+
 export const TAB_FOLDERS_CREATED: Metric = {
   category: 'Folder',
   action: 'Created',
@@ -632,6 +666,10 @@ export const ORGANISATION: MetricStack = {
     'Folders made and nested, tab folders, tabs and designs filed, tags, default folders, the Explorer sidebar and its filters.',
   members: [
     FOLDERS_CREATED,
+    FOLDERS_RE_PARENTED,
+    FOLDERS_DELETED,
+    DEFAULT_FOLDERS_SET,
+    DEFAULT_FOLDERS_CLEARED,
     TAB_FOLDERS_CREATED,
     TABS_FILED,
     DESIGNS_FILED,

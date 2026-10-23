@@ -14,6 +14,7 @@
 
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { EXPLORER_TELEMETRY_EVENTS } from '@liveworkspace/telemetry';
 import { platformComputedEmitters } from '../platform-emitters';
 import {
   LEVEL_TELEMETRY_TYPE,
@@ -352,6 +353,9 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     values: ['WhatHappened', 'SeeTimeline'],
   },
   'apps/live/app/embed/workbench/ExplorerHost.tsx Home·Opened': { values: ['Group'] },
+  'apps/live/app/embed/workbench/ExplorerHost.tsx Home·Loaded': {
+    values: EXPLORER_TELEMETRY_EVENTS['Home·Loaded'],
+  },
   // The filter lens, through the Explorer's onLensSelected prop.
   'apps/live/app/embed/workbench/ExplorerHost.tsx Explorer·Selected': { values: LENS_FACETS },
   'apps/live/app/new/page.tsx Theme·Changed': { values: THEMES, open: THEME_WHY },
@@ -539,6 +543,35 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     values: ['ShareLink', 'EmbedCode', 'LiveImage'],
   },
   'apps/live/lib/explorer-share-host.ts Document·Removed': { values: ['ShareLink'] },
+  'apps/live/lib/explorer-share-host.ts Document·Shared': {
+    values: EXPLORER_TELEMETRY_EVENTS['Document·Shared'],
+  },
+  // Folders, default folders, the Trash, through the Explorer's onOrganise prop (lib/explorer-organise.ts): the
+  // Explorer's closed list.
+  'apps/live/lib/explorer-organise.ts Folder·Created': {
+    values: EXPLORER_TELEMETRY_EVENTS['Folder·Created'],
+  },
+  'apps/live/lib/explorer-organise.ts Folder·Moved': {
+    values: EXPLORER_TELEMETRY_EVENTS['Folder·Moved'],
+  },
+  'apps/live/lib/explorer-organise.ts Folder·Deleted': {
+    values: EXPLORER_TELEMETRY_EVENTS['Folder·Deleted'],
+  },
+  'apps/live/lib/explorer-organise.ts Folder·Changed': {
+    values: EXPLORER_TELEMETRY_EVENTS['Folder·Changed'],
+  },
+  'apps/live/lib/explorer-organise.ts Folder·Cleared': {
+    values: EXPLORER_TELEMETRY_EVENTS['Folder·Cleared'],
+  },
+  'apps/live/lib/explorer-organise.ts Trash·Restored': {
+    values: EXPLORER_TELEMETRY_EVENTS['Trash·Restored'],
+  },
+  'apps/live/lib/explorer-organise.ts Trash·Deleted': {
+    values: EXPLORER_TELEMETRY_EVENTS['Trash·Deleted'],
+  },
+  'apps/live/lib/explorer-organise.ts Trash·Cleared': {
+    values: EXPLORER_TELEMETRY_EVENTS['Trash·Cleared'],
+  },
   'apps/live/lib/explorer-share-host.ts UI·Selected': { values: ['LiveImageTab'] },
   'apps/live/lib/explorer-share-host.ts UI·Started': { values: ['ShareTour'] },
   'apps/live/lib/explorer-share-host.ts UI·Ended': {

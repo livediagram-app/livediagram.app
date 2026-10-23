@@ -7,17 +7,27 @@
 //   api. Its team invitations, reminders and answers likewise feed the Team Invites, Invite Reminders
 //   and Invite Responses charts, under the app the inviter signed up through, and its expiring-token
 //   warnings the Token Expiry Warnings chart, under the app the token's owner signed up through.
+//   It also counts what is done to teams and API tokens on liveworkspace.app (Team·Created, ·Changed,
+//   ·Deleted, ·Added·Member, ·Shared·Link, ·Removed, ·Joined, ·Declined; Token·Created·Manual,
+//   Token·Removed), under the app the person acting signed up through, so each app keeps its Team
+//   Activity and API Token charts.
 // - The Explorer on liveworkspace.app (apps/site/lib/explorer/telemetry.ts) reports in the name of the
-//   app it is filtered to: the Timeline, Home, the lens, the Inbox, the view toggle, the Share dialog
-//   and the guest's banner, the events each app's own Explorer always sent. Its types are the
-//   Explorer's closed list (@liveworkspace/telemetry EXPLORER_TELEMETRY_EVENTS), declared here once
-//   as computed values for every app's checks.
+//   app it is filtered to, or of the item's app for what is done to an item: the Timeline, Home (and its
+//   Retry), the lens, the Inbox, the view toggle, the Share dialog (levels, lifetimes and settings),
+//   folders and default folders, the Trash, moves into and out of teams, and the guest's banner, the
+//   events each app's own Explorer always sent. Its types are the Explorer's closed list
+//   (@liveworkspace/telemetry EXPLORER_TELEMETRY_EVENTS), declared here once as computed values for
+//   every app's checks. A team move names the item by its app's noun, so an app sees only its own.
 //
 // An app sees only the events its own vocabulary takes (the service stores nothing else for it), so a
 // revoked pass counts as liveplanner's Project·Removed and as the others' Document·Removed.
 
 import { resolve } from 'node:path';
-import { EXPLORER_TELEMETRY_EVENTS, type TelemetryWireEvent } from '@liveworkspace/telemetry';
+import {
+  EXPLORER_TELEMETRY_EVENTS,
+  TEAM_ITEM_TYPES,
+  type TelemetryWireEvent,
+} from '@liveworkspace/telemetry';
 import { COMPUTED, scanEmitters, type Emit } from './emitter-scan';
 
 const MONOREPO = resolve(__dirname, '../../../../..');
@@ -48,9 +58,20 @@ const takes = (vocabulary: Vocabulary | undefined, e: Emit) =>
     typeof e.action === 'string' &&
     vocabulary({ category: e.category, action: e.action, type: null }));
 
-// Every emit in the platform code that the app's vocabulary takes, with paths from the monorepo root.
-export function platformEmitters(vocabulary?: Vocabulary): Emit[] {
-  return allPlatformEmitters().filter((e) => takes(vocabulary, e));
+// An item's noun in its app's team events (Team·Added·Project, say): another app's noun isn't this app's.
+export type ItemNoun = (typeof TEAM_ITEM_TYPES)[number];
+const ITEM_NOUNS: readonly string[] = TEAM_ITEM_TYPES;
+const ownNoun = (noun: ItemNoun | undefined, e: Emit) =>
+  !noun ||
+  e.category !== 'Team' ||
+  typeof e.type !== 'string' ||
+  !ITEM_NOUNS.includes(e.type) ||
+  e.type === noun;
+
+// Every emit in the platform code that the app's vocabulary takes, with paths from the monorepo root;
+// given the app's item noun, its team moves only.
+export function platformEmitters(vocabulary?: Vocabulary, noun?: ItemNoun): Emit[] {
+  return allPlatformEmitters().filter((e) => takes(vocabulary, e) && ownNoun(noun, e));
 }
 
 // The values each of the Explorer's computed emit sites can send, by the scan's site key

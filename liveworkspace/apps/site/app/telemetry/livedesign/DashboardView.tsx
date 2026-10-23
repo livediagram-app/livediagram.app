@@ -29,6 +29,7 @@ import {
   PANELS_OPENED,
   PRESENTATIONS,
   RETURNING_VISITORS,
+  SHARE_LINKS_MADE,
   SHARING_AND_JOINING,
   SIGN_IN_PROMPTS,
   SIGN_UPS,
@@ -84,7 +85,14 @@ export const GROUPS: MetricGroup[] = [
   // so read them against it.
   {
     title: 'Collaboration',
-    metrics: [LIVE_TOGETHER, JOINING, SHARING_AND_JOINING, TIMELINE_AND_ACTIVITY, PRESENTATIONS],
+    metrics: [
+      LIVE_TOGETHER,
+      JOINING,
+      SHARING_AND_JOINING,
+      SHARE_LINKS_MADE,
+      TIMELINE_AND_ACTIVITY,
+      PRESENTATIONS,
+    ],
   },
   {
     title: 'Connections',

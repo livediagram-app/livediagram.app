@@ -1504,6 +1504,38 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|View|SankeyTourStepFlowsPreview':
     'The Sankey tour reached its "Live Preview" step, inside the Flows dialog.',
   'UI|View|SankeyTourStepOutro': 'The Sankey tour reached its closing "That Is a Sankey" card.',
+  'Document|Shared|ExpiryMonth':
+    'Someone set a share link to expire after a month, when making it.',
+  'Document|Shared|ExpirySixMonths':
+    'Someone set a share link to expire after six months, when making it.',
+  'Document|Shared|TabScoped': 'Someone made a share link that opens on one tab only.',
+  'Document|Shared|Rescoped': 'Someone changed which tab an existing share link opens on.',
+  'Document|Joined|View':
+    'Someone came into a design through a view-only share link. Counted once per person per design, not on every revisit.',
+  'Folder|Changed|Kind':
+    'Someone chose a default folder: where new designs land when they pick no place.',
+  'Folder|Changed|Template':
+    'Someone chose a default folder for one template family: where new designs from it land.',
+  'Folder|Cleared|Kind': 'Someone cleared a default folder, so new designs land in My Work again.',
+  'Folder|Cleared|Template':
+    "Someone cleared a template family's default folder, so its new designs land in My Work again.",
+  'Trash|Deleted|Personal':
+    'Someone deleted one of their own designs in the Trash for good, before its 30 days were up.',
+  'Trash|Deleted|Team':
+    "Someone deleted a team's design in the Trash for good, before its 30 days were up.",
+  'Trash|Cleared|Personal':
+    'Someone emptied their own Trash, deleting every design in it for good.',
+  'Trash|Cleared|Team': "Someone emptied a team's Trash, deleting every design in it for good.",
+  'Trash|Restored|Personal':
+    'Someone brought one of their own deleted designs back, putting it back where it was.',
+  'Trash|Restored|Team':
+    "Someone brought a team's deleted design back, putting it back where it was.",
+  'Team|Added|Design': "A design was put into a team's shared library.",
+  'Team|Moved|Design':
+    'A design already in a team was moved on: to another team, or within the Explorer.',
+  'Team|Removed|Design': "A design was taken out of a team, back to its owner's My Work.",
+  'Team|Removed|Member': 'An admin removed a member who had joined the team.',
+  'Team|Removed|Invite': 'An admin withdrew a pending team invite.',
 };
 
 export const BY_ACTION: Readonly<Record<string, string>> = {

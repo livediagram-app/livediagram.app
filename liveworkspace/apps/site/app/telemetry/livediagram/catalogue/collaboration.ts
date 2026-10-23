@@ -170,7 +170,7 @@ export const TEAM_REMOVALS = chart(
   'Team',
   'Removed',
   'Team Removals',
-  'A document taken out of a team to its owner’s My Work. Members, invitations and leaving are run on liveworkspace.app.',
+  'A member removed, an invite withdrawn, a document or an invite link taken out of a team, or someone leaving.',
   { rising: 'neutral' },
 );
 
@@ -302,8 +302,65 @@ export const TEAMS_CREATED: Metric = {
   action: 'Created',
   type: null,
   title: 'Teams Created',
-  blurb: "A team made from the Move dialog's New Team tile, on liveworkspace.",
+  blurb: 'A new team workspace was created, in the app or on liveworkspace.app.',
 };
+
+// Teams are run on liveworkspace.app, where accounts counts each change under the app the person acting signed up
+// through (liveworkspace/docs/accounts.md "Teams").
+export const INVITES_SENT: Metric = {
+  category: 'Team',
+  action: 'Added',
+  type: 'Member',
+  title: 'Invites Sent',
+  blurb:
+    'An admin invited someone to a team by email. The invitation, not the acceptance: that is the next card.',
+};
+
+export const INVITES_ACCEPTED: Metric = {
+  category: 'Team',
+  action: 'Joined',
+  type: null,
+  title: 'Invites Accepted',
+  blurb: 'Someone joined a team, by accepting an email invite or opening an invite link.',
+};
+
+export const INVITES_DECLINED: Metric = {
+  category: 'Team',
+  action: 'Declined',
+  type: 'Invite',
+  rising: 'neutral',
+  title: 'Invites Declined',
+  blurb: 'The recipient turned an invitation down. Read against accepted, not against sent.',
+};
+
+// The same answer, given from the invitation email's Decline link.
+export const INVITES_DECLINED_FROM_EMAIL: Metric = {
+  category: 'Team',
+  action: 'Declined',
+  type: 'Email',
+  rising: 'neutral',
+  title: 'Invites Declined From Email',
+  blurb:
+    "The recipient turned an invitation down from the email's Decline link, without signing in.",
+};
+
+export const INVITE_LINKS_SHARED = chart(
+  'Team',
+  'Shared',
+  'Invite Links Shared',
+  'A team invite link turned on to share.',
+);
+
+export const TEAM_CHANGES = chart(
+  'Team',
+  'Changed',
+  'Team Changes',
+  'A team renamed or a member’s role changed.',
+);
+
+export const TEAMS_DELETED = chart('Team', 'Deleted', 'Teams Deleted', 'A team removed.', {
+  rising: 'neutral',
+});
 
 export const DOCUMENTS_SHARED_TO_A_TEAM: Metric = {
   category: 'Team',
@@ -508,9 +565,21 @@ export const TEAM_ACTIVITY: MetricStack = {
   stack: true,
   title: 'Team Activity',
   blurb:
-    'Teams made, and documents shared to a team or moved between teams. Invitations are answered on liveworkspace.app.',
-  members: [TEAMS_CREATED, DOCUMENTS_SHARED_TO_A_TEAM, TEAM_DOCUMENTS_MOVED, TEAM_REMOVALS],
-  headline: TEAMS_CREATED,
+    'Teams made, the invite funnel (sent, accepted, declined), documents shared to a team, and team upkeep.',
+  members: [
+    TEAMS_CREATED,
+    INVITES_SENT,
+    INVITES_ACCEPTED,
+    INVITES_DECLINED,
+    INVITES_DECLINED_FROM_EMAIL,
+    DOCUMENTS_SHARED_TO_A_TEAM,
+    TEAM_DOCUMENTS_MOVED,
+    INVITE_LINKS_SHARED,
+    TEAM_CHANGES,
+    TEAM_REMOVALS,
+    TEAMS_DELETED,
+  ],
+  headline: INVITES_ACCEPTED,
 };
 
 export const VOTING: MetricStack = {

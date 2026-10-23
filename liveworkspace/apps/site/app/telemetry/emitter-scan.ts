@@ -8,7 +8,7 @@
 // row sends AI·Toggled·AiOn) and nothing noticed.
 //
 // It parses with the TypeScript compiler API and resolves:
-//   - string literals, `undefined`, ternaries (both branches), parens / `as`;
+//   - string literals, `null`, `undefined`, ternaries (both branches), parens / `as`;
 //   - consts with such an initializer, and `TABLE[key]` over a const object
 //     literal (every value of the table), within the file;
 //   - `titleCaseType('x')` (the editor's capitalise-the-first-letter helper);
@@ -175,6 +175,7 @@ class FileScan {
       return next(node.expression);
     }
     if (isConditionalExpression(node)) return [...next(node.whenTrue), ...next(node.whenFalse)];
+    if (node.kind === SyntaxKind.NullKeyword) return [null];
     if (isIdentifier(node)) {
       if (node.text === 'undefined') return [null];
       const bound = bindings.get(node.text);

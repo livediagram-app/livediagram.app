@@ -2133,6 +2133,63 @@ export const EXACT: Readonly<Record<string, string>> = {
     'The Diagram tour (the welcome tour until October 2026) reached its "Tabs" step.',
   'UI|View|TourStepThemeCanvas':
     'The Diagram tour (the welcome tour until October 2026) reached its "Theme & Canvas" step, showing the paintbrush that restyles a tab.',
+  'Project|Shared|Edit': 'Someone made an edit-role share link for a project in the Share dialog.',
+  'Project|Shared|View': 'Someone made a view-role share link for a project in the Share dialog.',
+  'Project|Shared|Participate':
+    'Someone made a Participant share link for a project: people take part and write without reshaping it.',
+  'Project|Shared|ExpiryWeek': 'Someone set a share link to expire after a week, when making it.',
+  'Project|Shared|ExpiryMonth': 'Someone set a share link to expire after a month, when making it.',
+  'Project|Shared|ExpirySixMonths':
+    'Someone set a share link to expire after six months, when making it.',
+  'Project|Shared|TabScoped': 'Someone made a share link that opens on one tab only.',
+  'Project|Shared|Extended':
+    'Someone re-armed an expiring share link for another full round of its original lifetime.',
+  'Project|Shared|Rescoped': 'Someone changed which tab an existing share link opens on.',
+  'Project|Shared|PasswordSet': "Someone set a password on a project's share link.",
+  'Project|Shared|PasswordCleared': "Someone removed the password from a project's share link.",
+  'Project|Joined|Edit':
+    'Someone came into a project through an edit-role share link. Counted once per person per project, not on every revisit.',
+  'Project|Joined|View':
+    'Someone came into a project through a view-only share link. Counted once per person per project, not on every revisit.',
+  'Project|Joined|Participate':
+    'Someone came into a project through a Participant share link. Counted once per person per project, not on every revisit.',
+  'Folder|Created|': 'A new folder was made in the Explorer.',
+  'Folder|Created|Team': "A new folder was made in a team's library in the Explorer.",
+  'Folder|Moved|': 'A folder was re-parented under another folder (or the root).',
+  'Folder|Deleted|':
+    'A folder was deleted in the Explorer (the projects in it move to the Trash with it).',
+  'Folder|Changed|Kind':
+    'Someone chose a default folder: where new projects land when they pick no place.',
+  'Folder|Changed|Template':
+    'Someone chose a default folder for one template family: where new projects from it land.',
+  'Folder|Cleared|Kind': 'Someone cleared a default folder, so new projects land in My Work again.',
+  'Folder|Cleared|Template':
+    "Someone cleared a template family's default folder, so its new projects land in My Work again.",
+  'Home|Loaded|Retry': 'Someone pressed "Try again" after Home failed to load.',
+  'Trash|Deleted|Personal':
+    'Someone deleted one of their own projects in the Trash for good, before its 30 days were up.',
+  'Trash|Deleted|Team':
+    "Someone deleted a team's project in the Trash for good, before its 30 days were up.",
+  'Trash|Cleared|Personal':
+    'Someone emptied their own Trash, deleting every project in it for good.',
+  'Trash|Cleared|Team': "Someone emptied a team's Trash, deleting every project in it for good.",
+  'Trash|Restored|Personal':
+    'Someone brought one of their own deleted projects back, putting it back where it was.',
+  'Trash|Restored|Team':
+    "Someone brought a team's deleted project back, putting it back where it was.",
+  'Team|Created|': 'Someone created a new team.',
+  'Team|Joined|': 'Someone accepted a team invite, by email or by invite link.',
+  'Team|Declined|Invite':
+    'Someone turned down a team invite. Read against Joined: the two are the accept rate on an invitation.',
+  'Team|Declined|Email':
+    "Someone turned down a team invite from the email's Decline link, without signing in.",
+  'Team|Moved|Project':
+    'A project already in a team was moved on: to another team, or within the Explorer.',
+  'Team|Removed|Project': "A project was taken out of a team, back to its owner's My Work.",
+  'Team|Removed|Member': 'An admin removed a member who had joined the team.',
+  'Team|Removed|Invite': 'An admin withdrew a pending team invite.',
+  'Team|Removed|Self': 'Someone left a team they had joined.',
+  'Team|Removed|Link': "A team's shareable invite link was turned off.",
 };
 
 export const BY_ACTION: Readonly<Record<string, string>> = {
@@ -2393,6 +2450,26 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'UI|Used': 'Someone used a wizard-skipping entry point into a new project, or accepted an offer.',
   'UI|Declined': 'Someone turned down an offer the editor made them.',
   'UI|View': 'The welcome tour advanced to (or back to) a particular stage.',
+  'Project|Shared':
+    "Someone made a project's share link or changed one: its level, how long it lasts, its tab, or its password.",
+  'Project|Joined':
+    'Someone came into a project through a share link. Counted once per person per project, not on every revisit.',
+  'Folder|Moved': 'A folder was re-parented under another folder (or the root).',
+  'Folder|Deleted': 'A folder was deleted in the Explorer.',
+  'Folder|Changed':
+    'Someone chose a default folder: where new projects of one kind or template land.',
+  'Folder|Cleared':
+    'Someone cleared a default folder, so new projects of that kind land in My Work again.',
+  'Home|Loaded': 'Home was read again after failing to load.',
+  'Trash|Deleted': 'Someone deleted a project in the Trash for good, before its 30 days were up.',
+  'Trash|Cleared':
+    "Someone emptied one Trash (their own, or a team's), deleting everything in it for good.",
+  'Team|Created': 'Someone created a new team.',
+  'Team|Joined': 'Someone accepted a team invite, by email or by invite link.',
+  'Team|Declined': 'Someone turned down a team invite.',
+  'Team|Moved': 'A project already in a team was moved somewhere else.',
+  'Team|Removed':
+    'Someone was taken off a team, left one, had a pending invite or the invite link withdrawn, or a project was taken out of one.',
 };
 
 export const API_OPERATIONS: Readonly<Record<string, string>> = {

@@ -273,6 +273,49 @@ export const TAB_FOLDERS_CREATED: Metric = {
   blurb: 'A collapsible folder of tab pills created inside one project.',
 };
 
+// Folders of projects in the Explorer (one-explorer-contracts.md "Folders"), yours or a team's.
+export const FOLDERS_CREATED: Metric = {
+  category: 'Folder',
+  action: 'Created',
+  typeIn: (type) => type !== 'Tab',
+  title: 'Folders Created',
+  blurb: 'Folders of projects, in your own Explorer or a team library.',
+};
+
+export const FOLDERS_RE_PARENTED: Metric = {
+  category: 'Folder',
+  action: 'Moved',
+  allTypes: true,
+  title: 'Folders Re-parented',
+  blurb: 'A folder nested under another, or promoted back to the root.',
+};
+
+export const FOLDERS_DELETED = chart(
+  'Folder',
+  'Deleted',
+  'Folders Deleted',
+  'A folder removed, in your Explorer or a team library.',
+  { rising: 'neutral' },
+);
+
+// Default folders (docs/specs/013-workspace/default-folders.md "Telemetry"): by what the default is for, a kind of
+// project or one template (Kind, Template).
+export const DEFAULT_FOLDERS_SET = chart(
+  'Folder',
+  'Changed',
+  'Default Folders Set',
+  'A folder chosen as where new projects of one kind or template land: from a folder menu or Settings.',
+  { rising: 'good' },
+);
+
+export const DEFAULT_FOLDERS_CLEARED = chart(
+  'Folder',
+  'Cleared',
+  'Default Folders Cleared',
+  'A default folder cleared, so new projects of that kind land in My Work again.',
+  { rising: 'neutral' },
+);
+
 export const TABS_FILED: Metric = {
   category: 'Tab',
   action: 'Moved',
@@ -312,8 +355,19 @@ export const ASSIGNED_ACTIONS: MetricStack = {
 export const ORGANISATION: MetricStack = {
   stack: true,
   title: 'Organisation',
-  blurb: 'Tab folders made and renamed inside a project, and tabs filed into and out of them.',
-  members: [TAB_FOLDERS_CREATED, TABS_FILED, FOLDERS_RENAMED, TABS_UNFILED],
+  blurb:
+    'Folders made, nested and deleted in the Explorer, default folders, and tab folders inside a project with tabs filed into and out of them.',
+  members: [
+    FOLDERS_CREATED,
+    FOLDERS_RE_PARENTED,
+    FOLDERS_DELETED,
+    DEFAULT_FOLDERS_SET,
+    DEFAULT_FOLDERS_CLEARED,
+    TAB_FOLDERS_CREATED,
+    TABS_FILED,
+    FOLDERS_RENAMED,
+    TABS_UNFILED,
+  ],
 };
 
 // The editor's search panel.

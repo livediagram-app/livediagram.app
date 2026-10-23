@@ -146,12 +146,93 @@ export const COMMENTS_MENTIONED: Metric = {
   blurb: 'A comment was sent that @-mentioned at least one teammate.',
 };
 
+// Teams (liveworkspace/docs/accounts.md "Teams"): run on liveworkspace.app, where accounts counts each change
+// under the app the person acting signed up through; moves into and out of a team come from the Explorer.
+export const TEAMS_CREATED: Metric = {
+  category: 'Team',
+  action: 'Created',
+  type: null,
+  title: 'Teams Created',
+  blurb: 'A new team workspace was created.',
+};
+
+export const INVITES_SENT: Metric = {
+  category: 'Team',
+  action: 'Added',
+  type: 'Member',
+  title: 'Invites Sent',
+  blurb:
+    'An admin invited someone to a team by email. The invitation, not the acceptance: that is the next card.',
+};
+
+export const INVITES_ACCEPTED: Metric = {
+  category: 'Team',
+  action: 'Joined',
+  type: null,
+  title: 'Invites Accepted',
+  blurb: 'Someone joined a team, by accepting an email invite or opening an invite link.',
+};
+
+export const INVITES_DECLINED: Metric = {
+  category: 'Team',
+  action: 'Declined',
+  type: 'Invite',
+  rising: 'neutral',
+  title: 'Invites Declined',
+  blurb: 'The recipient turned an invitation down. Read against accepted, not against sent.',
+};
+
+// The same answer, given from the invitation email's Decline link.
+export const INVITES_DECLINED_FROM_EMAIL: Metric = {
+  category: 'Team',
+  action: 'Declined',
+  type: 'Email',
+  rising: 'neutral',
+  title: 'Invites Declined From Email',
+  blurb:
+    "The recipient turned an invitation down from the email's Decline link, without signing in.",
+};
+
+export const TEAM_PROJECTS_MOVED = chart(
+  'Team',
+  'Moved',
+  'Team Projects Moved',
+  'A project already in a team moved on: to another team, or within the Explorer.',
+);
+
+export const INVITE_LINKS_SHARED = chart(
+  'Team',
+  'Shared',
+  'Invite Links Shared',
+  'A team invite link turned on to share.',
+);
+
+export const TEAM_CHANGES = chart(
+  'Team',
+  'Changed',
+  'Team Changes',
+  'A team renamed or a member’s role changed.',
+);
+
+export const TEAM_REMOVALS = chart(
+  'Team',
+  'Removed',
+  'Team Removals',
+  'A member removed, an invite withdrawn, a project or an invite link taken out of a team, or someone leaving.',
+  { rising: 'neutral' },
+);
+
+export const TEAMS_DELETED = chart('Team', 'Deleted', 'Teams Deleted', 'A team removed.', {
+  rising: 'neutral',
+});
+
 export const PROJECTS_SHARED_TO_A_TEAM: Metric = {
   category: 'Team',
   action: 'Added',
   type: 'Project',
   title: 'Projects Shared to a Team',
-  blurb: "A project was created straight into a team's shared library, for everyone on the team.",
+  blurb:
+    "A project put into a team's shared library for everyone on the team: made straight into it, or moved there in the Explorer.",
 };
 
 export const VOTES_STARTED: Metric = {
@@ -329,6 +410,17 @@ export const WHAT_HAPPENED_OPENED = chart(
   'A plan opened from Home’s What Happened, or See Timeline followed from it.',
 );
 
+export const HOME_RETRIES = chart(
+  'Home',
+  'Loaded',
+  'Home Retries',
+  'A failed read of Home retried.',
+  {
+    types: ['Retry'],
+    rising: 'bad',
+  },
+);
+
 export const WHAT_HAPPENED_GROUPS = chart(
   'Home',
   'Opened',
@@ -411,6 +503,45 @@ export const SHARE_TOURS_SKIPPED = chart(
   { types: ['ShareTourSkipped'], rising: 'neutral' },
 );
 
+// Share links made in the Share dialog, by level, and their settings (the people who come in through them are the
+// Joining stack's).
+export const EDIT_LINKS_SHARED: Metric = {
+  category: 'Project',
+  action: 'Shared',
+  type: 'Edit',
+  title: 'Edit Links Shared',
+};
+
+export const VIEW_LINKS_SHARED: Metric = {
+  category: 'Project',
+  action: 'Shared',
+  type: 'View',
+  title: 'View Links Shared',
+};
+
+// Participant links (docs/specs/013-workspace/share-roles.md): take part and write, never reshape the board.
+export const PARTICIPATE_LINKS_SHARED: Metric = {
+  category: 'Project',
+  action: 'Shared',
+  type: 'Participate',
+  title: 'Participant Links Shared',
+};
+
+export const SHARE_SETTINGS = chart(
+  'Project',
+  'Shared',
+  'Share Link Settings',
+  'A share link given a lifetime or one tab when made, extended, rescoped, or given or cleared a password.',
+  { typeIn: (t) => t !== 'Edit' && t !== 'View' && t !== 'Participate' },
+);
+
+export const SHARE_LINKS_MADE: MetricStack = {
+  stack: true,
+  title: 'Share Links Made',
+  blurb: 'Edit, Participant and view links made in the Share dialog, and their settings.',
+  members: [EDIT_LINKS_SHARED, PARTICIPATE_LINKS_SHARED, VIEW_LINKS_SHARED, SHARE_SETTINGS],
+};
+
 export const SHARE_PASSES: MetricStack = {
   stack: true,
   title: 'Share Passes',
@@ -476,6 +607,7 @@ export const TIMELINE: MetricStack = {
     TIMELINE_FILTERED,
     WHAT_HAPPENED_OPENED,
     WHAT_HAPPENED_GROUPS,
+    HOME_RETRIES,
   ],
   headline: TIMELINE_CARDS_OPENED,
 };
@@ -523,9 +655,22 @@ export const DISCUSSION: MetricStack = {
 export const TEAM_ACTIVITY: MetricStack = {
   stack: true,
   title: 'Team Activity',
-  blurb: 'Projects created straight into a team’s shared library.',
-  members: [PROJECTS_SHARED_TO_A_TEAM],
-  headline: PROJECTS_SHARED_TO_A_TEAM,
+  blurb:
+    'Teams made, the invite funnel (sent, accepted, declined), projects shared to a team, and team upkeep.',
+  members: [
+    TEAMS_CREATED,
+    INVITES_SENT,
+    INVITES_ACCEPTED,
+    INVITES_DECLINED,
+    INVITES_DECLINED_FROM_EMAIL,
+    PROJECTS_SHARED_TO_A_TEAM,
+    TEAM_PROJECTS_MOVED,
+    INVITE_LINKS_SHARED,
+    TEAM_CHANGES,
+    TEAM_REMOVALS,
+    TEAMS_DELETED,
+  ],
+  headline: INVITES_ACCEPTED,
 };
 
 export const VOTING: MetricStack = {

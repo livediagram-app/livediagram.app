@@ -277,9 +277,9 @@ export const PROJECT_ACTIONS: MetricStack = {
 
 // The Trash (docs/specs/013-workspace/trash.md): the backstop behind every
 // project delete. Whether anyone comes back for a deleted project is the
-// question, so restores lead. The Trash itself is the One Explorer's now; the
-// editor only opens it from Settings and restores the open project from its
-// deleted page (Personal or Team).
+// question, so restores lead; each chart counts every Trash (Personal, Team).
+// The Trash itself is the One Explorer's; the editor opens it from Settings and
+// restores the open project from its deleted page.
 export const TRASH_OPENED = chart(
   'Trash',
   'Opened',
@@ -291,7 +291,23 @@ export const PROJECTS_RESTORED = chart(
   'Trash',
   'Restored',
   'Projects Restored',
-  'A deleted project brought back from its deleted page.',
+  'A deleted project brought back from the Trash, from the Trash itself or from its deleted page.',
+);
+
+export const PROJECTS_DELETED_FOR_GOOD = chart(
+  'Trash',
+  'Deleted',
+  'Deleted for Good',
+  'A project in the Trash deleted permanently, ahead of its 30 days.',
+  { rising: 'neutral' },
+);
+
+export const TRASH_EMPTIED = chart(
+  'Trash',
+  'Cleared',
+  'Trash Emptied',
+  'Empty Trash on one group: your projects or a team’s.',
+  { rising: 'neutral' },
 );
 
 export const TRASH: MetricStack = {
@@ -299,8 +315,8 @@ export const TRASH: MetricStack = {
   stack: true,
   title: 'Trash',
   blurb:
-    'Deleted projects wait 30 days in the Trash. Opening it from Settings, and restoring a project from its deleted page.',
-  members: [PROJECTS_RESTORED, TRASH_OPENED],
+    'Deleted projects wait 30 days in the Trash. Opening it, restoring from it, deleting for good, and emptying it.',
+  members: [PROJECTS_RESTORED, TRASH_OPENED, PROJECTS_DELETED_FOR_GOOD, TRASH_EMPTIED],
 };
 
 const TAB_CHANGES = [

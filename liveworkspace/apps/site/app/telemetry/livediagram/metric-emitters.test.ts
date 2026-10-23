@@ -52,7 +52,7 @@ const REPO = resolve(__dirname, '../../../../../../livediagram');
 // Plus what liveworkspace's own Workers send in this app's name (the onboarding emails).
 const EMITS = [
   ...scanEmitters(REPO, ['apps', 'packages'], join(REPO, 'apps', 'telemetry')),
-  ...platformEmitters(isValidTelemetryEvent),
+  ...platformEmitters(isValidTelemetryEvent, 'Document'),
 ];
 
 type Known = Emit & { category: string; action: string };

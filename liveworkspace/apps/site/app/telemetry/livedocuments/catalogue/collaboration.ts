@@ -104,6 +104,14 @@ export const WORKBENCH_WORKSPACES = chart(
   { types: ['WorkbenchWorkspace'] },
 );
 
+export const TEAM_REMOVALS = chart(
+  'Team',
+  'Removed',
+  'Team Removals',
+  'A member removed, an invite withdrawn, a document or an invite link taken out of a team, or someone leaving.',
+  { rising: 'neutral' },
+);
+
 export const SLIDE_NOTES = chart(
   'UI',
   'Changed',
@@ -173,6 +181,78 @@ export const COMMENTS_MENTIONED: Metric = {
   title: 'Comments With Mentions',
   blurb: 'A comment was sent that @-mentioned at least one teammate.',
 };
+
+export const TEAMS_CREATED: Metric = {
+  category: 'Team',
+  action: 'Created',
+  type: null,
+  title: 'Teams Created',
+  blurb: 'A new team workspace was created, in the app or on liveworkspace.app.',
+};
+
+// Teams are run on liveworkspace.app, where accounts counts each change under the app the person acting signed up
+// through (liveworkspace/docs/accounts.md "Teams").
+export const INVITES_SENT: Metric = {
+  category: 'Team',
+  action: 'Added',
+  type: 'Member',
+  title: 'Invites Sent',
+  blurb:
+    'An admin invited someone to a team by email. The invitation, not the acceptance: that is the next card.',
+};
+
+export const INVITES_ACCEPTED: Metric = {
+  category: 'Team',
+  action: 'Joined',
+  type: null,
+  title: 'Invites Accepted',
+  blurb: 'Someone joined a team, by accepting an email invite or opening an invite link.',
+};
+
+export const INVITES_DECLINED: Metric = {
+  category: 'Team',
+  action: 'Declined',
+  type: 'Invite',
+  rising: 'neutral',
+  title: 'Invites Declined',
+  blurb: 'The recipient turned an invitation down. Read against accepted, not against sent.',
+};
+
+// The same answer, given from the invitation email's Decline link.
+export const INVITES_DECLINED_FROM_EMAIL: Metric = {
+  category: 'Team',
+  action: 'Declined',
+  type: 'Email',
+  rising: 'neutral',
+  title: 'Invites Declined From Email',
+  blurb:
+    "The recipient turned an invitation down from the email's Decline link, without signing in.",
+};
+
+export const INVITE_LINKS_SHARED = chart(
+  'Team',
+  'Shared',
+  'Invite Links Shared',
+  'A team invite link turned on to share.',
+);
+
+export const TEAM_CHANGES = chart(
+  'Team',
+  'Changed',
+  'Team Changes',
+  'A team renamed or a member’s role changed.',
+);
+
+export const TEAMS_DELETED = chart('Team', 'Deleted', 'Teams Deleted', 'A team removed.', {
+  rising: 'neutral',
+});
+
+export const TEAM_DOCUMENTS_MOVED = chart(
+  'Team',
+  'Moved',
+  'Team Documents Moved',
+  'A document already in a team moved on: to another team, or within the Explorer.',
+);
 
 export const DOCUMENTS_SHARED_TO_A_TEAM: Metric = {
   category: 'Team',
@@ -261,9 +341,21 @@ export const TEAM_ACTIVITY: MetricStack = {
   stack: true,
   title: 'Team Activity',
   blurb:
-    'Documents created straight into a team’s shared library. Teams, their members and invitations are run on liveworkspace.app.',
-  members: [DOCUMENTS_SHARED_TO_A_TEAM],
-  headline: DOCUMENTS_SHARED_TO_A_TEAM,
+    'Teams made, the invite funnel (sent, accepted, declined), documents shared to a team, and team upkeep.',
+  members: [
+    TEAMS_CREATED,
+    INVITES_SENT,
+    INVITES_ACCEPTED,
+    INVITES_DECLINED,
+    INVITES_DECLINED_FROM_EMAIL,
+    DOCUMENTS_SHARED_TO_A_TEAM,
+    TEAM_DOCUMENTS_MOVED,
+    INVITE_LINKS_SHARED,
+    TEAM_CHANGES,
+    TEAM_REMOVALS,
+    TEAMS_DELETED,
+  ],
+  headline: INVITES_ACCEPTED,
 };
 
 // The shared Explorer's Timeline (docs/specs/013-workspace/timeline.md) and Inbox (docs/specs/013-workspace/inbox.md),
