@@ -1,8 +1,12 @@
 import { BrandMark, lucideGlyph } from '@livediagram/ui';
 import {
+  lucideBuilding2,
   lucideChartLine,
+  lucideFolder,
   lucideGift,
+  lucideKey,
   lucideLink,
+  lucideMessagesSquare,
   lucideShieldCheck,
   lucideUsers,
 } from '@livediagram/icons/lucide';
@@ -17,6 +21,10 @@ const UsersIcon = lucideGlyph(lucideUsers, 20);
 const ShieldIcon = lucideGlyph(lucideShieldCheck, 20);
 const GiftIcon = lucideGlyph(lucideGift, 20);
 const ActivityIcon = lucideGlyph(lucideChartLine, 20);
+const FolderIcon = lucideGlyph(lucideFolder, 20);
+const InboxIcon = lucideGlyph(lucideMessagesSquare, 20);
+const TeamIcon = lucideGlyph(lucideBuilding2, 20);
+const KeyIcon = lucideGlyph(lucideKey, 20);
 
 // What each app does for a piece of work, in the order work moves through them, and the way to start it.
 const STEPS: Partial<Record<SiteId, { title: string; body: string; action: string }>> = {
@@ -54,7 +62,7 @@ export function Journey() {
       id="how-it-fits"
       className="scroll-mt-20 border-y border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/40"
     >
-      <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-28">
+      <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 sm:py-28">
         <p className="text-sm font-semibold tracking-[.18em] text-slate-500 uppercase dark:text-slate-400">
           How it fits together
         </p>
@@ -160,6 +168,30 @@ export function Journey() {
             title="Share by link"
             body="One link opens the work in any browser, on a laptop, tablet or phone. Choose who can view, and who can edit."
           />
+          {/* Full width, so the tiles fill whole rows: 15 cells over 3 columns, 12 over 2. */}
+          <Tile
+            className="sm:col-span-2 lg:col-span-3"
+            icon={<FolderIcon />}
+            title="One Explorer for everything"
+            body="Every diagram, plan, document and design you make is in one Explorer, which every app shows. One folder can hold work from all of them."
+          >
+            <ExplorerArt />
+          </Tile>
+          <Tile
+            icon={<InboxIcon />}
+            title="One Inbox"
+            body="Comments, mentions and actions assigned to you, from every app, in one list. Open one and you land on the thing it is about."
+          />
+          <Tile
+            icon={<TeamIcon />}
+            title="Teams across every app"
+            body="Make a team once and invite people once. Its members share the team's work in every app."
+          />
+          <Tile
+            icon={<KeyIcon />}
+            title="One key for scripts and AI"
+            body="An API token works in every app, from a script, the command line or a connected AI tool. Revoke it once and it stops everywhere."
+          />
           <Tile
             icon={<ActivityIcon />}
             title="Open about data"
@@ -215,6 +247,54 @@ function Tile({
       </h4>
       <p className="mt-1.5 leading-relaxed text-slate-600 dark:text-slate-300">{body}</p>
       {children}
+    </div>
+  );
+}
+
+// One folder holding a piece of work from each app. Decorative.
+const EXPLORER_ITEMS: Partial<Record<SiteId, { name: string; kind: string }>> = {
+  'livediagram.app': { name: 'Launch flow', kind: 'Canvas' },
+  'liveplanner.app': { name: 'Launch plan', kind: 'Plan' },
+  'livedocuments.app': { name: 'Launch announcement', kind: 'Document' },
+  'livedesign.app': { name: 'Launch logo', kind: 'Design' },
+};
+
+function ExplorerArt() {
+  return (
+    <div
+      aria-hidden
+      className="mt-6 rounded-2xl bg-white p-4 ring-1 ring-slate-200 select-none sm:p-5 dark:bg-slate-950/50 dark:ring-slate-800"
+    >
+      <div className="flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white">
+        <span className="text-slate-400 dark:text-slate-500">
+          <FolderIcon />
+        </span>
+        Launch
+      </div>
+      <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+        {listedApps().flatMap((app) => {
+          const item = EXPLORER_ITEMS[app.id];
+          return item
+            ? [
+                <div
+                  key={app.id}
+                  className="flex items-center gap-2.5 rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-sm dark:border-slate-700 dark:bg-slate-900"
+                  style={{ '--lw-ink': app.deep, '--lw-ink-dark': app.accent } as CSSProperties}
+                >
+                  <AppMark app={app} className="size-5 shrink-0" />
+                  <span className="min-w-0">
+                    <span className="block truncate text-sm font-semibold text-slate-900 dark:text-white">
+                      {item.name}
+                    </span>
+                    <span className="block text-xs text-[var(--lw-ink)] dark:text-[var(--lw-ink-dark)]">
+                      {item.kind} · {app.name}
+                    </span>
+                  </span>
+                </div>,
+              ]
+            : [];
+        })}
+      </div>
     </div>
   );
 }

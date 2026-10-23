@@ -14,7 +14,7 @@ export function Breadcrumb({ items }: { items: BreadcrumbItem[] }) {
     <div className="border-b border-slate-200 bg-white/60 dark:border-slate-800 dark:bg-slate-900/60">
       <nav
         aria-label="Breadcrumb"
-        className="mx-auto flex max-w-6xl min-w-0 flex-wrap items-center gap-2 px-4 py-2.5 text-sm text-slate-500 sm:px-6 dark:text-slate-400"
+        className="mx-auto flex max-w-7xl min-w-0 flex-wrap items-center gap-2 px-4 py-2.5 text-sm text-slate-500 sm:px-6 dark:text-slate-400"
       >
         <BreadcrumbTrail items={items} rootLabel="Home" />
       </nav>

@@ -69,7 +69,9 @@ moves between them, and the one account that joins them.
    (sketch the idea, plan the work, write it up, make it look right), each a link to its app's New
    page (**Build a diagram**, **Start planning**, **Start writing**, **Start designing**), then
    "share one link", and what every app shares: one account (the large tile, with Create your
-   account), live by default, share by link, open about data (linking `/telemetry`), yours to keep
+   account), live by default, share by link, one Explorer for everything (full width, a folder holding a Canvas,
+   a Plan, a Document and a Design), one Inbox, teams across every app, one key for scripts and AI,
+   open about data (linking `/telemetry`), yours to keep
    (closing the account closes it everywhere), completely free (no paywalls or subscriptions).
 4. **Closing call to action**: "One account. Every app. Always live."
 5. **Footer**: Our Apps (each app's site), Platform (Product Comparison and the telemetry dashboard) and Legal (the

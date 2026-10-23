@@ -10,7 +10,7 @@ const linkClass =
 export function Footer() {
   return (
     <footer className="border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
-      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:grid-cols-[2fr_1fr_1fr_1fr] sm:px-6">
+      <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:grid-cols-[2fr_1fr_1fr_1fr] sm:px-6">
         <div>
           <Wordmark />
           <p className="mt-3 max-w-xs text-sm text-slate-500 dark:text-slate-400">

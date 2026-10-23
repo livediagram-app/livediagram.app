@@ -116,7 +116,7 @@ export default async function AlternativePage({ params }: { params: Promise<{ sl
           </div>
         </PageHero>
 
-        <div className="mx-auto mt-14 grid max-w-6xl gap-10 px-4 sm:px-6 lg:grid-cols-[14rem_1fr] lg:gap-14">
+        <div className="mx-auto mt-14 grid max-w-7xl gap-10 px-4 sm:px-6 lg:grid-cols-[14rem_1fr] lg:gap-14">
           <nav aria-label="On this page" className="hidden lg:block">
             <div className="sticky top-24">
               <p className="px-3 text-xs font-semibold tracking-wide text-slate-900 uppercase dark:text-slate-100">
@@ -263,7 +263,7 @@ export default async function AlternativePage({ params }: { params: Promise<{ sl
           </div>
         </div>
 
-        <section aria-labelledby="others-title" className="mx-auto mt-20 max-w-6xl px-4 sm:px-6">
+        <section aria-labelledby="others-title" className="mx-auto mt-20 max-w-7xl px-4 sm:px-6">
           <h2 id="others-title" className={`${H2} text-center`}>
             Other comparisons
           </h2>

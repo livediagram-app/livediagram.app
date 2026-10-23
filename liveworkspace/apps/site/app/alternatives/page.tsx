@@ -65,7 +65,7 @@ export default function AlternativesIndexPage() {
           title="How liveworkspace compares"
           lede="Thinking about another tool? Here is an honest, side-by-side look at how liveworkspace and its apps compare, including where each one is the better pick."
         />
-        <div className="mx-auto mt-14 max-w-6xl space-y-16 px-4 sm:px-6">
+        <div className="mx-auto mt-14 max-w-7xl space-y-16 px-4 sm:px-6">
           {ALTERNATIVE_GROUPS.map((group) => {
             const app = apps.find((a) => a.id === group.app);
             return (

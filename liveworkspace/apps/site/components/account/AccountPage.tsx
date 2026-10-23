@@ -9,7 +9,7 @@ export function AccountPage({ children, alone = false }: { children: ReactNode; 
     <div className="flex min-h-dvh flex-col bg-slate-100 bg-[radial-gradient(var(--color-slate-300)_1px,transparent_1px)] bg-size-[24px_24px] dark:bg-slate-900 dark:bg-none">
       <Header account={false} />
       <main
-        className={`mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 px-4 py-8 sm:px-8 lg:px-12 lg:py-10 ${
+        className={`mx-auto flex w-full max-w-7xl flex-1 flex-col gap-8 px-4 py-8 sm:px-8 lg:px-12 lg:py-10 ${
           alone
             ? 'items-center justify-center'
             : 'lg:grid lg:grid-cols-[minmax(0,1fr)_440px] lg:items-center lg:gap-16'

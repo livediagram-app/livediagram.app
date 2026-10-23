@@ -21,7 +21,7 @@ const SCENES: Record<AppArt, { address: string; scene: ReactNode }> = {
 export function Apps() {
   return (
     <section id="apps" className="scroll-mt-20">
-      <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-28">
+      <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 sm:py-28">
         <p className="text-sm font-semibold tracking-[.18em] text-slate-500 uppercase dark:text-slate-400">
           The apps
         </p>
