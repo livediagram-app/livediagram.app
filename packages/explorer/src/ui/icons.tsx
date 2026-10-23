@@ -115,6 +115,18 @@ export function InboxIcon({ size = 13 }: IconProps) {
   );
 }
 
+// livediagram's Timeline mark: a rail with two events on it and their lines of text.
+export function TimelineIcon({ size = 13 }: IconProps) {
+  return (
+    <Glyph size={size} units={16}>
+      <path d="M4 2.5v11" />
+      <circle cx="4" cy="5" r="1.1" />
+      <circle cx="4" cy="11" r="1.1" />
+      <path d="M6.5 5h6M6.5 11h4M6.5 8h2.8" />
+    </Glyph>
+  );
+}
+
 const CLOCK = (
   <>
     <circle cx="12" cy="12" r="10" />

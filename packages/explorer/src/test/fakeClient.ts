@@ -9,6 +9,8 @@ import {
   type IndexClient,
   type Item,
   type ItemListQuery,
+  type TimelineEvent,
+  type TimelineQuery,
 } from '@liveworkspace/index-client';
 
 export function makeItem(i: number, over: Partial<Item> = {}): Item {
@@ -36,6 +38,27 @@ export function makeItem(i: number, over: Partial<Item> = {}): Item {
   };
 }
 
+export function makeEvent(
+  i: number,
+  over: Partial<TimelineEvent> = {},
+  item: Partial<Item> = {},
+): TimelineEvent {
+  const it = makeItem(i, item);
+  return {
+    id: `ev-${i}`,
+    app: it.app,
+    type: 'created',
+    actorId: 'user_me',
+    actorName: null,
+    itemId: it.id,
+    title: it.title,
+    detail: null,
+    occurredAt: Date.now() - i * 60_000,
+    item: it,
+    ...over,
+  };
+}
+
 export type Call = { method: string; args: unknown[] };
 
 export type FakeIndex = {
@@ -43,6 +66,9 @@ export type FakeIndex = {
   items: Item[];
   folders: Folder[];
   inbox: InboxResponse;
+  // The Timeline, newest first or not (the fake sorts), and when the person last marked it seen.
+  events: TimelineEvent[];
+  timelineSeen: { at: number | null };
   calls: Call[];
   // Methods that answer with this refusal until removed.
   fail: Map<string, IndexError>;
@@ -54,8 +80,17 @@ export type FakeIndex = {
 
 const abortError = () => new DOMException('The operation was aborted.', 'AbortError');
 
-export function createFakeIndex(seed: { items?: Item[]; folders?: Folder[] } = {}): FakeIndex {
+export function createFakeIndex(
+  seed: {
+    items?: Item[];
+    folders?: Folder[];
+    events?: TimelineEvent[];
+    seenAt?: number | null;
+  } = {},
+): FakeIndex {
   const items = seed.items ?? [];
+  const events = seed.events ?? [];
+  const timelineSeen = { at: seed.seenAt ?? null };
   const folders = seed.folders ?? [];
   const calls: Call[] = [];
   const fail = new Map<string, IndexError>();
@@ -202,6 +237,19 @@ export function createFakeIndex(seed: { items?: Item[]; folders?: Folder[] } = {
         threads: inbox.threads.filter((t) => !query.app || t.app === query.app),
         actions: inbox.actions.filter((a) => !query.app || a.app === query.app),
       })),
+    timeline: (query: TimelineQuery = {}, options: { signal?: AbortSignal } = {}) =>
+      answer('timeline', [query], options.signal, () => {
+        const mine = events
+          .filter((e) => !query.app || e.app === query.app)
+          .sort((a, b) => b.occurredAt - a.occurredAt);
+        const { slice, next } = page(mine, query.limit ?? 30, query.cursor);
+        return { events: slice, nextCursor: next, seenAt: timelineSeen.at };
+      }),
+    markTimelineSeen: () =>
+      answer('markTimelineSeen', [], undefined, () => {
+        timelineSeen.at = Date.now();
+        return { seenAt: timelineSeen.at };
+      }),
     updateItem: (id: string, input: Partial<Item>) =>
       answer('updateItem', [id, input], undefined, () => {
         const item = find(id);
@@ -283,6 +331,8 @@ export function createFakeIndex(seed: { items?: Item[]; folders?: Folder[] } = {
     items,
     folders,
     inbox,
+    events,
+    timelineSeen,
     calls,
     fail,
     hold,

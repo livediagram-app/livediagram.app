@@ -421,6 +421,15 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M8.5 7.5 11 10l4.5-5" />
     </Glyph>
   ),
+  // A spine with two events on it and their lines of text: what happened, in order (the Explorer sidebar's mark).
+  timeline: (
+    <Glyph>
+      <path d="M6 3.5v17" />
+      <circle cx="6" cy="7.5" r="1.6" />
+      <circle cx="6" cy="16.5" r="1.6" />
+      <path d="M10 7.5h9M10 16.5h6M10 12h4.2" />
+    </Glyph>
+  ),
   // One folder inside another, which is the whole point of a nestable tree.
   folders: (
     <Glyph>

@@ -31,3 +31,10 @@ export type TeamRef = { id: string; name: string };
 export type ItemHref = (item: ItemRef, at?: ItemPlace) => string;
 export type ShareUrl = (link: ShareLink, item: ItemRef) => string;
 export type RenderThumbnail = (item: Item, size: 'row' | 'card') => ReactNode;
+
+/** What the Timeline reports, for the host's telemetry: a mode or filter changed (`Changed`, `Selected`), a page
+ *  read (`Loaded`: More or Retry), a card or a stack opened (`Opened`). `type` is always a fixed token. */
+export type TimelineTelemetry = (
+  action: 'Changed' | 'Selected' | 'Loaded' | 'Opened',
+  type: string,
+) => void;

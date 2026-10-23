@@ -1,0 +1,58 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Timeline',
+  description:
+    'The Explorer Timeline: what happened to your plans and your teams’, day by day, in every liveworkspace app.',
+  path: '/help/explorer/timeline/',
+});
+
+<ArticleLayout
+  title="Timeline"
+  description="What happened to your plans and your teams’ plans, newest first, one day at a time."
+  categoryTitle="Explorer"
+  categorySlug="explorer"
+>
+
+The **Timeline** is the record of what happened to the items you can open: your own, and your teams'. It has its own row in the Explorer sidebar's Overview group, under the [Inbox](/help/explorer/activity/), or open it at `/explorer/timeline`. Where the Inbox lists what is still waiting on you, the Timeline is the history: what you did, and what your teammates did.
+
+## What lands here
+
+- **Made:** a new plan, a copy, one an AI tool made for you (**Made by AI**) and one brought in by an import (**Imported**).
+- **Updated:** someone worked on a plan. A day of edits by one person is one card, however many changes they made, and it says who.
+- **Renamed**, with the name it had before.
+- **Moved** to another folder, to **My Work** or into a team.
+- **Moved to Trash** and **Restored**.
+- **Shared** by a link, saying what the link lets people do, and **Sharing Stopped** when links are turned off.
+- **Added to Favourites**, which only you see.
+
+A plan you made and worked on the same day shows one card, its making: the edits that day add nothing new.
+
+Your teammates see what happens to the team's plans, and you see theirs. A plan someone shared with you through a link is not on your Timeline: its history stays with the people who own it. Opening a plan is never recorded, so nobody can see that you looked at one.
+
+## This app or every app
+
+With **Plans** chosen at the top of the page, the Timeline shows only what happened to plans. With **All**, it shows every liveworkspace app's items: each card wears its app's mark, and clicking it opens the item in its own app. The Explorer remembers your choice in this browser.
+
+## Reading the Timeline
+
+Each day has its own heading, with **Today** marked, and its cards in a grid. A card shows the plan as it looks now, its name, why it is here in the event's colour, and when it happened with who did it. Red means something went to the Trash, amber that something was renamed, moved or shared, and green that something was made, worked on, restored or added to your Favourites. Click a card to open the plan; a plan in the Trash opens the [Trash](/help/account-and-data/trash/), where you can restore it.
+
+When several things of one kind happened on one day, such as five plans renamed, they fold into a stack that says how many. Click it to deal them out beside it, and again to fold them back.
+
+Anything that happened since you last looked, and was done by someone else, carries a **New** pill. The first time you visit nothing is marked: a whole history marked new would tell you nothing.
+
+The Timeline shows 30 events at a time. **Show More**, at the bottom, adds the next 30.
+
+## Filters and the calendar
+
+**Filter** narrows what you see. Choose **Other people** to leave out what you did yourself, switch off kinds of event (**Created**, **Edits**, **Renames**, **Trash**, **Sharing**, **Organisation**, **Favourites**), or pick a day in the small calendar to jump to it. A dot on the button means a filter is on; **Reset** clears them all. The filters apply to the events loaded so far, so Show More looks further back.
+
+**Calendar** shows a month at a time, with a coloured dot for each kind of day: what went, what changed and what was made. Click a dot to see that day's cards. **Cards** goes back to the feed.
+
+## Guests and signing in
+
+The Timeline works without an account, like the rest of liveplanner. When you sign in, what you did as a guest moves to your account with your plans.
+
+</ArticleLayout>

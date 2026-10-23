@@ -1,4 +1,4 @@
-// Working together: live sessions, embeds, discussion, teams and the session tools (docs/specs/017-telemetry/telemetry.md).
+// Working together: live sessions, embeds, discussion, the Timeline, teams and the session tools (docs/specs/017-telemetry/telemetry.md).
 // Part of the metric catalogue: import from ../metric-catalogue.
 
 import type { Metric, MetricStack } from '../metric-series';
@@ -239,6 +239,59 @@ export const STOPWATCHES_FINISHED: Metric = {
   type: 'StopwatchTimer',
   title: 'Stopwatches Finished',
   blurb: 'Dismissed from the tab.',
+};
+
+// The shared Explorer's Timeline (docs/specs/013-workspace/timeline.md), reported through its onTimeline prop.
+export const TIMELINE_CARDS_OPENED = chart(
+  'Timeline',
+  'Opened',
+  'Timeline Cards Opened',
+  'A plan opened from its card on the Timeline.',
+  { types: ['Card'] },
+);
+
+export const TIMELINE_STACKS_EXPANDED = chart(
+  'Timeline',
+  'Opened',
+  'Timeline Stacks Expanded',
+  'A run of one kind of change on the Timeline dealt out to show each one.',
+  { types: ['Stack'] },
+);
+
+export const TIMELINE_LOADS = chart(
+  'Timeline',
+  'Loaded',
+  'Timeline Loads',
+  'More of the Timeline loaded, or a failed load retried.',
+);
+
+export const TIMELINE_VIEW_SWITCHED = chart(
+  'Timeline',
+  'Changed',
+  'Timeline View Switched',
+  'The Timeline switched between its cards and its calendar.',
+);
+
+export const TIMELINE_FILTERED = chart(
+  'Timeline',
+  'Selected',
+  'Timeline Filtered',
+  'The Timeline narrowed to everyone, other people, or switched off a kind of event.',
+);
+
+export const TIMELINE: MetricStack = {
+  stack: true,
+  title: 'Timeline',
+  blurb:
+    'What happened to people’s plans, read in the Explorer: cards opened, runs expanded, filters and pages.',
+  members: [
+    TIMELINE_CARDS_OPENED,
+    TIMELINE_STACKS_EXPANDED,
+    TIMELINE_LOADS,
+    TIMELINE_VIEW_SWITCHED,
+    TIMELINE_FILTERED,
+  ],
+  headline: TIMELINE_CARDS_OPENED,
 };
 
 export const LIVE_TOGETHER: MetricStack = {

@@ -21,6 +21,7 @@ import type {
   RenderThumbnail,
   ShareUrl,
   TeamRef,
+  TimelineTelemetry,
 } from '../types';
 import { ExplorerProvider, useExplorer as useExplorerContext, type HelpHref } from './context';
 import { ExplorerDialogs } from './Dialogs';
@@ -30,6 +31,7 @@ import { InboxPane } from './InboxPane';
 import { ItemsPane } from './ItemsPane';
 import { SearchField } from './SearchField';
 import { Sidebar } from './Sidebar';
+import { TimelinePane } from './TimelinePane';
 import { useHeroPresence } from './useHeroPresence';
 
 export type ExplorerProps = {
@@ -81,6 +83,8 @@ export type ExplorerProps = {
   /** An item the host trashed just before landing here (the plan open in its editor): the Explorer says so, once,
    *  with an Undo that restores it and re-reads the lists. */
   trashedOnArrival?: { id: string; title: string | null } | null;
+  /** The Timeline's reports (a mode or filter changed, a page read, a card opened), for the host's telemetry. */
+  onTimeline?: TimelineTelemetry;
 };
 
 const FILTER_KEY = (app: App) => `liveworkspace:explorer-filter:${app}`;
@@ -172,6 +176,7 @@ function ExplorerInner({
   onHideHero,
   helpHref,
   trashedOnArrival,
+  onTimeline,
 }: ExplorerProps) {
   const [filter, setFilter] = useFilter(app, controlledFilter, onFilterChange);
   const [heroHidden, hideHero] = useHeroHidden(app, controlledHeroHidden, onHideHero);
@@ -207,6 +212,7 @@ function ExplorerInner({
       openNav={openNav}
       helpHref={helpHref}
       heroWords={heroWords}
+      onTimeline={onTimeline}
     >
       <div data-explorer="" className="flex min-w-0 flex-1 flex-col">
         {header ? (
@@ -308,6 +314,8 @@ function Pane({
       return <HomePane onOpenNav={onOpenNav} hero={hero} />;
     case 'inbox':
       return <InboxPane onOpenNav={onOpenNav} />;
+    case 'timeline':
+      return <TimelinePane onOpenNav={onOpenNav} />;
     default:
       return <ItemsPane view={view} onOpenNav={onOpenNav} />;
   }

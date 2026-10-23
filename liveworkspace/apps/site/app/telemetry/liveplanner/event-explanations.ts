@@ -872,6 +872,16 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Team|Deleted|': 'An admin deleted a team.',
   'Team|Shared|Link':
     "An admin turned on a team's shareable invite link, so anyone who has it can ask to join.",
+  'Timeline|Changed|List': "Someone switched the Explorer's Timeline to its cards.",
+  'Timeline|Changed|Calendar': "Someone switched the Explorer's Timeline to its month calendar.",
+  'Timeline|Selected|Everyone': "Someone showed everyone's doings on the Explorer's Timeline.",
+  'Timeline|Selected|Others':
+    "Someone narrowed the Explorer's Timeline to what other people did, leaving out their own.",
+  'Timeline|Loaded|More': "Someone pressed Show More on the Explorer's Timeline for the next page.",
+  'Timeline|Loaded|Retry': "Someone retried the Explorer's Timeline after it failed to load.",
+  'Timeline|Opened|Card': "Someone opened a plan from its card on the Explorer's Timeline.",
+  'Timeline|Opened|Stack':
+    "Someone dealt out a run of one kind of change on the Explorer's Timeline to see each one.",
   'Timeline|Removed|Entry':
     "Someone removed a single entry from their Timeline feed. No longer recorded: the Explorer's Timeline was removed.",
   'Timeline|Removed|Stack':
@@ -2253,6 +2263,14 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Team|Deleted': 'An admin deleted a team.',
   'Team|Shared': 'A team turned on a way for people to ask to join it.',
   'Timeline|Removed': 'Someone removed one or more entries from their Timeline feed.',
+  'Timeline|Changed':
+    "Someone switched the Explorer's Timeline between its cards and its calendar.",
+  'Timeline|Selected':
+    "Someone narrowed the Explorer's Timeline: to everyone, to other people, or by switching off a kind of event (the value).",
+  'Timeline|Loaded':
+    "The Explorer's Timeline loaded more (More), or retried after a failed load (Retry).",
+  'Timeline|Opened':
+    'Someone opened a plan from its Timeline card (Card), or dealt out a run of one kind of change (Stack).',
   'Trash|Opened': 'Someone opened the Trash, where deleted projects wait for 30 days.',
   'Plan|Added':
     'Someone made an item on a Plan board (its type is the value), or placed a Plan card (Card).',

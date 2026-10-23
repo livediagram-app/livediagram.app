@@ -159,7 +159,7 @@ export const categories: Category[] = [
     title: 'Explorer',
     description:
       'Organise everything you build: one library, shared by every liveworkspace app, that keeps your plans, folders and teams easy to find and manage.',
-    articleCount: 11,
+    articleCount: 12,
     kind: 'feature',
     groups: ['Your Library', 'Activity'],
   },
@@ -930,7 +930,7 @@ export const articles: Article[] = [
     description:
       'The Explorer’s landing view: what you opened last, and what was shared with you recently.',
     keywords:
-      'home jump back in recent last opened see more shared with you recently landing start what happened timeline history plan',
+      'home jump back in recent last opened most used see more shared with you recently landing start plan',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Activity',
@@ -942,6 +942,17 @@ export const articles: Article[] = [
       'What is outstanding for you across every app: actions assigned to you or by you, and open comment threads.',
     keywords:
       'activity inbox to do todo tasks my actions assigned to me assigned by me outstanding waiting open threads unresolved comments replies mentions pending work queue what needs me badge count all apps plan plans',
+    category: 'Explorer',
+    categorySlug: 'explorer',
+    group: 'Activity',
+  },
+  {
+    slug: 'timeline',
+    title: 'Timeline',
+    description:
+      'What happened to your plans and your teams’, day by day: made, updated, renamed, moved, trashed and shared.',
+    keywords:
+      'timeline history what happened changes feed log audit who changed edited renamed moved trashed restored shared favourited calendar filter new since last visit team activity every app all apps plan plans',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Activity',

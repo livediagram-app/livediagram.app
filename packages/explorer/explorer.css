@@ -2,3 +2,59 @@
    `--color-brand-*` ramp). A host imports this beside its Tailwind entry so Tailwind scans the package:
      @import '@liveworkspace/explorer/explorer.css'; */
 @source './src';
+
+/* The Timeline's arrivals (livediagram's tl-fan-out): a card is dealt in from the right, a collapsed run folds up
+   from below, and a day picked in the filter's calendar pulses its label. Gone under reduced motion. */
+@keyframes lw-tl-fan-out {
+  0% {
+    opacity: 0;
+    transform: translate3d(20px, -2px, 0) rotate(3deg) scale(0.96);
+  }
+  55% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) rotate(0) scale(1);
+  }
+}
+@keyframes lw-tl-fan-out-up {
+  0% {
+    opacity: 0;
+    transform: translate3d(20px, 12px, 0) rotate(-3deg) scale(0.96);
+  }
+  55% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) rotate(0) scale(1);
+  }
+}
+@keyframes lw-tl-date-pulse {
+  0%,
+  100% {
+    text-shadow: 0 0 0 rgb(14 165 233 / 0);
+  }
+  50% {
+    text-shadow: 0 0 12px rgb(14 165 233 / 0.9);
+  }
+}
+.lw-tl-fan-out {
+  animation: lw-tl-fan-out 150ms cubic-bezier(0.2, 0.85, 0.25, 1) both;
+  transform-origin: right center;
+}
+.lw-tl-fan-out-up {
+  animation: lw-tl-fan-out-up 150ms cubic-bezier(0.2, 0.85, 0.25, 1) both;
+  transform-origin: right center;
+}
+.lw-tl-date-pulse {
+  animation: lw-tl-date-pulse 0.7s ease-in-out 2;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lw-tl-fan-out,
+  .lw-tl-fan-out-up,
+  .lw-tl-date-pulse {
+    animation: none;
+  }
+}

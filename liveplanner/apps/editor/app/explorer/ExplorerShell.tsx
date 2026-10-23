@@ -13,7 +13,12 @@ import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { lazy, Suspense, useCallback, useState, type ReactNode } from 'react';
-import { Explorer, viewFromLocation, type ExplorerView } from '@liveworkspace/explorer';
+import {
+  Explorer,
+  viewFromLocation,
+  type ExplorerView,
+  type TimelineTelemetry,
+} from '@liveworkspace/explorer';
 import { Brand, SITE_ID, SiteSwitcher } from '@liveplanner/ui';
 import { AuthControls } from '@/components/chrome/AuthControls';
 import { ChromeControls } from '@/components/chrome/ChromeControls';
@@ -54,6 +59,22 @@ const SettingsDialog = dynamic(
   () => import('@/components/dialogs/SettingsDialog').then((m) => m.SettingsDialog),
   { ssr: false },
 );
+
+// The Timeline's reports (docs/specs/017-telemetry/telemetry.md "Timeline"), each a literal pair so the telemetry
+// manifest's coverage test sees it. The type is a fixed token from the Explorer: a mode, a filter, More or Retry,
+// Card or Stack.
+const trackTimeline: TimelineTelemetry = (action, type) => {
+  switch (action) {
+    case 'Changed':
+      return track('Timeline', 'Changed', type);
+    case 'Selected':
+      return track('Timeline', 'Selected', type);
+    case 'Loaded':
+      return track('Timeline', 'Loaded', type);
+    case 'Opened':
+      return track('Timeline', 'Opened', type);
+  }
+};
 
 /** What the host's chrome around the Explorer needs: the person's synced preferences and whose they are. */
 export type ExplorerChrome = { prefs: UserPreferences; ownerId: string | null; signedIn: boolean };
@@ -126,6 +147,7 @@ export function ExplorerHost({
         trashedOnArrival={trashedOnArrival}
         heroHidden={prefs.homeBanner === false}
         onHideHero={hideHero}
+        onTimeline={trackTimeline}
         header={header ? ({ search }) => header(search, chrome) : undefined}
       />
       {children?.(chrome)}

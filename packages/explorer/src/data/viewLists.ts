@@ -19,7 +19,7 @@ export type ViewList = {
 
 const live = (i: ShownItem) => i.trashedAt === null;
 
-/** The list behind a view, or null for a view with no item list (Home, Inbox). */
+/** The list behind a view, or null for a view with no item list (Home, Inbox, Timeline). */
 export function viewList(
   client: IndexClient,
   view: ExplorerView,
@@ -46,6 +46,7 @@ export function viewList(
   switch (view.kind) {
     case 'home':
     case 'inbox':
+    case 'timeline':
       return null;
     case 'all':
       // My Work: my own items in no folder (its folders are rows from the folder tree).

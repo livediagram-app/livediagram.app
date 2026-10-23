@@ -30,4 +30,5 @@ export type {
   RenderThumbnail,
   ShareUrl,
   TeamRef,
+  TimelineTelemetry,
 } from './types';

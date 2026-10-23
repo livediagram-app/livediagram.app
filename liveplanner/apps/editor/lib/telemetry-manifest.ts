@@ -150,6 +150,12 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Team·Added',
   'Template·Used',
   'Theme·Changed',
+  // The shared Explorer's Timeline (docs/specs/013-workspace/timeline.md): Changed (Cards or Calendar), Selected (a
+  // kind of event switched off, Everyone or Others), Loaded (More or Retry), Opened (a Card or a Stack).
+  'Timeline·Changed',
+  'Timeline·Loaded',
+  'Timeline·Opened',
+  'Timeline·Selected',
   'Token·Created',
   // A token's owner allowed a workbench on the pairing page (docs/specs/013-workspace/workbench-embeds.md).
   'Token·Linked',

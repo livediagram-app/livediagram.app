@@ -18,6 +18,8 @@ export type ExplorerView =
   | { kind: 'trash' }
   // Open actions and unresolved threads, across every app.
   | { kind: 'inbox' }
+  // What happened to the items you can reach, and your teams', newest first.
+  | { kind: 'timeline' }
   // Title and folder search over the index.
   | { kind: 'search'; q: string }
   | { kind: 'folder'; id: string }
@@ -66,6 +68,7 @@ export function viewFromLocation(
     case 'shared':
     case 'trash':
     case 'inbox':
+    case 'timeline':
     case 'home':
       return { kind: section };
     case 'search':
@@ -91,6 +94,7 @@ export function sameView(a: ExplorerView, b: ExplorerView): boolean {
 export const SIDEBAR_LABELS = {
   home: 'Home',
   inbox: 'Inbox',
+  timeline: 'Timeline',
   shared: 'Shared With Me',
   myWork: 'My Work',
   unsorted: 'Unsorted',
@@ -102,6 +106,7 @@ export const SIDEBAR_LABELS = {
 export const VIEW_TITLES: Record<Exclude<ExplorerViewKind, 'folder' | 'team'>, string> = {
   home: SIDEBAR_LABELS.home,
   inbox: SIDEBAR_LABELS.inbox,
+  timeline: SIDEBAR_LABELS.timeline,
   shared: SIDEBAR_LABELS.shared,
   all: SIDEBAR_LABELS.myWork,
   unsorted: SIDEBAR_LABELS.unsorted,

@@ -15,6 +15,7 @@ import {
   ShareIcon,
   StarIcon,
   TeamIcon,
+  TimelineIcon,
   TrashIcon,
   UnsortedIcon,
 } from '../ui/icons';
@@ -74,6 +75,13 @@ export function emptyCopy(
         title: 'Nothing waiting on you',
         description: `Open actions assigned to you, actions you assigned, and comment threads you’re in, collect here across every ${w.lowerOne}.`,
         cta: false,
+      };
+    case 'timeline':
+      return {
+        icon: <TimelineIcon />,
+        title: 'Nothing has happened yet',
+        description: `What you and your teams do to ${w.lowerMany} lands here: made, renamed, moved, shared, edited.`,
+        cta: true,
       };
     case 'search':
       return view.q

@@ -79,6 +79,7 @@ export const HELP_ARTICLES = {
   unsorted: 'explorer/unsorted',
   sharedWithYou: 'explorer/shared-with-you',
   inbox: 'explorer/activity',
+  timeline: 'explorer/timeline',
   teamSpaces: 'explorer/team-spaces',
   explorerPage: 'explorer/explorer-page',
   dataElements: 'plan/visualisations',
@@ -263,6 +264,10 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   inbox: {
     title: 'Learn about the Inbox',
     description: 'Comments and actions that wait on you, from every app.',
+  },
+  timeline: {
+    title: 'Learn about the Timeline',
+    description: 'What happened to your plans and your teams’, day by day.',
   },
   teamSpaces: {
     title: 'Learn about team spaces',

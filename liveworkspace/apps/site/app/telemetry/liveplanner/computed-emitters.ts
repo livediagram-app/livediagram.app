@@ -295,6 +295,25 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/editor/hooks/plan/usePlanSlice.ts Plan·Opened': {
     values: ['Item', 'Parent', 'ChildCard', 'Breadcrumb'],
   },
+  // The shared Explorer's Timeline, through its onTimeline prop (@liveworkspace/explorer TimelinePane.tsx): each a
+  // fixed token from the package.
+  'apps/editor/app/explorer/ExplorerShell.tsx Timeline·Changed': { values: ['List', 'Calendar'] },
+  'apps/editor/app/explorer/ExplorerShell.tsx Timeline·Selected': {
+    values: [
+      'Everyone',
+      'Others',
+      'new',
+      'edits',
+      'renames',
+      'deletions',
+      'sharing',
+      'filing',
+      'favourites',
+      'other',
+    ],
+  },
+  'apps/editor/app/explorer/ExplorerShell.tsx Timeline·Loaded': { values: ['More', 'Retry'] },
+  'apps/editor/app/explorer/ExplorerShell.tsx Timeline·Opened': { values: ['Card', 'Stack'] },
   'apps/editor/app/new/page.tsx Theme·Changed': { values: THEMES, open: THEME_WHY },
   'apps/editor/app/new/page.tsx Template·Used': { values: TEMPLATES, open: TEMPLATE_WHY },
   // The landing funnel (docs/specs/019-marketing/landing-funnel.md): the CTA a /new visit came from.

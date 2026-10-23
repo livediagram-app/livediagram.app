@@ -13,6 +13,7 @@ describe('views and their addresses', () => {
     { kind: 'shared' },
     { kind: 'trash' },
     { kind: 'inbox' },
+    { kind: 'timeline' },
     { kind: 'search', q: 'q3 & plans' },
     { kind: 'folder', id: 'f1' },
     { kind: 'team', id: 'team-1' },
@@ -25,7 +26,7 @@ describe('views and their addresses', () => {
   });
 
   it('falls back to Home for an unknown address or a folder without an id', () => {
-    expect(viewFromLocation('/explorer/timeline')).toEqual({ kind: 'home' });
+    expect(viewFromLocation('/explorer/activity-feed')).toEqual({ kind: 'home' });
     // Tags are gone; an old link lands on Home.
     expect(viewFromLocation('/explorer/tags', 'id=t1')).toEqual({ kind: 'home' });
     expect(viewFromLocation('/explorer/folder')).toEqual({ kind: 'home' });

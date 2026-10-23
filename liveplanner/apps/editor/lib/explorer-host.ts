@@ -103,6 +103,7 @@ const VIEW_HELP: Record<ExplorerView['kind'], HelpArticleKey> = {
   favourites: 'explorerPage',
   shared: 'sharedWithYou',
   inbox: 'inbox',
+  timeline: 'timeline',
   trash: 'trash',
   search: 'explorerPage',
 };

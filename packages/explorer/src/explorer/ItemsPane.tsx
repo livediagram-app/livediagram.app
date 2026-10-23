@@ -47,7 +47,7 @@ export function ItemsPane({
   view,
   onOpenNav,
 }: {
-  view: Exclude<ExplorerView, { kind: 'home' } | { kind: 'inbox' }>;
+  view: Exclude<ExplorerView, { kind: 'home' } | { kind: 'inbox' } | { kind: 'timeline' }>;
   onOpenNav?: () => void;
 }) {
   const ctx = useExplorer();

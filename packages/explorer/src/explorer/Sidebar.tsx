@@ -1,6 +1,6 @@
 'use client';
 
-// The Explorer's sidebar (liveplanner's ExplorerSidebar): Overview (Home, Inbox, Shared With Me), Spaces
+// The Explorer's sidebar (liveplanner's ExplorerSidebar): Overview (Home, Inbox, Timeline, Shared With Me), Spaces
 // (My Work and its folders, each team and its folders), and More (the Library's Recent, Favourites and
 // Unsorted, then the Trash). Rows carry toned tiles and the current row is a raised pill, in the
 // host app's brand colour. The tree reads the folder store, so it costs no request of its own.
@@ -29,6 +29,7 @@ import {
   ShareIcon,
   StarIcon,
   TeamIcon,
+  TimelineIcon,
   TrashIcon,
   TreeChevronIcon,
   UnsortedIcon,
@@ -348,6 +349,14 @@ export function Sidebar() {
           onActivate={() => navigate({ kind: 'inbox' })}
           depth={0}
           badge={inboxCount(inbox.data, viewerId)}
+        />
+        <SidebarRow
+          icon={<TimelineIcon />}
+          tone="amber"
+          label={SIDEBAR_LABELS.timeline}
+          selected={view.kind === 'timeline'}
+          onActivate={() => navigate({ kind: 'timeline' })}
+          depth={0}
         />
         <SidebarRow
           icon={<ShareIcon />}
