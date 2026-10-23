@@ -10,6 +10,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ index-client             the One Explorer index contract: types, a client, the grant check
 │  ├─ index-app                the server side of an app on the index: grants, internal doors, purge, outbox
 │  ├─ community                the Community contract: apps, vocabulary, limits, wire shapes
+│  ├─ comparisons              every app's comparison pages, built once; each app's marketing hosts its own
 │  ├─ media                    the media contract: apps, upload limits, wire shapes, a client
 │  ├─ sites                    liveworkspace's sites, for every logo's site switcher
 │  └─ telemetry                the telemetry contract: apps, batch format, dashboard summary
