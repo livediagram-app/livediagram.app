@@ -126,6 +126,30 @@ describe('createIndexClient', () => {
   });
 });
 
+describe('createIndexClient reads', () => {
+  it('pages folders and passes a signal through, so a superseded read is cancelled', async () => {
+    const signals: (AbortSignal | null | undefined)[] = [];
+    const urls: string[] = [];
+    const doFetch = (async (input: RequestInfo | URL, init: RequestInit = {}) => {
+      urls.push(String(input));
+      signals.push(init.signal);
+      init.signal?.throwIfAborted();
+      return Response.json({ folders: [], items: [], nextCursor: null });
+    }) as typeof fetch;
+    const client = createIndexClient({ getToken: () => null, fetch: doFetch });
+    const page = await client.listFolders({ limit: 200, cursor: 'c1' });
+    expect(page.nextCursor).toBeNull();
+    expect(urls[0]).toBe('/api/index/folders?limit=200&cursor=c1');
+
+    const controller = new AbortController();
+    controller.abort();
+    await expect(
+      client.listItems({ q: 'road' }, { signal: controller.signal }),
+    ).rejects.toMatchObject({ name: 'AbortError' });
+    expect(signals[1]).toBe(controller.signal);
+  });
+});
+
 describe('createIndexAppClient', () => {
   it("pushes with the app's key and name", async () => {
     const { seen, doFetch } = fakeFetch(() => new Response(null, { status: 204 }));

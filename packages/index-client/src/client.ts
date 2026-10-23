@@ -71,7 +71,17 @@ export type IndexClientOptions = {
   fetch?: typeof fetch;
 };
 
-type CallOptions = { method?: string; body?: unknown; query?: Query; share?: ShareAccess | null };
+type CallOptions = {
+  method?: string;
+  body?: unknown;
+  query?: Query;
+  share?: ShareAccess | null;
+  signal?: AbortSignal;
+};
+
+// What a read can take besides its query: a signal, so a list superseded by a newer one (the Explorer's
+// search as the person types) is cancelled rather than left to land late.
+export type RequestOptions = { signal?: AbortSignal };
 
 export function createIndexClient({
   baseUrl = INDEX_API_PATH,
@@ -98,6 +108,7 @@ export function createIndexClient({
       method: options.method ?? 'GET',
       headers,
       body,
+      signal: options.signal,
     });
     if (res.status === 204) return undefined as T;
     const parsed = (await res.json().catch(() => null)) as { error?: unknown } | null;
@@ -110,8 +121,8 @@ export function createIndexClient({
 
   return {
     // Items
-    listItems: (query: ItemListQuery = {}) =>
-      call<Page<Item, 'items'>>('/items', { query: query as Query }),
+    listItems: (query: ItemListQuery = {}, options: RequestOptions = {}) =>
+      call<Page<Item, 'items'>>('/items', { query: query as Query, signal: options.signal }),
     createItem: (input: CreateItemInput) =>
       call<{ item: Item; grant: GrantResponse }>('/items', { method: 'POST', body: input }),
     getItem: (id: string, share?: ShareAccess | null) =>
@@ -134,14 +145,19 @@ export function createIndexClient({
       call<GrantResponse>(`/items/${enc(id)}/grant`, { method: 'POST', share }),
 
     // Trash
-    listTrash: (query: { app?: App; team?: string; limit?: number; cursor?: string } = {}) =>
-      call<Page<Item, 'items'>>('/trash', { query }),
+    listTrash: (
+      query: { app?: App; team?: string; limit?: number; cursor?: string } = {},
+      options: RequestOptions = {},
+    ) => call<Page<Item, 'items'>>('/trash', { query, signal: options.signal }),
     emptyTrash: (query: { team?: string } = {}) =>
       call<{ purged: number }>('/trash', { method: 'DELETE', query }),
 
     // Folders
-    listFolders: (query: { team?: string } = {}) =>
-      call<{ folders: Folder[] }>('/folders', { query }),
+    // Paged like every list (≤ 200 a page, oldest first); without `team`, every scope the person has.
+    listFolders: (
+      query: { team?: string; limit?: number; cursor?: string } = {},
+      options: RequestOptions = {},
+    ) => call<Page<Folder, 'folders'>>('/folders', { query, signal: options.signal }),
     createFolder: (input: CreateFolderInput) =>
       call<{ folder: Folder }>('/folders', { method: 'POST', body: input }),
     updateFolder: (id: string, input: UpdateFolderInput) =>
@@ -193,12 +209,15 @@ export function createIndexClient({
     // What a link opens; records it under Shared for a signed-in person or guest.
     resolveShare: (code: string, password?: string | null) =>
       call<ShareResolution>(`/share/${enc(code)}`, { share: { code, password } }),
-    listShared: (query: { app?: App; limit?: number; cursor?: string } = {}) =>
-      call<Page<SharedWithItem, 'shared'>>('/shared', { query }),
+    listShared: (
+      query: { app?: App; limit?: number; cursor?: string } = {},
+      options: RequestOptions = {},
+    ) => call<Page<SharedWithItem, 'shared'>>('/shared', { query, signal: options.signal }),
     removeShared: (itemId: string) => call<void>(`/shared/${enc(itemId)}`, { method: 'DELETE' }),
 
     // Inbox
-    inbox: (query: { app?: App; limit?: number } = {}) => call<InboxResponse>('/inbox', { query }),
+    inbox: (query: { app?: App; limit?: number } = {}, options: RequestOptions = {}) =>
+      call<InboxResponse>('/inbox', { query, signal: options.signal }),
   };
 }
 

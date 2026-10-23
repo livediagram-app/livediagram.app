@@ -1,0 +1,4 @@
+/* @liveworkspace/explorer's classes are Tailwind utilities over the host's theme (slate, and the host's
+   `--color-brand-*` ramp). A host imports this beside its Tailwind entry so Tailwind scans the package:
+     @import '@liveworkspace/explorer/explorer.css'; */
+@source './src';

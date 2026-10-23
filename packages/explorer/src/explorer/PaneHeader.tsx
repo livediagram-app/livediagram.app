@@ -1,0 +1,232 @@
+'use client';
+
+// The pane header (liveplanner's PaneHeader): the title and breadcrumbs on the left; on the right the
+// section's own actions, the This app / All filter, the List / Card / Details toggle, and Create (New
+// <kind> and New Folder in one menu where both apply).
+
+import { useState, type ReactNode } from 'react';
+import { Button } from '../ui/Button';
+import { MenuActionRow, PortalMenu } from '../ui/Menu';
+import {
+  DetailsViewIcon,
+  FolderOutlineIcon,
+  GridViewIcon,
+  HamburgerIcon,
+  ItemIcon,
+  ListViewIcon,
+  PlusIcon,
+} from '../ui/icons';
+import { siteOf, type AppFilter } from '../words';
+import { useExplorer } from './context';
+
+export type ViewMode = 'list' | 'card' | 'details';
+
+export type Crumb = { name: string; onClick?: () => void };
+
+export function PaneHeader({
+  title,
+  crumbs = [],
+  onCreateItem,
+  onCreateFolder,
+  folderLabel = 'New Folder',
+  onOpenNav,
+  actions,
+  viewMode,
+  onSetViewMode,
+  showFilter = true,
+}: {
+  title: string;
+  crumbs?: Crumb[];
+  onCreateItem?: () => void;
+  onCreateFolder?: () => void;
+  folderLabel?: string;
+  onOpenNav?: () => void;
+  actions?: ReactNode;
+  viewMode?: ViewMode;
+  onSetViewMode?: (mode: ViewMode) => void;
+  showFilter?: boolean;
+}) {
+  const { kind } = useExplorer();
+  const [createOpen, setCreateOpen] = useState(false);
+  const [createButton, setCreateButton] = useState<HTMLButtonElement | null>(null);
+  const both = Boolean(onCreateItem && onCreateFolder);
+  const single = both
+    ? null
+    : onCreateItem
+      ? { label: `New ${kind.one}`, onClick: onCreateItem }
+      : onCreateFolder
+        ? { label: folderLabel, onClick: onCreateFolder }
+        : null;
+  return (
+    <div className="mb-4">
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+        <div className="flex min-w-[10rem] flex-1 items-center gap-2">
+          {onOpenNav ? (
+            <button
+              type="button"
+              onClick={onOpenNav}
+              aria-label="Browse sections"
+              className="-ml-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 sm:hidden dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+            >
+              <HamburgerIcon />
+            </button>
+          ) : null}
+          <h1 className="min-w-0 truncate text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
+            {title}
+          </h1>
+        </div>
+        <div className="ml-auto flex min-w-0 flex-wrap items-center justify-end gap-2">
+          {actions}
+          {showFilter ? <FilterToggle /> : null}
+          {viewMode && onSetViewMode ? (
+            <ViewToggle mode={viewMode} onChange={onSetViewMode} />
+          ) : null}
+          {single ? (
+            <Button
+              size="xs"
+              onClick={single.onClick}
+              aria-label={single.label}
+              className="shadow-sm"
+            >
+              <PlusIcon />
+              <span className="hidden sm:inline">{single.label}</span>
+            </Button>
+          ) : null}
+          {both ? (
+            <Button
+              ref={setCreateButton}
+              size="xs"
+              onClick={() => setCreateOpen((o) => !o)}
+              aria-haspopup="menu"
+              aria-expanded={createOpen}
+              className="shadow-sm"
+            >
+              <PlusIcon />
+              Create
+            </Button>
+          ) : null}
+          {createOpen && both ? (
+            <PortalMenu anchor={createButton} onClose={() => setCreateOpen(false)} label="Create">
+              <MenuActionRow
+                label={`New ${kind.one}`}
+                icon={<ItemIcon />}
+                onClick={() => {
+                  setCreateOpen(false);
+                  onCreateItem!();
+                }}
+              />
+              <MenuActionRow
+                label={folderLabel}
+                icon={<FolderOutlineIcon />}
+                onClick={() => {
+                  setCreateOpen(false);
+                  onCreateFolder!();
+                }}
+              />
+            </PortalMenu>
+          ) : null}
+        </div>
+      </div>
+      {crumbs.length >= 2 ? (
+        <nav
+          aria-label="Breadcrumb"
+          className="flex flex-wrap items-center rounded-md border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-600 shadow-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
+        >
+          {crumbs.map((c, i) => {
+            const last = i === crumbs.length - 1;
+            return (
+              <span key={`${c.name}-${i}`} className="flex items-center">
+                {i > 0 ? (
+                  <span aria-hidden className="px-1 text-slate-300 dark:text-slate-600">
+                    ›
+                  </span>
+                ) : null}
+                {c.onClick && !last ? (
+                  <button
+                    type="button"
+                    onClick={c.onClick}
+                    className="rounded px-1.5 py-0.5 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+                  >
+                    {c.name}
+                  </button>
+                ) : (
+                  <span
+                    aria-current={last ? 'page' : undefined}
+                    className="rounded px-1.5 py-0.5 font-medium text-slate-900 dark:text-slate-100"
+                  >
+                    {c.name}
+                  </span>
+                )}
+              </span>
+            );
+          })}
+        </nav>
+      ) : null}
+    </div>
+  );
+}
+
+const SEGMENTS =
+  'flex items-center gap-0.5 rounded-md border border-slate-200 bg-slate-50 p-0.5 dark:border-slate-700 dark:bg-slate-800';
+const segment = (active: boolean) =>
+  `flex h-7 items-center justify-center rounded px-2 text-xs font-medium transition ${
+    active
+      ? 'bg-white text-brand-700 shadow-sm dark:bg-slate-700 dark:text-brand-300'
+      : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+  }`;
+
+/** This app's items, or every app's. */
+export function FilterToggle() {
+  const { app, filter, setFilter, kind } = useExplorer();
+  const choose = (next: AppFilter) => () => setFilter(next);
+  return (
+    <div role="group" aria-label="Show" className={SEGMENTS}>
+      <button
+        type="button"
+        aria-pressed={filter === 'app'}
+        onClick={choose('app')}
+        title={`Only ${siteOf(app).name}'s ${kind.lowerMany}`}
+        className={segment(filter === 'app')}
+      >
+        {kind.many}
+      </button>
+      <button
+        type="button"
+        aria-pressed={filter === 'all'}
+        onClick={choose('all')}
+        title="Every app's items"
+        className={segment(filter === 'all')}
+      >
+        All
+      </button>
+    </div>
+  );
+}
+
+export function ViewToggle({
+  mode,
+  onChange,
+}: {
+  mode: ViewMode;
+  onChange: (mode: ViewMode) => void;
+}) {
+  const button = (m: ViewMode, label: string, icon: ReactNode) => (
+    <button
+      type="button"
+      onClick={() => onChange(m)}
+      aria-label={label}
+      title={label}
+      aria-pressed={mode === m}
+      className={`${segment(mode === m)} w-7 px-0`}
+    >
+      {icon}
+    </button>
+  );
+  return (
+    <div role="group" aria-label="View mode" className={SEGMENTS}>
+      {button('list', 'List view', <ListViewIcon />)}
+      {button('card', 'Card view', <GridViewIcon />)}
+      {button('details', 'Details view', <DetailsViewIcon />)}
+    </div>
+  );
+}
