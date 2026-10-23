@@ -17,6 +17,11 @@ import {
   rows,
   workbenchDb,
 } from './workbench-test-fixtures';
+import { resetProfiles, seedProfile } from '../test-profiles';
+vi.mock('../accounts/profiles', async () =>
+  (await import('../test-profiles')).fakeProfilesModule(),
+);
+beforeEach(() => resetProfiles());
 
 const SESSION_CONTEXT: WorkbenchContext = {
   sessionId: 'sess1',
@@ -68,8 +73,7 @@ describe('POST /api/workbench/sessions', () => {
   it('opens a session as the person, with their display identity', async () => {
     const db = await workbenchDb();
     pairToken(db);
-    db.sql.exec(`INSERT INTO participants (id, name, color, created_at)
-                 VALUES ('user_1', 'Webber', '#ff8800', 1)`);
+    seedProfile('user_1', 'Webber', '#ff8800');
     const ticket = await mintTicket(db);
 
     const res = await redeem(db, { ticket });

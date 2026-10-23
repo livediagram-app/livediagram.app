@@ -13,7 +13,8 @@ import {
   type ResultLine,
 } from '@livedesign/api-schema';
 import { redactCommentAuthorIds } from '../comments';
-import { getChangeset, getChangesetPart, getDesign, getParticipant, listChangesets } from '../db';
+import { getChangeset, getChangesetPart, getDesign, listChangesets } from '../db';
+import { getParticipant } from '../accounts/profiles';
 import type { ChangesetRecord } from '../db';
 import { forbidden, json, notFound } from '../responses';
 import { personTagFor } from '../person-tag';

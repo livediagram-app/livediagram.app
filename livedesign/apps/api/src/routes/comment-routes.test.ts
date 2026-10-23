@@ -5,6 +5,10 @@ import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import * as db from '../db';
 import { makeTestRouteContext } from './test-route-context';
 import { handleDesigns } from './designs';
+import { resetProfiles, seedProfile } from '../test-profiles';
+vi.mock('../accounts/profiles', async () =>
+  (await import('../test-profiles')).fakeProfilesModule(),
+);
 
 // The comment endpoints (docs/specs/024-agents/agent-presence.md "Comments", blueprint "REST"): add, delete-own,
 // reply, resolve and reopen through the tab's revision, relayed without author or token ids; the listing across
@@ -75,12 +79,13 @@ const threadOf = async (elementId: string, tabId = 't1') =>
   ).commentThread;
 
 beforeEach(() => {
+  resetProfiles();
+  seedProfile('owner', 'Webber', '#3b82f6');
   sql = sqliteD1();
   pending = [];
   sql.sql.exec(`
     INSERT INTO designs (id, owner_id, name, shareable, saved_at, created_at)
       VALUES ('d1', 'owner', 'Payments', 1, 1, 1);
-    INSERT INTO participants (id, name, color, created_at) VALUES ('owner', 'Webber', '#3b82f6', 1);
     INSERT INTO tabs (id, name, data, updated_at) VALUES ('t1', 'Main', '{"elements":[]}', 1);
     INSERT INTO tabs (id, name, data, updated_at) VALUES ('t2', 'Detail', '{"elements":[]}', 1);
     INSERT INTO design_tabs (design_id, tab_id, order_index, added_at) VALUES ('d1', 't1', 0, 1);

@@ -2,29 +2,28 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Env } from '../types';
 
 vi.mock('../db', () => ({
-  getOwnerEmail: vi.fn(),
-  getNotificationPrefs: vi.fn(),
   listTeamAdminUserIds: vi.fn(),
-  claimMilestone: vi.fn(),
-  claimFirstShare: vi.fn(),
   claimCommentNotify: vi.fn(),
   claimJoinNotify: vi.fn(),
   claimNotifyEmail: vi.fn(),
 }));
+// What the liveworkspace accounts Worker keeps (accounts/people.ts, accounts/settings.ts): seams here,
+// tested against its stand-in in accounts/*.test.ts.
+const people = vi.hoisted(() => ({
+  emailOf: vi.fn(),
+  emailsOf: vi.fn(),
+  claimAccountMilestone: vi.fn(),
+}));
+vi.mock('../accounts/people', () => people);
+vi.mock('../accounts/settings', () => ({ getNotificationPrefs: vi.fn() }));
 vi.mock('./client', async (importOriginal) => ({
   ...(await importOriginal<typeof import('./client')>()),
   sendEmail: vi.fn(),
 }));
 
-import {
-  claimCommentNotify,
-  claimFirstShare,
-  claimJoinNotify,
-  claimMilestone,
-  claimNotifyEmail,
-  getNotificationPrefs,
-  getOwnerEmail,
-} from '../db';
+import { claimCommentNotify, claimJoinNotify, claimNotifyEmail, listTeamAdminUserIds } from '../db';
+import { getNotificationPrefs } from '../accounts/settings';
+const { emailOf: getOwnerEmail, emailsOf, claimAccountMilestone } = people;
 import { sendEmail } from './client';
 import { actionAssignedEmail, commentNotificationEmail } from './templates';
 import {
@@ -32,6 +31,7 @@ import {
   notifyDesignJoin,
   notifyMentioned,
   notifyFirstShare,
+  notifyInviteResponse,
   notifyMilestone,
   notifyNewComment,
   NOTIFY_EMAIL_DEDUPE_MS,
@@ -44,7 +44,6 @@ const allowAll = {
   notifyDesignJoin: true,
   notifyInviteResponse: true,
   notifyComments: true,
-  notifyTips: true,
   notifyMilestones: true,
   notifyActionAssigned: true,
   notifyMentions: true,
@@ -332,9 +331,10 @@ describe('notifyMilestone (docs/specs/014-identity/transactional-email.md #6)', 
   it('sends + claims at a milestone count when opted in', async () => {
     vi.mocked(getOwnerEmail).mockResolvedValue('owner@x.com');
     vi.mocked(getNotificationPrefs).mockResolvedValue(allowAll);
-    vi.mocked(claimMilestone).mockResolvedValue(true);
+    vi.mocked(claimAccountMilestone).mockResolvedValue(true);
     vi.mocked(sendEmail).mockResolvedValue({ sent: true });
     await notifyMilestone(env, 'u1', 10);
+    expect(claimAccountMilestone).toHaveBeenCalledWith(env, 'u1', 'milestone');
     expect(sendEmail).toHaveBeenCalledOnce();
   });
 
@@ -346,7 +346,7 @@ describe('notifyMilestone (docs/specs/014-identity/transactional-email.md #6)', 
   it('does not send when the claim is lost (a concurrent save already sent)', async () => {
     vi.mocked(getOwnerEmail).mockResolvedValue('owner@x.com');
     vi.mocked(getNotificationPrefs).mockResolvedValue(allowAll);
-    vi.mocked(claimMilestone).mockResolvedValue(false);
+    vi.mocked(claimAccountMilestone).mockResolvedValue(false);
     await notifyMilestone(env, 'u1', 10);
     expect(sendEmail).not.toHaveBeenCalled();
   });
@@ -363,16 +363,17 @@ describe('notifyFirstShare (docs/specs/014-identity/transactional-email.md #6)',
   it('sends + claims on a first share when opted in', async () => {
     vi.mocked(getOwnerEmail).mockResolvedValue('owner@x.com');
     vi.mocked(getNotificationPrefs).mockResolvedValue(allowAll);
-    vi.mocked(claimFirstShare).mockResolvedValue(true);
+    vi.mocked(claimAccountMilestone).mockResolvedValue(true);
     vi.mocked(sendEmail).mockResolvedValue({ sent: true });
     await notifyFirstShare(env, 'u1');
+    expect(claimAccountMilestone).toHaveBeenCalledWith(env, 'u1', 'firstShare');
     expect(sendEmail).toHaveBeenCalledOnce();
   });
 
   it('does not send when already claimed (not actually the first share)', async () => {
     vi.mocked(getOwnerEmail).mockResolvedValue('owner@x.com');
     vi.mocked(getNotificationPrefs).mockResolvedValue(allowAll);
-    vi.mocked(claimFirstShare).mockResolvedValue(false);
+    vi.mocked(claimAccountMilestone).mockResolvedValue(false);
     await notifyFirstShare(env, 'u1');
     expect(sendEmail).not.toHaveBeenCalled();
   });
@@ -381,6 +382,32 @@ describe('notifyFirstShare (docs/specs/014-identity/transactional-email.md #6)',
     vi.mocked(getOwnerEmail).mockResolvedValue('owner@x.com');
     vi.mocked(getNotificationPrefs).mockResolvedValue({ ...allowAll, notifyMilestones: false });
     await notifyFirstShare(env, 'u1');
+    expect(sendEmail).not.toHaveBeenCalled();
+  });
+});
+
+describe('notifyInviteResponse (docs/specs/014-identity/profile-and-email-notifications.md)', () => {
+  it('reads every admin’s address in one request and skips the responder', async () => {
+    vi.mocked(listTeamAdminUserIds).mockResolvedValue(['u1', 'u2', 'u3']);
+    vi.mocked(emailsOf).mockResolvedValue(
+      new Map([
+        ['u1', 'one@x.test'],
+        ['u2', 'two@x.test'],
+      ]),
+    );
+    vi.mocked(getNotificationPrefs).mockResolvedValue(allowAll);
+    vi.mocked(sendEmail).mockResolvedValue({ sent: true });
+    await notifyInviteResponse(env, { id: 't1', name: 'Design' }, 'new@x.test', true, 'u2');
+    expect(emailsOf).toHaveBeenCalledOnce();
+    expect(emailsOf).toHaveBeenCalledWith(env, ['u1', 'u3']);
+    expect(vi.mocked(sendEmail).mock.calls.map((c) => c[1].to)).toEqual(['one@x.test']);
+  });
+
+  it('skips an admin who opted out', async () => {
+    vi.mocked(listTeamAdminUserIds).mockResolvedValue(['u1']);
+    vi.mocked(emailsOf).mockResolvedValue(new Map([['u1', 'one@x.test']]));
+    vi.mocked(getNotificationPrefs).mockResolvedValue({ ...allowAll, notifyInviteResponse: false });
+    await notifyInviteResponse(env, { id: 't1', name: 'Design' }, 'new@x.test', false, null);
     expect(sendEmail).not.toHaveBeenCalled();
   });
 });

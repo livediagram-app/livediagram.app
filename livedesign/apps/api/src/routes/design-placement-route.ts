@@ -7,10 +7,10 @@ import {
   getDesign,
   getFolder,
   getMembership,
-  getParticipant,
   getTeam,
   setDesignFolder,
 } from '../db';
+import { getParticipant } from '../accounts/profiles';
 import { badRequest, forbidden, noContent, notFound } from '../responses';
 import {
   audienceForDesign,

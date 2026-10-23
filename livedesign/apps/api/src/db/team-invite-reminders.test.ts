@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { sqliteD1 } from '../test-sqlite-d1';
-import { MAX_SEND_ATTEMPTS } from './email-lifecycle';
+import { MAX_SEND_ATTEMPTS } from './team-invite-reminders';
 import {
   dueForInviteReminder,
   expireStaleInvites,

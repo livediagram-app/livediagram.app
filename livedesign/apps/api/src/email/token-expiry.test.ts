@@ -4,14 +4,16 @@ import type { Env } from '../types';
 vi.mock('../db', () => ({
   apiTokensExpiringSoon: vi.fn(),
   markApiTokenExpiryWarned: vi.fn(),
-  getOwnerEmail: vi.fn(),
 }));
+// Owners' verified addresses, from the liveworkspace accounts Worker in one batched read.
+vi.mock('../accounts/people', () => ({ emailsOf: vi.fn() }));
 vi.mock('./client', async (importOriginal) => ({
   ...(await importOriginal<typeof import('./client')>()),
   sendEmail: vi.fn(),
 }));
 
-import { apiTokensExpiringSoon, getOwnerEmail, markApiTokenExpiryWarned } from '../db';
+import { apiTokensExpiringSoon, markApiTokenExpiryWarned } from '../db';
+import { emailsOf } from '../accounts/people';
 import { sendEmail } from './client';
 import { tokenExpiringEmail } from './templates';
 import { runTokenExpirySweep } from './token-expiry';
@@ -42,9 +44,10 @@ describe('runTokenExpirySweep', () => {
     vi.mocked(apiTokensExpiringSoon).mockResolvedValue([
       { id: 't1', ownerId: 'u1', name: 'CI', expiresAt: Date.UTC(2026, 0, 5) },
     ]);
-    vi.mocked(getOwnerEmail).mockResolvedValue('a@b.com');
+    vi.mocked(emailsOf).mockResolvedValue(new Map([['u1', 'a@b.com']]));
     vi.mocked(sendEmail).mockResolvedValue({ sent: true });
     await runTokenExpirySweep(env);
+    expect(emailsOf).toHaveBeenCalledWith(env, ['u1']);
     expect(sendEmail).toHaveBeenCalledOnce();
     expect(markApiTokenExpiryWarned).toHaveBeenCalledWith(env, 't1');
   });
@@ -53,7 +56,7 @@ describe('runTokenExpirySweep', () => {
     vi.mocked(apiTokensExpiringSoon).mockResolvedValue([
       { id: 't1', ownerId: 'u1', name: null, expiresAt: 1 },
     ]);
-    vi.mocked(getOwnerEmail).mockResolvedValue(null);
+    vi.mocked(emailsOf).mockResolvedValue(new Map());
     await runTokenExpirySweep(env);
     expect(sendEmail).not.toHaveBeenCalled();
     expect(markApiTokenExpiryWarned).not.toHaveBeenCalled();
@@ -63,7 +66,7 @@ describe('runTokenExpirySweep', () => {
     vi.mocked(apiTokensExpiringSoon).mockResolvedValue([
       { id: 't1', ownerId: 'u1', name: null, expiresAt: 1 },
     ]);
-    vi.mocked(getOwnerEmail).mockResolvedValue('a@b.com');
+    vi.mocked(emailsOf).mockResolvedValue(new Map([['u1', 'a@b.com']]));
     vi.mocked(sendEmail).mockResolvedValue({ sent: false });
     await runTokenExpirySweep(env);
     expect(markApiTokenExpiryWarned).not.toHaveBeenCalled();

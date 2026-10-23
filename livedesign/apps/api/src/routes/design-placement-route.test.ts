@@ -33,6 +33,7 @@ const db = vi.hoisted(() => ({
   setDesignFolder: vi.fn(async () => true),
 }));
 vi.mock('../db', () => db);
+vi.mock('../accounts/profiles', () => ({ getParticipant: db.getParticipant }));
 
 import { handleDesignPlacement } from './design-placement-route';
 

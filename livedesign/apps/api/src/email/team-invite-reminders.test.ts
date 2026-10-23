@@ -14,7 +14,7 @@ vi.mock('./client', async (original) => ({
   ...client,
 }));
 
-import { MAX_SEND_ATTEMPTS } from '../db/email-lifecycle';
+import { MAX_SEND_ATTEMPTS } from '../db/team-invite-reminders';
 import { resolveDeclineToken } from '../db/team-invite-decline';
 import { runTeamInviteSweep } from './team-invite-reminders';
 

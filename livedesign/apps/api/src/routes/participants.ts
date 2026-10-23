@@ -1,42 +1,45 @@
-// /api/participants/<id> — read / update a participant's display row.
+// /api/participants/<id>: read / set someone's display name and presence colour
+// (docs/specs/014-identity/auth-and-guest-access.md "Identity display name"). Both are the person's
+// liveworkspace profile (accounts/profiles.ts), the same in every app; livedesign keeps no copy.
 
 import { MAX_COLOR_LEN, MAX_PARTICIPANT_NAME_LEN } from '@livedesign/api-schema';
 import { isSafeColourValue } from '@livedesign/design';
-import { getParticipant, upsertParticipant } from '../db';
+import { getStoredProfile, ProfileError, writeParticipant } from '../accounts/profiles';
 import { badRequest, forbidden, json, notFound } from '../responses';
 import type { ParticipantDTO } from '../types';
 import { requireOwner, type RouteContext, readBody } from './context';
 
-// GET stays open — participant ids are already broadcast through
-// the WS room and embedded in comment authors, so anyone in a
-// shared session can already learn the id; the endpoint just
-// exposes display name + colour, which the same shared session
-// surfaces in every cursor and comment anyway.
+// GET stays open: participant ids are already broadcast through the WS room and embedded in comment
+// authors, so anyone in a shared session can already learn the id; the endpoint just exposes display name
+// + colour, which the same shared session surfaces in every cursor and comment anyway.
 //
-// PUT is owner-only on the participant. Without this guard any
-// caller who knew (or guessed) another participant's id could
-// rewrite their display name + colour, and that vandalism would
-// propagate across every design they'd collaborated on. The guard requires the caller's resolved
-// owner (account Bearer OR X-Owner-Id, docs/specs/014-identity/auth-and-guest-access.md) to match the
-// participant id being mutated.
+// PUT is owner-only. Without this guard any caller who knew (or guessed) another participant's id could
+// rewrite their display name + colour, and that would follow them into every app. The guard requires the
+// caller's resolved owner (account Bearer OR X-Owner-Id) to match the id being changed.
 export async function handleParticipants(ctx: RouteContext): Promise<Response> {
   const { request, env, segments } = ctx;
   if (segments[1] !== 'participants') return notFound();
   if (segments.length !== 3) return notFound();
   const id = segments[2]!;
   if (request.method === 'GET') {
-    const p = await getParticipant(env, id);
-    if (!p) {
-      // Your own profile, not saved yet (a fresh visitor): expected state, so a 200 with no
-      // participant rather than a 404 every browser logs as an error (docs/specs/015-api/api.md).
-      // Says nothing a 404 would not: the id is absent either way.
-      if (ctx.resolveOwner() === id) {
-        console.info('[participants] self_absent');
-        return json({ participant: null });
-      }
-      return notFound();
+    const self = ctx.resolveOwner() === id;
+    let profile;
+    try {
+      profile = await getStoredProfile(env, id);
+    } catch (err) {
+      console.warn('[participants] read_failed', err instanceof Error ? err.message : 'unknown');
+      return json({ error: 'profile_unavailable' }, { status: 503 });
     }
-    return json({ participant: p });
+    // Your own profile, when you have set nothing yet (a fresh visitor, or an account that has only ever
+    // shown its account name): a 200 with no participant rather than a 404 every browser logs as an error
+    // (docs/specs/015-api/api.md), so the editor picks a colour and saves it.
+    if (self && !profile.ownSet) {
+      console.info('[participants] self_absent');
+      return json({ participant: null });
+    }
+    // Named, so it reads as this route answering about the id rather than no route at all.
+    if (!profile.participant) return json({ error: 'participant_not_found' }, { status: 404 });
+    return json({ participant: profile.participant });
   }
   if (request.method === 'PUT') {
     const owner = requireOwner(ctx);
@@ -59,16 +62,26 @@ export async function handleParticipants(ctx: RouteContext): Promise<Response> {
     if (body.name.length > MAX_PARTICIPANT_NAME_LEN || body.color.length > MAX_COLOR_LEN) {
       return badRequest('name/color too long');
     }
-    const existing = await getParticipant(env, id);
-    const now = Date.now();
-    const p: ParticipantDTO = {
+    let stored;
+    try {
+      stored = await writeParticipant(env, id, { name: body.name, color: body.color });
+    } catch (err) {
+      if (err instanceof ProfileError) {
+        console.warn('[participants] write_refused', { status: err.status, code: err.code });
+        return json({ error: err.code }, { status: err.status === 404 ? 404 : 400 });
+      }
+      console.warn('[participants] write_failed', err instanceof Error ? err.message : 'unknown');
+      return json({ error: 'profile_unavailable' }, { status: 503 });
+    }
+    // No accounts Worker to keep it (a self-host with no sign-in): answered as sent, and the editor keeps
+    // it in the browser.
+    const participant: ParticipantDTO = stored?.participant ?? {
       id,
       name: body.name,
       color: body.color,
-      createdAt: existing?.createdAt ?? now,
+      createdAt: Date.now(),
     };
-    await upsertParticipant(env, p);
-    return json({ participant: p });
+    return json({ participant });
   }
   return notFound();
 }

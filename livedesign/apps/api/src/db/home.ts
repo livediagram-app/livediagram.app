@@ -14,7 +14,8 @@ import {
   type WithinReach,
 } from '@livedesign/api-schema';
 import { WHAT_HAPPENED_EVENT_TYPES, type WhatHappenedRow } from '../home/what-happened';
-import type { Env } from '../types';
+import type { Env, ParticipantDTO } from '../types';
+import { readParticipants } from '../accounts/profiles';
 import { VISIBLE_DESIGNS_CTES } from './design-visibility';
 import { firstTabCountSql, isEmptyCount } from './tabs';
 
@@ -26,13 +27,12 @@ const PLACE_COLUMNS = `
   CASE WHEN v.via = 'shared' THEN NULL ELSE pt.name END AS team_name,
   CASE WHEN v.via = 'shared' THEN NULL ELSE v.folder_id END AS folder_id,
   CASE WHEN v.via = 'shared' THEN NULL ELSE pf.name END AS folder_name,
-  po.name AS owner_name, v.saved_at,
+  v.owner_id, v.saved_at,
   ${firstTabCountSql('v.id', 'v.scope_tab_id')}`;
 
 const PLACE_JOINS = `
   LEFT JOIN teams pt ON pt.id = v.team_id
-  LEFT JOIN folders pf ON pf.id = v.folder_id
-  LEFT JOIN participants po ON po.id = v.owner_id`;
+  LEFT JOIN folders pf ON pf.id = v.folder_id`;
 
 type PlaceRow = {
   design_id: string;
@@ -44,12 +44,13 @@ type PlaceRow = {
   team_name: string | null;
   folder_id: string | null;
   folder_name: string | null;
-  owner_name: string | null;
+  owner_id: string;
   saved_at: number;
   first_tab_count: number | null;
 };
 
-function placeOf(row: PlaceRow): HomeDesign {
+// `people` holds the owners' liveworkspace profiles (accounts/profiles.ts), read once per page.
+function placeOf(row: PlaceRow, people: ReadonlyMap<string, ParticipantDTO>): HomeDesign {
   return {
     designId: row.design_id,
     name: row.design_name,
@@ -60,7 +61,7 @@ function placeOf(row: PlaceRow): HomeDesign {
     teamName: row.team_name,
     folderId: row.folder_id,
     folderName: row.folder_name,
-    ownerName: row.owner_name,
+    ownerName: people.get(row.owner_id)?.name ?? null,
     savedAt: row.saved_at,
     empty: isEmptyCount(row.first_tab_count),
   };
@@ -142,8 +143,12 @@ export async function readJumpBackIn(
   const rows = (res.results ?? []).sort((a, b) =>
     a.design_id < b.design_id ? -1 : a.design_id > b.design_id ? 1 : 0,
   );
+  const people = await readParticipants(
+    env,
+    rows.map((r) => r.owner_id),
+  );
   const items = rows.map((r): HomeJumpBackInItem => ({
-    ...placeOf(r),
+    ...placeOf(r, people),
     useDays: r.use_days,
     lastUsedAt: r.last_used_at,
   }));
@@ -170,14 +175,12 @@ export const WHAT_HAPPENED_SQL = `WITH me(id) AS (
      ),
      ${VISIBLE_DESIGNS_CTES}
      SELECT e.id AS event_id, e.event_type, e.actor_id, e.occurred_at, e.description, e.snapshot,
-            ap.name AS actor_name, ap.color AS actor_color,
             ${PLACE_COLUMNS}
        -- The reader's designs lead (CROSS JOIN fixes the order), so the scopes are sought by
        -- (scope_type, scope_id); led by scope_type alone, the read walked every design's events.
        FROM visible v
        CROSS JOIN timeline_event_scopes sc ON sc.scope_type = 'design' AND sc.scope_id = v.id
        JOIN timeline_events e ON e.id = sc.event_id
-       LEFT JOIN participants ap ON ap.id = e.actor_id
        ${PLACE_JOINS}
       WHERE v.scope_tab_id IS NULL
         AND e.event_type IN (${WHAT_HAPPENED_TYPES_SQL})
@@ -205,19 +208,26 @@ export async function readWhatHappenedRows(
         occurred_at: number;
         description: string | null;
         snapshot: string;
-        actor_name: string | null;
-        actor_color: string | null;
       }
     >();
-  return (res.results ?? []).map((r) => ({
+  const rows = res.results ?? [];
+  // The owners' and the actors' names, in one batched read for the page.
+  const people = await readParticipants(
+    env,
+    rows.flatMap((r) => [r.owner_id, r.actor_id]),
+  );
+  return rows.map((r) => ({
     eventId: r.event_id,
     eventType: r.event_type,
     actorId: r.actor_id,
     occurredAt: r.occurred_at,
     description: r.description,
     snapshot: parseSnapshot(r.snapshot),
-    design: placeOf(r),
-    actor: { name: r.actor_name, color: r.actor_color },
+    design: placeOf(r, people),
+    actor: {
+      name: people.get(r.actor_id)?.name ?? null,
+      color: people.get(r.actor_id)?.color ?? null,
+    },
   }));
 }
 

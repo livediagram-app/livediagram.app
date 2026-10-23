@@ -4,14 +4,16 @@
 import { isAccountIdShape } from '@livedesign/api-schema';
 import { guestSignatureEnforced, isLegacyGuestEra } from '../auth/guest-rest';
 import { verifyOwnerId } from '../auth/owner-signature';
-import { getParticipant, migrateOwnerId } from '../db';
+import { migrateOwnerId } from '../db';
+import { getStoredProfile } from '../accounts/profiles';
 import { badRequest, forbidden, json, missingAuth, notFound } from '../responses';
 import { readOptionalBody, type RouteContext } from './context';
 
 const ZERO = { designs: 0, folders: 0, shared: 0, images: 0 };
 
-// Moves every `owner_id` row (designs, folders, prefs, images, shared
-// list) from a source owner to a target owner. Two flows:
+// Moves every `owner_id` row (designs, folders, images, shared list) from a
+// source owner to a target owner, and the source's preferences, name and
+// colour with the liveworkspace accounts Worker. Two flows:
 //
 //  1. Sign-up (guest → account): the live app calls this once sign-in reports
 //     a session, to bind the caller's guest data to their account. The
@@ -85,8 +87,13 @@ export async function handleMigrate(ctx: RouteContext): Promise<Response> {
     guestSignatureEnforced(env, Date.now()) &&
     !(await verifyOwnerId(secret, fromOwnerId, request.headers.get('X-Owner-Sig')))
   ) {
-    const participant = await getParticipant(env, fromOwnerId);
-    if (!isLegacyGuestEra(env, participant?.createdAt ?? null)) return forbidden();
+    // When the id's profile was first stored, by the accounts Worker's clock: an id it cannot vouch for
+    // right now is refused, never waved through.
+    const createdAt = await getStoredProfile(env, fromOwnerId).then(
+      (profile) => profile.createdAt,
+      () => null,
+    );
+    if (!isLegacyGuestEra(env, createdAt)) return forbidden();
     console.warn('[migrate] legacy unsigned guest upgraded under enforcement');
   }
   if (!toOwnerId) return badRequest('toOwnerId is required');

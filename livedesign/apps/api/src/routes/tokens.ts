@@ -20,13 +20,8 @@ import {
   notFound,
 } from '../responses';
 import { readOptionalBody, type RouteContext } from './context';
-import {
-  getParticipant,
-  listApiTokensByOwner,
-  mintApiToken,
-  retractTimelineWarning,
-  revokeApiToken,
-} from '../db';
+import { listApiTokensByOwner, mintApiToken, retractTimelineWarning, revokeApiToken } from '../db';
+import { getParticipant } from '../accounts/profiles';
 import { MAX_NAME_LEN } from '../limits';
 import { recordTokenCreated, recordTokenRevoked } from '../timeline';
 import { endWorkbenchAccess } from '../workbench-end';

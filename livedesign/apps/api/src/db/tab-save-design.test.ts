@@ -1,5 +1,6 @@
 // The tab save's one-query design read (db/tab-save-design.ts), against the real migrations: the fields the
-// save uses, the owner's participant row joined in, the tab count, and a trashed design reading as missing.
+// save uses, the tab count, and a trashed design reading as missing. The owner's name is no longer joined in:
+// it is their liveworkspace profile, read by the save itself (accounts/profiles.ts).
 import { describe, expect, it } from 'vitest';
 import { sqliteD1 } from '../test-sqlite-d1';
 import { getDesign } from './designs';
@@ -10,7 +11,6 @@ function setUp() {
   db.sql.exec(`
     INSERT INTO designs (id, owner_id, name, shareable, saved_at, created_at, team_id)
       VALUES ('d1', 'owner', 'Plan', 0, 5, 3, NULL);
-    INSERT INTO participants (id, name, color, created_at) VALUES ('owner', 'Ada', '#ff0000', 1);
     INSERT INTO tabs (id, name, data, updated_at) VALUES ('t1', 'One', '{"elements":[]}', 1), ('t2', 'Two', '{"elements":[]}', 1);
     INSERT INTO design_tabs (design_id, tab_id, order_index, added_at) VALUES ('d1', 't1', 0, 1), ('d1', 't2', 1, 1);
   `);
@@ -28,14 +28,10 @@ describe('getDesignForSave', () => {
       teamId: null,
       name: 'Plan',
       createdAt: 3,
-      ownerName: 'Ada',
-      ownerColor: '#ff0000',
       tabCount: 2,
     });
     expect(saving).toMatchObject({
       ownerId: full!.ownerId,
-      ownerName: full!.ownerName,
-      ownerColor: full!.ownerColor,
       createdAt: full!.createdAt,
       tabCount: full!.tabs.length,
     });
@@ -46,14 +42,5 @@ describe('getDesignForSave', () => {
     expect(await getDesignForSave(env, 'nope')).toBeNull();
     sql.exec(`UPDATE designs SET trashed_at = 9 WHERE id = 'd1'`);
     expect(await getDesignForSave(env, 'd1')).toBeNull();
-  });
-
-  it('has no owner name before the owner has a participant row', async () => {
-    const { env, sql } = setUp();
-    sql.exec(`DELETE FROM participants`);
-    expect(await getDesignForSave(env, 'd1')).toMatchObject({
-      ownerName: null,
-      ownerColor: null,
-    });
   });
 });

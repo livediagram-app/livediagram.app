@@ -39,13 +39,11 @@ const OWNER_COLUMNS: OwnerColumn[] = [
   { table: 'tags', column: 'owner_id', migrate: { kind: 'moves' } },
   // Default folders (docs/specs/013-workspace/default-folders.md): guests have them too.
   { table: 'placement_defaults', column: 'owner_id', migrate: { kind: 'moves' } },
-  { table: 'user_preferences', column: 'owner_id', migrate: { kind: 'moves' } },
   // Explorer Home's opens (docs/specs/013-workspace/explorer-home.md): guests open designs too.
   { table: 'design_opens', column: 'owner_id', migrate: { kind: 'moves' } },
   { table: 'images', column: 'owner_id', migrate: { kind: 'moves' } },
   // Whose each media-service image is (src/media.ts): guests upload too.
   { table: 'media_images', column: 'owner_id', migrate: { kind: 'moves' } },
-  { table: 'participants', column: 'id', migrate: { kind: 'moves' } },
   { table: 'timeline_events', column: 'actor_id', migrate: { kind: 'moves' } },
   {
     table: 'timeline_event_scopes',
@@ -70,8 +68,6 @@ const OWNER_COLUMNS: OwnerColumn[] = [
   // writes and reverts changesets too.
   { table: 'agent_changesets', column: 'author_id', migrate: { kind: 'moves' } },
   { table: 'api_tokens', column: 'owner_id', migrate: { kind: 'account-only' } },
-  { table: 'email_lifecycle', column: 'owner_id', migrate: { kind: 'account-only' } },
-  { table: 'auth_accounts', column: 'owner_id', migrate: { kind: 'account-only' } },
   // Mention and action-assigned email claims (docs/specs/012-collaboration/comment-mentions.md "The email"):
   // only a joined team member sends them.
   { table: 'notify_email_claims', column: 'sender_id', migrate: { kind: 'account-only' } },
@@ -123,7 +119,6 @@ function liveDoc(sql: DatabaseSync, id: string, ownerId: string, teamId: string 
 // One row in every guest-holdable owner-keyed column, keyed on `id`, starring
 // and visiting a design `peer` owns as well as its own.
 function seedGuestHoldable(sql: DatabaseSync, id: string, peerDesign: string) {
-  insert(sql, 'participants', { id, name: 'Otter', color: '#ff8800', created_at: T0 });
   liveDoc(sql, `d-${id}`, id);
   insert(sql, 'folders', {
     id: `f-${id}`,
@@ -148,7 +143,6 @@ function seedGuestHoldable(sql: DatabaseSync, id: string, peerDesign: string) {
       last_open_day: '2023-11-14',
     });
   }
-  insert(sql, 'user_preferences', { owner_id: id, prefs: '{}', updated_at: T0 });
   insert(sql, 'placement_defaults', {
     owner_id: id,
     default_key: 'mode:draw',
@@ -225,8 +219,6 @@ function seedAccountOnly(sql: DatabaseSync, id: string, peer: string) {
     revoked: 0,
     read_only: 0,
   });
-  insert(sql, 'email_lifecycle', { owner_id: id, email: `${id}@example.com`, created_at: T0 });
-  insert(sql, 'auth_accounts', { owner_id: id, first_seen_at: T0 });
   insert(sql, 'notify_email_claims', { claim_key: `claim-${id}`, sender_id: id, created_at: T0 });
   insert(sql, 'teams', { id: 'team-1', name: 'Team', created_at: T0, updated_at: T0 });
   for (const [n, userId] of [id, peer].entries()) {
@@ -296,6 +288,19 @@ describe('owner-keyed columns (docs/specs/015-api/api.md)', () => {
     expect(ledger).toEqual(expect.arrayContaining(schemaOwnerColumns(sql)));
   });
 
+  // A person's settings, profile, sign-up and onboarding emails live with their liveworkspace account
+  // (liveworkspace/docs/accounts.md), so closing it there removes them; livedesign keeps no copy to forget.
+  it('keeps no settings, profiles, sightings or onboarding rows of its own', () => {
+    const { sql } = sqliteD1();
+    const tables = sql
+      .prepare(
+        `SELECT name FROM sqlite_master WHERE type = 'table'
+           AND name IN ('user_preferences', 'participants', 'auth_accounts', 'email_lifecycle')`,
+      )
+      .all();
+    expect(tables).toEqual([]);
+  });
+
   it('names only columns the migrations create', () => {
     const { sql } = sqliteD1();
     for (const c of OWNER_COLUMNS) {
@@ -311,7 +316,6 @@ describe('owner-keyed columns (docs/specs/015-api/api.md)', () => {
 describe('deleteAccount erases every owner-keyed row (docs/specs/015-api/api.md)', () => {
   function arrange() {
     const db = sqliteD1();
-    insert(db.sql, 'participants', { id: OTHER, name: 'Peer', color: '#000', created_at: T0 });
     liveDoc(db.sql, 'd-other', OTHER);
     seedGuestHoldable(db.sql, ACCOUNT, 'd-other');
     seedAccountOnly(db.sql, ACCOUNT, OTHER);
@@ -430,31 +434,6 @@ describe('migrateOwnerId moves every guest-holdable row (docs/specs/015-api/api.
 
     const visits = sql.prepare('SELECT owner_id, design_id FROM shared_with').all();
     expect(visits.map((v) => ({ ...v }))).toEqual([{ owner_id: ACCOUNT, design_id: 'd-other' }]);
-  });
-
-  it("keeps the account's participant row over the guest's", async () => {
-    const { env, sql } = arrange();
-    insert(sql, 'participants', { id: ACCOUNT, name: 'Ada', color: '#123456', created_at: T0 });
-
-    await migrateOwnerId(env, GUEST, ACCOUNT);
-
-    const people = sql.prepare('SELECT id, name, color FROM participants').all();
-    expect(people.map((p) => ({ ...p }))).toEqual([{ id: ACCOUNT, name: 'Ada', color: '#123456' }]);
-  });
-
-  // A row older than GUEST_SIGNING_LIVE_AT marks a legacy id that may upgrade unsigned, so the new
-  // id must never inherit the old date (docs/specs/015-api/public-api-and-tokens.md §6).
-  it('stamps the moved participant row with the time of the move, never the old date', async () => {
-    const { env, sql } = arrange();
-    const before = Date.now();
-
-    await migrateOwnerId(env, GUEST, ACCOUNT);
-
-    const row = sql.prepare('SELECT created_at FROM participants WHERE id = ?').get(ACCOUNT) as {
-      created_at: number;
-    };
-    expect(row.created_at).toBeGreaterThanOrEqual(before);
-    expect(row.created_at).not.toBe(T0);
   });
 
   it('is a no-op on a second run', async () => {

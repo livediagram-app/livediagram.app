@@ -11,7 +11,7 @@ import {
   recordInviteReminderFailure,
   type InviteReminderStage,
 } from '../db/team-invite-reminders';
-import { MAX_SEND_ATTEMPTS } from '../db/email-lifecycle';
+import { MAX_SEND_ATTEMPTS } from '../db/team-invite-reminders';
 import type { Env } from '../types';
 import { emailEnabled, sendEmail } from './client';
 import { teamInviteReminderEmail } from './templates';

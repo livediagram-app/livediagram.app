@@ -11,11 +11,11 @@ import {
   designsContainingTab,
   getDesign,
   getDesignForSave,
-  getParticipant,
   getTab,
   linkTabToDesign,
   tabLinkedToOwnedDesign,
 } from '../db';
+import { getParticipant } from '../accounts/profiles';
 import { conflict, forbidden, json, noContent, notFound } from '../responses';
 import { recordVisitorOpened, retractTabComments } from '../timeline';
 import { DESIGN_OPEN_HEADER, readDesignOpen, tabEtag } from '@livedesign/api-schema';

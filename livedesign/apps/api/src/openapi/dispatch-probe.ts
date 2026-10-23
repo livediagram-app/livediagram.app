@@ -180,6 +180,11 @@ export async function probeDispatch(
     MEDIA_URL: 'http://media.invalid/api/media',
     MEDIA_KEY: 'probe-key',
     DESIGN_ROOM: trap('DESIGN_ROOM'),
+    // The liveworkspace accounts Worker, which keeps settings and profiles (accounts/client.ts): reached
+    // through the fetch trap below.
+    ACCOUNTS_URL: 'http://accounts.invalid',
+    ACCOUNTS_CLIENT_ID: 'probe-client',
+    ACCOUNTS_CLIENT_SECRET: 'probe-secret',
     TELEMETRY_ENABLED: 'true',
   } as unknown as Env;
   const pending: Promise<unknown>[] = [];

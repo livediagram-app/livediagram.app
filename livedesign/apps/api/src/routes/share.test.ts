@@ -30,9 +30,9 @@ vi.mock('../db', () => ({
   // The first correct entry of a legacy plain-text password stores its hash.
   upgradeDesignSharePassword: vi.fn(async () => {}),
   getShareLink: vi.fn(),
-  getParticipant: vi.fn(),
   recordSharedAccess: vi.fn(),
 }));
+vi.mock('../accounts/profiles', () => ({ getParticipant: vi.fn() }));
 
 // The live-image endpoint (docs/specs/013-workspace/live-image-share.md + docs/specs/006-design/design-snapshots.md) delegates the actual
 // render-cache to ./thumbnail; stub it so this suite pins the route's
@@ -65,7 +65,8 @@ vi.mock('../thumbnail', () => ({
 // db helpers. passwordGate is module-private to share.ts, exported
 // only for this suite (see the comment on the export).
 import { handleShare, passwordGate } from './share';
-import { getDesign, getParticipant, getShareLink, recordSharedAccess } from '../db';
+import { getDesign, getShareLink, recordSharedAccess } from '../db';
+import { getParticipant } from '../accounts/profiles';
 import { notifyDesignJoin } from '../email/notifications';
 import { reportServerEvent } from '../server-telemetry';
 import { getDesignTabImageSvg, getDesignThumbnailSvg } from '../thumbnail';

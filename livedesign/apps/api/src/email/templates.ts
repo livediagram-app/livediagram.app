@@ -1,4 +1,4 @@
-// docs/specs/014-identity/transactional-email.md: the five email bodies. Plain, inline-styled, email-client-safe HTML
+// docs/specs/014-identity/transactional-email.md: the email bodies livedesign sends. Plain, inline-styled, email-client-safe HTML
 // (no external CSS, tables for layout where it matters). Each builder returns
 // { subject, html }; links resolve against APP_BASE_URL via appBaseUrl(env).
 // Content only: never a design's contents, only the user's own account facts
@@ -29,9 +29,9 @@ const CANVAS = '#fff1f2';
 const LOGO_PATH = '/email/livedesign-mark-64.png';
 const LOGO_SIZE = 28;
 
-// Default sign-off, used by the onboarding emails (their recipients all have an
-// account). The invite + account-deleted builders pass their own, since those
-// recipients may not have (or no longer have) an account.
+// Default sign-off, for an email whose recipient has an account. The invite +
+// account-deleted builders pass their own, since those recipients may not have
+// (or no longer have) an account.
 const ACCOUNT_FOOTER =
   'You’re receiving this because you have a livedesign account. The editor is free and open source.';
 
@@ -42,27 +42,12 @@ function manageNotificationsFooter(env: Env, reason: string): string {
   return `${reason} <a href="${href}" style="color:${BRAND};text-decoration:underline">Manage your notifications</a> to turn these off.`;
 }
 
-// docs/specs/014-identity/transactional-email.md: every tip / check-in after the welcome (week 1, week 2, the
-// activation nudge, win-back) respects notifyTips, so each carries the same opt-out footer and the
-// List-Unsubscribe header pointing at the toggle that stops it.
-function tipsFooter(env: Env): string {
-  return manageNotificationsFooter(
-    env,
-    'You’re receiving this because you have a livedesign account and tips and check-ins are on.',
-  );
-}
-
 // `kind` is the template's telemetry token (docs/specs/017-telemetry/telemetry.md 'Email' category): it rides
 // along on the builder's return so it reaches `sendEmail` through the same
 // spread every caller already writes, rather than being re-stated (and
 // forgotten) at each of the fourteen call sites. A fixed literal, never a
 // subject line or anything the recipient wrote.
 export type EmailKind =
-  | 'Welcome'
-  | 'Week1'
-  | 'Week2'
-  | 'Activation'
-  | 'WinBack'
   | 'Milestone'
   | 'FirstShare'
   | 'TeamInvite'
@@ -170,71 +155,6 @@ function shell(env: Env, section: Section): string {
     </table>
   </td></tr></table>
 </body></html>`;
-}
-
-export function welcomeEmail(env: Env): RenderedEmail {
-  const base = appBaseUrl(env);
-  return {
-    kind: 'Welcome',
-    subject: 'Welcome to livedesign',
-    html: shell(env, {
-      heading: 'Welcome, let’s design something',
-      intro:
-        'livedesign is a fast, no-friction place to design logos and wireframes on pages. Here’s how to get your first design going:',
-      points: [
-        '<strong>Start from a template</strong> (logo designs, app and website wireframes) or a blank logo or wireframe page.',
-        '<strong>Drop shapes, text and icons</strong> from the palette, double-click to type, and drag the corners to resize.',
-        '<strong>Pick a theme</strong> for an instant look, and present your pages when it’s time for feedback.',
-      ],
-      outro: 'Everything autosaves as you go, so you can just start and come back later.',
-      ctaText: 'Start designing',
-      ctaHref: `${base}/new`,
-    }),
-  };
-}
-
-export function week1Email(env: Env): RenderedEmail {
-  const base = appBaseUrl(env);
-  return {
-    kind: 'Week1',
-    subject: 'Find your way around the Explorer',
-    html: shell(env, {
-      heading: 'Your designs, organised',
-      intro: 'Now that you’ve made a few designs, the Explorer is where you keep them tidy:',
-      points: [
-        '<strong>Folders</strong> group related designs; drag to sort, and collapse folders you’re not using.',
-        '<strong>Search and Recents</strong> jump you straight back to what you were working on.',
-        '<strong>Share</strong> right from the grid with a view-only or editor link, and open a design to export a PDF / PNG / SVG copy.',
-      ],
-      ctaText: 'Open your Explorer',
-      ctaHref: `${base}/explorer`,
-      footer: tipsFooter(env),
-    }),
-    unsubscribeUrl: profilePath(env),
-  };
-}
-
-export function week2Email(env: Env): RenderedEmail {
-  const base = appBaseUrl(env);
-  return {
-    kind: 'Week2',
-    subject: 'Bring your team onto the canvas',
-    html: shell(env, {
-      heading: 'Designs are better together',
-      intro:
-        'If you’re working with other people, a team gives everyone a shared home for designs:',
-      points: [
-        '<strong>Create a team</strong> from the Explorer and invite people by email.',
-        '<strong>A shared folder</strong> every member can open and edit (no more passing links around).',
-        '<strong>Admin and Member roles</strong>: admins manage who’s in the team, everyone else just gets to work.',
-      ],
-      outro: 'The canvas itself still needs no account. Teams just add a shared home on top.',
-      ctaText: 'Create a team',
-      ctaHref: `${base}/explorer/team`,
-      footer: tipsFooter(env),
-    }),
-    unsubscribeUrl: profilePath(env),
-  };
 }
 
 // docs/specs/013-workspace/teams.md "Declining from the email": where an invite email's Decline link lands. The
@@ -570,31 +490,6 @@ export function tokenExpiringEmail(
   };
 }
 
-// docs/specs/014-identity/transactional-email.md (#4): a gentle nudge for someone who signed up but hasn't created a
-// design yet (fires once, ~3 days in). Opt-out (notifyTips).
-export function activationEmail(env: Env): RenderedEmail {
-  const base = appBaseUrl(env);
-  return {
-    kind: 'Activation',
-    subject: 'Your canvas is waiting',
-    html: shell(env, {
-      heading: 'Ready when you are',
-      intro:
-        'You signed up for livedesign but haven’t made a design yet. It takes about thirty seconds to get going:',
-      points: [
-        'Start from a template (logo designs, app and website wireframes) or open a blank page.',
-        'Drop shapes, text and icons, double-click to type, and it all autosaves as you go.',
-        'Pick a theme for an instant look you can change any time.',
-      ],
-      outro: 'No pressure: the canvas is free and always here.',
-      ctaText: 'Make your first design',
-      ctaHref: `${base}/new`,
-      footer: tipsFooter(env),
-    }),
-    unsubscribeUrl: profilePath(env),
-  };
-}
-
 // docs/specs/014-identity/transactional-email.md (#1): someone other than the owner left a comment on a design the
 // recipient owns. Opt-out (notifyComments). Never includes the comment text
 // (privacy): just who, which design, and a link to open it.
@@ -622,31 +517,6 @@ export function commentNotificationEmail(
         env,
         'You’re receiving this because someone commented on a design you own.',
       ),
-    }),
-    unsubscribeUrl: profilePath(env),
-  };
-}
-
-// docs/specs/014-identity/transactional-email.md (#5): a friendly re-engagement nudge for someone who's been away for
-// a few weeks. Opt-out (notifyTips).
-export function winBackEmail(env: Env): RenderedEmail {
-  const base = appBaseUrl(env);
-  return {
-    kind: 'WinBack',
-    subject: 'Your designs are waiting',
-    html: shell(env, {
-      heading: 'It’s been a while',
-      intro:
-        'You haven’t opened livedesign in a few weeks, and your designs are right where you left them. A few things you can pick back up:',
-      points: [
-        'Start something new in seconds from a template or theme.',
-        'Share a design with a live link, or bring a team onto the canvas.',
-        'Export to PDF / PNG / SVG whenever you need a copy.',
-      ],
-      outro: 'No rush: it’s all still here whenever you want it.',
-      ctaText: 'Open your designs',
-      ctaHref: `${base}/explorer`,
-      footer: tipsFooter(env),
     }),
     unsubscribeUrl: profilePath(env),
   };

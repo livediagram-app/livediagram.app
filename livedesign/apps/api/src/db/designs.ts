@@ -6,7 +6,7 @@ import { copyBlobRefsStatements } from './photo-blobs';
 import { remapTabLinks, type Element } from '@livedesign/design';
 import { rowToTabSummary, type TabRow } from '../tab-row';
 import type { DesignDTO, DesignSummary, Env, TabSummaryDTO } from '../types';
-import { getParticipant } from './participants';
+import { getParticipant } from '../accounts/profiles';
 import { imageRefIdsFromData } from '../image-refs/extract';
 import { collabIndexCopyStatements } from './collab-index';
 import { redactTabDataAuthors } from '../comments';

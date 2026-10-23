@@ -5,11 +5,11 @@ import { designImageSvg } from '../design-image';
 import {
   getDesign,
   getDesignSharePassword,
-  getParticipant,
   getShareLink,
   getTrashedDesignMeta,
   recordSharedAccess,
 } from '../db';
+import { getParticipant } from '../accounts/profiles';
 import { notifyDesignJoin } from '../email/notifications';
 import { designTrashed, forbidden, json, notFound, svgImage } from '../responses';
 import { reportServerEvent } from '../server-telemetry';

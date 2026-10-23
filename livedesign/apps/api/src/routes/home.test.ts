@@ -14,6 +14,10 @@ import {
 import type { Env } from '../types';
 import { makeTestRouteContext } from './test-route-context';
 import { handleHome } from './home';
+import { resetProfiles, seedProfile } from '../test-profiles';
+vi.mock('../accounts/profiles', async () =>
+  (await import('../test-profiles')).fakeProfilesModule(),
+);
 
 // Explorer Home's reads (docs/specs/013-workspace/explorer-home.md; blueprint "Reads",
 // "Interfaces and contracts", "Security and trust"), against the real schema.
@@ -73,6 +77,10 @@ function shareWithMe(
 }
 
 function seed() {
+  resetProfiles();
+  seedProfile('user_priya', 'Priya', '#e11d48');
+  seedProfile('user_sam', 'Sam', '#0ea5e9');
+  seedProfile('user_lee', 'Lee', '#22c55e');
   db.sql.exec(`
     INSERT INTO teams (id, name, organisation, created_at, updated_at) VALUES ('team-1', 'Platform', NULL, 1, 1);
     INSERT INTO teams (id, name, organisation, created_at, updated_at) VALUES ('team-2', 'Other', NULL, 1, 1);
@@ -83,8 +91,6 @@ function seed() {
       ('m4', 'team-2', '${ME}', 'member', 'invited', 1, 1);
     INSERT INTO folders (id, owner_id, parent_id, team_id, name, created_at, updated_at)
       VALUES ('f1', '${ME}', NULL, NULL, 'Architecture', 1, 1);
-    INSERT INTO participants (id, name, color, created_at) VALUES
-      ('user_priya', 'Priya', '#e11d48', 1), ('user_sam', 'Sam', '#0ea5e9', 1), ('user_lee', 'Lee', '#22c55e', 1);
     INSERT INTO owner_aliases (owner_id, alias_id, created_at) VALUES ('${ME}', 'guest-me', 1);
   `);
   addDoc('own1', ME, { folderId: 'f1' });

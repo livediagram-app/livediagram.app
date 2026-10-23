@@ -7,7 +7,8 @@
 import { isOpenTeamMember } from '@livedesign/api-schema';
 import { legacyDesignIdOf } from '../legacy-request-forms';
 import type { TeamMember } from '@livedesign/api-schema';
-import { getDesignMeta, getMembership, getParticipant, hasSharedAccess } from '../db';
+import { getDesignMeta, getMembership, hasSharedAccess } from '../db';
+import { getParticipant } from '../accounts/profiles';
 import { listTeamMembers } from '../db';
 import { badRequest, forbidden, json, notFound } from '../responses';
 import { notifyActionAssigned } from '../email/notifications';

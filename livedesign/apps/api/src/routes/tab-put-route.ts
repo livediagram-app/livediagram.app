@@ -14,12 +14,13 @@ import { mergeChangesetsIntoSave } from '../changesets/merge-on-save';
 import { hasNewComments, rewriteCommentAuthors } from '../comments';
 import {
   changesetMergePages,
-  getParticipant,
   getTab,
   isTabRevStale,
   upsertTabAtRev,
   tabBelongsElsewhere,
 } from '../db';
+import { getParticipant } from '../accounts/profiles';
+import { reportOwnerActivity } from '../accounts/people';
 import { emailEnabled } from '../email/client';
 import { notifyNewComment } from '../email/notifications';
 import { MAX_TAB_BYTES, bodyExceedsCap, storeTab } from '../limits';
@@ -78,6 +79,9 @@ export async function handleTabPut(
     console.warn('[changeset] seen-invalid', { designId: id, tabId, length: seenHeader.length });
   }
 
+  // The writer's profile, asked for now so it overlaps the reads below rather than following them.
+  const writer = getParticipant(env, owner);
+
   for (let attempt = 1; attempt <= TAB_SAVE_CAS_ATTEMPTS; attempt += 1) {
     // The stored tab and the changesets this editor had not seen, read together. Changesets merge
     // first, so their before-image compare sees the save as sent; then the room's ledger.
@@ -113,18 +117,11 @@ export async function handleTabPut(
       return conflict('empty_tab_overwrite_blocked');
     }
     const orderIndex = existingTab?.orderIndex ?? existing.tabCount;
-    // Newly added comments carry the resolved owner's participant record, never the client's claim
-    // (docs/specs/014-identity/auth-and-guest-access.md). getDesign already joined the owner's
-    // row: reused when the writer IS the owner, the common autosave case.
-    const writerParticipant =
-      owner === existing.ownerId && existing.ownerName !== null
-        ? {
-            id: owner,
-            name: existing.ownerName,
-            color: existing.ownerColor ?? '#0ea5e9',
-            createdAt: existing.createdAt,
-          }
-        : await getParticipant(env, owner);
+    // Newly added comments carry the resolved owner's profile, never the client's claim
+    // (docs/specs/014-identity/auth-and-guest-access.md). Remembered per isolate for a minute
+    // (accounts/profiles.ts), so an autosave asks the accounts Worker at most once a minute, and
+    // asked before the loop, so that ask overlaps the tab's own reads.
+    const writerParticipant = await writer;
     const sanitised: Tab = writerParticipant
       ? {
           ...body,
@@ -155,6 +152,9 @@ export async function handleTabPut(
     ctx.waitUntil?.(
       recordTabSave(env, existing, owner, sanitised.elements, existingTab?.elements ?? []),
     );
+    // The owner saving their own design is activity, for liveworkspace's onboarding series
+    // (docs/specs/014-identity/transactional-email.md): at most once a minute a design.
+    if (owner === existing.ownerId) ctx.waitUntil?.(reportOwnerActivity(env, owner, id));
     // docs/specs/014-identity/transactional-email.md (#1): an edit-role visitor adding a comment
     // notifies the owner. Their own comment only, read from the authors the server just set.
     if (

@@ -38,6 +38,7 @@ const { db } = vi.hoisted(() => ({
   },
 }));
 vi.mock('../db', () => db);
+vi.mock('../accounts/profiles', () => ({ getParticipant: db.getParticipant }));
 // The in-app decline marks the row 'declined' (docs/specs/013-workspace/teams.md); the write has its own suite.
 const { decline } = vi.hoisted(() => ({
   decline: { declineTeamInvite: vi.fn(async () => true) },

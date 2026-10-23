@@ -5,6 +5,7 @@ import type { Env, ShareRole } from '../types';
 import { firstTabCountSql, isEmptyCount } from './tabs';
 import { legacyRoleColumn, levelColumn, storedLevelOf } from '../share-link-row';
 import { visitLinkSql } from './visit-link';
+import { readParticipants } from '../accounts/profiles';
 
 // Record a visitor's access to a shared design. Idempotent on
 // (owner_id, design_id): repeat visits just bump last_seen + role.
@@ -105,11 +106,9 @@ export async function listSharedWith(env: Env, ownerId: string): Promise<SharedW
     `SELECT d.id, d.name, d.saved_at, s.role, s.level, s.tab_id,
             ${visitLinkSql('?1')} AS share_code,
             ${firstTabCountSql('d.id', 's.tab_id')},
-            p.name  AS owner_name,
-            p.color AS owner_color
+            d.owner_id
        FROM shared_with s
        JOIN designs d ON d.id = s.design_id
-       LEFT JOIN participants p ON p.id = d.owner_id
       WHERE s.owner_id = ?2
         AND d.shareable = 1
         AND d.trashed_at IS NULL
@@ -124,21 +123,24 @@ export async function listSharedWith(env: Env, ownerId: string): Promise<SharedW
       level: string | null;
       tab_id: string | null;
       share_code: string | null;
-      owner_name: string | null;
-      owner_color: string | null;
+      owner_id: string;
       first_tab_count: number | null;
     }>();
-  return (res.results ?? [])
-    .filter((r) => r.share_code !== null)
-    .map((r) => ({
+  const rows = (res.results ?? []).filter((r) => r.share_code !== null);
+  // The owners' names and colours: their liveworkspace profiles, in one batched read for the page.
+  const owners = await readParticipants(
+    env,
+    rows.map((r) => r.owner_id),
+  );
+  return rows.map((r) => ({
       id: r.id,
       name: r.name,
       savedAt: r.saved_at,
       role: storedLevelOf(r),
       shareCode: r.share_code as string,
       tabId: r.tab_id ?? null,
-      ownerName: r.owner_name,
-      ownerColor: r.owner_color,
+      ownerName: owners.get(r.owner_id)?.name ?? null,
+      ownerColor: owners.get(r.owner_id)?.color ?? null,
       empty: isEmptyCount(r.first_tab_count),
     }));
 }

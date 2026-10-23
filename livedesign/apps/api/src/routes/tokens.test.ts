@@ -15,6 +15,7 @@ const { db } = vi.hoisted(() => ({
   },
 }));
 vi.mock('../db', () => db);
+vi.mock('../accounts/profiles', () => ({ getParticipant: db.getParticipant }));
 
 const { timeline } = vi.hoisted(() => ({
   timeline: { recordTokenCreated: vi.fn(), recordTokenRevoked: vi.fn() },

@@ -8,6 +8,10 @@ import { stubTelemetry, TELEMETRY_ON } from '../test-telemetry';
 import type { Env } from '../types';
 import { makeTestRouteContext } from './test-route-context';
 import { handleDesigns } from './designs';
+import { resetProfiles, seedProfile } from '../test-profiles';
+vi.mock('../accounts/profiles', async () =>
+  (await import('../test-profiles')).fakeProfilesModule(),
+);
 
 // The changeset routes end to end on real SQLite (docs/specs/024-agents/agent-changesets.md; blueprint
 // "Testing"): submit, list, one, revert, with a recording room.
@@ -77,9 +81,8 @@ async function setUp(
     ...TELEMETRY_ON,
   } as unknown as Partial<Env>);
   sent = stubTelemetry();
-  db.sql.exec(
-    `INSERT INTO participants (id, name, color, created_at) VALUES ('${OWNER}', 'Webber', '#123456', 1)`,
-  );
+  resetProfiles();
+  seedProfile(OWNER, 'Webber', '#123456');
   const created = await call(db, 'POST', '/api/designs', {
     id: 'D',
     name: 'Board',

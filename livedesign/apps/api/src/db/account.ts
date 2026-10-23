@@ -12,6 +12,7 @@ import { detachUserFromTeams } from './teams';
 import { migrateTagStatements } from './tags';
 import { imageGrantOwnerChangeStatement } from './image-grants';
 import { mediaClient, mediaOwner } from '../media';
+import { moveGuestAccountState } from '../accounts/guest-move';
 import type { Env } from '../types';
 
 // R2 batch delete takes at most 1000 keys per call. An owner has no hard
@@ -28,9 +29,9 @@ const R2_DELETE_CHUNK = 1000;
 // the tabs (and their history) no other owner's design still holds;
 // share links and the other per-design rows cascade from `designs.id`.
 // Folders carry their own owner_id and need their
-// own DELETE. Participants are owner-less in the schema but their id
-// IS the owner id, so a single id-match delete clears the display-
-// name / colour row too. Images carry owner_id on their D1 row and
+// own DELETE. The person's settings, display name and colour, sign-up
+// and milestones live with their liveworkspace account, which closing
+// the account removes (routes/account.ts). Images carry owner_id on their D1 row and
 // the R2 object key matches the row id, so we enumerate before the
 // D1 wipe + bulk-delete from R2 + then drop the rows.
 //
@@ -108,13 +109,6 @@ export async function deleteAccount(
   )
     .bind(ownerId)
     .run();
-  await env.DB.prepare('DELETE FROM participants WHERE id = ?').bind(ownerId).run();
-  // user_preferences (docs/specs/007-editor/user-preferences.md) holds this owner's editor preference
-  // flags (some surfaced in the Settings dialog, some attached to
-  // per-tool surfaces like the pencil's recognise-shapes toggle).
-  // Wipe along with everything else so a delete-account run leaves
-  // no row carrying their flags.
-  await env.DB.prepare('DELETE FROM user_preferences WHERE owner_id = ?').bind(ownerId).run();
   // Workbench rows (docs/specs/013-workspace/workbench-embeds.md), before the tokens they were minted from.
   await env.DB.batch(
     [
@@ -126,11 +120,6 @@ export async function deleteAccount(
   );
   // api_tokens (docs/specs/015-api/public-api-and-tokens.md): no API credential outlives the account.
   await env.DB.prepare('DELETE FROM api_tokens WHERE owner_id = ?').bind(ownerId).run();
-  // email_lifecycle (docs/specs/014-identity/transactional-email.md): drop the onboarding-email row so the address
-  // isn't retained and a re-signup starts the series fresh.
-  await env.DB.prepare('DELETE FROM email_lifecycle WHERE owner_id = ?').bind(ownerId).run();
-  // auth_accounts (docs/specs/017-telemetry/telemetry.md): the first-seen row the sign-up count keys on.
-  await env.DB.prepare('DELETE FROM auth_accounts WHERE owner_id = ?').bind(ownerId).run();
   // notify_email_claims (docs/specs/012-collaboration/comment-mentions.md "The email"): the claims of the
   // mention and action-assigned emails they sent. Hashes only, but keyed on their id.
   await env.DB.prepare('DELETE FROM notify_email_claims WHERE sender_id = ?').bind(ownerId).run();
@@ -173,8 +162,10 @@ export async function deleteAccount(
 // `toOwnerId`. Called
 // from POST /api/migrate when a guest signs up: their localStorage
 // participant id moves to their account id so the new account sees
-// the designs, folders, shared-with-them list, editor preferences,
-// AND uploaded images they built as a guest.
+// the designs, folders, shared-with-them list AND uploaded images they
+// built as a guest. Their preferences, name and colour live with the
+// liveworkspace accounts Worker and follow them there
+// (accounts/guest-move.ts).
 //
 // shared_with's primary key is (owner_id, design_id), so a naive
 // UPDATE could PK-collide if the visitor accepted the same share
@@ -254,21 +245,6 @@ export async function migrateOwnerId(
          AND design_id IN (SELECT id FROM designs WHERE owner_id = ?1)`,
       toOwnerId,
     ),
-    // user_preferences (docs/specs/007-editor/user-preferences.md): same INSERT OR IGNORE pattern as
-    // shared_with so an account id who somehow already had a row (an
-    // earlier sign-in on a different device) keeps that authoritative
-    // copy and the guest row gets dropped. Guest-only is the common
-    // path; the existing-row case just stops the migration clobbering
-    // intentional preferences with stale ones.
-    prefs: move(
-      `INSERT OR IGNORE INTO user_preferences (owner_id, prefs, updated_at)
-       SELECT ?, prefs, updated_at
-       FROM user_preferences
-       WHERE owner_id = ?`,
-      toOwnerId,
-      fromOwnerId,
-    ),
-    prefsDrop: move('DELETE FROM user_preferences WHERE owner_id = ?', fromOwnerId),
     // favourites (docs/specs/013-workspace/favourites.md): the primary key is
     // (owner_id, design_id), and both identities may have starred the same
     // design, so INSERT OR IGNORE then DELETE like shared_with. A collision
@@ -297,23 +273,6 @@ export async function migrateOwnerId(
       fromOwnerId,
     ),
     placementDrop: move('DELETE FROM placement_defaults WHERE owner_id = ?', fromOwnerId),
-    // participants: the guest's name and colour. The id IS the owner id, so an
-    // account that already has a row keeps it (a signed-in name comes from the
-    // account anyway). The copy is stamped NOW, never with the source's created_at: a row
-    // older than GUEST_SIGNING_LIVE_AT marks a legacy id that may upgrade unsigned
-    // (auth/guest-rest.ts isLegacyGuestEra), and the new id is a signed one, so
-    // carrying the old date over would let anyone holding the new id move its data
-    // without the signature. The guest row goes, since nothing reads a retired guest id.
-    participant: move(
-      `INSERT OR IGNORE INTO participants (id, name, color, created_at)
-       SELECT ?, name, color, ?
-       FROM participants
-       WHERE id = ?`,
-      toOwnerId,
-      now,
-      fromOwnerId,
-    ),
-    participantDrop: move('DELETE FROM participants WHERE id = ?', fromOwnerId),
     // images (docs/specs/009-elements/images.md). UPDATE OR IGNORE walks the unique (owner_id,
     // sha256) collision case (same bytes on both identities) and
     // leaves those guest rows in place; the grants written with the
@@ -343,6 +302,14 @@ export async function migrateOwnerId(
   const keys = Object.keys(statements) as (keyof typeof statements)[];
   const results = await env.DB.batch(keys.map((key) => statements[key]));
   const changes = (key: keyof typeof statements) => results[keys.indexOf(key)]?.meta.changes ?? 0;
+  // The guest's preferences, name and colour, kept by the liveworkspace accounts Worker. Best effort:
+  // a failure leaves them on the guest id and never fails the move of their designs.
+  try {
+    const moved = await moveGuestAccountState(env, fromOwnerId, toOwnerId);
+    console.info(`[migrate] account-state settings=${moved.settings} profile=${moved.profile}`);
+  } catch (err) {
+    console.warn('[migrate] account_state_failed', err instanceof Error ? err.message : 'unknown');
+  }
   // timeline (docs/specs/013-workspace/timeline.md §9): a week of drawing as a guest is history
   // worth keeping, so the feed, the authored events, and the
   // scope-state row all follow the user to their new account. The

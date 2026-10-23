@@ -1,4 +1,6 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { __forgetProfiles } from '../accounts/profiles';
+import { fakeAccounts, type FakeAccounts } from '../test-accounts';
 import { fakeD1 } from '../test-d1';
 import {
   dropSharedAccess,
@@ -20,8 +22,7 @@ const sharedRow = (over: Record<string, unknown> = {}) => ({
   saved_at: 42,
   role: 'edit',
   share_code: 'code-1',
-  owner_name: 'Ada',
-  owner_color: '#ff0000',
+  owner_id: 'user_ada',
   tab_id: null,
   first_tab_count: 3,
   ...over,
@@ -103,8 +104,23 @@ describe('hasSharedAccess (docs/specs/012-collaboration/assigned-actions.md acce
 });
 
 describe('listSharedWith (docs/specs/008-canvas/canvas-and-palette.md Shared with you)', () => {
+  // The owners' names and colours are their liveworkspace profiles.
+  let accounts: FakeAccounts;
+  beforeEach(() => {
+    __forgetProfiles();
+    accounts = fakeAccounts();
+    accounts.profiles.set('user_ada', {
+      name: 'Ada',
+      color: '#ff0000',
+      createdAt: 1,
+      updatedAt: 1,
+    });
+    vi.stubGlobal('fetch', accounts.fetch);
+  });
+  afterEach(() => vi.unstubAllGlobals());
+
   it('maps a row to the DTO the Explorer renders', async () => {
-    const db = fakeD1(() => ({ all: [sharedRow()] }));
+    const db = fakeD1(() => ({ all: [sharedRow()] }), accounts.env);
     expect(await listSharedWith(db.env, 'visitor-1')).toEqual([
       {
         id: 'diag-1',
@@ -117,6 +133,35 @@ describe('listSharedWith (docs/specs/008-canvas/canvas-and-palette.md Shared wit
         tabId: null,
         empty: false,
       },
+    ]);
+  });
+
+  it('reads every owner on the page in one request, and leaves an unknown one unnamed', async () => {
+    const db = fakeD1(
+      () => ({
+        all: [
+          sharedRow(),
+          sharedRow({ id: 'diag-2', share_code: 'code-2' }),
+          sharedRow({ id: 'diag-3', share_code: 'code-3', owner_id: 'user_gone' }),
+        ],
+      }),
+      accounts.env,
+    );
+    const items = await listSharedWith(db.env, 'visitor-1');
+    expect(items.map((i) => [i.ownerName, i.ownerColor])).toEqual([
+      ['Ada', '#ff0000'],
+      ['Ada', '#ff0000'],
+      [null, null],
+    ]);
+    expect(accounts.callsTo('profiles/read')).toEqual([
+      { path: 'profiles/read', body: { ids: ['user_ada', 'user_gone'] } },
+    ]);
+  });
+
+  it('names nobody without an accounts Worker', async () => {
+    const db = fakeD1(() => ({ all: [sharedRow()] }));
+    expect(await listSharedWith(db.env, 'visitor-1')).toMatchObject([
+      { ownerName: null, ownerColor: null },
     ]);
   });
 

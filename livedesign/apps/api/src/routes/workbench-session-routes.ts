@@ -16,7 +16,7 @@ import {
   hashWorkbenchSecret,
   sessionPrefixOf,
 } from '../auth/workbench-session';
-import { getParticipant } from '../db/participants';
+import { getParticipant } from '../accounts/profiles';
 import {
   consumeWorkbenchTicket,
   deleteWorkbenchSession,

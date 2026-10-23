@@ -31,7 +31,6 @@ import {
   getDesignThumbMeta,
   getTrashedDesignMeta,
   countDesignsByOwner,
-  getParticipant,
   listDesignsByOwner,
   listRecentTeamDesigns,
   listSharedWith,
@@ -42,6 +41,8 @@ import {
   tabIdsHeldElsewhere,
   upsertDesignMeta,
 } from '../db';
+import { getParticipant } from '../accounts/profiles';
+import { reportOwnerActivity } from '../accounts/people';
 import {
   badRequest,
   designTrashed,
@@ -311,6 +312,9 @@ export async function handleDesigns(ctx: RouteContext): Promise<Response> {
           );
         }
       }
+      // Making a design is activity, for liveworkspace's onboarding series
+      // (docs/specs/014-identity/transactional-email.md).
+      if (liveDoc && !clash) ctx.waitUntil?.(reportOwnerActivity(env, owner, liveDoc.id));
       // docs/specs/014-identity/transactional-email.md (#6): on a genuine create (no prior row), check for a design
       // milestone. Count + send run in the background, off the response path.
       if (emailEnabled(env) && !clash) {

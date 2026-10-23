@@ -4,7 +4,12 @@
 // (`clock_started_at`) is the invite's creation, or the deploy of the baseline migration for an invite already pending.
 
 import type { Env } from '../types';
-import { MAX_SEND_ATTEMPTS } from './email-lifecycle';
+
+// Failed sends after which an invite stops being reminded (docs/specs/013-workspace/teams.md "Reminders and
+// expiry"). Three daily runs rides out a provider outage; an address that has failed three days running is
+// dead (a deleted mailbox, a hard bounce), and left in it would take a place in the oldest-first batch every
+// day for good. Safe range 1..10.
+export const MAX_SEND_ATTEMPTS = 3;
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 

@@ -2,16 +2,13 @@ import { describe, expect, it } from 'vitest';
 import type { Env } from '../types';
 import {
   accountDeletedEmail,
-  activationEmail,
-  winBackEmail,
+  commentNotificationEmail,
   designJoinedEmail,
   inviteResponseEmail,
   teamInviteEmail,
   teamInviteReminderEmail,
-  week1Email,
-  week2Email,
-  welcomeEmail,
   mentionedEmail,
+  milestoneEmail,
   mentionQuote,
   MENTION_QUOTE_CHARS,
 } from './templates';
@@ -22,7 +19,7 @@ describe('email templates', () => {
   // docs/specs/014-identity/transactional-email.md §6 "Branding": every email opens with the logo mark next
   // to the wordmark and closes on the branded footer, all from the one shell.
   it.each([
-    ['welcome', () => welcomeEmail(env)],
+    ['milestone', () => milestoneEmail(env, 10)],
     ['team invite', () => teamInviteEmail(env, 'Acme')],
     ['account deleted', () => accountDeletedEmail(env)],
   ])('%s carries the logo beside the wordmark', (_label, build) => {
@@ -38,34 +35,16 @@ describe('email templates', () => {
     expect(html).toContain('>app.test</a>');
   });
 
-  it('welcome has a subject + links to /new', () => {
-    const e = welcomeEmail(env);
-    expect(e.subject).toMatch(/welcome/i);
-    expect(e.html).toContain('https://app.test/new');
-  });
-
-  it('week 1 links to the explorer', () =>
-    expect(week1Email(env).html).toContain('https://app.test/explorer'));
-
-  it('week 2 links to teams', () =>
-    expect(week2Email(env).html).toContain('https://app.test/explorer/team'));
-
-  // docs/specs/014-identity/transactional-email.md: every tip / check-in respects notifyTips, so each one
-  // links to the toggle in its footer and in its List-Unsubscribe header.
+  // The opt-out emails link to the toggle that stops them, in their footer and their List-Unsubscribe
+  // header. The onboarding series is liveworkspace's own (liveworkspace/docs/accounts.md).
   it.each([
-    ['week 1', week1Email],
-    ['week 2', week2Email],
-    ['activation', activationEmail],
-    ['win-back', winBackEmail],
+    ['milestone', () => milestoneEmail(env, 10)],
+    ['comment', () => commentNotificationEmail(env, 'Roadmap', 'd1', 'Anna')],
   ])('%s carries the manage-notifications footer and unsubscribe url', (_label, build) => {
-    const e = build(env);
+    const e = build();
     expect(e.unsubscribeUrl).toBe('https://app.test/explorer?settings=notifications');
     expect(e.html).toContain('Manage your notifications');
-    expect(e.html).toContain('tips and check-ins are on');
   });
-
-  it('the welcome is not opt-out, so it carries no unsubscribe url', () =>
-    expect(welcomeEmail(env).unsubscribeUrl).toBeUndefined());
 
   it('team invite links to the invites page + names the team', () => {
     const e = teamInviteEmail(env, 'Acme');

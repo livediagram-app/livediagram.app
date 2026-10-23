@@ -1186,21 +1186,22 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'participants',
     tag: 'Participants',
     summary:
-      "Get a participant's display name and colour. Your own id before you have saved a profile answers { participant: null }.",
+      "Get a participant's display name and colour: their liveworkspace profile, the same in every app. Your own id before you have set either answers { participant: null }.",
     auth: 'public',
     responseSchema: {
       type: 'object',
       properties: { participant: { oneOf: [ref('ParticipantRecord'), { type: 'null' }] } },
       required: ['participant'],
     },
-    statuses: [200, 404],
+    statuses: [200, 404, 503],
   },
   {
     method: 'PUT',
     path: '/participants/{id}',
     segment: 'participants',
     tag: 'Participants',
-    summary: 'Update your own participant display name and colour.',
+    summary:
+      'Set your own display name and colour, on your liveworkspace profile (every app shows them).',
     auth: 'guest-or-clerk',
     requestSchema: {
       type: 'object',
@@ -1208,7 +1209,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
       required: ['name', 'color'],
     },
     responseSchema: wrap('participant', 'ParticipantRecord'),
-    statuses: [200, 400, 401, 403, 404],
+    statuses: [200, 400, 401, 403, 404, 503],
   },
 
   // ---- Preferences ----
@@ -1217,24 +1218,26 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/preferences',
     segment: 'preferences',
     tag: 'Account',
-    summary: "Get the caller's editor preferences (opaque blob).",
+    summary:
+      "Get the caller's editor preferences: those shared by every liveworkspace app and livedesign's own, as one set. 404 preferences_not_stored on a deployment without liveworkspace accounts.",
     auth: 'guest-or-clerk',
     responseSchema: { type: 'object', properties: { prefs: { type: 'object' } } },
-    statuses: [200, 401],
+    statuses: [200, 401, 404, 503],
   },
   {
     method: 'PUT',
     path: '/preferences',
     segment: 'preferences',
     tag: 'Account',
-    summary: 'Replace the editor preferences blob.',
+    summary:
+      'Change editor preferences: each key named takes its value whole, null deletes it, keys left out stay.',
     auth: 'guest-or-clerk',
     requestSchema: {
       type: 'object',
       properties: { prefs: { type: 'object' } },
       required: ['prefs'],
     },
-    statuses: [204, 400, 401],
+    statuses: [204, 400, 401, 404, 413, 503],
   },
 
   // ---- Favourites (docs/specs/013-workspace/favourites.md) ----
