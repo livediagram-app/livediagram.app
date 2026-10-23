@@ -3,6 +3,7 @@
 import { DefaultFoldersSettings } from '@liveworkspace/explorer';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useTokenTeams } from '@/lib/explorer-host';
+import { trackOrganise } from '@/lib/explorer-organise';
 import { CANVAS_TEMPLATE_FAMILIES } from '@/lib/canvas-template-families';
 import { indexClient } from '@/lib/index-client';
 import { SettingsRowShell } from './SettingsRowShell';
@@ -21,6 +22,7 @@ export function SettingsDefaultFoldersRow({ row }: { row: SettingsDefaultFolders
           app="livediagram"
           teams={teams}
           templates={CANVAS_TEMPLATE_FAMILIES}
+          onOrganise={trackOrganise}
         />
       </div>
     </SettingsRowShell>

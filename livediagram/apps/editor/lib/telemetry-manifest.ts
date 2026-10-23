@@ -109,8 +109,13 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Facilitator·Changed',
   'Facilitator·Ended',
   'Facilitator·Started',
+  'Folder·Changed',
+  'Folder·Cleared',
   'Folder·Created',
+  'Folder·Deleted',
+  'Folder·Moved',
   'Folder·Renamed',
+  'Home·Loaded',
   'Home·Opened',
   'Home·Selected',
   'Layer·Added',
@@ -161,6 +166,8 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Tab·Unlocked',
   'Tab·Voted',
   'Team·Added',
+  'Team·Moved',
+  'Team·Removed',
   'Template·Used',
   'Theme·Changed',
   // The shared Explorer's Timeline (docs/specs/013-workspace/timeline.md): Changed (Cards or Calendar), Selected (a
@@ -175,6 +182,8 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   // A token's owner allowed a workbench on the pairing page (docs/specs/013-workspace/workbench-embeds.md).
   'Token·Linked',
   // Trash (docs/specs/013-workspace/trash.md): a trashed document's card, and the document restored from it.
+  'Trash·Cleared',
+  'Trash·Deleted',
   'Trash·Opened',
   'Trash·Restored',
   'UI·Added',

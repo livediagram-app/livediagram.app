@@ -28,6 +28,7 @@ import {
 import { countedVerbs, SYNC_WATCH_TYPE } from '@livediagram/agent-verbs';
 import { MCP_TOOL_VERBS } from '@livediagram/agent-verbs/mcp';
 import { CANVAS_CONTROLS } from './event-vocab';
+import { EXPLORER_TELEMETRY_EVENTS } from '@liveworkspace/telemetry';
 
 type ComputedValues = {
   values: readonly (string | null)[];
@@ -418,6 +419,9 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     values: ['WhatHappened', 'SeeTimeline'],
   },
   'apps/editor/app/embed/workbench/ExplorerHost.tsx Home·Opened': { values: ['Group'] },
+  'apps/editor/app/embed/workbench/ExplorerHost.tsx Home·Loaded': {
+    values: EXPLORER_TELEMETRY_EVENTS['Home·Loaded'],
+  },
   // The filter lens, through the Explorer's onLensSelected prop.
   'apps/editor/app/embed/workbench/ExplorerHost.tsx Explorer·Selected': { values: LENS_FACETS },
   // The Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md, "Telemetry"):
@@ -572,7 +576,33 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   // The Share dialog's reports, through its onTelemetry prop (@liveworkspace/explorer ShareDialog.tsx): each a fixed
   // token from the package; a pass issued reports its level.
   'apps/editor/lib/explorer-share-host.ts Document·Shared': {
-    values: Object.values(LEVEL_TELEMETRY_TYPE),
+    values: EXPLORER_TELEMETRY_EVENTS['Document·Shared'],
+  },
+  // Folders, default folders, the Trash, through the Explorer's onOrganise prop (lib/explorer-organise.ts): the
+  // Explorer's closed list.
+  'apps/editor/lib/explorer-organise.ts Folder·Created': {
+    values: EXPLORER_TELEMETRY_EVENTS['Folder·Created'],
+  },
+  'apps/editor/lib/explorer-organise.ts Folder·Moved': {
+    values: EXPLORER_TELEMETRY_EVENTS['Folder·Moved'],
+  },
+  'apps/editor/lib/explorer-organise.ts Folder·Deleted': {
+    values: EXPLORER_TELEMETRY_EVENTS['Folder·Deleted'],
+  },
+  'apps/editor/lib/explorer-organise.ts Folder·Changed': {
+    values: EXPLORER_TELEMETRY_EVENTS['Folder·Changed'],
+  },
+  'apps/editor/lib/explorer-organise.ts Folder·Cleared': {
+    values: EXPLORER_TELEMETRY_EVENTS['Folder·Cleared'],
+  },
+  'apps/editor/lib/explorer-organise.ts Trash·Restored': {
+    values: EXPLORER_TELEMETRY_EVENTS['Trash·Restored'],
+  },
+  'apps/editor/lib/explorer-organise.ts Trash·Deleted': {
+    values: EXPLORER_TELEMETRY_EVENTS['Trash·Deleted'],
+  },
+  'apps/editor/lib/explorer-organise.ts Trash·Cleared': {
+    values: EXPLORER_TELEMETRY_EVENTS['Trash·Cleared'],
   },
   'apps/editor/lib/explorer-share-host.ts UI·Copied': {
     values: ['ShareLink', 'EmbedCode', 'LiveImage'],

@@ -1,6 +1,7 @@
 'use client';
 
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { trackOrganise } from '@/lib/explorer-organise';
 import { ExplorerPanel, explorerPath } from '@liveworkspace/explorer';
 import type { Item } from '@liveworkspace/index-client';
 import Link from 'next/link';
@@ -151,6 +152,7 @@ function ExplorerImpl({
         shareUrl={shareUrl}
         share={shareHost}
         inbox={inboxHost}
+        onOrganise={trackOrganise}
         itemMenu={itemMenu}
         gallery={library.gallery}
         shapeLibraries={library.shapeLibraries}

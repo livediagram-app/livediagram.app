@@ -31,6 +31,7 @@ import { explorerInboxHost } from '@/lib/explorer-inbox-host';
 import { explorerImports, explorerLibraryHosts } from '@/lib/explorer-library-host';
 import { renderDocumentThumbnail } from '@/lib/explorer-thumbnail';
 import { arrivedTrashed } from '@/lib/document-delete-undo';
+import { trackOrganise } from '@/lib/explorer-organise';
 import { track } from '@/lib/telemetry';
 import { commitUserPreferences, type UserPreferences } from '@/lib/user-preferences';
 import {
@@ -67,13 +68,16 @@ const trackTimeline: TimelineTelemetry = (action, type) => {
   }
 };
 
-// Home's What Happened: literal calls, so the telemetry manifest scan sees each pair.
+// Home's What Happened, and a failed read of Home retried: literal calls, so the telemetry manifest scan sees each
+// pair.
 const trackHome: HomeTelemetry = (action, type) => {
   switch (action) {
     case 'Selected':
       return track('Home', 'Selected', type);
     case 'Opened':
       return track('Home', 'Opened', type);
+    case 'Loaded':
+      return track('Home', 'Loaded', type);
   }
 };
 
@@ -161,6 +165,7 @@ export function ExplorerHost({
         onHideHero={hideHero}
         onTimeline={trackTimeline}
         onHome={trackHome}
+        onOrganise={trackOrganise}
         lensTemplates={CANVAS_TEMPLATE_FAMILIES}
         gallery={library.gallery}
         shapeLibraries={library.shapeLibraries}
