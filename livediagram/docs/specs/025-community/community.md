@@ -14,7 +14,8 @@ described in [liveworkspace's Community](../../../../liveworkspace/docs/communit
 view, the card image and copying). Its pages read the gallery, posts, likes and reports straight from the service,
 for `livediagram.app` posts only; its api publishes, edits and removes a post on the owner's behalf, answers My
 Shares, and tells the service where each published document stands (public, closed, away or gone) right after a
-change and on a one-minute cron. A post hidden after reports closes its link here within that minute.
+change and from each published document's own alarm every ten minutes. A post hidden after reports closes its
+link here within those ten minutes.
 
 ## Why
 
@@ -57,7 +58,7 @@ A post shows every tab of the document. A document that is empty (its first tab 
   theirs: their Share dialog shows none, and publishing replaces it with their own. Two first publishes of one
   document at once give the second **This document is already in the Community.**
 - **In the editor**: while the post is public, the visibility badge in the editor header reads **Public** (it wins over
-  Private, Shared and Team; only This Browser beats it), and the Share dialog's status line says the document is public.
+  Private, Shared and Team; only This Browser beats it), and the Share dialog's Community band shows the listed post.
   A visitor who opens the document through the post's link sees **Public** too: that link only resolves while the post
   is public.
 - **In the Explorer**: while the post is public, the document's visibility badge on every list row and card (Recent,
@@ -73,7 +74,7 @@ A post shows every tab of the document. A document that is empty (its first tab 
   nothing on it, the Community section holds **Share to Community** and says why beside it, in the refusal's own words
   ("Add something to your first tab before sharing: it is the picture on your Community card."), as it does for a
   share password. Another first tab is not loaded, so for it the server's refusal stays the only word.
-- **Where**: the Share dialog carries a **Community** tab beside Passes: a short illustrated guide to what publishing means (three steps and four facts: always up to date, anonymous by default, private stays private, yours to take back), then the Community section. Unpublished, it invites the owner
+- **Where**: the editor's Share is the shared Share dialog ([`@liveworkspace/explorer`](../../../../packages/explorer/README.md)) with livediagram's **Community** band below Password Protection (its `appSection`; `apps/editor/components/dialogs/community/ShareDialogWithCommunity.tsx`, `CommunitySection.tsx`). It is offered for a signed-in owner's personal canvas while the Community is on; a team canvas's band says team library documents can't be shared to the Community. Unpublished, it invites the owner
   to share the document with the Community; published, it shows the post (title, category, likes, copies), a link to it,
   **Edit Listing** and **Remove From Community**.
 - **The Publish dialog** asks for:
@@ -93,7 +94,7 @@ A post shows every tab of the document. A document that is empty (its first tab 
 - Publishing again on a published document (**Edit Listing**) updates the title, description, category and tags; the
   likes, copies and publish date stay.
 - The publish dialog takes the Share dialog's place while it is open; closing it (Done after publishing, Cancel, or
-  Escape) brings the Share dialog back on its **Community** tab, where it was left.
+  Escape) brings the Share dialog back, so two modals never stack.
 - **Remove From Community** deletes the post, its likes, copies and reports. Copies people already made are theirs and
   are untouched.
 - An owner can have at most 50 posts.
@@ -204,7 +205,7 @@ only two paths; everything else is served straight from the assets.
 - **When the api cannot answer** (no `API` binding, an error, or no reply within `API_TIMEOUT_MS`, 1.5 seconds) the
   post page is the shell exactly as built and the sitemap answers 503 with `Retry-After`. Nothing about the page
   depends on the worker: it only adds what crawlers read.
-- **Cost**: each post page view makes one extra api read (an indexed D1 lookup of one post) before the HTML is sent,
+- **Cost**: each post page view makes one extra api read (one post's metadata) before the HTML is sent,
   since HTML is never cached ([Router app](../016-platform/router-app.md)). The timeout bounds what a slow api can
   add.
 
@@ -247,7 +248,9 @@ A copy through a Community link is **named after the post**: its title, as the v
 A name the caller sends still wins, and copies through any other share link keep `Copy of <document name>`.
 
 A share password ([Share password](../013-workspace/share-password.md)) and a post exclude each other: a document with a
-password cannot be published, and a published document cannot be given a password (the Share dialog explains why).
+password cannot be published (the band disables Share to Community: "Remove the share password to share it to the
+Community."), and a listed post locks Password Protection in the same dialog ("Remove it from the Community to set a
+password."; the shared dialog's `passwordLockedReason`). A password already set can still be removed.
 
 ## Document lifecycle
 

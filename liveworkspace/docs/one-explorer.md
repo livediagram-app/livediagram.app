@@ -102,8 +102,8 @@ What a browser keeps offline belongs to its app's origin. On the app's address t
 Each app's router answers `/explorer/*` by fetching the same page from liveworkspace.app, so the address bar
 keeps the app's name (`liveplanner.app/explorer/recent`): path, query and hash unchanged, no redirect. The
 routing is one shared helper, `@liveworkspace/sites/workspace-proxy`, with a switch per app
-(`EXPLORER_ON_APP_ORIGIN`); it is on for liveplanner, livedocuments and livedesign, and livediagram's router has
-the route ready for when its switch is turned on. What it forwards:
+(`EXPLORER_ON_APP_ORIGIN`); it is on for all four apps: livediagram, liveplanner, livedocuments and livedesign.
+What it forwards:
 
 - `/explorer`, `/explorer/…` and the page's payloads (`/explorer.txt`, `/explorer/….txt`) to the same place on
   liveworkspace.app, the app's cookies left behind and liveworkspace's never set on the app's origin. The page is
@@ -189,7 +189,8 @@ walks the index, asks each item's app for an export of its content, and keeps Dr
    index, its Explorer opens on liveworkspace.app, comments, actions and the Timeline go to liveworkspace,
    and its own folders, tags, sharing, Timeline, Inbox, teams mirror and content tables are removed.
 6. **livedocuments, then livedesign**, the same way.
-7. **livediagram last.** It has real documents, so it needs a migration; that is planned separately.
+7. **livediagram last.** It ships fresh on new infrastructure, so it starts empty like the others and
+   needs no migration.
 
 ## Cost and performance
 
@@ -219,6 +220,5 @@ walks the index, asks each item's app for an export of its content, and keeps Dr
 
 ## Not decided yet
 
-- Moving livediagram's existing documents.
 - Self-hosting an app without liveworkspace.
 - The CLI and MCP server across apps.

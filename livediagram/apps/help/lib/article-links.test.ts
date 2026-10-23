@@ -68,6 +68,9 @@ const EDITOR_APP_DIR = fileURLToPath(new URL('../../editor/app', import.meta.url
 // Routes served by a different worker entirely, so there is no page.tsx to
 // find. The router stitches these under the same hostname (docs/specs/016-platform/router-app.md).
 const OTHER_WORKERS = new Set(['/telemetry', '/community']);
+// The Explorer is liveworkspace's page, which the router serves at /explorer/* with the address kept
+// (docs/specs/013-workspace/explorer-structure.md), so the editor has no page for it.
+const OTHER_WORKER_PREFIXES = ['/explorer'];
 
 // Markdown [label](/path) and JSX href="/path", excluding /help (covered
 // above) and anything absolute.
@@ -83,6 +86,7 @@ function productLinksIn(source: string): string[] {
 
 function liveRouteExists(path: string): boolean {
   if (OTHER_WORKERS.has(path)) return true;
+  if (OTHER_WORKER_PREFIXES.some((p) => path === p || path.startsWith(`${p}/`))) return true;
   const rel = path.replace(/^\//, '');
   if (rel === '') return existsSync(`${EDITOR_APP_DIR}/page.tsx`);
   return existsSync(`${EDITOR_APP_DIR}/${rel}/page.tsx`);

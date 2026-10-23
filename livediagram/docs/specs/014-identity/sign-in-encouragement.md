@@ -31,7 +31,7 @@ Common gate (all must hold):
   doesn't count).
 - The visitor hasn't dismissed it (see Dismissal).
 
-**Explorer** (`app/explorer/ExplorerShell.tsx`): rides every
+**Explorer** (`../packages/explorer/src/explorer/SignInBanner.tsx`): rides every
 `/explorer/<section>` route, shown immediately when the gate holds.
 The pane reserves extra bottom padding while it's up so the last row
 never hides behind it.

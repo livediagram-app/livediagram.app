@@ -1,95 +1,85 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { MyDocumentsTree } from '@/components/illustrations/explorer';
-import { ExplorerPageLayout } from '@/components/illustrations/explorer-structure';
 
 export const metadata = helpMetadata({
   title: 'Explorer Page',
   description:
-    'Find your way around the full-page Explorer: the Overview, Spaces and More sidebar groups, list or card views, and folders to organise your documents.',
+    'Find your way around the full-page Explorer: one library for everything you make across liveworkspace, its sidebar, views, search and folders.',
   path: '/help/explorer/explorer-page/',
 });
 
 <ArticleLayout
   title="Explorer Page"
-  description="Your whole document library in one place: how the full-page Explorer is laid out, and where everything lives."
+  description="One library for everything you make across liveworkspace: how the full-page Explorer is laid out, and where everything lives."
   categoryTitle="Explorer"
   categorySlug="explorer"
 >
 
-The full-page [Explorer](/explorer) is the complete library view, modelled on a desktop file browser: a sidebar on the left to navigate, and the page you picked on the right, with its folders and documents. Opening `/explorer` takes you to **Home**. It is where all your documents live, organised into folders by project, customer, or topic. (For the compact version inside the editor, see the [Explorer panel](/help/explorer/explorer-panel/).)
+The full-page [Explorer](/explorer) is your library: a sidebar on the left to move around, and the page you picked on the right, with its folders and items. Opening `/explorer` takes you to **Home**. (For the compact version inside the editor, see the [Explorer panel](/help/explorer/explorer-panel/).)
 
-The sidebar is one tree in three groups: **Overview**, **Spaces** and **More**. Every document lives in exactly one place, **My Work**, a team, or this browser, and everything else in the sidebar is a view that gathers documents from wherever they live. Search sits in the top bar: type there to search, or pick a filter, and the page you are on narrows to what matches ([Search and filter documents](/help/explorer/filters/)). Making things happens in the page header: **New Document** is on Home, Timeline, Recent, Favourites and search results, and on My Work and inside a folder it becomes a **Create** button offering **New Document** and **New Folder** (**New Subfolder** inside a folder). Wherever New Document is (except Home), an **Import from** menu sits beside it. Pages that aren't a place a document lands (Inbox, Shared With Me, the Library pages, Trash, a team, This Browser) have no New Document.
+The Explorer is shared by every liveworkspace app. The same library opens on livediagram, livedocuments, livedesign and the others, so a folder can hold a Canvas beside a Document from livedocuments and a Design from livedesign. Your folders, favourites, sharing and Trash are the same wherever you open it.
 
-<Figure caption="The full-page Explorer: the sidebar's three groups on the left, and My Work in the card view on the right.">
-  <ExplorerPageLayout />
-</Figure>
+## Canvases or All
+
+At the top right of most pages, a two-way switch chooses what the lists show:
+
+- **Canvases** shows only livediagram's canvases.
+- **All** shows every item from every app. Each row then carries its app's name, and the lists say "items" rather than "canvases".
+
+Your choice is remembered in this browser. Opening an item from another app takes you to that app's site to open it.
+
+## Making things
+
+**New Canvas** sits in the page header wherever a new canvas has an obvious home: Home, Recent, Favourites and Unsorted put it in My Work, outside any folder. On My Work, inside a folder and in a team's library, the button becomes **Create**, offering **New Canvas** and **New Folder** (**New Subfolder** inside a folder). New always makes a canvas here, whichever filter is on; to make something in another app, open the Explorer on that app's site.
+
+Beside it, on My Work and inside a folder, **Import from** brings in boards from Microsoft Whiteboard, Excalidraw or draw.io; each becomes its own canvas, filed where you are ([Import from draw.io](/help/explorer/drawio-import/), [Import from Microsoft Whiteboard](/help/explorer/microsoft-whiteboard-import/)).
+
+Pages that are not a place an item lives (the Inbox, the Timeline, Shared With Me, the Trash and search results) have no New button.
 
 ## Overview
 
-- **Home** is what the Explorer opens on ([Home](/help/explorer/timeline/)): the documents you use most and last, and what other people did while you were away. Its **See More** link opens [Recent](/help/explorer/recent/), which has no sidebar row of its own. The row carries a badge when something has happened since you last looked.
-- **Inbox** lists the open [actions and comment threads](/help/explorer/activity/) waiting on you, with a badge counting the open actions assigned to you.
-- **Timeline** is the [full feed](/help/explorer/timeline/#the-timeline) of everything that has happened across your documents, teams and account, your own doings included. Home's **See Timeline** link opens it too.
-- **Shared With Me** gathers every document other people have [shared with you](/help/explorer/shared-with-you/) into one list, kept apart from your own library so collaborator work and your own never get mixed up. Its badge counts them.
+- **Home** is what the Explorer opens on ([Home](/help/explorer/timeline/)): the items you use most, what was shared with you recently, and what other people did to your items.
+- **Inbox** lists the [actions and comment threads](/help/explorer/activity/) waiting on you, with a badge counting the open actions assigned to you.
+- **Timeline** is the record of what happened to your items and your teams' items, by day ([Timeline](/help/explorer/timeline/#the-timeline)), with a count of what is new since you last looked.
+- **Shared With Me** gathers every item other people have [shared with you](/help/explorer/shared-with-you/) through a link, kept apart from your own library.
 
 ## Spaces
 
-Your spaces are the top-level folders of the tree.
-
-- **My Work** is [your own library](/help/explorer/personal-space/). Beneath it sit the folders you create; opening it lists those folders, then the documents you have not filed. This is where you do the filing: moving documents into folders with **Change Folder**, renaming, and nesting folders inside folders. Its own menu (its **⋯** button or a right-click) holds **Use as Default for** ([Default folders](/help/explorer/folders/default-folders/)).
-- **Each team** you belong to sits beside it, and expands to the team's shared folders ([Team spaces](/help/explorer/team-spaces/)). Its badge counts the members once there is more than one.
-- **Manage Teams** opens your teams on liveworkspace.app, where teams are made and run. If you are not signed in, a **Sign in to access Teams** card sits here instead (a self-hosted copy without sign-in shows neither).
-
-<Figure caption="My Work is a folder tree: folders you can nest as deep as you like, and the documents at its root.">
-  <MyDocumentsTree />
-</Figure>
+- **My Work** is [your own library](/help/explorer/personal-space/). Beneath it sit the folders you create; opening it lists those folders, then the items you have not filed.
+- **Each team** you belong to sits beside it, and expands to the team's folders ([Team Spaces](/help/explorer/team-spaces/)).
+- **Manage Teams**, when you are signed in, takes you to liveworkspace.app, where teams are made and run.
 
 ## More
 
-- **This Browser** lists the documents saved only in this browser ([Offline Mode](/help/privacy-and-security/offline-mode/)). It shows only while there is at least one. They are yours, like everything in My Work, and every row and card of one carries a **This Browser** pill: hover or focus it to read that it lives only in this browser, and click it for the Offline Mode guide. Their menus offer **Sync Document** to move one to your account, while a cloud document's menu offers **Take Offline** to do the reverse.
-- **Library** expands (it has no page of its own) to the [Image gallery](/help/explorer/image-gallery/) (every image you have uploaded, with where each is used) and [Shape libraries](/help/explorer/shape-libraries/).
-- **Trash** holds deleted documents for 30 days, ready to restore.
+- **Library** expands to **Recent** (everything by when you last opened it, [Recent](/help/explorer/recent/)), **Favourites** (what you starred), and **Unsorted** (every item in no folder, yours and your teams').
+- **This Browser** lists the canvases saved only in this browser ([Offline Mode](/help/privacy-and-security/offline-mode/)), with how many there are, and shows only while there is at least one. Each opens in the editor. Their own page, [This Browser](/offline), has **Sync Canvas** on each to move it to your account when you are signed in, and **Delete** to remove one for good: nothing else holds it, so it has no Trash.
+- **Image Gallery** holds every image you have uploaded, with where each is used ([Image Gallery](/help/explorer/image-gallery/)).
+- **Shape Libraries** holds the shape libraries you imported from draw.io, ready in the palette's My shapes ([Shape Libraries](/help/explorer/shape-libraries/)).
+- **Trash** holds deleted items for 30 days, ready to restore ([Trash](/help/account-and-data/trash/)).
 
-## Moving around with the keyboard
+Which rows you expand is remembered in this browser.
 
-The sidebar is a single stop when you press Tab. Then the **arrow keys** move up and down, **Right** opens a row and **Left** closes it (or moves to its parent), **Home** and **End** jump to the first and last rows, **Enter** or **Space** opens the row, and typing a letter jumps to the next row starting with it. On a folder, or on My Work, **Shift+F10** (or the **Menu** key) opens its menu.
+## Searching
 
-My Work starts expanded and Library starts closed (it opens by itself when you are on one of its pages). Teams and folders start closed, and what you expand lasts until you reload.
+The search field at the top of the page narrows the list you are on by the titles of your items and the names of their folders. On a page with no list of its own, such as Home or the Inbox, typing opens a **Search results** page across the whole library. The chips under each list's title, and typed filters like `made-by:ai` or `edited:7d`, narrow it further: [Search and Filter Documents](/help/explorer/filters/) covers them. Search does not look inside an item's content.
 
-With [power user mode](/help/user-interface/power-user-mode/) and Minimal chrome on, the group titles give way to thin lines between the groups, with nothing above Home.
+## List, Card and Details
 
-Each page is named after its row: **Home**, **Shared With Me**, **My Work**, **This Browser**, **Image Gallery** and the rest, in the page heading, the browser tab and the breadcrumb.
+Every list of items (My Work, a folder, a team, Recent, Favourites, Unsorted, Shared With Me, search results and the Trash) can be shown three ways, switched with the **List view**, **Card view** and **Details view** buttons at the top right of the page. [List, Card and Details Views](/help/explorer/list-and-card-views/) covers them.
 
-## List or card view
+## An item's menu
 
-Every browse view (My Work, your folders, Recent, Favourites, Search results, This Browser, and a team's shared library) can be shown three ways, switched with the **List view** / **Card view** / **Details view** toggle at the top-right of the pane:
+Each row and card has a **⋯** button (or right-click it) with what you can do to that item: **Open**, **Rename**, **Duplicate**, **Change Folder**, **Share**, **Add to Favourites**, **Open Team** for a team's item, and **Delete Canvas** to move it to the Trash. What appears depends on your access: someone who reaches an item through a link cannot rename, move, share or delete it, and its menu offers **Remove from Shared With Me** instead.
 
-- **List** packs documents into compact rows, best for scanning a long library by name and date.
-- **Card** shows each document as a tile with a thumbnail of its first tab, best for recognising a document by its shape at a glance.
-- **Details** lays everything out as a table you can sort by any column: type, comments, access, size and dates.
+**Duplicate** makes a copy named after the original with "(copy)" on the end, every tab included, and puts it in your library.
 
-Cards are the starting view. Your choice is remembered on this device, so the Explorer always opens the way you left it. [List, Card and Details Views](/help/explorer/list-and-card-views/) covers the three layouts and the snapshot previews in detail.
+## On a phone
 
-## Duplicating a Document
-
-To make a copy of a document, open its menu (the **⋯** button on its row or card, or a right-click) and choose **Duplicate**. A notification naming the document ("“Roadmap” duplicated") confirms it, and the copy appears in the list.
-
-- **The name** is the original's with "copy" on the end, so "Roadmap" becomes "Roadmap copy". Rename it from the same menu.
-- **Where it goes:** beside the original, in the same team and folder. If you can't file a document there (a team you are not in, or a folder that isn't yours), the copy lands at the top of **My Work** instead.
-- **Everything comes with it:** every tab and its tab folders.
-- **Links between tabs** point at the copy's own tabs, so clicking one inside the copy stays inside the copy. Links to other documents and to websites are left as they are.
-- **[Default folders](/help/explorer/folders/default-folders/) don't apply.** A copy always goes beside its original, never into the folder you set as a default.
-- **A document in This Browser** duplicates as another document in This Browser, so nothing you chose to keep in this browser is uploaded. See [Offline Mode](/help/privacy-and-security/offline-mode/).
-
-If the copy can't be made, a message says so ("Could not duplicate “Roadmap”. Try again.") and nothing is created.
-
-## Finding your way around
-
-Whichever row you pick, the main pane on the right shows its contents. Inside a folder, a breadcrumb under the title traces the folder path so you can click any step to jump back up. On a phone, the menu button beside the page title opens the same sidebar as a drawer from the left; picking a page closes it. Everything works whether or not you are signed in: a guest sees the documents and folders their own browser owns, and can sign in later to carry that work into an account.
+The sidebar folds away on a small screen. Press the menu button beside the page title (**Browse sections**) to open it, and pick a page to close it again.
 
 <Tip>
   New here? Start with [My Work](/help/explorer/personal-space/) to learn folders, then let **Home**
-  show you what changed since you were last here.
+  take you back to whatever you were last working on.
 </Tip>
 
 </ArticleLayout>

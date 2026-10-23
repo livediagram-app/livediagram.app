@@ -103,7 +103,7 @@ The estimate card uses it; the temperature check deliberately does not.
 ## Rules it inherits, and the one it breaks
 
 - **It syncs, it persists, it exports.** An ordinary element field, so it rides
-  the granular `el` op ([Realtime conflict resolution](realtime-conflict-resolution.md)), lands in D1, and reaches late joiners. This is
+  the granular `el` op ([Realtime conflict resolution](realtime-conflict-resolution.md)), lands in the stored tab, and reaches late joiners. This is
   the deliberate opposite of the poll ([Live poll (ephemeral pulse-check)](live-poll.md)): a poll is a pulse-check that
   should evaporate, an estimate is a record of what the team decided.
 - **Edit-role only.** The room drops view-role mutations ([API app](../015-api/api.md)), so casting

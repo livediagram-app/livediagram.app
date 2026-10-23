@@ -57,9 +57,8 @@ Drop an entry once an upstream release makes it redundant.
 
 A merge to `main` that passes CI **deploys automatically to staging** —
 [staging.livediagram.app](https://staging.livediagram.app), a complete copy of the
-platform with its own database ([Staging environment](../specs/016-platform/staging-environment.md)). Nobody
-presses anything. Within a few minutes your change is running somewhere public, and any
-D1 migration in it has been applied to a real remote database.
+platform with its own Durable Objects and index ([Staging environment](../specs/016-platform/staging-environment.md)).
+Nobody presses anything. Within a few minutes your change is running somewhere public.
 
 Production is **not** affected: that deploy stays manual (`Deploy Production` in the
 Actions tab) and someone decides when to press it.

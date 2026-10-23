@@ -594,9 +594,9 @@ and the dialog stays as the one complete, browsable index of them.
   **Accessibility** (reduce motion, and a **UI Scale** link row that opens
   Appearance), **Tours** (one switch per guided tour, see **Tours** below),
   **Documents** (a **Default Folders** section with one row per
-  [default folder](../013-workspace/default-folders.md#settings) entry, with Change and Clear; those are not a
+  [default folder](../013-workspace/default-folders.md#surfaces) entry, with Change and Clear; those are not a
   preference, they read and write `/api/placement-defaults`), and an **Explorer** section with **Show Home Banner**
-  (`homeBanner`, missing means shown; [Explorer Home](../013-workspace/explorer-home.md#hiding-the-banner))), **Account** (identity, Trash, **Cloud Sync** (the cloud providers the
+  (`homeBanner`, missing means shown; [Explorer Home](../013-workspace/explorer-home.md))), **Account** (identity, Trash, **Cloud Sync** (the cloud providers the
   deployment offers, [Google Drive mirror](../022-drive-mirror/drive-mirror.md)), delete account, see
   [Account settings & email notifications](../014-identity/profile-and-email-notifications.md); with the
   sub-categories **Notifications** (in-editor, plus the seven email preferences) and **API Tokens** (create, view and

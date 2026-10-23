@@ -24,11 +24,10 @@ Derived from [Shape libraries](../shape-libraries.md). Modelled like folders: on
 | `apps/editor/components/palette/PaletteMyShapesTab.tsx`         | The My shapes category body: search, sections, tiles                                                                                                                |
 | `apps/editor/components/palette/LibraryShapeTile.tsx`           | One tile: thumbnail or title, click, keyboard, drag                                                                                                                 |
 | `apps/editor/hooks/canvas/useLibraryShapeInsert.ts`             | `insertLibraryShape(item, at?)`: fresh ids, centred at the point, one commit, selected                                                                              |
-| `apps/editor/app/explorer/shape-libraries/page.tsx`             | The route                                                                                                                                                           |
-| `apps/editor/components/panels/ShapeLibrariesPane.tsx`          | The Explorer page body: cards, rename, delete, show shapes, delete a shape                                                                                          |
-| `apps/editor/components/primitives/LibraryItemThumbnail.tsx`    | `LibraryItemThumbnail`: one item drawn small, shared by My shapes and the Explorer page                                                                             |
+| `apps/api/src/routes/shape-libraries.ts` `/previews`            | `GET /api/shape-libraries/:id/previews`: one library's shapes as SVG by shape id (`shapePreviews`), for the shared Explorer                                         |
+| `apps/editor/lib/explorer-library-host.tsx`                     | `explorerLibraryHosts`: the shared Explorer's Image Gallery and Shape Libraries over this site's API (`appLibraryHosts`)                                            |
+| `apps/editor/components/primitives/LibraryItemThumbnail.tsx`    | `LibraryItemThumbnail`: one item drawn small, drawn in My shapes                                                                                                    |
 | `apps/editor/lib/shape-library-dnd.ts`                          | `LIBRARY_SHAPE_DND_MIME`, `readLibraryShapeRef`: the drag payload                                                                                                   |
-| `apps/editor/app/explorer/routes.ts`                            | `shape-libraries` to and from `/explorer/shape-libraries`                                                                                                           |
 | `apps/help/app/explorer/shape-libraries/page.mdx`               | The help article, key `shapeLibraries`                                                                                                                              |
 
 ## Domain and naming
@@ -51,7 +50,7 @@ Derived from [Shape libraries](../shape-libraries.md). Modelled like folders: on
 4. **Palette**: `usePaletteCatalogue` drops `my-shapes` from the tabs while no library holds a shape. The body lists sections newest first (the api's order); the search filters items whose title or library name contains the query (case-insensitive, trimmed); a library whose name matches shows whole.
 5. **Insert** (`useLibraryShapeInsert`): read-only or edits blocked → nothing. Else the footprint is the size of what lands, the item's elements' `contentBounds` (an item with none falls back to its `width` × `height`), centred on `at` (a drop) or, for a click, on `clickFootprint`: start at `getViewportCenter()`; while the footprint intersects the footprint of an earlier insert on this tab that is still in place (every element it made still exists, its first element still at the `x`, `y` it landed at), move it so its left edge sits `LIBRARY_INSERT_GAP` (24) right of that footprint, centred on its row. Then `duplicateElements(item.elements, all ids, dx, dy)` moving the item's top-left onto the footprint's; `commit((els) => [...els, ...copies])`; one copy selected alone, several multi-selected; the footprint recorded (clicks and drops alike); `track('Element', 'Added', 'LibraryShape')`.
 6. **Drag**: a tile's `dragstart` sets `LIBRARY_SHAPE_DND_MIME` to `JSON.stringify({ libraryId, itemId })` and `copy`; `usePaletteDrop` accepts it and calls `onDropLibraryShape(ref, { x, y })`; the host resolves the item from the provider and inserts at that point. An unknown ref is ignored with a log.
-7. **Explorer page**: the provider's list; a card per library with rename (inline input, Enter saves, Escape or blur cancels; empty, unchanged or over-length input saves nothing), delete (confirm dialog), show shapes (toggle), delete a shape. A failed rename shows its error under the input and keeps the input open.
+7. **Explorer page**: the shared Explorer's Shape Libraries (`@liveworkspace/explorer` `ShapeLibrariesPane`) over `appLibraryHosts('livediagram', …)`: list, rename, delete, show shapes, delete a shape, each through this site's `/api/shape-libraries`; its tiles are drawn from `GET /api/shape-libraries/:id/previews`, one request a library.
 8. **Sign-up**: `migrateOwnerId` reads the account's names, renames each guest library whose name clashes (`uniqueLibraryName`), then moves every guest row to the account.
 
 ## Interfaces and contracts
@@ -147,9 +146,9 @@ CREATE TABLE shape_libraries (
 
 ## Performance and limits
 
-- The list endpoint returns every library's items: at the cap, 100 libraries × up to 2 MB is far past what one list should carry, so the list is bounded in practice by the owner's own imports. The worst real case (the private survey's 14-item library) is about 7 KB. The list is fetched once per editor or Explorer open.
+- The list endpoint returns every library's items: at the cap, 100 libraries × up to 2 MB is far past what one list should carry, so the list is bounded in practice by the owner's own imports. The worst real case (the private survey's 14-item library) is about 7 KB. The list is fetched once per editor or Explorer open; the Explorer's drawings are one previews request per library shown, cached privately for five minutes.
 - Thumbnails render lazily: each `LibraryItemThumbnail` draws after its surface has painted
-  (`setTimeout(0)`), only while My shapes or the Explorer page shows it, cached per item id for the
+  (`setTimeout(0)`), only while My shapes shows it, cached per item id for the
   session; a failed drawing is not retried in that session.
 - Insert is one `duplicateElements` over the item's elements and one commit.
 
@@ -157,8 +156,8 @@ CREATE TABLE shape_libraries (
 
 - Palette: category label **My shapes**, blurb "Shapes from your imported libraries, ready to place.", icon a stacked-shapes glyph. A search input labelled "Search my shapes" (placeholder "Search my shapes"). A section per library: heading the name, then a grid of tiles (the same tile size as Icons). Tile: the thumbnail (contain-fit) over the title, one line, truncated; untitled "Shape n". No matches: "No shapes match “<words>”" (the shared empty state, with Clear Search).
 - Report: under the documents block, "New shape library:" / "2 new shape libraries:", each name a link to `/explorer/shape-libraries/`.
-- Explorer page: header "Shape Libraries"; the article link "Learn more" (`shapeLibraries`) above the
-  cards and in the empty state; cards in a column. Card: the name (heading), "14 shapes", a row of up to 8 thumbnails, buttons **Rename**, **Delete**, **Show shapes** / **Hide shapes**. Expanded: a grid of items, each thumbnail, title and **Delete**. Empty, loading and error copy as the spec.
+- Explorer page: the shared Explorer's Shape Libraries, its Help button opening `shapeLibraries`
+  (`explorerHelpHref` in `apps/editor/lib/explorer-host.ts`). Card: the name (heading), "14 shapes", a row of the first shapes drawn small, buttons **Rename**, **Delete**, **Show shapes** / **Hide shapes**. Expanded: a grid of items, each drawing, title and **Delete**. Empty, loading and error copy as the spec.
 
 ## Accessibility
 
@@ -206,8 +205,7 @@ CREATE TABLE shape_libraries (
 | Palette: hidden when empty, sections, search, tile names, disabled                                                                                                                      | `PaletteMyShapesTab.test.tsx`                                                       |
 | Insert: centred, fresh ids, connections, one commit, selection, read-only; consecutive clicks line up and never cover, a moved or deleted insert frees its spot, drops keep their point | `apps/editor/hooks/canvas/useLibraryShapeInsert.test.ts`                            |
 | Drop: the MIME reaches the host with the point                                                                                                                                          | `usePaletteDrop.test.ts`                                                            |
-| Explorer page: list, rename, delete confirm, items, empty, error                                                                                                                        | `ShapeLibrariesPane.test.tsx`                                                       |
-| Route mapping                                                                                                                                                                           | `app/explorer/routes.test.ts`                                                       |
+| Previews: every shape as SVG, 404 for a missing library                                                                                                                                 | `apps/api/src/routes/shape-libraries.test.ts`                                       |
 | End to end: import a synthesised library, place two shapes whose boxes do not overlap, rename, delete                                                                                   | `apps/editor/e2e/shape-libraries.spec.ts`                                           |
 
 ## Constants and configuration
@@ -228,7 +226,7 @@ CREATE TABLE shape_libraries (
 
 ## Assets and external resources
 
-- The My shapes category glyph and the Explorer sidebar glyph: drawn in-house on the palette's 24-unit grid (a square, a circle and a triangle stacked), MIT like the codebase. No vendor marks.
+- The My shapes category glyph: drawn in-house on the palette's 24-unit grid (a square, a circle and a triangle stacked), MIT like the codebase. No vendor marks.
 - No external resources at runtime.
 
 ## Defaults ledger

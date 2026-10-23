@@ -69,7 +69,7 @@ couldn't be undone would be the only un-undoable add on the canvas.
 
 ## What does not change
 
-- Nothing is written to D1 **during** the poll, still.
+- Nothing is written to the stored document **during** the poll, still.
 - A host who presses **End poll** leaves no trace, still.
 - Late joiners are still not prompted, a reload still drops your answer, and
   the poll still dies with the last connected client ([Live poll (ephemeral pulse-check)](live-poll.md)). This adds one

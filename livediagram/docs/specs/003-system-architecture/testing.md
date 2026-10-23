@@ -96,15 +96,13 @@ export default defineProject({ test: { environment: 'jsdom' } });
   with a base64 value decodes it, flips a bit, and re-encodes: the last
   base64 character carries padding bits, so editing the text can decode to the
   very same bytes.
-- **Two D1 doubles in `apps/api`.** `src/test-d1.ts` records which SQL ran
-  with which bindings, and has no schema. `src/test-sqlite-d1.ts` is a real
-  in-memory SQLite (`node:sqlite`) with every migration applied and foreign
-  keys on, as D1 has them. Use the second wherever the behaviour lives in the
-  schema: cascades, primary-key collisions, `INSERT OR IGNORE` outcomes. It also
-  carries the documents' schema (`document-room/document-schema.ts`) in the same database,
-  behind `env.DOCUMENT_DB`, answers the `DOCUMENT_ROOM` RPCs from it, and pushes each
-  document's outbox before every D1 call, so a handler test reads D1 as it would be
-  once the push landed.
+- **The api's storage in tests.** The api has no D1 database. `src/test-sqlite-d1.ts` is a real in-memory SQLite
+  (`node:sqlite`) holding the documents' schema (`document-room/document-schema.ts`), behind `env.DOCUMENT_DB` (the
+  D1-shaped surface a document's own Durable Object runs its handlers on), with foreign keys on. Use it wherever the
+  behaviour lives in the schema: cascades, primary-key collisions, `INSERT OR IGNORE` outcomes. It answers the
+  `DOCUMENT_ROOM` RPCs from the same tables, stands in for the index (grants, share links, folders), and gives each
+  person an in-memory store (`PERSON_STORE`) and workbench store (`memoryWorkbenchNamespace`,
+  `@liveworkspace/index-app/testing`).
 - **A document's own Durable Object in tests.** `src/test-document-sql.ts` puts
   `ctx.storage.sql` (`exec`) and `transactionSync` over `node:sqlite`, and
   `vitest.config.ts` aliases `cloudflare:workers` to a stub base class, so
@@ -148,13 +146,12 @@ tests," not a number.
 One set of files is the exception, held at **100% statements, branches,
 functions and lines** by per-glob thresholds in `apps/api/vitest.config.ts`:
 
-| Files                                                                                | Why                                                                                                                                                           |
-| ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/auth/**`                                                                        | Decides WHO a request is — access-token and guest-token checks, api tokens, the read/edit gates                                                               |
-| `src/db/api-tokens.ts`, `src/routes/tokens.ts`                                       | Mint, resolve and revoke the credentials that act as an account                                                                                               |
-| `src/db/share.ts`, `src/db/shared.ts`, `src/db/ws-tickets.ts`                        | Share links, the "shared with you" record, and the one-time realtime room tickets                                                                             |
-| `src/routes/share.ts`, `src/routes/shared.ts`, `src/routes/document-share-routes.ts` | The only unauthenticated read path into a document, and the owner-only routes that grant it                                                                   |
-| `src/image-refs/**`, `src/db/image-refs.ts`, `src/db/document-removal.ts`            | Decide whether an uploaded image is still placed anywhere, and so whether the daily sweep may delete it ([Images](../009-elements/images.md#reference-index)) |
+| Files                                                                 | Why                                                                                                                                                           |
+| --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/auth/**`                                                         | Decides WHO a request is — access-token and guest-token checks, api tokens, the read/edit gates                                                               |
+| `src/db/api-tokens.ts`, `src/routes/tokens.ts`                        | Mint, resolve and revoke the credentials that act as an account                                                                                               |
+| `src/routes/share.ts`, `src/routes/share-preview.ts`                  | The only unauthenticated read path into a document, and the owner-only routes that grant it                                                                   |
+| `src/image-refs/**`, `src/db/image-refs.ts`, `src/db/image-grants.ts` | Decide whether an uploaded image is still placed anywhere, and so whether the daily sweep may delete it ([Images](../009-elements/images.md#reference-index)) |
 
 The rest of the worker fails visibly. These fail by serving the right response
 to the **wrong person**, or by deleting a picture someone placed: an outcome no amount of production monitoring
@@ -284,8 +281,8 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
     [Optical alignment](../004-interface-design/optical-alignment.md)), and every
     UI workspace's `motion-budget.test.ts` ([Motion](../004-interface-design/motion.md)).
   - `apps/api`: auth guards (account access tokens, guest tokens, document access, tokens),
-    every defensive D1 row mapper, the D1 modules against real SQLite
-    (cascades, migrations), the `DocumentRoom` Durable Object's rules, ledger
+    every defensive row mapper, the document's storage modules against real SQLite
+    (cascades, the schema), the `DocumentRoom` Durable Object's rules, ledger
     and multiplayer paths, every route family (documents, tabs, share, images,
     thumbnails, folders, teams, trash, timeline, activity, tokens, OAuth, unfurl,
     events, AI incl. the photo reader), the Timeline's writers and its catalogue
@@ -396,9 +393,9 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
 - **Ahead:**
   - Worker-runtime tests for `apps/api`: the current suites run under plain
     vitest in the `node` environment with fakes for `WebSocket` / Durable
-    Object state, and D1 as either a recorder or in-memory SQLite (see
+    Object state, and a document's SQLite as in-memory SQLite (see
     Conventions); a future move to `@cloudflare/vitest-pool-workers` would
-    let the D1 binding + Durable Object run in a real `workerd` runtime, but
+    let the Durable Objects run in a real `workerd` runtime, but
     that's an aspiration, not the current setup.
 
 Browser end-to-end tests are not part of this gate; they are specified in

@@ -56,7 +56,7 @@ their `hello`.
 - **A refresh is invisible.** New socket, new presence id, same token, baton
   reclaimed before the page has finished painting.
 - **Leaving is a real event**, because the room sees the socket close.
-- No identity plumbing: the one D1 column it needs, the room ticket's owner bit (below), is a boolean.
+- No identity plumbing: the one thing it needs, the owner bit the upgrade carries (below), is a boolean.
 
 For "the owner can always take it back", the api forwards one more
 server-verified bit at upgrade — `X-Verified-Owner`. A boolean, carrying no

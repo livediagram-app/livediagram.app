@@ -113,7 +113,7 @@ collapsible has no such button.
 
 The layout is stored in **`localStorage` only**, under `livediagram:panel-layout:v1`, on
 the browser that set it. It is **not** synced to the account and **not** part of the
-D1-backed user-preferences blob ([User preferences](user-preferences.md)): panel placement is a per-device ergonomic
+account-synced user-preferences blob ([User preferences](user-preferences.md)): panel placement is a per-device ergonomic
 choice (screen size, handedness, external monitor) rather than a portable account setting,
 and guests get it too. This is deliberately a different store from [User preferences](user-preferences.md).
 
@@ -130,7 +130,8 @@ type PanelCorner = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 // corner stack rather than sitting in it: 'laser' (docs/specs/008-canvas/laser-panel.md, the laser pen's settings), 'spotlight'
 // (docs/specs/008-canvas/spotlight-panel.md, the light's look), 'eraser' (docs/specs/008-canvas/eraser-panel.md, the brush),
 // and 'format' (docs/specs/008-canvas/format-panel.md, what the painter copies).
-type PanelId = 'collaborate' | 'minimap' | 'laser' | 'spotlight' | 'eraser' | 'format' | 'slide-deck';
+type PanelId =
+  'collaborate' | 'minimap' | 'laser' | 'spotlight' | 'eraser' | 'format' | 'slide-deck';
 
 type PanelLayout = {
   // Ordered stack per corner. Order is top→bottom (top corners) /

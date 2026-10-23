@@ -218,7 +218,7 @@ Importers depend on `index.ts` (the types, `attachImportImages`, `describeImport
 
 No new persisted fields. A stored image sets the existing `ImageElement.imageId`, `naturalWidth`,
 `naturalHeight`. Cloud: an image in the media service through the existing endpoint. Offline: the
-`data:` URL lives in the tab body in IndexedDB and re-homes on Sync Document (existing
+`data:` URL lives in the tab body in IndexedDB and re-homes on Sync Canvas (existing
 `uploadEmbeddedImages`). No migration.
 
 ## Errors and edge cases
@@ -274,27 +274,27 @@ No new persisted fields. A stored image sets the existing `ImageElement.imageId`
 
 ## Testing
 
-| Rule                                                  | Test                                                       |
-| ----------------------------------------------------- | ---------------------------------------------------------- |
-| Longest side 2048, never upscale                      | `policy.test.ts` scale cases                               |
-| PNG/JPEG within size: encode, keep if smaller         | `policy.test.ts`, `prepare.test.ts`                        |
-| WebP within size kept                                 | `policy.test.ts`                                           |
-| GIF kept when it fits, flattened when not             | `policy.test.ts`                                           |
-| SVG raster size from intrinsic/hint/default           | `policy.test.ts`                                           |
-| WebP fallback type                                    | `policy.test.ts`, `prepare.test.ts`                        |
-| 50 MB source cap, 10 MB output cap                    | `source.test.ts`, `prepare.test.ts`                        |
-| Data URL parsing, MIME sniff                          | `source.test.ts`                                           |
-| Upload error mapping                                  | `upload-error.test.ts`                                     |
-| Unavailable short-circuit; cap keeps trying           | `session.test.ts`                                          |
-| 409 `upload_conflict` retried once, then placeholder  | `session.test.ts`                                          |
-| Offline embed + budget                                | `session.test.ts`                                          |
-| Concurrency never above 3                             | `session.test.ts`                                          |
-| Key dedupe, element patch, report invariant, progress | `attach.test.ts`                                           |
-| Report copy                                           | `report.test.ts`                                           |
-| Canvas WebP used when present; WASM never loaded      | `webp.test.ts`                                             |
-| No canvas WebP detected by blob type; WASM encodes    | `webp.test.ts`                                             |
-| Detection remembered; failed load retried             | `webp.test.ts`                                             |
-| No WebP at all → PNG / JPEG fallback                  | `prepare.test.ts`                                          |
+| Rule                                                  | Test                                                         |
+| ----------------------------------------------------- | ------------------------------------------------------------ |
+| Longest side 2048, never upscale                      | `policy.test.ts` scale cases                                 |
+| PNG/JPEG within size: encode, keep if smaller         | `policy.test.ts`, `prepare.test.ts`                          |
+| WebP within size kept                                 | `policy.test.ts`                                             |
+| GIF kept when it fits, flattened when not             | `policy.test.ts`                                             |
+| SVG raster size from intrinsic/hint/default           | `policy.test.ts`                                             |
+| WebP fallback type                                    | `policy.test.ts`, `prepare.test.ts`                          |
+| 50 MB source cap, 10 MB output cap                    | `source.test.ts`, `prepare.test.ts`                          |
+| Data URL parsing, MIME sniff                          | `source.test.ts`                                             |
+| Upload error mapping                                  | `upload-error.test.ts`                                       |
+| Unavailable short-circuit; cap keeps trying           | `session.test.ts`                                            |
+| 409 `upload_conflict` retried once, then placeholder  | `session.test.ts`                                            |
+| Offline embed + budget                                | `session.test.ts`                                            |
+| Concurrency never above 3                             | `session.test.ts`                                            |
+| Key dedupe, element patch, report invariant, progress | `attach.test.ts`                                             |
+| Report copy                                           | `report.test.ts`                                             |
+| Canvas WebP used when present; WASM never loaded      | `webp.test.ts`                                               |
+| No canvas WebP detected by blob type; WASM encodes    | `webp.test.ts`                                               |
+| Detection remembered; failed load retried             | `webp.test.ts`                                               |
+| No WebP at all → PNG / JPEG fallback                  | `prepare.test.ts`                                            |
 | Safari path end to end, in Chromium and WebKit        | `apps/editor/e2e/import-images.spec.ts` (canvas answers PNG) |
 
 All with a fake `ImageCodec` and fake `upload` / `toDataUrl` / `loadWasm`; the browser codec is
@@ -302,10 +302,10 @@ proven end to end by the e2e spec, in WebKit with `E2E_WEBKIT=1`.
 
 ## Assets and external resources
 
-| Asset                                  | Source                             | Licence                                      |
-| -------------------------------------- | ---------------------------------- | -------------------------------------------- |
+| Asset                                  | Source                               | Licence                                      |
+| -------------------------------------- | ------------------------------------ | -------------------------------------------- |
 | `@jsquash/webp` 1.5.0 (glue + `.wasm`) | npm, pinned exactly in `apps/editor` | Apache-2.0; libwebp inside the `.wasm` BSD-3 |
-| `wasm-feature-detect` (jSquash's dep)  | npm, via the lockfile              | Apache-2.0                                   |
+| `wasm-feature-detect` (jSquash's dep)  | npm, via the lockfile                | Apache-2.0                                   |
 
 Reproducible: `pnpm install` resolves both from the lockfile; the build emits the `.wasm` files
 with content hashes.

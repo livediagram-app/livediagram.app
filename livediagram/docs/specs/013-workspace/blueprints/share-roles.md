@@ -23,11 +23,11 @@ socket, the answers route, a look-only Viewer) are not derived here; their earli
 | `packages/document/src/participant-content.ts` (new)                                                           | The participant content rule: `applyParticipantOp`, `PARTICIPANT_ADDABLE_TYPES`, field sets    |
 | `packages/document/src/element-types.ts`, `validate.ts`                                                        | `addedBy?: string` on `StickyElement` and `TextElement`; validated                             |
 | `packages/document/src/collab-ledger.ts`                                                                       | `mergeLedgerAnswersIntoTab`: votes, responses and ideas only                                   |
-| `apps/api/migrations/0001_livediagram_baseline.sql` (was 0080_participate_links)                               | A `level` column on `share_links` and `shared_with`; `ws_tickets.adder_key`                    |
-| `apps/api/src/share-link-row.ts`, `db/ws-tickets.ts`, `db/shared.ts`                                           | Readers through `parseStoredLevel`; the ticket's `adderKey`                                    |
-| `apps/api/src/auth/document-access.ts`                                                                         | Gates compare levels; `canParticipateDocument`                                                 |
+| `../liveworkspace/apps/index/migrations/0001_index.sql`                                                        | A `level` column on `share_links`                                                              |
+| `apps/api/src/room-op-gate.ts`, `apps/api/src/adder-key.ts`                                                    | Readers through `parseStoredLevel`; the room's `adderKeyFor`                                   |
+| `apps/api/src/routes/context.ts`                                                                               | Gates compare levels on the index's grant                                                      |
 | `apps/api/src/routes/context.ts`                                                                               | `gateParticipate` is the Participant check                                                     |
-| `apps/api/src/routes/document-share-routes.ts`                                                                 | `POST /share` takes three levels                                                               |
+| `../liveworkspace/apps/index/src/sharing.ts`                                                                   | The index's share route takes three levels                                                     |
 | `apps/api/src/adder-key.ts` (new)                                                                              | `adderKeyFor(documentId, ownerId)`                                                             |
 | `apps/api/src/routes/document-room-routes.ts`                                                                  | The ticket carries `adderKey` for a Participant; the upgrade forwards `X-Verified-Adder`       |
 | `apps/api/src/document-room/document-room.ts`, `room-op-gate.ts`, `document-room-rules.ts`                     | Level on the session; op gate by class; participant `el` ops through the tab write queue       |
@@ -35,9 +35,9 @@ socket, the answers route, a look-only Viewer) are not derived here; their earli
 | `packages/agent-verbs/src/mcp/*`                                                                               | `share_document.role` takes three levels, default `participate`                                |
 | `apps/editor/lib/editor-capabilities.ts` (new)                                                                 | `resolveEditorCapabilities`, `EditorCapabilities`                                              |
 | `apps/editor/app/document/[id]/*` (`useViewPreview`, `useEditorState`, `tab-save-flow`, `editor-page-helpers`) | `sessionRole: AccessLevel`; `can`; the participant save flow                                   |
-| `apps/editor/components/dialogs/ShareComposer.tsx`, `share-dialog-parts.tsx`                                   | Three cards                                                                                    |
+| `../packages/explorer/src/dialogs/share/ShareComposer.tsx`, `parts.tsx`                                        | Three cards                                                                                    |
 | `apps/editor/components/chrome/RoleIndicator.tsx`, `app/document/[id]/useRoleIndicator.ts`                     | Participating pill                                                                             |
-| `apps/editor/lib/collaborator-roster.ts`, `app/explorer/views.tsx`                                             | Participant badge; Participate chip                                                            |
+| `apps/editor/lib/collaborator-roster.ts`, `../packages/explorer/src/explorer/SharedList.tsx`                   | Participant badge; Participate chip                                                            |
 
 ## Domain and naming
 
@@ -406,13 +406,13 @@ The Share dialog is a lazy chunk; a third card adds no request. A Participant's 
 | Every row of the participant rule, every refusal and correction | `packages/document/src/participant-content.test.ts`                  |
 | `addedBy` validation                                            | `packages/document/src/validate.test.ts`                             |
 | `mergeLedgerAnswersIntoTab`                                     | `packages/document/src/collab-ledger.test.ts`                        |
-| Gates compare levels                                            | `apps/api/src/auth/document-access.test.ts`                          |
-| Share create validates three levels                             | `apps/api/src/routes/document-share-routes.test.ts`                  |
+| Gates compare levels                                            | `apps/api/src/routes/context.test.ts`                                |
+| Share create validates three levels                             | `../liveworkspace/apps/index/src/sharing.test.ts`                    |
 | Write: applied, unchanged, refused, CAS retry, 404, 409, 413    | `apps/api/src/participant-write.test.ts`                             |
 | Room: op gate per level; participant path; adder header         | `apps/api/src/document-room.test.ts`, `document-room-routes.test.ts` |
 | Capabilities per level                                          | `apps/editor/lib/editor-capabilities.test.ts`                        |
 | Participant save branch                                         | `apps/editor/app/document/[id]/tab-save-flow.test.ts`                |
-| Three cards and keys                                            | `apps/editor/components/dialogs/ShareDialog.test.tsx`                |
+| Three cards and keys                                            | `../packages/explorer/src/dialogs/ShareDialog.test.tsx`              |
 | Pill per level                                                  | `apps/editor/components/chrome/RoleIndicator.test.tsx`               |
 | MCP default and enum                                            | `packages/agent-verbs` MCP schema tests                              |
 

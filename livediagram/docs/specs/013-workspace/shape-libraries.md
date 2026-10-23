@@ -33,7 +33,7 @@ week stay two libraries.
 
 ## Making libraries
 
-- **Import from draw.io** in the Explorer page header's **Import from** group takes library files
+- **Import from draw.io** in the Explorer's **Import from** (which opens this site's `/import` page) takes library files
   (`<mxlibrary>`) alongside diagrams, in the same pick or folder; **each library file becomes its own
   library** ([draw.io import](../020-import-export/drawio-import.md) "Shape Libraries").
 - **Name**: the file name without its extension; draw.io's default library name (`Untitled Library`,
@@ -44,7 +44,7 @@ week stay two libraries.
   can be read is not made, and the report says why.
 - **The report.** The import's one shared report ([Board scene](../020-import-export/board-scene.md)
   "The report") lists the new libraries under the new documents, "2 new shape libraries:", each a
-  link to the Explorer's Shape libraries page. A library the api refuses (the cap, the size budget)
+  link to the Explorer's Shape Libraries page. A library the api refuses (the cap, the size budget)
   is listed with the files left out, with the api's reason. Libraries count toward the report's
   landed totals like documents do.
 - **Diagrams and libraries in one pick** import together: the diagrams as documents, then the
@@ -91,21 +91,26 @@ Named constants, checked by the api and before any upload by the client:
 
 ## Managing libraries: the Explorer
 
-The Explorer's **Library** section gains **Shape Libraries** beside Image gallery
-([Folders](folders.md)):
+The shared Explorer's **Library** holds **Shape Libraries** beside the Image Gallery
+([`@liveworkspace/explorer`](../../../../packages/explorer/README.md) `shapeLibraries`). livediagram lends it the
+person's libraries over this site's API (`appLibraryHosts('livediagram', …)` in
+`apps/editor/lib/explorer-library-host.tsx`), the same hosts liveworkspace.app's Explorer uses.
 
-- Route `/explorer/shape-libraries`; a sidebar row **Shape Libraries** with a shapes glyph, under
-  **Library**, after Image Gallery ([Explorer structure](explorer-structure.md)). The page header's **Import from** group shows there as on every Explorer page.
-- The page lists the owner's libraries, newest first, each a card: name, "14 shapes", the first eight
-  items' thumbnails; **Rename** (inline, the same name rules; Enter saves, Escape cancels; a name the
-  owner already uses is refused with "You already have a library with that name."), **Delete**
-  (confirm: "Delete this shape library? Its shapes leave My shapes; documents that use them keep
-  them."). **Show shapes** expands the card to every item, each with its title and a **Delete**
-  button named "Delete <title>" (no confirm: one shape; the library itself is confirmed). Deleting the
-  last shape deletes nothing else: an empty library stays until deleted.
-- Deleting a library or an item never touches documents: a placed item is ordinary elements.
-- Loading: the cards' skeleton; a failed load: "Couldn't load your shape libraries." with **Try
-  again**. Empty state: "No shape libraries yet. Import a draw.io library with Import from draw.io."
+- Route `/explorer/shape-libraries`; a **Shape Libraries** row with a shapes glyph under **Library**, after Image
+  Gallery ([Explorer structure](explorer-structure.md)), and a Library tab in the editor's Explorer panel. **Import
+  from** shows there for the sources that bring libraries.
+- The page lists the owner's libraries, newest first, each a card: name, "14 shapes", the first items drawn small;
+  **Rename** (inline, the same name rules; Enter saves, Escape cancels; a name the owner already uses is refused
+  with "You already have a library with that name."), **Delete** (confirm, "Delete This Shape Library?": "Its
+  shapes leave My shapes; anything that uses them keeps them."). **Show shapes** expands the card to every item,
+  each with its title and a **Delete** button named "Delete <title>" (no confirm: one shape; the library itself is
+  confirmed). Deleting the last shape deletes nothing else: an empty library stays until deleted.
+- **The shapes are drawn by livediagram.** The Explorer cannot draw a canvas's elements itself, so it asks for one
+  library's shapes as SVG in one request, `GET /api/shape-libraries/:id/previews` ([API](#api)), and draws each
+  tile from it (`renderShape`).
+- Deleting a library or an item never touches canvases: a placed item is ordinary elements.
+- Loading: the cards' skeleton; a failed load: "Couldn't load your shape libraries." with **Try again**. Empty
+  state: "No shape libraries yet", "Import a draw.io library and its shapes collect here."
 
 ## API
 
@@ -119,6 +124,9 @@ the api's other routes):
 - `PUT /api/shape-libraries/:id` `{ name?, items? }` → `{ library }`: renaming, and deleting items
   (the client sends the remaining items). Someone else's library answers 404, as a missing one does.
 - `DELETE /api/shape-libraries/:id` → 204; 404 for a missing library or someone else's.
+- `GET /api/shape-libraries/:id/previews` → `{ previews: Record<shapeId, svg> }`: every shape of one library drawn
+  as an SVG, for the shared Explorer, which cannot draw them itself. One request a library, cached privately for
+  five minutes (`?v=<updatedAt>` keys it to the library's version); 404 for a missing library or someone else's.
 
 Items are validated as the tab endpoints validate elements (`isValidElement`, after the same
 element migration), and stored as JSON in one column. 400 for a missing or invalid field, an item

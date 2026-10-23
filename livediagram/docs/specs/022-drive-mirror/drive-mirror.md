@@ -190,7 +190,7 @@ this spec does not restate it.
   only) or `broker` (client id, secret and key), so the app knows which
   token path to take.
 - The refresh token is encrypted with AES-GCM under a worker secret
-  (`DRIVE_TOKEN_KEY`) before it reaches D1, and is never returned by any route.
+  (`DRIVE_TOKEN_KEY`) before it reaches the person's store, and is never returned by any route.
 - One refresh token per user, shared by all their devices, keeps well inside
   Google's limit of 100 live tokens per account per client.
 - **Revoked or expired grant** (`invalid_grant`, or six months unused): the
@@ -263,7 +263,8 @@ this spec does not restate it.
 ## Folders
 
 - The root folder is the **root of My Work**: documents without a folder sit
-  directly in it.
+  directly in it. My Work's canvases, folders and Trash are liveworkspace's index's, read as the person
+  (`listItems`, `listFolders`, `listTrash`); a canvas's content and preview are the api's.
 - Every folder in My Work is a Drive folder at the same place in the tree.
 - **Folders created in Drive** by the user are invisible to livediagram under
   `drive.file` until the user shows them to it; see
@@ -271,19 +272,19 @@ this spec does not restate it.
 
 ## Outbound: livediagram to Drive
 
-| In livediagram                   | In Drive                                                                                                                                                                                        |
-| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Document created                 | File created in its folder                                                                                                                                                                      |
-| Document edited                  | File contents and thumbnail rewritten, at the [cadence](#cadence)                                                                                                                               |
-| Document renamed                 | File renamed                                                                                                                                                                                    |
-| Document moved to another folder | File moved                                                                                                                                                                                      |
-| Document deleted (to Trash)      | File moved to Drive's bin                                                                                                                                                                       |
-| Document restored from Trash     | File restored from the bin (re-created if it is gone)                                                                                                                                           |
-| Document purged from Trash       | File permanently deleted, if still in the bin                                                                                                                                                   |
-| Document moved into a team       | File moved to Drive's bin (the document left My Work)                                                                                                                                           |
-| Document moved out of a team     | File created (or restored), as a new document in My Work                                                                                                                                        |
-| Folder created / renamed / moved | Folder created / renamed / moved                                                                                                                                                                |
-| Folder deleted                   | Its documents and subfolders move to its parent folder (the root for a top-level folder, [Folders](../013-workspace/folders.md#deleting-a-folder)), then the empty Drive folder goes to the bin |
+| In livediagram                   | In Drive                                                                                                                                                                      |
+| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Document created                 | File created in its folder                                                                                                                                                    |
+| Document edited                  | File contents and thumbnail rewritten, at the [cadence](#cadence)                                                                                                             |
+| Document renamed                 | File renamed                                                                                                                                                                  |
+| Document moved to another folder | File moved                                                                                                                                                                    |
+| Document deleted (to Trash)      | File moved to Drive's bin                                                                                                                                                     |
+| Document restored from Trash     | File restored from the bin (re-created if it is gone)                                                                                                                         |
+| Document purged from Trash       | File permanently deleted, if still in the bin                                                                                                                                 |
+| Document moved into a team       | File moved to Drive's bin (the document left My Work)                                                                                                                         |
+| Document moved out of a team     | File created (or restored), as a new document in My Work                                                                                                                      |
+| Folder created / renamed / moved | Folder created / renamed / moved                                                                                                                                              |
+| Folder deleted                   | Its documents and subfolders move to its parent folder (the root for a top-level folder, [Folders](../013-workspace/folders.md)), then the empty Drive folder goes to the bin |
 
 ## Inbound: Drive to livediagram
 
@@ -331,9 +332,11 @@ folder id):
 - **A file whose contents were edited in Drive** (a new `md5Checksum`) is
   rewritten from livediagram on the next outbound pass, so the canonical copy
   comes back without waiting for the next edit.
-- Inbound changes go through the ordinary api routes (rename, move, delete,
-  restore), so authorisation and realtime rooms behave exactly
-  as if the user had done it in livediagram.
+- Inbound changes go through the same calls the Explorer and the editor make: a move, a delete to the Trash, a
+  restore, a purge and every folder change through liveworkspace's index, as the person
+  ([one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md)), and a rename through the
+  api (`apps/editor/lib/drive/livediagram-port.ts`), so authorisation, the Timeline and realtime rooms behave
+  exactly as if the user had done it in livediagram.
 
 ## Copies made in Drive
 
@@ -408,7 +411,7 @@ Named constants in one cadence module of the mirror code, with the values and bu
   never an embed and never the Drive routes themselves; it starts once the
   signed-in session has settled.
 - **One tab syncs per browser**, elected with the Web Locks API; across
-  devices, a short lease row in D1 keeps two browsers from writing the same
+  devices, a short lease in the person's store keeps two browsers from writing the same
   document at once. The lease lasts 15 minutes, is renewed only when a pass
   has something to write and under 5 minutes remain, and is released when the
   tab hides, so a device that walks away hands over at once.
@@ -443,7 +446,7 @@ Named constants in one cadence module of the mirror code, with the values and bu
 - **Back-off:** on `403 userRateLimitExceeded` or `429`, the intervals double
   (the check up to 60 minutes, writes up to 30), returning to normal after an
   hour without errors.
-- The page token is written to D1 only when it changed, at most every 10
+- The page token is written to the person's store only when it changed, at most every 10
   minutes and on flush.
 
 ## Other views follow
@@ -581,7 +584,7 @@ Each person's own store (`PersonStore`, a SQLite-backed Durable Object per perso
   multipart.
 - **Quota or rate errors:** back-off as above; a persistent failure shows in
   the Cloud Sync row, never silently.
-- **Two devices at once:** the D1 lease decides which one writes; the other
+- **Two devices at once:** the lease decides which one writes; the other
   still reads changes.
 - Every decision point logs a fingerprinted line in the browser console
   (`[drive-mirror]`) and every api route logs its outcome (`drive:`), so a
@@ -677,12 +680,12 @@ past the threshold Google has announced charges, not a hard stop. Push
 notifications, which would remove polling Google altogether, are a separate
 follow-up ([Prototype scope](../005-project-roadmap/prototype-scope.md)).
 
-The research model counted only the page token's D1 writes. Two more are
+The research model counted only the page token's writes. Two more are
 inherent in the design: one item row per upload or applied change (about six
 an active user-day at this cadence) and the lease (renewed at most every ten
 minutes of writing). Together they add about $70 a month at 10 million users
-(200,000 active a day, about 12 row writes each, at $1 per million), and
-nothing measurable at 10,000.
+(200,000 active a day, about 12 row writes each, at about $1 per million, as
+Durable Object SQLite bills rows), and nothing measurable at 10,000.
 
 ## Privacy
 

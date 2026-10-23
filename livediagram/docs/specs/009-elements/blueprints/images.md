@@ -6,50 +6,50 @@ engineering precision. Defaults applied where the spec is silent are ledgered in
 
 Scope, by file:
 
-| File                                                   | Role                                                                    |
-| ------------------------------------------------------ | ----------------------------------------------------------------------- |
-| `packages/document/src/element-types.ts`               | `ImageElement`                                                          |
-| `packages/document/src/factories.ts`                   | `createImage`: the 200×150 placeholder, `aspectLocked: true`            |
-| `packages/document/src/validate.ts`                    | Structural check of an image element in a tab body                      |
-| `packages/document/src/svg-render-describe.ts`         | `describeBoxedExport`: image `ExportShape` with `href` / fit / radius   |
-| `packages/document/src/svg-render.ts`                  | Image branch: `svgImageShape`, else the dashed placeholder rect         |
-| `packages/document/src/svg-render-image-icon.ts`       | `svgImageShape`: clipped `<image>` over a white backing rect            |
-| `packages/api-schema/src/image-limits.ts`              | `MAX_IMAGE_BYTES`, `ACCEPTED_IMAGE_TYPES` for the editor's own gate     |
-| `packages/api-schema/src/image-sniff.ts`               | `sniffImageType`: labels embedded bytes whose stored type is missing    |
-| `packages/api-schema/src/embed-images.ts`              | `embedTabImages`, `tabImageIds`: server-side data-URL inlining          |
-| `packages/api-schema/src/sha256.ts`                    | `sha256Hex`, shared by editor and worker                                |
-| `packages/api-schema/src/index.ts`                     | `ImageSummary`                                                          |
-| `packages/media` (`@liveworkspace/media`)              | Limits, sniffing, guest owners, wire shapes, `createMediaClient`        |
-| `liveworkspace/apps/media`                             | The media service: bytes, gallery rows, dedupe, caps, JPEG strip, sweep |
-| `apps/api/migrations/0001_livediagram_baseline.sql`    | `media_images` (owner index) and `media_ref_outbox` (reference queue)   |
-| `apps/api/src/media.ts`                                | The service client, owner naming, the owner index, the reference queue  |
-| `apps/api/src/routes/images.ts`                        | `handleImages`: the five `/api/images*` routes; `originalNameOf`        |
-| `apps/api/src/db/images.ts`                            | `imageUsageByOwner`                                                     |
-| `apps/api/src/db/image-grants.ts`                      | `documentMayServeImage`, `servableImageIds`: read `media_images`        |
-| `apps/api/src/index.ts`                                | Pre-dispatch size gate, write limiter, `scheduled()` refs flush         |
-| `apps/api/src/thumbnail.ts`                            | `loadEmbeddedImages` for the preview and live image                     |
-| `apps/api/wrangler.toml`                               | `IMAGES` bucket (legacy images and snapshots), `MEDIA_KEY` note         |
-| `apps/api/hosted-vars.json`                            | Hosted livediagram.app's `MEDIA_URL` per environment                    |
-| `apps/editor/lib/api/images.ts`                        | `apiListImages`, `apiUploadImage`, `apiDeleteImage`, `apiImageUsage`, … |
-| `apps/editor/lib/upload-image.ts`                      | `uploadImageFile`, `addImageFileForDocument`, `ImageUploadError`        |
-| `apps/editor/hooks/canvas/useEditorImages.ts`          | Picker state, attach, detach, place-from-gallery                        |
-| `apps/editor/hooks/canvas/useClipboard.ts`             | `pasteImageFile`: Cmd/Ctrl+V image paste                                |
-| `apps/editor/hooks/persistence/useImageBlobUrl.ts`     | Authenticated fetch to a revocable blob URL                             |
-| `apps/editor/components/canvas/ImageElementView.tsx`   | Canvas face: placeholder, loading, broken, bitmap                       |
-| `apps/editor/components/canvas/ImageEmptyFace.tsx`     | Empty placeholder: empty state + Select Image button                    |
-| `apps/editor/components/panels/ImagePicker.tsx`        | Upload / Gallery modal, lazy via `EditorElementDialogs.tsx`             |
-| `apps/editor/components/canvas/ImageDropZone.tsx`      | Drop, paste, file-input zone shared with the Explorer gallery           |
-| `apps/editor/lib/export-tab-images.ts`                 | `loadTabImages`: client export prefetch                                 |
-| `apps/editor/components/palette/palette-tile-defs.tsx` | `tools:image` tile (`needsImage: true`, shortcut `9`)                   |
-| `apps/editor/app/document/[id]/useElementCreation.ts`  | `addImage`: arms the draw gesture                                       |
-| `apps/editor/hooks/canvas/useShapeDrawing.ts`          | Commit of the draw: telemetry, selects the placeholder (no picker)      |
+| File                                                    | Role                                                                    |
+| ------------------------------------------------------- | ----------------------------------------------------------------------- |
+| `packages/document/src/element-types.ts`                | `ImageElement`                                                          |
+| `packages/document/src/factories.ts`                    | `createImage`: the 200×150 placeholder, `aspectLocked: true`            |
+| `packages/document/src/validate.ts`                     | Structural check of an image element in a tab body                      |
+| `packages/document/src/svg-render-describe.ts`          | `describeBoxedExport`: image `ExportShape` with `href` / fit / radius   |
+| `packages/document/src/svg-render.ts`                   | Image branch: `svgImageShape`, else the dashed placeholder rect         |
+| `packages/document/src/svg-render-image-icon.ts`        | `svgImageShape`: clipped `<image>` over a white backing rect            |
+| `packages/api-schema/src/image-limits.ts`               | `MAX_IMAGE_BYTES`, `ACCEPTED_IMAGE_TYPES` for the editor's own gate     |
+| `packages/api-schema/src/image-sniff.ts`                | `sniffImageType`: labels embedded bytes whose stored type is missing    |
+| `packages/api-schema/src/embed-images.ts`               | `embedTabImages`, `tabImageIds`: server-side data-URL inlining          |
+| `packages/api-schema/src/sha256.ts`                     | `sha256Hex`, shared by editor and worker                                |
+| `packages/api-schema/src/index.ts`                      | `ImageSummary`                                                          |
+| `packages/media` (`@liveworkspace/media`)               | Limits, sniffing, guest owners, wire shapes, `createMediaClient`        |
+| `liveworkspace/apps/media`                              | The media service: bytes, gallery rows, dedupe, caps, JPEG strip, sweep |
+| `../liveworkspace/apps/media/migrations/0001_media.sql` | The media service's `images`, `refs` and `ref_sync`                     |
+| `apps/api/src/media.ts`                                 | The service client, owner naming, the owner index, the reference queue  |
+| `apps/api/src/routes/images.ts`                         | `handleImages`: the five `/api/images*` routes; `originalNameOf`        |
+| `apps/api/src/routes/images.ts`                         | `usageOf`: `GET /api/images/usage`                                      |
+| `apps/api/src/db/image-grants.ts`                       | `documentMayServeImage`, `servableImageIds`: read `media_images`        |
+| `apps/api/src/index.ts`                                 | Pre-dispatch size gate, write limiter, `scheduled()` refs flush         |
+| `apps/api/src/thumbnail.ts`                             | `loadEmbeddedImages` for the preview and live image                     |
+| `apps/api/wrangler.toml`                                | `IMAGES` bucket (legacy images and snapshots), `MEDIA_KEY` note         |
+| `apps/api/hosted-vars.json`                             | Hosted livediagram.app's `MEDIA_URL` per environment                    |
+| `apps/editor/lib/api/images.ts`                         | `apiListImages`, `apiUploadImage`, `apiDeleteImage`, `apiImageUsage`, … |
+| `apps/editor/lib/upload-image.ts`                       | `uploadImageFile`, `addImageFileForDocument`, `ImageUploadError`        |
+| `apps/editor/hooks/canvas/useEditorImages.ts`           | Picker state, attach, detach, place-from-gallery                        |
+| `apps/editor/hooks/canvas/useClipboard.ts`              | `pasteImageFile`: Cmd/Ctrl+V image paste                                |
+| `apps/editor/hooks/persistence/useImageBlobUrl.ts`      | Authenticated fetch to a revocable blob URL                             |
+| `apps/editor/components/canvas/ImageElementView.tsx`    | Canvas face: placeholder, loading, broken, bitmap                       |
+| `apps/editor/components/canvas/ImageEmptyFace.tsx`      | Empty placeholder: empty state + Select Image button                    |
+| `apps/editor/components/panels/ImagePicker.tsx`         | Upload / Gallery modal, lazy via `EditorElementDialogs.tsx`             |
+| `apps/editor/components/canvas/ImageDropZone.tsx`       | Drop, paste, file-input zone shared with the Explorer gallery           |
+| `apps/editor/lib/export-tab-images.ts`                  | `loadTabImages`: client export prefetch                                 |
+| `apps/editor/components/palette/palette-tile-defs.tsx`  | `tools:image` tile (`needsImage: true`, shortcut `9`)                   |
+| `apps/editor/app/document/[id]/useElementCreation.ts`   | `addImage`: arms the draw gesture                                       |
+| `apps/editor/hooks/canvas/useShapeDrawing.ts`           | Commit of the draw: telemetry, selects the placeholder (no picker)      |
 
 Out of this blueprint, cited where they touch images: the reference index and the retention sweep
 ([Image reference index](image-reference-index.md)), Offline Mode data-URI embedding
 (`apps/editor/lib/offline/offline-images.ts`, [Offline Mode](../../006-document/offline-mode.md)), the
 import pipeline (`apps/editor/lib/import-images/`,
 [Import image pipeline](../../020-import-export/import-image-pipeline.md)), the Explorer gallery
-(`apps/editor/components/panels/GalleryPane.tsx`, [Folders](../../013-workspace/folders.md)),
+(`../packages/explorer/src/library/GalleryPane.tsx`, [Folders](../../013-workspace/folders.md)),
 account deletion and guest migration (`apps/api/src/db/account.ts`,
 [Owner-keyed data](../../015-api/api.md#owner-keyed-data)), the Trash
 ([Trash](../../013-workspace/trash.md)), and the mcp embedder (`apps/mcp/src/image-result.ts`).
@@ -263,10 +263,11 @@ export function embedTabImages(
   limits?: EmbedImageLimits,
 ): Promise<Map<string, string>>;
 
-// apps/api/src/db/images.ts
-export function imageUsageByOwner(
-  env: Env,
-  ownerId: string,
+// apps/api/src/routes/images.ts (GET /api/images/usage)
+async function usageOf(
+  ctx: RouteContext,
+  media: MediaClient,
+  owner: string,
 ): Promise<Record<string, { id: string; name: string }[]>>;
 
 // apps/api/src/db/image-grants.ts
@@ -366,7 +367,7 @@ read a 503 as `null` and `{}`.
   ([Trash](../../013-workspace/trash.md)); its share link grants no image read meanwhile.
 - **Reference index**: `image_refs` (in each document's own SQLite) and `document_images` (D1) are
   derived from tab bodies and owned by the [Image reference index](image-reference-index.md) blueprint.
-- **Offline documents** hold `data:` URIs in `imageId`; Take Offline and Sync Document convert
+- **Offline documents** hold `data:` URIs in `imageId`; Take Offline and Sync Canvas convert
   ([Offline Mode](../../006-document/offline-mode.md)).
 - **Migration**: `media_images` and `media_ref_outbox` are in `0001_livediagram_baseline.sql`;
   `document_images`, in the same baseline, belongs to the index blueprint.
@@ -519,7 +520,7 @@ backfill fingerprints live in [Image reference index](image-reference-index.md#o
 | Hosted profile points at the media service           | `turns telemetry on and points each environment…`         | `apps/api/src/hosted-vars.test.ts`               |
 | Sniff, strip, caps, dedupe, racing inserts           | the service's suites                                      | `liveworkspace/apps/media/src/*.test.ts`         |
 | Whitelist, cap, no SVG                               | `MAX_IMAGE_BYTES`, `ACCEPTED_IMAGE_TYPES`                 | `packages/api-schema/src/image-limits.test.ts`   |
-| Usage from the index                                 | `imageUsageByOwner`                                       | `apps/api/src/db/images.test.ts`                 |
+| Usage from the index                                 | `usageOf`                                                 | `apps/api/src/routes/images.test.ts` (`usage`)   |
 | Retention, backfill, tripwire                        | [Image reference index](image-reference-index.md#testing) |                                                  |
 | Snapshot embeds, missing or unservable placeholder   | three `getDocumentThumbnailSvg` tests                     | `apps/api/src/thumbnail.test.ts`                 |
 | Embed budget in document order                       | `spends a total budget in document order…`                | `packages/api-schema/src/embed-images.test.ts`   |

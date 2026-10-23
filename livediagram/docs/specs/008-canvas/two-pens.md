@@ -63,6 +63,6 @@ where that is shown, at the user's request; it stays Select everywhere else.)
 - the `UI·Toggled·RecogniseShapesOn/Off` telemetry pair
 
 `recogniseShapes` stays in the `UserPreferences` type as an accepted-but-ignored
-field: it is already persisted in D1 for existing users, and dropping it from
+field: it is already persisted in existing users' stored preferences, and dropping it from
 the type would make a stored preference fail to parse rather than simply do
 nothing.

@@ -148,7 +148,7 @@ missing document the condition is expected to clear on its own. The
 same card serves the failed-create path on `/new`, with one exception: a
 create refused for its **placement** (`team_forbidden`, `folder_not_found`,
 `folder_scope_mismatch`, `placement_invalid`, see
-[Folders → Placement on create](../013-workspace/folders.md#placement-on-create)) will not clear on
+[Folders → Placement on create](../013-workspace/folders.md)) will not clear on
 a retry, so the card says why and offers **Choose another place** instead.
 On `/new`, **Retry** re-runs the same create under the same document and tab
 ids it first tried: a create that reached the server but whose answer was lost
@@ -354,7 +354,7 @@ answered. It does not ask where the document goes or what it is called:
   - People change where documents go in **Settings > Documents > Default Folders**, and move a document between
     livediagram and this browser afterwards ([Offline Mode](../006-document/offline-mode.md)).
   - Why: the step asked three questions (name, store, folder) most people answer with the default, before they
-    have anything on the canvas. Every answer has a later, better home (the title, Default Folders, Sync Document
+    have anything on the canvas. Every answer has a later, better home (the title, Default Folders, Sync Canvas
     or Take Offline), so asking up front only slowed the first document down.
 - **No step rail.** One step needs no progress indicator.
 - **There is no theme step.** A new document starts on the **Default** theme,
@@ -593,7 +593,7 @@ Every create from `/new` honours the URL placement context (the `?folder` /
 
 The URL's placement context travels in the create body as
 `{ teamId?, folderId? }`, and the server files the document in the same write
-([Folders → Placement on create](../013-workspace/folders.md#placement-on-create)). There is no
+([Folders → Placement on create](../013-workspace/folders.md)). There is no
 follow-up placement request, so a document asked for in a team can never be left personal
 by a request that failed quietly.
 
@@ -631,7 +631,7 @@ caller's: `brand` on `/new`, the source tab's theme for a new tab.
 
 - No new endpoints. `POST /api/documents` already accepts an
   optional `tabs` array per [Per-tab storage](../006-document/per-tab-storage.md) — the new route uses it,
-  and the placement `{ teamId?, folderId? }` ([Folders → Placement on create](../013-workspace/folders.md#placement-on-create)).
+  and the placement `{ teamId?, folderId? }` ([Folders → Placement on create](../013-workspace/folders.md)).
 
 ## Tests / sanity-check checklist
 

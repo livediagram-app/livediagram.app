@@ -7,17 +7,17 @@ Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS
 
 Scope, by file (all under `apps/api/`):
 
-| File                                    | Role                                                                                        |
-| --------------------------------------- | ------------------------------------------------------------------------------------------- |
-| `src/image-refs/extract.ts`             | The JavaScript extractor: what a reference is                                               |
-| `src/db/image-refs.ts`                  | The writers' statements, and the document's own reads (its set; whether it places an image) |
-| `src/db/images.ts`                      | The usage map, reading D1's `document_images`                                               |
-| `src/db/tabs.ts`                        | `upsertTab`, `seedTabs`, `swapTabData` carry index statements; `deleteTabRow` cascades      |
-| `src/document-room/document-content.ts` | `importDocumentCopy` indexes a copy from its bodies                                         |
-| `src/document-room/document-schema.ts`  | `image_refs`, and the outbox triggers that key a change to it                               |
-| `src/document-room/document-outbox.ts`  | The push: `document_images`, the media queue and the placement grants, one D1 batch         |
-| `src/db/document-removal.ts`            | `documentRemovalStatements` deletes the document's `document_images` and grants             |
-| `src/image-refs/writer-census.test.ts`  | Fails when SQL writing `tabs` appears outside the known writers                             |
+| File                                    | Role                                                                                          |
+| --------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `src/image-refs/extract.ts`             | The JavaScript extractor: what a reference is                                                 |
+| `src/db/image-refs.ts`                  | The writers' statements, and the document's own reads (its set; whether it places an image)   |
+| `src/routes/images.ts`                  | The usage map (`usageOf`): the media service's references, kept to canvases the index answers |
+| `src/db/tabs.ts`                        | `upsertTab`, `seedTabs`, `swapTabData` carry index statements; `deleteTabRow` cascades        |
+| `src/document-room/document-content.ts` | `importDocumentCopy` indexes a copy from its bodies                                           |
+| `src/document-room/document-schema.ts`  | `image_refs`, and the outbox triggers that key a change to it                                 |
+| `src/document-room/document-outbox.ts`  | The push: `document_images`, the media queue and the placement grants, one D1 batch           |
+| `src/db/documents.ts`                   | `purgeDocumentRows` deletes a purged canvas's cached snapshots                                |
+| `src/image-refs/writer-census.test.ts`  | Fails when SQL writing `tabs` appears outside the known writers                               |
 
 ## Domain and naming
 

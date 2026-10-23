@@ -157,8 +157,8 @@ seen on the document).
 - A query that serves one person starts from that person's rows (their visible documents, their
   candidates) and seeks everything else by index. A query led by a table-wide index (all open
   threads, every document in id order, every document-scoped event) slows as the database grows,
-  not as the person's work does. `apps/api/src/db/home-plans.test.ts` pins the plans of the Home and
-  Inbox reads against the real migrations.
+  not as the person's work does. `../liveworkspace/apps/index/src/home-reads.test.ts` pins the plans of Home's reads against the
+  index's real migrations.
 - A public, identity-free read that every visitor makes (the Community's featured posts and facets)
   is answered from the edge cache for its stated lifetime (liveworkspace/apps/community/src/http.ts).
 - A check that needs only a document's owner and team reads that row, not the full document.

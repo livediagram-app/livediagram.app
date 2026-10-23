@@ -98,7 +98,7 @@ differ, and the second copy is stored once more.
   unchanged. The owner is whoever is importing: a guest's own gallery, or a signed-in account's.
 - **Offline Mode documents** ([Offline Mode](../006-document/offline-mode.md)) never reach the
   server. The resized image is embedded in the element as a `data:` URL, the same shape a picked
-  image takes in an offline document and the shape Sync Document re-homes into the gallery later.
+  image takes in an offline document and the shape Sync Canvas re-homes into the gallery later.
   Embedding is bounded by an **offline import budget of 8 MB** of `data:` URL text per import:
   an image that would go past it stays a placeholder (`offline-budget`), so one import cannot
   bloat the document record beyond what autosave handles comfortably.
@@ -111,7 +111,7 @@ differ, and the second copy is stored once more.
 | `unsupported`        | The browser cannot decode the bytes, or the gallery refuses the type (`unsupported_type`, `malformed_jpeg`). |
 | `too-large`          | The source is over 50 MB, or the encoded image is over the 10 MB per-file cap (`file_too_large`).            |
 | `gallery-full`       | The owner's gallery is at its image-count or byte cap (`gallery_full`, 100 images / 100 MB hosted).          |
-| `images-unavailable` | The deployment stores no images (`images_unavailable`: a self-host without the media service).                              |
+| `images-unavailable` | The deployment stores no images (`images_unavailable`: a self-host without the media service).               |
 | `offline-budget`     | An Offline Mode import has already embedded 8 MB of images.                                                  |
 | `upload-failed`      | Anything else: the network dropped, the server erred.                                                        |
 

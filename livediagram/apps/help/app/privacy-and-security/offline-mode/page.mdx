@@ -16,9 +16,9 @@ Most documents are saved to livediagram's servers so you can reach them from any
 
 Offline Mode is chosen per document, so you can keep normal documents and ones in This Browser side by side.
 
-- **If you haven't signed in**, your new documents start in This Browser (on a deployment with sign-in; a guest-only self-host saves to the server by default). Nothing you try out is sent to our servers until you choose to share it, sync it, or sign in and move it to your account. Everything you make from the [New Document](/new) screen, and from the links that create a document straight away (a template from the home page, **Start Blank**), starts in This Browser. Use **Sync Document** on one if you would rather it went to the server now.
-- **Once you've signed in**, new documents go to your account. To keep one only in this browser, choose **Take Offline** from its menu (see below).
-- The document is written to your browser's own storage (IndexedDB) and opens like any other. A **This Browser** badge next to its name in the editor, and the matching **This Browser** pill wherever it is listed (Explorer lists and cards, search results, the Explorer panel and the Trash), mark it so you always know which documents live only in this browser. Hover or focus the pill to read that the document lives only in this browser and that clearing this browser's site data deletes it; click it (in the Explorer lists, the Explorer panel and the Trash) to come back to this guide. The Explorer sidebar's **This Browser** row lists them all.
+- **If you haven't signed in**, your new documents start in This Browser (on a deployment with sign-in; a guest-only self-host saves to the server by default). Nothing you try out is sent to our servers until you choose to share it, sync it, or sign in and move it to your account. Everything you make from the [New Document](/new) screen, and from the links that create a document straight away (a template from the home page, **Start Blank**), starts in This Browser. Use **Sync Canvas** on one if you would rather it went to the server now.
+- **Once you've signed in**, new documents go to your account. To keep one only in this browser, choose **Take Offline** from its menu in the editor's Explorer panel (see below).
+- The document is written to your browser's own storage (IndexedDB) and opens like any other. A **This Browser** badge next to its name in the editor marks it, so you always know which documents live only in this browser; hover or focus it to read that clearing this browser's site data deletes it. They are not in your account's lists: the Explorer sidebar's **This Browser** row, with how many there are, lists them all, and so does their own page, [This Browser](/offline), where each has **Sync Canvas** and **Delete**.
 
 <Note>
   A document in This Browser is **not synced and not backed up**. It lives only in this browser:
@@ -30,19 +30,18 @@ Offline Mode is chosen per document, so you can keep normal documents and ones i
 
 A document in This Browser is a normal document: every editor feature works, including shapes, arrows, layers, tabs, themes, undo/redo, and export. Only the features that need the server are unavailable, because there's no server copy to power them:
 
-- **Sharing** needs a document on the server. Opening **Share** on a document in This Browser tells you so and offers **Sync Document**: press it and the document uploads, and the Share options appear in the same dialog, with no reload. Embeds are unavailable until it is synced, for the same reason.
+- **Sharing** needs a document on the server. Opening **Share** on a document in This Browser tells you so and offers **Sync Canvas**: press it and the document uploads, and the Share options appear in the same dialog, with no reload. Embeds are unavailable until it is synced, for the same reason.
 - **Live collaboration** and **teams** don't apply; a document in This Browser is yours alone. Comments still work, but only you see them.
 - Images you add are stored **inside the document**, so it stays fully local.
 - **Add a Tab to Another Document** is unavailable for a document in This Browser in either direction, and **Duplicate** makes another copy in This Browser rather than uploading one.
-- In the Explorer it shows a fixed This Browser picture instead of a thumbnail, because there is no server copy to draw one from.
 
 ## Moving to and from your account
 
-You can change your mind at any time, from the document's **⋯** menu in the Explorer.
+You can change your mind at any time, from the document's **⋯** menu in the editor's Explorer panel, or from the [This Browser](/offline) page.
 
 - **When you sign in** with documents in This Browser, we offer to move them to your account. Every one is ticked; untick any you want to keep in this browser, then **Move**. **Not Now** leaves them where they are, and we only ask again when there are more.
 
-- **Sync Document** uploads a document in This Browser to the cloud. It becomes a normal document, shareable and (when you're signed in) reachable from your other devices, and the copy in this browser is removed.
+- **Sync Canvas** uploads a document in This Browser to the cloud. It becomes a normal document, shareable and (when you're signed in) reachable from your other devices, and the copy in this browser is removed.
 - **Take Offline** does the reverse: it downloads a cloud document into this browser and then **removes it from your account and every other device**. Because that deletes the server copy for good, we ask you to confirm first.
 
 <Note>
@@ -50,8 +49,8 @@ You can change your mind at any time, from the document's **⋯** menu in the Ex
   Browser it exists only in the browser you took it offline in. If it was shared, taking it offline
   also revokes the share links, and a team document leaves the team library. For the owner it is a
   move, not a delete, so it skips the [Trash](/help/account-and-data/trash/); a teammate taking a
-  team document offline sends the team's copy to the team Trash. A document in This Browser you
-  delete goes to this browser's own Trash.
+  team document offline sends the team's copy to the team Trash. Deleting a document in This Browser
+  removes it for good: nothing else holds it, so it has no Trash.
 </Note>
 
 </ArticleLayout>

@@ -27,7 +27,7 @@ marketing/   off-site copy + media for listings and promotion (see docs/specs/01
 
 - **Marketing** at `/` is the pitch and feature tour.
 - **Editor** is the canvas, served at clean routes (`/new`, `/document/<id>`, `/explorer/...`; no `/live` prefix). Guests get a per-browser identity and full persistence; signed-in users get the same plus cross-device sync. `/explorer` opens on **Home** ([Explorer Home](docs/specs/013-workspace/explorer-home.md)); the **Inbox** beneath it lists what is still outstanding for you (open actions assigned to or by you, comment threads you are in) across every document ([Inbox](docs/specs/013-workspace/inbox.md)), and the **Timeline** is a day-grouped feed of everything that happened across your documents, teams and account ([Timeline](docs/specs/013-workspace/timeline.md)). Signed-in users can mirror their Personal Space to their own Google Drive, kept in step both ways while a tab is open ([Google Drive mirror](docs/specs/022-drive-mirror/drive-mirror.md)).
-- **API** at `/api/*` is a Cloudflare Worker (REST + WebSocket realtime room per document, backed by D1).
+- **API** at `/api/*` is a Cloudflare Worker (REST + WebSocket realtime room per document, each document's content in its own Durable Object; liveworkspace's index files documents and decides who may open them).
 - **Telemetry** is anonymous usage events sent to liveworkspace's telemetry service, published on its public dashboard (`/telemetry` redirects there; off in OSS forks by default).
 - **Help** at `/help` is the static help centre (guides, feature docs, troubleshooting).
 - **Community** at `/community` is the public gallery of shared documents: browse, like and copy what people publish ([Community](docs/specs/025-community/community.md)).

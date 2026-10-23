@@ -18,7 +18,6 @@ Scope, by file:
 | `packages/ui/src/appearance/appearance-cycle.ts`                                                                 | Pure: `oppositeAppearanceSetting`, `quickAppearanceToggleName`                   |
 | `apps/editor/components/chrome/AppearanceToggle.tsx`                                                             | Quick appearance switch: click flips, right-click sets System                    |
 | `apps/editor/hooks/ui/useAppearance.ts`                                                                          | Logs and tracks every explicit pick                                              |
-| `apps/editor/app/explorer/ExplorerShell.tsx`                                                                     | Passes `powerUser` to its bottom bar                                             |
 | `apps/editor/components/chrome/ChromeControls.tsx`                                                               | `TabBar` and the Explorer pass `powerUser` through to the toggle                 |
 | `apps/editor/components/chrome/RoleIndicator.tsx`                                                                | `RolePill` (title bar) and `RoleStatusIcon` (status bar)                         |
 | `apps/editor/app/document/[id]/useViewPreview.ts`                                                                | `viewPreview`, `canToggleRole`, `toggleViewPreview`                              |

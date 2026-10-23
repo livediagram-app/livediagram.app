@@ -6,43 +6,26 @@ This guide is the practical path: provision Cloudflare resources, configure secr
 
 ## What you'll provision on Cloudflare
 
-| Resource                             | Used by           | Why                                                                                                                                                                                                                                                                                                                                        |
-| ------------------------------------ | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Workers paid plan**                | All eight workers | Durable Objects (per-document realtime room) need the paid plan.                                                                                                                                                                                                                                                                           |
-| **D1 database**                      | `apps/api`        | Documents, folders, share links, shared-with index, image metadata, the Inbox index, teams + membership + team library, telemetry rows. People's preferences, display names and colours are kept by the accounts Worker when sign-in is on, and in each browser otherwise.                                                                 |
-| **Durable Object namespace**         | `apps/api`        | One SQLite-backed object per document: its content (tabs, comments, changesets) and its realtime room.                                                                                                                                                                                                                                     |
-| **R2 bucket** (optional)             | `apps/api`        | Image uploads ([Image element + per-owner gallery](../specs/009-elements/images.md)) + document SVG snapshots ([Document SVG snapshots](../specs/006-document/document-snapshots.md): Explorer thumbnails + the live image share). Without it, image endpoints `503` and snapshot endpoints `404` (the Explorer row shows a generic icon). |
-| **Rate Limiter bindings** (optional) | `apps/api`        | Abuse throttles: per-owner writes, plus telemetry ingest, share-code lookups, link unfurls, AI calls, API-token reads, and Community likes and reports. Any binding you don't provision falls through to "allow", so none are required.                                                                                                    |
-| **Custom domain**                    | `apps/router`     | The router worker serves your hostname; downstream workers don't need their own domain.                                                                                                                                                                                                                                                    |
+| Resource                             | Used by           | Why                                                                                                                                                                                                                                                                                                                                               |
+| ------------------------------------ | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Workers paid plan**                | All eight workers | Durable Objects (per-document realtime room) need the paid plan.                                                                                                                                                                                                                                                                                  |
+| **Durable Object namespaces**        | `apps/api`        | One SQLite-backed object per document (`DocumentRoom`: its content, tabs, comments, changesets, Community post and image references, and its realtime room) and two per person (`PersonStore`: their Drive mirror and shape libraries; `WorkbenchStore`: their workbench pairings, tickets and sessions). Each makes its own schema on first use. |
+| **R2 bucket** (optional)             | `apps/api`        | Document SVG snapshots ([Document SVG snapshots](../specs/006-document/document-snapshots.md): Explorer thumbnails + the live image share). Uploaded images live in liveworkspace's media service ([Images](#images)). Without it, snapshot endpoints `404` (the Explorer row shows a generic icon).                                              |
+| **Rate Limiter bindings** (optional) | `apps/api`        | Abuse throttles: per-owner writes, plus telemetry ingest, share-code lookups, link unfurls, AI calls, API-token reads, and Community likes and reports. Any binding you don't provision falls through to "allow", so none are required.                                                                                                           |
+| **Custom domain**                    | `apps/router`     | The router worker serves your hostname; downstream workers don't need their own domain.                                                                                                                                                                                                                                                           |
 
 What you do NOT need:
 
 - Sign-in: it is optional. Without it, every user is a guest. **Guests still need a liveworkspace accounts site**, though: a guest's identity is a guest token the accounts site mints ([The accounts site](#the-accounts-site-guests-and-sign-in)). The api worker fetches the accounts Worker's public keys (`${ACCOUNTS_URL}/api/auth/jwks`) to check access tokens and guest tokens, and calls it when someone signs in or a session refreshes.
 - No _required_ SaaS: no Stripe (no paid tier) and no analytics vendor. The other integrations are all optional and stay off until you add a key: Resend for transactional email ([Transactional & lifecycle email (Resend)](../specs/014-identity/transactional-email.md)), a model key for the event-storming photo reader ([Note reader](../specs/021-event-storming/note-reader.md)), and a Google OAuth client for the Google Drive mirror ([Google Drive mirror](../specs/022-drive-mirror/drive-mirror.md)), each covered in its own section below. The telemetry endpoint is first-party only and off by default.
-- A separate database host: D1 covers everything.
+- A database: the api worker keeps its data in Durable Objects.
 
 ## One-time Cloudflare setup
 
 1. **Create a Cloudflare account** and sign up for the Workers paid plan ($5/mo at the time of writing).
-2. **Create a D1 database**:
+2. **No database to create.** The api worker has no D1 database and no migrations: its data lives in the Durable Objects declared in `apps/api/wrangler.toml` (`new_sqlite_classes`), which make their own schema on first use. Where documents are filed (folders, favourites, the Trash), who may open them (share links and their passwords), the Timeline, teams and API tokens are liveworkspace's (the index at `INDEX_ORIGIN`, reached with `INDEX_KEY`, and the accounts Worker); without `INDEX_KEY` no document opens.
 
-   ```sh
-   pnpm exec wrangler d1 create livediagram
-   ```
-
-   Copy the `database_id` from the output into `apps/api/wrangler.toml` under the `[[d1_databases]]` block (it already has the binding name `DB`; you only need to update the id).
-
-3. **Apply migrations to the new D1**:
-
-   ```sh
-   pnpm --filter @livediagram/api db:migrate:remote
-   ```
-
-   (this runs `wrangler d1 migrations apply livediagram --remote` — note it takes the database **name**, `livediagram`, not the binding name `DB`).
-
-   This creates every table the worker expects. The same command runs in the deploy workflow on every release, so you only need it once for the first deploy.
-
-4. **Create an R2 bucket** (optional, for images):
+3. **Create an R2 bucket** (optional, for document snapshots):
 
    ```sh
    pnpm exec wrangler r2 bucket create livediagram-images
@@ -50,9 +33,9 @@ What you do NOT need:
 
    The bucket name is bound to `IMAGES` in `apps/api/wrangler.toml`.
 
-5. **Get an API token + account id**:
+4. **Get an API token + account id**:
    - Account id is at the bottom-right of any Cloudflare dashboard page.
-   - API token: create one with **Workers Scripts: Edit**, **D1: Edit**, **R2: Edit** (only if using images), **Workers KV: Edit** (for Durable Objects), and **Account → Account Settings: Read** on your account. Save it.
+   - API token: create one with **Workers Scripts: Edit**, **R2: Edit** (only if using the R2 bucket), **Workers KV: Edit** (for Durable Objects), and **Account → Account Settings: Read** on your account. Save it.
 
 ## Required GitHub Actions secrets
 
@@ -124,9 +107,9 @@ Or just push to `main` and use the bundled GitHub Actions workflows:
 - `.github/workflows/deploy.yml` calls it for **production**, **manually** from the Actions tab.
 - `.github/workflows/deploy-staging.yml` calls it for **staging**, automatically, whenever CI goes green on `main`.
 
-Self-hosting needs only the production pair: staging is a second copy of the platform the hosted deployment runs for its own rehearsals (own hostname, own D1 / R2 / KV), and deleting `deploy-staging.yml` costs a fork nothing. Keeping it means adding the `_STAGING` secrets and staging resources from [Staging environment](../specs/016-platform/staging-environment.md); without them the workflow simply fails on every merge.
+Self-hosting needs only the production pair: staging is a second copy of the platform the hosted deployment runs for its own rehearsals (own hostname, own R2 / KV and Durable Objects), and deleting `deploy-staging.yml` costs a fork nothing. Keeping it means adding the `_STAGING` secrets and staging resources from [Staging environment](../specs/016-platform/staging-environment.md); without them the workflow simply fails on every merge.
 
-See [Deployment](../specs/016-platform/deployment.md) for the deeper deploy mechanics, including how D1 migrations run BEFORE the worker deploy so the new code never briefly runs against the old schema.
+See [Deployment](../specs/016-platform/deployment.md) for the deeper deploy mechanics. There is no migration step: each Durable Object sets up its own storage the first time it is used.
 
 Serve the editor over HTTPS (Cloudflare does by default, on `workers.dev` and on a custom domain). It also works over plain http, on a LAN address for instance: ids and hashes fall back to plain code there, and only the clipboard buttons need HTTPS ([Secure context](../specs/016-platform/secure-context.md)).
 
@@ -215,8 +198,8 @@ Optional knobs (plain `[vars]`):
 
 ## Teams
 
-Teams need sign-in. They are liveworkspace teams, made and run on liveworkspace.app; the api worker keeps a copy of
-the ones its people are in, following liveworkspace's change feed every five minutes
+Teams need sign-in. They are liveworkspace teams, made and run on liveworkspace.app; the api worker reads a person's
+teams from their access token and asks the accounts Worker for a team's people when it needs them
 ([Teams](../specs/013-workspace/teams.md)). There are no team invite emails, reminders or expiry to configure here.
 
 ## Workbenches (optional, needs sign-in)
@@ -225,17 +208,16 @@ A workbench is a developer tool that frames the editor signed in, beside an agen
 
 - `APP_BASE_URL` (api `[vars]`): set it to your deployment's public origin. Besides the links in emails, it builds the workbench frame URLs (`/embed/workbench`, and `/embed/workbench/explorer` for the whole workspace) and the pairing URL (`/workbench/pair`) the CLI prints. Use the origin that serves the app without redirecting (for example `https://www.example.com` when the apex redirects to `www`): a workbench checks the frame's messages against the origin of that URL, and a redirect changes it. Left at its default, those links point at livediagram.app.
 - `WORKBENCH_TICKET_RATE_LIMITER` (optional binding, declared in `apps/api/wrangler.toml`): caps ticket mints and pairing requests per token. Without the binding every request is allowed.
-- Migration `0077_workbench.sql` creates the four workbench tables; it runs with the others.
+- Each person's workbench state lives in their own `WorkbenchStore` Durable Object; nothing needs creating.
 
-## Plan's tables
+## Plan
 
-Plan mode (boards, Sheets and forms) moved to liveplanner. The migrations that made its tables (`items`, `sheets`,
-`sheet_cells`, the form tables) stay in the chain and the tables stay in D1, unread; nothing needs setting up for
-them, and `FORM_RATE_LIMITER` is no longer read.
+Plan mode (boards, Sheets and forms) is liveplanner's; nothing needs setting up for it here, and `FORM_RATE_LIMITER`
+is not read.
 
 ## Google Drive mirror (optional, needs sign-in)
 
-Signed-in users can mirror My Work to their own Google Drive ([Google Drive mirror](../specs/022-drive-mirror/drive-mirror.md)). It is **off until you set a Google OAuth client id**; with none, Settings has no Cloud Sync section and every `/api/drive` route answers `503 drive_not_configured`. The Drive traffic goes from each user's browser straight to Google; your worker only brokers tokens and stores a few small rows in D1.
+Signed-in users can mirror My Work to their own Google Drive ([Google Drive mirror](../specs/022-drive-mirror/drive-mirror.md)). It is **off until you set a Google OAuth client id**; with none, Settings has no Cloud Sync section and every `/api/drive` route answers `503 drive_not_configured`. The Drive traffic goes from each user's browser straight to Google; your worker only brokers tokens and keeps each person's connection in their own `PersonStore` Durable Object.
 
 1. In Google Cloud, create a project, enable the **Google Drive API**, and create an OAuth client of type **Web application**. Add `https://<your-host>/drive/connected` as an authorised redirect URI and `https://<your-host>` as a JavaScript origin. The consent screen needs only the non-sensitive scopes `drive.file` and `drive.install`, so no verification or security assessment is required.
 2. For **Open with**, configure the Drive API's **Drive UI integration**: Open URL `https://<your-host>/drive/open`, default MIME type `application/vnd.livediagram+json`, default extension `livediagram`.

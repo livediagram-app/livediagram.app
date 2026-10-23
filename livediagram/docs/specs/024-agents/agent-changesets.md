@@ -15,7 +15,7 @@ Before changesets an agent wrote a tab with the editor's whole-tab `PUT` ([API a
 persistence boundary"). That write never reached the room, so:
 
 - **A person never saw the agent's edit** until they reloaded, and their next autosave of the tab, built from a copy
-  without it, erased it from D1.
+  without it, erased it from the store.
 - **An agent erased a person's edits.** The MCP's `update_document` read the tab, waited while the model thought,
   then wrote the whole tab back over anything saved in between.
 - **A personal document had no room**, on the premise that it has one writer. An agent is a second writer.
@@ -61,9 +61,9 @@ says what it has seen.
 4. **Compile.** The shared engine resolves selectors, applies the operations to the stored tab, normalises and lays
    out what they touched ([Edit operations](edit-operations.md)), and validates the result with `isValidTab`.
 5. **Write** the tab with compare-and-swap on `rev`. A lost race repeats steps 2 to 5 once, then answers `409`.
-6. **Record** the changeset in `agent_changesets` (D1) with its element ops and inverse.
+6. **Record** the changeset in `agent_changesets` (the document's Durable Object) with its element ops and inverse.
 7. **Relay** it to the submitting document's room as one sequenced `changeset` op. A relay failure is logged and
-   never fails the write: D1 already holds it, and step 8 keeps it there. A tab linked into other documents is not
+   never fails the write: the store already holds it, and step 8 keeps it there. A tab linked into other documents is not
    relayed to their rooms; step 8 keeps it there too.
 8. **Merge on save.** An editor's tab `PUT` carries `X-Changeset-Seen: <rev>`, the highest changeset revision it has
    applied. The api re-applies every recorded changeset after that revision to the incoming tab before writing,
@@ -76,7 +76,7 @@ says what it has seen.
      A save without the header (a bundle older than this spec) is treated as having seen nothing newer than
      `CHANGESET_MERGE_WINDOW` ago.
 
-Because the merge reads D1 rather than the room, a changeset survives a dropped relay, a sleeping room and an
+Because the merge reads the store rather than the room, a changeset survives a dropped relay, a sleeping room and an
 editor that was offline when it landed.
 
 ## What the room does
@@ -203,7 +203,7 @@ erases anything:
 | `CHANGESET_REVEAL_MS`         | 2000       | Long enough to notice, short enough not to clutter                       |
 | `CHANGESET_TOAST_COALESCE_MS` | 10000      | One toast per burst of work                                              |
 
-A changeset's element ops, inverse and result lines are stored beside its record, one D1 row each, so only the tab
+A changeset's element ops, inverse and result lines are stored beside its record, one row each, so only the tab
 cap bounds a changeset.
 
 Changesets count against the token's write rate limit ([Public API and API tokens](../015-api/public-api-and-tokens.md) §3.5).

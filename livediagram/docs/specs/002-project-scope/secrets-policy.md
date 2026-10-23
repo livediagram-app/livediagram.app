@@ -20,10 +20,10 @@ This is non-negotiable. The same rule applies to README examples, test fixtures,
 
 Required by the CI/CD pipeline (see [10-deployment.md](../016-platform/deployment.md)):
 
-| Secret          | Purpose                                                                                                                                                                                                                                               |
-| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `CF_API_TOKEN`  | Cloudflare API token scoped to the account that owns the workers. Required permissions: Workers Scripts:Edit, D1:Edit, Workers Routes:Edit, Account Settings:Read, User Details:Read. Full list in [10-deployment.md](../016-platform/deployment.md). |
-| `CF_ACCOUNT_ID` | Cloudflare account ID (not a secret per se, but kept in the same store).                                                                                                                                                                              |
+| Secret          | Purpose                                                                                                                                                                                                                                      |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CF_API_TOKEN`  | Cloudflare API token scoped to the account that owns the workers. Required permissions: Workers Scripts:Edit, Workers Routes:Edit, Account Settings:Read, User Details:Read. Full list in [10-deployment.md](../016-platform/deployment.md). |
+| `CF_ACCOUNT_ID` | Cloudflare account ID (not a secret per se, but kept in the same store).                                                                                                                                                                     |
 
 The deploy workflow also **syncs** the sign-in values and one more of the worker secrets below from GitHub repo secrets into `wrangler secret put` on every deploy, so they rotate by editing the GitHub secret: `ACCOUNTS_URL`, `API_RESOURCE`, `ACCOUNTS_CLIENT_ID`, `ACCOUNTS_CLIENT_SECRET` and `MEDIA_KEY`. Each sync is guarded on the GitHub secret being non-empty, so a fork that sets none still deploys.
 
@@ -60,7 +60,7 @@ If a value's documentation calls it "public", "publishable", or "client", it's f
 Never imported in client code, never bundled into the static export:
 
 - Every secret in the table above.
-- D1 database access (always via a Worker; the browser never holds DB credentials).
+- Storage access (always via a Worker; the browser never holds storage credentials).
 - Any signing / encryption key.
 
 Workers and server-only code read these from `env` bindings — not from `process.env`-style imports in shared code.
@@ -96,7 +96,7 @@ photograph of a physical wall **in the browser**, with classical computer
 vision. The photograph itself is never uploaded: only the CROPS — one sticky
 each — go to `POST /api/ai/read-notes` so the model can read the handwriting,
 and the route forwards them to the provider and discards them. Nothing is
-persisted anywhere: not R2, not D1, not IndexedDB, not a log
+persisted anywhere: not R2, not a Durable Object, not IndexedDB, not a log
 line. The browser also re-encodes every crop, which drops EXIF (including the
 GPS tag) after honouring the orientation flag.
 

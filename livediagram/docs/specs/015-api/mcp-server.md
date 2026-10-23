@@ -147,7 +147,7 @@ This implements the OAuth flow Manager Toolkit uses:
 
 **State storage.** Add a **KV namespace binding (`OAUTH_KV`) to `apps/mcp`** for
 client registrations, authorize sessions, and codes (all short TTLs). `apps/api`
-needs no KV — minting stays in D1 via the existing token table.
+needs no KV — tokens are minted and kept by the liveworkspace accounts Worker.
 
 **Why OAuth and not just token-paste.** A static-token-paste connector works in
 Claude Code / custom connectors, but the polished "Connect" button in claude.ai
@@ -266,7 +266,7 @@ canvas overrides; the model then personalises labels via `update_document`'s
    as such and is compiled by the api ([API app](api.md)), so the MCP and the
    [CLI](cli.md) build documents alike.
    Making a document is a use of it, so it joins the user's
-   Jump Back In at once ([Explorer Home](../013-workspace/explorer-home.md#making-a-document));
+   Jump Back In at once ([Explorer Home](../013-workspace/explorer-home.md#opens));
    `markUsed: false` is passed through to the create
    ([API](api.md#marking-a-document-used)) for a model making many documents in one go,
    so a batch never pushes the user's own work out of reach. Absent, nothing is sent and the

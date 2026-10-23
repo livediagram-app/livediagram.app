@@ -7,9 +7,9 @@ Status: shipped
 A document that has held nothing for 30 days moves to the
 [Trash](trash.md) on its own. From there the Trash's usual 30 days apply, so it
 can still be restored, and it is removed for good only after both clocks have
-run. An empty document gives its owner nothing, but every one of them is a row
-the database keeps, lists and sweeps; letting them go keeps the Explorer and
-the database clean without anyone having to tidy up.
+run. An empty document gives its owner nothing, but every one of them is an
+item the index keeps and lists and a Durable Object the platform keeps; letting
+them go keeps the Explorer clean without anyone having to tidy up.
 
 ## Which documents
 
@@ -37,11 +37,12 @@ browser, cost the server nothing, and are never touched.
 
 ## The sweep
 
-The api worker's daily `0 3 * * *` cron, the one that already purges the Trash,
-moves every live document that is both empty and stale to the Trash. The check
-and the move are one statement, so a document saved a moment before the sweep
-is not moved. The sweep is capped per run, oldest first, so a backlog drains
-over a few days. It logs how many it moved.
+Each canvas checks itself. Its Durable Object runs a daily upkeep alarm, and
+when the canvas is both empty and stale it asks the index, as the canvas's
+owner, to move it to the Trash with the reason `empty` (`DELETE /items/:id?reason=empty`).
+The check reads the canvas's own content and last save in the same object that
+takes every save, so a canvas saved a moment before is not moved. A canvas in
+a team goes to its team's Trash. Each move is logged.
 
 The move stamps the document's Trash time with **the moment of the sweep**,
 never its creation or last save. The Trash's purge counts from that time, so an
@@ -69,9 +70,10 @@ author: it records no one, so it adds nothing to erase on account deletion.
 
 ## Restore
 
-Restoring an automatically moved document works like any restore, and counts as
-a save: its 30 stale days start again from the restore, so it is not moved
-straight back by the next sweep. A document a person deleted restores exactly
+Restoring an automatically moved document works like any restore. The canvas
+remembers the save it was moved for, so it is never moved back for that same
+save: only after it is saved again and then left empty for 30 days does it go
+to the Trash again. A document a person deleted restores exactly
 as it was, its last-saved time untouched.
 
 ## The API
@@ -92,8 +94,8 @@ Offline Mode's local Trash rows are always `deleted`.
   30 days ago".
 - **No room broadcast.** A person deleting a document tells its open sessions
   at once. The sweep does not: a document untouched for 30 days rarely has one,
-  and one that does stops at its next save, which answers `document_trashed`,
-  the same fallback the Trash already relies on when the room is unreachable.
+  and one that does loses its grant at the next renewal, since the index grants
+  nothing on an item in the Trash.
 - **No telemetry event.** Telemetry counts what people do; the sweep is not a
   person. Its log line counts it, and the Trash's `Restored` event already
   says whether anyone comes back for what it moved.

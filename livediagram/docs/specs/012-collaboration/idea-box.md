@@ -97,7 +97,7 @@ apply. The second poster's copy settles the same way:
 - A pending card that leaves the box any other way (the box was emptied for a
   new round, or deleted) is not a refusal and says nothing.
 
-The ledger and the D1 copy agree: the room's ledger records ideas in the same
+The ledger and the stored copy agree: the room's ledger records ideas in the same
 order, and a save merged with it appends the first card and refuses the second
 at the cap. An Editor whose copy still held the refused card when it saved
 saves again once the card comes out, and the merge restores the peer's card.

@@ -29,7 +29,7 @@ Opens as a popover from the **menu button** at the top left of the canvas ([Tool
 Sections, top to bottom:
 
 - **Current Document** — the active document's row. Click to rename in place; the row's ellipsis menu surfaces Rename, Duplicate, and Delete for the current document (moved here from the editor header).
-- **Overview, Spaces and More** — the Explorer sidebar's three groups, built from the same rows, layout rules and keyboard model at the panel's width; rows with documents open in place, the rest go to their Explorer page ([Explorer structure](../013-workspace/explorer-structure.md#the-editors-explorer)).
+- **Overview, Spaces and More** — the Explorer sidebar's three groups, built from the same rows, layout rules and keyboard model at the panel's width; rows with documents open in place, the rest go to their Explorer page ([Explorer structure](../013-workspace/explorer-structure.md#the-editors-explorer-panel)).
 - **Sign-in nudge** — a dashed-border card at the bottom of the Explorer body that surfaces the value of accounts (cross-device persistence) where the user is looking at their library. Three states driven by the deployment + session:
   - **Sign-in disabled** (self-host without auth): "No sign-in on this deployment" with the body "Your documents are saved, but only this browser can open them. Clear its site data and you lose them." The documents are on the server; it is the guest id that lives in the browser. No button.
   - **Sign-in enabled, signed out**: "Sign in to keep your content" with body "A free account keeps your documents and content across sessions and devices." and a primary CTA linking to `/sign-in/`.
@@ -589,7 +589,7 @@ type Element = {
 - The palette is always rendered on top of the canvas, regardless of which tab is active.
 - Each tab owns its own array of elements. Adding a shape adds it to the **active tab** only.
 - Switching tabs swaps the canvas content; each tab's shapes persist while the page is loaded.
-- Reloads restore the document from the api worker (D1), keyed by the document id in the URL. The active tab id is encoded in the URL fragment (`#t=<tabId>`) so refreshing keeps you on the same tab.
+- Reloads restore the document from the api worker (the document's Durable Object), keyed by the document id in the URL. The active tab id is encoded in the URL fragment (`#t=<tabId>`) so refreshing keeps you on the same tab.
 - When the active tab has zero elements (and the template picker isn't open), an **empty-state card** is centred on the canvas. It contains, top to bottom: a brand-coloured icon (square + circle, evoking diagram primitives), the tab name in bold, an `EMPTY CANVAS` subtitle, a one-paragraph hint explaining the three ways to start ("Open the palette on the left to add shapes, double-click anywhere to drop text, or connect elements by dragging from their anchor dots"), and a **Browse templates** button that opens the template picker. The card sits on top of any background pattern so it stays legible on coloured / patterned canvases.
 - The empty-state card disappears once the active tab has at least one element.
 

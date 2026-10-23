@@ -51,10 +51,10 @@ way. `tabs` holds the body ([Per-tab storage](per-tab-storage.md)).
   `body` key per other holder, from a trigger on `tabs`, so no write path can forget it. The room's alarm sends
   them a few seconds after the document goes quiet (`FLUSH_IDLE_MS`), each a `receiveShares` call to the holder's
   Durable Object carrying the tab's current name and body, its write time, and the holders the sender knows. It is
-  not held to the D1 push's once a minute: it is a call between documents, not a D1 write.
+  not held to the outbox push's once a minute: it is a call between documents, not a push to the index.
 - **The later write wins.** A holder takes a body only when it is later than its own copy, by write time, then (two
   holders writing in the same millisecond) by content, so every holder settles on the same one. A copy taken in
-  updates the tab's stats, image references and the document's D1 push as a local write does.
+  updates the tab's stats, image references and the document's outbox push as a local write does.
 - **No echo.** A holder taking a copy sends it on only to holders the sender did not list; that is also how a
   holder that joined a moment ago hears of a write made by one that has not yet heard of it.
 - **Joining.** `POST /api/documents/:target/tabs/:tabId/link` with `{ from }` runs in the target's object. It reads

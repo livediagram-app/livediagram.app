@@ -336,8 +336,6 @@ mode until it moved out into its own product, liveplanner (https://liveplanner.a
   ordinary Diagram tab (`dropRetiredPlan`, run from `migrateStoredTab` beside `dropRetiredPages`): its `kind` and
   `opensIn` go, with its Plan-only fields, and so do its Plan board and Sheet elements. A chart that read a Sheet keeps
   the data it last read and loses its `chartSource`. The tab is saved without them the next time it is saved.
-- The Plan tables in D1 (items, sheets, sheet cells and refs, board statuses, form links, reports and reads) stay in
-  place, unread, so the drop can be undone; a later migration may drop them.
 - The help articles about Plan, boards, cards, Sheets, dashboards and forms redirect to Editor Modes, which points to
   liveplanner, and the marketing site's Plan, Sheets and Forms feature pages redirect to liveplanner.app.
 - Workshop's Q&A board and the diagram [card](../009-elements/card.md) are not Plan, and stay.
@@ -402,7 +400,7 @@ out into its own product, livedocuments (https://livedocuments.app). livediagram
   intent, a `/new?mode=` link and a recently opened document's mode (`parseEditorMode`), an `opens-in:facilitate`
   Explorer filter, and a default-folder key `mode:facilitate` (`parsePlacementDefaultKey`; clearing the default
   clears both names). Tab bodies are not rewritten. The tour's preference `facilitateTourSeen` is renamed
-  `workshopTourSeen` (migration 0098 in D1, `upgradeLegacyPreferences` for any older copy), and telemetry history
+  `workshopTourSeen` (`upgradeLegacyPreferences` upgrades any older copy), and telemetry history
   moves to the new event names and help slugs. The help articles moved to `/help/canvas/workshop-mode/`, the
   `/help/canvas/facilitate-mode/` addresses redirecting. The **facilitator** keeps its name.
 

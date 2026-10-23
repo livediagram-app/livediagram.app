@@ -115,7 +115,7 @@ The server decides everything that matters:
   deleting an account deletes the claims it sent ([Owner-keyed data](../015-api/api.md#owner-keyed-data)).
 - A canvas comment and an
   assigned action ([Assigned actions](assigned-actions.md)) are deduped on their exact text: neither is stored where the route can read it when the request lands
-  (both reach D1 only with the next tab save), so a client that rewords each
+  (both reach the stored tab only with the next tab save), so a client that rewords each
   request gets past the dedupe, and the hourly cap is the bound.
 
 The email reads **"{author} mentioned you in {document}"**, quotes the

@@ -123,32 +123,20 @@ storing tokens itself, the account-level design below supersedes it.
   randomness, so there's no low-entropy value to time-attack (unlike a
   password) and the lookup leaks nothing useful.
 
-### 3.2 Storage (D1)
+### 3.2 Storage
 
-A new owner-scoped table, migration with the worker that owns the binding:
-
-```
-api_tokens(
-  id            TEXT PRIMARY KEY,     -- public token id (for listing / revoke)
-  owner_id      TEXT NOT NULL,        -- the account userId this token acts as (never a guest id)
-  token_hash    TEXT NOT NULL UNIQUE, -- SHA-256 of the secret
-  name          TEXT,                 -- user label ("CI bot")
-  created_at    INTEGER NOT NULL,
-  last_used_at  INTEGER,
-  expires_at    INTEGER NOT NULL,     -- created_at + 6 months; never null, never "forever"
-  revoked       INTEGER NOT NULL DEFAULT 0
-)
-```
-
-Indexed on `token_hash` (lookup) and `owner_id` (listing).
+livediagram stores no token and has no database to store one in. liveworkspace keeps each token (its hash, owner,
+name, read-only flag, expiry and last use) with the account ([liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md)
+"API tokens"). What hangs off a token here, a workbench pairing or session, is in the person's workbench store, which
+notes the token's id, name, read-only flag and expiry when it pairs or mints ([Workbench embeds](../013-workspace/workbench-embeds.md)).
 
 **Lifetime — fixed 6 months.** Every token expires at `created_at + 6 months`.
 This is a hard maximum AND the only option: `expires_at` is **never null** (no
 never-expires tokens) and there is no shorter / user-chosen value for now — a
 long-lived credential that never lapses is the thing we don't want sitting in
 someone's CI config forever. `expires_at` is therefore always set and always in
-the future at creation; the lookup filters on it (`expires_at > now`) so an
-expired token is rejected exactly like a revoked one. **Rotation is manual**:
+the future at creation, and liveworkspace refuses an
+expired token exactly like a revoked one. **Rotation is manual**:
 mint a fresh token before the old one lapses. A configurable or shorter
 lifetime can be added later if there's demand; six months is the ceiling
 regardless.
@@ -455,7 +443,7 @@ hardening landed first:
   (`apps/api/src/limits.ts`); a per-frame cap in the realtime room. Document
   and tab names are shortened to the 60-character name cap rather than
   rejected (`apps/api/src/names.ts`, [Tab and document name length](../006-document/name-length.md)).
-- **Already solid** (pre-existing): D1 is fully parameterized; session JWT
+- **Already solid** (pre-existing): every SQL statement is parameterized; session JWT
   verification; share-link expiry + constant-time password compare + per-IP
   brute-force limiter; WS-upgrade auth; realtime role re-stamping + op-rate cap.
 

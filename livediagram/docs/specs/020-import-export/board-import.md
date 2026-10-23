@@ -62,7 +62,7 @@ throws. Only the parse stage has to be pure.
      Home's Jump Back In at once; an import of **more than one** in one go
      marks none of them used (`markUsed: false`, in this browser's record too
      for Offline Mode documents), so it never pushes everything else out
-     ([Explorer Home: Making a document](../013-workspace/explorer-home.md#making-a-document));
+     ([Explorer Home: Making a document](../013-workspace/explorer-home.md#opens));
    - **insert-at-point**: the elements join the active tab at a point and are
      selected (a paste or a drop).
 

@@ -811,7 +811,7 @@ Events: `elected`, `pass-start`, `pass-end`, `token`, `root-created`, `root-foun
 | Account switch confirm, cancel, expiry      | `routes/drive.test.ts` (`account switch`)                               |
 | Account switch dialog                       | `apps/editor/components/drive/DriveAccountSwitchDialog.test.tsx`        |
 | Signed-in only, 503 when off                | `routes/drive.test.ts`                                                  |
-| Rows removed with document, folder, account | `db/drive-removal.test.ts`, `account-owner-columns.test.ts`             |
+| Rows removed with document, folder, account | `db/drive.test.ts`, `account-owner-columns.test.ts`                     |
 | OpenAPI parity                              | `openapi/route-parity.test.ts`                                          |
 | Envelope                                    | `packages/document/src/document-envelope.test.ts`                       |
 | REST client against the fake                | `apps/editor/lib/drive/drive-rest-client.test.ts`                       |

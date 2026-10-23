@@ -45,15 +45,14 @@ A `tabs` row is the tab's body and nothing else. It lives in its document's own 
 Object ([API app, Storage](../015-api/api.md#storage)), with the document's other content; its order and folder
 live on the `document_tabs` row beside it ([Tab ↔ document many-to-many](tab-document-many-to-many.md)). Its stats
 (`tab_stats`), image references (`image_refs`, [Images, Reference index](../009-elements/images.md#reference-index))
-and changesets cascade from `tabs(id)`, so a dropped tab takes them with it; the D1 index rows it fed
-(`collab_actions`, `collab_threads`, `document_images`) follow on the document's next push.
+and changesets cascade from `tabs(id)`, so a dropped tab takes them with it; what the index and the media service
+hold from it (the Inbox's threads and actions, the images it placed) follows on the document's next push.
 
 The table is created by the document's schema (`apps/api/src/document-room/document-schema.ts`), with
 `element_count` ([Document snapshots](document-snapshots.md)) and `rev` ([Agent changesets](../024-agents/agent-changesets.md)).
-D1's baseline migration, `0001_livediagram_baseline.sql`, has no `tabs`.
 
-`documents` (in D1) keeps `id`, `owner_id`, `name`, `shareable`, `folder_id`, `saved_at`, `created_at` and the
-listing's `content_summary`.
+The document's own row (`document`, in the same store) keeps its name, owner, deck, `saved_at` and `created_at`;
+where the document is filed, who may open it and the listing's summary are liveworkspace's index's.
 
 ## API surface
 

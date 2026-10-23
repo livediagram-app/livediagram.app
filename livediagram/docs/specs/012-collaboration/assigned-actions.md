@@ -119,16 +119,14 @@ Clicking it opens the **Assign Action dialog** (its own component under
 `components/dialogs/`, per the no-god-files rule), with:
 
 - **Assignee**: a pinned **Myself** row (every session — the signed-in
-  account, or the guest participant identity), then the **joined members
-  of the team whose shared library holds this document** (`GET
-/api/teams/<documentTeamId>` members, via the existing api-client
-  helper), each row showing the member's avatar bubble and display name
-  (email local-part fallback, as TeamPane does). Members of the user's
+  account, or the guest participant identity), then the **people of the canvas's team**, the team whose library holds it
+  (`GET /api/teams/<documentTeamId>/members`, read from liveworkspace's accounts, one request shared with the
+  mention list's), each row showing the member's avatar bubble and display name
+  (email local-part fallback). Members of the user's
   OTHER teams are deliberately not offered: they aren't members of this
   document's team, so they almost certainly can't open the document to
   complete the action — offering them just manufactures the §4 access
-  warning. **Invited-but-not-joined members ARE offered** (with the same
-  amber "Invited" badge the team pane uses): work often gets divided up
+  warning. **Invited-but-not-joined members ARE offered** (with an amber "Invited" badge): work often gets divided up
   while invites are still in flight. An invited member is keyed by their
   membership `memberId` (their `userId` when the lazy claim has already
   identified an account, else null), and picking one shows an
@@ -140,8 +138,8 @@ Clicking it opens the **Assign Action dialog** (its own component under
   Myself-only states, each with its own nudge: a **personal document**
   (no team library) offers the fix INLINE — "Move this document into a
   team library to assign teammates", with a button per joined team that
-  performs the [Team shared documents](../013-workspace/team-shared-documents.md) placement move (`PUT /api/documents/<id>/folder`
-  with the team id, landing at the team root) right from the dialog and
+  files the canvas into that team's library root through the index ([Team shared documents](../013-workspace/team-shared-documents.md),
+  `indexClient.updateItem` with the team id) right from the dialog and
   reloads the picker with that team's members, no Explorer round-trip; a
   signed-in user with no teams gets the create-a-team link instead; a
   signed-in user **not a member of the document's team** (a share-link
@@ -215,7 +213,7 @@ The server, not the client, establishes every fact that matters:
   an invited member) is a joined OR invited member of `<teamId>` (404
   otherwise, so there is no probing which users exist);
 - verifies the caller can access `documentId` (owner, team library, or
-  shared-with), and reads the **document name from D1**, not the body;
+  shared-with), and reads the **document name from the index**, not the body;
 - resolves the assignee's address from trusted server state
   (`team_members.email` / `email_lifecycle`), never a client header
   ([Transactional & lifecycle email (Resend)](../014-identity/transactional-email.md) §7, [Account settings & email notifications](../014-identity/profile-and-email-notifications.md) §5);
@@ -413,7 +411,7 @@ enum-ish tokens, not user content.
 
 - ~~A cross-document "my actions" inbox~~ — shipped as the Explorer's
   [Inbox](../013-workspace/inbox.md), exactly the way this bullet predicted:
-  a D1 projection (`collab_actions`) written beside every tab save,
+  a projection pushed to liveworkspace's index from each document's outbox,
   with the per-element blob still the source of truth.
 - Due dates, priorities, more than one action on an ordinary element (an
   Action panel is the place for a list), and multiple assignees.
