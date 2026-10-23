@@ -49,7 +49,6 @@ export const OWNER_SCOPED_SEGMENTS = new Set([
   'documents',
   'folders',
   'images',
-  'custom-themes',
   'participants',
   'preferences',
   'shared',

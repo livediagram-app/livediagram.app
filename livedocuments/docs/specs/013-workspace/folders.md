@@ -84,7 +84,6 @@ Every Explorer section is its own page under `/explorer` (the chrome — header,
 | Invites ([Teams](teams.md))                                    | `/explorer/invites`                                                |
 | This Browser ([Offline Mode](../006-document/offline-mode.md)) | `/explorer/offline`                                                |
 | Image gallery                                                  | `/explorer/images`                                                 |
-| Themes                                                         | `/explorer/themes`                                                 |
 | Trash ([Trash](trash.md))                                      | `/explorer/trash`                                                  |
 
 A retired address replaces itself with its successor, so links already out there keep working, and the sidebar highlights the successor's row at once; the Inbox was once called Activity, hence `/explorer/activity`. `/explorer` itself redirects to `/explorer/home` (worker-level 302 in production, client replace in dev). Folder and team ids ride the **query string**, not a path segment: `output: 'export'` can't enumerate user-minted ids, and the `/document/<id>` placeholder-rewrite workaround ([Dedicated route for new-document creation](../007-editor/new-document-route.md)) is deliberately kept single-purpose. The sidebar's groups, rows, labels and visibility rules are [Explorer structure](explorer-structure.md).

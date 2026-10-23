@@ -26,7 +26,6 @@ export const SIDEBAR_LABELS = {
   tags: 'Tags',
   library: 'Library',
   gallery: 'Image Gallery',
-  themes: 'Themes',
   trash: 'Trash',
 } as const;
 
@@ -95,7 +94,7 @@ export function sidebarDivider(minimalChrome: boolean): SidebarDivider {
   return minimalChrome ? 'separators' : 'titles';
 }
 
-const LIBRARY_VIEWS: ReadonlySet<SelectedNode['kind']> = new Set(['gallery', 'themes']);
+const LIBRARY_VIEWS: ReadonlySet<SelectedNode['kind']> = new Set(['gallery']);
 
 export function isLibraryView(kind: SelectedNode['kind']): boolean {
   return LIBRARY_VIEWS.has(kind);

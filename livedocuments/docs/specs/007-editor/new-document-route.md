@@ -410,13 +410,11 @@ Telemetry: Start Blank (`/new?blank=1`) fires `UI / Used / JustDraw` alongside
 the usual `Document / Created` event, so its adoption is
 measurable ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).
 
-## Custom themes
+## Themes
 
-`/new` shows no themes. Custom themes ([Custom themes](../011-theme/custom-themes.md)) are applied and built
-from the Tab Style dialog (`CustomThemePicker`). The create path still carries a theme id (`onPick`,
-`commitNewDocument`, `buildTemplatedTab` take a `string`, so a `custom:<uuid>`
-passes through), now always the caller's: `brand` on `/new`, the source tab's
-theme for a new tab.
+`/new` shows no themes. Themes are picked from the Tab Style dialog (`ThemeBrowser`). The create path still
+carries a theme id (`onPick`, `commitNewDocument`, `buildTemplatedTab` take a `string`), always the caller's:
+`brand` on `/new`, the source tab's theme for a new tab.
 
 ## API impact
 

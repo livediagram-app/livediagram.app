@@ -46,7 +46,6 @@ export * from './api/tabs';
 export * from './api/changesets';
 export * from './api/share';
 export * from './api/folders';
-export * from './api/custom-themes';
 export * from './api/teams';
 export * from './api/tokens';
 export * from './api/oauth';

@@ -198,7 +198,6 @@ const teamRenderer: TimelineRenderer = (event, ctx) => {
 const accountRenderer: TimelineRenderer = (event) => {
   const base = { icon: icon(event), description: null };
   const token = str(event.snapshot, 'tokenName') ?? 'API token';
-  const theme = str(event.snapshot, 'themeName') ?? 'A theme';
   const folder = str(event.snapshot, 'folderName') ?? 'A folder';
   // Tokens live in Settings, which opens in place over the feed.
   const tokens = () => requestOpenSettings('tokens');
@@ -213,14 +212,6 @@ const accountRenderer: TimelineRenderer = (event) => {
         meta: 'Rotate it before it lapses to keep connected tools working',
         onClick: tokens,
       };
-    case 'theme_saved':
-      return {
-        ...base,
-        subject: theme,
-        onClick: () => assignAppLocation('/explorer/themes'),
-      };
-    case 'theme_deleted':
-      return { ...base, subject: theme };
     case 'folder_created': {
       // The folder's own Explorer page. A deleted folder has no id in
       // its snapshot (there is nothing left to open), so it stays inert.

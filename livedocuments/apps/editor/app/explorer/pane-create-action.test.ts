@@ -24,7 +24,7 @@ describe('paneCreateMode', () => {
   });
 
   it('renders nothing for the read-only sections', () => {
-    // Shared / Gallery / Themes / Tokens / Profile pass neither verb.
+    // Shared / Gallery / Tokens / Profile pass neither verb.
     expect(paneCreateMode({ hasCreateDocument: false, hasCreateFolder: false })).toEqual({
       kind: 'none',
     });

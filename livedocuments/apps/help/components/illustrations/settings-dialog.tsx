@@ -45,7 +45,6 @@ const CATEGORIES = [
   'Panels',
   'Accessibility',
   'Tours',
-  'AI Tools',
   'Documents',
   'Account',
   'Privacy',

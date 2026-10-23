@@ -37,7 +37,7 @@ A picker shows up to three groups, always in this order, each under a small head
    theme derives them ([Canvas and palette](../008-canvas/canvas-and-palette.md#colours)), each named by a
    colour word, never two alike ("Blue", "Light blue", "Deep blue"). A Quick Style row's More colours shows the
    row's own colours here instead ([Quick Style Panel](../008-canvas/quick-style-panel.md#colours)). Outside
-   the editor (the Explorer's theme builder) there is no active tab, so no group.
+   the editor (the Explorer) there is no active tab, so no group.
 2. **Standard Colours**: the **standard colours**, the same ten everywhere, in this order:
 
    | Strong tone | Soft tone |
@@ -58,7 +58,7 @@ A picker shows up to three groups, always in this order, each under a small head
    - The **soft tone** is for backgrounds, fills and highlights: the same hues as washes, pale on light paper
      and deep on dark, with White in Ink's place.
    - A surface that offers free colours shows a soft row headed "Light", then a strong row headed "Dark": an
-     Page's background, the canvas colour and the custom theme builder.
+     Page's background and the canvas colour.
 
 3. **Custom Colours**: the colours picked with **Add a custom colour** in this document, newest first, at most twelve, then **Add a custom colour** (four coloured dots).
 
@@ -145,11 +145,11 @@ pick commits it, once, for undo.
 
 ## Skins
 
-| Skin              | What it is                                                                                  | Used by                                                                                                                                                                                                                                                                |
-| ----------------- | ------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Inline**        | The picker drawn in place, inside a flyout, panel or popover                                | Page background, article toolbar Colour, article Accent                                                                                                                                                                                                                |
-| **Row**           | A labelled row (the colour in force on its right) opening the picker in a popover beside it | Element, selection and table cell menu colour rows (the menu is 224px, narrower than the picker), the Laser Panel's Colour                                                                                                                                             |
-| **Swatch button** | A small swatch-only trigger opening the picker in a popover                                 | Rich-text label colour, gradient From and To, chart slice and legend colours, canvas and pattern colours, custom theme builder tiles, Quick Style's **More colours**, a tag's colour in the tag picker and its menu's Change Colour ([Tags](../013-workspace/tags.md)) |
+| Skin              | What it is                                                                                  | Used by                                                                                                                                                                                                                                    |
+| ----------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Inline**        | The picker drawn in place, inside a flyout, panel or popover                                | Page background, article toolbar Colour, article Accent                                                                                                                                                                                    |
+| **Row**           | A labelled row (the colour in force on its right) opening the picker in a popover beside it | Element, selection and table cell menu colour rows (the menu is 224px, narrower than the picker), the Laser Panel's Colour                                                                                                                 |
+| **Swatch button** | A small swatch-only trigger opening the picker in a popover                                 | Rich-text label colour, gradient From and To, chart slice and legend colours, canvas and pattern colours, Quick Style's **More colours**, a tag's colour in the tag picker and its menu's Change Colour ([Tags](../013-workspace/tags.md)) |
 
 ## Quick Style
 

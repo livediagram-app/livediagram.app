@@ -231,9 +231,9 @@ The canvas-style controls, shared with the palette's **Canvas** accordion (`Canv
 
 ### Colours panel
 
-Every theme in **one flat list**, nine to a carousel page (`ThemeBrowser`, shared with the palette accordion and
-the [New-document](../007-editor/new-document-route.md) picker so they stay identical), the owner's saved themes
-([Custom themes](custom-themes.md)) among them. No categories, no shuffle. Each card previews the theme in the
+Every built-in theme in **one flat list**, nine to a carousel page (`ThemeBrowser`, shared with the palette accordion
+and the [New-document](../007-editor/new-document-route.md) picker so they stay identical). No categories, no
+shuffle. Each card previews the theme in the
 viewer's half ([Light and dark halves](light-and-dark.md)).
 
 - Clicking a theme applies it live; double-clicking applies and closes the dialog.

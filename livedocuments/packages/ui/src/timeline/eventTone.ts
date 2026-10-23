@@ -38,7 +38,6 @@ const TONE_BY_EVENT: Record<KnownTimelineEventType, TimelineTone> = {
   // Revoking a token breaks whatever was using it, which is the same
   // shape of surprise as a deletion.
   token_revoked: 'danger',
-  theme_deleted: 'danger',
   // Note `team_member_left` is NOT danger: leaving is a departure the person
   // chose, and colouring it the same as being removed misreads the room.
 
@@ -80,7 +79,6 @@ const TONE_BY_EVENT: Record<KnownTimelineEventType, TimelineTone> = {
   action_assigned: 'create',
   action_completed: 'create',
   token_created: 'create',
-  theme_saved: 'create',
   image_uploaded: 'create',
   folder_created: 'create',
   // Somebody reaching your work is the good kind of news, and the whole

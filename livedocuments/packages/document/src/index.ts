@@ -614,7 +614,7 @@ export { mixHex } from './color-wash';
 
 // Theme engine (docs/specs/011-theme/multicolour-themes.md, /42, /44, /48): theme catalogue + types + the pure
 // recolour / switch / reset / preset transforms, shared by the editor and the
-// MCP worker (docs/specs/015-api/mcp-server.md). Custom-theme resolution stays in apps/editor/lib/themes.ts.
+// MCP worker (docs/specs/015-api/mcp-server.md). Resolution in the viewer's appearance stays in apps/editor/lib/themes.ts.
 export * from './theme-graph';
 export * from './themes';
 export * from './theme-halves';

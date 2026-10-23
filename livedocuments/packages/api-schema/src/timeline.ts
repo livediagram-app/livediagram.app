@@ -96,8 +96,6 @@ export const TIMELINE_EVENT_TYPES = [
   'token_created',
   'token_revoked',
   'token_expiring',
-  'theme_saved',
-  'theme_deleted',
   'image_uploaded',
 ] as const;
 

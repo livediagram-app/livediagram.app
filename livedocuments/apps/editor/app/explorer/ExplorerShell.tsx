@@ -19,7 +19,6 @@ import { commitUserPreferences } from '@/lib/user-preferences';
 import { isPowerUserMode } from '@/lib/power-user-mode';
 import { useDismissibleBanner } from '@/hooks/ui/useDismissibleBanner';
 import { useSearchShortcut } from '@/hooks/ui/useSearchShortcut';
-import { CustomThemeProvider } from '@/components/primitives/CustomThemeProvider';
 import { DocumentTagsProvider } from '@/components/tags/DocumentTagsProvider';
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import { ExplorerProvider, useExplorer } from './ExplorerContext';
@@ -79,16 +78,11 @@ export function ExplorerShell({ children }: { children: ReactNode }) {
   if (!state.authLoaded) return null;
   return (
     <ExplorerProvider value={state}>
-      {/* Owner-scoped custom themes (docs/specs/011-theme/custom-themes.md) so the Themes section + its
-          builder share one source of truth, keyed by the same owner id
-          the rest of the Explorer uses. */}
-      <CustomThemeProvider ownerId={state.ownerId}>
-        {/* The reader's tags (docs/specs/013-workspace/tags.md): the sidebar's Tags rows, the Tags page, every
-            row's chips and every document menu's Tags read the one list. */}
-        <DocumentTagsProvider ownerId={state.ownerId}>
-          <ShellChrome>{children}</ShellChrome>
-        </DocumentTagsProvider>
-      </CustomThemeProvider>
+      {/* The reader's tags (docs/specs/013-workspace/tags.md): the sidebar's Tags rows, the Tags page, every
+          row's chips and every document menu's Tags read the one list. */}
+      <DocumentTagsProvider ownerId={state.ownerId}>
+        <ShellChrome>{children}</ShellChrome>
+      </DocumentTagsProvider>
       {/* Moving this browser's documents in This Browser after signing in
           (docs/specs/014-identity/auth-and-guest-access.md). */}
       {surface.guestPrompts ? <LocalMovePrompt /> : null}

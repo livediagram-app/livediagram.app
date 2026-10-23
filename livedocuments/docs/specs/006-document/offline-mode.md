@@ -114,7 +114,7 @@ auth has settled, the path names a document registered in the local index
   `'self'` placeholder participant.
 - **Owner-scoped work waits for the real reader.** Under `'self'`, nothing is
   read or written as an owner: the participant record is not saved, preferences
-  stay local (`writeUserPreferences`), and the custom themes,
+  stay local (`writeUserPreferences`), and the
   recent images and Explorer lists load only once the reader is known. Sync
   Document from the Share dialog waits too (the gate's `ready`).
 - **The reader resolves in the background** once auth answers, exactly as a

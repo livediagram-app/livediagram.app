@@ -58,7 +58,7 @@ export type ThemeSwatchOverrides = {
 };
 export type SwatchOverrideStore = ThemeSwatchOverrides[];
 
-// A theme id is a built-in id or `custom:<uuid>` (43 chars).
+// A theme id is a built-in id; the cap bounds what a stored preference can carry.
 const SWATCH_OVERRIDE_MAX_THEME_ID = 64;
 export const SWATCH_OVERRIDE_MAX_THEMES = 8;
 // The store's share of the 4 KB preferences blob: recent-exclusions can take
@@ -116,16 +116,6 @@ export function storeWithoutOverride(
   else next[key] = rest;
   const empty = ROLES.every((role) => !next[KEY[role]]);
   return store.flatMap((e) => (e.t !== themeId ? [e] : empty ? [] : [next]));
-}
-
-// A theme that no longer exists (a deleted custom theme) takes its overrides
-// with it.
-export function pruneSwatchOverrideStore(
-  store: SwatchOverrideStore,
-  keep: (themeId: string) => boolean,
-): SwatchOverrideStore {
-  const next = store.filter((e) => keep(e.t));
-  return next.length === store.length ? store : next;
 }
 
 function parseRow(value: unknown): SwatchOverrideRow | undefined {

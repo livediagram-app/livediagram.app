@@ -110,7 +110,7 @@ At `/explorer/tags?id=<id>`, reached from a tag's sidebar row, a chip, or a sect
 
 ## The sidebar
 
-**Tags** is the first row inside **Library** (before Image Gallery and Themes), always shown (so it
+**Tags** is the first row inside **Library** (before Image Gallery), always shown (so it
 can be found before the first tag). It opens the Tags page and expands to one child row per tag: a dot of the tag's
 colour, its name, and its document count as the badge. A tag's row opens its page. Library and Tags start collapsed
 unless a Tags page is the current view, which opens both. Tags' expanded state is the sidebar's (`more:tags`).

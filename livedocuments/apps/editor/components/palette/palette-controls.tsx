@@ -163,8 +163,7 @@ export function AlignmentGrid({
 }
 
 // A colour well opening the one colour picker (docs/specs/004-interface-design/colour-picker.md)
-// in a popover under its trigger: the canvas and pattern colours here, the custom theme builder's
-// tiles and dots. Free colours, so it offers both tones of the standard colours (soft first, for
+// in a popover under its trigger: the canvas and pattern colours here. Free colours, so it offers both tones of the standard colours (soft first, for
 // backgrounds), by hex, for the canvas behind; Custom colours; and +. A pick closes it and hands focus
 // back to the trigger.
 export function useColourWell({

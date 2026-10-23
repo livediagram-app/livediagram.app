@@ -128,7 +128,7 @@ mode (their backdrop).
 ## Security and trust
 
 No trust boundary: static tokens and pure colour functions. `editorAccentCss` and `identityVars` interpolate colours
-that are either built-in or validated hex (custom themes validate on save); the ramp and shade functions only emit
+that are either built-in or validated hex; the ramp and shade functions only emit
 `#rrggbb`, and a custom property value cannot break out of its declaration in React's style serialisation.
 
 ## Performance and limits

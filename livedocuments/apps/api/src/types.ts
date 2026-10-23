@@ -12,8 +12,6 @@ export type {
   TabSummary as TabSummaryDTO,
   TabRecord as TabDTO,
   Folder as FolderDTO,
-  CustomTheme as CustomThemeDTO,
-  CustomThemeDefinition,
   ApiToken as ApiTokenDTO,
   ImageSummary,
   ParticipantRecord as ParticipantDTO,
@@ -53,7 +51,7 @@ export type Env = {
   // /api/auth routes read them; the secret is a `wrangler secret`.
   ACCOUNTS_CLIENT_ID?: string;
   ACCOUNTS_CLIENT_SECRET?: string;
-  // Local dev only: the origin the browser is on (the router, `http://localhost:3200`), which the
+  // Local dev only: the origin the browser is on (the router, `http://localhost:3300`), which the
   // sign-in redirect returns to. Unset in production, where the request's own origin is right.
   AUTH_ORIGIN?: string;
   // The OAuth server the CLI signs in through (docs/specs/015-api/cli.md), an https origin.

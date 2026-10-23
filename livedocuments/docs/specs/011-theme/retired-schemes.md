@@ -13,6 +13,9 @@ a scheme that has since gone.
 - **Default's light half** is the off-white `#fbfaf7` with a `#cbd5e1` grid.
 - **Autumn and Jewel** left the catalogue, being too close to other multi-colour themes
   ([Light and dark halves](light-and-dark.md#retired-autumn-and-jewel)).
+- **Custom themes**, the ones a person built and saved to their account (`custom:<uuid>` ids), were removed: only
+  built-in themes exist, and there is no builder, no saved-theme list and no `/api/custom-themes`. A tab that still
+  names a `custom:` id resolves as any other id the catalogue does not hold (below).
 
 ## An id the catalogue does not hold
 

@@ -48,7 +48,6 @@ const BY_EVENT: Record<KnownTimelineEventType, TimelineCategory> = {
   // news, and someone scanning for "did anything disappear?" wants them
   // in one place.
   folder_deleted: 'deletions',
-  theme_deleted: 'deletions',
   team_deleted: 'deletions',
   token_revoked: 'deletions',
 
@@ -83,7 +82,6 @@ const BY_EVENT: Record<KnownTimelineEventType, TimelineCategory> = {
 
   token_created: 'account',
   token_expiring: 'account',
-  theme_saved: 'account',
   image_uploaded: 'account',
 };
 

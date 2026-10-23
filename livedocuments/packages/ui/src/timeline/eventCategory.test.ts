@@ -32,7 +32,7 @@ describe('eventCategory', () => {
   // table the row came from. Someone scanning for "did anything disappear?"
   // wants a lost document, folder, theme, team and working token in one place.
   it('groups losses together regardless of what was lost', () => {
-    for (const type of ['folder_deleted', 'theme_deleted', 'team_deleted', 'token_revoked']) {
+    for (const type of ['folder_deleted', 'team_deleted', 'token_revoked']) {
       expect(eventCategory(type)).toBe('deletions');
     }
   });

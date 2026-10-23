@@ -5,11 +5,11 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Images, Pages and More',
   description:
-    'livedocuments API examples for image uploads, pages and articles, SVG renders of a tab, copying a document and custom themes.',
+    'livedocuments API examples for image uploads, pages and articles, SVG renders of a tab and copying a document.',
   path: '/help/developers/working-with-documents/images-and-pages/',
 });
 
-<ArticleLayout title="Images, Pages and More" description="Worked examples for the rest of a document: images, pages and articles, pictures of a tab, copies and your themes." categoryTitle="Developers" categorySlug="developers/working-with-documents" parentArticle={{ title: "Working with Documents", slug: "working-with-documents" }} subArticles={getSubArticles("working-with-documents").filter((a) => a.slug !== "images-and-pages")}>
+<ArticleLayout title="Images, Pages and More" description="Worked examples for the rest of a document: images, pages and articles, pictures of a tab and copies." categoryTitle="Developers" categorySlug="developers/working-with-documents" parentArticle={{ title: "Working with Documents", slug: "working-with-documents" }} subArticles={getSubArticles("working-with-documents").filter((a) => a.slug !== "images-and-pages")}>
 
 A tab's elements change through [changesets](/help/developers/working-with-documents/edit-operations/), but a document holds more than elements: the images it shows, its pages and its articles. Each has its own endpoints, shown here with `curl`. The examples assume your [API token](/help/developers/authentication/) is in `$TOKEN` and a document id in `$DOC`; paths are relative to `https://livedocuments.app/api`, and `/api/openapi.json` has every field.
 
@@ -93,19 +93,5 @@ curl -X POST https://livedocuments.app/api/documents/$DOC/copy \
 ```
 
 Makes a copy in your own files and answers `201` with the new `document`. Leave out `name` for `Copy of <name>`. Anything you can read can be copied; share links are not copied with it.
-
-## Custom Themes
-
-Your [custom themes](/help/canvas/themes/custom-themes/) belong to you, not to a document.
-
-```bash
-curl -X POST https://livedocuments.app/api/custom-themes \
-  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{ "id": "custom:'"$(uuidgen)"'", "name": "Night shift",
-        "definition": { "backgroundColor": "#0f172a", "backgroundPattern": "grid", "patternColor": "#1e293b",
-          "elementFill": "#1e293b", "elementStroke": "#38bdf8", "elementText": "#f8fafc" } }'
-```
-
-A custom theme's id starts `custom:`, and a tab uses it by that id. `PUT /custom-themes/{id}` changes its name or definition, `DELETE` removes it, and a `palette` you send must not be empty. `GET` on the path lists yours.
 
 </ArticleLayout>

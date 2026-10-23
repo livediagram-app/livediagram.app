@@ -21,9 +21,9 @@ vi.mock('./audience', () => ({
   userScope: (id: string) => ({ scopeType: 'user', scopeId: id }),
 }));
 
+import { dedupeKeyForDay } from '../db/timeline';
 import type { Env } from '../types';
 import { recordTeamRenamed } from './team-events';
-import { recordThemeSaved } from './account-events';
 
 const env = {} as Env;
 
@@ -46,20 +46,11 @@ describe('repeatable events carry a unique dedupe key', () => {
     expect(a).not.toBe(b);
   });
 
-  it('a theme saved twice in a day is one card, saved on another day a new one', async () => {
-    vi.useFakeTimers();
-    try {
-      vi.setSystemTime(new Date('2026-09-22T10:00:00Z'));
-      await recordThemeSaved(env, { id: 'th1', name: 'Dusk' }, 'me');
-      vi.setSystemTime(new Date('2026-09-22T15:00:00Z'));
-      await recordThemeSaved(env, { id: 'th1', name: 'Dusk' }, 'me');
-      vi.setSystemTime(new Date('2026-10-01T10:00:00Z'));
-      await recordThemeSaved(env, { id: 'th1', name: 'Dusk' }, 'me');
-      const [a, b, c] = keys();
-      expect(a).toBe(b);
-      expect(c).not.toBe(a);
-    } finally {
-      vi.useRealTimers();
-    }
+  it('a per-day key is one card for a day, a new one the next', () => {
+    const morning = Date.parse('2026-09-22T10:00:00Z');
+    const evening = Date.parse('2026-09-22T15:00:00Z');
+    const nextMonth = Date.parse('2026-10-01T10:00:00Z');
+    expect(dedupeKeyForDay('me', morning)).toBe(dedupeKeyForDay('me', evening));
+    expect(dedupeKeyForDay('me', nextMonth)).not.toBe(dedupeKeyForDay('me', morning));
   });
 });

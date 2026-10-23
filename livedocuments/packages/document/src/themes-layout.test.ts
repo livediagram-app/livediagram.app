@@ -32,7 +32,7 @@ describe('a layout in its tab’s theme', () => {
     expect(isLightColor(onLight!.textColor!)).toBe(false);
   });
 
-  it('leaves it as built on the default scheme, a custom theme, or no theme', () => {
+  it('leaves it as built on the default scheme, an unknown theme, or no theme', () => {
     for (const id of [undefined, 'brand', 'custom-1234'])
       expect(themedForTab([bare], id)).toEqual([bare]);
   });

@@ -23,7 +23,7 @@ import {
 } from '@/components/primitives/background-pattern-icons';
 
 // The canvas background-pattern catalogue: one PatternEntry per pattern,
-// consumed by the pattern picker (CanvasStyleControls / CustomThemeBuilder)
+// consumed by the pattern picker (CanvasStyleControls)
 // and useTabCanvas. Pure data — the picker UI has no hard-coded ids, so a
 // new pattern slots in by editing this list. Split out of palette-controls.
 export type PatternEntry = {

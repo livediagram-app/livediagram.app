@@ -53,7 +53,6 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'changing-the-background': '#64748b',
   'changing-theme': '#d946ef',
   'multicolour-themes': '#ec4899',
-  'custom-themes': '#a855f7',
   'multi-select': '#8b5cf6',
   'choosing-fonts': '#0284c7',
   // Canvas category: Undo / Redo
@@ -146,7 +145,6 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'personal-space': '#f59e0b',
   'team-spaces': '#a855f7',
   'image-gallery': '#ec4899',
-  'themes-library': '#d946ef',
   'tab-folders': '#3b82f6',
   'linking-tabs': '#10b981',
   'add-to-document': '#6366f1',

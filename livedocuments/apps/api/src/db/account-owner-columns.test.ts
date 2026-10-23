@@ -40,7 +40,6 @@ const OWNER_COLUMNS: OwnerColumn[] = [
   // Default folders (docs/specs/013-workspace/default-folders.md): guests have them too.
   { table: 'placement_defaults', column: 'owner_id', migrate: { kind: 'moves' } },
   { table: 'user_preferences', column: 'owner_id', migrate: { kind: 'moves' } },
-  { table: 'custom_themes', column: 'owner_id', migrate: { kind: 'moves' } },
   // Explorer Home's opens (docs/specs/013-workspace/explorer-home.md): guests open documents too.
   { table: 'document_opens', column: 'owner_id', migrate: { kind: 'moves' } },
   // Whose each media-service image is (src/media.ts): guests upload too.
@@ -158,14 +157,6 @@ function seedGuestHoldable(sql: DatabaseSync, id: string, peerDocument: string) 
     owner_id: id,
     default_key: 'mode:draw',
     folder_id: `f-${id}`,
-    updated_at: T0,
-  });
-  insert(sql, 'custom_themes', {
-    id: `t-${id}`,
-    owner_id: id,
-    name: 'Mine',
-    definition: '{}',
-    created_at: T0,
     updated_at: T0,
   });
   insert(sql, 'tags', {

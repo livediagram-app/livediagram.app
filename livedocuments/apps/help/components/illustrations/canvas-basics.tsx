@@ -1,24 +1,14 @@
 // Canvas basics illustrations (docs/specs/018-help/help-app.md): the palette strip and dock on the
 // canvas, the multi-selection toolbar, the New Document template step, the element menu's
-// Font tiles, and the Colours, Text and Canvas panels of the Tab Style dialog plus the custom-theme builder.
+// Font tiles, and the Colours, Text and Canvas panels of the Tab Style dialog.
 // Each draws the real surface with its real labels: ToolbarPalette.tsx, CanvasChrome.tsx,
 // MultiSelectionToolbar.tsx, TemplatePickerHeader.tsx / TemplatePickerBrowse.tsx,
-// TypographySections.tsx, CanvasThemeDialog.tsx, BackBar.tsx, ThemeBrowser.tsx, TextTab.tsx,
-// CanvasStyleControls.tsx and CustomThemeBuilder.tsx. Composed from the shared primitives so
+// TypographySections.tsx, CanvasThemeDialog.tsx, BackBar.tsx, ThemeBrowser.tsx, TextTab.tsx
+// and CanvasStyleControls.tsx. Composed from the shared primitives so
 // the house style holds.
 
 import type { ReactNode } from 'react';
-import {
-  Scene,
-  Shape,
-  Arrow,
-  SelectionBox,
-  Panel,
-  Dialog,
-  Label,
-  Button,
-  Menu,
-} from './primitives';
+import { Scene, Shape, Arrow, SelectionBox, Panel, Dialog, Label, Menu } from './primitives';
 import { MenuCard, Strip } from './toolbar-layout';
 
 // --- Shared bits -------------------------------------------------------------------------------
@@ -639,7 +629,7 @@ function ThemeTile({
 }
 
 /** The Colours panel: every theme in one carousel, nine to a page, Default first (then the
- *  catalogue, then your custom themes and New Theme). */
+ *  catalogue). */
 export function LookAndFeelTheme() {
   const themes: [string, string, string, string][] = [
     [
@@ -913,128 +903,6 @@ export function LookAndFeelCanvas() {
       </Label>
       <Slider x={220} y={334} w={140} t={1} label="Opacity" readout="100%" />
       <Slider x={220} y={364} w={140} t={1 / 3} label="Size" readout="100%" />
-    </TabStylePanel>
-  );
-}
-
-/** The custom-theme builder, opened from the New Theme card at the end of the Colours panel's
- *  theme list: the back bar stays on top, then the live preview, the name, the four base colours, the Pattern section
- *  (open to start with) and the Per-shape colours section stacked beneath it, and Save theme. */
-export function CustomThemeBuilderScene() {
-  const bases: [string, string][] = [
-    ['Background', 'fill-brand-50'],
-    ['Fill', 'fill-brand-200'],
-    ['Stroke', 'fill-brand-600'],
-    ['Text', 'fill-slate-800'],
-  ];
-  const chevron = { className: 'stroke-slate-400', strokeWidth: 1.4, fill: 'none' } as const;
-  return (
-    <TabStylePanel panel="Colours" h={378} sceneH={402}>
-      <Label x={60} y={98} size={10} weight={600} tone="muted">
-        ‹ Back
-      </Label>
-      <Label x={102} y={98} size={10} weight={700} tone="strong">
-        New Theme
-      </Label>
-      {/* Live preview of the in-progress theme. */}
-      <g className="help-art-as-drawn">
-        <rect x={60} y={110} width={300} height={40} rx={6} className="fill-brand-50" />
-        <rect
-          x={110}
-          y={120}
-          width={52}
-          height={20}
-          rx={4}
-          className="fill-brand-200 stroke-brand-600"
-          strokeWidth={1.5}
-        />
-        <rect
-          x={258}
-          y={120}
-          width={52}
-          height={20}
-          rx={4}
-          className="fill-brand-200 stroke-brand-600"
-          strokeWidth={1.5}
-        />
-        <path d="M162 130 H256" className="stroke-brand-600" strokeWidth={1.5} />
-      </g>
-      <Caption x={60} y={164}>
-        Name
-      </Caption>
-      <rect
-        x={60}
-        y={172}
-        width={300}
-        height={22}
-        rx={5}
-        className="fill-white stroke-slate-200"
-        strokeWidth={1.3}
-      />
-      <Label x={70} y={183} size={10} tone="muted">
-        My theme
-      </Label>
-      <Caption x={60} y={208}>
-        Base colours
-      </Caption>
-      {bases.map(([name, cls], i) => (
-        <g key={name}>
-          <rect
-            x={60 + i * 77}
-            y={216}
-            width={69}
-            height={40}
-            rx={6}
-            className="fill-white stroke-slate-200"
-            strokeWidth={1.3}
-          />
-          <g className="help-art-as-drawn">
-            <rect
-              x={67 + i * 77}
-              y={221}
-              width={55}
-              height={16}
-              rx={3}
-              className={`${cls} stroke-slate-300`}
-              strokeWidth={1}
-            />
-          </g>
-          <Label x={94.5 + i * 77} y={247} anchor="middle" size={10} tone="body">
-            {name}
-          </Label>
-        </g>
-      ))}
-      {/* Pattern: open to start with, a row of pattern tiles inside. */}
-      <line x1={60} y1={266} x2={360} y2={266} className="stroke-slate-100" strokeWidth={1.5} />
-      <Label x={60} y={278} size={10} weight={600} tone="body">
-        Pattern
-      </Label>
-      <path d="M350 275 L354 280 L358 275" {...chevron} />
-      {Array.from({ length: 6 }, (_, i) => (
-        <g key={i}>
-          <rect
-            x={60 + i * 51}
-            y={290}
-            width={45}
-            height={22}
-            rx={4}
-            className={i === 0 ? 'fill-brand-50 stroke-brand-400' : 'fill-white stroke-slate-200'}
-            strokeWidth={1.3}
-          />
-          {i === 0 &&
-            [0, 1, 2, 3].map((d) => (
-              <circle key={d} cx={71 + d * 8} cy={301} r={1.4} className="fill-brand-400" />
-            ))}
-        </g>
-      ))}
-      {/* Per-shape colours: an advanced section, closed until opened. */}
-      <line x1={60} y1={322} x2={360} y2={322} className="stroke-slate-100" strokeWidth={1.5} />
-      <Label x={60} y={334} size={10} weight={600} tone="body">
-        Per-shape colours
-      </Label>
-      <path d="M352 330 L357 334 L352 338" {...chevron} />
-      <Button x={208} y={350} w={64} h={24} label="Cancel" />
-      <Button x={280} y={350} w={80} h={24} label="Save theme" variant="primary" />
     </TabStylePanel>
   );
 }

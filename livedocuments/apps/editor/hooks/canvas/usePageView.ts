@@ -12,7 +12,7 @@ export function usePageView(
   themeId: string | undefined,
 ): PageView | undefined {
   // The theme in each half: themeViewMap caches per theme and half, so the pair keeps its identity
-  // until the theme (or a custom theme's registered colours) changes.
+  // until the theme changes.
   const light = themeViewMap(themeId, 'light');
   const dark = themeViewMap(themeId, 'dark');
   const maps = useMemo(() => ({ light, dark }), [light, dark]);

@@ -166,7 +166,7 @@ export function StarIcon({ filled = false, size = 13 }: IconProps & { filled?: b
 
 export const ShareIcon = lucideGlyph(lucideShare2, 13);
 export const ImageIcon = lucideGlyph(lucideImage, 13);
-// Painter's palette: the Themes section (docs/specs/011-theme/custom-themes.md).
+// Painter's palette: a tag's colour.
 export const PaletteIcon = lucideGlyph(lucidePalette, 13);
 export const KeyIcon = lucideGlyph(lucideKey, 13);
 // A team: one drawing, shared with the landing page (@livedocuments/ui).

@@ -16,7 +16,6 @@ export const VIEW_TITLES: Readonly<Record<NamedKind, string>> = {
   offline: SIDEBAR_LABELS.thisBrowser,
   invites: SIDEBAR_LABELS.invites,
   gallery: SIDEBAR_LABELS.gallery,
-  themes: SIDEBAR_LABELS.themes,
   tags: SIDEBAR_LABELS.tags,
   trash: SIDEBAR_LABELS.trash,
   recent: 'Recent',

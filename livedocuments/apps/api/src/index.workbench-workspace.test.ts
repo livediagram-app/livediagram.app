@@ -28,7 +28,6 @@ vi.mock('./auth/workbench-session', async (original) => ({
 vi.mock('./routes/account', () => stub('handleAccount'));
 vi.mock('./routes/catalogues', () => stub('handleCatalogues'));
 vi.mock('./routes/capabilities', () => stub('handleCapabilities'));
-vi.mock('./routes/custom-themes', () => stub('handleCustomThemes'));
 vi.mock('./routes/documents', () => stub('handleDocuments'));
 vi.mock('./routes/folders', () => stub('handleFolders'));
 vi.mock('./routes/forms', () => stub('handleForms'));
@@ -116,7 +115,6 @@ describe('a workspace session at the front door', () => {
     ['GET', 'placement-defaults', 'handlePlacementDefaults'],
     ['GET', 'images', 'handleImages'],
     ['POST', 'images', 'handleImages'],
-    ['POST', 'custom-themes', 'handleCustomThemes'],
     ['GET', 'teams', 'handleTeams'],
     ['GET', 'teams/team1/library', 'handleTeams'],
     ['DELETE', 'workbench/sessions/current', 'handleWorkbench'],

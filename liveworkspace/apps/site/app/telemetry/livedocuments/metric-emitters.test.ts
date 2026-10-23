@@ -12,12 +12,7 @@ import { GROUPS as TIMINGS } from './TimingsView';
 import { GROUPS as PAGES } from './PagesView';
 import { CONNECTIONS_GROUPS, TEAMWORK_GROUPS } from './FeaturesView';
 import { TOURS_GROUPS } from './PagesHelpView';
-import {
-  CUSTOM_THEME_METRICS,
-  CUSTOM_THEME_TYPES,
-  NON_PATTERN_CANVAS_TYPES,
-  THEME_ALIASES,
-} from './LookAndFeelView';
+import { NON_PATTERN_CANVAS_TYPES, THEME_ALIASES } from './LookAndFeelView';
 import * as CATALOGUE from './metric-catalogue';
 import {
   groupMetrics,
@@ -174,15 +169,8 @@ describe('hard-coded ranking types', () => {
       (t) =>
         ['Canvas styles exclusion', 'Canvas', 'Changed', t] as [string, string, string, string],
     ),
-    ...[...CUSTOM_THEME_TYPES].map(
-      (t) => ['Themes exclusion', 'Theme', 'Changed', t] as [string, string, string, string],
-    ),
     ...Object.values(THEME_ALIASES).map(
       (t) => ['Themes alias target', 'Theme', 'Changed', t] as [string, string, string, string],
-    ),
-    ...CUSTOM_THEME_METRICS.map(
-      (m) =>
-        ['Custom theme builder', m.category, m.action, m.type] as [string, string, string, string],
     ),
     ...RECOVERY_TYPES.map(
       (t) => ['Exceptions recovery', 'Error', 'Client', t] as [string, string, string, string],
@@ -257,8 +245,8 @@ describe('every event has a chart', () => {
 // caught team invite copies). Two overlaps are by design, and only these:
 //  - a Settings Changed category chart rolls up the setting charts in it;
 //  - inside one stack, a chart and its subset, with the headline counting
-//    only one of them (AI Requests over Ask / Clean, Returning Visitors over
-//    its guest / signed-in split), so the head never adds them together.
+//    only one of them (Returning Visitors over its guest / signed-in split),
+//    so the head never adds them together.
 describe('no event is counted by two unrelated charts', () => {
   const stacks = ALL.flatMap((g) => g.metrics).filter(isStack);
   const rollups = new Set<Metric>(SETTINGS_CHANGED.members);
