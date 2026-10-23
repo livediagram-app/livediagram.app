@@ -19,3 +19,4 @@ export * from './cards';
 export * from './item-head';
 export * from './notify-claims';
 export * from './person-events';
+export * from './item-db';

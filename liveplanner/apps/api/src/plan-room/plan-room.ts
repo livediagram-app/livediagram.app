@@ -2,6 +2,7 @@ import {
   createItemHeadSync,
   FLUSH_IDLE_MS,
   FLUSH_RETRY_MS,
+  ItemDb,
   nextFlushAt,
   type ItemHeadSync,
 } from '@liveworkspace/index-app';
@@ -60,7 +61,6 @@ import { readItem } from '../db/items';
 import type { Item } from '@liveplanner/items';
 import { runSheetExpiry } from '../sheet-sweep';
 import { renderPlanImage, type ThumbnailSubject } from '../thumbnail';
-import { PlanDb } from './plan-db';
 import { hasPlanSchema, migratePlanSchema } from './plan-schema';
 import {
   exportPlanCopy,
@@ -80,9 +80,9 @@ import { answerPlanRequest, type RouteIdentity } from './plan-route';
 //
 //   - The plan's content: tabs (with their stats), items, board columns, sheets and their cells, the changeset
 //     log, in its own SQLite (plan-schema.ts), which the content modules reach as `env.PLAN_DB`
-//     (plan-db.ts). Every API request about the plan runs here (`route`, plan-route.ts), so a save is one call
-//     to this object and one SQLite transaction, with no other database on its path. What the index's cross-plan
-//     reads need (the Inbox, the listing summary, saved_at) is pushed from the outbox on idle
+//     (@liveworkspace/index-app item-db.ts). Every API request about the plan runs here (`route`, plan-route.ts),
+//     so a save is one call to this object and one SQLite transaction, with no other database on its path. What
+//     the index's cross-plan reads need (the Inbox, the listing summary, saved_at) is pushed from the outbox on idle
 //     (plan-outbox.ts).
 //   - The realtime room: connected WebSockets and their identity, presence, and the ordered op stream. It
 //     classifies each op by kind, orders mutations (seq within an epoch, kept in storage), rewrites comment
@@ -208,8 +208,8 @@ export class PlanRoom extends DurableObject<Env> {
   // PLAN_ROOM that answers this plan's own id with this object (no hop). Undefined only for a unit test that
   // builds a room from a fake state alone; then the content and telemetry paths are skipped.
   roomEnv: PlanEnv | undefined;
-  // The plan's SQLite behind the D1 surface (plan-db.ts).
-  readonly db: PlanDb;
+  // The plan's SQLite behind the D1 surface (@liveworkspace/index-app item-db.ts).
+  readonly db: ItemDb;
   // The plan this object is, from the first call that names it (every RPC and room join does).
   private planId: string | null = null;
   private schemaReady = false;
@@ -240,7 +240,7 @@ export class PlanRoom extends DurableObject<Env> {
   constructor(state: DurableObjectState, env?: Env) {
     super(state, env as Env);
     this.state = state;
-    this.db = new PlanDb(state.storage.sql, {
+    this.db = new ItemDb(state.storage.sql, {
       transaction: (fn) => state.storage.transactionSync(fn),
       ensureSchema: () => this.ensureSchema(),
       onWrite: () => this.noteWrite(),

@@ -278,6 +278,31 @@ describe("a plan's content lives in its own Durable Object", () => {
     ]);
   });
 
+  it('records nothing for a read: no edit key, no outbox row, no push scheduled', async () => {
+    const w = world({ INDEX_KEY: 'index-key' });
+    await createPlan(w, 'A');
+    const plan = w.plans.get('A')!;
+    await plan.room.drain();
+    expect(count(plan.db, 'outbox')).toBe(0);
+    indexCalls.length = 0;
+
+    for (const path of [
+      '/api/projects/A',
+      '/api/projects/A/tabs',
+      '/api/projects/A/tabs/t1',
+      '/api/projects/A/thumbnail',
+    ]) {
+      const res = await w.send('GET', path);
+      expect(res.status, path).toBeLessThan(500);
+      expect(
+        plan.db.prepare('SELECT kind, key FROM outbox').all(),
+        `${path} queued an outbox row`,
+      ).toEqual([]);
+    }
+    await plan.room.drain();
+    expect(indexCalls).toEqual([]);
+  });
+
   it('runs its daily upkeep from its alarm: old changesets go', async () => {
     vi.useFakeTimers({ toFake: ['Date'] });
     vi.spyOn(console, 'info').mockImplementation(() => {});

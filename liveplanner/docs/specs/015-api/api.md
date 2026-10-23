@@ -299,7 +299,7 @@ stands; storing a large tab in chunks is the follow-up.
 workbench confinement, body caps) and hands every request under `/api/projects/:id/...` and `/api/forms/:code/...`
 to the plan's object, `planRoom(env, id).route(request, identity)` (typed RPC, `plan-client.ts`). The object
 rebuilds the route context from that identity and the grant and runs the handlers against its own SQLite as
-`env.PLAN_DB` (`plan-db.ts`, the D1 surface over `ctx.storage.sql`). The editor's wire protocol is unchanged. Other RPCs: `outline` (a project read's tab
+`env.PLAN_DB` (`@liveworkspace/index-app` `item-db.ts`, the D1 surface over `ctx.storage.sql`, which tells the room only of calls that changed a row, so a read never counts as an edit). The editor's wire protocol is unchanged. Other RPCs: `outline` (a project read's tab
 list), `image` (thumbnails, drawn where the content is), `hasTab`, `item`, `exportCopy` / `importCopy` (a project
 copy), `purge` and `revokeCodes`.
 

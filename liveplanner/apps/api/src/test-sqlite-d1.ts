@@ -1,5 +1,5 @@
 import { DatabaseSync } from 'node:sqlite';
-import { PlanDb } from './plan-room/plan-db';
+import { ItemDb } from '@liveworkspace/index-app';
 import { migratePlanSchema } from './plan-room/plan-schema';
 import { nodePlanSql, nodeTransaction } from './test-plan-sql';
 import type { AccessLevel } from '@liveplanner/api-schema';
@@ -78,7 +78,7 @@ export function sqliteD1(base: Partial<Env> = {}): SqliteD1 {
     }
   };
 
-  const planDb = new PlanDb(planSql, {
+  const planDb = new ItemDb(planSql, {
     transaction: nodeTransaction(sql),
     ensureSchema: () => {},
     onWrite: () => {},
