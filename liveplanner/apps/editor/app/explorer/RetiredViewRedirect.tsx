@@ -4,9 +4,9 @@ import { useEffect } from 'react';
 import { useAppNavigation } from '@/hooks/navigation/useAppNavigation';
 
 // Explorer addresses that no longer have a view of their own (docs/specs/013-workspace/explorer-structure.md):
-// Dynamic and Generated became My Work (the index keeps no record of which plans were made with AI), and Activity is
-// the Inbox. The routes stay so links already out there keep working: each replaces itself with its successor, so
-// Back does not return to it.
+// Dynamic became My Work, Generated the Made by AI filter (items the index records with source 'ai'; My Work until
+// the filter is back), and Activity is the Inbox. The routes stay so links already out there keep working: each
+// replaces itself with its successor, so Back does not return to it.
 export const RETIRED_VIEW_TARGETS = {
   dynamic: '/explorer/all',
   generated: '/explorer/all',
