@@ -31,11 +31,11 @@ export type GuestTokenOptions = {
 };
 
 export type GuestTokens = {
-  readGuestToken(now?: number): GuestToken | null;
-  clearGuestToken(): void;
-  startGuestHandoff(returnTo?: string): Promise<void>;
-  completeGuestHandoff(hash: string): { returnTo: string; ok: boolean };
-  ensureGuestToken(): Promise<GuestToken | null>;
+  readGuestToken: (now?: number) => GuestToken | null;
+  clearGuestToken: () => void;
+  startGuestHandoff: (returnTo?: string) => Promise<void>;
+  completeGuestHandoff: (hash: string) => { returnTo: string; ok: boolean };
+  ensureGuestToken: () => Promise<GuestToken | null>;
 };
 
 function storage(kind: 'localStorage' | 'sessionStorage'): Storage | null {

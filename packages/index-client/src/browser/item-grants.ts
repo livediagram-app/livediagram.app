@@ -32,22 +32,22 @@ export type ItemGrantOptions = {
 };
 
 export type ItemGrants = {
-  seed(itemId: string, grant: GrantResponse, share?: ItemShare): void;
-  grant(
+  seed: (itemId: string, grant: GrantResponse, share?: ItemShare) => void;
+  grant: (
     itemId: string,
     share?: ItemShare,
     opts?: { fresh?: boolean },
-  ): Promise<GrantResponse | null>;
-  held(itemId: string, share?: ItemShare): string | null;
-  refusal(itemId: string, share?: ItemShare): string | null;
-  keepFresh(itemId: string, share?: ItemShare): () => void;
-  itemIdOfPath(apiBase: string, url: string): string | null;
-  withGrant(
+  ) => Promise<GrantResponse | null>;
+  held: (itemId: string, share?: ItemShare) => string | null;
+  refusal: (itemId: string, share?: ItemShare) => string | null;
+  keepFresh: (itemId: string, share?: ItemShare) => () => void;
+  itemIdOfPath: (apiBase: string, url: string) => string | null;
+  withGrant: (
     apiBase: string,
     input: string,
     init: RequestInit | undefined,
-  ): Promise<RequestInit | undefined>;
-  resetForTests(): void;
+  ) => Promise<RequestInit | undefined>;
+  resetForTests: () => void;
 };
 
 type Held = {
