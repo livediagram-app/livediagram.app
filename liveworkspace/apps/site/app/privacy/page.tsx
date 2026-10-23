@@ -102,7 +102,10 @@ const SECTIONS: LegalSection[] = [
         <li>
           <strong>Your documents.</strong> What you make is saved so it is there when you come back,
           and so the people you share it with can see it. Each document is stored on its own on
-          Cloudflare, with its comments beside what they are about.
+          Cloudflare, with its comments beside what they are about. A document you make in{' '}
+          <strong>Offline Mode</strong>, which every app has, stays in your browser and never
+          reaches our servers, unless you use an AI feature on it or add a web link to it (our
+          server fetches the link&rsquo;s preview).
         </li>
         <li>
           <strong>Your Explorer.</strong> liveworkspace.app keeps one list of what you make in every
@@ -194,10 +197,10 @@ const SECTIONS: LegalSection[] = [
         <p>The AI features run only when you use them, and only where an AI provider is set up.</p>
         <ul>
           <li>
-            <strong>The AI assistant.</strong> When you ask it something, your prompt, the
-            tab&rsquo;s name, what is on the current tab and your last few messages in that
-            conversation are sent through our API to <strong>OpenAI</strong>, which writes the
-            answer. The assistant is off until you turn it on in Settings.
+            <strong>The AI assistant</strong>, in livediagram and livedesign. When you ask it
+            something, your prompt, the tab&rsquo;s name, what is on the current tab and your last
+            few messages in that conversation are sent through our API to <strong>OpenAI</strong>,
+            which writes the answer. The assistant is off until you turn it on in Settings.
           </li>
           <li>
             <strong>Connected AI tools</strong>, such as Claude, read and change your documents
@@ -207,6 +210,19 @@ const SECTIONS: LegalSection[] = [
         </ul>
         <p>We do not use your documents to train AI models.</p>
       </>
+    ),
+  },
+  {
+    id: 'image-search',
+    title: 'Image search',
+    body: (
+      <p>
+        In livediagram, livedocuments and livedesign, the image picker&rsquo;s Search tab sends your
+        search words from your browser to <strong>Openverse</strong>, run by the WordPress
+        Foundation, which sees them and your IP address under its own privacy policy; our servers
+        never see the search. A picture you pick is downloaded from its original host and stored
+        like any image you upload.
+      </p>
     ),
   },
   {
@@ -254,10 +270,10 @@ const SECTIONS: LegalSection[] = [
       <p>
         If you sign in, liveworkspace.app sets a cookie to keep you signed in, and each app you use
         sets its own to remember that you are. If you use an app without an account,
-        liveworkspace.app sets a cookie holding your guest id. The apps keep your guest id, your preferences (also
-        saved to our database so they follow you) and your Community key in local storage, and
-        liveworkspace.app keeps your light or dark choice there. We do not use advertising or
-        tracking cookies.
+        liveworkspace.app sets a cookie holding your guest id. The apps keep your guest id, your
+        preferences (also saved to our database so they follow you) and your Community key in local
+        storage, and liveworkspace.app keeps your light or dark choice there. We do not use
+        advertising or tracking cookies.
       </p>
     ),
   },
@@ -278,8 +294,8 @@ const SECTIONS: LegalSection[] = [
           <li>
             <strong>Notifications about your work</strong>: when someone first opens a document you
             shared, comments on one you own, fills in one of your forms, assigns you an action or
-            mentions you. A mention quotes the comment (up to about
-            280 characters); an assigned action includes its name and the start of its description.
+            mentions you. A mention quotes the comment (up to about 280 characters); an assigned
+            action includes its name and the start of its description.
           </li>
           <li>
             <strong>A short onboarding series</strong>: a welcome, a few tips in your first two
@@ -313,7 +329,7 @@ const SECTIONS: LegalSection[] = [
             <strong>Google</strong>: sign-in with Google, if you choose it.
           </li>
           <li>
-            <strong>OpenAI</strong>: the AI assistant, when you use it.
+            <strong>OpenAI</strong>: livediagram&rsquo;s and livedesign&rsquo;s AI assistant, when you use it.
           </li>
         </ul>
         <p>
@@ -356,11 +372,20 @@ const SECTIONS: LegalSection[] = [
         </p>
         <p>
           Other things are kept only as long as they are useful: anonymous product events for 60
-          days, and changes made by connected AI tools for 30 days, so
-          they can be undone. A guest&rsquo;s documents have no account to delete: remove them in
-          the Explorer, or ask us.
+          days, and changes made by connected AI tools for 30 days, so they can be undone. A
+          guest&rsquo;s documents have no account to delete: remove them in the Explorer, or ask us.
         </p>
       </>
+    ),
+  },
+  {
+    id: 'self-hosting',
+    title: 'Self-hosting',
+    body: (
+      <p>
+        livediagram, livedocuments and livedesign are open source. If you run your own copy of one,
+        you are responsible for your own deployment, and this policy does not apply to it.
+      </p>
     ),
   },
   {
@@ -409,21 +434,9 @@ const SECTIONS: LegalSection[] = [
       <p>
         livediagram signs you in with your liveworkspace account, and its teams and API tokens are
         the liveworkspace ones, all as described under{' '}
-        <a href="#your-liveworkspace-account">Your liveworkspace account</a>. Its diagrams are stored
-        as described under <a href="#what-the-apps-store">What the apps store</a>. The sections
-        below are what it does beyond that.
-      </p>
-    ),
-  },
-  {
-    app: 'livediagram.app',
-    id: 'livediagram-offline-mode',
-    title: 'Offline Mode',
-    body: (
-      <p>
-        A document you create in Offline Mode stays in your browser and never reaches our servers,
-        unless you use an AI feature on it or add a web link to it (our server fetches the
-        link&rsquo;s preview).
+        <a href="#your-liveworkspace-account">Your liveworkspace account</a>. Its diagrams are
+        stored as described under <a href="#what-the-apps-store">What the apps store</a>. The
+        sections below are what it does beyond that.
       </p>
     ),
   },
@@ -478,30 +491,6 @@ const SECTIONS: LegalSection[] = [
         When you import a photo of sticky notes, the notes are found in your browser, and crops of
         them are sent through our API to <strong>Google</strong> (Gemini) to read the handwriting.
         We do not store the crops.
-      </p>
-    ),
-  },
-  {
-    app: 'livediagram.app',
-    id: 'livediagram-image-search',
-    title: 'Image search',
-    body: (
-      <p>
-        The image picker&rsquo;s Search tab sends your search words from your browser to{' '}
-        <strong>Openverse</strong>, run by the WordPress Foundation, which sees them and your IP
-        address under its own privacy policy; our servers never see the search. A picture you pick
-        is downloaded from its original host and stored like any image you upload.
-      </p>
-    ),
-  },
-  {
-    app: 'livediagram.app',
-    id: 'livediagram-self-hosting',
-    title: 'Self-hosting',
-    body: (
-      <p>
-        livediagram is open source. If you run your own copy, you are responsible for your own
-        deployment, and this policy does not apply to it.
       </p>
     ),
   },
