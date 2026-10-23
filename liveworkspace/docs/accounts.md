@@ -8,20 +8,88 @@ and kept by the accounts Worker (`apps/accounts`), in its own D1 beside the acco
 
 ## Teams
 
-A team has a name, admins and members. Anyone signed in can make one (up to 50 per account) and
-becomes its admin. Admins rename it, invite people by email, change roles, remove people and
-delete it; anyone can leave. A team always keeps an admin: the last one can't step down or leave
-while others remain, and the last member leaving deletes the team. Closing an account leaves
-every team first: a team it ran alone goes, and one where it was the only admin passes to the
-longest-standing member.
+A team has a name, an optional organisation line (a company or department, up to 80 characters),
+admins and members. Anyone signed in can make one (up to 50 per account) and becomes its admin.
+Admins rename it, change its organisation, invite people by email, turn its join link on and off,
+change roles (making someone else admin is how a team changes hands), remove people, clear
+answered invitations and delete it; anyone can leave. A team always keeps an admin: the last one
+can't step down or leave while others remain, and the last member leaving deletes the team.
+Closing an account leaves every team first: a team it ran alone goes, and one where it was the only
+admin passes to the longest-standing member.
+
+| Who may                                                        | Admin                                      | Member |
+| -------------------------------------------------------------- | ------------------------------------------ | ------ |
+| See the team, its members and invitations                      | ✓                                          | ✓      |
+| Invite by email, turn the join link on / off                   | ✓                                          |        |
+| Change a role, remove someone, withdraw or clear an invitation | ✓                                          |        |
+| Rename it, change its organisation, delete it                  | ✓                                          |        |
+| Leave                                                          | ✓ (not the last admin while others remain) | ✓      |
+
+### Invitations
 
 An invitation is a member row with the invited address, `invited` until answered. Accepting it
 takes a signed-in account whose **verified** address is the one invited (signing in by code, or
-with Google, verifies it). The invitation email links to `/account/teams`, where it waits.
+with Google, verifies it). The invitation email links to `/account/teams`, where it waits with the
+team's name, organisation and member count. Accepting or declining tells the team's admins by
+email, unless an admin has turned that off (the `notifyInviteResponse` setting, `false`, in the
+`all` scope; [Settings](#settings)).
+
+An invitation turned down is `declined`. It grants nothing and counts toward nothing, but stays on
+the team's list so the admins can see the answer, until an admin clears it or invites the address
+again, which replaces it with a fresh invitation.
+
+**Declining from the email.** Every invitation email (and every reminder) carries a Decline link,
+`/join/decline?token=<member id>.<secret>`, which works without an account or signing in. The
+secret is 32 random bytes; only its SHA-256 hash is kept, in the row's `declineTokenHashes` (at
+most four: the invitation and its three reminders). The token can read that one invitation's team
+name and state and decline it, nothing else. The page only reads (`GET`) until its button is
+pressed (`POST`), so a mail scanner opening the link changes nothing. Declining twice changes
+nothing; an expired invitation stays expired; a membership can't be undone this way (`409
+already_joined`); any token that doesn't match a live row, including one an admin cleared or
+replaced, is the same `404 invite_not_found`.
+
+### Reminders and expiry
+
+An invitation nobody answers is followed up three times, then closes on its own. The accounts
+Worker's daily cron (`17 9 * * *`, `sweepInvitations` in `src/teams.ts`):
+
+1. **Expires** every invitation still `invited` 28 days after its clock started (`clockStartedAt`,
+   when it was sent): it becomes `declined` with `expiredAt` stamped, shown to the admins as
+   expired. Nobody is emailed. At most 500 a run, oldest first, whether or not email is set up.
+2. **Reminds** the rest at 1, 7 and 21 days. The windows don't overlap, so an invitation hears at
+   most one email a run: the latest it is due, with any it skipped stamped `0`. Each reminder
+   carries a fresh decline token. At most 100 per stage a run; a failed send is tried again the
+   next day, three times at most (`reminderAttempts`).
+
+Reminders stop the moment the row is no longer `invited`.
+
+### The join link
+
+A second way in: one link per team that an admin turns on, good for **7 days**. Anyone signed in
+who opens it sees the team's name and joins as a member with one click.
+
+- **Stored as a hash.** The link's token is an HMAC-SHA-256, under the Worker's secret, of a random
+  nonce kept on the team (`inviteLinkNonce`); the team keeps the token's SHA-256 hash
+  (`inviteLinkHash`, unique) for the lookup and `inviteLinkExpiresAt`. An admin can see the link
+  again (it is recomputed), but the table alone never yields one.
+- **On, anew, off** (admins): `POST /teams/:id/invite-link` makes a new link, ending any old one,
+  for a week from now; `DELETE` turns it off. Deleting the team turns it off too. The team detail
+  carries `inviteLink: { url, expiresAt } | null`, for admins only (null for members, and once it
+  has expired).
+- **The page** is `/join?token=<token>` on liveworkspace.app. Its preview, `GET /join/:token`, needs
+  no session, so someone signed out sees what they'd join, then signs in and comes back to the
+  same link. Someone already in the team is taken straight to it.
+- **Joining**, `POST /join/:token`, signed in: adds them as a joined member. Already in: nothing
+  changes. An invitation waiting for their address is accepted in place rather than doubled. An
+  off, expired or unknown token is `404 invite_not_found`.
+
+The two doors that need no session, the join preview and the Decline link, are limited per network
+(`TEAM_LINK_LIMITER`, 20 a minute per IPv4 /24 or IPv6 /48).
 
 Rows are never deleted. Leaving or being removed makes a row `removed`; deleting a team stamps
 `deletedAt`. Every write takes the next number from one counter (`team_seq`) in the same batch, so
-the apps can follow everything that changed after the last number they saw.
+the apps can follow everything that changed after the last number they saw. The feed carries each
+team's organisation too.
 
 ### How an app keeps up
 
@@ -150,21 +218,25 @@ On liveworkspace.app, routed to the accounts Worker (`/api/account/*`).
 
 For the signed-in person, by their session cookie. Writes must come from the site's own origin.
 
-| Route                                                   | Does                                          |
-| ------------------------------------------------------- | --------------------------------------------- |
-| `GET /api/account/teams`                                | their teams and the invitations waiting       |
-| `POST /api/account/teams` `{ name }`                    | makes a team, with them as admin              |
-| `PATCH` / `DELETE /api/account/teams/:id`               | renames / deletes it (admins)                 |
-| `GET /api/account/teams/:id/members`                    | the team, their role, members and invitations |
-| `POST /api/account/teams/:id/members` `{ email, role }` | invites an address and emails it (admins)     |
-| `PATCH /api/account/teams/:id/members/:member`          | changes a role (admins)                       |
-| `DELETE /api/account/teams/:id/members/:member`         | removes someone (admins), or leaves (oneself) |
-| `POST /api/account/invitations/:member/accept`          | joins (the invited, verified address only)    |
-| `POST /api/account/invitations/:member/decline`         | declines                                      |
-| `GET` / `POST /api/account/tokens`                      | lists / makes a token (the secret once)       |
-| `DELETE /api/account/tokens/:id`                        | revokes one                                   |
-| `GET /api/account/settings`                             | their `all` settings: `{ all, updatedAt }`    |
-| `PATCH /api/account/settings` `{ all }`                 | patches `all`; answers `{ all, updatedAt }`   |
+| Route                                                   | Does                                                                                    |
+| ------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| `GET /api/account/teams`                                | their teams (counts and first four members each, one query) and the invitations waiting |
+| `POST /api/account/teams` `{ name, organisation? }`     | makes a team, with them as admin                                                        |
+| `PATCH` / `DELETE /api/account/teams/:id`               | `{ name?, organisation? }` / deletes (admins)                                           |
+| `GET /api/account/teams/:id/members`                    | the team, their role, members and invitations, and `inviteLink` (admins)                |
+| `POST` / `DELETE /api/account/teams/:id/invite-link`    | makes the join link anew / turns it off (admins)                                        |
+| `GET /api/account/join/:token`                          | no session needed: the team a join link names                                           |
+| `POST /api/account/join/:token`                         | joins through the link, as a member                                                     |
+| `GET` / `POST /api/account/invitations/decline/:token`  | no session needed: reads / declines the invitation an email's Decline link names        |
+| `POST /api/account/teams/:id/members` `{ email, role }` | invites an address and emails it (admins)                                               |
+| `PATCH /api/account/teams/:id/members/:member`          | changes a role (admins)                                                                 |
+| `DELETE /api/account/teams/:id/members/:member`         | removes someone (admins), or leaves (oneself)                                           |
+| `POST /api/account/invitations/:member/accept`          | joins (the invited, verified address only)                                              |
+| `POST /api/account/invitations/:member/decline`         | declines                                                                                |
+| `GET` / `POST /api/account/tokens`                      | lists / makes a token (the secret once)                                                 |
+| `DELETE /api/account/tokens/:id`                        | revokes one                                                                             |
+| `GET /api/account/settings`                             | their `all` settings: `{ all, updatedAt }`                                              |
+| `PATCH /api/account/settings` `{ all }`                 | patches `all`; answers `{ all, updatedAt }`                                             |
 
 For an app's server, by its OAuth client credentials (`Authorization: Basic`, checked by the OAuth
 provider's own introspection and remembered per isolate for five minutes):

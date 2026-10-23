@@ -11,6 +11,8 @@ import type { Env } from './env.ts';
 import { GUEST_PATH, guestHandoff } from './guests.ts';
 import { overCodeLimit } from './rate-limit.ts';
 import { SIGN_IN_OPTIONS_PATH, signInOptions } from './sign-in-options.ts';
+import { sendTeamInviteEmail } from './email.ts';
+import { sweepInvitations } from './teams.ts';
 
 // The accounts API. Only the paths routed to this Worker reach it (wrangler.toml): /api/auth/*,
 // /api/account/* (teams and API tokens, account-api.ts) and the two discovery documents. Every page, the sign-in pages included, is the static site's
@@ -67,5 +69,20 @@ export default {
     }
 
     return new Response('Not found', { status: 404 });
+  },
+
+  // Once a day (wrangler.toml): team invitations nobody answered expire, and the rest hear their
+  // reminders (liveworkspace/docs/accounts.md "Reminders and expiry").
+  async scheduled(_controller: ScheduledController, env: Env): Promise<void> {
+    const result = await sweepInvitations(env.AUTH_DB, (reminder) =>
+      sendTeamInviteEmail(env, {
+        to: reminder.to,
+        teamName: reminder.teamName,
+        inviterName: reminder.inviterName ?? '',
+        declineToken: reminder.declineToken,
+        stage: reminder.stage,
+      }),
+    );
+    console.log('[teams] invitation sweep', JSON.stringify(result));
   },
 } satisfies ExportedHandler<Env>;

@@ -7,22 +7,30 @@
 import { AUTH_BASE_PATH } from './auth-options.ts';
 import type { Auth } from './auth.ts';
 import type { Env } from './env.ts';
-import { sendTeamInviteEmail } from './email.ts';
+import { sendInviteResponseEmails, sendTeamInviteEmail } from './email.ts';
 import { isSettingsApp, isSettingsOwner, readSettings, writeSettings } from './settings.ts';
 import {
   answerInvitation,
+  clearInviteLink,
   createTeam,
+  currentInviteLink,
+  declineByToken,
   deleteTeam,
   getMembership,
   inviteMember,
+  inviteResponseRecipients,
+  joinByInviteLink,
   listMembers,
   listMyInvitations,
   listMyTeams,
+  makeInviteLink,
+  previewInviteLink,
+  readDeclineToken,
   removeMember,
-  renameTeam,
   setMemberRole,
   teamChanges,
   teamsClaim,
+  updateTeam,
   type Actor,
   type Result,
 } from './teams.ts';
@@ -81,6 +89,78 @@ function sameOrigin(request: Request, env: Env): boolean {
   return request.headers.get('origin') === new URL(env.BASE_URL).origin;
 }
 
+// The doors that need no session, each limited per network (TEAM_LINK_LIMITER; absent, allowed): a
+// join link's preview, so someone signed out sees what they'd join before signing in; and an
+// invitation email's Decline link, which reads and declines that one invitation and nothing else.
+async function handleOpen(
+  request: Request,
+  env: Env,
+  auth: Auth,
+  parts: string[],
+): Promise<Response | null> {
+  const { method } = request;
+  const [section, id, sub, token] = parts;
+  const db = env.AUTH_DB;
+
+  if (section === 'join' && id && !sub && method === 'GET') {
+    if (await overLinkLimit(request, env)) return error(429, 'rate_limited');
+    const actor = await sessionActor(request, auth);
+    const preview = await previewInviteLink(db, id, actor?.id ?? null);
+    return preview
+      ? json({ ...preview, signedIn: Boolean(actor) })
+      : error(404, 'invite_not_found');
+  }
+
+  if (section === 'invitations' && id === 'decline' && sub && !token) {
+    if (method !== 'GET' && method !== 'POST') return null;
+    if (await overLinkLimit(request, env)) return error(429, 'rate_limited');
+    if (method === 'GET') {
+      const found = await readDeclineToken(db, sub);
+      return found ? json(found) : error(404, 'invite_not_found');
+    }
+    const result = await declineByToken(db, sub);
+    if (result.ok && result.value.declined) {
+      await tellAdmins(env, result.value.teamId, {
+        teamName: result.value.teamName,
+        responder: result.value.email,
+        accepted: false,
+      });
+    }
+    return result.ok
+      ? json({ teamName: result.value.teamName, status: result.value.status })
+      : error(result.status, result.error);
+  }
+
+  return null;
+}
+
+// A network: an IPv4 /24 or an IPv6 /48, so one machine can't dodge the limit by changing address.
+function network(ip: string): string {
+  if (ip.includes(':')) return ip.split(':').slice(0, 3).join(':');
+  return ip.split('.').slice(0, 3).join('.');
+}
+
+async function overLinkLimit(request: Request, env: Env): Promise<boolean> {
+  if (!env.TEAM_LINK_LIMITER) return false;
+  const ip = request.headers.get('cf-connecting-ip') ?? 'unknown';
+  return !(await env.TEAM_LINK_LIMITER.limit({ key: `team-link:${network(ip)}` })).success;
+}
+
+// Someone answered an invitation: the team's admins hear of it, unless they turned it off. A failed
+// email never fails the answer.
+async function tellAdmins(
+  env: Env,
+  teamId: string,
+  response: { teamName: string; responder: string; accepted: boolean },
+): Promise<void> {
+  try {
+    const recipients = await inviteResponseRecipients(env.AUTH_DB, teamId);
+    if (recipients.length) await sendInviteResponseEmails(env, recipients, response);
+  } catch (cause) {
+    console.error('[teams] invite response email failed', cause);
+  }
+}
+
 async function handleSignedIn(
   request: Request,
   env: Env,
@@ -89,6 +169,8 @@ async function handleSignedIn(
 ): Promise<Response> {
   const { method } = request;
   if (method !== 'GET' && !sameOrigin(request, env)) return error(403, 'cross_origin');
+  const open = await handleOpen(request, env, auth, parts);
+  if (open) return open;
   const actor = await sessionActor(request, auth);
   if (!actor) return error(401, 'signed_out');
   const db = env.AUTH_DB;
@@ -103,20 +185,46 @@ async function handleSignedIn(
         ]);
         return json({ teams, invitations });
       }
-      if (method === 'POST')
-        return answer(await createTeam(db, actor, (await readBody(request)).name), 201);
+      if (method === 'POST') {
+        const body = await readBody(request);
+        return answer(await createTeam(db, actor, body.name, Date.now(), body.organisation), 201);
+      }
     } else if (!sub) {
-      if (method === 'PATCH')
-        return answer(await renameTeam(db, actor, id, (await readBody(request)).name));
+      if (method === 'PATCH') {
+        const body = await readBody(request);
+        return answer(
+          await updateTeam(db, actor, id, { name: body.name, organisation: body.organisation }),
+        );
+      }
       if (method === 'DELETE') return answer(await deleteTeam(db, actor, id));
+    } else if (sub === 'invite-link' && !subId) {
+      // The team's join link: on (or a new one, ending the old), and off. Admins only.
+      if (method === 'POST') {
+        return answer(await makeInviteLink(db, actor, id, env.BETTER_AUTH_SECRET, env.BASE_URL));
+      }
+      if (method === 'DELETE') return answer(await clearInviteLink(db, actor, id));
     } else if (sub === 'members' && !action) {
       if (!subId) {
         if (method === 'GET') {
           const me = await getMembership(db, id, actor.id);
           if (!me) return error(404, 'not_found');
+          const [members, inviteLink] = await Promise.all([
+            listMembers(db, id),
+            me.role === 'admin'
+              ? currentInviteLink(db, id, env.BETTER_AUTH_SECRET, env.BASE_URL)
+              : null,
+          ]);
           return json({
-            team: { id, name: me.teamName, myRole: me.role, myMemberId: me.memberId },
-            members: await listMembers(db, id),
+            team: {
+              id,
+              name: me.teamName,
+              organisation: me.organisation,
+              myRole: me.role,
+              myMemberId: me.memberId,
+            },
+            members,
+            // The join link admits anyone signed in, so only the admins see it.
+            inviteLink,
           });
         }
         if (method === 'POST') {
@@ -127,6 +235,7 @@ async function handleSignedIn(
               to: result.value.member.email,
               teamName: result.value.teamName,
               inviterName: actor.name,
+              declineToken: result.value.declineToken,
             }).catch((cause: unknown) => console.error('[teams] invite email failed', cause));
             return json(result.value.member, 201);
           }
@@ -147,7 +256,21 @@ async function handleSignedIn(
     (sub === 'accept' || sub === 'decline') &&
     method === 'POST'
   ) {
-    return answer(await answerInvitation(db, actor, id, sub === 'accept'));
+    const result = await answerInvitation(db, actor, id, sub === 'accept');
+    if (result.ok) {
+      await tellAdmins(env, result.value.teamId, {
+        teamName: result.value.teamName,
+        responder: actor.email ?? actor.name,
+        accepted: result.value.status === 'joined',
+      });
+    }
+    return answer(result);
+  }
+
+  // Joining through a team's join link. Its preview (GET) is open: handleOpen.
+  if (section === 'join' && id && !sub && method === 'POST') {
+    if (await overLinkLimit(request, env)) return error(429, 'rate_limited');
+    return answer(await joinByInviteLink(db, actor, id));
   }
 
   if (section === 'tokens') {

@@ -6,13 +6,22 @@
 CREATE TABLE team (
   id        TEXT    NOT NULL PRIMARY KEY,
   name      TEXT    NOT NULL,
+  -- A free-text line under the name (a company, a department), or null.
+  organisation TEXT,
   createdAt INTEGER NOT NULL,
   updatedAt INTEGER NOT NULL,
   deletedAt INTEGER,
   -- Where this row sits in the change feed the apps read (team_seq below).
-  rev       INTEGER NOT NULL
+  rev       INTEGER NOT NULL,
+  -- The team's join link, while an admin has it on (all three null when it is off). The token in the
+  -- link is an HMAC of the nonce under the Worker's secret, so an admin can see the link again; only
+  -- its SHA-256 hash is stored for the lookup, so the table alone never yields a working link.
+  inviteLinkNonce     TEXT,
+  inviteLinkHash      TEXT,
+  inviteLinkExpiresAt INTEGER
 );
 CREATE INDEX team_rev_idx ON team (rev, id);
+CREATE UNIQUE INDEX team_invite_link_uq ON team (inviteLinkHash) WHERE inviteLinkHash IS NOT NULL;
 
 -- A member, or an invitation by email until it is answered. A row is never deleted: a member who
 -- leaves or is removed becomes 'removed', so the change feed carries that too.
@@ -28,9 +37,21 @@ CREATE TABLE team_member (
   invitedBy TEXT,
   createdAt INTEGER NOT NULL,
   updatedAt INTEGER NOT NULL,
-  rev       INTEGER NOT NULL
+  rev       INTEGER NOT NULL,
+  -- An invitation's email lifecycle (liveworkspace/docs/accounts.md "Reminders and expiry"). The
+  -- SHA-256 hashes of the decline tokens its emails carry, space-separated (the invitation and its
+  -- three reminders, at most four); when its reminder and expiry clock started; each reminder's stamp
+  -- (0 = skipped); failed reminder sends in a row; and when it expired unanswered (status 'declined').
+  declineTokenHashes TEXT    NOT NULL DEFAULT '',
+  clockStartedAt     INTEGER,
+  reminder1SentAt    INTEGER,
+  reminder2SentAt    INTEGER,
+  reminder3SentAt    INTEGER,
+  reminderAttempts   INTEGER NOT NULL DEFAULT 0,
+  expiredAt          INTEGER
 );
 CREATE INDEX team_member_team_idx ON team_member (teamId);
+CREATE INDEX team_member_clock_idx ON team_member (clockStartedAt) WHERE status = 'invited';
 CREATE INDEX team_member_user_idx ON team_member (userId);
 CREATE INDEX team_member_email_idx ON team_member (email);
 CREATE INDEX team_member_rev_idx ON team_member (rev, id);

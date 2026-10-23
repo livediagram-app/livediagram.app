@@ -60,6 +60,17 @@ name = "GUEST_LIMITER"
 namespace_id = "1003"
 simple = { limit = 60, period = 60 }
 
+# The doors that need no session: a team join link's preview and an invitation's Decline link
+# (liveworkspace/docs/accounts.md), per network.
+[[ratelimits]]
+name = "TEAM_LINK_LIMITER"
+namespace_id = "1004"
+simple = { limit = 20, period = 60 }
+
+# The daily sweep of team invitations: reminders, then expiry (src/teams.ts sweepInvitations).
+[triggers]
+crons = ["17 9 * * *"]
+
 [env.staging]
 name = "liveworkspace-accounts-staging"
 routes = [
@@ -100,3 +111,11 @@ simple = { limit = 3, period = 60 }
 name = "GUEST_LIMITER"
 namespace_id = "2003"
 simple = { limit = 60, period = 60 }
+
+[[env.staging.ratelimits]]
+name = "TEAM_LINK_LIMITER"
+namespace_id = "2004"
+simple = { limit = 20, period = 60 }
+
+[env.staging.triggers]
+crons = ["17 9 * * *"]

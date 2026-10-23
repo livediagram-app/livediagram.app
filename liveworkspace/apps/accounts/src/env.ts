@@ -24,4 +24,7 @@ export interface Env {
   CODE_IP_LIMITER: RateLimit;
   CODE_EMAIL_LIMITER: RateLimit;
   GUEST_LIMITER: RateLimit;
+  // The doors that need no session: a team join link's preview and an invitation's Decline link.
+  // Absent (tests), they are not limited.
+  TEAM_LINK_LIMITER?: RateLimit;
 }

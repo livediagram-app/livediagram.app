@@ -55,32 +55,104 @@ export async function sendCodeEmail(env: Env, email: string, code: string): Prom
 
 const escapeHtml = (value: string) => value.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 
-// An invitation to a team, sent when an admin invites an address on liveworkspace.app. Answering it
-// happens there, signed in with that address.
-export function teamInviteEmail(baseUrl: string, teamName: string, inviterName: string) {
+const origin = (baseUrl: string) => baseUrl.replace(/\/+$/, '');
+
+// The page an invitation email's Decline link opens: it reads the token and declines only when its
+// button is pressed, so a mail scanner opening the link changes nothing.
+export const declineUrl = (baseUrl: string, token: string) =>
+  `${origin(baseUrl)}/join/decline?token=${encodeURIComponent(token)}`;
+
+// An invitation to a team, sent when an admin invites an address on liveworkspace.app, and again as a
+// reminder (stage 1 to 3) while nobody answers. Accepting happens there, signed in with that address;
+// declining needs no account, through the email's own link.
+export function teamInviteEmail(
+  baseUrl: string,
+  teamName: string,
+  inviterName: string,
+  declineToken: string,
+  stage = 0,
+) {
   const who = inviterName.trim() || 'Someone';
-  const link = `${baseUrl.replace(/\/+$/, '')}/account/teams`;
-  const subject = `${who} invited you to ${teamName} on liveworkspace`;
+  const link = `${origin(baseUrl)}/account/teams`;
+  const decline = declineUrl(baseUrl, declineToken);
+  const reminder = stage > 0;
+  const subject = reminder
+    ? `Reminder: ${who} invited you to ${teamName} on liveworkspace`
+    : `${who} invited you to ${teamName} on liveworkspace`;
+  const lead = reminder
+    ? `A reminder: ${who} invited you to join the team ${teamName} on liveworkspace, and it's still waiting for you.`
+    : `${who} invited you to join the team ${teamName} on liveworkspace.`;
   const text = [
-    `${who} invited you to join the team ${teamName} on liveworkspace.`,
+    lead,
     '',
-    `Accept or decline it at ${link}, signed in with this email address.`,
-    'The team is the same in every liveworkspace app. If you were not expecting this, you can ignore it.',
+    `Accept it at ${link}, signed in with this email address.`,
+    `Not for you? Decline it, no account needed: ${decline}`,
+    'The team is the same in every liveworkspace app. An invitation nobody answers closes after 28 days.',
   ].join('\n');
   const html = `<!doctype html><html><body style="font-family:system-ui,sans-serif;color:#111;padding:24px">
-<p>${escapeHtml(who)} invited you to join the team <strong>${escapeHtml(teamName)}</strong> on liveworkspace.</p>
+<p>${escapeHtml(lead)}</p>
 <p style="margin:24px 0"><a href="${link}" style="background:#0f172a;color:#fff;padding:10px 18px;border-radius:999px;text-decoration:none">Answer the invitation</a></p>
-<p style="color:#555">Sign in with this email address to accept or decline it. The team is the same in every liveworkspace app. If you were not expecting this, you can ignore it.</p>
+<p style="color:#555">Sign in with this email address to accept it. Not for you? <a href="${decline}" style="color:#555">Decline the invitation</a>, no account needed.</p>
+<p style="color:#555">The team is the same in every liveworkspace app. An invitation nobody answers closes after 28 days.</p>
 </body></html>`;
   return { subject, text, html };
 }
 
 export async function sendTeamInviteEmail(
   env: Env,
-  invite: { to: string; teamName: string; inviterName: string },
+  invite: {
+    to: string;
+    teamName: string;
+    inviterName: string;
+    declineToken: string;
+    stage?: number;
+  },
 ): Promise<void> {
   await sendEmail(env, {
     to: invite.to,
-    ...teamInviteEmail(env.BASE_URL, invite.teamName, invite.inviterName),
+    ...teamInviteEmail(
+      env.BASE_URL,
+      invite.teamName,
+      invite.inviterName,
+      invite.declineToken,
+      invite.stage,
+    ),
   });
+}
+
+// To a team's admins when someone accepts or declines an invitation (each can turn it off).
+export function inviteResponseEmail(
+  baseUrl: string,
+  teamName: string,
+  responder: string,
+  accepted: boolean,
+) {
+  const verb = accepted ? 'accepted' : 'declined';
+  const link = `${origin(baseUrl)}/account/teams`;
+  const subject = `${responder} ${verb} your invitation to ${teamName}`;
+  const text = [
+    `${responder} ${verb} the invitation to join ${teamName} on liveworkspace.`,
+    '',
+    `See the team at ${link}.`,
+  ].join('\n');
+  const html = `<!doctype html><html><body style="font-family:system-ui,sans-serif;color:#111;padding:24px">
+<p><strong>${escapeHtml(responder)}</strong> ${verb} the invitation to join <strong>${escapeHtml(teamName)}</strong> on liveworkspace.</p>
+<p style="margin:24px 0"><a href="${link}" style="background:#0f172a;color:#fff;padding:10px 18px;border-radius:999px;text-decoration:none">See the team</a></p>
+<p style="color:#555">You get this as one of the team's admins.</p>
+</body></html>`;
+  return { subject, text, html };
+}
+
+export async function sendInviteResponseEmails(
+  env: Env,
+  recipients: { email: string }[],
+  response: { teamName: string; responder: string; accepted: boolean },
+): Promise<void> {
+  const email = inviteResponseEmail(
+    env.BASE_URL,
+    response.teamName,
+    response.responder,
+    response.accepted,
+  );
+  await Promise.all(recipients.map((r) => sendEmail(env, { to: r.email, ...email })));
 }
