@@ -287,9 +287,9 @@ export type CanvasProps = {
   // (done) or reopen the action in place. Absent for a read-only visitor.
   onToggleActionDone?: (elementId: string, done: boolean) => void;
   currentDocumentId: string | null;
-  // The link this session came in on, so the Explorer panel reads the open plan as the link allows.
+  // The link this session came in on, so the Explorer panel reads the open document as the link allows.
   currentShareCode?: string | null;
-  // The open plan renamed from the Explorer panel: the editor's title follows at once.
+  // The open document renamed from the Explorer panel: the editor's title follows at once.
   onRenameCurrentDocument?: (name: string) => void;
   onNewDocument: () => void;
   // The Explorer panel's ⋯ menu verbs beyond new / open (docs/specs/013-workspace/folders.md).

@@ -59,7 +59,7 @@ export function EditorSearchPanel() {
     <SearchPanel
       {...searchPanelSources({
         documents: documentList,
-        // Folders, links and team plans are the Explorer's (the index's), opened there.
+        // Folders, links and team documents are the Explorer's (the index's), opened there.
         folders: [],
         shared: [],
         teams,

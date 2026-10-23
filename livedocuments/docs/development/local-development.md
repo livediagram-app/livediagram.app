@@ -139,7 +139,7 @@ Without these set: the api worker treats every request as a link visitor (there 
 
 ### The index
 
-The Explorer, sharing and access are liveworkspace's index ([One Explorer](../../../liveworkspace/docs/one-explorer.md)). Run it from the monorepo (`corepack pnpm dev:index`, port 8793; [the index](../../../liveworkspace/docs/index-service.md) "Running it locally"), and give the api worker `INDEX_ORIGIN=http://127.0.0.1:8793` and `INDEX_KEY=dev-livedocuments-index-key` in `apps/api/.dev.vars` (see `apps/api/.env.example`). The router forwards `/api/index/*` there. Without it, the Explorer has nothing to list and a plan cannot be opened from the server. This is the default for any deployment without sign-in configured. See [Auth + guest access](../specs/014-identity/auth-and-guest-access.md) for the full hybrid model.
+The Explorer, sharing and access are liveworkspace's index ([One Explorer](../../../liveworkspace/docs/one-explorer.md)). Run it from the monorepo (`corepack pnpm dev:index`, port 8793; [the index](../../../liveworkspace/docs/index-service.md) "Running it locally"), and give the api worker `INDEX_ORIGIN=http://127.0.0.1:8793` and `INDEX_KEY=dev-livedocuments-index-key` in `apps/api/.dev.vars` (see `apps/api/.env.example`). The router forwards `/api/index/*` there. Without it, the Explorer has nothing to list and a document cannot be opened from the server. This is the default for any deployment without sign-in configured. See [Auth + guest access](../specs/014-identity/auth-and-guest-access.md) for the full hybrid model.
 
 ## Running the CLI from source (optional)
 

@@ -23,8 +23,6 @@ const OUTSIDE_RENDER: Record<string, string> = {
   'packages/ui/src/useVisualViewportBand.ts': 'subscribe and snapshot of an external store',
   'apps/editor/app/document/[id]/useTabEntryEffects.ts': 'inside an effect',
   'apps/editor/app/document/[id]/useCollabDeepLink.ts': 'inside an effect',
-  'apps/editor/app/explorer/useTimelineFeed.ts':
-    'ENTRY_HASH, module state; the Explorer renders in the browser only',
   'apps/editor/hooks/ui/usePanelDock.ts': 'inside an effect',
   'apps/editor/hooks/canvas/useDocumentActions.ts': 'inside a handler',
   'apps/editor/hooks/canvas/useClipboard.ts': 'inside a handler',

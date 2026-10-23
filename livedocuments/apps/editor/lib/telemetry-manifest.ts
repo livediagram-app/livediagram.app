@@ -126,9 +126,6 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Tab·Selected',
   'Tab·Unlocked',
   'Team·Added',
-  'Team·Created',
-  'Team·Moved',
-  'Team·Removed',
   'Template·Used',
   'Theme·Changed',
   // The shared Explorer's Timeline (docs/specs/013-workspace/timeline.md): Changed (Cards or Calendar), Selected (a
@@ -142,7 +139,7 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Token·Created',
   // A token's owner allowed a workbench on the pairing page (docs/specs/013-workspace/workbench-embeds.md).
   'Token·Linked',
-  // Trash (docs/specs/013-workspace/trash.md): a trashed plan's card, and the plan restored from it.
+  // Trash (docs/specs/013-workspace/trash.md): a trashed document's card, and the document restored from it.
   'Trash·Opened',
   'Trash·Restored',
   'UI·Added',

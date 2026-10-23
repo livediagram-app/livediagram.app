@@ -22,7 +22,7 @@ export async function seedDocument(page: Page, owner: string, origin: string): P
   return (await seedDrawnDocument(page, owner, origin)).id;
 }
 
-// The seeded plan's row on an Explorer listing.
+// The seeded document's row on an Explorer listing.
 export const documentRow = (page: Page, name: string) =>
   page.locator('main section').getByRole('link', { name, exact: true });
 

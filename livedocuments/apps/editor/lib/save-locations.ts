@@ -4,8 +4,8 @@
 
 export type SaveLocationId = 'livedocuments' | 'browser';
 
-// Where a new plan goes when nobody picked (docs/specs/006-document/save-locations.md "The default"): livedocuments, for
-// everyone. A guest has a liveworkspace guest identity (liveworkspace/docs/accounts.md "Guests"), so their plans are
+// Where a new document goes when nobody picked (docs/specs/006-document/save-locations.md "The default"): livedocuments, for
+// everyone. A guest has a liveworkspace guest identity (liveworkspace/docs/accounts.md "Guests"), so their documents are
 // index items like anyone's, listed in the Explorer, and signing in moves them to the account. This Browser
 // (Offline Mode) is only ever chosen on purpose.
 export function defaultSaveLocationFor(): SaveLocationId {

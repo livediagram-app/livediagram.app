@@ -1,5 +1,5 @@
-// Deleting the plan open in the editor (docs/specs/013-workspace/trash.md "Deleting"): from the command palette or
-// any menu in the Explorer panel. The plan is tombstoned first (lib/document-tombstones.ts), so neither the autosave
+// Deleting the document open in the editor (docs/specs/013-workspace/trash.md "Deleting"): from the command palette or
+// any menu in the Explorer panel. The document is tombstoned first (lib/document-tombstones.ts), so neither the autosave
 // debounce nor the unload flush can write it back while it goes to the Trash; then the editor leaves for the
 // Explorer, which offers the Undo on arrival. The handoff lives in sessionStorage for one page load and only for a
 // moment, so a later visit offers nothing.
@@ -12,13 +12,13 @@ const HANDOFF_MAX_AGE_MS = 30_000;
 
 type Handoff = { id: string; name?: string; at: number };
 
-export type TrashedPlan = { id: string; title: string | null };
+export type TrashedDocument = { id: string; title: string | null };
 
 /**
- * The open plan to the Trash, then to the Explorer with its Undo. Resolves false, with the plan writable again,
+ * The open document to the Trash, then to the Explorer with its Undo. Resolves false, with the document writable again,
  * when the index refuses; the caller says so.
  */
-export async function trashOpenPlan(
+export async function trashOpenDocument(
   id: string,
   name: string | null | undefined,
   leave: (href: string) => void = (href) => window.location.assign(href),
@@ -41,12 +41,12 @@ export function handOffDeleteUndo(id: string, name?: string | null, now = Date.n
     const handoff: Handoff = { id, at: now, ...(name ? { name } : {}) };
     window.sessionStorage.setItem(HANDOFF_KEY, JSON.stringify(handoff));
   } catch {
-    // Storage off: the plan is still in the Trash.
+    // Storage off: the document is still in the Trash.
   }
 }
 
 /** The handed-over delete, taken (read once and cleared); null when there is none or it is stale. */
-export function takeDeleteUndo(now = Date.now()): TrashedPlan | null {
+export function takeDeleteUndo(now = Date.now()): TrashedDocument | null {
   try {
     const raw = window.sessionStorage.getItem(HANDOFF_KEY);
     if (raw === null) return null;
@@ -61,11 +61,11 @@ export function takeDeleteUndo(now = Date.now()): TrashedPlan | null {
 }
 
 // Taken once per page load and kept, so a remount (or Strict Mode's second call) sees the same answer.
-let arrival: { taken: boolean; plan: TrashedPlan | null } = { taken: false, plan: null };
+let arrival: { taken: boolean; document: TrashedDocument | null } = { taken: false, document: null };
 
-/** The plan deleted just before this page opened, for the Explorer's Undo; null on the server or when none. */
-export function arrivedTrashed(): TrashedPlan | null {
+/** The document deleted just before this page opened, for the Explorer's Undo; null on the server or when none. */
+export function arrivedTrashed(): TrashedDocument | null {
   if (typeof window === 'undefined') return null;
-  if (!arrival.taken) arrival = { taken: true, plan: takeDeleteUndo() };
-  return arrival.plan;
+  if (!arrival.taken) arrival = { taken: true, document: takeDeleteUndo() };
+  return arrival.document;
 }

@@ -46,7 +46,7 @@ beforeEach(() => {
 
 // The Assign Action dialog's assignee dataset (docs/specs/012-collaboration/assigned-actions.md §2 + §4).
 describe('useAssigneeOptions', () => {
-  it("offers Myself and the plan team's people, joined and invited, grouped by team", async () => {
+  it("offers Myself and the document team's people, joined and invited, grouped by team", async () => {
     const { result } = renderHook(() => useAssigneeOptions(base));
     expect(result.current.selfRow).toMatchObject({ userId: 'u1', name: 'Me' });
     expect(result.current.memberOfDocumentTeam).toBe(true);
@@ -58,7 +58,7 @@ describe('useAssigneeOptions', () => {
     expect(result.current.grouped.map(([id, g]) => [id, g.members.length])).toEqual([['t1', 2]]);
   });
 
-  it('is Myself alone on a personal plan, or for a guest', () => {
+  it('is Myself alone on a personal document, or for a guest', () => {
     const personal = renderHook(() => useAssigneeOptions({ ...base, documentTeamId: null }));
     expect(personal.result.current.members).toEqual([]);
     expect(personal.result.current.memberOfDocumentTeam).toBe(false);
@@ -67,7 +67,7 @@ describe('useAssigneeOptions', () => {
     expect(api.apiTeamMembers).not.toHaveBeenCalled();
   });
 
-  it("knows who can open the plan: Myself and a joined teammate yes, an invitation on accepting", () => {
+  it("knows who can open the document: Myself and a joined teammate yes, an invitation on accepting", () => {
     const pick = (p: Partial<PickableMember>): PickableMember => ({
       userId: 'u2',
       name: 'X',

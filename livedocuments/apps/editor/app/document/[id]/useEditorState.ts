@@ -101,8 +101,8 @@ import { useCapabilities } from '@/hooks/persistence/useCapabilities';
 import type { Participant } from '@/lib/identity';
 import { markNameConfirmed } from '@/lib/local-identity';
 import { apiNotifyActionAssigned, apiSaveDocumentMeta, apiSaveSelf } from '@/lib/api-client';
-import { usePlanList } from '@/hooks/persistence/usePlanList';
-import { usePlanShareState } from '@/hooks/persistence/usePlanShareState';
+import { useDocumentList } from '@/hooks/persistence/useDocumentList';
+import { useDocumentShareState } from '@/hooks/persistence/useDocumentShareState';
 import { useTokenTeams } from '@/lib/explorer-host';
 import {
   actionRowsFromElements,
@@ -600,8 +600,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Saves are gated on `hydrated` so we never overwrite stored data
   // with the empty initial render.
   const [documentId, setDocumentId] = useState<string | null>(null);
-  // The plan's links are the index's: the badge and the presence stack read them from there.
-  usePlanShareState({
+  // The document's links are the index's: the badge and the presence stack read them from there.
+  useDocumentShareState({
     documentId,
     serverStored: realtime.documentServerStored,
     sessionShareCode,
@@ -609,9 +609,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setShareable: setDocumentShareable,
   });
   const [hydrated, setHydrated] = useState(false);
-  // The person's plans, for the pickers that name another plan: read from the index once the plan is open and the
-  // browser idle (usePlanList), never inside a workbench, which reaches its one plan only.
-  const { documentList, refreshDocumentList } = usePlanList(
+  // The person's documents, for the pickers that name another document: read from the index once the document is open and the
+  // browser idle (useDocumentList), never inside a workbench, which reaches its one document only.
+  const { documentList, refreshDocumentList } = useDocumentList(
     hydrated && !workbenchMode && !embedMode,
     selfParticipant.id,
   );

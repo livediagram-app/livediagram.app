@@ -1,7 +1,7 @@
 'use client';
 
 // What the shared Share dialog (@liveworkspace/explorer `ShareDialog`) needs from livedocuments beyond a link's
-// address: a plan's tabs (a link can open one), its embed (`/embed?s=<code>`, lib/embed.ts) and live image
+// address: a document's tabs (a link can open one), its embed (`/embed?s=<code>`, lib/embed.ts) and live image
 // (`/api/share/<code>/image.svg`, lib/live-image.ts), the Help articles, and telemetry. The editor's Share and the
 // Explorer's both use it; the Explorer asks per item, and another app's item gets no embed or live image here.
 
@@ -20,7 +20,7 @@ import { track } from './telemetry';
 
 const origin = () => (typeof window === 'undefined' ? '' : window.location.origin);
 
-export const planHandOver: ShareHandOver = {
+export const documentHandOver: ShareHandOver = {
   embedUrl: (link) => embedUrlFor(origin(), link.code),
   liveImageUrl: (link, tabId) => liveImageUrlFor(origin(), link.code, tabId),
   liveImageAlt: 'livedocuments tab',
@@ -50,15 +50,15 @@ export const trackShare: ShareTelemetry = (action, type) => {
   }
 };
 
-/** The Explorer's Share: a plan's tabs read when the dialog opens, its embed and live image, Help, telemetry. */
+/** The Explorer's Share: a document's tabs read when the dialog opens, its embed and live image, Help, telemetry. */
 export function explorerShareHost(ownerId: string | null): ShareHost {
   return {
     loadTabs: async (item) => {
       if (item.app !== 'livedocuments' || !ownerId) return [];
-      const plan = await apiLoadDocument(ownerId, item.id);
-      return (plan?.tabs ?? []).map((t) => ({ id: t.id, name: t.name }));
+      const document = await apiLoadDocument(ownerId, item.id);
+      return (document?.tabs ?? []).map((t) => ({ id: t.id, name: t.name }));
     },
-    handOver: (item) => (item.app === 'livedocuments' ? planHandOver : undefined),
+    handOver: (item) => (item.app === 'livedocuments' ? documentHandOver : undefined),
     helpHref: shareHelpHref,
     onTelemetry: trackShare,
   };

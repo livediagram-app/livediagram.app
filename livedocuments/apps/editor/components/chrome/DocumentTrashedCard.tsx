@@ -9,18 +9,18 @@ import { useState } from 'react';
 import { Button, TrashIcon, buttonClassName } from '@livedocuments/ui';
 import { TRASH_RETENTION_MS, type TrashReason } from '@liveworkspace/index-client';
 
-// A plan in the Trash, as the index says: when it went, and why (deleted, or empty for too long).
-export type TrashedPlan = { trashedAt: number; reason: TrashReason | null };
+// A document in the Trash, as the index says: when it went, and why (deleted, or empty for too long).
+export type TrashedDocument = { trashedAt: number; reason: TrashReason | null };
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-export function trashedCardHeading(row: Pick<TrashedPlan, 'reason'> | null): {
+export function trashedCardHeading(row: Pick<TrashedDocument, 'reason'> | null): {
   label: string;
   title: string;
 } {
   return row?.reason === 'empty'
-    ? { label: 'In the Trash', title: 'This plan is in the Trash' }
-    : { label: 'Deleted', title: 'This plan was deleted' };
+    ? { label: 'In the Trash', title: 'This document is in the Trash' }
+    : { label: 'Deleted', title: 'This document was deleted' };
 }
 
 export function daysLeftLabel(trashedAt: number, now: number): string {
@@ -30,7 +30,7 @@ export function daysLeftLabel(trashedAt: number, now: number): string {
 }
 
 // The deleted card's lead for someone who may restore it, with the days left.
-export function trashedCardLead(row: TrashedPlan, now: number): string {
+export function trashedCardLead(row: TrashedDocument, now: number): string {
   const where =
     row.reason === 'empty' ? 'It was empty, so it moved to the Trash' : 'It is in the Trash';
   return `${where} (${daysLeftLabel(row.trashedAt, now).toLowerCase()}).`;
@@ -40,7 +40,7 @@ export function DocumentTrashedCard({
   restorable,
   onRestore,
 }: {
-  restorable: TrashedPlan | null;
+  restorable: TrashedDocument | null;
   onRestore: () => Promise<void>;
 }) {
   const [restoring, setRestoring] = useState(false);

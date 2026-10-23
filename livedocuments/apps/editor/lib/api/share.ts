@@ -1,6 +1,6 @@
-// Opening a plan through a share link (liveworkspace/docs/one-explorer-contracts.md "Sharing and access"). The link
-// is the index's: its grant on the plan says what the link allows (the level, and the tab it is scoped to), and
-// the plan is then read with that grant. Managing links is the shared Explorer's Share dialog
+// Opening a document through a share link (liveworkspace/docs/one-explorer-contracts.md "Sharing and access"). The link
+// is the index's: its grant on the document says what the link allows (the level, and the tab it is scoped to), and
+// the document is then read with that grant. Managing links is the shared Explorer's Share dialog
 // (@liveworkspace/explorer `ShareDialog`), straight to the index.
 import { IndexError } from '@liveworkspace/index-client';
 import { parseStoredLevel, type DocumentResponse } from '@livedocuments/api-schema';
@@ -23,28 +23,28 @@ function passwordRefusal(code: string | null): SharedDocumentResolution | null {
   return null;
 }
 
-// Resolve a share code to the plan it opens, the level it grants and its tab. With the plan's id (the address
+// Resolve a share code to the document it opens, the level it grants and its tab. With the document's id (the address
 // `/document/<id>?s=<code>` carries it) this is the grant, which the page asked for while its code loaded, and the
-// plan's one read; without it, the index resolves the code first. Null for a code that opens nothing.
+// document's one read; without it, the index resolves the code first. Null for a code that opens nothing.
 async function _apiLoadShared(
   code: string,
   ownerId: string,
   documentId: string | null = null,
 ): Promise<SharedDocumentResolution | null> {
   const password = getSessionSharePassword();
-  let planId = documentId;
-  if (!planId) {
+  let id = documentId;
+  if (!id) {
     try {
-      planId = (await indexClient.resolveShare(code, password)).item.id;
+      id = (await indexClient.resolveShare(code, password)).item.id;
     } catch (err) {
       if (err instanceof IndexError) return passwordRefusal(err.code);
       throw err;
     }
   }
   const share = { code, password };
-  const grant = await documentGrant(planId, share, { fresh: true });
-  if (!grant) return passwordRefusal(documentGrantRefusal(planId, share));
-  const res = await apiFetch(`${API_BASE}/documents/${encodeURIComponent(planId)}`, {
+  const grant = await documentGrant(id, share, { fresh: true });
+  if (!grant) return passwordRefusal(documentGrantRefusal(id, share));
+  const res = await apiFetch(`${API_BASE}/documents/${encodeURIComponent(id)}`, {
     headers: await apiHeaders(ownerId, { share: code }),
   });
   const body = await expectOkOrNull<DocumentResponse>(res, 'load shared');

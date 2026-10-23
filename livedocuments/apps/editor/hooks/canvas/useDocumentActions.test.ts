@@ -38,7 +38,7 @@ beforeEach(() => {
 afterEach(() => vi.clearAllMocks());
 
 // Copy and delete are the index's (liveworkspace/docs/one-explorer-contracts.md "Items"): the index makes the copy's
-// row and has this app copy the content; a delete sends the plan to the Trash.
+// row and has this app copy the content; a delete sends the document to the Trash.
 describe('useDocumentActions', () => {
   it('copies through the link a visitor came in on, then opens the copy', async () => {
     index.copyItem.mockResolvedValue({ item: { id: 'p2' } });
@@ -55,7 +55,7 @@ describe('useDocumentActions', () => {
     expect(toast.error).toHaveBeenCalled();
   });
 
-  it('stops saving the open plan before it goes to the Trash, then hands its Undo to the Explorer', async () => {
+  it('stops saving the open document before it goes to the Trash, then hands its Undo to the Explorer', async () => {
     let tombstonedAtDelete = false;
     index.deleteItem.mockImplementation(async () => {
       tombstonedAtDelete = isDocumentDeleted('p1');
@@ -75,7 +75,7 @@ describe('useDocumentActions', () => {
     expect(toast.error).toHaveBeenCalled();
   });
 
-  it('opens a plan, through its link when it has one', () => {
+  it('opens a document, through its link when it has one', () => {
     actions().openDocument('p9', 's 1');
     expect(assign).toHaveBeenCalledWith('http://localhost:3200/document/p9?s=s%201');
   });

@@ -18,8 +18,8 @@ const {
   withDocumentGrant,
 } = await import('./document-grants');
 
-// The index's grant on a plan (liveworkspace/docs/one-explorer-contracts.md "Grants"), as the editor holds it: one
-// request per plan per ten minutes however many ask, renewed a minute before it lapses, and sent as X-Index-Grant.
+// The index's grant on a document (liveworkspace/docs/one-explorer-contracts.md "Grants"), as the editor holds it: one
+// request per document per ten minutes however many ask, renewed a minute before it lapses, and sent as X-Index-Grant.
 
 const TEN_MIN = 10 * 60_000;
 const grantOf = (name: string, life = TEN_MIN) => ({
@@ -83,14 +83,14 @@ describe('documentGrant', () => {
   });
 
   it('takes the grant the page asked for before its code loaded', async () => {
-    (window as { __lpGrant?: unknown }).__lpGrant = {
+    (window as { __ldocGrant?: unknown }).__ldocGrant = {
       id: 'p1',
       share: '',
       p: Promise.resolve(grantOf('early')),
     };
     expect((await documentGrant('p1'))?.grant).toBe('early');
     expect(index.grant).not.toHaveBeenCalled();
-    expect((window as { __lpGrant?: unknown }).__lpGrant).toBeUndefined();
+    expect((window as { __ldocGrant?: unknown }).__ldocGrant).toBeUndefined();
   });
 });
 
@@ -115,7 +115,7 @@ describe('keepDocumentGrantFresh', () => {
 });
 
 describe('withDocumentGrant', () => {
-  it('names the plan of a plan path, and nothing else', () => {
+  it('names the document of a document path, and nothing else', () => {
     expect(documentIdOfPath('/api', '/api/documents/p%201/tabs/t')).toBe('p 1');
     expect(documentIdOfPath('/api', '/api/documents')).toBeNull();
     expect(documentIdOfPath('/api', '/api/self')).toBeNull();
@@ -123,7 +123,7 @@ describe('withDocumentGrant', () => {
     expect(documentIdOfPath('/api', '/api/images/img-1')).toBeNull();
   });
 
-  it('adds the grant for the plan and link the request names', async () => {
+  it('adds the grant for the document and link the request names', async () => {
     index.grant.mockResolvedValue(grantOf('g-share'));
     const init = await withDocumentGrant('/api', '/api/documents/p1/tabs/t1', {
       headers: { 'X-Share-Code': 'C9' },
@@ -132,7 +132,7 @@ describe('withDocumentGrant', () => {
     expect(index.grant).toHaveBeenCalledWith('p1', { code: 'C9', password: null });
   });
 
-  it('leaves a request that already carries one, or names no plan, alone', async () => {
+  it('leaves a request that already carries one, or names no document, alone', async () => {
     const carried = { headers: { 'X-Index-Grant': 'mine' } };
     expect(await withDocumentGrant('/api', '/api/documents/p1', carried)).toBe(carried);
     const other = { method: 'POST' };

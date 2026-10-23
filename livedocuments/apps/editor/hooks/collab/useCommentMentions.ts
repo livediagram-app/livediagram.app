@@ -1,9 +1,9 @@
 'use client';
 
 // Who a comment can @-mention, and what follows a mention (docs/specs/012-collaboration/comment-mentions.md). The
-// candidates are the people of the team whose library holds this plan, joined and invited, except yourself: the
-// Assign Action picker's rule, for the same reason (a mention should reach someone who can open the plan). A
-// personal plan or a guest has none. The team is one the account's token names (liveworkspace/docs/accounts.md
+// candidates are the people of the team whose library holds this document, joined and invited, except yourself: the
+// Assign Action picker's rule, for the same reason (a mention should reach someone who can open the document). A
+// personal document or a guest has none. The team is one the account's token names (liveworkspace/docs/accounts.md
 // "Teams"); its people come from the api, which reads them from liveworkspace.
 //
 // The email itself is the api's: it sends one to each person a comment mentions when the comment is saved (a

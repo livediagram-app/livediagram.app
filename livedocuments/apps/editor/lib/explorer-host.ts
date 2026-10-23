@@ -17,6 +17,7 @@ import type {
 import { placeHash } from '@liveworkspace/explorer';
 import { helpArticleHref, type HelpArticleKey } from './help-articles';
 import { APP_SITES } from '@liveworkspace/sites';
+import { teamsOfToken } from '@liveworkspace/index-client/browser';
 import { currentBearer } from './api/core';
 
 // Where each app opens its own items. livedocuments's open here; another app's open on its own site.
@@ -37,13 +38,13 @@ export const itemHref: ItemHref = (item, at) => {
   return `${origin}${ITEM_PATHS[item.app]}${encodeURIComponent(item.id)}${query}${pin}`;
 };
 
-// A link opens the plan on this site as `/document/shared?s=<code>`: the code names the plan, and that address is the
-// one whose page head names it, so the link previews as the plan in chat apps (src/share-page.ts).
+// A link opens the document on this site as `/document/shared?s=<code>`: the code names the document, and that address is the
+// one whose page head names it, so the link previews as the document in chat apps (src/share-page.ts).
 export const shareUrl: ShareUrl = (link) =>
   `${typeof window === 'undefined' ? '' : window.location.origin}/document/shared?s=${encodeURIComponent(link.code)}`;
 
 // New from the Explorer: the /new flow, filed where the person pressed it.
-export function newPlanHref(placement: Placement | null): string {
+export function newDocumentHref(placement: Placement | null): string {
   const params = new URLSearchParams();
   if (placement?.folderId) params.set('folder', placement.folderId);
   if (placement?.teamId) params.set('team', placement.teamId);
@@ -51,27 +52,10 @@ export function newPlanHref(placement: Placement | null): string {
   return query ? `/new?${query}` : '/new';
 }
 
-// The teams an access token names (its `teams` claim, liveworkspace/docs/accounts.md "Teams"); none for a guest.
-export function teamsOfToken(token: string | null): TeamRef[] {
-  const part = token?.split('.')[1];
-  if (!part) return [];
-  try {
-    const claims = JSON.parse(atob(part.replace(/-/g, '+').replace(/_/g, '/'))) as {
-      teams?: unknown;
-    };
-    if (!Array.isArray(claims.teams)) return [];
-    return claims.teams.flatMap((team: unknown) => {
-      const t = team as { id?: unknown; name?: unknown };
-      return typeof t?.id === 'string' && typeof t.name === 'string'
-        ? [{ id: t.id, name: t.name }]
-        : [];
-    });
-  } catch {
-    return [];
-  }
-}
+export { teamsOfToken };
 
-// The person's teams, read from the token the page sends once it is known.
+// The teams the person's access token names (its `teams` claim, liveworkspace/docs/accounts.md "Teams"); none for a
+// guest.
 export function useTokenTeams(signedIn: boolean | undefined): TeamRef[] {
   const [teams, setTeams] = useState<TeamRef[]>([]);
   useEffect(() => {
@@ -88,7 +72,7 @@ export function useTokenTeams(signedIn: boolean | undefined): TeamRef[] {
 }
 
 // Each Explorer view's Help article: the Help button in its page header, and Home's in the hero's corner. Search opens
-// Search and Filter Plans; Favourites, with no article of its own, the Explorer's.
+// Search and Filter Documents; Favourites, with no article of its own, the Explorer's.
 const VIEW_HELP: Record<ExplorerView['kind'], HelpArticleKey> = {
   home: 'home',
   all: 'myWork',

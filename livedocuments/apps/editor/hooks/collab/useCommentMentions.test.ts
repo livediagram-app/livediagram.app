@@ -2,7 +2,7 @@
 import { renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-// docs/specs/012-collaboration/comment-mentions.md: the plan's team's people are who a comment can mention (never
+// docs/specs/012-collaboration/comment-mentions.md: the document's team's people are who a comment can mention (never
 // yourself), and a mention is counted. The email is the api's, sent from the stored comment, so nothing is asked.
 const api = vi.hoisted(() => ({ apiTeamMembers: vi.fn() }));
 vi.mock('@/lib/api-client', () => api);
@@ -45,7 +45,7 @@ function hook(ownerId: string | null = 'me', documentTeamId: string | null = 't1
 }
 
 describe('useCommentMentions', () => {
-  it("offers the plan's team's people, joined and invited, never yourself", async () => {
+  it("offers the document's team's people, joined and invited, never yourself", async () => {
     const { result } = hook();
     await waitFor(() => expect(result.current.candidates).toHaveLength(2));
     expect(api.apiTeamMembers).toHaveBeenCalledWith('me', 't1');
@@ -56,7 +56,7 @@ describe('useCommentMentions', () => {
     ]);
   });
 
-  it('offers nobody on a personal plan or to a guest', () => {
+  it('offers nobody on a personal document or to a guest', () => {
     expect(hook('me', null).result.current.available).toBe(false);
     expect(hook(null).result.current.candidates).toEqual([]);
     expect(api.apiTeamMembers).not.toHaveBeenCalled();

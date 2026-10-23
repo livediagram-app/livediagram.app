@@ -195,7 +195,7 @@ state; nothing is added to `useEditorState.ts` beyond the wiring call.
 
 ## 4. Email notification
 
-A **signed-in-only** endpoint on the api worker, answered inside the plan's Durable Object (an account access
+A **signed-in-only** endpoint on the api worker, answered inside the document's Durable Object (an account access
 token required; an API token is refused):
 
 ```
@@ -206,13 +206,13 @@ answer: 202, the email worked out in the background
 
 The server, not the client, establishes every fact that matters:
 
-- verifies the **caller** can open the plan (the index's grant) and is a joined member of `teamId`: their
+- verifies the **caller** can open the document (the index's grant) and is a joined member of `teamId`: their
   token names the team, and the team as liveworkspace keeps it now (`POST /api/account/internal/teams/members`,
   [liveworkspace accounts](../../../../liveworkspace/docs/accounts.md) "Notification emails") still holds them;
 - verifies the **assignee** (`assigneeUserId`, or `assigneeMemberId` for
   an invited member) is a joined OR invited member of `teamId`, and not the caller (404
   otherwise, so there is no probing which users exist);
-- reads the **plan name from the plan**, not the body;
+- reads the **document name from the document**, not the body;
 - resolves the assignee's address from liveworkspace: an account's verified address, or an invited
   person's invite address; never a client header
   ([Transactional email (Resend)](../014-identity/transactional-email.md) §5, [Account settings & email notifications](../014-identity/profile-and-email-notifications.md) §5);
@@ -221,16 +221,16 @@ The server, not the client, establishes every fact that matters:
 - no-ops silently unless `emailEnabled(env)` and the assignee's
   `notifyActionAssigned` setting (§6) is on; an invited member with no
   account has no settings yet, so it counts as on and their invite address is the destination;
-- checks whether the **assignee** can open the plan: it is in this team's library (an invited member gets in
-  on accepting), they own it, they have joined the plan's own team, or the index would let them in (a link they
+- checks whether the **assignee** can open the document: it is in this team's library (an invited member gets in
+  on accepting), they own it, they have joined the document's own team, or the index would let them in (a link they
   opened before). When they cannot,
-  the email names no plan and its button opens the Explorer instead, with
-  "ask them to share it" in place of the plan name;
+  the email names no document and its button opens the Explorer instead, with
+  "ask them to share it" in place of the document name;
 - **claims** the email before sending, since the action name and description
-  come from the body: the same email (assigner, plan, recipient, action
+  come from the body: the same email (assigner, document, recipient, action
   name, description) goes at most once per 24 hours, and one sender's
-  action-assigned and mention emails on a plan are capped at 60 an hour, both in
-  the plan's own `notify_claims` table ([Comment mentions](comment-mentions.md) "The email" has the
+  action-assigned and mention emails on a document are capped at 60 an hour, both in
+  the document's own `notify_claims` table ([Comment mentions](comment-mentions.md) "The email" has the
   detail).
 
 Then it sends the **action-assigned** email (template in
@@ -250,10 +250,10 @@ accept — acceptable v1: the action is still on the canvas, and reassigning
 (or completing) it works for anyone with edit access. Invitees the lazy
 claim already identified carry their real `userId` and match normally.
 
-**Access caveat:** assigning is allowed on any plan the assigner can
-edit, including ones the assignee cannot open. The picker only offers the people of the plan's own team, who
+**Access caveat:** assigning is allowed on any document the assigner can
+edit, including ones the assignee cannot open. The picker only offers the people of the document's own team, who
 can open it by being in it, so the dialog knows without asking: a joined teammate can, an invited one will on
-accepting (the hint above). An action kept from before the plan moved may name someone else; the dialog then
+accepting (the hint above). An action kept from before the document moved may name someone else; the dialog then
 says nothing, and the email (§4) decides from what the server can see. Auto-sharing on assign is explicitly not done
 (v1): quietly widening access as a side effect of an assignment is worse
 than a dead CTA, and the email to an assignee who cannot open the document

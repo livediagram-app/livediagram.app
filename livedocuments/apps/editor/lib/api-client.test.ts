@@ -120,8 +120,8 @@ describe('apiHeaders', () => {
   });
 });
 
-// A link opens a plan at the level its grant says (liveworkspace/docs/one-explorer-contracts.md "Sharing and
-// access"): the index answers the grant, or why not; the plan is then read once.
+// A link opens a document at the level its grant says (liveworkspace/docs/one-explorer-contracts.md "Sharing and
+// access"): the index answers the grant, or why not; the document is then read once.
 describe('apiLoadShared', () => {
   afterEach(() => {
     vi.unstubAllGlobals();
@@ -156,7 +156,7 @@ describe('apiLoadShared', () => {
     expect(await apiLoadShared('CODE2345', 'guest-3', 'p1')).toBeNull();
   });
 
-  it('reads the plan once, at the grant’s level and tab', async () => {
+  it('reads the document once, at the grant’s level and tab', async () => {
     grants.documentGrant.mockResolvedValue(GRANT);
     stubFetch(200, { document: { id: 'p1' } });
     const res = await apiLoadShared('CODE2345', 'guest-4', 'p1');
@@ -172,7 +172,7 @@ describe('apiLoadShared', () => {
     expect(new Headers(init!.headers).get('X-Share-Code')).toBe('CODE2345');
   });
 
-  it('resolves the code at the index when the address names no plan', async () => {
+  it('resolves the code at the index when the address names no document', async () => {
     index.resolveShare.mockResolvedValue({ item: { id: 'p9' } });
     grants.documentGrant.mockResolvedValue(GRANT);
     stubFetch(200, { document: { id: 'p9' } });

@@ -29,7 +29,7 @@ import { isDocumentTrashedError } from '@/lib/document-trashed';
 import { documentGrant } from '@/lib/api/document-grants';
 import { indexClient } from '@/lib/index-client';
 
-// Whether the index has this plan in its Trash, for the person (the deleted card rather than not found).
+// Whether the index has this document in its Trash, for the person (the deleted card rather than not found).
 async function isTrashedInIndex(id: string): Promise<boolean> {
   try {
     return (await indexClient.getItem(id)).item.trashedAt !== null;
@@ -451,8 +451,8 @@ export function useIdentityBootstrap(opts: {
           // A share link always opens a server document: it has a room.
           setDocumentServerStored(true);
           setDocumentId(fetched.id);
-          // A link's own address (`/document/shared?s=<code>`) names no plan: the bar names the one it opened, so a
-          // reload, a deep link and the grant all address the plan itself.
+          // A link's own address (`/document/shared?s=<code>`) names no document: the bar names the one it opened, so a
+          // reload, a deep link and the grant all address the document itself.
           if (!id) {
             window.history.replaceState(
               window.history.state,
@@ -505,7 +505,7 @@ export function useIdentityBootstrap(opts: {
           // URL had a ?d=<id> but the API didn't return anything for
           // us — either the document doesn't exist or we don't own it.
           // Surface a NotFound page instead of dropping the user into
-          // the new-document welcome flow. A plan in the Trash has no grant, so the api cannot tell it from a
+          // the new-document welcome flow. A document in the Trash has no grant, so the api cannot tell it from a
           // missing one; the index can (its item outlives the trashing), and then it gets the deleted card.
           setDocumentId(id);
           if (await isTrashedInIndex(id)) setDocumentTrashed(true);
@@ -529,8 +529,8 @@ export function useIdentityBootstrap(opts: {
         // Every server-stored document has a room, personal ones included (docs/specs/024-agents/
         // agent-changesets.md "Rooms for personal documents"); an offline one has none.
         setDocumentServerStored(!offline);
-        // The owner's chrome goes to whoever holds edit on the plan without a link: its owner, or a member of the
-        // team that owns it. The index decides that, so a guest's plans stay theirs once the guest becomes an account.
+        // The owner's chrome goes to whoever holds edit on the document without a link: its owner, or a member of the
+        // team that owns it. The index decides that, so a guest's documents stay theirs once the guest becomes an account.
         setIsOwner(offline || (await documentGrant(fetched.id))?.level === 'edit');
         setSessionRole('edit');
         // Owner branch (`?d=<id>` / `/document/<id>`): a signed-in

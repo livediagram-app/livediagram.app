@@ -18,8 +18,8 @@ async function _apiTeamMembers(ownerId: string, teamId: string): Promise<TeamMem
 
 export const apiTeamMembers = dedupeInFlight(_apiTeamMembers, (ownerId, teamId) => `${ownerId} ${teamId}`);
 
-// Email a teammate about an action just assigned to them on this plan. Best-effort: the assignment is already
-// saved, so callers fire and forget. The api checks the team, the plan and the assignee, and resolves every name
+// Email a teammate about an action just assigned to them on this document. Best-effort: the assignment is already
+// saved, so callers fire and forget. The api checks the team, the document and the assignee, and resolves every name
 // and address itself.
 export async function apiNotifyActionAssigned(
   ownerId: string,

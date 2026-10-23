@@ -41,14 +41,14 @@ import { isPowerUserMode } from '@/lib/power-user-mode';
 import { dropSettingsLink, readSettingsLink } from '@/lib/settings-link';
 import { explorerShareHost } from '@/lib/explorer-share-host';
 import { explorerInboxHost } from '@/lib/explorer-inbox-host';
-import { renderPlanThumbnail } from '@/lib/explorer-thumbnail';
+import { renderDocumentThumbnail } from '@/lib/explorer-thumbnail';
 import { arrivedTrashed } from '@/lib/document-delete-undo';
 import { track } from '@/lib/telemetry';
 import { commitUserPreferences, type UserPreferences } from '@/lib/user-preferences';
 import {
   explorerHelpHref,
   itemHref,
-  newPlanHref,
+  newDocumentHref,
   shareUrl,
   useTokenTeams,
 } from '@/lib/explorer-host';
@@ -160,10 +160,10 @@ export function ExplorerHost({
     passwordGated: false,
   });
   const chrome: ExplorerChrome = { prefs, ownerId: viewerId ?? null, signedIn: !!accountUserId };
-  // The open plan deleted from the editor lands here with its Undo (lib/document-delete-undo.ts), taken once.
+  // The open document deleted from the editor lands here with its Undo (lib/document-delete-undo.ts), taken once.
   const [trashedOnArrival] = useState(arrivedTrashed);
   // The hero's close (docs/specs/013-workspace/explorer-home.md "Hiding the banner"): reported, then written, so
-  // every device the person signs in on opens Home without it. Settings > Plans turns it back on.
+  // every device the person signs in on opens Home without it. Settings > Documents turns it back on.
   const hideHero = useCallback(() => {
     track('UI', 'Toggled', 'HomeBannerOff');
     commitUserPreferences(prefs, { ...prefs, homeBanner: false }, viewerId ?? null);
@@ -208,7 +208,7 @@ export function ExplorerHost({
           options?.replace ? router.replace(href) : router.push(href)
         }
         itemHref={itemHref}
-        onCreate={(placement) => router.push(newPlanHref(placement))}
+        onCreate={(placement) => router.push(newDocumentHref(placement))}
         onOpenItem={(href) =>
           href.startsWith('/') ? router.push(href) : window.location.assign(href)
         }
@@ -223,7 +223,7 @@ export function ExplorerHost({
         welcome={welcome}
         helpHref={explorerHelpHref}
         heroArt={HERO_ART}
-        renderThumbnail={renderPlanThumbnail}
+        renderThumbnail={renderDocumentThumbnail}
         trashedOnArrival={trashedOnArrival}
         heroHidden={prefs.homeBanner === false}
         onHideHero={hideHero}

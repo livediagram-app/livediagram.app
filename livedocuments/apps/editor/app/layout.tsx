@@ -20,7 +20,7 @@ import {
   trustedTypesBootScript,
 } from '@livedocuments/ui';
 import {
-  PLAN_GRANT_BOOT_SCRIPT,
+  DOCUMENT_GRANT_BOOT_SCRIPT,
   REDUCE_MOTION_BOOT_SCRIPT,
   WEBFONTS_STYLESHEET_ID,
   WEBFONTS_SWAP_SCRIPT,
@@ -118,8 +118,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <script dangerouslySetInnerHTML={{ __html: trustedHtml(SILENT_SIGN_IN_BOOT_SCRIPT) }} />
         {/* Ids work outside a secure context too (docs/specs/016-platform/secure-context.md), before any app code. */}
         <script dangerouslySetInnerHTML={{ __html: trustedHtml(RANDOM_UUID_BOOT_SCRIPT) }} />
-        {/* A plan's grant, asked for while the code loads (lib/api/document-grants.ts). */}
-        <script dangerouslySetInnerHTML={{ __html: trustedHtml(PLAN_GRANT_BOOT_SCRIPT) }} />
+        {/* A document's grant, asked for while the code loads (lib/api/document-grants.ts). */}
+        <script dangerouslySetInnerHTML={{ __html: trustedHtml(DOCUMENT_GRANT_BOOT_SCRIPT) }} />
         {/* Then the stale HTML guard (docs/specs/016-platform/stale-builds.md "The pre-boot
             guard"), listening before any build asset can fail to load. Its source is static; its
             settings ride as data attributes on this element. */}

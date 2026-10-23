@@ -1,4 +1,4 @@
-# Hide a plan from Recent
+# Hide a document from Recent
 
 Status: shipped, on liveworkspace's index and the shared Explorer
 ([`@liveworkspace/explorer`](../../../../packages/explorer/README.md)).
@@ -12,7 +12,7 @@ search, Favourites, direct links, sharing, teams.
 
 ## Per person, not per item
 
-Recent is your view of your own work, so the choice belongs to the reader, not the item. On a shared or team plan,
+Recent is your view of your own work, so the choice belongs to the reader, not the item. On a shared or team document,
 one collaborator tidying their Recent leaves everyone else's alone. The index keeps it on the person's own `opens`
 row (`hidden`), beside when they last opened the item
 ([one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "Folders, tags, favourites,

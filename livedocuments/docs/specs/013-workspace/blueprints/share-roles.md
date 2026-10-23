@@ -1,6 +1,6 @@
 # Share roles: blueprint
 
-> **Partly superseded (October 2026).** Share links, their levels and who may reach a plan are the index's now
+> **Partly superseded (October 2026).** Share links, their levels and who may reach a document are the index's now
 > ([One Explorer: contracts](../../../../../liveworkspace/docs/one-explorer-contracts.md#sharing-and-access)), and the Share dialog is the
 > shared one from `@liveworkspace/explorer`. Files marked (removed) below went with livedocuments's own copies.
 

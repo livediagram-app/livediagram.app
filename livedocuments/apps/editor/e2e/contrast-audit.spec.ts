@@ -72,7 +72,7 @@ test.describe('Contrast audit, dark mode', () => {
     await visitor.context().close();
   });
 
-  // My Work, which lists the seeded plan as a row.
+  // My Work, which lists the seeded document as a row.
   test('the Explorer', async ({ page, pageErrors, baseURL }) => {
     const owner = await mintGuest(page.request);
     await seedDocument(page, owner, new URL(baseURL!).origin);

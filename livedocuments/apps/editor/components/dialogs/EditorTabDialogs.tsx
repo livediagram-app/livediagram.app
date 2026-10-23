@@ -11,7 +11,7 @@ import { tabAsSeen } from '@/lib/export-as-seen';
 import { panelEnabled } from '@/lib/user-preferences';
 import { indexClient } from '@/lib/index-client';
 import { shareUrl } from '@/lib/explorer-host';
-import { planHandOver, shareHelpHref, trackShare } from '@/lib/explorer-share-host';
+import { documentHandOver, shareHelpHref, trackShare } from '@/lib/explorer-share-host';
 import { randomName } from '@/lib/identity';
 import { useToast } from '@/hooks/ui/useToast';
 
@@ -135,14 +135,14 @@ export function EditorTabDialogs() {
           item={{
             id: documentId,
             app: 'livedocuments',
-            kind: 'plan',
+            kind: 'document',
             sharedVia: null,
             title: documentName,
             teamId: documentTeamId,
           }}
           tabs={tabs.map((t) => ({ id: t.id, name: t.name }))}
           shareUrl={shareUrl}
-          handOver={planHandOver}
+          handOver={documentHandOver}
           helpHref={shareHelpHref}
           onTelemetry={trackShare}
           notify={(text, tone) => toast[tone](text)}

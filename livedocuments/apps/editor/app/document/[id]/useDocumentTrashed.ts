@@ -7,7 +7,7 @@
 // (liveworkspace/docs/one-explorer-contracts.md): the item, which outlives the trashing, at edit for them (its owner,
 // or a member of the team that owns it), and never for a share-link visitor.
 import { useCallback, useEffect, useState } from 'react';
-import type { TrashedPlan } from '@/components/chrome/DocumentTrashedCard';
+import type { TrashedDocument } from '@/components/chrome/DocumentTrashedCard';
 import { indexClient } from '@/lib/index-client';
 import { track } from '@/lib/telemetry';
 import { debugLog } from '@/lib/debug-log';
@@ -18,7 +18,7 @@ type DocumentTrashedState = {
   setDocumentTrashed: (trashed: boolean) => void;
   // When and why it went to the Trash, or null when the reader may not
   // restore it (or it hasn't been looked up yet).
-  restorable: TrashedPlan | null;
+  restorable: TrashedDocument | null;
   restore: () => Promise<void>;
 };
 
@@ -29,7 +29,7 @@ export function useDocumentTrashed(opts: {
 }): DocumentTrashedState {
   const { documentId, viaShareLink } = opts;
   const [trashed, setTrashed] = useState(false);
-  const [restorable, setRestorable] = useState<TrashedPlan | null>(null);
+  const [restorable, setRestorable] = useState<TrashedDocument | null>(null);
   // Which Trash it sits in, for the telemetry `type`.
   const [from, setFrom] = useState<'Personal' | 'Team'>('Personal');
 

@@ -55,10 +55,10 @@ export const SILENT_SIGN_IN_BOOT_SCRIPT = silentSignInBootScript({
   skipPaths: SILENT_SIGN_IN_SKIP_PATHS,
 });
 
-// The plan's grant, asked for while the editor's code loads (liveworkspace/docs/one-explorer-contracts.md "Grants"):
+// The document's grant, asked for while the editor's code loads (liveworkspace/docs/one-explorer-contracts.md "Grants"):
 // on /document/<id>, a guest's token (or a link's code from `?s=`, with its remembered password) is all the request
-// needs, and both are in storage, so it need not wait for the bundle. The promise is left on `window.__lpGrant`
+// needs, and both are in storage, so it need not wait for the bundle. The promise is left on `window.__ldocGrant`
 // for lib/api/document-grants.ts to adopt. A signed-in browser (the hint cookie) skips it: its token arrives with the
 // session, and its grant is asked for then.
 export const SHARE_PASSWORD_STORAGE_PREFIX = 'livedocuments:share-password:';
-export const PLAN_GRANT_BOOT_SCRIPT = `try{var m=location.pathname.match(/^\\/document\\/([^/]+)\\/?$/);if(m&&m[1]!=='placeholder'&&m[1]!=='shared'&&!/(?:^|; )${SIGNED_IN_HINT_COOKIE}=1/.test(document.cookie)){var t=localStorage.getItem('${GUEST_TOKEN_STORAGE_KEY}');var s=new URLSearchParams(location.search).get('s');if(t||s){var h={};if(t)h.Authorization='Bearer '+t;if(s){h['X-Share-Code']=s;var pw=localStorage.getItem('${SHARE_PASSWORD_STORAGE_PREFIX}'+s);if(pw)h['X-Share-Password']=pw}var id=decodeURIComponent(m[1]);window.__lpGrant={id:id,share:s||'',p:fetch('${API_BASE}/index/items/'+encodeURIComponent(id)+'/grant',{method:'POST',headers:h}).then(function(r){return r.ok?r.json():null}).catch(function(){return null})}}}}catch(e){}`;
+export const DOCUMENT_GRANT_BOOT_SCRIPT = `try{var m=location.pathname.match(/^\\/document\\/([^/]+)\\/?$/);if(m&&m[1]!=='placeholder'&&m[1]!=='shared'&&!/(?:^|; )${SIGNED_IN_HINT_COOKIE}=1/.test(document.cookie)){var t=localStorage.getItem('${GUEST_TOKEN_STORAGE_KEY}');var s=new URLSearchParams(location.search).get('s');if(t||s){var h={};if(t)h.Authorization='Bearer '+t;if(s){h['X-Share-Code']=s;var pw=localStorage.getItem('${SHARE_PASSWORD_STORAGE_PREFIX}'+s);if(pw)h['X-Share-Password']=pw}var id=decodeURIComponent(m[1]);window.__ldocGrant={id:id,share:s||'',p:fetch('${API_BASE}/index/items/'+encodeURIComponent(id)+'/grant',{method:'POST',headers:h}).then(function(r){return r.ok?r.json():null}).catch(function(){return null})}}}}catch(e){}`;

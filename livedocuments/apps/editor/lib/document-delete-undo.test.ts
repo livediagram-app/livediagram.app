@@ -5,7 +5,7 @@ const index = vi.hoisted(() => ({ deleteItem: vi.fn() }));
 vi.mock('@/lib/index-client', () => ({ indexClient: index }));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
-const { handOffDeleteUndo, takeDeleteUndo, trashOpenPlan } = await import('./document-delete-undo');
+const { handOffDeleteUndo, takeDeleteUndo, trashOpenDocument } = await import('./document-delete-undo');
 const { isDocumentDeleted } = await import('./document-tombstones');
 
 afterEach(() => {
@@ -13,12 +13,12 @@ afterEach(() => {
   sessionStorage.clear();
 });
 
-describe('trashOpenPlan', () => {
-  it('tombstones the plan before the delete, so autosave cannot write it back, then leaves with the Undo', async () => {
+describe('trashOpenDocument', () => {
+  it('tombstones the document before the delete, so autosave cannot write it back, then leaves with the Undo', async () => {
     const seen: boolean[] = [];
     index.deleteItem.mockImplementation(async () => void seen.push(isDocumentDeleted('a')));
     const leave = vi.fn();
-    expect(await trashOpenPlan('a', 'Roadmap', leave)).toBe(true);
+    expect(await trashOpenDocument('a', 'Roadmap', leave)).toBe(true);
     expect(seen).toEqual([true]);
     expect(leave).toHaveBeenCalledWith('/explorer');
     expect(takeDeleteUndo()).toEqual({ id: 'a', title: 'Roadmap' });
@@ -27,7 +27,7 @@ describe('trashOpenPlan', () => {
   it('lifts the tombstone and stays when the index refuses', async () => {
     index.deleteItem.mockRejectedValue(new Error('no'));
     const leave = vi.fn();
-    expect(await trashOpenPlan('b', 'Roadmap', leave)).toBe(false);
+    expect(await trashOpenDocument('b', 'Roadmap', leave)).toBe(false);
     expect(isDocumentDeleted('b')).toBe(false);
     expect(leave).not.toHaveBeenCalled();
     expect(takeDeleteUndo()).toBeNull();

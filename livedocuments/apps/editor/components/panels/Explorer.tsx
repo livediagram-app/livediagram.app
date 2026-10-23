@@ -15,16 +15,16 @@ import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useAppNavigation } from '@/hooks/navigation/useAppNavigation';
 import { getSessionSharePassword } from '@/lib/api-client';
 import { indexClient } from '@/lib/index-client';
-import { itemHref, newPlanHref, shareUrl, useTokenTeams } from '@/lib/explorer-host';
+import { itemHref, newDocumentHref, shareUrl, useTokenTeams } from '@/lib/explorer-host';
 import { explorerShareHost } from '@/lib/explorer-share-host';
 import { explorerInboxHost } from '@/lib/explorer-inbox-host';
-import { renderPlanThumbnail } from '@/lib/explorer-thumbnail';
-import { trashOpenPlan } from '@/lib/document-delete-undo';
+import { renderDocumentThumbnail } from '@/lib/explorer-thumbnail';
+import { trashOpenDocument } from '@/lib/document-delete-undo';
 import type { ExplorerProps } from './Explorer.types';
 
 // The editor's floating Explorer panel: the shared Explorer's panel (@liveworkspace/explorer, drawn as this panel
 // always was, with the same lists, menus and dialogs as the /explorer page, from the index) inside the editor's
-// movable panel, which docks in a corner or opens as the menu button's popover. The open plan shows on top, read
+// movable panel, which docks in a corner or opens as the menu button's popover. The open document shows on top, read
 // once from the index when the panel opens; every list is one request a page, loaded only once its section is chosen.
 function ExplorerImpl({
   position,
@@ -51,7 +51,7 @@ function ExplorerImpl({
   const inboxHost = useMemo(() => explorerInboxHost(accountUserId ?? null), [accountUserId]);
   const teams = useTokenTeams(isSignedIn);
 
-  // The open plan as the index has it (its title, place and star), for the card on top.
+  // The open document as the index has it (its title, place and star), for the card on top.
   const [current, setCurrent] = useState<Item | null>(null);
   useEffect(() => {
     if (!currentDocumentId) return;
@@ -76,7 +76,7 @@ function ExplorerImpl({
     return () => document.body.removeAttribute('data-explorer-open');
   }, [shown]);
 
-  const trashCurrent = useCallback((item: Item) => trashOpenPlan(item.id, item.title), []);
+  const trashCurrent = useCallback((item: Item) => trashOpenDocument(item.id, item.title), []);
 
   const go = (href: string) =>
     href.startsWith('/') ? router.push(href) : window.location.assign(href);
@@ -120,17 +120,17 @@ function ExplorerImpl({
         itemHref={itemHref}
         current={currentDocumentId ? current : null}
         currentId={currentDocumentId ?? null}
-        // The open plan stops saving before it goes, then the editor leaves for the Explorer and its Undo.
+        // The open document stops saving before it goes, then the editor leaves for the Explorer and its Undo.
         onTrashCurrent={trashCurrent}
         onRenameCurrent={onRenameCurrent}
         onCreate={(placement) =>
           onNewDocument && !placement.folderId && !placement.teamId
             ? onNewDocument()
-            : go(newPlanHref(placement))
+            : go(newDocumentHref(placement))
         }
         onOpenExplorer={(view) => go(explorerPath(view))}
         onOpenItem={(href) => go(href)}
-        renderThumbnail={renderPlanThumbnail}
+        renderThumbnail={renderDocumentThumbnail}
         Link={Link}
         teams={teams}
         viewerId={accountUserId ?? null}

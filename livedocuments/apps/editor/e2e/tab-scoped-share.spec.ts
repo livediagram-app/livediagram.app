@@ -27,7 +27,7 @@ test('a tab-scoped link opens its tab and nothing else', async ({ page, browser 
   });
   const seeded = await seedDocumentItem(page.request, owner, {
     id: liveDoc,
-    name: 'Launch plan',
+    name: 'Launch document',
     tabs: [
       { id: pricing, name: 'Pricing', elements: [box('p1', 200, SECRET)] },
       { id: roadmap, name: 'Roadmap', elements: [box('r1', 200, 'Q3 beta')] },

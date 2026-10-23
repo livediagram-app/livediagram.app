@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const index = vi.hoisted(() => ({ listShareLinks: vi.fn() }));
 vi.mock('@/lib/index-client', () => ({ indexClient: index }));
 
-import { hasLiveLink, usePlanShareState } from './usePlanShareState';
+import { hasLiveLink, useDocumentShareState } from './useDocumentShareState';
 
 type Props = { open: boolean; code: string | null };
 
@@ -13,7 +13,7 @@ function hook(initial: Props) {
   const setShareable = vi.fn();
   const view = renderHook(
     ({ open, code }: Props) =>
-      usePlanShareState({
+      useDocumentShareState({
         documentId: 'p1',
         serverStored: true,
         sessionShareCode: code,
@@ -27,8 +27,8 @@ function hook(initial: Props) {
 
 beforeEach(() => vi.clearAllMocks());
 
-describe('usePlanShareState', () => {
-  it('counts only links that still open the plan', () => {
+describe('useDocumentShareState', () => {
+  it('counts only links that still open the document', () => {
     expect(hasLiveLink([{ expiresAt: null }], 10)).toBe(true);
     expect(hasLiveLink([{ expiresAt: 5 }], 10)).toBe(false);
     expect(hasLiveLink([], 10)).toBe(false);

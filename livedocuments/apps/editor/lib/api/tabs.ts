@@ -37,7 +37,7 @@ import {
 // lazily when the user opens a tab; the document-summary fetch only
 // carries TabSummary rows.
 //
-// `open` declares this read an open of the plan, for the reader's Recent
+// `open` declares this read an open of the document, for the reader's Recent
 // (liveworkspace/docs/one-explorer-contracts.md "Items", `POST /items/:id/open`): only the
 // editor's first-tab read sets it, never a resync, a duplicate, Take
 // Offline or an embed. Told to the index beside the read, never waited on.
@@ -228,7 +228,7 @@ export function flushDocumentSavesBeacon(args: {
   // signed-in sessions ride the token apiHeaders cached on its last
   // fetch — the autosave loop refreshes it every ~600ms while editing,
   // so it's seconds old at teardown. Guests ride their guest token (a sync
-  // localStorage read), and the plan's grant is the one held (document-grants.ts),
+  // localStorage read), and the document's grant is the one held (document-grants.ts),
   // so nothing here waits on the network. The rule is apiHeaders' own
   // (identityHeaders). A signed-in owner with no cached token has nothing the worker accepts, so
   // skip the flush rather than fire writes that are certain to 401.

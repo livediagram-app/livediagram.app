@@ -2,7 +2,7 @@
 
 Follow the references below only as needed; never upfront.
 
-The Explorer, and everything it lists, lives in liveworkspace's index and its shared Explorer package: [one-explorer.md](../../../../liveworkspace/docs/one-explorer.md) is the plan and [one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) the calls. The specs below marked "moved" are short notes saying what went and what livedocuments still does.
+The Explorer, and everything it lists, lives in liveworkspace's index and its shared Explorer package: [one-explorer.md](../../../../liveworkspace/docs/one-explorer.md) is the document and [one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) the calls. The specs below marked "moved" are short notes saying what went and what livedocuments still does.
 
 - ./explorer-structure.md - when working on the Explorer page or the editor's Explorer panel: the shared `@liveworkspace/explorer` hosted at `/explorer`, its views, and what livedocuments supplies (addresses, New, teams) (moved)
 - ./share-roles.md - when working on what a share link, embed or API token may do: Viewer, Participant, Editor; ownership powers
@@ -12,16 +12,16 @@ The Explorer, and everything it lists, lives in liveworkspace's index and its sh
 - ./teams.md - when working on teams: managed on liveworkspace.app, read from the access token (moved)
 - ./team-shared-documents.md - when working on a team's library (moved)
 - ./folders.md - when working on folders (moved)
-- ./default-folders.md - when working on where a new plan is filed by default (moved)
+- ./default-folders.md - when working on where a new document is filed by default (moved)
 - ./tags.md - tags (removed from the Explorer)
 - ./favourites.md - when working on favourites (moved)
-- ./trash.md - when working on the Trash or a trashed plan's refusals (moved)
+- ./trash.md - when working on the Trash or a trashed document's refusals (moved)
 - ./empty-document-cleanup.md - when looking for the empty-document sweep (removed)
-- ./explorer-home.md - when working on Explorer Home and recording a plan's opens (moved)
+- ./explorer-home.md - when working on Explorer Home and recording a document's opens (moved)
 - ./hide-from-recent.md - when looking for Hide from Recent / Show in Recent
 - ./explorer-filters.md - when looking for the Explorer's filter lens (removed; `packages/explorer-lens` remains)
-- ./explorer-details-view.md - when working on the per-tab stats a plan pushes to the index for the Details view (moved)
-- ./inbox.md - when working on what a plan pushes for the Inbox (moved)
+- ./explorer-details-view.md - when working on the per-tab stats a document pushes to the index for the Details view (moved)
+- ./inbox.md - when working on what a document pushes for the Inbox (moved)
 - ./timeline.md - when looking for the Timeline, What Happened, History or Team Activity (removed)
 - ./embeds.md - when working on Read-only embeds (`/embed`): the iframe-able share view
 - ./workbench-embeds.md - when a developer tool (an agent workbench, VS Code) frames the editor signed in: workbench tickets and sessions, the origin handshake, workbench messages, the selection reference

@@ -7,12 +7,12 @@ import { teamMemberRows } from './team-member-rows';
 import type { PickableMember } from '@/components/dialogs/AssignActionAssigneePicker';
 
 // The Assign Action dialog's assignee dataset (docs/specs/012-collaboration/assigned-actions.md §2 + §4): the pinned
-// Myself row, the plan team's people (joined AND invited), the preselect-on-edit resolution, whether the pick can
-// open the plan, and the by-team grouping the picker renders. The dialog keeps the `assignee` selection itself.
+// Myself row, the document team's people (joined AND invited), the preselect-on-edit resolution, whether the pick can
+// open the document, and the by-team grouping the picker renders. The dialog keeps the `assignee` selection itself.
 //
-// Only the team whose library holds this plan is pickable, and its people can open the plan by being in it: a
-// joined teammate is a yes, an invited one gets in on accepting. Anyone else (an action kept from before the plan
-// moved) is unknown, and the email names no plan they cannot open (the api decides).
+// Only the team whose library holds this document is pickable, and its people can open the document by being in it: a
+// joined teammate is a yes, an invited one gets in on accepting. Anyone else (an action kept from before the document
+// moved) is unknown, and the email names no document they cannot open (the api decides).
 type Access = 'unknown' | 'yes' | 'no' | 'error' | 'invited';
 
 // A member list, kept with the owner and team it was loaded for.
@@ -70,7 +70,7 @@ export function useAssigneeOptions({
     [selfUserId, selfName],
   );
 
-  // The plan's team, when the caller is in it; none for a personal plan, a guest, or a share-link editor
+  // The document's team, when the caller is in it; none for a personal document, a guest, or a share-link editor
   // outside the team.
   const team = useMemo(
     () => (ownerId ? (teams.find((t) => t.id === documentTeamId) ?? null) : null),
@@ -78,7 +78,7 @@ export function useAssigneeOptions({
   );
   const memberOfDocumentTeam = team !== null;
   const key = team && ownerId ? `${ownerId}:${team.id}` : null;
-  // Null while loading. A guest picker, or a plan with no team, is Myself alone.
+  // Null while loading. A guest picker, or a document with no team, is Myself alone.
   const members = !key ? NO_MEMBERS : loaded?.key === key ? loaded.members : null;
 
   // Load the team's people when the dialog opens (one request, shared with the mention list's). A failure

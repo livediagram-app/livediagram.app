@@ -22,7 +22,7 @@ import {
 // the request itself failed, which is worth trying again on the next list.
 type FetchSnapshotSvg = (id: string, savedAt: number) => Promise<string | null>;
 
-// What the note is picked from: a plan's id, name, last save, whether it is empty, and whether the person hid it
+// What the note is picked from: a document's id, name, last save, whether it is empty, and whether the person hid it
 // from Recent (the index's, docs/specs/013-workspace/hide-from-recent.md).
 export type RecentSource = Parameters<typeof pickRecentDiagrams>[0][number] & {
   hiddenFromRecent?: boolean;

@@ -63,10 +63,8 @@ export const HELP_ARTICLES = {
   explorerPanel: 'explorer/explorer-panel',
   layers: 'canvas/layers',
   minimap: 'user-interface/minimap',
-  imageGallery: 'explorer/image-gallery',
   // Home and the Timeline share an article.
   home: 'explorer/timeline',
-  recentDocuments: 'explorer/recent',
   folders: 'explorer/folders',
   defaultFolders: 'explorer/folders/default-folders',
   // The shared Explorer's other views, each its page header's Help (lib/explorer-host.ts explorerHelpHref).
@@ -111,10 +109,6 @@ export type HelpArticleKey = keyof typeof HELP_ARTICLES;
 // the same article say the same thing, and a `?` never falls back to a bare
 // "Learn more" that tells the reader nothing about where it goes.
 export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description: string }> = {
-  recentDocuments: {
-    title: 'Learn about Recent',
-    description: 'Your most recently opened documents, personal and team, in one list.',
-  },
   pagesTour: {
     title: 'Learn about the Pages Tour',
     description: 'What the tour shows you and how replaying works.',
@@ -238,10 +232,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   minimap: {
     title: 'Learn about the Map',
     description: 'Tips for finding your way around a big canvas.',
-  },
-  imageGallery: {
-    title: 'Learn about the Image Gallery',
-    description: 'How uploaded images are stored and reused across documents.',
   },
   timeline: {
     title: 'Learn about Home and the Timeline',

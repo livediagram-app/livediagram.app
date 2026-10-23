@@ -97,9 +97,9 @@ holding identifiers and states only, never document content:
     whether but not who; with no such cookie it reports "unknown".
   - **Guest id in this browser:** only the first 8 characters of the id the
     guest token names (the token itself is a credential), or "none".
-  - When signed in with a guest token still present: "Guest plans moved to
+  - When signed in with a guest token still present: "Guest documents moved to
     the account: NOT YET (guest token still present)". Signing in moves a
-    guest's plans and then clears the guest token, so one still there means
+    guest's documents and then clears the guest token, so one still there means
     the move has not happened,
     the usual cause of "my documents went missing after I signed in";
 - the load: the step it reached (`identity`, `participant`, `document`,

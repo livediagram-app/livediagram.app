@@ -4,4 +4,4 @@
 
 New from inside a folder or a team carries the place into the `/new` flow (`?folder=`, `?team=`), and the created document is registered there. API clients can still list the caller's folders at `GET /api/folders` ([API](../015-api/api.md)), which reads the index.
 
-The plan is [one-explorer.md](../../../../liveworkspace/docs/one-explorer.md); the calls and types are in [one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "Folders, tags, favourites, defaults". The Explorer that shows it is the shared package, [`@liveworkspace/explorer`](../../../../packages/explorer/README.md).
+The document is [one-explorer.md](../../../../liveworkspace/docs/one-explorer.md); the calls and types are in [one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "Folders, tags, favourites, defaults". The Explorer that shows it is the shared package, [`@liveworkspace/explorer`](../../../../packages/explorer/README.md).

@@ -117,7 +117,7 @@ blob. Don't fold panel placement into `UserPreferences`.
 There is none now. `POST /api/migrate` once moved `user_preferences.owner_id`
 with a guest's documents; it went when guests became liveworkspace guest
 tokens ([Auth + guest access](../014-identity/auth-and-guest-access.md#guest--account)).
-Signing in moves a guest's plans in the index, but the preferences row
+Signing in moves a guest's documents in the index, but the preferences row
 stays under the guest id, so a guest who signs up starts from the
 account's own settings (or the defaults).
 

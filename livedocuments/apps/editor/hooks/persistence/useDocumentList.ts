@@ -1,9 +1,9 @@
 'use client';
 
-// The person's plans, for the editor's pickers that name another plan (Add to Document, a link to a plan, search).
+// The person's documents, for the editor's pickers that name another document (Add to Document, a link to a document, search).
 // They are the index's (liveworkspace/docs/one-explorer-contracts.md): one page of livedocuments items, read once the
-// open plan has loaded and the browser is idle, so it never joins the open's requests. `refresh` reads it again
-// after this editor changed it (a tab moved to another plan).
+// open document has loaded and the browser is idle, so it never joins the open's requests. `refresh` reads it again
+// after this editor changed it (a tab moved to another document).
 
 import { useEffect, useState } from 'react';
 import type { Item } from '@liveworkspace/index-client';
@@ -17,7 +17,7 @@ export const PLAN_LIST_LIMIT = 100;
 // Waits at most this long for an idle moment.
 const IDLE_TIMEOUT_MS = 4_000;
 
-export function planListItem(item: Item): DocumentListItem {
+export function documentListItem(item: Item): DocumentListItem {
   return {
     id: item.id,
     name: item.title,
@@ -29,9 +29,9 @@ export function planListItem(item: Item): DocumentListItem {
   };
 }
 
-// The person's live plans. Each read also refreshes the landing page's note of the most recent ones
+// The person's live documents. Each read also refreshes the landing page's note of the most recent ones
 // (docs/specs/019-marketing/returning-visitor.md), as listing them always has.
-export async function fetchPlanList(ownerId: string): Promise<DocumentListItem[]> {
+export async function fetchDocumentList(ownerId: string): Promise<DocumentListItem[]> {
   const page = await indexClient.listItems({ app: 'livedocuments', limit: PLAN_LIST_LIMIT });
   const live = page.items.filter((item) => item.trashedAt === null);
   rememberRecentDiagrams(
@@ -45,7 +45,7 @@ export async function fetchPlanList(ownerId: string): Promise<DocumentListItem[]
     })),
     (id, savedAt) => apiFetchDocumentThumbnailSvg(ownerId, id, { version: savedAt }),
   );
-  return live.map(planListItem);
+  return live.map(documentListItem);
 }
 
 function whenIdle(run: () => void): () => void {
@@ -57,8 +57,8 @@ function whenIdle(run: () => void): () => void {
   return () => window.clearTimeout(handle);
 }
 
-// `enabled` once the plan has loaded for a person (not a workbench, not before hydration).
-export function usePlanList(
+// `enabled` once the document has loaded for a person (not a workbench, not before hydration).
+export function useDocumentList(
   enabled: boolean,
   ownerId: string,
 ): {
@@ -71,7 +71,7 @@ export function usePlanList(
     if (!enabled) return;
     let live = true;
     const cancel = whenIdle(() => {
-      fetchPlanList(ownerId)
+      fetchDocumentList(ownerId)
         .then((list) => {
           if (live) setDocumentList(list);
         })

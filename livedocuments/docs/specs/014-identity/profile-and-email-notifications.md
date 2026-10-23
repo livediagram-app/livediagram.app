@@ -64,7 +64,7 @@ dialog and the Danger Zone row both say.
 
 **Teams on deletion.** Teams are the liveworkspace account's: closing the account leaves every team there
 first, a team it ran alone goes, and one where it was the only admin passes to the longest-standing member
-([liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md) "Teams"). Plans filed in a team's
+([liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md) "Teams"). Documents filed in a team's
 library stay with the team. livedocuments itself holds no team rows to clean up.
 
 ## 2. Capabilities gains `emailEnabled`
@@ -132,15 +132,15 @@ addresses come only from trusted server state (the account's verified
 address, looked up at the accounts Worker with `accountEmails`, or the
 inviter-typed `team_members.email`), never from a client header.
 
-### a. Someone joins my plan — `notifyDocumentJoin`
+### a. Someone joins my document — `notifyDocumentJoin`
 
-The signal is **a new person opening one of my shared plans for the first
+The signal is **a new person opening one of my shared documents for the first
 time**, which the index sees: it records who came in through a link (its `shared_with`), whether by resolving
-the link's code or by opening the plan with it, and when that row is new it tells livedocuments, after the write and
+the link's code or by opening the document with it, and when that row is new it tells livedocuments, after the write and
 off its own request's path: `POST /api/internal/items/<id>/notices` with `{ type: 'joined', personId, level }`
 and livedocuments's index key ([One Explorer contracts](../../../../liveworkspace/docs/one-explorer-contracts.md)
-"Notices"). livedocuments answers `202` at once and hands it to the plan's room, which runs
-`notifyDocumentJoin(env, plan, personId)`. A guest is no one joining (a guest id is free to mint, so every fresh
+"Notices"). livedocuments answers `202` at once and hands it to the document's room, which runs
+`notifyDocumentJoin(env, document, personId)`. A guest is no one joining (a guest id is free to mint, so every fresh
 one would be another first visit), and neither is the owner. `notifyDocumentJoin`:
 
 - no-ops unless `emailEnabled(env)`, and for a guest or the owner;
@@ -148,8 +148,8 @@ one would be another first visit), and neither is the owner. `notifyDocumentJoin
   owner with an account and a verified address);
 - no-ops when the owner's `notifyDocumentJoin` switch is `false`;
 - no-ops unless it wins the per-plan throttle: at most one join email per
-  plan per 15 minutes (a `join` claim in the plan's own `notify_claims`, the new-comment email's rule);
-- otherwise sends the **document-joined** email: "{joiner} opened one of your plans", naming the plan, with a
+  document per 15 minutes (a `join` claim in the document's own `notify_claims`, the new-comment email's rule);
+- otherwise sends the **document-joined** email: "{joiner} opened one of your documents", naming the document, with a
   CTA to the Explorer.
 
 The document **name** is the recipient owner's _own_ content going back to
@@ -181,7 +181,7 @@ Settings because it is a setting every app shares.
 - Signed-in only; every recipient address comes from verified server state,
   never a client header (consistent with [Teams](../013-workspace/teams.md)'s removal of
   `X-Owner-Email` and [Transactional email (Resend)](transactional-email.md) §5).
-- The only user-influenced strings in a notification body (a plan name, a
+- The only user-influenced strings in a notification body (a document name, a
   joiner name, an assigner's or author's name, an action, a quoted comment) are HTML-escaped, and each is
   either the recipient's own content or already known to the recipient.
 - Off by default at the deployment level (no `RESEND_API_KEY` → no sends, no

@@ -1,7 +1,7 @@
 'use client';
 
-// Every Explorer surface (the /explorer page, the editor's panel) draws each plan's snapshot as it always did (DocumentThumbnail: fetched only once it
-// scrolls into view, cached page-wide, the undrawn sketch for an empty plan with no request at all). Another app's
+// Every Explorer surface (the /explorer page, the editor's panel) draws each document's snapshot as it always did (DocumentThumbnail: fetched only once it
+// scrolls into view, cached page-wide, the undrawn sketch for an empty document with no request at all). Another app's
 // item has no snapshot here, so the Explorer shows its own placeholder.
 import type { RenderThumbnail } from '@liveworkspace/explorer';
 import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
@@ -13,7 +13,7 @@ const FILL = 'h-full w-full';
 // to send it.
 const VIEWER = 'viewer';
 
-export const renderPlanThumbnail: RenderThumbnail = (item) =>
+export const renderDocumentThumbnail: RenderThumbnail = (item) =>
   item.app === 'livedocuments' ? (
     <DocumentThumbnail
       ownerId={VIEWER}

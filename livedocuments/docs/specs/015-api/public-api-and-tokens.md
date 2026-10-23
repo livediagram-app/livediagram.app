@@ -73,7 +73,7 @@ closed the escalation. The fix is [§4](#4-the-guest-header-retired).
   session) or a link visitor with a share code. The spoofable `X-Owner-Id` path, its HMAC signature
   (`X-Owner-Sig`, `GUEST_ID_HMAC_SECRET`, `GUEST_SIG_ENFORCE_AFTER`), `POST /api/guest-id` and `POST /api/migrate`
   are removed ([§4](#4-the-guest-header-retired)).
-- **Access is the index's grant.** Who may open a plan is decided by liveworkspace's index and carried as a
+- **Access is the index's grant.** Who may open a document is decided by liveworkspace's index and carried as a
   short-lived grant; an API token's request gets one fetched for it as its account ([API app](api.md) "Access").
 - **The WS upgrade takes only a ticket**: the grant, as `?t=` ([API app](api.md) "Realtime model"). No owner id,
   share code or password rides the upgrade URL.
@@ -173,7 +173,7 @@ error="invalid_token"`, on every route: it never falls through to the guest
    is a liveworkspace guest token, checked in step 1. Tokens never resolve to a guest id.
 
 The resolved owner id flows through the **same** checks every route already enforces: the index's grant for a
-plan, fetched for the token's account, so a token can only touch what its account can reach. No route changes for authorization; only the identity
+document, fetched for the token's account, so a token can only touch what its account can reach. No route changes for authorization; only the identity
 source changes.
 
 ### 3.4 Access — full read + write, with an optional read-only flag

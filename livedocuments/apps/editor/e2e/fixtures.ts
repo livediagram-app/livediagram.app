@@ -286,8 +286,8 @@ export function ownerHeaders(
   return { ...(token ? { Authorization: `Bearer ${token}` } : {}), ...extra };
 }
 
-// The index's grant on a plan for whoever `headers` names (liveworkspace/docs/one-explorer-contracts.md "Grants"):
-// every api request about one plan carries it as X-Index-Grant.
+// The index's grant on a document for whoever `headers` names (liveworkspace/docs/one-explorer-contracts.md "Grants"):
+// every api request about one document carries it as X-Index-Grant.
 export async function documentGrant(
   request: import('@playwright/test').APIRequestContext,
   headers: Record<string, string>,
@@ -300,7 +300,7 @@ export async function documentGrant(
   return ((await res.json()) as { grant: string }).grant;
 }
 
-// ownerHeaders plus the grant on one plan.
+// ownerHeaders plus the grant on one document.
 export async function documentHeaders(
   request: import('@playwright/test').APIRequestContext,
   owner: string,
@@ -311,7 +311,7 @@ export async function documentHeaders(
   return { ...headers, 'X-Index-Grant': await documentGrant(request, headers, documentId), ...extra };
 }
 
-// A plan made as the app makes one: the item at the index first, then its content with the grant the create
+// A document made as the app makes one: the item at the index first, then its content with the grant the create
 // answers (liveworkspace/docs/one-explorer-contracts.md "Items"). `data` is the api's create body ({ id, name,
 // tabs, ... }). Answers the content create's response.
 export async function seedDocumentItem(
@@ -333,7 +333,7 @@ export async function seedDocumentItem(
 }
 
 // The page's OWN guest identity as request headers, for api calls a spec makes from inside the page
-// (`page.evaluate`, which cannot import this module): its guest token, and with `documentId` the grant on that plan.
+// (`page.evaluate`, which cannot import this module): its guest token, and with `documentId` the grant on that document.
 // Read once, before the evaluate, and passed in as an argument.
 export async function pageOwnerHeaders(
   page: Page,

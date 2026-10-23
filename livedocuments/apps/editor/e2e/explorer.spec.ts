@@ -2,7 +2,7 @@ import type { Page } from '@playwright/test';
 import { expect, expectNoPageErrors, test } from './fixtures';
 
 // The shared Explorer (@liveworkspace/explorer, liveworkspace/docs/one-explorer.md) as livedocuments hosts it at
-// /explorer: everything it lists is the index's, reached through /api/index on this origin. One guest, one plan,
+// /explorer: everything it lists is the index's, reached through /api/index on this origin. One guest, one document,
 // every verb a person uses on it: make it, rename it, open it, find it in Recent, star it, file it in a new folder,
 // delete it and restore it.
 
@@ -21,13 +21,13 @@ async function rowAction(page: Page, title: string, action: string): Promise<voi
   await page.getByRole('menuitem', { name: action, exact: true }).click();
 }
 
-test('a guest makes, renames, opens, stars, files, deletes and restores a plan', async ({
+test('a guest makes, renames, opens, stars, files, deletes and restores a document', async ({
   page,
   pageErrors,
 }) => {
-  // New Plan from the Explorer goes through /new, which makes the plan at the index and opens it.
+  // New Document from the Explorer goes through /new, which makes the document at the index and opens it.
   await page.goto('/explorer');
-  await page.getByRole('button', { name: 'New Plan' }).first().click();
+  await page.getByRole('button', { name: 'New Document' }).first().click();
   await page.waitForURL(/\/document\/[0-9a-f-]{36}/, { timeout: 30_000 });
   await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
   const id = new URL(page.url()).pathname.split('/').pop()!;
@@ -46,7 +46,7 @@ test('a guest makes, renames, opens, stars, files, deletes and restores a plan',
   await input.press('Enter');
   await expect(row(page, 'Roadmap')).toBeVisible();
 
-  // Open: the row is the plan's address in the editor.
+  // Open: the row is the document's address in the editor.
   await row(page, 'Roadmap').click();
   await page.waitForURL(new RegExp(`/document/${id}`));
   await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
@@ -76,7 +76,7 @@ test('a guest makes, renames, opens, stars, files, deletes and restores a plan',
   await expect(row(page, 'Roadmap')).toBeVisible();
 
   // Delete it: it goes to the Trash, and Restore brings it back.
-  await rowAction(page, 'Roadmap', 'Delete Plan');
+  await rowAction(page, 'Roadmap', 'Delete Document');
   await expect(row(page, 'Roadmap')).toBeHidden();
   await showView(page, 'Trash');
   await expect(page.locator('main').getByText('Roadmap', { exact: true })).toBeVisible();
@@ -88,11 +88,11 @@ test('a guest makes, renames, opens, stars, files, deletes and restores a plan',
   expectNoPageErrors(pageErrors);
 });
 
-// The Explorer lists what the index holds for the person, not only plans: the Show switch widens it to every app.
-test('the Explorer offers every app’s items, plans first', async ({ page, pageErrors }) => {
+// The Explorer lists what the index holds for the person, not only documents: the Show switch widens it to every app.
+test('the Explorer offers every app’s items, documents first', async ({ page, pageErrors }) => {
   await page.goto('/explorer');
   const show = page.getByRole('group', { name: 'Show' });
-  await expect(show.getByRole('button', { name: 'Plans' })).toHaveAttribute('aria-pressed', 'true');
+  await expect(show.getByRole('button', { name: 'Documents' })).toHaveAttribute('aria-pressed', 'true');
   await show.getByRole('button', { name: 'All' }).click();
   await expect(show.getByRole('button', { name: 'All' })).toHaveAttribute('aria-pressed', 'true');
   expectNoPageErrors(pageErrors);

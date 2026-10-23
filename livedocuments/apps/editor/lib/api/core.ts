@@ -112,7 +112,7 @@ export async function apiFetch(
   if (refusal) throw refusal;
   let res: Response;
   try {
-    // A request about one plan carries the index's grant on it (document-grants.ts), fetched once per ten minutes.
+    // A request about one document carries the index's grant on it (document-grants.ts), fetched once per ten minutes.
     res = await fetch(
       input,
       opts.documentGrant === false ? init : await withDocumentGrant(API_BASE, input, init),

@@ -76,7 +76,7 @@ capabilities, the room) keep a new feature from widening a role by accident.
 
 ## Ownership
 
-Ownership is a set of powers, held by the plan's **owner** (its creator) and every joined member of the team it is
+Ownership is a set of powers, held by the document's **owner** (its creator) and every joined member of the team it is
 filed in. Who holds them is the index's to say: it issues the owner and team members an `edit` grant, and keeps
 sharing, moves and the Trash to them ([one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md)
 "Sharing and access"). No level grants any of them. The full ownership model is [Later](#later).
@@ -85,7 +85,7 @@ sharing, moves and the Trash to them ([one-explorer-contracts.md](../../../../li
 
 Share links are the index's, made and managed in the shared Share dialog (`ShareDialog` in
 [`@liveworkspace/explorer`](../../../../packages/explorer/README.md)). What livedocuments owns is what each level may do
-once a plan is open.
+once a document is open.
 
 - The Share dialog offers three levels, in this order: **Viewer** ("Watches along. Can’t comment or change a
   thing."), **Participant** ("Comments, votes and works items. Can’t reshape it.") and **Editor** ("Works with you

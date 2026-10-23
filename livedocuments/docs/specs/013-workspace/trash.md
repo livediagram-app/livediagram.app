@@ -4,4 +4,4 @@
 
 An editor left open on a document that was trashed has its saves refused (410 `document_trashed`) and shows the deleted state. API clients can still list, restore and delete trashed documents at `/api/trash` ([API](../015-api/api.md)), which reads and writes the index.
 
-The plan is [one-explorer.md](../../../../liveworkspace/docs/one-explorer.md); the calls and types are in [one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "Items". The Explorer that shows it is the shared package, [`@liveworkspace/explorer`](../../../../packages/explorer/README.md).
+The document is [one-explorer.md](../../../../liveworkspace/docs/one-explorer.md); the calls and types are in [one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "Items". The Explorer that shows it is the shared package, [`@liveworkspace/explorer`](../../../../packages/explorer/README.md).

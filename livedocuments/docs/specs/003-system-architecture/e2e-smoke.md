@@ -64,7 +64,7 @@ Cost controls, all in `e2e.yml` and `playwright.config.ts`:
   and Playwright's default locally. Tests stay independent because each opens a fresh browser
   context, so a fresh guest owner whose documents no other test sees.
 - **Guests as production makes them**: a spec seeds through a guest token from the stack's accounts
-  stand-in (`mintGuest`, `adoptGuest`), with the index's grant on each plan (`planHeaders`, `seedPlan`;
+  stand-in (`mintGuest`, `adoptGuest`), with the index's grant on each document (`planHeaders`, `seedPlan`;
   `pageOwnerHeaders` for calls made inside the page, `apps/editor/e2e/fixtures.ts`).
 - **Sharded** (`--shard=i/6`, the matrix in `e2e.yml`): Playwright splits the `chromium` document's
   tests evenly by count across six jobs; each boots its own stack, so shards share nothing.

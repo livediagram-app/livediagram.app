@@ -288,7 +288,7 @@ export default function NewDocumentPage() {
     setOpenedId(documentId);
   };
 
-  // Every create from /new goes where new plans go by default (docs/specs/007-editor/new-document-route.md): livedocuments,
+  // Every create from /new goes where new documents go by default (docs/specs/007-editor/new-document-route.md): livedocuments,
   // whoever is creating, and the /new?folder= / ?team= context when there is one; without one the index files it at
   // the root of the person's space.
   const createByDefault = async (kind: TemplateKind | null) => {

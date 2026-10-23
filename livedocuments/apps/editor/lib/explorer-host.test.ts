@@ -1,15 +1,15 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
 import { parseCollabDeepLink } from './collab-deep-link';
-import { itemHref, newPlanHref, shareUrl, teamsOfToken } from './explorer-host';
+import { itemHref, newDocumentHref, shareUrl, teamsOfToken } from './explorer-host';
 
 describe('explorer host', () => {
-  it('copies a share link as the address whose page head names the plan', () => {
+  it('copies a share link as the address whose page head names the document', () => {
     const url = shareUrl({ code: 'ABCD2345', itemId: 'p1' } as never, { id: 'p1' } as never);
     expect(url).toBe(`${window.location.origin}/document/shared?s=ABCD2345`);
   });
 
-  it('opens a plan here and another app’s item on its own site', () => {
+  it('opens a document here and another app’s item on its own site', () => {
     expect(itemHref({ id: 'p1', app: 'livedocuments', sharedVia: null } as never)).toBe(
       '/document/p1',
     );
@@ -32,8 +32,8 @@ describe('explorer host', () => {
   });
 
   it('files New where it was pressed', () => {
-    expect(newPlanHref(null)).toBe('/new');
-    expect(newPlanHref({ folderId: 'f1', teamId: null })).toBe('/new?folder=f1');
+    expect(newDocumentHref(null)).toBe('/new');
+    expect(newDocumentHref({ folderId: 'f1', teamId: null })).toBe('/new?folder=f1');
   });
 
   it('reads teams from a token, none from a guest or a bad one', () => {

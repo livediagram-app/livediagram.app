@@ -78,8 +78,8 @@ export function formatBrowserIdentity(
       ? `Guest id in this browser: ${id.guestIdPrefix}…`
       : 'Guest id in this browser: none',
   ];
-  // Signing in moves a guest's plans to the account and then lets go of the guest token, so one still
-  // here while signed in means that move has not happened: the classic "my plans went missing".
+  // Signing in moves a guest's documents to the account and then lets go of the guest token, so one still
+  // here while signed in means that move has not happened: the classic "my documents went missing".
   if (signedIn && id.guestIdPrefix) {
     lines.push('Guest documents moved to the account: NOT YET (guest token still present)');
   }
