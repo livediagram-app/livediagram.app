@@ -91,7 +91,7 @@ describe('worker refusal of an account id in X-Owner-Id', () => {
   });
 
   it('covers every owner-scoped resource, not just documents', async () => {
-    for (const seg of ['folders', 'images', 'custom-themes', 'preferences', 'shared', 'timeline']) {
+    for (const seg of ['folders', 'images', 'preferences', 'shared', 'timeline']) {
       const res = await worker.fetch(
         get(`/api/${seg}`, { 'X-Owner-Id': 'user_2abcDEF' }),
         noEnforcement(),

@@ -16,7 +16,7 @@ import { track } from '@/lib/telemetry';
 
 // The owner's shape libraries (docs/specs/013-workspace/shape-libraries.md), shared by the palette's
 // My shapes, the Explorer's Shape libraries page and the draw.io import, so one list is the truth
-// everywhere. Modelled on CustomThemeProvider: loaded once per owner, changes written through the
+// everywhere. Loaded once per owner, changes written through the
 // api and reflected here. A null owner (auth still bootstrapping) loads nothing and changes nothing.
 
 export type ShapeLibraryChange = { ok: true; library: ShapeLibrary } | { ok: false; error: string };

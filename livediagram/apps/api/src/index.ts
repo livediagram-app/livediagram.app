@@ -57,7 +57,6 @@ import { handleCatalogues } from './routes/catalogues';
 import { handleCommunity } from './routes/community';
 import { handleCapabilities } from './routes/capabilities';
 import { handleOpenapi } from './routes/openapi';
-import { handleCustomThemes } from './routes/custom-themes';
 import { handleShapeLibraries } from './routes/shape-libraries';
 import { handleUnfurl } from './routes/unfurl';
 import type { RouteContext, WorkbenchContext } from './routes/context';
@@ -457,8 +456,6 @@ async function routeApiRequest(
         return await handleDocuments(ctx);
       case 'folders':
         return await handleFolders(ctx);
-      case 'custom-themes':
-        return await handleCustomThemes(ctx);
       case 'shape-libraries':
         return await handleShapeLibraries(ctx);
       case 'teams':

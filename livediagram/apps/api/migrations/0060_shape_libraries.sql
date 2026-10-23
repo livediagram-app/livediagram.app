@@ -1,6 +1,6 @@
 -- Shape libraries, per docs/specs/013-workspace/shape-libraries.md.
 --
--- Owner-scoped (Clerk sub or the X-Owner-Id guest id, like custom_themes),
+-- Owner-scoped (Clerk sub or the X-Owner-Id guest id, like folders),
 -- guests included. `items` is the JSON array of library items as the api
 -- validated them (validateShapeLibraryItems), within the tab byte budget.
 -- The (owner_id, created_at) index serves the newest-first list and the

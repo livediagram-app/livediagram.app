@@ -19,7 +19,6 @@ describe('lensViewOf', () => {
       'timeline',
       'inbox',
       'gallery',
-      'themes',
       'shape-libraries',
       'trash',
       'invites',

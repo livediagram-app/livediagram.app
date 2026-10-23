@@ -33,7 +33,6 @@ describe('OWNER_SCOPED_SEGMENTS', () => {
       'documents',
       'folders',
       'images',
-      'custom-themes',
       'participants',
       'preferences',
       'shared',

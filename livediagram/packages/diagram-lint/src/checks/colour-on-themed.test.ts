@@ -81,9 +81,9 @@ describe('colour-on-themed', () => {
     ).toHaveLength(1);
   });
 
-  it('skips a custom theme and logs it (N15)', () => {
+  it('skips an unknown theme and logs it (N15)', () => {
     const logged: string[] = [];
-    const report = lint(themed('custom-mine', box('a', 0, 0, { fillColor: '#123456' })), {
+    const report = lint(themed('unknown-theme', box('a', 0, 0, { fillColor: '#123456' })), {
       log: (fp) => logged.push(fp),
     });
     expect(of(report, 'colour-on-themed')).toEqual([]);

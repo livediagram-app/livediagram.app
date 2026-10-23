@@ -1,5 +1,5 @@
 // shape_libraries: owner-scoped named sets of reusable shapes
-// (docs/specs/013-workspace/shape-libraries.md). Mirrors custom-themes.ts: flat owner-keyed rows, a
+// (docs/specs/013-workspace/shape-libraries.md). Flat owner-keyed rows, a
 // newest-first list, a JSON column the row mapper parses.
 
 import type { ShapeLibrary, ShapeLibraryItem, ShapeLibrarySource } from '@livediagram/api-schema';
@@ -61,7 +61,7 @@ export async function updateShapeLibrary(
   patch: { name?: string; items?: ShapeLibraryItem[] },
 ): Promise<void> {
   const now = Date.now();
-  // Partial: an absent field is left alone (the custom-themes semantic).
+  // Partial: an absent field is left alone .
   if (patch.name !== undefined) {
     await env.DB.prepare('UPDATE shape_libraries SET name = ?, updated_at = ? WHERE id = ?')
       .bind(patch.name, now, id)

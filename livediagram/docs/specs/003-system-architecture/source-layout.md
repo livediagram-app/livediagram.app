@@ -44,7 +44,7 @@ exhaustive — each file lands in the bucket that owns its concern):
 `apps/editor/hooks/`
 
 - `canvas/` — drag, eraser, marquee, element style, keyboard shortcuts.
-- `persistence/` — folders, teams, capabilities, custom themes, share links.
+- `persistence/` — folders, teams, capabilities, share links.
 - `ui/` — confirm, toast, panel layout, escape/click-outside.
 - `collab/` — room connection, presence.
 

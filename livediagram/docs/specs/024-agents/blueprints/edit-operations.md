@@ -495,11 +495,11 @@ type ParseOutcome = { operations: EditOperation[] } | { errors: EditRejection[] 
 
 type ApplyOptions = {
   selected?: readonly ElementId[] | null; // the owner's selection; null: the room was not read
-  theme?: ThemeDefinition; // the tab's theme resolved by the caller (custom themes included)
+  theme?: ThemeDefinition; // the tab's theme resolved by the caller
   makeId?: () => string; // ids no slug can name; default crypto.randomUUID
   log?: (fingerprint: string, fields: Readonly<Record<string, string | number | boolean>>) => void;
 };
-// `themeId` names a created tab's theme by id (custom themes included); it wins over `theme`.
+// `themeId` names a created tab's theme by id; it wins over `theme`.
 type ReplaceOptions = ApplyOptions & { tabId: string; name: string; themeId?: string };
 
 type ReplaceBody =
@@ -701,7 +701,7 @@ Edge cases:
   box; their old containers report them leaving.
 - **E9** `layout` of a selection without arrows: every box is edgeless, swept into rows from the top-left.
 - **E10** An element whose id is a reserved word: reached by label or a longer prefix (EO10).
-- **E11** A custom theme the caller did not resolve: the default scheme's slots; `log('[edit-ops] theme-fallback')`.
+- **E11** A theme id the caller did not resolve (no catalogue entry names it): the default scheme's slots; `log('[edit-ops] theme-fallback')`.
 - **E12** Hidden layers: elements there resolve and change like any other. Locked elements and layers: they
   resolve (as placement references, `test` targets, ends of a new arrow) but never change (I7).
 - **E17** Make room meeting a locked unit: the unit stays where it is and the rest shift; any overlap is the

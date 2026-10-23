@@ -8,7 +8,6 @@ import { useState } from 'react';
 import { dateKey, pickRenderer, timeLabel } from '@livediagram/ui';
 import { ActivityPane } from '@/components/panels/ActivityPane';
 import { GalleryPane } from '@/components/panels/GalleryPane';
-import { ThemesPane } from '@/components/panels/ThemesPane';
 import { ShapeLibrariesPane } from '@/components/panels/ShapeLibrariesPane';
 import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
 import { AvatarStack } from '@/components/panels/home/HomeAvatar';
@@ -443,8 +442,6 @@ export function LibrarySection({
       <div role="tabpanel">
         {tab === 'gallery' ? (
           <GalleryPane compact ownerId={ownerId} />
-        ) : tab === 'themes' ? (
-          <ThemesPane compact />
         ) : (
           <ShapeLibrariesPane compact />
         )}

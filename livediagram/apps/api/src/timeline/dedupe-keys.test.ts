@@ -23,7 +23,6 @@ vi.mock('./audience', () => ({
 
 import type { Env } from '../types';
 import { recordTeamRenamed } from './team-events';
-import { recordThemeSaved } from './account-events';
 
 const env = {} as Env;
 
@@ -44,22 +43,5 @@ describe('repeatable events carry a unique dedupe key', () => {
     await recordTeamRenamed(env, { id: 't1', name: 'Guild 2' }, 'Guild', 'me');
     const [a, b] = keys();
     expect(a).not.toBe(b);
-  });
-
-  it('a theme saved twice in a day is one card, saved on another day a new one', async () => {
-    vi.useFakeTimers();
-    try {
-      vi.setSystemTime(new Date('2026-09-22T10:00:00Z'));
-      await recordThemeSaved(env, { id: 'th1', name: 'Dusk' }, 'me');
-      vi.setSystemTime(new Date('2026-09-22T15:00:00Z'));
-      await recordThemeSaved(env, { id: 'th1', name: 'Dusk' }, 'me');
-      vi.setSystemTime(new Date('2026-10-01T10:00:00Z'));
-      await recordThemeSaved(env, { id: 'th1', name: 'Dusk' }, 'me');
-      const [a, b, c] = keys();
-      expect(a).toBe(b);
-      expect(c).not.toBe(a);
-    } finally {
-      vi.useRealTimers();
-    }
   });
 });

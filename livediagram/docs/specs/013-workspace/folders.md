@@ -84,7 +84,6 @@ Every Explorer section is its own page under `/explorer` (the chrome — header,
 | Invites ([Teams](teams.md))                                    | `/explorer/invites`                                                |
 | This Browser ([Offline Mode](../006-document/offline-mode.md)) | `/explorer/offline`                                                |
 | Image gallery                                                  | `/explorer/images`                                                 |
-| Themes                                                         | `/explorer/themes`                                                 |
 | Shape libraries ([Shape libraries](shape-libraries.md))        | `/explorer/shape-libraries`                                        |
 | Trash ([Trash](trash.md))                                      | `/explorer/trash`                                                  |
 

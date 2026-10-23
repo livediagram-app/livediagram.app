@@ -3,7 +3,7 @@
 
 import { isHelpArticleType, isSettingsCategory } from '../opened-types';
 import { SELECTION_MODES } from '../palette-types';
-import { CUSTOM_THEME_TYPES, NON_PATTERN_CANVAS_TYPES, isNonThemePick } from '../look-feel-types';
+import { NON_PATTERN_CANVAS_TYPES, isNonThemePick } from '../look-feel-types';
 import type { Metric, MetricStack } from '../metric-series';
 import { chart } from './helpers';
 import { elementTourTokens } from '../element-tour-kinds';
@@ -958,14 +958,6 @@ export const CANVAS_CONTROLS_TWEAKED = chart(
   { types: NON_PATTERN_CANVAS_TYPES, rising: 'neutral' },
 );
 
-export const CUSTOM_THEMES = chart(
-  'Theme',
-  'Created',
-  'Custom Themes',
-  'The custom-theme builder: created, applied, edited and deleted.',
-  { actionIn: ['Changed', 'Deleted'], typeIn: (t) => CUSTOM_THEME_TYPES.has(t ?? '') },
-);
-
 // The quick style panel's own palette (docs/specs/008-canvas/quick-style-panel.md): a swatch replaced with
 // a colour of your own, or put back to the theme's.
 export const CUSTOM_SWATCHES = chart(
@@ -1000,14 +992,13 @@ export const LOOK_AND_FEEL: MetricStack = {
   stack: true,
   title: 'Look & Feel',
   blurb:
-    "The visual presets people reach for: templates (and those found in another mode by a start's search), themes, canvas styles, and their own themes. Headed by themes and canvas styles picked: a template also applies its theme, so adding templates would count that pick twice.",
+    "The visual presets people reach for: templates (and those found in another mode by a start's search), themes, canvas styles and their own swatches. Headed by themes and canvas styles picked: a template also applies its theme, so adding templates would count that pick twice.",
   members: [
     TEMPLATES_USED,
     TEMPLATES_FROM_OTHER_MODES,
     THEMES_CHOSEN,
     CANVAS_STYLES_PICKED,
     CANVAS_CONTROLS_TWEAKED,
-    CUSTOM_THEMES,
     CUSTOM_SWATCHES,
     LOOKS_FILTERED,
     HIGHLIGHTER_SETTINGS,

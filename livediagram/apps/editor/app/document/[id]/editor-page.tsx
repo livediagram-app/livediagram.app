@@ -19,7 +19,6 @@ import { OpeningScreen } from '@/components/chrome/OpeningScreen';
 // Static, unlike the other status cards: it must render offline (docs/specs/007-editor/load-recovery.md
 // "Offline"); its recovery tools are the lazy part.
 import { LoadErrorCard } from '@/components/chrome/LoadErrorCard';
-import { CustomThemeProvider } from '@/components/primitives/CustomThemeProvider';
 import { ShapeLibraryProvider } from '@/components/primitives/ShapeLibraryProvider';
 import { DocumentTagsProvider } from '@/components/tags/DocumentTagsProvider';
 import { LocalMovePrompt } from '@/components/dialogs/LocalMovePrompt';
@@ -256,28 +255,18 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
 
   return (
     <EditorContext.Provider value={state}>
-      {/* Owner-scoped custom themes (docs/specs/011-theme/custom-themes.md): keyed by the current
-          user's id (account or guest self id) so the theme picker /
-          builder share one source of truth and getTheme resolves saved
-          themes referenced by this document's tabs. */}
-      <CustomThemeProvider
-        ownerId={ownerId}
-        readOnly={workbenchMode}
-        onThemeDeleted={state.resetTabsUsingTheme}
-      >
-        {/* Who the comment composers can @-mention (docs/specs/012-collaboration/comment-mentions.md). */}
-        <MentionContext.Provider value={state.commentMentions}>
-          {/* The owner's shape libraries, for the palette's My shapes
-              (docs/specs/013-workspace/shape-libraries.md). */}
-          <ShapeLibraryProvider ownerId={ownerId}>
-            {/* The reader's tags for the Explorer panel's rows and menus (docs/specs/013-workspace/tags.md), loaded
-                the first time one of them shows, so opening a document costs no extra request. */}
-            <DocumentTagsProvider ownerId={ownerId} lazy>
-              <EditorView />
-            </DocumentTagsProvider>
-          </ShapeLibraryProvider>
-        </MentionContext.Provider>
-      </CustomThemeProvider>
+      {/* Who the comment composers can @-mention (docs/specs/012-collaboration/comment-mentions.md). */}
+      <MentionContext.Provider value={state.commentMentions}>
+        {/* The owner's shape libraries, for the palette's My shapes
+            (docs/specs/013-workspace/shape-libraries.md). */}
+        <ShapeLibraryProvider ownerId={ownerId}>
+          {/* The reader's tags for the Explorer panel's rows and menus (docs/specs/013-workspace/tags.md), loaded
+              the first time one of them shows, so opening a document costs no extra request. */}
+          <DocumentTagsProvider ownerId={ownerId} lazy>
+            <EditorView />
+          </DocumentTagsProvider>
+        </ShapeLibraryProvider>
+      </MentionContext.Provider>
       {/* Moving this browser's documents in This Browser after signing in
           (docs/specs/014-identity/auth-and-guest-access.md); never inside someone else's page. */}
       {appChrome ? <LocalMovePrompt /> : null}

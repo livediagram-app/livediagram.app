@@ -56,7 +56,7 @@ import {
   wizardStartsBlank,
 } from '@/lib/new-document-params';
 import { backOutTarget } from '@/lib/back-out';
-import { themeTelemetryLabel } from '@/lib/custom-theme-registry';
+import { themeTelemetryLabel } from '@/lib/theme-telemetry-label';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { debugLog } from '@/lib/debug-log';
 import { handStartQuery } from '@/components/start/start-query';
@@ -139,8 +139,6 @@ export default function NewDocumentPage() {
   const explicitBlank = useRef(false);
   const lastCreateArgs = useRef<{
     kind: TemplateKind | null;
-    // string, not ThemeId: the picker can hand back a custom `custom:<uuid>`
-    // theme id (docs/specs/011-theme/custom-themes.md) as well as a built-in one.
     // Where it goes (new-document-settings.ts): store and placement, decided at commit.
     settings: NewDocumentSettings;
     // The ids it wrote under, reused by its Retry (createIdsFor).

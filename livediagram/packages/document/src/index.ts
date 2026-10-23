@@ -713,7 +713,7 @@ export {
 
 // Theme engine (docs/specs/011-theme/multicolour-themes.md, /42, /44, /48): theme catalogue + types + the pure
 // recolour / switch / reset / preset transforms, shared by the editor and the
-// MCP worker (docs/specs/015-api/mcp-server.md). Custom-theme resolution stays in apps/editor/lib/themes.ts.
+// MCP worker (docs/specs/015-api/mcp-server.md). The viewer-appearance wrappers stay in apps/editor/lib/themes.ts.
 export * from './theme-graph';
 export * from './themes';
 export * from './theme-halves';
@@ -766,6 +766,7 @@ export { isSafeColourValue } from './unsafe-colours';
 export * from './stored-tab';
 export { settleTabFields } from './tab-fields';
 export { retiredSchemeOf, migrateRetiredScheme } from './retired-schemes';
+export { dropCustomTheme, isRetiredCustomThemeId } from './retired-custom-themes';
 export { dropRetiredPages, isRetiredPagesElement } from './retired-pages';
 export { dropRetiredPlan, isRetiredPlanElement } from './retired-plan';
 

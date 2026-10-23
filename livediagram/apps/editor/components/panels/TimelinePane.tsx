@@ -43,7 +43,6 @@ export function TimelinePane({
   });
   return (
     <>
-      {entityMenus.dialogs}
       <TimelineFeedView feed={feed} ownerId={ownerId} cardSlots={cardSlots} />
     </>
   );

@@ -135,7 +135,7 @@ the stored-element migrations drop it wherever elements enter (a load, a peer's 
 write, the api's own reads and writes), and the element paints with that colour's default. Nothing in livediagram
 fetches from outside a document ([Images](../009-elements/images.md) "External-URL images"), and a colour must not
 become the way it does. The same rule holds for a participant's colour (refused by `PUT /api/participants/<id>`,
-blanked in a room hello) and a custom theme's colours (refused on save).
+blanked in a room hello).
 
 ### Styles have their types
 

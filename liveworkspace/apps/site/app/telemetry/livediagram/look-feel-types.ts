@@ -4,18 +4,21 @@ import type { TypeAliases } from './rank';
 // How the dashboard reads the look-and-feel events (docs/specs/017-telemetry/telemetry.md), shared by the
 // Look & Feel tab's rankings and the Look & Feel stack on the Dashboard.
 
-// Theme·Changed types that are NOT built-in theme picks, so the theme
-// ranking excludes them: the custom-theme builder's applied/edited variants.
-export const CUSTOM_THEME_TYPES: ReadonlySet<string> = new Set(['Custom', 'CustomEdited']);
-
-// Theme·Changed types nothing sends any more but stored rows still carry: the one-shot "Reset elements to theme"
-// recolour (`ResetElements`), removed with its button from Tab Style. Still kept out of the theme ranking, where
-// it would otherwise compete as if it were a theme.
-const RETIRED_THEME_TYPES: ReadonlySet<string> = new Set(['ResetElements']);
+// Theme·Changed types that are NOT built-in theme picks, kept out of the theme ranking where they would
+// otherwise compete as if they were themes. Each is sent by nothing any more but stored rows still carry them:
+// `Unknown`, briefly reported for a theme id the editor could not name, the one-shot "Reset elements to theme"
+// recolour (`ResetElements`), removed with its button from Tab Style, and the custom-theme builder's applied and
+// edited picks (`Custom`, `CustomEdited`), removed with custom themes.
+const NON_THEME_TYPES: ReadonlySet<string> = new Set([
+  'Unknown',
+  'ResetElements',
+  'Custom',
+  'CustomEdited',
+]);
 
 /** Whether a Theme·Changed type is not a built-in theme pick. */
 export const isNonThemePick = (t: string | undefined | null): boolean =>
-  CUSTOM_THEME_TYPES.has(t ?? '') || RETIRED_THEME_TYPES.has(t ?? '');
+  NON_THEME_TYPES.has(t ?? '');
 
 // The built-in brand theme was labelled Basic until #73 renamed it Default
 // (packages/document themes-data.ts), and the token follows the label. Rows

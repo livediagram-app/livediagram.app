@@ -15,7 +15,7 @@ week stay two libraries.
 ## What a library is
 
 - **A library**: an id, its owner, a **name**, an ordered list of **items**, created and updated
-  times. It is owner-scoped exactly like documents, folders and [Custom themes](../011-theme/custom-themes.md):
+  times. It is owner-scoped exactly like documents and [folders](folders.md):
   keyed by the request owner id, the account's `sub` when signed in or the `X-Owner-Id` guest id otherwise
   ([Auth + guest access](../014-identity/auth-and-guest-access.md)). **Guests have libraries too**, and
   a guest who signs up carries them over with the existing `POST /api/migrate` owner-id remap.
@@ -85,17 +85,17 @@ Named constants, checked by the api and before any upload by the client:
   the view's centre), named "Insert <title> from <library>" for screen readers.
 - The palette, and with it My shapes, is not offered on a read-only tab (a view-role share) or in
   Draw mode (its dock replaces the palette); a locked tab places nothing.
-- The list loads once per owner when the editor opens (as custom themes do); an import or a change
+- The list loads once per owner when the editor opens; an import or a change
   in the Explorer shows on the next open. Offline Mode documents place items too, from the list the
   owner last loaded.
 
 ## Managing libraries: the Explorer
 
-The Explorer's **Library** section gains **Shape Libraries** beside Themes and Image gallery
+The Explorer's **Library** section gains **Shape Libraries** beside Image gallery
 ([Folders](folders.md)):
 
 - Route `/explorer/shape-libraries`; a sidebar row **Shape Libraries** with a shapes glyph, under
-  **Library**, after Themes ([Explorer structure](explorer-structure.md)). The page header's **Import from** group shows there as on every Explorer page.
+  **Library**, after Image Gallery ([Explorer structure](explorer-structure.md)). The page header's **Import from** group shows there as on every Explorer page.
 - The page lists the owner's libraries, newest first, each a card: name, "14 shapes", the first eight
   items' thumbnails; **Rename** (inline, the same name rules; Enter saves, Escape cancels; a name the
   owner already uses is refused with "You already have a library with that name."), **Delete**
@@ -109,7 +109,7 @@ The Explorer's **Library** section gains **Shape Libraries** beside Themes and I
 
 ## API
 
-A REST resource at `/api/shape-libraries`, mirroring `/api/custom-themes` (the same owner guard, the
+A REST resource at `/api/shape-libraries`, like `/api/folders` (the same owner guard, the
 same 400 / 403 / 404 conventions and envelopes):
 
 - `GET /api/shape-libraries` → `{ libraries: ShapeLibrary[] }`, the owner's, newest first.
@@ -125,7 +125,7 @@ element migration), and stored as JSON in one column. 400 for a missing or inval
 that fails validation, more than `MAX_SHAPE_LIBRARY_ITEMS` items, or a name over 120 characters;
 409 `shape_library_name_taken` for a rename onto a name the owner already uses.
 
-The route is owner-scoped in the guest-id guard (`OWNER_SCOPED_SEGMENTS`), like `custom-themes`. Deleting
+The route is owner-scoped in the guest-id guard (`OWNER_SCOPED_SEGMENTS`), like `folders`. Deleting
 an account deletes its libraries; `POST /api/migrate` moves a guest's libraries to the signed-in
 owner, renaming any that clash with a name the account already uses by the same " (2)" rule.
 
@@ -148,8 +148,8 @@ pairs, new types only.
 ## Out of scope (for now)
 
 - Making a library from shapes on the canvas, or adding to one (only imports make libraries today).
-- Timeline cards for libraries (custom themes record theirs; libraries do not, yet).
+- Timeline cards for libraries.
 - Live updates across open editors: a change shows on the next open.
-- Team-shared libraries (a `team_id`), as for custom themes.
+- Team-shared libraries (a `team_id`).
 - Exporting a library back to draw.io.
 - Libraries from other tools.

@@ -128,7 +128,7 @@ export function methodNotAllowed(): Response {
 
 // 413 for a body over a route's size cap. Canonical home for the
 // `{ error: 'payload_too_large' }` literal the body gate in index.ts and the
-// per-field / per-tab caps in the document, tab, and custom-theme routes share.
+// per-field / per-tab caps in the document and tab routes share.
 // Image uploads answer with their own `file_too_large` + `limitBytes` instead.
 export function payloadTooLarge(): Response {
   return json({ error: 'payload_too_large' }, { status: 413 });

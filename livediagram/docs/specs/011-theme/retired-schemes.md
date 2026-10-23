@@ -47,6 +47,21 @@ still holding the retired theme's value for that role (its fill, outline, text, 
 theme's value for the same role. A colour the user picked is kept. The backdrop follows the same rule: a canvas or
 pattern colour still equal to the retired theme's becomes the new theme's.
 
+## Custom themes
+
+Custom themes (a person's own saved schemes) were removed, and their saved definitions deleted with them. A tab saved
+on one stored `theme: 'custom:<uuid>'`, and a `.livediagram.json` file exported then carries the same id. On load such
+a tab becomes a Default tab:
+
+- `theme` becomes Default (`brand`).
+- The backdrop becomes Default's: canvas `#fbfaf7`, a `#cbd5e1` grid, no pattern opacity, so it follows each viewer's
+  appearance like any untouched Default canvas.
+- Element colours are **kept**. With the definition gone nothing can tell a colour the theme painted from one somebody
+  picked, so every one reads as picked, which is also how the tab already looked.
+
+Only the tab's own fields change, so the check costs the same whatever the tab holds: one prefix test on `theme`, and
+one shallow copy of the tab when it matches.
+
 ## Where it runs
 
 One pure function in `@livediagram/document`, `migrateStoredTab`, composes every tab-level migration (this one and the
@@ -55,14 +70,15 @@ element migrations: retired groups and docks). Every place a stored tab enters a
 - the api worker's tab read (`rowToTab`), which every editor, share-link and MCP read goes through;
 - the api worker's thumbnail and live-image render, which parses `tabs.data` directly;
 - the offline store's tab load, for documents kept only in this browser;
-- a file import, since an exported file is a stored tab like any other.
+- a file import, since an exported file is a stored tab like any other;
+- a tab arriving from outside (an api write, a realtime peer), through `migrateIncomingTab`, before validation.
 
 It runs at read time rather than as a D1 migration because the rewrite needs the element model (per-kind colour
 fields), which SQL over a JSON blob cannot express safely, and because offline documents and files never reach D1.
 
 ## Properties
 
-- **Idempotent.** A migrated tab has no Charcoal id and no previous dark- or light-half backdrop, so a second pass
+- **Idempotent.** A migrated tab has no Charcoal, Autumn, Jewel or `custom:` id and no previous dark- or light-half backdrop, so a second pass
   changes nothing. A tab with nothing to migrate is returned as the same object.
 - **Pure.** No I/O, no clock; the same tab always migrates the same way.
 - **Lossless for choices.** Only values equal to what the retired scheme wrote are removed.

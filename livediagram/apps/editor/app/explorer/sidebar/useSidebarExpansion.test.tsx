@@ -25,7 +25,7 @@ describe('useSidebarExpansion', () => {
   });
 
   it('lets the reader collapse Library while on a Library page', () => {
-    const { result } = renderHook(() => useSidebarExpansion({ kind: 'themes' }));
+    const { result } = renderHook(() => useSidebarExpansion({ kind: 'shape-libraries' }));
     act(() => result.current.toggleExpand(LIBRARY_EXPAND_KEY));
     expect(result.current.expanded.has(LIBRARY_EXPAND_KEY)).toBe(false);
   });

@@ -529,7 +529,7 @@ hardening landed first:
   incoming tabs (create-seed + tab PUT) through `isValidTab` and reject
   malformed trees with `400`.
 - **Size caps** — a global Content-Length body cap, per-tab byte cap, and
-  name / theme-definition / participant / share-password caps
+  name / participant / share-password caps
   (`apps/api/src/limits.ts`); a per-frame cap in the realtime room. Document
   and tab names are shortened to the 60-character name cap rather than
   rejected (`apps/api/src/names.ts`, [Tab and document name length](../006-document/name-length.md)).

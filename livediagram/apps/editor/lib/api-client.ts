@@ -47,7 +47,6 @@ export * from './api/changesets';
 export * from './api/qa-board';
 export * from './api/share';
 export * from './api/folders';
-export * from './api/custom-themes';
 export * from './api/shape-libraries';
 export * from './api/teams';
 export * from './api/tokens';

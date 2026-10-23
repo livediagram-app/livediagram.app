@@ -47,8 +47,6 @@ export function explorerPathFor(node: SelectedNode): string {
       return '/explorer/shared';
     case 'gallery':
       return '/explorer/images';
-    case 'themes':
-      return '/explorer/themes';
     case 'shape-libraries':
       return '/explorer/shape-libraries';
     case 'trash':
@@ -115,8 +113,6 @@ export function selectedFromRoute(pathname: string, search: URLSearchParams): Se
       return { kind: 'shared' };
     case '/explorer/images':
       return { kind: 'gallery' };
-    case '/explorer/themes':
-      return { kind: 'themes' };
     case '/explorer/shape-libraries':
       return { kind: 'shape-libraries' };
     case '/explorer/trash':

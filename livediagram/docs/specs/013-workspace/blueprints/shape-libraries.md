@@ -1,6 +1,6 @@
 # Shape libraries blueprint
 
-Derived from [Shape libraries](../shape-libraries.md). Modelled on custom themes (`custom_themes`, `/api/custom-themes`, `CustomThemeProvider`): one owner-scoped table, one REST resource, one client context, plus the draw.io import landing, the palette category and the Explorer page.
+Derived from [Shape libraries](../shape-libraries.md). Modelled like folders: one owner-scoped table, one REST resource, one client context, plus the draw.io import landing, the palette category and the Explorer page.
 
 ## Files
 
@@ -139,7 +139,7 @@ CREATE INDEX shape_libraries_owner_created_idx ON shape_libraries (owner_id, cre
 
 ## Security and trust
 
-- Owner-scoped exactly like custom themes: `requireOwner`, 403 for another owner's row, the segment in `OWNER_SCOPED_SEGMENTS` so a guest id must be proven when enforcement is on.
+- Owner-scoped exactly like folders: `requireOwner`, 403 for another owner's row, the segment in `OWNER_SCOPED_SEGMENTS` so a guest id must be proven when enforcement is on.
 - Items are untrusted client JSON: validated structurally and per element (`isValidElement`), capped in count and bytes. Element links stay as `isValidElement` allows them.
 - Thumbnails are SVG strings from the editor's own exporter, shown through `<img>` (a data URL), so nothing in them runs.
 - The library name is text everywhere (React escapes it); it never reaches markup unescaped.

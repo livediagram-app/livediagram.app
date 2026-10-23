@@ -16,7 +16,6 @@ import {
   CodeBlockArt,
   CommentsArt,
   ComponentsArt,
-  CustomThemesArt,
   DragDuplicateArt,
   DrawDockArt,
   EmbedArt,
@@ -562,14 +561,6 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Twenty-six preset themes',
         description:
           'Default, Forest, Ocean, Sunset, Rose, Midnight, Mono and a dozen more, plus multi-colour Rainbow, Pastel and Tropical schemes that tint each branch a different hue. One click recolours the canvas, every shape, and every arrow. Every theme has a light and a dark half, and follows your own appearance.',
-      },
-      {
-        art: <CustomThemesArt />,
-        href: '/help/canvas/themes/custom-themes/',
-        group: 'Templates & themes',
-        title: 'Build your own theme',
-        description:
-          'Need your brand palette, a house style, or a notation that is not in the list? Build a custom theme, save it to your account, and reuse it across documents just like a built-in one. Edit it any time, and guests get them too.',
       },
       {
         art: <CanvasBackdropArt />,

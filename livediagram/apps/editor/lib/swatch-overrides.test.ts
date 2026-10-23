@@ -7,7 +7,6 @@ import {
   normaliseHex,
   overridesForTheme,
   parseSwatchOverrideStore,
-  pruneSwatchOverrideStore,
   storeWithOverride,
   storeWithoutOverride,
   type SwatchOverrideStore,
@@ -97,14 +96,14 @@ describe('the theme-keyed store', () => {
       for (const slot of [1, 2, 3, 4, 5, 6] as const) {
         store = storeWithOverride(
           store,
-          `custom:0000000${i}-aaaa-bbbb-cccc-dddddddddddd`,
+          `theme-0000000${i}-aaaa-bbbb-cccc-dddddddddddd`,
           'stroke',
           slot,
           '#abcdef',
         );
         store = storeWithOverride(
           store,
-          `custom:0000000${i}-aaaa-bbbb-cccc-dddddddddddd`,
+          `theme-0000000${i}-aaaa-bbbb-cccc-dddddddddddd`,
           'fill',
           slot,
           '#abcdef',
@@ -113,15 +112,6 @@ describe('the theme-keyed store', () => {
     }
     expect(JSON.stringify(store).length).toBeLessThanOrEqual(SWATCH_OVERRIDE_MAX_BYTES);
     expect(store[0]!.t).toContain('00000007');
-  });
-
-  it('prunes themes that no longer exist', () => {
-    let store = storeWithOverride([], 'custom:gone', 'stroke', 1, '#111111');
-    store = storeWithOverride(store, 'forest', 'stroke', 1, '#111111');
-    expect(pruneSwatchOverrideStore(store, (id) => id !== 'custom:gone').map((e) => e.t)).toEqual([
-      'forest',
-    ]);
-    expect(pruneSwatchOverrideStore(store, () => true)).toBe(store);
   });
 });
 
@@ -133,6 +123,8 @@ describe('parseSwatchOverrideStore', () => {
       { t: '', s: { 1: '#ffffff' } },
       { s: { 1: '#ffffff' } },
       { t: 'ocean' },
+      // A retired custom theme's swatches are dropped.
+      { t: 'custom:gone', s: { 1: '#111111' } },
       'junk',
     ];
     expect(parseSwatchOverrideStore(raw)).toEqual([

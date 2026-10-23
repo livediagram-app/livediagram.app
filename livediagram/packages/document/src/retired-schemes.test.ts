@@ -72,7 +72,7 @@ describe('retiredSchemeOf', () => {
     // Another scheme on the same grey is somebody's choice.
     expect(
       retiredSchemeOf(
-        tab({ theme: 'custom:x', backgroundColor: CHARCOAL.bg, patternColor: CHARCOAL.grid }),
+        tab({ theme: 'ocean', backgroundColor: CHARCOAL.bg, patternColor: CHARCOAL.grid }),
       ),
     ).toBeNull();
   });

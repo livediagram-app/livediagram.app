@@ -15,7 +15,7 @@ export const metadata = helpMetadata({
   categorySlug="developers"
 >
 
-Everything the livediagram editor does, it does by calling a REST API. That API is open to you too: with an [API token](/help/account-and-data/api-tokens/) your own scripts and integrations can read, create, and update documents, tabs, folders, images, themes and more, exactly as the app does. Account administration (teams, tokens, deleting the account) stays with the signed-in app.
+Everything the livediagram editor does, it does by calling a REST API. That API is open to you too: with an [API token](/help/account-and-data/api-tokens/) your own scripts and integrations can read, create, and update documents, tabs, folders, images, shape libraries and more, exactly as the app does. Account administration (teams, tokens, deleting the account) stays with the signed-in app.
 
 If you want to connect an AI assistant rather than write code, you usually want the [MCP server](/help/account-and-data/connect-ai-mcp/) instead. It wraps this API in tools Claude and other MCP clients can call directly. To work from a terminal or a coding agent without writing requests yourself, use [the livediagram CLI](/help/developers/cli/).
 
@@ -49,7 +49,7 @@ The token-callable surface mirrors the app:
 - **Folders**: organise documents into folders, personal or in a team you belong to.
 - **Sharing**: create, list, extend and revoke share links, and set or remove a share password.
 - **Trash**: list what you can restore, restore it, or delete it for good.
-- **Images, themes and shape libraries**: upload and reference images, and manage your saved custom themes and shape libraries.
+- **Images and shape libraries**: upload and reference images, and manage your shape libraries.
 
 [Working with Documents](/help/developers/working-with-documents/) walks through the common calls with copy-pasteable examples. [Edit Operations Reference](/help/developers/working-with-documents/edit-operations/) lists the changeset vocabulary, [Images, Copies and Libraries](/help/developers/working-with-documents/images-and-copies/) covers uploads, pictures and copies, and [Comments and Presence for Agents](/help/developers/agent-comments-presence/) shows how an agent talks to people and shows what it is doing.
 

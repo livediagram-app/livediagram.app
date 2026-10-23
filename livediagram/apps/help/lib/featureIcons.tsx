@@ -15,7 +15,6 @@ import {
   lucideLocateFixed,
   lucideMagnet,
   lucideMessagesSquare,
-  lucidePalette,
   lucidePanelLeft,
   lucidePanelsTopLeft,
   lucidePencilLine,
@@ -1247,8 +1246,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   ),
   // The dialog's list, with one theme picked. A wheel of hues was the obvious
   // drawing and it rendered as the `pie-chart` glyph exactly; `themes` already
-  // owns the paint palette, and `custom-themes` owns swatches-with-a-plus, so
-  // what is left to draw is the browsing itself.
+  // owns the paint palette, so what is left to draw is the browsing itself.
   'changing-theme': (
     <Glyph>
       <rect x="3" y="4" width="18" height="16" rx="2" />
@@ -1267,15 +1265,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M12 7.2v3.3M6 13.5v-1.5h12v1.5" />
       <circle cx="6" cy="17" r="2.5" fill="currentColor" stroke="none" />
       <circle cx="18" cy="17" r="2.5" />
-    </Glyph>
-  ),
-  // Swatches with a plus: building one rather than picking one.
-  'custom-themes': (
-    <Glyph>
-      <rect x="3" y="5" width="6" height="6" rx="1.5" />
-      <rect x="11" y="5" width="6" height="6" rx="1.5" fill="currentColor" stroke="none" />
-      <rect x="3" y="14" width="6" height="6" rx="1.5" fill="currentColor" stroke="none" />
-      <path d="M14 14v6M11 17h6" />
     </Glyph>
   ),
   // Two elements, both with handles on them: many things selected at once.
@@ -1608,11 +1597,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <rect x="3" y="5" width="18" height="14" rx="2" />
       <circle cx="8.5" cy="10" r="1.5" />
       <path d="M21 16l-5-5-7 7" />
-    </Glyph>
-  ),
-  'themes-library': (
-    <Glyph>
-      <Prims prims={lucidePalette} />
     </Glyph>
   ),
   // Tabs guides.

@@ -1,5 +1,5 @@
 // /api/shape-libraries: owner-scoped named sets of reusable shapes
-// (docs/specs/013-workspace/shape-libraries.md). Mirrors /api/custom-themes: the requireOwner guard,
+// (docs/specs/013-workspace/shape-libraries.md). The requireOwner guard,
 // the 400 / 403 / 404 conventions, list / create / update / delete; plus the per-owner cap, the
 // row budget, item validation and the name rules (blueprint "Interfaces and contracts").
 

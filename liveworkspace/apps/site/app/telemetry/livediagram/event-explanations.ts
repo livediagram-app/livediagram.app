@@ -1101,8 +1101,6 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Team|Removed|Self': 'Someone left a team they had joined.',
   'Team|Shared|Link':
     "An admin turned on a team's shareable invite link, so anyone who has it can ask to join.",
-  'Theme|Created|Custom': 'Someone created a custom theme with their own colours.',
-  'Theme|Deleted|Custom': 'Someone deleted a custom theme they had created.',
   'Timeline|Changed|Calendar':
     "Someone switched the Explorer's Timeline from list view to calendar view.",
   'Timeline|Changed|List':
@@ -2625,8 +2623,6 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Team|Removed':
     'Someone was taken off a team, left one, or had a pending invite or the invite link withdrawn.',
   'Team|Shared': 'A team turned on a way for people to ask to join it.',
-  'Theme|Created': 'Someone created a custom theme with their own colours.',
-  'Theme|Deleted': 'Someone deleted a custom theme they had created.',
   'Home|Loaded': "More of Home's Timeline column loaded, or Home was read again after failing.",
   'Home|Opened': "Someone opened the Explorer's Home, or expanded a summary within it.",
   'Home|Selected': "Someone opened a document from one part of the Explorer's Home.",
@@ -2734,7 +2730,6 @@ export const API_OPERATIONS: Readonly<Record<string, string>> = {
   AddTab: 'adding a tab to a document, from an AI tool connected over MCP',
   AppendChangeLog: "recording an entry in a document's since-removed change history",
   CopyDocument: 'duplicating a document',
-  CreateCustomTheme: 'saving a new custom theme',
   CreateDocument: 'creating a new document',
   CreateFolder: 'creating a folder',
   CreateShareLink: 'generating a share link',
@@ -2744,7 +2739,6 @@ export const API_OPERATIONS: Readonly<Record<string, string>> = {
   DeleteChangeLog: "clearing a document's since-removed change history",
   DeleteChangeLogEntry: "removing one entry from a document's since-removed change history",
   DeleteComment: 'deleting a comment',
-  DeleteCustomTheme: 'deleting a saved custom theme',
   DeleteDocument: 'deleting a document',
   DeleteFolder: 'deleting a folder',
   DeleteImage: 'deleting a saved image',
@@ -2761,7 +2755,6 @@ export const API_OPERATIONS: Readonly<Record<string, string>> = {
   LinkTab: 'linking a tab into another document',
   List: "listing a visitor's documents",
   ListChangeLog: "listing a document's since-removed change history",
-  ListCustomThemes: "listing an account's saved custom themes",
   ListFolders: "listing an account's folders",
   ListImages: 'listing the images saved to an account',
   ListShareLinks: "listing a document's share links",
@@ -2791,7 +2784,6 @@ export const API_OPERATIONS: Readonly<Record<string, string>> = {
   SetFolder: 'moving a document into, or out of, a folder',
   SetSharePassword: 'setting a password on a share link',
   ShareDocument: 'generating a share link, from an AI tool connected over MCP',
-  UpdateCustomTheme: 'updating a saved custom theme',
   UpdateDocument: 'updating a document, from an AI tool connected over MCP',
   UpdateFolder: 'renaming or updating a folder',
   UpdateTeam: "updating a team's name or organisation",

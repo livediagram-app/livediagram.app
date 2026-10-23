@@ -89,7 +89,6 @@ export type SelectedNode =
   | { kind: 'offline' }
   | { kind: 'shared' }
   | { kind: 'gallery' }
-  | { kind: 'themes' }
   // Shape libraries (docs/specs/013-workspace/shape-libraries.md).
   | { kind: 'shape-libraries' }
   // The Trash (docs/specs/013-workspace/trash.md): a route with no sidebar row,

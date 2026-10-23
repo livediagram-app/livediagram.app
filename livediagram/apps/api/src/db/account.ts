@@ -116,8 +116,6 @@ export async function deleteAccount(
   // Wipe along with everything else so a delete-account run leaves
   // no row carrying their flags.
   await env.DB.prepare('DELETE FROM user_preferences WHERE owner_id = ?').bind(ownerId).run();
-  // custom_themes (docs/specs/011-theme/custom-themes.md): this owner's saved themes go too.
-  await env.DB.prepare('DELETE FROM custom_themes WHERE owner_id = ?').bind(ownerId).run();
   // shape_libraries (docs/specs/013-workspace/shape-libraries.md): this owner's libraries go too.
   await env.DB.prepare('DELETE FROM shape_libraries WHERE owner_id = ?').bind(ownerId).run();
   // Workbench rows (docs/specs/013-workspace/workbench-embeds.md), before the tokens they were minted from.
@@ -362,15 +360,6 @@ export async function migrateOwnerId(
     // in the guest's documents, and the bytes are read by id.
     mediaImages: move(
       'UPDATE media_images SET owner_id = ? WHERE owner_id = ?',
-      toOwnerId,
-      fromOwnerId,
-    ),
-    // custom_themes (docs/specs/011-theme/custom-themes.md): move the guest's saved themes onto the
-    // authed identity so the documents that reference them keep their look
-    // after sign-up. Plain UPDATE — the id is the PK (no per-owner unique
-    // constraint to collide on), so no OR IGNORE needed.
-    themes: move(
-      'UPDATE custom_themes SET owner_id = ? WHERE owner_id = ?',
       toOwnerId,
       fromOwnerId,
     ),

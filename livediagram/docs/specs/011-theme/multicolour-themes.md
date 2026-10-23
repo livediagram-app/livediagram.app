@@ -9,7 +9,7 @@ A multi-colour theme is an ordinary `ThemeDefinition` with two extra fields:
 - `palette: ThemePaletteEntry[]` — an ordered list of `{ fill, stroke, text }` triples, one per branch colour. Branches cycle through the palette (`palette[branchIndex % palette.length]`), so a diagram with more branches than colours repeats hues rather than running out.
 - `rootColor: ThemePaletteEntry` — the colour for the **trunk**: the root node(s) of the hierarchy, plus any newly-added element that isn't wired into a hierarchy yet. A neutral so the radiating branch hues read as the accent. Optional: a palette theme without one paints the trunk with its element-level `elementFill` / `elementStroke` / `elementText`, and a null field there falls back to a neutral slate. Every built-in multi-colour theme sets it.
 
-A palette is never empty: the api rejects a custom theme whose `palette` is present with no entries ([Custom themes](custom-themes.md)). Should an empty palette reach the renderer anyway, every element paints with the trunk colour.
+A palette is never empty: every built-in palette has entries. Should an empty palette reach the renderer anyway, every element paints with the trunk colour.
 
 Every palette entry and `rootColor` of a built-in theme keeps its `text` at a contrast ratio of at least 4.5:1 against its `fill` (WCAG 2.2 AA for normal text).
 

@@ -167,7 +167,7 @@ export function StarIcon({ filled = false, size = 13 }: IconProps & { filled?: b
 
 export const ShareIcon = lucideGlyph(lucideShare2, 13);
 export const ImageIcon = lucideGlyph(lucideImage, 13);
-// Painter's palette: the Themes section (docs/specs/011-theme/custom-themes.md).
+// Painter's palette.
 export const PaletteIcon = lucideGlyph(lucidePalette, 13);
 // Three shapes: the Shape libraries section (docs/specs/013-workspace/shape-libraries.md).
 export const ShapesIcon = lucideGlyph(lucideShapes, 13);

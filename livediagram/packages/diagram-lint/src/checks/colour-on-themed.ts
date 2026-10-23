@@ -1,7 +1,7 @@
 // `colour-on-themed` (info): a fill or stroke set by hex that the tab's theme would not paint, on an
 // element the theme colours, bound to no preset or swatch (LN17). Stickies, images, link cards and videos
-// have no theme fields; a colour stored by name (a marker colour) is a binding. A custom theme is not
-// known here: the check is skipped and logged (N15).
+// have no theme fields; a colour stored by name (a marker colour) is a binding. A theme id no catalogue
+// entry names: the check is skipped and logged (N15).
 
 import { endpointPosition, themeColourFields, type Element } from '@livediagram/document';
 import { refOf } from '../context';

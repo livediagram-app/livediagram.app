@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 // What a card's ⋯ menu offers for the thing it's about (docs/specs/013-workspace/timeline.md §2.8):
-// the Explorer's own verbs for themes, a link to liveworkspace.app for teams and tokens (run there),
+// a link to liveworkspace.app for teams and tokens (run there),
 // and only the "open the section" row when the Explorer can't resolve the entity any more.
 
 import { renderHook } from '@testing-library/react';
@@ -15,16 +15,6 @@ import { OPEN_SETTINGS_EVENT } from '@/lib/open-settings';
 
 const assign = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/app-location', () => ({ assignAppLocation: assign }));
-const themes = vi.hoisted(() => ({
-  themes: [{ id: 'th1', name: 'Dusk', definition: {} }],
-  updateTheme: vi.fn(),
-  deleteTheme: vi.fn(),
-  createTheme: vi.fn(),
-  loading: false,
-}));
-vi.mock('@/components/primitives/CustomThemeProvider', () => ({
-  useCustomThemes: () => themes,
-}));
 
 const go = vi.fn();
 
@@ -115,15 +105,6 @@ describe('useTimelineEntityMenus', () => {
     expect(labels(invite)).toEqual(['Open Invites']);
     invite?.items[0]?.onClick();
     expect(go).toHaveBeenCalledWith({ kind: 'invites' });
-  });
-
-  it('offers Edit and Delete on a theme the reader still has', () => {
-    const m = menuFor();
-    const live = m(event({ sourceId: 'th1', eventType: 'theme_saved' }));
-    expect(labels(live)).toEqual(['Open Themes', 'Edit Theme', 'Delete Theme']);
-    expect(live?.subject).toBe('Dusk');
-    const gone = m(event({ sourceId: 'th1:deleted', eventType: 'theme_deleted' }));
-    expect(labels(gone)).toEqual(['Open Themes']);
   });
 
   it('opens an unresolved document, and returns nothing for a folder tombstone', () => {
