@@ -69,7 +69,7 @@ moves between them, and the one account that joins them.
    account), live by default, share by link, open about data (linking `/telemetry`), yours to keep
    (closing the account closes it everywhere), completely free (no paywalls or subscriptions).
 4. **Closing call to action**: "One account. Every app. Always live."
-5. **Footer**: Our Apps (each app's site), Platform (the telemetry dashboard) and Legal (the
+5. **Footer**: Our Apps (each app's site), Platform (Product Comparison and the telemetry dashboard) and Legal (the
    privacy policy and terms).
 
 The illustrations are drawn in the page (HTML and SVG with the apps' own logos), not images. Their
@@ -83,6 +83,13 @@ footer. They were built from the apps' own policies, which said the same things 
 feature only one app has (livediagram's Google Drive mirror, its Clerk sign-in until it moves to the
 liveworkspace account) says which. Both share `components/LegalPage.tsx`, and their date and contact
 form are in `lib/legal.ts`. Change them when what an app stores or who it uses changes.
+
+### Product Comparison (`/alternatives`, `/alternatives/<slug>`)
+
+Every app's comparison with another tool, and comparisons of the whole suite with one: a hub grouped
+by what answers each competitor, and one static page per competitor in the colours of the app it
+speaks for. The apps' own `/alternatives` addresses redirect here. See
+[comparison-pages.md](comparison-pages.md).
 
 ### Telemetry (`/telemetry`)
 

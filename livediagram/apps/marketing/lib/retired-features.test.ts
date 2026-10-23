@@ -44,11 +44,12 @@ describe('retired feature pages', () => {
     // Pages mode's own categories went to livedocuments, the app that now makes them.
     const live = new Set([
       '/',
-      '/alternatives',
       'https://livedocuments.app/',
       ...LANDING_SECTION_IDS.map((id) => `/features/${id}`),
     ]);
-    for (const [, to] of rules) expect(live.has(to!), to).toBe(true);
+    for (const [from, to] of rules) {
+      if (from!.startsWith('/features/')) expect(live.has(to!), to).toBe(true);
+    }
   });
 
   it('never redirects a live category', () => {

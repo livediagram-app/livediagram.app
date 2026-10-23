@@ -4,8 +4,7 @@
 # old links keep landing. Workers Static Assets reads this file from out/ (Next copies public/).
 # lib/retired-features.test.ts pins every target to a live page.
 # Pages mode moved out of livediagram into livedocuments: its infographics and documents categories
-# go there, the slide deck cards that stayed went to collaboration, and the Google Slides comparison
-# to the comparisons hub.
+# go there, and the slide deck cards that stayed went to collaboration.
 
 /features/simple /features/diagrams 301
 /features/simple/ /features/diagrams 301
@@ -37,5 +36,10 @@
 /features/infographics/ https://livedocuments.app/ 301
 /features/documents https://livedocuments.app/ 301
 /features/documents/ https://livedocuments.app/ 301
-/alternatives/google-slides /alternatives 301
-/alternatives/google-slides/ /alternatives 301
+
+# The comparison pages moved to liveworkspace.app (liveworkspace/docs/comparison-pages.md), which
+# compares every app in one place. Each address here, the hub and every comparison, moves there
+# permanently under the same slug; lib/comparisons-moved.test.ts pins it.
+/alternatives https://liveworkspace.app/alternatives 301
+/alternatives/ https://liveworkspace.app/alternatives 301
+/alternatives/* https://liveworkspace.app/alternatives/:splat 301

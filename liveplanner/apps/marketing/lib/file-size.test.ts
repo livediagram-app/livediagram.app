@@ -10,7 +10,7 @@ import { describe, expect, it } from 'vitest';
 // comes down as files split (1000, then 750 after the first October 2026 art split, then 650 after the second).
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const LIMIT = 650;
-const DATA = new Set(['lib/landing-content.tsx', 'lib/alternatives.ts', 'lib/faq-content.tsx']);
+const DATA = new Set(['lib/landing-content.tsx', 'lib/faq-content.tsx']);
 
 function sources(dir: string): string[] {
   return readdirSync(join(ROOT, dir), { withFileTypes: true }).flatMap((e) =>

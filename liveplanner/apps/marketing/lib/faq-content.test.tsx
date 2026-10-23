@@ -5,9 +5,6 @@ import { describe, expect, it } from 'vitest';
 
 import { TEMPLATES, isBlankTemplate, isPlanTemplate } from '@liveplanner/templates';
 
-import { COMPETITOR_LOOK } from '@/components/compare/competitor-look';
-
-import { ALTERNATIVES } from './alternatives';
 import { FAQ_CATEGORIES, faqAnswerText, TEMPLATE_COUNT } from './faq-content';
 import { filterFaq } from './faq-filter';
 
@@ -51,17 +48,6 @@ describe('FAQ content', () => {
 describe('template counts in marketing copy', () => {
   it('matches the Plan templates in the FAQ', () => {
     expect(TEMPLATE_COUNT).toBe(PLAN_TEMPLATES.length);
-  });
-
-  it('matches the Plan templates on any comparison page or card that counts them', () => {
-    const copy = JSON.stringify([
-      ALTERNATIVES,
-      Object.values(COMPETITOR_LOOK).map((l) => l.highlights),
-    ]);
-    const counts = [...copy.matchAll(/(\d+) (?:ready-made |starter )?templates/g)].map((m) =>
-      Number(m[1]),
-    );
-    for (const n of counts) expect(n).toBe(PLAN_TEMPLATES.length);
   });
 });
 
