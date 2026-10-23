@@ -74,7 +74,7 @@ Pulse and Heartbeat suit "New" and alerts. Its text is too small to animate on i
 
 ## Palette
 
-**Components**: Badge (on a wireframe page, **Elements**).
+**Components**: Badge.
 
 ## Badge presets
 

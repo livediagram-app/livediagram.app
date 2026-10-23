@@ -20,8 +20,7 @@ import type { ComponentType } from 'react';
 // A category on the bar: its glyph (the editor's own, @livedocuments/ui) and its one-word name.
 export type BarCategory = { key: string; label: string; Icon: ComponentType };
 
-// The bar's categories, band by band (a hairline between bands). Logo joins only on a logo page,
-// so it is not here.
+// The bar's categories, band by band (a hairline between bands).
 export const PAGES_BAR: readonly (readonly BarCategory[])[] = [
   [
     { key: 'shapes', label: 'Shapes', Icon: ShapesTabIcon },

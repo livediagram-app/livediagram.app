@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createShape } from './shape-factory';
-import { layOutPages, newLogoPage } from './page';
+import { layOutPages } from './page';
 import type { PageImageFill } from './page-image';
 import { pageExportFrame, pageGradientLine, pageImageSvg, pagePatternInk } from './page-frame';
 import type { Element } from './index';
@@ -86,14 +86,6 @@ describe('a page’s frame', () => {
     expect(pageExportFrame(a4!).backgroundSvg).toContain('fill="#ffffff"');
     expect(pagePatternInk({ fill: { kind: 'solid', color: '#0f172a' } })).toContain('255 255 255');
     expect(pagePatternInk(undefined)).toContain('15 23 42');
-  });
-
-  it('leaves a logo page’s plain paper see-through when asked', () => {
-    const [logo] = layOutPages([newLogoPage('l')]);
-    expect(pageExportFrame(logo!, { transparentPaper: true })).toMatchObject({
-      transparent: true,
-      backgroundSvg: '',
-    });
   });
 
   it('holds what reaches onto the page, an arrow by its ends', () => {

@@ -1,7 +1,7 @@
 import { lucideAppWindow } from '@livedocuments/icons/lucide';
 import { lucideGlyph } from '@livedocuments/ui';
 
-// How each competitor is drawn on the comparison pages (docs/specs/019-marketing/comparison-pages.md): a generic
+// How each competitor is drawn on the comparison pages (liveworkspace/docs/comparison-pages.md): a generic
 // glyph of what the tool IS (a window for a slide tool), never its logo,
 // since vendor trademarks are not used (docs/specs/004-interface-design/iconography.md); an accent tone; and three
 // short highlight chips for its card. Tailwind classes are written out in full so the build sees them.

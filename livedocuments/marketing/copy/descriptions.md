@@ -133,8 +133,8 @@ detailed GitHub / Product Hunt write-up.
 >
 > #### Start fast, stay organized
 >
-> Open one of 17 templates (mind map, flowchart, Kanban, SWOT, retrospective,
-> org chart, timeline, fishbone, user journey, UI wireframes, and more) or start
+> Open a template (mind map, flowchart, Kanban, SWOT, retrospective,
+> org chart, timeline, fishbone, user journey, and more) or start
 > blank. Recolor an entire diagram, every shape and arrow, with one of 18 themes
 > in a single click. Group related work into tabs within a document, link across
 > them, copy a tab into another document, and file everything into nested

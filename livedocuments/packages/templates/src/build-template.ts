@@ -5,7 +5,6 @@
 // top (apps/live/lib/template-builders.ts), and the MCP worker
 // materialises these directly (docs/specs/015-api/mcp-server.md §4.5).
 
-import { buildWireframeFlow } from './template-builders-wireframe-flows';
 import { settleChips, type Element } from '@livedocuments/document';
 import type { TemplateKind } from './templates';
 import { buildSlideDeck } from './template-builders-slides';
@@ -21,7 +20,6 @@ import { buildLayoutDeck } from './template-builders-layout-decks';
 import { buildStoryboard } from './template-builders-storyboard';
 import { buildOnDesignPage } from './template-design-pages';
 import { buildFloorPlan } from './template-builders-floorplan';
-import { buildLogoDesign } from './template-builders-logo';
 import { buildLiveCard } from './template-builders-livecard';
 
 // Build the elements for a given template, centred on the supplied canvas
@@ -40,8 +38,6 @@ function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
       return [];
     case 'slide-deck':
       return buildSlideDeck(cx, cy);
-    case 'logo-design':
-      return buildLogoDesign(cx, cy);
     case 'live-card':
       return buildLiveCard(cx, cy);
     case 'storyboard':
@@ -57,19 +53,7 @@ function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
     case 'blank-slide-deck':
     case 'blank-article':
     case 'blank-infographic':
-    case 'blank-logo':
-    case 'blank-wireframe-phone':
-    case 'blank-wireframe-tablet':
-    case 'blank-wireframe-browser':
-    case 'blank-wireframe-laptop':
-    case 'blank-wireframe-watch':
       return [];
-    case 'wireframe-mobile-app':
-    case 'wireframe-website':
-    case 'wireframe-dashboard':
-    case 'wireframe-tablet-app':
-    case 'wireframe-watch-app':
-      return buildWireframeFlow(kind);
     // Built on their own pages (template-pages.ts), whatever the centre.
     case 'event-poster':
       return buildEventPoster();

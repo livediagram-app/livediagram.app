@@ -23,17 +23,17 @@ describe('AddPageButton', () => {
     const onAddLike = vi.fn();
     render(
       <AddPageButton
-        last={page({ kind: 'wireframe', device: 'ipad' })}
+        last={page({ kind: 'slide' })}
         zoom={1}
         onAdd={vi.fn()}
         onAddLike={onAddLike}
       />,
     );
-    fireEvent.click(screen.getByRole('button', { name: 'Add Another iPad Screen' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Add Another Slide' }));
     expect(onAddLike).toHaveBeenCalledWith('p1');
   });
 
-  it('chooses any kind from the list under it, a wireframe by its device', () => {
+  it('chooses any kind from the list under it', () => {
     const onAdd = vi.fn();
     render(<AddPageButton last={page()} zoom={1} onAdd={onAdd} onAddLike={vi.fn()} />);
     fireEvent.click(screen.getByRole('button', { name: 'Add a Page of Any Kind' }));
@@ -42,35 +42,19 @@ describe('AddPageButton', () => {
       'Infographic',
       'Article',
       'Slide',
-      'Logo',
-      'Wireframe',
     ]);
     expect(document.activeElement).toBe(rows[0]);
     fireEvent.keyDown(rows[0]!, { key: 'ArrowUp' });
-    expect(document.activeElement).toBe(rows[4]);
+    expect(document.activeElement).toBe(rows[2]);
     fireEvent.click(rows[2]!);
     expect(onAdd).toHaveBeenCalledWith('slide');
-
-    fireEvent.click(screen.getByRole('button', { name: 'Add a Page of Any Kind' }));
-    fireEvent.click(document.querySelector('[data-add-kind="wireframe"]')!);
-    expect(screen.getByRole('group', { name: 'Choose a Device' })).toBeTruthy();
-    fireEvent.click(document.querySelector('[data-device-row="watch"]')!);
-    expect(onAdd).toHaveBeenLastCalledWith('wireframe', 'watch');
   });
 });
 
 describe('addAnotherLabel', () => {
-  it('names each kind, a wireframe by its device', () => {
+  it('names each kind', () => {
     expect(addAnotherLabel({ kind: 'slide' })).toBe('Add Another Slide');
     expect(addAnotherLabel({})).toBe('Add Another Infographic Page');
     expect(addAnotherLabel({ kind: 'article' })).toBe('Add Another Article');
-    expect(addAnotherLabel({ kind: 'logo' })).toBe('Add Another Logo Page');
-    expect(addAnotherLabel({ kind: 'wireframe', device: 'iphone-duo' })).toBe(
-      'Add Another iPhone Duo Screen',
-    );
-    expect(addAnotherLabel({ kind: 'wireframe', device: 'browser' })).toBe(
-      'Add Another Browser Page',
-    );
-    expect(addAnotherLabel({ kind: 'wireframe', device: 'watch' })).toBe('Add Another Watch Face');
   });
 });

@@ -22,18 +22,6 @@ import {
   TechTabIcon,
   WriteTabIcon,
 } from '@livedocuments/ui';
-import { Glyph } from '@livedocuments/ui';
-
-// A phone with a screen being wireframed: a bar, a picture and a button.
-function WireframeTabIcon() {
-  return (
-    <Glyph size={18} units={24}>
-      <rect x="6" y="2.5" width="12" height="19" rx="2.5" />
-      <rect x="8.5" y="6.5" width="7" height="5" rx="0.75" />
-      <path d="M8.5 14.5h7M8.5 17.5h4" />
-    </Glyph>
-  );
-}
 
 /**
  * The category catalogue's IDENTITY: which categories exist, in band order,
@@ -80,17 +68,6 @@ export const PALETTE_CATEGORIES: {
     group: 0,
     description: 'The wordy elements: text, sticky notes and pointer notes.',
     icon: <WriteTabIcon />,
-  },
-
-  {
-    // Pages mode, while the tab has a wireframe page (docs/specs/007-editor/wireframe-pages.md "The
-    // Elements palette").
-    id: 'wireframe',
-    label: 'Elements',
-    group: 0,
-    description:
-      'The parts a screen is wireframed from: buttons, fields, badges, pictures, avatars, cards and lists.',
-    icon: <WireframeTabIcon />,
   },
   {
     id: 'draw',

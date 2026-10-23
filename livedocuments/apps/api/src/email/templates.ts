@@ -184,7 +184,7 @@ export function welcomeEmail(env: Env): RenderedEmail {
       points: [
         '<strong>Drop a shape</strong> from the palette, double-click it to type, and drag the corners to resize.',
         '<strong>Connect things</strong> by hovering an element’s edge and dragging an arrow to another, and the arrow stays pinned as you move them.',
-        '<strong>Start from a template</strong> (slide deck, article, infographic, logo and more) or pick one of the built-in themes for an instant look.',
+        '<strong>Start from a template</strong> (slide deck, article, infographic and more) or pick one of the built-in themes for an instant look.',
       ],
       outro: 'Everything autosaves as you go, so you can just start and come back later.',
       ctaText: 'Start drawing',

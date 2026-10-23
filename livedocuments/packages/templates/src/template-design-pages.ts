@@ -1,7 +1,6 @@
 // The Design templates' pages (docs/specs/008-canvas/canvas-and-palette.md "Templates on pages"): the
 // Floor Plan and the Storyboard open in Pages, each on one infographic page sized for what it is: an
-// A3 landscape sheet, the paper a plan and a shoot's boards are printed on. (The wireframes are
-// wireframe pages in their devices: template-builders-wireframe-flows.ts.) Each drawing keeps its own builder and its own size
+// A3 landscape sheet, the paper a plan and a shoot's boards are printed on. Each drawing keeps its own builder and its own size
 // (the floor plan is to a captioned metric scale, so it is never scaled): it is built once to be
 // measured, then again centred on its page.
 //

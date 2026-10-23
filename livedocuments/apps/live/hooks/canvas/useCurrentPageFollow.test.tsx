@@ -1,20 +1,22 @@
 // @vitest-environment jsdom
 
-// docs/specs/007-editor/logo-pages.md "The Logo palette": the palette turns to Logo.
+// docs/specs/007-editor/pages-mode.md "The palette's kind": the palette follows the page someone is on.
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { layOutPages, newLogoPage, type LaidOutPage } from '@livedocuments/document';
+import { layOutPages, newSlidePage, type LaidOutPage } from '@livedocuments/document';
 import { onPaletteCategoryRequest } from '@/lib/palette-category-request';
 import { createViewportStore } from '@/lib/viewport-store';
+import { currentPageIdNow, setCurrentPageKind } from '@/lib/current-page-kind';
 import type { ReactNode } from 'react';
 import { ViewportStoreProvider } from './useViewportStore';
-import { useLogoPaletteSwitch } from './useLogoPaletteSwitch';
+import { useCurrentPageFollow } from './useCurrentPageFollow';
 
 let asked: string[] = [];
 let off = () => {};
 beforeEach(() => {
   asked = [];
   off = onPaletteCategoryRequest((id) => asked.push(id));
+  setCurrentPageKind(null);
   vi.useFakeTimers();
 });
 afterEach(() => {
@@ -24,7 +26,7 @@ afterEach(() => {
 });
 
 const infographic = layOutPages([{ id: 'i', orientation: 'portrait' }]);
-const both = layOutPages([{ id: 'i', orientation: 'portrait' }, newLogoPage('l')]);
+const both = layOutPages([{ id: 'i', orientation: 'portrait' }, newSlidePage('s')]);
 
 // A sheet on screen for each page, side by side, 100 px wide.
 function sheets(pages: readonly LaidOutPage[]) {
@@ -46,65 +48,55 @@ const press = (x: number, chrome = false) => {
   vi.runAllTimers();
 };
 
-describe('useLogoPaletteSwitch', () => {
-  it('asks for Logo when a logo page is added, not for what was already there', () => {
-    const { rerender } = renderHook(({ pages }) => useLogoPaletteSwitch(pages, true), {
-      initialProps: { pages: infographic },
-    });
-    expect(asked).toEqual([]);
-    rerender({ pages: both });
+describe('useCurrentPageFollow', () => {
+  it('takes the page in view on opening, asking nothing', () => {
+    renderHook(() => useCurrentPageFollow(infographic, true));
     vi.runAllTimers();
-    expect(asked).toEqual(['draw']);
+    expect(asked).toEqual([]);
+    expect(currentPageIdNow()).toBe('i');
   });
 
-  it('asks for Logo on a logo page and Popular on any other, when a press moves page', () => {
+  it('moves onto a page added, asking for Popular', () => {
+    const { rerender } = renderHook(({ pages }) => useCurrentPageFollow(pages, true), {
+      initialProps: { pages: infographic },
+    });
+    rerender({ pages: both });
+    vi.runAllTimers();
+    expect(asked).toEqual(['popular']);
+    expect(currentPageIdNow()).toBe('s');
+  });
+
+  it('asks for Popular when a press moves page, never when it stays', () => {
     sheets(both);
-    renderHook(() => useLogoPaletteSwitch(both, true));
-    // The infographic page is the one in view on opening: pressing it is staying on it.
+    renderHook(() => useCurrentPageFollow(both, true));
     press(50);
     expect(asked).toEqual([]);
     press(250);
     press(260);
-    expect(asked).toEqual(['draw']);
-    press(50);
-    press(55);
-    press(250);
-    expect(asked).toEqual(['draw', 'popular', 'draw']);
+    expect(asked).toEqual(['popular']);
+    expect(currentPageIdNow()).toBe('s');
   });
 
   it('stays quiet when inactive (a viewer, or a bare view)', () => {
     sheets(both);
-    renderHook(() => useLogoPaletteSwitch(both, false));
+    renderHook(() => useCurrentPageFollow(both, false));
     press(250);
     expect(asked).toEqual([]);
   });
 
-  it('asks on opening when the page in view is a logo page, and again a little later', () => {
-    const logoFirst = layOutPages([newLogoPage('l'), { id: 'i', orientation: 'portrait' }]);
-    renderHook(() => useLogoPaletteSwitch(logoFirst, true));
-    vi.runAllTimers();
-    expect(asked).toEqual(['draw', 'draw']);
-    asked = [];
-    renderHook(() => useLogoPaletteSwitch(infographic, true));
-    vi.runAllTimers();
-    expect(asked).toEqual([]);
-  });
-
-  it('asks when a page is gone to (its label, the navigator), once per page', () => {
-    const { result } = renderHook(() => useLogoPaletteSwitch(both, true));
+  it('follows a page gone to (its label, the navigator), once per page', () => {
+    const { result } = renderHook(() => useCurrentPageFollow(both, true));
     vi.runAllTimers();
     act(() => result.current.pageShown(both[1]!));
     act(() => result.current.pageShown(both[1]!));
     vi.runAllTimers();
-    expect(asked).toEqual(['draw']); // And Popular on going back to the infographic page.
-    act(() => result.current.pageShown(both[0]!));
-    vi.runAllTimers();
-    expect(asked).toEqual(['draw', 'popular']);
+    expect(asked).toEqual(['popular']);
+    expect(currentPageIdNow()).toBe('s');
   });
 
-  it('ignores a press on chrome floating over a logo page (a palette category just chosen)', () => {
+  it('ignores a press on chrome floating over a page (a palette category just chosen)', () => {
     sheets(both);
-    renderHook(() => useLogoPaletteSwitch(both, true));
+    renderHook(() => useCurrentPageFollow(both, true));
     press(50);
     press(250, true);
     expect(asked).toEqual([]);
@@ -116,14 +108,14 @@ describe('useLogoPaletteSwitch', () => {
       <ViewportStoreProvider store={store}>{children}</ViewportStoreProvider>
     );
     sheets(both);
-    // The canvas, its centre over the first page, then over the logo page.
+    // The canvas, its centre over the first page, then over the slide.
     const canvas = document.createElement('div');
     canvas.setAttribute('data-canvas-a11y-root', '');
     let centre = 50;
     canvas.getBoundingClientRect = () =>
       ({ left: centre - 50, top: 0, width: 100, height: 100 }) as DOMRect;
     document.body.appendChild(canvas);
-    renderHook(() => useLogoPaletteSwitch(both, true), { wrapper });
+    renderHook(() => useCurrentPageFollow(both, true), { wrapper });
     act(() => {
       vi.runAllTimers();
     });
@@ -133,13 +125,14 @@ describe('useLogoPaletteSwitch', () => {
       store.setOffset({ x: -200, y: 0 });
       vi.runAllTimers();
     });
-    expect(asked).toEqual(['draw']);
+    expect(asked).toEqual(['popular']);
     // Resting between pages keeps the page last on.
     centre = 150;
     act(() => {
       store.setOffset({ x: -100, y: 0 });
       vi.runAllTimers();
     });
-    expect(asked).toEqual(['draw']);
+    expect(asked).toEqual(['popular']);
+    expect(currentPageIdNow()).toBe('s');
   });
 });

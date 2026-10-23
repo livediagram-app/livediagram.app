@@ -41,8 +41,8 @@ describe('buildTemplateTab', () => {
 describe('resolveTemplate', () => {
   it('resolves a catalogue kind and refuses an unknown one', () => {
     expect(resolveTemplate('slide-deck')).toBe('slide-deck');
-    // A retired kind resolves to its replacement.
-    expect(resolveTemplate('mobile-wireframe')).toBe('wireframe-mobile-app');
+    // livedesign's wireframes are no kind here.
+    expect(resolveTemplate('mobile-wireframe')).toBeNull();
     expect(resolveTemplate('nope')).toBeNull();
   });
 
@@ -67,7 +67,7 @@ describe('buildTemplateTabs', () => {
       'slide-deck',
       'event-poster',
       'floor-plan',
-      'wireframe-website',
+      'storyboard',
     ] as const) {
       const tabs = buildTemplateTabs({ id: 's', name: 'Mine' }, kind, newId);
       expect(tabs.map(shape), kind).toEqual([shape(buildTemplateTab('s', 'Mine', kind))]);
@@ -86,13 +86,7 @@ describe('templateTabName', () => {
 // docs/specs/015-api/mcp-server.md §4.5: an unknown kind is refused with the ones it most likely meant.
 describe('closestTemplateKinds', () => {
   it('offers the kinds with a word starting with a word of it', () => {
-    expect(closestTemplateKinds('wireframe')).toEqual([
-      'blank-wireframe-phone',
-      'blank-wireframe-tablet',
-      'blank-wireframe-browser',
-      'blank-wireframe-laptop',
-      'blank-wireframe-watch',
-    ]);
+    expect(closestTemplateKinds('keynote')).toEqual(['launch-keynote']);
     expect(closestTemplateKinds('Recipe Card')).toContain('recipe-card');
     expect(closestTemplatesHint('poster')).toBe('Closest: event-poster. ');
   });

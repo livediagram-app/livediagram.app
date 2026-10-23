@@ -31,13 +31,12 @@ elements) and **Draw** (the gesture tools). The **User / actor** tile was delete
 **The category bar has bands**, the way the canvas-tool dropdown got them
 ([Tile grids for the palette dropdowns](../004-interface-design/dropdown-tile-grid.md)):
 
-| Band          | Categories                                                                                                                     |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| **Common**    | Shapes, Write, and Draw on a logo page ([logo pages](../007-editor/logo-pages.md#the-logo-palette)); Media on a slide          |
-| **Structure** | Concepts ([Concept graphics](../009-elements/concept-graphics.md)), Components, Devices                                        |
-| **Decorate**  | Icons, Stickers, Media                                                                                                         |
-| **Dynamic**   | Data                                                                                                                           |
-| **Screen**    | Components and Elements, first, on a wireframe page ([wireframe pages](../007-editor/wireframe-pages.md#the-elements-palette)) |
+| Band          | Categories                                                                              |
+| ------------- | --------------------------------------------------------------------------------------- |
+| **Common**    | Shapes, Write; Media on a slide                                                         |
+| **Structure** | Concepts ([Concept graphics](../009-elements/concept-graphics.md)), Components, Devices |
+| **Decorate**  | Icons, Stickers, Media                                                                  |
+| **Dynamic**   | Data                                                                                    |
 
 ## Why flatten
 
@@ -62,7 +61,7 @@ icon-over-caption grid.
 
 The rule is whether the picture explains the thing, and only three categories pass it: **Shapes**, **Icons** and
 **Stickers**, where the glyph IS the answer. A square tile explains a square. A donut does not explain "how far along
-something is", a wireframe thumbnail shows a composite's arrangement but not its job, six device outlines are six grey
+something is", a miniature thumbnail shows a composite's arrangement but not its job, six device outlines are six grey
 rectangles of slightly different proportions, and two picture frames at 18px do not distinguish an image from an
 avatar.
 

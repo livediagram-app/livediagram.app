@@ -1,14 +1,13 @@
 'use client';
 
 // The page panel's Background section (docs/specs/007-editor/pages-mode.md "Backgrounds"), for
-// every page kind: the kinds as tiles (page-background-kinds: Solid, Gradient, and Image but on a logo page,
+// every page kind: the kinds as tiles (page-background-kinds: Solid, Gradient, Image,
 // page-background-image, and Animated on a slide page, page-background-animated) over that
 // category's choices: Solid is the
 // one colour picker (docs/specs/004-interface-design/colour-picker.md), Paper leading the theme's
 // colours, then the soft and the strong standard colours and Custom colours with +; Gradient is the
 // theme's gradients, then the gradient presets, ending in a custom one,
-// whose editor (From, To, Angle, Swap) shows while the page's fill is one; then the Pattern (not on
-// a logo page). Each hover previews on the page itself (`onPreview`), and a press commits; leaving
+// whose editor (From, To, Angle, Swap) shows while the page's fill is one; then the Pattern. Each hover previews on the page itself (`onPreview`), and a press commits; leaving
 // the section drops the preview.
 import { useState, type ReactNode } from 'react';
 import {
@@ -153,16 +152,11 @@ export function BackgroundSection({
 }) {
   const fill = page.background?.fill;
   const pattern = page.background?.pattern;
-  // A logo page takes no picture (docs/specs/007-editor/logo-pages.md "A logo page").
-  // A slide page and a wireframe page's screen move (docs/specs/007-editor/pages-mode.md "Animated
-  // backgrounds", wireframe-pages.md "The screen").
-  const kind = pageKindOf(page);
+  // A slide page's background moves (docs/specs/007-editor/pages-mode.md "Animated backgrounds").
   const offered: BackgroundCategory[] =
-    kind === 'logo'
-      ? ['solid', 'gradient']
-      : kind === 'slide' || kind === 'wireframe'
-        ? ['solid', 'gradient', 'image', 'animated']
-        : ['solid', 'gradient', 'image'];
+    pageKindOf(page) === 'slide'
+      ? ['solid', 'gradient', 'image', 'animated']
+      : ['solid', 'gradient', 'image'];
   const categories = only ? offered.filter((c) => only.includes(c)) : offered;
   // Opens on the current fill's category; choosing another changes nothing on the page.
   const [chosen, setChosen] = useState<BackgroundCategory | null>(null);
@@ -277,39 +271,36 @@ export function BackgroundSection({
           </>
         )}
       </PanelSection>
-      {/* A logo page takes no pattern (docs/specs/007-editor/logo-pages.md "A logo page"). */}
-      {pageKindOf(page) === 'logo' ? null : (
-        <PanelSection title="Pattern">
-          <div role="radiogroup" aria-label="Pattern" className="grid grid-cols-4 gap-1">
-            {(['none', ...PAGE_PATTERNS] as const).map((p) => {
-              const on = (pattern ?? 'none') === p;
-              const value = p === 'none' ? undefined : p;
-              return (
-                <button
-                  key={p}
-                  type="button"
-                  role="radio"
-                  aria-checked={on}
-                  onClick={() => onBackground({ pattern: value })}
-                  onPointerEnter={() => onPreview({ pattern: value })}
-                  onFocus={() => onPreview({ pattern: value })}
-                  className={tileClass(on)}
-                >
-                  <span
-                    aria-hidden
-                    className="h-6 w-9 rounded-sm bg-white text-slate-900/25 ring-1 ring-inset ring-slate-900/10 dark:bg-slate-900 dark:text-white/25 dark:ring-white/15"
-                    style={{
-                      ...pageSheetStyle(PATTERN_PREVIEW[p]),
-                      backgroundSize: p === 'lines' ? '100% 6px' : '6px 6px',
-                    }}
-                  />
-                  {PAGE_PATTERN_LABEL[p]}
-                </button>
-              );
-            })}
-          </div>
-        </PanelSection>
-      )}
+      <PanelSection title="Pattern">
+        <div role="radiogroup" aria-label="Pattern" className="grid grid-cols-4 gap-1">
+          {(['none', ...PAGE_PATTERNS] as const).map((p) => {
+            const on = (pattern ?? 'none') === p;
+            const value = p === 'none' ? undefined : p;
+            return (
+              <button
+                key={p}
+                type="button"
+                role="radio"
+                aria-checked={on}
+                onClick={() => onBackground({ pattern: value })}
+                onPointerEnter={() => onPreview({ pattern: value })}
+                onFocus={() => onPreview({ pattern: value })}
+                className={tileClass(on)}
+              >
+                <span
+                  aria-hidden
+                  className="h-6 w-9 rounded-sm bg-white text-slate-900/25 ring-1 ring-inset ring-slate-900/10 dark:bg-slate-900 dark:text-white/25 dark:ring-white/15"
+                  style={{
+                    ...pageSheetStyle(PATTERN_PREVIEW[p]),
+                    backgroundSize: p === 'lines' ? '100% 6px' : '6px 6px',
+                  }}
+                />
+                {PAGE_PATTERN_LABEL[p]}
+              </button>
+            );
+          })}
+        </div>
+      </PanelSection>
     </div>
   );
 }

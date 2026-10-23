@@ -1,5 +1,5 @@
 // The blanks of a page kind (docs/specs/007-editor/start-diagramming.md "Recommended and groups"): Blank Slide Deck,
-// Blank Article, Blank Infographic and Blank Logo, each a tab that opens in Pages on exactly one empty page whose
+// Blank Article and Blank Infographic, each a tab that opens in Pages on exactly one empty page whose
 // kind is already chosen. The page is made the way the first page's What Is This Page For? makes it
 // (withPageKindChosen on an unchosen page), so a blank of a kind and a chosen Blank Illustration are the same page.
 // Pure: merged in by templateCanvasOverrides, so every application path (the picker, /new, the MCP worker) lands it.
@@ -10,7 +10,6 @@ import {
   type PageKind,
   type Tab,
   type ThemeDefinition,
-  type WireframeDeviceId,
 } from '@livedocuments/document';
 import type { TemplateKind } from './templates';
 
@@ -19,22 +18,7 @@ export const BLANK_PAGE_TEMPLATE_KINDS = {
   'blank-slide-deck': 'slide',
   'blank-article': 'article',
   'blank-infographic': 'infographic',
-  'blank-logo': 'logo',
-  'blank-wireframe-phone': 'wireframe',
-  'blank-wireframe-tablet': 'wireframe',
-  'blank-wireframe-browser': 'wireframe',
-  'blank-wireframe-laptop': 'wireframe',
-  'blank-wireframe-watch': 'wireframe',
 } as const satisfies Partial<Record<TemplateKind, PageKind>>;
-
-// Each blank wireframe's device (docs/specs/007-editor/wireframe-pages.md "Templates").
-const BLANK_WIREFRAME_DEVICES: Partial<Record<TemplateKind, WireframeDeviceId>> = {
-  'blank-wireframe-phone': 'iphone',
-  'blank-wireframe-tablet': 'ipad',
-  'blank-wireframe-browser': 'browser',
-  'blank-wireframe-laptop': 'laptop',
-  'blank-wireframe-watch': 'watch',
-};
 
 type BlankPageTemplateKind = keyof typeof BLANK_PAGE_TEMPLATE_KINDS;
 
@@ -56,7 +40,6 @@ export function blankPageTemplateOverrides(kind: TemplateKind): Partial<Tab> | u
     unchosen.pages[0]!.id,
     BLANK_PAGE_TEMPLATE_KINDS[kind],
     BLANK_ARTICLE_FLOW,
-    BLANK_WIREFRAME_DEVICES[kind],
   )!;
   // An article page's writing (an empty Title and paragraph) comes with it.
   const { articles } = chosen as Partial<Tab>;

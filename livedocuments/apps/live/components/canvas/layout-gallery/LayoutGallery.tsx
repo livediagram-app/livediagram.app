@@ -9,7 +9,7 @@
 // page panel's Layouts tab and a phone's sheet.
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { lucideDices } from '@livedocuments/icons/lucide';
-import { pageDeviceClass, pageKindOf, type LaidOutPage } from '@livedocuments/document';
+import { pageKindOf, type LaidOutPage } from '@livedocuments/document';
 import {
   layoutCatalogueFor,
   warmLayoutPlaceholders,
@@ -68,7 +68,7 @@ export function LayoutGallery({
   described = false,
   autoFocus = false,
 }: LayoutGalleryProps) {
-  const { categories, layouts } = layoutCatalogueFor(pageKindOf(page), pageDeviceClass(page));
+  const { categories, layouts } = layoutCatalogueFor(pageKindOf(page));
   const [category, setCategory] = useState<string>(ALL_LAYOUTS);
   const [query, setQuery] = useState('');
   const [rolling, setRolling] = useState(false);

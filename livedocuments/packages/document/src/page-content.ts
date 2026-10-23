@@ -17,13 +17,13 @@ import {
   pagesOf,
   layOutPages,
   PAGE_NAME_MAX,
+  pageContentBox,
   withPages,
   type Page,
   type LaidOutPage,
   type PageFill,
 } from './page';
 import { pageImageTone } from './page-image';
-import { pageContentBox, pageScreenRect } from './wireframe-page';
 import { PAGE_INK_CONTRAST, PAGE_INK_FLOOR } from './page-ink-rules';
 import { isBoxed, type Element, type Endpoint, type ShapeElement, type Tab } from './index';
 
@@ -223,8 +223,7 @@ export function elementPageSurfaces(
  *  and one for its margin box, with ids no element can take. */
 export function pageSnapBoxes(pages: readonly LaidOutPage[]): ShapeElement[] {
   return pages.flatMap((page) => {
-    // A wireframe page offers its screen and safe area in place of its sheet and margin box.
-    const { x, y, width, height } = pageScreenRect(page);
+    const { x, y, width, height } = page.rect;
     const inner = pageContentBox(page);
     const box = (id: string, bx: number, by: number, w: number, h: number): ShapeElement => ({
       id,
@@ -296,7 +295,7 @@ export function withContentFittedToPage<T extends Pick<Tab, 'elements'>>(
     }
   }
   if (!Number.isFinite(minX)) return tab;
-  // The room is the page's content box: its margin box, a wireframe page's safe area.
+  // The room is the page's content box: its margin box.
   const room = pageContentBox(page);
   const roomW = room.width;
   const roomH = room.height;

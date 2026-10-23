@@ -78,14 +78,14 @@ const ROWS: { label: string; glyph: ReactNode }[] = [
 
 const DOCS: {
   title: string;
-  kind: 'article' | 'slide' | 'sticky' | 'logo' | 'wireframe' | 'poster';
+  kind: 'article' | 'slide' | 'sticky' | 'poster';
 }[] = [
   { title: 'Annual report', kind: 'article' },
   { title: 'Launch poster', kind: 'poster' },
   { title: 'Team retro', kind: 'sticky' },
   { title: 'Kickoff deck', kind: 'slide' },
-  { title: 'Brand mark', kind: 'logo' },
-  { title: 'Sign-up screen', kind: 'wireframe' },
+  { title: 'Pitch deck', kind: 'slide' },
+  { title: 'Product one-pager', kind: 'article' },
 ];
 
 // A tiny drawing of a document's first page inside its card's thumbnail, in the box (x, y, 64 by 34).
@@ -115,21 +115,6 @@ function Thumb({ x, y, kind }: { x: number; y: number; kind: (typeof DOCS)[numbe
               className="fill-slate-200"
             />
           ))}
-        </g>
-      );
-    case 'poster':
-      return (
-        <g>
-          <rect x={x + 20} y={y + 3} width={24} height={30} rx={1.5} className="fill-brand-500" />
-          <rect
-            x={x + 24}
-            y={y + 8}
-            width={14}
-            height={3}
-            rx={1.5}
-            className="fill-white help-art-as-drawn"
-          />
-          <circle cx={x + 32} cy={y + 22} r={5} className="fill-amber-300" />
         </g>
       );
     case 'sticky':
@@ -169,52 +154,19 @@ function Thumb({ x, y, kind }: { x: number; y: number; kind: (typeof DOCS)[numbe
           <rect x={x + 13} y={y + 19} width={16} height={3} rx={1.5} className="fill-brand-200" />
         </g>
       );
-    case 'logo':
-      return (
-        <g>
-          <rect
-            x={x + 17}
-            y={y + 2}
-            width={30}
-            height={30}
-            rx={1.5}
-            className="fill-white stroke-slate-200"
-            strokeWidth={0.8}
-          />
-          <circle
-            cx={x + 32}
-            cy={y + 17}
-            r={10}
-            className="fill-none stroke-sky-300"
-            strokeWidth={0.7}
-            strokeDasharray="2 2"
-          />
-          <path d={`M${x + 32} ${y + 9} l7 13 h-14 Z`} className="fill-teal-400" />
-        </g>
-      );
     default:
       return (
         <g>
+          <rect x={x + 20} y={y + 3} width={24} height={30} rx={1.5} className="fill-brand-500" />
           <rect
             x={x + 24}
-            y={y + 2}
-            width={16}
-            height={30}
-            rx={3}
-            className="fill-white stroke-slate-400"
-            strokeWidth={0.9}
-          />
-          <rect x={x + 27} y={y + 8} width={10} height={3} rx={1} className="fill-slate-300" />
-          <rect
-            x={x + 27}
-            y={y + 14}
-            width={10}
+            y={y + 8}
+            width={14}
             height={3}
-            rx={1}
-            className="fill-white stroke-slate-300"
-            strokeWidth={0.6}
+            rx={1.5}
+            className="fill-white help-art-as-drawn"
           />
-          <rect x={x + 27} y={y + 22} width={10} height={4} rx={1.5} className="fill-brand-400" />
+          <circle cx={x + 32} cy={y + 22} r={5} className="fill-amber-300" />
         </g>
       );
   }

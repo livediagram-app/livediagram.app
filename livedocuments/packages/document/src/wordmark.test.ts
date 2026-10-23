@@ -10,7 +10,7 @@ import {
   wordmarkDisplayText,
 } from './wordmark';
 
-// docs/specs/007-editor/logo-pages.md "Wordmark type".
+// docs/specs/006-document/document-structure.md "Text type".
 describe('wordmark type', () => {
   it('is present when any of its four fields is', () => {
     expect(hasWordmarkType({})).toBe(false);

@@ -60,7 +60,7 @@ Categories fall into two kinds. The **support** categories carry standalone arti
 
 The feature categories group the feature guides by area. **Pages is the first**: it is what livedocuments is for.
 
-- **Pages** — the pages a document is made of, in two groups: **Basics** (Working with Pages, page layouts, exporting pages, the Pages tour) and **Kinds of Page** (articles, slides, infographics, logo pages and wireframe pages).
+- **Pages** — the pages a document is made of, in two groups: **Basics** (Working with Pages, page layouts, exporting pages, the Pages tour) and **Kinds of Page** (articles, slides and infographics).
 - **User Interface** — the panels, toolbar, context menus, the Map, zoom and tab bars, quick controls and power user mode.
 - **Explorer** — the document library: The Explorer overview, Home (the Timeline), Recent, Shared With Me, My Work and folders, Team Spaces, Image Gallery, and Saved Themes, one guide per sidebar row.
 - **Selection Modes** — one guide per tool-picker mode: Select, Hand, Format Painter, Laser, Spotlight, Isometric.

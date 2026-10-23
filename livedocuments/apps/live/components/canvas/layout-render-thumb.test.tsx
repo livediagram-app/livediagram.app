@@ -1,48 +1,45 @@
 // @vitest-environment jsdom
 
-// A logo layout's tile is the layout itself, rendered (docs/specs/007-editor/logo-pages.md "Logo
-// layouts"): what pressing it puts on the page.
+// A layout's tile is the layout itself, rendered (docs/specs/007-editor/pages-mode.md "The layout
+// gallery"): what pressing it puts on the page.
 import { cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import { layOutPages, newLogoPage, newSlidePage, type Tab } from '@livedocuments/document';
-import { LOGO_LAYOUTS, SLIDE_LAYOUTS } from '@livedocuments/templates';
+import { layOutPages, newSlidePage, type Tab } from '@livedocuments/document';
+import { SLIDE_LAYOUTS } from '@livedocuments/templates';
 import { LayoutRenderThumb, layoutRenderSvg, PAGE_PAPER_DARK } from './layout-render-thumb';
 import { LayoutThumb } from './infographic-layout-thumb';
 
 afterEach(() => cleanup());
 
-const [page] = layOutPages([newLogoPage('l')]);
-const tab = { id: 't', name: 'T', elements: [], pages: [newLogoPage('l')] } as unknown as Tab;
+describe('layout tiles', () => {
+  const [page] = layOutPages([newSlidePage('s', 'slide')]);
+  const tab = {
+    id: 't',
+    name: 'T',
+    elements: [],
+    pages: [newSlidePage('s', 'slide')],
+  } as unknown as Tab;
 
-describe('logo layout tiles', () => {
-  it('draw the layout as it lands: its words, framed to the page', () => {
-    const svg = layoutRenderSvg(tab, page!, LOGO_LAYOUTS[0]!.id);
+  it('draw the layout as it lands, framed to the page', () => {
+    const svg = layoutRenderSvg(tab, page!, 'slide-bullets');
     expect(svg.startsWith('<svg')).toBe(true);
-    expect(svg).toContain('Brand');
     expect(svg).toContain(`viewBox="${page!.rect.x} ${page!.rect.y}`);
   });
 
-  it('render as markup sized to the tile, square for the artboard', () => {
+  it('render as markup sized to the tile, in the page’s shape', () => {
     const { container } = render(
-      <LayoutRenderThumb layout={LOGO_LAYOUTS[0]!.id} page={page!} width={100} tab={tab} />,
+      <LayoutRenderThumb layout="slide-bullets" page={page!} width={160} tab={tab} />,
     );
     const tile = container.querySelector<HTMLElement>('[data-layout-render-thumb]')!;
-    expect(tile.style.width).toBe('100px');
-    expect(tile.style.height).toBe('100px');
+    expect(tile.style.width).toBe('160px');
+    expect(tile.style.height).toBe('90px');
     expect(tile.querySelector('svg')).not.toBeNull();
   });
 
-  it('fall back to the wireframe outside an editor', () => {
-    const { container } = render(<LayoutThumb layout={LOGO_LAYOUTS[0]!.id} page={page!} />);
+  it('fall back to the outline outside an editor', () => {
+    const { container } = render(<LayoutThumb layout="slide-bullets" page={page!} />);
     expect(container.querySelector('[data-layout-render-thumb]')).toBeNull();
     expect(container.querySelector('svg')).not.toBeNull();
-  });
-
-  it('render every logo layout quickly enough for a card of them', () => {
-    const t = performance.now();
-    for (const l of LOGO_LAYOUTS) layoutRenderSvg(tab, page!, l.id);
-    // 25 layouts; a card draws at most 7 at once plus 8 small ones.
-    expect(performance.now() - t).toBeLessThan(500);
   });
 });
 

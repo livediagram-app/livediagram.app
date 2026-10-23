@@ -5,7 +5,6 @@ import { FormatCard } from './FormatCard';
 import { FormatIcon } from './export-format-icons';
 import { TextExportPanel } from './TextExportPanel';
 import { ImageExportPanel } from './ImageExportPanel';
-import { LogoKitPanel } from './LogoKitPanel';
 import {
   isLayerVisible,
   tabLayers,
@@ -48,7 +47,6 @@ const EXPORT_LABEL: Record<Format, string> = {
   svg: 'SVG',
   pdf: 'PDF',
   gif: 'GIF',
-  'logo-kit': 'LogoKit',
 };
 
 // A text format taken (downloaded or copied) counts as the document's export.
@@ -111,9 +109,8 @@ type ExportTabDialogProps = {
 
 const NO_DOCUMENT_TABS: readonly Tab[] = [];
 
-// The format keys ('file' is the livedocuments .json): 'logo-kit' is a logo page's kit
-// (docs/specs/007-editor/logo-pages.md "Export"), while the tab has one.
-export type Format = 'markdown' | 'pdf' | 'png' | 'svg' | 'gif' | 'file' | 'logo-kit';
+// The format keys ('file' is the livedocuments .json).
+export type Format = 'markdown' | 'pdf' | 'png' | 'svg' | 'gif' | 'file';
 
 // The two text formats each open a view/edit/copy panel; the three image
 // formats each open an options-and-download panel (docs/specs/010-palette/style-presets.md / 73).
@@ -153,11 +150,6 @@ const CARDS: { kind: Format; title: string; description: string }[] = [
     kind: 'gif',
     title: 'GIF',
     description: 'An animated image of the pages, moving as they move on the canvas.',
-  },
-  {
-    kind: 'logo-kit',
-    title: 'Logo Kit',
-    description: 'An SVG, PNGs from 16 to 1024 px and a favicon.ico, in one .zip.',
   },
 ];
 
@@ -226,19 +218,14 @@ export function ExportTabDialog({
   // All pages or One page, per format: each starts where DEFAULT_PAGE_SCOPE puts it.
   const [scopes, setScopes] = useState<Partial<Record<ImageFormat, PageScope>>>({});
   const scopeOf = (format: ImageFormat) => scopes[format] ?? DEFAULT_PAGE_SCOPE[format];
-  // The Logo Kit card shows while the tab has a logo page (docs/specs/007-editor/logo-pages.md).
-  const hasLogoPage = !!pages?.some((p) => p.kind === 'logo');
   const cards = pages
-    ? [
-        // A GIF animates the pages, so a Pages tab with none yet (First Page Choice) offers no GIF.
-        ...PAGES_FORMATS.filter((kind) => kind !== 'gif' || pages.length > 0),
-        ...(hasLogoPage ? (['logo-kit'] as const) : []),
-      ].map((kind) => {
+    ? // A GIF animates the pages, so a Pages tab with none yet (First Page Choice) offers no GIF.
+      PAGES_FORMATS.filter((kind) => kind !== 'gif' || pages.length > 0).map((kind) => {
         const card = CARDS.find((c) => c.kind === kind)!;
         return { ...card, description: PAGES_CARD_COPY[kind] ?? card.description };
       })
-    : // A selection has no pages, so no logo page and no GIF: never the Logo Kit or GIF.
-      CARDS.filter((c) => c.kind !== 'logo-kit' && c.kind !== 'gif');
+    : // A selection has no pages, so no GIF.
+      CARDS.filter((c) => c.kind !== 'gif');
 
   const isSelection = scope === 'selection';
   const suffix = isSelection ? ' - selection' : '';
@@ -282,9 +269,6 @@ export function ExportTabDialog({
     [active, tab],
   );
 
-  // A page's PNG and SVG leave a logo page's plain paper see-through (exportPages), so their
-  // preview does too, over a checkerboard; a PDF page always has its paper.
-  const seeThrough = !!page && (active === 'png' || active === 'svg');
   // Build the preview SVG for the current options — the same SVG the .svg
   // export produces, which PNG / PDF rasterise, so it faithfully previews all
   // three. Stable across renders so the panel can memoise on the toggles.
@@ -313,10 +297,9 @@ export function ExportTabDialog({
         ...opts,
         images: previewImages,
         page,
-        ...(seeThrough ? { transparentPaper: true } : {}),
         ...windowOpts,
       }),
-    [tab, previewImages, page, seeThrough, windowOpts],
+    [tab, previewImages, page, windowOpts],
   );
 
   // Render + download an image format with the chosen options (docs/specs/010-palette/style-presets.md).
@@ -377,13 +360,11 @@ export function ExportTabDialog({
 
   const activeCard = active ? CARDS.find((c) => c.kind === active) : null;
   const subtitle = activeCard
-    ? active === 'logo-kit'
-      ? 'Download a logo page as an SVG, PNGs and a favicon.'
-      : active === 'gif'
-        ? 'Set how the pages play, then download the GIF.'
-        : isTextFormat(active!)
-          ? `Copy this tab as ${activeCard.title}, or download a file.`
-          : `Set the image options for ${activeCard.title}, then download.`
+    ? active === 'gif'
+      ? 'Set how the pages play, then download the GIF.'
+      : isTextFormat(active!)
+        ? `Copy this tab as ${activeCard.title}, or download a file.`
+        : `Set the image options for ${activeCard.title}, then download.`
     : isSelection
       ? 'Pick a format to export the selected elements.'
       : pages
@@ -417,17 +398,6 @@ export function ExportTabDialog({
             onCopied={() => trackTextExport(active)}
             onBack={() => setActive(null)}
           />
-        ) : active === 'logo-kit' && pages ? (
-          <LogoKitPanel
-            tab={tab}
-            pages={pages}
-            documentName={documentName}
-            images={previewImages}
-            imagesReady={previewReady}
-            imageContext={imageContext}
-            onDone={onClose}
-            onBack={() => setActive(null)}
-          />
         ) : active === 'gif' && pages && page ? (
           <Suspense
             fallback={
@@ -455,7 +425,7 @@ export function ExportTabDialog({
                   pages={pages}
                   page={page}
                   scope={scopeOf(active as ImageFormat)}
-                  format={active as ImageFormat}
+                  format={active}
                   onScope={(next) => setScopes((s) => ({ ...s, [active as ImageFormat]: next }))}
                   onPick={setPageIndex}
                 />
@@ -467,7 +437,6 @@ export function ExportTabDialog({
             // Held until each tab window's tab is drawn, so a download never misses one.
             busy={busy || !windows.ready}
             error={error}
-            checkerboard={seeThrough && page?.kind === 'logo'}
             // Pages mode has no Layers, so no "Hidden layers" option: hidden layers stay
             // out, as they stay off its canvas.
             hasHiddenLayers={

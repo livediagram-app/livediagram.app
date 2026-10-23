@@ -1,10 +1,9 @@
 // @vitest-environment jsdom
 
-// Pages mode's Export dialog (docs/specs/007-editor/pages-mode.md "Export"): a logo
-// page's PNG and SVG preview its see-through paper as the download has it, and there is no
+// Pages mode's Export dialog (docs/specs/007-editor/pages-mode.md "Export"): there is no
 // "Hidden layers" option, as the mode has no Layers.
 
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createShape, pagesOf, layOutPages, type Tab } from '@livedocuments/document';
 import { ExportTabDialog } from './ExportTabDialog';
@@ -27,8 +26,8 @@ const tab = {
     { id: 'hidden', name: 'Hidden', visible: false },
   ],
   pages: [
-    { id: 'logo1', orientation: 'portrait', kind: 'logo', size: 'logo' },
-    { id: 'logo2', orientation: 'portrait', kind: 'logo', size: 'logo', name: 'Mark' },
+    { id: 'p1', orientation: 'portrait', kind: 'infographic' },
+    { id: 'p2', orientation: 'portrait', kind: 'infographic', name: 'Mark' },
   ],
 } as unknown as Tab;
 const pages = layOutPages(pagesOf(tab));
@@ -46,22 +45,6 @@ const open = (withPages = true) =>
 const preview = () => screen.findByTestId('export-preview');
 
 describe('ExportTabDialog, Pages', () => {
-  it("previews a logo page's PNG see-through, over a checkerboard", async () => {
-    open();
-    fireEvent.click(screen.getByRole('button', { name: /^PNG/ }));
-    const el = await preview();
-    expect(el.innerHTML).not.toContain('#ffffff');
-    expect(el.style.background).toContain('repeating-conic-gradient');
-  });
-
-  it("previews a logo page's PDF on its paper, with no checkerboard", async () => {
-    open();
-    fireEvent.click(screen.getByRole('button', { name: /^PDF/ }));
-    const el = await preview();
-    await waitFor(() => expect(el.innerHTML).toContain('#ffffff'));
-    expect(el.style.background).toBe('');
-  });
-
   it('offers no Hidden layers option', async () => {
     open();
     fireEvent.click(screen.getByRole('button', { name: /^SVG/ }));
@@ -106,17 +89,5 @@ describe('the GIF card (docs/specs/020-import-export/animated-gif-export.md "Whe
     // The panel loads on demand: under a loaded machine the import can take more than a second.
     expect(await screen.findByText('Each page holds', {}, { timeout: 5000 })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Download GIF' })).toBeTruthy();
-  });
-});
-
-describe('LogoKitPanel', () => {
-  it('names each logo page by its full label', () => {
-    open();
-    fireEvent.click(screen.getByRole('button', { name: /Logo Kit/ }));
-    const select = screen.getByLabelText('Logo page') as HTMLSelectElement;
-    expect([...select.options].map((o) => o.textContent)).toEqual([
-      'Page 1 · 1024 x 1024 · Logo',
-      'Mark · 1024 x 1024 · Logo',
-    ]);
   });
 });

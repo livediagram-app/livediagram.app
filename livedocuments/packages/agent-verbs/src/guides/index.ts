@@ -106,7 +106,7 @@ Something changed since you read? The changeset is refused as a conflict: read a
 A workbench (a coding tool or an editor) shows a document live beside you. When the person writes
 to you about it, the message carries a selection reference:
 
-  [livedocuments] "Home screen" \u203a tab "Wireframe" (doc 3h9x2a, tab 0b34, rev 41)
+  [livedocuments] "Home screen" \u203a tab "Overview" (doc 3h9x2a, tab 0b34, rev 41)
   selected: button 146b "Play", stack e4a8 "Game grid", sticky 0c84 "Daily streak goes here"
   read: livedocuments tab view 3h9x2a --tab 0b34 --view show --ref 146b
 
@@ -131,7 +131,7 @@ It may have moved on since they wrote; the refs in the reference are what they m
 
 Look at the tab as they see it before and after you change it:
 
-  livedocuments tab render 3h9x2a --tab 0b34 --png /tmp/wireframe.png
+  livedocuments tab render 3h9x2a --tab 0b34 --png /tmp/overview.png
 
 Show them what you are doing while you work: a status line and the elements you are on,
 credited to them, kept up by each changeset you write there:

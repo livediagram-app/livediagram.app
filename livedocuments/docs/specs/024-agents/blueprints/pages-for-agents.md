@@ -48,7 +48,7 @@ Banned synonyms: "document" for an article, "slide deck" for a tab of slides (it
    draws.
 4. The tab transforms inside `apps/live/hooks/editor/page-edits.ts` became pure functions in
    `packages/document/src/pages-edits.ts`. Each takes the tab and answers `{ tab } | { refused: PageEditRefusal }`
-   (`PageEditRefusal = 'locked' | 'no_orientation' | 'size_not_offered' | 'pattern_not_offered' | 'page_limit' |
+   (`PageEditRefusal = 'locked' | 'no_orientation' | 'size_not_offered' | 'page_limit' |
 'last_page' | 'unknown_page'`); the hook keeps telemetry, toasts, `onGoTo`, `claimArticleLayout` and debug
    logs, and calls them inside `commitTab`. The lock rule (`refusedLocked` with `shared`) and `sharing` move with
    them. Existing editor tests stay green unchanged; new unit tests cover each function.
@@ -151,7 +151,7 @@ which change 1 made the page it added; nothing deleted.`; otherwise `pageRemoved
 `PageChange` (strict, unknown keys refused `invalid_value`):
 
 ```ts
-| { op: 'add'; kind: 'infographic' | 'slide' | 'logo' | 'article'; size?: PageSizeId; orientation?: PageOrientation;
+| { op: 'add'; kind: 'infographic' | 'slide' | 'article'; size?: PageSizeId; orientation?: PageOrientation;
     name?: string; background?: PageBackgroundInput; layout?: string; at?: number }
 | { op: 'set'; page: PageRef; name?: string; size?: PageSizeId; orientation?: PageOrientation;
     background?: PageBackgroundInput; locked?: boolean }
@@ -175,7 +175,7 @@ Refusals: `400 { error, message, change? }` for every engine code and `invalid_b
 tab, `409 tab_busy`, `413 tab_too_large`.
 
 `PagesRefusalCode`: `invalid_body`, `invalid_value`, `tab_locked`, `tab_kind`, `page_unknown`,
-`article_by_write`, `size_not_offered`, `no_orientation`, `pattern_not_offered`, `no_other_pages`, `layout_unknown`, `page_locked`,
+`article_by_write`, `size_not_offered`, `no_orientation`, `no_other_pages`, `layout_unknown`, `page_locked`,
 `page_limit`, `last_page`, `article_unknown`, `article_ambiguous`, `zone_unknown`, `article_too_large`.
 
 ### MCP
@@ -191,7 +191,7 @@ pageNumbers? }`, behaviour `destructive`, output as `change_pages` plus `article
   description, generated from `layoutCatalogueFor`.
 - `read_document` `view` enum gains `pages`.
 - The server instructions (`packages/agent-verbs/src/mcp/schema.ts`) gain a paragraph: what Pages tabs hold,
-  which tool makes what (a document or brief → an article, a deck → slides, a logo → a logo page), how a document
+  which tool makes what (a document or brief → an article, a deck → slides, an infographic → an infographic page), how a document
   for pages starts (`create_document` with template `blank-illustration`), and that a layout's sample text is
   found in the `pages` view and replaced with `update_document`.
 
@@ -223,8 +223,7 @@ pageNumbers? }`, behaviour `destructive`, output as `change_pages` plus `article
 | Only page already of the kind added, unnamed and empty        | first `add` of that kind takes that page (its fields and layout set)   |
 | `add` article                                                 | `article_by_write`                                                     |
 | Size not offered / `fit`                                      | `size_not_offered` with the kind's sizes                               |
-| Turn a slide or logo                                          | `no_orientation`                                                       |
-| Pattern on a logo page                                        | `pattern_not_offered`                                                  |
+| Turn a slide                                                  | `no_orientation`                                                       |
 | `apply_background_to_all` with no other page of the kind      | `no_other_pages`                                                       |
 | Layout of another kind                                        | `layout_unknown` with the kind's layouts                               |
 | Delete, in the same call, the page an `add` took as its blank | nothing deleted, line says the empty page became the added one         |

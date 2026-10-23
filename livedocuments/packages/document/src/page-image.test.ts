@@ -73,10 +73,6 @@ describe('image fills are read safely', () => {
         ?.fill,
     ).toEqual({ kind: 'image', imageId: ID });
   });
-
-  it('drops a picture from a logo page', () => {
-    expect(read({ kind: 'image', imageId: ID }, 'logo').background).toBeUndefined();
-  });
 });
 
 describe('a picture page reads as its tone under its overlay', () => {

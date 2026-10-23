@@ -8,7 +8,7 @@
 
 import type { TabDef } from './hero-editor-window';
 
-export type HeroSceneKey = 'article' | 'slides' | 'infographic' | 'logo' | 'together';
+export type HeroSceneKey = 'article' | 'slides' | 'infographic' | 'together';
 
 export type HeroSceneData = {
   key: HeroSceneKey;
@@ -40,15 +40,6 @@ export const HERO_SCENE_DATA: HeroSceneData[] = [
     tabs: [{ name: 'Infographic', color: '#8b5cf6', active: true }],
     shared: true,
     landscapeViewBox: '-24 -60 690 400',
-  },
-  {
-    key: 'logo',
-    title: 'Bloom brand',
-    tabs: [
-      { name: 'Logo', color: '#0ea5e9', active: true },
-      { name: 'App screens', color: '#10b981' },
-    ],
-    shared: true,
   },
   {
     key: 'together',

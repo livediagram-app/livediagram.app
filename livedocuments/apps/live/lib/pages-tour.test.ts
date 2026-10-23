@@ -11,17 +11,17 @@ describe('the Pages tour’s seen kinds', () => {
 
   it('owes nothing once every kind is answered', () => {
     let prefs = {};
-    for (const kind of ['slide', 'infographic', 'article', 'logo'] as const)
+    for (const kind of ['slide', 'infographic', 'article'] as const)
       prefs = markPagesKindSeen(prefs, kind);
     expect(PAGES_TOUR_KINDS.every((k) => pagesKindSeen(prefs, k))).toBe(true);
   });
 
   it('offers every kind again to someone who answered the single tour before it split', () => {
-    expect(pagesKindSeen({ pagesTourSeen: true }, 'logo')).toBe(false);
+    expect(pagesKindSeen({ pagesTourSeen: true }, 'article')).toBe(false);
   });
 
   it('counts every kind seen for a power user with the tour off', () => {
-    expect(pagesKindSeen({ pagesTourSeen: true, powerUserMode: true }, 'logo')).toBe(true);
+    expect(pagesKindSeen({ pagesTourSeen: true, powerUserMode: true }, 'article')).toBe(true);
   });
 
   it('never lists a kind twice', () => {

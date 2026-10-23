@@ -30,23 +30,6 @@ function tokensOf(row: SettingsRowSpec): string[] {
 }
 
 describe('settings catalogue', () => {
-  it("points the logo guide rows at a logo page's Guides button, where they live, not its panel", () => {
-    // docs/specs/007-editor/logo-pages.md: the guides moved out of the page panel into the Guides popover.
-    // The master switch says so once; the strength and the guides nest under it, so they do not repeat it.
-    const pages = SETTINGS_CATEGORIES.find((c) => c.id === 'pages')!;
-    expect(pages.rows.find((r) => r.key === 'logoGuides')!.alsoIn).toBe(
-      "a logo page's Guides button",
-    );
-    expect(
-      pages.rows
-        .filter((r) => r.key !== 'logoGuides' && r.key !== 'contentsPlacement')
-        .map((r) => [r.key, r.parent]),
-    ).toEqual([
-      ['logoGuideStrength', 'logoGuides'],
-      ['logoGuideParts', 'logoGuides'],
-    ]);
-  });
-
   it('shows Auto-Attach Arrows in the state the editor actually runs', () => {
     // A fresh profile has the feature OFF; the switch has to say so, or the
     // first click flips a switch that looked on to the off it already was.
@@ -99,28 +82,28 @@ describe('settings catalogue', () => {
   it('gives each Pages tour track its own row, named for itself', () => {
     // docs/specs/007-editor/pages-tour.md: each kind of page its own tour, never "Pages Tour".
     const slide = SWITCHES.find((r) => r.key === 'pagesTourSeen-slide')!;
-    const logo = SWITCHES.find((r) => r.key === 'pagesTourSeen-logo')!;
-    expect([slide.label, logo.label]).toEqual(['Slides Tour', 'Logo Tour']);
+    const article = SWITCHES.find((r) => r.key === 'pagesTourSeen-article')!;
+    expect([slide.label, article.label]).toEqual(['Slides Tour', 'Article Tour']);
     expect(slide.read({ pagesTourKinds: ['slide'] })).toBe(false);
-    expect(logo.read({ pagesTourKinds: ['slide'] })).toBe(true);
+    expect(article.read({ pagesTourKinds: ['slide'] })).toBe(true);
     // On forgets this track alone; off answers it alone.
-    expect(slide.write({ pagesTourKinds: ['slide', 'logo'] }, true)).toEqual({
+    expect(slide.write({ pagesTourKinds: ['slide', 'article'] }, true)).toEqual({
       pagesTourSeen: false,
-      pagesTourKinds: ['logo'],
+      pagesTourKinds: ['article'],
     });
-    expect(logo.write({}, false)).toEqual({ pagesTourSeen: false, pagesTourKinds: ['logo'] });
+    expect(article.write({}, false)).toEqual({ pagesTourSeen: false, pagesTourKinds: ['article'] });
     expect(slide.event.on).toBe('SlidesTourSeenOff');
-    expect(logo.event.off).toBe('LogoTourSeenOn');
+    expect(article.event.off).toBe('ArticleTourSeenOn');
   });
 
   it("folds a power user's single seen flag into the list, so one track back on leaves the others answered", () => {
     const power = setPowerUserMode({}, true).prefs;
     const slide = SWITCHES.find((r) => r.key === 'pagesTourSeen-slide')!;
-    const logo = SWITCHES.find((r) => r.key === 'pagesTourSeen-logo')!;
+    const article = SWITCHES.find((r) => r.key === 'pagesTourSeen-article')!;
     expect(slide.read(power)).toBe(false);
     const next = slide.write(power, true);
     expect(slide.read(next)).toBe(true);
-    expect(logo.read(next)).toBe(false);
+    expect(article.read(next)).toBe(false);
   });
 
   // docs/specs/007-editor/user-preferences.md "Tours": a category of its own, one switch per tour in
@@ -133,7 +116,6 @@ describe('settings catalogue', () => {
       ['pagesTourSeen-slide', 'toggle', 'Slides Tour', 'pagesTour'],
       ['pagesTourSeen-infographic', 'toggle', 'Infographic Tour', 'pagesTour'],
       ['pagesTourSeen-article', 'toggle', 'Article Tour', 'pagesTour'],
-      ['pagesTourSeen-logo', 'toggle', 'Logo Tour', 'pagesTour'],
       // Element tours (docs/specs/007-editor/element-tours.md): one switch over them all, then one per element,
       // linking that element's article.
       ['elementToursSeen', 'toggle', 'Show Me on Every Element', undefined],
@@ -164,7 +146,6 @@ describe('settings catalogue', () => {
         ['SlidesTourSeenOff', 'SlidesTourSeenOn'],
         ['InfographicTourSeenOff', 'InfographicTourSeenOn'],
         ['ArticleTourSeenOff', 'ArticleTourSeenOn'],
-        ['LogoTourSeenOff', 'LogoTourSeenOn'],
         ['ElementToursSeenOff', 'ElementToursSeenOn'],
         ['SankeyTourSeenOff', 'SankeyTourSeenOn'],
         ['LayerStackTourSeenOff', 'LayerStackTourSeenOn'],
@@ -237,7 +218,6 @@ describe('settings catalogue', () => {
       'pagesTourSeen-slide': ['pagesTourSeen', 'pagesTourKinds'],
       'pagesTourSeen-infographic': ['pagesTourSeen', 'pagesTourKinds'],
       'pagesTourSeen-article': ['pagesTourSeen', 'pagesTourKinds'],
-      'pagesTourSeen-logo': ['pagesTourSeen', 'pagesTourKinds'],
       elementToursSeen: ['elementToursSeen', 'elementTourKinds'],
       // One element's tour writes the answered list alone (lib/element-tours.ts).
       'elementTour-sankey': ['elementTourKinds'],
@@ -268,18 +248,18 @@ describe('settings catalogue', () => {
 
   // docs/specs/007-editor/pages-tour.md "Where it appears": one switch over every page kind's track.
   it('gives each kind of page its own tour row, turned back on alone', () => {
-    // docs/specs/007-editor/pages-tour.md: Slides Tour, Infographic Tour, Article Tour, Logo Tour.
+    // docs/specs/007-editor/pages-tour.md: Slides Tour, Infographic Tour, Article Tour.
     const slides = TOGGLES.find((r) => r.key === 'pagesTourSeen-slide')!;
-    const logo = TOGGLES.find((r) => r.key === 'pagesTourSeen-logo')!;
-    const seen: UserPreferences = { pagesTourKinds: ['slide', 'infographic', 'article', 'logo'] };
+    const article = TOGGLES.find((r) => r.key === 'pagesTourSeen-article')!;
+    const seen: UserPreferences = { pagesTourKinds: ['slide', 'infographic', 'article'] };
     expect(slides.read(seen)).toBe(false);
     const next = slides.write(seen, true);
     expect(next).toEqual({
       pagesTourSeen: false,
-      pagesTourKinds: ['infographic', 'article', 'logo'],
+      pagesTourKinds: ['infographic', 'article'],
     });
     expect(slides.read(next)).toBe(true);
-    expect(logo.read(next)).toBe(false);
+    expect(article.read(next)).toBe(false);
   });
 
   it('keeps row keys and telemetry tokens unique', () => {

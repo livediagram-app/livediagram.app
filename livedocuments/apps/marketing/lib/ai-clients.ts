@@ -241,7 +241,7 @@ export const AI_CLIENTS: readonly AiClient[] = [
 type StarterPrompt = { title: string; prompt: string };
 
 // Each maps to a shipped MCP tool (docs/specs/015-api/mcp-server.md §4): write_article, change_pages with slide
-// layouts, a logo page, create_document from a template, find + read_document, share_document.
+// layouts, an infographic page from a layout, create_document from a template, find + read_document, share_document.
 export const STARTER_PROMPTS: readonly StarterPrompt[] = [
   {
     title: 'Write it up',
@@ -259,9 +259,9 @@ export const STARTER_PROMPTS: readonly StarterPrompt[] = [
       'Turn these numbers into a livedocuments infographic: a headline, three big figures and a short line under each, on one page.',
   },
   {
-    title: 'Sketch a logo',
+    title: 'Design a poster',
     prompt:
-      'Add a livedocuments logo page for a bakery called Bloom: a simple symmetrical mark above the name, in warm colours.',
+      'Lay out a livedocuments event poster for a bakery called Bloom opening its doors on Saturday: a big headline, the time and place, and warm colours.',
   },
   {
     title: 'Start from a template',

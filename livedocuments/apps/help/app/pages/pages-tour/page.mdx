@@ -5,7 +5,7 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'The Pages Tour',
   description:
-    'Take the Pages tour: a walkthrough for each kind of page (slides, infographics, articles, logos) that opens the real layouts, backgrounds and deck.',
+    'Take the Pages tour: a walkthrough for each kind of page (slides, infographics, articles) that opens the real layouts, backgrounds and deck.',
   path: '/help/pages/pages-tour/',
 });
 
@@ -17,7 +17,7 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles('pages-tour')}
 >
 
-The Pages tour shows you how each kind of page is made, on your own page. There is one tour for each kind: **slides**, **infographics**, **articles** and **logos**. It works on the real editor rather than screenshots, and it opens the real controls for you: the Layout and Background popovers, the page's settings, the Slide Deck. Anything you pick while a step is open is kept. It takes under a minute, and you can leave at any point.
+The Pages tour shows you how each kind of page is made, on your own page. There is one tour for each kind: **slides**, **infographics** and **articles**. It works on the real editor rather than screenshots, and it opens the real controls for you: the Layout and Background popovers, the page's settings, the Slide Deck. Anything you pick while a step is open is kept. It takes under a minute, and you can leave at any point.
 
 ## When It's Offered
 
@@ -41,8 +41,6 @@ Each kind's tour is offered **once ever**. However you answer (decline, skip mid
 
 **Articles**: writing on the page, the page toolbar (held up for you while its step is showing), and the article's style and its fonts and spacing (the page's **Style** and **Text** settings). See [Articles](/help/pages/articles/).
 
-**Logos**: the logo layouts, guides, mirror drawing and combining shapes, as the logo page's Show Me runs them. See [Logo Pages](/help/pages/logo-pages/).
-
 A step whose control isn't on screen when the tour starts (the deck button and **Slides** on a phone, say) is left out, so the count stays honest. Each step has **Next**, **Back** and **Skip tour**; leaving a step closes whatever it opened. If you switch tab, or delete or lock the page mid-tour, it ends as skipped.
 
 ## Show Me on Any Page
@@ -54,13 +52,13 @@ Every page's settings (its cog) carry **Show Me** at the top, which runs that pa
 <Step n={1}>Open **Settings** from the editor and go to **Tours**.</Step>
 
 <Step n={2}>
-  Switch the tour for the kind of page back on: **Slides Tour**, **Infographic Tour**, **Article
-  Tour** or **Logo Tour**, or **Pages Tours** for all of them.
+  Switch the tour for the kind of page back on: **Slides Tour**, **Infographic Tour** or **Article
+  Tour**, or **Pages Tours** for all of them.
 </Step>
 
 <Step n={3}>
-  Close Settings. If that kind of page is on screen, its tour shows straight
-  away; otherwise it's offered the next time you work on one.
+  Close Settings. If that kind of page is on screen, its tour shows straight away; otherwise it's
+  offered the next time you work on one.
 </Step>
 
 </ArticleLayout>

@@ -73,7 +73,7 @@ curl -X POST https://livedocuments.app/api/documents/$DOC/tabs/$TAB/pages \
   -d '{ "article": { "markdown": "# Release notes\n\nWhat changed this month.", "size": "a4" } }'
 ```
 
-A page change is `add` (a `kind` of `infographic`, `slide` or `logo`, with an optional `size`, `orientation`, `name`, `background`, `layout` and `at`), `set`, `layout`, `move`, `duplicate` or `delete`; a page is named by its id, its place in the row (from 1) or its name. An article write takes `mode` `replace` (the default) or `append`, and `article` to name an existing one. The answer lists every page with its rectangle on the canvas, which is where a changeset puts elements to land them on that page.
+A page change is `add` (a `kind` of `infographic` or `slide`, with an optional `size`, `orientation`, `name`, `background`, `layout` and `at`), `set`, `layout`, `move`, `duplicate` or `delete`; a page is named by its id, its place in the row (from 1) or its name. An article write takes `mode` `replace` (the default) or `append`, and `article` to name an existing one. The answer lists every page with its rectangle on the canvas, which is where a changeset puts elements to land them on that page.
 
 ## A Tab as a Picture
 

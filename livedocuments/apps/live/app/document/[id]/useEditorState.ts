@@ -45,14 +45,13 @@ import { useStyleMemory } from '@/hooks/canvas/useStyleMemory';
 import type { QuickStyleDeps } from '@/hooks/canvas/useQuickStyle';
 import { useSwatchOverrides } from '@/hooks/canvas/useSwatchOverrides';
 import { getTheme } from '@/lib/themes';
-import { DEFAULT_SCHEME_ID, checklistDeltaFor } from '@livedocuments/document';
+import { DEFAULT_SCHEME_ID, checklistDeltaFor, pageSnapBoxes } from '@livedocuments/document';
 import { settleChipsInTabs } from '@/lib/settle-tabs';
 import { useEditorMode } from '@/hooks/editor/useEditorMode';
 import { selectAllIds } from '@/lib/select-all-ids';
 import { currentPageIdNow } from '@/lib/current-page-kind';
 import { useArticles } from '@/hooks/editor/useArticles';
 import { usePagesMode } from '@/hooks/editor/usePagesMode';
-import { useLogoEditor } from '@/hooks/editor/useLogoEditor';
 import { useAddCustomColour } from '@/hooks/editor/useAddCustomColour';
 import { useTagColourSetter } from '@/hooks/editor/useTagColourSetter';
 import { useFollowMe } from '@/hooks/collab/useFollowMe';
@@ -2014,22 +2013,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // commit handlers). beginDrawIfEnabled short-circuits the palette
   // adds below into draw mode; the rest is consumed by the Canvas +
   // keyboard hook. See useShapeDrawing.
-  // Logo pages (docs/specs/007-editor/logo-pages.md): the mirror-aware draw commit, the logo tools,
-  // previews and the keyline snaps. See useLogoEditor.
-  const logo = useLogoEditor({
-    pagesModeView,
-    pages: pagesMode.pages,
-    activeTab,
-    commit,
-    currentSelectionIds,
-    setSelectedId,
-    setMultiSelectedIds,
-    prefs: userPreferences,
-    setPrefs: setUserPreferences,
-    selfId: selfParticipant.id,
-    readOnly: isReadOnly,
-    getZoom: () => zoomRef.current,
-  });
+  // Every page's edges, centre and margin: what a move or resize snaps to besides elements.
+  const pageSnapBoxList = useMemo(() => pageSnapBoxes(pagesMode.pages), [pagesMode.pages]);
   const { pendingDraw, beginDraw, commitDraw, cancelDrawShape, beginPolygon, commitPolygon } =
     useShapeDrawing({
       editsBlocked: createBlocked,
@@ -2037,7 +2022,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       canvasTool,
       setCanvasTool,
       activeTab,
-      commit: logo.drawCommit,
+      commit,
       setSelectedId,
       setMultiSelectedIds,
       setEditingId,
@@ -2322,8 +2307,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     previewTextAlign,
     commitTextAlign,
     previewTextSize,
-    previewWordmark,
-    commitWordmark,
     commitTextSize,
     previewFont,
     commitFont,
@@ -2486,8 +2469,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     autoRebindArrowsRef,
     styleNewElement: styleMemory.styleNewElement,
     alignmentGuidesRef,
-    // Every page's edges and margin, and a logo page's keylines (useLogoEditor).
-    pageSnapBoxes: logo.snapBoxes,
+    pageSnapBoxes: pageSnapBoxList,
     pagesMode: pagesMode.pages,
     isPinchingRef,
   });
@@ -2653,7 +2635,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     focusBounds,
     // The person's editor mode on the active tab, for the mode switch and the canvas.
     editorMode,
-    pagesMode: logo.view,
+    pagesMode: pagesModeView,
     // A page slide presenting outside Pages draws its article's writing from these.
     // Whether anything edited is still unsaved: the new version prompt reloads only once it is not
     // (docs/specs/016-platform/new-version-prompt.md).
@@ -2960,8 +2942,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     previewTextAlign,
     commitTextAlign,
     previewTextSize,
-    previewWordmark,
-    commitWordmark,
     commitTextSize,
     previewFont,
     commitFont,

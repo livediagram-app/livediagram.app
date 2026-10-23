@@ -39,11 +39,7 @@ import {
   SizeMenuIcon,
   SquareMenuIcon,
 } from '@/components/palette/context-menu-icons';
-import {
-  MenuAccordionSection,
-  MenuActionRow,
-  MenuGroupSeparator,
-} from '@/components/primitives/PortalMenu';
+import { MenuAccordionSection, MenuGroupSeparator } from '@/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { ShapeIcon } from '@/components/primitives/shape-icon';
 import { SizeSection } from '@/components/palette/SizeSection';
@@ -55,7 +51,6 @@ import { useContextMenuScaffold } from './useContextMenuScaffold';
 import { ElementContentSections } from './ElementContentSections';
 import { ElementMenuQuickBar } from './ElementMenuQuickBar';
 import { ElementAppearanceSections } from './ElementAppearanceSections';
-import { MirrorCopyGlyph } from '@/components/canvas/logo-glyphs';
 import { MultiSelectionContextMenu } from './MultiSelectionContextMenu';
 
 import { shapeKindLabel } from '@/lib/element-names';
@@ -133,11 +128,6 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
       target.type === 'link-card' ||
       target.type === 'video';
     const showCollaborateGroup = boxed;
-    // A verb runs, then the menu gets out of the way (see the rows below).
-    const runAndClose = (action: () => void) => () => {
-      action();
-      onClose();
-    };
     return (
       <ContextMenu
         position={position}
@@ -256,14 +246,6 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
               ))}
             </div>
           </MenuAccordionSection>
-        ) : null}
-        {/* Mirror Copy on a logo page (docs/specs/007-editor/logo-pages.md "Mirror"). */}
-        {props.onMirrorCopy ? (
-          <MenuActionRow
-            icon={<MirrorCopyGlyph />}
-            label="Mirror Copy"
-            onClick={runAndClose(props.onMirrorCopy)}
-          />
         ) : null}
         {/* ── Appearance group: Presets / Progress / Animation / Colours / Border ── */}
         {

@@ -46,13 +46,13 @@ describe('a start search, best match first', () => {
 
   it('has no Best Match when no name begins with the words', () => {
     const { search } = pages();
-    fireEvent.change(search, { target: { value: 'wireframe' } });
+    fireEvent.change(search, { target: { value: 'chart' } });
     expect(screen.queryByRole('region', { name: 'Best Match' })).toBeNull();
   });
 
   it('moves between the cards with the arrow keys, Up from the first back to the search', () => {
     const { search } = pages();
-    fireEvent.change(search, { target: { value: 'wireframe' } });
+    fireEvent.change(search, { target: { value: 'chart' } });
     fireEvent.keyDown(search, { key: 'ArrowDown' });
     const all = [...document.querySelectorAll<HTMLElement>('[data-start-card]')];
     expect(all.length).toBeGreaterThan(2);

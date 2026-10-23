@@ -14,7 +14,6 @@ afterEach(cleanup);
 const edits = (): PageEdits => ({
   setOrientation: vi.fn(),
   setSize: vi.fn(),
-  setDevice: vi.fn(),
   rename: vi.fn(),
   setBackground: vi.fn(),
   applyToAllReach: vi.fn(() => 0),
@@ -30,7 +29,6 @@ const edits = (): PageEdits => ({
   previewInk: vi.fn(),
   isLocked: () => false,
   setLocked: vi.fn(),
-  startBlank: vi.fn(),
   splitPage: vi.fn(),
   removePage: vi.fn(),
 });
@@ -52,7 +50,6 @@ describe('a page held by its article lock', () => {
         themeBackgrounds={[]}
         edit={edits()}
         onPreview={vi.fn()}
-        onLayoutPreview={vi.fn()}
         onClose={vi.fn()}
       />,
     );

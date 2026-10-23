@@ -119,7 +119,7 @@ The hero speaks to a beginning:
 
 Under it, beside the sidebar, Home holds three sections in place of Jump Back In and What Happened:
 
-- **Start Blank**: the Pages blanks (Blank Slide Deck, Blank Article, Blank Infographic, Blank Logo and the rest), each a card with its preview,
+- **Start Blank**: the Pages blanks (Blank Slide Deck, Blank Article, Blank Infographic and the rest), each a card with its preview,
   title and one-line description. Activating one makes
   that blank at once (`/new?template=<kind>`).
 - **Popular Templates**: the first eight non-blank templates of the shared Popular list, as large cards with their

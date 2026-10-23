@@ -37,7 +37,6 @@ describe('HomeWelcome', () => {
       '/new?template=blank-slide-deck',
       '/new?template=blank-article',
       '/new?template=blank-infographic',
-      '/new?template=blank-logo',
     ]);
     fireEvent.click(links[0]!);
     expect(track).toHaveBeenLastCalledWith('Home', 'Selected', 'Welcome.Blank');

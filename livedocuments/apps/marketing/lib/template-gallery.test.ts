@@ -15,7 +15,7 @@ describe('galleryTemplates (docs/specs/019-marketing/marketing-site.md)', () => 
       (t) => t.kind,
     );
     expect(kinds).toEqual(expected);
-    for (const blank of ['blank', 'blank-illustration', 'blank-slide-deck', 'blank-logo']) {
+    for (const blank of ['blank', 'blank-illustration', 'blank-slide-deck']) {
       expect(kinds).not.toContain(blank);
     }
     expect(new Set(kinds).size).toBe(kinds.length);
@@ -39,14 +39,14 @@ describe('filterGallery', () => {
   });
 
   it('matches the description and the category name', () => {
-    expect(filterGallery(all, 'landing page').map((t) => t.kind)).toContain('wireframe-website');
+    expect(filterGallery(all, 'cooking').map((t) => t.kind)).toContain('recipe-card');
     expect(filterGallery(all, 'design').map((t) => t.kind)).toContain('floor-plan');
   });
 
   it('needs every word to hit somewhere', () => {
-    const kinds = filterGallery(all, 'watch wireframe').map((t) => t.kind);
-    expect(kinds).toContain('wireframe-watch-app');
-    expect(kinds).not.toContain('wireframe-website');
+    const kinds = filterGallery(all, 'floor plan').map((t) => t.kind);
+    expect(kinds).toContain('floor-plan');
+    expect(kinds).not.toContain('storyboard');
     expect(filterGallery(all, 'storyboard zebra')).toEqual([]);
   });
 });
@@ -70,7 +70,7 @@ describe('groupGallery', () => {
     const holding = (kind: string) =>
       browse.filter((g) => g.templates.some((t) => t.kind === kind)).map((g) => g.id);
     expect(holding('slide-deck')).toEqual(['presentations']);
-    expect(holding('wireframe-website')).toEqual(['design']);
+    expect(holding('floor-plan')).toEqual(['design']);
   });
 
   it('finds a template by its search words, as the editor does', () => {
@@ -91,8 +91,6 @@ describe('the shelves, as the template step lays them out', () => {
       'blank-illustration',
       'blank-slide-deck',
       'blank-article',
-      'blank-logo',
-      'blank-wireframe-phone',
     ]);
     for (const t of popularTemplates()) expect(isBlankTemplate(t.kind), t.kind).toBe(true);
     expect(shelves.slice(1).map((s) => s.id)).toEqual(

@@ -38,7 +38,7 @@ describe('usePaletteKindMotion', () => {
       initialProps: { kind: 'design' },
     });
     expect(animate).not.toHaveBeenCalled();
-    rerender({ kind: 'logo' });
+    rerender({ kind: 'slide' });
     expect(animate).toHaveBeenCalledTimes(6);
     const delays = animate.mock.calls.map((c) => (c[1] as KeyframeAnimationOptions).delay);
     expect(delays[0]).toBe(0);

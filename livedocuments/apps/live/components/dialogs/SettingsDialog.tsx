@@ -156,7 +156,7 @@ export function SettingsDialog({
     track('UI', 'Opened', `Settings${id.charAt(0).toUpperCase()}${id.slice(1)}`);
   };
 
-  // Tours › "Slides Tour", "Infographic Tour", "Article Tour", "Logo Tour" (docs/specs/007-editor/pages-tour.md): no
+  // Tours › "Slides Tour", "Infographic Tour", "Article Tour" (docs/specs/007-editor/pages-tour.md): no
   // handoff flag to arm, as the Pages tour offers itself on working with each kind of page; turning a kind's row on
   // from off reruns it in place.
   const pagesOwed = PAGES_TOUR_KINDS.filter((k) => !pagesKindSeen(settings, k));

@@ -13,7 +13,4 @@ export const CATEGORY_BANDS: Record<number, string> = {
   4: 'Boards & Cards',
   // Sheets, after Boards & Cards.
   5: 'Spreadsheets',
-  // A wireframe page's own band (docs/specs/007-editor/wireframe-pages.md "The Elements palette"):
-  // Components and Elements, first, set apart from the rest.
-  7: 'Screen',
 };

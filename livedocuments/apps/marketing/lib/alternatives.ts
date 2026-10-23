@@ -1,9 +1,9 @@
 // Single source of truth for the comparison / "alternative" pages
-// (see docs/specs/019-marketing/comparison-pages.md). The dynamic route, its metadata,
+// (see liveworkspace/docs/comparison-pages.md). The dynamic route, its metadata,
 // the index page, and the sitemap all derive from this list, so adding
 // a competitor is a one-place change.
 //
-// Honesty rules (docs/specs/019-marketing/comparison-pages.md): every livedocuments claim maps to a shipped
+// Honesty rules (liveworkspace/docs/comparison-pages.md): every livedocuments claim maps to a shipped
 // feature; every competitor gets a real "where they're the better pick"
 // section; competitor facts are qualitative (positioning, not volatile
 // pricing/numbers); free + open-source competitors are never implied to
@@ -64,7 +64,7 @@ export type Alternative = {
   // interop). This is where the page earns its depth.
   sections: DeepDiveSection[];
   // Competitor-specific questions, rendered on-page and emitted as
-  // FAQPage JSON-LD (docs/specs/019-marketing/comparison-pages.md "Metadata").
+  // FAQPage JSON-LD (liveworkspace/docs/comparison-pages.md "Metadata").
   faqs: Faq[];
 };
 
@@ -103,7 +103,7 @@ export const ALTERNATIVES: Alternative[] = [
       },
       {
         label: 'Beyond the deck',
-        us: 'Articles, infographics, logos and wireframes in the same document',
+        us: 'Articles and infographics in the same document',
         them: 'One of several Google Workspace apps',
       },
       { label: 'Self-hostable', us: 'Yes, on your own Cloudflare account', them: 'No' },
@@ -124,7 +124,7 @@ export const ALTERNATIVES: Alternative[] = [
       'Export the deck as an animated GIF for a chat, an email or a README.',
       'Real-time editing with live cursors, comments and assigned actions, for anyone with the link, no account needed.',
       'An AI assistant connected over MCP can build the deck for you from slide layouts.',
-      '35 templates to start from, from a launch keynote to a quarterly review.',
+      '23 templates to start from, from a launch keynote to a quarterly review.',
       'Free, MIT-licensed and self-hostable.',
     ],
     sections: [
@@ -145,7 +145,7 @@ export const ALTERNATIVES: Alternative[] = [
       {
         heading: 'The deck and everything behind it',
         paragraphs: [
-          'A deck is usually the last step of something: a brief, a report, a launch. In Workspace those live in Docs and Slides as separate files. In livedocuments they are tabs of one document: write the brief as an article, lay out the one-pager, design the logo, and present from all of it. Everyone edits live, with comments and assigned actions on the pages themselves.',
+          'A deck is usually the last step of something: a brief, a report, a launch. In Workspace those live in Docs and Slides as separate files. In livedocuments they are tabs of one document: write the brief as an article, lay out the one-pager, and present from all of it. Everyone edits live, with comments and assigned actions on the pages themselves.',
         ],
       },
       {

@@ -419,22 +419,10 @@ export * from './title-caption';
 export * from './editor-mode';
 export * from './tab-stats';
 export * from './page';
-export * from './wireframe-device';
-export * from './wireframe-page';
-export {
-  wireframeFrameOverSvg,
-  wireframeFrameTheme,
-  wireframeFrameUnderSvg,
-  type WireframeFrameTheme,
-} from './wireframe-device-svg';
 export * from './page-fit';
 export * from './page-image';
 export * from './page-lock';
 export * from './page-of';
-export * from './logo-page';
-export * from './element-mirror';
-export * from './element-symmetry';
-export * from './logo-guide-snap';
 export * from './wordmark';
 export * from './page-content';
 export * from './page-frame';
@@ -668,7 +656,6 @@ export * from './svg-path-outline';
 export * from './shape-hit';
 // The band a shape's label sits in (docs/specs/008-canvas/canvas-and-palette.md "Shape primitives").
 export * from './label-body';
-export * from './shape-area';
 export * from './indicator-placement';
 export * from './anchor-choice';
 export * from './arrow-body-drop';

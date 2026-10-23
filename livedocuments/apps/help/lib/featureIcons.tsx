@@ -238,23 +238,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M7.5 18h9" />
     </Glyph>
   ),
-  // A square artboard with a keyline circle and its centre lines: a logo built on its guides.
-  'logo-pages': (
-    <Glyph>
-      <rect x="3" y="3" width="18" height="18" rx="2" />
-      <circle cx="12" cy="12" r="5.5" />
-      <path d="M12 3v18M3 12h18" strokeDasharray="1.5 2" />
-    </Glyph>
-  ),
-  // A phone with a screen being wireframed: a header bar, a picture block and a button.
-  'wireframe-pages': (
-    <Glyph>
-      <rect x="6" y="2" width="12" height="20" rx="2.5" />
-      <path d="M10.5 4.5h3" />
-      <rect x="8.5" y="7.5" width="7" height="5" rx="0.75" />
-      <path d="M8.5 15h7M8.5 18h4" />
-    </Glyph>
-  ),
   // A page of writing: a title over lines of text, a short last line where a paragraph ends.
   articles: (
     <Glyph>

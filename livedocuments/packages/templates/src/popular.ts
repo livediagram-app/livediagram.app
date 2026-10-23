@@ -18,8 +18,8 @@ export const POPULAR_BY_MODE: Readonly<Record<PopularChoice, readonly TemplateKi
     'event-poster',
     'year-in-review',
     'social-carousel',
-    'wireframe-mobile-app',
-    'logo-design',
+    'how-it-works',
+    'launch-keynote',
   ],
   pages: [
     'blank-illustration',

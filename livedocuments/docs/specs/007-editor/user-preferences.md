@@ -522,8 +522,7 @@ and the dialog stays as the one complete, browsable index of them.
   pan; then **Power User**: power user mode, with Minimal chrome and the preset
   readout nested under it while the mode is on; with the sub-categories
   **Pages** (a **Pages**
-  section: Contents, Sidebar or Button; then a **Logo Pages** section: Logo Guides, with Logo Guide Strength and the Guides Shown chips
-  nested under it) and **Presenting** (the presenter settings: Slides, Playback and While Presenting,
+  section: Contents, Sidebar or Button) and **Presenting** (the presenter settings: Slides, Playback and While Presenting,
   [Presentation mode](../012-collaboration/presentation-mode.md) "Presenter settings")), **Appearance** (theme, then an **Interface** section:
   Button Labels, and UI scale with a slider per part nested under it), **Keyboard**
   (the Keyboard Shortcuts on/off switch, then the full shortcut catalogue as
@@ -558,7 +557,7 @@ and the dialog stays as the one complete, browsable index of them.
   only here - see **UI placement** below.
 
   A category can hold **sub-categories** (`parent` on the sub-category's
-  spec). **Editor** holds **Pages** (Contents and the logo guides) and **Presenting** (the presenter settings); the
+  spec). **Editor** holds **Pages** (Contents) and **Presenting** (the presenter settings); the
   settings that act on the whole canvas (quick-add on hover, alignment guides, auto-attach arrows, middle-mouse pan
   and power user mode) stay on Editor itself. A category with no rows is never shown. **Account** holds **Notifications** and
   **API Tokens**: both belong to the person rather than the editor. Their
@@ -671,8 +670,8 @@ and the dialog stays as the one complete, browsable index of them.
   and read as broken. So are the Mouse section's (Quick-Add on Hover, Middle-Mouse
   Pan): a phone has no hover and no middle button.
 
-  **Tours** is a category of its own: **Pages Tours** (over **Slides Tour**, **Infographic Tour**, **Article
-  Tour** and **Logo Tour**), with a line saying where it offers itself and a **Learn more** to its article, under
+  **Tours** is a category of its own: **Pages Tours** (over **Slides Tour**, **Infographic Tour** and **Article
+  Tour**), with a line saying where it offers itself and a **Learn more** to its article, under
   one **Offer Again** section note: each tour offers itself once; switch one back on and close Settings to take it
   again. (The tours used to be an Onboarding Tutorials grid of switches inside Accessibility, where nobody looked
   for them: a tour is not an accessibility setting.) Every switch is inverted: on means "offer me this tour", the
@@ -695,13 +694,11 @@ and the dialog stays as the one complete, browsable index of them.
   need no relaunch: the offer shows the next time such an element is selected. A category may mark any section
   closed this way (`collapsedSections`); Settings opened on one of its rows opens it.
 
-  **Toggle groups.** Several related switches that share one description are
+  **Toggle groups.** Several related switches that share one description can be
   one `toggleGroup` row: the label and description over a row of **chips**, one
   per switch, ticked and tinted while on, each its own preference with its own
   telemetry. Chips rather than a grid of switches, so short names fit without
-  truncating. **Guides Shown** (one chip per logo guide) is the one
-  today; six near-identical rows each saying "Shows the X among a logo page's
-  construction guides" read as clutter.
+  truncating, and near-identical rows do not read as clutter.
 
   **Button Labels** (Appearance › Interface, `dockButtonNames`, on by default)
   names the editor's bottom buttons beside their icons: the footer bar's Search,

@@ -1,4 +1,4 @@
-// Wordmark type in an export (docs/specs/007-editor/logo-pages.md "Wordmark type"): a text
+// Wordmark type in an export (docs/specs/006-document/document-structure.md "Text type"): a text
 // element's tracking, weight and case, flat or along its arc, written into the same SVG the PNG and
 // PDF exports rasterise (boxedNeedsSvgRaster), so every format matches the canvas.
 import type { TextElement } from './element-types';

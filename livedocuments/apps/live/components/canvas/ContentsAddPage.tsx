@@ -3,7 +3,7 @@
 // Contents' Add Page (docs/specs/007-editor/pages-mode.md "Contents"): the footer both of its homes
 // (PageContentsPanel, PageContentsSidebar) end on, the same pair the canvas's + after the last page
 // is (AddPageButton): a wide Add Page button that adds another page like the last (its tooltip says
-// what: "Add Another Slide"; a wireframe page's device and frame too), and beside it one that opens Add a
+// what: "Add Another Slide"), and beside it one that opens Add a
 // Page (AddPagePopover) to choose a page of any kind. At the page limit both are disabled, a Tooltip
 // naming the limit.
 import { useCallback, useRef, useState } from 'react';

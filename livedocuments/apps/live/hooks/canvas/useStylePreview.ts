@@ -80,8 +80,6 @@ import {
   applyHeaderFillToEl,
   applyTextColorToEl,
   applyTextSizeToEl,
-  applyWordmarkToEl,
-  type WordmarkPatch,
 } from '@/lib/style-presets';
 import type { ShapeColorPreset } from '@/lib/themes';
 import { track } from '@/lib/telemetry';
@@ -307,11 +305,6 @@ export function useStylePreview(deps: {
       commitStyle((el) => applyTextAlignToEl(el, x, y), 'TextAlign'),
     previewTextSize: (v: TextSize) => previewStyle((el) => applyTextSizeToEl(el, v)),
     commitTextSize: (v: TextSize) => commitStyle((el) => applyTextSizeToEl(el, v), 'TextSize'),
-    // Wordmark type (docs/specs/007-editor/logo-pages.md): tracking, weight, case and arc, the
-    // telemetry type naming the field a commit changed.
-    previewWordmark: (patch: WordmarkPatch) => previewStyle((el) => applyWordmarkToEl(el, patch)),
-    commitWordmark: (patch: WordmarkPatch) =>
-      commitStyle((el) => applyWordmarkToEl(el, patch), wordmarkTelemetryType(patch)),
     // Label font + box padding — same hover-preview / click-commit flow as the
     // text-size tiles above, for the element menu's Text flyout.
     previewFont: (v: string | null) => previewStyle((el) => applyFontToEl(el, v)),
@@ -354,16 +347,4 @@ export function useStylePreview(deps: {
         'IconAnimation',
       ),
   };
-}
-
-const WORDMARK_EVENT: Record<keyof WordmarkPatch, string> = {
-  letterSpacing: 'TextTracking',
-  fontWeight: 'TextWeight',
-  textCase: 'TextCase',
-  textArc: 'TextArc',
-};
-
-function wordmarkTelemetryType(patch: WordmarkPatch): string {
-  // A patch names one field: the one its control changed.
-  return WORDMARK_EVENT[Object.keys(patch)[0] as keyof WordmarkPatch];
 }

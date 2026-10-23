@@ -3,8 +3,8 @@ import type { TemplateKind } from '@livedocuments/templates';
 import { pv } from './motion';
 
 // Group 20: the blanks of a page kind (docs/specs/007-editor/start-diagramming.md "Recommended and groups"): Blank
-// Slide Deck, Blank Article, Blank Infographic and Blank Logo. Each draws its one empty page in its own proportions
-// (a 16:9 slide, an A4 page, the square artboard) with the dashed edge, faint guides and sky "+" of Blank
+// Slide Deck, Blank Article and Blank Infographic. Each draws its one empty page in its own proportions
+// (a 16:9 slide, an A4 page) with the dashed edge, faint guides and sky "+" of Blank
 // Illustration's page, so the Pages blanks read as a set. Hover story: the guides light up, what the page is for.
 // Static SVG preview tiles, one branch per TemplateKind; TemplatePreview chains the groups with ??.
 
@@ -101,28 +101,6 @@ export function templatePreviewGroup20(kind: TemplateKind): ReactElement | null 
             ))}
           </g>
           <Plus cx={40} cy={41} />
-        </svg>
-      );
-    case 'blank-logo':
-      // One empty square artboard: centre guides and a ring where the mark goes, a faint wordmark under it. Hover
-      // story: the ring lights up.
-      return (
-        <svg width="80" height="50" viewBox="0 0 80 50" aria-hidden>
-          <Page x={21} y={6} width={38} height={38} />
-          <path d="M40 9 V41 M24 22 H56" stroke={GUIDE} strokeWidth="0.5" strokeDasharray="1.2 1" />
-          <circle
-            className="pv-pulse"
-            cx="40"
-            cy="22"
-            r="8"
-            fill={TINT}
-            stroke={SOFT_SKY}
-            strokeWidth="0.8"
-            strokeDasharray="1.6 1.2"
-            style={pv({ '--pv-at': '500ms' })}
-          />
-          <rect x="33" y="35" width="14" height="1.8" rx="0.9" fill={LINE} />
-          <Plus cx={40} cy={22} />
         </svg>
       );
     default:

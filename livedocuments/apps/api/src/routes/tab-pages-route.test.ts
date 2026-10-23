@@ -146,13 +146,13 @@ describe('page changes', () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     const { db } = await setUp();
     expect(
-      (await call(db, { pages: [{ op: 'add', kind: 'logo' }] }, { owner: 'user_x' })).status,
+      (await call(db, { pages: [{ op: 'add', kind: 'slide' }] }, { owner: 'user_x' })).status,
     ).toBe(403);
     expect(
       (
         await call(
           db,
-          { pages: [{ op: 'add', kind: 'logo' }] },
+          { pages: [{ op: 'add', kind: 'slide' }] },
           { path: '/api/documents/D/tabs/nope/pages' },
         )
       ).status,
@@ -161,7 +161,7 @@ describe('page changes', () => {
       (
         await call(
           db,
-          { pages: [{ op: 'add', kind: 'logo' }] },
+          { pages: [{ op: 'add', kind: 'slide' }] },
           { path: '/api/documents/Z/tabs/t1/pages' },
         )
       ).status,
@@ -172,7 +172,7 @@ describe('page changes', () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const { db } = await setUp(500);
-    const res = await call(db, { pages: [{ op: 'add', kind: 'logo' }] });
+    const res = await call(db, { pages: [{ op: 'add', kind: 'slide' }] });
     expect(res.status).toBe(200);
     expect(stored(db).pages).toHaveLength(1);
     expect(warn).toHaveBeenCalledWith(

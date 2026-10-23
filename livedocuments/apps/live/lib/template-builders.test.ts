@@ -22,26 +22,14 @@ import { buildTemplate, buildTemplatedTab } from './template-builders';
 //     fails to compile when that set is non-empty.
 // The previous wording claimed `satisfies` alone enforced
 // exhaustiveness, which was wrong: `satisfies` only checks the
-// other direction. `logo-design` slipped past the check that way.
+// other direction. A template once slipped past the check that way.
 const ALL_KINDS = [
   'blank',
   'blank-illustration',
   'blank-slide-deck',
   'blank-article',
   'blank-infographic',
-  'blank-logo',
-  'blank-wireframe-phone',
-  'blank-wireframe-tablet',
-  'blank-wireframe-browser',
-  'blank-wireframe-laptop',
-  'blank-wireframe-watch',
   'slide-deck',
-  'logo-design',
-  'wireframe-mobile-app',
-  'wireframe-website',
-  'wireframe-dashboard',
-  'wireframe-tablet-app',
-  'wireframe-watch-app',
   'live-card',
   'storyboard',
   'floor-plan',
@@ -90,12 +78,6 @@ function coordsOf(el: Element): { x: number; y: number }[] {
 // on pages").
 const PAGED_KINDS = [
   'slide-deck',
-  'logo-design',
-  'wireframe-mobile-app',
-  'wireframe-website',
-  'wireframe-dashboard',
-  'wireframe-tablet-app',
-  'wireframe-watch-app',
   'live-card',
   'event-poster',
   'year-in-review',
@@ -128,8 +110,7 @@ function centreOf(el: Element): { x: number; y: number } | undefined {
 }
 
 describe('templates on pages', () => {
-  // A deck is built of slide pages, the logo exploration's lockups of logo pages; every other paged
-  // template of infographic pages. Either way a chosen kind, so the first page's kind choice is
+  // A deck is built of slide pages; every other paged template of infographic pages. Either way a chosen kind, so the first page's kind choice is
   // never offered.
   // The decks: the Slide Deck and the decks built from slide layouts.
   const SLIDE_DECK_KINDS = new Set<string>([
@@ -143,15 +124,8 @@ describe('templates on pages', () => {
     const o = templateCanvasOverrides(kind);
     expect(o.opensIn).toBe('pages');
     expect(o.pages?.length).toBeGreaterThan(0);
-    const want = (i: number) =>
-      SLIDE_DECK_KINDS.has(kind)
-        ? 'slide'
-        : kind === 'logo-design' && i < 6
-          ? 'logo'
-          : kind.startsWith('wireframe-')
-            ? 'wireframe'
-            : 'infographic';
-    expect(o.pages!.every((p, i) => p.kind === want(i))).toBe(true);
+    const want = SLIDE_DECK_KINDS.has(kind) ? 'slide' : 'infographic';
+    expect(o.pages!.every((p) => p.kind === want)).toBe(true);
     expect(new Set(o.pages!.map((p) => p.id)).size).toBe(o.pages!.length);
   });
 

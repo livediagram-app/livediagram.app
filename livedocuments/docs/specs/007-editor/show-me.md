@@ -65,7 +65,7 @@ points only at controls that person can use. Each surface's spec names who that 
 
 Each surface sends three literal events under its own token `<Surface>Tour`: `UI` · `Started` · `<Surface>Tour`
 when the button is pressed, and `UI` · `Ended` · `<Surface>TourCompleted` or `<Surface>TourSkipped`. The tokens:
-`ShareTour`, `LogoTour`, `SlideTour`, `InfographicTour`, `ArticleTour`, `SankeyFlowsTour`, `TabStyleTour`. Each
+`ShareTour`, `SlideTour`, `InfographicTour`, `ArticleTour`, `SankeyFlowsTour`, `TabStyleTour`. Each
 has its stack (Started, Completed, Skipped) on the telemetry dashboard, and its explanations.
 
 ## Code

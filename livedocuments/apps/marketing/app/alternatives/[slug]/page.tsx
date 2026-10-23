@@ -27,7 +27,7 @@ const DotIcon = lucideGlyph(lucideCircleDot, 16);
 const sectionId = (i: number) => `section-${i + 1}`;
 
 // One page per competitor at /alternatives/<slug> (see
-// docs/specs/019-marketing/comparison-pages.md). Static export: only the known slugs are
+// liveworkspace/docs/comparison-pages.md). Static export: only the known slugs are
 // generated, so an unknown slug 404s at build rather than rendering.
 export const dynamicParams = false;
 
@@ -56,7 +56,7 @@ export default async function AlternativePage({ params }: { params: Promise<{ sl
   const alt = getAlternative(slug);
   if (!alt) notFound();
 
-  // FAQPage JSON-LD (docs/specs/019-marketing/comparison-pages.md "Metadata"): the per-competitor questions
+  // FAQPage JSON-LD (liveworkspace/docs/comparison-pages.md "Metadata"): the per-competitor questions
   // target the long-tail queries around "<tool> alternative" searches
   // and can surface as Google's expandable-FAQ rich result. Answers
   // are plain strings in the data, so the structured-data text matches
@@ -135,7 +135,7 @@ export default async function AlternativePage({ params }: { params: Promise<{ sl
               </div>
             </section>
 
-            {/* Honest two-sided takeaway (docs/specs/019-marketing/comparison-pages.md "Honesty rules"). */}
+            {/* Honest two-sided takeaway (liveworkspace/docs/comparison-pages.md "Honesty rules"). */}
             <section
               id="which-to-pick"
               aria-labelledby="which-to-pick-title"
@@ -186,7 +186,7 @@ export default async function AlternativePage({ params }: { params: Promise<{ sl
               </div>
             </section>
 
-            {/* Deep-dive sections (docs/specs/019-marketing/comparison-pages.md "Page shape"): competitor-specific
+            {/* Deep-dive sections (liveworkspace/docs/comparison-pages.md "Page shape"): competitor-specific
                 prose expanding the key value themes behind the bullets above. */}
             {alt.sections.map((section, i) => (
               <section

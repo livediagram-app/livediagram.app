@@ -22,7 +22,7 @@ const CATEGORY_LIST: readonly CategoryInfo[] = [
     id: 'design',
     label: 'Design',
     searchWords: 'ux',
-    description: 'Wireframes, storyboards and floor plans.',
+    description: 'Storyboards and floor plans, on A3 sheets.',
   },
   {
     id: 'presentations',
@@ -45,17 +45,7 @@ export const TEMPLATE_CATEGORIES: readonly Omit<CategoryInfo, 'searchWords'>[] =
 // "Recommended and groups"). Mirrors isBlankTemplate (BLANK_TEMPLATE_FOR_MODE, EXTRA_BLANK_TEMPLATES and Blank Tab);
 // the categories test pins them together.
 type BlankKind =
-  | 'blank'
-  | 'blank-illustration'
-  | 'blank-slide-deck'
-  | 'blank-article'
-  | 'blank-infographic'
-  | 'blank-logo'
-  | 'blank-wireframe-phone'
-  | 'blank-wireframe-tablet'
-  | 'blank-wireframe-browser'
-  | 'blank-wireframe-laptop'
-  | 'blank-wireframe-watch';
+  'blank' | 'blank-illustration' | 'blank-slide-deck' | 'blank-article' | 'blank-infographic';
 
 // Every non-blank template's primary category.
 const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCategory> = {
@@ -73,18 +63,12 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   'team-welcome': 'presentations',
   'workshop-kickoff': 'presentations',
   'event-poster': 'presentations',
-  'logo-design': 'presentations',
   resume: 'presentations',
   'recipe-card': 'presentations',
   'live-card': 'presentations',
-  // Design: screens and the spaces people move through.
+  // Design: shots and the spaces people move through.
   storyboard: 'design',
   'floor-plan': 'design',
-  'wireframe-mobile-app': 'design',
-  'wireframe-website': 'design',
-  'wireframe-dashboard': 'design',
-  'wireframe-tablet-app': 'design',
-  'wireframe-watch-app': 'design',
 };
 
 // Cross-listing: the other categories a template is also shown in, where someone would genuinely look for it there.

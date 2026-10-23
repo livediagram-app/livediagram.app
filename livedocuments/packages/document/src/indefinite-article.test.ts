@@ -14,7 +14,7 @@ describe('indefiniteArticle', () => {
       'entity',
     ])
       expect(indefiniteArticle(w), w).toBe('an');
-    for (const w of ['Blank Diagram', 'Crazy 8s', 'slide', 'logo', 'YouTube', 'hotspot'])
+    for (const w of ['Blank Diagram', 'Crazy 8s', 'slide', 'YouTube', 'hotspot'])
       expect(indefiniteArticle(w), w).toBe('a');
   });
 

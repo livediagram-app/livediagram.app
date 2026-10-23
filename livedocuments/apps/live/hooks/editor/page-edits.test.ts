@@ -315,63 +315,6 @@ describe('slide page edits', () => {
   });
 });
 
-// docs/specs/007-editor/logo-pages.md "A logo page": a logo page is the artboard, keeps it, takes
-// no pattern, and no other page takes the artboard.
-describe('logo page edits', () => {
-  const logoTab = (): Tab =>
-    ({
-      id: 't',
-      name: 'T',
-      elements: [],
-      pages: [
-        { id: 'page-1', orientation: 'landscape', size: 'a3', kind: 'infographic' },
-        { id: 'l1', orientation: 'portrait', size: 'logo', kind: 'logo' },
-      ],
-    }) as unknown as Tab;
-
-  it('adds the artboard, and an infographic page modelled on the last infographic', async () => {
-    const { track } = await import('@/lib/telemetry');
-    const h = harness(logoTab());
-    h.edits().addPage!('logo');
-    expect(track).toHaveBeenLastCalledWith('Tab', 'Changed', 'LogoPageAdded');
-    h.edits().addPage!('infographic');
-    const [, , logo, page] = pagesOf(h.tab());
-    expect(logo).toMatchObject({ size: 'logo', kind: 'logo' });
-    expect(page).toMatchObject({ orientation: 'landscape', size: 'a3' });
-  });
-
-  it('keeps the artboard: no other size, no turn, no pattern', () => {
-    const h = harness(logoTab());
-    h.edits().setSize('l1', 'square');
-    h.edits().setOrientation('l1', 'landscape');
-    h.edits().setBackground('l1', { pattern: 'dots' });
-    expect(h.commitTabs).not.toHaveBeenCalled();
-    h.edits().setBackground('l1', { fill: { kind: 'solid', color: '#101010' } });
-    expect(pagesOf(h.tab())[1]!.background).toEqual({
-      fill: { kind: 'solid', color: '#101010' },
-    });
-  });
-
-  it('never gives the artboard to another page', () => {
-    const h = harness(logoTab());
-    h.edits().setSize('page-1', 'logo');
-    expect(h.commitTabs).not.toHaveBeenCalled();
-  });
-
-  it('chooses Logo for the only, empty page', async () => {
-    const { track } = await import('@/lib/telemetry');
-    const h = harness({
-      id: 't',
-      name: 'T',
-      elements: [],
-      pages: [{ id: 'page-1', orientation: 'portrait' }],
-    } as unknown as Tab);
-    h.edits().choosePageKind('page-1', 'logo');
-    expect(track).toHaveBeenLastCalledWith('Tab', 'Changed', 'PageKindLogo');
-    expect(pagesOf(h.tab())[0]).toMatchObject({ kind: 'logo', size: 'logo' });
-  });
-});
-
 describe('locking a page (docs/specs/007-editor/pages-mode.md "Locking a page")', () => {
   it('locks and unlocks a page, one edit each', () => {
     const h = harness(twoPages());
@@ -397,18 +340,6 @@ describe('locking a page (docs/specs/007-editor/pages-mode.md "Locking a page")'
     const copy = pagesOf(h.tab())[1]!;
     expect(copy.id).not.toBe('page-1');
     expect(copy.locked).toBeUndefined();
-  });
-
-  it('starts a page blank once, never on a locked page', () => {
-    const h = harness(twoPages());
-    h.edits().startBlank('page-1');
-    expect(pagesOf(h.tab())[0]!.startedBlank).toBe(true);
-    const after = h.tab();
-    h.edits().startBlank('page-1');
-    expect(h.tab()).toBe(after);
-    h.edits().setLocked('page-2', true);
-    h.edits().startBlank('page-2');
-    expect(pagesOf(h.tab())[1]!.startedBlank).toBeUndefined();
   });
 
   it("refuses the edits an article's pages share when any of them is locked", () => {

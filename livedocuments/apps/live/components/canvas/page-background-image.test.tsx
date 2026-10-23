@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 // The Background section's Image category (docs/specs/007-editor/pages-mode.md "Image
-// backgrounds"): offered but on a logo page, the search asking for the page's shape, a hovered
+// backgrounds"): offered on every page kind, the search asking for the page's shape, a hovered
 // result previewed, a pick one edit with a readable overlay, and the overlay, strength and position.
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -88,12 +88,9 @@ function show(page: Partial<Page> & { fill?: PageFill }, surface: 'light' | 'dar
 const radio = (name: string) => screen.getByRole('radio', { name });
 
 describe('the Image category', () => {
-  it('is offered on an infographic page, never on a logo page', () => {
+  it('is offered on an infographic page', () => {
     show({});
     expect(radio('Image')).toBeTruthy();
-    cleanup();
-    show({ kind: 'logo', size: 'logo' });
-    expect(screen.queryByRole('radio', { name: 'Image' })).toBeNull();
   });
 
   it('opens on a page with a picture, and asks the search for the page’s shape (never large: its thumbnails fail)', () => {

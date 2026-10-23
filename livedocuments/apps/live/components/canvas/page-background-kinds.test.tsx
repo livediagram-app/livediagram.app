@@ -38,7 +38,7 @@ describe('BackgroundKinds', () => {
     expect(onChange).toHaveBeenCalledWith('animated');
   });
 
-  it('lays a logo page’s two kinds across the whole row', () => {
+  it('lays two kinds across the whole row', () => {
     render(
       <BackgroundKinds
         categories={['solid', 'gradient']}

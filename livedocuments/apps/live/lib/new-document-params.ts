@@ -7,7 +7,7 @@ import { templateKindOf, type TemplateKind } from '@livedocuments/templates';
 
 // The template the query asks for, or null for a document that opens on its start. `blank` wins when both are present
 // (it is the older, documented shortcut); an unknown template kind is ignored rather than guessed, so a stale
-// marketing link makes a document, not a 404. A retired kind opens its replacement (templateKindOf).
+// marketing link makes a document, not a 404.
 export function newDocumentKind(search: string): TemplateKind | null {
   const params = new URLSearchParams(search);
   if (params.has('blank')) return 'blank';

@@ -17,7 +17,6 @@ import {
   type CanvasSurface,
   type Slide,
   type Tab,
-  tabWireframeFrameTheme,
 } from '@livedocuments/document';
 import { pageRulingOf, pageWritingBars } from '@/lib/article/article-export';
 import { articleOpsToSvg } from '@/lib/article/article-draw';
@@ -69,7 +68,6 @@ export function slideThumbFor(slide: Slide, tab: Tab, opts: SlideThumbOptions): 
       paper: CANVAS_PAPER[canvasSurface === 'dark' ? 'dark' : 'light'],
       idPrefix: `lvd-slide-${slide.id}`,
       ruling: pageRulingOf(tab, page),
-      frameTheme: tabWireframeFrameTheme(tab),
     });
     if (page.background?.fill) surface = frame.surface;
     parts.push(frame.backgroundSvg);

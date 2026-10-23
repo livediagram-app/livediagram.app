@@ -1,6 +1,6 @@
 # livedocuments
 
-A collaborative editor for documents made of pages (articles, slide decks, infographics, logos and wireframes) that works without signing in. Open a link, make pages, share, present. Real-time presence, cursors, comments, undo and redo. The editor never sits behind an auth wall, so the friction to start is "open the link, start writing."
+A collaborative editor for documents made of pages (articles, slide decks and infographics) that works without signing in. Open a link, make pages, share, present. Real-time presence, cursors, comments, undo and redo. The editor never sits behind an auth wall, so the friction to start is "open the link, start writing."
 
 **Live at [livedocuments.app](https://livedocuments.app).** MIT-licensed and self-hostable end-to-end.
 

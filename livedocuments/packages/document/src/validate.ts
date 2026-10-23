@@ -299,7 +299,7 @@ const TEXT_FIELD_CHECKS: readonly FieldCheck[] = [
     valid: (v) => isNum(v) && v >= TEXT_SCALE_MIN && v <= TEXT_SCALE_MAX,
     rule: `a number from ${TEXT_SCALE_MIN} to ${TEXT_SCALE_MAX}`,
   },
-  // Wordmark type (docs/specs/007-editor/logo-pages.md "Wordmark type").
+  // Wordmark type (docs/specs/006-document/document-structure.md "Text type").
   {
     field: 'letterSpacing',
     valid: (v) => isNum(v) && v >= LETTER_SPACING_MIN && v <= LETTER_SPACING_MAX,

@@ -20,7 +20,7 @@ export type ContentsRow = {
   number: number;
   // Its own name, else "Page n".
   name: string;
-  // What it is: "Infographic · A4 Portrait", "Slide · In the deck", "Article · Its Title", "Logo".
+  // What it is: "Infographic · A4 Portrait", "Slide · In the deck", "Article · Its Title".
   line: string;
   locked: boolean;
   // Its shape on the sheet, for the thumbnail's frame.
@@ -37,8 +37,6 @@ const KIND_NAME = {
   infographic: 'Infographic',
   slide: 'Slide',
   article: 'Article',
-  logo: 'Logo',
-  wireframe: 'Wireframe',
 } as const;
 
 export function contentsRows(
@@ -56,8 +54,6 @@ export function contentsRows(
       const size = pageSizeLabel(p);
       const turn = pageHasOrientation(p) && ['a4', 'letter', 'a3'].includes(p.size ?? 'a4');
       line += ` · ${size}${turn ? ` ${p.orientation === 'portrait' ? 'Portrait' : 'Landscape'}` : ''}`;
-    } else if (kind === 'wireframe') {
-      line += ` · ${pageSizeLabel(p)}${p.orientation === 'landscape' && pageHasOrientation(p) ? ' Landscape' : ''}`;
     } else if (kind === 'slide' && opts.inDeck) {
       line += opts.inDeck(p.id) ? ' · In the deck' : ' · Not in the deck';
     } else if (kind === 'article' && p.flow) {

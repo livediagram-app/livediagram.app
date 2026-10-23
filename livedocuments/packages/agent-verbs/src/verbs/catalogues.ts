@@ -96,7 +96,10 @@ export const templateView = defineVerb({
   text: ({ text }) => [text],
   cli: {
     positionals: ['kind'],
-    examples: ['livedocuments template view slide-deck', 'livedocuments template view logo-design'],
+    examples: [
+      'livedocuments template view slide-deck',
+      'livedocuments template view event-poster',
+    ],
     prints: 'the outline of the tab the template builds',
   },
 });
@@ -134,7 +137,10 @@ export const iconSearch = defineVerb({
   quiet: ({ icons }) => icons.map((i) => i.id),
   cli: {
     positionals: ['text'],
-    examples: ['livedocuments icon search database', 'livedocuments icon search "message queue" --limit 5'],
+    examples: [
+      'livedocuments icon search database',
+      'livedocuments icon search "message queue" --limit 5',
+    ],
     prints: 'one icon a line: id, label, catalogue',
   },
 });

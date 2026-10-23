@@ -33,8 +33,8 @@ describe('ContentsAddPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Add a Page of Any Kind' }));
     const chooser = screen.getByRole('dialog', { name: 'Add a Page' });
     expect(chooser.hasAttribute('data-menu-surface')).toBe(true);
-    fireEvent.click(chooser.querySelector('[data-add-kind="logo"]')!);
-    expect(c.add).toHaveBeenCalledWith('logo');
+    fireEvent.click(chooser.querySelector('[data-add-kind="article"]')!);
+    expect(c.add).toHaveBeenCalledWith('article');
     expect(screen.queryByRole('dialog', { name: 'Add a Page' })).toBeNull();
   });
 

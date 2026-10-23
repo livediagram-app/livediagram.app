@@ -13,9 +13,6 @@ import type { GalleryLayout } from './layout-gallery-filter';
 
 // How far beyond the scrolling area a tile starts drawing, so a flick rarely meets a placeholder.
 const DRAW_AHEAD_PX = 320;
-// The tallest a wireframe page's tile stands: a phone, twice as tall as wide, narrows to fit
-// (LayoutThumb's maxHeight) rather than towering over the row.
-const WIREFRAME_TILE_MAX_H = 200;
 
 /** Whether the element has come within DRAW_AHEAD_PX of the scrolling area; true at once where
  *  there is no IntersectionObserver (a test), and for good once seen. */
@@ -56,8 +53,7 @@ export const LayoutTile = memo(function LayoutTile({
 }) {
   const art = useRef<HTMLDivElement>(null);
   const seen = useSeen(art, scrollRoot);
-  const tall = Math.round((width * page.rect.height) / page.rect.width);
-  const height = page.kind === 'wireframe' ? Math.min(tall, WIREFRAME_TILE_MAX_H) : tall;
+  const height = Math.round((width * page.rect.height) / page.rect.width);
   return (
     <button
       type="button"
@@ -75,7 +71,7 @@ export const LayoutTile = memo(function LayoutTile({
       >
         {seen ? (
           <span className="flex h-full w-full items-center justify-center">
-            <LayoutThumb layout={layout.id} page={page} width={width} maxHeight={height} />
+            <LayoutThumb layout={layout.id} page={page} width={width} />
           </span>
         ) : null}
         <span

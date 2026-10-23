@@ -168,7 +168,7 @@ A new category, **Concepts**, in the Structure band: **Layer Stack**, **Pyramid*
 Spoke**, **Onion**, **Chevrons**. The Funnel
 tile places a Pyramid with the Funnel variant (the variant is the decision, so it gets its own tile). The
 **Sankey** ([Sankey diagram](sankey.md)) joins them last: a flow drawn as wide as what it carries explains an idea
-the way a funnel or a cycle does. Every Pages palette but the wireframe's and the logo's offers Concepts.
+the way a funnel or a cycle does. Every Pages palette offers Concepts.
 
 ## Templates
 

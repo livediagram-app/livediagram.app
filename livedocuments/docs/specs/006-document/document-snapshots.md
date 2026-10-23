@@ -58,7 +58,7 @@ This is **render-on-read**, not render-on-save, on purpose:
 
 ### Pages tabs
 
-A first tab in Pages (pages: infographics, slides, logos, articles)
+A first tab in Pages (pages: infographics, slides, articles)
 snapshots as **its first page alone**, drawn as the page export draws it
 (`renderPageToSvg`, [Pages](../007-editor/pages-mode.md) "Export"): the page's sheet and
 background, an article page's estimated writing, and the elements reaching

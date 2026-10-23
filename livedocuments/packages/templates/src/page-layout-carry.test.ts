@@ -166,7 +166,7 @@ describe('carryPageContent', () => {
     expect((huge[0] as TextElement).textScale).toBeCloseTo(0.8, 1);
   });
 
-  it('carries into slide and logo layouts too', () => {
+  it('carries into slide layouts too', () => {
     const page = relabel(build('title'), 'Your big headline', 'Q3 Results');
     const slide = carryPageContent(page, pageLayoutById('slide-title').build(TALL));
     expect(labels(slide)).toContain('Q3 Results');

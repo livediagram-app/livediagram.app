@@ -1,4 +1,3 @@
-import { mirroredLogoPages } from '@/hooks/editor/useLogoTools';
 import { useViewportStore } from '@/hooks/canvas/useViewportStore';
 import { ViewZoomControls } from '@/components/canvas/view-readers';
 import { computeDrawGuides } from '@/components/canvas/canvas-draw-guides';
@@ -383,9 +382,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
         polygonVertices={polygonVertices}
         polygonCursor={polygonCursor}
         pendingDraw={pendingDraw}
-        mirrorPages={
-          props.pagesMode ? mirroredLogoPages(props.pagesMode.pages, props.pagesMode.logo) : null
-        }
         wrapperRef={wrapperRef}
         mainSize={props.mainSize}
       />

@@ -46,7 +46,7 @@ describe('pickTourPage', () => {
 
   it('passes over a locked page and one too small to show its cog', () => {
     drawPage('a', 'slide', [0, 0, 800, 450], { locked: true });
-    drawPage('b', 'logo', [0, 0, 300, 300], { cog: false });
+    drawPage('b', 'infographic', [0, 0, 300, 300], { cog: false });
     expect(pickTourPage(all)).toBeNull();
   });
 

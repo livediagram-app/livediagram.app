@@ -56,14 +56,7 @@ export function galleryTemplates(): GalleryTemplate[] {
 
 // Blanks the row already shows by another name: Blank Infographic is Blank Illustration's own
 // empty infographic page, so it is left off rather than shown twice.
-const SHOWN_AS_ANOTHER_BLANK: readonly string[] = [
-  'blank-infographic',
-  // One blank wireframe stands for all five (docs/specs/007-editor/wireframe-pages.md "Templates").
-  'blank-wireframe-tablet',
-  'blank-wireframe-browser',
-  'blank-wireframe-laptop',
-  'blank-wireframe-watch',
-];
+const SHOWN_AS_ANOTHER_BLANK: readonly string[] = ['blank-infographic'];
 
 // Blank Slate's blanks: the empty page that asks what it is for, then a blank of each page kind.
 const BLANK_SLATE_KINDS = [

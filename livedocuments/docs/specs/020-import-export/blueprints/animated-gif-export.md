@@ -81,7 +81,7 @@ longSide)`, at least 1.
    `[data-page-id]`; every outermost `[data-element-id]` whose screen box misses this page's (a frame then
    draws one page's DOM, not the whole deck's); and every node matching `GIF_OMIT_SELECTOR`: `[data-gif-omit]`
    (the `GifOmit` wrapper round the drafts, cursors, laser, agent overlays and avatars; the
-   first-page kind choice, the in-page layout card and an empty logo page's guides), `[data-selection-grips]` and
+   first-page kind choice and the in-page layout card), `[data-selection-grips]` and
    `[data-comment-trigger]`. Page title bars and the add-page button sit outside the page's box and are cropped.
 4. **Animation table**, read inside `withFullMotion` (below): for each kept node and each of `''`, `'::before'`,
    `'::after'` whose computed `animation-name` is not `none`, a row `{ id, pseudo, delaysMs[] }` from the computed
@@ -126,8 +126,7 @@ Reduce Motion on (the system's or the app's) would read every page as still.
 snapshotOf)` loads the incoming page at `frame.t` and, under a transition, the outgoing page at `frame.from.t` (in
   parallel), composes them and returns `getImageData(...).data` (a fresh buffer: it is transferred to the worker);
   a throw from `getImageData` is `GifExportError('tainted')`.
-- `composeFrame(ctx, frame, transition, w, h, { incoming, outgoing })`: white paper first, always (a logo page's
-  see-through paper). No `from` or `none`: the incoming page. Fade: the outgoing page, then the incoming with
+- `composeFrame(ctx, frame, transition, w, h, { incoming, outgoing })`: white paper first, always. No `from` or `none`: the incoming page. Fade: the outgoing page, then the incoming with
   `globalAlpha = mix`. Slide: the outgoing at `x = -round(mix * w)`, the incoming at `w - round(mix * w)`.
 
 ### The encoder (`gif-encode-core.ts`, `gif-encode.worker.ts`, `gif-encoder.ts`)
@@ -187,7 +186,7 @@ pages.length > 1`; the transition is `config.transition`, its length `SLIDE_SPEE
 ## Interfaces and contracts
 
 - `Format` (`ExportTabDialog.tsx`) includes `'gif'`; `PAGES_FORMATS` is `['pdf', 'png', 'svg', 'gif', 'file']`.
-  A tab with no pages yet, and a selection export, leave out `'gif'` with `'logo-kit'`.
+  A tab with no pages yet, and a selection export, leave out `'gif'`.
 - `GifExportError` codes: `'page-missing' | 'tainted' | 'failed'`; the panel maps them to the spec's three lines
   (`GIF_ERROR_COPY`).
 - `ExportPagePicker` takes `format: PageExportFormat | 'gif'` for its outcome line.

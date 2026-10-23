@@ -30,9 +30,6 @@ describe('blanks of a page kind', () => {
     expect(blankPageTemplateOverrides('blank-infographic')!.pages).toEqual([
       { id: 'page-1', orientation: 'portrait', kind: 'infographic' },
     ]);
-    expect(blankPageTemplateOverrides('blank-logo')!.pages).toEqual([
-      { id: 'page-1', orientation: 'portrait', size: 'logo', kind: 'logo' },
-    ]);
     const article = blankPageTemplateOverrides('blank-article')!;
     expect(article.pages).toEqual([
       { id: 'page-1', orientation: 'portrait', kind: 'article', flow: 'art-1' },
@@ -55,7 +52,7 @@ describe('blanks of a page kind', () => {
       expect(templateCategory(kind)).toBeNull();
     }
     expect(untitledNameForTemplate('blank-slide-deck')).toBe('Untitled Slide Deck');
-    expect(untitledNameForTemplate('blank-logo')).toBe('Untitled Logo');
+    expect(untitledNameForTemplate('blank-infographic')).toBe('Untitled Infographic');
   });
 
   it('answers nothing for any other template', () => {
@@ -68,7 +65,8 @@ describe('blanks of a page kind', () => {
 describe('a blank infographic on its theme', () => {
   it("starts its page on the theme's default background, a blank deck's on Steel; other templates keep theirs", async () => {
     const { buildTemplateTab } = await import('./template-tab');
-    const { defaultPageBackground, getBuiltInTheme, pagesOf } = await import('@livedocuments/document');
+    const { defaultPageBackground, getBuiltInTheme, pagesOf } =
+      await import('@livedocuments/document');
     const tab = buildTemplateTab('t', 'T', 'blank-infographic', 'ocean');
     expect(pagesOf(tab)[0]!.background).toEqual(defaultPageBackground(getBuiltInTheme('ocean')));
     const slides = buildTemplateTab('s', 'S', 'blank-slide-deck', 'ocean');

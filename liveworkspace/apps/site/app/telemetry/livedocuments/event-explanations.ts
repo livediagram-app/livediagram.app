@@ -273,88 +273,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Element|Changed|TextFormat':
     "Someone applied rich-text formatting, such as bold, a colour, a list, a heading, or a link, to part of an element's label.",
   'Element|Changed|TextSize': "Someone changed a selected element's text size.",
-  'Tab|Changed|LogoPageAdded': 'Someone added a logo page to a Pages tab.',
-  'Tab|Changed|PageKindLogo': "Someone chose Logo for a new Pages tab's first page.",
-  'Tab|Changed|WireframePageAdded': 'Someone added a wireframe page to a Pages tab.',
   'Tab|Changed|PageAddedLikeLast':
     'Someone added another page like the last one, with the + after the pages.',
-  'Tab|Changed|PageKindWireframe': "Someone chose Wireframe for a new Pages tab's first page.",
-  'Tab|Changed|WireframeDeviceIphone': 'Someone framed a wireframe page as an iPhone.',
-  'Tab|Changed|WireframeDeviceIphoneDuo': 'Someone framed a wireframe page as an iPhone Duo.',
-  'Tab|Changed|WireframeDeviceAndroid': 'Someone framed a wireframe page as an Android phone.',
-  'Tab|Changed|WireframeDeviceIpad': 'Someone framed a wireframe page as an iPad.',
-  'Tab|Changed|WireframeDeviceAndroidTablet':
-    'Someone framed a wireframe page as an Android tablet.',
-  'Tab|Changed|WireframeDeviceLaptop': 'Someone framed a wireframe page as a laptop.',
-  'Tab|Changed|WireframeDeviceDesktop': 'Someone framed a wireframe page as a desktop monitor.',
-  'Tab|Changed|WireframeDeviceBrowser': 'Someone framed a wireframe page as a browser window.',
-  'Tab|Changed|WireframeDeviceWatch': 'Someone framed a wireframe page as a watch.',
-  'Tab|Changed|WireframeFrameTheme':
-    "Someone drew a wireframe page's device in the tab theme's colours.",
-  'Tab|Changed|WireframeFrameDark': "Someone drew a wireframe page's device in the Dark look.",
-  'Tab|Changed|WireframeFrameLight': "Someone drew a wireframe page's device in the Light look.",
-  'Tab|Changed|WireframeFrameOutline':
-    "Someone drew a wireframe page's device in the Outline look.",
-  'UI|Toggled|WireframeSystemBarsOn':
-    "Someone turned a wireframe page's status bar and home indicator on.",
-  'UI|Toggled|WireframeSystemBarsOff':
-    "Someone turned a wireframe page's status bar and home indicator off.",
-  'Element|Changed|ShapesUnited': 'Someone united shapes on a logo page into one.',
-  'Element|Changed|StrokesTidiedUp':
-    'Someone tidied up hand-drawn lines on a logo page, making them straight.',
-  'Element|Changed|ShapesSubtracted':
-    'Someone subtracted shapes from the bottom one on a logo page.',
-  'Element|Changed|ShapesIntersected': 'Someone kept only where shapes overlap on a logo page.',
-  'Element|Changed|ShapesExcluded':
-    'Someone combined shapes on a logo page, leaving out where they overlap.',
-  'Element|Changed|MirrorCopy':
-    "Someone reflected the selection across a logo page's centre line (Mirror Copy).",
-  'Element|Changed|TextTracking':
-    'Someone changed the spacing between letters of a text on a logo page.',
-  'Element|Changed|TextWeight': 'Someone set the weight of a text on a logo page.',
-  'Element|Changed|TextCase':
-    'Someone set a text on a logo page in capitals, lower case or as typed.',
-  'Element|Changed|TextArc': 'Someone bent a text on a logo page along an arc.',
-  'Element|Created|MirrorTwin':
-    'Someone drew on a logo page with Mirror on, so it got a reflected twin.',
-  'UI|Toggled|LogoGuidesOn': "Someone showed a logo page's construction guides.",
-  'UI|Toggled|LogoGuidesOff': "Someone hid a logo page's construction guides.",
-  'UI|Toggled|LogoMirrorOn': 'Someone turned on Mirror While Drawing on a logo page.',
-  'UI|Toggled|LogoMirrorOff': 'Someone turned off Mirror While Drawing on a logo page.',
-  'UI|Changed|LogoMirrorAxisVertical':
-    'Someone set a logo page to mirror across its vertical centre line.',
-  'UI|Changed|LogoMirrorAxisHorizontal':
-    'Someone set a logo page to mirror across its horizontal centre line.',
-  'UI|Changed|LogoMirrorAxisBoth':
-    'Someone set a logo page to mirror across both centre lines (four ways).',
-  'UI|Changed|LogoMirrorAxisRadial':
-    'Someone set a logo page to mirror radially, turning each drawing round the centre.',
-  'UI|Changed|LogoMirrorMergeOn':
-    "Someone turned on Merge Into One for a logo page's mirror, joining each drawing and its copies.",
-  'UI|Changed|LogoMirrorMergeOff':
-    "Someone turned off Merge Into One for a logo page's mirror, keeping each copy its own element.",
-  'UI|Changed|LogoMirrorCopies3': "Someone set a logo page's radial mirror to 3 copies.",
-  'UI|Changed|LogoMirrorCopies4': "Someone set a logo page's radial mirror to 4 copies.",
-  'UI|Changed|LogoMirrorCopies5': "Someone set a logo page's radial mirror to 5 copies.",
-  'UI|Changed|LogoMirrorCopies6': "Someone set a logo page's radial mirror to 6 copies.",
-  'UI|Changed|LogoMirrorCopies8': "Someone set a logo page's radial mirror to 8 copies.",
-  'Document|Exported|LogoKit':
-    'Someone downloaded a logo kit: an SVG, PNGs and a favicon of a logo page.',
-  'UI|Toggled|LogoGuideCentreLinesOn': "Someone showed the logo guides' centre lines.",
-  'UI|Toggled|LogoGuideCentreLinesOff': "Someone hid the logo guides' centre lines.",
-  'UI|Toggled|LogoGuideDiagonalsOn': "Someone showed the logo guides' diagonals.",
-  'UI|Toggled|LogoGuideDiagonalsOff': "Someone hid the logo guides' diagonals.",
-  'UI|Toggled|LogoGuideSafeAreaOn': "Someone showed the logo guides' safe area.",
-  'UI|Toggled|LogoGuideSafeAreaOff': "Someone hid the logo guides' safe area.",
-  'UI|Toggled|LogoGuideCirclesOn': "Someone showed the logo guides' circles.",
-  'UI|Toggled|LogoGuideCirclesOff': "Someone hid the logo guides' circles.",
-  'UI|Toggled|LogoGuideSquareOn': "Someone showed the logo guides' square.",
-  'UI|Toggled|LogoGuideSquareOff': "Someone hid the logo guides' square.",
-  'UI|Toggled|LogoGuideGridOn': "Someone showed the logo guides' grid.",
-  'UI|Toggled|LogoGuideGridOff': "Someone hid the logo guides' grid.",
-  'UI|Changed|LogoGuideStrengthFaint': 'Someone set logo guides to Faint.',
-  'UI|Changed|LogoGuideStrengthMedium': 'Someone set logo guides to Medium.',
-  'UI|Changed|LogoGuideStrengthStrong': 'Someone set logo guides to Strong.',
   'Element|Changed|TimelineRail': "Someone changed a Timeline Rail element's number of points.",
   'Element|Copied|': 'Someone copied one or more selected elements to the clipboard.',
   'Element|Deleted|': 'An element was removed from the canvas.',
@@ -826,8 +746,6 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Opened|EmptyPageInvite':
     'Someone pressed Choose a Layout on an empty page too small on screen for its layout card (a phone, or zoomed out).',
   'UI|Closed|EmptyPageLayouts': 'Someone hid the Start From a Layout card on an empty page.',
-  'UI|Closed|EmptyPageLayoutsBlank':
-    'Someone chose Start From Scratch on an empty logo page, so its Start From a Layout card stays away on that page.',
   'UI|Closed|Presentation': 'Someone exited presentation mode.',
   'UI|Closed|SignInBanner':
     'Someone dismissed the guest sign-in banner. An earlier version of this event, before it recorded which surface (the editor or the Explorer) showed the banner. No longer recorded.',
@@ -852,8 +770,6 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Copied|TeamInviteLink': "Someone copied a team's shareable invite link to their clipboard.",
   'UI|Ended|ShareTourCompleted': "Someone reached the end of the Share dialog's Show Me tour.",
   'UI|Ended|ShareTourSkipped': "Someone left the Share dialog's Show Me tour before its end.",
-  'UI|Ended|LogoTourCompleted': "Someone reached the end of a logo page's Show Me tour.",
-  'UI|Ended|LogoTourSkipped': "Someone left a logo page's Show Me tour before its end.",
   'UI|Ended|SlideTourCompleted': "Someone reached the end of a slide page's Show Me tour.",
   'UI|Ended|SlideTourSkipped': "Someone left a slide page's Show Me tour before its end.",
   'UI|Ended|InfographicTourCompleted':
@@ -1070,8 +986,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone pressed Show Me in an infographic page's panel, starting its tour of layouts, backgrounds and page size.",
   'UI|Started|ArticleTour':
     "Someone pressed Show Me in an article page's panel, starting its tour of writing and article style.",
-  'UI|Started|LogoTour':
-    "Someone pressed Show Me in a logo page's panel, starting its tour of the logo tools.",
   'UI|Started|TabStyleTour':
     'Someone pressed Show Me in the Tab Style dialog, starting its tour of looks and fine-tuning.',
   'UI|Started|LayerStackTour':
@@ -1257,10 +1171,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone switched on Tours › "Article Tour" in Settings, so the Pages tour\'s article track is offered again.',
   'UI|Toggled|ArticleTourSeenOn':
     'Someone switched off Tours › "Article Tour" in Settings, marking the Pages tour\'s article track as answered.',
-  'UI|Toggled|LogoTourSeenOff':
-    'Someone switched on Tours › "Logo Tour" in Settings, so the Pages tour\'s logo track is offered again.',
-  'UI|Toggled|LogoTourSeenOn':
-    'Someone switched off Tours › "Logo Tour" in Settings, marking the Pages tour\'s logo track as answered.',
   'UI|Toggled|ElementToursSeenOff':
     'Someone switched on Tours › Element Tours in Settings, so every element tour is offered again.',
   'UI|Toggled|ElementToursSeenOn':
@@ -1370,16 +1280,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     'The Pages tour\'s article track reached its "Fonts and Spacing" step, with the page\'s Text settings open.',
   'UI|View|PagesTourStepArticleOutro':
     'The Pages tour\'s article track reached its closing "You\'re ready to write" card.',
-  'UI|View|PagesTourStepLogoLayouts':
-    'The Pages tour\'s logo track reached its "Start From a Logo Layout" step, with the page\'s Layouts open.',
-  'UI|View|PagesTourStepLogoGuides':
-    'The Pages tour\'s logo track reached its "Draw on Guides" step, on the Guides button.',
-  'UI|View|PagesTourStepLogoMirror':
-    'The Pages tour\'s logo track reached its "Mirror As You Draw" step, on the Mirror button.',
-  'UI|View|PagesTourStepLogoCombine':
-    'The Pages tour\'s logo track reached its "Combine Shapes" step.',
-  'UI|View|PagesTourStepLogoOutro':
-    'The Pages tour\'s logo track reached its closing "That Is a Logo Page" card.',
   'UI|View|LayerStackTourStepLayers':
     'The Layer Stack tour reached its "One Element, Many Layers" step, on the whole stack.',
   'UI|View|LayerStackTourStepEdit':

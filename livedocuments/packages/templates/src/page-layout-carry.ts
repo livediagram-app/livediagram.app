@@ -13,7 +13,6 @@ import {
 } from '@livedocuments/document';
 import { PAGE_LAYOUTS } from './page-layouts';
 import { SLIDE_LAYOUTS } from './slide-layouts';
-import { LOGO_LAYOUTS } from './logo-layouts';
 
 // What a shape carries into the next shape of its kind: its words and its data, never its
 // geometry or look (the new place's own).
@@ -266,7 +265,7 @@ function placeholders(): { labels: Set<string>; shapes: Set<string> } {
   if (marked) return marked;
   const labels = new Set<string>(['']);
   const shapes = new Set<string>();
-  for (const layout of [...PAGE_LAYOUTS, ...SLIDE_LAYOUTS, ...LOGO_LAYOUTS]) {
+  for (const layout of [...PAGE_LAYOUTS, ...SLIDE_LAYOUTS]) {
     for (const box of REFERENCE_BOXES) {
       for (const el of layout.build(box)) {
         if (el.type === 'text') labels.add(labelOf(el));

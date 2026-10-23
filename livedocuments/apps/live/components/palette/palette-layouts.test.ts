@@ -93,20 +93,6 @@ describe('palette layouts', () => {
     for (const id of popular) expect(reachable.has(id), id).toBe(true);
   });
 
-  it('gives a logo page its own palette: Draw, Shapes, Write, Icons, Media (logo-pages.md)', () => {
-    const logo = paletteCategoriesFor('pages', { pagesKind: 'logo' });
-    expect(logo.map((c) => c.id)).toEqual(['popular', 'draw', 'shapes', 'write', 'icons', 'media']);
-    const tilesOf = (id: string) => logo.find((c) => c.id === id)!.tiles!.map((t) => t.id);
-    expect(tilesOf('draw')).toEqual(['tools:polygon']);
-    expect(tilesOf('write')).toEqual(['tools:text', 'tools:sticky']);
-    expect(tilesOf('media')).toEqual(['tools:image']);
-    // No Logo category anywhere: its tools are Draw's.
-    for (const kind of ['design', 'slide', 'wireframe', 'logo'] as const)
-      expect(paletteCategoriesFor('pages', { pagesKind: kind }).map((c) => c.id)).not.toContain(
-        'logo',
-      );
-  });
-
   it('gives a slide page words, shapes and media first, then what makes a point (pages-mode.md)', () => {
     const slide = paletteCategoriesFor('pages', { pagesKind: 'slide' });
     expect(slide.map((c) => c.id)).toEqual([
@@ -130,27 +116,7 @@ describe('palette layouts', () => {
 
 // docs/specs/007-editor/pages-mode.md "The palette's kind": each kind's tiles in one category each.
 describe('the Pages kinds', () => {
-  const wireframe = paletteCategoriesFor('pages', { pagesKind: 'wireframe' });
-
-  it('leads Wireframe with Components then Elements, in a band of their own, and no Concepts or Devices', () => {
-    const ids = wireframe.map((c) => c.id);
-    expect(ids.slice(0, 3)).toEqual(['popular', 'components', 'wireframe']);
-    expect(ids).not.toContain('concepts');
-    expect(ids).not.toContain('devices');
-    const band = wireframe[1]!.group;
-    expect(wireframe[2]!.group).toBe(band);
-    expect(wireframe[3]!.group).not.toBe(band);
-  });
-
-  it('keeps the Card, the Badge and the Checklist in Elements alone', () => {
-    const components = wireframe.find((c) => c.id === 'components')!.tiles!.map((t) => t.id);
-    expect(components).not.toContain('components:card');
-    expect(components).not.toContain('components:badge');
-    expect(components).not.toContain('tools:checklist');
-    expect(tileIds('components')).toContain('components:card');
-  });
-
-  it.each(['design', 'slide', 'wireframe', 'logo'] as const)(
+  it.each(['design', 'slide', 'article'] as const)(
     'shares no tile between two categories in %s, Popular aside',
     (kind) => {
       const seen = new Map<string, string>();
@@ -165,7 +131,7 @@ describe('the Pages kinds', () => {
   );
 
   it('fills each kind’s Popular from its own categories', () => {
-    for (const kind of ['design', 'slide', 'wireframe', 'logo'] as const) {
+    for (const kind of ['design', 'slide', 'article'] as const) {
       const cats = paletteCategoriesFor('pages', { pagesKind: kind });
       const popular = cats.find((c) => c.id === 'popular')!.tiles!.map((t) => t.id);
       const rest = new Set(

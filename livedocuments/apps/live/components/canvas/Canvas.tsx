@@ -48,13 +48,11 @@ import { useOffscreenContent } from '@/hooks/canvas/useOffscreenContent';
 import { TabLoadOverlay } from '@/components/canvas/TabLoadOverlay';
 import { PaletteDragGhost } from '@/components/canvas/PaletteDragGhost';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
-import { LogoCanvasOverlays } from '@/components/canvas/LogoCanvasOverlays';
 import { useCanvasSurfaceGestures } from '@/hooks/canvas/useCanvasSurfaceGestures';
 import { useCanvasSelectHandlers } from '@/hooks/canvas/useCanvasSelectHandlers';
 import { useArrowLabelLayouts } from '@/hooks/canvas/useArrowLabelLayouts';
 import { useFontEpoch } from '@/components/canvas/useFontEpoch';
 import { loadArticleFlows, loadCanvasPages } from '@/lib/editor-deferred-code';
-import { GifOmit } from './GifOmit';
 import { SLIDE_VIEW_TRANSITION_UPDATE } from './slide-transition';
 import { useStickyPeelVars } from '@/lib/sticky-peel-image';
 
@@ -420,7 +418,7 @@ function CanvasView(props: CanvasProps) {
             ) : null}
             <div
               ref={wrapperRef}
-              // The pages and elements, as against the chrome over them (useLogoPaletteSwitch).
+              // The pages and elements, as against the chrome over them.
               data-canvas-content=""
               onPointerDown={surface.onWrapperPointerDown}
               onDoubleClick={(e) => {
@@ -529,17 +527,6 @@ function CanvasView(props: CanvasProps) {
                   </ElementIndicatorStyleProvider>
                 </CanvasZoomProvider>
               </CanvasArrivalProvider>
-              {/* Drafts and the logo page's guides: editor-only, left out of an animated GIF
-            (GifOmit). */}
-              <GifOmit>
-                {/* A logo page's guides (LogoCanvasOverlays). */}
-                {props.pagesMode ? (
-                  <LogoCanvasOverlays
-                    view={props.pagesMode}
-                    bare={props.zenMode === true || canvasTool === 'isometric'}
-                  />
-                ) : null}
-              </GifOmit>
             </div>
 
             {/* Spotlight presenter shroud (docs/specs/008-canvas/canvas-and-palette.md). Screen-space sibling of the

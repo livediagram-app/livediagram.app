@@ -11,7 +11,6 @@ function handlers(): CommandHandlers {
     bringToFront: vi.fn(),
     sendToBack: vi.fn(),
     rotate: vi.fn(),
-    mirrorCopy: vi.fn(),
     clearAnimation: vi.fn(),
     renumberSteps: vi.fn(),
     setMarker: vi.fn(),

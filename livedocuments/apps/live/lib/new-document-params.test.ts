@@ -21,12 +21,9 @@ describe('newDocumentKind (docs/specs/007-editor/new-document-route.md)', () => 
     expect(newDocumentKind('?team=t1&template=article')).toBe('article');
   });
 
-  it('opens a retired template’s replacement (a stale link)', () => {
-    expect(newDocumentKind('?template=browser-wireframe')).toBe('wireframe-website');
-  });
-
   it('is no template for an unknown kind or none', () => {
     expect(newDocumentKind('?template=not-a-template')).toBeNull();
+    expect(newDocumentKind('?template=logo-design')).toBeNull();
     expect(newDocumentKind('?template=')).toBeNull();
     expect(newDocumentKind('?folder=f1')).toBeNull();
     expect(newDocumentKind('')).toBeNull();

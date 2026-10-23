@@ -3,7 +3,7 @@
 // A layout's preview tile art (docs/specs/007-editor/pages-mode.md "Layouts"): the layout
 // built for THIS page's size and orientation and drawn by the export renderer in the tab's theme
 // and font on the page's own background, so the tile is exactly what pressing it puts on the page.
-// Outside the editor (no tab to paint with) it falls back to a wireframe: text as bars (a title
+// Outside the editor (no tab to paint with) it falls back to an outline: text as bars (a title
 // thicker), images as a shaded block, icons as dots, everything else as an outlined box.
 import { useContext, useMemo } from 'react';
 import {
@@ -20,14 +20,12 @@ import { LayoutRenderThumb } from './layout-render-thumb';
 
 // Wide enough to read a layout's parts: two tiles to a row in the panel and the in-page card.
 const THUMB_W = 120;
-// The tallest a tile's thumb stands by default.
-const THUMB_MAX_H = 150;
 
 function ElementGlyph({ el }: { el: Element }) {
   if (el.type === 'arrow') return null;
   const { x, y, width: w, height: h } = el;
   if (el.type === 'text' && el.textArc) {
-    // Arched text (a logo's badge or seal): a bar along its arc.
+    // Arched text (a badge or a seal): a bar along its arc.
     const px = labelFontPx(el.textSize) * (el.textScale ?? 1);
     const { d } = arcGeometry({ width: w, height: h }, el.textArc, px);
     return (
@@ -44,7 +42,7 @@ function ElementGlyph({ el }: { el: Element }) {
     );
   }
   if (el.type === 'text' && hasWordmarkType(el)) {
-    // Wordmark type (a logo's name): a bar as long and as tall as the words would set, placed by
+    // Tracked or cased type (a title set wide): a bar as long and as tall as the words would set, placed by
     // the text's alignment, so a short name in a large box stays a short name.
     const px = labelFontPx(el.textSize) * (el.textScale ?? 1);
     const chars = (el.label ?? '').length;
@@ -86,8 +84,7 @@ function ElementGlyph({ el }: { el: Element }) {
   if (el.type === 'shape' && el.shape === 'icon') {
     return <circle cx={x + w / 2} cy={y + h / 2} r={Math.min(w, h) / 2.4} fill="var(--accent)" />;
   }
-  // A shape's own outline where it has a simple one (a logo is made of rings, discs and
-  // diamonds); an outlined shape (no fill) drawn as its line alone.
+  // A shape's own outline where it has a simple one (rings, discs and diamonds); an outlined shape (no fill) drawn as its line alone.
   const outlined = el.type === 'shape' && el.fillColor === 'transparent';
   const paint = {
     fill: 'var(--accent)',
@@ -133,34 +130,24 @@ function ElementGlyph({ el }: { el: Element }) {
 export function LayoutThumb({
   layout,
   page,
-  width: widest = THUMB_W,
-  maxHeight = THUMB_MAX_H,
+  width = THUMB_W,
 }: {
   layout: PageLayoutId;
   page: LaidOutPage;
   // The tile's width in px (a category card's fan draws them smaller).
   width?: number;
-  // The tallest a wireframe page's thumb is drawn: a phone narrows to fit rather than standing
-  // taller than its tile.
-  maxHeight?: number;
 }) {
-  // Only a wireframe page is ever that tall (a phone is twice as tall as wide); every other page
-  // keeps the width it was given.
-  const width =
-    page.kind === 'wireframe'
-      ? Math.min(widest, Math.round((maxHeight * page.rect.width) / page.rect.height))
-      : widest;
-  // Rendered with the editor's tab (its theme and font, LayoutRenderThumb); a wireframe where there
+  // Rendered with the editor's tab (its theme and font, LayoutRenderThumb); an outline where there
   // is none.
   const tab = useContext(EditorContext)?.activeTab;
   return tab ? (
     <LayoutRenderThumb layout={layout} page={page} width={width} tab={tab} />
   ) : (
-    <Wireframe layout={layout} page={page} width={width} />
+    <OutlineThumb layout={layout} page={page} width={width} />
   );
 }
 
-function Wireframe({
+function OutlineThumb({
   layout,
   page,
   width,

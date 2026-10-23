@@ -6,7 +6,7 @@ import { ART, TourArtFrame } from './TourArtFrame';
 
 // The Pages tour's welcome card heroes (docs/specs/007-editor/pages-tour.md "The steps"), one per page
 // kind, each showing what its track teaches: a slide taking a layout and being presented, an infographic page
-// filling in, an article being written, a logo's shapes combining on its guides. Drawn in TourArtFrame's recipe.
+// filling in, an article being written. Drawn in TourArtFrame's recipe.
 
 const SLIDES_CSS = `
   @keyframes slides-art-pick {
@@ -246,66 +246,10 @@ function ArticleTourArt() {
   );
 }
 
-const LOGO_CSS = `
-  @keyframes logo-art-left {
-    0%, 16% { transform: translate(-22px, 0px); }
-    40%, 88% { transform: translate(0px, 0px); }
-    100% { transform: translate(-22px, 0px); }
-  }
-  @keyframes logo-art-right {
-    0%, 16% { transform: translate(22px, 0px); }
-    40%, 88% { transform: translate(0px, 0px); }
-    100% { transform: translate(22px, 0px); }
-  }
-  @keyframes logo-art-word {
-    0%, 40% { opacity: 0; }
-    54%, 88% { opacity: 1; }
-    100% { opacity: 0; }
-  }
-  .logo-art-left { animation: logo-art-left 4.6s ease-in-out infinite; }
-  .logo-art-right { animation: logo-art-right 4.6s ease-in-out infinite; }
-  .logo-art-word { animation: logo-art-word 4.6s ease-in-out infinite; }
-  @media (prefers-reduced-motion: reduce) {
-    .logo-art-left, .logo-art-right, .logo-art-word { animation: none; }
-  }
-`;
-
-/** Logo: two shapes meeting on the page's guides to make one mark, its wordmark appearing under it. */
-function LogoTourArt() {
-  return (
-    <TourArtFrame css={LOGO_CSS}>
-      <rect x="92" y="8" width="120" height="88" rx="3" className={ART.paper} strokeWidth="1.5" />
-      {/* The guides: the page's centre lines. */}
-      <path
-        d="M152 12 V92 M96 44 H208"
-        strokeWidth="1"
-        strokeDasharray="3 3"
-        className="stroke-brand-300 dark:stroke-brand-500/60"
-      />
-      <circle cx="144" cy="44" r="16" className="tour-art-el logo-art-left fill-brand-500/80" />
-      <rect
-        x="146"
-        y="30"
-        width="26"
-        height="28"
-        rx="5"
-        className="tour-art-el logo-art-right fill-sky-400/80 dark:fill-sky-500/80"
-      />
-      <g className="tour-art-el logo-art-word">
-        <rect x="126" y="70" width="52" height="6" rx="2" className={ART.ink} />
-        <rect x="136" y="80" width="32" height="3" rx="1.5" className={ART.faint} />
-      </g>
-    </TourArtFrame>
-  );
-}
-
 const BY_KIND: Record<PageKind, () => ReactNode> = {
   slide: SlidesTourArt,
   infographic: InfographicTourArt,
   article: ArticleTourArt,
-  logo: LogoTourArt,
-  // A wireframe page is laid out as an infographic page is: its track and art are the infographic's.
-  wireframe: InfographicTourArt,
 };
 
 /** The welcome card's hero for a page kind's track. */

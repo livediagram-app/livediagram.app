@@ -190,20 +190,19 @@ const camel = (id: string) =>
     .split('-')
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join('');
-const PAGES_TOUR_STEP_SOURCE: string[] = (
-  ['slide', 'infographic', 'article', 'logo'] as const
-).flatMap((kind) =>
-  [...read(`live/components/tour/${kind}-tour-steps.ts`).matchAll(/^ +id: '([a-z-]+)',/gm)]
-    .map((m) => m[1]!)
-    .filter((id, i, ids) => id !== 'welcome' && ids.indexOf(id) === i)
-    .map((id) => `PagesTourStep${camel(`${kind}-${id}`)}`),
+const PAGES_TOUR_STEP_SOURCE: string[] = (['slide', 'infographic', 'article'] as const).flatMap(
+  (kind) =>
+    [...read(`live/components/tour/${kind}-tour-steps.ts`).matchAll(/^ +id: '([a-z-]+)',/gm)]
+      .map((m) => m[1]!)
+      .filter((id, i, ids) => id !== 'welcome' && ids.indexOf(id) === i)
+      .map((id) => `PagesTourStep${camel(`${kind}-${id}`)}`),
 );
 
 const SLUGS = ['your-first-diagram', 'tips-format-painter', 'connect-ai-mcp'];
 const SLUG_WHY = "a help article's telemetry id, one per registered article";
 const THEMES = ['Default', 'Plum', 'Custom'];
 const THEME_WHY = "themeTelemetryLabel(themeId): a built-in theme's label, or Custom";
-const TEMPLATES = ['Article', 'SlideDeck', 'LogoDesign'];
+const TEMPLATES = ['Article', 'SlideDeck', 'EventPoster'];
 const TEMPLATE_WHY = "titleCaseType(kind): a template's kind";
 const ELEMENT_KINDS = ['Square', 'Circle', 'Sticky', 'Icon', 'TechIcon', 'Banner', 'Video'];
 const ELEMENT_WHY = 'an element kind, as the palette catalogue spells it';
@@ -422,29 +421,10 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     open: 'titleCaseType(pattern): a background pattern',
   },
   'apps/live/hooks/canvas/useTabTheme.ts Theme·Changed': { values: THEMES, open: THEME_WHY },
-  'apps/live/hooks/editor/useLogoTools.ts UI·Toggled': {
-    values: [
-      'LogoGuidesOn',
-      'LogoGuidesOff',
-      'LogoMirrorOn',
-      'LogoMirrorOff',
-      ...['CentreLines', 'Diagonals', 'SafeArea', 'Circles', 'Square', 'Grid'].flatMap((p) => [
-        `LogoGuide${p}On`,
-        `LogoGuide${p}Off`,
-      ]),
-    ],
-  },
-  'apps/live/hooks/editor/useLogoTools.ts UI·Changed': {
-    values: ['LogoGuideStrengthFaint', 'LogoGuideStrengthMedium', 'LogoGuideStrengthStrong'],
-  },
   'apps/live/hooks/canvas/useStylePreview.ts Element·Changed': {
-    // The wordmark fields, and the types the element menu's generic style ops pass through it
+    // The types the element menu's generic style ops pass through it
     // (apps/live/lib/element-style-ops.ts): the accent edge, card slots and chip looks.
     values: [
-      'TextTracking',
-      'TextWeight',
-      'TextCase',
-      'TextArc',
       'AccentEdge',
       'CardSlots',
       'ChipLook',

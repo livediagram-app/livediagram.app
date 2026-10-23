@@ -77,7 +77,7 @@ export default function GifExportPanel({
             onPick={onPick}
           />
         </div>
-        {/* The page as the GIF opens, still. White under it: a logo page's see-through paper exports white. */}
+        {/* The page as the GIF opens, still. */}
         <div className="my-4 flex h-48 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-slate-50 p-2 dark:border-slate-700 dark:bg-slate-900">
           {gif.estimate ? (
             <img

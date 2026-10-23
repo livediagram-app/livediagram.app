@@ -1,11 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { layOutPages, newSlidePage, newWireframePage, type Element } from '@livedocuments/document';
-import {
-  buildPageLayout,
-  layoutCatalogueFor,
-  PAGE_LAYOUTS,
-  SLIDE_LAYOUTS,
-} from '@livedocuments/templates';
+import { layOutPages, newSlidePage, type Element } from '@livedocuments/document';
+import { buildPageLayout, PAGE_LAYOUTS, SLIDE_LAYOUTS } from '@livedocuments/templates';
 
 // docs/specs/009-elements/pie-chart.md "Show Values": a column chart names its columns under its baseline only
 // with its values on, so one whose legend is off and values are not draws columns nobody can name (the Chart
@@ -19,11 +14,9 @@ const namesItsColumns = (el: Element) =>
 describe('layout charts', () => {
   const [page] = layOutPages([{ id: 'p', orientation: 'portrait', size: 'a4' }]);
   const [slide] = layOutPages([newSlidePage('s', 'slide')]);
-  const [phone] = layOutPages([newWireframePage('w')]);
   const cases = [
     ...PAGE_LAYOUTS.map((l) => [l.id, page!] as const),
     ...SLIDE_LAYOUTS.map((l) => [l.id, slide!] as const),
-    ...layoutCatalogueFor('wireframe').layouts.map((l) => [l.id, phone!] as const),
   ];
 
   it.each(cases)('%s names every column it draws', (id, on) => {

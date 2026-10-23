@@ -19,7 +19,6 @@ export * from './template-layers';
 export { buildTemplate, templateTabs, type TemplateTabDef } from './build-template';
 export * from './page-layouts';
 export * from './slide-layouts';
-export * from './logo-layouts';
 export * from './layout-catalogue';
 export { buildPageLayout, buildPageLayoutOver } from './page-layout-build';
 export { carryPageContent, warmLayoutPlaceholders } from './page-layout-carry';

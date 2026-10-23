@@ -34,7 +34,6 @@ import type { CanvasSelectionInput } from '@/hooks/canvas/useCanvasSelectionView
 import { ZoomedLaserOverlay, ZoomedRemoteCursor } from '@/components/canvas/view-readers';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { PageClip } from '@/components/canvas/PageClip';
-import { WireframeDeviceOverlays } from '@/components/canvas/WireframeDeviceOverlays';
 import { GifOmit } from './GifOmit';
 
 // What a drawn arrow resolves its ends against on a board with no arrows yet.
@@ -355,13 +354,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             stackedIds={stackedIds}
           />
         </PageClip>
-        {/* A wireframe page's camera and system bars, over what is on its screen. */}
-        {props.pagesMode && props.canvasTool !== 'isometric' ? (
-          <WireframeDeviceOverlays
-            pages={props.pagesMode.pages}
-            frameTheme={props.pagesMode.frameTheme}
-          />
-        ) : null}
 
         {/* Editor-only marks, left out of an animated GIF (GifOmit). */}
         <GifOmit>
@@ -422,7 +414,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
               onAppendWebRow,
             }}
             onBeginDrag={onBeginDrag}
-            pages={props.pagesMode?.pages}
           />
         </SelectionGripsLayer>
       </SelectionGripsContext.Provider>

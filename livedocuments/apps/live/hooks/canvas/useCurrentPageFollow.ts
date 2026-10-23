@@ -1,34 +1,24 @@
 'use client';
 
-// The palette follows the page someone is on (docs/specs/007-editor/logo-pages.md "The Logo
-// palette"): Logo on a logo page, Popular on any other. Asked when they move to another page: one
-// gone to with its label or the page navigator (`pageShown`), a press on a page other than the page
-// pressed last, and a logo page added; on opening, only a logo page in view asks (any other keeps
-// the category remembered). Asked just after, so a palette re-rendered with the category (Logo shows
-// only while the tab has a logo page) is there to answer. A view that comes to rest on another page
-// (a pan, a scroll, a zoom) moves onto it too. Staying on the same page never asks again, so another
-// category chosen meanwhile is kept.
+// The page someone is on in Pages mode (docs/specs/007-editor/pages-mode.md "The palette's kind"),
+// followed for the palette, whose kind is that page's (lib/palette-kind.ts), and for Select All
+// (lib/current-page-kind.ts). They move onto a page when they go to it with its label or the page
+// navigator (`pageShown`), press on a page other than the page pressed last, add one, or bring the
+// view to rest on it (a pan, a scroll, a zoom); on opening, the page in view is the one they are
+// on. Moving onto another page turns the palette back to Popular; staying on the same page never
+// asks again, so another category chosen meanwhile is kept.
 import { useEffect, useRef } from 'react';
 import { pageKindOf, type LaidOutPage, type PageKind } from '@livedocuments/document';
 import { requestPaletteCategory } from '@/lib/palette-category-request';
 import { setCurrentPageKind } from '@/lib/current-page-kind';
-import { PALETTE_KIND_LANDING, paletteKindForPage } from '@/lib/palette-kind';
 import { CANVAS_ROOT_SELECTOR } from '@/lib/canvas-selectors';
 import { useViewportStoreIfAny } from '@/hooks/canvas/useViewportStore';
 
 // After the current event (React has rendered the add by then); a timeout, not a frame, so a tab in
 // the background still answers.
 const ask = (category: string) => window.setTimeout(() => requestPaletteCategory(category), 0);
-// A page kind whose palette opens on its own category (lib/palette-kind.ts PALETTE_KIND_LANDING):
-// Draw on a logo page, Elements on a wireframe page.
-const ownCategory = (page: Pick<LaidOutPage, 'kind'>): string | null => {
-  const landing = PALETTE_KIND_LANDING[paletteKindForPage(pageKindOf(page))];
-  return landing === 'popular' ? null : landing;
-};
 // How long the view rests before the page under its centre counts as the page someone is on.
 const VIEW_FOLLOW_SETTLE_MS = 250;
-// On opening, asked again a little later too: the palette may mount after the pages.
-const LOGO_PALETTE_OPEN_RETRY_MS = 400;
 
 const sheetRect = (pageId: string) =>
   document.querySelector(`[data-page-id="${CSS.escape(pageId)}"]`)?.getBoundingClientRect();
@@ -58,7 +48,7 @@ function pageInView(pages: readonly LaidOutPage[]): LaidOutPage | null {
   return centred ?? pages[0] ?? null;
 }
 
-export function useLogoPaletteSwitch(
+export function useCurrentPageFollow(
   pages: readonly LaidOutPage[],
   active: boolean,
 ): { pageShown: (page: LaidOutPage) => void } {
@@ -66,11 +56,7 @@ export function useLogoPaletteSwitch(
   const last = useRef<string | null>(null);
   const currentKind = useRef<PageKind | null>(null);
   const onPage = (page: LaidOutPage | null, opening = false) => {
-    if (page && page.id !== last.current) {
-      const own = ownCategory(page);
-      if (own) ask(own);
-      else if (!opening) ask('popular');
-    }
+    if (page && page.id !== last.current && !opening) ask('popular');
     // Off every page (the bare canvas) keeps the page last on, so coming back asks nothing.
     if (page) {
       last.current = page.id;
@@ -79,48 +65,32 @@ export function useLogoPaletteSwitch(
     }
   };
 
-  // The pages as now, for what runs later (a press, a view at rest, the opening's second look).
+  // The pages as now, for what runs later (a press, a view at rest).
   const latest = useRef(pages);
   useEffect(() => {
     latest.current = pages;
   });
 
-  // A new logo page: one not here before (the first render with pages only records what is there,
-  // and looks at the page in view).
+  // A new page: one not here before (the first render with pages only records what is there, and
+  // looks at the page in view).
   const known = useRef<Set<string> | null>(null);
   useEffect(() => {
     const before = known.current;
     known.current = pages.length ? new Set(pages.map((p) => p.id)) : null;
     if (!active || !pages.length) return;
     if (before === null) {
-      const opened = pageInView(pages);
-      onPage(opened, true);
-      const own = opened && ownCategory(opened);
-      // A little later, the page in view again (the view may have framed the page last on after
-      // opening) and its category again (the palette may mount after the pages).
-      // Only while nothing has moved them on meanwhile (a page added, a press, a page gone to).
-      const openedId = opened?.id ?? null;
-      window.setTimeout(() => {
-        if (last.current !== openedId) return;
-        const again = pageInView(latest.current);
-        if (again && again.id !== openedId) onPage(again);
-        else if (own) requestPaletteCategory(own);
-      }, LOGO_PALETTE_OPEN_RETRY_MS);
+      onPage(pageInView(pages), true);
       return;
     }
-    // A page added: the view goes to it, so the palette follows it (to Logo or Wireframe, or back
-    // to Popular from one).
+    // A page added: the view goes to it, so the palette follows it.
     const added = pages.find((p) => !before.has(p.id));
     if (added) {
       onPage(added);
       return;
     }
-    // The page someone is on changed kind in place (the first page chosen as a wireframe keeps its
-    // id): the palette follows it as if they had just moved onto it.
+    // The page someone is on changed kind in place (the first page's kind chosen keeps its id).
     const here = pages.find((p) => p.id === last.current);
     if (here && pageKindOf(here) !== currentKind.current) {
-      const own = ownCategory(here);
-      if (own) ask(own);
       currentKind.current = pageKindOf(here);
       setCurrentPageKind(currentKind.current, here.id);
     }

@@ -42,10 +42,10 @@ export function heroSearch(query: string, limit = HERO_SEARCH_LIMIT): HeroMatch[
 export const HERO_FAN_OPENING: readonly TemplateKind[] = [
   'resume',
   'year-in-review',
-  'logo-design',
+  'data-story',
   'slide-deck',
   'article',
-  'wireframe-mobile-app',
+  'recipe-card',
   'event-poster',
 ];
 

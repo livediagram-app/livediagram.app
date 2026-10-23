@@ -8,7 +8,6 @@ const infographic = {
   locked: false,
   deck: false,
   notes: false,
-  logo: false,
   page: true,
   tidy: true,
 };

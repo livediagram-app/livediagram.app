@@ -7,13 +7,13 @@ editor mode, Pages ([Pages mode](../007-editor/pages-mode.md)): a run of pages o
 
 ## Domain language
 
-| Term            | Means                                                                                                                          |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| **document**    | The top-level container: its name, owner, location, share links and tabs.                                                      |
-| **tab**         | One tab of a document, with its own pages, layers and elements.                                                                |
-| **page**        | One page of a tab: a design page, a slide, an article page, a logo or a wireframe ([Pages mode](../007-editor/pages-mode.md)). |
-| **tab kind**    | What a tab is (`TabKind`, `packages/document/src/tab-kind.ts`); livedocuments has one, the general tab.                            |
-| **editor mode** | How a tab is worked on: always Pages; a stored livediagram mode reads as Pages.                                                |
+| Term            | Means                                                                                                     |
+| --------------- | --------------------------------------------------------------------------------------------------------- |
+| **document**    | The top-level container: its name, owner, location, share links and tabs.                                 |
+| **tab**         | One tab of a document, with its own pages, layers and elements.                                           |
+| **page**        | One page of a tab: a design page, a slide or an article page ([Pages mode](../007-editor/pages-mode.md)). |
+| **tab kind**    | What a tab is (`TabKind`, `packages/document/src/tab-kind.ts`); livedocuments has one, the general tab.   |
+| **editor mode** | How a tab is worked on: always Pages; a stored livediagram mode reads as Pages.                           |
 
 - As a term, "diagram" names nothing the person sees: it survives in code as the general tab kind's
   stored value (`'diagram'`) and in legacy names.
@@ -31,7 +31,7 @@ Prose follows the context:
 
 - **Document** when the text is about the container: naming, filing, sharing,
   trashing or opening.
-- **Page**, or the page's own kind (an article, a slide, a deck, an infographic, a logo, a wireframe), when the text
+- **Page**, or the page's own kind (an article, a slide, a deck, an infographic), when the text
   is about what is made in it.
 
 ## What keeps its name

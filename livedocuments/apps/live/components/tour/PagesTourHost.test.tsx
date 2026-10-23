@@ -75,7 +75,7 @@ const editor = (over: Record<string, unknown> = {}) => {
     setUserPreferences,
     writeUserPreferences,
     // The demonstration elements a tour places (useTourSquare).
-    tourSquare: { place: vi.fn(), replace: vi.fn(), remove: vi.fn(() => []) },
+    tourSquare: { place: vi.fn(), remove: vi.fn(() => []) },
     selfParticipant: { id: 'me' },
     prefsSettled: true,
     ...over,
@@ -138,7 +138,7 @@ describe('PagesTourHost offer', () => {
       'seen',
       {
         userPreferences: {
-          pagesTourKinds: ['slide', 'infographic', 'article', 'logo'],
+          pagesTourKinds: ['slide', 'infographic', 'article'],
         },
       },
     ],
@@ -178,7 +178,7 @@ describe('PagesTourHost offer', () => {
   it('reruns from Settings in Pages', async () => {
     editor({
       userPreferences: {
-        pagesTourKinds: ['slide', 'infographic', 'article', 'logo'],
+        pagesTourKinds: ['slide', 'infographic', 'article'],
       },
     });
     const { rerender } = render(<PagesTourHost />);
@@ -230,11 +230,11 @@ describe('PagesTourHost end', () => {
 
   it('adds the last kind answered to the list', async () => {
     await start({
-      userPreferences: { pagesTourKinds: ['infographic', 'article', 'logo'] },
+      userPreferences: { pagesTourKinds: ['infographic', 'article'] },
     });
     act(() => stage.engine!.skip());
     expect(writeUserPreferences).toHaveBeenCalledWith(
-      { pagesTourKinds: ['infographic', 'article', 'logo', 'slide'] },
+      { pagesTourKinds: ['infographic', 'article', 'slide'] },
       'me',
     );
   });
@@ -317,7 +317,7 @@ describe('PagesTourHost per kind', () => {
     const { rerender } = render(<PagesTourHost />);
     await wait(2000);
     expect(offered()).toBe(false);
-    dom.page = { pageId: 'p2', kind: 'logo' };
+    dom.page = { pageId: 'p2', kind: 'infographic' };
     editor({
       userPreferences: { pagesTourKinds: ['slide'] },
       activeTab: {
@@ -325,14 +325,14 @@ describe('PagesTourHost per kind', () => {
         locked: false,
         pages: [
           { id: 'p1', orientation: 'landscape', kind: 'slide' },
-          { id: 'p2', orientation: 'landscape', kind: 'logo' },
+          { id: 'p2', orientation: 'landscape', kind: 'infographic' },
         ],
       },
     });
     rerender(<PagesTourHost />);
     await wait(800);
     expect(offered()).toBe(true);
-    expect(stage.engine?.step?.title).toBe('Getting started with Logos?');
+    expect(stage.engine?.step?.title).toBe('Getting started with Infographics?');
   });
 
   it('reads the stored pages as the canvas does, skipping a malformed entry rather than throwing', async () => {

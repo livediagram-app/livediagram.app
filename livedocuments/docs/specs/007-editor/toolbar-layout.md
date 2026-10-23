@@ -51,8 +51,6 @@ under the pointer as a category is switched.
   | -------------------- | ----------------------------------------------------------------------------- |
   | Infographic (Design) | Shapes, Write · Concepts, Components, Devices · Icons, Stickers, Media · Data |
   | Slide                | Write, Shapes, Media · Data, Concepts, Components, Devices · Icons, Stickers  |
-  | Wireframe            | Components, Elements · Shapes, Write · Icons, Stickers, Media · Data          |
-  | Logo                 | Draw, Shapes, Write, Icons, Media                                             |
 
 - **Names fit or go.** The bar shows its names while the strip, named, fits the room the centred strip may take
   (the editor's width less the top-left menu card, measured, on both sides); otherwise the glyphs alone

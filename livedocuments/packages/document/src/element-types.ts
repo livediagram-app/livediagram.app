@@ -478,7 +478,7 @@ export type TextElement = {
   // Multiplier on the label size, set by a Shift resize of a text box
   // (docs/specs/006-document/document-structure.md "Data model"). Absent = 1.
   textScale?: number;
-  // Wordmark type (docs/specs/007-editor/logo-pages.md "Wordmark type"), drawn wherever the text
+  // Wordmark type (docs/specs/006-document/document-structure.md "Text type"), drawn wherever the text
   // is. Tracking: em added between letters, -0.2 to 1; absent is none.
   letterSpacing?: number;
   // The weight it paints in; wins over `textBold` while set. Absent follows `textBold`.

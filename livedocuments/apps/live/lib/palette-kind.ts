@@ -1,21 +1,19 @@
 // The palette's kind in Pages mode (docs/specs/007-editor/pages-mode.md "The palette's kind"): which
 // categories the palette offers, in what order (each kind's layout, palette-layouts.ts). Design for
-// an infographic page, Slide, Article, Wireframe and Logo for theirs. In Article the strip holds the
+// an infographic page, Slide and Article for theirs. In Article the strip holds the
 // article's formatting (its page toolbar, docked: lib/article/article-dock.ts) in place of the
 // category bar. Always the kind of the page someone is on: it is never shown or chosen.
 import type { PageKind } from '@livedocuments/document';
 import { useCurrentPageKind } from './current-page-kind';
 
-export type PaletteKind = 'design' | 'slide' | 'article' | 'wireframe' | 'logo';
+export type PaletteKind = 'design' | 'slide' | 'article';
 
-// The category each kind opens on: Popular for Design, Slide and Article (the bar has no Popular,
-// so the strip keeps what it shows), Elements for Wireframe, Draw for Logo.
+// The category each kind opens on: Popular for each (the bar has no Popular, so the strip keeps
+// what it shows).
 export const PALETTE_KIND_LANDING: Readonly<Record<PaletteKind, string>> = {
   design: 'popular',
   slide: 'popular',
   article: 'popular',
-  wireframe: 'wireframe',
-  logo: 'draw',
 };
 
 /** The kind a page of `kind` gives the palette. */

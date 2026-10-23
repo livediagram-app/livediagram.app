@@ -2,7 +2,6 @@
 // laid out in their row, the edits to them (page-edits) and framing one in the view. It
 // also centres the view on the page you were last on (the first, the first time) whenever the
 // tab changes.
-import type { LogoToolsView } from './useLogoTools';
 import {
   useCallback,
   useEffect,
@@ -22,16 +21,11 @@ import {
   layOutPages,
   pageKindOf,
   withContentOnAPage,
-  tabWireframeFrameTheme,
-  type WireframeFrameTheme,
   type Element,
   type LaidOutPage,
   type Tab,
 } from '@livedocuments/document';
 import { besideSideInsets, computeFitBelow, computeReadingFrame } from '@/lib/viewport';
-
-// The most a wireframe page's fit zooms in (a watch's face fills the screen at about this).
-const WIREFRAME_FIT_MAX_ZOOM = 2.5;
 import { sideChromeInsets } from '@/lib/side-chrome-insets';
 import { pageInView } from '@/lib/page-contents';
 import { topStripInset } from '@/lib/top-strip-inset';
@@ -71,9 +65,6 @@ export type PagesModeView = {
   themeBackgrounds: ThemeBackgroundPreset[];
   // The tab theme's accent: a document's accent unless it picked one of its own.
   themeAccent: string;
-  // The tab theme's colours a wireframe page's frame is drawn in (docs/specs/007-editor/
-  // wireframe-pages.md "Choosing the device").
-  frameTheme: WireframeFrameTheme;
   // The articles' writing on the pages (useArticles), composed in by the editor.
   articles?: ArticlesView | null;
   // The tab's default face, for what the pages draw themselves (a layout preview).
@@ -84,9 +75,6 @@ export type PagesModeView = {
   // under it (the clip leaves the page out) so the preview never mixes with it.
   layoutPreview: { pageId: string; layout: PageLayoutId } | null;
   setLayoutPreview: (preview: { pageId: string; layout: PageLayoutId } | null) => void;
-  // A logo page's own tools, each person's (docs/specs/007-editor/logo-pages.md): composed in by
-  // the editor.
-  logo?: LogoToolsView;
   // Absent where the viewer may not change the pages (a view role, a locked tab).
   edit?: PageEdits;
   // A slide page's place in the slide deck (PageDeckButton), composed in by the editor; absent
@@ -164,14 +152,7 @@ export function usePagesMode(deps: {
     return besideSideInsets(
       read && page && doc
         ? computeReadingFrame(size, page.rect, inset, articleMarginPx(doc.style))
-        : computeFitBelow(
-            size,
-            pageFitBox(page),
-            inset,
-            // A wireframe page is a device at its real size (a watch is 198 px wide): its fit may
-            // zoom in past 100% to fill the screen; paper stays at most at its own size.
-            page?.kind === 'wireframe' ? WIREFRAME_FIT_MAX_ZOOM : undefined,
-          ),
+        : computeFitBelow(size, pageFitBox(page), inset),
       sides,
     );
   };
@@ -348,7 +329,6 @@ export function usePagesMode(deps: {
   };
   const theme = getTheme(activeTab.theme);
   const themeBackgrounds = themeBackgroundPresets(theme);
-  const frameTheme = tabWireframeFrameTheme(activeTab);
   const tabFont = activeTab.font;
   const fitPageInView = () => {
     const canvas = deps.canvasMainRef.current;
@@ -373,7 +353,6 @@ export function usePagesMode(deps: {
     panFrom,
     themeBackgrounds,
     themeAccent: themeAccent(theme),
-    frameTheme,
     tabFont,
     elements: activeTab.elements,
     layoutPreview,

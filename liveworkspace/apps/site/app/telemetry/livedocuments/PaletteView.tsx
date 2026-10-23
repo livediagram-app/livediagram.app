@@ -93,7 +93,7 @@ export function PaletteView({
           <RankCard
             trend={trend}
             title="Devices"
-            subtitle="Wireframe frames: browser, phone, laptop and friends"
+            subtitle="Device frames: browser, phone, laptop and friends"
             category="Element"
             action="Added"
             items={devices}

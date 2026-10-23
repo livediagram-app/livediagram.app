@@ -71,7 +71,7 @@ export function SiteFooter() {
         <div>
           <Brand href="/" size="lg" className="relative touch-target-y" />
           <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-            Free articles, slide decks, infographics and logos for teams who make them together.
+            Free articles, slide decks and infographics for teams who make them together.
           </p>
         </div>
         <nav

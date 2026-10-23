@@ -5,7 +5,6 @@ import { describe, expect, it } from 'vitest';
 
 import { THEMES } from '@livedocuments/document';
 import {
-  LOGO_LAYOUTS,
   PAGE_LAYOUTS,
   SLIDE_LAYOUTS,
   TEMPLATE_CATEGORIES,
@@ -19,7 +18,6 @@ import { LANDING_SECTIONS } from './landing-content';
 import {
   FAQ_CATEGORIES,
   faqAnswerText,
-  LOGO_LAYOUT_COUNT,
   PAGE_LAYOUT_COUNT,
   SLIDE_LAYOUT_COUNT,
   TEMPLATE_CATEGORY_COUNT,
@@ -107,17 +105,15 @@ describe('slide layout counts in marketing copy', () => {
     expect(SLIDE_LAYOUT_COUNT).toBe(SLIDE_LAYOUTS.length);
   });
 
-  it('matches the infographic and logo catalogues in the FAQ', () => {
+  it('matches the infographic catalogue in the FAQ', () => {
     expect(PAGE_LAYOUT_COUNT).toBe(PAGE_LAYOUTS.length);
-    expect(LOGO_LAYOUT_COUNT).toBe(LOGO_LAYOUTS.length);
   });
 
-  it('matches the infographic and logo catalogues on the landing page', () => {
+  it('matches the infographic catalogue on the landing page', () => {
     // Written as words in the cards; a catalogue change fails here until the copy follows it.
-    const WORD: Record<number, string> = { 25: 'twenty-five', 92: 'Ninety-two' };
+    const WORD: Record<number, string> = { 92: 'Ninety-two' };
     const copy = JSON.stringify(LANDING_SECTIONS.map((s) => s.items.map((i) => i.description)));
     expect(copy).toContain(`${WORD[PAGE_LAYOUTS.length]} ready-made pages`);
-    expect(copy).toContain(`${WORD[LOGO_LAYOUTS.length]} logo layouts`);
   });
 
   it('matches the catalogue on every comparison page', () => {
@@ -133,9 +129,7 @@ describe('filterFaq', () => {
   });
 
   it('needs every word, in any case, across question, answer and category', () => {
-    const hits = filterFaq(FAQ_CATEGORIES, 'LOGO kit export').flatMap((c) =>
-      c.items.map((i) => i.q),
-    );
+    const hits = filterFaq(FAQ_CATEGORIES, 'GIF export').flatMap((c) => c.items.map((i) => i.q));
     expect(hits).toContain('Can I export my work?');
     expect(hits.every((q) => q !== 'Is it really free?')).toBe(true);
   });

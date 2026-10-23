@@ -3,7 +3,6 @@
 // tool painting one page's background onto another. Each is one tab edit (one undo step, synced),
 // the pages it reaches re-inked as a pick on each would; the pure edits are the document package's.
 import {
-  backgroundPatchFor,
   pageBackgroundCopied,
   pageBackgroundSpread,
   pageKindOf,
@@ -30,8 +29,6 @@ export const KIND_PAGES: Record<PageKind, { one: string; many: string }> = {
   slide: { one: 'slide', many: 'Slides' },
   infographic: { one: 'infographic page', many: 'Infographic Pages' },
   article: { one: 'article page', many: 'Article Pages' },
-  logo: { one: 'logo page', many: 'Logo Pages' },
-  wireframe: { one: 'wireframe page', many: 'Wireframe Pages' },
 };
 
 /** What Apply to All says it did: "Background applied to 35 slides." and the locked it skipped. */
@@ -97,11 +94,6 @@ export function backgroundCopyEdits({
     if (pageLockRefuses(current, toPageId)) {
       toastInfo('That page is locked. Unlock it to change its background.');
       debugLog('[page] paint refused: page locked', { tabId, toPageId });
-      return false;
-    }
-    if (!backgroundPatchFor(to, from.background)) {
-      toastInfo('A logo page takes no picture background.');
-      debugLog('[page] paint refused: picture on a logo page', { tabId, toPageId });
       return false;
     }
     track('Tab', 'Changed', 'PageBackgroundPainted');

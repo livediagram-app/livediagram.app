@@ -37,19 +37,8 @@ describe('the tracks', () => {
     ]);
   });
 
-  it('Wireframe: the infographic track, its size step naming the device instead', () => {
-    expect(ids(pageTourSteps('wireframe'))).toEqual(ids(pageTourSteps('infographic')));
-    const device = pageTourSteps('wireframe').find((s) => s.id === 'page-size')!;
-    expect(device.title).toBe('Device');
-    expect(device.body).toMatch(/device/);
-  });
-
   it('Article: the page, its toolbar, its style and type', () => {
     expect(ids(pageTourSteps('article'))).toEqual(['write', 'toolbar', 'style', 'text', 'outro']);
-  });
-
-  it('Logo: the logo page’s Show Me steps', () => {
-    expect(ids(pageTourSteps('logo'))).toEqual(['layouts', 'guides', 'mirror', 'outro']);
   });
 
   it('holds the article toolbar up on the tour page through its step', () => {
@@ -62,7 +51,7 @@ describe('the tracks', () => {
   });
 
   it('holds every control to the tour page, never the first page', () => {
-    for (const kind of ['slide', 'infographic', 'article', 'logo'] as const) {
+    for (const kind of ['slide', 'infographic', 'article'] as const) {
       for (const step of pageTourSteps(kind)) {
         const selectors = [step.requires?.(api), step.selector?.(api)].filter(Boolean) as string[];
         for (const sel of selectors) {
