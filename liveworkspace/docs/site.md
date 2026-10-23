@@ -80,8 +80,7 @@ ambient motion (the current along the lines, drifting cursors, the cards settlin
 
 One privacy policy and one set of terms for liveworkspace and every app in it, linked from the
 footer. They were built from the apps' own policies, which said the same things app by app; a
-feature only one app has (livediagram's Google Drive mirror, its Clerk sign-in until it moves to the
-liveworkspace account) says which. Both share `components/LegalPage.tsx`, and their date and contact
+feature only one app has (livediagram's Google Drive mirror, its Offline Mode) says which. Both share `components/LegalPage.tsx`, and their date and contact
 form are in `lib/legal.ts`. Change them when what an app stores or who it uses changes.
 
 ### Product Comparison (`/alternatives`, `/alternatives/<slug>`)

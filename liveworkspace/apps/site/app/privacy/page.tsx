@@ -120,23 +120,10 @@ const SECTIONS: LegalSection[] = [
           browser id or account.
         </li>
         <li>
-          <strong>livediagram&rsquo;s own API tokens.</strong> livediagram still makes API tokens in
-          its own Settings, apart from the liveworkspace ones above. For those it stores a one-way
-          hash of each token (never the token itself), its name and when it was last used. They
-          expire after six months and are deleted with your account.
-        </li>
-        <li>
           <strong>Connected AI tools, if you connect one.</strong> If you connect a tool through an
           app&rsquo;s MCP server, we store the tool&rsquo;s registration (its name and redirect
           address, for 30 days), short-lived authorisation codes that expire within minutes, and for
           an hour a count of registrations from your network address, to stop abuse.
-        </li>
-        <li>
-          <strong>livediagram&rsquo;s own team invitations.</strong> livediagram still runs its own
-          teams while it moves to liveworkspace teams. If a teammate invites you there by email, it
-          stores that address with the team, sends you the invitation (and up to three reminders
-          while nobody has answered it), and may email you about actions and mentions at that
-          address before you create an account.
         </li>
         <li>
           <strong>Form responses.</strong> Each response to a form you publish is stored in your
@@ -279,15 +266,14 @@ const SECTIONS: LegalSection[] = [
             <strong>Sign-in codes</strong>, from liveworkspace.app, when you ask for one.
           </li>
           <li>
-            <strong>Account and service emails</strong>: team invitations from liveworkspace.app
-            (and, for livediagram&rsquo;s own teams, from livediagram with up to three reminders), a
-            confirmation when you delete your account, a reminder a week before a livediagram API
-            token expires, and a note if one of your forms is suspended after reports.
+            <strong>Account and service emails</strong>: team invitations from liveworkspace.app, a
+            confirmation when you delete your account, and a note if one of your forms is suspended
+            after reports.
           </li>
           <li>
             <strong>Notifications about your work</strong>: when someone first opens a document you
-            shared, comments on one you own, fills in one of your forms, answers a team invite you
-            sent, assigns you an action or mentions you. A mention quotes the comment (up to about
+            shared, comments on one you own, fills in one of your forms, assigns you an action or
+            mentions you. A mention quotes the comment (up to about
             280 characters); an assigned action includes its name and the start of its description.
           </li>
           <li>
@@ -415,17 +401,14 @@ const SECTIONS: LegalSection[] = [
   {
     app: 'livediagram.app',
     id: 'livediagram-sign-in',
-    title: 'Signing in, for now',
+    title: 'Signing in',
     body: (
       <p>
-        livediagram still signs you in through its own provider, <strong>Clerk</strong>, which
-        receives your email address and, if you choose Google sign-in, basic profile details from
-        Google. Clerk&rsquo;s sign-in script loads in the editor for every visitor and sets cookies
-        to remember whether you are signed in. We store only the web address of your profile
-        picture, never the image, to show it to collaborators who are signed in; turn that off in{' '}
-        <strong>Settings &gt; Account &gt; Show My Profile Picture</strong>. Deleting your account
-        deletes it at Clerk. livediagram will move to the liveworkspace account, and this section
-        will change when it does.
+        livediagram signs you in with your liveworkspace account, and its teams and API tokens are
+        the liveworkspace ones, all as described under{' '}
+        <a href="#your-liveworkspace-account">Your liveworkspace account</a>. Its diagrams are stored
+        as described under <a href="#what-the-apps-store">What the apps store</a>. The sections
+        below are what it does beyond that.
       </p>
     ),
   },
