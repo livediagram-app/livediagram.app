@@ -104,3 +104,4 @@ export type {
   ShapeLibrariesHost,
   ShapeLibrary,
 } from './library/types';
+export { appLibraryHosts, uploadRefusal, type AppLibraryHosts } from './library/http';
