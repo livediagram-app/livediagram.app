@@ -47,6 +47,16 @@ still holding the retired theme's value for that role (its fill, outline, text, 
 theme's value for the same role. A colour the user picked is kept. The backdrop follows the same rule: a canvas or
 pattern colour still equal to the retired theme's becomes the new theme's.
 
+## Custom themes
+
+People could once build and save their own themes. They are gone, and nothing of them is kept: the `custom_themes`
+table, its routes, the builder and the Themes library were deleted, not exported. A tab saved on one still names it as
+`custom:<uuid>`, and so can a file exported while they were here. On read the tab moves to Default (`dropCustomTheme`
+in `packages/project/src/retired-custom-themes.ts`): `theme` becomes Default and the canvas takes Default's backdrop
+and grid. Element colours are kept as they are: with the theme's definition gone nothing can tell a colour it painted
+from one somebody picked, so each reads as picked, which is how it already looked. Swatch overrides stored for a
+`custom:` id are dropped as the preferences are read, and telemetry never reports one as a theme.
+
 ## Where it runs
 
 One pure function in `@liveplanner/project`, `migrateStoredTab`, composes every tab-level migration (this one and the

@@ -738,6 +738,7 @@ export { isSafeColourValue } from './unsafe-colours';
 export * from './stored-tab';
 export { settleTabFields } from './tab-fields';
 export { retiredSchemeOf, migrateRetiredScheme } from './retired-schemes';
+export { dropCustomTheme, isRetiredCustomThemeId } from './retired-custom-themes';
 
 // Photoshop-style layers (docs/specs/006-project/layers.md): the Layer type used by the Tab field
 // above, band-aware render ordering, and the pure layer operations.

@@ -25,7 +25,6 @@ import { handleEvents } from './routes/events';
 import { handleCatalogues } from './routes/catalogues';
 import { handleCapabilities } from './routes/capabilities';
 import { handleOpenapi } from './routes/openapi';
-import { handleCustomThemes } from './routes/custom-themes';
 import { handleUnfurl } from './routes/unfurl';
 import type { RouteContext, WorkbenchContext } from './routes/context';
 import { handleProjects } from './routes/projects';
@@ -330,8 +329,6 @@ async function routeApiRequest(
       // A form link's public doors (docs/specs/030-forms/forms.md "Filling in a form").
       case 'forms':
         return await handleForms(ctx);
-      case 'custom-themes':
-        return await handleCustomThemes(ctx);
       case 'teams':
         return await handleTeams(ctx);
       case 'tokens':

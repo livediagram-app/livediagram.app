@@ -9,7 +9,6 @@ export * from './projects';
 export * from './tab-save-project';
 export * from './tabs';
 export * from './participants';
-export * from './custom-themes';
 export * from './api-tokens';
 export * from './email-lifecycle';
 export * from './notification-prefs';

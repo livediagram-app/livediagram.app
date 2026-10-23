@@ -19,7 +19,6 @@ type OwnerColumn = {
 const OWNER_COLUMNS: OwnerColumn[] = [
   { table: 'participants', column: 'id' },
   { table: 'user_preferences', column: 'owner_id' },
-  { table: 'custom_themes', column: 'owner_id' },
   // What a reader has seen of a form's responses (docs/specs/030-forms/forms.md).
   { table: 'form_reads', column: 'owner_id' },
   { table: 'api_tokens', column: 'owner_id' },
@@ -77,14 +76,6 @@ function seed(sql: DatabaseSync, id: string) {
   insert(sql, 'form_links', { code: `form-${id}`, project_id: `d-${id}`, tab_id: `t-${id}`, created_at: T0 });
   insert(sql, 'form_reads', { code: `form-${id}`, owner_id: id, seen_number: 3 });
   insert(sql, 'user_preferences', { owner_id: id, prefs: '{}', updated_at: T0 });
-  insert(sql, 'custom_themes', {
-    id: `t-${id}`,
-    owner_id: id,
-    name: 'Mine',
-    definition: '{}',
-    created_at: T0,
-    updated_at: T0,
-  });
   insert(sql, 'tabs', { id: `tab-${id}`, name: 'Board', data: '{"elements":[]}', updated_at: T0 });
   insert(sql, 'agent_changesets', {
     id: `cs-${id}`,

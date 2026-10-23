@@ -872,8 +872,6 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Team|Deleted|': 'An admin deleted a team.',
   'Team|Shared|Link':
     "An admin turned on a team's shareable invite link, so anyone who has it can ask to join.",
-  'Theme|Created|Custom': 'Someone created a custom theme with their own colours.',
-  'Theme|Deleted|Custom': 'Someone deleted a custom theme they had created.',
   'Timeline|Removed|Entry':
     "Someone removed a single entry from their Timeline feed. No longer recorded: the Explorer's Timeline was removed.",
   'Timeline|Removed|Stack':
@@ -1432,6 +1430,9 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Toggled|DockButtonNamesOn':
     'Someone turned Button Labels back on in Settings > Appearance, naming the bottom-right buttons beside their icons on a wide desktop.',
   'UI|Toggled|MinimapOn': 'Someone turned on the minimap, in Settings > Editor.',
+  'UI|Toggled|HomeBannerOff':
+    "Someone hid Explorer Home's banner, from its close button or Settings > Plans. Home then opens on its page header.",
+  'UI|Toggled|HomeBannerOn': "Someone turned Explorer Home's banner back on, in Settings > Plans.",
   'UI|Toggled|NotificationsOff':
     'Someone turned off in-editor toast notifications, in Settings > Notifications.',
   'UI|Toggled|NotificationsOn':
@@ -2251,8 +2252,6 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Team|Changed': "Something about a team's settings, or a member's role, was changed.",
   'Team|Deleted': 'An admin deleted a team.',
   'Team|Shared': 'A team turned on a way for people to ask to join it.',
-  'Theme|Created': 'Someone created a custom theme with their own colours.',
-  'Theme|Deleted': 'Someone deleted a custom theme they had created.',
   'Timeline|Removed': 'Someone removed one or more entries from their Timeline feed.',
   'Trash|Opened': 'Someone opened the Trash, where deleted projects wait for 30 days.',
   'Plan|Added':
@@ -2322,9 +2321,9 @@ export const API_OPERATIONS: Readonly<Record<string, string>> = {
   AddTab: 'adding a tab to a project, from an AI tool connected over MCP',
   AppendChangeLog: "recording an entry in a project's since-removed change history",
   CopyProject: 'duplicating a project',
-  CreateCustomTheme: 'saving a new custom theme',
-  CreateProject: 'creating a new project',
+  CreateCustomTheme: 'saving a new custom theme, a since-removed feature',
   CreateFolder: 'creating a folder',
+  CreateProject: 'creating a new project',
   CreateShareLink: 'generating a share link',
   CreateTeam: 'creating a team',
   CreateToken: 'creating an API token',
@@ -2332,10 +2331,10 @@ export const API_OPERATIONS: Readonly<Record<string, string>> = {
   DeleteChangeLog: "clearing a project's since-removed change history",
   DeleteChangeLogEntry: "removing one entry from a project's since-removed change history",
   DeleteComment: 'deleting a comment',
-  DeleteCustomTheme: 'deleting a saved custom theme',
-  DeleteProject: 'deleting a project',
+  DeleteCustomTheme: 'deleting a saved custom theme, a since-removed feature',
   DeleteFolder: 'deleting a folder',
   DeleteImage: 'deleting a saved image',
+  DeleteProject: 'deleting a project',
   DeleteShareLink: 'deleting a share link',
   DeleteTab: 'deleting a tab',
   DeleteTeam: 'deleting a team',
@@ -2349,7 +2348,7 @@ export const API_OPERATIONS: Readonly<Record<string, string>> = {
   LinkTab: 'linking a tab into another project',
   List: "listing a visitor's projects",
   ListChangeLog: "listing a project's since-removed change history",
-  ListCustomThemes: "listing an account's saved custom themes",
+  ListCustomThemes: "listing an account's saved custom themes, a since-removed feature",
   ListFolders: "listing an account's folders",
   ListShareLinks: "listing a project's share links",
   ListShared: 'listing projects shared with a visitor',
@@ -2378,9 +2377,9 @@ export const API_OPERATIONS: Readonly<Record<string, string>> = {
   SetFolder: 'moving a project into, or out of, a folder',
   SetSharePassword: 'setting a password on a share link',
   ShareProject: 'generating a share link, from an AI tool connected over MCP',
-  UpdateCustomTheme: 'updating a saved custom theme',
-  UpdateProject: 'updating a project, from an AI tool connected over MCP',
+  UpdateCustomTheme: 'updating a saved custom theme, a since-removed feature',
   UpdateFolder: 'renaming or updating a folder',
+  UpdateProject: 'updating a project, from an AI tool connected over MCP',
   UpdateTeam: "updating a team's name or organisation",
   UploadImage: 'uploading an image',
 };

@@ -469,7 +469,7 @@ export const articles: Article[] = [
     title: 'Plan Items, Sheets and More',
     description: 'API examples for Plan cards, card types, Sheets, forms, copies and themes.',
     keywords:
-      'items cards plan board card types sheets cells spreadsheet forms form link render svg copy custom themes api',
+      'items cards plan board card types sheets cells spreadsheet forms form link render svg copy themes api',
     category: 'Developers',
     categorySlug: 'developers/working-with-projects',
     parentSlug: 'working-with-projects',
@@ -689,7 +689,7 @@ export const articles: Article[] = [
   {
     slug: 'themes',
     title: 'Themes',
-    description: 'Restyle a whole tab with a built-in or custom theme.',
+    description: 'Restyle a whole tab with a theme.',
     keywords: 'color colour scheme restyle recolour recolor appearance style palette',
     category: 'User Interface',
     categorySlug: 'user-interface',
@@ -1080,15 +1080,6 @@ export const articles: Article[] = [
     description: 'Open the Tab Style dialog from Style and pick a look or a theme.',
     keywords:
       'apply browse switch restyle colours colors dialog pick paintbrush look feel looks finish filter flexible professional sketch marker spectrum mashup random surprise shuffle dice billboard patchwork coffeehouse schematic flipchart sketchbook greenboard picnic mural field notes aurora seasonal holiday christmas halloween easter new year snowflakes',
-    category: 'User Interface',
-    categorySlug: 'user-interface/themes',
-    parentSlug: 'themes',
-  },
-  {
-    slug: 'custom-themes',
-    title: 'Custom Themes',
-    description: 'Build, save, and reuse your own themes.',
-    keywords: 'own colors colours personalise personalize create save brand',
     category: 'User Interface',
     categorySlug: 'user-interface/themes',
     parentSlug: 'themes',

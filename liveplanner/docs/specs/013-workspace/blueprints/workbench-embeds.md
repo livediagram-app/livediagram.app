@@ -108,7 +108,6 @@ It provides these names to sibling blueprints ([CLI](../../015-api/blueprints/cl
 | `apps/editor/components/chrome/TabBar.tsx`, `ChromeControls.tsx` (+ `TabBar.workbench.test.tsx`)                                                                                   | `workbenchLink`: the link at the bar's right end, and no Appearance control in a workbench                                                                                                          |
 | `apps/editor/components/canvas/useCanvasChromePanels.tsx`, `CanvasChrome.tsx`, `Canvas.types.ts`, `EditorCanvasHost.tsx`                                                           | `explorerHidden`: no menu button, so no Explorer                                                                                                                                                    |
 | `apps/editor/components/dialogs/settings/settings-catalogue.ts`, `SettingsDialog.tsx`                                                                                              | `visibleCategories(ctx)`: the workbench hides `projects`, `account` (with `notifications`, nested under it), `tokens` and the Appearance choice; the dialog reads no placement defaults there       |
-| `apps/editor/components/primitives/CustomThemeProvider.tsx`, `apps/editor/components/palette/CustomThemePicker.tsx` (+ test)                                                       | `readOnly` gives `writable: false`: the picker offers no builder, Custom category or Copy; saved themes still resolve                                                                               |
 | `apps/editor/lib/editor-commands.ts`                                                                                                                                               | No share, delete, move, take offline, copy or AI commands in a workbench                                                                                                                            |
 | `packages/ui/src/appearance/appearance-store.ts` (+ test)                                                                                                                          | `setAppearanceOverride(appearance \| null)`: wins over the setting, never stored                                                                                                                    |
 | `apps/editor/app/workbench/pair/page.tsx`, `PairWorkbench.tsx` (new, + test)                                                                                                       | The pairing page; `OAUTH_PRIMARY` from `apps/editor/app/oauth/oauth-shell.tsx`                                                                                                                      |
@@ -326,7 +325,7 @@ ON t.id = s.token_id WHERE s.secret_hash = ?`. No row → `unknown`; token revok
 | Method           | Path under `/api`                                                                                                                                                             |
 | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | GET              | `capabilities`, `openapi.json`, `templates`, `templates/:kind`, `icons`, `schema`, `schema/:kind`                                                                             |
-| GET              | `participants/:owner` (the session's owner only; another id is `confined`), `preferences`, `custom-themes`                                                                    |
+| GET              | `participants/:owner` (the session's owner only; another id is `confined`), `preferences`                                                                                     |
 | GET, PUT         | `projects/:doc`                                                                                                                                                               |
 | GET, PUT, DELETE | `projects/:doc/tabs/:tabId`                                                                                                                                                   |
 | PUT              | `projects/:doc/tabs/:tabId/name`                                                                                                                                              |
@@ -345,8 +344,7 @@ ON t.id = s.token_id WHERE s.secret_hash = ?`. No row → `unknown`; token revok
 Everything else is `confined`, among it: `projects/:doc` `DELETE`, `copy`, `folder`, `shared-tabs`, `share*`,
 `thumbnail`, `tabs/:tabId/link`, `tabs/:tabId/presence` (an agent's door), `projects` (the library),
 `folders`, `shared`, `favourites`, `home`, `timeline`, `activity`, `trash`, `placement-defaults`, `tokens`, `teams`,
-`account`, `migrate`, `guest-id`, `oauth`, every write to `preferences`, `participants`,
-`custom-themes`, and every
+`account`, `migrate`, `guest-id`, `oauth`, every write to `preferences` and `participants`, and every
 `workbench/*` route but the one above. `/ws` carries no bearer and is decided by its ticket. `events`, `unfurl` and
 `share/:code` are called without credentials by the editor and never see `lvw_`.
 
@@ -455,7 +453,6 @@ The Surface table, every gate `workbenchMode` touches (`appChrome` is `surface =
 | Settings categories `projects`, `account`, `tokens`; the Appearance choice                           | `settings-catalogue.ts`                                      | Hidden                                                    |
 | Share, delete, move, take offline, copy                                                              | `editor-commands.ts`                                         | Absent                                                    |
 | TabBar "copy to another project"                                                                     | `EditorView.tsx` `otherProjects`                             | `[]`                                                      |
-| Custom theme writes (theme builder save and delete)                                                  | their hosts                                                  | Absent; reads stay                                        |
 | `useFolders`, `useFavourites`, `useTeams`, `useTeamPeople`, `useTeamLibrariesSweep`, `useShareLinks` | `useEditorState.ts`                                          | `enabled: false`                                          |
 | `useCommentMentions`, `useAssigneeOptions`                                                           | `hooks/collab`                                               | Candidates from presence only; no team read, no notify    |
 | Identity screen                                                                                      | `useEditorState.ts` `joinScreenOpen`                         | Never                                                     |
@@ -611,7 +608,6 @@ is a person's editor and every route re-gates it with the owner's identity at th
 | GET                    | `share/**` (the person opening a link shared with them)                                                                             |
 | GET, POST, PUT, DELETE | `projects/**` but `projects/:p/tabs/:p/presence`                                                                                    |
 | GET, POST, PUT, DELETE | `folders/**`, `shared/**`, `favourites/**`, `tags/**`, `home/**`, `timeline/**`, `activity/**`, `trash/**`, `placement-defaults/**` |
-| GET, POST, PUT, DELETE | `custom-themes/**`                                                                                                                  |
 | GET                    | `teams`, `teams/:p`, `teams/:p/library`, `teams/:p/members`                                                                         |
 | DELETE                 | `workbench/sessions/current`                                                                                                        |
 

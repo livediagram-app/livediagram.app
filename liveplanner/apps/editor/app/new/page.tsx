@@ -41,7 +41,7 @@ import {
   placementParamsFromSearch,
 } from '@/lib/new-project-params';
 import { backOutTarget } from '@/lib/back-out';
-import { themeTelemetryLabel } from '@/lib/custom-theme-registry';
+import { themeTelemetryLabel } from '@/lib/theme-telemetry-label';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { debugLog } from '@/lib/debug-log';
 import { handStartQuery } from '@/components/start/start-query';
@@ -102,8 +102,7 @@ export default function NewProjectPage() {
   const [createError, setCreateError] = useState<CreateFailure | null>(null);
   const lastCreateArgs = useRef<{
     kind: TemplateKind | null;
-    // string, not ThemeId: the picker can hand back a custom `custom:<uuid>`
-    // theme id (docs/specs/011-theme/custom-themes.md) as well as a built-in one.
+    // string, not ThemeId: the picker hands back a theme id as a plain string.
     // Where it goes (new-project-settings.ts): store and placement, decided at commit.
     settings: NewProjectSettings;
     // The ids it wrote under, reused by its Retry (createIdsFor).

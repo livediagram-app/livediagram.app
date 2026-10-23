@@ -18,7 +18,7 @@ Specs live in numbered category folders: the reserved `001`–`005` first (visio
 - ./008-canvas/README.md - when working on the canvas host under every tab (viewport, selection, history, performance), or on livediagram's drawing code still in the tree
 - ./009-elements/README.md - when changing an element kind: the charts Dashboards use, or the diagram kinds whose code is still in the tree
 - ./010-palette/README.md - when a code comment cites the palette: Plan shows none; its code and catalogues are still in the tree
-- ./011-theme/README.md - when working on tab themes: built-in, multi-colour and custom themes
+- ./011-theme/README.md - when working on tab themes: built-in and multi-colour themes, and retired schemes
 - ./012-collaboration/README.md - when working on realtime, sessions, facilitation, comments, actions or room tools
 - ./013-workspace/README.md - when working on the Explorer, its filters, folders, default folders, teams, favourites, tags, share links, the Trash or the empty project clean-up
 - ./014-identity/README.md - when working on auth, guest access, profiles or account email

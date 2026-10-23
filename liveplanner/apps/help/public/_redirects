@@ -14,10 +14,12 @@
 /about/what-is-open-source/ /about/why-liveplanner/ 301
 
 # The Explorer became liveworkspace's shared Explorer (liveworkspace/docs/one-explorer.md): its typed filters,
-# the Themes library and default folders went with liveplanner's own Explorer.
+# the Themes library and default folders went with liveplanner's own Explorer. Custom themes are gone.
 /explorer/filters /explorer/explorer-page/ 301
 /explorer/filters/ /explorer/explorer-page/ 301
-/explorer/themes-library /user-interface/themes/custom-themes/ 301
-/explorer/themes-library/ /user-interface/themes/custom-themes/ 301
+/explorer/themes-library /user-interface/themes/ 301
+/explorer/themes-library/ /user-interface/themes/ 301
+/user-interface/themes/custom-themes /user-interface/themes/ 301
+/user-interface/themes/custom-themes/ /user-interface/themes/ 301
 /explorer/folders/default-folders /explorer/folders/ 301
 /explorer/folders/default-folders/ /explorer/folders/ 301

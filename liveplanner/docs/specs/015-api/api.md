@@ -13,7 +13,7 @@ The first prototype phase ([spec 02](../005-project-roadmap/prototype-scope.md))
 ## Tech
 
 - **Runtime:** Cloudflare Workers.
-- **DB:** Cloudflare D1 (binding `DB`) for what is liveplanner's own and not a plan's content: participants, preferences, custom themes, tokens, form links, workbench pairings and sessions, lifecycle email. Schema lives in `apps/api/migrations/`.
+- **DB:** Cloudflare D1 (binding `DB`) for what is liveplanner's own and not a plan's content: participants, preferences, tokens, form links, workbench pairings and sessions, lifecycle email. Schema lives in `apps/api/migrations/`.
 - **Index:** where every plan is, who may open it, its sharing, folders, tags, favourites, Trash and Inbox are liveworkspace's index ([one-explorer.md](../../../../liveworkspace/docs/one-explorer.md), [one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md)). The api reaches it at `INDEX_ORIGIN` (`apps/api/src/index-service.ts`).
 - **Plans:** one SQLite-backed Durable Object per plan (`PlanRoom`, binding `PLAN_ROOM`, `new_sqlite_classes`), named by the plan's id via `idFromName`. It holds the plan's content and is its realtime room (see **Storage** and **Realtime model**).
 
@@ -61,7 +61,6 @@ All JSON unless stated. CORS allows any origin (the editor app is same-origin vi
 | `projects`            | `projects.ts` + its sub-modules | this spec, below                                                                     |
 | `folders`             | `folders.ts`                    | this spec, below (read from the index)                                               |
 | `forms`               | `forms.ts`                      | [Forms](../030-forms/forms.md)                                                       |
-| `custom-themes`       | `custom-themes.ts`              | [Custom themes](../011-theme/custom-themes.md)                                       |
 | `teams`               | `teams.ts`                      | this spec, below (from the token, and the index)                                     |
 | `tokens`              | `tokens.ts`                     | [Public API and API tokens](public-api-and-tokens.md)                                |
 | `oauth`               | `oauth.ts`                      | [MCP server](mcp-server.md)                                                          |
@@ -285,7 +284,7 @@ plan id. D1 keeps only what is liveplanner's own and not content; where a plan i
 A tab is one row. A tab over 2 MB does not fit a SQLite row in a Durable Object either, so the cap in **Tab size**
 stands; storing a large tab in chunks is the follow-up.
 
-**What D1 keeps**: `participants`, `auth_accounts`, `user_preferences`, `api_tokens`, `email_lifecycle`, `custom_themes`, `form_links`, `form_reads`, `form_reports` and the workbench tables. No plan row, tab body, card, cell or changeset is in D1, and nothing about folders, sharing, teams, the Trash or the Inbox.
+**What D1 keeps**: `participants`, `auth_accounts`, `user_preferences`, `api_tokens`, `email_lifecycle`, `form_links`, `form_reads`, `form_reports` and the workbench tables. No plan row, tab body, card, cell or changeset is in D1, and nothing about folders, sharing, teams, the Trash or the Inbox.
 
 **Routing.** The worker authenticates the caller, applies its cross-cutting gates (rate limits, read-only tokens,
 workbench confinement, body caps) and hands every request under `/api/projects/:id/...` and `/api/forms/:code/...`
@@ -425,7 +424,7 @@ The schema is one baseline migration, `apps/api/migrations/0001_liveplanner_base
 
 - **Plan content** (`plan`, `tabs`, `plan_tabs`, `tab_stats`, `items`, `sheets`, `sheet_cells`, `sheet_refs`, `agent_changesets`, `agent_changeset_parts`, `outbox`) is in each plan's Durable Object, `apps/api/src/plan-room/plan-schema.ts`, not in this migration. The plan's own row holds its name, owner and provenance.
 - **`participants`** — id, name, color: a person's display identity. Volatile presence/status state stays on the wire.
-- **`user_preferences`**, **`custom_themes`** — a person's synced settings and saved themes.
+- **`user_preferences`** — a person's synced settings.
 - **`api_tokens`**, **`auth_accounts`**, **`email_lifecycle`** — account-only rows: tokens, first sighting, lifecycle email.
 - **`form_links`**, **`form_reads`**, **`form_reports`** — a Form tab's public link and what readers have seen ([Forms](../030-forms/forms.md)).
 - **`workbench_pairing_requests`**, **`workbench_pairings`**, **`workbench_tickets`**, **`workbench_sessions`**, **`workbench_session_rooms`** — [Workbench embeds](../013-workspace/workbench-embeds.md).
@@ -442,7 +441,6 @@ This is the one list of columns that hold an owner id (a guest id or an account 
 | `agent_changesets.author_id`          | In each plan's own store: those on someone else's plan stay until the 30-day changeset retention ages them out          |
 | `participants.id`                     | Deleted                                                                                                                 |
 | `user_preferences.owner_id`           | Deleted                                                                                                                 |
-| `custom_themes.owner_id`              | Deleted                                                                                                                 |
 | `form_reads.owner_id`                 | Deleted ([Forms](../030-forms/forms.md#hearing-about-responses))                                                        |
 | `api_tokens.owner_id`                 | Deleted ([Public API and API tokens](public-api-and-tokens.md))                                                         |
 | `email_lifecycle.owner_id`            | Deleted ([Transactional email](../014-identity/transactional-email.md))                                                 |

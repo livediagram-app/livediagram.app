@@ -57,9 +57,6 @@ export class TabTooLargeError extends Error {
 // NAME_MAX_LENGTH instead (names.ts, docs/specs/006-project/name-length.md).
 export const MAX_NAME_LEN = 500;
 
-// A custom theme's JSON definition (palette + per-shape colours).
-export const MAX_THEME_DEF_BYTES = 256 * 1024;
-
 // The client-claimed project-write key relayed on presence (docs/specs/012-collaboration/participant-responses.md). Real
 // ones are UUIDs; the clamp only stops a hostile hello pushing an oversize
 // string into the socket attachment, which has a small hard budget.

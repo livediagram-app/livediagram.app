@@ -100,7 +100,7 @@ describe('apiRouteLabel', () => {
       'Post.Projects.Tabs.Comments',
     );
     expect(apiRouteLabel('GET', 'http://localhost:8887/api/trash?cursor=abc')).toBe('Get.Trash');
-    expect(apiRouteLabel('GET', '/api/custom-themes')).toBe('Get.CustomThemes');
+    expect(apiRouteLabel('GET', '/api/preferences')).toBe('Get.Preferences');
     expect(apiRouteLabel('POST', '/api/trash/0b7c5f9e-1111/restore')).toBe('Post.Trash.Restore');
   });
 

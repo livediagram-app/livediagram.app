@@ -12,8 +12,6 @@ export type {
   TabSummary as TabSummaryDTO,
   TabRecord as TabDTO,
   Folder as FolderDTO,
-  CustomTheme as CustomThemeDTO,
-  CustomThemeDefinition,
   ApiToken as ApiTokenDTO,
   ParticipantRecord as ParticipantDTO,
   ParticipantPresence,

@@ -350,12 +350,10 @@ default ([Default folders](../013-workspace/default-folders.md) "A template pick
 - **Telemetry:** `Team / Added / Project` fires once a create into a team has succeeded,
   never on a refused one.
 
-## Custom themes
+## Themes
 
-`/new` shows no themes. Custom themes ([Custom themes](../011-theme/custom-themes.md)) are applied and built from
-the Tab Style dialog. The create path still carries a theme id (`commitNewProject`, `buildTemplatedTab` take a
-`string`, so a `custom:<uuid>` passes through), always the caller's: `brand` on `/new`, the source tab's theme for a
-new tab.
+`/new` shows no themes; themes are chosen from the Tab Style dialog. The create path carries a theme id
+(`commitNewProject`, `buildTemplatedTab`), always the caller's: `brand` on `/new`, the source tab's theme for a new tab.
 
 ## API impact
 

@@ -208,6 +208,16 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('UI', 'Opened', 'SessionVote')).toBe(false);
   });
 
+  it('retires the custom-theme builder and its help article, not the built-in themes', () => {
+    expect(isRetiredEvent('Theme', 'Created', 'Custom')).toBe(true);
+    expect(isRetiredEvent('Theme', 'Changed', 'Custom')).toBe(true);
+    expect(isRetiredEvent('Theme', 'Changed', 'CustomEdited')).toBe(true);
+    expect(isRetiredEvent('Theme', 'Deleted', 'Custom')).toBe(true);
+    expect(isRetiredEvent('Help', 'View', 'custom-themes')).toBe(true);
+    expect(isRetiredEvent('Theme', 'Changed', 'Default')).toBe(false);
+    expect(isRetiredEvent('Help', 'View', 'changing-theme')).toBe(false);
+  });
+
   it('keeps everything that still exists', () => {
     expect(isRetiredEvent('Project', 'Undone', null)).toBe(false);
     expect(isRetiredEvent('Help', 'View', 'undo')).toBe(false);

@@ -5,7 +5,7 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Plan Items, Sheets and More',
   description:
-    'liveplanner API examples for Plan items and card types, Sheet cells, forms, SVG renders, plan copies and custom themes.',
+    'liveplanner API examples for Plan items and card types, Sheet cells, forms, SVG renders and plan copies.',
   path: '/help/developers/working-with-projects/plan-sheets-images/',
 });
 
@@ -199,20 +199,5 @@ curl -X POST https://liveplanner.app/api/projects/$DOC/copy \
 ```
 
 Makes a copy in your own files and answers `201` with the new `project`. Leave out `name` for `Copy of <name>`. Anything you can read can be copied; share links are not copied with it.
-
-## Custom Themes
-
-Your [custom themes](/help/user-interface/themes/custom-themes/) belong to you, not to a plan.
-
-```bash
-# A custom theme
-curl -X POST https://liveplanner.app/api/custom-themes \
-  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{ "id": "custom:'"$(uuidgen)"'", "name": "Night shift",
-        "definition": { "backgroundColor": "#0f172a", "backgroundPattern": "grid", "patternColor": "#1e293b",
-          "elementFill": "#1e293b", "elementStroke": "#38bdf8", "elementText": "#f8fafc" } }'
-```
-
-A custom theme's id starts `custom:`, and a tab uses it by that id. `PUT /custom-themes/{id}` changes its name or definition, `DELETE` removes it, and a `palette` you send must not be empty. `GET /custom-themes` lists yours.
 
 </ArticleLayout>

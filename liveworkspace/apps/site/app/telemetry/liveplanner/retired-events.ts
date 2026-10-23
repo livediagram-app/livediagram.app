@@ -306,6 +306,19 @@ function isRetiredEditorModeEvent(category: string, action: string, type: string
   );
 }
 
+// Custom themes (removed 2026-10-23, docs/specs/011-theme/retired-schemes.md "Custom themes"): the builder's
+// lifecycle (created, applied, edited, deleted) and its help article.
+const CUSTOM_THEMES = new Set([
+  'Theme|Created|Custom',
+  'Theme|Changed|Custom',
+  'Theme|Changed|CustomEdited',
+  'Theme|Deleted|Custom',
+  'Help|View|custom-themes',
+  'Help|Helpful|custom-themes',
+  'Help|Unhelpful|custom-themes',
+  'UI|Opened|custom-themes',
+]);
+
 // The Explorer's Timeline section (removed 2026-10-22, docs/specs/013-workspace/timeline.md): its
 // page arrivals, its card and stack menus and their Remove from Timeline, its sidebar rows and its
 // page view. A project's History and a team's Activity draw the same feed and keep the rest of the
@@ -398,6 +411,7 @@ export function isRetiredEvent(category: string, action: string, type: string | 
   if (DIAGRAM_LINT_EVENTS.has(`${category}|${action}|${type ?? ''}`)) return true;
   if (isRetiredWorkshopEvent(category, action, type)) return true;
   if (category === 'Project' && action === 'Reverted') return true;
+  if (CUSTOM_THEMES.has(`${category}|${action}|${type ?? ''}`)) return true;
   if (EXPLORER_TIMELINE.has(`${category}|${action}|${type ?? ''}`)) return true;
   if (isPagesModeEvent(`${category}|${action}|${type ?? ''}`)) return true;
   if (isRetiredEditorModeEvent(category, action, type)) return true;

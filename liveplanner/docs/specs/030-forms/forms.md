@@ -236,8 +236,6 @@ so text contrast never depends on the theme.
   colour (a colour the theme painted follows the viewer's half), size, speed and strength. In the builder and
   Preview it is the canvas's own style; on the form link's page it comes with the look (`look.canvas`) and stays put
   as the form scrolls.
-- A custom theme draws as Default, on the page and in the builder alike: the form link's page cannot read its
-  owner's themes, and the builder shows what respondents will see.
 - The look dresses the form alone: the builder's status bar and the cog's panel are the editor's and keep its look.
 - **In the Explorer**: a project whose first tab is a Form tab shows the form, drawn on its look, as its snapshot
   ([Project snapshots](../006-project/project-snapshots.md)), never "Nothing drawn yet"; a tab holding a form is

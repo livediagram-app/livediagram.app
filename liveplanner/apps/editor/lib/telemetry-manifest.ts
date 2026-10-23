@@ -150,8 +150,6 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Team·Added',
   'Template·Used',
   'Theme·Changed',
-  'Theme·Created',
-  'Theme·Deleted',
   'Token·Created',
   // A token's owner allowed a workbench on the pairing page (docs/specs/013-workspace/workbench-embeds.md).
   'Token·Linked',

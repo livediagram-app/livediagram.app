@@ -5,7 +5,6 @@
 // import from here; callers go through the lib/api-client.ts barrel.
 import type {
   ApiToken,
-  CustomTheme,
   Project,
   Folder,
   ShareLink,
@@ -148,8 +147,6 @@ function isTimelinePath(url: string): boolean {
 // below are the editor-only glue for `expectOk` to destructure.
 export type FolderResponse = { folder: Folder };
 export type FoldersResponse = { folders: Folder[] };
-export type CustomThemeResponse = { theme: CustomTheme };
-export type CustomThemesResponse = { themes: CustomTheme[] };
 export type TokensResponse = { tokens: ApiToken[] };
 // POST /api/tokens returns the one-time plaintext secret alongside the new
 // token's public metadata (the secret is never retrievable again).

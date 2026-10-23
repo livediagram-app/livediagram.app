@@ -1,8 +1,7 @@
 // @vitest-environment jsdom
 
-// Production's `Error·Api·Http401.ListCustomThemes`: the Explorer mounts
-// CustomThemeProvider in the same render that makes the signed-in user's
-// account id the owner, and React runs that child's effect (its themes fetch)
+// A child mounted in the same render that makes the signed-in user's
+// account id the owner has its effect (its first fetch) run by React
 // before the parent's. When the token provider was registered in a passive
 // effect, the fetch went out without the account's Bearer, which the worker
 // refuses. The provider must be in place

@@ -190,7 +190,7 @@ had five person glyphs and every one was a head-and-shoulders bust, so these two
 are whole figures mid-stride — which happens to be exactly what the feature is.
 And Changing the Theme is the plainest collision of the lot: a wheel of hues
 rendered as the `pie-chart` glyph exactly, while `themes` already owned the paint
-palette and `custom-themes` owned swatches-with-a-plus, so what was left to draw
+palette, so what was left to draw
 was the browsing itself. By the Collaboration batch every one of the six had its
 obvious drawing already spoken for, so each took the next detail down: a stopwatch
 rather than a clock, a question in a bubble rather than cards, dots landing on

@@ -128,8 +128,8 @@ const PLAN_SETUP_PARTS = [
 ];
 const SLUGS = ['your-first-diagram', 'tips-format-painter', 'connect-ai-mcp'];
 const SLUG_WHY = "a help article's telemetry id, one per registered article";
-const THEMES = ['Default', 'Plum', 'Custom'];
-const THEME_WHY = "themeTelemetryLabel(themeId): a built-in theme's label, or Custom";
+const THEMES = ['Default', 'Plum'];
+const THEME_WHY = "themeTelemetryLabel(themeId): a built-in theme's label (Default for none)";
 const TEMPLATES = ['Flowchart', 'Mindmap', 'Kanban'];
 const TEMPLATE_WHY = "titleCaseType(kind): a template's kind";
 const ELEMENT_KINDS = ['Square', 'Circle', 'Sticky', 'Icon', 'TechIcon', 'Banner', 'Video'];

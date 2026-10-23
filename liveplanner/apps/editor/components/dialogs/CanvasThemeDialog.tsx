@@ -32,7 +32,7 @@ import { CanvasStyleControls } from '@/components/canvas/CanvasStyleControls';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { BackBar } from '@/components/primitives/BackBar';
 import { AnimatedHeightBox } from '@/components/primitives/AnimatedHeightBox';
-import { CustomThemePicker } from '@/components/palette/CustomThemePicker';
+import { ThemeBrowser } from '@/components/palette/ThemeBrowser';
 import type { TextSize } from '@liveplanner/project';
 import { useModalGuard } from '@/hooks/ui/useModalGuard';
 import { FinishTab } from './FinishTab';
@@ -75,8 +75,7 @@ type CanvasThemeDialogProps = {
   onSetBackgroundOpacity: (opacity: number) => void;
   onSetBackgroundPatternScale: (scale: number) => void;
   onSetBackgroundAnimationSpeed: (speed: number) => void;
-  // Theme. `themeId` is a built-in ThemeId or a custom `custom:<uuid>`
-  // id (docs/specs/011-theme/custom-themes.md), so it's widened to string; onSetTheme applies either.
+  // Theme: a built-in theme id.
   themeId: string;
   onSetTheme: (id: string) => void;
   // Font (docs/specs/004-interface-design/fonts.md). `font` null = the editor default; `defaultTextSize`
@@ -296,13 +295,14 @@ export function CanvasThemeDialog({
                   previewTiles
                 />
               ) : (
-                <CustomThemePicker
+                <ThemeBrowser
                   themeId={themeId}
                   onSelect={eased(onSetTheme)}
                   onCommit={(id) => {
                     onSetTheme(id);
                     onClose();
                   }}
+                  className="mt-4"
                 />
               )}
             </AnimatedHeightBox>

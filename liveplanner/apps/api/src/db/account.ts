@@ -15,8 +15,6 @@ export async function deleteAccount(env: Env, ownerId: string): Promise<void> {
     by('DELETE FROM participants WHERE id = ?'),
     // user_preferences (docs/specs/007-editor/user-preferences.md): their editor preference flags.
     by('DELETE FROM user_preferences WHERE owner_id = ?'),
-    // custom_themes (docs/specs/011-theme/custom-themes.md): their saved themes.
-    by('DELETE FROM custom_themes WHERE owner_id = ?'),
     // Workbench rows (docs/specs/013-workspace/workbench-embeds.md), before the tokens they were minted from.
     by('DELETE FROM workbench_sessions WHERE owner_id = ?'),
     by('DELETE FROM workbench_tickets WHERE owner_id = ?'),

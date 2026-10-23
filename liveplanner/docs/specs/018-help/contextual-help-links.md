@@ -105,7 +105,6 @@ Grouped by priority; each links the keyed article.
 
 - Canvas/Theme dialog -> `changing-the-background` / `changing-theme`
 - Link picker -> `links` (tab links -> `linking-tabs`)
-- Themes pane empty state -> `custom-themes`
 - Line/chart data editor -> `data-elements`
 - Settings - telemetry -> `what-we-collect`
 

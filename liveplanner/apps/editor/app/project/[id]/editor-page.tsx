@@ -18,7 +18,6 @@ import { OpeningScreen } from '@/components/chrome/OpeningScreen';
 // Static, unlike the other status cards: it must render offline (docs/specs/007-editor/load-recovery.md
 // "Offline"); its recovery tools are the lazy part.
 import { LoadErrorCard } from '@/components/chrome/LoadErrorCard';
-import { CustomThemeProvider } from '@/components/primitives/CustomThemeProvider';
 import { LocalMovePrompt } from '@/components/dialogs/LocalMovePrompt';
 import { EditorContext } from './EditorContext';
 import { EditorView } from './EditorView';
@@ -218,20 +217,10 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
 
   return (
     <EditorContext.Provider value={state}>
-      {/* Owner-scoped custom themes (docs/specs/011-theme/custom-themes.md): keyed by the current
-          user's id (account or guest self id) so the theme picker /
-          builder share one source of truth and getTheme resolves saved
-          themes referenced by this project's tabs. */}
-      <CustomThemeProvider
-        ownerId={ownerId}
-        readOnly={workbenchMode}
-        onThemeDeleted={state.resetTabsUsingTheme}
-      >
-        {/* Who the comment composers can @-mention (docs/specs/012-collaboration/comment-mentions.md). */}
-        <MentionContext.Provider value={state.commentMentions}>
-          <EditorView />
-        </MentionContext.Provider>
-      </CustomThemeProvider>
+      {/* Who the comment composers can @-mention (docs/specs/012-collaboration/comment-mentions.md). */}
+      <MentionContext.Provider value={state.commentMentions}>
+        <EditorView />
+      </MentionContext.Provider>
       {/* Moving this browser's projects in This Browser after signing in
           (docs/specs/014-identity/auth-and-guest-access.md); never inside someone else's page. */}
       {appChrome ? <LocalMovePrompt /> : null}

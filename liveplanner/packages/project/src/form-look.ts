@@ -60,7 +60,7 @@ function slider(value: unknown, min: number, max: number): number | undefined {
 
 // The canvas a Form tab shows (resolveViewBackdrop in Plan mode): Plan's plain canvas while the tab's pattern is still
 // its theme's, else the pattern someone picked, its colour in each half as the editor draws it (a colour the theme
-// painted follows the half; a picked colour stays). A custom theme reads as Default, as the rest of the look does.
+// painted follows the half; a picked colour stays). An unknown theme id reads as Default, as the rest of the look does.
 function formCanvas(tab: CanvasTab): FormCanvas | undefined {
   const pattern = tab.backgroundPattern;
   if (!isBackgroundPattern(pattern) || pattern === 'blank') return undefined;
@@ -103,8 +103,7 @@ export function formLabelOn(accent: string): string {
 const accentOf = (theme: ThemeDefinition, appearance: Appearance) =>
   theme.elementStroke || theme.palette?.length ? themeAccent(theme) : BRAND[appearance];
 
-/** The look of a form on a tab with this theme, finish and font. A custom theme draws as Default (as the public
- *  page cannot read its owner's themes, the builder draws it the same way). */
+/** The look of a form on a tab with this theme, finish and font. An unknown theme id draws as Default. */
 export function formLook(tab: CanvasTab & { finish?: unknown; font?: string }): FormLook {
   const half = (appearance: Appearance) => getBuiltInTheme(tab.theme, appearance);
   const light = half('light');

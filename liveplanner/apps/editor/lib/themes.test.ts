@@ -7,7 +7,7 @@ import type {
   TableElement,
   TextElement,
 } from '@liveplanner/project';
-import { afterEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { createPinnedArrow, createShape, DEFAULT_BACKGROUND_COLOR } from '@liveplanner/project';
 import {
   THEMES,
@@ -27,11 +27,6 @@ import {
   tableColorPresets,
   type ThemeDefinition,
 } from './themes';
-import {
-  clearCustomThemeRegistry,
-  registerCustomTheme,
-  unregisterCustomTheme,
-} from './custom-theme-registry';
 import { encodeStrokePoints } from '@liveplanner/project';
 
 describe('THEMES catalogue', () => {
@@ -283,8 +278,6 @@ describe('table-preset re-derivation across themes (docs/specs/010-palette/style
 });
 
 describe('resolveTheme (distinguishes unknown from the default)', () => {
-  afterEach(() => clearCustomThemeRegistry());
-
   it('resolves a built-in id to its catalogue theme (as written, in its own appearance)', () => {
     expect(resolveTheme('slate', 'light')).toEqual(THEMES.find((t) => t.id === 'slate'));
   });
@@ -298,18 +291,11 @@ describe('resolveTheme (distinguishes unknown from the default)', () => {
     expect(resolveTheme(undefined)).toBeUndefined();
   });
 
-  it('resolves a registered custom theme, then returns undefined once deleted', () => {
-    const id = 'custom:test-1';
-    registerCustomTheme({
-      id,
-      name: 'Mine',
-      definition: { backgroundColor: '#fff', elementFill: '#abc', elementStroke: '#123' },
-    } as Parameters<typeof registerCustomTheme>[0]);
-    expect(resolveTheme(id)?.label).toBe('Mine');
-    // A deleted custom theme is "unknown" again — the signal setTheme uses
-    // to hard-reset instead of diffing against the wrong baseline (docs/specs/011-theme/custom-themes.md).
-    unregisterCustomTheme(id);
-    expect(resolveTheme(id)).toBeUndefined();
+  it('treats a retired custom id as unknown, and getTheme paints it as Default', () => {
+    // Custom themes are gone (docs/specs/011-theme/retired-schemes.md "Custom themes"): a stray id resolves to
+    // nothing, never throws, and getTheme falls back to the Default scheme.
+    expect(resolveTheme('custom:7d1c7a4e')).toBeUndefined();
+    expect(getTheme('custom:7d1c7a4e').id).toBe('brand');
   });
 });
 

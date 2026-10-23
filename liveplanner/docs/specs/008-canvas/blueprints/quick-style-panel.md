@@ -26,9 +26,7 @@ Scope, by file:
 | `apps/editor/components/canvas/QuickStylePanel.tsx`                           | The panel: compact, a fixed width from `panelFrame()`                                                            |
 | `apps/editor/components/canvas/quick-style-rows.tsx`                          | `QuickRadioRow`, swatch and glyph options, roving focus                                                          |
 | `apps/editor/lib/swatch-overrides.ts`                                         | Pure: apply to a row, the theme-keyed store (set, clear, prune, caps), parse                                     |
-| `apps/editor/lib/swatch-override-prefs.ts`                                    | Prunes a deleted custom theme's overrides from the preferences blob                                              |
 | `apps/editor/hooks/canvas/useSwatchOverrides.ts`                              | The active theme's overrides, read from and written to the synced preferences                                    |
-| `apps/editor/components/primitives/CustomThemeProvider.tsx`                   | Calls the prune on delete and when the custom-theme list loads                                                   |
 | `apps/editor/components/canvas/SwatchOverridePopover.tsx`                     | The right-click popover: picker, hex field, Clear override                                                       |
 | `apps/editor/app/project/[id]/useEditorState.ts`                              | Wires memory into the style hooks and the creation hooks; exposes the panel's view-model                         |
 | `apps/editor/app/project/[id]/EditorView.tsx`                                 | Mounts the panel                                                                                                 |
@@ -135,10 +133,8 @@ case-insensitively, else `null`.
   keeping the first).
 - `storeWithoutOverride(store, t, role, slot)`: removes the slot; an empty row is deleted, an
   entry with no rows is removed; the input is returned by reference when nothing changes.
-- `pruneSwatchOverrideStore(store, keep)` and `pruneCustomThemeSwatchOverrides(ownerId, exists)`:
-  entries whose `t` starts with `custom:` and no longer exists are removed, from
-  `CustomThemeProvider` on delete and after its list loads; built-in ids are never pruned. A write
-  only happens when something was pruned (`[swatch-overrides] pruned`, debug).
+- A `custom:` id (custom themes are gone, [Retired colour schemes](../../011-theme/retired-schemes.md#custom-themes)) is
+  dropped as the store is read.
 - `parseSwatchOverrideStore(value)`: an array only; per entry, `t` a non-empty string of at most
   `SWATCH_OVERRIDE_MAX_THEME_ID = 64` chars, first entry per theme wins, rows keep slots 1-6 whose
   values pass `normaliseHex`, an entry with no rows is dropped, then the caps apply (D44).
@@ -372,7 +368,6 @@ label", "Icon after label"; "Clear Styles". The panel's region label: "Quick sty
 | Storage write fails                       | Session-only memory (safe writer); the read-back mismatch is logged once   |
 | Override hex invalid                      | Not committed; the field says "Enter a colour like #1a2b3c"                |
 | Override store malformed                  | Invalid entries dropped on read (D44); a write stores the cleaned store    |
-| Custom theme deleted                      | Its overrides are pruned on delete and on the next custom-theme list load  |
 | Preferences PUT over 4 KB                 | Prevented by the 800-byte cap (D45); the cache keeps the change regardless |
 | Invalid slot on an element                | Ignored by re-derive; rejected by validation on load                       |
 | Theme with a short palette                | Padded from the toned set                                                  |
@@ -435,7 +430,7 @@ QuickTextAlign | QuickIconAlign | QuickClearStyles`.
 | Left edge centred, walks below / above / beside left chrome, then the right edge  | `quick-style-placement.test.ts`                             |
 | The panel sits on the left edge                                                   | `quick-style-placement.test.ts`                             |
 | One click on Flowing sets dashed + flow                                           | none (the e2e spec was removed)                             |
-| Overrides replace a slot, keyed by theme, capped, pruned; parse drops junk        | `swatch-overrides.test.ts`, `swatch-override-prefs.test.ts` |
+| Overrides replace a slot, keyed by theme, capped; parse drops junk and `custom:` ids        | `swatch-overrides.test.ts`                                   |
 | Synced per user; theme switch shows that theme's slots; Clear override restores   | `useSwatchOverrides.test.tsx`                               |
 | Overridden slot applies the custom colour unbound; highlight by colour            | `quick-style.test.ts`                                       |
 | Right-click / Shift+F10 opens the popover; picking saves; Clear override restores | `QuickStylePanel.test.tsx`                                  |

@@ -113,8 +113,7 @@ function useAccountBootstrapEnabled(): BootstrapResult {
   //
   // A LAYOUT effect on purpose. React runs a child's passive effects before
   // its parent's, and the render that flips `isSignedIn` is the same one that
-  // hands children the account id as their owner (the Explorer's
-  // CustomThemeProvider, say). With a plain useEffect, that child's first
+  // hands children the account id as their owner. With a plain useEffect, that child's first
   // fetch went out before the provider existed, so apiHeaders fell back to
   // no identity for an account id, which the worker refuses with a 401 (an account id
   // is never a guest credential). Every layout effect runs before any

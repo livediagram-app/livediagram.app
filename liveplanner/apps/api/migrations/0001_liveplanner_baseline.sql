@@ -72,21 +72,6 @@ CREATE INDEX idx_email_lifecycle_due ON email_lifecycle (created_at);
 
 
 -- ---------------------------------------------------------------------------------------------------------------
--- Settings
--- ---------------------------------------------------------------------------------------------------------------
-
-CREATE TABLE custom_themes (
-  id         TEXT    PRIMARY KEY,
-  owner_id   TEXT    NOT NULL,
-  name       TEXT    NOT NULL,
-  definition TEXT    NOT NULL,
-  created_at INTEGER NOT NULL,
-  updated_at INTEGER NOT NULL
-);
-CREATE INDEX custom_themes_owner_idx ON custom_themes (owner_id);
-CREATE INDEX custom_themes_owner_created_idx ON custom_themes (owner_id, created_at DESC);
-
--- ---------------------------------------------------------------------------------------------------------------
 -- Forms (docs/specs/030-forms/forms.md)
 -- ---------------------------------------------------------------------------------------------------------------
 

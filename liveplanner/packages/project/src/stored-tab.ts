@@ -6,6 +6,7 @@ import { upgradeLegacyLinks } from './legacy-links';
 import { migrateWhiteboardKind } from './legacy-whiteboard-tab';
 import { migrateRetiredScheme } from './retired-schemes';
 import { migrateRetiredTheme } from './retired-themes';
+import { dropCustomTheme } from './retired-custom-themes';
 import { migrateStoredElements } from './stored-elements';
 import { settleDiagramKeys } from './diagram-key';
 import { settleStacks } from './stack';
@@ -19,8 +20,9 @@ export function migrateStoredTab<
 >(tab: T): T {
   // A former whiteboard (./legacy-whiteboard-tab) first: it inks the elements the rest then see.
   // Its own fields that renderers read raw (layers, the background colours) are settled before anything reads them.
-  const schemed = migrateRetiredTheme(
-    migrateRetiredScheme(migrateWhiteboardKind(settleTabFields(tab))),
+  // A tab on a custom theme, which are gone (./retired-custom-themes), opens on Default.
+  const schemed = dropCustomTheme(
+    migrateRetiredTheme(migrateRetiredScheme(migrateWhiteboardKind(settleTabFields(tab)))),
   );
   if (!Array.isArray(schemed.elements)) return schemed;
   // Element links from before the project rename (./legacy-links) are upgraded here too.

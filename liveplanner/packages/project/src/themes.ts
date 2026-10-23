@@ -1,7 +1,7 @@
 // The shared theme ENGINE (docs/specs/011-theme/multicolour-themes.md, /42, /44, /48): theme data, types, and the
 // pure element/backdrop transforms that take a resolved ThemeDefinition. Lives
 // in the package so both the editor (apps/editor) and the MCP worker (apps/mcp,
-// docs/specs/015-api/mcp-server.md) theme tabs identically. Custom-theme (per-owner) resolution +
+// docs/specs/015-api/mcp-server.md) theme tabs identically. Resolution in the viewer's appearance +
 // deriveNewBoxedColours stay in apps/editor/lib/themes.ts, which re-exports this.
 import { themeHalf } from './theme-halves';
 import {
@@ -89,9 +89,9 @@ export type ThemeDefinition = {
   backgroundColor: string;
   backgroundPattern: BackgroundPattern;
   patternColor: string;
-  // Pattern opacity 0..1. Absent = fully opaque; carried so a (custom)
-  // theme can ship a faded pattern (docs/specs/011-theme/custom-themes.md). Applied to the tab on theme
-  // switch via switchThemeBackdrop.
+  // Pattern opacity 0..1. Absent = fully opaque; carried so a theme can
+  // ship a faded pattern. Applied to the tab on theme switch via
+  // switchThemeBackdrop.
   backgroundOpacity?: number;
   // Defaults for newly added boxed elements. `null` means "fall through
   // to the type-default" — used by the brand theme so it stays identical
@@ -175,10 +175,9 @@ function backdropVariants(scheme: ThemeDefinition): ThemeDefinition[] {
 //
 // `appearance` only ever changes the answer for Default, which has a light and
 // a dark half; it defaults to light so pure callers with no viewer to ask
-// (exports, the MCP worker, tests) land somewhere predictable. Custom
-// (per-owner) themes are NOT resolved here — that needs the editor app's
-// registry; apps/editor/lib/themes.ts wraps this as `getTheme`, which also
-// supplies the current viewer's appearance.
+// (exports, the MCP worker, tests) land somewhere predictable.
+// apps/editor/lib/themes.ts wraps this as `getTheme`, which supplies the
+// current viewer's appearance.
 export function getBuiltInTheme(
   id: string | undefined,
   appearance: Appearance = 'light',

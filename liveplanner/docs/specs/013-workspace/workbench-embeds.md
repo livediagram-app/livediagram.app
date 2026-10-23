@@ -109,7 +109,7 @@ second, explicit approval, never an existing pairing widened in silence.
 - **Never more than the token.** The session's level is the minting token's level on the project, capped by the
   owner's own access now: a view token gives a read-only frame.
 - **Only what the editor of one project needs.** The project, its tabs, comments, changesets, items and room;
-  reading the person's display identity, preferences and custom themes; the catalogues. Everything else is refused `403 workbench_confined`: ownership powers
+  reading the person's display identity and preferences; the catalogues. Everything else is refused `403 workbench_confined`: ownership powers
   (share links, password, move, delete, publish, copy), other projects, the person's library and folders,
   writing preferences or the profile, the guest migration, tokens, teams and the account. The
   editor offers none of them in a workbench embed: the person's agent sits beside it.

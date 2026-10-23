@@ -38,7 +38,6 @@ export * from './api/projects';
 export * from './api/tabs';
 export * from './api/changesets';
 export * from './api/share';
-export * from './api/custom-themes';
 export * from './api/tokens';
 export * from './api/oauth';
 export * from './api/self';

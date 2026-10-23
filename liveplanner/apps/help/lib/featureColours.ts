@@ -39,7 +39,6 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'power-user-mode': '#0f766e',
   // Canvas sub-article guides
   'changing-theme': '#d946ef',
-  'custom-themes': '#a855f7',
   undo: '#0ea5e9',
   redo: '#06b6d4',
   tools: '#14b8a6',

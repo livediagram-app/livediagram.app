@@ -380,15 +380,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M11 15.5h4.5" />
     </Glyph>
   ),
-  // A hierarchy whose branches are tinted differently — the whole feature.
-  'custom-themes': (
-    <Glyph>
-      <rect x="3" y="5" width="6" height="6" rx="1.5" />
-      <rect x="11" y="5" width="6" height="6" rx="1.5" fill="currentColor" stroke="none" />
-      <rect x="3" y="14" width="6" height="6" rx="1.5" fill="currentColor" stroke="none" />
-      <path d="M14 14v6M11 17h6" />
-    </Glyph>
-  ),
   // Two elements, both with handles on them: many things selected at once.
   undo: (
     <Glyph>
