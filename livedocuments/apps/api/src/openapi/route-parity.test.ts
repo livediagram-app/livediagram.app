@@ -81,7 +81,7 @@ describe('OpenAPI manifest ↔ dispatch (method, path-template) parity', () => {
     expect(vocabulary.size).toBeGreaterThan(15);
     expect(results.length).toBeGreaterThan(1000);
     expect(results.filter((r) => r.outcome === 'routed').length).toBeGreaterThan(10);
-    expect(results.filter((r) => r.outcome === 'storage').length).toBeGreaterThan(40);
+    expect(results.filter((r) => r.outcome === 'storage').length).toBeGreaterThan(30);
   });
 
   it('serves every documented (method, path)', async () => {

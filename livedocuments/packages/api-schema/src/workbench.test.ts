@@ -55,10 +55,18 @@ describe('parseWorkbenchOrigin', () => {
 
 describe('isWorkbenchSessionFormat', () => {
   it('tells an lvw_ session from a token and from a malformed one', () => {
-    expect(isWorkbenchSessionFormat(`${WORKBENCH_SESSION_PREFIX}${'a'.repeat(43)}`)).toBe(true);
-    expect(isWorkbenchSessionFormat(`lwt_${'a'.repeat(43)}`)).toBe(false);
-    expect(isWorkbenchSessionFormat(`${WORKBENCH_SESSION_PREFIX}${'a'.repeat(42)}`)).toBe(false);
-    expect(isWorkbenchSessionFormat(`${WORKBENCH_SESSION_PREFIX}${'a'.repeat(42)}!`)).toBe(false);
+    const store = `.${'0f'.repeat(32)}`;
+    expect(isWorkbenchSessionFormat(`${WORKBENCH_SESSION_PREFIX}${'a'.repeat(43)}${store}`)).toBe(
+      true,
+    );
+    expect(isWorkbenchSessionFormat(`${WORKBENCH_SESSION_PREFIX}${'a'.repeat(43)}`)).toBe(false);
+    expect(isWorkbenchSessionFormat(`lwt_${'a'.repeat(43)}${store}`)).toBe(false);
+    expect(isWorkbenchSessionFormat(`${WORKBENCH_SESSION_PREFIX}${'a'.repeat(42)}${store}`)).toBe(
+      false,
+    );
+    expect(isWorkbenchSessionFormat(`${WORKBENCH_SESSION_PREFIX}${'a'.repeat(42)}!${store}`)).toBe(
+      false,
+    );
   });
 });
 

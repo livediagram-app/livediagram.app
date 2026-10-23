@@ -11,7 +11,7 @@ import {
 // Client confinement (docs/specs/013-workspace/blueprints/workbench-embeds.md "The editor in a
 // workbench", WB16): a request the allow-list refuses is refused here, before it is sent.
 
-const SECRET = `lvw_${'s'.repeat(43)}`;
+const SECRET = `lvw_${'s'.repeat(43)}.${'0f'.repeat(32)}`;
 const BEARER = { Authorization: `Bearer ${SECRET}` };
 const SESSION = { scope: 'document' as const, documentId: 'doc-1', ownerId: 'user_1' };
 

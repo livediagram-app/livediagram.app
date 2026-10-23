@@ -6,7 +6,7 @@
 // safe is that this route OVERWRITES every name on every path, so a client's own copy can never survive, and
 // that it reaches the room only with a grant the index signed for this document. These tests read the headers the
 // stub actually received rather than trusting the route's intent.
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { GrantClaims } from '@liveworkspace/index-client';
 import { INDEX_GRANT_HEADER } from '@livedocuments/api-schema';
 import type { Env } from '../types';
@@ -17,7 +17,6 @@ import { handleDocumentRoomRoutes } from './document-room-routes';
 import { personTagFor } from '../person-tag';
 import type { WorkbenchContext } from './context';
 
-vi.mock('../db/workbench', () => ({ noteWorkbenchSessionRoom: vi.fn(async () => undefined) }));
 
 const NOW = Math.floor(Date.now() / 1000);
 

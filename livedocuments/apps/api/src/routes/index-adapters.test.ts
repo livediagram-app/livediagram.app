@@ -219,6 +219,16 @@ describe('the Trash, folders, teams and links', () => {
     expect((await handleTeams(ctx('GET', '/api/teams/other/library'))).status).toBe(404);
   });
 
+  it('answers index_unavailable for a share code on a deployment without an index', async () => {
+    const c = ctx('GET', '/api/share/CODE2345');
+    const res = await handleShare({
+      ...c,
+      env: { ...c.env, INDEX_ORIGIN: undefined },
+    } as RouteContext);
+    expect(res.status).toBe(503);
+    expect(await res.json()).toEqual({ error: 'index_unavailable' });
+  });
+
   it('resolves a share code to what it opens', async () => {
     routes['GET /share/CODE2345'] = () =>
       Response.json({ item: item('P'), level: 'view', tabId: null });

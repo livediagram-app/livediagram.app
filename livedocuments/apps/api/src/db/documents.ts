@@ -81,17 +81,18 @@ export async function getDocumentThumbMeta(env: Env, id: string): Promise<Docume
   const outline = await documentRoom(env, id).outline();
   const meta = outline.meta;
   if (!meta) return null;
-  return { id, name: meta.name, savedAt: outline.savedAt, thumbRenderedAt: meta.thumbRenderedAt ?? null };
+  return {
+    id,
+    name: meta.name,
+    savedAt: outline.savedAt,
+    thumbRenderedAt: meta.thumbRenderedAt ?? null,
+  };
 }
 
-// What D1 and R2 hold about a document, for when the index purges it (routes/internal-items.ts): the workbench
-// tickets and sessions scoped to it, and its cached snapshots. One D1 batch and one R2 delete, whatever the document
-// held.
+// What R2 holds about a document, for when the index purges it (routes/internal-items.ts): its cached snapshots.
+// One R2 delete, whatever the document held. Workbench tickets and sessions scoped to it are in their owners'
+// workbench stores: a ticket lapses in a minute, and a session's every request is gated on the document's grant,
+// which a purged document never gets again.
 export async function purgeDocumentRows(env: Env, id: string): Promise<void> {
-  await env.DB.batch([
-    env.DB.prepare('DELETE FROM workbench_tickets WHERE document_id = ?').bind(id),
-    env.DB.prepare('DELETE FROM workbench_session_rooms WHERE document_id = ?').bind(id),
-    env.DB.prepare('DELETE FROM workbench_sessions WHERE document_id = ?').bind(id),
-  ]);
   if (env.IMAGES) await env.IMAGES.delete(snapshotKeys(id));
 }

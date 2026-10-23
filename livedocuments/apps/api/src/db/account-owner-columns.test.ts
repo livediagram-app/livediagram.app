@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { DatabaseSync } from 'node:sqlite';
 import { sqliteD1 } from '../test-sqlite-d1';
+import { workbenchStore } from '../workbench-store';
 import { deleteAccount } from './account';
 
 // Every column that holds an owner id, and what account deletion does with it (docs/specs/015-api/api.md,
@@ -17,13 +18,6 @@ type OwnerColumn = {
 };
 
 const OWNER_COLUMNS: OwnerColumn[] = [
-  // API tokens (docs/specs/015-api/public-api-and-tokens.md).
-  { table: 'api_tokens', column: 'owner_id' },
-  // Workbench embeds (docs/specs/013-workspace/workbench-embeds.md).
-  { table: 'workbench_pairing_requests', column: 'owner_id' },
-  { table: 'workbench_pairings', column: 'owner_id' },
-  { table: 'workbench_tickets', column: 'owner_id' },
-  { table: 'workbench_sessions', column: 'owner_id' },
   // A document's own row (its Durable Object; one database holds every document here): the index purges the owner's
   // documents, and each purge drops the document's whole store.
   {
@@ -90,35 +84,6 @@ function seed(sql: DatabaseSync, id: string) {
     removed: 0,
     created_at: T0,
   });
-  insert(sql, 'api_tokens', {
-    id: `tok-${id}`,
-    owner_id: id,
-    token_hash: `hash-${id}`,
-    created_at: T0,
-    expires_at: T0 * 2,
-    revoked: 0,
-    read_only: 0,
-  });
-  const workbenchRow = { owner_id: id, token_id: `tok-${id}`, origin: 'https://w.example' };
-  insert(sql, 'workbench_pairing_requests', {
-    ...workbenchRow,
-    id: `wr-${id}`,
-    code: `code-${id}`,
-    status: 'pending',
-    created_at: T0,
-    expires_at: T0 * 2,
-  });
-  insert(sql, 'workbench_pairings', { ...workbenchRow, id: `wp-${id}`, created_at: T0 });
-  const opened = {
-    ...workbenchRow,
-    pairing_id: `wp-${id}`,
-    document_id: `d-${id}`,
-    role: 'edit',
-    created_at: T0,
-    expires_at: T0 * 2,
-  };
-  insert(sql, 'workbench_tickets', { ...opened, ticket_hash: `th-${id}` });
-  insert(sql, 'workbench_sessions', { ...opened, id: `ws-${id}`, secret_hash: `sh-${id}` });
 }
 
 function schemaOwnerColumns(sql: DatabaseSync): string[] {
@@ -181,5 +146,27 @@ describe('deleteAccount erases every owner-keyed row (docs/specs/015-api/api.md)
     await deleteAccount(env, ACCOUNT);
 
     for (const c of OWNER_COLUMNS) expect(count(sql, c, OTHER), label(c)).toBeGreaterThan(0);
+  });
+
+  it("closes the person's workbench store and no one else's", async () => {
+    const { env } = arrange();
+    const ask = (personId: string) =>
+      workbenchStore(env, personId).openPairingRequest({
+        personId,
+        token: { id: `tok-${personId}`, name: null, readOnly: false, expiresAt: T0 * 2 },
+        origin: 'https://w.example',
+        scope: 'document',
+        name: null,
+        now: T0,
+      });
+    const mine = await ask(ACCOUNT);
+    const theirs = await ask(OTHER);
+
+    await deleteAccount(env, ACCOUNT);
+
+    const status = (personId: string, code: string) =>
+      workbenchStore(env, personId).pairingRequestStatus(code, `tok-${personId}`, T0);
+    expect(await status(ACCOUNT, mine.code)).toBeNull();
+    expect(await status(OTHER, theirs.code)).toMatchObject({ status: 'pending' });
   });
 });

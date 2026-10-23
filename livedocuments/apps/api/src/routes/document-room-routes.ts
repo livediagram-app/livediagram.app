@@ -8,7 +8,7 @@ import {
   type AccessLevel,
   type RoomTicketResponse,
 } from '@livedocuments/api-schema';
-import { noteWorkbenchSessionRoom } from '../db/workbench';
+import { workbenchStore } from '../workbench-store';
 import { linkCodeOf } from '../index-service';
 import { forbidden, json, notFound } from '../responses';
 import { openRoomTicket, sealRoomTicket } from '../room-ticket';
@@ -34,7 +34,7 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     );
     // A workspace session joins many rooms; each is recorded so ending its access closes them all (WB55).
     if (workbench?.scope === 'workspace')
-      await noteWorkbenchSessionRoom(env, workbench.sessionId, id);
+      await workbenchStore(env, workbench.ownerId).noteSessionRoom(workbench.sessionId, id);
     const answer: RoomTicketResponse = { ticket };
     return json(answer);
   }
@@ -44,12 +44,13 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     const opened = await openRoomTicket(env, url.searchParams.get('t'), id);
     if (!opened) return forbidden();
     const { claims, workbench } = opened;
-    const role: AccessLevel = workbench ? capWorkbenchRole(claims.level, workbench.cap) : claims.level;
+    const role: AccessLevel = workbench
+      ? capWorkbenchRole(claims.level, workbench.cap)
+      : claims.level;
     const person = linkCodeOf(claims.sub) ? null : claims.sub;
     // The share code a session came in by, so revoking it closes exactly its sockets: a link visitor's grant
     // names it; a person who opened a link says so on `?s=` (it only ever closes, so it needs no proof).
-    const shareCode =
-      linkCodeOf(claims.sub) ?? (url.searchParams.get('s')?.slice(0, 64) || null);
+    const shareCode = linkCodeOf(claims.sub) ?? (url.searchParams.get('s')?.slice(0, 64) || null);
     const forwarded = new Request(request);
     // Every trust header is stamped UNCONDITIONALLY: `new Request` copies the client's own headers, and the room
     // believes whatever arrives under these names (room-session.ts).

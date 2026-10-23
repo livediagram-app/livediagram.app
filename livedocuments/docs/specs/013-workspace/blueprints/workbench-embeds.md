@@ -241,7 +241,7 @@ Don't allow).
                                                         └──now ≥ expires_at──▶ expired (read as such)
 ```
 
-1. **Ask from a mint.** `POST /api/workbench/tickets` for an origin with no `workbench_pairings` row for the token
+1. **Ask from a mint.** `POST /api/workbench/tickets` for an origin with no pairing for the token
    calls `livePairingRequest(tokenId, origin)` (`status = 'pending' AND expires_at > now`); none creates one with
    `name` null. The answer is `428 pairing_required { pairingUrl, expiresAt }`. Log `[workbench] pairing-requested`.
 2. **Ask from `workbench pair`.** `POST /api/workbench/pairing-requests { origin, name? }` returns
@@ -259,9 +259,9 @@ Don't allow).
    `{ status, expiresAt, interval }`; the CLI polls it every `interval` seconds.
 6. **Paired.** Mints for that token and origin now pass the pairing check.
 7. **Unpair.** `DELETE /api/workbench/pairings/:id` (signed-in session, the token's owner) runs
-   `endWorkbenchAccess({ pairingId }, 'unpaired')`.
-8. **Token revoked.** Both revoke routes run `endWorkbenchAccess({ tokenId }, 'revoked')`: pairings, pending
-   requests, tickets and sessions of the token go.
+   the person's store's `endAccess({ pairingId }, 'unpaired')`.
+8. **Token revoked.** `DELETE /api/tokens/current`, and the store's own check of its tokens with liveworkspace, run
+   `endAccess({ tokenId }, 'revoked')`: pairings, pending requests, tickets and sessions of the token go.
 
 A request row stays after its answer until the sweep, so the waiting CLI reads the answer; it is never answered
 twice (the `status = 'pending'` guard).
@@ -291,9 +291,9 @@ In order; the first failure answers:
 
 Credential-free: an `Authorization` other than `lvw_` is ignored; `lvw_` is confined (WB5).
 
-1. Body `{ ticket }`, `ticket` matching `^[A-Za-z0-9_-]{22}$`, else `400 bad_request` (`invalid ticket`).
-2. Consume: `UPDATE workbench_tickets SET used_at = ? WHERE ticket_hash = ? AND used_at IS NULL AND expires_at > ?
-RETURNING ...`. No row: `SELECT used_at, expires_at` classifies `used`, `expired` or `unknown`, logged
+1. Body `{ ticket }`, `ticket` matching `WORKBENCH_TICKET_PATTERN`, else `400 bad_request` (`invalid ticket`).
+2. Consume, in the store the ticket names: `UPDATE wb_tickets SET used_at = ? WHERE ticket_hash = ? AND used_at IS
+NULL AND expires_at > ? RETURNING ...`. No row: `SELECT used_at` classifies `used`, `expired` or `unknown`, logged
    `[workbench] session-refused`, answered `401 invalid_ticket { reason }`.
 3. The token must be live and the pairing present (joined in step 2's `RETURNING` query through `token_id` and
    `pairing_id`); else `401 invalid_ticket { reason: 'unknown' }`.
@@ -308,9 +308,8 @@ RETURNING ...`. No row: `SELECT used_at, expires_at` classifies `used`, `expired
 
 Resolved where `lwt_` is, only when no account access token verified:
 
-1. `bearer` matching `isWorkbenchSessionFormat` → `resolveWorkbenchSession(env, bearer, now)`:
-   `SELECT s.*, t.read_only, t.revoked, t.expires_at AS token_expires_at FROM workbench_sessions s JOIN api_tokens t
-ON t.id = s.token_id WHERE s.secret_hash = ?`. No row → `unknown`; token revoked or expired → `revoked`;
+1. `bearer` matching `isWorkbenchSessionFormat` → `resolveWorkbenchSession(env, bearer, now)`: one `readSession`
+   call on the store the secret names, the session by its hash with its token's state. No row → `unknown`; token revoked or expired → `revoked`;
    `s.expires_at <= now` → `expired`. Refused: log `[workbench] bearer-refused { reason, sessionPrefix }`, answer
    `401 invalid_session` with `WWW-Authenticate: Bearer error="invalid_token"`.
 2. `ctx.workbench = { sessionId, ownerId, tokenId, pairingId, documentId, tabId, origin, level }`, `level` lowered to
@@ -371,16 +370,15 @@ Everything else is `confined`, among it: `documents/:doc` `DELETE`, `copy`, `fol
   socket `mine` through the person tag, so it never holds against the owner's agent, and the CLI's `selected`
   reads it.
 
-### Ending access (`endWorkbenchAccess`)
+### Ending access (the store's `endAccess`)
 
-`target` is `{ pairingId }` or `{ tokenId }`; `reason` is `unpaired` or `revoked`.
+`target` is `{ pairingId }` or `{ tokenId }`; `reason` is `unpaired`, `revoked` or `closed` (the account closed).
 
-1. Read the target's pairings with every document any of their sessions names (`SELECT DISTINCT pairing_id,
-document_id FROM workbench_sessions WHERE pairing_id IN (...)`).
-2. One batch: `DELETE FROM workbench_pairings` of the target (sessions and tickets cascade); for a token, also
-   `DELETE FROM workbench_pairing_requests WHERE token_id = ?`.
-3. Close: `closeWorkbenchSessions(env, documentId, pairingId)` per pair, `TEAM_ROOM_CLOSE_CONCURRENCY` at a time,
-   best-effort (the D1 delete is the change).
+1. Read the target's pairings with every plan any of their sessions names or joined (`wb_session_rooms`).
+2. Delete the target's pairings (sessions, tickets and rooms cascade); for a token, also its pairing requests, and
+   it is marked revoked.
+3. Close: `closeWorkbenchSessions(env, documentId, pairingId)` per pair, 10 at a time, best-effort (the delete is
+   the change).
 4. Log `[workbench] session-ended { reason, documentId, tokenId, sessionPrefix }` per session read in step 1, and
    `[workbench] unpaired { tokenId, pairingId, rooms, unreached }` for each pairing.
 
@@ -407,7 +405,7 @@ Transitions, in order:
 
 1. `reading`: `takeTicketFromAddress` reads `location.hash` as `URLSearchParams`, takes `ticket`, and calls
    `history.replaceState(null, '', pathname + search)` before any request. `d` from `?d=`. A ticket failing the
-   22-character shape, or none: `refused('no-ticket')`.
+   ticket shape (`WORKBENCH_TICKET_PATTERN`), or none: `refused('no-ticket')`.
 2. `redeeming`: `apiRedeemWorkbenchTicket(ticket)` with no credential. `401 invalid_ticket`, 404 or 410:
    `refused('ticket')`. A 201 whose `documentId` differs from `d`: `apiEndWorkbenchSession(secret)`, post
    `ended { reason: 'refused' }` to `origin`, `refused('mismatch')`.
@@ -1194,13 +1192,14 @@ CREATE INDEX workbench_session_rooms_document_idx ON workbench_session_rooms (do
 
 ## Performance and limits
 
-- Each `lvw_` request: one indexed `SELECT` (`secret_hash` unique) joined to `api_tokens` by primary key, about the
-  cost of `resolveApiToken` without its once-a-minute `last_used_at` write (WB32). The autosave's cadence (one save per debounce)
-  adds one such read per save.
+- Each `lvw_` request: one call to the person's store, which hashes the secret and does one indexed `SELECT`
+  (`secret_hash` unique) joined to `wb_tokens` by primary key; well under a millisecond inside the store among a
+  thousand sessions (`packages/index-app/src/workbench.test.ts` holds the budget). No write (WB32). The autosave's
+  cadence (one save per debounce) adds one such call per save.
 - `workbenchRouteVerdict`: a walk over at most 40 patterns of at most 8 segments, constant per request.
 - Mint: four indexed reads (pairing, document meta, grant, tab link) and one insert. Redemption: one update, one
   read, one insert, one participant read.
-- `endWorkbenchAccess` for a token: at most the token's pairings (a handful) times their documents; rooms closed
+- `endAccess` for a token: at most the token's pairings (a handful) times their documents; rooms closed
   10 at a time, 3 s each at most.
 - `selectionReference`: `buildViewModel` over the tab, O(n log n) for refs; a 5,000-element tab builds in well under
   `VIEW_SLOW_MS`; run once per settled selection, never per pointer move.

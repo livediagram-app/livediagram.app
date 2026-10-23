@@ -44,7 +44,7 @@ const DOC = {
 function workbenchOf(over: Partial<WorkbenchDocumentSession> = {}): WorkbenchDocumentSession {
   return {
     scope: 'document',
-    secret: `lvw_${'a'.repeat(43)}`,
+    secret: `lvw_${'a'.repeat(43)}.${'0f'.repeat(32)}`,
     documentId: 'doc-1',
     tabId: null,
     shareCode: null,

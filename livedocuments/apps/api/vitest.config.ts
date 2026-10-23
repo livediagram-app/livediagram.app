@@ -14,7 +14,6 @@ import { defineProject } from '@livedocuments/vitest-config';
 // has no threshold yet (docs/specs/003-system-architecture/testing.md) — this is the first ratchet, not the last.
 const GATE_KEEPERS = [
   'src/auth/**',
-  'src/api-token-row.ts',
   'src/db/api-tokens.ts',
   'src/db/share.ts',
   'src/db/shared.ts',

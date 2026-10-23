@@ -5,7 +5,7 @@
 
 import {
   normaliseWorkbenchName,
-  WORKBENCH_HANDLE_PATTERN,
+  WORKBENCH_TICKET_PATTERN,
   WORKBENCH_SELECTION_MAX_REFS,
   type WorkbenchRole,
 } from './workbench';
@@ -231,7 +231,7 @@ const TO_PAGE: Record<string, Parser> = {
     return name === null ? null : { type: 'livedocuments:hello-ack', v: 1, name };
   },
   'livedocuments:ticket': (m) =>
-    isString(m.ticket) && WORKBENCH_HANDLE_PATTERN.test(m.ticket)
+    isString(m.ticket) && WORKBENCH_TICKET_PATTERN.test(m.ticket)
       ? { type: 'livedocuments:ticket', v: 1, ticket: m.ticket }
       : null,
   'livedocuments:reveal': (m) =>

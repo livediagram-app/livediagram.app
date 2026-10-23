@@ -1,6 +1,5 @@
-import { accountCredentials, getPersonIdentity } from './auth/accounts';
-import { AccountsUnavailable, sweepRevokedTokens, type ResolvedApiToken } from './db/api-tokens';
-import { endWorkbenchAccess } from './workbench-end';
+import { getPersonIdentity } from './auth/accounts';
+import { AccountsUnavailable, type ResolvedApiToken } from './db/api-tokens';
 import { handleAuth } from './routes/auth';
 import { reportServerEvent, telemetryEnabled } from './server-telemetry';
 import { resolveApiToken } from './db';
@@ -18,6 +17,7 @@ import {
 import { handleTokens } from './routes/tokens';
 import { handleOauthExchange } from './routes/oauth';
 import { DocumentRoom } from './document-room/document-room';
+import { WorkbenchStore } from './workbench-store-do';
 import { handleInternalItems } from './routes/internal-items';
 import { CORS_HEADERS, forbidden, json, notFound, payloadTooLarge, rateLimited } from './responses';
 import { clientRateKey } from './client-ip';
@@ -41,11 +41,10 @@ import { handleTrash } from './routes/trash';
 import { handleWorkbench } from './routes/workbench';
 import { resolveWorkbenchSession } from './auth/workbench-session';
 import { workbenchRefusal } from './auth/workbench-confinement';
-import { sweepWorkbench } from './db/workbench';
 import { withServerRelease } from './server-release-header';
 import type { Env } from './types';
 
-export { DocumentRoom };
+export { DocumentRoom, WorkbenchStore };
 
 // Per-owner write rate limit (security audit item). Returns true
 // when the caller is over the configured cap (wrangler.toml's
@@ -270,7 +269,14 @@ async function routeApiRequest(
     verifiedUserId,
     accountEmail,
     resolveOwner,
-    token: tokenAuth ? { id: tokenAuth.tokenId, readOnly: tokenAuth.readOnly } : null,
+    token: tokenAuth
+      ? {
+          id: tokenAuth.tokenId,
+          readOnly: tokenAuth.readOnly,
+          name: tokenAuth.name,
+          expiresAt: tokenAuth.expiresAt,
+        }
+      : null,
     workbench,
     teams,
     // The browser's own token, which the index takes as it is; an API token's or a workbench session's account
@@ -341,44 +347,6 @@ const worker = {
   // Every response carries the server release signal (docs/specs/016-platform/new-version-prompt.md, stale-builds.md).
   async fetch(request: Request, env: Env, executionCtx?: ExecutionContext): Promise<Response> {
     return withServerRelease(await routeApiRequest(request, env, executionCtx), env.BUILD_ID);
-  },
-
-  // Scheduled handler. Wired to the cron schedule in wrangler.toml.
-  // One worker invocation per `triggers.crons` entry; dispatch on
-  // `event.cron` for each pattern. The Trash, its purge, the empty-document
-  // sweep and the Timeline are the index's (liveworkspace/docs/index-service.md);
-  // a document's notification claims and changesets are its own Durable
-  // Object's; unused images are swept by liveworkspace's media service, which
-  // each document keeps told. What is left here is this app's own: tokens and
-  // workbench rows. All use `ctx.waitUntil` so they run concurrently and the
-  // worker can exit as soon as the schedule callback returns.
-  async scheduled(event: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
-    // liveworkspace/docs/accounts.md "How an app keeps up": end the workbench access of any token revoked
-    // on liveworkspace.app.
-    if (event.cron === '*/5 * * * *') {
-      if (!accountCredentials(env)) return;
-      ctx.waitUntil(
-        sweepRevokedTokens(env)
-          .then(async (gone) => {
-            for (const tokenId of gone) await endWorkbenchAccess(env, { tokenId }, 'revoked');
-            if (gone.length > 0) console.log(`token sweep: ${gone.length} revoked`);
-          })
-          .catch((err) => console.error('token sweep failed', err)),
-      );
-      return;
-    }
-    if (event.cron === '0 3 * * *') {
-      const now = Date.now();
-      // A document's changesets are kept by the document's own Durable Object, swept by its daily upkeep alarm
-      // (document-room.ts `maintain`), not from here.
-      // docs/specs/013-workspace/blueprints/workbench-embeds.md "Retention": spent tickets and requests,
-      // sessions past their grace, pairings of tokens no longer live.
-      ctx.waitUntil(
-        sweepWorkbench(env, now)
-          .then((count) => console.log(`workbench sweep: deleted ${count} rows`))
-          .catch((err) => console.error('workbench sweep failed', err)),
-      );
-    }
   },
 } satisfies ExportedHandler<Env>;
 

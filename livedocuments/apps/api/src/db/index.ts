@@ -1,5 +1,6 @@
-// Thin wrappers over what the api stores, split by resource: D1 for API tokens and workbench embeds, and each
-// document's own SQLite (`env.DOCUMENT_DB`, inside its Durable Object) for its content.
+// Thin wrappers over what the api stores: each document's own SQLite (`env.DOCUMENT_DB`, inside its Durable Object)
+// for its content. API tokens are checked with liveworkspace (api-tokens.ts); a person's workbench is their own
+// Durable Object (src/workbench-store.ts).
 //
 // This barrel re-exports every resource module so callers keep
 // importing from '../db'. Add a new query to its resource module (or

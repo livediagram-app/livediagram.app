@@ -10,7 +10,6 @@ import { describe, expect, it } from 'vitest';
 // (and its test in db/image-refs-writers.test.ts) before the count is raised.
 
 const APPS = fileURLToPath(new URL('../../../', import.meta.url).href);
-const MIGRATIONS = join(APPS, 'api/migrations');
 
 const WRITES_TABS =
   /\b(?:INSERT(?:\s+OR\s+\w+)?\s+INTO|UPDATE|DELETE\s+FROM|REPLACE\s+INTO|DROP\s+TABLE)\s+tabs\b/gi;
@@ -30,11 +29,6 @@ const KNOWN_WRITERS: Record<string, number> = {
   // references go with the tabs by their foreign key.
   'api/src/test-sqlite-d1.ts': 1,
 };
-
-// `tabs` lives in each document's own SQLite (document-room/document-schema.ts), not in D1; any D1 migration that
-// wrote `tabs` would be a mistake, and must maintain `image_refs` and be listed here.
-const LAST_UNINDEXED_MIGRATION = '0001';
-const KNOWN_MIGRATION_WRITERS: string[] = [];
 
 function sourceFiles(dir: string): string[] {
   return readdirSync(dir).flatMap((name) => {
@@ -62,14 +56,5 @@ describe('writers of tabs', () => {
       }
     }
     expect(found).toEqual(KNOWN_WRITERS);
-  });
-
-  it('include no migration after the index without it being listed', () => {
-    const late = readdirSync(MIGRATIONS)
-      .filter((f) => f.endsWith('.sql') && f.slice(0, 4) > LAST_UNINDEXED_MIGRATION)
-      .filter(
-        (f) => (readFileSync(join(MIGRATIONS, f), 'utf8').match(WRITES_TABS)?.length ?? 0) > 0,
-      );
-    expect(late).toEqual(KNOWN_MIGRATION_WRITERS);
   });
 });

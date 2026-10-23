@@ -10,7 +10,9 @@ import { resetServerReleaseForTests, serverBuild, serverDocumentFormat } from '.
 // The guest token is the only identity core.ts reads besides the session's (liveworkspace/docs/one-explorer-
 // contracts.md "Guests"); mock it so each case says whether there is one.
 const { guest } = vi.hoisted(() => ({
-  guest: { readGuestToken: vi.fn((): { token: string; id: string; expiresAt: number } | null => null) },
+  guest: {
+    readGuestToken: vi.fn((): { token: string; id: string; expiresAt: number } | null => null),
+  },
 }));
 vi.mock('../guest-token', () => guest);
 
@@ -359,7 +361,7 @@ describe('apiFetch under a workbench session', () => {
 
     await expect(
       apiFetch(`${API_BASE}/folders`, {
-        headers: { Authorization: `Bearer lvw_${'s'.repeat(43)}` },
+        headers: { Authorization: `Bearer lvw_${'s'.repeat(43)}.${'0f'.repeat(32)}` },
       }),
     ).rejects.toBeInstanceOf(WorkbenchConfinedError);
     expect(fetchMock).not.toHaveBeenCalled();

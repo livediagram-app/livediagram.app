@@ -44,7 +44,7 @@ import worker from './index';
 import type { RouteContext, WorkbenchContext } from './routes/context';
 import type { Env } from './types';
 
-const LVW = `lvw_${'w'.repeat(43)}`;
+const LVW = `lvw_${'w'.repeat(43)}.${'0f'.repeat(32)}`;
 const SESSION: WorkbenchContext = {
   sessionId: 'abcdef12-0000-4000-8000-000000000000',
   ownerId: 'user_1',

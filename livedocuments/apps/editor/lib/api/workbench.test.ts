@@ -17,7 +17,7 @@ import {
 type Seen = { method: string; url: string; headers: Headers; body: unknown };
 
 const SESSION: WorkbenchSessionResponse = {
-  session: `lvw_${'a'.repeat(43)}`,
+  session: `lvw_${'a'.repeat(43)}.${'0f'.repeat(32)}`,
   scope: 'document',
   documentId: 'doc-1',
   folderId: null,

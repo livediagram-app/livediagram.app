@@ -8,8 +8,7 @@
 // Boots:
 //   1. index — `wrangler dev --local` (liveworkspace/apps/index) on E2E_INDEX_PORT (8319), its D1 kept apart from
 //      a developer's own local index, trusting this stack's accounts stand-in and calling this api.
-//   2. api — `wrangler dev --local` (apps/api) after applying the D1
-//      migrations to a fresh local database, so persistence works.
+//   2. api — `wrangler dev --local` (apps/api): each document's content in its own local Durable Object.
 //   3. live — a static file server for `out/` that reproduces the four
 //      things production does (docs/specs/003-system-architecture/e2e-smoke.md): strip the `/live` assetPrefix,
 //      rewrite `/document/*` to the single placeholder, forward `/api/index/*` to the index, and proxy
@@ -608,10 +607,6 @@ async function main() {
       'MERGE_KEY:e2e-merge-key',
     ],
     { cwd: INDEX_DIR },
-  );
-  console.log('[e2e] applying local D1 migrations…');
-  await waitForExit(
-    run('pnpm', ['--filter', '@livedocuments/api', 'run', 'db:migrate:local'], { cwd: ROOT }),
   );
   console.log('[e2e] starting api worker…');
   run(

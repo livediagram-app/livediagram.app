@@ -93,7 +93,7 @@ let end: Mock<WorkbenchSession['end']>;
 function sessionOf(): WorkbenchSession {
   return {
     scope: 'workspace',
-    secret: `lvw_${'a'.repeat(43)}`,
+    secret: `lvw_${'a'.repeat(43)}.${'0f'.repeat(32)}`,
     documentId: null,
     tabId: null,
     shareCode: null,

@@ -65,7 +65,7 @@ describe('POST /api/teams (docs/specs/013-workspace/teams.md "Making a team")', 
   });
 
   it('answers 503 without sign-in configured, or with liveworkspace out of reach', async () => {
-    expect((await create({ name: 'A' }, { env: { DB: db.env.DB } as Env })).status).toBe(503);
+    expect((await create({ name: 'A' }, { env: {} as Env })).status).toBe(503);
     vi.unstubAllGlobals();
     vi.stubGlobal('fetch', async () => {
       throw new TypeError('network');

@@ -149,7 +149,11 @@ type World = {
 
 function world(extra: Partial<Env> = {}): World {
   const d1 = sqliteD1();
-  const env = { DB: d1.env.DB, INDEX_ORIGIN: 'https://index.test', ...extra } as unknown as Env;
+  const env = {
+    WORKBENCH: d1.env.WORKBENCH,
+    INDEX_ORIGIN: 'https://index.test',
+    ...extra,
+  } as unknown as Env;
   const { ns, documents, calls } = documentNamespace(() => env);
   Reflect.set(env, 'DOCUMENT_ROOM', ns);
   const executionCtx = {
@@ -374,21 +378,16 @@ describe('/api/internal/items (docs/specs/015-api/api.md "Internal")', () => {
     expect(again.status).toBe(409);
   });
 
-  it('purges a document: every row, every session, and what D1 keeps about it', async () => {
+  it('purges a document: every row of its store', async () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     const w = world({ INDEX_KEY: 'index-key' });
     await createDocument(w, 'A');
     const document = w.documents.get('A')!;
-    w.d1.sql.exec(`PRAGMA foreign_keys = OFF;
-      INSERT INTO workbench_session_rooms (session_id, document_id) VALUES ('s1', 'A'), ('s1', 'B');`);
     const res = await w.send('DELETE', '/api/internal/items/A', undefined, auth);
     expect(res.status).toBe(200);
     expect(
       document.db.prepare("SELECT COUNT(*) AS n FROM sqlite_master WHERE type = 'table'").get()!.n,
     ).toBe(0);
-    expect(w.d1.sql.prepare('SELECT document_id FROM workbench_session_rooms').all()).toEqual([
-      { document_id: 'B' },
-    ]);
   });
 
   it("takes a closed account's name off the documents that name them, and starts none", async () => {

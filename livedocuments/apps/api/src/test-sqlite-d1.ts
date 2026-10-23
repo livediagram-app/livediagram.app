@@ -1,66 +1,38 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
-import { readdirSync, readFileSync } from 'node:fs';
-import { DatabaseSync, type SQLInputValue } from 'node:sqlite';
-import { fileURLToPath } from 'node:url';
+import { DatabaseSync } from 'node:sqlite';
 import { DocumentDb } from './document-room/document-db';
 import { migrateDocumentSchema } from './document-room/document-schema';
 import { nodeDocumentSql, nodeTransaction } from './test-document-sql';
 import type { AccessLevel } from '@livedocuments/api-schema';
 import type { GrantCaller, GrantOutcome, DocumentGrant } from './index-service';
-import {
-  IndexError,
-  type IndexClient,
-  type ShareAccess,
-} from '@liveworkspace/index-client';
+import { IndexError, type IndexClient, type ShareAccess } from '@liveworkspace/index-client';
 import type { Env, DocumentEnv } from './types';
+import { memoryWorkbenchNamespace } from '@liveworkspace/index-app/testing';
+import { accountCredentials } from './auth/accounts';
+import { closeWorkbenchSessions } from './room-access-client';
 
-// A REAL D1 for tests: an in-memory SQLite database with every migration in
-// apps/api/migrations applied, behind the D1 prepare/bind/first/all/run/batch
-// surface the db/ modules call.
-//
-// test-d1.ts records which SQL ran; this one answers whether it WORKED. Use it
-// where the behaviour lives in the schema: foreign-key cascades, primary-key
-// collisions, INSERT OR IGNORE outcomes. D1 enforces foreign keys, so this
-// turns them on too.
-//
-// The documents' content (docs/specs/015-api/api.md "Storage") is each document's own Durable Object in production. Here
-// every document's tables sit in the same database as D1's (their names do not overlap), behind `env.DOCUMENT_DB`, so a
-// test arranges and asserts on both through one handle, and a handler runs as it does inside a document's object.
-// `env.DOCUMENT_ROOM` answers the document RPCs (document-client.ts) from those same tables, and hands `fetch` (the room's
-// relays) to the DOCUMENT_ROOM the test passed, if any. A document row inserted into D1 gets its document row, as a
-// create does, and what a document owes D1 (document-outbox.ts) is pushed before every D1 call, so a test reads D1 as
-// it would be once the document's push has landed.
+// The api's storage for tests. A document's content (docs/specs/015-api/api.md "Storage") is its own Durable Object
+// in production; here every document's tables sit in one in-memory SQLite database, behind `env.DOCUMENT_DB`, so a
+// test arranges and asserts on them through one handle, and a handler runs as it does inside a document's object.
+// `env.DOCUMENT_ROOM` answers the document RPCs (document-client.ts) from those same tables, and hands `fetch` (the
+// room's relays) to the DOCUMENT_ROOM the test passed, if any. `flush` drains what the documents owe the index and the
+// media service (document-outbox.ts), for a test that asserts on those pushes. Each person's workbench is an in-memory
+// store (@liveworkspace/index-app/testing).
 //
 // Not a `.test.ts` file, so vitest doesn't collect it as a suite.
 
-const MIGRATIONS_DIR = fileURLToPath(new URL('../migrations/', import.meta.url).href);
-
 export type SqliteD1 = {
-  // The worker's bindings and the documents' (DOCUMENT_DB): every content module and every D1 module runs against it.
+  // The worker's bindings and the documents' (DOCUMENT_DB): every content module runs against it.
   env: DocumentEnv;
   // The raw handle, for arranging rows and asserting on them directly.
   sql: DatabaseSync;
-  // Land what the documents owe D1 now (every D1 call does this first), for a test that reads D1 through `sql`.
+  // Drain what the documents owe the index and the media service now.
   flush: () => Promise<void>;
 };
-
-// D1 binds a boolean as 1 / 0; node:sqlite refuses one outright.
-function toSql(value: unknown): SQLInputValue {
-  if (typeof value === 'boolean') return value ? 1 : 0;
-  if (value === undefined) throw new TypeError('D1_TYPE_ERROR: undefined is not a bindable value');
-  return value as SQLInputValue;
-}
-
-function migrationFiles(): string[] {
-  return readdirSync(MIGRATIONS_DIR)
-    .filter((f) => f.endsWith('.sql'))
-    .sort();
-}
 
 export function sqliteD1(base: Partial<Env> = {}): SqliteD1 {
   const sql = new DatabaseSync(':memory:');
   sql.exec('PRAGMA foreign_keys = ON');
-  for (const file of migrationFiles()) sql.exec(readFileSync(MIGRATIONS_DIR + file, 'utf8'));
   const documentSql = nodeDocumentSql(sql);
   migrateDocumentSchema((q) => documentSql.exec(q));
   // Test scaffolding for what the index holds in production (liveworkspace/docs/one-explorer.md): `test_documents`
@@ -85,8 +57,8 @@ export function sqliteD1(base: Partial<Env> = {}): SqliteD1 {
     code TEXT PRIMARY KEY, document_id TEXT NOT NULL, role TEXT NOT NULL DEFAULT 'edit', level TEXT NULL,
     tab_id TEXT NULL, created_at INTEGER NOT NULL DEFAULT 0, expires_at INTEGER NULL, expiry TEXT NULL)`);
 
-  // Push what the documents owe D1 before D1 answers anything. A call made while a push runs waits for it; the
-  // push's own D1 batch (inside it, by its async context) goes straight through.
+  // Drain what the documents owe (their outboxes). A call made while a drain runs waits for it; one made from inside
+  // the drain (by its async context) returns at once.
   const inPush = new AsyncLocalStorage<true>();
   let pushing: Promise<void> | null = null;
   const push = async (): Promise<void> => {
@@ -110,77 +82,12 @@ export function sqliteD1(base: Partial<Env> = {}): SqliteD1 {
     }
   };
 
-  const statement = (query: string, args: SQLInputValue[]) => {
-    const rows = () =>
-      sql
-        .prepare(query)
-        .all(...args)
-        .map((row) => ({ ...row }));
-    return {
-      bind: (...next: unknown[]) => statement(query, next.map(toSql)),
-      first: async (column?: string) => {
-        await push();
-        const row = rows()[0] ?? null;
-        return column && row ? (row[column] ?? null) : row;
-      },
-      all: async () => {
-        await push();
-        return { results: rows(), success: true, meta: {} };
-      },
-      run: async () => {
-        await push();
-        const res = sql.prepare(query).run(...args);
-        return {
-          success: true,
-          meta: { changes: Number(res.changes), last_row_id: Number(res.lastInsertRowid) },
-        };
-      },
-      // What D1's batch hands back per statement: a read's rows, a write's
-      // change count.
-      batchResult: async () => {
-        const prepared = sql.prepare(query);
-        if (prepared.columns().length > 0) {
-          return { results: rows(), success: true, meta: { changes: 0 } };
-        }
-        const res = prepared.run(...args);
-        return { results: [], success: true, meta: { changes: Number(res.changes) } };
-      },
-    };
-  };
-
-  // D1 isolates each batch from every other. Each batch here awaits between its statements, so two run
-  // concurrently (the cron's sweeps, under waitUntil) would interleave inside one SQLite connection and the
-  // second BEGIN would fail. Batches therefore queue behind one another, as D1 serialises them.
-  let batches: Promise<unknown> = Promise.resolve();
-  const runBatch = async (statements: { batchResult: () => Promise<unknown> }[]) => {
-    sql.exec('BEGIN');
-    try {
-      const results = [];
-      for (const s of statements) results.push(await s.batchResult());
-      sql.exec('COMMIT');
-      return results;
-    } catch (err) {
-      sql.exec('ROLLBACK');
-      throw err;
-    }
-  };
-  const db = {
-    prepare: (query: string) => statement(query, []),
-    // D1 runs a batch as one transaction: all of it lands or none of it does.
-    // A batch does not push first: the drain's own D1 batch (document-outbox.ts) must not set off a second drain.
-    batch: async (statements: { batchResult: () => Promise<unknown> }[]) => {
-      const run = batches.then(() => runBatch(statements));
-      batches = run.catch(() => undefined);
-      return run;
-    },
-  };
-
   const documentDb = new DocumentDb(documentSql, {
     transaction: nodeTransaction(sql),
     ensureSchema: () => {},
     onWrite: () => {},
   });
-  const env = { ...base, DB: db, DOCUMENT_DB: documentDb.asD1() } as unknown as DocumentEnv;
+  const env = { ...base, DOCUMENT_DB: documentDb.asD1() } as unknown as DocumentEnv;
   Object.defineProperty(env, TEST_GRANT_HOOK, {
     value: (documentId: string, who: TestGrantCaller) => testGrantFor(sql, documentId, who),
     enumerable: false,
@@ -195,6 +102,13 @@ export function sqliteD1(base: Partial<Env> = {}): SqliteD1 {
       rooms = testDocumentRooms(env, sql, next);
     },
   });
+  // Each person's workbench store, in memory (@liveworkspace/index-app/testing), closing rooms as the real one does.
+  if (!base.WORKBENCH) {
+    env.WORKBENCH = memoryWorkbenchNamespace<'document'>({
+      credentials: () => accountCredentials(env),
+      closeRoom: (planId, pairingId) => closeWorkbenchSessions(env, planId, pairingId),
+    }) as unknown as DurableObjectNamespace;
+  }
   return { env, sql, flush: push };
 }
 
@@ -216,7 +130,12 @@ export function testIndexFor(env: unknown, caller: GrantCaller): IndexClient | n
         create: false,
       });
       if (!grant) throw new IndexError(404, 'not_found');
-      return { grant: grant.token, level: grant.level, tabId: grant.tab, expiresAt: grant.exp * 1000 };
+      return {
+        grant: grant.token,
+        level: grant.level,
+        tabId: grant.tab,
+        expiresAt: grant.exp * 1000,
+      };
     },
     listFolders: async () => {
       const rows = sql

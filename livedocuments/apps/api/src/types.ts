@@ -12,7 +12,6 @@ export type {
   TabSummary as TabSummaryDTO,
   TabRecord as TabDTO,
   Folder as FolderDTO,
-  ApiToken as ApiTokenDTO,
   ImageSummary,
   ParticipantRecord as ParticipantDTO,
   ParticipantPresence,
@@ -27,12 +26,12 @@ import type { DocumentRoom } from './document-room/document-room';
 // Worker bindings injected by Cloudflare at runtime. Not part of the
 // wire format (purely a server-side capability handle).
 export type Env = {
-  // What is neither a document's content nor the index's (docs/specs/015-api/api.md "Storage"): people and their
-  // settings, form links and workbench embeds.
-  DB: D1Database;
   // Each document's Durable Object (src/document-room/document-room.ts): its content, in its own SQLite, and its
   // realtime room. Reached through document-client.ts `documentRoom(env, documentId)`.
   DOCUMENT_ROOM: DurableObjectNamespace<DocumentRoom>;
+  // Each person's workbench (src/workbench-store.ts, @liveworkspace/index-app workbench.ts): their pairing
+  // requests, pairings, tickets and sessions, in its own SQLite.
+  WORKBENCH: DurableObjectNamespace;
   // liveworkspace's index (liveworkspace/docs/one-explorer.md, src/index-service.ts): where every document is and who
   // may open it. INDEX_ORIGIN is its origin (`https://liveworkspace.app`; locally `http://127.0.0.1:8793`): the
   // grants this api checks are signed by `${INDEX_ORIGIN}/api/index/jwks`. INDEX_KEY is this app's key there, a
