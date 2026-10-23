@@ -18,7 +18,8 @@ const noSubscription = () => () => {};
 const signedInNow = () => signedInFromCookie(document.cookie) === true;
 const signedOutOnServer = () => false;
 
-function useSignedInHint(): boolean {
+// Whether the hint cookie says someone is signed in: false in the static HTML, read after hydration.
+export function useSignedInHint(): boolean {
   return useSyncExternalStore(noSubscription, signedInNow, signedOutOnServer);
 }
 

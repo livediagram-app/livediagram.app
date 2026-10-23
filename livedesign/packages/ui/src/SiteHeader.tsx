@@ -2,6 +2,7 @@ import type { CtaSurface } from '@livedesign/api-schema';
 import type { ReactNode } from 'react';
 import { Brand } from './Brand';
 import { BuildWithAiLink } from './BuildWithAiLink';
+import { ExplorerLink } from './ExplorerLink';
 import { HeaderPrimaryCta } from './HeaderPrimaryCta';
 import { ShareRail } from './ShareRail';
 import { SITE_ID } from './site';
@@ -32,6 +33,9 @@ import { StartBlankLink } from './StartBlankLink';
 // pair's hrefs carry `via=<surface>.Header` / `.HeaderBlank` so the editor can
 // count which page's header brought somebody in. A surface passing its own
 // `actions` tags those links itself.
+//
+// Every header carries the Explorer link (ExplorerLink) left of the CTAs, so a new visitor can reach
+// Explorer too; signed in, the primary Open Explorer covers it.
 //
 // `buildWithAi` adds the Build with AI link (desktop only) left of Start Blank: 'link' on a marketing page,
 // 'current' on /ai itself (docs/specs/019-marketing/build-with-ai.md "Entry points").
@@ -75,6 +79,7 @@ export function SiteHeader({
             </div>
           ) : null}
           <div className="flex shrink-0 items-center gap-2">
+            <ExplorerLink />
             {buildWithAi ? <BuildWithAiLink current={buildWithAi === 'current'} /> : null}
             {actions ?? <DefaultActions ctaSurface={ctaSurface} roomy={!center} />}
           </div>
