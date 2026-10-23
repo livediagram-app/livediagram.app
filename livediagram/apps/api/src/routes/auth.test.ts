@@ -65,7 +65,7 @@ const cookieValue = (res: Response, name: string) =>
 async function signInCookie(returnTo = '/document/abc') {
   const res = await call(`/api/auth/sign-in?return_to=${encodeURIComponent(returnTo)}`);
   const location = new URL(res.headers.get('Location')!);
-  return { res, location, pkce: cookieValue(res, 'lp_pkce')! };
+  return { res, location, pkce: cookieValue(res, 'ld_pkce')! };
 }
 
 describe('GET /api/auth/sign-in', () => {
@@ -84,7 +84,7 @@ describe('GET /api/auth/sign-in', () => {
 
   it('keeps the verifier in an HttpOnly cookie scoped to /api/auth', async () => {
     const { res } = await signInCookie();
-    const pkce = setCookies(res).find((c) => c.startsWith('lp_pkce='))!;
+    const pkce = setCookies(res).find((c) => c.startsWith('ld_pkce='))!;
     expect(pkce).toContain('HttpOnly');
     expect(pkce).toContain('Secure');
     expect(pkce).toContain('Path=/api/auth');
@@ -107,7 +107,7 @@ describe('GET /api/auth/callback', () => {
     const { location, pkce } = await signInCookie();
     const state = opts.state ?? location.searchParams.get('state')!;
     return call(`/api/auth/callback?code=the-code&state=${state}`, {
-      headers: { Cookie: `other=1; lp_pkce=${opts.cookie ?? pkce}` },
+      headers: { Cookie: `other=1; ld_pkce=${opts.cookie ?? pkce}` },
     });
   }
 
@@ -125,11 +125,11 @@ describe('GET /api/auth/callback', () => {
     expect(body.get('code')).toBe('the-code');
     expect(body.get('code_verifier')).toBeTruthy();
 
-    expect(cookieValue(res, 'lp_refresh')).toBe('refresh-2');
-    const refresh = setCookies(res).find((c) => c.startsWith('lp_refresh='))!;
+    expect(cookieValue(res, 'ld_refresh')).toBe('refresh-2');
+    const refresh = setCookies(res).find((c) => c.startsWith('ld_refresh='))!;
     expect(refresh).toContain('HttpOnly');
     expect(refresh).toContain('SameSite=Strict');
-    expect(cookieValue(res, 'lp_pkce')).toBe('');
+    expect(cookieValue(res, 'ld_pkce')).toBe('');
     // The page-readable hint, site-wide and not HttpOnly, holding nothing secret.
     const hint = setCookies(res).find((c) => c.startsWith('ld_signed_in='))!;
     expect(hint).toContain('ld_signed_in=1;');
@@ -148,7 +148,7 @@ describe('GET /api/auth/callback', () => {
     const res = await callback({ state: 'forged' });
     expect(res.headers.get('Location')).toBe('/sign-in?error=expired');
     expect(fetchMock).not.toHaveBeenCalled();
-    expect(cookieValue(res, 'lp_refresh')).toBeUndefined();
+    expect(cookieValue(res, 'ld_refresh')).toBeUndefined();
   });
 
   it('refuses a callback with no sign-in cookie', async () => {
@@ -162,7 +162,7 @@ describe('GET /api/auth/callback', () => {
     fetchMock.mockResolvedValue(new Response('{"error":"invalid_grant"}', { status: 400 }));
     const res = await callback();
     expect(res.headers.get('Location')).toBe('/sign-in?error=failed');
-    expect(cookieValue(res, 'lp_refresh')).toBeUndefined();
+    expect(cookieValue(res, 'ld_refresh')).toBeUndefined();
     warn.mockRestore();
   });
 });
@@ -179,7 +179,7 @@ describe('POST /api/auth/token', () => {
     fetchMock.mockResolvedValue(tokenResponse({ refresh_token: 'refresh-3' }));
     const res = await call('/api/auth/token', {
       method: 'POST',
-      headers: { Cookie: 'lp_refresh=refresh-2' },
+      headers: { Cookie: 'ld_refresh=refresh-2' },
     });
     expect(res.status).toBe(200);
     expect(res.headers.get('Cache-Control')).toBe('no-store');
@@ -190,7 +190,7 @@ describe('POST /api/auth/token', () => {
       user: { id: 'user_abc', email: 'ada@example.com', name: 'Ada Lovelace' },
     });
     expect(typeof body.expiresAt).toBe('number');
-    expect(cookieValue(res, 'lp_refresh')).toBe('refresh-3');
+    expect(cookieValue(res, 'ld_refresh')).toBe('refresh-3');
     const sent = sentForm(fetchMock.mock.calls[0]![1]);
     expect(sent.get('grant_type')).toBe('refresh_token');
     expect(sent.get('refresh_token')).toBe('refresh-2');
@@ -202,10 +202,10 @@ describe('POST /api/auth/token', () => {
     fetchMock.mockResolvedValue(new Response('{"error":"invalid_grant"}', { status: 400 }));
     const res = await call('/api/auth/token', {
       method: 'POST',
-      headers: { Cookie: 'lp_refresh=stale' },
+      headers: { Cookie: 'ld_refresh=stale' },
     });
     expect(res.status).toBe(401);
-    expect(cookieValue(res, 'lp_refresh')).toBe('');
+    expect(cookieValue(res, 'ld_refresh')).toBe('');
     expect(cookieValue(res, 'ld_signed_in')).toBe('0');
     warn.mockRestore();
   });
@@ -215,7 +215,7 @@ describe('POST /api/auth/sign-out', () => {
   it('drops the refresh cookie and the hint', async () => {
     const res = await call('/api/auth/sign-out', { method: 'POST' });
     expect(res.status).toBe(200);
-    expect(cookieValue(res, 'lp_refresh')).toBe('');
+    expect(cookieValue(res, 'ld_refresh')).toBe('');
     expect(cookieValue(res, 'ld_signed_in')).toBe('0');
   });
 });
@@ -256,8 +256,8 @@ describe('safeReturnPath', () => {
 
 describe('readCookie', () => {
   it('finds one cookie among several', () => {
-    const req = new Request(APP, { headers: { Cookie: 'a=1; lp_refresh=xyz ; b=2' } });
-    expect(readCookie(req, 'lp_refresh')).toBe('xyz');
+    const req = new Request(APP, { headers: { Cookie: 'a=1; ld_refresh=xyz ; b=2' } });
+    expect(readCookie(req, 'ld_refresh')).toBe('xyz');
     expect(readCookie(req, 'missing')).toBeNull();
   });
 });

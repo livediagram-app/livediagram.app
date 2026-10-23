@@ -33,8 +33,8 @@ import { json, notFound, rateLimited } from '../responses';
 import type { Env } from '../types';
 
 const COOKIE_PATH = '/api/auth';
-const PKCE_COOKIE = 'lp_pkce';
-const REFRESH_COOKIE = 'lp_refresh';
+const PKCE_COOKIE = 'ldoc_pkce';
+const REFRESH_COOKIE = 'ldoc_refresh';
 // The readable hint (not HttpOnly, the whole site), and no secret: only whether this browser has a
 // session, `1` or `0` (packages/api-schema/src/signed-in-hint.ts). Every request still authenticates
 // with the access token.

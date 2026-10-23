@@ -32,7 +32,7 @@ Why a guest starts local: [Auth + guest access → Guest designs start local](..
   in the wizard, its **Create** and **Skip**, and the wizard-less links (`/new?template=`, `/new?blank=1`).
 - A `/new?folder=` / `?team=` context names a server place, so it is
   livedesign whoever is creating.
-- Before sign-in has answered, `signedIn` is the `lp_signed_in` hint cookie
+- Before sign-in has answered, `signedIn` is the `ldes_signed_in` hint cookie
   ([Who is a guest, before sign-in answers](../014-identity/auth-and-guest-access.md#who-is-a-guest-before-sign-in-answers)).
   A browser that looks signed in waits for the settled answer before creating, so a signed-in person is never handed
   a design in This Browser; a guest never waits.

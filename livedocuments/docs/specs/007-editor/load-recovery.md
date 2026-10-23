@@ -93,7 +93,7 @@ holding identifiers and states only, never document content:
 - the identity, the same lines on every surface:
   - **Signed in:** yes or no. The editor adds the account id it resolved. The
     help page, which has no session loaded, reads the api's readable
-    `lp_signed_in` hint cookie (`0` signed out, `1` signed in), which says
+    `ldoc_signed_in` hint cookie (`0` signed out, `1` signed in), which says
     whether but not who; with no such cookie it reports "unknown".
   - **Guest id in this browser:** only its first 8 characters (a full guest id
     is an `X-Owner-Id` credential) and whether it is signed, or "none".

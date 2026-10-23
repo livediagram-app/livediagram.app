@@ -5,7 +5,7 @@
 // reaches the page: it lives in an HttpOnly cookie on /api/auth, and the page
 // asks POST /api/auth/token for a short-lived access token, which it holds in
 // memory and sends as `Authorization: Bearer` (docs/specs/014-identity/auth-and-guest-access.md).
-// A browser with no `lp_signed_in` hint is a guest and asks nothing.
+// A browser with no `ldoc_signed_in` hint is a guest and asks nothing.
 //
 // Loaded lazily by AuthProvider, like the Clerk bridge it replaced, so the
 // first load of every route stays free of it; it publishes the same distilled

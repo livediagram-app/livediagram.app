@@ -126,7 +126,7 @@ Invariant: on every path the bootstrap leaves `loadingDesign` false or the watch
 - The report never carries a share code (`?s=` reduced to "share link: yes") or a full guest id
   (8-character prefix, cut inside `readBrowserIdentity` so no caller sees the whole id). A
   signed-in account id is not a credential on its own and is included by the editor only.
-- `lp_signed_in` is read as a hint (`1` means signed in, `0` signed out; `signedInHintOf` in
+- `ldes_signed_in` is read as a hint (`1` means signed in, `0` signed out; `signedInHintOf` in
   `packages/api-schema/src/signed-in-hint.ts`); it is never sent anywhere but the copied report.
 - The repair cannot sign anyone out or remove identity; the kept list is guarded by a test against
   `LOCAL_IDENTITY_KEYS`.

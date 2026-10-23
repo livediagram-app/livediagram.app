@@ -18,8 +18,8 @@ const GUEST = '6f1c2d3e-aaaa-bbbb-cccc-123456789abc';
 
 describe('signedInFromCookie', () => {
   it('reads the signed-in hint cookie', () => {
-    expect(signedInFromCookie('a=1; lp_signed_in=1')).toBe(true);
-    expect(signedInFromCookie('lp_signed_in=0')).toBe(false);
+    expect(signedInFromCookie('a=1; ldes_signed_in=1')).toBe(true);
+    expect(signedInFromCookie('ldes_signed_in=0')).toBe(false);
     expect(signedInFromCookie('theme=dark')).toBeNull();
     expect(signedInFromCookie('')).toBeNull();
   });
@@ -32,7 +32,7 @@ describe('readBrowserIdentity', () => {
         'livedesign:v2:self-id': GUEST,
         'livedesign:v2:self-sig': 'sig',
       }),
-      document: { cookie: 'lp_signed_in=0' },
+      document: { cookie: 'ldes_signed_in=0' },
     });
     expect(id).toEqual({
       signedIn: false,

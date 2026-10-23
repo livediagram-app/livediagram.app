@@ -72,7 +72,7 @@ describe('DELETE /api/account', () => {
 
   it('clears the refresh cookie, since the refresh token went with the account', async () => {
     const cookies = (await remove()).headers.getSetCookie();
-    expect(cookies.some((c) => c.startsWith('lp_refresh=;') && c.includes('Max-Age=0'))).toBe(true);
+    expect(cookies.some((c) => c.startsWith('ldes_refresh=;') && c.includes('Max-Age=0'))).toBe(true);
   });
 
   it('says so when the account could not be closed, with the data already gone', async () => {
