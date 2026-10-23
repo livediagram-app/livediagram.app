@@ -19,6 +19,7 @@
     "@livedocuments/template-previews": "workspace:*",
     "@livedocuments/templates": "workspace:*",
     "@livedocuments/ui": "workspace:*",
+    "@liveworkspace/comparisons": "workspace:*",
     "next": "^16.4.1",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"
