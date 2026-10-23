@@ -3,8 +3,9 @@
 // This Browser in the Explorer: the host app's items kept only in this browser (this-browser.ts), where the host can
 // read them (the Explorer served on the app's own address). They show as liveplanner's own Explorer showed them: a
 // sidebar row with their count, a view of their own (`/explorer/offline`), a This Browser group in the Trash, and
-// among Recent in Home's Jump Back In. Each opens in its app's editor, which does the rest (rename, sync, restore): the
-// index never sees them, so the Explorer only lists them.
+// among Recent in Home's Jump Back In. Each opens in its app's editor, which does the rest (rename, restore): the index
+// never sees them, so the Explorer only lists them. Where the app moves them into the account, each live row also has
+// Sync, which hands over to the app's This Browser page (this-browser.ts `thisBrowserConvertHref`).
 
 import { useMemo, useState, type ReactNode } from 'react';
 import type { ThisBrowserItem } from '../this-browser';
@@ -22,6 +23,8 @@ export type ThisBrowserHost = {
   itemHref: (item: ThisBrowserItem) => string;
   // The app's help on keeping items in this browser; the pill links there.
   helpHref?: string;
+  // Where the app moves one into the person's account (Sync), when it can for this person (signed in). None: no Sync.
+  syncHref?: (item: ThisBrowserItem) => string;
 };
 
 export const THIS_BROWSER_COPY = {
@@ -97,14 +100,25 @@ export function ThisBrowserPill({ inLink = false }: { inLink?: boolean }) {
 
 const DATE: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric' };
 
-function LocalRow({ item, detail }: { item: ThisBrowserItem; detail: ReactNode }) {
+function LocalRow({
+  item,
+  detail,
+  sync = false,
+}: {
+  item: ThisBrowserItem;
+  detail: ReactNode;
+  // Offer Sync beside it (a live row, where the host can).
+  sync?: boolean;
+}) {
   const { thisBrowser } = useHostExtras();
+  const { kind } = useExplorer();
   const name = item.title || 'Untitled';
+  const syncHref = sync ? thisBrowser?.syncHref?.(item) : undefined;
   return (
-    <li data-this-browser-row={item.id}>
+    <li data-this-browser-row={item.id} className="flex items-center">
       <a
         href={thisBrowser?.itemHref(item)}
-        className="flex items-center gap-3 px-4 py-3 transition hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brand-500 dark:hover:bg-slate-800/60"
+        className="flex min-w-0 flex-1 items-center gap-3 px-4 py-3 transition hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brand-500 dark:hover:bg-slate-800/60"
       >
         <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-200">
           <BrowserIcon size={14} />
@@ -119,6 +133,15 @@ function LocalRow({ item, detail }: { item: ThisBrowserItem; detail: ReactNode }
           <span className={`text-xs ${MUTED}`}>{detail}</span>
         </span>
       </a>
+      {syncHref ? (
+        <a
+          href={syncHref}
+          aria-label={`Sync ${kind.one}: ${name}`}
+          className="mr-3 shrink-0 rounded-md px-2 py-1 text-xs font-medium text-brand-700 hover:bg-brand-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 dark:text-brand-300 dark:hover:bg-slate-800"
+        >
+          Sync {kind.one}
+        </a>
+      ) : null}
     </li>
   );
 }
@@ -142,6 +165,7 @@ export function ThisBrowserPane({ onOpenNav }: { onOpenNav?: () => void }) {
             <LocalRow
               key={item.id}
               item={item}
+              sync
               detail={`Changed ${new Date(item.updatedAt).toLocaleDateString(undefined, DATE)}`}
             />
           ))}

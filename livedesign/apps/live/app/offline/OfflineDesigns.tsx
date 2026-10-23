@@ -4,8 +4,11 @@ import { useEffect, useState } from 'react';
 import type { DesignSummary } from '@livedesign/api-schema';
 import { Brand, SITE_ID, SiteSwitcher } from '@livedesign/ui';
 import { ThisBrowserIcon } from '@/components/primitives/explorer-icons';
+import { LocalMovePrompt } from '@/components/dialogs/LocalMovePrompt';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
+import { useConversionHandoff } from '@/hooks/persistence/useConversionHandoff';
 import { useOfflineConversion } from '@/hooks/persistence/useOfflineConversion';
+import { useSignedGuestId } from '@/hooks/persistence/useSignedGuestId';
 import { explorerHref } from '@/lib/explorer-redirect';
 import { offlineListDesigns, subscribeOfflineIds } from '@/lib/offline/offline-store';
 
@@ -15,7 +18,10 @@ import { offlineListDesigns, subscribeOfflineIds } from '@/lib/offline/offline-s
 // (Sync Design, docs/specs/006-design/offline-mode.md).
 export function OfflineDesigns() {
   const [designs, setDesigns] = useState<DesignSummary[] | null>(null);
-  const { accountUserId } = useAccountBootstrap();
+  const { accountUserId, authLoaded } = useAccountBootstrap();
+  const guestId = useSignedGuestId(authLoaded, accountUserId);
+  // Take Offline and Sync handed over by the Explorer on this address.
+  useConversionHandoff(accountUserId ?? guestId, !!accountUserId);
   useEffect(() => {
     let live = true;
     const read = () =>
@@ -69,6 +75,9 @@ export function OfflineDesigns() {
           </ul>
         )}
       </main>
+      {/* Moving this browser's designs into the account after signing in
+          (docs/specs/014-identity/auth-and-guest-access.md). */}
+      <LocalMovePrompt />
     </div>
   );
 }

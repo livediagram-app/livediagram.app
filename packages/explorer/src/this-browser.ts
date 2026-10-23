@@ -193,3 +193,51 @@ export function thisBrowserPublisher<R extends OfflineRecordFields>(
     },
   };
 }
+
+// ---------- Moving an item in or out of this browser ----------------------------------------------------------------
+// Take Offline (an account's item into this browser, out of the account) and Sync (back again) are the app's own
+// conversions: only its code knows how to copy its items in and out of its offline store. So the Explorer on the app's
+// address offers them and hands over to the app's This Browser page (the registry's `offlinePath`) with what to do in
+// its query; that page asks the person to confirm, checks the item is theirs to move, and runs the conversion. Every
+// app that converts reads the same query through these, so the two sides can't drift.
+
+export type ThisBrowserConversion = 'take-offline' | 'sync';
+
+export const THIS_BROWSER_CONVERT_PARAM = 'convert';
+export const THIS_BROWSER_ITEM_PARAM = 'item';
+
+const CONVERSIONS: readonly ThisBrowserConversion[] = ['take-offline', 'sync'];
+
+/** The app's This Browser page, asked to run one conversion on one item. */
+export function thisBrowserConvertHref(
+  offlinePath: string,
+  conversion: ThisBrowserConversion,
+  id: string,
+): string {
+  const params = new URLSearchParams({
+    [THIS_BROWSER_CONVERT_PARAM]: conversion,
+    [THIS_BROWSER_ITEM_PARAM]: id,
+  });
+  return `${offlinePath}?${params}`;
+}
+
+/** The conversion a This Browser page's address asks for, or null. */
+export function readThisBrowserConversion(
+  search: string,
+): { conversion: ThisBrowserConversion; id: string } | null {
+  const params = new URLSearchParams(search);
+  const conversion = params.get(THIS_BROWSER_CONVERT_PARAM) as ThisBrowserConversion | null;
+  const id = params.get(THIS_BROWSER_ITEM_PARAM);
+  if (!conversion || !CONVERSIONS.includes(conversion) || !id) return null;
+  return { conversion, id };
+}
+
+/** Takes the request out of the address (once read), so a reload or Back never asks again. */
+export function dropThisBrowserConversion(): void {
+  if (typeof window === 'undefined') return;
+  const url = new URL(window.location.href);
+  if (!url.searchParams.has(THIS_BROWSER_CONVERT_PARAM)) return;
+  url.searchParams.delete(THIS_BROWSER_CONVERT_PARAM);
+  url.searchParams.delete(THIS_BROWSER_ITEM_PARAM);
+  window.history.replaceState(window.history.state, '', url);
+}

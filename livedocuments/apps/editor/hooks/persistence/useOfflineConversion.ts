@@ -11,6 +11,8 @@ import {
   syncFailureMessage,
   takeCloudOffline,
 } from '@/lib/offline/offline-convert';
+import { dismissLocalMove } from '@/lib/offline/local-move-dismissal';
+import { offlineListDocuments } from '@/lib/offline/offline-store';
 
 // Offline Mode conversions (docs/specs/006-document/offline-mode.md) for the menus that offer them: the editor's
 // Explorer panel's item menu (Take Offline, useOfflineItemMenu) and This Browser's rows (Sync Document).
@@ -56,6 +58,11 @@ export function useOfflineConversions(ownerId: string | null) {
     if (!ok) return;
     try {
       await takeCloudOffline(liveDoc.id, ownerId, liveDoc.shareCode ?? null);
+      // Kept here on purpose: the move prompt after signing in never offers it back (local-move-dismissal.ts).
+      await offlineListDocuments().then(
+        (kept) => dismissLocalMove(ownerId, kept.length),
+        () => {},
+      );
       track('Document', 'Moved', 'TakenOffline');
       window.location.reload();
     } catch (e) {

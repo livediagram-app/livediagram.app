@@ -108,6 +108,10 @@ export type AppItems = {
   newPath: string;
   // The app's view of what is kept only in this browser (its offline items), when it has one.
   offlinePath: string | null;
+  // Whether that page also runs Take Offline and Sync when the Explorer on the app's address hands one over
+  // (`?convert=take-offline|sync&item=<id>`, @liveworkspace/explorer/this-browser `thisBrowserConvertHref`): it asks
+  // the person to confirm and moves the item with the app's own offline code. False: the Explorer offers neither.
+  offlineConversions: boolean;
   // Whether the app's items are listed by the index yet. Until they are, the app keeps its own /explorer.
   onIndex: boolean;
   // Its share link: `${url}${sharePath}<code>`.
@@ -181,6 +185,7 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     itemPath: '/document/',
     newPath: '/new',
     offlinePath: '/explorer/offline',
+    offlineConversions: false,
     onIndex: false,
     sharePath: '/document/shared?s=',
     previewPath: null,
@@ -201,6 +206,7 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     itemPath: '/project/',
     newPath: '/new',
     offlinePath: '/offline',
+    offlineConversions: false,
     onIndex: true,
     sharePath: '/project/shared?s=',
     previewPath: '/api/projects/:id/thumbnail',
@@ -217,6 +223,7 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     itemPath: '/document/',
     newPath: '/new',
     offlinePath: '/offline',
+    offlineConversions: true,
     onIndex: true,
     sharePath: '/document/shared?s=',
     previewPath: null,
@@ -233,6 +240,7 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     itemPath: '/design/',
     newPath: '/new',
     offlinePath: '/offline',
+    offlineConversions: true,
     onIndex: true,
     sharePath: '/design/shared?s=',
     previewPath: '/api/designs/:id/thumbnail',

@@ -5,11 +5,14 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/rea
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createFakeIndex, makeItem } from '../test/fakeClient';
 import {
+  dropThisBrowserConversion,
   dropThisBrowserItem,
   putThisBrowserItem,
   readThisBrowser,
+  readThisBrowserConversion,
   subscribeThisBrowser,
   THIS_BROWSER_MAX,
+  thisBrowserConvertHref,
   thisBrowserPublisher,
   thisBrowserKey,
   writeThisBrowser,
@@ -155,6 +158,25 @@ describe('This Browser in the Explorer', () => {
     expect(within(rows[0]!).getByText('This Browser')).toBeTruthy();
   });
 
+  it('offers Sync on each live row where the host can, handing over to the app', async () => {
+    page(
+      { kind: 'offline' },
+      {
+        ...host([local(2), local(1, { trashedAt: 5 })]),
+        syncHref: (item) => thisBrowserConvertHref('/offline', 'sync', item.id),
+      },
+    );
+    const sync = await screen.findByRole('link', { name: 'Sync Plan: Local 2' });
+    expect(sync.getAttribute('href')).toBe('/offline?convert=sync&item=local-2');
+    expect(screen.queryByRole('link', { name: /Sync Plan: Local 1/ })).toBeNull();
+  });
+
+  it('has no Sync where the host offers none', async () => {
+    page({ kind: 'offline' }, host([local(1)]));
+    await screen.findAllByRole('link', { name: /Local 1/ });
+    expect(screen.queryByRole('link', { name: /^Sync/ })).toBeNull();
+  });
+
   it('says so when nothing is kept', async () => {
     page({ kind: 'offline' }, host([]));
     expect(await screen.findByText('Nothing is kept only in this browser.')).toBeTruthy();
@@ -208,5 +230,34 @@ describe('This Browser in the Explorer', () => {
       'item-1',
       'local-3',
     ]);
+  });
+});
+
+describe('moving an item in or out of this browser', () => {
+  it('names the conversion and the item in the app page\'s address, and reads them back', () => {
+    const href = thisBrowserConvertHref('/offline', 'take-offline', 'doc 1');
+    expect(href).toBe('/offline?convert=take-offline&item=doc+1');
+    expect(readThisBrowserConversion(href.slice(href.indexOf('?')))).toEqual({
+      conversion: 'take-offline',
+      id: 'doc 1',
+    });
+    expect(readThisBrowserConversion('?convert=sync&item=d2')).toEqual({
+      conversion: 'sync',
+      id: 'd2',
+    });
+  });
+
+  it('reads nothing from an unknown conversion or a missing item', () => {
+    expect(readThisBrowserConversion('?convert=delete&item=d1')).toBeNull();
+    expect(readThisBrowserConversion('?convert=sync')).toBeNull();
+    expect(readThisBrowserConversion('')).toBeNull();
+  });
+
+  it('takes the request out of the address, keeping the rest', () => {
+    window.history.replaceState(null, '', '/offline?convert=sync&item=d1&x=1#h');
+    dropThisBrowserConversion();
+    expect(window.location.pathname + window.location.search + window.location.hash).toBe(
+      '/offline?x=1#h',
+    );
   });
 });

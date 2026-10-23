@@ -7,6 +7,7 @@ const store = vi.hoisted(() => ({
   designs: [] as { id: string; name: string; savedAt: number }[],
   accountUserId: null as string | null,
   sync: vi.fn(),
+  handoff: vi.fn(),
 }));
 vi.mock('@/lib/offline/offline-store', () => ({
   offlineListDesigns: async () => store.designs,
@@ -16,6 +17,12 @@ vi.mock('@/lib/offline/offline-store', () => ({
 vi.mock('@/hooks/persistence/useAccountBootstrap', () => ({
   useAccountBootstrap: () => ({ accountUserId: store.accountUserId }),
 }));
+vi.mock('@/hooks/persistence/useSignedGuestId', () => ({ useSignedGuestId: () => null }));
+vi.mock('@/hooks/persistence/useConversionHandoff', () => ({
+  useConversionHandoff: (ownerId: string | null, signedIn: boolean) =>
+    store.handoff(ownerId, signedIn),
+}));
+vi.mock('@/components/dialogs/LocalMovePrompt', () => ({ LocalMovePrompt: () => null }));
 vi.mock('@/hooks/persistence/useOfflineConversion', () => ({
   useOfflineConversion: (design: { id: string }) => ({
     syncToCloud: async () => {
@@ -49,6 +56,12 @@ describe('This Browser', () => {
     );
     // A guest has no account to sync to.
     expect(screen.queryByRole('button', { name: 'Sync Design' })).toBeNull();
+  });
+
+  it('runs a Take Offline or Sync the Explorer hands over, as the person', async () => {
+    store.accountUserId = 'user_ada';
+    render(<OfflineDesigns />);
+    await waitFor(() => expect(store.handoff).toHaveBeenCalledWith('user_ada', true));
   });
 
   it('offers Sync Design to a signed-in person', async () => {

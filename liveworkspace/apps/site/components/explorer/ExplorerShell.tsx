@@ -12,7 +12,8 @@
 // The same page is also served under each app's own address (`liveplanner.app/explorer/…`, through the app's router;
 // lib/explorer/page-app.ts). There it is that app's Explorer: it asks as the app's session, shows the app's items kept
 // only in this browser (This Browser), keeps its links on the app's address and sends liveworkspace's own pages
-// (account, teams, settings) to liveworkspace.app.
+// (account, teams, settings) to liveworkspace.app. Where the app supplies them (the sites registry), it also offers the
+// app's Take Offline and Sync (lib/explorer/offline-moves.tsx).
 
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
@@ -82,6 +83,7 @@ import { inboxHost } from '@/lib/explorer/inbox';
 import { libraryHosts } from '@/lib/explorer/library';
 import { importsHost } from '@/lib/explorer/imports';
 import { makeTeam } from '@/lib/explorer/new-team';
+import { offlineItemMenu, offlineSyncHref } from '@/lib/explorer/offline-moves';
 import { useExplorerSettings } from '@/lib/explorer/settings';
 import { shareHostFor } from '@/lib/explorer/share';
 import {
@@ -351,6 +353,7 @@ export function ExplorerShell() {
     () => (host ? localItems(host) : NO_LOCAL),
     () => NO_LOCAL,
   );
+  const syncHref = useMemo(() => offlineSyncHref(host, signedIn), [host, signedIn]);
   const thisBrowser: ThisBrowserHost | null = useMemo(
     () =>
       host
@@ -358,10 +361,13 @@ export function ExplorerShell() {
             items: local as ThisBrowserItem[],
             itemHref: (item) => `${APP_ITEMS[host].itemPath}${encodeURIComponent(item.id)}`,
             helpHref: '/help/privacy-and-security/offline-mode/',
+            ...(syncHref ? { syncHref } : {}),
           }
         : null,
-    [host, local],
+    [host, local, syncHref],
   );
+  // Take Offline on the app's own items, handed to the app's This Browser page.
+  const itemMenu = useMemo(() => offlineItemMenu(host), [host]);
 
   // This Browser on liveworkspace.app, which can't read it: a link to the app's own offline view.
   const sidebarLinks: SidebarLink[] = useMemo(() => {
@@ -452,6 +458,7 @@ export function ExplorerShell() {
           gallery={library.gallery}
           shapeLibraries={library.shapeLibraries}
           imports={imports}
+          itemMenu={itemMenu}
           {...(signedIn && !host ? { onCreateTeam } : {})}
           heroHidden={settings.heroHidden}
           onHideHero={settings.onHideHero}
