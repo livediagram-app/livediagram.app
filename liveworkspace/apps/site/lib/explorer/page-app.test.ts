@@ -41,10 +41,13 @@ describe('where the page is', () => {
     expect(appOfHost('www.livedesign.app')).toBe('livedesign');
     expect(appOfHost('staging.livedocuments.app')).toBe('livedocuments');
     expect(appOfHost('localhost:3200')).toBe('liveplanner');
+    expect(appOfHost('livediagram.app')).toBe('livediagram');
+    expect(appOfHost('localhost:3100')).toBe('livediagram');
     expect(appOfHost('liveworkspace.app')).toBeNull();
     expect(appOfHost('localhost:3000')).toBeNull();
-    // livediagram's switch is off: its address is not the Explorer's.
-    expect(Object.values(appHosts())).not.toContain('livediagram');
+    expect(new Set(Object.values(appHosts()))).toEqual(
+      new Set(['livediagram', 'liveplanner', 'livedocuments', 'livedesign']),
+    );
   });
 
   it("is liveplanner's here, with its own origin and liveworkspace.app's pages in full", () => {
@@ -98,8 +101,10 @@ describe('the silent sign-in script', () => {
     const script = explorerSilentSignInScript();
     expect(script).toContain('"localhost:3200":"liveplanner"');
     expect(script).toContain('lp_signed_in');
+    expect(script).toContain('"localhost:3100":"livediagram"');
+    expect(script).toContain('ld_signed_in');
     expect(script).toContain('/auth/silent?return=');
-    expect(script).not.toContain('ld_signed_in');
+    expect(script).not.toContain('liveworkspace.app"');
     expect(script.startsWith('(function(){var h=location.host')).toBe(true);
   });
 });

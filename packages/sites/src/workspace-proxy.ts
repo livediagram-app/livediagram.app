@@ -23,7 +23,7 @@ export const WORKSPACE_CLIENT_IP_HEADER = 'X-Liveworkspace-Client-IP';
 // the index and the Explorer holds everything its own did (scratchpad's index-app kit notes say how). Off, the app's
 // router leaves /explorer to the app's own editor as before.
 export const EXPLORER_ON_APP_ORIGIN: Record<AppName, boolean> = {
-  livediagram: false,
+  livediagram: true,
   liveplanner: true,
   livedocuments: true,
   livedesign: true,

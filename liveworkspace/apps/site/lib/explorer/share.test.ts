@@ -45,11 +45,11 @@ describe('the Share dialog’s extras on liveworkspace.app', () => {
 
   it('reads the whole item from an app not yet serving its tabs alone', async () => {
     const fetch = vi.fn(async () =>
-      Response.json({ document: { tabs: [{ id: 't1', name: 'Canvas' }] } }),
+      Response.json({ design: { tabs: [{ id: 't1', name: 'Logo' }] } }),
     );
-    const tabs = await loadTabsOf({ app: 'livediagram', id: 'd1', sharedVia: null }, fetch);
-    expect(tabs).toEqual([{ id: 't1', name: 'Canvas' }]);
-    expect((fetch.mock.calls[0] as unknown as [string])[0]).toMatch(/\/api\/documents\/d1$/);
+    const tabs = await loadTabsOf({ app: 'livedesign', id: 'd1', sharedVia: null }, fetch);
+    expect(tabs).toEqual([{ id: 't1', name: 'Logo' }]);
+    expect((fetch.mock.calls[0] as unknown as [string])[0]).toMatch(/\/api\/designs\/d1$/);
   });
 
   it('offers no tabs when the read fails, so a pass opens every tab', async () => {

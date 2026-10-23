@@ -54,7 +54,7 @@ describe('which paths go to liveworkspace', () => {
     expect(EXPLORER_ON_APP_ORIGIN.liveplanner).toBe(true);
     expect(EXPLORER_ON_APP_ORIGIN.livedesign).toBe(true);
     expect(EXPLORER_ON_APP_ORIGIN.livedocuments).toBe(true);
-    expect(EXPLORER_ON_APP_ORIGIN.livediagram).toBe(false);
+    expect(EXPLORER_ON_APP_ORIGIN.livediagram).toBe(true);
   });
 
   it('answers null for a path it does not own, so the router carries on', () => {
@@ -66,7 +66,7 @@ describe('which paths go to liveworkspace', () => {
       }),
     ).toBeNull();
     expect(
-      routeToWorkspace(new Request('https://livediagram.app/explorer'), {
+      routeToWorkspace(new Request('https://livediagram.app/document/d1'), {
         app: 'livediagram',
         fetch: doFetch,
       }),
