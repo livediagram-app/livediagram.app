@@ -55,14 +55,14 @@ describe('previews on liveworkspace.app', () => {
     });
     vi.stubGlobal('fetch', fetch);
     const items = Array.from({ length: 10 }, (_, i) => item({ id: `p${i}` }));
-    await Promise.all([...items, ...items].map((it) => loadPreview(it)));
+    await Promise.all([...items, ...items].map((it) => loadPreview(it) ?? Promise.resolve(null)));
     expect(fetch).toHaveBeenCalledTimes(10);
     expect(most).toBeLessThanOrEqual(PREVIEW_CONCURRENCY);
     await loadPreview(items[0]!);
     expect(fetch).toHaveBeenCalledTimes(10);
     await loadPreview(item({ id: 'p0', updatedAt: 6 }));
     expect(fetch).toHaveBeenCalledTimes(11);
-    await loadPreview(item({ id: 's', sharedVia: 'code' } as never));
+    await loadPreview(item({ id: 's', sharedVia: 'code' }));
     expect(new Headers(fetch.mock.calls.at(-1)![1].headers).get('X-Share-Code')).toBe('code');
   });
 });
