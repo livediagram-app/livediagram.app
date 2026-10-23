@@ -51,6 +51,7 @@ import {
   workspaceToken,
   type WorkspaceIdentity,
 } from '@/lib/explorer/token';
+import { prefetchPreview, renderPreview } from '@/lib/explorer/previews';
 import { loadWelcome } from '@/lib/explorer/welcome';
 import { ExplorerHeader } from './ExplorerHeader';
 
@@ -201,7 +202,9 @@ export function ExplorerShell() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (!(e.metaKey || e.ctrlKey) || e.altKey || e.key.toLowerCase() !== 'k') return;
-      const field = document.querySelector<HTMLInputElement>('[data-explorer] input[role="combobox"]');
+      const field = document.querySelector<HTMLInputElement>(
+        '[data-explorer] input[role="combobox"]',
+      );
       e.preventDefault();
       if (field) field.focus();
       else router.push('/explorer/search');
@@ -230,6 +233,8 @@ export function ExplorerShell() {
           onNavigate={onNavigate}
           itemHref={itemHref}
           onCreate={onCreate}
+          renderThumbnail={renderPreview}
+          prefetchThumbnail={prefetchPreview}
           Link={Link}
           teams={teams}
           viewerId={identity.sub}

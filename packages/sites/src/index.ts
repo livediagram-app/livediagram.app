@@ -112,6 +112,10 @@ export type AppItems = {
   onIndex: boolean;
   // Its share link: `${url}${sharePath}<code>`.
   sharePath: string;
+  // An item's preview, an SVG its API serves to anyone the item is open to (the index's grant decides), with `:id`
+  // for the item's id; `?v=<updatedAt>` keeps a cached one fresh. Null while the app serves none to other sites, and
+  // the Explorer on liveworkspace.app draws the kind's icon instead.
+  previewPath: string | null;
 };
 
 export const APP_ITEMS: Record<AppName, AppItems> = {
@@ -124,6 +128,7 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     offlinePath: '/explorer/offline',
     onIndex: false,
     sharePath: '/document/shared?s=',
+    previewPath: null,
   },
   liveplanner: {
     site: 'liveplanner.app',
@@ -134,6 +139,7 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     offlinePath: '/offline',
     onIndex: true,
     sharePath: '/project/shared?s=',
+    previewPath: '/api/projects/:id/thumbnail',
   },
   livedocuments: {
     site: 'livedocuments.app',
@@ -144,6 +150,7 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     offlinePath: '/explorer/offline',
     onIndex: false,
     sharePath: '/document/shared?s=',
+    previewPath: null,
   },
   livedesign: {
     site: 'livedesign.app',
@@ -154,6 +161,7 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     offlinePath: '/explorer/offline',
     onIndex: false,
     sharePath: '/design/shared?s=',
+    previewPath: null,
   },
 };
 
