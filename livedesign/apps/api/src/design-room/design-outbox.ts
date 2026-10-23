@@ -60,6 +60,7 @@ export function collabPushOf(
       mentionedIds: t.mentionedIds,
       latestText: t.latestText,
       latestAuthorName: t.latestAuthorName ?? '',
+      latestAuthorId: t.latestAuthorId ?? null,
       latestAuthorColor: t.latestAuthorColor ?? '',
       firstAt: t.firstAt,
       latestAt: t.latestAt,

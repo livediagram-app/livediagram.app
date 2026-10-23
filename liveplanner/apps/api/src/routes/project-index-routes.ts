@@ -1,7 +1,11 @@
 // The plan list and the plan doors that are the index's (to the Trash, a copy, a share link), for API clients
 // (index-adapters.ts).
 
-import { isAccessLevel } from '@liveplanner/api-schema';
+import {
+  isAccessLevel,
+  PROJECT_CONVERSION_HEADER,
+  readProjectConversion,
+} from '@liveplanner/api-schema';
 import type { ShareLinkExpiry } from '@liveworkspace/index-client';
 import { json } from '../responses';
 import { readOptionalBody, requireOwner, shareAccessOf, type RouteContext } from './context';
@@ -34,6 +38,12 @@ export async function handleProjectIndexRoutes(ctx: RouteContext): Promise<Respo
   if (client instanceof Response) return client;
   try {
     if (isDelete) {
+      // Taken offline (Offline Mode): the cloud copy goes for good, not to the Trash, and the Timeline says
+      // "Taken Offline" rather than a deletion.
+      if (readProjectConversion(request.headers.get(PROJECT_CONVERSION_HEADER)) === 'offline') {
+        await client.deleteItem(id, { permanent: true, reason: 'offline' });
+        return new Response(null, { status: 204 });
+      }
       const permanent = ['1', 'true'].includes(url.searchParams.get('permanent') ?? '');
       await client.deleteItem(id, { permanent });
       return new Response(null, { status: 204 });

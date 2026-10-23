@@ -174,6 +174,36 @@ message, so it can't be turned off.
   on liveworkspace.app, or before the sign-up app was recorded, isn't counted. The events go with the
   daily run's one batch per app.
 
+## On the Timeline
+
+Teams and API tokens are run here, but their news belongs on the one Timeline the index keeps for every
+app (docs/one-explorer-contracts.md "Timeline"). Each event is shown under All apps and in every app's
+own view, marked as liveworkspace's:
+
+| Event                 | When                                                       | Who sees it                         |
+| --------------------- | ---------------------------------------------------------- | ----------------------------------- |
+| `team_invite_sent`    | An admin invites an address                                | The team, and the invitee if known  |
+| `team_joined`         | An invitation is accepted, or someone joins by the link    | The team and the person joining     |
+| `team_declined`       | An invitation is turned down, on the site or from email    | The team (and the person declining) |
+| `team_role_changed`   | An admin makes a member an admin, or an admin a member     | The team and that member            |
+| `team_member_removed` | An admin removes a member, or a member leaves              | The team and that member            |
+| `team_renamed`        | The team's name changes                                    | The team                            |
+| `team_deleted`        | An admin deletes the team, or its last member leaves       | Everyone who was in it              |
+| `token_created`       | A token is made                                            | Its owner                           |
+| `token_revoked`       | A token is revoked, from the account page or by its secret | Its owner                           |
+| `token_expiring`      | Once, in the daily run, for a live token within its week   | Its owner, dated at the expiry      |
+
+A withdrawn invitation, a cleared refusal, and an account closing take nothing onto the Timeline.
+
+Each event is written to `index_timeline_outbox` in the same batch as its change, so a change is never
+recorded without its event, and an event is never recorded for a change that didn't happen (a token
+refused over the limit, a second answer to one invitation). After the response, a request's events go to
+the index in one call (`POST /internal/timeline`, with the merge key, at most 100 a call). The
+15-minute cron sends again whatever is still waiting, up to 10 calls a run. An event's id is stable, so
+sending it twice changes nothing; one the index keeps refusing is dropped after 96 tries. An event carries
+the name of the person who acted, and for a member's event their name or address, so the Timeline can
+say who without asking accounts.
+
 ## Guests
 
 Someone using an app without an account is a guest, and the guest is the same person in every app

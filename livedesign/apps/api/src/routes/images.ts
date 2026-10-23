@@ -4,7 +4,9 @@
 
 import { ACCEPTED_IMAGE_TYPES, MAX_IMAGE_BYTES, ORIGINAL_NAME_MAX } from '@liveworkspace/media';
 import type { MediaClient } from '@liveworkspace/media';
+import { reportImagesUploaded } from '@liveworkspace/index-app';
 import { designRoom } from '../design-client';
+import { indexAppClient } from '../index-service';
 import { imageSummary, MEDIA_APP, mediaClient, mediaImageOwnerFor, mediaOwner } from '../media';
 import { badRequest, CORS_HEADERS, imagesUnavailable, json, notFound } from '../responses';
 import { requireOwner, type RouteContext } from './context';
@@ -74,6 +76,8 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
     });
     if (!uploaded.ok) return serviceAnswer(uploaded);
     const { image, deduped } = uploaded.value;
+    // On the uploader's Timeline (one entry a day, counting up); the same bytes again are no news.
+    if (!deduped) ctx.waitUntil?.(reportImagesUploaded(indexAppClient(env), owner));
     return json({ image: imageSummary(image), deduped });
   }
 

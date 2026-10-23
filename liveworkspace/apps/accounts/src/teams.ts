@@ -36,6 +36,8 @@ export interface Actor {
   id: string;
   // The account's verified address, lower-cased, or null when it isn't verified.
   email: string | null;
+  // The account's name, for the Timeline's "by …" (an event with none says "a teammate").
+  name?: string | null;
 }
 
 export type Result<T> = { ok: true; value: T } | { ok: false; status: number; error: string };
@@ -44,6 +46,58 @@ const ok = <T>(value: T): Result<T> => ({ ok: true, value });
 const fail = (status: number, error: string): Result<never> => ({ ok: false, status, error });
 
 import { isSettingsApp, type SettingsApp } from './settings.ts';
+import {
+  teamScopes,
+  timelineStatement,
+  type TimelineEvent,
+  type TimelineType,
+} from './index-timeline.ts';
+
+// One team event for the Timeline (index-timeline.ts), queued in the batch that makes its change. `guard`
+// holds only when that change was made.
+function teamEvent(
+  db: D1Database,
+  event: {
+    id: string;
+    type: TimelineType;
+    teamId: string;
+    teamName: string;
+    actor: { id: string | null; name?: string | null } | null;
+    at: number;
+    scopes: string[];
+    detail?: Record<string, string | null>;
+  },
+  guard?: { sql: string; args: unknown[] },
+): D1PreparedStatement {
+  const timeline: TimelineEvent = {
+    id: event.id,
+    type: event.type,
+    actorId: event.actor?.id ?? null,
+    actorName: event.actor?.name ?? null,
+    title: event.teamName,
+    detail: { teamId: event.teamId, ...event.detail },
+    at: event.at,
+    scopes: event.scopes,
+  };
+  return timelineStatement(db, timeline, guard);
+}
+
+// The member row still in `status`, changed at `now` by the batch before it.
+const memberGuard = (memberId: string, status: MemberStatus, now: number) => ({
+  sql: 'EXISTS (SELECT 1 FROM team_member WHERE id = ? AND status = ? AND updatedAt = ?)',
+  args: [memberId, status, now],
+});
+
+// The people in a team, for an event they must see once it is gone.
+async function joinedPeople(db: D1Database, teamId: string): Promise<string[]> {
+  const { results } = await db
+    .prepare(
+      `SELECT userId FROM team_member WHERE teamId = ? AND status = 'joined' AND userId IS NOT NULL`,
+    )
+    .bind(teamId)
+    .all<{ userId: string }>();
+  return results.map((r) => r.userId);
+}
 
 // The app an invitation's sender signed up through (migrations/0009_signup_app.sql), one primary-key
 // read beside the member row: its emails are counted under it (email.ts). Null for liveworkspace.app,
@@ -324,6 +378,20 @@ export async function updateTeam(
         `UPDATE team SET name = ?, organisation = ?, updatedAt = ?, rev = ${REV} WHERE id = ?`,
       )
       .bind(name, organisation, now, teamId),
+    ...(name !== me.teamName
+      ? [
+          teamEvent(db, {
+            id: `team_renamed:${teamId}:${now}`,
+            type: 'team_renamed',
+            teamId,
+            teamName: name,
+            actor,
+            at: now,
+            scopes: teamScopes(teamId, []),
+            detail: { from: me.teamName },
+          }),
+        ]
+      : []),
   ]);
   return ok({ id: teamId, name, organisation });
 }
@@ -339,8 +407,31 @@ export async function renameTeam(
   return result.ok ? ok({ id: result.value.id, name: result.value.name }) : result;
 }
 
-// The team and every open row in it go; the apps' copies follow from the change feed.
-function deleteTeamStatements(db: D1Database, teamId: string, now: number): D1PreparedStatement[] {
+// The team and every open row in it go; the apps' copies follow from the change feed. Its members (no
+// longer in it, so each by name) see it go on their Timelines.
+async function deleteTeamStatements(
+  db: D1Database,
+  actor: Actor,
+  teamId: string,
+  teamName: string,
+  now: number,
+): Promise<D1PreparedStatement[]> {
+  return [
+    teamEvent(db, {
+      id: `team_deleted:${teamId}`,
+      type: 'team_deleted',
+      teamId,
+      teamName,
+      actor,
+      at: now,
+      scopes: teamScopes(null, await joinedPeople(db, teamId)),
+    }),
+    ...deleteTeamRows(db, teamId, now),
+  ];
+}
+
+// A team closing with the account that ran it alone: nobody is left to tell.
+function deleteTeamRows(db: D1Database, teamId: string, now: number): D1PreparedStatement[] {
   return [
     db.prepare(BUMP),
     db
@@ -369,7 +460,7 @@ export async function deleteTeam(
   const me = await getMembership(db, teamId, actor.id);
   if (!me) return fail(404, 'not_found');
   if (me.role !== 'admin') return fail(403, 'admin_only');
-  await db.batch(deleteTeamStatements(db, teamId, now));
+  await db.batch(await deleteTeamStatements(db, actor, teamId, me.teamName, now));
   return ok({ id: teamId });
 }
 
@@ -427,6 +518,11 @@ export async function inviteMember(
   if ((counts?.open ?? 0) >= MAX_MEMBERS_PER_TEAM) return fail(409, 'member_limit_reached');
   const id = crypto.randomUUID();
   const decline = await newDeclineToken(id);
+  // The person invited sees it too, when the address is already a verified account's.
+  const invitee = await db
+    .prepare('SELECT id FROM "user" WHERE email = ? AND emailVerified = 1')
+    .bind(email)
+    .first<{ id: string }>();
   try {
     await db.batch([
       // An address that turned an earlier invitation down is invited afresh: the old answer leaves
@@ -446,6 +542,16 @@ export async function inviteMember(
            VALUES (?, ?, NULL, ?, ?, 'invited', ?, ?, ?, ${REV}, ?, ?)`,
         )
         .bind(id, teamId, email, role, actor.id, now, now, decline.hash, now),
+      teamEvent(db, {
+        id: `team_invite_sent:${id}`,
+        type: 'team_invite_sent',
+        teamId,
+        teamName: me.teamName,
+        actor,
+        at: now,
+        scopes: teamScopes(teamId, [invitee?.id]),
+        detail: { memberName: email, personId: invitee?.id ?? null, role },
+      }),
     ]);
   } catch {
     // Two invitations to one address at once: the unique index lets one through.
@@ -480,22 +586,35 @@ async function adminCount(db: D1Database, teamId: string): Promise<number> {
 async function openMember(db: D1Database, teamId: string, memberId: string) {
   return db
     .prepare(
-      `SELECT id, userId, role, status FROM team_member
-       WHERE id = ? AND teamId = ? AND status IN ('invited', 'joined')`,
+      `SELECT m.id, m.userId, m.role, m.status, COALESCE(u.name, m.email) AS memberName
+       FROM team_member m LEFT JOIN "user" u ON u.id = m.userId
+       WHERE m.id = ? AND m.teamId = ? AND m.status IN ('invited', 'joined')`,
     )
     .bind(memberId, teamId)
-    .first<{ id: string; userId: string | null; role: TeamRole; status: 'invited' | 'joined' }>();
+    .first<{
+      id: string;
+      userId: string | null;
+      role: TeamRole;
+      status: 'invited' | 'joined';
+      memberName: string;
+    }>();
 }
 
 // An invitation turned down (or expired), which an admin may clear from the list.
 async function declinedMember(db: D1Database, teamId: string, memberId: string) {
   return db
     .prepare(
-      `SELECT id, userId, role, status FROM team_member
+      `SELECT id, userId, role, status, email AS memberName FROM team_member
        WHERE id = ? AND teamId = ? AND status = 'declined'`,
     )
     .bind(memberId, teamId)
-    .first<{ id: string; userId: string | null; role: TeamRole; status: 'declined' }>();
+    .first<{
+      id: string;
+      userId: string | null;
+      role: TeamRole;
+      status: 'declined';
+      memberName: string;
+    }>();
 }
 
 export async function setMemberRole(
@@ -527,6 +646,16 @@ export async function setMemberRole(
     db
       .prepare(`UPDATE team_member SET role = ?, updatedAt = ?, rev = ${REV} WHERE id = ?`)
       .bind(rawRole, now, memberId),
+    teamEvent(db, {
+      id: `team_role_changed:${memberId}:${now}`,
+      type: 'team_role_changed',
+      teamId,
+      teamName: me.teamName,
+      actor,
+      at: now,
+      scopes: teamScopes(teamId, [target.userId]),
+      detail: { personId: target.userId, memberName: target.memberName, role: rawRole },
+    }),
   ]);
   return ok({ id: memberId, role: rawRole });
 }
@@ -553,7 +682,7 @@ export async function removeMember(
       .bind(teamId)
       .first<{ n: number }>();
     if ((joined?.n ?? 0) <= 1) {
-      await db.batch(deleteTeamStatements(db, teamId, now));
+      await db.batch(await deleteTeamStatements(db, actor, teamId, me.teamName, now));
       return ok({ id: memberId, teamDeleted: true });
     }
     if ((await adminCount(db, teamId)) <= 1) return fail(409, 'last_admin');
@@ -565,6 +694,29 @@ export async function removeMember(
         `UPDATE team_member SET status = 'removed', updatedAt = ?, rev = ${REV} WHERE id = ?`,
       )
       .bind(now, memberId),
+    // A member removed, or leaving; an invitation withdrawn or a refusal cleared is no news.
+    ...(target.status === 'joined'
+      ? [
+          teamEvent(
+            db,
+            {
+              id: `team_member_removed:${memberId}`,
+              type: 'team_member_removed',
+              teamId,
+              teamName: me.teamName,
+              actor,
+              at: now,
+              scopes: teamScopes(teamId, [target.userId]),
+              detail: {
+                personId: target.userId,
+                memberName: target.memberName,
+                left: self ? '1' : null,
+              },
+            },
+            memberGuard(memberId, 'removed', now),
+          ),
+        ]
+      : []),
   ]);
   return ok({ id: memberId, teamDeleted: false });
 }
@@ -629,6 +781,20 @@ export async function answerInvitation(
          WHERE id = ? AND status = 'invited'`,
       )
       .bind(status, accept ? actor.id : null, now, memberId),
+    teamEvent(
+      db,
+      {
+        id: `team_${status}:${memberId}`,
+        type: accept ? 'team_joined' : 'team_declined',
+        teamId: row.teamId,
+        teamName: row.teamName,
+        actor,
+        at: now,
+        scopes: teamScopes(row.teamId, [actor.id]),
+        detail: { personId: actor.id, memberName: actor.name || actor.email },
+      },
+      memberGuard(memberId, status, now),
+    ),
   ]);
   return ok({ id: memberId, teamId: row.teamId, teamName: row.teamName, status, inviterApp });
 }
@@ -654,7 +820,7 @@ export async function leaveAllTeams(
   const closed: string[] = [];
   for (const row of results) {
     if (row.joined <= 1) {
-      statements.push(...deleteTeamStatements(db, row.teamId, now));
+      statements.push(...deleteTeamRows(db, row.teamId, now));
       closed.push(row.teamId);
       continue;
     }
@@ -902,6 +1068,21 @@ export async function declineByToken(
          WHERE id = ? AND status = 'invited'`,
       )
       .bind(now, row.id),
+    // From the email's link, signed in or not: named by the address invited.
+    teamEvent(
+      db,
+      {
+        id: `team_declined:${row.id}`,
+        type: 'team_declined',
+        teamId: row.teamId,
+        teamName: row.teamName,
+        actor: { id: null, name: row.email },
+        at: now,
+        scopes: teamScopes(row.teamId, []),
+        detail: { memberName: row.email },
+      },
+      memberGuard(row.id, 'declined', now),
+    ),
   ]);
   const declined = ((changed as { meta?: { changes?: number } })?.meta?.changes ?? 0) > 0;
   return ok({ ...base, status: 'declined', declined });
@@ -1051,6 +1232,21 @@ export async function joinByInviteLink(
   const team = await linkedTeam(db, token, now);
   if (!team) return fail(404, 'invite_not_found');
   const result = { teamId: team.id, teamName: team.name };
+  const joinedEvent = (memberId: string, guard?: { sql: string; args: unknown[] }) =>
+    teamEvent(
+      db,
+      {
+        id: `team_joined:${memberId}`,
+        type: 'team_joined',
+        teamId: team.id,
+        teamName: team.name,
+        actor,
+        at: now,
+        scopes: teamScopes(team.id, [actor.id]),
+        detail: { personId: actor.id, memberName: actor.name || actor.email, via: 'link' },
+      },
+      guard,
+    );
   if (await getMembership(db, team.id, actor.id)) {
     return ok({ ...result, alreadyMember: true, acceptedInvite: false });
   }
@@ -1072,6 +1268,7 @@ export async function joinByInviteLink(
            WHERE id = ? AND status = 'invited'`,
         )
         .bind(actor.id, now, pending.id),
+      joinedEvent(pending.id, memberGuard(pending.id, 'joined', now)),
     ]);
     return ok({ ...result, alreadyMember: false, acceptedInvite: true });
   }
@@ -1082,6 +1279,7 @@ export async function joinByInviteLink(
     .bind(team.id)
     .first<{ n: number }>();
   if ((open?.n ?? 0) >= MAX_MEMBERS_PER_TEAM) return fail(409, 'member_limit_reached');
+  const memberId = crypto.randomUUID();
   try {
     await db.batch([
       db.prepare(BUMP),
@@ -1090,14 +1288,8 @@ export async function joinByInviteLink(
           `INSERT INTO team_member (id, teamId, userId, email, role, status, invitedBy, createdAt, updatedAt, rev)
            VALUES (?, ?, ?, ?, 'member', 'joined', NULL, ?, ?, ${REV})`,
         )
-        .bind(
-          crypto.randomUUID(),
-          team.id,
-          actor.id,
-          actor.email ?? `${actor.id}@account.invalid`,
-          now,
-          now,
-        ),
+        .bind(memberId, team.id, actor.id, actor.email ?? `${actor.id}@account.invalid`, now, now),
+      joinedEvent(memberId),
     ]);
   } catch {
     // Two joins at once by one person: the unique index lets one through, and they are in.

@@ -11,18 +11,10 @@ import {
   type SharedTabsSummary,
   type SheetCreateRequest,
 } from '@liveplanner/api-schema';
-import type {
-  Project,
-  ProjectResponse,
-  ProjectSummary,
-} from '@liveplanner/api-schema';
+import type { Project, ProjectResponse, ProjectSummary } from '@liveplanner/api-schema';
 import type { Tab } from '@liveplanner/project';
 import { dedupeInFlight } from '../dedupe';
-import {
-  isOfflineId,
-  offlineLoadProject,
-  offlineSaveProjectMeta,
-} from '../offline/offline-store';
+import { isOfflineId, offlineLoadProject, offlineSaveProjectMeta } from '../offline/offline-store';
 import { IndexError } from '@liveworkspace/index-client';
 import { indexClient } from '../index-client';
 import { markReported, reportApiError } from './error-report';
@@ -192,6 +184,8 @@ export async function apiCreateProject(
   try {
     created = await indexClient.createItem({
       id: d.id,
+      // Synced to the cloud from this browser (Offline Mode): the Timeline says so, not "Created".
+      ...(opts.conversion === 'sync' ? { synced: true } : {}),
       app: 'liveplanner',
       title: d.name,
       ...(d.teamId ? { teamId: d.teamId } : {}),

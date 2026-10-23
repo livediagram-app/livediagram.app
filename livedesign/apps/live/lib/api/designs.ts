@@ -9,18 +9,10 @@ import {
   type DesignConversion,
   type SharedTabsSummary,
 } from '@livedesign/api-schema';
-import type {
-  LiveDoc,
-  DesignResponse,
-  DesignSummary,
-} from '@livedesign/api-schema';
+import type { LiveDoc, DesignResponse, DesignSummary } from '@livedesign/api-schema';
 import type { Tab } from '@livedesign/design';
 import { dedupeInFlight } from '../dedupe';
-import {
-  isOfflineId,
-  offlineLoadDesign,
-  offlineSaveDesignMeta,
-} from '../offline/offline-store';
+import { isOfflineId, offlineLoadDesign, offlineSaveDesignMeta } from '../offline/offline-store';
 import { IndexError } from '@liveworkspace/index-client';
 import { indexClient } from '../index-client';
 import { markReported, reportApiError } from './error-report';
@@ -194,6 +186,8 @@ export async function apiCreateDesign(
   try {
     created = await indexClient.createItem({
       id: d.id,
+      // Synced to the cloud from this browser (Offline Mode): the Timeline says so, not "Created".
+      ...(opts.conversion === 'sync' ? { synced: true } : {}),
       app: 'livedesign',
       title: d.name,
       ...(d.teamId ? { teamId: d.teamId } : {}),

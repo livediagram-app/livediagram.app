@@ -48,6 +48,8 @@ export type CollabThreadRow = {
   mentionedIds: string[];
   latestText: string;
   latestAuthorName: string;
+  // The latest comment's server-stamped author, for the Timeline's "Comment Added"; null before authorId existed.
+  latestAuthorId: string | null;
   latestAuthorColor: string;
   firstAt: number;
   latestAt: number;
@@ -120,6 +122,7 @@ export function collabIndexRowsFromElements(elements: Element[]): CollabIndexRow
         mentionedIds: mentioned,
         latestText: latest.text,
         latestAuthorName: latest.authorName,
+        latestAuthorId: latest.authorId ?? null,
         latestAuthorColor: latest.authorColor,
         firstAt: first.createdAt,
         latestAt: latest.createdAt,

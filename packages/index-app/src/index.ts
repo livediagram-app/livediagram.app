@@ -17,3 +17,4 @@ export * from './tabs';
 export * from './forms';
 export * from './cards';
 export * from './item-head';
+export * from './person-events';

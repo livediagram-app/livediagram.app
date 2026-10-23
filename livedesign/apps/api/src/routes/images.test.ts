@@ -15,6 +15,13 @@ import type { Env } from '../types';
 const { resolveDesignGrant } = vi.hoisted(() => ({ resolveDesignGrant: vi.fn() }));
 vi.mock('./design-grant', () => ({ resolveDesignGrant }));
 
+// The index's app client, for the Timeline's "Images Uploaded".
+const { pushPersonEvents } = vi.hoisted(() => ({ pushPersonEvents: vi.fn(async () => {}) }));
+vi.mock('../index-service', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../index-service')>()),
+  indexAppClient: () => ({ pushPersonEvents }),
+}));
+
 // The index's grant to read a design, the whole design or one tab of it.
 const viewGrant = (tab: string | null = null) => ({ level: 'view', tab });
 
@@ -38,6 +45,8 @@ afterEach(() => vi.unstubAllGlobals());
 
 type Opts = { owner?: string | null; workbench?: unknown; token?: { id: string }; env?: Env };
 
+let waits: Promise<unknown>[] = [];
+
 const call = (method: string, path: string, opts: Opts = {}, request?: RequestInit) => {
   const ctx = makeTestRouteContext(method, path, {
     owner: opts.owner === undefined ? 'user_ada' : opts.owner,
@@ -45,9 +54,11 @@ const call = (method: string, path: string, opts: Opts = {}, request?: RequestIn
     ...(opts.workbench ? { workbench: opts.workbench as never } : {}),
     ...(opts.token ? { token: opts.token } : {}),
   });
-  if (!request) return handleImages(ctx);
+  const waitUntil = (p: Promise<unknown>) => void waits.push(p);
+  if (!request) return handleImages({ ...ctx, waitUntil });
   return handleImages({
     ...ctx,
+    waitUntil,
     request: new Request(`https://api.test${path}`, { method, ...request }),
   });
 };
@@ -92,6 +103,18 @@ describe('handleImages', () => {
 
   it('400 listing the gallery with no owner', async () => {
     expect((await call('GET', '/api/images', { owner: null })).status).toBe(400);
+  });
+
+  it("puts a new upload on the uploader's Timeline, and not the same bytes again", async () => {
+    pushPersonEvents.mockClear();
+    waits = [];
+    await upload(PNG);
+    await upload(PNG);
+    await Promise.all(waits);
+    expect(pushPersonEvents).toHaveBeenCalledTimes(1);
+    expect(pushPersonEvents).toHaveBeenCalledWith([
+      expect.objectContaining({ type: 'image_uploaded', actorId: 'user_ada', count: 1 }),
+    ]);
   });
 
   it('uploads to the service and dedupes the same bytes', async () => {

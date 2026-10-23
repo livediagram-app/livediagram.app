@@ -22,7 +22,8 @@ import { SIGN_IN_OPTIONS_PATH, signInOptions } from './sign-in-options.ts';
 import { sendEmail, sendTeamInviteEmail } from './email.ts';
 import { runLifecycle, sendWelcomes, takeWelcomes, type SendEmail } from './lifecycle.ts';
 import { sweepInvitations } from './teams.ts';
-import { sweepExpiringTokens } from './token-expiry.ts';
+import { noteExpiringTokens, sweepExpiringTokens } from './token-expiry.ts';
+import { flushTimeline, flushTimelineAfter, TIMELINE_CALLS_PER_RUN } from './index-timeline.ts';
 import { flushServerEvents, flushServerEventsAfter } from './telemetry.ts';
 import { WORKSPACE_TOKEN_PATH, workspaceToken } from './workspace-token.ts';
 
@@ -59,8 +60,10 @@ export default {
 
     if (pathname === ACCOUNT_API_PATH || pathname.startsWith(`${ACCOUNT_API_PATH}/`)) {
       const response = await handleAccountApi(request, env, getAuth(env));
-      // The team emails it sent are counted after the response (telemetry.ts).
+      // The team emails it sent are counted after the response (telemetry.ts), and the team and token
+      // events it made go to the Timeline (index-timeline.ts).
       flushServerEventsAfter(env, ctx);
+      flushTimelineAfter(env, ctx);
       return response;
     }
 
@@ -115,12 +118,20 @@ export default {
   // again, and welcomes that failed are tried again; once a day the rest of the onboarding series goes
   // (liveworkspace/docs/accounts.md "Onboarding emails"). Once a day as well: team invitations nobody answered expire, and the rest hear their
   // reminders (liveworkspace/docs/accounts.md "Reminders and expiry"); owners of API tokens that expire
-  // within a week are warned, once per token ("API tokens"); and the settings and profiles
+  // within a week are warned, once per token, and see it on their Timelines ("API tokens"); and the settings and profiles
   // of guests who can never come back are deleted ("Guests who never come back").
   async scheduled(controller: ScheduledController, env: Env): Promise<void> {
     const purges = await retryPendingPurges(env.AUTH_DB, indexPurgeConfig(env));
     if (purges.sent + purges.failed > 0)
       console.log('[accounts] index purges', JSON.stringify(purges));
+    // Every run: Timeline events the index hasn't taken yet go again (index-timeline.ts).
+    const timeline = await flushTimeline(
+      env.AUTH_DB,
+      indexPurgeConfig(env),
+      TIMELINE_CALLS_PER_RUN,
+    );
+    if (timeline.sent > 0 || timeline.waiting)
+      console.log('[accounts] timeline events', JSON.stringify(timeline));
     // Every run: a welcome that failed is tried again within 15 minutes. Once a day: the whole series.
     const daily = controller.cron !== PURGE_RETRY_CRON;
     const lifecycle = await runLifecycle(
@@ -152,6 +163,14 @@ export default {
     } catch (error) {
       console.error('[tokens] expiry warning sweep failed', error);
     } finally {
+      // Tokens expiring within the week go on their owners' Timelines, then to the index.
+      try {
+        if ((await noteExpiringTokens(env.AUTH_DB)) > 0) {
+          await flushTimeline(env.AUTH_DB, indexPurgeConfig(env), TIMELINE_CALLS_PER_RUN);
+        }
+      } catch (error) {
+        console.error('[tokens] expiry Timeline note failed', error);
+      }
       // The reminders and warnings that went, one batch per app once both sweeps are done.
       await flushServerEvents(env);
     }

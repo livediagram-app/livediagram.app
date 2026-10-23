@@ -9,7 +9,9 @@
 import { tokenExpiringEmail } from './email.ts';
 import type { Env } from './env.ts';
 import { isSettingsApp } from './settings.ts';
+import { timelineStatement } from './index-timeline.ts';
 import { reportServerEvent, type TelemetryEnv } from './telemetry.ts';
+import { tokenEvent } from './tokens.ts';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 // How long before a token expires its owner is warned.
@@ -64,4 +66,38 @@ export async function sweepExpiringTokens(
       .run();
   }
   return { sent: warned.length, failed };
+}
+
+// Tokens put on the Timeline per run, at most.
+export const TOKEN_EXPIRY_NOTE_LIMIT = 500;
+
+/**
+ * Puts each live token that expires within a week on its owner's Timeline, once, dated at its expiry (so it
+ * shows under Upcoming), whether or not their address is verified. One read on the partial index
+ * api_token_expiry_note_idx, then one batch: the events (index-timeline.ts) and the stamps together.
+ */
+export async function noteExpiringTokens(db: D1Database, now = Date.now()): Promise<number> {
+  const { results } = await db
+    .prepare(
+      `SELECT id, userId, name, expiresAt FROM api_token
+       WHERE revokedAt IS NULL AND expiryNotedAt IS NULL AND expiresAt > ? AND expiresAt <= ?
+       ORDER BY expiresAt LIMIT ?`,
+    )
+    .bind(now, now + TOKEN_EXPIRY_WARNING_MS, TOKEN_EXPIRY_NOTE_LIMIT)
+    .all<{ id: string; userId: string; name: string; expiresAt: number }>();
+  if (results.length === 0) return 0;
+  await db.batch([
+    ...results.map((token) =>
+      timelineStatement(
+        db,
+        tokenEvent('token_expiring', token, token.userId, null, token.expiresAt),
+      ),
+    ),
+    db
+      .prepare(
+        'UPDATE api_token SET expiryNotedAt = ? WHERE id IN (SELECT value FROM json_each(?))',
+      )
+      .bind(now, JSON.stringify(results.map((token) => token.id))),
+  ]);
+  return results.length;
 }
