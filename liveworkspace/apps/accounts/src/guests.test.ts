@@ -7,6 +7,8 @@ import {
   GUEST_COOKIE,
   GUEST_TOKEN_TTL_SECONDS,
   guestHandoff,
+  guestMergeConfig,
+  mergeGuestOnAuthorize,
   readGuestCookie,
   signGuestCookie,
 } from './guests.ts';
@@ -364,5 +366,125 @@ describe('signing in as a guest', () => {
     const response = await signIn(cookie);
     expect(merges).toHaveLength(1);
     expect(setGuestCookie(response)).toBeUndefined();
+  });
+});
+
+describe('signing in to an app with a session already there', () => {
+  // A session made with no guest cookie, so the session hook has nothing to merge.
+  async function session(): Promise<{ cookie: string; userId: string }> {
+    const email = 'grace@example.com';
+    const json = { 'content-type': 'application/json', origin: BASE };
+    await auth.handler(
+      new Request(`${BASE}/api/auth/email-otp/send-verification-otp`, {
+        method: 'POST',
+        headers: { ...json, 'x-captcha-response': 'ok' },
+        body: JSON.stringify({ email, type: 'sign-in' }),
+      }),
+    );
+    const response = await auth.handler(
+      new Request(`${BASE}/api/auth/sign-in/email-otp`, {
+        method: 'POST',
+        headers: json,
+        body: JSON.stringify({ email, otp: codes.get(email) }),
+      }),
+    );
+    const { user } = (await response.json()) as { user: { id: string } };
+    const cookie = response.headers
+      .getSetCookie()
+      .map((c) => c.split(';')[0])
+      .join('; ');
+    return { cookie, userId: user.id };
+  }
+
+  const config = () => ({
+    ...guestMergeConfig(env),
+    indexUrl: INDEX_URL,
+    indexMergeKey: 'merge-key',
+  });
+  const userIdOf = async (headers: Headers) =>
+    (await auth.api.getSession({ headers }))?.user.id ?? null;
+  const answer = (location: string) => new Response(null, { status: 302, headers: { location } });
+
+  function authorizeRequest(cookie: string) {
+    return new Request(`${BASE}/api/auth/oauth2/authorize?prompt=none`, { headers: { cookie } });
+  }
+
+  it("hands the guest's things to the account when the answer carries a code", async () => {
+    const { cookie, userId } = await session();
+    const guest = cookieValueOf(setGuestCookie(await handoff()));
+    const guestId = (await readGuestCookie(guest, SECRET))!;
+    merges = [];
+    const response = await mergeGuestOnAuthorize(
+      authorizeRequest(`${cookie}; ${GUEST_COOKIE}=${guest}`),
+      answer('https://liveplanner.app/auth/callback?code=abc&state=s'),
+      config(),
+      userIdOf,
+    );
+    expect(response.status).toBe(302);
+    expect(response.headers.get('location')).toContain('code=abc');
+    expect(merges).toEqual([expect.objectContaining({ body: { guestId, userId } })]);
+    expect(setGuestCookie(response)).toMatch(/Max-Age=0/);
+  });
+
+  it('leaves everything alone for an error answer, no guest cookie, or no session', async () => {
+    const { cookie } = await session();
+    const guest = cookieValueOf(setGuestCookie(await handoff()));
+    merges = [];
+    const failed = await mergeGuestOnAuthorize(
+      authorizeRequest(`${cookie}; ${GUEST_COOKIE}=${guest}`),
+      answer('https://liveplanner.app/auth/callback?error=login_required&state=s'),
+      config(),
+      userIdOf,
+    );
+    expect(setGuestCookie(failed)).toBeUndefined();
+    await mergeGuestOnAuthorize(
+      authorizeRequest(cookie),
+      answer('https://liveplanner.app/auth/callback?code=abc'),
+      config(),
+      userIdOf,
+    );
+    await mergeGuestOnAuthorize(
+      authorizeRequest(`${GUEST_COOKIE}=${guest}`),
+      answer('https://liveplanner.app/auth/callback?code=abc'),
+      config(),
+      userIdOf,
+    );
+    expect(merges).toEqual([]);
+  });
+
+  it('keeps the guest cookie when the index merge fails', async () => {
+    const { cookie } = await session();
+    const guest = cookieValueOf(setGuestCookie(await handoff()));
+    mergeStatus = 503;
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const response = await mergeGuestOnAuthorize(
+      authorizeRequest(`${cookie}; ${GUEST_COOKIE}=${guest}`),
+      answer('https://liveplanner.app/auth/callback?code=abc'),
+      config(),
+      userIdOf,
+    );
+    expect(setGuestCookie(response)).toBeUndefined();
+  });
+});
+
+describe('prompt=none', () => {
+  it('answers login_required straight away when there is no session, never a page', async () => {
+    const query = new URLSearchParams({
+      response_type: 'code',
+      client_id: CLIENT_ID,
+      redirect_uri: 'https://liveplanner.app/auth/callback',
+      scope: 'openid email profile offline_access',
+      state: 'st',
+      code_challenge: 'E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM',
+      code_challenge_method: 'S256',
+      resource: RESOURCE,
+      prompt: 'none',
+    });
+    const response = await auth.handler(new Request(`${BASE}/api/auth/oauth2/authorize?${query}`));
+    expect(response.status).toBe(302);
+    const location = new URL(response.headers.get('location')!);
+    expect(`${location.origin}${location.pathname}`).toBe('https://liveplanner.app/auth/callback');
+    expect(location.searchParams.get('error')).toBe('login_required');
+    expect(location.searchParams.get('state')).toBe('st');
   });
 });

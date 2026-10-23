@@ -3,6 +3,7 @@ import { authOptions } from './auth-options.ts';
 import { clientApp } from './clients.ts';
 import { sendCodeEmail } from './email.ts';
 import type { Env } from './env.ts';
+import { guestMergeConfig } from './guests.ts';
 import { queueWelcome, startLifecycle } from './lifecycle.ts';
 import { RESOURCES } from './resources.ts';
 import { teamsClaim } from './teams.ts';
@@ -22,13 +23,7 @@ function build(env: Env) {
             : null,
         sendCode: (email, code) => sendCodeEmail(env, email, code),
         teamsFor: (userId) => teamsClaim(env.AUTH_DB, userId),
-        guestMerge: {
-          secure: env.ENVIRONMENT !== 'development',
-          indexUrl: env.INDEX_URL,
-          indexService: env.INDEX,
-          indexMergeKey: env.INDEX_MERGE_KEY,
-          db: env.AUTH_DB,
-        },
+        guestMerge: guestMergeConfig(env),
         // The welcome goes once the sign-up's response has (index.ts takeWelcomes), speaking for the app
         // the sign-up came through: its OAuth client's, or liveworkspace.app's for the site's own.
         onUserCreated: async (user, { clientId }) => {

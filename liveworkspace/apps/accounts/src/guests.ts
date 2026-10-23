@@ -198,17 +198,27 @@ export interface MergeConfig {
 
 let warnedUnconfigured = false;
 
-// Better Auth's session.create.after hook: a session made by a request carrying a valid guest
-// cookie asks the index to hand the guest's things to the account, then clears the cookie so the
-// next guest visit starts a fresh guest. A failed merge never fails the sign-in.
-export async function mergeGuestOnSignIn(
+// The merge config as the Worker runs it: the same for Better Auth's hook (auth.ts) and for a sign-in
+// that needed no new session (mergeGuestOnAuthorize).
+export function guestMergeConfig(env: Env): MergeConfig {
+  return {
+    secret: env.BETTER_AUTH_SECRET,
+    secure: env.ENVIRONMENT !== 'development',
+    indexUrl: env.INDEX_URL,
+    indexService: env.INDEX,
+    indexMergeKey: env.INDEX_MERGE_KEY,
+    db: env.AUTH_DB,
+  };
+}
+
+// Hands a guest's things to an account: settings and profile here, then the index. True once the index
+// has them, so the cookie can go; false keeps it, and the next sign-in tries again (every step is
+// idempotent). Never throws.
+async function mergeGuestInto(
   config: MergeConfig,
+  guestId: string,
   userId: string,
-  ctx: GenericEndpointContext | null,
-): Promise<void> {
-  const header = ctx?.request?.headers.get('cookie') ?? ctx?.headers?.get('cookie') ?? null;
-  const guestId = await readGuestCookie(cookieValue(header, GUEST_COOKIE), config.secret);
-  if (!ctx || !guestId) return;
+): Promise<boolean> {
   // Settings and profiles live here, not in the index, so they move whatever the index says. Idempotent, and a
   // failure is only logged: the guest's rows stay for the next sign-in to try again.
   if (config.db) {
@@ -224,14 +234,14 @@ export async function mergeGuestOnSignIn(
     if (!warnedUnconfigured)
       console.warn('Guest merge skipped: INDEX_URL or INDEX_MERGE_KEY unset');
     warnedUnconfigured = true;
-    return;
+    return false;
   }
 
   // Awaited, so the cookie is cleared only once the index has the guest's things: a merge that
   // fails keeps the cookie, and the next sign-in tries again (the merge is idempotent). It adds one
   // request to signing in, capped at MERGE_TIMEOUT_MS.
   const send = config.indexService ? config.indexService.fetch.bind(config.indexService) : fetch;
-  const merged = await send(`${config.indexUrl}/internal/merge`, {
+  return send(`${config.indexUrl}/internal/merge`, {
     method: 'POST',
     headers: {
       'content-type': 'application/json',
@@ -249,8 +259,20 @@ export async function mergeGuestOnSignIn(
       return false;
     },
   );
-  if (!merged) return;
+}
 
+// Better Auth's session.create.after hook: a session made by a request carrying a valid guest
+// cookie asks the index to hand the guest's things to the account, then clears the cookie so the
+// next guest visit starts a fresh guest. A failed merge never fails the sign-in.
+export async function mergeGuestOnSignIn(
+  config: MergeConfig,
+  userId: string,
+  ctx: GenericEndpointContext | null,
+): Promise<void> {
+  const header = ctx?.request?.headers.get('cookie') ?? ctx?.headers?.get('cookie') ?? null;
+  const guestId = await readGuestCookie(cookieValue(header, GUEST_COOKIE), config.secret);
+  if (!ctx || !guestId) return;
+  if (!(await mergeGuestInto(config, guestId, userId))) return;
   // Appended beside the session cookie, not in place of it.
   ctx.setCookie(GUEST_COOKIE, '', {
     maxAge: 0,
@@ -259,4 +281,38 @@ export async function mergeGuestOnSignIn(
     sameSite: 'lax',
     secure: config.secure,
   });
+}
+
+export const AUTHORIZE_PATH = '/oauth2/authorize';
+
+// An app's sign-in that found a liveworkspace session already there, a click or a silent one
+// (`prompt=none`), makes no new session, so the hook above never runs. A guest who used an app in this
+// browser meanwhile still hands their things over: when the authorize answer carries a code and the
+// request a valid guest cookie, the session's account takes the guest's things, as at any sign-in.
+// Costs nothing without a guest cookie; with one, a session read and the merge (capped as above).
+export async function mergeGuestOnAuthorize(
+  request: Request,
+  response: Response,
+  config: MergeConfig,
+  userIdOf: (headers: Headers) => Promise<string | null>,
+): Promise<Response> {
+  const location = response.headers.get('location');
+  if (response.status !== 302 || !location) return response;
+  let code: string | null = null;
+  try {
+    code = new URL(location).searchParams.get('code');
+  } catch {
+    return response;
+  }
+  if (!code) return response;
+  const guestId = await readGuestCookie(
+    cookieValue(request.headers.get('cookie'), GUEST_COOKIE),
+    config.secret,
+  );
+  if (!guestId) return response;
+  const userId = await userIdOf(request.headers).catch(() => null);
+  if (!userId || !(await mergeGuestInto(config, guestId, userId))) return response;
+  const merged = new Response(response.body, response);
+  merged.headers.append('set-cookie', guestCookie('', 0, config.secure));
+  return merged;
 }

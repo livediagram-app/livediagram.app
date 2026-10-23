@@ -9,7 +9,13 @@ import { CLIENTS_PATH, registerClient } from './clients.ts';
 import { DELETE_ACCOUNT_PATH, deleteAccount } from './delete-account.ts';
 import type { Env } from './env.ts';
 import { sweepIdleGuests } from './guest-sweep.ts';
-import { GUEST_PATH, guestHandoff } from './guests.ts';
+import {
+  AUTHORIZE_PATH,
+  GUEST_PATH,
+  guestHandoff,
+  guestMergeConfig,
+  mergeGuestOnAuthorize,
+} from './guests.ts';
 import { indexPurgeConfig, PURGE_RETRY_CRON, retryPendingPurges } from './index-purge.ts';
 import { overCodeLimit } from './rate-limit.ts';
 import { SIGN_IN_OPTIONS_PATH, signInOptions } from './sign-in-options.ts';
@@ -78,7 +84,17 @@ export default {
           { status: 429 },
         );
       }
-      const response = await getAuth(env).handler(request);
+      const auth = getAuth(env);
+      let response = await auth.handler(request);
+      // A sign-in that found a session already here still takes a guest's things (guests.ts).
+      if (request.method === 'GET' && route === AUTHORIZE_PATH) {
+        response = await mergeGuestOnAuthorize(
+          request,
+          response,
+          guestMergeConfig(env),
+          async (headers) => (await auth.api.getSession({ headers }))?.user.id ?? null,
+        );
+      }
       // An account made by this request (or another in this isolate) hears its welcome now, after the
       // response, rather than holding the sign-up on the email (lifecycle.ts).
       const welcomes = takeWelcomes();
