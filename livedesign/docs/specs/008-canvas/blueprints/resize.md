@@ -58,9 +58,6 @@ unionMinScale)` where `unionMinScale` is the largest `minUniformScale` of the re
   square of side `max(|dx|, |dy|)` in the drag's direction, then `snapLeadingAxis(box, corner, lead,
 snapEdge)` with `lead` from the raw pointer, so the square survives the snap; without Shift each
   moving edge snaps on its own.
-- Whiteboard: `useCanvasSurfaceGestures` turns a Shift press into an additive marquee unless the
-  target is inside `[data-canvas-handle]`. `ResizeHandles`, `EdgeResizeHandle` and
-  `UnionResizeHandles` all carry `data-canvas-handle`, so every handle reaches its resize with Shift.
 
 - Grips layer: `CanvasElementsLayer` draws it last in the transformed world, after every element,
   the remote cursors and the laser, at `z-index: SELECTION_GRIPS_Z_INDEX`, `pointer-events: none`,

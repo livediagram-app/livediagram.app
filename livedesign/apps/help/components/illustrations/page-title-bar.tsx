@@ -1,7 +1,6 @@
 // The page title bar's buttons (docs/specs/007-editor/pages-mode.md "Beside the
 // cog"), drawn once for every scene that shows a page: Layout (PageLayoutsButton.tsx, the
-// panels-top-left glyph), Tidy (PageTidyUpButton.tsx, the broom), Background
-// (PageBackgroundButton.tsx, the paint roller) and the page's padlock (PageLockButton.tsx). Each
+// panels-top-left glyph), Background (PageBackgroundButton.tsx, the paint roller) and the page's padlock (PageLockButton.tsx). Each
 // glyph is drawn about 12 units square around its centre; `TitleButton` frames one as the title
 // bar does, named beside its icon while the page has room, tinted while its popover is open.
 
@@ -24,24 +23,6 @@ export function LayoutGlyph({ cx, cy, on }: GlyphProps) {
     >
       <rect x={-5.5} y={-5.5} width={11} height={11} rx={1.8} />
       <path d="M-5.5 -1.5 h11 M-1.5 -1.5 v7" />
-    </g>
-  );
-}
-
-/** Tidy: a broom, its handle up to the right and its head fanned down to the left. */
-export function TidyUpGlyph({ cx, cy, on }: GlyphProps) {
-  return (
-    <g
-      transform={`translate(${cx} ${cy})`}
-      fill="none"
-      className={ink(on)}
-      strokeWidth={1.3}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M5.5 -5.5 L0.8 -0.8" />
-      <path d="M-0.6 -2.2 L2.2 0.6 L-1.4 5.6 L-6 1 Z" />
-      <path d="M-3.8 3.4 L-2 1.6" />
     </g>
   );
 }

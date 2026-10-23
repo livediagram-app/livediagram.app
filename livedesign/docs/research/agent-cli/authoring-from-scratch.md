@@ -1,5 +1,7 @@
 # Authoring from scratch, and the visual feedback loop
 
+> **History.** Written for livediagram, before livedesign was cut down to logo, wireframe and photo pages. Its diagrams, flowcharts, Markdown outlines and whiteboard examples describe that product; what livedesign's agents read and write is in [Agents](../../specs/024-agents/README.md) and [CLI](../../specs/015-api/cli.md).
+
 Research for the agent-facing `livedesign` CLI, dated 2026-10-03. It asks how an AI agent
 builds a good diagram from nothing, how it then sees what it built, and how it corrects it,
 and ends with a recommended authoring flow, a `lint` design and a mock session.

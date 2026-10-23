@@ -1,7 +1,6 @@
 // Feature art for presenting (docs/specs/019-marketing/marketing-site.md,
-// docs/specs/012-collaboration/presentation-mode.md): slides cut
-// from a canvas, one deck drawn from several tabs, the presenter's own notes, a deck that plays on
-// your screen alone. Each is a small mock of the real surface, built on ./page-kit so it reads in
+// docs/specs/012-collaboration/presentation-mode.md): the pages of several tabs in one running order,
+// the presenter's own notes, and a presentation that plays on your screen alone. Each is a small mock of the real surface, built on ./page-kit so it reads in
 // light and in dark.
 
 import type { CSSProperties } from 'react';
@@ -21,54 +20,37 @@ import {
   VIOLET,
 } from './page-kit';
 
-// A shape on the canvas in the Default scheme's colours, with its label.
-function Shape({ x, y, w = 26, label }: { x: number; y: number; w?: number; label: string }) {
+// A phone wireframe page on the canvas in miniature: its frame, a title bar, a picture and a button.
+function PhoneScreen({ x, y, accent = SKY }: { x: number; y: number; accent?: string }) {
   return (
     <g>
       <rect
-        className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
+        className="fill-white stroke-slate-400 dark:fill-slate-800 dark:stroke-slate-500"
         x={x}
         y={y}
-        width={w}
-        height="12"
+        width="22"
+        height="40"
         rx="3.4"
-        fill="#f0f9ff"
-        stroke={SKY}
-        strokeWidth="1"
+        fill="#ffffff"
+        stroke="#94a3b8"
+        strokeWidth="0.8"
       />
-      <text
-        className="fill-(--art-ink-text)"
-        x={x + w / 2}
-        y={y + 7.8}
-        textAnchor="middle"
-        fontSize="4.6"
-        fontWeight="700"
-        fill="#075985"
-      >
-        {label}
-      </text>
+      <rect
+        className="fill-slate-300 dark:fill-slate-600"
+        x={x + 4}
+        y={y + 6}
+        width="12"
+        height="2"
+        rx="1"
+        fill="#cbd5e1"
+      />
+      <rect x={x + 4} y={y + 12} width="14" height="12" rx="1.4" fill={accent} fillOpacity="0.25" />
+      <rect x={x + 4} y={y + 29} width="14" height="4" rx="2" fill={accent} />
     </g>
   );
 }
 
-// An arrow on the canvas, head included.
-function Arrow({ d, head }: { d: string; head: string }) {
-  return (
-    <g
-      className="stroke-(--art-arrow)"
-      stroke="#334155"
-      strokeWidth="0.9"
-      fill="none"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d={d} />
-      <path d={head} />
-    </g>
-  );
-}
-
-// A slide in miniature: a dark 16:9 card with a title bar and two boxes.
+// A page in miniature: a dark 16:9 card with a title bar and two boxes.
 function SlideThumb({
   x,
   y,
@@ -125,7 +107,7 @@ function SlideThumb({
   );
 }
 
-/** One deck across every tab: the deck's rows, each from its own tab, one being dragged into place. */
+/** One running order across every tab: the pages' rows, each from its own tab, one being dragged into place. */
 export function FullScreenSlideArt() {
   const rows: {
     title: string;
@@ -136,31 +118,31 @@ export function FullScreenSlideArt() {
     moving?: boolean;
     shapes: number;
   }[] = [
-    { title: 'System overview', tab: 'Architecture', color: SKY, shapes: 9 },
+    { title: 'Bloom logo', tab: 'Logo', color: SKY, shapes: 4 },
     {
-      title: 'Q3 roadmap',
-      shapes: 6,
-      tab: 'Roadmap',
+      title: 'Sign in',
+      shapes: 7,
+      tab: 'App screens',
       color: EMERALD,
       moving: true,
       style: { ...at(0.4), '--e-y': '17px' } as CSSProperties,
     },
     {
-      title: 'Data flow',
-      shapes: 5,
-      tab: 'Architecture',
+      title: 'Logo on a dark page',
+      shapes: 3,
+      tab: 'Logo',
       color: SKY,
       moving: true,
       style: { ...at(0.4), '--e-y': '-17px' } as CSSProperties,
     },
-    { title: 'Open risks', tab: 'Risks', color: ROSE, hidden: true, shapes: 4 },
+    { title: 'Old mark', tab: 'Logo', color: ROSE, hidden: true, shapes: 2 },
   ];
   return (
     <Frame canvas>
       <svg viewBox="0 0 300 96" className="absolute inset-0 h-full w-full">
-        <Panel x={30} y={6} w={240} h={86} title="Slide deck">
+        <Panel x={30} y={6} w={240} h={86} title="Slide Deck">
           <text x="264" y="15.5" textAnchor="end" fontSize="4" className={INK_SOFT} fill="#64748b">
-            4 slides, 3 tabs
+            4 pages, 2 tabs
           </text>
           {rows.map((row, i) => {
             const y = 19 + i * 17;
@@ -245,27 +227,15 @@ export function PresenterNotesArt() {
     <Frame>
       <svg viewBox="0 0 300 96" className="absolute inset-0 h-full w-full">
         <Screen x={10} y={7} w={280} h={82} />
-        {/* The slide, filling the screen. */}
+        {/* The page, filling the screen: the logo on its artboard. */}
         <text x="24" y="25" fontSize="3.6" fontWeight="700" letterSpacing="0.4" fill="#7dd3fc">
-          QUARTERLY REVIEW
+          BLOOM BRAND
         </text>
         <text x="24" y="35" fontSize="8.4" fontWeight="800" fill="#ffffff">
-          Q3 at a glance
+          The new mark
         </text>
-        <g fill={SKY}>
-          {[10, 16, 13, 24, 31].map((h, i) => (
-            <rect
-              key={i}
-              x={26 + i * 19}
-              y={76 - h}
-              width="12"
-              height={h}
-              rx="1.4"
-              fillOpacity={i === 4 ? 1 : 0.4}
-            />
-          ))}
-        </g>
-        <path d="M24 76.5h96" stroke="#ffffff" strokeOpacity="0.15" strokeWidth="0.6" />
+        <circle cx="70" cy="60" r="13" fill="none" stroke={SKY} strokeWidth="4" />
+        <circle cx="70" cy="60" r="5" fill={VIOLET} />
 
         <g transform="translate(80 0)">
           {/* The HUD: notes, position, controls. */}
@@ -305,7 +275,7 @@ export function PresenterNotesArt() {
               only you
             </text>
             <path d="M118 29.5h78" stroke="#e2e8f0" strokeWidth="0.5" />
-            {['Open on the 48% jump.', 'Credit the platform team.', 'Pause for questions.'].map(
+            {['Open on the mark alone.', 'Show it at icon size.', 'Pause for questions.'].map(
               (line, i) => (
                 <g key={line}>
                   <circle cx="120" cy={37 + i * 8.5} r="0.9" fill={SKY} />
@@ -329,7 +299,7 @@ export function PresentLocallyArt() {
     <Frame canvas>
       <svg viewBox="0 0 300 96" className="absolute inset-0 h-full w-full">
         <g transform="translate(16 0)">
-          {/* You: the deck, full screen. */}
+          {/* You: the design, full screen. */}
           <text x="16" y="14" fontSize="4.6" fontWeight="700" className={INK} fill="#1e293b">
             You
           </text>
@@ -342,10 +312,10 @@ export function PresentLocallyArt() {
           </g>
           <Screen x={14} y={20} w={92} h={62} />
           <text x="22" y="34" fontSize="3.2" fontWeight="700" letterSpacing="0.4" fill="#7dd3fc">
-            LAUNCH PLAN
+            APP SCREENS
           </text>
           <text x="22" y="42" fontSize="6.4" fontWeight="800" fill="#ffffff">
-            Ship by Friday
+            The sign-in flow
           </text>
           <rect x="22" y="50" width="34" height="18" rx="2" fill={SKY} fillOpacity="0.9" />
           <rect x="60" y="50" width="38" height="18" rx="2" fill={SKY} fillOpacity="0.35" />
@@ -369,18 +339,16 @@ export function PresentLocallyArt() {
             stroke="#e2e8f0"
             strokeWidth="0.8"
           />
-          <Shape x={122} y={30} label="Brief" w={28} />
-          <Shape x={170} y={30} label="Design" w={28} />
-          <Shape x={146} y={60} label="Launch" w={28} />
-          <Arrow d="M150 36h19" head="M166 33.5l3 2.5-3 2.5" />
-          <Arrow d="M184 42c0 12-8 18-10 18" head="M177 57.5l-3 2.5 3.5 1.5" />
-          {/* A teammate's edit, mid-flight: the shape they hold, their cursor moving it. */}
+          <PhoneScreen x={122} y={30} />
+          <PhoneScreen x={149} y={30} accent={EMERALD} />
+          <PhoneScreen x={176} y={30} accent={VIOLET} />
+          {/* A teammate's edit, mid-flight: the screen they hold, their cursor on it. */}
           <rect
-            x="145"
-            y="59"
-            width="30"
-            height="14"
-            rx="4"
+            x="174"
+            y="28"
+            width="26"
+            height="44"
+            rx="4.4"
             fill="none"
             stroke={VIOLET}
             strokeWidth="0.8"
@@ -389,7 +357,7 @@ export function PresentLocallyArt() {
             className="fa-e-move"
             style={{ ...at(0), '--e-x': '-10px', '--e-y': '4px' } as CSSProperties}
           >
-            <Cursor x={170} y={66} color={VIOLET} name="Sam" />
+            <Cursor x={190} y={58} color={VIOLET} name="Sam" />
           </g>
           <g
             className="fa-e-move"

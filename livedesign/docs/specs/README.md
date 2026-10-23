@@ -14,12 +14,12 @@ Specs live in numbered category folders: the reserved `001`–`005` first (visio
 - ./004-interface-design/README.md - when working on the visual language: colour, fonts, motion, accessibility, shared UI mechanics
 - ./005-project-roadmap/README.md - when asking where the product is now and what is still ahead
 - ./006-design/README.md - when working on the design model and its domain language: tabs, pages, layers, storage, snapshots, offline designs, stroke points
-- ./007-editor/README.md - when working on the live editor shell: routes, Pages (logos and wireframes), side by side tabs, preferences, power user mode, panels, tours (incl. Show Me), AI, command palette
+- ./007-editor/README.md - when working on the live editor shell: routes, Pages (logos, wireframes and photos), side by side tabs, preferences, power user mode, panels, tours (incl. Show Me), AI, command palette
 - ./008-canvas/README.md - when working on canvas tools and gestures: arrows, snapping, sizing, corner radius, finishes (Flexible / Professional / Sketch / Marker), tool panels and the Quick Style Panel
 - ./009-elements/README.md - when adding or changing an element kind or its content
 - ./010-palette/README.md - when working on the palette: categories, per-kind layouts and Popular, icon and sticker catalogues, presets
 - ./011-theme/README.md - when working on tab themes: built-in, multi-colour and custom themes
-- ./012-collaboration/README.md - when working on realtime, presentation mode, comments, actions or the room
+- ./012-collaboration/README.md - when working on realtime, presenting (the Slides view), comments, actions or the room
 - ./013-workspace/README.md - when working on the Explorer, its filters, folders, default folders, teams, favourites, tags, share links, the Trash or the empty design clean-up
 - ./014-identity/README.md - when working on auth, guest access, profiles or account email
 - ./015-api/README.md - when working on the api worker, its OpenAPI design, tokens, the MCP server or the CLI

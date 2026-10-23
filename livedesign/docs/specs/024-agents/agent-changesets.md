@@ -25,13 +25,13 @@ persistence boundary"). That write never reached the room, so:
 | Field        | Meaning                                                                                                         |
 | ------------ | --------------------------------------------------------------------------------------------------------------- |
 | `id`         | `cs_` and 10 base32 characters, minted by the api                                                               |
-| `designId` | The design                                                                                                    |
+| `designId`   | The design                                                                                                      |
 | `tabId`      | The one tab it writes; a changeset never spans tabs                                                             |
 | `agent`      | The token id and the owner id; absent when a signed-in session writes                                           |
 | `summary`    | Optional, up to 80 characters, written by the agent ("add payment service"); shown in the toast and the history |
 | `body`       | Either ordered [edit operations](edit-operations.md), or one `replace` (a template or elements)                 |
 | `base`       | Optional: the tab revision the agent read, and a fingerprint of every element the operations target             |
-| `results`    | The result lines it printed, kept for `GET /api/designs/:id/changesets/:changesetId` and `changeset show`     |
+| `results`    | The result lines it printed, kept for `GET /api/designs/:id/changesets/:changesetId` and `changeset show`       |
 | `rev`        | The tab revision the changeset produced                                                                         |
 | `elementOps` | The `ElementOp`s it compiled to (`add`, `update`, `remove`, `reorder`), the unit the room and editors apply     |
 | `inverse`    | The element ops that undo it, computed from the before-images                                                   |
@@ -189,7 +189,7 @@ erases anything:
 
 | Constant                      | Value      | Why                                                                      |
 | ----------------------------- | ---------- | ------------------------------------------------------------------------ |
-| `CHANGESET_MAX_OPERATIONS`    | 500        | A full tab rebuild of a large diagram fits; a runaway loop does not      |
+| `CHANGESET_MAX_OPERATIONS`    | 500        | A full tab rebuild of a large page set fits; a runaway loop does not     |
 | `CHANGESET_RELAY_MAX_BYTES`   | 192 KiB    | Under the room's 256 KiB frame cap with room for metadata                |
 | `CHANGESET_MERGE_WINDOW`      | 10 minutes | Covers a pre-spec bundle until the new-version prompt reloads it         |
 | `CHANGESET_RETENTION_DAYS`    | 30         | Matches the Trash: an agent's work can be undone as long as a delete can |

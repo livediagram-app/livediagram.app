@@ -283,7 +283,7 @@ export const articles: Article[] = [
     slug: 'tab-bar',
     title: 'The Tab Bar',
     description: 'Switch between the tabs in a design, add new ones, and group them into folders.',
-    keywords: 'tabs boards pages switch bottom bar sheets add rename',
+    keywords: 'tabs pages switch bottom bar add rename',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
@@ -331,9 +331,9 @@ export const articles: Article[] = [
     slug: 'what-is-livedesign',
     title: 'What is livedesign?',
     description:
-      'An overview of the real-time, multiplayer editor for articles, decks, infographics and logos.',
+      'An overview of the real-time, multiplayer editor for logos, wireframes and photos.',
     keywords:
-      'overview intro introduction about product articles slides deck infographics logos wireframes presenting app',
+      'overview intro introduction about product logos wireframes photos photo editor presenting app',
     category: 'About livedesign',
     categorySlug: 'about',
     parentSlug: 'about',
@@ -372,7 +372,7 @@ export const articles: Article[] = [
     title: 'Your First Design',
     description: 'From a new design to a first page you can share, in a couple of minutes.',
     keywords:
-      'start begin new create tutorial beginner basics quickstart onboarding design page article slide picture template location',
+      'start begin new create tutorial beginner basics quickstart onboarding design page logo wireframe photo picture template location',
     category: 'Getting Started',
     categorySlug: 'getting-started',
   },
@@ -548,7 +548,7 @@ export const articles: Article[] = [
     title: 'Connect an AI Tool (MCP)',
     description: 'Connect Claude or any MCP client to find, view, create, and edit your designs.',
     keywords:
-      'claude chatgpt cursor model context protocol ai integration assistant llm connector trash restore pages slides article read-only',
+      'claude chatgpt cursor model context protocol ai integration assistant llm connector trash restore pages logo wireframe photo read-only',
     category: 'Account and Data',
     categorySlug: 'account-and-data',
   },
@@ -611,9 +611,9 @@ export const articles: Article[] = [
   {
     slug: 'images-and-pages',
     title: 'Images, Pages and More',
-    description: 'API examples for images, pages and articles, renders, copies and themes.',
+    description: 'API examples for images, pages, renders, copies and themes.',
     keywords:
-      'images upload pages page slides article articles markdown render svg picture copy duplicate custom themes api',
+      'images upload pages page logo wireframe photo render svg picture copy duplicate custom themes api',
     category: 'Developers',
     categorySlug: 'developers/working-with-designs',
     parentSlug: 'working-with-designs',
@@ -1291,7 +1291,7 @@ export const articles: Article[] = [
     description:
       'Every tab is a row of pages: add, size, paint, reorder, lock and find them, then export or present.',
     keywords:
-      'pages page infographic infographics poster one pager one-pager flyer handout report sheet a4 a3 letter us letter square social post instagram linkedin story stories slide portrait landscape orientation size page size background article articles design page kind first page choice navigator next page previous page backgrounds colour color gradient pattern dots grid lines theme dark page name rename duplicate move reorder drag delete add page snap margins margin fit resize scale split into pages contents sidebar find a page lock locked unlock padlock protect freeze read only page lock custom gradient photo background image background picture background photo overlay image overlay wash tint fade upload image title bar layout button background button tidy up tidy align straighten even spacing widescreen carry over',
+      'pages page sheet a4 blank page portrait landscape orientation size page size background logo wireframe photo design page kind first page choice navigator next page previous page backgrounds colour color gradient pattern dots grid lines theme dark page name rename duplicate move reorder drag delete add page snap margins margin fit resize scale split into pages contents sidebar find a page lock locked unlock padlock protect freeze read only page lock custom gradient photo background image background picture background photo overlay image overlay wash tint fade upload image title bar layout button background button carry over',
     category: 'Pages',
     categorySlug: 'pages',
     group: 'Basics',
@@ -1335,7 +1335,7 @@ export const articles: Article[] = [
     description:
       'A short, optional walkthrough for each kind of page, offered the first time you work on one and replayable from Settings or Show Me.',
     keywords:
-      'pages tour tour walkthrough onboarding intro introduction getting started guide tutorial first time learn pages page name cog page settings layout background add page present presentation logo wireframe show me replay rerun settings accessibility',
+      'pages tour tour walkthrough onboarding intro introduction getting started guide tutorial first time learn pages page name cog page settings layout background add page present presentation logo wireframe show me replay rerun settings accessibility photo photos',
     category: 'Pages',
     categorySlug: 'pages',
     group: 'Basics',
@@ -1343,9 +1343,10 @@ export const articles: Article[] = [
   {
     slug: 'exporting-pages',
     title: 'Exporting and Presenting Pages',
-    description: 'Every page or one page as a PDF, PNG or SVG, and presenting your pages.',
+    description:
+      'Every page or one page as a PDF, PNG or SVG, a logo kit or a photo, and presenting your pages.',
     keywords:
-      'export download pdf png svg image zip all pages one page import json print printable pages page pages present presentation slide deck from pages deck button hide in slides show in slides notes',
+      'export download pdf png svg image zip all pages one page import json print printable pages page pages present presentation slide deck from pages deck button hide in slides show in slides notes logo kit photo jpeg webp psd',
     category: 'Pages',
     categorySlug: 'pages',
     group: 'Basics',
@@ -1353,9 +1354,9 @@ export const articles: Article[] = [
   {
     slug: 'tab-windows',
     title: 'Tab Windows',
-    description: 'Another tab, live, fitted inside a slide or page.',
+    description: 'Another tab, live, fitted inside a page.',
     keywords:
-      'tab window windows live view embed mirror show another tab diagram on a slide reference up to date stale copy paste sync linked picture choose a tab open',
+      'tab window windows live view embed mirror show another tab on a page reference up to date stale copy paste sync linked picture choose a tab open',
     category: 'Pages',
     categorySlug: 'pages',
     group: 'Basics',
@@ -1688,7 +1689,8 @@ export const articles: Article[] = [
     slug: 'style-presets',
     title: 'Style Presets',
     description: 'One-click colour and line-style variations for shapes and arrows.',
-    keywords: 'markdown md paste article headings lists bullet formatting import text convert',
+    keywords:
+      'preset presets style styles variation variations colour color line style dashed dotted quick look one click restyle',
     category: 'Palette',
     categorySlug: 'palette/shapes',
     parentSlug: 'shapes',

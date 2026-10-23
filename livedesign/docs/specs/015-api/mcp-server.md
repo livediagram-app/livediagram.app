@@ -15,7 +15,7 @@ desktop/web, Claude Code, any MCP client) and, from inside that tool:
 1. **Find and view** the designs they already have — search by name, get back a
    link to open in the editor **and an inline image** of the design.
 2. **Create** a new design from a request — e.g. point the AI at a codebase and
-   have it write an article or a slide deck explaining it.
+   have it draw a logo for it or wireframe its screens.
 3. **Edit** an existing design — full rework of a tab, or a small adjustment.
 
 **The calling LLM does the thinking; the MCP is only the bridge.** This is the
@@ -218,7 +218,7 @@ Wraps `GET /api/designs/:id` + `GET /api/designs/:id/tabs/:tabId?view=outline`. 
 tab's [outline view](../024-agents/design-views.md), about a tenth of the element JSON, with
 the refs the edit tools take (`format: "json"` returns the elements instead), plus the deep-link
 `url`. With `image: true` it also attaches an inline **PNG** of the tab as MCP image content
-([§5](#5-visualise--inline-image-render)); without it a read costs no image tokens. So "show me my onboarding deck" → `find_designs` →
+([§5](#5-visualise--inline-image-render)); without it a read costs no image tokens. So "show me my onboarding wireframes" → `find_designs` →
 `read_design` with `image: true` renders it inline. Its structured result carries the tab's `rev`,
 which `update_design` takes back as the base of its ops ([§4.4](#44-update_design)).
 It also takes `view` (`outline`, `pages`, `layout`, `comments`, `show`, `find`), `budget` (8,000 tokens unless
@@ -265,7 +265,7 @@ canvas overrides; the model then personalises labels via `update_design`'s
 ### 4.3a `add_tab`
 
 Add a **new tab** (its own canvas) to an existing design — the motivating case:
-"add a tab with the speaker handout for this deck." Input:
+"add a tab with the tablet screens for these wireframes." Input:
 `designId`, `name`, `elements`, optional `layout` — or `template: TemplateKind`
 instead of `elements`, exactly like a `create_design` tab. Validates + lays out
 exactly like a `create_design` tab, then submits a [changeset](../024-agents/agent-changesets.md)
@@ -337,12 +337,12 @@ No input. Returns the categories plus one row per template:
 `kind` and pass it as `template` on `create_design` / `add_tab`. Deliberately
 metadata-only (no elements): the scaffold materialises server-side on create,
 so the model never has to re-emit — or accidentally mangle — a curated layout.
-The recommended flow for "make me a pitch deck"-style asks: `list_templates`
+The recommended flow for "make me a logo"-style asks: `list_templates`
 → create with `template` → `update_design` (`ops`) to fill in real content.
 
 A `template` that names no kind is refused before anything is written, offering the kinds it most likely meant first:
 those whose kind or title has a word starting with a word of it of 3 letters or more (`closestTemplateKinds`, at most
-`CLOSEST_TEMPLATES_MAX` (5)), then every kind: `Unknown template "deck". Closest: slide-deck, blank-slide-deck.
+`CLOSEST_TEMPLATES_MAX` (5)), then every kind: `Unknown template "logo". Closest: logo-design, blank-logo.
 Valid kinds: ...`. The CLI's and api's template bodies refuse with the same hint.
 
 ### 4.5a `search_icons`
@@ -454,7 +454,7 @@ wrongly:
 every closed vocabulary from `ELEMENT_FIELD_VALUES` (text size and alignment, icon position, arrow style, ends and
 heads, border style and radius, font) with its values, bold and italic, `colorPreset` with the theme's preset looks,
 `iconId` (from `search_icons`) and `note`. Before, these were discoverable only by reading a template's JSON, and
-an agent hand-placing an infographic guessed `textAlign` and `textSize: "xl"`.
+an agent hand-placing a wireframe guessed `textAlign` and `textSize: "xl"`.
 
 **Block kinds.** The format also names what the ready-made blocks hold:
 a checklist's `checklistItems`, a stat row's `stats`, a callout's `pageTitle` over its `label` body, a banner's
@@ -469,8 +469,8 @@ checked, on every element path (`freehand-points.ts`), and an ops update giving 
 `MAX_FREEHAND_POINTS`, or not number pairs) are refused naming the element. The format says that any box may carry a small `rotation`.
 
 **Found by search.** A client that searches tools by text finds a tool by its name, description and schema, and
-ranks long ones down or leaves the largest out. So `create_design` leads with what it makes (pages of infographics,
-logos and wireframes among them, and how to start one), `change_pages` says it is for those pages, and the single-`tab` alias
+ranks long ones down or leaves the largest out. So `create_design` leads with what it makes (pages of logos, wireframes
+and photos among them, and how to start one), `change_pages` says it is for those pages, and the single-`tab` alias
 is checked against the tab shape by the tool rather than repeating that shape (the whole element format) in the
 schema: the definition halved, from about 41 KB to 21 KB, the size of `update_design` and `add_tab`.
 
@@ -482,8 +482,8 @@ so a position read from a result is not sent back off by it.
 ### 4.8 `share_design`
 
 Create a shareable link so anyone with the URL can open a design without
-signing in — the verb that turns "the AI made a deck" into "the AI made a
-deck and here's a link to send the team." Wraps `POST /api/designs/<id>/share`
+signing in — the verb that turns "the AI made a logo" into "the AI made a
+logo and here's a link to send the team." Wraps `POST /api/designs/<id>/share`
 ([Share password](../013-workspace/share-password.md)): `{ designId, role?, expiry? }` → the public URL
 (`/design/shared?s=<code>`), the granted role, and the expiry. `role` is
 `view`, `participate` or `edit` ([Share roles](../013-workspace/share-roles.md)) and defaults to
@@ -540,7 +540,7 @@ Pages are named by id, place (`2`) or name. The tool goes through one api route
 `packages/agent-verbs/src/pages/`) and the editor's own page edits, and reach open editors at once.
 
 - **`change_pages`** (destructive, as it deletes and replaces page content): up to 50 page changes in order,
-  `add` `{ kind, size, orientation, name, background, layout, at }` (infographic, logo or wireframe), `set`
+  `add` `{ kind, size, orientation, name, background, layout, at }` (logo, wireframe or photo), `set`
   `{ page, name, size, orientation, background, locked }`, `layout` `{ page, layout }`, `move` `{ page, to }`,
   `duplicate` `{ page }`, `delete` `{ page }` and `apply_background_to_all` `{ page }` (every other page of its kind
   takes its background), written as one edit; a refusal writes nothing and names the
@@ -629,10 +629,10 @@ which is how the gap was found.
 Three behaviours cover the fifteen tools, and each is a preset in
 `apps/mcp/src/tool-annotations.ts`:
 
-| Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                            |
-| --------------- | -------------- | ----------------- | ------------------------------------------------------------------------------------------------ |
+| Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                        |
+| --------------- | -------------- | ----------------- | -------------------------------------------------------------------------------------------- |
 | **read**        | `true`         | (not applicable)  | `find_designs`, `read_design`, `list_templates`, `search_icons`, `list_trash`, `list_images` |
-| **write**       | `false`        | `false`           | `create_design`, `add_tab`, `share_design`, `rename_design`, `restore_design`            |
+| **write**       | `false`        | `false`           | `create_design`, `add_tab`, `share_design`, `rename_design`, `restore_design`                |
 | **destructive** | `false`        | `true`            | `update_design`, `delete_design`, `change_pages`                                             |
 
 The split mirrors §4.11's read-only-token boundary exactly (what a
@@ -719,18 +719,18 @@ code or status: a design in the Trash, a view-only grant, an id that names nothi
 (a tab id the design lacks names its tabs); only a 5xx or a network failure throws. A deleted tab's refusal
 says why by its status (no such tab, view only, the last tab).
 
-| Tool               | Result object                                                                                             |
-| ------------------ | --------------------------------------------------------------------------------------------------------- |
-| `find_designs`   | `count`, `designs[]` of `{ id, name, updatedAt, library, url }`                                         |
+| Tool             | Result object                                                                                             |
+| ---------------- | --------------------------------------------------------------------------------------------------------- |
+| `find_designs`   | `count`, `designs[]` of `{ id, name, updatedAt, library, url }`                                           |
 | `read_design`    | `id`, `name`, `tab { id, name, rev, ... }`, `tabs[]` of `{ id, name }` (every tab, in order), `url`       |
-| `list_templates`   | `categories[]` of `{ id, label, description }`, `templates[]` of `{ kind, title, description, category }` |
-| `create_design`  | `id` and `designId` (the same), `name`, `tabCount`, `tabIds[]`, `folder`, `url`                         |
-| `add_tab`          | `designId`, `tabId`, `name`, `url`, `note` when a template has more tabs than it added                  |
-| `update_design`  | `id` and `designId` (the same), `tabId`, `url`                                                          |
-| `share_design`   | `url`, `role`, `expiresAt` (ms epoch, or null for never), `designUrl`                                   |
-| `rename_design`  | `renamed` (`design` or `tab`), `name`, then `id` + `url` for a design or `tabId` for a tab            |
-| `delete_design`  | `deleted` (`design` or `tab`), `designId`, then `trashed` + `restorableForDays` or `tabId`            |
-| `list_trash`       | `trash[]` of `{ id, name, library, reason, deletedAt, purgeAt }` (ISO timestamps)                         |
+| `list_templates` | `categories[]` of `{ id, label, description }`, `templates[]` of `{ kind, title, description, category }` |
+| `create_design`  | `id` and `designId` (the same), `name`, `tabCount`, `tabIds[]`, `folder`, `url`                           |
+| `add_tab`        | `designId`, `tabId`, `name`, `url`, `note` when a template has more tabs than it added                    |
+| `update_design`  | `id` and `designId` (the same), `tabId`, `url`                                                            |
+| `share_design`   | `url`, `role`, `expiresAt` (ms epoch, or null for never), `designUrl`                                     |
+| `rename_design`  | `renamed` (`design` or `tab`), `name`, then `id` + `url` for a design or `tabId` for a tab                |
+| `delete_design`  | `deleted` (`design` or `tab`), `designId`, then `trashed` + `restorableForDays` or `tabId`                |
+| `list_trash`     | `trash[]` of `{ id, name, library, reason, deletedAt, purgeAt }` (ISO timestamps)                         |
 | `restore_design` | `restored`, `id`, `name` (null when the api omits it), `url`                                              |
 
 **The schema and the result can't drift.** Each tool is a verb in the shared catalogue

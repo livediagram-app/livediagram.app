@@ -1,6 +1,6 @@
-// The logo page card art (the Infographics section): a square artboard with its construction
+// The logo page card art (the Logos & wireframes section): a square artboard with its construction
 // guides, a mark drawn with Mirror on, a wordmark under it, and the Logo Kit it exports. Same
-// vocabulary as ./infographics (page-kit's paper and panel, the fa-e-* loops in
+// vocabulary as ./pages (page-kit's paper and panel, the fa-e-* loops in
 // app/feature-art/pages.css); under reduced motion it shows the finished mark.
 
 import type { CSSProperties } from 'react';

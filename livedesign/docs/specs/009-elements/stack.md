@@ -8,7 +8,7 @@ between two others and the rest reflow, so a row of cards never needs nudging in
 
 ## Why
 
-Most pages have a row or grid of like things: four features on a slide, six people on a team page, a column of steps.
+Most pages have a row or grid of like things: four features on a screen, six people on a team page, a column of steps.
 Placing them evenly by hand is fiddly, and the first edit (a longer label, one more card) undoes it. Alignment guides
 help once; a stack keeps the arrangement as the content changes.
 

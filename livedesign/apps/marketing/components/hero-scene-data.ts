@@ -8,7 +8,7 @@
 
 import type { TabDef } from './hero-editor-window';
 
-export type HeroSceneKey = 'slides' | 'logo' | 'together';
+export type HeroSceneKey = 'logo' | 'photo' | 'present' | 'together';
 
 export type HeroSceneData = {
   key: HeroSceneKey;
@@ -23,12 +23,6 @@ export type HeroSceneData = {
 
 export const HERO_SCENE_DATA: HeroSceneData[] = [
   {
-    key: 'slides',
-    title: 'Board update',
-    tabs: [{ name: 'Deck', color: '#0284c7', active: true }],
-    shared: true,
-  },
-  {
     key: 'logo',
     title: 'Bloom brand',
     tabs: [
@@ -38,11 +32,29 @@ export const HERO_SCENE_DATA: HeroSceneData[] = [
     shared: true,
   },
   {
+    key: 'photo',
+    title: 'Bloom brand',
+    tabs: [
+      { name: 'Photos', color: '#f59e0b', active: true },
+      { name: 'Logo', color: '#0ea5e9' },
+    ],
+    shared: true,
+  },
+  {
+    key: 'present',
+    title: 'Bloom launch',
+    tabs: [
+      { name: 'Website', color: '#0284c7', active: true },
+      { name: 'Logo', color: '#0ea5e9' },
+    ],
+    shared: true,
+  },
+  {
     key: 'together',
     title: 'Spring launch',
     tabs: [
-      { name: 'Brief', color: '#d97706', active: true },
-      { name: 'Deck', color: '#0284c7' },
+      { name: 'App screens', color: '#10b981', active: true },
+      { name: 'Logo', color: '#0ea5e9' },
     ],
     shared: true,
   },

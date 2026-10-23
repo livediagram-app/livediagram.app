@@ -69,7 +69,7 @@ element leaves unset, plus how a line is drawn (Sketch, Marker).
 - **Lettering:** an element without its own font, on a tab without one, is written in the handwriting font
   (Caveat). A font picked on the element or the tab wins, so a typeface picked in Tab Style shows on a Sketch tab.
   Sketch picked on the element itself is more specific than the tab's font: that element is written by hand even
-  on a tab with a typeface (Style → Finish on one heading of a Boardroom slide); its own font still wins. A code block keeps its monospace font.
+  on a tab with a typeface (Style → Finish on one heading of a Boardroom page); its own font still wins. A code block keeps its monospace font.
   The face covers every word on the element, not only its label: a face that writes its own (a progress value, a
   panel's rows, a button) is lettered in it too, on the canvas and in exports. The same holds for a tab's
   font and Professional's Inter.

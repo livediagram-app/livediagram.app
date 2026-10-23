@@ -9,8 +9,8 @@ design, held apart from editing. The research behind this is in `docs/research/a
 
 ## Why
 
-Someone gathering feedback on a deck or an infographic has to hand the team an edit link so they can comment, drop
-a sticky beside a slide and fix a typo. An edit link also lets them restyle the pages, move the layout around and
+Someone gathering feedback on a logo or a set of wireframes has to hand the team an edit link so they can comment, drop
+a sticky beside a page and fix a typo. An edit link also lets them restyle the pages, move the layout around and
 delete what others made, and in a busy review somebody does. A view link is no answer either: it cannot comment or
 add a sticky. The Participant level is the middle: take part in the design, never reshape it.
 
@@ -32,14 +32,14 @@ add a sticky. The Participant level is the middle: take part in the design, neve
 
 A Participant changes the design's **content**, never its **shape**.
 
-| May                                                                                                 | Never                                                                                                                                                 |
-| --------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Add a sticky, a text element or an image                                                            | Add any other element: shapes, connectors, frames, templates, kits, page layouts                                                                      |
-| Write on any element: change its text (a sticky's, a shape's label, a table's cells)                | Change any other field of an element it did not add: size, style, rotation, layer, lock                                                               |
-| Move and resize any sticky or image; recolour any sticky; swap any image's picture                  | Move, resize or restyle anything else, text boxes included; turn (rotate) anything someone else added                                                 |
-| Delete anything it added itself                                                                     | Delete anything someone else added                                                                                                                    |
-| Change anything about what it added (size, style, text), so long as it stays something it could add | Reorder layers; group; lock                                                                                                                           |
-| Undo and redo its own changes (the room puts back any part it may not make)                         | Undo or redo anyone else's                                                                                                                            |
+| May                                                                                                 | Never                                                                                                                                               |
+| --------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Add a sticky, a text element or an image                                                            | Add any other element: shapes, connectors, frames, templates, kits, page layouts                                                                    |
+| Write on any element: change its text (a sticky's, a shape's label, a table's cells)                | Change any other field of an element it did not add: size, style, rotation, layer, lock                                                             |
+| Move and resize any sticky or image; recolour any sticky; swap any image's picture                  | Move, resize or restyle anything else, text boxes included; turn (rotate) anything someone else added                                               |
+| Delete anything it added itself                                                                     | Delete anything someone else added                                                                                                                  |
+| Change anything about what it added (size, style, text), so long as it stays something it could add | Reorder layers; group; lock                                                                                                                         |
+| Undo and redo its own changes (the room puts back any part it may not make)                         | Undo or redo anyone else's                                                                                                                          |
 | Nothing about tabs or pages                                                                         | Add, rename, reorder or delete tabs or pages; change a tab's theme, canvas or finish; change a page's size, background or layout; rename the design |
 
 - **"It added"** means the server recorded the Participant as the element's adder when the element was created.

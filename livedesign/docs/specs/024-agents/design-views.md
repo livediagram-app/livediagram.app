@@ -28,15 +28,15 @@ Views are what an agent reads by default; JSON is what it asks for. The measurem
 One line per element: its kind, ref, label, attributes, then its outgoing arrows. Indentation is containment.
 
 ```text
-tab 0b34 "Board update" · 24 elements: 9 boxes, 3 frames, 4 arrows · 3 pages: 3 slide (view pages) · threads 1 open/2 · rev 41
-frame 048c "Slide 1"
-  text b811 "Q3 board update"
-  image 649c "Team photo"
-frame c991 "Slide 2"
+tab 0b34 "Checkout" · 24 elements: 9 boxes, 3 frames, 4 arrows · 3 pages: 3 wireframe (view pages) · threads 1 open/2 · rev 41
+frame 048c "Cart"
+  text b811 "Your cart"
+  image 649c "Product photo"
+frame c991 "Payment"
   square 146b "Revenue" icon=chart → e4a8
   square e4a8 "Margin" comments=1 resolved
   table 480a 4x3 Region | Q2 | Q3
-frame d41e "Slide 3"
+frame d41e "Done"
   sticky 0c84 "Check the churn figure before Friday" comments=2 open
 ```
 
@@ -65,7 +65,7 @@ The example is abridged; a real outline prints every element.
 
 | View           | Answers                         | Holds                                                                                                                                                          |
 | -------------- | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `overview`     | What is in this design?       | Its tabs, their sizes, open threads, last edit; no elements                                                                                                    |
+| `overview`     | What is in this design?         | Its tabs, their sizes, open threads, last edit; no elements                                                                                                    |
 | `outline`      | What does this tab mean?        | As above                                                                                                                                                       |
 | `graph`        | What connects to what?          | Nodes (ref, kind, label) and arrows (ref, from, to, label), nothing else                                                                                       |
 | `layout`       | Where do things sit?            | Rounded geometry per element from the content origin (the header names the origin when it is not 0,0: stored = shown + origin), or `--coarse` rows and columns |

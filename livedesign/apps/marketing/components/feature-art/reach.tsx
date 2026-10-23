@@ -1,6 +1,6 @@
 // Feature illustrations for getting around and getting it out: the search panel that doubles as a
 // command palette, following a teammate's view, and a design shown live somewhere else (an embed
-// or a live image in a README). Panels use the editor's floating chrome; diagrams the Default ink.
+// or a live image in a README). Panels use the editor's floating chrome; shapes the Default ink.
 
 import type { CSSProperties } from 'react';
 
@@ -20,13 +20,13 @@ import {
 } from './canvas-marks';
 import { Cursor, Frame, MONO } from './shared';
 
-// The search panel: "lay" typed after ⌘K, a matching tab and element above, then the Actions group
-// with Auto Layout and the Laser Pointer tool, the first action highlighted to run on Enter.
+// The search panel: "logo" typed after ⌘K, a matching tab above, then the Actions group with the
+// Logo Kit export and the Laser Pointer tool, the first action highlighted to run on Enter.
 export function SearchPaletteArt() {
   const rows = [
-    { group: 'Tabs', label: 'Layout ideas', hint: 'Tab' },
-    { group: 'Actions', label: 'Auto Layout', hint: '↵', active: true },
-    { group: '', label: 'Auto-align to Grid', hint: '' },
+    { group: 'Tabs', label: 'Logo ideas', hint: 'Tab' },
+    { group: 'Actions', label: 'Logo Kit', hint: '↵', active: true },
+    { group: '', label: 'Logo Layouts', hint: '' },
     { group: '', label: 'Laser Pointer', hint: 'Tool' },
   ];
   return (
@@ -39,9 +39,9 @@ export function SearchPaletteArt() {
         <circle className="stroke-slate-400" cx="66" cy="18" r="3.2" fill="none" strokeWidth="1" />
         <path className="stroke-slate-400" d="M68.4 20.4 l2.4 2.4" strokeWidth="1" />
         <text className={TEXT_STRONG} x="76" y="20.4" fontSize="7">
-          lay
+          logo
         </text>
-        <Caret x={88} y={13} h={9} />
+        <Caret x={92} y={13} h={9} />
         <rect
           className="fill-slate-100 dark:fill-slate-800"
           x="216"
@@ -169,7 +169,7 @@ export function FollowAlongArt() {
 }
 
 // A live image in a README: the Markdown pasted on the left, and the rendered page on the right
-// showing the diagram as it is now, a fresh box arriving after the latest save.
+// showing the design as it is now, a fresh box arriving after the latest save.
 export function LiveImageArt() {
   return (
     <Frame>
@@ -186,7 +186,7 @@ export function LiveImageArt() {
           ## Architecture
         </text>
         <text className={TEXT_BODY} x="18" y="53" fontSize="5.6" fontFamily={MONO}>
-          ![diagram](https://
+          ![logo](https://
         </text>
         <text className={TEXT_BODY} x="18" y="62" fontSize="5.6" fontFamily={MONO}>
           livedesign.app/…/live.svg)

@@ -35,8 +35,8 @@ Activating a tab/element/design link is a navigation action; a `url` link opens 
 
 ### Use cases
 
-- **Drill-down.** A summary slide's "Results" box links to the tab holding the full report — clicking it dives into detail.
-- **Cross-references.** A step in an infographic links to the article page that explains it, without duplicating the content.
+- **Drill-down.** A wireframe screen's "Checkout" button links to the tab holding that flow's screens — clicking it dives into detail.
+- **Cross-references.** A logo page's mark links to the photo page it was traced from, without duplicating the content.
 
 ## Data model
 

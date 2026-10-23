@@ -19,7 +19,7 @@ const COMPETITORS = new Intl.ListFormat('en-GB', { type: 'conjunction' }).format
 export const metadata = pageMetadata({
   title: 'How livedesign compares · alternatives',
   description:
-    'An honest, side-by-side comparison of livedesign with Google Slides, including where each is the better pick.',
+    'An honest, side-by-side comparison of livedesign with Figma, including where each is the better pick.',
   path: '/alternatives',
   modifiedTime: ALTERNATIVES_LAST_UPDATED,
 });

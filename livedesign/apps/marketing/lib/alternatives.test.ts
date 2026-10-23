@@ -144,8 +144,8 @@ describe('getAlternative', () => {
 
   it('is case-sensitive (matches the URL-safe lowercase slug)', () => {
     // generateStaticParams emits the exact lowercase slug; a
-    // case-insensitive lookup would let /alternatives/GOOGLE-SLIDES render
-    // the Google Slides page as a non-canonical URL.
+    // case-insensitive lookup would let /alternatives/FIGMA render
+    // the Figma page as a non-canonical URL.
     const first = ALTERNATIVES[0]!;
     expect(getAlternative(first.slug.toUpperCase())).toBeUndefined();
   });

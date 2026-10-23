@@ -17,6 +17,10 @@ import {
   PagesArt,
   PagesBackgroundsArt,
   PagesExportArt,
+  PhotoAdjustArt,
+  PhotoLayersArt,
+  PhotoPsdArt,
+  PhotoRetouchArt,
   PresenceArt,
   PresentLocallyArt,
   PresenterNotesArt,
@@ -44,7 +48,7 @@ import type { FeatureProps } from '@/components/Section';
  */
 export type LandingSection = {
   id: string;
-  /** The plain name of the feature, shown beside the beat's number (e.g. "Slide decks"). */
+  /** The plain name of the feature, shown beside the beat's number (e.g. "Photo editing"). */
   label: string;
   /** The headline: the beat's title on the landing page and the category page's h1. */
   title: string;
@@ -53,7 +57,7 @@ export type LandingSection = {
   metaDescription: string;
   /**
    * The label for the beat's link into its category page. Hand written rather
-   * than derived from the title, and kept short and verb-led, e.g. "Explore slide decks".
+   * than derived from the title, and kept short and verb-led, e.g. "Explore photo editing".
    */
   cta: string;
   /** The scene that plays beside the beat and on the category page (components/hero-scene-data.ts). */
@@ -64,86 +68,12 @@ export type LandingSection = {
 };
 
 /**
- * The feature categories, in the order the landing page tells them: presenting the pages as a deck,
- * the kinds of page a design is made of (logos and wireframes), then working on them together. `page.tsx` renders one beat per entry and alternates its background by index;
- * `/features/<id>` renders each one's cards.
+ * The feature categories, in the order the landing page tells them: the kinds of page a design is made
+ * of (logos and wireframes, then photos), presenting them, then working on them together. `page.tsx`
+ * renders one beat per entry and alternates its background by index; `/features/<id>` renders each
+ * one's cards.
  */
 export const LANDING_SECTIONS: LandingSection[] = [
-  {
-    id: 'slides',
-    label: 'Slide decks',
-    scene: 'slides',
-    cta: 'Explore slide decks',
-    title: 'Build the deck, then present it',
-    description:
-      'Every page you design joins the deck, then present it full screen on your screen alone, your notes behind a button, with a laser and a spotlight to point the room at what you mean.',
-    metaDescription:
-      'Slide decks from your pages, presented full screen with private notes, a timer, a laser pointer and a spotlight.',
-    highlights: [
-      'One deck across every tab',
-      'Notes only you open',
-      'Laser pointer for presenting',
-      'Your screen, not everyone else’s',
-    ],
-    items: [
-      {
-        art: <FullScreenSlideArt />,
-        href: '/help/selection-modes/slide-deck/building-a-deck/',
-        group: 'Build',
-        title: 'One deck across every tab',
-        description:
-          'Any page can be a slide: a logo, a wireframe, a blank page. Order them in the Slide Deck panel: drag to rearrange, rename, duplicate, or hide a slide you might want next week without deleting it. The deck is saved with the design, so a teammate opens it and sees the same talk.',
-      },
-      {
-        art: <PresenterNotesArt />,
-        href: '/help/selection-modes/slide-deck/presenting/',
-        group: 'Present',
-        title: 'Notes only you open',
-        description:
-          'Write what you mean to say over each slide. During the presentation they sit behind a button in the corner, so nothing about your script is on screen until you ask for it.',
-      },
-      {
-        art: <SlideTimingArt />,
-        href: '/help/selection-modes/slide-deck/presenter-controls/',
-        group: 'Present',
-        title: 'Keep the talk on time',
-        description:
-          'Give each slide a few minutes when you build the deck. While you present, an elapsed clock counts up and the slide’s budget turns amber when you run over, on your screen only. Both are off until you want them, and running over never moves the deck on for you.',
-      },
-      {
-        art: <PresentLocallyArt />,
-        href: '/help/selection-modes/slide-deck/presenting/',
-        group: 'Present',
-        title: 'Your screen, not everyone else’s',
-        description:
-          'Presenting shows the deck on your screen and nowhere else. Nobody is dragged into your slide, nobody’s view moves, and collaborators with the design open carry on working. You share your screen the way you already do. Nothing on a slide can be changed by a stray click, so a projector is safe. To leave a deck running on a screen, set it to advance every 5 to 60 seconds and loop back to the start.',
-      },
-      {
-        art: <LaserArt />,
-        href: '/help/selection-modes/laser/',
-        group: 'Point the room',
-        title: 'Laser pointer for presenting',
-        description:
-          'Switch to the laser and your cursor leaves a glowing trail everyone can see. Point at the thing you mean while you talk it through. Trails fade on their own.',
-      },
-      {
-        art: <SpotlightArt />,
-        href: '/help/selection-modes/spotlight/',
-        group: 'Point the room',
-        title: 'Spotlight one thing at a time',
-        description:
-          'Switch on Spotlight and the page dims under a soft shroud, with only a circle of light around your cursor. Walk the room through a busy slide one piece at a time. Left-click grows the light, right-click shrinks it, and it is a local view aid, so it never gets in a viewer’s way.',
-      },
-      {
-        art: <ZenModeArt />,
-        href: '/help/tools/zen-mode/',
-        group: 'Point the room',
-        title: 'Zen mode for focus',
-        description:
-          'Press Z and every toolbar, panel and tab bar drops away, leaving just your pages. Only the zoom controls stay, with an exit button right beside them. Press Z or Esc to bring it all back.',
-      },
-    ],
-  },
   {
     id: 'logos',
     label: 'Logos & wireframes',
@@ -191,7 +121,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Pages',
         title: 'A page for each logo and screen',
         description:
-          'A square artboard for a logo; a phone, tablet, laptop, browser or watch for a screen. Each page is its own size, and everything on it moves with it.',
+          'A square artboard for a logo; a phone, tablet, laptop, browser or watch for a screen; a photo the size of its picture. Each page is its own size, and everything on it moves with it.',
       },
       {
         art: <ContentsSidebarArt />,
@@ -199,7 +129,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Pages',
         title: 'Every page in the Contents',
         description:
-          'A Contents sidebar lists every page with a picture of it, its number and its name, and highlights the one you are reading. Press a row to glide there, or type to find a page by its name or any words on it.',
+          'A Contents sidebar lists every page with a picture of it, its number and its name, and highlights the one you are on. Press a row to glide there, or type to find a page by its name or any words on it.',
       },
       {
         art: <PagesBackgroundsArt />,
@@ -223,7 +153,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Pages',
         title: 'Every page, print-ready',
         description:
-          'Export every page as one PDF at true print size, or one page as a PNG or SVG. Add pages to a slide deck and present them full screen, one page at a time.',
+          'Export every page as one PDF at true print size, or one page as a PNG or SVG, and keep any tab as a livedesign JSON file. Then present them full screen, one page at a time.',
       },
       {
         art: <ThemesArt />,
@@ -248,6 +178,132 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Fonts for every voice',
         description:
           'Set the typeface per element or as a default for the tab, from Google Fonts spanning sans, serif, slab, display, mono and handwriting.',
+      },
+    ],
+  },
+  {
+    id: 'photos',
+    label: 'Photo editing',
+    scene: 'photo',
+    cta: 'Explore photo editing',
+    title: 'Edit the photos in layers',
+    description:
+      'A photo page is a picture to edit in layers, with masks, blend modes, adjustments and filters, the tools to select, paint and retouch, and PSD files in and out.',
+    metaDescription:
+      'Edit photos in layers with masks, blend modes, adjustments, 44 filters and retouching tools, then export PNG, JPEG, WebP or PSD.',
+    highlights: [
+      'Edit a photo in layers',
+      'Adjustments and filters',
+      'Select, paint and retouch',
+      'Open and save PSD files',
+    ],
+    items: [
+      {
+        art: <PhotoLayersArt />,
+        href: '/help/pages/photo-pages/',
+        group: 'Layers',
+        title: 'Edit a photo in layers',
+        description:
+          'Open a picture on a photo page, or start a blank one, and build it up in layers: pixel, text and adjustment layers, each with its own mask, opacity and one of twenty-seven blend modes. Group them, clip one to the layer below, lock or hide any of them.',
+      },
+      {
+        art: <PhotoAdjustArt />,
+        href: '/help/pages/photo-pages/',
+        group: 'Layers',
+        title: 'Adjustments and filters',
+        description:
+          'Sixteen adjustments, from Levels and Curves to Hue/Saturation and Black & White, sit on their own layers so you can change them later. Forty-four filters, from Gaussian Blur and Unsharp Mask to Oil Paint and Lens Flare, preview live before you apply them.',
+      },
+      {
+        art: <PhotoRetouchArt />,
+        href: '/help/pages/photo-pages/',
+        group: 'Tools',
+        title: 'Select, paint and retouch',
+        description:
+          'Select with a marquee, a lasso, the Magic Wand or Quick Select, or let Subject find the main thing in the picture and Remove Background cut it out. Paint with brushes and gradients, and heal, clone, dodge and burn away what should not be there.',
+      },
+      {
+        art: <PhotoPsdArt />,
+        href: '/help/pages/photo-pages/',
+        group: 'Tools',
+        title: 'Open and save PSD files',
+        description:
+          'Drop a PSD onto a photo page and its layers come in with their names, opacity, blend modes and masks. Export the photo as a PNG, a JPEG, a WebP, or a PSD with its layers kept.',
+      },
+    ],
+  },
+  {
+    id: 'present',
+    label: 'Present',
+    scene: 'present',
+    cta: 'Explore presenting',
+    title: 'Present the design, page by page',
+    description:
+      'Step through the logo, the screens and the photos full screen on your screen alone, your notes behind a button, with a laser and a spotlight to point the room at what you mean.',
+    metaDescription:
+      'Present a design page by page, full screen, with private notes, a timer, a laser pointer and a spotlight.',
+    highlights: [
+      'Every page, in your order',
+      'Notes only you open',
+      'Laser pointer for presenting',
+      'Your screen, not everyone else’s',
+    ],
+    items: [
+      {
+        art: <FullScreenSlideArt />,
+        href: '/help/selection-modes/slide-deck/building-a-deck/',
+        group: 'Prepare',
+        title: 'Every page, in your order',
+        description:
+          'Every page of every tab presents: a logo, a wireframe, a photo. Order them in the Slide Deck panel: drag to rearrange, rename, or hide a page you might want next week without deleting it. The order is saved with the design, so a teammate opens it and sees the same walkthrough.',
+      },
+      {
+        art: <PresenterNotesArt />,
+        href: '/help/selection-modes/slide-deck/presenting/',
+        group: 'Present',
+        title: 'Notes only you open',
+        description:
+          'Write what you mean to say over each page. While you present they sit behind a button in the corner, so nothing about your script is on screen until you ask for it.',
+      },
+      {
+        art: <SlideTimingArt />,
+        href: '/help/selection-modes/slide-deck/presenter-controls/',
+        group: 'Present',
+        title: 'Keep the talk on time',
+        description:
+          'Give each page a few minutes before you present. While you talk, an elapsed clock counts up and the page’s budget turns amber when you run over, on your screen only. Both are off until you want them, and running over never moves you on to the next page.',
+      },
+      {
+        art: <PresentLocallyArt />,
+        href: '/help/selection-modes/slide-deck/presenting/',
+        group: 'Present',
+        title: 'Your screen, not everyone else’s',
+        description:
+          'Presenting shows the design on your screen and nowhere else. Nobody is dragged along, nobody’s view moves, and collaborators with the design open carry on working. You share your screen the way you already do. Nothing on a page can be changed by a stray click, so a projector is safe. To leave a design running on a screen, set it to advance every 5 to 60 seconds and loop back to the start.',
+      },
+      {
+        art: <LaserArt />,
+        href: '/help/selection-modes/laser/',
+        group: 'Point the room',
+        title: 'Laser pointer for presenting',
+        description:
+          'Switch to the laser and your cursor leaves a glowing trail everyone can see. Point at the thing you mean while you talk it through. Trails fade on their own.',
+      },
+      {
+        art: <SpotlightArt />,
+        href: '/help/selection-modes/spotlight/',
+        group: 'Point the room',
+        title: 'Spotlight one thing at a time',
+        description:
+          'Switch on Spotlight and the page dims under a soft shroud, with only a circle of light around your cursor. Walk the room through a busy screen one piece at a time. Left-click grows the light, right-click shrinks it, and it is a local view aid, so it never gets in a viewer’s way.',
+      },
+      {
+        art: <ZenModeArt />,
+        href: '/help/tools/zen-mode/',
+        group: 'Point the room',
+        title: 'Zen mode for focus',
+        description:
+          'Press Z and every toolbar, panel and tab bar drops away, leaving just your pages. Only the zoom controls stay, with an exit button right beside them. Press Z or Esc to bring it all back.',
       },
     ],
   },

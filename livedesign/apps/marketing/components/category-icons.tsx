@@ -18,20 +18,28 @@ const glyph =
   );
 
 export const CATEGORY_ICONS: Record<string, Icon> = {
-  // Slide decks: a slide on its stand, a play mark on it.
-  slides: glyph(
-    <>
-      <rect x="1.5" y="2.5" width="13" height="8.5" rx="1" />
-      <path d="M7 5l3 1.75L7 8.5z" />
-      <path d="M8 11v2.5M5.5 14h5" />
-    </>,
-  ),
   // Logos and wireframes: a square artboard with a mark on its keyline circle.
   logos: glyph(
     <>
       <rect x="1.5" y="1.5" width="13" height="13" rx="1.5" />
       <circle cx="8" cy="8" r="3.5" />
       <path d="M8 4.5v7" />
+    </>,
+  ),
+  // Photo editing: a picture, a sun over a hill.
+  photos: glyph(
+    <>
+      <rect x="1.5" y="2.5" width="13" height="11" rx="1.5" />
+      <circle cx="10.5" cy="6" r="1.5" />
+      <path d="M1.5 11.5l4-4 3.5 3.5 2-2 3.5 3.5" />
+    </>,
+  ),
+  // Presenting: a screen on its stand, a play mark on it.
+  present: glyph(
+    <>
+      <rect x="1.5" y="2.5" width="13" height="8.5" rx="1" />
+      <path d="M7 5l3 1.75L7 8.5z" />
+      <path d="M8 11v2.5M5.5 14h5" />
     </>,
   ),
   // Collaboration: two people.

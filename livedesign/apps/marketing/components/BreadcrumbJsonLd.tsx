@@ -1,7 +1,7 @@
 // Renders a schema.org BreadcrumbList <script type="application/ld+json">
 // for a subpage. The leading "Home" item is added automatically; callers
 // supply the rest of the trail. Most pages are two-level (Home > Page) and
-// pass `name`/`path`; deeper pages (e.g. Home > Alternatives > Google Slides) pass a
+// pass `name`/`path`; deeper pages (e.g. Home > Alternatives > Figma) pass a
 // `trail` array. Kept in one place so callers can't drift apart on subtle
 // things like trailing slashes or @id formats, which Google's structured-data
 // validator is strict about. The BreadcrumbList shape itself comes from the

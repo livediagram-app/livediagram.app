@@ -6,7 +6,7 @@ editor's toolbars and panels follow the person to whichever side they work in.
 
 ## Why
 
-Tabs hold related work: the deck and its handout, the article and its infographic, the draft and
+Tabs hold related work: the logo and its wireframes, the photo and the banner made from it, the draft and
 the reference. Comparing two tabs today means flicking between them and
 holding one in your head. Side by side puts both on screen, with the gesture people already know
 from browsers and code editors: drag the tab to where you want it.

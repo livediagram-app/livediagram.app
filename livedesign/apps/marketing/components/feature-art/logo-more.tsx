@@ -1,5 +1,5 @@
 // The Logos section's other card art: the logo layouts a page starts from, and wireframe pages.
-// Same vocabulary as ./logo and ./infographics (page-kit's paper, the fa-e-* loops in
+// Same vocabulary as ./logo and ./pages (page-kit's paper, the fa-e-* loops in
 // app/feature-art/pages.css); under reduced motion each shows its finished frame.
 
 import type { CSSProperties } from 'react';

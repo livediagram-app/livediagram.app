@@ -60,7 +60,7 @@ Categories fall into two kinds. The **support** categories carry standalone arti
 
 The feature categories group the feature guides by area. **Pages is the first**: it is what livedesign is for.
 
-- **Pages** — the pages a design is made of, in two groups: **Basics** (Working with Pages, exporting pages, the Pages tour) and **Kinds of Page** (logo pages and wireframe pages).
+- **Pages** — the pages a design is made of, in two groups: **Basics** (Working with Pages, exporting and presenting pages, the Pages tour, tab windows) and **Kinds of Page** (logo pages, wireframe pages and photo pages).
 - **User Interface** — the panels, toolbar, context menus, the Map, zoom and tab bars, quick controls and power user mode.
 - **Explorer** — the design library: The Explorer overview, Home (the Timeline), Recent, Shared With Me, My Work and folders, Team Spaces, Image Gallery, and Saved Themes, one guide per sidebar row.
 - **Selection Modes** — one guide per tool-picker mode: Select, Hand, Format Painter, Laser, Spotlight, Isometric.

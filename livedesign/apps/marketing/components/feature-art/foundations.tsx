@@ -1,5 +1,5 @@
 // Feature illustrations for livedesign's open edges: the REST API from your own scripts, an AI
-// tool building a diagram over MCP, and export that is a faithful picture of the canvas. Same
+// tool building a screen flow over MCP, and export that is a faithful picture of the canvas. Same
 // vocabulary as ./features (panel chrome with a light and a dark half, the Default canvas, the
 // fa-b-* loops); under reduced motion each shows its finished state.
 //
@@ -71,7 +71,7 @@ export function ApiArt() {
             <tspan fill={TERM.dim}>[{'{'} </tspan>
             <tspan fill={TERM.key}>&quot;title&quot;</tspan>
             <tspan fill={TERM.dim}>: </tspan>
-            <tspan fill={TERM.string}>&quot;Auth flow&quot;</tspan>
+            <tspan fill={TERM.string}>&quot;Bloom brand&quot;</tspan>
             <tspan fill={TERM.dim}>, </tspan>
             <tspan fill={TERM.key}>&quot;tabs&quot;</tspan>
             <tspan fill={TERM.dim}>: </tspan>
@@ -82,7 +82,7 @@ export function ApiArt() {
             <tspan fill={TERM.dim}>{'{'} </tspan>
             <tspan fill={TERM.key}>&quot;title&quot;</tspan>
             <tspan fill={TERM.dim}>: </tspan>
-            <tspan fill={TERM.string}>&quot;Q3 roadmap&quot;</tspan>
+            <tspan fill={TERM.string}>&quot;App screens&quot;</tspan>
             <tspan fill={TERM.dim}>, </tspan>
             <tspan fill={TERM.key}>&quot;tabs&quot;</tspan>
             <tspan fill={TERM.dim}>: </tspan>
@@ -107,7 +107,7 @@ function Sparkle({ x, y, r = 4 }: { x: number; y: number; r?: number }) {
   );
 }
 
-/** MCP: you ask your AI tool for a diagram; it calls livedesign and the diagram appears. */
+/** MCP: you ask your AI tool for a screen flow; it calls livedesign and the wireframes appear. */
 export function McpArt() {
   return (
     <Frame>
@@ -132,7 +132,7 @@ export function McpArt() {
         {/* You ask. */}
         <rect x="74" y="32" width="80" height="14" rx="7" fill={SKY} />
         <text x="114" y="41.2" textAnchor="middle" fontSize="6" fontWeight="600" fill="#fff">
-          Draw our login flow
+          Wireframe our sign in
         </text>
 
         {/* The tool call, running then done. */}
@@ -190,11 +190,11 @@ export function McpArt() {
         </g>
 
         {/* What lands in livedesign. */}
-        <MiniWindow x={176} y={8} w={112} h={80} title="Login flow">
+        <MiniWindow x={176} y={8} w={112} h={80} title="Sign-in flow">
           <g className="fa-b-late">
             <Node x={190} y={30} w={36} h={16} label="Sign in" r={8} />
             <Node x={240} y={30} w={36} h={16} label="Verify" />
-            <Node x={240} y={62} w={36} h={16} label="Session" />
+            <Node x={240} y={62} w={36} h={16} label="Home" />
             <Node x={190} y={62} w={36} h={16} label="Retry" />
             <Arrow d="M226 38 H234" head={[239, 38, 0]} />
             <Arrow d="M258 46 V56" head={[258, 61, 90]} />

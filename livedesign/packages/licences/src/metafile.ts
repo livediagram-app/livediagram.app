@@ -22,7 +22,10 @@ export function decodeMetafile(meta: unknown, appDir: string): string[] {
   for (const key of Object.keys(inputs)) {
     if (VIRTUAL_INPUT.test(key)) continue;
     const rel = posix.normalize(posix.join(appDir, key));
-    if (rel.startsWith('../')) fail(`input ${key} is outside the repository`);
+    // The monorepo's one pnpm store sits beside this product, not inside it.
+    if (rel.startsWith('../') && !rel.startsWith('../node_modules/')) {
+      fail(`input ${key} is outside the repository`);
+    }
     paths.add(rel);
   }
   return [...paths].sort();

@@ -131,8 +131,6 @@ are worth having.
 - **SVG / PNG export and the share thumbnail** cannot contain an iframe or a
   cross-origin image, so a video renders as its card with a play glyph and its
   title. That is the honest static representation.
-- **Markdown** exports it as a link, which is all those formats can
-  hold.
 
 ## Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))
 

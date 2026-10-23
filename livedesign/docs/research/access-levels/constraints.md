@@ -1,5 +1,7 @@
 # Access levels: the constraints any model must satisfy
 
+> **History.** Written for livediagram, before livedesign was cut down to logo, wireframe and photo pages. Mentions of diagrams, workshops, boards, Sheets, forms and facilitation tools describe that product; the spec it fed is [Share roles](../../specs/013-workspace/share-roles.md).
+
 Research note for the access-levels design. It asks one question: whatever levels we choose, what must
 the model honour, given how livedesign is actually built? It then weighs four candidate models against
 those constraints. Read-only research; it decides nothing. Sources are the specs and code on `main` at
@@ -41,15 +43,15 @@ Only enough to anchor terms; the product survey is another angle's job.
 
 ### Grants
 
-| Who                               | How the server knows                                                                                                                | Content level | Ownership powers                                                      |
-| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ------------- | --------------------------------------------------------------------- |
-| Personal owner (guest or account) | `isPersonalOwner` on the hybrid id ([design-access.ts](../../../apps/api/src/auth/design-access.ts))                            | edit          | all: share family, password, delete, move, tab link                   |
-| Team design owner               | verified account id and still a joined member (`ownsDesign`, [context.ts](../../../apps/api/src/routes/context.ts))               | edit          | all, as above                                                         |
+| Who                               | How the server knows                                                                                                                | Content level | Ownership powers                                                    |
+| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ------------- | ------------------------------------------------------------------- |
+| Personal owner (guest or account) | `isPersonalOwner` on the hybrid id ([design-access.ts](../../../apps/api/src/auth/design-access.ts))                                | edit          | all: share family, password, delete, move, tab link                 |
+| Team design owner                 | verified account id and still a joined member (`ownsDesign`, [context.ts](../../../apps/api/src/routes/context.ts))                 | edit          | all, as above                                                       |
 | Joined team member                | verified account id, `team_members.status = 'joined'`                                                                               | edit          | delete and move only (`mayDeleteDesign`); **not** sharing           |
-| Share-link holder                 | bearer code, optional password, optional expiry, optional tab scope                                                                 | link's role   | none                                                                  |
-| Embed visitor                     | same as share link, inside an iframe, no identity screen                                                                            | link's role   | none                                                                  |
+| Share-link holder                 | bearer code, optional password, optional expiry, optional tab scope                                                                 | link's role   | none                                                                |
+| Embed visitor                     | same as share link, inside an iframe, no identity screen                                                                            | link's role   | none                                                                |
 | API token, full                   | `lvd_` hash resolves to its account; flows through every gate as that account                                                       | owner's       | owner's (it passes `ownsDesign`), minus session-only administration |
-| API token, read-only              | as above, refused on every `POST`/`PUT`/`DELETE` at one choke point ([index.ts](../../../apps/api/src/index.ts), `read_only_token`) | read          | none in practice (every ownership action is a write)                  |
+| API token, read-only              | as above, refused on every `POST`/`PUT`/`DELETE` at one choke point ([index.ts](../../../apps/api/src/index.ts), `read_only_token`) | read          | none in practice (every ownership action is a write)                |
 
 Sources: [Team shared designs](../../specs/013-workspace/team-shared-designs.md),
 [Public API and API tokens §3.4](../../specs/015-api/public-api-and-tokens.md),
@@ -66,7 +68,7 @@ Sources: [Team shared designs](../../specs/013-workspace/team-shared-designs.md)
 | Add to and upvote a Q&A board                                        | REST `POST .../qa`, `gateRead`; the room writes D1                              | yes  | yes  |
 | Resolve, reopen, delete others' comments                             | room `el-delta` or tab `PUT`                                                    | no   | yes  |
 | Dots, estimates, temperature checks, Done check, quiz answers, ideas | room `vote` / `el-delta` (mutation)                                             | no   | yes  |
-| Change elements, tabs, design                                      | room mutations, tab `PUT`                                                       | no   | yes  |
+| Change elements, tabs, design                                        | room mutations, tab `PUT`                                                       | no   | yes  |
 | Run session tools, hold the facilitator baton                        | `canHold` is edit-only ([facilitator.ts](../../../apps/api/src/facilitator.ts)) | no   | yes  |
 
 Sources: [room-messages.ts](../../../packages/api-schema/src/room-messages.ts) (op classes),

@@ -1,7 +1,7 @@
 # Purpose
 
-livedesign is a web app where teams make **designs of pages together, in real time**: articles, slide decks,
-infographics, logos and wireframes.
+livedesign is a web app where teams make **designs of pages together, in real time**: logos, wireframes and
+photos.
 
 This is the root of the spec tree: every other spec is a decision taken inside
 the boundaries set here. That only works if it stays true, so it carries a
@@ -11,24 +11,25 @@ than quietly describing a product that no longer exists.
 ## What it is
 
 A multiplayer page editor in the browser. A design holds tabs, and every tab is a run of pages on a
-surround ([Pages mode](../007-editor/pages-mode.md)): an article that flows across linked pages, a deck of
-slides, an infographic, a logo artboard or a wireframe of a screen. Anyone with access to a design can join,
+surround ([Pages mode](../007-editor/pages-mode.md)): a logo artboard, a wireframe of a screen, or a photo to
+edit in layers ([Photo pages](../031-photo/photo-pages.md)). Anyone with access to a design can join,
 see other collaborators' cursors and edits live, and contribute simultaneously.
 
 The page is the product. Everything else exists because a team making a design together usually ends by
-showing it or sending it: a way to present the deck, a way to export the pages, a way to bring Markdown in and
-take it out again.
+showing it or sending it: a way to present the pages, and a way to export them as PDF, PNG, SVG, a Logo Kit or
+a photo's own files.
 
-livedesign is a fork of livediagram cut down to Pages. The diagram, whiteboard, workshop and planning modes stay
-in livediagram; nothing here assumes them.
+livedesign is a fork of livediagram cut down to Pages, and then to three page kinds. The diagram, whiteboard,
+workshop and planning modes stay in livediagram; articles, slide decks and infographics stay in livedocuments.
+Nothing here assumes them.
 
 ## Target users
 
-Teams who need to write, show and design together:
+Teams who need to design and show their work together:
 
-- Anyone writing a report, a brief or a how-to, and wanting it laid out on real pages.
-- Teams building a talk, a pitch or a review deck, and presenting it from the same place.
-- Marketing, product and design people making infographics, social cards, logos and screen wireframes.
+- Founders, marketers and designers making a logo and the kit of files that goes with it.
+- Product teams sketching the screens of an app or a site as wireframes, and walking through them.
+- Anyone touching up a photo, a banner or a social image in layers, without a desktop image editor.
 
 The unit of value is the **team**. The entry point is one person: the editor
 works fully without signing in, and a guest gets persistence, share links and
@@ -44,16 +45,18 @@ never arrives.
   awareness, per-element merge so concurrent edits don't clobber, and an ordered
   room with reconnect catch-up, plus Follow Me ([Follow-me viewport](../012-collaboration/follow-me-viewport.md)).
 - **Pages** ([Pages mode](../007-editor/pages-mode.md)): page sizes, backgrounds, layouts and page snapping;
-  [logo artboards](../007-editor/logo-pages.md) and [wireframes](../007-editor/wireframe-pages.md). On a page:
+  [logo artboards](../007-editor/logo-pages.md), [wireframes](../007-editor/wireframe-pages.md) and
+  [photos](../031-photo/photo-pages.md), a layered pixel editor with adjustments and filters. On a page:
   text, shapes, images, charts, concept graphics, tables, code blocks, checklists, stickers, icons and embeds, plus
   web components that lay themselves out
   ([Web components are elements; groups are gone](../009-elements/web-components-and-no-groups.md)).
 - **Structure**: tabs, tab folders, per-tab layers ([Layers](../006-design/layers.md)),
-  themes and the Pages templates.
-- **Presenting** ([Presentation mode](../012-collaboration/presentation-mode.md)): full-screen decks with the laser
-  and the spotlight.
-- **Getting work in and out**: import/export as JSON; image and PDF export
-  ([Export fidelity](../020-import-export/export-fidelity.md)); read-only embeds.
+  themes and the templates (Logos, Photos, Wireframes).
+- **Presenting** ([Presentation mode](../012-collaboration/presentation-mode.md)): the Slides view steps through a
+  tab's pages full screen, with the laser and the spotlight.
+- **Getting work in and out**: import/export as JSON; PDF, PNG and SVG export of the pages, the Logo Kit of a logo
+  page, and a photo page as PNG, JPEG, WebP or PSD ([Export fidelity](../020-import-export/export-fidelity.md));
+  read-only embeds.
 - **Comments** on elements, with mentions ([Comment mentions](../012-collaboration/comment-mentions.md)).
 - **Teams** ([Teams](../013-workspace/teams.md), [Team shared designs](../013-workspace/team-shared-designs.md)): a
   named group with Admin/Member roles and a shared library of designs and
@@ -69,8 +72,11 @@ never arrives.
 ## What it is _not_
 
 - **Not a diagramming tool or a whiteboard.** Shapes and arrows exist because a page uses them, but there are no
-  mind maps, flowcharts, pens or sticky-note sessions; that is livediagram.
+  mind maps, flowcharts or sticky-note sessions; that is livediagram. The markers and the Pen are there to draw a
+  logo.
+- **Not a word processor or a deck builder.** No articles, slide pages or infographics; that is livedocuments.
 - **Not a project planner.** No boards, cards, spreadsheets or forms.
+- **Not a facilitation tool.** No Q&A, polls or quizzes.
 - **Not a desktop app.** The web, with collaboration, is the product. Offline
   Mode is a per-design choice, not the default posture (see below).
 - **Not a paid product, ever.** No tier, no billing, no feature flags gating the
@@ -88,12 +94,16 @@ here in the same change, with the spec that moved it.
   unsupported state.
 - **Pages only**: livedesign began as livediagram with every mode, and was cut down to Pages. A feature that serves
   only a diagram, a whiteboard, a workshop or a plan does not belong here.
+- **Logos, wireframes and photos only**: the Pages it kept were cut down to three page kinds. Articles (and
+  Markdown in and out), slide pages, infographics and the animated GIF export went with livedocuments; presenting
+  stays, as the Slides view over any tab's pages. Photo pages came in from livediagram's photo editor
+  ([Photo pages](../031-photo/photo-pages.md)).
 
 ## Why it matters
 
-Designs, decks and designs usually live in three tools that do not talk to each other, and the one a team
-writes in is rarely the one it presents from. livedesign exists to be the **fast, focused, multiplayer-from-the-start**
-place where a team makes pages together and shows them.
+A logo, the wireframes of the product it names and the pictures that sell it usually live in three tools that
+do not talk to each other, and rarely in one the whole team can open. livedesign exists to be the **fast, focused,
+multiplayer-from-the-start** place where a team designs them together and shows them.
 
 "Focused" is the load-bearing word. The honest check on any new feature is not "is this good?" but "does a team
 making pages together need this?".

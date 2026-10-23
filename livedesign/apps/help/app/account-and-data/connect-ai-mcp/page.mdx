@@ -18,7 +18,7 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles("connect-ai-mcp")}
 >
 
-livedesign has an [MCP](https://modelcontextprotocol.io) server, so you can connect it to an AI tool you already use, like Claude, and then find, view, create, and edit your designs from inside that tool. Ask it for a slide deck on a topic, an article written up from your notes, or a tweak to an existing page, and the result is saved to your account.
+livedesign has an [MCP](https://modelcontextprotocol.io) server, so you can connect it to an AI tool you already use, like Claude, and then find, view, create, and edit your designs from inside that tool. Ask it for a set of app screens, a logo to start from, or a tweak to an existing page, and the result is saved to your account.
 
 ## You need an account
 
@@ -44,13 +44,13 @@ The connection gives your AI tool these tools:
 - **Find designs**: search your designs by name, across your personal library and the shared libraries of every [team](/help/collaboration/teams/) you belong to.
 - **Read a design**: get a tab's contents as a text outline, and a picture of it when the AI asks for one.
 - **List templates**: browse the same hand-tuned [template library](/help/canvas/templates/) the editor's template starts offer.
-- **Create a design**: turn a request into a new design, with one tab or several. A tab can start from a template: ask for "a slide deck" and the AI can lay down the ready-made pages, then fill in your content.
+- **Create a design**: turn a request into a new design, with one tab or several. A tab can start from a template: ask for "a mobile app wireframe" and the AI can lay down the ready-made screens, then fill in your content.
 - **Add a tab**: add another tab (its own row of pages) to an existing design, for example a detail view of one part. Tabs can start from a template too.
 - **Update a design**: rework a whole tab or make a small adjustment.
 - **Share a design**: turn a design into a [share link](/help/collaboration/sharing/) to hand to someone. Unless you ask for another level, the AI makes a **Participant** link: people can add stickies, text and pictures, but not reshape the pages.
 - **Rename a design** and **Delete a design**: tidy your library from the AI tool, a whole design or a single tab. Deleting a design moves it to the [Trash](/help/account-and-data/trash/); deleting a tab removes it for good.
 - **List the Trash** and **Restore a design**: bring back something deleted by mistake, by you or by the AI.
-- **Change pages**: make [Pages](/help/pages/working-with-pages/) pages. Ask for a logo and the AI adds a logo artboard; ask for a screen and it adds a wireframe page. Every page is in the slide deck, ready to present.
+- **Change pages**: make [Pages](/help/pages/working-with-pages/) pages. Ask for a logo and the AI adds a logo artboard; ask for a screen and it adds a wireframe page; ask for a photo and it adds a photo page. Every page is a slide, ready to [present](/help/selection-modes/slide-deck/presenting/).
 - **Search icons** and **List images**: find an [icon](/help/palette/icons/) by what it shows, and find a picture you uploaded to your [image gallery](/help/explorer/image-gallery/), so the AI can put them on a page.
 
 Beyond plain boxes and arrows, the AI can fill in **sticky notes** (in the sticky colours), **tables**, **code blocks**, **bar, line, and pie charts**, and **Sankey diagrams** (from a list of flows: what moves from where to where, and how much). Your AI tool may also surface a ready-made **prompt** ("Show my design") as a quick action, so you don't have to know the tool names.
@@ -65,7 +65,7 @@ By default the token behind a connection has full read and write access to your 
 
 Either way, a connection can't manage your teams or your account: inviting members, changing roles, and deleting things other than designs stay in the app. It can never delete a design for good either; that stays with you, in the Trash. (A tab it deletes is gone for good.)
 
-Approving a connection creates a token, so it fails if you already have ten tokens that haven't expired; revoke one in **API Tokens** first. Some tools list each design tool twice, once under an older _diagram_ name marked deprecated: they do the same thing.
+Approving a connection creates a token, so it fails if you already have ten tokens that haven't expired; revoke one in **API Tokens** first.
 
 <Tip>
   Connected a tool you no longer use? Open **Settings**, then **Account**, then **API Tokens**, and

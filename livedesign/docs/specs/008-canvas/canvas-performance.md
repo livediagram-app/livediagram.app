@@ -13,8 +13,9 @@ what the gesture touches, not the size of the board. The measurements behind it 
   between them, 10% freehand strokes, 10% text, 5% paths, 5% stickies), spread over an area four
   screens wide and three high, with arrows routed behind boxes by default as drawn. As in real
   diagrams, an arrow joins a shape to one of its nearest neighbours, not to any shape on the board.
-- It is opened twice: as a **whiteboard** tab and as a **diagram** tab, since the two render
-  differently (ink projection, the dock, the Quick Style panel).
+- It is opened twice, as two series that keep their livediagram names: **whiteboard** (its tab stores
+  the old `opensIn: 'draw'`) and **diagram**. Both open in Pages, as every tab does; the pair still
+  checks that a stored mode changes nothing about the cost.
 
 ## The budget
 
@@ -96,7 +97,7 @@ A gesture's cost scales with what it changes and what is on screen, never with t
   stroke lands, and a cursor is inherited: set on what holds the elements, each change restyled
   every element on the board. The elements sit in a plane with a cursor of its own, so a change of
   the canvas's cursor restyles that plane and not what is in it. Each element shows its own cursor
-  where it takes a press, as it already does; a whiteboard pen or a path in its edit mode, whose
+  where it takes a press, as it already does; a marker or a path in its edit mode, whose
   cursor shows over elements, passes it through the plane on purpose.
 - **The canvas re-renders only for what it shows.** The editor around the canvas re-renders for
   many reasons (a panel opening, a toast, a collaborator's presence, the selection); none of them
@@ -107,7 +108,7 @@ A gesture's cost scales with what it changes and what is on screen, never with t
   select-all and a remote change of the local selection re-render, anywhere in the editor, only what
   shows the selection: the element views whose selected state changed, the selection chrome
   (toolbars, popover, resize box, handles and anchors), and the panels that describe the selection
-  (Quick Style, the slide deck, an open context menu). The editor root, the canvas, the element
+  (Quick Style, the Slide Deck panel, an open context menu). The editor root, the canvas, the element
   layer and the Map do not re-render for it. Handlers read the selection from the store when they
   run; effects that follow it (presence, scrolling a selection into view, the screen-reader
   announcement, dropping hidden elements from it) subscribe to the store.
@@ -135,8 +136,8 @@ Taken up only when the rules above leave the budget unmet; each is a change to t
   marks.
 - **Containment** (`contain` on element wrappers) so a change inside one element does not
   invalidate the layout of others. Measured and set aside: `contain: layout` on every element left
-  a diagram stroke's release unchanged (layout was about 8 ms of it; the rest was a restyle of the
-  whole board, which the cursor rule above removes). A whiteboard pen's cursor passes through that
+  a pencil stroke's release unchanged (layout was about 8 ms of it; the rest was a restyle of the
+  whole board, which the cursor rule above removes). A marker's cursor passes through that
   rule on purpose, so its restyle remains.
 
 ## Measuring

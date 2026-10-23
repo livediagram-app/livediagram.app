@@ -1,5 +1,7 @@
 # Agent-facing CLI ergonomics and discoverability
 
+> **History.** Written for livediagram, before livedesign was cut down to logo, wireframe and photo pages. Its diagrams, flowcharts, Markdown outlines and whiteboard examples describe that product; what livedesign's agents read and write is in [Agents](../../specs/024-agents/README.md) and [CLI](../../specs/015-api/cli.md).
+
 Research for the `livedesign` CLI, an interface built mainly for AI agents. Measured on 2026-10-03.
 This report covers one angle: how a CLI should look to an LLM caller, and what that means for livedesign.
 It records evidence and recommendations; the spec, once written, decides.
@@ -191,9 +193,9 @@ a huge API at 485 at the top. Past about 900 tokens, the help is a manual.
 
 | Tool                                                              | Tokens          |
 | ----------------------------------------------------------------- | --------------- |
-| `create_design`                                                 | 4,631           |
+| `create_design`                                                   | 4,631           |
 | `add_tab`                                                         | 2,439           |
-| `update_design`                                                 | 2,401           |
+| `update_design`                                                   | 2,401           |
 | the other eight                                                   | 257 to 384 each |
 | **11 current tools**                                              | **≈12.2k**      |
 | **all 19 advertised (with `*_diagram` aliases until 2027-04-30)** | **21.5k**       |
@@ -228,7 +230,7 @@ grouping, id prefixes and comment counts, is 279 tokens.
 | Reference form                 | Tokens |
 | ------------------------------ | ------ |
 | full element UUID              | 23     |
-| design URL with UUID         | 33     |
+| design URL with UUID           | 33     |
 | 4-hex prefix (`e7a1`)          | 4      |
 | quoted label (`"API gateway"`) | 4      |
 | positional handle (`s12`)      | 2      |

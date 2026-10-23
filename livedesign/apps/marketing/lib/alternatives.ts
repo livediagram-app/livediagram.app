@@ -18,7 +18,7 @@
 // ALTERNATIVES array so revising a competitor row + bumping the date
 // lands in one diff. Bump this when adding a competitor or revising
 // any row / claim / lede.
-export const ALTERNATIVES_LAST_UPDATED = new Date('2026-10-18');
+export const ALTERNATIVES_LAST_UPDATED = new Date('2026-10-23');
 
 type ComparisonRow = {
   label: string;
@@ -70,56 +70,60 @@ export type Alternative = {
 
 export const ALTERNATIVES: Alternative[] = [
   {
-    slug: 'google-slides',
-    name: 'Google Slides',
-    title: 'Google Slides alternative · livedesign',
+    slug: 'figma',
+    name: 'Figma',
+    title: 'Figma alternative for logos and wireframes · livedesign',
     description:
-      'A free, open-source Google Slides alternative for presenting designs: every page joins the deck, with presenter notes, timing, a laser and a spotlight.',
-    h1: 'A free, open-source Google Slides alternative',
-    lede: 'Google Slides is the presentation tool most people already have open. livedesign makes decks a little differently: every page of a design joins its deck, so the logo and the wireframes present as they are, from tabs of one design, with your team editing alongside you.',
+      'A free, open-source Figma alternative for logos, wireframes and photo edits: real-time editing, no account needed, and every feature free.',
+    h1: 'A free, open-source Figma alternative for logos and wireframes',
+    lede: 'Figma is the design tool most product teams already use. livedesign is smaller and more focused: logos on a square artboard, wireframes framed by their device and photos edited in layers, side by side as tabs of one design, edited live with your team and free for everyone.',
     rows: [
-      { label: 'Price', us: 'Free, every feature', them: 'Free with a Google account' },
+      {
+        label: 'Price',
+        us: 'Free, every feature',
+        them: 'A free plan, with paid plans for more files and features',
+      },
       { label: 'Open source', us: 'Yes, MIT-licensed', them: 'No, proprietary' },
       {
         label: 'Start without an account',
         us: 'Yes, create and edit as a guest',
-        them: 'A Google account to create decks',
+        them: 'An account to create files',
       },
       { label: 'Real-time multiplayer', us: 'Yes, live cursors and comments', them: 'Yes' },
       {
-        label: 'Designed slides',
-        us: 'Present any design’s pages, in order',
-        them: 'Themes, layouts and a large template gallery',
+        label: 'Logos',
+        us: 'Square artboards with guides, Mirror, logo layouts and a Logo Kit export',
+        them: 'Vector editing with boolean operations and a full pen tool',
       },
       {
-        label: 'Presenting',
-        us: 'Presenter notes, per-slide time budgets, transitions, auto-advance and loop, laser and spotlight',
-        them: 'Speaker notes, presenter view, audience Q&A, animations and transitions',
+        label: 'Wireframes',
+        us: 'Phone, tablet, browser, laptop and watch frames with ready-made screens',
+        them: 'Frames, components, auto layout and clickable prototypes',
+      },
+      {
+        label: 'Photo editing',
+        us: 'Layers, masks, blend modes, adjustments, 44 filters, retouching and PSD',
+        them: 'Image fills with adjustments; layered pixel work usually happens elsewhere',
       },
       {
         label: 'Export',
-        us: 'PDF, PNG and SVG',
-        them: 'PowerPoint, PDF and images',
-      },
-      {
-        label: 'Beyond the deck',
-        us: 'Logos, wireframes and photos in the same design',
-        them: 'One of several Google Workspace apps',
+        us: 'PDF, PNG, SVG, a Logo Kit, and JPEG, WebP or PSD for photos',
+        them: 'PNG, JPG, SVG and PDF',
       },
       { label: 'Self-hostable', us: 'Yes, on your own Cloudflare account', them: 'No' },
     ],
     themBest: [
-      'Everyone in your organisation already lives in Google Workspace, with Drive, Meet and Docs around the deck.',
-      'A full presentation suite: click-by-click builds within a slide, a presenter view, audience Q&A and a large template gallery.',
-      'PowerPoint import and export, for decks that travel between organisations.',
-      'Gemini in Slides drafts a whole, editable deck from a prompt, styled from your files, on eligible Workspace and Google AI plans.',
+      'A complete product design tool: components, variants, variables and auto layout for a design system that grows with the product.',
+      'Clickable prototypes and a developer handoff mode, for taking a design all the way to code.',
+      'A large community of files, plugins and widgets, and most product designers already know it.',
+      'A deeper vector editor for detailed illustration and icon work.',
     ],
     usBest: [
-      'Every page of a design joins its deck: reorder them, hide the ones to skip, and present. The deck is saved with the design.',
-      'One design for the whole story: the logo, the wireframes and the deck that presents them, side by side as tabs.',
-      'Present with presenter notes, a time budget per slide, transitions, a laser pointer and a spotlight; your screen moves, nobody else’s.',
-      'Leave a deck running on a screen: auto-advance every 5 to 60 seconds and loop back to the start.',
-      'Put another tab on a slide, live: a tab window shows it as it is now, so the slide follows every change.',
+      'Logos, wireframes and photos in one design: each a kind of page, side by side as tabs.',
+      'Logo pages with construction guides, Mirror drawing, 25 logo layouts and a Logo Kit: an SVG, PNGs from 16 to 1024 pixels and a favicon in one .zip.',
+      'Wireframe pages that draw the phone, tablet, browser, laptop or watch round the screen, starting from ready-made screens.',
+      'A layered photo editor on the page: masks, blend modes, adjustments, 44 filters, selection and retouching tools, and PSD in and out.',
+      'Present any page full screen with notes, a timer, a laser pointer and a spotlight, on your screen only.',
       'Real-time editing with live cursors, comments and assigned actions, for anyone with the link, no account needed.',
       'An AI assistant connected over MCP can add logo and wireframe pages for you.',
       '15 templates to start from, from a logo design to app and website wireframes and a photo to edit.',
@@ -127,48 +131,37 @@ export const ALTERNATIVES: Alternative[] = [
     ],
     sections: [
       {
-        heading: 'Every page is a slide',
+        heading: 'Focused on the first pass',
         paragraphs: [
-          'In Google Slides a deck is its own file, built slide by slide. In livedesign every page of a design joins its deck on its own, in order, so a logo, a wireframe or a blank page presents edge to edge, painted from your theme.',
-          'The deck is ordered in the Slide Deck panel: drag to rearrange, rename, duplicate, or hide a slide you might want next week. A tab window puts another tab on a page, live, fitted to its frame.',
+          'Figma is built to carry a product from the first sketch to a full design system. livedesign is built for the early, shared part of the work: the logo, the first screens and the photos that go with them, made quickly and talked through together.',
+          'A logo page starts from a layout and gives you guides and Mirror drawing; a wireframe page starts from a ready-made screen in its device frame. There is less to set up, and less to learn before a teammate can help.',
         ],
       },
       {
-        heading: 'Presenting, built for the room',
+        heading: 'Photos without leaving the design',
         paragraphs: [
-          'Presenting runs full screen on your screen alone: nobody is dragged into your slide, and collaborators with the design open carry on working. Each slide carries its own presenter notes behind a button, and an optional time budget you can watch as you talk. A laser pointer and a spotlight guide the room.',
-          'Nothing on a slide can be changed by a stray click, so a projector is safe, and a deck can advance on its own and loop for a screen in a lobby.',
-        ],
-      },
-      {
-        heading: 'The deck and everything behind it',
-        paragraphs: [
-          'A deck is usually the last step of something: a brand, a product, a launch. In Workspace the pieces live in separate files. In livedesign they are tabs of one design: design the logo, sketch the screens, and present from all of it. Everyone edits live, with comments and assigned actions on the pages themselves.',
+          'A photo page is a layered pixel editor: masks, twenty-seven blend modes, adjustment layers, filters, brushes, selections and retouching. Open a PSD with its layers, and export a PNG, a JPEG, a WebP or a layered PSD, all in the same design as the logo and the screens.',
         ],
       },
       {
         heading: 'Free, open and no account needed',
         paragraphs: [
-          'Slides is free with a Google account. livedesign needs no account at all: open the editor and start, and a guest’s design stays in their browser until they press Share, which syncs it in one step. The whole product is MIT-licensed with no paid tier, and you can run your own copy on your own Cloudflare account. Export any page as a PNG, SVG or a print-ready PDF when a deck has to travel.',
+          'Figma has a free plan and paid plans for teams. livedesign has no paid tier at all: open the editor and start, and a guest’s design stays in their browser until they press Share, which syncs it in one step. The whole product is MIT-licensed, and you can run your own copy on your own Cloudflare account.',
         ],
       },
     ],
     faqs: [
       {
-        q: 'Can livedesign replace Google Slides?',
-        a: 'For presenting a design, yes: every page as a slide, presenter notes, time budgets, transitions, a laser pointer and a spotlight, all edited live with your team. If you need click-by-click builds within a slide, PowerPoint files or audience Q&A, Google Slides is still the deeper presentation suite.',
+        q: 'Can livedesign replace Figma?',
+        a: 'For logos, wireframes and photo edits made together, often yes. If you need a component library, auto layout, clickable prototypes or developer handoff, Figma is the deeper product design tool.',
       },
       {
-        q: 'Can I import or export PowerPoint files?',
-        a: 'No. livedesign does not read or write .pptx. You can export each page as a PNG or SVG, or every page as one PDF, and drop those into another deck.',
+        q: 'Can I import Figma files?',
+        a: 'No. livedesign imports its own JSON export and PSD files on photo pages. A Figma link can sit on the canvas as a live embed, so the two can still be seen side by side.',
       },
       {
-        q: 'Do my audience or co-editors need an account?',
+        q: 'Do my co-editors need an account?',
         a: 'No account of any kind. Share a link and anyone who opens it can view or edit in real time. Signing in (email code or Google) is optional and mainly adds cross-device sync and teams.',
-      },
-      {
-        q: 'Which pages can I present?',
-        a: 'Every page, from any tab: a logo artboard, a wireframe screen or a blank page presents full screen, in page order. Hide the ones you want to skip.',
       },
       {
         q: 'Is livedesign free?',

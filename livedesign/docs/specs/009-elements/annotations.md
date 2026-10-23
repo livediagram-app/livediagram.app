@@ -87,8 +87,6 @@ size. `isBoxed` and the `BoxedElement` union include it.
   string, so no schema change is required.
 - **Visual exports** (PNG / SVG) render an annotation as its themed circle
   (the note text is not drawn — it's a hover affordance, not page content).
-- **Markdown export** lists a labelled annotation under Elements with an
-  `(annotation)` tag via the existing `isBoxed`-driven path.
 
 ## Telemetry
 

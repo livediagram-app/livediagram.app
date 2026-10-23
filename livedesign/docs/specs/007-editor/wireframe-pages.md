@@ -4,7 +4,7 @@ A **wireframe page** is the fifth kind of page in Pages mode ([Pages](pages-mode
 a screen to wireframe on, framed by the **device** it is for. Choosing a device (a phone, a tablet,
 a laptop, a desktop monitor, a browser window or a watch) makes the page that device: its sheet is
 the device drawn front on, at its real size, and what is on the page lives on its **screen**.
-Everything [Pages](pages-mode.md) says of infographic pages applies to a wireframe page except
+Everything [Pages](pages-mode.md) says of a page applies to a wireframe page except
 where this spec says otherwise.
 
 ## Domain language
@@ -104,7 +104,7 @@ case with dashes>` on a named one, so naming the page names the screen.
   - **System Bars**: a switch, while the device has them ("The status bar and home indicator").
 
   Each choice is one undoable page edit, synced to everyone. The page's **Layouts** and
-  **Background** sit beside it as on an infographic page. The Layouts popover offers no **Change
+  **Background** sit beside it in its title bar ([Pages](pages-mode.md) "Beside the cog"). The Layouts popover offers no **Change
   Theme** on a wireframe page (its screens are drawn in wireframe greys), and a wireframe page never
   shows the in-page **Start From a Layout** card: its screen stays clear, its layouts are the
   button's.
@@ -210,8 +210,8 @@ other kinds.
 
 ## Templates
 
-Start Making Pages ([Template start](start-diagramming.md)) holds a wireframe template per flow in its **Design**
-group:
+Start Making Pages ([Template start](start-diagramming.md)) holds a wireframe template per flow in its **Wireframes**
+category:
 
 - **Blank wireframes**, one empty wireframe page in a device, its kind already chosen: **Blank Phone
   Wireframe** (iPhone), **Blank Tablet Wireframe** (iPad), **Blank Website Wireframe** (Browser),
@@ -261,7 +261,7 @@ page control is.
 ## Non-goals
 
 - Clickable prototypes (linking a button to another screen).
-- A device catalogue per model year, or custom screen sizes (an infographic page in Fit to Content
+- A device catalogue per model year, or custom screen sizes (a blank page in Fit to Content
   is the free-size page).
 - Device photography or brand marks on the frame; the frames are drawn, generic and theme-neutral.
 - Responsive re-layout of content when a device changes (it is re-fitted, not re-flowed).

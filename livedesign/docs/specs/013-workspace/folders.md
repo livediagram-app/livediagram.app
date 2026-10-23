@@ -72,8 +72,8 @@ Every Explorer section is its own page under `/explorer` (the chrome — header,
 | Inbox ([Inbox](inbox.md))                                      | `/explorer/inbox`                                                  |
 | Timeline ([Timeline](timeline.md))                             | `/explorer/timeline`                                               |
 | Shared With Me                                                 | `/explorer/shared`                                                 |
-| Recent designs                                               | `/explorer/recent` (no sidebar row)                                |
-| Favourites ([Favourite designs](favourites.md))              | `/explorer/favourites` (no sidebar row)                            |
+| Recent designs                                                 | `/explorer/recent` (no sidebar row)                                |
+| Favourites ([Favourite designs](favourites.md))                | `/explorer/favourites` (no sidebar row)                            |
 | My Work, the root of the personal tree                         | `/explorer/all`                                                    |
 | Search results ([Explorer filters](explorer-filters.md#views)) | `/explorer/search` (no sidebar row)                                |
 | Retired: Unsorted and Dynamic                                  | `/explorer/unsorted`, `/explorer/dynamic`, opening `/explorer/all` |
@@ -82,7 +82,7 @@ Every Explorer section is its own page under `/explorer` (the chrome — header,
 | A folder                                                       | `/explorer/folder?id=<id>`                                         |
 | A team ([Teams](teams.md))                                     | `/explorer/team?id=<id>`                                           |
 | Invites ([Teams](teams.md))                                    | `/explorer/invites`                                                |
-| This Browser ([Offline Mode](../006-design/offline-mode.md)) | `/explorer/offline`                                                |
+| This Browser ([Offline Mode](../006-design/offline-mode.md))   | `/explorer/offline`                                                |
 | Image gallery                                                  | `/explorer/images`                                                 |
 | Themes                                                         | `/explorer/themes`                                                 |
 | Trash ([Trash](trash.md))                                      | `/explorer/trash`                                                  |
@@ -195,12 +195,12 @@ the `folder_id` column.
 
 All endpoints continue the existing `X-Owner-Id` convention.
 
-| Method | Path                        | Body                                 | Returns                 |
-| ------ | --------------------------- | ------------------------------------ | ----------------------- |
-| GET    | `/api/folders`              |                                      | `{ folders: Folder[] }` |
-| POST   | `/api/folders`              | `{ id, name, parentId? }`            | `{ folder: Folder }`    |
-| PUT    | `/api/folders/:id`          | `{ name?, parentId? }` (cycle check) | `{ folder: Folder }`    |
-| DELETE | `/api/folders/:id`          |                                      | 204                     |
+| Method | Path                      | Body                                 | Returns                 |
+| ------ | ------------------------- | ------------------------------------ | ----------------------- |
+| GET    | `/api/folders`            |                                      | `{ folders: Folder[] }` |
+| POST   | `/api/folders`            | `{ id, name, parentId? }`            | `{ folder: Folder }`    |
+| PUT    | `/api/folders/:id`        | `{ name?, parentId? }` (cycle check) | `{ folder: Folder }`    |
+| DELETE | `/api/folders/:id`        |                                      | 204                     |
 | PUT    | `/api/designs/:id/folder` | `{ folderId \| null }`               | 204                     |
 
 `Folder` = `{ id, name, parentId, createdAt, updatedAt }`.
@@ -292,12 +292,11 @@ split by separators:
 
 1. **New Design**, **Open Explorer** (the full-page Explorer's Recent
    list, `/explorer/recent`).
-
-The panel does not carry the import entry: its header holds only
-**⋯** and **?**. Importing Markdown lives on the full-page Explorer (below). 2. **Share** (the owner, or any joined member of a team design's team: the header Share button's gate) and
-**Export** (the active tab, as the tab menu's Export). 3. **Search**, **GitHub** (the open-source repo, new tab), **Licences** (the
-third-party licences page, new tab, see
-[Third-party licences](../002-project-scope/third-party-licences.md)), **Settings**.
+2. **Share** (the owner, or any joined member of a team design's team: the header Share button's gate) and
+   **Export** (the active tab, as the tab menu's Export).
+3. **Search**, **GitHub** (the open-source repo, new tab), **Licences** (the
+   third-party licences page, new tab, see
+   [Third-party licences](../002-project-scope/third-party-licences.md)), **Settings**.
 
 A row whose handler the host doesn't pass is absent, and a band left
 empty takes its separator with it (the Explorer behind an error screen

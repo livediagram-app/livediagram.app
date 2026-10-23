@@ -139,7 +139,7 @@ Never the query, a title, a creator or a URL.
 
 ## Out of scope
 
-- **Credit in exports.** PNG, SVG, PDF and Markdown exports don't print the credit yet; it lives on
+- **Credit in exports.** PNG, SVG and PDF exports don't print the credit yet; it lives on
   the element and in the Image panel.
 - **Filters.** No licence, colour, orientation or source pickers; the commercial-and-modification
   filter is fixed. The one exception is a page's Image background

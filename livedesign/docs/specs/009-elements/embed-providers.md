@@ -12,7 +12,7 @@ The parser, the poster URL and the embed origin are the only provider-specific p
 [YouTube video element](youtube-video.md), so each provider is one more case in them. There
 is no `provider` field: the provider is derived from the link, like the video id.
 
-Slides and articles show live third-party content: a prototype, a video, a doc. The hard part, an iframe that
+Wireframes and presented pages show live third-party content: a prototype, a video, a doc. The hard part, an iframe that
 does not eat the canvas, is shared with the YouTube element.
 
 ## `embedTargetFor`
@@ -25,7 +25,7 @@ One function, `(url) => { provider, embedUrl, posterUrl?, label } | null`.
 | Vimeo    | `vimeo.com/<digits>`                                            | `player.vimeo.com/video/<id>`          |
 | Loom     | `loom.com/share/<id>` or `loom.com/embed/<id>`                  | `loom.com/embed/<id>`                  |
 | Figma    | any `figma.com` URL                                             | `figma.com/embed?url=<original>`       |
-| Google   | `docs.google.com/{design,spreadsheets,presentation}/…`        | the same URL with `/edit` → `/preview` |
+| Google   | `docs.google.com/{design,spreadsheets,presentation}/…`          | the same URL with `/edit` → `/preview` |
 
 Figma takes the **original URL as a query parameter** rather than a rewritten
 path, so anything Figma accepts keeps working without this having to know

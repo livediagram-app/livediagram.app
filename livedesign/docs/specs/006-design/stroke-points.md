@@ -1,12 +1,13 @@
 # Stroke points
 
 How a `freehand` element stores its points: one compact binary block per stroke, written as
-base64 inside the tab's JSON. It covers every freehand stroke: polygon-tool paths, and the pen strokes of designs made in
-livediagram, drawn there or imported.
+base64 inside the tab's JSON. It covers every freehand stroke: a logo page's marker strokes ([Drawing tools](../023-draw-mode/drawing-tools.md)) and
+polygon-tool paths.
 
 ## Why
 
-- Pen strokes were the bulk of a livediagram whiteboard. Stored as `{ nx, ny }` objects with full doubles, a
+- Pen strokes are the bulk of a hand-drawn tab (the format was measured on livediagram's whiteboards, where it
+  began). Stored as `{ nx, ny }` objects with full doubles, a
   point costs about 29 to 46 bytes, and a large board's tab outgrows what one database row holds.
 - A tab is saved as one row in Cloudflare D1, which caps a row at 2,000,000 bytes, so a tab must fit
   within it ([API](../015-api/api.md)). Compact points keep large boards well inside

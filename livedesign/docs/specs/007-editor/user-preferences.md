@@ -231,7 +231,7 @@ type UserPreferences = {
   // page kind's track as seen while Power user mode is on. Set with every kind by Power user mode.
   pagesTourSeen?: boolean;
   // The page kinds whose Pages tour track has been offered and answered (taken, skipped or declined), so each
-  // kind offers its own once ever. Settings' row per kind (Infographic Tour, ...) adds or removes its own kind.
+  // kind offers its own once ever. Settings' row per kind (Logo Tour, ...) adds or removes its own kind.
   pagesTourKinds?: PageKind[];
   // Element tours (docs/specs/007-editor/element-tours.md): the toured element kinds whose offer has been answered
   // (Play or Cancel). Surfaced in Settings as Tours › Show Me, one switch per kind (inverted).

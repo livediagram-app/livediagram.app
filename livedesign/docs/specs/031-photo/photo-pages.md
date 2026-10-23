@@ -6,7 +6,7 @@ picture the size of the page. It is edited with the tools an image editor has (b
 gradients, transforms, adjustments and filters) on the page itself, with everything else Pages offers around it:
 the row of pages, ordinary elements on top, presenting, exports and real-time collaboration.
 
-Everything [Pages](../007-editor/pages-mode.md) says of infographic pages applies to a photo page except where this
+Everything [Pages](../007-editor/pages-mode.md) says of pages applies to a photo page except where this
 spec says otherwise. The layer stack is [Photo layers](photo-layers.md), the tools [Photo tools](photo-tools.md),
 the adjustments and filters [Photo adjustments](photo-adjustments.md), and where the pixels live [Photo
 store](photo-store.md).
@@ -16,7 +16,7 @@ store](photo-store.md).
 | Term               | Means                                                                                               | Never called          |
 | ------------------ | --------------------------------------------------------------------------------------------------- | --------------------- |
 | **photo page**     | A page of kind `photo` (`Page.kind`).                                                               | image page, canvas    |
-| **photo**          | The photo page's picture: its pixel size and its layer stack (`Tab.photos[pageId]`).                | design, project     |
+| **photo**          | The photo page's picture: its pixel size and its layer stack (`Tab.photos[pageId]`).                | design, project       |
 | **pixel size**     | The photo's width and height in pixels, each 1 to the pixel cap.                                    | resolution, dimension |
 | **layer**          | One entry of the photo's layer stack ([Photo layers](photo-layers.md)).                             | element, sheet        |
 | **active layer**   | The layer the tools act on: each person's own, for the session.                                     | current, focused      |
@@ -274,7 +274,7 @@ All on the active photo, each one edit:
 | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Editor**      | Everything: every tool, every layer change, adjustments, filters, size changes, making and deleting photo pages.                                                                                                                                |
 | **Participant** | Sees the photo and the layer stack (read-only Layers tab: no actions, no toggles), may use the Eyedropper and the info line, and may add elements on top where they may add content. No tool that changes pixels or layers, no title-bar menus. |
-| **Viewer**      | Sees the photo; no photo tools, no options flyout, no panel; may export where the design allows exports.                                                                                                                                      |
+| **Viewer**      | Sees the photo; no photo tools, no options flyout, no panel; may export where the design allows exports.                                                                                                                                        |
 
 The server refuses a photo blob write from anyone who may not edit the tab, and the room refuses a `photo` op from
 a Participant or a Viewer.
@@ -299,7 +299,7 @@ a Participant or a Viewer.
 
 ## Exports and other views
 
-- **The composite is the page.** Every export of the page (PNG, JPEG, PDF, the page images, slides, presenting,
+- **The composite is the page.** Every export of the page (PNG, JPEG, PDF, the page images, presenting,
   share-link previews, the Explorer thumbnail) draws the composite at the page's place, then the
   elements on top. The PNG of a photo page is exported at its **pixel size** by default (Export's scale **Actual
   Pixels**), and offers the usual scales beside it.

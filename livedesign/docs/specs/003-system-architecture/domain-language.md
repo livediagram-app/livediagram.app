@@ -1,14 +1,20 @@
 # Domain language
 
+## Design
+
+What a person makes is a **design** ([Design](../006-design/design.md)), never a "document": in a file name, an
+identifier, a route, a table, copy or a spec (`packages/design/src/design-naming.test.ts` holds the line). The
+DOM's `document` and the flowchart shape `document` keep their names.
+
 ## Mode, kind and template
 
 Three words describe how a design and its tabs differ. They answer different questions and are never
 interchangeable. These are design decisions, taken before any feature that uses them.
 
-| Term         | Answers                        | Values                            | Where it lives                                |
-| ------------ | ------------------------------ | --------------------------------- | --------------------------------------------- |
-| **mode**     | How is a tab worked on?        | Pages (`EditorMode`)              | Per tab, the same for everyone; `Tab.opensIn` |
-| **kind**     | What is a tab?                 | the general tab (`TabKind`)       | `Tab.kind`                                    |
+| Term         | Answers                      | Values                            | Where it lives                                |
+| ------------ | ---------------------------- | --------------------------------- | --------------------------------------------- |
+| **mode**     | How is a tab worked on?      | Pages (`EditorMode`)              | Per tab, the same for everyone; `Tab.opensIn` |
+| **kind**     | What is a tab?               | the general tab (`TabKind`)       | `Tab.kind`                                    |
 | **template** | What was a design made from? | a Pages template (`TemplateKind`) | Captured once, at creation                    |
 
 ### Mode
@@ -25,14 +31,15 @@ interchangeable. These are design decisions, taken before any feature that uses 
 
 - A **tab kind** is what a tab is. livedesign has one kind, the general tab (`'diagram'` in code, kept for stored
   tabs); a kind this build does not have, such as a livediagram Board tab, reads as a general tab (`tabKindOf`).
-- What a **page** is (a design page, a slide, an article page, a logo or a wireframe) is the page's kind, not the
-  tab's ([Pages mode](../007-editor/pages-mode.md)).
+- What a **page** is (a logo, a wireframe or a photo) is the page's kind (`PageKind`), not the tab's
+  ([Pages mode](../007-editor/pages-mode.md)). A tab holds pages of any kind.
 
 ### Template
 
 - A **template** is what a design was made from. It shapes the starting pages of a tab and then has no further
   hold on it.
-- A template is never a kind or a type: a slide deck is a general tab made from the Slide Deck template.
+- A template is never a kind or a type: a logo design is a general tab made from a Logos template, whose pages
+  are logo pages.
 
 ### Using the three together
 
@@ -69,7 +76,7 @@ The words for a program working on designs for a person ([Agents](../024-agents/
 | **ref**            | The short name a view prints for an element: its id, or its shortest unique id prefix                   | handle (that is a mention), alias       |
 | **selector**       | An expression matching one or more elements (a ref, `type:sticky`, `in:f1`)                             | query, filter (that is the Explorer's)  |
 | **access level**   | What a share link, embed or token admits: Viewer, Participant or Editor (`view`, `participate`, `edit`) | permission, scope (the field is `role`) |
-| **ownership**      | The owner's powers over a design (sharing, delete, move), apart from any level                        | admin, edit level                       |
+| **ownership**      | The owner's powers over a design (sharing, delete, move), apart from any level                          | admin, edit level                       |
 
 - **Participant** is the access level; a person's name, colour and picture (the `participants` table) are their
   **display identity**.
@@ -86,7 +93,7 @@ The words for choosing a colour ([Colour picker](../004-interface-design/colour-
 | **standard colours**     | The ten named colours every picker offers (Ink or White, Grey, Red ... Pink)                      | stock colours, presets              |
 | **tone**                 | Which version of the standard colours a picker offers: `strong` (lines, text) or `soft` (fills)   | shade, variant, a drawing finish    |
 | **theme colours**        | The active theme's own colours, offered on the canvas only                                        | presets                             |
-| **Custom colours**       | The colours picked with + in the design, kept with its tabs                                     | custom swatches, recent colours     |
+| **Custom colours**       | The colours picked with + in the design, kept with its tabs                                       | custom swatches, recent colours     |
 | **custom colour editor** | The square, hue, hex and eyedropper panel that **Add a custom colour** (four coloured dots) opens | colour wheel, native picker         |
 | **skin**                 | Where and how a picker opens: inline, field, swatch button                                        | variant, mode                       |
 
@@ -143,6 +150,6 @@ A **photo page** is a page of kind `photo`, never a mode, a tab kind or a templa
 
 Copy that builds a phrase around a name (a page kind, a template, a chart type, an element type in an agent's
 error) takes its article from the name: `withArticle` / `indefiniteArticle` in `packages/design/src/indefinite-article.ts`
-(exported by `@livedesign/design`). A vowel sound takes "an" ("Add an infographic page", "Create an Article"),
+(exported by `@livedesign/design`). A vowel sound takes "an" ("Add an emblem", "Create an Emblem"),
 and a vowel said "you" keeps "a" ("a User Persona"). A fixed "a" before an interpolated name is how "Create a Org
 Chart" once reached livediagram's marketing site.

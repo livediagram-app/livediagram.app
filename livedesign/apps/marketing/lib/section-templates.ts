@@ -11,7 +11,6 @@ import { toGallery, type GalleryTemplate } from '@/lib/template-gallery';
 export const SECTION_TEMPLATES_MAX = 9;
 
 export const SECTION_TEMPLATE_KINDS: Readonly<Record<string, readonly TemplateKind[]>> = {
-  slides: ['logo-design', 'wireframe-mobile-app', 'wireframe-website'],
   logos: [
     'logo-design',
     'wireframe-mobile-app',
@@ -21,7 +20,9 @@ export const SECTION_TEMPLATE_KINDS: Readonly<Record<string, readonly TemplateKi
     'wireframe-watch-app',
     'blank-logo',
   ],
-  collaboration: ['wireframe-website', 'wireframe-mobile-app', 'logo-design'],
+  photos: ['photo-edit'],
+  present: ['logo-design', 'wireframe-mobile-app', 'wireframe-website'],
+  collaboration: ['wireframe-website', 'wireframe-mobile-app', 'logo-design', 'photo-edit'],
 };
 
 const BY_KIND = new Map(TEMPLATES.map((t) => [t.kind, t]));

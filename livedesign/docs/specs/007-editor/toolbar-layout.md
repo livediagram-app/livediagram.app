@@ -46,12 +46,11 @@ under the pointer as a category is switched.
   Stack sits in Components and the Timeline and Table in Data and Concepts.
 - **The bars**, by page kind (`palette-layouts.ts`):
 
-  | Page kind            | Bar                                                                           |
-  | -------------------- | ----------------------------------------------------------------------------- |
-  | Infographic (Design) | Shapes, Write · Concepts, Components, Devices · Icons, Stickers, Media · Data |
-  | Slide                | Write, Shapes, Media · Data, Concepts, Components, Devices · Icons, Stickers  |
-  | Wireframe            | Components, Elements · Shapes, Write · Icons, Stickers, Media · Data          |
-  | Logo                 | Draw, Shapes, Write, Icons, Media                                             |
+  | Page kind                      | Bar                                                                           |
+  | ------------------------------ | ----------------------------------------------------------------------------- |
+  | Design (a blank page, a photo) | Shapes, Write · Concepts, Components, Devices · Icons, Stickers, Media · Data |
+  | Wireframe                      | Components, Elements · Shapes, Write · Icons, Stickers, Media · Data          |
+  | Logo                           | Draw, Shapes, Write, Icons, Media                                             |
 
 - **Names fit or go.** The bar shows its names while the strip, named, fits the room the centred strip may take
   (the editor's width less the top-left menu card, measured, on both sides); otherwise the glyphs alone

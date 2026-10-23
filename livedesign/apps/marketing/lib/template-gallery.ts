@@ -54,10 +54,8 @@ export function galleryTemplates(): GalleryTemplate[] {
   return TEMPLATES.filter((t) => !t.hidden && !isBlankTemplate(t.kind)).map(toGallery);
 }
 
-// Blanks the row already shows by another name: Blank Infographic is Blank Illustration's own
-// empty infographic page, so it is left off rather than shown twice.
+// Blanks the row already shows by another name, left off rather than shown twice.
 const SHOWN_AS_ANOTHER_BLANK: readonly string[] = [
-  'blank-infographic',
   // One blank wireframe stands for all five (docs/specs/007-editor/wireframe-pages.md "Templates").
   'blank-wireframe-tablet',
   'blank-wireframe-browser',

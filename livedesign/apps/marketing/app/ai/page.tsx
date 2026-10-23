@@ -22,7 +22,7 @@ import { Header } from '@/components/Header';
 export const metadata = pageMetadata({
   title: 'Build with AI · livedesign',
   description:
-    'Connect Claude, ChatGPT, Cursor, VS Code or any MCP client to livedesign in a minute, then ask your AI for articles, decks, infographics and logos.',
+    'Connect Claude, ChatGPT, Cursor, VS Code or any MCP client to livedesign in a minute, then ask your AI for logos and wireframes.',
   path: '/ai',
 });
 
@@ -78,9 +78,9 @@ export default function BuildWithAiPage() {
                 Your AI, building in livedesign
               </h1>
               <p className="mt-4 max-w-xl text-lg leading-relaxed text-slate-600 dark:text-slate-300">
-                Connect the AI tool you already use, then ask it for an article, a slide deck, an
-                infographic or a logo. It lands in your account, ready to edit together. Set up
-                takes about a minute.
+                Connect the AI tool you already use, then ask it for a logo, a wireframe or a whole
+                screen flow. It lands in your account, ready to edit together. Set up takes about a
+                minute.
               </p>
               <div className="mt-8">
                 <McpAddressCard />

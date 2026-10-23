@@ -28,7 +28,7 @@ export function TemplateCard({
         <TemplatePreview kind={template.kind} />
       </span>
       <span className="mt-3 block text-sm font-semibold text-slate-900 dark:text-slate-100">
-        {/* The link's name is its own text, "Create a Blank Article" and the description, so its
+        {/* The link's name is its own text, "Create a Blank Logo" and the description, so its
             visible title is part of it (WCAG 2.5.3). */}
         <span className="sr-only">{createLabelPrefix(template.title)}</span>
         {template.title}

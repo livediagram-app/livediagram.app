@@ -41,8 +41,8 @@ export function Hero() {
           data-hero-anchor="lead"
           className="mx-auto mt-6 max-w-2xl text-pretty text-lg leading-relaxed text-(--hero-muted) sm:text-xl"
         >
-          Pick a starting point and make it on pages. Write an article, build a deck, lay out an
-          infographic or design a logo, then share one link and finish it together.
+          Pick a starting point and make it on pages. Design a logo, wireframe an app or a website,
+          or edit a photo in layers, then share one link and finish it together.
         </p>
         <HeroSearch />
       </div>

@@ -5,7 +5,7 @@
 Originally every `tabs` row carried a single `design_id` FK — one tab belonged to one design. That worked for the editor's "tabs are folders inside a design" mental model, but it forecloses a category of features the user has flagged for the next phase:
 
 - **Copy a tab between designs** without duplicating the content (so an edit in one tab propagates to the other).
-- **A reference tab** that lives in several designs at once — e.g. a glossary, a shared timeline, an architecture diagram that's part of two product lines' workspaces.
+- **A reference tab** that lives in several designs at once — e.g. a glossary, a shared timeline, a brand's logo pages that are part of two product lines' workspaces.
 - **Change log without per-design scoping** (paired with item #14; the change log itself was removed on 2026-10-03, see [Collaboration](../012-collaboration/README.md)): once a tab can live in multiple designs, attributing a change to a single `(design_id, tab_id)` pair stops being meaningful. The change should be on the tab; consumers join through the link table when they care which designs it surfaces in.
 
 The migration sequences as items #13 → #14 → #15 → #16 in the post-prototype haul. #13 adds the link table; #14 drops the now-redundant `change_log.design_id`; #15 denormalises participant metadata out of `change_log`; #16 ages out old `change_log` rows on a cron. (Migration 0064 later dropped `change_log` outright along with the Activity panel.)

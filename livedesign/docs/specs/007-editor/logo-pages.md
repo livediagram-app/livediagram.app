@@ -1,11 +1,11 @@
 # Logo pages
 
-A **logo page** is one of the kinds of page ([Pages](pages-mode.md) "Page kinds"): a square artboard to design a logo on. It is laid out like an infographic page,
-with ordinary elements, and adds tools a logo needs and an infographic does not: **construction
+A **logo page** is one of the kinds of page ([Pages](pages-mode.md) "Page kinds"): a square artboard to design a logo on. It is laid out freely,
+with ordinary elements, and adds tools a logo needs: **construction
 guides** to build a balanced mark, **mirror** drawing for symmetry, **wordmark** type (tracking,
 weight, case, text on an arc), **combining** shapes into one mark, and a **logo
 kit** export. Everything [Pages](pages-mode.md) says
-of infographic pages applies to a logo page except where this spec says otherwise.
+of a page applies to a logo page except where this spec says otherwise.
 
 ## Domain language
 
@@ -40,7 +40,7 @@ of infographic pages applies to a logo page except where this spec says otherwis
 - **Re-fitting and laying out**: a logo page never changes size, so it never re-fits. Laying loose
   content out into pages never makes a logo page.
 - **No quick-connect pluses**: a selection on a logo page shows no **+** buttons around it (a
-  mark is drawn, not wired up as a diagram); everything else about selecting is as anywhere.
+  mark is drawn, not wired up with arrows); everything else about selecting is as anywhere.
 
 ## The Logo palette
 
@@ -104,8 +104,8 @@ cog).
 - **Layouts**: the **logo layouts** (below), in the layout gallery ( search, Surprise Me, category chips and large tiles, placed at once with the content carried over, and hover previews). Each
   tile is the layout exactly as it lands: built for this page and drawn by the export renderer in
   the tab's theme and font, on the page's background, its words and icon included (a wireframe
-  outside an editor). An empty logo page shows them inside itself (**Start From a Layout**) as an empty
-  infographic page does, with **Start From Scratch** at the card's foot, a full-width dashed row with a plus, quiet until hovered: it puts the card away for good on that page (the page is marked started blank, for everyone, in the same undoable edit), leaving the artboard to start from nothing. Hide puts it away until the tab is next opened. Either way the page's layouts stay in its panel's Layouts tab.
+  outside an editor). An empty logo page shows them inside itself (**Start From a Layout**,
+  [Pages](pages-mode.md) "Layouts"), with **Start From Scratch** at the card's foot, a full-width dashed row with a plus, quiet until hovered: it puts the card away for good on that page (the page is marked started blank, for everyone, in the same undoable edit), leaving the artboard to start from nothing. Hide puts it away until the tab is next opened. Either way the page's layouts stay in its panel's Layouts tab.
 - The cog opens the panel on Background (a logo page has no Page tab); the layout invite on Layouts.
 
 ### Show Me

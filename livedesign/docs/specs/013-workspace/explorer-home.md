@@ -119,7 +119,7 @@ The hero speaks to a beginning:
 
 Under it, beside the sidebar, Home holds three sections in place of Jump Back In and What Happened:
 
-- **Start Blank**: the Pages blanks (Blank Slide Deck, Blank Article, Blank Infographic, Blank Logo and the rest), each a card with its preview,
+- **Start Blank**: the Pages blanks (Blank Logo, the blank wireframes, Photo Edit and the rest), each a card with its preview,
   title and one-line description. Activating one makes
   that blank at once (`/new?template=<kind>`).
 - **Popular Templates**: the first eight non-blank templates of the shared Popular list, as large cards with their
@@ -245,15 +245,15 @@ the **4 most used** and the **4 most recent**, no design twice.
   theirs).
 - The actions and their verbs are a closed set, in this order wherever several are named:
 
-  | Action                                         | Verb phrase            |
-  | ---------------------------------------------- | ---------------------- |
-  | A comment that starts a thread                 | commented              |
-  | A comment on a thread that already had one     | replied                |
-  | A thread resolved                              | resolved a thread      |
-  | A day of edits (one per person per day)        | edited                 |
-  | An action assigned to the person               | assigned you an action |
-  | An action assigned to anyone else              | assigned an action     |
-  | An action completed                            | completed an action    |
+  | Action                                       | Verb phrase            |
+  | -------------------------------------------- | ---------------------- |
+  | A comment that starts a thread               | commented              |
+  | A comment on a thread that already had one   | replied                |
+  | A thread resolved                            | resolved a thread      |
+  | A day of edits (one per person per day)      | edited                 |
+  | An action assigned to the person             | assigned you an action |
+  | An action assigned to anyone else            | assigned an action     |
+  | An action completed                          | completed an action    |
   | The design published into one of their teams | shared                 |
 
 - Opens are never listed here: whether someone looked at a design is theirs to know, not the reader's.
@@ -345,8 +345,8 @@ else on it.
 | State                 | What shows                                                                                                     |
 | --------------------- | -------------------------------------------------------------------------------------------------------------- |
 | Loading               | Each section's skeleton: both groups' cards (the phone's strip), three entry rows in the panel                 |
-| Jump Back In, partial | What exists, no empty boxes (see [Fewer than 8 designs](#fewer-than-8-designs))                            |
-| Jump Back In, empty   | One card-sized slot: empty state "No designs yet": "The designs you use most and last will gather here."   |
+| Jump Back In, partial | What exists, no empty boxes (see [Fewer than 8 designs](#fewer-than-8-designs))                                |
+| Jump Back In, empty   | One card-sized slot: empty state "No designs yet": "The designs you use most and last will gather here."       |
 | What Happened, empty  | The section is left out: no heading, no link, no empty state. It is the page's last section, so nothing moves. |
 | Read failed           | "Home could not load. Check your connection and try again." with **Try again**, in place of the body           |
 

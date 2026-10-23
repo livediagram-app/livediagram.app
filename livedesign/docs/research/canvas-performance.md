@@ -1,5 +1,7 @@
 # Canvas performance on large boards
 
+> **History.** Written for livediagram, before livedesign was cut down to logo, wireframe and photo pages. The board measured was a whiteboard tab, which livedesign does not have; the hot spots are in canvas code livedesign still runs, and the rules live in the spec.
+
 Measured 2026-10-02 on a real 658-element whiteboard on staging (277 shapes, 215 arrows, 76
 freehand, 74 text, 14 paths, 2 stickies; 164 KB), at the 19% zoom that fits it on screen. The
 resulting rules live in [Canvas performance](../specs/008-canvas/canvas-performance.md).

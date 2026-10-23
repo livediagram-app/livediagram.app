@@ -12,7 +12,7 @@ export function TimelineFeedArt() {
       color: '#8b5cf6',
       kind: '#16a34a',
       verb: 'commented on',
-      doc: 'Roadmap',
+      doc: 'Bloom brand',
       time: 'now',
       fresh: true,
     },
@@ -21,7 +21,7 @@ export function TimelineFeedArt() {
       color: '#0ea5e9',
       kind: '#f59e0b',
       verb: 'assigned you',
-      doc: 'Billing v2',
+      doc: 'Checkout flow',
       time: '11:02',
     },
     {
@@ -29,7 +29,7 @@ export function TimelineFeedArt() {
       color: '#ec4899',
       kind: '#0ea5e9',
       verb: 'edited',
-      doc: 'Onboarding',
+      doc: 'Onboarding screens',
       time: '09:24',
     },
   ];

@@ -2,7 +2,7 @@
 // tables, copy and specs. The browser's own `document` (and its DOM relatives) keeps its name, as do the telemetry
 // category Document (a category every product's dashboard shares), other sites' URLs and livedocuments.
 import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
@@ -16,7 +16,8 @@ const tracked = () =>
     maxBuffer: 64 * 1024 * 1024,
   })
     .split('\0')
-    .filter((f) => f && !f.startsWith('plans/'));
+    // A deletion not yet staged is still listed: skip what is gone.
+    .filter((f) => f && !f.startsWith('plans/') && existsSync(join(root, f)));
 
 // The DOM's names that hold the word, and words that only look like it.
 const ALLOWED = new Set([

@@ -1,6 +1,6 @@
 # Code block
 
-A monospace, syntax-highlighted code snippet element in the palette's **Components** category ([Palette top-level categories and bands](../010-palette/palette-top-level-categories.md)). The audience is technical (developer slides, how-to articles, API explainers, the MCP server); without it, people fake snippets with text elements.
+A monospace, syntax-highlighted code snippet element in the palette's **Components** category ([Palette top-level categories and bands](../010-palette/palette-top-level-categories.md)). The audience is technical (a developer tool's wireframe, API explainers, the MCP server); without it, people fake snippets with text elements.
 
 ## Model: a data shape, not a new element kind
 

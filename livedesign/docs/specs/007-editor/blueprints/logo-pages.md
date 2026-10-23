@@ -32,22 +32,22 @@ Exclude), **Wordmark**, **Logo Kit**.
 
 | Constant                                   | Value                                         | Where                                             | Provenance / safe range                                          |
 | ------------------------------------------ | --------------------------------------------- | ------------------------------------------------- | ---------------------------------------------------------------- |
-| `LOGO_SIDE`                                | 1024                                          | `packages/design/src/page.ts`                   | The largest common app-icon master; 512 to 2048                  |
-| `LOGO_SAFE_FRACTION`                       | 0.1                                           | `packages/design/src/page.ts`                   | Spec; 0.05 to 0.15                                               |
-| `LOGO_KEYLINE_CIRCLE`                      | 0.8 (diameter / side)                         | `packages/design/src/logo-page.ts`              | Inscribed in the safe area                                       |
-| `LOGO_INNER_CIRCLE`                        | 0.5                                           | `packages/design/src/logo-page.ts`              | Spec                                                             |
-| `LOGO_KEYLINE_SQUARE`                      | 0.64                                          | `packages/design/src/logo-page.ts`              | Spec (Material's 18/24 of the 20/24 live area, rounded)          |
-| `LOGO_GRID_DIVISIONS`                      | 8                                             | `packages/design/src/logo-page.ts`              | Spec                                                             |
+| `LOGO_SIDE`                                | 1024                                          | `packages/design/src/page.ts`                     | The largest common app-icon master; 512 to 2048                  |
+| `LOGO_SAFE_FRACTION`                       | 0.1                                           | `packages/design/src/page.ts`                     | Spec; 0.05 to 0.15                                               |
+| `LOGO_KEYLINE_CIRCLE`                      | 0.8 (diameter / side)                         | `packages/design/src/logo-page.ts`                | Inscribed in the safe area                                       |
+| `LOGO_INNER_CIRCLE`                        | 0.5                                           | `packages/design/src/logo-page.ts`                | Spec                                                             |
+| `LOGO_KEYLINE_SQUARE`                      | 0.64                                          | `packages/design/src/logo-page.ts`                | Spec (Material's 18/24 of the 20/24 live area, rounded)          |
+| `LOGO_GRID_DIVISIONS`                      | 8                                             | `packages/design/src/logo-page.ts`                | Spec                                                             |
 | `LOGO_GUIDE_ALPHA`                         | faint .2/.08, medium .35/.15, strong .6/.3    | `apps/live/lib/logo-guide-prefs.ts`               | Guides / grid opacity per strength                               |
-| `MIRROR_AXIS_TOLERANCE`                    | 0.01 (of the artboard's width)                | `packages/design/src/element-mirror.ts`         | Spec; 0.005 to 0.03                                              |
-| `LETTER_SPACING_MIN` / `_MAX`              | -0.2 / 1 (em)                                 | `packages/design/src/wordmark.ts`               | Spec                                                             |
-| `TEXT_ARC_MAX`                             | 360 (degrees, either sign)                    | `packages/design/src/wordmark.ts`               | Spec                                                             |
-| `FONT_WEIGHTS`                             | 400, 500, 700                                 | `packages/design/src/wordmark.ts`               | The weights `fonts.ts` loads for every catalogue font            |
-| `ARC_ASCENT` / `ARC_DESCENT`               | 0.8 / 0.25 (em)                               | `packages/design/src/wordmark.ts`               | Room kept for glyphs above / below the arc's baseline            |
+| `MIRROR_AXIS_TOLERANCE`                    | 0.01 (of the artboard's width)                | `packages/design/src/element-mirror.ts`           | Spec; 0.005 to 0.03                                              |
+| `LETTER_SPACING_MIN` / `_MAX`              | -0.2 / 1 (em)                                 | `packages/design/src/wordmark.ts`                 | Spec                                                             |
+| `TEXT_ARC_MAX`                             | 360 (degrees, either sign)                    | `packages/design/src/wordmark.ts`                 | Spec                                                             |
+| `FONT_WEIGHTS`                             | 400, 500, 700                                 | `packages/design/src/wordmark.ts`                 | The weights `fonts.ts` loads for every catalogue font            |
+| `ARC_ASCENT` / `ARC_DESCENT`               | 0.8 / 0.25 (em)                               | `packages/design/src/wordmark.ts`                 | Room kept for glyphs above / below the arc's baseline            |
 | `COMBINE_TOLERANCE_PX`                     | 0.25                                          | `apps/live/lib/combine/outline.ts`                | Spec ("a quarter of a pixel")                                    |
 | `COMBINE_MERGE_PX`                         | 0.05                                          | `apps/live/lib/combine/simplify.ts`               | Collinear merge distance; well under a device pixel              |
 | `COMBINE_MAX_INPUT_POINTS`                 | 50,000                                        | `apps/live/lib/combine/combine.ts`                | Refused above as Too detailed; measured runs stay under 4 ms     |
-| `MAX_PATH_NODES`                           | 5,000 (existing; now across all contours)     | `packages/design/src/validate.ts`               | Existing                                                         |
+| `MAX_PATH_NODES`                           | 5,000 (existing; now across all contours)     | `packages/design/src/validate.ts`                 | Existing                                                         |
 | `LOGO_KIT_PNG_SIZES`                       | 16, 32, 48, 64, 128, 180, 192, 256, 512, 1024 | `apps/live/lib/export-logo-kit.ts`                | Spec                                                             |
 | `LOGO_ICO_SIZES`                           | 16, 32, 48                                    | `apps/live/lib/export-logo-kit.ts`                | Spec                                                             |
 | `BUTTON_ROOM` / `LABELLED_ROOM`            | 28 px / 72 px                                 | `apps/live/components/canvas/LogoTitleBar.tsx`    | Title-bar room a control takes, icon-only / named                |
@@ -58,8 +58,8 @@ Exclude), **Wordmark**, **Logo Kit**.
 | `TIDY_SQUARE_DEGREES`                      | 12                                            | `apps/live/lib/stroke-tidy.ts`                    | Spec ("within 12 degrees of level or upright")                   |
 | `LOGO_PAGE_GUIDES_MAX`                     | 200                                           | `apps/live/lib/logo-page-guides.ts`               | Spec ("the latest 200 pages"); about 10 KB of local storage      |
 | `LOGO_PALETTE_OPEN_RETRY_MS`               | 400 ms                                        | `apps/live/hooks/canvas/useLogoPaletteSwitch.ts`  | Second ask on opening, for a palette that mounts after the pages |
-| `RADIAL_COPIES`                            | 3, 4, 5, 6, 8                                 | `packages/design/src/element-symmetry.ts`       | A radial mirror's choices of copies                              |
-| `DEFAULT_MIRROR`                           | Vertical, 6 copies, merge on                  | `packages/design/src/element-symmetry.ts`       | Mirror settings before any are chosen                            |
+| `RADIAL_COPIES`                            | 3, 4, 5, 6, 8                                 | `packages/design/src/element-symmetry.ts`         | A radial mirror's choices of copies                              |
+| `DEFAULT_MIRROR`                           | Vertical, 6 copies, merge on                  | `packages/design/src/element-symmetry.ts`         | Mirror settings before any are chosen                            |
 | `THUMB_W`                                  | 120 px                                        | `apps/live/components/canvas/layout-thumb.tsx`    | Two layout tiles to a row (user request, every kind)             |
 
 ## Data and persistence
@@ -87,7 +87,7 @@ Exclude), **Wordmark**, **Logo Kit**.
   `livedesign:v2:logo-page-guides`, `{ [logoPageGuidesKey(tabId, pageId)]: boolean }`, the key
   `<tabId>:<pageId>` since page ids repeat across tabs, the latest `LOGO_PAGE_GUIDES_MAX` = 200): a page's own Show Guides; absent follows `logoGuides`. Not a synced preference: the
   api caps preferences at 4 KB.
-- Migration: none. Older readers see `kind: 'logo'` as infographic and the artboard as A4; they
+- Migration: none. Older readers see `kind: 'logo'` as a plain page and the artboard as A4; they
   ignore `subpaths` (first contour drawn) and the wordmark fields (flat text).
 
 ## Behaviour and state
@@ -106,7 +106,7 @@ Exclude), **Wordmark**, **Logo Kit**.
 ### Page edits (`apps/live/hooks/editor/page-edits.ts`)
 
 - `KIND_CHOSEN_EVENT.logo = 'PageKindLogo'`, `KIND_ADDED_EVENT.logo = 'LogoPageAdded'`.
-- `addPage('logo')` appends `newLogoPage(id)`; the infographic model skips logo pages.
+- `addPage('logo')` appends `newLogoPage(id)`.
 - `setSize` refuses any size on a logo page and `'logo'` on any other; `setOrientation` refuses;
   `setBackground` refuses a pattern on a logo page.
 - `removePage` (every kind, user request): before the commit, `onGoTo` the page before the deleted
@@ -523,14 +523,14 @@ Measured (vitest on this branch):
 
 | Spec rule                                         | Test                                                                                                                           |
 | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| Logo page parsed, artboard, no pattern, label     | `packages/design/src/page-logo.test.ts`                                                                                      |
-| Guide geometry, snap boxes, page under a point    | `packages/design/src/logo-page.test.ts`                                                                                      |
-| Mirror rules                                      | `packages/design/src/element-mirror.test.ts`, `element-symmetry.test.ts`, `apps/live/lib/mirror-commit.test.ts`              |
+| Logo page parsed, artboard, no pattern, label     | `packages/design/src/page-logo.test.ts`                                                                                        |
+| Guide geometry, snap boxes, page under a point    | `packages/design/src/logo-page.test.ts`                                                                                        |
+| Mirror rules                                      | `packages/design/src/element-mirror.test.ts`, `element-symmetry.test.ts`, `apps/live/lib/mirror-commit.test.ts`                |
 | Mirror popover and per-page settings              | `apps/live/components/canvas/LogoMirrorPopover.test.tsx`, `apps/live/hooks/editor/useLogoTools.pages.test.tsx`                 |
 | Mirror Copy                                       | `apps/live/hooks/editor/useLogoTools.test.ts`                                                                                  |
-| Wordmark fields, clamps, arc geometry, validation | `packages/design/src/wordmark.test.ts`                                                                                       |
-| Wordmark in export                                | `packages/design/src/svg-render-wordmark.test.ts`                                                                            |
-| Combined paths: draw, hit, validate               | `packages/design/src/path-contours.test.ts`                                                                                  |
+| Wordmark fields, clamps, arc geometry, validation | `packages/design/src/wordmark.test.ts`                                                                                         |
+| Wordmark in export                                | `packages/design/src/svg-render-wordmark.test.ts`                                                                              |
+| Combined paths: draw, hit, validate               | `packages/design/src/path-contours.test.ts`                                                                                    |
 | Page edits, the delete glide                      | `apps/live/hooks/editor/page-edits.test.ts`                                                                                    |
 | Logo layouts fit the safe area                    | `apps/live/lib/logo-layouts.test.ts`                                                                                           |
 | Combine ops, style, empty, too detailed, budget   | `apps/live/lib/combine/combine.test.ts`, `apps/live/hooks/canvas/useCombineShapes.test.ts`                                     |
@@ -540,7 +540,7 @@ Measured (vitest on this branch):
 | Guide preferences                                 | `apps/live/lib/logo-guide-prefs.test.ts`                                                                                       |
 | Transparency, kit names, ICO                      | `apps/live/lib/export-logo.test.ts`, `apps/live/lib/ico-writer.test.ts`                                                        |
 | Commands                                          | `apps/live/lib/editor-commands.test.ts`                                                                                        |
-| Guide snapping and its budget                     | `packages/design/src/logo-guide-snap.test.ts`, `apps/live/lib/logo-guide-snapping.test.ts`                                   |
+| Guide snapping and its budget                     | `packages/design/src/logo-guide-snap.test.ts`, `apps/live/lib/logo-guide-snapping.test.ts`                                     |
 | Where a drawing can start                         | `apps/live/components/canvas/GuideSnapPoints.test.tsx`                                                                         |
 | Per-page Show Guides                              | `apps/live/lib/logo-page-guides.test.ts`                                                                                       |
 | Title bar controls and room                       | `apps/live/components/canvas/LogoTitleBar.test.tsx`                                                                            |

@@ -3,6 +3,8 @@
 Follow the references below only as needed; never upfront.
 
 Research holds dated measurements and experiment reports. They record what was measured and decided at the time; the specs state what the product does now.
+Every report here was written for livediagram, before livedesign was cut down to logo, wireframe and photo pages, so its
+whiteboards, diagrams, Markdown outlines and facilitation tools describe that product; each opens with a note saying so.
 
 ## Canvas performance
 

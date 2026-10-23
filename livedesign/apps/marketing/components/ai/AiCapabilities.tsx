@@ -1,7 +1,7 @@
 import {
-  lucideFileText,
+  lucideAppWindow,
   lucideLayoutGrid,
-  lucidePresentation,
+  lucidePenTool,
   lucideSearch,
   lucideShare2,
   lucideUndo2,
@@ -12,14 +12,14 @@ import { lucideGlyph } from '@livedesign/ui';
 // card maps to a shipped tool (docs/specs/015-api/mcp-server.md §4); a new tool earns a card here only once it ships.
 const CAPABILITIES = [
   {
-    icon: lucideGlyph(lucideFileText, 20),
-    title: 'Articles',
-    body: 'Written up in Markdown and flowed onto pages, then read back and revised whenever you ask.',
+    icon: lucideGlyph(lucidePenTool, 20),
+    title: 'Logos',
+    body: 'Logo artboards started from a ready-made layout, with the mark and the name set in your colours, ready to polish by hand.',
   },
   {
-    icon: lucideGlyph(lucidePresentation, 20),
-    title: 'Slides, posters and logos',
-    body: 'Decks from ready-made slide layouts, infographics and logo artboards, all on pages you can polish by hand.',
+    icon: lucideGlyph(lucideAppWindow, 20),
+    title: 'Wireframes',
+    body: 'Phone, tablet, browser, laptop and watch screens from ready-made layouts, laid out page by page into a flow.',
   },
   {
     icon: lucideGlyph(lucideLayoutGrid, 20),

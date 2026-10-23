@@ -48,7 +48,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'What is livedesign?',
-        a: 'A free, real-time editor for designing on pages: logos on a square artboard and wireframes framed by their device, presented as a deck or exported as PDF, PNG or SVG. Every design is a stack of tabs, each holding its pages, and your team can work on any of them with you live.',
+        a: 'A free, real-time editor for designing on pages: logos on a square artboard, wireframes framed by their device and photos edited in layers, presented page by page or exported as PDF, PNG or SVG. Every design is a stack of tabs, each holding its pages, and your team can work on any of them with you live.',
       },
       {
         q: 'Do I need an account to use livedesign?',
@@ -56,8 +56,8 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
           <>
             No. Open the editor and start straight away, with no sign-up. Your work saves in your
             browser as you go, and pressing Share puts it online for others to join. Signing in
-            (also free) keeps your designs with you across devices and unlocks teams, API tokens
-            and the AI connection. See{' '}
+            (also free) keeps your designs with you across devices and unlocks teams, API tokens and
+            the AI connection. See{' '}
             <a href="/help/getting-started/guest-vs-account/">guest vs account</a>.
           </>
         ),
@@ -151,29 +151,29 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
   {
     id: 'creating',
     title: 'Creating',
-    blurb: 'Logos, wireframes and presenting them.',
+    blurb: 'Logos, wireframes, photos and presenting them.',
     icon: lucideGlyph(lucideShapes, ICON),
     items: [
       {
         q: 'What can I make with it?',
-        a: 'Logos, wordmarks and brand marks, and wireframes for phone, tablet, watch and web apps and websites, each framed by its device, and photos edited in layers. Pages hold shapes, text, pictures, icons, tables and charts, and every page presents as a slide.',
+        a: 'Logos, wordmarks and brand marks, and wireframes for phone, tablet, watch and web apps and websites, each framed by its device, and photos edited in layers. Pages hold shapes, text, pictures, icons, tables and charts, and every page can be presented full screen.',
       },
       {
         q: 'How many templates and themes are there?',
         a: `${TEMPLATE_COUNT} starter templates across ${TEMPLATE_CATEGORY_COUNT} categories, and twenty-four themes that recolour every page in one click, including dark and multi-colour schemes. On top of the templates, a logo page starts from one of ${LOGO_LAYOUT_COUNT} logo layouts. You can also build and save a colour scheme of your own.`,
       },
       {
-        q: 'Can I present my pages as a slide deck?',
+        q: 'Can I present my pages?',
         a: (
           <>
-            Yes. Every page joins the deck, from any tab, and presents full screen. Each slide can
+            Yes. Every page, from any tab, presents full screen in the order you set. Each page can
             carry presenter notes and a time budget, and a laser pointer and spotlight help you
             guide the room. Presenting happens on your screen only, so collaborators carry on
             working. See <a href="/help/selection-modes/slide-deck/presenting/">presenting</a>.
           </>
         ),
         aText:
-          'Yes. Every page joins the deck, from any tab, and presents full screen. Each slide can carry presenter notes and a time budget, and a laser pointer and spotlight help you guide the room. Presenting happens on your screen only, so collaborators carry on working. See presenting.',
+          'Yes. Every page, from any tab, presents full screen in the order you set. Each page can carry presenter notes and a time budget, and a laser pointer and spotlight help you guide the room. Presenting happens on your screen only, so collaborators carry on working. See presenting.',
       },
       {
         q: 'Can I design a logo?',
@@ -199,6 +199,19 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         ),
         aText:
           'Yes. A wireframe page draws a phone, a tablet, a browser, a laptop or a watch round the screen you are planning, and starts from a ready-made screen. Five templates lay out whole flows, from a mobile app to a web dashboard. See wireframe pages.',
+      },
+      {
+        q: 'Can I edit photos?',
+        a: (
+          <>
+            Yes. A photo page edits a picture in layers, with masks, blend modes, adjustments, 44
+            filters and tools to select, paint and retouch. Open a PSD with its layers, and export
+            PNG, JPEG, WebP or a layered PSD. See <a href="/help/pages/photo-pages/">photo pages</a>
+            .
+          </>
+        ),
+        aText:
+          'Yes. A photo page edits a picture in layers, with masks, blend modes, adjustments, 44 filters and tools to select, paint and retouch. Open a PSD with its layers, and export PNG, JPEG, WebP or a layered PSD. See photo pages.',
       },
       {
         q: 'Can I organise a big design?',
@@ -390,7 +403,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'Can I export my work?',
-        a: 'Yes. Export pages as PNG, SVG or one print-ready PDF, a logo page as a logo kit, and any tab as a portable JSON file to import back with full fidelity. Hidden layers stay out of image exports unless you switch them on.',
+        a: 'Yes. Export pages as PNG, SVG or one print-ready PDF, a logo page as a logo kit, a photo as PNG, JPEG, WebP or a layered PSD, and any tab as a portable JSON file to import back with full fidelity. Hidden layers stay out of image exports unless you switch them on.',
       },
     ],
   },
@@ -404,9 +417,9 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'Where is my data stored, and do you track me?',
         a: (
           <>
-            Designs saved to your account are stored in our database on Cloudflare, and designs
-            in This Browser stay in your browser. There are no tracking pixels, no advertising and
-            no third-party analytics. We do record anonymous, first-party usage (which features get
+            Designs saved to your account are stored in our database on Cloudflare, and designs in
+            This Browser stay in your browser. There are no tracking pixels, no advertising and no
+            third-party analytics. We do record anonymous, first-party usage (which features get
             used, never your content or name) and show it openly on our{' '}
             <a href="/telemetry">telemetry page</a>. See the{' '}
             <a href="/help/policies/privacy-policy/">privacy policy</a> for the details.
@@ -433,9 +446,9 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         a: (
           <>
             A design kept only in your browser goes with it, so share it or sign in first. Share
-            syncs a design online in one step, and after you sign in livedesign offers to move
-            every browser-only design into your account. Designs saved to your account are never
-            touched. See <a href="/help/privacy-and-security/offline-mode/">Offline Mode</a>.
+            syncs a design online in one step, and after you sign in livedesign offers to move every
+            browser-only design into your account. Designs saved to your account are never touched.
+            See <a href="/help/privacy-and-security/offline-mode/">Offline Mode</a>.
           </>
         ),
         aText:

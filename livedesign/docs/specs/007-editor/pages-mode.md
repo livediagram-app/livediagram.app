@@ -34,9 +34,8 @@ page is and offers; this section is the basics.
     (`MAX_PAGES`).
 - **The surround** is the tab's own canvas: its colour, and every canvas setting, apply behind the pages. Its
   pattern is **plain** while the tab keeps its theme's pattern; a pattern someone picked shows behind the pages.
-- **Each page's label** sits above its top-left corner (**A4 · Portrait** on an infographic page, or
-  **A4 · Landscape · Article**, its name first when it has one, never "Page n": the page
-  navigator shows its place), and
+- **Each page's label** sits above its top-left corner (**1024 x 1024 · Logo** on a logo page,
+  **iPhone · Wireframe** on a wireframe page, its name first when it has one), and
   **its settings cog** above its top-right, both held at one screen size at any
   zoom. The cog (tooltip **Page settings**, or **Page 2 settings**) opens the
   **page panel** ("The page panel").
@@ -50,8 +49,7 @@ page is and offers; this section is the basics.
 - **Content moves with its page.** Turning, resizing, moving or deleting a page
   moves the pages after it; every element whose centre lies on a page that
   moves (and an arrow's free ends) moves with it, re-centred on the page's
-  centre (`withPages`); on an article page it keeps its place from
-  the page's top-left corner, where the writing starts. A deleted page takes its content with it; a
+  centre (`withPages`). A deleted page takes its content with it; a
   turned or resized page re-fits its own content
   ("Sizes"). Elements on no page stay
   where they are. Each change is one tab edit (one undo step, synced to
@@ -62,7 +60,7 @@ page is and offers; this section is the basics.
   pages: the tab's own fit on landing, and the fit after a template or an import
   lands on it, frame the first page too (only Fit to Screen fits everything), and going to a page
   (its label, the page navigator, a new page) fits that page, so whatever its shape
-  (a landscape slide on a wide screen too) it fills the view; turning or resizing a
+  (a turned tablet on a wide screen too) it fills the view; turning or resizing a
   page re-fits it. Where the Toolbar strip lies over
   the canvas's top edge, the page centres in the band below it
   (`computeFitBelow`).
@@ -87,7 +85,7 @@ page is and offers; this section is the basics.
 | Term                | Means                                                                                                                                 |
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
 | **page**            | One sheet of a tab (`Page`), stored in `Tab.pages` in row order.                                                                      |
-| **page kind**       | What a page is for, fixed when it is made: a **logo** or **wireframe** page; a page with no kind is a blank page.                     |
+| **page kind**       | What a page is for, fixed when it is made: a **logo**, **wireframe** or **photo** page; a page with no kind is a blank page.          |
 | **page size**       | The sheet's format (`PageSizeId`): its short and long side in canvas px, or Fit to Content's own sides.                               |
 | **row anchor**      | Where the row of pages sits on the canvas (`Page.rowAt`): the first page's centre.                                                    |
 | **orientation**     | Portrait (the long side upright) or landscape. A square page has none.                                                                |
@@ -110,7 +108,7 @@ is never shown and never chosen. Each kind is its own palette layout (`palette-l
 offering what that page is made of and nothing it has no use for; within a kind every tile sits in
 one category (Popular, a pick from across them, aside).
 
-- **Design** (infographic pages): Popular, Shapes,
+- **Design** (a blank page, its kind not chosen yet): Popular, Shapes,
   Write, Concepts, Components, Devices, Icons, Stickers, Media, Data.
 - **Wireframe** (wireframe pages): **Components** and **Elements** first, in a band of their own
   (a divider after Elements), then the rest without **Concepts** and **Devices**
@@ -132,20 +130,20 @@ nothing moves under reduced motion.
 
 ## Page kinds
 
-A page is one of four kinds (`Page.kind`), chosen when it is made and never changed
-afterwards (the one exception: the first page's own choice, below):
+A page is one of three kinds (`Page.kind`, `PageKind`), chosen when it is made and never changed
+afterwards (the one exception: the first page's own choice, below). A page whose kind is absent is
+a **blank page** not chosen yet: a plain A4 sheet. A kind livediagram stored that livedesign does not
+have (an infographic, a slide, an article) reads as absent (`pageKindOf`).
 
-- **Infographic** (`kind: 'infographic'`, or absent: unchosen, and every page from before kinds):
-  a sheet to lay out elements on, freely, starting from a layout. Everything in this spec applies to it.
-- **Logo** (`kind: 'logo'`): a square artboard (1024 x 1024) to design a logo on, laid out like an
-  infographic page, with construction guides, mirror drawing, wordmark type, combining shapes,
-  and a logo kit export ([Logo pages](logo-pages.md)). Everything in this spec for
-  infographic pages applies to it except where [Logo pages](logo-pages.md) says otherwise.
+- **Logo** (`kind: 'logo'`): a square artboard (1024 x 1024) to design a logo on, laid out freely,
+  starting from a logo layout, with construction guides, mirror drawing, wordmark type, combining
+  shapes, and a logo kit export ([Logo pages](logo-pages.md)). Everything in this spec applies to it
+  except where [Logo pages](logo-pages.md) says otherwise.
 - **Wireframe** (`kind: 'wireframe'`): a screen framed as a device (a phone, the iPhone Duo, a
   tablet, a laptop, a desktop monitor, a browser window or a watch), its size the device's, laid out
-  like an infographic page on the device's screen, starting from the wireframe layouts
-  ([Wireframe pages](wireframe-pages.md)). Everything in this spec for infographic pages applies to
-  it except where [Wireframe pages](wireframe-pages.md) says otherwise.
+  freely on the device's screen, starting from the wireframe layouts
+  ([Wireframe pages](wireframe-pages.md)). Everything in this spec applies to it except where
+  [Wireframe pages](wireframe-pages.md) says otherwise.
 - **Photo** (`kind: 'photo'`): a picture to edit, its sheet the photo's own shape, with layers, brushes,
   selections, adjustments and filters ([Photo pages](../031-photo/photo-pages.md)). It has no background, no
   margin and no layouts; elements may sit on top of it as on any page.
@@ -154,15 +152,16 @@ afterwards (the one exception: the first page's own choice, below):
 after it, level with its middle, or, zoomed out so far that the gap is narrower than them, kept 12
 screen px clear of the page), held at one screen size:
 
-- **The +** adds **another page like the last one**, at once: its kind and shape (an infographic
-  page's size and orientation, the logo artboard), and a wireframe page's device, frame look, orientation and system bars too
+- **The +** adds **another page like the last one**, at once: its kind and shape (the logo artboard,
+  a photo page's picture size), and a wireframe page's device, frame look, orientation and system bars too
   ([Wireframe pages](wireframe-pages.md)). It carries the last page's background as every new page
-  does, never its content. Its tooltip and name say what it adds: **Add Another Infographic
-  Page**, **Add Another Logo Page**, **Add Another Photo Page** (an unstarted photo page), **Add Another iPhone Screen** (a browser's **Browser Page**, a watch's **Watch Face**).
+  does, never its content. Its tooltip and name say what it adds (`addAnotherLabel`): **Add Another
+  Logo Page**, **Add Another Photo Page** (an unstarted photo page), **Add Another iPhone Screen** (a
+  browser's **Browser Page**, a watch's **Watch Face**). A blank page has no like to add
+  (`pageAddedLike` refuses it): a page after one is chosen in Add a Page.
 - **The button under it** (a grid, tooltip **Add a Page of Any Kind**) opens **Add a Page**: a
   compact list, one row per kind, its glyph, its name and a short line, so it stays small however
   many kinds there are:
-  - **Infographic**: "Lay out icons, charts and media."
   - **Logo**: "A square artboard for a mark."
   - **Wireframe**: "A phone, tablet or web screen.", with a chevron: it turns the list to
     **Choose a Device**, a row per device (its miniature, name and screen size) under its family,
@@ -175,33 +174,28 @@ screen px clear of the page), held at one screen size:
   closes.
 
 The first page's own choice (below) keeps its cards, two by two, arrow keys moving between them. A new
-infographic page takes the last infographic page's size and orientation (else A4 portrait; A4 in
-its orientation after a Fit to Content page, whose sides are that page's alone); a new logo page
-is the 1024 x 1024 artboard. Whatever its
+logo page is the 1024 x 1024 artboard, a new wireframe page the device chosen, a new photo page its
+picture's size. Whatever its
 kind, a new page **carries over the background** of the page before it (the last page): its fill
 and pattern, a logo page taking the fill alone (it takes no pattern). It is the new page's own
 from then on.
 
-**A new page's background.** A new infographic page with nothing to carry over (after the plain
-paper, or the first page once it is chosen as an infographic, or a Blank Infographic's page)
-starts on the tab theme's **Dusk** gradient (the Gradient category's Theme Dusk: the theme's
-accent shaded 65% toward black at the top into its second colour shaded 40%), so a fresh page looks
-designed rather than bare; light ink reads on it at 4.5:1 or better on every built-in theme. A new logo
-page starts on the plain paper as before, and a template that comes with content keeps the paper it
-was designed on. Every path that makes a page lands the same: adding
-one, choosing the first page's kind, the template picker and an AI tool's template. The popover is the same on
-a phone (a bottom sheet). The + already adds another of the last page's kind, so the list keeps one fixed order.
+**A new page's background.** A new page with nothing to carry over starts on the plain paper, and a
+template that comes with content keeps the paper it was designed on. Every path that makes a page
+lands the same: adding one, choosing the first page's kind, the template picker and an AI tool's
+template. The popover is the same on a phone (a bottom sheet). The + already adds another of the
+last page's kind, so the list keeps one fixed order.
 
 A tab with no pages stored starts with one page, its kind unchosen.
 
-**The first page's choice**: while a tab's only page is unchosen and empty, it offers the four kinds
+**The first page's choice**: while a tab's only page is unchosen and empty, it offers the three kinds
 inside itself, for someone who may edit: a card centred on the page, held at one screen size,
-**What Is This Page For?** ("Choose now: a page keeps its kind once you start."), over the same four
-cards as the popover. **Infographic** keeps the page, now chosen (`kind: 'infographic'`), and the
-choice goes; **Logo** turns it into the artboard (`kind: 'logo'`), its logo layouts inviting; **Wireframe** turns
+**What Is This Page For?** ("Choose now: a page keeps its kind once you start."), over the same three
+cards as the popover (`FirstPageChoice`, `page-kind-cards.tsx`). **Logo** turns it into the artboard
+(`kind: 'logo'`), its logo layouts inviting; **Wireframe** turns
 the card to Choose a Device, and the device chosen turns it into that device's screen
 (`kind: 'wireframe'`, [Wireframe pages](wireframe-pages.md)); **Photo** turns it into an unstarted photo page
-(`kind: 'photo'`), its Start a Photo card showing ([Photo pages](../031-photo/photo-pages.md)). One edit each. Anything put on the page first (a layout, an element) is choosing Infographic by doing: the
+(`kind: 'photo'`), its Start a Photo card showing ([Photo pages](../031-photo/photo-pages.md)). One edit each. Anything put on the page first (a layout, an element) keeps it a blank page: the
 offer goes while the page has content, and comes back if it is emptied while still unchosen. The
 empty page's layout invitation waits until the choice is made. Not offered in zen or isometric
 view, nor on a second page (a page added from the + is chosen in the popover).
@@ -215,7 +209,7 @@ view, nor on a second page (a page added from the + is chosen in the popover).
   track of the [Pages tour](pages-tour.md) on this page ([Logo pages](logo-pages.md) "Show Me" for a logo
   page); the **name** field (placeholder `Page n`, or `Untitled page` while there is one
   page; renamed on Enter, on leaving the field, or on closing the panel), then its tabs: **Page**
-  alone on an infographic page, with no tab switch (its Layout, Background and Tidy are the
+  alone on a blank page, **Device** alone on a wireframe page, with no tab switch (a wireframe page's Layout, Background and Tidy are the
   buttons beside the cog, "Beside the cog" below); a logo page: **Background** and **Layouts**, its Layouts the logo layouts, [Logo pages](logo-pages.md)
   "The page panel"; Page is there only while the page has a size or orientation to choose), then the action row (Split Into Pages on a Fit to Content page, Duplicate, Move left, Move right, Delete) as icon buttons
   with tooltips. **Page** holds the **Size** tiles (each drawn to scale) and **Orientation**
@@ -255,61 +249,56 @@ field after `orientation` is optional and absent on a page that never set it:
 - `name` absent shows the page's place ("Page 2"); a name replaces it in the label.
 - `locked` is present (`true`) exactly on a locked page ("Locking a page"); `startedBlank` is
   present (`true`) once its in-page layout card was hidden for good.
-- `kind` absent is **infographic**.
+- `kind` absent is a **blank page**, its kind not chosen yet.
 
 A stored page that is malformed in any optional field keeps its valid fields and drops the rest; a
 page with no valid `id` or `orientation` is skipped (as today), as is a repeat of an id already read.
 A new page's id is random (`page-` and eight hex digits) and never one the tab's pages have had, so
-a deck slide of a deleted page can never find a new page under the old id.
+a Slide Deck slide of a deleted page can never find a new page under the old id.
 
 ## Sizes
 
-| Size id  | Label (portrait / landscape)               | Short x long side (px) | For                       |
-| -------- | ------------------------------------------ | ---------------------- | ------------------------- |
-| `a4`     | A4                                         | 794 x 1123             | Print, the default        |
-| `letter` | US Letter                                  | 816 x 1056             | Print in North America    |
-| `a3`     | A3                                         | 1123 x 1587            | Posters                   |
-| `square` | Square                                     | 1080 x 1080            | Social posts              |
-| `social` | Portrait post (4:5) / Landscape post (5:4) | 1080 x 1350            | Instagram and LinkedIn    |
-| `wide`   | Story (9:16) / Widescreen (16:9)           | 1080 x 1920            | Stories, and screens wide |
-| `logo`   | 1024 x 1024                                | 1024 x 1024            | Logos, logo pages only    |
-| `fit`    | Fit to Content                             | its own (`fit`)        | Content put onto a page   |
+| Size id  | Label (portrait / landscape) | Short x long side (px) | For                       |
+| -------- | ---------------------------- | ---------------------- | ------------------------- |
+| `a4`     | A4                           | 794 x 1123             | A blank page, the default |
+| `logo`   | 1024 x 1024                  | 1024 x 1024            | Logo pages only           |
+| `device` | the device's name            | the device's frame     | Wireframe pages only      |
+| `photo`  | the picture's size           | its own (`fit`)        | Photo pages only          |
+| `fit`    | Fit to Content               | its own (`fit`)        | Content put onto a page   |
 
-- **Which sizes a page offers** depends on its kind. An **infographic** page: A4,
-  US Letter, A3, Square, Post and Story. A **logo** page: the `logo` size only, and no Size
-  section ([Logo pages](logo-pages.md)).
-- The size tiles sit four to a row. Turned landscape, the Story (9:16) reads **Widescreen
-  (16:9)**.
-- A page is only ever given a size its kind offers; any other is refused.
+- **Which sizes a page offers** depends on its kind (`pageSizesFor`): a blank page A4, a **logo**
+  page the `logo` size only and no Size section ([Logo pages](logo-pages.md)), a **wireframe** page
+  its device ([Wireframe pages](wireframe-pages.md)), a **photo** page its picture's size
+  ([Photo pages](../031-photo/photo-pages.md)).
+- A page is only ever given a size its kind offers; any other is refused. A page stored in a size
+  livediagram had (US Letter, A3, Square, Post, Story) reads as A4.
 - **Fit to Content** (`fit`) is the page made around content that does not fit a paper size ("Into
   pages"): its sides are its own (`Page.fit`), the content's bounds plus the page margin
   all round, so nothing on it is scaled. Each side is clamped to **200** to **19200** px
   (`FIT_PAGE_MIN_SIDE`, `FIT_PAGE_MAX_SIDE`; 19200 px is 14400 pt, the largest page a PDF holds).
-  - It is offered only on an infographic page **already in it**, as its first tile; its sides come
+  - It is offered only on a page **already in it**, as its first tile; its sides come
     from content, so no other page can choose it. Choosing another size leaves it for good (its
     content re-fits as any size change does).
   - It has no orientation, like a square: no Portrait / Landscape choice and no turn.
   - Its label is **Fit to Content**; its tile hint "Sized around the content it was made for".
 
-- Paper sizes are at the CSS 96 px per inch; screen sizes are their own pixels.
-- A **square** page has no orientation: its panel shows no Portrait / Landscape choice, and it keeps
-  whatever orientation it had, so turning it back to another size restores it.
+- A4 is at the CSS 96 px per inch; screen sizes are their own pixels.
+- A **square** page (the logo artboard) has no orientation: its panel shows no Portrait / Landscape
+  choice.
 - **Changing size or orientation re-fits the page's content**: everything on the page before the
   change stays on it. Content that still fits the new margin box keeps its size, re-centred (and
   nudged back inside the margins if it pokes out); content that no longer fits is scaled down as
   one, about the page's centre, until it does: text elements' text scales with it (`textScale`)
   and arrows' bends with their lines; a shape's own label keeps its size. Nothing is cut off. The
   pages after it move along. One edit, one undo.
-- The page label reads `<name> · <size label> · <Portrait|Landscape> · <Logo|Wireframe>`,
-  the name only where the page has one: never "Page n", which the page navigator shows.
-  Only the paper sizes (A4, US Letter, A3) add the orientation: a square and Fit to Content have none, and the post
-  and story labels already say which way they face. The kind ends it, but for an infographic
-  page, the plain page, which leaves the kind off so its title bar keeps the room for its
-  controls.
+- The page label reads `<name> · <size label> · <Portrait|Landscape> · <Logo|Wireframe|Photo>`
+  (`pageLabel`), the name where the page has one. Only A4 adds the orientation (a turned device
+  says **Landscape**); a square and Fit to Content have none. The kind ends it where the size label
+  does not already name it; a blank page has no kind to name.
 
 ## Backgrounds
 
-Every page kind (infographic, logo and wireframe) is painted the same way, except that a logo
+Logo and wireframe pages are painted the same way (a photo page is never painted), except that a logo
 page takes no pattern and no picture ([Logo pages](logo-pages.md) "A logo page"). The page panel's
 **Background** section sorts its fills into three **categories**, a row of tiles at its top read like the
 Pattern tiles: each a small sheet picturing what it makes (the page's own fill on its category's tile, else
@@ -375,7 +364,7 @@ between categories changes nothing on the page.
 
 ### Re-inking
 
-When a page's fill changes (any page kind: infographic, logo, wireframe), every colour of its
+When a page's fill changes (any page: blank, logo, wireframe), every colour of its
 own on the page is measured against what it now sits on, and only a colour that falls under its
 **floor** is changed: lightened or darkened, keeping its hue, by the least amount that reaches its
 **target**, whichever way (lighter or darker) needs the smaller change. A colour that still reads
@@ -540,12 +529,12 @@ press sets it (`Tab · Changed · PageBackgroundAnimated`).
   seeds, so a page looks the same wherever it is opened.
 - **Legibility**: the moving parts are faint on a light colouring (70% strength) and lights on a
   dark one; what sits on the page is re-inked against the gradient as with any gradient.
-- Infographic and logo pages offer no Animated category.
+- Blank and logo pages offer no Animated category.
 - **Share roles**: as any background, an Editor's alone.
 
 ### Image backgrounds
 
-An infographic or wireframe page can be painted with a picture:
+A wireframe page can be painted with a picture:
 `PageFill` `{ kind: 'image', imageId, tone?, overlay?, position?, credit? }`. A logo page offers no
 Image category: a logo goes over other things, so its artboard stays a colour or the paper.
 
@@ -618,12 +607,12 @@ content, name and lock stay its own. A set of pages often wears one background, 
 given in one go rather than page by page.
 
 - **Apply to All**: at the foot of a page's **Background** (the button beside its cog, and the page
-  panel's Background tab), **Apply to All Infographic Pages** (**Logo Pages** or **Wireframe
-  Pages** on the other kinds) gives
+  panel's Background tab), **Apply to All Logo Pages** (**Wireframe Pages**, **Photo Pages** or
+  **Blank Pages** on the others, `kindPages`) gives
   every other page of the same kind this page's background, under a line saying how many it reaches
   and that a locked one keeps its own. Shown only while there is another page of the kind. One edit, one undo, each page re-inked for
-  its new fill ("Re-inking"). A notice says what it did: "Background applied to 35 infographic pages.", adding
-  "2 locked infographic pages kept their own." when it skipped any. A locked page is skipped, never refused
+  its new fill ("Re-inking"). A notice says what it did: "Background applied to 35 wireframe pages.", adding
+  "2 locked wireframe pages kept their own." when it skipped any. A locked page is skipped, never refused
   whole; a logo page's pattern is never touched.
 - **The Format tool paints pages**: with the [Format
   tool](../008-canvas/canvas-and-palette.md#format-painter), a press on a page's paper (anywhere on
@@ -633,8 +622,8 @@ given in one go rather than page by page.
   **Paint once** work as for elements; the Format Panel's groups (Fill, Border, Text, Effects, Size)
   are an element's and do not narrow a page's paint. A press on the source page, an element pressed
   under a page brush, or a page pressed under an element's brush is a no-op that keeps the brush
-  (as a shape's look onto an arrow is). Painting crosses kinds (a wireframe page's background onto an
-  infographic page), except a picture onto a logo page ("A logo page takes no picture background.");
+  (as a shape's look onto an arrow is). Painting crosses kinds (a wireframe page's background onto a
+  blank page), except a picture onto a logo page ("A logo page takes no picture background.");
   a locked target says so ("That page is locked. Unlock it to change its background.") and is left
   as it is. A refused paint keeps a Paint once brush (only a paint empties it), and a brush whose
   page has gone (deleted, undone) empties as the page goes (`useDeadPageBrush`), so the next press, on a page or an element, works at once. A press off every
@@ -654,11 +643,11 @@ the lock, a logo page's Mirror and Guides; Tidy is always its icon alone) name t
 the page is wide enough on screen to hold them named and still leave the label its least room
 (40 px); zoomed out further, they all drop to their icons (with their tooltips), as on a phone.
 
-An infographic or wireframe page's title bar holds a **Background** button before its lock and cog,
+A wireframe page's title bar holds a **Background** button before its lock and cog,
 the cog's size with a tooltip, for someone who may edit (an Editor; a Participant or Viewer sees
 no title-bar controls), as a logo page holds its Guides ([Logo pages](logo-pages.md) "Beside the
-cog"). It opens a popover anchored to it holding the **Background** and **Pattern** sections (these
-pages' panels have no Background tab: this is its one place), with the same hover previews; a press commits, one edit, and the
+cog"). It opens a popover anchored to it holding the **Background** and **Pattern** sections (its
+panel has no Background tab: this is its one place), with the same hover previews; a press commits, one edit, and the
 popover stays open for another pick. Leaving the popover, or closing it (an outside press, Escape,
 the button again), drops any preview. It is tinted while its popover is open. On a desktop it
 names itself beside its icon (**Background**); a phone shows the icon alone. A locked page shows
@@ -668,7 +657,7 @@ pages keep their background in the panel only. Opening it is tracked as
 
 ### Tidy
 
-An infographic or wireframe page's title bar holds a **Tidy** button, its icon alone (never named,
+A wireframe page's title bar holds a **Tidy** button, its icon alone (never named,
 on a desktop or a phone), right after Background and left of the lock and the cog, shown only
 while a press would change something (a page already tidy, or empty, shows none), the cog's
 size with a tooltip ("Tidy: align and space what is on this page"), its glyph a broom. A page has no graph to lay out from, so it keeps the author's layout and straightens it.
@@ -703,7 +692,7 @@ size with a tooltip ("Tidy: align and space what is on this page"), its glyph a 
   turned (rotated) one or anything on a locked layer ([Layout cleanup](../008-canvas/layout-cleanup.md#locked-elements-stay-put)),
   which stays where it is and is kept clear of like any other block. Arrows pinned to what moves
   follow their ends; a free arrow end stays. Running it twice changes nothing the second time.
-- **Where it shows**: infographic and wireframe pages only (a logo page has its own Tidy for
+- **Where it shows**: wireframe pages only (a logo page has its own Tidy for
   drawn lines). A locked page shows no
   Tidy, like its Background.
 
@@ -726,346 +715,19 @@ It shows wherever the session may restyle the tab (an Editor; never for a Partic
 who see no layout picker anyway). On a phone the Layout sheet keeps Change Theme and closes by a
 swipe, with no X.
 
-- **Ninety-two layouts**, each a complete, editable starting point in the tab's theme: a layout is built without
+- **Which layouts a page offers** depends on its kind (`layoutCatalogueFor`,
+  `packages/templates/src/layout-catalogue.ts`): a logo page the logo layouts
+  ([Logo pages](logo-pages.md) "Logo layouts"), a wireframe page its device class's
+  ([Wireframe pages](wireframe-pages.md) "Wireframe layouts"), each by its own categories. A photo
+  page and a blank page have none, so they show no Layout button and no layout card.
+- Each layout is a complete, editable starting point in the tab's theme: a layout is built without
   colours where it means the theme's, and placing it (in the editor or by an agent) fills each of those from the
   tab's built-in theme (`themedForTab`), keeping the colours it sets itself; on a dark page (a dark fill), from the
-  theme's dark half, so its words are light there. Most open with
-  a title and a lead line. A **tall** page (not wider than 1.15 times its height) stacks; a
-  **wide** one sets things side by side:
-  1. **Title Page**: an eyebrow line, a large title over a short accent rule, a subtitle, an image
-     placeholder (below on a tall page, to the right on a wide one) and a footer line.
-  2. **Big Number**: one huge figure, its caption, a paragraph, a progress bar and a source line.
-  3. **Key Stats**: two stat rows of three figures, a trend line where the page has room, and a
-     Takeaway callout.
-  4. **Process**: four steps. Tall: numbered discs down the page joined by arrows, a name and note
-     beside each. Wide: a process strip, a note under each step and a "Why it works" callout.
-  5. **Timeline**: five dated milestones. Tall: year discs down the page joined by arrows. Wide: a
-     [Timeline](../009-elements/concept-graphics.md) of the five, each its name with its year as its when, and a stat
-     row.
-  6. **Comparison**: two columns (Before / After), each a heading over three points with icons,
-     and a "The verdict" callout.
-  7. **Chart Story**: a captioned bar chart, a progress ring, three takeaways with icons and a
-     source line.
-  8. **Top Tips**: five tips, each an icon beside a line.
-  9. **Quote**: a large quotation mark, the quote in large type and the attribution (a round
-     photo, a name and a role) under it.
-  10. **Team**: six people, each a round photo, a name and a role, three across (two on a page
-      clearly taller than wide).
-  11. **Facts Grid**: six cards, each an icon, a figure and a caption, three across (two on a tall
-      page).
-  12. **Checklist**: six items, a ticked circle for each done one and an empty ring for the rest,
-      then "n of 6 done" and a progress bar.
-  13. **Event**: "You're invited", a title, an image, when and where (icon rows) and a "Save your
-      spot" banner.
-  14. **Section Divider**: a big section number, an accent rule, a title and a line, centred
-      down the page.
-  15. **Poster**: a large image (top, or the left on a wide page), a bold headline, a line and a
-      footer.
-  16. **Survey Results**: a pie chart of the answers with its legend, three headline figures (a
-      stat row, or stacked beside the chart on a wide page) and a source line.
-  17. **Progress Report**: four goals, each a name, its percentage and a progress bar, and an
-      "Updated" line.
-  18. **Roadmap**: Now, Next and Later columns, three item cards each.
-  19. **Agenda**: six timed items, each a title and a note (two columns of three on a page not
-      clearly taller than wide).
-  20. **Questions and Answers**: four questions in bold, each with its answer.
-  21. **Profile**: a round photo, a name, a role, a short bio and a stat row of three facts.
-  22. **Pros and Cons**: a heading, then Pros (ticks, green) and Cons (crosses, rose) side by side,
-      four each, and a "Weighing it up" callout.
-  23. **Before and After**: Before and After panels, each an image placeholder over three points,
-      an arrow between them (down the page when tall), and the change in one figure.
-  24. **Feature Matrix**: three options across, five features down, a tick or a dash in each cell,
-      the recommended option's column highlighted.
-  25. **Announcement**: a "New" badge, a large headline, a line, an image placeholder and a call to
-      action button.
-  26. **Did You Know?**: an icon in a large disc, "Did you know?", one surprising fact set large,
-      and a source line.
-  27. **Save the Date**: "Save the date", the date in a calendar tile, the event's name, where, and
-      a "More soon" line.
-  28. **Pictogram**: a figure set large ("7 in 10") over a grid of ten person icons, seven filled,
-      and a caption.
-  29. **Ranking**: five ranked rows, each a Step number, a name and a bar sized to its value.
-  30. **Cycle**: four stages round a loop, each a disc with an icon, a name and a note, joined by
-      arrows that close the loop.
-  31. **Funnel**: four stages narrowing down the page, each a band with its name and count, and the
-      conversion between them.
-  32. **Report Cover**: the organisation and "Annual report" in tracked capitals over an accent
-      rule, the year set huge, a title, a lead, a picture where the page has room, three headline
-      figures split by hairlines, and a footnote saying what period the figures cover. Tall:
-      everything stacks, the year above the title. Wide: the title, lead and figures on the left;
-      the year and picture on the right.
-  33. **Magazine Cover**: a tracked masthead, an issue strip between hairlines (issue and price),
-      cover lines (an accent rule, a bold lead and a line each) and the cover story. Tall: three
-      cover lines beside the picture (two on a square), the cover story across the foot. Wide: the
-      cover story on the left, the picture in the middle, the cover lines on the right.
-  34. **Book Cover**: inside a double rule, the author in tracked capitals, the title centred, a
-      star ornament between hairlines, "A novel" in italics, round artwork, a blurb and the
-      publisher. Tall: everything centred down the page; where there is no room for the artwork, the
-      words centre above the blurb. Wide: the artwork on the left, the words on the right.
-  35. **Proposal Cover**: a logo placeholder, the studio's name and a Confidential badge; a
-      "Proposal" kicker, the title and a lead beside an accent bar; and labelled details (Prepared
-      for, Prepared by, Date, Reference), each a hairline, a label, a bold value and a note. Tall:
-      the title block centred above the details set two by two; a page not much taller than wide
-      keeps one row (Prepared for and Date). Wide: the title block on the left, the four details
-      stacked in a tinted panel on the right.
-  36. **Case Study**: a "Case study" badge and a sector line, an outcome headline, a picture, a
-      client quote with attribution, three results split by hairlines, and a source line. Tall:
-      everything stacks, and the quote shows only where it leaves room for the picture. Wide: the
-      headline and quote on the left, the picture over the results on the right.
-  37. **Newsletter**: volume and date in tracked capitals, a masthead band in the accent colour
-      (name and tagline), the lead story (kicker, headline, standfirst, picture), and "In this
-      issue" in a tinted panel listing four page-numbered stories. Tall: stacked, with the stories
-      two by two; the standfirst and picture drop where there is no room. Wide: the headline and
-      standfirst, then the picture, then "In this issue" as a column on the right.
-  38. **Contents**: "Inside this report", a "Contents" title, an accent rule and an intro line, then
-      six chapters, each a hairline, a big number, a bold name, a note and its page number on the
-      right. Notes drop where rows are short. Tall: the chapters run down the page. Wide: the title
-      block and a picture on the left, the chapters on the right.
-  39. **Certificate**: inside a double rule, the heading, "This is proudly presented to", the name
-      set large over an accent rule, the reason, and two signature lines (name, then Date) around an
-      award seal. Pages up to 1.3 times taller than wide (including square) set one line of tracked
-      capitals with the seal between the signatures. Taller pages set "CERTIFICATE" large over "of
-      achievement", with the seal above the two signatures.
-  40. **Gig Poster**: a letter-spaced venue line, the band's name huge over two lines, the support
-      acts, a photo, a ticket-stub row (date, doors, price between hairlines) and a "Tickets on sale
-      now" banner. Tall: stacked and centred. Square or wide: the words down the left, the photo
-      full height on the right.
-  41. **Research Poster**: a two-line title set at one size, the authors and their school, a logo
-      slot and a rule. Under it are sections, each a tinted heading bar over its body: Introduction,
-      Methods, Results (a captioned bar chart with its legend and a source line), a Key Finding card
-      with its figure set large, Conclusions and References with a slot for a code. Three columns on
-      a page about as wide as tall or wider, two on a tall one.
-  42. **Coming Soon**: a key image, "This winter", the title huge over two lines, a tagline in
-      italics, an accent rule, the release date set large, where to watch and a billing block of
-      credits. Tall: the image on top. Square or wide: the image down the left, the words centred on
-      the right.
-  43. **Exhibition**: the gallery and "Free entry" over a hairline, then "Form" and "Colour" set
-      huge with "and" inside a big disc between them, and a subtitle. Below come an artwork image
-      with its caption and a three-column grid of Dates, Open and Where, each under a hairline.
-      Square or wide: the title down the left, the image, caption and grid down the right.
-  44. **Travel**: "Visit", the destination set huge, a line on it, a big photo with a round "Fly
-      from" fare stamp over its corner, three facts (an icon beside a figure and a caption) and a
-      foot of where and by when to book. Tall: stacked. Square or wide: the name across the top, the
-      photo down the left, the facts stacked down the right.
-  45. **Workshop**: an eyebrow, a two-line title, a lead, a photo beside three ticked points and a
-      when / how many / how much stat row. Along the foot is a tear-off strip of dashed tabs, each
-      with the class and a phone number running up it. Square or wide: the words and stat row on the
-      left, the photo and points on the right, the strip across the foot.
-  46. **We're Hiring**: the company line, "We're hiring." set huge beside an icon disc, a lead,
-      three open-role cards (role, team and terms, an arrow), three perks with icons and an "Apply
-      by" banner. Tall: stacked. Square or wide: the pitch, perks and banner on the left, an "Open
-      roles" column of cards on the right.
-  47. **Big Sale**: "Summer sale", "Up to 50% off" set inside a big disc with two stars on its edge,
-      a headline, the dates, department pills and an "In store and online" banner. Tall: stacked and
-      centred. Square or wide: the disc on the left, the rest centred down the right, the pills two
-      by two in a narrow column.
-  48. **Notice**: a tinted Caution band with a warning icon at each end, a big shield disc, the rule
-      over two lines at one size, three ticked dos and a contact footer. Tall: stacked and centred.
-      Square or wide: the band across the top, the disc on the left, the words on the right.
-  49. **Motivational**: a framed, type-only poster with three words set huge (START, USE, DO), each
-      over its phrase, an accent rule and who said it. Tall or square: stacked and centred. Wide:
-      the three pairs side by side at one size.
-  50. **KPI Dashboard**: four metric cards, each a name, a big figure, its change against last
-      quarter with a trend icon (green when good, rose when bad) and a six-month area sparkline,
-      with a source line. A wide page sets the cards four across, a long page (a story) one per row,
-      and other pages two by two. A card much wider than tall sets its figure beside the sparkline.
-      Every card's figure is the same size.
-  51. **Trend Story**: a headline and lead on the left and the period's one figure set big on the
-      right, then a two-series line chart (this year against last) over twelve months, and three
-      moments, each a disc holding its month, a name and a note, with a source line. A wide page
-      sets the moments in a column beside the chart, a long page stacks them under it, and other
-      pages run them three across under it.
-  52. **Market Share**: a doughnut of five shares with its key, the leader's share set in the hole,
-      a table of each share and the points it moved (green up, rose down, the leader's row bold),
-      and a source line. A wide page sets the doughnut on the left with the table and a "The story"
-      callout on the right. A tall page stacks the doughnut over the table.
-  53. **Stat Mosaic**: six tiles of mixed sizes on a grid: a hero figure with an icon, an icon
-      figure, a score with five stars, a progress ring and its caption, a day-by-day area chart, and
-      a second icon figure, with a source line. A wide page, or one not much taller than wide, uses
-      a four by three grid with the hero and chart two by two each. A tall page uses three by four,
-      and a long page two by six with the hero and chart across the page. A page that is not much
-      taller than wide drops the lead line.
-  54. **Staircase**: five levels, each a number, a name and a note. Not clearly taller than wide:
-      five columns standing on the page's foot, each taller than the last, the level's number, name
-      and note inside each, and the lead line in the room the low steps leave above them. Taller:
-      five cards climbing from the bottom left to the top right, each a Step number, a name and a
-      note, joined by arrows, with a pin beside the first and a flag beside the last.
-  55. **Customer Journey**: five stages, each an icon and a name, what the customer does, where it
-      happens, how it feels as an emoji face, and what to fix next. Not clearly taller than wide:
-      stages as columns and the journey's lanes (Doing, Touchpoints, Feeling, Fix next) as rows
-      under them, a persona photo heading the lane names, and the faces plotted at the height of
-      their mood and joined by arrows. Taller: stages as rows (a stage card, what happens and
-      where), and a Feeling column from Low to High where each face sits further right the better
-      the stage feels, joined down the page by arrows; a long page adds each stage's fix.
-  56. **Project Plan**: six dated weeks across the top, five workstreams (a name and an owner each)
-      as progress bars spanning their weeks, a Launch row ending in a milestone diamond, a Today
-      line through the rows with a tag under it, and faint gridlines. Not clearly taller than wide:
-      a progress ring of how much is done, "Done so far" and two figures beside the chart. Taller: a
-      stat row of three figures under it.
-  57. **Decision Flow**: a New idea start, three numbered question diamonds and a Build it end,
-      joined by arrows labelled Yes, each question's No arrow ending in its own outcome card. Not
-      clearly taller than wide: the flow runs across the middle, each question above its diamond and
-      its outcome below, with a line under each end. Taller: it runs down the middle, each question
-      to the left of its diamond and its outcome to the right.
-  58. **How-To**: a title, three facts as icon rows (time, servings, difficulty), then six steps,
-      each a photo with a Step number in its corner over the step's name and a note. One row of
-      six on a clearly wide page, otherwise three across in two rows.
-  59. **Versus**: two contenders, each an icon in a large disc, a name and a line, with a VS badge
-      between them; four stats, each a name over a pair of bars (left and right contender); and a
-      source line. Tall: the contenders face to face across the top, the stats under them. Not
-      clearly taller than wide: the contenders out at either side, the badge and stats between them,
-      no lead line.
-  60. **Pricing Tiers**: three plan cards side by side, each a name, a line on who it is for
-      (dropped where the card is short), the price set large, what it is per, an accent rule, four
-      ticked features and a button. The middle plan is drawn heavier and badged "Most popular". A
-      wide page drops the lead line.
-  61. **SWOT**: Strengths, Weaknesses, Opportunities and Threats, each a card with its letter set
-      large, its name at one shared size, an icon where there is room, a rule and three points. Two
-      by two with Helpful / Harmful column heads and a "Top row: inside the business" foot line.
-      Four in a row under "Inside the business" / "Outside it" on a wide page. Stacked on a page
-      over 1.6 times taller than wide. Lead line only when clearly taller than wide.
-  62. **Effort vs Impact**: four quadrants (Quick wins outlined, Big bets, Fill-ins, Money pits),
-      each named with a hint at its outer edge, inside an Impact axis up the left and an Effort axis
-      along the foot, each ending in an arrow. Seven numbered ideas sit at their effort and impact,
-      kept clear of the quadrant names. A numbered key sits beside the plot, or under it in two
-      columns on a page clearly taller than wide.
-  63. **Scorecard**: three options, each a card with its name, its overall score set large over "out
-      of 5", and star ratings on four criteria. The top scorer is drawn heavier and badged "Top
-      score". A source line ends the page. Three cards down the page (score at the left, a rule, the
-      criteria two by two) where it is clearly taller than wide; three across otherwise (score over
-      a rule, criteria down the card).
-  64. **Spectrum**: a rail across the page with five options placed on it at their positions from
-      simple to powerful. Each option is an icon disc, with its name and note above and below the
-      rail in turn. The pick is drawn heavier and badged "Our pick", and the two ends are named
-      under the rail with arrows. A tall page with room adds three trade-off rows (what changes from
-      one end to the other); with less room it closes on a "Why the middle" callout.
-  65. **Venn**: two overlapping translucent circles, side by side or one over the other (whichever
-      lets them grow larger). Each set's name is set large over its three traits in its own part,
-      and "Both" with the three shared traits sits in the overlap.
-  66. **Three Options**: three option cards, each a lettered disc, a name, its cost and time, an
-      image placeholder, two ticked points for (green) and one cross against (rose). One is drawn
-      heavier and badged "Recommended". Three across where the page is at least 0.8 times as wide as
-      tall; otherwise three cards down the page, each with the image and cost at the left and the
-      letter, name and points beside them.
-  67. **Org Chart**: a lead's card (round photo, name, role) joined by thin lines to three crew
-      cards. Each crew card has its lead's photo, name and role, a short rule and its members, one
-      per line (two to a line in a wide card). A page much taller than wide closes on a stat row of
-      the team's numbers.
-  68. **Testimonials**: three customer quotes, each with a star rating, a round photo, a name and a
-      role, and a source line. Not much taller than wide: three cards side by side, the rating at
-      the top and the attribution at the foot (under the photo in a narrow card). Taller: three
-      cards down the page, the photo and rating beside each quote.
-  69. **Meet the Speakers**: the event in the lead line, four speakers each a photo with a time
-      badge, a name, a role and the talk's title, and a "Book your seat" banner. Four across on a
-      wide page, two by two on a tall one; a cell much wider than tall puts the photo beside the
-      words.
-  70. **Spotlight**: an "Employee Spotlight" eyebrow, the colleague's name and role, three quick
-      facts as icon rows and three interview questions in bold, each answered. Wide or not much
-      taller than wide: the photo down the left, the words beside it. Tall: the photo beside the
-      name and facts, the interview under them. A story: the photo across the top.
-  71. **Our Values**: six values, each an icon in a disc, a name, a short accent rule and a line,
-      centred in their cells. Three across (two on a page much taller than wide).
-  72. **Idea Board**: a "How might we" question, six sticky notes slightly turned, each with its
-      vote count in a disc on its corner, and a Next step callout. Three across (two on a tall
-      page).
-  73. **Persona**: a "User Persona" eyebrow, a round photo, a name and a line of facts, a quote in a
-      speech bubble, Goals (green ticks) and Frustrations (rose warnings) side by side, and two
-      trait bars. Wide or not much taller than wide: the person and quote down the left, the lists
-      and traits beside them. Tall: the photo beside who she is, then the quote, the lists and the
-      traits.
-  74. **Shout-outs**: a Colleague of the Month card (round photo with an award badge, name, role and
-      why) and three thank-you cards, each a heart, who it is to and from, and the message. Wide or
-      not much taller than wide: the colleague of the month on the left, the notes beside. Tall:
-      that card across the top (photo beside the words), the notes under it.
-  75. **Carousel Cover**: the account's handle and a "1 / 7" slide count, a "Save this for later"
-      kicker, a hook stacked over four lines at one size (three lines on a page not much taller than
-      wide), an accent rule, a teaser line and "Swipe for all 7" beside an arrow disc at the foot; a
-      wide page sets the hook on the left and a large arrow disc with "Swipe" on the right.
-  76. **Tip of the Day**: a "Tip of the day" pill and a large "#12", the tip stacked over three
-      lines as large as the page allows, an accent rule, three reasons (an icon beside a line each)
-      and the handle row with "Save for later"; a wide page puts the reasons on a card to the right
-      of the tip.
-  77. **Milestone**: "We just hit", the figure ("10,000") set as wide as the page, what it counts, a
-      thank-you line, the follower climb as a line chart with a caption naming its source, and the
-      handle row; a square page has no room for the chart and sets the figure larger instead; a wide
-      page centres the words on the left with the chart on the right.
-  78. **Behind the Scenes**: a "Behind the scenes" pill, a two-line title, a line, and a mosaic of
-      three photos (one across the top, two below), each with its step named on a chip, then the
-      handle row; a square page drops the line so the photos keep their room; a wide page sets the
-      title on the left and the mosaic on the right (one tall photo, two stacked).
-  79. **Countdown**: "The countdown is on", the event's name, three tiles (days, hours, minutes,
-      each a large number over its unit), the date and time, a "Turn on reminders" button and the
-      handle row; a wide page sets the words on the left and the tiles in a row on the right.
-  80. **Product Spotlight**: the product photo as large as the page allows with a round price badge
-      on its lower edge, "New in", the product's name, a five-star rating with its review count, one
-      line, and a "Shop now" button beside "Link in bio"; a wide page fills the left with the photo,
-      the badge on its edge, and centres the words on the right.
-  81. **Giveaway**: "Giveaway" set across the page, the prize, its photo with a "WIN" star on it,
-      "How to enter" with three numbered steps across, and the small print; a wide page lists the
-      steps down the left and sets the photo on the right.
-  82. **Welcome Aboard**: a "Please welcome" pill, a large round photo, the name, the role, three
-      facts across (an icon over a line each) and the handle row with "Say hi below"; a wide page
-      sets the photo on the left and the name, role and facts (as icon rows) on the right.
-  83. **Webinar**: a "Free live webinar" pill, the talk's title over two lines, when, how long and
-      where (an icon row each), the host on a card (round photo, "Your host", name and role; a
-      square page drops the "Your host" line) and a full-width "Save your seat" button; a wide page
-      sets the talk on the left and the host's portrait, name and role on the right.
-  84. **How It Works**: an image with four numbered hotspots on it, a key giving each step's name
-      and note, and the one figure that sells it ("3x") over its source line. Wide, square and 4:5
-      pages set the image over the figure on the left and the key down the right; a taller page puts
-      the image across the top, the key two by two under it, and the figure at the foot.
-  85. **Anatomy**: an image down the middle and six named parts, three either side, each joined to a
-      spot on the image by a leader line with no arrowhead. Every page keeps the three columns; a
-      wide page sets the image square-ish and the names in larger type, a tall page keeps the image
-      narrow like a phone screen.
-  86. **Key Concepts**: one big idea in a hub circle and the six ideas behind it, each an icon disc
-      with a name and note, an arrow from the hub to each. A wide page sets three ideas down each
-      side on an arc, words reading away from the hub; a taller page sets three above and three
-      below, the group centred down the page; a square keeps the discs and notes compact.
-  87. **Cheat Sheet**: four groups of four shortcuts, each group an icon and name over an accent
-      rule, each shortcut a keycap beside what it does, with a line at the foot for the Mac keys.
-      Two columns of groups, one on a story; a page clearly taller than wide adds a Pro Tip callout.
-  88. **Glossary**: eight terms A to Z, each under its letter tile with a plain-words definition,
-      the term set as large as its column allows. Two columns reading down, one on a story.
-  89. **Myths and Facts**: four myths in dashed cards, each joined by an arrow to the fact that
-      corrects it in a solid card, under a red-cross Myth and green-tick Fact header, over a source
-      line. Side by side on every page but a story, which sets each myth over its fact with an arrow
-      down and a cross or tick beside each card.
-  90. **Fact File**: an image, a table of six key facts with the names in a header column, a "Did
-      you know?" callout and the source line. Wide, square and 4:5 pages set the image down the left
-      beside the table and callout; a taller page stacks image, table and callout.
-  91. **Lesson Summary**: what you can now do (three ticked lines), three numbered key points, four
-      key-word pills, and a question with four answers A to D, the answer at the foot. Two columns
-      (what was learnt left, words and quiz right) on every page but a story, which stacks the four
-      sections; the answers sit one under another where the column has the height, else two by two.
-  92. **Formula Explained**: a rule set large across a band, each term on a tile and the exponent
-      raised, each term's meaning under a symbol disc, a worked example and a bar chart of the
-      result over time. Wide, square and 4:5 pages set the four meanings in a row, each linked to
-      its term, with the example beside the chart below; a taller page sets the meanings two by two
-      with no lines, then the chart, then the example at the foot.
-- **Categories**: the picker groups the layouts as /new groups templates, one category at a time,
-  at most twelve to a category: **Covers** (Title Page, Quote, Event, Section Divider, Report Cover,
-  Magazine Cover, Book Cover, Proposal Cover, Case Study, Newsletter, Contents, Certificate),
-  **Posters** (Poster, Gig Poster, Research Poster, Coming Soon, Exhibition, Travel, Workshop, We're
-  Hiring, Big Sale, Notice, Motivational), **Data** (Big Number, Key Stats, Chart Story, Facts Grid,
-  Survey Results, Progress Report, Pictogram, Ranking, KPI Dashboard, Trend Story, Market Share,
-  Stat Mosaic), **Steps and Time** (Process, Timeline, Checklist, Roadmap, Agenda, Cycle, Funnel,
-  Staircase, Customer Journey, Project Plan, Decision Flow, How-To), **Compare** (Comparison, Pros
-  and Cons, Before and After, Feature Matrix, Versus, Pricing Tiers, SWOT, Effort vs Impact,
-  Scorecard, Spectrum, Venn, Three Options), **People and Ideas** (Top Tips, Team, Questions and
-  Answers, Profile, Org Chart, Testimonials, Meet the Speakers, Spotlight, Our Values, Idea Board,
-  Persona, Shout-outs), **Social** (Announcement, Did You Know?, Save the Date, Carousel Cover, Tip
-  of the Day, Milestone, Behind the Scenes, Countdown, Product Spotlight, Giveaway, Welcome Aboard,
-  Webinar) and **Explainers** (How It Works, Anatomy, Key Concepts, Cheat Sheet, Glossary, Myths and
-  Facts, Fact File, Lesson Summary, Formula Explained). A category with no layouts is not offered. Every picker browses them in the **layout gallery**
+  theme's dark half, so its words are light there. Every picker browses them in the **layout gallery**
   (below).
 - **Body type** is the page-sized medium and large text sizes, never the small one. Headlines
   are large text scaled to their box (`textScale`), so they read the same on the canvas and in
   every export.
-- **Numbers cite a source**: Big number and Chart story end in a source line at the page's
-  foot; Chart story's chart carries a caption naming what it shows.
-- **Nothing floats in empty space**: Quote centres its block down the page; Comparison's rows
-  share their column down to the verdict.
 - **Fitted to the page**: a layout is laid out in proportions of the page's content box (the page
   less margins of 7% of its short side), so it fits any size and orientation.
 - **A press places the layout straight away**, never asking first, empty page or not: onto a page
@@ -1115,7 +777,7 @@ swipe, with no X.
     description. Under the pointer a tile lifts and takes the brand ring with a **Use** pill at
     its corner (the same on keyboard focus); none of the motion under reduced motion. Tiles cascade
     in as a view opens, and draw their preview once they scroll near view (a soft placeholder of
-    the page's shape until then), so ninety layouts open without drawing them all.
+    the page's shape until then), so a long catalogue opens without drawing it all.
   - **Surprise Me** places a random layout from those shown (never the one it last landed on while
     there is another), and its dice tumble. In the Layout popover it keeps the popover open, so
     pressing it again rolls again with the page changing behind it; elsewhere it places and
@@ -1123,24 +785,24 @@ swipe, with no X.
   - A picture a layout leaves for the author shows in its tile as a **sample picture** (a soft
     drawn landscape, the palettes taken in turn), so a picture-led layout reads as one; what lands
     is the ordinary picture placeholder.
-- **The Layout button**: an infographic or wireframe page's title bar always holds a **Layout**
+- **The Layout button**: a wireframe page's title bar always holds a **Layout**
   button (an icon and its name on a desktop, the icon alone on a phone, tooltip **Layout**) before
   its Background button, for an Editor, on any page that is not locked, empty or not. It opens the
   page's layout gallery (a wireframe page's the wireframe layouts) in a popover anchored to it (580 px,
   headed **Layouts**, the search taking the keyboard); on a phone it opens as a bottom sheet.
   Hovering a tile previews it on the page; pressing one places it (over anything there, at once)
   and closes the popover; closing it takes any preview away. Opening it is tracked as
-  `UI / Opened / PageLayoutsButton`. These pages' panels hold no Layouts tab: the button is their
+  `UI / Opened / PageLayoutsButton`. A wireframe page's panel holds no Layouts tab: the button is its
   one way in, besides an empty page's own card. A **logo** page keeps its Layouts tab, and its
   empty artboard still invites them: a "Start From a Layout" button beside the cog, only while the
   page is empty, opening the panel on Layouts, with its words while the title bar has room for
   them beside its other buttons and the label, else just its icon, else hidden.
-- **An empty page offers its layouts**: while an infographic or logo page is empty (never a
+- **An empty page offers its layouts**: while a logo page is empty (never a
   wireframe page, whose screen stays clear), on a tab
   the viewer can edit, a **Start From a Layout** card sits centred on the page, held at its screen
   size whatever the zoom, as large as the page on screen leaves room for inside a 16 px margin (at
   most 900 by 660 px): a header (a sparkles badge where the card is 520 px or wider, **Start From a
-  Layout**, "n infographic layouts in your theme. Pick one, then make it yours." naming the page's kind,
+  Layout**, "n logo layouts in your theme. Pick one, then make it yours." naming the page's kind,
   and Hide; no Change Theme, the card keeps to its layouts) over the layout gallery. Pressing a layout places it (the page is empty,
   so at once, as one undo step); there is no hover preview here, since drawn over the page it
   would cover the card's own tiles. The card goes as
@@ -1258,10 +920,10 @@ Both show the same list:
   control. Up, Down, Home and End move between the rows' buttons.
 - **Adding**: an Editor's footer is the same pair as the canvas's + after the last page ("Adding a
   page"): a wide **Add Page** button, with the add icon, that adds another page like the last (its
-  tooltip names what it adds, **Add Another Infographic Page**, **Add Another iPad Screen**: its kind and
+  tooltip names what it adds, **Add Another Logo Page**, **Add Another iPad Screen**: its kind and
   shape, a wireframe page's device and frame too), and beside it a square button, **Add a Page of
   Any Kind**, opening Add a Page (the kinds as rows, Wireframe stepping on to its devices) beside
-  it. A new page lands after the last (carrying the background, theme's Dusk for a new infographic), glides into view and the list scrolls to its new row, marked as here. At the page
+  it. A new page lands after the last (carrying the background), glides into view and the list scrolls to its new row, marked as here. At the page
   limit both buttons are disabled with the limit in
   their tooltips. A Participant and a Viewer see the list without the footer.
 - **Cost**: thumbnails are drawn when the popover opens and redrawn only when the tab's elements
@@ -1316,7 +978,7 @@ lies on; one between pages is on none.
 
 ## Locking a page
 
-Any page, of every kind (infographic, logo, wireframe), can be **locked**, so it stays as it
+Any page, of every kind (logo, wireframe, photo, a blank page), can be **locked**, so it stays as it
 is while the rest of the tab is worked on.
 
 - **Where**: a padlock button in the page's title bar, before its cog (and the logo page's own
@@ -1383,7 +1045,7 @@ is while the rest of the tab is worked on.
   under reduced motion) onto one page:
   - **Which page**: the one holding the middle of what shows (beside the Contents sidebar), else
     the nearest. From a page seen whole, a pan of a fifth of the view's width toward a neighbour,
-    or a quicker flick of at least 24 px, turns to that neighbour, as swiping a slide deck does, so
+    or a quicker flick of at least 24 px, turns to that neighbour, as swiping through photos does, so
     getting to the next page never needs a long drag. A pinch or a zoom never turns the page.
   - **At least whole**: zoomed out past the page's fit (or within 2% of it), the view fits that
     page, exactly as its label, Fit and the pages row's arrows frame it. Zoomed in further than fit
@@ -1411,7 +1073,10 @@ is while the rest of the tab is worked on.
 
 The Export dialog exports **pages**, not the tab's content bounds.
 
-- **Formats**: **PDF**, **PNG** and **SVG**, plus **JSON** (the tab itself, a backup that imports back).
+- **Formats**: **PDF**, **PNG** and **SVG**, plus **JSON** (the tab itself, a backup that imports back),
+  the **Logo Kit** while the tab has a logo page ([Logo pages](logo-pages.md) "Export") and **Photo**
+  (PNG, JPEG, WebP or PSD, or each layer as a file) while it has a photo page
+  ([Photo pages](../031-photo/photo-pages.md)). There is no GIF or Markdown export.
 - **Pages**: every format asks **All pages** or **One page** (a segmented control), and with One
   page, which page (each by its label). PDF starts on All pages; PNG and SVG start on One page,
   the first.
@@ -1447,12 +1112,12 @@ The Import dialog offers **JSON** (a livedesign tab, which may carry pages).
 `PageBackgroundPainted` (the Format tool, page onto page), `PageRenamed`, `PageDuplicated`, `PageMoved`, `PageLayout`,
 `PageLayoutSurprise` (the layout gallery's Surprise Me), `PageLocked`, `PageUnlocked`,
 `PageFitToContent` (content put onto a page on opening), `PagesLaidOut` (Split Into Pages),
-`LogoPageAdded` and `WireframePageAdded` (the other kinds' adds), `PageKindInfographic` / `PageKindLogo` /
-`PageKindWireframe` (the first page's own choice);
-`Design · Exported · PagesPNG / PagesSVG / PagesPDF / PagesGIF` (one page) and
-`PagesPNGPages / PagesSVGPages / PagesPDFPages / PagesGIFPages` (all pages);
+`LogoPageAdded`, `WireframePageAdded` and `PhotoPageAdded` (each kind's add), `PageKindLogo` /
+`PageKindWireframe` / `PageKindPhoto` (the first page's own choice);
+`Design · Exported · PagesPNG / PagesSVG / PagesPDF` (one page) and
+`PagesPNGPages / PagesSVGPages / PagesPDFPages` (all pages);
 `UI · Added · PageSlide`; `UI · Opened · SlideDeck`; `UI · Used · PageSwipe` (a short pan or a flick
-turning to the neighbouring page, never the snap itself); `Tab · Aligned · PageTidyUp` (an infographic
+turning to the neighbouring page, never the snap itself); `Tab · Aligned · PageTidyUp` (a wireframe
 page's Tidy); `UI · Closed · EmptyPageLayouts` (the in-page
 **Start From a Layout** card's Hide); `UI · Opened · EmptyPageInvite` (Choose a Layout, where the
 card has no room). Never a colour, name or layout content.
@@ -1473,7 +1138,7 @@ onto a page made to fit it instead.
     page made around the content, as above. Pages someone has set up are kept, the content left
     in the surround.
   - Otherwise nothing happens: content left in the surround stays where it is.
-- **The page made around content** is an infographic page, landscape when the content is more than
+- **The page made around content** is a blank page, landscape when the content is more than
   1.1 times wider than tall (`LANDSCAPE_RATIO`), portrait otherwise. It is **A4** when the content
   fits A4's margin box in that orientation, and otherwise **Fit to Content** ("Sizes"): the
   content's bounds plus the margin all round. Past `FIT_PAGE_MAX_SIDE` the page stops growing and

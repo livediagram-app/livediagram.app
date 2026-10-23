@@ -2,7 +2,7 @@
 
 Status: shipped
 
-`/ai` is the marketing page that gets a visitor from "I use an AI tool" to "my AI just made a deck in livedesign" in the fewest possible steps. It is the front door to the [MCP server](../015-api/mcp-server.md): one address, one approval, then a prompt. The [help article](../../../apps/help/app/account-and-data/connect-ai-mcp/ai-clients/page.mdx) stays the reference; this page is the guided path, and links to it for everything past the first connection.
+`/ai` is the marketing page that gets a visitor from "I use an AI tool" to "my AI just made a logo in livedesign" in the fewest possible steps. It is the front door to the [MCP server](../015-api/mcp-server.md): one address, one approval, then a prompt. The [help article](../../../apps/help/app/account-and-data/connect-ai-mcp/ai-clients/page.mdx) stays the reference; this page is the guided path, and links to it for everything past the first connection.
 
 ## Entry points
 
@@ -13,7 +13,7 @@ Status: shipped
 ## The page, top to bottom
 
 1. **Hero.** Eyebrow "Build with AI", headline "Your AI, building in livedesign", a lede saying it works with the AI tool you already use, then the **address card**: `https://mcp.livedesign.app/mcp` in a monospace field with a Copy button (the one thing every tool needs). Beside it on wide screens, a chat illustration (`AiChatArt`): a request bubble, a tool-call chip naming the livedesign tool, and the first page building itself from a layout. Reduced motion shows the finished picture.
-2. **Three steps** (`#how-it-works`), one row: **Add livedesign** (paste the address into your tool), **Approve** (a livedesign page opens: sign in or create a free account, check where access goes, Connect), **Ask** (request a diagram, board, sheet or deck; it lands in your account).
+2. **Three steps** (`#how-it-works`), one row: **Add livedesign** (paste the address into your tool), **Approve** (a livedesign page opens: sign in or create a free account, check where access goes, Connect), **Ask** (request a logo, a wireframe or a screen flow; it lands in your account).
 3. **Pick your tool** (`#connect`): a tab list of clients, grouped Chat apps, Coding agents, Editors, Anything else. Selecting one shows its steps. The choice is mirrored into the URL hash (`/ai#cursor`) with `history.replaceState`, and a hash on arrival selects that client, so a link can open straight onto one tool. Every panel is in the HTML (inactive ones `hidden`), so the instructions are indexable and work before hydration (the first client shows until then).
 4. **Try it** (`#prompts`): starter prompts, each a card with a Copy button, each mapped to a shipped MCP tool.
 5. **What it can do**: a grid of the MCP's capabilities in plain words (logos and wireframes, templates, find and read with a picture, share links, live changes on an open design with Undo).

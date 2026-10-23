@@ -144,12 +144,12 @@ tests," not a number.
 One set of files is the exception, held at **100% statements, branches,
 functions and lines** by per-glob thresholds in `apps/api/vitest.config.ts`:
 
-| Files                                                                                                  | Why                                                                                                                                                           |
-| ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/auth/**`                                                                                          | Decides WHO a request is — Clerk verification, guest-id signatures, api tokens, the read/edit gates                                                           |
-| `src/api-token-row.ts`, `src/db/api-tokens.ts`, `src/routes/tokens.ts`                                 | Mint, resolve and revoke the credentials that act as an account                                                                                               |
-| `src/db/share.ts`, `src/db/shared.ts`, `src/db/ws-tickets.ts`                                          | Share links, the "shared with you" record, and the one-time realtime room tickets                                                                             |
-| `src/routes/share.ts`, `src/routes/shared.ts`, `src/routes/design-share-routes.ts`                   | The only unauthenticated read path into a design, and the owner-only routes that grant it                                                                   |
+| Files                                                                                                | Why                                                                                                                                                           |
+| ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/auth/**`                                                                                        | Decides WHO a request is — Clerk verification, guest-id signatures, api tokens, the read/edit gates                                                           |
+| `src/api-token-row.ts`, `src/db/api-tokens.ts`, `src/routes/tokens.ts`                               | Mint, resolve and revoke the credentials that act as an account                                                                                               |
+| `src/db/share.ts`, `src/db/shared.ts`, `src/db/ws-tickets.ts`                                        | Share links, the "shared with you" record, and the one-time realtime room tickets                                                                             |
+| `src/routes/share.ts`, `src/routes/shared.ts`, `src/routes/design-share-routes.ts`                   | The only unauthenticated read path into a design, and the owner-only routes that grant it                                                                     |
 | `src/image-refs/**`, `src/db/image-refs.ts`, `src/db/image-retention.ts`, `src/db/design-removal.ts` | Decide whether an uploaded image is still placed anywhere, and so whether the daily sweep may delete it ([Images](../009-elements/images.md#reference-index)) |
 
 The rest of the worker fails visibly. These fail by serving the right response
@@ -256,7 +256,7 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
   named workspace. This section records the SHAPE of coverage, not counts or
   filenames: `pnpm test` reports the counts, which change with every feature.
   A workspace that gains its first test file joins this list in the same change.
-  - `packages/design`: the data model end to end: element factories + defaults, geometry / anchor / snap math, arrow path + avoidance + endpoint-spread + auto-rebind and crossing swaps, arrow labels, layer mutations, pages and articles, rich text, tables, comments + mentions, element ops and deltas, slide decks, tab kinds, names, themes, element shadows, the headless SVG renderer's fidelity and coverage, validation.
+  - `packages/design`: the data model end to end: element factories + defaults, geometry / anchor / snap math, arrow path + avoidance + endpoint-spread + auto-rebind and crossing swaps, arrow labels, layer mutations, pages, rich text, tables, comments + mentions, element ops and deltas, slide decks, tab kinds, names, themes, element shadows, the headless SVG renderer's fidelity and coverage, validation.
   - `apps/live`: the lib layer's helpers (api client + Offline Mode store,
     auto-align, canvas geometry + backgrounds, export/import,
     search, templates + theme catalogues, user preferences, telemetry policy,

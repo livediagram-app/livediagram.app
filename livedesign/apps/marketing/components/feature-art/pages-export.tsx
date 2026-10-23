@@ -1,5 +1,5 @@
-// Feature art for Pages mode's last steps (docs/specs/007-editor/pages-mode.md): a diagram split
-// onto pages, and every page exported print-ready. Split from ./infographics; built on ./page-kit like it.
+// Feature art for Pages mode's last step (docs/specs/007-editor/pages-mode.md): every page exported
+// print-ready. Split from ./pages; built on ./page-kit like it.
 
 import { Frame } from './shared';
 import { at, EMERALD, INK, INK_SOFT, Lines, Page, Panel, ROSE, SKY, VIOLET } from './page-kit';
@@ -76,7 +76,7 @@ export function PagesExportArt() {
             ))}
             {[
               ['Pages', 'All 3'],
-              ['Size', 'A4, true size'],
+              ['Size', 'True size'],
             ].map(([k, v], i) => (
               <g key={k}>
                 <text x="92" y={47 + i * 9} fontSize="4.4" className={INK_SOFT} fill="#64748b">

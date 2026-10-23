@@ -2,7 +2,7 @@
 
 ## Overview
 
-An optional AI assistant panel in the diagram editor. Disabled by default; users opt in
+An optional AI assistant panel in the Pages editor. Disabled by default; users opt in
 via Settings. Requires a model key (`GOOGLE_AI_STUDIO_API_KEY`, `OPENAI_API_KEY`, or a generic `AI_API_KEY` + `AI_BASE_URL`) in the api worker environment —
 if absent the feature is **hidden entirely** (no UI surface, no API routes respond). This
 keeps the OSS/self-host promise intact: contributors who don't want to provision an
@@ -23,7 +23,7 @@ answering questions and tidying.
 
 | Mode      | What it does                                         | Response                                           |
 | --------- | ---------------------------------------------------- | -------------------------------------------------- |
-| **Ask**   | Answers questions about the design (read-only)     | `text/event-stream` SSE (text deltas)              |
+| **Ask**   | Answers questions about the design (read-only)       | `text/event-stream` SSE (text deltas)              |
 | **Clean** | Fixes label typos, normalises sizes/positions/styles | `text/event-stream` SSE; client parses JSON on end |
 
 Both modes stream: the worker pipes OpenAI's SSE through unchanged so the panel can render progress (text deltas for Ask, a "thinking" indicator for the JSON Clean mode). The client buffers the Clean stream until completion, parses it, then applies the elements via `commit()` so undo still treats the change as one block.
@@ -75,8 +75,8 @@ Each AI request optionally includes a `history` array of prior `{ role, content 
   element cap; past it, the selection alone (`aiContextElements`), and with no selection, or one itself
   over the cap, it says so ("Select up to 200 and try again") rather than sending a request the api refuses.
   Both prevent runaway token costs and context-window stuffing.
-- System prompt explicitly instructs the model to refuse any request unrelated to diagram
-  creation/editing and to return a structured error rather than comply.
+- System prompt explicitly instructs the model to refuse any request clearly unrelated to the
+  design on the tab and to return a structured error rather than comply.
 - For the mutating mode (Clean) `response_format: { type: "json_object" }` is set on the
   OpenAI request so the model can only return parseable JSON, preventing injection of
   arbitrary text through the design data layer.

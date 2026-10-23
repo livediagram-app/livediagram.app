@@ -54,9 +54,9 @@ does too, so the editor never asks anyone to switch mode to suit a tab.
   ([#819](https://github.com/livedesign-app/livedesign.app/issues/819)).
 - **A page's own paper.** An element on a page with a fill of its own (a solid, a gradient, an
   image) is drawn for that page, not for the viewer's chrome: its theme colours in the half whose surface matches
-  the page's (a light slide takes the light half, a dark one the dark half), its stock colours for that surface. A
-  layout placed on a light slide in Steel keeps its dark words in dark chrome, where the dark half's light ink would
-  sink into the slide. Elements on plain paper (no fill) follow the chrome as before, since the paper does. The canvas
+  the page's (a light page takes the light half, a dark one the dark half), its stock colours for that surface. A
+  layout placed on a light page in Steel keeps its dark words in dark chrome, where the dark half's light ink would
+  sink into the page. Elements on plain paper (no fill) follow the chrome as before, since the paper does. The canvas
   (`usePageView`, `apps/live/lib/stock-colour-projector.ts`) and every export (`tabAsSeen`) draw it the same way.
 - **A Border-tier preset is a line drawing on the paper.** Hairline, Outline, Dotted, Dash-Dot and Frame sit on white
   in a light half and, in a dark half, on that half's element fill (the dark ink's for a theme that paints none, as
@@ -67,7 +67,7 @@ does too, so the editor never asks anyone to switch mode to suit a tab.
   Bold of white on a mid-tone fill is drawn with the darker fill).
 - Writing follows the writer: a new element takes the writer's half of the theme, and everyone else sees it in theirs.
   Picking a theme or a look applies it in the picker's half.
-- Everything that draws a tab for a person follows their half: the canvas, the Map, layer and slide thumbnails,
+- Everything that draws a tab for a person follows their half: the canvas, the Map, layer and page thumbnails,
   exports made from the editor, the palette's tile tint, the theme and look previews in Tab Style, and the quick
   style swatches. Server-made images (thumbnails, the MCP's inline renders) have no viewer and draw what is stored.
 

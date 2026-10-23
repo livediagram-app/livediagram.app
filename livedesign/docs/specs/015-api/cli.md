@@ -5,7 +5,7 @@ browser, a device code or a token kept in the system's keychain, and is counted 
 article is `/help/developers/cli/` (Developers). Ahead: the update check.
 
 `livedesign` is a command-line front door to the api, built first for **agents** (a coding agent in a repo, a chat
-agent changing a deck while a person talks to it) and second for people (scripts, pulling designs to files).
+agent changing a wireframe while a person talks to it) and second for people (scripts, pulling designs to files).
 With it an agent reads, builds, edits, comments on and reasons about designs, paying for context only when it
 asks. It sits beside the [MCP server](mcp-server.md), not in place of it: the two are front doors to one set of
 verbs, and the api owns every write ([Agents](../024-agents/README.md)). The research behind it is in
@@ -29,12 +29,12 @@ Resource, then verb. `doc` and `el` are accepted for `design` and `element`.
 
 | Command                                                                       | Does                                                                                                                                                            |
 | ----------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `design ls [query]`                                                         | Designs in the personal library and joined teams, newest first                                                                                                |
+| `design ls [query]`                                                           | Designs in the personal library and joined teams, newest first                                                                                                  |
 | `folder ls [--json]` / `folder create <name> [--in <f>]`                      | The person's folders as paths with their ids; a new folder, at the top of My Work or inside another                                                             |
-| `design view <doc>`                                                         | The overview view                                                                                                                                               |
-| `design create <name> [--tab <name>] [-f <file>\|--template <kind>]`        | A new design from elements or a template, compiled by the api                                                                                                 |
-| `design rename\|share\|rm\|restore <doc>`                                   | As the MCP's verbs; `rm` moves to the Trash, there is no permanent delete                                                                                       |
-| `tab ls <doc>`                                                                | The design's tabs                                                                                                                                             |
+| `design view <doc>`                                                           | The overview view                                                                                                                                               |
+| `design create <name> [--tab <name>] [-f <file>\|--template <kind>]`          | A new design from elements or a template, compiled by the api                                                                                                   |
+| `design rename\|share\|rm\|restore <doc>`                                     | As the MCP's verbs; `rm` moves to the Trash, there is no permanent delete                                                                                       |
+| `tab ls <doc>`                                                                | The design's tabs                                                                                                                                               |
 | `tab view <doc> [--tab <t>] [--view <name>] [--budget <n>]`                   | A view; the outline by default; `show` takes `--ref`, `find` `--text`                                                                                           |
 | `tab add\|rename\|rm <doc> ...`                                               | Tab lifecycle; `add` takes `-f` or `--template`                                                                                                                 |
 | `tab diff <doc> [--tab <t>] --since <rev>`                                    | The diff view, computed by the CLI from its copy of the tab at that rev                                                                                         |
@@ -48,9 +48,9 @@ Resource, then verb. `doc` and `el` are accepted for `design` and `element`.
 | `presence set\|clear <doc> [--tab <t>] [--status ..] [--focus ..]`            | The agent's presence                                                                                                                                            |
 | `wait <doc> --for comment\|change [--timeout <s>]`                            | Blocks until it happens, prints it, exits                                                                                                                       |
 | `watch <doc>`                                                                 | Streams changes, one line each, until interrupted                                                                                                               |
-| `pull <doc> [--to <dir>] [--force]` / `push <file>`                           | Sync one design to a file and back                                                                                                                            |
-| `export --all --to <dir> [--format json,svg,png,md]`                          | Every design to files                                                                                                                                         |
-| `workbench open <doc>\|--workspace [--folder <f>] [--tab <t>] --origin <o>`   | A single-use link that opens the design, or the whole workspace (on Home, or a folder), live in a paired workbench                                            |
+| `pull <doc> [--to <dir>] [--force]` / `push <file>`                           | Sync one design to a file and back                                                                                                                              |
+| `export --all --to <dir> [--format json,svg,png]`                             | Every design to files                                                                                                                                           |
+| `workbench open <doc>\|--workspace [--folder <f>] [--tab <t>] --origin <o>`   | A single-use link that opens the design, or the whole workspace (on Home, or a folder), live in a paired workbench                                              |
 | `workbench pair --origin <origin> [--name <name>] [--workspace]`              | Pairs the token with a workbench, approved once in the browser; `--workspace` asks for the whole workspace                                                      |
 | `template ls\|view`, `icon search <text>`, `image ls [name]`, `schema [kind]` | The catalogues, the image gallery an image element's `imageId=` takes ([Image element](../009-elements/images.md#agents)), and the element format, from the api |
 | `guide [topic]`                                                               | How-tos: `build`, `edit`, `views`, `comments`, `collaborate`, `workbench`                                                                                       |
@@ -112,7 +112,7 @@ an agent through the CLI is designing their own pages.
 | 0    | Done                                                             |
 | 1    | Rejected: the input was understood and refused (`invalid_value`) |
 | 2    | Usage: the command line does not parse                           |
-| 3    | Not found or ambiguous: a design, tab or ref                   |
+| 3    | Not found or ambiguous: a design, tab or ref                     |
 | 4    | Not signed in, or not permitted by the token's role              |
 | 5    | Conflict or held: re-read, then retry                            |
 | 6    | Rate limited                                                     |

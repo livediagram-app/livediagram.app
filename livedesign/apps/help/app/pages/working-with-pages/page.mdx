@@ -6,33 +6,33 @@ import { PagesScene, PagePanelScene } from '@/components/illustrations/pages';
 export const metadata = helpMetadata({
   title: 'Working with Pages',
   description:
-    'Every tab is a row of pages: logos and wireframes in print, screen and social sizes, to export or present.',
+    'Every tab is a row of pages: logos, wireframes and photos, side by side, to export or present.',
   path: '/help/pages/working-with-pages/',
 });
 
 <ArticleLayout
   title="Working with Pages"
-  description="Work on a tab as pages: size them, paint them, start each from a layout, then export or present them."
+  description="Work on a tab as pages: add them, paint them, reorder and lock them, then export or present them."
   categoryTitle="Pages"
   categorySlug="pages"
   subArticles={getSubArticles('working-with-pages')}
 >
 
-Every tab in livedesign is a row of **pages**, made for building finished work: a poster, a one-pager, a set of social posts, an article or a short deck. Instead of an endless canvas you work on pages, sheets laid out in a row, each one a picture you build up and then export or present.
+Every tab in livedesign is a row of **pages**, made for building finished work: a logo, a set of app screens, an edited photo. Instead of an endless canvas you work on pages, sheets laid out in a row, each one a picture you build up and then export or present.
 
 ## Three Kinds of Page
 
-- **Infographic**: a sheet to lay out freely, starting from a layout if you like. Everything on this page is about infographic pages unless it says otherwise.
 - **Logo**: a square artboard (1024 x 1024) to design a logo on, with construction guides, mirror drawing, wordmark type, combining shapes and a logo kit export. See [Logo Pages](/help/pages/logo-pages/).
 - **Wireframe**: a screen framed as a device (a phone, a tablet, a laptop, a browser or a watch), to sketch an app or a site on. See [Wireframe Pages](/help/pages/wireframe-pages/).
+- **Photo**: a picture made of layers, edited with brushes, selections, adjustments and filters, its page the photo's own size. See [Photo Pages](/help/pages/photo-pages/).
 
-Every page, of any kind, is also a slide in the tab's slide deck, in page order, ready to present (see [Exporting and Presenting Pages](/help/pages/exporting-pages/#turning-pages-into-slides)).
+Every page, of any kind, is also a slide in the tab's deck, in page order, ready to present (see [Exporting and Presenting Pages](/help/pages/exporting-pages/#turning-pages-into-slides)).
 
-A tab's first page asks **What Is This Page For?** while it is the only page and still empty; after that, every page keeps the kind it was made with.
+A tab's first page asks **What Is This Page For?** while it is the only page and still empty. Until you choose, it is a **blank page**: a plain A4 sheet. After that, every page keeps the kind it was made with.
 
 ## Starting From a Template
 
-A new, empty tab opens on **Start Making Pages**: every Pages template, grouped by what it makes (**Logos**, **Wireframes**), with **Recommended** first and a search. No page is drawn behind it until you choose. **Blank Logo** is first under **Logos** ([Templates](/help/canvas/templates/)). The **×** leaves one empty page, ready to ask what it is for. Deleting the last page empties the tab and brings Start Making Pages back.
+A new, empty tab opens on **Start Making Pages**: every Pages template, grouped by what it makes (**Logos**, **Photos**, **Wireframes**), with **Recommended** first and a search. No page is drawn behind it until you choose. **Blank Logo** is first under **Logos** ([Templates](/help/canvas/templates/)). The **×** leaves one empty page, ready to ask what it is for. Deleting the last page empties the tab and brings Start Making Pages back.
 
 ## Content That Does Not Fit a Page
 
@@ -42,18 +42,18 @@ Open a tab whose content does not fit on its first page (an imported tab, say), 
 
 ## Pages
 
-<Figure caption="Two pages in a row, each labelled above its corner with its buttons and cog opposite, the two add buttons after the last, and the page navigator beside Undo and Redo.">
+<Figure caption="A logo page and a wireframe page in a row, each labelled above its corner with its buttons and cog opposite, the two add buttons after the last, and the page navigator beside Undo and Redo.">
   <PagesScene />
 </Figure>
 
-- **Add a page** with the **+** after the last page, or the **+** at the end of the palette strip, and choose **Infographic**, **Logo** or **Wireframe** in **Add a Page**. A new infographic page takes the last one's size and orientation, and every new page **carries over the background** of the page before it (its colour, gradient or picture, and its pattern; a logo page takes the fill without the pattern), so a series keeps its look. It is the new page's own from then on. With no background to carry over, a new infographic page starts on a deep gradient in your theme's colours (the Theme Dusk gradient); a new logo page starts on plain paper. A tab holds up to 100 pages.
-- **Each page's label** sits above its top-left corner: its name, or "Page 2", then its size ("A4 · Portrait", "Square", "Story (9:16)"), then "Logo" or "Wireframe" on those kinds of page. An infographic page, the plain page, leaves its kind off, so its title bar keeps the room for its buttons. **Press the label** to fit that page to the screen.
+- **Add a page** with the **+** after the last page, or the **+** at the end of the palette strip, and choose **Logo**, **Wireframe** or **Photo** in **Add a Page** (a wireframe then asks which device). A new logo or wireframe page **carries over the background** of the page before it (its colour, gradient or picture, and its pattern; a logo page takes the fill without the pattern), so a series keeps its look. It is the new page's own from then on. With no background to carry over, a new page starts on plain paper. A photo page is never painted: it is its picture. A tab holds up to 100 pages.
+- **Each page's label** sits above its top-left corner: its name, or "Page 2", then its size ("1024 x 1024", the device such as "iPhone", or a photo's pixel size), then its kind ("Logo", "Wireframe", "Photo"). A blank page reads "A4 · Portrait". **Press the label** to fit that page to the screen.
 - **Drag a label sideways to reorder the pages.** A blue bar in the gap shows where the page will land; let go and it moves there with everything on it. **Escape** cancels.
 - **Content belongs to its page.** Anything whose centre is on a page moves with it when the pages around it change, and whatever hangs off a page's edge is cut off at the edge, on screen and in exports, as if the pages were the only paper.
 - **Arrows stay on one page.** An arrow's end pins to an element only when that element is on the same page as the arrow's other end; elements on another page show no connection points, so the end stays free where you drop it.
 - **The page navigator** in the bottom-right corner, beside Undo and Redo (once there are two or more pages), shows "2 of 5" between **Previous page** and **Next page**, each fitting that page to the screen.
 - **The arrow keys** do the same with nothing selected: **Right** or **Down** for the next page, **Left** or **Up** for the previous one.
-- **The view always lands on a page.** Pan and zoom freely, and when you let go the view glides onto the page you are on, never stuck between pages or lost off the end of the row. A short swipe or flick turns to the next or previous page, like a slide deck. Zoom out past a whole page and it springs back to fit; zoom in as far as you like and it stays zoomed in, just kept on the page.
+- **The view always lands on a page.** Pan and zoom freely, and when you let go the view glides onto the page you are on, never stuck between pages or lost off the end of the row. A short swipe or flick turns to the next or previous page. Zoom out past a whole page and it springs back to fit; zoom in as far as you like and it stays zoomed in, just kept on the page.
 - **Back where you left off.** Come back to a tab of pages, from another tab or after a reload, and it opens on the page you were last on rather than the first. Each person's place is their own, kept in this browser.
 - **Snapping:** move or resize an element and it snaps to its page's edges, centre lines and margins, with the same guides as lining up with other elements.
 - **The title bar** above each page holds its buttons, ending in the padlock and the cog: see [Beside the Cog](#beside-the-cog).
@@ -69,56 +69,45 @@ On a computer, once a tab has more than one page, Contents sits as a sidebar aga
 - **Fit**: **Fit** in the bottom-right corner fits the page you are nearest, beside the sidebar.
 - **Find a page**: with more than six pages, type in **Find a Page** to narrow the list by a page's name, kind or number, or by any words on it.
 - **Page actions**: in the sidebar, rest the pointer on a page for **Duplicate**, **Lock** and **Delete** beside its name. In the popover, its **⋯** button holds the same.
-- **Add a page**: at the foot, **Add Page** adds another page like the last one (its tooltip says which, **Add Another Infographic Page**, say), and the square button beside it, **Add a Page of Any Kind**, lets you choose any kind. The new page lands after the last one and the list marks it.
+- **Add a page**: at the foot, **Add Page** adds another page like the last one (its tooltip says which, **Add Another Logo Page** or **Add Another iPhone Screen**, say), and the square button beside it, **Add a Page of Any Kind**, lets you choose any kind. The new page lands after the last one and the list marks it.
 
 Anyone can open Contents to find their way round. Only Editors see the page actions and the add buttons.
 
 ## Beside the Cog
 
-An infographic or wireframe page's title bar, above its top-right corner, holds the buttons you reach for most, so you rarely need its panel:
+A wireframe page's title bar, above its top-right corner, holds the buttons you reach for most, so you rarely need its panel:
 
-- **Layout** opens the page's layouts in a popover: press a category, hover a layout to preview it on the page, press it to place it. It is there on every page, empty or not, and placing a layout replaces what is on the page at once (one **Undo** brings it back). See [Wireframe Pages](/help/pages/wireframe-pages/) and [Logo Pages](/help/pages/logo-pages/).
+- **Layout** opens the page's layouts in a popover: press a category, hover a layout to preview it on the page, press it to place it. It is there on every wireframe page, empty or not, and placing a layout replaces what is on the page at once (one **Undo** brings it back). See [Wireframe Pages](/help/pages/wireframe-pages/).
 - **Background** opens the page's backgrounds and patterns in a popover, with the same hover previews as the panel (see [Backgrounds and Patterns](#backgrounds-and-patterns)). It stays open for another pick.
 - The **padlock** locks the page ([Locking a Page](#locking-a-page)), and the **cog** opens the page panel.
 
-While the page is wide enough on screen, each button shows its name beside its icon; zoom out, or use a phone, and they drop to their icons (hover one for its name). On a phone, Layout and Background open as a sheet from the bottom of the screen. A locked page shows no Layout, Tidy Up or Background button. Only Editors see these buttons: Participants and Viewers see the pages without them.
+While the page is wide enough on screen, each button shows its name beside its icon; zoom out, or use a phone, and they drop to their icons (hover one for its name). On a phone, Layout and Background open as a sheet from the bottom of the screen. A locked page shows no Layout or Background button. Only Editors see these buttons: Participants and Viewers see the pages without them.
 
-A logo page has its own buttons here instead (**Tidy** for a drawing, **Mirror** and **Guides**, and **Start From a Layout** while it is empty): see [Logo Pages](/help/pages/logo-pages/).
+A logo page has its own buttons here instead (**Tidy** for a drawing, **Mirror** and **Guides**, and **Start From a Layout** while it is empty): see [Logo Pages](/help/pages/logo-pages/). A photo page has its **Image**, **Select** and **Filter** menus: see [Photo Pages](/help/pages/photo-pages/). A blank page has the padlock and the cog alone.
 
 ## The Page Panel
 
 Press the cog above a page's top-right corner to open its panel, which opens beside the page so the page stays in view (on a phone it slides up from the bottom of the screen). At the top is the page's **name** (leave it empty to go back to "Page 2"). Below it, what the page offers:
 
-- An **infographic** page: its size and orientation. Its layouts and background are on the **Layout** and **Background** buttons beside the cog.
 - A **logo** page: the **Background** and **Layouts** tabs, with no size to choose (see [Logo Pages](/help/pages/logo-pages/)).
+- A **wireframe** page: its **Device**, the frame's look, its orientation and its system bars. Its layouts and background are on the **Layout** and **Background** buttons beside the cog (see [Wireframe Pages](/help/pages/wireframe-pages/)).
+- A **blank** page: its orientation, until you choose what it is for.
 
 Along the bottom are the page's actions.
 
-<Figure caption="An infographic page's panel beside its page: the name, the Size tiles and the orientation, then the page actions.">
+<Figure caption="A blank page's panel beside its page: the name and the orientation, then the page actions.">
   <PagePanelScene />
 </Figure>
 
 ### Size and Orientation
 
-The page's settings start with the **Size** tiles, each drawn to scale:
+Each kind of page has its own size: a logo page is always its 1024 x 1024 artboard, a wireframe page is its device's screen, and a photo page is its picture's size (change it from the photo's **Image** menu). A blank page is A4, and a page made around content that did not fit is **Fit to Content** (see [Content That Does Not Fit a Page](#content-that-does-not-fit-a-page)).
 
-| Size   | For                                                         |
-| ------ | ----------------------------------------------------------- |
-| A4     | Print, the default                                          |
-| Letter | US Letter, for print in North America                       |
-| A3     | Posters                                                     |
-| Square | Square social posts                                         |
-| Post   | Portrait posts for Instagram and LinkedIn (4:5)             |
-| Story  | Stories (9:16); turned landscape it reads Widescreen (16:9) |
-| Fit    | Fit to Content: sized around the content it was made for    |
-
-**Fit** shows only on a page already in it, a page made around content that did not fit (see [Content That Does Not Fit a Page](#content-that-does-not-fit-a-page)); choose another size and it is gone for good. A logo page is always its 1024 x 1024 artboard, so it shows no sizes at all.
-
-Below them, **Portrait** and **Landscape** turn the page (a square page and Fit to Content have no orientation). Changing a page's size or orientation keeps everything on it: content that still fits stays as it is, and content that no longer fits is scaled down as one to fit inside the margins, its text with it. Nothing is cut off.
+**Portrait** and **Landscape** turn a blank page or a Fit to Content page's sheet; a wireframe page turns from its **Device** settings. Turning a page keeps everything on it: content that still fits stays as it is, and content that no longer fits is scaled down as one to fit inside the margins, its text with it. Nothing is cut off.
 
 ### Backgrounds and Patterns
 
-Every kind of page has the same backgrounds, sorted into **Solid**, **Gradient** and **Image** at the top of the backgrounds (a logo page has no Image); they open on the kind the page has now. An infographic page keeps them on the **Background** button beside its cog; a logo page has the **Background** tab.
+Logo and wireframe pages have the same backgrounds, sorted into **Solid**, **Gradient** and **Image** at the top of the backgrounds (a logo page has no Image); they open on the kind the page has now. A wireframe page keeps them on the **Background** button beside its cog; a logo page has the **Background** tab. A photo page has no background: it is its picture.
 
 - **Solid**: **Paper** (the plain page) leading your tab theme's colours, then a row of light colours and a row of dark ones (the same colours every colour picker in livedesign offers), the colours already used in the design, and **Add a custom colour** (four coloured dots) for a **custom colour** of your own.
 - **Gradient**: a **Theme** group of fourteen gradients drawn from your tab's theme colours, light ones first, then bold and deep ones (change the tab's theme and these follow it), then a **Gradients** group of thirteen presets, from Sunrise and Peach to Night, Forest and Ember, plus the rainbow swatch for a **custom gradient**: pick its **From** and **To** colours from the same colours, turn its **Angle**, or **Swap** the two.

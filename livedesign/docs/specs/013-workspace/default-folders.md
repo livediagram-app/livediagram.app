@@ -15,10 +15,10 @@ team: two teammates may send the same new designs to different places.
 
 | Term                 | Means                                                                                              |
 | -------------------- | -------------------------------------------------------------------------------------------------- |
-| **default folder**   | The folder a person's new designs of one key land in when no place is chosen.                    |
+| **default folder**   | The folder a person's new designs of one key land in when no place is chosen.                      |
 | **default key**      | What a default is for: `<dimension>:<value>`, e.g. `mode:pages` (`PlacementDefaultKey`).           |
-| **creation intent**  | What a new design is made as, captured once when it is created: opens in and tab kind.           |
-| **opens in**         | The editor mode the design's first tab opens in (`EditorMode`).                                  |
+| **creation intent**  | What a new design is made as, captured once when it is created: opens in and tab kind.             |
+| **opens in**         | The editor mode the design's first tab opens in (`EditorMode`).                                    |
 | **tab kind**         | What the first tab is (`TabKind`).                                                                 |
 | **explicit root**    | The root of My Work, chosen on purpose (the placement picker's root tile): a place like any other. |
 | **dangling default** | A default whose folder is gone, no longer the person's to see, or in a team the person has left.   |
@@ -32,8 +32,8 @@ team: two teammates may send the same new designs to different places.
 The list a person sets defaults from is titled **New designs that open as**, and holds, in this
 order:
 
-| Entry           | Key          |
-| --------------- | ------------ |
+| Entry         | Key          |
+| ------------- | ------------ |
 | Pages designs | `mode:pages` |
 
 - A key is `<dimension>:<value>`. There is one dimension, `mode` (opens in).
@@ -66,10 +66,10 @@ order:
 The creation intent is also **written on the design**, by the same insert that creates it, and
 never re-derived or rewritten afterwards:
 
-| Column     | Field     | Holds                                          |
-| ---------- | --------- | ---------------------------------------------- |
+| Column     | Field     | Holds                                        |
+| ---------- | --------- | -------------------------------------------- |
 | `opens_in` | `opensIn` | The editor mode the design opens in, or null |
-| `tab_kind` | `tabKind` | The first tab's kind at creation, or null      |
+| `tab_kind` | `tabKind` | The first tab's kind at creation, or null    |
 
 - **Null `opensIn` means unknown**, never Pages: the design was made before intents were
   recorded, or by a create that carries none (an Offline Mode sync, an API
@@ -164,12 +164,12 @@ A create's place is decided in this order; the first that answers wins:
   included: a surface shows a dangling default as such.
 - `DELETE` of a key with no default is a 204 as well.
 
-| Rejection                | Status | When                                                                  |
-| ------------------------ | ------ | --------------------------------------------------------------------- |
-| `default_key_invalid`    | 400    | `:key` is not one of the keys                                         |
-| `default_folder_invalid` | 400    | The body is not an object whose `folderId` is a non-empty string      |
-| `folder_not_found`       | 404    | The folder is missing, someone else's, or in a team not joined        |
-| `rate_limited`           | 429    | The per-owner write rate limit is spent                               |
+| Rejection                | Status | When                                                                |
+| ------------------------ | ------ | ------------------------------------------------------------------- |
+| `default_key_invalid`    | 400    | `:key` is not one of the keys                                       |
+| `default_folder_invalid` | 400    | The body is not an object whose `folderId` is a non-empty string    |
+| `folder_not_found`       | 404    | The folder is missing, someone else's, or in a team not joined      |
+| `rate_limited`           | 429    | The per-owner write rate limit is spent                             |
 | `intent_invalid`         | 400    | (on `POST /api/designs`) `intent` is present but not a valid intent |
 
 ## Surfaces
@@ -182,8 +182,8 @@ Settings.
 
 Each key has a label, the plural a sentence uses, and an icon, in list order:
 
-| Key          | Label           | In a sentence   | Icon                  |
-| ------------ | --------------- | --------------- | --------------------- |
+| Key          | Label         | In a sentence | Icon                  |
+| ------------ | ------------- | ------------- | --------------------- |
 | `mode:pages` | Pages designs | Pages designs | The Pages mode's icon |
 
 - A new editor mode is named once (label, plural and icon) and
@@ -247,7 +247,7 @@ it has no Location step and shows no folder browser.
   ("Where each kind of new design is saved when you create it without choosing a place.") and the
   article's **Learn more**, said once rather than under every row.
 - A row names the entry, in the title case of every Settings label ("Pages Designs"), and beneath it where those designs go: the folder's name (a team folder adds its
-  team: "Decks · Design team", with a small folder mark), or **My Work** when there is
+  team: "Logos · Design team", with a small folder mark), or **My Work** when there is
   no default. Until the
   defaults and the folders have loaded it reads "Loading…"; if either cannot be read, "Couldn't
   load your default folders", with no buttons, never a guess.

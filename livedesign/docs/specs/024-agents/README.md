@@ -12,6 +12,6 @@ changes and discusses a design, alone or beside people editing it live. The fron
 - ./agent-presence.md - when showing an agent to people: attribution as its owner, presence, comments
 - ./design-views.md - when an agent reads a tab as text: refs, the outline and the other views, budgets
 - ./edit-operations.md - when an agent edits elements: the operation vocabulary, selectors, placement, errors
-- ./pages-for-agents.md - when an agent reads or makes pages (infographic, logo, wireframe)
+- ./pages-for-agents.md - when an agent reads or makes pages (logo, wireframe, photo)
 - ./page-lint.md - when checking a tab's text fits without looking at it: the findings, their codes and output
 - ./blueprints/README.md - when implementing an agents spec from its blueprint

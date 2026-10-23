@@ -227,7 +227,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <circle cx="12" cy="11" r="9.5" strokeDasharray="1.6 1.4" />
     </Glyph>
   ),
-  // A page with a title and a bar chart: the poster an infographic becomes.
+  // A page with a title and a bar chart: a page built up into one finished picture.
   'working-with-pages': (
     <Glyph>
       <rect x="5" y="2.5" width="14" height="19" rx="1.5" />

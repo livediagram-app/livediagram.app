@@ -40,7 +40,7 @@ Nine of the Shape set's values move or fade the element as a whole: **Blink**, *
 **Bounce**, **Wobble**, **Shake**, **Jelly**, **Float** and **Swing**. They are its **motions**, and they suit any
 silhouette, so an element whose own set animates inside it takes them too: sticky notes, drawings, images and
 videos, tables, charts, Sankey diagrams, progress, ratings and concept graphics. Its menu shows a
-**Shape** section beside its own, offering the motions alone; a photo on a slide can bounce. The Shape set's
+**Shape** section beside its own, offering the motions alone; a photo on a page can bounce. The Shape set's
 other values (Pulse, Glow, Trace, Gradient, Shimmer, Highlight) light or trace a shape's own outline and fill, so
 they stay with the Shape set's members.
 

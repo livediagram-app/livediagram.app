@@ -971,27 +971,20 @@ export function MoveToFolderScene() {
   );
 }
 
-/** A folder's menu with Use as Default for open: the "New designs that open as" list, one
- *  checkable entry per kind of new design. */
+/** A folder's menu with Use as Default for open: the "New designs that open as" list, its one
+ *  entry, Designs, ticked. */
 export function UseAsDefaultScene() {
   const mx = 16;
   const my = 16;
   const mw = 156;
   const items = ['Rename', 'New Subfolder', 'Change Folder', 'Use as Default for'];
-  const kinds = [
-    'Diagrams',
-    'Whiteboards',
-    'Pages designs',
-    'Plan boards',
-    'Retrospectives',
-    'Kanban boards',
-  ];
-  const ticked = new Set(['Whiteboards', 'Retrospectives']);
+  const kinds = ['Designs'];
+  const ticked = new Set(['Designs']);
   const fx = 180;
   const fy = 72;
   const fw = 222;
   return (
-    <Scene w={420} h={250} bg="plain">
+    <Scene w={420} h={190} bg="plain">
       {/* The folder menu */}
       <rect
         x={mx}
@@ -1003,7 +996,7 @@ export function UseAsDefaultScene() {
         strokeWidth={1.5}
       />
       <Label x={mx + 12} y={my + 16} size={10} weight={700} tone="strong">
-        Workshops
+        Brand Work
       </Label>
       <line
         x1={mx}
@@ -1055,7 +1048,7 @@ export function UseAsDefaultScene() {
         x={fx}
         y={fy}
         width={fw}
-        height={170}
+        height={56}
         rx={8}
         className="fill-white stroke-slate-200"
         strokeWidth={1.5}

@@ -34,7 +34,7 @@ elements) and **Draw** (the gesture tools plus Frame). The **User / actor** tile
 
 | Band          | Categories                                                                                                                     |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| **Common**    | Shapes, Write, and Draw on a logo page ([logo pages](../007-editor/logo-pages.md#the-logo-palette)); Media on a slide          |
+| **Common**    | Shapes, Write, and Draw on a logo page ([logo pages](../007-editor/logo-pages.md#the-logo-palette))                            |
 | **Structure** | Concepts ([Concept graphics](../009-elements/concept-graphics.md)), Components, Devices                                        |
 | **Decorate**  | Icons, Stickers, Media                                                                                                         |
 | **Dynamic**   | Data                                                                                                                           |

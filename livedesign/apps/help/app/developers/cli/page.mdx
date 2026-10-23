@@ -123,17 +123,17 @@ livedesign tab render "Auth flow" --png auth.png
 A few commands read livedesign's catalogues rather than your designs, which helps before writing anything:
 
 ```bash
-livedesign template ls                       # the templates a design or tab can start from
-livedesign template view slide-deck          # one template, as the outline of the tab it builds
-livedesign icon search "message queue"       # icons by name, best match first, for iconId=
-livedesign schema sticky                     # the element kinds, or one kind's fields and values
+livedesign template ls                         # the templates a design or tab can start from
+livedesign template view wireframe-mobile-app  # one template, as the outline of the tab it builds
+livedesign icon search "message queue"         # icons by name, best match first, for iconId=
+livedesign schema sticky                       # the element kinds, or one kind's fields and values
 ```
 
 ## Change a Design
 
 ```bash
 livedesign design create "Shop" -f arch.json            # from an elements file
-livedesign design create "Pitch" --template slide-deck
+livedesign design create "Coffee app" --template wireframe-mobile-app
 livedesign element set "Auth flow" n3 label="Sign in" shape=stadium
 livedesign edit "Auth flow" -f ops.txt                     # many edit operations at once
 livedesign changeset revert "Auth flow" cs_8k2m4q7d1x
@@ -158,11 +158,11 @@ livedesign watch "Shop"                         # stream changes until you stop 
 
 ## Pages
 
-A tab's [pages](/help/pages/working-with-pages/) (logos and wireframes) have their own commands:
+A tab's [pages](/help/pages/working-with-pages/) (logos, wireframes and photos) have their own commands:
 
 ```bash
-livedesign page ls "Pitch deck"                                  # each page, its refs and layouts
-livedesign page set "Pitch deck" --add slide --layout slide-title  # add, lay out, move, copy or delete pages
+livedesign page ls "Brand kit"                                       # each page, its refs and layouts
+livedesign page set "Brand kit" --add logo --layout logo-icon-above  # add, lay out, move, copy or delete pages
 ```
 
 `page set` makes one change from its flags, or up to 50 from a JSON list with `--changes`.
@@ -201,7 +201,7 @@ The CLI never prompts when its input or output is not a terminal, so it is safe 
 | `0`       | Done                                                       |
 | `1`       | Refused: the input was understood but not accepted         |
 | `2`       | Usage: the command line does not parse                     |
-| `3`       | Not found, or ambiguous: a design, tab or element        |
+| `3`       | Not found, or ambiguous: a design, tab or element          |
 | `4`       | Not signed in, or not allowed (a read-only token's writes) |
 | `5`       | Conflict: the tab changed since you read it; read, retry   |
 | `6`       | Rate limited                                               |

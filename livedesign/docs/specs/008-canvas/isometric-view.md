@@ -152,7 +152,7 @@ Like Pan / Select, repeated re-selection isn't re-tracked.
 The Export dialog ([Live app](../007-editor/live-app.md) `ExportTabDialog`) carries an **Isometric view**
 iOS-style toggle, **off by default**. When on, the image exports (PNG / SVG /
 PDF) tilt the rendered scene into the same isometric projection as the on-canvas
-view; JSON / Markdown ignore it. The export applies the projection's 2D affine
+view; JSON ignores it. The export applies the projection's 2D affine
 (`isoCanvasMatrix` in `lib/isometric.ts` — an in-plane rotation by the azimuth
 then a `cos(elevation)` vertical squash, the parallel-projection equivalent of
 the on-screen `rotateX·rotateZ`) and sizes the canvas / SVG viewBox to the

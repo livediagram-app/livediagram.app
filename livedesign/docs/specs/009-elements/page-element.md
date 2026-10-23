@@ -14,7 +14,7 @@ whole artefact.
 ## It is a shape kind, not a new element type
 
 `shape: 'page'`. The alternative, a new `BoxedElement` member, would mean
-touching validation, both export renderers, Markdown,
+touching validation, both export renderers,
 the MCP tools and the API schema, to arrive at something that
 behaves like a shape in every one of them.
 
@@ -131,4 +131,4 @@ page when it outgrows it rather than the page growing without bound.
   algebra; block content inside it is a different data structure and a much
   larger feature. Put an image element next to the page.
 - **Import / export as a design format.** It exports exactly like any shape:
-  its plain-text mirror in Markdown, its box in PNG / SVG.
+  its box in PNG / SVG / PDF.
