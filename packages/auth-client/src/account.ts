@@ -1,7 +1,8 @@
 // An app's server talking to the liveworkspace account API (liveworkspace/docs/accounts.md "Teams",
 // "API tokens" and "Settings"), with its OAuth client credentials: checking an API token, making one
 // for an AI tool someone connects, making a team for someone, reading the teams change feed,
-// reading and writing someone's settings, and reading profiles and setting one's own. These send the client secret, so they run
+// reading and writing someone's settings, reading profiles and setting one's own, this app's
+// sign-ups and milestones, and accounts' emails. These send the client secret, so they run
 // in the app's Worker only.
 import type { SiteId } from '@liveworkspace/sites';
 import type { ClientCredentials } from './oauth';
@@ -420,4 +421,73 @@ export async function writeProfile(
   }
   if (!response.ok) throw new Error(`profile write failed: ${response.status}`);
   return ((await response.json()) as { profile: Profile }).profile;
+}
+
+// --- Sign-ups, milestones and emails, per app ---
+
+// Records that this app has seen a signed-in account. True only the first time this app sees it,
+// which the app counts as a sign-up. The app is this client's own.
+export async function recordSighting(
+  credentials: ClientCredentials,
+  userId: string,
+  fetcher: typeof fetch = fetch,
+): Promise<boolean> {
+  const response = await call(
+    credentials,
+    '/sightings',
+    { method: 'POST', body: { userId } },
+    fetcher,
+  );
+  if (!response.ok) throw new Error(`sighting failed: ${response.status}`);
+  return ((await response.json()) as { first: boolean }).first;
+}
+
+// This app's one-time milestone emails: `milestone` (the tenth item) and `firstShare`.
+export type Milestone = 'milestone' | 'firstShare';
+
+// Claims one before sending it: true only for the first claim, so a burst sends one email. False
+// when already claimed, or this app has never recorded a sighting of the account.
+export async function claimMilestone(
+  credentials: ClientCredentials,
+  request: { userId: string; milestone: Milestone },
+  fetcher: typeof fetch = fetch,
+): Promise<boolean> {
+  const response = await call(
+    credentials,
+    '/milestones/claim',
+    { method: 'POST', body: request },
+    fetcher,
+  );
+  if (!response.ok) throw new Error(`milestone claim failed: ${response.status}`);
+  return ((await response.json()) as { claimed: boolean }).claimed;
+}
+
+// The most ids the account API takes in one email lookup; accountEmails splits a longer list.
+export const MAX_EMAIL_IDS = 100;
+
+// The verified addresses of these accounts (`user_…` ids), for this app's notification emails. An
+// account without a verified address is left out. Repeated ids are asked once, in batches, at once.
+export async function accountEmails(
+  credentials: ClientCredentials,
+  ids: string[],
+  fetcher: typeof fetch = fetch,
+): Promise<Record<string, string>> {
+  const unique = [...new Set(ids)];
+  const batches: string[][] = [];
+  for (let at = 0; at < unique.length; at += MAX_EMAIL_IDS) {
+    batches.push(unique.slice(at, at + MAX_EMAIL_IDS));
+  }
+  const pages = await Promise.all(
+    batches.map(async (batch) => {
+      const response = await call(
+        credentials,
+        '/emails',
+        { method: 'POST', body: { ids: batch } },
+        fetcher,
+      );
+      if (!response.ok) throw new Error(`emails failed: ${response.status}`);
+      return ((await response.json()) as { emails: Record<string, string> }).emails;
+    }),
+  );
+  return Object.assign({}, ...pages) as Record<string, string>;
 }

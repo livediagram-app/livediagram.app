@@ -4,12 +4,20 @@
 //   - for the apps' servers, by their OAuth client credentials (/api/account/internal/*): checking an
 //     API token, making one for a connecting AI tool, a token revoking itself, which tokens still
 //     work, the teams change feed, a team made in an app, reading and writing someone's settings, and
-//     reading profiles and setting one's own.
+//     reading profiles and setting one's own, an app's sign-ups and milestones, and accounts' emails.
 import { AUTH_BASE_PATH } from './auth-options.ts';
 import type { Auth } from './auth.ts';
 import type { Env } from './env.ts';
 import { sendInviteResponseEmails, sendTeamInviteEmail } from './email.ts';
+import {
+  claimMilestone,
+  isMilestone,
+  MAX_EMAIL_IDS,
+  recordSighting,
+  verifiedEmails,
+} from './account-apps.ts';
 import { clientApp } from './clients.ts';
+import { USER_ID } from './ids.ts';
 import {
   checkProfilePatch,
   isProfileOwner,
@@ -535,6 +543,34 @@ async function handleInternal(
     if (!checked.ok) return error(400, checked.error);
     const result = await writeProfile(db, body.owner, checked.patch);
     return result.ok ? json({ profile: result.value }) : answer(result);
+  }
+
+  // This app seeing an account: answers whether it was the first time, which the app counts as a
+  // sign-up. The app is the client's own.
+  if (route === 'POST sightings') {
+    const { userId } = await readBody(request);
+    if (typeof userId !== 'string' || !USER_ID.test(userId)) return error(400, 'invalid_user');
+    if (!client.app) return error(403, 'client_has_no_app');
+    return json({ first: await recordSighting(db, userId, client.app) });
+  }
+
+  // A one-time milestone email of this app's, claimed before it is sent.
+  if (route === 'POST milestones/claim') {
+    const { userId, milestone } = await readBody(request);
+    if (typeof userId !== 'string' || !USER_ID.test(userId)) return error(400, 'invalid_user');
+    if (!isMilestone(milestone)) return error(400, 'invalid_milestone');
+    if (!client.app) return error(403, 'client_has_no_app');
+    return json({ claimed: await claimMilestone(db, userId, client.app, milestone) });
+  }
+
+  // Where to reach these accounts by email, for the app's notifications: verified addresses only.
+  if (route === 'POST emails') {
+    const { ids } = await readBody(request);
+    if (!Array.isArray(ids) || !ids.every((id) => typeof id === 'string' && USER_ID.test(id))) {
+      return error(400, 'ids_required');
+    }
+    if (ids.length > MAX_EMAIL_IDS) return error(400, 'too_many_ids');
+    return json({ emails: await verifiedEmails(db, ids as string[]) });
   }
 
   if (route === 'GET teams/changes') {

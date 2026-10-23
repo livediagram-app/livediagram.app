@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
+  accountEmails,
+  claimMilestone,
   createTeamFor,
   createTokenChecker,
   fetchTeamChanges,
@@ -7,6 +9,7 @@ import {
   ProfileError,
   readProfiles,
   readSettings,
+  recordSighting,
   SettingsError,
   TeamError,
   writeProfile,
@@ -244,5 +247,39 @@ describe('writeProfile', () => {
       writeProfile(CREDENTIALS, { owner: 'user_1', color: 'url(x)' }, fetcher),
     ).rejects.toMatchObject({ name: 'ProfileError', code: 'invalid_color' });
     expect(ProfileError).toBeTypeOf('function');
+  });
+});
+
+describe('recordSighting and claimMilestone', () => {
+  it('answer whether this was the first time', async () => {
+    const { fetcher, calls } = fakeFetch((url) =>
+      Response.json(url.endsWith('/sightings') ? { first: true } : { claimed: false }),
+    );
+    expect(await recordSighting(CREDENTIALS, 'user_1', fetcher)).toBe(true);
+    expect(
+      await claimMilestone(CREDENTIALS, { userId: 'user_1', milestone: 'firstShare' }, fetcher),
+    ).toBe(false);
+    expect(calls.map((c) => c.url)).toEqual([
+      'https://liveworkspace.app/api/account/internal/sightings',
+      'https://liveworkspace.app/api/account/internal/milestones/claim',
+    ]);
+  });
+
+  it('throw when the account API fails', async () => {
+    const { fetcher } = fakeFetch(() => new Response('', { status: 403 }));
+    await expect(recordSighting(CREDENTIALS, 'user_1', fetcher)).rejects.toThrow('403');
+  });
+});
+
+describe('accountEmails', () => {
+  it('asks in batches of at most 100 and joins the answers', async () => {
+    const { fetcher, calls } = fakeFetch((_url, init) => {
+      const { ids } = JSON.parse(String(init.body)) as { ids: string[] };
+      return Response.json({ emails: Object.fromEntries(ids.map((id) => [id, `${id}@x`])) });
+    });
+    const ids = Array.from({ length: 150 }, (_, i) => `user_${i}`);
+    const emails = await accountEmails(CREDENTIALS, ids, fetcher);
+    expect(Object.keys(emails)).toHaveLength(150);
+    expect(calls).toHaveLength(2);
   });
 });

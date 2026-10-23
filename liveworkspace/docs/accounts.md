@@ -251,6 +251,24 @@ Its items stay in the index, as every guest's do, until someone deletes them
 ([one-explorer-contracts.md](one-explorer-contracts.md#guests)). Signing in removes the guest's stamp
 with the rest of the guest.
 
+## Sign-ups and milestones per app
+
+Each app counts a sign-up the first time it sees an account, and some send a one-time milestone email
+(the tenth item someone makes there, their first share link). Both are kept per account and app in
+`account_app` (`migrations/0007_account_apps.sql`, `src/account-apps.ts`), which goes with the account.
+The app is always the calling client's own ([Which app a client is](#which-app-a-client-is)).
+
+- **A sighting** (`POST /api/account/internal/sightings` `{ userId }`) answers `{ first }`: true only
+  the first time this app sees the account. One statement, an insert whose `RETURNING` row says it was
+  new, so two requests racing still count one sign-up. An unknown account is never first.
+- **A milestone** (`POST /api/account/internal/milestones/claim` `{ userId, milestone }`, `milestone`
+  or `firstShare`) answers `{ claimed }`: true for the first claim only, so a burst of saves at the
+  milestone sends one email. The app claims before it sends. One conditional update; false when this
+  app has never recorded a sighting of the account.
+- **Emails** (`POST /api/account/internal/emails` `{ ids }`, up to 100 account ids) answers
+  `{ emails: { [id]: address } }`, verified addresses only, in one query: where an app sends its
+  notifications (a comment on what someone owns, a form response). An app keeps no addresses of its own.
+
 ## Closing an account
 
 An app's server asks (`POST /api/auth/delete-account`, with its client credentials and the person's
@@ -328,18 +346,21 @@ For the signed-in person, by their session cookie. Writes must come from the sit
 For an app's server, by its OAuth client credentials (`Authorization: Basic`, checked by the OAuth
 provider's own introspection and remembered per isolate for five minutes):
 
-| Route                                       | Does                                                                                     |
-| ------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| `POST /api/account/internal/tokens/verify`  | `{ token }` → the account and its teams, or 404                                          |
-| `POST /api/account/internal/tokens`         | `{ accessToken, name, readOnly }` → a token, shown once                                  |
-| `POST /api/account/internal/teams`          | `{ accessToken, name, organisation? }` → 201 the team made, the person its admin         |
-| `GET /api/account/internal/teams/changes`   | `?cursor=` → the next page of the change feed                                            |
-| `POST /api/account/internal/tokens/revoke`  | `{ token }` → revokes it (a CLI signing out), or 404                                     |
-| `POST /api/account/internal/tokens/live`    | `{ ids }` (up to 100) → which still work, so an app can end what hangs off a revoked one |
-| `POST /api/account/internal/settings/read`  | `{ owner, app }` → `{ all, app, updatedAt }`                                             |
-| `POST /api/account/internal/settings/write` | `{ owner, app, patch: { all?, app? } }` → `{ all, app, updatedAt }`                      |
-| `POST /api/account/internal/profiles/read`  | `{ ids }` (up to 100) → `{ profiles: Profile[] }`, the ids found                         |
-| `POST /api/account/internal/profiles/write` | `{ owner, name?, color? }` → `{ profile }`; null clears a field                          |
+| Route                                         | Does                                                                                     |
+| --------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `POST /api/account/internal/tokens/verify`    | `{ token }` → the account and its teams, or 404                                          |
+| `POST /api/account/internal/tokens`           | `{ accessToken, name, readOnly }` → a token, shown once                                  |
+| `POST /api/account/internal/teams`            | `{ accessToken, name, organisation? }` → 201 the team made, the person its admin         |
+| `GET /api/account/internal/teams/changes`     | `?cursor=` → the next page of the change feed                                            |
+| `POST /api/account/internal/tokens/revoke`    | `{ token }` → revokes it (a CLI signing out), or 404                                     |
+| `POST /api/account/internal/tokens/live`      | `{ ids }` (up to 100) → which still work, so an app can end what hangs off a revoked one |
+| `POST /api/account/internal/settings/read`    | `{ owner, app }` → `{ all, app, updatedAt }`                                             |
+| `POST /api/account/internal/settings/write`   | `{ owner, app, patch: { all?, app? } }` → `{ all, app, updatedAt }`                      |
+| `POST /api/account/internal/profiles/read`    | `{ ids }` (up to 100) → `{ profiles: Profile[] }`, the ids found                         |
+| `POST /api/account/internal/profiles/write`   | `{ owner, name?, color? }` → `{ profile }`; null clears a field                          |
+| `POST /api/account/internal/sightings`        | `{ userId }` → `{ first }`, for the client's own app                                     |
+| `POST /api/account/internal/milestones/claim` | `{ userId, milestone }` → `{ claimed }`, for the client's own app                        |
+| `POST /api/account/internal/emails`           | `{ ids }` (up to 100 accounts) → `{ emails }`, verified addresses only                   |
 
 `Profile` is `{ id, name, color, createdAt, updatedAt }`: `name` and `color` may be null, and the two
 times are null for an account that has never set either.

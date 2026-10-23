@@ -265,6 +265,36 @@ describe('the account API, for the apps', () => {
     expect((await internal('/profiles/write', { owner: 'user_gone', name: 'x' })).status).toBe(404);
   });
 
+  it("records the client's own app's sign-ups and milestones", async () => {
+    expect(await (await internal('/sightings', { userId: 'user_ada' })).json()).toEqual({
+      first: true,
+    });
+    expect(await (await internal('/sightings', { userId: 'user_ada' })).json()).toEqual({
+      first: false,
+    });
+    // Another app seeing the same account is that app's first time.
+    expect(await (await internal('/sightings', { userId: 'user_ada' }, DIAGRAM)).json()).toEqual({
+      first: true,
+    });
+    const claim = (milestone: string) =>
+      internal('/milestones/claim', { userId: 'user_ada', milestone });
+    expect(await (await claim('milestone')).json()).toEqual({ claimed: true });
+    expect(await (await claim('milestone')).json()).toEqual({ claimed: false });
+    expect((await claim('tenth')).status).toBe(400);
+    expect((await internal('/sightings', { userId: 'guest_x' })).status).toBe(400);
+    expect((await internal('/sightings', { userId: 'user_ada' }, NO_APP)).status).toBe(403);
+  });
+
+  it("answers accounts' verified emails, a bounded batch", async () => {
+    const response = await internal('/emails', { ids: ['user_ada', 'user_bea'] });
+    expect(await response.json()).toEqual({
+      emails: { user_ada: 'ada@example.com', user_bea: 'bea@example.com' },
+    });
+    const many = Array.from({ length: 101 }, (_, i) => `user_${i}`);
+    expect((await internal('/emails', { ids: many })).status).toBe(400);
+    expect((await internal('/emails', { ids: ['guest_x'] })).status).toBe(400);
+  });
+
   it('refuses wrong client credentials', async () => {
     const response = await internal(
       '/teams/changes',
