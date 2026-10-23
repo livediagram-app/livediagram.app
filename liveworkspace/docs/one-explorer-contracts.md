@@ -61,6 +61,8 @@ cookie, accounts tells the index (`POST /internal/merge`, accounts' own key), wh
 items, folders, tags, favourites, opens and placement defaults to the account in one batch, and clears the
 cookie. A link visitor with no identity needs no redirect: a share code is enough for a grant.
 
+A guest's things stay until the guest deletes them, or becomes an account; nothing expires on its own.
+
 ## Items
 
 ```ts
@@ -120,9 +122,35 @@ type ItemSummary = {
 |                                |                     | `X-Share-Code` (and `X-Share-Password` when set).                            |
 | `GET /trash` / `DELETE /trash` | person              | List, empty (`?team=`).                                                      |
 
-**Purging.** A permanent delete, or the daily sweep of items in the Trash for 30 days, removes the index
-rows and asks the app to drop the content (`DELETE <app>/api/internal/items/:id`, app key). If the app
-cannot be reached, the index keeps a tombstone and retries daily.
+**Purging.** A permanent delete, the daily sweep of items in the Trash for 30 days, or closing an account
+(below) removes the index rows and asks the app to drop the content (`DELETE <app>/api/internal/items/:id`,
+app key). Each purged item leaves a tombstone until its app confirms: the index tells the app at once for
+the first few, and a cron every 15 minutes works through the rest, up to 300 a run, trying a failed one
+again at most once an hour.
+
+## Closing an account
+
+When a liveworkspace account closes, accounts tells the index (`POST /internal/purge-person`
+`{personId, teamIds}`, accounts' own key, the one the merge uses), and the index removes everything it
+holds for that person:
+
+- **Purged**, as a permanent delete is, with the content dropped by each app: every item they own in
+  every app, the Trash included, and with each one its tags, favourites, opens, share links, password,
+  Shared with me rows and comment and action rows.
+- **Deleted**: their folders, tags (and their tags on anyone's items), favourites, opens (Recent),
+  Shared with me rows and placement defaults.
+- **Kept by the team**: an item or folder they made in a team stays with that team, its owner anonymised.
+  `teamIds` names the teams that closed with the account (one it ran alone); their items and folders in
+  those go too, while anyone else's stay theirs.
+- **Anonymised**: on other people's items, a comment thread they are in or are mentioned in, and an
+  action assigned to or by them, keeps its row, naming `deleted` (no account or guest) in their place.
+
+Grants are not stored (they lapse within 10 minutes), and the link codes of their own items go with the
+items. The request is recorded first and done in chunks of 500 rows, so it holds for any number of items:
+what one call leaves, the 15-minute cron finishes. It answers `{done, items}`; running it again changes
+nothing. The record is kept, and the purge run again, for two hours, so anything written with an access
+token issued before the account closed goes too. A guest's things have no account to close; the same
+purge serves a guest id when one is asked for.
 
 ## Folders, tags, favourites, defaults
 

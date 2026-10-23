@@ -6,9 +6,12 @@
 // Deleting the user takes everything else with it: sessions and linked Google accounts through
 // Better Auth, and the OAuth tokens and consents through their foreign keys; teams and settings
 // are cleared first, explicitly. Every app's refresh token stops working at once; an access token
-// already issued runs out on its own (minutes).
+// already issued runs out on its own (minutes). Then the index is told to purge everything it holds
+// for the person (index-purge.ts): recorded before the user goes, so it can't be lost, and sent again
+// by the cron if the index doesn't take it now. The account is closed either way.
 import { AUTH_BASE_PATH } from './auth-options.ts';
 import type { Auth } from './auth.ts';
+import { purgeFromIndex, recordPendingPurge, type IndexPurgeConfig } from './index-purge.ts';
 import { deleteSettings } from './settings.ts';
 import { leaveAllTeams } from './teams.ts';
 
@@ -36,6 +39,7 @@ export async function deleteAccount(
   request: Request,
   auth: Auth,
   db: D1Database,
+  index: IndexPurgeConfig = {},
 ): Promise<Response> {
   const authorization = request.headers.get('authorization');
   const clientId = basicClientId(authorization);
@@ -72,10 +76,13 @@ export async function deleteAccount(
   }
 
   // Teams first, so the apps hear that the account left each one and a team it ran passes on.
-  await leaveAllTeams(db, result.sub);
+  const closedTeams = await leaveAllTeams(db, result.sub);
   // Settings have no foreign key to the account (a guest's rows have no account), so they go here.
   await deleteSettings(db, result.sub);
+  await recordPendingPurge(db, result.sub, closedTeams);
   const ctx = await auth.$context;
   await ctx.internalAdapter.deleteUser(result.sub);
+  // A failure is logged and left for the cron; it never keeps the account open.
+  await purgeFromIndex(db, index, result.sub);
   return Response.json({ deleted: true });
 }

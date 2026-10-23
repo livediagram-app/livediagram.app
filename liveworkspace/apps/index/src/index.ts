@@ -3,6 +3,7 @@
 // every app. Browsers reach it through their own app's router; apps' servers push summaries and comments
 // with their key; grants it signs let an app's item open without asking again.
 
+import { continuePurges, FREQUENT_CRON, handlePersonPurge } from './account-purge';
 import { handleApp } from './app-routes';
 import { callerOf } from './auth';
 import { API_PATH, JWKS_MAX_AGE_S } from './config';
@@ -91,6 +92,9 @@ const worker = {
     if (segments[0] === 'internal' && segments[1] === 'merge' && segments.length === 2) {
       return handleMerge(request, env);
     }
+    if (segments[0] === 'internal' && segments[1] === 'purge-person' && segments.length === 2) {
+      return handlePersonPurge(request, env, (promise) => ctx.waitUntil(promise));
+    }
     const caller = await callerOf(request, env);
     if (!caller) return unauthorized();
     // An app acting for a person reaches that app's items only: its lists are that app's.
@@ -108,9 +112,15 @@ const worker = {
     });
   },
 
-  // Once a day: purge items 30 days in the Trash, and retry apps that missed a purge.
-  async scheduled(_event: ScheduledController, env: Env): Promise<void> {
+  // Every 15 minutes: carry on closed accounts' purges and tell the apps what was purged. Once a day:
+  // purge items 30 days in the Trash, and retry apps that missed a purge.
+  async scheduled(event: ScheduledController, env: Env): Promise<void> {
     if (!indexEnabled(env)) return;
+    if (event.cron === FREQUENT_CRON) {
+      const done = await continuePurges(env);
+      console.log('[index] purges', JSON.stringify(done));
+      return;
+    }
     const { purged, confirmed } = await sweep(env);
     console.log(`[index] sweep: purged ${purged} items, apps confirmed ${confirmed}`);
   },

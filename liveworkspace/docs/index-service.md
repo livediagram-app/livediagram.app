@@ -12,7 +12,7 @@ The plan is [one-explorer.md](one-explorer.md). The calls, types and tokens are
 `createGrantVerifier` for apps.
 
 ```
-apps/index/src/index.ts       routing, and the daily cron
+apps/index/src/index.ts       routing, and the crons (daily, and every 15 minutes)
 apps/index/src/auth.ts        people (access and guest tokens), link visitors, app keys, the merge key
 apps/index/src/access.ts      the access rule: owner, joined team member, or a live link (+ password)
 apps/index/src/grants.ts      ES256 grants and the public keys at /jwks
@@ -24,6 +24,7 @@ apps/index/src/app-routes.ts  what an item pushes: its summary, and each tab's c
 apps/index/src/inbox.ts       the Inbox query
 apps/index/src/purge.ts       purging, tombstones and the daily sweep
 apps/index/src/merge.ts       a guest becoming an account
+apps/index/src/account-purge.ts  a closed account's purge, and the 15-minute cron
 ```
 
 ## Who calls it
@@ -40,7 +41,8 @@ apps/index/src/merge.ts       a guest becoming an account
 - **An app's server**, with `Authorization: Bearer <INDEX_KEY>` and `X-Index-App: <app>`, to push an
   item's summary and its comments and actions. The index calls the app back with the same key, at
   `${APP_ORIGIN_<APP>}/api/internal/items/:id` (purge), `…/copy-to/:to` (copy) and `…/revoke`.
-- **Accounts**, with `MERGE_KEY`, at `POST /api/index/internal/merge`.
+- **Accounts**, with `MERGE_KEY`, at `POST /api/index/internal/merge` (a guest signing in) and
+  `POST /api/index/internal/purge-person` (an account closing).
 
 ## Decisions the contract left open
 
@@ -121,4 +123,5 @@ Cloudflare account.
    above, a different one per environment), `MERGE_KEY` (the same value as accounts' `INDEX_MERGE_KEY`),
    and `INDEX_KEY_<APP>` for each app (the same value as that app's `INDEX_KEY`).
 4. Check the staging app origins and API resources in `wrangler.toml` against each app's staging deploy.
-5. `wrangler deploy` (and `--env staging`). The daily cron purges the Trash and retries missed purges.
+5. `wrangler deploy` (and `--env staging`). The daily cron purges the Trash and retries missed purges;
+   the 15-minute one finishes closed accounts' purges and tells the apps what was purged.

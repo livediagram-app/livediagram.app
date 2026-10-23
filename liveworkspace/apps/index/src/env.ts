@@ -14,7 +14,7 @@ export interface Env {
   INDEX_AUDIENCES?: string;
   // The private ES256 JWK, as JSON with its `kid`, that grants are signed with.
   GRANT_SIGNING_KEY?: string;
-  // Accounts' key for the guest-to-account merge (its INDEX_MERGE_KEY).
+  // Accounts' key (its INDEX_MERGE_KEY): the guest-to-account merge, and purging a closed account.
   MERGE_KEY?: string;
   // Each app's key (wrangler secret put), the app's INDEX_KEY. Unset means that app can't push, and the
   // index can't call it.

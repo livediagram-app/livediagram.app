@@ -613,11 +613,12 @@ export async function answerInvitation(
 
 // Before an account is deleted: it leaves every team. A team it ran alone goes with it; one where it
 // was the only admin passes to the longest-standing member.
+// Answers the teams that closed with the account (those it ran alone).
 export async function leaveAllTeams(
   db: D1Database,
   userId: string,
   now = Date.now(),
-): Promise<void> {
+): Promise<string[]> {
   const { results } = await db
     .prepare(
       `SELECT m.id, m.teamId, m.role,
@@ -628,9 +629,11 @@ export async function leaveAllTeams(
     .bind(userId)
     .all<{ id: string; teamId: string; role: TeamRole; joined: number; admins: number }>();
   const statements: D1PreparedStatement[] = [];
+  const closed: string[] = [];
   for (const row of results) {
     if (row.joined <= 1) {
       statements.push(...deleteTeamStatements(db, row.teamId, now));
+      closed.push(row.teamId);
       continue;
     }
     if (row.role === 'admin' && row.admins <= 1) {
@@ -655,6 +658,7 @@ export async function leaveAllTeams(
     );
   }
   if (statements.length) await db.batch(statements);
+  return closed;
 }
 
 // The change feed the apps keep their copies in step with: every team and member row written after

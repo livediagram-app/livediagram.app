@@ -193,8 +193,8 @@ CREATE INDEX collab_actions_item ON collab_actions (item_id, tab_id);
 CREATE INDEX collab_actions_assignee ON collab_actions (assignee_id, status, updated_at DESC);
 CREATE INDEX collab_actions_assigner ON collab_actions (assigner_id, status, updated_at DESC);
 
--- An item purged from the index whose app has not yet confirmed dropping its content. The daily run
--- retries each until the app answers.
+-- An item purged from the index whose app has not yet confirmed dropping its content. The cron tells
+-- the app within 15 minutes and retries each (at most hourly) until the app answers.
 CREATE TABLE purge_tombstones (
   item_id         TEXT    PRIMARY KEY,
   app             TEXT    NOT NULL,
@@ -204,3 +204,15 @@ CREATE TABLE purge_tombstones (
   last_error      TEXT    NULL
 );
 CREATE INDEX purge_tombstones_due ON purge_tombstones (last_attempt_at);
+
+-- A closed account being purged (src/account-purge.ts): recorded when accounts asks, so whatever one call
+-- leaves undone the cron finishes. Kept, and the purge run again, for two hours after the request, then
+-- forgotten. `team_ids`: the teams that closed with the account (JSON), whose items of theirs go too.
+CREATE TABLE person_purges (
+  person_id    TEXT    PRIMARY KEY,
+  team_ids     TEXT    NOT NULL DEFAULT '[]',
+  requested_at INTEGER NOT NULL,
+  -- When a pass last found nothing left; NULL while work remains.
+  finished_at  INTEGER NULL,
+  runs         INTEGER NOT NULL DEFAULT 0
+);

@@ -35,9 +35,10 @@ database_name = "liveworkspace-index"
 database_id = "00000000-0000-0000-0000-000000000000"
 migrations_dir = "migrations"
 
-# Once a day: purge items 30 days in the Trash, and retry apps that missed a purge.
+# Once a day: purge items 30 days in the Trash, and retry apps that missed a purge. Every 15 minutes
+# (src/account-purge.ts FREQUENT_CRON): carry on closed accounts' purges and tell the apps what was purged.
 [triggers]
-crons = ["23 4 * * *"]
+crons = ["23 4 * * *", "*/15 * * * *"]
 
 [env.staging]
 name = "liveworkspace-index-staging"
@@ -62,4 +63,4 @@ database_id = "00000000-0000-0000-0000-000000000000"
 migrations_dir = "migrations"
 
 [env.staging.triggers]
-crons = ["23 4 * * *"]
+crons = ["23 4 * * *", "*/15 * * * *"]

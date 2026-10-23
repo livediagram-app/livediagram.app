@@ -203,7 +203,7 @@ batch.
 
 ### Closing an account, and a guest signing in
 
-Closing an account deletes its settings rows with it. Settings have no foreign key to the account
+Closing an account deletes its settings rows with it ([Closing an account](#closing-an-account)). Settings have no foreign key to the account
 (a guest isn't a user row), so this is done explicitly, beside leaving its teams.
 
 When a guest signs in (the same hook that tells the index, above), their settings move to the
@@ -211,6 +211,30 @@ account, scope by scope. A key the account already has keeps the account's value
 other keys fill the gaps, as many as fit under the limit. Then the guest's rows are deleted. This
 runs whether or not the index is set up, is safe to run twice, and a failure is logged without
 failing the sign-in: the guest's rows stay for the next sign-in.
+
+## Closing an account
+
+An app's server asks (`POST /api/auth/delete-account`, with its client credentials and the person's
+access token, `src/delete-account.ts`), and the account closes for every app at once:
+
+1. It leaves every team: a team it ran alone is deleted, and one where it was the only admin passes to
+   the longest-standing member.
+2. Its settings rows are deleted.
+3. A purge request for the index is written to `pending_purges` (`migrations/0004_pending_purges.sql`),
+   naming the teams deleted in step 1.
+4. The user is deleted, and with it its sessions, linked sign-ins, OAuth tokens and consents, and API
+   tokens.
+5. The request is sent to the index (`POST ${INDEX_URL}/internal/purge-person` `{ personId, teamIds }`,
+   `Bearer ${INDEX_MERGE_KEY}`, the same key and binding as the guest merge; `src/index-purge.ts`), which
+   purges every item the person owns, with its content in each app, and everything else it holds for
+   them ([one-explorer-contracts.md](one-explorer-contracts.md#closing-an-account)). Once the index
+   takes it, the row is cleared.
+
+The account is closed whatever the index answers. A request it doesn't take (an error, a timeout, or
+`INDEX_URL` or `INDEX_MERGE_KEY` unset) stays in `pending_purges` with its attempts and last error, and
+the Worker's cron sends it again every 15 minutes (`*/15 * * * *`, 25 a run, the longest-waiting first)
+until it lands. Each failure is logged, as an error from the third on. The index's purge is idempotent,
+so a request sent twice does no harm.
 
 ## The API
 

@@ -14,7 +14,8 @@ export interface Env {
   // Both set turns on "Continue with Google"; either missing leaves email codes only.
   GOOGLE_CLIENT_ID?: string;
   GOOGLE_CLIENT_SECRET?: string;
-  // The index service (one-explorer-contracts.md), told when a guest signs in. Either unset skips it.
+  // The index service (one-explorer-contracts.md), told when a guest signs in (either unset skips it)
+  // and when an account closes (either unset leaves the purge waiting in pending_purges).
   INDEX_URL?: string;
   INDEX_MERGE_KEY?: string;
   // The index Worker itself, so the merge reaches it rather than going out and back (wrangler.toml).

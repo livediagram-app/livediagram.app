@@ -21,13 +21,15 @@ routes = [
 #   ADMIN_TOKEN           guards POST /api/auth/internal/clients (registering an app)
 #   GOOGLE_CLIENT_ID      "Continue with Google"; optional, the button only shows with both
 #   GOOGLE_CLIENT_SECRET
-#   INDEX_MERGE_KEY       accounts' key on the index, for POST /internal/merge when a guest signs in
+#   INDEX_MERGE_KEY       accounts' key on the index: POST /internal/merge when a guest signs in, and
+#                         POST /internal/purge-person when an account closes
 [vars]
 ENVIRONMENT = "production"
 BASE_URL = "https://liveworkspace.app"
-# The index service, told when a guest signs in (src/guests.ts), reached through the INDEX service
-# binding below: a Worker's fetch to another Worker's route on its own zone isn't routed to it.
-# Unset, or without INDEX_MERGE_KEY, the merge is skipped.
+# The index service, told when a guest signs in (src/guests.ts) and when an account closes
+# (src/index-purge.ts), reached through the INDEX service binding below: a Worker's fetch to another
+# Worker's route on its own zone isn't routed to it. Unset, or without INDEX_MERGE_KEY, the merge is
+# skipped and a closed account's purge waits in pending_purges until it is set.
 INDEX_URL = "https://liveworkspace.app/api/index"
 EMAIL_FROM = "sign-in@liveworkspace.app"
 TURNSTILE_SITE_KEY = ""
@@ -67,9 +69,10 @@ name = "TEAM_LINK_LIMITER"
 namespace_id = "1004"
 simple = { limit = 20, period = 60 }
 
-# The daily sweep of team invitations: reminders, then expiry (src/teams.ts sweepInvitations).
+# The daily sweep of team invitations: reminders, then expiry (src/teams.ts sweepInvitations). Every
+# 15 minutes: closed accounts' index purges not yet taken are sent again (src/index-purge.ts).
 [triggers]
-crons = ["17 9 * * *"]
+crons = ["17 9 * * *", "*/15 * * * *"]
 
 [env.staging]
 name = "liveworkspace-accounts-staging"
@@ -118,4 +121,4 @@ namespace_id = "2004"
 simple = { limit = 20, period = 60 }
 
 [env.staging.triggers]
-crons = ["17 9 * * *"]
+crons = ["17 9 * * *", "*/15 * * * *"]

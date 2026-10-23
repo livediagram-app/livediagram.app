@@ -9,6 +9,7 @@ import { CLIENTS_PATH, registerClient } from './clients.ts';
 import { DELETE_ACCOUNT_PATH, deleteAccount } from './delete-account.ts';
 import type { Env } from './env.ts';
 import { GUEST_PATH, guestHandoff } from './guests.ts';
+import { indexPurgeConfig, PURGE_RETRY_CRON, retryPendingPurges } from './index-purge.ts';
 import { overCodeLimit } from './rate-limit.ts';
 import { SIGN_IN_OPTIONS_PATH, signInOptions } from './sign-in-options.ts';
 import { sendTeamInviteEmail } from './email.ts';
@@ -50,7 +51,7 @@ export default {
     }
 
     if (request.method === 'POST' && pathname === `${AUTH_BASE_PATH}${DELETE_ACCOUNT_PATH}`) {
-      return deleteAccount(request, getAuth(env), env.AUTH_DB);
+      return deleteAccount(request, getAuth(env), env.AUTH_DB, indexPurgeConfig(env));
     }
 
     if (pathname === AUTH_BASE_PATH || pathname.startsWith(`${AUTH_BASE_PATH}/`)) {
@@ -71,9 +72,14 @@ export default {
     return new Response('Not found', { status: 404 });
   },
 
-  // Once a day (wrangler.toml): team invitations nobody answered expire, and the rest hear their
+  // Every 15 minutes (wrangler.toml): closed accounts' purges the index hasn't taken yet are sent
+  // again. Once a day as well: team invitations nobody answered expire, and the rest hear their
   // reminders (liveworkspace/docs/accounts.md "Reminders and expiry").
-  async scheduled(_controller: ScheduledController, env: Env): Promise<void> {
+  async scheduled(controller: ScheduledController, env: Env): Promise<void> {
+    const purges = await retryPendingPurges(env.AUTH_DB, indexPurgeConfig(env));
+    if (purges.sent + purges.failed > 0)
+      console.log('[accounts] index purges', JSON.stringify(purges));
+    if (controller.cron === PURGE_RETRY_CRON) return;
     const result = await sweepInvitations(env.AUTH_DB, (reminder) =>
       sendTeamInviteEmail(env, {
         to: reminder.to,
