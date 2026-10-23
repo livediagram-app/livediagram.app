@@ -50,7 +50,7 @@ moves between them, and the one account that joins them.
 1. **Hero**: "Everything your team makes, live in one workspace", one sentence naming each app
    in its accent and what it is for (sketch, plan, write it up, make it look right), and two calls to
    action: **Create your free account** (`/sign-up`, back here after) and **Explore the apps**.
-   Signed in, they become "Welcome back" and a button into each app. Beside it, the platform's prism
+   Signed in, they are hidden. Beside it, the platform's prism
    with each app's logo at a corner, joined to it by a line in its accent, read clockwise in the
    order work moves through them, and a collaborator's cursor at each. Each app there is a link to its
    site that lifts and rings in its accent on hover, and holds still while pointed at.
