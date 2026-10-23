@@ -170,7 +170,7 @@ export const WHAT_HAPPENED_SQL = `WITH me(id) AS (
      ),
      ${VISIBLE_DESIGNS_CTES}
      SELECT e.id AS event_id, e.event_type, e.actor_id, e.occurred_at, e.description, e.snapshot,
-            ap.name AS actor_name, ap.color AS actor_color, ap.picture_url AS actor_picture,
+            ap.name AS actor_name, ap.color AS actor_color,
             ${PLACE_COLUMNS}
        -- The reader's designs lead (CROSS JOIN fixes the order), so the scopes are sought by
        -- (scope_type, scope_id); led by scope_type alone, the read walked every design's events.
@@ -207,7 +207,6 @@ export async function readWhatHappenedRows(
         snapshot: string;
         actor_name: string | null;
         actor_color: string | null;
-        actor_picture: string | null;
       }
     >();
   return (res.results ?? []).map((r) => ({
@@ -218,7 +217,7 @@ export async function readWhatHappenedRows(
     description: r.description,
     snapshot: parseSnapshot(r.snapshot),
     design: placeOf(r),
-    actor: { name: r.actor_name, color: r.actor_color, pictureUrl: r.actor_picture },
+    actor: { name: r.actor_name, color: r.actor_color },
   }));
 }
 

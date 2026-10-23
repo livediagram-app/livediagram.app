@@ -208,7 +208,7 @@ export function TitleBarParts() {
       <Label x={358} y={y + 21} size={11} weight={600} tone="onAccent">
         Share
       </Label>
-      {/* The account button: your initial or profile picture. */}
+      {/* The account button: your initial. */}
       <Avatar cx={407} cy={y + 20} r={9} initial="S" />
 
       <Callout x={40} row={2} text="Logo and menu" />

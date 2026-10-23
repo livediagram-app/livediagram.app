@@ -126,17 +126,7 @@ function room(env: ReturnType<typeof arrange>['env'] | undefined) {
 }
 
 const join = (r: DesignRoom, ws: Socket, tabScope: string | null, code: string | null) =>
-  r.acceptSession(
-    ws as unknown as WebSocket,
-    'view',
-    tabScope,
-    code,
-    false,
-    null,
-    null,
-    null,
-    'd1',
-  );
+  r.acceptSession(ws as unknown as WebSocket, 'view', tabScope, code, null, null, null, 'd1');
 
 describe('DesignRoom.recheckJoinedLink', () => {
   it('tells a session that joined on a since-widened link, then closes it', async () => {

@@ -40,7 +40,7 @@ const SESSION: WorkbenchDesignSessionResponse = {
   origin: ORIGIN,
   role: 'edit',
   expiresAt: NOW + TTL,
-  person: { id: 'user_1', name: 'Webber', color: '#0ea5e9', pictureUrl: null },
+  person: { id: 'user_1', name: 'Webber', color: '#0ea5e9' },
 };
 const RENEWED: WorkbenchDesignSessionResponse = {
   ...SESSION,

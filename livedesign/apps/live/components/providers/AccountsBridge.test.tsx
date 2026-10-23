@@ -14,7 +14,7 @@ vi.mock('@/lib/recent-diagrams-snapshot', () => ({ forgetRecentDiagrams: vi.fn(a
 
 const { AccountsBridge, namesOf, resetAccountsSessionForTests } = await import('./AccountsBridge');
 
-const USER = { id: 'user_abc', email: 'ada@example.com', name: 'Ada Lovelace', picture: null };
+const USER = { id: 'user_abc', email: 'ada@example.com', name: 'Ada Lovelace' };
 const fetchMock = vi.fn<typeof fetch>();
 
 function signedIn(token: string, expiresInMs = 3_600_000) {
@@ -84,7 +84,6 @@ describe('AccountsBridge', () => {
         firstName: 'Ada',
         lastName: 'Lovelace',
         fullName: 'Ada Lovelace',
-        pictureUrl: null,
       },
     });
   });
@@ -122,7 +121,7 @@ describe('AccountsBridge', () => {
 });
 
 describe('namesOf', () => {
-  const base = { id: 'u', email: 'grace.hopper@example.com', picture: null };
+  const base = { id: 'u', email: 'grace.hopper@example.com' };
   it("splits the account's name at its first space", () => {
     expect(namesOf({ ...base, name: 'Grace Brewster Hopper' })).toEqual({
       firstName: 'Grace',

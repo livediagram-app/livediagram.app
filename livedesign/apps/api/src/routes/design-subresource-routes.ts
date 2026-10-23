@@ -21,7 +21,6 @@ import { recordVisitorOpened, retractTabComments } from '../timeline';
 import { DESIGN_OPEN_HEADER, readDesignOpen, tabEtag } from '@livedesign/api-schema';
 import { recordDesignOpen } from '../home/record-open';
 import { handleDesignShareRoutes } from './design-share-routes';
-import { handleCommentPicturesRoute } from './comment-pictures-routes';
 import { handlePhotoBlobRoutes } from './photo-blob-routes';
 import { handleTabPut, refuseTokenTabPut } from './tab-put-route';
 import { handleTabRename } from './tab-name-route';
@@ -50,9 +49,6 @@ export async function handleDesignSubresources(ctx: RouteContext): Promise<Respo
   // Agent changesets (docs/specs/024-agents/agent-changesets.md).
   const changesets = await handleChangesetRoutes(ctx);
   if (changesets) return changesets;
-  // /api/designs/<id>/tabs/<tabId>/comment-pictures (docs/specs/014-identity/profile-picture.md §6).
-  const commentPictures = await handleCommentPicturesRoute(ctx);
-  if (commentPictures) return commentPictures;
   // /api/designs/<id>/tabs/<tabId>/photo-blobs[-held|-adopt][/<blob>] (docs/specs/031-photo/photo-store.md "The routes").
   const photoBlobs = await handlePhotoBlobRoutes(ctx);
   if (photoBlobs) return photoBlobs;

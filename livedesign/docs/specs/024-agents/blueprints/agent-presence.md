@@ -415,7 +415,7 @@ the tab pill.
 - A folded agent adds nothing to the stack: the owner's avatar stays, and its hover card description reads
   "{status line} · {status} · Active {when}". Without a status line the card is unchanged. The owner sees their own
   agent's status this way on their own avatar when both are on the tab.
-- A standalone agent row is an avatar in the owner's name and colour (initials, no picture, as the spec says),
+- A standalone agent row is an avatar in the owner's name and colour (initials, as the spec says),
   always online (PR32); its hover card title carries the badge `participantBadges` gives the entry's level, and its
   description reads "{status line}", or "Online" without one.
 - Two tokens of one owner on one tab are one row, showing the status set last.

@@ -1,9 +1,8 @@
 // People on Home (docs/specs/013-workspace/explorer-home.md "What Happened"): an initials disc in
-// the person's colour, with their picture over it once it loads, and no presence ring (Home says
-// what people did, not whether they are here). Decorative: every entry names its people in words.
+// the person's colour, and no presence ring (Home says what people did, not whether they are here). Decorative: every entry names its people in words.
 
 import type { HomePerson } from '@livedesign/api-schema';
-import { PictureDisc, IDENTITY_FILL, identityVars } from '@livedesign/ui';
+import { GlyphDisc, IDENTITY_FILL, identityVars } from '@livedesign/ui';
 import { initialsOf } from '@/lib/identity';
 import { personName } from '@/app/explorer/home/home-copy';
 import { PAGE_RING } from './home-styles';
@@ -16,10 +15,9 @@ const AVATAR_STACK_MAX = 3;
 
 export function HomeAvatar({ person, size }: { person: HomePerson | undefined; size: number }) {
   return (
-    <PictureDisc
+    <GlyphDisc
       as="span"
       aria-hidden
-      pictureUrl={person?.pictureUrl ?? null}
       size={size}
       style={{
         ...identityVars(person?.color ?? FALLBACK_COLOUR),
@@ -28,7 +26,7 @@ export function HomeAvatar({ person, size }: { person: HomePerson | undefined; s
       className={`font-semibold text-white ${IDENTITY_FILL}`}
     >
       {initialsOf(personName(person))}
-    </PictureDisc>
+    </GlyphDisc>
   );
 }
 

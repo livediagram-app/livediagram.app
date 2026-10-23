@@ -276,7 +276,6 @@ describe('POST room-ticket', () => {
       role: 'view',
       tabScope: null,
       shareCode: null,
-      account: true,
       personTag: await personTagFor('d1', 'user_1'),
       workbenchPairing: 'pair-1',
       adderKey: null,
@@ -294,7 +293,6 @@ describe('POST room-ticket', () => {
       role: 'edit',
       tabScope: null,
       shareCode: null,
-      account: false,
       personTag: null,
       workbenchPairing: null,
       adderKey: null,
@@ -312,7 +310,6 @@ describe('POST room-ticket', () => {
       role: 'view',
       tabScope: null,
       shareCode: 'C',
-      account: false,
       personTag: null,
       workbenchPairing: null,
       adderKey: null,
@@ -402,73 +399,10 @@ describe('WebSocket upgrade: tab scope', () => {
       role: 'edit',
       tabScope: 't2',
       shareCode: 'CODE1234',
-      account: false,
       personTag: null,
       workbenchPairing: null,
       adderKey: null,
     });
-  });
-});
-
-// The account bit (docs/specs/014-identity/profile-picture.md §6): only a verified session
-// mints an account ticket, and the upgrade stamps the bit on every path, so a client header can
-// never claim it.
-describe('account sessions', () => {
-  it('mints an account ticket for a verified signed-in caller only', async () => {
-    db.getDesignMeta.mockResolvedValue({ ownerId: 'other', teamId: null });
-    gates.resolveDesignGrant.mockResolvedValue({ role: 'view', tabScope: null, shareCode: 'C' });
-    await handleDesignRoomRoutes(
-      makeTestRouteContext('POST', '/api/designs/d1/room-ticket', {
-        owner: 'user_ann',
-        accountUserId: 'user_ann',
-      }),
-    );
-    expect(db.createWsTicket).toHaveBeenLastCalledWith(
-      expect.anything(),
-      'd1',
-      expect.objectContaining({ account: true }),
-    );
-    await handleDesignRoomRoutes(
-      makeTestRouteContext('POST', '/api/designs/d1/room-ticket', {
-        owner: 'user_ann',
-        verifiedUserId: 'user_ann',
-      }),
-    );
-    expect(db.createWsTicket).toHaveBeenLastCalledWith(
-      expect.anything(),
-      'd1',
-      expect.objectContaining({ account: false }),
-    );
-  });
-
-  it('stamps X-Verified-Account from the ticket, and 0 on every other leg', async () => {
-    db.getDesignMeta.mockResolvedValue({ ownerId: 'owner-uuid', teamId: null });
-    db.consumeWsTicket.mockResolvedValue({
-      role: 'edit',
-      tabScope: null,
-      shareCode: null,
-      account: true,
-    });
-    const ticketed = roomEnv();
-    await handleDesignRoomRoutes(
-      makeTestRouteContext('GET', '/api/designs/d1/ws?t=T', {
-        owner: null,
-        headers: { Upgrade: 'websocket' },
-        env: ticketed.env,
-      }),
-    );
-    expect(ticketed.seen[0]!.headers.get('X-Verified-Account')).toBe('1');
-
-    db.getShareLink.mockResolvedValue({ designId: 'd1', role: 'view' });
-    const anonymous = roomEnv();
-    await handleDesignRoomRoutes(
-      makeTestRouteContext('GET', '/api/designs/d1/ws?s=CODE1234', {
-        owner: null,
-        headers: { Upgrade: 'websocket', 'X-Verified-Account': '1' },
-        env: anonymous.env,
-      }),
-    );
-    expect(anonymous.seen[0]!.headers.get('X-Verified-Account')).toBe('0');
   });
 });
 
@@ -505,7 +439,6 @@ describe('person tag', () => {
       role: 'edit',
       tabScope: null,
       shareCode: null,
-      account: true,
       personTag: 'tag1',
     });
     const ticketed = roomEnv();
@@ -536,7 +469,6 @@ describe('person tag', () => {
       role: 'edit',
       tabScope: null,
       shareCode: null,
-      account: true,
       personTag: 'tag1',
       workbenchPairing: 'pair-1',
       adderKey: null,
@@ -600,7 +532,6 @@ describe('person tag', () => {
       role: 'participate',
       tabScope: null,
       shareCode: 'C',
-      account: false,
       personTag: null,
       workbenchPairing: null,
       adderKey: 'k'.repeat(32),

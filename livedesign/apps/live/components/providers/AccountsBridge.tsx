@@ -21,7 +21,6 @@ type SessionUser = {
   id: string;
   email: string | null;
   name: string | null;
-  picture: string | null;
 };
 type Session = { accessToken: string; expiresAt: number; user: SessionUser };
 
@@ -108,8 +107,6 @@ function stateOf(session: Session | null): DeferredAuthState {
       username: null,
       email: user.email,
       createdAt: null,
-      // The accounts Worker has no profile pictures yet: the initials avatar draws everyone.
-      pictureUrl: null,
     },
     getToken,
     // The landing page sign-out returns to must not show the account's recent diagrams

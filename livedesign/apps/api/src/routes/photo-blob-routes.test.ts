@@ -93,9 +93,7 @@ async function upload(
 
 describe('photo blob routes', () => {
   it('passes other paths by', async () => {
-    expect(
-      await handlePhotoBlobRoutes(ctx('GET', '/api/designs/d1/tabs/t1/comment-pictures')),
-    ).toBeNull();
+    expect(await handlePhotoBlobRoutes(ctx('GET', '/api/designs/d1/tabs/t1/comments'))).toBeNull();
   });
 
   it('answers 503 without image storage', async () => {
@@ -132,8 +130,7 @@ describe('photo blob routes', () => {
         .status,
     ).toBe(404);
     expect(
-      (await handlePhotoBlobRoutes(ctx('GET', `/api/designs/d1/tabs/t1/photo-blobs/nope`)))!
-        .status,
+      (await handlePhotoBlobRoutes(ctx('GET', `/api/designs/d1/tabs/t1/photo-blobs/nope`)))!.status,
     ).toBe(404);
   });
 

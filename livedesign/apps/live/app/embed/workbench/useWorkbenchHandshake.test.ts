@@ -34,7 +34,7 @@ const SESSION: WorkbenchDesignSessionResponse = {
   origin: ORIGIN,
   role: 'edit',
   expiresAt: 10_000,
-  person: { id: 'user_1', name: 'Webber', color: '#0ea5e9', pictureUrl: null },
+  person: { id: 'user_1', name: 'Webber', color: '#0ea5e9' },
 };
 
 type Listener = (event: MessageEvent) => void;
@@ -81,9 +81,7 @@ describe('runWorkbenchHandshake', () => {
 
     expect(await runWorkbenchHandshake(win, dispatch)).toBeNull();
 
-    expect(events).toEqual([
-      { type: 'read', ticket: null, scope: 'design', designId: 'doc-1' },
-    ]);
+    expect(events).toEqual([{ type: 'read', ticket: null, scope: 'design', designId: 'doc-1' }]);
     expect(redeem).not.toHaveBeenCalled();
     expect(warn).toHaveBeenCalledWith('[workbench] redeem-failed', {
       status: null,

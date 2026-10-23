@@ -15,7 +15,6 @@
 import { isSafeColourValue } from '@livedesign/design';
 import { MAX_PARTICIPANT_KEY_LEN } from './limits';
 import {
-  isProfilePictureUrl,
   MAX_COLOR_LEN,
   MAX_PARTICIPANT_NAME_LEN,
   type AccessLevel,
@@ -46,7 +45,7 @@ export function helloPresence(
   // verifiedRole is optional on the attachment (it is absent for a session
   // that upgraded before the role was stamped), and ParticipantPresence.role
   // is optional for the same reason. Passed straight through, as before.
-  session: { presenceId: string; verifiedRole?: AccessLevel; account?: boolean },
+  session: { presenceId: string; verifiedRole?: AccessLevel },
 ): ParticipantPresence {
   const c = claimed ?? {};
   const presence: ParticipantPresence = {
@@ -68,15 +67,6 @@ export function helloPresence(
   // it claimable adds no reach; it is clamped like every other string here.
   if (typeof c.key === 'string' && c.key.length > 0) {
     presence.key = c.key.slice(0, MAX_PARTICIPANT_KEY_LEN);
-  }
-  // The profile picture (docs/specs/014-identity/profile-picture.md §6): kept only from a session a
-  // verified account holds, and only when it is a Clerk image URL. Not clamped but refused whole:
-  // a cut URL is a broken image.
-  if (c.picture !== undefined && c.picture !== '') {
-    if (!session.account) console.info('[profile-picture] rejected', 'not_account');
-    else if (!isProfilePictureUrl(c.picture))
-      console.info('[profile-picture] rejected', 'invalid_url');
-    else presence.picture = c.picture;
   }
   return presence;
 }

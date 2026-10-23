@@ -68,8 +68,6 @@ import { useReleaseSelectionLock } from '@/hooks/collab/useReleaseSelectionLock'
 import type { CanvasTool } from '@/components/palette/palette.types';
 import { useCellLinkPicker } from '@/hooks/canvas/useCellLinkPicker';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
-import { usePublishPicture } from '@/hooks/persistence/usePublishedPicture';
-import { useCommentPicturesLoader } from '@/lib/comment-pictures';
 import { useClipboard } from '@/hooks/canvas/useClipboard';
 import { useDesignActions } from '@/hooks/canvas/useDesignActions';
 import { useEditorContextMenu } from '@/hooks/canvas/useEditorContextMenu';
@@ -192,8 +190,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // returns are the same ones `useAuth()` would; we read them via the
   // hook so the page has one source of truth.
   const { authLoaded, accountUserId, accountDisplayName } = useAccountBootstrap();
-  // Keep the participant record's profile picture current (docs/specs/014-identity/profile-picture.md §6).
-  usePublishPicture(workbenchMode ? null : accountUserId);
 
   const {
     tabs,
@@ -1075,8 +1071,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const setTagColour = useTagColourSetter({ activeTab, canEdit, commitTabs });
   // The tool the editor starts with: Select, or Hand on a phone.
   useModeDefaultTool(canvasTool, setCanvasTool, embedMode);
-  // Comment authors' pictures for the open tab (docs/specs/014-identity/profile-picture.md §5).
-  useCommentPicturesLoader(designId, activeTab?.id, activeTab?.elements, sessionShareCode);
 
   // Outbound realtime broadcasters (cursor + laser) and the local
   // laser-trail buffer live in useEditorBroadcast. Same throttle,

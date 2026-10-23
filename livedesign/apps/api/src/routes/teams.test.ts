@@ -104,7 +104,6 @@ function member(overrides: Partial<TeamMember> = {}): TeamMember {
     role: 'admin',
     status: 'joined',
     name: null,
-    pictureUrl: null,
     createdAt: 1,
     updatedAt: 1,
     ...overrides,

@@ -312,28 +312,6 @@ describe('resolveOwnerBadge', () => {
   });
 });
 
-// A peer's published picture rides onto their cursor (docs/specs/014-identity/profile-picture.md §5).
-describe('buildRemoteCursorRows pictures', () => {
-  it('carries the picture from presence, and nothing when there is none', () => {
-    const peer = (id: string, picture?: string) =>
-      ({ id, name: id, color: '#f00', status: 'online', ...(picture ? { picture } : {}) }) as const;
-    const rows = buildRemoteCursorRows(
-      new Map([
-        ['a', { tabId: 't', x: 1, y: 2 }],
-        ['b', { tabId: 't', x: 3, y: 4 }],
-      ]),
-      new Map([
-        ['a', peer('a', 'https://img.clerk.com/a')],
-        ['b', peer('b')],
-      ]),
-      'me',
-      't',
-    );
-    expect(rows.find((r) => r.id === 'a')?.picture).toBe('https://img.clerk.com/a');
-    expect(rows.find((r) => r.id === 'b')).not.toHaveProperty('picture');
-  });
-});
-
 // docs/specs/013-workspace/share-roles.md: a Viewer only looks, so its selection holds nothing.
 describe('buildRemoteSelectionsByElement holds', () => {
   it("marks a Viewer's selection as not holding, a Participant's and an Editor's as holding", () => {

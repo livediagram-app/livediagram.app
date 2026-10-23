@@ -23,7 +23,6 @@ describe('explorerSurfaceFlags', () => {
       appLinks: false,
       guestPrompts: false,
       administration: false,
-      publishPicture: false,
     });
   });
 });
