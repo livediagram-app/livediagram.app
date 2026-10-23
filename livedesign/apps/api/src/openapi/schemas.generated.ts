@@ -8067,22 +8067,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
-  "TeamInviteDecline": {
-    "additionalProperties": false,
-    "properties": {
-      "status": {
-        "$ref": "#/components/schemas/TeamMemberStatus"
-      },
-      "teamName": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "teamName",
-      "status"
-    ],
-    "type": "object"
-  },
   "TeamInviteLink": {
     "additionalProperties": false,
     "properties": {

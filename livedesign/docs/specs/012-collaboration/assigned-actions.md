@@ -351,8 +351,9 @@ One new opt-out flag in the [User preferences](../007-editor/user-preferences.md
 notifyActionAssigned?: boolean; // someone assigns me an action
 ```
 
-- Server-side it joins `NotificationPrefs`
-  (`apps/api/src/db/notification-prefs.ts`), read by the notify dispatcher.
+- Server-side it is one of the shared settings in `@liveworkspace/settings`, kept by liveworkspace
+  accounts in the `all` scope, so turning it off in any app turns it off here. The notify dispatcher
+  reads it through `NotificationPrefs` (`apps/api/src/accounts/settings.ts`).
 - Client-side the profile page (`ProfilePane.tsx`, [Account settings & email notifications](../014-identity/profile-and-email-notifications.md)) gains a
   `NotificationRow`: "Someone assigns me an action", gated with the others
   on `emailEnabled`, flipping through the same `setFlag` round-trip.

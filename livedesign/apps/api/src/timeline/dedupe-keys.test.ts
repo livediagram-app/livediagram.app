@@ -15,15 +15,13 @@ vi.mock('../db/timeline', async (importOriginal) => {
 });
 vi.mock('./audience', () => ({
   audienceForDesign: vi.fn(async () => [{ scopeType: 'user', scopeId: 'me' }]),
-  audienceForTeam: vi.fn(async () => [{ scopeType: 'user', scopeId: 'me' }]),
-  adminsForTeam: vi.fn(async () => []),
   mergeScopes: vi.fn((...lists: unknown[][]) => lists.flat()),
   userScope: (id: string) => ({ scopeType: 'user', scopeId: id }),
 }));
 
 import { dedupeKeyForDay } from '../db/timeline';
 import type { Env } from '../types';
-import { recordTeamRenamed } from './team-events';
+import { recordDesignMoved } from './design-events';
 
 const env = {} as Env;
 
@@ -39,9 +37,19 @@ beforeEach(() => {
 });
 
 describe('repeatable events carry a unique dedupe key', () => {
-  it('two renames of one team are two rows, not one upserted', async () => {
-    await recordTeamRenamed(env, { id: 't1', name: 'Guild' }, 'Old Guild', 'me');
-    await recordTeamRenamed(env, { id: 't1', name: 'Guild 2' }, 'Guild', 'me');
+  it('two moves of one design are two rows, not one upserted', async () => {
+    await recordDesignMoved(
+      env,
+      { id: 'd1', name: 'Poster', ownerId: 'me', teamId: null },
+      'Drafts',
+      'me',
+    );
+    await recordDesignMoved(
+      env,
+      { id: 'd1', name: 'Poster', ownerId: 'me', teamId: null },
+      'Archive',
+      'me',
+    );
     const [a, b] = keys();
     expect(a).not.toBe(b);
   });

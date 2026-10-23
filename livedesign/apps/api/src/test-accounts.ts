@@ -88,14 +88,17 @@ export function fakeAccounts(fallback?: typeof fetch): FakeAccounts {
     };
   };
 
-  state.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+  state.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
     if (!url.startsWith(prefix)) {
       if (fallback) return fallback(input, init);
       throw new Error(`unexpected fetch ${url}`);
     }
     const path = url.slice(prefix.length);
-    const body = JSON.parse(String(init?.body ?? '{}')) as Record<string, unknown>;
+    const body = JSON.parse(typeof init?.body === 'string' ? init.body : '{}') as Record<
+      string,
+      unknown
+    >;
     state.calls.push({ path, body });
     const failure = state.failing.get(path);
     if (failure) return json({ error: 'failing' }, failure);
@@ -191,6 +194,6 @@ export function fakeAccounts(fallback?: typeof fetch): FakeAccounts {
       default:
         return json({ error: 'not_found' }, 404);
     }
-  }) as typeof fetch;
+  };
   return state;
 }

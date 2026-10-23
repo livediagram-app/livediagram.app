@@ -17,7 +17,7 @@ let accounts: FakeAccounts;
 beforeEach(() => {
   sent = [];
   accounts = fakeAccounts((_url, init) => {
-    const { events } = JSON.parse(String(init?.body)) as {
+    const { events } = JSON.parse(typeof init?.body === 'string' ? init.body : '{}') as {
       events: { category: string; action: string; type: string | null }[];
     };
     sent.push(...events.map((e) => [e.category, e.action, e.type]));

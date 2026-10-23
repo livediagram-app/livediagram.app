@@ -199,8 +199,6 @@ Optional knobs (plain `[vars]`):
 - `RESEND_FROM`: the From identity, e.g. `livedesign <hello@livedesign.app>` (the default). Must be on your verified domain.
 - `APP_BASE_URL`: public origin for links in emails, defaults to `https://livedesign.app`.
 
-If you enable this on a deployment that already has signed-in users, run the one-time backfill in [Transactional email (Resend) §4](../specs/014-identity/transactional-email.md) first, so existing users aren't "welcomed" on their next sign-in.
-
 ## Teams
 
 Teams need sign-in. They are liveworkspace teams, made and run on liveworkspace.app; the api worker keeps a copy of

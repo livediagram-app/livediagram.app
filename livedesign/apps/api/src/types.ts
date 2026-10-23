@@ -97,10 +97,6 @@ export type Env = {
   // outbound page fetch, so bound abuse. Keyed on CF-Connecting-IP. Optional:
   // absent (self-host) → "allow".
   UNFURL_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
-  // Per-network limiter for an invite email's Decline link (docs/specs/013-workspace/teams.md "Declining from the
-  // email"), keyed `invite-decline:<address range>`: open doors, so the owner-keyed limiter cannot key them.
-  // Optional: absent (self-host) → "allow".
-  TEAM_INVITE_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // Telemetry on/off switch (docs/specs/017-telemetry/telemetry.md) for this worker's own events. A plain
   // wrangler.toml [vars] string; only the literal "true" enables it.
   // Absent/anything-else keeps telemetry fully off — the self-host

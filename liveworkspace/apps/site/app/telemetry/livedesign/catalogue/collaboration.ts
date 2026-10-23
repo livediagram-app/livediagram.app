@@ -252,23 +252,6 @@ export const TEAMS_CREATED: Metric = {
   blurb: 'A new team workspace was created.',
 };
 
-export const INVITES_ACCEPTED: Metric = {
-  category: 'Team',
-  action: 'Joined',
-  type: null,
-  title: 'Invites Accepted',
-  blurb: 'Someone joined a team, by accepting an email invite or opening an invite link.',
-};
-
-export const INVITES_DECLINED: Metric = {
-  category: 'Team',
-  action: 'Declined',
-  type: 'Invite',
-  rising: 'neutral',
-  title: 'Invites Declined',
-  blurb: 'The recipient turned an invitation down. Read against accepted, not against sent.',
-};
-
 export const DESIGNS_SHARED_TO_A_TEAM: Metric = {
   category: 'Team',
   action: 'Added',
@@ -332,17 +315,16 @@ export const INVITE_LINKS_COPIED = chart(
 export const TEAM_ACTIVITY: MetricStack = {
   stack: true,
   title: 'Team Activity',
-  blurb: 'Teams made, the invite funnel (sent, accepted, declined), and designs shared to a team.',
+  blurb:
+    'Teams made, and designs shared to a team or moved between teams. Invitations are answered on liveworkspace.app.',
   members: [
     TEAMS_CREATED,
-    INVITES_ACCEPTED,
-    INVITES_DECLINED,
     DESIGNS_SHARED_TO_A_TEAM,
     TEAM_DESIGNS_MOVED,
     TEAM_REMOVALS,
     INVITE_LINKS_COPIED,
   ],
-  headline: INVITES_ACCEPTED,
+  headline: TEAMS_CREATED,
 };
 
 // The Explorer Timeline (docs/specs/013-workspace/timeline.md) and the Explorer's Inbox (docs/specs/013-workspace/inbox.md).

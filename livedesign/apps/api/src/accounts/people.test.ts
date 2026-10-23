@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from 'vitest';
 import { fakeAccounts, type FakeAccounts } from '../test-accounts';
 import type { Env } from '../types';
 import {
@@ -17,7 +17,7 @@ import { getNotificationPrefs } from './settings';
 
 let accounts: FakeAccounts;
 let env: Env;
-let warn: ReturnType<typeof vi.spyOn>;
+let warn: MockInstance<typeof console.warn>;
 beforeEach(() => {
   __forgetActivity();
   accounts = fakeAccounts();
