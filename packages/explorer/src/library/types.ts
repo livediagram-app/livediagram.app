@@ -94,4 +94,10 @@ export type LibraryHostProps = {
   itemMenu?: ItemMenuHost;
   /** History on an item's menu: the item's own Timeline. On by default. */
   history?: boolean;
+  /** New Team in an item's Move dialog: makes a team for the person (on liveworkspace, so the same team in every
+   *  app) and answers it, or null when refused; the item then files into it. Omitted where the person has no teams
+   *  (a guest). */
+  onCreateTeam?: CreateTeam;
 };
+
+export type CreateTeam = (name: string) => Promise<{ id: string; name: string } | null>;

@@ -96,6 +96,7 @@ export type {
   ImportHost,
   ImportSource,
   ItemMenuHost,
+  CreateTeam,
   ItemMenuVerb,
   LibraryHostProps,
   LibraryShape,

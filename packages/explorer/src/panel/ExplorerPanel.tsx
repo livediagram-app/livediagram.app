@@ -164,6 +164,7 @@ export function ExplorerPanel({
   imports,
   itemMenu,
   history,
+  onCreateTeam,
   ...props
 }: ExplorerPanelProps) {
   return (
@@ -174,6 +175,7 @@ export function ExplorerPanel({
         imports={imports}
         itemMenu={itemMenu}
         history={history}
+        onCreateTeam={onCreateTeam}
       >
         <PanelInner {...props} />
       </LibraryHostProvider>

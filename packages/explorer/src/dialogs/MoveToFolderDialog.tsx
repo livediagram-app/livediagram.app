@@ -29,6 +29,8 @@ export type MoveToFolderDialogProps = {
     parentId: string | null,
     teamId: string | null,
   ) => Promise<PickerFolder | null>;
+  // New Team among the spaces (items only).
+  onCreateTeam?: (name: string) => Promise<{ id: string; name: string } | null>;
   onPick: (dest: Destination) => void;
   onClose: () => void;
 };
@@ -41,6 +43,7 @@ export function MoveToFolderDialog({
   currentTeamId = null,
   currentFolderId = null,
   onCreateFolder,
+  onCreateTeam,
   onPick,
   onClose,
 }: MoveToFolderDialogProps) {
@@ -59,7 +62,7 @@ export function MoveToFolderDialog({
         subtitle={
           subjectKind === 'folder'
             ? 'Pick the folder it should live inside.'
-            : teamList.length > 0
+            : teamList.length > 0 || onCreateTeam
               ? 'Pick a destination folder or team.'
               : 'Pick a destination folder.'
         }
@@ -75,6 +78,7 @@ export function MoveToFolderDialog({
           showPersonal={personalFolders !== undefined}
           teams={teamList}
           onCreateFolder={onCreateFolder}
+          onCreateTeam={onCreateTeam}
         />
       </div>
       <DialogFooter>

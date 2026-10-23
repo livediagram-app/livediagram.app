@@ -65,6 +65,7 @@ import {
 import { inboxHost } from '@/lib/explorer/inbox';
 import { libraryHosts } from '@/lib/explorer/library';
 import { importsHost } from '@/lib/explorer/imports';
+import { makeTeam } from '@/lib/explorer/new-team';
 import { useExplorerSettings } from '@/lib/explorer/settings';
 import { shareHostFor } from '@/lib/explorer/share';
 import {
@@ -237,6 +238,13 @@ export function ExplorerShell() {
     void loadWelcome(app).then((manifest) => manifest && setLoaded({ app, manifest }));
   }, [app]);
   const signedIn = identity?.kind === 'account';
+  // New Team in the Move dialog: made on liveworkspace, then the renewed token lists it among the teams.
+  const onCreateTeam = useCallback(async (name: string) => {
+    const made = await makeTeam(name);
+    if (!made) return null;
+    if (made.identity) setIdentity(made.identity);
+    return made.team;
+  }, []);
   const welcome: WelcomeOptions = useMemo(
     () => ({
       manifest: loaded?.app === app ? loaded.manifest : null,
@@ -360,6 +368,7 @@ export function ExplorerShell() {
           gallery={library.gallery}
           shapeLibraries={library.shapeLibraries}
           imports={imports}
+          {...(signedIn ? { onCreateTeam } : {})}
           heroHidden={settings.heroHidden}
           onHideHero={settings.onHideHero}
           onTimeline={trackTimeline}

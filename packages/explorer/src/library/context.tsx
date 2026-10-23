@@ -24,11 +24,12 @@ export function LibraryHostProvider({
   imports,
   itemMenu,
   history = true,
+  onCreateTeam,
   children,
 }: LibraryHostProps & { children: ReactNode }) {
   const value = useMemo<LibraryHost>(
-    () => ({ gallery, shapeLibraries, imports, itemMenu, history }),
-    [gallery, shapeLibraries, imports, itemMenu, history],
+    () => ({ gallery, shapeLibraries, imports, itemMenu, history, onCreateTeam }),
+    [gallery, shapeLibraries, imports, itemMenu, history, onCreateTeam],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

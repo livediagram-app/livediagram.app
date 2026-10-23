@@ -16,6 +16,7 @@ import type { ShareUrl } from '../types';
 import type { ExplorerView } from '../views';
 import { useExplorer } from './context';
 import { HistoryDialog } from '../library/HistoryDialog';
+import { useLibraryHost } from '../library/context';
 
 const defaultShareUrl: ShareUrl = (link) =>
   typeof window === 'undefined' ? `/s/${link.code}` : `${window.location.origin}/s/${link.code}`;
@@ -24,6 +25,7 @@ const pick = (f: Folder): PickerFolder => ({ id: f.id, name: f.name, parentId: f
 
 export function ExplorerDialogs() {
   const ctx = useExplorer();
+  const { onCreateTeam } = useLibraryHost();
   const {
     dialog,
     openDialog,
@@ -70,6 +72,8 @@ export function ExplorerDialogs() {
           currentTeamId={item.teamId}
           currentFolderId={item.folderId}
           onCreateFolder={createFolder}
+          // New Team, as livediagram's Move dialog has it: a team made on the spot, the item filed into it.
+          onCreateTeam={onCreateTeam}
           onPick={(dest) => void actions.move(item, dest)}
           onClose={close}
         />

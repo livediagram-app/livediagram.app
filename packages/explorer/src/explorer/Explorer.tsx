@@ -210,6 +210,7 @@ export function Explorer({
   imports,
   itemMenu,
   history,
+  onCreateTeam,
   ...props
 }: ExplorerProps) {
   return (
@@ -220,6 +221,7 @@ export function Explorer({
         imports={imports}
         itemMenu={itemMenu}
         history={history}
+        onCreateTeam={onCreateTeam}
       >
         <ExplorerInner {...props} />
       </LibraryHostProvider>
