@@ -13,7 +13,10 @@ import { SIGNED_IN_HINT_COOKIE } from '@livedesign/api-schema';
 //   GET  /api/auth/sign-in?return_to=/path  → the accounts site
 //   GET  /api/auth/callback?code&state       → back in the app, signed in
 //   POST /api/auth/token                     → { accessToken, expiresAt, user }
-//   POST /api/auth/sign-out                  → drops the refresh cookie
+//   GET  /api/auth/silent?return=/path       → the accounts site with prompt=none, and straight back:
+//                                              signed in, or a guest (liveworkspace/docs/accounts.md
+//                                              "Signing in without a click")
+//   POST /api/auth/sign-out                  → drops the refresh cookie, and remembers the sign-out
 //
 // Handled before the caller's identity is resolved (src/index.ts): none of
 // these carry a Bearer, so they would otherwise all share one 'anonymous'
@@ -27,6 +30,12 @@ import {
   refreshTokens,
   type TokenSet,
 } from '@liveworkspace/auth-client';
+import {
+  finishSilentSignIn,
+  signedOutCookie,
+  silentCookiesForHint,
+  startSilentSignIn,
+} from '@liveworkspace/auth-client/silent';
 import { clientRateKey } from '../client-ip';
 import { reportSignIn } from '../auth/session-telemetry';
 import { json, notFound, rateLimited } from '../responses';
@@ -42,6 +51,8 @@ const REFRESH_COOKIE = 'ldes_refresh';
 const PKCE_MAX_AGE_SECONDS = 600;
 // The refresh token's own lifetime is set by the accounts Worker; the cookie only needs to outlast it.
 const REFRESH_MAX_AGE_SECONDS = 30 * 24 * 3600;
+// Signing in without a click: the signed-out mark, the loop guard and the bounce's own PKCE cookie.
+const SILENT_COOKIES = silentCookiesForHint(SIGNED_IN_HINT_COOKIE);
 const DEFAULT_RETURN = '/explorer/home';
 
 // What the page renders for the signed-in account (AuthControls, Settings, the editor's name).
@@ -197,6 +208,29 @@ async function callback(
   waitUntil: (p: Promise<unknown>) => void,
 ): Promise<Response> {
   const url = new URL(request.url);
+  // Back from a silent bounce (its own cookie, so a clicked sign-in in another tab is left alone): signed in
+  // when the accounts site had a session, a guest when not, and either way back where the page was.
+  const silent = await finishSilentSignIn({
+    request,
+    credentials: {
+      accountsUrl: config.accountsUrl,
+      clientId: config.clientId,
+      clientSecret: config.clientSecret,
+    },
+    resource: config.resource,
+    callbackUrl: callbackUrl(env, request),
+    cookies: SILENT_COOKIES,
+    cookiePath: COOKIE_PATH,
+  });
+  if (silent) {
+    if (!silent.tokens?.refreshToken) return redirect(silent.returnTo, silent.cookies);
+    const silentUser = userOf(silent.tokens);
+    if (silentUser) waitUntil(reportSignIn(env, silentUser.id));
+    return redirect(silent.returnTo, [
+      ...silent.cookies,
+      ...sessionCookies(silent.tokens.refreshToken),
+    ]);
+  }
   const pkce = decodePkce(readCookie(request, PKCE_COOKIE));
   const code = url.searchParams.get('code');
   // A missing or mismatched state is a stale tab, a second sign-in started elsewhere, or a forged
@@ -234,6 +268,8 @@ async function callback(
   return redirect(pkce.returnTo, [
     clearCookie(PKCE_COOKIE),
     ...sessionCookies(tokens.refreshToken),
+    // Signed in again: silent sign-in may run here again.
+    signedOutCookie(SILENT_COOKIES, false),
   ]);
 }
 
@@ -274,8 +310,33 @@ function noStore(cookies: string[] = []): Headers {
 
 // Signing out of livedesign only: the accounts site keeps its own session, so signing in again
 // is one click with no code, as it is for every other liveworkspace app.
+// It is remembered (the signed-out mark) until the next sign-in here, so signing in without a click
+// never undoes it.
 function signOut(): Response {
-  return json({ signedIn: false }, { headers: noStore(signedOutCookies()) });
+  return json(
+    { signedIn: false },
+    { headers: noStore([...signedOutCookies(), signedOutCookie(SILENT_COOKIES, true)]) },
+  );
+}
+
+// GET /api/auth/silent?return=: the page's boot script sends a browser here once per browser session when it has
+// no session in this app (liveworkspace/docs/accounts.md "Signing in without a click"). Handled before the
+// configuration check and the rate limit, because the page is waiting on it: whatever happens it goes back to
+// where it came from, never to an error page.
+async function silent(request: Request, env: Env, config: Configured | null): Promise<Response> {
+  const returnTo = safeReturnPath(new URL(request.url).searchParams.get('return'));
+  if (config && env.WRITE_RATE_LIMITER) {
+    const ok = await env.WRITE_RATE_LIMITER.limit({ key: `auth:${clientRateKey(request)}` });
+    if (!ok.success) return redirect(returnTo, []);
+  }
+  return startSilentSignIn({
+    request,
+    config,
+    callbackUrl: callbackUrl(env, request),
+    fallbackReturn: DEFAULT_RETURN,
+    cookies: SILENT_COOKIES,
+    cookiePath: COOKIE_PATH,
+  });
 }
 
 export async function handleAuth(
@@ -286,6 +347,9 @@ export async function handleAuth(
 ): Promise<Response> {
   if (segments.length !== 3) return notFound();
   const config = configured(env);
+  const route = `${request.method} ${segments[2]}`;
+  // Never a page: with no sign-in configured, it goes straight back (startSilentSignIn).
+  if (route === 'GET silent') return silent(request, env, config);
   // A guest-only deployment: nothing to sign in to.
   if (!config) return json({ error: 'sign_in_not_configured' }, { status: 404 });
   // Each step is one network's worth of requests, apart from everyone's design writes.
@@ -293,7 +357,6 @@ export async function handleAuth(
     const ok = await env.WRITE_RATE_LIMITER.limit({ key: `auth:${clientRateKey(request)}` });
     if (!ok.success) return rateLimited();
   }
-  const route = `${request.method} ${segments[2]}`;
   switch (route) {
     case 'GET sign-in':
       return signIn(request, env, config);

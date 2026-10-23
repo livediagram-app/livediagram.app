@@ -1,4 +1,5 @@
 import { STORAGE_KEY as USER_PREFERENCES_STORAGE_KEY } from '@/lib/user-preferences';
+import { silentSignInBootScript, silentCookiesForHint } from '@liveworkspace/auth-client/silent';
 import { SIGNED_IN_HINT_COOKIE } from '@liveplanner/api-schema';
 import { API_BASE } from '@/lib/api/base';
 import { GUEST_TOKEN_STORAGE_KEY } from '@/lib/guest-token-key';
@@ -40,3 +41,25 @@ export const WEBFONTS_SWAP_SCRIPT = `try{var l=document.getElementById('${WEBFON
 // session, and its grant is asked for then.
 export const SHARE_PASSWORD_STORAGE_PREFIX = 'liveplanner:share-password:';
 export const PLAN_GRANT_BOOT_SCRIPT = `try{var m=location.pathname.match(/^\\/project\\/([^/]+)\\/?$/);if(m&&m[1]!=='placeholder'&&m[1]!=='shared'&&!/(?:^|; )${SIGNED_IN_HINT_COOKIE}=1/.test(document.cookie)){var t=localStorage.getItem('${GUEST_TOKEN_STORAGE_KEY}');var s=new URLSearchParams(location.search).get('s');if(t||s){var h={};if(t)h.Authorization='Bearer '+t;if(s){h['X-Share-Code']=s;var pw=localStorage.getItem('${SHARE_PASSWORD_STORAGE_PREFIX}'+s);if(pw)h['X-Share-Password']=pw}var id=decodeURIComponent(m[1]);window.__lpGrant={id:id,share:s||'',p:fetch('${API_BASE}/index/items/'+encodeURIComponent(id)+'/grant',{method:'POST',headers:h}).then(function(r){return r.ok?r.json():null}).catch(function(){return null})}}}}catch(e){}`;
+
+// Signing in without a click (liveworkspace/docs/accounts.md "Signing in without a click"): once per browser
+// session, a browser with no session here is bounced through the accounts site and straight back, signed in when
+// it has a liveworkspace session and a guest when not. First in <head> (after Trusted Types), because when it
+// bounces it stops the page loading, so nothing signed-out paints and no app code starts. Never on the sign-in
+// pages, the guest hand-off's way back, the AI-tool consent pages, embeds and form links; the shared script
+// (@liveworkspace/auth-client/silent) also leaves frames, crawlers, share links and anyone who signed out of
+// liveplanner alone.
+export const SILENT_SIGN_IN_SKIP_PATHS = [
+  '/sign-in',
+  '/get-started',
+  '/auth',
+  '/oauth',
+  '/embed',
+  '/workbench',
+  '/form',
+];
+export const SILENT_SIGN_IN_BOOT_SCRIPT = silentSignInBootScript({
+  apiBase: API_BASE,
+  cookies: silentCookiesForHint(SIGNED_IN_HINT_COOKIE),
+  skipPaths: SILENT_SIGN_IN_SKIP_PATHS,
+});

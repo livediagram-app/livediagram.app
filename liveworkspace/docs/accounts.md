@@ -199,6 +199,64 @@ background with a 5 second timeout, and clears the cookie, so the next guest vis
 guest. A failed merge never fails the sign-in. Without `INDEX_URL` and `INDEX_MERGE_KEY` it does
 nothing and the cookie stays.
 
+An app's sign-in that finds a liveworkspace session already there, by a click or
+[without one](#signing-in-without-a-click), makes no new session, so it does the same from the
+authorize step instead (`mergeGuestOnAuthorize`): when the authorize answer carries a code and the
+request a valid `lw_guest` cookie, the session's account takes the guest's settings, profile and
+index items, and the cookie is cleared. Without a guest cookie it costs nothing.
+
+## Signing in without a click
+
+Someone signed in to liveworkspace who opens an app they have no session in is signed in by the
+page itself, with no click. Each app is its own site and liveworkspace.app another, so an app can't
+see the liveworkspace session from script: a fetch or a hidden iframe would need a third-party
+cookie, which Safari and Chrome withhold. What always works is a full-page visit, so the app takes one
+quick bounce through the accounts site. The mechanism is shared, in `@liveworkspace/auth-client/silent`
+(`packages/auth-client/src/silent.ts`); each app wires it to its own cookies.
+
+1. **The page.** An inline script first in the app's `<head>` (`silentSignInBootScript`) runs before
+   anything renders. With no session hint for this app, it marks the tab's `sessionStorage`, stops
+   the page loading, so no signed-out page paints and no app code starts, lets the page follow the
+   device's light or dark setting meanwhile, and goes to the app's
+   `GET /api/auth/silent?return=<path?query#hash>`.
+2. **The app's Worker** (`startSilentSignIn`) sends it to `/api/auth/oauth2/authorize` with
+   `prompt=none`, keeping its PKCE verifier and the return address in its own HttpOnly cookie (so a
+   clicked sign-in in another tab is untouched) and setting a two-minute guard cookie.
+3. **The accounts Worker** answers at once and never shows a page: a code when there is a session
+   (taking a guest's things along, [above](#guests)), `error=login_required` when there isn't.
+   Better Auth's OAuth provider does this for `prompt=none`; the apps' clients skip consent, so a
+   session is all it needs.
+4. **The app's callback** (`finishSilentSignIn`) knows the bounce by its cookie's `state`: with a
+   code it signs in exactly as a clicked sign-in does; with an error, or a code swap that fails, it
+   does nothing. Either way the browser goes back to the same path, query and hash.
+
+It never bounces:
+
+- more than once per tab (`sessionStorage`), nor again in any tab of the app within two minutes (the
+  guard cookie, `<prefix>silent`, which the route also refuses to bounce past, so it can't loop);
+- with a session in the app already (its hint cookie, `<prefix>signed_in=1`);
+- after the person signed out of that app. Signing out sets `<prefix>signed_out=1` (readable, the
+  whole site, 400 days), which the page and the route both respect, and the next sign-in to the app
+  clears it. Signing out of an app ends that app's session only, as before: the liveworkspace session
+  and the other apps stay signed in, so signing in to that app again is one click with no code;
+- inside a frame (embeds, the workbench), for a crawler (by user agent), or for an automated browser
+  (`navigator.webdriver`), which also keeps the apps' own end-to-end suites unbounced;
+- on the sign-in pages, the guest hand-off's way back, the AI-tool consent pages, embeds, a share
+  link (`?s=`) or liveplanner's form links, so their own flows are never interrupted;
+- when the app's API isn't on the page's own site, or the address is too long to carry (1,500
+  characters), or the browser has no `sessionStorage` or cookies to guard it.
+
+Whatever goes wrong on the way (no sign-in configured, rate limited, the accounts site down), the
+route and the callback go back to the page rather than to an error.
+
+**The cost.** One bounce per new tab for a person with no session in the app: four extra requests (the
+stopped page, the app's route, the accounts site, the callback, which for a signed-in person also
+swaps the code). Measured locally against the dev stacks (median of seven cold loads), it adds about
+85 ms to a signed-in person's first load and about 50 ms to a guest's; on the deployed apps each hop is
+a round trip to the edge, so it costs more. Later loads in the same tab add nothing, and a person
+already signed in to the app never bounces. FedCM and the Storage Access API could make this a
+background request one day, but neither works in every browser, so the bounce stays.
+
 ## Settings
 
 A person's settings live with the account, in the accounts Worker's D1

@@ -261,3 +261,94 @@ describe('readCookie', () => {
     expect(readCookie(req, 'missing')).toBeNull();
   });
 });
+
+// Signing in without a click (liveworkspace/docs/accounts.md "Signing in without a click"): the page's boot
+// script sends a browser with no session here once per browser session; it always comes back to where it was.
+describe('GET /api/auth/silent', () => {
+  async function bounce(
+    returnTo = '/explorer/home?x=1#card',
+    init: RequestInit & { env?: Env } = {},
+  ) {
+    return call(`/api/auth/silent?return=${encodeURIComponent(returnTo)}`, init);
+  }
+
+  it('asks the accounts site with prompt=none, guarding against a second bounce', async () => {
+    const res = await bounce();
+    const location = new URL(res.headers.get('Location')!);
+    expect(location.origin + location.pathname).toBe(
+      'https://accounts.example/api/auth/oauth2/authorize',
+    );
+    expect(location.searchParams.get('prompt')).toBe('none');
+    expect(location.searchParams.get('redirect_uri')).toBe(`${APP}/api/auth/callback`);
+    expect(cookieValue(res, 'ldes_silent')).toBe('1');
+    expect(cookieValue(res, 'ldes_silent_pkce')).toBeTruthy();
+    // A clicked sign-in in another tab keeps its own cookie.
+    expect(cookieValue(res, 'ldes_pkce')).toBeUndefined();
+  });
+
+  it('goes straight back after the person signed out of this app', async () => {
+    const res = await bounce('/new', { headers: { Cookie: 'ldes_signed_out=1' } });
+    expect(res.headers.get('Location')).toBe('/new');
+  });
+
+  it('goes straight back on a guest-only deployment, never to an error page', async () => {
+    const res = await bounce('/new', { env: {} as Env });
+    expect(res.status).toBe(302);
+    expect(res.headers.get('Location')).toBe('/new');
+  });
+
+  it('goes straight back when rate limited', async () => {
+    const limit = vi.fn(async () => ({ success: false }));
+    const res = await bounce('/new', {
+      env: { ...ENV, WRITE_RATE_LIMITER: { limit } } as unknown as Env,
+    });
+    expect(res.headers.get('Location')).toBe('/new');
+  });
+
+  async function comeBack(query: (state: string) => string) {
+    const out = await bounce();
+    const state = new URL(out.headers.get('Location')!).searchParams.get('state')!;
+    return call(`/api/auth/callback?${query(state)}`, {
+      headers: { Cookie: `ldes_silent_pkce=${cookieValue(out, 'ldes_silent_pkce')}` },
+    });
+  }
+
+  it('signs in at the callback when the accounts site had a session, back to the same address', async () => {
+    fetchMock.mockResolvedValueOnce(tokenResponse());
+    const res = await comeBack((state) => `code=c1&state=${state}`);
+    expect(res.headers.get('Location')).toBe('/explorer/home?x=1#card');
+    expect(cookieValue(res, 'ldes_refresh')).toBe('refresh-2');
+    expect(cookieValue(res, 'ldes_signed_in')).toBe('1');
+    expect(cookieValue(res, 'ldes_signed_out')).toBe('');
+    expect(cookieValue(res, 'ldes_silent_pkce')).toBe('');
+    expect(reportSignIn).toHaveBeenCalledWith(expect.anything(), 'user_abc');
+  });
+
+  it('comes back a guest on login_required, swapping nothing', async () => {
+    const res = await comeBack((state) => `error=login_required&state=${state}`);
+    expect(res.headers.get('Location')).toBe('/explorer/home?x=1#card');
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(cookieValue(res, 'ldes_refresh')).toBeUndefined();
+    expect(cookieValue(res, 'ldes_silent_pkce')).toBe('');
+  });
+});
+
+describe('signing out, and signing in again', () => {
+  it('remembers an explicit sign-out, so no silent sign-in undoes it', async () => {
+    const res = await call('/api/auth/sign-out', { method: 'POST' });
+    expect(cookieValue(res, 'ldes_signed_out')).toBe('1');
+    const out = setCookies(res).find((c) => c.startsWith('ldes_signed_out='))!;
+    expect(out).toContain('Path=/');
+    expect(out).not.toContain('HttpOnly');
+  });
+
+  it('forgets it at the next clicked sign-in', async () => {
+    const { location, pkce } = await signInCookie();
+    fetchMock.mockResolvedValueOnce(tokenResponse());
+    const res = await call(
+      `/api/auth/callback?code=c1&state=${location.searchParams.get('state')}`,
+      { headers: { Cookie: `ldes_pkce=${pkce}; ldes_signed_out=1` } },
+    );
+    expect(cookieValue(res, 'ldes_signed_out')).toBe('');
+  });
+});

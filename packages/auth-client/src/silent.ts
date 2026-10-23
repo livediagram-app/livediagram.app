@@ -9,7 +9,8 @@
 // the same address as a guest. Either way it costs one bounce per browser session, and nothing after.
 //
 // Guards, all here so every app keeps the same ones:
-// - the page: once per browser session (sessionStorage), never in a frame, never for a crawler, never on the
+// - the page: once per browser session (sessionStorage), never in a frame, never for a crawler or an automated
+//   browser (`navigator.webdriver`, which also keeps the apps' own end-to-end suites unbounced), never on the
 //   sign-in pages, embeds or a share link (`?s=`), never with a session already (the app's hint cookie);
 // - the person: never after they signed out of this app, until they sign in again (the signed-out cookie);
 // - loops: a short-lived guard cookie the bounce sets, which both the page and the route refuse to bounce past.
@@ -60,6 +61,13 @@ export function silentCookieNames(prefix: string, hint: string): SilentCookies {
     guard: `${prefix}silent`,
     pkce: `${prefix}silent_pkce`,
   };
+}
+
+// The same, from the hint alone, for apps whose hint is `<prefix>signed_in` (all of them).
+export function silentCookiesForHint(hint: string): SilentCookies {
+  const suffix = 'signed_in';
+  if (!hint.endsWith(suffix)) throw new Error(`not a signed-in hint: ${hint}`);
+  return silentCookieNames(hint.slice(0, -suffix.length), hint);
 }
 
 export function readCookie(header: string | null, name: string): string | null {
@@ -274,6 +282,9 @@ export function silentSignInBootScript(options: SilentBootOptions): string {
   for (const path of options.skipPaths) {
     if (!PATH.test(path)) throw new Error(`unsafe skip path: ${path}`);
   }
+  // The way back is a path on the page's own site, so the API must be on it too (as in production and behind each
+  // app's router). An API elsewhere (an app's dev server on its own port) gets no bounce.
+  if (!options.apiBase.startsWith('/') || options.apiBase.startsWith('//')) return '';
   const api = JSON.stringify(options.apiBase.replace(/\/+$/, ''));
   const skip = JSON.stringify(options.skipPaths);
   const key = JSON.stringify(SILENT_SESSION_KEY);
@@ -281,8 +292,9 @@ export function silentSignInBootScript(options: SilentBootOptions): string {
     `(function(){try{` +
     `var w=window,d=document,l=location,n=navigator,c=d.cookie||'';` +
     `function has(k,v){return new RegExp('(?:^|;\\\\s*)'+k+'='+(v||'[^;\\\\s]')).test(c)}` +
-    // A frame (an embed, the workbench, a preview), a crawler, or no cookies to come back with.
-    `if(w.top!==w.self||!n.cookieEnabled||/bot|crawl|spider|slurp|mediapartners|facebookexternalhit|embedly|preview/i.test(n.userAgent||''))return;` +
+    // A frame (an embed, the workbench, a preview), a crawler or other automated browser, or no cookies to come
+    // back with.
+    `if(w.top!==w.self||n.webdriver||!n.cookieEnabled||/bot|crawl|spider|slurp|mediapartners|facebookexternalhit|embedly|preview/i.test(n.userAgent||''))return;` +
     // A session here already, signed out of this app on purpose, or a bounce just out.
     `if(has('${hint}','1')||has('${signedOut}','1')||has('${guard}'))return;` +
     `var p=l.pathname,s=${skip};` +

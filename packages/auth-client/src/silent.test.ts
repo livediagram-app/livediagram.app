@@ -3,6 +3,7 @@ import {
   finishSilentSignIn,
   signedOutCookie,
   silentCookieNames,
+  silentCookiesForHint,
   silentSignInBootScript,
   SILENT_SESSION_KEY,
   startSilentSignIn,
@@ -37,11 +38,13 @@ type Page = {
   userAgent?: string;
   storage?: Map<string, string> | 'blocked';
   cookieEnabled?: boolean;
+  webdriver?: boolean;
+  apiBase?: string;
 };
 
 function boot(page: Page = {}) {
   const script = silentSignInBootScript({
-    apiBase: '/api',
+    apiBase: page.apiBase ?? '/api',
     cookies,
     skipPaths: ['/sign-in', '/embed', '/auth'],
   });
@@ -84,6 +87,7 @@ function boot(page: Page = {}) {
   };
   const navigator = {
     cookieEnabled: page.cookieEnabled ?? true,
+    webdriver: page.webdriver ?? false,
     userAgent: page.userAgent ?? 'Mozilla/5.0 (Macintosh) AppleWebKit/605.1.15 Safari/605.1.15',
   };
   new Function('window', 'document', 'location', 'navigator', script)(
@@ -99,6 +103,18 @@ function boot(page: Page = {}) {
     scheme: document.documentElement.style.colorScheme,
   };
 }
+
+describe('silentCookiesForHint', () => {
+  it("names an app's cookies from its hint", () => {
+    expect(silentCookiesForHint('ldoc_signed_in')).toEqual({
+      hint: 'ldoc_signed_in',
+      signedOut: 'ldoc_signed_out',
+      guard: 'ldoc_silent',
+      pkce: 'ldoc_silent_pkce',
+    });
+    expect(() => silentCookiesForHint('session')).toThrow();
+  });
+});
 
 describe('the boot script', () => {
   it('bounces a browser with no session here, keeping the path, query and hash', () => {
@@ -139,6 +155,17 @@ describe('the boot script', () => {
 
   it('never bounces inside a frame', () => {
     expect(boot({ inFrame: true }).to).toBeNull();
+  });
+
+  it('never bounces an automated browser', () => {
+    expect(boot({ webdriver: true }).to).toBeNull();
+  });
+
+  it('is left out when the API is on another origin, since the way back is a path', () => {
+    expect(
+      silentSignInBootScript({ apiBase: 'http://localhost:8887/api', cookies, skipPaths: [] }),
+    ).toBe('');
+    expect(silentSignInBootScript({ apiBase: '//api.example', cookies, skipPaths: [] })).toBe('');
   });
 
   it('never bounces a crawler', () => {

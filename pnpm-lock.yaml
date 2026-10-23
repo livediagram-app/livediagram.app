@@ -335,6 +335,9 @@ importers:
       '@livedesign/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@liveworkspace/auth-client':
+        specifier: workspace:*
+        version: link:../../../packages/auth-client
       '@liveworkspace/settings':
         specifier: workspace:*
         version: link:../../../packages/settings
@@ -1565,6 +1568,9 @@ importers:
       '@livediagram/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@liveworkspace/auth-client':
+        specifier: workspace:*
+        version: link:../../../packages/auth-client
       '@liveworkspace/settings':
         specifier: workspace:*
         version: link:../../../packages/settings
@@ -2817,6 +2823,9 @@ importers:
       '@livedocuments/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@liveworkspace/auth-client':
+        specifier: workspace:*
+        version: link:../../../packages/auth-client
       '@liveworkspace/settings':
         specifier: workspace:*
         version: link:../../../packages/settings
@@ -4026,6 +4035,9 @@ importers:
       '@liveplanner/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@liveworkspace/auth-client':
+        specifier: workspace:*
+        version: link:../../../packages/auth-client
       '@liveworkspace/explorer':
         specifier: workspace:*
         version: link:../../../packages/explorer

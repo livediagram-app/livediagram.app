@@ -36,6 +36,7 @@
     "@livedesign/template-previews": "workspace:*",
     "@livedesign/templates": "workspace:*",
     "@livedesign/ui": "workspace:*",
+    "@liveworkspace/auth-client": "workspace:*",
     "@liveworkspace/settings": "workspace:*",
     "next": "^16.4.1",
     "polygon-clipping": "0.15.7",

@@ -99,6 +99,12 @@ For a "Create account" button, pass `prompt: 'create'` to `authorizeUrl`. The ac
 opens its registration page (first name, last name, email, code) instead of sign-in. Everything
 after that is the same.
 
+`prompt: 'none'` never shows a page: the accounts site answers at once with a code when there is a
+liveworkspace session and with `error=login_required` when there isn't. That is how an app signs
+someone in without a click; `@liveworkspace/auth-client/silent` holds the whole of it, the page's boot
+script, the `/api/auth/silent` route and the callback's half
+([accounts.md](accounts.md#signing-in-without-a-click)).
+
 Who signed in comes from the ID token: `sub`, `email`, `name`, `given_name` and `family_name`.
 
 In the browser, keep the access token in memory. Call `POST /auth/token` on load and again a

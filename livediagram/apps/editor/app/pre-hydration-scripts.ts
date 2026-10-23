@@ -1,4 +1,7 @@
 import { STORAGE_KEY as USER_PREFERENCES_STORAGE_KEY } from '@/lib/user-preferences';
+import { silentSignInBootScript, silentCookiesForHint } from '@liveworkspace/auth-client/silent';
+import { SIGNED_IN_HINT_COOKIE } from '@livediagram/api-schema';
+import { API_BASE } from '@/lib/api/base';
 
 // The editor-only snippet the root layout inlines into a `<script>` that runs
 // BEFORE first paint (the appearance one is shared by every app and lives in
@@ -29,3 +32,24 @@ export const REDUCE_MOTION_BOOT_SCRIPT = `try{var p=JSON.parse(localStorage.getI
 // already paints it while a face downloads, and useFontEpoch re-measures as the faces land.
 export const WEBFONTS_STYLESHEET_ID = 'livediagram-webfonts';
 export const WEBFONTS_SWAP_SCRIPT = `try{var l=document.getElementById('${WEBFONTS_STYLESHEET_ID}');if(l){var on=function(){l.media='all'};if(l.sheet)on();else l.addEventListener('load',on)}}catch(e){}`;
+
+// Signing in without a click (liveworkspace/docs/accounts.md "Signing in without a click"): once per browser
+// session, a browser with no session here is bounced through the accounts site and straight back, signed in when
+// it has a liveworkspace session and a guest when not. First in <head> (after Trusted Types), because when it
+// bounces it stops the page loading, so nothing signed-out paints and no app code starts. Never on the sign-in
+// pages, the guest hand-off's way back, the AI-tool consent pages, embeds; the shared script
+// (@liveworkspace/auth-client/silent) also leaves frames, crawlers, share links and anyone who signed out of
+// livediagram alone.
+export const SILENT_SIGN_IN_SKIP_PATHS = [
+  '/sign-in',
+  '/get-started',
+  '/auth',
+  '/oauth',
+  '/embed',
+  '/workbench',
+];
+export const SILENT_SIGN_IN_BOOT_SCRIPT = silentSignInBootScript({
+  apiBase: API_BASE,
+  cookies: silentCookiesForHint(SIGNED_IN_HINT_COOKIE),
+  skipPaths: SILENT_SIGN_IN_SKIP_PATHS,
+});
