@@ -22,7 +22,6 @@ export type MapSize = 'short' | 'medium' | 'tall';
 
 import { upgradeLegacyPreferences } from '@livediagram/api-schema';
 import type { ElementTourKind } from './element-tours';
-import type { PlanTourTrack } from './plan-tour';
 import type { SwatchOverrideStore } from './swatch-overrides';
 import type { WhiteboardShapeKey } from './whiteboard-shape-catalogue';
 import type { ShapePicks } from './whiteboard-shape-slots';
@@ -185,8 +184,6 @@ export type UserPreferences = {
   notifyActionAssigned?: boolean;
   // "A teammate @-mentioned me in a comment" (docs/specs/012-collaboration/comment-mentions.md).
   notifyMentions?: boolean;
-  // "Someone fills in one of my forms" (docs/specs/030-forms/forms.md "Hearing about responses").
-  notifyFormResponses?: boolean;
   // "Show my profile picture" (docs/specs/014-identity/profile-picture.md §4): whether signed-in
   // collaborators see this account's picture. Missing = SHOW_PROFILE_PICTURE_DEFAULT. The owner
   // always sees their own picture whatever this says.
@@ -199,21 +196,12 @@ export type UserPreferences = {
   // Settings as Tours › "Diagram Tour" (inverted); turning it on there and
   // closing Settings replays the tour. Missing / undefined === not seen.
   tourSeen?: boolean;
-  // The Plan tour's seen-guard (docs/specs/026-plan/plan-tour.md): true counts both tracks as seen while Power user
-  // mode is on (lib/tour-tracks.ts); set with every track by Power user mode.
-  planTourSeen?: boolean;
-  // The Plan tour tracks (Boards, Sheets, Dashboards) whose offer has been answered (taken, skipped or declined), so each offers
-  // itself once ever. Cleared with `planTourSeen` when the Settings switch is turned on.
-  planTourTracks?: PlanTourTrack[];
-  // The Workshop tour's seen-guard (docs/specs/012-collaboration/workshop-tour.md), as `planTourSeen`.
+  // The Workshop tour's seen-guard (docs/specs/012-collaboration/workshop-tour.md), as `tourSeen`.
   // Surfaced in Settings as Tours › "Workshop Tour" (inverted). Missing / undefined === not seen.
   workshopTourSeen?: boolean;
   // The Draw tour's seen-guard (docs/specs/023-draw-mode/draw-tour.md), as `workshopTourSeen`.
   // Surfaced in Settings as Tours › "Draw Tour" (inverted). Missing / undefined === not seen.
   drawTourSeen?: boolean;
-  // The Forms tour's seen-guard (docs/specs/030-forms/forms.md "The Forms tour"), as `drawTourSeen`; Show Me in the
-  // form's cog panel reruns it. Missing / undefined === not seen.
-  formTourSeen?: boolean;
   // The Avatar tour's seen-guard (docs/specs/008-canvas/avatar-tour.md), as `drawTourSeen`.
   // Surfaced in Settings as Tours › "Avatar Tour" (inverted). Missing / undefined === not seen.
   avatarTourSeen?: boolean;

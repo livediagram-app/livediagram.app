@@ -5,7 +5,7 @@
 // sync (lib/api/documents.ts), off the critical path, and only for a save the cache does not already hold.
 //
 // Like the server's snapshot, an empty first tab has no picture (null). Unlike it, images keep their
-// placeholders and Plan cards and Sheet cells are left out: a glance at the document, not an export.
+// placeholders: a glance at the document, not an export.
 import { renderElementsToSvg } from '@livediagram/document';
 import {
   ensureIconCatalogs,

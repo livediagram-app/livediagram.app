@@ -70,7 +70,6 @@ function fullAccount(): UserPreferences {
     whiteboardYourColours: Array.from({ length: 50 }, (_, i) => `#${String(i).padStart(6, 'a')}`),
     telemetryEnabled: false,
     tourSeen: true,
-    planTourSeen: true,
     workshopTourSeen: true,
     uiScale: 1.1,
     panelOpacity: 0.85,

@@ -47,7 +47,7 @@ export function useFaceFinishPass(
   rootRef: RefObject<HTMLElement | null>,
   finish: Finish | undefined,
   elementId: string,
-  // A body that fills its tab or the screen (MaximisedPlanLayer's OverFace) is the page, not a box on it: its own box
+  // A body that fills its tab or the screen is the page, not a box on it: its own box
   // is never coloured in.
   { page = false }: { page?: boolean } = {},
 ): void {

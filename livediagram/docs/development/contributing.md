@@ -102,7 +102,7 @@ The bar isn't 100% line coverage; it's "the next regression on this code path fa
 
 A [Playwright](https://playwright.dev) suite (`apps/editor/e2e`, [`docs/specs/003-system-architecture/e2e-smoke.md`](../specs/003-system-architecture/e2e-smoke.md)) drives the real editor build + api worker in a headless Chromium — the layer the Vitest unit tests can't reach. It runs on **every pull request** as required checks (the `E2E Smoke` workflow's jobs, `.github/workflows/e2e.yml`: six **Smoke shard** jobs, **Sites audit** and **Signed-in specs**), on push to `main`, and on demand: `gh workflow run e2e.yml --ref <branch>`.
 
-Run it locally against a running `pnpm dev` stack (it reuses the servers on `:3102` / `:8787`):
+Run it locally against a running `pnpm dev` stack (it reuses the servers on `:3102` / `:8687`):
 
 ```sh
 pnpm --filter @livediagram/editor test:e2e
@@ -128,8 +128,8 @@ Those ports are defaults, not fixtures. Three environment variables move them, w
 | Variable             | Default                 | What it moves                                                         |
 | -------------------- | ----------------------- | --------------------------------------------------------------------- |
 | `E2E_BASE_URL`       | `http://localhost:3102` | Where Playwright points, and the URL it waits on before starting      |
-| `E2E_EDITOR_PORT`      | `3002`                  | The port `e2e-stack.mjs` serves the built editor app on                 |
-| `E2E_API_PORT`       | `8787`                  | The api worker's port, and the target its `/api/*` proxy forwards to  |
+| `E2E_EDITOR_PORT`    | `3002`                  | The port `e2e-stack.mjs` serves the built editor app on               |
+| `E2E_API_PORT`       | `8687`                  | The api worker's port, and the target its `/api/*` proxy forwards to  |
 | `E2E_MARKETING_PORT` | `3013`                  | The port the stack serves the built marketing site on (optical audit) |
 
 `E2E_API_PORT` is self-contained: it sets the worker's port and the proxy that reaches it together. The other two are **not**. Playwright waits on `E2E_BASE_URL` while the stack binds `E2E_EDITOR_PORT`, so moving the editor app means setting both. Set only one and the run hangs until the 180-second `webServer` timeout, with nothing said about why.

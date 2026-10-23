@@ -84,7 +84,7 @@ type SelectionPopoverProps = {
   title?: string;
   // Tighter gap between the popover and the element edge, set whenever
   // the "+" quick-connect button (which sits in this gap) doesn't render:
-  // read-only, or a kind that shows none (a Plan board or card, an
+  // read-only, or a kind that shows none (an
   // annotation), so the toolbar sits closer without overlapping anything.
   compact?: boolean;
   // A separate small toolbar to the left of this one (the element tour offer, away from Delete at the right end,

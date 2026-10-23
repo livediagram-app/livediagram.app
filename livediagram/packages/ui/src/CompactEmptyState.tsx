@@ -7,7 +7,7 @@ import { SearchIcon } from './icons/navigation';
 
 type EmptyStateSize = 'regular' | 'small';
 
-// The heading's and the line's colours on a surface painted in its own theme (a Plan board, Setup Sheet), in place of
+// The heading's and the line's colours on a surface painted in its own theme (a start panel), in place of
 // the app's slate. The badge keeps the brand.
 type EmptyStateInk = { text: string; muted: string };
 
@@ -47,7 +47,7 @@ export function CompactEmptyState({
 }: {
   icon: ReactNode;
   title: string;
-  // The line under the title; left out where the title and action say enough (a Dashboard's empty slot).
+  // The line under the title; left out where the title and action say enough (a gallery with nothing yet).
   description?: string;
   className?: string;
   // A button under the line, for the empty state's one way forward.

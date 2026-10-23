@@ -6,14 +6,13 @@ Status: shipped
 
 Every date and time field (`date`, `datetime-local`, `time`, `month`) in every app fits the box it is
 laid out in, on a phone and a tablet as on a desktop. A date field is as wide as the column it sits
-in and never wider: the Plan card panel's Start, Due and custom Date fields, the decision record's
-Date, and any later one.
+in and never wider: the decision record's Date, and any later one.
 
 ## Why
 
 iOS and iPadOS Safari draw a native date field as a centred pill with an intrinsic minimum width.
-That minimum beat the field's own full width, so in a narrow column (the card panel on a phone, its
-two-column field grid on an iPad) the field ran past the panel's edge and pushed the page sideways.
+That minimum beat the field's own full width, so in a narrow column (a menu on a phone, a two-column
+field grid on an iPad) the field ran past the panel's edge and pushed the page sideways.
 
 ## The rule
 
@@ -41,17 +40,4 @@ in a segment at a time never loses what is already there.
 - **A change from elsewhere** (a collaborator, undo) shows in the field at once, except while
   the field has focus, so it never overwrites typing in progress.
 
-The Plan card panel's Start, Due and custom Date fields and the decision record's Date all use it.
-
-## A dropdown on a date opens the picker
-
-Where a date is chosen from a dropdown rather than typed (a Start or Due column in a
-sheet's card table), the dropdown opens the system date picker straight away, anchored to the cell.
-There is no popover holding a second date field. Typing a date stays in the cell itself.
-
-## Showing a date
-
-A card's saved date reads the same way wherever Plan shows it: day, short month and year ("30 Oct 2026") in the card
-panel and its custom fields; day and short month ("30 Oct") on a board card, where room is
-tight; day, long month and year ("30 October 2026") on a card's slide. All of them go through one
-`dayLabel` helper, in the viewer's locale.
+The decision record's Date uses it.

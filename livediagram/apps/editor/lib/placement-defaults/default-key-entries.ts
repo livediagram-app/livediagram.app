@@ -16,7 +16,6 @@ type Words = { label: string; noun: string };
 const MODE_WORDS: Record<EditorMode, Words> = {
   diagram: { label: 'Diagrams', noun: 'diagrams' },
   draw: { label: 'Whiteboards', noun: 'whiteboards' },
-  plan: { label: 'Plan boards', noun: 'Plan boards' },
   workshop: { label: 'Sessions', noun: 'sessions' },
 };
 

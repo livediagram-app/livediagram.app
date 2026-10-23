@@ -43,14 +43,12 @@ export type SaveActionInput = {
   // The dialog's "Email {name} about this action" checkbox. Only consulted
   // when it can matter: on create, and on an edit that changes the assignee.
   notifyEmail: boolean;
-  // An edit's new status, when the dialog's Status changed it (docs/specs/026-plan/linked-boards.md "On the canvas").
+  // An edit's new status, when the dialog's Status changed it (docs/specs/012-collaboration/assigned-actions.md).
   status?: ElementActionStatus;
 };
 
 type EditorActionsDeps = {
   activeId: string;
-  // A new action was saved (the Actions board is made on the first, docs/specs/026-plan/linked-boards.md).
-  onCreated?: (elementId: string) => void;
   // The history hook's element-only setter (no snapshot), per the
   // non-undoable rule above.
   tickTabs: (mapTabs: (ts: Tab[]) => Tab[]) => void;
@@ -92,7 +90,7 @@ type EditorActionsApi = {
   saveAction: (elementId: string, input: SaveActionInput, actionId?: string | null) => void;
   completeAction: (elementId: string, actionId?: string | null) => void;
   reopenAction: (elementId: string, actionId?: string | null) => void;
-  // Won't Do (docs/specs/026-plan/linked-boards.md "On the canvas"): closed without being done.
+  // Won't Do (docs/specs/012-collaboration/assigned-actions.md): closed without being done.
   wontDoAction: (elementId: string, actionId?: string | null) => void;
   deleteAction: (elementId: string, actionId?: string | null) => void;
 };
@@ -215,7 +213,6 @@ export function useEditorActions(deps: EditorActionsDeps): EditorActionsApi {
         card ? [...list, action].slice(0, ACTION_CARD_MAX) : [action],
       );
       track('Action', 'Created', input.notifyEmail ? 'EmailOn' : 'EmailOff');
-      deps.onCreated?.(elementId);
       // Email needs a team context (the endpoint verifies shared
       // membership); a self-assignment has none and never notifies.
       if (input.notifyEmail && input.teamId) {

@@ -18,9 +18,7 @@ import { useCapabilities } from '@/hooks/persistence/useCapabilities';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { markTourPending, requestTourRelaunch } from '@/lib/tour-pending';
-import { PLAN_TOUR_TRACKS, planTrackSeen, requestPlanTourRelaunch } from '@/lib/plan-tour';
 import { requestWorkshopTourRelaunch } from '@/lib/workshop-tour';
-import { requestFormTourRelaunch } from '@/lib/form-tour';
 import { requestDrawTourRelaunch } from '@/lib/draw-tour';
 import { requestAvatarTourRelaunch } from '@/lib/avatar-tour';
 import { track } from '@/lib/telemetry';
@@ -186,20 +184,14 @@ export function SettingsDialog({
   // in place, which is the "run it again" case the row's copy describes.
   const tourSeen = settings.tourSeen === true;
   const tourSeenAtOpen = useRef(tourSeen);
-  // Tours › "Boards Tour" and "Sheets Tour" (docs/specs/026-plan/plan-tour.md): no handoff flag to arm, as the
-  // Plan tour offers itself on entering Plan; turning a track's row on from off reruns it in place.
-  const planOwed = PLAN_TOUR_TRACKS.filter((t) => !planTrackSeen(settings, t));
-  const planOwedAtOpen = useRef(planOwed);
-  // Tours › "Workshop Tour" (docs/specs/012-collaboration/workshop-tour.md): as the Plan tour's.
+  // Tours › "Workshop Tour" (docs/specs/012-collaboration/workshop-tour.md): no handoff flag to arm, as the
+  // tour offers itself on entering Workshop; turning its row on from off reruns it in place.
   const workshopTourSeen = settings.workshopTourSeen === true;
   const workshopTourSeenAtOpen = useRef(workshopTourSeen);
-  // Tours › "Draw Tour" (docs/specs/023-draw-mode/draw-tour.md): as the Plan tour's.
+  // Tours › "Draw Tour" (docs/specs/023-draw-mode/draw-tour.md): as the Workshop tour's.
   const drawTourSeen = settings.drawTourSeen === true;
   const drawTourSeenAtOpen = useRef(drawTourSeen);
-  // Tours › "Forms Tour" (docs/specs/030-forms/forms.md "The Forms tour"): as the Plan tour's.
-  const formTourSeen = settings.formTourSeen === true;
-  const formTourSeenAtOpen = useRef(formTourSeen);
-  // Tours › "Avatar Tour" (docs/specs/008-canvas/avatar-tour.md): as the Plan tour's.
+  // Tours › "Avatar Tour" (docs/specs/008-canvas/avatar-tour.md): as the Workshop tour's.
   const avatarTourSeen = settings.avatarTourSeen === true;
   const avatarTourSeenAtOpen = useRef(avatarTourSeen);
   const close = () => {
@@ -207,10 +199,8 @@ export function SettingsDialog({
       markTourPending();
       if (tourSeenAtOpen.current) requestTourRelaunch();
     }
-    if (planOwed.some((t) => !planOwedAtOpen.current.includes(t))) requestPlanTourRelaunch();
     if (!workshopTourSeen && workshopTourSeenAtOpen.current) requestWorkshopTourRelaunch();
     if (!drawTourSeen && drawTourSeenAtOpen.current) requestDrawTourRelaunch();
-    if (!formTourSeen && formTourSeenAtOpen.current) requestFormTourRelaunch();
     if (!avatarTourSeen && avatarTourSeenAtOpen.current) requestAvatarTourRelaunch();
     onClose();
   };

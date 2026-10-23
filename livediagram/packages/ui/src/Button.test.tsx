@@ -52,7 +52,7 @@ describe('Button aria-disabled', () => {
   });
 });
 
-// The quiet header-row actions (Plan's Card Types panel): no fill or border until hovered.
+// The quiet header-row actions: no fill or border until hovered.
 describe('Button ghost variant', () => {
   it('has no border or fill at rest', () => {
     const { container } = render(<Button variant="ghost">Archive</Button>);

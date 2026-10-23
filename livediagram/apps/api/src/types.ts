@@ -99,8 +99,6 @@ export type Env = {
   // tighter bound than the general write limiter. Keyed on the Clerk user id.
   // Optional: absent (self-host) → "allow".
   DRIVE_TOKEN_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
-  // Per-network limiter for a form link's reads and responses (docs/specs/030-forms/forms.md "Abuse and limits").
-  FORM_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // Per-network limiter for an invite email's Decline link (docs/specs/013-workspace/teams.md "Declining from the
   // email"), keyed `invite-decline:<address range>`: open doors, so the owner-keyed limiter cannot key them.
   // Optional: absent (self-host) → "allow".

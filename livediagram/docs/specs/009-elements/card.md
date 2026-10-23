@@ -94,7 +94,6 @@ their own.
 | Mode     | Where                                            |
 | -------- | ------------------------------------------------ |
 | Diagram  | **Build**: Card; **Write**: Callout (the preset) |
-| Plan     | none                                             |
 | Workshop | none (Search still finds and places it)          |
 
 The Card tile drops a card with a tile, a title, a meta line, a body and two tags, so the first one shows what the

@@ -74,10 +74,9 @@ export function applyRoomOpToTabs(tabs: Tab[], op: RoomOp, pendingIdeaIds?: Pend
       return updateTab(withTab, op.tabId, (tab) => {
         let elements = tab.elements;
         for (const elOp of ops) {
-          // An agent sends no deltas, so its copy of a board's set-up is taken (phase 6).
           const merged =
             elOp.kind === 'update' || elOp.kind === 'add'
-              ? mergeOpOverLocal({ ...tab, elements }, elOp, { keepBoard: false })
+              ? mergeOpOverLocal({ ...tab, elements }, elOp)
               : elOp;
           elements = applyElementOp(elements, merged);
         }
@@ -172,12 +171,8 @@ function updateTab(tabs: Tab[], tabId: string, fn: (tab: Tab) => Tab): Tab[] {
 // An incoming add / update, with the element merged over our copy of it when
 // we have one. A racing double-add degrades to an update in applyElementOp,
 // so it gets the same merge.
-function mergeOpOverLocal(
-  tab: Tab,
-  op: Extract<ElementOp, { kind: 'add' | 'update' }>,
-  opts: { keepBoard?: boolean } = {},
-): ElementOp {
+function mergeOpOverLocal(tab: Tab, op: Extract<ElementOp, { kind: 'add' | 'update' }>): ElementOp {
   const local = tab.elements.find((e) => e.id === op.element.id);
   if (!local) return op;
-  return { ...op, element: mergeIncomingElement(local, op.element, opts) };
+  return { ...op, element: mergeIncomingElement(local, op.element) };
 }

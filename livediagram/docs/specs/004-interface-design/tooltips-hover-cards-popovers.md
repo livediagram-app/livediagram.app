@@ -134,7 +134,7 @@ hidden. A control that shows its own text needs no hint on touch, and its long p
 ## On-screen keyboard
 
 A touch screen's keyboard covers the bottom of the screen, but a popover, menu, floating panel or bottom sheet is placed
-against the whole window, so a field in one low on the screen (a Sheet chart's **Range** in a slot's picker) went
+against the whole window, so a field in one low on the screen (a chart's Data field near the bottom) went
 under the keyboard the moment it was tapped. Every floating surface stays in view while the keyboard opens and closes:
 
 - While a text field inside a floating surface (`[data-anchored-popover]`, `[data-floating-panel]`,

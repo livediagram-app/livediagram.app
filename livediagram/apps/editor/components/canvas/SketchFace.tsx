@@ -80,7 +80,7 @@ export function SketchFace({
 }: {
   active: boolean;
   // Render the same two layers when inactive (the ink layer empty), so turning the split on and off never remounts
-  // the face: a maximised Plan board keeps its state (MaximisableSlot). Both layers fill the box, so a face laid out
+  // the face, so it keeps its state. Both layers fill the box, so a face laid out
   // to fill its host is placed the same either way.
   keepTree?: boolean;
   children: ReactNode;

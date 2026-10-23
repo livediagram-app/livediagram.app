@@ -1,7 +1,6 @@
 # Vote integrity
 
-A live poll answer and a Q&A upvote each count one person once (a dot on a Plan card is a session vote's dot,
-keyed and budgeted as any dot is: [Session tools](session-tools.md) "Voting on Plan cards"). This spec says who "one person"
+A live poll answer and a Q&A upvote each count one person once. This spec says who "one person"
 is on each path, and what stops one browser from posing as many people or changing somebody else's answer.
 
 ## What it protects against
@@ -72,5 +71,3 @@ A refused vote answers `429 { error: 'vote_limit' }` and logs `[vote-integrity] 
   rewrite the whole document, so these stay keyed on the claimed collab key.
 - **Many real browsers on many networks** are many voters. Only signing in, or a facilitator who knows the room, can
   tell them apart.
-- **A Plan card's per-person count** is bounded by the board's vote budget in the editor, not by the server: one
-  person's dots on one card are a facilitation rule, not an identity question.

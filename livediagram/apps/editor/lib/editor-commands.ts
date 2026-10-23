@@ -37,9 +37,6 @@ export type CommandContext = {
   // True when the single selection is a boxed element (rotation / note /
   // comment / animation all target boxed elements; arrows are excluded).
   singleIsBoxed: boolean;
-  // False when the single selection is a Plan item, which takes no note or comment (docs/specs/026-plan/plan-mode.md
-  // "Nothing attached to Plan items"); absent reads as true.
-  singleTakesAttachments?: boolean;
   // True when the single selection can be rotated (`supportsRotation`): boxed, minus an
   // annotation marker (docs/specs/009-elements/blueprints/annotations.md). Gates the Rotate commands.
   singleRotates: boolean;
@@ -78,9 +75,6 @@ export type CommandContext = {
   // A whiteboard (docs/specs/023-draw-mode/draw-mode.md): its dock replaces the format painter, so
   // search does not offer it either.
   whiteboard?: boolean;
-  // Plan mode (docs/specs/026-plan/plan-mode.md) leaves Eraser and Format out of the tool dropdown, so search
-  // does too.
-  planMode?: boolean;
   // A locked tab (docs/specs/008-canvas/canvas-and-palette.md "Locking") refuses every element edit, so search
   // offers none of them: no selection verbs, no layout cleanup, no Eraser or Format.
   tabLocked?: boolean;
@@ -148,7 +142,7 @@ export const CANVAS_TOOLS: {
   needsContent?: boolean;
   // Changes the document, so a view-only visitor never sees it.
   mutates?: boolean;
-  // Edits the tab's elements, so it goes on a locked tab and in Plan mode, as in the dropdown.
+  // Edits the tab's elements, so it goes on a locked tab, as in the dropdown.
   editsElements?: boolean;
   desktopOnly?: boolean;
 }[] = [
@@ -218,7 +212,7 @@ function toolCommands(ctx: CommandContext, h: CommandHandlers): EditorCommand[] 
       !(t.needsContent && ctx.canvasEmpty) &&
       !(t.desktopOnly && ctx.isMobile) &&
       !(t.mutates && ctx.isReadOnly) &&
-      !(t.editsElements && (ctx.tabLocked || ctx.planMode)) &&
+      !(t.editsElements && ctx.tabLocked) &&
       !(ctx.whiteboard && WHITEBOARD_ABSENT_TOOLS.has(t.id)),
   ).map((t) => ({
     id: `tool:${t.id}`,

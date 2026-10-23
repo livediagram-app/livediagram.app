@@ -19,7 +19,8 @@ export function legacyEditorRedirect(url: URL): Response | null {
 // its other articles land on Undo), Facilitate mode became Workshop mode, and the Welcome Tour
 // became the Diagram Tour. Infographics became Illustrate mode and then Pages mode, which has
 // since left livediagram for livedocuments: every article of all three sections lands on the
-// Editor Modes article. The old addresses are links people have already shared (docs/specs/018-help/help-app.md, "Renamed articles").
+// Editor Modes article. Plan mode left for liveplanner the same way, its articles landing there too, and the API's
+// Plan Items, Sheets and Images article became Images, Copies and Libraries. The old addresses are links people have already shared (docs/specs/018-help/help-app.md, "Renamed articles").
 const LEGACY_HELP_ARTICLES: Readonly<Record<string, string>> = {
   'tabs/add-to-diagram': 'tabs/add-to-document',
   'troubleshooting/diagram-not-loading': 'troubleshooting/document-not-loading',
@@ -48,6 +49,18 @@ const LEGACY_HELP_ARTICLES: Readonly<Record<string, string>> = {
   'canvas/pages-mode/slide-pages': 'canvas/editor-modes',
   'canvas/pages-mode/tab-windows': 'canvas/editor-modes',
   'canvas/pages-mode/wireframe-pages': 'canvas/editor-modes',
+  'canvas/plan-mode': 'canvas/editor-modes',
+  'canvas/plan-mode/items': 'canvas/editor-modes',
+  'canvas/plan-mode/boards': 'canvas/editor-modes',
+  'canvas/plan-mode/cards': 'canvas/editor-modes',
+  'canvas/plan-mode/card-types': 'canvas/editor-modes',
+  'canvas/plan-mode/plan-tour': 'canvas/editor-modes',
+  'canvas/plan-mode/forms': 'canvas/editor-modes',
+  'canvas/plan-mode/dashboards': 'canvas/editor-modes',
+  'canvas/plan-mode/sheets': 'canvas/editor-modes',
+  'canvas/plan-mode/sheet-functions': 'canvas/editor-modes',
+  'canvas/plan-mode/visualisations': 'canvas/editor-modes',
+  'developers/working-with-documents/plan-sheets-images': 'developers/working-with-documents/images-and-copies',
   'canvas/facilitate-mode': 'canvas/workshop-mode',
   'canvas/facilitate-mode/facilitate-tour': 'canvas/workshop-mode/workshop-tour',
   'selection-modes/highlighter': 'palette/tools/highlighter',

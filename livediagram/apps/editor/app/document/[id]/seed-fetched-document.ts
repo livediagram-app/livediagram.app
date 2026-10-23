@@ -1,5 +1,3 @@
-import { readItemTypeCatalogue } from '@livediagram/items';
-import type { SavedItemTypes } from '@/lib/api/item-types';
 import { setCommunityState } from '@/lib/community-state-store';
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 import type { Tab } from '@livediagram/document';
@@ -33,8 +31,6 @@ export function makeSeedFetchedDocument(deps: {
   setDocumentName: SetState<string>;
   // The stored slide deck (docs/specs/012-collaboration/presentation-mode.md), handed on for useSlideDeck to parse.
   setDocumentPresentation: SetState<string | null>;
-  // The type catalogue (docs/specs/026-plan/item-types.md), null for the default types, and its revision.
-  setDocumentItemTypes: SetState<SavedItemTypes>;
   setDocumentOwnerColor: SetState<string | null>;
   setDocumentOwnerId: SetState<string | null>;
   setDocumentOwnerName: SetState<string | null>;
@@ -55,7 +51,6 @@ export function makeSeedFetchedDocument(deps: {
     setActiveId,
     setDocumentName,
     setDocumentPresentation,
-    setDocumentItemTypes,
     setDocumentOwnerColor,
     setDocumentOwnerId,
     setDocumentOwnerName,
@@ -118,10 +113,6 @@ export function makeSeedFetchedDocument(deps: {
     lastSavedNameRef.current = fetched.name;
     setDocumentName(fetched.name);
     setDocumentPresentation(fetched.presentation ?? null);
-    setDocumentItemTypes({
-      itemTypes: readItemTypeCatalogue(fetched.itemTypes ?? null),
-      itemTypesRev: fetched.itemTypesRev ?? 0,
-    });
     // Prefer the tab id pinned in the URL fragment (#t=<id>) when
     // it points at a real loaded tab — round-trips the user back
     // to whichever tab they last had open before a refresh.

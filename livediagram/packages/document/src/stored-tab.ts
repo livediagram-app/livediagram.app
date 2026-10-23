@@ -7,6 +7,7 @@ import { migrateWhiteboardKind } from './legacy-whiteboard-tab';
 import { migrateRetiredScheme } from './retired-schemes';
 import { migrateRetiredTheme } from './retired-themes';
 import { dropRetiredPages } from './retired-pages';
+import { dropRetiredPlan } from './retired-plan';
 import { migrateStoredElements } from './stored-elements';
 import { settleDiagramKeys } from './diagram-key';
 import { settleStacks } from './stack';
@@ -20,9 +21,12 @@ export function migrateStoredTab<
 >(tab: T): T {
   // A former whiteboard (./legacy-whiteboard-tab) first: it inks the elements the rest then see.
   // Its own fields that renderers read raw (layers, the background colours) are settled before anything reads them.
-  // A former Pages tab (./retired-pages) opens in Diagram, its pages, articles and page-only elements dropped.
+  // A former Pages tab (./retired-pages) opens in Diagram, its pages, articles and page-only elements dropped, and a
+  // former Plan tab (./retired-plan) as an ordinary one, its dashboard, form and Plan-only elements dropped.
   const schemed = migrateRetiredTheme(
-    migrateRetiredScheme(migrateWhiteboardKind(settleTabFields(dropRetiredPages(tab)))),
+    migrateRetiredScheme(
+      migrateWhiteboardKind(settleTabFields(dropRetiredPlan(dropRetiredPages(tab)))),
+    ),
   );
   if (!Array.isArray(schemed.elements)) return schemed;
   // Element links from before the document rename (./legacy-links) are upgraded here too.

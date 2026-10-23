@@ -25,12 +25,6 @@ export type Slide = {
   /** The one tab this slide draws from: its backdrop, theme and coordinates. */
   tabId: TabId;
   elementIds: ElementId[];
-  /**
-   * An item slide (docs/specs/012-collaboration/presentation-mode.md "Item slides"): the slide IS this Plan
-   * item, presented full screen as a card, resolved live. `elementIds` is empty and ignored; `tabId` is
-   * the tab the card was on. Added from a card's menu.
-   */
-  itemId?: string;
   /** What you mean to SAY over this slide. The slide's own, not any element's. */
   notes?: string;
   /**
@@ -84,7 +78,7 @@ export function slideName(slide: Slide, index: number): string {
  * restack the drawing.
  */
 export function resolveSlide(slide: Slide, tab: Tab | undefined): Element[] {
-  if (!tab || slide.itemId) return [];
+  if (!tab) return [];
   const wanted = new Set(slide.elementIds);
   if (wanted.size === 0) return [];
   const chosen = tab.elements.filter((el) => wanted.has(el.id));
@@ -212,12 +206,10 @@ function isSlide(value: unknown): value is Slide {
   if (s.name !== undefined && typeof s.name !== 'string') return false;
   if (s.notes !== undefined && typeof s.notes !== 'string') return false;
   if (s.hidden !== undefined && typeof s.hidden !== 'boolean') return false;
-  // A page slide (a Pages tab's page, from before Pages mode moved out to livedocuments) has no page to show now:
-  // it is dropped, and the deck keeps the rest.
-  if ('pageId' in s) return false;
-  if (s.itemId !== undefined && (typeof s.itemId !== 'string' || s.itemId.length === 0)) {
-    return false;
-  }
+  // A page slide (a Pages tab's page, from before Pages mode moved out to livedocuments) and an item slide (a Plan
+  // card, from before Plan moved out to liveplanner) have nothing to show now: they are dropped, and the deck keeps
+  // the rest.
+  if ('pageId' in s || 'itemId' in s) return false;
   return true;
 }
 

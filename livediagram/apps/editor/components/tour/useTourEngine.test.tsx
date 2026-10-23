@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { TourStepOf } from './tour-step';
 import { useTourEngine, type TourOutcome } from './useTourEngine';
 
-// The shared step runner (docs/specs/026-plan/blueprints/plan-tour.md "Engine").
+// The shared step runner (docs/specs/007-editor/editor-tour.md "Mechanics").
 
 const found = vi.hoisted(() => ({ selectors: new Set<string>() }));
 vi.mock('./tour-dom', () => ({

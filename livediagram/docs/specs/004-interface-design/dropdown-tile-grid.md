@@ -20,10 +20,9 @@ Measured on the canvas-tool picker: **182px tall against roughly 360px**, at
 
 ## When a grid, and when not
 
-Plan mode is the exception: its option pickers (a board's Swimlanes, Card Types, Card Size and Fill Tab, Setup
-Board's steps, Add a Card, a card type's States, the Card Types panel) are never tile grids but one bordered list, a
-row per choice, icon left ([Plan board: Option lists](../026-plan/plan-board.md#option-lists)). The general canvas
-context-menu tiles for other elements are unchanged.
+Option lists are the exception: a choice whose names say more than a picture (a flowchart's, mind map's or Sankey's
+menu, an element's Finish) is never a tile grid but one bordered list, a row per choice, icon left (`OptionRows`,
+`apps/editor/components/primitives/OptionRows.tsx`). The other context-menu tiles are unchanged.
 
 `PaletteDropdown` gains a `grid` prop rather than switching wholesale, because
 a grid is not always the better shape:

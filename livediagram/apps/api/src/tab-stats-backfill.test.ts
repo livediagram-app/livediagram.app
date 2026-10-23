@@ -76,9 +76,9 @@ describe('runTabStatsBackfill', () => {
       .prepare(
         'INSERT INTO tab_stats (tab_id, mode, element_count, comment_count, data_bytes, written_at) VALUES (?, ?, ?, ?, ?, ?)',
       )
-      .run('t1', 'plan', 9, 9, 9, T0);
+      .run('t1', 'workshop', 9, 9, 9, T0);
     expect(await runTabStatsBackfill(db.env)).toBe(0);
-    expect(stats('t1')).toMatchObject({ mode: 'plan', element_count: 9 });
+    expect(stats('t1')).toMatchObject({ mode: 'workshop', element_count: 9 });
   });
 
   it('counts a corrupt body as empty, warns, and never retries it', async () => {
@@ -121,13 +121,13 @@ describe('tabStatsBackfillStatement', () => {
       .prepare(
         'INSERT INTO tab_stats (tab_id, mode, element_count, comment_count, data_bytes, written_at) VALUES (?, ?, ?, ?, ?, ?)',
       )
-      .run('t1', 'plan', 9, 9, 9, T0);
+      .run('t1', 'workshop', 9, 9, 9, T0);
     await tabStatsBackfillStatement(
       db.env,
       't1',
       { mode: 'diagram', elementCount: 0, commentCount: 0, dataBytes: 2 },
       T0 + 1,
     ).run();
-    expect(stats('t1')).toMatchObject({ mode: 'plan', element_count: 9 });
+    expect(stats('t1')).toMatchObject({ mode: 'workshop', element_count: 9 });
   });
 });

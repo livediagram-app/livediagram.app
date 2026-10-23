@@ -5,11 +5,9 @@
 // stay in index.ts and are imported here (type-only, so no runtime cycle).
 import type { RoomDoor } from './office';
 import type { Finish } from './finish';
-import type { CardSearchFilter, PlanBoardSetup, PlanViewId, SwimlaneBy } from '@livediagram/items';
 import type { EventStormingNoteKind } from './event-storming';
 import type { TextRun } from './rich-text';
 import type { CommentThread } from './comments';
-import type { CellCommentThreads } from './cell-comments';
 import type { ElementAction } from './element-action';
 import type { BorderStroke, BorderStyle, BorderRadius } from './border-style';
 import type { ElementShadow } from './shadow';
@@ -36,7 +34,6 @@ import type {
   SankeyNodeStyle,
   SankeyValueLabel,
 } from './sankey-model';
-import type { ChartSource, SheetAnchor } from './chart-source';
 import type { PickerSource, SelectionMode, SessionButtonConfig } from './selection-mode';
 import type { IconSize } from './icon-size';
 import type { IconWeight } from './icon-weight';
@@ -398,12 +395,6 @@ export type ShapeElement = {
   // when they carry no colour of their own. Only meaningful on the chart
   // kinds; absent = the tab theme's palette, as before.
   chartPalette?: ChartPaletteId;
-  // A chart drawn from a sheet range (docs/specs/029-sheets/sheet.md "Charts"): its data is read live from there,
-  // the fields above holding the last read. Only meaningful on the pie, bar and line chart kinds.
-  chartSource?: ChartSource;
-  // Where a chart drawn from a sheet sits in its Sheet (docs/specs/029-sheets/sheet.md "Charts"): the Sheet draws it
-  // over its cells and the canvas does not. Only meaningful with chartSource; absent = it floats over the canvas.
-  sheetAnchor?: SheetAnchor;
   // Code block (docs/specs/009-elements/code-block.md): the snippet text + its highlight language. Only
   // meaningful on the 'code-block' kind; bounded in validate.ts.
   code?: string;
@@ -511,17 +502,6 @@ export type ShapeElement = {
   // Checklist (docs/specs/009-elements/checklist.md): the checkable rows. Only meaningful on the
   // 'checklist' kind; bounded in validate.ts.
   checklistItems?: ChecklistItem[];
-  // Plan board set-up and Plan card reference (docs/specs/026-plan/plan-board.md). Only meaningful on
-  // the 'plan-board' and 'plan-card' kinds; the items they show live in the document's item store.
-  planBoard?: PlanBoardSetup;
-  planCard?: PlanCardRef;
-  // Plan view (docs/specs/026-plan/plan-views.md): which view of the document's cards a 'plan-view' shows.
-  planView?: PlanViewRef;
-  // Sheet (docs/specs/029-sheets/sheet.md): which sheet of the document's sheet store a 'plan-sheet' frames.
-  planSheet?: PlanSheetRef;
-  // A Sheet's cell comment threads (docs/specs/029-sheets/sheet.md "Cell comments"), keyed `rowId:colId`. Only on
-  // a 'plan-sheet'; written by comment deltas, like `commentThread`.
-  cellComments?: CellCommentThreads;
   // Status marker (docs/specs/009-elements/shape-markers.md): a small glyph (traffic-light dot / checkbox) shown
   // just left of the label, or centred when the shape has no label. `markerSize`
   // is a TextSize preset where 'scale' tracks the element's text size (never a px: a marker is a dot).
@@ -1504,12 +1484,6 @@ const UNTYPED_SHAPES = new Set<string>([
   'reaction-pad',
   'mode-button',
   'estimate',
-  // Plan boards, cards and views draw their own faces from the item store; a caret on one left a
-  // newly placed board stuck in label editing, unable to move until reselected.
-  'plan-board',
-  'plan-card',
-  'plan-view',
-  'plan-sheet',
 ]);
 
 export function takesTypedLabel(el: { type: string; shape?: string }): boolean {
@@ -1517,78 +1491,3 @@ export function takesTypedLabel(el: { type: string; shape?: string }): boolean {
   if (el.type !== 'shape') return true;
   return !UNTYPED_SHAPES.has(el.shape ?? '');
 }
-
-// What a Plan card points at: one item of the document's item store (docs/specs/026-plan/items.md).
-// `size`: how much of the card shows (docs/specs/026-plan/plan-board.md "The Plan card"), as a board's Card Size;
-// absent is Detailed.
-export type PlanCardRef = { itemId: string; size?: 'minimal' | 'compact' | 'detailed' };
-
-// What a Sheet element frames: one sheet of the document's sheet store (docs/specs/029-sheets/sheet-store.md).
-// `copyOf` marks a copy not yet made (a duplicate, a paste, a duplicated tab): the Sheet makes its sheet from that
-// one when it is first drawn, then drops the mark (docs/specs/029-sheets/sheet.md "Copying a Sheet element").
-// `fillTab`: the Sheet fills its tab (docs/specs/029-sheets/sheet.md "Fill Tab"), as a board can.
-// `start`: a template's Sheet not yet made (docs/specs/029-sheets/sheet-store.md "Template starts"): the template
-// start its sheet is made from, by whatever makes the tabs (or, failing that, the first editor to draw it), which then
-// drops the mark.
-export type PlanSheetRef = { sheetId: string; copyOf?: string; fillTab?: true; start?: string };
-
-// A template start's id (@livediagram/sheets TEMPLATE_STARTS): kebab-case words.
-const PLAN_SHEET_START_PATTERN = /^[a-z][a-z-]{0,39}$/;
-
-// A fresh sheet id for a copy (the sheets engine's makeSheetId, without importing it).
-export function newPlanSheetId(): string {
-  return crypto.randomUUID().replace(/-/g, '').slice(0, 16);
-}
-
-// The sheet id pattern (@livediagram/sheets SHEET_ID_PATTERN), repeated here so the document package never
-// imports the engine.
-export const PLAN_SHEET_ID_PATTERN = /^[A-Za-z0-9_-]{6,32}$/;
-
-export function isPlanSheetRef(v: unknown): v is PlanSheetRef {
-  if (typeof v !== 'object' || v === null) return false;
-  const {
-    sheetId: id,
-    copyOf,
-    fillTab,
-    start,
-    ...rest
-  } = v as {
-    sheetId?: unknown;
-    copyOf?: unknown;
-    fillTab?: unknown;
-    start?: unknown;
-  };
-  // An empty id is a Sheet element not yet given its sheet (the factory's), as a Plan card's empty item id.
-  const idOk = typeof id === 'string' && (id === '' || PLAN_SHEET_ID_PATTERN.test(id));
-  const copyOk =
-    copyOf === undefined || (typeof copyOf === 'string' && PLAN_SHEET_ID_PATTERN.test(copyOf));
-  return (
-    idOk &&
-    copyOk &&
-    (fillTab === undefined || fillTab === true) &&
-    (start === undefined || (typeof start === 'string' && PLAN_SHEET_START_PATTERN.test(start))) &&
-    Object.keys(rest).length === 0
-  );
-}
-
-// What a plan view shows (docs/specs/026-plan/plan-views.md): a metric or a visualisation.
-// The Gantt chart adds its swimlanes and its names column width (px), validated by isPlanViewSettings.
-export type PlanViewRef = {
-  view: PlanViewId;
-  // The card types the view shows (card type ids, docs/specs/026-plan/plan-views.md "Card types"); absent is every
-  // type it can show (for a Gantt chart, every type with a Start and a Due field).
-  types?: string[];
-  swimlaneBy?: SwimlaneBy;
-  swimlaneField?: string;
-  namesWidth?: number;
-  // The Gantt chart's own row order (card ids); absent is date order (docs/specs/026-plan/plan-views.md "Row order").
-  rowOrder?: string[];
-  // Card Search's filters, each a grouping (and field) and the lane a card must fall in (docs/specs/026-plan/plan-views.md
-  // "Card Search"); absent is every card.
-  filters?: CardSearchFilter[];
-  // The statuses a chart counts (status ids; docs/specs/026-plan/plan-views.md "Statuses"); absent is every card.
-  statuses?: string[];
-  // Its own title in place of the view's name (a Visualisation tab's chart, named with its tab,
-  // docs/specs/026-plan/plan-tabs.md "Names"); absent is the view's name.
-  title?: string;
-};

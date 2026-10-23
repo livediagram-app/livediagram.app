@@ -121,24 +121,6 @@ started.
 `tab.vote: { active; revealed; votesPerPerson; votes: Record<elementId, participantId[]> }`
 — one participant id per dot, so stacking N dots on one element is N entries.
 
-### Voting on Plan cards
-
-Plan has no voting of its own: a vote on a tab with Plan boards is this vote, cast on **cards**
-(docs/specs/026-plan/items.md "Votes").
-
-- **What takes dots**: the cards the tab's boards show (each board's own cards, as it draws them), and Plan card
-  elements, each voting on its card. A card's dots are keyed `item:<itemId>` in `votes` (`itemVoteKey`), so a
-  card shown on two boards, or as a card element too, is one card with one count. Plan board and Plan view
-  elements take no dots themselves (`isVotable`), so a board stays workable through a vote. A card face down
-  under **Hide writing** takes no dots until its board shows it.
-- **On the card**: the same stepper as an element's (cast, take back, the count as privacy allows), in the card's
-  corner; the card keeps working otherwise (open, drag). The Vote panel and the results walkthrough name a card
-  by its title and number.
-- **The tally stays**: when the host **ends** the vote, each card's dots are added to the card's stored votes
-  (`votes`, per voter, as pseudonymous person ids), in one write by the host's editor; Top Voted, sorting and the
-  card's ▲ count read it afterwards. Revealing does not write; clearing a vote that never ended writes nothing.
-  Undo does not take a tally back.
-
 ### Casting a dot: the one thing that is not plain tab state
 
 A dot travels as its own room op, `{ kind: 'vote', tabId, elementId, voter, delta: 1 | -1 }`,
@@ -284,9 +266,7 @@ Ending a vote persists the host's final state. Server-side merge of the map is
 
 ## The Session strip
 
-The running session tools live in **one strip in the bottom-right cluster**, the way Plan mode's
-New Card, Find a Card and Card Types share one strip. It sits **left of Layers** (or of the mode's
-own strip: the Plan strip in Plan mode), right
+The running session tools live in **one strip in the bottom-right cluster**. It sits **left of Layers**, right
 after Undo and Redo. **An editor always has all three buttons**, running or not, so a session tool
 is one press away. Idle, a button is just its glyph and opens that tool's set-up pane, the same form a session
 button element's menu offers; running, it opens the live tool:
@@ -309,11 +289,7 @@ panes are disabled under a note naming them.
 
 **Which tools a mode offers** (`sessionStripTools`): **Workshop** has all three
 ([Workshop mode](workshop-mode.md#the-session-strip-per-mode)) and on an event-storming board, a
-workshop that is always Diagram; **Plan** has Timer and
-Vote (cards take the dots, [Voting on Plan cards](#voting-on-plan-cards)) only on a tab with a board made for voting,
-one taking a card type with a **Votes** field (a Retro's Notes and Ideas, or a type someone gave Votes), and never on
-a Dashboard tab, a timer or vote already running keeping its button so it can be stopped; Plan has no Poll;
-**Diagram** and **Draw** have no strip, keeping their bottom bar to their own
+workshop that is always Diagram; **Diagram** and **Draw** have no strip, keeping their bottom bar to their own
 tools, even while a tool runs (a session button on the canvas still starts one there). A popover whose button
 leaves (a mode switch) closes.
 

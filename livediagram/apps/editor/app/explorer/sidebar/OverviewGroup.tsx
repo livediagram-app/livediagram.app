@@ -35,7 +35,7 @@ export function OverviewGroup({ divider, first }: { divider: SidebarDivider; fir
         depth={0}
         badge={timelineUnread.count > 0 ? timelineUnread.count : undefined}
       />
-      {/* Open actions and Plan cards ASSIGNED TO the reader (docs/specs/013-workspace/inbox.md), 0 included. */}
+      {/* Open actions ASSIGNED TO the reader (docs/specs/013-workspace/inbox.md), 0 included. */}
       <SidebarRow
         icon={<InboxIcon />}
         tone="violet"

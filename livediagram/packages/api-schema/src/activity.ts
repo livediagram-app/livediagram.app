@@ -57,60 +57,12 @@ export type ActivityThread = ActivityPlace & {
   mentionsYou: boolean;
 };
 
-// An open Plan card (docs/specs/026-plan/items.md) whose Assignee is the reader (docs/specs/013-workspace/
-// inbox.md §2.4). Not an ActivityPlace: a card is an item, not an element, and `board` (where the row
-// opens it) is null when no board in its document shows it.
-export type ActivityCard = {
-  documentId: string;
-  documentName: string;
-  teamId: string | null;
-  via: 'own' | 'team' | 'shared';
-  shareCode: string | null;
-  board: { tabId: string; tabName: string; elementId: string; title: string } | null;
-  id: string;
-  key: number;
-  type: string;
-  title: string;
-  status: string | null;
-  updatedAt: number;
-};
-
-// A Plan card's unresolved comment thread the reader is in (docs/specs/013-workspace/inbox.md §2.5):
-// the card's identity and place, and the thread's facts as ActivityThread has them. Author ids never travel.
-export type ActivityCardThread = Omit<ActivityCard, 'status' | 'updatedAt'> & {
-  commentCount: number;
-  latest: { text: string; authorName: string; authorColor: string; at: number };
-  firstAt: number;
-  youCommented: boolean;
-  onYourDocument: boolean;
-  mentionsYou: boolean;
-};
-
-// A form with responses the reader has not seen (docs/specs/030-forms/forms.md "Hearing about responses"): in a
-// document they own or reach through a team. The row opens the form's board (`boardTabId`), else its Form tab.
-export type ActivityFormResponses = {
-  documentId: string;
-  documentName: string;
-  teamId: string | null;
-  via: 'own' | 'team';
-  tabId: string;
-  heading: string;
-  boardTabId: string | null;
-  unseen: number;
-  // When the latest response arrived.
-  latestAt: number;
-};
-
 export type ActivityReadResult = {
   actions: ActivityAction[];
   threads: ActivityThread[];
-  cards: ActivityCard[];
-  cardThreads: ActivityCardThread[];
-  // Absent from an api that predates forms.
-  formResponses?: ActivityFormResponses[];
 };
 
-// Ceiling per kind (actions, threads, cards) on one read. The page is an inbox, not a history: a
+// Ceiling per kind (actions, threads) on one read. The page is an inbox, not a history: a
 // reader with more than this outstanding is not going to scroll to the
 // hundredth, and the cap keeps the response bounded without paging.
 export const ACTIVITY_LIST_MAX = 100;

@@ -16,15 +16,8 @@ import { useUiScale } from '@/components/providers/ui-scale';
 const POPOVER_WIDTH = 256;
 // A popover wider than the rest, so its placement keeps all of it on the canvas.
 const POPOVER_WIDTHS: Partial<Record<string, number>> = {
-  'plan-trash': 352,
   // The Layers popover's `w-[22rem]`: roomy rows (docs/specs/006-document/layers.md).
   layers: 352,
-  // CardFinderPanel's `sm:w-[44rem]`: wide enough for each row's state, priority, due date and assignee.
-  'plan-cards': 704,
-  // CardTypesPanel's `sm:w-[34rem]`, two types to a row.
-  'card-types': 544,
-  // NewCardPanel's `w-72`.
-  'plan-new-card': 288,
   // The Session strip's popovers, `w-72` each (docs/specs/012-collaboration/session-tools.md).
   'session-timer': 288,
   'session-vote': 288,
@@ -35,16 +28,10 @@ const POPOVER_WIDTHS: Partial<Record<string, number>> = {
   explorer: 608,
 };
 
-// 'card-types': the Card Types panel over its cluster button in Plan mode
-// (docs/specs/026-plan/item-types.md).
 export type DockPanel =
   | 'explorer'
   | 'layers'
   | 'collaborate'
-  | 'card-types'
-  | 'plan-trash'
-  | 'plan-cards'
-  | 'plan-new-card'
   // The Session strip's Timer, Vote and Poll (docs/specs/012-collaboration/session-tools.md "The Session strip").
   | 'session-timer'
   | 'session-vote'
@@ -62,9 +49,6 @@ export type { DockAnchor };
 function trackDockPanelOpened(id: DockPanel): void {
   if (id === 'layers') track('Layer', 'Opened', 'Panel');
   else if (id === 'collaborate') track('UI', 'Opened', 'Collaborate');
-  else if (id === 'card-types') track('Plan', 'Opened', 'CardTypes');
-  else if (id === 'plan-trash') track('Plan', 'Opened', 'Trash');
-  else if (id === 'plan-cards') track('Plan', 'Opened', 'CardFinder');
   else if (id === 'session-timer') track('UI', 'Opened', 'SessionTimer');
   else if (id === 'session-vote') track('UI', 'Opened', 'SessionVote');
   else if (id === 'session-poll') track('UI', 'Opened', 'SessionPoll');

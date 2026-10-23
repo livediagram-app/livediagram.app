@@ -1,7 +1,7 @@
 // Refs, slug ids and kind words (docs/specs/024-agents/document-views.md "Refs"): how views, edit
 // operations and the lint name elements alike. Element ids are opaque strings; nothing here reads
 // them as UUIDs.
-import { cutSlug, slugText, uniqueSlug } from '@livediagram/items';
+import { cutSlug, slugText, uniqueSlug } from './slug';
 import { eventStormingKindOf } from './event-storming';
 import type { Element } from './index';
 import { ELEMENT_TYPES, SHAPE_KINDS } from './validate';

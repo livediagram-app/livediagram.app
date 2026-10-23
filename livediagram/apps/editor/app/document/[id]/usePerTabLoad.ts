@@ -63,7 +63,7 @@ export function usePerTabLoad(opts: {
   // tab back as if we had just drawn it (docs/specs/012-collaboration/collab-race-hardening.md).
   lastSavedTabsRef: MutableRefObject<Tab[]>;
   // Puts fetched content in place in the present AND every undo / redo snapshot (the history's applyRemoteOp), so a
-  // tab loading for the first time (on opening it, or the search and Plan prefetch) never clears the undo history:
+  // tab loading for the first time (on opening it, or the search prefetch) never clears the undo history:
   // a snapshot holding the tab's empty placeholder takes the loaded content too, so an undo can never put the
   // placeholder back over it (and the autosave save it, empty, over the stored tab). `apply` returns its input
   // when it changes nothing.
@@ -143,7 +143,7 @@ export function usePerTabLoad(opts: {
   // The tabs whose fetch is in flight, kept apart from the loaded-set: a tab joins `loadedTabIdsRef` only once its
   // content is in place. The loaded-set is what lets the autosave save a tab (computeTabSaveDiff) and send it empty
   // (X-Allow-Empty), so claiming a tab there before its GET answered let a commit that touched every tab (the kind
-  // stamp in commitTabs) save the empty placeholder over the real row while the Plan sweep was in flight.
+  // stamp in commitTabs) save the empty placeholder over the real row while its fetch was in flight.
   const fetchingTabIdsRef = useRef<Set<string>>(new Set());
   // How each fetch under way ends, by tab: so a caller asking for a tab another fetch is already loading waits for
   // that one and hears how it went, rather than answering at once with neither the tab nor a failure (which left

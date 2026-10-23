@@ -65,7 +65,7 @@ describe('apiListDocuments', () => {
             name: 'Team',
             savedAt: 3,
             empty: false,
-            opensIn: 'plan',
+            opensIn: 'workshop',
             teamName: 'Design',
           },
         ],
@@ -77,7 +77,7 @@ describe('apiListDocuments', () => {
 
     expect(seen[0]).toMatch(/\/documents\?include=team-recent$/);
     expect(parseRecentDiagrams(localStorage.getItem(RECENT_DIAGRAMS_KEY))).toEqual([
-      { id: 'team', name: 'Team', savedAt: 3, mode: 'plan', teamName: 'Design' },
+      { id: 'team', name: 'Team', savedAt: 3, mode: 'workshop', teamName: 'Design' },
       { id: 'mine', name: 'Mine', savedAt: 1, mode: null, teamName: null },
     ]);
   });

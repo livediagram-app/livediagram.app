@@ -352,9 +352,8 @@ Escape is the tour's and never closes the dialog.
 3. **Make It Grow**: rings the chart and previews **Grow** on it, looping while the step is up, never stored. Grow and
    Pop play once as it appears; Spin and Pulse loop.
 4. **The Chart's Own Menu**: the menu step. Chart Type (keeps the data), Data, Chart (the legend, Show Values, Show
-   Axis), Presets (a palette). On a pie or column chart, Data is a row per mark; on a chart drawn from a Sheet, Data
-   reads the Sheet and **Unlink From Sheet** keeps today's numbers.
-5. **A Row per Category** (a line, area or scatter chart not drawn from a Sheet): opens **Chart Data** and rings its
+   Axis), Presets (a palette). On a pie or column chart, Data is a row per mark.
+5. **A Row per Category** (a line, area or scatter chart): opens **Chart Data** and rings its
    table; the chart behind redraws as the numbers change.
 6. **Series Across the Top**: rings the series header row; rename, remove, or **+** for another series.
 7. **Add a Row**: rings **+ Add row**: a category at the end, every series at 0.

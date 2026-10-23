@@ -55,7 +55,6 @@ import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
 import { MindMapMenuSections } from './MindMapMenuSections';
 import { FlowchartMenuSections } from '@/components/flowchart/FlowchartMenuSections';
 import { AnimationSections } from '@/components/palette/AnimationSections';
-import { useCoversCanvas } from '@/hooks/plan/plan-cover-store';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
 import { LegendTextSize } from '@/components/palette/TypographySections';
@@ -91,7 +90,6 @@ import {
   DataMenuGlyph,
   LegendDataEditor,
   LineDataSummary,
-  LinkedChartData,
   PieDataEditor,
   ProgressRow,
   RatingMenuGlyph,
@@ -101,35 +99,11 @@ import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import { useContextMenuScaffold } from './useContextMenuScaffold';
 import { ChartPalettePresets } from './StylePresets';
 
-// Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost"), so a document without
-// Plan pays nothing for it.
 // A Sankey's sections (docs/specs/009-elements/sankey.md "The menu") load only when a Sankey's menu opens.
 const SankeyMenuSections = dynamic(
   () => import('./SankeyMenuSection').then((m) => m.SankeyMenuSections),
   { ssr: false },
 );
-const PlanBoardMenuSections = dynamic(
-  () => import('./PlanBoardMenuSection').then((m) => m.PlanBoardMenuSections),
-  { ssr: false },
-);
-
-// A Sheet's settings flyout (docs/specs/029-sheets/sheet.md "Sheet Settings"), loaded with the sheet chunk.
-const SheetMenuSection = dynamic(
-  () => import('@/components/sheets/SheetMenuSection').then((m) => m.SheetMenuSection),
-  { ssr: false },
-);
-
-// A Plan card's Card flyout (docs/specs/026-plan/plan-board.md "The Plan card"), loaded with the rest of Plan.
-const PlanCardMenuSection = dynamic(
-  () => import('./PlanCardMenuSection').then((m) => m.PlanCardMenuSection),
-  { ssr: false },
-);
-// A Gantt chart's View flyout (docs/specs/026-plan/plan-views.md "Swimlanes"), loaded with the rest of Plan.
-const PlanViewMenuSection = dynamic(
-  () => import('./PlanViewMenuSection').then((m) => m.PlanViewMenuSection),
-  { ssr: false },
-);
-
 type Scaffold = ReturnType<typeof useContextMenuScaffold>;
 
 // The element menu's data-shape sections: Progress, Timeline Rail, Rating, and
@@ -214,7 +188,6 @@ export function ElementDataSections({
   flyoutProps,
 }: ElementDataSectionsProps) {
   const shapeTarget = target.type === 'shape' ? target : null;
-  const covering = useCoversCanvas(target.id);
   // What an uncoloured slice / series shows as, so the swatches in the data
   // rows match the chart: the ladder the canvas draws with (chartRamp, docs/specs/009-elements/pie-chart.md).
   const chartFallbackPalette = chartRamp(shapeTarget?.chartPalette, props.chartThemeRamp);
@@ -256,35 +229,6 @@ export function ElementDataSections({
     !!props.flowchart;
   return (
     <>
-      {/* A Plan board's own settings (docs/specs/026-plan/plan-board.md "The board set-up"): its own
-          flyout, ahead of Tools, as every board-wide choice lives here. */}
-      {shapeTarget?.shape === 'plan-board' ? (
-        <>
-          <PlanBoardMenuSections
-            element={shapeTarget}
-            flyoutProps={flyoutProps}
-            onClose={props.onClose}
-          />
-        </>
-      ) : null}
-      {/* A Sheet's settings: the cog's sections, as a board's Board flyout. */}
-      {shapeTarget?.shape === 'plan-sheet' ? (
-        <SheetMenuSection element={shapeTarget} flyoutProps={flyoutProps} onClose={props.onClose} />
-      ) : null}
-      {shapeTarget?.shape === 'plan-card' && shapeTarget.planCard ? (
-        <PlanCardMenuSection
-          element={shapeTarget}
-          flyoutProps={flyoutProps('plan-card')}
-          sectionProps={sectionProps}
-        />
-      ) : null}
-      {shapeTarget?.shape === 'plan-view' && shapeTarget.planView ? (
-        <PlanViewMenuSection
-          element={shapeTarget}
-          flyoutProps={flyoutProps('plan-view')}
-          sectionProps={sectionProps}
-        />
-      ) : null}
       {showTools ? (
         <MenuFlyoutSection title="Tools" icon={<ToolsMenuGlyph />} {...flyoutProps('tools')}>
           {/* Progress (docs/specs/009-elements/progress.md) — the percentage; how the fill animates is the
@@ -335,9 +279,7 @@ export function ElementDataSections({
               icon={<DataMenuGlyph />}
               {...sectionProps('pie-data')}
             >
-              {shapeTarget?.chartSource ? (
-                <LinkedChartData onUnlink={props.onUnlinkChart} />
-              ) : isLine ? (
+              {isLine ? (
                 <LineDataSummary
                   palette={chartFallbackPalette}
                   series={
@@ -704,17 +646,14 @@ export function ElementDataSections({
         </MenuFlyoutSection>
       ) : null}
       {/* Animation (docs/specs/028-animation/element-animations.md): one category per animation set the
-            element takes, such as Shape Animation and Text Animation for a labelled shape. None while it covers
-            the canvas (maximised, or Fill Tab): it does not animate there. */}
-      {covering ? null : (
-        <AnimationSections
-          elements={[target]}
-          keyPrefix=""
-          sectionProps={sectionProps}
-          flyoutProps={flyoutProps}
-          handlers={props}
-        />
-      )}
+            element takes, such as Shape Animation and Text Animation for a labelled shape. */}
+      <AnimationSections
+        elements={[target]}
+        keyPrefix=""
+        sectionProps={sectionProps}
+        flyoutProps={flyoutProps}
+        handlers={props}
+      />
       {/* Colours — text / background / border swatches. Boxed elements that
             support colours (excludes images). Icons included: Text tints a
             line-art glyph, Background / Border paint the icon's box. Pie charts

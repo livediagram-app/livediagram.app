@@ -1,10 +1,10 @@
 'use client';
 
-// The start panel (docs/specs/026-plan/plan-mode.md "Starting a board", docs/specs/007-editor/start-diagramming.md):
+// The start panel (docs/specs/007-editor/start-diagramming.md):
 // an empty tab's one wide panel. A rail of categories beside a grid of large cards (StartCard), each a picture of what
 // it makes over its name and line; a search across all of them, and across every other mode's templates
-// (StartOtherModes). Choosing a card acts at once. Shared by Start Planning and Start Diagramming, which say what the
-// categories and cards are; this draws them, in the tab's own light or dark look (the palette).
+// (StartOtherModes). Choosing a card acts at once. Start Diagramming says what the categories and cards are; this
+// draws them, in the tab's own light or dark look (the palette).
 import {
   useEffect,
   useRef,
@@ -29,7 +29,7 @@ import { useChromeFloor } from '@/components/toast/useToastFloor';
 import type { EditorMode } from '@livediagram/document';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import type { HelpArticleKey } from '@/lib/help-articles';
-import type { PlanPalette } from '@/components/plan/plan-palette';
+import type { StartPalette } from './start-palette';
 import { StartCardGrid, startTint, type StartPanelCard } from './StartCard';
 import { StartOtherModes, type StartPanelElsewhere } from './StartOtherModes';
 import { takeStartQuery } from './start-query';
@@ -85,7 +85,7 @@ export function StartPanel<C extends string>({
   // What a search that finds nothing found no match among ("boards, sheets or layouts").
   noMatchNoun: string;
   helpArticle: HelpArticleKey;
-  palette: PlanPalette;
+  palette: StartPalette;
   // Only the categories holding cards.
   categories: readonly StartPanelCategory<C>[];
   initialCategory: C;

@@ -29,21 +29,6 @@ describe('mergeImportedTab', () => {
     expect(mergeImportedTab(tab(), old)).toMatchObject({ kind: 'diagram', opensIn: 'draw' });
   });
 
-  it('carries a Form tab’s form, so an imported Form tab is not left without one', () => {
-    // docs/specs/030-forms/forms.md: a form restored from a file comes back as a copy. Only the kind came across, so
-    // the tab read as a Form tab holding no form.
-    const form = { v: 1, heading: 'Contact', sections: [{ id: 's1', title: '', questions: [] }] };
-    const out = mergeImportedTab(tab(), {
-      ...tab({ kind: 'form', opensIn: 'plan' }),
-      form,
-    } as unknown as Tab);
-    expect(out).toMatchObject({ kind: 'form', opensIn: 'plan', form });
-    // Any other import leaves a receiving Form tab's form alone.
-    expect(
-      mergeImportedTab({ ...tab({ kind: 'form' }), form } as unknown as Tab, tab()).form,
-    ).toEqual(form);
-  });
-
   it('carries the imported LAYERS, so element layerIds still resolve', () => {
     const layers = [{ id: 'layer:es:board', name: 'Event Storming' }];
     expect(mergeImportedTab(tab(), tab({ layers })).layers).toEqual(layers);

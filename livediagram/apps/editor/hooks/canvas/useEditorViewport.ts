@@ -8,13 +8,11 @@
 // useEditorDrag so the helpers always read fresh tab elements
 // without re-creating themselves on every parent render.
 
-import { isFocusedOnAdd } from '@/hooks/plan/useFocusNewPlanElement';
-import { prefersReducedMotion } from '@/lib/motion-preference';
 import { createViewportStore, type ViewportStore } from '@/lib/viewport-store';
 import type { Selection } from '@/lib/selection-store';
 import { use, useCallback, useEffect, useEffectEvent, useRef, useState } from 'react';
 import { browser } from 'react-dom';
-import { isBoxed, unionBoxedBounds, type Tab } from '@livediagram/document';
+import { isBoxed, type Tab } from '@livediagram/document';
 import {
   computeFitToScreen,
   computeViewportCanvasRect,
@@ -86,8 +84,6 @@ type EditorViewportApi = {
   // viewport. Idempotent (the lastFittedTabRef gate in
   // editor-page.tsx still controls WHEN this runs).
   fitToScreen: () => void;
-  // Focus: glide to fit an element, or out to the whole tab when it is already fitted.
-  focusOn: (bbox: { x: number; y: number; w: number; h: number }, maxZoom?: number) => void;
   // Frame an ARBITRARY rectangle. Presenting a slide (docs/specs/012-collaboration/presentation-mode.md) needs this:
   // the deck decides what is on screen, so the box to fit is the slide's
   // rather than the whole tab's.
@@ -117,9 +113,6 @@ type EditorViewportApi = {
   // Is that point already in the middle of this view?
   isCentredOn: (at: { x: number; y: number }) => boolean;
 };
-
-// How long a Focus glide takes (docs/specs/026-plan/plan-board.md "Focus").
-const FIT_GLIDE_MS = 420;
 
 // Whether two views are the same, to the pixel a view is rounded to.
 function sameView(a: ViewPose, b: ViewPose): boolean {
@@ -285,8 +278,7 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
     const sel = deps.readSelection().selectedId;
     if (!sel || prev.has(sel) || !ids.has(sel)) return;
     const el = els.find((e) => e.id === sel);
-    // A board, view or Sheet glides to fit instead (useFocusNewPlanElement): one glide, not two.
-    if (!el || !isBoxed(el) || isFocusedOnAdd(el)) return;
+    if (!el || !isBoxed(el)) return;
     scrollToNew(el.x, el.y, el.width, el.height);
   }, [deps.activeTab.elements, deps]);
 
@@ -364,49 +356,6 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
     [viewportOffsetRef, zoomRef],
   );
 
-  // The running Focus glide's frame, so a new fit (or another glide) takes over from it.
-  const glide = useRef<number | null>(null);
-  const stopGlide = useCallback(() => {
-    if (glide.current !== null) cancelAnimationFrame(glide.current);
-    glide.current = null;
-  }, []);
-  // Gone with the canvas: no frame writes to the view after it.
-  useEffect(() => stopGlide, [stopGlide]);
-  // Glide to a view: the offset (canvas units, the viewport centre's point) eased in a straight line and the zoom
-  // geometrically, so the view moves and scales at an even pace; at once under reduced motion. Anything else moving
-  // the view meanwhile (a wheel, a pinch, a pan, another fit) takes over: the glide stops where it is.
-  const glideTo = useCallback(
-    (zoom: number, offset: { x: number; y: number }) => {
-      stopGlide();
-      if (prefersReducedMotion()) {
-        setViewportZoom(zoom);
-        setViewportOffset(offset);
-        return;
-      }
-      const z0 = zoomRef.current;
-      const o0 = viewportOffsetRef.current;
-      const start = performance.now();
-      let set = { zoom: z0, offset: o0 };
-      const step = (now: number) => {
-        const now0 = viewportOffsetRef.current;
-        if (zoomRef.current !== set.zoom || now0.x !== set.offset.x || now0.y !== set.offset.y) {
-          glide.current = null;
-          return;
-        }
-        const t = Math.min(1, (now - start) / FIT_GLIDE_MS);
-        const e = t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2;
-        set = {
-          zoom: z0 * (zoom / z0) ** e,
-          offset: { x: o0.x + (offset.x - o0.x) * e, y: o0.y + (offset.y - o0.y) * e },
-        };
-        setViewportZoom(set.zoom);
-        setViewportOffset(set.offset);
-        glide.current = t < 1 ? requestAnimationFrame(step) : null;
-      };
-      glide.current = requestAnimationFrame(step);
-    },
-    [stopGlide, setViewportOffset, setViewportZoom, zoomRef, viewportOffsetRef],
-  );
   // Frame an ARBITRARY rectangle, which is what presenting a slide needs
   // (docs/specs/012-collaboration/presentation-mode.md): the deck decides what is on screen, so the box to fit is the
   // slide's, not the tab's. Same maths as fitToScreen, which is now the
@@ -431,44 +380,13 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
         opts?.maxZoom,
         opts?.padding,
       );
-      stopGlide();
       setViewportZoom(zoom);
       setViewportOffset(offset);
     },
-    [setViewportOffset, setViewportZoom, stopGlide],
-  );
-
-  // Focus (docs/specs/026-plan/plan-board.md "Focus"): glide to fit an element; pressed again while it is already
-  // fitted, glide out to fit everything on the tab.
-  const focusOn = useCallback(
-    (bbox: { x: number; y: number; w: number; h: number }, maxZoom?: number) => {
-      const node = canvasMainRef.current;
-      if (!node || bbox.w <= 0 || bbox.h <= 0) return;
-      const rect = { width: node.offsetWidth, height: node.offsetHeight };
-      const fit = computeFitToScreen(
-        rect,
-        { x: bbox.x, y: bbox.y, width: bbox.w, height: bbox.h },
-        maxZoom,
-      );
-      const there =
-        Math.abs(zoomRef.current - fit.zoom) < 0.01 &&
-        Math.abs(viewportOffsetRef.current.x - fit.offset.x) < 2 &&
-        Math.abs(viewportOffsetRef.current.y - fit.offset.y) < 2;
-      if (!there) return glideTo(fit.zoom, fit.offset);
-      const { activeTab } = depsRef.current;
-      const all = unionBoxedBounds(
-        activeTab.elements,
-        new Set(activeTab.elements.filter(isBoxed).map((el) => el.id)),
-      );
-      if (!all) return;
-      const whole = computeFitToScreen(rect, all);
-      glideTo(whole.zoom, whole.offset);
-    },
-    [depsRef, glideTo, zoomRef, viewportOffsetRef],
+    [setViewportOffset, setViewportZoom],
   );
 
   return {
-    focusOn,
     viewport,
     setViewportOffset,
     setViewportZoom,

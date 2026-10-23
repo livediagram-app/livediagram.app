@@ -8,21 +8,7 @@ import { MCP_TOOL_VERBS, mcpShareDocument } from './mcp-tools';
 describe('the MCP tool verbs', () => {
   it('name each tool once, under an id of its own, with words and a behaviour', () => {
     expect(MCP_TOOL_VERBS.map((v) => v.mcp.tool)).toEqual([
-      'list_items',
-      'change_items',
-      'add_board',
-      'change_board',
-      'change_card_types',
-      'list_sheets',
-      'read_sheet',
-      'change_sheet',
-      'add_sheet',
       'list_images',
-      'read_form',
-      'add_form',
-      'change_form',
-      'share_form',
-      'try_form',
       'find_documents',
       'read_document',
       'list_templates',
@@ -56,11 +42,7 @@ describe('the MCP tool verbs', () => {
   it('read only where a read-only token could call them', () => {
     const reads = MCP_TOOL_VERBS.filter((v) => v.behaviour === 'read').map((v) => v.mcp.tool);
     expect(reads).toEqual([
-      'list_items',
-      'list_sheets',
-      'read_sheet',
       'list_images',
-      'read_form',
       'find_documents',
       'read_document',
       'list_templates',

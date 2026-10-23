@@ -48,60 +48,14 @@ export { argvToOperationLine } from './argv-line';
 export { baseFromCopy, readPlainTab, recordCopy, type ReadCopies, type ReadCopy } from './copies';
 export { classifySource } from './source-kind';
 export { HELD_RETRY_INTERVAL_MS, submitChangeset, type WriteFlags } from './write';
+export { apiRefusalOf } from './api-refusal';
 export { GUIDE_TOPIC_NAMES, GUIDE_TOPICS, isGuideTopic } from './guides';
 export { renderSkill, SKILL_DESCRIPTION, SKILL_DIRECTORIES, SKILL_NAME } from './skill';
-export {
-  documentOf,
-  itemsPath,
-  LIST_DEFAULT_LIMIT,
-  LIST_MAX_LIMIT,
-  tabOf,
-  tabPath,
-} from './verbs/shared';
+export { documentOf, LIST_DEFAULT_LIMIT, LIST_MAX_LIMIT, tabOf, tabPath } from './verbs/shared';
 export { graphLint, graphOfSource } from './verbs/graph';
 export { tabListOf } from './verbs/tab';
 export { EXPORT_FORMATS } from './verbs/local';
 export { documentListText, documentRows, type ListedDocument } from './verbs/document';
 export { MIRROR_LEVELS, STATUS_ORDER, SYNC_WATCH_TYPE, type StatusRow } from './verbs/link';
 export { workbenchNameOf, workbenchOriginOf } from './verbs/workbench';
-export {
-  addBoard,
-  apiRefusalOf,
-  changeBoard,
-  resolveBoard,
-  resolveDashboardInput,
-  type DashboardInput,
-  type DashboardTabRef,
-  applyItemChanges,
-  bringBoardCardTypes,
-  changeCardTypes,
-  FIELD_HINT,
-  NO_BOARD_HINT,
-  planListing,
-  planPath,
-  resolveListingFilter,
-  readPlanState,
-  type ItemChange,
-  type PlanState,
-} from './plan';
-export {
-  addSheet,
-  buildSheetChange,
-  changeSheet,
-  chartsReadLive,
-  formatPatchOf,
-  listSheets,
-  readSheet,
-  readSheets,
-  resolveSheet,
-  SHEET_READ_CHARS_MAX,
-  SHEET_REFUSAL_WORDS,
-  sheetsPath,
-  type ReadCell,
-  type SheetChange,
-  type SheetFormatInput,
-  type SheetRead,
-  type SheetRefusal,
-} from './sheets';
-export * from './forms';
 export * from './images';

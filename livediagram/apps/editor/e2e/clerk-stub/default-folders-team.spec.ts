@@ -64,22 +64,22 @@ test('a team folder becomes a member’s default, and new boards land in it', as
   await expect(menu).toBeVisible({ timeout: 30_000 });
   await menu.click();
   await page.getByRole('menuitem', { name: 'Use as Default for' }).click();
-  await page.getByRole('menuitemcheckbox', { name: 'Kanban boards' }).click();
-  await expect.poll(defaults).toEqual([{ key: 'template:kanban', folderId }]);
+  await page.getByRole('menuitemcheckbox', { name: 'Retrospectives' }).click();
+  await expect.poll(defaults).toEqual([{ key: 'template:retrospective', folderId }]);
   await page.keyboard.press('Escape');
   await expect(page.locator('[data-default-marker]').first()).toBeVisible();
 
-  // The wizard asks for a mode and creates at once; the Kanban template is picked on Start Planning, and the new
+  // The wizard asks for a mode and creates at once; the Sailboat retrospective is picked on Start a Workshop, and the new
   // document moves to the template's default folder, since no folder was chosen ("A template picked after creation").
   await page.goto('/new');
-  const plan = page.locator('[data-new-mode="plan"]');
-  await untilHydrated(plan);
-  await plan.click();
+  const workshop = page.locator('[data-new-mode="workshop"]');
+  await untilHydrated(workshop);
+  await workshop.click();
   await expect(page).toHaveURL(/\/document\/[0-9a-f-]{36}$/, { timeout: 30_000 });
-  const start = page.getByRole('region', { name: 'Start Planning' });
-  await start.locator('[data-rail="inspiration"]').click();
+  const start = page.getByRole('region', { name: 'Start a Workshop' });
+  await start.getByRole('textbox', { name: 'Find a template' }).fill('sailboat');
   await start
-    .getByRole('button', { name: /^Kanban/ })
+    .getByRole('button', { name: /^Sailboat/ })
     .first()
     .click();
   await expect(page.getByText(/Moved to Boards/)).toBeVisible({ timeout: 20_000 });

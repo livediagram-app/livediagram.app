@@ -1,11 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   allLinked,
-  below,
   elementsFor,
-  errorCells,
   flows,
-  header,
   inside,
   linked,
   mentionsAll,
@@ -60,20 +57,6 @@ const diagram = {
           ],
         },
       ],
-      items: null,
-      sheets: [
-        {
-          title: 'S',
-          read: {
-            cells: [
-              { at: 'A1', input: 'Rep', value: 'Rep' },
-              { at: 'A2', input: 'Ana', value: 'Ana' },
-              { at: 'A3', input: 'Raj', value: 'Raj' },
-              { at: 'B1', input: '=1/0', value: '#DIV/0!' },
-            ],
-          },
-        },
-      ],
     },
   ],
 };
@@ -93,7 +76,7 @@ describe('diagram readers', () => {
     expect(allLinked(diagram, [[/cart/i, /receipt/i]], { directed: true }).detail).toBe(
       'not joined: cart → receipt',
     );
-    expect(mentionsAll(diagram, [/flow/i, /ana/i]).pass).toBe(true);
+    expect(mentionsAll(diagram, [/flow/i, /cart/i]).pass).toBe(true);
   });
 
   it('sees a box inside a frame by its bounds', () => {
@@ -106,22 +89,11 @@ describe('diagram readers', () => {
   });
 });
 
-describe('sheet readers', () => {
-  it('reads a column under its header and the cells that show errors', () => {
-    expect(below(header(diagram, /^rep$/i)).map((c: { input: string }) => c.input)).toEqual([
-      'Ana',
-      'Raj',
-    ]);
-    expect(errorCells(diagram).map((c: { at: string }) => c.at)).toEqual(['B1']);
-    expect(below(null)).toEqual([]);
-  });
-});
-
 describe('parseTabHeader', () => {
   it('reads a kind and mode', () => {
     expect(
-      parseTabHeader('tab 6cb1 "RSVP" · 0 elements · kind=form (read_form) · mode=plan · rev 1'),
-    ).toEqual({ kind: 'form', mode: 'plan' });
+      parseTabHeader('tab 6cb1 "Storm" · 0 elements · kind=event-storming · mode=diagram · rev 1'),
+    ).toEqual({ kind: 'event-storming', mode: 'diagram' });
   });
 });
 

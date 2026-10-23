@@ -140,10 +140,10 @@ renders immediately rather than showing a spinner over real content.
 ### New tabs and the tab order
 
 The document's tab order (`PUT /api/documents/<id>`) only places tab rows that exist; a new tab's row is made by its
-own tab save, which places it after the tabs the document had when that save read it. So a save that adds tabs (a
-template's several tabs, an import, a duplicate) writes the order only once those new tabs' saves have settled. Sent
+own tab save, which places it after the tabs the document had when that save read it. So a save that adds tabs (an
+import, a duplicate) writes the order only once those new tabs' saves have settled. Sent
 beside them, the order could land first and the new tabs, each taking the same place, came back after a reload
-sorted by id rather than as made (Project Planner's Overview before its Daily Standup). A new tab whose save failed
+sorted by id rather than as made. A new tab whose save failed
 does not hold the order back: the retried save writes the order again. The unload flush cannot wait and sends both
 at once, as before.
 
@@ -256,9 +256,9 @@ kernel both the debounced save and the `beforeunload` flush share.
 
 A tab joins the loaded set only **once its content is in place**, never when
 its fetch starts. A fetch in flight (the visit-time load, the background
-sweep that search and Plan run over every tab) is held in a separate
+sweep that search runs over every tab) is held in a separate
 fetching set, which de-duplicates fetches but grants no write. Claiming the
-loaded set up front once let any commit during a Plan sweep save the empty
+loaded set up front once let any commit during a sweep save the empty
 placeholders of every tab still loading, with `X-Allow-Empty`, past both
 guards (tabs found wiped on reload). For the same reason the commit choke
 point stamps a tab's `kind` only on tabs that commit changed or added: an
@@ -274,7 +274,7 @@ content did not land does not make its tab loaded.
 Landing fetched content never clears the undo history: it goes into the present
 and into every undo and redo snapshot, under the same rule (a snapshot whose copy
 of the tab is still the empty placeholder takes the content), the way a peer's
-change does. Opening a tab for the first time, or the search and Plan sweeps
+change does. Opening a tab for the first time, or the search sweep
 loading the rest, once reset the history, so an undo after them had nothing to
 undo; and a snapshot left holding the placeholder would let an undo put it back
 over the loaded tab.

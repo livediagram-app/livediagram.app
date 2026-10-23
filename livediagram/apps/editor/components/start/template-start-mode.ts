@@ -1,7 +1,7 @@
 // Which template start an empty tab shows (docs/specs/007-editor/start-diagramming.md "When it shows"): Start
 // Diagramming, Start Drawing or Start a Workshop, to someone who can edit, while the tab is
 // empty, outside zen and embed, with no draw tool armed. Draw keeps a pen in hand on an empty
-// tab, so there an armed pen does not hide it. Plan has Start Planning.
+// tab, so there an armed pen does not hide it.
 import type { EditorMode } from '@livediagram/document';
 import type { TemplateStartMode } from './start-template-items';
 

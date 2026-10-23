@@ -20,10 +20,10 @@ export function commentPersisters(session: CommentSession) {
   const { readOnly, documentId, tabId, selfId, shareCode } = session;
   const endpoint = readOnly && documentId !== null ? documentId : null;
   return {
-    add: (elementId: string, text: string, mentions?: CommentMention[], cell?: string) =>
+    add: (elementId: string, text: string, mentions?: CommentMention[]) =>
       endpoint === null
         ? undefined
-        : () => apiAddComment(selfId, endpoint, tabId, elementId, text, shareCode, mentions, cell),
+        : () => apiAddComment(selfId, endpoint, tabId, elementId, text, shareCode, mentions),
     remove: (commentId: string) =>
       endpoint === null
         ? undefined

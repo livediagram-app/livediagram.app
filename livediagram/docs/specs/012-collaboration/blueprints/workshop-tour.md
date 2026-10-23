@@ -1,20 +1,20 @@
 # Workshop tour blueprint
 
 Derived from [Workshop tour](../workshop-tour.md). Where this is silent, the
-[Plan tour blueprint](../../026-plan/blueprints/plan-tour.md) holds.
+[Diagram tour](../../007-editor/editor-tour.md) holds.
 
 ## Domain and naming
 
-| Thing               | Identifier                                                                                        |
-| ------------------- | ------------------------------------------------------------------------------------------------- |
+| Thing               | Identifier                                                                                          |
+| ------------------- | --------------------------------------------------------------------------------------------------- |
 | The host            | `WorkshopTourHost` in `apps/editor/components/tour/WorkshopTourHost.tsx`                            |
-| The steps           | `WORKSHOP_TOUR_STEPS`, `workshopTourSteps({ canShare })` in `workshop-tour-steps.ts`              |
+| The steps           | `WORKSHOP_TOUR_STEPS`, `workshopTourSteps({ canShare })` in `workshop-tour-steps.ts`                |
 | The welcome art     | `WorkshopTourArt` in `apps/editor/components/tour/WorkshopTourArt.tsx`                              |
-| The seen-guard      | `UserPreferences.workshopTourSeen` (synced)                                                       |
+| The seen-guard      | `UserPreferences.workshopTourSeen` (synced)                                                         |
 | The rerun signal    | `WORKSHOP_TOUR_RELAUNCH_EVENT`, `requestWorkshopTourRelaunch` in `apps/editor/lib/workshop-tour.ts` |
 | The one-tour slot   | `ActiveTour` `'workshop'` in `apps/editor/lib/tour-active.ts`                                       |
-| The Settings switch | `workshopTourSeen`, "Workshop Tour", third toggle row in the Tours category                       |
-| The help article    | `canvas/workshop-mode/workshop-tour` (`helpArticle: 'workshopTour'`)                              |
+| The Settings switch | `workshopTourSeen`, "Workshop Tour", third toggle row in the Tours category                         |
+| The help article    | `canvas/workshop-mode/workshop-tour` (`helpArticle: 'workshopTour'`)                                |
 
 ## Behaviour and state
 
@@ -31,7 +31,8 @@ Derived from [Workshop tour](../workshop-tour.md). Where this is silent, the
   Workshop", `WORKSHOP_TOUR_START_EVENT`) and wrote `workshopTourSeen` with `tourSeen`. All of it is gone:
   `TourStage` / `TourPopover` lost `outroChoice`, `lib/workshop-tour.ts` lost the start event, and
   `workshopTourSteps` lost `withWelcome`.
-- **One tour at a time:** each of `TourHost` (the Diagram tour), `PlanTourHost`, `WorkshopTourHost` treats any other
+- **One tour at a time:** each of `TourHost` (the Diagram tour), `DrawTourHost`, `WorkshopTourHost` (and the
+  avatar and element tours) treats any other
   active tour as blocking and publishes itself with `setActiveTour` while active.
 - **Steps:** `welcome` (card) → `collaborate` (`band-collaborate` with `alsoHighlight`
   `option-collab-navigate`: the band's heading to its last tile; opens the picker, closes it on cleanup) → `session-strip` (`session-tools`) → `share` (`share`, the
@@ -46,8 +47,7 @@ Derived from [Workshop tour](../workshop-tour.md). Where this is silent, the
 
 - `WorkshopTourApi = Record<string, never>`: the steps drive only the DOM.
 - `TourStage` gets `ariaPrefix="Workshop tour"`, copy `{ welcomeEyebrow: 'Workshop tour',
-helpHref: '/help/canvas/workshop-mode/', finish: TOUR_FINISH }` and no
-  `welcomeChoices` (the default Yes / No).
+helpHref: '/help/canvas/workshop-mode/', finish: TOUR_FINISH }`; its welcome card asks Yes / No.
 
 ## Data and persistence
 
@@ -101,9 +101,9 @@ helpHref: '/help/canvas/workshop-mode/', finish: TOUR_FINISH }` and no
 
 ## Constants and configuration
 
-| Constant         | Value | Provenance                         |
-| ---------------- | ----- | ---------------------------------- |
-| `OFFER_DELAY_MS` | 800   | The Diagram and Plan tours' settle |
+| Constant         | Value | Provenance                |
+| ---------------- | ----- | ------------------------- |
+| `OFFER_DELAY_MS` | 800   | The Diagram tour's settle |
 
 ## Assets and external resources
 

@@ -3,11 +3,11 @@ import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { activeTour, setActiveTour, useActiveTour } from './tour-active';
 
-// One guided tour at a time (docs/specs/026-plan/plan-tour.md "Where it appears").
+// One guided tour at a time (docs/specs/007-editor/editor-tour.md).
 
 afterEach(() => {
   setActiveTour('welcome', false);
-  setActiveTour('plan', false);
+  setActiveTour('draw', false);
   setActiveTour('workshop', false);
 });
 
@@ -20,7 +20,7 @@ describe('tour-active', () => {
 
   it('is released only by the tour holding it', () => {
     setActiveTour('welcome', true);
-    setActiveTour('plan', false);
+    setActiveTour('draw', false);
     expect(activeTour()).toBe('welcome');
     setActiveTour('welcome', false);
     expect(activeTour()).toBeNull();
@@ -35,9 +35,9 @@ describe('tour-active', () => {
   it('re-renders a reader when it changes', () => {
     const { result } = renderHook(() => useActiveTour());
     expect(result.current).toBeNull();
-    act(() => setActiveTour('plan', true));
-    expect(result.current).toBe('plan');
-    act(() => setActiveTour('plan', false));
+    act(() => setActiveTour('draw', true));
+    expect(result.current).toBe('draw');
+    act(() => setActiveTour('draw', false));
     expect(result.current).toBeNull();
   });
 });

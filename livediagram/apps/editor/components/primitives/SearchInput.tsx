@@ -3,8 +3,8 @@
 import { HoverCard, Glyph } from '@livediagram/ui';
 
 // The shared search box: a bordered text input with an inline clear (×)
-// button. Used by the Icons + Technology pickers, the palette's Tools tab,
-// the Settings dialog and Plan's Cards panel.
+// button. Used by the Icons + Technology pickers, the palette's Tools tab
+// and the Settings dialog.
 //
 // It lived in components/palette as PaletteSearchInput until Settings needed
 // one too. Nothing about it was ever palette-specific: the caller supplies
@@ -40,7 +40,7 @@ export function SearchInput({
   // The results list this box drives, when it is always shown beneath it: the box becomes a
   // combobox controlling that listbox (the whiteboard's More shapes search).
   listboxId?: string;
-  // Focus the box on mount (a popover whose first job is the search, like Plan's Cards panel).
+  // Focus the box on mount (a popover whose first job is the search).
   autoFocus?: boolean;
 }) {
   return (

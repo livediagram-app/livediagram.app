@@ -9,7 +9,6 @@ import { AnchoredPopover, placeAnchored } from './AnchoredPopover';
 import { ConfirmPopover } from './ConfirmPopover';
 import { openPopoverCount } from './popover-stack';
 
-// docs/specs/026-plan/item-types.md "Editing a type": Add Field's and Glyph's popovers.
 afterEach(cleanup);
 
 const view = { width: 1000, height: 800 };

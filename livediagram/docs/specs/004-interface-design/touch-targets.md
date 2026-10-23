@@ -15,7 +15,7 @@ floor at 24px; the editor aims past it, because a diagram editor is used with a 
   `(pointer: coarse)`; a box already 44px or more is left alone. The control keeps its drawn size,
   so a dense desktop layout and a phone share one design. The host is positioned (`relative`, or
   its own `absolute`): a static host's pad fills its nearest positioned ancestor and takes every tap
-  there (a Plan column's Remove Column once took every tap in its popover). A static guard
+  there (a popover's remove button once took every tap in it). A static guard
   (`touch-target-guard` in `packages/tailwind-config`, run by each site's `touch-target-guard.test.ts`)
   fails a class list that names either utility without a position.
 - **`touch-target-y` for packed rows.** Where neighbours sit closer than 44px apart (the palette
@@ -30,8 +30,7 @@ floor at 24px; the editor aims past it, because a diagram editor is used with a 
   and the menu button's own card in Draw (`ToolbarExplorerButton`) all carry `PHONE_TOOLBAR_ITEMS`;
   the selection toolbar's 32px buttons (`SelectionPopover`) get `touch-target-y`, as do the tab pill,
   the role pill (Editing / Viewing), the tour card's buttons and a page's lock and cog.
-  The Plan cogs (a column's, Board Settings, a Sheet's) and the empty-tab card's close take the
-  full `touch-target`.
+  The empty-tab card's close takes the full `touch-target`.
 - **A phone sheet's grab handle** (BottomSheet, Dialog's `phoneSheet`, the start panels) is one shared strip,
   `SheetHandle`: the sheet's full width and 32px tall (`SHEET_HANDLE_PX`), its pill 48 by 6px, so a thumb finds it
   without aiming for the pill. A pad cannot reach above it, where the sheet's edge clips it.
@@ -47,7 +46,7 @@ floor at 24px; the editor aims past it, because a diagram editor is used with a 
   it (15 px words on a 20 px line, 17 px icons, a group keeping 8 px rather than 20 px above its title), so the taller
   rows read as a phone's list rather than small words far apart.
 - **Nothing waits for a hover on a touch screen.** A control that appears on hover (a row's delete, a card's edit, a
-  theme card's actions, a Dashboard's grip, dividers and row handle) is shown there all the time
+  theme card's actions) is shown there all the time
   (`[@media(hover:none)]`), quietly where it would crowd. A canvas comment bubble's quick delete stays hover-only:
   shown on every bubble it would invite a mistaken tap, and the open thread offers Delete.
 - **Keyboard hints are not drawn on a touch screen.** A tile's always-on shortcut letter (the Palette

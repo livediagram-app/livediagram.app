@@ -46,7 +46,7 @@ const WIDTHS: Record<DialogSize, string> = {
   xl: 'w-[36rem]',
   // The image picker's two-column grid (640px = 40rem).
   '2xl': 'w-[40rem]',
-  // A Plan item's panel: a main column beside a details panel (docs/specs/026-plan/plan-board.md).
+  // The widest panel: a main column beside a details panel.
   '3xl': 'w-[60rem]',
 };
 
@@ -74,7 +74,7 @@ export type DialogProps = {
   // dialogs rise as sheets on a phone"). A centred card from sm up either way.
   phoneSheet?: boolean;
   // Where focus lands on open: the first control (default), or the panel itself ('container') when the
-  // first control is not where anyone starts (the Plan card panel, whose header opens on its type picker).
+  // first control is not where anyone starts.
   initialFocus?: FocusTrapInitial;
   children: ReactNode;
 };

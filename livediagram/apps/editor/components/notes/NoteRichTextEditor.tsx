@@ -28,28 +28,15 @@ export function NoteRichTextEditor({
   onSubmit,
   onCancel,
   onBlur,
-  label = 'Note',
-  placeholder = 'Add a note for this element…',
-  surfaceClassName = 'max-h-96 min-h-44 resize-y',
-  note = true,
-  autoFocus,
 }: {
   initialRuns: TextRun[];
   onChange: (plain: string, runs: TextRun[]) => void;
   // Cmd/Ctrl-Enter: commit and close.
   onSubmit?: () => void;
-  // Esc: discard and close. Without it Escape is left to the host (the item panel closes).
+  // Esc: discard and close. Without it Escape is left to the host.
   onCancel?: () => void;
   // Focus left the text (after the runs are read back from it).
   onBlur?: () => void;
-  // The text box's name and empty hint, and its height; a Plan item's description sets its own.
-  label?: string;
-  placeholder?: string;
-  surfaceClassName?: string;
-  // A note: it opens focused and its formatting counts as note use. False for an item's description.
-  note?: boolean;
-  // Opens focused (a note always does; a description does once you choose to edit it).
-  autoFocus?: boolean;
 }) {
   const {
     editorRef,
@@ -64,8 +51,6 @@ export function NoteRichTextEditor({
   } = useNoteRichTextSession({
     initialRuns,
     onChange,
-    trackFormats: note,
-    autoFocus: autoFocus ?? note,
   });
 
   return (
@@ -86,7 +71,6 @@ export function NoteRichTextEditor({
         }}
         onApplyHeading={applyHeading}
         onApplyLink={applyLink}
-        listButtons={!note}
       />
       <div
         ref={editorRef}
@@ -95,8 +79,8 @@ export function NoteRichTextEditor({
         suppressContentEditableWarning
         role="textbox"
         aria-multiline
-        aria-label={label}
-        data-rt-placeholder={placeholder}
+        aria-label="Note"
+        data-rt-placeholder="Add a note for this element…"
         style={{ fontSize: `${NOTE_BASE_PX}px` }}
         onInput={() => {
           if (composingRef.current) return;
@@ -157,7 +141,7 @@ export function NoteRichTextEditor({
           handleInput();
           onBlur?.();
         }}
-        className={`${surfaceClassName} overflow-y-auto whitespace-pre-wrap break-words rounded-md border border-slate-200 bg-white px-2 py-1.5 leading-snug text-slate-800 outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100`}
+        className={`max-h-96 min-h-44 resize-y overflow-y-auto whitespace-pre-wrap break-words rounded-md border border-slate-200 bg-white px-2 py-1.5 leading-snug text-slate-800 outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100`}
       />
     </div>
   );

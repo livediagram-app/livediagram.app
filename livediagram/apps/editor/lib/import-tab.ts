@@ -34,13 +34,7 @@ export type ImportOutcome =
 // parseImportedTab that walks old shapes forward.
 
 import {
-  legacyCatalogue,
-  readItemTypeCatalogue,
-  type Item,
-  type ItemTypeCatalogue,
-} from '@livediagram/items';
-import {
-  isItemLike,
+  dropRetiredPlan,
   isValidElement,
   migrateIncomingElements,
   type Tab,
@@ -50,11 +44,7 @@ import {
 import type { ImportImageReport } from './import-images';
 import type { BoardSceneReport } from './board-scene/report';
 
-// The Plan items a tab export carries (docs/specs/026-plan/items.md "Copies and exports"), and its stored type
-// catalogue (null: the default types).
-export type ImportedPlanItems = { items: Item[]; itemTypes: ItemTypeCatalogue | null };
-
-type ImportResult = { ok: true; tab: Tab; plan?: ImportedPlanItems } | { ok: false; error: string };
+type ImportResult = { ok: true; tab: Tab } | { ok: false; error: string };
 
 // Parse text from a chosen `.json` file. Returns a discriminated
 // union — callers branch on `.ok` and surface the error string to
@@ -100,16 +90,11 @@ export function parseImportedTab(text: string): ImportResult {
   // alone let `null`, `{}` or an arrow with no endpoints through: the last
   // threw in the id re-mint (leaving the Import dialog stuck on busy), the
   // others landed on the canvas as junk.
+  //
+  // A file exported while Plan was here imports as an ordinary tab, its Plan-only parts left behind
+  // (dropRetiredPlan); its cards were never part of the tab.
   const elements = migrateIncomingElements(tab.elements).filter(isValidElement);
-  // Items that do not look like items are left behind, as the document envelope does; the store validates the rest.
-  const items = Array.isArray(env.items) ? env.items.filter(isItemLike) : [];
-  if (items.length === 0) return { ok: true, tab: { ...tab, elements } };
-  return {
-    ok: true,
-    tab: { ...tab, elements },
-    // A tab exported before card types started empty carries cards and no catalogue: the default types.
-    plan: { items, itemTypes: legacyCatalogue(readItemTypeCatalogue(env.itemTypes), true) },
-  };
+  return { ok: true, tab: dropRetiredPlan({ ...tab, elements }) };
 }
 
 // Open the browser's file picker and resolve with the chosen file's name

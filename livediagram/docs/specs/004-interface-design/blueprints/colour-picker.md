@@ -35,15 +35,8 @@ import are unchanged.
     - soft: `ink` is labelled White, `SOFT_WHITE`; the others `oklchHex(SOFT_LIGHTNESS[appearance],
 min(chroma * SOFT_CHROMA_SCALE, SOFT_MAX_CHROMA), hue)`; grey at chroma 0.
   - `standardColourAt(hex)`: `{ name, label, tone, appearance } | null` for any version's hex, case-insensitive.
-  - `isHexColour(v)`: `#rrggbb` only, for the apps. `packages/items` keeps its own `HEX_COLOUR` regex (it does not
-    depend on `@livediagram/document`).
+  - `isHexColour(v)`: `#rrggbb` only, for the apps.
 - `quick-swatches.ts`: `colourWords(hexes)`: hue words, a repeat "Light"/"Deep", a third numbered.
-
-### `packages/items` and `packages/agent-verbs`
-
-- `itemColourValue(v)`: any `#rrggbb`, trimmed and lower-cased, else undefined.
-- `type-changes.ts` `colourOf`: any `#rrggbb`, else `type_change_invalid` ("is not a colour").
-- MCP `plan-schema.ts`: `color` and `colourArg` describe "a #rrggbb colour" with four examples.
 
 ### `apps/editor/components/colour`
 
@@ -88,10 +81,6 @@ ColourPicker({
 | Draw pen flyout                | `components/canvas/whiteboard/ColourPicker.tsx`                                                              | none                        | strong by name for the board                                                                                                                     | `null` = Ink                                                               |
 | Quick Style More colours       | `components/canvas/QuickMoreColours.tsx`                                                                     | none                        | strong by name (soft hex on Background, soft light hex on Highlighter)                                                                           | `setColour(role, id)`, `setPenColour`, `setBoard*`, `setHighlighterColour` |
 | Quick Style custom swatch      | `components/canvas/SwatchOverridePopover.tsx`                                                                | n/a (editor only)           | n/a                                                                                                                                              | Use saves and closes                                                       |
-| Plan card type                 | `components/plan/ColourSwatches.tsx` (`TypeColourButton`)                                                    | none                        | strong light hex                                                                                                                                 | hex                                                                        |
-| Plan card Colour               | `ColourSelect` (same file, a `ColourField`)                                                                  | None                        | strong light hex                                                                                                                                 | hex / undefined                                                            |
-| Plan column                    | `components/plan/PlanColumnPopover.tsx`                                                                      | No colour                   | strong light hex; column colours as `extra`                                                                                                      | hex / null                                                                 |
-| Form cover                     | `components/forms/builder/FormHeaderCard.tsx` (`BackgroundSection`)                                          | Paper                       | soft "Light" + strong "Dark", light hex                                                                                                          | `PageFill` / undefined                                                     |
 | Laser                          | `components/panels/LaserColourRow.tsx`                                                                       | Your colour (`presence`)    | strong by name for the canvas                                                                                                                    | `presence` / name / hex                                                    |
 | Canvas, pattern, theme builder | `components/palette/palette-controls.tsx` (`useColourWell`, `ColorSwatch`), `custom-theme-builder-parts.tsx` | none                        | soft + strong ("Soft colours", "Strong colours") by hex for the canvas; pattern strong only                                                      | hex                                                                        |
 | Rich-text colour               | `components/canvas/RichTextToolbar.tsx`                                                                      | none                        | strong hex for the canvas                                                                                                                        | hex                                                                        |
@@ -187,22 +176,21 @@ Picks are reported by each surface's own write path (`track('Element', 'Changed'
 
 ## Testing
 
-| Rule                                                      | Test                                                                                                                                        |
-| --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| ten standard colours, both tones, readable                | `packages/document/src/standard-colours.test.ts`                                                                                            |
-| Grey is a stock colour, not hued                          | `packages/document/src/pen-colours.test.ts`                                                                                                 |
-| one Tab stop, arrows wrap, Home/End                       | `apps/editor/components/colour/ColourPicker.test.tsx`                                                                                       |
-| pick, custom Use, value matching, yours cap               | `ColourPicker.test.tsx`                                                                                                                     |
-| preview and revert                                        | `ColourPicker.test.tsx`                                                                                                                     |
-| skins open, pick closes, Escape refocuses                 | `ColourSkins.test.tsx`                                                                                                                      |
-| custom colours kept and listed                            | `packages/document/src/custom-colours.test.ts`, `apps/editor/lib/document-colours.test.ts`                                                  |
-| no new pickers: no colour well, editor only in the picker | `apps/editor/components/colour/one-picker.test.ts`                                                                                          |
-| element menu rows                                         | `components/palette/context-menu-input-rows.test.tsx`                                                                                       |
-| Quick Style rows, More colours, keys                      | `components/canvas/QuickStylePanel.test.tsx`, `hooks/canvas/useQuickStyle.test.tsx`                                                         |
-| Draw marker picker                                        | `components/canvas/whiteboard/ColourPicker.test.tsx`, `WhiteboardDock.test.tsx`                                                             |
-| Plan surfaces                                             | `ColourSwatches.test.tsx`, `ItemFieldEditor.colour.test.tsx`, `PlanColumnPopover.colour.test.tsx`, `packages/items/src/item-colour.test.ts` |
-| laser and colour wells                                    | `LaserColourRow.test.tsx`, `lib/laser-config.test.ts`, `components/palette/colour-wells.test.tsx`                                           |
-| rows fit, e2e                                             | `e2e/quick-style-swatch-rows.spec.ts`, `quick-style-panel.spec.ts`, `quick-style-mixed.spec.ts`                                             |
+| Rule                                                      | Test                                                                                              |
+| --------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| ten standard colours, both tones, readable                | `packages/document/src/standard-colours.test.ts`                                                  |
+| Grey is a stock colour, not hued                          | `packages/document/src/pen-colours.test.ts`                                                       |
+| one Tab stop, arrows wrap, Home/End                       | `apps/editor/components/colour/ColourPicker.test.tsx`                                             |
+| pick, custom Use, value matching, yours cap               | `ColourPicker.test.tsx`                                                                           |
+| preview and revert                                        | `ColourPicker.test.tsx`                                                                           |
+| skins open, pick closes, Escape refocuses                 | `ColourSkins.test.tsx`                                                                            |
+| custom colours kept and listed                            | `packages/document/src/custom-colours.test.ts`, `apps/editor/lib/document-colours.test.ts`        |
+| no new pickers: no colour well, editor only in the picker | `apps/editor/components/colour/one-picker.test.ts`                                                |
+| element menu rows                                         | `components/palette/context-menu-input-rows.test.tsx`                                             |
+| Quick Style rows, More colours, keys                      | `components/canvas/QuickStylePanel.test.tsx`, `hooks/canvas/useQuickStyle.test.tsx`               |
+| Draw marker picker                                        | `components/canvas/whiteboard/ColourPicker.test.tsx`, `WhiteboardDock.test.tsx`                   |
+| laser and colour wells                                    | `LaserColourRow.test.tsx`, `lib/laser-config.test.ts`, `components/palette/colour-wells.test.tsx` |
+| rows fit, e2e                                             | `e2e/quick-style-swatch-rows.spec.ts`, `quick-style-panel.spec.ts`, `quick-style-mixed.spec.ts`   |
 
 ## Constants and configuration
 

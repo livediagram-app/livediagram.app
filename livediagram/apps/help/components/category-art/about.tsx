@@ -1,37 +1,24 @@
 import { Arrow, Label, Shape } from '@/components/illustrations/primitives';
 import { Chip, Stage, Window } from './parts';
 
-// About livediagram: what it is in one picture. Three windows fanned out, one per way of working (planning on a
-// board, a diagram, a sketch), under the two promises: free, and open source.
+// About livediagram: what it is in one picture. Three windows fanned out, one per way of working (a workshop's
+// sticky notes, a diagram, a sketch), under the two promises: free, and open source.
 export function AboutArt() {
   return (
     <Stage>
-      {/* Plan: a board, tilted back on the left. */}
+      {/* Workshop: sticky notes gathered for a session, tilted back on the left. */}
       <g transform="rotate(-7 92 120)">
-        <Window x={18} y={52} w={150} h={118} title="Plan">
-          {[0, 1, 2].map((c) => (
-            <g key={c}>
-              <rect
-                x={28 + c * 46}
-                y={84}
-                width={40}
-                height={6}
-                rx={3}
-                className={['fill-violet-300', 'fill-amber-300', 'fill-emerald-300'][c]}
-              />
-              {[0, 1, 2].slice(0, 3 - c).map((r) => (
-                <rect
-                  key={r}
-                  x={28 + c * 46}
-                  y={96 + r * 22}
-                  width={40}
-                  height={18}
-                  rx={4}
-                  className="fill-white stroke-slate-200"
-                  strokeWidth={1.2}
-                />
-              ))}
-            </g>
+        <Window x={18} y={52} w={150} h={118} title="Workshop">
+          {[0, 1, 2, 3, 4, 5].map((n) => (
+            <rect
+              key={n}
+              x={30 + (n % 3) * 44}
+              y={86 + Math.floor(n / 3) * 40}
+              width={36}
+              height={32}
+              rx={2}
+              className={['fill-amber-200', 'fill-sky-200', 'fill-rose-200'][n % 3]}
+            />
           ))}
         </Window>
       </g>
@@ -81,7 +68,7 @@ export function AboutArt() {
       <Chip x={118} y={12} label="Free for everyone" tone="emerald" h={20} size={10} />
       <Chip x={236} y={12} label="Open source" tone="violet" h={20} size={10} />
       <Label x={200} y={204} anchor="middle" size={9} weight={600} tone="muted">
-        Diagram · Draw · Workshop · Plan
+        Diagram · Draw · Workshop
       </Label>
     </Stage>
   );

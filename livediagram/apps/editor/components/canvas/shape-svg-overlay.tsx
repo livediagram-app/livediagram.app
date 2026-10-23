@@ -108,13 +108,7 @@ export function isSvgRenderedShape(kind: ShapeKind): boolean {
     // An Avatar Pad (docs/specs/009-elements/avatar-pad.md) paints its own pixels.
     kind !== 'avatar-pad' &&
     kind !== 'desk' &&
-    kind !== 'sofa' &&
-    // The Plan board, card and view (docs/specs/026-plan/plan-board.md, plan-views.md) paint their own surfaces.
-    kind !== 'plan-board' &&
-    kind !== 'plan-card' &&
-    kind !== 'plan-view' &&
-    // The Sheet (docs/specs/029-sheets/sheet.md) paints its own grid.
-    kind !== 'plan-sheet'
+    kind !== 'sofa'
   );
 }
 

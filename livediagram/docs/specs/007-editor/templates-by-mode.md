@@ -1,7 +1,7 @@
 # Templates by mode
 
-Every template opens in one [editor mode](editor-modes.md): **Diagram**, **Draw**,
-**Workshop** or **Plan**. The New Document wizard asks for the mode itself
+Every template opens in one [editor mode](editor-modes.md): **Diagram**, **Draw** or
+**Workshop**. The New Document wizard asks for the mode itself
 ([New document route](new-document-route.md) "Choosing a mode"), and each mode's templates wait on an empty tab in
 its own start ([Template starts](start-diagramming.md)), so someone who came to sketch or to run a session sees only
 what starts there. A search on a start also finds the other modes' templates, each saying which mode it opens in
@@ -14,10 +14,6 @@ what starts there. A search on a start also finds the other modes' templates, ea
   canvas overrides (`templateCanvasOverrides`) take `opensIn` from it, so the mode a card shows and
   the mode the tab opens in can never disagree.
 - Draw templates: Blank Whiteboard and the eight [Draw templates](#draw-templates) below.
-- Plan templates: Blank Plan and the twenty-two [Plan templates](../026-plan/plan-templates.md), Kanban Board
-  among them. Plan templates open on a worked example of cards: each but Blank Plan sets up a way of working across
-  several tabs, or a ready-made spreadsheet (the twelve
-  [spreadsheet templates](../026-plan/plan-templates.md#spreadsheet-templates)), every tab opening in Plan.
 - Workshop templates: Blank Session and the [Workshop templates](#workshop-templates)
   below.
 - Every other template is a Diagram template.
@@ -30,7 +26,7 @@ what starts there. A search on a start also finds the other modes' templates, ea
   **after** the title, so a card's accessible name still starts with its title
   ([Found in other modes](start-diagramming.md#found-in-other-modes)).
 
-## Four blanks
+## Three blanks
 
 Popular opens with one blank per mode, in mode order. Each blank also leads its mode's Recommended in that mode's
 start ([Template starts](start-diagramming.md)), and is what the New Document wizard creates for the mode chosen:
@@ -40,21 +36,16 @@ start ([Template starts](start-diagramming.md)), and is what the New Document wi
 | Blank Diagram    | `blank`         | Diagram  | An empty canvas (was "Blank Canvas").               |
 | Blank Whiteboard | `whiteboard`    | Draw     | An empty board to draw on (was "Whiteboard").       |
 | Blank Session    | `blank-session` | Workshop | An empty tab in Workshop, named "Untitled Session". |
-| Blank Plan       | `blank-plan`    | Plan     | An empty Plan tab that opens on Start Planning.     |
 
-**Blank Spreadsheet** (`blank-spreadsheet`, Plan) is a fifth blank beside them (`EXTRA_BLANK_TEMPLATES`): one tab
-holding an empty Sheet that fills it, made from the `blank-spreadsheet` start, an empty grid with no template, no
-charts and no setup to await ([Sheet store](../029-sheets/sheet-store.md#template-starts)). It is a blank like the four
-(`isBlankTemplate`): in no category and on no category shelf. It is not a mode's blank, so it leads no start and is
-not what the New Document wizard creates; the editor's Popular lists are unchanged (a start's search finds it, under
-Plan in [other modes](start-diagramming.md#found-in-other-modes)), and Start Planning, which has its own Empty Sheet, does not offer it. The landing page's **Blank Slate**
-shelf lists it after Blank Plan ([Marketing site](../019-marketing/marketing-site.md)).
+The Plan templates (Blank Plan, Blank Spreadsheet, the forms and the twenty-two Plan templates, Kanban Board among
+them) moved to liveplanner with Plan mode ([Editor modes](editor-modes.md) "Plan moved to liveplanner"). A link, an
+agent or a seed naming one is answered as any unknown kind is (`retired-templates.test.ts`).
 
 - The kind ids of the first two are unchanged, so `/new?template=blank` and
   `/new?template=whiteboard` links keep working.
 - None of the blanks is on a category shelf or a category tile.
-- Popular under Everything, in order: Blank Diagram, Blank Whiteboard, Blank Session, Blank Plan,
-  Mind map, Flowchart, Kanban Board, Sailboat retrospective, Budget Planner, Org chart, Sketchnote. Under a
+- Popular under Everything, in order: Blank Diagram, Blank Whiteboard, Blank Session,
+  Mind map, Flowchart, Sailboat retrospective, Org chart, Sketchnote, Gantt chart, Retrospective, Timeline. Under a
   mode, its own list ([Template categories](../008-canvas/canvas-and-palette.md#template-categories)).
 
 ## Draw templates
@@ -93,7 +84,7 @@ unchanged; only the mode they open in moved from Diagram.
 
 - The Retrospectives family's **Retrospective** (`retrospective`), **Start, Stop, Continue**
   (`start-stop-continue`), **Mad, Sad, Glad** (`mad-sad-glad`), **4Ls** (`four-ls`) and **Sailboat**
-  (`sailboat`). **Team Retro** (`team-retro`) stays in Plan: it is a board of cards.
+  (`sailboat`).
 - **Town Hall Q&A** (`town-hall`), **Lean Coffee** (`lean-coffee`), **Crazy Eights**
   (`crazy-eights`), **Meeting Agenda** (`meeting-agenda`), **Workshop Board** (`workshop-board`) and
   **Brainstorm Board** (`brainstorm`).
@@ -130,24 +121,17 @@ unchanged; only the mode they open in moved from Diagram.
 ## The tab's name
 
 - A template picked on a start or on /new names the tab it fills after itself, in every mode (a flowchart's
-  tab is "Flowchart"): the template's own name for the tab where it gives one
-  (a Plan template's tabs), else for a Board or Sheet template the board's title, else the template's title. It does
+  tab is "Flowchart"): the template's title. It does
   so whatever the tab was called before. A blank template leaves the name as it was (`templateTabName`).
 
 ## The document's name
 
 - A template picked on a start names the **document** after itself too, as /new names a document after the template
-  it is made from: "Untitled Flowchart", "Untitled Kanban Board", a blank naming what it makes ("Untitled
+  it is made from: "Untitled Flowchart", "Untitled Retrospective", a blank naming what it makes ("Untitled
   Whiteboard"), Blank Diagram "Untitled document" (`untitledNameForTemplate`).
 - Only while the document still has a default name: one of those untitled names (`isDefaultDocumentName`, any
   template's, or the legacy "Untitled diagram"). A name someone gave it, or the first element's label the editor
   named it after ([Name length](../006-document/name-length.md)), is kept.
 - Only for the document's **first** tab: a template filling a later tab names that tab, not the document.
-- **Start Planning's own picks name it too**: a board preset, a sheet start, a form, a dashboard layout or a
-  visualisation picked for the first tab names a still-untitled document after the title that tab takes ("Untitled
-  Bug Tracker", "Untitled Gantt Chart"), read once the tab has changed (`usePlanStartDocumentName`). Before, only
-  Start Planning's template cards did, so most new Plan documents stayed "Untitled Plan". Only a change seen in the
-  session counts (opening a document on a Plan tab is not a start), only for someone who can edit, and a name the
-  start gave the document itself (a template's) is kept.
 - It is the document's name like any other: saved with it, shown in the header and the Explorer at once, and changed
   by renaming. No telemetry: it is not a person's rename.

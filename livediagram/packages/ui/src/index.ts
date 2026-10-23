@@ -50,7 +50,6 @@ export { HoverCard, type HoverCardProps } from './HoverCard';
 export { useRowPreview, type RowPreview } from './useRowPreview';
 export { SnapCarousel } from './SnapCarousel';
 export { DiagramBuildAnimation } from './DiagramBuildAnimation';
-export { SheetBuildAnimation } from './SheetBuildAnimation';
 export { LoadingSweep } from './LoadingSweep';
 export { EmptyState, EmptyStateArt } from './EmptyState';
 export { PageNotFound } from './PageNotFound';
@@ -128,7 +127,7 @@ export {
 } from './seo';
 export * from './appearance';
 export * from './random-uuid-boot';
-export { indefiniteArticle, withArticle } from '@livediagram/items';
+export { indefiniteArticle, withArticle } from '@livediagram/document';
 export * from './optical';
 export * from './menu';
 export { Dialog, type DialogProps } from './dialog/Dialog';

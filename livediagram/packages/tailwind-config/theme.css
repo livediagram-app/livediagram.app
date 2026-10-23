@@ -2,8 +2,7 @@
  * `dark:bg-slate-900` (etc.) lights up when documentElement carries
  * `.dark`, regardless of the user's OS prefers-color-scheme. See
  * docs/specs/007-editor/editor-app.md "UI light / dark mode" for the policy.
- * An element marked `.light` (or `.dark`) is an island of that appearance inside the other: a Dashboard card filled
- * in a light colour draws its contents light in dark mode (docs/specs/026-plan/plan-tabs.md "Card style"). */
+ * An element marked `.light` (or `.dark`) is an island of that appearance inside the other. */
 @custom-variant dark (&:where(.dark, .dark *):not(:where(.light, .light *)));
 
 /* Motion tokens (docs/specs/004-interface-design/motion.md). Every chrome

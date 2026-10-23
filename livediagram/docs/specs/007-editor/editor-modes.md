@@ -1,7 +1,7 @@
 # Editor modes
 
-A general tab is drawn on in one of four **editor modes**: **Diagram**,
-**Draw**, **Workshop** and **Plan**. A mode decides which tools and rules are in focus; it never decides
+A general tab is drawn on in one of three **editor modes**: **Diagram**,
+**Draw** and **Workshop**. A mode decides which tools and rules are in focus; it never decides
 what the tab is. Like a drawing tool that switches between a pixel mode and a
 vector mode over the same picture, switching mode keeps every element exactly
 where it is and changes only how the next mark is made.
@@ -11,10 +11,9 @@ where it is and changes only how the next mark is made.
 | Term              | Means                                                                                                                                             |
 | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **tab kind**      | What a tab **is** ([Document](../006-document/document.md)). Reserved for specific uses.                                                          |
-| **editor mode**   | How a general tab is **worked on** right now: `diagram`, `draw`, `plan` or `workshop` (`EditorMode`).                                             |
+| **editor mode**   | How a general tab is **worked on** right now: `diagram`, `draw` or `workshop` (`EditorMode`).                                                     |
 | **Diagram mode**  | Structured drawing: the palette, shapes, arrows, icons, templates, snapping and guides.                                                           |
 | **Draw mode**     | Freehand whiteboarding: the dock, preset pens, eraser, shape recognition ([Draw mode](../023-draw-mode/draw-mode.md)).                            |
-| **Plan mode**     | Boards of items: Plan boards, cards, the item panel ([Plan mode](../026-plan/plan-mode.md)).                                                      |
 | **Workshop mode** | Running a session with a team: the Collaborate elements, stickers and the Session strip ([Workshop mode](../012-collaboration/workshop-mode.md)). |
 | **mode switch**   | The control leading an empty tab's start that changes the editor mode.                                                                            |
 
@@ -22,7 +21,7 @@ where it is and changes only how the next mark is made.
   never a type of document.
 - "Mode" on its own is ambiguous here (Zen mode, Presentation mode, Power user
   mode); in specs and code say **editor mode**. The interface says **Diagram**,
-  **Draw**, **Workshop** and **Plan**.
+  **Draw** and **Workshop**.
 
 ## Kinds versus modes
 
@@ -57,8 +56,7 @@ where it is and changes only how the next mark is made.
   - The same for everyone, power user mode or not, on a phone as on a computer.
 - **The mode menu** is two panes: a **list** of the modes and a **preview** of one.
   - **The list:** one row per mode in catalogue order, each its mark on a small tile in the
-    mode's tint, its name, then a check on the current mode, or a **New tab** mark on a mode across
-    Plan's line ("Plan stands apart").
+    mode's tint, its name, then a check on the current mode.
   - **The preview** shows the row under the pointer, else the focused row, else the current mode:
     a picture of the mode's work on its tint, its name with **Shift+D** when the key leads there,
     its **description** (one line on what the mode is for, from the mode catalogue) and the mode's
@@ -69,16 +67,15 @@ where it is and changes only how the next mark is made.
   - **Narrow (under 640px wide):** the preview is left out and the list stands alone, each row
     showing its description under its name, the menu spanning the panel's width.
   - **Each mode has a tint**, used only by the mode menu (the list's tiles and the preview's
-    picture): Diagram sky, Draw orange, Workshop violet, Plan emerald. The current row and the focus ring stay
+    picture): Diagram sky, Draw orange, Workshop violet. The current row and the focus ring stay
     the brand colour.
 - **The mode descriptions** say what each mode is for, in the catalogue (`EDITOR_MODE_CATALOGUE`):
   - Diagram: "Flowcharts, architecture and org charts with snapping shapes."
   - Draw: "Sketch freehand with pens, tidied into shapes as you go."
   - Workshop: "Run a live session: timers, votes, polls and reveals."
-  - Plan: "Boards of cards moving through columns, with types and fields."
 - **One switch:** every start panel's rail carries the same chip and menu. The New Document wizard's mode cards are
   a choice of what to make, not a switch.
-- **One mode chosen:** Diagram, Draw, Workshop or Plan.
+- **One mode chosen:** Diagram, Draw or Workshop.
   Exactly one is active.
 - **Switching is instant and lossless:** no dialog, no reload, and no element changes (the tab's
   mode is the one field it writes, with what the mode brings: "Where the mode lives"); the
@@ -89,29 +86,11 @@ where it is and changes only how the next mark is made.
 - **Not on event-storming boards:** the tab kind keeps its own tools and
   notation, and shows no switch.
 - **Zero layout shift:** the switch fills its row, and nothing next to it moves when the mode changes.
-- **Shift+D** moves an **empty** tab to the next mode, wrapping round through all four, shown in the switch's
+- **Shift+D** moves an **empty** tab to the next mode, wrapping round through all three, shown in the switch's
   preview, `aria-keyshortcuts` and Settings › Keyboard; a switch by key is announced politely ("Draw mode"). On a tab
   with content it does nothing, as the switch is not offered there. It obeys the character-key shortcuts setting.
 - **Accessible:** reachable by keyboard, its state exposed to assistive
   technology, its text and focus ring at least WCAG 2.2 AA.
-
-### Plan stands apart
-
-A tab never switches **into Plan** from another mode, nor **out of Plan** into another (`crossesPlan`): Plan works on
-boards, sheets and dashboards, which need tabs of their own, and the other modes on a canvas. In the mode switch the
-mode across that line is still listed; picking it asks **Open a New <Mode> Tab?** ("Plan works in tabs of its own.",
-or on a Plan tab "A Plan tab stays in Plan.", then "Its mode can’t change, but you can carry on in a new <Mode>
-tab.") and **New <Mode> Tab** opens one after the others, with its mode's own start: Start Diagramming, Start a
-Workshop or Start Drawing (a pen in hand) ([Template starts](start-diagramming.md)), and
-Start Planning for Plan. A session that cannot add
-tabs (a tab-scoped link, docs/specs/013-workspace/tab-scoped-share-links.md) is offered no new tab: those rows show,
-inert (`aria-disabled`), and ask nothing. Since the switch shows only on an empty tab's start, the line holds in
-practice for a Board, Sheet or Dashboard tab, whose kind keeps it in Plan (`lockedReason`).
-
-**Except on an empty tab.** A general tab with no elements has nothing either side's tools could not hold, so it
-crosses the line freely, into Plan and out of it, as one plain switch (`crossPlan` on `useEditorMode`): the start's
-switch lists every mode unlocked, and Shift+D steps through all four. The first element ends switching altogether. A Board, Sheet or Dashboard tab keeps its kind's lock (`lockedReason`). See
-[Template starts](start-diagramming.md) "Changing mode".
 
 ## Where the mode lives
 
@@ -140,14 +119,12 @@ switch lists every mode unlocked, and Shift+D steps through all four. The first 
   left in place and ignored.
 - **A new tab opens in the mode it was made from.** A tab added from the tab bar's **+** or the command palette's
   **Create New Tab** opens in the mode of the tab its maker was on (the active tab's mode, for everyone on the new
-  tab): made from a Draw tab it is a Draw tab, from a Workshop tab a Workshop tab, from a Plan tab (a Board,
-  Sheet or Dashboard tab included) a Plan tab, and from an event-storming board, always Diagram, a Diagram tab. The
+  tab): made from a Draw tab it is a Draw tab, from a Workshop tab a Workshop tab, and from an event-storming board, always Diagram, a Diagram tab. The
   **+** makes the tab straight away, with no picker: it is a general tab (never the source's kind) carrying the
   source's look ([Canvas and palette](../008-canvas/canvas-and-palette.md) "Selecting & adding"), and only its mode
-  follows. A tab asked for in a mode (**New <Mode> Tab**, "Plan stands apart") opens in that mode instead. A new tab
+  follows. A new tab
   opens empty on its mode's own start (Start Diagramming, Start Drawing, Start a
-  Workshop, Start Planning: [Template starts](start-diagramming.md), [Plan
-  mode](../026-plan/plan-mode.md#starting-a-board); `newTabOpening` in `apps/editor/lib/new-tab-seed.ts`), whose
+  Workshop: [Template starts](start-diagramming.md); `newTabOpening` in `apps/editor/lib/new-tab-seed.ts`), whose
   search also finds every other mode's templates. Only the template chosen for it changes that:
   every template opens in its own mode ([Templates by mode](templates-by-mode.md)), the **Whiteboard** in Draw,
   Blank in Diagram, and an **Event Storming** board is always Diagram. **Duplicate** is not a new tab: the copy
@@ -161,8 +138,7 @@ switch lists every mode unlocked, and Shift+D steps through all four. The first 
   (above).
 - **The tab pill shows the tab's mode.** Each tab pill leads with the icon of its mode (the same
   glyph the mode switch uses), tinted with the tab's theme accent. An
-  event-storming board is always Diagram, so it shows the Diagram icon. A Board, Sheet or Dashboard tab, always Plan,
-  shows its kind's glyph instead ([Plan tabs](../026-plan/plan-tabs.md#the-kinds)).
+  event-storming board is always Diagram, so it shows the Diagram icon.
 
 ## One look
 
@@ -175,9 +151,7 @@ element in the same colour.
 - **Each mode's default canvas.** The canvas colour is the tab's in every mode; the pattern behind it suits the
   mode. Diagram shows the tab's pattern (the theme's dot grid until someone picks another). Draw shows the person's
   own board pattern (graph paper until chosen, [Draw mode](../023-draw-mode/draw-mode.md#board-background)).
-  Plan shows a **blank canvas**, so boards, sheets and dashboards carry the page. Plan's applies only while the
-  tab keeps its theme's pattern: a pattern someone picked shows in every mode but
-  Draw. None is stored, so exports, thumbnails and other people's modes keep the tab's own (`MODE_PATTERNS`,
+  A pattern someone picked shows in every mode but Draw. None is stored, so exports, thumbnails and other people's modes keep the tab's own (`MODE_PATTERNS`,
   `resolveViewBackdrop`).
 - **Off-white light canvas.** The Default theme's light canvas is the board's
   off-white (`#fbfaf7`); its dark canvas stays `#0d121a`.
@@ -235,31 +209,24 @@ element in the same colour.
     migrated whiteboard without it becomes `'wrap'`, as it hugged there.
 - **Entering Draw mode**, by opening a tab or by switching, puts the active
   pen in hand on an empty tab and Select on a tab with content.
-- **Plan mode** is Diagram mode with the palette narrowed to boards and
-  cards, and Plan boards taking input as a planning tool
-  ([Plan mode](../026-plan/plan-mode.md)).
 - **Workshop mode** is Diagram mode with its own palette for running a session (the Collaborate
   and Stickers categories, which Diagram does not offer) and the Session strip's three tools
   ([Workshop mode](../012-collaboration/workshop-mode.md)).
 - **Each mode's mark**: Diagram a flowchart (two steps joined), Draw a marker,
-  Plan a board of three columns with a raised card, Workshop a flipchart on an easel; the same glyph on the switch and the tab pill.
+  Workshop a flipchart on an easel; the same glyph on the switch and the tab pill.
 - **No further cue:** the dock (in place of the palette) and the switch's
   own label say which mode is on; no tint, accent or notice is added.
 - **Leaving a mode puts its tool down**, as leaving a whiteboard did: a pen,
   the eraser or an armed shape never carries over into the other mode. A mode's tool can still
   be **picked up** in another on purpose: the Toolbar strip's Search offers Draw mode's markers
-  in Diagram, Workshop and Plan ([Toolbar layout](toolbar-layout.md#search-every-element-type)),
+  in Diagram and Workshop ([Toolbar layout](toolbar-layout.md#search-every-element-type)),
   and one picked there is put down by a switch like any other.
 
 ## The tool a mode starts with
 
-- Every mode starts on **Select**, except **Plan**, which starts on **Hand** (a board's cards take the pointer
-  themselves). On a phone every mode starts on **Hand**, so a drag moves the canvas.
+- Every mode starts on **Select**. On a phone every mode starts on **Hand**, so a drag moves the canvas.
 - The tool is picked whenever the mode changes, the first mode a tab opens in included; any tool can be picked
   after. An embedded viewer always starts on Hand.
-- Plan leaves **Eraser** and **Format** out ([Plan mode](../026-plan/plan-mode.md#tools)).
-- Any tab switches into and out of Plan with everything on it kept: a board outside Plan is an element like any
-  other ([Plan mode](../026-plan/plan-mode.md#switching-modes-keeps-the-tab)).
 
 ## The palette per mode
 
@@ -287,7 +254,7 @@ holds.
   own, such as Popular, is a tile grid.
 - **Every surface reads the layout:** the Toolbar strip, its category bar and flyouts (Diagram and Workshop:
   [The category bar](toolbar-layout.md#the-category-bar), which shows the layout without Popular, with
-  one-word names, Write and Draw apart, and Workshop's session tools as Session) and its More popover (Plan).
+  one-word names, Write and Draw apart,and Workshop's session tools as Session).
 - Draw mode shows its own tools in place of the palette, so it borrows
   Diagram's layout.
 
@@ -310,34 +277,30 @@ six categories, **Ask**, **Tools**, **Record**, **React**, **Selection Mode** an
 ("Collaborate's six" below), and offers **Data**: every chart and meter, since a session reads results
 and sets targets.
 
-| Category          | Diagram | Plan | Workshop |
-| ----------------- | ------- | ---- | -------- |
-| Popular           | yes     | no   | yes      |
-| Plan's seven      | no      | yes  | no       |
-| Shapes            | yes     | no   | yes      |
-| My shapes         | yes     | no   | yes      |
-| Write             | yes     | no   | yes      |
-| Draw              | yes     | no   | yes      |
-| Build             | no      | no   | no       |
-| Diagrams          | yes     | no   | no       |
-| Layout            | yes     | no   | yes      |
-| Concepts          | yes     | no   | no       |
-| Event Storming    | board   | no   | no       |
-| Icons             | yes     | no   | yes      |
-| Stickers          | no      | no   | yes      |
-| Tech              | yes     | no   | no       |
-| Media             | yes     | no   | yes      |
-| Data              | no      | no   | yes      |
-| Collaborate's six | no      | no   | yes      |
+| Category          | Diagram | Workshop |
+| ----------------- | ------- | -------- |
+| Popular           | yes     | yes      |
+| Shapes            | yes     | yes      |
+| My shapes         | yes     | yes      |
+| Write             | yes     | yes      |
+| Draw              | yes     | yes      |
+| Build             | no      | no       |
+| Diagrams          | yes     | no       |
+| Layout            | yes     | yes      |
+| Concepts          | yes     | no       |
+| Event Storming    | board   | no       |
+| Icons             | yes     | yes      |
+| Stickers          | no      | yes      |
+| Tech              | yes     | no       |
+| Media             | yes     | yes      |
+| Data              | no      | yes      |
+| Collaborate's six | no      | yes      |
 
-Plan shows no palette: its boards, sheets and dashboards carry their own tools
-([Plan mode](../026-plan/plan-mode.md#no-palette)).
-
-- **The landing category** is the mode's **Popular** (Plan's is **Cards**), and the notation on an
+- **The landing category** is the mode's **Popular**, and the notation on an
   event-storming board
   (the layout's `landing`). Switching mode re-lands the palette there, so it
   never shows a category the new mode leaves out.
-- **Popular** is the landing category of every mode but Plan: the tiles that mode is most
+- **Popular** is the landing category of every mode: the tiles that mode is most
   often built from (twelve at most), listed in its layout entry, fixed (not edited or
   reordered). A layout may put a divider of its own between two entries (`DIVIDE`), shown on the strip as a
   tile's own fixed divider is. An entry may be an **opener** instead of a tile (`palette-openers`): it stands for a whole category, or
@@ -356,14 +319,28 @@ Plan shows no palette: its boards, sheets and dashboards carry their own tools
 ## Every mode, always offered
 
 Every mode of the catalogue is offered to everyone: the mode switch and the template picker's
-mode filter always list all four, and a tab always opens in its stored mode. Shift+D, on an empty tab, steps through
-all four.
+mode filter always list all three, and a tab always opens in its stored mode. Shift+D, on an empty tab, steps through
+all three.
 
 Plan had a switch in **Settings › Experimental** while it was new. It graduated on 2026-10-06, and the
 **Experimental** category went with it. Its `planModeEnabled` preference is a retired key ([User
-preferences](user-preferences.md) "Retired keys"), so a person who had switched it off sees it again. Its `UI` ·
-`Toggled` · `PlanMode{On,Off}` events are retired from the dashboard ([Telemetry](../017-telemetry/telemetry.md)
-"Retired features").
+preferences](user-preferences.md) "Retired keys"). Its `UI` · `Toggled` · `PlanMode{On,Off}` events are retired from
+the dashboard ([Telemetry](../017-telemetry/telemetry.md) "Retired features").
+
+## Plan moved to liveplanner
+
+Plan mode (boards of cards, Sheets, dashboards and forms, each on a Board, Sheet, Dashboard or Form tab) was a fourth
+mode until it moved out into its own product, liveplanner (https://liveplanner.app). livediagram no longer has it:
+
+- A stored tab whose mode is Plan (`opensIn: 'plan'`), or whose kind is Board, Sheet, Dashboard or Form, reads as an
+  ordinary Diagram tab (`dropRetiredPlan`, run from `migrateStoredTab` beside `dropRetiredPages`): its `kind` and
+  `opensIn` go, with its Plan-only fields, and so do its Plan board and Sheet elements. A chart that read a Sheet keeps
+  the data it last read and loses its `chartSource`. The tab is saved without them the next time it is saved.
+- The Plan tables in D1 (items, sheets, sheet cells and refs, board statuses, form links, reports and reads) stay in
+  place, unread, so the drop can be undone; a later migration may drop them.
+- The help articles about Plan, boards, cards, Sheets, dashboards and forms redirect to Editor Modes, which points to
+  liveplanner, and the marketing site's Plan, Sheets and Forms feature pages redirect to liveplanner.app.
+- Workshop's Q&A board and the diagram [card](../009-elements/card.md) are not Plan, and stay.
 
 ## Pages moved to livedocuments
 
@@ -395,8 +372,7 @@ out into its own product, livedocuments (https://livedocuments.app). livediagram
 
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
 
-- `Editor` · `Changed` · `ModeDiagram` / `ModeDraw` / `ModePlan` /
-  `ModeWorkshop`, fired by
+- `Editor` · `Changed` · `ModeDiagram` / `ModeDraw` / `ModeWorkshop`, fired by
   the switch and Shift+D before the mode applies (never by a collaborator's
   switch arriving, an undo or a redo).
 - `Tab` · `Changed` · `OpensInDiagram` / `OpensInDraw` / `OpensInPlan` were
@@ -409,14 +385,14 @@ out into its own product, livedocuments (https://livedocuments.app). livediagram
 
 ## Naming in the interface
 
-- The help article **Editor Modes** (`/help/canvas/editor-modes/`) explains all four modes, the
+- The help article **Editor Modes** (`/help/canvas/editor-modes/`) explains all three modes, the
   start's switch and new tabs in a mode, and links to each mode's own article.
 - The mode is **Draw** on the switch and in Settings, where it names the
   **Editor › Draw** sub-category (Dock Position) as the switch names it, and
   **Draw mode** in prose: the help article (**Draw mode**, at a new address,
   the old one redirecting) and the command palette.
-- The template card is **Blank Whiteboard**, one of four blanks (Blank Diagram,
-  Blank Whiteboard, Blank Session, Blank Plan), one per mode, that lead Popular
+- The template card is **Blank Whiteboard**, one of three blanks (Blank Diagram,
+  Blank Whiteboard, Blank Session), one per mode, that lead Popular
   ([Templates by mode](templates-by-mode.md)); the document it makes is named "Untitled
   Whiteboard", for the activity a person comes for.
 - **Workshop** is the mode for running a session ([Workshop mode](../012-collaboration/workshop-mode.md)), its name
@@ -432,7 +408,7 @@ out into its own product, livedocuments (https://livedocuments.app). livediagram
 
 ## Non-goals
 
-- Further editor modes beyond these four until use asks for one.
+- Further editor modes beyond these three until use asks for one.
 
 - A mode per element or per layer.
 - Converting content between modes (a stroke into a shape on switching).

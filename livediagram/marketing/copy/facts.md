@@ -32,7 +32,7 @@ is the team, not the individual.
   optional labels), freehand Pencil tool with optional shape recognition,
   per-element links and locks.
 - Multi-select: marquee drag, shift-click, format painter, groups.
-- 17 templates (Blank, Mind map, Flowchart, Kanban, SWOT, Retrospective, Org
+- 82 templates (Blank, Mind map, Flowchart, Gantt, SWOT, Retrospective, Org
   chart, Timeline, Fishbone, Pyramid, Flywheel, Venn, User journey).
 - 18 themes that recolor the whole canvas in one click.
 - Undo and redo (Cmd/Ctrl+Z, Cmd/Ctrl+Shift+Z), personal to each editor.

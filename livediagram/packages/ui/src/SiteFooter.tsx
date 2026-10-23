@@ -54,8 +54,8 @@ const COLUMNS: { title: string; links: (FooterLink | typeof COMMUNITY | typeof G
   {
     title: 'Legal',
     links: [
-      { href: '/help/policies/terms/', label: 'Terms' },
-      { href: '/help/policies/privacy-policy/', label: 'Privacy Policy' },
+      { href: 'https://liveworkspace.app/terms', label: 'Terms' },
+      { href: 'https://liveworkspace.app/privacy', label: 'Privacy Policy' },
       { href: '/help/privacy-and-security/', label: 'Data & Security' },
       // Vulnerability disclosure (docs/specs/002-project-scope/vulnerability-disclosure.md).
       { href: '/help/policies/report-a-vulnerability/', label: 'Report a Vulnerability' },

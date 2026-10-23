@@ -3,7 +3,7 @@
 import { track } from '@/lib/telemetry';
 import { HoverCard, Glyph } from '@livediagram/ui';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
-import { MenuNameSlot, TabNameInBox } from '@/components/plan/menu-name-slot';
+import { TabNameInBox } from './TabNameInBox';
 import { ToolbarMenuCard } from './ToolbarMenuCard';
 
 // The Toolbar layout's menu button (docs/specs/007-editor/toolbar-layout.md), top-left of the canvas where
@@ -55,9 +55,7 @@ export function ToolbarExplorerButton({
       <HoverCard title="Explorer" description="Your documents, folders and teams." disabled={open}>
         {button}
       </HoverCard>
-      {/* A maximised or tab-filling element's name, while its header holds the top row (menu-name-slot). */}
-      {phone || inline ? null : <MenuNameSlot />}
-      {/* Else the open tab's name, in every mode (not on a phone). */}
+      {/* The open tab's name, in every mode (not on a phone). */}
       {phone || inline ? null : <TabNameInBox />}
     </ToolbarMenuCard>
   );

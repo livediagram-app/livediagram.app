@@ -31,7 +31,7 @@ any of it is worth doing.
 
 Every CTA's `href` carries a `via=<source>` query parameter naming **which
 button on which kind of page** it is, for example
-`/new?via=Home.Hero` or `/new?template=kanban&via=Home.Gallery`. The source is
+`/new?via=Home.Hero` or `/new?template=flowchart&via=Home.Gallery`. The source is
 baked into the static HTML at build time, so it works with JavaScript off, for
 a middle-click or open-in-new-tab, and for a copied link.
 

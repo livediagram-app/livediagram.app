@@ -1,6 +1,3 @@
-import { dashboardItemOf, placeOnDashboard } from '@/hooks/plan/dashboard-drop';
-import { planBoardPlacement } from '@/lib/plan-board-placement';
-import { isPlanViewId, planViewSize } from '@livediagram/items';
 import type { Selection } from '@/lib/selection-store';
 import { type Dispatch, type SetStateAction } from 'react';
 import {
@@ -34,12 +31,6 @@ import { getSticker, stickerDropSize } from '@/lib/stickers';
 import { track, titleCaseType } from '@/lib/telemetry';
 import type { AddShapeOptions, PendingDraw } from '@/lib/draw-mode';
 import { useArrowConnect } from '@/app/document/[id]/useArrowConnect';
-import {
-  BLANK_SHEET_CHOICE,
-  isPlacedSheetStart,
-  placeNewSheet,
-  sheetTitleForTab,
-} from '@/lib/sheet-seeds';
 
 type SetState<T> = Dispatch<SetStateAction<T>>;
 
@@ -49,14 +40,6 @@ type SetState<T> = Dispatch<SetStateAction<T>>;
 // sizes it on a drag. The ANNOTATION alone drops at the viewport centre via
 // addBoxed (from useElementHelpers): a fixed 44x44 marker has no box to size,
 // so there is nothing for the drag to decide (docs/specs/008-canvas/canvas-and-palette.md "Placement on add").
-
-// A plan view placed from the palette (docs/specs/026-plan/plan-views.md): its tile's view, at its size.
-function planViewPlacement(view: string | undefined) {
-  return {
-    ...(isPlanViewId(view) ? { planView: { view } } : {}),
-    ...planViewSize(view),
-  };
-}
 
 export function useElementCreation(opts: {
   editsBlocked: boolean;
@@ -87,9 +70,6 @@ export function useElementCreation(opts: {
   // Style memory (docs/specs/008-canvas/quick-style-panel.md) for the user-drawn adds made here: a palette
   // drop and a click-to-connect arrow.
   styleNewElement: <T extends Element>(el: T) => T;
-  // A palette card never lands on the canvas (docs/specs/026-plan/plan-mode.md "The palette"): it goes
-  // into the board column at the point, or nowhere.
-  onPlanCardPlace?: (itemType: string | undefined, canvasX: number, canvasY: number) => void;
 }) {
   const {
     editsBlocked,
@@ -104,7 +84,6 @@ export function useElementCreation(opts: {
     addBoxedAt,
     beginDraw,
     styleNewElement,
-    onPlanCardPlace,
   } = opts;
 
   // Telemetry for these arming handlers fires on commit (see
@@ -116,12 +95,9 @@ export function useElementCreation(opts: {
   // element rather than leaving the factory default in place.
   const addShape = (kind: ShapeKind, opts?: AddShapeOptions) => {
     if (editsBlocked) return;
-    // On a Dashboard a plan view, board or Sheet fills a slot (hooks/plan/dashboard-drop.ts).
-    if (placeOnDashboard(dashboardItemOf(kind, opts?.plan))) return;
     beginDraw({
       type: 'shape',
       kind,
-      ...(opts?.plan ? { plan: opts.plan } : {}),
       ...(opts?.session ? { session: opts.session } : {}),
       ...(opts?.reaction ? { reaction: opts.reaction } : {}),
       ...(opts?.mode ? { mode: opts.mode } : {}),
@@ -295,8 +271,6 @@ export function useElementCreation(opts: {
   // (docs/specs/021-event-storming/event-storming.md); absent for the plain sticky tile / the N shortcut.
   const addSticky = (fill?: string, esKind?: EventStormingNoteKind) => {
     if (editsBlocked) return;
-    // On a Dashboard a sticky is a note in a slot.
-    if (placeOnDashboard(dashboardItemOf('sticky'))) return;
     beginDraw({ type: 'sticky', ...(fill ? { fill } : {}), ...(esKind ? { esKind } : {}) });
   };
 
@@ -329,10 +303,6 @@ export function useElementCreation(opts: {
     // offset through the same snap channel the ghost and the drop follow.
     const insertion = takeInsertionSlot();
     if (editsBlocked) return;
-    if (kind === 'plan-card') {
-      onPlanCardPlace?.(art?.choice, canvasX, canvasY);
-      return;
-    }
     if (insertion) track('Canvas', 'Used', 'InsertBetween');
     const iconId = art?.iconId;
     const stickerId = art?.stickerId;
@@ -426,20 +396,6 @@ export function useElementCreation(opts: {
                 : {}),
               ...(art?.choice && kind === 'estimate'
                 ? { estimateScale: art.choice as EstimateScale }
-                : {}),
-              // A board wide enough for its columns (docs/specs/026-plan/plan-board.md).
-              ...(kind === 'plan-board' ? planBoardPlacement(art?.choice, activeTab.name) : {}),
-              ...(kind === 'plan-view' ? planViewPlacement(art?.choice) : {}),
-              // A Sheet names a new sheet (docs/specs/029-sheets/sheet.md "Placing a sheet").
-              ...(kind === 'plan-sheet'
-                ? {
-                    // Named after its tab (docs/specs/029-sheets/sheet.md "Placing a sheet").
-                    planSheet: placeNewSheet({
-                      title: sheetTitleForTab(activeTab.name, art?.choice),
-                      ...(isPlacedSheetStart(art?.choice) ? { start: art.choice } : {}),
-                      ...(art?.choice === BLANK_SHEET_CHOICE ? { blank: true as const } : {}),
-                    }),
-                  }
                 : {}),
             },
       // Shapes and icons open for typing too; takesTypedLabel filters out the

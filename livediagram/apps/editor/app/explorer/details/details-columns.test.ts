@@ -21,7 +21,7 @@ const doc = (id: string, over: Partial<PaneDocument> = {}): PaneDocument => ({
   ...over,
 });
 const stats = (
-  mode: 'diagram' | 'draw' | 'plan',
+  mode: 'diagram' | 'draw' | 'workshop',
   elements: number,
   comments: number,
   bytes: number,
@@ -108,7 +108,7 @@ describe('sortDetailsEntries', () => {
     const docs = [
       doc('few', { stats: stats('draw', 1, 1, 100) }),
       doc('none', { stats: null }),
-      doc('many', { stats: stats('plan', 9, 7, 9000) }),
+      doc('many', { stats: stats('workshop', 9, 7, 9000) }),
     ];
     expect(sort('comments', 'desc', docs)).toEqual(['many', 'few', 'none']);
     expect(sort('comments', 'asc', docs)).toEqual(['few', 'many', 'none']);

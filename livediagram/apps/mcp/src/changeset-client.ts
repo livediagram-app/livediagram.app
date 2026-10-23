@@ -162,7 +162,6 @@ export function replaceBodyFrom(args: {
   graph?: unknown;
   mermaid?: string;
   template?: string;
-  dashboard?: Record<string, unknown>;
   elements?: unknown[];
   layout?: 'auto' | 'preserve';
   theme?: string;
@@ -175,9 +174,7 @@ export function replaceBodyFrom(args: {
       ? { mermaid: args.mermaid }
       : args.template
         ? { template: args.template }
-        : args.dashboard
-          ? { dashboard: args.dashboard }
-          : { elements: args.elements ?? [] };
+        : { elements: args.elements ?? [] };
   return {
     ...source,
     ...(args.layout ? { layout: args.layout } : {}),

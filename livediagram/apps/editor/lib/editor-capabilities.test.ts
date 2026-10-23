@@ -13,7 +13,7 @@ const shape = (extra: Record<string, unknown> = {}) =>
 describe('resolveEditorCapabilities', () => {
   it('gives an Editor everything', () => {
     const can = resolveEditorCapabilities({ level: 'edit', adderKey: null });
-    expect(can.takePart && can.addContent && can.planCards && can.sheetCells).toBe(true);
+    expect(can.takePart && can.addContent).toBe(true);
     expect(can.remove(shape()) && can.move(shape()) && can.recolour(shape())).toBe(true);
   });
 
@@ -31,7 +31,7 @@ describe('resolveEditorCapabilities', () => {
 
   it('gives a Viewer nothing', () => {
     const can = resolveEditorCapabilities({ level: 'view', adderKey: ME });
-    expect(can.takePart || can.addContent || can.planCards || can.sheetCells).toBe(false);
+    expect(can.takePart || can.addContent).toBe(false);
     expect(
       can.writeText(sticky()) || can.move(sticky()) || can.remove(sticky({ addedBy: ME })),
     ).toBe(false);
@@ -39,7 +39,7 @@ describe('resolveEditorCapabilities', () => {
 
   it('lets a Participant write anywhere, move and recolour stickies, remove only its own', () => {
     const can = resolveEditorCapabilities({ level: 'participate', adderKey: ME });
-    expect(can.takePart && can.addContent && can.planCards && can.sheetCells).toBe(true);
+    expect(can.takePart && can.addContent).toBe(true);
     expect(can.writeText(shape())).toBe(true);
     expect(can.writeText(shape({ locked: true }))).toBe(false);
     expect(can.writeText(shape({ shape: 'session-button', label: 'Poll' }))).toBe(false);

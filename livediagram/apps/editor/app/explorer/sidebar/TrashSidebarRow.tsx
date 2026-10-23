@@ -14,8 +14,8 @@ import { trackSidebar } from './sidebar-telemetry';
 import { SidebarRow } from './SidebarRow';
 
 // The sidebar's Trash row (docs/specs/013-workspace/explorer-structure.md "Dragging to the Trash"): it opens the Trash,
-// and while a document or folder is dragged anywhere on the page it wakes as a target, the way Plan mode's Trash takes
-// a card. Dashed with "Drop to Trash" while the drag is elsewhere; filled with the brand colour, its bin's lid tipped
+// and while a document or folder is dragged anywhere on the page it wakes as a target.
+// Dashed with "Drop to Trash" while the drag is elsewhere; filled with the brand colour, its bin's lid tipped
 // and "Let go to trash it" while the drag is over it; one short bounce as it swallows the drop. A drop goes through
 // the item's own Delete: a document to the Trash (with its Undo toast), a folder through Delete Folder (with its
 // confirmation, the bounce waiting on it: a cancelled folder is not swallowed). Never red: the Trash is undoable. Motion settles within the 250 ms budget; under reduced motion only

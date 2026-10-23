@@ -2,11 +2,8 @@
 // another on the ids they share.
 import diagram from './diagram.mjs';
 import workshop from './workshop.mjs';
-import forms from './forms.mjs';
-import plan from './plan.mjs';
-import sheets from './sheets.mjs';
 
-const AREAS = { diagram, plan, sheets, workshop, forms };
+const AREAS = { diagram, workshop };
 
 export const TASKS = Object.entries(AREAS).flatMap(([area, tasks]) =>
   tasks.map((t) => ({ ...t, area })),
@@ -20,7 +17,7 @@ export function taskById(id) {
   return task;
 }
 
-// `all`, an area name, or ids, comma-separated and mixed ("forms,D1,D2").
+// `all`, an area name, or ids, comma-separated and mixed ("workshop,D1,D2").
 export function selectTasks(spec = 'all') {
   const picked = new Map();
   for (const part of spec

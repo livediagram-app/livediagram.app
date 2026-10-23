@@ -1,4 +1,4 @@
-import { diffToElementOps, ledgerKey, type ElementOp, type Tab } from '@livediagram/document';
+import { diffToElementOps, type ElementOp, type Tab } from '@livediagram/document';
 import type { RoomOp, RoomOutgoing } from '@livediagram/api-schema';
 import { tabBroadcastOps } from './tab-broadcast-ops';
 import { holdOwnWrites, type OwnElementWrites } from './own-element-writes';
@@ -16,10 +16,7 @@ export type SaveRoom = {
 // by then the baseline may hold a peer's newer copy of an element, and diffing our snapshot against it
 // would broadcast our older copy over theirs.
 //
-// The ops the room's ledger records (a Plan board's `board` delta) go FIRST, and the write waits for the
-// room to sequence them: a peer's save that lands after ours then merges them from the ledger. Sent after
-// the write, a peer saving at the same moment wrote before the ledger had them and erased them from D1.
-// Element ops still follow the write, so peers never hold an element D1 has not.
+// The ops follow the write, so peers never hold an element D1 has not.
 //
 // The save's ops, derived at the snapshot, and (with `writes`) the elements they write held from that moment
 // until the room sequences them (own-element-writes.ts), so a peer's update of one of them that the room ordered
@@ -45,19 +42,6 @@ export async function saveTabAndRelay<R>(
   prepared: PreparedTabSave = prepareTabSave(before, tab),
 ): Promise<R> {
   const { ops, release } = prepared;
-  const deltas = ops.filter((op) => ledgerKey(op) !== null);
-  const rest = ops.filter((op) => ledgerKey(op) === null);
-  const live = room();
-  if (live && deltas.length > 0) {
-    const confirmed = await Promise.all(deltas.map((op) => live.sequence(op)));
-    if (confirmed.includes(false)) {
-      console.warn('[autosave] room did not confirm the deltas before the save', {
-        tabId: tab.id,
-        deltas: deltas.length,
-        confirmed: confirmed.filter(Boolean).length,
-      });
-    }
-  }
   let saved: R;
   try {
     saved = await put();
@@ -66,7 +50,7 @@ export async function saveTabAndRelay<R>(
     release?.();
     throw err;
   }
-  relay(rest, room(), release);
+  relay(ops, room(), release);
   return saved;
 }
 

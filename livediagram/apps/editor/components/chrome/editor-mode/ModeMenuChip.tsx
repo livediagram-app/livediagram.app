@@ -1,10 +1,5 @@
 import { useRef, useState } from 'react';
-import {
-  EDITOR_MODES,
-  editorModeLabel,
-  modesBesidePlanRule,
-  nextEditorMode,
-} from '@livediagram/document';
+import { EDITOR_MODES, editorModeLabel, nextEditorMode } from '@livediagram/document';
 import {
   ChevronDownIcon,
   useClickOutside,
@@ -14,7 +9,6 @@ import {
 import { TOOLBAR_TRIGGER_TONE } from '@/components/palette/PaletteDropdown';
 import { EDITOR_MODE_KEYSHORTCUT, type EditorModeSwitchProps } from './editor-mode-copy';
 import { ModeMenu } from './ModeMenu';
-import { useLockedModePick } from './useLockedModePick';
 
 // The mode switch (docs/specs/007-editor/editor-modes.md "The mode switch"): a dropdown chip on a
 // start panel's rail showing the current mode's glyph, its name and a chevron, that opens the mode menu (ModeMenu) DOWNWARD, hanging from the chip's left edge:
@@ -25,15 +19,7 @@ import { useLockedModePick } from './useLockedModePick';
 // Menu button pattern (docs/specs/004-interface-design/menus.md): the chip is a menu button, the rows
 // are `menuitemradio`, and the shared hooks give it the menu keyboard: opening focuses the checked
 // row, choosing or Escape returns focus to the chip, Tab closes it. An outside press closes it.
-export function ModeMenuChip({
-  mode,
-  onChange,
-  lockedReason,
-  newTabIn,
-  crossPlan = false,
-}: EditorModeSwitchProps) {
-  // On a tab that keeps its mode, another mode is a new tab in it, asked first (docs/specs/026-plan/plan-tabs.md).
-  const pickLocked = useLockedModePick({ mode, lockedReason, newTabIn });
+export function ModeMenuChip({ mode, onChange }: EditorModeSwitchProps) {
   const {
     open,
     close,
@@ -47,8 +33,7 @@ export function ModeMenuChip({
   const Icon = EDITOR_MODE_ICONS[mode];
   const label = editorModeLabel(mode);
   const modes = EDITOR_MODES;
-  const besides = crossPlan ? modes : modesBesidePlanRule(mode);
-  const keyLeadsTo = besides.length > 1 ? nextEditorMode(mode, 1, besides) : null;
+  const keyLeadsTo = nextEditorMode(mode, 1, modes);
 
   // The zoom the chip's host draws at (the toolbar or panel UI scale, docs/specs/007-editor/ui-scale.md),
   // read when the menu opens; the menu undoes it, so it opens at design size like every menu
@@ -103,14 +88,7 @@ export function ModeMenuChip({
           hostZoom={hostZoom}
           onChange={onChange}
           onClose={close}
-          crossPlan={crossPlan}
-          lockedReason={lockedReason}
           fill
-          // No new tab to offer (a session that cannot add tabs, such as a tab-scoped link): the
-          // locked rows are inert.
-          {...(newTabIn
-            ? { onLockedPick: (next: EditorModeSwitchProps['mode']) => void pickLocked(next) }
-            : {})}
         />
       ) : null}
     </div>

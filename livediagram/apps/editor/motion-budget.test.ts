@@ -16,8 +16,6 @@ const CANVAS_STYLESHEETS = [
   'app/motion-drawing.css',
   'app/motion-media.css',
   'app/motion-table.css',
-  // A form cover's animated backgrounds (docs/specs/030-forms/forms.md "The form card, top to bottom").
-  'app/form-cover-motion.css',
   // The account and connect pages' entrance and lines (docs/specs/014-identity/auth-and-guest-access.md).
   'app/auth-motion.css',
 ];

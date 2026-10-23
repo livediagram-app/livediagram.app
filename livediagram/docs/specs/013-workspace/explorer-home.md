@@ -116,13 +116,12 @@ The hero speaks to a beginning:
   Enter opens the New Document wizard with the words in its template search (`/new?q=`). Inside its right end,
   **Start Blank** asks which mode, then makes that mode's blank with its start closed (`/new?start=blank`,
   [Start Blank after a mode](../007-editor/new-document-route.md#start-blank-after-a-mode)).
-- **The fanned sheets** show three template previews (Flowchart in front, Mind Map and Kanban Board behind), the
+- **The fanned sheets** show three template previews (Flowchart in front, Mind Map and Retrospective behind), the
   marketing hero's fan, so the page shows what can be made.
 
 Under it, beside the sidebar, Home holds three sections in place of Jump Back In and What Happened:
 
-- **Start Blank**: the four blanks, one per mode (Blank Diagram, Blank Whiteboard, Blank Session, Blank
-  Plan), each a card with its preview, title and one-line description. Activating one makes
+- **Start Blank**: the three blanks, one per mode (Blank Diagram, Blank Whiteboard, Blank Session), each a card with its preview, title and one-line description. Activating one makes
   that blank at once (`/new?template=<kind>`).
 - **Popular Templates**: the first eight non-blank templates of the shared Popular list, as large cards with their
   previews, titles and descriptions; activating one makes it at once. A quiet **Browse All Templates** link in the

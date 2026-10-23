@@ -26,7 +26,7 @@ import { getTheme } from './themes';
 
 // The catalogue's shape (count + default/extra split + no kind
 // drift) is load-bearing across both the picker and the marketing
-// site. docs/specs/019-marketing/marketing-site.md pins "113 templates (11 default + 102 extra)" and
+// site. docs/specs/019-marketing/marketing-site.md pins "82 templates (10 default + 72 extra)" and
 // docs/specs/008-canvas/canvas-and-palette.md catalogues the picker UX. These tests pin the array so
 // either the spec or the catalogue can't silently drift away from
 // the other.
@@ -47,7 +47,6 @@ describe('TEMPLATES catalogue', () => {
     'decision-tree',
     'approval-workflow',
     'data-flow',
-    'kanban',
     'swot',
     'timeline',
     'milestone-timeline',
@@ -118,56 +117,25 @@ describe('TEMPLATES catalogue', () => {
     'journey-doodle',
     'pre-mortem',
     'idea-garden',
-    'blank-plan',
-    'blank-spreadsheet',
     'blank-session',
-    'project-planner',
-    'bug-triage',
-    'team-retro',
-    'weekly-planner',
-    'content-calendar',
-    'hiring-pipeline',
-    'okrs',
-    'product-launch',
-    'feedback-board',
-    'budget-planner',
-    'timesheet',
-    'contact-list',
-    'task-tracker',
-    'invoice',
-    'expense-report',
-    'loan-calculator',
-    'sales-pipeline',
-    'inventory',
-    'guest-list',
-    'grade-book',
-    'habit-tracker',
-    // Form templates (docs/specs/030-forms/forms.md "Starting a form").
-    'blank-form',
-    'bug-report-form',
-    'feedback-form',
-    'feature-request-form',
-    'rsvp-form',
-    'job-application-form',
-    'contact-form',
   ];
 
   // Hidden templates are buildable but never listed, so every user-facing
-  // count (docs/specs/019-marketing/marketing-site.md's "113 templates", the picker grids, the MCP catalogue)
+  // count (docs/specs/019-marketing/marketing-site.md's "82 templates", the picker grids, the MCP catalogue)
   // is over the listed subset. The mechanism is generic; nothing ships
   // hidden today (the docs/specs/007-editor/guided-tour-sample.md guided-tour sample used it until the
   // interactive tour, docs/specs/007-editor/editor-tour.md, superseded it).
   const listed = TEMPLATES.filter((t) => !t.hidden);
 
-  it('lists exactly 113 templates (11 default + 102 extra, matches docs/specs/019-marketing/marketing-site.md and docs/specs/008-canvas/canvas-and-palette.md)', () => {
-    expect(listed).toHaveLength(113);
+  it('lists exactly 82 templates (10 default + 72 extra, matches docs/specs/019-marketing/marketing-site.md and docs/specs/008-canvas/canvas-and-palette.md)', () => {
+    expect(listed).toHaveLength(82);
   });
 
-  it('splits cleanly into 11 default + 102 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
+  it('splits cleanly into 10 default + 72 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
     const defaults = listed.filter((t) => !t.extra);
     const extras = listed.filter((t) => t.extra);
-    expect(defaults).toHaveLength(11);
-    expect(extras).toHaveLength(102);
+    expect(defaults).toHaveLength(10);
+    expect(extras).toHaveLength(72);
   });
 
   it('ships no hidden templates (the flag is generic; docs/specs/007-editor/guided-tour-sample.md was retired by docs/specs/007-editor/editor-tour.md)', () => {
@@ -205,12 +173,8 @@ describe('TEMPLATES catalogue', () => {
       const empty =
         kind === 'blank' ||
         kind === 'whiteboard' ||
-        // An empty Plan tab, which opens on Start Planning.
-        kind === 'blank-plan' ||
         // An empty session tab, in Workshop.
-        kind === 'blank-session' ||
-        // A form template's Plan tab, which the editor starts the form on.
-        kind.endsWith('-form');
+        kind === 'blank-session';
       expect(tab.elements.length).toBeGreaterThan(empty ? -1 : 0);
     }
   });
@@ -296,13 +260,6 @@ describe('templateCanvasOverrides', () => {
 
   it('leaves the blank template to inherit the theme backdrop', () => {
     expect(templateCanvasOverrides('blank')).toEqual({});
-  });
-
-  it('opens the Kanban board in Plan mode on the quiet dot grid (docs/specs/026-plan/plan-mode.md)', () => {
-    expect(templateCanvasOverrides('kanban')).toEqual({
-      backgroundPattern: 'grid',
-      opensIn: 'plan',
-    });
   });
 });
 

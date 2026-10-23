@@ -196,7 +196,7 @@ knowing about when adding another.
 1. User clears the active tab's content (or opens a tab that was
    created empty).
 2. An Editor sees the mode's start in the middle of the canvas (Start Diagramming,
-   Start a Workshop, Start Planning; [Template starts](start-diagramming.md));
+   Start Drawing, Start a Workshop; [Template starts](start-diagramming.md));
    a Participant or Viewer the empty-canvas card ([The empty-canvas hint](#the-empty-canvas-hint)).
 
 ### Document not found
@@ -311,14 +311,14 @@ full library. Component: `apps/editor/app/new/RecentDocumentsCard.tsx`.
 
 ## Choosing a mode
 
-The wizard's first step asks **what you are making**, as the four editor modes, never a template
+The wizard's first step asks **what you are making**, as the three editor modes, never a template
 (`NewDocumentModeStep`, `components/palette/NewDocumentModeStep.tsx`). The templates wait on the canvas, in the
 mode's own start ([Template starts](start-diagramming.md)); the marketing site's gallery is where every template is
 browsed before signing up.
 
 - **Heading:** "What are you making today?"
-- **Four mode cards**, in the order every mode list shows them (`EDITOR_MODES`: Diagram, Draw, Workshop,
-  Plan), in a grid from 640px (`modeCardSpan`; one column on a phone). Every card has the same build and the same
+- **Three mode cards**, in the order every mode list shows them (`EDITOR_MODES`: Diagram, Draw,
+  Workshop), in a grid from 640px (`modeCardSpan`; one column on a phone). Every card has the same build and the same
   height (`auto-rows-fr`), so **Diagram**, first there and where most start, leads as an equal rather than a wide,
   short strip. The cards carry no template names and no "Most Popular" badge.
 - **Each card:** a fan of its own templates' previews on top (`PreviewFan`, the mode's Popular shelf less its blank)
@@ -397,7 +397,7 @@ The **empty-canvas hint** is a calm **card in the middle of the canvas** (`Empty
 active tab has no elements to someone who cannot edit it: an Editor gets the mode's start instead ([Template
 starts](start-diagramming.md)). A **Viewer** reads "Nothing here yet. The owner can build it out, and your view
 updates live."; a **Participant** is pointed at a sticky, text or an image. It shows in Diagram and Workshop; Draw
-(its dock is the hint, [Draw mode](../023-draw-mode/draw-mode.md)) and Plan show none. It offers no action
+(its dock is the hint, [Draw mode](../023-draw-mode/draw-mode.md)) shows none. It offers no action
 of its own: an Editor's empty tab shows its start instead, and **Help** on a desktop. It goes once the
 canvas has content, and a **Close** (×) in its top right corner closes it for good on that tab for this person in
 this browser (a per-browser list of the last 200 closed keys, `livediagram:v2:empty-card-dismissed` in localStorage,
@@ -510,7 +510,7 @@ and the Start Blank in Explorer Home's first-run field ([Explorer Home](../013-w
 It is **not a bypass**: the wizard shows as usual and asks for a mode. The mode chosen (a card, a number key, a card
 clicked before hydration, or **Create**) makes that mode's blank exactly as without the flag, but opens it **with its
 start closed** (`closeStartForBlank`), as Skip's Blank Diagram does, so whoever asked for a blank is not shown
-templates again. Plan's start cannot be closed (it is where a board or sheet is picked), so a Plan blank keeps it.
+templates again.
 
 - Read by `wizardStartsBlank` (`lib/new-document-params.ts`) at the moment of the create: only the exact value
   `blank` counts; any other `start` value, or none, keeps the start.
@@ -585,12 +585,6 @@ document"**; everything else stays put.
 - `DiagramBuildAnimation` stays a bare illustration (no surface of its own),
   so the sso-callback and OAuth consent cards keep composing it inside their
   own card.
-- **The family:** a loading Sheet shows its sibling `SheetBuildAnimation`
-  ([Sheet](../029-sheets/sheet.md#the-sheet-element), "Loading"), the same
-  cursor, timing and colours typing data into a small table, with the same
-  label and bar. The two share `build-animation-kit` (the ease, the cursor,
-  the loop's phase) and the bar is the shared `LoadingSweep`, so they stay
-  alike.
 
 Every create from `/new` honours the URL placement context (the `?folder` /
 `?team` pre-seed): the document files there, not silently at the personal root.
@@ -659,9 +653,9 @@ theme for a new tab.
 - `/new?blank=1` → no wizard; blank document created and editor loads on
   `/document/<id>`.
 - `/new?blank=1&folder=<id>` → the blank document files into that folder.
-- `/new?template=kanban` → no wizard; a Kanban diagram created and the
+- `/new?template=flowchart` → no wizard; a Flowchart diagram created and the
   editor loads on `/document/<id>`.
-- `/new?template=not-a-kind` → the plain wizard.
+- `/new?template=not-a-kind` (a retired one, such as `kanban`, too) → the plain wizard.
 - `/new?template=whiteboard` → no wizard; a document created whose tab opens
   in Draw mode ([Editor modes](editor-modes.md)), the Ink pen in hand.
 - `/new?mode=draw` → the wizard, the Draw card chosen; Create makes a Draw tab.

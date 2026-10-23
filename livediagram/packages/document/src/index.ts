@@ -3,7 +3,6 @@
 // handles document data. See docs/specs/006-document/document-structure.md and
 // docs/specs/008-canvas/canvas-and-palette.md.
 
-import type { FormDefinition } from '@livediagram/forms';
 
 // Live session-tool types used by the `Tab.timer` / `Tab.vote` fields
 // below. Type-only import (erased at build) so the index <-> session
@@ -15,7 +14,6 @@ import type { FormDefinition } from '@livediagram/forms';
 import type { TagColour } from './tag-colours';
 import { isSelfDrawingShape } from './data-shapes';
 import type { TabKind } from './tab-kind';
-import type { DashboardLayout } from './dashboard';
 import type { EditorMode } from './editor-mode';
 import type { TabTimer, TabVote } from './session';
 
@@ -72,9 +70,6 @@ export type {
   LinkCardMeta,
   LinkCardElement,
   VideoElement,
-  PlanCardRef,
-  PlanSheetRef,
-  PlanViewRef,
 } from './element-types';
 
 // Arrow appearance preset types used by ArrowElement's fields below. The
@@ -345,10 +340,6 @@ export type Tab = {
   id: TabId;
   name: string;
   kind?: TabKind;
-  // A Dashboard tab's rows and slots (docs/specs/026-plan/plan-tabs.md "Dashboard tab"), read via `readDashboard`.
-  dashboard?: DashboardLayout;
-  // A Form tab's form (docs/specs/030-forms/forms.md), read via `readForm` from @livediagram/forms.
-  form?: FormDefinition;
   // The tab's editor mode, the same for everyone on it and the mode it opens in
   // (docs/specs/007-editor/editor-modes.md "Where the mode lives"). Absent = 'diagram' (read via
   // `opensInOf`); a switch sets it as one tab edit (withEditorModeSwitched).
@@ -432,19 +423,11 @@ export type Tab = {
 
 // --- Type guards -----------------------------------------------------------
 
-export {
-  isPlanSheetRef,
-  newPlanSheetId,
-  PLAN_SHEET_ID_PATTERN,
-  takesTypedLabel,
-} from './element-types';
+export { takesTypedLabel } from './element-types';
 export {
   DEFAULT_TAB_KIND,
-  PLAN_TAB_KINDS,
-  isPlanTabKind,
   stampTabKind,
   tabKindOf,
-  type PlanTabKind,
   type TabKind,
 } from './tab-kind';
 export * from './accent-edge';
@@ -469,7 +452,6 @@ export * from './editor-mode';
 export * from './tab-stats';
 export * from './wordmark';
 export * from './editor-mode-switch';
-export * from './theme-accent';
 export * from './tab-has-drawing';
 export { migrateWhiteboardKind } from './legacy-whiteboard-tab';
 export { downgradeLinks, upgradeLegacyLinks } from './legacy-links';
@@ -578,16 +560,11 @@ export * from './behaviour-skin';
 export * from './poll-style';
 export * from './comments';
 export * from './collab-index-rows';
-export * from './plan-board-rows';
-export * from './cell-comments';
 export * from './comment-thread';
-export * from './item-comments';
 // The whole-document `livediagram.document` envelope and the per-tab JSON and Markdown export (the editor, the
 // Drive mirror and the CLI's pull files).
 export * from './document-envelope';
 export * from './export-tab-text';
-export * from './export-tab-plan';
-export * from './plan-board-layout';
 export * from './comment-mentions';
 // The shared plain-object guard for untrusted JSON.
 export * from './is-record';
@@ -615,8 +592,6 @@ export * from './chart-types';
 export * from './chart-marks';
 export * from './chart-axis';
 export * from './chart-values';
-export * from './chart-source';
-export * from './plan-only';
 // Per-participant responses (docs/specs/012-collaboration/participant-responses.md) + the collaboration element family
 // (docs/specs/012-collaboration/estimate-card.md to docs/specs/009-elements/chair.md). Both leaf modules, for the factories cycle.
 export * from './responses';
@@ -727,10 +702,8 @@ export { ELEMENT_FIELD_VALUES, fieldValueIssue } from './element-field-values';
 export { buildMindTemplate, MIND_HUES, type MindHue, type MindSpec } from './mind-template';
 export { inlineIconGap, inlineIconMetrics } from './svg-render-inline-icon';
 export { SKETCH_ART_FILTER_ID, SKETCH_FACE_FILTER, svgSketchArtFilter } from './svg-render-sketch';
-export * from './svg-render-plan-sheet';
 export * from './svg-render-table';
-// The marks the editor's Plan tab images draw with (docs/specs/026-plan/plan-tabs.md "Export"): text, line fitting,
-// people and card faces, so its plan view and dashboard pictures read like the boards beside them.
+// The SVG face kit's marks (text, line fitting, colour mixing), for drawings made outside this package.
 export {
   fitLine as svgFitLine,
   mixHex,
@@ -746,8 +719,6 @@ export * from './themes';
 export * from './theme-halves';
 export * from './label-backdrop';
 export * from './theme-presets';
-// A Form tab's look: its theme, finish and font as the builder and the form link's page draw them.
-export * from './form-look';
 
 // Human-readable name for an element's kind ('Square', 'Table', 'Icon', ...),
 // used by selection captions and any surface that names what's selected.
@@ -796,6 +767,7 @@ export * from './stored-tab';
 export { settleTabFields } from './tab-fields';
 export { retiredSchemeOf, migrateRetiredScheme } from './retired-schemes';
 export { dropRetiredPages, isRetiredPagesElement } from './retired-pages';
+export { dropRetiredPlan, isRetiredPlanElement } from './retired-plan';
 
 // Photoshop-style layers (docs/specs/006-document/layers.md): the Layer type used by the Tab field
 // above, band-aware render ordering, and the pure layer operations.
@@ -812,7 +784,6 @@ export * from './element-fingerprint';
 // Per-element deltas for the fields many participants write at once
 // (docs/specs/012-collaboration/collab-race-hardening.md): answers, ideas, checklist ticks, comments.
 export * from './element-deltas';
-export * from './plan-board-patch';
 
 // The room's record of those deltas, merged into each save so D1 keeps what
 // the room saw (docs/specs/012-collaboration/collab-race-hardening.md phase 3).
@@ -851,16 +822,16 @@ export * from './lane-seam-snapping';
 export * from './element-refs';
 export * from './containment';
 export * from './style-keys';
-export * from './plan-palette';
-export * from './plan-presets';
-export * from './dashboard';
-export * from './dashboard-cards';
-export * from './dashboard-card-style';
 export * from './tab-names';
-export { planBoardFitHeight } from './svg-render-plan';
 export { agendaFitHeight } from './svg-render-agenda';
 export * from './session-button-text';
 export { lineChars } from './svg-render-web';
 export * from './drawn-count';
 // The a / an rule for copy built around a name, shared with every package above this one.
-export { indefiniteArticle, withArticle } from '@livediagram/items';
+export { indefiniteArticle, withArticle } from './indefinite-article';
+// Slug ids (element refs, and anything else that mints a readable id from a name).
+export { cutSlug, slugText, uniqueSlug } from './slug';
+// Calendar days as whole day numbers, for month grids.
+export * from './civil-dates';
+// SHA-256 in every runtime, secure context or not.
+export { sha256, sha256Fallback } from './sha256';

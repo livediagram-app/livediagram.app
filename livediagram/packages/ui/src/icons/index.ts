@@ -50,8 +50,6 @@ export {
 export {
   EDITOR_MODE_ICONS,
   FlowchartIcon,
-  PlanCardsIcon,
-  PlanIcon,
   FlipchartIcon,
   MarkerIcon,
 } from './drawing-kinds';

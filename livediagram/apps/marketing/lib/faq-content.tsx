@@ -33,9 +33,9 @@ export type FaqCategory = {
 const ICON = 18;
 // Written out rather than read from @livediagram/templates: this module ships in the FAQ's client bundle, and the
 // catalogue is ~15 KB for one number. faq-content.test.tsx pins it to TEMPLATES.length.
-export const TEMPLATE_COUNT = 113;
+export const TEMPLATE_COUNT = 82;
 // The template categories, pinned to TEMPLATE_CATEGORIES.length by faq-content.test.tsx the same way.
-export const TEMPLATE_CATEGORY_COUNT = 13;
+export const TEMPLATE_CATEGORY_COUNT = 9;
 
 export const FAQ_CATEGORIES: FaqCategory[] = [
   {
@@ -46,7 +46,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'What is livediagram?',
-        a: 'A free, real-time canvas for diagrams, whiteboards, workshops and plans. Every document is a stack of tabs, and each tab can be worked on in four modes: Diagram for shapes and arrows, Draw for freehand whiteboarding, Workshop for running a session with your team, and Plan for boards of cards, spreadsheets and forms. Your team can join any of them live.',
+        a: 'A free, real-time canvas for diagrams, whiteboards and workshops. Every document is a stack of tabs, and each tab can be worked on in three modes: Diagram for shapes and arrows, Draw for freehand whiteboarding, and Workshop for running a session with your team. Your team can join any of them live.',
       },
       {
         q: 'Do I need an account to use livediagram?',
@@ -64,7 +64,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'How do I start my first document?',
-        a: `Press Start drawing and choose what you are making: Diagram, Draw, Workshop or Plan. The document opens straight away on that mode's start, where you begin from a blank canvas or one of ${TEMPLATE_COUNT} templates, and a short tour offers to show you round.`,
+        a: `Press Start drawing and choose what you are making: Diagram, Draw or Workshop. The document opens straight away on that mode's start, where you begin from a blank canvas or one of ${TEMPLATE_COUNT} templates, and a short tour offers to show you round.`,
       },
       {
         q: 'Does it work on my phone or tablet?',
@@ -155,7 +155,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'What can I make with it?',
-        a: 'Flowcharts, mind maps, org charts, retrospectives in five formats, Lean Coffee and town hall Q&A boards, kanban and Plan boards, spreadsheets, roadmaps, story maps, SWOT grids, Business Model Canvases, timelines, Gantt charts, funnels, flywheels, tables, pie, bar and line charts, UML class, sequence and state diagrams, system architecture, event storming, incident postmortems, risk matrices, stakeholder maps, user personas, meeting agendas, Sankey diagrams, and forms and surveys.',
+        a: 'Flowcharts, mind maps, org charts, retrospectives in five formats, Lean Coffee and town hall Q&A boards, roadmaps, story maps, SWOT grids, Business Model Canvases, timelines, Gantt charts, funnels, flywheels, tables, pie, bar and line charts, UML class, sequence and state diagrams, system architecture, event storming, incident postmortems, risk matrices, stakeholder maps, user personas, meeting agendas and Sankey diagrams.',
       },
       {
         q: 'How many templates and themes are there?',
@@ -177,8 +177,8 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
           "Yes. Every tab has a finish: Flexible (the everyday look), Professional (crisp and print-ready), Sketch (wobbly pencil lines and handwriting) or Marker (bold felt-tip, like a flip chart). Switch it from the tab's style, or set it on one element, and nothing about the diagram changes underneath. Ready-made looks set the theme, finish, font and canvas pattern in one click. See choosing a finish.",
       },
       {
-        q: 'What are the four modes?',
-        a: 'Diagram is for structured shapes, connectors and layouts. Draw is a freehand whiteboard with pressure-sensitive markers. Workshop runs a session with your team, with timers, dot votes, polls and reveals to hand. Plan turns a tab into boards of cards with columns, WIP limits and quick add, beside spreadsheets with formulas. A mode belongs to the tab, so everyone on it works in the same one, and each tab of a document can have its own.',
+        q: 'What are the three modes?',
+        a: 'Diagram is for structured shapes, connectors and layouts. Draw is a freehand whiteboard with pressure-sensitive markers. Workshop runs a session with your team, with timers, dot votes, polls and reveals to hand. A mode belongs to the tab, so everyone on it works in the same one, and each tab of a document can have its own.',
       },
       {
         q: 'Can I organise a big document?',
@@ -198,18 +198,17 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
           'Yes. Press Tab to add a child and Enter to add a sibling, so a map grows without the mouse. Pick a Tree, Leftward, Balanced, Downward, Upward or Bubble layout, tidy it in one click, or open Edit Outline to rewrite the whole map as an indented list. See mind maps.',
       },
       {
-        q: 'Can I plan projects with it?',
+        q: 'Can I plan projects, keep a spreadsheet or run a form in it?',
         a: (
           <>
-            Yes. Switch a tab to Plan for boards of cards with columns, swimlanes and WIP limits.
-            Card types carry your own fields, the same card can sit on two boards, and charts of the
-            cards (a Gantt chart, due and start calendars, counts by person or priority) can fill a
-            tab of their own. A Dashboard puts boards, Sheets, charts and figures side by side. See{' '}
-            <a href="/help/canvas/plan-mode/">Plan mode</a>.
+            Not any more. Boards of cards, spreadsheets, dashboards and forms now live in{' '}
+            <a href="https://liveplanner.app">liveplanner</a>, a sister app on the same free
+            liveworkspace account. livediagram still has roadmaps, timelines and Gantt charts to
+            draw a plan out.
           </>
         ),
         aText:
-          'Yes. Switch a tab to Plan for boards of cards with columns, swimlanes and WIP limits. Card types carry your own fields, the same card can sit on two boards, and charts of the cards (a Gantt chart, due and start calendars, counts by person or priority) can fill a tab of their own. A Dashboard puts boards, Sheets, charts and figures side by side. See Plan mode.',
+          'Not any more. Boards of cards, spreadsheets, dashboards and forms now live in liveplanner, a sister app on the same free liveworkspace account. livediagram still has roadmaps, timelines and Gantt charts to draw a plan out.',
       },
       {
         q: 'Can I add pictures?',
@@ -228,12 +227,12 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         a: (
           <>
             Yes. Add a table and paste cells straight in from a spreadsheet, or place a pie, bar or
-            line chart, a progress bar, a rating or a timeline. For real formulas, put a Sheet on a
-            Plan tab. See <a href="/help/palette/tools/data-elements/">data elements</a>.
+            line chart, a progress bar, a rating or a timeline. See{' '}
+            <a href="/help/palette/tools/data-elements/">data elements</a>.
           </>
         ),
         aText:
-          'Yes. Add a table and paste cells straight in from a spreadsheet, or place a pie, bar or line chart, a progress bar, a rating or a timeline. For real formulas, put a Sheet on a Plan tab. See data elements.',
+          'Yes. Add a table and paste cells straight in from a spreadsheet, or place a pie, bar or line chart, a progress bar, a rating or a timeline. See data elements.',
       },
       {
         q: 'Can I animate things?',
@@ -295,36 +294,6 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         ),
         aText:
           'Yes. Switch a tab to Draw for a plain whiteboard: three pressure-sensitive markers, text, an eraser and shapes, on a plain, dotted or grid board in light or dark. With a stylus, a resting palm never leaves a mark. See Draw mode.',
-      },
-      {
-        q: 'Is there a spreadsheet?',
-        a: (
-          <>
-            Yes. Put a Sheet on a Plan tab: cells with over 150 functions, number formats, sort,
-            filter and freeze, edited live by everyone on the tab. Formulas can read the cards on
-            the board, or list the cards as rows that stay linked both ways. Select some cells to
-            chart them in a bar, line or pie chart that sits in the Sheet over its cells. CSV files
-            come in and go out, and twelve templates start you off, from a Budget Planner and an
-            Invoice to a Loan Calculator and a Habit Tracker. See{' '}
-            <a href="/help/canvas/plan-mode/sheets/">Sheets</a>.
-          </>
-        ),
-        aText:
-          'Yes. Put a Sheet on a Plan tab: cells with over 150 functions, number formats, sort, filter and freeze, edited live by everyone on the tab. Formulas can read the cards on the board, or list the cards as rows that stay linked both ways. Select some cells to chart them in a bar, line or pie chart that sits in the Sheet over its cells. CSV files come in and go out, and twelve templates start you off, from a Budget Planner and an Invoice to a Loan Calculator and a Habit Tracker. See Sheets.',
-      },
-      {
-        q: 'Can I make a form or survey?',
-        a: (
-          <>
-            Yes. In Plan mode, start a form from a starter such as Feedback, Bug Report or Event
-            RSVP, or a blank one, and build it in place. Share its link and anyone can fill it in
-            without an account; every response lands as a card on a board or a row in a Sheet, so
-            the answers turn straight into work. See{' '}
-            <a href="/help/canvas/plan-mode/forms/">forms</a>.
-          </>
-        ),
-        aText:
-          'Yes. In Plan mode, start a form from a starter such as Feedback, Bug Report or Event RSVP, or a blank one, and build it in place. Share its link and anyone can fill it in without an account; every response lands as a card on a board or a row in a Sheet, so the answers turn straight into work. See forms.',
       },
       {
         q: 'Can I present from it?',
@@ -404,14 +373,14 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'How do I keep up with what changed?',
         a: (
           <>
-            Your Inbox gathers the actions, Plan cards and comment threads waiting on you across
+            Your Inbox gathers the actions and comment threads waiting on you across
             every document, and Home shows what other people did while you were away. Once you sign
             in, emails can tell you too, and you choose which in Settings. See{' '}
             <a href="/help/explorer/activity/">the Inbox</a>.
           </>
         ),
         aText:
-          'Your Inbox gathers the actions, Plan cards and comment threads waiting on you across every document, and Home shows what other people did while you were away. Once you sign in, emails can tell you too, and you choose which in Settings. See the Inbox.',
+          'Your Inbox gathers the actions and comment threads waiting on you across every document, and Home shows what other people did while you were away. Once you sign in, emails can tell you too, and you choose which in Settings. See the Inbox.',
       },
       {
         q: 'Is it good for running workshops and retros?',
@@ -549,7 +518,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'Can I export my work?',
-        a: 'Yes. Export a diagram or whiteboard tab as PNG, SVG, PDF, Mermaid, Markdown, Excalidraw or a portable JSON file, and a Plan board or a Sheet as CSV. Hidden layers stay out of image exports unless you switch them on.',
+        a: 'Yes. Export a diagram or whiteboard tab as PNG, SVG, PDF, Mermaid, Markdown, Excalidraw or a portable JSON file. Hidden layers stay out of image exports unless you switch them on.',
       },
       {
         q: 'Does it work with Mermaid?',
@@ -557,7 +526,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Can I move my boards over from another tool?',
-        a: 'Yes. Import draw.io diagrams (a tab per page, a whole folder at a time if you like), Excalidraw scenes (a .excalidraw file, or a PNG or SVG exported with the scene embedded) and Microsoft Whiteboard boards, and they land as editable content. Markdown and JSON import too, and a CSV file dropped on a Plan tab becomes a Sheet.',
+        a: 'Yes. Import draw.io diagrams (a tab per page, a whole folder at a time if you like), Excalidraw scenes (a .excalidraw file, or a PNG or SVG exported with the scene embedded) and Microsoft Whiteboard boards, and they land as editable content. Markdown and JSON import too.',
       },
       {
         q: 'Can I turn a photo of sticky notes into a board?',
@@ -584,7 +553,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
             no third-party analytics. We do record anonymous, first-party usage (which features get
             used, never your content or name) and show it openly on our{' '}
             <a href="/telemetry">telemetry page</a>. See the{' '}
-            <a href="/help/policies/privacy-policy/">privacy policy</a> for the details.
+            <a href="https://liveworkspace.app/privacy">privacy policy</a> for the details.
           </>
         ),
         aText:

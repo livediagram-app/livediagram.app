@@ -3,7 +3,6 @@ import { describe, expect, it } from 'vitest';
 import { headlineCase } from '@livediagram/api-schema';
 import { EVENT_STORMING_NOTES } from '@livediagram/document';
 import { PALETTE_CATEGORIES } from './palette-categories';
-import { CARD_TILE_GLYPH_PX } from './palette-plan-tiles';
 import {
   PALETTE_TILES,
   TILE_GLYPH_PX,
@@ -153,21 +152,6 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   'collab-navigate': 15,
   // The Event Storming notation (docs/specs/021-event-storming/event-storming.md): one tile per note kind.
   'event-storming': 8,
-  // Plan mode's Boards and Cards (docs/specs/026-plan/plan-mode.md "The palette"): nine boards, one
-  // card per item type.
-  'plan-boards': 10,
-  'plan-cards': 5,
-  // A board header's widgets (docs/specs/026-plan/board-widgets.md): one tile per widget kind.
-  // Plan views (docs/specs/026-plan/plan-views.md): ten metrics, five visualisations.
-  'plan-metrics': 10,
-  'plan-visualisations': 6,
-  'plan-sheets': 1,
-  'dashboard-layout': 5,
-  // A tile per Board or Sheet tab of the document, made as the palette opens (dashboardTabTiles).
-  'dashboard-tabs': 0,
-  // Borrowed tiles, listed by the Plan layout (palette-layouts.ts), so no tile of their own.
-  'plan-content': 0,
-  'plan-tools': 0,
   // Diagram's Build as two, listed by the Diagram layout (docs/specs/010-palette/build-category.md).
   diagrams: 0,
   layout: 0,
@@ -248,11 +232,8 @@ describe('palette tile glyph size', () => {
     (t) => [t.id, renderToStaticMarkup(<>{t.icon}</>)] as const,
   ).filter(([, svg]) => svg.includes('lvd-glyph'));
 
-  // Plan card tiles are the one larger step: a card picture with its type's glyph on the face.
   it.each(glyphTiles)('%s renders at the tile step', (id, svg) => {
-    expect(Number(/width="([\d.]+)"/.exec(svg)![1])).toBe(
-      id.startsWith('plan:card-') ? CARD_TILE_GLYPH_PX : TILE_GLYPH_PX,
-    );
+    expect(Number(/width="([\d.]+)"/.exec(svg)![1]), id).toBe(TILE_GLYPH_PX);
   });
 });
 

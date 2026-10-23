@@ -16,10 +16,10 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ apps/community           liveworkspace.app/api/community: every app's listings, own D1
 │  ├─ apps/media               liveworkspace.app/api/media: every app's images, own D1 and R2
 │  └─ apps/telemetry           liveworkspace.app/api/telemetry: every product's events, own D1
-├─ livediagram/                imported with full history (main at 82e6ed79a)
+├─ livediagram/                imported with full history (main at 82e6ed79a); Diagram, Draw, Workshop
 │  ├─ apps/                    live, api, mcp, cli, marketing, help, community, router
 │  └─ packages/                @livediagram/*
-├─ liveplanner/                imported with full history (main at d5c8bed2)
+├─ liveplanner/                imported with full history (main at d5c8bed2); Plan
 │  ├─ apps/                    the same set minus community
 │  └─ packages/                @liveplanner/*
 ├─ livedocuments/              forked from livediagram in-tree (Pages mode only)
@@ -31,18 +31,23 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 ```
 
 livedocuments (first called livepages) was forked from livediagram `main` at `82e6ed79a` on 2026-10-22
-and cut down to Pages mode (livedocuments/plans/0001-livedocuments-fork.md); Phase 8 takes Pages out of livediagram.
+and cut down to Pages mode (livedocuments/plans/0001-livedocuments-fork.md); Phase 8 took Pages out of livediagram.
+
+livediagram is now Diagram, Draw and Workshop. Plan (boards of cards, Sheets, dashboards and forms) lives in
+liveplanner, and livediagram has no `items`, `sheets`, `forms`, `plan-art` or `page-background` packages any more
+(livediagram/plans/0001-remove-plan-mode.md). A stored Plan tab opens in livediagram as an ordinary Diagram tab.
 
 livedesign was forked from livepages (`livepages-phase-2` at `1eb2877a5`) on 2026-10-22 and cut down to
 logo and wireframe pages, plus the photo pages ported from livediagram. What it makes is a design, never
 a document. Logos and wireframes then left livedocuments, which keeps articles, slides and infographics.
 
 liveplanner was forked from livediagram on 2026-10-21, so today most of it is a renamed copy.
-I compared each file with the product name ignored, and these counts are from that:
+I compared each file with the product name ignored, and these counts are from that (taken before Plan left
+livediagram, so `packages/items` and `packages/sheets` are liveplanner's alone now):
 
 |                                                                                                  | identical | changed | only in one |
 | ------------------------------------------------------------------------------------------------ | --------- | ------- | ----------- |
-| `apps/editor` (the editor)                                                                         | 2,718     | 1,248   | ~1,080      |
+| `apps/editor` (the editor)                                                                       | 2,718     | 1,248   | ~1,080      |
 | `packages/document`                                                                              | 474       | 169     | 110         |
 | `packages/ui`                                                                                    | 168       | 42      | 23          |
 | `packages/templates`                                                                             | 142       | 95      | 21          |
@@ -65,13 +70,12 @@ liveworkspace/
 │  ├─ auth-client
 │  ├─ api-client, telemetry-client, render-png, source-ast, icons
 │  ├─ document, document-views, edit-operations, agent-verbs, api-schema
-│  ├─ items, sheets, forms, plan-art, templates, template-previews
+│  ├─ templates, template-previews
 │  ├─ ui                           design system: buttons, menus, dialogs, tokens
 │  ├─ workbench                    NEW: the editor shell lifted out of apps/editor:
 │  │                               tabs, explorer, panels, chrome, split view, start
 │  │                               screen, toasts, providers. A product hands it the tab
 │  │                               kinds it offers.
-│  ├─ mode-plan                    NEW: Board, Sheet, Dashboard and Form tab kinds
 │  └─ api-core                     NEW: the shared API routes (documents, sharing,
 │                                  teams, tokens, trash) that each product's API Worker mounts
 ├─ liveworkspace/apps/
@@ -81,20 +85,22 @@ liveworkspace/
 │  ├─ media                        every product's uploaded images (docs/media.md there)
 │  └─ home (later)                 one place for all your documents across products
 ├─ livediagram/
-│  ├─ apps/editor                    thin: workbench + mode-draw (+ mode-plan for now)
+│  ├─ apps/editor                  thin: workbench + mode-draw (Diagram, Draw and Workshop)
 │  ├─ apps/api                     api-core + the diagram-only routes
 │  ├─ apps/…                       marketing, help, mcp, cli, community: product-specific
 │  └─ packages/                    mode-draw (canvas tabs), diagram, diagram-lint, sticky-*
 └─ liveplanner/
-   ├─ apps/editor                    thin: workbench + mode-plan
+   ├─ apps/editor                  thin: workbench + mode-plan
    ├─ apps/api                     api-core + the planner-only routes
-   └─ apps/…                       marketing, help, mcp, cli
+   ├─ apps/…                       marketing, help, mcp, cli
+   └─ packages/                    mode-plan (Board, Sheet, Dashboard and Form tab kinds), items,
+                                   sheets, forms, plan-art
 ```
 
 Tabs are the example you gave. The tab strip, tab state, opening, reordering and splitting all
 live in `workbench`. What's _inside_ a tab is a tab kind that a mode registers: a canvas from
-`mode-draw`, a board or sheet from `mode-plan`. livediagram registers both, as it does today.
-liveplanner registers only Plan's.
+`mode-draw`, a board or sheet from `mode-plan`. livediagram registers only `mode-draw`, and liveplanner
+only Plan's.
 
 Each product keeps its own deployables, Cloudflare account, databases and branding. Shared
 packages take the product's name, URLs and feature flags as configuration rather than
@@ -107,8 +113,8 @@ Each step is its own PR, and both products build and pass their tests after ever
 1. **Move the identical packages** (`api-client`, `telemetry-client`, `render-png`, `source-ast`
    and the config packages) to `packages/` as `@liveworkspace/*`, then repoint imports in both
    products. This is mechanical and checked by typecheck.
-2. **Small-drift packages** (`items`, `forms`, `plan-art`, `sheets`, `diagram-lint`,
-   `document-views`, `icons`): settle each diff. For each one, decide whether it's real product
+2. **Small-drift packages** (`diagram-lint`, `document-views`, `icons`; `items`, `forms`, `plan-art` and
+   `sheets` are liveplanner's alone now, so they stay in liveplanner): settle each diff. For each one, decide whether it's real product
    behaviour, which becomes config, or just one side being behind, where the newer side wins.
    Then move.
 3. **The big ones** (`document`, `templates`, `ui`, `api-schema`, `edit-operations`,

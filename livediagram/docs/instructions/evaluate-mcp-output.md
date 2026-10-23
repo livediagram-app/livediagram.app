@@ -8,12 +8,12 @@ finding earns a fix only when it recurs; the same benchmark then shows whether t
 
 The kit lives in `apps/mcp/eval/`:
 
-- `bench/tasks/*.mjs`: the task bank, one file per area (`D` diagrams, `P` plan, `S` sheets, `F`
-  workshop, `W` draw, `Q` forms). Each task is a prompt as a user would type it, its checks, an optional `after`
+- `bench/tasks/*.mjs`: the task bank, one file per area (`diagram.mjs`: `D` diagrams and `W` draw;
+  `workshop.mjs`: `F` workshop). Each task is a prompt as a user would type it, its checks, an optional `after`
   (an edit, run as a second turn of the same session), an optional `setup` (what the prompt takes for granted,
   made in the run's empty library) and an optional `gallery` (pictures from `bench/fixtures/` the user has uploaded,
   seeded into the run's image gallery before the round starts, under the names the prompt's user would have). Ids are stable: rounds compare on the ids they share.
-- `apps/mcp/eval/bench/checks.mjs`: the readers checks are written with (boxes, arrows, cards, card types, sheet cells, forms,
+- `apps/mcp/eval/bench/checks.mjs`: the readers checks are written with (boxes, arrows, shapes, words, links,
   the reply), each answering yes or no, with a reason on a no.
 - `apps/mcp/eval/bench/run.mjs`: runs a round. `apps/mcp/eval/bench/score.mjs`: scores one, offline. `apps/mcp/eval/bench/summary.mjs`: the report.
 - `mcp-call.mjs`: calls one tool by hand, to replay a call from a transcript.
@@ -33,10 +33,10 @@ The kit lives in `apps/mcp/eval/`:
 ## Run a round
 
 6. Run from `apps/mcp/eval`: `node bench/run.mjs --round <name> --tasks all --models haiku,sonnet,opus --repeat 2
---concurrency 6`. `--tasks` takes `all`, an area (`forms`) or ids (`Q1,Q4`), mixed. A whole-bank round of 258 runs
-   takes about an hour.
+--concurrency 6`. `--tasks` takes `all`, an area (`workshop`) or ids (`D1,F2`), mixed. A whole-bank round of these settings is 22 tasks, three models,
+   twice: 132 runs.
 7. Each run gets a token minted into local D1 for a throwaway owner, so it starts in an empty library and never sees
-   another run's documents ("our Bugs board" finds its own). The tokens are kept in `runs/<round>/tokens.json` so a
+   another run's documents ("our retro" finds its own). The tokens are kept in `runs/<round>/tokens.json` so a
    run's library can be read again.
 8. Each run is `claude -p` from an empty temp directory outside the repo, with `--strict-mcp-config`, `--tools ""`,
    `--setting-sources ""`, a short chat-app system prompt (with a fixed date) and `ENABLE_TOOL_SEARCH=false`, so the
@@ -117,11 +117,6 @@ The kit lives in `apps/mcp/eval/`:
   blaming the assistant's pace.
 - Links point at livediagram.app when the local server has no public host set; a check on a link compares its code,
   never its host.
-- A form's response lands through `try_form`: a check reads the "Preview: ..." card with `list_items` (or the row
-  with `read_sheet`) to see each answer where `read_form`'s `goesTo` and `column` say it goes. On a published form a
-  preview counts as a response, so a check on the response count allows for it. Judge a try from its own result
-  (`call.result`: `made`, `where`, `title`), never from the final snapshot: models check the card, then delete it as
-  the tool suggests, so a snapshot check fails a run that did everything right (Q6 and Q7, 2026-10-16).
 - A lint finding that names a template's own design (its colours, its shape) invites the agent to undo it. Check
   `templates.test.ts` stays clean after a lint change, and lint a fresh template of each kind the round touched.
 - Measure a new layout pass at 2,000 boxes and 2,000 arrows before the PR: a per-arrow scan of the tab looked free on

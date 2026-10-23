@@ -290,8 +290,8 @@ strip's other buttons (one open at a time, a second press or a press outside clo
 
 ### Where it shows
 
-- **Diagram mode only.** Draw, Workshop and Plan arrange their content another way
-  (strokes, a session board, boards), so the button is not there; the command palette still
+- **Diagram mode only.** Draw and Workshop arrange their content another way
+  (strokes, a session board), so the button is not there; the command palette still
   reaches the tidiers.
 - **On a phone too.** Diagram mode's phone cluster is one row with room for it: Undo and Redo, the
   Tidy Up, Layers and Theme strip, then Fit. There is no hover on touch, so a tap on a tile is the

@@ -24,10 +24,3 @@ export function withTileActionPreamble<T extends Record<string, unknown>>(
   }
   return out as T;
 }
-
-// Whether picking this tile restores a maximised Plan element first (docs/specs/026-plan/plan-board.md "The palette
-// follows what fills the screen"): every tile but a card (which lands on the maximised board) and cancelling a draw.
-export function restoresMaximised(action: string, args: readonly unknown[]): boolean {
-  if (action === 'cancelDraw') return false;
-  return !(action === 'addShape' && args[0] === 'plan-card');
-}

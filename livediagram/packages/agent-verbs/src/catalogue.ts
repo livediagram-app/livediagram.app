@@ -45,11 +45,6 @@ import {
   tabRm,
 } from './verbs/lifecycle';
 import { tabLint, tabLs, tabView } from './verbs/tab';
-import { itemVerbs } from './verbs/item';
-import { boardVerbs } from './verbs/board';
-import { cardTypeVerbs } from './verbs/card-type';
-import { sheetVerbs } from './verbs/sheet';
-import { formVerbs } from './verbs/form';
 import { linkInit, linkLs, linkStatus, sync } from './verbs/link';
 import { workbenchOpen, workbenchPair } from './verbs/workbench';
 import { folderCreate, folderLs } from './verbs/folder';
@@ -71,11 +66,6 @@ export const VERBS: readonly Verb[] = [
   tabRename,
   tabRm,
   ...elementVerbs,
-  ...itemVerbs,
-  ...boardVerbs,
-  ...cardTypeVerbs,
-  ...sheetVerbs,
-  ...formVerbs,
   changesetApply,
   changesetLs,
   changesetShow,
@@ -127,11 +117,6 @@ export const RESOURCES: readonly { name: string; alias?: string; summary: string
   { name: 'folder', summary: 'Folders: their paths and ids, and a new one' },
   { name: 'tab', summary: 'Tabs: their views, their lint, and what changed' },
   { name: 'element', alias: 'el', summary: 'Elements: one edit operation a call' },
-  { name: 'item', summary: 'Items: the work Plan boards show' },
-  { name: 'board', summary: 'Plan boards: add one' },
-  { name: 'type', summary: 'Card types and their fields' },
-  { name: 'sheet', summary: 'Sheets: their cells by A1, rows and columns' },
-  { name: 'form', summary: 'Forms: build, read and publish one' },
   { name: 'changeset', summary: 'Changesets: what changed, by whom, and undoing one' },
   { name: 'comment', summary: 'Comment threads' },
   { name: 'presence', summary: 'What the agent is doing, shown on a tab' },

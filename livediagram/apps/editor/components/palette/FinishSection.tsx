@@ -10,7 +10,7 @@ import type { ReactNode } from 'react';
 import { FINISHES, isFinish, type Finish } from '@livediagram/document';
 import { Glyph, LinkIcon } from '@livediagram/ui';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
-import { OptionRows, type OptionRow } from '@/components/plan/OptionRows';
+import { OptionRows, type OptionRow } from '@/components/primitives/OptionRows';
 import { FinishMenuGlyph } from '@/components/palette/context-menu-icons';
 
 export const FINISH_LABELS: Record<Finish, string> = {
@@ -67,7 +67,7 @@ const FINISH_DETAILS: Record<Finish, string> = {
   marker: 'Bold felt-tip',
 };
 
-// The Plan-style option list (docs/specs/026-plan/plan-board.md "Option lists"): one full-width row per choice.
+// The option list (OptionRows): one full-width row per choice.
 const FINISH_ROWS: OptionRow[] = [
   {
     id: FOLLOW_TAB,

@@ -12,8 +12,8 @@ import { EYEBROW } from '@/components/eyebrow';
 // "Browse every template" (docs/specs/019-marketing/marketing-site.md), anchored #templates for the hero's search: every template the
 // editor ships, laid out as the editor's template step lays them out
 // (docs/specs/008-canvas/canvas-and-palette.md "Templates"). ONE shelf is open as a four-across
-// carousel (TemplateCarousel), Blank Slate on load (every blank and nothing else: each mode's and Blank
-// Spreadsheet); every other category sits folded underneath as a card (CategoryTiles) that opens it
+// carousel (TemplateCarousel), Blank Slate on load (every blank and nothing else: one a
+// mode); every other category sits folded underneath as a card (CategoryTiles) that opens it
 // in the open one's place, the shelf it replaces folding back (Blank Slate leading the folds). It only
 // browses: the search is the hero's (components/HeroSearch.tsx), which finds across every shelf. Every
 // card is a link that creates that document straight away and opens it in the editor (TemplateCard).

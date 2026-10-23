@@ -11,17 +11,10 @@
 // dispatch can answer "is this id offline?" cheaply (./offline-ids, which keeps
 // every tab of the browser in step).
 
-import type { SheetJson } from '@livediagram/sheets';
 import type { LiveDoc, DocumentSummary, RecordedIntent, TabSummary } from '@livediagram/api-schema';
 import { utcDay } from '@livediagram/api-schema';
 import { drawnCount, migrateStoredTab, stampTabKind } from '@livediagram/document';
 import type { Tab } from '@livediagram/document';
-import {
-  legacyCatalogue,
-  readItemTypeCatalogue,
-  type Item,
-  type ItemTypeCatalogue,
-} from '@livediagram/items';
 import { DocumentTrashedError } from '../document-trashed';
 import {
   offlineBackend,
@@ -70,16 +63,6 @@ export type OfflineDocumentRecord = {
   // This Browser's opens of the document (docs/specs/013-workspace/explorer-home.md "Opens"),
   // for Home's Jump Back In; see ./offline-opens.ts. Optional: a record never opened has none.
   opens?: StoredLocalOpens;
-  // The document's item store (docs/specs/026-plan/items.md "Offline documents"): its items, the
-  // store's revision and the next item key. Optional: a record without them has an empty store.
-  items?: Item[];
-  itemsRev?: number;
-  itemsNextKey?: number;
-  // The type catalogue (docs/specs/026-plan/item-types.md), absent or null for the default types.
-  itemTypes?: ItemTypeCatalogue | null;
-  // The document's sheet store (docs/specs/029-sheets/sheet-store.md "Offline documents"): every sheet, cells
-  // included. Optional: a record without it has none.
-  sheets?: SheetJson[];
 };
 
 // A local document's opens, counted like the server's (docs/specs/013-workspace/explorer-home.md
@@ -127,10 +110,6 @@ export function recordToDocument(rec: OfflineDocumentRecord): LiveDoc {
     name: rec.name,
     tabs: rec.tabs.map((t, i) => tabToSummary(t, rec.id, i, rec.savedAt)),
     presentation: rec.presentation ?? null,
-    itemTypes: legacyCatalogue(
-      readItemTypeCatalogue(rec.itemTypes ?? null),
-      (rec.items?.length ?? 0) > 0,
-    ),
     shareable: false,
     shareCode: null,
     folderId: rec.folderId,
@@ -330,15 +309,7 @@ export async function offlineLoadTab(id: string, tabId: string): Promise<Tab | n
 // record of uses starts with the day and the moment it was made, as a first open would
 // (docs/specs/013-workspace/explorer-home.md "Making a document"; offline-opens.ts).
 export async function offlineCreateDocument(
-  // `itemTypes`: the type catalogue it starts with (a Plan template's brought types), already validated.
-  // `sheets`: the sheets it starts with (a Plan template's, docs/specs/029-sheets/sheet-store.md "Template starts").
-  d: {
-    id: string;
-    name: string;
-    tabs?: Tab[];
-    itemTypes?: ItemTypeCatalogue | null;
-    sheets?: SheetJson[];
-  },
+  d: { id: string; name: string; tabs?: Tab[] },
   now: number,
   extra: {
     createdAt?: number;
@@ -354,8 +325,6 @@ export async function offlineCreateDocument(
     createdAt: extra.createdAt ?? now,
     savedAt: extra.savedAt ?? now,
     tabs: d.tabs ?? [],
-    ...(d.itemTypes ? { itemTypes: d.itemTypes } : {}),
-    ...(d.sheets?.length ? { sheets: d.sheets } : {}),
     ...(extra.markUsed === false ? {} : { opens: { days: [utcDay(now)], lastOpenedAt: now } }),
   };
   await offlineBackend().put(rec);
@@ -369,16 +338,6 @@ export async function offlineSaveDocumentMeta(
   now: number,
 ): Promise<void> {
   await writeLive(id, (rec) => applyMeta(rec, patch, now));
-}
-
-// An offline document's type catalogue (docs/specs/026-plan/item-types.md "Storage and sync"), already
-// validated by the caller; null goes back to the default types.
-export async function offlineSaveItemTypes(
-  id: string,
-  itemTypes: ItemTypeCatalogue | null,
-  now: number,
-): Promise<void> {
-  await writeLive(id, (rec) => ({ ...rec, itemTypes, savedAt: now }));
 }
 
 // Personal-folder placement for an offline document (docs/specs/013-workspace/folders.md). Folders are

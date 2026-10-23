@@ -4,7 +4,7 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Comments and Presence for Agents',
   description:
-    'Let an agent or script reply to, resolve and reopen comment threads, comment on Plan cards, and show what it is doing with a status line and focus ring.',
+    'Let an agent or script reply to, resolve and reopen comment threads, and show what it is doing with a status line and focus ring.',
   path: '/help/developers/agent-comments-presence/',
 });
 
@@ -110,24 +110,6 @@ curl -X POST https://livediagram.app/api/documents/$DOC/tabs/$TAB/comments/$COMM
 - Arrows cannot carry a thread; every boxed element can.
 
 Everyone with the document open sees each change arrive at once, exactly as if you had typed it. See [Comments](/help/collaboration/comments/) for how threads look in the editor.
-
-## Comments on Plan Cards
-
-A Plan card (an **item**) has one thread of its own, so its endpoints name the item rather than a comment. Take the item's id from `GET /documents/$DOC/items`:
-
-```bash
-# Add to the card's thread (a resolved thread reopens)
-curl -X POST https://livediagram.app/api/documents/$DOC/items/$ITEM/comments \
-  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{ "text": "Blocked on the payments review" }'
-
-curl -X POST https://livediagram.app/api/documents/$DOC/items/$ITEM/comments/resolve \
-  -H "Authorization: Bearer $TOKEN"
-curl -X POST https://livediagram.app/api/documents/$DOC/items/$ITEM/comments/reopen \
-  -H "Authorization: Bearer $TOKEN"
-```
-
-Each answers with the card as stored and the item store's new revision (`{ "item": …, "rev": 42 }`); adding a comment also returns its `commentId`. Resolving a resolved thread, or reopening an open one, answers `204`. A card holds up to 200 comments; past that, adding answers `413 comments_full`. `DELETE …/items/$ITEM/comments/$COMMENT` deletes your own comment, and someone with edit access can delete any. See [Cards](/help/canvas/plan-mode/cards/) for the card's comment panel, and [Plan Items, Sheets and Images](/help/developers/working-with-documents/plan-sheets-images/) for the rest of the item API.
 
 ## Show What Your Agent Is Doing
 

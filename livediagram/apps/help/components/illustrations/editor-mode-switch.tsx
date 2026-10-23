@@ -2,7 +2,7 @@
 // (docs/specs/018-help/help-app.md): the mode switch at the top of an empty tab's start with its menu open,
 // the list of modes and the preview of one (chrome/editor-mode/ModeMenu.tsx), and Draw mode's dock
 // across the top of the canvas (canvas/whiteboard/WhiteboardDock.tsx). Real labels throughout: the
-// four modes, a mode's description and tools, ⇧D in the preview, the dock's tools and their keys.
+// three modes, a mode's description and tools, ⇧D in the preview, the dock's tools and their keys.
 
 import type { ReactNode } from 'react';
 import { Scene, Label } from './primitives';
@@ -13,11 +13,10 @@ const MODES: { mode: Mode; tile: string; mark: string }[] = [
   { mode: 'Diagram', tile: 'fill-sky-100', mark: 'stroke-sky-700' },
   { mode: 'Draw', tile: 'fill-orange-100', mark: 'stroke-orange-700' },
   { mode: 'Workshop', tile: 'fill-violet-100', mark: 'stroke-violet-700' },
-  { mode: 'Plan', tile: 'fill-emerald-100', mark: 'stroke-emerald-700' },
 ];
 
 /** The mode switch leading Start Diagramming's rail (start/StartModeSwitch.tsx), its menu open: the
- *  list of the four modes (the current one checked; the tab is empty, so Plan is a plain switch) and
+ *  list of the three modes (the current one checked) and
  *  the preview of the one under the pointer, Draw: its picture, name with ⇧D, description and tools. */
 export function ModeSwitchScene() {
   const mx = 13;
@@ -25,7 +24,8 @@ export function ModeSwitchScene() {
   const listW = 118;
   const pw = 210;
   const rowH = 28;
-  const menuH = MODES.length * rowH + 12;
+  // Tall enough for the preview's tools, which run below the shorter list.
+  const menuH = 136;
   const shown = 1;
   const px = mx + listW;
   return (

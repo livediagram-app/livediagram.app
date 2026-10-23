@@ -330,10 +330,6 @@ are escaped as `\;` and `\}` too.
 | `checklist`                       | `done=<done>/<total>`                                                                                                        |        |
 | `sankey`                          | `flows=<sankeyFlows.length> nodes=<distinct from / to names, trimmed and space-collapsed>`                                   |        |
 | `layer-stack`, `pyramid`, `cycle` | `rows=` then each row's `label` (`?` when it has none) as `cellText`, joined `\|`; then ` variant=<pyramidVariant>` when set |        |
-| `plan-board`                      | `columns=` then each column's `name` (`?` when it has none) as `cellText`, joined `\|`                                       |        |
-| `plan-card`                       | `item=<planCard.itemId as cellText>`, `item=none` when absent or empty                                                       |        |
-| `plan-view`                       | `view=<planView.view as cellText>`, `view=none` when absent                                                                  |        |
-| `plan-sheet`                      | `sheet=<planSheet.sheetId as cellText>`, `sheet=none` when absent or empty                                                   |        |
 
 The table line prints its label first when it has one. Every text a summary prints from the document goes through
 `cellText` (JSON escapes, `|` escaped), so a newline in a column name can never forge a line of the view.

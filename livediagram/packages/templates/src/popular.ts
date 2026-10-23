@@ -8,20 +8,19 @@ import { TEMPLATES, type TemplateKind } from './templates';
 type PopularChoice = 'all' | EditorMode;
 
 export const POPULAR_BY_MODE: Readonly<Record<PopularChoice, readonly TemplateKind[]>> = {
-  // The four blanks lead, one per mode in mode order (EDITOR_MODES), so the picker needs no separate blank card.
+  // The three blanks lead, one per mode in mode order (EDITOR_MODES), so the picker needs no separate blank card.
   all: [
     'blank',
     'whiteboard',
     'blank-session',
-    'blank-plan',
     'mindmap',
     'flowchart',
-    'kanban',
     'sailboat',
-    'budget-planner',
     'orgchart',
     'sketchnote',
     'gantt',
+    'retrospective',
+    'timeline',
   ],
   diagram: [
     'blank',
@@ -39,15 +38,6 @@ export const POPULAR_BY_MODE: Readonly<Record<PopularChoice, readonly TemplateKi
     'comic-strip',
     'idea-garden',
     'rich-picture',
-  ],
-  plan: [
-    'blank-plan',
-    'project-planner',
-    'kanban',
-    'budget-planner',
-    'team-retro',
-    'bug-triage',
-    'invoice',
   ],
   workshop: [
     'blank-session',

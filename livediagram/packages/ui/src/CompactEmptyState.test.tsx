@@ -89,12 +89,12 @@ describe('CompactEmptyState on a themed surface', () => {
     render(
       <CompactEmptyState
         icon={null}
-        title="No cards"
+        title="No templates"
         description="Line"
         ink={{ text: 'rgb(1, 2, 3)', muted: 'rgb(4, 5, 6)' }}
       />,
     );
-    expect(screen.getByText('No cards').style.color).toBe('rgb(1, 2, 3)');
+    expect(screen.getByText('No templates').style.color).toBe('rgb(1, 2, 3)');
     expect(screen.getByText('Line').style.color).toBe('rgb(4, 5, 6)');
   });
 });

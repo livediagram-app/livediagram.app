@@ -1,14 +1,13 @@
 import type { Metadata } from 'next';
 import { Redirect } from '@/components/Redirect';
 
-// The privacy policy moved into the new Policies category. This stub keeps the
-// old help URL alive (it redirects there) but is noindex so search engines
-// consolidate on the canonical article rather than this thin redirect.
-const NEW_URL = '/help/policies/privacy-policy/';
+// The privacy policy covers every liveworkspace app, livediagram included, so it lives on liveworkspace.app. This
+// stub keeps the old help URL alive (it redirects there) but is noindex so search engines consolidate on that page.
+const NEW_URL = 'https://liveworkspace.app/privacy';
 
 export const metadata: Metadata = {
   title: 'Privacy Policy',
-  description: 'The livediagram privacy policy now lives under Policies.',
+  description: 'The privacy policy for livediagram is liveworkspace\'s, on liveworkspace.app.',
   robots: { index: false, follow: true },
   alternates: { canonical: NEW_URL },
 };

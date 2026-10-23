@@ -52,7 +52,6 @@ the motions that do not move it, like a boundary's.
 | Mode     | Where                                   |
 | -------- | --------------------------------------- |
 | Diagram  | **Build**: Stack, after Frame           |
-| Plan     | none                                    |
 | Workshop | none (Search still finds and places it) |
 
 A new stack is a row, 360 × 160, empty, drawn as a faint dashed outline so it reads as a target.

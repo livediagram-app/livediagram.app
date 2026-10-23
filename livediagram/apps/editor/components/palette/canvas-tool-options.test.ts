@@ -9,7 +9,6 @@ describe('buildCanvasToolOptions', () => {
 
   it('never offers Avatar as a way in, in any mode', () => {
     expect(ids()).not.toContain('avatar');
-    expect(ids({ isMobile: false, planMode: true })).not.toContain('avatar');
     expect(ids({ isMobile: true, currentTool: 'laser' })).not.toContain('avatar');
     expect(ids()).toEqual(expect.arrayContaining(['select', 'pan', 'laser', 'spotlight']));
   });

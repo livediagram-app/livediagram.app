@@ -12,8 +12,7 @@ lets you jump the viewport anywhere with a tap or drag.
   device-local persisted position; its default corner is **bottom-left**.
 - **When.** Shown when it's **enabled** (`showMinimap` preference, **on by
   default**), the tab has **at least 4 elements**, **on desktop** (hidden on
-  mobile, where the canvas is already edge-to-edge), and **in Diagram, Draw and Workshop** only: a
-  Plan board is a list rather than a space to find your way round, so Plan does not show the Map. It stacks with any other panel docked bottom-left rather than hiding
+  mobile, where the canvas is already edge-to-edge), and **in Diagram, Draw and Workshop**. It stacks with any other panel docked bottom-left rather than hiding
   behind it (the docking layout reflows them).
 - **Enable / disable + reset.** The map's preferences (**Enable Map**, **Dim
   Outside the View**, **Map Size**) live in the **Settings** dialog

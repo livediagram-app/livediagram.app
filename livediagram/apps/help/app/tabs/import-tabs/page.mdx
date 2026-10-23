@@ -22,7 +22,7 @@ export const metadata = helpMetadata({
 
 Open the tab's menu (the **⋯** button on the active tab, or right-click the tab) and choose **Import**. You can also run **Import…** from the [command palette](/help/search-panel/the-search-panel/command-palette/). The **Import to Tab** dialog opens with a card per format:
 
-- **JSON** reads a livediagram tab export (a `.livediagram-tab.json` file) and restores its elements exactly, the highest-fidelity round trip. Plan cards in the file are added to this document, along with any card types it doesn't have yet; cards the document already holds are left as they are, so importing a tab back into its own document never doubles them.
+- **JSON** reads a livediagram tab export (a `.livediagram-tab.json` file) and restores its elements exactly, the highest-fidelity round trip.
 - **Mermaid** reads a [Mermaid](https://mermaid.js.org/) flowchart (`graph` / `flowchart`), state diagram (`stateDiagram`), or ER diagram (`erDiagram`, its relationships drawn with crow's-foot ends at each table, and an entity's alias in square brackets, like `BOOK_AUTHOR[Book author]`, used as its title) and lays it out on the canvas, keeping every connection, its style (dashed, thick, two-headed, headless), `click` links, and any `subgraph` or composite-state blocks, which come in as frames drawn around their nodes. Other Mermaid diagram types (sequence, gantt, pie and so on) aren't supported.
 - **Markdown** turns a Markdown outline into a themed tree diagram, the same conversion as [Markdown Import](/help/tools/markdown-import/), so you can draft structure in text and bring it onto the canvas.
 - **Excalidraw** reads a `.excalidraw` scene (what [excalidraw.com](https://excalidraw.com/)'s Save to disk produces) and keeps its shapes, labels, arrow connections, freehand drawings, sticky notes, frames, and images. In [Draw mode](/help/canvas/draw-mode/) it comes in as pen marks; in any other mode as diagram elements. It also reads a PNG or SVG exported from Excalidraw with **Embed scene** switched on (a `.excalidraw.png` or `.excalidraw.svg` file), which carries the whole scene inside the picture. The hand-drawn look flattens to clean strokes, and groups come apart into separate items.
@@ -33,8 +33,6 @@ Open the tab's menu (the **⋯** button on the active tab, or right-click the ta
 </Figure>
 
 Each format card opens the same panel: **paste or write** the content into the box and press **Import**, or press **Import a file instead** to pick one from disk. Either way the tab updates once it parses. **All formats** at the top of the panel takes you back to the cards.
-
-On a [Dashboard](/help/canvas/plan-mode/dashboards/) tab, Import takes a Dashboard's own JSON export only (**Export** › **JSON** on a Dashboard tab): it opens straight at JSON and replaces the dashboard's rows, slots and what they hold, one step to undo. Anything else (a file that isn't JSON, or a tab that isn't a Dashboard) is turned away with a message, and the dashboard is left as it was. A slot that showed one of the document's other tabs reads as deleted when the file comes from another document; clear it or fill it again.
 
 ## Paste from Excalidraw
 

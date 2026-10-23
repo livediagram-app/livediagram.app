@@ -10,7 +10,6 @@
 // the structure still lives in one authoritative place (this string is guidance,
 // not a second validator).
 import { z } from 'zod';
-import { METRIC_KINDS, PLAN_VISUALISATIONS } from '@livediagram/items';
 import {
   FIND_QUERY_MAX_LENGTH,
   REF_INPUT_MAX_LENGTH,
@@ -274,7 +273,7 @@ tabs in a create_document call.
 - Give every node an id and a short, clear label.
 - A node/edge diagram given as "graph" is laid out in the template look (sizes,
   elbows, side exits, loops round the outside, title, key). For an artefact that
-  is not a graph (kanban, SWOT, gantt, retrospective, ...) list_templates has
+  is not a graph (SWOT, roadmap, gantt, retrospective, ...) list_templates has
   hand-tuned scaffolds to pass as "template", then personalise with update_document.
 `;
 }
@@ -301,29 +300,10 @@ use a unique "id" per element, make nodes "shape" elements (a labelled box) NOT
 "text" (text is only for titles/captions), prefer pinned arrows (node -> node),
 and the theme owns colours (a sticky keeps its own). Stickies, tables, code blocks,
 entities, lanes and charts carry content fields, documented on each tool's
-element argument. For a standard artefact that is not a node/edge graph (kanban, swot,
+element argument. For a standard artefact that is not a node/edge graph (swot, roadmap,
 gantt, retrospective, ...) list_templates has hand-tuned scaffolds: pass its kind as
 "template" on create_document / add_tab, then fill in real labels with
-update_document. search_icons finds icon ids for "iconId" and a graph node's "icon". Plan boards hold cards (items), which have their own tools:
-list_items reads a document's boards, their columns by name, its cards and its
-card types; change_items adds, edits and moves cards, naming columns, card
-types, fields and people as the board shows them; add_board puts a board on a
-tab in Plan (a preset or columns by name) and change_board changes one (title, columns,
-the card types it shows); change_card_types adds and edits card types and their
-custom fields. A board shows only the card types it takes. A Plan template (kanban, project-planner, bug-triage)
-makes a document with boards ready to fill. Sheets (spreadsheets on a tab) have
-theirs: list_sheets lists a document's sheets, read_sheet reads one's cells by A1
-(inputs, worked-out values and what they show), change_sheet sets, clears and
-formats cells, inserts and deletes rows and columns, sorts, freezes and renames,
-and sets dropdowns, checkboxes and other validation rules and conditional formats,
-and add_sheet puts a new Sheet on a tab in Plan, blank or from rows or CSV text.
-Form tabs hold forms (like Google Forms): questions anyone fills in from a link,
-without an account, each response a card on a Board tab or a row in a sheet.
-add_form makes one (from a starter or questions, in a document of its own when
-no documentId is given), change_form changes it, read_form reads it with its
-link, state and anything stopping it being published, share_form publishes,
-closes or deletes its link, and try_form fills it in as a test response. Asked for a form, survey, sign-up or RSVP, make a
-form; its responses are read with list_items (cards) or read_sheet (rows).`;
+update_document. search_icons finds icon ids for "iconId" and a graph node's "icon".`;
 
 // --- Tool input shapes (ZodRawShape). Element arrays are permissive; isValidTab
 // is the real guard, so there's no second schema to drift. ---
@@ -341,67 +321,12 @@ const layoutField = z
 // (@livediagram/templates) rather than a z.enum, so a new template is one
 // catalogue entry with no schema churn; list_templates is the discovery
 // surface.
-// A new Dashboard tab (docs/specs/026-plan/plan-agents.md "Making a dashboard"), everything named as people name it.
-const dashboardField = z
-  .object({
-    tabs: z
-      .union([z.array(z.string()), z.literal('every')])
-      .optional()
-      .describe(
-        'The Board and Sheet tabs it shows, by name (in create_document, other tabs of the same call), or "every"; ' +
-          'two to a row.',
-      ),
-    metrics: z
-      .array(z.enum(METRIC_KINDS))
-      .optional()
-      .describe(
-        'Metric tiles, four to a row: count (cards), progress (percent done), people, types, priorities, due ' +
-          '(overdue and due soon), unassigned, points (estimates), top-voted, stale.',
-      ),
-    charts: z
-      .array(
-        z.object({
-          view: z
-            .enum(PLAN_VISUALISATIONS)
-            .exclude(['status-mix'])
-            .describe(
-              'gantt, calendar (by due date), start-calendar, workload (cards by a field), priority-matrix ' +
-                '(priority by status), search.',
-            ),
-          groupBy: z
-            .string()
-            .optional()
-            .describe(
-              'workload only: assignee (default), type, priority, status, or a field by name.',
-            ),
-          types: z.array(z.string()).optional().describe('Only these card types, by name.'),
-        }),
-      )
-      .optional()
-      .describe('Charts, two to a row; a Gantt takes a row of its own.'),
-    notes: z
-      .array(
-        z.object({
-          title: z.string().describe('The note’s heading.'),
-          text: z.string().describe('Its text; a line each.'),
-        }),
-      )
-      .optional()
-      .describe('Notes, three to a row.'),
-  })
-  .optional()
-  .describe(
-    'Make the tab a Plan Dashboard instead of a canvas: rows of the tabs it shows, then metrics, Gantts, other ' +
-      'charts and notes, each drawn live from the cards; up to 12 rows. Give it in place of graph, mermaid, ' +
-      'elements or template.',
-  );
-
 const templateField = z
   .string()
   .optional()
   .describe(
     'Start from a hand-tuned template scaffold instead of providing elements: a template ' +
-      'kind from list_templates (e.g. "kanban", "flowchart", "gantt"). The server ' +
+      'kind from list_templates (e.g. "swot", "flowchart", "gantt"). The server ' +
       'materialises its curated layout ("layout" is ignored for a template tab) and paints ' +
       'it with the chosen theme. Personalise the placeholder labels afterwards with ' +
       'update_document mode "ops". Provide template OR elements, not both.',
@@ -720,7 +645,6 @@ export const createDocumentTab = z.object({
   mermaid: mermaidField,
   elements: elementArray.optional(),
   template: templateField,
-  dashboard: dashboardField,
   theme: z
     .string()
     .optional()
@@ -770,7 +694,6 @@ export const addTabShape = {
   mermaid: mermaidField,
   elements: elementArray.optional(),
   template: templateField,
-  dashboard: dashboardField,
   layout: layoutField,
   theme: themeField,
   finish: finishField,
@@ -799,10 +722,6 @@ export const updateDocumentShape = {
   elements: elementArray
     .optional()
     .describe(`Replace mode: the full new element list. ${ELEMENT_SCHEMA_HINT}`),
-  dashboard: dashboardField.describe(
-    'Replace mode on a Dashboard tab: its tabs, metrics, charts and notes rebuilt whole (the tab keeps its id ' +
-      'and name). Only a Dashboard tab takes one.',
-  ),
   layout: layoutField,
   ops: z
     .array(

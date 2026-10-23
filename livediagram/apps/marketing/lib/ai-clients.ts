@@ -241,7 +241,7 @@ export const AI_CLIENTS: readonly AiClient[] = [
 type StarterPrompt = { title: string; prompt: string };
 
 // Each maps to a shipped MCP tool (docs/specs/015-api/mcp-server.md §4): create_document with a graph,
-// a Plan template, add_sheet, add_form, find + read_document.
+// a template, find + read_document.
 export const STARTER_PROMPTS: readonly StarterPrompt[] = [
   {
     title: 'Map a codebase',
@@ -256,17 +256,17 @@ export const STARTER_PROMPTS: readonly StarterPrompt[] = [
   {
     title: 'Plan a launch',
     prompt:
-      'Create a livediagram kanban board for launching our new website, with cards for design, copy, build, testing and go-live, and share a link I can send the team.',
+      'Create a livediagram Gantt chart for launching our new website, with bars for design, copy, build, testing and go-live, and share a link I can send the team.',
   },
   {
-    title: 'Track a budget',
+    title: 'Brainstorm an offsite',
     prompt:
-      'Make a livediagram sheet for our team offsite budget, with a row per cost, a column for estimate and actual, and totals at the bottom.',
+      'Make a livediagram mind map of ideas for our team offsite, with a branch each for the venue, the agenda, the budget and the activities.',
   },
   {
-    title: 'Collect feedback',
+    title: 'Run a retro',
     prompt:
-      'Create a livediagram feedback form for our workshop, with a rating, what worked and what to change, and share its link so I can send it round.',
+      'Set up a livediagram retrospective for our sprint, with what went well, what to improve and actions, and share a participant link so the team can add their notes.',
   },
   {
     title: 'Find and improve',

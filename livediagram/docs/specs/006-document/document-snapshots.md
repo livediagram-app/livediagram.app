@@ -33,9 +33,7 @@ On a read of either delivery path:
 - **Fresh** (`thumb_rendered_at >= saved_at`): stream the stored R2
   bytes. No render, no element load.
 - **Stale** (or never rendered, or the object is missing): render the
-  first tab (a Form tab as its form, the picture respondents see on its
-  tab's look: `formArt` from `@livediagram/plan-art`, as the MCP preview
-  draws it, since a form is not an element) with `renderElementsToSvg` (`@livediagram/document`, the same
+  first tab with `renderElementsToSvg` (`@livediagram/document`, the same
   DOM-free renderer the MCP worker uses), write it to R2, stamp
   `thumb_rendered_at`, and return it. Icon elements render their real
   glyph (line art + Technology brand tiles) via the
@@ -51,10 +49,7 @@ On a read of either delivery path:
 This is **render-on-read**, not render-on-save, on purpose:
 
 - **Covers every write path.** `saved_at` is bumped by every tab write
-  (editor, collaborators, MCP server, API token), and by every card write
-  and Sheet write that lands (a board draws its cards and a Sheet its
-  cells, which live in their own tables: in the statement each already
-  runs on the document row, never moving the time back), so the snapshot
+  (editor, collaborators, MCP server, API token), so the snapshot
   invalidates uniformly regardless of who edited — no client upload to
   keep in sync.
 - **No wasted renders.** A document is only rendered when it has been
@@ -122,9 +117,7 @@ document renders lazily.
   a copy carries its source's. A count not known (`null`) reads as not
   empty, so the row asks as before. The editor's own row follows its saves:
   after an autosave it says `empty` from the first tab when that tab is
-  loaded, and keeps what the list said when it is not. A Form tab stored
-  before its form counted keeps a count of 0 until its next write (any
-  builder edit), which stamps it afresh; no migration reads the bodies.
+  loaded, and keeps what the list said when it is not.
 - **The count is filled lazily, never by a bulk backfill.** The migration
   only adds the column. A tab stored before it starts unknown and gets its
   count from its next write, or from the thumbnail route: having parsed the

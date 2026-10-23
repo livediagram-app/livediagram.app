@@ -16,7 +16,7 @@ import { WHAT_HAPPENED_EVENT_TYPES, type WhatHappenedRow } from '../home/what-ha
 import type { Env } from '../types';
 import { VISIBLE_DOCUMENTS_CTES } from './document-visibility';
 import { firstTabCountSql, isEmptyCount } from './tabs';
-import { DAY_MS } from '@livediagram/items';
+import { DAY_MS } from '../home/local-day';
 
 // Where each document lives and what its thumbnail needs. A shared document's team and folder
 // are the owner's filing, so they are not disclosed.

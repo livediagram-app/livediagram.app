@@ -71,12 +71,11 @@ const LOCATION_STEP_AND_QUICK_START_UI = new Set([
 // agents' page tools, the Pages help articles, a logo page's wordmark controls (tracking, weight, case, arc) and Tidy
 // Up, a page's title-bar buttons, a page added to a deck as a slide, the agents' Pages view, and the Pages export
 // formats (every page as PNG, SVG, PDF or GIF, the animated GIF and the logo kit). The Slide Deck, which presents a
-// canvas or a Plan board, carries on, and so does an animated background: a form's cover still takes one, under the
-// same two Tab·Changed tokens (FORM_COVER_TAB_TYPES).
+// canvas, carries on. A form's cover took the animated background over until Plan mode left too, so those two
+// Tab·Changed tokens are retired with it.
 const PAGES_MODE_EDITOR_TYPES = new Set(['ModePages', 'LeavePagesConfirmed']);
 const PAGES_MODE_TAB_TYPE =
   /^(OpensInPages|Page[A-Z]|Pages[A-Z]|Articles?[A-Z]|SlidePage|LogoPage|Wireframe[A-Z])/;
-const FORM_COVER_TAB_TYPES = new Set(['PageBackgroundAnimated', 'PageBackgroundAnimatedSpeed']);
 const PAGES_MODE_ELEMENT_TYPE =
   /^(Article[A-Z]|TabWindow|MirrorCopy$|MirrorTwin$|Shapes(United|Subtracted|Intersected|Excluded)$|Text(Tracking|Weight|Case|Arc)$|StrokesTidiedUp$)/;
 const PAGES_MODE_UI_TYPE =
@@ -106,7 +105,7 @@ const PAGES_MODE_HELP_IDS = new Set([
 function isPagesModeEvent(category: string, action: string, type: string | null): boolean {
   const t = type ?? '';
   if (category === 'Editor') return PAGES_MODE_EDITOR_TYPES.has(t);
-  if (category === 'Tab') return PAGES_MODE_TAB_TYPE.test(t) && !FORM_COVER_TAB_TYPES.has(t);
+  if (category === 'Tab') return PAGES_MODE_TAB_TYPE.test(t);
   if (category === 'Element') return PAGES_MODE_ELEMENT_TYPE.test(t);
   if (category === 'Document') return action === 'Exported' && PAGES_MODE_EXPORT_TYPE.test(t);
   if (category === 'Agent') return action === 'Viewed' && t === 'Pages';
@@ -120,9 +119,51 @@ function isPagesModeEvent(category: string, action: string, type: string | null)
   return false;
 }
 
+// Plan mode (removed 2026-10-23; its boards, cards, Sheets, dashboards and forms moved to liveplanner.app): every
+// Plan, Sheet, Form and Item event, switching a tab to Plan or opening it there, a card or a board added to a deck as
+// a slide, a card opened from the Inbox, the Plan and Forms tours and their Settings rows, the form-response email
+// switch, the agents' item, board, card-type, sheet and form tools, and the Plan help articles.
+const PLAN_MODE_CATEGORIES = new Set(['Plan', 'Sheet', 'Form', 'Item']);
+const PLAN_MODE_EDITOR_TYPES = new Set(['ModePlan']);
+const PLAN_MODE_TAB_TYPES = new Set(['OpensInPlan']);
+const PLAN_MODE_UI_TYPE =
+  /^(PlanTour|FormTour|BoardsTour|SheetsTour|DashboardsTour|ItemSlide$|BoardSlide$|NotifyFormResponses)/;
+const PLAN_MODE_AGENT_TYPE =
+  /^(Mcp\|(ListItems|ChangeItems|AddBoard|ChangeBoard|ChangeCardTypes|ListSheets|ReadSheet|ChangeSheet|AddSheet|ReadForm|AddForm|ChangeForm|ShareForm|TryForm)|Cli\|(Item|Board|Sheet|Form|Type)[A-Z]\w*)$/;
+const PLAN_MODE_HELP_IDS = new Set([
+  'plan-mode',
+  'items',
+  'boards',
+  'cards',
+  'card-types',
+  'plan-tour',
+  'forms',
+  'dashboards',
+  'sheets',
+  'sheet-functions',
+  'visualisations',
+  'plan-sheets-images',
+]);
+
+function isPlanModeEvent(category: string, action: string, type: string | null): boolean {
+  const t = type ?? '';
+  if (PLAN_MODE_CATEGORIES.has(category)) return true;
+  if (category === 'Editor') return PLAN_MODE_EDITOR_TYPES.has(t);
+  if (category === 'Tab') return PLAN_MODE_TAB_TYPES.has(t);
+  if (category === 'Action') return action === 'Linked' && t === 'Board';
+  if (category === 'Help') return PLAN_MODE_HELP_IDS.has(t);
+  if (category === 'Mcp' || category === 'Cli') return PLAN_MODE_AGENT_TYPE.test(`${category}|${t}`);
+  if (category === 'UI') {
+    if (action === 'Opened' && PLAN_MODE_HELP_IDS.has(t)) return true;
+    return PLAN_MODE_UI_TYPE.test(t);
+  }
+  return false;
+}
+
 export function isRetiredEvent(category: string, action: string, type: string | null): boolean {
   if (category === 'Document' && action === 'Reverted') return true;
   if (isPagesModeEvent(category, action, type)) return true;
+  if (isPlanModeEvent(category, action, type)) return true;
   if (category === 'UI' && PALETTE_FAVOURITES_UI.has(`${action}|${type ?? ''}`)) return true;
   if (category === 'UI' && EXPERIMENTAL_SETTINGS_UI.has(`${action}|${type ?? ''}`)) return true;
   if (category === 'UI' && LOCATION_STEP_AND_QUICK_START_UI.has(`${action}|${type ?? ''}`))

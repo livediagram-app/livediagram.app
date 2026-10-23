@@ -1,6 +1,5 @@
-// The strategy and systems batch (docs/specs/008-canvas/canvas-and-palette.md "Templates"; the companion Sheets in
-// docs/specs/026-plan/plan-templates.md "How a template with tabs is made"): each drawing agrees with the data it is
-// built from, the companion Sheets are made on every path, and the layouts keep what they hold where it belongs.
+// The strategy and systems batch (docs/specs/008-canvas/canvas-and-palette.md "Templates"): each drawing agrees with
+// the data it is built from, and the layouts keep what they hold where it belongs.
 import { describe, expect, it } from 'vitest';
 import type { ArrowElement, Element, ShapeElement, StickyElement } from '@livediagram/document';
 import {
@@ -10,14 +9,10 @@ import {
   driverTree,
   threatRating,
   valueStreamTotals,
-} from '@livediagram/sheets';
-import { buildTemplate, templateTabs } from './build-template';
-import { buildTemplateTabs } from './template-tab';
-import { materialiseTemplateSheets } from './template-sheets';
-import { templateCanvasOverrides } from './template-canvas-overrides';
+} from './template-analysis-data';
+import { buildTemplate } from './build-template';
 import { RATING_COLOURS } from './template-builders-threat-model';
 import { NORTH_STAR_GOAL } from './template-builders-metric-tree';
-import { TEMPLATE_COMPANION_SHEETS } from './template-companions';
 import { WARDLEY_COMPONENTS, WARDLEY_NEEDS } from './template-wardley-data';
 import { BLUEPRINT_CARDS, BLUEPRINT_MARKS } from './template-service-blueprint-data';
 
@@ -31,46 +26,6 @@ const pinnedIds = (a: ArrowElement) => [
   a.from.kind === 'pinned' ? a.from.elementId : null,
   a.to.kind === 'pinned' ? a.to.elementId : null,
 ];
-
-describe('companion Sheets', () => {
-  const companions = Object.keys(
-    TEMPLATE_COMPANION_SHEETS,
-  ) as (keyof typeof TEMPLATE_COMPANION_SHEETS)[];
-
-  it.each(companions)('%s makes its drawing, then a Sheet tab of its own canvas', (kind) => {
-    const c = TEMPLATE_COMPANION_SHEETS[kind];
-    const defs = templateTabs(kind);
-    expect(defs.map((d) => d.name)).toEqual([c.diagram, c.sheet]);
-    expect(defs[0]!.ownCanvas).toBeUndefined();
-    expect(defs[1]!.ownCanvas).toBe(true);
-    const [sheet] = defs[1]!.build(0, 0) as ShapeElement[];
-    expect(sheet).toMatchObject({
-      shape: 'plan-sheet',
-      planSheet: { start: c.start, fillTab: true },
-    });
-    expect(defs[1]!.tab!(['a', 'b'])).toEqual({ kind: 'sheet', opensIn: 'plan' });
-  });
-
-  it.each(companions)('%s: an agent’s create makes both tabs, the sheet beside them', (kind) => {
-    let n = 0;
-    const tabs = buildTemplateTabs({ id: 't1', name: 'Model' }, kind, () => `t${++n + 1}`);
-    expect(tabs).toHaveLength(2);
-    const [drawing, sheetTab] = tabs;
-    // The drawing keeps the template's canvas; the Sheet tab takes none of it.
-    expect(drawing!.layers).toEqual(templateCanvasOverrides(kind).layers);
-    expect(drawing!.backgroundPattern).toBe('graph');
-    expect(sheetTab).toMatchObject({
-      kind: 'sheet',
-      opensIn: 'plan',
-      name: TEMPLATE_COMPANION_SHEETS[kind].sheet,
-    });
-    expect(sheetTab!.layers).toBeUndefined();
-    expect(sheetTab!.backgroundPattern).not.toBe('graph');
-    const { sheets } = materialiseTemplateSheets(tabs, Date.UTC(2026, 9, 8));
-    expect(sheets).toHaveLength(1);
-    expect(sheets[0]!.tabId).toBe(sheetTab!.id);
-  });
-});
 
 describe('the Threat model', () => {
   const els = buildTemplate('threat-model', 0, 0);

@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { dashboardOpen } from '@/hooks/plan/dashboard-drop';
 import { ShapeGlyph } from '@/components/primitives/shape-icon';
 import { usePaletteDragPreview, usePaletteDragSnap } from '@/lib/palette-drag-preview';
 import { overFloatingPanel } from '@/lib/canvas-pointer';
@@ -39,11 +38,6 @@ export function PaletteDragGhost({ zoom }: { zoom: number }) {
   }, [preview]);
 
   if (!preview || !cursor || !cursor.over) return null;
-  // A Plan card never lands on the canvas: the board column it would join opens a gap instead
-  // (docs/specs/026-plan/plan-mode.md "The palette"), so no ghost suggests otherwise.
-  if (preview.kind === 'plan-card') return null;
-  // On a Dashboard a tile fills a slot, which lights up instead (DashboardPage): no canvas footprint.
-  if (dashboardOpen()) return null;
 
   const w = preview.width * zoom;
   const h = preview.height * zoom;

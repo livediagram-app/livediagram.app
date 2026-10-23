@@ -258,21 +258,12 @@ type UserPreferences = {
   // in Settings as Tours › "Diagram Tour" (inverted); turning it on and closing
   // Settings replays the tour. Missing / undefined === not seen.
   tourSeen?: boolean;
-  // The Plan tour's seen-guard (docs/specs/026-plan/plan-tour.md): true counts both tracks as seen while Power user
-  // mode is on (lib/tour-tracks.ts); set with every track by Power user mode.
-  planTourSeen?: boolean;
-  // The Plan tour tracks (Boards, Sheets, Dashboards) whose offer has been answered (taken, skipped or declined), so each offers
-  // itself once ever. Settings' Boards Tour and Sheets Tour rows each add or remove their own track.
-  planTourTracks?: PlanTourTrack[];
-  // The Workshop tour's seen-guard (docs/specs/012-collaboration/workshop-tour.md), as `planTourSeen`.
+  // The Workshop tour's seen-guard (docs/specs/012-collaboration/workshop-tour.md), as `tourSeen`.
   // Surfaced in Settings as Tours › "Workshop Tour" (inverted). Missing / undefined === not seen.
   workshopTourSeen?: boolean;
   // The Draw tour's seen-guard (docs/specs/023-draw-mode/draw-tour.md), as `workshopTourSeen`.
   // Surfaced in Settings as Tours › "Draw Tour" (inverted). Missing / undefined === not seen.
   drawTourSeen?: boolean;
-  // The Forms tour's seen-guard (docs/specs/030-forms/forms.md "The Forms tour"), as `drawTourSeen`; Show Me Around
-  // in the form's cog panel reruns it. Missing / undefined === not seen.
-  formTourSeen?: boolean;
   // The Avatar tour's seen-guard (docs/specs/008-canvas/avatar-tour.md), as `drawTourSeen`.
   // Surfaced in Settings as Tours › "Avatar Tour" (inverted). Missing / undefined === not seen.
   avatarTourSeen?: boolean;
@@ -699,8 +690,7 @@ and the dialog stays as the one complete, browsable index of them.
   indented and faintly tinted, beneath it. What every row of a section shares
   is said **once**, in a **section note** under its heading (`sectionNotes` on
   the category: Documents' Default Folders, the Tours' "offer again"), not
-  repeated under each row. A row reused outside a group (a Plan panel's
-  `SettingsRow`) draws the same cell inside a card of its own.
+  repeated under each row.
 
   Row kinds: `toggle`, `choice` (a segmented control, e.g.
   the theme and the minimap size), `slider` (panel opacity, UI scale, committing on
@@ -748,8 +738,7 @@ and the dialog stays as the one complete, browsable index of them.
   Pan): a phone has no hover and no middle button.
 
   **Tours** is a category of its own: one switch per guided tour, **Diagram
-  Tour**, **Plan Tours** (over **Boards Tour**, **Sheets Tour** and **Dashboards Tour**), **Workshop Tour**,
-  **Draw Tour**, **Forms Tour** and **Avatar Tour**, each with a line saying where it offers itself and a **Learn more**
+  Tour**, **Workshop Tour**, **Draw Tour** and **Avatar Tour**, each with a line saying where it offers itself and a **Learn more**
   to its article, under one **Offer Again** section note: each tour offers
   itself once; switch one back on and close Settings to take it again, straight
   away if you are in its mode, otherwise the next time you are. (The tours used
@@ -765,26 +754,16 @@ and the dialog stays as the one complete, browsable index of them.
   (TourHost also needs the per-tab pending flag, which only `/new` sets), closing the dialog with the switch
   on **marks that flag**, so its promise is true for a reader who had simply never taken the tour. Turning it
   on from off additionally relaunches in place on a Diagram tab; on a tab in another mode the offer waits
-  for a Diagram tab. The Plan tour is a
-  tour of several tracks (`apps/editor/lib/tour-tracks.ts`): **Plan Tours** is one switch over all of them
-  (`tourTracksSwitch`, key `planTourSeen`: on while any track is owed, off answers every track, on forgets every
-  answer), and each track has its own row nested beneath it (`parent: 'planTourSeen'`), named for itself: **Boards
-  Tour**, **Sheets Tour** and **Dashboards Tour** (`tourTrackSwitch`, keys `planTourSeen-boards`,
-  `planTourSeen-sheets`, `planTourSeen-dashboards`). A track's row is on while its track is owed; off adds its track
-  to `planTourTracks`, on removes it alone, and both clear the single `planTourSeen`, folding it into the list first
-  so one track back on leaves the others answered. It needs no handoff flag (the Plan tour offers itself in Plan once
-  a board or Sheet is open, the Dashboards tour on a dashboard), so closing the dialog only reruns it, when a track
-  became owed while it was open ([Plan tour](../026-plan/plan-tour.md)). **Workshop Tour** works the same way against
+  for a Diagram tab. **Workshop Tour** is inverted against
   `workshopTourSeen` ([Workshop tour](../012-collaboration/workshop-tour.md)), **Draw Tour** against
-  `drawTourSeen` ([Draw tour](../023-draw-mode/draw-tour.md)), **Forms Tour** against `formTourSeen` ([Forms](../030-forms/forms.md) "The Forms tour"), **Avatar Tour** against `avatarTourSeen`
-  ([Avatar tour](../008-canvas/avatar-tour.md)). Power user
-  mode's readout lists the Plan tour's switch over all its tracks (**Plan Tours**).
-  A multi-track tour's old single flag (`planTourSeen`) counts every track only while Power
-  user mode is on, so an answer given before the tour split offers each track once more.
+  `drawTourSeen` ([Draw tour](../023-draw-mode/draw-tour.md)) and **Avatar Tour** against `avatarTourSeen`
+  ([Avatar tour](../008-canvas/avatar-tour.md)); none needs a handoff flag, so closing the dialog with one turned on
+  only reruns it when you are in its mode.
 
   Below the mode tours, **Show Me** (element tours, named Show Me in the interface) is its own section, a closed
   accordion naming how many are on ([Element tours](element-tours.md#settings)): **Show Me on Every Element**, built
-  as Plan Tours is (`tourTracksSwitch`) against `elementToursSeen` and `elementTourKinds`, with one switch per toured
+  as a tour of several tracks (`tourTracksSwitch`, `apps/editor/lib/tour-tracks.ts`: on while any track is owed, off
+  answers every track, on forgets every answer) against `elementToursSeen` and `elementTourKinds`, with one switch per toured
   kind nested under it, named for the element (**Sankey Diagram**). Element tours
   need no relaunch: the offer shows the next time such an element is selected. A category may mark any section
   closed this way (`collapsedSections`); Settings opened on one of its rows opens it.

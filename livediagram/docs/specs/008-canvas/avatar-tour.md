@@ -90,5 +90,5 @@ The Draw tour's funnel, with its own tokens:
 
 ## Power user mode
 
-[Power user mode](../007-editor/power-user-mode.md) marks the Avatar tour seen alongside the Diagram, Plan,
+[Power user mode](../007-editor/power-user-mode.md) marks the Avatar tour seen alongside the Diagram,
 Workshop and Draw tours.

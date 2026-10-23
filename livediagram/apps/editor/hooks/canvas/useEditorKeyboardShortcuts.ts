@@ -155,26 +155,6 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       const key = e.key;
       const lower = key.toLowerCase();
 
-      // --- A Plan board covers the canvas (docs/specs/026-plan/plan-board.md "Nothing under it moves") ---
-      // Nothing on the canvas changes from the keyboard; undo, redo, search, zen, the mode switch and Escape still
-      // work, and a canvas chord the browser would take over (Cmd+D, Cmd+A...) is prevented.
-      if (live.canvasCovered?.()) {
-        if (inText) return;
-        const role = coveredKeyRole(e);
-        if (role === 'swallow') e.preventDefault();
-        if (role !== 'run') return;
-        if (mod) {
-          runModShortcut(e, live);
-          return;
-        }
-        if (key !== 'Escape') {
-          e.preventDefault();
-          if (lower === 'z') live.onToggleZen();
-          else live.onCycleEditorMode?.();
-          return;
-        }
-      }
-
       // --- Mind map growth (docs/specs/009-elements/mind-node.md) ---
       // Tab adds a child, Enter a sibling, both off the selected mind node.
       // Placed before every other branch because Tab is otherwise the
@@ -289,7 +269,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         const historyChord = lower === 'z' || lower === 'y';
         if (inText && !(historyChord && passesHistoryChords(target))) return;
         // A Viewer's or Participant's canvas chord it may not run (select-all, duplicate, lock, z-order) is still the
-        // canvas's, as on a covered canvas: left to the browser, Cmd+A selected the page's text and Cmd+D bookmarked it.
+        // canvas's: left to the browser, Cmd+A selected the page's text and Cmd+D bookmarked it.
         if (!runModShortcut(e, live) && live.isReadOnly && coveredKeyRole(e) === 'swallow') {
           e.preventDefault();
         }

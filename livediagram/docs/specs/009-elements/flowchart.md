@@ -152,7 +152,7 @@ a direction writes it to every step and lays the chart out again.
 A selected step's or lane's context menu has one **Flowchart** row, a parent category that opens to the
 side (a `MenuFlyoutSection`, the way the Mind Map and Sankey rows do). Inside it, up to three categories,
 each a closed `MenuAccordionSection` like every element-menu section, so the menu never shows every list
-at once. Each holds one of Plan mode's option lists (`OptionRows`): a bordered box, one full-width row per
+at once. Each holds an [option list](../004-interface-design/dropdown-tile-grid.md#when-a-grid-and-when-not) (`OptionRows`): a bordered box, one full-width row per
 choice, its icon at the left.
 
 - **Chart**: **Add Lane** and **Tidy Flowchart**.

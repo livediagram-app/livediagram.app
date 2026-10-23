@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { stubResizeObserver } from '@/components/sheets/sheet-ui-test-utils';
+import { stubResizeObserver } from '@/lib/stub-resize-observer';
 import { DEFAULT_AVATAR_CONFIG } from '@/lib/avatar-config';
 import { AvatarClusterButton } from '@/components/canvas/AvatarClusterButton';
 import { AvatarPanel } from './AvatarPanel';

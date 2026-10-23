@@ -18,7 +18,7 @@ describe('wizardBypassKind (docs/specs/007-editor/new-document-route.md)', () =>
   });
 
   it('reads ?template=<kind> for a catalogue kind', () => {
-    expect(wizardBypassKind('?template=kanban')).toBe('kanban');
+    expect(wizardBypassKind('?template=sailboat')).toBe('sailboat');
     expect(wizardBypassKind('?team=t1&template=er-diagram')).toBe('er-diagram');
   });
 

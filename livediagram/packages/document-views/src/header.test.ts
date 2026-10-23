@@ -38,18 +38,6 @@ describe('headerLine (R16, VW8)', () => {
     );
   });
 
-  it('points a Form tab at read_form', () => {
-    const line = headerLine(
-      facts({
-        tab: { id: 't', ref: 'f1', name: 'RSVP', kind: 'form' },
-        elements: 0,
-        counts: { boxes: 0, frames: 0, lanes: 0, arrows: 0 },
-        threads: { open: 0, total: 0 },
-      }),
-    );
-    expect(line).toBe('tab f1 "RSVP" · 0 elements · kind=form (read_form) · rev 41');
-  });
-
   it('names a mode other than Diagram and a set finish', () => {
     expect(
       headerLine(facts({ mode: 'draw', finish: 'sketch', threads: { open: 0, total: 0 } })),

@@ -1,13 +1,9 @@
 // A tour's card in the active tab's colours (docs/specs/007-editor/editor-tour.md "Look"): the start panels' palette
-// (useStartPalette) as the CSS variables TourPopover and TourStage paint from, so every tour (Diagram, Plan,
-// Workshop, Draw, Pages, the card type tour) reads as part of the tab it runs on. Pure.
+// (useStartPalette) as the CSS variables TourPopover and TourStage paint from, so every tour (Diagram,
+// Workshop, Draw) reads as part of the tab it runs on. Pure.
+import type { StartPalette } from '@/components/start/start-palette';
 import type { CSSProperties } from 'react';
-import {
-  contrastRatio,
-  isLightColor,
-  toneToContrast,
-  type PlanPalette,
-} from '@livediagram/document';
+import { contrastRatio, isLightColor, toneToContrast } from '@livediagram/document';
 
 const LIGHT_INK = '#ffffff';
 const DARK_INK = '#0f172a';
@@ -45,7 +41,7 @@ export function bannerColours(accent: string): { from: string; to: string } {
 // The variables: --tour-card, --tour-border, --tour-text, --tour-muted, --tour-accent, --tour-on-accent,
 // --tour-banner-from and --tour-banner-to (the banners' gradient, whose deep end is also the label on their white
 // button) and --tour-hover (a faint wash of the accent for the quiet buttons).
-export function tourColourVars(palette: PlanPalette): CSSProperties {
+export function tourColourVars(palette: StartPalette): CSSProperties {
   const banner = bannerColours(palette.focus);
   return {
     '--tour-card': palette.card,

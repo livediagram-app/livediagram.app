@@ -136,9 +136,8 @@ describe('Pages: a running Vote or Poll only', () => {
 });
 
 describe('sessionStripTools', () => {
-  it('offers all three in Workshop, Timer and Vote in Plan, none in Diagram or Draw', () => {
+  it('offers all three in Workshop, none in Diagram or Draw', () => {
     expect(sessionStripTools('workshop')).toEqual({ timer: true, vote: true, poll: true });
-    expect(sessionStripTools('plan')).toEqual({ timer: true, vote: true, poll: false });
     expect(sessionStripTools(undefined)).toBeNull();
     expect(sessionStripTools('diagram')).toBeNull();
     expect(sessionStripTools('draw')).toBeNull();
@@ -171,7 +170,7 @@ describe('stripSegmentGone', () => {
     const at = { readOnly: false, running: all };
     expect(stripSegmentGone({ ...at, segment: 'session-vote', tools: null })).toBe(true);
     expect(
-      stripSegmentGone({ ...at, segment: 'session-poll', tools: sessionStripTools('plan') }),
+      stripSegmentGone({ ...at, segment: 'session-poll', tools: { ...all, poll: false } }),
     ).toBe(true);
   });
 

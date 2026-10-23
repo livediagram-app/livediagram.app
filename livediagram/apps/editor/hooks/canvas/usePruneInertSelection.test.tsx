@@ -33,17 +33,4 @@ describe('usePruneInertSelection', () => {
 
     expect(selection.get()).toBe(before);
   });
-
-  it('keeps an inert element selected another way (a chart its Sheet draws)', () => {
-    const selection = createSelectionStore();
-    selection.setSelection({ selectedId: 'chart', multiSelectedIds: new Set() });
-    const kept = new Set(['chart']);
-    const { rerender } = renderHook(({ inert }) => usePruneInertSelection(inert, selection, kept), {
-      initialProps: { inert: new Set<string>(['chart']) },
-    });
-
-    rerender({ inert: new Set(['chart', 'other']) });
-
-    expect(selection.get().selectedId).toBe('chart');
-  });
 });

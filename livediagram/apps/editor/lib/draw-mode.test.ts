@@ -5,7 +5,6 @@ import {
   drawIntentCursor,
   isHeldPenIntent,
   isPathIntent,
-  isPlanCardIntent,
   opensForTyping,
   type PendingDraw,
 } from './draw-mode';
@@ -54,15 +53,6 @@ const INTENT_SAMPLES: Record<PendingDraw['type'], PendingDraw[]> = {
 const ALL_INTENTS: PendingDraw[] = Object.values(INTENT_SAMPLES).flat();
 
 describe('drawBannerMessage', () => {
-  it('tells a pressed Plan card where it goes, or that a board comes first', () => {
-    const card = { type: 'shape', kind: 'plan-card' } as const;
-    expect(drawBannerMessage(card, false, { hasPlanBoard: true })).toBe(
-      'Select the board column you want this card to appear in',
-    );
-    expect(drawBannerMessage(card, false)).toBe('Add a board first in order to use cards');
-    expect(drawBannerMessage({ type: 'shape', kind: 'square' }, false)).toContain('Tap to drop');
-  });
-
   it('says a workshop note is placed, not drawn (docs/specs/021-event-storming/event-storming.md)', () => {
     expect(drawBannerMessage({ type: 'sticky', esKind: 'command' }, false)).toBe(
       'Click to place a command note',
@@ -328,14 +318,5 @@ describe('the Path tool (docs/specs/023-draw-mode/path-tool.md)', () => {
   it('has its own cursor and screen-reader copy', () => {
     expect(drawIntentCursor({ type: 'path' })).toMatch(/^url\(/);
     expect(drawBannerMessage({ type: 'path' }, false)).toBe('Click to place points, drag to curve');
-  });
-});
-
-describe('a pressed Plan card (docs/specs/026-plan/plan-mode.md "The palette")', () => {
-  it('is told apart from every other shape in hand', () => {
-    expect(isPlanCardIntent({ type: 'shape', kind: 'plan-card', plan: 'task' })).toBe(true);
-    expect(isPlanCardIntent({ type: 'shape', kind: 'plan-board' })).toBe(false);
-    expect(isPlanCardIntent({ type: 'text' })).toBe(false);
-    expect(isPlanCardIntent(null)).toBe(false);
   });
 });

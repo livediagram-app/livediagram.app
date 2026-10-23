@@ -16,11 +16,10 @@ import { readJumpBackIn, readMe, readWhatHappenedRows } from '../db/home';
 import { getScopeState, markScopeSeen } from '../db/timeline';
 import { isNewVisit } from '../timeline/seen';
 import { groupWhatHappened } from '../home/what-happened';
-import { parseTimeZone } from '../home/local-day';
+import { DAY_MS, parseTimeZone } from '../home/local-day';
 import { json, missingAuth, notFound, rateLimited } from '../responses';
 import { userScope } from '../timeline';
 import type { RouteContext } from './context';
-import { DAY_MS } from '@livediagram/items';
 
 function rejected(reason: HomeRejection): Response {
   console.warn(`home: rejected reason=${reason}`);

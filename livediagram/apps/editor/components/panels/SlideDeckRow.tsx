@@ -21,7 +21,6 @@ export function SlideDeckRow({
   isDragging,
   renaming,
   thumb,
-  card,
   onOpen,
   onRename,
   onRenameDone,
@@ -43,8 +42,6 @@ export function SlideDeckRow({
   renaming: boolean;
   /** Preview markup + viewBox, absent for an empty slide or a missing tab. */
   thumb: { markup: string; viewBox: string } | undefined;
-  // An item slide's card: its title and type colour.
-  card?: { title: string; color: string };
   onOpen: () => void;
   onRename: (name: string) => void;
   onRenameDone: () => void;
@@ -76,17 +73,11 @@ export function SlideDeckRow({
     onRenameDone();
   };
 
-  const title = slide.name ?? card?.title ?? headline ?? slideName(slide, index);
-  // Where it comes from: the tab, and the card or the count.
+  const title = slide.name ?? headline ?? slideName(slide, index);
+  // Where it comes from: the tab, and the count.
   const source = [
     showTab ? (tabName ?? 'Tab deleted') : null,
-    slide.itemId
-      ? card
-        ? 'Card'
-        : 'Card deleted'
-      : slide.elementIds.length === 1
-        ? '1 element'
-        : `${slide.elementIds.length} elements`,
+    slide.elementIds.length === 1 ? '1 element' : `${slide.elementIds.length} elements`,
   ]
     .filter(Boolean)
     .join(' · ');
@@ -106,18 +97,6 @@ export function SlideDeckRow({
           // Our own renderer's output (every label is xmlEscaped inside it).
           dangerouslySetInnerHTML={{ __html: trustedHtml(thumb.markup) }}
         />
-      ) : slide.itemId ? (
-        <span
-          aria-hidden
-          className="relative flex h-5 w-8 flex-col justify-center gap-0.5 overflow-hidden rounded-sm border border-slate-200 bg-white pl-1.5 dark:border-slate-600 dark:bg-slate-800"
-        >
-          <span
-            className="absolute inset-y-0 left-0 w-0.5"
-            style={{ backgroundColor: card?.color ?? '#94a3b8' }}
-          />
-          <span className="h-0.5 w-4 rounded-full bg-slate-400" />
-          <span className="h-0.5 w-2.5 rounded-full bg-slate-300 dark:bg-slate-600" />
-        </span>
       ) : null}
     </span>
   );

@@ -103,7 +103,7 @@ describe('the hero', () => {
     render(<Hero />);
     const box = screen.getByLabelText('Search templates') as HTMLInputElement;
     box.focus();
-    fireEvent.change(box, { target: { value: 'kanban' } });
+    fireEvent.change(box, { target: { value: 'sailboat' } });
     fireEvent.keyDown(box, { key: 'ArrowDown' });
     const first = within(screen.getByRole('list', { name: 'Matching templates' })).getAllByRole(
       'link',
@@ -112,7 +112,7 @@ describe('the hero', () => {
     fireEvent.keyDown(first, { key: 'ArrowUp' });
     expect(document.activeElement).toBe(box);
     fireEvent.submit(box.form!);
-    expect(assign).toHaveBeenCalledWith('/new?template=kanban&via=Home.HeroSearch');
+    expect(assign).toHaveBeenCalledWith('/new?template=sailboat&via=Home.HeroSearch');
     fireEvent.keyDown(box, { key: 'Escape' });
     expect(box.value).toBe('');
   });
@@ -144,7 +144,7 @@ describe('the hero', () => {
     rect.mockReturnValue({ bottom: 10 } as DOMRect);
     scrollIntoView.mockClear();
     fireEvent.change(box, { target: { value: '' } });
-    fireEvent.change(box, { target: { value: 'kanban' } });
+    fireEvent.change(box, { target: { value: 'sailboat' } });
     expect(scrollIntoView).not.toHaveBeenCalled();
     rect.mockRestore();
   });

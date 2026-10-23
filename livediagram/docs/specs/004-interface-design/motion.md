@@ -102,8 +102,8 @@ A state change that swaps a whole surface animates as a React View Transition
 
 ## Dialogs
 
-A modal arrives rather than appearing. Every dialog built on the shared `Dialog` shell (the Plan card
-panel, Settings, Share, confirms) enters the same way, and none waits on an exit animation to close,
+A modal arrives rather than appearing. Every dialog built on the shared `Dialog` shell (Settings,
+Share, confirms) enters the same way, and none waits on an exit animation to close,
 so focus returns at once.
 
 - **The dim** behind it fades in over `micro` (`fade-in`).

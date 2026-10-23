@@ -207,7 +207,7 @@ export async function canReadDocument(
   );
 }
 
-// The Participant door (docs/specs/013-workspace/share-roles.md): Plan cards, Sheet cells. A Viewer is refused; a
+// The Participant door (docs/specs/013-workspace/share-roles.md): comments, Q&A notes and upvotes. A Viewer is refused; a
 // Participant and an Editor pass.
 export async function canParticipateDocument(
   env: Env,

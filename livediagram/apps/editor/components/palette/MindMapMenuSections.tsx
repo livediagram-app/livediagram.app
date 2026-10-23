@@ -1,7 +1,7 @@
 'use client';
 
 // The Mind Map menu category (docs/specs/009-elements/mind-node.md "The Mind Map menu"): a flyout row holding three
-// categories, Outline, Branching and Spacing, each a closed accordion around one of Plan mode's option lists (a
+// categories, Outline, Branching and Spacing, each a closed accordion around an option list (a
 // bordered box, one full-width row per choice, its icon at the left). Everything acts on the selected node's whole
 // MAP, through its root.
 import type { ComponentProps } from 'react';
@@ -19,7 +19,7 @@ import {
   lucideListTree,
   lucideNetwork,
 } from '@livediagram/icons/lucide';
-import { OptionRows } from '@/components/plan/OptionRows';
+import { OptionRows } from '@/components/primitives/OptionRows';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
 import { MENU_ICON_PX } from './context-menu-icons';

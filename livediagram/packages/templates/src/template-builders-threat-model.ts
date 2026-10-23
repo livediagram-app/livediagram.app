@@ -1,7 +1,6 @@
 // The Threat model template (docs/specs/008-canvas/canvas-and-palette.md "Templates"): a STRIDE threat model of
-// Plateful's checkout. This builds its first tab, the drawing; the second, the Threat Register, is the companion
-// Sheet (template-companions.ts) made from the same threats (@livediagram/sheets THREAT_EXAMPLES), so every marker
-// here names a row there with the same element and rating.
+// Plateful's checkout, drawn from its worked threats (./template-analysis-data THREAT_EXAMPLES), each with its element
+// and rating.
 //
 // The drawing is a data-flow diagram inside its trust boundaries (Internet, Plateful VPC and the PCI zone nested in
 // it): external entities as squares, processes as circles, data stores as cylinders, flows as labelled arrows. Each
@@ -25,7 +24,7 @@ import {
   threatRating,
   type StrideCategory,
   type ThreatRating,
-} from '@livediagram/sheets';
+} from './template-analysis-data';
 import { techHeader, TECH_HEADER_H } from './template-builders-technical-kit';
 import {
   CONTENT,
@@ -40,7 +39,7 @@ import {
 
 const TITLE = 'Plateful checkout · Threat model (STRIDE)';
 const CAPTION =
-  'Draw what you are building, mark what can go wrong on it, then track each threat on the Threat Register tab. Red dashed lines are trust boundaries.';
+  'Draw what you are building, mark what can go wrong on it, then track each threat until it is mitigated. Red dashed lines are trust boundaries.';
 
 const DFD_W = 1500;
 const DFD_H = 900;

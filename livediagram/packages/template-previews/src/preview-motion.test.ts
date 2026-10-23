@@ -6,7 +6,7 @@ import { STORY_CLASSES } from './motion';
 import { TemplatePreview } from './template-preview';
 
 // The hover stories (preview-motion.css) draw extra shapes into a preview:
-// the ideas a mind map grows, the card that lands on a kanban, the flowchart's
+// the ideas a mind map grows, the flowchart's
 // token. Those shapes are in the markup at rest, and the editor's picker
 // renders the same markup without the motion stylesheet, so each one must be
 // invisible until its story adds it.

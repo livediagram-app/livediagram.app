@@ -3,7 +3,7 @@
 A bootstrap-style guided tour of [Diagram mode](editor-modes.md): a sequence of anchored popover steps that
 spotlight one piece of the diagramming chrome at a time, opening the real panels and menus as it goes. Until
 October 2026 it was the **welcome tour**, offered whatever mode a tab was in; it is now about diagramming alone,
-and the other modes have tours of their own (the [Plan tour](../026-plan/plan-tour.md) and the
+and the other modes have tours of their own (the [Draw tour](../023-draw-mode/draw-tour.md) and the
 [Workshop tour](../012-collaboration/workshop-tour.md)). It superseded the guided-tour **sample diagram**
 ([Guided tour sample ("Take the guided tour"), RETIRED](guided-tour-sample.md)), which taught through
 annotation markers on the canvas; the sample's template, builder, and /new card were removed once this tour
@@ -20,8 +20,7 @@ proved the better introduction.
 ## Where it appears
 
 - **Only in Diagram mode.** The tour is offered, and runs, only while the open tab is in Diagram mode. It is
-  never offered on a Draw, Workshop or Plan tab, nor on a Board, Sheet or Dashboard tab (always
-  in Plan); an offer owed there waits until the person is on a Diagram tab. Leaving Diagram mid-tour
+  never offered on a Draw or Workshop tab; an offer owed there waits until the person is on a Diagram tab. Leaving Diagram mid-tour
   (switching the tab's mode, or opening a tab in another mode) ends it as skipped, since its steps point at
   chrome the other modes do not show.
 - **Automatically, for a brand-new user.** When a **zero-owned-documents** user (the `/new` page already learns
@@ -29,7 +28,7 @@ proved the better introduction.
   (any path: Create or Skip), the tour is owed in that browser tab. A document that opens on a Diagram tab
   shows a **welcome offer banner** at the bottom of the screen once the editor is ready, and once its start is done (a template picked
   or Start Diagramming closed, [Template starts](start-diagramming.md) "The tours wait"): **Yes** starts the tour,
-  **No** dismisses it. A document made from a Plan, Draw or Workshop template does not show it
+  **No** dismisses it. A document made from a Draw or Workshop template does not show it
   there; the offer stays owed and comes the first time the person works on a Diagram tab in that browser tab.
   There is no wizard toggle; the offer IS the opt-in, and declining must be one obvious, equal-weight click.
   The count is the one from **before** the create: a cloud create waits for it (up to
@@ -69,13 +68,13 @@ proved the better introduction.
   closing Settings relaunches the tour from the top when the open tab is in Diagram, and otherwise offers it
   the next time the person is on a Diagram tab. The welcome card is always step 1, on a rerun too. Finishing
   the rerun turns it off again.
-- **One tour at a time.** The [Plan tour](../026-plan/plan-tour.md), the
+- **One tour at a time.** The
   [Workshop tour](../012-collaboration/workshop-tour.md) and the [Draw tour](../023-draw-mode/draw-tour.md)
   are this tour's siblings; while any is on screen the others wait.
   Each belongs to its own mode, so none is owed to another: the others never wait for this tour's offer, and
   this tour never carries theirs.
-- **Dialogs come first.** A tour never lands over a dialog the person has open (Share, Settings, Export, Share
-  Form, the Search panel, a confirm, any dialog at all). This holds for every tour on the shared engine, the
+- **Dialogs come first.** A tour never lands over a dialog the person has open (Share, Settings, Export,
+  the Search panel, a confirm, any dialog at all). This holds for every tour on the shared engine, the
   element tours' offer included:
   - **An offer waits.** A tour that would be offered while a dialog is open is not skipped: it stays owed and is
     offered once every dialog has closed (stacked dialogs count until the last one goes), after the tour's usual
@@ -88,7 +87,7 @@ proved the better introduction.
   - **A tour's own dialogs are not in its way.** A dialog a tour step opens to show what is in it (a Sequence's
     or a chart's data dialog, a Sankey's Flows) is the tour's: while the step's target sits inside it the tour
     stays up, and it stays up after that dialog's last step too, until the tour puts it away. A tour started
-    from inside a dialog (Show Me in the card type editor, the Share dialog, Photo Review) counts that dialog as
+    from inside a dialog (Show Me in the Share dialog, Photo Review) counts that dialog as
     its own in the same way. Only a dialog opened on top of those makes it step aside.
 
 ## Handoff
@@ -122,8 +121,7 @@ words too (`touchBody`), which a touch screen (a coarse pointer) reads instead: 
    switching. No "default" claim in the copy: desktop defaults to Select but mobile to Hand.
 3. **Palette Categories**: opens the first category on the palette's category bar (Shapes), its flyout highlighted
    with the bar ([Toolbar layout](toolbar-layout.md#the-category-bar)): "The palette's categories sit along the
-   top: rest on one to see its elements, then click one to add it, or drag it onto the canvas." Plan's strip still
-   opens its category dropdown here. A dedicated "Tools category" step existed briefly and was cut: the category
+   top: rest on one to see its elements, then click one to add it, or drag it onto the canvas." A dedicated "Tools category" step existed briefly and was cut: the category
    dropdown already tells that story. On touch: "Tap a category to see what is in it. Tap to add, or drag onto the
    canvas." (the flyout's own touch hint).
 4. **The Element Menu**: selects an element (adding a theme-coloured square at the viewport centre first if the
@@ -191,11 +189,12 @@ of their steps ask the person to try things.
 
 ## Mechanics
 
-- **One engine, three tours.** The step runner (`useTourEngine`: prepare, await, heal, glide, Back / Next /
+- **One engine, every tour.** The step runner (`useTourEngine`: prepare, await, heal, glide, Back / Next /
   Skip) and what it draws (`TourStage`: `TourSpotlight`, `TourPopover`) are shared with the
-  [Plan tour](../026-plan/plan-tour.md) and the [Workshop tour](../012-collaboration/workshop-tour.md);
+  [Workshop tour](../012-collaboration/workshop-tour.md), the [Draw tour](../023-draw-mode/draw-tour.md), the
+  avatar, element and Show Me tours;
   each tour's host owns its offer, its steps and what ending means. A step anchors by `data-tour-id`, or by a
-  `selector` resolved when it runs (the Plan tour's board and cards), and an anchorless card's `prepare` runs
+  `selector` resolved when it runs (a Show Me step's Mashup tile), and an anchorless card's `prepare` runs
   too. The bookend cards' words (`TourCardCopy`) and the welcome art are props, defaulting to this tour's.
 - The engine drives the **real UI**, not screenshots: steps have a `prepare` phase that opens the actual panel
   / dropdown / menu (clicking the same triggers a user would, or calling editor-context handlers like
@@ -246,7 +245,7 @@ of their steps ask the person to try things.
   in navy. The white **Yes** (and the last card's **Start**) takes its label in the banner's own deep colour. On a phone the
   banner stacks, as the sign-in banner does: the words, then the buttons at the right.
 - **The spotlight** is the dim alone, with no outline in the accent; the step card wears the tab's colours.
-- This holds for the Diagram, Plan, Workshop and Draw tours and the card type editor's Show Me,
+- This holds for the Diagram, Workshop and Draw tours and Show Me,
   which all draw through `TourStage` and `TourPopover`.
 
 ## Share roles

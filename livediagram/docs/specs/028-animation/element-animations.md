@@ -113,8 +113,6 @@ A text element's old value lives in `animation`. Picking a Text animation for it
   so a board at rest stays at rest ([Canvas performance](../008-canvas/canvas-performance.md)).
 - **Deterministic.** Nothing is broadcast: collaborators see the same motion from the stored fields. Anything that
   looks random (a scramble, a flicker) is seeded from the element's id, so everyone sees the same letters.
-- **Held while covering.** A board, view or Sheet that is maximised or fills its tab shows its rest frame, and its
-  menu offers no Animation category ([Plan board](../026-plan/plan-board.md#maximised-board)).
 - **Rest frame.** Every animation has a rest frame: the element fully shown, in place, as it is with no animation.
   Reduced motion, PNG and SVG export, and a still canvas show the rest frame. A reveal's rest frame is fully
   revealed, so nothing is ever exported or shown blank.

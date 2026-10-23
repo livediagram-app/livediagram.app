@@ -1,9 +1,7 @@
 import {
-  lucideClipboardList,
   lucideSearch,
   lucideShare2,
   lucideSquareKanban,
-  lucideTable,
   lucideUndo2,
   lucideWorkflow,
   lucideTrash2,
@@ -21,17 +19,7 @@ const CAPABILITIES = [
   {
     icon: lucideGlyph(lucideSquareKanban, 20),
     title: 'Boards and templates',
-    body: 'Kanban, sprints, retros, SWOT and more from the template library, with Plan cards your AI can add, edit and move.',
-  },
-  {
-    icon: lucideGlyph(lucideTable, 20),
-    title: 'Sheets',
-    body: 'Spreadsheets with formulas, formatting, dropdowns and sorting, built from rows or CSV and read back by cell.',
-  },
-  {
-    icon: lucideGlyph(lucideClipboardList, 20),
-    title: 'Forms',
-    body: 'Builds a form on a Plan tab, tries it out, and shares its link, with every answer landing in a board or a sheet.',
+    body: 'Retros, roadmaps, SWOT, Gantt charts and more from the template library, filled in with your own content.',
   },
   {
     icon: lucideGlyph(lucideTrash2, 20),
@@ -57,7 +45,7 @@ const CAPABILITIES = [
 
 export function AiCapabilities() {
   return (
-    <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {CAPABILITIES.map(({ icon: Icon, title, body }) => (
         <li
           key={title}

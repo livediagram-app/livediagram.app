@@ -40,7 +40,7 @@ service = "livediagram-community"
 DEPLOY_ENV = "local"
 MARKETING_ORIGIN = "http://127.0.0.1:3101"
 EDITOR_ORIGIN = "http://127.0.0.1:3102"
-API_ORIGIN = "http://127.0.0.1:8787"
+API_ORIGIN = "http://127.0.0.1:8687"
 HELP_ORIGIN = "http://127.0.0.1:3104"
 COMMUNITY_ORIGIN = "http://127.0.0.1:3105"
 

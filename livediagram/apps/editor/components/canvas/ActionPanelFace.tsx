@@ -9,8 +9,7 @@ import { CollabDoneChip } from '@/components/canvas/collab/CollabDoneChip';
 import { CollabAccentScope } from '@/components/canvas/collab/collab-accent';
 import { CelebrationBurst } from '@/components/canvas/collab/CelebrationBurst';
 import { ActionRow } from '@/components/canvas/collab/action/ActionRow';
-import { ActionGlyph, BoardGlyph, PlusGlyph } from '@/components/canvas/collab/action/action-parts';
-import { CollabCaption, tint } from '@/components/canvas/collab/collab-chrome';
+import { ActionGlyph, PlusGlyph } from '@/components/canvas/collab/action/action-parts';
 import {
   AccentBar,
   EmptyRows,
@@ -43,7 +42,6 @@ export function ActionPanelFace({
   onEdit,
   onComplete,
   onReopen,
-  onOpenBoard,
 }: {
   element: ShapeElement;
   label?: string;
@@ -59,8 +57,6 @@ export function ActionPanelFace({
   onEdit?: (actionId: string) => void;
   onComplete?: (actionId: string) => void;
   onReopen?: (actionId: string) => void;
-  // The document's Actions board (docs/specs/026-plan/linked-boards.md "On the canvas"): the header's chip opens it.
-  onOpenBoard?: () => void;
 }) {
   const actions = elementActions(element);
   const open = actions.filter((a) => !isClosedAction(a)).length;
@@ -75,20 +71,6 @@ export function ActionPanelFace({
   ) : open > 0 ? (
     `${open} open`
   ) : undefined;
-  // Beside the Board chip a caption is drawn as the panel draws a plain one.
-  const aside =
-    onOpenBoard && actions.length > 0 ? (
-      <span className="flex items-center gap-1.5">
-        {typeof status === 'string' ? (
-          <CollabCaption textColor={textColor}>{status}</CollabCaption>
-        ) : (
-          status
-        )}
-        <BoardChip onPress={onOpenBoard} textColor={textColor} />
-      </span>
-    ) : (
-      status
-    );
 
   return (
     <CollabAccentScope element={element} textColor={textColor} surface={surface ?? '#ffffff'}>
@@ -97,7 +79,7 @@ export function ActionPanelFace({
         reflow
         title={label.trim() || 'Actions'}
         textColor={textColor}
-        aside={aside}
+        aside={status}
         footer={
           onAdd && actions.length > 0 ? (
             <AccentBar onPress={onAdd} icon={<PlusGlyph size={12} />}>
@@ -159,25 +141,6 @@ function AddButton({ onPress }: { onPress: () => void }) {
     >
       <PlusGlyph size={12} />
       Add Action
-    </button>
-  );
-}
-
-// The Actions Board chip: where these actions are tracked, one press away.
-function BoardChip({ onPress, textColor }: { onPress: () => void; textColor: string }) {
-  const press = usePressWithoutDrag(onPress);
-  return (
-    <button
-      type="button"
-      {...press}
-      {...stopPointer}
-      aria-label="Open the Actions board"
-      className="pointer-events-auto inline-flex cursor-pointer items-center gap-1 rounded-full px-2 py-0.5 text-[10.5px] font-semibold transition hover:scale-[1.04] active:scale-95"
-      style={{ color: textColor, backgroundColor: tint(textColor, 0.08) }}
-    >
-      <BoardGlyph size={11} />
-      Board
-      <span aria-hidden>↗</span>
     </button>
   );
 }

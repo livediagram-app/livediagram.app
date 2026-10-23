@@ -173,7 +173,6 @@ carries explains an idea the way a funnel or a cycle does.
 | Mode     | Concepts |
 | -------- | -------- |
 | Diagram  | yes      |
-| Plan     | no       |
 | Workshop | no       |
 
 ## Templates

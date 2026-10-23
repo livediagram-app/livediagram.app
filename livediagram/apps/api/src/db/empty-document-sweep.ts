@@ -20,9 +20,9 @@ const EMPTY_SWEEP_MAX_BATCHES = 4;
 // is judged on that save. A tab whose data is not valid JSON counts as content:
 // the sweep fails safe. So does a tab with any article: a former Pages tab's
 // writing is still stored in `articles` (not in `elements`) though livediagram no
-// longer reads it, and it is never swept away; and a tab holding a form (a Form tab's
-// form is `form`, not an element). A tab shared with another document counts in
-// both.
+// longer reads it, and it is never swept away; and a tab holding a form, the same for
+// a former Form tab's form (`form`, not an element). A tab shared with another document
+// counts in both.
 const MOVE_EMPTY_STALE = `
   UPDATE documents SET trashed_at = ?1, trash_reason = 'empty'
    WHERE id IN (

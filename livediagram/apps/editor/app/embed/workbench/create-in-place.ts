@@ -9,7 +9,7 @@ import {
   type TemplateKind,
 } from '@livediagram/templates';
 import { apiCreateDocument } from '@/lib/api-client';
-import { NEW_DOCUMENT_THEME_ID, newDocumentContent } from '@/lib/new-document-content';
+import { NEW_DOCUMENT_THEME_ID, newDocumentTab } from '@/lib/new-document-content';
 import { wizardBypassKind } from '@/lib/new-document-params';
 import type { WorkspacePlace } from '@/lib/workbench/workspace-place';
 
@@ -46,20 +46,17 @@ export async function createDocumentInPlace(
   const { templateKind } = request;
   const documentId = crypto.randomUUID();
   const tabId = crypto.randomUUID();
-  const { tabs, tab, itemTypes, seedItems } = await newDocumentContent({
+  const tab = newDocumentTab({
     templateKind,
     themeId: NEW_DOCUMENT_THEME_ID,
     tabId,
-    via: 'workbench',
     // No template asked for: the editor opens on its start, where the templates are.
     templateChosen: templateKind !== null,
   });
   await apiCreateDocument(ownerId, {
     id: documentId,
     name: untitledNameForTemplate(templateKind),
-    tabs: tabs ?? [tab],
-    ...(itemTypes ? { itemTypes } : {}),
-    ...(seedItems.length ? { items: seedItems } : {}),
+    tabs: [tab],
     teamId: request.teamId,
     folderId: request.folderId,
     intent: creationIntentOf(tab, templateFamilyOf(templateKind)),

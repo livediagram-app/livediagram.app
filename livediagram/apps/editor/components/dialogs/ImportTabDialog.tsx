@@ -28,8 +28,7 @@ type ImportTabDialogProps = {
     text: string,
     onProgress: (progress: ImportImageProgress) => void,
   ) => Promise<ImportOutcome>;
-  // The formats offered, in catalogue order; absent offers every one. A Dashboard tab offers JSON only
-  // (docs/specs/026-plan/plan-tabs.md "Import and Export of a Dashboard"); a single format opens straight at its
+  // The formats offered, in catalogue order; absent offers every one. A single format opens straight at its
   // panel.
   formats?: readonly Format[];
   onClose: () => void;

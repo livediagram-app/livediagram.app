@@ -7,13 +7,13 @@ import type { CollabDeepLink } from '@/lib/collab-deep-link';
 import { useCollabDeepLink, useCollabDeepLinkCapture } from './useCollabDeepLink';
 import type { TabLoadState } from './editor-page-helpers';
 
-// Arriving from an Inbox row (docs/specs/013-workspace/inbox.md §1): an element and its popover,
-// or a Plan card on its board (§2.4), or a card no board shows. Consumed once, and only on the right tab.
+// Arriving from an Inbox row (docs/specs/013-workspace/inbox.md §1): an element and its popover.
+// Consumed once, and only on the right tab.
 
-const board = {
+const box = {
   id: 'b1',
   type: 'shape',
-  shape: 'plan-board',
+  shape: 'square',
   x: 10,
   y: 20,
   width: 300,
@@ -29,14 +29,13 @@ function arrive(
     scrollIntoView: vi.fn(),
     openActionPopover: vi.fn(),
     openComments: vi.fn(),
-    openItem: vi.fn(),
   };
   const props = {
     link: { current: link },
     hydrated: true,
     activeId: over.activeId ?? 't1',
     activeTabLoadState: over.state ?? 'ready',
-    elements: over.elements ?? [board],
+    elements: over.elements ?? [box],
     ...calls,
   };
   const hook = renderHook((p: typeof props) => useCollabDeepLink(p), { initialProps: props });
@@ -45,75 +44,51 @@ function arrive(
 
 describe('useCollabDeepLink', () => {
   it('selects the element and opens its popover', () => {
-    const { calls } = arrive({
-      at: { tabId: 't1', elementId: 'b1' },
-      open: 'action',
-      itemId: null,
-    });
+    const { calls } = arrive({ at: { tabId: 't1', elementId: 'b1' }, open: 'action' });
     expect(calls.select).toHaveBeenCalledWith('b1');
     expect(calls.scrollIntoView).toHaveBeenCalledWith(10, 20, 300, 200, { center: true });
     expect(calls.openActionPopover).toHaveBeenCalledWith('b1');
-    expect(calls.openItem).not.toHaveBeenCalled();
-  });
-
-  it('lands on a card’s board and opens the card', () => {
-    const { calls } = arrive({ at: { tabId: 't1', elementId: 'b1' }, open: null, itemId: 'it1' });
-    expect(calls.select).toHaveBeenCalledWith('b1');
-    expect(calls.openItem).toHaveBeenCalledWith('it1');
-    expect(calls.openActionPopover).not.toHaveBeenCalled();
-    expect(calls.openComments).not.toHaveBeenCalled();
-  });
-
-  it('opens a card with no board on whichever tab the document opens on', () => {
-    const { calls } = arrive({ at: null, open: null, itemId: 'it1' }, { activeId: 'other' });
-    expect(calls.openItem).toHaveBeenCalledWith('it1');
-    expect(calls.select).not.toHaveBeenCalled();
   });
 
   it('waits for the named tab and its load, then fires once', () => {
     const { calls, hook, props } = arrive(
-      { at: { tabId: 't2', elementId: 'b1' }, open: null, itemId: 'it1' },
+      { at: { tabId: 't2', elementId: 'b1' }, open: null },
       { activeId: 't1' },
     );
-    expect(calls.openItem).not.toHaveBeenCalled();
+    expect(calls.select).not.toHaveBeenCalled();
     hook.rerender({ ...props, activeId: 't2', activeTabLoadState: 'loading' });
-    expect(calls.openItem).not.toHaveBeenCalled();
+    expect(calls.select).not.toHaveBeenCalled();
     hook.rerender({ ...props, activeId: 't2', activeTabLoadState: 'ready' });
-    hook.rerender({ ...props, activeId: 't2', activeTabLoadState: 'ready', elements: [board] });
-    expect(calls.openItem).toHaveBeenCalledTimes(1);
+    hook.rerender({ ...props, activeId: 't2', activeTabLoadState: 'ready', elements: [box] });
+    expect(calls.select).toHaveBeenCalledTimes(1);
   });
 
   it('opens nothing when the tab failed to load', () => {
     const { calls } = arrive(
-      { at: { tabId: 't1', elementId: 'b1' }, open: null, itemId: 'it1' },
+      { at: { tabId: 't1', elementId: 'b1' }, open: 'action' },
       { state: 'error' as TabLoadState },
     );
-    expect(calls.openItem).not.toHaveBeenCalled();
+    expect(calls.openActionPopover).not.toHaveBeenCalled();
     expect(calls.select).not.toHaveBeenCalled();
   });
 
   it('opens a thread’s comments', () => {
-    const { calls } = arrive({
-      at: { tabId: 't1', elementId: 'b1' },
-      open: 'comments',
-      itemId: null,
-    });
+    const { calls } = arrive({ at: { tabId: 't1', elementId: 'b1' }, open: 'comments' });
     expect(calls.openComments).toHaveBeenCalledWith('b1');
   });
 });
 
 describe('useCollabDeepLinkCapture', () => {
   it('captures the link from the fragment and keeps it when the hash is rewritten to a plain pin', () => {
-    window.location.hash = '#t=t1&el=b1&item=it1';
+    window.location.hash = '#t=t1&el=b1&open=comments';
     const { result, rerender } = renderHook(() => useCollabDeepLinkCapture());
     expect(result.current.current).toEqual({
       at: { tabId: 't1', elementId: 'b1' },
-      open: null,
-      itemId: 'it1',
+      open: 'comments',
     });
     window.location.hash = '#t=t1';
     rerender();
-    expect(result.current.current?.itemId).toBe('it1');
+    expect(result.current.current?.open).toBe('comments');
   });
 
   it('holds nothing for a plain tab pin', () => {

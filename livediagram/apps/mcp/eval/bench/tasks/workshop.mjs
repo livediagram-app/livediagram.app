@@ -1,24 +1,12 @@
 // The workshop tasks of the benchmark (docs/instructions/evaluate-mcp-output.md). Each prompt is what a user would type;
 // `checks` judge what the run made from the prompt's own requirements (see checks.mjs).
-import {
-  arrows,
-  atLeast,
-  elementsFor,
-  itemsOf,
-  mentionsAll,
-  shapes,
-  sketched,
-  tabsOf,
-} from '../checks.mjs';
+import { arrows, atLeast, elementsFor, mentionsAll, shapes, sketched, tabsOf } from '../checks.mjs';
 
 const stickies = (snap) => shapes(snap, 'sticky').filter((s) => (s.label ?? '').trim());
 // The containers a cluster can sit in.
 const themes = (snap) => ['frame', 'lane', 'boundary'].flatMap((k) => shapes(snap, k));
-// A note people add to a board: a sticky on the canvas, or a card on a Plan board (a retro or Q&A board's own way).
-const notes = (snap) => [
-  ...stickies(snap).map((s) => s.label),
-  ...itemsOf(snap).map((i) => i.title ?? ''),
-];
+// A note people add to a board: a sticky on the canvas.
+const notes = (snap) => stickies(snap).map((s) => s.label);
 
 export default [
   {

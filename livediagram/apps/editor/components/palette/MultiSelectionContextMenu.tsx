@@ -55,13 +55,7 @@ import {
 import { presetPxFor, TextSizeControl } from '@/components/palette/TextSizeControl';
 import { TypographySections } from './TypographySections';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
-import {
-  ArrowPresetsSection,
-  isPlanPresetShape,
-  PlanPresetsSection,
-  ShapePresetsSection,
-  shapeSupportsPresets,
-} from './PresetSections';
+import { ArrowPresetsSection, ShapePresetsSection, shapeSupportsPresets } from './PresetSections';
 import { MultiPlacementSections } from './MultiPlacementSections';
 import { MultiStyleSections } from './MultiStyleSections';
 import { useContextMenuScaffold } from './useContextMenuScaffold';
@@ -208,20 +202,7 @@ export function MultiSelectionContextMenu({
                   "Style" flyout row, matching the single-element menu. ── */}
             {showStyleFlyout ? (
               <MenuFlyoutSection title="Style" icon={<StyleMenuGlyph />} {...flyoutProps('style')}>
-                {presetShapeSrc &&
-                sel.every(
-                  (el) =>
-                    el.type !== 'shape' || !shapeSupportsPresets(el) || isPlanPresetShape(el.shape),
-                ) ? (
-                  // Only boards and sheets: their calm presets (docs/specs/010-palette/style-presets.md).
-                  <PlanPresetsSection
-                    target={presetShapeSrc}
-                    props={props}
-                    accordion={sectionProps('m-shape-presets')}
-                    onClose={onClose}
-                    title={arrowSrc ? 'Shape Presets' : 'Presets'}
-                  />
-                ) : presetShapeSrc ? (
+                {presetShapeSrc ? (
                   <ShapePresetsSection
                     shape={presetShapeSrc.shape}
                     current={{

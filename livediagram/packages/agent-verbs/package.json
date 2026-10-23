@@ -24,10 +24,6 @@
     "@livediagram/document": "workspace:*",
     "@livediagram/document-views": "workspace:*",
     "@livediagram/edit-operations": "workspace:*",
-    "@livediagram/forms": "workspace:*",
-    "@livediagram/items": "workspace:*",
-    "@livediagram/page-background": "workspace:*",
-    "@livediagram/sheets": "workspace:*",
     "@livediagram/templates": "workspace:*",
     "zod": "^4.6.7"
   },

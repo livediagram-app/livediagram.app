@@ -9,7 +9,6 @@
 // omitted in the visual ones (PNG, PDF) where they have no natural
 // rendering.
 
-import type { Item, ItemTypeDef } from '@livediagram/items';
 import {
   arrowLabelFontStack,
   arrowLabelPass,
@@ -20,8 +19,6 @@ import {
   exportFontIds,
   visibleLayerElements,
   type BoxedElement,
-  type ResolvePlanArt,
-  type SheetRenderModel,
   type Tab,
 } from '@livediagram/document';
 // Shared SVG render helpers (docs/specs/015-api/mcp-server.md §5): moved into the document package so the
@@ -79,17 +76,6 @@ export type ImageExportOpts = {
   // Google stylesheet by @import, which only a browser opening the file
   // directly will honour.
   fontCss?: string;
-  // The document's items, so Plan boards and cards export with their cards
-  // (docs/specs/026-plan/plan-board.md "Both elements everywhere").
-  items?: ReadonlyMap<string, Item>;
-  // And its item types (docs/specs/026-plan/item-types.md), so custom types keep their colour.
-  itemTypes?: readonly ItemTypeDef[];
-  // Each Sheet's window of cells by sheet id (docs/specs/029-sheets/sheet.md "Exports and images"), from the sheet
-  // store (plan-export-sheets.ts). Without it a Sheet draws its frame and headers alone.
-  sheets?: ReadonlyMap<string, SheetRenderModel>;
-  // A plan view's picture (docs/specs/026-plan/plan-tabs.md "Export"), drawn by the editor, which has the charts'
-  // models; without it a plan view draws as its labelled box.
-  resolvePlanArt?: ResolvePlanArt;
 };
 
 // Re-export so callers (the export dialog) get the loader from the same
@@ -257,8 +243,7 @@ export async function renderTabToCanvas(
   // would come back in the fallback face unless the font travels INSIDE the
   // markup. Fetched once here and inlined into every fragment below.
   const fontCss =
-    opts.fontCss ??
-    (await embeddedFontFaceCss(exportFontIds(els, tab.font, opts.sheets, tab.finish)));
+    opts.fontCss ?? (await embeddedFontFaceCss(exportFontIds(els, tab.font, tab.finish)));
   // The canvas drawers paint through the DOM's own font set, so wait for it
   // to settle — rasterising mid-swap bakes the fallback face into the PNG.
   await document.fonts?.ready;
@@ -293,10 +278,6 @@ export async function renderTabToCanvas(
         sketchBackdrop: backdrops.has(el.id),
         surface,
         ...chartInk,
-        items: opts.items,
-        itemTypes: opts.itemTypes,
-        sheets: opts.sheets,
-        resolvePlanArt: opts.resolvePlanArt,
       })}</svg>`;
     try {
       rasterImages.set(el.id, { image: await svgToImage(svg), pad });
@@ -473,7 +454,7 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
   // stylesheet (the live preview, where the page has the faces already).
   const fontDefs = opts.fontCss
     ? `<defs><style type="text/css">${opts.fontCss}</style></defs>`
-    : svgFontDefs(exportFontIds(els, tab.font, opts.sheets, tab.finish));
+    : svgFontDefs(exportFontIds(els, tab.font, tab.finish));
   if (fontDefs) parts.push(fontDefs);
   // Element-shadow filter defs (docs/specs/008-canvas/element-shadows.md); empty string when none.
   const shadowDefs = svgShadowDefs(els);
@@ -519,10 +500,6 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
             sketchBackdrop: backdrops.has(el.id),
             surface,
             ...chartInk,
-            items: opts.items,
-            itemTypes: opts.itemTypes,
-            sheets: opts.sheets,
-            resolvePlanArt: opts.resolvePlanArt,
           }),
         );
     }
@@ -544,8 +521,7 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
 export async function exportTabAsSvg(tab: Tab, opts: ImageExportOpts = {}): Promise<Blob> {
   const els = opts.hiddenLayers ? tab.elements : visibleLayerElements(tab.elements, tab.layers);
   const fontCss =
-    opts.fontCss ??
-    (await embeddedFontFaceCss(exportFontIds(els, tab.font, opts.sheets, tab.finish)));
+    opts.fontCss ?? (await embeddedFontFaceCss(exportFontIds(els, tab.font, tab.finish)));
   return new Blob([renderTabToSvg(tab, { ...opts, fontCss })], { type: 'image/svg+xml' });
 }
 

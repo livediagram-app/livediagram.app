@@ -5,7 +5,7 @@ import { idBound } from './element-layer-props';
 import { arrowViewGeometry } from './arrow-view-frame';
 import { buildArrowLinks } from './drag-affected-arrows';
 import { shownWithOverlay, useLayerDragPreview } from '@/hooks/canvas/useLayerDragPreview';
-import { CanvasElementList } from './CanvasElementList';
+import { CanvasElementList, type BoxedShared } from './CanvasElementList';
 import { usePublishSketchBackdrops } from '@/lib/sketch-backdrop-store';
 import { useFontEpoch } from './useFontEpoch';
 import {
@@ -37,18 +37,12 @@ import {
 import { ChangesetRevealOverlay } from '@/components/canvas/ChangesetRevealOverlay';
 import { AgentFocusOverlay } from '@/components/canvas/AgentFocusOverlay';
 import { LayerSelectionChrome } from '@/components/canvas/LayerSelectionChrome';
-import { useSheetChartRenderer, type BoxedShared } from '@/components/canvas/sheet-chart-renderer';
 import type { CanvasSelectionInput } from '@/hooks/canvas/useCanvasSelectionView';
 import { usePhotoDraftView } from '@/lib/photo-draft-preview';
 import { ZoomedLaserOverlay, ZoomedRemoteCursor } from '@/components/canvas/view-readers';
 import { useInsertShift } from '@/hooks/canvas/useInsertShift';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
-import { CardVoteProvider, type CardVote } from '@/components/plan/CardVoteContext';
-import {
-  SheetChartsContext,
-  type SheetChartsValue,
-} from '@/components/sheets/sheet-charts-context';
-import { sheetDrawnChartIds, type LaneGutterEdge, type LaneLike } from '@livediagram/document';
+import { type LaneGutterEdge, type LaneLike } from '@livediagram/document';
 
 // What a drawn arrow resolves its ends against on a board with no arrows yet.
 const EMPTY_ELEMENT_INDEX: ElementIndex = new Map();
@@ -276,7 +270,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     actionConfigure: actionPanelActions?.configure,
     actionComplete: actionPanelActions?.complete,
     actionReopen: actionPanelActions?.reopen,
-    actionOpenBoard: actionPanelActions?.openBoard,
   });
   // One timer bag and one comment / action bag per element, built from the stable wrappers above, so
   // a view's memo holds across editor renders (docs/specs/008-canvas/canvas-performance.md).
@@ -306,14 +299,13 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     }));
   }, [h]);
   const actionActionsFor = useMemo(() => {
-    const { actionConfigure, actionComplete, actionReopen, actionOpenBoard } = h;
+    const { actionConfigure, actionComplete, actionReopen } = h;
     if (!actionConfigure || !actionComplete || !actionReopen) return null;
     return idBound((id) => ({
       add: () => actionConfigure(id, null),
       edit: (actionId: string) => actionConfigure(id, actionId),
       complete: (actionId: string) => actionComplete(id, actionId),
       reopen: (actionId: string) => actionReopen(id, actionId),
-      ...(actionOpenBoard ? { openBoard: actionOpenBoard } : {}),
     }));
   }, [h]);
   // Auto-fit measures the face it paints, and webfonts land after first
@@ -358,31 +350,24 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
   // renders — hidden or not — at full band opacity so the preview is
   // legible. Memoised for the same reason as the index (stable identity
   // when inputs are).
-  // A chart that sits in a Sheet on this tab is the Sheet's to draw, over its cells (docs/specs/029-sheets/sheet.md
-  // "Charts"): the canvas draws no copy of it.
-  const inSheet = useMemo(() => sheetDrawnChartIds(elements), [elements]);
   const ordered = useMemo(() => {
-    const drawn = (element: { id: string }) => !inSheet.has(element.id);
     if (layerPreviewId) {
       return layerBands(elements, tabLayers, { includeHidden: true })
         .filter((band) => band.layer.id === layerPreviewId)
-        .flatMap((band) =>
-          band.elements.filter(drawn).map((element) => ({ element, layerOpacity: 1 })),
-        );
+        .flatMap((band) => band.elements.map((element) => ({ element, layerOpacity: 1 })));
     }
     return layerBands(elements, tabLayers).flatMap((band) => {
       const layerOpacity = layerOpacityOf(band.layer);
-      return band.elements.filter(drawn).map((element) => ({ element, layerOpacity }));
+      return band.elements.map((element) => ({ element, layerOpacity }));
     });
-  }, [elements, tabLayers, layerPreviewId, inSheet]);
-  // The palette arrives as a fresh array each render (themeChartPalette): keyed by its colours, so the views (and a
-  // Sheet's charts) re-render only when the colours change.
+  }, [elements, tabLayers, layerPreviewId]);
+  // The palette arrives as a fresh array each render (themeChartPalette): keyed by its colours, so the views
+  // re-render only when the colours change.
   const paletteKey = chartPalette?.join('|') ?? '';
   // oxlint-disable-next-line react/exhaustive-deps
   const stablePalette = useMemo(() => chartPalette, [paletteKey]);
   const selfId = participantKey(selfParticipant);
-  // What every boxed element view takes from this layer, the same for each element; a chart its Sheet draws takes
-  // the same (sheet-chart-renderer), so it looks and acts as it would here.
+  // What every boxed element view takes from this layer, the same for each element.
   const boxedShared = useMemo<BoxedShared>(
     () => ({
       onPlainClick: h.handleElementClick,
@@ -472,11 +457,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
       imageContext,
     ],
   );
-  const renderChart = useSheetChartRenderer(boxedShared, tabFontStack);
-  const sheetCharts = useMemo<SheetChartsValue>(
-    () => ({ elements, chartPalette: stablePalette, editable: true, renderChart }),
-    [elements, stablePalette, renderChart],
-  );
   // The elements actually drawn, for the arrows' pass-behind breaks: a box on
   // a hidden layer must not cut a gap in a line (docs/specs/008-canvas/arrow-route-behind.md).
   const drawnElements = useMemo(() => ordered.map((o) => o.element), [ordered]);
@@ -525,166 +505,134 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
   // The grips layer's portal hosts (docs/specs/008-canvas/canvas-and-palette.md "Resize"), set once
   // it mounts; every element view portals its grips into them.
   const [gripHosts, setGripHosts] = useState<SelectionGripHosts | null>(null);
-  // The vote as a board's cards see it (CardVoteContext): their stepper reads it, keyed by card.
-  const cardVote = useMemo<CardVote | null>(
-    () =>
-      tabVote
-        ? {
-            vote: tabVote,
-            selfId,
-            voteMax,
-            layers: tabLayers,
-            reviewActive: voteReview != null,
-            focusKey: voteReview?.focusId ?? null,
-            onCast: readOnly && !takePart ? undefined : onCastVote,
-            onRetract: readOnly && !takePart ? undefined : onRetractVote,
-          }
-        : null,
-    [
-      tabVote,
-      selfId,
-      voteMax,
-      tabLayers,
-      voteReview,
-      readOnly,
-      takePart,
-      onCastVote,
-      onRetractVote,
-    ],
-  );
   return (
-    <SheetChartsContext.Provider value={sheetCharts}>
-      <CardVoteProvider value={cardVote}>
-        <SelectionGripsContext.Provider value={gripHosts}>
-          {/* Shared arrowhead defs. Multiple per-arrow <svg>s below
+    <>
+      <SelectionGripsContext.Provider value={gripHosts}>
+        {/* Shared arrowhead defs. Multiple per-arrow <svg>s below
             all reference url(#arrowhead) — defs are document-scoped
             in SVG so a single defs node lets every arrow render
             with the same marker. */}
-          {hasArrows ? (
-            <svg
-              className="absolute"
-              style={{ width: 0, height: 0, overflow: 'visible' }}
-              aria-hidden
-            >
-              <ArrowDefs />
-            </svg>
-          ) : null}
+        {hasArrows ? (
+          <svg
+            className="absolute"
+            style={{ width: 0, height: 0, overflow: 'visible' }}
+            aria-hidden
+          >
+            <ArrowDefs />
+          </svg>
+        ) : null}
 
-          {/* Render elements in their natural array order so
+        {/* Render elements in their natural array order so
             `bringToFront` / `sendToBack` reorder arrows relative to
             boxed elements (instead of all arrows perpetually stacking
             above all boxes inside a single SVG layer). Each arrow
             gets its own <svg> overlay; pointer events on the SVG are
             disabled in CSS, only the inner arrow line picks them up. */}
-          <CanvasElementList
-            shownOrder={shownOrder}
-            previewStore={previewStore}
-            h={h}
-            boxedShared={boxedShared}
-            arrowGeometry={arrowGeometry}
-            arrowLabels={arrowLabels}
-            elements={elements}
-            editingId={editingId}
-            editCursorAtEnd={editCursorAtEnd}
-            reshapingArrowId={props.reshapingArrowId}
-            isPaintMode={isPaintMode}
-            tabLocked={tabLocked}
-            readOnly={readOnly}
-            insertShift={insertShift}
-            shiftDupGhostIds={shiftDupGhostIds}
-            draftView={draftView}
-            tabVote={tabVote}
-            tabLayers={tabLayers}
-            remoteSelectionsByElement={remoteSelectionsByElement}
-            canMove={canMove}
-            canWriteText={canWriteText}
-            canResize={canResize}
-            voteReview={voteReview}
-            commentActionsFor={commentActionsFor}
-            actionActionsFor={actionActionsFor}
-            revealedIds={revealedIds}
-            reactionBursts={reactionBursts}
-            tabFont={tabFont}
-            tabFinish={tabFinish}
-            fontEpoch={fontEpoch}
-            stackedIds={stackedIds}
-          />
+        <CanvasElementList
+          shownOrder={shownOrder}
+          previewStore={previewStore}
+          h={h}
+          boxedShared={boxedShared}
+          arrowGeometry={arrowGeometry}
+          arrowLabels={arrowLabels}
+          elements={elements}
+          editingId={editingId}
+          editCursorAtEnd={editCursorAtEnd}
+          reshapingArrowId={props.reshapingArrowId}
+          isPaintMode={isPaintMode}
+          tabLocked={tabLocked}
+          readOnly={readOnly}
+          insertShift={insertShift}
+          shiftDupGhostIds={shiftDupGhostIds}
+          draftView={draftView}
+          tabVote={tabVote}
+          tabLayers={tabLayers}
+          remoteSelectionsByElement={remoteSelectionsByElement}
+          canMove={canMove}
+          canWriteText={canWriteText}
+          canResize={canResize}
+          voteReview={voteReview}
+          commentActionsFor={commentActionsFor}
+          actionActionsFor={actionActionsFor}
+          revealedIds={revealedIds}
+          reactionBursts={reactionBursts}
+          tabFont={tabFont}
+          tabFinish={tabFinish}
+          fontEpoch={fontEpoch}
+          stackedIds={stackedIds}
+        />
 
-          {/* The line or arrow being drawn (docs/specs/023-draw-mode/draw-mode.md "Shapes"): the
+        {/* The line or arrow being drawn (docs/specs/023-draw-mode/draw-mode.md "Shapes"): the
           element the release lands, after every element, where it will land. */}
-          {drawDrag && props.pendingDraw?.type === 'arrow' && props.previewDrawnArrow ? (
-            <DrawnArrowPreview
-              arrow={props.previewDrawnArrow(
-                props.pendingDraw,
-                drawDrag.startX,
-                drawDrag.startY,
-                drawDrag.currentX,
-                drawDrag.currentY,
-              )}
-              elementIndex={elementIndex ?? EMPTY_ELEMENT_INDEX}
-              occluders={drawnElements}
-              draftLayout={arrowLabels.draftLayout}
-              fontFamily={tabFontStack}
-              withDefs={!hasArrows}
-            />
-          ) : null}
+        {drawDrag && props.pendingDraw?.type === 'arrow' && props.previewDrawnArrow ? (
+          <DrawnArrowPreview
+            arrow={props.previewDrawnArrow(
+              props.pendingDraw,
+              drawDrag.startX,
+              drawDrag.startY,
+              drawDrag.currentX,
+              drawDrag.currentY,
+            )}
+            elementIndex={elementIndex ?? EMPTY_ELEMENT_INDEX}
+            occluders={drawnElements}
+            draftLayout={arrowLabels.draftLayout}
+            fontFamily={tabFontStack}
+            withDefs={!hasArrows}
+          />
+        ) : null}
 
-          {/* What the agents present name in focus (docs/specs/024-agents/agent-presence.md "In the editor"):
+        {/* What the agents present name in focus (docs/specs/024-agents/agent-presence.md "In the editor"):
           above the elements, beneath the remote cursors. */}
-          <AgentFocusOverlay elements={elements} />
+        <AgentFocusOverlay elements={elements} />
 
-          {remoteCursors.map((c) => (
-            <ZoomedRemoteCursor key={c.id} cursor={c} />
-          ))}
+        {remoteCursors.map((c) => (
+          <ZoomedRemoteCursor key={c.id} cursor={c} />
+        ))}
 
-          {/* Laser overlay sits inside the viewport-transformed wrapper
+        {/* Laser overlay sits inside the viewport-transformed wrapper
             so trail coordinates (canvas-space) pan + zoom with
             elements. The overlay component owns its own RAF loop
             and only runs while there's at least one active trail. */}
-          <ZoomedLaserOverlay trails={laserTrails} />
+        <ZoomedLaserOverlay trails={laserTrails} />
 
-          {/* What a relayed changeset touched (docs/specs/024-agents/agent-changesets.md "In the editor"):
+        {/* What a relayed changeset touched (docs/specs/024-agents/agent-changesets.md "In the editor"):
           above the elements, below the selection chrome. */}
-          <ChangesetRevealOverlay elements={elements} tabId={props.activeTabId ?? ''} />
+        <ChangesetRevealOverlay elements={elements} tabId={props.activeTabId ?? ''} />
 
-          {/* The grips layer (docs/specs/008-canvas/canvas-and-palette.md "Resize"): above every element, so
+        {/* The grips layer (docs/specs/008-canvas/canvas-and-palette.md "Resize"): above every element, so
           no grip is ever covered. The canvas's own grips go in here; each element's are portalled in. */}
-          <SelectionGripsLayer onHosts={setGripHosts} isoDepth={ordered.length}>
-            <LayerSelectionChrome
-              selectionInput={props.selectionInput}
-              tabId={props.activeTabId ?? ''}
-              elements={elements}
-              editingId={editingId}
-              nextNote={
-                props.esBoard && props.onAddNextNote
-                  ? {
-                      blocked:
-                        readOnly ||
-                        tabLocked ||
-                        props.createBlocked === true ||
-                        insertShift.animates,
-                      onAdd: props.onAddNextNote,
-                    }
-                  : null
-              }
-              pluses={{
-                quickRingOpen,
-                setQuickRingOpen,
-                openOnHover: settings.quickAddOnHover === true,
-                onSpawnConnect,
-                onStartArrow,
-                onStartPencil,
-                onAddTableRow,
-                onAddTableColumn,
-                onAppendWebRow,
-                onAddEntityField: h.onAddEntityField,
-                onAddRelatedEntity: h.onAddRelatedEntity,
-              }}
-              onBeginDrag={onBeginDrag}
-            />
-          </SelectionGripsLayer>
-        </SelectionGripsContext.Provider>
-      </CardVoteProvider>
-    </SheetChartsContext.Provider>
+        <SelectionGripsLayer onHosts={setGripHosts} isoDepth={ordered.length}>
+          <LayerSelectionChrome
+            selectionInput={props.selectionInput}
+            tabId={props.activeTabId ?? ''}
+            elements={elements}
+            editingId={editingId}
+            nextNote={
+              props.esBoard && props.onAddNextNote
+                ? {
+                    blocked:
+                      readOnly || tabLocked || props.createBlocked === true || insertShift.animates,
+                    onAdd: props.onAddNextNote,
+                  }
+                : null
+            }
+            pluses={{
+              quickRingOpen,
+              setQuickRingOpen,
+              openOnHover: settings.quickAddOnHover === true,
+              onSpawnConnect,
+              onStartArrow,
+              onStartPencil,
+              onAddTableRow,
+              onAddTableColumn,
+              onAppendWebRow,
+              onAddEntityField: h.onAddEntityField,
+              onAddRelatedEntity: h.onAddRelatedEntity,
+            }}
+            onBeginDrag={onBeginDrag}
+          />
+        </SelectionGripsLayer>
+      </SelectionGripsContext.Provider>
+    </>
   );
 }

@@ -4,14 +4,12 @@
 // this package already imports the document one (the reverse would be a cycle).
 
 import { buildTab, stampTabKind, type Tab } from '@livediagram/document';
-import { buildTemplate, templateTabs } from './build-template';
+import { buildTemplate } from './build-template';
 import { TEMPLATES, templateKindOf, type TemplateKind } from './templates';
-import { formTemplateStarter, isFormTemplateKind } from './form-templates';
 import { templateCanvasOverrides } from './template-canvas-overrides';
 
-// The templates an agent may build: the catalogue's (templateCatalogue), never an editor-only one. A form template
-// makes an empty Plan tab the editor then starts the form on, so built here it was an empty Plan tab and no form.
-const AGENT_TEMPLATES = TEMPLATES.filter((t) => !t.hidden && !t.editorOnly);
+// The templates an agent may build: the catalogue's (templateCatalogue), never a hidden one.
+const AGENT_TEMPLATES = TEMPLATES.filter((t) => !t.hidden);
 const AGENT_KINDS: ReadonlySet<string> = new Set(AGENT_TEMPLATES.map((t) => t.kind));
 
 // A template argument resolved against the catalogue; null for an unknown kind (or one only the editor makes), so the
@@ -30,7 +28,7 @@ const wordsOf = (text: string) => text.toLowerCase().match(/[a-z0-9]+/g) ?? [];
 
 /**
  * The kinds an unknown one most likely meant (docs/specs/015-api/mcp-server.md §4.5): those whose kind or title has a
- * word starting with a word of it (of 3 letters or more), so "retro" offers the four retrospectives.
+ * word starting with a word of it (of 3 letters or more), so "retro" offers the three retrospectives named for it.
  */
 export function closestTemplateKinds(given: string): TemplateKind[] {
   const asked = wordsOf(given).filter((w) => w.length >= 3);
@@ -42,11 +40,8 @@ export function closestTemplateKinds(given: string): TemplateKind[] {
     .map((t) => t.kind);
 }
 
-/** "Closest: retrospective, team-retro. " for an unknown kind with any, else nothing. A form template says how
- *  its form is made instead. */
+/** "Closest: retrospective, start-stop-continue. " for an unknown kind with any, else nothing. */
 export function closestTemplatesHint(given: string): string {
-  if (isFormTemplateKind(given))
-    return `"${given}" starts a form, which only the editor makes from a template: make it with add_form (starter "${formTemplateStarter(given)}"). `;
   const closest = closestTemplateKinds(given);
   return closest.length ? `Closest: ${closest.join(', ')}. ` : '';
 }
@@ -67,44 +62,20 @@ export function buildTemplateTab(
     ...buildTab(tabId, name, buildTemplate(kind, 0, 0), 'preserve', themeId),
     templateChosen: true,
     ...templateCanvasOverrides(kind),
-    ...templateTabs(kind)[0]?.tab?.([tabId]),
   });
 }
 
-// Every tab a template makes (docs/specs/026-plan/plan-templates.md "How a template with tabs is made"):
-// the first takes `first`'s id and name, the rest a fresh id each and the template's names. A template of
-// one tab makes exactly buildTemplateTab's.
-// The name a template's first tab takes where an agent or the api makes it (docs/specs/026-plan/plan-templates.md "How a
-// template with tabs is made"): the name given, unless it is one of the template's later tabs (the agent naming the
-// tab it wanted, which the template makes anyway), when the first keeps its template name, so no two tabs share one.
-// With no name given, the template's own first name, else Tab 1.
-export function templateTabName(given: string | undefined, kind: TemplateKind): string {
-  const [first, ...later] = templateTabs(kind).map((d) => d.name);
-  if (given === undefined || !given.trim()) return first ?? 'Tab 1';
-  const key = given.trim().toLowerCase();
-  return first && later.some((n) => n?.trim().toLowerCase() === key) ? first : given;
+// The name a template's tab takes where an agent or the api makes it: the name given, else Tab 1.
+export function templateTabName(given: string | undefined, _kind: TemplateKind): string {
+  return given === undefined || !given.trim() ? 'Tab 1' : given;
 }
 
+// Every tab a template makes: one, buildTemplateTab's, taking `first`'s id and name.
 export function buildTemplateTabs(
   first: { id: string; name: string },
   kind: TemplateKind,
-  newId: () => string,
+  _newId: () => string,
   themeId?: string,
 ): Tab[] {
-  const defs = templateTabs(kind);
-  const ids = defs.map((_, i) => (i === 0 ? first.id : newId()));
-  return defs.map((def, i) =>
-    stampTabKind({
-      ...buildTab(
-        ids[i]!,
-        i === 0 ? first.name : (def.name ?? first.name),
-        def.build(0, 0),
-        'preserve',
-        themeId,
-      ),
-      templateChosen: true,
-      ...(def.ownCanvas ? {} : templateCanvasOverrides(kind)),
-      ...def.tab?.(ids),
-    }),
-  );
+  return [buildTemplateTab(first.id, first.name, kind, themeId)];
 }

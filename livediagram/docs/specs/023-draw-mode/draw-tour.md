@@ -82,5 +82,5 @@ The Workshop tour's funnel, with its own tokens:
 
 ## Power user mode
 
-[Power user mode](../007-editor/power-user-mode.md) marks the Draw tour seen alongside the Diagram, Plan and
+[Power user mode](../007-editor/power-user-mode.md) marks the Draw tour seen alongside the Diagram and
 Workshop tours.

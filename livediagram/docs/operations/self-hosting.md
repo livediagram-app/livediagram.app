@@ -264,15 +264,6 @@ adds the columns; nothing else to configure.
   network on the invite email's open Decline doors (`/api/teams/invite-decline/...`). Without the binding every
   request is allowed; the token is 256 random bits either way.
 
-## Forms
-
-Form tabs ([Forms](../specs/030-forms/forms.md)) need nothing extra: migration `0092_forms.sql` creates their tables
-with the others, and a form link is served by the editor worker (`/form/<code>`) and the api (`/api/forms/...`).
-
-- `FORM_RATE_LIMITER` (optional binding, declared in `apps/api/wrangler.toml`): 60 reads and 60 responses a minute
-  per network. Without the binding every request is allowed; the per-form cap of 500 responses an hour still holds.
-- The new-response and suspension emails go only where email is configured (`RESEND_API_KEY`).
-
 ## Workbenches (optional, needs Clerk)
 
 A workbench is a developer tool that frames the editor signed in, beside an agent ([Workbench embeds](../specs/013-workspace/workbench-embeds.md)). It needs API tokens, so it exists only where Clerk is configured; without Clerk the routes answer as for any caller without a token and nothing breaks.
@@ -281,9 +272,11 @@ A workbench is a developer tool that frames the editor signed in, beside an agen
 - `WORKBENCH_TICKET_RATE_LIMITER` (optional binding, declared in `apps/api/wrangler.toml`): caps ticket mints and pairing requests per token. Without the binding every request is allowed.
 - Migration `0077_workbench.sql` creates the four workbench tables; it runs with the others.
 
-## Sheets
+## Plan's tables
 
-Plan-mode Sheets ([Sheet store](../specs/029-sheets/sheet-store.md)) need no setup: migration `0078_sheets.sql` creates the `sheets` and `sheet_cells` tables and runs with the others, and the worker's existing daily scheduled run removes sheets that no Sheet element shows any more.
+Plan mode (boards, Sheets and forms) moved to liveplanner. The migrations that made its tables (`items`, `sheets`,
+`sheet_cells`, the form tables) stay in the chain and the tables stay in D1, unread; nothing needs setting up for
+them, and `FORM_RATE_LIMITER` is no longer read.
 
 ## Google Drive mirror (optional, needs Clerk)
 

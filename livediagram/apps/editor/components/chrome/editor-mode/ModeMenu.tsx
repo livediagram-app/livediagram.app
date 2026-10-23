@@ -1,5 +1,5 @@
 import { useId, useState } from 'react';
-import { crossesPlan, editorModeDescription, editorModeLabel } from '@livediagram/document';
+import { editorModeDescription, editorModeLabel } from '@livediagram/document';
 import {
   CheckIcon,
   EDITOR_MODE_ICONS,
@@ -11,13 +11,12 @@ import { MODE_SWITCH_FOCUS, type EditorModeSwitchProps } from './editor-mode-cop
 import { MODE_TINT, MODE_TOOLS, type ModeMenuAction } from './mode-menu-copy';
 import { ModeKeyHint } from './ModeKeyHint';
 import { ModePreviewArt } from './ModePreviewArt';
-import { OpenIcon } from '@/components/primitives/explorer-icons';
 
 type Mode = EditorModeSwitchProps['mode'];
 
 // The mode menu (docs/specs/007-editor/editor-modes.md "The mode switch"): two panes, a list of the
 // modes and a preview of one. The list's rows are the menu's `menuitemradio` items, each its mark on
-// the mode's tint, its name, then a check on the current mode or a New tab mark across Plan's line.
+// the mode's tint, its name, then a check on the current mode.
 // The preview follows the pointer, else focus, else the current mode: a picture, the description,
 // the main tools. Choosing is the row's alone (a click, or Enter or Space on the focused row). The
 // preview is for the pointer, so it is hidden from assistive technology, which hears each row's
@@ -34,12 +33,8 @@ export function ModeMenu({
   hostZoom,
   onChange,
   onClose,
-  crossPlan,
-  lockedReason,
-  onLockedPick,
   fill = false,
 }: {
-  crossPlan: boolean;
   mode: Mode;
   modes: readonly Mode[];
   keyLeadsTo: Mode | null;
@@ -48,8 +43,6 @@ export function ModeMenu({
   hostZoom: number;
   onChange: EditorModeSwitchProps['onChange'];
   onClose: () => void;
-  lockedReason?: string | undefined;
-  onLockedPick?: (mode: Mode) => void;
   // A start panel's labelled switch: on a phone the menu spans the row it opens from, its descriptions running the
   // full width (the top chrome's chip is too narrow to span).
   fill?: boolean;
@@ -64,20 +57,10 @@ export function ModeMenu({
   // The mode the preview shows: the last row pointed at or focused, the current mode until then.
   const [shown, setShown] = useState<Mode>(mode);
 
-  // Across a lock (the tab keeps its mode, or Plan's line) a row offers a new tab instead; with no
-  // new tab to offer (a session that cannot add tabs) it is inert.
-  const actionOf = (option: Mode): ModeMenuAction => {
-    if (option === mode) return 'current';
-    const locked = !!lockedReason || (!crossPlan && crossesPlan(mode, option));
-    if (!locked) return 'switch';
-    return onLockedPick ? 'new-tab' : 'inert';
-  };
+  const actionOf = (option: Mode): ModeMenuAction => (option === mode ? 'current' : 'switch');
   const choose = (option: Mode) => {
-    const action = actionOf(option);
-    if (action === 'inert') return;
     onClose();
-    if (action === 'new-tab') onLockedPick?.(option);
-    else if (action === 'switch') onChange(option);
+    if (actionOf(option) === 'switch') onChange(option);
   };
 
   return (
@@ -92,7 +75,6 @@ export function ModeMenu({
         {modes.map((option) => {
           const action = actionOf(option);
           const checked = action === 'current';
-          const inert = action === 'inert';
           const RowIcon = EDITOR_MODE_ICONS[option];
           const describedBy = `${ids}-${option}`;
           return (
@@ -101,7 +83,6 @@ export function ModeMenu({
               type="button"
               role="menuitemradio"
               aria-checked={checked}
-              aria-disabled={inert || undefined}
               aria-describedby={describedBy}
               data-mode-row={option}
               data-shown={option === shown || undefined}
@@ -113,7 +94,7 @@ export function ModeMenu({
                 checked
                   ? 'font-semibold text-slate-900 dark:text-white'
                   : 'font-medium text-slate-600 dark:text-slate-300'
-              } ${inert ? 'cursor-not-allowed opacity-50' : ''} ${
+              } ${
                 option === shown
                   ? 'bg-slate-100 dark:bg-slate-800'
                   : 'hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -133,21 +114,18 @@ export function ModeMenu({
                   className={`${fill ? '' : 'max-w-60'} text-xs font-normal leading-snug text-slate-500 sm:sr-only dark:text-slate-400`}
                 >
                   {editorModeDescription(option)}
-                  {action === 'new-tab' ? ' Opens in a new tab.' : ''}
                 </span>
               </span>
               <span className="flex w-5 shrink-0 justify-end">
                 {checked ? (
                   <CheckIcon aria-hidden className="text-brand-700 dark:text-brand-400" />
-                ) : action === 'new-tab' ? (
-                  <OpenIcon aria-hidden data-new-tab-mark className="text-slate-400" />
                 ) : null}
               </span>
             </button>
           );
         })}
       </div>
-      <ModePreview mode={shown} keyLeads={shown === keyLeadsTo && !lockedReason} />
+      <ModePreview mode={shown} keyLeads={shown === keyLeadsTo} />
     </div>
   );
 }

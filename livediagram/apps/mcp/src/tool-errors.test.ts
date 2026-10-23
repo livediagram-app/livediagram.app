@@ -5,9 +5,9 @@ import { ApiError } from './api';
 import type { Env } from './env';
 import { registerTool } from './tool-annotations';
 import { loadTab, ToolInputError } from './tool-helpers';
-import { deleteRefusal, templateNote } from './tools';
+import { deleteRefusal } from './tools';
 
-// Errors that teach (docs/specs/026-plan/plan-agents.md; docs/specs/015-api/mcp-server.md): a mistake the caller
+// Errors that teach (docs/specs/015-api/mcp-server.md): a mistake the caller
 // can fix is a tool error in words, never a thrown protocol error.
 
 vi.mock('./render', () => ({ svgToPngBase64: async () => '' }));
@@ -59,17 +59,6 @@ describe('deleteRefusal', () => {
     expect(deleteRefusal(401, true)).not.toContain('last one');
     expect(deleteRefusal(503, true)).toContain('503');
     expect(deleteRefusal(400, false)).toContain('Check the document id');
-  });
-});
-
-describe('templateNote', () => {
-  it('says when add_tab took only the first of a template’s tabs', () => {
-    expect(templateNote('kanban').note).toMatch(
-      /^The kanban template has \d+ tabs; add_tab added its first/,
-    );
-    expect(templateNote('flowchart')).toEqual({});
-    expect(templateNote(undefined)).toEqual({});
-    expect(templateNote('nope')).toEqual({});
   });
 });
 

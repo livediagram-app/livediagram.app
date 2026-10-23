@@ -79,7 +79,7 @@ const GROUPS: {
             <circle cy={3.4} r={0.7} className="fill-current" />
           </>
         ),
-        title: 'Plan Mode: Roadmaps',
+        title: 'Timelines and Roadmaps',
         where: 'Help Centre',
       },
     ],

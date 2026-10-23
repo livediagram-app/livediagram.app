@@ -94,7 +94,7 @@ describe('pageMetadata', () => {
         url: 'https://livediagram.app/opengraph-image',
         width: 1200,
         height: 630,
-        alt: 'livediagram: a real-time canvas for diagrams, whiteboards, workshops and plans',
+        alt: 'livediagram: a real-time canvas for diagrams, whiteboards and workshops',
       },
     ]);
     const tw = md.twitter as Record<string, unknown> | undefined;
@@ -147,7 +147,7 @@ describe('pageMetadata', () => {
     // pin (a) the exact format, and (b) that the factory does the
     // toISOString() conversion itself (so callers can pass a
     // friendly Date and not worry about the wire format). See
-    // docs/specs/019-marketing/comparison-pages.md "Metadata".
+    // liveworkspace/docs/comparison-pages.md "Metadata".
     const date = new Date('2026-06-02T00:00:00.000Z');
     const md = pageMetadata({
       title: 't',

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { restoresMaximised, withTileActionPreamble } from './palette-tile-actions';
+import { withTileActionPreamble } from './palette-tile-actions';
 
 describe('withTileActionPreamble', () => {
   it('runs the preamble before each action, with the arguments intact', () => {
@@ -33,21 +33,13 @@ describe('withTileActionPreamble', () => {
   });
 });
 
-describe('restoresMaximised', () => {
-  it('restores for every tile but a card and cancelling a draw', () => {
-    expect(restoresMaximised('addShape', ['square'])).toBe(true);
-    expect(restoresMaximised('addShape', ['plan-board'])).toBe(true);
-    expect(restoresMaximised('addSticky', [])).toBe(true);
-    expect(restoresMaximised('addShape', ['plan-card', { plan: 'task' }])).toBe(false);
-    expect(restoresMaximised('cancelDraw', [])).toBe(false);
-  });
-
+describe('withTileActionPreamble arguments', () => {
   it('hands the preamble the action and its arguments', () => {
     const seen: unknown[] = [];
     const wrapped = withTileActionPreamble({ addShape: (_k: string) => {} }, (a, args) =>
       seen.push([a, ...args]),
     );
-    wrapped.addShape('plan-card');
-    expect(seen).toEqual([['addShape', 'plan-card']]);
+    wrapped.addShape('square');
+    expect(seen).toEqual([['addShape', 'square']]);
   });
 });

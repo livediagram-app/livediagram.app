@@ -126,8 +126,8 @@ export const TELEMETRY_CATEGORIES = [
   // retried). Never a document name or a person.
   'Home',
   // Inbox (docs/specs/013-workspace/inbox.md): the Explorer's cross-document inbox of open
-  // actions, Plan cards + comment threads. 'Opened' once per visit; 'Selected' with
-  // `type` 'Action' | 'Thread' | 'Card' on a row click (which kind of row sends
+  // actions + comment threads. 'Opened' once per visit; 'Selected' with
+  // `type` 'Action' | 'Thread' on a row click (which kind of row sends
   // people back into a document); 'Loaded'/'Retry' when a failed read is
   // retried. Never an action name, comment text, or document name.
   'Activity',
@@ -160,7 +160,7 @@ export const TELEMETRY_CATEGORIES = [
   // 'BreakShapeKey' | 'BreakShapeChip'). Presets only; never content.
   'Draw',
   // Editor modes (docs/specs/007-editor/editor-modes.md): a person switched a tab's editor mode,
-  // 'Changed' with 'ModeDiagram' | 'ModeDraw' | 'ModeWorkshop' | 'ModePlan', fired before the mode applies.
+  // 'Changed' with 'ModeDiagram' | 'ModeDraw' | 'ModeWorkshop', fired before the mode applies.
   'Editor',
   // Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md, "Telemetry"):
   // 'Linked' / 'Unlinked' (connected / disconnected, typed by token path
@@ -183,17 +183,6 @@ export const TELEMETRY_CATEGORIES = [
   // see what changed; 'Viewed' for a document view the api answered, typed by the view. Never
   // content, never an id.
   'Agent',
-  // Plan mode (docs/specs/026-plan/plan-mode.md "Telemetry"): items made, moved, opened, voted on and
-  // deleted, and board set-up changed or revealed. `type` is the item type, the set-up part or the
-  // gesture ('Board', 'Keyboard', 'Card'), never item content.
-  'Plan',
-  // Sheets (docs/specs/029-sheets/sheet.md "Telemetry"): a change by kind, CSV in and out, Find opened, and a
-  // function's first use by name (names from the closed function list only, never content).
-  'Sheet',
-  // Forms (docs/specs/030-forms/forms.md "Telemetry"): a form started (its starter), a question added (its type),
-  // published ('Link'), opened or closed, and a response sent ('Response', or 'Dropped' for the hidden field, written
-  // server-side; 'Preview' for a builder Preview's card) or reported (its reason). Never a form's words.
-  'Form',
   // Community (docs/specs/025-community/community.md): publishing, Edit Listing and removal from the editor
   // ('Shared'/'Changed' typed by category, 'Removed'·'Post'); opens, likes, copies, reports, search and filters in
   // the Community app. Never a title, tag or id.
@@ -428,11 +417,6 @@ export const PALETTE_TELEMETRY_TYPES = {
     // Entity (docs/specs/009-elements/entity.md).
     'Entity',
     'Checklist',
-    // Plan board and Plan card (docs/specs/026-plan/plan-mode.md "Telemetry").
-    'PlanBoard',
-    'PlanCard',
-    'PlanView',
-    'PlanSheet',
     'ModeButton',
     'Portal',
     'SessionButton',
@@ -512,32 +496,6 @@ export const PALETTE_TELEMETRY_TYPES = {
 // Every palette token, flattened — the set an emitter can be checked against.
 export const ALL_PALETTE_TELEMETRY_TYPES: readonly string[] =
   Object.values(PALETTE_TELEMETRY_TYPES).flat();
-
-// The kinds of Sheet change `Sheet · Changed` names (docs/specs/029-sheets/sheet.md "Telemetry"): one per change,
-// never content. Closed, so the dashboard charts each.
-export const SHEET_CHANGE_KINDS = [
-  'Cell',
-  'Formula',
-  'Format',
-  'Rows',
-  'Columns',
-  'Merge',
-  'Freeze',
-  'Sort',
-  'Filter',
-  'Replace',
-  'Fill',
-  'Paste',
-  'Title',
-  'Clear',
-  'Shift',
-  'Settings',
-  'Setup',
-  'Name',
-  'Validation',
-  'ConditionalFormat',
-] as const;
-export type SheetChangeKind = (typeof SHEET_CHANGE_KINDS)[number];
 
 // -----
 // Unfurl (docs/specs/009-elements/link-cards.md) — link-card preview metadata extracted server-side by

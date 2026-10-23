@@ -1,9 +1,9 @@
 'use client';
 
 // The parts of a comment thread every surface draws the same way (docs/specs/008-canvas/canvas-and-palette.md
-// "Comments", "On Plan cards"): the list of comments, the composer with @-mentions, and the Resolve / Reopen
-// control. The canvas's comment popover and a Plan card's item panel both compose them; the panel draws them
-// `comfortable` (a feed: larger text, the composer beside your own avatar), the popover `compact`.
+// "Comments"): the list of comments, the composer with @-mentions, and the Resolve / Reopen control. Every
+// thread surface composes them, `comfortable` (a feed: larger text, the composer beside your own avatar) or
+// `compact` (the canvas's comment popover).
 import { useRef, useState, type RefObject } from 'react';
 import { useAutoHeight } from '@/hooks/ui/useAutoHeight';
 import {

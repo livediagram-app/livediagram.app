@@ -1,6 +1,5 @@
 import { useState } from 'react';
 
-import type { TabDataRows } from './tab-data-rows';
 import { PortalMenu } from './TabPortalMenu';
 import { EllipsisGlyph } from '@/components/primitives/EllipsisTriggerButton';
 import { MenuErrorBoundary } from '@/components/primitives/MenuErrorBoundary';
@@ -14,7 +13,6 @@ export function EllipsisMenuButton({
   onClose,
   canvas,
   canDelete,
-  deleteWarning,
   canClearContent,
   locked,
   otherDocuments,
@@ -30,8 +28,6 @@ export function EllipsisMenuButton({
   onCopyTo,
   onToggleLock,
   onDelete,
-  planTab,
-  dataRows,
   selfId,
 }: {
   open: boolean;
@@ -42,8 +38,6 @@ export function EllipsisMenuButton({
   // canvas right-click menu, i.e. one unified menu rather than two.
   canvas?: CanvasMenuActions;
   canDelete: boolean;
-  // Delete's warning (deleteTabWarning): the forms sending their responses to this tab are unpublished.
-  deleteWarning?: string | undefined;
   canClearContent: boolean;
   locked: boolean;
   // Viewer identity, forwarded to the menu's Add to Document thumbnails.
@@ -61,8 +55,6 @@ export function EllipsisMenuButton({
   onCopyTo: (targetDocumentId: string) => void;
   onToggleLock: () => void;
   onDelete: () => void;
-  planTab?: boolean;
-  dataRows?: TabDataRows;
 }) {
   // In state, so the menu anchors to the button on the render that opens it.
   const [button, setButton] = useState<HTMLButtonElement | null>(null);
@@ -94,8 +86,6 @@ export function EllipsisMenuButton({
             onCopyTo={onCopyTo}
             onToggleLock={onToggleLock}
             locked={locked}
-            planTab={planTab}
-            {...(dataRows ? { dataRows } : {})}
             selfId={selfId}
             otherDocuments={otherDocuments}
             folderNames={folderNames}
@@ -104,7 +94,6 @@ export function EllipsisMenuButton({
             onRemoveFromFolder={onRemoveFromFolder}
             onDelete={onDelete}
             canDelete={canDelete}
-            deleteWarning={deleteWarning}
             canClearContent={canClearContent}
           />
         </MenuErrorBoundary>

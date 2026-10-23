@@ -37,7 +37,7 @@ const OWNER_COLUMNS: OwnerColumn[] = [
   { table: 'favourites', column: 'owner_id', migrate: { kind: 'moves' } },
   // Tags (docs/specs/013-workspace/tags.md): guests tag documents too.
   { table: 'tags', column: 'owner_id', migrate: { kind: 'moves' } },
-  // What a reader has seen of a form's responses (docs/specs/030-forms/forms.md): guests edit forms too.
+  // What a reader had seen of a form's responses (Plan's forms, now in liveplanner): the rows remain.
   { table: 'form_reads', column: 'owner_id', migrate: { kind: 'moves' } },
   // Default folders (docs/specs/013-workspace/default-folders.md): guests have them too.
   { table: 'placement_defaults', column: 'owner_id', migrate: { kind: 'moves' } },

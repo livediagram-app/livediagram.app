@@ -35,7 +35,7 @@ describe('heroSearch', () => {
 
   it('finds the blanks too, and through search words, as the editor does', () => {
     expect(heroSearch('whiteboard').map((t) => t.kind)).toContain('whiteboard');
-    expect(heroSearch('mortgage').map((t) => t.kind)).toContain('loan-calculator');
+    expect(heroSearch('erd').map((t) => t.kind)).toContain('er-diagram');
   });
 
   it('never lists a template twice', () => {
@@ -53,7 +53,7 @@ describe('the fan', () => {
         .sort(),
     );
     const modes = new Set(HERO_FAN_POOL.map((k) => heroTemplate(k).mode));
-    expect([...modes].sort()).toEqual(['diagram', 'draw', 'plan', 'workshop']);
+    expect([...modes].sort()).toEqual(['diagram', 'draw', 'workshop']);
     for (const kind of HERO_FAN_OPENING) expect(HERO_FAN_POOL).toContain(kind);
     expect(HERO_FAN_OPENING).toHaveLength(HERO_FAN_SLOTS);
   });
@@ -67,10 +67,10 @@ describe('the fan', () => {
   });
 
   it('deals the next kind not already showing, wrapping round the pool', () => {
-    const pool = ['kanban', 'flowchart', 'mindmap'] as const;
-    expect(nextFanKind(pool, ['kanban'], 0)).toEqual({ kind: 'flowchart', at: 1 });
+    const pool = ['gantt', 'flowchart', 'mindmap'] as const;
+    expect(nextFanKind(pool, ['gantt'], 0)).toEqual({ kind: 'flowchart', at: 1 });
     expect(nextFanKind(pool, ['flowchart'], 0)).toEqual({ kind: 'mindmap', at: 2 });
-    expect(nextFanKind(pool, ['flowchart'], 2)).toEqual({ kind: 'kanban', at: 0 });
+    expect(nextFanKind(pool, ['flowchart'], 2)).toEqual({ kind: 'gantt', at: 0 });
   });
 
   it('throws for a kind the catalogue does not list', () => {

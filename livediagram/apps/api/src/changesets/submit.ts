@@ -19,7 +19,6 @@ import { capStoredName } from '../names';
 import { personTagFor } from '../person-tag';
 import { readRoomSelections, type RoomSelection } from '../room-client';
 import type { DocumentDTO, Env } from '../types';
-import { makeTemplateSheets } from './template-sheets';
 import type { ChangesetBody } from './request';
 import { afterChangeset } from './after';
 import { checkBase, type BaseOutcome } from './base-check';
@@ -110,16 +109,7 @@ export async function submitChangeset(args: SubmitArgs): Promise<SubmitResult> {
         lint,
       });
     }
-    const ruled = withServerRules(compiled.tab, stored, args.author);
-    // A template's Sheets a replace lands (sheet-store.md "Template starts"), made before the tab is written.
-    const next =
-      request.body.kind === 'replace'
-        ? await makeTemplateSheets(env, document.id, ruled, {
-            id: args.author.id ?? '',
-            name: args.author.name,
-            color: args.author.color,
-          })
-        : ruled;
+    const next = withServerRules(compiled.tab, stored, args.author);
     const lint = lintResult(next, where, priorOf(request.body, stored));
     const outcome = await writeChangeset(env, {
       documentId: document.id,
@@ -229,7 +219,6 @@ function compile(
       name: body.name ?? 'Tab',
       ...(body.theme ? { themeId: body.theme } : {}),
       ...(body.finish ? { finish: body.finish } : {}),
-      ...(body.tabKind ? { kind: body.tabKind } : {}),
     });
   }
   if (!stored)

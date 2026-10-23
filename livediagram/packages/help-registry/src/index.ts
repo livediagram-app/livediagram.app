@@ -131,8 +131,8 @@ export const categories: Category[] = [
     slug: 'policies',
     title: 'Policies',
     description:
-      'The legal terms for the hosted livediagram service: the Terms of Service, the full Privacy Policy and how to report a vulnerability.',
-    articleCount: 3,
+      'How to report a vulnerability. The terms and privacy policy are liveworkspace\'s, on liveworkspace.app.',
+    articleCount: 1,
   },
   {
     slug: 'contact',
@@ -183,7 +183,7 @@ export const categories: Category[] = [
     title: 'Canvas',
     description:
       'Master the infinite canvas: place, select, link, annotate, layer, rotate, animate, lock and theme elements, undo changes, and start from templates.',
-    articleCount: 30,
+    articleCount: 29,
     kind: 'feature',
     groups: [
       'Basics',
@@ -300,7 +300,7 @@ export const articles: Article[] = [
     title: 'Settings',
     description: 'Every preference toggle, what it does, and which device it follows you to.',
     keywords:
-      'settings preferences options config configure gear cog toggles panel opacity toolbar minimap welcome tour notifications toasts reduce motion animation accessibility ai assistant telemetry anonymous usage events privacy sync account device per device defaults turn off keyboard shortcuts hotkeys keybindings ui scale element indicators badges dock position draw default folders where new documents go plan email api tokens trash delete profile picture',
+      'settings preferences options config configure gear cog toggles panel opacity toolbar minimap welcome tour notifications toasts reduce motion animation accessibility ai assistant telemetry anonymous usage events privacy sync account device per device defaults turn off keyboard shortcuts hotkeys keybindings ui scale element indicators badges dock position draw default folders where new documents go email api tokens trash delete profile picture',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
@@ -553,7 +553,7 @@ export const articles: Article[] = [
     title: 'Connect an AI Tool (MCP)',
     description: 'Connect Claude or any MCP client to find, view, create, and edit your documents.',
     keywords:
-      'claude chatgpt cursor model context protocol ai integration assistant llm connector trash restore plan items read-only',
+      'claude chatgpt cursor model context protocol ai integration assistant llm connector trash restore read-only',
     category: 'Account and Data',
     categorySlug: 'account-and-data',
   },
@@ -623,11 +623,11 @@ export const articles: Article[] = [
     parentSlug: 'working-with-documents',
   },
   {
-    slug: 'plan-sheets-images',
-    title: 'Plan Items, Sheets and Images',
-    description: 'API examples for Plan cards, Sheets, images, copies and themes.',
+    slug: 'images-and-copies',
+    title: 'Images, Copies and Libraries',
+    description: 'API examples for images, tab pictures, copies, shape libraries and themes.',
     keywords:
-      'items cards plan board card types sheets cells spreadsheet images upload render svg copy shape libraries custom themes api',
+      'images upload gallery render svg picture png copy duplicate shape libraries custom themes api',
     category: 'Developers',
     categorySlug: 'developers/working-with-documents',
     parentSlug: 'working-with-documents',
@@ -700,25 +700,6 @@ export const articles: Article[] = [
   },
 
   // ---- Policies ----
-  {
-    slug: 'terms',
-    title: 'Terms of Service',
-    description: 'The terms that govern use of the hosted livediagram service.',
-    keywords: 'tos legal terms conditions agreement rules',
-    category: 'Policies',
-    categorySlug: 'policies',
-    parentSlug: 'policies',
-  },
-  {
-    slug: 'privacy-policy',
-    title: 'Privacy Policy',
-    description: 'The full privacy policy for the hosted livediagram service.',
-    keywords:
-      'legal privacy gdpr data protection personal information openai ai retention security',
-    category: 'Policies',
-    categorySlug: 'policies',
-    parentSlug: 'policies',
-  },
   {
     slug: 'report-a-vulnerability',
     title: 'Reporting a Vulnerability',
@@ -1498,7 +1479,7 @@ export const articles: Article[] = [
     title: 'Templates',
     description: 'Start from a ready-made template instead of a blank canvas.',
     keywords:
-      'wardley map value chain evolution threat model threat modelling stride security trust boundary threat register service blueprint frontstage backstage line of visibility metric tree north star kpi tree driver model what if value proposition canvas jobs pains gains working backwards pr faq press release amazon family tree genealogy ancestry value stream map vsm lead time flow efficiency kaizen virtual office office rooms coworking cowork team pod all hands town hall auditorium pub quiz quiz night trivia icebreaker icebreakers two truths and a lie would you rather bingo find someone who games starter kanban flowchart swot gantt sankey flow diagram wireframe prebuilt scaffold quick start retro sailboat postmortem risk stakeholder persona agenda objectives crazy 8s opportunity tree standup stand-up hiring pipeline recruiting content calendar editorial project planner bug tracker okrs key results product launch go no-go feedback board feature requests onboarding new wizard mode filter draw workshop plan popular blank category categories finance budget invoice expense report loan calculator mortgage sales pipeline crm spreadsheet sheet inventory guest list rsvp grade book habit tracker meetings workshops timelines roadmaps search words blank spreadsheet empty sheet blank slate',
+      'wardley map value chain evolution threat model threat modelling stride security trust boundary threat register service blueprint frontstage backstage line of visibility metric tree north star kpi tree driver model what if value proposition canvas jobs pains gains working backwards pr faq press release amazon family tree genealogy ancestry value stream map vsm lead time flow efficiency kaizen virtual office office rooms coworking cowork team pod all hands town hall auditorium pub quiz quiz night trivia icebreaker icebreakers two truths and a lie would you rather bingo find someone who games starter flowchart swot gantt sankey flow diagram wireframe prebuilt scaffold quick start retro sailboat postmortem risk stakeholder persona agenda objectives crazy 8s opportunity tree standup stand-up new wizard mode filter draw workshop popular blank category categories meetings workshops timelines roadmaps search words blank slate',
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Basics',
@@ -1507,9 +1488,9 @@ export const articles: Article[] = [
     slug: 'editor-modes',
     title: 'Editor Modes',
     description:
-      'Diagram, Draw, Workshop and Plan: what each mode is for, choosing one on an empty tab, and Opens in.',
+      'Diagram, Draw and Workshop: what each mode is for, choosing one on an empty tab, and Opens in.',
     keywords:
-      'editor mode editor modes mode switch switch mode change mode choose mode new tab modes diagram draw plan workshop session shift+d shift d cycle next mode opens in open in default mode per tab per person tab pill mode icon whiteboard sketch boards kanban phone mobile view only read only kind template workflow way of working slides articles documents livedocuments',
+      'editor mode editor modes mode switch switch mode change mode choose mode new tab modes diagram draw workshop session shift+d shift d cycle next mode opens in open in default mode per tab per person tab pill mode icon whiteboard sketch boards kanban phone mobile view only read only kind template workflow way of working slides articles documents livedocuments plan planning boards kanban sheets spreadsheet forms liveplanner',
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Modes and Boards',
@@ -1526,17 +1507,6 @@ export const articles: Article[] = [
     group: 'Modes and Boards',
   },
   {
-    slug: 'plan-mode',
-    title: 'Plan Mode',
-    description:
-      'Boards of items on any tab: Kanban, sprints, triage, retros and roadmaps, with cards you drag together.',
-    keywords:
-      'plan mode planning board boards kanban scrum sprint agile retro retrospective roadmap now next later bug triage weekly planner jira trello asana linear backlog to do in progress done column columns swimlane swimlanes rows wip limit work in progress card cards ticket tickets task tasks story stories issue issues drag drop move card assign label priority estimate story points vote voting dot vote hide writing private reveal facilitator set up board settings plan card keyboard shift arrow undo editor mode switch shift+d opens in plan templates project planner gantt daily standup bug tracker okrs key results product launch feedback board budget planner timesheet contact list task tracker spreadsheet templates hiring onboarding tabs dashboard trash archive flag finder types hand tool view only phone',
-    category: 'Canvas',
-    categorySlug: 'canvas',
-    group: 'Modes and Boards',
-  },
-  {
     slug: 'workshop-mode',
     title: 'Workshop Mode',
     description:
@@ -1546,49 +1516,6 @@ export const articles: Article[] = [
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Modes and Boards',
-  },
-  {
-    slug: 'items',
-    title: 'Items',
-    description:
-      'The tasks, bugs, notes and ideas boards show: numbered, typed, live, kept offline and in copies.',
-    keywords:
-      'item items ticket tickets task story bug epic note idea action risk issue record records field fields custom field status assignee owner priority label labels tag tags estimate points due date deadline checklist subtasks parent epic votes number key id #12 database store offline sync duplicate copy export drive api mcp agent automation script limit 2000',
-    category: 'Canvas',
-    categorySlug: 'canvas/plan-mode',
-    parentSlug: 'plan-mode',
-  },
-  {
-    slug: 'boards',
-    title: 'Boards',
-    description:
-      'Plan boards: pick one, set up its columns, swimlanes and widgets, and what cards it takes.',
-    keywords:
-      'board boards plan board kanban sprint retro roadmap bug triage week weekly all cards archive blank column columns swimlane swimlanes rows wip limit width done counts as done widget widgets completion filter people points priorities unassigned top voted stale card size minimal compact detailed new cards card types move handle grip start with a board reveal hide writing votes left vote budget planner csv import csv download csv spreadsheet export cards',
-    category: 'Canvas',
-    categorySlug: 'canvas/plan-mode',
-    parentSlug: 'plan-mode',
-  },
-  {
-    slug: 'cards',
-    title: 'Cards',
-    description:
-      'Plan cards: add, open and fill one in, child cards, comments, flags, find any card, archive or trash it, and present it as a slide.',
-    keywords:
-      'card cards ticket tickets plan card add card open card panel modal details tab tabs description rich text bullet list numbered list labels checklist steps parent open parent assignee team members comments comment thread resolve mention trash restore empty trash archive duplicate slide slides present presentation card size flag flagged child breadcrumb trail find search finder not on a board',
-    category: 'Canvas',
-    categorySlug: 'canvas/plan-mode',
-    parentSlug: 'plan-mode',
-  },
-  {
-    slug: 'card-types',
-    title: 'Card Types',
-    description: 'Your own kinds of card on Plan boards: name, colour, glyph and custom fields.',
-    keywords:
-      'card type types item type types custom type kind kinds category ticket type issue type template fields custom field fields property properties attribute column choice dropdown select option options checkbox tick link url number date text long text show on card colour color glyph icon reorder delete restore built-in tabs details new cards can be limits',
-    category: 'Canvas',
-    categorySlug: 'canvas/plan-mode',
-    parentSlug: 'plan-mode',
   },
   {
     slug: 'draw-tour',
@@ -1611,70 +1538,6 @@ export const articles: Article[] = [
     category: 'Canvas',
     categorySlug: 'canvas/workshop-mode',
     parentSlug: 'workshop-mode',
-  },
-  {
-    slug: 'plan-tour',
-    title: 'The Plan Tour',
-    description:
-      'A guided walkthrough of Plan mode on an example board or sheet, offered once and replayable from Settings.',
-    keywords:
-      'plan tour tour walkthrough onboarding intro introduction show me around getting started guide tutorial example board example cards example sheet first time learn plan mode kanban board cards spreadsheet spreadsheets sheet sheets formulas replay rerun settings accessibility',
-    category: 'Canvas',
-    categorySlug: 'canvas/plan-mode',
-    parentSlug: 'plan-mode',
-  },
-  {
-    slug: 'forms',
-    title: 'Forms',
-    description:
-      'A form anyone can fill in from a link, each response a card on your board: questions, where answers go, publishing and closing.',
-    keywords:
-      'form forms survey surveys questionnaire google forms typeform intake submission submissions responses response respondents rsvp feedback bug report contact job application public link share link publish questions question answers mapping fields card type board column close limit report anonymous',
-    category: 'Canvas',
-    categorySlug: 'canvas/plan-mode',
-    parentSlug: 'plan-mode',
-  },
-  {
-    slug: 'dashboards',
-    title: 'Dashboards',
-    description:
-      'A Plan tab of rows and slots: boards, sheets, metrics, charts and notes side by side, live, arranged by dragging.',
-    keywords:
-      'dashboard dashboards overview report summary page layout rows row slots slot grid tiles widgets metrics metric kpi kpis chart charts board boards sheet sheets tabs at a glance status home portal add to slot settings cog background tint clear dashboard start over sheet chart change chart sheet figure column summary trend move swap resize arrange drag rearrange',
-    category: 'Canvas',
-    categorySlug: 'canvas/plan-mode',
-    parentSlug: 'plan-mode',
-  },
-  {
-    slug: 'sheets',
-    title: 'Sheets',
-    description:
-      'A spreadsheet tab on the canvas: setup and templates, cells, formulas, formatting, dropdowns, checkboxes, conditional formatting, sort, filter, find, charts, card tables, CSV, maximise and fill tab.',
-    keywords:
-      'sheet sheets spreadsheet spreadsheets excel google sheets workbook table grid cell cells row rows column columns formula formulas function functions sum average reference references a1 range ranges number format currency percent date bold italic border borders merge merged freeze frozen sort sorting filter filtering find replace csv tsv import export download upload paste copy fill handle series autofill maximise maximize full screen restore spill setup chart charts bar line pie card table cards linked save focus fill tab templates template budget invoice expense report expenses loan calculator mortgage sales pipeline inventory stock guest list rsvp grade book habit tracker timesheet contacts tracker cell size compact roomy dropdown drop down select picklist pick list list chip chips checkbox check box tick box tickbox validation data validation rule rules conditional formatting conditional format highlight colour scale color scale heat map paint format format painter custom number format format code',
-    category: 'Canvas',
-    categorySlug: 'canvas/plan-mode',
-    parentSlug: 'plan-mode',
-  },
-  {
-    slug: 'sheet-functions',
-    title: 'Sheet Functions',
-    description: 'Every function a Sheet formula can use, with its arguments and an example.',
-    keywords:
-      'sheet functions function list formulas formula reference spreadsheet functions excel functions sum average count countif sumif vlookup xlookup index match if iferror concat text date today now round filter sort unique sequence pmt npv cardcount cardsum cards plan cards errors div/0 n/a name ref value spill',
-    category: 'Canvas',
-    categorySlug: 'canvas/plan-mode',
-    parentSlug: 'plan-mode',
-  },
-  {
-    slug: 'visualisations',
-    title: 'Charts of Your Cards',
-    description: 'Visualisation tabs: a Gantt chart, calendars and more, live from every card.',
-    keywords:
-      'visualisation visualisations visualization chart charts graph gantt gantt chart timeline roadmap due calendar start calendar calendar cards by field workload priority by status priority matrix card search filter filters swimlanes swimlane lanes row order reorder drag to reorder sort by date chart settings cog card types group by statuses maximise maximize view restore view dashboard slot status breakdown',
-    category: 'Canvas',
-    categorySlug: 'canvas/plan-mode',
-    parentSlug: 'plan-mode',
   },
   {
     slug: 'event-storming-boards',
@@ -1945,7 +1808,7 @@ export const articles: Article[] = [
     title: 'Default Folders',
     description: 'Choose the folder new diagrams, whiteboards and boards land in automatically.',
     keywords:
-      'default folder where new documents go automatic placement file whiteboards retrospectives kanban event storming diagrams use as default settings documents new document wizard sessions plan',
+      'default folder where new documents go automatic placement file whiteboards retrospectives event storming diagrams use as default settings documents new document wizard sessions',
     category: 'Explorer',
     categorySlug: 'explorer/folders',
     parentSlug: 'folders',
@@ -1956,7 +1819,7 @@ export const articles: Article[] = [
     description:
       'Narrow any document list with words, chips or typed filters like made-by:ai, and share it as a link.',
     keywords:
-      'search find filter filters chips narrow refine query token tokens made by ai generated opens in mode diagram draw kind event storming template retrospective kanban edited date last week recent people me others owner space team shared unsorted unfiled root lens results pages plan',
+      'search find filter filters chips narrow refine query token tokens made by ai generated opens in mode diagram draw kind event storming template retrospective edited date last week recent people me others owner space team shared unsorted unfiled root lens results pages',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Your Library',

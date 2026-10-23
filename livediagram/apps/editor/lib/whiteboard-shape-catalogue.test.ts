@@ -22,16 +22,10 @@ describe('the whiteboard shape catalogue', () => {
     expect(draw).toEqual(['line', 'arrow']);
   });
 
-  it('offers every palette shape tile except the Components, Plan and Dashboard categories', () => {
+  it('offers every palette shape tile except the Components category', () => {
     const keys = new Set(WHITEBOARD_SHAPE_CATALOGUE.map((e) => e.key));
     for (const tile of SHAPE_TILES) {
-      if (
-        tile.section === 'components' ||
-        tile.section.startsWith('plan-') ||
-        tile.section === 'dashboard-layout' ||
-        tile.section === 'dashboard-cards'
-      )
-        continue;
+      if (tile.section === 'components') continue;
       const kind = (tile.action as { kind: string }).kind;
       const found = [...keys].some((k) => k === kind || k.startsWith(`${kind}:`));
       const docked = kind === 'square' || kind === 'circle';

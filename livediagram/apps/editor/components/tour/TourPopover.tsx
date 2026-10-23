@@ -8,13 +8,14 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { clamp, type PlanPalette } from '@livediagram/document';
+import { clamp } from '@livediagram/document';
+import type { StartPalette } from '@/components/start/start-palette';
 import { tourColourVars } from './tour-colours';
 import { glideTransition } from './tour-motion';
 import { placeTourPopover } from './tour-position';
 import type { TourTargetRect } from './useTourEngine';
 
-export { WELCOME_TOUR_COPY, type TourCardCopy, type TourWelcomeChoice } from './tour-card-copy';
+export { WELCOME_TOUR_COPY, type TourCardCopy } from './tour-card-copy';
 
 // The tour's step card (docs/specs/007-editor/editor-tour.md): step count, title, copy, dots, Back / Next / Skip,
 // anchored to the highlighted target. The bookend cards (the offer and the last card) are TourBanner's.
@@ -57,7 +58,7 @@ export function TourPopover({
   // The dialog label's lead ("Tour step 2 of 7: ...").
   ariaPrefix?: string;
   // The active tab's colours (tour-colours.ts): the card, its text and its accent wear them.
-  palette: PlanPalette;
+  palette: StartPalette;
   onBack?: () => void;
   onNext: () => void;
   onSkip: () => void;

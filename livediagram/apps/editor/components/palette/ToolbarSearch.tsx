@@ -9,7 +9,6 @@ import { SearchInput } from '@/components/primitives/SearchInput';
 import { TOOLBAR_TRIGGER_TONE } from './PaletteDropdown';
 import { ToolbarSearchAccordion } from './ToolbarSearchAccordion';
 import { PaletteTileGrid, tileHandler, type PaletteTileActions } from './PaletteTileGrid';
-import type { PaletteTileDef } from './palette-tile-defs';
 import { mergeByName, searchElementTiles } from './palette-tile-search';
 import { searchCatalogueTiles } from './palette-catalogue-search';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
@@ -67,7 +66,6 @@ export function ToolbarSearchPanel({
   mode,
   actions,
   pendingDraw,
-  planCardTiles,
   tabElements,
 }: {
   mode: EditorMode;
@@ -75,13 +73,10 @@ export function ToolbarSearchPanel({
   tabElements: readonly Element[];
   actions: PaletteTileActions;
   pendingDraw: PendingDraw | null | undefined;
-  // Plan's Cards, from the document's item types (as on the strip).
-  planCardTiles?: readonly PaletteTileDef[];
 }) {
   // Mounted only while the popover is open, so both reset each time it opens.
   const [query, setQuery] = useState('');
   const [othersOpen, setOthersOpen] = useState(false);
-  const [unavailableOpen, setUnavailableOpen] = useState(false);
   // Draw mode's markers as this browser last set them, read once per opening.
   const [pens] = useState(loadWhiteboardPrefs);
   const surface = useCanvasSurface();
@@ -91,7 +86,6 @@ export function ToolbarSearchPanel({
     query,
     mode,
     hasImage: actions.hasImage,
-    planCardTiles,
     tabElements,
     drawTiles: markerTiles(pens, surface),
   });
@@ -99,9 +93,7 @@ export function ToolbarSearchPanel({
   // One ranking per section across element types and catalogue entries: name matches first.
   const here = mergeByName(query, elements.here, catalogues.here);
   const elsewhere = mergeByName(query, elements.elsewhere, catalogues.elsewhere);
-  // Another mode's own elements: found, greyed out, never added here (and so never Enter's pick).
-  const unavailable = elements.unavailable;
-  const below = elsewhere.length + unavailable.length;
+  const below = elsewhere.length;
   const browsing = !query.trim();
   const modeName = editorModeLabel(mode);
 
@@ -162,20 +154,6 @@ export function ToolbarSearchPanel({
           }}
         >
           <PaletteTileGrid tiles={elsewhere} actions={actions} pendingDraw={pendingDraw} />
-        </ToolbarSearchAccordion>
-      ) : null}
-      {unavailable.length > 0 ? (
-        <ToolbarSearchAccordion
-          title={`Not Available in ${modeName} Mode`}
-          description="Made for another mode's own tools, so only that mode adds them."
-          count={unavailable.length}
-          open={unavailableOpen}
-          onToggle={() => {
-            if (!unavailableOpen) track('UI', 'Opened', 'ToolbarSearchUnavailable');
-            setUnavailableOpen(!unavailableOpen);
-          }}
-        >
-          <PaletteTileGrid tiles={unavailable} actions={actions} pendingDraw={pendingDraw} />
         </ToolbarSearchAccordion>
       ) : null}
     </div>

@@ -106,7 +106,6 @@ unless Repeat is on. CSS only (a clip from the top); reduced motion and every ex
 | Mode     | Where                                        |
 | -------- | -------------------------------------------- |
 | Diagram  | **Build**: Sequence Diagram, after Flowchart |
-| Plan     | none                                         |
 | Workshop | none (Search still finds and places it)      |
 
 A new one shows Browser, API and Database with five messages: a call, a self-call, a call to the database, its reply

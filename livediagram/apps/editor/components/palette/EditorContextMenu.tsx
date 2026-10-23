@@ -26,8 +26,6 @@ import {
   isBoxed,
   isSelfDrawingShape,
   supportsRotation,
-  isSheetAnchoredChart,
-  takesAttachments,
 } from '@livediagram/document';
 import { ArrowLineControls, ArrowPointerControls } from '@/components/canvas/arrow-controls';
 import { ContextMenu, ContextMenuDivider } from '@/components/palette/ContextMenu';
@@ -60,7 +58,6 @@ import { OpacityRow } from '@/components/palette/context-menu-rows';
 import { MoveToLayerRow } from '@/components/palette/MoveToLayerRow';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import { useContextMenuScaffold } from './useContextMenuScaffold';
-import { useCoversCanvas } from '@/hooks/plan/plan-cover-store';
 import { ElementContentSections } from './ElementContentSections';
 import { ElementMenuQuickBar } from './ElementMenuQuickBar';
 import { ElementAppearanceSections } from './ElementAppearanceSections';
@@ -100,9 +97,6 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
     arrowheadColorHandlers,
     strokeColorHandlers,
   } = useContextMenuScaffold(props);
-  // A board, view or Sheet filling the canvas (maximised, or Fill Tab) is not placed on it while it does: no Layer,
-  // Size or Rotation (docs/specs/026-plan/plan-board.md "Maximised board").
-  const covering = useCoversCanvas(menu.mode === 'element' ? menu.elementId : null);
   // Session-tool pickers (docs/specs/012-collaboration/session-tools.md): the chosen timer mode + countdown length
   // and the votes-per-person budget, local until the facilitator hits Start
   // (mirrors the old tab editor's Session accordion).
@@ -148,9 +142,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
       target.type === 'image' ||
       target.type === 'link-card' ||
       target.type === 'video';
-    // Collaborate and Resources: never on a Plan item (docs/specs/026-plan/plan-mode.md "Nothing attached to Plan
-    // items"), whoever opens the menu.
-    const showCollaborateGroup = boxed && takesAttachments(target);
+    const showCollaborateGroup = boxed;
     // An event-storming note (docs/specs/021-event-storming/event-storming.md) gets a VERB menu, not a styling one:
     // its colour, silhouette, text treatment and tilt are the notation, so
     // Colours / Shadow / Animation / Text / Rotation / Layer have nothing
@@ -254,7 +246,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
             />
           </>
         ) : null}
-        {esNote || covering ? null : (
+        {esNote ? null : (
           <MenuAccordionSection title="Layer" icon={<LayersGlyph />} {...sectionProps('layer')}>
             {/* Layer order tweaks keep the menu open so you can nudge
               front/back a few times in a row. */}
@@ -297,7 +289,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
         {/* Fixed-size elements (docs/specs/009-elements/mode-button.md buttons, docs/specs/021-event-storming/event-storming.md event-storming
             notes) have no size to edit — offering the boxes would advertise
             a resize the drag paths deliberately ignore. */}
-        {boxed && !isFixedSizeElement(target) && !covering ? (
+        {boxed && !isFixedSizeElement(target) ? (
           <MenuAccordionSection title="Size" icon={<SizeMenuIcon />} {...sectionProps('size')}>
             <SizeSection
               width={(target as { width: number }).width}
@@ -336,8 +328,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
             (an upright marker rotated by the angle) so the effect is legible
             before clicking; 0° resets to upright. Not on an annotation marker
             (docs/specs/009-elements/blueprints/annotations.md [QD8]). */}
-        {/* Nor on a chart its Sheet draws: it sits square on the cells (docs/specs/029-sheets/sheet.md "Charts"). */}
-        {supportsRotation(target) && !esNote && !covering && !isSheetAnchoredChart(target) ? (
+        {supportsRotation(target) && !esNote ? (
           <MenuAccordionSection
             title="Rotation"
             icon={<RotationMenuIcon />}
@@ -378,7 +369,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
             headerFillHandlers={headerFillHandlers}
             arrowheadColorHandlers={arrowheadColorHandlers}
             strokeColorHandlers={strokeColorHandlers}
-            afterGroup={!covering}
+            afterGroup
           />
         )}
         {showContentGroup ? <MenuGroupSeparator /> : null}

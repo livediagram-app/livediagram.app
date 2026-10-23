@@ -27,7 +27,7 @@ export const CORS_HEADERS = {
   // signed-in cross-origin request fails the preflight and surfaces
   // to JS as "Failed to fetch", which was hiding behind DELETE
   // /api/account and any other authed call from localhost:3102 to
-  // localhost:8787 in dev.
+  // localhost:8687 in dev.
   // Image upload uses custom X-Image-* headers (docs/specs/009-elements/images.md). The browser
   // rejects the POST preflight if any header the client sends isn't
   // in this list, which surfaces as "Failed to fetch" with no other

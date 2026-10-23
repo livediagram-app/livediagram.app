@@ -17,19 +17,19 @@ describe('the CLI words for MCP tools', () => {
   });
 
   it('writes a tool in a message as the command', () => {
-    expect(inCliWords('That document has no Form tab. Make one with add_form.')).toBe(
-      'That document has no Form tab. Make one with livediagram form add.',
+    expect(inCliWords('That tab is gone. Add one with add_tab.')).toBe(
+      'That tab is gone. Add one with livediagram tab add.',
     );
-    expect(inCliWords('read_form lists its problems; not_a_form_tab stays')).toBe(
-      'livediagram form get lists its problems; not_a_form_tab stays',
+    expect(inCliWords('read_document lists its tabs; add_tabs stays')).toBe(
+      'livediagram document view lists its tabs; add_tabs stays',
     );
   });
 
   it('prints an error in those words, text and JSON alike', () => {
-    const failure = { exit: 3 as const, code: 'form_tab_none', message: 'Make one with add_form.' };
-    expect(formatError(failure, false)).toBe('error: Make one with livediagram form add.\n');
+    const failure = { exit: 3 as const, code: 'tab_none', message: 'Add one with add_tab.' };
+    expect(formatError(failure, false)).toBe('error: Add one with livediagram tab add.\n');
     expect((JSON.parse(formatError(failure, true)) as { message: string }).message).toBe(
-      'Make one with livediagram form add.',
+      'Add one with livediagram tab add.',
     );
   });
 });

@@ -17,17 +17,9 @@ export const PlusGlyph = ({ size = 12 }: { size?: number }) => (
   </Glyph>
 );
 
-// Won't Do (docs/specs/026-plan/linked-boards.md "On the canvas"): a stroke through, inside the row's ring.
+// Won't Do (docs/specs/012-collaboration/assigned-actions.md): a stroke through, inside the row's ring.
 export const SlashGlyph = ({ size = 12 }: { size?: number }) => (
   <Glyph size={size} units={16}>
     <path d="M4 12 12 4" />
-  </Glyph>
-);
-
-// A board: three columns of cards, the Actions Board chip's mark.
-export const BoardGlyph = ({ size = 12 }: { size?: number }) => (
-  <Glyph size={size} units={16}>
-    <rect x="2" y="2.5" width="12" height="11" rx="2" />
-    <path d="M6 2.5v11M10 2.5v11" />
   </Glyph>
 );

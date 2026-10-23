@@ -5,6 +5,7 @@
 # lib/retired-features.test.ts pins every target to a live page.
 # Pages mode moved out of livediagram into livedocuments: its infographics and documents categories
 # go there, and the slide deck cards that stayed went to collaboration.
+# Plan mode moved out of livediagram into liveplanner: its boards, sheets and forms categories go there.
 
 /features/simple /features/diagrams 301
 /features/simple/ /features/diagrams 301
@@ -36,6 +37,12 @@
 /features/infographics/ https://livedocuments.app/ 301
 /features/documents https://livedocuments.app/ 301
 /features/documents/ https://livedocuments.app/ 301
+/features/plan https://liveplanner.app/ 301
+/features/plan/ https://liveplanner.app/ 301
+/features/sheets https://liveplanner.app/ 301
+/features/sheets/ https://liveplanner.app/ 301
+/features/forms https://liveplanner.app/ 301
+/features/forms/ https://liveplanner.app/ 301
 
 # The comparison pages moved to liveworkspace.app (liveworkspace/docs/comparison-pages.md), which
 # compares every app in one place. Each address here, the hub and every comparison, moves there

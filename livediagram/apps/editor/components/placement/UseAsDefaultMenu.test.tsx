@@ -64,7 +64,6 @@ describe('UseAsDefaultMenu', () => {
       'Diagrams',
       'Whiteboards',
       'Sessions',
-      'Plan boards',
       'Event Storming boards',
       'Retrospectives',
       'Kanban boards',
@@ -72,7 +71,6 @@ describe('UseAsDefaultMenu', () => {
     expect(items.map((i) => i.getAttribute('aria-checked'))).toEqual([
       'false',
       'true',
-      'false',
       'false',
       'false',
       'false',
@@ -85,7 +83,7 @@ describe('UseAsDefaultMenu', () => {
     open({ isChecked: () => false, isDisabled: () => false, toggle });
     fireEvent.click(screen.getByRole('menuitemcheckbox', { name: 'Retrospectives' }));
     expect(toggle).toHaveBeenCalledWith('template:retrospective');
-    expect(screen.getAllByRole('menuitemcheckbox')).toHaveLength(7);
+    expect(screen.getAllByRole('menuitemcheckbox')).toHaveLength(6);
   });
 
   it('keeps a disabled entry in place and inert', () => {

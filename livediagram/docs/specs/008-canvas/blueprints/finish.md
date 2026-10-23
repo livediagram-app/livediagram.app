@@ -340,8 +340,6 @@ is. `svgChecklistShape` and `svgLegendShape` letter in the element's face.
   changes, `resize`, and once fonts load): Professional marks SVG pills `data-finish-pill`; Marker draws each
   positioned bordered HTML box (and the face's own box) as an `<svg data-marker-ink>` inside it, each SVG part as a
   `<g data-marker-ink>` after it, and a `[data-marker-grid]` (a table)'s cell borders joined into whole rules.
-- A Plan body over the canvas (`MaximisableSlot`'s `OverFace`) carries `data-face-finish`, its own pass and a
-  stable-tree `SketchFace` (`keepTree`).
 - `drawn-outline-finish.ts`: `isPolygonOutline`, `polygonStrokePx`, `handDrawnPolygonPaint`, `handDrawnPathPaint`
   (line and shading only; a combined path is never shaded), `imageCornerPx`, `handDrawnImagePaint` (an edge round
   the picture), reached through `handDrawnElementPaint`. Marker's sticky is a colouring drawing over its paper.
@@ -356,12 +354,7 @@ is. `svgChecklistShape` and `svgLegendShape` letter in the element's face.
   (`box-shadow: c 0 0 0 Npx inset`) counts as a frame's line (`data-marker-drawn="ring"` drops it).
 - The face's own box (`MARKER_FACE_BODY_SLACK_PX`) is coloured in once, its ink at `z-index: -1` in a box the pass
   isolates (`data-marker-isolated`), and never when the element's body is already drawn by hand (`FaceBox.bodyDrawn`,
-  a `svg[data-finish]` body) or the surface is a page (`useFaceFinishPass(..., { page: true })`: OverFace and the
-  Dashboard page).
-- Dashboard (`components/plan/dashboard/DashboardPage.tsx`): the page provides `FaceFinishProvider` and
-  `data-face-finish` from `resolveFinish(undefined, tab.finish)`, letters itself with
-  `planFontStyle(resolveFontStack(elementFontId({}, tab.font, tab.finish)))`, and runs the pass as a page.
-- `lib/plan-font.ts`: only Sketch's Caveat takes `fontSizeAdjust: ex-height PLAN_HANDWRITING_EX`.
+  a `svg[data-finish]` body) or the surface is a page (`useFaceFinishPass(..., { page: true })`).
 - Stickers: `sticker-markup.ts` marks the shadow `data-sticker-shadow` and the emoji art `data-finish-keep`;
   `faceFinishOf` returns Professional and Marker for a sticker (Sketch wobbles it whole); face-finish.css and
   `svgProfessionalFace` / `svgMarkerFace` drop the shadow.

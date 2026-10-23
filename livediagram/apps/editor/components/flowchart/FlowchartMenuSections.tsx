@@ -2,7 +2,7 @@
 
 // The Flowchart menu category (docs/specs/009-elements/flowchart.md "The Flowchart menu"): a flyout row
 // holding Chart (Add Lane, Tidy Flowchart), Step Type (on a step) and Direction, each a closed accordion
-// around one of Plan mode's option lists, the way the Mind Map row is built. Everything but Step Type acts
+// around an option list (a bordered box, one full-width row per choice), the way the Mind Map row is built. Everything but Step Type acts
 // on the selected step's or lane's whole chart.
 import type { ComponentProps } from 'react';
 import {
@@ -15,7 +15,7 @@ import {
 } from '@livediagram/document';
 import { Glyph, lucideGlyph } from '@livediagram/ui';
 import { lucideRoute, lucideShapes, lucideWorkflow } from '@livediagram/icons/lucide';
-import { OptionRows } from '@/components/plan/OptionRows';
+import { OptionRows } from '@/components/primitives/OptionRows';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
 import { MENU_ICON_PX } from '@/components/palette/context-menu-icons';

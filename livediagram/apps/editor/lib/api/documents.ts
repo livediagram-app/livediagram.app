@@ -1,6 +1,5 @@
 // Document-level calls: load / create / save-meta / delete / list, the
 // copy-into-my-files flow, and the "Shared with you" list.
-import type { ItemCreate, ItemTypeCatalogue } from '@livediagram/items';
 import {
   DOCUMENT_CONVERSION_HEADER,
   scalableSnapshotSvg,
@@ -9,7 +8,6 @@ import {
   type CreationIntent,
   type DocumentConversion,
   type SharedTabsSummary,
-  type SheetCreateRequest,
 } from '@livediagram/api-schema';
 import type {
   LiveDoc,
@@ -183,12 +181,6 @@ export async function apiCreateDocument(
     // (docs/specs/015-api/api.md "Marking a document used"). Only `false` travels: absent is the
     // server's own default, a making that counts.
     markUsed?: boolean;
-    // Seed items (docs/specs/026-plan/items.md): an offline document's, on sync.
-    items?: ItemCreate[];
-    // Sheets (docs/specs/029-sheets/sheet-store.md "Offline documents", "Copies"), whole.
-    sheets?: SheetCreateRequest[];
-    // The type catalogue (docs/specs/026-plan/item-types.md): a copy's, a sync's or a Drive file's.
-    itemTypes?: ItemTypeCatalogue | null;
   },
   // Set by the Offline Mode sync path (docs/specs/006-document/offline-mode.md). A sync is a plain POST, so
   // without this the worker records it as a brand-new document being created.
@@ -213,13 +205,6 @@ export async function apiCreateDocument(
       ...(d.savedAt !== undefined ? { savedAt: d.savedAt } : {}),
       ...(d.presentation ? { presentation: d.presentation } : {}),
       ...(d.markUsed === false ? { markUsed: false } : {}),
-      ...(d.items && d.items.length ? { items: d.items } : {}),
-      // The sheet store (docs/specs/029-sheets/sheet-store.md "Offline documents", "Copies"): typed since Sheets
-      // shipped but never sent, so a sync came up short of its sheets and kept the local copy, and a duplicate or
-      // a Drive import landed without them.
-      ...(d.sheets && d.sheets.length ? { sheets: d.sheets } : {}),
-      // The type catalogue rides the create (a copy's, a Plan template's card types); absent is the default types.
-      ...(d.itemTypes ? { itemTypes: d.itemTypes } : {}),
     }),
   });
   const { document: liveDoc } = await expectOk<DocumentResponse>(res, 'create document');

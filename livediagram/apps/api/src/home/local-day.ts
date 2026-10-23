@@ -7,6 +7,9 @@
 
 import { HOME_TZ_MAX_LENGTH } from '@livediagram/api-schema';
 
+/** One UTC day, in milliseconds. */
+export const DAY_MS = 86_400_000;
+
 /** The time zone to group in: UTC when none is sent, null when the name is not one Intl knows. */
 export function parseTimeZone(raw: string | null): string | null {
   if (raw === null) return 'UTC';
