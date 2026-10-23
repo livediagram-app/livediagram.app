@@ -148,13 +148,13 @@ tests," not a number.
 One set of files is the exception, held at **100% statements, branches,
 functions and lines** by per-glob thresholds in `apps/api/vitest.config.ts`:
 
-| Files                                                                                                  | Why                                                                                                                                                           |
-| ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/auth/**`                                                                                          | Decides WHO a request is — access-token checks, guest-id signatures, api tokens, the read/edit gates                                                          |
-| `src/db/api-tokens.ts`, `src/routes/tokens.ts`                                                         | Mint, resolve and revoke the credentials that act as an account                                                                                               |
-| `src/db/share.ts`, `src/db/shared.ts`, `src/db/ws-tickets.ts`                                          | Share links, the "shared with you" record, and the one-time realtime room tickets                                                                             |
-| `src/routes/share.ts`, `src/routes/shared.ts`, `src/routes/document-share-routes.ts`                   | The only unauthenticated read path into a document, and the owner-only routes that grant it                                                                   |
-| `src/image-refs/**`, `src/db/image-refs.ts`, `src/db/image-retention.ts`, `src/db/document-removal.ts` | Decide whether an uploaded image is still placed anywhere, and so whether the daily sweep may delete it ([Images](../009-elements/images.md#reference-index)) |
+| Files                                                                                | Why                                                                                                                                                           |
+| ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/auth/**`                                                                        | Decides WHO a request is — access-token checks, guest-id signatures, api tokens, the read/edit gates                                                          |
+| `src/db/api-tokens.ts`, `src/routes/tokens.ts`                                       | Mint, resolve and revoke the credentials that act as an account                                                                                               |
+| `src/db/share.ts`, `src/db/shared.ts`, `src/db/ws-tickets.ts`                        | Share links, the "shared with you" record, and the one-time realtime room tickets                                                                             |
+| `src/routes/share.ts`, `src/routes/shared.ts`, `src/routes/document-share-routes.ts` | The only unauthenticated read path into a document, and the owner-only routes that grant it                                                                   |
+| `src/image-refs/**`, `src/db/image-refs.ts`, `src/db/document-removal.ts`            | Decide whether an uploaded image is still placed anywhere, and so whether the daily sweep may delete it ([Images](../009-elements/images.md#reference-index)) |
 
 The rest of the worker fails visibly. These fail by serving the right response
 to the **wrong person**, or by deleting a picture someone placed: an outcome no amount of production monitoring

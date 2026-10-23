@@ -12,7 +12,7 @@ Scope, by file:
 | File                                                                               | Role                                                                                        |
 | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
 | `packages/api-schema/src/trash.ts`                                                 | The clock and the wire: retention, days left, error code, close code, `TrashedDocument`     |
-| `apps/api/migrations/0051_diagram_trash.sql`                                       | `documents.trashed_at` + the partial index                                                  |
+| `apps/api/migrations/0001_livediagram_baseline.sql` (was 0051_diagram_trash)       | `documents.trashed_at` + the partial index                                                  |
 | `apps/api/src/db/trash.ts`                                                         | `trashDocument`, `restoreDocument`, `purgeDocuments`, `purgeExpiredTrash`, `listTrash`, ... |
 | `apps/api/src/db/document-removal.ts`                                              | `documentRemovalStatements` takes `{ ids }` besides one id / one owner                      |
 | `apps/api/src/db/documents.ts`                                                     | `getDocument`, `getDocumentMeta`, both lists: live rows only                                |

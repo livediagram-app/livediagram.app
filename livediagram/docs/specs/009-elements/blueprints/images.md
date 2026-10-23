@@ -21,8 +21,7 @@ Scope, by file:
 | `packages/api-schema/src/index.ts`                     | `ImageSummary`                                                          |
 | `packages/media` (`@liveworkspace/media`)              | Limits, sniffing, guest owners, wire shapes, `createMediaClient`        |
 | `liveworkspace/apps/media`                             | The media service: bytes, gallery rows, dedupe, caps, JPEG strip, sweep |
-| `apps/api/migrations/0014_images.sql`                  | `images` table: the images from before the media service, unserved      |
-| `apps/api/migrations/0101_media_images.sql`            | `media_images` (owner index) and `media_ref_outbox` (reference queue)   |
+| `apps/api/migrations/0001_livediagram_baseline.sql`    | `media_images` (owner index) and `media_ref_outbox` (reference queue)   |
 | `apps/api/src/media.ts`                                | The service client, owner naming, the owner index, the reference queue  |
 | `apps/api/src/routes/images.ts`                        | `handleImages`: the five `/api/images*` routes; `originalNameOf`        |
 | `apps/api/src/db/images.ts`                            | `imageUsageByOwner`                                                     |
@@ -338,7 +337,7 @@ read a 503 as `null` and `{}`.
 
 - **Media service** ([media.md](../../../../../liveworkspace/docs/media.md)): one row per image
   (`id`, owner, `app`, type, size, dimensions, hash, name, time) and its bytes in R2, keyed by id.
-- **D1 `media_images`** (`0101_media_images.sql`, `WITHOUT ROWID`): `id` TEXT PK, `owner_id` TEXT
+- **D1 `media_images`** (the baseline, `WITHOUT ROWID`): `id` TEXT PK, `owner_id` TEXT
   NOT NULL (an account id, a guest id, or `''` for an id the service does not know); index
   `media_images_owner_idx`. Filled on upload, on gallery list, and on a byte-read miss. Never
   emptied by a read; a deleted image's row goes with its delete.

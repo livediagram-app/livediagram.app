@@ -96,7 +96,7 @@ Community is off, and it fetches `featured` only once the section comes near the
 
 ## 3. Data and persistence
 
-Migration `apps/api/migrations/0068_community.sql`:
+Migration `apps/api/migrations/0001_livediagram_baseline.sql` (was 0068_community):
 
 ```sql
 ALTER TABLE share_links ADD COLUMN purpose TEXT NOT NULL DEFAULT 'share'
@@ -128,10 +128,10 @@ CREATE TABLE community_reports (post_id → posts CASCADE, reporter_key TEXT, ne
                                 (reason IN (...)), note TEXT NULL, created_at INTEGER, PK (post_id, reporter_key))
 ```
 
-Migration `apps/api/migrations/0069_community_anonymous.sql`: `community_posts.anonymous INTEGER NOT NULL DEFAULT 0`
+Migration `apps/api/migrations/0001_livediagram_baseline.sql` (was 0069_community_anonymous): `community_posts.anonymous INTEGER NOT NULL DEFAULT 0`
 (posts published before it stay named, C10).
 
-Migration `apps/api/migrations/0070_community_networks.sql`: `network_hash TEXT` (nullable) on `community_likes` and
+Migration `apps/api/migrations/0001_livediagram_baseline.sql` (was 0070_community_networks): `network_hash TEXT` (nullable) on `community_likes` and
 `community_copies` (rows from before it count on their own); indexes `idx_community_likes_created` on
 `community_likes (created_at)` (the featured window) and `idx_community_copies_copier` on
 `community_copies (copier_id)` (a guest's copies migrating to an account, and account deletion).

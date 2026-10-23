@@ -17,8 +17,8 @@ Scope, by file:
 | `packages/api-schema/src/within-reach.ts`                                      | `withinReach`, `utcDay`; shared with the view and the Shapes flyout                            |
 | `packages/api-schema/src/creation-use.ts`                                      | `readMarkUsed`, `importMarksUse`, `MARK_USED_INVALID`, `MARKED_USED_IMPORT_MAX`                |
 | `packages/api-schema/src/error-telemetry.ts`                                   | `home` resource                                                                                |
-| `apps/api/migrations/0063_document_opens.sql`                                  | `document_opens`, its indexes, `timeline_events_actor_idx`                                     |
-| `apps/api/migrations/0065_within_reach.sql`                                    | Drops frecency: the rank index, `frecency_key`, `open_days`, `first_opened_at`, the seed stamp |
+| `apps/api/migrations/0001_livediagram_baseline.sql` (was 0063_document_opens)  | `document_opens`, its indexes, `timeline_events_actor_idx`                                     |
+| `apps/api/migrations/0001_livediagram_baseline.sql` (was 0065_within_reach)    | Drops frecency: the rank index, `frecency_key`, `open_days`, `first_opened_at`, the seed stamp |
 | `apps/api/src/home/local-day.ts`                                               | `parseTimeZone`, `localDay`                                                                    |
 | `apps/api/src/home/what-happened.ts`                                           | `verbOf`, `groupWhatHappened` (pure)                                                           |
 | `apps/api/src/home/record-open.ts`                                             | `recordDocumentOpen`: the dedupe, the write, the last open, the fingerprints                   |
@@ -40,12 +40,12 @@ Scope, by file:
 | `apps/api/wrangler.toml`                                                       | `HOME_RATE_LIMITER` in the default and `[env.staging]` blocks                                  |
 | `apps/api/src/openapi/manifest.ts`, `apps/api/scripts/gen-openapi-schemas.mjs` | The route; the `HomeResponse` schema; the create body's `markUsed`                             |
 | `packages/agent-verbs/src/mcp/schema.ts`, `apps/mcp/src/tools.ts`              | `create_document`'s optional `markUsed`, passed through to the create                          |
-| `apps/editor/lib/api/documents.ts`                                               | `apiCreateDocument(..., { markUsed })` sends `markUsed: false` only                            |
-| `apps/editor/lib/board-scene-import.ts`                                          | `importDocuments` marks by the number of documents it sets out to make                         |
-| `apps/editor/lib/api/home.ts`                                                    | `apiReadHome`                                                                                  |
-| `apps/editor/lib/api/tabs.ts`                                                    | `apiLoadTab(..., { open })` sends the marker                                                   |
-| `apps/editor/app/document/[id]/seed-fetched-document.ts`                         | The editor's first-tab read is the marked one, unless embedded                                 |
-| `apps/editor/app/document/[id]/{useIdentityBootstrap,useEditorState}.ts`         | `embed` reaches the seed                                                                       |
+| `apps/editor/lib/api/documents.ts`                                             | `apiCreateDocument(..., { markUsed })` sends `markUsed: false` only                            |
+| `apps/editor/lib/board-scene-import.ts`                                        | `importDocuments` marks by the number of documents it sets out to make                         |
+| `apps/editor/lib/api/home.ts`                                                  | `apiReadHome`                                                                                  |
+| `apps/editor/lib/api/tabs.ts`                                                  | `apiLoadTab(..., { open })` sends the marker                                                   |
+| `apps/editor/app/document/[id]/seed-fetched-document.ts`                       | The editor's first-tab read is the marked one, unless embedded                                 |
+| `apps/editor/app/document/[id]/{useIdentityBootstrap,useEditorState}.ts`       | `embed` reaches the seed                                                                       |
 
 ## Domain and naming
 
@@ -465,10 +465,10 @@ stay on their own lazy route.
 | Jump Back In: use days in the window, edit days, dedupe, the split, access, ties        | `apps/api/src/routes/home.test.ts` (real SQLite)                                          |
 | A making counts once, an opted-out or bulk one does not, a sync or re-commit never      | `apps/api/src/routes/document-create-use.test.ts` (real SQLite)                           |
 | `readMarkUsed`, `importMarksUse`                                                        | `packages/api-schema/src/creation-use.test.ts`                                            |
-| The client sends `markUsed: false` only; a bulk import sends it, a single one does not  | `apps/editor/lib/api-client.test.ts`, `apps/editor/lib/board-scene-import.test.ts`            |
+| The client sends `markUsed: false` only; a bulk import sends it, a single one does not  | `apps/editor/lib/api-client.test.ts`, `apps/editor/lib/board-scene-import.test.ts`        |
 | `create_document` passes `markUsed` through only when given                             | `apps/mcp/src/create-document-placement.test.ts`                                          |
-| An imported board is in Jump Back In unopened; a two-board import is not (guest, phone) | `apps/editor/e2e/creation-use.spec.ts`                                                      |
-| Signed in: the same, and an API create with `markUsed: false` stays out                 | `apps/editor/e2e/signed-in/creation-use.spec.ts`                                           |
+| An imported board is in Jump Back In unopened; a two-board import is not (guest, phone) | `apps/editor/e2e/creation-use.spec.ts`                                                    |
+| Signed in: the same, and an API create with `markUsed: false` stays out                 | `apps/editor/e2e/signed-in/creation-use.spec.ts`                                          |
 | Reads: others only, opens private, rejections, rate limit, the unread mark, no timeline | `apps/api/src/routes/home.test.ts` (real SQLite)                                          |
 | The backfill marks its edit, never marks a real one; migration 0063 marks legacy rows   | `apps/api/src/home/real-edits.test.ts` (real SQLite)                                      |
 | The feed and the unread count leave opens out                                           | `apps/api/src/db/timeline-opens.test.ts` (real SQLite)                                    |
@@ -478,23 +478,23 @@ stay on their own lazy route.
 | The Inbox unchanged on the shared visibility                                            | `apps/api/src/db/activity-mentions.test.ts`, `apps/api/src/db/trash-surfaces.test.ts`     |
 | OpenAPI parity and schemas                                                              | `apps/api/src/openapi/*.test.ts`                                                          |
 | Route labels know `home`                                                                | `apps/api/src/route-resources.test.ts`, `packages/api-schema/src/error-telemetry.test.ts` |
-| Client wrapper: null on failure; the marker header and its dedupe key                   | `apps/editor/lib/api/home.test.ts`, `apps/editor/lib/api-client.test.ts`                      |
-| The seed marks the first-tab read unless embedded                                       | `apps/editor/app/document/[id]/seed-fetched-document.test.ts`                               |
+| Client wrapper: null on failure; the marker header and its dedupe key                   | `apps/editor/lib/api/home.test.ts`, `apps/editor/lib/api-client.test.ts`                  |
+| The seed marks the first-tab read unless embedded                                       | `apps/editor/app/document/[id]/seed-fetched-document.test.ts`                             |
 
 ## Constants and configuration
 
-| Constant                        | Value     | Where                                         | Provenance                                   | Safe range     |
-| ------------------------------- | --------- | --------------------------------------------- | -------------------------------------------- | -------------- |
-| `HOME_WITHIN_REACH_PER_ROW`     | 4         | `packages/api-schema/src/home.ts`             | Spec (4 most used, 4 recent)                 | 3 to 6         |
-| `WITHIN_REACH_USE_WINDOW_DAYS`  | 90        | same                                          | Spec ("the last 90 days")                    | 30 to 365      |
-| `HOME_WHAT_HAPPENED_DAYS`       | 14        | same                                          | Spec                                         | 7 to 30        |
-| `HOME_WHAT_HAPPENED_ACTION_MAX` | 200       | same                                          | `D68`                                        | 100 to 500     |
-| `HOME_TZ_MAX_LENGTH`            | 64        | same                                          | Longest IANA name is 32; double for headroom | 32 to 128      |
-| `MARKED_USED_IMPORT_MAX`        | 1         | `packages/api-schema/src/creation-use.ts`     | Spec ("more than one document in one go")    | fixed          |
-| `TIMELINE_RETENTION_MS`         | 365 days  | `packages/api-schema/src/timeline.ts`         | Spec (the Timeline's retention), reused      | fixed          |
-| `LEGACY_BACKFILL_SKEW_MS`       | 60 s      | `apps/api/migrations/0063_document_opens.sql` | `D79`                                        | 10 s to 10 min |
-| `SEEN_WINDOW_MS`                | 60 s      | `apps/api/src/timeline/seen.ts`               | [Timeline](../timeline.md) §2.5, reused      | fixed          |
-| `HOME_RATE_LIMITER`             | 60 / 60 s | `apps/api/wrangler.toml`, namespace `1008`    | `D73`                                        | 30 to 120      |
+| Constant                        | Value     | Where                                                                         | Provenance                                   | Safe range     |
+| ------------------------------- | --------- | ----------------------------------------------------------------------------- | -------------------------------------------- | -------------- |
+| `HOME_WITHIN_REACH_PER_ROW`     | 4         | `packages/api-schema/src/home.ts`                                             | Spec (4 most used, 4 recent)                 | 3 to 6         |
+| `WITHIN_REACH_USE_WINDOW_DAYS`  | 90        | same                                                                          | Spec ("the last 90 days")                    | 30 to 365      |
+| `HOME_WHAT_HAPPENED_DAYS`       | 14        | same                                                                          | Spec                                         | 7 to 30        |
+| `HOME_WHAT_HAPPENED_ACTION_MAX` | 200       | same                                                                          | `D68`                                        | 100 to 500     |
+| `HOME_TZ_MAX_LENGTH`            | 64        | same                                                                          | Longest IANA name is 32; double for headroom | 32 to 128      |
+| `MARKED_USED_IMPORT_MAX`        | 1         | `packages/api-schema/src/creation-use.ts`                                     | Spec ("more than one document in one go")    | fixed          |
+| `TIMELINE_RETENTION_MS`         | 365 days  | `packages/api-schema/src/timeline.ts`                                         | Spec (the Timeline's retention), reused      | fixed          |
+| `LEGACY_BACKFILL_SKEW_MS`       | 60 s      | `apps/api/migrations/0001_livediagram_baseline.sql` (was 0063_document_opens) | `D79`                                        | 10 s to 10 min |
+| `SEEN_WINDOW_MS`                | 60 s      | `apps/api/src/timeline/seen.ts`                                               | [Timeline](../timeline.md) §2.5, reused      | fixed          |
+| `HOME_RATE_LIMITER`             | 60 / 60 s | `apps/api/wrangler.toml`, namespace `1008`                                    | `D73`                                        | 30 to 120      |
 
 No environment variable. The rate limiter binding is optional; absent means allow.
 

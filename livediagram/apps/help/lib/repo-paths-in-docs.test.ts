@@ -1,6 +1,6 @@
 import { execFileSync, spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
-import { dirname, posix, resolve } from 'node:path';
+import { dirname, posix, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
@@ -48,6 +48,8 @@ const WORKSPACE_ROOTS = [
   'packages/sticky-vision/',
   'packages/sticky-model/',
   'packages/',
+  // The liveworkspace monorepo this repo sits in: a shared package (`packages/index-app/...`) or a sibling app.
+  '../',
 ];
 
 // Placeholders and globs the specs use on purpose: an elided route segment, a
@@ -103,11 +105,29 @@ function trackedTextFiles(): string[] {
 // What git tracks, files and the directories holding them. The disk is not the
 // answer: a local build leaves outputs there that a fresh CI checkout lacks, so
 // a check against it passes or fails by whatever was last built.
+// The monorepo's own files count too, named from here (`../packages/...`): specs quote the shared packages and the
+// sibling apps.
 function trackedPaths(): Set<string> {
   const paths = new Set<string>();
-  for (const f of execFileSync('git', ['ls-files'], { cwd: ROOT, encoding: 'utf8' }).split('\n')) {
+  const add = (f: string) => {
     const parts = f.split('/');
     for (let i = 1; i <= parts.length; i++) paths.add(parts.slice(0, i).join('/'));
+  };
+  for (const f of execFileSync('git', ['ls-files'], { cwd: ROOT, encoding: 'utf8' }).split('\n'))
+    add(f);
+  const top = execFileSync('git', ['rev-parse', '--show-toplevel'], {
+    cwd: ROOT,
+    encoding: 'utf8',
+  }).trim();
+  const up = relative(ROOT, top).split(sep).join('/');
+  if (up !== '' && up.split('/').every((part) => part === '..')) {
+    for (const f of execFileSync('git', ['ls-files'], {
+      cwd: top,
+      encoding: 'utf8',
+      maxBuffer: 64 * 1024 * 1024,
+    }).split('\n')) {
+      if (f) add(`${up}/${f}`);
+    }
   }
   return paths;
 }

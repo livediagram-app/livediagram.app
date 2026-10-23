@@ -253,7 +253,7 @@ Migration on read, in every entry point (`migrateStoredTab` / `migrateIncomingTa
   `'wrap'`). Logs `[editor-mode] whiteboard tab migrated to Draw { tabId, inked }`.
 - `migrateLegacyTextSizing` (in `migrateStoredElements`): `autoWidth: true` → `sizing: 'fit'`,
   `autoWidth: false` dropped; a stored `sizing` wins.
-- Telemetry history: D1 migration `apps/api/migrations/0061_draw_telemetry.sql` renames the
+- Telemetry history: D1 migration 0061 (draw_telemetry, since squashed into the baseline) renamed the
   `Whiteboard` category to `Draw`.
 
 ## Errors and edge cases
@@ -361,7 +361,7 @@ Migration on read, in every entry point (`migrateStoredTab` / `migrateIncomingTa
 | Entering / leaving Draw | `hooks/canvas/useWhiteboard.test.tsx`, `useWhiteboard.board-tools.test.tsx` |
 | Hugging on `sizing` in both modes | `lib/text-hug.test.ts`, `boxed-drag-resolve.resize.test.ts`, `useEditorDrag.shift-resize.test.tsx`, `useTextStyleSetters.test.ts` |
 | Template, MCP, imports open in Draw | `apps/editor/lib/templates.test.ts`, `packages/templates/src/template-tab.test.ts`, `lib/board-scene/land.test.ts`, `lib/import-merge.test.ts` |
-| Telemetry rename and history | `apps/api/src/db/legacy-migration-0061.test.ts`, telemetry app suites |
+| Telemetry rename and history | Telemetry app suites |
 | Shift+D | `hooks/editor/editor-mode-shortcut.test.ts`, e2e "Shift+D moves an empty tab to the next mode" |
 
 Workshop mode's own rules are blueprinted in

@@ -7,10 +7,9 @@ The spec decides; this file adds engineering precision. Defaults are ledgered in
 
 | File                                                          | Role                                                                                    |
 | ------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| `apps/api/migrations/0084_tab_stats.sql`                      | The `tab_stats` table                                                                   |
+| `apps/api/src/document-room/document-schema.ts`               | The `tab_stats` table, in each document's own store                                     |
 | `packages/document/src/tab-stats.ts`                          | `tabStatsOf`, `TabStats`: one counting rule for the api and the browser                 |
 | `apps/api/src/db/tab-stats.ts`                                | `tabStatsOfData`, `tabStatsStatement`, `documentStatsSql`, `readDocumentStats`          |
-| `apps/api/src/tab-stats-backfill.ts`                          | `runTabStatsBackfill`: the cron's bounded count of tabs without stats                   |
 | `apps/api/src/db/tabs.ts`, `apps/api/src/db/documents.ts`     | Every tab write batches `tabStatsStatement`; the summary projection selects `doc_stats` |
 | `apps/api/src/participant-write.ts`, `qa-board-write.ts`      | Hand `swapTabData` the next body's stats                                                |
 | `packages/api-schema/src/index.ts`                            | `DocumentStats`, `DocumentSummary.stats`                                                |
@@ -67,24 +66,11 @@ SUM, 'comments', SUM, 'bytes', SUM)`. It reads no `tabs` column, so no body.
 - `readDocumentStats(text)` parses that JSON; a value that fails to parse or carries a mode that
   `parseEditorMode` rejects is `null` with a warning `tab-stats: unreadable doc_stats`.
 
-### Backfill
+### No backfill
 
-`runTabStatsBackfill(env, clock)` loops while under `TAB_STATS_BACKFILL_BUDGET_MS` and
-`TAB_STATS_BACKFILL_MAX_ROWS`:
-
-1. `SELECT t.id, t.data, t.updated_at FROM tabs t WHERE NOT EXISTS (SELECT 1 FROM tab_stats s WHERE s.tab_id = t.id) LIMIT ?`
-   with `TAB_STATS_BACKFILL_PAGE_ROWS`.
-2. Each body counts through `tabStatsOfData`; a body that fails to parse counts as Diagram with no elements
-   and no comments, its bytes measured, and warns `tab-stats: corrupt tab <id> counted empty`.
-3. One batch of `INSERT ... ON CONFLICT(tab_id) DO NOTHING`, `written_at` set to the tab's own
-   `updated_at` (never the run's time, which would make the backfilled tab the document's newest and
-   so its Type). A write that landed since step 1
-   already wrote the newer stats, which stay.
-4. A page shorter than the page size ends the loop: `left=none`; otherwise `left=more`.
-
-It logs `tab-stats: backfilled n=<n> left=<more|none>` once per run and returns the count. The
-cron runs it in `waitUntil` beside the other sweeps, its failure logged as
-`tab-stats: backfill failed`.
+Every tab write batches its stats, and livediagram ships with no stored tabs, so every tab has its row from its
+first write. A copy taken in from another document sharing the tab
+([Tab ↔ document many-to-many](../../006-document/tab-document-many-to-many.md)) writes its stats like a save.
 
 ### The view
 
@@ -143,9 +129,9 @@ CREATE TABLE tab_stats (
 );
 ```
 
-- Derived data: deleting every row loses nothing the backfill cannot rebuild.
-- The migration creates the table only (constant time); no statement reads a body.
-- A tab deleted cascades its row away. A document deleted keeps tabs other documents link, and their
+- Derived data: every row is rebuilt by the tab's next write.
+- The table lives in each document's own store, created with the rest of its schema.
+- A tab deleted cascades its row away. Another document sharing the tab keeps its own copy, and its
   stats.
 - The Trash, restore and purge need nothing: stats follow tabs.
 
@@ -154,11 +140,9 @@ CREATE TABLE tab_stats (
 | Case                                    | Handling                                                  |
 | --------------------------------------- | --------------------------------------------------------- |
 | Document with no tabs                   | `stats: null`, cells `–`                                  |
-| Some tabs not yet counted               | `stats: null` until the backfill reaches them             |
 | Event-storming board                    | Mode Diagram (`opensInOf`)                                |
 | Retired mode `pages` (or `infographic`) | Diagram (`opensInOf` reads through `parseEditorMode`)     |
-| Corrupt tab body in the backfill        | Counted empty, warned                                     |
-| Write racing the backfill               | The write's row wins (`DO NOTHING`)                       |
+| Corrupt tab body                        | Counted empty                                             |
 | Shared row                              | No `stats`: `–`; no Created: `–` "Not known" (`D153`)     |
 | Offline row                             | Counted in the browser, the first tab's mode (`D152`)     |
 | Unknown stored sort or view mode        | Defaults                                                  |
@@ -175,8 +159,6 @@ CREATE TABLE tab_stats (
 - The list reads, per document, its `document_tabs` rows and their `tab_stats` rows: narrow rows, no
   body, no overflow page.
 - A write adds one small statement to a batch it already sends.
-- The backfill parses at most `TAB_STATS_BACKFILL_PAGE_ROWS` bodies at once (each at most
-  `MAX_TAB_BYTES`), and at most `TAB_STATS_BACKFILL_MAX_ROWS` per run.
 - The Details view renders every row of the folder, as the list does; each row's snapshot prefetch
   uses one `IntersectionObserver` per row with the thumbnails' `200px` margin, disconnected after its
   first sighting.
@@ -227,13 +209,10 @@ CREATE TABLE tab_stats (
 
 ## Observability
 
-| Fingerprint                                     | Where                                   |
-| ----------------------------------------------- | --------------------------------------- |
-| `tab-stats: backfilled n=<n> left=<more\|none>` | Each cron run                           |
-| `tab-stats: backfill failed`                    | A run that threw                        |
-| `tab-stats: corrupt tab <id> counted empty`     | Backfill on an unparseable body         |
-| `tab-stats: unreadable doc_stats`               | A summary row whose stats did not parse |
-| `[explorer-drop] …`                             | Drops on Details folder rows            |
+| Fingerprint                       | Where                                   |
+| --------------------------------- | --------------------------------------- |
+| `tab-stats: unreadable doc_stats` | A summary row whose stats did not parse |
+| `[explorer-drop] …`               | Drops on Details folder rows            |
 
 ## Testing
 
@@ -247,7 +226,6 @@ CREATE TABLE tab_stats (
 | Warm-up per kind                                               | `packages/ui/src/hint/hint-registry.test.ts`                    |
 | Every write path leaves a matching stats row                   | `apps/api/src/db/tab-stats-writers.test.ts`                     |
 | Document stats sum, latest mode, null when uncounted           | `apps/api/src/db/tab-stats.test.ts`                             |
-| Backfill counts, keeps a racing write, logs, stops             | `apps/api/src/tab-stats-backfill.test.ts`                       |
 | Preview delay, warm-up, focus                                  | `packages/ui/src/hint/useHint.test.tsx`                         |
 | Sort: natural direction, toggle, folders first, `–` last       | `apps/editor/app/explorer/details/details-columns.test.ts`      |
 | Formats                                                        | `apps/editor/app/explorer/details/details-format.test.ts`       |
