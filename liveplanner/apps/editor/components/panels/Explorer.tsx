@@ -15,12 +15,13 @@ import { useAppNavigation } from '@/hooks/navigation/useAppNavigation';
 import { getSessionSharePassword } from '@/lib/api-client';
 import { indexClient } from '@/lib/index-client';
 import { itemHref, newPlanHref, shareUrl, useTokenTeams } from '@/lib/explorer-host';
+import { renderPlanThumbnail } from '@/lib/explorer-thumbnail';
 import type { ExplorerProps } from './Explorer.types';
 
-// The editor's floating Explorer panel: the shared Explorer's panel (@liveworkspace/explorer, the same lists,
-// menus and dialogs as the /explorer page, from the index) inside the editor's movable panel, which docks in a
-// corner or opens as the menu button's popover. The open plan shows on top, read once from the index when the
-// panel opens; every list is one request a page, loaded only once its section is chosen.
+// The editor's floating Explorer panel: the shared Explorer's panel (@liveworkspace/explorer, drawn as this panel
+// always was, with the same lists, menus and dialogs as the /explorer page, from the index) inside the editor's
+// movable panel, which docks in a corner or opens as the menu button's popover. The open plan shows on top, read
+// once from the index when the panel opens; every list is one request a page, loaded only once its section is chosen.
 function ExplorerImpl({
   position,
   currentProjectId,
@@ -60,6 +61,14 @@ function ExplorerImpl({
     };
   }, [currentProjectId, currentShareCode]);
 
+  // Open, the panel reaches under the palette strip: the trays hanging from it step aside (PaletteTray).
+  const shown = asPopover === true && popoverOpen === true;
+  useEffect(() => {
+    if (!shown) return;
+    document.body.setAttribute('data-explorer-open', '');
+    return () => document.body.removeAttribute('data-explorer-open');
+  }, [shown]);
+
   const go = (href: string) =>
     href.startsWith('/') ? router.push(href) : window.location.assign(href);
 
@@ -96,41 +105,39 @@ function ExplorerImpl({
       dismissOnOutside={dismissOnOutside}
       collapsible
     >
-      <div className={`flex min-h-0 flex-col ${sheet ? 'flex-1' : ''}`}>
-        {minimalChrome ? null : (
-          <div className="px-2.5 pb-2.5 pt-1 empty:hidden">
-            <SignInPrompt bar />
-          </div>
-        )}
-        <div
-          className={`flex min-h-0 flex-col border-t border-slate-200 dark:border-slate-700/70 ${
-            sheet ? 'min-h-[18rem] flex-1' : 'h-[min(34rem,66vh)]'
-          }`}
-        >
-          <ExplorerPanel
-            app="liveplanner"
-            client={indexClient}
-            itemHref={itemHref}
-            current={currentProjectId ? current : null}
-            onCreate={(placement) =>
-              onNewProject && !placement.folderId && !placement.teamId
-                ? onNewProject()
-                : go(newPlanHref(placement))
-            }
-            onOpenExplorer={(view) => go(explorerPath(view))}
-            onOpenItem={(href) => go(href)}
-            Link={Link}
-            teams={teams}
-            viewerId={accountUserId ?? null}
-            shareUrl={shareUrl}
+      <ExplorerPanel
+        app="liveplanner"
+        client={indexClient}
+        itemHref={itemHref}
+        current={currentProjectId ? current : null}
+        currentId={currentProjectId ?? null}
+        onCreate={(placement) =>
+          onNewProject && !placement.folderId && !placement.teamId
+            ? onNewProject()
+            : go(newPlanHref(placement))
+        }
+        onOpenExplorer={(view) => go(explorerPath(view))}
+        onOpenItem={(href) => go(href)}
+        renderThumbnail={renderPlanThumbnail}
+        Link={Link}
+        teams={teams}
+        viewerId={accountUserId ?? null}
+        shareUrl={shareUrl}
+        // Side by side in a desktop popover; chips over the pane on a phone and in the corner panel that stands
+        // beside the new-plan wizard and the status screens, which must stay narrow or it covers their card.
+        layout={sheet ? 'sheet' : isMobile || !asPopover ? 'stacked' : 'side'}
+        open={shown}
+        divider={minimalChrome ? 'lines' : 'titles'}
+        // The sign-in note under the card (an onboarding notice: Minimal chrome drops it).
+        notice={minimalChrome ? null : <SignInPrompt bar />}
+        footer={
+          // The product's surfaces, which the editor header no longer carries as a menu.
+          <ProductNavLinks
+            current="editor"
+            className={`overflow-x-auto border-t border-slate-200 px-1.5 py-1 [scrollbar-width:none] dark:border-slate-700/70 ${sheet ? 'justify-between' : ''}`}
           />
-        </div>
-        {/* The product's surfaces, which the editor header no longer carries as a menu. */}
-        <ProductNavLinks
-          current="editor"
-          className={`overflow-x-auto border-t border-slate-200 px-1.5 py-1 [scrollbar-width:none] dark:border-slate-700/70 ${sheet ? 'justify-between' : ''}`}
-        />
-      </div>
+        }
+      />
     </MovablePanel>
   );
 }

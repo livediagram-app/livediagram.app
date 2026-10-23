@@ -3,7 +3,11 @@
 // panel, and the view helpers a host's router needs.
 
 export { Explorer, type ExplorerProps } from './explorer/Explorer';
-export { ExplorerPanel, type ExplorerPanelProps } from './panel/ExplorerPanel';
+export {
+  ExplorerPanel,
+  type ExplorerPanelProps,
+  type PanelLayout,
+} from './panel/ExplorerPanel';
 export { MoveToFolderDialog, type MoveToFolderDialogProps } from './dialogs/MoveToFolderDialog';
 export type { PickerFolder, PickerTeam, Destination } from './dialogs/PlacementBrowser';
 export { ShareDialog, type ShareDialogProps, type ShareTab } from './dialogs/ShareDialog';

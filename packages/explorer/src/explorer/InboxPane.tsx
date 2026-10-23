@@ -15,7 +15,8 @@ import { useExplorer } from './context';
 import { EmptyPane, SkeletonRows } from './EmptyPane';
 import { PaneHeader } from './PaneHeader';
 
-export function InboxPane({ onOpenNav }: { onOpenNav?: () => void }) {
+// `compact`: inside the editor's Explorer panel, under the pane's own header, with the small empty state.
+export function InboxPane({ onOpenNav, compact = false }: { onOpenNav?: () => void; compact?: boolean }) {
   const { inbox, viewerId, words, filter } = useExplorer();
   const data = inbox.data;
   const forMe = data
@@ -31,7 +32,7 @@ export function InboxPane({ onOpenNav }: { onOpenNav?: () => void }) {
   const showApp = filter === 'all';
   return (
     <div data-explorer-view="inbox">
-      <PaneHeader title="Inbox" onOpenNav={onOpenNav} />
+      {compact ? null : <PaneHeader title="Inbox" onOpenNav={onOpenNav} />}
       {inbox.error ? (
         <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-200">
           Couldn’t load your Inbox.{' '}
@@ -42,7 +43,7 @@ export function InboxPane({ onOpenNav }: { onOpenNav?: () => void }) {
       ) : inbox.loading ? (
         <SkeletonRows count={4} />
       ) : forMe.length + byMe.length + threads.length === 0 ? (
-        <EmptyPane view={{ kind: 'inbox' }} words={words} />
+        <EmptyPane view={{ kind: 'inbox' }} words={words} compact={compact} />
       ) : (
         <div className="flex flex-col gap-6">
           <InboxSection title="Assigned to You" rows={forMe} showApp={showApp} />

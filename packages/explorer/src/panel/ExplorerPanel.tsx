@@ -1,13 +1,24 @@
 'use client';
 
-// The editor's floating Explorer panel (liveplanner's components/panels/Explorer.tsx, its content only:
-// the host wraps it in its own movable panel). The current item on top, a rail of sections (Home, Inbox,
-// Shared With Me, My Work, each team, Favourites, Trash), and the chosen section as compact rows, paged
-// like the full Explorer. It shares the full Explorer's data layer, so a rename or a star shows here at
-// once and every list is one request a page.
+// The editor's floating Explorer panel, drawn as liveplanner's was before it moved onto the index
+// (components/panels/Explorer.tsx with its explorer-panel/ and explorer-tree/ parts): the open item's card with the
+// host's notice under it, then a rail of sections beside a pane (a row of chips over the pane when stacked). The
+// pane names its section, offers New Folder in a space and Open Page to the Explorer, and shows Home's Jump Back
+// In, the Inbox, a space's folders and items, Favourites or the Trash. Only where the data comes from changed: it
+// shares the full Explorer's data layer, so a rename or a star shows here at once and every list is one request a
+// page, read only while its section is shown.
 
-import { memo, useCallback, useMemo, useRef, useState, type ReactNode } from 'react';
-import type { App, IndexClient, Item } from '@liveworkspace/index-client';
+import {
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type ReactNode,
+} from 'react';
+import type { App, Folder, IndexClient, Item } from '@liveworkspace/index-client';
 import { useItemList } from '../data/useItemList';
 import { recentLoader, viewList } from '../data/viewLists';
 import type { ShownItem } from '../data/overlay';
@@ -15,8 +26,13 @@ import { inboxCount } from '../data/useInbox';
 import { ExplorerProvider, useExplorer } from '../explorer/context';
 import { ExplorerDialogs } from '../explorer/Dialogs';
 import { AppMark, FavouriteMarker, VisibilityBadge } from '../explorer/badges';
-import { ItemMenu } from '../explorer/menus';
-import { RelativeTimeChip } from '../ui/RelativeTimeChip';
+import { FolderMenu, ItemMenu } from '../explorer/menus';
+import { emptyCopy } from '../explorer/EmptyPane';
+import { InboxPane } from '../explorer/InboxPane';
+import { daysLeftLabel, trashedOnLabel, trashGroups } from '../explorer/TrashPane';
+import { BackBar } from '../ui/BackBar';
+import { ConfirmDialog } from '../ui/ConfirmDialog';
+import { InlineRenameInput } from '../ui/InlineRenameInput';
 import { EllipsisTriggerButton, useRowMenu } from '../ui/RowMenu';
 import { ToastProvider } from '../ui/Toasts';
 import {
@@ -26,13 +42,17 @@ import {
   InboxIcon,
   ItemIcon,
   MyWorkIcon,
+  OpenIcon,
+  PencilIcon,
   PlusIcon,
+  RestoreIcon,
   ShareIcon,
   StarIcon,
   TeamIcon,
   TrashIcon,
 } from '../ui/icons';
-import { SIDEBAR_LABELS, type ExplorerView } from '../views';
+import { relativeSince, useNow } from '../time';
+import { explorerPath, type ExplorerView } from '../views';
 import type { AppFilter } from '../words';
 import type {
   ItemHref,
@@ -42,15 +62,50 @@ import type {
   ShareUrl,
   TeamRef,
 } from '../types';
+import {
+  PANE_LINK,
+  PANE_PREVIEW_BOX,
+  PANE_THUMB_BOX,
+  FolderPreview,
+  PaneCard,
+  PaneEmpty,
+  PaneFailed,
+  PaneGrid,
+  PaneIconButton,
+  PaneList,
+  PaneRow,
+  PaneSection,
+  PaneSkeleton,
+  PaneTile,
+} from './pane-parts';
+import {
+  SECTION_GROUP_TITLES,
+  panelSectionGroups,
+  sectionKey,
+  sectionLabel,
+  sectionPage,
+  usePanelSection,
+  type PanelSection,
+  type PanelSectionGroup,
+} from './sections';
+
+/**
+ * How the panel lays out: `side`, the rail beside the pane (a desktop popover); `stacked`, a row of section chips
+ * over the pane (a phone, or the narrow corner panel); `sheet`, stacked and filling a phone's sheet, the card
+ * scrolling with the pane.
+ */
+export type PanelLayout = 'side' | 'stacked' | 'sheet';
 
 export type ExplorerPanelProps = {
   app: App;
   client: IndexClient;
   itemHref: ItemHref;
   onCreate: (placement: Placement) => void;
-  // The item open in the editor, shown on top.
+  // The item open in the editor, shown on top and left out of Home's Jump Back In.
   current?: Item | null;
-  // Opens the full Explorer at a view (the panel's "Open Explorer").
+  // The id of the item open in the editor, known before `current` is read.
+  currentId?: string | null;
+  // Opens the full Explorer at a view (Open Page, See all).
   onOpenExplorer?: (view: ExplorerView) => void;
   renderThumbnail?: RenderThumbnail;
   Link?: LinkComponent;
@@ -60,6 +115,15 @@ export type ExplorerPanelProps = {
   viewerId?: string | null;
   shareUrl?: ShareUrl;
   filter?: AppFilter;
+  layout?: PanelLayout;
+  // The panel is showing (a popover opened): a phone's sheet starts on Home each time.
+  open?: boolean;
+  // Under the current card: the host's onboarding notice (the sign-in bar).
+  notice?: ReactNode;
+  // Pinned under the rail and pane, outside their scroll (the product's links).
+  footer?: ReactNode;
+  // Group titles over the rail's groups, or a hairline between them (Minimal chrome).
+  divider?: 'titles' | 'lines';
 };
 
 export function ExplorerPanel(props: ExplorerPanelProps) {
@@ -76,19 +140,56 @@ function PanelInner({
   itemHref,
   onCreate,
   current = null,
+  currentId = null,
   onOpenExplorer,
   renderThumbnail,
   Link,
   onOpenItem,
   basePath,
-  teams,
+  teams = [],
   viewerId,
   shareUrl,
   filter: initialFilter = 'app',
+  layout = 'side',
+  open = false,
+  notice,
+  footer,
+  divider = 'titles',
 }: ExplorerPanelProps) {
-  const [view, setView] = useState<ExplorerView>({ kind: 'home' });
+  const sheet = layout === 'sheet';
+  const stacked = layout !== 'side';
+  const groups = useMemo(() => panelSectionGroups(teams), [teams]);
+  const [section, pickSection] = usePanelSection(app, groups, { homeOnOpen: sheet, open });
+  // The folder open in the pane, for the section it was opened in: another section starts at its root.
+  const [openFolder, setOpenFolder] = useState<{ section: string; id: string | null }>({
+    section: '',
+    id: null,
+  });
+  const folderId = openFolder.section === sectionKey(section) ? openFolder.id : null;
   const [filter, setFilter] = useState<AppFilter>(initialFilter);
-  const navigate = useCallback((v: ExplorerView) => setView(v), []);
+
+  // The pane's view, which the shared menus read and navigate (a folder's Open).
+  const view = paneView(section, folderId);
+  const pick = useCallback(
+    (next: PanelSection) => {
+      pickSection(next);
+      setOpenFolder({ section: sectionKey(next), id: null });
+    },
+    [pickSection],
+  );
+  const navigate = useCallback(
+    (v: ExplorerView) => {
+      const at = sectionOfView(v);
+      if (!at) {
+        onOpenExplorer?.(v);
+        return;
+      }
+      pickSection(at.section);
+      setOpenFolder({ section: sectionKey(at.section), id: at.folderId });
+    },
+    [pickSection, onOpenExplorer],
+  );
+
   return (
     <ExplorerProvider
       app={app}
@@ -107,34 +208,111 @@ function PanelInner({
       renderThumbnail={renderThumbnail}
       shareUrl={shareUrl}
     >
-      <div data-explorer-panel="" className="flex h-full min-h-0 flex-col gap-3 text-sm">
-        {current ? <CurrentItem item={current} /> : null}
-        <div className="flex min-h-0 flex-1 gap-3">
-          <Rail onOpenExplorer={onOpenExplorer} />
-          <div className="min-h-0 min-w-0 flex-1 overflow-y-auto">
-            <PanelSection />
+      <div data-explorer-panel="" className={`flex min-h-0 flex-col ${sheet ? 'flex-1' : ''}`}>
+        {/* On a phone's sheet the card and the rail and pane scroll as one, over the pinned footer. Elsewhere this
+            box is `contents`, adding nothing to the layout. */}
+        <div
+          data-explorer-sheet-scroll={sheet ? '' : undefined}
+          className={
+            sheet
+              ? 'scrollbar-slim flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain'
+              : 'contents'
+          }
+        >
+          <div className="flex flex-col gap-2 px-2.5 pb-2.5 pt-1 empty:hidden">
+            {current ? <CurrentItem item={current} /> : null}
+            {notice}
+          </div>
+          <div
+            className={`flex border-t border-slate-200 dark:border-slate-700/70 ${
+              sheet
+                ? 'min-h-[18rem] flex-1 flex-col'
+                : stacked
+                  ? 'max-h-[max(14rem,calc(100dvh-30rem))] flex-col'
+                  : 'h-[min(30rem,62vh)]'
+            }`}
+          >
+            <Rail
+              groups={groups}
+              selected={section}
+              onPick={pick}
+              phone={stacked}
+              divider={divider}
+            />
+            <Pane
+              section={section}
+              folderId={folderId}
+              onOpenFolder={(id) => setOpenFolder({ section: sectionKey(section), id })}
+              currentId={current?.id ?? currentId}
+              onOpenExplorer={onOpenExplorer}
+              basePath={basePath}
+              narrow={stacked}
+            />
           </div>
         </div>
+        {footer}
       </div>
       <ExplorerDialogs />
     </ExplorerProvider>
   );
 }
 
+function paneView(section: PanelSection, folderId: string | null): ExplorerView {
+  switch (section.kind) {
+    case 'mine':
+      return folderId ? { kind: 'folder', id: folderId } : { kind: 'all' };
+    case 'team':
+      return folderId
+        ? { kind: 'team', id: section.id, folderId }
+        : { kind: 'team', id: section.id };
+    default:
+      return { kind: section.kind };
+  }
+}
+
+// Where a view the shared menus ask for sits in the panel, or null for one only the Explorer page shows.
+function sectionOfView(v: ExplorerView): { section: PanelSection; folderId: string | null } | null {
+  switch (v.kind) {
+    case 'home':
+    case 'inbox':
+    case 'shared':
+    case 'favourites':
+    case 'trash':
+      return { section: { kind: v.kind }, folderId: null };
+    case 'all':
+      return { section: { kind: 'mine' }, folderId: null };
+    case 'folder':
+      return { section: { kind: 'mine' }, folderId: v.id };
+    case 'team':
+      return { section: { kind: 'team', id: v.id }, folderId: v.folderId ?? null };
+    default:
+      return null;
+  }
+}
+
+// ---- The current item's card ----------------------------------------------------------------------------
+
 function CurrentItem({ item: base }: { item: Item }) {
-  const { overlay, kind, renderThumbnail, actions } = useExplorer();
+  const { overlay, kind, renderThumbnail, actions, openItem } = useExplorer();
   const item = overlay.apply(base);
   const [editing, setEditing] = useState(false);
   const menu = useRowMenu({ disabled: editing });
-  const title = item.title || 'Untitled';
+  const now = useNow();
+  const name = item.title || `Untitled ${kind.lowerOne}`;
+  const canRename = item.access === 'edit';
+  const commit = (next: string) => {
+    const trimmed = next.trim();
+    if (trimmed && trimmed !== item.title) void actions.rename(item, trimmed);
+    setEditing(false);
+  };
   return (
     <section
-      aria-label={`Current ${kind.one}`}
+      aria-label={`Current ${kind.lowerOne}`}
       onContextMenu={menu.onContextMenu}
       className="flex items-center gap-3 rounded-xl bg-slate-50 p-2.5 ring-1 ring-slate-200/70 dark:bg-slate-800/50 dark:ring-slate-700/60"
     >
-      <span className="flex h-14 w-20 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-100 bg-white text-slate-300 dark:border-slate-700 dark:bg-slate-900">
-        {renderThumbnail ? renderThumbnail(item, 'card') : <ItemIcon />}
+      <span className="flex h-14 w-20 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-white text-slate-300 dark:border-slate-700 dark:bg-slate-900 [&>*]:!h-14 [&>*]:!w-20">
+        {renderThumbnail ? renderThumbnail(item, 'card') : <ItemIcon size={18} />}
       </span>
       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span className="flex min-h-5 items-center justify-between gap-2">
@@ -144,34 +322,53 @@ function CurrentItem({ item: base }: { item: Item }) {
           <VisibilityBadge item={item} />
         </span>
         {editing ? (
-          <input
-            autoFocus
-            defaultValue={item.title}
-            aria-label={`Rename ${title}`}
-            onBlur={(e) => {
-              setEditing(false);
-              void actions.rename(item, e.target.value);
-            }}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
-              if (e.key === 'Escape') setEditing(false);
-            }}
+          <InlineRenameInput
+            initial={item.title}
+            ariaLabel={`Rename ${name}`}
+            onCommit={commit}
+            onCancel={() => setEditing(false)}
             className="w-full rounded border border-brand-300 bg-white px-1.5 py-0.5 text-sm font-semibold text-slate-900 dark:border-brand-400 dark:bg-slate-800 dark:text-slate-50"
           />
+        ) : canRename ? (
+          // Fitted to the name: hovering underlines it and shows the pencil, never a block of fill.
+          <button
+            type="button"
+            aria-label={`Rename ${name}`}
+            onClick={() => setEditing(true)}
+            className="group/name flex max-w-full cursor-pointer items-center gap-1.5 self-start rounded text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
+          >
+            <span className="min-w-0 truncate text-[15px] font-semibold text-slate-900 decoration-slate-400 decoration-dotted underline-offset-4 group-hover/name:underline dark:text-slate-50 dark:decoration-slate-500">
+              {name}
+            </span>
+            <span
+              aria-hidden
+              className="shrink-0 text-slate-400 opacity-0 transition group-hover/name:opacity-100 group-focus-visible/name:opacity-100 dark:text-slate-400"
+            >
+              <PencilIcon size={12} />
+            </span>
+          </button>
         ) : (
           <button
             type="button"
-            disabled={item.access !== 'edit'}
-            onClick={() => setEditing(true)}
-            aria-label={`Rename ${title}`}
-            className="truncate text-left text-sm font-semibold text-slate-900 dark:text-slate-50"
+            onClick={() => openItem(item)}
+            aria-current="true"
+            className="min-w-0 self-start truncate text-left text-[15px] font-semibold text-slate-900 dark:text-slate-50"
           >
-            {title}
+            {name}
           </button>
         )}
-        <span className="flex items-center justify-between gap-2">
-          <RelativeTimeChip at={item.updatedAt} />
-          <EllipsisTriggerButton {...menu.triggerProps} size="md" label={`Menu for ${title}`} />
+        <span className="flex min-h-5 items-center justify-between gap-2">
+          <span className="truncate text-[11px] text-slate-500 dark:text-slate-400">
+            Updated {relativeSince(item.updatedAt, now || Date.now())}
+          </span>
+          {!editing ? (
+            <EllipsisTriggerButton
+              {...menu.triggerProps}
+              size="md"
+              className="-my-1 shrink-0"
+              label={`${kind.one} menu`}
+            />
+          ) : null}
         </span>
       </span>
       {menu.open ? (
@@ -181,90 +378,455 @@ function CurrentItem({ item: base }: { item: Item }) {
   );
 }
 
-function Rail({ onOpenExplorer }: { onOpenExplorer?: (view: ExplorerView) => void }) {
-  const { view, navigate, teams, inbox, viewerId, onCreate, kind, filter, setFilter } =
-    useExplorer();
-  const entry = (v: ExplorerView, label: string, icon: ReactNode, badge?: number) => {
-    const on =
-      view.kind === v.kind && (v.kind !== 'team' || (view.kind === 'team' && view.id === v.id));
+// ---- The rail -------------------------------------------------------------------------------------------
+
+function SectionIcon({ kind }: { kind: PanelSection['kind'] }) {
+  switch (kind) {
+    case 'home':
+      return <HomeIcon />;
+    case 'inbox':
+      return <InboxIcon />;
+    case 'shared':
+      return <ShareIcon />;
+    case 'mine':
+      return <MyWorkIcon />;
+    case 'team':
+      return <TeamIcon />;
+    case 'favourites':
+      return <StarIcon />;
+    case 'trash':
+      return <TrashIcon />;
+  }
+}
+
+function Rail({
+  groups,
+  selected,
+  onPick,
+  phone,
+  divider,
+}: {
+  groups: PanelSectionGroup[];
+  selected: PanelSection;
+  onPick: (s: PanelSection) => void;
+  phone: boolean;
+  divider: 'titles' | 'lines';
+}) {
+  const { onCreate, kind, inbox, viewerId, teamName } = useExplorer();
+  const navRef = useRef<HTMLElement>(null);
+  const selectedKey = sectionKey(selected);
+  const name = (id: string) => teamName(id);
+  const badges: Record<string, number | undefined> = {
+    inbox: inboxCount(inbox.data, viewerId) || undefined,
+  };
+  // On a phone the picked chip may sit past the row's edge: bring it into view.
+  useEffect(() => {
+    if (!phone) return;
+    const chip = navRef.current?.querySelector<HTMLElement>('[aria-current="true"]');
+    chip?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
+  }, [phone, selectedKey]);
+  // Up and Down (Left and Right on a phone) move between entries; Enter or Space picks one.
+  const onKeyDown = (e: KeyboardEvent) => {
+    const keys = phone ? ['ArrowLeft', 'ArrowRight'] : ['ArrowUp', 'ArrowDown'];
+    if (!keys.includes(e.key)) return;
+    const entries = [
+      ...(navRef.current?.querySelectorAll<HTMLButtonElement>('[data-rail-entry]') ?? []),
+    ];
+    const at = entries.indexOf(document.activeElement as HTMLButtonElement);
+    if (at < 0) return;
+    e.preventDefault();
+    entries[(at + (e.key === keys[1] ? 1 : -1) + entries.length) % entries.length]?.focus();
+  };
+  const newItem = (
+    <button
+      type="button"
+      onClick={() => onCreate({ folderId: null, teamId: null })}
+      className={`flex cursor-pointer items-center justify-center gap-1.5 bg-brand-700 font-semibold text-white shadow-sm transition hover:bg-brand-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 dark:bg-brand-600 dark:hover:bg-brand-500 ${
+        phone
+          ? 'relative h-9 shrink-0 touch-target-y whitespace-nowrap rounded-lg px-3 text-[13px]'
+          : 'mb-3 h-9 w-full rounded-lg text-xs'
+      }`}
+    >
+      <PlusIcon size={13} />
+      <span className={phone ? 'text-optical-centre' : ''}>
+        {phone ? 'New' : `New ${kind.one}`}
+      </span>
+    </button>
+  );
+  const entry = (s: PanelSection) => {
+    const key = sectionKey(s);
+    const on = key === selectedKey;
+    const label = sectionLabel(s, name);
+    const badge = badges[key];
     return (
-      <button
-        key={label + (v.kind === 'team' ? v.id : '')}
-        type="button"
-        aria-current={on ? 'page' : undefined}
-        onClick={() => navigate(v)}
-        className={`flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-xs font-medium transition ${
-          on
-            ? 'bg-brand-50 text-brand-800 dark:bg-brand-500/15 dark:text-brand-200'
-            : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
-        }`}
-      >
-        <span className="shrink-0 text-slate-400">{icon}</span>
-        <span className="min-w-0 flex-1 truncate">{label}</span>
-        {badge ? <span className="text-[10px] tabular-nums text-slate-500">{badge}</span> : null}
-      </button>
+      <li key={key} className={phone ? 'shrink-0' : ''}>
+        <button
+          type="button"
+          data-rail-entry=""
+          aria-current={on ? 'true' : undefined}
+          aria-label={badge ? `${label} (${badge})` : label}
+          onClick={() => onPick(s)}
+          className={`flex cursor-pointer items-center gap-2 text-left text-xs transition focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-500 ${
+            phone
+              ? 'relative h-9 touch-target-y whitespace-nowrap rounded-lg px-2.5 text-[13px]'
+              : 'h-8 w-full rounded-md px-2'
+          } ${
+            on
+              ? 'bg-brand-100 font-semibold text-brand-800 dark:bg-brand-500/20 dark:text-brand-100'
+              : phone
+                ? 'text-slate-700 ring-1 ring-slate-200 hover:bg-slate-100 dark:text-slate-200 dark:ring-slate-700 dark:hover:bg-slate-800'
+                : 'text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800'
+          }`}
+        >
+          <span aria-hidden className="flex shrink-0 items-center opacity-80">
+            <SectionIcon kind={s.kind} />
+          </span>
+          <span className={phone ? 'text-optical-centre' : 'min-w-0 flex-1 truncate'}>
+            {label}
+          </span>
+          {badge ? (
+            <span
+              aria-hidden
+              className="rounded-full bg-slate-200/70 px-1.5 text-[10px] font-semibold leading-4 text-slate-600 dark:bg-slate-700 dark:text-slate-200"
+            >
+              {badge}
+            </span>
+          ) : null}
+        </button>
+      </li>
     );
   };
   return (
-    <nav aria-label="Sections" className="flex w-36 shrink-0 flex-col gap-0.5">
-      <button
-        type="button"
-        onClick={() => onCreate({ folderId: null, teamId: null })}
-        className="mb-2 flex h-9 w-full items-center justify-center gap-1.5 rounded-lg bg-brand-700 text-xs font-semibold text-white shadow-sm hover:bg-brand-800 dark:bg-brand-600 dark:hover:bg-brand-500"
-      >
-        <PlusIcon size={13} />
-        New {kind.one}
-      </button>
-      {entry({ kind: 'home' }, SIDEBAR_LABELS.home, <HomeIcon />)}
-      {entry(
-        { kind: 'inbox' },
-        SIDEBAR_LABELS.inbox,
-        <InboxIcon />,
-        inboxCount(inbox.data, viewerId),
+    <nav
+      ref={navRef}
+      aria-label="Explorer sections"
+      onKeyDown={onKeyDown}
+      className={
+        phone
+          ? 'shrink-0 overflow-x-auto px-2.5 py-1 [scrollbar-width:none]'
+          : 'scrollbar-slim flex w-44 shrink-0 flex-col overflow-y-auto border-r border-slate-200 px-1.5 py-2 dark:border-slate-700/70'
+      }
+    >
+      {phone ? (
+        <ul className="flex gap-1.5">
+          <li className="shrink-0">{newItem}</li>
+          {groups.flatMap((g) => g.sections).map(entry)}
+        </ul>
+      ) : (
+        <>
+          {newItem}
+          {groups.map((g, i) =>
+            g.sections.length ? (
+              <section key={g.id} aria-label={SECTION_GROUP_TITLES[g.id]}>
+                {divider === 'titles' ? (
+                  <h3
+                    className={`px-2 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 ${i ? 'mt-4' : ''}`}
+                  >
+                    {SECTION_GROUP_TITLES[g.id]}
+                  </h3>
+                ) : i ? (
+                  <span
+                    aria-hidden
+                    className="mx-2 my-2.5 block h-px bg-slate-200 dark:bg-slate-700"
+                  />
+                ) : null}
+                <ul className="flex flex-col gap-0.5">{g.sections.map(entry)}</ul>
+              </section>
+            ) : null,
+          )}
+        </>
       )}
-      {entry({ kind: 'shared' }, SIDEBAR_LABELS.shared, <ShareIcon />)}
-      {entry({ kind: 'all' }, SIDEBAR_LABELS.myWork, <MyWorkIcon />)}
-      {teams.map((t) => entry({ kind: 'team', id: t.id }, t.name, <TeamIcon />))}
-      {entry({ kind: 'favourites' }, 'Favourites', <StarIcon />)}
-      {entry({ kind: 'trash' }, SIDEBAR_LABELS.trash, <TrashIcon />)}
-      <span className="flex-1" />
-      <label className="mt-2 flex items-center gap-1.5 px-2 text-[11px] text-slate-500">
-        <input
-          type="checkbox"
-          checked={filter === 'all'}
-          onChange={(e) => setFilter(e.target.checked ? 'all' : 'app')}
-        />
-        Every app
-      </label>
-      {onOpenExplorer ? (
-        <button
-          type="button"
-          onClick={() => onOpenExplorer(view)}
-          className="mt-1 rounded-lg px-2 py-1.5 text-left text-xs font-semibold text-brand-700 hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-500/10"
-        >
-          Open Explorer
-        </button>
-      ) : null}
     </nav>
   );
 }
 
-const PANEL_HOME = 20;
+// ---- The pane -------------------------------------------------------------------------------------------
 
-function PanelSection() {
-  const { client, view, app, filter, overlay, epoch, folders, navigate, inbox } = useExplorer();
+// The header's quiet actions: words with a glyph, a wash on hover, no frame.
+const HEADER_BUTTON =
+  'flex h-7 shrink-0 cursor-pointer items-center gap-1.5 rounded-md px-2 text-xs font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-brand-500 pointer-coarse:h-11 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white';
+
+function Pane({
+  section,
+  folderId,
+  onOpenFolder,
+  currentId,
+  onOpenExplorer,
+  basePath,
+  narrow,
+}: {
+  section: PanelSection;
+  folderId: string | null;
+  onOpenFolder: (id: string | null) => void;
+  currentId: string | null;
+  onOpenExplorer?: (view: ExplorerView) => void;
+  basePath?: string;
+  narrow: boolean;
+}) {
+  const { teamName, folders } = useExplorer();
+  const title = sectionLabel(section, (id) => teamName(id));
+  const space = section.kind === 'mine' || section.kind === 'team';
+  // The folder open, while it is still one of the space's (a folder deleted or moved away goes back to the root).
+  const here =
+    folderId && folders.byId.get(folderId)?.teamId === (section.kind === 'team' ? section.id : null)
+      ? folderId
+      : null;
+  const pendingRename = useRef<((id: string) => void) | null>(null);
+  const newFolder = space
+    ? () =>
+        void folders
+          .create({
+            name: 'New folder',
+            parentId: here,
+            teamId: section.kind === 'team' ? section.id : null,
+          })
+          .then((f) => f && pendingRename.current?.(f.id))
+    : undefined;
+  const page = sectionPage(section, here);
+  const openPage = onOpenExplorer
+    ? (e: React.MouseEvent) => {
+        e.preventDefault();
+        onOpenExplorer(page);
+      }
+    : undefined;
+  const body =
+    section.kind === 'home' ? (
+      <HomeSection currentId={currentId} onOpenExplorer={onOpenExplorer} />
+    ) : section.kind === 'inbox' ? (
+      <InboxPane compact />
+    ) : section.kind === 'trash' ? (
+      <TrashSection />
+    ) : (
+      <PlaceSection
+        section={section}
+        folderId={here}
+        onOpenFolder={onOpenFolder}
+        currentId={currentId}
+        rootLabel={title}
+        pendingRename={pendingRename}
+      />
+    );
+  return (
+    <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+      <div className="flex items-center gap-2 px-5 pb-3 pt-4 max-sm:px-4 max-sm:pb-1.5 max-sm:pt-2.5">
+        <h3 className="min-w-0 flex-1 truncate text-[15px] font-semibold text-slate-900 dark:text-slate-50">
+          {title}
+        </h3>
+        {newFolder ? (
+          <button type="button" onClick={newFolder} className={HEADER_BUTTON}>
+            <PlusIcon size={12} />
+            <span className={narrow ? 'sr-only' : 'max-sm:sr-only'}>
+              {here ? 'New Subfolder' : 'New Folder'}
+            </span>
+          </button>
+        ) : null}
+        <FilterToggle />
+        <a href={explorerPath(page, basePath)} onClick={openPage} className={HEADER_BUTTON}>
+          <span className={narrow ? 'sr-only' : 'max-sm:sr-only'}>Open Page</span>
+          <OpenIcon />
+        </a>
+      </div>
+      <div
+        data-explorer-pane=""
+        className="scrollbar-slim min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-3 pb-5 pt-1"
+      >
+        {/* Keyed by section: a pick slides the new section in (a fade alone under reduced motion). */}
+        <div key={sectionKey(section)} className="animate-view-forward">
+          {body}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// This app's items, or every app's: the Explorer page's own filter, as two quiet words.
+function FilterToggle() {
+  const { filter, setFilter, kind } = useExplorer();
+  const option = (value: AppFilter, label: string) => (
+    <button
+      type="button"
+      aria-pressed={filter === value}
+      onClick={() => setFilter(value)}
+      className={`h-6 cursor-pointer rounded px-1.5 text-[11px] font-medium transition focus-visible:outline-2 focus-visible:outline-brand-500 ${
+        filter === value
+          ? 'bg-white text-brand-700 shadow-sm dark:bg-slate-700 dark:text-brand-200'
+          : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100'
+      }`}
+    >
+      {label}
+    </button>
+  );
+  return (
+    <div
+      role="group"
+      aria-label="Show"
+      className="flex shrink-0 items-center rounded-md bg-slate-100 p-0.5 dark:bg-slate-800"
+    >
+      {option('app', kind.many)}
+      {option('all', 'All')}
+    </div>
+  );
+}
+
+// ---- Home -----------------------------------------------------------------------------------------------
+
+// How many items Home's Jump Back In lists in the pane.
+const JUMP_BACK_IN_ROWS = 6;
+const live = (i: ShownItem) => i.trashedAt === null;
+
+function HomeSection({
+  currentId,
+  onOpenExplorer,
+}: {
+  currentId: string | null;
+  onOpenExplorer?: (view: ExplorerView) => void;
+}) {
+  const { client, app, filter, overlay, epoch, words } = useExplorer();
+  // One more than the pane lists, so leaving out the open item still fills it.
+  const load = useMemo(
+    () => recentLoader(client, app, filter, JUMP_BACK_IN_ROWS + 1),
+    [client, app, filter],
+  );
+  const list = useItemList({
+    key: `panel-home:${filter}`,
+    load,
+    overlay,
+    belongs: live,
+    epoch,
+  });
+  if (list.error)
+    return (
+      <PaneFailed
+        message="Home could not load. Check your connection and try again."
+        onRetry={list.retry}
+      />
+    );
+  if (list.loading) return <PaneSkeleton rows={6} />;
+  const recent = list.items.filter((i) => i.id !== currentId).slice(0, JUMP_BACK_IN_ROWS);
+  // Empty only because the open item is left out: there is one, just no other.
+  const onlyOpen = recent.length === 0 && list.items.some((i) => i.id === currentId);
+  return (
+    <div className="flex flex-col gap-6">
+      <PaneSection
+        title="Jump Back In"
+        action={
+          <a
+            href={explorerPath({ kind: 'recent' })}
+            onClick={
+              onOpenExplorer
+                ? (e) => {
+                    e.preventDefault();
+                    onOpenExplorer({ kind: 'recent' });
+                  }
+                : undefined
+            }
+            className={PANE_LINK}
+          >
+            See all
+          </a>
+        }
+      >
+        {recent.length ? (
+          <PaneGrid label="Jump Back In">
+            {recent.map((item) => (
+              <JumpBackInCard key={item.id} item={item} />
+            ))}
+          </PaneGrid>
+        ) : (
+          <PaneEmpty
+            icon={<ClockIcon />}
+            title={onlyOpen ? 'Nothing else yet' : `No ${words.lowerMany} yet`}
+            description={
+              onlyOpen
+                ? `The other ${words.lowerMany} you use most and last will gather here.`
+                : `The ${words.lowerMany} you use most and last will gather here.`
+            }
+          />
+        )}
+      </PaneSection>
+    </div>
+  );
+}
+
+function Preview({ item, size }: { item: ShownItem; size: 'row' | 'card' }) {
+  const { renderThumbnail } = useExplorer();
+  const thumb = renderThumbnail?.(item, size);
+  if (thumb) return <>{thumb}</>;
+  return (
+    <span
+      className={`flex items-center justify-center text-slate-300 dark:text-slate-600 ${
+        size === 'card' ? `${PANE_PREVIEW_BOX} [&_svg]:h-7 [&_svg]:w-7` : PANE_THUMB_BOX
+      }`}
+    >
+      <ItemIcon size={size === 'card' ? 28 : 16} />
+    </span>
+  );
+}
+
+function usePaneItemMenu(item: ShownItem) {
+  const menu = useRowMenu();
+  const name = item.title || 'Untitled';
+  return {
+    onContextMenu: menu.onContextMenu,
+    trailing: (
+      <>
+        <EllipsisTriggerButton {...menu.triggerProps} size="md" reveal label={`Menu for ${name}`} />
+        {menu.open ? (
+          <ItemMenu item={item} anchor={menu.triggerRef.current} onClose={menu.close} />
+        ) : null}
+      </>
+    ),
+  };
+}
+
+const JumpBackInCard = memo(function JumpBackInCard({ item }: { item: ShownItem }) {
+  const { openItem, filter, kind } = useExplorer();
+  const menu = usePaneItemMenu(item);
+  const now = useNow();
+  return (
+    <PaneCard
+      preview={<Preview item={item} size="card" />}
+      title={item.title || `Untitled ${kind.lowerOne}`}
+      meta={
+        <span className="flex items-center gap-1.5">
+          {filter === 'all' ? <AppMark app={item.app} size={12} /> : null}
+          <span className="truncate">
+            Opened {relativeSince(item.lastOpenedAt ?? item.updatedAt, now || Date.now())}
+          </span>
+        </span>
+      }
+      onActivate={() => openItem(item)}
+      rowProps={{ onContextMenu: menu.onContextMenu }}
+      trailing={menu.trailing}
+    />
+  );
+});
+
+// ---- A place: Shared With Me, My Work, a team, Favourites -------------------------------------------------
+
+function PlaceSection({
+  section,
+  folderId,
+  onOpenFolder,
+  currentId,
+  rootLabel,
+  pendingRename,
+}: {
+  section: Exclude<PanelSection, { kind: 'home' } | { kind: 'inbox' } | { kind: 'trash' }>;
+  folderId: string | null;
+  onOpenFolder: (id: string | null) => void;
+  currentId: string | null;
+  rootLabel: string;
+  pendingRename: React.MutableRefObject<((id: string) => void) | null>;
+}) {
+  const { client, app, filter, overlay, epoch, folders, words, setRenamingId } = useExplorer();
   const sharedMeta = useRef(new Map());
-  const list = useMemo(() => {
-    if (view.kind === 'home') {
-      return {
-        key: `panel-home:${filter}`,
-        load: recentLoader(client, app, filter, PANEL_HOME),
-        belongs: (i: ShownItem) => i.trashedAt === null,
-        enabled: true,
-      };
-    }
-    return viewList(client, view, app, filter, sharedMeta.current);
-  }, [client, view, app, filter]);
+  const view = paneView(section, folderId);
+  const list = useMemo(
+    () => viewList(client, view, app, filter, sharedMeta.current),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [client, app, filter, view.kind, 'id' in view ? view.id : null, folderId],
+  );
   const state = useItemList({
     key: list?.key ?? 'none',
     load: list?.load ?? (async () => ({ items: [], nextCursor: null })),
@@ -273,107 +835,261 @@ function PanelSection() {
     epoch,
     enabled: Boolean(list?.enabled),
   });
-  const folderRows =
-    view.kind === 'all'
-      ? folders.childrenOf(null, null)
-      : view.kind === 'folder'
-        ? folders.childrenOf(view.id, folders.byId.get(view.id)?.teamId ?? null)
-        : view.kind === 'team'
-          ? folders.childrenOf(view.folderId ?? null, view.id)
-          : [];
+  // A folder just made opens renaming.
+  useEffect(() => {
+    pendingRename.current = (id) => setRenamingId(id);
+    return () => {
+      pendingRename.current = null;
+    };
+  }, [pendingRename, setRenamingId]);
 
-  if (view.kind === 'inbox') {
-    const rows = inbox.data ? inbox.data.actions.length + inbox.data.threads.length : 0;
-    return (
-      <p className="px-2 py-3 text-xs text-slate-500 dark:text-slate-400">
-        {inbox.loading
-          ? 'Loading…'
-          : rows === 0
-            ? 'You’re all caught up.'
-            : `${rows} waiting in your Inbox.`}
-      </p>
-    );
-  }
-  return (
-    <ul className="flex flex-col">
-      {folderRows.map((f) => (
-        <li key={f.id}>
-          <button
-            type="button"
-            onClick={() =>
-              navigate(
-                f.teamId
-                  ? { kind: 'team', id: f.teamId, folderId: f.id }
-                  : { kind: 'folder', id: f.id },
-              )
-            }
-            className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left hover:bg-slate-100 dark:hover:bg-slate-800"
-          >
-            <span className="text-amber-500">
-              <FolderSolidIcon />
-            </span>
-            <span className="truncate text-[13px] font-medium text-slate-800 dark:text-slate-100">
-              {f.name}
-            </span>
-          </button>
-        </li>
-      ))}
-      {state.loading ? (
-        <li className="px-2 py-3 text-xs text-slate-500">Loading…</li>
-      ) : state.items.length === 0 && folderRows.length === 0 ? (
-        <li className="px-2 py-3 text-xs text-slate-500 dark:text-slate-400">
-          {view.kind === 'home' ? (
-            <span className="inline-flex items-center gap-1.5">
-              <ClockIcon /> Nothing opened yet.
-            </span>
-          ) : (
-            'Nothing here yet.'
-          )}
-        </li>
-      ) : (
-        state.items.map((item) => <PanelRow key={item.id} item={item} showApp={filter === 'all'} />)
-      )}
-      {state.hasMore ? (
-        <li>
+  const teamId = section.kind === 'team' ? section.id : null;
+  const space = section.kind === 'mine' || section.kind === 'team';
+  const folderRows = space ? folders.childrenOf(folderId, teamId) : [];
+  const trail: Folder[] = [];
+  for (
+    let f = folderId ? folders.byId.get(folderId) : undefined;
+    f;
+    f = f.parentId ? folders.byId.get(f.parentId) : undefined
+  )
+    trail.unshift(f);
+  const here = trail.at(-1)?.name ?? rootLabel;
+
+  let content: ReactNode;
+  if (state.error) {
+    content = <PaneFailed message="This list could not load." onRetry={state.retry} />;
+  } else if (state.loading || (space && folders.loading)) {
+    content = <PaneSkeleton />;
+  } else if (folderRows.length + state.items.length === 0) {
+    const copy = emptyCopy(folderId ? { kind: 'folder', id: folderId } : view, words);
+    content = <PaneEmpty icon={copy.icon} title={copy.title} description={copy.description} />;
+  } else {
+    content = (
+      // Keyed by the folder open, so opening one slides its contents in.
+      <div key={folderId ?? 'root'} className="flex animate-view-forward flex-col gap-3">
+        {folderRows.length ? (
+          <PaneGrid label={`Folders in ${here}`}>
+            {folderRows.map((f) => (
+              <FolderCard key={f.id} folder={f} onOpen={() => onOpenFolder(f.id)} />
+            ))}
+          </PaneGrid>
+        ) : null}
+        {state.items.length ? (
+          <PaneList label={here}>
+            {state.items.map((item) => (
+              <ItemRow key={item.id} item={item} current={item.id === currentId} />
+            ))}
+          </PaneList>
+        ) : null}
+        {state.hasMore ? (
           <button
             type="button"
             disabled={state.loadingMore}
             onClick={state.loadMore}
-            className="w-full rounded-lg px-2 py-1.5 text-xs font-semibold text-brand-700 hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-500/10"
+            className={`${PANE_LINK} self-center py-1`}
           >
             {state.loadingMore ? 'Loading…' : 'Show more'}
           </button>
-        </li>
+        ) : null}
+      </div>
+    );
+  }
+  return (
+    <div className="flex flex-col gap-1">
+      {trail.length ? (
+        <BackBar
+          gap="tight"
+          label={trail.at(-2)?.name ?? rootLabel}
+          current={trail.at(-1)!.name}
+          onClick={() => onOpenFolder(trail.at(-2)?.id ?? null)}
+        />
       ) : null}
-    </ul>
+      {content}
+    </div>
   );
 }
 
-const PanelRow = memo(function PanelRow({ item, showApp }: { item: ShownItem; showApp: boolean }) {
-  const { Link, itemHref } = useExplorer();
-  const menu = useRowMenu();
-  const title = item.title || 'Untitled';
+const FolderCard = memo(function FolderCard({
+  folder,
+  onOpen,
+}: {
+  folder: Folder;
+  onOpen: () => void;
+}) {
+  const { folders, renamingId, setRenamingId } = useExplorer();
+  const editing = renamingId === folder.id;
+  const menu = useRowMenu({ disabled: editing });
+  const subfolders = folders.childrenOf(folder.id, folder.teamId).length;
+  const count = subfolders
+    ? `${subfolders} ${subfolders === 1 ? 'folder' : 'folders'}`
+    : 'Folder';
+  const commit = (name: string) => {
+    const next = name.trim();
+    if (next && next !== folder.name) void folders.rename(folder.id, next);
+    setRenamingId(null);
+  };
   return (
-    <li
-      data-item-row={item.id}
-      onContextMenu={menu.onContextMenu}
-      className="group flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-800"
-    >
-      {showApp ? <AppMark app={item.app} size={14} /> : null}
-      {item.favourite ? <FavouriteMarker /> : null}
-      <Link
-        href={itemHref(item)}
-        className="min-w-0 flex-1 truncate text-[13px] font-medium text-slate-800 hover:text-brand-700 dark:text-slate-100 dark:hover:text-brand-300"
-      >
-        {title}
-      </Link>
-      <span className="shrink-0">
-        <RelativeTimeChip at={item.lastOpenedAt ?? item.updatedAt} />
-      </span>
-      <EllipsisTriggerButton {...menu.triggerProps} reveal size="sm" label={`Menu for ${title}`} />
-      {menu.open ? (
-        <ItemMenu item={item} anchor={menu.triggerRef.current} onClose={menu.close} />
-      ) : null}
-    </li>
+    <PaneCard
+      preview={<FolderPreview icon={<FolderSolidIcon />} count={count} />}
+      title={
+        editing ? (
+          <InlineRenameInput
+            initial={folder.name}
+            ariaLabel={`Rename ${folder.name}`}
+            onCommit={commit}
+            onCancel={() => setRenamingId(null)}
+            className="w-full rounded border border-brand-300 bg-white px-1.5 py-0.5 text-[13px] dark:border-brand-500/50 dark:bg-slate-900 dark:text-slate-100"
+          />
+        ) : (
+          folder.name
+        )
+      }
+      label={folder.name}
+      onActivate={editing ? undefined : onOpen}
+      rowProps={{ onContextMenu: menu.onContextMenu }}
+      trailing={
+        editing ? null : (
+          <>
+            <EllipsisTriggerButton
+              {...menu.triggerProps}
+              size="md"
+              reveal
+              label={`Menu for ${folder.name}`}
+            />
+            {menu.open ? (
+              <FolderMenu folder={folder} anchor={menu.triggerRef.current} onClose={menu.close} />
+            ) : null}
+          </>
+        )
+      }
+    />
   );
 });
+
+const ItemRow = memo(function ItemRow({ item, current }: { item: ShownItem; current: boolean }) {
+  const { openItem, filter, kind, actions, renamingId, setRenamingId } = useExplorer();
+  const menu = usePaneItemMenu(item);
+  const now = useNow();
+  const name = item.title || `Untitled ${kind.lowerOne}`;
+  const editing = renamingId === item.id;
+  const commit = (next: string) => {
+    const trimmed = next.trim();
+    if (trimmed && trimmed !== item.title) void actions.rename(item, trimmed);
+    setRenamingId(null);
+  };
+  return (
+    <PaneRow
+      leading={<Preview item={item} size="row" />}
+      title={
+        editing ? (
+          <InlineRenameInput
+            initial={item.title}
+            ariaLabel={`Rename ${name}`}
+            onCommit={commit}
+            onCancel={() => setRenamingId(null)}
+            className="w-full rounded border border-brand-300 bg-white px-1.5 py-0.5 text-[13px] dark:border-brand-500/50 dark:bg-slate-900 dark:text-slate-100"
+          />
+        ) : (
+          <span className="flex min-w-0 items-center gap-1">
+            {filter === 'all' ? <AppMark app={item.app} size={12} /> : null}
+            {item.favourite ? <FavouriteMarker /> : null}
+            <span className="min-w-0 truncate">{name}</span>
+          </span>
+        )
+      }
+      label={name}
+      meta={`Updated ${relativeSince(item.updatedAt, now || Date.now())}`}
+      current={current}
+      onActivate={editing ? undefined : () => openItem(item)}
+      rowProps={{ onContextMenu: menu.onContextMenu }}
+      trailing={editing ? null : menu.trailing}
+    />
+  );
+});
+
+// ---- The Trash ------------------------------------------------------------------------------------------
+
+function TrashSection() {
+  const { client, app, filter, overlay, epoch, actions, teamName, words, kind } = useExplorer();
+  const list = useMemo(
+    () => viewList(client, { kind: 'trash' }, app, filter),
+    [client, app, filter],
+  );
+  const state = useItemList({
+    key: list?.key ?? 'trash',
+    load: list!.load,
+    overlay,
+    belongs: list?.belongs,
+    epoch,
+  });
+  const now = useNow();
+  const [confirming, setConfirming] = useState<ShownItem | null>(null);
+  if (state.error) return <PaneFailed message="The Trash could not load." onRetry={state.retry} />;
+  if (state.loading) return <PaneSkeleton rows={4} />;
+  const groups = trashGroups(state.items, teamName, words);
+  if (!groups.length) {
+    const copy = emptyCopy({ kind: 'trash' }, words);
+    return <PaneEmpty icon={copy.icon} title={copy.title} description={copy.description} />;
+  }
+  return (
+    <div className="flex flex-col gap-5">
+      <p className="px-2 text-[11px] leading-4 text-slate-500 dark:text-slate-400">
+        Deleted {words.lowerMany} wait here for 30 days. Restoring one puts it back where it was.
+      </p>
+      {groups.map((group) => (
+        <PaneSection key={group.key} title={group.title}>
+          <PaneList label={group.title}>
+            {group.rows.map((row) => (
+              <PaneRow
+                key={row.id}
+                leading={
+                  <PaneTile tone="rose">
+                    <ItemIcon />
+                  </PaneTile>
+                }
+                title={row.title || `Untitled ${kind.lowerOne}`}
+                meta={`${trashedOnLabel(row)} · ${daysLeftLabel(row.trashedAt ?? 0, now || Date.now())}`}
+                trailing={
+                  <>
+                    <PaneIconButton label="Restore" onClick={() => void actions.restore(row)}>
+                      <RestoreIcon />
+                    </PaneIconButton>
+                    <PaneIconButton
+                      label="Delete for Good"
+                      tone="danger"
+                      onClick={() => setConfirming(row)}
+                    >
+                      <TrashIcon />
+                    </PaneIconButton>
+                  </>
+                }
+              />
+            ))}
+          </PaneList>
+        </PaneSection>
+      ))}
+      {state.hasMore ? (
+        <button
+          type="button"
+          disabled={state.loadingMore}
+          onClick={state.loadMore}
+          className={`${PANE_LINK} self-center py-1`}
+        >
+          {state.loadingMore ? 'Loading…' : 'Show more'}
+        </button>
+      ) : null}
+      {confirming ? (
+        <ConfirmDialog
+          title="Delete for good?"
+          message={`Delete "${confirming.title || 'Untitled'}" for good? This cannot be undone.`}
+          confirmLabel="Delete permanently"
+          onConfirm={() => {
+            void actions.purge(confirming);
+            setConfirming(null);
+          }}
+          onCancel={() => setConfirming(null)}
+        />
+      ) : null}
+    </div>
+  );
+}

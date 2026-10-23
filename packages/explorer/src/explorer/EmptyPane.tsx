@@ -122,8 +122,10 @@ export function EmptyPane({
   onCreate,
   createLabel,
   children,
+  compact = false,
 }: {
   view: ExplorerView;
+  compact?: boolean;
   words: Words;
   /** New, offered where the view's words call for it. */
   onCreate?: () => void;
@@ -132,7 +134,12 @@ export function EmptyPane({
 }) {
   const copy = emptyCopy(view, words);
   return (
-    <EmptyState icon={copy.icon} title={copy.title} description={copy.description}>
+    <EmptyState
+      icon={copy.icon}
+      title={copy.title}
+      description={copy.description}
+      compact={compact}
+    >
       {copy.cta && onCreate ? (
         <button type="button" onClick={onCreate} className={EMPTY_CTA}>
           <PlusIcon size={14} />
