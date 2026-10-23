@@ -48,6 +48,30 @@ describe('production dispatch (service bindings)', () => {
     expect(api.urls).toEqual(['https://livediagram.app/api/documents/abc']);
   });
 
+  it('sends /api/index/* to the index, not the api, without this site\'s cookies', async () => {
+    const { env, api } = makeEnv();
+    const seen: Request[] = [];
+    vi.stubGlobal('fetch', (req: Request) => {
+      seen.push(req);
+      return Promise.resolve(new Response('index'));
+    });
+    try {
+      const res = await router.fetch(
+        new Request('https://livediagram.app/api/index/items?app=livediagram', {
+          headers: { Cookie: 'ld_signed_in=1', Authorization: 'Bearer t' },
+        }),
+        { ...env, INDEX_ORIGIN: 'https://index.test' },
+      );
+      expect(await res.text()).toBe('index');
+      expect(seen[0]!.url).toBe('https://index.test/api/index/items?app=livediagram');
+      expect(seen[0]!.headers.get('Cookie')).toBeNull();
+      expect(seen[0]!.headers.get('Authorization')).toBe('Bearer t');
+      expect(api.urls).toEqual([]);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   it('strips /live off the asset-prefix requests for the editor worker', async () => {
     const { env, live } = makeEnv();
     await dispatch('/live/_next/static/chunk.js', env);

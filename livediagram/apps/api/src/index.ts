@@ -4,6 +4,7 @@ import {
   toLegacyResponse,
 } from './legacy-documents-alias';
 import { flushMediaRefs } from './media';
+import { teamIdsOf } from '@liveworkspace/index-app';
 import { accountCredentials, getPersonIdentity } from './auth/accounts';
 import { AccountsUnavailable, type ResolvedApiToken } from './db/api-tokens';
 import { catchUpTeams, syncTeams } from './db/team-sync';
@@ -330,6 +331,8 @@ async function routeApiRequest(
         }
       : null,
     workbench,
+    bearer: person ? bearerTokenOf(request.headers.get('Authorization')) : null,
+    teams: teamIdsOf(teamsClaim),
     waitUntil: (promise) => executionCtx?.waitUntil(promise),
   };
   try {

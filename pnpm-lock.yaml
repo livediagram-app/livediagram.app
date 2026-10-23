@@ -1392,6 +1392,9 @@ importers:
       '@liveworkspace/community-service':
         specifier: workspace:*
         version: link:../../../liveworkspace/apps/community
+      '@liveworkspace/index-service':
+        specifier: workspace:*
+        version: link:../../../liveworkspace/apps/index
       '@liveworkspace/media-service':
         specifier: workspace:*
         version: link:../../../liveworkspace/apps/media

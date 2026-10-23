@@ -24,10 +24,24 @@ export interface Env {
   // response noindex so the public staging mirror can't compete with
   // production in search results. Absent in production and in local dev.
   DEPLOY_ENV?: string;
+  // The central index (liveworkspace/docs/one-explorer.md): `/api/index/*` goes there, not to the api. Unset means
+  // production's.
+  INDEX_ORIGIN?: string;
 }
 
 const LIVE_PATH = '/live';
 const API_PATH = '/api';
+const INDEX_PATH = '/api/index';
+const PRODUCTION_INDEX_ORIGIN = 'https://liveworkspace.app';
+
+// The index is another site: the same request (method, body, Authorization, the share headers) at its origin,
+// minus this site's cookies, which are not the index's to read. Its redirects pass back as they are.
+export function forwardToIndex(request: Request, url: URL, origin: string): Promise<Response> {
+  const target = new URL(`${url.pathname}${url.search}`, origin);
+  const forwarded = new Request(target.toString(), request);
+  forwarded.headers.delete('Cookie');
+  return fetch(forwarded);
+}
 const TELEMETRY_PATH = '/telemetry';
 
 // The public telemetry dashboard is liveworkspace's now, shared by every app
@@ -197,6 +211,10 @@ export default {
 // has a single return value to decorate instead of nine.
 async function route(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url);
+  // The Explorer's own calls (liveworkspace/docs/one-explorer-contracts.md): the index answers them.
+  if (hasPrefix(url.pathname, INDEX_PATH)) {
+    return forwardToIndex(request, url, env.INDEX_ORIGIN || PRODUCTION_INDEX_ORIGIN);
+  }
   // /api/* is forwarded as-is to the api worker. The API worker handles
   // the full pathname (it expects `/api/...`) so there's no prefix
   // stripping here, unlike the basePath apps.

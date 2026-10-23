@@ -65,6 +65,8 @@ describe('hosted profile', () => {
     expect(shared.TELEMETRY_ENABLED).toBe('true');
     expect(environments.production.MEDIA_URL).toBe('https://liveworkspace.app/api/media');
     expect(environments.staging.MEDIA_URL).toBe('https://staging.liveworkspace.app/api/media');
+    expect(environments.production.INDEX_ORIGIN).toBe('https://liveworkspace.app');
+    expect(environments.staging.INDEX_ORIGIN).toBe('https://staging.liveworkspace.app');
   });
 
   it('names only vars the worker reads', async () => {

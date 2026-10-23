@@ -39,6 +39,7 @@
     "@livediagram/oxlint-config": "workspace:*",
     "@livediagram/vitest-config": "workspace:*",
     "@liveworkspace/community-service": "workspace:*",
+    "@liveworkspace/index-service": "workspace:*",
     "@liveworkspace/media-service": "workspace:*",
     "@types/node": "^26.6.4",
     "@vitest/coverage-v8": "^5.0.3",

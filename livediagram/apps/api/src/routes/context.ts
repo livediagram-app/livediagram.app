@@ -20,6 +20,7 @@ import { clientRateKey } from '../client-ip';
 import { getDocument, getMembership, getTrashedDocumentMeta } from '../db';
 import { badRequest, documentTrashed, forbidden, missingAuth, notFound } from '../responses';
 import type { DocumentDTO, Env, DocumentEnv } from '../types';
+import type { GrantCaller, ItemGrant } from '../index-service';
 
 // A workbench session as the choke point resolved it (blueprint "A request bearing lvw_", "The choke point by
 // scope"): one document in the document scope, the workspace (from an optional folder) in the workspace scope.
@@ -41,9 +42,8 @@ export type RouteContext = {
   // Path split on '/', leading slash stripped: `['api', '<resource>', ...]`.
   segments: string[];
   // The verified account id, or null. Routes that must be
-  // signed-in only (account deletion, guest->authed migration, teams)
-  // read this directly rather than through `resolveOwner` so there's
-  // no X-Owner-Id fallback.
+  // signed-in only (account deletion, teams) read this directly rather
+  // than through `resolveOwner`, which a guest also answers.
   accountUserId: string | null;
   // The server-verified account id from EITHER credential: an account
   // access token, or an `lwt_` API token (whose owner is always an
@@ -51,7 +51,7 @@ export type RouteContext = {
   // CONTENT access — gateRead/gateEdit and the teams-surface reads — so a
   // token reaches the same documents the app does (docs/specs/015-api/public-api-and-tokens.md §3.4). Account
   // and team ADMINISTRATION (team mutations, token management, account
-  // deletion, migration) keeps requiring `accountUserId`: a leaked token
+  // deletion) keeps requiring `accountUserId`: a leaked token
   // must not be able to manage membership or mint further credentials.
   verifiedUserId: string | null;
   // The verified `email` claim from the account access token (docs/specs/013-workspace/teams.md), or null
@@ -59,8 +59,8 @@ export type RouteContext = {
   // verified. Never read from a header — it
   // drives teams' invite auto-connection so it must be unforgeable.
   accountEmail: string | null;
-  // Hybrid identity (docs/specs/014-identity/auth-and-guest-access.md): the verified account id, else the
-  // legacy X-Owner-Id header, else null. Resolved once in `fetch`.
+  // Hybrid identity (docs/specs/014-identity/auth-and-guest-access.md): the verified account id (signed in, an
+  // API token's or a workbench session's), else the guest token's id, else null. Resolved once in `fetch`.
   resolveOwner: () => string | null;
   // The API token the request presented, or null for a signed-in session or a guest. Only a token
   // makes a changeset an agent's, and a token may never do a whole-tab save
@@ -71,6 +71,15 @@ export type RouteContext = {
   // caller. Under one, `accountUserId` and `token` are null and `resolveOwner()` is the owner: a person's editor on
   // one document, never a token and never an administrator. Optional so unit tests can leave it out.
   workbench?: WorkbenchContext | null;
+  // The verified bearer of a signed-in person or a guest (an accounts access token or guest token), passed on to
+  // the index as theirs; null for an API token, a workbench session or a link visitor.
+  bearer?: string | null;
+  // The teams the caller is in, from their token's claim: what an API token delegates to the index with.
+  teams?: readonly string[];
+  // The index's grant on the document the request is about (liveworkspace/docs/one-explorer-contracts.md
+  // "Grants"), settled by the worker before the request reaches the document's room. Null when the caller holds
+  // none; unset outside a document's own routes.
+  grant?: ItemGrant | null;
   // Schedule background work that may outlive the response (docs/specs/014-identity/transactional-email.md email
   // sends). Forwards to the fetch handler's ExecutionContext.waitUntil.
   // Optional so unit tests can build a RouteContext without a real
@@ -81,6 +90,16 @@ export type RouteContext = {
 
 // A RouteContext inside a document's Durable Object (document-room/document-route.ts): its env reaches the document's content.
 export type DocumentRouteContext = RouteContext & { env: DocumentEnv };
+
+// Who the index sees: an API token or workbench session delegates (the app checked the person, with the app's key),
+// anyone else's own bearer goes as it is (a link visitor's is null).
+export function grantCallerOf(ctx: RouteContext): GrantCaller {
+  if (ctx.token || ctx.workbench) {
+    const personId = ctx.verifiedUserId ?? ctx.resolveOwner() ?? '';
+    return { kind: 'delegate', personId, teams: [...(ctx.teams ?? [])] };
+  }
+  return { kind: 'bearer', token: ctx.bearer ?? null };
+}
 
 // Visitor share code carried on edit/view-link requests so a non-owner
 // can authorise against a document they don't own.

@@ -8,6 +8,7 @@
 import type { DocumentRouteContext, RouteContext, WorkbenchContext } from '../routes/context';
 import { handleDocumentRequest } from '../routes/documents';
 import type { DocumentEnv } from '../types';
+import type { ItemGrant } from '../index-service';
 
 // The caller as the worker resolved it: plain data, so it crosses the RPC boundary.
 export type RouteIdentity = {
@@ -18,9 +19,13 @@ export type RouteIdentity = {
   owner: string | null;
   token: { id: string; readOnly?: boolean } | null;
   workbench: WorkbenchContext | null;
+  bearer: string | null;
+  teams: readonly string[];
+  // The index's grant on this document, as the worker settled it.
+  grant: ItemGrant | null;
 };
 
-export function identityOf(ctx: RouteContext): RouteIdentity {
+export function identityOf(ctx: RouteContext, grant: ItemGrant | null = null): RouteIdentity {
   return {
     accountUserId: ctx.accountUserId,
     verifiedUserId: ctx.verifiedUserId,
@@ -28,6 +33,9 @@ export function identityOf(ctx: RouteContext): RouteIdentity {
     owner: ctx.resolveOwner(),
     token: ctx.token ?? null,
     workbench: ctx.workbench ?? null,
+    bearer: ctx.bearer ?? null,
+    teams: ctx.teams ?? [],
+    grant,
   };
 }
 
@@ -50,6 +58,9 @@ export async function answerDocumentRequest(
     resolveOwner: () => identity.owner,
     token: identity.token,
     workbench: identity.workbench,
+    bearer: identity.bearer,
+    teams: identity.teams,
+    grant: identity.grant,
     waitUntil,
   };
   // A throw crosses back to the worker, which logs it and answers 500 as for any route (index.ts).

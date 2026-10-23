@@ -42,6 +42,10 @@ export type Env = {
   // The key liveworkspace's index presents on this app's internal endpoints (`/api/internal/items/*`,
   // liveworkspace/docs/one-explorer-contracts.md). A secret; unset, those endpoints answer 404.
   INDEX_KEY?: string;
+  // liveworkspace's index (liveworkspace/docs/one-explorer.md): where every canvas is filed and who may open it.
+  // The grants this api checks are signed by `${INDEX_ORIGIN}/api/index/jwks`, and the document rooms push their
+  // summaries there with INDEX_KEY. From hosted-vars.json per environment; local dev sets it in `.dev.vars`.
+  INDEX_ORIGIN?: string;
   // The live build id: the deploy's commit, the same one baked into the editor build as
   // NEXT_PUBLIC_BUILD_ID (docs/specs/016-platform/stale-builds.md). Unset (local dev, a self-host that
   // sets neither) leaves it off the server release signal.
