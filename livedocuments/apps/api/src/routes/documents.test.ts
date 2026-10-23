@@ -224,6 +224,73 @@ describe('the tab autosave backstop', () => {
   });
 });
 
+describe('the tabs alone', () => {
+  type Tabs = { tabs: { id: string; name: string; kind: string | null }[] };
+
+  it('names each tab, in order, without its content', async () => {
+    const db = await seeded();
+    const res = await call(db, 'GET', '/api/documents/P/tabs');
+    expect(res.status).toBe(200);
+    expect(res.headers.get('Cache-Control')).toBe('private, no-store');
+    expect(res.headers.get('Access-Control-Allow-Origin')).toBe('*');
+    const text = await res.text();
+    expect(JSON.parse(text) as Tabs).toEqual({
+      tabs: [
+        { id: 't1', name: 'Pricing', kind: null },
+        { id: 't2', name: 'Roadmap', kind: null },
+      ],
+    });
+    // The tabs' content never leaves.
+    expect(text).not.toContain('elements');
+  });
+
+  it('is a 404 without a grant or a document, and a tab’s link sees its own tab alone', async () => {
+    const db = await seeded();
+    expect((await call(db, 'GET', '/api/documents/P/tabs', { owner: 'stranger' })).status).toBe(
+      404,
+    );
+    expect((await call(db, 'GET', '/api/documents/nope/tabs')).status).toBe(404);
+    testShareLink(db, 'P', 'SCOPED23', 'view', 'never', 't2');
+    const res = await call(db, 'GET', '/api/documents/P/tabs', {
+      owner: 'visitor-1',
+      headers: { 'X-Share-Code': 'SCOPED23' },
+    });
+    expect(res.status).toBe(200);
+    expect(await res.json<Tabs>()).toEqual({ tabs: [{ id: 't2', name: 'Roadmap', kind: null }] });
+  });
+
+  it('reads a large document’s tabs in budget, a fraction of the whole document', async () => {
+    const db = sqliteD1();
+    const many = Array.from({ length: 60 }, (_, i) => ({
+      id: `t${i}`,
+      name: `Tab ${i}`,
+      elements: Array.from({ length: 150 }, (_, k) => box(`e${i}-${k}`)),
+    }));
+    expect(
+      (await call(db, 'POST', '/api/documents', { body: { id: 'P', name: 'Big', tabs: many } }))
+        .status,
+    ).toBe(201);
+    const time = async (path: string) => {
+      let best = Infinity;
+      let bytes = 0;
+      for (let k = 0; k < 5; k++) {
+        const t = performance.now();
+        bytes = (await (await call(db, 'GET', path)).text()).length;
+        best = Math.min(best, performance.now() - t);
+      }
+      return { ms: best, bytes };
+    };
+    const whole = await time('/api/documents/P');
+    const tabs = await time('/api/documents/P/tabs');
+    // console.info is quiet in this file; the measurement is worth seeing.
+    console.log(
+      `[tabs] 60 tabs of 150 elements: whole document ${whole.ms.toFixed(1)} ms ${whole.bytes} B, tabs ${tabs.ms.toFixed(1)} ms ${tabs.bytes} B`,
+    );
+    expect(tabs.bytes).toBeLessThan(whole.bytes);
+    expect(tabs.ms).toBeLessThan(50);
+  });
+});
+
 describe('the thumbnail', () => {
   it('is a 404 the editor turns into an icon, for no grant and for no snapshot alike', async () => {
     const db = await seeded();

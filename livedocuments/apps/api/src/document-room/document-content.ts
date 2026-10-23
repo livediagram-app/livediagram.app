@@ -82,6 +82,24 @@ export async function readDocumentOutline(
   };
 }
 
+// The document's tabs alone, in order: id and name, no tab's body read, parsed or sent. For the tab picker's read
+// (routes/documents.ts, `GET /api/documents/:id/tabs`). Every tab holds pages, so none has a kind of its own.
+export async function readDocumentTabs(
+  env: DocumentEnv,
+  documentId: string,
+): Promise<{ id: string; name: string }[]> {
+  const { results } = await env.DOCUMENT_DB.prepare(
+    `SELECT t.id, t.name
+       FROM document_tabs dt
+       JOIN tabs t ON t.id = dt.tab_id
+      WHERE dt.document_id = ?
+      ORDER BY dt.order_index ASC`,
+  )
+    .bind(documentId)
+    .all<{ id: string; name: string }>();
+  return results ?? [];
+}
+
 // What the document knows of itself, alone (no tabs): for the doors that only need its owner or name.
 export async function readDocumentMeta(
   env: DocumentEnv,

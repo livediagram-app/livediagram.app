@@ -6,6 +6,7 @@
 import type { Tab } from '@livedocuments/document';
 import { isValidTab, migrateIncomingTab } from '@livedocuments/document';
 import { IndexError, type ItemSource } from '@liveworkspace/index-client';
+import { itemTabsOf, itemTabsRequest, itemTabsResponse } from '@liveworkspace/index-app';
 import { capStoredName } from '../names';
 import {
   MAX_DECK_LEN,
@@ -23,7 +24,15 @@ import {
   type CreationIntent,
 } from '@livedocuments/api-schema';
 import { getDocument, readReorderEntries, reorderTabs, seedTabs } from '../db';
-import { badRequest, forbidden, json, notFound, payloadTooLarge, svgImage } from '../responses';
+import {
+  badRequest,
+  CORS_HEADERS,
+  forbidden,
+  json,
+  notFound,
+  payloadTooLarge,
+  svgImage,
+} from '../responses';
 import { documentDates, isDocumentSource } from '@livedocuments/api-schema';
 import { documentImageSvg } from '../document-image';
 import { redactDocumentForReader, redactDocumentForScope } from '../redact-document';
@@ -39,6 +48,7 @@ import { reportOwnerActivity } from '../person/account-app';
 import {
   initDocument,
   readDocumentMeta,
+  readDocumentTabs,
   renameDocument,
   setDocumentPresentation,
 } from '../document-room/document-content';
@@ -192,6 +202,17 @@ async function startedDocument(ctx: DocumentRouteContext, id: string): Promise<D
   console.info('[documents] started on open', { documentId: id });
   ctx.waitUntil?.(notifyMilestone(ctx.env, grant.sub));
   return getDocument(ctx.env, id);
+}
+
+// /api/documents/<id>/tabs: the document's tabs alone, `{ tabs: [{ id, name, kind: null }] }` (@liveworkspace/index-app
+// tabs.ts), for the Share dialog's tab picker on liveworkspace.app, which would otherwise read the whole document.
+// Gated like a read: a miss is 404; a tab's share link sees its own tab alone.
+async function documentTabs(ctx: DocumentRouteContext, id: string): Promise<Response> {
+  const grant = await gateGrant(ctx, id);
+  if (!grant) return notFound();
+  const rows = await readDocumentTabs(ctx.env, id);
+  if (rows.length === 0 && !(await readDocumentMeta(ctx.env, id))) return notFound();
+  return itemTabsResponse(itemTabsOf(rows, grant.tabScope), CORS_HEADERS);
 }
 
 // /api/documents/<id>/thumbnail: the cached SVG snapshot (docs/specs/006-document/document-snapshots.md), served by
@@ -356,6 +377,10 @@ export async function handleDocumentRequest(ctx: DocumentRouteContext): Promise<
       return json({ document: liveDoc }, { status: 201 });
     }
   }
+
+  // /api/documents/<id>/tabs
+  const tabsOf = itemTabsRequest(request.method, segments, 'documents');
+  if (tabsOf) return documentTabs(ctx, tabsOf);
 
   // /api/documents/<id>/thumbnail
   if (segments.length === 4 && segments[3] === 'thumbnail' && request.method === 'GET') {

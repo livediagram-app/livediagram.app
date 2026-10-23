@@ -194,7 +194,7 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     onIndex: false,
     sharePath: '/document/shared?s=',
     previewPath: null,
-    share: shareOf('/api/documents/:id', 'document', 'livedocuments tab'),
+    share: shareOf(itemTabsPath('documents'), null, 'livedocuments tab'),
   },
   livedesign: {
     site: 'livedesign.app',

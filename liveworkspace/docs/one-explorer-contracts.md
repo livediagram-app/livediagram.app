@@ -267,7 +267,8 @@ in the item's order, gated like a read of the item (a miss is 404, a grant confi
 alone), private and never cached. The Share dialog on liveworkspace.app reads it once per open for its tab picker,
 from the address the sites registry gives (`itemTabsPath`), rather than the whole item. The app answers it from its
 tab rows alone, never a tab's content: liveplanner keeps each tab's kind beside its stats at every write
-(`tab_stats.kind`). An app that does not serve it yet is read whole, as before.
+(`tab_stats.kind`); every livedocuments tab holds pages, so its kind is null. An app that does not serve it yet
+is read whole, as before.
 
 ## What an item pushes
 
