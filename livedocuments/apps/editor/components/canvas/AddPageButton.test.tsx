@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AddPageButton } from './AddPageButton';
 import { addAnotherLabel } from '@/lib/add-page-labels';
@@ -12,7 +12,7 @@ const page = (extra: object = {}) => ({ id: 'p1', rect, ...extra });
 // docs/specs/007-editor/pages-mode.md "Adding a page".
 describe('AddPageButton', () => {
   it('sits level with the last page’s middle', () => {
-    render(<AddPageButton last={page()} zoom={1} onAdd={vi.fn()} onAddLike={vi.fn()} />);
+    render(<AddPageButton last={page()} zoom={1} onAddLike={vi.fn()} />);
     const holder = screen
       .getByRole('button', { name: 'Add Another Infographic Page' })
       .closest('div[style]') as HTMLElement;
@@ -25,7 +25,7 @@ describe('AddPageButton', () => {
       <AddPageButton
         last={page({ kind: 'slide' })}
         zoom={1}
-        onAdd={vi.fn()}
+
         onAddLike={onAddLike}
       />,
     );
@@ -33,21 +33,10 @@ describe('AddPageButton', () => {
     expect(onAddLike).toHaveBeenCalledWith('p1');
   });
 
-  it('chooses any kind from the list under it', () => {
-    const onAdd = vi.fn();
-    render(<AddPageButton last={page()} zoom={1} onAdd={onAdd} onAddLike={vi.fn()} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Add a Page of Any Kind' }));
-    const rows = within(screen.getByRole('group', { name: 'Add a Page' })).getAllByRole('button');
-    expect(rows.map((r) => r.querySelector('span.block')?.textContent)).toEqual([
-      'Infographic',
-      'Article',
-      'Slide',
-    ]);
-    expect(document.activeElement).toBe(rows[0]);
-    fireEvent.keyDown(rows[0]!, { key: 'ArrowUp' });
-    expect(document.activeElement).toBe(rows[2]);
-    fireEvent.click(rows[2]!);
-    expect(onAdd).toHaveBeenCalledWith('slide');
+  it('offers no other kind: the tab holds one (One kind a tab)', () => {
+    render(<AddPageButton last={page({ kind: 'slide' })} zoom={1} onAddLike={vi.fn()} />);
+    expect(screen.getAllByRole('button')).toHaveLength(1);
+    expect(screen.queryByRole('button', { name: 'Add a Page of Any Kind' })).toBeNull();
   });
 });
 

@@ -5,7 +5,7 @@
 // left. The rows, Find a Page, the thumbnails, the page marked as here, going to a page, the
 // keyboard, reordering by drag and adding a page live here once; each home lays them out.
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
-import { MAX_PAGES, pageKindOf, type PageKind } from '@livedocuments/document';
+import { MAX_PAGES, type PageKind } from '@livedocuments/document';
 import { usePageThumbnails, type PageThumbTab } from '@/hooks/ui/usePageThumbnails';
 import type { PagesModeView } from '@/hooks/editor/usePagesMode';
 import {
@@ -166,8 +166,6 @@ export function usePageContents({
     buttons.current.get(order[to]!)?.focus();
   };
   const full = pages.length >= MAX_PAGES;
-  // The last page's kind leads the footer, highlighted: the next page is most often the same.
-  const lastKind = pages.length ? pageKindOf(pages[pages.length - 1]!) : undefined;
   const add =
     view.edit?.addPage && !full
       ? (kind: PageKind) => {
@@ -226,7 +224,6 @@ export function usePageContents({
     addLike,
     lastPage,
     full,
-    lastKind,
   };
 }
 

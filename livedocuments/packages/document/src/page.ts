@@ -265,6 +265,12 @@ export function pageKindOf(page: Pick<Page, 'kind'>): PageKind {
   return page.kind === 'article' || page.kind === 'slide' ? page.kind : 'infographic';
 }
 
+/** The tab's kind (docs/specs/007-editor/pages-mode.md "One kind a tab"): its first page's, so a
+ *  deck holds only slides; infographic for a tab with no pages. A page added is of this kind. */
+export function tabPageKind(pages: readonly Pick<Page, 'kind'>[]): PageKind {
+  return pages[0] ? pageKindOf(pages[0]) : 'infographic';
+}
+
 /** A new slide page (docs/specs/007-editor/pages-mode.md "Page kinds"): landscape, in the
  *  given slide size (16:9 by default). */
 export function newSlidePage(id: string, size: PageSizeId = 'slide'): Page {

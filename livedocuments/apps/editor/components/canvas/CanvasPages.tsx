@@ -440,7 +440,7 @@ export function CanvasPages({
       })}
       {drag.reorder ? <ReorderMarker pages={pages} reorder={drag.reorder} zoom={zoom} /> : null}
       {edit?.addPage && edit.addPageLike ? (
-        <AddPageButton last={last} zoom={zoom} onAdd={edit.addPage} onAddLike={edit.addPageLike} />
+        <AddPageButton last={last} zoom={zoom} onAddLike={edit.addPageLike} />
       ) : null}
       {previewed && view.layoutPreview ? (
         <InfographicLayoutPreview

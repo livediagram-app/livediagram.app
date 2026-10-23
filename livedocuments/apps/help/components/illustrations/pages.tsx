@@ -219,7 +219,7 @@ export function PagesScene() {
           />
         ))}
       </Sheet>
-      {/* After the last page: the + adds another like it, the button under it any kind */}
+      {/* After the last page: the + adds another like it */}
       <g>
         <circle
           cx={438}
@@ -233,18 +233,6 @@ export function PagesScene() {
           className="stroke-slate-500"
           strokeWidth={1.8}
           strokeLinecap="round"
-        />
-        <circle
-          cx={438}
-          cy={148}
-          r={10}
-          className="fill-white stroke-slate-300"
-          strokeWidth={1.2}
-        />
-        <path
-          d="M434 144h3v3h-3zM439 144h3v3h-3zM434 149h3v3h-3zM439 149h3v3h-3z"
-          className="fill-none stroke-slate-500"
-          strokeWidth={1}
         />
       </g>
       {/* The bottom-right cluster: Undo / Redo, then the page navigator */}

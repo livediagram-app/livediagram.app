@@ -164,18 +164,13 @@ describe('PageContentsSidebar', () => {
 
   it('offers Add Page to an Editor alone', () => {
     const h = show();
-    // Add a Page of Any Kind opens the chooser.
-    expect(screen.queryByRole('dialog', { name: 'Add a Page' })).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: 'Add a Page of Any Kind' }));
-    fireEvent.click(
-      screen
-        .getByRole('dialog', { name: 'Add a Page' })
-        .querySelector('[data-add-kind="article"]')!,
-    );
-    expect(h.addPage).toHaveBeenCalledWith('article');
+    // One kind a tab: no chooser of another kind.
+    expect(screen.queryByRole('button', { name: 'Add a Page of Any Kind' })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Add Page' }));
+    expect(h.addPage).toHaveBeenCalledWith('infographic');
     cleanup();
     show({ canEdit: false });
-    expect(screen.queryByRole('button', { name: 'Add a Page of Any Kind' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Add Page' })).toBeNull();
     expect(screen.getAllByRole('listitem')).toHaveLength(3);
   });
 });

@@ -204,15 +204,15 @@ describe('Page edits: documents', () => {
       articles: { f: { blocks: [{ id: 'b', type: 'paragraph', runs: [{ text: 'Hi' }] }] } },
     }) as unknown as Tab;
 
-  it('adds an infographic page like the last infographic, and a document on paper', () => {
+  // A tab stored before one kind a tab (docs/specs/007-editor/pages-mode.md): its first page's
+  // kind is the one it takes.
+  it('adds an infographic page like the last infographic, never another article', () => {
     const h = harness(withDocument());
     h.edits().addPage!('infographic');
     expect(pagesOf(h.tab()).at(-1)).toMatchObject({ size: 'square' });
     h.edits().addPage!('article');
-    const added = pagesOf(h.tab()).at(-1)!;
-    expect(added.kind).toBe('article');
-    expect(added.size).toBeUndefined();
-    expect(Object.keys(h.tab().articles!)).toHaveLength(2);
+    expect(pagesOf(h.tab())).toHaveLength(4);
+    expect(Object.keys(h.tab().articles!)).toHaveLength(1);
   });
 
   it('turns, sizes and paints every page of a document together', () => {
@@ -258,21 +258,35 @@ describe('slide page edits', () => {
       ],
     }) as unknown as Tab;
 
-  it('adds a slide in the last slide size, and an infographic page modelled on the last infographic', async () => {
+  const deck = (): Tab =>
+    ({
+      id: 't',
+      name: 'T',
+      elements: [],
+      pages: [{ id: 's1', orientation: 'landscape', size: 'slide-classic', kind: 'slide' }],
+    }) as unknown as Tab;
+
+  it('adds a slide in the last slide size, and no page of another kind', async () => {
     const { track } = await import('@/lib/telemetry');
-    const h = harness(slideTab());
+    const h = harness(deck());
     h.edits().addPage!('slide');
     expect(track).toHaveBeenLastCalledWith('Tab', 'Changed', 'SlidePageAdded');
     h.edits().addPage!('infographic');
-    const [, , slide, page] = pagesOf(h.tab());
-    expect(slide).toMatchObject({ orientation: 'landscape', size: 'slide-classic', kind: 'slide' });
-    expect(page).toMatchObject({ orientation: 'portrait', size: 'social' });
+    h.edits().addPage!('article');
+    const pages = pagesOf(h.tab());
+    expect(pages).toHaveLength(2);
+    expect(pages[1]).toMatchObject({
+      orientation: 'landscape',
+      size: 'slide-classic',
+      kind: 'slide',
+    });
   });
 
-  it('adds a 16:9 slide when there is no slide yet', () => {
+  it('adds no slide to an infographic tab (one kind a tab)', () => {
     const h = harness(twoPages());
     h.edits().addPage!('slide');
-    expect(pagesOf(h.tab())[2]).toMatchObject({ size: 'slide', kind: 'slide' });
+    expect(h.commitTabs).not.toHaveBeenCalled();
+    expect(pagesOf(h.tab())).toHaveLength(2);
   });
 
   it('never turns a slide, nor gives it a size that is not a slide size', () => {

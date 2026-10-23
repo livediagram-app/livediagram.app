@@ -63,6 +63,9 @@ changes before it would have done.
 
 - **Article pages are made by `write_article`**, never by `add`: an `add` of kind `article` is refused
   (`article_by_write`) with that hint.
+- **One kind a tab** ([Pages](../007-editor/pages-mode.md#one-kind-a-tab)): an `add` of a kind other than the tab's
+  (its first page's) is refused (`kind_not_offered`), naming the tab's kind and pointing to a tab of its own
+  (`add_tab`). The first page's choice, below, is how an unchosen tab takes its kind.
 - **The first page's choice**: while the tab's only page is unchosen and empty, an `add` of a kind makes that page
   the kind (`withPageKindChosen`) instead of adding a second page, so a fresh Pages tab does not keep an empty
   first page. Likewise a blank of the kind asked for (the tab's only page already of that kind, unnamed and holding
@@ -106,7 +109,8 @@ Writes an article's text from **Markdown**.
   refused (`article_unknown`). `new: true` always starts a new article.
 - **A new article** is made as the editor's **+** makes one (A4 portrait, or the last page's paper size and
   orientation when it is A4, US Letter or A3), after the last page, or, while the tab's only page is unchosen and
-  empty, on that page. `size` and `orientation` may set its paper (an article's sizes, `pageSizesFor('article')`).
+  empty, on that page. On a tab of another kind (a deck, an infographic) a new article is refused
+  (`kind_not_offered`): it goes in a tab of its own. `size` and `orientation` may set its paper (an article's sizes, `pageSizesFor('article')`).
 - **`mode`**: `replace` (default) writes the article's text anew; `append` adds the blocks after its last block.
 - **The Markdown** (the editor's paste reading, `parseMarkdownBlocks`, shared): `#`, `##`, `###` headings (h1 to
   h3), paragraphs, `-` / `*` / `1.` lists by indent (five levels), `- [ ]` / `- [x]` to-dos, `>` quotes, fenced

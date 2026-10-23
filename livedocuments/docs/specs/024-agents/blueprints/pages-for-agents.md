@@ -49,7 +49,8 @@ Banned synonyms: "document" for an article, "slide deck" for a tab of slides (it
 4. The tab transforms inside `apps/editor/hooks/editor/page-edits.ts` became pure functions in
    `packages/document/src/pages-edits.ts`. Each takes the tab and answers `{ tab } | { refused: PageEditRefusal }`
    (`PageEditRefusal = 'locked' | 'no_orientation' | 'size_not_offered' | 'page_limit' |
-'last_page' | 'unknown_page'`); the hook keeps telemetry, toasts, `onGoTo`, `claimArticleLayout` and debug
+'last_page' | 'unknown_page' | 'kind_not_offered'`; `pageAdded` answers `kind_not_offered` when the kind is not
+   `tabPageKind(pages)`); the hook keeps telemetry, toasts, `onGoTo`, `claimArticleLayout` and debug
    logs, and calls them inside `commitTab`. The lock rule (`refusedLocked` with `shared`) and `sharing` move with
    them. Existing editor tests stay green unchanged; new unit tests cover each function.
 
@@ -63,7 +64,9 @@ Banned synonyms: "document" for an article, "slide deck" for a tab of slides (it
      `1 Cover (slide), 2 (slide)`;
    - `add`: `kind === 'article'` → `article_by_write`; if the only page is unchosen and empty
      (`offersPageKindChoice`) → `withPageKindChosen`; else if the only page is of `kind`, unnamed and empty → that
-     page; else `pageAdded(tab, kind, newId(), newFlowId())`; then
+     page; else `pageAdded(tab, kind, newId(), newFlowId())` (`kind_not_offered` when `kind` is not the tab's,
+     `This tab holds slide pages: every page of a tab is one kind. Put infographic pages in a tab of their own
+(add_tab).`); then
      `name`, `size`, `orientation`, `background` through `pageRenamed`, `pageResized`, `pageTurned`,
      `pageBackgroundSet`, `at` through `pageMovedTo`, `layout` through `pageLaidOut`. Line:
      `Added page 3 (slide, Slide (16:9)) from layout Title Slide: name "Cover".`;
@@ -93,7 +96,8 @@ which change 1 made the page it added; nothing deleted.`; otherwise `pageRemoved
 3. Resolve the article: `new` → new; `article` → flow id, else title by `nameKey` among `articlesOf(tab)` →
    `article_unknown` listing titles; absent → the only one, none → new, several → `article_ambiguous`.
 4. New: `offersPageKindChoice` → `withPageKindChosen(tab, onlyPage, 'article', flow)`, else
-   `pageAdded(tab, 'article', id, flow)` (the editor's paper rule), then `size` and `orientation` in turn (`size`/`orientation` when given and in `pageSizesFor('article')`, else
+   `pageAdded(tab, 'article', id, flow)` (the editor's paper rule; `kind_not_offered` on a tab of another kind,
+   checked before the size), then `size` and `orientation` in turn (`size`/`orientation` when given and in `pageSizesFor('article')`, else
    `size_not_offered`). Refuse at `MAX_PAGES` → `page_limit`.
 5. Any page of the flow locked → `page_locked`.
 6. Parse: `articleFromMarkdown(markdown, current)` → `{ blocks, keptZones, droppedZones }`, or `unknownZone`
@@ -176,7 +180,8 @@ tab, `409 tab_busy`, `413 tab_too_large`.
 
 `PagesRefusalCode`: `invalid_body`, `invalid_value`, `tab_locked`, `tab_kind`, `page_unknown`,
 `article_by_write`, `size_not_offered`, `no_orientation`, `no_other_pages`, `layout_unknown`, `page_locked`,
-`page_limit`, `last_page`, `article_unknown`, `article_ambiguous`, `zone_unknown`, `article_too_large`.
+`page_limit`, `last_page`, `kind_not_offered`, `article_unknown`, `article_ambiguous`, `zone_unknown`,
+`article_too_large`.
 
 ### MCP
 
@@ -222,6 +227,7 @@ pageNumbers? }`, behaviour `destructive`, output as `change_pages` plus `article
 | Fresh tab whose only page is unchosen and empty               | first `add` / new article takes that page                              |
 | Only page already of the kind added, unnamed and empty        | first `add` of that kind takes that page (its fields and layout set)   |
 | `add` article                                                 | `article_by_write`                                                     |
+| `add` / new article of a kind other than the tab's            | `kind_not_offered` naming the tab's kind, pointing to `add_tab`        |
 | Size not offered / `fit`                                      | `size_not_offered` with the kind's sizes                               |
 | Turn a slide                                                  | `no_orientation`                                                       |
 | `apply_background_to_all` with no other page of the kind      | `no_other_pages`                                                       |
@@ -281,6 +287,7 @@ pageNumbers? }`, behaviour `destructive`, output as `change_pages` plus `article
 | Naming a page (id, place, name, order)          | `page-changes.test.ts` "naming a page", `summary.test.ts`                               |
 | Each change and each refusal, the fresh tab     | `page-changes.test.ts`                                                                  |
 | Pure edits match the editor                     | `packages/document/src/pages-edits.test.ts`, the editor's own page-edit tests           |
+| One kind a tab (`kind_not_offered`)             | `pages-edits.test.ts`, `page-changes.test.ts`, `article-write.test.ts` "one kind a tab" |
 | Article resolution, new, append, style, limits  | `packages/edit-operations/src/pages/article-write.test.ts`                              |
 | Front matter, zones, page breaks, escapes, trip | `packages/document/src/article-markdown-io.test.ts`                                     |
 | Grow for an absent writer                       | `packages/document/src/article-pages.test.ts`, `room-op-apply.test.ts` (the agent mark) |

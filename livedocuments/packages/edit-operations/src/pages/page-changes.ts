@@ -27,6 +27,7 @@ import {
   pageSizesFor,
   pageTurned,
   pageUnits,
+  tabPageKind,
   withPageKindChosen,
   type Page,
   type PageBackground,
@@ -48,6 +49,7 @@ const CODE: Record<PageEditRefusal, PagesRefusal['code']> = {
   size_not_offered: 'size_not_offered',
   page_limit: 'page_limit',
   last_page: 'last_page',
+  kind_not_offered: 'kind_not_offered',
 };
 
 class Stop extends Error {
@@ -99,8 +101,14 @@ function messageFor(why: PageEditRefusal, tab: Tab, page: Pick<Page, 'kind'> | u
     size_not_offered: `${aKind} page takes the sizes ${pageSizesFor(kind).join(', ')}.`,
     page_limit: 'A tab holds at most 100 pages: delete one first.',
     last_page: "That is the tab's only page (or article): add another before deleting it.",
+    kind_not_offered: kindNotOffered(tab, kind),
   };
   return words[why];
+}
+
+/** Why a page of `kind` cannot join the tab (docs/specs/007-editor/pages-mode.md "One kind a tab"). */
+export function kindNotOffered(tab: Tab, kind: string): string {
+  return `This tab holds ${tabPageKind(pagesOf(tab))} pages: every page of a tab is one kind. Put ${kind} pages in a tab of their own (add_tab).`;
 }
 
 export function applyPageChanges(
@@ -129,7 +137,7 @@ export function applyPageChanges(
       const stop = (code: PagesRefusal['code'], message: string): never => {
         throw new Stop({ code, message, change: i });
       };
-      const take = (out: PageEdit<Tab>, page?: Page): Tab => {
+      const take = (out: PageEdit<Tab>, page?: Pick<Page, 'kind'>): Tab => {
         if ('refused' in out) stop(CODE[out.refused], messageFor(out.refused, current, page));
         return (out as { tab: Tab }).tab;
       };
@@ -220,7 +228,7 @@ export function applyPageChanges(
             tookBlank.set(page.id, i + 1);
           } else {
             const id = newPageId();
-            current = take(pageAdded(current, change.kind, id, newFlowId()));
+            current = take(pageAdded(current, change.kind, id, newFlowId()), { kind: change.kind });
             page = pages().find((p) => p.id === id)!;
           }
           madeHere.add(page.id);

@@ -141,6 +141,7 @@ const PAGES_REFUSAL_CODES = [
   'page_locked',
   'page_limit',
   'last_page',
+  'kind_not_offered',
   'article_unknown',
   'article_ambiguous',
   'zone_unknown',
