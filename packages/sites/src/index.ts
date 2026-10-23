@@ -159,9 +159,9 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     itemPath: '/design/',
     newPath: '/new',
     offlinePath: '/explorer/offline',
-    onIndex: false,
+    onIndex: true,
     sharePath: '/design/shared?s=',
-    previewPath: null,
+    previewPath: '/api/designs/:id/thumbnail',
   },
 };
 
@@ -204,4 +204,25 @@ export function explorerUrl(
   return `${origin}${EXPLORER_PATH}${tail ? `/${tail}` : ''}${query ? `?${query}` : ''}${
     fragment ? `#${fragment}` : ''
   }`;
+}
+
+// ---------- An app's old /explorer, sent to liveworkspace's ----------------------------------------------------
+// Every address under an app's old /explorer goes to the liveworkspace Explorer, keeping its path, query and hash
+// and naming the app as where the person came from. The app's editor worker answers it with a 302 before any HTML
+// is served; its /explorer pages' client replace covers the dev server, where that worker isn't in front.
+
+export const OLD_EXPLORER_PATH = '/explorer';
+
+export const isOldExplorerPath = (pathname: string): boolean =>
+  pathname === OLD_EXPLORER_PATH || pathname.startsWith(`${OLD_EXPLORER_PATH}/`);
+
+/** The liveworkspace Explorer's address for one of `app`'s old /explorer addresses. */
+export function oldExplorerRedirectUrl(
+  app: AppName,
+  pathname: string,
+  search = '',
+  hash = '',
+): string {
+  const tail = pathname.slice(OLD_EXPLORER_PATH.length).replace(/^\/+|\/+$/g, '');
+  return explorerUrl(app, tail, search, hash);
 }

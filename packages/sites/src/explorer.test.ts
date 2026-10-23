@@ -6,6 +6,9 @@ import {
   appOfSite,
   explorerUrl,
   isAppName,
+  isOldExplorerPath,
+  oldExplorerRedirectUrl,
+  PLATFORM_SITE,
   siteOfApp,
 } from './index';
 
@@ -39,6 +42,26 @@ describe('the apps, for the liveworkspace Explorer', () => {
     expect(explorerUrl('livediagram', 'search', 'q=a+b&from=liveplanner', '', origin)).toBe(
       'https://liveworkspace.app/explorer/search?q=a+b&from=livediagram',
     );
-    expect(explorerUrl(null, 'trash', '', '', origin)).toBe('https://liveworkspace.app/explorer/trash');
+    expect(explorerUrl(null, 'trash', '', '', origin)).toBe(
+      'https://liveworkspace.app/explorer/trash',
+    );
+  });
+});
+
+describe("an app's old /explorer", () => {
+  it('is every address under /explorer, and nothing else', () => {
+    expect(isOldExplorerPath('/explorer')).toBe(true);
+    expect(isOldExplorerPath('/explorer/folder')).toBe(true);
+    expect(isOldExplorerPath('/explorers')).toBe(false);
+    expect(isOldExplorerPath('/design/x')).toBe(false);
+  });
+
+  it('goes to the same place on liveworkspace, naming the app', () => {
+    expect(oldExplorerRedirectUrl('livedesign', '/explorer/folder/', '?id=f1', '#x')).toBe(
+      `${PLATFORM_SITE.url}/explorer/folder?id=f1&from=livedesign#x`,
+    );
+    expect(oldExplorerRedirectUrl('livedesign', '/explorer')).toBe(
+      `${PLATFORM_SITE.url}/explorer?from=livedesign`,
+    );
   });
 });
