@@ -10,26 +10,25 @@ The spec decides; this file adds engineering precision. Defaults are ledgered in
 | `apps/api/migrations/0001_liveplanner_baseline.sql`           | The `tab_stats` table                                                                   |
 | `packages/project/src/tab-stats.ts`                           | `tabStatsOf`, `TabStats`: one counting rule for the api and the browser                 |
 | `apps/api/src/db/tab-stats.ts`                                | `tabStatsOfData`, `tabStatsStatement`, `projectStatsSql`, `readProjectStats`            |
-| `apps/api/src/tab-stats-backfill.ts`                          | `runTabStatsBackfill`: the cron's bounded count of tabs without stats                   |
 | `apps/api/src/db/tabs.ts`, `apps/api/src/db/projects.ts`      | Every tab write batches `tabStatsStatement`; the summary projection selects `doc_stats` |
 | `apps/api/src/participant-write.ts`                           | Hand `swapTabData` the next body's stats                                                |
 | `packages/api-schema/src/index.ts`                            | `ProjectStats`, `ProjectSummary.stats`                                                  |
 | `packages/ui/src/hint/*`, `packages/ui/src/useRowPreview.tsx` | Hint kind `preview`: delay, per-kind warm-up (`isHintWarm`), look; `useRowPreview`      |
-| `apps/editor/app/explorer/useExplorerViewMode.ts`               | `ExplorerViewMode` gains `'details'`                                                    |
-| `apps/editor/app/explorer/ViewToggle.tsx`                       | The third button                                                                        |
-| `apps/editor/app/explorer/details/DetailsView.tsx`              | The table: header, folder rows, project rows                                            |
-| `apps/editor/app/explorer/details/DetailsHeader.tsx`            | Sortable column headers                                                                 |
-| `apps/editor/app/explorer/details/DetailsProjectRow.tsx`        | One project row: drag source, preview, `⋯`                                              |
-| `apps/editor/app/explorer/details/DetailsFolderRow.tsx`         | One folder row: drop target, `⋯`                                                        |
-| `apps/editor/app/explorer/details/details-columns.ts`           | `DETAILS_COLUMNS`, `sortDetailsEntries`, cell values                                    |
-| `apps/editor/app/explorer/details/details-format.ts`            | `formatObjects`, `formatBytes`, `formatSize`, `formatDateTime`, `formatItems`           |
-| `apps/editor/app/explorer/details/details-cells.tsx`            | `TypeCell`, `AccessCell`, `DateCell`, `NoValue`, `SHOWN_FROM_CLASS`                     |
-| `apps/editor/app/explorer/explorer-view-props.ts`               | `projectEntryPropsFor`: the per-project bindings every view shares                      |
-| `apps/editor/lib/offline/offline-stats.ts`                      | `offlineProjectStats`: a project in this browser counted from its record                |
-| `apps/editor/components/panels/TeamSharedProjects.tsx`          | The team library's Details branch                                                       |
-| `apps/editor/app/explorer/details/useDetailsSort.ts`            | The device-local sort                                                                   |
-| `apps/editor/app/explorer/details/useSnapshotPrefetch.ts`       | Asks for a row's snapshot as it nears the viewport                                      |
-| `apps/editor/lib/project-space.ts`                              | `readerAccessOf`                                                                        |
+| `apps/editor/app/explorer/useExplorerViewMode.ts`             | `ExplorerViewMode` gains `'details'`                                                    |
+| `apps/editor/app/explorer/ViewToggle.tsx`                     | The third button                                                                        |
+| `apps/editor/app/explorer/details/DetailsView.tsx`            | The table: header, folder rows, project rows                                            |
+| `apps/editor/app/explorer/details/DetailsHeader.tsx`          | Sortable column headers                                                                 |
+| `apps/editor/app/explorer/details/DetailsProjectRow.tsx`      | One project row: drag source, preview, `⋯`                                              |
+| `apps/editor/app/explorer/details/DetailsFolderRow.tsx`       | One folder row: drop target, `⋯`                                                        |
+| `apps/editor/app/explorer/details/details-columns.ts`         | `DETAILS_COLUMNS`, `sortDetailsEntries`, cell values                                    |
+| `apps/editor/app/explorer/details/details-format.ts`          | `formatObjects`, `formatBytes`, `formatSize`, `formatDateTime`, `formatItems`           |
+| `apps/editor/app/explorer/details/details-cells.tsx`          | `TypeCell`, `AccessCell`, `DateCell`, `NoValue`, `SHOWN_FROM_CLASS`                     |
+| `apps/editor/app/explorer/explorer-view-props.ts`             | `projectEntryPropsFor`: the per-project bindings every view shares                      |
+| `apps/editor/lib/offline/offline-stats.ts`                    | `offlineProjectStats`: a project in this browser counted from its record                |
+| `apps/editor/components/panels/TeamSharedProjects.tsx`        | The team library's Details branch                                                       |
+| `apps/editor/app/explorer/details/useDetailsSort.ts`          | The device-local sort                                                                   |
+| `apps/editor/app/explorer/details/useSnapshotPrefetch.ts`     | Asks for a row's snapshot as it nears the viewport                                      |
+| `apps/editor/lib/project-space.ts`                            | `readerAccessOf`                                                                        |
 
 ## Domain and naming
 
@@ -69,22 +68,8 @@ SUM, 'comments', SUM, 'bytes', SUM)`. It reads no `tabs` column, so no body.
 
 ### Backfill
 
-`runTabStatsBackfill(env, clock)` loops while under `TAB_STATS_BACKFILL_BUDGET_MS` and
-`TAB_STATS_BACKFILL_MAX_ROWS`:
-
-1. `SELECT t.id, t.data, t.updated_at FROM tabs t WHERE NOT EXISTS (SELECT 1 FROM tab_stats s WHERE s.tab_id = t.id) LIMIT ?`
-   with `TAB_STATS_BACKFILL_PAGE_ROWS`.
-2. Each body counts through `tabStatsOfData`; a body that fails to parse counts as Diagram with no elements
-   and no comments, its bytes measured, and warns `tab-stats: corrupt tab <id> counted empty`.
-3. One batch of `INSERT ... ON CONFLICT(tab_id) DO NOTHING`, `written_at` set to the tab's own
-   `updated_at` (never the run's time, which would make the backfilled tab the project's newest and
-   so its Type). A write that landed since step 1
-   already wrote the newer stats, which stay.
-4. A page shorter than the page size ends the loop: `left=none`; otherwise `left=more`.
-
-It logs `tab-stats: backfilled n=<n> left=<more|none>` once per run and returns the count. The
-cron runs it in `waitUntil` beside the other sweeps, its failure logged as
-`tab-stats: backfill failed`.
+None. Stats live beside the tabs in each plan's Durable Object and are written in the same
+transaction as the tab (`apps/api/src/plan-room/plan-room.ts`), so no tab is ever without them.
 
 ### The view
 
@@ -236,22 +221,21 @@ CREATE TABLE tab_stats (
 
 ## Testing
 
-| Rule                                                           | Test                                                          |
-| -------------------------------------------------------------- | ------------------------------------------------------------- |
-| Stats of a body: mode, elements, comments, bytes               | `packages/project/src/tab-stats.test.ts`                      |
-| A corrupt body counts empty                                    | `apps/api/src/db/tab-stats.test.ts`                           |
+| Rule                                                           | Test                                                            |
+| -------------------------------------------------------------- | --------------------------------------------------------------- |
+| Stats of a body: mode, elements, comments, bytes               | `packages/project/src/tab-stats.test.ts`                        |
+| A corrupt body counts empty                                    | `apps/api/src/db/tab-stats.test.ts`                             |
 | A project in this browser is counted, cached per save          | `apps/editor/lib/offline/offline-stats.test.ts`                 |
 | The snapshot prefetch asks once, near the viewport             | `apps/editor/app/explorer/details/useSnapshotPrefetch.test.tsx` |
 | Reader access                                                  | `apps/editor/lib/project-space.test.ts`                         |
-| Warm-up per kind                                               | `packages/ui/src/hint/hint-registry.test.ts`                  |
-| Every write path leaves a matching stats row                   | `apps/api/src/db/tab-stats-writers.test.ts`                   |
-| Project stats sum, latest mode, null when uncounted            | `apps/api/src/db/tab-stats.test.ts`                           |
-| Backfill counts, keeps a racing write, logs, stops             | `apps/api/src/tab-stats-backfill.test.ts`                     |
-| Preview delay, warm-up, focus                                  | `packages/ui/src/hint/useHint.test.tsx`                       |
+| Warm-up per kind                                               | `packages/ui/src/hint/hint-registry.test.ts`                    |
+| Every write path leaves a matching stats row                   | `apps/api/src/db/tab-stats-writers.test.ts`                     |
+| Project stats sum, latest mode, null when uncounted            | `apps/api/src/db/tab-stats.test.ts`                             |
+| Preview delay, warm-up, focus                                  | `packages/ui/src/hint/useHint.test.tsx`                         |
 | Sort: natural direction, toggle, folders first, `–` last       | `apps/editor/app/explorer/details/details-columns.test.ts`      |
 | Formats                                                        | `apps/editor/app/explorer/details/details-format.test.ts`       |
-| Stored sort and mode read back, defaults                       | `useDetailsSort.test.tsx`, `useExplorerViewMode.test.tsx`     |
-| A phone shows cards, keeps the stored mode; toggle hidden      | `useExplorerViewMode.test.tsx`, `ViewToggle.test.tsx`         |
+| Stored sort and mode read back, defaults                       | `useDetailsSort.test.tsx`, `useExplorerViewMode.test.tsx`       |
+| A phone shows cards, keeps the stored mode; toggle hidden      | `useExplorerViewMode.test.tsx`, `ViewToggle.test.tsx`           |
 | Table renders columns, aria-sort, `–`, menu, drag, row preview | `apps/editor/app/explorer/details/DetailsView.test.tsx`         |
 | Icon columns, the bubble and `99+`, dense rows                 | `apps/editor/app/explorer/details/DetailsView.test.tsx`         |
 

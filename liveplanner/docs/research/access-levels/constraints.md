@@ -41,15 +41,15 @@ Only enough to anchor terms; the product survey is another angle's job.
 
 ### Grants
 
-| Who                               | How the server knows                                                                                                                | Content level | Ownership powers                                                      |
-| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ------------- | --------------------------------------------------------------------- |
-| Personal owner (guest or account) | `isPersonalOwner` on the hybrid id ([project-access.ts](../../../apps/api/src/auth/project-access.ts))                            | edit          | all: share family, password, delete, move, tab link                   |
-| Team project owner               | verified account id and still a joined member (`ownsProject`, [context.ts](../../../apps/api/src/routes/context.ts))               | edit          | all, as above                                                         |
+| Who                               | How the server knows                                                                                                                | Content level | Ownership powers                                                     |
+| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ------------- | -------------------------------------------------------------------- |
+| Personal owner (guest or account) | `isPersonalOwner` on the hybrid id ([project-access.ts](../../../apps/api/src/auth/project-access.ts))                              | edit          | all: share family, password, delete, move, tab link                  |
+| Team project owner                | verified account id and still a joined member (`ownsProject`, [context.ts](../../../apps/api/src/routes/context.ts))                | edit          | all, as above                                                        |
 | Joined team member                | verified account id, `team_members.status = 'joined'`                                                                               | edit          | delete and move only (`mayDeleteProject`); **not** sharing           |
-| Share-link holder                 | bearer code, optional password, optional expiry, optional tab scope                                                                 | link's role   | none                                                                  |
-| Embed visitor                     | same as share link, inside an iframe, no identity screen                                                                            | link's role   | none                                                                  |
+| Share-link holder                 | bearer code, optional password, optional expiry, optional tab scope                                                                 | link's role   | none                                                                 |
+| Embed visitor                     | same as share link, inside an iframe, no identity screen                                                                            | link's role   | none                                                                 |
 | API token, full                   | `lvd_` hash resolves to its account; flows through every gate as that account                                                       | owner's       | owner's (it passes `ownsProject`), minus session-only administration |
-| API token, read-only              | as above, refused on every `POST`/`PUT`/`DELETE` at one choke point ([index.ts](../../../apps/api/src/index.ts), `read_only_token`) | read          | none in practice (every ownership action is a write)                  |
+| API token, read-only              | as above, refused on every `POST`/`PUT`/`DELETE` at one choke point ([index.ts](../../../apps/api/src/index.ts), `read_only_token`) | read          | none in practice (every ownership action is a write)                 |
 
 Sources: [Team shared projects](../../specs/013-workspace/team-shared-projects.md),
 [Public API and API tokens §3.4](../../specs/015-api/public-api-and-tokens.md),
@@ -66,11 +66,11 @@ Sources: [Team shared projects](../../specs/013-workspace/team-shared-projects.m
 | Add to and upvote a Q&A board                                        | REST `POST .../qa`, `gateRead`; the room writes D1 | yes  | yes  |
 | Resolve, reopen, delete others' comments                             | room `el-delta` or tab `PUT`                       | no   | yes  |
 | Dots, estimates, temperature checks, Done check, quiz answers, ideas | room `vote` / `el-delta` (mutation)                | no   | yes  |
-| Change elements, tabs, project                                      | room mutations, tab `PUT`                          | no   | yes  |
+| Change elements, tabs, project                                       | room mutations, tab `PUT`                          | no   | yes  |
 | Run session tools, hold the facilitator baton                        | `canHold` is edit-only (facilitator.ts)            | no   | yes  |
 
 Sources: [room-messages.ts](../../../packages/api-schema/src/room-messages.ts) (op classes),
-[project-room.ts](../../../apps/api/src/project-room.ts) (`sender.role !== 'edit' && !isPresenceOp`),
+[project-room.ts](../../../apps/api/src/plan-room/plan-room.ts) (`sender.role !== 'edit' && !isPresenceOp`),
 [API app](../../specs/015-api/api.md) (comment and Q&A rows),
 [Per-participant responses](../../specs/012-collaboration/participant-responses.md) ("Edit-role only"),
 [Session tools](../../specs/012-collaboration/session-tools.md) ("the facilitator and participants share an edit link"),

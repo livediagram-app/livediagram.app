@@ -40,16 +40,16 @@ research) or **recalled** (from general knowledge; treat as indicative, check be
 
 | Asset                                                                | Where                                                  | Why it matters here                                                         |
 | -------------------------------------------------------------------- | ------------------------------------------------------ | --------------------------------------------------------------------------- |
-| Element-level ops `add / update / remove / reorder`, applied by id   | `packages/project/src/element-ops.ts`                 | The unit an agent changeset is made of; `diffToElementOps` derives them     |
-| Per-field deltas (`comment-add`, `comment-resolve`, `check`, ...)    | `packages/project/src/element-deltas.ts`              | Comments from the agent travel as deltas and merge, never clobber           |
-| Ordered room: `seq` within a persisted `epoch`, bounded op log (256) | `apps/api/src/project-room.ts`                        | Gives every agent change a total order and a cursor                         |
+| Element-level ops `add / update / remove / reorder`, applied by id   | `packages/project/src/element-ops.ts`                  | The unit an agent changeset is made of; `diffToElementOps` derives them     |
+| Per-field deltas (`comment-add`, `comment-resolve`, `check`, ...)    | `packages/project/src/element-deltas.ts`               | Comments from the agent travel as deltas and merge, never clobber           |
+| Ordered room: `seq` within a persisted `epoch`, bounded op log (256) | `apps/api/src/plan-room/plan-room.ts`                  | Gives every agent change a total order and a cursor                         |
 | Collaboration ledger merged into tab PUTs after `X-Room-Cursor`      | `room-client.ts` `mergeRoomLedger`, `collab-ledger.ts` | The exact mechanism that can keep an agent's change alive through a race    |
-| Internal `POST /mutation` on the room (worker-originated op)         | `project-room.ts` (accepts only `el-delta` today)     | The seam a REST changeset enters the room through                           |
-| One-time room ticket minted over authenticated REST                  | `routes/project-room-routes.ts`                       | How a CLI process with an `lvd_` token can open a socket for `wait`/`watch` |
-| Server-built presence (random presence id, clamped name and colour)  | `helloPresence` in `project-room-rules.ts`            | An agent presence entry slots into the same roster                          |
-| Room remembers per-session state in the socket attachment (`tabId`)  | `project-room.ts` `SessionAttachment`                 | Precedent for remembering each session's selection                          |
+| Internal `POST /mutation` on the room (worker-originated op)         | `project-room.ts` (accepts only `el-delta` today)      | The seam a REST changeset enters the room through                           |
+| One-time room ticket minted over authenticated REST                  | `routes/project-room-routes.ts`                        | How a CLI process with an `lvd_` token can open a socket for `wait`/`watch` |
+| Server-built presence (random presence id, clamped name and colour)  | `helloPresence` in `project-room-rules.ts`             | An agent presence entry slots into the same roster                          |
+| Room remembers per-session state in the socket attachment (`tabId`)  | `project-room.ts` `SessionAttachment`                  | Precedent for remembering each session's selection                          |
 | Follow-me viewport, bring focus                                      | the since-removed follow-me-viewport spec              | "Show me what you changed" for free                                         |
-| Comment endpoints (add, delete-own) that relay to the room           | `routes/project-subresource-routes.ts`                | Agent comments already go live                                              |
+| Comment endpoints (add, delete-own) that relay to the room           | `routes/project-subresource-routes.ts`                 | Agent comments already go live                                              |
 
 ### 2.2 The gaps, verified
 
@@ -90,7 +90,7 @@ research) or **recalled** (from general knowledge; treat as indicative, check be
 
 | Product                                 | How the agent joins                                                                | Presence and attribution                                                                                | How edits land                                                                                         | Review and undo                                                                                                          | Lesson for liveplanner                                                                              |
 | --------------------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------- |
-| **Liveblocks** (verified)               | Server-side, no socket: `liveblocks.mutateStorage(roomId, fn)` from Node           | `liveblocks.setPresence(roomId, { userId, userInfo, data: { editingId }, ttl: 30 })`; `ttl: 2` to clear | Through the same Sync project humans edit, so it is live for everyone                                 | Docs recommend saving a version snapshot before the agent modifies, so the person can revert; "AI comments" join threads | The stateless, TTL presence pattern fits a CLI exactly                                              |
+| **Liveblocks** (verified)               | Server-side, no socket: `liveblocks.mutateStorage(roomId, fn)` from Node           | `liveblocks.setPresence(roomId, { userId, userInfo, data: { editingId }, ttl: 30 })`; `ttl: 2` to clear | Through the same Sync project humans edit, so it is live for everyone                                  | Docs recommend saving a version snapshot before the agent modifies, so the person can revert; "AI comments" join threads | The stateless, TTL presence pattern fits a CLI exactly                                              |
 | **Hocuspocus / Yjs** (verified)         | `hocuspocus.openDirectConnection(name, context)` then `transact(fn)`, `disconnect` | Yjs Awareness: per-client JSON state, peers drop a client after 30 s without a heartbeat                | A CRDT transaction, merged with concurrent human edits                                                 | `Y.UndoManager({ trackedOrigins })` undoes only changes from chosen origins: per-actor undo                              | Tag every change with an origin; per-actor revert without a CRDT via changeset ids                  |
 | **tldraw agent starter kit** (verified) | Agent runs beside the canvas, driven from a chat panel                             | Agent has its own viewport it moves to look at parts of the canvas                                      | Actions stream: shapes are created, updated, deleted "incrementally as each action finishes streaming" | Keeps a todo list; schedules follow-up reviews of its own work                                                           | Compact context: simplified shapes in view plus clusters outside; reveal work as it lands           |
 | **Figma multiplayer** (recalled)        | Server-authoritative; clients send property changes                                | Cursors, avatar stack, "spotlight" and follow                                                           | Per-object, per-property last-writer-wins, server orders                                               | Undo is per user, of one's own changes                                                                                   | liveplanner is Figma-shaped already, but per element, not per property: add a field-level patch op  |
@@ -114,12 +114,12 @@ Three patterns recur:
 
 ### 4.1 How a CLI call joins the room
 
-| Option                               | Shape                                                                                                        | Strengths                                                                                         | Weaknesses                                                                                                      |
-| ------------------------------------ | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| A. REST only (today)                 | `PUT` whole tabs                                                                                             | Simple                                                                                            | Invisible and erasable (section 2.2); disqualified                                                              |
+| Option                               | Shape                                                                                                       | Strengths                                                                                         | Weaknesses                                                                                                      |
+| ------------------------------------ | ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| A. REST only (today)                 | `PUT` whole tabs                                                                                            | Simple                                                                                            | Invisible and erasable (section 2.2); disqualified                                                              |
 | **B. REST relayed through the room** | `POST /api/projects/:id/changes`; the worker gates, the room sequences and broadcasts, the worker writes D1 | Every one-shot command is live-safe; no process to keep alive; mirrors Liveblocks `mutateStorage` | Room becomes part of the write path for agent changes; needs a ledger extension so racing saves keep the change |
-| C. Session daemon holding the socket | `liveplanner session start` forks a local process with a ticketed WebSocket; commands talk to it             | Live state, cursor, sub-second lock awareness, cheapest writes                                    | Agents juggle a background process; stale daemons; harder in sandboxes and CI; a second client to maintain      |
-| D. CRDT peer (Yjs, Hocuspocus style) | Server-side direct connection                                                                                | Field-level merge                                                                                 | Dropped deliberately in `realtime-conflict-resolution.md`; would bring back a project copy in the room         |
+| C. Session daemon holding the socket | `liveplanner session start` forks a local process with a ticketed WebSocket; commands talk to it            | Live state, cursor, sub-second lock awareness, cheapest writes                                    | Agents juggle a background process; stale daemons; harder in sandboxes and CI; a second client to maintain      |
+| D. CRDT peer (Yjs, Hocuspocus style) | Server-side direct connection                                                                               | Field-level merge                                                                                 | Dropped deliberately in `realtime-conflict-resolution.md`; would bring back a project copy in the room          |
 
 **Recommendation: B for every write, plus a socket only while a `wait` or `watch` command runs.**
 The socket is opened with a room ticket (`POST /room-ticket`, already token-capable) and closed
@@ -193,9 +193,9 @@ summary }`. The room relays it as **one** sequenced `changeset` op (one log slot
 
 ### 4.5 Suggest and review
 
-| Mode                      | When                                                                                                        | How it works                                                                                                                                                            |
-| ------------------------- | ----------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **apply** (default)       | A person asked for it and is watching, or the agent works alone                                             | Changeset lands; toast "Claude for Webber changed 6 elements · Show · Undo"; revert per 4.7                                                                             |
+| Mode                      | When                                                                                                       | How it works                                                                                                                                                            |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **apply** (default)       | A person asked for it and is watching, or the agent works alone                                            | Changeset lands; toast "Claude for Webber changed 6 elements · Show · Undo"; revert per 4.7                                                                             |
 | **propose** (`--propose`) | Unattended agents (a coding agent updating the architecture diagram), or a project set to "agents propose" | Changeset is stored pending, not applied; editors draw it as a ghost overlay; Accept, Reject, or reject individual elements; accepting applies it as a normal changeset |
 
 - Apply-first matches Cursor and Zed: the conversation is the review, and revert is one click.
@@ -314,20 +314,20 @@ mention rev=e1f3:431 tab=main el-9 "Payments" Webber: "@Claude should this be as
 
 ### 5.2 What liveplanner needs to change
 
-| Change                                                                                     | Where                                                          | Size   |
-| ------------------------------------------------------------------------------------------ | -------------------------------------------------------------- | ------ |
-| `POST /api/projects/:id/changes` (validate, room sequence, D1 apply, result)              | new route beside `project-subresource-routes.ts`              | medium |
-| `changeset` room op (one log slot); `patch` element op                                     | `packages/api-schema/src/room-messages.ts`, `element-ops.ts`   | small  |
+| Change                                                                                     | Where                                                         | Size   |
+| ------------------------------------------------------------------------------------------ | ------------------------------------------------------------- | ------ |
+| `POST /api/projects/:id/changes` (validate, room sequence, D1 apply, result)               | new route beside `project-subresource-routes.ts`              | medium |
+| `changeset` room op (one log slot); `patch` element op                                     | `packages/api-schema/src/room-messages.ts`, `element-ops.ts`  | small  |
 | Room: accept `changeset` on `/mutation`, lock check, authored-change ledger, before-images | `project-room.ts`, `room-ledger-store.ts`, `collab-ledger.ts` | medium |
-| Tab PUT merge re-applies changesets after the saver's cursor                               | `room-client.ts` `mergeRoomLedger`                             | small  |
+| Tab PUT merge re-applies changesets after the saver's cursor                               | `room-client.ts` `mergeRoomLedger`                            | small  |
 | Room remembers each session's selection                                                    | `project-room.ts` attachment                                  | small  |
 | REST presence with ttl; `agent` flag on `ParticipantPresence`; alarm expiry                | `project-room.ts`, `api-schema`                               | medium |
-| Editor: agent avatar badge, focus rings, reveal outline, changeset toast with Undo         | `apps/editor`                                                    | medium |
-| Room for every project, personal ones included                                            | `useRoomConnection.ts`, `roomStubFor`                          | small  |
-| Comments: resolve/reopen endpoint, agent author fields, agent mentions                     | comment routes, `comments.ts`, `comment-mentions.md`           | medium |
-| `wait` / `watch` over a ticketed socket with `--since`                                     | CLI; room `sync` already exists                                | small  |
-| Retire whole-tab writes for agents: MCP `update_project` uses changesets too              | `apps/mcp/src/tools.ts`                                        | small  |
-| Telemetry: agent changeset applied, reverted, skipped                                      | `TELEMETRY_*` enums                                            | small  |
+| Editor: agent avatar badge, focus rings, reveal outline, changeset toast with Undo         | `apps/editor`                                                 | medium |
+| Room for every project, personal ones included                                             | `useRoomConnection.ts`, `roomStubFor`                         | small  |
+| Comments: resolve/reopen endpoint, agent author fields, agent mentions                     | comment routes, `comments.ts`, `comment-mentions.md`          | medium |
+| `wait` / `watch` over a ticketed socket with `--since`                                     | CLI; room `sync` already exists                               | small  |
+| Retire whole-tab writes for agents: MCP `update_project` uses changesets too               | `apps/mcp/src/tools.ts`                                       | small  |
+| Telemetry: agent changeset applied, reverted, skipped                                      | `TELEMETRY_*` enums                                           | small  |
 
 The MCP server should move onto the same changeset path in the same change, so the two agent
 front doors cannot drift.
@@ -366,12 +366,12 @@ looks like it came from them.
 
 Webber decided these four forks; specs should record them when this work is specified.
 
-| Question                        | Decision                                                                                |
-| ------------------------------- | --------------------------------------------------------------------------------------- |
+| Question                       | Decision                                                                               |
+| ------------------------------ | -------------------------------------------------------------------------------------- |
 | Personal projects and the room | The editor always connects to its room, personal projects included                     |
-| Default write mode for agents   | Apply, with a revert toast; `--propose` is opt-in and comes later                       |
-| Agent mentions                  | `@` offers the agents seen on this project recently; only their owner's `wait` sees it |
-| Read-only tokens and comments   | Allowed, like view-role visitors; other writes stay refused                             |
+| Default write mode for agents  | Apply, with a revert toast; `--propose` is opt-in and comes later                      |
+| Agent mentions                 | `@` offers the agents seen on this project recently; only their owner's `wait` sees it |
+| Read-only tokens and comments  | Allowed, like view-role visitors; other writes stay refused                            |
 
 ## 8. Sources
 
@@ -379,7 +379,7 @@ Webber decided these four forks; specs should record them when this work is spec
   `collab-race-hardening.md`, `resync-without-reload.md`, `comment-mentions.md`,
   `comment-pin.md`; `docs/specs/007-editor/editor-app.md` (concurrent-selection lock);
   `docs/specs/015-api/mcp-server.md`, `public-api-and-tokens.md`;
-  `apps/api/src/project-room.ts`, `room-client.ts`, `routes/project-room-routes.ts`,
+  `apps/api/src/plan-room/plan-room.ts`, `room-client.ts`, `routes/project-room-routes.ts`,
   `routes/project-subresource-routes.ts`; `apps/editor/app/project/[id]/useRoomConnection.ts`;
   `packages/project/src/element-ops.ts`, `element-deltas.ts`, `comments.ts`;
   `packages/api-schema/src/room-messages.ts`, `index.ts` (`ParticipantPresence`).
