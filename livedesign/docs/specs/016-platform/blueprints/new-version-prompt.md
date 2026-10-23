@@ -4,32 +4,32 @@ Derived from [New version prompt](../new-version-prompt.md).
 
 ## Domain and naming
 
-| Term                   | Identifier                   | Meaning                                                   |
-| ---------------------- | ---------------------------- | --------------------------------------------------------- |
-| Design format number | `DESIGN_FORMAT`            | The version of the stored design shapes                 |
-| Format header          | `DESIGN_FORMAT_HEADER`     | `X-Livedesign-Format`, on every api response              |
-| Room format message    | `{ kind: 'format'; format }` | The room's number, sent to each socket on `hello`         |
-| Server format          | `serverDesignFormat()`     | The highest number this page has heard from the server    |
-| Outdated editor        | `newVersionAvailable()`      | Server format greater than the editor's `DESIGN_FORMAT` |
-| Prompt                 | `NewVersionPrompt`           | The status panel offering "Reload"                        |
+| Term                 | Identifier                   | Meaning                                                 |
+| -------------------- | ---------------------------- | ------------------------------------------------------- |
+| Design format number | `DESIGN_FORMAT`              | The version of the stored design shapes                 |
+| Format header        | `DESIGN_FORMAT_HEADER`       | `X-Livedesign-Format`, on every api response            |
+| Room format message  | `{ kind: 'format'; format }` | The room's number, sent to each socket on `hello`       |
+| Server format        | `serverDesignFormat()`       | The highest number this page has heard from the server  |
+| Outdated editor      | `newVersionAvailable()`      | Server format greater than the editor's `DESIGN_FORMAT` |
+| Prompt               | `NewVersionPrompt`           | The status panel offering "Reload"                      |
 
 ## Modules
 
 | File                                               | Responsibility                                                                                        |
 | -------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `packages/api-schema/src/design-format.ts`       | `DESIGN_FORMAT`, `DESIGN_FORMAT_HEADER`, `parseDesignFormat`                                    |
+| `packages/api-schema/src/design-format.ts`         | `DESIGN_FORMAT`, `DESIGN_FORMAT_HEADER`, `parseDesignFormat`                                          |
 | `apps/api/src/server-release-header.ts`            | `withServerRelease(response, buildId)`: the headers on every response but a 101                       |
 | `apps/api/src/index.ts`                            | The worker's `fetch` returns `withServerRelease(..., env.BUILD_ID)`                                   |
 | `apps/api/src/responses.ts`                        | `CORS_HEADERS` exposes the header                                                                     |
-| `apps/api/src/design-room.ts`                    | Sends the room format message on `hello`                                                              |
+| `apps/api/src/design-room/design-room.ts`          | Sends the room format message on `hello`                                                              |
 | `packages/api-schema/src/room-messages.ts`         | The `format` kind on `ServerMessage` and `RoomIncoming`                                               |
 | `apps/live/lib/server-release.ts`                  | The page's server release store (format number and build id, docs/specs/016-platform/stale-builds.md) |
 | `apps/live/lib/api/core.ts`                        | `apiFetch` notes the header                                                                           |
 | `apps/live/lib/api/room.ts`                        | The room client notes the message                                                                     |
 | `apps/live/lib/reload-when-saved.ts`               | `reloadWhenSaved`: wait for a settled save, then reload, or give up                                   |
 | `apps/live/components/chrome/NewVersionPrompt.tsx` | The prompt                                                                                            |
-| `apps/live/app/design/[id]/useAutosave.ts`       | Returns `hasUnsavedChanges()`                                                                         |
-| `apps/live/app/design/[id]/EditorView.tsx`       | Mounts the prompt with `hasUnsavedChanges`                                                            |
+| `apps/live/app/design/[id]/useAutosave.ts`         | Returns `hasUnsavedChanges()`                                                                         |
+| `apps/live/app/design/[id]/EditorView.tsx`         | Mounts the prompt with `hasUnsavedChanges`                                                            |
 
 ## Interfaces and contracts
 
@@ -137,21 +137,21 @@ The number is not a secret and grants nothing; a forged value can only show a re
 
 | Rule                                                     | Test                                                               |
 | -------------------------------------------------------- | ------------------------------------------------------------------ |
-| Format parsing                                           | `packages/api-schema/src/design-format.test.ts`                  |
+| Format parsing                                           | `packages/api-schema/src/design-format.test.ts`                    |
 | Header on responses, not on a 101; CORS exposes it       | `apps/api/src/server-release-header.test.ts`                       |
-| Room sends its format on hello                           | `apps/api/src/design-room.test.ts`                               |
+| Room sends its format on hello                           | `apps/api/src/design-room.test.ts`                                 |
 | Store keeps the maximum, notifies on rise, ignores junk  | `apps/live/lib/server-release.test.ts`                             |
 | `apiFetch` and the room client note the number           | `apps/live/lib/api/core.test.ts`, `apps/live/lib/api/room.test.ts` |
 | Reload waits for a settled save, gives up after the wait | `apps/live/lib/reload-when-saved.test.ts`                          |
 | Prompt states, copy, role, keyboard, telemetry           | `apps/live/components/chrome/NewVersionPrompt.test.tsx`            |
-| `hasUnsavedChanges`                                      | `apps/live/app/design/[id]/useAutosave.test.tsx`                 |
+| `hasUnsavedChanges`                                      | `apps/live/app/design/[id]/useAutosave.test.tsx`                   |
 | An older editor against a newer server (Playwright)      | `apps/live/e2e/new-version-prompt.spec.ts`                         |
 
 ## Constants and configuration
 
 | Constant              | Value  | Provenance                                | Safe range      |
 | --------------------- | ------ | ----------------------------------------- | --------------- |
-| `DESIGN_FORMAT`     | 2      | Packed stroke points                      | rises by 1 only |
+| `DESIGN_FORMAT`       | 2      | Packed stroke points                      | rises by 1 only |
 | `RELOAD_SAVE_WAIT_MS` | 10,000 | Autosave debounce 600 ms plus a slow save | 3,000 to 30,000 |
 | `RELOAD_SAVE_POLL_MS` | 200    | Imperceptible wait, a local check only    | 50 to 1,000     |
 

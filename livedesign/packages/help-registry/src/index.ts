@@ -165,10 +165,10 @@ export const categories: Category[] = [
     slug: 'explorer',
     title: 'Explorer',
     description:
-      'Organise everything you build: one library, shared by every liveworkspace app, that keeps your designs, folders and teams easy to find and manage.',
-    articleCount: 12,
+      'Organise everything you build: one library, shared by every liveworkspace app, that keeps your designs, folders, teams and images easy to find and manage.',
+    articleCount: 14,
     kind: 'feature',
-    groups: ['Your Library', 'Activity'],
+    groups: ['Your Library', 'Activity', 'Assets and Imports'],
   },
   {
     slug: 'selection-modes',

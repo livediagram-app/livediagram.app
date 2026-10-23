@@ -58,7 +58,7 @@ function withRoom(env: Env, liveDoc: ThumbnailSubject, opts: ThumbnailOptions = 
   };
   return Object.assign(env, {
     DESIGN_ROOM: { idFromName: (n: string) => n, get: () => room },
-  }) as unknown as Env;
+  });
 }
 
 function getDesignThumbnailSvg(

@@ -310,7 +310,7 @@ export async function handleDesignRequest(ctx: DesignRouteContext): Promise<Resp
       // (the upsert never rewrites it) and is modified now.
       const savedAt = clash ? Date.now() : dates.savedAt;
       // The design's own row: what it knows of itself, its dates, and on a genuine create the type catalogue
-      // (docs/specs/026-design/item-types.md); a re-commit keeps its owner, team, provenance, intent and catalogue.
+      // (docs/specs/015-api/api.md "Storage"); a re-commit keeps its owner, team, provenance, intent and catalogue.
       await initDesign(env, body.id, {
         name,
         ownerId: owner,

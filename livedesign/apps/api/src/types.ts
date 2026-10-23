@@ -48,7 +48,7 @@ export type Env = {
   // auth/accounts.ts + routes/auth.ts). ACCOUNTS_URL is its origin, e.g.
   // `https://liveworkspace.app`; its issuer and key set sit under `/api/auth`. API_RESOURCE is
   // what this API was registered as, e.g. `https://livedesign.app/api`, and every access token must
-  // name it as its audience. With either unset the worker stays in pure-guest mode (X-Owner-Id only).
+  // name it as its audience. With either unset no access token verifies: only guests and links are served.
   ACCOUNTS_URL?: string;
   API_RESOURCE?: string;
   // This app's OAuth client at the accounts Worker (its scripts/register-client.ts). Only the

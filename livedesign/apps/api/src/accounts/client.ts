@@ -36,9 +36,8 @@ export function isAccountOwner(ownerId: string): boolean {
   return USER_ID.test(ownerId);
 }
 
-// The owner the accounts Worker knows this one by. An account is itself. A livedesign guest is a
-// server-minted UUID (POST /api/guest-id), which the accounts Worker keeps as `guest_<uuid>`, the shape of
-// its own guest ids. Anything else (a malformed header) has no settings or profile there: null.
+// The owner the accounts Worker knows this one by. An account is itself. A guest is a liveworkspace
+// guest (`guest_<uuid>`); a bare UUID, the shape older livedesign guests had, is read as that guest. Anything else (a malformed header) has no settings or profile there: null.
 export function accountsOwner(ownerId: string): string | null {
   if (USER_ID.test(ownerId) || GUEST_ID.test(ownerId)) return ownerId;
   if (GUEST_UUID.test(ownerId)) return `${GUEST_PREFIX}${ownerId}`;

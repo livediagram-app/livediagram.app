@@ -39,7 +39,7 @@ const KEYS = {
   lastActiveDay: `${NS}last-active-day`,
   // Per-browser random that ties this browser's tabs together in presence (one person, one avatar).
   //
-  // Deliberately NOT `selfId`: that is the guest's owner id, an `X-Owner-Id` credential, and publishing it would hand
+  // Deliberately NOT `selfId`: that is the guest's owner id, which names their designs, and publishing it would hand
   // it to every co-viewer. Deliberately not the room's presence id either: that one is minted per socket
   // (docs/specs/015-api/public-api-and-tokens.md §6), so it changes on every reconnect and tab.
   collabKey: `${NS}collab-key`,

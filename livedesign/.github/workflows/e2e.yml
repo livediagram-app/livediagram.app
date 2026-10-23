@@ -127,12 +127,6 @@ jobs:
 
       - name: Run sites audit
         run: pnpm --filter @livedesign/live test:e2e:sites
-      # The armed guest-signature specs (docs/specs/003-system-architecture/e2e-smoke.md "Armed guest
-      # signatures") reuse this job's guest-mode build, on their own stack with enforcement on.
-      - name: Run armed guest-signature specs
-        if: always()
-        run: pnpm --filter @livedesign/live test:e2e:armed
-
       - name: Save build cache
         uses: ./.github/actions/next-cache-save
 
@@ -144,8 +138,6 @@ jobs:
           path: |
             apps/live/playwright-report
             apps/live/test-results
-            apps/live/playwright-report-armed
-            apps/live/test-results-armed
           retention-days: 7
 
   signed-in:

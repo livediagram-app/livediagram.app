@@ -105,7 +105,7 @@ export function ExplorerShell() {
   const bottom = ({ prefs, ownerId, signedIn }: ExplorerChrome) => (
     <>
       <GuestSignInBanner signedIn={signedIn} />
-      {/* The bottom bar (docs/specs/007-editor/editor-app.md): the editor's right-hand controls, Search, Settings
+      {/* The bottom bar (docs/specs/007-editor/live-app.md): the editor's right-hand controls, Search, Settings
           and Appearance. The toasts stand on it (docs/specs/004-interface-design/toasts.md). */}
       <div
         data-toast-floor=""

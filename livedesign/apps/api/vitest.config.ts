@@ -15,23 +15,18 @@ import { defineProject } from '@livedesign/vitest-config';
 const GATE_KEEPERS = [
   'src/auth/**',
   'src/db/api-tokens.ts',
-  'src/db/share.ts',
-  'src/db/shared.ts',
-  'src/db/ws-tickets.ts',
   'src/routes/share.ts',
+  // The index's grant on a design: the whole of what a caller may do to it.
+  'src/routes/design-grant.ts',
   // Link previews name a shared design (docs/specs/013-workspace/share-link-previews.md).
   'src/routes/share-preview.ts',
-  'src/routes/shared.ts',
   'src/routes/tokens.ts',
-  'src/routes/design-share-routes.ts',
   // The image reference index and the sweep that trusts it: a gap here
   // deletes a picture someone placed (docs/specs/009-elements/images.md).
   'src/image-refs/**',
   'src/db/image-refs.ts',
   // Which designs may serve an image they don't own ("Placement grants").
   'src/db/image-grants.ts',
-  'src/db/image-retention.ts',
-  'src/db/design-removal.ts',
 ];
 
 export default defineProject({

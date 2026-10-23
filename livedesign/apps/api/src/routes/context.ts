@@ -38,8 +38,8 @@ export type RouteContext = {
   segments: string[];
   // The verified account id, or null. Routes that must be
   // signed-in only (account deletion, guest->authed migration, teams)
-  // read this directly rather than through `resolveOwner` so there's
-  // no X-Owner-Id fallback.
+  // read this directly rather than through `resolveOwner` so a guest's
+  // token never counts.
   accountUserId: string | null;
   // The server-verified account id from EITHER credential: an account
   // access token, or an `lwt_` API token (whose owner is always an

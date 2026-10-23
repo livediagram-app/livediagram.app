@@ -15,7 +15,7 @@ import { requireOwner, type RouteContext, readBody } from './context';
 //
 // PUT is owner-only. Without this guard any caller who knew (or guessed) another participant's id could
 // rewrite their display name + colour, and that would follow them into every app. The guard requires the
-// caller's resolved owner (account Bearer OR X-Owner-Id) to match the id being changed.
+// caller's resolved owner (an account's or a guest's token) to match the id being changed.
 export async function handleParticipants(ctx: RouteContext): Promise<Response> {
   const { request, env, segments } = ctx;
   if (segments[1] !== 'participants') return notFound();

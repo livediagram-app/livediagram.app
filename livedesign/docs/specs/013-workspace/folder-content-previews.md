@@ -1,6 +1,7 @@
 # Folder content previews
 
-Status: shipped
+Status: shipped, in the shared Explorer
+([`@liveworkspace/explorer`](../../../../packages/explorer/README.md)).
 
 ## What
 
@@ -61,21 +62,11 @@ than the card claims to describe.
 - The **editor's Explorer** is unchanged for the same reason
   as [Folder location on Recent rows](recent-folder-chip.md): a ~256 px rail has no room for a mosaic.
 - The **team library** grid ([Team shared designs](team-shared-designs.md)) gets it for free — it renders the same
-  `CardView`, and its own `designsByFolder` / `childrenByParent` indexes
-  feed the same prop.
+  `CardView`.
 
 ## Where it lives
 
-- `apps/live/app/explorer/folder-preview-tiles.ts` — the pure "which tiles,
-  in what order, and how many are hidden" selection. Its own module so the
-  rule is unit-tested without rendering.
-- `apps/live/app/explorer/FolderPreview.tsx` — the mosaic component
-  (`FolderPreview`), including the subfolder and `+N` tiles.
-- `FolderCard` (`explorer-folder-cards.tsx`) takes a ready-made `preview`
-  node and falls back to the folder glyph when it's absent, so it stays
-  presentational and knows nothing about thumbnails.
-- The contents come from the indexes the explorer already builds client-side
-  (`childrenByParent`, `designsByFolder`) via a `folderContents` prop wired
-  in `ExplorerPane.tsx` and `TeamSharedDesigns.tsx`. No new API call and no
-  per-folder fetch: the Explorer already loads every folder and design up
-  front.
+In the shared Explorer package: the mosaic is its [`FolderMosaic`](../../../../packages/explorer/src/explorer/FolderMosaic.tsx), including the
+subfolder and `+N` tiles, drawn by the folder card. What a folder holds comes from the index (its `FolderPreview`,
+read by the package's `useFolderPreviews`), so nothing new is drawn: the tiles are the same snapshots the items' own
+cards show.

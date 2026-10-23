@@ -25,8 +25,8 @@ import type { BodySchema } from './types';
 
 /** How a caller authenticates (docs/specs/014-identity/auth-and-guest-access.md):
  *  - `public`: no identity required.
- *  - `guest-or-clerk`: the guest `X-Owner-Id` header OR a Bearer credential
- *    (an account access token or an API token).
+ *  - `guest-or-clerk`: a Bearer credential: a liveworkspace guest token, an
+ *    account access token or an API token.
  *  - `clerk`: a Bearer credential only (account access token or API token); guests are
  *    rejected. */
 export type AuthMode = 'public' | 'guest-or-clerk' | 'clerk';

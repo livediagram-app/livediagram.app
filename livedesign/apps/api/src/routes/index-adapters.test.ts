@@ -224,7 +224,7 @@ describe('the Trash, folders, teams and links', () => {
     const res = await handleShare({
       ...c,
       env: { ...c.env, INDEX_ORIGIN: undefined },
-    } as RouteContext);
+    });
     expect(res.status).toBe(503);
     expect(await res.json()).toEqual({ error: 'index_unavailable' });
   });

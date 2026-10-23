@@ -7,7 +7,7 @@
 //         rather than merging into it), null deletes it, and keys left out stay as they are. So two apps,
 //         or two tabs, changing different keys both land.
 //
-// Hybrid identity like the rest of the api: the account when signed in, else the guest's X-Owner-Id. A
+// Hybrid identity like the rest of the api: the account when signed in, else the guest's guest token. A
 // deployment with no accounts Worker (a self-host with no sign-in) keeps no preferences: both answer
 // 404 `preferences_not_stored`, and the editor keeps them in the browser.
 

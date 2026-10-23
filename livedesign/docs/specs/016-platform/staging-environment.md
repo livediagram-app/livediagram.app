@@ -173,7 +173,7 @@ value the deploy workflow syncs:
 | `API_RESOURCE_STAGING`           | staging api                     | Staging's own resource (the access-token audience). Never production's.                                                 |
 | `ACCOUNTS_CLIENT_ID_STAGING`     | staging api, build step         | Staging's own OAuth client; set, it also turns sign-in on in the staging build.                                         |
 | `ACCOUNTS_CLIENT_SECRET_STAGING` | staging api                     | That client's secret.                                                                                                   |
-| `GUEST_ID_HMAC_SECRET_STAGING`   | staging api                     | Own value — `openssl rand -hex 32`. Never production's.                                                                 |
+| `MEDIA_KEY_STAGING`              | staging api                     | Staging's own key for staging liveworkspace's media service. Never production's.                                        |
 | `TELEMETRY_KEY_STAGING`          | staging api **and** staging mcp | Same value on both, and as staging telemetry's `TELEMETRY_KEY_LIVEDESIGN` ([Telemetry](../017-telemetry/telemetry.md)). |
 
 `CF_API_TOKEN` and `CF_ACCOUNT_ID` are shared — same account.
@@ -212,22 +212,22 @@ is worse than queueing.
 Deploys fail loudly until these exist. Resource ids are committed to `wrangler.toml`
 (they are identifiers, not secrets — [Secrets policy](../002-project-scope/secrets-policy.md)).
 
-**Done** — the data stores exist, and their ids are committed where they have one:
+**Data stores** staging needs, each created once with wrangler:
 
-| Resource | Name                             | Where the id lives       |
-| -------- | -------------------------------- | ------------------------ |
-| R2       | `livedesign-snapshots-staging`   | bound by name, no id     |
-| R2       | `livedesign-photo-blobs-staging` | bound by name, no id     |
-| KV       | `mcp-oauth-kv-staging`           | `apps/mcp/wrangler.toml` |
+| Resource | Name                             | Created with                                                    | Where the id lives                        |
+| -------- | -------------------------------- | --------------------------------------------------------------- | ----------------------------------------- |
+| R2       | `livedesign-snapshots-staging`   | `wrangler r2 bucket create livedesign-snapshots-staging`        | bound by name, no id                      |
+| R2       | `livedesign-photo-blobs-staging` | `wrangler r2 bucket create livedesign-photo-blobs-staging`      | bound by name, no id                      |
+| KV       | `mcp-oauth-kv-staging`           | `wrangler kv namespace create mcp-oauth-kv-staging` (see below) | `apps/mcp/wrangler.toml`, `[env.staging]` |
 
-The api's Durable Objects need no setup: they exist once the staging api worker deploys.
-The stores were created in `ENAM`, Cloudflare's default for the account rather than a
-deliberate choice; production's region was not readable from the API to mirror. If
-staging ever needs to reproduce production's read latency, that is the knob.
+`wrangler r2 bucket list` and `wrangler kv namespace list` show whether each exists. The
+KV namespace's id goes into `apps/mcp/wrangler.toml` once it is created; until then the
+file holds a placeholder id and the mcp deploy fails. The api's Durable Objects need no
+setup: they exist once the staging api worker deploys.
 
 Note the KV **title** is `mcp-oauth-kv-staging`, matching production's `mcp-oauth-kv`.
 It is not `OAUTH_KV` — that is the binding name inside `wrangler.toml`, a different
-thing, and `wrangler kv namespace create OAUTH_KV --env staging` would have produced
+thing, and `wrangler kv namespace create OAUTH_KV --env staging` would produce
 `livedesign-mcp-staging-OAUTH_KV` instead.
 
 The **workers** are not on this list: a worker is its uploaded script, so all seven
@@ -243,7 +243,7 @@ Still outstanding:
 cd apps/api && wrangler secret put RESEND_API_KEY --env staging
 
 # 2. GitHub secrets — Settings → Secrets and variables → Actions
-#    the four _STAGING entries in the table above
+#    the _STAGING entries in the table above
 ```
 
 **Done** — both custom domains are attached in the Cloudflare dashboard (the deploy

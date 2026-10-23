@@ -9,7 +9,7 @@ Scope, by file:
 | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
 | `packages/ui/src/menu/menu-constants.ts`                                  | Every selector, attribute and timing, named                                                                  |
 | `packages/ui/src/menu/menu-keys.ts`                                       | Pure keyboard model: key to intent, index stepping, typeahead, initial index                                 |
-| `packages/ui/src/menu/input-modality.ts`                                  | The last interaction (key or pointer) and the last focused element, tracked on the design                  |
+| `packages/ui/src/menu/input-modality.ts`                                  | The last interaction (key or pointer) and the last focused element, tracked on the design                    |
 | `packages/ui/src/menu/menu-dom.ts`                                        | DOM reads: a menu's own items, focusables, tabbable neighbour, focus ownership                               |
 | `packages/ui/src/menu/menu-tree.ts`                                       | `MenuTreeContext`: the kind and id of the menu a component renders inside                                    |
 | `packages/ui/src/menu/useMenu.ts`                                         | Command menu hook: roles, label, initial focus, keys, Tab, focus return                                      |
@@ -33,11 +33,11 @@ Scope, by file:
 | `apps/live/components/chrome/ZoomMenu.tsx`                                | Hover-open command menu with a button of its own                                                             |
 | `apps/live/components/chrome/AuthControls.tsx`                            | Account command menu                                                                                         |
 | `apps/live/components/chrome/EmbedChrome.tsx`                             | Embed tab command menu                                                                                       |
-| `apps/live/components/dialogs/ShareCopyMenu.tsx`                          | Command menu, or control menu when it carries a header control                                               |
+| apps/live/components/dialogs/ShareCopyMenu.tsx (removed)                  | Command menu, or control menu when it carries a header control                                               |
 | `apps/live/hooks/canvas/useEditorKeyboardShortcuts.ts`                    | Canvas shortcuts stand down inside a menu surface                                                            |
 | `apps/live/components/canvas/SelectionPopover.tsx`                        | More actions: `aria-haspopup="dialog"` and the stable id `selection-more-actions`                            |
 | `apps/live/lib/element-names.ts`                                          | `shapeKindLabel`: names the Shape tiles of the element and selection menus                                   |
-| `packages/ui/src/SiteSwitcher.tsx`                          | Site switcher command menu (the logo's, [site switcher](../../../../../liveworkspace/docs/site-switcher.md)) |
+| `packages/ui/src/SiteSwitcher.tsx`                                        | Site switcher command menu (the logo's, [site switcher](../../../../../liveworkspace/docs/site-switcher.md)) |
 | `../liveworkspace/apps/site/app/telemetry/livedesign/StickyWindowBar.tsx` | View picker command menu                                                                                     |
 
 ## Domain and naming

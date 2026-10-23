@@ -40,6 +40,5 @@ jobs:
       API_RESOURCE: ${{ secrets.API_RESOURCE }}
       ACCOUNTS_CLIENT_ID: ${{ secrets.ACCOUNTS_CLIENT_ID }}
       ACCOUNTS_CLIENT_SECRET: ${{ secrets.ACCOUNTS_CLIENT_SECRET }}
-      GUEST_ID_HMAC_SECRET: ${{ secrets.GUEST_ID_HMAC_SECRET }}
       MEDIA_KEY: ${{ secrets.MEDIA_KEY }}
       TELEMETRY_KEY: ${{ secrets.TELEMETRY_KEY }}

@@ -132,8 +132,8 @@ visitor in `shared_with` via `recordSharedAccess`, but only when the visitor
 identifies and isn't the owner. `recordSharedAccess` now reports whether the
 row was **new** (first visit) vs a repeat. On a new visit by a **verified**
 visitor (a signed-in session or API token, `ctx.verifiedUserId`) the worker fires
-`notifyDesignJoin(env, liveDoc, joinerName)`. A guest's `X-Owner-Id` is
-unproven and free to mint, so every fresh one would be another first visit;
+`notifyDesignJoin(env, liveDoc, joinerName)`. A guest token is free to
+get, so every fresh guest would be another first visit;
 a guest visit is still recorded in `shared_with` and counted as
 `Document·Joined`, but never emails. `notifyDesignJoin`:
 
