@@ -176,7 +176,7 @@ ADMIN_TOKEN=… node apps/accounts/scripts/register-client.ts \
 ```
 
 Locally, against a development accounts Worker, the redirect is
-`http://localhost:3100/api/auth/callback` (the router) and the resource `http://localhost/api`
+`http://localhost:3200/api/auth/callback` (the router) and the resource `http://localhost/api`
 (liveplanner/docs/development/local-development.md).
 
 ## Telemetry

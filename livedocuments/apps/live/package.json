@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node ../../scripts/next-dev.mjs --port 3202",
-    "dev:webpack": "node ../../scripts/next-dev.mjs --port 3202 --webpack",
+    "dev": "node ../../scripts/next-dev.mjs --port 3302",
+    "dev:webpack": "node ../../scripts/next-dev.mjs --port 3302 --webpack",
     "build": "next build && node scripts/asset-size-gate.mjs out",
     "build:signed-in": "node scripts/build-signed-in.mjs",
     "lint": "oxlint",

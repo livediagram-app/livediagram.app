@@ -5,7 +5,7 @@
   "license": "UNLICENSED",
   "type": "module",
   "scripts": {
-    "dev": "node ../../scripts/next-dev.mjs --port 3104",
+    "dev": "node ../../scripts/next-dev.mjs --port 3204",
     "build": "next build",
     "lint": "oxlint",
     "typecheck": "tsc --noEmit",

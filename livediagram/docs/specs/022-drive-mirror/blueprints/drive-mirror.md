@@ -648,7 +648,7 @@ one as `driveLog('inbound-not-ours', { fileId, hadAppProperties })`, so a copy t
 ### Root folder name
 
 `driveRootName(host)` (`packages/api-schema/src/drive.ts`), `host` as `window.location.host`: lower-cased, the port
-dropped (`[::1]:3000` → `::1`, `localhost:3000` → `localhost`):
+dropped (`[::1]:3000` → `::1`, `localhost:3100` → `localhost`):
 
 | Host (after normalising)                                   | Name                        |
 | ---------------------------------------------------------- | --------------------------- |

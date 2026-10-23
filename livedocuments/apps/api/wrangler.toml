@@ -236,7 +236,7 @@ simple = { limit = 20, period = 60 }
 #   ACCOUNTS_CLIENT_SECRET  its client secret (the only real secret)
 #
 #   - Local dev: put them in `apps/api/.dev.vars` (gitignored), plus
-#     AUTH_ORIGIN=http://localhost:3100 so the callback comes back
+#     AUTH_ORIGIN=http://localhost:3200 so the callback comes back
 #     through the router. Wrangler reads it on the next `wrangler dev`.
 #   - Production: Cloudflare Worker secrets. The deploy workflow pulls
 #     each from the GitHub repo secret of the same name and pipes it into

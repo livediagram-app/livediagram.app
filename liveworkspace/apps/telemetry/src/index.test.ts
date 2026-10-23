@@ -17,7 +17,7 @@ describe('telemetry worker', () => {
       worker.fetch(
         new Request('https://liveworkspace.app/api/telemetry/events', {
           method: 'POST',
-          headers: { Origin: 'http://localhost:3000' },
+          headers: { Origin: 'http://localhost:3100' },
           body: JSON.stringify({
             app,
             // Each app's own word for what it makes: liveplanner's is a project.
@@ -83,7 +83,7 @@ describe('telemetry worker', () => {
     const res = await worker.fetch(
       new Request('https://liveworkspace.app/telemetry/api/events', {
         method: 'POST',
-        headers: { Origin: 'http://localhost:3000' },
+        headers: { Origin: 'http://localhost:3100' },
         body: JSON.stringify({
           app: 'livediagram.app',
           events: [{ category: 'Document', action: 'Created' }],

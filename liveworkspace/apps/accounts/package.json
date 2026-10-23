@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "wrangler dev --port 8787 --local-upstream localhost:3300",
+    "dev": "wrangler dev --inspector-port 9130 --port 8787 --local-upstream localhost:3000",
     "build": "wrangler deploy --dry-run --outdir dist",
     "deploy": "wrangler deploy",
     "lint": "oxlint",

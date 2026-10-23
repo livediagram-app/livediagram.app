@@ -98,13 +98,13 @@ cd apps/accounts
 cp .dev.vars.example .dev.vars
 corepack pnpm db:migrate:local
 cd ../..
-corepack pnpm dev:workspace           # http://localhost:3300/sign-in
+corepack pnpm dev:workspace           # http://localhost:3000/sign-in
 ```
 
 `dev:workspace` runs the site on 3300 with the accounts Worker (8787), the telemetry Worker
 (8790) and the Community Worker (8791) behind it: the site's dev server forwards `/api/auth/*` and `/.well-known/*` to the
 accounts Worker, so the pages and the API share one origin, as on liveworkspace.app. That origin,
-`http://localhost:3300`, is the Worker's `BASE_URL` and the issuer apps check locally.
+`http://localhost:3000`, is the Worker's `BASE_URL` and the issuer apps check locally.
 
 Locally, emails aren't sent. Each code email is printed in the accounts Worker's output. Turnstile
 uses Cloudflare's always-pass test keys.
@@ -124,11 +124,12 @@ Other checks, from the repo root: `corepack pnpm test`, `corepack pnpm typecheck
 
 1. Create the databases and put their ids in `apps/accounts/wrangler.toml` (they are placeholders):
    `wrangler d1 create liveworkspace-accounts` (and `liveworkspace-accounts-staging`).
-2. Turn on Email Sending for the domain: `wrangler email sending enable liveworkspace.app`.
+2. Verify `liveworkspace.app` as a sending domain in Resend, the provider every app emails
+   through, and create an API key with sending access for it.
 3. Create a Turnstile widget for `liveworkspace.app` and put its site key in
    `TURNSTILE_SITE_KEY`.
 4. Set the secrets: `BETTER_AUTH_SECRET` (`openssl rand -base64 32`), `TURNSTILE_SECRET_KEY`,
-   and `ADMIN_TOKEN` (`openssl rand -hex 32`).
+   `ADMIN_TOKEN` (`openssl rand -hex 32`) and `RESEND_API_KEY`.
 5. For Google: create an OAuth client (Web application) in Google Cloud with
    `https://liveworkspace.app/api/auth/callback/google` as its redirect URI (and the staging one
    for staging), then set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`.

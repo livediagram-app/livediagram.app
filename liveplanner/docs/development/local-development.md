@@ -41,16 +41,16 @@ Turbo spins up all eight dev servers in parallel:
 
 | App              | Dev URL                                                                                            |
 | ---------------- | -------------------------------------------------------------------------------------------------- |
-| `apps/router`    | `http://localhost:3100` — **everything on one port**, stitched like production                     |
-| `apps/marketing` | `http://localhost:3101`                                                                            |
-| `apps/editor`      | `http://localhost:3102` (clean routes: /new, /explorer, ...)                                       |
-| `apps/help`      | `http://localhost:3104/help`                                                                       |
+| `apps/router`    | `http://localhost:3200` — **everything on one port**, stitched like production                     |
+| `apps/marketing` | `http://localhost:3201`                                                                            |
+| `apps/editor`      | `http://localhost:3202` (clean routes: /new, /explorer, ...)                                       |
+| `apps/help`      | `http://localhost:3204/help`                                                                       |
 | `apps/api`       | `http://localhost:8887/api`                                                                        |
 | `apps/mcp`       | `http://localhost:8888` (MCP server, [MCP server](../specs/015-api/mcp-server.md); signed-in only) |
 
 The `router` dev server (`wrangler dev --env local`, port 3100) gives you the production URL shape locally: `/` is marketing, `/new` and `/project/*` are the editor, plus `/telemetry`, `/help` and `/api` — no per-app port to remember. It has no service bindings in dev; the `[env.local]` environment in `apps/router/wrangler.toml` points it at the localhost origins above and it proxies plain HTTP (see [Router app](../specs/016-platform/router-app.md)).
 
-**Use port 3100 unless you have a reason not to.** Each app's own port still serves its pages, but only the router puts the API on the same origin. The frontends call `NEXT_PUBLIC_API_BASE`, defaulting to the relative `/api` — correct in production and behind the router, and a dead end on an app's own port, where nothing serves `/api` (these are static exports; there are no Next API routes, see [Architecture](architecture.md)). So the editor on `http://localhost:3102` cannot reach the api worker until you tell it where the worker is:
+**Use port 3100 unless you have a reason not to.** Each app's own port still serves its pages, but only the router puts the API on the same origin. The frontends call `NEXT_PUBLIC_API_BASE`, defaulting to the relative `/api` — correct in production and behind the router, and a dead end on an app's own port, where nothing serves `/api` (these are static exports; there are no Next API routes, see [Architecture](architecture.md)). So the editor on `http://localhost:3202` cannot reach the api worker until you tell it where the worker is:
 
 ```sh
 # apps/editor/.env.local  (gitignored; see apps/editor/.env.example)
@@ -63,7 +63,7 @@ the one to reach for; the production api reads and writes real people's projects
 
 Without it the editor loads, the canvas works, and the first save fails with **“Couldn’t create the project”** — which reads like a broken api worker rather than a missing variable, so it is worth setting up front. `apps/help` reads the same variable. Telemetry is liveworkspace's (liveworkspace/docs/telemetry.md): to see local events, run its service (`wrangler dev` in liveworkspace/apps/telemetry, port 8788) and point the frontends at it with `NEXT_PUBLIC_TELEMETRY_URL=http://localhost:8790/api/telemetry`, and the api and mcp workers with `TELEMETRY_URL` and `TELEMETRY_KEY` in their `.dev.vars`.
 
-The editor works in pure-guest mode without any auth setup: `pnpm dev` and open `http://localhost:3100/new`. Projects persist to the local D1 file the api worker creates on first start. (On `http://localhost:3102/new` instead, set `NEXT_PUBLIC_API_BASE` first — see the note above.)
+The editor works in pure-guest mode without any auth setup: `pnpm dev` and open `http://localhost:3200/new`. Projects persist to the local D1 file the api worker creates on first start. (On `http://localhost:3202/new` instead, set `NEXT_PUBLIC_API_BASE` first — see the note above.)
 
 ## Scoping commands to one workspace
 
@@ -89,8 +89,8 @@ Run from the repo root:
 | `pnpm test`                                                    | Vitest across every workspace that has tests (`turbo run test`).                                                                                                                                                                                                                                                                                                                      |
 | `pnpm --filter @liveplanner/editor perf:canvas`                  | The canvas performance probe ([Canvas performance](../specs/008-canvas/canvas-performance.md)): builds the 1,000-element reference board, traces every gesture at 4x CPU and writes the budget table to `apps/editor/test-results/perf/`. Needs a fresh `next build`; set `E2E_EDITOR_PORT` / `E2E_API_PORT` / `E2E_BASE_URL` to run beside a `pnpm dev`. Reports, never fails on a miss. |
 | `pnpm --filter @liveplanner/editor test:e2e`                     | Playwright end-to-end suite ([End-to-end tests](../specs/003-system-architecture/e2e-smoke.md)); reuses a running `pnpm dev` or boots its own stack. Set `E2E_WEBKIT=1` (after `npx playwright install webkit`) to also run the image import spec in WebKit.                                                                                                                          |
-| `pnpm --filter @liveplanner/editor test:e2e:signed-in`           | The signed-in specs (`apps/editor/e2e/signed-in/`) against `.next/out-signed-in/`; run `pnpm --filter @liveplanner/editor build:signed-in` first. Boots its own stack on `:3115` / `:8888` / `:3116`.                                                                                                                                                                                     |
-| `pnpm --filter @liveplanner/editor test:e2e:armed`               | The armed guest-signature specs (`apps/editor/e2e/armed/`) with guest signature enforcement on, against the guest-mode `out/`. Boots its own stack on `:3017` / `:8789` / `:3018`.                                                                                                                                                                                                      |
+| `pnpm --filter @liveplanner/editor test:e2e:signed-in`           | The signed-in specs (`apps/editor/e2e/signed-in/`) against `.next/out-signed-in/`; run `pnpm --filter @liveplanner/editor build:signed-in` first. Boots its own stack on `:3215` / `:8888` / `:3216`.                                                                                                                                                                                     |
+| `pnpm --filter @liveplanner/editor test:e2e:armed`               | The armed guest-signature specs (`apps/editor/e2e/armed/`) with guest signature enforcement on, against the guest-mode `out/`. Boots its own stack on `:3117` / `:8789` / `:3118`.                                                                                                                                                                                                      |
 | `pnpm --filter @liveplanner/cli build`                         | Bundle the CLI into `apps/cli/dist/liveplanner.mjs` (see [Running the CLI from source](#running-the-cli-from-source-optional)).                                                                                                                                                                                                                                                       |
 | `pnpm format`                                                  | Prettier write across the repo.                                                                                                                                                                                                                                                                                                                                                       |
 | `pnpm format:check`                                            | Prettier check (this is what CI runs).                                                                                                                                                                                                                                                                                                                                                |
@@ -107,14 +107,14 @@ Turbo caches results, so re-running with no changes is a no-op.
 
 The editor works without sign-in. To exercise the signed-in code paths, run liveworkspace beside it and register liveplanner with its accounts API:
 
-1. Start liveworkspace (first-time setup is in `liveworkspace/README.md`, "Local development"): `pnpm dev:workspace` from the repo root runs the site, with the sign-in pages, on `http://localhost:3300`, and the accounts and telemetry Workers behind it, as liveworkspace.app has them. Locally the accounts Worker prints each sign-in code in its own output instead of emailing it.
+1. Start liveworkspace (first-time setup is in `liveworkspace/README.md`, "Local development"): `pnpm dev:workspace` from the repo root runs the site, with the sign-in pages, on `http://localhost:3000`, and the accounts and telemetry Workers behind it, as liveworkspace.app has them. Locally the accounts Worker prints each sign-in code in its own output instead of emailing it.
 2. Register liveplanner once against it. `http://localhost/api` is the one resource a development accounts Worker issues tokens for (`RESOURCES` in liveworkspace/apps/accounts/src/resources.ts). The secret is printed once:
 
    ```sh
    ADMIN_TOKEN=local-admin-token node liveworkspace/apps/accounts/scripts/register-client.ts \
-     --accounts http://localhost:3300 \
+     --accounts http://localhost:3000 \
      --name liveplanner-dev \
-     --redirect http://localhost:3100/api/auth/callback \
+     --redirect http://localhost:3200/api/auth/callback \
      --resource http://localhost/api
    ```
 
@@ -125,14 +125,14 @@ The editor works without sign-in. To exercise the signed-in code paths, run live
    NEXT_PUBLIC_SIGN_IN_ENABLED=true
 
    # apps/api/.dev.vars (gitignored)
-   ACCOUNTS_URL=http://localhost:3300
+   ACCOUNTS_URL=http://localhost:3000
    API_RESOURCE=http://localhost/api
    ACCOUNTS_CLIENT_ID=...
    ACCOUNTS_CLIENT_SECRET=...
-   AUTH_ORIGIN=http://localhost:3100
+   AUTH_ORIGIN=http://localhost:3200
    ```
 
-4. Restart `pnpm dev` and open the app through the router (`http://localhost:3100`), so the sign-in cookies and the callback share one origin.
+4. Restart `pnpm dev` and open the app through the router (`http://localhost:3200`), so the sign-in cookies and the callback share one origin.
 
 With these set, `/sign-in` hands off to the accounts site and comes back signed in. The api worker verifies the access token and derives the owner id from the `sub` claim instead of falling back to the `X-Owner-Id` header.
 
@@ -163,7 +163,7 @@ pnpm --filter @liveplanner/editor exec vitest   # watch mode while developing
 
 Tests live alongside the code they cover, as `*.test.ts` / `*.test.tsx` files. The test runner is [Vitest](https://vitest.dev) with the shared config from `@liveplanner/vitest-config`. See [Testing](../specs/003-system-architecture/testing.md) for the testing contract.
 
-Workbench embeds have an opt-in end-to-end run ([Workbench embeds](../specs/013-workspace/workbench-embeds.md)): `pnpm --filter @liveplanner/editor test:e2e:workbench`. It rebuilds `apps/editor/out` with the test-only session bridge (`NEXT_PUBLIC_E2E_AUTH=1`), then boots the e2e stack with `E2E_WORKBENCH=1` on its own ports (live 3021, api 8791, marketing 3022): the stack acts as the accounts Worker (as under `E2E_ACCOUNTS_STUB`, minting access tokens on `/e2e/token`) and gives the api worker `APP_BASE_URL=http://localhost:3021`, so its workbench and pairing URLs point at the live server. The spec serves a fake workbench (`apps/editor/e2e/fixtures/fake-workbench.html`) from `127.0.0.1` on a free port, pairs it on the pairing page, and frames `/embed/workbench` in it; `workbench-workspace.spec.ts` pairs it again for the whole workspace and frames `/embed/workbench/explorer`, whose places (`/embed/workbench/explorer/**`, `/embed/workbench/project/**`) the stack serves from that one page, as the editor worker does.
+Workbench embeds have an opt-in end-to-end run ([Workbench embeds](../specs/013-workspace/workbench-embeds.md)): `pnpm --filter @liveplanner/editor test:e2e:workbench`. It rebuilds `apps/editor/out` with the test-only session bridge (`NEXT_PUBLIC_E2E_AUTH=1`), then boots the e2e stack with `E2E_WORKBENCH=1` on its own ports (live 3021, api 8791, marketing 3022): the stack acts as the accounts Worker (as under `E2E_ACCOUNTS_STUB`, minting access tokens on `/e2e/token`) and gives the api worker `APP_BASE_URL=http://localhost:3121`, so its workbench and pairing URLs point at the live server. The spec serves a fake workbench (`apps/editor/e2e/fixtures/fake-workbench.html`) from `127.0.0.1` on a free port, pairs it on the pairing page, and frames `/embed/workbench` in it; `workbench-workspace.spec.ts` pairs it again for the whole workspace and frames `/embed/workbench/explorer`, whose places (`/embed/workbench/explorer/**`, `/embed/workbench/project/**`) the stack serves from that one page, as the editor worker does.
 
 ## Serving the editor beside a running stack
 

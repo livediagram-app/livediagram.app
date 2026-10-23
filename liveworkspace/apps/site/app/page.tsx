@@ -69,9 +69,7 @@ export default function Home() {
                 , all with one account. Every link opens straight into the work, with everyone
                 already in it.
               </p>
-              <div className="mt-9">
-                <HeroActions />
-              </div>
+              <HeroActions />
               <ul className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-500 dark:text-slate-400">
                 {PROMISES.map((p) => (
                   <li key={p} className="flex items-center gap-1.5">

@@ -11,7 +11,7 @@ import { parseArgs } from 'node:util';
 
 const { values } = parseArgs({
   options: {
-    accounts: { type: 'string', default: 'http://localhost:3300' },
+    accounts: { type: 'string', default: 'http://localhost:3000' },
     name: { type: 'string' },
     redirect: { type: 'string', multiple: true },
     resource: { type: 'string' },

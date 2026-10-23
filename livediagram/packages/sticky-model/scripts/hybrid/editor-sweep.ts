@@ -13,7 +13,7 @@ import { mergedFloorOf, realMergedOf, table, type Row } from '../report';
 // the weights the editor ships, and every box is compared: the table must
 // equal `sweep.ts --kept`'s, and each box must sit where Node put it.
 //
-//   E2E_BASE_URL=http://localhost:3202 npx tsx scripts/hybrid/editor-sweep.ts
+//   E2E_BASE_URL=http://localhost:3302 npx tsx scripts/hybrid/editor-sweep.ts
 //     [--no-model]  (block the weights: the editor must fall back, and equal
 //                    the classical sweep instead)
 //     [--gpu]       (ask Chromium for the real GPU, so WebGPU can run)
@@ -31,7 +31,7 @@ const { detectStickies } = await import('../../../sticky-vision/src/detect');
 const { CUE_OPTIONS, cuesOf } = await import('../../src/cues');
 const { isFlatImage } = await import('../../src/flatness');
 
-const base = process.env.E2E_BASE_URL ?? 'http://localhost:3202';
+const base = process.env.E2E_BASE_URL ?? 'http://localhost:3302';
 const noModel = process.argv.includes('--no-model');
 const gpu = process.argv.includes('--gpu');
 

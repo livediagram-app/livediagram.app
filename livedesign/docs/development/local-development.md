@@ -60,7 +60,7 @@ A remote api works too, and there are now two of them: `https://staging.livedesi
 reaches [staging](../specs/016-platform/staging-environment.md), which has its own database and is
 the one to reach for; the production api reads and writes real people's designs.
 
-Without it the editor loads, the canvas works, and the first save fails with **“Couldn’t create the design”** — which reads like a broken api worker rather than a missing variable, so it is worth setting up front. `apps/telemetry` and `apps/help` read the same variable: the dashboard needs it to show anything on `:3003`, and the help centre only loses its telemetry posts without it. To work on the dashboard against real numbers without seeding a local database, point it at production's summary instead: `NEXT_PUBLIC_API_BASE=https://www.livedesign.app/api` in `apps/telemetry/.env.local`. `GET /api/telemetry/summary` is public, read-only and allows any origin, and the dashboard only sends events itself when `NEXT_PUBLIC_TELEMETRY_ENABLED=true`, which local builds leave unset.
+Without it the editor loads, the canvas works, and the first save fails with **“Couldn’t create the design”** — which reads like a broken api worker rather than a missing variable, so it is worth setting up front. `apps/telemetry` and `apps/help` read the same variable: the dashboard needs it to show anything on `:3103`, and the help centre only loses its telemetry posts without it. To work on the dashboard against real numbers without seeding a local database, point it at production's summary instead: `NEXT_PUBLIC_API_BASE=https://www.livedesign.app/api` in `apps/telemetry/.env.local`. `GET /api/telemetry/summary` is public, read-only and allows any origin, and the dashboard only sends events itself when `NEXT_PUBLIC_TELEMETRY_ENABLED=true`, which local builds leave unset.
 
 The editor works in pure-guest mode without any auth setup: `pnpm dev` and open `http://localhost:3400/new`. Designs persist to the local D1 file the api worker creates on first start. (On `http://localhost:3402/new` instead, set `NEXT_PUBLIC_API_BASE` first — see the note above.)
 
@@ -88,8 +88,8 @@ Run from the repo root:
 | `pnpm test`                                                  | Vitest across every workspace that has tests (`turbo run test`).                                                                                                                                                                                                                                                                                                                      |
 | `pnpm --filter @livedesign/live perf:canvas`                 | The canvas performance probe ([Canvas performance](../specs/008-canvas/canvas-performance.md)): builds the 1,000-element reference board, traces every gesture at 4x CPU and writes the budget table to `apps/live/test-results/perf/`. Needs a fresh `next build`; set `E2E_LIVE_PORT` / `E2E_API_PORT` / `E2E_BASE_URL` to run beside a `pnpm dev`. Reports, never fails on a miss. |
 | `pnpm --filter @livedesign/live test:e2e`                    | Playwright end-to-end suite ([End-to-end tests](../specs/003-system-architecture/e2e-smoke.md)); reuses a running `pnpm dev` or boots its own stack. Set `E2E_WEBKIT=1` (after `npx playwright install webkit`) to also run the image import spec in WebKit.                                                                                                                          |
-| `pnpm --filter @livedesign/live test:e2e:signed-in`          | The signed-in specs (`apps/live/e2e/signed-in/`) against `.next/out-signed-in/`; run `pnpm --filter @livedesign/live build:signed-in` first. Boots its own stack on `:3215` / `:8998` / `:3216`.                                                                                                                                                                                      |
-| `pnpm --filter @livedesign/live test:e2e:armed`              | The armed guest-signature specs (`apps/live/e2e/armed/`) with guest signature enforcement on, against the guest-mode `out/`. Boots its own stack on `:3017` / `:8789` / `:3018`.                                                                                                                                                                                                      |
+| `pnpm --filter @livedesign/live test:e2e:signed-in`          | The signed-in specs (`apps/live/e2e/signed-in/`) against `.next/out-signed-in/`; run `pnpm --filter @livedesign/live build:signed-in` first. Boots its own stack on `:3315` / `:8998` / `:3316`.                                                                                                                                                                                      |
+| `pnpm --filter @livedesign/live test:e2e:armed`              | The armed guest-signature specs (`apps/live/e2e/armed/`) with guest signature enforcement on, against the guest-mode `out/`. Boots its own stack on `:3117` / `:8789` / `:3118`.                                                                                                                                                                                                      |
 | `pnpm --filter @livedesign/cli build`                        | Bundle the CLI into `apps/cli/dist/livedesign.mjs` (see [Running the CLI from source](#running-the-cli-from-source-optional)).                                                                                                                                                                                                                                                        |
 | `pnpm format`                                                | Prettier write across the repo.                                                                                                                                                                                                                                                                                                                                                       |
 | `pnpm format:check`                                          | Prettier check (this is what CI runs).                                                                                                                                                                                                                                                                                                                                                |
@@ -106,14 +106,14 @@ Turbo caches results, so re-running with no changes is a no-op.
 
 The editor works without sign-in. To exercise the signed-in code paths, run liveworkspace beside it and register livedesign with its accounts API:
 
-1. Start liveworkspace (first-time setup is in `liveworkspace/README.md`, "Local development"): `pnpm dev:workspace` from the repo root runs the site, with the sign-in pages, on `http://localhost:3300`, and the accounts and telemetry Workers behind it, as liveworkspace.app has them. Locally the accounts Worker prints each sign-in code in its own output instead of emailing it.
+1. Start liveworkspace (first-time setup is in `liveworkspace/README.md`, "Local development"): `pnpm dev:workspace` from the repo root runs the site, with the sign-in pages, on `http://localhost:3000`, and the accounts and telemetry Workers behind it, as liveworkspace.app has them. Locally the accounts Worker prints each sign-in code in its own output instead of emailing it.
 2. Register livedesign once against it. `http://localhost/api` is the one resource a development accounts Worker issues tokens for (`RESOURCES` in liveworkspace/apps/accounts/src/resources.ts). The secret is printed once:
 
    ```sh
    ADMIN_TOKEN=local-admin-token node liveworkspace/apps/accounts/scripts/register-client.ts \
-     --accounts http://localhost:3300 \
+     --accounts http://localhost:3000 \
      --name livedesign-dev \
-     --redirect http://localhost:3200/api/auth/callback \
+     --redirect http://localhost:3300/api/auth/callback \
      --resource http://localhost/api
    ```
 
@@ -124,14 +124,14 @@ The editor works without sign-in. To exercise the signed-in code paths, run live
    NEXT_PUBLIC_SIGN_IN_ENABLED=true
 
    # apps/api/.dev.vars (gitignored)
-   ACCOUNTS_URL=http://localhost:3300
+   ACCOUNTS_URL=http://localhost:3000
    API_RESOURCE=http://localhost/api
    ACCOUNTS_CLIENT_ID=...
    ACCOUNTS_CLIENT_SECRET=...
-   AUTH_ORIGIN=http://localhost:3200
+   AUTH_ORIGIN=http://localhost:3300
    ```
 
-4. Restart `pnpm dev` and open the app through the router (`http://localhost:3200`), so the sign-in cookies and the callback share one origin.
+4. Restart `pnpm dev` and open the app through the router (`http://localhost:3300`), so the sign-in cookies and the callback share one origin.
 
 With these set, `/sign-in` hands off to the accounts site and comes back signed in. The api worker verifies the access token and derives the owner id from the `sub` claim instead of falling back to the `X-Owner-Id` header.
 
@@ -176,7 +176,7 @@ pnpm --filter @livedesign/live exec vitest   # watch mode while developing
 
 Tests live alongside the code they cover, as `*.test.ts` / `*.test.tsx` files. The test runner is [Vitest](https://vitest.dev) with the shared config from `@livedesign/vitest-config`. See [Testing](../specs/003-system-architecture/testing.md) for the testing contract.
 
-Workbench embeds have an opt-in end-to-end run ([Workbench embeds](../specs/013-workspace/workbench-embeds.md)): `pnpm --filter @livedesign/live test:e2e:workbench`. It rebuilds `apps/live/out` with the test-only session bridge (`NEXT_PUBLIC_E2E_AUTH=1`), then boots the e2e stack with `E2E_WORKBENCH=1` on its own ports (live 3021, api 8791, marketing 3022): the stack acts as the accounts Worker (as under `E2E_ACCOUNTS_STUB`, minting access tokens on `/e2e/token`) and gives the api worker `APP_BASE_URL=http://localhost:3021`, so its workbench and pairing URLs point at the live server. The spec serves a fake workbench (`apps/live/e2e/fixtures/fake-workbench.html`) from `127.0.0.1` on a free port, pairs it on the pairing page, and frames `/embed/workbench` in it; `workbench-workspace.spec.ts` pairs it again for the whole workspace and frames `/embed/workbench/explorer`, whose places (`/embed/workbench/explorer/**`, `/embed/workbench/design/**`) the stack serves from that one page, as the live worker does.
+Workbench embeds have an opt-in end-to-end run ([Workbench embeds](../specs/013-workspace/workbench-embeds.md)): `pnpm --filter @livedesign/live test:e2e:workbench`. It rebuilds `apps/live/out` with the test-only session bridge (`NEXT_PUBLIC_E2E_AUTH=1`), then boots the e2e stack with `E2E_WORKBENCH=1` on its own ports (live 3021, api 8791, marketing 3022): the stack acts as the accounts Worker (as under `E2E_ACCOUNTS_STUB`, minting access tokens on `/e2e/token`) and gives the api worker `APP_BASE_URL=http://localhost:3121`, so its workbench and pairing URLs point at the live server. The spec serves a fake workbench (`apps/live/e2e/fixtures/fake-workbench.html`) from `127.0.0.1` on a free port, pairs it on the pairing page, and frames `/embed/workbench` in it; `workbench-workspace.spec.ts` pairs it again for the whole workspace and frames `/embed/workbench/explorer`, whose places (`/embed/workbench/explorer/**`, `/embed/workbench/design/**`) the stack serves from that one page, as the live worker does.
 
 ## Trying the editor without an AI key
 

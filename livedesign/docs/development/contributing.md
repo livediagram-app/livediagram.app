@@ -115,7 +115,7 @@ pnpm --filter @livedesign/live build:signed-in
 pnpm --filter @livedesign/live test:e2e:signed-in
 ```
 
-The armed guest-signature specs (`apps/live/e2e/armed/`) run against the usual build, on their own stack with guest signature enforcement on (`:3017`):
+The armed guest-signature specs (`apps/live/e2e/armed/`) run against the usual build, on their own stack with guest signature enforcement on (`:3117`):
 
 ```sh
 pnpm --filter @livedesign/live test:e2e:armed

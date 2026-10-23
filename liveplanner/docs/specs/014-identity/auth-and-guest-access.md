@@ -36,7 +36,7 @@ liveplanner has no sign-in form of its own. People sign in to their **liveworksp
 3. **`POST /api/auth/token`** turns the refresh cookie into a fresh access token and the account (`{ id, email, givenName, familyName, name }`, from the id token), rotating the cookie. No cookie answers `401 { signedIn: false }`; a refused refresh clears both cookies.
 4. **`POST /api/auth/sign-out`** clears both cookies. It ends the liveplanner session only: the accounts site keeps its own, so the next sign-in may not ask for a code.
 
-Every response is `Cache-Control: no-store`, and the routes are rate limited per network. Locally, behind the router, `AUTH_ORIGIN=http://localhost:3100` makes the callback come back through the router; the accounts Worker must list `<origin>/api/auth/callback` as a redirect URI for each origin.
+Every response is `Cache-Control: no-store`, and the routes are rate limited per network. Locally, behind the router, `AUTH_ORIGIN=http://localhost:3200` makes the callback come back through the router; the accounts Worker must list `<origin>/api/auth/callback` as a redirect URI for each origin.
 
 ## Hybrid identity
 

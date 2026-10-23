@@ -139,7 +139,7 @@ corepack pnpm dev                     # the API, http://localhost:8791/api/commu
 ```
 
 `corepack pnpm dev:workspace` from the repo root runs it behind the site at
-http://localhost:3300/api/community, and `corepack pnpm dev:community` runs it alone. Point livediagram's
+http://localhost:3000/api/community, and `corepack pnpm dev:community` runs it alone. Point livediagram's
 api at it with `COMMUNITY_URL=http://localhost:8791/api/community` and
 `COMMUNITY_KEY=dev-livediagram-community-key` in `apps/api/.dev.vars`, and its pages with
 `NEXT_PUBLIC_COMMUNITY_API=http://localhost:8791/api/community`. Development accepts writes from any

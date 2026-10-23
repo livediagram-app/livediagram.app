@@ -6,10 +6,10 @@
 //   pnpm dev   (in another terminal; .dev.vars from .dev.vars.example, with any
 //              GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET: Google itself is never called),
 //              and the site's dev server (apps/site), which serves this Worker at
-//              http://localhost:3300/api/auth, the origin it signs for
+//              http://localhost:3000/api/auth, the origin it signs for
 //   ADMIN_TOKEN=local-admin-token node scripts/e2e-local.ts
 //
-// The emailed code is read back from the local email simulation's log, so pass the
+// The emailed code is read back from the dev server's log (run it without RESEND_API_KEY), so pass the
 // file `pnpm dev` writes to: DEV_LOG=/path/to/dev.log
 import { readFileSync } from 'node:fs';
 import { setTimeout as sleep } from 'node:timers/promises';
@@ -22,9 +22,9 @@ import {
   refreshTokens,
 } from '@liveworkspace/auth-client';
 
-const ACCOUNTS = process.env.ACCOUNTS_URL ?? 'http://localhost:3300';
+const ACCOUNTS = process.env.ACCOUNTS_URL ?? 'http://localhost:3000';
 const RESOURCE = 'http://localhost/api';
-const REDIRECT = 'http://localhost:3000/auth/callback';
+const REDIRECT = 'http://localhost:3100/auth/callback';
 const EMAIL = process.env.E2E_EMAIL ?? `e2e+${Date.now()}@example.com`;
 const NAMELESS_EMAIL = `e2e-nameless+${Date.now()}@example.com`;
 const devLog = process.env.DEV_LOG;
@@ -108,10 +108,8 @@ async function requestCode(email: string): Promise<string> {
   let code: string | undefined;
   for (let i = 0; i < 20 && !code; i++) {
     const log = readFileSync(devLog!, 'utf8').slice(logBefore);
-    // The local simulation logs where it saved the message; the code is in its subject.
-    const saved = log.match(/(\/[^\s'"]+\.eml)/)?.[1];
-    const text = saved ? readFileSync(saved, 'utf8') : log;
-    code = text.match(/\b(\d{6}) is your liveworkspace sign-in code/)?.[1];
+    // Without RESEND_API_KEY the dev server logs each email; the code is in its subject.
+    code = log.match(/\b(\d{6}) is your liveworkspace sign-in code/)?.[1];
     if (!code) await sleep(250);
   }
   assert(code, 'the code email was sent');
