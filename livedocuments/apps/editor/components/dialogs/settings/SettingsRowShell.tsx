@@ -6,6 +6,7 @@ import { SettingsIllustration } from './settings-illustrations';
 import type { SettingsRowSpec } from './settings-catalogue';
 import { Glyph } from '@livedocuments/ui';
 import { SETTINGS_CARD, useInSettingsGroup } from './SettingsGroup';
+import { rowSharedAcrossApps } from './settings-all-apps';
 
 // Everything a settings row has in common, whatever its control is: one CELL holding the label
 // with a short description under it, the control beside them, and below them whatever the row
@@ -66,7 +67,8 @@ export function SettingsRowShell({
   dimmed?: boolean;
 }) {
   const inGroup = useInSettingsGroup();
-  const described = Boolean(descriptionContent ?? row.description) || !!row.helpArticle;
+  const allApps = rowSharedAcrossApps(row.key);
+  const described = Boolean(descriptionContent ?? row.description) || !!row.helpArticle || allApps;
 
   const cell = (
     <div
@@ -102,6 +104,15 @@ export function SettingsRowShell({
               {row.alsoIn ? (
                 <span className="mt-0.5 block text-slate-500 dark:text-slate-400">
                   Also in {row.alsoIn}.
+                </span>
+              ) : null}
+              {/* A setting every liveworkspace app shares: changing it here changes it there. */}
+              {allApps ? (
+                <span
+                  data-settings-all-apps
+                  className="mt-0.5 block text-[11px] text-slate-500 dark:text-slate-400"
+                >
+                  All apps
                 </span>
               ) : null}
             </p>

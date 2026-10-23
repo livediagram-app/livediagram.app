@@ -12,7 +12,9 @@ vi.mock('./api-client', () => ({
 
 import { apiGetPreferences, apiPutPreferences } from './api-client';
 import { setWorkbenchConfinement } from './api/workbench-confinement';
+import { __resetPreferencesSync, flushPreferences } from './preferences-sync';
 import {
+  __forgetPreferenceLoads,
   autoRebindArrowsEnabled,
   fetchUserPreferences,
   RECENT_EXCLUDED_LIMIT,
@@ -106,6 +108,8 @@ afterEach(() => {
 beforeEach(() => {
   mockedGet.mockReset();
   mockedPut.mockReset();
+  __resetPreferencesSync();
+  __forgetPreferenceLoads();
 });
 
 describe('readUserPreferences (no window)', () => {
@@ -195,8 +199,7 @@ describe('readUserPreferences (with localStorage)', () => {
   });
 });
 
-// Network-sync helpers introduced in docs/specs/007-editor/user-preferences.md's "preferences live in D1"
-// rewrite. These cover the two interfaces the editor relies on:
+// Network-sync helpers (docs/specs/007-editor/user-preferences.md "Saving to the server"). These cover the two interfaces the editor relies on:
 // writeUserPreferences(prefs, ownerId) firing a PUT when an owner is
 // known (and staying purely local when one isn't), and
 // fetchUserPreferences merging the server response over the cache.
@@ -204,7 +207,10 @@ describe('readUserPreferences (with localStorage)', () => {
 describe('writeUserPreferences (server sync)', () => {
   it('fires a PUT to /api/preferences when an owner id is supplied', () => {
     mockBrowser();
+    mockedPut.mockResolvedValue('saved');
     writeUserPreferences({ telemetryEnabled: false }, 'guest-abc');
+    // Debounced: sent now, as when the page is hidden.
+    flushPreferences();
     expect(mockedPut).toHaveBeenCalledTimes(1);
     expect(mockedPut).toHaveBeenCalledWith('guest-abc', { telemetryEnabled: false });
   });

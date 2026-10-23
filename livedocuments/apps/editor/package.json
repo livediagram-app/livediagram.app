@@ -35,6 +35,7 @@
     "@livedocuments/template-previews": "workspace:*",
     "@livedocuments/templates": "workspace:*",
     "@livedocuments/ui": "workspace:*",
+    "@liveworkspace/settings": "workspace:*",
     "gifenc": "1.0.3",
     "next": "^16.4.1",
     "prosemirror-commands": "^1.7.2",
