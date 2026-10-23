@@ -142,7 +142,7 @@ holds for that person:
   Shared with me rows and comment and action rows.
 - **Deleted**: their folders, tags (and their tags on anyone's items), favourites, opens (Recent), use
   days (Most Used), Shared with me rows, placement defaults, and the Timeline only they saw (their own
-  space's events and their favourites) with when they last looked at it.
+  space's events and their favourites) with when they last looked at it and what they removed from it.
 - **Kept by the team**: an item or folder they made in a team stays with that team, its owner anonymised.
   `teamIds` names the teams that closed with the account (one it ran alone); their items and folders in
   those go too, while anyone else's stay theirs.
@@ -264,15 +264,21 @@ occurredAt, item}`, `title` being the item's name then and `item` the item as it
   a page: an index range of at most `limit + 1` rows per scope (by scope, then app, then time), the
   newest of those joined to their events and items.
 - `POST /timeline/seen` — `{seenAt}`: what came before is no longer new.
+- `POST /timeline/dismiss {ids}` — 204: Remove from Timeline, for this person only. 1 to
+  `TIMELINE_DISMISS_MAX` (100) event ids; an id from nowhere adds nothing. A removed event leaves their
+  pages and their count, and goes when the event does. A guest's removals follow them into their account.
 
 The index keeps no names of people. An event shows its person as "You" to them; to anyone else, by the
 name an app reported, or as a teammate.
 
 ## Inbox
 
-`GET /inbox?app=` — `{threads, actions}` across every app: open actions assigned to or by me, and
-unresolved threads on my items, where I commented, or where I am mentioned, limited to items I can
-reach. Each row carries `app`, `itemId`, `tabId` and `elementId`, so opening it goes to that app.
+`GET /inbox?app=` — `{threads, actions, timelineNew}` across every app: open actions assigned to or by
+me, and unresolved threads on my items, where I commented, or where I am mentioned, limited to items I
+can reach. Each row carries `app`, `itemId`, `tabId` and `elementId`, so opening it goes to that app.
+`timelineNew` is the sidebar's Timeline count, read in the same batch: events by someone else since my
+last look, up to now (never one still to come), not removed, counted to at most `TIMELINE_NEW_CAP + 1`
+(100, shown as "99+"); 0 before my first look.
 
 ## What goes away in each app, as it moves
 

@@ -138,7 +138,13 @@ export type InboxAction = InboxPlace & CollabActionInput;
 // FOLDER_PREVIEW_COUNT_CAP.
 export type FolderPreview = { folderId: string; itemCount: number; items: Item[] };
 
-export type InboxResponse = { threads: InboxThread[]; actions: InboxAction[] };
+export type InboxResponse = {
+  threads: InboxThread[];
+  actions: InboxAction[];
+  // Timeline events by someone else since the person last looked, at most TIMELINE_NEW_CAP + 1 (read as
+  // "99+"); 0 before their first look. In the same filter as the rest.
+  timelineNew: number;
+};
 
 // The grant: an ES256 JWT signed by the index.
 export type GrantClaims = {

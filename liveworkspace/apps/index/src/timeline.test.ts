@@ -115,6 +115,61 @@ describe('what the index records', () => {
   });
 });
 
+describe('Remove from Timeline and the new count', () => {
+  const inbox = async (auth: string, query = '') =>
+    body<{ timelineNew: number }>(await call(`/inbox${query ? `?${query}` : ''}`, { auth }));
+
+  it("takes events off one person's Timeline only, and counts what others did since the last look", async () => {
+    const next = tick();
+    const ada = await person('user_tlr1', { teams: [{ id: 'team_tlr' }] });
+    const cy = await person('user_tlr1c', { teams: [{ id: 'team_tlr' }] });
+    const a = await makeItem(ada.auth, { title: 'A', teamId: 'team_tlr' });
+    next();
+    // Never looked: nothing is new.
+    expect((await inbox(cy.auth)).timelineNew).toBe(0);
+    await call('/timeline/seen', { method: 'POST', auth: cy.auth });
+    next();
+    await makeItem(ada.auth, { title: 'B', teamId: 'team_tlr' });
+    next();
+    await makeItem(ada.auth, { title: 'C', teamId: 'team_tlr', app: 'livediagram' });
+    next();
+    // Cy's own doing is never new to Cy.
+    await makeItem(cy.auth, { title: 'D', teamId: 'team_tlr' });
+    next();
+    expect((await inbox(cy.auth)).timelineNew).toBe(2);
+    expect((await inbox(cy.auth, 'app=liveplanner')).timelineNew).toBe(1);
+
+    const events = (await feed(cy.auth)).events;
+    const b = events.find((e) => e.title === 'B')!;
+    const res = await call('/timeline/dismiss', {
+      method: 'POST',
+      auth: cy.auth,
+      body: { ids: [b.id, 'no-such-event'] },
+    });
+    expect(res.status).toBe(204);
+    expect(kinds((await feed(cy.auth)).events)).toEqual(['created D', 'created C', 'created A']);
+    expect((await inbox(cy.auth)).timelineNew).toBe(1);
+    // Still on Ada's.
+    expect(kinds((await feed(ada.auth)).events)).toContain('created B');
+    expect(a.id).toBeTruthy();
+    for (const bad of [{}, { ids: [] }, { ids: [1] }, { ids: Array(101).fill('x') }]) {
+      const r = await call('/timeline/dismiss', { method: 'POST', auth: cy.auth, body: bad });
+      expect(r.status).toBe(400);
+    }
+  });
+
+  it('stops counting at 100', async () => {
+    const next = tick();
+    const ada = await person('user_tlr2', { teams: [{ id: 'team_tlr2' }] });
+    const cy = await person('user_tlr2c', { teams: [{ id: 'team_tlr2' }] });
+    await call('/timeline/seen', { method: 'POST', auth: cy.auth });
+    next();
+    for (let i = 0; i < 105; i++) await makeItem(ada.auth, { title: `P${i}`, teamId: 'team_tlr2' });
+    next();
+    expect((await inbox(cy.auth)).timelineNew).toBe(100);
+  });
+});
+
 describe('who sees what', () => {
   it("shows a person their own space and their teams', and an item's history follows it", async () => {
     const next = tick();
@@ -331,5 +386,25 @@ describe('the bound', () => {
       );
       expect(ms).toBeLessThan(250);
     }
+    // The sidebar's count, with every one of them new and someone else's: it stops at 100 rows a scope.
+    db.exec(`UPDATE timeline_events SET actor_id = 'user_x' WHERE actor_id = 'user_big'`);
+    db.exec(`INSERT INTO timeline_scope_state (person_id, last_seen_at) VALUES ('user_big', 0)`);
+    let started = performance.now();
+    const counted = await body<{ timelineNew: number }>(await call('/inbox', { auth: big.auth }));
+    let ms = performance.now() - started;
+    expect(counted.timelineNew).toBe(100);
+    console.info(
+      `[timeline] new count over 10,000 new events, with the Inbox, in ${ms.toFixed(1)} ms`,
+    );
+    expect(ms).toBeLessThan(250);
+    // A thousand removed at the top of the range: skipped in the index walk.
+    db.exec(`INSERT INTO timeline_dismissals (person_id, event_id, created_at)
+      SELECT 'user_big', id, 1 FROM timeline_events WHERE actor_id = 'user_x' AND occurred_at >= 9000`);
+    started = performance.now();
+    const after = await feed(big.auth);
+    ms = performance.now() - started;
+    expect(after.events[0]!.occurredAt).toBeLessThan(9000);
+    console.info(`[timeline] a page past 1,000 removed events in ${ms.toFixed(1)} ms`);
+    expect(ms).toBeLessThan(250);
   });
 });

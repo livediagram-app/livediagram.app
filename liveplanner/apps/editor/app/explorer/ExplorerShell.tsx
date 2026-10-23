@@ -73,6 +73,8 @@ const trackTimeline: TimelineTelemetry = (action, type) => {
       return track('Timeline', 'Loaded', type);
     case 'Opened':
       return track('Timeline', 'Opened', type);
+    case 'Removed':
+      return track('Timeline', 'Removed', type);
   }
 };
 

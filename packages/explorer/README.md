@@ -84,7 +84,7 @@ Dark mode follows the host's `.dark` variant. The empty-state art animates only 
 | `heroWords?`               | `{ question, lead }`                   | The hero's words after the greeting. Defaults to the app kind's.                                                                                     |
 | `heroHidden?`/`onHideHero` | `boolean` / `() => void`               | Controls the hero from the host's setting. Without them the close is remembered per app in this browser.                                             |
 | `helpHref?`                | `(view) => string \| undefined`        | A Help article for a view. Shows a Help button in that view's header and the hero's corner.                                                          |
-| `onTimeline?`              | `(action, type) => void`               | The Timeline's reports for telemetry: `Changed`, `Selected`, `Loaded` or `Opened`, typed by a fixed token.                                           |
+| `onTimeline?`              | `(action, type) => void`               | The Timeline's reports for telemetry: `Changed`, `Selected`, `Loaded`, `Opened` or `Removed`, by a fixed token.                                      |
 
 Views (`ExplorerView`) and their addresses under `basePath`:
 
@@ -172,10 +172,10 @@ the list scrolls near.
 | Data                  | When it loads                                                                                                                                                                              |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Folders               | Once, paging if needed. The sidebar, breadcrumbs, folder rows and Move all read this copy.                                                                                                 |
-| Inbox                 | Once per filter. The sidebar's count and the Inbox view share it.                                                                                                                          |
+| Inbox                 | Once per filter. The sidebar's counts (Inbox, and the Timeline's new events) and the Inbox view share it.                                                                                  |
 | Home                  | Two small requests: Recent (8, carrying Most Used via `used`) and Shared (4).                                                                                                              |
 | Folder cards and rows | One `GET /folders/previews` per batch of up to 60 cards (or list rows on screen) not yet answered, for their mosaics and counts ("1 folder · 5 plans"); again after an item changes place. |
-| Timeline              | One `GET /timeline` page of 30 on arrival and when the filter changes, then one per Show More. One `POST /timeline/seen` per visit, after the first page.                                  |
+| Timeline              | One `GET /timeline` page of 30 on arrival and per filter, then one per Show More (5 at most for an `#event=` link). One `POST /timeline/seen` a visit. Removing: 100 ids a call.           |
 | Home's hero           | One count request while it shows (My Work, one page of up to 200; "200+" past that). The Inbox pill reuses the sidebar's Inbox. None when the hero is hidden.                              |
 
 Nothing is fetched per row, or per folder.
@@ -202,5 +202,7 @@ Search waits 250 ms after typing stops, and a newer search cancels the older req
 - `HomeHero.test.tsx` covers the hero: greeting, pills, New, art, Help and close, and its one count request.
 - `perf.test.tsx` renders 2,000 items in each layout under a time budget.
 - `timeline.test.tsx` covers the Timeline view: this app's events by default, All with each app's mark, New and
-  the seen mark, Show More and stacks, the failed read, the filters, and one page however long the history.
+  the seen mark, Show More and stacks, the failed read, the filters, one page however long the history, the card
+  and stack menus with Remove from Timeline (and its refusal), rename on a card, `#event=` links and their bounded
+  paging, the Upcoming band, and the sidebar's count clearing without a new request.
   `timeline/model.test.ts` holds its rules, and works out 10,000 events' days and stacks under a budget.

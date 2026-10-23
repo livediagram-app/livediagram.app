@@ -95,6 +95,13 @@ export async function handleMerge(request: Request, env: Env): Promise<Response>
     db.prepare('DELETE FROM timeline_scope_state WHERE person_id = ?').bind(guest),
     db
       .prepare(
+        `INSERT OR IGNORE INTO timeline_dismissals (person_id, event_id, created_at)
+         SELECT ?, event_id, created_at FROM timeline_dismissals WHERE person_id = ?`,
+      )
+      .bind(user, guest),
+    db.prepare('DELETE FROM timeline_dismissals WHERE person_id = ?').bind(guest),
+    db
+      .prepare(
         `INSERT OR IGNORE INTO shared_with (person_id, item_id, share_code, last_seen)
          SELECT ?, item_id, share_code, last_seen FROM shared_with WHERE person_id = ?`,
       )

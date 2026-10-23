@@ -152,6 +152,16 @@ CREATE TABLE timeline_scope_state (
   last_seen_at INTEGER NOT NULL
 );
 
+-- Events a person took off their own Timeline (Remove from Timeline): theirs alone, the event stays for
+-- everyone else who sees it.
+CREATE TABLE timeline_dismissals (
+  person_id  TEXT    NOT NULL,
+  event_id   TEXT    NOT NULL REFERENCES timeline_events (id) ON DELETE CASCADE,
+  created_at INTEGER NOT NULL,
+  PRIMARY KEY (person_id, event_id)
+);
+CREATE INDEX timeline_dismissals_event ON timeline_dismissals (event_id);
+
 -- Share links, as the apps have them today. A link whose `expires_at` has passed opens nothing but stays
 -- listed for its owner to extend or delete.
 CREATE TABLE share_links (

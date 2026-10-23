@@ -319,19 +319,14 @@ const CUSTOM_THEMES = new Set([
   'UI|Opened|custom-themes',
 ]);
 
-// The Explorer's Timeline section (removed 2026-10-22, docs/specs/013-workspace/timeline.md): its
-// page arrivals, its card and stack menus and their Remove from Timeline, its sidebar rows and its
-// page view. A project's History and a team's Activity draw the same feed and keep the rest of the
-// Timeline category (Changed, Selected, Loaded, Opened·Stack).
+// The old Explorer Timeline's arrivals and sidebar rows (docs/specs/013-workspace/timeline.md). The
+// shared Explorer's Timeline reports its own (Changed, Selected, Loaded, Opened·Card/Stack/Menu,
+// Removed·Entry/Stack) through its onTimeline prop; how someone arrived is the page view.
 const EXPLORER_TIMELINE = new Set([
   'Timeline|Opened|Landing',
   'Timeline|Opened|Nav',
-  'Timeline|Opened|Menu',
-  'Timeline|Removed|Entry',
-  'Timeline|Removed|Stack',
   'UI|Selected|Sidebar.Timeline',
   'UI|Selected|ExplorerPanel.Timeline',
-  'Page|View|/explorer/timeline',
 ]);
 
 // The agents' icon search (removed 2026-10-22, docs/specs/015-api/mcp-server.md): the MCP's search_icons and the CLI's

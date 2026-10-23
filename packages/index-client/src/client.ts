@@ -243,6 +243,9 @@ export function createIndexClient({
     timeline: (query: TimelineQuery = {}, options: RequestOptions = {}) =>
       call<TimelinePage>('/timeline', { query, signal: options.signal }),
     markTimelineSeen: () => call<{ seenAt: number }>('/timeline/seen', { method: 'POST' }),
+    // Remove from Timeline: off this person's Timeline only (up to TIMELINE_DISMISS_MAX ids).
+    dismissTimelineEvents: (ids: readonly string[]) =>
+      call<void>('/timeline/dismiss', { method: 'POST', body: { ids } }),
 
     // Inbox
     inbox: (query: { app?: App; limit?: number } = {}, options: RequestOptions = {}) =>

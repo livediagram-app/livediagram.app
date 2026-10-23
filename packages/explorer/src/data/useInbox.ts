@@ -1,7 +1,8 @@
 'use client';
 
 // The Inbox (GET /inbox): open actions assigned to or by the person and unresolved threads they are in,
-// across every app. One request per filter, shared by the sidebar's count and the Inbox view.
+// across every app. One request per filter, shared by the sidebar's counts (the Inbox's, and the Timeline's
+// events since the person last looked) and the Inbox view.
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { App, InboxResponse, IndexClient } from '@liveworkspace/index-client';
@@ -13,6 +14,8 @@ export type InboxState = {
   loading: boolean;
   error: boolean;
   reload: () => void;
+  /** The Timeline was just read: its count drops to nothing here, without asking the index again. */
+  clearTimelineNew: () => void;
 };
 
 export function useInbox(client: IndexClient, app: App, filter: AppFilter): InboxState {
@@ -34,11 +37,23 @@ export function useInbox(client: IndexClient, app: App, filter: AppFilter): Inbo
     return () => controller.abort();
   }, [client, app, filter, key]);
   const reload = useCallback(() => setAttempt((n) => n + 1), []);
+  const clearTimelineNew = useCallback(
+    () =>
+      setState((prev) =>
+        prev.data && prev.data.timelineNew
+          ? { ...prev, data: { ...prev.data, timelineNew: 0 } }
+          : prev,
+      ),
+    [],
+  );
   const current = state.key === key ? state : null;
   const data = current?.data ?? null;
   const loading = !current;
   const error = current?.error ?? false;
-  return useMemo(() => ({ data, loading, error, reload }), [data, loading, error, reload]);
+  return useMemo(
+    () => ({ data, loading, error, reload, clearTimelineNew }),
+    [data, loading, error, reload, clearTimelineNew],
+  );
 }
 
 /** The sidebar's Inbox count: actions waiting on the person (assigned to them) and open threads. */

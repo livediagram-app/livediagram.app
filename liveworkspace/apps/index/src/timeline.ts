@@ -16,7 +16,9 @@
 import {
   APP_EVENTS_MAX,
   APP_TIMELINE_EVENT_TYPES,
+  TIMELINE_DISMISS_MAX,
   TIMELINE_LIMIT_MAX,
+  TIMELINE_NEW_CAP,
   TIMELINE_PAGE,
   isApp,
   type App,
@@ -140,8 +142,11 @@ export function buildTimelineQuery(person: Person, spec: TimelineSpec): BuiltQue
   const args: unknown[] = [person.id];
   const ranges: string[] = [];
   for (const scope of scopesOf(person)) {
-    let sql = 'SELECT event_id FROM timeline_event_scopes WHERE scope = ?';
-    args.push(scope);
+    // An event the person removed from their Timeline is skipped in the range; removals are rare, so the
+    // range reads at most limit + 1 rows plus those.
+    let sql = `SELECT event_id FROM timeline_event_scopes s WHERE scope = ?
+      AND NOT EXISTS (SELECT 1 FROM timeline_dismissals d WHERE d.person_id = ? AND d.event_id = s.event_id)`;
+    args.push(scope, person.id);
     if (spec.app) {
       sql += ' AND app = ?';
       args.push(spec.app);
@@ -232,9 +237,60 @@ export async function listTimeline(
   };
 }
 
-// GET /timeline, POST /timeline/seen.
+/**
+ * How many events someone else did since the person last looked, across their scopes (one app's, or every
+ * app's), counted to at most TIMELINE_NEW_CAP + 1: each scope reads at most that many rows of its index range,
+ * newest first, back to the last look. Never looked: 0.
+ */
+export function timelineNewQuery(person: Person, app: App | null, now: number): BuiltQuery {
+  const take = TIMELINE_NEW_CAP + 1;
+  const args: unknown[] = [person.id];
+  const ranges: string[] = [];
+  for (const scope of scopesOf(person)) {
+    let sql = `SELECT s.event_id FROM timeline_event_scopes s JOIN timeline_events e ON e.id = s.event_id
+      WHERE s.scope = ?`;
+    args.push(scope);
+    if (app) {
+      sql += ' AND s.app = ?';
+      args.push(app);
+    }
+    sql += ` AND s.occurred_at > (SELECT seen FROM st) AND s.occurred_at <= ?
+      AND (e.actor_id IS NULL OR e.actor_id != ?)
+      AND NOT EXISTS (SELECT 1 FROM timeline_dismissals d WHERE d.person_id = ? AND d.event_id = s.event_id)
+      ORDER BY s.occurred_at DESC LIMIT ?`;
+    args.push(now, person.id, person.id, take);
+    ranges.push(`SELECT event_id FROM (${sql})`);
+  }
+  args.push(take);
+  const sql = `WITH st AS (SELECT last_seen_at AS seen FROM timeline_scope_state WHERE person_id = ?)
+    SELECT COUNT(*) AS n FROM (SELECT DISTINCT event_id FROM (${ranges.join(' UNION ALL ')}) LIMIT ?)`;
+  return { sql, args };
+}
+
+// GET /timeline, POST /timeline/seen, POST /timeline/dismiss.
 export async function handleTimeline(ctx: PersonContext): Promise<Response> {
   const { request, env, url, segments, person } = ctx;
+  if (segments.length === 2 && segments[1] === 'dismiss' && request.method === 'POST') {
+    const body = (await request.json().catch(() => null)) as { ids?: unknown } | null;
+    const ids = body?.ids;
+    if (
+      !Array.isArray(ids) ||
+      ids.length === 0 ||
+      ids.length > TIMELINE_DISMISS_MAX ||
+      !ids.every((id) => typeof id === 'string' && id.length > 0 && id.length <= 300)
+    ) {
+      return badRequest('invalid_events');
+    }
+    const unique = [...new Set(ids as string[])];
+    // Only events that exist: an id from nowhere adds nothing.
+    await env.INDEX_DB.prepare(
+      `INSERT OR IGNORE INTO timeline_dismissals (person_id, event_id, created_at)
+       SELECT ?, id, ? FROM timeline_events WHERE id IN (SELECT value FROM json_each(?))`,
+    )
+      .bind(person.id, Date.now(), JSON.stringify(unique))
+      .run();
+    return noContent();
+  }
   if (segments.length === 2 && segments[1] === 'seen' && request.method === 'POST') {
     const seenAt = Date.now();
     await env.INDEX_DB.prepare(

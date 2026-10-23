@@ -63,6 +63,12 @@ export type TimelineProps = {
   onStackExpand?: () => void;
   /** Events after this are New; null (never looked) marks none. */
   lastSeenAt?: number | null;
+  /** A card's own controls (its ⋯ menu, a rename in place), by event. */
+  cardSlots?: (event: TimelineEvent) => TimelineCardSlots | undefined;
+  /** A stack's ⋯ menu, by stack. */
+  stackSlots?: (stack: TimelineStack) => TimelineCardSlots | undefined;
+  /** The event a link named (#event=<id>): its card is ringed, its stack held open, and it is scrolled to once. */
+  focusEventId?: string | null;
 };
 
 export function Timeline({
@@ -79,6 +85,9 @@ export function Timeline({
   onLoadMore,
   onStackExpand,
   lastSeenAt = null,
+  cardSlots,
+  stackSlots,
+  focusEventId = null,
 }: TimelineProps) {
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
   // Read once: which events are New must not shift while the reader looks.
@@ -106,6 +115,43 @@ export function Timeline({
       return next;
     });
   }, []);
+
+  // Scroll to the linked card once it is drawn; after paint, so the stack holding it has opened first.
+  const scrolledTo = useRef<string | null>(null);
+  const focusShown = Boolean(
+    focusEventId && controls.mode === 'list' && visibleEvents.some((e) => e.id === focusEventId),
+  );
+  // The stack holding it opens once, and folds again like any other.
+  const focusStack = useMemo(() => {
+    if (!focusShown) return null;
+    for (const group of groups) {
+      for (const stack of buildStacks(group.events)) {
+        if (stack.events.length > 1 && stack.events.some((e) => e.id === focusEventId)) {
+          return stack.key;
+        }
+      }
+    }
+    return null;
+  }, [focusShown, focusEventId, groups]);
+  useEffect(() => {
+    if (focusStack && scrolledTo.current !== focusEventId) {
+      setExpanded((prev) => (prev.has(focusStack) ? prev : new Set(prev).add(focusStack)));
+    }
+  }, [focusStack, focusEventId]);
+  useEffect(() => {
+    if (!focusShown || !focusEventId || scrolledTo.current === focusEventId) return;
+    if (focusStack && !expanded.has(focusStack)) return;
+    const frame = requestAnimationFrame(() => {
+      // The event's own card, not a stack's front card, which wears its first member's id.
+      const card = [
+        ...document.querySelectorAll(`[data-timeline-event="${CSS.escape(focusEventId)}"]`),
+      ].find((el) => !el.closest('[data-timeline-stack]'));
+      if (!card) return;
+      scrolledTo.current = focusEventId;
+      card.scrollIntoView?.({ block: 'center', behavior: 'smooth' });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [focusShown, focusEventId, focusStack, expanded]);
 
   useEffect(() => {
     if (!pulseDay) return;
@@ -160,6 +206,7 @@ export function Timeline({
           label={group.label}
           year={group.year}
           isToday={group.isToday}
+          isFuture={group.isFuture}
           dateKey={group.key}
           pulse={pulseDay === group.key}
         >
@@ -172,7 +219,13 @@ export function Timeline({
                   className="lw-tl-fan-out"
                   style={{ animationDelay: `${cascadeDelayMs(fanIndex.get(event.id) ?? 0)}ms` }}
                 >
-                  <TimelineCard event={event} isNew={isNew(event)} rendered={render(event)} />
+                  <TimelineCard
+                    event={event}
+                    isNew={isNew(event)}
+                    rendered={render(event)}
+                    slots={cardSlots?.(event)}
+                    focused={event.id === focusEventId}
+                  />
                 </div>
               );
             }
@@ -186,6 +239,7 @@ export function Timeline({
                   expanded={open}
                   isNew={stack.events.some(isNew)}
                   stagger={cascadeDelayMs(fanIndex.get(stack.events[0]!.id) ?? 0)}
+                  slots={stackSlots?.(stack)}
                   onToggle={() => {
                     toggleStack(stack.key);
                     if (!open) onStackExpand?.();
@@ -198,7 +252,13 @@ export function Timeline({
                         className="lw-tl-fan-out"
                         style={{ animationDelay: `${cascadeDelayMs(index)}ms` }}
                       >
-                        <TimelineCard event={event} isNew={isNew(event)} rendered={render(event)} />
+                        <TimelineCard
+                          event={event}
+                          isNew={isNew(event)}
+                          rendered={render(event)}
+                          slots={cardSlots?.(event)}
+                          focused={event.id === focusEventId}
+                        />
                       </div>
                     ))
                   : null}
@@ -274,6 +334,7 @@ function TimelineGroup({
   label,
   year,
   isToday,
+  isFuture,
   dateKey: key,
   pulse,
   children,
@@ -281,6 +342,7 @@ function TimelineGroup({
   label: string;
   year: string;
   isToday: boolean;
+  isFuture?: boolean;
   dateKey: string;
   pulse?: boolean;
   children: ReactNode;
@@ -295,10 +357,16 @@ function TimelineGroup({
       <div className="flex flex-shrink-0 flex-col items-center">
         <div
           className={`mt-3 h-2.5 w-2.5 flex-shrink-0 rounded-full ${
-            isToday ? 'bg-brand-500 ring-2 ring-brand-500/30' : 'bg-slate-300 dark:bg-slate-600'
+            isToday
+              ? 'bg-brand-500 ring-2 ring-brand-500/30'
+              : isFuture
+                ? 'bg-violet-400/60'
+                : 'bg-slate-300 dark:bg-slate-600'
           }`}
         />
-        <div className="w-px flex-1 bg-slate-200 dark:bg-slate-700" />
+        <div
+          className={`w-px flex-1 ${isFuture ? 'bg-violet-400/25' : 'bg-slate-200 dark:bg-slate-700'}`}
+        />
       </div>
       <div className="min-w-0 flex-1 pb-4">
         <div className="mb-2 flex items-baseline gap-2 pt-1">
@@ -307,6 +375,11 @@ function TimelineGroup({
               className={`inline-flex h-[19px] items-center rounded px-1.5 text-[10px] font-semibold uppercase tracking-wide ${SOLID_BRAND}`}
             >
               Today
+            </span>
+          ) : null}
+          {isFuture ? (
+            <span className="inline-flex h-[19px] items-center rounded bg-violet-500/15 px-1.5 text-[10px] font-semibold uppercase tracking-wide text-violet-700 dark:text-violet-300">
+              Upcoming
             </span>
           ) : null}
           <h2
@@ -463,6 +536,7 @@ function StackedCard({
   expanded = false,
   isNew,
   stagger = 0,
+  slots,
 }: {
   stack: TimelineStack;
   render: TimelineRenderer;
@@ -470,6 +544,7 @@ function StackedCard({
   expanded?: boolean;
   isNew?: boolean;
   stagger?: number;
+  slots?: TimelineCardSlots;
 }) {
   const anchor = stack.events[0]!;
   const rendered = render(anchor);
@@ -494,6 +569,7 @@ function StackedCard({
           event={anchor}
           isNew={isNew}
           focused={expanded}
+          slots={slots}
           rendered={{
             ...rendered,
             // The kind's own glyph: the anchor's (sparkles for an AI-made plan, say) would speak for the whole run.

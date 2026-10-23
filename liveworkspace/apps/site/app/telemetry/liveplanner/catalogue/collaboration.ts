@@ -258,6 +258,21 @@ export const TIMELINE_STACKS_EXPANDED = chart(
   { types: ['Stack'] },
 );
 
+export const TIMELINE_MENUS_OPENED = chart(
+  'Timeline',
+  'Opened',
+  'Timeline Menus Opened',
+  'A card’s or a run’s ⋯ menu opened on the Timeline.',
+  { types: ['Menu'] },
+);
+
+export const TIMELINE_REMOVED = chart(
+  'Timeline',
+  'Removed',
+  'Removed from Timeline',
+  'An entry (Entry) or a whole run (Stack) taken off someone’s own Timeline.',
+);
+
 export const TIMELINE_LOADS = chart(
   'Timeline',
   'Loaded',
@@ -283,10 +298,12 @@ export const TIMELINE: MetricStack = {
   stack: true,
   title: 'Timeline',
   blurb:
-    'What happened to people’s plans, read in the Explorer: cards opened, runs expanded, filters and pages.',
+    'What happened to people’s plans, read in the Explorer: cards opened, runs expanded, menus, removals, filters and pages.',
   members: [
     TIMELINE_CARDS_OPENED,
     TIMELINE_STACKS_EXPANDED,
+    TIMELINE_MENUS_OPENED,
+    TIMELINE_REMOVED,
     TIMELINE_LOADS,
     TIMELINE_VIEW_SWITCHED,
     TIMELINE_FILTERED,

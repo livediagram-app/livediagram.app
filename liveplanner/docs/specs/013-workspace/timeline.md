@@ -47,12 +47,24 @@ the This app / All filter (the Explorer's one filter, remembered per app in this
   run on the loaded pages; with nothing matching, the feed says so and offers Show More and Clear filters.
 - Calendar: a month grid with a dot per tone on each day; a dot opens that day's cards.
 - A plan in the Trash opens the Trash.
+- Each card has a ⋯ menu (also on a right-click): the plan's own menu (Open, Rename, Duplicate, Change Folder,
+  Share, Favourites, Delete; Restore and Delete Forever for one in the Trash) with **Remove from Timeline** before
+  the destructive rows. Rename edits the name in place on the card whose menu started it, and every card of that
+  plan follows. A stack's ⋯ menu has Remove from Timeline for its whole run. Removing takes the cards off at once
+  and puts them back, with a message, if the index refuses (`POST /timeline/dismiss`); it is the reader's own
+  Timeline only.
+- A link ending `#event=<id>` rings that card, holds its stack open and scrolls to it, looking up to five pages
+  back for it.
+- A day still to come sits above Today in a violet **Upcoming** band. The index takes a report from at most five
+  minutes ahead, so this is for events written as scheduled.
+- The sidebar's Timeline row counts events by someone else since the last look ("99+" past 99), from the Inbox
+  read the sidebar already makes (`timelineNew`). Opening the Timeline clears it once the visit is marked seen.
 
 ## 4. Telemetry
 
 `Timeline·Changed` (`Cards` is reported as `List`, and `Calendar`), `Timeline·Selected` (a category switched off,
-`Everyone`, `Others`), `Timeline·Loaded` (`More`, `Retry`) and `Timeline·Opened` (`Card`, `Stack`), through the
-Explorer's `onTimeline` prop (`app/explorer/ExplorerShell.tsx`).
+`Everyone`, `Others`), `Timeline·Loaded` (`More`, `Retry`), `Timeline·Opened` (`Card`, `Stack`, `Menu`) and
+`Timeline·Removed` (`Entry`, `Stack`), through the Explorer's `onTimeline` prop (`app/explorer/ExplorerShell.tsx`).
 
 ## 5. Performance
 
@@ -60,7 +72,13 @@ One indexed statement per page (by scope, then app, then time; at most `limit + 
 the index with 10,000 events of the reader's among 100,000: 14.7 ms for every app, 2.2 ms for one app. The view
 renders one page at a time; working out the days and stacks of 10,000 loaded events stays under the test's budget.
 
+Removed events are skipped inside each scope's range by their primary key, so a page past 1,000 removed events
+reads in 1.0 ms. The sidebar count rides in the Inbox's batch, no request of its own, bounded at 100 rows per
+scope: 1.4 ms with the Inbox on the same 100,000 events. Remove from Timeline sends at most 100 ids a call. The menu
+is one per pane, drawn only while open.
+
 ## 6. Not carried over
 
-livediagram's card ⋯ menus and inline rename on a card, deep links to one event, a plan's own History panel, a
-team's Team Activity, and the unread count on the sidebar's row.
+A plan's own History panel and a team's Team Activity: the index can answer both (by item, by `t:<team>`), and they
+belong with the editor and the Teams pages. livediagram's token-expiry warnings, the scheduled events its Upcoming
+band showed, are accounts' (by email) rather than the Timeline's.

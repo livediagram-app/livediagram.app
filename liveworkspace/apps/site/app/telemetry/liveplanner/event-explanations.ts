@@ -564,8 +564,7 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone opened the Explorer's old Activity address, which now opens the Inbox. The Inbox was once called Activity; its visits count under /explorer/inbox.",
   'Page|View|/explorer/inbox': "Someone navigated to the Explorer's Inbox.",
   'Page|View|/explorer/shared': "Someone navigated to the Explorer's Shared with You section.",
-  'Page|View|/explorer/timeline':
-    "Someone navigated to the Explorer's Timeline. No longer recorded: the Explorer's Timeline was removed.",
+  'Page|View|/explorer/timeline': "Someone navigated to the Explorer's Timeline.",
   'Page|View|/features/foundations':
     "Someone visited the marketing site's Foundations features page.",
   'Page|View|/features/simple': "Someone visited the marketing site's Simple features page.",
@@ -882,10 +881,12 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Timeline|Opened|Card': "Someone opened a plan from its card on the Explorer's Timeline.",
   'Timeline|Opened|Stack':
     "Someone dealt out a run of one kind of change on the Explorer's Timeline to see each one.",
+  'Timeline|Opened|Menu':
+    "Someone opened the ⋯ menu of a card or a run on the Explorer's Timeline, by its button or a right-click.",
   'Timeline|Removed|Entry':
-    "Someone removed a single entry from their Timeline feed. No longer recorded: the Explorer's Timeline was removed.",
+    "Someone removed a single entry from their own Timeline, from its card's ⋯ menu. Nobody else's Timeline changes.",
   'Timeline|Removed|Stack':
-    "Someone removed every entry in a collapsed run from their Timeline feed at once, from its ⋯ menu. No longer recorded: the Explorer's Timeline was removed.",
+    "Someone removed every entry in a run from their own Timeline at once, from the run's ⋯ menu.",
   'Trash|Opened|Settings': 'Someone opened the Trash from Settings, under Account.',
   'Token|Created|MCP':
     'An AI tool was connected to the account over MCP, which creates an API token for it to use.',
@@ -2270,7 +2271,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Timeline|Loaded':
     "The Explorer's Timeline loaded more (More), or retried after a failed load (Retry).",
   'Timeline|Opened':
-    'Someone opened a plan from its Timeline card (Card), or dealt out a run of one kind of change (Stack).',
+    'Someone opened a plan from its Timeline card (Card), dealt out a run of one kind of change (Stack), or opened a card’s ⋯ menu (Menu).',
   'Trash|Opened': 'Someone opened the Trash, where deleted projects wait for 30 days.',
   'Plan|Added':
     'Someone made an item on a Plan board (its type is the value), or placed a Plan card (Card).',

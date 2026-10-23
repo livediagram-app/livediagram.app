@@ -35,6 +35,6 @@ export type RenderThumbnail = (item: Item, size: 'row' | 'card') => ReactNode;
 /** What the Timeline reports, for the host's telemetry: a mode or filter changed (`Changed`, `Selected`), a page
  *  read (`Loaded`: More or Retry), a card or a stack opened (`Opened`). `type` is always a fixed token. */
 export type TimelineTelemetry = (
-  action: 'Changed' | 'Selected' | 'Loaded' | 'Opened',
+  action: 'Changed' | 'Selected' | 'Loaded' | 'Opened' | 'Removed',
   type: string,
 ) => void;

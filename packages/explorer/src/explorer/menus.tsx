@@ -5,6 +5,7 @@
 // an item reached through a link can be opened, copied, starred and dismissed, and renamed when
 // the link edits; one in the Trash can be restored or deleted for good.
 
+import type { ReactNode } from 'react';
 import type { Folder } from '@liveworkspace/index-client';
 import type { ShownItem } from '../data/overlay';
 import { MenuActionRow, MenuGroupSeparator, MenuHeader, PortalMenu } from '../ui/Menu';
@@ -32,10 +33,13 @@ export function ItemMenu({
   item,
   anchor,
   onClose,
+  extra,
 }: {
   item: ShownItem;
   anchor: HTMLElement | null;
   onClose: () => void;
+  /** Rows a surface adds before the destructive ones (the Timeline's Remove from Timeline). */
+  extra?: ReactNode;
 }) {
   const { actions, openItem, setRenamingId, openDialog, navigate, kind } = useExplorer();
   const run = (fn: () => void) => () => {
@@ -54,6 +58,7 @@ export function ItemMenu({
           icon={<RestoreIcon />}
           onClick={run(() => void actions.restore(item))}
         />
+        {extra}
         <MenuGroupSeparator />
         <MenuActionRow
           label="Delete Forever"
@@ -109,6 +114,7 @@ export function ItemMenu({
           onClick={run(() => navigate({ kind: 'team', id: item.teamId! }))}
         />
       ) : null}
+      {extra}
       <MenuGroupSeparator />
       {item.sharedVia ? (
         <MenuActionRow

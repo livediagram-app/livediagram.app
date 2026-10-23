@@ -32,6 +32,17 @@ describe('the Timeline’s rules', () => {
     expect(groups[0]!.label).toBe('Wed, 21 Oct');
   });
 
+  it('puts a day still to come in the Upcoming band, never today or before', () => {
+    const groups = groupByDay(
+      [makeEvent(1, { occurredAt: noon + 2 * DAY }), makeEvent(2, { occurredAt: noon })],
+      noon,
+    );
+    expect(groups.map((g) => [g.key, g.isFuture, g.isToday])).toEqual([
+      ['2026-10-23', true, false],
+      ['2026-10-21', false, true],
+    ]);
+  });
+
   it('folds a day’s runs of one kind into a stack, and names it for every member', () => {
     const events = [
       makeEvent(1, { type: 'renamed' }),

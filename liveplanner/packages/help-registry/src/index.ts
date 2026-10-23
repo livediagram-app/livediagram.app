@@ -952,7 +952,7 @@ export const articles: Article[] = [
     description:
       'What happened to your plans and your teams’, day by day: made, updated, renamed, moved, trashed and shared.',
     keywords:
-      'timeline history what happened changes feed log audit who changed edited renamed moved trashed restored shared favourited calendar filter new since last visit team activity every app all apps plan plans',
+      'timeline history what happened changes feed log audit who changed edited renamed moved trashed restored shared favourited calendar filter new since last visit unread count remove from timeline hide menu rename upcoming link team activity every app all apps plan plans',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Activity',

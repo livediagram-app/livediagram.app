@@ -50,6 +50,8 @@ export type TimelineDayGroup = {
   label: string;
   year: string;
   isToday: boolean;
+  // After today: a scheduled event, drawn in the Upcoming band above Today.
+  isFuture: boolean;
   events: TimelineEvent[];
 };
 
@@ -86,7 +88,8 @@ export function groupByDay(events: readonly TimelineEvent[], now = Date.now()): 
     const key = dateKey(event.occurredAt);
     let group = byKey.get(key);
     if (!group) {
-      group = { key, ...formatDay(key), isToday: key === today, events: [] };
+      // YYYY-MM-DD compares as text in date order.
+      group = { key, ...formatDay(key), isToday: key === today, isFuture: key > today, events: [] };
       byKey.set(key, group);
     }
     group.events.push(event);

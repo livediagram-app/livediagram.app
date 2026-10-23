@@ -313,7 +313,10 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     ],
   },
   'apps/editor/app/explorer/ExplorerShell.tsx Timeline·Loaded': { values: ['More', 'Retry'] },
-  'apps/editor/app/explorer/ExplorerShell.tsx Timeline·Opened': { values: ['Card', 'Stack'] },
+  'apps/editor/app/explorer/ExplorerShell.tsx Timeline·Opened': {
+    values: ['Card', 'Stack', 'Menu'],
+  },
+  'apps/editor/app/explorer/ExplorerShell.tsx Timeline·Removed': { values: ['Entry', 'Stack'] },
   'apps/editor/app/new/page.tsx Theme·Changed': { values: THEMES, open: THEME_WHY },
   'apps/editor/app/new/page.tsx Template·Used': { values: TEMPLATES, open: TEMPLATE_WHY },
   // The landing funnel (docs/specs/019-marketing/landing-funnel.md): the CTA a /new visit came from.

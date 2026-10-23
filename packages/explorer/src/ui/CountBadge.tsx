@@ -4,7 +4,7 @@ export function CountBadge({
   className,
   tone = 'neutral',
 }: {
-  count: number;
+  count: number | string;
   className?: string;
   tone?: 'neutral' | 'brand';
 }) {

@@ -199,6 +199,7 @@ function personalStatements(db: Db, person: string): (() => D1PreparedStatement)
         )
         .bind(ANONYMISED_PERSON, person, CHUNK),
     byPerson('timeline_scope_state'),
+    byPerson('timeline_dismissals'),
     byPerson('shared_with'),
     byPerson('placement_defaults'),
     anonymiseAction('assignee_id'),

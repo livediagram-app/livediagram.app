@@ -6,7 +6,7 @@
 // host app's brand colour. The tree reads the folder store, so it costs no request of its own.
 
 import { useCallback, useEffect, useId, useState, type DragEvent, type ReactNode } from 'react';
-import type { Folder } from '@liveworkspace/index-client';
+import { TIMELINE_NEW_CAP, type Folder } from '@liveworkspace/index-client';
 import {
   TRASH_BIN,
   TRASH_OVER,
@@ -106,6 +106,8 @@ export function SidebarRow({
   onActivate,
   depth,
   badge,
+  badgeLabel,
+  badgeTone = 'neutral',
   expandable = false,
   expanded = false,
   onToggleExpand,
@@ -122,7 +124,11 @@ export function SidebarRow({
   selected: boolean;
   onActivate: () => void;
   depth: number;
-  badge?: number;
+  // A count, or its capped words ("99+").
+  badge?: number | string;
+  // What the count means, for a screen reader ("3 new"); the count alone when unset.
+  badgeLabel?: string;
+  badgeTone?: 'neutral' | 'brand';
   expandable?: boolean;
   expanded?: boolean;
   onToggleExpand?: () => void;
@@ -146,7 +152,7 @@ export function SidebarRow({
   return (
     <li
       role="treeitem"
-      aria-label={badge !== undefined ? `${label} (${badge})` : label}
+      aria-label={badge !== undefined ? `${label} (${badgeLabel ?? badge})` : label}
       aria-level={depth + 1}
       aria-selected={selected}
       aria-expanded={expandable ? expanded : undefined}
@@ -197,7 +203,9 @@ export function SidebarRow({
             </span>
           )}
           <span className="min-w-0 flex-1 truncate">{shownLabel ?? label}</span>
-          {badge !== undefined ? <CountBadge count={badge} className="ml-1" /> : null}
+          {badge !== undefined ? (
+            <CountBadge count={badge} tone={badgeTone} className="ml-1" />
+          ) : null}
         </button>
       </div>
       {expandable && expanded && children ? <ul role="group">{children}</ul> : null}
@@ -325,6 +333,17 @@ function TrashRow() {
   );
 }
 
+/** The Timeline row's count: what others did since the person last looked, capped by the index at 99. */
+export function timelineBadge(count: number | undefined): {
+  badge?: string;
+  badgeLabel?: string;
+  badgeTone?: 'brand';
+} {
+  if (!count) return {};
+  const shown = count > TIMELINE_NEW_CAP ? `${TIMELINE_NEW_CAP}+` : String(count);
+  return { badge: shown, badgeLabel: `${shown} new`, badgeTone: 'brand' };
+}
+
 export function Sidebar() {
   const { view, navigate, folders, teams, inbox, viewerId, manageTeamsUrl } = useExplorer();
   const { expanded, toggle } = useExpanded(view);
@@ -357,6 +376,7 @@ export function Sidebar() {
           selected={view.kind === 'timeline'}
           onActivate={() => navigate({ kind: 'timeline' })}
           depth={0}
+          {...timelineBadge(inbox.data?.timelineNew)}
         />
         <SidebarRow
           icon={<ShareIcon />}

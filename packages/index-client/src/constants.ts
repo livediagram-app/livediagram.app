@@ -110,6 +110,10 @@ export const TIMELINE_PAGE = 30;
 export const TIMELINE_LIMIT_MAX = 100;
 // Events one app report may carry.
 export const APP_EVENTS_MAX = 100;
+// Remove from Timeline: at most this many events in one call (a day's stack at most).
+export const TIMELINE_DISMISS_MAX = 100;
+// The sidebar's Timeline count stops here and reads "99+".
+export const TIMELINE_NEW_CAP = 99;
 
 // Share links, as the apps have them today: a lifetime chosen when made, `never` by default.
 export const SHARE_LINK_EXPIRIES = ['never', 'week', 'month', 'sixMonths'] as const;

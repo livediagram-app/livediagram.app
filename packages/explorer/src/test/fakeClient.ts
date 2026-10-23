@@ -96,7 +96,7 @@ export function createFakeIndex(
   const fail = new Map<string, IndexError>();
   const hold = new Set<string>();
   let waiting: (() => void)[] = [];
-  const inbox: InboxResponse = { threads: [], actions: [] };
+  const inbox: InboxResponse = { threads: [], actions: [], timelineNew: 0 };
 
   function answer<T>(
     method: string,
@@ -236,6 +236,7 @@ export function createFakeIndex(
       answer('inbox', [query], options.signal, () => ({
         threads: inbox.threads.filter((t) => !query.app || t.app === query.app),
         actions: inbox.actions.filter((a) => !query.app || a.app === query.app),
+        timelineNew: inbox.timelineNew,
       })),
     timeline: (query: TimelineQuery = {}, options: { signal?: AbortSignal } = {}) =>
       answer('timeline', [query], options.signal, () => {
@@ -244,6 +245,13 @@ export function createFakeIndex(
           .sort((a, b) => b.occurredAt - a.occurredAt);
         const { slice, next } = page(mine, query.limit ?? 30, query.cursor);
         return { events: slice, nextCursor: next, seenAt: timelineSeen.at };
+      }),
+    dismissTimelineEvents: (ids: string[]) =>
+      answer('dismissTimelineEvents', [ids], undefined, () => {
+        for (const id of ids) {
+          const at = events.findIndex((e) => e.id === id);
+          if (at >= 0) events.splice(at, 1);
+        }
       }),
     markTimelineSeen: () =>
       answer('markTimelineSeen', [], undefined, () => {
