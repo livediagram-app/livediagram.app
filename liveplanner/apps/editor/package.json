@@ -40,6 +40,7 @@
     "@liveplanner/ui": "workspace:*",
     "@liveworkspace/explorer": "workspace:*",
     "@liveworkspace/index-client": "workspace:*",
+    "@liveworkspace/settings": "workspace:*",
     "@liveworkspace/sites": "workspace:*",
     "next": "^16.4.1",
     "prosemirror-commands": "^1.7.2",

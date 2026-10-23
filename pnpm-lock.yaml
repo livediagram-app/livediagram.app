@@ -4029,6 +4029,9 @@ importers:
       '@liveworkspace/index-client':
         specifier: workspace:*
         version: link:../../../packages/index-client
+      '@liveworkspace/settings':
+        specifier: workspace:*
+        version: link:../../../packages/settings
       '@liveworkspace/sites':
         specifier: workspace:*
         version: link:../../../packages/sites
