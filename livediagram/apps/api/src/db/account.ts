@@ -295,7 +295,7 @@ export async function migrateOwnerId(
 // account's; one whose name the account already uses takes the next free " (n)" first, so the account never holds
 // two libraries of one name. The cap applies to creates, never to this move. The guest's store is emptied once the
 // account's holds them.
-async function migrateShapeLibraries(env: Env, fromOwnerId: string, toOwnerId: string) {
+export async function migrateShapeLibraries(env: Env, fromOwnerId: string, toOwnerId: string) {
   const guest = personStore(env, fromOwnerId);
   const records = await guest.exportShapeLibraries();
   if (records.length === 0) return;

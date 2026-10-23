@@ -42,7 +42,7 @@ function fakeEnv(opts: {
     PERSON_STORE: testPersonStores(),
     WORKBENCH: memoryWorkbenchNamespace<'document'>({
       credentials: () => null,
-      closeRoom: async () => {},
+      closeRoom: async () => false,
     }),
   } as unknown as Env;
 }

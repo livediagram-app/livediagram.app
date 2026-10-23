@@ -7,6 +7,8 @@ import { handleInternalItems as handle } from '@liveworkspace/index-app';
 import { imageGrantCopyStatements } from '../db/image-grants';
 import { documentRoom } from '../document-client';
 import { copyImageIds } from '../document-room/document-content';
+import { migrateShapeLibraries } from '../db/account';
+import { mediaClient, mediaOwner } from '../media';
 import { personStore } from '../person-client';
 import { workbenchStore } from '../workbench-store';
 import type { Env } from '../types';
@@ -38,6 +40,22 @@ export function handleInternalItems(
       personClosed: async (personId) => {
         await workbenchStore(env, personId).close();
         await personStore(env, personId).purge();
+      },
+      // A guest who became an account (accounts merged them; the index tells each app): what livediagram keeps for
+      // the guest beside their canvases becomes the account's. Their images in liveworkspace's media service, and
+      // their shape libraries, adopted by the account's store (by id, so a retry moves nothing twice). A guest has
+      // no workbench (it needs a token).
+      personMerged: async (guestId, userId) => {
+        const media = mediaClient(env);
+        if (media) {
+          const merged = await media.mergeOwner(
+            await mediaOwner(guestId),
+            await mediaOwner(userId),
+          );
+          if (!merged.ok)
+            throw new Error(`media: merging the guest's images answered ${merged.status}`);
+        }
+        await migrateShapeLibraries(env, guestId, userId);
       },
     },
   });

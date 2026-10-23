@@ -421,16 +421,18 @@ traffic; an idle document costs nothing, and sockets still hibernate.
 
 ### Internal (One Explorer index)
 
-Server-to-server doors into a document's content for liveworkspace's index (`routes/internal-items.ts`). The caller
+Server-to-server doors into a document's content, and into what this app keeps for a person, for liveworkspace's index (`routes/internal-items.ts`). The caller
 sends `Authorization: Bearer <INDEX_KEY>`, compared in constant time; a wrong key is 401, and without `INDEX_KEY`
 set every path is a plain 404. Each is one RPC to the document's object; only a copy touches D1, for the image
 grants it carries.
 
-| Method | Path                                    | Body         | Answer                                                                                                                |
-| ------ | --------------------------------------- | ------------ | --------------------------------------------------------------------------------------------------------------------- |
-| POST   | `/api/internal/items/:from/copy-to/:to` | `{ tabId? }` | 201 `{ ok, tabs }`; 404 when `:from` (or its tab) holds nothing; 409 `copy_conflict` when `:to` already holds content |
-| DELETE | `/api/internal/items/:id`               |              | 200 `{ ok }`: every session ends and everything the document stored goes (`deleteAll`)                                |
-| POST   | `/api/internal/items/:id/revoke`        | `{ codes }`  | 200 `{ ok, closed }`: the sessions those share codes admitted end now (at most 500 codes)                             |
+| Method | Path                                    | Body         | Answer                                                                                                                                                                                      |
+| ------ | --------------------------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| POST   | `/api/internal/items/:from/copy-to/:to` | `{ tabId? }` | 201 `{ ok, tabs }`; 404 when `:from` (or its tab) holds nothing; 409 `copy_conflict` when `:to` already holds content                                                                       |
+| DELETE | `/api/internal/items/:id`               |              | 200 `{ ok }`: every session ends and everything the document stored goes (`deleteAll`)                                                                                                      |
+| POST   | `/api/internal/items/:id/revoke`        | `{ codes }`  | 200 `{ ok, closed }`: the sessions those share codes admitted end now (at most 500 codes)                                                                                                   |
+| POST   | `/api/internal/people/:id/purge`        | `{ items }`  | 200 `{ ok }`: an account closed, wherever it was closed. The person's workbench store closes (every pairing ends, its rooms closed) and their own store (`PERSON_STORE`) is emptied         |
+| POST   | `/api/internal/people/:guest/merge`     | `{ into }`   | 200 `{ ok }`: a guest became an account. Their images in the media service and their shape libraries (by id, so a retry moves nothing twice) become the account's; a guest has no workbench |
 
 ## Realtime model
 
