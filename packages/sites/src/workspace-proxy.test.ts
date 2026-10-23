@@ -9,6 +9,13 @@ import {
   WORKSPACE_PROXY_HEADER,
   workspaceRouteFor,
   workspaceRoutes,
+  ACCOUNTS_ROUTE,
+  FLOW_COOKIE_MAX_AGE_SECONDS,
+  flowCookieOut,
+  flowCookiesIn,
+  SIGN_IN_PAGE_ROUTES,
+  SITE_ASSETS_ROUTE,
+  WORKSPACE_CLIENT_IP_HEADER,
 } from './workspace-proxy';
 import { APP_NAMES } from './index';
 
@@ -37,9 +44,12 @@ describe('which paths go to liveworkspace', () => {
     expect(workspaceRouteFor(path, ROUTES)).toBe(route);
   });
 
-  it('is the Explorer and its account reads for an app switched on, nothing for one switched off', () => {
+  it('is the Explorer and its account reads for an app switched on, and signing in for every app', () => {
+    const signIn = [...SIGN_IN_PAGE_ROUTES, ACCOUNTS_ROUTE, SITE_ASSETS_ROUTE];
     for (const app of APP_NAMES) {
-      expect(workspaceRoutes(app)).toEqual(EXPLORER_ON_APP_ORIGIN[app] ? ROUTES : []);
+      expect(workspaceRoutes(app)).toEqual(
+        EXPLORER_ON_APP_ORIGIN[app] ? [...ROUTES, ...signIn] : signIn,
+      );
     }
     expect(EXPLORER_ON_APP_ORIGIN.liveplanner).toBe(true);
     expect(EXPLORER_ON_APP_ORIGIN.livedesign).toBe(true);
@@ -187,5 +197,126 @@ describe('no loops', () => {
     });
     expect(res?.status).toBe(508);
     expect(doFetch).not.toHaveBeenCalled();
+  });
+});
+
+describe("signing in on the app's own address", () => {
+  const routes = workspaceRoutes('livediagram');
+
+  it.each([
+    ['https://livediagram.app/sign-in?client_id=c&sig=s', '/sign-in'],
+    ['https://livediagram.app/sign-up?client_id=c&prompt=create&sig=s', '/sign-up'],
+    ['https://livediagram.app/consent?sig=s', '/consent'],
+    ['https://livediagram.app/api/workspace/auth/sign-in/email-otp', '/api/workspace/auth'],
+    // The app's own sign-in hand-off page, and its own auth routes, stay the app's.
+    ['https://livediagram.app/sign-in/?redirect_url=%2Fexplorer', null],
+    ['https://livediagram.app/sign-in', null],
+    ['https://livediagram.app/sign-in.txt', null],
+    ['https://livediagram.app/api/auth/callback?code=c&state=s', null],
+    ['https://livediagram.app/get-started/', null],
+    ['https://livediagram.app/_liveworkspace/_next/static/chunks/a.js', '/_liveworkspace'],
+    ['https://livediagram.app/_next/static/chunks/a.js', null],
+  ])('%s', (address, prefix) => {
+    const url = new URL(address);
+    expect(workspaceRouteFor(url.pathname, routes, url)?.prefix ?? null).toBe(prefix);
+  });
+
+  it("sends liveworkspace only the sign-in's own cookies, under their own names", async () => {
+    const doFetch = upstream(new Response('{}'));
+    await routeToWorkspace(
+      new Request('https://livediagram.app/api/workspace/auth/get-session', {
+        headers: {
+          Cookie:
+            'ld_refresh=secret; lw_flow.__Secure-better-auth.session_token=tok.sig; ld_signed_in=1',
+        },
+      }),
+      { app: 'livediagram', fetch: doFetch },
+    );
+    const sent = doFetch.mock.calls[0]![0] as Request;
+    expect(sent.url).toBe('https://liveworkspace.app/api/auth/get-session');
+    expect(sent.headers.get('Cookie')).toBe('__Secure-better-auth.session_token=tok.sig');
+
+    await routeToWorkspace(
+      new Request('https://livediagram.app/api/workspace/auth/get-session', {
+        headers: { Cookie: 'ld_refresh=secret' },
+      }),
+      { app: 'livediagram', fetch: doFetch },
+    );
+    expect((doFetch.mock.calls[1]![0] as Request).headers.has('Cookie')).toBe(false);
+  });
+
+  it("keeps liveworkspace's session on the app's address only on the auth path, and briefly", async () => {
+    const headers = new Headers();
+    headers.append(
+      'Set-Cookie',
+      '__Secure-better-auth.session_token=tok.sig; Max-Age=604800; Path=/; HttpOnly; Secure; SameSite=Lax',
+    );
+    headers.append('Set-Cookie', 'lw_guest=g; Domain=liveworkspace.app; Path=/; Max-Age=0');
+    const doFetch = upstream(new Response('{}', { headers }));
+    const response = await routeToWorkspace(
+      new Request('https://livediagram.app/api/workspace/auth/sign-in/email-otp', {
+        method: 'POST',
+      }),
+      { app: 'livediagram', fetch: doFetch },
+    )!;
+    expect(response.headers.getSetCookie()).toEqual([
+      `lw_flow.__Secure-better-auth.session_token=tok.sig; Path=/api/workspace/auth; Max-Age=${FLOW_COOKIE_MAX_AGE_SECONDS}; HttpOnly; Secure; SameSite=Lax`,
+      'lw_flow.lw_guest=; Path=/api/workspace/auth; Max-Age=0; HttpOnly; Secure; SameSite=Lax',
+    ]);
+  });
+
+  it('clears a cookie liveworkspace expires by date, and refuses names that could smuggle attributes', () => {
+    expect(
+      flowCookieOut('a=b; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Path=/', '/api/workspace/auth'),
+    ).toMatch(/^lw_flow\.a=; .*Max-Age=0;/);
+    expect(flowCookieOut('a=b; Max-Age=60', '/p')).toContain('Max-Age=60;');
+    expect(flowCookieOut('=b', '/p')).toBeNull();
+    expect(flowCookieOut('a b=c', '/p')).toBeNull();
+    expect(flowCookiesIn('x=1; y=2')).toBeNull();
+    expect(flowCookiesIn(null)).toBeNull();
+  });
+
+  it("names the visitor's network, and never one the visitor made up", async () => {
+    const doFetch = upstream(new Response('{}'));
+    await routeToWorkspace(
+      new Request('https://livediagram.app/api/workspace/auth/sign-in/email-otp', {
+        headers: { 'CF-Connecting-IP': '203.0.113.9' },
+      }),
+      { app: 'livediagram', fetch: doFetch },
+    );
+    expect((doFetch.mock.calls[0]![0] as Request).headers.get(WORKSPACE_CLIENT_IP_HEADER)).toBe(
+      '203.0.113.9',
+    );
+    await routeToWorkspace(
+      new Request('https://livediagram.app/api/workspace/auth/sign-in/email-otp', {
+        headers: { [WORKSPACE_CLIENT_IP_HEADER]: '198.51.100.1' },
+      }),
+      { app: 'livediagram', fetch: doFetch },
+    );
+    expect((doFetch.mock.calls[1]![0] as Request).headers.has(WORKSPACE_CLIENT_IP_HEADER)).toBe(
+      false,
+    );
+  });
+
+  it("passes the pages' cookies neither way", async () => {
+    const doFetch = upstream(new Response('<html>', { headers: { 'Set-Cookie': 'x=1; Path=/' } }));
+    const response = await routeToWorkspace(
+      new Request('https://livediagram.app/sign-in?sig=s', { headers: { Cookie: 'ld_refresh=r' } }),
+      { app: 'livediagram', fetch: doFetch },
+    )!;
+    expect((doFetch.mock.calls[0]![0] as Request).headers.has('Cookie')).toBe(false);
+    expect(response.headers.has('Set-Cookie')).toBe(false);
+  });
+
+  it("brings a redirect to a sign-in page back to the app's address", () => {
+    expect(locationOnApp('/sign-in?sig=s', PRODUCTION_WORKSPACE_ORIGIN, routes)).toBe(
+      '/sign-in?sig=s',
+    );
+    expect(
+      locationOnApp('https://liveworkspace.app/sign-up?sig=s', PRODUCTION_WORKSPACE_ORIGIN, routes),
+    ).toBe('/sign-up?sig=s');
+    expect(
+      locationOnApp('https://accounts.google.com/o/oauth2', PRODUCTION_WORKSPACE_ORIGIN, routes),
+    ).toBe('https://accounts.google.com/o/oauth2');
   });
 });

@@ -14,6 +14,9 @@ export const PRODUCTION_WORKSPACE_ORIGIN = 'https://liveworkspace.app';
 // Set on every request a router forwards, naming the app. A request that already carries it was forwarded once,
 // so a router that finds it refuses rather than forward again: a misconfigured origin can never loop.
 export const WORKSPACE_PROXY_HEADER = 'X-Liveworkspace-Proxy';
+// The visitor's address as the router saw it. A Worker's request to another site arrives from the Worker, so
+// liveworkspace's per-network limits (a sign-in code's) would otherwise count every app's visitors as one.
+export const WORKSPACE_CLIENT_IP_HEADER = 'X-Liveworkspace-Client-IP';
 
 // ---------- The per-app switch ------------------------------------------------------------------------------------
 // Whether the app serves liveworkspace's Explorer at its own /explorer. An app turns it on once its items are on
@@ -44,8 +47,12 @@ export type WorkspaceRoute = {
   target: string;
   // Cookies belong to the origin that set them. `drop`: the app's cookies never leave for liveworkspace, and
   // liveworkspace's never land on the app's origin. `pass`: a page whose session is meant to live on the app's
-  // origin (a proxied sign-in, say) keeps both ways.
-  cookies: 'drop' | 'pass';
+  // origin keeps both ways. `flow`: liveworkspace's cookies live on the app's origin only for the length of a
+  // sign-in, renamed (`lw_flow.<name>`), scoped to this route's path and capped at FLOW_COOKIE_MAX_AGE_SECONDS; only
+  // those go back, under their own names, and the app's own cookies never leave.
+  cookies: 'drop' | 'pass' | 'flow';
+  // Matched only when this also holds (the sign-in pages: only with an OAuth request in the query).
+  when?: (url: URL) => boolean;
 };
 
 /** The Explorer's pages and their payloads (`/explorer`, `/explorer/…`, `/explorer.txt`). Its build assets are not
@@ -65,9 +72,54 @@ export const ACCOUNT_ROUTE: WorkspaceRoute = {
   cookies: 'drop',
 };
 
-/** The routes an app's router forwards to liveworkspace.app: the Explorer's, while the app's switch is on. */
+// ---------- Signing in on the app's own address -------------------------------------------------------------------
+// (liveworkspace/docs/accounts.md "Signing in on the app's own address"). The accounts site's sign-in, registration
+// and consent pages are served under the app's address when they carry an OAuth request (the accounts Worker sends
+// them there, signed, with `sig`); without one the path stays the app's own (its sign-in hand-off page). The few
+// accounts calls those pages make go under /api/workspace/auth, beside the app's own /api/auth.
+
+const hasSignedRequest = (url: URL) => url.searchParams.has('sig');
+
+/** The pages: `/sign-in`, `/sign-up` and `/consent`, each only with a signed OAuth request in its query. */
+export const SIGN_IN_PAGE_ROUTES: readonly WorkspaceRoute[] = [
+  '/sign-in',
+  '/sign-up',
+  '/consent',
+].map((path): WorkspaceRoute => ({
+  prefix: path,
+  target: path,
+  cookies: 'drop',
+  when: hasSignedRequest,
+}));
+
+/** Where the pages reach the accounts API on an app's address. */
+export const ACCOUNTS_ON_APP_PATH = '/api/workspace/auth';
+
+/** The accounts API under it, with the sign-in's own short-lived cookies (`flow`). */
+export const ACCOUNTS_ROUTE: WorkspaceRoute = {
+  prefix: ACCOUNTS_ON_APP_PATH,
+  target: '/api/auth',
+  cookies: 'flow',
+};
+
+/** How long a sign-in's cookie may live on the app's address: the emailed code's ten minutes, and some to type it. */
+export const FLOW_COOKIE_MAX_AGE_SECONDS = 900;
+export const FLOW_COOKIE_PREFIX = 'lw_flow.';
+
+/** The site's build assets (its `assetPrefix`, liveworkspace/apps/site/next.config.ts): a path of their own, so they
+ *  never collide with the app's own `/_next`, and the same in every environment, so one build serves them all. */
+export const SITE_ASSET_PREFIX = '/_liveworkspace';
+export const SITE_ASSETS_ROUTE: WorkspaceRoute = {
+  prefix: SITE_ASSET_PREFIX,
+  target: SITE_ASSET_PREFIX,
+  cookies: 'drop',
+};
+
+/** The routes an app's router forwards to liveworkspace.app: signing in (and the site's assets) always, the
+ *  Explorer's while the app's switch is on. */
 export function workspaceRoutes(app: AppName): readonly WorkspaceRoute[] {
-  return EXPLORER_ON_APP_ORIGIN[app] ? [EXPLORER_ROUTE, ACCOUNT_ROUTE] : [];
+  const signIn = [...SIGN_IN_PAGE_ROUTES, ACCOUNTS_ROUTE, SITE_ASSETS_ROUTE];
+  return EXPLORER_ON_APP_ORIGIN[app] ? [EXPLORER_ROUTE, ACCOUNT_ROUTE, ...signIn] : signIn;
 }
 
 function underPrefix(pathname: string, prefix: string): boolean {
@@ -77,12 +129,59 @@ function underPrefix(pathname: string, prefix: string): boolean {
   return next === '/' || next === '.';
 }
 
-/** The route a path falls under, or null. */
+/** The route a path falls under, or null. `url` answers routes that also look at the query. */
 export function workspaceRouteFor(
   pathname: string,
   routes: readonly WorkspaceRoute[],
+  url?: URL,
 ): WorkspaceRoute | null {
-  return routes.find((route) => underPrefix(pathname, route.prefix)) ?? null;
+  return (
+    routes.find(
+      (route) =>
+        underPrefix(pathname, route.prefix) && (!route.when || (url ? route.when(url) : false)),
+    ) ?? null
+  );
+}
+
+// ---------- A sign-in's cookies on the app's address ----------------------------------------------------------------
+
+/** The Cookie header liveworkspace sees from a `flow` route: only the sign-in's own cookies, under their own names. */
+export function flowCookiesIn(header: string | null): string | null {
+  if (!header) return null;
+  const kept: string[] = [];
+  for (const part of header.split(';')) {
+    const pair = part.trim();
+    if (pair.startsWith(FLOW_COOKIE_PREFIX)) kept.push(pair.slice(FLOW_COOKIE_PREFIX.length));
+  }
+  return kept.length > 0 ? kept.join('; ') : null;
+}
+
+/** One Set-Cookie from liveworkspace as it lands on the app's address: renamed, on the route's path alone, HttpOnly,
+ *  Secure, SameSite=Lax and never longer than FLOW_COOKIE_MAX_AGE_SECONDS. A cookie being cleared stays cleared. */
+export function flowCookieOut(setCookie: string, path: string, now = Date.now()): string | null {
+  const [pair = '', ...attributes] = setCookie.split(';');
+  const eq = pair.indexOf('=');
+  const name = eq > 0 ? pair.slice(0, eq).trim() : '';
+  if (!name || !/^[!#$%&'*+.^_`|~0-9A-Za-z-]+$/.test(name)) return null;
+  const value = pair.slice(eq + 1).trim();
+  let maxAge: number | null = null;
+  for (const attribute of attributes) {
+    const [key = '', ...rest] = attribute.split('=');
+    const lower = key.trim().toLowerCase();
+    const raw = rest.join('=').trim();
+    if (lower === 'max-age') {
+      const n = Number.parseInt(raw, 10);
+      if (Number.isFinite(n)) maxAge = n;
+    } else if (lower === 'expires' && maxAge === null) {
+      const at = Date.parse(raw);
+      if (Number.isFinite(at)) maxAge = Math.floor((at - now) / 1000);
+    }
+  }
+  const life =
+    maxAge !== null && maxAge <= 0
+      ? 0
+      : Math.min(maxAge ?? FLOW_COOKIE_MAX_AGE_SECONDS, FLOW_COOKIE_MAX_AGE_SECONDS);
+  return `${FLOW_COOKIE_PREFIX}${name}=${life === 0 ? '' : value}; Path=${path}; Max-Age=${life}; HttpOnly; Secure; SameSite=Lax`;
 }
 
 const swapPrefix = (pathname: string, from: string, to: string) =>
@@ -138,7 +237,7 @@ export function routeToWorkspace(
 ): Promise<Response> | null {
   const url = new URL(request.url);
   const routes = options.routes ?? workspaceRoutes(options.app);
-  const route = workspaceRouteFor(url.pathname, routes);
+  const route = workspaceRouteFor(url.pathname, routes, url);
   if (!route) return null;
   return forwardToWorkspace(request, url, route, routes, options);
 }
@@ -160,7 +259,15 @@ async function forwardToWorkspace(
 
   const headers = new Headers(request.headers);
   if (route.cookies === 'drop') headers.delete('Cookie');
+  if (route.cookies === 'flow') {
+    const flow = flowCookiesIn(request.headers.get('Cookie'));
+    if (flow) headers.set('Cookie', flow);
+    else headers.delete('Cookie');
+  }
   headers.set(WORKSPACE_PROXY_HEADER, options.app);
+  const client = request.headers.get('CF-Connecting-IP');
+  if (client) headers.set(WORKSPACE_CLIENT_IP_HEADER, client);
+  else headers.delete(WORKSPACE_CLIENT_IP_HEADER);
   headers.set('X-Forwarded-Host', url.host);
   // Built from the request itself, so its method and body come along as they are.
   const forwarded = new Request(new Request(target.toString(), request), {
@@ -170,11 +277,19 @@ async function forwardToWorkspace(
   const response = await (options.fetch ?? fetch)(forwarded);
 
   const location = response.headers.get('Location');
-  const dropCookies = route.cookies === 'drop' && response.headers.has('Set-Cookie');
-  if (!location && !dropCookies) return response;
+  const rewriteCookies = route.cookies !== 'pass' && response.headers.has('Set-Cookie');
+  if (!location && !rewriteCookies) return response;
   const out = new Headers(response.headers);
   if (location) out.set('Location', locationOnApp(location, origin, routes));
-  if (dropCookies) out.delete('Set-Cookie');
+  if (rewriteCookies) {
+    out.delete('Set-Cookie');
+    if (route.cookies === 'flow') {
+      for (const set of response.headers.getSetCookie()) {
+        const scoped = flowCookieOut(set, route.prefix);
+        if (scoped) out.append('Set-Cookie', scoped);
+      }
+    }
+  }
   return new Response(response.body, {
     status: response.status,
     statusText: response.statusText,

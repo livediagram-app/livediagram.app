@@ -305,3 +305,11 @@ export function oldExplorerRedirectUrl(
   const tail = pathname.slice(OLD_EXPLORER_PATH.length).replace(/^\/+|\/+$/g, '');
   return explorerUrl(app, tail, search, hash);
 }
+
+export {
+  appOfAnyOrigin,
+  appOfOrigin,
+  appOrigins,
+  type AppEnvironment,
+  type AppSiteId,
+} from './app-origins';
