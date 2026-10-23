@@ -29,7 +29,7 @@ export default function Home() {
   const apps = listedApps();
   return (
     <>
-      <Header />
+      <Header share />
       <main>
         <section className="relative overflow-hidden">
           <div

@@ -26,9 +26,19 @@ The two APIs are Workers on more specific routes of the same origin, so the page
 ### The header
 
 Every page has the same header: the liveworkspace wordmark, with the site switcher on hover
-(the current site highlighted), links to Our Apps and Telemetry, each with its icon, the Appearance toggle (Light, Dark, System, as on the
-apps' sites; the boot script applies the choice before paint), and the account control. On a phone the wordmark, the Appearance toggle and the account control show; the footer has
-the rest.
+(the current site highlighted), links to Our Apps and Telemetry, each with its icon, and the account
+control. On a phone the wordmark and the account control show; the footer has the rest. The
+Appearance toggle is never in the header: it is on the rail.
+
+### The rail
+
+As on the apps' sites, a rail is pinned to the page's right edge (`components/SiteRail.tsx`). On the
+home page it starts with a **Share** card: X, LinkedIn, Facebook, WhatsApp and Email, as plain
+share-intent links with no SDKs or tracking, and Copy link, all for `https://liveworkspace.app`.
+Under it, on every page, is the **Appearance** card (Light, Dark, System, as on the apps' sites; the
+boot script applies the choice before paint). The content runs `max-w-7xl` (1280px), so the rail
+shows from 1400px, where there is a gutter for it. Below that it is left out: the address is
+shareable as it is, and the device's own setting applies through System.
 
 - **Signed out**: **Sign in**, which opens `/sign-in` with the page to come back to
   (`?return=/telemetry`, say). Once signed in, the page goes back there. Only a path on this site
