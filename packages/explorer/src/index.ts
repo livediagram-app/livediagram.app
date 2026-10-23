@@ -89,3 +89,17 @@ export {
 } from './data/accounts';
 export type { ViewModeTelemetry } from './explorer/extras';
 export { placeHash } from './place';
+export type {
+  GalleryHost,
+  GalleryImage,
+  GalleryUse,
+  ImportHost,
+  ImportSource,
+  ItemMenuHost,
+  ItemMenuVerb,
+  LibraryHostProps,
+  LibraryShape,
+  RenameResult,
+  ShapeLibrariesHost,
+  ShapeLibrary,
+} from './library/types';

@@ -337,6 +337,9 @@ by link are not on it.
 occurredAt, item}`, `title` being the item's name then and `item` the item as it is now. One statement
   a page: an index range of at most `limit + 1` rows per scope (by scope, then app, then time), the
   newest of those joined to their events and items.
+- `GET /timeline?item=<id>&limit=&cursor=` — one item's history (an item menu's History), the same shape:
+  only that item's events, read through the events' item index, each kept when one of the person's scopes
+  sees it and they haven't removed it.
 - `POST /timeline/seen` — `{seenAt}`: what came before is no longer new.
 - `POST /timeline/dismiss {ids}` — 204: Remove from Timeline, for this person only. 1 to
   `TIMELINE_DISMISS_MAX` (100) event ids; an id from nowhere adds nothing. A removed event leaves their

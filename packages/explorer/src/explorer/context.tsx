@@ -71,6 +71,8 @@ export type DialogTarget =
   | { kind: 'default-folders' }
   // A Trash group's: the person's own (teamId null) or a team's, named for the confirmation.
   | { kind: 'empty-trash'; teamId: string | null; title: string }
+  // History: the item's own Timeline.
+  | { kind: 'history'; item: Item }
   | null;
 
 export type ExplorerContextValue = {

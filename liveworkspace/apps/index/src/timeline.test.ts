@@ -408,3 +408,48 @@ describe('the bound', () => {
     expect(ms).toBeLessThan(250);
   });
 });
+
+describe('one item’s history', () => {
+  it('lists only that item’s events the person can see, a page at a time', async () => {
+    const next = tick();
+    const ada = await person('user_hist1');
+    const bob = await person('user_hist2');
+    const item = await makeItem(ada.auth, { title: 'Roadmap' });
+    const other = await makeItem(ada.auth, { title: 'Other' });
+    next();
+    await call(`/items/${item.id}`, { method: 'PATCH', auth: ada.auth, body: { title: 'Roadmap 2' } });
+    next();
+    await call(`/items/${other.id}`, { method: 'PATCH', auth: ada.auth, body: { title: 'Other 2' } });
+    next();
+    await call(`/items/${item.id}/share`, { method: 'POST', auth: ada.auth, body: { level: 'view' } });
+    const page = await feed(ada.auth, `item=${item.id}`);
+    expect(kinds(page.events)).toEqual(['shared Roadmap 2', 'renamed Roadmap 2', 'created Roadmap']);
+    expect(page.events.every((e) => e.itemId === item.id)).toBe(true);
+    const first = await feed(ada.auth, `item=${item.id}&limit=2`);
+    const rest = await feed(ada.auth, `item=${item.id}&limit=2&cursor=${first.nextCursor}`);
+    expect(kinds([...first.events, ...rest.events])).toEqual(kinds(page.events));
+    expect(rest.nextCursor).toBeNull();
+    // Someone else, outside the item's scope, sees none of it.
+    expect((await feed(bob.auth, `item=${item.id}`)).events).toEqual([]);
+    expect((await call('/timeline?item=', { auth: ada.auth })).status).toBe(400);
+  });
+
+  it('reads through the events’ item index, never scanning', () => {
+    const ada: Person = { id: 'user_big', kind: 'account', teams: ['team_a', 'team_b'] };
+    for (const spec of [{ limit: 30, item: 'it-1' }, { limit: 30, item: 'it-1', cursor: { at: 5, id: 'x' } }]) {
+      const { sql, args } = buildTimelineQuery(ada, spec);
+      const lines = h.db.sql
+        .prepare(`EXPLAIN QUERY PLAN ${sql}`)
+        .all(...(args as SQLInputValue[]))
+        .map((r) => String((r as { detail: string }).detail));
+      const plan = lines.join('\n');
+      expect(plan).toMatch(/timeline_events_item/);
+      expect(
+        lines.filter((l) =>
+          /\bSCAN (e|i|items|timeline_events|timeline_event_scopes|sc)\b(?! USING)/.test(l),
+        ),
+        plan,
+      ).toEqual([]);
+    }
+  });
+});

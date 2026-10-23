@@ -15,6 +15,7 @@ import { UseAsDefaultDialog } from '../defaults/UseAsDefaultDialog';
 import type { ShareUrl } from '../types';
 import type { ExplorerView } from '../views';
 import { useExplorer } from './context';
+import { HistoryDialog } from '../library/HistoryDialog';
 
 const defaultShareUrl: ShareUrl = (link) =>
   typeof window === 'undefined' ? `/s/${link.code}` : `${window.location.origin}/s/${link.code}`;
@@ -163,6 +164,8 @@ export function ExplorerDialogs() {
         />
       );
     }
+    case 'history':
+      return <HistoryDialog item={dialog.item} onClose={close} />;
     case 'use-as-default':
       return <UseAsDefaultDialog folderId={dialog.folderId} onClose={close} />;
     case 'default-folders':

@@ -30,6 +30,8 @@ import { MY_WORK, rowsAbove } from './sidebar/expansion';
 import { SIDEBAR_LABELS } from '../views';
 import { VisibilityBadge } from './badges';
 import { useExtras } from './extras';
+import { useLibraryHost } from '../library/context';
+import { HistoryIcon } from '../ui/library-icons';
 
 export function canManage(item: ShownItem): boolean {
   return item.access === 'edit' && !item.sharedVia;
@@ -49,6 +51,7 @@ export function ItemMenu({
 }) {
   const { actions, openItem, setRenamingId, openDialog, navigate, kind } = useExplorer();
   const { slideOut } = useExtras();
+  const host = useLibraryHost();
   const run = (fn: () => void) => () => {
     onClose();
     fn();
@@ -114,6 +117,13 @@ export function ItemMenu({
         icon={<StarIcon filled={item.favourite} />}
         onClick={run(() => void actions.setFavourite(item, !item.favourite))}
       />
+      {host.history && !item.sharedVia ? (
+        <MenuActionRow
+          label="History"
+          icon={<HistoryIcon />}
+          onClick={run(() => openDialog({ kind: 'history', item }))}
+        />
+      ) : null}
       {/* The label says what the click does, and so the state: no badge anywhere else. */}
       <MenuActionRow
         label={item.hiddenFromRecent ? 'Show in Recent' : 'Hide from Recent'}

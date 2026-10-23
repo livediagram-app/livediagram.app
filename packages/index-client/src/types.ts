@@ -367,6 +367,8 @@ export type TimelineEvent = {
 export type TimelineQuery = {
   // One app's events; unset, every app's.
   app?: App;
+  // One item's events only (its History).
+  item?: string;
   limit?: number;
   cursor?: string;
 };

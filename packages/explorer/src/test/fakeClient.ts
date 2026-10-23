@@ -304,6 +304,7 @@ export function createFakeIndex(
       answer('timeline', [query], options.signal, () => {
         const mine = events
           .filter((e) => !query.app || e.app === query.app)
+          .filter((e) => !query.item || e.itemId === query.item)
           .sort((a, b) => b.occurredAt - a.occurredAt);
         const { slice, next } = page(mine, query.limit ?? 30, query.cursor);
         return { events: slice, nextCursor: next, seenAt: timelineSeen.at };

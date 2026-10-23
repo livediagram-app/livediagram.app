@@ -51,6 +51,8 @@ import { ConfirmDialog } from '../ui/ConfirmDialog';
 import { InlineRenameInput } from '../ui/InlineRenameInput';
 import { EllipsisTriggerButton, useRowMenu } from '../ui/RowMenu';
 import { ToastProvider } from '../ui/Toasts';
+import { LibraryHostProvider } from '../library/context';
+import type { LibraryHostProps } from '../library/types';
 import { useLatest } from '../ui/useLatest';
 import {
   ClockIcon,
@@ -154,12 +156,27 @@ export type ExplorerPanelProps = {
   footer?: ReactNode;
   // Group titles over the rail's groups, or a hairline between them (Minimal chrome).
   divider?: 'titles' | 'lines';
-};
+} & LibraryHostProps;
 
-export function ExplorerPanel(props: ExplorerPanelProps) {
+export function ExplorerPanel({
+  gallery,
+  shapeLibraries,
+  imports,
+  itemMenu,
+  history,
+  ...props
+}: ExplorerPanelProps) {
   return (
     <ToastProvider>
-      <PanelInner {...props} />
+      <LibraryHostProvider
+        gallery={gallery}
+        shapeLibraries={shapeLibraries}
+        imports={imports}
+        itemMenu={itemMenu}
+        history={history}
+      >
+        <PanelInner {...props} />
+      </LibraryHostProvider>
     </ToastProvider>
   );
 }
@@ -189,7 +206,7 @@ function PanelInner({
   notice,
   footer,
   divider = 'titles',
-}: ExplorerPanelProps) {
+}: Omit<ExplorerPanelProps, keyof LibraryHostProps>) {
   const sheet = layout === 'sheet';
   const stacked = layout !== 'side';
   const groups = useMemo(() => panelSectionGroups(teams), [teams]);

@@ -12,6 +12,8 @@ import { CloseIcon } from '../ui/icons';
 import { useItemCount } from '../data/useItemCount';
 import type { App, IndexClient, Item } from '@liveworkspace/index-client';
 import { ToastProvider } from '../ui/Toasts';
+import { LibraryHostProvider } from '../library/context';
+import type { LibraryHostProps } from '../library/types';
 import type { ExplorerView } from '../views';
 import type { AppFilter, HeroWords } from '../words';
 import type {
@@ -143,7 +145,7 @@ export type ExplorerProps = {
   prefetchThumbnail?: (item: Item) => void;
   /** The List / Card / Details toggle switched (`UI / Toggled / <type>`), for the host's telemetry. */
   onViewToggled?: (type: ViewModeTelemetry) => void;
-};
+} & LibraryHostProps;
 
 const FILTER_KEY = (app: App) => `liveworkspace:explorer-filter:${app}`;
 const HERO_KEY = (app: App) => `liveworkspace:explorer-hero-hidden:${app}`;
@@ -201,10 +203,25 @@ function useFilter(app: App, controlled?: AppFilter, onChange?: (f: AppFilter) =
   return [controlled ?? own, set] as const;
 }
 
-export function Explorer(props: ExplorerProps) {
+export function Explorer({
+  gallery,
+  shapeLibraries,
+  imports,
+  itemMenu,
+  history,
+  ...props
+}: ExplorerProps) {
   return (
     <ToastProvider>
-      <ExplorerInner {...props} />
+      <LibraryHostProvider
+        gallery={gallery}
+        shapeLibraries={shapeLibraries}
+        imports={imports}
+        itemMenu={itemMenu}
+        history={history}
+      >
+        <ExplorerInner {...props} />
+      </LibraryHostProvider>
     </ToastProvider>
   );
 }
@@ -251,7 +268,7 @@ function ExplorerInner({
   teamManageUrl,
   prefetchThumbnail,
   onViewToggled,
-}: ExplorerProps) {
+}: Omit<ExplorerProps, keyof LibraryHostProps>) {
   const [filter, setFilter] = useFilter(app, controlledFilter, onFilterChange);
   const [heroHidden, hideHero] = useHeroHidden(app, controlledHeroHidden, onHideHero);
   const heroOnHome = view.kind === 'home' && !heroHidden;

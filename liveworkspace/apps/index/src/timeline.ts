@@ -132,12 +132,48 @@ export function moveScopeStatements(
 export const editedEventId = (itemId: string, personId: string, at: number) =>
   `ed:${itemId}:${personId}:${useDayOf(at)}`;
 
-export type TimelineSpec = { app?: App; limit: number; cursor?: { at: number; id: string } };
+export type TimelineSpec = {
+  app?: App;
+  // One item's own history (its History dialog): only its events, in whichever of the person's scopes see them.
+  item?: string;
+  limit: number;
+  cursor?: { at: number; id: string };
+};
 
 export type BuiltQuery = { sql: string; args: unknown[] };
 
+/**
+ * One page of one item's history: its events newest first, through the events' item index, each kept when one of
+ * the person's scopes sees it and they haven't removed it. An item's events are few, so this reads at most the
+ * page plus what the person can't see or removed.
+ */
+function buildItemHistoryQuery(person: Person, spec: TimelineSpec & { item: string }): BuiltQuery {
+  const scopes = scopesOf(person);
+  const args: unknown[] = [person.id, spec.item, ...scopes, person.id];
+  let cursor = '';
+  if (spec.cursor) {
+    cursor = ' AND (e.occurred_at < ? OR (e.occurred_at = ? AND e.id < ?))';
+    args.push(spec.cursor.at, spec.cursor.at, spec.cursor.id);
+  }
+  args.push(spec.limit + 1);
+  const sql = `SELECT s.seen_at, x.* FROM (
+      SELECT (SELECT last_seen_at FROM timeline_scope_state WHERE person_id = ?) AS seen_at
+    ) s LEFT JOIN (
+      SELECT e.id AS e_id, e.actor_id AS e_actor_id, e.actor_name AS e_actor_name, e.type AS e_type,
+             e.title AS e_title, e.detail AS e_detail, e.occurred_at AS e_occurred_at, ${ITEM_COLUMNS}
+      FROM timeline_events e JOIN items i ON i.id = e.item_id
+      WHERE e.item_id = ?
+        AND EXISTS (SELECT 1 FROM timeline_event_scopes sc
+                    WHERE sc.event_id = e.id AND sc.scope IN (${scopes.map(() => '?').join(', ')}))
+        AND NOT EXISTS (SELECT 1 FROM timeline_dismissals d WHERE d.person_id = ? AND d.event_id = e.id)${cursor}
+      ORDER BY e.occurred_at DESC, e.id DESC LIMIT ?
+    ) x ON 1`;
+  return { sql, args };
+}
+
 /** One page of a person's Timeline as one statement (exported for its plan test). */
 export function buildTimelineQuery(person: Person, spec: TimelineSpec): BuiltQuery {
+  if (spec.item) return buildItemHistoryQuery(person, { ...spec, item: spec.item });
   const take = spec.limit + 1;
   const args: unknown[] = [person.id];
   const ranges: string[] = [];
@@ -311,8 +347,11 @@ export async function handleTimeline(ctx: PersonContext): Promise<Response> {
   }
   const cursor = decodeCursor(url.searchParams.get('cursor'));
   if (cursor === null) return badRequest('invalid_cursor');
+  const itemParam = url.searchParams.get('item');
+  if (itemParam !== null && !isId(itemParam)) return badRequest('invalid_query');
   const page = await listTimeline(env, person, {
     app: appParam ? (appParam as App) : undefined,
+    ...(itemParam ? { item: itemParam } : {}),
     limit,
     cursor,
   });
