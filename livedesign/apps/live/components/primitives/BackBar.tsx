@@ -4,7 +4,7 @@ import { Glyph } from '@livedesign/ui';
 
 // A full-width "go back to the overview" bar. Far more obvious than a small
 // pill in the corner: the whole row is the target. One bar for every
-// two-level browse (themes, templates, the custom theme builder, folder
+// two-level browse (themes, templates, folder
 // placement) so they all read the same. When it mounts it eases into place
 // (slide-row-in: fade, a short slide, and height from zero) rather than
 // popping in and shoving the rows beneath it down.

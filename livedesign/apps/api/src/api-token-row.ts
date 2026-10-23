@@ -1,7 +1,7 @@
 import type { ApiTokenDTO } from './types';
 
 // api_tokens row as read from D1 (the baseline migration). Pulled into its own module
-// (like custom-theme-row.ts / folder-row.ts) so the snake_case -> camelCase
+// (like folder-row.ts) so the snake_case -> camelCase
 // mapping has its own test surface.
 export type ApiTokenRow = {
   id: string;

@@ -110,7 +110,7 @@ At `/explorer/tags?id=<id>`, reached from a tag's sidebar row, a chip, or a sect
 
 ## The sidebar
 
-**Tags** is the first row inside **Library** (before Image Gallery and Themes), always shown (so it
+**Tags** is the first row inside **Library** (before Image Gallery), always shown (so it
 can be found before the first tag). It opens the Tags page and expands to one child row per tag: a dot of the tag's
 colour, its name, and its design count as the badge. A tag's row opens its page. Library and Tags start collapsed
 unless a Tags page is the current view, which opens both. Tags' expanded state is the sidebar's (`more:tags`).
@@ -159,14 +159,14 @@ Both owner-wide operations ([Owner-keyed data](../015-api/api.md#owner-keyed-dat
 
 Owner-scoped, hybrid identity like the rest of the api, guests included.
 
-| Route                                        | Does                                                | Answers                                                                                    |
-| -------------------------------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| `GET /api/tags`                              | The reader's tags and their links to live designs | `{ tags: Tag[], links: { tagId, designId }[] }`                                          |
-| `POST /api/tags`                             | Make a tag: `{ id, name, colour }`                  | 201 `{ tag }`; 400 `invalid_tag`; 409 `tag_name_taken`; 409 `tag_limit`                    |
-| `PUT /api/tags/:id`                          | Rename and / or recolour: `{ name?, colour? }`      | `{ tag }`; 400 `invalid_tag`; 404 not the reader's; 409 `tag_name_taken`                   |
-| `DELETE /api/tags/:id`                       | Delete the tag (its links cascade)                  | 204; 404 not the reader's                                                                  |
+| Route                                    | Does                                              | Answers                                                                                  |
+| ---------------------------------------- | ------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `GET /api/tags`                          | The reader's tags and their links to live designs | `{ tags: Tag[], links: { tagId, designId }[] }`                                          |
+| `POST /api/tags`                         | Make a tag: `{ id, name, colour }`                | 201 `{ tag }`; 400 `invalid_tag`; 409 `tag_name_taken`; 409 `tag_limit`                  |
+| `PUT /api/tags/:id`                      | Rename and / or recolour: `{ name?, colour? }`    | `{ tag }`; 400 `invalid_tag`; 404 not the reader's; 409 `tag_name_taken`                 |
+| `DELETE /api/tags/:id`                   | Delete the tag (its links cascade)                | 204; 404 not the reader's                                                                |
 | `PUT /api/tags/:id/designs/:designId`    | Put the tag on the design, idempotently           | 204; 404 when the tag is not the reader's or the design does not exist (the foreign key) |
-| `DELETE /api/tags/:id/designs/:designId` | Take it off; silent when it was not on              | 204; 404 not the reader's tag                                                              |
+| `DELETE /api/tags/:id/designs/:designId` | Take it off; silent when it was not on            | 204; 404 not the reader's tag                                                            |
 
 `Tag` is `{ id, name, colour, createdAt }`. Like a star, putting a tag on a design checks no access to the design:
 the link is the tagger's private row, and the Tags page shows only designs the reader can already open.

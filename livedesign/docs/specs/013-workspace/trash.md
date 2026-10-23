@@ -50,7 +50,7 @@ Three things bypass it:
 
 ## Where things live
 
-| Design                               | Its Trash                         | Who may see, restore and purge           |
+| Design                                 | Its Trash                         | Who may see, restore and purge           |
 | -------------------------------------- | --------------------------------- | ---------------------------------------- |
 | Personal (guest or account)            | The owner's personal Trash        | The owner                                |
 | Team library                           | The team's Trash                  | Any joined member (the delete authority) |
@@ -80,8 +80,8 @@ deleted a moment ago shows 30 and one due within the day shows 1. A design
 past its 30 days but not yet swept reads "Removed at the next clean-up".
 
 The Trash is reached two ways, never from the account menu: the **Trash** row
-last in the Explorer sidebar's **More** group, after **Library** (Image gallery
-and Themes, the other things that hold your stuff rather than
+last in the Explorer sidebar's **More** group, after **Library** (the Image gallery,
+the other things that hold your stuff rather than
 being it; [Explorer structure](explorer-structure.md)), and
 **Settings › Account**'s **Trash** row, for everyone, guests and deployments
 without accounts included, because Settings is the one menu every deployment

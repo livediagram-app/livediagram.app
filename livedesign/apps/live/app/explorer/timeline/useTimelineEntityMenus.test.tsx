@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 // What a card's ⋯ menu offers for the thing it's about (docs/specs/013-workspace/timeline.md §2.8):
-// the Explorer's own verbs for tokens, teams, invites and themes, and
+// the Explorer's own verbs for tokens, teams and invites, and
 // only the "open the section" row when the Explorer can't resolve the
 // entity any more.
 
@@ -20,16 +20,6 @@ vi.mock('@/lib/api-client', () => ({
   apiGetTeam: vi.fn(),
   apiRemoveTeamMember: vi.fn(),
   apiUpdateTeam: vi.fn(),
-}));
-const themes = vi.hoisted(() => ({
-  themes: [{ id: 'th1', name: 'Dusk', definition: {} }],
-  updateTheme: vi.fn(),
-  deleteTheme: vi.fn(),
-  createTheme: vi.fn(),
-  loading: false,
-}));
-vi.mock('@/components/primitives/CustomThemeProvider', () => ({
-  useCustomThemes: () => themes,
 }));
 
 const revoke = vi.fn();
@@ -142,15 +132,6 @@ describe('useTimelineEntityMenus', () => {
       }),
     );
     expect(labels(answered)).toEqual(['Open Invites']);
-  });
-
-  it('offers Edit and Delete on a theme the reader still has', () => {
-    const m = menuFor();
-    const live = m(event({ sourceId: 'th1', eventType: 'theme_saved' }));
-    expect(labels(live)).toEqual(['Open Themes', 'Edit Theme', 'Delete Theme']);
-    expect(live?.subject).toBe('Dusk');
-    const gone = m(event({ sourceId: 'th1:deleted', eventType: 'theme_deleted' }));
-    expect(labels(gone)).toEqual(['Open Themes']);
   });
 
   it('opens an unresolved design, and returns nothing for a folder tombstone', () => {

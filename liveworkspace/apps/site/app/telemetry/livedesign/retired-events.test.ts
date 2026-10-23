@@ -58,6 +58,24 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('UI', 'Opened', 'SettingsAi')).toBe(false);
   });
 
+  it('retires the custom themes, not the built-in theme picks', () => {
+    expect(isRetiredEvent('Theme', 'Created', 'Custom')).toBe(true);
+    expect(isRetiredEvent('Theme', 'Changed', 'Custom')).toBe(true);
+    expect(isRetiredEvent('Theme', 'Changed', 'CustomEdited')).toBe(true);
+    expect(isRetiredEvent('Theme', 'Deleted', 'Custom')).toBe(true);
+    expect(isRetiredEvent('UI', 'Selected', 'Sidebar.Themes')).toBe(true);
+    expect(isRetiredEvent('UI', 'Selected', 'ExplorerPanel.Themes')).toBe(true);
+    expect(isRetiredEvent('Help', 'View', 'custom-themes')).toBe(true);
+    expect(isRetiredEvent('UI', 'Opened', 'themes-library')).toBe(true);
+    expect(isRetiredEvent('Error', 'Api', 'Http401.ListCustomThemes')).toBe(true);
+    expect(isRetiredEvent('Error', 'Api', 'Http413.CreateCustomTheme')).toBe(true);
+    expect(isRetiredEvent('Theme', 'Changed', 'Default')).toBe(false);
+    expect(isRetiredEvent('Theme', 'Changed', 'Unknown')).toBe(false);
+    expect(isRetiredEvent('Help', 'View', 'changing-theme')).toBe(false);
+    expect(isRetiredEvent('UI', 'Selected', 'Sidebar.ImageGallery')).toBe(false);
+    expect(isRetiredEvent('Error', 'Api', 'Http401.ListFolders')).toBe(false);
+  });
+
   it('keeps everything that still exists', () => {
     expect(isRetiredEvent('Document', 'Undone', null)).toBe(false);
     expect(isRetiredEvent('Help', 'View', 'undo')).toBe(false);

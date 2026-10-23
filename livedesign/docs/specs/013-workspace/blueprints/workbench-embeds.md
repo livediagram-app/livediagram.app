@@ -106,7 +106,6 @@ It provides these names to sibling blueprints ([CLI](../../015-api/blueprints/cl
 | `apps/live/components/chrome/TabBar.tsx`, `ChromeControls.tsx` (+ `TabBar.workbench.test.tsx`)                                                                               | `workbenchLink`: the link at the bar's right end, and no Appearance control in a workbench                                                                                                                              |
 | `apps/live/components/canvas/useCanvasChromePanels.tsx`, `CanvasChrome.tsx`, `Canvas.types.ts`, `EditorCanvasHost.tsx`                                                       | `explorerHidden`: no menu button, so no Explorer; the AI panel is absent because `aiCapable` reads false                                                                                                                |
 | `apps/live/components/dialogs/settings/settings-catalogue.ts`, `SettingsDialog.tsx`                                                                                          | `visibleCategories(aiCapable, { workbench })`: the workbench hides `ai`, `designs`, `account` (with `notifications`, nested under it), `tokens` and the Appearance choice; the dialog reads no placement defaults there |
-| `apps/live/components/primitives/CustomThemeProvider.tsx`, `apps/live/components/palette/CustomThemePicker.tsx` (+ test)                                                     | `readOnly` gives `writable: false`: the picker offers no builder, Custom category or Copy; saved themes still resolve                                                                                                   |
 | `apps/live/lib/editor-commands.ts`                                                                                                                                           | No share, delete, move, take offline, copy or AI commands in a workbench                                                                                                                                                |
 | `apps/live/components/panels/ImagePicker.tsx` (+ test), `apps/live/hooks/canvas/useEditorImages.ts` (+ test)                                                                 | `uploadOnly`: no Gallery or Search tab and no gallery read; `galleryHidden`: no recent-images read                                                                                                                      |
 | `packages/ui/src/appearance/appearance-store.ts` (+ test)                                                                                                                    | `setAppearanceOverride(appearance \| null)`: wins over the setting, never stored                                                                                                                                        |
@@ -328,7 +327,7 @@ ON t.id = s.token_id WHERE s.secret_hash = ?`. No row → `unknown`; token revok
 | Method           | Path under `/api`                                                                                                                                                            |
 | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | GET              | `capabilities`, `openapi.json`, `templates`, `templates/:kind`, `icons`, `schema`, `schema/:kind`                                                                            |
-| GET              | `participants/:owner` (the session's owner only; another id is `confined`), `preferences`, `custom-themes`                                                                   |
+| GET              | `participants/:owner` (the session's owner only; another id is `confined`), `preferences`                                                                                    |
 | POST             | `images`                                                                                                                                                                     |
 | GET              | `images/:id` (the route then requires `?d=:doc`)                                                                                                                             |
 | GET, PUT         | `designs/:doc`                                                                                                                                                               |
@@ -350,7 +349,7 @@ Everything else is `confined`, among it: `designs/:doc` `DELETE`, `copy`, `folde
 `thumbnail`, `tabs/:tabId/link`, `tabs/:tabId/presence` (an agent's door), `designs` (the library),
 `folders`, `shared`, `favourites`, `home`, `timeline`, `activity`, `trash`, `placement-defaults`, `tokens`, `teams`,
 `account`, `migrate`, `guest-id`, `ai`, `oauth`, every write to `preferences`, `participants`,
-`custom-themes`, `images/:id` `DELETE`, `images/usage`, `GET images`, and every
+`images/:id` `DELETE`, `images/usage`, `GET images`, and every
 `workbench/*` route but the one above. `/ws` carries no bearer and is decided by its ticket. `events`, `unfurl` and
 `share/:code` are called without credentials by the editor and never see `lvw_`.
 
@@ -463,7 +462,6 @@ The Surface table, every gate `workbenchMode` touches (`appChrome` is `surface =
 | Share, delete, move, take offline, copy, AI commands                                                 | `editor-commands.ts`                                         | Absent                                                    |
 | TabBar "copy to another design"                                                                      | `EditorView.tsx` `otherDesigns`                              | `[]`                                                      |
 | Image picker gallery                                                                                 | `ImagePicker.tsx`, `useEditorImages`                         | Upload only; `apiListImages` never called                 |
-| Custom theme writes (theme builder save and delete)                                                  | their hosts                                                  | Absent; reads stay                                        |
 | `useFolders`, `useFavourites`, `useTeams`, `useTeamPeople`, `useTeamLibrariesSweep`, `useShareLinks` | `useEditorState.ts`                                          | `enabled: false`                                          |
 | `useCommentMentions`, `useAssigneeOptions`                                                           | `hooks/collab`                                               | Candidates from presence only; no team read, no notify    |
 | Identity screen                                                                                      | `useEditorState.ts` `joinScreenOpen`                         | Never                                                     |
@@ -619,7 +617,7 @@ is a person's editor and every route re-gates it with the owner's identity at th
 | GET                    | `share/**` (the person opening a link shared with them)                                                                             |
 | GET, POST, PUT, DELETE | `designs/**` but `designs/:p/tabs/:p/presence`                                                                                      |
 | GET, POST, PUT, DELETE | `folders/**`, `shared/**`, `favourites/**`, `tags/**`, `home/**`, `timeline/**`, `activity/**`, `trash/**`, `placement-defaults/**` |
-| GET, POST, PUT, DELETE | `images/**`, `custom-themes/**`                                                                                                     |
+| GET, POST, PUT, DELETE | `images/**`                                                                                                                         |
 | GET                    | `teams`, `teams/:p`, `teams/:p/library`, `teams/:p/members`                                                                         |
 | DELETE                 | `workbench/sessions/current`                                                                                                        |
 

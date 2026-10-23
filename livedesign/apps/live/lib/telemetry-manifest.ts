@@ -159,8 +159,6 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Team·Shared',
   'Template·Used',
   'Theme·Changed',
-  'Theme·Created',
-  'Theme·Deleted',
   // Timeline (docs/specs/013-workspace/timeline.md): 'Opened' with type 'Landing' | 'Nav' | 'Stack'
   // — the first two measure the landing-page change, the third tells us
   // whether the stacking thresholds are right. 'Changed' carries the

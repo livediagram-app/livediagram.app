@@ -29,7 +29,7 @@ import { assignAppLocation } from '@/lib/app-location';
 const VIEW_COMPONENTS = { list: ListView, card: CardView, details: DetailsView } as const;
 
 // The browse sections that render a folders + designs grid the List/Card
-// toggle (docs/specs/006-design/design-snapshots.md) can swap. Other sections (gallery, themes,
+// toggle (docs/specs/006-design/design-snapshots.md) can swap. Other sections (gallery,
 // profile, team, invites, shared) have their own fixed layout.
 const BROWSE_KINDS = new Set([
   'recent',
@@ -53,7 +53,6 @@ const SECTION_HELP: Partial<Record<string, HelpArticleKey>> = {
   recent: 'recentDesigns',
   shared: 'sharedWithYou',
   gallery: 'imageGallery',
-  themes: 'customThemes',
   trash: 'trash',
   offline: 'offlineMode',
   folder: 'folders',
@@ -71,10 +70,6 @@ const GalleryPane = dynamic(
 const TrashSection = dynamic(() => import('./TrashSection').then((m) => m.TrashSection), {
   ssr: false,
 });
-const ThemesPane = dynamic(
-  () => import('@/components/panels/ThemesPane').then((m) => m.ThemesPane),
-  { ssr: false },
-);
 const TeamPane = dynamic(() => import('@/components/panels/TeamPane').then((m) => m.TeamPane), {
   ssr: false,
 });
@@ -243,8 +238,7 @@ export function ExplorerPane() {
     recentExcludedIds: prefs.recentExcludedIds ?? [],
     onToggleRecentExclusion: toggleRecentExclusion,
     onShowHistory: (id: string) => {
-      const row =
-        paneContent.designs.find((d) => d.id === id) ?? taggable.find((d) => d.id === id);
+      const row = paneContent.designs.find((d) => d.id === id) ?? taggable.find((d) => d.id === id);
       // Offline designs never reach the worker, so they have
       // no server history to show (docs/specs/006-design/offline-mode.md).
       if (row && !isOfflineIdSync(id)) setHistoryFor({ id, name: row.name });
@@ -376,8 +370,6 @@ export function ExplorerPane() {
         ownerId ? (
           <GalleryPane ownerId={ownerId} />
         ) : null
-      ) : selected.kind === 'themes' ? (
-        <ThemesPane />
       ) : selected.kind === 'trash' ? (
         <TrashSection />
       ) : selected.kind === 'tags' ? (

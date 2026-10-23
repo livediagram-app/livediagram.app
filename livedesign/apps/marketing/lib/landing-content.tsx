@@ -4,7 +4,6 @@ import {
   AssignedActionsArt,
   CommentsArt,
   ContentsSidebarArt,
-  CustomThemesArt,
   ExpiryArt,
   FollowAlongArt,
   FontsArt,
@@ -88,7 +87,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       'Design a logo',
       'Start from a logo layout',
       'Wireframe the screens',
-      'Your brand as a theme',
+      'Preset themes',
     ],
     items: [
       {
@@ -162,14 +161,6 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Preset themes',
         description:
           'One click recolours every page, shape and line. Every theme has a light and a dark half, and multi-colour themes tint each part a different hue.',
-      },
-      {
-        art: <CustomThemesArt />,
-        href: '/help/canvas/themes/custom-themes/',
-        group: 'Make it yours',
-        title: 'Your brand as a theme',
-        description:
-          'Build a custom theme from your brand palette, save it to your account, and reuse it across designs just like a built-in one. Edit it any time.',
       },
       {
         art: <FontsArt />,

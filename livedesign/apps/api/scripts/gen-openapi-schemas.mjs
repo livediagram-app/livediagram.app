@@ -53,8 +53,6 @@ export const ROOT_TYPES = [
   'OverviewView',
   'RefErrorBody',
   'Folder',
-  'CustomTheme',
-  'CustomThemeDefinition',
   'ShareLink',
   'ShareLinkExpiry',
   'ShareRole',

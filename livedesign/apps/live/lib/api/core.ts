@@ -3,14 +3,7 @@
 // shared DELETE shape, and the module-level token / share-password
 // state. The per-domain call collections (designs, tabs, share, …)
 // import from here; callers go through the lib/api-client.ts barrel.
-import type {
-  ApiToken,
-  CustomTheme,
-  LiveDoc,
-  Folder,
-  ShareLink,
-  ShareRole,
-} from '@livedesign/api-schema';
+import type { ApiToken, LiveDoc, Folder, ShareLink, ShareRole } from '@livedesign/api-schema';
 import {
   BUILD_ID_HEADER,
   DESIGN_FORMAT_HEADER,
@@ -139,8 +132,6 @@ function isTimelinePath(url: string): boolean {
 // below are the editor-only glue for `expectOk` to destructure.
 export type FolderResponse = { folder: Folder };
 export type FoldersResponse = { folders: Folder[] };
-export type CustomThemeResponse = { theme: CustomTheme };
-export type CustomThemesResponse = { themes: CustomTheme[] };
 export type TokensResponse = { tokens: ApiToken[] };
 // POST /api/tokens returns the one-time plaintext secret alongside the new
 // token's public metadata (the secret is never retrievable again).

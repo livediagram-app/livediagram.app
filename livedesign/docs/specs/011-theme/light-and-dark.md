@@ -27,8 +27,6 @@ does too, so the editor never asks anyone to switch mode to suit a tab.
   white reads on it; any other short label (Solid's white on a mid accent, the Border tier's accent on white) is walked
   away from its fill. A preset that already read is unchanged. The shared walk lives in
   `packages/design/src/readable-colour.ts`; `packages/design/src/theme-presets.test.ts` checks every preset.
-- **Custom themes** derive their other half the same way. A viewer who cannot resolve someone else's custom theme
-  ([Custom themes](custom-themes.md)) sees it as stored.
 
 ## What a viewer sees
 

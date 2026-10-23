@@ -64,8 +64,28 @@ const LOCATION_STEP_AND_QUICK_START_UI = new Set([
   'Toggled|TemplateModePlan',
 ]);
 
+// Custom themes (removed 2026-10-23, livedesign docs/specs/011-theme/retired-schemes.md): the builder's
+// lifecycle (created, applied, edited, deleted), the Explorer's Themes page row in the sidebar and the
+// editor's Explorer panel, the failed calls to the routes that served them, and their two help articles.
+const CUSTOM_THEME_TYPES = new Set(['Custom', 'CustomEdited']);
+const CUSTOM_THEME_UI = new Set(['Selected|Sidebar.Themes', 'Selected|ExplorerPanel.Themes']);
+const CUSTOM_THEME_HELP_IDS = new Set(['custom-themes', 'themes-library']);
+const CUSTOM_THEME_ROUTE = /(?:^|\.)(?:List|Create|Update|Delete)CustomThemes?(?:\.|$)/;
+
+function isRetiredCustomTheme(category: string, action: string, type: string | null): boolean {
+  if (category === 'Theme') {
+    return action === 'Created' || action === 'Deleted' || CUSTOM_THEME_TYPES.has(type ?? '');
+  }
+  if (category === 'UI' && CUSTOM_THEME_UI.has(`${action}|${type ?? ''}`)) return true;
+  if (category === 'Help' || (category === 'UI' && action === 'Opened')) {
+    if (CUSTOM_THEME_HELP_IDS.has(type ?? '')) return true;
+  }
+  return category === 'Error' && CUSTOM_THEME_ROUTE.test(type ?? '');
+}
+
 export function isRetiredEvent(category: string, action: string, type: string | null): boolean {
   if (category === 'Document' && action === 'Reverted') return true;
+  if (isRetiredCustomTheme(category, action, type)) return true;
   if (category === 'UI' && PALETTE_FAVOURITES_UI.has(`${action}|${type ?? ''}`)) return true;
   if (category === 'UI' && EXPERIMENTAL_SETTINGS_UI.has(`${action}|${type ?? ''}`)) return true;
   if (category === 'UI' && LOCATION_STEP_AND_QUICK_START_UI.has(`${action}|${type ?? ''}`))

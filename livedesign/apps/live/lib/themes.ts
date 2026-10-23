@@ -1,7 +1,7 @@
 // The shared theme ENGINE (catalogue, types, recolour / switch / reset / preset
 // transforms) now lives in @livedesign/design so the MCP worker (docs/specs/015-api/mcp-server.md)
 // themes tabs identically to the editor. This file re-exports it and adds
-// the LIVE-ONLY layer: custom-theme (per-owner, docs/specs/011-theme/custom-themes.md) resolution and the
+// the LIVE-ONLY layer: resolution in the viewer's appearance and the
 // new-element colour derivation that depends on it. The ~120 `@/lib/themes`
 // consumers are unchanged — every symbol they imported is still exported here.
 import {
@@ -24,7 +24,6 @@ import {
   type ThemeDefinition,
 } from '@livedesign/design';
 import { getResolvedAppearance } from '@livedesign/ui';
-import { lookupCustomTheme } from './custom-theme-registry';
 
 // Pass through the shared engine so `@/lib/themes` stays the editor's theme API.
 export {
@@ -46,8 +45,7 @@ export {
 export type { ThemeId, ThemeDefinition, ShapeColorPreset } from '@livedesign/design';
 
 // Resolve an id to its real ThemeDefinition, or `undefined` when the id names
-// nothing we know — a deleted custom theme (docs/specs/011-theme/custom-themes.md), or a custom id whose owner
-// fetch hasn't landed yet. Callers that must DISTINGUISH "unknown" from "the
+// no built-in theme (a retired theme, or any other id a stored tab carries). Callers that must DISTINGUISH "unknown" from "the
 // default theme" (setTheme's preserve-customs diff) branch on undefined; callers
 // that always need something (getTheme) fall back to the default.
 export function resolveTheme(
@@ -55,7 +53,7 @@ export function resolveTheme(
   appearance: Appearance = getResolvedAppearance(),
 ): ThemeDefinition | undefined {
   // Every scheme in the viewer's half (docs/specs/011-theme/light-and-dark.md): Default's hand-made halves, every
-  // other built-in's and every custom theme's native or derived half.
+  // other built-in's native or derived half.
   const source = themeSource(id);
   return source ? themeHalf(source, appearance) : undefined;
 }
@@ -64,8 +62,6 @@ export function resolveTheme(
  *  from. Undefined for an id that names nothing known. */
 function themeSource(id: string | undefined): ThemeDefinition | undefined {
   if (!id) return undefined;
-  const custom = lookupCustomTheme(id);
-  if (custom) return custom;
   if (id === DEFAULT_SCHEME_ID) return DEFAULT_SCHEME_LIGHT;
   return THEMES.find((t) => t.id === id);
 }
@@ -79,12 +75,8 @@ export function themeViewMap(
   return themeColourMap(themeSource(id) ?? DEFAULT_SCHEME_LIGHT, appearance);
 }
 
-// Custom themes (docs/specs/011-theme/custom-themes.md) win: the editor registers the owner's saved themes
-// into the module registry, so a `custom:<uuid>` id resolves here synchronously
-// like any built-in. Falls through to the catalogue (and ultimately the default)
-// when the id isn't a registered custom theme — including a deleted one, so a
-// design never breaks. The MCP worker, which has no registry, uses
-// getBuiltInTheme directly instead.
+// Resolves through the catalogue, and to the default theme for an id that
+// names no built-in one, so a design never breaks.
 // `appearance` defaults to the CURRENT VIEWER's (the module-level appearance
 // store, no React needed), so every one of the ~120 existing callers gets the
 // right half of Default without passing anything. Callers rendering for
@@ -138,7 +130,7 @@ export function resolveTabBackdrop(
 // tab's backdrop so a customised canvas drives the shape's fill / stroke / text;
 // (2) apply the active theme's explicit element overrides on top (the theme
 // always wins). Sticky notes keep their amber (return {}). Lives here, not in
-// the package, because it resolves the (custom-aware) active theme via getTheme.
+// the package, because it resolves the active theme in the viewer's appearance via getTheme.
 export function deriveNewBoxedColours(
   base: BoxedElement,
   tab: {

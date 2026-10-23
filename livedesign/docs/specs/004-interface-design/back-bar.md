@@ -3,8 +3,8 @@
 The **back bar** is the one way back out of a two-level browse: a full-width row naming where it goes back to, with
 the level that is open as a chip on the right (**Tab Style** then **Colours**; **All formats** then **PNG**). Every
 drill-in uses it (`apps/live/components/primitives/BackBar.tsx`), so they all read the same: the Tab Style panels,
-the Import and Export format panels, the palette's category browse, the page layouts, the custom theme
-builder, folder placement and the Explorer side panel's folders. With nowhere to go back to, it stands as a static
+the Import and Export format panels, the palette's category browse, the page layouts, folder
+placement and the Explorer side panel's folders. With nowhere to go back to, it stands as a static
 heading in the same shape ("Choose a Space").
 
 ## Always in view

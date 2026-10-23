@@ -20,7 +20,6 @@ import { commitUserPreferences } from '@/lib/user-preferences';
 import { isPowerUserMode } from '@/lib/power-user-mode';
 import { useDismissibleBanner } from '@/hooks/ui/useDismissibleBanner';
 import { useSearchShortcut } from '@/hooks/ui/useSearchShortcut';
-import { CustomThemeProvider } from '@/components/primitives/CustomThemeProvider';
 import { DesignTagsProvider } from '@/components/tags/DesignTagsProvider';
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import { ExplorerProvider, useExplorer } from './ExplorerContext';
@@ -80,16 +79,11 @@ export function ExplorerShell({ children }: { children: ReactNode }) {
   if (!state.authLoaded) return null;
   return (
     <ExplorerProvider value={state}>
-      {/* Owner-scoped custom themes (docs/specs/011-theme/custom-themes.md) so the Themes section + its
-          builder share one source of truth, keyed by the same owner id
-          the rest of the Explorer uses. */}
-      <CustomThemeProvider ownerId={state.ownerId}>
-        {/* The reader's tags (docs/specs/013-workspace/tags.md): the sidebar's Tags rows, the Tags page, every
+      {/* The reader's tags (docs/specs/013-workspace/tags.md): the sidebar's Tags rows, the Tags page, every
             row's chips and every design menu's Tags read the one list. */}
-        <DesignTagsProvider ownerId={state.ownerId}>
-          <ShellChrome>{children}</ShellChrome>
-        </DesignTagsProvider>
-      </CustomThemeProvider>
+      <DesignTagsProvider ownerId={state.ownerId}>
+        <ShellChrome>{children}</ShellChrome>
+      </DesignTagsProvider>
       {/* Moving this browser's designs in This Browser after signing in
           (docs/specs/014-identity/auth-and-guest-access.md). */}
       {surface.guestPrompts ? <LocalMovePrompt /> : null}

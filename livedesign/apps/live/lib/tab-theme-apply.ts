@@ -32,12 +32,12 @@ export function withThemeApplied(
   // so colours written by someone in the other appearance still read as the theme's, not as choices.
   const viewMap = themeViewMap(source.theme, appearance);
   const t = { ...source, elements: source.elements.map((el) => viewElementInTheme(el, viewMap)) };
-  // When the tab's PREVIOUS theme can't be resolved (a custom theme
-  // that was deleted, docs/specs/011-theme/custom-themes.md), there's no baseline to diff against:
-  // the elements carry the dead theme's colours, which match neither
+  // When the tab's PREVIOUS theme can't be resolved (an id that names
+  // no built-in theme), there's no baseline to diff against:
+  // the elements carry that theme's colours, which match neither
   // the default nor the new theme, so the preserve-customs walk would
   // treat them all as user overrides and recolour nothing — the tab
-  // reads as "stuck on the deleted theme". Hard-reset to the new
+  // reads as "stuck on the unknown theme". Hard-reset to the new
   // theme instead so picking a theme always visibly applies.
   //
   // A tab whose theme was simply NEVER SET (a fresh design, an

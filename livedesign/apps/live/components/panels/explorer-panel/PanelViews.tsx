@@ -8,7 +8,6 @@ import { useState } from 'react';
 import { dateKey, pickRenderer, timeLabel } from '@livedesign/ui';
 import { ActivityPane } from '@/components/panels/ActivityPane';
 import { GalleryPane } from '@/components/panels/GalleryPane';
-import { ThemesPane } from '@/components/panels/ThemesPane';
 import { DesignThumbnail } from '@/components/panels/DesignThumbnail';
 import { AvatarStack } from '@/components/panels/home/HomeAvatar';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
@@ -28,8 +27,6 @@ import { TIMELINE_RENDERERS } from '@/app/explorer/timeline/renderers';
 import { useTrash } from '@/hooks/persistence/useTrash';
 import { useToast } from '@/hooks/ui/useToast';
 import { explorerPathFor } from '@/app/explorer/routes';
-import { LIBRARY_PAGES } from '@/app/explorer/sidebar/library-pages';
-import { trackSidebar } from '@/app/explorer/sidebar/sidebar-telemetry';
 import { daysLeftLabel, trashGroups, trashedOnLabel, type TrashGroup } from '@/lib/trash-groups';
 import { relativeSince, useRelativeNow } from '@/lib/relative-time';
 import {
@@ -398,50 +395,7 @@ export function TrashSection({
   );
 }
 
-export type LibraryKind = (typeof LIBRARY_PAGES)[number]['kind'];
-
-// The Library's two pages as tabs over one view (Image gallery first), each drawn for the pane. The pane holds the
-// tab, so its Open Page goes to the page shown.
-export function LibrarySection({
-  ownerId,
-  tab,
-  setTab,
-}: {
-  ownerId: string;
-  tab: LibraryKind;
-  setTab: (tab: LibraryKind) => void;
-}) {
-  return (
-    <div className="flex flex-col gap-4">
-      <div
-        role="tablist"
-        aria-label="Library"
-        className="flex gap-1 rounded-lg bg-slate-100 p-1 dark:bg-slate-800"
-      >
-        {LIBRARY_PAGES.map(({ kind, label, Icon, row }) => (
-          <button
-            key={kind}
-            type="button"
-            role="tab"
-            aria-selected={tab === kind}
-            onClick={() => {
-              trackSidebar(row, 'panel');
-              setTab(kind);
-            }}
-            className={`flex h-8 flex-1 cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded-md px-2 text-xs font-medium transition pointer-coarse:h-11 ${
-              tab === kind
-                ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-slate-50'
-                : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white'
-            }`}
-          >
-            <Icon />
-            {label}
-          </button>
-        ))}
-      </div>
-      <div role="tabpanel">
-        {tab === 'gallery' ? <GalleryPane compact ownerId={ownerId} /> : <ThemesPane compact />}
-      </div>
-    </div>
-  );
+// The Library's page (the Image gallery), drawn for the pane.
+export function LibrarySection({ ownerId }: { ownerId: string }) {
+  return <GalleryPane compact ownerId={ownerId} />;
 }

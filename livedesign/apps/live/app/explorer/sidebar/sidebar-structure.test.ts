@@ -127,8 +127,8 @@ describe('sidebarDivider', () => {
 });
 
 describe('isLibraryView', () => {
-  it('recognises the two Library pages', () => {
-    expect(['gallery', 'themes'].every((k) => isLibraryView(k as never))).toBe(true);
+  it('recognises the Library page', () => {
+    expect(isLibraryView('gallery')).toBe(true);
   });
 
   it('rejects every other view', () => {
@@ -143,7 +143,7 @@ describe('initialExpanded', () => {
   });
 
   it('also opens Library when a Library page is the current view', () => {
-    expect(initialExpanded({ kind: 'themes' }).has(LIBRARY_EXPAND_KEY)).toBe(true);
+    expect(initialExpanded({ kind: 'gallery' }).has(LIBRARY_EXPAND_KEY)).toBe(true);
   });
 
   it('opens Tags when a Tags page is the current view, and only then', () => {

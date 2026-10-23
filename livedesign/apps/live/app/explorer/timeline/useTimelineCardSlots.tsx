@@ -38,7 +38,7 @@ const RENAME_INPUT_CLASS =
 // The card's subject as the menu header should name it. Renderers
 // build the on-card subject from the same snapshot keys; this is the
 // plain-string reading of it, for a menu that can't take a node.
-const SUBJECT_KEYS = ['designName', 'teamName', 'folderName', 'themeName', 'tokenName'];
+const SUBJECT_KEYS = ['designName', 'teamName', 'folderName', 'tokenName'];
 function subjectOf(event: TimelineEvent): string {
   for (const key of SUBJECT_KEYS) {
     const v = event.snapshot?.[key];
@@ -143,8 +143,8 @@ export function useTimelineCardSlots({
       const liveDoc = id ? byId.get(id) : undefined;
       if (!id || !liveDoc) {
         // Everything else: the verbs the Explorer offers that kind of
-        // thing (revoke this token, accept this invite, edit this
-        // theme…), or just the remove verb when it offers none.
+        // thing (open this team, open these images…), or just the
+        // remove verb when it offers none.
         const entity = entityMenu(event);
         return {
           subject: entity?.subject,

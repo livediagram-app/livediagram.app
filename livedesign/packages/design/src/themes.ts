@@ -1,7 +1,7 @@
 // The shared theme ENGINE (docs/specs/011-theme/multicolour-themes.md, /42, /44, /48): theme data, types, and the
 // pure element/backdrop transforms that take a resolved ThemeDefinition. Lives
 // in the package so both the editor (apps/live) and the MCP worker (apps/mcp,
-// docs/specs/015-api/mcp-server.md) theme tabs identically. Custom-theme (per-owner) resolution +
+// docs/specs/015-api/mcp-server.md) theme tabs identically. Resolution in the viewer's appearance +
 // deriveNewBoxedColours stay in apps/live/lib/themes.ts, which re-exports this.
 import { themeHalf } from './theme-halves';
 import {
@@ -89,8 +89,8 @@ export type ThemeDefinition = {
   backgroundColor: string;
   backgroundPattern: BackgroundPattern;
   patternColor: string;
-  // Pattern opacity 0..1. Absent = fully opaque; carried so a (custom)
-  // theme can ship a faded pattern (docs/specs/011-theme/custom-themes.md). Applied to the tab on theme
+  // Pattern opacity 0..1. Absent = fully opaque; carried so a theme can
+  // ship a faded pattern. Applied to the tab on theme
   // switch via switchThemeBackdrop.
   backgroundOpacity?: number;
   // Defaults for newly added boxed elements. `null` means "fall through
@@ -288,7 +288,7 @@ export function recolourElementForTheme(el: Element, theme: ThemeDefinition): El
 // A page layout's elements in its tab's theme (docs/specs/007-editor/pages-mode.md "Layouts"): a layout is built
 // without colours of its own where it means the theme's, so each colour an element leaves unset takes the tab's
 // built-in theme's, as any element made on the tab does; a colour the layout set (an accent, a callout's tint) is
-// kept. The default scheme and a custom theme (resolved only in the editor) leave it as built. On a dark page (`dark`,
+// kept. The default scheme and an id no built-in theme has leave it as built. On a dark page (`dark`,
 // pageIsDark) the theme's dark half is used, so the layout's words are light on it: an unset colour would have been
 // inked light for the page, and a colour written from the light half was dark on dark.
 export function themedForTab<E extends Element>(

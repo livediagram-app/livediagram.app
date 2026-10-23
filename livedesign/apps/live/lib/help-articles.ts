@@ -52,10 +52,8 @@ export const HELP_ARTICLES = {
   teamRolesAndInvites: 'collaboration/teams/roles-and-invites',
   // Canvas / themes
   changingTheBackground: 'canvas/the-canvas/changing-the-background',
-  themes: 'canvas/themes',
   changingTheme: 'canvas/themes/changing-theme',
   choosingAFinish: 'canvas/finish',
-  customThemes: 'canvas/themes/custom-themes',
   choosingFonts: 'canvas/text-and-fonts/choosing-fonts',
   // Links / activity / comments
   pagesTour: 'pages/pages-tour',
@@ -205,14 +203,9 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about the canvas',
     description: 'Tips for the background, patterns and the canvas behind what you draw.',
   },
-  themes: { title: 'Learn about themes', description: 'How themes restyle a whole tab.' },
   changingTheme: {
     title: 'Learn about changing the theme',
     description: "Tips for restyling a tab's colours in one go.",
-  },
-  customThemes: {
-    title: 'Learn about custom themes',
-    description: 'Build your own palette and reuse it across designs.',
   },
   choosingAFinish: {
     title: 'Learn about finishes',

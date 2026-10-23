@@ -8,7 +8,6 @@
 //   token   Open Tokens · Revoke Token (confirmed)
 //   team    Open Team · Edit Team (admin) · Leave Team · Delete Team (admin)
 //   invite  Open Invites · Accept · Decline
-//   theme   Open Themes · Edit Theme · Delete Theme (confirmed)
 //   image   Open Images
 //   design the Explorer can't resolve (a team design the sidebar
 //           hasn't loaded): Open Design
@@ -17,11 +16,11 @@
 // token, an answered invite, a team the reader has left), keeps only
 // the "open the section" row: a menu of guesses is worse than none.
 //
-// The dialogs a verb opens (Edit Team, Edit Theme) are owned here and
+// The dialog a verb opens (Edit Team) is owned here and
 // handed back as `dialogs` for the pane to render, so the cards stay
 // stateless. Confirm copy comes from the panes' own helpers, so the
-// warning a reader sees is the same one they'd see on the Tokens,
-// Themes or Team page.
+// warning a reader sees is the same one they'd see on the Tokens
+// or Team page.
 
 import { CloseIcon } from '@livedesign/ui';
 import {
@@ -30,7 +29,6 @@ import {
   ImageIcon,
   InviteIcon,
   KeyIcon,
-  PaletteIcon,
   PencilIcon,
   TeamIcon,
   TrashIcon,
@@ -40,12 +38,6 @@ import type { TimelineEvent } from '@livedesign/ui';
 import type { TeamInvite, TeamListItem } from '@livedesign/api-schema';
 import { apiDeleteTeam, apiGetTeam, apiRemoveTeamMember, apiUpdateTeam } from '@/lib/api-client';
 import { TeamFormModal } from '@/components/dialogs/TeamFormModal';
-import { useCustomThemes } from '@/components/primitives/CustomThemeProvider';
-import {
-  ThemeBuilderModal,
-  themeDeleteConfirm,
-  type CustomThemeDraft,
-} from '@/components/panels/ThemeBuilderModal';
 import { teamDeleteCopy, teamRemovalCopy } from '@/components/panels/team-removal';
 import { TOKEN_REVOKE_MESSAGE } from '@/components/dialogs/settings/token-copy';
 import { useConfirm } from '@/hooks/ui/useConfirm';
@@ -70,7 +62,6 @@ function str(snapshot: Record<string, unknown>, key: string): string | null {
 }
 
 const TOKEN_EVENTS = new Set(['token_created', 'token_expiring', 'token_revoked']);
-const THEME_EVENTS = new Set(['theme_saved', 'theme_deleted']);
 const TEAM_EVENTS = new Set([
   'team_created',
   'team_renamed',
@@ -100,15 +91,11 @@ export function useTimelineEntityMenus(): {
     declineInvite,
     refreshTeams,
   } = useExplorer();
-  const { themes, updateTheme, deleteTheme } = useCustomThemes();
   const confirm = useConfirm();
   const toast = useToast();
 
-  // The two dialogs a verb can open.
+  // The dialog a verb can open.
   const [editingTeam, setEditingTeam] = useState<TeamListItem | null>(null);
-  const [editingThemeId, setEditingThemeId] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
-  const editingTheme = editingThemeId ? themes.find((t) => t.id === editingThemeId) : undefined;
 
   // ---- tokens -----------------------------------------------------
   const revokeToken = useCallback(
@@ -199,26 +186,6 @@ export function useTimelineEntityMenus(): {
         if (teamId) go({ kind: 'team', id: teamId });
       }),
     [acceptInvite, go],
-  );
-
-  // ---- themes -----------------------------------------------------
-  const removeTheme = useCallback(
-    async (id: string, name: string) => {
-      if (await confirm(themeDeleteConfirm(name))) deleteTheme(id);
-    },
-    [confirm, deleteTheme],
-  );
-  const saveTheme = useCallback(
-    async (draft: CustomThemeDraft) => {
-      if (!editingTheme) return;
-      setSaving(true);
-      try {
-        if (await updateTheme(editingTheme.id, draft)) setEditingThemeId(null);
-      } finally {
-        setSaving(false);
-      }
-    },
-    [editingTheme, updateTheme],
   );
 
   const menuFor = useCallback<TimelineEntityMenuFor>(
@@ -317,28 +284,6 @@ export function useTimelineEntityMenus(): {
           }
           return { subject: token?.name ?? undefined, items };
         }
-        if (THEME_EVENTS.has(eventType)) {
-          const items: TimelineMenuItem[] = [
-            { label: 'Open Themes', icon: <PaletteIcon />, onClick: () => go({ kind: 'themes' }) },
-          ];
-          const theme = themes.find((t) => t.id === event.sourceId);
-          if (theme) {
-            items.push(
-              {
-                label: 'Edit Theme',
-                icon: <PencilIcon size={12} />,
-                onClick: () => setEditingThemeId(theme.id),
-              },
-              {
-                label: 'Delete Theme',
-                icon: <TrashIcon size={12} />,
-                onClick: () => void removeTheme(theme.id, theme.name),
-                destructive: true,
-              },
-            );
-          }
-          return { subject: theme?.name, items };
-        }
         if (eventType === 'image_uploaded') {
           return {
             items: [
@@ -353,19 +298,7 @@ export function useTimelineEntityMenus(): {
       }
       return null;
     },
-    [
-      invites,
-      teams,
-      tokens.list,
-      themes,
-      go,
-      accept,
-      declineInvite,
-      leaveTeam,
-      deleteTeam,
-      revokeToken,
-      removeTheme,
-    ],
+    [invites, teams, tokens.list, go, accept, declineInvite, leaveTeam, deleteTeam, revokeToken],
   );
 
   const dialogs = useMemo(
@@ -383,18 +316,9 @@ export function useTimelineEntityMenus(): {
           onSubmit={(values) => void submitTeamEdit(values)}
           onCancel={() => setEditingTeam(null)}
         />
-        {editingTheme ? (
-          <ThemeBuilderModal
-            title="Edit Theme"
-            initial={{ name: editingTheme.name, definition: editingTheme.definition }}
-            saving={saving}
-            onSave={(draft) => void saveTheme(draft)}
-            onClose={() => setEditingThemeId(null)}
-          />
-        ) : null}
       </>
     ),
-    [editingTeam, editingTheme, saving, submitTeamEdit, saveTheme],
+    [editingTeam, submitTeamEdit],
   );
 
   return { menuFor, dialogs };

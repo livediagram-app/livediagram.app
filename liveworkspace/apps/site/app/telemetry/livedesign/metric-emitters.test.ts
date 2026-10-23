@@ -12,12 +12,7 @@ import { GROUPS as TIMINGS } from './TimingsView';
 import { GROUPS as PAGES } from './PagesView';
 import { CONNECTIONS_GROUPS, TEAMWORK_GROUPS } from './FeaturesView';
 import { TOURS_GROUPS } from './PagesHelpView';
-import {
-  CUSTOM_THEME_METRICS,
-  CUSTOM_THEME_TYPES,
-  NON_PATTERN_CANVAS_TYPES,
-  THEME_ALIASES,
-} from './LookAndFeelView';
+import { NON_PATTERN_CANVAS_TYPES, THEME_ALIASES } from './LookAndFeelView';
 import * as CATALOGUE from './metric-catalogue';
 import {
   groupMetrics,
@@ -174,15 +169,8 @@ describe('hard-coded ranking types', () => {
       (t) =>
         ['Canvas styles exclusion', 'Canvas', 'Changed', t] as [string, string, string, string],
     ),
-    ...[...CUSTOM_THEME_TYPES].map(
-      (t) => ['Themes exclusion', 'Theme', 'Changed', t] as [string, string, string, string],
-    ),
     ...Object.values(THEME_ALIASES).map(
       (t) => ['Themes alias target', 'Theme', 'Changed', t] as [string, string, string, string],
-    ),
-    ...CUSTOM_THEME_METRICS.map(
-      (m) =>
-        ['Custom theme builder', m.category, m.action, m.type] as [string, string, string, string],
     ),
     ...RECOVERY_TYPES.map(
       (t) => ['Exceptions recovery', 'Error', 'Client', t] as [string, string, string, string],

@@ -13,10 +13,10 @@ Scope, by file:
 | ----------------------------------------------------- | ---------------------------------------------------------------------------------------- |
 | `packages/tailwind-config/theme.css`                  | `.dark` surface + Steel tokens                                                           |
 | `packages/ui/src/brand-classes.ts`                    | `SOLID_BRAND_DARK`, `SOLID_BRAND_DARK_CONTROL`                                           |
-| `packages/ui/src/Brand.tsx`                           | Wordmark accent `dark:text-rose-400`                                                    |
-| `packages/design/src/canvas-colors.ts`              | Dark canvas + pattern constants                                                          |
-| `packages/design/src/colors.ts`                     | `DARK_INK`, `defaultArrowLabelColor`                                                     |
-| `packages/design/src/svg-render-arrows.ts`          | Export caption colour through `defaultArrowLabelColor`                                   |
+| `packages/ui/src/Brand.tsx`                           | Wordmark accent `dark:text-rose-400`                                                     |
+| `packages/design/src/canvas-colors.ts`                | Dark canvas + pattern constants                                                          |
+| `packages/design/src/colors.ts`                       | `DARK_INK`, `defaultArrowLabelColor`                                                     |
+| `packages/design/src/svg-render-arrows.ts`            | Export caption colour through `defaultArrowLabelColor`                                   |
 | `packages/template-previews/src/preview-art-tile.css` | Editor `.dark` tile rule landing on the canvas colour                                    |
 | `apps/live/components/canvas/ArrowView.tsx`           | Canvas caption colour through `defaultArrowLabelColor`                                   |
 | `apps/live/components/canvas/element-variant.ts`      | `DARK_SELECTION_RING` on every single selection                                          |
@@ -36,7 +36,7 @@ Scope, by file:
 | Dark surfaces       | `--color-slate-800/900/950` under `.dark`                | The blue-slate chrome                                         |
 | Solid brand fill    | `SOLID_BRAND_DARK`                                       | `dark:bg-brand-600`, a static fill under white text           |
 | Solid brand control | `SOLID_BRAND_DARK_CONTROL`                               | `dark:bg-brand-600 dark:hover:bg-brand-700`, a clickable fill |
-| Wordmark accent     | `dark:text-rose-400` on the "live" span                 | The one vivid note in dark chrome                             |
+| Wordmark accent     | `dark:text-rose-400` on the "live" span                  | The one vivid note in dark chrome                             |
 | Dark canvas         | `DARK_CANVAS_BACKGROUND_COLOR`                           | `#0d121a`                                                     |
 | Dark pattern        | `DARK_CANVAS_PATTERN_COLOR`                              | `#1c2735`, the opaque blend of `#2e4057` at 45 %              |
 | Dark ink            | `DARK_INK` (`fill`, `stroke`, `text`, `annotationFill`)  | Unpainted element colours on dark paper                       |
@@ -130,7 +130,7 @@ mode (their backdrop). Tabs holding the previous dark half are migrated on read;
 ## Security and trust
 
 No trust boundary: static tokens and pure colour functions. `editorAccentCss` and `identityVars` interpolate colours
-that are either built-in or validated hex (custom themes validate on save); the ramp and shade functions only emit
+that are either built-in or validated hex; the ramp and shade functions only emit
 `#rrggbb`, and a custom property value cannot break out of its declaration in React's style serialisation.
 
 ## Performance and limits
@@ -162,7 +162,7 @@ border-radius: inherit; pointer-events: none }`.
 | White on `brand-600` `#993a4a`           | 4.56       | 4.5 text     |
 | White on `brand-700` `#842f3e` (hover)   | 5.80       | 4.5 text     |
 | `brand-400` `#e08f9d` on `slate-900`     | 9.63       | 4.5 text     |
-| Rose `#fb7185` on `slate-950`           | 11.50      | 4.5 text     |
+| Rose `#fb7185` on `slate-950`            | 11.50      | 4.5 text     |
 | `slate-400` on `slate-900` / `slate-800` | 6.4 / 6.1  | 4.5 text     |
 | White on identity 700 steps              | 5.0 to 7.9 | 4.5 text     |
 | Element text white on `#141b26`          | 17.29      | 4.5 text     |
@@ -190,7 +190,7 @@ The Charcoal migration logs as its blueprint states.
 
 | Rule                                                         | Test                                                                       |
 | ------------------------------------------------------------ | -------------------------------------------------------------------------- |
-| Dark canvas, blended pattern, ink values                     | `packages/design/src/canvas-ink.test.ts`, `default-scheme.test.ts`       |
+| Dark canvas, blended pattern, ink values                     | `packages/design/src/canvas-ink.test.ts`, `default-scheme.test.ts`         |
 | Stroke >= 3:1 on canvas and fill; text >= 4.5:1              | `canvas-ink.test.ts`, "dark ink contrast"                                  |
 | Caption colour (B3, I4)                                      | `canvas-ink.test.ts`, "defaultArrowLabelColor"                             |
 | Export caption uses the same colour                          | `svg-render.test.ts`, "caption colour on dark paper"                       |
@@ -220,7 +220,7 @@ The Charcoal migration logs as its blueprint states.
 | `DARK_ARROW_LABEL_COLOR`       | `#94a3b8`                                | slate-400                                    | >= 4.5:1 on the canvas             |
 | Surfaces 950 / 900 / 800       | `#0b0f16` / `#131b26` / `#16202e`        | Operator decision 2                          | Dark, ordered                      |
 | Steel ramp                     | spec table                               | Operator decision 3                          | White on 600 >= 4.5:1              |
-| Wordmark accent                | `#fb7185`                                | Tailwind rose-400                           | >= 4.5:1 on slate-950              |
+| Wordmark accent                | `#fb7185`                                | Tailwind rose-400                            | >= 4.5:1 on slate-950              |
 | `PARTICIPANT_DEEP`             | each colour's Tailwind 700 step          | Operator choice (identity avatars, option B) | White >= 4.5:1                     |
 | `SHADE_STEP`                   | `0.05`                                   | D20                                          | 0.01 to 0.1                        |
 | Tile plate / veil              | `#f3faff`                                | Measured: maps to `#0d1318` under the filter | Within 2 of the canvas per channel |

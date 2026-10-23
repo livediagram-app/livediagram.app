@@ -18,7 +18,6 @@ import { OpeningScreen } from '@/components/chrome/OpeningScreen';
 // Static, unlike the other status cards: it must render offline (docs/specs/007-editor/load-recovery.md
 // "Offline"); its recovery tools are the lazy part.
 import { LoadErrorCard } from '@/components/chrome/LoadErrorCard';
-import { CustomThemeProvider } from '@/components/primitives/CustomThemeProvider';
 import { DesignTagsProvider } from '@/components/tags/DesignTagsProvider';
 import { LocalMovePrompt } from '@/components/dialogs/LocalMovePrompt';
 import { EditorContext } from './EditorContext';
@@ -248,24 +247,14 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
 
   return (
     <EditorContext.Provider value={state}>
-      {/* Owner-scoped custom themes (docs/specs/011-theme/custom-themes.md): keyed by the current
-          user's id (account or guest self id) so the theme picker /
-          builder share one source of truth and getTheme resolves saved
-          themes referenced by this design's tabs. */}
-      <CustomThemeProvider
-        ownerId={ownerId}
-        readOnly={workbenchMode}
-        onThemeDeleted={state.resetTabsUsingTheme}
-      >
-        {/* Who the comment composers can @-mention (docs/specs/012-collaboration/comment-mentions.md). */}
-        <MentionContext.Provider value={state.commentMentions}>
-          {/* The reader's tags for the Explorer panel's rows and menus (docs/specs/013-workspace/tags.md), loaded
+      {/* Who the comment composers can @-mention (docs/specs/012-collaboration/comment-mentions.md). */}
+      <MentionContext.Provider value={state.commentMentions}>
+        {/* The reader's tags for the Explorer panel's rows and menus (docs/specs/013-workspace/tags.md), loaded
               the first time one of them shows, so opening a design costs no extra request. */}
-          <DesignTagsProvider ownerId={ownerId} lazy>
-            <EditorView />
-          </DesignTagsProvider>
-        </MentionContext.Provider>
-      </CustomThemeProvider>
+        <DesignTagsProvider ownerId={ownerId} lazy>
+          <EditorView />
+        </DesignTagsProvider>
+      </MentionContext.Provider>
       {/* Moving this browser's designs in This Browser after signing in
           (docs/specs/014-identity/auth-and-guest-access.md); never inside someone else's page. */}
       {appChrome ? <LocalMovePrompt /> : null}

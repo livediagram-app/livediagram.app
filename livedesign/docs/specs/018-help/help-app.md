@@ -62,7 +62,7 @@ The feature categories group the feature guides by area. **Pages is the first**:
 
 - **Pages** — the pages a design is made of, in two groups: **Basics** (Working with Pages, exporting and presenting pages, the Pages tour, tab windows) and **Kinds of Page** (logo pages, wireframe pages and photo pages).
 - **User Interface** — the panels, toolbar, context menus, the Map, zoom and tab bars, quick controls and power user mode.
-- **Explorer** — the design library: The Explorer overview, Home (the Timeline), Recent, Shared With Me, My Work and folders, Team Spaces, Image Gallery, and Saved Themes, one guide per sidebar row.
+- **Explorer** — the design library: The Explorer overview, Home (the Timeline), Recent, Shared With Me, My Work and folders, Team Spaces and Image Gallery, one guide per sidebar row.
 - **Selection Modes** — one guide per tool-picker mode: Select, Hand, Format Painter, Laser, Spotlight, Isometric.
 - **Palette** — the palette strip: one guide per palette category (Shapes and arrows, Text, Media and images, Data elements, Concepts, Components, Devices, Icons, Stickers) and one per palette setting.
 - **Canvas** — the canvas around the pages, selecting many elements, links and link cards, themes, templates, text and fonts, layers, animations, Undo and Redo.
@@ -175,8 +175,7 @@ set — a padlock is `locking`, a chain is `links`, a picture is `images` — so
 draw the password field, the deadline, the page the design sits inside, and the
 refresh. And Changing the Theme is the plainest collision of the lot: a wheel of hues
 rendered as the `pie-chart` glyph exactly, while `themes` already owned the paint
-palette and `custom-themes` owned swatches-with-a-plus, so what was left to draw
-was the browsing itself.
+palette, so what was left to draw was the browsing itself.
 
 Two mechanical checks earn their keep alongside the render, because both catch
 things the eye skims: every path must parse (a leading moveto, seven-parameter

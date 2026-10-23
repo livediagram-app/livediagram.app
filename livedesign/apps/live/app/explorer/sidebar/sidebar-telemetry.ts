@@ -17,7 +17,6 @@ export type SidebarTelemetryRow =
   | 'ThisBrowser'
   | 'Library'
   | 'ImageGallery'
-  | 'Themes'
   | 'Tags'
   | 'Tag'
   | 'Trash'

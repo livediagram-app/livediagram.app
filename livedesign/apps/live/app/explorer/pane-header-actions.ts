@@ -14,7 +14,6 @@ const NO_NEW_DESIGN: ReadonlySet<Kind> = new Set<Kind>([
   'inbox',
   'shared',
   'gallery',
-  'themes',
   'trash',
   'team',
   'invites',

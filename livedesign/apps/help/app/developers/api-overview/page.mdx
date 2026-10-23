@@ -15,7 +15,7 @@ export const metadata = helpMetadata({
   categorySlug="developers"
 >
 
-Everything the livedesign editor does, it does by calling a REST API. That API is open to you too: with an [API token](/help/account-and-data/api-tokens/) your own scripts and integrations can read, create, and update designs, tabs, folders, images, themes and more, exactly as the app does. Account administration (teams, tokens, deleting the account) stays with the signed-in app.
+Everything the livedesign editor does, it does by calling a REST API. That API is open to you too: with an [API token](/help/account-and-data/api-tokens/) your own scripts and integrations can read, create, and update designs, tabs, folders, images and more, exactly as the app does. Account administration (teams, tokens, deleting the account) stays with the signed-in app.
 
 If you want to connect an AI assistant rather than write code, you usually want the [MCP server](/help/account-and-data/connect-ai-mcp/) instead. It wraps this API in tools Claude and other MCP clients can call directly. To work from a terminal or a coding agent without writing requests yourself, use [the livedesign CLI](/help/developers/cli/).
 
@@ -50,7 +50,7 @@ The token-callable surface mirrors the app:
 - **Pages**: add, change, lay out and move a tab's logo, wireframe and photo pages.
 - **Sharing**: create, list, extend and revoke share links, and set or remove a share password.
 - **Trash**: list what you can restore, restore it, or delete it for good.
-- **Images and themes**: upload and reference images, and manage your saved custom themes.
+- **Images**: upload and reference images.
 
 [Working with Designs](/help/developers/working-with-designs/) walks through the common calls with copy-pasteable examples. [Edit Operations Reference](/help/developers/working-with-designs/edit-operations/) lists the changeset vocabulary, [Images, Pages and More](/help/developers/working-with-designs/images-and-pages/) covers uploads and pages, and [Comments and Presence for Agents](/help/developers/agent-comments-presence/) shows how an agent talks to people and shows what it is doing.
 

@@ -1027,64 +1027,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [200, 401, 403, 503],
   },
 
-  // ---- Custom themes ----
-  {
-    method: 'GET',
-    path: '/custom-themes',
-    segment: 'custom-themes',
-    tag: 'Themes',
-    summary: "List the caller's saved custom themes.",
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    responseSchema: listOf('themes', 'CustomTheme'),
-    statuses: [200, 401],
-  },
-  {
-    method: 'POST',
-    path: '/custom-themes',
-    segment: 'custom-themes',
-    tag: 'Themes',
-    summary: 'Create a custom theme.',
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    requestSchema: {
-      type: 'object',
-      properties: {
-        id: { type: 'string' },
-        name: { type: 'string' },
-        definition: ref('CustomThemeDefinition'),
-      },
-      required: ['id', 'name', 'definition'],
-    },
-    responseSchema: wrap('theme', 'CustomTheme'),
-    statuses: [201, 400, 401, 413],
-  },
-  {
-    method: 'PUT',
-    path: '/custom-themes/{id}',
-    segment: 'custom-themes',
-    tag: 'Themes',
-    summary: "Update a custom theme's name or definition.",
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    requestSchema: {
-      type: 'object',
-      properties: { name: { type: 'string' }, definition: ref('CustomThemeDefinition') },
-    },
-    responseSchema: wrap('theme', 'CustomTheme'),
-    statuses: [200, 400, 401, 403, 404, 413],
-  },
-  {
-    method: 'DELETE',
-    path: '/custom-themes/{id}',
-    segment: 'custom-themes',
-    tag: 'Themes',
-    summary: 'Delete a custom theme.',
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    statuses: [204, 401, 403, 404],
-  },
-
   // ---- API tokens ----
   {
     method: 'GET',

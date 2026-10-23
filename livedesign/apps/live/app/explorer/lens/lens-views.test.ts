@@ -15,7 +15,7 @@ describe('lensViewOf', () => {
   });
 
   it('gives the views that list no designs no lens', () => {
-    for (const kind of ['timeline', 'inbox', 'gallery', 'themes', 'trash', 'invites'] as const) {
+    for (const kind of ['timeline', 'inbox', 'gallery', 'trash', 'invites'] as const) {
       expect(lensViewOf(kind)).toBeNull();
     }
   });

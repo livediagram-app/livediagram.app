@@ -55,30 +55,6 @@ export async function recordTokenExpiring(
   );
 }
 
-export async function recordThemeSaved(
-  env: Env,
-  theme: { id: string; name: string },
-  ownerId: string,
-): Promise<void> {
-  await record(
-    env,
-    {
-      actorId: ownerId,
-      sourceType: 'account',
-      sourceId: theme.id,
-      eventType: 'theme_saved',
-      // One card per theme per day, however many times it was saved
-      // while being tweaked — but a save next month is a new card, not
-      // last month's moved forward.
-      dedupeKey: dedupeKeyForDay(ownerId, Date.now()),
-      title: 'Theme Saved',
-      description: theme.name,
-      snapshot: { themeName: theme.name },
-    },
-    [userScope(ownerId)],
-  );
-}
-
 // Coalesced per day like design editing: someone pasting a dozen
 // screenshots into a design is one moment, not twelve. The snapshot's
 // count is what the renderer reads to say "3 images uploaded".
@@ -134,26 +110,6 @@ export async function recordTokenRevoked(
       title: 'API Token Revoked',
       description: token.name,
       snapshot: { tokenName: token.name },
-    },
-    [userScope(ownerId)],
-  );
-}
-
-export async function recordThemeDeleted(
-  env: Env,
-  theme: { id: string; name: string },
-  ownerId: string,
-): Promise<void> {
-  await record(
-    env,
-    {
-      actorId: ownerId,
-      sourceType: 'account',
-      sourceId: `${theme.id}:deleted`,
-      eventType: 'theme_deleted',
-      title: 'Theme Deleted',
-      description: theme.name,
-      snapshot: { themeName: theme.name },
     },
     [userScope(ownerId)],
   );

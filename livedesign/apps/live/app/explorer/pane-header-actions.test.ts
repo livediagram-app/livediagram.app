@@ -28,7 +28,6 @@ describe('paneHeaderActions', () => {
       'inbox',
       'shared',
       'gallery',
-      'themes',
       'trash',
       'team',
       'invites',

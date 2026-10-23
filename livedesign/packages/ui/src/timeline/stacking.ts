@@ -104,8 +104,6 @@ const STACK_LABELS: Record<string, string> = {
   'team::team_invite_declined': 'Invites Declined',
   'account::token_created': 'API Tokens Created',
   'account::token_expiring': 'API Tokens Expiring',
-  'account::theme_saved': 'Themes Saved',
-  'account::theme_deleted': 'Themes Deleted',
   'account::folder_created': 'Folders Created',
   'account::folder_deleted': 'Folders Deleted',
   'account::image_uploaded': 'Images Uploaded',

@@ -10,7 +10,7 @@
 // Timeline" added. Every other card gets a menu built from `items`:
 // whatever the Explorer can do with that kind of thing (open the
 // tokens page and revoke this token; open the team, edit it, leave it;
-// accept or decline this invite; edit or delete this theme), with
+// accept or decline this invite), with
 // "Remove from Timeline" among them and the destructive verbs last
 // under their own separator, the way the design menu keeps Delete.
 // An entry with no verbs of its own still gets the one it always has.

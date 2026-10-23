@@ -160,7 +160,7 @@ A card has four regions, top to bottom:
    `DesignThumbnail` and inheriting its lazy intersection-observer
    fetch, so a feed of fifty cards doesn't trigger fifty server renders
    for designs nobody scrolls to. An event with **no picture** (a team,
-   a folder, a token, a theme, a comment on a deleted design) fills the
+   a folder, a token, a comment on a deleted design) fills the
    same box with the event's **glyph, large, on the event's tone tint**.
    The box is the same height either way, so a row of cards stays
    aligned whatever mix of kinds it holds; a shorter card for pictureless
@@ -182,7 +182,7 @@ A card has four regions, top to bottom:
 **A card is one big click target.** Clicking anywhere on it that isn't
 the menu opens whatever the event is about: the design, the team, your
 invites, your tokens. Cards that lead nowhere are dimmed to 60%, and the
-common case is a tombstone for a folder, theme or team: the emit
+common case is a tombstone for a folder or team: the emit
 deliberately omits its id, so the renderer has nothing to link and the
 dimming is structural rather than a rule someone has to remember. (A
 deleted design has no tombstone at all; see §3.5.) For the keyboard and a screen reader the target is one real
@@ -232,7 +232,7 @@ compiler can't check: that no known type was classified `neutral` or
 **A card that can't be clicked is dimmed.** A row that looks
 identical to a clickable one but ignores the click reads as broken;
 60% opacity answers the question before the pointer gets there. The
-common case is a folder / theme / team tombstone — the emit deliberately
+common case is a folder / team tombstone — the emit deliberately
 omits the deleted thing's id, so the renderer has nothing to link and
 the dimming is structural rather than a rule someone has to remember.
 
@@ -573,8 +573,8 @@ page's floor can't be judged from that read and stay
 (`reconcileEvents`, in `merge-events.ts`).
 
 **A DELETE that ends an entity also names it.** `apiDelete` takes an
-optional `purge: { sourceType, sourceId }`, set by the four wrappers
-that end a design, folder, theme or team, and the feed drops that
+optional `purge: { sourceType, sourceId }`, set by the three wrappers
+that end a design, folder or team, and the feed drops that
 entity's cards on the spot with the worker's own cascade predicate
 (§3.5): keyed on the id, or referencing it from the snapshot under
 `<sourceType>Id`. This is what covers pages the re-read won't reach — a
@@ -751,7 +751,6 @@ the Explorer's own handlers (`useTimelineEntityMenus`):
 | API token (created, expiring)          | Open API Tokens (Settings, in place) · **Revoke Token** (confirmed with the token manager's own warning) |
 | Team (created, renamed, members, role) | Open Team · Edit Team _(admin)_ · Leave Team · Delete Team _(admin)_                                     |
 | Invite received                        | Open Invites · **Accept Invite** · **Decline Invite**                                                    |
-| Theme saved                            | Open Themes · Edit Theme (the same builder modal the Themes pane opens) · Delete Theme                   |
 | Images uploaded                        | Open Images                                                                                              |
 | Design the Explorer can't resolve      | Open Design                                                                                              |
 
@@ -762,12 +761,12 @@ on the argument that a ⋯ holding a single "Open" that duplicated the
 card's own click was a control that exists to look consistent. Half
 right: the reader who sees "API Token Expiring" wants to revoke it
 _there_, not go and find it. Confirm copy comes from the panes' own
-helpers (`token-copy.ts`, `team-removal.ts`, `ThemeBuilderModal.tsx`),
-so the warning a reader sees is the one they'd see on the Tokens,
-Themes or Team page.
+helpers (`token-copy.ts`, `team-removal.ts`),
+so the warning a reader sees is the one they'd see on the Tokens
+or Team page.
 
 **A tombstone, or an entity the Explorer no longer holds** — a revoked
-token, an answered invite, a team the reader has left, a deleted theme —
+token, an answered invite, a team the reader has left —
 keeps only the "open the section" row: a menu of guesses is worse than
 none. The same `TimelineCardMenu` component renders all three shapes
 (design, folder, items) behind the same trigger, so they can't drift on
@@ -783,7 +782,7 @@ Telemetry: opening a card menu fires `Timeline` / `Opened` / `Menu`
 
 ### 2.9 Remove from Timeline
 
-A busy day clutters. A reader who saved six themes, made a folder and
+A busy day clutters. A reader who uploaded six images, made a folder and
 renamed three designs before lunch has a Today full of cards that were
 all true and are all now noise, and the only way to thin it was to wait
 for tomorrow. **Every card's ⋯ menu ends with "Remove from Timeline"**,
@@ -861,7 +860,7 @@ rather than duplicating it.
 `dedupe_key` is empty for events that happen **once per source** (a
 design is created once; a tombstone is written once; an invite arrives
 once). It carries `<actorId>:<YYYY-MM-DD>` for the coalesced events —
-the editing event (§4.2), image uploads, and a theme's saves — which
+the editing event (§4.2) and image uploads — which
 deliberately extend one row through the day.
 
 **Events that can recur on the same source get a fresh key every time**
@@ -1000,20 +999,19 @@ Favourites are not built. Everything here is additive.
   Deleted / Payments architecture", in danger red, surviving the sweep
   by being written after it — and it was noise the reader had asked to
   be rid of: the delete was their own act, and a red card for it told
-  them nothing they didn't know. (Folders, themes and teams keep their tombstones: those are
+  them nothing they didn't know. (Folders and teams keep their tombstones: those are
   the one row that answers "what happened to it?" for a container other
   people may have relied on.)
   `markTimelineEventsDeletedBySource(env, sourceType, sourceId)` is the
   shared helper; any future entity's delete path calls it rather than
   writing the DELETE inline.
-- **Deleting a folder, a theme, or a team cascades the same way.** They
+- **Deleting a folder or a team cascades the same way.** They
   didn't at first: a folder delete wrote its tombstone and left "Folder
-  Created" standing beside it, and every "Theme Saved" for a deleted
-  theme stayed up, where a design's history had always been swept.
+  Created" standing beside it, where a design's history had always been swept.
   Same helper, same order — the sweep runs first, then the tombstone,
-  whose `:deleted` source id keeps it out of any later sweep. Folder and
-  theme events live under the `account` source type keyed on the
-  folder's / theme's id (§4.5), so that is what their routes sweep;
+  whose `:deleted` source id keeps it out of any later sweep. Folder
+  events live under the `account` source type keyed on the
+  folder's id (§4.5), so that is what their routes sweep;
   a team sweeps `team`. The client mirrors the cascade the moment the
   DELETE resolves (§2.4b), so the reader doesn't wait a second for the
   re-read to see it.
@@ -1256,17 +1254,15 @@ Teams are for accounts only, so none of these events ever reach a guest scope.
 
 ### 4.5 Account and housekeeping
 
-| `eventType`           | Fires when                                                                            | Notes                                                                             |
-| --------------------- | ------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| `token_created`       | `POST /api/tokens` ([Public API and API tokens](../015-api/public-api-and-tokens.md)) |                                                                                   |
-| `token_revoked`       | `DELETE /api/tokens/:id`: "API Token Revoked" / the token's name                      | Withdraws the token's `token_expiring` warning first                              |
-| `token_expiring`      | the existing daily expiry-warning cron                                                | **Future-dated**: `occurred_at` is the expiry, not now                            |
-| `share_link_expiring` | the share-expiry cron ([Share-link expiry](share-link-expiry.md))                     | Future-dated                                                                      |
-| `theme_saved`         | custom theme created ([Custom themes](../011-theme/custom-themes.md))                 |                                                                                   |
-| `theme_deleted`       | `DELETE /api/custom-themes/:id`: "Theme Deleted" / the theme's name                   | Tombstone: the theme's `theme_saved` rows go first ("reads its name first" below) |
-| `folder_created`      | `POST /api/folders`, personal or team: "Folder Created" / the folder's name           | The person who made it only                                                       |
-| `folder_deleted`      | `DELETE /api/folders/:id`: "Folder Deleted" / the folder's name                       | The person who deleted it only; tombstone like `theme_deleted`                    |
-| `image_uploaded`      | image upload ([Image element + per-owner gallery](../009-elements/images.md))         | Coalesced per day like editing                                                    |
+| `eventType`           | Fires when                                                                            | Notes                                                  |
+| --------------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| `token_created`       | `POST /api/tokens` ([Public API and API tokens](../015-api/public-api-and-tokens.md)) |                                                        |
+| `token_revoked`       | `DELETE /api/tokens/:id`: "API Token Revoked" / the token's name                      | Withdraws the token's `token_expiring` warning first   |
+| `token_expiring`      | the existing daily expiry-warning cron                                                | **Future-dated**: `occurred_at` is the expiry, not now |
+| `share_link_expiring` | the share-expiry cron ([Share-link expiry](share-link-expiry.md))                     | Future-dated                                           |
+| `folder_created`      | `POST /api/folders`, personal or team: "Folder Created" / the folder's name           | The person who made it only                            |
+| `folder_deleted`      | `DELETE /api/folders/:id`: "Folder Deleted" / the folder's name                       | The person who deleted it only; a tombstone            |
+| `image_uploaded`      | image upload ([Image element + per-owner gallery](../009-elements/images.md))         | Coalesced per day like editing                         |
 
 **A warning that stops being true is withdrawn, not corrected.** The two
 future-dated rows above are the only events the feed states before they
@@ -1339,7 +1335,7 @@ live is an administrative fact, and telling every member one exists is a
 nudge to go and find it.
 
 **Anything whose row is about to vanish reads its name first** and omits
-the id from the snapshot, so a folder / theme / team tombstone can't
+the id from the snapshot, so a folder / team tombstone can't
 link at something that no longer exists — the same structural guard the
 design tombstone uses.
 

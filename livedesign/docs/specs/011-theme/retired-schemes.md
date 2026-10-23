@@ -46,6 +46,15 @@ still holding the retired theme's value for that role (its fill, outline, text, 
 theme's value for the same role. A colour the user picked is kept. The backdrop follows the same rule: a canvas or
 pattern colour still equal to the retired theme's becomes the new theme's.
 
+## Custom themes
+
+Custom themes, the ones a person built and saved to their account (`custom:<uuid>` ids), were removed: only built-in
+themes exist, and there is no builder, no saved-theme list and no `/api/custom-themes`. A tab that still names a
+`custom:` id is not migrated, since there is no saved definition left to map it from. It stays a valid tab (the tab
+validator leaves `theme` unchecked) and `getBuiltInTheme` resolves the id to Default in the viewer's appearance, so it
+paints as Default until someone picks a theme. That first pick finds no previous theme to compare against and so
+resets the element colours to the new theme's.
+
 ## Where it runs
 
 One pure function in `@livedesign/design`, `migrateStoredTab`, composes every tab-level migration (this one and the

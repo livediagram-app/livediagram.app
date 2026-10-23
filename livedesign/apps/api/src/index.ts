@@ -48,7 +48,6 @@ import { handleAi } from './routes/ai';
 import { handleCatalogues } from './routes/catalogues';
 import { handleCapabilities } from './routes/capabilities';
 import { handleOpenapi } from './routes/openapi';
-import { handleCustomThemes } from './routes/custom-themes';
 import { handleUnfurl } from './routes/unfurl';
 import type { RouteContext, WorkbenchContext } from './routes/context';
 import { handleDesigns } from './routes/designs';
@@ -414,8 +413,6 @@ async function routeApiRequest(
         return await handleDesigns(ctx);
       case 'folders':
         return await handleFolders(ctx);
-      case 'custom-themes':
-        return await handleCustomThemes(ctx);
       case 'teams':
         return await handleTeams(ctx);
       case 'tokens':
