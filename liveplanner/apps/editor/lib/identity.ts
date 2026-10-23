@@ -4,6 +4,7 @@
 // for that name/colour generation plus presence-status semantics.
 
 import { fnv1aString } from '@liveplanner/project';
+import { PRESENCE_COLOUR_VALUES } from '@liveworkspace/settings';
 import { randomPick } from './random';
 import type { AccessLevel } from '@liveplanner/api-schema';
 
@@ -150,22 +151,12 @@ const ANIMALS = [
   'Wolf',
 ];
 
-// Curated palette of distinguishable colours. White initials fall below AA on
-// every one of them; dark mode paints their deeper shade (identity-fill.ts) instead.
-export const PARTICIPANT_COLORS = [
-  '#0ea5e9', // sky-500
-  '#10b981', // emerald-500
-  '#f59e0b', // amber-500
-  '#ef4444', // red-500
-  '#8b5cf6', // violet-500
-  '#ec4899', // pink-500
-  '#14b8a6', // teal-500
-  '#f97316', // orange-500
-  '#6366f1', // indigo-500
-  '#84cc16', // lime-500
-];
+// The presence palette every liveworkspace app shares (@liveworkspace/settings), so a person reads
+// in the same colour in each. White initials fall below AA on every one of them; dark mode paints
+// their deeper shade (identity-fill.ts) instead.
+const PALETTE = PRESENCE_COLOUR_VALUES;
 
-function pick<T>(arr: T[]): T {
+function pick<T>(arr: readonly T[]): T {
   // Non-empty by construction (the catalogues above), so the bang is safe.
   return randomPick(arr)!;
 }
@@ -175,7 +166,7 @@ export function randomName(): string {
 }
 
 export function randomColor(): string {
-  return pick(PARTICIPANT_COLORS);
+  return pick(PALETTE);
 }
 
 // Deterministic palette pick for identities that have no persisted
@@ -185,7 +176,7 @@ export function randomColor(): string {
 // onto the curated palette above.
 export function colorForKey(key: string): string {
   // `| 0` reads the hash as signed, the way colours have always been picked, so no key changes colour.
-  return PARTICIPANT_COLORS[Math.abs(fnv1aString(key) | 0) % PARTICIPANT_COLORS.length]!;
+  return PALETTE[Math.abs(fnv1aString(key) | 0) % PALETTE.length]!;
 }
 
 // Pick a colour from the palette that isn't in `taken`. When the
@@ -202,10 +193,10 @@ export function colorForKey(key: string): string {
 // records can stay random.
 export function nextFreeColor(taken: Set<string>, preferred?: string): string {
   if (preferred && !taken.has(preferred)) return preferred;
-  for (const c of PARTICIPANT_COLORS) {
+  for (const c of PALETTE) {
     if (!taken.has(c)) return c;
   }
-  return preferred ?? PARTICIPANT_COLORS[0]!;
+  return preferred ?? PALETTE[0]!;
 }
 
 // Up to two characters for the avatar: shared with the headless export, so

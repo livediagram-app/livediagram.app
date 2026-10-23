@@ -46,6 +46,7 @@
     "@liveplanner/items": "workspace:*",
     "@liveplanner/tailwind-config": "workspace:*",
     "@liveplanner/telemetry-client": "workspace:*",
+    "@liveworkspace/settings": "workspace:*",
     "@liveworkspace/sites": "workspace:*"
   }
 }

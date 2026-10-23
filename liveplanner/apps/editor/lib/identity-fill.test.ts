@@ -1,6 +1,6 @@
 import { contrastRatio } from '@liveplanner/project';
 import { describe, expect, it } from 'vitest';
-import { PARTICIPANT_COLORS } from './identity';
+import { PRESENCE_COLOUR_VALUES } from '@liveworkspace/settings';
 import { IDENTITY_FILL, identityDeep, identityVars } from '@liveplanner/ui';
 
 // White text on an identity colour in dark mode (docs/specs/004-interface-design/color-scheme.md, Dark
@@ -8,7 +8,7 @@ import { IDENTITY_FILL, identityDeep, identityVars } from '@liveplanner/ui';
 // shade of the same hue and keeps the white initials. Light mode keeps the colour as it is.
 describe('identityDeep', () => {
   it('holds white initials at AA on every participant colour', () => {
-    for (const color of PARTICIPANT_COLORS) {
+    for (const color of PRESENCE_COLOUR_VALUES) {
       expect(contrastRatio('#ffffff', identityDeep(color)), color).toBeGreaterThanOrEqual(4.5);
     }
   });
