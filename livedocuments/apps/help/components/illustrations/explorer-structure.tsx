@@ -1,7 +1,7 @@
 // Explorer structure illustrations (docs/specs/018-help/help-app.md): the full-page Explorer's
 // sidebar groups and pane header, the editor's Explorer popover, the filter lens on Search
 // results, the card view with a folder's preview mosaic, the Change Folder dialog and the folder
-// menu's Use as Default for. Every label is the real one from apps/live (sidebar-structure.ts,
+// menu's Use as Default for. Every label is the real one from apps/editor (sidebar-structure.ts,
 // PaneHeader.tsx, ViewToggle.tsx, ExplorerHeaderMenu.tsx, MoveToFolderDialog.tsx,
 // folder-actions-menu.tsx, default-key-entries.ts and the explorer-lens catalogue).
 //

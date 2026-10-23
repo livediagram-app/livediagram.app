@@ -69,7 +69,7 @@ The `definition` is the **themable payload only** — it omits `id` / `label` (t
 
 ## Making custom themes resolvable (`getTheme`)
 
-`getTheme(id)` is synchronous and called all over the render path, so custom themes must resolve without an async hop. A module-level **registry** (`apps/live/lib/custom-theme-registry.ts`) holds `Map<id, ThemeDefinition>`. Resolution is split in two so callers can tell "the default theme" apart from "an id that names nothing":
+`getTheme(id)` is synchronous and called all over the render path, so custom themes must resolve without an async hop. A module-level **registry** (`apps/editor/lib/custom-theme-registry.ts`) holds `Map<id, ThemeDefinition>`. Resolution is split in two so callers can tell "the default theme" apart from "an id that names nothing":
 
 ```ts
 // undefined when the id names nothing we know — a deleted custom theme,

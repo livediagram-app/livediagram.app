@@ -64,7 +64,7 @@ elements omitted) because it's a summary, not a reconstruction; the faithful rou
 
 ## Implementation
 
-The dialog is `apps/live/components/dialogs/ImportTabDialog.tsx`, and `useTabActions.importIntoActiveTab` replaces
-the active tab. The Markdown reader is `apps/live/lib/markdown-import.ts`, dynamically imported so it stays out of the
+The dialog is `apps/editor/components/dialogs/ImportTabDialog.tsx`, and `useTabActions.importIntoActiveTab` replaces
+the active tab. The Markdown reader is `apps/editor/lib/markdown-import.ts`, dynamically imported so it stays out of the
 initial editor bundle. See also [Document structure](../006-document/document-structure.md) (element model) and
 [Canvas and palette](../008-canvas/canvas-and-palette.md) (import/export menu).

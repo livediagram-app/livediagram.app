@@ -100,7 +100,7 @@ export type ShapeKind =
   // the amount it carries. Carries `sankeyFlows` (below); lays itself out in columns.
   | 'sankey'
   // Curated single-colour glyph from the icon catalogue. Which glyph
-  // is carried by `iconId` (a registry key resolved in the live app's
+  // is carried by `iconId` (a registry key resolved in the editor app's
   // icon catalogue, NOT a closed enum here, so adding icons is a
   // one-file change with no model migration). Tinted by `strokeColor`
   // like a line drawing; keeps aspect ratio when resized. See docs/specs/008-canvas/canvas-and-palette.md

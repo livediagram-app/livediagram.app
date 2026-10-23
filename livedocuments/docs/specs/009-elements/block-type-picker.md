@@ -56,7 +56,7 @@ Only the apply **scope** differs, and it lives in each editor's session rather
 than in the picker: a collapsed caret means the whole text in a label and the
 current line in a note ([Rich-text notes](rich-text-notes.md)).
 
-`ToolbarDropdown` lives in `apps/live/components/rich-text/ToolbarDropdown.tsx`,
+`ToolbarDropdown` lives in `apps/editor/components/rich-text/ToolbarDropdown.tsx`,
 shared by both toolbars for the same reason: one menu behaviour (inline, not
 portalled; closes on outside pointerdown; never steals the editor's
 selection), not two copies to drift.

@@ -254,7 +254,7 @@ no tab exists without its rows.
 
 A document in This Browser ([Offline Mode](../006-document/offline-mode.md)) never reaches the worker, so the index above
 never holds it. The editor reads those documents itself, from the browser's offline store, and lists what it finds with
-the server's rows (`readOfflineActivity`, `apps/live/lib/offline/offline-activity.ts`):
+the server's rows (`readOfflineActivity`, `apps/editor/lib/offline/offline-activity.ts`):
 
 - **The same derivation.** Actions and element threads come from `collabIndexRowsFromElements` (in
   `packages/document`), so a document in This Browser lists exactly what the same

@@ -128,7 +128,7 @@ Font`.
 ## Loading
 
 A single Google Fonts stylesheet (`googleFontsHref()`) is linked in the
-live app's root layout, with `preconnect` hints. One request defines
+editor app's root layout, with `preconnect` hints. One request defines
 every `@font-face`; browsers only download a family once it's actually
 applied to an element, so listing all eleven is cheap.
 
@@ -156,7 +156,7 @@ sans, which quietly rewrote every canvas).
   hands it to the emitters on `ExportLabel.fontFamily`; the wrap measurement
   uses it too, or a wide face breaks at the wrong words.
 - **A downloaded file carries the bytes.** `embeddedFontFaceCss`
-  (`apps/live/lib/export-fonts.ts`) fetches the Latin subsets of the faces the
+  (`apps/editor/lib/export-fonts.ts`) fetches the Latin subsets of the faces the
   tab actually used and inlines them as base64 `@font-face` rules. This is not
   belt-and-braces: the PNG path rasterises element fragments through an
   `<img>`, which blocks external resources outright, so a referenced font

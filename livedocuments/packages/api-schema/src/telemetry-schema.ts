@@ -58,7 +58,7 @@ export const TELEMETRY_CATEGORIES = [
   // to-layer, 'Opened' for the panel. Never layer names in `type`.
   'Layer',
   'Session',
-  // Freeing an element somebody was holding (docs/specs/007-editor/live-app.md lock): 'Changed' with `type`
+  // Freeing an element somebody was holding (docs/specs/007-editor/editor-app.md lock): 'Changed' with `type`
   // 'Unlocked'. Named for the facilitator baton it once belonged to.
   'Facilitator',
   'Team',

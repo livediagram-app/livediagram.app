@@ -151,7 +151,7 @@ export function deriveTextColorForBg(backgroundColor: string): string {
 }
 
 // Which paper an element is being drawn on. NOT the same thing as the
-// viewer's Appearance (docs/specs/007-editor/live-app.md): a Midnight-schemed tab is dark paper in
+// viewer's Appearance (docs/specs/007-editor/editor-app.md): a Midnight-schemed tab is dark paper in
 // light chrome, and the Default scheme is whichever paper the viewer's
 // appearance resolves to. The element defaults below take it because an
 // element with no colour of its own has nothing else to read — and a Default

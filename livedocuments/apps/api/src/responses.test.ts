@@ -56,7 +56,7 @@ describe('json', () => {
   it('always includes every CORS allow-list header on the response', () => {
     // The CORS preflight only succeeds when these headers are
     // present on EVERY response (not just the OPTIONS pre-flight).
-    // Stripping one silently would break the live app's cross-
+    // Stripping one silently would break the editor app's cross-
     // origin fetches in dev.
     const res = json({ ok: true });
     for (const [key, value] of Object.entries(CORS_HEADERS)) {

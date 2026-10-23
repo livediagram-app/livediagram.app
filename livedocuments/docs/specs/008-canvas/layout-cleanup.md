@@ -20,7 +20,7 @@ locked element is never a [unit](#what-moves-together).
 
 ## Auto-align (grid snap)
 
-`autoAlignElements` (`apps/live/lib/auto-align.ts`, positions in `auto-align-lines.ts`). A
+`autoAlignElements` (`apps/editor/lib/auto-align.ts`, positions in `auto-align-lines.ts`). A
 **grid snap that keeps what is already lined up**: so near-aligned shapes become exactly aligned
 and small drift collapses, without breaking the alignment the author already has. It never reads
 the arrow graph for structure and never moves anything far: the use case is "things are a few px

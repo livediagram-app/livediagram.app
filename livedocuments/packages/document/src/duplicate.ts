@@ -19,7 +19,7 @@ import {
 // about that element, and an assigned action is work handed to a person under its own id (docs/specs/012-collaboration/assigned-actions.md
 // "A copy doesn't carry the action"): a duplicate under the same id is a second action nobody assigned, which the
 // timeline never sees added. A Sheet's cell threads go the same way.
-// The clipboard strips the same list on the way out (stripIdentity in apps/live).
+// The clipboard strips the same list on the way out (stripIdentity in apps/editor).
 export const ORIGINAL_ONLY_FIELDS = ['commentThread', 'action'] as const;
 
 export function freshCopyFields(el: Element): {

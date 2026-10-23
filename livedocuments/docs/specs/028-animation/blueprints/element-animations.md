@@ -37,24 +37,24 @@ EA1 onwards in [DEFAULTS.md](DEFAULTS.md).
 
 ## Modules
 
-| Module                                                    | Holds                                                                                                                                      |
-| --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `packages/document/src/animation-sets.ts`                 | the six catalogues, reveals, titles, labels, telemetry types, kept values; a leaf                                                          |
-| `packages/document/src/animation.ts`                      | speed, `animLoops`, icon and progress sets; re-exports `animation-sets`                                                                    |
-| `packages/document/src/animation-membership.ts`           | `bodyAnimationSetOf`, `takesShapeMotions`, `shapeAnimationsFor`, `animationSectionOf`, `carriesWords`, `inAnimationSet`, `animationSetsOf` |
-| `apps/live/lib/animation-set-writes.ts`                   | `withSetAnimation`, `withSetAnimationSpeed`, `withSetAnimationRepeat`, `withoutAnimations`, `setAnimationState`                            |
-| `apps/live/lib/animation-classes.ts`                      | `ANIMATION_CLASS_PREFIX`, `setAnimationClass`, `bodySetClass`                                                                              |
-| `apps/live/components/palette/AnimationSections.tsx`      | every animation category for a selection, `animationCategoriesOf` (single and multi menus)                                                 |
-| `apps/live/components/palette/AnimationSetTiles.tsx`      | the tile grid + Speed / Repeat rows for any set, kept tile included                                                                        |
-| `apps/live/components/canvas/useBoxedElementAnimation.ts` | `wrapperShapeAnimation`; the wrapper's Shape / Sticky class, layer flag and variables                                                      |
-| `apps/live/components/canvas/useShapeSvgAnimation.tsx`    | the SVG-rendered shape's Pulse ring, Glow halo, Trace copies and Gradient defs                                                             |
-| `apps/live/components/canvas/useTraceDashes.ts`           | measures the SVG Trace copies' on-screen length onto them                                                                                  |
-| `apps/live/components/canvas/AnimationLayer.tsx`          | the element's effect layer, above its face; Trace as a measured rounded rectangle                                                          |
-| `apps/live/components/canvas/animated-words.tsx`          | `planTextAnimation`, `renderUnits`, `unitCount`, `scrambleGlyph`, `flickerPhase`                                                           |
-| `apps/live/components/canvas/useTextAnimation.ts`         | `textAnimationView`, `useTextAnimation`, `useLabelTextAnimation`                                                                           |
-| `apps/live/components/canvas/useTableAnimation.ts`        | a table's grid class, counts, cells' Text view and unit starts                                                                             |
-| `apps/live/components/canvas/drawing-animation.tsx`       | `useDrawingAnimation`: a drawing's mask, filters and overlay                                                                               |
-| `apps/live/app/motion-<set>.css`                          | each set's keyframes (`shape`, `text`, `sticky`, `drawing`, `media`, `table`)                                                              |
+| Module                                                      | Holds                                                                                                                                      |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `packages/document/src/animation-sets.ts`                   | the six catalogues, reveals, titles, labels, telemetry types, kept values; a leaf                                                          |
+| `packages/document/src/animation.ts`                        | speed, `animLoops`, icon and progress sets; re-exports `animation-sets`                                                                    |
+| `packages/document/src/animation-membership.ts`             | `bodyAnimationSetOf`, `takesShapeMotions`, `shapeAnimationsFor`, `animationSectionOf`, `carriesWords`, `inAnimationSet`, `animationSetsOf` |
+| `apps/editor/lib/animation-set-writes.ts`                   | `withSetAnimation`, `withSetAnimationSpeed`, `withSetAnimationRepeat`, `withoutAnimations`, `setAnimationState`                            |
+| `apps/editor/lib/animation-classes.ts`                      | `ANIMATION_CLASS_PREFIX`, `setAnimationClass`, `bodySetClass`                                                                              |
+| `apps/editor/components/palette/AnimationSections.tsx`      | every animation category for a selection, `animationCategoriesOf` (single and multi menus)                                                 |
+| `apps/editor/components/palette/AnimationSetTiles.tsx`      | the tile grid + Speed / Repeat rows for any set, kept tile included                                                                        |
+| `apps/editor/components/canvas/useBoxedElementAnimation.ts` | `wrapperShapeAnimation`; the wrapper's Shape / Sticky class, layer flag and variables                                                      |
+| `apps/editor/components/canvas/useShapeSvgAnimation.tsx`    | the SVG-rendered shape's Pulse ring, Glow halo, Trace copies and Gradient defs                                                             |
+| `apps/editor/components/canvas/useTraceDashes.ts`           | measures the SVG Trace copies' on-screen length onto them                                                                                  |
+| `apps/editor/components/canvas/AnimationLayer.tsx`          | the element's effect layer, above its face; Trace as a measured rounded rectangle                                                          |
+| `apps/editor/components/canvas/animated-words.tsx`          | `planTextAnimation`, `renderUnits`, `unitCount`, `scrambleGlyph`, `flickerPhase`                                                           |
+| `apps/editor/components/canvas/useTextAnimation.ts`         | `textAnimationView`, `useTextAnimation`, `useLabelTextAnimation`                                                                           |
+| `apps/editor/components/canvas/useTableAnimation.ts`        | a table's grid class, counts, cells' Text view and unit starts                                                                             |
+| `apps/editor/components/canvas/drawing-animation.tsx`       | `useDrawingAnimation`: a drawing's mask, filters and overlay                                                                               |
+| `apps/editor/app/motion-<set>.css`                          | each set's keyframes (`shape`, `text`, `sticky`, `drawing`, `media`, `table`)                                                              |
 
 `canvas-motion.css` keeps arrow, icon, progress, rating and chart animations and the legacy text-native and
 sticker classes a kept Shape value still draws.
@@ -90,7 +90,7 @@ has no body set and no `hasOwnBodySet` (a chart's older Shape value, shown as th
 `animationCategoriesOf(elements)` adds each element's own category (`ownCategoryOf`: icon, chart, sankey, progress,
 rating, concept, arrow) to `animationSetsOf` and orders all by
 `shape, sticky, drawing, media, table, icon, chart, sankey, progress, rating, concept, text, arrow`. Concept
-renders `ConceptAnimTiles` (`apps/live/components/palette/ElementAnimationTiles.tsx`)
+renders `ConceptAnimTiles` (`apps/editor/components/palette/ElementAnimationTiles.tsx`)
 through the menu's `elementStyle` ops; Progress and Rating render `ProgressAnimTiles` / `RatingAnimTiles` with their
 `onSet*Anim*` handlers.
 
@@ -306,17 +306,17 @@ in `../liveworkspace/apps/site/app/telemetry/livedocuments/event-explanations.ts
 
 ## Testing
 
-| Rule                                                                | Test                                                      |
-| ------------------------------------------------------------------- | --------------------------------------------------------- |
-| Membership, Shape motions, carries words, set order, kept values    | `packages/document/src/animation-membership.test.ts`      |
-| Every option has a rule in its sheet, none orphaned, reduced motion | `apps/live/app/animation-classes.test.ts`                 |
-| One category per set present                                        | `apps/live/components/palette/AnimationSections.test.tsx` |
-| Tiles, labels, kept tile                                            | `apps/live/components/palette/AnimationSetTiles.test.tsx` |
-| Writes act on members only; None per section; Text clears legacy    | `apps/live/lib/animation-set-writes.test.ts`              |
-| A motion plays on a photo, a chart, a concept graphic               | `apps/live/components/canvas/animation-routing.test.ts`   |
-| Painter copies within a set, a motion to its takers, Text to words  | `apps/live/lib/format-painter.test.ts`                    |
-| Granularity, fallbacks, counting, determinism, aria, budget         | `apps/live/components/canvas/animated-words.test.tsx`     |
-| New stylesheets kept out of the chrome motion budget                | `apps/live/motion-budget.test.ts`                         |
+| Rule                                                                | Test                                                        |
+| ------------------------------------------------------------------- | ----------------------------------------------------------- |
+| Membership, Shape motions, carries words, set order, kept values    | `packages/document/src/animation-membership.test.ts`        |
+| Every option has a rule in its sheet, none orphaned, reduced motion | `apps/editor/app/animation-classes.test.ts`                 |
+| One category per set present                                        | `apps/editor/components/palette/AnimationSections.test.tsx` |
+| Tiles, labels, kept tile                                            | `apps/editor/components/palette/AnimationSetTiles.test.tsx` |
+| Writes act on members only; None per section; Text clears legacy    | `apps/editor/lib/animation-set-writes.test.ts`              |
+| A motion plays on a photo, a chart, a concept graphic               | `apps/editor/components/canvas/animation-routing.test.ts`   |
+| Painter copies within a set, a motion to its takers, Text to words  | `apps/editor/lib/format-painter.test.ts`                    |
+| Granularity, fallbacks, counting, determinism, aria, budget         | `apps/editor/components/canvas/animated-words.test.tsx`     |
+| New stylesheets kept out of the chrome motion budget                | `apps/editor/motion-budget.test.ts`                         |
 
 ## Constants and configuration
 

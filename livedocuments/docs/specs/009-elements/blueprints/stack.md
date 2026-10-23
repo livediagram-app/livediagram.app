@@ -2,14 +2,14 @@
 
 Derived from [The stack](../stack.md). Defaults in [DEFAULTS.md](DEFAULTS.md) as `Dn`.
 
-| File                                                | Role                                                      |
-| --------------------------------------------------- | --------------------------------------------------------- |
-| `packages/document/src/stack.ts`                    | Fields, bounds, children, the layout, `settleStacks`      |
-| `packages/document/src/containment.ts`              | `stack` joins `CONTAINER_KINDS`                           |
-| `apps/live/lib/settle-tabs.ts`                      | Settles stacks per changed tab (after keys, before chips) |
-| `packages/document/src/stored-tab.ts`               | Settles stacks on read                                    |
-| `apps/live/components/palette/StackMenuSection.tsx` | Arrangement, columns, gap, padding, align                 |
-| `apps/live/app/canvas-motion.css`                   | The reflow glide                                          |
+| File                                                  | Role                                                      |
+| ----------------------------------------------------- | --------------------------------------------------------- |
+| `packages/document/src/stack.ts`                      | Fields, bounds, children, the layout, `settleStacks`      |
+| `packages/document/src/containment.ts`                | `stack` joins `CONTAINER_KINDS`                           |
+| `apps/editor/lib/settle-tabs.ts`                      | Settles stacks per changed tab (after keys, before chips) |
+| `packages/document/src/stored-tab.ts`                 | Settles stacks on read                                    |
+| `apps/editor/components/palette/StackMenuSection.tsx` | Arrangement, columns, gap, padding, align                 |
+| `apps/editor/app/canvas-motion.css`                   | The reflow glide                                          |
 
 ## Domain and naming
 
@@ -107,12 +107,12 @@ Menu tiles named "Row Stack", "Column Stack", "Grid Stack", "Align Start / Centr
 
 ## Testing
 
-| Rule                              | Test file                                                |
-| --------------------------------- | -------------------------------------------------------- |
-| Children, layout per arrangement  | `packages/document/src/stack.test.ts`                    |
-| Settle (I1 to I3), nesting, carry | same                                                     |
-| Budget                            | `packages/document/src/stack.perf.test.ts`               |
-| Menu section                      | `apps/live/components/palette/StackMenuSection.test.tsx` |
+| Rule                              | Test file                                                  |
+| --------------------------------- | ---------------------------------------------------------- |
+| Children, layout per arrangement  | `packages/document/src/stack.test.ts`                      |
+| Settle (I1 to I3), nesting, carry | same                                                       |
+| Budget                            | `packages/document/src/stack.perf.test.ts`                 |
+| Menu section                      | `apps/editor/components/palette/StackMenuSection.test.tsx` |
 
 ## Constants and configuration
 

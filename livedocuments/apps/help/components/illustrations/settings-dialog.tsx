@@ -3,7 +3,7 @@
 // on/off `Switch` every settings-style row in the help art uses, and the Editor and Panels panes,
 // each section one grouped card as the dialog draws it.
 // Categories, row labels, order and defaults are lifted from
-// apps/live/components/dialogs/settings/settings-catalogue.ts; sub-categories (Draw under Editor,
+// apps/editor/components/dialogs/settings/settings-catalogue.ts; sub-categories (Draw under Editor,
 // Layers / Map / Collaborate / Quick Style under Panels) stay folded, as the dialog opens them.
 
 import type { ReactNode } from 'react';

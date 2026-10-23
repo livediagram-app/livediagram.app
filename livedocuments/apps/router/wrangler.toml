@@ -12,8 +12,8 @@ binding = "MARKETING"
 service = "livedocuments-marketing"
 
 [[services]]
-binding = "LIVE"
-service = "livedocuments-live"
+binding = "EDITOR"
+service = "livedocuments-editor"
 
 [[services]]
 binding = "API"
@@ -32,7 +32,7 @@ service = "livedocuments-help"
 # no-cache header passes through (docs/specs/016-platform/stale-builds.md "Caching rules").
 DEPLOY_ENV = "local"
 MARKETING_ORIGIN = "http://127.0.0.1:3301"
-LIVE_ORIGIN = "http://127.0.0.1:3302"
+EDITOR_ORIGIN = "http://127.0.0.1:3302"
 API_ORIGIN = "http://127.0.0.1:8987"
 # /telemetry redirects to the central dashboard (liveworkspace/docs/telemetry.md), run locally by
 # liveworkspace/apps/site; production's needs no var.
@@ -64,8 +64,8 @@ binding = "MARKETING"
 service = "livedocuments-marketing-staging"
 
 [[env.staging.services]]
-binding = "LIVE"
-service = "livedocuments-live-staging"
+binding = "EDITOR"
+service = "livedocuments-editor-staging"
 
 [[env.staging.services]]
 binding = "API"

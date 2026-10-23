@@ -46,7 +46,7 @@ Prose follows the context:
 The container was called a diagram until the domain language settled on document. Everything
 that named it moved in one change:
 
-- **Code:** identifiers, files and packages (`@livedocuments/document`, `apps/live/app/document/[id]`).
+- **Code:** identifiers, files and packages (`@livedocuments/document`, `apps/editor/app/document/[id]`).
 - **Database:** the baseline migration names the tables and columns `documents`, `document_tabs`
   and `document_id`, and the timeline's source, scope and event types say document. The tab kind
   `'diagram'` and anything naming a drawing (`ErDiagram`) are left alone.

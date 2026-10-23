@@ -10,7 +10,7 @@ look of that catalogue.
 
 ## Why a separate category, not more entries in Icons
 
-The Icons catalogue (`apps/live/lib/icons.ts`, [Canvas and palette](../008-canvas/canvas-and-palette.md)) is Feather/Lucide-style:
+The Icons catalogue (`apps/editor/lib/icons.ts`, [Canvas and palette](../008-canvas/canvas-and-palette.md)) is Feather/Lucide-style:
 each glyph is a set of stroke primitives in a 0..24 box, drawn `fill="none"` and
 **tinted by the element's stroke colour** so it themes like a line drawing.
 Brand service icons are the opposite: fixed multi-colour fills that must NOT be
@@ -40,7 +40,7 @@ gives icons the two properties this feature needs:
 render path **dispatches on the id**: `isTechIconId(iconId)` picks the coloured
 brand renderer, otherwise the stroke-tinted line renderer.
 
-## The catalogue — `apps/live/lib/tech-icons.ts`
+## The catalogue — `apps/editor/lib/tech-icons.ts`
 
 ```ts
 type TechIconDef = {
@@ -65,7 +65,7 @@ type TechIconDef = {
   the per-icon colour + glyph markup lives in
   `packages/icons/src/tech-icon-catalog.ts` (the shared `@livedocuments/icons`
   package) and is dynamic-imported (together with the line-art catalogue) by
-  `apps/live/lib/icon-registry.ts`, keeping ~25 kB of source out of the
+  `apps/editor/lib/icon-registry.ts`, keeping ~25 kB of source out of the
   editor's first-load JS (see [Canvas and palette](../008-canvas/canvas-and-palette.md) "Catalogue loading"). `isTechIconId` —
   which gates hot paths that can't wait for the chunk (the coloured-vs-line-art
   render dispatch, the drag fold-into-shape exclusion, telemetry typing) —
@@ -136,7 +136,7 @@ existing standalone tech icon over a shape leaves it standalone — the
 icon-fold-into-shape gesture (`useEditorDrag`, which absorbs a dragged line-art
 `icon` shape into the shape beneath it) excludes tech icons via `isTechIconId`.
 
-## Rendering — `apps/live/components/primitives/tech-icon-glyph.tsx`
+## Rendering — `apps/editor/components/primitives/tech-icon-glyph.tsx`
 
 `TechIconGlyph` paints the brand-coloured tile + the icon's white `glyph` markup
 inside an `<svg>`. No stroke tint is applied; the brand colour is the tile fill
@@ -235,7 +235,7 @@ out to the element edge — a connector leaving toward a bottom caption starts
 at the element's bottom line, under the text, instead of crossing it (and
 mirrored for top / left / right captions). Line-art icons keep box anchors
 (their glyph scales with the box). The document package reads `isTechIconId` from `@livedocuments/icons`
-(tech-icon-ids.ts, re-exported by `apps/live/lib/tech-icons.ts`).
+(tech-icon-ids.ts, re-exported by `apps/editor/lib/tech-icons.ts`).
 
 **The format painter carries the icon fields.** Painting from one icon to
 another copies `iconSize` (the Technology mark's fixed-size preset),

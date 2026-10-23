@@ -1,6 +1,6 @@
 // Share-link previews (docs/specs/013-workspace/share-link-previews.md): the two doors a link preview reads.
 //
-//   GET /api/share/<code>/card       { name } for the live app's worker, which writes it into the share page's head;
+//   GET /api/share/<code>/card       { name } for the editor app's worker, which writes it into the share page's head;
 //   GET /api/share/<code>/image.png  the share card, a 1200 x 630 PNG of the link's live-image drawing.
 //
 // Both answer exactly where the live image (GET /api/share/<code>/image.svg) answers, so a preview never says more

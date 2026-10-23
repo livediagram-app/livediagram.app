@@ -38,11 +38,11 @@ Scope, by file:
 | `apps/api/wrangler.toml`                                                       | `HOME_RATE_LIMITER` in the default and `[env.staging]` blocks                                |
 | `apps/api/src/openapi/manifest.ts`, `apps/api/scripts/gen-openapi-schemas.mjs` | The route; the `HomeResponse` schema; the create body's `markUsed`                           |
 | `packages/agent-verbs/src/mcp/schema.ts`, `apps/mcp/src/tools.ts`              | `create_document`'s optional `markUsed`, passed through to the create                        |
-| `apps/live/lib/api/documents.ts`                                               | `apiCreateDocument(..., { markUsed })` sends `markUsed: false` only                          |
-| `apps/live/lib/api/home.ts`                                                    | `apiReadHome`                                                                                |
-| `apps/live/lib/api/tabs.ts`                                                    | `apiLoadTab(..., { open })` sends the marker                                                 |
-| `apps/live/app/document/[id]/seed-fetched-document.ts`                         | The editor's first-tab read is the marked one, unless embedded                               |
-| `apps/live/app/document/[id]/{useIdentityBootstrap,useEditorState}.ts`         | `embed` reaches the seed                                                                     |
+| `apps/editor/lib/api/documents.ts`                                             | `apiCreateDocument(..., { markUsed })` sends `markUsed: false` only                          |
+| `apps/editor/lib/api/home.ts`                                                  | `apiReadHome`                                                                                |
+| `apps/editor/lib/api/tabs.ts`                                                  | `apiLoadTab(..., { open })` sends the marker                                                 |
+| `apps/editor/app/document/[id]/seed-fetched-document.ts`                       | The editor's first-tab read is the marked one, unless embedded                               |
+| `apps/editor/app/document/[id]/{useIdentityBootstrap,useEditorState}.ts`       | `embed` reaches the seed                                                                     |
 
 ## Domain and naming
 
@@ -431,7 +431,7 @@ stay on their own lazy route.
 | A making counts once, an opted-out one does not, a sync or re-commit never              | `apps/api/src/routes/document-create-use.test.ts` (real SQLite)                           |
 | `readMarkUsed`                                                                          | `packages/api-schema/src/creation-use.test.ts`                                            |
 | `create_document` passes `markUsed` through only when given                             | `apps/mcp/src/create-document-placement.test.ts`                                          |
-| Signed in: an API create is in Jump Back In unopened; one with `markUsed: false` is not | `apps/live/e2e/signed-in/creation-use.spec.ts`                                            |
+| Signed in: an API create is in Jump Back In unopened; one with `markUsed: false` is not | `apps/editor/e2e/signed-in/creation-use.spec.ts`                                          |
 | Reads: others only, opens private, rejections, rate limit, the unread mark, no timeline | `apps/api/src/routes/home.test.ts` (real SQLite)                                          |
 | The feed and the unread count leave opens out                                           | `apps/api/src/db/timeline-opens.test.ts` (real SQLite)                                    |
 | Migration merge and account deletion                                                    | `apps/api/src/db/document-opens.test.ts`, `account-owner-columns.test.ts`                 |
@@ -440,8 +440,8 @@ stay on their own lazy route.
 | The Inbox unchanged on the shared visibility                                            | `apps/api/src/db/activity-mentions.test.ts`, `apps/api/src/db/trash-surfaces.test.ts`     |
 | OpenAPI parity and schemas                                                              | `apps/api/src/openapi/*.test.ts`                                                          |
 | Route labels know `home`                                                                | `apps/api/src/route-resources.test.ts`, `packages/api-schema/src/error-telemetry.test.ts` |
-| Client wrapper: null on failure; the marker header and its dedupe key                   | `apps/live/lib/api/home.test.ts`, `apps/live/lib/api-client.test.ts`                      |
-| The seed marks the first-tab read unless embedded                                       | `apps/live/app/document/[id]/seed-fetched-document.test.ts`                               |
+| Client wrapper: null on failure; the marker header and its dedupe key                   | `apps/editor/lib/api/home.test.ts`, `apps/editor/lib/api-client.test.ts`                  |
+| The seed marks the first-tab read unless embedded                                       | `apps/editor/app/document/[id]/seed-fetched-document.test.ts`                             |
 
 ## Constants and configuration
 

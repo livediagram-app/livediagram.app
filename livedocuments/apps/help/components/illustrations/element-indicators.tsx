@@ -1,7 +1,7 @@
 // Illustrations for the Element Indicators article (docs/specs/008-canvas/element-indicators.md):
 // the three styles side by side, where the indicators sit on a box, a round shape and an element
 // too small for them, and a mind map root's commands appearing on hover. Glyphs, words and hover
-// cards are lifted from apps/live: components/canvas/ElementIndicators.tsx and
+// cards are lifted from apps/editor: components/canvas/ElementIndicators.tsx and
 // components/canvas/indicator-items.ts. Each glyph is drawn in the element's own text colour at
 // half strength, the way the editor draws it at rest.
 

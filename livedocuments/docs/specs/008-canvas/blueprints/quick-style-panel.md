@@ -6,32 +6,32 @@ engineering precision. Defaults applied where the spec is silent are ledgered in
 
 Scope, by file:
 
-| File                                                                        | Role                                                                                                             |
-| --------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `packages/document/src/quick-swatches.ts`                                   | The seven swatches per role and theme, slot ids, hue names, slot lookup                                          |
-| `packages/document/src/colors.ts`                                           | `unpaintedShapeInk(surface)`: the theme default on the Default scheme; `supportsColours` admits `text`           |
-| `packages/document/src/element-types.ts`, `arrow-types.ts`                  | `strokeSwatch` / `fillSwatch` on `ShapeElement`, `strokeSwatch` on `ArrowElement`, `textSwatch` on `TextElement` |
-| `packages/document/src/validate.ts`                                         | Rejects a swatch field that is not a slot                                                                        |
-| `packages/document/src/quick-swatch-rederive.ts`                            | `rederiveQuickSwatches(el, theme)`: a bound colour re-read from its slot                                         |
-| `packages/document/src/theme-graph.ts`                                      | The four theme walks call the re-derive last                                                                     |
-| `apps/live/lib/style-presets.ts`                                            | Hand-set colour and presets clear the matching binding                                                           |
-| `apps/live/hooks/canvas/useColorStyleSetters.ts`, `useShapeStyleSetters.ts` | Resets clear both bindings                                                                                       |
-| `apps/live/lib/format-painter.ts`, `format-config.ts`                       | The painter carries a binding only together with its colour                                                      |
-| `apps/live/lib/quick-style.ts`                                              | Pure: eligibility, sections, shared values, the apply transforms, clear                                          |
-| `apps/live/lib/style-memory.ts`                                             | Pure: memory shape, record from an edit, apply to a new element, forget, parse                                   |
-| `apps/live/lib/quick-style-placement.ts`                                    | Pure: the candidate walk that keeps the panel clear of chrome                                                    |
-| `apps/live/hooks/canvas/useStyleMemory.ts`                                  | Per-document memory state + `localStorage`; `recordEdit`, `styleNewElement`, `forget`                            |
-| `apps/live/hooks/canvas/useQuickStyle.ts`                                   | Panel actions: one commit per choice, memory, telemetry                                                          |
-| `apps/live/hooks/ui/useQuickStylePlacement.ts`                              | Measures chrome and the panel, runs the walk, re-runs on chrome change                                           |
-| `apps/live/components/canvas/QuickStylePanel.tsx`                           | The panel: compact, a fixed width from `panelFrame()`                                                            |
-| `apps/live/components/canvas/quick-style-rows.tsx`                          | `QuickRadioRow`, swatch and glyph options, roving focus                                                          |
-| `apps/live/lib/swatch-overrides.ts`                                         | Pure: apply to a row, the theme-keyed store (set, clear, prune, caps), parse                                     |
-| `apps/live/lib/swatch-override-prefs.ts`                                    | Prunes a deleted custom theme's overrides from the preferences blob                                              |
-| `apps/live/hooks/canvas/useSwatchOverrides.ts`                              | The active theme's overrides, read from and written to the synced preferences                                    |
-| `apps/live/components/primitives/CustomThemeProvider.tsx`                   | Calls the prune on delete and when the custom-theme list loads                                                   |
-| `apps/live/components/canvas/SwatchOverridePopover.tsx`                     | The right-click popover: picker, hex field, Clear override                                                       |
-| `apps/live/app/document/[id]/useEditorState.ts`                             | Wires memory into the style hooks and the creation hooks; exposes the panel's view-model                         |
-| `apps/live/app/document/[id]/EditorView.tsx`                                | Mounts the panel                                                                                                 |
+| File                                                                          | Role                                                                                                             |
+| ----------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `packages/document/src/quick-swatches.ts`                                     | The seven swatches per role and theme, slot ids, hue names, slot lookup                                          |
+| `packages/document/src/colors.ts`                                             | `unpaintedShapeInk(surface)`: the theme default on the Default scheme; `supportsColours` admits `text`           |
+| `packages/document/src/element-types.ts`, `arrow-types.ts`                    | `strokeSwatch` / `fillSwatch` on `ShapeElement`, `strokeSwatch` on `ArrowElement`, `textSwatch` on `TextElement` |
+| `packages/document/src/validate.ts`                                           | Rejects a swatch field that is not a slot                                                                        |
+| `packages/document/src/quick-swatch-rederive.ts`                              | `rederiveQuickSwatches(el, theme)`: a bound colour re-read from its slot                                         |
+| `packages/document/src/theme-graph.ts`                                        | The four theme walks call the re-derive last                                                                     |
+| `apps/editor/lib/style-presets.ts`                                            | Hand-set colour and presets clear the matching binding                                                           |
+| `apps/editor/hooks/canvas/useColorStyleSetters.ts`, `useShapeStyleSetters.ts` | Resets clear both bindings                                                                                       |
+| `apps/editor/lib/format-painter.ts`, `format-config.ts`                       | The painter carries a binding only together with its colour                                                      |
+| `apps/editor/lib/quick-style.ts`                                              | Pure: eligibility, sections, shared values, the apply transforms, clear                                          |
+| `apps/editor/lib/style-memory.ts`                                             | Pure: memory shape, record from an edit, apply to a new element, forget, parse                                   |
+| `apps/editor/lib/quick-style-placement.ts`                                    | Pure: the candidate walk that keeps the panel clear of chrome                                                    |
+| `apps/editor/hooks/canvas/useStyleMemory.ts`                                  | Per-document memory state + `localStorage`; `recordEdit`, `styleNewElement`, `forget`                            |
+| `apps/editor/hooks/canvas/useQuickStyle.ts`                                   | Panel actions: one commit per choice, memory, telemetry                                                          |
+| `apps/editor/hooks/ui/useQuickStylePlacement.ts`                              | Measures chrome and the panel, runs the walk, re-runs on chrome change                                           |
+| `apps/editor/components/canvas/QuickStylePanel.tsx`                           | The panel: compact, a fixed width from `panelFrame()`                                                            |
+| `apps/editor/components/canvas/quick-style-rows.tsx`                          | `QuickRadioRow`, swatch and glyph options, roving focus                                                          |
+| `apps/editor/lib/swatch-overrides.ts`                                         | Pure: apply to a row, the theme-keyed store (set, clear, prune, caps), parse                                     |
+| `apps/editor/lib/swatch-override-prefs.ts`                                    | Prunes a deleted custom theme's overrides from the preferences blob                                              |
+| `apps/editor/hooks/canvas/useSwatchOverrides.ts`                              | The active theme's overrides, read from and written to the synced preferences                                    |
+| `apps/editor/components/primitives/CustomThemeProvider.tsx`                   | Calls the prune on delete and when the custom-theme list loads                                                   |
+| `apps/editor/components/canvas/SwatchOverridePopover.tsx`                     | The right-click popover: picker, hex field, Clear override                                                       |
+| `apps/editor/app/document/[id]/useEditorState.ts`                             | Wires memory into the style hooks and the creation hooks; exposes the panel's view-model                         |
+| `apps/editor/app/document/[id]/EditorView.tsx`                                | Mounts the panel                                                                                                 |
 
 ## Domain and naming
 

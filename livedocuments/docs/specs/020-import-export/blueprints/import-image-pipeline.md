@@ -3,7 +3,7 @@
 Derived from [Import image pipeline](../import-image-pipeline.md). The spec decides; this file only
 adds engineering precision. Defaults are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
 
-Scope, by file (all under `apps/live/lib/import-images/`):
+Scope, by file (all under `apps/editor/lib/import-images/`):
 
 | File              | Role                                                                                           |
 | ----------------- | ---------------------------------------------------------------------------------------------- |
@@ -301,10 +301,10 @@ proven end to end by the e2e spec, in WebKit with `E2E_WEBKIT=1`.
 
 ## Assets and external resources
 
-| Asset                                  | Source                             | Licence                                      |
-| -------------------------------------- | ---------------------------------- | -------------------------------------------- |
-| `@jsquash/webp` 1.5.0 (glue + `.wasm`) | npm, pinned exactly in `apps/live` | Apache-2.0; libwebp inside the `.wasm` BSD-3 |
-| `wasm-feature-detect` (jSquash's dep)  | npm, via the lockfile              | Apache-2.0                                   |
+| Asset                                  | Source                               | Licence                                      |
+| -------------------------------------- | ------------------------------------ | -------------------------------------------- |
+| `@jsquash/webp` 1.5.0 (glue + `.wasm`) | npm, pinned exactly in `apps/editor` | Apache-2.0; libwebp inside the `.wasm` BSD-3 |
+| `wasm-feature-detect` (jSquash's dep)  | npm, via the lockfile                | Apache-2.0                                   |
 
 Reproducible: `pnpm install` resolves both from the lockfile; the build emits the `.wasm` files
 with content hashes.

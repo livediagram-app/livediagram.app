@@ -23,8 +23,9 @@ The MCP server is its own Cloudflare Worker, `apps/mcp`. It carries no AI model 
 </Step>
 <Step n={2}>
   Give the Worker a hostname of its own, such as `mcp.pages.example.com`: in the Cloudflare
-  dashboard, open the `livedocuments-mcp` Worker and add a custom domain under **Domains & Routes**. The
-  deploy token only uploads Workers, so hostnames are attached by hand, as for every other Worker.
+  dashboard, open the `livedocuments-mcp` Worker and add a custom domain under **Domains & Routes**.
+  The deploy token only uploads Workers, so hostnames are attached by hand, as for every other
+  Worker.
 </Step>
 <Step n={3}>
   Point the pieces at each other with the three variables in the table below. Each ships with
@@ -57,14 +58,14 @@ The bundled deploy workflow builds every app, then deploys the Workers. Two thin
 
 - **It always deploys the mcp Worker.** If you are not running the MCP server, remove that job from `.github/workflows/deploy-reusable.yml`, or create the KV namespace first so the deploy succeeds.
 - **It does not read most `NEXT_PUBLIC_*` values from repository secrets.** These are baked into the live build, so they must be in the build step's environment:
-  - `NEXT_PUBLIC_MCP_ORIGIN` comes from the `mcp_origin` input in `.github/workflows/deploy.yml`. Left empty, the live app falls back to `https://mcp.livedocuments.app`, which is not yours, so set it to your MCP origin.
+  - `NEXT_PUBLIC_MCP_ORIGIN` comes from the `mcp_origin` input in `.github/workflows/deploy.yml`. Left empty, the editor app falls back to `https://mcp.livedocuments.app`, which is not yours, so set it to your MCP origin.
 
 The `wrangler.toml` values and Worker secrets are read at runtime, so they do not need the workflow at all: edit the file, or run `wrangler secret put`.
 
 <Tip>
   The repository's `docs/operations/self-hosting.md`, and the `.env.example` file in `apps/api`,
-  `apps/live` and `apps/mcp`, list every variable this feature reads, for local development as well
-  as production.
+  `apps/editor` and `apps/mcp`, list every variable this feature reads, for local development as
+  well as production.
 </Tip>
 
 </ArticleLayout>

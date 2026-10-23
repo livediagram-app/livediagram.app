@@ -173,28 +173,28 @@ export function migrateIncomingElements(elements: readonly unknown[]): Element[]
 Every site that read or wrote `FreehandElement.points` / `pressures`, found by removing both
 fields from the type and compiling every workspace, plus the untyped entry points.
 
-| Area             | Site                                                                     | Change                                                                              |
-| ---------------- | ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------- |
-| Element model    | `packages/document/src/element-types.ts`                                 | `packedPoints: string` replaces both fields                                         |
-| Validation       | `packages/document/src/validate.ts`                                      | `parseStrokePoints`; `MAX_FREEHAND_POINTS` moves to the codec                       |
-| OpenAPI          | `apps/api/src/openapi/schemas.generated.ts`                              | regenerated from the type                                                           |
-| Factories        | `packages/document/src/factories.ts`                                     | `createFreehand` packs; geometry stays unpacked                                     |
-| Pen outline      | `packages/document/src/pen-stroke.ts`                                    | `freehandPenStroke` / `penStrokeSvg` decode                                         |
-| SVG export       | `packages/document/src/svg-render-shapes.ts`                             | decode                                                                              |
-| Stored migration | `packages/document/src/stored-elements.ts`                               | adds `migrateLegacyStrokePoints`                                                    |
-| Canvas view      | `apps/live/components/canvas/boxed-element-overlays.tsx`                 | decode                                                                              |
-| Commit types     | `apps/live/components/canvas/Canvas.types.ts`                            | `PenInk` owns `pressures`                                                           |
-| Style presets    | `apps/live/lib/style-presets.ts`                                         | re-pack without pressures                                                           |
-| Realtime         | `apps/live/app/document/[id]/useRoomConnection.ts`, `room-op-migrate.ts` | `migrateRoomOp` on receipt                                                          |
-| Clipboard        | `apps/live/lib/clipboard-payload.ts`                                     | migrate before `isValidElement`; `CLIPBOARD_SCHEMA_VERSION` 2                       |
-| Tab file import  | `apps/live/lib/import-tab.ts`, `export-tab-text.ts`                      | migrate; `TAB_SCHEMA_VERSION` 2                                                     |
-| Api writes       | `apps/api/src/routes/documents.ts`, `document-subresource-routes.ts`     | `migrateStoredTab` before `isValidTab`                                              |
-| Api reads        | `apps/api/src/tab-row.ts`, `thumbnail.ts`                                | unchanged (already migrate)                                                         |
-| Offline store    | `apps/live/lib/offline/offline-store.ts`                                 | unchanged (already migrates)                                                        |
-| MCP server       | `packages/document/src/element-normalise.ts`, `tools.ts`                 | `normaliseElement` migrates; `mergeElementUpdate` lets new points replace the block |
-| Polygon tool     | `useCanvasPolygonGesture.ts`                                             | unchanged: `createFreehand`                                                         |
-| Path tool        | `PathElement.nodes`                                                      | not a freehand: out of scope                                                        |
-| Undo             | `useEditorHistory.ts`                                                    | unchanged: element snapshots by reference                                           |
+| Area             | Site                                                                       | Change                                                                              |
+| ---------------- | -------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| Element model    | `packages/document/src/element-types.ts`                                   | `packedPoints: string` replaces both fields                                         |
+| Validation       | `packages/document/src/validate.ts`                                        | `parseStrokePoints`; `MAX_FREEHAND_POINTS` moves to the codec                       |
+| OpenAPI          | `apps/api/src/openapi/schemas.generated.ts`                                | regenerated from the type                                                           |
+| Factories        | `packages/document/src/factories.ts`                                       | `createFreehand` packs; geometry stays unpacked                                     |
+| Pen outline      | `packages/document/src/pen-stroke.ts`                                      | `freehandPenStroke` / `penStrokeSvg` decode                                         |
+| SVG export       | `packages/document/src/svg-render-shapes.ts`                               | decode                                                                              |
+| Stored migration | `packages/document/src/stored-elements.ts`                                 | adds `migrateLegacyStrokePoints`                                                    |
+| Canvas view      | `apps/editor/components/canvas/boxed-element-overlays.tsx`                 | decode                                                                              |
+| Commit types     | `apps/editor/components/canvas/Canvas.types.ts`                            | `PenInk` owns `pressures`                                                           |
+| Style presets    | `apps/editor/lib/style-presets.ts`                                         | re-pack without pressures                                                           |
+| Realtime         | `apps/editor/app/document/[id]/useRoomConnection.ts`, `room-op-migrate.ts` | `migrateRoomOp` on receipt                                                          |
+| Clipboard        | `apps/editor/lib/clipboard-payload.ts`                                     | migrate before `isValidElement`; `CLIPBOARD_SCHEMA_VERSION` 2                       |
+| Tab file import  | `apps/editor/lib/import-tab.ts`, `export-tab-text.ts`                      | migrate; `TAB_SCHEMA_VERSION` 2                                                     |
+| Api writes       | `apps/api/src/routes/documents.ts`, `document-subresource-routes.ts`       | `migrateStoredTab` before `isValidTab`                                              |
+| Api reads        | `apps/api/src/tab-row.ts`, `thumbnail.ts`                                  | unchanged (already migrate)                                                         |
+| Offline store    | `apps/editor/lib/offline/offline-store.ts`                                 | unchanged (already migrates)                                                        |
+| MCP server       | `packages/document/src/element-normalise.ts`, `tools.ts`                   | `normaliseElement` migrates; `mergeElementUpdate` lets new points replace the block |
+| Polygon tool     | `useCanvasPolygonGesture.ts`                                               | unchanged: `createFreehand`                                                         |
+| Path tool        | `PathElement.nodes`                                                        | not a freehand: out of scope                                                        |
+| Undo             | `useEditorHistory.ts`                                                      | unchanged: element snapshots by reference                                           |
 
 ## Data and persistence
 
@@ -282,8 +282,8 @@ The api's existing `invalid tab` 400 covers a block that fails validation.
 | Pen outline unchanged                                                         | `packages/document/src/pen-stroke.test.ts`                                          |
 | SVG export within the bound                                                   | `packages/document/src/svg-render-shapes.test.ts`, `stroke-points-fidelity.test.ts` |
 | Api migrates former shape on create and save                                  | `apps/api/src/routes/stroke-points-writes.test.ts`                                  |
-| Clipboard and tab import migrate                                              | `apps/live/lib/clipboard-payload.test.ts`, `import-tab.test.ts`                     |
-| Room ops migrated on receipt                                                  | `apps/live/app/document/[id]/room-op-migrate.test.ts`                               |
+| Clipboard and tab import migrate                                              | `apps/editor/lib/clipboard-payload.test.ts`, `import-tab.test.ts`                   |
+| Room ops migrated on receipt                                                  | `apps/editor/app/document/[id]/room-op-migrate.test.ts`                             |
 | Untrusted tabs and elements: migrated or passed through                       | `packages/document/src/legacy-stroke-points.test.ts`                                |
 | MCP packs a model's former-shape stroke; an update's points replace the block | `packages/document/src/element-normalise.test.ts`                                   |
 | Every template builds a valid tab with packed strokes (MCP and editor)        | `packages/templates/src/template-tab.test.ts`                                       |

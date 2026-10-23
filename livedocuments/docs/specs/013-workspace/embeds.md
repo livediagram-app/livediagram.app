@@ -6,7 +6,7 @@ Tracked as [issue #8](https://github.com/livedocuments-app/livedocuments.app/iss
 
 `/embed?s=<share-code>`.
 
-The issue sketched a path segment (`/embed/<code>`), but the static export ([Dedicated route for new-document creation](../007-editor/new-document-route.md)) would need a second worker rewrite rule to serve it, and the existing share view already uses the query form (`/document/shared?s=<code>`). The embed route follows the share view: one statically exported page (`apps/live/app/embed/page.tsx`), the code read client-side from `?s=`. No new infrastructure.
+The issue sketched a path segment (`/embed/<code>`), but the static export ([Dedicated route for new-document creation](../007-editor/new-document-route.md)) would need a second worker rewrite rule to serve it, and the existing share view already uses the query form (`/document/shared?s=<code>`). The embed route follows the share view: one statically exported page (`apps/editor/app/embed/page.tsx`), the code read client-side from `?s=`. No new infrastructure.
 
 ## What renders
 
@@ -22,13 +22,13 @@ The share-password gate ([Share password](share-password.md)) renders inside the
 
 ## Frame headers
 
-The live worker (`apps/live/src/worker.ts`) sends `X-Frame-Options: DENY` on every response as clickjacking defence. It can only do that because `apps/live/wrangler.toml` sets `run_worker_first = ["/*", "!/_next/*"]`: Static Assets otherwise serves a matching file before the worker runs, so every real page (the MCP OAuth consent screen included) would ship without the header. Embed responses (`/embed` and anything under it) are the **one path-scoped exception**: the header is omitted so any site can frame them. This is safe because the embed carries no authenticated actions to clickjack: its only authority is the share code already present in the URL the host page chose to embed (framing an edit-role embed grants nothing the embedding page didn't already hold), and no owner session or credential lives inside the frame; the editor and every other route keep DENY. The one embed that does hold a credential, the
+The editor worker (`apps/editor/src/worker.ts`) sends `X-Frame-Options: DENY` on every response as clickjacking defence. It can only do that because `apps/editor/wrangler.toml` sets `run_worker_first = ["/*", "!/_next/*"]`: Static Assets otherwise serves a matching file before the worker runs, so every real page (the MCP OAuth consent screen included) would ship without the header. Embed responses (`/embed` and anything under it) are the **one path-scoped exception**: the header is omitted so any site can frame them. This is safe because the embed carries no authenticated actions to clickjack: its only authority is the share code already present in the URL the host page chose to embed (framing an edit-role embed grants nothing the embedding page didn't already hold), and no owner session or credential lives inside the frame; the editor and every other route keep DENY. The one embed that does hold a credential, the
 [workbench embed](workbench-embeds.md) under `/embed/workbench`, is safe for a second reason: its credential comes
 only from a ticket minted with the person's own API token, and the page mounts only for the origin that minted it. No `Content-Security-Policy: frame-ancestors` is added (absence means frameable, and the CSP cycle is still deferred per the worker's comment).
 
 ## Share dialog
 
-Each pass in the ShareDialog ([Live app → Share dialog](../007-editor/live-app.md#share-dialog)) carries an **Embed** menu beside Live image, offering **Copy embed URL** and **Copy iframe**. The iframe is an `<iframe>` snippet built by `buildEmbedSnippet` (`apps/live/lib/embed.ts`, unit-tested): the embed URL for that link's code, a sensible default size (800×500), a hairline border, and `allowfullscreen`. The pass carries no separate embed hint for a password: its **Password** tag already shows when one is set, and viewers are prompted for it inside the embed.
+Each pass in the ShareDialog ([Editor app → Share dialog](../007-editor/editor-app.md#share-dialog)) carries an **Embed** menu beside Live image, offering **Copy embed URL** and **Copy iframe**. The iframe is an `<iframe>` snippet built by `buildEmbedSnippet` (`apps/editor/lib/embed.ts`, unit-tested): the embed URL for that link's code, a sensible default size (800×500), a hairline border, and `allowfullscreen`. The pass carries no separate embed hint for a password: its **Password** tag already shows when one is set, and viewers are prompted for it inside the embed.
 
 ## Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))
 
@@ -37,7 +37,7 @@ Each pass in the ShareDialog ([Live app → Share dialog](../007-editor/live-app
 
 ## Self-hosting
 
-Works with zero external services: the embed page is part of the live app's static export, and the snippet builds its URL from the live origin at copy time, so self-hosted instances emit self-hosted embed URLs.
+Works with zero external services: the embed page is part of the editor app's static export, and the snippet builds its URL from the live origin at copy time, so self-hosted instances emit self-hosted embed URLs.
 
 ## Out of scope
 

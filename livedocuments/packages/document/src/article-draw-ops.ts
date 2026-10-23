@@ -1,7 +1,7 @@
 // An article's writing as draw operations (docs/specs/007-editor/article-pages.md "Everywhere a page goes"): each
 // word where it lands, with its font and colour, each painted background, border, list marker and to-do box, in
 // canvas coordinates; and those operations as SVG markup. The editor reads them off its live layout
-// (apps/live/lib/article/article-snapshot.ts); a preview without a browser estimates them (article-layout-estimate.ts).
+// (apps/editor/lib/article/article-snapshot.ts); a preview without a browser estimates them (article-layout-estimate.ts).
 // Pure.
 import { r2, xmlEscape } from './svg-render-primitives';
 

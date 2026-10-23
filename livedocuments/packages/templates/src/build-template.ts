@@ -2,7 +2,7 @@
 // centre (cx, cy) and returns a fresh array of Element. Sizing
 // constants live inline so each template is self-describing. See
 // docs/specs/008-canvas/canvas-and-palette.md for the picker UX; the editor applies its theme recolour on
-// top (apps/live/lib/template-builders.ts), and the MCP worker
+// top (apps/editor/lib/template-builders.ts), and the MCP worker
 // materialises these directly (docs/specs/015-api/mcp-server.md §4.5).
 
 import { settleChips, type Element } from '@livedocuments/document';

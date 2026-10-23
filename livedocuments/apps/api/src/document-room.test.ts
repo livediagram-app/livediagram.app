@@ -604,7 +604,7 @@ describe('DocumentRoom op-role enforcement', () => {
   // presence kinds would only prove the restatement agrees. What catches it is
   // the editor's own vocabulary: every op kind it sends or handles must appear
   // in one of the three schema lists, checked in
-  // apps/live/app/document/[id]/room-op-vocabulary.test.ts. What this file can
+  // apps/editor/app/document/[id]/room-op-vocabulary.test.ts. What this file can
   // still pin is that the gate reads the schema's list at all.
   it('classifies every op kind in the shared vocabulary, and only those', () => {
     const classified = [...PRESENCE_OP_KINDS, ...MUTATION_OP_KINDS, ...SYSTEM_OP_KINDS];
@@ -1199,7 +1199,7 @@ describe('DocumentRoom multiplayer telemetry (docs/specs/017-telemetry/telemetry
   });
 });
 
-describe('DocumentRoom freeing a selection lock (docs/specs/007-editor/live-app.md)', () => {
+describe('DocumentRoom freeing a selection lock (docs/specs/007-editor/editor-app.md)', () => {
   // Sent frames as the fake socket recorded them.
   const framesOf = (ws: FakeSocket) => ws.sent.map((raw) => JSON.parse(raw) as { kind: string });
   const released = (ws: FakeSocket) => framesOf(ws).filter((f) => f.kind === 'selection-released');

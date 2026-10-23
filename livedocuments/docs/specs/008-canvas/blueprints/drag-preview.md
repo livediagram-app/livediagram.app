@@ -5,20 +5,20 @@ drags for collaborators.
 
 ## Files
 
-| File                                                  | Role                                                                           |
-| ----------------------------------------------------- | ------------------------------------------------------------------------------ |
-| `apps/live/lib/drag-preview.ts`                       | The preview store: local and peer overlays, `useDragPreview`, `applyOverlay`   |
-| `apps/live/hooks/canvas/useEditorDrag.ts`             | Writes ticks to the preview; reads through the virtual tab; commits on release |
-| `apps/live/components/canvas/CanvasElementsLayer.tsx` | Lists the elements; renders for a preview only when it adds or removes some    |
-| `apps/live/hooks/canvas/useLayerDragPreview.ts`       | The layer's preview store: one entry per previewed element and affected arrow  |
-| `apps/live/components/canvas/CanvasElementList.tsx`   | Lists a `PreviewedElement` per element, in paint order                         |
-| `apps/live/components/canvas/PreviewedElement.tsx`    | One element, drawn from its preview entry or the document                      |
-| `apps/live/components/canvas/drag-affected-arrows.ts` | `affectedArrows`: arrows pinned to, or crossing, a previewed box               |
-| `apps/live/hooks/canvas/useCanvasSelectionView.ts`    | Derives the selection from the previewed elements while a preview lasts        |
-| `apps/live/hooks/canvas/useArrowLabelLayouts.ts`      | `draftLayout(arrow, text, elements?)`: lays out a previewed arrow's label      |
-| `packages/api-schema/src/room-messages.ts`            | `drag-preview` presence op, in `PRESENCE_OP_KINDS`                             |
-| `apps/live/hooks/collab/useDragPreviewBroadcast.ts`   | Sends the local preview at `DRAG_PREVIEW_SEND_MS`, and its end                 |
-| `apps/live/hooks/collab/peer-drag-previews.ts`        | Receives peers' previews: role check, expiry, cleared by real ops              |
+| File                                                    | Role                                                                           |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `apps/editor/lib/drag-preview.ts`                       | The preview store: local and peer overlays, `useDragPreview`, `applyOverlay`   |
+| `apps/editor/hooks/canvas/useEditorDrag.ts`             | Writes ticks to the preview; reads through the virtual tab; commits on release |
+| `apps/editor/components/canvas/CanvasElementsLayer.tsx` | Lists the elements; renders for a preview only when it adds or removes some    |
+| `apps/editor/hooks/canvas/useLayerDragPreview.ts`       | The layer's preview store: one entry per previewed element and affected arrow  |
+| `apps/editor/components/canvas/CanvasElementList.tsx`   | Lists a `PreviewedElement` per element, in paint order                         |
+| `apps/editor/components/canvas/PreviewedElement.tsx`    | One element, drawn from its preview entry or the document                      |
+| `apps/editor/components/canvas/drag-affected-arrows.ts` | `affectedArrows`: arrows pinned to, or crossing, a previewed box               |
+| `apps/editor/hooks/canvas/useCanvasSelectionView.ts`    | Derives the selection from the previewed elements while a preview lasts        |
+| `apps/editor/hooks/canvas/useArrowLabelLayouts.ts`      | `draftLayout(arrow, text, elements?)`: lays out a previewed arrow's label      |
+| `packages/api-schema/src/room-messages.ts`              | `drag-preview` presence op, in `PRESENCE_OP_KINDS`                             |
+| `apps/editor/hooks/collab/useDragPreviewBroadcast.ts`   | Sends the local preview at `DRAG_PREVIEW_SEND_MS`, and its end                 |
+| `apps/editor/hooks/collab/peer-drag-previews.ts`        | Receives peers' previews: role check, expiry, cleared by real ops              |
 
 ## Domain and naming
 
@@ -128,7 +128,7 @@ drags for collaborators.
 ## Interfaces and contracts
 
 ```ts
-// apps/live/lib/drag-preview.ts
+// apps/editor/lib/drag-preview.ts
 export type DragOverlay = {
   tabId: string;
   changed: ReadonlyMap<string, Element>;

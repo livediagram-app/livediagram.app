@@ -21,7 +21,7 @@ Derived from [Trusted Types](../trusted-types.md).
 | `packages/ui/src/trusted-types-csp.ts`                       | `TRUSTED_TYPES_CSP`, `MARKUP_POLICY`; import-free, so `scripts/e2e-stack.mjs` runs it as is                                            |
 | `packages/ui/src/trusted-types.ts`                           | `trustedHtml`, `isAllowedScriptUrl`, `trustedTypesBootScript`; exported from `@livedocuments/ui` and `@livedocuments/ui/trusted-types` |
 | `apps/*/app/layout.tsx` (all three)                          | `TRUSTED_TYPES_BOOT` (the boot script for the app's prefix), first in `<head>`; help gains a `<head>` for it                           |
-| `apps/live/src/worker.ts`                                    | `Content-Security-Policy: TRUSTED_TYPES_CSP` among its security headers                                                                |
+| `apps/editor/src/worker.ts`                                  | `Content-Security-Policy: TRUSTED_TYPES_CSP` among its security headers                                                                |
 | `apps/{marketing,help}/public/_headers`                      | The same header on `/*`                                                                                                                |
 | `scripts/e2e-stack.mjs`                                      | Sends the header on every HTML response, as production does                                                                            |
 | Every `dangerouslySetInnerHTML` site                         | `__html: trustedHtml(markup)`                                                                                                          |
@@ -136,15 +136,15 @@ export function trustedTypesBootScript(assetPrefix: string, origins?: readonly s
 
 ## Testing
 
-| Rule                                                 | Test                                                                       |
-| ---------------------------------------------------- | -------------------------------------------------------------------------- |
-| The URL rule, prefixes and the blob worker           | `packages/ui/src/trusted-types.test.ts`: `isAllowedScriptUrl` cases        |
-| `trustedHtml`                                        | `trusted-types.test.ts`                                                    |
-| The boot script runs the rule and logs               | `trusted-types.test.ts`: `trustedTypesBootScript`                          |
-| Every sink uses a policy, direct DOM writes included | `packages/ui/src/trusted-types-sinks.test.ts` (every app and package)      |
-| Every layout boots first, with its prefix            | `trusted-types-sinks.test.ts` (prefix read from each `next.config.ts`)     |
-| Every app sends the header                           | `trusted-types-sinks.test.ts` (`_headers`); `apps/live/src/worker.test.ts` |
-| No violation in the running editor                   | The E2E suite against `scripts/e2e-stack.mjs`, which sends the header      |
+| Rule                                                 | Test                                                                         |
+| ---------------------------------------------------- | ---------------------------------------------------------------------------- |
+| The URL rule, prefixes and the blob worker           | `packages/ui/src/trusted-types.test.ts`: `isAllowedScriptUrl` cases          |
+| `trustedHtml`                                        | `trusted-types.test.ts`                                                      |
+| The boot script runs the rule and logs               | `trusted-types.test.ts`: `trustedTypesBootScript`                            |
+| Every sink uses a policy, direct DOM writes included | `packages/ui/src/trusted-types-sinks.test.ts` (every app and package)        |
+| Every layout boots first, with its prefix            | `trusted-types-sinks.test.ts` (prefix read from each `next.config.ts`)       |
+| Every app sends the header                           | `trusted-types-sinks.test.ts` (`_headers`); `apps/editor/src/worker.test.ts` |
+| No violation in the running editor                   | The E2E suite against `scripts/e2e-stack.mjs`, which sends the header        |
 
 ## Constants and configuration
 

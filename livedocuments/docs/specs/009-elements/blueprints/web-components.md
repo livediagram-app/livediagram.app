@@ -6,26 +6,26 @@ silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
 
 Scope, by file:
 
-| File                                                        | Role                                                                             |
-| ----------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| `packages/document/src/web-components.ts`                   | Vocabulary, bounds, defaults, the pure layouts, `withWebRows`                    |
-| `packages/document/src/component-factories.ts`              | `createComponent`, `createHero`, `createCalloutCard`, `COMPONENT_SIZE`           |
-| `packages/document/src/shape-factory.ts`                    | Default sizes and starting content per kind                                      |
-| `packages/document/src/shape-variants.ts`                   | `applyShapeVariant`: the `callout` Card preset                                   |
-| `packages/document/src/svg-render-web.ts`                   | `svgWebComponent`, `svgHeroCaption`: the headless render                         |
-| `packages/document/src/themes.ts`                           | `themeColourFields`: accent bars retheme only their stroke                       |
-| `packages/document/src/colors.ts`                           | `defaultTextColor`, `SELF_PAINTING_SHAPES`, `acceptsInlineIcon`, `RADIUS_SHAPES` |
-| `packages/document/src/data-shapes.ts`                      | `isSelfDrawingShape`: stat row and process carry no label                        |
-| `packages/document/src/validate.ts`                         | Row, masthead and caption bounds; arrow ends `free`, `pinned` or `on-arrow`      |
-| `apps/live/components/canvas/web/*.tsx`                     | One face per kind, `HeroCaptionCard`, `LabelRegion`, `WebFaceProps`              |
-| `apps/live/components/canvas/InlineTextLine.tsx`            | The in-place single-line editor                                                  |
-| `apps/live/components/canvas/ElementFaceRouter.tsx`         | Routes faces; computes `editable`                                                |
-| `apps/live/hooks/canvas/useWebComponentSetters.ts`          | Row writes, ring append, hero caption writes                                     |
-| `apps/live/hooks/canvas/useDataShapeSetters.ts`             | `setPageHeading` (`MASTHEAD_SHAPES`)                                             |
-| `apps/live/components/palette/context-menu-web-editors.tsx` | `WebRowsMenuSection`, `StatsEditor`, `TextRowsEditor`                            |
-| `apps/live/components/palette/ElementContentSections.tsx`   | The image menu's "Caption Card" toggle                                           |
-| `apps/live/components/canvas/CanvasElementsLayer.tsx`       | `WEB_ROW_ACTION`: the ring's add-row action                                      |
-| `apps/live/lib/element-telemetry.ts`                        | `COMPONENT_TELEMETRY`, `SHAPE_TOKENS` entries                                    |
+| File                                                          | Role                                                                             |
+| ------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `packages/document/src/web-components.ts`                     | Vocabulary, bounds, defaults, the pure layouts, `withWebRows`                    |
+| `packages/document/src/component-factories.ts`                | `createComponent`, `createHero`, `createCalloutCard`, `COMPONENT_SIZE`           |
+| `packages/document/src/shape-factory.ts`                      | Default sizes and starting content per kind                                      |
+| `packages/document/src/shape-variants.ts`                     | `applyShapeVariant`: the `callout` Card preset                                   |
+| `packages/document/src/svg-render-web.ts`                     | `svgWebComponent`, `svgHeroCaption`: the headless render                         |
+| `packages/document/src/themes.ts`                             | `themeColourFields`: accent bars retheme only their stroke                       |
+| `packages/document/src/colors.ts`                             | `defaultTextColor`, `SELF_PAINTING_SHAPES`, `acceptsInlineIcon`, `RADIUS_SHAPES` |
+| `packages/document/src/data-shapes.ts`                        | `isSelfDrawingShape`: stat row and process carry no label                        |
+| `packages/document/src/validate.ts`                           | Row, masthead and caption bounds; arrow ends `free`, `pinned` or `on-arrow`      |
+| `apps/editor/components/canvas/web/*.tsx`                     | One face per kind, `HeroCaptionCard`, `LabelRegion`, `WebFaceProps`              |
+| `apps/editor/components/canvas/InlineTextLine.tsx`            | The in-place single-line editor                                                  |
+| `apps/editor/components/canvas/ElementFaceRouter.tsx`         | Routes faces; computes `editable`                                                |
+| `apps/editor/hooks/canvas/useWebComponentSetters.ts`          | Row writes, ring append, hero caption writes                                     |
+| `apps/editor/hooks/canvas/useDataShapeSetters.ts`             | `setPageHeading` (`MASTHEAD_SHAPES`)                                             |
+| `apps/editor/components/palette/context-menu-web-editors.tsx` | `WebRowsMenuSection`, `StatsEditor`, `TextRowsEditor`                            |
+| `apps/editor/components/palette/ElementContentSections.tsx`   | The image menu's "Caption Card" toggle                                           |
+| `apps/editor/components/canvas/CanvasElementsLayer.tsx`       | `WEB_ROW_ACTION`: the ring's add-row action                                      |
+| `apps/editor/lib/element-telemetry.ts`                        | `COMPONENT_TELEMETRY`, `SHAPE_TOKENS` entries                                    |
 
 ## Domain and naming
 
@@ -151,7 +151,7 @@ export function createComponent(
   colors: ComponentColors,
 ): Element;
 
-// apps/live/hooks/canvas/useWebComponentSetters.ts
+// apps/editor/hooks/canvas/useWebComponentSetters.ts
 setWebRows: (elementId: string, rows: WebRows) => void;
 appendWebRowTo: (elementId: string) => void;
 setWebRowsSelected: (rows: WebRows) => void;
@@ -239,26 +239,26 @@ None: web components log nothing of their own.
 
 ## Testing
 
-| Rule                                         | Test                                                                                  | File                                                             |
-| -------------------------------------------- | ------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| One element per component, no `groupId` (I1) | every component builds exactly one element                                            | `packages/document/src/web-components.test.ts`                   |
-| Colours per family                           | dresses the accent-bar kinds in the accent with white text                            | `packages/document/src/web-components.test.ts`                   |
-| Hero is an image with a caption              | the hero is an image with a caption card in the accent                                | `packages/document/src/web-components.test.ts`                   |
-| Bounds (I3)                                  | validation bounds the rows (three cases)                                              | `packages/document/src/web-components.test.ts`                   |
-| Layouts re-flow (I4)                         | layouts re-flow with the box (four cases)                                             | `packages/document/src/web-components.test.ts`                   |
-| Accent bar retheme touches only stroke       | an accent bar retheme touches only its stroke                                         | `packages/document/src/web-components.test.ts`                   |
-| Export draws rows, title once, hero caption  | headless render (three cases)                                                         | `packages/document/src/web-components.test.ts`                   |
-| `withWebRows` / `appendWebRow`               | row writes (two cases)                                                                | `packages/document/src/web-components.test.ts`                   |
-| Faces commit, inert until selected           | web component faces (six cases)                                                       | `apps/live/components/canvas/web/WebComponentFace.test.tsx`      |
-| Menu add, remove, reorder, bounds            | WebRowsMenuSection (five cases)                                                       | `apps/live/components/palette/context-menu-web-editors.test.tsx` |
-| Setters, caption toggle                      | useWebComponentSetters (five cases)                                                   | `apps/live/hooks/canvas/useWebComponentSetters.test.ts`          |
-| ⌘G left to the browser                       | leaves Cmd+G to the browser now that there are no groups                              | `apps/live/hooks/canvas/useEditorKeyboardShortcuts.test.ts`      |
-| Single selection bounds itself               | a single selection is bounded by the element itself                                   | `apps/live/lib/canvas-selection.test.ts`                         |
-| Drag-to-draw sizes per axis                  | sizes to the dragged box, per axis                                                    | `apps/live/lib/draw-commit.test.ts`                              |
-| Disc glyphs on the cap band in export        | %s centres its disc glyph on its cap band                                             | `packages/document/src/svg-cap-band-render.test.ts`              |
-| Text alignment in the Quick Style Panel      | offers no text alignment on a kind with its own face, but keeps it on a web component | `apps/live/lib/quick-style.test.ts`                              |
-| Ring add hidden when full                    | none [GA14]                                                                           |                                                                  |
-| Export draws the inline icon                 | none [GA2]                                                                            |                                                                  |
+| Rule                                         | Test                                                                                  | File                                                               |
+| -------------------------------------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| One element per component, no `groupId` (I1) | every component builds exactly one element                                            | `packages/document/src/web-components.test.ts`                     |
+| Colours per family                           | dresses the accent-bar kinds in the accent with white text                            | `packages/document/src/web-components.test.ts`                     |
+| Hero is an image with a caption              | the hero is an image with a caption card in the accent                                | `packages/document/src/web-components.test.ts`                     |
+| Bounds (I3)                                  | validation bounds the rows (three cases)                                              | `packages/document/src/web-components.test.ts`                     |
+| Layouts re-flow (I4)                         | layouts re-flow with the box (four cases)                                             | `packages/document/src/web-components.test.ts`                     |
+| Accent bar retheme touches only stroke       | an accent bar retheme touches only its stroke                                         | `packages/document/src/web-components.test.ts`                     |
+| Export draws rows, title once, hero caption  | headless render (three cases)                                                         | `packages/document/src/web-components.test.ts`                     |
+| `withWebRows` / `appendWebRow`               | row writes (two cases)                                                                | `packages/document/src/web-components.test.ts`                     |
+| Faces commit, inert until selected           | web component faces (six cases)                                                       | `apps/editor/components/canvas/web/WebComponentFace.test.tsx`      |
+| Menu add, remove, reorder, bounds            | WebRowsMenuSection (five cases)                                                       | `apps/editor/components/palette/context-menu-web-editors.test.tsx` |
+| Setters, caption toggle                      | useWebComponentSetters (five cases)                                                   | `apps/editor/hooks/canvas/useWebComponentSetters.test.ts`          |
+| ⌘G left to the browser                       | leaves Cmd+G to the browser now that there are no groups                              | `apps/editor/hooks/canvas/useEditorKeyboardShortcuts.test.ts`      |
+| Single selection bounds itself               | a single selection is bounded by the element itself                                   | `apps/editor/lib/canvas-selection.test.ts`                         |
+| Drag-to-draw sizes per axis                  | sizes to the dragged box, per axis                                                    | `apps/editor/lib/draw-commit.test.ts`                              |
+| Disc glyphs on the cap band in export        | %s centres its disc glyph on its cap band                                             | `packages/document/src/svg-cap-band-render.test.ts`                |
+| Text alignment in the Quick Style Panel      | offers no text alignment on a kind with its own face, but keeps it on a web component | `apps/editor/lib/quick-style.test.ts`                              |
+| Ring add hidden when full                    | none [GA14]                                                                           |                                                                    |
+| Export draws the inline icon                 | none [GA2]                                                                            |                                                                    |
 
 ## Constants and configuration
 

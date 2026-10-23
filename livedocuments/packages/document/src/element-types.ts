@@ -77,7 +77,7 @@ export type ShapeElement = {
   // optional caption); on any OTHER shape kind it's an inline icon shown
   // beside the shape's text label (drag an icon onto a shape, or add one
   // while a shape is selected). The valid keys + their SVG live in the
-  // live app's icon catalogue; an unknown key falls back to a placeholder
+  // editor app's icon catalogue; an unknown key falls back to a placeholder
   // glyph so a document authored against a newer catalogue still renders.
   iconId?: string;
   // Registry key for a `sticker` shape's art (docs/specs/010-palette/stickers.md) — e.g.

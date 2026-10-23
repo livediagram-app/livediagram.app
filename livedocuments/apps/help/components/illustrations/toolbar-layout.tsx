@@ -72,7 +72,7 @@ function Pill({
   );
 }
 
-/** The category bar's categories on an infographic page, in order (apps/live palette-layouts.ts), with '|' for the
+/** The category bar's categories on an infographic page, in order (apps/editor palette-layouts.ts), with '|' for the
  *  divider between the bands. */
 export const BAR: readonly string[] = [
   'Shapes',

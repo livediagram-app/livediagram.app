@@ -61,7 +61,7 @@ export const BRAND_ICONS: NonNullable<Metadata['icons']> = {
 // 'light dark' says the pages paint both appearances. The painted one is the
 // CSS `color-scheme` the shared theme sets from the `dark` class, which outranks
 // this hint (docs/specs/004-interface-design/appearance.md). The editor has its own
-// viewport (pinned zoom, docs/specs/007-editor/live-app.md) and doesn't use this.
+// viewport (pinned zoom, docs/specs/007-editor/editor-app.md) and doesn't use this.
 export const PUBLIC_VIEWPORT: Viewport = {
   themeColor: '#F59E0B',
   colorScheme: 'light dark',

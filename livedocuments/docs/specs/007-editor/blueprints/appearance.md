@@ -1,7 +1,7 @@
 # Appearance (light / dark / system): blueprint
 
 Derived from [Appearance](../../004-interface-design/appearance.md) (the origin-wide setting, its boot script and the
-public-site toggle) and [Live app, Appearance](../live-app.md#appearance-light--dark--system) (the editor's parts), with the dark-mode token rules from
+public-site toggle) and [Editor app, Appearance](../editor-app.md#appearance-light--dark--system) (the editor's parts), with the dark-mode token rules from
 [Colour scheme](../../004-interface-design/color-scheme.md) and the Default scheme's per-viewer halves from
 [Canvas and palette](../../008-canvas/canvas-and-palette.md). The spec decides; this file only adds engineering precision.
 Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
@@ -18,9 +18,9 @@ Scope, by file:
 | `packages/ui/src/appearance/SiteAppearanceToggle.tsx`      | The public sites' control, on the ShareRail's Appearance rail at `xl`+ (`2xl`+ on wide surfaces: help), never in `SiteHeader`; no telemetry |
 | `packages/ui/src/site.ts`                                  | `PUBLIC_VIEWPORT` (`colorScheme: 'light dark'`) and `DARK_READER_LOCK`                                                                      |
 | `apps/*/app/layout.tsx` (live, marketing, help, telemetry) | Inline the boot script; declare the lock meta; dark body                                                                                    |
-| `apps/live/hooks/ui/useAppearance.ts`                      | The shared hook plus the editor's telemetry                                                                                                 |
-| `apps/live/components/chrome/AppearanceToggle.tsx`         | The three-state control on the TabBar                                                                                                       |
-| `apps/live/components/canvas/CanvasSurfaceContext.tsx`     | Carries the `CanvasSurface` past `React.memo` element views                                                                                 |
+| `apps/editor/hooks/ui/useAppearance.ts`                    | The shared hook plus the editor's telemetry                                                                                                 |
+| `apps/editor/components/chrome/AppearanceToggle.tsx`       | The three-state control on the TabBar                                                                                                       |
+| `apps/editor/components/canvas/CanvasSurfaceContext.tsx`   | Carries the `CanvasSurface` past `React.memo` element views                                                                                 |
 | `packages/document/src/colors.ts`                          | `CanvasSurface`, `canvasSurface`, `isLightColor`, the `default*Color` inks                                                                  |
 | `packages/document/src/canvas-colors.ts`                   | The Default scheme's light and dark canvas colours                                                                                          |
 | `packages/tailwind-config/theme.css`                       | The `dark:` class variant, the brand / slate tokens, `color-scheme`                                                                         |
@@ -100,8 +100,8 @@ editor.
 
 ## Data and persistence
 
-| Field                  | Store                             | Class             | Notes                                    |
-| ---------------------- | --------------------------------- | ----------------- | ---------------------------------------- |
+| Field                      | Store                             | Class             | Notes                                    |
+| -------------------------- | --------------------------------- | ----------------- | ---------------------------------------- |
 | `livedocuments:v2:ui-mode` | `localStorage`, this browser only | Device preference | Values `'light'` / `'dark'` / `'system'` |
 
 Nothing is synced to the api or written into a document. Migration: none; older builds wrote `'light'` / `'dark'`, which
@@ -148,7 +148,7 @@ layout inlines the real string rather than a client-reference stub.
   its contrast audit covers dark mode.
 - Light mode's brand ramp is settled ([#74](https://github.com/livedocuments-app/livedocuments.app/issues/74)): solid
   brand fills under white text and brand ink on white are both `brand-700` (5.9:1), guarded by
-  `apps/live/app/light-palette.test.ts`. Light muted text in the editor's chrome (`slate-400`) is not yet in line,
+  `apps/editor/app/light-palette.test.ts`. Light muted text in the editor's chrome (`slate-400`) is not yet in line,
   so this category is not yet fully covered.
 
 ## Web Experience
@@ -188,7 +188,7 @@ layout inlines the real string rather than a client-reference stub.
 
 | Constant                       | Value                            | Provenance                              | Safe range                            |
 | ------------------------------ | -------------------------------- | --------------------------------------- | ------------------------------------- |
-| `APPEARANCE_STORAGE_KEY`       | `'livedocuments:v2:ui-mode'`         | Stored data; renaming resets every user | Fixed; no quote, backslash or newline |
+| `APPEARANCE_STORAGE_KEY`       | `'livedocuments:v2:ui-mode'`     | Stored data; renaming resets every user | Fixed; no quote, backslash or newline |
 | `DARK_MEDIA_QUERY`             | `'(prefers-color-scheme: dark)'` | CSS Media Queries Level 5               | Fixed                                 |
 | `DEFAULT_APPEARANCE_SETTING`   | `'system'`                       | Spec: System is the default             | One of the three literals             |
 | `DEFAULT_BACKGROUND_COLOR`     | `#ffffff`                        | Colour scheme: canvas is pure white     | Light (`isLightColor` true)           |

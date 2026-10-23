@@ -16,8 +16,8 @@
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\"",
     "clean": "turbo run clean --filter=@livedocuments/* && rm -rf node_modules",
     "icons:vendor": "pnpm --filter @livedocuments/icons vendor:lucide",
-    "icons:sheet": "pnpm --filter @livedocuments/live icons:sheet",
-    "icons:brand": "pnpm --filter @livedocuments/live icons:brand"
+    "icons:sheet": "pnpm --filter @livedocuments/editor icons:sheet",
+    "icons:brand": "pnpm --filter @livedocuments/editor icons:brand"
   },
   "devDependencies": {
     "@livedocuments/oxlint-config": "workspace:*",

@@ -8,7 +8,7 @@ The editor is friction-free and discoverable, but there's no place that explains
 
 ## Shape
 
-A new Next.js app, `apps/help`, deployed as the `livedocuments-help` Worker and stitched in by the router under `/help` — the same pattern as the live app's assets (see [Router app](../016-platform/router-app.md), [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)):
+A new Next.js app, `apps/help`, deployed as the `livedocuments-help` Worker and stitched in by the router under `/help` — the same pattern as the editor app's assets (see [Router app](../016-platform/router-app.md), [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)):
 
 - `output: 'export'`, `basePath: '/help'`, `assetPrefix: '/help'`. Static only, no SSR (see [hard constraints](../../../AGENTS.md)).
 - The router strips `/help` and forwards to the worker, which serves `./out`.
@@ -247,7 +247,7 @@ The editor's `TabBar` gains a **Help** link on its right edge, beside the existi
 
 The editor's global search panel ([Canvas and palette](../008-canvas/canvas-and-palette.md)) surfaces matching help articles as a
 **Help** group, so "how do I…" is answerable without leaving the canvas. The
-searchable catalogue (`apps/live/lib/help-search.ts`) is derived from the
+searchable catalogue (`apps/editor/lib/help-search.ts`) is derived from the
 **full `@livedocuments/help-registry` registry** — every article, matched on its
 title plus the registry's description + `keywords` synonyms, resolved to an
 absolute `/help` href, with the article's telemetry id ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md) Help) as the

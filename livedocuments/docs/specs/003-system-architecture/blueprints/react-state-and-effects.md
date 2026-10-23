@@ -25,25 +25,25 @@ Every render-time read of a browser global is converted; reads in effects, handl
 module code that render does not consume stay as they are. A component whose prerendered HTML matters (an LCP
 page) never suspends whole: its URL reads use an external store whose server snapshot is "nothing" instead.
 
-| Site                                                                          | Reads                               | Becomes                                                                           |
-| ----------------------------------------------------------------------------- | ----------------------------------- | --------------------------------------------------------------------------------- |
-| `apps/live/app/explorer/useExplorerState.ts`                                  | the URL, preferences                | `use(browser())`; no hydration flag                                               |
-| `apps/live/app/oauth/consent/page.tsx`, `apps/live/app/oauth/device/page.tsx` | `location` (return path)            | `use(browser())` in the signed-out branch, under the page's Suspense              |
-| `apps/live/app/new/page.tsx` (`initialPlacement`)                             | `location.search`                   | `useSyncExternalStore` (`placementContextFromSearch`), like the bypass            |
-| `apps/live/components/panels/TeamSharedDocuments.tsx` (`spot`)                | `location.search`                   | `use(browser())` before the state                                                 |
-| `ShareDialog`, `TeamInviteLinkDialog`                                         | `location.origin`                   | `use(browser())`, then `window.location.origin`                                   |
-| `CanvasThemeDialog` (`useBrushAnchor`)                                        | `innerWidth`, a box                 | `use(browser())` before the state (read once as it opens)                         |
-| `useEditorDialogs`, `useEyeDropper`, `useShareLinks`, `useEditorViewport`     | the URL, `EyeDropper`, `innerWidth` | `use(browser())` (`useShareLinks`: the guard goes; its URL is built in handlers)  |
-| `apps/live/app/document/[id]/page.tsx`, `apps/live/app/embed/page.tsx`        | (the editor suspends)               | `<Suspense fallback={<OpeningScreen />}>`: the screen the prerender always showed |
-| `CardFinderPanel` (`finePointer`)                                             | `(pointer: fine)`                   | `useMediaQuery('(pointer: fine)')`                                                |
-| `arrow-handles.tsx` (`COARSE_POINTER`)                                        | `(pointer: coarse)`                 | `useMediaQuery('(pointer: coarse)')` in each handle                               |
-| `EditorContextMenu` (`anchorBottom`)                                          | `innerHeight`                       | `useViewportHeight()`                                                             |
-| `StartAgainTray` (`pillPlace` default argument)                               | `innerHeight`                       | a required argument; the caller passes `useViewportHeight()`                      |
-| `useViewportWidth`, `useViewportHeight`                                       | `innerWidth`, `innerHeight`         | `useSyncExternalStore` on `resize`, 0 in the prerender                            |
-| `EditorCanvasHost` (`openUp`, in the context-menu handler)                    | `innerHeight`                       | the guard goes: a handler runs in the browser                                     |
-| `packages/ui/src/SiteFooter.tsx`                                              | the clock (`new Date()`)            | `NEXT_PUBLIC_BUILD_YEAR`                                                          |
+| Site                                                                              | Reads                               | Becomes                                                                           |
+| --------------------------------------------------------------------------------- | ----------------------------------- | --------------------------------------------------------------------------------- |
+| `apps/editor/app/explorer/useExplorerState.ts`                                    | the URL, preferences                | `use(browser())`; no hydration flag                                               |
+| `apps/editor/app/oauth/consent/page.tsx`, `apps/editor/app/oauth/device/page.tsx` | `location` (return path)            | `use(browser())` in the signed-out branch, under the page's Suspense              |
+| `apps/editor/app/new/page.tsx` (`initialPlacement`)                               | `location.search`                   | `useSyncExternalStore` (`placementContextFromSearch`), like the bypass            |
+| `apps/editor/components/panels/TeamSharedDocuments.tsx` (`spot`)                  | `location.search`                   | `use(browser())` before the state                                                 |
+| `ShareDialog`, `TeamInviteLinkDialog`                                             | `location.origin`                   | `use(browser())`, then `window.location.origin`                                   |
+| `CanvasThemeDialog` (`useBrushAnchor`)                                            | `innerWidth`, a box                 | `use(browser())` before the state (read once as it opens)                         |
+| `useEditorDialogs`, `useEyeDropper`, `useShareLinks`, `useEditorViewport`         | the URL, `EyeDropper`, `innerWidth` | `use(browser())` (`useShareLinks`: the guard goes; its URL is built in handlers)  |
+| `apps/editor/app/document/[id]/page.tsx`, `apps/editor/app/embed/page.tsx`        | (the editor suspends)               | `<Suspense fallback={<OpeningScreen />}>`: the screen the prerender always showed |
+| `CardFinderPanel` (`finePointer`)                                                 | `(pointer: fine)`                   | `useMediaQuery('(pointer: fine)')`                                                |
+| `arrow-handles.tsx` (`COARSE_POINTER`)                                            | `(pointer: coarse)`                 | `useMediaQuery('(pointer: coarse)')` in each handle                               |
+| `EditorContextMenu` (`anchorBottom`)                                              | `innerHeight`                       | `useViewportHeight()`                                                             |
+| `StartAgainTray` (`pillPlace` default argument)                                   | `innerHeight`                       | a required argument; the caller passes `useViewportHeight()`                      |
+| `useViewportWidth`, `useViewportHeight`                                           | `innerWidth`, `innerHeight`         | `useSyncExternalStore` on `resize`, 0 in the prerender                            |
+| `EditorCanvasHost` (`openUp`, in the context-menu handler)                        | `innerHeight`                       | the guard goes: a handler runs in the browser                                     |
+| `packages/ui/src/SiteFooter.tsx`                                                  | the clock (`new Date()`)            | `NEXT_PUBLIC_BUILD_YEAR`                                                          |
 
-What stays, with where it runs, is the allow-list in `apps/live/render-browser-globals.test.ts`.
+What stays, with where it runs, is the allow-list in `apps/editor/render-browser-globals.test.ts`.
 
 ### A View Transition from state
 
@@ -57,9 +57,9 @@ What stays, with where it runs, is the allow-list in `apps/live/render-browser-g
 
 ### Ref-only wrappers: the sites
 
-| Site                                                      | The wrapper carried          | Becomes                                                          |
-| --------------------------------------------------------- | ---------------------------- | ---------------------------------------------------------------- |
-| `apps/live/components/panels/LayerRowMenu.tsx` (two rows) | the confirm popover's anchor | the click's `currentTarget` (`MenuActionRow` hands its click on) |
+| Site                                                        | The wrapper carried          | Becomes                                                          |
+| ----------------------------------------------------------- | ---------------------------- | ---------------------------------------------------------------- |
+| `apps/editor/components/panels/LayerRowMenu.tsx` (two rows) | the confirm popover's anchor | the click's `currentTarget` (`MenuActionRow` hands its click on) |
 
 Stay, carrying more than a ref: `packages/ui/src/Tooltip.tsx` (React pointer and focus handlers, capture-phase
 ones among them), `apps/help/components/ArticleShell.tsx` (reads `textContent`) and
@@ -68,7 +68,7 @@ ones among them), `apps/help/components/ArticleShell.tsx` (reads `textContent`) 
 ### The React Compiler's reach
 
 `reactCompiler: true` with `experimental.turbopackRustReactCompiler` comes from `@livedocuments/next-config` when an app
-passes `reactCompiler: true`, which only `apps/live/next.config.ts` does
+passes `reactCompiler: true`, which only `apps/editor/next.config.ts` does
 ([Next.js blueprint](../../016-platform/blueprints/nextjs.md)).
 
 ## Interfaces and contracts
@@ -133,7 +133,7 @@ No new log lines: a refused fullscreen and a Trusted Types violation are logged 
 | Rule                                     | Test                                                                                             |
 | ---------------------------------------- | ------------------------------------------------------------------------------------------------ |
 | Browser-only sites render in the browser | Each site's component test renders the browser value; a server render shows the fallback         |
-| No `typeof window` in render             | `apps/live/render-browser-globals.test.ts`: `.tsx` and `use*.ts` guard only where allow-listed   |
+| No `typeof window` in render             | `apps/editor/render-browser-globals.test.ts`: `.tsx` and `use*.ts` guard only where allow-listed |
 | Footer year from the build               | `packages/ui` SiteFooter test renders `BUILD_YEAR`, and no year without it                       |
 | Reduced motion starts no transition      | The slide and mode-switch tests stub `prefersReducedMotion` and assert no `startTransition` type |
 | Steps count from `asked`                 | `PresentationHost` test: three quick steps land three slides on                                  |
@@ -141,8 +141,8 @@ No new log lines: a refused fullscreen and a Trusted Types violation are logged 
 
 ## Constants and configuration
 
-| Constant                 | Value                                       | Provenance                     | Safe range        |
-| ------------------------ | ------------------------------------------- | ------------------------------ | ----------------- |
+| Constant                 | Value                                       | Provenance                         | Safe range        |
+| ------------------------ | ------------------------------------------- | ---------------------------------- | ----------------- |
 | `NEXT_PUBLIC_BUILD_YEAR` | `String(new Date().getFullYear())` at build | `@livedocuments/next-config` `env` | A four-digit year |
 
 ## Defaults ledger

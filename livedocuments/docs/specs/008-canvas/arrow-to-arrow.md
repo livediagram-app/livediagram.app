@@ -51,7 +51,7 @@ threshold, excludeId)` (`geometry-snapping.ts`) compute the dots + the nearest
   target when present (`factories.ts`); deleting a target arrow cascade-deletes
   the arrows attached to it (`arrowReferencesAny`).
 - Reveal distance (perpendicular) shows the dots; a tighter threshold connects.
-  Drag-snap lives in `apps/live/hooks/canvas/useEditorDrag.ts`.
+  Drag-snap lives in `apps/editor/hooks/canvas/useEditorDrag.ts`.
 - Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)): `track('Element', 'Linked', 'ArrowPoint')`, once per drag.
 
 ## Out of scope (for now)

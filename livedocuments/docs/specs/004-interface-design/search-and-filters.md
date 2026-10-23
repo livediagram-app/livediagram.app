@@ -21,5 +21,5 @@ filters live in the search. The box always reads as the whole query.
 
 ## Building it
 
-- `FilterSearchBox` (apps/live/components/primitives) draws the field; the caller owns what a chip and the add
+- `FilterSearchBox` (apps/editor/components/primitives) draws the field; the caller owns what a chip and the add
   control mean.

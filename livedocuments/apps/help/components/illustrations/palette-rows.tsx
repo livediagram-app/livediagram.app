@@ -2,7 +2,7 @@
 // Write, Draw, Build, Components, Media and Data render as a column of rows, each a
 // glyph chip, the tile's caption, a one-line blurb and, where it has one, its key.
 // The captions, blurbs and keys are copied from PALETTE_TILES
-// (apps/live/components/palette/palette-tile-defs.tsx), so the picture reads the
+// (apps/editor/components/palette/palette-tile-defs.tsx), so the picture reads the
 // way the editor does. Composed from the shared primitives.
 
 import { Scene, Panel, Label } from './primitives';

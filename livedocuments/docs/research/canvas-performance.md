@@ -10,7 +10,7 @@ resulting rules live in [Canvas performance](../specs/008-canvas/canvas-performa
 
 ## Method
 
-- A production export of `apps/live` (with `productionBrowserSourceMaps` switched on for the run
+- A production export of `apps/editor` (with `productionBrowserSourceMaps` switched on for the run
   only) pointed at the staging api, served locally; every non-GET api call and the WebSocket were
   stubbed, so the board was never written.
 - Headless Chromium, 1440 × 900, dark, the CPU throttled 4× (`Emulation.setCPUThrottlingRate`) to
@@ -390,7 +390,7 @@ Measured 2026-10-14 on the reference board, local, calibrated 3.2x, against main
 - **Interleave A/B runs on a shared machine.** Measured one build after the other, whiteboard zoom at
   fit read about 5 ms worse with the plane; another session's test suite was running alongside
   (load average 17-26). Interleaved over five pairs the two builds could not be told apart, each
-  swinging with the load. Serve the second build with `E2E_LIVE_OUT` on other ports, from a folder
+  swinging with the load. Serve the second build with `E2E_EDITOR_OUT` on other ports, from a folder
   `next build` does not wipe (it empties `.next`). The
   cursor the browser shows over bare canvas, a shape and an arrow, under Select, a draw tool, Hand
   and a whiteboard pen, read identically on both builds, and isometric view draws the same.

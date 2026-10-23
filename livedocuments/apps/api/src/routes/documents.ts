@@ -274,7 +274,7 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
         savedAt,
         createdAt: dates.createdAt,
       });
-      // Seed tabs if the caller provided them. The live app's
+      // Seed tabs if the caller provided them. The editor app's
       // welcome flow uses this when it commits a fresh document
       // id — it ships the templated tab inline so the very
       // first per-tab fetch already has data.
@@ -536,7 +536,7 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
   // /api/documents/<id>/thumbnail — cached SVG snapshot (docs/specs/006-document/document-snapshots.md). Read-
   // gated exactly like GET /api/documents/<id>: the owner, a joined team
   // member, or a valid share-code visitor. A native <img> can't send
-  // auth headers, so the live app fetches this with headers and wraps
+  // auth headers, so the editor app fetches this with headers and wraps
   // the bytes in a blob URL; a miss (no document, no read access, no R2
   // binding, empty document) is a 404 the row turns into its icon.
   if (segments.length === 4 && segments[3] === 'thumbnail') {

@@ -80,7 +80,7 @@ The brand mark as PNGs, drawn in its light palette: the compact drawing below 48
 | `livedocuments-icon-{256,512,1024}.png`  | White. For surfaces that show the icon as a tile, such as social previews.                 |
 | `livedocuments-icon-transparent-<n>.png` | Transparent, at 16, 32, 64, 128, 256 and 512. For surfaces that draw their own background. |
 
-`pnpm icons:brand` (`apps/live/scripts/brand-icons/render.mjs`) regenerates every static copy from the
+`pnpm icons:brand` (`apps/editor/scripts/brand-icons/render.mjs`) regenerates every static copy from the
 brand module in `@livedocuments/ui`: the apps' `app/icon.svg` favicons, `logo/`, and both PNG sets (the white ones
 also into `apps/marketing/public/`), rasterised by Playwright's Chromium. A test fails if a committed SVG drifts.
 

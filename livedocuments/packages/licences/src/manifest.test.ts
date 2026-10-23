@@ -42,7 +42,7 @@ describe('buildManifest', () => {
     const { manifest } = build([
       collected('api', [work('svgpath', '2.6.0')]),
       collected('marketing', [work('svgpath', '2.6.0')]),
-      collected('live', [work('svgpath', '2.6.0'), work('dequal', '2.0.3')]),
+      collected('editor', [work('svgpath', '2.6.0'), work('dequal', '2.0.3')]),
     ]);
     expect(manifest.schemaVersion).toBe(1);
     expect(manifest.sections.map((s) => [s.side, s.apps.map((a) => a.label)])).toEqual([
@@ -50,8 +50,8 @@ describe('buildManifest', () => {
       ['server', ['API', 'MCP server', 'Router']],
     ]);
     expect(manifest.sections[0]!.works.map((w) => [w.name, w.apps])).toEqual([
-      ['dequal', ['live']],
-      ['svgpath', ['live', 'marketing']],
+      ['dequal', ['editor']],
+      ['svgpath', ['editor', 'marketing']],
     ]);
     expect(manifest.sections[1]!.works.map((w) => [w.name, w.apps])).toEqual([
       ['svgpath', ['api']],
@@ -60,7 +60,7 @@ describe('buildManifest', () => {
 
   it('shares one file between works with the same text and measures it', () => {
     const { manifest, texts } = build([
-      collected('live', [
+      collected('editor', [
         work('a', '1.0.0'),
         work('b', '1.0.0', { licence: 'ISC', texts: [{ label: 'COPYING', text: ISC }] }),
         work('c', '1.0.0'),
@@ -78,7 +78,7 @@ describe('buildManifest', () => {
 
   it('orders by name ignoring case, then by version, and anchors each entry uniquely', () => {
     const { manifest } = build([
-      collected('live', [
+      collected('editor', [
         work('long', '5.3.2'),
         work('XNNPACK', '5e8033a', { key: 'embedded:xnnpack', kind: 'embedded', carrier: 'tfjs' }),
         work('long', '4.0.0'),
@@ -104,7 +104,7 @@ describe('buildManifest', () => {
 
   it('reports table entries no app used', () => {
     const { unused } = build([
-      collected('live', [], { usedOverrides: ['seedrandom@3.0.5'], usedEmbedded: ['xnnpack'] }),
+      collected('editor', [], { usedOverrides: ['seedrandom@3.0.5'], usedEmbedded: ['xnnpack'] }),
     ]);
     expect(unused).toEqual([
       { kind: 'override', id: 'old@1.0.0' },
@@ -113,7 +113,7 @@ describe('buildManifest', () => {
   });
 
   it('serialises the same input to the same bytes', () => {
-    const input = [collected('live', [work('b', '1.0.0'), work('a', '1.0.0')])];
+    const input = [collected('editor', [work('b', '1.0.0'), work('a', '1.0.0')])];
     const text = serialiseManifest(build(input).manifest);
     expect(text.endsWith('}\n')).toBe(true);
     expect(serialiseManifest(build(input).manifest)).toBe(text);

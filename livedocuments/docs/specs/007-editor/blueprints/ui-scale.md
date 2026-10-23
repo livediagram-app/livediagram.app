@@ -7,15 +7,15 @@ owns every design decision.
 
 | Term                      | Identifier                                                                |
 | ------------------------- | ------------------------------------------------------------------------- |
-| The master preference     | `UserPreferences.uiScale` (`apps/live/lib/user-preferences.ts`)           |
+| The master preference     | `UserPreferences.uiScale` (`apps/editor/lib/user-preferences.ts`)         |
 | A part                    | `UiScalePart`: `'panels'`, `'toolbar'`, `'cornerButtons'`                 |
 | A part's preference       | `uiScalePanels`, `uiScaleToolbar`, `uiScaleCornerButtons`                 |
-| The parts, in order       | `UI_SCALE_PARTS` (`{ id, key }`) in `apps/live/lib/ui-scale.ts`           |
+| The parts, in order       | `UI_SCALE_PARTS` (`{ id, key }`) in `apps/editor/lib/ui-scale.ts`         |
 | The factor in force       | "UI scale", `scale` in code; always the RESOLVED value                    |
 | Every part's factor       | `UiScales`, from `resolveUiScales(prefs, { mobile })`                     |
 | A slider's shown value    | `resolveUiScale(prefs)` (master), `resolveUiScalePart(prefs, part)`       |
 | Writing                   | `withUiScalePatch(prefs, patch)` with `uiScalePatch` / `uiScalePartPatch` |
-| Reading it in a component | `useUiScale(part)` (`apps/live/components/providers/ui-scale.tsx`)        |
+| Reading it in a component | `useUiScale(part)` (`apps/editor/components/providers/ui-scale.tsx`)      |
 | A scaled surface's style  | `uiScaleStyle(scale)` → `{ zoom }`, or `undefined` at 1                   |
 | Screen px → surface px    | `toSurfacePx(px, scale)` = `px / scale`                                   |
 
@@ -27,7 +27,7 @@ report surface px.
 
 ## Constants and configuration
 
-In `apps/live/lib/ui-scale.ts`:
+In `apps/editor/lib/ui-scale.ts`:
 
 | Constant                | Value  | Provenance                                  |
 | ----------------------- | ------ | ------------------------------------------- |
@@ -116,7 +116,7 @@ the window rather than running off it.
 
 What makes room for a scaled surface:
 
-- `cornerBottomInset(corner, scale)` (`apps/live/lib/panel-layout.ts`):
+- `cornerBottomInset(corner, scale)` (`apps/editor/lib/panel-layout.ts`):
   bottom-right is `16 + 44 × scale + 12` at the corner buttons' scale, the
   cluster's height scaled and the inset and gap not.
   `nearestSnapCorner(geom, extents, scale)` uses it, fed by `usePanelDock`'s
@@ -148,7 +148,7 @@ What makes room for a scaled surface:
   it on every `change`, then commits and calls `preview(null)` on release
   (pointer-up or key-up), and calls `preview(null)` on unmount. Each UI scale
   row's `preview` hands its write patch to `setUiScalePreview`
-  (`apps/live/lib/ui-scale-preview.ts`, a module store read through
+  (`apps/editor/lib/ui-scale-preview.ts`, a module store read through
   `useUiScalePreview()`); `EditorView` spreads it over the stored preferences
   while it is non-null.
 
@@ -209,17 +209,17 @@ dashboard's `APPEARANCE_SETTINGS` stack.
 
 | Spec rule                            | Test                                                     |
 | ------------------------------------ | -------------------------------------------------------- |
-| Default 100%, range, step, junk      | `apps/live/lib/ui-scale.test.ts` `resolveUiScale`        |
-| A part follows or overrides master   | `apps/live/lib/ui-scale.test.ts` `resolveUiScales`       |
-| Master clears parts; part writes own | `apps/live/lib/ui-scale.test.ts` writing                 |
-| Phone always 100%                    | `apps/live/lib/ui-scale.test.ts`                         |
+| Default 100%, range, step, junk      | `apps/editor/lib/ui-scale.test.ts` `resolveUiScale`      |
+| A part follows or overrides master   | `apps/editor/lib/ui-scale.test.ts` `resolveUiScales`     |
+| Master clears parts; part writes own | `apps/editor/lib/ui-scale.test.ts` writing               |
+| Phone always 100%                    | `apps/editor/lib/ui-scale.test.ts`                       |
 | Slider row offers its default        | existing `settings-catalogue.test.ts` slider round-trips |
 | Rows commit, preview, grey out       | `SettingsCategoryPane.ui-scale.test.tsx`                 |
 | Panel keeps screen position          | `MovablePanel` test: `left` = `x / scale`, `zoom` set    |
 | A panel reads only the panels part   | `MovablePanel` test, provider with differing parts       |
 | Nothing outside the provider scales  | `useUiScale(part)` is 1 with no provider                 |
-| Strip popovers stay unscaled         | `apps/live/lib/ui-scale.test.ts` `uiUnscaleStyle`        |
-| Bottom-right clearance scales        | `apps/live/lib/panel-layout.test.ts`                     |
+| Strip popovers stay unscaled         | `apps/editor/lib/ui-scale.test.ts` `uiUnscaleStyle`      |
+| Bottom-right clearance scales        | `apps/editor/lib/panel-layout.test.ts`                   |
 
 Verified in a real browser across the range: drag, corner snap, the strip's
 popovers, cluster popovers, live preview, and one part scaled alone.

@@ -1,5 +1,5 @@
 // Shared types for the two icon catalogues (docs/specs/008-canvas/canvas-and-palette.md "Icons" line art +
-// docs/specs/010-palette/technology-icons.md Technology brand marks). Moved here from apps/live so the data
+// docs/specs/010-palette/technology-icons.md Technology brand marks). Moved here from apps/editor so the data
 // can be consumed by every renderer: the editor (async, via its
 // icon-registry chunk), the api worker's live-image / thumbnail render,
 // and the MCP worker's inline render.

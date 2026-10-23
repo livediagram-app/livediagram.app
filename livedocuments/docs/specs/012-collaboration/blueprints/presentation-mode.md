@@ -24,7 +24,7 @@ Transitions) and "Full screen" (refusals logged). The rest of presentation mode 
    `clamp(asked ?? at, + step, 0 … runnable.length)`; a jump keeps `next`. It writes `asked`.
 3. `type = slideTransitionType(config.transition, asked ?? at, target)`. With no type it calls
    `setPresentingAt(target)` and stops.
-4. Otherwise `startTypedTransition(type, () => setPresentingAt(target))` (`apps/live/lib/view-transition.ts`), which
+4. Otherwise `startTypedTransition(type, () => setPresentingAt(target))` (`apps/editor/lib/view-transition.ts`), which
    runs it plainly under `prefersReducedMotion()` and in a typed `startTransition` otherwise.
 5. The layout effect on `[at, shown]` clears `asked` once `at` equals it, records the direction for the HUD and sets
    `data-presenting`, `data-hide-pointer` and `--lvd-slide-ms`; it drives no animation itself.
@@ -48,7 +48,7 @@ exit.
 ## Interfaces and contracts
 
 ```ts
-// apps/live/components/canvas/slide-transition.ts
+// apps/editor/components/canvas/slide-transition.ts
 export const SLIDE_TRANSITION_TYPES: readonly [
   'slide-in',
   'slide-forward',
@@ -80,7 +80,7 @@ export function whenScreenSettles(ready: () => void): () => void;
 
 ## Performance and limits
 
-Measured by `apps/live/e2e/perf/slide-transition.perf.ts` at a 4x CPU slowdown on 100-element slides: a key paints
+Measured by `apps/editor/e2e/perf/slide-transition.perf.ts` at a 4x CPU slowdown on 100-element slides: a key paints
 in under 16 ms and the longest task stays under the earlier DOM copy's (about 112 ms). The probe is the regression
 check; a build that loses either is a defect.
 

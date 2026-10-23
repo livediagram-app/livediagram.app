@@ -64,7 +64,7 @@ The editor is real. Every tab is Pages ([Pages mode](../007-editor/pages-mode.md
 - **A quiet console**: every decision point logs a fingerprinted trace line, shown in production only when the browser's debug flag asks for it; warnings and errors always show ([Console logging](../003-system-architecture/console-logging.md)).
 - **Transactional + lifecycle email** (optional): welcome on first sign-in, week-1 / week-2 onboarding tips off the daily cron, and transactional team-invite + account-deleted messages, sent via Resend. Off until a `RESEND_API_KEY` is set; guests never receive email (it is authenticated-only). See [Transactional & lifecycle email (Resend)](../014-identity/transactional-email.md).
 
-**No document content lives in `localStorage`.** A document is stored on the server, or in IndexedDB for an Offline Mode document, and `apps/live/lib/api-client.ts` is the single persistence boundary over both. `localStorage` holds only small per-browser state, under `livedocuments:*` keys:
+**No document content lives in `localStorage`.** A document is stored on the server, or in IndexedDB for an Offline Mode document, and `apps/editor/lib/api-client.ts` is the single persistence boundary over both. `localStorage` holds only small per-browser state, under `livedocuments:*` keys:
 
 - **Identity bootstrap**: the guest participant id, the name-confirmed flag and the collaboration key (`lib/local-identity.ts`); signed-in users key their data off their account id instead.
 - **Device-local preferences and UI state**: the preferences cache ([User preferences](../007-editor/user-preferences.md)), the UI mode, the panel layout, per-tool configs (format painter, laser, spotlight, presentation), recent toolbar tiles, style memory, the Explorer and Settings views, and the keyboard-shortcuts switch.
@@ -84,7 +84,7 @@ These are the meaningful gaps between today and "full product":
 
 - **Finer-grained team permissions** — every member of a team can edit every document in its shared library ([Team shared documents](../013-workspace/team-shared-documents.md)).
 - **Per-user grants beyond teams + share links** — a document is private, shared via a link with a role, or part of a team's shared library (teams with Admin/Member roles shipped — see [Teams](../013-workspace/teams.md) + [Team shared documents](../013-workspace/team-shared-documents.md)). There are still no per-document per-user grants outside those.
-- **Same-element concurrent edits are last-writer-wins.** Edits to different elements merge ([Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md)), and the fields many people write at once merge as deltas, but two people changing the same element at the same moment still lose one edit. The advisory selection lock ([Live app](../007-editor/live-app.md)) makes that rare; it does not prevent it. A field-level CRDT that would close it was scoped and deliberately dropped, so this gap stays open by choice.
+- **Same-element concurrent edits are last-writer-wins.** Edits to different elements merge ([Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md)), and the fields many people write at once merge as deltas, but two people changing the same element at the same moment still lose one edit. The advisory selection lock ([Editor app](../007-editor/editor-app.md)) makes that rare; it does not prevent it. A field-level CRDT that would close it was scoped and deliberately dropped, so this gap stays open by choice.
 
 ## Hard rules carried forward
 

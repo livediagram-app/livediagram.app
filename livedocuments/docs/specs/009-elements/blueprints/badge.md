@@ -3,21 +3,21 @@
 Derived from [The badge](../badge.md) and [The step number](../step-number.md). Defaults in
 [DEFAULTS.md](DEFAULTS.md) as `Dn`.
 
-| File                                                                                                                    | Role                                                                     |
-| ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| `packages/document/src/chip.ts`                                                                                         | `ChipLook`, `chipColours`, `badgeSize`, step numbering, `renumberSteps`  |
-| `packages/document/src/attachment.ts`                                                                                   | `AttachPoint`, `canHost`, `attachPointXY`, `settleChips`, `withAttached` |
-| `packages/document/src/shape-kind.ts`, `validate.ts`                                                                    | `'badge'`, `'step'`                                                      |
-| `packages/document/src/element-types.ts`, `element-fields.ts`, `validate-shape.ts`                                      | `chipLook`, `attachedTo`, `attachAt`, `stepSequence`                     |
-| `packages/document/src/shape-factory.ts`                                                                                | Sizes and starting content                                               |
-| `packages/document/src/colors.ts`                                                                                       | Both in `SELF_PAINTING_SHAPES`                                           |
-| `packages/document/src/layers.ts`                                                                                       | `paintTier`: an attached chip paints in the top tier                     |
-| `packages/document/src/duplicate.ts`                                                                                    | `attachedTo` follows a copied host, else the copy is detached            |
-| `packages/document/src/svg-render-chip.ts`                                                                              | `svgChip`: the headless body                                             |
-| `apps/live/app/document/[id]/useEditorState.ts`                                                                         | `settleChips(prev, next)` at the commit choke point                      |
-| `apps/live/components/canvas/ChipFace.tsx`                                                                              | The pill / disc face                                                     |
-| `apps/live/components/palette/ChipMenuSection.tsx`                                                                      | Look tiles, Detach, Renumber Steps, Play in Order                        |
-| `apps/live/hooks/canvas/useBoxedDragHandlers.ts`, `useNudgeSelection.ts`, `useClipboard.ts`, `useElementDuplication.ts` | `withAttached`                                                           |
+| File                                                                                                                      | Role                                                                     |
+| ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `packages/document/src/chip.ts`                                                                                           | `ChipLook`, `chipColours`, `badgeSize`, step numbering, `renumberSteps`  |
+| `packages/document/src/attachment.ts`                                                                                     | `AttachPoint`, `canHost`, `attachPointXY`, `settleChips`, `withAttached` |
+| `packages/document/src/shape-kind.ts`, `validate.ts`                                                                      | `'badge'`, `'step'`                                                      |
+| `packages/document/src/element-types.ts`, `element-fields.ts`, `validate-shape.ts`                                        | `chipLook`, `attachedTo`, `attachAt`, `stepSequence`                     |
+| `packages/document/src/shape-factory.ts`                                                                                  | Sizes and starting content                                               |
+| `packages/document/src/colors.ts`                                                                                         | Both in `SELF_PAINTING_SHAPES`                                           |
+| `packages/document/src/layers.ts`                                                                                         | `paintTier`: an attached chip paints in the top tier                     |
+| `packages/document/src/duplicate.ts`                                                                                      | `attachedTo` follows a copied host, else the copy is detached            |
+| `packages/document/src/svg-render-chip.ts`                                                                                | `svgChip`: the headless body                                             |
+| `apps/editor/app/document/[id]/useEditorState.ts`                                                                         | `settleChips(prev, next)` at the commit choke point                      |
+| `apps/editor/components/canvas/ChipFace.tsx`                                                                              | The pill / disc face                                                     |
+| `apps/editor/components/palette/ChipMenuSection.tsx`                                                                      | Look tiles, Detach, Renumber Steps, Play in Order                        |
+| `apps/editor/hooks/canvas/useBoxedDragHandlers.ts`, `useNudgeSelection.ts`, `useClipboard.ts`, `useElementDuplication.ts` | `withAttached`                                                           |
 
 ## Domain and naming
 
@@ -172,7 +172,7 @@ instrumented pass on a shared runner measured 58 ms with one warm-up (17 ms warm
 - Menu section **Badge** or **Step Number** (Tools flyout): look tiles (Solid, Ink, Outline, Tinted, Quiet); **Detach**
   while attached; on a step, **Renumber Steps**. **Play in Order** is a toggle in the same section, shown
   while the step has an animation. **Renumber Steps** is also a command-palette command (`renumber-steps`, offered while
-  the tab holds a step; `apps/live/lib/editor-commands.ts`).
+  the tab holds a step; `apps/editor/lib/editor-commands.ts`).
 - No resize handles on a badge (it fits its text); no quick-connect ring or anchors on either.
 
 ## Accessibility
@@ -186,17 +186,17 @@ Telemetry: `Element·Added·Badge` / `Step`; `Element·Changed·ChipLook`, `Chip
 
 ## Testing
 
-| Rule                                                | Test file                                                                                                |
-| --------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| Points, rotation, snap, attach, detach, follow (I1) | `packages/document/src/attachment.test.ts`                                                               |
-| Host deleted removes, unknown host detaches (I2)    | same                                                                                                     |
-| Badge fit (I3), next number, renumber, looks        | `packages/document/src/chip.test.ts`                                                                     |
-| Duplicate remap / detach                            | `packages/document/src/duplicate.test.ts`                                                                |
-| Paint tier                                          | `packages/document/src/layers.test.ts`                                                                   |
-| Export draws pill / disc in its look                | `packages/document/src/chip.test.ts`                                                                     |
-| Face, menu section                                  | `apps/live/components/canvas/ChipFace.test.tsx`, `apps/live/components/palette/ChipMenuSection.test.tsx` |
-| Settle budget                                       | `packages/document/src/attachment.perf.test.ts`                                                          |
-| Templates and layouts land settled                  | `packages/templates/src/template-settled.test.ts`                                                        |
+| Rule                                                | Test file                                                                                                    |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Points, rotation, snap, attach, detach, follow (I1) | `packages/document/src/attachment.test.ts`                                                                   |
+| Host deleted removes, unknown host detaches (I2)    | same                                                                                                         |
+| Badge fit (I3), next number, renumber, looks        | `packages/document/src/chip.test.ts`                                                                         |
+| Duplicate remap / detach                            | `packages/document/src/duplicate.test.ts`                                                                    |
+| Paint tier                                          | `packages/document/src/layers.test.ts`                                                                       |
+| Export draws pill / disc in its look                | `packages/document/src/chip.test.ts`                                                                         |
+| Face, menu section                                  | `apps/editor/components/canvas/ChipFace.test.tsx`, `apps/editor/components/palette/ChipMenuSection.test.tsx` |
+| Settle budget                                       | `packages/document/src/attachment.perf.test.ts`                                                              |
+| Templates and layouts land settled                  | `packages/templates/src/template-settled.test.ts`                                                            |
 
 ## Constants and configuration
 

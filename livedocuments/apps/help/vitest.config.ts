@@ -8,7 +8,7 @@ import { defineProject } from '@livedocuments/vitest-config';
 // .tsx modules for their DATA: the feature-icon and article-icon maps are
 // records of JSX elements. Next compiles JSX with the automatic runtime (no
 // React import in scope), so a .tsx module transformed any other way here
-// throws "React is not defined" at import time — the same override apps/live
+// throws "React is not defined" at import time — the same override apps/editor
 // carries, for the same reason.
 //
 // The alias mirrors tsconfig's `"@/*": ["./*"]`, so a suite can import the modules the pages use (the category

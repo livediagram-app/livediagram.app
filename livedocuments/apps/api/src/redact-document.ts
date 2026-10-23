@@ -21,7 +21,7 @@
 //
 // Every non-owner reader already behaved as though this value might be blank:
 // the client reads it only to compute `isOwner` (correctly false for a blank),
-// and `resolveOwnerBadge` in apps/live/lib/presence-rows.ts documents the
+// and `resolveOwnerBadge` in apps/editor/lib/presence-rows.ts documents the
 // blank case and falls back to the owner's name + colour. So redacting on the
 // second door changes what a non-owner RECEIVES, not what they can do.
 

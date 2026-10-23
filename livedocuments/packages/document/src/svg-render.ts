@@ -1,5 +1,5 @@
 // Headless SVG renderer for a tab's elements (docs/specs/015-api/mcp-server.md §5). Extracted from the
-// editor's export pipeline (apps/live/lib/export-tab.ts) so the SAME element
+// editor's export pipeline (apps/editor/lib/export-tab.ts) so the SAME element
 // drawing serves both the in-app SVG/PNG export AND the MCP worker's inline
 // render — one renderer, two callers, no DOM. The per-element drawers
 // (svgBoxed / svgArrow / labels) and their pure helpers live here; the in-app
@@ -534,7 +534,7 @@ export function boxedNeedsSvgRaster(
 // frame sections behind their band-mates (docs/specs/006-document/layers.md + docs/specs/008-canvas/canvas-and-palette.md), everything else
 // in array order as on the canvas. Hidden layers are skipped, so server snapshots (docs/specs/006-document/document-snapshots.md) and
 // MCP inline images match what the canvas shows. No isometric projection or
-// backdrop pattern — those are in-app export extras (apps/live/lib/export-tab).
+// backdrop pattern — those are in-app export extras (apps/editor/lib/export-tab).
 export function renderElementsToSvg(
   tab: Tab,
   opts: {
@@ -569,7 +569,7 @@ export function renderElementsToSvg(
   const vbH = bounds.h + padding * 2;
   const bg = frame ? PAGE_EXPORT_PAPER : (opts.background ?? tab.backgroundColor ?? EXPORT_BG);
   // What you export is what you see: an element with no colours of its own is
-  // drawn in the ink of the paper it is being exported onto (docs/specs/007-editor/live-app.md), so a
+  // drawn in the ink of the paper it is being exported onto (docs/specs/007-editor/editor-app.md), so a
   // dark canvas exports dark-canvas elements rather than pale ones.
   const surface = frame ? frame.surface : canvasSurface(bg);
   const parts: string[] = [

@@ -83,7 +83,7 @@ export const COMMENTS_REOPENED = chart(
   { rising: 'neutral' },
 );
 
-// Freeing an element a peer is holding (docs/specs/007-editor/live-app.md concurrent-selection lock).
+// Freeing an element a peer is holding (docs/specs/007-editor/editor-app.md concurrent-selection lock).
 export const LOCKS_RELEASED = chart(
   'Facilitator',
   'Changed',

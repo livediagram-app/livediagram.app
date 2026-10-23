@@ -10,7 +10,7 @@ import { PageViewTracker } from './PageViewTracker';
 // <PageViewBoot />. Page views are all it reports: the dashboard and marketing
 // emit nothing else (docs/specs/017-telemetry/page-view-telemetry.md), and help's article / error events go through
 // the same siteTrack from its own call sites. The editor mounts
-// PageViewTracker with its own emitter instead (apps/live PageViewBoot).
+// PageViewTracker with its own emitter instead (apps/editor PageViewBoot).
 export function PageViewBoot() {
   return <PageViewTracker track={siteTrack} />;
 }

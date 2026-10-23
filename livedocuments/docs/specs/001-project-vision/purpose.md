@@ -39,7 +39,7 @@ never arrives.
 
 ## Core capabilities
 
-- **Real-time multiplayer editing** ([Live app](../007-editor/live-app.md),
+- **Real-time multiplayer editing** ([Editor app](../007-editor/editor-app.md),
   [Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md)): live cursors, selection
   awareness, per-element merge so concurrent edits don't clobber, and an ordered
   room with reconnect catch-up, plus Follow Me ([Follow-me viewport](../012-collaboration/follow-me-viewport.md)).

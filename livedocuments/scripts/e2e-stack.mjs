@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // E2E stack (docs/specs/003-system-architecture/e2e-smoke.md): the two-process stack the Playwright smoke suite
-// runs against — the real static `apps/live/out` build served with the
+// runs against — the real static `apps/editor/out` build served with the
 // production router/worker rewrites, plus the api worker on a local D1.
 // Dependency-free (node builtins) so it adds nothing to install cost.
 //
@@ -43,19 +43,19 @@ import {
   cacheRule,
   isBuildAsset,
 } from '../apps/router/src/cache-policy.ts';
-import { EXPLORER_LANDING_PATH } from '../apps/live/lib/explorer-landing.ts';
+import { EXPLORER_LANDING_PATH } from '../apps/editor/lib/explorer-landing.ts';
 import {
   isWorkspaceFramePath,
   WORKSPACE_FRAME_PAGE,
-} from '../apps/live/lib/workbench/workbench-frame-path.ts';
+} from '../apps/editor/lib/workbench/workbench-frame-path.ts';
 // Every page enforces Trusted Types in production (docs/specs/016-platform/trusted-types.md), so the suite runs
 // against the same header: a violation throws in the page, and the pageErrors fixture fails the spec on it.
 import { TRUSTED_TYPES_CSP } from '../packages/ui/src/trusted-types-csp.ts';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-// E2E_LIVE_OUT serves another export of the live app, e.g. the signed-in `.next/out-signed-in`
-// the signed-in specs run against (apps/live/scripts/build-signed-in.mjs).
-const OUT_DIR = path.join(ROOT, 'apps', 'live', process.env.E2E_LIVE_OUT ?? 'out');
+// E2E_EDITOR_OUT serves another export of the editor app, e.g. the signed-in `.next/out-signed-in`
+// the signed-in specs run against (apps/editor/scripts/build-signed-in.mjs).
+const OUT_DIR = path.join(ROOT, 'apps', 'editor', process.env.E2E_EDITOR_OUT ?? 'out');
 // The builds a simulated deploy (POST /__e2e/deploy) made: copies whose chunk files carry new
 // names, as a real deploy's do. Deploy n is served from deployDirs[n - 1].
 const deployDirs = [];
@@ -90,7 +90,7 @@ function assetsOutOfCacheFor(req) {
   return cookiesOf(req).get(OUT_OF_CACHE_COOKIE) === '1';
 }
 
-const LIVE_PORT = Number(process.env.E2E_LIVE_PORT ?? 3202);
+const EDITOR_PORT = Number(process.env.E2E_EDITOR_PORT ?? 3202);
 const API_PORT = Number(process.env.E2E_API_PORT ?? 8987);
 // The other sites, for the audits that open them (docs/specs/004-interface-design/blueprints/
 // optical-alignment.md, "Ink audit"). Help sits under its basePath on the live origin, as the
@@ -100,9 +100,9 @@ const SITES = [{ prefix: '/help', dir: path.join(ROOT, 'apps', 'help', 'out') }]
 const MARKETING_DIR = path.join(ROOT, 'apps', 'marketing', 'out');
 const MARKETING_PORT = Number(process.env.E2E_MARKETING_PORT ?? 3013);
 // A switch for trying the editor beside a stack that is already up:
-//   E2E_LIVE_ONLY=1  serve the static editor only, proxying to the api
+//   E2E_EDITOR_ONLY=1  serve the static editor only, proxying to the api
 //                    already listening on E2E_API_PORT (no second worker).
-const LIVE_ONLY = process.env.E2E_LIVE_ONLY === '1';
+const EDITOR_ONLY = process.env.E2E_EDITOR_ONLY === '1';
 //   E2E_ACCOUNTS_STUB=1  act as the liveworkspace accounts Worker for the signed-in specs
 //                    (docs/specs/003-system-architecture/e2e-smoke.md): a key made at boot, its JWKS
 //                    on the issuer's own path (/e2e/accounts/api/auth/jwks) for the api worker to
@@ -137,7 +137,7 @@ function mintAccessToken(sub, email) {
   const payload = b64url(
     JSON.stringify({
       sub,
-      iss: `http://127.0.0.1:${LIVE_PORT}${ACCOUNTS_PATH}/api/auth`,
+      iss: `http://127.0.0.1:${EDITOR_PORT}${ACCOUNTS_PATH}/api/auth`,
       aud: API_RESOURCE,
       iat: now,
       nbf: now - 5,
@@ -378,18 +378,18 @@ function simulateDeploy(from) {
   return n;
 }
 
-// Resolve a request path to a file in out/, mirroring the live worker
-// (apps/live/src/worker.ts) + the static export's file layout.
+// Resolve a request path to a file in out/, mirroring the editor worker
+// (apps/editor/src/worker.ts) + the static export's file layout.
 function resolveStatic(pathname, out) {
   // The build references assets as `/live/_next/*` (assetPrefix); the
   // files live at out/_next/*.
   let p = pathname.startsWith('/live/') ? pathname.slice('/live'.length) : pathname;
   // /document and everything under it share one placeholder HTML.
   if (p === '/document' || p.startsWith('/document/')) p = '/document/placeholder';
-  // So does every form link, /form/<code> (apps/live/lib/form-path.ts, as the live worker rewrites it): without this
+  // So does every form link, /form/<code> (apps/editor/lib/form-path.ts, as the editor worker rewrites it): without this
   // the stack answered a published form's link with the 404 page, so no spec could open one.
   if (p === '/form' || p.startsWith('/form/')) p = '/form/placeholder';
-  // So does every place inside a workspace frame, as the live worker serves them (lib/workbench/workbench-frame-path.ts).
+  // So does every place inside a workspace frame, as the editor worker serves them (lib/workbench/workbench-frame-path.ts).
   if (isWorkspaceFramePath(p)) p = WORKSPACE_FRAME_PAGE;
   if (p === '/') p = '/index';
   const candidates = [
@@ -538,7 +538,7 @@ function startLiveServer() {
     serveNotFound(req, res, pathname, path.join(liveOut, '404.html'));
   });
   server.on('upgrade', proxyApiUpgrade);
-  server.listen(LIVE_PORT, () => console.log(`[e2e] live static server on :${LIVE_PORT}`));
+  server.listen(EDITOR_PORT, () => console.log(`[e2e] live static server on :${EDITOR_PORT}`));
   startMarketingServer();
 }
 
@@ -564,11 +564,11 @@ function startMarketingServer() {
 async function main() {
   if (!existsSync(OUT_DIR)) {
     console.error(
-      `[e2e] ${OUT_DIR} missing — run \`pnpm --filter @livedocuments/live build\` first`,
+      `[e2e] ${OUT_DIR} missing — run \`pnpm --filter @livedocuments/editor build\` first`,
     );
     process.exit(1);
   }
-  if (LIVE_ONLY) {
+  if (EDITOR_ONLY) {
     console.log(`[e2e] static editor only, proxying to the api on :${API_PORT}`);
     startLiveServer();
     return;
@@ -609,12 +609,12 @@ async function main() {
       ...(ACCOUNTS_STUB
         ? [
             '--var',
-            `ACCOUNTS_URL:http://127.0.0.1:${LIVE_PORT}${ACCOUNTS_PATH}`,
+            `ACCOUNTS_URL:http://127.0.0.1:${EDITOR_PORT}${ACCOUNTS_PATH}`,
             '--var',
             `API_RESOURCE:${API_RESOURCE}`,
           ]
         : []),
-      ...(WORKBENCH ? ['--var', `APP_BASE_URL:http://localhost:${LIVE_PORT}`] : []),
+      ...(WORKBENCH ? ['--var', `APP_BASE_URL:http://localhost:${EDITOR_PORT}`] : []),
     ],
     {
       cwd: ROOT,

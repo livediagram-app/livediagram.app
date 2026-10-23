@@ -259,7 +259,7 @@
     "@livedocuments/marketing#build": {
       "dependsOn": [
         "^build",
-        "@livedocuments/live#build",
+        "@livedocuments/editor#build",
         "@livedocuments/help#build",
         "@livedocuments/api#build",
         "@livedocuments/mcp#build",

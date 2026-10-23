@@ -29,7 +29,7 @@ function makeEnv() {
   const help = mockFetcher();
   const env: Env = {
     MARKETING: marketing.fetcher,
-    LIVE: live.fetcher,
+    EDITOR: live.fetcher,
     API: api.fetcher,
     HELP: help.fetcher,
   };
@@ -46,7 +46,7 @@ describe('production dispatch (service bindings)', () => {
     expect(api.urls).toEqual(['https://livedocuments.app/api/documents/abc']);
   });
 
-  it('strips /live off the asset-prefix requests for the live worker', async () => {
+  it('strips /live off the asset-prefix requests for the editor worker', async () => {
     const { env, live } = makeEnv();
     await dispatch('/live/_next/static/chunk.js', env);
     expect(live.urls).toEqual(['https://livedocuments.app/_next/static/chunk.js']);
@@ -112,7 +112,7 @@ describe('production dispatch (service bindings)', () => {
     ]);
   });
 
-  it("routes the live app's root-served icon to the live worker", async () => {
+  it("routes the editor app's root-served icon to the editor worker", async () => {
     const { env, live } = makeEnv();
     await dispatch('/icon.svg', env);
     expect(live.urls).toEqual(['https://livedocuments.app/icon.svg']);
@@ -161,13 +161,13 @@ describe('local-dev dispatch (origin proxy)', () => {
 });
 
 describe('live route drift guard', () => {
-  it('routes every top-level apps/live/app segment to the live worker', async () => {
+  it('routes every top-level apps/editor/app segment to the editor worker', async () => {
     // `.href` rather than the URL object: this worker's tsconfig loads BOTH
     // @cloudflare/workers-types and node, and each declares a global `URL`.
     // `fileURLToPath` wants Node's, `new URL(...)` resolves to the Workers
     // one, and from @types/node 26 the two are different enough that the call
     // no longer typechecks. A string is the one argument both agree on.
-    const liveApp = fileURLToPath(new URL('../../live/app', import.meta.url).href);
+    const liveApp = fileURLToPath(new URL('../../editor/app', import.meta.url).href);
     const segments = readdirSync(liveApp).filter((entry) =>
       statSync(`${liveApp}/${entry}`).isDirectory(),
     );
@@ -220,7 +220,7 @@ describe('bare help-article paths', () => {
   it('covers every help category the registry declares', async () => {
     // The list in index.ts is hand-kept; this is what stops it drifting when
     // the help centre grows a category. `explorer` is the one exclusion: the
-    // live app owns that segment.
+    // editor app owns that segment.
     const { categories } = await import('@livedocuments/help-registry');
     expect(categories.length).toBeGreaterThan(15);
     const missed: string[] = [];
@@ -301,14 +301,14 @@ describe('the caching rules', () => {
     const html = { headers: { 'Content-Type': 'text/html' } };
     const env: Env = {
       MARKETING: answering('<html></html>', html),
-      LIVE: answering('<html></html>', html),
+      EDITOR: answering('<html></html>', html),
       HELP: answering('<html></html>', html),
     };
     for (const page of ['/', '/explorer/unsorted', '/help/canvas/']) {
       expect((await dispatch(page, env)).headers.get('Cache-Control'), page).toBe('no-store');
     }
     const assets: Env = {
-      LIVE: answering('x', { headers: { 'Content-Type': 'text/javascript' } }),
+      EDITOR: answering('x', { headers: { 'Content-Type': 'text/javascript' } }),
     };
     expect(
       (await dispatch('/live/_next/static/chunks/a.js', assets)).headers.get('Cache-Control'),
@@ -320,14 +320,14 @@ describe('the caching rules', () => {
     const devChunk = answering('x', {
       headers: { 'Content-Type': 'text/javascript', 'Cache-Control': 'no-cache, must-revalidate' },
     });
-    const local: Env = { DEPLOY_ENV: 'local', LIVE: devChunk };
+    const local: Env = { DEPLOY_ENV: 'local', EDITOR: devChunk };
     expect(
       (await dispatch('/live/_next/static/chunks/a.js', local)).headers.get('Cache-Control'),
     ).toBe('no-cache, must-revalidate');
     // Pages stay out of the cache locally too.
     const page: Env = {
       DEPLOY_ENV: 'local',
-      LIVE: answering('<html></html>', { headers: { 'Content-Type': 'text/html' } }),
+      EDITOR: answering('<html></html>', { headers: { 'Content-Type': 'text/html' } }),
     };
     expect((await dispatch('/explorer/unsorted', page)).headers.get('Cache-Control')).toBe(
       'no-store',
@@ -336,7 +336,7 @@ describe('the caching rules', () => {
 
   it('answers a missing build asset with plain text, not the HTML 404 page', async () => {
     const env: Env = {
-      LIVE: answering('<html>404</html>', {
+      EDITOR: answering('<html>404</html>', {
         status: 404,
         headers: { 'Content-Type': 'text/html' },
       }),

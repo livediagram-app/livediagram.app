@@ -6,7 +6,7 @@ Status: shipped
 
 Every workspace is linted by **oxlint** with one shared config, `@livedocuments/oxlint-config`
 (`packages/oxlint-config`). `pnpm lint` runs `turbo run lint`, and each workspace's `lint` script is
-`oxlint`: it reads the workspace's `oxlint.config.ts`, which re-exports the shared config (`apps/live`
+`oxlint`: it reads the workspace's `oxlint.config.ts`, which re-exports the shared config (`apps/editor`
 adds one override for its Playwright suite). Every rule is an **error**; there are no warnings.
 
 ## Why
@@ -83,7 +83,7 @@ is the whole of what the repo enforces.
 - oxlint hands those rules to `oxlint-tsgolint` (`options.typeAware` in the shared config), which is
   built on typescript-go: the same TypeScript 7 the repo type-checks with, so no second compiler is
   involved.
-- A file is typed through the nearest `tsconfig.json` that includes it. Every source file, script and test is in one, so what the lint reads is what `pnpm typecheck` checks: `apps/live`'s `.mts` scripts and marketing's `.well-known` route are named in their app's tsconfig, and a folder of Node scripts beside browser code has its own, which adds Node's types. A file no tsconfig includes is typed on its own, as an inferred project, without the workspace's options and paths; only the tool configs (`oxlint.config.ts`, `vitest.config.ts`) are.
+- A file is typed through the nearest `tsconfig.json` that includes it. Every source file, script and test is in one, so what the lint reads is what `pnpm typecheck` checks: `apps/editor`'s `.mts` scripts and marketing's `.well-known` route are named in their app's tsconfig, and a folder of Node scripts beside browser code has its own, which adds Node's types. A file no tsconfig includes is typed on its own, as an inferred project, without the workspace's options and paths; only the tool configs (`oxlint.config.ts`, `vitest.config.ts`) are.
 - `oxlint-tsgolint` is a root dev dependency, so every workspace's `oxlint` resolves it as its peer,
   and a dependency of `@livedocuments/oxlint-config`, whose tests run it.
 - A caught reason passed on unchanged keeps its type, `unknown`: `only-throw-error` allows throwing it

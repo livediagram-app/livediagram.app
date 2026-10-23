@@ -1,7 +1,7 @@
 /* UI light / dark mode. The class-selector variant means
  * `dark:bg-slate-900` (etc.) lights up when documentElement carries
  * `.dark`, regardless of the user's OS prefers-color-scheme. See
- * docs/specs/007-editor/live-app.md "UI light / dark mode" for the policy.
+ * docs/specs/007-editor/editor-app.md "UI light / dark mode" for the policy.
  * An element marked `.light` (or `.dark`) is an island of that appearance inside the other: a card filled in a light
  * colour draws its contents light in dark mode. */
 @custom-variant dark (&:where(.dark, .dark *):not(:where(.light, .light *)));

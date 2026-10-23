@@ -115,7 +115,7 @@ existing emitters: the build-time `NEXT_PUBLIC_TELEMETRY_ENABLED` gate plus the
 [User preferences](../007-editor/user-preferences.md) per-browser opt-out, which every app on the origin reads from the same
 preferences key.
 
-- **editor** (`apps/live`) and **help centre** (`apps/help`): already emitting.
+- **editor** (`apps/editor`) and **help centre** (`apps/help`): already emitting.
 - **marketing** (`apps/marketing`): its _only_ event is the page view: it mounts the shared
   `PageViewBoot` and nothing else, and deliberately no error tracking (the
   privacy policy promises page views only). The landing funnel

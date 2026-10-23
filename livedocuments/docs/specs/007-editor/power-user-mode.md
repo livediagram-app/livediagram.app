@@ -84,7 +84,7 @@ the interface, and leaves the controls:
 - **Onboarding notices and hints.** The modifier-key hint banner, the Explorer's sign-in / "saved to this browser"
   notice, and the match-theme nudge are not shown.
 - **The bin** (Delete) in the selection toolbars, on desktop. Touch devices keep it: they have no Delete key.
-- **The role pill** leaves the title bar ([Live app](live-app.md#role-pill)) and becomes an icon, **first** in the
+- **The role pill** leaves the title bar ([Editor app](editor-app.md#role-pill)) and becomes an icon, **first** in the
   bottom-left of the status bar: a pencil while editing, an eye while viewing. Its Tooltip reads "Editing" or
   "Viewing (read-only)". Whoever may toggle the pill may toggle the icon, the same way.
 

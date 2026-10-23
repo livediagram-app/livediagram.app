@@ -88,7 +88,7 @@ With the banner hidden, Home is drawn like every other Explorer page:
   button), so it keeps its `h1`;
 - Jump Back In and What Happened, or a first run's sections, follow as before.
 
-One reading, `homeBannerShown` (`apps/live/lib/home-banner.ts`), decides all three, so Home never shows two fields or
+One reading, `homeBannerShown` (`apps/editor/lib/home-banner.ts`), decides all three, so Home never shows two fields or
 none. The banner's first-run words and template search go with it; the first run's sections under it stay.
 
 ## First run

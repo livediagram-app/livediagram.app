@@ -6,32 +6,32 @@ cited as `Dn`.
 
 Scope, by file:
 
-| File                                                     | Role                                                                       |
-| -------------------------------------------------------- | -------------------------------------------------------------------------- |
-| `packages/document/src/element-types.ts`                 | `LinkCardElement`, `LinkCardMeta`                                          |
-| `packages/document/src/factories.ts`                     | `createLinkCard`: 280×120, no link, no meta                                |
-| `packages/document/src/index.ts`                         | `isBoxed` includes `link-card`; `elementSupportsText` excludes it          |
-| `packages/document/src/colors.ts`                        | Default fill, stroke, text; `supportsColours` true                         |
-| `packages/document/src/themes.ts`                        | `THEME_COLOUR_FIELDS['link-card'] = []`                                    |
-| `packages/document/src/validate.ts`                      | Link card carries no extra required fields                                 |
-| `packages/document/src/svg-render.ts`                    | Export: generic `rect` branch                                              |
-| `packages/api-schema/src/index.ts`                       | `UnfurlResult`                                                             |
-| `apps/api/src/routes/unfurl.ts`                          | `handleUnfurl`, `isBlockedHost`, `parsePublicHttpUrl`, `buildUnfurlResult` |
-| `apps/api/src/index.ts`                                  | Dispatch of `unfurl`                                                       |
-| `apps/api/wrangler.toml`                                 | `UNFURL_RATE_LIMITER` (production and `[env.staging]`)                     |
-| `apps/live/lib/api/unfurl.ts`                            | `apiUnfurl`: fail-soft client                                              |
-| `apps/live/hooks/canvas/useElementLinks.ts`              | `applyElementLink`: sets the link, then fetches and commits `meta`         |
-| `apps/live/lib/url-safety.ts`                            | `normaliseUrl`, `isSafeFollowUrl`                                          |
-| `apps/live/components/canvas/LinkCardView.tsx`           | Card face: banner, favicon, title, destination, "Open link" row            |
-| `apps/live/components/canvas/element-variant.ts`         | The card chrome: 10 px radius, 1 px border, fill                           |
-| `apps/live/components/canvas/BoxedElementView.tsx`       | Excludes link cards from the corner link badge                             |
-| `apps/live/components/canvas/useBoxedElementGestures.ts` | Double-click → `onEditLink`                                                |
-| `apps/live/components/canvas/EditorCanvasHost.tsx`       | `onEditLink={isReadOnly ? undefined : setLinkPickerOpenForId}`             |
-| `apps/live/components/dialogs/LinkPickerDialog.tsx`      | The shared link editor                                                     |
-| `apps/live/components/palette/palette-tile-defs.tsx`     | `tools:link-card` tile                                                     |
-| `apps/live/app/document/[id]/useElementCreation.ts`      | `addLinkCard`: arms the draw gesture                                       |
-| `apps/live/hooks/canvas/useShapeDrawing.ts`              | Commit: `track('Element', 'Added', 'LinkCard')`                            |
-| `apps/live/lib/search.ts`                                | Palette search entry                                                       |
+| File                                                       | Role                                                                       |
+| ---------------------------------------------------------- | -------------------------------------------------------------------------- |
+| `packages/document/src/element-types.ts`                   | `LinkCardElement`, `LinkCardMeta`                                          |
+| `packages/document/src/factories.ts`                       | `createLinkCard`: 280×120, no link, no meta                                |
+| `packages/document/src/index.ts`                           | `isBoxed` includes `link-card`; `elementSupportsText` excludes it          |
+| `packages/document/src/colors.ts`                          | Default fill, stroke, text; `supportsColours` true                         |
+| `packages/document/src/themes.ts`                          | `THEME_COLOUR_FIELDS['link-card'] = []`                                    |
+| `packages/document/src/validate.ts`                        | Link card carries no extra required fields                                 |
+| `packages/document/src/svg-render.ts`                      | Export: generic `rect` branch                                              |
+| `packages/api-schema/src/index.ts`                         | `UnfurlResult`                                                             |
+| `apps/api/src/routes/unfurl.ts`                            | `handleUnfurl`, `isBlockedHost`, `parsePublicHttpUrl`, `buildUnfurlResult` |
+| `apps/api/src/index.ts`                                    | Dispatch of `unfurl`                                                       |
+| `apps/api/wrangler.toml`                                   | `UNFURL_RATE_LIMITER` (production and `[env.staging]`)                     |
+| `apps/editor/lib/api/unfurl.ts`                            | `apiUnfurl`: fail-soft client                                              |
+| `apps/editor/hooks/canvas/useElementLinks.ts`              | `applyElementLink`: sets the link, then fetches and commits `meta`         |
+| `apps/editor/lib/url-safety.ts`                            | `normaliseUrl`, `isSafeFollowUrl`                                          |
+| `apps/editor/components/canvas/LinkCardView.tsx`           | Card face: banner, favicon, title, destination, "Open link" row            |
+| `apps/editor/components/canvas/element-variant.ts`         | The card chrome: 10 px radius, 1 px border, fill                           |
+| `apps/editor/components/canvas/BoxedElementView.tsx`       | Excludes link cards from the corner link badge                             |
+| `apps/editor/components/canvas/useBoxedElementGestures.ts` | Double-click → `onEditLink`                                                |
+| `apps/editor/components/canvas/EditorCanvasHost.tsx`       | `onEditLink={isReadOnly ? undefined : setLinkPickerOpenForId}`             |
+| `apps/editor/components/dialogs/LinkPickerDialog.tsx`      | The shared link editor                                                     |
+| `apps/editor/components/palette/palette-tile-defs.tsx`     | `tools:link-card` tile                                                     |
+| `apps/editor/app/document/[id]/useElementCreation.ts`      | `addLinkCard`: arms the draw gesture                                       |
+| `apps/editor/hooks/canvas/useShapeDrawing.ts`              | Commit: `track('Element', 'Added', 'LinkCard')`                            |
+| `apps/editor/lib/search.ts`                                | Palette search entry                                                       |
 
 ## Domain and naming
 
@@ -156,7 +156,7 @@ export function isBlockedHost(hostname: string): boolean;
 export function parsePublicHttpUrl(raw: string): URL | null;
 export function buildUnfurlResult(collected: CollectedMeta, finalUrl: string): UnfurlResult;
 
-// apps/live/lib/api/unfurl.ts: null on any error or non-2xx
+// apps/editor/lib/api/unfurl.ts: null on any error or non-2xx
 export function apiUnfurl(url: string): Promise<UnfurlResult | null>;
 ```
 
@@ -266,9 +266,9 @@ LinkUnfurled` exist.
 | og:\* precedence, relative resolution, favicon fallback | `buildUnfurlResult` suite                                   | `apps/api/src/routes/unfurl.test.ts`             |
 | Rate limit, redirect re-check, non-HTML, timeout, cap   | none (GB16)                                                 |                                                  |
 | 280×120 factory, no link or meta                        | `createLinkCard is a 280x120 boxed bookmark…`               | `packages/document/src/factories.test.ts`        |
-| Drawn to size                                           | `draws a link card to the dragged box`                      | `apps/live/lib/draw-commit.test.ts`              |
-| Draw banner copy                                        | `drawBannerMessage` case                                    | `apps/live/lib/draw-mode.test.ts`                |
-| Telemetry token `LinkCard`                              | `elementTelemetryType` case                                 | `apps/live/lib/element-telemetry.test.ts`        |
+| Drawn to size                                           | `draws a link card to the dragged box`                      | `apps/editor/lib/draw-commit.test.ts`            |
+| Draw banner copy                                        | `drawBannerMessage` case                                    | `apps/editor/lib/draw-mode.test.ts`              |
+| Telemetry token `LinkCard`                              | `elementTelemetryType` case                                 | `apps/editor/lib/element-telemetry.test.ts`      |
 | Boxed                                                   | `isBoxed is true for every boxed-element kind…`             | `packages/document/src/geometry.test.ts`         |
 | No inline text                                          | `is false for label-less kinds…`                            | `packages/document/src/element-has-text.test.ts` |
 | Shadow supported                                        | `supportsShadow` suite                                      | `packages/document/src/shadow.test.ts`           |
@@ -278,12 +278,12 @@ LinkUnfurled` exist.
 
 ## Constants and configuration
 
-| Name                  | Value                                            | Provenance / safe range                            |
-| --------------------- | ------------------------------------------------ | -------------------------------------------------- |
-| `FETCH_TIMEOUT_MS`    | `8000`                                           | Spec 8 s; 3 000 to 10 000 within the Worker budget |
-| `MAX_HTML_BYTES`      | `512 * 1024`                                     | Spec ~512 KB; the head is rarely past 100 KiB      |
-| `USER_AGENT`          | `livedocuments-unfurl/1.0 (+https://livedocuments.app)`  | Spec "descriptive"; keep a contact URL             |
-| `UNFURL_RATE_LIMITER` | 60 per 60 s, namespace `1005`                    | Spec; production and staging                       |
-| `createLinkCard` size | 280 × 120                                        | Spec                                               |
-| Card radius           | 10 px canvas, 6 px export                        | `element-variant.ts`, `svg-render.ts` (D56)        |
-| Default colours       | fill `#ffffff`, stroke `#e2e8f0`, text `#1e293b` | `colors.ts`; text on fill 14.6:1                   |
+| Name                  | Value                                                   | Provenance / safe range                            |
+| --------------------- | ------------------------------------------------------- | -------------------------------------------------- |
+| `FETCH_TIMEOUT_MS`    | `8000`                                                  | Spec 8 s; 3 000 to 10 000 within the Worker budget |
+| `MAX_HTML_BYTES`      | `512 * 1024`                                            | Spec ~512 KB; the head is rarely past 100 KiB      |
+| `USER_AGENT`          | `livedocuments-unfurl/1.0 (+https://livedocuments.app)` | Spec "descriptive"; keep a contact URL             |
+| `UNFURL_RATE_LIMITER` | 60 per 60 s, namespace `1005`                           | Spec; production and staging                       |
+| `createLinkCard` size | 280 × 120                                               | Spec                                               |
+| Card radius           | 10 px canvas, 6 px export                               | `element-variant.ts`, `svg-render.ts` (D56)        |
+| Default colours       | fill `#ffffff`, stroke `#e2e8f0`, text `#1e293b`        | `colors.ts`; text on fill 14.6:1                   |

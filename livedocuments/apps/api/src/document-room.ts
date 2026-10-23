@@ -712,7 +712,7 @@ export class DocumentRoom implements DurableObject {
   }
 
   /**
-   * Tell one peer to let go of an element (docs/specs/007-editor/live-app.md concurrent-selection lock).
+   * Tell one peer to let go of an element (docs/specs/007-editor/editor-app.md concurrent-selection lock).
    *
    * Sent to the holder's socket ALONE, which is the entire addressing scheme: a client is never told its own
    * presence id (docs/specs/015-api/public-api-and-tokens.md §6), so a broadcast naming a target would arrive at

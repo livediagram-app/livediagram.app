@@ -14,10 +14,10 @@ import {
   DOCUMENT_TRASHED_ERROR,
 } from '@livedocuments/api-schema';
 
-// CORS for the browser. Live app runs at the same hostname as the
+// CORS for the browser. Editor app runs at the same hostname as the
 // API (router worker stitches them together) so this is mostly a
 // safety net for local dev where origins may differ. Headers list
-// is the minimum the live app sends today.
+// is the minimum the editor app sends today.
 export const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
@@ -67,7 +67,7 @@ export function notFound(): Response {
 }
 
 // An SVG image body (docs/specs/006-document/document-snapshots.md document snapshots). Same CORS treatment as
-// `json` so the live app's blob-URL fetch works cross-origin in dev; the
+// `json` so the editor app's blob-URL fetch works cross-origin in dev; the
 // caller picks the `Cache-Control` (private + long for the owner
 // thumbnail, public + short for the live share image).
 const SVG_CSP =

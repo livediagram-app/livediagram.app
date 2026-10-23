@@ -1,0 +1,817 @@
+@import 'tailwindcss';
+@import '@livedocuments/tailwind-config';
+@import '@livedocuments/template-previews/preview-art-tile.css';
+@import '@livedocuments/template-previews/preview-motion.css';
+@import './collab-cards.css';
+@import './canvas-motion.css';
+@import './motion-shape.css';
+@import './motion-text.css';
+@import './motion-sticky.css';
+@import './motion-media.css';
+@import './motion-page.css';
+/* The account and connect pages' entrance and lines (docs/specs/014-identity/auth-and-guest-access.md). */
+@import './auth-motion.css';
+@import './motion-drawing.css';
+@import './motion-table.css';
+@import './thumbnail-loader.css';
+@import './image-search-loader.css';
+@import './article-pages.css';
+@import './split-view.css';
+@import './sketch-face.css';
+@import './face-finish.css';
+@import './label-bidi.css';
+@import './scroll-edge-fade.css';
+
+/* A phone: narrower than `sm`, or a touch screen under 500px tall (one held sideways). The JS twin
+ * is PHONE_MEDIA_QUERY (lib/responsive.ts); the two state the same query. Phone-only layout uses
+ * `phone:` rather than `max-sm:`, so a phone in landscape gets it too. */
+@custom-variant phone {
+  @media (max-width: 639px), (pointer: coarse) and (max-height: 499px) {
+    @slot;
+  }
+}
+
+/* A phone held sideways (docs/specs/007-editor/editor-app.md "A phone held sideways"): the header and the
+ * tab bar fold away there. The JS twin is LANDSCAPE_PHONE_MEDIA_QUERY (lib/responsive.ts); the two
+ * state the same query. */
+@custom-variant landscape-phone {
+  @media (pointer: coarse) and (orientation: landscape) and (max-height: 499px) {
+    @slot;
+  }
+}
+
+/* A short window, whatever the pointer: a phone held sideways, or a desktop browser zoomed to 200% (720x450). Panels
+ * that need their height (the start panel, docs/specs/007-editor/start-diagramming.md "On a short window") trim
+ * their clearances here. */
+@custom-variant short-window {
+  @media (max-height: 499px) {
+    @slot;
+  }
+}
+
+/* Scan the shared UI package so utility classes used only inside its
+ * components (e.g. the <Brand> mark's hover-rotate) are generated here too.
+ * Tailwind v4 skips node_modules, where the workspace package is symlinked. */
+@source '../../../packages/ui/src';
+/* The shared template-browse art (PreviewFan) carries its own utility classes. */
+@source '../../../packages/template-previews/src/PreviewFan.tsx';
+
+/*
+ * Editor fade-in (docs/specs/004-interface-design/motion.md "Editor arrival"): the editor's floating
+ * chrome fades in as it mounts rather than popping into place, most visibly as a document opens.
+ * Opacity only, so a panel's own position is untouched; `fade-in` has no `to`, so a translucent
+ * panel settles at its own opacity. In the components layer, so a surface's own entrance utility (a
+ * panel's pop-in, a banner's fade) still wins. Reduced motion collapses it with every other
+ * animation. The board appears at once: fading the canvas world re-lays out the
+ * whole page's compositing as the fade starts and ends.
+ */
+@layer components {
+  [data-floating-panel],
+  [data-editor-tabbar],
+  [data-zoom-cluster] {
+    animation: fade-in var(--transition-duration-short) ease-out;
+  }
+}
+
+/* Pages mode's page clip (components/canvas/PageClip.tsx): the layer covers the
+   canvas world without taking presses itself, so a press on the empty canvas still reaches the
+   canvas; the element views inside take them as anywhere else. Zero specificity, in the base layer,
+   so an element's own pointer-events utility still wins. */
+@layer base {
+  [data-page-clip] {
+    pointer-events: none;
+  }
+  :where([data-page-clip]) > * {
+    pointer-events: auto;
+  }
+}
+
+@layer base {
+  /* The pointer cursor on every enabled button now lives in the shared theme
+   * (@livedocuments/tailwind-config), so every app gets it. */
+
+  /* The keyboard-focus ring (WCAG 2.4.7) now lives in the shared theme
+   * (@livedocuments/tailwind-config) so every app gets the same branded ring;
+   * see there for the rationale. */
+
+  /* An SVG node focused by a pointer press (an arrow's bend, curve or elbow handle, whose node
+   * React may then reuse as a plain group mid-drag) drew the browser's default focus outline
+   * round the whole arrow: a dark box while dragging its points. A pointer focus shows no ring;
+   * keyboard focus (:focus-visible) keeps it (docs/specs/008-canvas/arrow-bending.md). */
+  svg :focus:not(:focus-visible) {
+    outline: none;
+  }
+}
+
+/* iOS Safari refuses to honour `user-scalable=no` for accessibility,
+ * and `maximum-scale=1` is not always respected on focus, so the
+ * canonical fix is to ensure every focusable input is already at
+ * 16px+ on mobile. iOS only triggers focus-zoom when the focused
+ * input's effective font-size is under 16px, so this is the lever
+ * that actually works.
+ *
+ * Previously lived inside @layer base + bare element selectors
+ * (input, textarea, select). Tailwind utility classes (.text-sm,
+ * .text-xs, etc.) sit in @layer utilities, which always wins over
+ * @layer base in v4's cascade, so an input with `text-sm` kept its
+ * 14px and iOS still zoomed on focus, the bug the user hit on the
+ * EditorHeader's inline rename input.
+ *
+ * Move the rule out of @layer base and bump the selector specificity
+ * with [class] so it sits at (0,0,1,1), one notch above any pure
+ * utility-class selector (0,0,1,0). The mobile media query keeps the
+ * dense desktop chrome (text-xs / text-[10px] in tabs, palette,
+ * settings dialog) at its design size. Anything explicitly larger
+ * (text-base / text-lg) on mobile loses to this rule and forcibly
+ * drops to 16px, which is fine because 16px is already the design
+ * floor for mobile-readable text and avoiding the focus-zoom is the
+ * non-negotiable win.
+ */
+@media (max-width: 640px) {
+  input[class],
+  textarea[class],
+  select[class] {
+    font-size: 16px;
+  }
+}
+
+/*
+ * Themed palette previews. The filled palette tiles (shapes / devices on
+ * the palette) set `--tile-fill` to the active theme's
+ * element fill and carry this class on their glyph wrapper; the rule paints
+ * the otherwise-hollow shape outlines (`fill="none"` SVG paths) with that
+ * fill so each tile previews the real themed element. `fill` is an inherited
+ * SVG property, so paths whose fill lives on the parent <svg> inherit it too.
+ * A presentation attribute (`fill="none"`) has lower specificity than any
+ * author selector, so this wins; tiles without the class (and the Default theme
+ * theme, which sets no `--tile-fill`) keep their hollow line-art look.
+ */
+.palette-tile-filled [fill='none'] {
+  fill: var(--tile-fill);
+}
+
+/*
+ * Animation tokens. Each `--animate-*` variable creates a Tailwind
+ * `animate-<name>` utility that runs the matching @keyframes on mount.
+ * Durations are the motion tokens of the shared theme
+ * (docs/specs/004-interface-design/motion.md): micro (150ms) for small
+ * surfaces and cascade items, short (200ms) for step swaps and drawers, long
+ * (250ms) for dialogs and sheets. `fade-in`, and the dialog shell's `fly-up-in` and `sheet-up`, live in the shared
+ * theme.
+ * Transform-based animations (pop-in, fly-up-in) must only be used on
+ * elements that don't carry their own inline `transform` style, otherwise
+ * the animation overrides positioning. Use the opacity-only `fade-in`
+ * variants for elements that already use transform for positioning
+ * (popover, plus buttons, mode banner, portal menus).
+ */
+@theme {
+  --animate-pop-in: pop-in var(--transition-duration-micro) cubic-bezier(0.34, 1.56, 0.64, 1);
+  --animate-pop-out: pop-out var(--transition-duration-micro) cubic-bezier(0.4, 0, 1, 1) forwards;
+  --animate-slide-row-in: slide-row-in var(--transition-duration-micro)
+    cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-slide-row-out: slide-row-out var(--transition-duration-micro) cubic-bezier(0.4, 0, 1, 1)
+    forwards;
+  --animate-slide-in-left: slide-in-left var(--transition-duration-short)
+    cubic-bezier(0.16, 1, 0.3, 1);
+  /* Dropdown listbox opening: a short drop/rise toward the trigger so the
+     menu visibly unfolds (PaletteDropdown; -down for below-the-trigger,
+     -up for the flipped variant). Pair with origin-top / origin-bottom. */
+  /* Menus unfold FROM their trigger. The keyframe is direction-agnostic (a
+     uniform scale + a settle); which corner it grows out of is the
+     transform-origin the caller sets, so a menu anchored top-right visibly
+     comes out of the top-right control rather than appearing whole. See
+     PaletteDropdown. */
+  --animate-dropdown-down: dropdown-open var(--transition-duration-micro)
+    cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-dropdown-up: dropdown-open var(--transition-duration-micro)
+    cubic-bezier(0.16, 1, 0.3, 1);
+  /* A list item that opens or closes its own space: the row's height eases
+     between 0 and its natural size (grid-template-rows 0fr <-> 1fr, on a
+     one-row grid wrapping an overflow-hidden child), so its neighbours glide
+     instead of jumping, while the content fades and settles. Share-dialog
+     passes (docs/specs/007-editor/editor-app.md "Share dialog"). */
+  --animate-row-open: row-open var(--transition-duration-long) cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-row-close: row-close var(--transition-duration-long) cubic-bezier(0.4, 0, 0.2, 1)
+    forwards;
+  /* Empty-state illustration motion (--animate-empty-*) now lives in the
+     shared tailwind theme (@livedocuments/tailwind-config) so every app's
+     EmptyState animates alike; see packages/ui/src/EmptyState.tsx. */
+}
+
+/* The entry pop for a newly added element. It carries the element's own
+   rotation through every frame via --lvd-enter-rot (0deg when unset): a
+   keyframe that sets `transform` at all REPLACES the inline
+   `transform: rotate(Ndeg)` for its whole duration, so without this a tilted
+   element (a rotated shape, or any sticker, docs/specs/010-palette/stickers.md) popped in flat and
+   then visibly snapped to its angle when the class dropped. */
+@keyframes pop-in {
+  0% {
+    transform: rotate(var(--lvd-enter-rot, 0deg)) scale(0);
+  }
+  60% {
+    transform: rotate(var(--lvd-enter-rot, 0deg)) scale(1.06);
+  }
+  100% {
+    transform: rotate(var(--lvd-enter-rot, 0deg)) scale(1);
+  }
+}
+
+@keyframes pop-out {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0);
+    opacity: 0;
+  }
+}
+
+/* Left edge drawer (mobile explorer section nav). Slides in from off-screen
+ * left. Safe to pair with the drawer's own positioning because it only
+ * animates translateX from a fixed start. */
+@keyframes slide-in-left {
+  from {
+    transform: translateX(-100%);
+    opacity: 0.4;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* One keyframe for every direction: a uniform scale out of the
+   transform-origin, which the caller pins to the trigger's corner. Uniform
+   rather than the old scaleY-only, because a corner origin is what carries the
+   direction — squashing the Y axis on top of it read as a blind coming down
+   rather than a menu growing out of a button. The tiny overshoot in the easing
+   (cubic-bezier 0.16,1,0.3,1) does the rest. */
+@keyframes dropdown-open {
+  from {
+    opacity: 0;
+    transform: scale(0.86);
+  }
+  60% {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/*
+ * Explorer document-row enter / exit. Used by the Explorer to make
+ * add + delete feel responsive when the list has many similarly-
+ * named documents. Max-height collapse + horizontal translate +
+ * fade gives a real sense of motion; the row above slides up into
+ * the gap as the deleted row collapses out.
+ *
+ * Max-height 80px is generous (rows are ~36-44px tall today) — the
+ * row's actual content sets its rendered height; max-height only
+ * affects the animation interpolation.
+ */
+@keyframes slide-row-in {
+  from {
+    transform: translateX(-12px);
+    opacity: 0;
+    max-height: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+    max-height: 80px;
+  }
+}
+
+@keyframes row-open {
+  from {
+    grid-template-rows: 0fr;
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    grid-template-rows: 1fr;
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes row-close {
+  from {
+    grid-template-rows: 1fr;
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    grid-template-rows: 0fr;
+    opacity: 0;
+    transform: scale(0.98);
+  }
+}
+
+@keyframes slide-row-out {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+    max-height: 80px;
+  }
+  to {
+    transform: translateX(12px);
+    opacity: 0;
+    max-height: 0;
+  }
+}
+
+/*
+ * Panel opacity (docs/specs/007-editor/user-preferences.md). Every panel renders at the user's chosen
+ * opacity so the canvas shows through, then snaps back to fully opaque while
+ * hovered or focused so it stays readable in use. Panels carry
+ * `data-panel-translucent` (MovablePanel in both branches, the Quick style
+ * panel, the Toolbar strip); buttons do not. The var
+ * defaults to 1 (fully opaque) when the preference is unset.
+ */
+[data-panel-translucent] {
+  opacity: var(--lvd-panel-opacity, 1);
+  transition: opacity var(--transition-duration-micro) ease;
+}
+[data-panel-translucent]:hover,
+[data-panel-translucent]:focus-within {
+  opacity: 1;
+}
+/* A touch screen has no hover to bring a panel back, so it would stay faded while in use: panels are opaque there. */
+@media (hover: none) {
+  [data-panel-translucent] {
+    opacity: 1;
+  }
+}
+
+/*
+ * Reduced motion (accessibility, docs/specs/007-editor/user-preferences.md). Honour BOTH the operating
+ * system's `prefers-reduced-motion` setting AND the per-user "Reduce
+ * motion" preference, which adds `.reduce-motion` to <html>. Decorative
+ * animations + transitions collapse to ~instant so motion-sensitive users
+ * get a calm, static UI; nothing is hidden or disabled, it just stops
+ * moving (docs/specs/004-interface-design/motion.md "Reduced motion").
+ *
+ * Animations collapse to 0.01ms rather than 0, so animationend still fires for
+ * the JS that waits on it (a split pane closing). Transitions collapse to 0s: every
+ * element's transition-property defaults to `all`, so any non-zero duration on
+ * `*` would turn every style write into a transition, and a position written
+ * and measured in the same frame would read back the old value (the tab
+ * menu's viewport clamp looped on exactly that). Nothing waits on
+ * transitionend.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0s !important;
+    scroll-behavior: auto !important;
+  }
+}
+:root.reduce-motion *,
+:root.reduce-motion *::before,
+:root.reduce-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0s !important;
+  scroll-behavior: auto !important;
+}
+
+/* The template previews' hover stories (docs/specs/019-marketing/marketing-site.md) would, under the rule above,
+   jump straight to their last frame (a kanban card teleporting to Done), so
+   with Reduce motion on they don't play at all: the picker shows the static
+   art, as it does with the OS setting (preview-motion.css). */
+:root.reduce-motion .preview-motion * {
+  animation: none !important;
+}
+
+/*
+ * Staggered entrance. An item in a list or grid that should arrive one beat
+ * after the one before it: pair with a micro `animate-*` utility and set
+ * `--stagger-i` to the item's index. The beat and its cap are the shared
+ * cascade tokens, so however long the list, the whole cascade settles within
+ * the 250ms motion budget (docs/specs/004-interface-design/motion.md).
+ * `backwards` fill keeps a delayed item
+ * at its keyframe start (invisible) until its turn, instead of showing it
+ * and then re-hiding it. Reduced motion zeroes the delay as well as the
+ * duration (above), so nothing waits on a beat it will never see.
+ */
+.stagger-enter {
+  animation-delay: min(
+    calc(var(--stagger-i, 0) * var(--motion-cascade-step)),
+    var(--motion-cascade-cap)
+  );
+  animation-fill-mode: backwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  .stagger-enter {
+    animation-delay: 0s !important;
+  }
+}
+:root.reduce-motion .stagger-enter {
+  animation-delay: 0s !important;
+}
+
+/*
+ * Context-menu "falling stack": each direct child of a right-click menu
+ * drops in just after the previous one, so the categories cascade into place
+ * rather than appearing all at once. A 10ms beat, capped at the cascade cap
+ * from the eleventh child on, so the whole menu settles within 250ms
+ * (docs/specs/004-interface-design/motion.md). The reduced-motion blocks above
+ * already collapse the drop to ~instant, and the delay reset below drops the
+ * cascade too, so motion-sensitive users get the whole menu at once.
+ */
+@keyframes menu-drop {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.lvd-menu-stagger > * {
+  animation: menu-drop var(--transition-duration-micro) ease-out both;
+}
+.lvd-menu-stagger > *:nth-child(1) {
+  animation-delay: 0ms;
+}
+.lvd-menu-stagger > *:nth-child(2) {
+  animation-delay: 10ms;
+}
+.lvd-menu-stagger > *:nth-child(3) {
+  animation-delay: 20ms;
+}
+.lvd-menu-stagger > *:nth-child(4) {
+  animation-delay: 30ms;
+}
+.lvd-menu-stagger > *:nth-child(5) {
+  animation-delay: 40ms;
+}
+.lvd-menu-stagger > *:nth-child(6) {
+  animation-delay: 50ms;
+}
+.lvd-menu-stagger > *:nth-child(7) {
+  animation-delay: 60ms;
+}
+.lvd-menu-stagger > *:nth-child(8) {
+  animation-delay: 70ms;
+}
+.lvd-menu-stagger > *:nth-child(9) {
+  animation-delay: 80ms;
+}
+.lvd-menu-stagger > *:nth-child(10) {
+  animation-delay: 90ms;
+}
+.lvd-menu-stagger > *:nth-child(n + 11) {
+  animation-delay: var(--motion-cascade-cap);
+}
+@media (prefers-reduced-motion: reduce) {
+  .lvd-menu-stagger > * {
+    animation-delay: 0ms !important;
+  }
+}
+:root.reduce-motion .lvd-menu-stagger > * {
+  animation-delay: 0ms !important;
+}
+
+/*
+ * Empty-state placeholder for the rich-text label editor (docs/specs/008-canvas/canvas-and-palette.md). A
+ * contentEditable can't use the native `placeholder` attribute, so when the
+ * editor has no children (:empty) we render its `data-rt-placeholder` text
+ * as a faded ::before. Typing inserts spans, so :empty stops matching and
+ * the placeholder disappears.
+ */
+[data-rt-placeholder]:empty::before {
+  content: attr(data-rt-placeholder);
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/*
+ * Spotlight tool cursor (docs/specs/008-canvas/canvas-and-palette.md). The OS cursor is HIDDEN: the glowing dot
+ * is drawn by SpotlightOverlay as a DOM element locked to the light's centre
+ * (a data-URI SVG cursor renders inconsistently across browsers and silently
+ * falls back). Returned as the `cursor-spotlight` class by canvasCursorClass.
+ */
+.cursor-spotlight {
+  cursor: none;
+}
+
+/*
+ * Hide it over elements too. Arrow hit-bands set `pointer-events: stroke`
+ * (re-enabling themselves despite the layer's pointer-events:none) and carry
+ * their own hover cursor inline, so without this they'd flip back to a move /
+ * pointer cursor mid-spotlight. Scoped to [data-element-id] so floating panels
+ * keep theirs (mirrors cursor-eraser).
+ */
+.cursor-spotlight [data-element-id],
+.cursor-spotlight [data-element-id] * {
+  cursor: none !important;
+}
+
+/* Sticky-note paper peel (docs/specs/008-canvas/canvas-and-palette.md): the note is glued along its top strip
+   and the rest of the sheet lifts ever so slightly off the canvas. The note
+   itself never changes — same flat rectangle, same fill — and no mask or
+   clip is involved anywhere, so no hard edge can exist: the lift lives in
+   ::before, a caster whose FILL is a long vertical gradient (nothing above
+   ~10%, full slate-32% ink by 77%) softened by one small blur. The caster
+   runs 3px proud of the sides and 5px below, so a whisper of shadow hugs
+   the sides — deepening continuously toward the bottom, which is why no
+   band or stripe ever appears — and throws under the bottom edge.
+
+   Negative-z pseudos paint above their own element's background, so
+   ::after repaints the sheet over the caster's interior (only the shadow
+   that escapes the note's edges survives) and carries a whisper of
+   pressed-glue shading at the top strip. Element rotation on the wrapper
+   rotates sheet and shadow together. A user-set element shadow (docs/specs/008-canvas/element-shadows.md)
+   replaces the whole treatment — element-variant.ts drops this class when
+   one is set. Recipe hand-tuned on a live canvas against Miro's renderer
+   (the numbers are the winner of a 25-variant bake-off; see docs/specs/008-canvas/canvas-and-palette.md).
+
+   The caster is drawn as a picture of itself already blurred, never as a live
+   `filter: blur()`: Safari re-ran the blur for every note on screen on every
+   frame of a pan or zoom (docs/specs/008-canvas/canvas-performance.md). The
+   picture is computed from the same recipe (lib/sticky-peel-image.ts) and its
+   border-image and inset arrive as custom properties on the canvas root; the
+   sides stretch to the note's height, so the ramp keeps its proportions.
+
+   The caster's box runs 9px past the note's sides and 11px below it (10px and
+   13px on a dark canvas), wider than many gaps between notes, so it takes no pointer:
+   a click or a drop just beside a note reaches the board, not the note. */
+.lvd-sticky-peel::before {
+  content: '';
+  position: absolute;
+  z-index: -2;
+  pointer-events: none;
+  inset: var(--lvd-sticky-peel-inset, 0);
+  border: 0 solid transparent;
+  border-image: var(--lvd-sticky-peel, none);
+}
+/* On a DARK canvas the peel's ink has to go deeper: the slate above is
+   tuned against light paper, and on a dark wall it all but disappears —
+   the note stops lifting. Same construction, stronger ink and a slightly
+   longer throw. The canvas surface flags itself (see isDarkCanvas). */
+[data-dark-canvas] .lvd-sticky-peel::before {
+  inset: var(--lvd-sticky-peel-dark-inset, 0);
+  border-image: var(--lvd-sticky-peel-dark, none);
+}
+
+.lvd-sticky-peel::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background-color: inherit;
+  /* Pressed-glue strip: a flat 4% wash over the glued band, releasing by a
+     third of the way down — hand-tuned with the peel below it. */
+  background-image: linear-gradient(#0f172a08, #0f172a08 14%, #00000000 33%);
+  /* A 1px definition halo so the sheet's edge reads against any backdrop.
+     Lives here rather than on the wrapper: an inline wrapper box-shadow
+     would override the Tailwind selection ring (rings are box-shadows). */
+  box-shadow: 0 0 1px #0f172a4a;
+}
+
+/* Dropdown tile glyphs lift on hover (docs/specs/004-interface-design/dropdown-tile-grid.md).
+   The whole tile is the target — pointing at a row should acknowledge the
+   row, not just its 18px picture — but it is the GLYPH that moves, because
+   moving the tile would shift its own label out from under the cursor.
+   Written here rather than as a Tailwind group-hover variant: the named-group
+   form produced no rule at all, and this is one selector. */
+[role='listbox'] [role='option'] .lvd-opt-glyph {
+  transition: transform var(--transition-duration-micro) cubic-bezier(0.16, 1, 0.3, 1);
+}
+[role='listbox'] [role='option']:hover:not(:disabled) .lvd-opt-glyph {
+  transform: translateY(-2px) scale(1.12);
+}
+
+/* Isometric z-fighting, generally (docs/specs/008-canvas/isometric-view.md).
+   Under preserve-3d every element sits at z=0, so ANY two that overlap are
+   coplanar and the compositor picks a winner per frame — which reads as
+   flicker while the camera orbits, and as flicker on repaint even when it
+   doesn't. The two rules that used to live here only de-conflicted frames and
+   arrows; every other pair of overlapping elements still fought.
+   So each element is staggered by its own paint index (--iso-z, set in
+   CanvasElementsLayer). A hundredth of a pixel is far too small to see and far
+   more than enough to order the layers, and it restores DOM paint order in 3D,
+   where painting goes by z rather than by document position.
+   The independent `translate` property is used rather than `transform` on
+   purpose: it COMPOSES with an element's own rotation, where a transform would
+   replace it. */
+[data-iso] [data-element-id],
+[data-iso] [data-arrow-svg] {
+  translate: 0 0 calc(var(--iso-z, 0) * 0.01px);
+}
+
+/* The floating chrome gets its OWN compositing layer while isometric is on.
+   Isometric puts a large preserve-3d scene on the page, and the panels sit
+   above it in z but shared its repaint region — which is why the palette
+   flickered too, not just the canvas. `will-change` is the promotion hint
+   that doesn't touch `transform`, which MovablePanel needs for dragging.
+   Gated on the scene being there rather than unconditional: a promoted layer
+   loses sub-pixel text anti-aliasing on a 1x display, so every panel's small
+   text (the palette's tile captions most of all) read soft ALL the time to
+   buy a fix that only matters in one mode. The cost is one re-layer on
+   entering and leaving isometric, which is a deliberate, rare switch. */
+:root:has([data-iso]) [data-floating-panel] {
+  will-change: transform;
+}
+
+/* A standing message (an empty tab's Show Templates, StartAgainTray) steps aside while a mode's message (an armed
+   tool's Cancel, a modifier hint) is up: they take the same place under the strip or the Draw dock, and the mode's
+   says what the next click does (docs/specs/007-editor/start-diagramming.md "Bringing it back"). */
+body:has([data-mode-message]) [data-yields-to-mode] {
+  display: none;
+}
+
+/* Arrows get the same treatment in the other direction: an arrow's SVG is
+   coplanar with the boxes it crosses under preserve-3d, so the two z-fight.
+   On a static arrow that only shows while the camera orbits; on a FLOWING one
+   (docs/specs/008-canvas/canvas-and-palette.md animated arrows) the path repaints every frame, so the fight is
+   continuous and reads as a shimmer that never settles. +1px puts arrows just
+   ABOVE the base plane, which is also where they belong visually — a
+   connector should paint over the shapes it joins. Invisible at any tilt, and
+   the per-arrow <svg> carries no transform of its own, so nothing is
+   clobbered. */
+[data-iso] [data-arrow-svg] {
+  /* Arrows keep their nudge ON TOP of the index stagger: a connector should
+     cross above the boxes it joins, whatever order it was added in. */
+  translate: 0 0 calc(1px + var(--iso-z, 0) * 0.01px);
+}
+
+/* The selection grips layer (docs/specs/008-canvas/canvas-and-palette.md "Resize") takes one index past
+   the top element (its --iso-z) plus the arrows' nudge, so the handles stay above everything in 3D,
+   where painting goes by z rather than by z-index. */
+[data-iso] [data-selection-grips] {
+  translate: 0 0 calc(2px + var(--iso-z, 0) * 0.01px);
+}
+
+/* Rich-text notes (docs/specs/009-elements/rich-text-notes.md): the ink a linked run takes. Declared as a
+   variable rather than a Tailwind class because the note editor paints its
+   spans imperatively with inline CSS (see note-run-style.ts) and so can't
+   carry a `dark:` class; the surface sets the variable, both renderers read
+   it. Scoped to the note surfaces so nothing else inherits it. */
+[data-note-surface] {
+  --note-link-color: var(--color-brand-700);
+}
+.dark [data-note-surface] {
+  --note-link-color: var(--color-brand-200);
+}
+
+/* Presenting a slide deck (docs/specs/012-collaboration/presentation-mode.md).
+
+   The SLIDE is the canvas itself, narrowed to one slide's elements and framed
+   to their bounds by useEditorState. These rules are only the frame around
+   it, driven by the attributes the PresentationHost sets on <html>:
+   `data-presenting` while a deck is running, and `data-slide-move="pending"`
+   while the first slide waits for the screen to settle. The motion itself is a
+   View Transition of the canvas surface (canvas-motion.css): one picture moves,
+   so a hundred-element slide costs what a one-element slide does. */
+
+/* Chrome hiding is NOT done here: presenting reports zenMode, so the editor's
+   own zen treatment (docs/specs/007-editor/zen-mode.md) takes the header, tab bar, palette and panels
+   away through the same path a zen user gets. One way to hide the chrome, not
+   two that can disagree. The zoom cluster is the one survivor zen keeps, and
+   presenting hides it below since a deck has no zoom controls. */
+html[data-presenting] [data-zoom-cluster] {
+  display: none !important;
+}
+
+/* A still cursor left sitting on a projector is a distraction, so it goes
+   away with the HUD. Driven by the same idle state, so the pointer and the
+   controls come back together on the first twitch of the mouse — a hidden
+   cursor you cannot bring back would be a trap. */
+html[data-presenting][data-hide-pointer][data-pointer-idle] [data-canvas-a11y-root],
+html[data-presenting][data-hide-pointer][data-pointer-idle] [data-presentation-surface] {
+  cursor: none;
+}
+
+/* Timeline event colours (docs/specs/013-workspace/timeline.md §2).
+ *
+ * Keyed on WHAT HAPPENED, not on which part of the product it happened
+ * in: red for destruction and lost access, amber for the shape of
+ * things changing (names, teams, sharing), green for the ordinary
+ * business of making and editing. Three meanings, because a palette
+ * with six is a legend the reader has to learn.
+ *
+ * The shared <Timeline> reads these through `var(--ld-timeline-<tone>)`
+ * with a fallback baked into the package, so it renders standalone.
+ * They live here because the palette is a product decision, and because
+ * this app has a class-based dark mode: each tone needs a pair, and the
+ * package can't know which one is showing.
+ *
+ * The `-soft` variant is a whole bubble background, so it has to sit
+ * quietly under body text at 4.5:1 in both themes rather than compete
+ * with it. Hence the low alphas — a saturated tint reads as a status
+ * banner, and every row would look urgent. */
+:root {
+  --ld-timeline-danger: #dc2626;
+  --ld-timeline-danger-soft: rgb(220 38 38 / 0.09);
+  --ld-timeline-structural: #b45309;
+  --ld-timeline-structural-soft: rgb(217 119 6 / 0.1);
+  --ld-timeline-create: #047857;
+  --ld-timeline-create-soft: rgb(5 150 105 / 0.09);
+  --ld-timeline-neutral: #64748b;
+  --ld-timeline-neutral-soft: rgb(100 116 139 / 0.07);
+}
+
+/* Dark mode lifts the bold values (a 600-weight hue goes muddy on
+ * slate-900) and drops the soft ones, because an alpha tint over a dark
+ * surface reads far stronger than the same alpha over white. */
+.dark {
+  --ld-timeline-danger: #f87171;
+  --ld-timeline-danger-soft: rgb(248 113 113 / 0.08);
+  --ld-timeline-structural: #fbbf24;
+  --ld-timeline-structural-soft: rgb(251 191 36 / 0.07);
+  --ld-timeline-create: #34d399;
+  --ld-timeline-create-soft: rgb(52 211 153 / 0.07);
+  --ld-timeline-neutral: #94a3b8;
+  --ld-timeline-neutral-soft: rgb(148 163 184 / 0.06);
+}
+
+/* The element plane (docs/specs/008-canvas/canvas-performance.md "The canvas's cursor stays off the
+   elements"): the canvas's cursor is inherited, and changes on a tool switch, a pan and a stroke
+   landing; stopping it here means such a change restyles this one node, not every element. Each
+   element sets its own cursor where it takes a press. */
+[data-element-plane] {
+  cursor: auto;
+}
+
+/*
+ * The outline a relayed changeset draws (docs/specs/024-agents/blueprints/agent-changesets.md,
+ * "Accessibility", CS37): it fades in, holds and fades out over its reveal time (set inline). Under
+ * reduced motion it does not animate at all, so it appears and goes; collapsing it to its last frame,
+ * as the rule above would, would hide it.
+ */
+@keyframes changeset-reveal {
+  0% {
+    opacity: 0;
+  }
+  10%,
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+.changeset-reveal {
+  animation-name: changeset-reveal;
+  animation-timing-function: ease-out;
+  animation-fill-mode: both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .changeset-reveal {
+    animation: none !important;
+  }
+}
+:root.reduce-motion .changeset-reveal {
+  animation: none !important;
+}
+
+/* Palette tiles in the tab's finish (docs/specs/008-canvas/finish.md, palette-tile-finish.ts). Professional:
+   square corners, fine mitred lines. Sketch: the shared wobble filter (SketchFilterDefs). Marker: bold round lines. */
+.palette-finish-professional svg {
+  stroke-linejoin: miter;
+}
+.palette-finish-professional svg :where(path, rect, circle, ellipse, polygon, polyline, line) {
+  stroke-width: 1px;
+}
+.palette-finish-professional svg rect {
+  rx: 0;
+  ry: 0;
+}
+.palette-finish-sketch svg {
+  filter: url(#lvd-sketch-tile);
+}
+/* Marker: a felt-tip's line, bold with round ends, slightly see-through so a glyph's crossings pool darker. */
+.palette-finish-marker svg {
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.palette-finish-marker svg :where(path, rect, circle, ellipse, polygon, polyline, line) {
+  stroke-width: 2.75px;
+  stroke-opacity: 0.88;
+}
+
+/* A Tab Style change (lib/tab-style-ease.ts, docs/specs/011-theme/canvas-and-theme-dialog.md "Eased changes") eases the canvas's colours instead of snapping them. On only for the moment of the change, so it
+   costs nothing the rest of the time; Reduce motion (above) zeroes it. */
+:root.lvd-style-transition [data-canvas-root],
+:root.lvd-style-transition [data-canvas-root] * {
+  transition-property: background-color, border-color, color, fill, stroke, opacity;
+  transition-duration: 250ms;
+  transition-timing-function: ease-out;
+}
+
+/* View Transitions (docs/specs/004-interface-design/motion.md "View Transitions"). The document root takes no part,
+   so only a named surface is captured: the rest of the page neither cross-fades nor freezes into a picture. Reduced
+   motion adds nothing here: the handlers start no View Transition then (lib/view-transition.ts). */
+html {
+  view-transition-name: none;
+}

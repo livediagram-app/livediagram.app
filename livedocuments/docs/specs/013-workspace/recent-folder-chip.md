@@ -65,9 +65,9 @@ Worth revisiting if the panel ever grows a routable folder view.
 
 ## Where it lives
 
-- `FolderChip`: `apps/live/app/explorer/document-badges.tsx`, beside
+- `FolderChip`: `apps/editor/app/explorer/document-badges.tsx`, beside
   `VisibilityBadge`, so the list row and the card can't drift.
-- The resolver — `folderChipFor` in `apps/live/app/explorer/ExplorerPane.tsx`,
+- The resolver — `folderChipFor` in `apps/editor/app/explorer/ExplorerPane.tsx`,
   which is also where the "Recent only" gate lives. Rows and cards take a
   ready-made `{ label, onOpen }` (or null) rather than resolving names
   themselves, so the naming rules stay in one place.

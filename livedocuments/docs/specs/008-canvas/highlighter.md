@@ -27,4 +27,4 @@ Selection, move/resize (non-scaling stroke keeps the marker width), rotation, lo
 
 ## Telemetry
 
-A copy of a highlight stroke reports as `Element · Added · Highlighter` (`apps/live/lib/element-telemetry.ts`). No setting or tile event remains.
+A copy of a highlight stroke reports as `Element · Added · Highlighter` (`apps/editor/lib/element-telemetry.ts`). No setting or tile event remains.

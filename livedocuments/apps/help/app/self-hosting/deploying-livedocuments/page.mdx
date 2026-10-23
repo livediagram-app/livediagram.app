@@ -28,7 +28,7 @@ The router is what makes the first four appear under one domain. The hosted serv
 
 ## How a request is routed
 
-The router Worker inspects the path and forwards accordingly: `/api/*` to the api Worker, `/help` to the help centre, the editor's routes (`/document`, `/explorer`, `/new`, `/join`, `/sign-in`, `/get-started`, `/embed` and the like) to the live app, and everything else to marketing. Because the router has service bindings to the four path-routed apps, they must exist before the router can be deployed.
+The router Worker inspects the path and forwards accordingly: `/api/*` to the api Worker, `/help` to the help centre, the editor's routes (`/document`, `/explorer`, `/new`, `/join`, `/sign-in`, `/get-started`, `/embed` and the like) to the editor app, and everything else to marketing. Because the router has service bindings to the four path-routed apps, they must exist before the router can be deployed.
 
 <Figure caption="The router forwards each request to an app by matching the URL path.">
   <RequestRouting />

@@ -26,15 +26,15 @@ Scope, by file:
 | `apps/api/src/index.ts`, `auth/guest-rest.ts`                                                                    | `trash` dispatch + guest-signature scope; the cron's `purgeExpiredTrash`                    |
 | `apps/api/src/openapi/manifest.ts`, `document.ts`, `apps/api/scripts/gen-openapi-schemas.mjs`                    | The Trash tag and routes; 410 on the document doors; `TrashedDocument` schema               |
 | `apps/mcp/src/tools.ts`, `packages/agent-verbs/src/mcp/schema.ts`                                                | `delete_document` to the Trash only; `list_trash`, `restore_document`                       |
-| `apps/live/lib/api/trash.ts`                                                                                     | `apiListTrash`, `apiRestoreDocument`, `apiPurgeDocument`, `apiEmptyTrash`                   |
-| `apps/live/lib/offline/offline-trash.ts`, `offline-store.ts`                                                     | The local Trash on the IndexedDB record                                                     |
-| `apps/live/lib/document-trashed.ts`, `document-tombstones.ts`                                                    | `DocumentTrashedError`, `isDocumentTrashedError`; `unmarkDocumentDeleted`                   |
-| `apps/live/lib/trash-groups.ts`, `trash-copy.ts`                                                                 | Grouping and days-left copy; the confirmation line                                          |
-| `apps/live/hooks/persistence/useTrash.ts`, `components/panels/TrashPane.tsx`                                     | The Trash view                                                                              |
-| `apps/live/app/explorer/{TrashSection.tsx,trash/page.tsx,routes.ts,views.tsx}`                                   | The `/explorer/trash` route, no sidebar row                                                 |
-| `apps/live/components/dialogs/settings/{settings-catalogue.ts,SettingsTrashRow}`                                 | Settings › Account › Trash, the one way in                                                  |
-| `apps/live/app/document/[id]/{useDocumentTrashed,useIdentityBootstrap,...}.ts`                                   | The deleted state: load, room, autosave                                                     |
-| `apps/live/components/chrome/DocumentTrashedCard.tsx`, `editor-page.tsx`                                         | The deleted card, Restore when allowed                                                      |
+| `apps/editor/lib/api/trash.ts`                                                                                   | `apiListTrash`, `apiRestoreDocument`, `apiPurgeDocument`, `apiEmptyTrash`                   |
+| `apps/editor/lib/offline/offline-trash.ts`, `offline-store.ts`                                                   | The local Trash on the IndexedDB record                                                     |
+| `apps/editor/lib/document-trashed.ts`, `document-tombstones.ts`                                                  | `DocumentTrashedError`, `isDocumentTrashedError`; `unmarkDocumentDeleted`                   |
+| `apps/editor/lib/trash-groups.ts`, `trash-copy.ts`                                                               | Grouping and days-left copy; the confirmation line                                          |
+| `apps/editor/hooks/persistence/useTrash.ts`, `components/panels/TrashPane.tsx`                                   | The Trash view                                                                              |
+| `apps/editor/app/explorer/{TrashSection.tsx,trash/page.tsx,routes.ts,views.tsx}`                                 | The `/explorer/trash` route, no sidebar row                                                 |
+| `apps/editor/components/dialogs/settings/{settings-catalogue.ts,SettingsTrashRow}`                               | Settings › Account › Trash, the one way in                                                  |
+| `apps/editor/app/document/[id]/{useDocumentTrashed,useIdentityBootstrap,...}.ts`                                 | The deleted state: load, room, autosave                                                     |
+| `apps/editor/components/chrome/DocumentTrashedCard.tsx`, `editor-page.tsx`                                       | The deleted card, Restore when allowed                                                      |
 | `apps/help/app/account-and-data/trash/page.mdx`, help registry, article icon                                     | The help article                                                                            |
 | `../liveworkspace/apps/site/app/telemetry/livedocuments/catalogue/{content,connections}.ts`, explanations, vocab | The Trash stack; the two MCP tool charts                                                    |
 
@@ -231,24 +231,24 @@ room`; open sessions still stop at their next save (I5).
 
 ## Testing
 
-| Rule                                                    | Test                                                                                         |
-| ------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| Clock, days left, expiry                                | `packages/api-schema/src/trash.test.ts`                                                      |
-| Migration, trash / restore / purge / list / cron sweep  | `apps/api/src/db/trash.test.ts` (real SQLite)                                                |
-| Timeline hidden and back, Activity, tab link, expiry    | `apps/api/src/db/trash-surfaces.test.ts`                                                     |
-| Every door: 410 / 404 / lists / DELETE semantics / room | `apps/api/src/routes/trash-doors.test.ts`                                                    |
-| `/api/trash` authority                                  | `apps/api/src/routes/trash.test.ts`                                                          |
-| Cron wiring and log                                     | `apps/api/src/scheduled-trash.test.ts`                                                       |
-| Room closes with 4004; never relays a client's op       | `apps/api/src/document-room.test.ts`, `room-scope.test.ts`                                   |
-| Permanent removal keeps shared tabs                     | `apps/api/src/db/document-delete.test.ts`                                                    |
-| OpenAPI parity                                          | `apps/api/src/openapi/*.test.ts`                                                             |
-| MCP tools                                               | `apps/mcp/src/tools.test.ts`                                                                 |
-| Local Trash                                             | `apps/live/lib/offline/offline-trash.test.ts`                                                |
-| Client calls, dispatch, 410                             | `apps/live/lib/api/trash.test.ts`                                                            |
-| Room client stops on 4004                               | `apps/live/lib/api/room.test.ts`                                                             |
-| Grouping and copy                                       | `apps/live/lib/trash-groups.test.ts`                                                         |
-| End to end                                              | `apps/live/e2e/trash.spec.ts`                                                                |
-| Telemetry coverage and charts                           | `apps/live` telemetry tests, `../liveworkspace/apps/site/app/telemetry/livedocuments` suites |
+| Rule                                                    | Test                                                                                           |
+| ------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Clock, days left, expiry                                | `packages/api-schema/src/trash.test.ts`                                                        |
+| Migration, trash / restore / purge / list / cron sweep  | `apps/api/src/db/trash.test.ts` (real SQLite)                                                  |
+| Timeline hidden and back, Activity, tab link, expiry    | `apps/api/src/db/trash-surfaces.test.ts`                                                       |
+| Every door: 410 / 404 / lists / DELETE semantics / room | `apps/api/src/routes/trash-doors.test.ts`                                                      |
+| `/api/trash` authority                                  | `apps/api/src/routes/trash.test.ts`                                                            |
+| Cron wiring and log                                     | `apps/api/src/scheduled-trash.test.ts`                                                         |
+| Room closes with 4004; never relays a client's op       | `apps/api/src/document-room.test.ts`, `room-scope.test.ts`                                     |
+| Permanent removal keeps shared tabs                     | `apps/api/src/db/document-delete.test.ts`                                                      |
+| OpenAPI parity                                          | `apps/api/src/openapi/*.test.ts`                                                               |
+| MCP tools                                               | `apps/mcp/src/tools.test.ts`                                                                   |
+| Local Trash                                             | `apps/editor/lib/offline/offline-trash.test.ts`                                                |
+| Client calls, dispatch, 410                             | `apps/editor/lib/api/trash.test.ts`                                                            |
+| Room client stops on 4004                               | `apps/editor/lib/api/room.test.ts`                                                             |
+| Grouping and copy                                       | `apps/editor/lib/trash-groups.test.ts`                                                         |
+| End to end                                              | `apps/editor/e2e/trash.spec.ts`                                                                |
+| Telemetry coverage and charts                           | `apps/editor` telemetry tests, `../liveworkspace/apps/site/app/telemetry/livedocuments` suites |
 
 ## Constants and configuration
 

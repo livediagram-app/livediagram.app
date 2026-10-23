@@ -24,7 +24,7 @@ const VIEW = {
 // scope, and a short life — and each is one SQL predicate away from being
 // silently lost.
 
-describe('createWsTicket (docs/specs/007-editor/live-app.md room auth)', () => {
+describe('createWsTicket (docs/specs/007-editor/editor-app.md room auth)', () => {
   it('writes the document, the resolved admission and an expiry a minute out', async () => {
     const db = fakeD1();
     const ticket = await createWsTicket(db.env, 'diag-1', EDIT, 1_000_000);
@@ -86,7 +86,7 @@ describe('createWsTicket (docs/specs/007-editor/live-app.md room auth)', () => {
   });
 });
 
-describe('consumeWsTicket (docs/specs/007-editor/live-app.md room auth)', () => {
+describe('consumeWsTicket (docs/specs/007-editor/editor-app.md room auth)', () => {
   it('returns the admission the ticket was minted with', async () => {
     const db = fakeD1(() => ({
       first: {

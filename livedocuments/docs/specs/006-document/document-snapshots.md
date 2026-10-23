@@ -88,7 +88,7 @@ renders it lazily.
 
 - Read-gated exactly like `GET /api/documents/:id`: the owner, a joined
   team member, or a valid share-code visitor.
-- A native `<img>` can't send auth headers, so the live app fetches this
+- A native `<img>` can't send auth headers, so the editor app fetches this
   through the authenticated client and wraps the bytes in a blob URL
   (the same pattern image elements use, [Image element + per-owner gallery](../009-elements/images.md)). `?v=<savedAt>` busts
   the browser cache when the document changes; the worker ignores it.
@@ -102,7 +102,7 @@ renders it lazily.
 - The Explorer row fetches **lazily** (IntersectionObserver): only rows
   scrolled into view fetch, so a long list never fires dozens of
   requests / renders for rows the user never reaches.
-- The live app keeps settled thumbnails in a page-wide, least-recently-used
+- The editor app keeps settled thumbnails in a page-wide, least-recently-used
   cache of 200 entries keyed by viewer, document, version and share code
   (`lib/thumbnail-cache.ts`). A remount (a view switch, a folder, coming
   back to the Explorer) paints from it at once, and two thumbnails of one

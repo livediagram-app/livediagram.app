@@ -1,7 +1,7 @@
 // An article's writing laid out without a browser (docs/specs/015-api/mcp-server.md §5, docs/specs/007-editor/
 // article-pages.md "Everywhere a page goes"): what an agent's preview draws of an article page, and how many pages
 // the writing reaches. The editor lays the writing out in the browser and reads the words off where they land
-// (apps/live/lib/article/article-snapshot.ts); here every block is set as app/article-pages.css sets it (its size,
+// (apps/editor/lib/article/article-snapshot.ts); here every block is set as app/article-pages.css sets it (its size,
 // weight, face, line height and margins, from the article's resolved style), its words wrapped at an estimated width
 // and flowed down the article's pages, a page break starting the next. An estimate: a line may break a word earlier
 // or later than the browser would, so a long article can end a few lines off. Pure.

@@ -7,7 +7,7 @@ a scheme that has since gone.
 ## What has left
 
 - **Charcoal**, the neutral dark scheme, merged into **Default** as Default's dark half
-  ([Live app](../007-editor/live-app.md#appearance-light--dark--system)).
+  ([Editor app](../007-editor/editor-app.md#appearance-light--dark--system)).
 - **Default's dark half** is the blue-slate `#0d121a` with a `#1c2735` grid
   ([Canvas and palette](../008-canvas/canvas-and-palette.md#default-scheme-dark-half)).
 - **Default's light half** is the off-white `#fbfaf7` with a `#cbd5e1` grid.

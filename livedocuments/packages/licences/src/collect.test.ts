@@ -125,11 +125,11 @@ function context(files = baseFiles(), overrides: Override[] = [TFJS_OVERRIDE]): 
 }
 
 const collect = (sources: string[], assets: string[] = [], ctx = context()) =>
-  collectWorks({ app: 'live', sources, assets }, ctx);
+  collectWorks({ app: 'editor', sources, assets }, ctx);
 
 describe('collectWorks: packages', () => {
   it('publishes a package with its licence files, licence id and homepage', () => {
-    const { works } = collect([`${SVGPATH}/lib/path.js`, 'apps/live/app/page.tsx']);
+    const { works } = collect([`${SVGPATH}/lib/path.js`, 'apps/editor/app/page.tsx']);
     expect(works).toEqual([
       {
         key: 'package:svgpath@2.6.0',
@@ -294,7 +294,7 @@ describe('collectWorks: vendored works', () => {
 describe('collectWorks: embedded works', () => {
   it('fails an emitted binary no entry reviews', () => {
     expect(() => collect([], ['mystery.abc.wasm'])).toThrow(
-      /UnreviewedBinaryAsset: live emits mystery\.abc\.wasm/,
+      /UnreviewedBinaryAsset: editor emits mystery\.abc\.wasm/,
     );
   });
 

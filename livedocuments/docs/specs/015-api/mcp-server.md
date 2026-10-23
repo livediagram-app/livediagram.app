@@ -98,7 +98,7 @@ This implements the OAuth flow Manager Toolkit uses:
    redirect URI, and the consent page only ever navigates to an http(s) URL.
    The token endpoint refuses a code presented with another `client_id`.
 3. **Authorize** — `GET /oauth/authorize` creates a short-lived session in KV and
-   redirects to a **consent page in `apps/live`** (e.g. `/oauth/authorize` or an
+   redirects to a **consent page in `apps/editor`** (e.g. `/oauth/authorize` or an
    Explorer "Connect an app" screen), passing the session id. The user is
    already signed in there (a livedocuments session through the liveworkspace accounts
    Worker; a signed-out visitor gets a Sign in link that returns here).
@@ -121,10 +121,10 @@ This implements the OAuth flow Manager Toolkit uses:
    the host is the fact to check, which is why it must come from the server. A
    session that is unknown or expired is a blocking screen, never a screen with
    an approve button and a blank destination. See
-   `apps/live/lib/mcp-consent-session.ts`. The screen is never frameable
+   `apps/editor/lib/mcp-consent-session.ts`. The screen is never frameable
    (`X-Frame-Options: DENY`, [Embeds](../013-workspace/embeds.md)), so the
    Connect click can't be clickjacked from an attacker's page.
-4. **Consent + mint** — on approve, `apps/live` calls `POST /api/oauth/exchange`
+4. **Consent + mint** — on approve, `apps/editor` calls `POST /api/oauth/exchange`
    on the api worker with the person's account access token. It asks liveworkspace
    to mint an `lwt_` account token named for the connecting client (e.g. "Claude
    (MCP)"), read-only if the person ticked that (`POST /api/account/internal/tokens`,
@@ -139,7 +139,7 @@ This implements the OAuth flow Manager Toolkit uses:
    (409 `token_limit_reached`: "Your account has reached its limit of API tokens.
    Revoke one on liveworkspace.app, under API tokens, then try again."), or anything
    else ("Something went wrong. Please try again."). The device page does the same
-   (`apps/live/lib/oauth-handover.ts`).
+   (`apps/editor/lib/oauth-handover.ts`).
 5. **Callback + token exchange** — the MCP redirects back to the client with a
    code; `POST /oauth/token` (with the PKCE `code_verifier`) exchanges it for the
    `access_token` (= the `lwt_` secret). `expires_in` reflects the token's
@@ -167,7 +167,7 @@ one authorisation server for both front doors, so it also offers what a
 command-line client needs: a loopback redirect matched on scheme, host and path
 with any port (RFC 8252 §7.3), a pre-registered public client `livedocuments-cli`
 whose name the consent screen can trust, and the device authorisation grant
-(RFC 8628) with a `/oauth/device` page in `apps/live` for machines without a
+(RFC 8628) with a `/oauth/device` page in `apps/editor` for machines without a
 browser. A token minted for the CLI is named "livedocuments CLI".
 
 ## 4. Tools
@@ -775,7 +775,7 @@ PNG** so the pages show in the chat. This needs headless rendering inside a
 Worker (no DOM, no React).
 
 - **Reuse what's already pure.** The existing export
-  (`apps/live/lib/export-tab.ts`) has a **purely procedural SVG path**
+  (`apps/editor/lib/export-tab.ts`) has a **purely procedural SVG path**
   (`renderTabToSvg`) that already calls headless helpers in `packages/document`:
   `arrow-path.ts` (path `d` strings, label anchors), `geometry.ts` (endpoint /
   anchor / bounds), `colors.ts` (`defaultFillColor` / `defaultStrokeColor` /
@@ -865,7 +865,7 @@ Worker (no DOM, no React).
 4. **Write tools** — `create_document`, `update_document` (both modes), reusing
    `validate.ts` + `auto-layout.ts`.
 5. **OAuth** — `/api/oauth/exchange` on the api worker (reusing the token-mint
-   path, signed-in only like `/api/tokens`); `apps/live` consent page; the MCP
+   path, signed-in only like `/api/tokens`); `apps/editor` consent page; the MCP
    OAuth endpoints + `OAUTH_KV`. Until this lands, the worker can be exercised
    with a hand-pasted `lwt_` Bearer for development.
 6. **Docs + help, shipped WITH the feature** (per the help-centre + docs rules in

@@ -15,8 +15,8 @@ export const dynamic = 'force-static';
 // router worker stitches all three under one hostname), so a
 // blanket "allow: /" lets crawlers waste budget probing the
 // editor's auth-walled HTML and the API's JSON. Both surfaces
-// also carry their own deterrents (the live app declares
-// noindex/nofollow at the root layout, per docs/specs/007-editor/live-app.md; the API
+// also carry their own deterrents (the editor app declares
+// noindex/nofollow at the root layout, per docs/specs/007-editor/editor-app.md; the API
 // returns JSON crawlers can't index meaningfully), but a
 // belt-and-braces Disallow stops well-behaved crawlers from
 // even fetching them.
@@ -29,7 +29,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: '*',
       allow: '/',
-      // The live app serves at clean routes now (no `/live` prefix —
+      // The editor app serves at clean routes now (no `/live` prefix —
       // docs/specs/016-platform/router-app.md), so each live route segment is Disallowed by name to
       // keep the editor + auth surfaces out of crawlers' budget. NOT a
       // bare '/' — that would block the marketing site itself.

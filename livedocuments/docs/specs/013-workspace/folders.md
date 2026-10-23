@@ -303,7 +303,7 @@ empty takes its separator with it (the Explorer behind an error screen
 has no document, so no Share / Export). This replaced a **+ New** chip
 whose hover-open popover held only band 1, and took GitHub off the
 editor's bottom bar, which keeps Search, Settings and the appearance
-toggle ([Live app](../007-editor/live-app.md)). The full-page Explorer's bottom bar keeps its GitHub
+toggle ([Editor app](../007-editor/editor-app.md)). The full-page Explorer's bottom bar keeps its GitHub
 link.
 
 - A "Current Document" card sits at the top. Beneath it, the panel shows
@@ -362,7 +362,7 @@ link.
 
 This is the full-page library view. Open to both guests and signed-in
 users: the owner id resolves the same way every other surface in the
-live app does (the account userId when signed in, the `livedocuments:v2:self-id`
+editor app does (the account userId when signed in, the `livedocuments:v2:self-id`
 localStorage UUID otherwise), so a guest sees the documents + folders +
 Image Gallery their per-browser id owns. AuthControls in the page header
 surfaces a "Sign in" CTA for guests who want to upgrade. The page is
@@ -400,7 +400,7 @@ it stays in view as the dashboard scrolls; Settings opens the same synced
     (see [11-api.md](../015-api/api.md)). The badge expands inline to a
     list of links into those documents so the user can spot
     orphaned bytes that are safe to delete. Upload validation +
-    hashing share the editor's path via `apps/live/lib/upload-image.ts`.
+    hashing share the editor's path via `apps/editor/lib/upload-image.ts`.
 - **Create:** a single floating action button at the bottom-right
   opens a popover with "New Document" and "New folder" (or "New
   subfolder" when a folder is focused). The documents-page FAB on the

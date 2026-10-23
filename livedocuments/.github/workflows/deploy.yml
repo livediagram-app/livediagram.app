@@ -31,7 +31,7 @@ jobs:
       wrangler_env: ''
       environment_name: production
       environment_url: https://livedocuments.app
-      # Empty: the live app's own default, https://mcp.livedocuments.app.
+      # Empty: the editor app's own default, https://mcp.livedocuments.app.
       mcp_origin: ''
     secrets:
       CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}

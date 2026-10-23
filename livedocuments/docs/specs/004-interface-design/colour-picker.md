@@ -16,7 +16,7 @@ editor.
 
 Any new feature that lets someone choose a colour **uses this picker**, through one of its skins (inline, row,
 swatch button). It never builds its own swatch grid, its own custom colour editor, or a system colour
-well (`<input type="color">`). If no skin fits, add a skin here, in `apps/live/components/colour/`, and to the
+well (`<input type="color">`). If no skin fits, add a skin here, in `apps/editor/components/colour/`, and to the
 Skins table, rather than a picker in the feature. Offering different colours is a change to this spec (a
 leading option, a tone), not a separate palette. A test (`components/colour/one-picker.test.ts`) fails the
 build on a system colour well or a custom colour editor used outside the picker.

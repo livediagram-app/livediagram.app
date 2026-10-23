@@ -7,14 +7,14 @@ one browser-side path that turns those bytes into a stored image, so every calle
 the same way, under the same limits, with the same named outcomes.
 
 Its caller today is [Image search](../009-elements/image-search.md): a picked Openverse result is
-downloaded in the browser and handed to the pipeline (`apps/live/lib/image-search/pick.ts`). The
+downloaded in the browser and handed to the pipeline (`apps/editor/lib/image-search/pick.ts`). The
 session and the report below are shaped for an import that meets many images at once, so a
 future importer plugs in unchanged: it should see its images arrive, and when some cannot, see
 how many and why, never a failed import.
 
 ## Where it lives
 
-`apps/live/lib/import-images/`, a folder of small modules, not a package:
+`apps/editor/lib/import-images/`, a folder of small modules, not a package:
 
 - Every caller is in the live editor; no other app stores outside pictures.
 - It needs the browser: canvas decoding and encoding (`createImageBitmap`, `<canvas>`), the

@@ -123,7 +123,7 @@ export function isSystemOpKind(kind: unknown): kind is (typeof SYSTEM_OP_KINDS)[
 }
 
 // ---------------------------------------------------------------------
-// Freeing a held element (docs/specs/007-editor/live-app.md)
+// Freeing a held element (docs/specs/007-editor/editor-app.md)
 // ---------------------------------------------------------------------
 
 // Free an element somebody else is holding through the concurrent-selection lock, so the room can get on. A
@@ -161,7 +161,7 @@ export type ServerMessage =
       ops: { from: string; op: unknown; seq: number }[];
       resync: boolean;
     }
-  // "Your hold on this element has been released" (docs/specs/007-editor/live-app.md), sent
+  // "Your hold on this element has been released" (docs/specs/007-editor/editor-app.md), sent
   // to the HOLDER'S SOCKET ALONE. Being sent it is the whole of the addressing:
   // the room mints a presence id per socket and never tells a client which one
   // is its own (docs/specs/015-api/public-api-and-tokens.md §6), so a broadcast carrying a target id would reach
@@ -293,7 +293,7 @@ export type RoomOp =
   // `tabId` scopes the selection to the tab it lives on: element ids
   // are only unique per tab in older documents (tab duplication used to
   // copy ids verbatim), so an unscoped selection rendered — and, via
-  // the docs/specs/007-editor/live-app.md concurrent-selection lock, LOCKED — the same-id element
+  // the docs/specs/007-editor/editor-app.md concurrent-selection lock, LOCKED — the same-id element
   // on every other tab too. Optional for wire compatibility: a frame
   // without it is treated as tab-unknown and shown everywhere (the old
   // behaviour).

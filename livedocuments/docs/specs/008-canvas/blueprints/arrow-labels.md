@@ -6,21 +6,21 @@ cited as `Dn`.
 
 Scope, by file:
 
-| File                                                                                                 | Role                                                                                     |
-| ---------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| `packages/document/src/arrow-label-layout.ts`                                                        | The layout engine: route, open run, width rule, wrap, slide, beside, knockout            |
-| `packages/document/src/arrow-label-wrap.ts`                                                          | Word metrics, greedy wrap on cached widths, balanced wrap                                |
-| `packages/document/src/arrow-label.ts`                                                               | `arrowLabelFontSize`: the caption size presets                                           |
-| `packages/document/src/svg-render.ts`                                                                | `contentBounds` counts routes and label plates; one pass per render                      |
-| `packages/document/src/svg-render-arrows.ts`                                                         | Export: multi-line caption, plate, knockout mask from the same layout                    |
-| `apps/live/hooks/canvas/useArrowLabelLayouts.ts`                                                     | One `arrowLabelPass` per element change; `draftLayout`; `labelRectOf`; `sameLabelRender` |
-| `apps/live/components/canvas/Canvas.tsx`                                                             | Calls the hook; feeds `labelRectOf` to the selection derivation                          |
-| `apps/live/components/canvas/CanvasElementsLayer.tsx`                                                | Hands each `ArrowView` its render from the `arrowLabels` it is given                     |
-| `apps/live/lib/canvas-selection.ts`                                                                  | Toolbar anchors span each selected arrow's selection extent                              |
-| `apps/live/lib/export-tab.ts`                                                                        | PNG / PDF rasterise arrows from `svgArrow`; SVG export shares one pass                   |
-| `apps/live/hooks/ui/useSlideThumbnails.ts`, `useLayerThumbnails.ts`, `components/canvas/Minimap.tsx` | One pass each, with their own mask-id prefix                                             |
-| `apps/live/components/canvas/ArrowView.tsx`                                                          | Knockout mask on the line + halo; renders the layout it is given                         |
-| `apps/live/components/canvas/ArrowLabel.tsx`                                                         | Multi-line SVG caption; textarea editor laid out by the same engine                      |
+| File                                                                                                   | Role                                                                                     |
+| ------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------- |
+| `packages/document/src/arrow-label-layout.ts`                                                          | The layout engine: route, open run, width rule, wrap, slide, beside, knockout            |
+| `packages/document/src/arrow-label-wrap.ts`                                                            | Word metrics, greedy wrap on cached widths, balanced wrap                                |
+| `packages/document/src/arrow-label.ts`                                                                 | `arrowLabelFontSize`: the caption size presets                                           |
+| `packages/document/src/svg-render.ts`                                                                  | `contentBounds` counts routes and label plates; one pass per render                      |
+| `packages/document/src/svg-render-arrows.ts`                                                           | Export: multi-line caption, plate, knockout mask from the same layout                    |
+| `apps/editor/hooks/canvas/useArrowLabelLayouts.ts`                                                     | One `arrowLabelPass` per element change; `draftLayout`; `labelRectOf`; `sameLabelRender` |
+| `apps/editor/components/canvas/Canvas.tsx`                                                             | Calls the hook; feeds `labelRectOf` to the selection derivation                          |
+| `apps/editor/components/canvas/CanvasElementsLayer.tsx`                                                | Hands each `ArrowView` its render from the `arrowLabels` it is given                     |
+| `apps/editor/lib/canvas-selection.ts`                                                                  | Toolbar anchors span each selected arrow's selection extent                              |
+| `apps/editor/lib/export-tab.ts`                                                                        | PNG / PDF rasterise arrows from `svgArrow`; SVG export shares one pass                   |
+| `apps/editor/hooks/ui/useSlideThumbnails.ts`, `useLayerThumbnails.ts`, `components/canvas/Minimap.tsx` | One pass each, with their own mask-id prefix                                             |
+| `apps/editor/components/canvas/ArrowView.tsx`                                                          | Knockout mask on the line + halo; renders the layout it is given                         |
+| `apps/editor/components/canvas/ArrowLabel.tsx`                                                         | Multi-line SVG caption; textarea editor laid out by the same engine                      |
 
 ## Domain and naming
 

@@ -52,7 +52,7 @@ clearance margin:
   wins. If neither side clears, the arrow stays straight: a huge bow reads
   worse than the crossing.
 
-The apply side (`apps/live/hooks/canvas/arrow-avoidance-apply.ts`) is a pure
+The apply side (`apps/editor/hooks/canvas/arrow-avoidance-apply.ts`) is a pure
 elements map run through the gesture's own `commit`, so the bow lands inside
 the same undo step as the draw: one Cmd-Z removes the arrow, not the bow.
 

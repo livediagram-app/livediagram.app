@@ -4,7 +4,7 @@
 # A cache only ever saves time: a bad one must cost a cold build, never a red run. A build that fails
 # cold, or fails again after the wipe, fails the step.
 #
-#   scripts/next-build-cold-retry.sh pnpm --filter @livedocuments/live build
+#   scripts/next-build-cold-retry.sh pnpm --filter @livedocuments/editor build
 #
 # Reads NEXT_CACHE_RESTORED and NEXT_CACHE_PATHS (one directory per line), set by next-cache-restore.
 set -euo pipefail

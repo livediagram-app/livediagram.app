@@ -18,7 +18,7 @@ globs = ["**/*.ttf", "**/*.otf"]
 # what only livedocuments.app runs with is NOT here: TELEMETRY_ENABLED and the
 # image gallery caps live in `hosted-vars.json`, which the deploy workflow adds
 # with `wrangler deploy --var` on livedocuments.app's own repository only, and
-# then verifies on the live worker (docs/specs/016-platform/deployment.md
+# then verifies on the editor worker (docs/specs/016-platform/deployment.md
 # "Hosted profile"). A fork is therefore telemetry-off and uncapped until it
 # opts in, by declaring the var here. TELEMETRY_ENABLED gates this worker's
 # anonymous, first-party product events, sent to liveworkspace's central

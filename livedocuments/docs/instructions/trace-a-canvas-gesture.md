@@ -7,12 +7,12 @@ browser. The budget it is held to is in [Canvas performance](../specs/008-canvas
 
 1. Work in your own worktree off `origin/main`.
 2. For named functions in profiles, add `productionBrowserSourceMaps: true` to
-   `apps/live/next.config.ts` for this build only.
+   `apps/editor/next.config.ts` for this build only.
 3. Build the export against the api whose document you measure:
-   `NEXT_PUBLIC_API_BASE=https://staging.livedocuments.app/api npx next build` in `apps/live`, under
+   `NEXT_PUBLIC_API_BASE=https://staging.livedocuments.app/api npx next build` in `apps/editor`, under
    PM2.
 4. Revert `next.config.ts` as soon as the build is done; the flag is never committed.
-5. Serve `apps/live/out` over HTTPS on a free loopback port, mapping every `/document/<id>` path to
+5. Serve `apps/editor/out` over HTTPS on a free loopback port, mapping every `/document/<id>` path to
    `document/placeholder.html`, under PM2.
 
 ## Open the document

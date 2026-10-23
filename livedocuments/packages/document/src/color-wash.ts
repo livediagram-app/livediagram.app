@@ -3,7 +3,7 @@
 // card's chips, a chair's seat). Tying them to the element's colour keeps
 // them agreeing with the TAB theme (docs/specs/011-theme/multicolour-themes.md), which a Tailwind light / dark
 // pair (that follows the APP's mode) does not. Shared by the editor
-// (apps/live lib/element-tint.ts) and the headless render.
+// (apps/editor lib/element-tint.ts) and the headless render.
 
 /** `rgba()` for a hex; `color-mix` for anything else (a named / rgb() /
  *  oklch() colour this can't parse), which a browser without it drops,

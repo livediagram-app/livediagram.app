@@ -151,12 +151,12 @@ later, or reading a layout written by a newer client, never strands the UI.
 
 ## Implementation
 
-- **`apps/live/lib/panel-layout.ts`** — types, `DEFAULT_PANEL_CORNER` (which corner each
+- **`apps/editor/lib/panel-layout.ts`** — types, `DEFAULT_PANEL_CORNER` (which corner each
   panel rests in out of the box) plus `defaultPanelLayout()` that builds a layout from it,
   `normalizePanelLayout()`, and `readPanelLayout()` / `writePanelLayout()` against
   `localStorage`. Pure, unit-tested (placement normalisation: a panel can't be in two
   corners; reflow ordering; default fallback).
-- **`apps/live/hooks/ui/usePanelDock.ts`** — owns the layout state (hydrated synchronously
+- **`apps/editor/hooks/ui/usePanelDock.ts`** — owns the layout state (hydrated synchronously
   from `localStorage` at mount, re-read on the change event), derives the per-corner
   ordered panel lists, tracks the active drag + nearest-corner snap candidate, and exposes
   handlers: `dockToCorner(panelId, corner)`, `setFree(panelId, x, y)`,
@@ -174,7 +174,7 @@ later, or reading a layout written by a newer client, never strands the UI.
   callbacks report start / move (with the live bounding rect, converted to dock-layer
   coords) / end up to the dock hook, which drives the snap guides and the dock-vs-free
   decision. The popover and `collapsible` paths are untouched. The persisted corner/free placement only changes on pointer-up.
-- **`apps/live/components/canvas/PanelSnapSlot.tsx`** — the drop-target slot rendered
+- **`apps/editor/components/canvas/PanelSnapSlot.tsx`** — the drop-target slot rendered
   by `CanvasChrome` as the last flex child of the candidate corner's stack container
   while a panel drag is active, so flexbox previews exactly where the released panel will
   land (its height mirrors the dragged panel); the candidate corner comes from the dock hook.

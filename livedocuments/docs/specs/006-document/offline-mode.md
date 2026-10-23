@@ -43,7 +43,7 @@ have cloud documents and offline documents side by side.
   IndexedDB) so the Explorer can list them and the persistence layer knows which
   ids resolve locally vs to the API.
 - **Every tab of the browser agrees on the index.** Each tab mirrors it in memory
-  (`apps/live/lib/offline/offline-ids.ts`), and every id registered or removed is told
+  (`apps/editor/lib/offline/offline-ids.ts`), and every id registered or removed is told
   to the other tabs on the `livedocuments-offline` BroadcastChannel (`{ kind: 'add' |
 'remove', id }`), which apply it at once. Without it, a tab that missed a Take
   Offline kept saving that document to the server (where it no longer is), and a tab
@@ -80,17 +80,17 @@ API. The full editor works: shapes, arrows, sketches, layers, tabs, links,
 templates, themes, undo/redo, export. What changes are the features that
 _require the server_, which are hidden or gated (not broken) for an offline document:
 
-| Feature                                                                   | Offline behaviour                                                                                                                                                                                                                                                               |
-| ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Share links / embeds                                                      | The header **Share** button stays visible, but for an offline document it opens a gate prompting you to sync to your account first (nothing lives on a server to share yet). Read-only embeds are unavailable for the same reason ([Live app](../007-editor/live-app.md), /54). |
-| Live presence / realtime                                                  | N/A — a private document never opens the room anyway ([Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md)).                                                                                                                                    |
-| Teams / shared library                                                    | Hidden — a team library is server-side ([Teams](../013-workspace/teams.md), /35).                                                                                                                                                                                               |
-| Comments                                                                  | Local-only (just you), stored in the document; no cross-user.                                                                                                                                                                                                                   |
-| Duplicate                                                                 | Makes **another offline document** — a copy never uploads what the user chose to keep local.                                                                                                                                                                                    |
-| Folders                                                                   | Personal-tree placement stored in the record; team moves are impossible (the shared library is server-side).                                                                                                                                                                    |
-| Tab linking ([Tab ↔ document many-to-many](tab-document-many-to-many.md)) | Unavailable in either direction — linked tabs are one shared server row.                                                                                                                                                                                                        |
-| Thumbnails                                                                | A fixed **offline illustration** in the Explorer — there's no server snapshot ([Live image share link](../013-workspace/live-image-share.md)).                                                                                                                                  |
-| Images                                                                    | **Embedded locally** — see below.                                                                                                                                                                                                                                               |
+| Feature                                                                   | Offline behaviour                                                                                                                                                                                                                                                                   |
+| ------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Share links / embeds                                                      | The header **Share** button stays visible, but for an offline document it opens a gate prompting you to sync to your account first (nothing lives on a server to share yet). Read-only embeds are unavailable for the same reason ([Editor app](../007-editor/editor-app.md), /54). |
+| Live presence / realtime                                                  | N/A — a private document never opens the room anyway ([Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md)).                                                                                                                                        |
+| Teams / shared library                                                    | Hidden — a team library is server-side ([Teams](../013-workspace/teams.md), /35).                                                                                                                                                                                                   |
+| Comments                                                                  | Local-only (just you), stored in the document; no cross-user.                                                                                                                                                                                                                       |
+| Duplicate                                                                 | Makes **another offline document** — a copy never uploads what the user chose to keep local.                                                                                                                                                                                        |
+| Folders                                                                   | Personal-tree placement stored in the record; team moves are impossible (the shared library is server-side).                                                                                                                                                                        |
+| Tab linking ([Tab ↔ document many-to-many](tab-document-many-to-many.md)) | Unavailable in either direction — linked tabs are one shared server row.                                                                                                                                                                                                            |
+| Thumbnails                                                                | A fixed **offline illustration** in the Explorer — there's no server snapshot ([Live image share link](../013-workspace/live-image-share.md)).                                                                                                                                      |
+| Images                                                                    | **Embedded locally** — see below.                                                                                                                                                                                                                                                   |
 
 **Images embed locally ([Image element + per-owner gallery](../009-elements/images.md)).** In a cloud document, an added image uploads
 to R2 and is referenced by URL. In an offline document it can't — so an image is
@@ -383,7 +383,7 @@ Offline Mode is independent of sign-in:
 
 ## Persistence architecture
 
-The editor already has a **single persistence boundary**: `apps/live/lib/api-client.ts`
+The editor already has a **single persistence boundary**: `apps/editor/lib/api-client.ts`
 (a barrel over `lib/api/*`); nothing in the editor calls `fetch` directly. Offline
 Mode is implemented **behind that boundary** so the editor is unaware of the
 target:
@@ -475,7 +475,7 @@ Track adoption without content, reusing the closed vocabulary:
 
 ## Implementation map
 
-- `apps/live/lib/api-client.ts` + `lib/api/*` — the persistence-backend seam;
+- `apps/editor/lib/api-client.ts` + `lib/api/*` — the persistence-backend seam;
   new `LocalBackend` (IndexedDB) beside the existing API calls; per-document
   dispatch via a local index.
 - New Document wizard (`TemplatePicker` / `template-picker-settings.tsx`,

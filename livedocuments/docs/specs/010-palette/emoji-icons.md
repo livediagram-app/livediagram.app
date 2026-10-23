@@ -26,7 +26,7 @@ Native colour emoji as first-class icon-catalogue entries, browsable under a new
 
 - Each emoji is an ordinary `IconDef` — `id` prefixed `emoji-` (flat namespace, uniqueness is test-pinned), `label`, and `keywords` carrying the search synonyms ("rocket launch ship" etc.). The entries live in their own pure-data file in `packages/icons/src` (`sticker-catalog.ts` since [Stickers](stickers.md)) (size-exempt data catalogue), concatenated into the part-2 export so consumers see one line-art catalogue and the async icon chunk (`icon-registry.ts`) needs no changes.
 
-- A new `ICON_CATEGORIES` entry `{ id: 'emoji', label: 'Emoji', iconIds: [...] }` in `apps/live/lib/icons.ts` makes it a filter chip in the Icons tab. The starter set is roughly 60 emoji weighted toward collaboration and status: smileys/reactions (thumbs up/down, clapping, party, thinking, heart), status marks (check, cross, warning, question, fire, star, sparkles, rocket, bulb, target, trophy, hourglass), work objects (calendar, clock, pin, lock, key, bug, wrench, memo, folder, chart), and hands/people.
+- A new `ICON_CATEGORIES` entry `{ id: 'emoji', label: 'Emoji', iconIds: [...] }` in `apps/editor/lib/icons.ts` makes it a filter chip in the Icons tab. The starter set is roughly 60 emoji weighted toward collaboration and status: smileys/reactions (thumbs up/down, clapping, party, thinking, heart), status marks (check, cross, warning, question, fire, star, sparkles, rocket, bulb, target, trophy, hourglass), work objects (calendar, clock, pin, lock, key, bug, wrench, memo, folder, chart), and hands/people.
 
 ## What we deliberately do NOT build
 

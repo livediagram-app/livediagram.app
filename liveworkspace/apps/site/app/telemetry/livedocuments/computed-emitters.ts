@@ -63,7 +63,7 @@ const APPEARANCE_LABELS = tokensAfter(
 // The Explorer sidebar row kinds: `Sidebar.<Row>` on the page and `ExplorerPanel.<Row>` in the
 // editor's panel, per SidebarTelemetryRow member.
 const SIDEBAR_ROW_KINDS = tokensAfter(
-  read('live/app/explorer/sidebar/sidebar-telemetry.ts'),
+  read('editor/app/explorer/sidebar/sidebar-telemetry.ts'),
   'export type SidebarTelemetryRow',
   ';',
 );
@@ -80,14 +80,14 @@ const LENS_FACETS = tokensAfter(
 ).filter((token) => /^[A-Z]/.test(token));
 
 // The Trash a Trash action happened in: TrashGroup's `telemetryType`.
-const TRASH_TYPES = tokensAfter(read('live/lib/trash-groups.ts'), 'telemetryType:', ';');
+const TRASH_TYPES = tokensAfter(read('editor/lib/trash-groups.ts'), 'telemetryType:', ';');
 
 // One closed value per default folder key (placementDefaultTelemetryType).
 const DEFAULT_FOLDER_TYPES = PLACEMENT_DEFAULT_KEYS.map(placementDefaultTelemetryType);
 
 // The presenter settings: `Presentation-<field>` per PresentationConfig key.
 const PRESENTATION_FIELDS = (() => {
-  const source = read('live/lib/presentation-config.ts');
+  const source = read('editor/lib/presentation-config.ts');
   const start = source.indexOf('export type PresentationConfig = {');
   const block = source.slice(start, source.indexOf('\n};', start));
   return [...block.matchAll(/^ {2}([a-zA-Z]+)\??:/gm)].map((m) => `Presentation-${m[1]}`);
@@ -96,7 +96,7 @@ const PRESENTATION_FIELDS = (() => {
 // The Settings dialog's presenter rows (settings-catalogue.ts presentingToggle / presentingChoice): a toggle sends
 // `Presentation-<field>On|Off` for each boolean field, a choice `Presentation-<field><Option>` (choiceTelemetryType).
 const PRESENTATION_SETTINGS = (() => {
-  const source = read('live/lib/presentation-config.ts');
+  const source = read('editor/lib/presentation-config.ts');
   const start = source.indexOf('export type PresentationConfig = {');
   const block = source.slice(start, source.indexOf('\n};', start));
   const fields = [...block.matchAll(/^ {2}([a-zA-Z]+)\??: ([A-Za-z]+);/gm)].map(
@@ -121,11 +121,11 @@ const PRESENTATION_SETTINGS = (() => {
   };
 })();
 
-// The image picker's search failures (apps/live image-search/telemetry.ts):
+// The image picker's search failures (apps/editor image-search/telemetry.ts):
 // every `ImageSearch.<Reason>` token in its fixed tables.
 const IMAGE_SEARCH_WARNINGS = [
   ...new Set(
-    [...read('live/lib/image-search/telemetry.ts').matchAll(/'(ImageSearch\.[A-Za-z.]+)'/g)].map(
+    [...read('editor/lib/image-search/telemetry.ts').matchAll(/'(ImageSearch\.[A-Za-z.]+)'/g)].map(
       (m) => m[1]!,
     ),
   ),
@@ -140,12 +140,12 @@ const pascal = (id: string) =>
     .join('');
 const SANKEY_TOUR_STEP_SOURCE: string[] = [
   ...[
-    ...read('live/components/tour/sankey-element-tour-steps.ts').matchAll(
+    ...read('editor/components/tour/sankey-element-tour-steps.ts').matchAll(
       /canvasStep\(\s*'([a-z-]+)'/g,
     ),
   ].map((m) => m[1]!),
   ...[
-    ...read('live/components/tour/sankey-flows-tour-steps.ts').matchAll(/step\(\s*'([a-z-]+)'/g),
+    ...read('editor/components/tour/sankey-flows-tour-steps.ts').matchAll(/step\(\s*'([a-z-]+)'/g),
   ].map((m) => `flows-${m[1]!}`),
   'outro',
 ].map((id) => `SankeyTourStep${pascal(id)}`);
@@ -155,7 +155,7 @@ const SANKEY_TOUR_STEP_SOURCE: string[] = [
 const conceptTourSteps = (token: string, file: string): string[] =>
   [
     ...[
-      ...read(`live/components/tour/${file}`).matchAll(
+      ...read(`editor/components/tour/${file}`).matchAll(
         /(?:(?:onGraphic|addRowStep|inTheMenu|onCanvas|inDialog)\(\s*|menuStep\(\s*\w+,\s*|\bid: )'([a-z-]+)'/g,
       ),
     ].map((m) => m[1]!),
@@ -164,7 +164,7 @@ const conceptTourSteps = (token: string, file: string): string[] =>
 
 // Every element tour (ElementTourHost runs them all): its token, from the registry, and its steps.
 export const ELEMENT_TOUR_TOKENS: string[] = [
-  ...read('live/components/tour/element-tour-defs.ts').matchAll(/token: '(\w+)'/g),
+  ...read('editor/components/tour/element-tour-defs.ts').matchAll(/token: '(\w+)'/g),
 ].map((m) => m[1]!);
 
 export const ELEMENT_TOUR_STEP_SOURCE: string[] = [
@@ -182,7 +182,7 @@ export const ELEMENT_TOUR_STEP_SOURCE: string[] = [
   ...conceptTourSteps('TabWindowTour', 'tab-window-tour-steps.ts'),
 ];
 
-// The Pages tour's steps, as pagesTourStepTelemetryType makes them (apps/live PagesTourHost.tsx,
+// The Pages tour's steps, as pagesTourStepTelemetryType makes them (apps/editor PagesTourHost.tsx,
 // docs/specs/007-editor/pages-tour.md): each page kind's track names its kind before the step. The welcome card
 // sends no step view.
 const camel = (id: string) =>
@@ -192,7 +192,7 @@ const camel = (id: string) =>
     .join('');
 const PAGES_TOUR_STEP_SOURCE: string[] = (['slide', 'infographic', 'article'] as const).flatMap(
   (kind) =>
-    [...read(`live/components/tour/${kind}-tour-steps.ts`).matchAll(/^ +id: '([a-z-]+)',/gm)]
+    [...read(`editor/components/tour/${kind}-tour-steps.ts`).matchAll(/^ +id: '([a-z-]+)',/gm)]
       .map((m) => m[1]!)
       .filter((id, i, ids) => id !== 'welcome' && ids.indexOf(id) === i)
       .map((id) => `PagesTourStep${camel(`${kind}-${id}`)}`),
@@ -276,30 +276,30 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   },
 
   // The editor.
-  'apps/live/app/document/[id]/useElementCreation.ts Element·Added': {
+  'apps/editor/app/document/[id]/useElementCreation.ts Element·Added': {
     values: ELEMENT_KINDS,
     open: ELEMENT_WHY,
   },
-  'apps/live/app/document/[id]/useSlideDeck.ts UI·Changed': { values: PRESENTATION_FIELDS },
-  'apps/live/components/dialogs/settings/settings-catalogue.ts UI·Toggled': {
+  'apps/editor/app/document/[id]/useSlideDeck.ts UI·Changed': { values: PRESENTATION_FIELDS },
+  'apps/editor/components/dialogs/settings/settings-catalogue.ts UI·Toggled': {
     values: PRESENTATION_SETTINGS.toggled,
   },
-  'apps/live/components/dialogs/settings/settings-catalogue.ts UI·Changed': {
+  'apps/editor/components/dialogs/settings/settings-catalogue.ts UI·Changed': {
     values: PRESENTATION_SETTINGS.changed,
   },
-  // ARTICLE_BLOCK_INSERT_EVENT (apps/live/lib/article/article-telemetry.ts): a block put into an
+  // ARTICLE_BLOCK_INSERT_EVENT (apps/editor/lib/article/article-telemetry.ts): a block put into an
   // article from the page toolbar's Insert or the slash menu.
-  'apps/live/components/canvas/article/PageToolbar.tsx Element·Added': {
+  'apps/editor/components/canvas/article/PageToolbar.tsx Element·Added': {
     values: ['ArticleDivider', 'ArticlePageBreak', 'ArticleQuote', 'ArticleCode'],
   },
-  'apps/live/components/canvas/article/ArticleEditor.tsx Element·Added': {
+  'apps/editor/components/canvas/article/ArticleEditor.tsx Element·Added': {
     values: ['ArticleDivider', 'ArticlePageBreak', 'ArticleQuote', 'ArticleCode'],
   },
-  'apps/live/app/document/[id]/useTemplateFlow.ts Template·Used': {
+  'apps/editor/app/document/[id]/useTemplateFlow.ts Template·Used': {
     values: TEMPLATES,
     open: TEMPLATE_WHY,
   },
-  'apps/live/app/explorer/useTimelineFeed.ts Timeline·Selected': {
+  'apps/editor/app/explorer/useTimelineFeed.ts Timeline·Selected': {
     values: [
       'comments',
       'new',
@@ -316,61 +316,61 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   },
   // Which Trash (docs/specs/013-workspace/trash.md): lib/trash-groups.ts's
   // telemetryType, the one closed set every site sends.
-  'apps/live/hooks/persistence/useTrash.ts Trash·Restored': { values: TRASH_TYPES },
-  'apps/live/hooks/persistence/useTrash.ts Trash·Deleted': { values: TRASH_TYPES },
-  'apps/live/hooks/persistence/useTrash.ts Trash·Cleared': { values: TRASH_TYPES },
-  'apps/live/app/document/[id]/useDocumentTrashed.ts Trash·Restored': { values: TRASH_TYPES },
+  'apps/editor/hooks/persistence/useTrash.ts Trash·Restored': { values: TRASH_TYPES },
+  'apps/editor/hooks/persistence/useTrash.ts Trash·Deleted': { values: TRASH_TYPES },
+  'apps/editor/hooks/persistence/useTrash.ts Trash·Cleared': { values: TRASH_TYPES },
+  'apps/editor/app/document/[id]/useDocumentTrashed.ts Trash·Restored': { values: TRASH_TYPES },
   // A delete toast's Undo (lib/document-delete-undo.ts DeletedTrash, the same three).
-  'apps/live/lib/document-delete-undo.ts Trash·Restored': { values: TRASH_TYPES },
-  'apps/live/app/explorer/sidebar/sidebar-telemetry.ts UI·Selected': { values: SIDEBAR_ROWS },
+  'apps/editor/lib/document-delete-undo.ts Trash·Restored': { values: TRASH_TYPES },
+  'apps/editor/app/explorer/sidebar/sidebar-telemetry.ts UI·Selected': { values: SIDEBAR_ROWS },
   // Default folders (docs/specs/013-workspace/default-folders.md "Telemetry"): one value per key.
-  'apps/live/lib/placement-defaults/placement-defaults-store.ts Folder·Changed': {
+  'apps/editor/lib/placement-defaults/placement-defaults-store.ts Folder·Changed': {
     values: DEFAULT_FOLDER_TYPES,
   },
-  'apps/live/lib/placement-defaults/placement-defaults-store.ts Folder·Cleared': {
+  'apps/editor/lib/placement-defaults/placement-defaults-store.ts Folder·Cleared': {
     values: DEFAULT_FOLDER_TYPES,
   },
-  'apps/live/app/explorer/lens/lens-telemetry.ts Explorer·Selected': { values: LENS_FACETS },
-  'apps/live/app/new/page.tsx Theme·Changed': { values: THEMES, open: THEME_WHY },
-  'apps/live/app/new/page.tsx Template·Used': { values: TEMPLATES, open: TEMPLATE_WHY },
+  'apps/editor/app/explorer/lens/lens-telemetry.ts Explorer·Selected': { values: LENS_FACETS },
+  'apps/editor/app/new/page.tsx Theme·Changed': { values: THEMES, open: THEME_WHY },
+  'apps/editor/app/new/page.tsx Template·Used': { values: TEMPLATES, open: TEMPLATE_WHY },
   // The landing funnel (docs/specs/019-marketing/landing-funnel.md): the CTA a /new visit came from.
-  'apps/live/app/new/useCtaAttribution.ts Cta·Opened': { values: ALL_CTA_SOURCES },
-  'apps/live/app/new/useCtaAttribution.ts Cta·Created': { values: ALL_CTA_SOURCES },
-  'apps/live/components/dialogs/SettingsDialog.tsx UI·Opened': {
+  'apps/editor/app/new/useCtaAttribution.ts Cta·Opened': { values: ALL_CTA_SOURCES },
+  'apps/editor/app/new/useCtaAttribution.ts Cta·Created': { values: ALL_CTA_SOURCES },
+  'apps/editor/components/dialogs/SettingsDialog.tsx UI·Opened': {
     values: ['SettingsAppearance', 'SettingsEditor', 'SettingsAccount', 'SettingsPrivacy'],
     open: 'Settings<Category>, one per Settings category',
   },
-  'apps/live/components/dialogs/ShareCopyMenu.tsx UI·Copied': {
+  'apps/editor/components/dialogs/ShareCopyMenu.tsx UI·Copied': {
     values: ['EmbedCode', 'LiveImage'],
   },
-  'apps/live/components/notes/useNoteRichTextSession.ts Note·Used': {
+  'apps/editor/components/notes/useNoteRichTextSession.ts Note·Used': {
     values: ['Bold', 'Italic', 'List', 'Heading'],
     open: 'the rich-text command a note applied',
   },
-  'apps/live/components/palette/PaletteCategoryBrowser.tsx UI·Searched': {
+  'apps/editor/components/palette/PaletteCategoryBrowser.tsx UI·Searched': {
     values: ['IconSearch', 'TechSearch', 'StickerSearch'],
   },
-  'apps/live/components/palette/PaletteCategoryBrowser.tsx UI·Opened': {
+  'apps/editor/components/palette/PaletteCategoryBrowser.tsx UI·Opened': {
     values: ['IconGroup', 'TechGroup', 'StickerGroup'],
   },
-  'apps/live/components/panels/SearchPanel.tsx UI·Opened': { values: SLUGS, open: SLUG_WHY },
-  'apps/live/components/panels/SearchPanel.tsx Search·Selected': {
+  'apps/editor/components/panels/SearchPanel.tsx UI·Opened': { values: SLUGS, open: SLUG_WHY },
+  'apps/editor/components/panels/SearchPanel.tsx Search·Selected': {
     values: ['Document', 'Shared', 'Folder', 'Team', 'Tab', 'Element', 'Palette', 'Command'],
   },
-  'apps/live/hooks/ui/useImageSearch.ts Error·Warning': {
+  'apps/editor/hooks/ui/useImageSearch.ts Error·Warning': {
     values: IMAGE_SEARCH_WARNINGS,
   },
-  'apps/live/components/primitives/AreaErrorBoundary.tsx Error·Client': {
+  'apps/editor/components/primitives/AreaErrorBoundary.tsx Error·Client': {
     values: ['Render.Canvas.TypeError', 'Render.Header.Error'],
     open: 'Render.<Area>.<ErrorName>',
   },
-  'apps/live/components/primitives/HelpArticleLink.tsx UI·Opened': {
+  'apps/editor/components/primitives/HelpArticleLink.tsx UI·Opened': {
     values: SLUGS,
     open: SLUG_WHY,
   },
   // Load recovery (docs/specs/007-editor/load-recovery.md): the watchdog's warnings, and a throw in
   // the load named by its error.
-  'apps/live/app/document/[id]/useIdentityBootstrap.ts Error·Warning': {
+  'apps/editor/app/document/[id]/useIdentityBootstrap.ts Error·Warning': {
     values: [
       'DocumentLoad.TimedOut.Identity',
       'DocumentLoad.TimedOut.Participant',
@@ -381,49 +381,49 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
       'DocumentLoad.Late',
     ],
   },
-  'apps/live/app/document/[id]/useIdentityBootstrap.ts Error·Client': {
+  'apps/editor/app/document/[id]/useIdentityBootstrap.ts Error·Client': {
     values: ['DocumentLoad.TypeError', 'DocumentLoad.Error'],
     open: 'DocumentLoad.<ErrorName>',
   },
-  'apps/live/components/providers/ErrorTelemetryBoot.tsx Error·Warning': {
+  'apps/editor/components/providers/ErrorTelemetryBoot.tsx Error·Warning': {
     values: ['OfflineStore.Unavailable', 'SessionToken.TimedOut'],
   },
-  'apps/live/components/providers/ErrorTelemetryBoot.tsx Error·Api': {
+  'apps/editor/components/providers/ErrorTelemetryBoot.tsx Error·Api': {
     values: API_ERRORS,
     open: API_ERROR_WHY,
   },
-  'apps/live/components/tour/ElementTourHost.tsx UI·View': { values: ELEMENT_TOUR_STEP_SOURCE },
-  'apps/live/components/tour/ElementTourHost.tsx UI·Started': { values: ELEMENT_TOUR_TOKENS },
-  'apps/live/components/tour/ElementTourHost.tsx UI·Ended': {
+  'apps/editor/components/tour/ElementTourHost.tsx UI·View': { values: ELEMENT_TOUR_STEP_SOURCE },
+  'apps/editor/components/tour/ElementTourHost.tsx UI·Started': { values: ELEMENT_TOUR_TOKENS },
+  'apps/editor/components/tour/ElementTourHost.tsx UI·Ended': {
     values: ELEMENT_TOUR_TOKENS.flatMap((t) => [`${t}Completed`, `${t}Skipped`]),
   },
-  'apps/live/components/tour/ElementTourHost.tsx UI·Opened': {
+  'apps/editor/components/tour/ElementTourHost.tsx UI·Opened': {
     values: ELEMENT_TOUR_TOKENS.map((t) => `${t}Offer`),
   },
-  'apps/live/components/tour/ElementTourHost.tsx UI·Closed': {
+  'apps/editor/components/tour/ElementTourHost.tsx UI·Closed': {
     values: ELEMENT_TOUR_TOKENS.map((t) => `${t}Offer`),
   },
-  'apps/live/components/tour/PagesTourHost.tsx UI·View': {
+  'apps/editor/components/tour/PagesTourHost.tsx UI·View': {
     values: PAGES_TOUR_STEP_SOURCE,
   },
-  'apps/live/hooks/canvas/useDebouncedCanvasTelemetry.ts Canvas·Changed': {
+  'apps/editor/hooks/canvas/useDebouncedCanvasTelemetry.ts Canvas·Changed': {
     values: Object.keys(CANVAS_CONTROLS),
   },
-  'apps/live/hooks/canvas/useShapeDrawing.ts Element·Added': {
+  'apps/editor/hooks/canvas/useShapeDrawing.ts Element·Added': {
     values: ['Banner', 'Callout', 'Image', 'Video', 'LinkCard'],
     open: 'a drawn component or media kind',
   },
-  'apps/live/hooks/canvas/useTabCanvas.ts Tab·Aligned': {
+  'apps/editor/hooks/canvas/useTabCanvas.ts Tab·Aligned': {
     values: ['Smart', 'FlowchartDown', 'FlowchartRight', 'Tree', 'Mindmap'],
   },
-  'apps/live/hooks/canvas/useTabCanvas.ts Canvas·Changed': {
+  'apps/editor/hooks/canvas/useTabCanvas.ts Canvas·Changed': {
     values: ['Blank', 'Grid', 'Dots', 'Graph'],
     open: 'titleCaseType(pattern): a background pattern',
   },
-  'apps/live/hooks/canvas/useTabTheme.ts Theme·Changed': { values: THEMES, open: THEME_WHY },
-  'apps/live/hooks/canvas/useStylePreview.ts Element·Changed': {
+  'apps/editor/hooks/canvas/useTabTheme.ts Theme·Changed': { values: THEMES, open: THEME_WHY },
+  'apps/editor/hooks/canvas/useStylePreview.ts Element·Changed': {
     // The types the element menu's generic style ops pass through it
-    // (apps/live/lib/element-style-ops.ts): the accent edge, card slots and chip looks.
+    // (apps/editor/lib/element-style-ops.ts): the accent edge, card slots and chip looks.
     values: [
       'AccentEdge',
       'CardSlots',
@@ -440,20 +440,20 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
       'ConceptAnim',
     ],
   },
-  // The element menu's whole-tab writes (apps/live/lib/element-style-ops.ts `commitTab`).
-  'apps/live/components/palette/EditorContextMenuHost.tsx Element·Changed': {
+  // The element menu's whole-tab writes (apps/editor/lib/element-style-ops.ts `commitTab`).
+  'apps/editor/components/palette/EditorContextMenuHost.tsx Element·Changed': {
     values: ['RenumberSteps', 'StepSequence'],
   },
-  'apps/live/hooks/canvas/useTextStyleSetters.ts Element·Toggled': {
+  'apps/editor/hooks/canvas/useTextStyleSetters.ts Element·Toggled': {
     values: ['Bold', 'Italic', 'Underline', 'Strikethrough'],
   },
-  'apps/live/hooks/canvas/useWebComponentSetters.ts Element·Changed': {
+  'apps/editor/hooks/canvas/useWebComponentSetters.ts Element·Changed': {
     values: ['Banner', 'Callout', 'StatRow'],
     open: 'elementTelemetryType of the web component a row was added to',
   },
-  'apps/live/hooks/ui/useAppearance.ts UI·Toggled': { values: APPEARANCE_LABELS },
+  'apps/editor/hooks/ui/useAppearance.ts UI·Toggled': { values: APPEARANCE_LABELS },
   // A new link's level (LEVEL_TELEMETRY_TYPE) and its expiry, the file's two computed sites.
-  'apps/live/hooks/persistence/useShareLinks.ts Document·Shared': {
+  'apps/editor/hooks/persistence/useShareLinks.ts Document·Shared': {
     values: [
       ...Object.values(LEVEL_TELEMETRY_TYPE),
       'ExpiryWeek',
@@ -461,8 +461,11 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
       'ExpirySixMonths',
     ],
   },
-  'apps/live/lib/element-telemetry.ts Element·Duplicated': { values: [null, 'ShiftDrag'] },
-  'apps/live/lib/element-telemetry.ts Element·Added': { values: ELEMENT_KINDS, open: ELEMENT_WHY },
+  'apps/editor/lib/element-telemetry.ts Element·Duplicated': { values: [null, 'ShiftDrag'] },
+  'apps/editor/lib/element-telemetry.ts Element·Added': {
+    values: ELEMENT_KINDS,
+    open: ELEMENT_WHY,
+  },
   // Timings (docs/specs/017-telemetry/timing-telemetry.md): every editor timing and every app's Web
   // Vitals go through the one reportTiming, so this one site sends every metric in every bucket.
   'packages/telemetry-client/src/timing.ts Timing·Measured': { values: ALL_TIMING_TYPES },

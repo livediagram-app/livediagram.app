@@ -20,7 +20,7 @@ import {
 // An element that carries no colour of its own is drawn in the canvas's own
 // ink. That used to be one fixed set of brand blues, which was fine while
 // every unpainted element sat on white paper — and stopped being fine when
-// the Default colour scheme gained a dark half (docs/specs/007-editor/live-app.md), because a Default
+// the Default colour scheme gained a dark half (docs/specs/007-editor/editor-app.md), because a Default
 // tab deliberately stores NO element colours, so the dark canvas had nothing
 // but the light ink to fall back on and the whole canvas read as pale cards on
 // near-black.

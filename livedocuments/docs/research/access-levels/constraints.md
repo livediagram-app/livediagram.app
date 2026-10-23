@@ -242,7 +242,7 @@ or opens a hole; "should" is a strong preference.
   the pass stub prints the role word at 10 px semibold, which is not large text. Measured today
   (light theme): white on `brand-500` (`#0ea5e9`) **2.77:1** and white on `violet-500` (`#8b5cf6`)
   **4.23:1**, both below AA, so the existing stubs fail before any new level is added
-  ([share-dialog-parts.tsx](../../../apps/live/components/dialogs/share-dialog-parts.tsx)). Candidates
+  ([share-dialog-parts.tsx](../../../apps/editor/components/dialogs/share-dialog-parts.tsx)). Candidates
   that pass: white on `brand-600` 4.10 (still fails), `sky-700` 5.93, `teal-700` 5.47, `violet-600`
   5.70, `amber-700` 5.02, `indigo-700` 7.90. The role pill passes: `amber-800` on `amber-100` 6.37,
   `emerald-800` on `emerald-100` 6.78; a third tone such as `teal-800` on `teal-100` reaches 6.73.

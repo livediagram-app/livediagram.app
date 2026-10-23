@@ -44,13 +44,13 @@ shared thumbnail shows the same amount of code the canvas does.
 
 ## Syntax highlighting: lazy, hand-rolled, dependency-free
 
-- A small generic tokenizer lives in `apps/live/lib/code-tokens.ts`: one engine (comments, strings, numbers, keywords, punctuation) driven by a per-language config table. No dependency, no WASM.
-- It loads as an **async chunk** on the icon-registry pattern (`apps/live/lib/code-highlight-registry.ts`: memoized dynamic import, `useSyncExternalStore` pair, sync lookup returning undefined pre-load). Until the chunk lands, the block renders plain monospace text — it degrades, never blanks. First paints that show no code block never pay for the tokenizer.
+- A small generic tokenizer lives in `apps/editor/lib/code-tokens.ts`: one engine (comments, strings, numbers, keywords, punctuation) driven by a per-language config table. No dependency, no WASM.
+- It loads as an **async chunk** on the icon-registry pattern (`apps/editor/lib/code-highlight-registry.ts`: memoized dynamic import, `useSyncExternalStore` pair, sync lookup returning undefined pre-load). Until the chunk lands, the block renders plain monospace text — it degrades, never blanks. First paints that show no code block never pay for the tokenizer.
 - Token classes map to the active scheme's colour set (keyword / string / comment / number / punctuation), independent of the app theme.
 
 ## Editing
 
-- **Double-click** opens an **Edit code dialog** (`apps/live/components/dialogs/CodeEditDialog.tsx`): a monospace textarea (Tab inserts two spaces, never moves focus) plus a language dropdown. Save commits one history entry; read-only/locked gating as usual.
+- **Double-click** opens an **Edit code dialog** (`apps/editor/components/dialogs/CodeEditDialog.tsx`): a monospace textarea (Tab inserts two spaces, never moves focus) plus a language dropdown. Save commits one history entry; read-only/locked gating as usual.
 - The element context menu has a **Code** section (in `ElementDataSections.tsx`, inside the menu's Tools flyout, per the data-shape pattern): a summary of the line count and language, an "Edit Code" row opening the same dialog, and a Wrap toggle. The language is chosen in the dialog only; the menu has no language picker.
 
 ## Headless render (share thumbnails, MCP, exports)

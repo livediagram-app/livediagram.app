@@ -4,7 +4,7 @@
 // classifier shares the router's own segment list so the dashboard and the
 // router can't disagree about who serves a path.
 
-// The live app's top-level page route segments. These serve at clean URLs
+// The editor app's top-level page route segments. These serve at clean URLs
 // (`/document`, `/explorer`, ...), and the router forwards them to the live
 // worker (docs/specs/016-platform/router-app.md). Marketing owns every other first segment.
 export const LIVE_ROUTE_SEGMENTS: ReadonlySet<string> = new Set([
@@ -20,7 +20,7 @@ export const LIVE_ROUTE_SEGMENTS: ReadonlySet<string> = new Set([
   'workbench',
 ]);
 
-// Named after the apps (`apps/live` is the editor).
+// Named after the apps (`apps/editor` is the editor).
 export type PageViewApp = 'Marketing' | 'Live' | 'Help' | 'Dashboard';
 
 const SEGMENT = /^[a-z0-9._-]{1,60}$/;

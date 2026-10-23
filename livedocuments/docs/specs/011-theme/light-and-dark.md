@@ -1,7 +1,7 @@
 # Light and dark halves
 
 Every colour theme works in both appearances. A theme has a **light half** and a **dark half**, and each person sees
-a tab in the half that matches their own appearance ([Live app](../007-editor/live-app.md#appearance-light--dark--system)):
+a tab in the half that matches their own appearance ([Editor app](../007-editor/editor-app.md#appearance-light--dark--system)):
 two people in different modes look at the same tab at the same time, each in their own half. Default has always worked
 this way ([Canvas and palette](../008-canvas/canvas-and-palette.md#default-scheme-dark-half)); every other theme now
 does too, so the editor never asks anyone to switch mode to suit a tab.
@@ -20,7 +20,7 @@ does too, so the editor never asks anyone to switch mode to suit a tab.
   at 3:1 or more. Where a derived (or a native) colour falls short, its lightness is moved away from what it sits on
   until it passes, keeping its hue.
   `packages/document/src/theme-halves-contrast.test.ts` checks every theme in both halves, and
-  `apps/live/lib/tab-looks-contrast.test.ts` every look as a light- and a dark-mode viewer sees it (box text, outline
+  `apps/editor/lib/tab-looks-contrast.test.ts` every look as a light- and a dark-mode viewer sees it (box text, outline
   and arrow).
 - **Style presets meet the same floor.** Every shape preset's label reads on its fill at 4.5:1 or more in both halves
   of every theme, and every table preset's header title on its band. Bold stays white text, so its fill darkens until
@@ -39,12 +39,12 @@ does too, so the editor never asks anyone to switch mode to suit a tab.
   theme's colours but whose text is someone's choice (a template's white box with slate text) would get the half's
   fill under the stored text. Where that would put the text on its fill below 4.5:1, and read worse than the stored
   pair does, the box keeps its stored fill and text instead (its outline still follows the half). `packages/document/src/theme-halves.test.ts` covers the rule, and
-  `apps/live/lib/template-theme-contrast.test.ts` every template under every theme, for a light- and a dark-mode
+  `apps/editor/lib/template-theme-contrast.test.ts` every template under every theme, for a light- and a dark-mode
   viewer.
 - **A label's ink is not walked against what is behind it.** Picking a theme or a look, or drawing a tab in the other
   half, repaints each colour on its own: a label keeps the ink its theme gives it, whatever its backdrop (a panel the
   theme paints, the canvas) turns to. Every tab is a Pages tab, whose words sit on pages with their own paper
-  (the next point). `apps/live/lib/template-overlay-contrast.test.ts` holds the
+  (the next point). `apps/editor/lib/template-overlay-contrast.test.ts` holds the
   labels of every template that is not a Pages template at 3:1 against what is drawn behind them, under every theme,
   picked in either half and seen in either; today those are the two blank templates, which hold no labels.
 - **A page's own paper.** An element on a page with a fill of its own (a solid, a gradient, an
@@ -52,7 +52,7 @@ does too, so the editor never asks anyone to switch mode to suit a tab.
   the page's (a light slide takes the light half, a dark one the dark half), its stock colours for that surface. A
   layout placed on a light slide in Steel keeps its dark words in dark chrome, where the dark half's light ink would
   sink into the slide. Elements on plain paper (no fill) follow the chrome as before, since the paper does. The canvas
-  (`usePageView`, `apps/live/lib/stock-colour-projector.ts`) and every export (`tabAsSeen`) draw it the same way.
+  (`usePageView`, `apps/editor/lib/stock-colour-projector.ts`) and every export (`tabAsSeen`) draw it the same way.
 - **A Border-tier preset is a line drawing on the paper.** Hairline, Outline, Dotted, Dash-Dot and Frame sit on white
   in a light half and, in a dark half, on that half's element fill (the dark ink's for a theme that paints none, as
   Default), their lines and labels lightened to read there. A white card on a dark canvas glared. A preset-styled box is redrawn by the preset it wears (`colorPreset`), not only by its

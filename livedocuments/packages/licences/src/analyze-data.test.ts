@@ -20,7 +20,7 @@ const sample = {
     { path: pnpmNext, parent_source_index: null },
     { parent_source_index: 0, path: 'dist/client/index.js' },
     { parent_source_index: 0, path: 'dist/server/render.js' },
-    { path: '[project]/apps/live/app/page.tsx' },
+    { path: '[project]/apps/editor/app/page.tsx' },
     { path: '[turbopack]/browser/runtime.ts' },
     { path: '[project]/[client-fs]/_next/static/media/a.wasm' },
   ],
@@ -34,7 +34,7 @@ const sample = {
   ],
   output_files: [
     { filename: '[client-fs]/_next/static/chunks/abc.js' },
-    { filename: '[output]/apps/live/.next-analyze/server/chunks/ssr/x.js' },
+    { filename: '[output]/apps/editor/.next-analyze/server/chunks/ssr/x.js' },
     { filename: '[client-fs]/_next/static/media/tfjs-backend-wasm.38dtokxvvg789.wasm' },
   ],
 };
@@ -43,7 +43,7 @@ describe('decodeAnalyzeData', () => {
   it('keeps the repo files placed in client output, joined through their parents', () => {
     const { sources } = decodeAnalyzeData(analyzeData(sample));
     expect(sources).toEqual([
-      'apps/live/app/page.tsx',
+      'apps/editor/app/page.tsx',
       'node_modules/.pnpm/next@16.3.6_react@19.3.0/node_modules/next/dist/client/index.js',
     ]);
   });

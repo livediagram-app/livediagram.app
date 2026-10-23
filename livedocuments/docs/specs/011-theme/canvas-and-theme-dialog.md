@@ -9,11 +9,11 @@ The pattern grid, canvas/pattern colour pickers, opacity slider, and theme grid 
 ## Behaviour
 
 - The dialog is one modal (`CanvasThemeDialog`) titled **Tab Style** ("Appearance" names the VIEWER's own
-  chrome, [Live app](../007-editor/live-app.md)). It opens on its **home**: a grid of **Looks**, then a
+  chrome, [Editor app](../007-editor/editor-app.md)). It opens on its **home**: a grid of **Looks**, then a
   **Fine-tune** list. The tab / canvas context menu carries no Look & Feel or Font category: the dock button is
   the one entry point.
 - A **dock button** ("Theme & canvas") sits in the bottom-right chrome cluster, **in one strip with the Layers
-  button** (Layers on its left) ([Live app](../007-editor/live-app.md) "Mobile chrome"), and opens
+  button** (Layers on its left) ([Editor app](../007-editor/editor-app.md) "Mobile chrome"), and opens
   the dialog on its home. Its icon is a painter's palette with filled paint wells, in the button's own colour like every other chrome icon, so it reads as "how this tab
   looks" at a glance. It shows on **every viewport, mobile included**, and stays hidden in zen mode and in
   read-only / embed views.
@@ -82,7 +82,7 @@ The table is in the order the carousel shows them after the Mashup card, six to 
   is what an untouched tab reads as). The rest follow a fixed, interleaved
   order written into the catalogue (`TAB_LOOKS`, never shuffled at runtime): every page holds two multi-colour looks,
   and no two neighbours on a page share a theme or a finish, so each page reads as a spread of contrasting styles
-  rather than the colourful looks clumping on one page. `apps/live/lib/tab-looks.test.ts` locks both rules.
+  rather than the colourful looks clumping on one page. `apps/editor/lib/tab-looks.test.ts` locks both rules.
 - **Retired looks.** Carnival (Rainbow, Flexible, Poppins, Confetti at 50%) was replaced by Spectrum: its confetti
   backdrop fought the diagram, and the party feel was already covered by Doodle. Because a look is not stored, a tab
   that once picked Carnival keeps its four settings and simply reads as its own mix (no card selected); nothing
@@ -104,7 +104,7 @@ The table is in the order the carousel shows them after the Mashup card, six to 
   The sample is coloured with its two boxes as separate branches, taking the palette's first and fourth colours
   (across the wheel: Rainbow's red and green, Tropical's teal and orange), and its arrow is put back on its pins
   after; so a multi-colour look's card shows two contrasting palette colours rather than the trunk neutral and one
-  hue. Single-colour and per-shape (UML) looks draw exactly as they would without it (`apps/live/lib/look-preview.ts`).
+  hue. Single-colour and per-shape (UML) looks draw exactly as they would without it (`apps/editor/lib/look-preview.ts`).
 - Picking a look applies it as **one undo step**. The theme is applied exactly as picking that theme does
   (preserve-customs, arrows track the theme, see Theme below), then the finish, font and pattern are set; an
   element's own finish or font still wins over the tab's.
@@ -145,13 +145,13 @@ tab matches) but they never appear among the everyday looks.
   (orange, purple and green per branch on a night canvas), Yuletide (red, green and gold per branch), Frost (icy
   blues) and Evergreen (berry red on fir green). They are built-in themes (`seasonal: true` in the catalogue), with
   light and dark halves at the same contrast floor as every theme
-  (`apps/live/lib/tab-looks-contrast.test.ts` checks the seasonal looks in both halves). No theme picker lists them
+  (`apps/editor/lib/tab-looks-contrast.test.ts` checks the seasonal looks in both halves). No theme picker lists them
   and the Mashup never draws them; a tab wears one only through a seasonal look, and its name still shows on the
   Colours row.
 - **Seasonal patterns.** Sparkles (four-point twinkles), Eggs (banded egg outlines), Cobwebs (a web strung from
   each tile's corner), Snowflakes (six-armed flakes) and Candy Stripes (thick 45° bands). Each is a static SVG tile
   in the tab's pattern colour, so it themes, fades and scales like the other static patterns, and the image export
-  draws the same tile (`apps/live/lib/seasonal-patterns.ts`). No pattern picker lists them; the Canvas row still
+  draws the same tile (`apps/editor/lib/seasonal-patterns.ts`). No pattern picker lists them; the Canvas row still
   names the one a tab wears. Fireside reuses the animated Drift for falling embers.
 - **Telemetry:** picking a seasonal look fires `track('Tab', 'Changed', 'SeasonalLook')` in place of the `Look`
   event.
@@ -169,7 +169,7 @@ and the user can keep pressing it to regenerate.
   thousand combinations).
 - **Light and dark.** Any theme reads in both appearances ([Light and dark halves](light-and-dark.md)), so every
   mashup does too: a dark-mode viewer sees it in its theme's dark half, with the same contrast floor as the looks
-  (`apps/live/lib/tab-looks-contrast.test.ts` checks a spread of seeded mashups in both halves).
+  (`apps/editor/lib/tab-looks-contrast.test.ts` checks a spread of seeded mashups in both halves).
 - **Always new.** A roll that equals one of the named looks, or the mashup the card already shows, is rolled
   again (up to `MASHUP_REROLLS` times), so a press always changes the tab and never lands on a named look.
 - **The card.** Like a look's card (the sample diagram drawn in the mashup, in the viewer's half), named **Mashup**

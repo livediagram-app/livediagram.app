@@ -24,18 +24,18 @@ export function cornerRadiusPx(
 
 ## Call sites (every reader of `borderRadius` that draws or hit-tests)
 
-| File                                                                       | Fallback px                 |
-| -------------------------------------------------------------------------- | --------------------------- |
-| `apps/live/components/canvas/element-variant.ts`                           | 8 (`DEFAULT_BOX_RADIUS_PX`) |
-| `apps/live/components/canvas/BoxedElementView.tsx` (dashed-border overlay) | 8                           |
-| `apps/live/components/canvas/ImageElementView.tsx`                         | 4                           |
-| `apps/live/components/canvas/web/BannerFace.tsx`                           | `lg`'s px (24)              |
-| `apps/live/components/canvas/web/SiteHeaderFace.tsx`                       | `md`'s px (12)              |
-| `apps/live/components/canvas/web/StatRowFace.tsx`                          | `md`'s px (12)              |
-| `packages/document/src/svg-render-border.ts` (`borderOf`)                  | `DEFAULT_BOX_RADIUS_PX`     |
-| `packages/document/src/svg-render-describe.ts`                             | 4 (images)                  |
-| `packages/document/src/svg-render-web.ts`                                  | the caller's fallback       |
-| `packages/document/src/shape-hit.ts`                                       | `CSS_DEFAULT_RADIUS_PX`     |
+| File                                                                         | Fallback px                 |
+| ---------------------------------------------------------------------------- | --------------------------- |
+| `apps/editor/components/canvas/element-variant.ts`                           | 8 (`DEFAULT_BOX_RADIUS_PX`) |
+| `apps/editor/components/canvas/BoxedElementView.tsx` (dashed-border overlay) | 8                           |
+| `apps/editor/components/canvas/ImageElementView.tsx`                         | 4                           |
+| `apps/editor/components/canvas/web/BannerFace.tsx`                           | `lg`'s px (24)              |
+| `apps/editor/components/canvas/web/SiteHeaderFace.tsx`                       | `md`'s px (12)              |
+| `apps/editor/components/canvas/web/StatRowFace.tsx`                          | `md`'s px (12)              |
+| `packages/document/src/svg-render-border.ts` (`borderOf`)                    | `DEFAULT_BOX_RADIUS_PX`     |
+| `packages/document/src/svg-render-describe.ts`                               | 4 (images)                  |
+| `packages/document/src/svg-render-web.ts`                                    | the caller's fallback       |
+| `packages/document/src/shape-hit.ts`                                         | `CSS_DEFAULT_RADIUS_PX`     |
 
 The PNG export rasterises the SVG export, so it follows. Web component faces whose sub-boxes (a stat
 row's cards) are smaller than the element pass the sub-box size.
@@ -51,7 +51,7 @@ See the quick style blueprint's "Corners row".
 | Quarter cap, presets, fallback, Full exempt, None 0, broken sides | `packages/document/src/corner-radius.test.ts`                                 |
 | Shorter side at least 4x the preset: unchanged, every preset      | same                                                                          |
 | SVG export and hit outline use the rule (small rounded square)    | `packages/document/src/corner-radius-renderers.test.ts`, `svg-render.test.ts` |
-| Canvas variant uses the rule (presets, kind defaults, Full)       | `apps/live/components/canvas/element-variant.test.ts`                         |
+| Canvas variant uses the rule (presets, kind defaults, Full)       | `apps/editor/components/canvas/element-variant.test.ts`                       |
 
 ## Constants and configuration
 

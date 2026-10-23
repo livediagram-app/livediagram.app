@@ -69,7 +69,7 @@ The hosted version signs people in with their liveworkspace account, through the
 
 1. Register your deployment as an OAuth client of an accounts Worker. Its redirect URI is `https://<your-host>/api/auth/callback`, and it needs its own resource (the audience its access tokens carry). You get a client id and a client secret.
 2. Set the values on the two apps:
-   - **Live (build-time, browser-side)**: set `NEXT_PUBLIC_SIGN_IN_ENABLED=true` in your CI build env, or in `apps/live/.env.production`.
+   - **Live (build-time, browser-side)**: set `NEXT_PUBLIC_SIGN_IN_ENABLED=true` in your CI build env, or in `apps/editor/.env.production`.
    - **API (worker secrets)**:
 
      ```sh
@@ -118,7 +118,7 @@ pnpm build           # static export for marketing + live + help,
                      # plus the generated /licences page (no network needed)
 # Then deploy each worker (run from the repo root):
 pnpm --filter @livedocuments/marketing exec wrangler deploy
-pnpm --filter @livedocuments/live exec wrangler deploy
+pnpm --filter @livedocuments/editor exec wrangler deploy
 pnpm --filter @livedocuments/help exec wrangler deploy
 pnpm --filter @livedocuments/api exec wrangler deploy
 pnpm --filter @livedocuments/router exec wrangler deploy   # last, depends on the four above
@@ -162,7 +162,7 @@ nothing. To run it:
    Cloudflare dashboard (Workers → `livedocuments-mcp` → Domains & Routes → add a
    custom domain) — the same way every other worker here gets its hostname, since
    the deploy token only uploads scripts, not zone routes. Then set
-   `CONSENT_BASE_URL` (in `apps/mcp/wrangler.toml`) to your live app's origin and
+   `CONSENT_BASE_URL` (in `apps/mcp/wrangler.toml`) to your editor app's origin and
    `NEXT_PUBLIC_MCP_ORIGIN` (live and marketing build env) to the MCP origin, so the
    consent page posts the minted token only to your trusted host and the Build
    with AI page (`/ai`) gives AI tools your address, not the hosted one.

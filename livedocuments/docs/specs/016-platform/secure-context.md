@@ -9,7 +9,7 @@ plain-http wiki and a self-hosted instance on a LAN address both open.
 ## Why
 
 The editor mints ids (documents, tabs, elements, the guest's own participant id) with `crypto.randomUUID()`, more
-than a hundred call sites across `apps/live` and the shared packages. `randomUUID` is secure-context only. On
+than a hundred call sites across `apps/editor` and the shared packages. `randomUUID` is secure-context only. On
 livedocuments.app the editor itself is always HTTPS, but an [embed](../013-workspace/embeds.md) on an `http://` page is
 not secure (its ancestor is not), and neither is a self-hosted instance reached as `http://192.168.1.20`. There the
 first id the editor minted threw `crypto.randomUUID is not a function` while it booted, and the frame showed only
@@ -38,6 +38,6 @@ first id the editor minted threw `crypto.randomUUID is not a function` while it 
 
 `packages/ui/src/random-uuid-boot.test.ts` runs the script as the browser does (`runInlineScript`) with a
 `crypto` that lacks `randomUUID` and checks the ids it mints are version 4 and distinct, that a real `randomUUID`
-is kept, and that it never throws without `crypto`. `apps/live/app/pre-hydration-scripts.test.ts` checks the layout inlines it before any app code.
+is kept, and that it never throws without `crypto`. `apps/editor/app/pre-hydration-scripts.test.ts` checks the layout inlines it before any app code.
 `packages/api-schema/src/sha256-digest.test.ts` checks the plain-code digest against the FIPS 180-4 vectors and against Web
 Crypto at every length across the padding boundaries, and that `sha256` picks Web Crypto when it is there.

@@ -18,7 +18,7 @@ toolbar beside a selected element.
 
 | Surface                                                             | Where the button sits                              | Who sees it                                 |
 | ------------------------------------------------------------------- | -------------------------------------------------- | ------------------------------------------- |
-| [Share dialog](live-app.md#share-dialog)                            | The dialog's title row (not on the offline gate)   | The owner (only the owner can open it)      |
+| [Share dialog](editor-app.md#share-dialog)                          | The dialog's title row (not on the offline gate)   | The owner (only the owner can open it)      |
 | [Page panel](pages-tour.md#where-it-appears)                        | The page panel's title row, on every unlocked page | An Editor (only an Editor has the panel)    |
 | [Sankey Flows dialog](../009-elements/sankey.md#show-me)            | The dialog's title row                             | An Editor (only an Editor opens the dialog) |
 | [Tab Style dialog](../011-theme/canvas-and-theme-dialog.md#show-me) | The dialog's title row                             | An Editor (only an Editor opens the dialog) |
@@ -70,7 +70,7 @@ has its stack (Started, Completed, Skipped) on the telemetry dashboard, and its 
 
 ## Code
 
-`apps/live/components/tour/ShowMe.tsx` holds the button (`ShowMeButton`) and the running tour (`ShowMeStage`);
+`apps/editor/components/tour/ShowMe.tsx` holds the button (`ShowMeButton`) and the running tour (`ShowMeStage`);
 each surface keeps its steps in `<surface>-tour-steps.ts` and its literal telemetry in `<Surface>Tour.tsx`, so
 the dashboard's emitter scan reads every event. The engine scrolls each step's control into view in its scrolling
 panel (`revealInScrollers`, `tour-reveal.ts`, [Mechanics](pages-tour.md#mechanics)); a step never scrolls itself. A surface whose steps depend on what is there fixes them when the button is pressed, so they never change mid-tour. A surface in the editor's first load (the page panel) imports its steps at the press (`onStart` returns the promise the tour waits for), so
