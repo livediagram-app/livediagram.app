@@ -252,3 +252,27 @@ describe('a template picked after creation', () => {
     expect(chosen).toBeNull();
   });
 });
+
+// One read per page: Home, then other views, share the Explorer's one copy (the second request a dev server shows is
+// React StrictMode running effects twice; a production build asks once).
+describe('the defaults read', () => {
+  it('is one request from Home on, however many views follow', async () => {
+    const index = createFakeIndex({ items: [makeItem(1)] });
+    const props = {
+      app: 'liveplanner' as const,
+      client: index.client,
+      onNavigate: vi.fn(),
+      itemHref: (i: { id: string }) => `/p/${i.id}`,
+      onCreate: vi.fn(),
+      lensTemplates: TEMPLATES,
+    };
+    const { rerender } = render(<Explorer {...props} view={{ kind: 'home' }} />);
+    await waitFor(() => expect(index.count('listPlacementDefaults')).toBe(1));
+    for (const view of [{ kind: 'all' }, { kind: 'recent' }, { kind: 'home' }] as const) {
+      rerender(<Explorer {...props} view={view} />);
+      await screen.findAllByRole('navigation');
+    }
+    expect(index.count('listPlacementDefaults')).toBe(1);
+  });
+});
+

@@ -216,6 +216,7 @@ the list scrolls near.
 | Data                  | When it loads                                                                                                                                                                              |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Folders               | Once, paging if needed. The sidebar, breadcrumbs, folder rows and Move all read this copy.                                                                                                 |
+| Default folders       | Once per page (`GET /placement-defaults`), shared by the markers, Use as Default for… and the delete warning. A dev server shows two: React StrictMode runs effects twice; a production build asks once. |
 | Inbox                 | Once per filter, and again on returning to the browser tab (at most every 30 s). The sidebar's counts (Inbox, and the Timeline's new events) and the Inbox view share it.                  |
 | Home                  | Three small requests: Recent (8, carrying Most Used via `used`), Shared (4) and one Timeline page (30) for What Happened.                                                                  |
 | Folder cards and rows | One `GET /folders/previews` per batch of up to 60 cards (or list rows on screen) not yet answered, for their mosaics and counts ("1 folder · 5 plans"); again after an item changes place. |
