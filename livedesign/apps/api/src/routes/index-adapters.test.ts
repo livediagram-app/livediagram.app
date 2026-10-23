@@ -111,6 +111,15 @@ describe('GET /api/designs', () => {
 });
 
 describe('the index doors on one design', () => {
+  it('takes an item offline for good, not to the Trash', async () => {
+    routes['DELETE /items/P'] = () => new Response(null, { status: 204 });
+    const res = await handleDesignIndexRoutes(
+      ctx('DELETE', '/api/designs/P', { headers: { 'X-Design-Conversion': 'offline' } }),
+    );
+    expect(res!.status).toBe(204);
+    expect(calls.map((c) => c.search)).toEqual(['?permanent=true&reason=offline']);
+  });
+
   it('trashes, and deletes for good on ?permanent=1', async () => {
     routes['DELETE /items/P'] = () => new Response(null, { status: 204 });
     expect((await handleDesignIndexRoutes(ctx('DELETE', '/api/designs/P')))!.status).toBe(204);

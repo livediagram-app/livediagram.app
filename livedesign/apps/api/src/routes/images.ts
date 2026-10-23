@@ -160,8 +160,8 @@ async function imageUsage(ctx: RouteContext, media: MediaClient, owner: string):
   if (!answered.ok) return serviceAnswer(answered);
   const byImage = new Map<string, string[]>();
   const designs = new Set<string>();
-  for (const [imageId, documents] of Object.entries(answered.value.usage)) {
-    const ids = documents.filter((d) => d.app === MEDIA_APP).map((d) => d.document);
+  for (const [imageId, places] of Object.entries(answered.value.usage)) {
+    const ids = places.filter((d) => d.app === MEDIA_APP).map((d) => d.document);
     if (ids.length === 0) continue;
     byImage.set(imageId, ids);
     for (const id of ids) designs.add(id);
