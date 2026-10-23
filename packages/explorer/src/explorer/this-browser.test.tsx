@@ -10,6 +10,7 @@ import {
   readThisBrowser,
   subscribeThisBrowser,
   THIS_BROWSER_MAX,
+  thisBrowserPublisher,
   thisBrowserKey,
   writeThisBrowser,
   type ThisBrowserItem,
@@ -95,6 +96,24 @@ describe('the list an app keeps', () => {
     );
     expect(readThisBrowser('liveplanner')).toHaveLength(THIS_BROWSER_MAX);
     expect(heard).toHaveBeenCalledTimes(3);
+  });
+
+  it("is kept by an app's offline store: every record at once, then each write", () => {
+    const list = thisBrowserPublisher('liveplanner', (opens) =>
+      typeof opens === 'number' ? opens : null,
+    );
+    const rec = (id: string, extra = {}) => ({ id, name: id, createdAt: 1, savedAt: 2, ...extra });
+    list.publish([rec('a', { opens: 9 }), rec('b', { trashedAt: 3, favourite: true })]);
+    expect(
+      readThisBrowser('liveplanner').map((i) => [i.id, i.lastOpenedAt, i.trashedAt, i.favourite]),
+    ).toEqual([
+      ['a', 9, null, false],
+      ['b', null, 3, true],
+    ]);
+    list.note('a', rec('a', { name: 'Renamed', savedAt: 5 }));
+    list.note('b', 'delete');
+    list.note('c', undefined);
+    expect(readThisBrowser('liveplanner').map((i) => i.title)).toEqual(['Renamed']);
   });
 
   it('reads a long list well inside a frame', () => {

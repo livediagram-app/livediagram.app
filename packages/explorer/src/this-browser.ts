@@ -151,3 +151,45 @@ export function subscribeThisBrowser(app: App, onChange: () => void): () => void
     window.removeEventListener(SAME_TAB_EVENT, onSameTab);
   };
 }
+
+// ---------- An app's offline store, writing the list -----------------------------------------------------------------
+
+/** The fields every app's offline record has (liveplanner's plan, livedocuments' document, livedesign's design). */
+export type OfflineRecordFields = {
+  id: string;
+  name: string;
+  createdAt: number;
+  savedAt: number;
+  trashedAt?: number;
+  favourite?: boolean;
+  opens?: unknown;
+};
+
+/** One write's outcome, as an offline store's read-modify-write reports it: the record as it now is, gone, or
+ *  untouched. */
+export type OfflineWriteOutcome<R> = R | 'delete' | undefined;
+
+/** What an app's offline store calls to keep its list: `publish` with every record (once per page load), `note` after
+ *  each write. `lastOpenedAt` reads the record's opens in the app's own format. */
+export function thisBrowserPublisher<R extends OfflineRecordFields>(
+  app: App,
+  lastOpenedAt: (opens: unknown) => number | null,
+) {
+  const itemOf = (rec: R): ThisBrowserItem => ({
+    id: rec.id,
+    title: rec.name,
+    createdAt: rec.createdAt,
+    updatedAt: rec.savedAt,
+    lastOpenedAt: lastOpenedAt(rec.opens),
+    trashedAt: rec.trashedAt ?? null,
+    favourite: rec.favourite === true,
+  });
+  return {
+    itemOf,
+    publish: (recs: readonly R[]) => writeThisBrowser(app, recs.map(itemOf)),
+    note: (id: string, after: OfflineWriteOutcome<R>) => {
+      if (after === 'delete') dropThisBrowserItem(app, id);
+      else if (after) putThisBrowserItem(app, itemOf(after));
+    },
+  };
+}

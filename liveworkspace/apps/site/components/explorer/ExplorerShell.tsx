@@ -187,7 +187,7 @@ const noSubscribe = () => () => {};
 const NO_LOCAL: readonly ThisBrowserItem[] = [];
 let localRead: { raw: string | null; items: readonly ThisBrowserItem[] } | null = null;
 function localItems(app: AppName): readonly ThisBrowserItem[] {
-  let raw: string | null = null;
+  let raw: string | null;
   try {
     raw = localStorage.getItem(thisBrowserKey(app));
   } catch {
