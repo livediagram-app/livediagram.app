@@ -21,7 +21,14 @@ import { useItemActions, type HostTrash, type ItemActions } from '../data/useIte
 import { useInbox, type InboxState } from '../data/useInbox';
 import { useToast, type ToastApi } from '../ui/Toasts';
 import type { LensOption, LensSubject, LensTelemetryType } from '../lens';
-import { explorerPath, lensViewOf, viewLens, withLens, type ExplorerView } from '../views';
+import {
+  explorerPath,
+  lensViewOf,
+  SIDEBAR_LABELS,
+  viewLens,
+  withLens,
+  type ExplorerView,
+} from '../views';
 import {
   heroWords as heroWordsFor,
   kindWords,
@@ -47,6 +54,8 @@ export type DialogTarget =
   | { kind: 'move-folder'; folderId: string }
   | { kind: 'share'; item: Item }
   | { kind: 'delete-folder'; folderId: string }
+  // Delete Forever from an item's menu in the Trash: always confirmed.
+  | { kind: 'purge-item'; item: Item }
   // A Trash group's: the person's own (teamId null) or a team's, named for the confirmation.
   | { kind: 'empty-trash'; teamId: string | null; title: string }
   | null;
@@ -218,6 +227,16 @@ export function ExplorerProvider({
   const folders = useFolderStore(client, toast.error, reloadLists);
   const [placedEpoch, setPlacedEpoch] = useState(0);
   const onPlaced = useCallback(() => setPlacedEpoch((n) => n + 1), []);
+  // Where a move went, in words: a folder's name, a team's, or My Work.
+  const placeName = useCallback(
+    (to: { folderId: string | null; teamId: string | null }) => {
+      const folder = to.folderId ? folders.byId.get(to.folderId) : undefined;
+      if (folder) return folder.name;
+      if (to.teamId) return teams.find((t) => t.id === to.teamId)?.name ?? 'the team';
+      return SIDEBAR_LABELS.myWork;
+    },
+    [folders.byId, teams],
+  );
   const actions = useItemActions({
     client,
     overlay,
@@ -226,6 +245,7 @@ export function ExplorerProvider({
     hostTrash,
     onPlaced,
     onRenamed: onItemRenamed,
+    placeName,
   });
   const inbox = useInbox(client, app, filter);
   const [renamingId, setRenamingId] = useState<string | null>(null);

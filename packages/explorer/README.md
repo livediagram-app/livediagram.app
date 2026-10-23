@@ -150,7 +150,7 @@ link, nor one being renamed) drags from its row, card or Details row.
 
 - **Onto a place.** It drops on a folder (in the sidebar, as a row or card in the pane, or a card in the panel),
   on My Work (the root) or on a team, in the sidebar or the panel's rail. The drop takes Change Folder's path (the
-  same optimistic move and rollback), then says "Moved “X” to Y." with an Undo. Dropping where it already is does
+  same optimistic move, rollback and toast: "Moved “X” to Y." with an Undo). Dropping where it already is does
   nothing. The place wears a brand ring while the drag is over it, and a closed sidebar row (or a rail entry) opens
   once a drag rests on it for 800 ms.
 - **Onto the Trash.** While anything drags, the Trash wakes as a target: dashed, reading "Drop to Trash"; filled
@@ -187,6 +187,10 @@ Changes are optimistic: rename, favourite, move, Trash, restore and dismiss.
 
 - A change is laid over every loaded list at once, through a shared overlay.
 - If the index refuses, the change is taken back and a toast says why.
+- Toasts name what they acted on: a move ("Moved “X” to Y.") and a delete ("Moved “X” to the Trash.") each carry an
+  Undo, a restore says "“X” restored.". A toast with an Undo stays 10 s (`TOAST_ANSWER_MS`), its clock stopped while
+  it is hovered or focused; others go after 5 s. Delete Forever is always confirmed. Deleting the folder on screen,
+  or one holding it, goes to My Work or the team's library.
 - A copy or an emptied Trash cannot be guessed, so those reload the lists instead.
 - Rows are memoised and keep their identity unless their own item changed, so one change re-renders one row.
 

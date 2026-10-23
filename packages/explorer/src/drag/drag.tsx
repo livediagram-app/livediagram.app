@@ -123,41 +123,16 @@ function useHover(accepts: (e: DragEvent) => boolean) {
   };
 }
 
-/** Where an item lands, in words: the folder's name, the team's, or My Work. */
-function placeName(
-  to: DropPlace,
-  folderName: (id: string) => string | undefined,
-  teamName: (id: string | null) => string | null,
-): string {
-  if (to.folderId) return folderName(to.folderId) ?? 'the folder';
-  if (to.teamId) return teamName(to.teamId) ?? 'the team';
-  return 'My Work';
-}
-
-/** Moves a dropped item to a place, the way Change Folder does, and says so with an Undo. */
+/** Moves a dropped item to a place, the way Change Folder does; the move says so, with an Undo. */
 export function useDropMove() {
-  const { actions, overlay, folders, teamName, toast } = useExplorer();
+  const { actions, overlay } = useExplorer();
   return useCallback(
     async (dragged: Item, to: DropPlace): Promise<boolean> => {
       const item = overlay.apply(dragged);
       if (item.teamId === to.teamId && item.folderId === to.folderId) return false;
-      const from: DropPlace = { teamId: item.teamId, folderId: item.folderId };
-      const ok = await actions.move(item, to);
-      if (!ok) return false;
-      const name = item.title || 'Untitled';
-      toast.show(
-        `Moved “${name}” to ${placeName(to, (id) => folders.byId.get(id)?.name, teamName)}.`,
-        {
-          tone: 'success',
-          action: {
-            label: 'Undo',
-            run: () => void actions.move(overlay.apply(item), from),
-          },
-        },
-      );
-      return true;
+      return actions.move(item, to);
     },
-    [actions, overlay, folders, teamName, toast],
+    [actions, overlay],
   );
 }
 

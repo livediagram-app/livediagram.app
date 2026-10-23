@@ -84,7 +84,9 @@ describe('item actions: optimistic, with rollback', () => {
 
   it('leaves an item the host handles to the host: no index call, no patch', async () => {
     const { item, index, overlay, toast } = setup();
-    const hostTrash = vi.fn((it: typeof item) => (it.id === item.id ? Promise.resolve(true) : null));
+    const hostTrash = vi.fn((it: typeof item) =>
+      it.id === item.id ? Promise.resolve(true) : null,
+    );
     const actions = createItemActions({
       client: index.client,
       overlay,
@@ -116,5 +118,53 @@ describe('item actions: optimistic, with rollback', () => {
     const copy = await actions.duplicate(item, 'Item 1 (copy)');
     expect(copy?.title).toBe('Item 1 (copy)');
     expect(reloadLists).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('item actions: what the toasts say', () => {
+  it('names the item and where a move took it', async () => {
+    const { item, index, overlay, toast, reloadLists } = setup();
+    const actions = createItemActions({
+      client: index.client,
+      overlay,
+      toast,
+      reloadLists,
+      placeName: (to) => (to.folderId ? 'Q3' : 'My Work'),
+    });
+    await actions.move(item, { folderId: 'f1', teamId: null });
+    expect(toast.show.mock.calls.at(-1)![0]).toBe('Moved “Item 1” to Q3.');
+    // Its Undo moves it back.
+    toast.show.mock.calls.at(-1)![1].action.run();
+    await vi.waitFor(() =>
+      expect(index.calls.at(-1)).toEqual({
+        method: 'updateItem',
+        args: [item.id, { folderId: null }],
+      }),
+    );
+    index.fail.set('updateItem', new IndexError(500, 'unknown'));
+    await actions.move(item, { folderId: null, teamId: null });
+    expect(toast.error).toHaveBeenLastCalledWith('Couldn’t move “Item 1”. Try again.');
+  });
+
+  it('offers Undo on a delete, and says the item is back once Undo restores it', async () => {
+    const { item, toast, actions } = setup();
+    await actions.trash(item);
+    const [text, options] = toast.show.mock.calls.at(-1)!;
+    expect(text).toBe('Moved “Item 1” to the Trash.');
+    options.action.run();
+    await vi.waitFor(() =>
+      expect(toast.show).toHaveBeenLastCalledWith('“Item 1” restored.', { tone: 'success' }),
+    );
+  });
+
+  it('says a failed restore left it in the Trash, and confirms a permanent delete', async () => {
+    const { item, index, toast, actions } = setup();
+    index.fail.set('restoreItem', new IndexError(500, 'unknown'));
+    await actions.restore(item);
+    expect(toast.error).toHaveBeenLastCalledWith(
+      'Couldn’t restore “Item 1”. It is still in the Trash.',
+    );
+    await actions.purge(item);
+    expect(toast.show).toHaveBeenLastCalledWith('“Item 1” deleted for good.');
   });
 });

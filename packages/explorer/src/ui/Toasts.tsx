@@ -1,7 +1,8 @@
 'use client';
 
 // A small toast stack for the Explorer: what a change did, a refusal said in words, and Undo for a delete
-// (liveplanner's toasts: bottom of the page, newest last, a few seconds each).
+// (liveplanner's toasts: bottom of the page, newest last, a few seconds each). A toast that offers an answer (Undo)
+// stays TOAST_ANSWER_MS, long enough to reach for it, and its clock stops while it is hovered or focused.
 
 import {
   createContext,
@@ -23,6 +24,7 @@ export type ToastApi = {
 };
 
 const TOAST_MS = 5000;
+export const TOAST_ANSWER_MS = 10_000;
 const MAX_TOASTS = 3;
 
 const NOOP: ToastApi = { show: () => {}, error: () => {} };
@@ -35,34 +37,67 @@ export function useToast(): ToastApi {
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
   const next = useRef(1);
-  const timers = useRef(new Map<number, ReturnType<typeof setTimeout>>());
+  // Each toast's clock: the timer while it runs, and how long it has left (kept while paused).
+  const timers = useRef(
+    new Map<number, { timer: ReturnType<typeof setTimeout> | null; left: number; since: number }>(),
+  );
 
   const dismiss = useCallback((id: number) => {
     setToasts((all) => all.filter((t) => t.id !== id));
-    const timer = timers.current.get(id);
-    if (timer) clearTimeout(timer);
+    const clock = timers.current.get(id);
+    if (clock?.timer) clearTimeout(clock.timer);
     timers.current.delete(id);
   }, []);
+
+  const run = useCallback(
+    (id: number, left: number) => {
+      timers.current.set(id, {
+        timer: setTimeout(() => dismiss(id), left),
+        left,
+        since: Date.now(),
+      });
+    },
+    [dismiss],
+  );
+
+  // Hovered or focused: the clock stops; it goes on from where it was when they leave.
+  const pause = useCallback((id: number) => {
+    const clock = timers.current.get(id);
+    if (!clock?.timer) return;
+    clearTimeout(clock.timer);
+    clock.timer = null;
+    clock.left = Math.max(0, clock.left - (Date.now() - clock.since));
+  }, []);
+  const resume = useCallback(
+    (id: number) => {
+      const clock = timers.current.get(id);
+      if (clock && !clock.timer) run(id, clock.left);
+    },
+    [run],
+  );
 
   const show = useCallback<ToastApi['show']>(
     (text, options = {}) => {
       const id = next.current++;
-      setToasts((all) => [
-        ...all.slice(-(MAX_TOASTS - 1)),
-        { id, tone: options.tone ?? 'info', text, action: options.action },
-      ]);
-      timers.current.set(
-        id,
-        setTimeout(() => dismiss(id), TOAST_MS),
-      );
+      setToasts((all) => {
+        // The oldest beyond MAX_TOASTS leave with their clocks.
+        const kept = all.slice(-(MAX_TOASTS - 1));
+        for (const gone of all.slice(0, all.length - kept.length)) {
+          const clock = timers.current.get(gone.id);
+          if (clock?.timer) clearTimeout(clock.timer);
+          timers.current.delete(gone.id);
+        }
+        return [...kept, { id, tone: options.tone ?? 'info', text, action: options.action }];
+      });
+      run(id, options.action ? TOAST_ANSWER_MS : TOAST_MS);
     },
-    [dismiss],
+    [run],
   );
 
   useEffect(() => {
     const all = timers.current;
     return () => {
-      for (const timer of all.values()) clearTimeout(timer);
+      for (const clock of all.values()) if (clock.timer) clearTimeout(clock.timer);
       all.clear();
     };
   }, []);
@@ -83,6 +118,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           <div
             key={t.id}
             role={t.tone === 'error' ? 'alert' : 'status'}
+            onMouseEnter={() => pause(t.id)}
+            onMouseLeave={() => resume(t.id)}
+            onFocus={() => pause(t.id)}
+            onBlur={() => resume(t.id)}
             className="pointer-events-auto flex max-w-md animate-fade-in items-center gap-3 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 shadow-lg dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
           >
             <span

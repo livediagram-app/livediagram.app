@@ -65,7 +65,7 @@ export function ItemMenu({
         <MenuActionRow
           label="Delete Forever"
           icon={<TrashIcon />}
-          onClick={run(() => void actions.purge(item))}
+          onClick={run(() => openDialog({ kind: 'purge-item', item }))}
         />
       </PortalMenu>
     );

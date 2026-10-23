@@ -10,6 +10,7 @@ import type { PickerFolder, PickerTeam } from '../dialogs/PlacementBrowser';
 import { ShareDialog } from '../dialogs/ShareDialog';
 import { ConfirmDialog } from '../ui/ConfirmDialog';
 import type { ShareUrl } from '../types';
+import type { ExplorerView } from '../views';
 import { useExplorer } from './context';
 
 const defaultShareUrl: ShareUrl = (link) =>
@@ -19,7 +20,8 @@ const pick = (f: Folder): PickerFolder => ({ id: f.id, name: f.name, parentId: f
 
 export function ExplorerDialogs() {
   const ctx = useExplorer();
-  const { dialog, openDialog, folders, teams, actions, client, shareUrl, toast } = ctx;
+  const { dialog, openDialog, folders, teams, actions, client, shareUrl, toast, view, navigate } =
+    ctx;
   const close = () => openDialog(null);
 
   const personal = useMemo(
@@ -102,7 +104,25 @@ export function ExplorerDialogs() {
           onCancel={close}
           onConfirm={() => {
             close();
-            void folders.remove(folder.id);
+            const leaveTo = afterFolderDelete(view, folders.byId, folder);
+            void folders.remove(folder.id).then((removed) => {
+              if (removed && leaveTo) navigate(leaveTo);
+            });
+          }}
+        />
+      );
+    }
+    case 'purge-item': {
+      const item = dialog.item;
+      return (
+        <ConfirmDialog
+          title={`Delete “${item.title || 'Untitled'}” for good?`}
+          message="This cannot be undone."
+          confirmLabel="Delete permanently"
+          onCancel={close}
+          onConfirm={() => {
+            close();
+            void actions.purge(item);
           }}
         />
       );
@@ -137,4 +157,19 @@ export function emptyTrashMessage(
     return `${what} ${target.title}’s Trash is deleted for good, for the whole team. This can’t be undone.`;
   }
   return `${what} your Trash is deleted for good. This can’t be undone.`;
+}
+
+/**
+ * Where to go once a folder is deleted: deleting the folder on screen, or one holding it, leaves for its space's
+ * root (My Work, or the team's library); anywhere else stays put (null).
+ */
+export function afterFolderDelete(
+  view: ExplorerView,
+  byId: Map<string, Folder>,
+  folder: Folder,
+): ExplorerView | null {
+  const open =
+    view.kind === 'folder' ? view.id : view.kind === 'team' ? (view.folderId ?? null) : null;
+  if (open === null || !isWithin(byId, open, folder.id)) return null;
+  return folder.teamId ? { kind: 'team', id: folder.teamId } : { kind: 'all' };
 }

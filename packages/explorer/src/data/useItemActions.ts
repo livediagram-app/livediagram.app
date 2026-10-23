@@ -38,6 +38,7 @@ export function createItemActions({
   hostTrash,
   onPlaced,
   onRenamed,
+  placeName,
 }: {
   client: IndexClient;
   overlay: ItemOverlay;
@@ -48,7 +49,11 @@ export function createItemActions({
   onPlaced?: () => void;
   // After the index took a new title.
   onRenamed?: (item: Item, title: string) => void;
+  // A place's name for "moved to" ("My Work", a folder's, a team's). Without it, a move says nothing.
+  placeName?: (to: { folderId: string | null; teamId: string | null }) => string;
 }): ItemActions {
+  // Every toast names what it acted on.
+  const named = (item: Item) => `“${item.title || 'Untitled'}”`;
   // Patch, call, and on a refusal take the patch back and say why.
   async function optimistic(
     item: Item,
@@ -95,53 +100,71 @@ export function createItemActions({
         () => (hidden ? client.hideFromRecent(item.id) : client.showInRecent(item.id)),
         hidden ? 'Couldn’t hide it from Recent.' : 'Couldn’t show it in Recent again.',
       ),
-    move: (item, to) => {
+    move: async (item, to) => {
       // The index drops the folder when an item changes team; send the team only when it changes.
       const input =
         to.teamId === item.teamId
           ? { folderId: to.folderId }
           : { folderId: to.folderId, teamId: to.teamId };
-      return optimistic(
+      const from = { folderId: item.folderId, teamId: item.teamId };
+      const ok = await optimistic(
         item,
         { folderId: to.folderId, teamId: to.teamId },
         () => client.updateItem(item.id, input),
-        'Couldn’t move it. Try again.',
+        `Couldn’t move ${named(item)}. Try again.`,
       );
+      // Said with an Undo that moves it back, from Change Folder and a drop alike.
+      if (ok && placeName) {
+        toast.show(`Moved ${named(item)} to ${placeName(to)}.`, {
+          tone: 'success',
+          action: {
+            label: 'Undo',
+            run: () => void actions.move({ ...item, ...to }, from),
+          },
+        });
+      }
+      return ok;
     },
     trash: async (item) => {
       const hosted = hostTrash?.(item);
       if (hosted) {
         const done = await hosted;
-        if (!done) toast.error('Couldn’t move it to the Trash. Try again.');
+        if (!done) toast.error(`Couldn’t delete ${named(item)}. Try again.`);
         return done;
       }
       const ok = await optimistic(
         item,
         { trashedAt: Date.now(), trashReason: 'deleted' },
         () => client.deleteItem(item.id),
-        'Couldn’t move it to the Trash. Try again.',
+        `Couldn’t delete ${named(item)}. Try again.`,
       );
       if (ok) {
-        toast.show(`Moved “${item.title || 'Untitled'}” to the Trash.`, {
+        toast.show(`Moved ${named(item)} to the Trash.`, {
           action: { label: 'Undo', run: () => void actions.restore(item) },
         });
       }
       return ok;
     },
-    restore: (item) =>
-      optimistic(
+    restore: async (item) => {
+      const ok = await optimistic(
         item,
         { trashedAt: null, trashReason: null },
         () => client.restoreItem(item.id),
-        'Couldn’t restore it. Try again.',
-      ),
-    purge: (item) =>
-      optimistic(
+        `Couldn’t restore ${named(item)}. It is still in the Trash.`,
+      );
+      if (ok) toast.show(`${named(item)} restored.`, { tone: 'success' });
+      return ok;
+    },
+    purge: async (item) => {
+      const ok = await optimistic(
         item,
         { gone: true },
         () => client.deleteItem(item.id, { permanent: true }),
-        'Couldn’t delete it. Try again.',
-      ),
+        `Couldn’t delete ${named(item)}. Try again.`,
+      );
+      if (ok) toast.show(`${named(item)} deleted for good.`);
+      return ok;
+    },
     duplicate: async (item, title) => {
       try {
         const { item: copy } = await client.copyItem(item.id, { title }, sharedAccess(item));
@@ -183,10 +206,19 @@ function sharedAccess(item: Item) {
 }
 
 export function useItemActions(deps: Parameters<typeof createItemActions>[0]): ItemActions {
-  const { client, overlay, toast, reloadLists, hostTrash, onPlaced, onRenamed } = deps;
+  const { client, overlay, toast, reloadLists, hostTrash, onPlaced, onRenamed, placeName } = deps;
   return useMemo(
     () =>
-      createItemActions({ client, overlay, toast, reloadLists, hostTrash, onPlaced, onRenamed }),
-    [client, overlay, toast, reloadLists, hostTrash, onPlaced, onRenamed],
+      createItemActions({
+        client,
+        overlay,
+        toast,
+        reloadLists,
+        hostTrash,
+        onPlaced,
+        onRenamed,
+        placeName,
+      }),
+    [client, overlay, toast, reloadLists, hostTrash, onPlaced, onRenamed, placeName],
   );
 }
