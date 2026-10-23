@@ -33,8 +33,8 @@ const on = (key: AllSettingKey, label: string, description: string): ToggleRow =
 export const NOTIFICATION_ROWS: ToggleRow[] = [
   on(
     'notifyComments',
-    'Someone Comments on My Document',
-    'Someone leaves a comment on a document you own.',
+    'Someone Comments on My Work',
+    'Someone leaves a comment on a diagram, plan, document or design you own.',
   ),
   on(
     'notifyMentions',
@@ -59,7 +59,7 @@ export const NOTIFICATION_ROWS: ToggleRow[] = [
   on(
     'notifyMilestones',
     'Milestones',
-    'A note when you hit one, like sharing your first document.',
+    'A note when you hit one, like sharing your first piece of work.',
   ),
 ];
 
@@ -67,7 +67,7 @@ export const IN_APP_ROWS: ToggleRow[] = [
   on(
     'notificationsEnabled',
     'In-Editor Notifications',
-    'A brief note when something happens off screen, like moving a document to a folder. Errors and warnings always show.',
+    'A brief note when something happens off screen, like moving something to a folder. Errors and warnings always show.',
   ),
 ];
 
