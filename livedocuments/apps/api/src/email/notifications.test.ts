@@ -8,7 +8,6 @@ vi.mock('../person/account-app', () => ({
 }));
 vi.mock('../person/settings', () => ({ getNotificationPrefs: vi.fn() }));
 vi.mock('../db', () => ({
-  listTeamAdminUserIds: vi.fn(),
   claimCommentNotify: vi.fn(),
   claimJoinNotify: vi.fn(),
   claimNotifyEmail: vi.fn(),

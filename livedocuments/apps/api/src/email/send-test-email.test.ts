@@ -26,9 +26,7 @@ import {
   commentNotificationEmail,
   documentJoinedEmail,
   firstShareEmail,
-  inviteResponseEmail,
   milestoneEmail,
-  teamInviteEmail,
   tokenExpiringEmail,
 } from './templates';
 
@@ -69,14 +67,11 @@ describe.skipIf(!ENABLED)('live email send (manual harness)', () => {
     milestone: milestoneEmail(env, 10),
     'first-share': firstShareEmail(env),
     // Transactional
-    'team-invite': teamInviteEmail(env, 'Acme Inc'),
     'account-deleted': accountDeletedEmail(env),
     'token-expiry': tokenExpiringEmail(env, 'CI deploy token', Date.UTC(2026, 0, 5)),
     // Opt-out notifications
     'comment-notification': commentNotificationEmail(env, 'Q3 Roadmap', 'diagram-id-123', 'Anna'),
     'document-joined': documentJoinedEmail(env, 'Q3 Roadmap', 'Anna'),
-    'invite-accepted': inviteResponseEmail(env, 'Acme Inc', 'sam@example.com', true),
-    'invite-declined': inviteResponseEmail(env, 'Acme Inc', 'sam@example.com', false),
   };
   for (const [name, msg] of Object.entries(cases)) {
     it(`sends ${name} to ${TO}`, async () => {

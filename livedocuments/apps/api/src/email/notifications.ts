@@ -9,8 +9,8 @@
 // Like every docs/specs/014-identity/transactional-email.md send these never throw — sendEmail swallows failures — so
 // a notification problem can't break the request that triggered it.
 
-import { claimCommentNotify, claimJoinNotify, claimNotifyEmail, listTeamAdminUserIds } from '../db';
-import { claimOwnerMilestone, ownerEmail, ownerEmails } from '../person/account-app';
+import { claimCommentNotify, claimJoinNotify, claimNotifyEmail } from '../db';
+import { claimOwnerMilestone, ownerEmail } from '../person/account-app';
 import { getNotificationPrefs } from '../person/settings';
 import type { Env } from '../types';
 import { emailEnabled, sendEmail } from './client';
@@ -26,7 +26,6 @@ import {
   mentionedEmail,
   commentNotificationEmail,
   documentJoinedEmail,
-  inviteResponseEmail,
   firstShareEmail,
   milestoneEmail,
 } from './templates';
@@ -186,37 +185,6 @@ export async function notifyDocumentJoin(
   const now = Date.now();
   if (!(await claimJoinNotify(env, liveDoc.id, now, now - JOIN_NOTIFY_THROTTLE_MS))) return;
   await sendEmail(env, { to, ...documentJoinedEmail(env, liveDoc.name, joinerName) });
-}
-
-// An invitee accepted / declined a team invite. Tells each JOINED admin of the
-// team (other than the responder themselves) who has a known address and
-// hasn't opted out. Sends run concurrently; each is independently best-effort.
-export async function notifyInviteResponse(
-  env: Env,
-  team: { id: string; name: string },
-  responderEmail: string,
-  accepted: boolean,
-  responderUserId: string | null,
-): Promise<void> {
-  if (!emailEnabled(env)) return;
-  const adminIds = await listTeamAdminUserIds(env, team.id);
-  // Every admin's address in one request.
-  const addresses = await ownerEmails(env, adminIds);
-  await Promise.all(
-    adminIds.map(async (adminId) => {
-      // Don't notify the responder about their own action (an admin can be
-      // re-invited as a member and respond to that).
-      if (responderUserId && adminId === responderUserId) return;
-      const to = addresses.get(adminId);
-      if (!to) return;
-      const prefs = await getNotificationPrefs(env, adminId);
-      if (!prefs.notifyInviteResponse) return;
-      await sendEmail(env, {
-        to,
-        ...inviteResponseEmail(env, team.name, responderEmail, accepted),
-      });
-    }),
-  );
 }
 
 // Someone OTHER than the owner left a comment on a document the owner owns
