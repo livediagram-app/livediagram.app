@@ -214,7 +214,7 @@ simple = { limit = 30, period = 60 }
 # bindings into a named environment: `vars`, `r2_buckets`,
 # `durable_objects`, `migrations` and `unsafe` are all non-inheritable, so a
 # block omitted here is a binding MISSING from the deployed staging worker,
-# with no warning. Only `main`, `compatibility_date`, `rules` and `triggers`
+# with no warning. Only `main`, `compatibility_date` and `rules`
 # carry over from the production config above.
 #
 # The values that genuinely differ from production are the
