@@ -199,8 +199,8 @@ export function ExplorerShell() {
   // Every event counts for the app the page shows, or liveworkspace.app for All Apps. Set as the page renders, so
   // the Explorer's first reports (its effects run before this component's) already count for the right one.
   setExplorerSender(app, shownFilter);
-  // Whether events may be sent: the person's setting, or a guest's browser.
-  useExplorerSettings(app, identity?.kind ?? null);
+  // Home's banner (synced for an account) and whether events may be sent.
+  const settings = useExplorerSettings(app, identity?.kind ?? null);
 
   const view: ExplorerView = useMemo(
     () => viewFromLocation(pathname, searchParams.toString()),
@@ -319,6 +319,8 @@ export function ExplorerShell() {
           signInBanner={signInBanner}
           arrivalNotice={notice}
           inbox={inbox}
+          heroHidden={settings.heroHidden}
+          onHideHero={settings.onHideHero}
           onTimeline={trackTimeline}
           onHome={trackHome}
           onLensSelected={trackLens}
