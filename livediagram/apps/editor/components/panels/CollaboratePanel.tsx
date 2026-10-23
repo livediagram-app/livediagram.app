@@ -4,7 +4,6 @@ import { useState } from 'react';
 import {
   elementActions,
   elementDisplayLabel,
-  elementThreads,
   type BoxedElement,
   type ElementActionStatus,
 } from '@livediagram/document';
@@ -38,9 +37,6 @@ import {
 export type CommentRow = {
   // Element id; click jumps to it and opens the thread.
   elementId: string;
-  // A Sheet cell's thread (docs/specs/029-sheets/sheet.md "Cell comments"): its cell key. The row names the cell
-  // by A1 once the Sheet is drawn.
-  cell?: string;
   // Display label for the element, "Untitled" when missing so the
   // row never reads as blank.
   label: string;
@@ -86,7 +82,7 @@ type CollaboratePanelProps = {
   actionRows: ActionRow[];
   // Row clicks: the editor selects the element + opens the matching
   // popover (comment thread / action).
-  onCommentRowClick: (elementId: string, cell?: string) => void;
+  onCommentRowClick: (elementId: string) => void;
   onActionRowClick: (elementId: string) => void;
   // Complete (done = true) or reopen an action from its row's check. Absent
   // for a read-only visitor, whose check is a static status disc.
@@ -182,10 +178,10 @@ export function CollaboratePanel({
                       />
                     ) : (
                       <CommentRowItem
-                        key={`c-${row.comment.elementId}-${row.comment.cell ?? ''}`}
+                        key={`c-${row.comment.elementId}`}
                         index={index++}
                         row={row.comment}
-                        onClick={() => onCommentRowClick(row.comment.elementId, row.comment.cell)}
+                        onClick={() => onCommentRowClick(row.comment.elementId)}
                       />
                     ),
                   )}
@@ -206,13 +202,11 @@ export function CollaboratePanel({
 export function commentRowsFromElements(elements: BoxedElement[]): CommentRow[] {
   const rows: CommentRow[] = [];
   for (const el of elements) {
-    // The element's own thread, then (on a Sheet) each cell's.
-    for (const { cell, thread } of elementThreads(el)) {
-      if (thread.comments.length === 0) continue;
+    const thread = el.commentThread;
+    if (thread && thread.comments.length > 0) {
       const latest = thread.comments[thread.comments.length - 1]!;
       rows.push({
         elementId: el.id,
-        ...(cell !== undefined ? { cell } : {}),
         label: elementDisplayLabel(el),
         count: thread.comments.length,
         latestAuthorName: latest.authorName,

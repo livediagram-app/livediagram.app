@@ -35,7 +35,6 @@ vi.mock('./routes/custom-themes', () => stub('handleCustomThemes'));
 vi.mock('./routes/shape-libraries', () => stub('handleShapeLibraries'));
 vi.mock('./routes/documents', () => stub('handleDocuments'));
 vi.mock('./routes/folders', () => stub('handleFolders'));
-vi.mock('./routes/forms', () => stub('handleForms'));
 vi.mock('./routes/images', () => stub('handleImages'));
 vi.mock('./routes/migrate', () => stub('handleMigrate'));
 vi.mock('./routes/guest-id', () => stub('handleGuestId'));

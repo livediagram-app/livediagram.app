@@ -6,56 +6,55 @@ design decision. Draw mode's own tools are blueprinted in
 
 ## Domain and naming
 
-| Term                        | Identifier                                                                                                                                                                                          |
-| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Editor mode                 | `EditorMode` (`'diagram' \| 'draw' \| 'plan' \| 'workshop'`), `packages/document/src/editor-mode.ts`                                                                                                |
-| The mode catalogue          | `EDITOR_MODE_CATALOGUE` (`{ id, label, description }[]`), in interface order                                                                                                                        |
-| Every mode, in order        | `EDITOR_MODES`; the default `DEFAULT_EDITOR_MODE` (`'diagram'`)                                                                                                                                     |
-| A mode's words              | `editorModeLabel(mode)`, `editorModeDescription(mode)`                                                                                                                                              |
-| The next mode (Shift+D)     | `nextEditorMode(mode, step = 1, modes = EDITOR_MODES)`, wrapping round `modes`                                                                                                                      |
-| A stored value is a mode    | `isEditorMode(v)`; read every stored mode through `parseEditorMode(v)` (`LEGACY_EDITOR_MODES`: a retired `'pages'`, `'illustrate'` or `'infographic'` → `'diagram'`, `'facilitate'` → `'workshop'`) |
-| A switch as one tab edit    | `withEditorModeSwitched(tab, mode)` (`packages/document/src/editor-mode-switch.ts`), `switchedTab(tab, next, alsoChange?)` (`useEditorMode.ts`)                                                     |
-| Plan stands apart           | `crossesPlan(from, to)`, `modesBesidePlanRule(mode)` (`editor-mode.ts`); `EditorModeState.crossPlan` (an empty tab crosses), `lockedReason`, `newTabIn`                                             |
-| Legacy names elsewhere      | `parsePlacementDefaultKey`, `legacyPlacementDefaultKeys` (`packages/api-schema/src/placement-defaults.ts`); `planModeEnabled` in `RETIRED` (`legacy-preferences.ts`)                                |
-| The tab's mode              | `Tab.opensIn?: EditorMode` (stored name kept), read through `opensInOf(tab)`                                                                                                                        |
-| Setting the mode            | `setTabOpensIn(tab, mode)`                                                                                                                                                                          |
-| A tab offers the switch     | `editorModeSwitchable(tab)`: false on an event-storming board, new or legacy, and on a Board, Sheet or Dashboard tab (always Plan)                                                                  |
-| The look's one gate         | `hasBoardLook(mode)`: true in Draw mode (the person's own pattern)                                                                                                                                  |
-| The person's effective mode | `useEditorMode(tab, { canEdit })` → `EditorModeState`                                                                                                                                               |
-| The mode resolver           | `resolveEditorMode({ tab, canEdit })`, `apps/editor/lib/editor-mode-store.ts`                                                                                                                       |
-| A collaborator's switch     | `peerModeSwitchOf(op)`, `peerModeSwitchMessage(name, mode)` (`apps/editor/lib/peer-mode-switch.ts`); `useRoomConnection` `receivePeerModeSwitch`                                                    |
-| May this person edit        | `useViewPreview(...).canEdit`, `apps/editor/app/document/[id]/useViewPreview.ts`                                                                                                                    |
-| The mode switch             | `StartModeSwitch` (`apps/editor/components/start/`), a start panel's rail: chip `ModeMenuChip`, menu `ModeMenu` + `ModePreviewArt`, `apps/editor/components/chrome/editor-mode/`                    |
-| The editor's resolved mode  | `EditorModeProvider` / `useEditorModeState()`, `editor-mode-context.tsx`                                                                                                                            |
-| The tab pill's mode icon    | `TabModeIcon`, `apps/editor/components/chrome/editor-mode/`                                                                                                                                         |
-| Each mode's mark            | `EDITOR_MODE_ICONS` (`packages/ui/src/icons/drawing-kinds.tsx`), one per mode, Workshop's `FlipchartIcon`, read straight by the chip, the menu rows and the pill                                    |
-| A template's opening mode   | `templateOpensIn(overrides)`, `apps/editor/app/document/[id]/useTemplateFlow.ts`                                                                                                                    |
-| The tool a mode starts with | `modeDefaultTool(mode, mobile)`, `useModeDefaultTool`, `PLAN_LEFT_OUT_TOOLS`, `apps/editor/hooks/editor/useModeDefaultTool.ts`                                                                      |
-| A new tab's seed            | `newTabSeed(source)`, `newTabOpening(creatorMode, mode?)`, `apps/editor/lib/new-tab-seed.ts`                                                                                                        |
-| A text box's sizing         | `TextElement.sizing?: TextSizing` (`'fit' \| 'wrap'`), absent = a fixed box                                                                                                                         |
-| Ink by name                 | `INK_PEN_COLOUR` (`'ink'`), a `PenColourName`, drawn in `PEN_INK`                                                                                                                                   |
-| Legacy whiteboard migration | `migrateWhiteboardKind(tab)`, `packages/document/src/legacy-whiteboard-tab.ts`                                                                                                                      |
-| Legacy text migration       | `migrateLegacyTextSizing(elements)`, `packages/document/src/legacy-text-sizing.ts`                                                                                                                  |
+| Term                        | Identifier                                                                                                                                                                                                    |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Editor mode                 | `EditorMode` (`'diagram' \| 'draw' \| 'workshop'`), `packages/document/src/editor-mode.ts`                                                                                                                    |
+| The mode catalogue          | `EDITOR_MODE_CATALOGUE` (`{ id, label, description }[]`), in interface order                                                                                                                                  |
+| Every mode, in order        | `EDITOR_MODES`; the default `DEFAULT_EDITOR_MODE` (`'diagram'`)                                                                                                                                               |
+| A mode's words              | `editorModeLabel(mode)`, `editorModeDescription(mode)`                                                                                                                                                        |
+| The next mode (Shift+D)     | `nextEditorMode(mode, step = 1, modes = EDITOR_MODES)`, wrapping round `modes`                                                                                                                                |
+| A stored value is a mode    | `isEditorMode(v)`; read every stored mode through `parseEditorMode(v)` (`LEGACY_EDITOR_MODES`: a retired `'pages'`, `'plan'`, `'illustrate'` or `'infographic'` → `'diagram'`, `'facilitate'` → `'workshop'`) |
+| A switch as one tab edit    | `withEditorModeSwitched(tab, mode)` (`packages/document/src/editor-mode-switch.ts`), `switchedTab(tab, next, alsoChange?)` (`useEditorMode.ts`)                                                               |
+| Legacy names elsewhere      | `parsePlacementDefaultKey`, `legacyPlacementDefaultKeys` (`packages/api-schema/src/placement-defaults.ts`); `planModeEnabled` in `RETIRED` (`legacy-preferences.ts`)                                          |
+| The tab's mode              | `Tab.opensIn?: EditorMode` (stored name kept), read through `opensInOf(tab)`                                                                                                                                  |
+| Setting the mode            | `setTabOpensIn(tab, mode)`                                                                                                                                                                                    |
+| A tab offers the switch     | `editorModeSwitchable(tab)`: false on an event-storming board, new or legacy                                                                                                                                  |
+| The look's one gate         | `hasBoardLook(mode)`: true in Draw mode (the person's own pattern)                                                                                                                                            |
+| The person's effective mode | `useEditorMode(tab, { canEdit })` → `EditorModeState`                                                                                                                                                         |
+| The mode resolver           | `resolveEditorMode({ tab, canEdit })`, `apps/editor/lib/editor-mode-store.ts`                                                                                                                                 |
+| A collaborator's switch     | `peerModeSwitchOf(op)`, `peerModeSwitchMessage(name, mode)` (`apps/editor/lib/peer-mode-switch.ts`); `useRoomConnection` `receivePeerModeSwitch`                                                              |
+| May this person edit        | `useViewPreview(...).canEdit`, `apps/editor/app/document/[id]/useViewPreview.ts`                                                                                                                              |
+| The mode switch             | `StartModeSwitch` (`apps/editor/components/start/`), a start panel's rail: chip `ModeMenuChip`, menu `ModeMenu` + `ModePreviewArt`, `apps/editor/components/chrome/editor-mode/`                              |
+| The editor's resolved mode  | `EditorModeProvider` / `useEditorModeState()`, `editor-mode-context.tsx`                                                                                                                                      |
+| The tab pill's mode icon    | `TabModeIcon`, `apps/editor/components/chrome/editor-mode/`                                                                                                                                                   |
+| Each mode's mark            | `EDITOR_MODE_ICONS` (`packages/ui/src/icons/drawing-kinds.tsx`), one per mode, Workshop's `FlipchartIcon`, read straight by the chip, the menu rows and the pill                                              |
+| A template's opening mode   | `templateOpensIn(overrides)`, `apps/editor/app/document/[id]/useTemplateFlow.ts`                                                                                                                              |
+| The tool a mode starts with | `modeDefaultTool(mode, mobile)`, `useModeDefaultTool`, `PLAN_LEFT_OUT_TOOLS`, `apps/editor/hooks/editor/useModeDefaultTool.ts`                                                                                |
+| A new tab's seed            | `newTabSeed(source)`, `newTabOpening(creatorMode, mode?)`, `apps/editor/lib/new-tab-seed.ts`                                                                                                                  |
+| A text box's sizing         | `TextElement.sizing?: TextSizing` (`'fit' \| 'wrap'`), absent = a fixed box                                                                                                                                   |
+| Ink by name                 | `INK_PEN_COLOUR` (`'ink'`), a `PenColourName`, drawn in `PEN_INK`                                                                                                                                             |
+| Legacy whiteboard migration | `migrateWhiteboardKind(tab)`, `packages/document/src/legacy-whiteboard-tab.ts`                                                                                                                                |
+| Legacy text migration       | `migrateLegacyTextSizing(elements)`, `packages/document/src/legacy-text-sizing.ts`                                                                                                                            |
 
-"Editor mode" in code and specs; the interface says Diagram, Draw, Workshop and Plan. "Whiteboard" names the
+"Editor mode" in code and specs; the interface says Diagram, Draw and Workshop. "Whiteboard" names the
 activity, the template and Draw mode's dock (`useWhiteboard`, `WhiteboardDock`), never a tab kind.
 
 ## Constants and configuration
 
-| Constant                   | Value                                                                   | Where / provenance                                    |
-| -------------------------- | ----------------------------------------------------------------------- | ----------------------------------------------------- |
-| `EDITOR_MODE_CATALOGUE`    | Diagram, Draw, Workshop, Plan                                           | `editor-mode.ts`; spec "The mode switch"              |
-| `LEGACY_EDITOR_MODES`      | `{ pages, illustrate, infographic: 'diagram', facilitate: 'workshop' }` | `editor-mode.ts`; spec "Pages moved to livedocuments" |
-| `DEFAULT_EDITOR_MODE`      | `'diagram'`                                                             | Spec: `opensIn` absent = Diagram                      |
-| Retired mode store key     | `livediagram:v2:editor-mode:<tabId>`                                    | Per-person era; never read or written now             |
-| `PEN_INK`                  | `#1c1917` light, `#e2e8f0` dark                                         | `pen-colours.ts`; spec "Ink is one colour"            |
-| `WHITEBOARD_UNSET_PATTERN` | `'blank'`                                                               | Written on a migrated board with no pattern           |
-| `WHITEBOARD_INKED_SHAPES`  | square, circle, triangle, diamond                                       | The shapes a migrated board inks                      |
-| Shift+D                    | `EDITOR_MODE_KEYSHORTCUT`                                               | `editor-mode-copy.ts`; spec "The mode switch"         |
-| `MODE_TINT`                | sky, orange, violet, pink, emerald                                      | `mode-menu-copy.ts`; spec "The mode switch"           |
-| `MODE_TOOLS`               | 4-5 tool names per mode                                                 | `mode-menu-copy.ts`; the preview's chips              |
-| Mode menu preview width    | 288 px (`w-72`), list 192 px (`w-48`)                                   | `ModeMenu`; shown from 640 px (`sm`)                  |
-| `LEGACY_WHITEBOARD_KIND`   | `'whiteboard'`                                                          | The stored kind read as a Draw-opening tab            |
+| Constant                   | Value                                                                         | Where / provenance                                                                 |
+| -------------------------- | ----------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `EDITOR_MODE_CATALOGUE`    | Diagram, Draw, Workshop                                                       | `editor-mode.ts`; spec "The mode switch"                                           |
+| `LEGACY_EDITOR_MODES`      | `{ pages, illustrate, infographic, plan: 'diagram', facilitate: 'workshop' }` | `editor-mode.ts`; spec "Pages moved to livedocuments", "Plan moved to liveplanner" |
+| `DEFAULT_EDITOR_MODE`      | `'diagram'`                                                                   | Spec: `opensIn` absent = Diagram                                                   |
+| Retired mode store key     | `livediagram:v2:editor-mode:<tabId>`                                          | Per-person era; never read or written now                                          |
+| `PEN_INK`                  | `#1c1917` light, `#e2e8f0` dark                                               | `pen-colours.ts`; spec "Ink is one colour"                                         |
+| `WHITEBOARD_UNSET_PATTERN` | `'blank'`                                                                     | Written on a migrated board with no pattern                                        |
+| `WHITEBOARD_INKED_SHAPES`  | square, circle, triangle, diamond                                             | The shapes a migrated board inks                                                   |
+| Shift+D                    | `EDITOR_MODE_KEYSHORTCUT`                                                     | `editor-mode-copy.ts`; spec "The mode switch"                                      |
+| `MODE_TINT`                | sky, orange, violet, pink, emerald                                            | `mode-menu-copy.ts`; spec "The mode switch"                                        |
+| `MODE_TOOLS`               | 4-5 tool names per mode                                                       | `mode-menu-copy.ts`; the preview's chips                                           |
+| Mode menu preview width    | 288 px (`w-72`), list 192 px (`w-48`)                                         | `ModeMenu`; shown from 640 px (`sm`)                                               |
+| `LEGACY_WHITEBOARD_KIND`   | `'whiteboard'`                                                                | The stored kind read as a Draw-opening tab                                         |
 
 A further mode is one catalogue entry plus its icon in `EDITOR_MODE_ICONS`
 (`Record<EditorMode, …>`, so the typecheck names the missing icon).
@@ -67,33 +66,24 @@ A further mode is one catalogue entry plus its icon in `EDITOR_MODE_ICONS`
 `resolveEditorMode({ tab, canEdit })` (pure, `editor-mode-store.ts`):
 
 1. `mode = opensInOf(tab)`: the tab's own mode, the same for everyone; Diagram when absent or on
-   an event-storming board; Plan on a Board, Sheet or Dashboard tab.
+   an event-storming board.
 2. `canSwitch = tab && editorModeSwitchable(tab) && canEdit && tab.locked !== true`.
-3. `lockedReason` ("A Board tab is always in Plan.", likewise a Sheet tab and a Dashboard) for an
-   editor on a Plan kind's tab: the switch shows, and only its own mode can be picked.
 
 Nothing is remembered per person: the old `livediagram:v2:editor-mode:<tab>` keys are never read
 or written (left in place). Nothing is pinned per page.
 
-- `useEditorMode(tab, { canEdit, commitTabs, toastInfo, newTabIn? })` resolves the mode each render
-  (no store, no subscription) and returns `{ mode, setMode, canSwitch, canEdit, lockedReason?,
-crossPlan?, newTabIn? }`; `crossPlan = canSwitch && tab.elements.length === 0`; `newTabIn` is
-  passed only to a session that may add tabs (`!isStructureReadOnly`).
-- `setMode(next, alsoChange?)`: no-op unless `canSwitch`, `next !== mode` and, across Plan's line
-  (`crossesPlan(mode, next)`), `crossPlan`; else
+- `useEditorMode(tab, { canEdit, commitTabs, toastInfo })` resolves the mode each render
+  (no store, no subscription) and returns `{ mode, setMode, canSwitch, canEdit, emptyTab? }`;
+  `emptyTab = canSwitch && tab.elements.length === 0`.
+- `setMode(next, alsoChange?)`: no-op unless `canSwitch` and `next !== mode`; else
   `track('Editor', 'Changed', MODE_EVENT[next])` first, then ONE `commitTabs` mapping the active tab
   through `switchedTab(t, next, alsoChange)`: `alsoChange` (what leaving brings), then
   `withEditorModeSwitched`, which sets `opensIn` (`setTabOpensIn`). One undo step: the
   history restores the whole tab, mode included, so Undo switches back for everyone and Redo
   switches again.
-- **Every mode offered**: `ModeMenuChip` lists `EDITOR_MODES` whole. A row is locked when
-  `lockedReason` is set and it is not the checked one, or when `crossesPlan(mode, row)` and not
-  `crossPlan`; pressing a locked row asks `useConfirm` **Open a New <Mode> Tab?** (`lockedReason`,
-  else "Plan works in tabs of its own." / "A Plan tab stays in Plan.", then "Its mode can’t change,
-  but you can carry on in a new <Mode> tab.", confirm **New <Mode> Tab**) and calls
-  `newTabIn(mode)`; without `newTabIn` locked rows are inert (`aria-disabled`, no question).
-  Shift+D is `editorModeShortcut`: `nextEditorMode(mode, 1, EDITOR_MODES)` while `canSwitch && crossPlan` (an
-  empty tab), else null, so a tab with content never changes mode by key.
+- **Every mode offered**: `ModeMenuChip` lists `EDITOR_MODES` whole; every row but the current one switches.
+  Shift+D is `editorModeShortcut`: `nextEditorMode(mode, 1, EDITOR_MODES)` while `canSwitch && emptyTab`, else
+  null, so a tab with content never changes mode by key.
 - **One resolution** (`useEditorState`): `editorMode = useEditorMode(...)` drives the start's switch, Shift+D and
   the canvas on the active tab.
 - **Everyone follows**: a peer's switch arrives as a `tab-meta` op setting `opensIn` (or clearing
@@ -111,19 +101,18 @@ crossPlan?, newTabIn? }`; `crossPlan = canSwitch && tab.elements.length === 0`; 
 
 ### Opening mode
 
-- `opensInOf(tab)`: Plan on a Board, Sheet or Dashboard tab; Diagram on an event-storming board; `parseEditorMode(tab.opensIn)` when it is
-  one; else Diagram (a stored Pages mode included). `creationIntentOf` and
+- `opensInOf(tab)`: Diagram on an event-storming board; `parseEditorMode(tab.opensIn)` when it is
+  one; else Diagram (a stored Pages or Plan mode included). `creationIntentOf` and
   `readCreationIntent` read modes the same way.
 - `setTabOpensIn(tab, mode)`: the same tab when not switchable or unchanged; else
   `{ ...tab, opensIn: mode }` (written explicitly, Diagram included).
 - **New tab** (`useTabActions.addTab(mode?)`): `newTabSeed(activeTab)` copies the source tab's look and
   never an `opensIn`; the mode comes from `newTabOpening(editorMode, mode)` (new-tab-seed.ts), where `editorMode` is
-  the active tab's mode (`opensInOf(activeTab)`, so Plan on a Board, Sheet or Dashboard tab and Diagram on an
-  event-storming board). It returns `{ opensIn: mode ?? editorMode }`, leaving `opensIn` out when
+  the active tab's mode (`opensInOf(activeTab)`, so Diagram on an event-storming board). It returns `{ opensIn: mode ?? editorMode }`, leaving `opensIn` out when
   that is Diagram (absent reads as Diagram). So the tab bar's **+** and **Create New Tab** (`addTab()`) open the
-  tab in the active tab's mode, and `addTab(mode)` from `newTabIn` in the mode asked for. The mode's own start
+  tab in the active tab's mode, and `addTab(mode)` in the mode asked for. The mode's own start
   shows (Start Diagramming, Start Drawing,
-  Start a Workshop, Start Planning). `addTab` returns before anything when
+  Start a Workshop). `addTab` returns before anything when
   `!canEditStructure` (a Participant, a Viewer, a tab-scoped link). A template chosen for it then decides (`useTemplateFlow`): `templateOpensIn(overrides)`
   is `overrides.opensIn` when set (the template's own mode, `templateEditorMode`), else
   `undefined` for an event-storming template (`overrides.kind` set), else `'diagram'` (Blank
@@ -184,16 +173,14 @@ resize (`resizedElement`) and landed text (`hugLandedText`).
 ## Interfaces and contracts
 
 ```ts
-export type EditorMode = 'diagram' | 'draw' | 'plan' | 'workshop';
+export type EditorMode = 'diagram' | 'draw' | 'workshop';
 export function parseEditorMode(v: unknown): EditorMode | undefined;
 export type EditorModeState = {
   mode: EditorMode;
   setMode: (next: EditorMode, alsoChange?: (tab: Tab) => Tab) => void;
   canSwitch: boolean;
   canEdit: boolean;
-  lockedReason?: string;
-  newTabIn?: (mode: EditorMode) => void;
-  crossPlan?: boolean;
+  emptyTab?: boolean;
 };
 export function useEditorMode(
   tab: (EditorModeTab & Pick<Tab, 'elements'>) | undefined,
@@ -201,17 +188,15 @@ export function useEditorMode(
     canEdit: boolean;
     commitTabs: (map: (ts: Tab[]) => Tab[]) => void;
     toastInfo: (message: string) => void;
-    newTabIn?: (mode: EditorMode) => void;
   },
 ): EditorModeState;
 export function withEditorModeSwitched<T extends Tab>(
   tab: T,
   mode: EditorMode,
-): { tab: T; pagedContent: boolean };
+): EditorModeSwitch<T>; // { tab }
 export type TabModeChoice = { mode: EditorMode; onChange: (m: EditorMode) => void };
 export function peerModeSwitchOf(op: RoomOp): { tabId: string; mode: EditorMode } | null;
 export function newTabSeed(source: Tab | undefined): Partial<Tab>;
-export function crossesPlan(from: EditorMode, to: EditorMode): boolean;
 export function editorModeShortcut(
   s: EditorModeState,
   announce: (m: string) => void,
@@ -220,28 +205,22 @@ export function editorModeShortcut(
 
 - `EditorModeTab = Pick<Tab, 'id' | 'kind' | 'opensIn' | 'layers' | 'locked'>`.
 - `StartModeSwitch()`: reads `useEditorModeState()` and renders nothing outside a provider, when `!canEdit`, or
-  when neither `canSwitch` nor `lockedReason`; else `data-start-mode-switch` around `ModeMenuChip({ mode, onChange,
-newTabIn, crossPlan, lockedReason })` (`lockedReason` only while it cannot switch), each change inside a
+  when not `canSwitch`; else `data-start-mode-switch` around `ModeMenuChip({ mode, onChange })`, each change inside a
   `start-mode` view transition.
 - `ModeMenuChip`: shows the icon, the name and a chevron, is named "Tab mode: <Label>", and carries
   `data-mode-switch`.
 - The editor marks the open tab's mode as `data-editor-mode` on its column (`EditorView`), for the e2e helpers.
-- `ModeMenu({ mode, modes, keyLeadsTo, chip, initialFocus, hostZoom, onChange, onClose, crossPlan,
-lockedReason?, onLockedPick? })` (`ModeMenu.tsx`), opened by `ModeMenuChip`:
-  - `actionOf(option): ModeMenuAction`: `'current'` for `mode`; `'switch'` unless locked (a
-    `lockedReason`, or `!crossPlan && crossesPlan(mode, option)`); else `'new-tab'` with
-    `onLockedPick`, `'inert'` without. Choosing (a row's click, or Enter / Space through
-    `useMenu`'s activate) does nothing when inert,
-    else closes, then `onLockedPick` for `'new-tab'` or `onChange` for `'switch'`.
+- `ModeMenu({ mode, modes, keyLeadsTo, chip, initialFocus, hostZoom, onChange, onClose, fill? })` (`ModeMenu.tsx`), opened by `ModeMenuChip`:
+  - `actionOf(option): ModeMenuAction`: `'current'` for `mode`, else `'switch'`. Choosing (a row's click, or
+    Enter / Space through `useMenu`'s activate) closes, then calls `onChange` for `'switch'`.
   - Rows: `menuitemradio`, `data-mode-row`, `aria-describedby` to a span holding
-    `editorModeDescription` (plus " Opens in a new tab." on a `'new-tab'` row), visible under the
-    name below `sm` and `sm:sr-only` above; a `MODE_TINT` tile, a check on the current row, an
-    `OpenIcon` (`data-new-tab-mark`) on a `'new-tab'` row.
+    `editorModeDescription`, visible under the
+    name below `sm` and `sm:sr-only` above; a `MODE_TINT` tile, a check on the current row.
   - `shown` (initially `mode`) follows `onPointerEnter` and `onFocus` of a row.
   - `ModePreview` (`data-mode-preview`, `aria-hidden`, `hidden sm:flex`): `ModePreviewArt` on the
-    tint, the name with `ModeKeyHint` when `shown === keyLeadsTo && !lockedReason`, the
+    tint, the name with `ModeKeyHint` when `shown === keyLeadsTo`, the
     description and `MODE_TOOLS` chips; no button (choosing is the row's alone).
-- Placement: only on a start panel's rail (`StartFromTemplates`, `StartPlanning`), never in `ToolbarExplorerButton`,
+- Placement: only on a start panel's rail (`StartFromTemplates`), never in `ToolbarExplorerButton`,
   the `TabPortalMenu`, the `TabBar` or the `Explorer`.
 - `TabModeIcon({ tab, style? })`: the tab's mode's `EDITOR_MODE_ICON`, 12 px, `aria-hidden`;
   `TabPill` passes `style={{ color: legibleTabAccent(tab, isDark) }}`.
@@ -279,24 +258,23 @@ Migration on read, in every entry point (`migrateStoredTab` / `migrateIncomingTa
 
 ## Errors and edge cases
 
-| Case                                                            | Handling                                                                                                                                 |
-| --------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| A key from the per-person era in storage                        | Never read; the tab's mode wins                                                                                                          |
-| A peer's op with no presence name yet                           | The toast says "Someone"                                                                                                                 |
-| Undo or redo across a switch                                    | The snapshot restores `opensIn`; everyone moves to that mode, no toast for the one who undid                                             |
-| Forged `opensIn` on an event-storming board                     | `opensInOf` → Diagram; `setTabOpensIn` returns the tab                                                                                   |
-| Unknown `opensIn` value                                         | Read as Diagram                                                                                                                          |
-| Retired `opensIn: 'pages'` (or `'illustrate'`, `'infographic'`) | Read as Diagram (`parseEditorMode`, `LEGACY_EDITOR_MODES`); `dropRetiredPages` drops its pages, articles and Pages-only elements on read |
-| Switch by a visitor, on a locked tab or ES board                | `setMode` returns early: nothing written, no telemetry                                                                                   |
-| Switch to the mode the tab is in                                | No commit                                                                                                                                |
-| Shift+D on a tab with content                                   | `editorModeShortcut` returns null: nothing written, no telemetry                                                                         |
-| A locked row in a session that cannot add tabs                  | Inert (`aria-disabled`): no question, no new tab                                                                                         |
-| A Board, Sheet or Dashboard tab                                 | The switch shows its own mode only, with `lockedReason`; other rows offer a new tab                                                      |
-| A peer switches while I type in a label                         | The editor stays open; the text commits as usual; a toast names the peer                                                                 |
-| Previewing as a viewer                                          | `canEdit` false: no switch, the tab's mode, read-only                                                                                    |
-| Event-storming board, or outside an editor                      | `StartModeSwitch` renders nothing; the pill icon shows Diagram                                                                           |
-| A tab switched while a paste's images upload                    | The paste is dropped (unchanged board-scene rule)                                                                                        |
-| Stale client sends a `Whiteboard` telemetry event               | Refused by the closed category list                                                                                                      |
+| Case                                                                | Handling                                                                                                                                 |
+| ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| A key from the per-person era in storage                            | Never read; the tab's mode wins                                                                                                          |
+| A peer's op with no presence name yet                               | The toast says "Someone"                                                                                                                 |
+| Undo or redo across a switch                                        | The snapshot restores `opensIn`; everyone moves to that mode, no toast for the one who undid                                             |
+| Forged `opensIn` on an event-storming board                         | `opensInOf` → Diagram; `setTabOpensIn` returns the tab                                                                                   |
+| Unknown `opensIn` value                                             | Read as Diagram                                                                                                                          |
+| Retired `opensIn: 'pages'` (or `'illustrate'`, `'infographic'`)     | Read as Diagram (`parseEditorMode`, `LEGACY_EDITOR_MODES`); `dropRetiredPages` drops its pages, articles and Pages-only elements on read |
+| Retired `opensIn: 'plan'`, or a Board, Sheet, Dashboard or Form tab | Read as Diagram; `dropRetiredPlan` drops its `kind`, Plan-only fields, Plan board and Sheet elements on read                             |
+| Switch by a visitor, on a locked tab or ES board                    | `setMode` returns early: nothing written, no telemetry                                                                                   |
+| Switch to the mode the tab is in                                    | No commit                                                                                                                                |
+| Shift+D on a tab with content                                       | `editorModeShortcut` returns null: nothing written, no telemetry                                                                         |
+| A peer switches while I type in a label                             | The editor stays open; the text commits as usual; a toast names the peer                                                                 |
+| Previewing as a viewer                                              | `canEdit` false: no switch, the tab's mode, read-only                                                                                    |
+| Event-storming board, or outside an editor                          | `StartModeSwitch` renders nothing; the pill icon shows Diagram                                                                           |
+| A tab switched while a paste's images upload                        | The paste is dropped (unchanged board-scene rule)                                                                                        |
+| Stale client sends a `Whiteboard` telemetry event                   | Refused by the closed category list                                                                                                      |
 
 ## Security and trust
 
@@ -351,13 +329,13 @@ Migration on read, in every entry point (`migrateStoredTab` / `migrateIncomingTa
 
 ## Observability
 
-| Event / log                                                           | Where                   |
-| --------------------------------------------------------------------- | ----------------------- |
-| `Editor · Changed · ModeDiagram / ModeDraw / ModePlan / ModeWorkshop` | `useEditorMode.setMode` |
-| `Draw · …` (formerly `Whiteboard`)                                    | Draw mode's emitters    |
-| `[editor-mode] switched { tabId, from, to }` (debugLog)               | `setMode`               |
-| `[editor-mode] whiteboard tab migrated to Draw`                       | `migrateWhiteboardKind` |
-| `<Name> switched this tab to <Mode>.` (toast)                         | `receivePeerModeSwitch` |
+| Event / log                                                | Where                   |
+| ---------------------------------------------------------- | ----------------------- |
+| `Editor · Changed · ModeDiagram / ModeDraw / ModeWorkshop` | `useEditorMode.setMode` |
+| `Draw · …` (formerly `Whiteboard`)                         | Draw mode's emitters    |
+| `[editor-mode] switched { tabId, from, to }` (debugLog)    | `setMode`               |
+| `[editor-mode] whiteboard tab migrated to Draw`            | `migrateWhiteboardKind` |
+| `<Name> switched this tab to <Mode>.` (toast)              | `receivePeerModeSwitch` |
 
 ## Testing
 
@@ -377,7 +355,7 @@ Migration on read, in every entry point (`migrateStoredTab` / `migrateIncomingTa
 | The tab pill shows the tab's mode | `components/chrome/TabPill.test.tsx`, `components/chrome/editor-mode/TabModeIcon.test.tsx` |
 | A template decides the tab's mode | `app/document/[id]/useTemplateFlow.test.ts` |
 | A peer's switch is followed and named | `lib/peer-mode-switch.test.ts`, e2e `editor-modes.spec.ts` "the start's switch changes the tab for everyone, and Undo switches it back" |
-| Plan stands apart; an empty tab crosses; only an empty tab switches by key | `useEditorMode.test.tsx` "crosses into and out of Plan while the tab is empty, and only then", `StartModeSwitch.menu.test.tsx` "StartModeSwitch and Plan", "StartModeSwitch on a tab that keeps its mode", "StartModeSwitch for a session that cannot add tabs", `editor-mode-shortcut.test.ts` "offers nothing on a tab with content", e2e `editor-modes.spec.ts` "Shift+D moves an empty tab to the next mode", "a Plan tab with a board keeps its mode" |
+| Only an empty tab switches by key; a drawn-on tab keeps its mode | `editor-mode-shortcut.test.ts` "offers nothing on a tab with content: it keeps its mode", e2e `editor-modes.spec.ts` "Shift+D moves an empty tab to the next mode", "the start's switch turns an empty tab to Draw, and once drawn on the tab keeps its mode" |
 | The tool a mode starts with | `hooks/editor/useModeDefaultTool.test.ts` |
 | New tab opens in its maker's mode, on its start | `lib/new-tab-seed.test.ts`, `hooks/persistence/useTabActions.addTab.test.tsx`, e2e `editor-modes.spec.ts` "a new tab opens in the mode it was made from" |
 | Entering / leaving Draw | `hooks/canvas/useWhiteboard.test.tsx`, `useWhiteboard.board-tools.test.tsx` |
@@ -390,8 +368,8 @@ Workshop mode's own rules are blueprinted in
 [Workshop mode](../../012-collaboration/blueprints/workshop-mode.md).
 
 Not covered by a unit test: `parseEditorMode`'s legacy name, `parsePlacementDefaultKey`, the
-peer toast's wiring in `useRoomConnection`, and a label edit kept across a peer's switch (browser-checked with two windows). `addTab(mode)` across Plan's line
-is covered by `useTabActions.addTab.test.tsx` and `new-tab-seed.test.ts`.
+peer toast's wiring in `useRoomConnection`, and a label edit kept across a peer's switch (browser-checked with two windows). `addTab(mode)` is covered by
+`useTabActions.addTab.test.tsx` and `new-tab-seed.test.ts`.
 
 ## Defaults ledger
 

@@ -2,7 +2,7 @@
 
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { ActivityAction, ActivityCard, ActivityThread } from '@livediagram/api-schema';
+import type { ActivityAction, ActivityThread } from '@livediagram/api-schema';
 
 // The Inbox's one read, split three ways (docs/specs/013-workspace/inbox.md §1), and the
 // error-vs-empty distinction the inbox depends on.
@@ -15,7 +15,7 @@ const readOfflineActivity = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/offline/offline-activity', () => ({ readOfflineActivity }));
 vi.mock('@/lib/local-identity', () => ({ getGuestSelfId: () => 'guest-1' }));
 
-const NO_LOCAL = { actions: [], threads: [], cards: [], cardThreads: [] };
+const NO_LOCAL = { actions: [], threads: [] };
 
 import { useActivityFeed } from './useActivityFeed';
 
@@ -59,23 +59,6 @@ const thread: ActivityThread = {
   mentionsYou: false,
 };
 
-function card(id: string, updatedAt: number): ActivityCard {
-  return {
-    documentId: 'd2',
-    documentName: 'Roadmap',
-    teamId: 'tm',
-    via: 'team',
-    shareCode: null,
-    board: { tabId: 't2', tabName: 'Plan', elementId: 'b1', title: 'Sprint' },
-    id,
-    key: 1,
-    type: 'task',
-    title: id,
-    status: 'todo',
-    updatedAt,
-  };
-}
-
 beforeEach(() => {
   apiListActivity.mockReset();
   readOfflineActivity.mockReset().mockResolvedValue(NO_LOCAL);
@@ -90,7 +73,6 @@ describe('useActivityFeed', () => {
         action('theirs', { assignedToMe: false, createdByMe: true }),
       ],
       threads: [thread],
-      cards: [],
     });
     const { result } = renderHook(() => useActivityFeed('me'));
     await waitFor(() => expect(result.current.loading).toBe(false));
@@ -100,55 +82,12 @@ describe('useActivityFeed', () => {
     expect(result.current.error).toBe(false);
   });
 
-  // docs/specs/013-workspace/inbox.md §1, §2.5: a Plan card's thread lists with the element threads,
-  // newest comment first.
-  it("merges Plan cards' threads into the threads, newest comment first", async () => {
-    apiListActivity.mockResolvedValue({
-      actions: [],
-      threads: [{ ...thread, latest: { ...thread.latest, at: 5 } }],
-      cards: [],
-      cardThreads: [
-        { id: 'it-new', latest: { text: 'n', authorName: 'A', authorColor: '#000', at: 9 } },
-        { id: 'it-old', latest: { text: 'o', authorName: 'A', authorColor: '#000', at: 1 } },
-      ],
-    });
-    const { result } = renderHook(() => useActivityFeed('me'));
-    await waitFor(() => expect(result.current.loading).toBe(false));
-    expect(result.current.threads.map((t) => [t.kind, t.latest.at])).toEqual([
-      ['card', 9],
-      ['thread', 5],
-      ['card', 1],
-    ]);
-  });
-
-  // docs/specs/013-workspace/inbox.md §1, §2.4: Plan cards on the reader share Assigned to You
-  // with actions, newest change first, and count toward the sidebar badge through the same list.
-  it('merges Plan cards into assigned-to-you, newest first', async () => {
-    apiListActivity.mockResolvedValue({
-      actions: [
-        { ...action('older-action', { assignedToMe: true, createdByMe: false }), updatedAt: 2 },
-        { ...action('theirs', { assignedToMe: false, createdByMe: true }), updatedAt: 9 },
-      ],
-      threads: [],
-      cards: [card('new-card', 5), card('old-card', 1)],
-    });
-    const { result } = renderHook(() => useActivityFeed('me'));
-    await waitFor(() => expect(result.current.loading).toBe(false));
-    expect(result.current.assignedToMe.map((r) => [r.kind, r.id])).toEqual([
-      ['card', 'new-card'],
-      ['action', 'older-action'],
-      ['card', 'old-card'],
-    ]);
-    expect(result.current.youAssigned.map((a) => a.id)).toEqual(['theirs']);
-  });
-
   // docs/specs/013-workspace/inbox.md §2.6: this browser's documents in This Browser list among the server's rows,
   // in the same order, marked local, and count toward the badge's list.
   it('merges rows in This Browser in among the server rows, marked local', async () => {
     apiListActivity.mockResolvedValue({
       actions: [{ ...action('cloud', { assignedToMe: true, createdByMe: false }), updatedAt: 2 }],
       threads: [],
-      cards: [],
     });
     readOfflineActivity.mockResolvedValue({
       ...NO_LOCAL,
@@ -174,7 +113,6 @@ describe('useActivityFeed', () => {
     apiListActivity.mockResolvedValue({
       actions: [action('cloud', { assignedToMe: true, createdByMe: false })],
       threads: [],
-      cards: [],
     });
     readOfflineActivity.mockRejectedValue(new Error('no IndexedDB'));
     const { result } = renderHook(() => useActivityFeed('me'));
@@ -197,7 +135,6 @@ describe('useActivityFeed', () => {
     apiListActivity.mockResolvedValueOnce(null).mockResolvedValueOnce({
       actions: [action('a', { assignedToMe: true, createdByMe: false })],
       threads: [],
-      cards: [],
     });
     const { result } = renderHook(() => useActivityFeed('me'));
     await waitFor(() => expect(result.current.error).toBe(true));
@@ -219,7 +156,6 @@ describe('useActivityFeed', () => {
       .mockResolvedValueOnce({
         actions: [action('b1', { assignedToMe: true, createdByMe: false })],
         threads: [],
-        cards: [],
       });
     const { result, rerender } = renderHook(({ owner }) => useActivityFeed(owner), {
       initialProps: { owner: 'guest' },
@@ -227,7 +163,7 @@ describe('useActivityFeed', () => {
     rerender({ owner: 'user_1' });
     expect(result.current.loading).toBe(true);
     await waitFor(() => expect(result.current.loading).toBe(false));
-    await act(async () => answerFirst({ actions: [], threads: [thread], cards: [] }));
+    await act(async () => answerFirst({ actions: [], threads: [thread] }));
     expect(result.current.assignedToMe.map((a) => a.id)).toEqual(['b1']);
     expect(result.current.threads).toEqual([]);
   });

@@ -14,7 +14,6 @@ import {
   stringField,
   textField,
   threadOf,
-  cellThreadsOf,
 } from './fields';
 import { headerLine, viewHeader } from './header';
 import { layoutEndText } from './layout';
@@ -40,7 +39,7 @@ const SHOWN_ELSEWHERE = new Set([
   'from',
   'to',
 ]);
-const BLOCK_FIELDS = new Set(['cells', 'entityFields', 'commentThread', 'cellComments']);
+const BLOCK_FIELDS = new Set(['cells', 'entityFields', 'commentThread']);
 // Plain-text mirrors' runs and packed geometry: noise beside the fields they mirror.
 const MIRROR_FIELDS = ['richText', 'noteRich', 'packedPoints'];
 
@@ -49,10 +48,6 @@ export const PERSON_ID_FIELDS = [
   'commentThread.comments[].authorId',
   'commentThread.comments[].mentions[].userId',
   'commentThread.comments[].mentions[].memberId',
-  // A Sheet's cell threads (docs/specs/029-sheets/sheet.md "Cell comments"): `{}` is each value of a record.
-  'cellComments{}.comments[].authorId',
-  'cellComments{}.comments[].mentions[].userId',
-  'cellComments{}.comments[].mentions[].memberId',
   'action.assignerId',
   'action.assignee.userId',
   'action.assignee.memberId',
@@ -224,15 +219,6 @@ function blockLines(el: Element, fields: Record<string, unknown>): ViewLine[] {
       noun: LINE,
     });
     for (const c of thread.comments) {
-      lines.push({ text: `    ${commentText(readComment(c))}`, noun: LINE });
-    }
-  }
-  for (const cell of cellThreadsOf(el)) {
-    lines.push({
-      text: `  cell ${cell.cell} comments: ${cell.resolved ? 'resolved' : 'open'} · ${cell.comments.length}`,
-      noun: LINE,
-    });
-    for (const c of cell.comments) {
       lines.push({ text: `    ${commentText(readComment(c))}`, noun: LINE });
     }
   }

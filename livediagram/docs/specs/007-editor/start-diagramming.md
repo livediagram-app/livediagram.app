@@ -1,16 +1,14 @@
 # Template starts: Start Diagramming, Start Drawing, Start a Workshop
 
-An empty tab starts from a choice, not a blank page and a modal. A Plan tab has offered **Start Planning** since
-Plan shipped ([Plan mode](../026-plan/plan-mode.md) "Starting a board"); Diagram, Draw and Workshop tabs
-now offer their own: **Start Diagramming**, **Start Drawing** and **Start a Workshop**. Each is the same wide
+An empty tab starts from a choice, not a blank page and a modal. Diagram, Draw and Workshop tabs each offer their
+own: **Start Diagramming**, **Start Drawing** and **Start a Workshop**. Each is the same wide
 panel in the middle of the canvas, its rail of groups beside a grid of the mode's templates, so the templates sit
 where the work begins instead of in a step before it. The New Document wizard asks only for a mode
 ([New document route](new-document-route.md) "Choosing a mode"), and the document opens on that mode's start.
 
 ## The panel
 
-One shared panel, `StartPanel` (`apps/editor/components/start/StartPanel.tsx`), draws all four starts (Start Planning
-included, `components/plan/start/StartPlanning.tsx`); each start says what its groups and cards are, the panel
+One shared panel, `StartPanel` (`apps/editor/components/start/StartPanel.tsx`), draws all three starts; each start says what its groups and cards are, the panel
 draws them.
 
 - **Header:** the title ("Start Diagramming"), one line under it, the search box, and in the top right corner the
@@ -32,8 +30,7 @@ draws them.
   as the search's own) is listed first, under **Best Match**, and not again under its group: an exact name before a
   longer one, then in the order the groups list them. Typing "flowchart" leads with Flowchart, though Design's
   Service Blueprint, which matches through its search words, comes earlier in the rail. With no name beginning so,
-  there is no Best Match and the groups lead as before. Start Planning's search (the same panel) does the same with
-  its boards, sheets, forms and layouts.
+  there is no Best Match and the groups lead as before.
 - **There is no way out to a bigger picker.** Each start holds every listed template of its mode, the mode switch
   reaches the others, and a search finds a template in any mode; the start is the whole catalogue. (Its
   **Something Else** row and **Browse More Templates** button opened the Quick Start, a modal of every template, which
@@ -75,12 +72,12 @@ The blank appears only in Recommended. Choosing the blank closes the panel, as t
 - To someone who can edit (an **Editor**), after hydration, outside zen and an embed, with
   no draw tool armed. Draw keeps a pen in hand on an empty tab, so there an armed pen does not hide it.
 - While the tab is empty: no elements.
-- In Diagram, Draw or Workshop. Plan has Start Planning.
+- In Diagram, Draw or Workshop.
 
 While one of the palette's popovers is open (a category's flyout, More or Search), the start **steps aside**: it
 stays mounted, so its search, its group and its scroll are kept, but is hidden, and the tiles hang over a clear
 canvas. Closing the popover brings it back as it was; using a tile closes the popover, and the content it lands
-hides the start for good. The palette publishes the state in `lib/palette-popover-open.ts`, and `StartPanel` hides its own root, so every start (Start Planning too) steps aside alike. Never a wrapper around it: the start's View Transition pictures that root, and a `display: contents` wrapper has no box to picture, so a mode change lost its crossfade.
+hides the start for good. The palette publishes the state in `lib/palette-popover-open.ts`, and `StartPanel` hides its own root, so every start steps aside alike. Never a wrapper around it: the start's View Transition pictures that root, and a `display: contents` wrapper has no box to picture, so a mode change lost its crossfade.
 
 A **Participant** or **Viewer** never sees a start: they keep the empty-canvas card ([New document
 route](new-document-route.md) "The empty-canvas hint"), which tells a Viewer the owner can build it out and points a
@@ -90,8 +87,7 @@ A new tab opens on its mode's start (`newTabOpening` in `apps/editor/lib/new-tab
 
 An **explicit blank** opens with its start already closed (`closeStartForBlank`): a document made by Skip, Start
 Blank's `/new?blank=1`, a blank's `/new?template=` link, or a mode chosen after the public sites' Start Blank
-(`/new?start=blank`, [New document route](new-document-route.md) "Start Blank after a mode"). Plan keeps Start
-Planning.
+(`/new?start=blank`, [New document route](new-document-route.md) "Start Blank after a mode").
 
 ## Bringing it back
 
@@ -113,12 +109,6 @@ begun in the wrong mode changes before anything is made. It is the only switch: 
 mode, and the top chrome and the tab menu offer none. Its menu is the list of modes and the preview of one ([Editor modes](editor-modes.md) "The mode switch"), with the same rules. On a
 phone its menu spans the row it opens from, each mode a roomy row with its description across the full width.
 
-**An empty tab crosses Plan's line.** Plan stands apart ([Editor modes](editor-modes.md)): a tab never switches into
-or out of it, and the mode menu offers a new tab instead. An empty tab has nothing either side's tools could not
-hold, so while a general tab has no elements it switches freely into and out of Plan, from the start's switch and
-Shift+D (`crossPlan` on `useEditorMode`). The first element ends switching altogether. Meanwhile the mode menu
-shows Plan (or, on a Plan tab, the other modes) as a plain switch: no New tab mark, and choosing its row switches.
-
 A mode change swaps one start for another. The new one **turns in place**: the frame stays still and the old content
 crossfades into the new (the switch runs the change in `startTransition` typed `start-mode`, which the start's
 `<ViewTransition>` cross-fades over `short`), so a
@@ -129,18 +119,17 @@ content swaps at once.
 
 ## Found in other modes
 
-A search looks beyond the tab's mode. Someone on a Plan tab who types "sailboat" wants the Sailboat retrospective,
+A search looks beyond the tab's mode. Someone on a Draw tab who types "sailboat" wants the Sailboat retrospective,
 not an empty result: the start finds it in Workshop, shows it, and choosing it takes the tab there.
 
 - **What is searched.** Every listed template of every other mode (`otherModeMatches` in
   `components/start/other-mode-matches.ts`): a template's mode is `templateEditorMode`, the mode its tab opens in, so a
-  template is in exactly one mode and never shows twice. From Start Planning that is every other mode's templates;
-  from the others it includes Plan's templates. The same search as the mode's own (`templateMatchesQuery`), so the
+  template is in exactly one mode and never shows twice. The same search as the mode's own (`templateMatchesQuery`), so the
   same words find the same templates wherever they are typed. A mode's blank is a template like the rest ("whiteboard"
   finds Blank Whiteboard).
 - **Where it shows.** Under the mode's own results, after a hairline, a section headed **In Other Modes**, with the
   line "Choosing one switches this tab to its mode." Then one block per mode that matched, in the modes' order
-  (Diagram, Draw, Workshop, Plan): a header with the mode's icon on a soft tile of the accent, the mode's
+  (Diagram, Draw, Workshop): a header with the mode's icon on a soft tile of the accent, the mode's
   name and its count, then its cards in the same grid as every other result.
 - **Each card says where it leads.** Under its line, a quiet chip with the mode's icon and "Opens in Workshop", so a
   card seen alone still says it is not of this mode; assistive technology hears the template's name, "in Workshop",
@@ -151,8 +140,7 @@ not an empty result: the start finds it in Workshop, shows it, and choosing it t
   results instead, "No diagram templates match “sailboat”." with "Found in other modes." under it, then the other modes'
   blocks. **Nothing anywhere** shows the empty state, "Try another word."
 - **Choosing one** lands the template on the tab at once, as any card does (`chooseTemplate`), and the template brings
-  its mode: its tab opens in that mode (`templateCanvasOverrides`' `opensIn`), so the tab switches, through Plan's
-  line too (an empty tab crosses it freely, [Changing mode](#changing-mode)). The start goes with the empty tab. A
+  its mode: its tab opens in that mode (`templateCanvasOverrides`' `opensIn`), so the tab switches ([Changing mode](#changing-mode)). The start goes with the empty tab. A
   blank of the other mode (Blank Whiteboard from Start Diagramming) closes that mode's start, as choosing a start's own
   blank does, so the tab opens on the empty canvas asked for. The pick is a start-screen pick for
   [Default folders](#default-folders): a document `/new` just made moves to the template's default folder.
@@ -170,8 +158,7 @@ picked after creation"). The move loads only at the pick (`useTemplatePickMove`,
 
 A tour's welcome never lands over a start: while one is on screen the Diagram, Workshop and Draw
 tours hold their offer, and make it once a template is picked or the start closed (`start-panel-open.ts`,
-`useStartPanelOpen`). Start Planning shows only on a tab with no board or Sheet, where the Plan tour has nothing to
-show, so it needs no hold.
+`useStartPanelOpen`).
 
 ## Search handed over
 
@@ -182,16 +169,13 @@ They are kept for the browser tab only and read once (`start-query.ts`).
 ## Look
 
 - **The tab's colours.** The panel's paper is the tab's canvas colour, its accent (the chosen category, the focus
-  ring, a card's hover) the theme's stroke and its ink the theme's text, through `planPalette` as a coloured Plan
-  board's, which keeps the ink readable on the paper (`start-palette.ts`, `useStartPalette`). A theme with no colours
+  ring, a card's hover) the theme's stroke and its ink the theme's text, through `startPalette`, which keeps the ink readable on the paper (`start-palette.ts`, `useStartPalette`). A theme with no colours
   of its own (Default) leaves the app's light or dark look. The tours wear the same palette
   ([Diagram tour](editor-tour.md) "Look").
 - **Entrance.** The panel rises in with the dialog entrance (`animate-dialog-in`; a fade alone under reduced
   motion), and its cards and rail cascade in after it (`lvd-cascade`).
 - **On a phone** the panel is a sheet risen from the bottom (`animate-sheet-up`), full width below the top bar,
-  standing on the tab bar, with the grab handle every phone sheet has. A start that cannot close (Start Planning)
-  settles back when dragged. The tab bar stays in reach: over it, a new Plan tab's start left no way back to the
-  document's other tabs, nor to the tab's menu, but choosing a template. Where the bar stands is measured, as the
+  standing on the tab bar, with the grab handle every phone sheet has. The tab bar stays in reach. Where the bar stands is measured, as the
   toast stack measures its floor (`useChromeFloor`), so a short window stands on it too while it shows and keeps
   the room when the bars are folded away.
 - **On a short window** (under 500px tall, whatever the pointer: a phone held sideways, or a laptop zoomed to 200%,
@@ -211,13 +195,13 @@ results also fires `UI · Used · StartOtherMode`, so how often a search crosses
 - `components/start/other-mode-matches.test.ts`: which modes and templates another mode's search finds, in order,
   never the tab's own mode, and the worst-case query within its budget.
 - `components/start/StartPanel.test.tsx`: the In Other Modes section, its cap and Show All, the one-line no-match,
-  Down from the search, choosing a card from another mode, Best Match leading (Start Planning's too), the arrow keys
+  Down from the search, choosing a card from another mode, Best Match leading, the arrow keys
   among the cards.
 - `components/start/best-match.test.ts`: which names lead, exact first, lifted out of their groups once.
 - `components/start/start-card-keys.test.ts`: where each arrow, Home and End go in a grid of cards.
 - `components/start/template-start-mode.test.ts`: when a start shows.
 - `components/start/StartFromTemplates.test.tsx`: titles per mode, choosing, the blank closing, the per-mode close,
   scroll to top.
-- `components/start/StartModeSwitch.test.tsx`, `hooks/editor/useEditorMode.test.tsx` (crossing Plan while empty).
+- `components/start/StartModeSwitch.test.tsx`, `hooks/editor/useEditorMode.test.tsx`.
 - `components/start/start-palette.test.ts`, `start-panel-open.test.tsx`, `start-query.test.ts`.
 - `components/start/StartAgainTray.test.tsx`, `components/canvas/empty-card-dismissed.test.ts` (bringing a start back).

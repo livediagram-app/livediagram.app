@@ -1,8 +1,7 @@
 'use client';
 
 // An empty tab's template start (docs/specs/007-editor/start-diagramming.md): Start Diagramming on a Diagram tab, Start
-// Facilitating on a Workshop tab, Start Making Pages on a Pages tab, each a start panel (StartPanel) as Start
-// Planning is Plan's. Recommended (the mode's blank first) and its groups beside a grid of the mode's templates, each its
+// a Workshop on a Workshop tab, each a start panel (StartPanel). Recommended (the mode's blank first) and its groups beside a grid of the mode's templates, each its
 // preview over its name and line; a search across them and every other mode's templates (otherModeMatches); the × starts
 // from nothing. Choosing a template lands it on the tab at once, another mode's switching the tab to that mode.
 import { useEffect, useMemo } from 'react';

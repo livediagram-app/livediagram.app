@@ -7,16 +7,12 @@ Status: shipped
 The editor's one panel layout, on every device (see "One layout" for the retired Floating
 layout). The Palette is a single horizontal strip pinned to the top centre of the canvas, the way
 Excalidraw's tool bar works. In Diagram and Workshop the strip is the **category bar**
-(below): the mode's categories, each opening a flyout of its tiles. Plan keeps the category picker
-and one category's tiles:
+(below): the mode's categories, each opening a flyout of its tiles. Draw shows its dock instead:
 
 ```
  ☰ ⬡|✎   ┌──────────────────────────────────────────────────────────────────────┐
  │        │ [↖ ▾] │ Shapes Write Draw │ Diagrams Concepts Layout │ Icons … │ [🔍] │   Diagram, Workshop
  ▼        └──────────────────────────────────────────────────────────────────────┘
- ☰ ⬡|✎   ┌──────────────────────────────────────────────────────┐
-          │ [↖ ▾] │ [Cards ▾] │ □ ◇ ○ → ─ ✎ A ▤ … │ [⋯ ▾] │ [🔍] │                  Plan
-          └──────────────────────────────────────────────────────┘
  Explorer            (Undo/Redo, Layers, zoom: the bottom-right cluster)
 ```
 
@@ -29,14 +25,6 @@ and one category's tiles:
   Eraser / Format / Laser / Spotlight / Isometric / Zen (Avatar only while in it), [Tile grids for the palette dropdowns](../004-interface-design/dropdown-tile-grid.md))
   as a compact icon trigger, opening the banded tile grid.
 - **Then, in Diagram and Workshop, the category bar** ("The category bar").
-- **Then, in Plan, the category picker.** The same banded category grid ([Palette top-level categories and bands](../010-palette/palette-top-level-categories.md)),
-  as a compact trigger showing the current category's glyph and name. It
-  sits directly before the tiles it chooses, so it reads as their label.
-- **Then the current category's first twelve tiles** (Plan; fewer on a narrow window, see "Decided in review"), icon-only, each with its
-  hover card, shortcut letter, drag-to-place, theme tint and pressed state. They
-  are the Palette's tiles (`palette-tile-defs`, arranged by the mode's palette layout, [Editor modes](editor-modes.md#the-palette-per-mode)),
-  rendered by the shared `PaletteTile`, so the strip and its popovers stay alike.
-- **Right: More (⋯ ▾)** (Plan), when the category has more than the strip shows.
 - **Far right: Search** (a magnifier), in every mode's strip but an event-storming board's (see
   "Search: every element type"). Draw mode shows its dock instead of the strip, so it has none.
 
@@ -167,9 +155,8 @@ height, so switching group never moves the flyout. Each reopens on the group it 
 A strip shows one category at a time, so finding an element means knowing which category holds it.
 **Search** finds it by name instead, across every category, and across the other modes too.
 
-- **Where:** the last control on the strip, after More (and after Plan's Edit Cards and
-  Plan's Edit Cards), behind a divider, with a hover card ("Search Elements"). On a phone it
-  stays put beside More while the tiles swipe.
+- **Where:** the last control on the strip, behind a divider, with a hover card ("Search Elements"). On a phone it
+  stays put at the end of the strip.
 - **Not on an event-storming board:** the notation is the palette there, as the board hides the
   pickers. Draw mode has no strip, so no Search.
 - **Opening it clears the way**: a tile armed to place is let go (its "Tap to drop" banner goes), and the
@@ -210,19 +197,12 @@ A strip shows one category at a time, so finding an element means knowing which 
   order. The image-upload tiles are left out where the editor has none, as everywhere else.
 - **Two sections:**
   - **This mode's elements** first, as the palette's tile grid, drawn from every tile the current
-    mode's layout offers (Plan's Cards follow the document's item types, as on the strip).
+    mode's layout offers.
   - **Other modes**, below, as an accordion titled **"Elements From Other Modes"**, with a
     count: the matching tiles no category of this mode offers, from the other modes' layouts and
     the event-storming notation. **Closed by default** each time the popover opens: modes are
     tailored on purpose, so the rest is one deliberate click away, never hidden. Opened, it stays
     open while typing. It is absent when nothing outside the mode matches.
-  - **Another mode's own elements**, last, as an accordion titled **"Not Available in Diagram
-    Mode"** (the current mode's name), with a count, closed by default and absent when empty like
-    the one above. These are the tiles of Plan's own categories (Cards, Boards, Metrics,
-    Visualisations, Sheet): made for Plan's boards and views, so only Plan adds them. They are
-    listed so a search for one still finds it and says where it lives, but each is greyed out
-    (`aria-disabled`, no press, no drag) with "Only in Plan Mode" in its hover card. Plan itself
-    has none here. Its line: "Made for another mode's own tools, so only that mode adds them."
 - **Before anything is typed** it lists only the element types **already on the tab**, under a
   small "On This Tab" label, each once, in layout order (other modes' ones in their accordions, as
   ever): the popover stays short, and the tools a tab is actually built from are one click away.
@@ -259,7 +239,8 @@ A strip shows one category at a time, so finding an element means knowing which 
 
 ## More: the rest of the category
 
-Plan's strip only: the category bar has no More, since every category's whole body is its flyout.
+More belonged to Plan's strip, which went to liveplanner with Plan mode: the category bar has no More, since every
+category's whole body is its flyout. The rest of this section is kept as the record of how it worked.
 
 A strip has room for about a dozen tiles. Shapes fits; Icons (~180),
 Stickers and Technology do not. More opens the current
@@ -330,21 +311,16 @@ it (a 430px phone shows four of Diagram's Popular and the divider after the diam
 
 The chosen category lasts the page load: the strip is hidden rather than
 unmounted while zen or the welcome flow hides the chrome. Nothing is stored,
-so a new page load starts on the mode's landing (Plan's Cards, or Boards while the tab has no board).
+so a new page load starts on the mode's landing.
 
 ## The tab's name
 
 - On a desktop, the menu box (the Explorer button and the mode switch, top left) ends with the open tab's name, after a
-  hairline, in every mode: Diagram, Draw, Workshop and Plan alike, as a board's name rides there
-  ([The name rides in the menu box](../026-plan/plan-board.md)). It is the chrome's ink, 14 px at regular weight (never bold), cut short
+  hairline, in every mode: Diagram, Draw and Workshop alike
+  (The name rides in the menu box). It is the chrome's ink, 14 px at regular weight (never bold), cut short
   with an ellipsis past 16rem, and follows a rename at once. The box shows a name alone, never an icon beside it.
-- While a board, Sheet or view filling the tab (or maximised) has its own name in the box, that name shows instead,
-  so the box never shows two.
 - A click (a tap) on it renames the tab in place, for someone who may change the
   document's tabs: Enter or leaving saves, Escape puts it back; up to 60 characters.
-- Every name in the box renames on a single click, whichever it is (the tab's, a board's, a Sheet's, a chart's, a
-  Dashboard's): in the box a click has nothing else to do. In an element's own header a press moves the element, so
-  there a double-click renames, as before.
 - Not on a phone: the top row is the strip's there.
 
 ## The Explorer and the other panels
@@ -482,7 +458,7 @@ their bottom-row buttons. What changes to fit the width:
   the top. Only a real switch animates; the first set is simply there.
   Reduced motion collapses it to instant (`ToolbarStripRail`).
 - **The rail is always as wide as its tiles.** Its width follows the tiles as laid out, whenever they change
-  (a category switch, a tile added or gone, such as a card type), never a tile caught mid-slide: no empty gap
+  (a category switch, a tile added or gone), never a tile caught mid-slide: no empty gap
   after the last tile once they settle.
 
 ## Look
@@ -511,7 +487,7 @@ their bottom-row buttons. What changes to fit the width:
 
 ## Decided in review
 
-- **The strip opens on the mode's landing every time** (Plan's)
+- **The strip opens on the mode's landing every time**
   ([Editor modes](editor-modes.md#the-palette-per-mode)). It does not remember the last category across documents.
 - **Twelve tiles is enough** on desktop (raised from ten, which cut Shapes and
   Popular short). Below that, the strip shows as many as fit, **measured**

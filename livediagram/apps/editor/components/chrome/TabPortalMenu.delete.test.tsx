@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ComponentProps } from 'react';
 import { PortalMenu } from './TabPortalMenu';
@@ -56,15 +56,5 @@ describe('Delete in the tab menu', () => {
     expect(onDelete).toHaveBeenCalledTimes(1);
     expect(onClose).toHaveBeenCalled();
     expect(screen.queryByRole('dialog', { name: 'Delete this tab?' })).toBeNull();
-  });
-
-  it('asks first, with the warning, when deleting does what an undo cannot take back', () => {
-    const onDelete = vi.fn();
-    open({ onDelete, deleteWarning: 'A form sends its responses here.' });
-    expect(onDelete).not.toHaveBeenCalled();
-    const dialog = screen.getByRole('dialog', { name: 'Delete this tab?' });
-    expect(dialog.textContent).toContain('A form sends its responses here.');
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Delete' }));
-    expect(onDelete).toHaveBeenCalledTimes(1);
   });
 });

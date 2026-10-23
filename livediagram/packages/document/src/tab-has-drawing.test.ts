@@ -4,12 +4,8 @@ import { tabHasDrawing } from './tab-has-drawing';
 // docs/specs/007-editor/split-view.md "The other pane".
 
 describe('tabHasDrawing', () => {
-  it('draws a tab with elements and a Form tab with its form', () => {
-    const el = { id: 'a' };
-    expect(tabHasDrawing({ elements: [el] })).toBe(true);
+  it('draws a tab with elements, and nothing for an empty one', () => {
+    expect(tabHasDrawing({ elements: [{ id: 'a' }] })).toBe(true);
     expect(tabHasDrawing({ elements: [] })).toBe(false);
-    expect(tabHasDrawing({ elements: [], kind: 'form', form: { v: 1 } })).toBe(true);
-    expect(tabHasDrawing({ elements: [], kind: 'form' })).toBe(false);
-    expect(tabHasDrawing({ elements: [], kind: 'board' })).toBe(false);
   });
 });

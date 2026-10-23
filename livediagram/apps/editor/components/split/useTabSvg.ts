@@ -3,12 +3,10 @@
 import { useDeferredValue, useEffect, useMemo, useState } from 'react';
 import type { Tab } from '@livediagram/document';
 import { tabAsSeen } from '@/lib/export-as-seen';
-import { loadTabImages } from '@/lib/export-tab';
-import { renderTabDrawingSvg } from '@/lib/tab-drawing';
+import { loadTabImages, renderTabToSvg } from '@/lib/export-tab';
 import { tabImageKey, type ExportImageMap } from '@/lib/export-tab-images';
 import { ensureIconCatalogs } from '@/lib/icon-registry';
 import { svgFrameOf } from '@/lib/svg-frame';
-import { usePlan } from '@/components/plan/PlanContext';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 
@@ -25,15 +23,13 @@ export type TabSvg = {
 };
 
 // A tab drawn as the editor would show it (docs/specs/007-editor/split-view.md "The right pane"):
-// the export renderer's SVG, in the viewer's appearance, with the document's Plan items and the
+// the export renderer's SVG, in the viewer's appearance, with the
 // tab's photos. Re-rendered when the tab changes (an edit, a collaborator's op) at a deferred
 // priority, so a burst of remote edits never competes with the editor beside it.
 //
-// Drawn by renderTabDrawingSvg: a Form tab as its form, any other tab as its canvas, so the other pane and a Diagram
-// slot show a tab the same way.
+// Drawn by renderTabToSvg, as an export draws it.
 export function useTabSvg(tab: Tab | undefined): TabSvg | null {
   const { imageContext } = useEditorContext();
-  const plan = usePlan();
   const { appearance } = useAppearance();
   const deferredTab = useDeferredValue(tab);
   const [iconsReady, setIconsReady] = useState(false);
@@ -66,15 +62,14 @@ export function useTabSvg(tab: Tab | undefined): TabSvg | null {
     // `iconsReady` re-renders once the glyph catalogues land, so icons replace their placeholders.
     void iconsReady;
     const seen = tabAsSeen(deferredTab, appearance);
-    const markup = renderTabDrawingSvg(seen, {
+    const markup = renderTabToSvg(seen, {
       pattern: false,
       images: images?.map,
-      ...(plan ? { items: plan.items, itemTypes: plan.types } : {}),
     });
     return {
       markup,
       ...svgFrameOf(markup),
       background: seen.backgroundColor ?? '#ffffff',
     };
-  }, [deferredTab, appearance, images, plan, iconsReady]);
+  }, [deferredTab, appearance, images, iconsReady]);
 }

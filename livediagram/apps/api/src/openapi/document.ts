@@ -185,16 +185,6 @@ const TAGS = [
     description:
       'How scripts and agents change a tab: atomic, live for everyone with it open, credited and revertable.',
   },
-  {
-    name: 'Items',
-    description:
-      'The work Plan boards frame: typed items with an open bag of fields, live for everyone with the document open.',
-  },
-  {
-    name: 'Sheets',
-    description:
-      'Spreadsheet tabs on the canvas: cells, formulas and formatting by row and column id, live for everyone with the document open.',
-  },
   { name: 'Sharing', description: 'Share links, passwords, and the documents shared with you.' },
   { name: 'Folders', description: 'Organise documents into a personal or team folder tree.' },
   {

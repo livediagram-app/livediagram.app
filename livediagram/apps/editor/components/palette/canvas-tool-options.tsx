@@ -30,21 +30,17 @@ export function buildCanvasToolOptions({
   canvasEmpty,
   isMobile,
   includeZen,
-  planMode,
   currentTool,
 }: {
   canvasEmpty?: boolean;
   isMobile: boolean;
   includeZen?: boolean;
-  // Plan mode leaves Eraser and Format out (docs/specs/026-plan/plan-mode.md).
-  planMode?: boolean;
   // The tool in force: a board-only mode (Avatar) is listed only while it is the one in force.
   currentTool?: string;
 }): PaletteDropdownOption[] {
-  const options = buildAll(canvasEmpty, isMobile, includeZen).filter(
+  return buildAll(canvasEmpty, isMobile, includeZen).filter(
     (o) => !BOARD_ONLY_TOOLS.has(o.id) || o.id === currentTool,
   );
-  return planMode ? options.filter((o) => o.id !== 'eraser' && o.id !== 'format') : options;
 }
 
 function buildAll(

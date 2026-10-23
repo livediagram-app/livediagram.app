@@ -41,11 +41,11 @@ export function heroSearch(query: string, limit = HERO_SEARCH_LIMIT): HeroMatch[
 // (HERO_FAN_FULL_MIN_PX), the middle five on a laptop, the middle three on a phone.
 export const HERO_FAN_OPENING: readonly TemplateKind[] = [
   'retrospective',
-  'kanban',
+  'gantt',
   'flowchart',
   'mindmap',
   'system-architecture',
-  'budget-planner',
+  'swot',
   'sketchnote',
 ];
 

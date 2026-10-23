@@ -2,8 +2,8 @@
 
 A short, optional guided tour of [Workshop mode](workshop-mode.md), offered the first time a person works in
 Workshop. It is the [Diagram tour](../007-editor/editor-tour.md)'s sibling, as the
-[Plan tour](../026-plan/plan-tour.md) is: the same welcome card, anchored step cards, glide, dimming ring, Skip,
-Back and outro card, driven by the same engine. Where this spec is silent, the Plan tour's rules hold.
+[Draw tour](../023-draw-mode/draw-tour.md) is: the same welcome card, anchored step cards, glide, dimming ring, Skip,
+Back and outro card, driven by the same engine. Where this spec is silent, the Diagram tour's rules hold.
 
 ## Domain language
 
@@ -29,7 +29,7 @@ Back and outro card, driven by the same engine. Where this spec is silent, the P
   ([User preferences](../007-editor/user-preferences.md)): taken, skipped mid-way or declined, it never offers
   itself again, on any device.
 - **Replayable from Settings**: the **Workshop Tour** switch in Settings' **Tours** category
-  control, beside **Plan** and built the same way (on means "not seen yet"). Turning it on from off and closing Settings runs the
+  control, beside **Diagram Tour** and built the same way (on means "not seen yet"). Turning it on from off and closing Settings runs the
   tour straight away when the person is in Workshop, or offers it the next time they enter Workshop.
 
 ## Tour content
@@ -77,7 +77,7 @@ not theirs to use.
 
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
 
-The Plan tour's funnel, with its own tokens:
+The Diagram tour's funnel, with its own tokens:
 
 - **Offer**: `UI` · `Opened` · `WorkshopTourOffer` when its welcome card shows; `UI` · `Closed` ·
   `WorkshopTourOffer` on No.
@@ -90,5 +90,5 @@ The Plan tour's funnel, with its own tokens:
 
 ## Power user mode
 
-[Power user mode](../007-editor/power-user-mode.md) marks the Workshop tour seen alongside the Diagram and Plan
+[Power user mode](../007-editor/power-user-mode.md) marks the Workshop tour seen alongside the Diagram, Draw and Avatar
 tours.

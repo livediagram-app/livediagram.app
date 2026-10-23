@@ -52,11 +52,11 @@ describe('tool input shapes', () => {
 
   it('create/add_tab: a tab may pass template instead of elements', () => {
     const c = z.object(createDocumentShape);
-    const viaTemplate = c.parse({ name: 'x', tabs: [{ name: 'Board', template: 'kanban' }] });
-    expect(viaTemplate.tabs?.[0]?.template).toBe('kanban');
+    const viaTemplate = c.parse({ name: 'x', tabs: [{ name: 'Risks', template: 'swot' }] });
+    expect(viaTemplate.tabs?.[0]?.template).toBe('swot');
     expect(viaTemplate.tabs?.[0]?.elements).toBeUndefined();
     const a = z.object(addTabShape);
-    expect(a.parse({ documentId: 'd', name: 'Board', template: 'kanban' }).template).toBe('kanban');
+    expect(a.parse({ documentId: 'd', name: 'Risks', template: 'swot' }).template).toBe('swot');
     // Kind validity is a runtime check against the shared catalogue
     // (resolveTemplate in tools.ts), not a schema enum, so an arbitrary
     // string still parses here.

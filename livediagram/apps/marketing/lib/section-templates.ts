@@ -44,37 +44,6 @@ export const SECTION_TEMPLATE_KINDS: Readonly<Record<string, readonly TemplateKi
     'doodle-warmup',
     'whiteboard',
   ],
-  plan: [
-    'kanban',
-    'project-planner',
-    'bug-triage',
-    'product-launch',
-    'okrs',
-    'hiring-pipeline',
-    'content-calendar',
-    'weekly-planner',
-    'gantt',
-  ],
-  sheets: [
-    'budget-planner',
-    'invoice',
-    'expense-report',
-    'task-tracker',
-    'loan-calculator',
-    'timesheet',
-    'sales-pipeline',
-    'inventory',
-    'habit-tracker',
-  ],
-  forms: [
-    'contact-form',
-    'feedback-form',
-    'rsvp-form',
-    'bug-report-form',
-    'feature-request-form',
-    'job-application-form',
-    'blank-form',
-  ],
 };
 
 const BY_KIND = new Map(TEMPLATES.map((t) => [t.kind, t]));

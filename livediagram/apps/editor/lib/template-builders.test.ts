@@ -37,7 +37,6 @@ const ALL_KINDS = [
   'decision-tree',
   'approval-workflow',
   'data-flow',
-  'kanban',
   'swot',
   'timeline',
   'milestone-timeline',
@@ -108,37 +107,7 @@ const ALL_KINDS = [
   'journey-doodle',
   'pre-mortem',
   'idea-garden',
-  'blank-plan',
-  'blank-spreadsheet',
   'blank-session',
-  'project-planner',
-  'bug-triage',
-  'team-retro',
-  'weekly-planner',
-  'content-calendar',
-  'hiring-pipeline',
-  'okrs',
-  'product-launch',
-  'feedback-board',
-  'budget-planner',
-  'timesheet',
-  'contact-list',
-  'task-tracker',
-  'invoice',
-  'expense-report',
-  'loan-calculator',
-  'sales-pipeline',
-  'inventory',
-  'guest-list',
-  'grade-book',
-  'habit-tracker',
-  'blank-form',
-  'bug-report-form',
-  'feedback-form',
-  'feature-request-form',
-  'rsvp-form',
-  'job-application-form',
-  'contact-form',
 ] as const satisfies readonly TemplateKind[];
 
 // Real exhaustiveness check: any TemplateKind missing from
@@ -210,12 +179,8 @@ describe('buildTemplate translation invariance', () => {
       (k) =>
         k !== 'blank' &&
         k !== 'whiteboard' &&
-        // An empty Plan tab: it opens on Start Planning (docs/specs/026-plan/plan-templates.md).
-        k !== 'blank-plan' &&
         // An empty session tab (docs/specs/012-collaboration/workshop-mode.md "Templates").
-        k !== 'blank-session' &&
-        // A form template's empty Plan tab: the editor starts the form on it (docs/specs/030-forms/forms.md).
-        !k.endsWith('-form'),
+        k !== 'blank-session',
     ),
   )('%s: every coordinate shifts by (cx, cy)', (kind) => {
     const atOrigin = buildTemplate(kind, 0, 0);

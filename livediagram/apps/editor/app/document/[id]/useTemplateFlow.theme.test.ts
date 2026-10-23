@@ -2,7 +2,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { Tab } from '@livediagram/document';
-import { templateTabs } from '@livediagram/templates';
+import { buildTemplate } from '@livediagram/templates';
 import { getTheme, recolourElementsForTheme } from '@/lib/themes';
 import { useTemplateFlow } from './useTemplateFlow';
 
@@ -31,9 +31,6 @@ async function land(tab: Tab): Promise<Tab> {
       setIdentityPromptOpen: vi.fn(),
       requestFit: vi.fn(),
       putToolDown: vi.fn(),
-      markTabLoaded: vi.fn(),
-      bringCardTypes: vi.fn(),
-      seedCards: vi.fn(),
     }),
   );
   await act(async () => {
@@ -57,12 +54,12 @@ describe('chooseTemplate theme', () => {
   it("paints a start-panel pick in the tab's own theme", async () => {
     const landed = await land(empty);
     const expected = recolourElementsForTheme(
-      templateTabs('flowchart')[0]!.build(CENTRE.x, CENTRE.y),
+      buildTemplate('flowchart', CENTRE.x, CENTRE.y),
       getTheme('slate'),
     );
     expect(strokes(landed)).toEqual(strokes({ ...empty, elements: expected }));
     expect(strokes(landed)).not.toEqual(
-      strokes({ ...empty, elements: templateTabs('flowchart')[0]!.build(0, 0) }),
+      strokes({ ...empty, elements: buildTemplate('flowchart', 0, 0) }),
     );
     // The backdrop stays the tab's: no theme was picked.
     expect(landed.theme).toBe('slate');
@@ -70,7 +67,7 @@ describe('chooseTemplate theme', () => {
   });
 
   it('leaves a tab that already has work on it untouched', async () => {
-    const drawn: Tab = { ...empty, elements: templateTabs('mindmap')[0]!.build(0, 0) };
+    const drawn: Tab = { ...empty, elements: buildTemplate('mindmap', 0, 0) };
     const landed = await land(drawn);
     expect(landed).toEqual(drawn);
   });

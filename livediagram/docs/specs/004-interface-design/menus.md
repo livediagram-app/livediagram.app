@@ -98,11 +98,6 @@ There is one Tab stop: focus lives on one item at a time and the arrow keys move
   it, and it stays open, because it is a companion to the canvas.
 - Opening a flyout from the keyboard moves focus to its first control; Escape in the flyout closes
   only the flyout and returns focus to its trigger.
-- **One menu per item, its cog.** A Plan item with a settings cog (a board, a Sheet, a chart, a Dashboard
-  slot) has that cog as its only menu: never a ⋯ beside it. Anything else that item's container offers (a
-  Dashboard slot's Open Tab, Add a Slot, Clear Slot, Remove Slot) is a collapsible section in the same cog's
-  popover, one section open at a time, and an item with no cog of its own gets the container's cog (Slot
-  Settings) rather than a ⋯, so the trigger looks the same everywhere ([Plan tabs](../026-plan/plan-tabs.md#dashboard-tab)).
 
 ## Focus ring
 
@@ -198,7 +193,6 @@ Each menu, how it opens, what it holds, and what the keyboard could do before th
 | Layer menu            | ⋯ on a layer row                                                         | Tool buttons, an opacity slider, accordion tiles                        |
 | Session tool settings | ⋯ on a timer, stopwatch, vote or poll element                            | The session pane for that tool                                          |
 | Live image copy menu  | Live image on a share pass, with more than one tab                       | A tab select, copy rows                                                 |
-| Settings cog          | The cog on a board, Sheet or chart header, a Dashboard slot or page      | Collapsible sections of fields, tiles and pictures                      |
 
 Before this spec every one of them was `role="menu"`, so their sliders, fields and toggles sat inside
 a menu that may not own them, and opening one from the keyboard left focus behind.

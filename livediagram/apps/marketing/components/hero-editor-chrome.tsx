@@ -1,19 +1,15 @@
 // Pieces of the hero's editor-window mock drawn from the editor's own glyphs
 // (@livediagram/ui, @livediagram/icons), so they cannot drift from the editor they depict
 // (docs/specs/019-marketing/marketing-site.md): the canvas cluster, the tab bar's toolbelt, the
-// Toolbar panel layout's strip and its menu card (docs/specs/007-editor/toolbar-layout.md); a Plan
-// tab's own bar is in hero-plan-bars.tsx.
+// Toolbar panel layout's strip and its menu card (docs/specs/007-editor/toolbar-layout.md).
 // Everything is at the mock's scale, about five eighths of the editor's.
 
 import { MODE_GLYPHS } from '@livediagram/icons/mode-glyphs';
 import {
   lucideChartColumn,
   lucideCircleCheck,
-  lucidePlus,
-  lucideSearch,
   lucideSettings,
   lucideTimer,
-  lucideTrash2,
 } from '@livediagram/icons/lucide';
 import {
   AppearanceIcon,
@@ -29,7 +25,6 @@ import {
   UndoIcon,
 } from '@livediagram/ui';
 import { DRAW_DOCK, HERO_MODE, MODE_BAR, type HeroMode, type Tile } from './hero-mode-palette';
-import { PlanTabBar, type PlanTab } from './hero-plan-bars';
 
 const CARD =
   'flex h-7 items-center rounded-md border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900';
@@ -51,10 +46,9 @@ function Lucide({
 }
 
 // The extra group a mode adds to the cluster, as CanvasChrome lays it out: Workshop's session
-// tools (timer, votes, poll) and a Plan board's own (delete, add, find, cards).
+// tools (timer, votes, poll).
 const MODE_GROUP: Partial<Record<HeroMode, Parameters<typeof Prims>[0]['prims'][]>> = {
   workshop: [lucideTimer, lucideCircleCheck, lucideChartColumn],
-  plan: [lucideTrash2, lucidePlus, lucideSearch],
 };
 
 // The canvas cluster, bottom right, as CanvasChrome lays it out: undo / redo, the mode's own group,
@@ -81,12 +75,10 @@ export function CanvasCluster({ className, mode }: { className: string; mode: He
         </span>
       ) : null}
       <span className={`${CARD} overflow-hidden`}>
-        {mode === 'plan' ? null : (
-          <span className={CELL}>
-            <LayersStackIcon size={12} />
-          </span>
-        )}
-        <span className={`${CELL} ${mode === 'plan' ? '' : SPLIT}`}>
+        <span className={CELL}>
+          <LayersStackIcon size={12} />
+        </span>
+        <span className={`${CELL} ${SPLIT}`}>
           <ThemeLookIcon size={12} />
         </span>
       </span>
@@ -191,9 +183,8 @@ const NAMED_FROM: Partial<Record<HeroMode, string>> = {
 // centre of the canvas. In Diagram and Workshop it is the category bar: the selection
 // mode, then the mode's categories (each its glyph and one-word name, a hairline between bands; the
 // glyphs alone where the window is narrow), then Search. Draw shows its dock instead, its drawing
-// tools split from its shapes and its settings in a card of its own. A Plan tab brings its own bar
-// (hero-plan-bars.tsx): a board's, a Sheet's toolbar or a Form's status bar.
-export function ToolbarStrip({ mode, planTab = 'board' }: { mode: HeroMode; planTab?: PlanTab }) {
+// tools split from its shapes and its settings in a card of its own.
+export function ToolbarStrip({ mode }: { mode: HeroMode }) {
   const { Icon } = HERO_MODE[mode];
   const pill =
     'flex h-6 items-center gap-1 rounded bg-brand-50 px-1.5 text-[9px] font-medium text-brand-700 dark:bg-brand-500/15 dark:text-brand-300';
@@ -211,16 +202,6 @@ export function ToolbarStrip({ mode, planTab = 'board' }: { mode: HeroMode; plan
       </span>
     </>
   );
-  // A Plan tab's bar is for a wide window; on a phone the strip carries only the menu and mode.
-  if (mode === 'plan')
-    return (
-      <>
-        <PlanTabBar tab={planTab} />
-        <div className="pointer-events-none absolute inset-x-0 top-2 z-10 flex justify-center sm:hidden">
-          <div className={strip}>{phoneMenu}</div>
-        </div>
-      </>
-    );
   const select = MODE_GLYPHS.select!;
   const bands = MODE_BAR[mode];
   if (bands) {

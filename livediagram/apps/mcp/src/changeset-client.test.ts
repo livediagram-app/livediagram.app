@@ -214,10 +214,10 @@ describe('baseFor', () => {
 
 describe('replaceBodyFrom', () => {
   it('takes one source with its layout, theme and name', () => {
-    expect(replaceBodyFrom({ template: 'kanban', theme: 'ocean', name: 'Board' })).toEqual({
-      template: 'kanban',
+    expect(replaceBodyFrom({ template: 'swot', theme: 'ocean', name: 'Risks' })).toEqual({
+      template: 'swot',
       theme: 'ocean',
-      name: 'Board',
+      name: 'Risks',
     });
     expect(replaceBodyFrom({ elements: [], layout: 'auto' })).toEqual({
       elements: [],

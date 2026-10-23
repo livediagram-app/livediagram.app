@@ -46,7 +46,7 @@ element leaves unset, plus how a line is drawn (Sketch, Marker).
 - **Arrows:** a freshly drawn arrow whose style was not picked becomes a right-angled connector (Angled) instead of
   taking the draw-time avoidance curve ([Arrow collision avoidance](arrow-collision-avoidance.md)). It is an
   ordinary Angled arrow afterwards; arrows already on the tab keep their style.
-- **Faces:** everything an element draws for itself (a Plan card and its column, a panel's rows, a concept
+- **Faces:** everything an element draws for itself (a panel's rows, a concept
   graphic's bands and rings, a chart's bars, a web component's card, a button, an input, a chip) is squared and
   flattened the same way: every rectangle in it draws with square corners, its shadows and hover lift are not drawn,
   and its 2 px borders draw at 1 px. Circles, discs and true pills (avatars, toggles, status dots) keep their shape,
@@ -92,7 +92,7 @@ element leaves unset, plus how a line is drawn (Sketch, Marker).
 - **Every other face is drawn by hand too.** Whatever an element draws beyond its sketched body is split into two
   layers: charts, legends, progress, rating, checklists, code blocks, concept graphics, Sankey,
   badges, steps, cards, pointer notes, stacks, boundaries, diagram keys, people, web components, office furniture
-  and rooms, Plan boards, cards, views and sheets, collaboration panels, buttons, pickers, reveals, portals, quizzes,
+  and rooms, collaboration panels, buttons, pickers, reveals, portals, quizzes,
   link cards, a video's frame, annotation markers, a table's grid, a lane's gutter, a record's
   rows, a page's fold, a browser's chrome and an inline icon beside a label.
   - Its **ink** (fills, outlines, bars, discs, rules, glyphs) is drawn through the same wobble as icons.
@@ -104,8 +104,6 @@ element leaves unset, plus how a line is drawn (Sketch, Marker).
   drawn on a Sketch tab. A face's own animations (a quiz's answers fanning out from its disc) play in the copy in
   step with the live face: each new copy picks up each animation where the live one is, never from the start, so a
   face that keeps changing (a quiz's countdown) does not drag its moving parts back. Photos inside a face (an avatar, a link card's preview, a video's poster) are not wobbled. Exports draw the same two layers.
-  A Plan board, view or sheet that fills its tab or is maximised is drawn over the canvas, outside its element's
-  box, and keeps its finish there too: its face is split and wobbled as it is on the canvas.
 
 - **In WebKit** (Safari, and every browser on an iPhone or iPad), which runs a live wobble filter again on every
   repaint (a pan at iPhone resolution took 220-400 ms a frame), the canvas draws no live wobble. Icons and stickers
@@ -149,7 +147,7 @@ Sketch is a pencil's wandering double line, Marker is one bold stroke per edge, 
 - **Dashes:** a dashed or dotted border or arrow stays dashed or dotted, along the marker line.
 - **Icons** without their own weight draw Bold, a marker's line. Technology icons and stickers keep their art.
 - **Faces: frames and shapes.** What an element draws for itself is drawn in marker where it is a frame or a shape:
-  - A **frame** (a Plan card, a column, a panel, a web component's card, any outlined box inside a face at least
+  - A **frame** (a panel, a web component's card, any outlined box inside a face at least
     `MARKER_FACE_FRAME_MIN_PX` on both sides) loses its own border and shadow and is outlined in one marker stroke
     per edge, its fill kept solid behind its words. The face's own box (a panel's, a banner's, a timer's), whichever
     part paints it, is coloured in as a shape's body is.
@@ -202,7 +200,7 @@ Draws exactly as livediagram did before finishes existed.
 ## Where it is set
 
 - **Element menu, Style section:** a **Finish** category (closed by default, like every menu section) holding a
-  full-width option list in the Plan style ([Plan board](../026-plan/plan-board.md) "Option lists"), one row per
+  full-width [option list](../004-interface-design/dropdown-tile-grid.md#when-a-grid-and-when-not), one row per
   choice with its glyph, name and a short line: **Follow Tab** (As the tab is), **Flexible** (Soft and rounded),
   **Professional** (Square and fine), **Sketch** (Drawn by hand), **Marker** (Bold felt-tip). Follow Tab clears the element's own finish.
   Hovering a tile previews it on the selection; clicking commits it as one undo step. The category shows for
@@ -219,11 +217,6 @@ Draws exactly as livediagram did before finishes existed.
 ## Where it shows
 
 - **The canvas and every export** (SVG, PNG, PDF, thumbnails, the Map, live images) draw each element in its finish.
-- **Plan surfaces:** a board, view or sheet, on the canvas, filling its tab or maximised, and a Dashboard tab's page
-  (drawn over the canvas, outside any element) take their tab's finish and lettering. One that fills its tab or the
-  screen is the page itself: its contents follow the finish, its own background stays plain. Sketch's handwriting is
-  lifted to the UI face's x-height on these compact surfaces; Marker's lettering is drawn at its own size (it has no
-  true lowercase, so brought down it read too small).
 - **The palette** previews the tab's finish on every tile, the sticker picker's included: under Professional the
   glyphs are square and fine, under Sketch they are drawn wobbly and doubled, under Marker they are drawn bold with round ends. Full-colour art (technology icons,
   stickers) keeps its weight under Professional, as on the canvas, and wobbles under Sketch.

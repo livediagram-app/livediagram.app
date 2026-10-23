@@ -71,11 +71,6 @@ export type EditorDragDeps = {
     targetShapeId: string,
     position: IconPosition,
   ) => void;
-  // A Plan card was dragged and released over a Plan board's column (docs/specs/026-plan/plan-board.md
-  // "Working on a board"): its item files there and the card leaves the canvas, unless the board (`boardId`, its
-  // element id) does not show the card's type or the type leaves the status out. 'refused' sends the card back to
-  // where the drag started, with no undo step. Omitted when edits are blocked.
-  onPlanCardDroppedOnBoard?: (card: Element, status: string, boardId?: string) => 'refused' | void;
   // Per-user preference (docs/specs/007-editor/user-preferences.md) controlling whether connected
   // arrows re-pin to the most-natural face as a box is dragged.
   // Defaults to true; setting `false` keeps anchors frozen at

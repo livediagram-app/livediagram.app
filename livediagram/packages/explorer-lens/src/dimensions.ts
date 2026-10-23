@@ -73,7 +73,6 @@ export const VALUE_LABELS = {
     diagram: 'Diagram',
     draw: 'Draw',
     workshop: 'Workshop',
-    plan: 'Plan',
   },
   kind: { 'event-storming': 'Event Storming' },
   template: { retrospective: 'Retrospective', kanban: 'Kanban' },

@@ -7,13 +7,13 @@ interchangeable. These are design decisions, taken before any feature that uses 
 
 | Term         | Answers                        | Values                                                      | Where it lives                                |
 | ------------ | ------------------------------ | ----------------------------------------------------------- | --------------------------------------------- |
-| **mode**     | How is a tab worked on?        | Diagram, Draw, Workshop, Plan (`EditorMode`)                | Per tab, the same for everyone; `Tab.opensIn` |
+| **mode**     | How is a tab worked on?        | Diagram, Draw, Workshop (`EditorMode`)                      | Per tab, the same for everyone; `Tab.opensIn` |
 | **kind**     | What is a tab?                 | the general diagram tab, or Event Storming (`TabKind`)      | `Tab.kind`                                    |
 | **template** | What was a document made from? | a template (`TemplateKind`), grouped into template families | Captured once, at creation                    |
 
 ### Mode
 
-- An **editor mode** is how a general tab is worked on right now, by everyone on it: Diagram, Draw, Workshop or Plan.
+- An **editor mode** is how a general tab is worked on right now, by everyone on it: Diagram, Draw or Workshop.
   (the Editor modes spec in 007-editor).
 - A mode is never a type of document or tab. Switching mode changes no content: it sets the tab's mode (one undo step) and everyone on the tab follows.
 - A tab stores the mode it **opens in**. "Opens in" is a choice among modes, not a binary, so a new mode needs no
@@ -23,16 +23,15 @@ interchangeable. These are design decisions, taken before any feature that uses 
   stored thing; "Session" and "Collaborate" never name the mode, and neither does its old name, "Facilitate".
 - "Workshop" names the mode; a start's template group is never called Workshops (Workshop mode's is **Ideation**,
   Draw's **Exercises**). The template catalogue's **Workshops** category and the community's **Workshops**
-  category stay: they say what a template is for, as **Planning** does beside Plan mode, and most of their
+  category stay: they say what a template is for, as **Planning** does, and most of their
   templates open in Workshop mode.
 
 ### Kind
 
 - A **tab kind** is what a tab is. It is reserved for boards that do not follow the homogeneous environment of the
   general diagram tab, with their own notation, rules and data.
-- The general diagram tab is the default kind. **Event Storming** is the only other kind among the canvas modes;
-  Plan's tabs are kinds of their own ([Plan tabs](../026-plan/plan-tabs.md): Board, Sheet and Dashboard, and the Form
-  tab of [Forms](../030-forms/forms.md)), each always in Plan.
+- The general diagram tab is the default kind. **Event Storming** is the only other kind. (Plan's Board, Sheet,
+  Dashboard and Form tabs went to liveplanner with Plan mode; a stored one reads as a general tab.)
 - A new kind is added only when no mode can serve the use.
 - "Board type" means a kind. It never names a template or a mode.
 
@@ -41,7 +40,7 @@ interchangeable. These are design decisions, taken before any feature that uses 
 - A **template** is what a document was made from. It shapes the starting content of a general diagram tab and
   then has no further hold on it.
 - Templates group into **template families** where a family is meaningful to people, for example Retrospectives
-  (several retrospective formats) and Kanban boards.
+  (several retrospective formats).
 - A template or a template family is never a kind or a type: a retrospective is a general diagram tab made from a
   retrospective template.
 
@@ -51,21 +50,6 @@ interchangeable. These are design decisions, taken before any feature that uses 
 - **Explorer filters** offer them as separate chips: Opens in (mode), Kind and Template ([Explorer filters](../013-workspace/explorer-filters.md)).
 - Code, copy and specs use these words only in these meanings.
 
-## Items
-
-The words for the work a Plan board frames ([Items](../026-plan/items.md), [Plan board](../026-plan/plan-board.md)).
-
-| Term           | Means                                                                   | Never called                |
-| -------------- | ----------------------------------------------------------------------- | --------------------------- |
-| **item**       | One record in a document's item store: a type and an open bag of fields | ticket, task, issue, card   |
-| **item type**  | What an item is: Task, Story, Bug, Epic, Note, Idea, Action, Risk       | kind (that is a tab's)      |
-| **item store** | Every item of one document, stored apart from its tabs                  | backlog, database           |
-| **Plan board** | The element that draws items as columns of cards from a stored set-up   | Kanban element, board tab   |
-| **card**       | How an item is drawn, on a Plan board or alone as a Plan card           | item (the data is the item) |
-
-- **Plan** is an editor mode, never a kind: a Plan board is an element on a general tab.
-- A **column** belongs to a Plan board and stands for a status; a **lane** is the Lane element.
-
 ## Diagram elements
 
 The words for the diagram-building elements ([The card](../009-elements/card.md), [The badge](../009-elements/badge.md),
@@ -74,7 +58,7 @@ The words for the diagram-building elements ([The card](../009-elements/card.md)
 
 | Term                | Means                                                                                   | Never called                              |
 | ------------------- | --------------------------------------------------------------------------------------- | ----------------------------------------- |
-| **Card**            | The diagram element (`card`) with a header band, media, title, meta line, body and tags | node card, info card, Plan card           |
+| **Card**            | The diagram element (`card`) with a header band, media, title, meta line, body and tags | node card, info card                      |
 | **slot**            | One part of a Card a person switches on or off                                          | section, field (in copy)                  |
 | **Badge**           | The small pill element (`badge`)                                                        | tag (a tag is a chip inside a Card), pill |
 | **Step number**     | The numbered disc element (`step`)                                                      | marker (that is a shape's status mark)    |
@@ -82,10 +66,7 @@ The words for the diagram-building elements ([The card](../009-elements/card.md)
 | **host**            | The element an attached badge or step number sits on                                    | parent (that is a mind node's)            |
 | **Boundary**        | The titled, tinted container element (`boundary`)                                       | zone, group, frame (that is the Frame)    |
 | **concept graphic** | A Layer stack, Pyramid or Cycle: one element laying out its own rows                    | SmartArt, diagram                         |
-| **row**             | One layer, tier or step of a concept graphic (`conceptRows`)                            | item (that is a Plan record)              |
-
-- A Plan **card** draws an item and is always called a Plan card where the two could meet; the diagram **Card** is
-  never offered in Plan mode.
+| **row**             | One layer, tier or step of a concept graphic (`conceptRows`)                            | item                                      |
 
 ## Agents
 
@@ -198,7 +179,7 @@ mark it, and where a new guest's documents start. A document is **in This Browse
 ## Names in a sentence
 
 Copy that builds a phrase around a name (a field, a note, a template, a chart type, an element type in
-an agent's error) takes its article from the name: `withArticle` / `indefiniteArticle` in `@livediagram/items`
-(re-exported by `@livediagram/document` and `@livediagram/ui`). A vowel sound takes "an" ("Add an image",
+an agent's error) takes its article from the name: `withArticle` / `indefiniteArticle` in `@livediagram/document`
+(re-exported by `@livediagram/ui`). A vowel sound takes "an" ("Add an image",
 "Create an Org Chart", "is not an Estimate option"), and a vowel said "you" keeps "a" ("a User Persona", "a
 UML Class"). A fixed "a" before an interpolated name is how "Create a Org Chart" reached the marketing site.

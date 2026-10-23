@@ -104,12 +104,11 @@ export function searchCatalogueTiles({
   // Whether the catalogues have loaded (useIconCatalogs): a component passes the subscription's value so the React
   // Compiler re-runs this when they land. Before then they hold nothing to list.
   loaded?: boolean;
-  // No catalogue is bound to one mode's tools, so none is ever unavailable.
-}): Omit<ElementTileSearch, 'unavailable'> {
+}): ElementTileSearch {
   if (!loaded) return { here: [], elsewhere: [] };
   const browsing = !query.trim();
   const ids = browsing ? idsOnTab(tabElements) : null;
-  const out: Omit<ElementTileSearch, 'unavailable'> = { here: [], elsewhere: [] };
+  const out: ElementTileSearch = { here: [], elsewhere: [] };
   const add = <T>(cat: Catalogue<T>, onTabIds: Set<string> | undefined) => {
     const tiles = ids ? onTab(cat, onTabIds!) : matchesIn(cat, query);
     (paletteCategoryOffered(mode, cat.category) ? out.here : out.elsewhere).push(...tiles);

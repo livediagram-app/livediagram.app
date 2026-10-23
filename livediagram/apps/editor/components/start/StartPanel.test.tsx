@@ -2,11 +2,9 @@
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { EditorModeProvider } from '@/components/chrome/editor-mode/editor-mode-context';
-import { PlanBoardPicker } from '@/components/plan/PlanBoardPicker';
+import { editorModeLabel } from '@livediagram/document';
 import { StartFromTemplates } from './StartFromTemplates';
 import { OTHER_MODE_CARDS_MAX } from './other-mode-matches';
-
-vi.mock('@/components/plan/PlanContext', () => ({ usePlan: () => null }));
 
 // docs/specs/007-editor/start-diagramming.md "Found in other modes": a start's search also finds every other mode's
 // templates, under In Other Modes, and choosing one switches the tab to that mode.
@@ -15,8 +13,8 @@ afterEach(() => {
   localStorage.clear();
 });
 
-const switchable = (mode: 'diagram' | 'plan', canSwitch = true) =>
-  ({ mode, setMode: vi.fn(), canEdit: true, canSwitch, crossPlan: canSwitch }) as never;
+const switchable = (mode: 'diagram', canSwitch = true) =>
+  ({ mode, setMode: vi.fn(), canEdit: true, canSwitch }) as never;
 
 function diagram(canSwitch = true) {
   const onTemplate = vi.fn();
@@ -69,14 +67,14 @@ describe('a start search, in other modes', () => {
   it(`shows at most ${OTHER_MODE_CARDS_MAX} a mode, then Show All`, () => {
     const { search } = diagram();
     fireEvent.change(search, { target: { value: 'e' } });
-    const plan = within(otherModes()).getByRole('region', { name: 'Plan' });
-    const cards = () => plan.querySelectorAll('[data-start-card]').length;
+    const other = within(otherModes()).getByRole('region', { name: editorModeLabel('workshop') });
+    const cards = () => other.querySelectorAll('[data-start-card]').length;
     expect(cards()).toBe(OTHER_MODE_CARDS_MAX);
-    const showAll = within(plan).getByRole('button', { name: /^Show All \d+$/ });
+    const showAll = within(other).getByRole('button', { name: /^Show All \d+$/ });
     const total = Number(showAll.textContent.replace('Show All ', ''));
     fireEvent.click(showAll);
     expect(cards()).toBe(total);
-    expect(within(plan).queryByRole('button', { name: /^Show All/ })).toBeNull();
+    expect(within(other).queryByRole('button', { name: /^Show All/ })).toBeNull();
   });
 
   it('keeps to its own mode where the mode may not change', () => {
@@ -91,20 +89,6 @@ describe('a start search, in other modes', () => {
     fireEvent.change(search, { target: { value: 'sailboat' } });
     fireEvent.keyDown(search, { key: 'ArrowDown' });
     expect(document.activeElement?.getAttribute('data-start-card')).toBe('sailboat');
-  });
-
-  it('reaches the other modes from Start Planning too', () => {
-    const onOtherModeTemplate = vi.fn();
-    render(
-      <EditorModeProvider value={switchable('plan')}>
-        <PlanBoardPicker onPick={vi.fn()} onOtherModeTemplate={onOtherModeTemplate} />
-      </EditorModeProvider>,
-    );
-    fireEvent.change(screen.getByRole('textbox', { name: 'Find a board, sheet, form or layout' }), {
-      target: { value: 'sailboat' },
-    });
-    fireEvent.click(within(otherModes()).getByRole('button', { name: /^Sailboat.* in Workshop:/ }));
-    expect(onOtherModeTemplate).toHaveBeenCalledWith('workshop', 'sailboat');
   });
 });
 
@@ -148,19 +132,6 @@ describe('a start search, best match first', () => {
     // jsdom lays nothing out: every card is in one row, so Up leaves the cards for the search.
     fireEvent.keyDown(document.activeElement!, { key: 'ArrowUp' });
     expect(document.activeElement).toBe(search);
-  });
-
-  it('leads Start Planning with a title match too', () => {
-    render(
-      <EditorModeProvider value={switchable('plan')}>
-        <PlanBoardPicker onPick={vi.fn()} />
-      </EditorModeProvider>,
-    );
-    fireEvent.change(screen.getByRole('textbox', { name: 'Find a board, sheet, form or layout' }), {
-      target: { value: 'kanban' },
-    });
-    const best = screen.getByRole('region', { name: 'Best Match' });
-    expect(within(best).getAllByRole('button')[0]!.getAttribute('aria-label')).toMatch(/^Kanban/);
   });
 });
 

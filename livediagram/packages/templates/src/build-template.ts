@@ -5,13 +5,10 @@
 // top (apps/editor/lib/template-builders.ts), and the MCP worker
 // materialises these directly (docs/specs/015-api/mcp-server.md §4.5).
 
-import { isFormTemplateKind } from './form-templates';
 import { buildVirtualOffice } from './template-builders-office';
 import { buildAllHandsHall, buildCoworkingSpace, buildTeamPod } from './template-builders-spaces';
-import { settleChips, type Element, type Tab } from '@livediagram/document';
+import { settleChips, type Element } from '@livediagram/document';
 import type { TemplateKind } from './templates';
-import { buildPlanTemplate, isPlanTemplateKind, planTemplateTabs } from './template-builders-plan';
-import { companionTemplateTabs } from './template-companions';
 import {
   buildComicStrip,
   buildDoodleWarmup,
@@ -101,8 +98,6 @@ export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Eleme
 }
 
 function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
-  // A form template's tab starts empty: the editor starts the form on it (form-templates.ts).
-  if (isFormTemplateKind(kind)) return [];
   switch (kind) {
     case 'blank':
       return buildBlank();
@@ -126,33 +121,6 @@ function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
       return buildApprovalWorkflow(cx, cy);
     case 'data-flow':
       return buildDataFlow(cx, cy);
-    // Plan templates (docs/specs/026-plan/plan-templates.md): the first of their tabs; templateTabs
-    // gives them all.
-    case 'kanban':
-    case 'blank-plan':
-    case 'blank-spreadsheet':
-    case 'project-planner':
-    case 'bug-triage':
-    case 'team-retro':
-    case 'weekly-planner':
-    case 'content-calendar':
-    case 'hiring-pipeline':
-    case 'okrs':
-    case 'product-launch':
-    case 'feedback-board':
-    case 'budget-planner':
-    case 'timesheet':
-    case 'contact-list':
-    case 'task-tracker':
-    case 'invoice':
-    case 'expense-report':
-    case 'loan-calculator':
-    case 'sales-pipeline':
-    case 'inventory':
-    case 'guest-list':
-    case 'grade-book':
-    case 'habit-tracker':
-      return buildPlanTemplate(kind, cx, cy);
     case 'swot':
       return buildSwot(cx, cy);
     case 'timeline':
@@ -304,22 +272,12 @@ function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
 // starts from an empty canvas (with the empty-canvas hint banner, docs/specs/007-editor/new-document-route.md) and
 // adds their first element from the palette / Quick Start.
 
-// A template's tabs (docs/specs/026-plan/plan-templates.md "How a template with tabs is made"): every Plan
-// template but Blank Plan makes several, named; every other template makes one, named null so it keeps
-// the name the caller gives a new tab. The first tab's elements are always buildTemplate's.
+// A template's tabs: one, named null so it keeps the name the caller gives a new tab, its elements buildTemplate's.
 export type TemplateTabDef = {
   name: string | null;
   build: (cx: number, cy: number) => Element[];
-  // The tab's own fields, given every tab's id in order: a Plan template's kind and Dashboard
-  // (docs/specs/026-plan/plan-tabs.md "Templates").
-  tab?: (ids: readonly string[]) => Partial<Tab>;
-  // A companion Sheet (template-companions.ts): takes the theme but none of the template's canvas overrides
-  // (templateCanvasOverrides: its pattern, layers and mode), which are the drawing's.
-  ownCanvas?: true;
 };
 
 export function templateTabs(kind: TemplateKind): TemplateTabDef[] {
-  if (isPlanTemplateKind(kind)) return planTemplateTabs(kind);
-  const build = (cx: number, cy: number) => buildTemplate(kind, cx, cy);
-  return companionTemplateTabs(kind, build) ?? [{ name: null, build }];
+  return [{ name: null, build: (cx: number, cy: number) => buildTemplate(kind, cx, cy) }];
 }

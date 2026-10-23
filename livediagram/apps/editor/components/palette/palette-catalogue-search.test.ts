@@ -37,12 +37,10 @@ describe('searchCatalogueTiles', () => {
   });
 
   it("puts a catalogue the mode does not offer in the other modes' section", () => {
-    // Workshop offers Icons and Stickers but not Technology; Plan offers none of them.
+    // Workshop offers Icons and Stickers but not Technology.
     const workshop = searchCatalogueTiles({ query: 'database', mode: 'workshop' });
     expect(from(workshop.here, 'tech:')).toEqual([]);
     expect(from(workshop.elsewhere, 'tech:').length).toBeGreaterThan(0);
-    const plan = searchCatalogueTiles({ query: 'database', mode: 'plan' });
-    expect(plan.here).toEqual([]);
   });
 
   it('caps each catalogue, best match first', () => {

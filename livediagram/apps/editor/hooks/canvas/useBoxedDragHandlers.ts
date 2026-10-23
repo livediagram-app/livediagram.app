@@ -1,7 +1,6 @@
 import type { Dispatch, PointerEvent as ReactPointerEvent, RefObject, SetStateAction } from 'react';
 import {
   containerContents,
-  withSheetCharts,
   withAttached,
   anchorOutward,
   anchorPosition,
@@ -103,20 +102,16 @@ export function useBoxedDragHandlers({
     // resize re-sizes the section outline and leaves its contents put.
     //
     // A mind node (docs/specs/009-elements/mind-node.md "Moving a branch") carries its whole subtree
-    // the same way: a branch is one idea, and its points follow its heading. A Sheet carries the charts drawn
-    // from it that sit on it.
+    // the same way: a branch is one idea, and its points follow its heading.
     const ids =
       mode === 'move'
         ? unlocked(
             // A host's badges and step numbers ride its drag (docs/specs/009-elements/badge.md).
             withAttached(
               d.activeTab.elements,
-              withSheetCharts(
+              withMindSubtrees(
                 d.activeTab.elements,
-                withMindSubtrees(
-                  d.activeTab.elements,
-                  containerContents(d.activeTab.elements, baseIds),
-                ),
+                containerContents(d.activeTab.elements, baseIds),
               ),
             ),
           )

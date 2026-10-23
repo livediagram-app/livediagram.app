@@ -55,7 +55,7 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('UI', 'Toggled', 'PagesModeOff')).toBe(true);
     expect(isRetiredEvent('UI', 'Toggled', 'PlanModeOn')).toBe(true);
     expect(isRetiredEvent('UI', 'Toggled', 'PlanModeOff')).toBe(true);
-    expect(isRetiredEvent('Editor', 'Changed', 'ModePlan')).toBe(false);
+    expect(isRetiredEvent('Editor', 'Changed', 'ModeDraw')).toBe(false);
     expect(isRetiredEvent('UI', 'Opened', 'SettingsAi')).toBe(false);
   });
 
@@ -85,7 +85,6 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('Cli', 'Used', 'PageSet')).toBe(true);
     expect(isRetiredEvent('Mcp', 'Used', 'ReadDocument')).toBe(false);
     expect(isRetiredEvent('Editor', 'Changed', 'ModeDiagram')).toBe(false);
-    expect(isRetiredEvent('Tab', 'Changed', 'OpensInPlan')).toBe(false);
     expect(isRetiredEvent('UI', 'Opened', 'SlideDeck')).toBe(false);
     expect(isRetiredEvent('UI', 'Toggled', 'SlideHidden')).toBe(false);
   });
@@ -99,15 +98,36 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('UI', 'Added', 'PageSlide')).toBe(true);
     expect(isRetiredEvent('Tab', 'Changed', 'ArticlesToPages')).toBe(true);
     expect(isRetiredEvent('Agent', 'Viewed', 'Pages')).toBe(true);
-    // Still sent: the other export formats, the other slides, the agents' other views, a form cover's motion.
+    // Still sent: the other export formats, the other slides and the agents' other views.
     expect(isRetiredEvent('Document', 'Exported', 'PNG')).toBe(false);
-    expect(isRetiredEvent('UI', 'Added', 'BoardSlide')).toBe(false);
+    expect(isRetiredEvent('UI', 'Added', 'Slide')).toBe(false);
     expect(isRetiredEvent('Agent', 'Viewed', 'Outline')).toBe(false);
     expect(isRetiredEvent('Element', 'Changed', 'FormatPainter')).toBe(false);
-    expect(isRetiredEvent('Tab', 'Changed', 'PageBackgroundAnimated')).toBe(false);
-    expect(isRetiredEvent('Tab', 'Changed', 'PageBackgroundAnimatedSpeed')).toBe(false);
     expect(isRetiredEvent('Help', 'View', 'slide-deck')).toBe(false);
     expect(isRetiredEvent('Element', 'Added', 'Page')).toBe(false);
+  });
+
+  it('retires Plan mode, not the other modes, the Slide Deck or the Workshop Q&A board', () => {
+    expect(isRetiredEvent('Plan', 'Added', 'Task')).toBe(true);
+    expect(isRetiredEvent('Sheet', 'Changed', 'Cell')).toBe(true);
+    expect(isRetiredEvent('Form', 'Created', 'Feedback')).toBe(true);
+    expect(isRetiredEvent('Editor', 'Changed', 'ModePlan')).toBe(true);
+    expect(isRetiredEvent('Tab', 'Changed', 'OpensInPlan')).toBe(true);
+    expect(isRetiredEvent('Tab', 'Changed', 'PageBackgroundAnimated')).toBe(true);
+    expect(isRetiredEvent('UI', 'Added', 'BoardSlide')).toBe(true);
+    expect(isRetiredEvent('UI', 'View', 'PlanTourStepBoard')).toBe(true);
+    expect(isRetiredEvent('UI', 'Toggled', 'NotifyFormResponsesOn')).toBe(true);
+    expect(isRetiredEvent('Action', 'Linked', 'Board')).toBe(true);
+    expect(isRetiredEvent('Mcp', 'Used', 'AddSheet')).toBe(true);
+    expect(isRetiredEvent('Cli', 'Used', 'ItemAdd')).toBe(true);
+    expect(isRetiredEvent('Help', 'View', 'plan-mode')).toBe(true);
+    expect(isRetiredEvent('Editor', 'Changed', 'ModeWorkshop')).toBe(false);
+    expect(isRetiredEvent('Tab', 'Changed', 'OpensInDraw')).toBe(false);
+    expect(isRetiredEvent('UI', 'Added', 'Slide')).toBe(false);
+    expect(isRetiredEvent('UI', 'View', 'WorkshopTourStepTimer')).toBe(false);
+    expect(isRetiredEvent('Mcp', 'Used', 'ReadDocument')).toBe(false);
+    expect(isRetiredEvent('Cli', 'Used', 'TabView')).toBe(false);
+    expect(isRetiredEvent('Help', 'View', 'editor-modes')).toBe(false);
   });
 });
 

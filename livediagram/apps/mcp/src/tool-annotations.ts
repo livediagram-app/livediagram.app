@@ -99,7 +99,7 @@ export function registerTool<
 }
 
 // A mistake the caller can fix is a tool error that says so, never a thrown protocol error
-// (docs/specs/026-plan/plan-agents.md "Errors that teach"): a named input refusal, or an api 4xx in words. A 5xx
+// ("Errors that teach"): a named input refusal, or an api 4xx in words. A 5xx
 // or anything else still throws, and is reported as Error·Api underneath.
 async function answered(run: () => unknown): Promise<unknown> {
   try {

@@ -3,7 +3,6 @@ import { render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { setElementTourOffer } from '@/lib/element-tour-offer';
 import { createShape, type Element } from '@livediagram/document';
-import { presetSetup } from '@livediagram/items';
 import { CanvasSelectionToolbars } from './CanvasSelectionToolbars';
 import type { CanvasProps } from './Canvas.types';
 import { createSelectionStore } from '@/lib/selection-store';
@@ -48,14 +47,6 @@ function compactFor(el: Element, readOnly = false): boolean | undefined {
 }
 
 describe('selection toolbar gap', () => {
-  it('sits close to a Plan board, which has no "+"', () => {
-    const board = {
-      ...createShape('plan-board', 0, 0),
-      planBoard: presetSetup('kanban'),
-    } as Element;
-    expect(compactFor(board)).toBe(true);
-  });
-
   it('clears the "+" on an ordinary shape, and sits close when read-only', () => {
     const square = createShape('square', 0, 0);
     expect(compactFor(square)).toBe(false);

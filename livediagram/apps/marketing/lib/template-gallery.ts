@@ -2,7 +2,6 @@ import type { EditorMode } from '@livediagram/document';
 import { EDITOR_MODES, seededRandom } from '@livediagram/document';
 import {
   BLANK_TEMPLATE_FOR_MODE,
-  EXTRA_BLANK_TEMPLATES,
   TEMPLATES,
   TEMPLATE_CATEGORIES,
   isBlankTemplate,
@@ -18,8 +17,8 @@ import {
 // The landing page's template gallery (docs/specs/019-marketing/marketing-site.md): every template
 // the editor ships, each a link that creates that document straight away (/new?template=<kind>,
 // docs/specs/007-editor/new-document-route.md), laid out as the editor's template step lays them
-// out (docs/specs/008-canvas/canvas-and-palette.md "Templates"): Blank Slate first (every blank and nothing else: each
-// mode's, and Blank Spreadsheet), then one shelf per category. The data half lives here
+// out (docs/specs/008-canvas/canvas-and-palette.md "Templates"): Blank Slate first (every blank and nothing else: one
+// a mode), then one shelf per category. The data half lives here
 // so the lists and the filters can be tested without rendering the section.
 
 export type GalleryTemplate = TemplateDescriptor & {
@@ -55,16 +54,13 @@ export function toGallery(t: TemplateDescriptor): GalleryTemplate {
 
 // Every listed template on a category shelf: hidden templates never appear in a listing, and the
 // blanks are only ever on Blank Slate, never on a category shelf
-// (docs/specs/007-editor/templates-by-mode.md "Five blanks").
+// (docs/specs/007-editor/templates-by-mode.md "Three blanks").
 export function galleryTemplates(): GalleryTemplate[] {
   return TEMPLATES.filter((t) => !t.hidden && !isBlankTemplate(t.kind)).map(toGallery);
 }
 
-// Blank Slate's blanks in mode order (the mode switch's), Blank Spreadsheet beside Blank Plan.
-const BLANK_SLATE_KINDS = EDITOR_MODES.flatMap((mode) => [
-  BLANK_TEMPLATE_FOR_MODE[mode],
-  ...EXTRA_BLANK_TEMPLATES.filter((k) => templateEditorMode(k) === mode),
-]);
+// Blank Slate's blanks in mode order (the mode switch's).
+const BLANK_SLATE_KINDS = EDITOR_MODES.map((mode) => BLANK_TEMPLATE_FOR_MODE[mode]);
 
 // Blank Slate: every blank and nothing else, in its fixed order.
 export function popularTemplates(): GalleryTemplate[] {
@@ -75,8 +71,7 @@ export function popularTemplates(): GalleryTemplate[] {
 }
 
 // The editor's own search (templateMatchesQuery): every typed word has to hit the title, the description, the
-// kind, a category name or the template's search words ("plan board" finds Kanban through its category, "mortgage"
-// the Loan Calculator through its words). An empty query is the whole list.
+// kind, a category name or the template's search words ("retro" finds every retrospective). An empty query is the whole list.
 export function filterGallery(items: GalleryTemplate[], query: string): GalleryTemplate[] {
   if (templateQueryWords(query).length === 0) return items;
   return items.filter((t) => templateMatchesQuery(t, query));

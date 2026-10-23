@@ -4,7 +4,7 @@
 // refusals live here once.
 
 import { utcDay } from './within-reach';
-import { DAY_MS } from '@livediagram/items';
+import { DAY_MS } from '@livediagram/document';
 
 /** N of Jump back in's Within reach set: 4 most used and 4 recent (spec). */
 export const HOME_WITHIN_REACH_PER_ROW = 4;

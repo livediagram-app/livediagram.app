@@ -373,7 +373,6 @@ export function ElementFaceRouter({
           onEdit={actionActions?.edit}
           onComplete={actionActions?.complete}
           onReopen={actionActions?.reopen}
-          onOpenBoard={actionActions?.openBoard}
         />
       ) : element.type === 'shape' && element.shape === 'reaction-pad' && !isEditing ? (
         /* Reaction pad (docs/specs/009-elements/reaction-pad.md): a pressable glyph. The burst it throws is

@@ -77,7 +77,7 @@ beforeEach(() => {
 afterEach(() => {
   cleanup();
   vi.useRealTimers();
-  setActiveTour('plan', false);
+  setActiveTour('workshop', false);
   while (anyModalOpen()) modalClosed();
 });
 
@@ -118,7 +118,7 @@ describe('TourHost offer', () => {
   });
 
   // docs/specs/007-editor/editor-tour.md "Where it appears": Diagram mode only.
-  it.each(['draw', 'pages', 'plan', 'workshop'])(
+  it.each(['draw', 'workshop'])(
     'makes no offer on a tab in %s, and keeps it owed for a Diagram tab',
     (mode) => {
       markTourPending();
@@ -207,10 +207,10 @@ describe('TourHost with a dialog open', () => {
   });
 });
 
-describe('TourHost alongside the Plan tour', () => {
-  it('waits while the Plan tour is on screen, then offers', () => {
-    // docs/specs/026-plan/plan-tour.md "Where it appears": one tour at a time.
-    setActiveTour('plan', true);
+describe('TourHost alongside the Workshop tour', () => {
+  it('waits while the Workshop tour is on screen, then offers', () => {
+    // One tour at a time (docs/specs/012-collaboration/workshop-tour.md).
+    setActiveTour('workshop', true);
     markTourPending();
     editor();
     render(<TourHost />);
@@ -218,20 +218,20 @@ describe('TourHost alongside the Plan tour', () => {
       vi.advanceTimersByTime(2000);
     });
     expect(offered()).toBe(false);
-    act(() => setActiveTour('plan', false));
+    act(() => setActiveTour('workshop', false));
     act(() => {
       vi.advanceTimersByTime(800);
     });
     expect(offered()).toBe(true);
   });
 
-  it('holds a Settings rerun until the Plan tour ends', () => {
-    setActiveTour('plan', true);
+  it('holds a Settings rerun until the Workshop tour ends', () => {
+    setActiveTour('workshop', true);
     editor();
     render(<TourHost />);
     act(() => requestTourRelaunch());
     expect(offered()).toBe(false);
-    act(() => setActiveTour('plan', false));
+    act(() => setActiveTour('workshop', false));
     act(() => {
       vi.advanceTimersByTime(800);
     });
@@ -247,7 +247,7 @@ describe('TourHost alongside the Plan tour', () => {
   });
 
   it('holds a Settings rerun off a Diagram tab until the person is on one', () => {
-    editor({ editorMode: { mode: 'plan' } });
+    editor({ editorMode: { mode: 'workshop' } });
     const { rerender } = render(<TourHost />);
     act(() => requestTourRelaunch());
     act(() => {

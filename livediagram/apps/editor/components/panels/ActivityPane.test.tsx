@@ -1,13 +1,12 @@
 // @vitest-environment jsdom
 
-// The Inbox (docs/specs/013-workspace/inbox.md §1): three sections of rows, Plan cards
-// beside actions under Assigned to You (§2.4), each row a link into the editor; and the loading, failed
+// The Inbox (docs/specs/013-workspace/inbox.md §1): three sections of rows, each row a link into the editor; and the loading, failed
 // and empty states kept apart.
 
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { ActivityAction, ActivityCard, ActivityThread } from '@livediagram/api-schema';
-import type { ThreadRow, ActivityFeed } from '@/app/explorer/useActivityFeed';
+import type { ActivityAction, ActivityThread } from '@livediagram/api-schema';
+import type { ActivityFeed } from '@/app/explorer/useActivityFeed';
 
 const track = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/telemetry', () => ({ track }));
@@ -40,24 +39,7 @@ const action = (id: string, mine: boolean): ActivityAction => ({
   createdByMe: !mine,
 });
 
-const card = (over: Partial<ActivityCard> = {}): ActivityCard => ({
-  documentId: 'd2',
-  documentName: 'Roadmap',
-  teamId: null,
-  via: 'own',
-  shareCode: null,
-  board: { tabId: 'tp', tabName: 'Plan', elementId: 'b1', title: 'Sprint 14' },
-  id: 'it1',
-  key: 12,
-  type: 'task',
-  title: 'Wire the form',
-  status: 'todo',
-  updatedAt: 3,
-  ...over,
-});
-
-const thread = (over: Partial<ActivityThread> = {}): ThreadRow => ({
-  kind: 'thread',
+const thread = (over: Partial<ActivityThread> = {}): ActivityThread => ({
   ...place,
   elementId: 'e9',
   commentCount: 2,
@@ -73,7 +55,6 @@ const feed = (over: Partial<ActivityFeed> = {}): ActivityFeed => ({
   assignedToMe: [],
   youAssigned: [],
   threads: [],
-  formResponses: [],
   loading: false,
   error: false,
   retry: vi.fn(),
@@ -83,35 +64,10 @@ const feed = (over: Partial<ActivityFeed> = {}): ActivityFeed => ({
 const linkTo = (text: string) => screen.getByText(text).closest('a')!;
 
 describe('ActivityPane', () => {
-  it('lists a Plan card under Assigned to You, linking to it on its board', () => {
-    render(
-      <ActivityPane
-        feed={feed({
-          assignedToMe: [
-            { kind: 'card', ...card() },
-            { kind: 'action', ...action('a1', true) },
-            {
-              kind: 'card',
-              ...card({ id: 'it2', key: 3, type: 'custom-x', title: 'Loose', board: null }),
-            },
-          ],
-        })}
-      />,
-    );
+  it('lists an action under Assigned to You, linking to it', () => {
+    render(<ActivityPane feed={feed({ assignedToMe: [action('a1', true)] })} />);
     expect(screen.getByText('Assigned to You')).toBeTruthy();
-    expect(linkTo('#12 Wire the form').getAttribute('href')).toBe(
-      '/document/d2#t=tp&el=b1&item=it1',
-    );
-    expect(screen.getByText('Task')).toBeTruthy();
-    expect(screen.getByText('Sprint 14 · Plan')).toBeTruthy();
-    // A type the document added reads as a plain card, and a card no board shows says so.
-    expect(screen.getByText('Card')).toBeTruthy();
-    expect(screen.getByText('Not on a board')).toBeTruthy();
-    expect(linkTo('#3 Loose').getAttribute('href')).toBe('/document/d2#item=it2');
     expect(linkTo('Action a1').getAttribute('href')).toBe('/document/d1#t=t1&el=e-a1&open=action');
-
-    fireEvent.click(linkTo('#12 Wire the form'));
-    expect(track).toHaveBeenCalledWith('Activity', 'Selected', 'Card');
     fireEvent.click(linkTo('Action a1'));
     expect(track).toHaveBeenCalledWith('Activity', 'Selected', 'Action');
   });
@@ -140,8 +96,8 @@ describe('ActivityPane', () => {
       <ActivityPane
         feed={feed({
           assignedToMe: [
-            { kind: 'action', ...action('local', true), documentName: 'Retro', local: true },
-            { kind: 'action', ...action('cloud', true) },
+            { ...action('local', true), documentName: 'Retro', local: true },
+            action('cloud', true),
           ],
         })}
       />,
@@ -154,35 +110,6 @@ describe('ActivityPane', () => {
     expect(screen.getAllByText('This Browser')).toHaveLength(1);
   });
 
-  it("lists a card's comment thread as a card row that opens the card", () => {
-    const cardThread: ThreadRow = {
-      kind: 'card',
-      documentId: 'd2',
-      documentName: 'Roadmap',
-      teamId: null,
-      via: 'own',
-      shareCode: null,
-      board: { tabId: 'tp', tabName: 'Plan', elementId: 'b1', title: 'Sprint 14' },
-      id: 'it7',
-      key: 7,
-      type: 'task',
-      title: 'Ship it',
-      commentCount: 1,
-      latest: { text: 'Over to you', authorName: 'Priya', authorColor: '#336699', at: 9 },
-      firstAt: 9,
-      youCommented: false,
-      onYourDocument: false,
-      mentionsYou: true,
-    };
-    render(<ActivityPane feed={feed({ threads: [cardThread] })} />);
-    expect(screen.getByText('Over to you')).toBeTruthy();
-    expect(screen.getByText('Mentioned You')).toBeTruthy();
-    expect(screen.getByText('Sprint 14 · Plan')).toBeTruthy();
-    expect(linkTo('#7 Ship it').getAttribute('href')).toBe('/document/d2#t=tp&el=b1&item=it7');
-    fireEvent.click(linkTo('#7 Ship it'));
-    expect(track).toHaveBeenCalledWith('Activity', 'Selected', 'CardThread');
-  });
-
   it('keeps loading, failed and empty apart', () => {
     const retry = vi.fn();
     const { rerender } = render(<ActivityPane feed={feed({ loading: true })} />);
@@ -192,33 +119,5 @@ describe('ActivityPane', () => {
     expect(retry).toHaveBeenCalled();
     rerender(<ActivityPane feed={feed()} />);
     expect(screen.getByText('Nothing waiting on you')).toBeTruthy();
-  });
-});
-
-// docs/specs/030-forms/forms.md "Hearing about responses": a form with unseen responses lists, opening its board.
-describe('Form Responses', () => {
-  it('lists each form with its count and opens its board', () => {
-    render(
-      <ActivityPane
-        feed={feed({
-          formResponses: [
-            {
-              documentId: 'd1',
-              documentName: 'Ops',
-              teamId: null,
-              via: 'own',
-              tabId: 'form-tab',
-              heading: 'Bug Report',
-              boardTabId: 'board-tab',
-              unseen: 3,
-              latestAt: Date.now(),
-            },
-          ],
-        })}
-      />,
-    );
-    expect(screen.getByText('Form Responses')).toBeTruthy();
-    const row = screen.getByRole('link', { name: /3 new responses to Bug Report/ });
-    expect(row.getAttribute('href')).toBe('/document/d1#t=board-tab');
   });
 });

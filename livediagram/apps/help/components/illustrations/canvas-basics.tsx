@@ -418,7 +418,7 @@ export function MultiSelectionBar() {
 // --- Templates ---------------------------------------------------------------------------------
 
 /** A start's search finding a template in another mode (docs/specs/007-editor/start-diagramming.md "Found in other
- *  modes"): Start Planning searched for "sailboat", its own one-line no-match, then In Other Modes with the
+ *  modes"): Start Drawing searched for "sailboat", its own one-line no-match, then In Other Modes with the
  *  Workshop block and its Sailboat retrospective card, which says it opens in Workshop. */
 export function StartSearchOtherModes() {
   const card = { x: 36, y: 192, w: 168, h: 90 };
@@ -429,7 +429,7 @@ export function StartSearchOtherModes() {
         y={10}
         w={380}
         h={290}
-        title="Start Planning"
+        title="Start Drawing"
         sceneW={420}
         sceneH={308}
         scrim={false}
@@ -461,10 +461,10 @@ export function StartSearchOtherModes() {
         <Label x={61} y={60} size={10} tone="strong">
           sailboat
         </Label>
-        {/* Nothing of Plan's: one line, not an empty state. */}
+        {/* Nothing of Draw's: one line, not an empty state. */}
         <rect x={36} y={80} width={348} height={34} rx={7} className="fill-slate-50" />
         <Label x={46} y={95} size={9} weight={700} tone="strong">
-          No boards, sheets, forms or layouts match “sailboat”.
+          No drawing templates match “sailboat”.
         </Label>
         <Label x={46} y={107} size={9} tone="muted">
           Found in other modes.

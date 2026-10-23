@@ -1,4 +1,3 @@
-import { setPowerUserMode } from '@/lib/power-user-mode';
 import { describe, expect, it } from 'vitest';
 import { HELP_ARTICLES } from '@/lib/help-articles';
 import { SETTINGS_CATEGORIES, settingsCategoryPath, visibleCategories } from './settings-catalogue';
@@ -100,34 +99,7 @@ describe('settings catalogue', () => {
     expect(row.event.off).toBe('TourSeenOn');
   });
 
-  it('gives each Plan tour track its own row, named for itself', () => {
-    // docs/specs/026-plan/plan-tour.md "Where it appears": Boards Tour and Sheets Tour, never "Plan Tour".
-    const boards = SWITCHES.find((r) => r.key === 'planTourSeen-boards')!;
-    const sheets = SWITCHES.find((r) => r.key === 'planTourSeen-sheets')!;
-    expect([boards.label, sheets.label]).toEqual(['Boards Tour', 'Sheets Tour']);
-    expect(boards.read({ planTourTracks: ['boards'] })).toBe(false);
-    expect(sheets.read({ planTourTracks: ['boards'] })).toBe(true);
-    // On forgets this track alone; off answers it alone.
-    expect(boards.write({ planTourTracks: ['boards', 'sheets'] }, true)).toEqual({
-      planTourSeen: false,
-      planTourTracks: ['sheets'],
-    });
-    expect(sheets.write({}, false)).toEqual({ planTourSeen: false, planTourTracks: ['sheets'] });
-    expect(boards.event.on).toBe('BoardsTourSeenOff');
-    expect(sheets.event.off).toBe('SheetsTourSeenOn');
-  });
-
-  it("folds a power user's single seen flag into the list, so one track back on leaves the other answered", () => {
-    const power = setPowerUserMode({}, true).prefs;
-    const boards = SWITCHES.find((r) => r.key === 'planTourSeen-boards')!;
-    const sheets = SWITCHES.find((r) => r.key === 'planTourSeen-sheets')!;
-    expect(boards.read(power)).toBe(false);
-    const next = boards.write(power, true);
-    expect(boards.read(next)).toBe(true);
-    expect(sheets.read(next)).toBe(false);
-  });
-
-  it('inverts the Workshop tour row the same way, after the Plan tour row', () => {
+  it('inverts the Workshop tour row the same way', () => {
     // docs/specs/012-collaboration/workshop-tour.md "Where it appears".
     const row = SWITCHES.find((r) => r.key === 'workshopTourSeen')!;
     expect(row.read({ workshopTourSeen: true })).toBe(false);
@@ -144,14 +116,8 @@ describe('settings catalogue', () => {
     const tours = SETTINGS_CATEGORIES.find((c) => c.id === 'tours')!;
     expect(tours.rows.map((r) => [r.key, r.kind, r.label, r.helpArticle])).toEqual([
       ['tourSeen', 'toggle', 'Diagram Tour', 'diagramTour'],
-      // A tour of several tracks: one switch over them all, then each track's own row beneath it.
-      ['planTourSeen', 'toggle', 'Plan Tours', 'planTour'],
-      ['planTourSeen-boards', 'toggle', 'Boards Tour', 'planTour'],
-      ['planTourSeen-sheets', 'toggle', 'Sheets Tour', 'planTour'],
-      ['planTourSeen-dashboards', 'toggle', 'Dashboards Tour', 'planDashboards'],
       ['workshopTourSeen', 'toggle', 'Workshop Tour', 'workshopTour'],
       ['drawTourSeen', 'toggle', 'Draw Tour', 'drawTour'],
-      ['formTourSeen', 'toggle', 'Forms Tour', 'planForms'],
       ['avatarTourSeen', 'toggle', 'Avatar Tour', 'avatarTour'],
       // Element tours (docs/specs/007-editor/element-tours.md): one switch over them all, then one per element,
       // linking that element's article.
@@ -188,13 +154,8 @@ describe('settings catalogue', () => {
     expect(tours.rows.map((r) => (r.kind === 'toggle' ? [r.event.on, r.event.off] : null))).toEqual(
       [
         ['TourSeenOff', 'TourSeenOn'],
-        ['PlanTourSeenOff', 'PlanTourSeenOn'],
-        ['BoardsTourSeenOff', 'BoardsTourSeenOn'],
-        ['SheetsTourSeenOff', 'SheetsTourSeenOn'],
-        ['DashboardsTourSeenOff', 'DashboardsTourSeenOn'],
         ['WorkshopTourSeenOff', 'WorkshopTourSeenOn'],
         ['DrawTourSeenOff', 'DrawTourSeenOn'],
-        ['FormTourSeenOff', 'FormTourSeenOn'],
         ['AvatarTourSeenOff', 'AvatarTourSeenOn'],
         ['ElementToursSeenOff', 'ElementToursSeenOn'],
         ['SankeyTourSeenOff', 'SankeyTourSeenOn'],
@@ -261,11 +222,6 @@ describe('settings catalogue', () => {
     const before: UserPreferences = { alignmentGuides: false, telemetryEnabled: false };
     // A tour of several tracks also writes its answered list (lib/tour-tracks.ts).
     const own: Record<string, string[]> = {
-      // A tour track's row writes the answered list and clears the tour's single flag (lib/tour-tracks.ts).
-      planTourSeen: ['planTourSeen', 'planTourTracks'],
-      'planTourSeen-boards': ['planTourSeen', 'planTourTracks'],
-      'planTourSeen-sheets': ['planTourSeen', 'planTourTracks'],
-      'planTourSeen-dashboards': ['planTourSeen', 'planTourTracks'],
       elementToursSeen: ['elementToursSeen', 'elementTourKinds'],
       // One element's tour writes the answered list alone (lib/element-tours.ts).
       'elementTour-sankey': ['elementTourKinds'],

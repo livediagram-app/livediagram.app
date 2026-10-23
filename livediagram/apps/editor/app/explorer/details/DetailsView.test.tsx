@@ -105,13 +105,15 @@ describe('DetailsView', () => {
     render(
       <DetailsView
         {...view([
-          doc('Plan', { stats: { mode: 'plan', elements: 12, comments: 3, bytes: 12 * 1024 } }),
+          doc('Retro', {
+            stats: { mode: 'workshop', elements: 12, comments: 3, bytes: 12 * 1024 },
+          }),
         ])}
       />,
     );
     const cells = within(screen.getAllByRole('row')[1]!).getAllByRole('cell');
     // Icon columns: no visible words, the value named for assistive technology.
-    expect(within(cells[1]!).getByText('Plan').className).toContain('sr-only');
+    expect(within(cells[1]!).getByText('Workshop').className).toContain('sr-only');
     expect(within(cells[2]!).getByText('3 comments').className).toContain('sr-only');
     // The number is drawn inside the bubble icon, which assistive technology skips.
     expect(within(cells[2]!).getByText('3').closest('svg')!.getAttribute('aria-hidden')).toBe(

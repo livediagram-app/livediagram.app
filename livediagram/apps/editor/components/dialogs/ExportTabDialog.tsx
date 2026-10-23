@@ -1,5 +1,3 @@
-import { usePlan } from '@/components/plan/PlanContext';
-import { tabCsvText } from '@/lib/export-plan/tab-csv';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DialogCloseButton, DialogHeader } from '@livediagram/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
@@ -14,7 +12,6 @@ import {
   type Tab,
   tabToJsonText,
   tabToMarkdownText,
-  type TabPlanData,
 } from '@livediagram/document';
 import {
   downloadBlob,
@@ -28,8 +25,6 @@ import { tabToExcalidrawText } from '@/lib/excalidraw-export';
 import { ensureIconCatalogs } from '@/lib/icon-registry';
 import { track } from '@/lib/telemetry';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
-import { usePlanImageExport } from './usePlanImageExport';
-import type { ExportFormatKey } from '@livediagram/plan-art';
 
 /** A file name safe on every platform: anything but letters, digits, dots, dashes and spaces becomes a dash. */
 export function sanitizeFilename(name: string): string {
@@ -46,24 +41,16 @@ const EXPORT_LABEL: Record<Format, string> = {
   file: 'JSON',
   mermaid: 'Mermaid',
   markdown: 'Markdown',
-  csv: 'CSV',
   excalidraw: 'Excalidraw',
   png: 'PNG',
   svg: 'SVG',
   pdf: 'PDF',
 };
 
-// A text format taken (downloaded or copied): CSV counts as its board's or Sheet's own CSV download, as the tab menu's
-// Download CSV did; every other format as the document's export.
-function trackTextExport(format: TextFormat, tab: Pick<Tab, 'kind'>): void {
-  // Literal pairs, so the telemetry coverage test finds both.
-  if (format === 'csv' && tab.kind === 'sheet') track('Sheet', 'Exported', 'Csv');
-  else if (format === 'csv') track('Plan', 'Exported', 'Csv');
-  else track('Document', 'Exported', EXPORT_LABEL[format]);
+// A text format taken (downloaded or copied).
+function trackTextExport(format: TextFormat): void {
+  track('Document', 'Exported', EXPORT_LABEL[format]);
 }
-
-// A Board, Sheet or Dashboard tab's image: flat, no backdrop pattern, every element it draws.
-const PLAIN_IMAGE = { isometric: false, pattern: false, hiddenLayers: true } as const;
 
 type ExportTabDialogProps = {
   tab: Tab;
@@ -84,19 +71,17 @@ type ExportTabDialogProps = {
   // image options then leave out "Hidden layers", and hidden layers stay out
   // of the export as they stay off the canvas.
   offerHiddenLayers?: boolean;
-  // The document's tabs, for a Dashboard's slots that show one (docs/specs/026-plan/plan-tabs.md "Export").
-  documentTabs?: readonly Tab[];
 };
 
-// The format keys the dialog offers (plan-export-formats.ts).
-export type Format = ExportFormatKey;
+// The format keys the dialog offers.
+export type Format = 'file' | 'mermaid' | 'markdown' | 'excalidraw' | 'png' | 'svg' | 'pdf';
 
 // The four text formats each open a view/edit/copy panel; the three image
 // formats each open an options-and-download panel (docs/specs/010-palette/style-presets.md / 73).
-type TextFormat = 'file' | 'mermaid' | 'markdown' | 'csv' | 'excalidraw';
+type TextFormat = 'file' | 'mermaid' | 'markdown' | 'excalidraw';
 type ImageFormat = 'png' | 'svg' | 'pdf';
 const isTextFormat = (f: Format): f is TextFormat =>
-  f === 'file' || f === 'mermaid' || f === 'markdown' || f === 'csv' || f === 'excalidraw';
+  f === 'file' || f === 'mermaid' || f === 'markdown' || f === 'excalidraw';
 
 // Grid card copy, in display order: text formats first, then image formats.
 const CARDS: { kind: Format; title: string; description: string }[] = [
@@ -115,12 +100,6 @@ const CARDS: { kind: Format; title: string; description: string }[] = [
     kind: 'markdown',
     title: 'Markdown',
     description: "A text outline of this tab's elements and connections. Copy it or save a .md.",
-  },
-  {
-    kind: 'csv',
-    title: 'CSV',
-    description:
-      'The cards or cells as comma-separated values, for a spreadsheet. Copy it or save a .csv.',
   },
   {
     kind: 'excalidraw',
@@ -154,7 +133,7 @@ const TEXT_PANELS: Record<
     downloadLabel: string;
     ext: string;
     mime: string;
-    getText: (tab: Tab, plan?: TabPlanData) => string;
+    getText: (tab: Tab) => string;
   }
 > = {
   file: {
@@ -181,14 +160,6 @@ const TEXT_PANELS: Record<
     mime: 'text/markdown',
     getText: tabToMarkdownText,
   },
-  csv: {
-    blurb:
-      "This tab's cards or cells as CSV, formulas made safe to open in a spreadsheet. Edit it here to copy a variant.",
-    downloadLabel: 'Download .csv',
-    ext: 'csv',
-    mime: 'text/csv',
-    getText: (tab) => tabCsvText(tab),
-  },
   excalidraw: {
     blurb:
       'This tab as an Excalidraw scene: shapes Excalidraw lacks become labelled boxes. Edit it here to copy a variant.',
@@ -211,30 +182,7 @@ export function ExportTabDialog({
   scope = 'tab',
   imageContext,
   offerHiddenLayers = true,
-  documentTabs,
 }: ExportTabDialogProps) {
-  // A Board, Sheet or Dashboard tab offers only its formats and exports as laid out; a plan view anywhere draws as its
-  // chart (docs/specs/026-plan/plan-tabs.md "Export").
-  const planImage = usePlanImageExport(tab, documentTabs, scope);
-  const imageTab = planImage.imageTab;
-  // Plan boards and cards export with their items (docs/specs/026-plan/plan-board.md).
-  const plan = usePlan();
-  // Keyed on the items and types alone: the context value also changes with presence and the open item.
-  const planItems = plan?.items;
-  const planTypes = plan?.types;
-  const planCatalogue = plan?.itemTypes.catalogue ?? null;
-  const planOpts = useMemo(
-    () => (planItems ? { items: planItems, itemTypes: planTypes } : {}),
-    [planItems, planTypes],
-  );
-  // The text formats' view of the same (docs/specs/026-plan/items.md "Copies and exports").
-  const planData = useMemo<TabPlanData | undefined>(
-    () =>
-      planItems && planTypes
-        ? { items: planItems, types: planTypes, catalogue: planCatalogue }
-        : undefined,
-    [planItems, planTypes, planCatalogue],
-  );
   // null = the format grid; otherwise the picked format's sub-panel.
   const [active, setActive] = useState<Format | null>(null);
   const [busy, setBusy] = useState(false);
@@ -247,11 +195,6 @@ export function ExportTabDialog({
     Awaited<ReturnType<typeof loadTabImages>> | undefined
   >(undefined);
   const [previewReady, setPreviewReady] = useState(false);
-  // A Plan tab offers its own formats, CSV among them; any other tab has no cards or cells, so its CSV was an
-  // empty file.
-  const cards = CARDS.filter((c) =>
-    planImage.formats ? planImage.formats.includes(c.kind) : c.kind !== 'csv',
-  );
 
   const isSelection = scope === 'selection';
   const suffix = isSelection ? ' - selection' : '';
@@ -278,7 +221,7 @@ export function ExportTabDialog({
     let cancelled = false;
     void (async () => {
       await ensureIconCatalogs();
-      const images = imageContext ? await loadTabImages(imageTab, imageContext) : undefined;
+      const images = imageContext ? await loadTabImages(tab, imageContext) : undefined;
       if (cancelled) return;
       setPreviewImages(images);
       setPreviewReady(true);
@@ -286,29 +229,22 @@ export function ExportTabDialog({
     return () => {
       cancelled = true;
     };
-  }, [active, imageTab, imageContext]);
+  }, [active, tab, imageContext]);
 
-  // The open text format's text, built once per format, tab and item change rather than on every render: a JSON
-  // export with a full item store is up to 2,000 cards. The panel reads it only as its starting text.
+  // The open text format's text, built once per format and tab rather than on every render. The panel reads it only
+  // as its starting text.
   const activeText = useMemo(
-    () => (active && isTextFormat(active) ? TEXT_PANELS[active].getText(tab, planData) : ''),
-    [active, tab, planData],
+    () => (active && isTextFormat(active) ? TEXT_PANELS[active].getText(tab) : ''),
+    [active, tab],
   );
 
   // Build the preview SVG for the current options — the same SVG the .svg
   // export produces, which PNG / PDF rasterise, so it faithfully previews all
   // three. Stable across renders so the panel can memoise on the toggles.
-  const plain = planImage.plain;
-  const planExtras = planImage.opts;
   const renderPreview = useCallback(
     (opts: { isometric: boolean; pattern: boolean; hiddenLayers: boolean }) =>
-      renderTabToSvg(imageTab, {
-        ...(plain ? PLAIN_IMAGE : opts),
-        images: previewImages,
-        ...planOpts,
-        ...planExtras,
-      }),
-    [imageTab, plain, previewImages, planOpts, planExtras],
+      renderTabToSvg(tab, { ...opts, images: previewImages }),
+    [tab, previewImages],
   );
 
   // Render + download an image format with the chosen options (docs/specs/010-palette/style-presets.md).
@@ -326,20 +262,15 @@ export function ExportTabDialog({
       const images = previewReady
         ? previewImages
         : imageContext
-          ? await loadTabImages(imageTab, imageContext)
+          ? await loadTabImages(tab, imageContext)
           : undefined;
-      const renderOpts = {
-        ...(plain ? PLAIN_IMAGE : opts),
-        images,
-        ...planOpts,
-        ...planExtras,
-      };
+      const renderOpts = { ...opts, images };
       if (format === 'png') {
-        downloadBlob(await exportTabAsPng(imageTab, renderOpts), `${baseName}.png`);
+        downloadBlob(await exportTabAsPng(tab, renderOpts), `${baseName}.png`);
       } else if (format === 'svg') {
-        downloadBlob(await exportTabAsSvg(imageTab, renderOpts), `${baseName}.svg`);
+        downloadBlob(await exportTabAsSvg(tab, renderOpts), `${baseName}.svg`);
       } else {
-        downloadBlob(await exportTabAsPdf(imageTab, renderOpts), `${baseName}.pdf`);
+        downloadBlob(await exportTabAsPdf(tab, renderOpts), `${baseName}.pdf`);
       }
       track('Document', 'Exported', EXPORT_LABEL[format]);
       onClose();
@@ -380,23 +311,21 @@ export function ExportTabDialog({
             onDownload={(text) => {
               const cfg = TEXT_PANELS[active];
               downloadBlob(new Blob([text], { type: cfg.mime }), `${baseName}.${cfg.ext}`);
-              trackTextExport(active, tab);
+              trackTextExport(active);
             }}
-            onCopied={() => trackTextExport(active, tab)}
+            onCopied={() => trackTextExport(active)}
             onBack={() => setActive(null)}
           />
         ) : active ? (
           <ImageExportPanel
             label={activeCard!.title}
-            // A Plan tab as laid out: no canvas to tilt or pattern.
-            pageExport={plain}
             busy={busy}
             error={error}
             hasHiddenLayers={
-              !plain && offerHiddenLayers && tabLayers(tab.layers).some((l) => !isLayerVisible(l))
+              offerHiddenLayers && tabLayers(tab.layers).some((l) => !isLayerVisible(l))
             }
             renderPreview={renderPreview}
-            previewReady={previewReady && planImage.ready}
+            previewReady={previewReady}
             onExport={(opts) => void runImageExport(active, opts)}
             onBack={() => {
               setError(null);
@@ -408,7 +337,7 @@ export function ExportTabDialog({
             // Two columns on a phone: three left each card about 110px wide, its description wrapping to eight lines.
             className="grid grid-cols-2 gap-3 sm:grid-cols-3"
           >
-            {cards.map((c) => (
+            {CARDS.map((c) => (
               <FormatCard
                 key={c.kind}
                 title={c.title}

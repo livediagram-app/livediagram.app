@@ -4,12 +4,7 @@
 // selection bounds, and every "should this chrome show?" predicate the
 // Canvas render reads. Lifted out of Canvas.tsx so this decision logic
 // is unit-testable in isolation (the component itself has no tests).
-import {
-  isFixedSizeElement,
-  sheetDrawnChartIds,
-  isChipShape,
-  type Rect,
-} from '@livediagram/document';
+import { isFixedSizeElement, isChipShape, type Rect } from '@livediagram/document';
 import {
   elementBounds,
   isBoxed,
@@ -104,11 +99,6 @@ export function deriveCanvasSelection(input: {
   // line (docs/specs/008-canvas/arrow-labels.md), so the floating toolbars
   // clear it as they clear the line.
   labelRectOf?: (id: ElementId) => Rect | null;
-  // A Plan board or view is drawn over the canvas (maximised, or filling its tab: docs/specs/026-plan/plan-board.md
-  // "Maximised board", "Fill Tab"). The canvas under it cannot be worked on, so no selection toolbar, popover or
-  // plus floats over it, whatever is selected and however it came to be (a press before, select-all, undo, a
-  // collaborator, the tab opening with the board selected). The selection itself is kept.
-  canvasCovered?: boolean;
 }): CanvasSelection {
   const {
     elements,
@@ -121,7 +111,6 @@ export function deriveCanvasSelection(input: {
     esBoard,
     elementMenuOpen,
     labelRectOf,
-    canvasCovered: covered = false,
   } = input;
 
   // An element's selection extent (docs/specs/008-canvas/arrow-labels.md): an arrow spans
@@ -144,13 +133,9 @@ export function deriveCanvasSelection(input: {
   const selectedIsBoxed = selected ? isBoxed(selected) : false;
   const selectionBounds: Rect | null = selected ? selectionExtent(selected) : null;
 
-  // A chart that sits in a Sheet is drawn and worked in its Sheet (docs/specs/029-sheets/sheet.md "Charts"): selected
-  // there to open its element menu, it has no box on the canvas to float chrome over.
-  const canvasCovered = covered || (!!selected && sheetDrawnChartIds(elements).has(selected.id));
   const selectedLocked = selected ? selected.locked === true : false;
   const showPopover = !!(
     selected &&
-    !canvasCovered &&
     !elementMenuOpen &&
     editingId !== selected.id &&
     !isPaintMode &&
@@ -159,7 +144,6 @@ export function deriveCanvasSelection(input: {
   );
   const showPlus = !!(
     selected &&
-    !canvasCovered &&
     !elementMenuOpen &&
     selectedIsBoxed &&
     // Never on an event-storming board (docs/specs/021-event-storming/event-storming.md).
@@ -179,15 +163,6 @@ export function deriveCanvasSelection(input: {
     selected.type !== 'annotation' &&
     // Nor is a badge or step number: it is a mark on a node (docs/specs/009-elements/badge.md).
     !(selected.type === 'shape' && isChipShape(selected.shape)) &&
-    // A Plan board or Plan card is not a node to chain from: its cards are its content
-    // (docs/specs/026-plan/plan-board.md).
-    !(
-      selected.type === 'shape' &&
-      (selected.shape === 'plan-board' ||
-        selected.shape === 'plan-card' ||
-        selected.shape === 'plan-view' ||
-        selected.shape === 'plan-sheet')
-    ) &&
     editingId !== selected.id &&
     !isPaintMode &&
     !selectedLocked &&
@@ -231,12 +206,7 @@ export function deriveCanvasSelection(input: {
       ? unionRects(elements.filter((el) => multiSelectedIds.has(el.id)).map(selectionExtent))
       : null;
   const showMultiToolbar =
-    !!multiToolbarBounds &&
-    multiSelectedIds.size > 1 &&
-    !canvasCovered &&
-    !isPaintMode &&
-    !tabLocked &&
-    !readOnly;
+    !!multiToolbarBounds && multiSelectedIds.size > 1 && !isPaintMode && !tabLocked && !readOnly;
 
   return {
     multiPrimaryId,

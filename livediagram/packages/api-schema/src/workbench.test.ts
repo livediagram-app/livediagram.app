@@ -115,18 +115,6 @@ describe('workbenchRouteVerdict', () => {
     ['DELETE', 'documents/doc1/tabs/t1/comments/c1'],
     ['POST', 'documents/doc1/tabs/t1/qa'],
     ['POST', 'documents/doc1/room-ticket'],
-    ['GET', 'documents/doc1/items'],
-    ['POST', 'documents/doc1/items'],
-    ['POST', 'documents/doc1/items/bulk'],
-    ['POST', 'documents/doc1/items/i1'],
-    ['POST', 'documents/doc1/items/i1/move'],
-    ['POST', 'documents/doc1/items/i1/vote'],
-    ['POST', 'documents/doc1/items/i1/comments'],
-    ['POST', 'documents/doc1/items/i1/comments/resolve'],
-    ['POST', 'documents/doc1/items/i1/comments/reopen'],
-    ['DELETE', 'documents/doc1/items/i1'],
-    ['DELETE', 'documents/doc1/items/i1/comments/c1'],
-    ['PUT', 'documents/doc1/item-types'],
     ['DELETE', 'workbench/sessions/current'],
   ])('allows %s %s', (method, path) => {
     expect(verdict(method, path)).toBe('allow');

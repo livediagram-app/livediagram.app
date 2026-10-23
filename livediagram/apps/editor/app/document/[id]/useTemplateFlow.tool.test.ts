@@ -29,9 +29,6 @@ async function pick(kind: TemplateKind): Promise<ReturnType<typeof vi.fn>> {
       setIdentityPromptOpen: vi.fn(),
       requestFit: vi.fn(),
       putToolDown,
-      markTabLoaded: vi.fn(),
-      bringCardTypes: vi.fn(),
-      seedCards: vi.fn(),
     }),
   );
   await act(async () => {

@@ -22,10 +22,6 @@ export type EditorKeyboardShortcutsDeps = {
   // Called once per key the editor acted on: the power user mode offer counts
   // them (docs/specs/007-editor/power-user-mode.md).
   onShortcutUsed?: () => void;
-  // A Plan board or view covers the canvas (maximised, or filling its tab: docs/specs/026-plan/plan-board.md): the
-  // canvas's own shortcuts stand down (no nudge, delete, select-all, paste, duplicate or tool key), as its pointer
-  // input does. Read when a key is pressed.
-  canvasCovered?: () => boolean;
   // Modal-interaction state. Escape clears whichever is active.
   formatSourceId: string | null;
   setFormatSourceId: (v: string | null) => void;
@@ -412,11 +408,10 @@ export const WHITEBOARD_TOOL_KEYS = {
   shapes: 'S',
 } as const;
 
-// What a key does while a Plan board or view covers the canvas (docs/specs/026-plan/plan-board.md "Nothing under it
-// moves"): `run` leaves the canvas alone (undo, redo, search, zen, the mode switch, Escape) and is handled as usual;
-// `swallow` is a canvas chord the browser would act on in its place (duplicate, select-all, lock, z-order, zoom), so it
-// is prevented and does nothing; `ignore` is every other key, left to the browser and the board (copy and cut of the
-// board's text included), never reaching the canvas.
+// What a key does on a canvas that may not take it (a Viewer's or a Participant's, docs/specs/013-workspace/share-roles.md):
+// `run` leaves the canvas alone (undo, redo, search, zen, the mode switch, Escape) and is handled as usual; `swallow`
+// is a canvas chord the browser would act on in its place (duplicate, select-all, lock, z-order, zoom), so it is
+// prevented and does nothing; `ignore` is every other key, left to the browser.
 type CoveredKeyRole = 'run' | 'swallow' | 'ignore';
 export function coveredKeyRole(
   e: Pick<KeyboardEvent, 'key' | 'code' | 'metaKey' | 'ctrlKey' | 'shiftKey' | 'altKey'>,

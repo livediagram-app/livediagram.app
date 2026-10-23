@@ -76,14 +76,6 @@ export const HELP_ARTICLES = {
   customThemes: 'canvas/themes/custom-themes',
   choosingFonts: 'canvas/text-and-fonts/choosing-fonts',
   // Links / activity / comments
-  // Plan mode's card types (docs/specs/026-plan/item-types.md).
-  planCardTypes: 'canvas/plan-mode/card-types',
-  planBoards: 'canvas/plan-mode/boards',
-  planCards: 'canvas/plan-mode/cards',
-  planSheets: 'canvas/plan-mode/sheets',
-  planDashboards: 'canvas/plan-mode/dashboards',
-  planForms: 'canvas/plan-mode/forms',
-  planTour: 'canvas/plan-mode/plan-tour',
   workshopTour: 'canvas/workshop-mode/workshop-tour',
   // The event-storming board, its photo import review included (docs/specs/021-event-storming/event-storming.md).
   eventStormingBoards: 'canvas/event-storming-boards',
@@ -148,37 +140,9 @@ export type HelpArticleKey = keyof typeof HELP_ARTICLES;
 // the same article say the same thing, and a `?` never falls back to a bare
 // "Learn more" that tells the reader nothing about where it goes.
 export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description: string }> = {
-  planCardTypes: {
-    title: 'Learn about card types',
-    description: 'Add your own kinds of card, with the fields each one holds.',
-  },
-  planBoards: {
-    title: 'Learn about boards',
-    description: 'Columns, swimlanes, widgets, and the cards each board takes.',
-  },
-  planCards: {
-    title: 'Learn about cards',
-    description: 'Open a card, fill it in, and archive, trash or present it.',
-  },
-  planSheets: {
-    title: 'Learn about sheets',
-    description: 'Cells, formulas, charts, setup and settings.',
-  },
-  planDashboards: {
-    title: 'Learn about dashboards',
-    description: 'Rows of slots, what a slot can show, and arranging them.',
-  },
-  planForms: {
-    title: 'Learn about forms',
-    description: 'Questions, where answers go, publishing and responses.',
-  },
   eventStormingBoards: {
     title: 'Learn about event-storming boards',
     description: 'Lanes, next-note buttons, and importing a photo of the wall.',
-  },
-  planTour: {
-    title: 'Learn about the Plan Tour',
-    description: 'What the tour shows you and how replaying works.',
   },
   workshopTour: {
     title: 'Learn about the Workshop Tour',

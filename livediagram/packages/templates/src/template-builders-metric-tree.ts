@@ -1,12 +1,11 @@
 // The Metric tree template (docs/specs/008-canvas/canvas-and-palette.md "Templates"): Plateful's north star, on-time
-// orders a week, broken into the inputs teams own. This builds its first tab, the drawing; the second, the Driver
-// Model, is the companion Sheet (template-companions.ts) worked from the same inputs (@livediagram/sheets
-// DRIVER_BASELINE, driverTree), so every value on a card here is a figure that sheet works out.
+// orders a week, broken into the inputs teams own. Every value on a card is worked out from the same inputs
+// (./template-analysis-data DRIVER_BASELINE, driverTree), so the tree adds up.
 //
 // The tree reads top-down: the north star (violet, with a progress ring towards its goal), the outputs it is made
 // from (sky) and the inputs a team moves directly (green, tagged Input). Each card shows its value, a trend badge
 // (green up, red down) and the team that owns it; a round operator between a card's children says how they combine.
-// Faint bands name each level in a left rail, and a card spells out the biggest levers, which the sheet works out.
+// Faint bands name each level in a left rail, and a card spells out the biggest levers.
 //
 // Layers: "Levels" holds the bands and rail; "Tree" the cards, operators, connectors, badges and levers.
 //
@@ -28,14 +27,14 @@ import {
   driverTree,
   leverGain,
   type DriverInputKey,
-} from '@livediagram/sheets';
+} from './template-analysis-data';
 import { rake } from './template-rake';
 import { techHeader, TECH_HEADER_H } from './template-builders-technical-kit';
 import { CONTENT, INK, MUTED, PAPER, SCAFFOLD, chipRow } from './template-report-kit';
 
 const TITLE = 'Plateful · Metric tree: on-time orders a week';
 const CAPTION =
-  'The north star at the top, what it is made of underneath, and the inputs teams can move at the leaves. The numbers match the Driver Model tab: try a what-if there.';
+  'The north star at the top, what it is made of underneath, and the inputs teams can move at the leaves.';
 // The north star's goal, for its progress ring.
 export const NORTH_STAR_GOAL = 55_000;
 

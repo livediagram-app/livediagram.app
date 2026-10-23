@@ -1,9 +1,9 @@
-// A comment thread's ops: append, remove, resolve. Split out of comments.ts so element deltas and Plan card
-// comment writes (item-comments.ts) share them without an import cycle; the only imports are types.
+// A comment thread's ops: append, remove, resolve. Split out of comments.ts so element deltas share them without an
+// import cycle; the only imports are types.
 import type { Comment, CommentThread } from './comments';
 
-// The thread ops (docs/specs/008-canvas/canvas-and-palette.md "On Plan cards"): one set of pure functions that an
-// element's comment deltas and a Plan card's comment writes both apply. Each returns the SAME thread when nothing
+// The thread ops (docs/specs/008-canvas/canvas-and-palette.md "Comments"): one set of pure functions an element's
+// comment deltas apply. Each returns the SAME thread when nothing
 // changes, so callers keep identity.
 
 // Appends `comment` (unless its id is already there, or the thread holds `max`), reopening a resolved thread.

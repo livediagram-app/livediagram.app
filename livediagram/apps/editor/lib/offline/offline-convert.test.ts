@@ -52,16 +52,6 @@ vi.mock('@/lib/api/core', () => ({
   }),
 }));
 
-vi.mock('../api/items', () => ({
-  fetchItems: vi.fn(async () => ({ items: [], rev: 0, nextKey: 1 })),
-  fetchCloudItems: vi.fn(async () => ({ items: [], rev: 0, nextKey: 1 })),
-}));
-
-vi.mock('../api/sheets', () => ({
-  fetchAllSheets: vi.fn(async () => []),
-  fetchCloudSheets: vi.fn(async () => []),
-  sheetAsCreate: (s: unknown) => s,
-}));
 vi.mock('./offline-images', () => ({
   embedTabImages: vi.fn(async (tabs: unknown) => tabs),
   uploadEmbeddedImages: vi.fn(async (_owner: string, tabs: unknown) => ({
@@ -99,8 +89,6 @@ vi.mock('./offline-store', () => ({
 const apiClient = await import('@/lib/api-client');
 const core = await import('@/lib/api/core');
 const images = await import('./offline-images');
-const items = await import('../api/items');
-const sheets = await import('../api/sheets');
 const store = await import('./offline-store');
 const tagsApi = await import('@/lib/api/tags');
 const {
@@ -260,29 +248,6 @@ describe('saveOfflineToCloud (offline -> cloud)', () => {
     expect(apiClient.apiCreateDocument).toHaveBeenCalledTimes(3);
     expect(calls).not.toContain('offlineDeleteDocument');
     expect(calls.at(-1)).toBe('apiDelete');
-  });
-
-  it('keeps the local copy when the cloud copy is short of sheets', async () => {
-    // A create that resolves to an existing row never re-seeds the stores, so a retried sync
-    // could land without them; deleting the local copy then would lose them.
-    vi.spyOn(console, 'warn').mockImplementation(() => {});
-    vi.mocked(store.offlineGetRecord).mockResolvedValueOnce({
-      id: 'd1',
-      name: 'Roadmap',
-      tabs: [],
-      sheets: [{ id: 's1', rev: 0, updatedAt: 1 }],
-    } as never);
-    await expect(saveOfflineToCloud('d1', 'owner')).rejects.toMatchObject({
-      reason: 'stores_short',
-    });
-    expect(store.offlineDeleteIfUnchanged).not.toHaveBeenCalled();
-    expect(calls).toEqual(['apiCreateDocument', 'apiDelete']);
-  });
-
-  it('checks the cloud stores only for a record that has some', async () => {
-    await saveOfflineToCloud('d1', 'owner');
-    expect(items.fetchCloudItems).not.toHaveBeenCalled();
-    expect(sheets.fetchCloudSheets).not.toHaveBeenCalled();
   });
 
   it('refuses a document that is not in the local store', async () => {
@@ -477,9 +442,6 @@ describe('syncFailureMessage', () => {
     const { OfflineSyncIncompleteError } = await import('./offline-sync');
     expect(syncFailureMessage(new OfflineSyncIncompleteError('kept_changing'))).toMatch(
       /kept changing/i,
-    );
-    expect(syncFailureMessage(new OfflineSyncIncompleteError('stores_short'))).toMatch(
-      /yours was kept/i,
     );
   });
 

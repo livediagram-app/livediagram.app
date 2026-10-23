@@ -63,10 +63,10 @@ describe('a mode chosen before hydration', () => {
   it('keeps the last card chosen, and listens once however often the script runs', () => {
     runScript();
     runScript();
-    root.insertAdjacentHTML('beforeend', '<button data-new-mode="plan">Plan</button>');
+    root.insertAdjacentHTML('beforeend', '<button data-new-mode="workshop">Workshop</button>');
     click('[data-new-mode="draw"]');
-    click('[data-new-mode="plan"]');
-    expect(takeEarlyModeChoice()).toBe('plan');
+    click('[data-new-mode="workshop"]');
+    expect(takeEarlyModeChoice()).toBe('workshop');
   });
 
   it('answers nothing for a value that is not a mode, or with no script', () => {

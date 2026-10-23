@@ -21,11 +21,11 @@ export const SITE_NAME = 'livediagram';
 // "SEO and metadata"), kept here so they can't drift: the landing page's title, its description
 // (also the web app manifest's), and the one-line pitch the share card, the share images' alt text
 // and the share rail build on. It names every kind of thing the canvas makes, not just diagrams.
-export const SITE_TITLE = 'livediagram: Diagram, draw and plan together, live';
+export const SITE_TITLE = 'livediagram: Diagram, draw and run workshops together, live';
 export const SITE_DESCRIPTION =
-  'A free, real-time canvas for diagrams, whiteboards, mind maps, workshops and plans. Built for teams who think visually.';
+  'A free, real-time canvas for diagrams, whiteboards, mind maps and workshops. Built for teams who think visually.';
 // Lower case: it follows "livediagram: " or starts a sentence through sentencePitch.
-export const SITE_PITCH = 'a real-time canvas for diagrams, whiteboards, workshops and plans';
+export const SITE_PITCH = 'a real-time canvas for diagrams, whiteboards and workshops';
 export const sentencePitch = () => `${SITE_PITCH[0]!.toUpperCase()}${SITE_PITCH.slice(1)}.`;
 
 // The open-source repository (docs/specs/002-project-scope/open-source-and-business-model.md: the codebase is public + MIT), linked
@@ -33,7 +33,7 @@ export const sentencePitch = () => `${SITE_PITCH[0]!.toUpperCase()}${SITE_PITCH.
 // the editor's bottom bar and Explorer menu, and the `sameAs` JSON-LD.
 export const REPO_URL = 'https://github.com/livediagram-app/livediagram.app';
 
-// The public contact form (a livediagram Form, docs/specs/030-forms/forms.md), the one way to reach the
+// The public contact form, the one way to reach the
 // team; no email address is published. Linked from the help centre's contact page, the FAQ, the status
 // page and the Terms and Privacy Policy.
 export const CONTACT_FORM_URL = 'https://www.livediagram.app/form/90Bgj5sY9eTpVrjhx9tTZj';

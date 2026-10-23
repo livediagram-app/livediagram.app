@@ -103,10 +103,6 @@ export function useChartSetters({
   // import builds the next categories + series and commits them together).
   const setLineDataSelected = (categories: string[], series: LineSeries[]) =>
     setPieFieldSelected({ lineCategories: categories, lineSeries: series }, 'LineData');
-  // A chart drawn from a sheet range (docs/specs/029-sheets/sheet.md "Charts"): Unlink keeps the data it last read
-  // and makes it an ordinary chart, edited by hand.
-  const unlinkChartSelected = () =>
-    setPieFieldSelected({ chartSource: undefined, sheetAnchor: undefined }, 'ChartData');
   // Chart type (docs/specs/009-elements/pie-chart.md "Chart types"): each selected chart its own patch, since a
   // change across kinds moves that chart's own data. One commit, so one undo step, as the shape patcher's.
   const setChartTypeSelected = (type: ChartType) => {
@@ -123,7 +119,6 @@ export function useChartSetters({
   };
   return {
     setChartTypeSelected,
-    unlinkChartSelected,
     setRatingSelected,
     setRatingAnimSelected,
     setRatingAnimSpeedSelected,

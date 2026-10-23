@@ -32,7 +32,7 @@ import {
 } from '@livediagram/document';
 
 import { track } from '@/lib/telemetry';
-import { useSlideThumbnails, type ThumbnailPlan } from '@/hooks/ui/useSlideThumbnails';
+import { useSlideThumbnails } from '@/hooks/ui/useSlideThumbnails';
 import {
   readPresentationConfig,
   withPresentationConfig,
@@ -60,7 +60,6 @@ export function useSlideDeck({
   isReadOnly,
   saveDeck,
   loadAllTabs,
-  plan,
   prefs,
   commitPrefs,
 }: {
@@ -79,8 +78,6 @@ export function useSlideDeck({
   saveDeck?: (serialised: string | null) => void;
   /** Pulls every not-yet-loaded tab, so a deck can reach a tab nobody visited. */
   loadAllTabs?: () => Promise<unknown>;
-  /** The document's items and types, for a Plan board's thumbnail. */
-  plan?: ThumbnailPlan;
 }) {
   const [deck, setDeck] = useState<Deck>(EMPTY_DECK);
   // Which slide the PANEL has open. Separate from the presentation's own
@@ -167,7 +164,7 @@ export function useSlideDeck({
     [runnableRef],
   );
   // Row previews, from the same headless renderer the Layers panel uses.
-  const thumbs = useSlideThumbnails(deck, tabs, plan);
+  const thumbs = useSlideThumbnails(deck, tabs);
   // What each slide is about, for a row whose slide has no name: its largest text.
   const headlines = useMemo(() => slideHeadlines(deck, tabs), [deck, tabs]);
 
@@ -185,30 +182,6 @@ export function useSlideDeck({
     setOpenSlideId(slide.id);
     track('UI', 'Added', 'Slide');
   }, [activeTabId, commitDeck, isReadOnly, readSelection]);
-
-  // A Plan card as a slide (docs/specs/012-collaboration/presentation-mode.md "Item slides"): the slide
-  // is the item, presented as a card and resolved live. It belongs to the tab the card is on.
-  const newItemSlide = useCallback(
-    (itemId: string) => {
-      if (isReadOnly) return;
-      const slide: Slide = { id: crypto.randomUUID(), tabId: activeTabId, elementIds: [], itemId };
-      commitDeck((prev) => ({ slides: [...prev.slides, slide] }));
-      track('UI', 'Added', 'ItemSlide');
-    },
-    [activeTabId, commitDeck, isReadOnly],
-  );
-
-  // A whole Plan board as a slide (docs/specs/012-collaboration/presentation-mode.md "Board slides"): an
-  // ordinary slide naming the board element, so presenting frames the live board on the canvas.
-  const newBoardSlide = useCallback(
-    (boardId: string) => {
-      if (isReadOnly) return;
-      const slide: Slide = { id: crypto.randomUUID(), tabId: activeTabId, elementIds: [boardId] };
-      commitDeck((prev) => ({ slides: [...prev.slides, slide] }));
-      track('UI', 'Added', 'BoardSlide');
-    },
-    [activeTabId, commitDeck, isReadOnly],
-  );
 
   const addSelectionToSlide = useCallback(
     (slideId: string) => {
@@ -349,9 +322,7 @@ export function useSlideDeck({
         slides.splice(at + 1, 0, copy);
         return { slides };
       });
-      // Literal types, so the telemetry dashboard's emitter scan reads each one.
-      if (original?.itemId) track('UI', 'Added', 'ItemSlide');
-      else if (original) track('UI', 'Added', 'Slide');
+      if (original) track('UI', 'Added', 'Slide');
     },
     [commitDeck, deckRef, isReadOnly],
   );
@@ -445,8 +416,6 @@ export function useSlideDeck({
     thumbs,
     headlines,
     newSlideFromSelection,
-    newItemSlide,
-    newBoardSlide,
     addSelectionToSlide,
     removeFromSlide,
     renameSlide,

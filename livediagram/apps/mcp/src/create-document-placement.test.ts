@@ -80,7 +80,6 @@ describe('create_document intent', () => {
   it.each([
     ['retrospective', { mode: 'workshop', tabKind: 'diagram', templateFamily: 'retrospective' }],
     ['four-ls', { mode: 'workshop', tabKind: 'diagram', templateFamily: 'retrospective' }],
-    ['kanban', { mode: 'plan', tabKind: 'diagram', templateFamily: 'kanban' }],
     ['event-storming', { mode: 'diagram', tabKind: 'event-storming' }],
     ['incident-postmortem', { mode: 'workshop', tabKind: 'diagram' }],
     ['lean-coffee', { mode: 'workshop', tabKind: 'diagram' }],
@@ -92,38 +91,9 @@ describe('create_document intent', () => {
     expect(posted[0]!.intent).toEqual(intent);
   });
 
-  it('adds every tab of a Plan template with several, the first named as given', async () => {
-    const { run, posted } = harness(undefined);
-    await run([{ name: 'Plan', template: 'project-planner' }]);
-    const tabs = posted[0]!.tabs as { id: string; name: string; opensIn?: string }[];
-    expect(tabs.map((t) => t.name)).toEqual([
-      'Plan',
-      'Backlog',
-      'Sprint',
-      'Daily Standup',
-      'Overview',
-    ]);
-    expect(new Set(tabs.map((t) => t.id)).size).toBe(5);
-    expect(tabs.every((t) => t.opensIn === 'plan')).toBe(true);
-  });
-
-  // docs/specs/026-plan/item-types.md "The type catalogue": a template's boards choose a new document's card types.
-  it('makes a Plan template’s document with exactly the card types its boards take', async () => {
-    const { run, posted } = harness(undefined);
-    await run([{ name: 'Plan', template: 'project-planner' }]);
-    const itemTypes = posted[0]!.itemTypes as { types: { id: string }[] };
-    expect(itemTypes.types.map((t) => t.id)).toEqual(['project', 'story', 'task', 'bug']);
-  });
-
-  it('sends no catalogue for a document with no Plan board', async () => {
-    const { run, posted } = harness(undefined);
-    await run([elements, { name: 'Retro', template: 'start-stop-continue' }]);
-    expect(posted[0]).not.toHaveProperty('itemTypes');
-  });
-
   it('reads the intent from the first tab only', async () => {
     const { run, posted } = harness(undefined);
-    await run([elements, { name: 'Board', template: 'kanban' }]);
+    await run([elements, { name: 'Retro', template: 'start-stop-continue' }]);
     expect(posted[0]!.intent).toEqual({ mode: 'diagram', tabKind: 'diagram' });
   });
 });

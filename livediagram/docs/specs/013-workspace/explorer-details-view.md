@@ -36,8 +36,8 @@ by any column.
 - **Comments** show the count inside the bubble, up to 99, then "99+", centred on the bubble's body
   (not its tail). The bubble's outline is faint and the number in full contrast: the count is what
   matters.
-- **Type** is the mode of the tab written most recently, so a document worked in Draw last week and
-  in Plan today reads Plan. An event-storming board's mode is always Diagram. The mode's icon
+- **Type** is the mode of the tab written most recently, so a document worked in Diagram last week and
+  in Draw today reads Draw. An event-storming board's mode is always Diagram. The mode's icon
   and name are the editor's own ([Editor modes](../007-editor/editor-modes.md)).
 - **Access** is the reader's own level ([Share roles](share-roles.md)): their own documents, team
   documents and documents in this browser are Editor; a document shared with them is the role their

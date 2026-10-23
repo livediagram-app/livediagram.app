@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Element, Tab } from '@livediagram/document';
+import type { Tab } from '@livediagram/document';
 import { useEditorMode } from './useEditorMode';
 
 const events: unknown[][] = [];
@@ -14,9 +14,6 @@ vi.mock('@/lib/telemetry', () => ({
     modeAtEvent.push(tabs[0]?.opensIn);
   },
 }));
-
-const sticky = (id: string, x: number) =>
-  ({ id, type: 'sticky', x, y: 0, width: 150, height: 92 }) as unknown as Element;
 
 function setup(tab: Tab, canEdit = true) {
   tabs = [tab];
@@ -66,22 +63,6 @@ describe('useEditorMode', () => {
     act(() => h.hook.result.current.setMode('diagram', convert));
     expect(convert).toHaveBeenCalledTimes(1);
     expect(h.tab()).toMatchObject({ opensIn: 'diagram', name: 'Converted' });
-  });
-
-  // "Plan stands apart", unless the tab is empty (docs/specs/007-editor/start-diagramming.md "Changing mode").
-  it('crosses into and out of Plan while the tab is empty, and only then', () => {
-    const empty = setup({ id: 't', name: 'T', elements: [] });
-    expect(empty.hook.result.current.crossPlan).toBe(true);
-    act(() => empty.hook.result.current.setMode('plan'));
-    expect(empty.tab().opensIn).toBe('plan');
-    empty.hook.rerender();
-    act(() => empty.hook.result.current.setMode('diagram'));
-    expect(empty.tab().opensIn).toBe('diagram');
-
-    const full = setup({ id: 't', name: 'T', elements: [sticky('s', 0)] });
-    expect(full.hook.result.current.crossPlan).toBeUndefined();
-    act(() => full.hook.result.current.setMode('plan'));
-    expect(full.tab().opensIn).toBeUndefined();
   });
 
   it('does nothing when asked for the mode already in use', () => {

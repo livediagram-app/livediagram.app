@@ -19,7 +19,7 @@ vi.mock('../collab-index/backfill', () => backfill);
 import type { RouteContext } from './context';
 import { handleActivity } from './activity';
 
-const EMPTY = { actions: [], threads: [], cards: [], cardThreads: [] };
+const EMPTY = { actions: [], threads: [] };
 
 const makeCtx = (
   method: string,

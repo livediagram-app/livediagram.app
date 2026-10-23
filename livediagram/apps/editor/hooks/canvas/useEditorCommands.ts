@@ -12,7 +12,7 @@
 import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
 import { EMPTY_SELECTION, type Selection } from '@/lib/selection-store';
 import { useCallback, useMemo } from 'react';
-import { isBoxed, renumberSteps, supportsRotation, takesAttachments } from '@livediagram/document';
+import { isBoxed, renumberSteps, supportsRotation } from '@livediagram/document';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import type { CanvasTool } from '@/components/palette/palette.types';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
@@ -77,7 +77,6 @@ export function useEditorCommands(open: boolean): {
   );
   // Draw mode (docs/specs/007-editor/editor-modes.md) has no format painter.
   const whiteboard = ctx.editorMode.mode === 'draw';
-  const planMode = ctx.editorMode.mode === 'plan';
   const {
     isReadOnly,
     canShareDocument,
@@ -140,7 +139,6 @@ export function useEditorCommands(open: boolean): {
   const single =
     !isMulti && selectedId ? (activeTab.elements.find((e) => e.id === selectedId) ?? null) : null;
   const singleIsBoxed = single ? isBoxed(single) : false;
-  const singleTakesAttachments = single ? takesAttachments(single) : true;
   const singleIsShape = single?.type === 'shape';
   const singleRotates = single ? supportsRotation(single) : false;
   const marker = single?.type === 'shape' ? (single.marker ?? null) : null;
@@ -164,7 +162,6 @@ export function useEditorCommands(open: boolean): {
       zenMode,
       selectionCount,
       singleIsBoxed,
-      singleTakesAttachments,
       singleRotates,
       singleIsShape,
       hasAnimation,
@@ -181,7 +178,6 @@ export function useEditorCommands(open: boolean): {
       isMobile,
       esBoard,
       whiteboard,
-      planMode,
       tabLocked,
       photoImportAvailable,
     }),
@@ -192,7 +188,6 @@ export function useEditorCommands(open: boolean): {
       zenMode,
       selectionCount,
       singleIsBoxed,
-      singleTakesAttachments,
       singleRotates,
       singleIsShape,
       hasAnimation,
@@ -206,7 +201,6 @@ export function useEditorCommands(open: boolean): {
       isMobile,
       esBoard,
       whiteboard,
-      planMode,
       tabLocked,
       photoImportAvailable,
     ],
@@ -230,12 +224,11 @@ export function useEditorCommands(open: boolean): {
       commitElements(renumberSteps);
       track('Element', 'Changed', 'RenumberSteps');
     },
-    // Never on a Plan item (docs/specs/026-plan/plan-mode.md "Nothing attached to Plan items").
     addComment: () => {
-      if (selectedId && singleTakesAttachments) openComments(selectedId);
+      if (selectedId) openComments(selectedId);
     },
     editNote: () => {
-      if (selectedId && singleTakesAttachments) openNote(selectedId);
+      if (selectedId) openNote(selectedId);
     },
     createTab: addTab,
     renameDocument: requestRenameDocument,

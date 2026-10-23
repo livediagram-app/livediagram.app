@@ -30,9 +30,6 @@ import {
   type CreateIds,
 } from './create-failure';
 import { offlineCreateDocument } from '@/lib/offline/offline-store';
-import { offlineWriteItem } from '@/lib/offline/offline-items';
-import { seedAuthor } from '@/lib/seed-author';
-import { withTemplateSheets } from '@/lib/template-sheets';
 import { isOfflineLocation } from '@/lib/save-locations';
 import { useDocumentCount } from './useDocumentCount';
 import { useNewDocumentLocation } from './useNewDocumentLocation';
@@ -66,7 +63,7 @@ import { handStartQuery } from '@/components/start/start-query';
 import { closeStartForBlank } from '@/components/start/close-start-for-blank';
 import { handTemplatePick } from '@/lib/placement-defaults/template-pick-handoff';
 import { isBlankTemplate } from '@livediagram/templates';
-import { NEW_DOCUMENT_THEME_ID, newDocumentContent } from '@/lib/new-document-content';
+import { NEW_DOCUMENT_THEME_ID, newDocumentTab } from '@/lib/new-document-content';
 
 // In-place handoff (docs/specs/007-editor/new-document-route.md): once a document is created, this page
 // renders the editor itself under the rewritten /document/<id> URL instead of paying for a second page
@@ -326,37 +323,16 @@ export default function NewDocumentPage() {
     // and takes the count only if it is already in.
     const priorDocuments = await documentCount.settled(offline ? 0 : undefined);
 
-    // The template's tabs, card types and example cards, or one blank tab (lib/new-document-content.ts).
-    const { tabs, tab, itemTypes, seedItems } = await newDocumentContent({
-      templateKind,
-      themeId,
-      tabId,
-      via: 'new',
-    });
+    // The template's tab, or one blank tab (lib/new-document-content.ts).
+    const tab = newDocumentTab({ templateKind, themeId, tabId });
     try {
       if (offline) {
         // Offline Mode (docs/specs/006-document/offline-mode.md): create the document in IndexedDB only. This
-        // also registers its id so every later load / save routes local. A template's Sheets are made with it, as
-        // the api's create makes them (docs/specs/029-sheets/sheet-store.md "Template starts").
-        const made = tabs ? await withTemplateSheets(tabs, Date.now()) : null;
+        // also registers its id so every later load / save routes local.
         await offlineCreateDocument(
-          {
-            id: documentId,
-            name: documentName,
-            tabs: made?.tabs ?? tabs ?? [tab],
-            itemTypes,
-            ...(made?.sheets.length ? { sheets: made.sheets } : {}),
-          },
+          { id: documentId, name: documentName, tabs: [tab] },
           Date.now(),
         );
-        // Its example cards, through the same checks the api's create puts them through (offline-items.ts).
-        if (seedItems.length) {
-          await offlineWriteItem(
-            documentId,
-            { kind: 'create', creates: seedItems },
-            await seedAuthor(selfRef.current),
-          );
-        }
       } else {
         // Placement rides the create (docs/specs/007-editor/new-document-route.md): a /new?folder= / ?team=
         // context is filed by the same write, or the create is refused by name and nothing is written.
@@ -364,9 +340,7 @@ export default function NewDocumentPage() {
         await apiCreateDocument(owner.id, {
           id: documentId,
           name: documentName,
-          tabs: tabs ?? [tab],
-          ...(itemTypes ? { itemTypes } : {}),
-          ...(seedItems.length ? { items: seedItems } : {}),
+          tabs: [tab],
           // Passed through as given: absent is no choice (a default folder may answer), a null
           // folder the root chosen on purpose (docs/specs/013-workspace/default-folders.md).
           teamId: settings.teamId,

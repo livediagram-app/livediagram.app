@@ -7,7 +7,6 @@ import {
   presentableSlides,
   remapPresentationTabs,
   resolveSlide,
-  slideFrame,
   slideBounds,
   slideName,
   storePresentation,
@@ -274,26 +273,19 @@ describe('page slides', () => {
   });
 });
 
-// docs/specs/012-collaboration/presentation-mode.md "Item slides".
+// A Plan card's slide, from before Plan moved out to liveplanner.
 describe('item slides', () => {
-  it('show no canvas elements and frame nothing', () => {
-    const t = tab('t1', [shape('a')]);
-    const s = slide({ itemId: 'it-1', elementIds: ['a'] });
-    expect(resolveSlide(s, t)).toEqual([]);
-    expect(slideFrame(s, t)).toBeNull();
-  });
-
-  it('read back with their item, and an empty item id is dropped', () => {
+  it('are dropped on read, and the deck keeps the rest', () => {
     const stored = JSON.stringify({
       decks: [
         {
           slides: [
             { id: 'a', tabId: 't1', elementIds: [], itemId: 'it-1' },
-            { id: 'b', tabId: 't1', elementIds: [], itemId: '' },
+            { id: 'b', tabId: 't1', elementIds: [] },
           ],
         },
       ],
     });
-    expect(firstDeck(parseStoredPresentation(stored)).slides.map((s) => s.id)).toEqual(['a']);
+    expect(firstDeck(parseStoredPresentation(stored)).slides.map((s) => s.id)).toEqual(['b']);
   });
 });

@@ -88,12 +88,10 @@ right-click opens the ordinary element menu.
 - A completed action softens (title struck through and muted, the accent
   swapped for green) but stays on the canvas: finished work is still a record
   of what was agreed.
-- A **Won't Do** action ([Linked boards](../026-plan/linked-boards.md) "On the canvas") softens the same way, with a
+- A **Won't Do** action ([Assigned actions](assigned-actions.md)) softens the same way, with a
   grey slashed circle in place of the check (pressing it reopens) and **Won't Do** before the assignee. It counts as
   closed, so the open count and All Done treat it as done. The dialog's **Status** row (Open, Done, Won't Do) sets
   it when editing, saved with the rest.
-- On a document with an **Actions board**, a card holding actions shows a **Board ↗** chip beside its count, which
-  opens the board ([Linked boards](../026-plan/linked-boards.md) "On the canvas").
 - **Delete** lives in the dialog: editing a card's action shows a two-step
   **Delete Action** in its footer, the popover's rule ([Assigned actions](assigned-actions.md) §3). Deleting the
   card deletes all its actions with it.

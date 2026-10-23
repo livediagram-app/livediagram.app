@@ -63,17 +63,6 @@ describe('ImportTabDialog, draw.io', () => {
     );
     expect(screen.getByText("Here's how your images came across.")).toBeTruthy();
   });
-
-  it("reports a JSON import's refused Plan cards (docs/specs/026-plan/items.md)", async () => {
-    open({
-      status: 'done',
-      failures: [{ title: 'Plan Cards', message: "2 cards couldn't be added to this document." }],
-    });
-    expect((await screen.findByTestId('import-image-report')).textContent).toContain(
-      "2 cards couldn't be added",
-    );
-    expect(screen.getByText("Here's how your import came across.")).toBeTruthy();
-  });
 });
 
 describe('ImportTabDialog, offered formats', () => {
@@ -93,7 +82,6 @@ describe('ImportTabDialog, offered formats', () => {
     }
   });
 
-  // Pages mode and a Dashboard tab (docs/specs/026-plan/plan-tabs.md "Import and Export of a Dashboard").
   it('opens straight at the one format it offers, with no way back to a list', () => {
     render(<ImportTabDialog {...props} formats={['json']} />);
     expect(screen.getByText('Paste your JSON, or import a file.')).toBeTruthy();

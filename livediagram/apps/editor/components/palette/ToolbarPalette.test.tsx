@@ -8,28 +8,18 @@ import { ToolbarPalette } from './ToolbarPalette';
 import { ensureIconCatalogs } from '@/lib/icon-registry';
 import type { EsBoardControls } from './EventStormingBoardRows';
 import { COLLABORATE_CATEGORY_GROUPS } from './palette-tile-defs';
-import { paletteCategoriesFor } from './palette-layouts';
-import { createShape, type EditorMode, type Element } from '@livediagram/document';
+import { type EditorMode, type Element } from '@livediagram/document';
 import type { ReactNode } from 'react';
 import { EditorModeProvider } from '@/components/chrome/editor-mode/editor-mode-context';
 import { requestToolbarSearch } from '@/lib/toolbar-search-request';
 
 const mobile = vi.hoisted(() => ({ value: false }));
-// The window's width: a narrow one leaves Plan's strip room for only a few tiles, the rest behind More.
+// The window's width.
 const viewport = vi.hoisted(() => ({ width: 1440 }));
 vi.mock('@/hooks/ui/useViewportWidth', () => ({ useViewportWidth: () => viewport.width }));
 vi.mock('@/hooks/ui/useIsMobileViewport', () => ({
   useIsMobileViewport: () => mobile.value,
 }));
-// A Plan board or Sheet filling its tab (docs/specs/026-plan/plan-board.md "The palette follows what fills the screen").
-const covering = vi.hoisted(() => ({ value: false }));
-const sheetFilling = vi.hoisted(() => ({ value: false }));
-vi.mock('@/hooks/plan/plan-cover-store', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/hooks/plan/plan-cover-store')>()),
-  useBoardFillingTab: () => covering.value,
-  useSheetCovering: () => sheetFilling.value,
-}));
-
 beforeAll(() => {
   // The strip's rail measures itself; jsdom has no layout, so a no-op
   // observer is all it needs.
@@ -45,8 +35,6 @@ afterEach(() => {
   localStorage.clear();
   mobile.value = false;
   viewport.width = 1440;
-  covering.value = false;
-  sheetFilling.value = false;
 });
 
 function handlers(): PaletteAddHandlers {
@@ -90,13 +78,6 @@ function show({
   return { ...view, h, onSetCanvasTool };
 }
 
-function pickCategory(id: string) {
-  fireEvent.click(screen.getByRole('button', { name: 'Palette category' }));
-  const option = document.querySelector(`[data-option-id="${id}"]`);
-  expect(option, `category ${id} in the menu`).not.toBeNull();
-  fireEvent.click(option!);
-}
-
 // The tiles in the strip itself, not in the More popover.
 const strip = () => document.querySelector('[data-toolbar-palette] > div') as HTMLElement;
 
@@ -113,13 +94,6 @@ const openFlyout = (name: string) => {
   const el = flyout();
   expect(el, `${name}'s flyout`).not.toBeNull();
   return el!;
-};
-
-// A Plan category's tiles (Plan keeps the category picker and its tiles).
-const planTiles = (id: string) => {
-  const tiles = paletteCategoriesFor('plan').find((c) => c.id === id)?.tiles ?? [];
-  expect(tiles.length, `${id}'s tiles`).toBeGreaterThan(0);
-  return tiles;
 };
 
 describe('ToolbarPalette', () => {
@@ -144,12 +118,6 @@ describe('ToolbarPalette', () => {
     expect(within(strip()).queryByRole('button', { name: 'Add Square' })).toBeNull();
   });
 
-  it('keeps the category picker and its tiles in Plan', () => {
-    show({ mode: 'plan' });
-    expect(screen.getByRole('button', { name: 'Palette category' })).toBeTruthy();
-    expect(document.querySelector('[data-category-bar-button]')).toBeNull();
-  });
-
   it("reaches the same add-handler as the Palette from a category's flyout, and closes it", () => {
     const { h } = show();
     fireEvent.click(within(openFlyout('Shapes')).getByRole('button', { name: 'Add Square' }));
@@ -157,113 +125,6 @@ describe('ToolbarPalette', () => {
     expect(flyout()).toBeNull();
   });
 
-  // docs/specs/026-plan/plan-mode.md "The palette": Boards until the tab has a board, then Cards.
-  it('opens a Plan tab without a board on Boards, and moves on to Cards once one lands', () => {
-    const picked = () => screen.getByRole('button', { name: 'Palette category' }).textContent;
-    const board = { ...createShape('plan-board', 0, 0), id: 'b1' } as Element;
-    const view = show({ mode: 'plan', tabElements: [] });
-    expect(picked()).toContain('Boards');
-    const again = (tabElements: Element[]) =>
-      view.rerender(
-        inMode(
-          'plan',
-          <ToolbarPalette
-            canvasTool="select"
-            onSetCanvasTool={vi.fn()}
-            canvasEmpty={false}
-            pendingDraw={null}
-            tabElements={tabElements}
-            {...view.h}
-          />,
-        ),
-      );
-    again([board]);
-    expect(picked()).toContain('Cards');
-    // The last board going takes it back to Boards.
-    again([]);
-    expect(picked()).toContain('Boards');
-    // A category the person picked stays when a board lands.
-    pickCategory('plan-metrics');
-    again([board]);
-    expect(picked()).toContain('Metrics');
-  });
-
-  it('opens a Plan tab with a board on Cards', () => {
-    show({ mode: 'plan', tabElements: [{ ...createShape('plan-board', 0, 0), id: 'b1' }] });
-    expect(screen.getByRole('button', { name: 'Palette category' }).textContent).toContain('Cards');
-  });
-
-  // docs/specs/026-plan/plan-board.md "The palette follows what fills the screen": only Cards while a board fills its
-  // tab, and the category chosen before comes back when it stops.
-  it('offers only Cards while a board fills its tab, then restores the choice', () => {
-    const picked = () => screen.getByRole('button', { name: 'Palette category' }).textContent;
-    const view = show({ mode: 'plan' });
-    pickCategory('plan-boards');
-    expect(picked()).toContain('Boards');
-    covering.value = true;
-    view.rerender(
-      inMode(
-        'plan',
-        <ToolbarPalette
-          canvasTool="select"
-          onSetCanvasTool={vi.fn()}
-          canvasEmpty={false}
-          pendingDraw={null}
-          {...view.h}
-        />,
-      ),
-    );
-    expect(picked()).toContain('Cards');
-    covering.value = false;
-    view.rerender(
-      inMode(
-        'plan',
-        <ToolbarPalette
-          canvasTool="select"
-          onSetCanvasTool={vi.fn()}
-          canvasEmpty={false}
-          pendingDraw={null}
-          {...view.h}
-        />,
-      ),
-    );
-    expect(picked()).toContain('Boards');
-  });
-
-  // docs/specs/026-plan/plan-board.md "The palette follows what fills the screen": a Sheet filling its tab hides the
-  // palette; on a phone the menu beside it stays.
-  it('hides the palette while a Sheet fills its tab', () => {
-    sheetFilling.value = true;
-    show({ mode: 'plan' });
-    const root = document.querySelector('[data-toolbar-palette]')!;
-    expect(root.classList.contains('hidden')).toBe(true);
-    expect(screen.queryByRole('button', { name: 'Palette category' })).toBeNull();
-  });
-
-  it('keeps a phone’s menu while a Sheet fills its tab', () => {
-    sheetFilling.value = true;
-    mobile.value = true;
-    render(
-      inMode(
-        'plan',
-        <ToolbarPalette
-          canvasTool="select"
-          onSetCanvasTool={vi.fn()}
-          canvasEmpty={false}
-          pendingDraw={null}
-          leading={<button type="button">Menu</button>}
-          {...handlers()}
-        />,
-      ),
-    );
-    const root = document.querySelector('[data-toolbar-palette]')!;
-    expect(root.classList.contains('hidden')).toBe(false);
-    expect(screen.getByRole('button', { name: 'Menu' })).toBeTruthy();
-    expect(screen.queryByRole('button', { name: 'Palette category' })).toBeNull();
-  });
-
-  // docs/specs/007-editor/toolbar-layout.md "On a phone": held sideways the row has no menu card, and the strip
-  // keeps the phone's swiping row rather than turning into the desktop's centred one.
   it('keeps the phone’s swiping row with no menu card', () => {
     mobile.value = true;
     render(
@@ -304,30 +165,6 @@ describe('ToolbarPalette', () => {
     expect(document.querySelector('[data-strip-leading]')).not.toBeNull();
   });
 
-  it('swaps the tiles when the category changes', () => {
-    show({ mode: 'plan' });
-    pickCategory('plan-metrics');
-    expect(screen.getByRole('button', { name: 'Palette category' }).textContent).toContain(
-      'Metrics',
-    );
-    expect(
-      within(strip()).getByRole('button', { name: planTiles('plan-metrics')[0]!.label }),
-    ).toBeTruthy();
-  });
-
-  it('only offers More when the category has more than the strip shows', () => {
-    show({ mode: 'plan' });
-    pickCategory('plan-boards');
-    expect(screen.queryByRole('button', { name: /^More/ })).toBeNull();
-    cleanup();
-    // A narrow window fits two tiles; the rest is behind More.
-    viewport.width = 500;
-    show({ mode: 'plan' });
-    pickCategory('plan-boards');
-    expect(screen.getByRole('button', { name: /^More/ })).toBeTruthy();
-  });
-
-  // Workshop mode (docs/specs/012-collaboration/workshop-mode.md "The palette").
   it('offers Stickers, Data, Ask and Session in Workshop, not in Diagram, and Icons in both', () => {
     show();
     for (const name of ['Ask', 'Session', 'Stickers', 'Data'])
@@ -358,18 +195,6 @@ describe('ToolbarPalette', () => {
       ).toBeTruthy();
   });
 
-  it("opens the category's full body under More, and closes it when a tile is used", () => {
-    viewport.width = 500;
-    show({ mode: 'plan' });
-    pickCategory('plan-boards');
-    fireEvent.click(screen.getByRole('button', { name: /^More/ }));
-    const popover = document.querySelector('[data-toolbar-more]') as HTMLElement;
-    expect(popover).not.toBeNull();
-    const last = planTiles('plan-boards').at(-1)!;
-    fireEvent.click(within(popover).getAllByRole('button', { name: last.label }).at(-1)!);
-    expect(document.querySelector('[data-toolbar-more]')).toBeNull();
-  });
-
   it("focuses a catalogue's search field when its flyout opens (docs/specs/007-editor/toolbar-layout.md)", () => {
     show({ mode: 'workshop' });
     const popover = openFlyout('Icons');
@@ -398,17 +223,6 @@ describe('ToolbarPalette', () => {
       document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
     });
     expect(flyout()).toBeNull();
-  });
-
-  it('closes More on Escape', () => {
-    viewport.width = 500;
-    show({ mode: 'plan' });
-    pickCategory('plan-boards');
-    fireEvent.click(screen.getByRole('button', { name: /^More/ }));
-    act(() => {
-      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
-    });
-    expect(document.querySelector('[data-toolbar-more]')).toBeNull();
   });
 
   it('shows only the notation on an event-storming board', () => {
@@ -445,34 +259,6 @@ describe('ToolbarPalette', () => {
     expect(screen.queryByRole('button', { name: 'Add from Photo' })).toBeNull();
   });
 
-  it('hides rather than unmounts, so the chosen category survives', () => {
-    const view = show({ mode: 'plan' });
-    pickCategory('plan-metrics');
-    const h = handlers();
-    const rerender = (hidden: boolean) =>
-      view.rerender(
-        inMode(
-          'plan',
-          <ToolbarPalette
-            canvasTool="select"
-            onSetCanvasTool={vi.fn()}
-            canvasEmpty={false}
-            pendingDraw={null}
-            hidden={hidden}
-            {...h}
-          />,
-        ),
-      );
-    rerender(true);
-    const root = document.querySelector('[data-toolbar-palette]') as HTMLElement;
-    expect(root.classList.contains('hidden')).toBe(true);
-    rerender(false);
-    expect(root.classList.contains('hidden')).toBe(false);
-    expect(screen.getByRole('button', { name: 'Palette category' }).textContent).toContain(
-      'Metrics',
-    );
-  });
-
   describe('Search (docs/specs/007-editor/toolbar-layout.md "Search: every element type")', () => {
     // The icon catalogues load as a chunk of their own, as the editor loads them on its first paint: loaded
     // before the searches run, so what they find never depends on whether the chunk happened to land.
@@ -488,7 +274,7 @@ describe('ToolbarPalette', () => {
       });
 
     it("ends the strip in every mode's palette, and not on an event-storming board", () => {
-      for (const mode of ['diagram', 'workshop', 'plan'] as const) {
+      for (const mode of ['diagram', 'workshop'] as const) {
         show({ mode });
         const buttons = within(strip()).getAllByRole('button');
         expect(buttons.at(-1)?.getAttribute('aria-label'), mode).toBe('Search elements');
@@ -524,29 +310,6 @@ describe('ToolbarPalette', () => {
       fireEvent.click(accordion);
       fireEvent.click(within(popover).getByRole('button', { name: 'Add Pie Chart' }));
       expect(h.onAddShape).toHaveBeenCalledWith('pie-chart', expect.anything());
-    });
-
-    it("shows Plan's own elements in other modes, but never adds them", () => {
-      const { h } = show();
-      const popover = openSearch();
-      type(popover, 'gantt');
-      expect(
-        within(popover).queryByRole('button', { name: /Elements From Other Modes/ }),
-      ).toBeNull();
-      const accordion = within(popover).getByRole('button', {
-        name: /Not Available in Diagram Mode/,
-      });
-      expect(accordion.getAttribute('aria-expanded')).toBe('false');
-      fireEvent.click(accordion);
-      const gantt = within(popover).getByRole('button', { name: /Gantt/ });
-      expect(gantt.getAttribute('aria-disabled')).toBe('true');
-      expect(gantt.getAttribute('draggable')).not.toBe('true');
-      fireEvent.click(gantt);
-      fireEvent.keyDown(within(popover).getByRole('textbox', { name: 'Search elements' }), {
-        key: 'Enter',
-      });
-      expect(h.onAddShape).not.toHaveBeenCalled();
-      expect(document.querySelector('[data-toolbar-search]')).not.toBeNull();
     });
 
     it('lists only the element types on the tab before anything is typed', () => {

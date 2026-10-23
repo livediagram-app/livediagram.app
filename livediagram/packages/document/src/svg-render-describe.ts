@@ -6,8 +6,6 @@
 
 import type { TagColour } from './tag-colours';
 import { isPersonNode } from './person-node';
-import type { SheetRenderModel } from './svg-render-plan-sheet';
-import type { Item, ItemTypeDef } from '@livediagram/items';
 import { imageCornerPx } from './drawn-outline-finish';
 import { ownColours } from './behaviour-skin';
 import {
@@ -129,20 +127,7 @@ export type BoxedExportOptions = {
   // canvas hands its charts the same list; without it they fall back to the
   // built-in one, which is what a caller with no theme in hand wants.
   chartPalette?: readonly string[];
-  // The document's items, for the Plan board and Plan card (docs/specs/026-plan/plan-board.md). Without
-  // them a board draws its columns empty and a card a neutral placeholder.
-  items?: ReadonlyMap<string, Item>;
-  // The document's item types (docs/specs/026-plan/item-types.md); the built-in ones without them.
-  itemTypes?: readonly ItemTypeDef[];
-  // Sheet windows by sheet id (docs/specs/029-sheets/sheet.md "Exports and images").
-  sheets?: ReadonlyMap<string, SheetRenderModel>;
-  // A plan view's picture at its box (docs/specs/026-plan/plan-tabs.md "Export"), from a caller that has the charts'
-  // models (the editor); undefined, or no resolver, draws the labelled box.
-  resolvePlanArt?: ResolvePlanArt;
 };
-
-// The markup of a plan view drawn at its own box, or undefined to fall back to the labelled box.
-export type ResolvePlanArt = (el: BoxedElement & { type: 'shape' }) => string | undefined;
 
 // The face a label paints in: the author's own choice, else the notation's
 // (a workshop note writes in marker, docs/specs/021-event-storming/event-storming.md), else the tab default. The
@@ -180,19 +165,15 @@ export function exportFontIds(
     fillColor?: string;
   }[],
   tabFont?: string,
-  // The Sheet windows drawn (docs/specs/029-sheets/sheet.md "Formatting"): a cell's own font is painted too.
-  sheets?: ReadonlyMap<string, { cells: readonly { font?: string }[] }>,
   tabFinish?: Finish,
 ): string[] {
   const boxed = elements.filter((el) => el.type !== 'arrow') as BoxedElement[];
-  const cellFonts = [...(sheets?.values() ?? [])].flatMap((m) => m.cells.map((c) => c.font));
   // What each element letters in when it has no face of its own: the handwriting font under Sketch.
   const finishFonts = elements.map((el) =>
     el.font ? undefined : elementFontId(el, undefined, tabFinish),
   );
   return fontIdsUsed(boxed, tabFont, [
     ...boxed.map(eventStormingNoteFont),
-    ...cellFonts,
     ...finishFonts,
   ]);
 }
@@ -458,11 +439,7 @@ export function drawsStandardLabel(el: BoxedElement): boolean {
     el.type === 'shape' &&
     (el.shape === 'code-block' ||
       el.shape === 'legend' ||
-      el.shape === 'checklist' ||
-      el.shape === 'plan-board' ||
-      el.shape === 'plan-card' ||
-      el.shape === 'plan-view' ||
-      el.shape === 'plan-sheet')
+      el.shape === 'checklist')
   )
     return false;
   return !selfLabelled(el);

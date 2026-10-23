@@ -1,13 +1,3 @@
-import { boardTitleForTab } from '@/lib/tab-named-plan';
-import { statusColumnsOf } from '@/hooks/plan/usePlanStatusNames';
-import {
-  freshBoardSetup,
-  isPlanViewId,
-  newItemId,
-  planBoardHeightFor,
-  planBoardWidthFor,
-  planViewSize,
-} from '@livediagram/items';
 import {
   defaultSessionConfig,
   eventStormingNote,
@@ -50,7 +40,6 @@ import type { PendingDraw } from '@/lib/draw-mode';
 import { stampSizeFor } from '@/lib/stamp-placement';
 import { placedTextBox } from '@/lib/text-hug';
 import { boardShape } from '@/lib/whiteboard-tool';
-import { placeNewSheet, sheetTitleForTab } from '@/lib/sheet-seeds';
 
 // The pure element construction behind commitDraw (docs/specs/008-canvas/canvas-and-palette.md draw-to-add),
 // lifted out of useShapeDrawing: each builder interprets the gesture's
@@ -287,22 +276,8 @@ export function buildDrawnBoxed(
   // Shared with the live preview so the outline the user sizes against is the
   // box that lands — including the embed's 16:9 fit (docs/specs/009-elements/youtube-video.md).
   const dragBox = drawnDragBox(intent, startX, startY, endX, endY);
-  // A tapped-in board starts wide enough for its columns, and taller while it has none (planBoardHeightFor); its
-  // own size, so it centres on the tap. A board drawn to size keeps its size.
-  const boardTap =
-    isTap && intent.type === 'shape' && intent.kind === 'plan-board'
-      ? freshBoardSetup(intent.plan)
-      : null;
-  const drawnWidth = boardTap
-    ? planBoardWidthFor(boardTap)
-    : fixedSize || isTap
-      ? tapSize.width
-      : dragBox.width;
-  const height = boardTap
-    ? planBoardHeightFor(boardTap)
-    : fixedSize || isTap
-      ? tapSize.height
-      : dragBox.height;
+  const drawnWidth = fixedSize || isTap ? tapSize.width : dragBox.width;
+  const height = fixedSize || isTap ? tapSize.height : dragBox.height;
   // A tapped sticker (docs/specs/010-palette/stickers.md) takes its flavour's aspect rather than the
   // per-kind default: emoji stickers are square, badge pills are wide, and
   // both are the one `sticker` kind, so the default-size table can't say it.
@@ -405,33 +380,6 @@ export function buildDrawnBoxed(
     ...(intent.type === 'shape' && intent.kind === 'estimate' && intent.estimateScale
       ? { estimateScale: intent.estimateScale }
       : {}),
-    // A Plan board takes its tile's preset; a Plan card names a new item, which the editor makes in
-    // the item store as the card lands (docs/specs/026-plan/plan-mode.md "The palette").
-    // A column named as a status the tab's boards already have takes that status: one name, one status
-    // (docs/specs/026-plan/plan-board.md "The board set-up").
-    ...(intent.type === 'shape' && intent.kind === 'plan-board'
-      ? {
-          planBoard: namedForTab(
-            freshBoardSetup(intent.plan, Math.random, statusColumnsOf(activeTab.elements)),
-            activeTab.name,
-          ),
-        }
-      : {}),
-    ...(intent.type === 'shape' && intent.kind === 'plan-card'
-      ? { planCard: { itemId: newItemId() } }
-      : {}),
-    // A Sheet names a new sheet, which the Sheet makes in the sheet store as it first draws
-    // (docs/specs/029-sheets/sheet.md "Placing a sheet").
-    ...(intent.type === 'shape' && intent.kind === 'plan-sheet'
-      ? { planSheet: placeNewSheet({ title: sheetTitleForTab(activeTab.name) }) }
-      : {}),
-    // A plan view takes its tile's view (docs/specs/026-plan/plan-views.md), tapped in at that view's size.
-    ...(intent.type === 'shape' && intent.kind === 'plan-view' && isPlanViewId(intent.plan)
-      ? { planView: { view: intent.plan } }
-      : {}),
-    ...(intent.type === 'shape' && intent.kind === 'plan-view' && isTap
-      ? planViewSize(intent.plan)
-      : {}),
     ...(intent.type === 'shape' && intent.kind === 'mode-button' && intent.mode
       ? { mode: intent.mode }
       : {}),
@@ -470,9 +418,4 @@ export function buildEventStormingNote(
     null,
     activeTab,
   ) as StickyElement;
-}
-
-// A board placed on a tab is named after it (docs/specs/026-plan/plan-board.md "The board set-up").
-function namedForTab<T extends { title: string }>(setup: T, tabName: string | undefined): T {
-  return { ...setup, title: boardTitleForTab(tabName, setup.title) };
 }

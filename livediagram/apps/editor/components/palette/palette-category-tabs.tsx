@@ -13,7 +13,6 @@
 // Order IS layout: the category picker renders the dropdown straight from the layout's order,
 // grouping by `group` under the CATEGORY_BANDS headings.
 
-import dynamic from 'next/dynamic';
 import { PALETTE_CATEGORIES } from './palette-categories';
 import { PaletteMyShapesTab } from './PaletteMyShapesTab';
 import type { ShapeLibraryItem } from '@livediagram/api-schema';
@@ -37,13 +36,6 @@ import type { PendingDraw } from '@/lib/draw-mode';
 import { PaletteTileGrid, type PaletteTileActions } from '@/components/palette/PaletteTileGrid';
 import type { ResolvedPaletteCategory } from './palette-layouts';
 import type { EsBoardControls } from '@/components/palette/EventStormingBoardRows';
-
-// Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost"), so a document without
-// Plan pays nothing for it.
-const PalettePlanCardsTab = dynamic(
-  () => import('./PalettePlanCardsTab').then((m) => m.PalettePlanCardsTab),
-  { ssr: false },
-);
 
 // Deps are named exactly as the tab bodies' own props, and typed off those
 // components, so the array below is verbatim from where it used to live and
@@ -165,10 +157,6 @@ export function paletteCategoryTabs(
       case 'collab-mode':
       case 'collab-navigate':
         return <PaletteCollaborateTab {...tab} tiles={tiles} />;
-      // Plan mode's cards follow the document's item types
-      // (docs/specs/026-plan/item-types.md "Where types show").
-      case 'plan-cards':
-        return <PalettePlanCardsTab {...tab} />;
       default:
         return <PaletteTileGrid {...tab} tiles={tiles} />;
     }

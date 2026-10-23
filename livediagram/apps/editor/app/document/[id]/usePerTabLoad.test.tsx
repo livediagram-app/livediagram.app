@@ -461,8 +461,6 @@ describe('usePerTabLoad keeps the undo history', () => {
       past: [[placeholder('t1'), placeholder('t2')]],
       present: [drawn, placeholder('t2')],
       future: [] as Tab[][],
-      depth: 1,
-      branch: 0,
     };
     apiLoadTab.mockResolvedValue({
       ...placeholder('t2'),

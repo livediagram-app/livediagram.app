@@ -41,30 +41,20 @@ const dock = (page: Page) => page.locator('[data-whiteboard-dock]');
 const mode = (page: Page) => page.locator('[data-editor-mode]');
 // The start's own switch, the one place a tab's mode is chosen.
 const startSwitch = (page: Page) => page.getByRole('button', { name: /^Tab mode: / });
-const boards = (page: Page) => page.locator('[data-plan-board]');
 const sketches = (page: Page) => page.locator(CANVAS).getByRole('img', { name: /^Sketch/ });
 
 // A new document in a mode, on its start, in dark mode at a desktop size.
-async function openInMode(page: Page, name: 'diagram' | 'draw' | 'plan') {
+async function openInMode(page: Page, name: 'diagram' | 'draw') {
   await page.setViewportSize({ width: 1600, height: 900 });
   await page.emulateMedia({ colorScheme: 'dark' });
-  // The Plan and Workshop tours offer themselves 800 ms into their modes (OFFER_DELAY_MS), and their overlay
+  // The Workshop tour offers itself 800 ms into their modes (OFFER_DELAY_MS), and their overlay
   // takes the presses these specs make there on a slow runner; it has its own unit tests.
   await page.addInitScript(() => {
     const key = 'livediagram:user-preferences:v1';
     try {
       const prefs = JSON.parse(localStorage.getItem(key) ?? '{}') as Record<string, unknown>;
-      // The Plan tour offers each track once (lib/tour-tracks.ts): both answered.
-      if (!Array.isArray(prefs.planTourTracks) || prefs.workshopTourSeen !== true)
-        localStorage.setItem(
-          key,
-          JSON.stringify({
-            ...prefs,
-            planTourSeen: true,
-            planTourTracks: ['boards', 'sheets'],
-            workshopTourSeen: true,
-          }),
-        );
+      if (prefs.workshopTourSeen !== true)
+        localStorage.setItem(key, JSON.stringify({ ...prefs, workshopTourSeen: true }));
     } catch {
       // No storage: nothing to mark.
     }
@@ -72,7 +62,7 @@ async function openInMode(page: Page, name: 'diagram' | 'draw' | 'plan') {
   await createInMode(page, name);
 }
 
-async function chooseOnStart(page: Page, name: 'Diagram' | 'Draw' | 'Plan') {
+async function chooseOnStart(page: Page, name: 'Diagram' | 'Draw') {
   await startSwitch(page).click();
   await page.getByRole('menuitemradio', { name: new RegExp(`^${name}`) }).click();
 }
@@ -143,25 +133,12 @@ test.describe('editor modes', () => {
     expectNoPageErrors(pageErrors);
   });
 
-  // docs/specs/007-editor/editor-modes.md "Plan stands apart": an empty tab crosses Plan's line freely.
   test('Shift+D moves an empty tab to the next mode', async ({ page, pageErrors }) => {
     await openInMode(page, 'diagram');
     await closeStart(page);
     await page.locator(CANVAS).click({ position: { x: 800, y: 500 } });
     await page.keyboard.press('Shift+D');
     await expect(mode(page)).toHaveAttribute('data-editor-mode', 'draw');
-    expectNoPageErrors(pageErrors);
-  });
-
-  test('a Plan tab with a board keeps its mode', async ({ page, pageErrors }) => {
-    await openInMode(page, 'plan');
-    await expect(page.getByRole('heading', { name: 'Start Planning' })).toBeVisible();
-    await page.getByRole('button', { name: /^Kanban Board/ }).click();
-    await expect(boards(page)).toHaveCount(1);
-    await page.keyboard.press('Escape');
-    await page.keyboard.press('Shift+D');
-    await expect(mode(page)).toHaveAttribute('data-editor-mode', 'plan');
-    await expect(boards(page)).toHaveCount(1);
     expectNoPageErrors(pageErrors);
   });
 

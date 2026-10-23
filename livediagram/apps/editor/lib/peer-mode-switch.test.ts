@@ -26,6 +26,5 @@ describe('peerModeSwitchMessage', () => {
   it('names who switched, or says someone', () => {
     expect(peerModeSwitchMessage('Ada', 'draw')).toBe('Ada switched this tab to Draw.');
     expect(peerModeSwitchMessage('  ', 'workshop')).toBe('Someone switched this tab to Workshop.');
-    expect(peerModeSwitchMessage(null, 'plan')).toBe('Someone switched this tab to Plan.');
   });
 });

@@ -282,7 +282,7 @@ function InboxRow({
   time,
 }: {
   y: number;
-  kind: 'action' | 'comment' | 'card';
+  kind: 'action' | 'comment';
   title: string;
   hint?: string;
   chip: string;
@@ -317,7 +317,6 @@ function InboxRow({
           </g>
         )}
         {kind === 'comment' && <path d="M-6 -5 H6 V3 H-1 L-4 6 V3 H-6 Z" />}
-        {kind === 'card' && <rect x={-5} y={-5} width={10} height={10} rx={2} />}
       </g>
       <Label x={60} y={y + 11} size={10.5} weight={600} tone="strong">
         {title}
@@ -597,10 +596,10 @@ export function InboxSections() {
       />
       <InboxRow
         y={102}
-        kind="card"
-        title="#12 Add the audit table"
+        kind="action"
+        title="Add the audit table"
         chip="Ledger"
-        where="Sprint board · Plan"
+        where="Ledger · Schema"
         who="Y"
         colour="brand"
         time="1d"
@@ -611,7 +610,7 @@ export function InboxSections() {
         kind="action"
         title="Draft the rollout note"
         chip="Payments"
-        where="Release · Plan"
+        where="Release · Timeline"
         who="S"
         colour="emerald"
         time="3d"

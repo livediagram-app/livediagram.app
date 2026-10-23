@@ -6,14 +6,14 @@
 // the editor: no backdrop, no focus taken, Escape only from inside it, so someone carrying on working leaves it there.
 // The sign-in banner steps aside while it is up (TOUR_CARD_ATTR), so the two never show together.
 import { useEffect, useEffectEvent, useRef, type ReactNode } from 'react';
-import type { PlanPalette } from '@livediagram/document';
+import type { StartPalette } from '@/components/start/start-palette';
 import { lucideCircleHelp } from '@livediagram/icons/lucide';
 import { lucideGlyph } from '@livediagram/ui';
 import { announceToastFloorChange, BOTTOM_CHROME_SELECTOR } from '@/components/toast/toast-floor';
 import { useChromeFloor } from '@/components/toast/useToastFloor';
 import { tourColourVars } from './tour-colours';
 import { TourHelpArt } from './TourHelpArt';
-import type { TourCardCopy, TourWelcomeChoice } from './tour-card-copy';
+import type { TourCardCopy } from './tour-card-copy';
 import { TourWelcomeArt } from './TourWelcomeArt';
 
 // On the body while a bookend banner is up (SignInBanner steps aside).
@@ -29,7 +29,6 @@ export function TourBanner({
   body,
   copy,
   welcomeArt,
-  welcomeChoices,
   palette,
   onNext,
   onSkip,
@@ -39,8 +38,7 @@ export function TourBanner({
   body: string;
   copy: TourCardCopy;
   welcomeArt?: ReactNode;
-  welcomeChoices?: readonly TourWelcomeChoice[];
-  palette: PlanPalette;
+  palette: StartPalette;
   onNext: () => void;
   onSkip: () => void;
 }) {
@@ -126,15 +124,7 @@ export function TourBanner({
             >
               {copy.decline}
             </button>
-            {welcomeChoices ? (
-              welcomeChoices.map((choice) => (
-                <BannerButton key={choice.id} onClick={choice.onPick}>
-                  {choice.label}
-                </BannerButton>
-              ))
-            ) : (
-              <BannerButton onClick={onNext}>{copy.accept}</BannerButton>
-            )}
+            <BannerButton onClick={onNext}>{copy.accept}</BannerButton>
           </div>
         ) : (
           <div className="flex shrink-0 items-center justify-end gap-3 whitespace-nowrap">

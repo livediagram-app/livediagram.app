@@ -4,17 +4,13 @@
 
 import { isChartCategory, isChartSeries, isChartSlice } from './malformed-chart-rows';
 import { isRoomDoor } from './office';
-import { isPlanViewSettings, isValidItemId, normaliseBoardSetup } from '@livediagram/items';
-import { isPlanSheetRef } from './element-types';
 import { isFlowchartDirection } from './flowchart';
-import { isChartSource, isSheetAnchor } from './chart-source';
 import { CHART_VARIANTS, isChartVariant } from './chart-types';
 import { EMBED_PROVIDERS } from './youtube';
 import { SELECTION_MODES, isPickerSource, isSelectionMode, isSessionTool } from './selection-mode';
 import { RESPONSES_MAX, RESPONSE_VALUE_MAX } from './responses';
 import { QA_MAX_ID, QA_MAX_NAME, QA_MAX_NOTES, QA_MAX_TEXT, QA_MAX_VOTERS } from './qa-board';
-import { COLLAB_ROUND_MAX, COMMENTS_MAX, isComment } from './element-deltas';
-import { CELL_THREADS_MAX, isCellKey } from './cell-comments';
+import { COLLAB_ROUND_MAX } from './element-deltas';
 import { QUIZ_MAX_OPTIONS, QUIZ_OPTION_MAX_TEXT } from './quiz';
 import {
   AGENDA_MAX_ITEMS,
@@ -82,10 +78,6 @@ import {
 
 // railLabels / lineCategories / pieSlices / lineSeries / pickerOptions / session options.
 const MAX_DATA_ARRAY = 5_000;
-// A Plan card's sizes (PlanCardRef.size): the same three as @livediagram/items' CARD_SIZES, written out because
-// that package imports this one and its binding may be uninitialised at module load; plan-shapes.test.ts keeps
-// the two equal.
-export const PLAN_CARD_SIZES: readonly string[] = ['minimal', 'compact', 'detailed'];
 
 const isStrUpTo = (max: number) => (v: unknown) => typeof v === 'string' && v.length <= max;
 // A web component's row text (docs/specs/009-elements/web-components-and-no-groups.md).
@@ -164,23 +156,6 @@ const isQaNote = (n: unknown) =>
   (n.state === undefined || n.state === 'discussing' || n.state === 'done') &&
   (n.doneAt === undefined || isNum(n.doneAt)) &&
   (n.author === undefined || isQaAuthor(n.author));
-
-// A Sheet's cell threads (docs/specs/029-sheets/sheet.md "Cell comments"): at most CELL_THREADS_MAX, each keyed
-// by a cell key and holding a thread as an element's.
-const isCellCommentThreads = (v: unknown): boolean => {
-  if (!isRecord(v)) return false;
-  const entries = Object.entries(v);
-  return (
-    entries.length <= CELL_THREADS_MAX &&
-    entries.every(
-      ([key, t]) =>
-        isCellKey(key) &&
-        isRecord(t) &&
-        isBool(t.resolved) &&
-        rowsOf(COMMENTS_MAX, isComment)(t.comments),
-    )
-  );
-};
 
 // Agenda (docs/specs/012-collaboration/agenda.md): minutes are clamped where read
 // (clampAgendaMinutes), not rejected here.
@@ -494,50 +469,6 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
     field: 'checklistItems',
     valid: rowsOf(CHECKLIST_MAX_ITEMS, isChecklistItem),
     rule: arrayRule(CHECKLIST_MAX_ITEMS, '{ text, done } rows'),
-  },
-  {
-    field: 'planBoard',
-    valid: (v: unknown) => normaliseBoardSetup(v) !== null,
-    rule: 'a Plan board set-up: 1 to 12 columns, each an id and a status',
-  },
-  {
-    field: 'planCard',
-    valid: (v: unknown) =>
-      typeof v === 'object' &&
-      v !== null &&
-      typeof (v as { itemId?: unknown }).itemId === 'string' &&
-      ((v as { itemId: string }).itemId === '' ||
-        isValidItemId((v as { itemId: string }).itemId)) &&
-      ((v as { size?: unknown }).size === undefined ||
-        PLAN_CARD_SIZES.includes((v as { size: string }).size)),
-    rule: 'an object { itemId, size? } naming an item, size minimal, compact or detailed',
-  },
-  {
-    field: 'planView',
-    // Called, not referenced: @livediagram/items imports this package too, so at module load the binding
-    // may not be initialised yet (a ReferenceError in the browser).
-    valid: (v: unknown) => isPlanViewSettings(v),
-    rule: 'an object { view } naming a plan view, with an optional types (1 to 32 card type ids), swimlaneBy, swimlaneField, namesWidth (120 to 2000), rowOrder (up to 2000 card ids), filters (up to 8), statuses (1 to 64 status ids) and title (up to 80 characters)',
-  },
-  {
-    field: 'chartSource',
-    valid: (v: unknown) => isChartSource(v),
-    rule: 'an object { sheetId, range: { r1, c1, r2, c2 } } naming a sheet of the document and row and column ids',
-  },
-  {
-    field: 'sheetAnchor',
-    valid: (v: unknown) => isSheetAnchor(v),
-    rule: 'an object { x, y }, each 0 to 1000000: where the chart sits in its Sheet, in px from the corner of its cells',
-  },
-  {
-    field: 'planSheet',
-    valid: (v: unknown) => isPlanSheetRef(v),
-    rule: 'an object { sheetId } naming a sheet of the document',
-  },
-  {
-    field: 'cellComments',
-    valid: isCellCommentThreads,
-    rule: `an object of at most ${CELL_THREADS_MAX} comment threads keyed by cell (rowId:colId)`,
   },
   {
     field: 'legendItems',

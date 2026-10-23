@@ -34,10 +34,6 @@ async function pick(kind: TemplateKind, documentName: string, onTab = 't1') {
       setIdentityPromptOpen: vi.fn(),
       requestFit: vi.fn(),
       putToolDown: vi.fn(),
-      markTabLoaded: vi.fn(),
-      bringCardTypes: vi.fn(),
-      seedCards: vi.fn(),
-      startForm: vi.fn(),
     }),
   );
   await act(async () => {
@@ -49,15 +45,9 @@ async function pick(kind: TemplateKind, documentName: string, onTab = 't1') {
 describe('chooseTemplate names the document', () => {
   it('after the template, while its name is still a default one', async () => {
     expect(await pick('flowchart', 'Untitled document')).toHaveBeenCalledWith('Untitled Flowchart');
-    // A mode's blank made by /new ("Untitled Plan") is a default name too.
-    expect(await pick('sailboat', 'Untitled Plan')).toHaveBeenCalledWith(
+    // Another template's default name is a default name too.
+    expect(await pick('sailboat', 'Untitled Flowchart')).toHaveBeenCalledWith(
       'Untitled Sailboat Retrospective',
-    );
-  });
-
-  it('for a form template too', async () => {
-    expect(await pick('rsvp-form', 'Untitled Plan')).toHaveBeenCalledWith(
-      expect.stringMatching(/^Untitled .*Form$/),
     );
   });
 

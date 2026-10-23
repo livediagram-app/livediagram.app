@@ -6,7 +6,7 @@
 // collab-shapes.ts is one. Re-exported from './index'.
 
 import type { Element, ShapeKind } from './index';
-import { sha256 } from '@livediagram/items';
+import { sha256 } from './sha256';
 
 export type QaNoteState = 'discussing' | 'done';
 

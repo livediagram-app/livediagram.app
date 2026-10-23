@@ -57,9 +57,6 @@ type ShapeDrawingDeps = {
   // Style memory (docs/specs/008-canvas/quick-style-panel.md): dresses every user-drawn shape and arrow in
   // the remembered style of its kind. Identity for anything memory does not know.
   styleNewElement: <T extends Element>(el: T) => T;
-  // A palette card never lands on the canvas (docs/specs/026-plan/plan-mode.md "The palette"): it goes
-  // into the board column at the point, or nowhere.
-  onPlanCardPlace?: (itemType: string | undefined, canvasX: number, canvasY: number) => void;
 };
 
 export function useShapeDrawing(deps: ShapeDrawingDeps) {
@@ -76,7 +73,6 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     setEditingId,
     zoomRef,
     styleNewElement,
-    onPlanCardPlace,
   } = deps;
 
   // Pending draw-to-size intent. Picking a palette element stashes it here;
@@ -190,11 +186,6 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
       setSelectedId(placed.id);
       setPendingDraw(null);
       track('Element', 'Added', componentTelemetryType(intent.kind));
-      return;
-    }
-    if (intent.type === 'shape' && intent.kind === 'plan-card') {
-      setPendingDraw(null);
-      onPlanCardPlace?.(intent.plan, endX, endY);
       return;
     }
     const dressed = dress(

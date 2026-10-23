@@ -33,12 +33,8 @@ import type { Selection } from '@/lib/selection-store';
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import {
   duplicateElements,
-  sheetDrawnChartIds,
-  tabTakesPlanOnly,
   withMindBranches,
-  withSheetCharts,
   withAttached,
-  withoutPlanOnly,
   type Element,
   type Tab,
 } from '@livediagram/document';
@@ -50,7 +46,6 @@ import {
   IN_APP_COPY_ELSEWHERE,
   inAppCopyIdOf,
   parseElementsPayload,
-  takeSheetSeeds,
   stripIdentity,
 } from '@/lib/clipboard-payload';
 import { landPastedCopies, pasteTranslation } from '@/lib/paste-placement';
@@ -61,7 +56,6 @@ import {
   isExcalidrawFileCandidate,
 } from '@/lib/excalidraw-paste';
 import type { BoardScene } from '@/lib/board-scene/scene';
-import { debugLog } from '@/lib/debug-log';
 import { track } from '@/lib/telemetry';
 import { trackDuplicated } from '@/lib/element-telemetry';
 import type { useToast } from '@/hooks/ui/useToast';
@@ -194,20 +188,15 @@ export function useClipboard(deps: ClipboardDeps) {
           ? new Set([selectedId])
           : null;
     if (!idSet || idSet.size === 0) return;
-    // A Sheet carries the charts it draws (docs/specs/029-sheets/sheet.md "Charts"): they are never selectable on
-    // the canvas, so the copy takes them here, and the paste relinks them to the Sheet's copy.
     // A host's badges and step numbers copy with it (docs/specs/009-elements/badge.md).
-    const withCharts = withAttached(
+    const copied = withAttached(
       activeTab.elements,
-      withSheetCharts(
-        activeTab.elements,
-        opts?.cut === true
-          ? withMindBranches(activeTab.elements, idSet, (el) => el.locked === true)
-          : idSet,
-      ),
+      opts?.cut === true
+        ? withMindBranches(activeTab.elements, idSet, (el) => el.locked === true)
+        : idSet,
     );
     const snapshot = activeTab.elements
-      .filter((el) => withCharts.has(el.id))
+      .filter((el) => copied.has(el.id))
       // Deep clone so a later edit to the originals doesn't bleed
       // into a future paste.
       .map((el) => JSON.parse(JSON.stringify(el)) as Element)
@@ -245,17 +234,6 @@ export function useClipboard(deps: ClipboardDeps) {
     track('Element', 'Copied');
   };
 
-  // A board or Sheet goes only on a tab in Plan (docs/specs/026-plan/plan-tabs.md "Only in Plan"): onto any other tab a
-  // paste leaves out its boards, its Sheets and the charts they draw, and says so.
-  const onlyWhatTheTabTakes = (copied: Element[]): Element[] => {
-    if (tabTakesPlanOnly(activeTab)) return copied;
-    const { kept, boards, sheets } = withoutPlanOnly(copied);
-    if (boards + sheets === 0) return copied;
-    debugLog('[clipboard] plan work left out', { boards, sheets });
-    toast.info(planOnlyLeftOutMessage(boards, sheets));
-    return kept;
-  };
-
   // `source` is what the OS clipboard carried, when it carried ours. Absent
   // for a paste that found nothing on the system clipboard, which falls back
   // to the in-app buffer. `at` is where the paste was asked for (the canvas
@@ -265,8 +243,7 @@ export function useClipboard(deps: ClipboardDeps) {
     const copied = source && source.length > 0 ? source : clipboard;
     if (!copied || copied.length === 0) return;
     if (refuseCreate()) return;
-    const pasting = onlyWhatTheTabTakes(copied);
-    if (pasting.length === 0) return;
+    const pasting = copied;
     const pointer = at !== undefined ? at : (canvasPointerRef?.current ?? null);
     const { dx, dy, atPointer } = pasteTranslation(
       pasting,
@@ -288,15 +265,12 @@ export function useClipboard(deps: ClipboardDeps) {
     if (newElements.length === 0) return;
     const copyIds = new Set(newElements.map((el) => el.id));
     commit((els) => landPastedCopies([...els, ...newElements], copyIds, atPointer));
-    // The charts a pasted Sheet draws are its, not the canvas's to select.
-    const drawn = sheetDrawnChartIds(newElements);
-    const selectable = newElements.filter((el) => !drawn.has(el.id));
-    if (selectable.length === 1) {
-      setSelectedId(selectable[0]!.id);
+    if (newElements.length === 1) {
+      setSelectedId(newElements[0]!.id);
       setMultiSelectedIds(new Set());
     } else {
       setSelectedId(null);
-      setMultiSelectedIds(new Set(selectable.map((el) => el.id)));
+      setMultiSelectedIds(new Set(newElements.map((el) => el.id)));
     }
     trackDuplicated(newElements);
   };
@@ -556,7 +530,6 @@ export function useClipboard(deps: ClipboardDeps) {
       const text = e.clipboardData?.getData('text/plain') ?? '';
       const fromOs = parseElementsPayload(text);
       if (fromOs) {
-        takeSheetSeeds(text);
         e.preventDefault();
         pasteRef.current.pasteFromClipboard(fromOs);
         return;
@@ -615,7 +588,6 @@ export function useClipboard(deps: ClipboardDeps) {
       const elements = parseElementsPayload(text);
       const inAppCopy = elements ? null : inAppCopyIdOf(text);
       if (!elements && inAppCopy === null) return;
-      takeSheetSeeds(text);
       e.preventDefault();
       e.stopPropagation();
       setEditingId(null);
@@ -638,14 +610,4 @@ export function useClipboard(deps: ClipboardDeps) {
     dropBoardFile,
     hasClipboard: (clipboard?.length ?? 0) > 0,
   };
-}
-
-// "Boards and sheets stay on Plan tabs, so the board and the sheets were left out".
-export function planOnlyLeftOutMessage(boards: number, sheets: number): string {
-  const named = [
-    ...(boards ? [boards === 1 ? 'the board' : 'the boards'] : []),
-    ...(sheets ? [sheets === 1 ? 'the sheet' : 'the sheets'] : []),
-  ];
-  const many = boards + sheets > 1;
-  return `Boards and sheets stay on Plan tabs, so ${named.join(' and ')} ${many ? 'were' : 'was'} left out`;
 }

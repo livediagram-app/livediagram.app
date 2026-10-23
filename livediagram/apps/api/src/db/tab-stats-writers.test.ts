@@ -86,10 +86,10 @@ describe('upsertTab and upsertTabAtRev', () => {
   it('replace them on the next write', async () => {
     const db = withDocument();
     await upsertTab(db.env, 'A', tab('t1', 'draw', 2), 0);
-    const rev = await upsertTab(db.env, 'A', tab('t1', 'plan'), 0);
-    await upsertTabAtRev(db.env, 'A', tab('t1', 'plan', 0, 0), 0, rev);
+    const rev = await upsertTab(db.env, 'A', tab('t1', 'workshop'), 0);
+    await upsertTabAtRev(db.env, 'A', tab('t1', 'workshop', 0, 0), 0, rev);
     expect(statsRow(db.sql, 't1')).toEqual(expected(db.sql, 't1'));
-    expect(statsRow(db.sql, 't1')).toMatchObject({ mode: 'plan', element_count: 2 });
+    expect(statsRow(db.sql, 't1')).toMatchObject({ mode: 'workshop', element_count: 2 });
   });
 });
 

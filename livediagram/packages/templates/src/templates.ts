@@ -1,4 +1,3 @@
-import { FORM_TEMPLATES, type FormTemplateKind } from './form-templates';
 import { titleCase } from '@livediagram/api-schema';
 import { UNTITLED_DOCUMENT_NAME, isUntitledDocumentName } from './legacy-untitled';
 
@@ -18,7 +17,6 @@ export type TemplateKind =
   | 'decision-tree'
   | 'approval-workflow'
   | 'data-flow'
-  | 'kanban'
   | 'swot'
   | 'timeline'
   // Milestone timelines: the storytelling, presentation-ready siblings of
@@ -140,8 +138,7 @@ export type TemplateKind =
   | 'stakeholder-map'
   // The strategy and systems batch (docs/specs/008-canvas/canvas-and-palette.md "Templates"): a Wardley map, a
   // STRIDE threat model, a service blueprint, a north-star metric tree, the Value Proposition Canvas, a family tree
-  // and a value stream map. The threat model, metric tree and value stream map make a companion Sheet tab after the
-  // drawing (template-companions.ts).
+  // and a value stream map.
   | 'wardley-map'
   | 'threat-model'
   | 'service-blueprint'
@@ -174,39 +171,7 @@ export type TemplateKind =
   | 'pre-mortem'
   | 'idea-garden'
   // Workshop mode's blank (docs/specs/012-collaboration/workshop-mode.md "Templates").
-  | 'blank-session'
-  // Plan templates (docs/specs/026-plan/plan-templates.md): a way of working across several tabs,
-  // each opening in Plan mode, with no cards. The Kanban board ('kanban', above) is one of them;
-  // Blank Plan is the mode's blank.
-  | 'blank-plan'
-  // A blank of Plan's beside Blank Plan: one tab holding an empty Sheet (docs/specs/007-editor/templates-by-mode.md
-  // "The blanks").
-  | 'blank-spreadsheet'
-  | 'project-planner'
-  | 'bug-triage'
-  | 'team-retro'
-  | 'weekly-planner'
-  | 'content-calendar'
-  | 'hiring-pipeline'
-  | 'okrs'
-  | 'product-launch'
-  | 'feedback-board'
-  | 'budget-planner'
-  | 'timesheet'
-  | 'contact-list'
-  | 'task-tracker'
-  // Spreadsheet templates added with the catalogue's job-based categories (docs/specs/026-plan/plan-templates.md
-  // "Spreadsheet templates"): one Sheet each, filling its tab.
-  | 'invoice'
-  | 'expense-report'
-  | 'loan-calculator'
-  | 'sales-pipeline'
-  | 'inventory'
-  | 'guest-list'
-  | 'grade-book'
-  | 'habit-tracker'
-  // Form templates (docs/specs/030-forms/forms.md "Starting a form"): one a form starter (form-templates.ts).
-  | FormTemplateKind;
+  | 'blank-session';
 
 export type TemplateDescriptor = {
   kind: TemplateKind;
@@ -227,9 +192,6 @@ export type TemplateDescriptor = {
   // one-word change rather than a new concept. `templates.test.ts` asserts
   // the set is empty, so this stays honest.
   hidden?: boolean;
-  // Made in the editor only (a form template: the editor starts the form on its tab), so left out of the agents'
-  // catalogue (templateCatalogue), whose creates are built on the api.
-  editorOnly?: boolean;
 };
 
 export const TEMPLATES: TemplateDescriptor[] = [
@@ -242,18 +204,6 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'whiteboard',
     title: 'Blank Whiteboard',
     description: 'Free drawing without distractions',
-  },
-  {
-    kind: 'blank-plan',
-    title: 'Blank Plan',
-    description: 'An empty Plan tab: pick the board that fits the work, or build your own.',
-    extra: true,
-  },
-  {
-    kind: 'blank-spreadsheet',
-    title: 'Blank Spreadsheet',
-    description: 'An empty spreadsheet: cells, formulas and charts, ready to type into.',
-    extra: true,
   },
   {
     kind: 'blank-session',
@@ -317,160 +267,6 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'data-flow',
     title: 'Data Flow Diagram',
     description: 'A level-1 DFD of an online shop, with a key to the notation.',
-    extra: true,
-  },
-  {
-    kind: 'kanban',
-    title: 'Kanban Board',
-    description:
-      'Continuous flow in three tabs: Board, with WIP limits from Backlog to Done; Requests, where new asks are accepted onto it; and Flow, a dashboard of where the work stands.',
-  },
-  {
-    kind: 'project-planner',
-    title: 'Project Planner',
-    description:
-      'Five tabs: a Now, Next, Later Roadmap with a Gantt chart of your projects, a Backlog of tasks by project, the Sprint board, a Daily Standup and an Overview dashboard.',
-    extra: true,
-  },
-  {
-    kind: 'bug-triage',
-    title: 'Bug Tracker',
-    description:
-      'Three tabs: Triage new bugs by priority, follow them through Fixing to released, and watch Health on a dashboard.',
-    extra: true,
-  },
-  {
-    kind: 'team-retro',
-    title: 'Team Retro',
-    description:
-      'Four tabs: a Retro where notes stay hidden until you reveal and vote, the Actions you agree, an Archive of past retros and an Overview dashboard.',
-    extra: true,
-  },
-  {
-    kind: 'weekly-planner',
-    title: 'Weekly Planner',
-    description:
-      'Three tabs: This Week, a column a day; an Inbox to capture into; and a Calendar of what is due.',
-    extra: true,
-  },
-  {
-    kind: 'content-calendar',
-    title: 'Content Calendar',
-    description:
-      'Three tabs: Ideas to vote on and approve, Production from drafting to published, and a Calendar of publish dates.',
-    extra: true,
-  },
-  {
-    kind: 'hiring-pipeline',
-    title: 'Hiring Pipeline',
-    description:
-      'Four tabs: open Roles on a timeline, the candidate Pipeline a row per role, Onboarding for each new starter and an Overview dashboard.',
-    extra: true,
-  },
-  {
-    kind: 'okrs',
-    title: 'OKRs',
-    description:
-      'Three tabs: Objectives on a timeline, their Key Results by objective (on track, at risk or off track) and an Overview dashboard.',
-    extra: true,
-  },
-  {
-    kind: 'product-launch',
-    title: 'Product Launch',
-    description:
-      'Four tabs: workstreams on a Timeline, a Checklist per workstream, the Launch Day go / no-go and an Overview dashboard.',
-    extra: true,
-  },
-  {
-    kind: 'feedback-board',
-    title: 'Feedback Board',
-    description:
-      'Three tabs: Feedback from users, voted on and reviewed, Delivery for what you plan through to shipped, and an Overview dashboard.',
-    extra: true,
-  },
-  // Spreadsheet templates (docs/specs/026-plan/plan-templates.md "Spreadsheet templates").
-  {
-    kind: 'budget-planner',
-    title: 'Budget Planner',
-    description:
-      'A spreadsheet filling the tab: planned and actual amounts by category, the difference worked out and totalled.',
-    extra: true,
-  },
-  {
-    kind: 'timesheet',
-    title: 'Timesheet',
-    description:
-      'A spreadsheet filling the tab: this week Monday to Friday, by project and task, with the hours totalled.',
-    extra: true,
-  },
-  {
-    kind: 'contact-list',
-    title: 'Contact List',
-    description:
-      'A spreadsheet filling the tab: names, companies, roles, emails, phones, when you last spoke and notes.',
-    extra: true,
-  },
-  {
-    kind: 'task-tracker',
-    title: 'Task Tracker',
-    description:
-      'A spreadsheet on the canvas: tasks with owners, status, priority, dates and how much is done, beside a how-to.',
-    extra: true,
-  },
-  {
-    kind: 'invoice',
-    title: 'Invoice',
-    description:
-      'A spreadsheet filling the tab: who it is from and to, line items with tax worked out, and the amount due.',
-    extra: true,
-  },
-  {
-    kind: 'expense-report',
-    title: 'Expense Report',
-    description:
-      'A spreadsheet filling the tab: claims with dates and receipts, what is reimbursable, totalled by category.',
-    extra: true,
-  },
-  {
-    kind: 'loan-calculator',
-    title: 'Loan Calculator',
-    description:
-      'A spreadsheet filling the tab: a loan’s amount, rate and term, the monthly payment and a yearly schedule.',
-    extra: true,
-  },
-  {
-    kind: 'sales-pipeline',
-    title: 'Sales Pipeline',
-    description:
-      'A spreadsheet filling the tab: deals by stage, each weighted by its probability, with a forecast and a chart.',
-    extra: true,
-  },
-  {
-    kind: 'inventory',
-    title: 'Inventory',
-    description:
-      'A spreadsheet filling the tab: stock on hand, its value, what is due a reorder, and a chart by item.',
-    extra: true,
-  },
-  {
-    kind: 'guest-list',
-    title: 'Guest List',
-    description:
-      'A spreadsheet filling the tab: invitations, RSVPs, plus-ones and dietary needs, with the headcount totalled.',
-    extra: true,
-  },
-  {
-    kind: 'grade-book',
-    title: 'Grade Book',
-    description:
-      'A spreadsheet filling the tab: each student’s scores, their average and grade, and how the class is doing.',
-    extra: true,
-  },
-  {
-    kind: 'habit-tracker',
-    title: 'Habit Tracker',
-    description:
-      'A spreadsheet filling the tab: a week of ticks against each habit’s goal, the streaks counted and charted.',
     extra: true,
   },
   {
@@ -830,7 +626,7 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'threat-model',
     title: 'Threat Model',
     description:
-      'Two tabs: a data-flow diagram with its trust boundaries and STRIDE threats marked, then a live Threat Register.',
+      'A data-flow diagram with its trust boundaries and STRIDE threats marked.',
     extra: true,
   },
   {
@@ -844,7 +640,7 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'metric-tree',
     title: 'Metric Tree',
     description:
-      'Two tabs: a north-star metric broken into the inputs teams own, then a Driver Model sheet to try what-ifs on.',
+      'A north-star metric broken into the inputs teams own.',
     extra: true,
   },
   {
@@ -865,7 +661,7 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'value-stream-map',
     title: 'Value Stream Map',
     description:
-      'Two tabs: idea to production with its waits, process times and kaizen bursts, then the Flow Data sheet.',
+      'Idea to production with its waits, process times and kaizen bursts.',
     extra: true,
   },
 
@@ -946,7 +742,6 @@ export const TEMPLATES: TemplateDescriptor[] = [
       'Grow ideas as a drawn tree: the question at the roots, themes as branches, ideas as leaves and the best ones as fruit.',
     extra: true,
   },
-  ...FORM_TEMPLATES,
 ];
 
 // True when `value` names a template in the catalogue. The guard for a kind
@@ -958,8 +753,9 @@ export function isTemplateKind(value: unknown): value is TemplateKind {
 
 /** The template a kind names: itself, else null. For a kind that arrives as a plain string from outside (a link, an
  *  agent, a seed). The Pages templates (slide decks, articles, wireframes, logos and the rest) moved out to
- *  livedocuments with Pages mode, and the old device wireframes they replaced went with them: a kind naming one is
- *  unknown, as any unknown kind is. */
+ *  livedocuments with Pages mode, and the old device wireframes they replaced went with them; the Plan templates (boards,
+ *  spreadsheets and forms) moved out to liveplanner with Plan mode. A kind naming one is unknown, as any unknown kind
+ *  is. */
 export function templateKindOf(value: unknown): TemplateKind | null {
   return isTemplateKind(value) ? value : null;
 }

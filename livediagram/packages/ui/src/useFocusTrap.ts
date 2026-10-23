@@ -35,7 +35,7 @@ const coarsePointer = () =>
   typeof window !== 'undefined' && !!window.matchMedia?.('(pointer: coarse)').matches;
 
 // Where focus lands on open: the first control ('first'), or the container itself ('container') for a panel
-// whose first control is not where anyone starts (the Plan card panel's type picker); Tab then enters the
+// whose first control is not where anyone starts; Tab then enters the
 // controls from the top.
 export type FocusTrapInitial = 'first' | 'container';
 

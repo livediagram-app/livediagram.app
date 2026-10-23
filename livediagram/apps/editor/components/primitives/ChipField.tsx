@@ -5,13 +5,12 @@ import {
   useEffect,
   useImperativeHandle,
   useRef,
-  type CSSProperties,
   type ReactNode,
 } from 'react';
 import { CloseIcon, FIELD_INVALID } from '@livediagram/ui';
 
-// The shared chip field: chips typed into one bordered field, the Community publish dialog's tags and
-// a Plan card's labels. Enter adds the draft (the caller decides what adding means, and handles a
+// The shared chip field: chips typed into one bordered field, as the Community publish dialog's tags are.
+// Enter adds the draft (the caller decides what adding means, and handles a
 // comma in `onDraftChange`), Backspace in an empty field takes the last chip back, and each chip has
 // its own remove button. A remove (or the caller's `refocus()`, after a commit or a suggestion) puts
 // focus back in the field, or on the last chip's remove button while the field is disabled, rather
@@ -26,10 +25,6 @@ type ChipFieldProps = {
   chips: readonly string[];
   // What a chip reads (Community prefixes `#`); its text by default.
   chipText?: (chip: string) => string;
-  // A chip's own colour (Plan's label swatches); brand chips by default. The chip draws on a 12% tint of it, in ink
-  // leaned 30% toward the page's ink (dark in light mode, white in dark), which reads at WCAG AA for every swatch:
-  // the bare colour did not (#2563eb on its tint was 4.4:1 light, 3:1 dark).
-  chipColour?: (chip: string) => string;
   removeLabel: (chip: string) => string;
   draft: string;
   onDraftChange: (value: string) => void;
@@ -43,8 +38,6 @@ type ChipFieldProps = {
   // Only the typing is off (Community's "That is all five"); chips can still be removed.
   inputDisabled?: boolean;
   invalid?: boolean;
-  // The denser form rhythm (Plan's item panel), as TextInput's `compact`.
-  compact?: boolean;
   id?: string;
   placeholder?: string;
   ariaLabel?: string;
@@ -60,7 +53,6 @@ export const ChipField = forwardRef<ChipFieldHandle, ChipFieldProps>(function Ch
   {
     chips,
     chipText = (c) => c,
-    chipColour,
     removeLabel,
     draft,
     onDraftChange,
@@ -71,7 +63,6 @@ export const ChipField = forwardRef<ChipFieldHandle, ChipFieldProps>(function Ch
     disabled = false,
     inputDisabled = false,
     invalid = false,
-    compact = false,
     id,
     placeholder,
     ariaLabel,
@@ -100,26 +91,17 @@ export const ChipField = forwardRef<ChipFieldHandle, ChipFieldProps>(function Ch
     removers?.[removers.length - 1]?.focus();
   });
 
-  const box = compact
-    ? 'min-h-[34px] gap-1.5 px-1.5 py-1 text-[13px]'
-    : 'gap-1.5 px-2 py-1.5 text-sm';
-  const chipSize = compact ? 'pl-2 text-[12px]' : 'pl-2.5 text-xs';
   return (
     <div
       ref={boxRef}
-      className={`flex flex-wrap items-center rounded-md border bg-white transition focus-within:border-brand-400 focus-within:ring-2 focus-within:ring-brand-100 dark:bg-slate-900 ${box} ${
+      className={`flex flex-wrap items-center rounded-md border bg-white transition focus-within:border-brand-400 focus-within:ring-2 focus-within:ring-brand-100 dark:bg-slate-900 gap-1.5 px-2 py-1.5 text-sm ${
         invalid ? FIELD_INVALID : 'border-slate-200 dark:border-slate-700'
       }`}
     >
       {chips.map((chip) => (
         <span
           key={chip}
-          className={`inline-flex items-center gap-1 rounded-full py-0.5 pr-1 font-medium ${chipSize} ${
-            chipColour
-              ? 'bg-[color-mix(in_srgb,var(--chip)_12%,transparent)] text-[color-mix(in_srgb,var(--chip)_70%,#0f172a)] dark:text-[color-mix(in_srgb,var(--chip)_70%,#ffffff)]'
-              : 'bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-200'
-          }`}
-          style={chipColour ? ({ '--chip': chipColour(chip) } as CSSProperties) : undefined}
+          className="inline-flex items-center gap-1 rounded-full bg-brand-50 py-0.5 pr-1 pl-2.5 text-xs font-medium text-brand-700 dark:bg-brand-500/15 dark:text-brand-200"
         >
           {chipText(chip)}
           {readOnly ? null : (
@@ -132,11 +114,7 @@ export const ChipField = forwardRef<ChipFieldHandle, ChipFieldProps>(function Ch
               }}
               data-remove-chip
               aria-label={removeLabel(chip)}
-              className={`flex h-4 w-4 items-center justify-center rounded-full transition ${
-                chipColour
-                  ? 'hover:bg-black/10 dark:hover:bg-white/15'
-                  : 'text-brand-700 hover:bg-brand-100 hover:text-brand-800 dark:text-brand-300 dark:hover:bg-brand-500/25 dark:hover:text-brand-100'
-              }`}
+              className="flex h-4 w-4 items-center justify-center rounded-full text-brand-700 transition hover:bg-brand-100 hover:text-brand-800 dark:text-brand-300 dark:hover:bg-brand-500/25 dark:hover:text-brand-100"
             >
               <CloseIcon size={10} />
             </button>
@@ -172,9 +150,7 @@ export const ChipField = forwardRef<ChipFieldHandle, ChipFieldProps>(function Ch
           aria-invalid={invalid || undefined}
           autoComplete="off"
           spellCheck={false}
-          className={`flex-1 bg-transparent px-1 text-slate-900 outline-none placeholder:text-slate-400 disabled:cursor-not-allowed dark:text-slate-100 ${
-            compact ? 'min-w-20' : 'min-w-[8rem] py-0.5'
-          }`}
+          className="min-w-[8rem] flex-1 bg-transparent px-1 py-0.5 text-slate-900 outline-none placeholder:text-slate-400 disabled:cursor-not-allowed dark:text-slate-100"
         />
       )}
       {children}

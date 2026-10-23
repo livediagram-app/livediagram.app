@@ -161,8 +161,6 @@ export type CanvasProps = {
     configure: (elementId: string, actionId?: string | null) => void;
     complete: (elementId: string, actionId?: string | null) => void;
     reopen: (elementId: string, actionId?: string | null) => void;
-    // Opens the Actions board (docs/specs/026-plan/linked-boards.md "On the canvas"); absent with no board.
-    openBoard?: () => void;
   };
   onSetSessionConfig?: (
     element: import('@livediagram/document').ShapeElement,
@@ -540,8 +538,7 @@ export type CanvasProps = {
   onMoveCommentsPanel: (x: number, y: number) => void;
   onResetCommentsPanel: () => void;
   // Row click: editor selects the element + opens its thread popover.
-  // `cell` names a Sheet cell's thread (docs/specs/029-sheets/sheet.md "Cell comments").
-  onOpenCommentsForElement: (elementId: string, cell?: string) => void;
+  onOpenCommentsForElement: (elementId: string) => void;
   // Floating Actions panel (docs/specs/012-collaboration/assigned-actions.md). Mirrors the Comments panel: only
   // mounted when actionRows is non-empty (at least one OPEN action on
   // the active tab).

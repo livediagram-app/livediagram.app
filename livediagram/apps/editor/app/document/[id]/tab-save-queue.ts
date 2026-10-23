@@ -1,7 +1,6 @@
 // One tab's writes in the order they were made (docs/specs/012-collaboration/collab-race-hardening.md "Saves"):
-// each save or delete of a tab waits for that tab's previous one to settle. Without it a save holding Plan
-// ledger changes (which waits up to ROOM_SEQUENCE_ACK_TIMEOUT_MS for the room) could be overtaken by a
-// newer save of the same tab, and the server kept the older snapshot. Different tabs never wait on each
+// each save or delete of a tab waits for that tab's previous one to settle. Without it a slow save could be
+// overtaken by a newer save of the same tab, and the server kept the older snapshot. Different tabs never wait on each
 // other. A failed write does not hold the queue: the next one still goes.
 export type TabSaveQueue = {
   run<T>(tabId: string, task: () => Promise<T>): Promise<T>;

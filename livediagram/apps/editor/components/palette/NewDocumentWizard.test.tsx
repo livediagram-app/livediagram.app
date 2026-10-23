@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { EditorMode } from '@livediagram/document';
+import { editorModeLabel, type EditorMode } from '@livediagram/document';
 import { NewDocumentWizard } from './NewDocumentWizard';
 
 // docs/specs/007-editor/new-document-route.md "One-step wizard": the wizard asks what you are making, and choosing a
@@ -32,8 +32,8 @@ describe('NewDocumentWizard', () => {
 
   it('creates from the number keys too', () => {
     const p = wizard();
-    fireEvent.keyDown(screen.getByRole('group', { name: 'What are you making?' }), { key: '4' });
-    expect(p.onCreate).toHaveBeenCalledWith('blank-plan');
+    fireEvent.keyDown(screen.getByRole('group', { name: 'What are you making?' }), { key: '3' });
+    expect(p.onCreate).toHaveBeenCalledWith('blank-session');
   });
 
   it("creates the preset mode's blank from Create, else a Blank Diagram", () => {
@@ -72,9 +72,13 @@ describe('NewDocumentWizard', () => {
   });
 
   it('while creating, shows it, and creates nothing more nor backs out', () => {
-    const p = wizard({ busy: true, initialMode: 'plan' });
+    const p = wizard({ busy: true, initialMode: 'workshop' });
     expect(screen.getByRole('button', { name: /Creating/ })).toHaveProperty('disabled', true);
-    expect(screen.getByRole('button', { name: /^Plan:/ }).getAttribute('aria-busy')).toBe('true');
+    expect(
+      screen
+        .getByRole('button', { name: new RegExp(`^${editorModeLabel('workshop')}:`) })
+        .getAttribute('aria-busy'),
+    ).toBe('true');
     fireEvent.click(screen.getByRole('button', { name: /^Draw:/ }));
     fireEvent.keyDown(document, { key: 'Escape' });
     expect(p.onCreate).not.toHaveBeenCalled();

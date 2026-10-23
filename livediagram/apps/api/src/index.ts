@@ -64,7 +64,6 @@ import type { RouteContext, WorkbenchContext } from './routes/context';
 import { handleDocuments } from './routes/documents';
 import { handleEvents } from './routes/events';
 import { handleFolders } from './routes/folders';
-import { handleForms } from './routes/forms';
 import { handleImages } from './routes/images';
 import { handleMigrate } from './routes/migrate';
 import { handleGuestId } from './routes/guest-id';
@@ -88,7 +87,6 @@ import { workbenchRefusal } from './auth/workbench-confinement';
 import { sweepWorkbench } from './db/workbench';
 import { withServerRelease } from './server-release-header';
 import type { Env } from './types';
-import { runSheetExpiry } from './sheet-sweep';
 
 export { DocumentRoom };
 
@@ -342,15 +340,6 @@ async function routeApiRequest(
     if (await isWriteRateLimited(env, `room-ticket:${clientRateKey(request)}`))
       return rateLimited();
   }
-  // A form link's doors (docs/specs/030-forms/forms.md "Abuse and limits"): respondents are anonymous, so reads and
-  // responses are limited per network, each on its own key, apart from everyone's document writes.
-  const isFormRequest = segments[1] === 'forms';
-  if (isFormRequest && env.FORM_RATE_LIMITER) {
-    const ok = await env.FORM_RATE_LIMITER.limit({
-      key: `${isWrite ? 'form' : 'form-read'}:${communityNetwork(clientIp(request))}`,
-    });
-    if (!ok.success) return rateLimited();
-  }
   // An invite email's Decline link (docs/specs/013-workspace/teams.md "Declining from the email"): open, so
   // limited per network, reads and declines on one key, apart from everyone's document writes.
   const isInviteDecline = segments[1] === 'teams' && segments[2] === 'invite-decline';
@@ -364,7 +353,6 @@ async function routeApiRequest(
     isWrite &&
     url.pathname !== '/api/events' &&
     !isRoomTicketMint &&
-    !isFormRequest &&
     !isInviteDecline
   ) {
     // A token request rate-limits on the TOKEN id (docs/specs/015-api/public-api-and-tokens.md §3.5), so a
@@ -451,9 +439,6 @@ async function routeApiRequest(
         return await handleDocuments(ctx);
       case 'folders':
         return await handleFolders(ctx);
-      // A form link's public doors (docs/specs/030-forms/forms.md "Filling in a form").
-      case 'forms':
-        return await handleForms(ctx);
       case 'custom-themes':
         return await handleCustomThemes(ctx);
       case 'shape-libraries':
@@ -583,10 +568,6 @@ const worker = {
         'rows',
         now - NOTIFY_EMAIL_DEDUPE_MS,
         deleteOldNotifyEmailClaims,
-      );
-      // docs/specs/029-sheets/sheet-store.md "Deleting a sheet": delete sheets unreferenced for 30 days.
-      ctx.waitUntil(
-        runSheetExpiry(env).catch((err) => console.error('[sheets] sheets.expired failed', err)),
       );
       // docs/specs/014-identity/transactional-email.md: send any due onboarding emails (welcome catch-up + week 1 / 2).
       // No-op when RESEND_API_KEY is unset.

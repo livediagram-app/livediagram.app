@@ -55,8 +55,7 @@ Next renders the root not-found slot inside the layout, so its code is part of e
 ### A surface that is not on screen loads when it is
 
 A dialog, panel or view that renders only behind an open flag or a tab is loaded with
-`next/dynamic` (`ssr: false`), the way the editor's Dashboard page and Sheets host already are.
-The Explorer's Settings and move picker, and every telemetry dashboard view but the first, load
+`next/dynamic` (`ssr: false`), the way the Explorer's Settings and move picker, and every telemetry dashboard view but the first, load
 this way. Where switching to one must stay instant, its code is fetched once the page is idle
 (the telemetry dashboard).
 
@@ -160,8 +159,6 @@ seen on the document).
   threads, every document in id order, every document-scoped event) slows as the database grows,
   not as the person's work does. `apps/api/src/db/home-plans.test.ts` pins the plans of the Home and
   Inbox reads against the real migrations.
-- Cells named by key are matched as `(row_id, col_id)` pairs, so the primary key seeks each one
-  (`apps/api/src/db/sheets-plans.test.ts`).
 - A public, identity-free read that every visitor makes (the Community's featured posts and facets)
   is answered from the edge cache for its stated lifetime (liveworkspace/apps/community/src/http.ts).
 - A check that needs only a document's owner and team reads that row, not the full document.

@@ -26,7 +26,7 @@ beforeEach(() => vi.clearAllMocks());
 describe('commentPersisters', () => {
   it('writes a read-only session’s add, delete, resolve and reopen through the comment endpoints', async () => {
     const p = commentPersisters(session);
-    await p.add('el', 'hi', undefined, 'B2')?.();
+    await p.add('el', 'hi')?.();
     expect(api.apiAddComment).toHaveBeenCalledWith(
       'me',
       'doc',
@@ -35,7 +35,6 @@ describe('commentPersisters', () => {
       'hi',
       'CODE',
       undefined,
-      'B2',
     );
     await p.remove('c1')?.();
     expect(api.apiDeleteComment).toHaveBeenCalledWith('me', 'doc', 'tab', 'c1', 'CODE');

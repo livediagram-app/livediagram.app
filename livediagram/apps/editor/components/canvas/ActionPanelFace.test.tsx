@@ -127,7 +127,7 @@ describe('ActionPanelFace (docs/specs/012-collaboration/action-panel.md "The car
     expect(onAdd).toHaveBeenCalledOnce();
   });
 
-  it('shows a Won’t Do action closed, reopened from its slashed mark (linked-boards.md "On the canvas")', () => {
+  it('shows a Won’t Do action closed, reopened from its slashed mark (assigned-actions.md)', () => {
     const wont = second('wont-do');
     const onReopen = vi.fn();
     const onComplete = vi.fn();
@@ -146,24 +146,6 @@ describe('ActionPanelFace (docs/specs/012-collaboration/action-panel.md "The car
     fireEvent.click(screen.getByRole('button', { name: 'Reopen Load test the queue' }));
     expect(onReopen).toHaveBeenCalledWith(wont.id);
     expect(onComplete).not.toHaveBeenCalled();
-  });
-
-  it('offers the Actions board from its header once it holds actions and the document has one', () => {
-    const onOpenBoard = vi.fn();
-    const { rerender } = render(
-      <ActionPanelFace element={card()} textColor="#000" selfId={null} onOpenBoard={onOpenBoard} />,
-    );
-    expect(screen.queryByRole('button', { name: 'Open the Actions board' })).toBeNull();
-    rerender(
-      <ActionPanelFace
-        element={listCard(second())}
-        textColor="#000"
-        selfId={null}
-        onOpenBoard={onOpenBoard}
-      />,
-    );
-    fireEvent.click(screen.getByRole('button', { name: 'Open the Actions board' }));
-    expect(onOpenBoard).toHaveBeenCalledOnce();
   });
 
   it('renders readable but inert without handlers (read-only surfaces)', () => {

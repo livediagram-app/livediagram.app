@@ -33,32 +33,6 @@ export function FormatIcon({ kind }: { kind: Format }) {
           </text>
         </svg>
       );
-    case 'csv':
-      // A small grid: rows and columns of values.
-      return (
-        <svg width="32" height="20" viewBox="0 0 32 20" aria-hidden>
-          <rect
-            x="1"
-            y="1"
-            width="30"
-            height="18"
-            rx="2"
-            fill="none"
-            stroke="rgb(148 163 184)"
-            strokeWidth="1.25"
-          />
-          <path d="M1 7.5h30M1 13.5h30M11 1v18M21 1v18" stroke="rgb(148 163 184)" strokeWidth="1" />
-          <rect
-            x="1.6"
-            y="1.6"
-            width="28.8"
-            height="5.4"
-            rx="1.4"
-            fill="rgb(71 85 105)"
-            fillOpacity="0.18"
-          />
-        </svg>
-      );
     case 'mermaid':
       return (
         <svg width="32" height="20" viewBox="0 0 32 20" aria-hidden>

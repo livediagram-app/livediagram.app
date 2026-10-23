@@ -27,9 +27,6 @@ export type EditorCapabilities = {
   resize: (el: Element) => boolean;
   recolour: (el: Element) => boolean;
   remove: (el: Element) => boolean;
-  // Plan cards (add, edit, move) and Sheet cells.
-  planCards: boolean;
-  sheetCells: boolean;
 };
 
 const never = () => false;
@@ -54,8 +51,6 @@ export function resolveEditorCapabilities(input: {
       resize: always,
       recolour: always,
       remove: always,
-      planCards: true,
-      sheetCells: true,
     };
   }
   if (level === 'view') {
@@ -68,8 +63,6 @@ export function resolveEditorCapabilities(input: {
       resize: never,
       recolour: never,
       remove: never,
-      planCards: false,
-      sheetCells: false,
     };
   }
   const own = (el: Element) => addedByAdder(el, adderKey);
@@ -84,8 +77,6 @@ export function resolveEditorCapabilities(input: {
     recolour: (el) => !isLocked(el) && (el.type === 'sticky' || own(el)),
     // Its own work, and any mind node (its connector goes with it; the room checks that part).
     remove: (el) => !isLocked(el) && (own(el) || isMindNode(el)),
-    planCards: true,
-    sheetCells: true,
   };
 }
 

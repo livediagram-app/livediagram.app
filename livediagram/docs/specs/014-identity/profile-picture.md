@@ -199,7 +199,7 @@ presence ring stays around the disc, over the picture's edge.
 The identity row's note reads "Your name, email and picture come from your
 account and are changed there, not here." The help article Signing In
 (`apps/help/app/account-and-data/signing-in/`) and the privacy policy
-(`apps/help/app/policies/privacy-policy/`) say who sees the picture, where it
+(liveworkspace's, at liveworkspace.app/privacy) say who sees the picture, where it
 comes from and how to turn it off.
 
 ## 8. Accessibility

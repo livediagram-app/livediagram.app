@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { stubResizeObserver } from '@/components/sheets/sheet-ui-test-utils';
+import { stubResizeObserver } from '@/lib/stub-resize-observer';
 import { FlowchartMenuSections } from './FlowchartMenuSections';
 
 // docs/specs/009-elements/flowchart.md "The Flowchart menu": a Flowchart flyout row holding Chart, Step Type

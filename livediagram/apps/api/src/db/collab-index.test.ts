@@ -23,9 +23,7 @@ function fakeEnv(results: unknown[][] = []) {
   const env = {
     DB: {
       prepare: (sql: string) => ({
-        // `all` answers the cards read's alias lookup (no aliases), the one read outside the batch.
-        bind: (...args: unknown[]) =>
-          ({ sql, args, all: async () => ({ results: [] }) }) as unknown as D1PreparedStatement,
+        bind: (...args: unknown[]) => ({ sql, args }) as unknown as D1PreparedStatement,
       }),
       batch: vi.fn(async (stmts: Bound[]) => {
         batches.push(stmts);
@@ -57,7 +55,6 @@ describe('collabIndexStatements', () => {
     expect(stmts.map((s) => s.sql)).toEqual([
       'DELETE FROM collab_actions WHERE tab_id = ?',
       'DELETE FROM collab_threads WHERE tab_id = ?',
-      'DELETE FROM plan_board_statuses WHERE tab_id = ?',
     ]);
     expect(stmts.every((s) => s.args[0] === 'tab-1')).toBe(true);
   });
@@ -93,9 +90,9 @@ describe('collabIndexStatements', () => {
         },
       }),
     ]) as unknown as Bound[];
-    expect(stmts).toHaveLength(5);
-    expect(stmts[3]!.sql).toMatch(/INSERT INTO collab_actions/);
-    expect(stmts[3]!.args).toEqual([
+    expect(stmts).toHaveLength(4);
+    expect(stmts[2]!.sql).toMatch(/INSERT INTO collab_actions/);
+    expect(stmts[2]!.args).toEqual([
       'tab-1',
       's1',
       'a1',
@@ -112,8 +109,8 @@ describe('collabIndexStatements', () => {
       1,
       2,
     ]);
-    expect(stmts[4]!.sql).toMatch(/INSERT INTO collab_threads/);
-    expect(stmts[4]!.args).toEqual([
+    expect(stmts[3]!.sql).toMatch(/INSERT INTO collab_threads/);
+    expect(stmts[3]!.args).toEqual([
       'tab-1',
       's1',
       's1',
@@ -134,11 +131,9 @@ describe('collabIndexCopyStatements', () => {
   it('copies every table from the source tab under the new id', () => {
     const { env } = fakeEnv();
     const stmts = collabIndexCopyStatements(env, 'old', 'new') as unknown as Bound[];
-    expect(stmts).toHaveLength(3);
+    expect(stmts).toHaveLength(2);
     for (const s of stmts) {
-      expect(s.sql).toMatch(
-        /INSERT INTO (collab_\w+|plan_board_statuses)[\s\S]*SELECT \?1[\s\S]*WHERE tab_id = \?2/,
-      );
+      expect(s.sql).toMatch(/INSERT INTO collab_\w+[\s\S]*SELECT \?1[\s\S]*WHERE tab_id = \?2/);
       expect(s.args).toEqual(['new', 'old']);
     }
   });
@@ -176,7 +171,7 @@ describe('readActivity', () => {
     const { env, batches } = fakeEnv();
     await readActivity(env, 'me', { limit: 7 });
     expect(batches).toHaveLength(1);
-    expect(batches[0]).toHaveLength(5);
+    expect(batches[0]).toHaveLength(2);
     for (const s of batches[0]!) {
       expect(s.args[0]).toBe('me');
       expect(typeof s.args[1]).toBe('number');
@@ -184,17 +179,6 @@ describe('readActivity', () => {
     }
     expect(batches[0]![0]!.sql).toMatch(/FROM collab_actions/);
     expect(batches[0]![1]!.sql).toMatch(/JOIN collab_threads ct/);
-    // Cards also bind the reader's hashed person ids (docs/specs/013-workspace/inbox.md §2.4).
-    expect(batches[0]![2]!.sql).toMatch(/FROM items i/);
-    expect(JSON.parse(batches[0]![2]!.args[3] as string)).toEqual([
-      expect.stringMatching(/^[0-9a-f]{24}$/),
-    ]);
-    // A card's comment threads read the item store too (§2.5), with no ids of their own to bind.
-    expect(batches[0]![3]!.sql).toMatch(/\$\.comments\.resolved/);
-    expect(batches[0]![3]!.args).toHaveLength(3);
-    // Forms with unseen responses (docs/specs/030-forms/forms.md "Hearing about responses").
-    expect(batches[0]![4]!.sql).toMatch(/CROSS JOIN form_links l/);
-    expect(batches[0]![4]!.args).toHaveLength(3);
   });
 
   // docs/specs/013-workspace/tab-scoped-share-links.md: a visitor shown one tab gets a code of exactly that

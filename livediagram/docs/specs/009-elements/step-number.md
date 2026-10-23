@@ -47,7 +47,6 @@ A step takes the **Shape** set for its body, along its disc. It adds one option 
 | Mode     | Where                                   |
 | -------- | --------------------------------------- |
 | Diagram  | **Build**: Step Number                  |
-| Plan     | none                                    |
 | Workshop | none (Search still finds and places it) |
 
 ## Share roles

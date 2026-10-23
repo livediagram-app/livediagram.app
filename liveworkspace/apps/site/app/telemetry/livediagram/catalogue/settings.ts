@@ -248,13 +248,6 @@ export const NOTIFICATION_SETTINGS = settingsStack(
     ),
     toggle(
       'UI',
-      'NotifyFormResponsesOn',
-      'NotifyFormResponsesOff',
-      'Someone Fills In My Form',
-      'The new form response email.',
-    ),
-    toggle(
-      'UI',
       'NotifyTipsOn',
       'NotifyTipsOff',
       'Tips and Check-Ins',
@@ -278,7 +271,7 @@ export const ACCESSIBILITY_SETTINGS = settingsStack('Accessibility Settings', 'M
 // Tutorials before). Each switch's tokens track its PREFERENCE, so switching a tour on is `…SeenOff`.
 export const TOURS_SETTINGS = settingsStack(
   'Tours Settings',
-  'The Diagram, Plan, Workshop, Draw and Avatar tours switched back on or off.',
+  'The Diagram, Workshop, Draw and Avatar tours switched back on or off.',
   [
     toggle(
       'UI',
@@ -286,34 +279,6 @@ export const TOURS_SETTINGS = settingsStack(
       'TourSeenOn',
       'Diagram Tour',
       'The Diagram tour (the welcome tour until October 2026) switched back on or off.',
-    ),
-    toggle(
-      'UI',
-      'PlanTourSeenOff',
-      'PlanTourSeenOn',
-      'Plan Tours',
-      'Every Plan tour (boards, sheets and dashboards) switched back on or off at once.',
-    ),
-    toggle(
-      'UI',
-      'BoardsTourSeenOff',
-      'BoardsTourSeenOn',
-      'Boards Tour',
-      "The Plan tour's boards track switched back on or off.",
-    ),
-    toggle(
-      'UI',
-      'SheetsTourSeenOff',
-      'SheetsTourSeenOn',
-      'Sheets Tour',
-      "The Plan tour's sheets track switched back on or off.",
-    ),
-    toggle(
-      'UI',
-      'DashboardsTourSeenOff',
-      'DashboardsTourSeenOn',
-      'Dashboards Tour',
-      "The Plan tour's dashboards track switched back on or off.",
     ),
     toggle(
       'UI',

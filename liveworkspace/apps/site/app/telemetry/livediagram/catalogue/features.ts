@@ -247,7 +247,7 @@ export const EDITOR_MODE_SWITCHES = chart(
   'Changed',
   'Editor Mode Switches',
   'A tab switched to another editor mode by the person working on it.',
-  { types: ['ModeDiagram', 'ModeDraw', 'ModePlan', 'ModeWorkshop'] },
+  { types: ['ModeDiagram', 'ModeDraw', 'ModeWorkshop'] },
 );
 
 // The mode a tab opens in, set from the tab menu's Opens in (docs/specs/007-editor/editor-modes.md).
@@ -255,8 +255,8 @@ export const TAB_OPENS_IN = chart(
   'Tab',
   'Changed',
   'Opening Modes Set',
-  'A tab set to open in Diagram, Draw or Plan mode for everyone, from the tab menu.',
-  { types: ['OpensInDiagram', 'OpensInDraw', 'OpensInPlan'] },
+  'A tab set to open in Diagram or Draw mode for everyone, from the tab menu.',
+  { types: ['OpensInDiagram', 'OpensInDraw'] },
 );
 
 export const WHITEBOARDS: MetricStack = {
@@ -389,16 +389,7 @@ export const ACTIONS_WONT_DO: Metric = {
   type: 'WontDo',
   title: 'Actions Closed as Won’t Do',
   blurb:
-    'Actions someone decided against: closed without being done, from the canvas or the Actions board.',
-};
-
-export const ACTIONS_BOARDS_MADE: Metric = {
-  category: 'Action',
-  action: 'Linked',
-  type: 'Board',
-  title: 'Actions Boards Made',
-  blurb:
-    'Documents that got an Actions board: a board tab where every action in the document has a card, kept in step with the canvas.',
+    'Actions someone decided against: closed without being done.',
 };
 
 export const FOLDERS_CREATED: Metric = {
@@ -461,7 +452,6 @@ export const ASSIGNED_ACTIONS: MetricStack = {
     ACTIONS_EMAILED,
     ACTIONS_COMPLETED,
     ACTIONS_WONT_DO,
-    ACTIONS_BOARDS_MADE,
     ACTIONS_EDITED,
     ACTIONS_OPENED,
     ACTIONS_DELETED,
@@ -793,13 +783,6 @@ export const TOUR_OFFERED = opened(
   (t) => t === 'TourOffer',
 );
 
-// The Plan tour's offer (docs/specs/026-plan/plan-tour.md); charted in its funnel on the Visitors tab.
-export const PLAN_TOUR_OFFERED = opened(
-  'Plan Tour Offered',
-  'The Plan tour offered, the first time someone works in Plan mode.',
-  (t) => t === 'PlanTourOffer',
-);
-
 // The Workshop tour's offer (docs/specs/012-collaboration/workshop-tour.md); charted in its funnel on
 // the Visitors tab.
 export const WORKSHOP_TOUR_OFFERED = opened(
@@ -813,13 +796,6 @@ export const DRAW_TOUR_OFFERED = opened(
   'Draw Tour Offered',
   'The Draw tour offered, the first time someone works in Draw mode.',
   (t) => t === 'DrawTourOffer',
-);
-
-// The Forms tour's offer (docs/specs/030-forms/forms.md "The Forms tour"); charted in its funnel on the Visitors tab.
-export const FORM_TOUR_OFFERED = opened(
-  'Forms Tour Offered',
-  'The Forms tour offered, the first time an Editor opens a Form tab.',
-  (t) => t === 'FormTourOffer',
 );
 
 // The Avatar tour's offer (docs/specs/008-canvas/avatar-tour.md); charted in its funnel on the Visitors tab.

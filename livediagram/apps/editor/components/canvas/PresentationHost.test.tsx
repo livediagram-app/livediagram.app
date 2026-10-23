@@ -24,9 +24,6 @@ const deck = {
 vi.mock('@/app/document/[id]/EditorContext', () => ({
   useEditorContext: () => ({ slideDeck: deck, canvasTool: 'select', setCanvasTool: vi.fn() }),
 }));
-vi.mock('@/components/plan/PlanContext', () => ({ usePlan: () => null }));
-vi.mock('@/components/canvas/CanvasSurfaceContext', () => ({ useCanvasSurface: () => 'light' }));
-vi.mock('@/components/plan/plan-palette', () => ({ planPalette: () => ({}) }));
 // The overlay's controls, reduced to what they ask of the host: a step either way, and a jump.
 vi.mock('@/components/canvas/PresentationOverlay', () => ({
   PresentationOverlay: ({ at, onGo }: { at: number; onGo: (next: number) => void }) => (

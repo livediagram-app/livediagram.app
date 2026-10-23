@@ -21,7 +21,7 @@ describe('pageViewPath', () => {
     expect(pageViewPath('/document/3f2b8c1e-9a4d-4e7b-8c21-0d5e6f7a8b9c')).toBe('/document');
     expect(pageViewPath('/document/offline-abc')).toBe('/document');
     expect(pageViewPath('/document/abc/extra/Weird Stuff!')).toBe('/document');
-    // A form link's code never reaches telemetry, digits or none (docs/specs/030-forms/forms.md).
+    // A form link's code never reaches telemetry, digits or none, even now forms live in liveplanner.
     expect(pageViewPath('/form/AbCdEfGhIjKlMnOpQrStUv')).toBe('/form');
     expect(pageViewPath('/form/a1B2c3D4e5F6g7H8i9J0kL')).toBe('/form');
     expect(pageViewPath('/document/a/b/c/d/e/f/g')).toBe('/document');

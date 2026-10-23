@@ -15,7 +15,6 @@
   "dependencies": {
     "@livedesign/ui": "workspace:^",
     "@livediagram/api-schema": "workspace:*",
-    "@livediagram/forms": "workspace:*",
     "@livediagram/icons": "workspace:*",
     "@livediagram/ui": "workspace:*",
     "@livedocuments/api-schema": "workspace:*",

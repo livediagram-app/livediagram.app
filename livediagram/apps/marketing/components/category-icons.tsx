@@ -41,27 +41,4 @@ export const CATEGORY_ICONS: Record<string, Icon> = {
       <path d="M2 14c1.5-1 3-1 4.5 0s3 1 4.5 0" />
     </>,
   ),
-  // Plans and boards: three columns of cards.
-  plan: glyph(
-    <>
-      <rect x="1.5" y="2" width="3.5" height="5" rx=".75" />
-      <rect x="1.5" y="9" width="3.5" height="3.5" rx=".75" />
-      <rect x="6.25" y="2" width="3.5" height="7.5" rx=".75" />
-      <rect x="11" y="2" width="3.5" height="3.5" rx=".75" />
-    </>,
-  ),
-  // Sheets: a grid of cells, its header row filled.
-  sheets: glyph(
-    <>
-      <rect x="1.5" y="2.5" width="13" height="11" rx="1" />
-      <path d="M1.5 6h13M1.5 9.75h13M6 2.5v11M10.25 2.5v11" />
-    </>,
-  ),
-  // Forms: a clipboard with a ticked line and a box.
-  forms: glyph(
-    <>
-      <rect x="3" y="2.5" width="10" height="12" rx="1" />
-      <path d="M6 2.5v-1h4v1M5.25 6.5l1 1 1.75-2M9.5 6.75h2M5.25 10.5h6.5v2h-6.5z" />
-    </>,
-  ),
 };

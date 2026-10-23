@@ -9,7 +9,6 @@
 // through the index cycle TDZ-crashes plain-Node ESM consumers. Only TYPES
 // come from './index', and those are erased at build.
 import { DEFAULT_ROOM_DOOR, isOfficeShape } from './office';
-import { presetSetup } from '@livediagram/items';
 import {
   DEFAULT_BUTTON_MODE,
   DEFAULT_PICKER_SOURCE,
@@ -130,17 +129,6 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // creation path widens it for a word badge off STICKER_ASPECT, since the
   // default table is per-kind and a badge and an emoji are one kind.
   sticker: { width: 104, height: 104 },
-  // Plan board (docs/specs/026-plan/blueprints/DEFAULTS.md D5): room for five 220px columns and a
-  // header; made Blank (no columns yet), so it starts at the empty board's height (planBoardHeightFor).
-  // A literal, not PLAN_BOARD_EMPTY_HEIGHT_PX: this table is read while the module graph is still loading,
-  // where the imported constant can be uninitialised; plan-shapes.test.ts keeps the two equal.
-  // A Plan card is one card face at a board column's width.
-  'plan-board': { width: 1120, height: 880 },
-  'plan-card': { width: 240, height: 120 },
-  // A plan view's own size comes from its view (planViewSize); this is a visualisation's.
-  'plan-view': { width: 720, height: 400 },
-  // A Sheet (docs/specs/029-sheets/sheet.md "Placing a sheet"): about nine columns by eighteen rows.
-  'plan-sheet': { width: 960, height: 560 },
   // Progress bar: a wide, short pill. Progress ring: a square donut
   // (aspect-locked on create so it stays circular).
   'progress-bar': { width: 220, height: 44 },
@@ -641,14 +629,6 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
   if (kind === 'checklist') {
     return { ...base, checklistItems: CHECKLIST_DEFAULT_ITEMS.map((i) => ({ ...i })) };
   }
-  // Plan board: the blank preset's set-up; a palette tile or template swaps in its own
-  // (docs/specs/026-plan/plan-mode.md). Plan card: its caller names the item.
-  if (kind === 'plan-board') return { ...base, planBoard: presetSetup('blank') };
-  if (kind === 'plan-card') return { ...base, planCard: { itemId: '' } };
-  // Plan view: Cards by Field unless its caller names the view.
-  if (kind === 'plan-view') return { ...base, planView: { view: 'workload' } };
-  // Sheet: its caller makes the sheet in the store and names it.
-  if (kind === 'plan-sheet') return { ...base, planSheet: { sheetId: '' } };
   // Web components (docs/specs/009-elements/web-components-and-no-groups.md): the starting content each one shows on drop,
   // so a new one reads as what it is. Colours come from the caller
   // (createComponent maps the theme); without one the renderer's fallbacks

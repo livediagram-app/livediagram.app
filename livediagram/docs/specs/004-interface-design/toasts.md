@@ -32,12 +32,12 @@ its actions; never over 90. Filler ("Please", "so your recent changes", a restat
 
 A toast about a document, a folder or a tab names it, so someone who acted on one of several, or on a row that has
 scrolled away, can tell which one it was: "“Roadmap” deleted", "“Roadmap” moved to “Plans”", "Could not rename
-“Plans”. Try again.", "“Sheet 1” added to “Roadmap”".
+“Plans”. Try again.", "“Tab 2” duplicated in “Roadmap”".
 
 - **The name is in curly quotes**, its whitespace collapsed to single spaces.
 - **It is cut to 30 characters**, the last one an ellipsis (`TOAST_NAME_MAX`, `apps/editor/lib/toast-name.ts`), cut
   between characters so an emoji is never split. Two cut names and the words round them stay under the 90-character
-  ceiling; where they would not, the advice is dropped first ("Could not add “Sheet 1” to “Roadmap”.").
+  ceiling; where they would not, the advice is dropped first ("Could not move “Roadmap” to “Plans”.").
 - **A blank or unknown name falls back to the generic word**: "Document deleted", "Could not move the document. Try
   again.", "moved to the team library". The surface never shows empty quotes.
 - **Where it went is named too**: the folder, or My Work. A team is named when the surface knows it, else "the

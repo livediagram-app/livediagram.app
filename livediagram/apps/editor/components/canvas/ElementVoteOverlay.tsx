@@ -6,9 +6,7 @@ import { CounterScaled } from '@/components/canvas/CanvasZoomContext';
 // tally pill on the element's bottom-right corner — live count,
 // brand-filled when it holds your dots (click to retract one) — and the
 // amber winner ring shown once the vote is revealed. Renders nothing
-// until at least one dot has landed on this element. Keyed by a vote key, not an element: an element's own id, or
-// a Plan card's `item:<id>` (docs/specs/012-collaboration/session-tools.md "Voting on Plan cards"), so a card on a
-// board carries the same stepper.
+// until at least one dot has landed on this element. Keyed by a vote key: the element's own id.
 export function ElementVoteOverlay({
   voteKey,
   name,
@@ -21,7 +19,7 @@ export function ElementVoteOverlay({
   onRetractVote,
   onCastVote,
 }: {
-  // The key its dots go under in `votes` (voteKeyOf / itemVoteKey).
+  // The key its dots go under in `votes`: the element's id.
   voteKey: string;
   // What the stepper's buttons call it ("Add a dot to {name}").
   name: string;

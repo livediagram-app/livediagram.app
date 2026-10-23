@@ -14,9 +14,8 @@ describe('closeStartForBlank', () => {
     expect(emptyCardDismissed('u:draw')).toBe(true);
   });
 
-  it('leaves a template, a Plan blank and no template alone', () => {
+  it('leaves a template and no template alone', () => {
     expect(closeStartForBlank('t', 'flowchart')).toBe(false);
-    expect(closeStartForBlank('t', 'blank-plan')).toBe(false);
     expect(closeStartForBlank('t', null)).toBe(false);
     expect(emptyCardDismissed('t:diagram')).toBe(false);
   });

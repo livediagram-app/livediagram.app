@@ -12,8 +12,6 @@ import {
   isFlowchartStep,
   isMindNode,
   joinsEntities,
-  takesAttachments,
-  threadAt,
   type Element,
 } from '@livediagram/document';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
@@ -218,12 +216,7 @@ export function CanvasSelectionToolbars({
             // A Viewer writes no comment (docs/specs/013-workspace/share-roles.md): it reads the thread an
             // element has, behind Show Comments, and gets no button on one with none.
             onOpenComments={
-              // Never on a Plan item (docs/specs/026-plan/plan-mode.md "Nothing attached to Plan items").
-              readOnly &&
-              selected &&
-              commentsShown &&
-              takesAttachments(selected) &&
-              (props.takePart || hasComments(selected))
+              readOnly && selected && commentsShown && (props.takePart || hasComments(selected))
                 ? () => onOpenComments(selected.id)
                 : undefined
             }
@@ -246,8 +239,8 @@ export function CanvasSelectionToolbars({
                     }
                   : undefined
             }
-            // Close to the element whenever no "+" sits in the gap: read-only, and boxed kinds that show none (a
-            // Plan board or card, an annotation, an event-storming board). An arrow keeps the wide gap: its move
+            // Close to the element whenever no "+" sits in the gap: read-only, and boxed kinds that show none (an
+            // annotation, an event-storming board). An arrow keeps the wide gap: its move
             // frame sits there, and a toolbar over it would take the press that drags the arrow.
             compact={readOnly || (!showPlus && !!selected && isBoxed(selected))}
             aside={tourOffer ? <ElementTourOffer offer={tourOffer} /> : undefined}
@@ -302,5 +295,5 @@ export function CanvasSelectionToolbars({
 
 // Whether an element carries a comment thread to read (resolved ones included: a reader opens those too).
 function hasComments(el: Element): boolean {
-  return (threadAt(el)?.comments.length ?? 0) > 0;
+  return isBoxed(el) && (el.commentThread?.comments.length ?? 0) > 0;
 }

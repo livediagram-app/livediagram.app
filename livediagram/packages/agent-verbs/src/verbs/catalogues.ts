@@ -96,7 +96,7 @@ export const templateView = defineVerb({
   text: ({ text }) => [text],
   cli: {
     positionals: ['kind'],
-    examples: ['livediagram template view kanban', 'livediagram template view start-stop-continue'],
+    examples: ['livediagram template view swot', 'livediagram template view start-stop-continue'],
     prints: 'the outline of the tab the template builds',
   },
 });

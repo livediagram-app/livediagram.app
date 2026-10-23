@@ -52,7 +52,7 @@ interface ElementAction {
   teamId: string | null;
   assignerId: string; // Clerk user id of who assigned it
   assignerName: string | null;
-  // 'wont-do': closed without being done (docs/specs/026-plan/linked-boards.md "On the canvas").
+  // 'wont-do': closed without being done (liveplanner).
   status: 'open' | 'done' | 'wont-do';
   createdAt: number;
   updatedAt: number;
@@ -74,10 +74,8 @@ Assignee/assigner identity here is informational (who to render), not a
 permission: anyone with edit access can complete, edit, or delete an action,
 the same way they can edit any element content.
 
-**Won't Do** is a third status beside open and done ([Linked boards](../026-plan/linked-boards.md) "On the
-canvas"): decided against, closed without being done. It counts as closed wherever open and closed are counted. Every
-action in a document also has a card on its **Actions board**, kept in step both ways
-([Linked boards](../026-plan/linked-boards.md)).
+**Won't Do** is a third status beside open and done: decided against, closed without being done. It counts as closed
+wherever open and closed are counted.
 
 **A copy doesn't carry the action.** Copy / paste (both the OS clipboard and
 the in-app fallback buffer) and every Duplicate (`freshCopyFields`, one list,
@@ -100,8 +98,7 @@ collaboration band** ([Canvas and palette](../008-canvas/canvas-and-palette.md) 
    Note alone.
 
 Both categories keep the old section's gate (boxed elements only, so arrows
-are excluded just like today, and never a Plan item: a board, Plan card,
-visualisation or Sheet takes none, [Nothing attached to Plan items](../026-plan/plan-mode.md#nothing-attached-to-plan-items)), each gets its own accordion section id
+are excluded just like today), each gets its own accordion section id
 (`'collaborate'`, `'resources'`), and the band separator rules are
 unchanged. The **Assign Action** tile:
 

@@ -1,17 +1,34 @@
 import type { CommentListStatus, DocumentCommentThread } from '@livediagram/api-schema';
 import {
-  elementThreads,
-  mapElementThreads,
   sanitizeMentions,
-  threadHolding,
-  withThreadAt,
   type Comment,
   type CommentMention,
+  type CommentThread,
   type Element,
   type Tab,
 } from '@livediagram/document';
 import { buildViewModel, commentHosts } from '@livediagram/document-views';
 import type { ParticipantDTO } from './types';
+
+const threadOf = (el: Element): CommentThread | undefined =>
+  (el as { commentThread?: CommentThread }).commentThread;
+
+// The element with its thread replaced, or removed when `thread` is undefined.
+function withThread(el: Element, thread: CommentThread | undefined): Element {
+  const { commentThread: _drop, ...rest } = el as Element & { commentThread?: CommentThread };
+  return (thread ? { ...rest, commentThread: thread } : rest) as Element;
+}
+
+// The element with its thread mapped; the same element when the thread is unchanged.
+function mapThread(
+  el: Element,
+  fn: (thread: CommentThread) => CommentThread | undefined,
+): Element {
+  const thread = threadOf(el);
+  if (!thread) return el;
+  const mapped = fn(thread);
+  return mapped === thread ? el : withThread(el, mapped);
+}
 
 // Rewrite newly-added comments so the author fields come from the
 // server-trusted participant record, not whatever the client posted.
@@ -53,9 +70,8 @@ export function rewriteCommentAuthors(
       mentions?: CommentMention[];
     }
   >();
-  // Every thread an element holds: its own and, on a Sheet, its cells' (docs/specs/029-sheets/sheet.md "Cell
-  // comments"), so a cell comment's author locks the same way.
-  for (const { thread } of prevElements.flatMap(elementThreads)) {
+  for (const el of prevElements) {
+    const thread = threadOf(el);
     if (!thread?.comments) continue;
     for (const c of thread.comments) {
       existingComments.set(c.id, {
@@ -70,7 +86,7 @@ export function rewriteCommentAuthors(
     }
   }
   return nextElements.map((el) =>
-    mapElementThreads(el, (thread) => {
+    mapThread(el, (thread) => {
       if (!thread?.comments?.length) return thread;
       const sanitised = thread.comments.map((c) => {
         const prior = existingComments.get(c.id);
@@ -141,31 +157,21 @@ export function rewriteCommentAuthors(
 // Returns the elements unchanged when the id isn't present.
 export function removeComment(elements: Element[], commentId: string): Element[] {
   return elements.map((el) => {
-    const holder = threadHolding(el, commentId);
-    if (!holder) return el;
-    const remaining = holder.thread.comments.filter((c) => c.id !== commentId);
-    return withThreadAt(
-      el,
-      holder.cell,
-      remaining.length ? { ...holder.thread, comments: remaining } : undefined,
-    );
+    const thread = threadOf(el);
+    if (!thread?.comments?.some((c) => c.id === commentId)) return el;
+    const remaining = thread.comments.filter((c) => c.id !== commentId);
+    return withThread(el, remaining.length ? { ...thread, comments: remaining } : undefined);
   });
 }
 
-// The comment, the element whose thread holds it, and the cell when it is a Sheet cell's thread.
+// The comment and the element whose thread holds it.
 export function findCommentHost(
   elements: Element[],
   commentId: string,
-): { comment: Comment; elementId: string; cell?: string } | null {
+): { comment: Comment; elementId: string } | null {
   for (const el of elements) {
-    const holder = threadHolding(el, commentId);
-    if (!holder) continue;
-    const comment = holder.thread.comments.find((c) => c.id === commentId)!;
-    return {
-      comment,
-      elementId: el.id,
-      ...(holder.cell !== undefined ? { cell: holder.cell } : {}),
-    };
+    const comment = threadOf(el)?.comments?.find((c) => c.id === commentId);
+    if (comment) return { comment, elementId: el.id };
   }
   return null;
 }
@@ -180,7 +186,7 @@ export function findCommentHost(
 // the document owner's id as `viewerId` to no-op (the owner sees all).
 export function redactCommentAuthorIds(elements: Element[], viewerId: string | null): Element[] {
   return elements.map((el) =>
-    mapElementThreads(el, (thread) => {
+    mapThread(el, (thread) => {
       if (!thread?.comments?.length) return thread;
       const comments = thread.comments.map((c) =>
         c.authorId && c.authorId === viewerId
@@ -221,11 +227,11 @@ export function hasNewComments(
   authorId: string,
 ): boolean {
   const seen = new Set<string>();
-  for (const { thread } of prevElements.flatMap(elementThreads)) {
-    for (const c of thread?.comments ?? []) seen.add(c.id);
+  for (const el of prevElements) {
+    for (const c of threadOf(el)?.comments ?? []) seen.add(c.id);
   }
-  for (const { thread } of nextElements.flatMap(elementThreads)) {
-    for (const c of thread?.comments ?? []) {
+  for (const el of nextElements) {
+    for (const c of threadOf(el)?.comments ?? []) {
       if (!seen.has(c.id) && c.authorId === authorId) return true;
     }
   }
@@ -234,45 +240,37 @@ export function hasNewComments(
 
 // One tab's threads as the document listing serves them (agent-presence blueprint "REST"): in the outline's order,
 // with each element's ref and label, author ids redacted for everyone but their author, and threads filtered by
-// status. A thread on a hidden layer is left out, as the views leave its element out. A Sheet's cell threads
-// (docs/specs/029-sheets/sheet.md "Cell comments") follow its own, each with its cell and, from `cellRefOf` (the
-// sheet's layout, when the caller read it), its A1.
+// status. A thread on a hidden layer is left out, as the views leave its element out.
 export function threadsOfTab(
   tab: Tab & { name: string },
   status: CommentListStatus,
   viewerId: string | null,
-  cellRefOf: (el: Element, cell: string) => string | null = () => null,
 ): DocumentCommentThread[] {
   const elements = redactCommentAuthorIds(tab.elements, viewerId);
   const byId = new Map(elements.map((el) => [el.id, el]));
   return commentHosts(buildViewModel({ ...tab, elements })).flatMap(({ el, ref, label }) => {
-    const host = byId.get(el.id)!;
-    return elementThreads(host).flatMap(({ cell, thread }) => {
-      if (thread.comments.length === 0) return [];
-      if (status !== 'all' && thread.resolved !== (status === 'resolved')) return [];
-      const cellRef = cell === undefined ? null : cellRefOf(host, cell);
-      return [
-        {
-          tabId: tab.id,
-          tabName: tab.name,
-          elementId: el.id,
-          ref,
-          label,
-          ...(cell !== undefined ? { cell } : {}),
-          ...(cellRef ? { cellRef } : {}),
-          resolved: thread.resolved,
-          comments: thread.comments.map((c) => ({
-            id: c.id,
-            text: c.text,
-            createdAt: c.createdAt,
-            authorName: c.authorName,
-            authorColor: c.authorColor,
-            ...(c.mentions ? { mentions: c.mentions } : {}),
-            ...(c.authorId ? { authorId: c.authorId } : {}),
-            ...(c.tokenId ? { tokenId: c.tokenId } : {}),
-          })),
-        },
-      ];
-    });
+    const thread = threadOf(byId.get(el.id)!);
+    if (!thread || thread.comments.length === 0) return [];
+    if (status !== 'all' && thread.resolved !== (status === 'resolved')) return [];
+    return [
+      {
+        tabId: tab.id,
+        tabName: tab.name,
+        elementId: el.id,
+        ref,
+        label,
+        resolved: thread.resolved,
+        comments: thread.comments.map((c) => ({
+          id: c.id,
+          text: c.text,
+          createdAt: c.createdAt,
+          authorName: c.authorName,
+          authorColor: c.authorColor,
+          ...(c.mentions ? { mentions: c.mentions } : {}),
+          ...(c.authorId ? { authorId: c.authorId } : {}),
+          ...(c.tokenId ? { tokenId: c.tokenId } : {}),
+        })),
+      },
+    ];
   });
 }

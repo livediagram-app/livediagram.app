@@ -1,13 +1,10 @@
 import { openerById } from './palette-openers';
 import { describe, expect, it } from 'vitest';
-import { isPlanViewId } from '@livediagram/items';
 import { PALETTE_CATEGORIES } from './palette-categories';
 import {
   CATALOGUE_CATEGORIES,
   DIVIDE,
-  COVERED_PALETTE_CATEGORY,
   PALETTE_LAYOUTS,
-  coveredPaletteCategories,
   paletteCategoriesFor,
   paletteCategoryOffered,
   paletteLandingCategory,
@@ -16,9 +13,9 @@ import {
 import { tileById, tilesForCategory } from './palette-tile-defs';
 
 // The palette per mode (docs/specs/007-editor/editor-modes.md "The palette per mode").
-const ids = (mode: 'diagram' | 'plan' | 'workshop', esBoard = false) =>
+const ids = (mode: 'diagram' | 'draw' | 'workshop', esBoard = false) =>
   paletteCategoriesFor(mode, { esBoard }).map((c) => c.id);
-const tileIds = (mode: 'diagram' | 'plan' | 'workshop', category: string) =>
+const tileIds = (mode: 'diagram' | 'draw' | 'workshop', category: string) =>
   paletteCategoriesFor(mode)
     .find((c) => c.id === category)!
     .tiles!.map((t) => t.id);
@@ -243,108 +240,8 @@ describe('palette layouts', () => {
     ]);
   });
 
-  // docs/specs/026-plan/plan-mode.md "The palette".
-  it('narrows Plan to its own categories, and borrows the notes and team tools', () => {
-    expect(ids('plan')).toEqual([
-      'plan-cards',
-      'plan-boards',
-      'plan-metrics',
-      'plan-visualisations',
-      'plan-sheets',
-      'plan-content',
-      'plan-tools',
-    ]);
-    expect(tileIds('plan', 'plan-content')).toEqual([
-      'tools:sticky',
-      'tools:text',
-      'tools:image',
-      'tools:page',
-    ]);
-    expect(tileIds('plan', 'plan-tools')).toEqual([
-      'collab:temperature',
-      'collab:estimate',
-      'collab:idea-box',
-      'tools:picker',
-      'tools:session-timer',
-      'tools:session-stopwatch',
-    ]);
-    expect(paletteLandingCategory('plan', false)).toBe('plan-cards');
-    // A tab without a board opens on Boards: a card lands on a board.
-    expect(paletteLandingCategory('plan', false, false)).toBe('plan-boards');
-    expect(paletteLandingCategory('diagram', false, false)).toBe('popular');
-    expect(paletteLandingCategory('plan', true, false)).toBe('event-storming');
-    for (const mode of ['diagram', 'workshop'] as const) {
-      expect(ids(mode)).not.toContain('plan-boards');
-      expect(ids(mode)).not.toContain('plan-cards');
-      expect(ids(mode)).not.toContain('plan-visualisations');
-      expect(ids(mode)).not.toContain('plan-sheets');
-    }
-  });
-
-  it('offers a board per preset and a card per item type', () => {
-    const boards = tileIds('plan', 'plan-boards');
-    const cards = tileIds('plan', 'plan-cards');
-    expect(boards).toHaveLength(10);
-    expect(boards.every((id) => id.startsWith('plan:board-'))).toBe(true);
-    expect(cards).toHaveLength(5);
-    expect(cards.every((id) => id.startsWith('plan:card-'))).toBe(true);
-  });
-
-  // docs/specs/026-plan/plan-views.md: every tile places a plan view naming its view.
-  it('offers a metric per read-out kind and a tile per visualisation', () => {
-    const widgets = paletteCategoriesFor('plan').find((c) => c.id === 'plan-metrics')!;
-    const charts = paletteCategoriesFor('plan').find((c) => c.id === 'plan-visualisations')!;
-    expect(widgets.tiles).toHaveLength(10);
-    expect(charts.tiles!.map((t) => t.caption)).toEqual([
-      'Gantt Chart',
-      'Due Calendar',
-      'Start Calendar',
-      'Cards by Field',
-      'Priority Matrix',
-      'Card Search',
-    ]);
-    for (const t of [...widgets.tiles!, ...charts.tiles!]) {
-      expect(t.action).toMatchObject({ type: 'shape', kind: 'plan-view' });
-      expect(isPlanViewId((t.action as { plan?: string }).plan)).toBe(true);
-    }
-  });
-});
-
-// docs/specs/026-plan/plan-board.md "Maximised board": a board covering the canvas leaves the palette only Cards.
-describe('coveredPaletteCategories', () => {
-  it('is Plan’s Cards alone', () => {
-    expect(coveredPaletteCategories().map((c) => c.id)).toEqual([COVERED_PALETTE_CATEGORY]);
-    expect(COVERED_PALETTE_CATEGORY).toBe('plan-cards');
-  });
-});
-
-// docs/specs/026-plan/plan-tabs.md "Dashboard tab": a Dashboard's own palette.
-describe('the Dashboard palette', () => {
-  it('opens on Popular, every tile of it a real one, then what a slot takes', async () => {
-    const { dashboardPaletteCategories, DASHBOARD_PALETTE_LANDING } =
-      await import('./palette-layouts');
-    const cats = dashboardPaletteCategories();
-    expect(DASHBOARD_PALETTE_LANDING).toBe('popular');
-    expect(cats.map((c) => c.id)).toEqual([
-      'popular',
-      'dashboard-layout',
-      'dashboard-tabs',
-      'plan-boards',
-      'plan-metrics',
-      'plan-visualisations',
-      'plan-sheets',
-      'plan-content',
-    ]);
-    expect(cats[0]!.tiles).toHaveLength(13);
-    expect(cats.at(-1)!.tiles?.map((t) => t.id)).toEqual([
-      'tools:sticky',
-      'dashboard:card-title',
-      'dashboard:card-status',
-      'dashboard:card-checklist',
-      'dashboard:card-key-date',
-      'dashboard:card-links',
-    ]);
-    // Layout is a Dashboard's alone.
-    expect(paletteCategoriesFor('plan').some((c) => c.id === 'dashboard-layout')).toBe(false);
+  it('opens on Popular, or on the notation on an event-storming board', () => {
+    expect(paletteLandingCategory('diagram', false)).toBe('popular');
+    expect(paletteLandingCategory('diagram', true)).toBe('event-storming');
   });
 });

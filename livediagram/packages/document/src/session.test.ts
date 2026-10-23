@@ -16,10 +16,6 @@ import {
   votesSpentBy,
   type TabTimer,
   type TabVote,
-  isCardVotableInVote,
-  itemIdOfVoteKey,
-  itemVoteKey,
-  voteKeyOf,
   voteResultsOf,
 } from './session';
 
@@ -429,50 +425,20 @@ describe('vote rounds (docs/specs/012-collaboration/collab-race-hardening.md)', 
   });
 });
 
-// docs/specs/012-collaboration/session-tools.md "Voting on Plan cards".
-describe('voting on Plan cards', () => {
-  it('takes no dots on a board or a view, and keys a card element by its card', () => {
-    expect(isVotable(shape('b', { shape: 'plan-board' }))).toBe(false);
-    expect(isVotable(shape('v', { shape: 'plan-view' }))).toBe(false);
-    const card = shape('c', { shape: 'plan-card', planCard: { itemId: 'item0001' } });
-    expect(isVotable(card)).toBe(true);
-    expect(voteKeyOf(card)).toBe('item:item0001');
-    expect(voteKeyOf(shape('a'))).toBe('a');
-    expect(itemIdOfVoteKey(itemVoteKey('item0001'))).toBe('item0001');
-    expect(itemIdOfVoteKey('a')).toBeNull();
-  });
-});
-
-describe('isCardVotableInVote', () => {
-  const vote = { active: true, revealed: false, votesPerPerson: 3, votes: {} };
-  const board = shape('b', { shape: 'plan-board', layerId: 'l2' });
-  const layers = [
-    { id: 'l1', name: 'Base' },
-    { id: 'l2', name: 'Retro' },
-  ] as never;
-  it('takes a dot unless face down, or off the vote’s layer', () => {
-    expect(isCardVotableInVote(board, vote, layers, false)).toBe(true);
-    expect(isCardVotableInVote(board, vote, layers, true)).toBe(false);
-    expect(isCardVotableInVote(board, null, layers, false)).toBe(false);
-    expect(isCardVotableInVote(board, { ...vote, voteLayerId: 'l2' }, layers, false)).toBe(true);
-    expect(isCardVotableInVote(board, { ...vote, voteLayerId: 'l1' }, layers, false)).toBe(false);
-  });
-});
-
 describe('voteResultsOf', () => {
-  it('ranks elements and cards together, most dots first, ties in a stable order', () => {
+  it('ranks votable elements still on the tab, most dots first, ties in tab order', () => {
     const a = shape('a');
-    const card = shape('c', { shape: 'plan-card', planCard: { itemId: 'i1' } });
+    const b = shape('b');
     const vote = {
       active: false,
       revealed: true,
       votesPerPerson: 3,
-      votes: { a: ['p'], 'item:i1': ['p', 'q'], 'item:i2': ['q'], gone: ['p', 'q', 'r'] },
+      // A former Plan card's key and an element no longer on the tab count for nothing.
+      votes: { a: ['p'], b: ['p', 'q'], 'item:i1': ['p', 'q', 'r'], gone: ['p', 'q', 'r'] },
     };
-    expect(voteResultsOf(vote, [a, card])).toEqual([
-      { id: 'item:i1', votes: 2 },
+    expect(voteResultsOf(vote, [a, b])).toEqual([
+      { id: 'b', votes: 2 },
       { id: 'a', votes: 1 },
-      { id: 'item:i2', votes: 1 },
     ]);
   });
 });

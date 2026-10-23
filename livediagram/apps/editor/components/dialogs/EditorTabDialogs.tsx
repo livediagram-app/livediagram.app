@@ -99,8 +99,6 @@ export function EditorTabDialogs() {
           })}
           scope={exportScope}
           documentName={documentName}
-          // A Dashboard's slots that show another tab draw it (docs/specs/026-plan/plan-tabs.md "Export").
-          documentTabs={tabs}
           imageContext={imageContext}
           offerHiddenLayers={panelEnabled(userPreferences, 'layersPanelEnabled')}
           onClose={() => setExportOpen(false)}
@@ -111,9 +109,6 @@ export function EditorTabDialogs() {
           tabName={activeTab.name}
           onImportFile={importIntoActiveTab}
           onImportText={importTextIntoActiveTab}
-          // A Dashboard tab imports a livediagram tab only: the other formats are diagrams
-          // (docs/specs/026-plan/plan-tabs.md "Import and Export of a Dashboard").
-          formats={activeTab.kind === 'dashboard' ? ['json'] : undefined}
           onClose={() => setImportOpen(false)}
         />
       ) : null}

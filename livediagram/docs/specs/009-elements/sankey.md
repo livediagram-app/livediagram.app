@@ -118,7 +118,7 @@ closed until opened as everywhere ([menus](../004-interface-design/menus.md)), a
   [colour picker](../004-interface-design/colour-picker.md) in a popover, led by **Palette** once the
   node has a colour of its own, which hands it back) and its name.
 - **Bands** (Blend / From / To / Grey), **Layout** (Ends Right / By Step), **Labels** (Amount / Percent /
-  Names Only) and **Leftovers** (Show / Hide): each an option list, the Plan mode picker (`OptionRows`): a
+  Names Only) and **Leftovers** (Show / Hide): each an [option list](../004-interface-design/dropdown-tile-grid.md#when-a-grid-and-when-not) (`OptionRows`): a
   bordered box, one choice to a row, a glyph drawing it at the left, the chosen row tinted with a tick.
   **Leftovers** also holds **Leftover Name** while they show.
 - **Text**: **Unit**, and **Text Size** (the [Text Size](../004-interface-design/fonts.md#text-size) slider without Scale: a px is the labels' own; the presets earlier Sankeys carry read 10 / 12 / 15px). Unit and Leftover

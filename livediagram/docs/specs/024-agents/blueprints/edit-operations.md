@@ -55,9 +55,9 @@ Scope, by file:
 | `packages/document/src/index.ts`, `packages/templates/src/index.ts`               | Re-export the moved and new modules                                                                                                                                 |
 | `apps/mcp/src/tools.ts`, `schema.ts`, `changeset-client.ts`                       | Import the moved modules; `ops` mode resolves an `elementId` as an id or a ref and targets it by `id:"…"`                                                           |
 | `apps/api/src/changesets/request.ts`                                              | `operations` as a JSON array or the line form as a string, parsed with the engine's log                                                                             |
-| `apps/editor/lib/canvas.ts`                                                         | `withFrameContents` and `isFrameEl` removed; `framesFirst` reads `isContainer`                                                                                      |
-| `apps/editor/hooks/canvas/useBoxedDragHandlers.ts`                                  | The drag's move set is `containerContents(elements, ids)`                                                                                                           |
-| `apps/editor/lib/canvas.test.ts`                                                    | The `withFrameContents` suite gives way to `containment.test.ts` and `useEditorDrag.frames.test.tsx`                                                                |
+| `apps/editor/lib/canvas.ts`                                                       | `withFrameContents` and `isFrameEl` removed; `framesFirst` reads `isContainer`                                                                                      |
+| `apps/editor/hooks/canvas/useBoxedDragHandlers.ts`                                | The drag's move set is `containerContents(elements, ids)`                                                                                                           |
+| `apps/editor/lib/canvas.test.ts`                                                  | The `withFrameContents` suite gives way to `containment.test.ts` and `useEditorDrag.frames.test.tsx`                                                                |
 | `apps/api/package.json`                                                           | Depends on `@livediagram/edit-operations`; the changeset route is the [Agent changesets](agent-changesets.md) blueprint's                                           |
 | `docs/development/architecture.md`, `README.md`                                   | The package in the package list                                                                                                                                     |
 
@@ -712,11 +712,6 @@ Edge cases:
 - **E16** A `connect` whose `a` or `b` is an arrow: `invalid_value` ("arrows connect boxes").
 - **E17** `connect a->b->c` or `connect a -> b -> c`: `parse_error` at the second `->` word, expected
   `one -> in connect: <a> -> <b>`; the `<a>-><b>` selector term with a third end is a parse error too.
-- **E18** A result holding a board or Sheet the tab did not hold, on a tab not in Plan (operations after `finalise`,
-  replace after `nextTab`; `planOnlyAddedOutsidePlan`): `invalid_value` (`planOnlyOutsidePlan`), detail `a board or
-Sheet goes only on a tab in Plan: <ids>`, hint `add a Board tab or a Sheet tab with add_tab (template "kanban" or
-"blank-spreadsheet")` ([Agent changesets](../agent-changesets.md#boards-and-sheets-only-in-plan)). One the tab
-  already held passes.
 
 ## Security and trust
 
@@ -805,7 +800,7 @@ Every suite uses `packages/edit-operations/src/fixtures/checkout-flow.ts` and a 
 | `rm` removes pinned arrows and lists them; `keep-arrows` frees their ends                                                | `packages/edit-operations/src/operations/rm.test.ts`                                                                                  |
 | `move`: pinned arrows follow; a frame or lane carries its members; membership changes reported                           | `packages/edit-operations/src/operations/move.test.ts`                                                                                |
 | The centre rule decides what a moved container carries: straddling boxes, nested containers, free arrows, smallest owner | `packages/document/src/containment.test.ts` › "containerContents"                                                                     |
-| A person dragging a frame or lane carries exactly what `move` carries                                                    | `apps/editor/hooks/canvas/useEditorDrag.frames.test.tsx`                                                                                |
+| A person dragging a frame or lane carries exactly what `move` carries                                                    | `apps/editor/hooks/canvas/useEditorDrag.frames.test.tsx`                                                                              |
 | `connect`: pinned, anchors facing; second arrow needs `again`, else `arrow_exists`; `rewire` moves one end               | `packages/edit-operations/src/operations/connect.test.ts`                                                                             |
 | Locks: a locked tab, element or layer refuses with `element_locked`; make room passes locked units by                    | `locks.test.ts`, `invariants.test.ts` › "no locked element changes", `make-room.test.ts` › "passes a locked unit by"                  |
 | Live fields are never written by `set`                                                                                   | `fields.test.ts` › "refuses identity, live and prototype fields"                                                                      |

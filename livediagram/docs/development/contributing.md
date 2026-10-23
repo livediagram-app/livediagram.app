@@ -128,7 +128,7 @@ Those ports are defaults, not fixtures. Three environment variables move them, w
 | Variable             | Default                 | What it moves                                                         |
 | -------------------- | ----------------------- | --------------------------------------------------------------------- |
 | `E2E_BASE_URL`       | `http://localhost:3102` | Where Playwright points, and the URL it waits on before starting      |
-| `E2E_EDITOR_PORT`      | `3002`                  | The port `e2e-stack.mjs` serves the built editor app on                 |
+| `E2E_EDITOR_PORT`    | `3002`                  | The port `e2e-stack.mjs` serves the built editor app on               |
 | `E2E_API_PORT`       | `8687`                  | The api worker's port, and the target its `/api/*` proxy forwards to  |
 | `E2E_MARKETING_PORT` | `3013`                  | The port the stack serves the built marketing site on (optical audit) |
 

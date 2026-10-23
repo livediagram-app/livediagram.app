@@ -4,8 +4,7 @@
 // over its name and line, larger than it draws elsewhere, in the tab's own colours (the palette), and the grid they sit
 // in. Shared by a start's own groups, its search results and the other modes' matches (StartOtherModes).
 import type { ReactNode } from 'react';
-import type { PlanPalette } from '@/components/plan/plan-palette';
-import { tint } from '@/components/plan/plan-card-parts';
+import type { StartPalette } from './start-palette';
 
 export type StartPanelCard = {
   id: string;
@@ -24,8 +23,9 @@ export type StartPanelCard = {
   note?: ReactNode;
 };
 
-// The accent at a strength, as a Plan card's tints are (plan-card-parts).
-export const startTint = (palette: PlanPalette, pct: number) => tint(palette.focus, pct);
+// The accent at a strength.
+export const startTint = (palette: StartPalette, pct: number) =>
+  `color-mix(in srgb, ${palette.focus} ${pct}%, transparent)`;
 
 function StartCard({
   card,
@@ -33,7 +33,7 @@ function StartCard({
   onChoose,
 }: {
   card: StartPanelCard;
-  palette: PlanPalette;
+  palette: StartPalette;
   onChoose: () => void;
 }) {
   return (
@@ -101,7 +101,7 @@ export function StartCardGrid({
   onChoose,
 }: {
   cards: readonly StartPanelCard[];
-  palette: PlanPalette;
+  palette: StartPalette;
   cascade: boolean;
   onChoose: (cardId: string) => void;
 }) {

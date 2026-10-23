@@ -1,6 +1,6 @@
 import { useRightClickRelease } from '@/hooks/canvas/useRightClickRelease';
 import { useRef, type PointerEvent as ReactPointerEvent, type RefObject } from 'react';
-import { opensInlineLabelEditor, voteKeyOf } from '@livediagram/document';
+import { opensInlineLabelEditor } from '@livediagram/document';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
 import { useLongPress } from '@/hooks/ui/useLongPress';
 import { pressLedger } from '@/lib/double-press';
@@ -100,8 +100,7 @@ export function useBoxedElementGestures({
     // the facilitator can keep arranging the canvas.
     if (vote?.active && onCastVote && votableInVote) {
       e.stopPropagation();
-      // A Plan card element votes on its card (voteKeyOf).
-      onCastVote(voteKeyOf(element));
+      onCastVote(element.id);
       return;
     }
     // The double-press rule (docs/specs/008-canvas/arrow-bending.md): the second press of a

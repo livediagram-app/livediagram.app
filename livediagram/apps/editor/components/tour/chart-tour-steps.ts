@@ -13,8 +13,6 @@ type Step = TourStepOf<ElementTourApi>;
 
 export type ChartTourContext = MenuTourEnv & {
   type: ChartType;
-  // Its numbers are read from a Sheet's range, so there is no data of its own to edit.
-  fromSheet: boolean;
 };
 
 // What one mark of the chart is called.
@@ -30,7 +28,7 @@ const MARKS: Record<ChartType, [one: string, many: string]> = {
 
 // A line, area or scatter chart's numbers are a grid, edited in the Chart Data dialog.
 const editsInDialog = (ctx: ChartTourContext) =>
-  !ctx.fromSheet && (ctx.type === 'line' || ctx.type === 'area' || ctx.type === 'scatter');
+  ctx.type === 'line' || ctx.type === 'area' || ctx.type === 'scatter';
 
 // A step inside the Chart Data dialog: opens it (again, if it was closed); the engine waits for its control and
 // scrolls it in.
@@ -61,7 +59,6 @@ function onCanvas(step: Step): Step {
 
 function dataInMenu(ctx: ChartTourContext): string {
   const [one] = MARKS[ctx.type];
-  if (ctx.fromSheet) return 'Its numbers come from a Sheet. Unlink From Sheet makes them its own.';
   if (editsInDialog(ctx)) return 'Data opens its numbers as a grid, which the tour opens next.';
   return `Data is a row per ${one}: a colour, a label and a value.`;
 }

@@ -11,8 +11,6 @@ import {
   isEventStormingNote,
   isEventStormingTab,
   landArrivals,
-  sheetDrawnChartIds,
-  withSheetCharts,
   withAttached,
   type ElementId,
   type ArrowElement,
@@ -63,18 +61,13 @@ export function useElementDuplication(deps: {
     const { multiSelectedIds } = readSelection();
     if (multiSelectedIds.size === 0) return;
     const { dx, dy, lanes } = duplicateOffset(activeTab, multiSelectedIds);
-    // A Sheet's copy takes the charts it draws (docs/specs/029-sheets/sheet.md "Charts"), which are never selected.
-    // ...and a host's copy takes its badges and step numbers (docs/specs/009-elements/badge.md).
-    const ids = withAttached(
-      activeTab.elements,
-      withSheetCharts(activeTab.elements, multiSelectedIds),
-    );
+    // A host's copy takes its badges and step numbers (docs/specs/009-elements/badge.md).
+    const ids = withAttached(activeTab.elements, multiSelectedIds);
     const { newElements: copies } = duplicateElements(activeTab.elements, ids, dx, dy);
     if (copies.length === 0) return;
     commit((els) => landCopies(els, copies, lanes));
     trackDuplicated(copies);
-    const drawn = sheetDrawnChartIds(copies);
-    setMultiSelectedIds(new Set(copies.filter((c) => !drawn.has(c.id)).map((c) => c.id)));
+    setMultiSelectedIds(new Set(copies.map((c) => c.id)));
   };
 
   const duplicateSelected = () => {
@@ -85,12 +78,8 @@ export function useElementDuplication(deps: {
     // Element-only duplicate: clones just this element (not arrows attached
     // to it), offset diagonally so it's visible next to the original.
     const offset = PASTE_OFFSET;
-    // A Sheet drawing charts copies with them, through duplicateElements, so they read the Sheet's copy.
-    // ...and its badges and step numbers (docs/specs/009-elements/badge.md).
-    const withCharts = withAttached(
-      activeTab.elements,
-      withSheetCharts(activeTab.elements, new Set([source.id])),
-    );
+    // A host copies with its badges and step numbers (docs/specs/009-elements/badge.md).
+    const withCharts = withAttached(activeTab.elements, new Set([source.id]));
     if (withCharts.size > 1) {
       const { dx, dy, lanes } = duplicateOffset(activeTab, withCharts);
       const { newElements: copies, idMap } = duplicateElements(

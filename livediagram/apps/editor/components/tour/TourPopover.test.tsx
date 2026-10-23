@@ -2,7 +2,7 @@
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { planPalette } from '@livediagram/document';
+import { startPalette } from '@/components/start/start-palette';
 import { TourPopover } from './TourPopover';
 
 // docs/specs/007-editor/editor-tour.md: a step card leaves focus on the control it points at.
@@ -13,7 +13,7 @@ const props = {
   title: 'Getting started with Diagrams?',
   body: 'Want a quick tour?',
   targetRect: null,
-  palette: planPalette('light'),
+  palette: startPalette('light'),
   onNext: () => undefined,
   onSkip: () => undefined,
 };

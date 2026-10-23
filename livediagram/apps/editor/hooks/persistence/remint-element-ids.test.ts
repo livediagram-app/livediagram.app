@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Element, ShapeElement } from '@livediagram/document';
-import { remintElements, remintTabElements } from './useTabImport';
+import { remintElements } from './useTabImport';
 
 const remintElementIds = (elements: Element[]) => remintElements(elements).elements;
 
@@ -45,62 +45,5 @@ describe('remintElementIds', () => {
       shape('s'),
     ]);
     expect(out.map((e) => e.type)).toEqual(['arrow', 'shape']);
-  });
-
-  it('links a chart to the copy of its Sheet', () => {
-    const range = { r1: 'aaaa', c1: 'bbbb', r2: 'cccc', c2: 'dddd' };
-    const [sheet, chart] = remintElementIds([
-      shape('s', { shape: 'plan-sheet', planSheet: { sheetId: 'sheet0001' } }),
-      shape('c', { shape: 'bar-chart', chartSource: { sheetId: 'sheet0001', range } }),
-    ]) as ShapeElement[];
-    expect(sheet!.planSheet!.sheetId).not.toBe('sheet0001');
-    expect(chart!.chartSource).toEqual({ sheetId: sheet!.planSheet!.sheetId, range });
-  });
-});
-
-// docs/specs/026-plan/plan-tabs.md "Import and Export of a Dashboard": a duplicated or imported Dashboard follows its
-// re-minted elements and Sheets, and its rows and slots take ids of their own.
-describe('remintTabElements on a Dashboard', () => {
-  const SHEET = 'a1b2c3d4e5f60718';
-  const sheet = shape('s', { shape: 'plan-sheet', planSheet: { sheetId: SHEET } } as never);
-  const tab = {
-    elements: [sheet],
-    dashboard: {
-      rows: [
-        {
-          id: 'r',
-          height: 300,
-          slots: [
-            { id: 'a', span: 6, content: { type: 'element' as const, elementId: 's' } },
-            {
-              id: 'b',
-              span: 6,
-              content: {
-                type: 'sheet-metric' as const,
-                metric: 'figure' as const,
-                sheetId: SHEET,
-                cell: { r: 'abcd', c: 'efgh' },
-              },
-            },
-          ],
-        },
-      ],
-    },
-  };
-
-  it('points a figure from the tab’s Sheet at the Sheet’s copy', () => {
-    const out = remintTabElements(tab);
-    const copy = (out.elements[0] as ShapeElement).planSheet!.sheetId;
-    expect(copy).not.toBe(SHEET);
-    const [element, figure] = out.dashboard.rows[0]!.slots;
-    expect(element!.content).toEqual({ type: 'element', elementId: out.elements[0]!.id });
-    expect(figure!.content).toMatchObject({ type: 'sheet-metric', sheetId: copy });
-  });
-
-  it('gives every row and slot a new id', () => {
-    const out = remintTabElements(tab);
-    expect(out.dashboard.rows[0]!.id).not.toBe('r');
-    expect(out.dashboard.rows[0]!.slots.map((s) => s.id)).not.toContain('a');
-    expect(out.dashboard.rows[0]!.slots.map((s) => s.id)).not.toContain('b');
   });
 });

@@ -1,4 +1,4 @@
--- Deleting a sheet (docs/specs/029-sheets/sheet-store.md "Deleting a sheet", blueprint sheet-store.md "Deleting a
+-- Deleting a sheet (Plan's sheets, now in liveplanner "Deleting a sheet", blueprint sheet-store.md "Deleting a
 -- sheet"): which elements reference each sheet, kept by every tab write, so a sheet nothing references is noted
 -- the moment it happens and expires by one indexed query, instead of a daily sample of tabs.
 ALTER TABLE sheets RENAME COLUMN unframed_since TO unreferenced_since;

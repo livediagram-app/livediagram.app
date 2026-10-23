@@ -35,7 +35,6 @@ describe('HomeWelcome', () => {
       '/new?template=blank',
       '/new?template=whiteboard',
       '/new?template=blank-session',
-      '/new?template=blank-plan',
     ]);
     expect(links[0]!.textContent).toContain('Blank Diagram');
     fireEvent.click(links[0]!);

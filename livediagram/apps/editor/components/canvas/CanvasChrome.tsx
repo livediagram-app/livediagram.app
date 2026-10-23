@@ -22,22 +22,11 @@ import { ToolbarPalette } from '@/components/palette/ToolbarPalette';
 import { pickPaletteAddHandlers } from '@/components/palette/palette-add-handlers';
 import { ToolbarExplorerButton } from '@/components/chrome/ToolbarExplorerButton';
 import { WorkbenchBackButton } from '@/components/chrome/WorkbenchChrome';
-import { PlanCardsClusterStrip } from '@/components/canvas/PlanCardsClusterStrip';
-import { useTabShowsCards } from '@/hooks/sheets/card-table-sheets';
 import {
   SessionClusterStrip,
   sessionStripTools,
   stripCanStart,
 } from '@/components/canvas/SessionClusterStrip';
-import { useCardTypesOpener } from '@/hooks/plan/useCardTypesOpener';
-import { usePublishCardTypesTaken } from '@/hooks/plan/card-types-taken';
-import { usePlanVoting } from '@/hooks/plan/usePlanVoting';
-import { useCanvasCovered, usePlanTabKind } from '@/hooks/plan/plan-cover-store';
-
-// How far the bottom-right cluster moves in and up over a covering board or Sheet: the cover's padding (12 px) and a
-// little more in, and past the element's bottom scrollbar up.
-const COVERED_CLUSTER_INSET = { x: 16, y: 20 };
-const NO_CLUSTER_INSET = { x: 0, y: 0 };
 import { toolbarTopClearancePx } from '@/lib/canvas-chrome';
 import { LayersThemeStrip } from '@/components/canvas/LayersThemeStrip';
 import { tidyUpOffered } from '@/components/canvas/tidy-up-actions';
@@ -46,7 +35,6 @@ import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import {
   Fragment,
   useCallback,
-  useMemo,
   useState,
   type Dispatch,
   type RefObject,
@@ -267,9 +255,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // buttons with them (Undo / Redo stay). Read once here and handed to
   // useCanvasChromePanels, so a button and its panel share one value.
   const panelsOn = {
-    // Not in Plan mode: a board is worked by its
-    // columns and cards, not a stacking order (docs/specs/026-plan/plan-mode.md).
-    layers: panelEnabled(settings, 'layersPanelEnabled') && props.editorMode !== 'plan',
+    layers: panelEnabled(settings, 'layersPanelEnabled'),
     collaborate: panelEnabled(settings, 'collaboratePanelEnabled'),
   };
 
@@ -320,21 +306,14 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // Draw mode trades the palette, the strip and the theme controls for its
   // dock (docs/specs/023-draw-mode/draw-mode.md "What a whiteboard shows").
   const whiteboard = props.editorMode === 'draw';
-  // The palette's Edit Cards opens the Card Types popover from its button (docs/specs/026-plan/item-types.md).
-  const cardTypesButtonRef = useCardTypesOpener(!zenMode && props.editorMode === 'plan', {
-    activeDockPanel,
-    handleDockButtonClick,
-  });
   // The Vote button, which a starting results walkthrough opens for whoever drives it.
   const voteButtonRef = useVoteReviewOpener(!!props.voteReview?.canControl, {
     activeDockPanel,
     handleDockButtonClick,
   });
   // The palette strip: an editor's (not read-only), never on a whiteboard, which has its dock; or a Participant's
-  // (docs/specs/013-workspace/share-roles.md), on every mode, since it has no dock. Never in Plan, whose boards, sheets
-  // and dashboards carry their own tools (docs/specs/026-plan/plan-mode.md "No palette").
-  const paletteShown =
-    props.editorMode !== 'plan' && ((!readOnly && !whiteboard) || !!props.participantPalette);
+  // (docs/specs/013-workspace/share-roles.md), on every mode, since it has no dock.
+  const paletteShown = (!readOnly && !whiteboard) || !!props.participantPalette;
   // The strip only renders with the chrome up.
   const stripShown = paletteShown && !chromeHidden;
   // The whiteboard's dock, absent for a view-role visitor (nothing to draw with) and while the
@@ -363,35 +342,13 @@ export function CanvasChrome(props: CanvasChromeProps) {
     />
   );
 
-  // Whether the tab has a Plan board, for an armed Plan card's hint (docs/specs/026-plan/plan-mode.md).
-  const hasPlanBoard = useMemo(
-    () => elements.some((e) => e.type === 'shape' && e.shape === 'plan-board'),
-    [elements],
-  );
-  // A board or Sheet covering the canvas (maximised or filling its tab, not a Dashboard's page): the bottom-right
-  // cluster moves inside its frame.
-  const canvasCovered = useCanvasCovered();
-  const tabPlanKind = usePlanTabKind();
-  // A Dashboard's or a Form tab's page covers the canvas as a page, not an element.
-  const elementCovers = canvasCovered && tabPlanKind !== 'dashboard' && tabPlanKind !== 'form';
-  const clusterInset = elementCovers ? COVERED_CLUSTER_INSET : NO_CLUSTER_INSET;
-  // Plan's Timer and Vote, only for a board made for voting (or a session running), never on a Dashboard.
-  const planVoting = usePlanVoting(elements, !!props.tabVote || !!props.sessionTools?.timer);
-  const stripTools = sessionStripTools(props.editorMode, props.esBoard === true, planVoting);
-  // Plan's card strip shows only while the tab has something that shows cards (items.md "The Plan strip").
-  const tabShowsCards = useTabShowsCards(elements);
-  // The card types the tab's boards take, so the palette greys out a card tile none would take (plan-mode.md).
-  usePublishCardTypesTaken(elements);
+  const stripTools = sessionStripTools(props.editorMode, props.esBoard === true);
   // Panel elements + their wiring live in useCanvasChromePanels.
   const {
     panelEls,
     explorerEl,
     layersEl,
     collaborateEl,
-    cardTypesPopoverEl,
-    trashPopoverEl,
-    newCardPopoverEl,
-    cardFinderPopoverEl,
     sessionPopoverEl,
     tidyUpPopoverEl,
     avatarPopoverEl,
@@ -416,7 +373,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
   const toolbarScale = useUiScale('toolbar');
   const panelScale = useUiScale('panels');
   const cornerScale = useUiScale('cornerButtons');
-  const clusterX = clusterInset.x;
   // The dock's code loads on demand, so it is drawn a moment after the chrome: the top corners
   // measure against it from the commit it is first drawn in (its onDrawn), never before, when there
   // is nothing on the page to measure. Once drawn its code is in, so a later mount is immediate.
@@ -545,7 +501,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
       {/* Top-of-canvas floating chrome (docs/specs/008-canvas/canvas-and-palette.md): owner / role badge, the
           active editor-mode banner, multi-selection toolbar, session timer
           and vote banner — laid out as one non-overlapping stack. */}
-      <TopCenterChrome {...props} dockOnTop={dockOnTop} hasPlanBoard={hasPlanBoard} />
+      <TopCenterChrome {...props} dockOnTop={dockOnTop} />
 
       {/* The menu button (docs/specs/007-editor/toolbar-layout.md) opens the Explorer as a popover
           (zen hides it, the welcome flow doesn't), and Layers opens as a popover over its cluster
@@ -559,10 +515,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
       {/* The Collaborate popover (docs/specs/012-collaboration/assigned-actions.md §5): it positions
           against the canvas, so it renders outside the corner layer, as Layers does. */}
       {zenMode ? null : collaborateEl}
-      {zenMode ? null : cardTypesPopoverEl}
-      {zenMode ? null : trashPopoverEl}
-      {zenMode ? null : newCardPopoverEl}
-      {zenMode ? null : cardFinderPopoverEl}
       {tidyUpPopoverEl}
       {avatarPopoverEl}
       {/* The Session strip's popover, in Zen too, as its strip is (docs/specs/012-collaboration/session-tools.md). */}
@@ -619,7 +571,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
       )}
 
       {/* Bottom-right cluster. Order, left to right: the Undo / Redo
-          strip, the Session strip (Timer, Vote, Poll), the mode's own strip (Slides, Plan), the
+          strip, the Session strip (Timer, Vote, Poll), the
           Collaborate button (only while the tab has a thread or an action), the Layers and
           Theme & Canvas strip, then the Zoom controls. The buttons open their panels as popovers
           above them (docs/specs/007-editor/editor-app.md). */}
@@ -630,19 +582,13 @@ export function CanvasChrome(props: CanvasChromeProps) {
         data-zoom-cluster=""
         data-region="controls"
         // Drawn at the UI scale, still 16px from the corner, or clear of a landscape notch.
-        // Over a maximised or tab-filling board or Sheet it sits inside the element's frame, clear of its edge and its
-        // scrollbar: in by the cover's padding and up past the scrollbar (docs/specs/026-plan/plan-board.md "Maximised
-        // board").
         style={
           cornerScale === 1
-            ? {
-                right: atLeastInset(`${16 + clusterX}px`, 'right'),
-                ...(clusterInset.y ? { bottom: 16 + clusterInset.y } : {}),
-              }
+            ? { right: atLeastInset('16px', 'right') }
             : {
                 ...uiScaleStyle(cornerScale),
-                right: atLeastInset(`${toSurfacePx(16 + clusterX, cornerScale)}px`, 'right'),
-                bottom: toSurfacePx(16 + clusterInset.y, cornerScale),
+                right: atLeastInset(`${toSurfacePx(16, cornerScale)}px`, 'right'),
+                bottom: toSurfacePx(16, cornerScale),
               }
         }
         // On a phone the cluster stays one row (docs/specs/012-collaboration/session-tools.md "The Session
@@ -675,10 +621,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
               />
             ) : null}
             {/* The Session strip (docs/specs/012-collaboration/session-tools.md "The Session strip"): left of
-                Layers, or of the mode's own strip. Kept in Zen: a running session is the one piece of
-                chrome a facilitator still needs there. Workshop has all three, Plan its Timer and
-                Vote; Diagram and Draw keep their bottom bar to
-                their own tools. */}
+                Layers. Kept in Zen: a running session is the one piece of chrome a facilitator still
+                needs there. Workshop (and an event-storming board) has all three; Diagram and Draw keep
+                their bottom bar to their own tools. */}
             {props.sessionTools && stripTools ? (
               <div className="contents">
                 <SessionClusterStrip
@@ -710,36 +655,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
                   onToggle={(segment, button) => handleDockButtonClick(segment, button, true)}
                 />
               </div>
-            ) : null}
-            {/* Find a Card and Card Types (docs/specs/026-plan/items.md "Finding a card", item-types.md): in Plan
-                mode, one strip where Layers would be, while the tab has something that shows cards ("The Plan
-                strip"). */}
-            {!zenMode && props.editorMode === 'plan' && tabShowsCards ? (
-              <PlanCardsClusterStrip
-                finderOpen={activeDockPanel === 'plan-cards'}
-                onToggleFinder={(button) => handleDockButtonClick('plan-cards', button, true)}
-                typesOpen={activeDockPanel === 'card-types'}
-                onToggleTypes={(button) => handleDockButtonClick('card-types', button, true)}
-                typesButtonRef={cardTypesButtonRef}
-                // The Trash leads the strip, off a phone and for an editor (docs/specs/026-plan/items.md "Trash").
-                // A Participant adds cards too (docs/specs/013-workspace/share-roles.md); the Trash stays an Editor's.
-                newCard={
-                  !readOnly || !!props.participantPalette
-                    ? {
-                        open: activeDockPanel === 'plan-new-card',
-                        onToggle: (button) => handleDockButtonClick('plan-new-card', button, true),
-                      }
-                    : undefined
-                }
-                trash={
-                  !readOnly && !isMobile
-                    ? {
-                        open: activeDockPanel === 'plan-trash',
-                        onToggle: (button) => handleDockButtonClick('plan-trash', button, true),
-                      }
-                    : undefined
-                }
-              />
             ) : null}
             {/* Collaborate (docs/specs/012-collaboration/assigned-actions.md §5): before Layers, only while
                 the tab has a comment thread or an action. A view-role visitor

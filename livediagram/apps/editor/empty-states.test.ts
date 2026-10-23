@@ -20,7 +20,6 @@ const DRAWN_FACES = [
   'components/canvas/entity/EntityView.tsx',
   'components/canvas/collab/estimate/EstimateEmpty.tsx',
   'components/canvas/collab/temperature/MoodMeter.tsx',
-  'components/plan/widgets/BoardWidgetView.tsx',
 ];
 
 function* sources(dir: string): Generator<string> {

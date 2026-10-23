@@ -20,8 +20,8 @@ describe('resolveEditorMode', () => {
       canSwitch: false,
     });
     expect(
-      resolveEditorMode({ tab: { id: 't', opensIn: 'plan', locked: true }, canEdit: true }),
-    ).toEqual({ mode: 'plan', canSwitch: false });
+      resolveEditorMode({ tab: { id: 't', opensIn: 'workshop', locked: true }, canEdit: true }),
+    ).toEqual({ mode: 'workshop', canSwitch: false });
   });
 
   it('keeps an event-storming board in Diagram mode with no switch', () => {

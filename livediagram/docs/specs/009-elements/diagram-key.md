@@ -46,7 +46,6 @@ A key takes the **Shape** set. It is reference, not story, so it offers no entra
 | Mode     | Where                                   |
 | -------- | --------------------------------------- |
 | Diagram  | **Build**: Diagram Key, after Boundary  |
-| Plan     | none                                    |
 | Workshop | none (Search still finds and places it) |
 
 ## Share roles

@@ -128,32 +128,28 @@ describe('SettingsCategoryPane link rows', () => {
 describe('SettingsCategoryPane tours', () => {
   const TOURS = SETTINGS_CATEGORIES.find((c) => c.id === 'tours')!;
 
-  it('turns the Boards tour back on alone, leaving the Sheets tour answered', () => {
+  it('turns the Workshop tour back on alone, leaving the Diagram tour answered', () => {
     const onChange = vi.fn();
     render(
       <SettingsCategoryPane
         category={TOURS}
-        settings={{ tourSeen: true, planTourSeen: true, planTourTracks: ['boards', 'sheets'] }}
+        settings={{ tourSeen: true, workshopTourSeen: true }}
         onChange={onChange}
       />,
     );
-    const plan = screen.getByRole('switch', { name: 'Boards Tour' });
-    expect(screen.getByRole('switch', { name: 'Sheets Tour' }).getAttribute('aria-checked')).toBe(
+    const workshop = screen.getByRole('switch', { name: 'Workshop Tour' });
+    expect(screen.getByRole('switch', { name: 'Diagram Tour' }).getAttribute('aria-checked')).toBe(
       'false',
     );
-    expect(plan.getAttribute('aria-checked')).toBe('false');
-    expect(screen.getByRole('switch', { name: 'Workshop Tour' }).getAttribute('aria-checked')).toBe(
+    expect(workshop.getAttribute('aria-checked')).toBe('false');
+    expect(screen.getByRole('switch', { name: 'Draw Tour' }).getAttribute('aria-checked')).toBe(
       'true',
     );
     // The shared explanation sits once, under the section heading.
     expect(screen.getByRole('heading', { name: 'Offer Again' })).toBeTruthy();
     expect(screen.getAllByText(/Each tour offers itself once/)).toHaveLength(1);
-    fireEvent.click(plan);
-    expect(track).toHaveBeenCalledWith('UI', 'Toggled', 'BoardsTourSeenOff');
-    expect(onChange).toHaveBeenCalledWith({
-      tourSeen: true,
-      planTourSeen: false,
-      planTourTracks: ['sheets'],
-    });
+    fireEvent.click(workshop);
+    expect(track).toHaveBeenCalledWith('UI', 'Toggled', 'WorkshopTourSeenOff');
+    expect(onChange).toHaveBeenCalledWith({ tourSeen: true, workshopTourSeen: false });
   });
 });

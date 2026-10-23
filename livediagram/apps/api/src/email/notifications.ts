@@ -13,7 +13,6 @@ import {
   claimFirstShare,
   claimJoinNotify,
   claimMilestone,
-  claimFormEmail,
   claimNotifyEmail,
   getNotificationPrefs,
   getOwnerEmail,
@@ -28,16 +27,11 @@ const COMMENT_NOTIFY_THROTTLE_MS = 15 * 60 * 1000;
 // At most one "someone joined your document" email per document per this window
 // (docs/specs/014-identity/profile-and-email-notifications.md (a)): the comment email's rule, for the same reason.
 const JOIN_NOTIFY_THROTTLE_MS = 15 * 60 * 1000;
-// At most one "new response" email per form per this window (docs/specs/030-forms/forms.md "Hearing about
-// responses"); the next one says how many came while it was held. Safe range 5..60 minutes.
-const FORM_EMAIL_THROTTLE_MS = 15 * 60 * 1000;
 import {
   actionAssignedEmail,
   mentionedEmail,
   commentNotificationEmail,
   documentJoinedEmail,
-  formResponseEmail,
-  formSuspendedEmail,
   inviteResponseEmail,
   firstShareEmail,
   milestoneEmail,
@@ -150,11 +144,6 @@ export async function notifyMentioned(
     authorName: string | null;
     document: { id: string; name: string };
     commentText: string;
-    // A Plan card's comment: the card the button opens.
-    itemId?: string;
-    // A Plan card's stored comment, read by the route: the claim names it in place of the text, so the same
-    // comment emails each recipient once however the request is worded.
-    commentId?: string;
   },
 ): Promise<void> {
   if (!emailEnabled(env)) return;
@@ -169,9 +158,9 @@ export async function notifyMentioned(
   const claimed = await claimTeamNotifyEmail(env, input.authorUserId, [
     'mention',
     input.document.id,
-    input.itemId ?? null,
+    null,
     input.recipientUserId ?? `mail:${to}`,
-    input.commentId ? `comment:${input.commentId}` : input.commentText,
+    input.commentText,
   ]);
   if (!claimed) return;
   await sendEmail(env, {
@@ -182,7 +171,6 @@ export async function notifyMentioned(
       input.document.name,
       input.document.id,
       input.commentText,
-      input.itemId,
     ),
   });
 }
@@ -290,50 +278,4 @@ export async function notifyFirstShare(env: Env, ownerId: string): Promise<void>
   if (!prefs.notifyMilestones) return;
   if (!(await claimFirstShare(env, ownerId))) return;
   await sendEmail(env, { to, ...firstShareEmail(env) });
-}
-
-// A respondent filled in a form on a document the owner owns (docs/specs/030-forms/forms.md "Hearing about
-// responses"). Opt-out (notifyFormResponses), throttled per form; never blocks the response.
-export async function notifyFormResponse(
-  env: Env,
-  liveDoc: { id: string; ownerId: string; name: string },
-  form: { code: string; heading: string },
-  cardTitle: string,
-): Promise<void> {
-  if (!emailEnabled(env)) return;
-  const to = await getOwnerEmail(env, liveDoc.ownerId);
-  if (!to) return;
-  const prefs = await getNotificationPrefs(env, liveDoc.ownerId);
-  if (!prefs.notifyFormResponses) return;
-  const claim = await claimFormEmail(env, form.code, Date.now(), FORM_EMAIL_THROTTLE_MS);
-  if (!claim.send) {
-    console.info('[forms] form.email.held', { documentId: liveDoc.id });
-    return;
-  }
-  await sendEmail(env, {
-    to,
-    ...formResponseEmail(
-      env,
-      { heading: form.heading, documentId: liveDoc.id, documentName: liveDoc.name },
-      cardTitle,
-      claim.heldBefore,
-    ),
-  });
-  console.info('[forms] form.email.sent', { documentId: liveDoc.id });
-}
-
-// A form link suspended after reports (docs/specs/030-forms/forms.md "Report This Form"): always sent, where email is
-// configured and the owner has an address.
-export async function notifyFormSuspended(
-  env: Env,
-  liveDoc: { id: string; ownerId: string; name: string },
-  heading: string,
-): Promise<void> {
-  if (!emailEnabled(env)) return;
-  const to = await getOwnerEmail(env, liveDoc.ownerId);
-  if (!to) return;
-  await sendEmail(env, {
-    to,
-    ...formSuspendedEmail(env, { heading, documentId: liveDoc.id, documentName: liveDoc.name }),
-  });
 }

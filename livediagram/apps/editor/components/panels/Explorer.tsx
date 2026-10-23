@@ -321,7 +321,6 @@ function ExplorerImpl({
       helpArticle="explorerPanel"
       title="Explorer"
       dataTourId="explorer"
-      layoutChrome
       // Never faded by Panel opacity: its menus open outside it (docs/specs/007-editor/user-preferences.md).
       opaque
       position={position}

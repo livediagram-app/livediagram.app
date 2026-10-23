@@ -1,4 +1,4 @@
--- Sheets: a document's sheet store (docs/specs/029-sheets/sheet-store.md, blueprint sheet-store.md "Data and
+-- Sheets: a document's sheet store (Plan's sheets, now in liveplanner, blueprint sheet-store.md "Data and
 -- persistence"). A Sheet element on a tab names its sheet; the grid lives here, apart from the tab, so a sheet of
 -- tens of thousands of cells never weighs on the tab's elements, snapshots or room.
 CREATE TABLE sheets (

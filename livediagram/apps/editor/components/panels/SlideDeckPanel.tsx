@@ -18,13 +18,11 @@
 // An empty deck stays empty. No seeded slides, no "one per tab" starter: a
 // generated deck is one you have to read and prune before you can trust it.
 
-import { ITEM_TYPES, itemTitle, typeIn } from '@livediagram/items';
-import { usePlan } from '@/components/plan/PlanContext';
 import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
 import { sameMembers, selectionIds, type Selection } from '@/lib/selection-store';
 import { useMemo, useRef, useState } from 'react';
 
-import { slideName, type Slide } from '@livediagram/document';
+import { slideName } from '@livediagram/document';
 
 import { ModePanel, type ModePanelProps } from '@/components/panels/ModePanel';
 import { SlideRowMenu } from '@/components/panels/SlideRowMenu';
@@ -55,14 +53,6 @@ export function SlideDeckPanel({
   activeTabId: string;
   isReadOnly: boolean;
 } & ModePanelProps) {
-  // An item slide's card, read live from the items (docs/specs/012-collaboration/presentation-mode.md
-  // "Item slides").
-  const plan = usePlan();
-  const slideCard = (slide: Slide) => {
-    const item = slide.itemId ? plan?.items.get(slide.itemId) : undefined;
-    if (!item) return undefined;
-    return { title: itemTitle(item), color: typeIn(plan?.types ?? ITEM_TYPES, item.type).color };
-  };
   const {
     deck,
     openSlideId,
@@ -184,7 +174,6 @@ export function SlideDeckPanel({
                   isDragging={draggingId === slide.id && moving}
                   renaming={renamingId === slide.id}
                   thumb={thumbs.get(slide.id)}
-                  card={slideCard(slide)}
                   onOpen={() => openSlideInEditor(slide.id)}
                   onRename={(name) => renameSlide(slide.id, name)}
                   onRenameDone={() => setRenamingId(null)}

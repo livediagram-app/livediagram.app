@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
-// The New Document wizard's mode step (docs/specs/007-editor/new-document-route.md "Choosing a mode"): four cards of
-// one build, two by two, each printing its number key, with no template badges; 1 to 4 choose a card.
+// The New Document wizard's mode step (docs/specs/007-editor/new-document-route.md "Choosing a mode"): three cards of
+// one build, side by side, each printing its number key, with no template badges; 1 to 3 choose a card.
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -14,13 +14,13 @@ afterEach(cleanup);
 const cards = () => Array.from(document.querySelectorAll<HTMLButtonElement>('[data-new-mode]'));
 
 describe('NewDocumentModeStep', () => {
-  it('shows the four modes in the catalogue order, Diagram first', () => {
+  it('shows the three modes in the catalogue order, Diagram first', () => {
     render(<NewDocumentModeStep selected={null} onChoose={vi.fn()} />);
     expect(cards().map((c) => c.dataset.newMode)).toEqual([...EDITOR_MODES]);
     expect(NEW_DOCUMENT_MODES[0]).toBe('diagram');
   });
 
-  it('prints each card’s number key, 1 to 4, and names it as a shortcut', () => {
+  it('prints each card’s number key, 1 to 3, and names it as a shortcut', () => {
     render(<NewDocumentModeStep selected={null} onChoose={vi.fn()} />);
     cards().forEach((card, i) => {
       const key = card.querySelector('[data-mode-key]')!;
@@ -43,19 +43,18 @@ describe('NewDocumentModeStep', () => {
     }
   });
 
-  it('builds every card alike, Diagram included: two by two at one height', () => {
+  it('builds every card alike, Diagram included: side by side at one height', () => {
     render(<NewDocumentModeStep selected={null} onChoose={vi.fn()} />);
     const [diagram, ...rest] = cards();
     for (const card of rest) expect(card.className).toContain('flex-col');
     expect(diagram!.className).toContain('flex-col');
     expect(diagram!.className).not.toMatch(/sm:flex-row/);
     expect(cards().map((c) => c.className.match(/sm:col-span-\d/)?.[0])).toEqual([
-      'sm:col-span-3',
-      'sm:col-span-3',
-      'sm:col-span-3',
-      'sm:col-span-3',
+      'sm:col-span-2',
+      'sm:col-span-2',
+      'sm:col-span-2',
     ]);
-    expect(modeCardSpan()).toBe('sm:col-span-3');
+    expect(modeCardSpan()).toBe('sm:col-span-2');
     expect(diagram!.parentElement!.className).toMatch(/sm:grid-cols-6/);
     expect(diagram!.parentElement!.className).toMatch(/sm:auto-rows-fr/);
   });
@@ -108,12 +107,12 @@ describe('NewDocumentModeStep', () => {
     const [diagram, draw] = cards();
     expect(draw!.getAttribute('aria-pressed')).toBe('true');
     fireEvent.click(
-      screen.getByRole('button', { name: new RegExp(`^${editorModeLabel('plan')}:`) }),
+      screen.getByRole('button', { name: new RegExp(`^${editorModeLabel('workshop')}:`) }),
     );
-    expect(onChoose).toHaveBeenCalledWith('plan');
+    expect(onChoose).toHaveBeenCalledWith('workshop');
     diagram!.focus();
     fireEvent.keyDown(screen.getByRole('group'), { key: 'ArrowLeft' });
-    expect(document.activeElement).toBe(cards()[3]);
+    expect(document.activeElement).toBe(cards()[2]);
     fireEvent.keyDown(screen.getByRole('group'), { key: 'ArrowRight' });
     expect(document.activeElement).toBe(diagram);
   });

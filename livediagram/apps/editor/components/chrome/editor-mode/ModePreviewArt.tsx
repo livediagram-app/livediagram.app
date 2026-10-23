@@ -57,16 +57,4 @@ const ART: Record<EditorMode, ReactNode> = {
       <path d="M90 18v10l7 5M86 8h8" />
     </>
   ),
-  // Three columns of cards, one raised.
-  plan: (
-    <>
-      <rect x="10" y="6" width="30" height="44" rx="4" />
-      <rect x="45" y="6" width="30" height="44" rx="4" />
-      <rect x="80" y="6" width="30" height="44" rx="4" />
-      <rect x="14" y="12" width="22" height="9" rx="2" fill="currentColor" fillOpacity=".2" />
-      <rect x="14" y="25" width="22" height="9" rx="2" fill="currentColor" fillOpacity=".2" />
-      <rect x="49" y="12" width="22" height="9" rx="2" fill="currentColor" />
-      <rect x="84" y="12" width="22" height="9" rx="2" fill="currentColor" fillOpacity=".2" />
-    </>
-  ),
 };

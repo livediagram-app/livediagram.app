@@ -17,7 +17,6 @@ import type { DocumentSource } from './document-source';
 import type { DriveMode } from './drive';
 import type { BackgroundPattern, EditorMode, ShapeKind, Tab } from '@livediagram/document';
 import type { CreationTabKind, TemplateFamily } from './placement-defaults';
-import type { ItemTypeCatalogue } from '@livediagram/items';
 
 export type { AvatarClothing, AvatarConfig, AvatarGender, AvatarHair, AvatarSize } from './avatar';
 
@@ -60,12 +59,6 @@ export type LiveDoc = {
   // has no use for their decks, and a deck is the one metadata field that can
   // grow with the document.
   presentation: string | null;
-  // The document's type catalogue (docs/specs/026-plan/item-types.md): its own item types, or null
-  // (or absent, from an older client or record) for the built-in ones. Written only by
-  // PUT /documents/:id/item-types.
-  itemTypes?: ItemTypeCatalogue | null;
-  // The catalogue's revision (ItemTypesRequest `expectedRev`): 0 until its first write.
-  itemTypesRev?: number;
   savedAt: number;
   createdAt: number;
   // Owner's display name + avatar colour, joined server-side from the
@@ -633,8 +626,6 @@ export * from './read-notes';
 export * from './poll';
 export * from './room-messages';
 export * from './changesets';
-export * from './items';
-export * from './sheets';
 export * from './telemetry-schema';
 export * from './timing-telemetry';
 export * from './server-emitted-events';
@@ -710,5 +701,3 @@ export * from './oauth-clients';
 export * from './workbench';
 export * from './workbench-messages';
 export * from './mcp-origin';
-// Forms (docs/specs/030-forms/forms.md).
-export * from './forms';

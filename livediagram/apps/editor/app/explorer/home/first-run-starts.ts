@@ -15,7 +15,7 @@ import { EDITOR_MODES } from '@livediagram/document';
 export const WELCOME_TEMPLATES_MAX = 8;
 
 /** The three previews fanned in the hero, the front one first. */
-export const WELCOME_FAN: readonly TemplateKind[] = ['flowchart', 'mindmap', 'kanban'];
+export const WELCOME_FAN: readonly TemplateKind[] = ['flowchart', 'mindmap', 'retrospective'];
 
 /** Start Blank: each mode's blank, in mode order. */
 export const WELCOME_BLANKS: readonly TemplateKind[] = EDITOR_MODES.map(

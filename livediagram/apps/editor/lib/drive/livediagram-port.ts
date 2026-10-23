@@ -5,8 +5,6 @@
 // the user had done it here), and the mirror's own rows. The engine only ever
 // sees this interface; tests give it an in-memory livediagram.
 
-import { storeAsCreates } from '@livediagram/items';
-import { fetchItems } from '../api/items';
 import {
   creationIntentOf,
   type DriveConnection,
@@ -20,7 +18,6 @@ import {
   type Tab,
   documentToEnvelopeText,
   type DocumentEnvelope,
-  type EnvelopeSheet,
   type EnvelopeTab,
 } from '@livediagram/document';
 import {
@@ -49,8 +46,6 @@ import {
 } from '../api-client';
 import { apiFetch, apiHeaders, expectOk } from '../api/core';
 import type { DocumentListResponse } from '@livediagram/api-schema';
-import { fetchAllSheets, sheetAsCreate } from '../api/sheets';
-import type { SheetJson } from '@livediagram/sheets';
 
 export type MirrorDocument = {
   id: string;
@@ -108,7 +103,6 @@ export interface LivediagramPort {
 export function copyEnvelope(envelope: DocumentEnvelope): {
   tabs: EnvelopeTab[];
   presentation: string | null;
-  sheets: EnvelopeSheet[];
 } {
   const idMap = new Map(envelope.document.tabs.map((t) => [t.id, crypto.randomUUID()] as const));
   const tabs = envelope.document.tabs.map((t) => ({
@@ -129,11 +123,7 @@ export function copyEnvelope(envelope: DocumentEnvelope): {
       presentation = null;
     }
   }
-  // Each sheet follows its tab to the copy's id (docs/specs/029-sheets/sheet-store.md "Copies and exports").
-  const sheets = (envelope.document.sheets ?? [])
-    .filter((s) => idMap.has(s.tabId))
-    .map((s) => ({ ...s, tabId: idMap.get(s.tabId)! }));
-  return { tabs, presentation, sheets };
+  return { tabs, presentation };
 }
 
 // The production port, over lib/api.
@@ -177,21 +167,11 @@ export function createApiLivediagramPort(ownerId: string): LivediagramPort {
         void _bodyFolder;
         tabs.push(summary.folder ? { ...body, folder: summary.folder } : body);
       }
-      const itemStore = await fetchItems({ ownerId, documentId: id, shareCode: null, tabId: null });
-      const sheets = await fetchAllSheets({
-        ownerId,
-        documentId: id,
-        shareCode: null,
-        tabId: null,
-      });
       return {
         text: documentToEnvelopeText(
           { id: liveDoc.id, name: liveDoc.name, presentation: liveDoc.presentation },
           tabs,
           liveDoc.savedAt,
-          itemStore.items,
-          liveDoc.itemTypes ?? null,
-          sheets,
         ),
         savedAt: liveDoc.savedAt,
       };
@@ -229,17 +209,12 @@ export function createApiLivediagramPort(ownerId: string): LivediagramPort {
     deleteFolder: (id) => apiDeleteFolder(ownerId, id),
     async importDocumentCopy(envelope, target) {
       const id = target?.id ?? crypto.randomUUID();
-      const { tabs, presentation, sheets } = copyEnvelope(envelope);
+      const { tabs, presentation } = copyEnvelope(envelope);
       await apiCreateDocument(ownerId, {
         id,
         name: target?.name ?? envelope.document.name,
         tabs,
         presentation,
-        items: storeAsCreates(envelope.document.items ?? []),
-        itemTypes: envelope.document.itemTypes ?? null,
-        ...(sheets.length
-          ? { sheets: sheets.map((s) => sheetAsCreate(s as unknown as SheetJson)) }
-          : {}),
         // Import a copy is an import (docs/specs/013-workspace/default-folders.md): no place chosen
         // and its intent, so it lands in the person's default folder. A copy the mirror placed keeps
         // the mirror's place, chosen explicitly (its root included), and is never routed.

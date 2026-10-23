@@ -6,7 +6,7 @@ import { UseAsDefaultScene } from '@/components/illustrations/explorer-structure
 export const metadata = helpMetadata({
   title: 'Default Folders',
   description:
-    'Send new diagrams, whiteboards, sessions, Plan, Event Storming, retro and Kanban boards to a folder you choose, set from menus or Settings.',
+    'Send new diagrams, whiteboards, sessions, Event Storming boards and retros to a folder you choose, set from menus or Settings.',
   path: '/help/explorer/folders/default-folders/',
 });
 
@@ -24,12 +24,10 @@ A **default folder** is where your new documents go when you create one without 
 - **Diagrams**: documents that open in Diagram mode.
 - **Whiteboards**: documents that open in Draw mode.
 - **Sessions**: documents that open in Workshop mode.
-- **Plan boards**: documents that open in Plan mode.
 - **Event Storming boards**.
 - **Retrospectives**: documents made from any retrospective template.
-- **Kanban boards**: documents made from the Kanban template.
 
-A document goes to the most specific default that fits it: an Event Storming board's default first, then a retrospective's or a Kanban board's, then the one for the mode it opens in. So a retrospective goes to your Retrospectives folder even if you also have one for Diagrams. With none set, it lands in My Work. Your defaults are your own: teammates choose theirs. Default folders are stored with your account or guest identity, not in the browser.
+A document goes to the most specific default that fits it: an Event Storming board's default first, then a retrospective's, then the one for the mode it opens in. So a retrospective goes to your Retrospectives folder even if you also have one for Diagrams. With none set, it lands in My Work. Your defaults are your own: teammates choose theirs. Default folders are stored with your account or guest identity, not in the browser.
 
 ## Setting a default from a folder
 

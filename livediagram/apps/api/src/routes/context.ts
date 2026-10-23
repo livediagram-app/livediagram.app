@@ -145,7 +145,7 @@ export function gateRead(
 }
 
 // The Participant gate (docs/specs/013-workspace/share-roles.md): every write a Participant may make beside an
-// Editor (comments, Q&A notes and upvotes, Plan cards, Sheet cells). A Viewer only looks, so it is refused. Agent
+// Editor (comments, Q&A notes and upvotes). A Viewer only looks, so it is refused. Agent
 // presence stays on gateRead: an agent acts at its owner's level.
 export function gateParticipate(
   ctx: RouteContext,

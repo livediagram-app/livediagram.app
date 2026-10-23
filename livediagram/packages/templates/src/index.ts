@@ -18,19 +18,5 @@ export { isUntitledDocumentName, UNTITLED_DOCUMENT_NAME } from './legacy-untitle
 export * from './template-layers';
 export { buildTemplate, templateTabs, type TemplateTabDef } from './build-template';
 export { templateFamilyOf } from './template-families';
-export {
-  PLAN_TEMPLATE_KINDS,
-  isPlanTemplateKind,
-  type PlanTemplateKind,
-} from './template-builders-plan';
-export { isSpreadsheetPlanTemplate, planTemplateTabCount } from './plan-template-catalogue';
 export * from './template-tab';
-export * from './dashboard-builder';
 export { templateCatalogue } from './template-catalogue';
-// The engine-free check; materialiseTemplateSheets (which carries the sheets engine) is the
-// '@livediagram/templates/template-sheets' subpath, so only a caller making sheets bundles it.
-export { hasTemplateSheets } from './template-sheet-marks';
-
-export * from './form-templates';
-export * from './form-start';
-export * from './linked-board-start';

@@ -29,7 +29,7 @@ type HelpArticleLinkProps = {
    *   neighbouring primary button's shape but stays neutral, not brand —
    *   for header action rows (e.g. beside the explorer "+ Create" button).
    * `labelled`: the `icon` look with a small "Help" after the `?`, for a header row of labelled
-   *   ghost controls where a lone `?` reads as a stray mark (the Plan item panel).
+   *   ghost controls where a lone `?` reads as a stray mark (a dialog's header row).
    */
   variant?: 'icon' | 'text' | 'button' | 'labelled';
   /**

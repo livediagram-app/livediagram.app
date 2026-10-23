@@ -398,16 +398,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M9 15.5 7.5 21M15 15.5l1.5 5.5" />
     </Glyph>
   ),
-  // A board of three columns, a card raised in the middle one: work on the move.
-  'plan-mode': (
-    <Glyph>
-      <rect x="2.5" y="4" width="19" height="16" rx="1.5" />
-      <path d="M8.8 4v16M15.2 4v16" />
-      <rect x="4.2" y="7" width="3" height="3" rx="0.6" />
-      <rect x="10.2" y="6" width="3.6" height="5" rx="0.8" />
-      <rect x="16.6" y="7" width="3" height="3" rx="0.6" />
-    </Glyph>
-  ),
   // Three people round a speech bubble: a team in a session, someone asking the room.
   'workshop-mode': (
     <Glyph>
@@ -418,42 +408,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M1.5 21c0.6-2 1.8-3 3.5-3s2.9 1 3.5 3M8.5 21c0.6-2 1.8-3.3 3.5-3.3s2.9 1.3 3.5 3.3M15.5 21c0.6-2 1.8-3 3.5-3s2.9 1 3.5 3" />
     </Glyph>
   ),
-  // A card with a number and a type stripe: one item.
-  items: (
-    <Glyph>
-      <rect x="4" y="6" width="16" height="12" rx="1.5" />
-      <path d="M7 6v12" />
-      <path d="M10 10h6M10 14h4" />
-    </Glyph>
-  ),
-  // A board header over three columns of differing heights: a board with its widgets.
-  boards: (
-    <Glyph>
-      <rect x="2.5" y="3" width="19" height="18" rx="1.5" />
-      <path d="M2.5 7.5h19" />
-      <path d="M5 4.9h4" />
-      <rect x="4.5" y="10" width="4" height="8.5" rx="0.6" />
-      <rect x="10" y="10" width="4" height="5.5" rx="0.6" />
-      <rect x="15.5" y="10" width="4" height="7" rx="0.6" />
-    </Glyph>
-  ),
-  // A card opened up: its title, a description line and a checklist tick.
-  cards: (
-    <Glyph>
-      <rect x="3.5" y="3" width="17" height="18" rx="1.5" />
-      <path d="M7 7h10M7 10.5h7" />
-      <path d="M7 15l1.5 1.5L11 14M13.5 15.5h3.5" />
-    </Glyph>
-  ),
-  // Two cards, one behind the other, each with its type stripe: kinds of card.
-  'card-types': (
-    <Glyph>
-      <path d="M7 5.5V4.5a1.5 1.5 0 0 1 1.5-1.5h11A1.5 1.5 0 0 1 21 4.5v9a1.5 1.5 0 0 1-1.5 1.5H18" />
-      <rect x="3" y="8" width="15" height="12" rx="1.5" />
-      <path d="M6 8v12M9 12h6M9 15.5h4" />
-    </Glyph>
-  ),
-  // A board with one card ringed by the tour's spotlight: Plan shown one part at a time.
   // A flipchart on its easel with a dashed spotlight ring on its pad: a guided look at Workshop.
   'workshop-tour': (
     <Glyph>
@@ -477,49 +431,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <circle cx="12" cy="16" r="1.4" />
       <path d="M10 20c0-1.2.9-2 2-2s2 .8 2 2" />
       <circle cx="12" cy="12" r="10" strokeDasharray="1.6 1.4" />
-    </Glyph>
-  ),
-  'plan-tour': (
-    <Glyph>
-      <rect x="2.5" y="4" width="19" height="16" rx="1.5" />
-      <path d="M8.8 4v16M15.2 4v16" />
-      <rect x="10.4" y="8" width="3.2" height="4" rx="0.6" />
-      <rect x="9" y="6.5" width="6" height="7" rx="1.5" strokeDasharray="1.6 1.4" />
-      <path d="M4.5 16h2.5M17 16h2.5" />
-    </Glyph>
-  ),
-  // A clipboard holding two ticked lines: a form filled in.
-  forms: (
-    <Glyph>
-      <rect x="4.5" y="4" width="15" height="17.5" rx="1.5" />
-      <rect x="9" y="2.5" width="6" height="3" rx="1" />
-      <path d="M7.5 10.5l1.2 1.2 2.3-2.4M13 10.5h4M7.5 16l1.2 1.2 2.3-2.4M13 16h4" />
-    </Glyph>
-  ),
-  // A page of rows and slots, a wide one over two, the first holding a small ring: a dashboard.
-  dashboards: (
-    <Glyph>
-      <rect x="2.5" y="3.5" width="19" height="7" rx="1.5" />
-      <rect x="2.5" y="12.5" width="9" height="8" rx="1.5" />
-      <rect x="12.5" y="12.5" width="9" height="8" rx="1.5" />
-      <circle cx="7" cy="16.5" r="2" />
-      <path d="M15 18.5v-2M17 18.5v-4M19 18.5v-3M5.5 7h7" />
-    </Glyph>
-  ),
-  // A grid with a header row and one highlighted cell: a spreadsheet tab.
-  sheets: (
-    <Glyph>
-      <rect x="2.5" y="4" width="19" height="16" rx="1.5" />
-      <path d="M2.5 8.5h19M2.5 13h19M2.5 16.5h19M8 4v16M14.5 4v16" />
-      <rect x="8.6" y="13.6" width="5.3" height="2.3" rx="0.4" />
-    </Glyph>
-  ),
-  // The function sign over a pair of brackets: what a formula calls.
-  'sheet-functions': (
-    <Glyph>
-      <path d="M11 4.5c-1.6 0-2.4 1-2.7 2.6L6.6 19.5" />
-      <path d="M5.5 10h5.5" />
-      <path d="M15 9.5c-1.2 1.2-1.8 2.6-1.8 4.5s.6 3.3 1.8 4.5M19 9.5c1.2 1.2 1.8 2.6 1.8 4.5s-.6 3.3-1.8 4.5" />
     </Glyph>
   ),
   'using-tabs': (
@@ -1834,13 +1745,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <rect x="3" y="4" width="18" height="16" rx="2" />
       <path d="M3 9h18M6 6.5h5" />
       <rect x="13" y="5.5" width="5" height="2" rx="1" />
-    </Glyph>
-  ),
-  visualisations: (
-    <Glyph>
-      <rect x="2.5" y="3.5" width="19" height="17" rx="1.5" />
-      <path d="M5 8h7M8 12h8M6.5 16h6" />
-      <path d="M14.5 5.5v13" strokeDasharray="1.5 1.5" />
     </Glyph>
   ),
   'colours-borders-opacity': (

@@ -55,13 +55,12 @@ beforeEach(() => {
 afterEach(cleanup);
 
 describe('SettingsPlacementDefaultRow', () => {
-  it('lists the seven entries in title case under Default Folders', () => {
+  it('lists the six entries in title case under Default Folders', () => {
     const rows = SETTINGS_CATEGORIES.find((c) => c.id === 'documents')!.rows;
     expect(rows.filter((r) => r.kind === 'placementDefault').map((r) => r.label)).toEqual([
       'Diagrams',
       'Whiteboards',
       'Sessions',
-      'Plan Boards',
       'Event Storming Boards',
       'Retrospectives',
       'Kanban Boards',

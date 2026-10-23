@@ -66,7 +66,7 @@ export const POPULAR_TOPICS: { label: string; path: string }[] = [
   { label: 'Keyboard shortcuts', path: 'tips-and-tricks/keyboard-shortcuts' },
   { label: 'Templates', path: 'canvas/templates' },
   { label: 'Exporting', path: 'account-and-data/exporting-diagrams' },
-  { label: 'Plan mode', path: 'canvas/plan-mode' },
+  { label: 'Editor modes', path: 'canvas/editor-modes' },
 ];
 
 /** Every category slug the home page shows, in page order. */

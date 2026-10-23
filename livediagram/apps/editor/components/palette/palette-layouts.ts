@@ -240,37 +240,8 @@ const WORKSHOP: PaletteLayout = {
   ],
 };
 
-// Plan mode (docs/specs/026-plan/plan-mode.md "The palette"): cards, boards and their widgets first, then the
-// plan views that read every card (docs/specs/026-plan/plan-views.md), then the few other elements a team
-// plans beside its boards, borrowed from Write, Media and Behaviours; nothing that organises a diagram.
-const PLAN: PaletteLayout = {
-  // Opening on Cards: a Plan tab is worked by its boards, so the drawing and decorating categories, and a
-  // Popular drawn from them, stay with the other modes.
-  landing: 'plan-cards',
-  categories: [
-    { id: 'plan-cards' },
-    { id: 'plan-boards' },
-    { id: 'plan-metrics' },
-    { id: 'plan-visualisations' },
-    { id: 'plan-sheets' },
-    { id: 'plan-content', tiles: ['tools:sticky', 'tools:text', 'tools:image', 'tools:page'] },
-    {
-      id: 'plan-tools',
-      tiles: [
-        'collab:temperature',
-        'collab:estimate',
-        'collab:idea-box',
-        'tools:picker',
-        'tools:session-timer',
-        'tools:session-stopwatch',
-      ],
-    },
-  ],
-};
-
 export const PALETTE_LAYOUTS = {
   diagram: DIAGRAM,
-  plan: PLAN,
   workshop: WORKSHOP,
 } as const;
 
@@ -329,91 +300,14 @@ export function paletteCategoriesFor(
     .map(resolve);
 }
 
-/**
- * The palette while a Plan board covers the canvas (maximised, or filling its tab: docs/specs/026-plan/plan-board.md
- * "Maximised board"): only Plan's Cards, whatever the mode, since a card is the one thing that lands on the board.
- * The category the person had stays chosen underneath and comes back when the board is restored.
- */
-export const COVERED_PALETTE_CATEGORY = 'plan-cards';
-export function coveredPaletteCategories(): ResolvedPaletteCategory[] {
-  return paletteCategoriesFor('plan').filter((c) => c.id === COVERED_PALETTE_CATEGORY);
-}
-
-// A Dashboard tab's palette (docs/specs/026-plan/plan-tabs.md "Dashboard tab"): what a slot takes. Popular first, the
-// handful a dashboard is most often built from; then Layout's rows and slot, the boards, Sheets, metrics and
-// visualisations, and the sticky, which makes a note.
-const DASHBOARD: PaletteLayout = {
-  landing: 'popular',
-  categories: [
-    {
-      id: 'popular',
-      description:
-        'What a dashboard is most often built from: rows, a board, a sheet, metrics and charts.',
-      tiles: [
-        'dashboard:row-metrics',
-        'dashboard:row-charts',
-        'dashboard:slot',
-        'dashboard:card-title',
-        'plan:board-kanban',
-        'plan:sheet',
-        'plan:view-metric-progress',
-        'plan:view-metric-count',
-        'plan:view-metric-due',
-        'plan:view-workload',
-        'plan:view-gantt',
-        'plan:view-calendar',
-        'tools:sticky',
-      ],
-    },
-    { id: 'dashboard-layout' },
-    // Filled from the document's tabs (usePaletteCatalogue), dropped while it has none.
-    { id: 'dashboard-tabs', tiles: [] },
-    { id: 'plan-boards' },
-    { id: 'plan-metrics' },
-    { id: 'plan-visualisations' },
-    // Each band's categories together, so the dropdown names each band once.
-    { id: 'plan-sheets' },
-    // What is written on the page itself: a note and a section's Title.
-    {
-      id: 'plan-content',
-      label: 'Utilities',
-      tiles: [
-        'tools:sticky',
-        'dashboard:card-title',
-        'dashboard:card-status',
-        'dashboard:card-checklist',
-        'dashboard:card-key-date',
-        'dashboard:card-links',
-      ],
-    },
-  ],
-};
-
-export function dashboardPaletteCategories(): ResolvedPaletteCategory[] {
-  return DASHBOARD.categories.map(resolve);
-}
-export const DASHBOARD_PALETTE_LANDING = DASHBOARD.landing;
-
 /** Whether a mode's palette offers category `id` (on an ordinary tab). */
 export function paletteCategoryOffered(mode: EditorMode, id: string): boolean {
   return paletteLayoutFor(mode).categories.some((e) => e.id === id && !e.boardOnly);
 }
 
-// Plan's landing while its tab has no board (docs/specs/026-plan/plan-mode.md "The palette"): a card lands on a
-// board, so a tab without one opens on Boards.
-const PLAN_NO_BOARD_LANDING = 'plan-boards';
-
-/**
- * The category the palette opens on: an event-storming board's notation, or the mode's own (Plan's Boards while
- * the tab has no board).
- */
-export function paletteLandingCategory(
-  mode: EditorMode,
-  esBoard: boolean,
-  hasPlanBoard = true,
-): string {
+/** The category the palette opens on: an event-storming board's notation, or the mode's own. */
+export function paletteLandingCategory(mode: EditorMode, esBoard: boolean): string {
   if (esBoard) return 'event-storming';
-  if (mode === 'plan' && !hasPlanBoard) return PLAN_NO_BOARD_LANDING;
   return paletteLayoutFor(mode).landing;
 }
 

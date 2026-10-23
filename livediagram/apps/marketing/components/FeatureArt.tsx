@@ -31,16 +31,10 @@ export * from './feature-art/workshop';
 // The presenter's clock beside them.
 export * from './feature-art/present-timing';
 // The mode categories (docs/specs/019-marketing/marketing-site.md "Story beats"): Draw's markers and
-// erasers, and Plan's boards.
+// erasers.
 export * from './feature-art/whiteboard';
 export * from './feature-art/whiteboard-pen';
-export * from './feature-art/plan';
-export * from './feature-art/plan-views';
-export * from './feature-art/plan-dashboard';
-// Sheets on a Plan tab, two tabs side by side, and boards brought in from other tools.
-export * from './feature-art/sheet';
-// Forms (docs/specs/030-forms/forms.md): built in place, shared by link, responses landing.
-export * from './feature-art/forms';
+// Two tabs side by side, and boards brought in from other tools.
 export * from './feature-art/side-by-side';
 export * from './feature-art/imports';
 // Event storming boards and their photo import; the sequence diagram, charts and code blocks; search,
@@ -48,8 +42,5 @@ export * from './feature-art/imports';
 export * from './feature-art/storming';
 export * from './feature-art/canvas-data';
 export * from './feature-art/reach';
-// Plan cards beyond the board, Sheets beyond formulas, Forms beyond the build, and Draw's dock.
-export * from './feature-art/plan-more';
-export * from './feature-art/sheet-more';
-export * from './feature-art/forms-more';
+// Draw's dock.
 export * from './feature-art/whiteboard-dock';

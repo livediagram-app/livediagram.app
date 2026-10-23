@@ -90,11 +90,9 @@ applied by the sender and every receiver through the same pure
   row is named by index AND text; a peer who moved or retitled rows gets the
   row with that text, or nothing. A tick is no longer undoable.
 - `comment-add` / `comment-remove` / `comment-rekey` / `comment-resolve`:
-  one change to a thread, by comment id, so a replay is a no-op. An add and a
-  resolve may name a Sheet cell (`cell`), for that cell's thread
-  ([Cell comments](../029-sheets/sheet.md#cell-comments)); a remove and a rekey
-  find their comment in whichever thread holds it. The ledger keeps an add's
-  cell and each cell's latest resolve.
+  one change to a thread, by comment id, so a replay is a no-op. A remove and a rekey
+  find their comment in whichever thread holds it. (An add naming a Sheet cell, `cell`, was Plan's and is
+  refused now; a stored ledger entry that still carries one is read and ignored.)
 
 Every delta is idempotent or order-free, so concurrent presses commute, and
 a malformed frame is dropped rather than applied.
@@ -253,60 +251,27 @@ are on the participant record the api used before; what changed is that a
 comment now carries the name of the session that posted it rather than of
 whoever saved first.
 
-## Phase 6 (shipped): a Plan board's set-up travels as deltas
+## Phase 6 (shipped): the room has a save's deltas before the save is written
 
-A [Plan board](../026-plan/plan-board.md) keeps its whole set-up (title, columns, rows, card fields,
-widgets, voting) in one element field, `planBoard`, and its column cogs and its menu's board rows edit it
-WITHOUT selecting the board, so the selection lock never heads off a collision. Two people setting
-up one board at once, say one renaming To do while the other renames Review, each sent a
-whole-element `update`, each receiver took the other's copy, and the two screens ended up holding
-different boards (each with only the other's rename), while D1 kept whichever save landed last. A
-whole-element update is not last-writer-wins in room order on the sender's own screen, because the
-room never sends a sender its own op back: it is last-writer-wins on every OTHER screen.
+The ledger can only protect a change it holds when a peer's save reads it, so a save sends every op the ledger
+records (`el-delta`, `vote`) first, waits until the room confirms it sequenced each one, and only then PUTs; its
+element ops still follow the PUT. Most deltas meet this by going out at the press, 600 ms before any save. Sent after
+the PUT, two people saving at once could each write before either delta reached the room: the later write merged
+nothing and erased the earlier change from D1, while both screens, converged by the deltas, never saved again.
 
-The set-up now moves the way the other multi-writer fields do:
+- The confirmation is the `cursor` frame the room already sends the sender of each ordered op, carrying back the
+  `ref` the client put on the op.
+- A room that does not confirm within `ROOM_SEQUENCE_ACK_TIMEOUT_MS` (a socket down or a slow room) does not hold
+  the save back; it is logged (`[room] op not confirmed in time`), and the save goes through as before.
+- Peers therefore see a change before D1 holds it; a save that then fails sends the same delta again with its
+  retry, and applying a delta twice lands on the same tab.
 
-- **A `board` delta carries the change, not the set-up.** `planBoardPatch(before, after)`
-  (`packages/document/src/plan-board-patch.ts`) names only what changed: the top-level fields set
-  or cleared, each column's changed fields (by column id), columns added (whole) and removed (by
-  id), and the new column order when it moved. Applied through `applyPlanBoardPatch`, so edits to
-  different fields, or to different columns, or a field and a column, commute: every peer lands on
-  one board. A malformed patch, or one whose result is not a readable set-up
-  (`normaliseBoardSetup`), is dropped.
-- **Derived in the autosave, so every path sends it.** `tabBroadcastOps` emits one `el-delta` per
-  board whose `planBoard` changed, beside the element ops, in the granular path and the bulk
-  (whole-tab) path alike. A column cog, the Board and Cards flyouts, a widget added from the
-  palette, and undo or redo all reach peers the same way.
-- **The room has the delta before the save is written.** The ledger can only protect a change it
-  holds when a peer's save reads it, so a save sends every op the ledger records (`el-delta`,
-  `vote`) first, waits until the room confirms it sequenced each one, and only then PUTs; its
-  element ops still follow the PUT. The other deltas meet this by going out at the press, 600 ms
-  before any save. Sent after the PUT, as the board delta first was, two people saving at once
-  could each write before either delta reached the room: the later write merged nothing and erased
-  the earlier rename from D1, while both screens, converged by the deltas, never saved again.
-  The confirmation is the `cursor` frame the room already sends the sender of each ordered op,
-  carrying back the `ref` the client put on the op. A room that does not confirm within
-  `ROOM_SEQUENCE_ACK_TIMEOUT_MS` (a socket down or a slow room) does not hold the save back; it is
-  logged, and the save goes through as before. Peers therefore see a board change before D1 holds
-  it; a save that then fails sends the same delta again with its retry, and applying it twice
-  lands on the same board.
-- **A column move keeps a concurrent add.** The order names the columns the sender had; a column
-  only the receiver has (added meanwhile by someone else) stays beside the column it followed.
-- **Receivers keep their own set-up through a peer's whole-element copy** (`mergeIncomingElement`),
-  as they keep answers and ticks, and the sender drops an element update whose only change was
-  the set-up (`elementChangeIsDeltaOnly`). An agent's changeset is the exception: it is a writer
-  with no deltas, so its copy of the set-up is taken.
-- **The ledger records it.** For each board, the latest value of every top-level field and every
-  column field, each column added or removed, and the latest order, each with the seq that set it.
-  A save merges in only the entries the saver had not seen (phase 3), so D1 keeps both renames.
-
-Residual, stated plainly: two people changing the SAME field of the same column (both renaming To
-do) in the same moment still each see the other's value, exactly as a same-element collision on
-any shape does; the next change to that field from either side settles it.
+(This phase first shipped for a Plan board's set-up, sent as a `board` delta; that delta went to liveplanner with
+Plan.)
 
 ## Saves
 
-A tab's writes are queued per tab (`tab-save-queue.ts`): a save holding Plan ledger changes waits up to
+A tab's writes are queued per tab (`tab-save-queue.ts`): a save holding ledger changes waits up to
 `ROOM_SEQUENCE_ACK_TIMEOUT_MS` for the room before its PUT, and a newer save of the same tab used to overtake it, so
 the server kept the older snapshot while the client believed the newer one saved and peers received the older
 element ops last. Each save or delete of a tab now starts only once that tab's previous one has settled, landed or

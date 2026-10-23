@@ -7,7 +7,6 @@ import {
   setTabOpensIn,
   editorModeSwitchable,
   hasBoardLook,
-  hasPlanInput,
   isEditorMode,
   nextEditorMode,
   opensInOf,
@@ -17,8 +16,8 @@ import type { Tab } from './index';
 
 // Editor modes (docs/specs/007-editor/editor-modes.md): how a general tab is worked on.
 describe('editor modes', () => {
-  it('are Diagram, Draw, Workshop and Plan, Diagram by default', () => {
-    expect(EDITOR_MODES).toEqual(['diagram', 'draw', 'workshop', 'plan']);
+  it('are Diagram, Draw and Workshop, Diagram by default', () => {
+    expect(EDITOR_MODES).toEqual(['diagram', 'draw', 'workshop']);
     expect(DEFAULT_EDITOR_MODE).toBe('diagram');
   });
 
@@ -26,6 +25,7 @@ describe('editor modes', () => {
     expect(isEditorMode('diagram')).toBe(true);
     expect(isEditorMode('draw')).toBe(true);
     expect(isEditorMode('pages')).toBe(false);
+    expect(isEditorMode('plan')).toBe(false);
     expect(isEditorMode('workshop')).toBe(true);
     expect(isEditorMode('whiteboard')).toBe(false);
     expect(isEditorMode(undefined)).toBe(false);
@@ -55,6 +55,15 @@ describe('opensInOf', () => {
     expect(parseEditorMode('pages')).toBe('diagram');
     expect(parseEditorMode('illustrate')).toBe('diagram');
     expect(parseEditorMode('Illustrate')).toBeUndefined();
+  });
+
+  // Plan mode moved out to liveplanner: a tab stored in it, or a Board, Sheet, Dashboard or Form tab, opens in Diagram.
+  it('reads Plan mode, and a Plan tab kind, as Diagram', () => {
+    expect(opensInOf({ opensIn: 'plan' })).toBe('diagram');
+    expect(parseEditorMode('plan')).toBe('diagram');
+    for (const kind of ['board', 'sheet', 'dashboard', 'form']) {
+      expect(opensInOf({ kind, opensIn: 'plan' })).toBe('diagram');
+    }
   });
 
   // docs/specs/007-editor/editor-modes.md "Naming in the interface": Workshop was Facilitate.
@@ -102,7 +111,6 @@ describe('the editor mode catalogue', () => {
       'Diagram',
       'Draw',
       'Workshop',
-      'Plan',
     ]);
     for (const m of EDITOR_MODE_CATALOGUE) expect(m.description.length).toBeGreaterThan(0);
   });
@@ -135,13 +143,11 @@ describe('nextEditorMode', () => {
   it('moves forward through the catalogue, wrapping at the end', () => {
     expect(nextEditorMode('diagram')).toBe('draw');
     expect(nextEditorMode('draw')).toBe('workshop');
-    expect(nextEditorMode('workshop')).toBe('plan');
-    expect(nextEditorMode('plan')).toBe('diagram');
+    expect(nextEditorMode('workshop')).toBe('diagram');
   });
 
   it('moves backward with a negative step, wrapping at the start', () => {
-    expect(nextEditorMode('diagram', -1)).toBe('plan');
-    expect(nextEditorMode('plan', -1)).toBe('workshop');
+    expect(nextEditorMode('diagram', -1)).toBe('workshop');
     expect(nextEditorMode('workshop', -1)).toBe('draw');
     expect(nextEditorMode('draw', -1)).toBe('diagram');
   });
@@ -151,12 +157,5 @@ describe('nextEditorMode', () => {
       EDITOR_MODES.slice(0, i).reduce((m) => nextEditorMode(m), DEFAULT_EDITOR_MODE),
     );
     expect(new Set(seen).size).toBe(EDITOR_MODES.length);
-  });
-});
-
-describe('hasPlanInput', () => {
-  it('takes input the Plan way in Plan mode only', () => {
-    // Plan mode (docs/specs/026-plan/plan-mode.md) takes input the Plan way; nothing else does.
-    expect(EDITOR_MODES.filter(hasPlanInput)).toEqual(['plan']);
   });
 });

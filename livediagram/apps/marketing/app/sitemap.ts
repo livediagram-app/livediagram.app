@@ -25,8 +25,7 @@ export const dynamic = 'force-static';
 // `lastModified` per page reflects the truth of when that page's
 // content last changed. The landing + FAQ pages update with most
 // product releases, so they use the build-time `now`. The Terms and
-// Privacy Policy moved into the help centre (its own sitemap lists the
-// canonical articles), so they are not listed here.
+// Privacy Policy are liveworkspace's (liveworkspace.app lists them), so they are not listed here.
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();

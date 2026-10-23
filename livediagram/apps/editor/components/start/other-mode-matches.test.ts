@@ -10,8 +10,8 @@ import { otherModeMatches } from './other-mode-matches';
 
 // docs/specs/007-editor/start-diagramming.md "Found in other modes".
 describe('otherModeMatches', () => {
-  it('finds the Sailboat retrospective in Workshop from Start Planning', () => {
-    const found = otherModeMatches('plan', 'sailboat');
+  it('finds the Sailboat retrospective in Workshop from Start Diagramming', () => {
+    const found = otherModeMatches('diagram', 'sailboat');
     expect(found.map((m) => m.mode)).toEqual(['workshop']);
     expect(found[0]!.kinds).toContain('sailboat');
   });
@@ -43,12 +43,12 @@ describe('otherModeMatches', () => {
   });
 
   it('leads with the Popular picks and leaves the blanks last', () => {
-    const plan = otherModeMatches('diagram', 'board').find((m) => m.mode === 'plan')!;
-    const popular = popularKindsFor('plan').filter((k) => !isBlankTemplate(k));
-    expect(popular).toContain(plan.kinds[0]);
-    const firstBlank = plan.kinds.findIndex(isBlankTemplate);
-    expect(plan.kinds.slice(firstBlank).every(isBlankTemplate)).toBe(true);
-    expect(plan.kinds).toContain('blank-plan');
+    const workshop = otherModeMatches('diagram', 'e').find((m) => m.mode === 'workshop')!;
+    const popular = popularKindsFor('workshop').filter((k) => !isBlankTemplate(k));
+    expect(popular).toContain(workshop.kinds[0]);
+    const firstBlank = workshop.kinds.findIndex(isBlankTemplate);
+    expect(workshop.kinds.slice(firstBlank).every(isBlankTemplate)).toBe(true);
+    expect(otherModeMatches('diagram', 'blank').flatMap((m) => m.kinds)).toContain('blank-session');
   });
 
   it('finds nothing for an empty search', () => {
@@ -56,8 +56,8 @@ describe('otherModeMatches', () => {
   });
 
   it('leaves out a mode the tab may not enter', () => {
-    const found = otherModeMatches('diagram', 'board', (m) => m !== 'plan');
-    expect(found.some((m) => m.mode === 'plan')).toBe(false);
+    const found = otherModeMatches('diagram', 'board', (m) => m !== 'workshop');
+    expect(found.some((m) => m.mode === 'workshop')).toBe(false);
   });
 
   it('never offers a hidden template', () => {

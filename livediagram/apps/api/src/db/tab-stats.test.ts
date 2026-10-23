@@ -63,7 +63,7 @@ describe('documentStatsSql', () => {
     tab('D', 't1', 0);
     tab('D', 't2', 1);
     await stats('t1', 'draw', 4, 1, 1000, T0 + 2);
-    await stats('t2', 'plan', 6, 2, 500, T0 + 1);
+    await stats('t2', 'workshop', 6, 2, 500, T0 + 1);
     expect(docStats(db.sql, 'D')).toEqual({ mode: 'draw', elements: 10, comments: 3, bytes: 1500 });
   });
 
@@ -73,8 +73,8 @@ describe('documentStatsSql', () => {
     tab('D', 't1', 1);
     tab('D', 't2', 0);
     await stats('t1', 'draw', 1, 0, 1, T0);
-    await stats('t2', 'plan', 1, 0, 1, T0);
-    expect(docStats(db.sql, 'D')?.mode).toBe('plan');
+    await stats('t2', 'workshop', 1, 0, 1, T0);
+    expect(docStats(db.sql, 'D')?.mode).toBe('workshop');
   });
 
   it('is null while a tab is not counted yet', async () => {
@@ -97,8 +97,8 @@ describe('documentStatsSql', () => {
     doc('D');
     tab('D', 't1', 0);
     await stats('t1', 'draw', 4, 1, 1000, T0);
-    await stats('t1', 'plan', 2, 0, 200, T0 + 5);
-    expect(docStats(db.sql, 'D')).toEqual({ mode: 'plan', elements: 2, comments: 0, bytes: 200 });
+    await stats('t1', 'workshop', 2, 0, 200, T0 + 5);
+    expect(docStats(db.sql, 'D')).toEqual({ mode: 'workshop', elements: 2, comments: 0, bytes: 200 });
   });
 });
 
@@ -114,9 +114,9 @@ describe('readDocumentStats', () => {
 
 describe('tabStatsOfData', () => {
   it('counts a stored body', () => {
-    const data = JSON.stringify({ opensIn: 'plan', elements: [{ id: 'a' }] });
+    const data = JSON.stringify({ opensIn: 'workshop', elements: [{ id: 'a' }] });
     expect(tabStatsOfData(data)).toEqual({
-      stats: { mode: 'plan', elementCount: 1, commentCount: 0, dataBytes: data.length },
+      stats: { mode: 'workshop', elementCount: 1, commentCount: 0, dataBytes: data.length },
       corrupt: false,
     });
   });

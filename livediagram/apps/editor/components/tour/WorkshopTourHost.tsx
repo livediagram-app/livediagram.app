@@ -24,7 +24,7 @@ import { TourStage } from './TourStage';
 import { useTourEngine, type TourOutcome } from './useTourEngine';
 import { useStartPanelOpen } from '@/components/start/start-panel-open';
 
-// The settle delay before the offer, as the Diagram and Plan tours'.
+// The settle delay before the offer, as the Diagram and Draw tours'.
 export const OFFER_DELAY_MS = 800;
 
 const WORKSHOP_TOUR_COPY = {

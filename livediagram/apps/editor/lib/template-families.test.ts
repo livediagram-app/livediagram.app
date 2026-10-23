@@ -12,10 +12,6 @@ describe('templateFamilyOf', () => {
     },
   );
 
-  it('reads the Kanban template as a Kanban board', () => {
-    expect(templateFamilyOf('kanban')).toBe('kanban');
-  });
-
   it.each(['event-storming', 'incident-postmortem', 'lean-coffee'] as const)(
     'reads %s as no family',
     (kind) => {
@@ -27,20 +23,10 @@ describe('templateFamilyOf', () => {
     expect(templateFamilyOf(null)).toBeNull();
   });
 
-  it('gives a family to the retro formats and the Kanban boards only', () => {
+  it('gives a family to the retro formats only', () => {
     const members = TEMPLATES.filter((t) => templateFamilyOf(t.kind) !== null).map((t) => t.kind);
     expect(members.sort()).toEqual(
-      [
-        'four-ls',
-        'kanban',
-        'mad-sad-glad',
-        'retrospective',
-        'sailboat',
-        'start-stop-continue',
-        // The Plan templates in a family (docs/specs/026-plan/plan-templates.md).
-        'project-planner',
-        'team-retro',
-      ].sort(),
+      ['four-ls', 'mad-sad-glad', 'retrospective', 'sailboat', 'start-stop-continue'].sort(),
     );
   });
 });

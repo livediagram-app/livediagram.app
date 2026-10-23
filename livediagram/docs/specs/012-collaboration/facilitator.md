@@ -148,13 +148,13 @@ one click.
 
 ### What stays everyone's
 
-| Open                                                                                                                                                     | Why                                                                                                            |
-| -------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| Every personal response: casting and retracting a dot, answering a poll, responding to an estimate or temperature, adding an idea, marking yourself done | This is what the room is FOR. A tool only the facilitator can answer is not a tool                             |
-| Mode button press                                                                                                                                        | It switches YOUR canvas tool and touches nothing shared                                                        |
-| Follow Me, the laser, the spotlight, reactions, cursors                                                                                                  | Pointing at things is everybody's job                                                                          |
-| Running a slide deck                                                                                                                                     | `presentingAt` is local state: it is your own screen                                                           |
-| Comments, assigned actions                                                                                                                               | They are a conversation, not a pace                                                                            |
+| Open                                                                                                                                                     | Why                                                                                                                |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Every personal response: casting and retracting a dot, answering a poll, responding to an estimate or temperature, adding an idea, marking yourself done | This is what the room is FOR. A tool only the facilitator can answer is not a tool                                 |
+| Mode button press                                                                                                                                        | It switches YOUR canvas tool and touches nothing shared                                                            |
+| Follow Me, the laser, the spotlight, reactions, cursors                                                                                                  | Pointing at things is everybody's job                                                                              |
+| Running a slide deck                                                                                                                                     | `presentingAt` is local state: it is your own screen                                                               |
+| Comments, assigned actions                                                                                                                               | They are a conversation, not a pace                                                                                |
 | All ordinary editing, import, export, themes, layout cleanup                                                                                             | Nothing to collide over that the selection lock ([Editor app](../007-editor/editor-app.md)) doesn't already handle |
 
 ### Two elements this changes
@@ -191,8 +191,7 @@ Enforcement is therefore uneven, and deliberately so:
   baton taken mid-poll hands them its End control (`pollHostFor`) rather than
   leaving the poll with none; the starter's falls away, as the room would
   refuse it. A vote's starter likewise loses its host controls while somebody
-  else holds the baton, and ending a vote tallies its Plan cards only when the
-  end was not refused.
+  else holds the baton.
 - **Not room-side for the timer and the vote.** They are plain tab state riding
   the same `tab` / `tab-meta` ops that carry every shape move, so the room
   cannot tell "started a timer" from "dragged a box" without inspecting

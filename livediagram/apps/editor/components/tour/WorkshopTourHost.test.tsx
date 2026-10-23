@@ -81,7 +81,7 @@ afterEach(() => {
   vi.clearAllMocks();
   vi.useRealTimers();
   setActiveTour('welcome', false);
-  setActiveTour('plan', false);
+  setActiveTour('draw', false);
   setActiveTour('workshop', false);
   clearTourPending();
 });
@@ -123,7 +123,7 @@ describe('WorkshopTourHost offer', () => {
     ['locked', { activeTab: { id: 'tab1', locked: true } }],
     ['not hydrated', { hydrated: false }],
     ['embedded', { embedMode: true }],
-    ['in Plan', { editorMode: { mode: 'plan' } }],
+    ['in Diagram', { editorMode: { mode: 'diagram' } }],
     ['before the synced preferences are in', { prefsSettled: false }],
   ])('makes no offer when %s', (_why, over) => {
     editor(over);
@@ -161,8 +161,8 @@ describe('WorkshopTourHost offer', () => {
     expect(offered()).toBe(true);
   });
 
-  it('never runs beside the Plan tour', () => {
-    setActiveTour('plan', true);
+  it('never runs beside the Draw tour', () => {
+    setActiveTour('draw', true);
     editor();
     render(<WorkshopTourHost />);
     act(() => {

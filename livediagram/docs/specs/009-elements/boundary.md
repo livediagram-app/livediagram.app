@@ -57,7 +57,6 @@ title takes the **Text** set.
 | Mode     | Where                                     |
 | -------- | ----------------------------------------- |
 | Diagram  | **Build**: Boundary, after Frame and Lane |
-| Plan     | none                                      |
 | Workshop | none (Search still finds and places it)   |
 
 ## The menu

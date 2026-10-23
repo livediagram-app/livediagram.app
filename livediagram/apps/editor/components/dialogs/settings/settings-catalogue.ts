@@ -19,7 +19,6 @@ import {
   type UserPreferences,
 } from '@/lib/user-preferences';
 import { isPowerUserMode, setPowerUserMode } from '@/lib/power-user-mode';
-import { PLAN_TOUR_TRACKS, planTrackSeen } from '@/lib/plan-tour';
 import {
   ELEMENT_TOUR_KINDS,
   elementTourSeen,
@@ -67,7 +66,6 @@ type EmailKey =
   | 'notifyComments'
   | 'notifyActionAssigned'
   | 'notifyMentions'
-  | 'notifyFormResponses'
   | 'notifyTips'
   | 'notifyMilestones';
 
@@ -413,43 +411,10 @@ function elementTourSwitch(
 // Element tours are called Show Me wherever a person sees them (docs/specs/007-editor/element-tours.md "Naming").
 const ELEMENT_TOURS_SECTION = 'Show Me';
 
-// One track of a tour of several (lib/tour-tracks.ts), as its own row nested under the tour's switch over every track
-// (Plan Tours): the Plan tour's Boards and Sheets
-// (docs/specs/007-editor/user-preferences.md "Tours"). On while the track is owed; off answers it, on forgets its
-// answer. Each track is named for itself ("Slides Tour"), never the mode. The tour's single seen flag (set by Power
-// user mode) is folded into the answered list first, so turning one track back on leaves the others as they were.
-function tourTrackSwitch<T extends string>(
-  key: 'planTourSeen',
-  tracksKey: 'planTourTracks',
-  tracks: readonly T[],
-  seen: (p: UserPreferences, track: T) => boolean,
-  track: T,
-  row: Pick<SettingsToggleRowSpec, 'label' | 'description' | 'helpArticle' | 'keywords' | 'event'>,
-): SettingsToggleRowSpec {
-  return {
-    kind: 'toggle',
-    key: `${key}-${track}`,
-    section: 'Offer Again',
-    parent: key,
-    ...row,
-    read: (p) => !seen(p, track),
-    write: (p, v) => {
-      const answered = tracks.filter((t) => seen(p, t) && (v ? t !== track : true));
-      return {
-        ...p,
-        [key]: false,
-        [tracksKey]: (v
-          ? answered
-          : [...new Set([...answered, track])]) as UserPreferences[typeof tracksKey],
-      };
-    },
-  };
-}
-
 function tourTracksSwitch(
-  key: 'planTourSeen' | 'elementToursSeen',
-  tracksKey: 'planTourTracks' | 'elementTourKinds',
-  tracks: readonly string[],
+  key: 'elementToursSeen',
+  tracksKey: 'elementTourKinds',
+  tracks: readonly ElementTourKind[],
   owed: (p: UserPreferences) => boolean,
   row: Pick<SettingsToggleRowSpec, 'label' | 'description' | 'helpArticle' | 'keywords' | 'event'>,
   section?: string,
@@ -466,13 +431,7 @@ function tourTracksSwitch(
 }
 
 type TourSeenKey =
-  | 'tourSeen'
-  | 'planTourSeen'
-  | 'workshopTourSeen'
-  | 'drawTourSeen'
-  | 'formTourSeen'
-  | 'avatarTourSeen'
-  | 'elementToursSeen';
+  'tourSeen' | 'workshopTourSeen' | 'drawTourSeen' | 'avatarTourSeen' | 'elementToursSeen';
 
 // A presenter setting's row (docs/specs/012-collaboration/presentation-mode.md "Settings"): read and written through
 // lib/presentation-config, which keeps the whole config in one preference. The telemetry token is the one the
@@ -1048,50 +1007,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         description: 'On a Diagram tab: the palette, selecting, the element menu and tabs.',
         helpArticle: 'diagramTour',
       }),
-      // The Plan tour: one switch over both tracks, then each track's own row beneath it (docs/specs/026-plan/plan-tour.md).
-      tourTracksSwitch(
-        'planTourSeen',
-        'planTourTracks',
-        PLAN_TOUR_TRACKS,
-        (p) => PLAN_TOUR_TRACKS.some((t) => !planTrackSeen(p, t)),
-        {
-          label: 'Plan Tours',
-          event: { category: 'UI', on: 'PlanTourSeenOff', off: 'PlanTourSeenOn' },
-          keywords:
-            'tour walkthrough onboarding tutorial plan board kanban sheet spreadsheet all replay',
-          description: 'Every Plan tour at once: boards, sheets and dashboards.',
-          helpArticle: 'planTour',
-        },
-      ),
-      tourTrackSwitch('planTourSeen', 'planTourTracks', PLAN_TOUR_TRACKS, planTrackSeen, 'boards', {
-        label: 'Boards Tour',
-        event: { category: 'UI', on: 'BoardsTourSeenOff', off: 'BoardsTourSeenOn' },
-        keywords: 'tour walkthrough onboarding tutorial plan board kanban cards columns replay',
-        description: 'On a board in Plan: cards, columns, the card panel and card types.',
-        helpArticle: 'planTour',
-      }),
-      tourTrackSwitch('planTourSeen', 'planTourTracks', PLAN_TOUR_TRACKS, planTrackSeen, 'sheets', {
-        label: 'Sheets Tour',
-        event: { category: 'UI', on: 'SheetsTourSeenOff', off: 'SheetsTourSeenOn' },
-        keywords:
-          'tour walkthrough onboarding tutorial plan sheet spreadsheet cells formulas replay',
-        description: 'On a sheet in Plan: cells, formulas, the toolbar and its settings.',
-        helpArticle: 'planTour',
-      }),
-      tourTrackSwitch(
-        'planTourSeen',
-        'planTourTracks',
-        PLAN_TOUR_TRACKS,
-        planTrackSeen,
-        'dashboards',
-        {
-          label: 'Dashboards Tour',
-          event: { category: 'UI', on: 'DashboardsTourSeenOff', off: 'DashboardsTourSeenOn' },
-          keywords: 'tour walkthrough onboarding tutorial plan dashboard slots rows replay',
-          description: 'On a dashboard in Plan: rows of slots, filling them, and its settings.',
-          helpArticle: 'planDashboards',
-        },
-      ),
       tourSwitch('workshopTourSeen', {
         label: 'Workshop Tour',
         event: { category: 'UI', on: 'WorkshopTourSeenOff', off: 'WorkshopTourSeenOn' },
@@ -1105,13 +1020,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         keywords: 'tour walkthrough onboarding tutorial draw whiteboard pen sketch replay',
         description: 'The first time you work in Draw.',
         helpArticle: 'drawTour',
-      }),
-      tourSwitch('formTourSeen', {
-        label: 'Forms Tour',
-        event: { category: 'UI', on: 'FormTourSeenOff', off: 'FormTourSeenOn' },
-        keywords: 'tour walkthrough onboarding tutorial form survey questions responses replay',
-        description: 'The first time you open a Form tab.',
-        helpArticle: 'planForms',
       }),
       tourSwitch('avatarTourSeen', {
         label: 'Avatar Tour',
@@ -1478,13 +1386,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         keywords: 'email mention tag at comment',
         label: 'Someone Mentions Me in a Comment',
         description: 'A teammate @mentions you in a comment.',
-      }),
-      emailSwitch('notifyFormResponses', {
-        event: { category: 'UI', on: 'NotifyFormResponsesOn', off: 'NotifyFormResponsesOff' },
-        keywords: 'email form response survey submission answer',
-        label: 'Someone Fills In My Form',
-        description:
-          'Someone responds to a form in a document you own (at most one email every 15 minutes per form).',
       }),
       emailSwitch('notifyActionAssigned', {
         event: { category: 'UI', on: 'NotifyActionAssignedOn', off: 'NotifyActionAssignedOff' },

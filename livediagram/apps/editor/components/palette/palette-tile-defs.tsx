@@ -65,7 +65,6 @@ import {
   lucideType,
 } from '@livediagram/icons/lucide';
 import { Glyph, Prims } from '@livediagram/ui';
-import { PLAN_TILES } from './palette-plan-tiles';
 import { tileCaption } from './tile-caption';
 
 import {
@@ -112,19 +111,6 @@ export type PaletteTileSection =
   // eight workshop note kinds, each an ordinary sticky in its semantic
   // colour.
   | 'event-storming'
-  // Plan mode's Boards and Cards (docs/specs/026-plan/plan-mode.md "The palette"): boards by preset,
-  // cards by item type.
-  | 'plan-boards'
-  | 'plan-cards'
-  // Plan views (docs/specs/026-plan/plan-views.md): metrics and visualisations.
-  | 'plan-metrics'
-  | 'plan-visualisations'
-  // A Dashboard's rows and slots (docs/specs/026-plan/plan-tabs.md), on a Dashboard tab alone.
-  | 'dashboard-layout'
-  | 'dashboard-tabs'
-  // A Dashboard's written cards (Status, Checklist, Key Date, Links), on a Dashboard tab alone.
-  | 'dashboard-cards'
-  | 'plan-sheets'
   | 'tools'
   | 'data'
   // 'collaborate' is GONE (docs/specs/010-palette/palette-top-level-categories.md). The collaboration family (docs/specs/012-collaboration/estimate-card.md to
@@ -159,8 +145,6 @@ type PaletteTileAction =
       reaction?: Reaction;
       mode?: SelectionMode;
       estimateScale?: EstimateScale;
-      // Plan board preset, or a Plan card's item type (docs/specs/026-plan/plan-mode.md "The palette").
-      plan?: string;
       // A creation-time variant of the kind (packages/document shape-variants.ts): the Callout card, a Funnel.
       variant?: string;
     }
@@ -194,8 +178,6 @@ type PaletteTileAction =
   // Technology catalogue entry as a tile.
   | { type: 'icon'; iconId: string }
   | { type: 'tech-icon'; iconId: string }
-  // A Plan board's header widget (docs/specs/026-plan/board-widgets.md): placed in a board's header,
-  // never on the canvas.
   // One of Draw mode's markers (docs/specs/023-draw-mode/draw-mode.md "Pens"), offered by the
   // Toolbar strip's Search in the other modes (palette-marker-tiles.tsx): picked up as the dock
   // picks it up, in its colour and width. Never in PALETTE_TILES: a marker's colour and width are
@@ -280,8 +262,7 @@ export type PaletteTileDef = {
   // Tile only renders when the editor supplies onAddImage (image uploads
   // available) — the Image / Avatar / Hero / Header tiles.
   needsImage?: boolean;
-  // Greyed out with its reason (no press, no drag, the reason in its hover card). A card tile no board on the tab
-  // takes gets one at render (usePlanCardTileDisabled, docs/specs/026-plan/plan-mode.md "The palette").
+  // Greyed out with its reason (no press, no drag, the reason in its hover card).
   disabled?: { reason: string };
   // Ends a group of related tiles in its category: a fixed divider follows it on the Toolbar
   // strip, between it and the next tile shown (docs/specs/007-editor/toolbar-layout.md "Fixed
@@ -2368,8 +2349,6 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     // the actor — so the row's picture says the shape before the blurb does.
     icon: <NoteTileArt size={note.size} fill={note.fill} />,
   })),
-  // Plan (docs/specs/026-plan/plan-mode.md): boards by preset, cards by item type.
-  ...PLAN_TILES,
 ];
 
 export function tilesInSection(section: PaletteTileSection): PaletteTileDef[] {

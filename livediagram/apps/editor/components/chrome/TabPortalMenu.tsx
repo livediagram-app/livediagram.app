@@ -1,10 +1,8 @@
 import { PencilIcon, TrashIcon } from '@/components/primitives/explorer-icons';
-import type { TabDataRows } from './tab-data-rows';
 import { useEffect, useLayoutEffect, useRef, useState, useCallback } from 'react';
 import { useReposition } from '@/hooks/canvas/useReposition';
 import { BottomSheet } from '@/components/primitives/BottomSheet';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
-import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import { clampToViewport } from '@/lib/clamp-to-viewport';
 import { FileExportIcon, FileImportIcon } from '@/components/palette/palette-icons';
 import {
@@ -46,8 +44,6 @@ export function PortalMenu({
   onCopyTo,
   onToggleLock,
   locked,
-  planTab = false,
-  dataRows,
   selfId,
   otherDocuments,
   folderNames,
@@ -57,7 +53,6 @@ export function PortalMenu({
   onDelete,
   canClearContent,
   canDelete,
-  deleteWarning,
 }: {
   // Positioned EITHER above an anchor button (tab ellipsis) OR at a screen
   // point (canvas right-click / footer button). Exactly one is provided.
@@ -76,10 +71,6 @@ export function PortalMenu({
   onCopyTo: (targetDocumentId: string) => void;
   onToggleLock: () => void;
   locked: boolean;
-  // A Plan tab: Add to Document is off, its cards belong to this document's items.
-  planTab?: boolean;
-  // A Board or Sheet tab's own Import, in place of the document's, and its Download CSV after Export (tab-data-rows.ts).
-  dataRows?: TabDataRows;
   // Viewer identity for the Add to Document dialog's thumbnail fetches.
   selfId: string;
   otherDocuments: { id: string; name: string; savedAt?: number }[];
@@ -89,8 +80,6 @@ export function PortalMenu({
   onRemoveFromFolder: () => void;
   onDelete: () => void;
   canDelete: boolean;
-  // Delete's warning (deleteTabWarning): the forms sending their responses to this tab are unpublished.
-  deleteWarning?: string | undefined;
   canClearContent: boolean;
 }) {
   // The menu itself lists the verbs (Rename, Duplicate, Clear…); the two
@@ -102,10 +91,7 @@ export function PortalMenu({
   // the outside-click dismisser below; the modal owns its own dismissal
   // and closes the whole menu with it.
   const [view, setView] = useState<'actions' | 'copyTo' | 'folder'>('actions');
-  // Delete asks nothing (undo brings a tab back), except for what an undo cannot take back (deleteTabWarning):
-  // then an inline popover anchored to the Delete row, rendered so the outside-click handler treats it as "inside".
-  const [confirmingDelete, setConfirmingDelete] = useState(false);
-  const [deleteRow, setDeleteRow] = useState<HTMLDivElement | null>(null);
+  // Delete asks nothing: undo brings a tab back.
   const ref = useRef<HTMLDivElement | null>(null);
   // A control menu (docs/specs/004-interface-design/menus.md): Escape, focus in when the keyboard
   // opened it, focus back to the tab's ⋯ (or wherever it was) on close.
@@ -325,9 +311,8 @@ export function PortalMenu({
             ) : null}
             {/* Lock and Delete sit together at the right edge, apart from
               the everyday verbs: both change what the tab will let you
-              do next rather than doing something to it. The confirm
-              popover anchors to this wrapper. */}
-            <div ref={setDeleteRow} className="ml-auto flex items-center gap-0.5">
+              do next rather than doing something to it. */}
+            <div className="ml-auto flex items-center gap-0.5">
               <MenuToolButton
                 icon={<TabLockIcon />}
                 label={locked ? 'Unlock Tab' : 'Lock Tab'}
@@ -342,10 +327,6 @@ export function PortalMenu({
                   locked ? 'This tab is locked. Unlock it before deleting.' : 'Delete this tab.'
                 }
                 onClick={() => {
-                  if (deleteWarning) {
-                    setConfirmingDelete(true);
-                    return;
-                  }
                   onDelete();
                   onClose();
                 }}
@@ -389,15 +370,15 @@ export function PortalMenu({
             icon={<MoveIcon />}
             label="Add to Document"
             onClick={() => setView('copyTo')}
-            disabled={otherDocuments.length === 0 || planTab}
+            disabled={otherDocuments.length === 0}
           />
           <MenuGroupSeparator />
           <MenuActionRow
             plain
             icon={<FileImportIcon />}
-            label={dataRows?.importLabel ?? 'Import'}
-            onClick={dataRows ? () => (dataRows.onImport?.(), onClose()) : onImport}
-            disabled={locked || (!!dataRows && !dataRows.onImport)}
+            label="Import"
+            onClick={onImport}
+            disabled={locked}
           />
           <MenuActionRow plain icon={<FileExportIcon />} label="Export" onClick={onExport} />
           <MenuActionRow
@@ -411,23 +392,6 @@ export function PortalMenu({
       ) : null}
     </>
   );
-  // Delete's confirm, anchored to its row in either form.
-  const confirm =
-    confirmingDelete && deleteRow ? (
-      <ConfirmPopover
-        anchor={deleteRow}
-        message="Delete this tab?"
-        warning={deleteWarning}
-        confirmLabel="Delete"
-        onConfirm={() => {
-          setConfirmingDelete(false);
-          onDelete();
-          onClose();
-        }}
-        onCancel={() => setConfirmingDelete(false)}
-      />
-    ) : null;
-
   // A phone gets the menu as a bottom sheet (docs/specs/007-editor/editor-app.md "Menus are bottom
   // sheets on a phone"), as the element menu does: the dismissers above reach it through `ref`.
   if (phone) {
@@ -443,7 +407,6 @@ export function PortalMenu({
         >
           <MenuTreeContext.Provider value={tree}>{body}</MenuTreeContext.Provider>
         </BottomSheet>
-        {confirm ? <Portal>{confirm}</Portal> : null}
       </>
     );
   }
@@ -478,7 +441,6 @@ export function PortalMenu({
       >
         <MenuTreeContext.Provider value={tree}>{body}</MenuTreeContext.Provider>
       </div>
-      {confirm}
     </Portal>
   );
 }

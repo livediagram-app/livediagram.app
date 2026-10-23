@@ -22,6 +22,9 @@ const RETIRED = [
   'infographics',
   'slides',
   'documents',
+  'plan',
+  'sheets',
+  'forms',
 ];
 
 const rules = readFileSync(fileURLToPath(new URL('../public/_redirects', import.meta.url)), 'utf8')
@@ -41,10 +44,12 @@ describe('retired feature pages', () => {
   });
 
   it('sends each one to a live page', () => {
-    // Pages mode's own categories went to livedocuments, the app that now makes them.
+    // Pages mode's own categories went to livedocuments, and Plan mode's to liveplanner, the apps that now
+    // make them.
     const live = new Set([
       '/',
       'https://livedocuments.app/',
+      'https://liveplanner.app/',
       ...LANDING_SECTION_IDS.map((id) => `/features/${id}`),
     ]);
     for (const [from, to] of rules) {

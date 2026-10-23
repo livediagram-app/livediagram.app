@@ -175,9 +175,7 @@ browser. A token minted for the CLI is named "livediagram CLI".
 
 ## 4. Tools
 
-Twenty-six tools: thirteen for documents, five for Plan boards ([§4.9b](#49b-the-plan-tools)), four for sheets
-([§4.9c](#49c-the-sheet-tools)) and four
-for forms ([§4.9e](#49e-the-form-tools)), besides the deprecated names ([§4.18](#418-deprecated-tool-names)). The search/view capability is two tools (find, then read); create,
+Thirteen tools, all for documents, besides the deprecated names ([§4.18](#418-deprecated-tool-names)). The search/view capability is two tools (find, then read); create,
 add_tab, and update are separate because their inputs and intent differ;
 list_templates exposes the template catalogue ([§4.5](#45-list_templates)), search_icons the icon catalogue
 ([§4.5a](#45a-search_icons)) and list_images the user's image gallery ([§4.5b](#45b-list_images));
@@ -352,12 +350,10 @@ template starts ship ([Canvas and palette](../008-canvas/canvas-and-palette.md))
 `@livediagram/templates` package so the worker and the editor can't drift.
 No input. Returns the categories plus one row per template:
 `{ kind, title, description, category }` — enough for the model to pick a
-`kind` and pass it as `template` on `create_document` / `add_tab` (a template of several tabs, such as the
-Plan templates and the three with a companion Sheet, adds them all on `create_document`, the first named as given; `add_tab` takes its first;
-[Plan templates](../026-plan/plan-templates.md)). Deliberately
+`kind` and pass it as `template` on `create_document` / `add_tab`. Deliberately
 metadata-only (no elements): the scaffold materialises server-side on create,
 so the model never has to re-emit — or accidentally mangle — a curated layout.
-The recommended flow for "make me a kanban board"-style asks: `list_templates`
+The recommended flow for "make me a retrospective"-style asks: `list_templates`
 → create with `template` → `update_document` (`ops`) to fill in real content.
 
 A `template` that names no kind is refused before anything is written, offering the kinds it most likely meant first:
@@ -825,95 +821,6 @@ and every team Trash they have joined.
   A 404 (not in the Trash, or not the user's) becomes a model-correctable error
   pointing at `list_trash`.
 
-### 4.9b The Plan tools
-
-The cards Plan boards show, the boards and the card types ([Plan for agents](../026-plan/plan-agents.md),
-[Items](../026-plan/items.md)). Everything is named as the board shows it (a column by name, a card type by name,
-custom fields by name, a person by name, an item by number `#12`); the server resolves the ids and refuses an
-unknown name with the ones there are.
-
-- **`list_items`** (read): the document's boards with their columns and the cards in each, the items with their
-  column names, and the card types with their fields; narrowed by card type or column, by name. A document with no
-  board answers a hint saying how to get one.
-- **`change_items`** (destructive, as it may delete): up to 50 changes in order, each `add` `{ title, type,
-status, fields }`, `set` `{ item, fields, clear, type }`, `move` `{ item, status, before }` or `delete`
-  `{ item }`. A refusal answers what was applied before it. Each change reaches open boards at once.
-- **`add_board`** (write): a Plan board on a tab in Plan, from a preset or columns by name, as one changeset; any
-  other tab is refused `tab_not_plan` ([Plan tabs](../026-plan/plan-tabs.md#only-in-plan)).
-- **`change_board`** (write): a board's title, columns (by name) or the card types it takes, as one changeset.
-- **`change_card_types`** (destructive, as deleting a type moves its cards to the Trash): up to 32 card type
-  changes (`add`, `set`, `delete`, `add_default_types`; `restore_built_ins` is its older name), checked whole and saved once.
-
-### 4.9c The sheet tools
-
-The spreadsheets Sheet elements show ([Sheet store](../029-sheets/sheet-store.md#agents)). A sheet is named by its
-title (case aside) or id, cells by A1, rows by number and columns by letter, never the ids of rows and columns; the
-server (`apps/mcp/src/sheet-tools.ts` over `packages/agent-verbs/src/sheets/`) resolves them and refuses an unknown
-sheet with the sheets there are. Values are worked out by the editor's engine (`@livediagram/sheets`), with the
-document's Plan cards when a formula reads them.
-
-- **`list_sheets`** (read): the document's sheets (or one tab's), each with its title, tab, the rows and columns in
-  use and that range in A1, and the id of the Sheet element framing it (null when none does).
-- **`read_sheet`** (read): a range's non-empty cells (the range in use by default) as `{ at, input, value, display }`,
-  plus the frozen rows and columns, merges and filter, the validation rules (`validation`) and format rules
-  (`conditionalFormats`) in words, and `invalid` on a cell whose value its rule does not allow. A read covers at most `AGENT_READ_CELLS_MAX` (5,000) cells
-  of the range and answers at most `SHEET_READ_CHARS_MAX` (100,000) characters of cells; past either it stops,
-  sets `truncated` and says in `note` where to read on.
-- **`change_sheet`** (destructive, as it clears and deletes): up to 50 changes in order, each built against the
-  sheet as the ones before it left it: `set` `{ at, rows }`, `clear` `{ range, what }`, `format` `{ range, format }`
-  (bold, italic, underline, strikethrough, colours, font size, alignment, wrap, number format, decimals,
-  currency), `insert_rows` / `insert_cols` `{ at, count, side }`, `delete_rows` `{ rows }`, `delete_cols`
-  `{ cols }`, `rename` `{ title }`, `sort` `{ by, range?, descending, header }`, `freeze` `{ rows, cols }`, `validate`
-  `{ range, rule, reject?, help? }`, `clear_validation` `{ range }`, `conditional_format` `{ range, when + style |
-scale, first? }` and `clear_conditional_formats` `{ range? }` ([Data validation](../029-sheets/data-validation.md#agents),
-  [Conditional formatting](../029-sheets/conditional-formatting.md#agents)); `resize` `{ cols | rows, px | fit }`,
-  `merge` `{ range, across? }`, `unmerge` `{ range }`, `border` `{ range, sides, color, width, style }`, `filter`
-  `{ range | null }`, `chart` `{ type, range, columns?, at?, width?, height?, palette? }`, `clear_charts`
-  `{ range? }` and `design` `{ design }`
-  ([Shaping a sheet, A design](../029-sheets/sheet-store.md#agents); `sheet-shape-change.ts`, `sheet-design.ts`,
-  `sheet-charts.ts`, `sheet-chart-follow.ts`). Inserted rows take their neighbour's formats, columns its look. After the
-  writes, one changeset on the sheet's tab removes the charts `clear_charts` took, moves those a change left over
-  other cells back onto their cells, and adds the charts the changes made over the Sheet element, each with its
-  first read. Each
-  is sent through the sheet write route as the editor sends it (one write a call, split past 5,000 cells, each with
-  its own write id). A formula that cannot be read is refused naming the cell (`formula_invalid`), as is a value a Reject
-  validation rule does not allow (`value_invalid`, with what the rule allows); a refusal
-  answers what was applied before it.
-- **`add_sheet`** (write): a new sheet on a tab in Plan (the tab named, else the first with a sheet, else the first;
-  any other tab is refused `tab_not_plan` before a sheet is made, [Plan tabs](../026-plan/plan-tabs.md#only-in-plan)), titled
-  uniquely on the tab, blank or filled from A1 with `rows`, `csv` or a `design` (one of them), then a Sheet element
-  framing it placed beside what the tab holds, as `add_board` places a board, in one changeset with a design's charts.
-  The element is 960 x 560, grown to show every filled cell (up to 1,800 x 1,400).
-- **Previews**: a Sheet tab's image grows its Sheet to its filled cells and charts (`sheetContentSize`); a chart linked
-  to a sheet draws what its cells hold now (`chartsReadLive`); a dropdown draws as the editor's chip, or its arrow.
-
-### 4.9e The form tools
-
-A Form tab's form ([Forms](../030-forms/forms.md#agents)): its questions, sections, where its responses go and its
-form link. Everything is named as the builder names it (a question by id or prompt, a section by id, title or place,
-a board, card type, column, sheet and card field by name); the server (`apps/mcp/src/form-tools.ts` over
-`packages/agent-verbs/src/forms/`) resolves them and refuses an unknown name with the ones there are. The form is
-built with the editor's own edits (`@livediagram/forms`) and started as Start Planning starts one
-(`@livediagram/templates` `planFormStart`).
-
-- **`read_form`** (read): the form in words (sections, questions with their settings, each answer's destination by
-  field name, section rules by prompt), where responses go, the settings, state, response count, the form link (an
-  Editor's only) and its problems; `image` adds a picture of the form on its tab's look.
-- **`add_form`** (write): a Form tab from a starter or questions, its responses to a new or named board or sheet,
-  the fields its mappings name added to the card type; a new document when no `documentId` is given. Answers as
-  `read_form` does, with the tabs it made.
-- **`change_form`** (destructive): up to 50 question, section, form, settings and destination changes, checked whole
-  and written as one changeset; a refusal writes nothing and names the change. While the form takes responses only
-  `settings` changes go through.
-- **`share_form`** (write): `publish`, `close` or `delete_link`, through the form link routes as Share Form calls
-  them; a form not ready answers every problem.
-- **`try_form`** (write): fills the form in as the builder's Preview does, answers by question id or prompt checked
-  first (a wrong one refused with why, nothing sent), then the "Preview: ..." card or row a response makes: through
-  `.../form-preview` for a published or sheet form (a published form counts it), else the card through the items
-  route. Answers what it made, where, and its number.
-- `read_document` lists a Form tab as `kind=form` with a line naming `read_form`; its `image` draws the form as
-  `read_form` does.
-
 ### 4.10 Prompts (discoverability)
 
 Registered MCP **prompts** — pre-canned templates a client surfaces as slash
@@ -994,14 +901,14 @@ while a destructive one always asks. Directory listings (the Claude connectors
 portal among them) also require them, and a missing block is a listing blocker,
 which is how the gap was found.
 
-Three behaviours cover the twenty-six tools, and each is a preset in
+Three behaviours cover the thirteen tools, and each is a preset in
 `apps/mcp/src/tool-annotations.ts`:
 
-| Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                                                                                                 |
-| --------------- | -------------- | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **read**        | `true`         | (not applicable)  | `find_documents`, `read_document`, `list_templates`, `search_icons`, `list_trash`, `list_items`, `list_sheets`, `read_sheet`, `read_form`                             |
-| **write**       | `false`        | `false`           | `create_document`, `add_tab`, `share_document`, `rename_document`, `restore_document`, `add_board`, `change_board`, `add_sheet`, `add_form`, `share_form`, `try_form` |
-| **destructive** | `false`        | `true`            | `update_document`, `delete_document`, `change_items`, `change_card_types`, `change_sheet`, `change_form`                                                              |
+| Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                 |
+| --------------- | -------------- | ----------------- | ------------------------------------------------------------------------------------- |
+| **read**        | `true`         | (not applicable)  | `find_documents`, `read_document`, `list_templates`, `search_icons`, `list_trash`     |
+| **write**       | `false`        | `false`           | `create_document`, `add_tab`, `share_document`, `rename_document`, `restore_document` |
+| **destructive** | `false`        | `true`            | `update_document`, `delete_document`                                                  |
 
 The split mirrors §4.11's read-only-token boundary exactly (what a
 `read_only = 1` token can still reach is what `read` annotates), so the hint a
@@ -1087,28 +994,19 @@ code or status: a document in the Trash, a view-only grant, an id that names not
 (a tab id the document lacks names its tabs); only a 5xx or a network failure throws. A deleted tab's refusal
 says why by its status (no such tab, view only, the last tab).
 
-| Tool                | Result object                                                                                                                                                                                                           |
-| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `find_documents`    | `count`, `documents[]` of `{ id, name, updatedAt, library, url }`                                                                                                                                                       |
-| `read_document`     | `id`, `name`, `tab { id, name, rev, ... }`, `tabs[]` of `{ id, name }` (every tab, in order), `url`                                                                                                                     |
-| `list_templates`    | `categories[]` of `{ id, label, description }`, `templates[]` of `{ kind, title, description, category }`                                                                                                               |
-| `create_document`   | `id` and `documentId` (the same), `name`, `tabCount`, `tabIds[]`, `folder`, `url`                                                                                                                                       |
-| `add_tab`           | `documentId`, `tabId`, `name`, `url`, `note` when a template has more tabs than it added                                                                                                                                |
-| `update_document`   | `id` and `documentId` (the same), `tabId`, `url`                                                                                                                                                                        |
-| `share_document`    | `url`, `role`, `expiresAt` (ms epoch, or null for never), `documentUrl`                                                                                                                                                 |
-| `rename_document`   | `renamed` (`document` or `tab`), `name`, then `id` + `url` for a document or `tabId` for a tab                                                                                                                          |
-| `delete_document`   | `deleted` (`document` or `tab`), `documentId`, then `trashed` + `restorableForDays` or `tabId`                                                                                                                          |
-| `list_trash`        | `trash[]` of `{ id, name, library, reason, deletedAt, purgeAt }` (ISO timestamps)                                                                                                                                       |
-| `restore_document`  | `restored`, `id`, `name` (null when the api omits it), `url`                                                                                                                                                            |
-| `list_items`        | `boards[]` of `{ title, tab, tabId, kind, takes, columns[] { name, status, wipLimit?, cards[] } }`, `notOnBoard[]`, `count`, `items[]` of `{ ref, id, type, status, column, title, fields }`, `types[]`, `hint?`, `url` |
-| `change_items`      | `applied[]` (one line per change, naming the column), `url`                                                                                                                                                             |
-| `add_board`         | `tabId`, `elementId`, `title`, `columns[]` of `{ name, status }`, `changesetId`, `rev`, `url`                                                                                                                           |
-| `change_board`      | `tabId`, `elementId`, `title`, `columns[]` of `{ name, status }`, `takes`, `changesetId`, `rev`, `url`                                                                                                                  |
-| `change_card_types` | `applied[]` (with the ids made), `trashed[]`, `types[]`, `url`                                                                                                                                                          |
-| `list_sheets`       | `sheets[]` of `{ id, title, tabId, tabName, rows, cols, filled, elementId }`, `url`                                                                                                                                     |
-| `read_sheet`        | `sheetId`, `title`, `tabId`, `range`, `rows`, `cols`, `cells[]` of `{ at, input, value, display }`, `truncated`, `note?`, `frozen { rows, cols }`, `merges[]`, `filter`, `url`                                          |
-| `change_sheet`      | `sheetId`, `title`, `applied[]` (one line per change), `rev`, `url`                                                                                                                                                     |
-| `add_sheet`         | `tabId`, `sheetId`, `elementId`, `title`, `filled`, `truncated`, `changesetId`, `rev`, `url`                                                                                                                            |
+| Tool               | Result object                                                                                             |
+| ------------------ | --------------------------------------------------------------------------------------------------------- |
+| `find_documents`   | `count`, `documents[]` of `{ id, name, updatedAt, library, url }`                                         |
+| `read_document`    | `id`, `name`, `tab { id, name, rev, ... }`, `tabs[]` of `{ id, name }` (every tab, in order), `url`       |
+| `list_templates`   | `categories[]` of `{ id, label, description }`, `templates[]` of `{ kind, title, description, category }` |
+| `create_document`  | `id` and `documentId` (the same), `name`, `tabCount`, `tabIds[]`, `folder`, `url`                         |
+| `add_tab`          | `documentId`, `tabId`, `name`, `url`, `note` when a template has more tabs than it added                  |
+| `update_document`  | `id` and `documentId` (the same), `tabId`, `url`                                                          |
+| `share_document`   | `url`, `role`, `expiresAt` (ms epoch, or null for never), `documentUrl`                                   |
+| `rename_document`  | `renamed` (`document` or `tab`), `name`, then `id` + `url` for a document or `tabId` for a tab            |
+| `delete_document`  | `deleted` (`document` or `tab`), `documentId`, then `trashed` + `restorableForDays` or `tabId`            |
+| `list_trash`       | `trash[]` of `{ id, name, library, reason, deletedAt, purgeAt }` (ISO timestamps)                         |
+| `restore_document` | `restored`, `id`, `name` (null when the api omits it), `url`                                              |
 
 **The schema and the result can't drift.** Each tool is a verb in the shared catalogue
 (`packages/agent-verbs/src/verbs/mcp-tools.ts`, [CLI](cli.md#one-catalogue-for-the-cli-and-the-mcp)) holding its
@@ -1178,12 +1076,6 @@ Worker (no DOM, no React).
   consumed by **both** the existing in-app export (dedup — the editor stops
   carrying its own copy) and the MCP worker. This is the reuse rule applied: one
   renderer, two callers.
-- **A Plan tab as the editor exports it.** A Board, Sheet or Dashboard tab previews as the editor's image export draws
-  it ([Plan tabs](../026-plan/plan-tabs.md) "Export", `@livediagram/plan-art` `planImageOf`): a Board tab its board
-  alone, a Dashboard its page laid out row by row, each metric, chart and card drawn from the document's cards
-  (`resolvePlanArt`), each tab slot that tab's board or Sheet. A Dashboard's preview reads the document's other tabs
-  (up to `PLAN_PREVIEW_TABS_MAX`, 20) and its plan's column names; any read that fails draws as the editor draws it
-  missing.
 - **Rasterise in the worker.** Convert the SVG to PNG with
   [`@resvg/resvg-wasm`](https://github.com/yisibl/resvg-js) (runs in the Workers
   runtime), return it as base64 MCP image content (`image/png`) — broadest client

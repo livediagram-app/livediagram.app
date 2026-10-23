@@ -13,7 +13,6 @@ import {
   type RoomOp,
 } from '@livediagram/api-schema';
 import type { AgentPresenceWrite } from './room-agent-presence';
-import type { ItemsRoomOp, ItemTypesRoomOp, SheetsRoomOp } from '@livediagram/api-schema';
 import type { Env } from './types';
 
 // The worker's calls into a document's realtime room (docs/specs/012-collaboration/collab-race-hardening.md): reading its
@@ -47,13 +46,11 @@ export async function roomFetch(
   }
 }
 
-// `ordered` asks the room to sequence the op into its catch-up log, so a peer whose socket blipped
-// still receives it (the item store's ops).
-function mutationInit(op: unknown, ordered = false): RequestInit {
+function mutationInit(op: unknown): RequestInit {
   return {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(ordered ? { op, ordered: true } : { op }),
+    body: JSON.stringify({ op }),
   };
 }
 
@@ -65,10 +62,9 @@ async function broadcastOp(
   documentId: string,
   op: unknown,
   label: string,
-  ordered = false,
 ): Promise<void> {
   try {
-    await roomStubFor(env, documentId).fetch('https://room/broadcast', mutationInit(op, ordered));
+    await roomStubFor(env, documentId).fetch('https://room/broadcast', mutationInit(op));
   } catch (err) {
     console.warn(`[room-broadcast] ${label} did not reach the room`, documentId, err);
   }
@@ -284,45 +280,6 @@ export async function relayTabRename(
   return false;
 }
 
-// An agent's form write (docs/specs/030-forms/forms.md "Agents"), as the ops an editor's own edit sends: its form
-// and name as one `tab-meta`, in order. Best-effort and logged under `tag`, like the tab rename relay; answers how
-// many reached the room.
-export async function relayRoomOps(
-  env: Env,
-  documentId: string,
-  ops: readonly RoomOp[],
-  tag: string,
-): Promise<number> {
-  let reached = 0;
-  for (const op of ops) {
-    try {
-      const res = await roomFetch(
-        env,
-        documentId,
-        '/mutation',
-        mutationInit(op),
-        ROOM_RELAY_TIMEOUT_MS,
-      );
-      if (res.ok) {
-        reached += 1;
-        continue;
-      }
-      console.warn(`${tag} relay-missed`, {
-        documentId,
-        op: op.kind,
-        error: `status ${res.status}`,
-      });
-    } catch (err) {
-      console.warn(`${tag} relay-missed`, {
-        documentId,
-        op: op.kind,
-        error: String(err),
-      });
-    }
-  }
-  return reached;
-}
-
 // One open editor's selection on a tab, as the room answers it: every selected id, the session's
 // name and colour, and whether it is the agent owner's own session (matched by person tag).
 export type RoomSelection = { elementIds: string[]; name: string; color: string; mine: boolean };
@@ -466,26 +423,4 @@ export async function refreshAgentPresence(
       error: String(err),
     });
   }
-}
-
-// A stored type catalogue (docs/specs/026-plan/item-types.md "Storage and sync"): ordered like items,
-// to every session, a tab-scoped one too (a catalogue holds no content).
-export async function relayItemTypes(
-  env: Env,
-  documentId: string,
-  op: ItemTypesRoomOp,
-): Promise<void> {
-  await broadcastOp(env, documentId, op, 'item types', true);
-}
-
-// Tell a document's room about item writes (docs/specs/026-plan/items.md "Live for everyone"): an
-// ordered system op, so a peer whose socket blipped catches it up. Best-effort like the other
-// broadcasts: the D1 write is the change, and a client that missed it refetches on a rev gap.
-export async function relayItems(env: Env, documentId: string, op: ItemsRoomOp): Promise<void> {
-  await broadcastOp(env, documentId, op, 'items', true);
-}
-
-// A sheet write the api made (docs/specs/029-sheets/sheet-store.md "Live for everyone"), ordered like items.
-export async function relaySheets(env: Env, documentId: string, op: SheetsRoomOp): Promise<void> {
-  await broadcastOp(env, documentId, op, 'sheets', true);
 }

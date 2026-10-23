@@ -1,4 +1,4 @@
-import { Fragment, memo } from 'react';
+import { Fragment, memo, type ComponentProps } from 'react';
 import {
   arrowLabelFontStack,
   exportFontFamily,
@@ -16,10 +16,10 @@ import type {
 import type { PhotoDraftView } from '@/lib/photo-draft-preview';
 import type { RemoteSelector } from '@/lib/presence-rows';
 import type { arrowViewGeometry } from './arrow-view-frame';
+import type { BoxedElementView } from './BoxedElementView';
 import type { CanvasElementsLayerProps } from './CanvasElementsLayer';
 import { PreviewedElement } from './PreviewedElement';
 import { FreeArrowFrame, SelectableArrowView, SelectableBoxedView } from './selection-aware-views';
-import type { BoxedShared } from './sheet-chart-renderer';
 
 // Every element of the canvas in paint order (arrows and boxed views interleaved, so `bringToFront` /
 // `sendToBack` reorder arrows relative to boxes), each a PreviewedElement drawn from its drag preview
@@ -35,6 +35,36 @@ import type { BoxedShared } from './sheet-chart-renderer';
 const EMPTY_REMOTE_SELECTORS: RemoteSelector[] = [];
 
 type P = CanvasElementsLayerProps;
+
+// What every boxed element view on the canvas takes from its layer, the same for each element.
+export type BoxedShared = Omit<
+  ComponentProps<typeof BoxedElementView>,
+  | 'element'
+  | 'isSelected'
+  | 'isMultiSelected'
+  | 'showHandles'
+  | 'showAnchors'
+  | 'isoDepth'
+  | 'insertShiftX'
+  | 'insertShiftAnimates'
+  | 'votableInVote'
+  | 'layerOpacity'
+  | 'photoDraft'
+  | 'photoMatched'
+  | 'photoReadAs'
+  | 'remoteSelectors'
+  | 'isEditing'
+  | 'editCursorAtEnd'
+  | 'movable'
+  | 'writable'
+  | 'resizable'
+  | 'isVoteFocus'
+  | 'commentActions'
+  | 'actionActions'
+  | 'revealedForMe'
+  | 'reactionBurst'
+  | 'fontFamily'
+>;
 
 // The layer's identity-stable handler bag (useStableHandlers), as much of it as an element uses.
 type ElementListHandlers = Pick<

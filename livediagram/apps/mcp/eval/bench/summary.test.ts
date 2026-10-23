@@ -31,11 +31,11 @@ const run = (
   metrics: { ...metrics, errors: errors.length },
   checks: pass.map((p, i) => ({ name: `c${i}`, pass: p, detail: p ? null : `why ${i}` })),
   errors,
-  tools: ['add_form'],
+  tools: ['create_document'],
 });
 
 const err = (id: string) => ({
-  tool: 'add_form',
+  tool: 'create_document',
   error: `Question "Name ${id}" (q-${id}) needs 2 options, has 1`,
 });
 
@@ -63,7 +63,12 @@ describe('normaliseError', () => {
 describe('recurring findings', () => {
   it('keeps a tool error seen in two runs, counting each run once', () => {
     expect(recurringToolErrors(results.runs)).toEqual([
-      expect.objectContaining({ tool: 'add_form', runs: 2, tasks: ['Q1'], models: ['haiku'] }),
+      expect.objectContaining({
+        tool: 'create_document',
+        runs: 2,
+        tasks: ['Q1'],
+        models: ['haiku'],
+      }),
     ]);
   });
 

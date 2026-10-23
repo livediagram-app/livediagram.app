@@ -5,7 +5,7 @@ import { Portal } from '@livediagram/ui';
 import { useStartPalette } from '@/components/start/useStartPalette';
 import { TourBanner } from './TourBanner';
 import { TourPopover } from './TourPopover';
-import { WELCOME_TOUR_COPY, type TourCardCopy, type TourWelcomeChoice } from './tour-card-copy';
+import { WELCOME_TOUR_COPY, type TourCardCopy } from './tour-card-copy';
 import { TOUR_DIM } from './tour-motion';
 import { TourSpotlight } from './TourSpotlight';
 import { TourShield } from './TourShield';
@@ -26,19 +26,16 @@ export function TourStage<Api>({
   ariaPrefix,
   copy,
   welcomeArt,
-  welcomeChoices,
   layer = 'overlay',
   pad = 6,
   blockInput = false,
 }: {
   engine: TourEngine<Api>;
-  // The popover's label before "step N of M" ("Tour", "Plan tour").
+  // The popover's label before "step N of M" ("Tour", "Workshop tour").
   ariaPrefix?: string;
   copy?: Partial<TourCardCopy>;
   welcomeArt?: ReactNode;
-  // The welcome card's ways in, when it has more than one (the Plan tour's tracks).
-  welcomeChoices?: readonly TourWelcomeChoice[];
-  // 'modal' draws the ring over a dialog, for a tour of one (the card type editor's Show Me): just above the
+  // 'modal' draws the ring over a dialog, for a tour of one (a dialog's Show Me): just above the
   // dialog, just below the menus its controls open (AnchoredPopover), which stay lit.
   layer?: 'overlay' | 'modal';
   // The room between the target and its ring, in px (a dialog's tightly packed rows want more).
@@ -90,7 +87,6 @@ export function TourStage<Api>({
           copy={{ ...WELCOME_TOUR_COPY, ...copy }}
           palette={palette}
           {...(welcomeArt ? { welcomeArt } : {})}
-          {...(welcomeChoices ? { welcomeChoices } : {})}
           onNext={engine.next}
           onSkip={engine.skip}
         />

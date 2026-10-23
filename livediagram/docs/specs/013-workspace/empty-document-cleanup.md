@@ -13,11 +13,9 @@ the database clean without anyone having to tidy up.
 
 ## Which documents
 
-A document is **empty** when none of its tabs holds an element, an article or a form. An
+A document is **empty** when none of its tabs holds an element or an article. An
 article's writing (kept on a tab from when livediagram had Pages mode, until the tab is next saved) is stored on its tab beside the elements, not
-as elements, so a tab with any article, even one still blank, keeps its document: someone made it to write in. A
-Form tab's form is stored the same way ([Forms](../030-forms/forms.md)), so a tab holding a form keeps its
-document too, even a form with no questions yet. A document with
+as elements, so a tab with any article, even one still blank, keeps its document: someone made it to write in. A document with
 no tabs at all is empty too. Nothing else counts as content: a name, extra
 blank tabs, a tab's settings (background, grid), a share link, a star or a
 folder never keep a document. Comments and actions live on elements, so an

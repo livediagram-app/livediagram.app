@@ -1,7 +1,7 @@
 // The template library as the agent front doors list it (the MCP's list_templates, the api's GET /api/templates,
 // docs/specs/015-api/blueprints/cli.md "Catalogue routes"): the categories and one entry a template, the editor's
 // hidden onboarding templates left out. A template's category is its primary (docs/specs/008-canvas/canvas-and-palette.md
-// "Template categories"); the five blanks, in no category in the picker, are listed under `blanks` so an agent still
+// "Template categories"); the three blanks, in no category in the picker, are listed under `blanks` so an agent still
 // finds them.
 import { TEMPLATES, type TemplateKind } from './templates';
 import {
@@ -27,16 +27,13 @@ type TemplateCatalogue = {
 };
 
 export function templateCatalogue(): TemplateCatalogue {
-  const templates: TemplateCatalogue['templates'] = TEMPLATES.filter(
-    (t) => !t.hidden && !t.editorOnly,
-  ).map((t) => ({
+  const templates: TemplateCatalogue['templates'] = TEMPLATES.filter((t) => !t.hidden).map((t) => ({
     kind: t.kind,
     title: t.title,
     description: t.description,
     category: templateCategory(t.kind) ?? 'blanks',
   }));
-  // Only the categories something is listed in: Forms holds only editor-only templates, so an agent was offered an
-  // empty category.
+  // Only the categories something is listed in, so an agent is never offered an empty one.
   const used = new Set<string>(templates.map((t) => t.category));
   return {
     categories: [...TEMPLATE_CATEGORIES, BLANKS_CATALOGUE_CATEGORY].filter((c) => used.has(c.id)),

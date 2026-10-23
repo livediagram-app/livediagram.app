@@ -6,7 +6,7 @@
 import { Scene, Shape, Arrow, Dialog, Button, Label, Avatar } from './primitives';
 
 /** The New Document wizard, its one question: "What are you making today?", the
- *  four mode cards, two by two at one height (Diagram first and chosen),
+ *  three mode cards in a row at one height (Diagram first and chosen),
  *  each with its number key, and the footer's Skip and Create. Choosing a card
  *  creates the document there and then. */
 export function NewDocumentWelcome() {
@@ -29,13 +29,13 @@ export function NewDocumentWelcome() {
         <Label x={42} y={65} size={10.5} tone="muted">
           What are you making today?
         </Label>
-        {/* The four mode cards, two by two, every one the same build and height: a plate
+        {/* The three mode cards in a row, every one the same build and height: a plate
             on top, then the name and its number key. Diagram, where most start, leads and is
             chosen; its plate holds a small flow. */}
-        {(['Diagram', 'Draw', 'Workshop', 'Plan'] as const).map((mode, i) => {
-          const w = 164;
-          const x = 42 + (i % 2) * (w + 8);
-          const y = i < 2 ? 84 : 152;
+        {(['Diagram', 'Draw', 'Workshop'] as const).map((mode, i) => {
+          const w = 106;
+          const x = 42 + i * (w + 9);
+          const y = 84;
           const chosen = i === 0;
           return (
             <g key={mode}>
@@ -43,7 +43,7 @@ export function NewDocumentWelcome() {
                 x={x}
                 y={y}
                 width={w}
-                height={62}
+                height={128}
                 rx={9}
                 className={chosen ? 'fill-white stroke-brand-500' : 'fill-white stroke-slate-200'}
                 strokeWidth={chosen ? 2.5 : 1.5}
@@ -52,18 +52,18 @@ export function NewDocumentWelcome() {
                 x={x + 6}
                 y={y + 6}
                 width={w - 12}
-                height={30}
+                height={92}
                 rx={5}
                 className={chosen ? 'fill-brand-50' : 'fill-slate-50'}
               />
               {chosen ? (
                 <g>
                   <g className="fill-white stroke-brand-400" strokeWidth={1.5}>
-                    <rect x={x + 20} y={y + 14} width={22} height={13} rx={3} />
-                    <rect x={x + 64} y={y + 14} width={22} height={13} rx={3} />
+                    <rect x={x + 20} y={y + 45} width={22} height={13} rx={3} />
+                    <rect x={x + 64} y={y + 45} width={22} height={13} rx={3} />
                   </g>
                   <path
-                    d={`M${x + 42} ${y + 20.5} h18 m-4 -3.5 l4 3.5 l-4 3.5`}
+                    d={`M${x + 42} ${y + 51.5} h18 m-4 -3.5 l4 3.5 l-4 3.5`}
                     className="fill-none stroke-brand-400"
                     strokeWidth={1.5}
                     strokeLinecap="round"
@@ -73,27 +73,27 @@ export function NewDocumentWelcome() {
               ) : (
                 <rect
                   x={x + w / 2 - 13}
-                  y={y + 13}
+                  y={y + 44}
                   width={26}
                   height={16}
                   rx={3}
                   className="fill-brand-100"
                 />
               )}
-              <Label x={x + 9} y={y + 50} size={10} weight={chosen ? 700 : 600} tone="strong">
+              <Label x={x + 9} y={y + 116} size={10} weight={chosen ? 700 : 600} tone="strong">
                 {mode}
               </Label>
               {/* The card's number key, at the row's end. */}
               <rect
                 x={x + w - 21}
-                y={y + 43}
+                y={y + 109}
                 width={13}
                 height={13}
                 rx={2.5}
                 className="fill-white stroke-slate-300"
                 strokeWidth={1}
               />
-              <Label x={x + w - 14.5} y={y + 50} anchor="middle" size={8} weight={500} tone="muted">
+              <Label x={x + w - 14.5} y={y + 116} anchor="middle" size={8} weight={500} tone="muted">
                 {String(i + 1)}
               </Label>
             </g>

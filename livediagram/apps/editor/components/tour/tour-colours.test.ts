@@ -1,5 +1,6 @@
+import { startPalette } from '@/components/start/start-palette';
 import { describe, expect, it } from 'vitest';
-import { contrastRatio, hexToRgb, hueName, planPalette, rgbToHex } from '@livediagram/document';
+import { contrastRatio, hexToRgb, hueName, rgbToHex } from '@livediagram/document';
 import {
   BANNER_FROM_CONTRAST,
   BANNER_INK,
@@ -19,7 +20,7 @@ function whiteAt(alpha: number, behind: string): string {
 // docs/specs/007-editor/editor-tour.md "Look": the tour card wears the active tab's colours.
 describe('tour colours', () => {
   it('reads the palette into the card, border, text, muted and accent variables', () => {
-    const p = planPalette('light', { fill: '#fef3c7', stroke: '#b45309', text: '#451a03' });
+    const p = startPalette('light', { fill: '#fef3c7', stroke: '#b45309', text: '#451a03' });
     const vars = tourColourVars(p) as Record<string, string>;
     expect(vars['--tour-card']).toBe(p.card);
     expect(vars['--tour-border']).toBe(p.border);
@@ -67,7 +68,7 @@ describe('tour colours', () => {
   });
 
   it('gives the white button its label in the banner’s own colour, a dark tab’s pale accent included', () => {
-    const dark = planPalette('dark', { fill: '#1e293b', stroke: '#60a5fa', text: '#e2e8f0' });
+    const dark = startPalette('dark', { fill: '#1e293b', stroke: '#60a5fa', text: '#e2e8f0' });
     const vars = tourColourVars(dark) as Record<string, string>;
     expect(contrastRatio(vars['--tour-banner-from']!, '#ffffff')).toBeGreaterThanOrEqual(4.5);
     expect(contrastRatio(vars['--tour-banner-to']!, '#ffffff')).toBeGreaterThanOrEqual(

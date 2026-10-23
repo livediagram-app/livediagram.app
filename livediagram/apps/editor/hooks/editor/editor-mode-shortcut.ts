@@ -7,11 +7,10 @@ import type { EditorModeState } from './useEditorMode';
 // content keeps its mode, and a new tab is the way to work on it in another. Null elsewhere (a tab with content, a
 // view-role visitor, an event-storming board), so the key does nothing there.
 export function editorModeShortcut(
-  { mode, setMode, canSwitch, crossPlan }: EditorModeState,
+  { mode, setMode, canSwitch, emptyTab }: EditorModeState,
   announce: (message: string) => void,
 ): (() => void) | null {
-  // An empty tab (crossPlan) cycles every mode.
-  if (!canSwitch || !crossPlan) return null;
+  if (!canSwitch || !emptyTab) return null;
   return () => {
     const next = nextEditorMode(mode, 1, EDITOR_MODES);
     setMode(next);

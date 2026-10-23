@@ -14,7 +14,6 @@ import {
   type Slide,
   type Tab,
 } from '@livediagram/document';
-import type { Item, ItemTypeDef } from '@livediagram/items';
 import { exportChartInk } from '@/lib/export-chart-ink';
 import { resolveIconArtLoaded, resolveStickerArtLoaded } from '@/lib/icon-registry';
 
@@ -23,8 +22,6 @@ export type SlideThumb = { markup: string; viewBox: string };
 export type SlideThumbOptions = {
   // Whether the icon catalogues have landed: until then icons draw as nothing.
   iconsLoaded: boolean;
-  items?: ReadonlyMap<string, Item>;
-  itemTypes?: readonly ItemTypeDef[];
   // The tab's arrow labels, laid out once for many slides of one tab; laid out here when absent.
   labels?: ReturnType<typeof arrowLabelPass>;
   // The canvas's surface, for the ink of elements with no colour of their own. Light when absent.
@@ -43,7 +40,6 @@ export function slideThumbFor(slide: Slide, tab: Tab, opts: SlideThumbOptions): 
   const art = opts.iconsLoaded
     ? { resolveIconArt: resolveIconArtLoaded, resolveStickerArt: resolveStickerArtLoaded }
     : {};
-  const { items, itemTypes } = opts;
   const elements = resolveSlide(slide, tab);
   const bounds = slideFrame(slide, tab);
   if (!bounds) return null;
@@ -66,8 +62,6 @@ export function slideThumbFor(slide: Slide, tab: Tab, opts: SlideThumbOptions): 
           sketchBackdrop: backdrops.has(el.id),
           surface,
           chartPalette,
-          ...(items ? { items } : {}),
-          ...(itemTypes ? { itemTypes } : {}),
         }),
       );
     }

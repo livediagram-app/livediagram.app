@@ -1,8 +1,7 @@
 'use client';
 
 // The Inbox's data (docs/specs/013-workspace/inbox.md §1, §5): one read, split into the
-// three sections the pane shows, plus the count the sidebar badge draws. Assigned to You holds actions and
-// Plan cards (§2.4) in one list. The read is the server's and, beside it, this browser's documents in This Browser
+// three sections the pane shows, plus the count the sidebar badge draws. The read is the server's and, beside it, this browser's documents in This Browser
 // (§2.6), whose rows are marked `local` so they show the This Browser pill.
 //
 // Held in Explorer state (like favourites) rather than gated to the
@@ -12,13 +11,7 @@
 // count, and the badge can never disagree with the page.
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type {
-  ActivityAction,
-  ActivityCard,
-  ActivityCardThread,
-  ActivityThread,
-  ActivityFormResponses,
-} from '@livediagram/api-schema';
+import type { ActivityAction, ActivityThread } from '@livediagram/api-schema';
 import { apiListActivity } from '@/lib/api-client';
 import { getGuestSelfId } from '@/lib/local-identity';
 import { readOfflineActivity, type OfflineActivity } from '@/lib/offline/offline-activity';
@@ -28,15 +21,7 @@ import { track } from '@/lib/telemetry';
 /** A row, marked `local` when it comes from a document saved only in this browser (§2.6). */
 export type Located<T> = T & { local?: true };
 
-/** One Assigned to You row: an action or a Plan card, told apart by `kind`. */
-export type AssignedRow =
-  Located<{ kind: 'action' } & ActivityAction> | Located<{ kind: 'card' } & ActivityCard>;
-
-/** One Open Comment Threads row: an element's thread or a Plan card's (§2.5), told apart by `kind`. */
-export type ThreadRow =
-  Located<{ kind: 'thread' } & ActivityThread> | Located<{ kind: 'card' } & ActivityCardThread>;
-
-const NO_LOCAL: OfflineActivity = { actions: [], threads: [], cards: [], cardThreads: [] };
+const NO_LOCAL: OfflineActivity = { actions: [], threads: [] };
 
 const markLocal = <T extends object>(rows: T[]): Located<T>[] =>
   rows.map((r) => ({ ...r, local: true as const }));
@@ -48,8 +33,6 @@ function readLocal(owner: string): Promise<OfflineActivity> {
     (local) => ({
       actions: markLocal(local.actions),
       threads: markLocal(local.threads),
-      cards: markLocal(local.cards),
-      cardThreads: markLocal(local.cardThreads),
     }),
     (err: unknown) => {
       console.warn('[inbox] offline-read-failed', err);
@@ -59,14 +42,12 @@ function readLocal(owner: string): Promise<OfflineActivity> {
 }
 
 export type ActivityFeed = {
-  /** Open actions (self-assignments included) and open Plan cards on the reader, newest first. */
-  assignedToMe: AssignedRow[];
+  /** Open actions (self-assignments included) on the reader, newest first. */
+  assignedToMe: Located<ActivityAction>[];
   /** Open actions the reader assigned to somebody ELSE. */
   youAssigned: Located<ActivityAction>[];
-  /** Unresolved threads the reader is in, on elements and on Plan cards, newest comment first. */
-  threads: ThreadRow[];
-  /** Forms with responses the reader has not seen (docs/specs/030-forms/forms.md), newest response first. */
-  formResponses: ActivityFormResponses[];
+  /** Unresolved threads the reader is in, newest comment first. */
+  threads: Located<ActivityThread>[];
   loading: boolean;
   /** The last read FAILED — not the same as nothing outstanding. */
   error: boolean;
@@ -76,9 +57,6 @@ export type ActivityFeed = {
 export function useActivityFeed(ownerId: string | null): ActivityFeed {
   const [actions, setActions] = useState<Located<ActivityAction>[]>([]);
   const [threads, setThreads] = useState<Located<ActivityThread>[]>([]);
-  const [cards, setCards] = useState<Located<ActivityCard>[]>([]);
-  const [cardThreads, setCardThreads] = useState<Located<ActivityCardThread>[]>([]);
-  const [formResponses, setFormResponses] = useState<ActivityFormResponses[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   // Guards a late response from a previous owner id (a guest signing in
@@ -98,9 +76,6 @@ export function useActivityFeed(ownerId: string | null): ActivityFeed {
         if (mode === 'replace') {
           setActions([]);
           setThreads([]);
-          setCards([]);
-          setCardThreads([]);
-          setFormResponses([]);
         }
         setLoading(false);
         return;
@@ -108,9 +83,6 @@ export function useActivityFeed(ownerId: string | null): ActivityFeed {
       setError(false);
       setActions([...result.actions, ...local.actions]);
       setThreads([...result.threads, ...local.threads]);
-      setCards([...result.cards, ...local.cards]);
-      setCardThreads([...(result.cardThreads ?? []), ...local.cardThreads]);
-      setFormResponses(result.formResponses ?? []);
       setLoading(false);
     });
   }, []);
@@ -147,12 +119,8 @@ export function useActivityFeed(ownerId: string | null): ActivityFeed {
   // The split (docs/specs/013-workspace/inbox.md §1): a self-assignment is "assigned to you" and
   // only that, so one action never lists twice.
   const assignedToMe = useMemo(
-    () =>
-      [
-        ...actions.filter((a) => a.assignedToMe).map((a) => ({ kind: 'action' as const, ...a })),
-        ...cards.map((c) => ({ kind: 'card' as const, ...c })),
-      ].sort((a, b) => b.updatedAt - a.updatedAt),
-    [actions, cards],
+    () => actions.filter((a) => a.assignedToMe).sort((a, b) => b.updatedAt - a.updatedAt),
+    [actions],
   );
   const youAssigned = useMemo(
     () =>
@@ -163,13 +131,9 @@ export function useActivityFeed(ownerId: string | null): ActivityFeed {
   );
 
   const threadRows = useMemo(
-    () =>
-      [
-        ...threads.map((t) => ({ kind: 'thread' as const, ...t })),
-        ...cardThreads.map((t) => ({ kind: 'card' as const, ...t })),
-      ].sort((a, b) => b.latest.at - a.latest.at),
-    [threads, cardThreads],
+    () => [...threads].sort((a, b) => b.latest.at - a.latest.at),
+    [threads],
   );
 
-  return { assignedToMe, youAssigned, threads: threadRows, formResponses, loading, error, retry };
+  return { assignedToMe, youAssigned, threads: threadRows, loading, error, retry };
 }

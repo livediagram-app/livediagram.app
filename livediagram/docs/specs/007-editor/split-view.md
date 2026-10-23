@@ -79,10 +79,8 @@ reads **Close Side by Side**.
 
 ## The other pane
 
-- **Body:** the tab drawn with the export renderer, in the viewer's appearance, with the document's
-  Plan items and the tab's photos, on the tab's own paper and pattern (in the mode it opens in
-  here), laid out in canvas space exactly as the editor lays it out. A Form tab is
-  its form as respondents see it. On
+- **Body:** the tab drawn with the export renderer, in the viewer's appearance, with the tab's photos, on the tab's own paper and pattern (in the mode it opens in
+  here), laid out in canvas space exactly as the editor lays it out. On
   opening it is fitted to the pane (never enlarged past 125%) and stays fitted as the tab grows until
   the person moves it.
 - **Moving around:** scroll pans; Ctrl or Cmd + scroll (and a trackpad pinch) zooms about the
@@ -95,7 +93,7 @@ reads **Close Side by Side**.
 - **States:** _Loading name…_ while a never-opened tab's content is fetched (it is fetched as soon
   as it is placed, or when its drag starts); _Couldn't load name. Click to try again._ when that fetch
   fails (clicking in loads it as the editor does, with its Retry); _Nothing on this tab yet. Click to
-  start on it._ for a tab with nothing to draw: no elements, and not a Form tab with its form. The drop zone previews the same drawing. Resting the pointer here never moves the editor while a text field
+  start on it._ for a tab with nothing to draw: no elements. The drop zone previews the same drawing. Resting the pointer here never moves the editor while a text field
   has focus.
 
 ## Closing, and tab changes
@@ -165,7 +163,7 @@ motion.
 - The other pane, the SVG renderer and the icon catalogues load with the first split; a document
   never split pays nothing for them.
 - Rendering a tab's SVG takes ~0.5 ms for 50 elements, ~4 ms for 500 and ~9 ms for 2,000 (measured
-  in jsdom). It reruns only when that tab, the appearance or the Plan items change.
+  in jsdom). It reruns only when that tab, or the appearance change.
 - Moving the editor between panes re-renders the editor on the other tab (the same work as a tab
   switch) and mounts the other pane's SVG once.
 - The pointer is tracked through the drag at most once a frame; the divider resizes at most once a

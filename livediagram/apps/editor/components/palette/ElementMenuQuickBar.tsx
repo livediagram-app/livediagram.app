@@ -80,7 +80,7 @@ export function ElementMenuQuickBar({
 }: {
   target: Element;
   props: EditorContextMenuProps;
-  // Whether the element takes actions, comments, links and notes (never a Plan item, never an arrow).
+  // Whether the element takes actions, comments, links and notes (never an arrow).
   attachments: boolean;
   onClose: () => void;
 }) {

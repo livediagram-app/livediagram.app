@@ -7,8 +7,8 @@ import { findTour, waitForSelector } from './tour-dom';
 import { revealInScrollers } from './tour-reveal';
 import { hasAnchor, type TourStepOf } from './tour-step';
 
-// The step runner every guided tour shares (docs/specs/007-editor/editor-tour.md "Mechanics",
-// docs/specs/026-plan/blueprints/plan-tour.md "Engine"): the Diagram, Plan and Workshop tours each own
+// The step runner every guided tour shares (docs/specs/007-editor/editor-tour.md "Mechanics"): the Diagram and
+// Workshop tours each own
 // their offer, their steps and what ending means, and hand this the rest. Each step runs prepare
 // (opening the real panel / dropdown / menu it explains), waits for its target node, then reports a
 // rect for the dimming highlight ring, scrolling the target into view first when it sits below a panel's fold

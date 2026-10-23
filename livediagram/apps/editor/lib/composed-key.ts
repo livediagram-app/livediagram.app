@@ -1,5 +1,4 @@
-// Characters a keyboard composes with Alt (docs/specs/008-canvas/canvas-and-palette.md "Labels", docs/specs/029-sheets/sheet.md
-// "Keyboard"). A Mac's Option composes (⌥3 is £ on a UK layout, ⌥⇧2 is €); so does AltGr on Windows and Linux
+// Characters a keyboard composes with Alt (docs/specs/008-canvas/canvas-and-palette.md "Labels"). A Mac's Option composes (⌥3 is £ on a UK layout, ⌥⇧2 is €); so does AltGr on Windows and Linux
 // (€ is AltGr+E and @ is AltGr+Q on a German layout), which browsers report as Ctrl+Alt with the AltGraph state
 // set. Either way the key is the character itself, and typing it must type, never run a Ctrl or Alt shortcut.
 

@@ -7,13 +7,13 @@
 import { useState, type CSSProperties } from 'react';
 import { CountBadge, EDITOR_MODE_ICONS } from '@livediagram/ui';
 import { editorModeLabel, type EditorMode } from '@livediagram/document';
-import type { PlanPalette } from '@/components/plan/plan-palette';
+import type { StartPalette } from './start-palette';
 import { StartCardGrid, startTint, type StartPanelCard } from './StartCard';
 import { OTHER_MODE_CARDS_MAX } from './other-mode-matches';
 
 export type StartPanelElsewhere = { mode: EditorMode; cards: readonly StartPanelCard[] };
 
-function OpensIn({ mode, palette }: { mode: EditorMode; palette: PlanPalette }) {
+function OpensIn({ mode, palette }: { mode: EditorMode; palette: StartPalette }) {
   const Icon = EDITOR_MODE_ICONS[mode];
   return (
     <span
@@ -35,7 +35,7 @@ export function StartOtherModes({
   onChoose,
 }: {
   groups: readonly StartPanelElsewhere[];
-  palette: PlanPalette;
+  palette: StartPalette;
   // Below the mode's own results: a hairline above it. Alone (nothing of this mode matched), none.
   divided: boolean;
   cascade: boolean;

@@ -324,7 +324,7 @@ export const tabAdd = defineVerb({
     flags: { file: { short: 'f' } },
     examples: [
       'livediagram tab add "Auth flow" Details -f detail.mmd',
-      'livediagram tab add 3f9c Board --template kanban',
+      'livediagram tab add 3f9c Risks --template swot',
     ],
     prints:
       '+ tab <id> "<name>", the result lines, then the revision, lint verdict and the tab rm that undoes it',

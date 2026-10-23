@@ -15,7 +15,7 @@ import type { TemplateKind } from './templates';
 // so a starter ships with a fitting canvas instead of inheriting the
 // theme's default dot grid:
 //   - graph paper for alignment-heavy scaffolds (flow / org / SWOT /
-//     Gantt / kanban / wireframes) where boxes snap to a square grid,
+//     Gantt) where boxes snap to a square grid,
 //   - a blank canvas for clean radial layouts (Venn, flywheel,
 //     pyramid) where the shapes should carry the page,
 //   - horizontal rules for the time-ordered timeline / journey,
@@ -31,38 +31,6 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   orgchart: 'graph',
   swot: 'graph',
   gantt: 'graph',
-  // Plan boards (docs/specs/026-plan/plan-mode.md) sit on the quiet dot grid: the board is the structure.
-  kanban: 'grid',
-  'blank-plan': 'grid',
-  'blank-spreadsheet': 'grid',
-  'project-planner': 'grid',
-  'bug-triage': 'grid',
-  'team-retro': 'grid',
-  'weekly-planner': 'grid',
-  'content-calendar': 'grid',
-  'hiring-pipeline': 'grid',
-  okrs: 'grid',
-  'product-launch': 'grid',
-  'feedback-board': 'grid',
-  'budget-planner': 'grid',
-  timesheet: 'grid',
-  'contact-list': 'grid',
-  'task-tracker': 'grid',
-  invoice: 'grid',
-  'expense-report': 'grid',
-  'loan-calculator': 'grid',
-  'sales-pipeline': 'grid',
-  inventory: 'grid',
-  'guest-list': 'grid',
-  'grade-book': 'grid',
-  'habit-tracker': 'grid',
-  'blank-form': 'grid',
-  'bug-report-form': 'grid',
-  'feedback-form': 'grid',
-  'feature-request-form': 'grid',
-  'rsvp-form': 'grid',
-  'job-application-form': 'grid',
-  'contact-form': 'grid',
   venn: 'blank',
   flywheel: 'blank',
   pyramid: 'blank',
@@ -212,7 +180,7 @@ export function templateCanvasOverrides(kind: TemplateKind): Partial<Tab> {
   // /new, and the MCP worker all go through here.
   // A template's mode (docs/specs/007-editor/templates-by-mode.md): the Draw templates are general
   // tabs that OPEN in Draw mode (docs/specs/007-editor/editor-modes.md "Where the mode lives";
-  // whiteboarding is no kind), and the Workshop and Plan ones in theirs.
+  // whiteboarding is no kind), and the Workshop ones in Workshop.
   if (mode !== 'diagram') overrides.opensIn = mode;
   if (kind === 'event-storming') {
     overrides.kind = 'event-storming';

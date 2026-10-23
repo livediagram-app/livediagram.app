@@ -40,10 +40,6 @@ function add(editorMode: EditorMode, inMode?: EditorMode, active: Tab = first) {
 }
 
 describe('adding a tab', () => {
-  it('from Plan, opens it in Plan', () => {
-    expect(add('plan').added.opensIn).toBe('plan');
-  });
-
   it('from Diagram, opens on Start Diagramming: no opening mode', () => {
     expect(add('diagram').added.opensIn).toBeUndefined();
   });
@@ -58,16 +54,15 @@ describe('adding a tab', () => {
   });
 
   it('is a general tab carrying the active tab look, never its kind', () => {
-    const board = { ...first, kind: 'board', theme: 'slate' } as unknown as Tab;
-    const { added } = add('plan', undefined, board);
-    expect(added).toMatchObject({ opensIn: 'plan', theme: 'slate' });
+    const board = { ...first, kind: 'event-storming', theme: 'slate' } as unknown as Tab;
+    const { added } = add('draw', undefined, board);
+    expect(added).toMatchObject({ opensIn: 'draw', theme: 'slate' });
     expect(added.kind).toBeUndefined();
   });
 
   it("in any mode, opens on that mode's own start", () => {
-    // From Plan's mode menu: Start Drawing and Start a Workshop are each the new tab's start.
     for (const mode of ['draw', 'workshop'] as const)
-      expect(add('plan', mode).added.opensIn).toBe(mode);
+      expect(add('diagram', mode).added.opensIn).toBe(mode);
   });
 });
 
@@ -75,11 +70,11 @@ describe('adding a tab', () => {
 // control asks, no tab is added.
 describe('adding a tab without the right to change tabs', () => {
   it('adds nothing', () => {
-    expect(run('plan', 'diagram', false).commitTabs).not.toHaveBeenCalled();
+    expect(run('draw', 'diagram', false).commitTabs).not.toHaveBeenCalled();
   });
 
   it("adds nothing from the + either, whatever the active tab's mode", () => {
-    for (const mode of ['workshop', 'plan', 'diagram'] as const)
+    for (const mode of ['workshop', 'draw', 'diagram'] as const)
       expect(run(mode, undefined, false).commitTabs).not.toHaveBeenCalled();
   });
 });

@@ -175,12 +175,9 @@ describe('mentionedEmail (docs/specs/012-collaboration/comment-mentions.md)', ()
     expect(quoted.endsWith('word…')).toBe(true);
   });
 
-  it("opens the card for a card's comment, the document otherwise", () => {
-    const card = mentionedEmail(env, 'Sam', 'Roadmap', 'd1', 'hi', 'it 1');
-    expect(card.html).toContain('/document/d1#item=it%201');
-    expect(card.html).toContain('Open the card');
+  it('opens the document', () => {
     const doc = mentionedEmail(env, 'Sam', 'Roadmap', 'd1', 'hi');
-    expect(doc.html).not.toContain('#item=');
+    expect(doc.html).toContain('/document/d1');
     expect(doc.html).toContain('Open the document');
   });
 

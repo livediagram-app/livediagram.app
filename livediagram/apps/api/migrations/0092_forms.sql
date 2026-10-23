@@ -1,4 +1,4 @@
--- Form links (docs/specs/030-forms/forms.md "Publishing and the form link"). A Form tab's public address: the
+-- Form links (Plan, now in liveplanner "Publishing and the form link"). A Form tab's public address: the
 -- code a respondent opens, whether the form takes responses, and its running response number. The form itself
 -- stays on its tab; a link only names it, so a copy of the document is never published.
 --
@@ -25,7 +25,7 @@ CREATE TABLE form_links (
 CREATE UNIQUE INDEX form_links_live_tab ON form_links (document_id, tab_id) WHERE suspended_at IS NULL;
 CREATE INDEX form_links_document ON form_links (document_id);
 
--- Reports from respondents (docs/specs/030-forms/forms.md "Report This Form"): one per browser per link.
+-- Reports from respondents (Plan, now in liveplanner "Report This Form"): one per browser per link.
 CREATE TABLE form_reports (
   code TEXT NOT NULL REFERENCES form_links (code) ON DELETE CASCADE,
   browser TEXT NOT NULL,
@@ -36,7 +36,7 @@ CREATE TABLE form_reports (
   PRIMARY KEY (code, browser)
 );
 
--- What each reader has seen of a form's responses (docs/specs/030-forms/forms.md "Hearing about responses"):
+-- What each reader has seen of a form's responses (Plan, now in liveplanner "Hearing about responses"):
 -- the last response number, so unseen = responses - seen_number with no row per card.
 CREATE TABLE form_reads (
   code TEXT NOT NULL REFERENCES form_links (code) ON DELETE CASCADE,

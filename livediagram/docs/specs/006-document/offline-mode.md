@@ -49,7 +49,7 @@ have cloud documents and offline documents side by side.
   Offline kept saving that document to the server (where it no longer is), and a tab
   that missed a Sync Document or purge kept "saving" into a record that was gone.
 - **A write to a record that is gone fails out loud.** When an edit (a tab, the name,
-  the order, the folder, the card types) finds its record missing while the tab still
+  the order, the folder) finds its record missing while the tab still
   lists the id, the id is forgotten (and the other tabs told) and the write fails with
   `OfflineDocumentMissingError`, logged `[offline-store] write-to-missing-record`: the
   autosave shows the failure instead of "Saved", and its retry routes to wherever the
@@ -193,7 +193,7 @@ Explorer lists follow after the paint.
   sent anywhere, so Home's Jump Back In places it among the reader's other
   documents by the same rule, with the **This Browser** pill on its thumbnail
   ([Explorer Home](../013-workspace/explorer-home.md#opens)).
-- **Inbox.** The Inbox reads offline documents in the browser and lists their open actions, Plan cards and comment
+- **Inbox.** The Inbox reads offline documents in the browser and lists their open actions and comment
   threads among the cloud ones, each row with the **This Browser** pill
   ([Inbox §2.6](../013-workspace/inbox.md#26-documents-in-this-browser)).
 
@@ -254,9 +254,6 @@ signed-in person alike:
 - A failed sync keeps the document This Browser, says why in a toast
   (`syncFailureMessage`) and leaves the button to try again; nothing is
   half-uploaded (see below).
-- **Share Form** on a Form tab offers the same prompt (`SyncDocumentPrompt`, which
-  the gate draws too) with a form's wording, and carries on to publishing the form
-  once the document is synced ([Forms](../030-forms/forms.md#publishing-and-the-form-link)).
 
 ### Syncing in place
 
@@ -273,9 +270,7 @@ reload:
 3. **The offline index announces the move** (`subscribeOfflineIds` in
    `lib/offline/offline-store.ts`, told on every create, sync and Take Offline).
    What reads offline-ness follows it: the header badge and every
-   `useIsOfflineDocument` (so the Share dialog swaps the gate for its options), the
-   Plan board's items (`usePlanItems` loads the server's store and revision) and
-   the sheets (`SheetStore.resync`, so confirmed revisions are the server's).
+   `useIsOfflineDocument` (so the Share dialog swaps the gate for its options).
 4. **The open tabs' images are re-pointed** at their gallery copies, in the editor
    and in its last-saved copy, so the next save does not write the data URIs back.
 5. **The room opens** (`documentServerStored` turns true) and the Explorer list
@@ -287,7 +282,7 @@ sync: the document there is not the one on screen, or several move at once.
 ### Save to server (Offline → Cloud)
 
 Action: **"Sync Document"** (one name everywhere: the Explorer row menu, the
-Share dialog gate, Share Form's, and the move prompt after signing in).
+Share dialog gate, and the move prompt after signing in).
 
 - Uploads the document's meta + tabs to the API ([API app](../015-api/api.md)), creating a normal
   cloud document owned by the current identity (signed-in account, or the guest
@@ -316,18 +311,11 @@ Share dialog gate, Share Form's, and the move prompt after signing in).
   keeps its ids.
 - **What went up is what is removed.** The upload takes seconds and the document
   stays editable meanwhile (here or in another tab). The local copy is removed only if
-  it still matches what was uploaded (its save time, card store revision and each
-  sheet's revision), checked and deleted in one transaction. If it changed, the cloud
+  it still matches what was uploaded (its save time), checked and deleted in one transaction. If it changed, the cloud
   copy is taken back (a raw delete declared as a move into this browser, so it skips
   the Trash) and the newer record is uploaded again, logged
   `[offline-sync] changed-during-upload attempt=<n>`; after three uploads that each
   went stale the sync stops, keeps the local copy and says the document kept changing.
-- **The cloud copy must hold every card and sheet.** A create that resolves to an
-  existing row (a retry after a half-finished sync) never re-seeds the card or sheet
-  stores, so before the local copy goes the sync reads the cloud copy's cards and
-  sheets back and compares their counts with the record's (skipped when the record
-  has none). Short, the cloud copy is taken back, the local copy kept, and the sync
-  fails, logged `[offline-sync] stores-short`.
 - **One conversion per document at a time.** A second Sync Document or Take Offline
   of a document while one runs (a second menu, or the Share gate) does nothing; the
   guard lives with the conversion, not with the menu that started it, which closes.

@@ -96,7 +96,6 @@ happen to share [User preferences](../007-editor/user-preferences.md)'s storage:
 notifyDocumentJoin?: boolean;     // someone first opens one of my shared documents
 notifyInviteResponse?: boolean;  // someone accepts/declines a team invite I (an admin) sent
 notifyMentions?: boolean;        // a teammate @-mentions me in a comment (docs/specs/012-collaboration/comment-mentions.md)
-notifyFormResponses?: boolean;   // someone fills in one of my forms (docs/specs/030-forms/forms.md)
 ```
 
 Both **default on** (undefined === true): the user asked to be told, so the

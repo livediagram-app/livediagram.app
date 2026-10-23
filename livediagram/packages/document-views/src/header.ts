@@ -44,9 +44,7 @@ export function headerSegments(facts: HeaderFacts): string {
   const segments = [
     `${plural(facts.elements, 'element', 'elements')}${shown.length ? `: ${shown.join(', ')}` : ''}`,
   ];
-  // A Form tab's content is its form, read with read_form (docs/specs/030-forms/forms.md "Agents").
-  if (facts.tab.kind === 'form') segments.push('kind=form (read_form)');
-  else if (facts.tab.kind !== 'diagram') segments.push(`kind=${facts.tab.kind}`);
+  if (facts.tab.kind !== 'diagram') segments.push(`kind=${facts.tab.kind}`);
   if (facts.mode) segments.push(`mode=${facts.mode}`);
   if (facts.finish) segments.push(`finish=${facts.finish}`);
   if (facts.hidden > 0) segments.push(`${facts.hidden} hidden`);

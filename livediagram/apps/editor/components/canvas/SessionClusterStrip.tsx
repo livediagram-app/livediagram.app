@@ -9,7 +9,7 @@ import { CLUSTER_CONTROL_REST } from '@/components/canvas/cluster-strip';
 import { ClusterPopoverSegment, ClusterStrip } from './ClusterPopoverButton';
 
 // The Session strip in the bottom-right cluster (docs/specs/012-collaboration/session-tools.md "The Session
-// strip"): Timer, Vote and Poll in one strip left of Layers, as Plan mode's buttons share one. Each
+// strip"): Timer, Vote and Poll in one strip left of Layers. Each
 // opens its tool above it, set-up while idle and the live tool while it runs. An editor always has
 // the three; a view-role visitor, who cannot start anything, gets only the ones running. The Timer
 // shows its clock while a timer runs, so the time reads without opening anything, and the Vote
@@ -20,9 +20,8 @@ export type SessionSegment = 'session-timer' | 'session-vote' | 'session-poll';
 
 // Which tools a mode's strip offers (docs/specs/012-collaboration/session-tools.md "The Session strip"):
 // all three in Workshop (docs/specs/012-collaboration/workshop-mode.md), and on an event-storming
-// board, a workshop that is always Diagram and cannot switch; Timer and Vote in Plan, where cards take
-// the dots, only while `planVoting` (usePlanVoting: a board on the tab made for voting, or a session running);
-// none in Diagram or Draw, even while a tool runs.
+// board, a workshop that is always Diagram and cannot switch; none in Diagram or Draw, even while a tool
+// runs.
 export type SessionStripTools = {
   timer: boolean;
   vote: boolean;
@@ -32,10 +31,8 @@ export type SessionStripTools = {
 export function sessionStripTools(
   mode: string | undefined,
   esBoard = false,
-  planVoting = true,
 ): SessionStripTools | null {
   if (mode === 'workshop' || esBoard) return { timer: true, vote: true, poll: true };
-  if (mode === 'plan') return planVoting ? { timer: true, vote: true, poll: false } : null;
   return null;
 }
 
@@ -101,9 +98,9 @@ export function SessionClusterStrip({
   pollRunning: boolean;
   // An editor: the idle tools are offered too, to start one.
   canStart: boolean;
-  // The mode has a Timer button (not in Pages).
+  // The mode has a Timer button.
   offersTimer?: boolean;
-  // The mode has a Poll button (not in Plan).
+  // The mode has a Poll button.
   offersPoll?: boolean;
   // Which of the strip's popovers is open, if any.
   open: SessionSegment | null;

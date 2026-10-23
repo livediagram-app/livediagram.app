@@ -1,7 +1,7 @@
 # Workshop mode
 
-**Workshop** is one of the four [editor modes](../007-editor/editor-modes.md), beside Diagram, Draw
-and Plan: how a general tab is worked on while a team runs a session on it, a
+**Workshop** is one of the three [editor modes](../007-editor/editor-modes.md), beside Diagram and
+Draw: how a general tab is worked on while a team runs a session on it, a
 retrospective, a town hall, a lean coffee, a workshop. It brings the tools that run a room into
 focus (timers, votes, polls, reveals, the Collaborate elements, stickers) and takes them out of
 Diagram, so Diagram is about diagrams.
@@ -12,8 +12,8 @@ Diagram was the first mode, so it collected everything: shapes and arrows, and b
 whole workshop kit (34 Collaborate tiles, a sticker catalogue, a Session strip of Timer, Vote and
 Poll in the bottom bar). Someone drawing an architecture diagram meets a fist-of-five gauge and
 confetti; someone running a retro has to know those tools hide in the last category of a diagram
-palette. A mode for running a session gives each audience its own surface, the way Plan did for
-boards.
+palette. A mode for running a session gives each audience its own surface, the way Draw does for
+sketching.
 
 ## Domain language
 
@@ -28,7 +28,7 @@ boards.
 - The interface says **Workshop**; specs and code say **Workshop mode** or `'workshop'`.
 - It was called **Workshop** until October 2026. "Workshop" was jargon for what a team calls running a
   workshop, and it blurred the mode with the **facilitator**, the person holding the baton, who is unrelated
-  to who is in the mode. "Workshop" names the activity everyone on the tab shares, as Plan and Draw do. The
+  to who is in the mode. "Workshop" names the activity everyone on the tab shares, as Diagram and Draw do. The
   facilitator keeps its name: a workshop has a facilitator. Every stored trace of the old name reads as
   Workshop ([Editor modes](../007-editor/editor-modes.md) "Naming in the interface").
 - "Session" and "Collaborate" are not the mode's name: both already name other things (the
@@ -138,7 +138,6 @@ stop to draw):
 | Mode     | Strip tools       |
 | -------- | ----------------- |
 | Workshop | Timer, Vote, Poll |
-| Plan     | Timer, Vote       |
 | Diagram  | none              |
 | Draw     | none (as today)   |
 
@@ -148,7 +147,7 @@ stop to draw):
 - **Diagram has no strip, running or not.** A timer, vote or poll started on a Diagram tab (by a
   session button on it, or before the tab was switched out of Workshop) runs as before and shows
   on its own canvas element, but its strip button and popover do not: watching turnout, ending a
-  poll or keeping its results is done from Workshop (or Plan for a timer or vote). This is the
+  poll or keeping its results is done from Workshop. This is the
   same rule Draw already follows, and the price of a Diagram mode with no session chrome.
 - A popover whose button leaves (a mode switch, the tool ending) closes, as today.
 
@@ -158,7 +157,7 @@ Session templates open in Workshop, as the Draw templates open in Draw
 ([Templates by mode](../007-editor/templates-by-mode.md)):
 
 - the Retrospectives family's `retrospective`, `start-stop-continue`, `mad-sad-glad`, `four-ls`
-  and `sailboat` (`team-retro` stays in Plan: it is a board of cards);
+  and `sailboat`;
 - `town-hall`, `lean-coffee`, `crazy-eights`, `meeting-agenda`, `workshop-board` and `brainstorm`;
 - the boards that ship a dot vote, `affinity-map`, `prioritization-matrix` and `risk-matrix`, since
   only a mode with a Session strip can watch, end and keep that vote;
@@ -217,8 +216,8 @@ as for a viewer, as every mode does.
 
 - **Workshop mode** gets its own help article (`/help/canvas/workshop-mode/`),
   registered per [Register a help article](../../instructions/register-a-help-article.md), and
-  **Editor Modes** covers four modes.
-- The Session tools article says the set-up lives in Workshop (and Plan).
+  **Editor Modes** covers three modes.
+- The Session tools article says the set-up lives in Workshop.
 - An optional [Workshop tour](workshop-tour.md) shows the mode the first time someone is in it.
 
 ## Existing tabs

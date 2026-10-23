@@ -91,6 +91,14 @@ describe('legacyHelpRedirect', () => {
       ['/help/canvas/pages-mode/', '/help/canvas/editor-modes/'],
       ['/help/canvas/pages-mode/pages-tour/', '/help/canvas/editor-modes/'],
       ['/help/canvas/pages-mode/wireframe-pages/', '/help/canvas/editor-modes/'],
+      // Plan mode left livediagram for liveplanner the same way.
+      ['/help/canvas/plan-mode/', '/help/canvas/editor-modes/'],
+      ['/help/canvas/plan-mode/boards/', '/help/canvas/editor-modes/'],
+      ['/help/canvas/plan-mode/sheet-functions', '/help/canvas/editor-modes'],
+      [
+        '/help/developers/working-with-documents/plan-sheets-images/',
+        '/help/developers/working-with-documents/images-and-copies/',
+      ],
       // Facilitate mode became Workshop mode (docs/specs/007-editor/editor-modes.md "Naming in the interface").
       ['/help/canvas/facilitate-mode/', '/help/canvas/workshop-mode/'],
       [

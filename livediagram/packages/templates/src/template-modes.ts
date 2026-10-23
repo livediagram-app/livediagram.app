@@ -15,39 +15,6 @@ const TEMPLATE_MODES: Partial<Record<TemplateKind, EditorMode>> = {
   'journey-doodle': 'draw',
   'pre-mortem': 'draw',
   'idea-garden': 'draw',
-  // Plan templates (docs/specs/026-plan/plan-templates.md).
-  'blank-plan': 'plan',
-  'blank-spreadsheet': 'plan',
-  kanban: 'plan',
-  'project-planner': 'plan',
-  'bug-triage': 'plan',
-  'team-retro': 'plan',
-  'weekly-planner': 'plan',
-  'content-calendar': 'plan',
-  'hiring-pipeline': 'plan',
-  okrs: 'plan',
-  'product-launch': 'plan',
-  'feedback-board': 'plan',
-  'budget-planner': 'plan',
-  timesheet: 'plan',
-  'contact-list': 'plan',
-  'task-tracker': 'plan',
-  invoice: 'plan',
-  'expense-report': 'plan',
-  'loan-calculator': 'plan',
-  'sales-pipeline': 'plan',
-  inventory: 'plan',
-  'guest-list': 'plan',
-  'grade-book': 'plan',
-  'habit-tracker': 'plan',
-  // A form is started on a Plan tab (form-templates.ts).
-  'blank-form': 'plan',
-  'bug-report-form': 'plan',
-  'feedback-form': 'plan',
-  'feature-request-form': 'plan',
-  'rsvp-form': 'plan',
-  'job-application-form': 'plan',
-  'contact-form': 'plan',
   // Session formats (docs/specs/012-collaboration/workshop-mode.md "Templates"): run with the room,
   // so they open where the Collaborate kit and the Session strip are.
   'blank-session': 'workshop',
@@ -99,21 +66,14 @@ export function templateEditorMode(kind: TemplateKind): EditorMode {
   return TEMPLATE_MODES[kind] ?? 'diagram';
 }
 
-/** Each mode's blank (docs/specs/007-editor/templates-by-mode.md "Five blanks"). */
+/** Each mode's blank (docs/specs/007-editor/templates-by-mode.md "The blanks"). */
 export const BLANK_TEMPLATE_FOR_MODE: Readonly<Record<EditorMode, TemplateKind>> = {
   diagram: 'blank',
   draw: 'whiteboard',
-  plan: 'blank-plan',
   workshop: 'blank-session',
 };
 
-// The blanks beyond each mode's own (docs/specs/007-editor/templates-by-mode.md "The blanks"): Blank Spreadsheet, an
-// empty Sheet, and Blank Form beside Blank Plan, in the order the landing page's Blank Slate lists them.
-export const EXTRA_BLANK_TEMPLATES: readonly TemplateKind[] = ['blank-spreadsheet', 'blank-form'];
-
-/** True for the blanks: each mode's, Blank Spreadsheet and Blank Form. Quick-picks on Popular, never on a category shelf or tile. */
+/** True for the blanks, one per mode. Quick-picks on Popular, never on a category shelf or tile. */
 export function isBlankTemplate(kind: TemplateKind): boolean {
-  return (
-    Object.values(BLANK_TEMPLATE_FOR_MODE).includes(kind) || EXTRA_BLANK_TEMPLATES.includes(kind)
-  );
+  return Object.values(BLANK_TEMPLATE_FOR_MODE).includes(kind);
 }

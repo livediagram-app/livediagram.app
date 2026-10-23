@@ -21,7 +21,6 @@ import {
   isUprightTitle,
   labelBodyInset,
   uprightTitleStrip,
-  voteKeyOf,
   type ShapeMarker,
   type TextSize,
   withTagAccent,
@@ -465,7 +464,7 @@ function BoxedElementViewImpl({
       // What the face's own parts are drawn in (docs/specs/008-canvas/finish.md "Faces"; app/face-finish.css).
       data-face-finish={faceFinish}
       onPointerDown={(e) => {
-        // A finger on a board's empty space pans the canvas instead (hooks/canvas/pan-through.ts).
+        // A finger on an element too big for the screen pans the canvas instead (hooks/canvas/pan-through.ts).
         if (isPanThrough(e)) return;
         longPress.onPointerDown(e);
         handleShapeDown(e);
@@ -836,7 +835,7 @@ function BoxedElementViewImpl({
       {/* Dot-vote tally pill + winner ring (docs/specs/012-collaboration/session-tools.md) — see
           ElementVoteOverlay. */}
       <ElementVoteOverlay
-        voteKey={voteKeyOf(element)}
+        voteKey={element.id}
         name={element.label ?? 'this element'}
         vote={vote}
         selfId={selfId}

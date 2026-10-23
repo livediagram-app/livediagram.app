@@ -36,9 +36,8 @@ describe('slideHeadline', () => {
     expect(slideHeadline(slide(['a', 'b']), tie)).toBe('Upper');
   });
 
-  it('is nothing for a slide without text, a card slide, or a missing tab', () => {
+  it('is nothing for a slide without text, or a missing tab', () => {
     expect(slideHeadline(slide([]), tab([]))).toBeNull();
-    expect(slideHeadline({ ...slide(['a']), itemId: 'i' }, tab([text('a', 0, 'X')]))).toBeNull();
     expect(slideHeadline(slide(['a']), undefined)).toBeNull();
   });
 
@@ -55,9 +54,6 @@ describe('presentedSlideName', () => {
   const t = tab([text('a', 0, 'Quarterly results', { textSize: 'xl' })]);
   it("prefers the slide's own name", () => {
     expect(presentedSlideName({ ...slide(['a']), name: ' Intro ' }, t, 0)).toBe('Intro');
-  });
-  it("then an item slide's card", () => {
-    expect(presentedSlideName(slide([]), t, 0, 'Fix login')).toBe('Fix login');
   });
   it('then the headline on it', () => {
     expect(presentedSlideName(slide(['a']), t, 0)).toBe('Quarterly results');

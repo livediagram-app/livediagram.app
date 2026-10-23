@@ -1,4 +1,4 @@
--- Card types start empty (docs/specs/026-plan/item-types.md "The type catalogue"): a document whose card types were
+-- Card types start empty (Plan, now in liveplanner "The type catalogue"): a document whose card types were
 -- never chosen (`item_types` NULL) now reads as none, and the five default types arrive only through Add Default
 -- Types. A document made before that with cards kept the five default types its cards were made with, so it is given
 -- them here, stored, exactly as the code defines them (defaultCatalogue, validated). The revision is raised so an

@@ -18,7 +18,7 @@ describe('GET /api/templates', () => {
     expect(res.status).toBe(200);
     expect(res.headers.get('Cache-Control')).toBe(CATALOGUE_CACHE_CONTROL);
     const body = (await res.json()) as { categories: unknown[]; templates: { kind: string }[] };
-    expect(body.templates.some((t) => t.kind === 'kanban')).toBe(true);
+    expect(body.templates.some((t) => t.kind === 'swot')).toBe(true);
     expect(logs).toEqual(['[catalogues] templates 200']);
   });
 
@@ -36,9 +36,9 @@ describe('GET /api/templates', () => {
     expect(res.status).toBe(404);
     expect(await res.json()).toMatchObject({
       error: 'unknown_template',
-      kinds: expect.arrayContaining(['kanban']),
+      kinds: expect.arrayContaining(['swot']),
     });
-    expect(get('/api/templates/kanban/x').status).toBe(404);
+    expect(get('/api/templates/swot/x').status).toBe(404);
   });
 });
 

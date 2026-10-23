@@ -102,7 +102,7 @@ describe('trashEmptyDocuments', () => {
     expect(state(db.sql, 'blank').trash_reason).toBe('empty');
   });
 
-  it('keeps a document whose only content is a form, which is not an element', async () => {
+  it('keeps a document whose only content is a former Form tab\'s form, which is not an element', async () => {
     const db = sqliteD1();
     liveDoc(db.sql, 'survey', { savedAt: STALE - DAY });
     liveDoc(db.sql, 'blank', { savedAt: STALE - DAY });

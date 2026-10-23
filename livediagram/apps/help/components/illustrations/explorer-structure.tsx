@@ -981,10 +981,8 @@ export function UseAsDefaultScene() {
   const kinds = [
     'Diagrams',
     'Whiteboards',
-    'Plan boards',
     'Event Storming boards',
     'Retrospectives',
-    'Kanban boards',
   ];
   const ticked = new Set(['Whiteboards', 'Retrospectives']);
   const fx = 180;

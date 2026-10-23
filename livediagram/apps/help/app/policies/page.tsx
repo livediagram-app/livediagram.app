@@ -7,7 +7,7 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata: Metadata = helpMetadata({
   title: 'Policies',
   description:
-    'The legal terms for the hosted livediagram service: the Terms of Service, the full Privacy Policy and how to report a vulnerability.',
+    'How to report a vulnerability. The terms and privacy policy are liveworkspace\'s, on liveworkspace.app.',
   path: '/help/policies/',
 });
 
@@ -17,7 +17,7 @@ export default function PoliciesPage() {
     <BrowsePage
       listing={{ appPath: '/policies/', articles: articles }}
       title="Policies"
-      lede="The terms that govern the hosted service, and how your data is handled. They cover only livediagram.app; a copy you self-host is yours to run."
+      lede="How to report a security issue privately. The terms and privacy policy for livediagram.app are liveworkspace's, at liveworkspace.app/terms and liveworkspace.app/privacy; a copy you self-host is yours to run."
     >
       {articles.map((article) => (
         <ArticleCard key={article.slug} article={article} />

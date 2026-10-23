@@ -147,7 +147,7 @@ export function SideBySideDrag() {
       </Label>
       <Footer
         tabs={[
-          { label: 'Plan', x: 10, w: 48, active: true },
+          { label: 'Goals', x: 10, w: 48, active: true },
           { label: 'Timeline', x: 64, w: 60 },
         ]}
       />
@@ -237,7 +237,7 @@ export function SideBySideOpen() {
       <Header title="Launch plan" />
       <Footer
         tabs={[
-          { label: 'Plan', x: 10, w: 48, active: true },
+          { label: 'Goals', x: 10, w: 48, active: true },
           { label: 'Timeline', x: 64, w: 60, beside: true },
           { label: 'Budget', x: 130, w: 54 },
         ]}

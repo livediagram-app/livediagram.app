@@ -92,7 +92,7 @@ export async function readDocument(
     args.tabId === undefined ? document.tabs[0] : document.tabs.find((t) => t.id === args.tabId);
   const tabId = args.tabId ?? summary?.id;
   if (tabId === undefined) return errorResult('That document has no tabs.');
-  // Every tab, in order, so a caller can read the others (a Plan template's Board, Requests and Flow).
+  // Every tab, in order, so a caller can read the others.
   const tabs = [...document.tabs]
     .sort((a, b) => (a.orderIndex ?? 0) - (b.orderIndex ?? 0))
     .map((t) => ({ id: t.id, name: t.name }));

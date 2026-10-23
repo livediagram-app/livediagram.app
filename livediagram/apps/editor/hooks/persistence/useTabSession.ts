@@ -230,7 +230,7 @@ export function useTabSession(deps: TabSessionDeps) {
     if (vote.hideCursors || vote.hideCounts) track('Tab', 'Started', 'PrivateVote');
   };
 
-  // Whether it ended an open vote, so the caller tallying its Plan cards does so only for a real end.
+  // Whether it ended an open vote, so the caller acts only on a real end.
   const endVote = (): boolean => {
     if (runBlocked) return false;
     // Host-only (docs/specs/012-collaboration/session-tools.md). Ending is destructive-ish — you can restart a

@@ -23,20 +23,6 @@ export function MarkerIcon({ size = 16, ...rest }: IconProps) {
 // Two steps joined by a connector.
 export const FlowchartIcon = lucideGlyph(lucideWorkflow, 16);
 
-// Plan mode's mark (docs/specs/026-plan/plan-mode.md): a board of three columns, the middle one
-// holding a raised card, on the 24-unit grid.
-export function PlanIcon({ size = 16, ...rest }: IconProps) {
-  return (
-    <Glyph size={size} units={24} {...rest}>
-      <rect x="2.5" y="4" width="19" height="16" rx="2" />
-      <path d="M8.83 4V20M15.17 4V20" />
-      <rect x="4.5" y="7" width="2.5" height="3" rx="0.6" />
-      <rect x="10.2" y="6" width="3.6" height="5" rx="0.8" fill="currentColor" />
-      <rect x="17" y="7" width="2.5" height="3" rx="0.6" />
-    </Glyph>
-  );
-}
-
 // Workshop mode's mark (docs/specs/012-collaboration/workshop-mode.md): a flipchart on an
 // easel, its pad holding two lines of writing, on the 24-unit grid.
 export function FlipchartIcon({ size = 16, ...rest }: IconProps) {
@@ -50,25 +36,11 @@ export function FlipchartIcon({ size = 16, ...rest }: IconProps) {
   );
 }
 
-// Plan mode's Cards category (docs/specs/026-plan/plan-mode.md "The palette"): two item cards, one
-// behind the other, each with its type stripe, on the 24-unit grid.
-export function PlanCardsIcon({ size = 16, ...rest }: IconProps) {
-  return (
-    <Glyph size={size} units={24} {...rest}>
-      <path d="M7 5.5V4.5a1.5 1.5 0 0 1 1.5-1.5h11A1.5 1.5 0 0 1 21 4.5v9a1.5 1.5 0 0 1-1.5 1.5H18" />
-      <rect x="3" y="8" width="15" height="12" rx="1.5" />
-      <path d="M6 8v12" />
-      <path d="M9 12h6M9 15.5h4" />
-    </Glyph>
-  );
-}
-
 // Each editor mode's mark (docs/specs/007-editor/editor-modes.md "Each mode's mark"), keyed by the
 // mode's id: the same glyph on the mode switch, Opens in, the tab pill, the template mode filter
 // and the marketing site's mode pictures.
 export const EDITOR_MODE_ICONS: Readonly<Record<EditorMode, ComponentType<IconProps>>> = {
   diagram: FlowchartIcon,
   draw: MarkerIcon,
-  plan: PlanIcon,
   workshop: FlipchartIcon,
 };

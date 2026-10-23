@@ -27,7 +27,7 @@ Scope, by file:
 | liveworkspace/apps/site/app/telemetry/livediagram/catalogue/content.ts  | `IMAGE_SEARCHES`, `IMAGE_SEARCH_PICKS` in Element Editing               |
 | liveworkspace/apps/site/app/telemetry/livediagram/event-explanations.ts | Sentences for the two events                                            |
 | `apps/help/app/palette/tools/images/page.mdx`                           | "Searching for an image" section                                        |
-| `apps/help/app/policies/privacy-policy/page.mdx`                        | Openverse named under Service providers                                 |
+| liveworkspace.app/privacy (the shared policy, in the liveworkspace site) | Openverse named under Service providers                                 |
 
 ## Domain and naming
 

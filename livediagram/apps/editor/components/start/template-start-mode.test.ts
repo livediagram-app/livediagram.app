@@ -18,9 +18,8 @@ describe('templateStartMode', () => {
     expect(templateStartMode({ ...base, mode: 'workshop' })).toBe('workshop');
   });
 
-  it('offers Start Drawing with the pen in hand, and none in Plan (Start Planning is its own)', () => {
+  it('offers Start Drawing with the pen in hand', () => {
     expect(templateStartMode({ ...base, mode: 'draw', drawToolArmed: true })).toBe('draw');
-    expect(templateStartMode({ ...base, mode: 'plan' })).toBeNull();
   });
 
   it('offers none once the tab has content', () => {

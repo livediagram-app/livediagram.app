@@ -6,7 +6,6 @@ import { tileCaption } from './tile-caption';
 import { IconButton } from '@/components/palette/palette-controls';
 import type { PaletteTileDef } from './palette-tile-defs';
 import { tileDragStart } from './palette-tile-drag';
-import { usePlanCardTileDisabled } from '@/hooks/plan/card-types-taken';
 import type { WhiteboardPenId } from '@/lib/whiteboard-prefs';
 import { MarkerPaletteTile } from './MarkerPaletteTile';
 
@@ -71,7 +70,6 @@ export function tileHandler(
           reaction: a.reaction,
           mode: a.mode,
           estimateScale: a.estimateScale,
-          plan: a.plan,
           variant: a.variant,
           name: tileCaption(def.label, def.caption),
         });
@@ -138,7 +136,6 @@ export function tileActive(
         pendingDraw.reaction === a.reaction &&
         pendingDraw.mode === a.mode &&
         pendingDraw.estimateScale === a.estimateScale &&
-        pendingDraw.plan === a.plan &&
         pendingDraw.variant === a.variant
       );
     case 'component':
@@ -244,9 +241,8 @@ function TileButton({
   // Shape tiles drag through IconButton's dragKind (which also picks their theme tint); every other
   // placeable tile (sticky, icons, sticker) carries the shared payload from tileDragStart.
   const otherDrag = a.type === 'shape' ? undefined : tileDragStart(a);
-  // Greyed out with a reason: the def's own, or a card tile no board on the tab takes.
-  const cardRefusal = usePlanCardTileDisabled(a);
-  const disabledReason = (def.disabled ?? cardRefusal)?.reason;
+  // Greyed out with a reason: the def's own.
+  const disabledReason = def.disabled?.reason;
   return (
     <IconButton
       disabledReason={disabledReason}
@@ -257,7 +253,7 @@ function TileButton({
       dragKind={a.type === 'shape' ? a.kind : undefined}
       dragChoice={
         a.type === 'shape'
-          ? (a.session ?? a.reaction ?? a.mode ?? a.estimateScale ?? a.plan ?? a.variant)
+          ? (a.session ?? a.reaction ?? a.mode ?? a.estimateScale ?? a.variant)
           : undefined
       }
       draggable={otherDrag !== undefined || undefined}
