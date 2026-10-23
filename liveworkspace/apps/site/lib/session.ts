@@ -2,6 +2,7 @@
 
 import { useSyncExternalStore } from 'react';
 import { call, displayName } from './accounts';
+import { pageApp } from './explorer/page-app';
 
 // Who is signed in to liveworkspace.app, asked of the accounts API once per page however many parts
 // of the page want to know (the header's account control, the home page's hero). The site is
@@ -20,6 +21,9 @@ function set(next: Session) {
 function ask() {
   if (asked) return;
   asked = true;
+  // The Explorer on an app's own address: liveworkspace.app's session isn't this page's to read, the app's is
+  // (components/explorer/AppAccountControl.tsx). The sign-in pages served there read theirs through lib/accounts.ts.
+  if (pageApp() && /^\/explorer(?:[/.]|$)/.test(window.location.pathname)) return;
   void call('/get-session').then((result) => {
     const user = result.ok ? result.data.user : null;
     set(

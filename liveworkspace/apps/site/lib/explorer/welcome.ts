@@ -5,6 +5,7 @@
 
 import type { WelcomeManifest, WelcomeStart } from '@liveworkspace/explorer';
 import { siteOfApp, type AppName } from '@liveworkspace/sites';
+import { appOrigin } from './page-app';
 
 /** A manifest as the templates package writes it: addresses relative to the app. */
 export type WelcomeFile = {
@@ -28,7 +29,8 @@ const FILES: Record<AppName, () => Promise<{ default: unknown }>> = {
 /** A file's addresses, made the app's own. */
 export function absoluteWelcome(app: AppName, file: WelcomeFile): WelcomeManifest {
   const site = siteOfApp(app);
-  const at = (href: string) => (/^https?:/.test(href) ? href : `${site.url}${href}`);
+  const origin = appOrigin(app);
+  const at = (href: string) => (/^https?:/.test(href) ? href : `${origin}${href}`);
   const start = (s: WelcomeStart): WelcomeStart => ({ ...s, href: at(s.href) });
   return {
     name: site.name,

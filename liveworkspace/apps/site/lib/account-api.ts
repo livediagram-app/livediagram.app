@@ -1,6 +1,8 @@
 // The account pages' side of the account API (liveworkspace/apps/accounts src/account-api.ts), on
 // this same origin under /api/account: the signed-in person's teams and API tokens.
 
+import { pageApp } from './explorer/page-app';
+
 export const ACCOUNT_API = '/api/account';
 
 export type TeamRole = 'admin' | 'member';
@@ -95,7 +97,9 @@ export async function accountApi<T>(
   body?: unknown,
 ): Promise<ApiResult<T>> {
   try {
-    const response = await fetch(ACCOUNT_API + path, {
+    // On an app's own address (the Explorer, served there) through the app's router, with the page's token.
+    const send = pageApp() ? (await import('./explorer/token')).accountFetch : fetch;
+    const response = await send(ACCOUNT_API + path, {
       method,
       headers: { accept: 'application/json', 'content-type': 'application/json' },
       body: body === undefined ? undefined : JSON.stringify(body),

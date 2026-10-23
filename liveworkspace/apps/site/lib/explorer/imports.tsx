@@ -6,7 +6,8 @@
 
 import type { ReactNode } from 'react';
 import type { ImportHost, ImportSource } from '@liveworkspace/explorer';
-import { APP_ITEMS, siteOfApp, type AppName } from '@liveworkspace/sites';
+import { APP_ITEMS, type AppName } from '@liveworkspace/sites';
+import { appOrigin } from './page-app';
 import {
   DrawioSourceIcon,
   ExcalidrawSourceIcon,
@@ -24,7 +25,7 @@ export function importHref(
   if (!path) return null;
   const params = new URLSearchParams({ source, what });
   if (folderId && what === 'items') params.set('folder', folderId);
-  return `${siteOfApp(app).url}${path}?${params}`;
+  return `${appOrigin(app)}${path}?${params}`;
 }
 
 const hosts = new Map<AppName, ImportHost | null>();

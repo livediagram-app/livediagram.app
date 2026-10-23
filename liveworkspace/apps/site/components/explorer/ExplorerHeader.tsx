@@ -6,16 +6,25 @@
 // header has them: the same height, border and frosted bar. The Explorer runs the page's full width, so the rail the
 // site's other pages keep Appearance on (SiteRail) would sit over it; its Light / Dark / System control is here,
 // beside the account, at every width.
+//
+// On an app's own address (lib/explorer/page-app.ts) the page is the app's: the liveworkspace logo leads to
+// liveworkspace.app, the app's logo to the app's home on this address, and the account control is the app's session.
 
-import type { ReactNode } from 'react';
+import { useSyncExternalStore, type ReactNode } from 'react';
 import { SiteAppearanceToggle, SiteSwitcher } from '@livediagram/ui';
 import { siteOfApp, type AppName } from '@liveworkspace/sites';
 import { AccountControl } from '@/components/AccountControl';
+import { AppAccountControl } from '@/components/explorer/AppAccountControl';
+import { pageApp, workspaceOrigin } from '@/lib/explorer/page-app';
 import { Wordmark } from '@/components/Wordmark';
 import { AppLogo } from '@/components/landing/AppLogo';
 import { listedApps } from '@/lib/apps';
 
+const noChange = () => () => {};
+
 export function ExplorerHeader({ app, search }: { app: AppName | null; search: ReactNode }) {
+  // Null while prerendered and on liveworkspace.app.
+  const host = useSyncExternalStore(noChange, pageApp, () => null);
   const listed = app ? listedApps().find((a) => a.id === siteOfApp(app).id) : undefined;
   return (
     <header
@@ -25,7 +34,11 @@ export function ExplorerHeader({ app, search }: { app: AppName | null; search: R
       <div className="mx-auto flex h-full max-w-7xl items-center gap-4 px-4 sm:px-6">
         <div className="flex min-w-0 shrink-0 items-center gap-3">
           <SiteSwitcher current="liveworkspace.app">
-            <a href="/" aria-label="liveworkspace home" className="relative touch-target-y">
+            <a
+              href={host ? `${workspaceOrigin()}/` : '/'}
+              aria-label="liveworkspace home"
+              className="relative touch-target-y"
+            >
               <Wordmark className="max-sm:[&_[data-logotype]]:hidden" />
             </a>
           </SiteSwitcher>
@@ -33,7 +46,7 @@ export function ExplorerHeader({ app, search }: { app: AppName | null; search: R
             <>
               <span aria-hidden className="h-6 w-px rotate-12 bg-slate-300 dark:bg-slate-700" />
               <a
-                href={listed.url}
+                href={host === app ? '/' : listed.url}
                 data-explorer-from={app}
                 aria-label={`Back to ${listed.name}`}
                 className="relative touch-target-y inline-flex items-center rounded-md transition-opacity hover:opacity-80 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-500"
@@ -48,7 +61,7 @@ export function ExplorerHeader({ app, search }: { app: AppName | null; search: R
         </div>
         <div className="flex shrink-0 items-center gap-1">
           <SiteAppearanceToggle />
-          <AccountControl />
+          {host ? <AppAccountControl /> : <AccountControl />}
         </div>
       </div>
     </header>

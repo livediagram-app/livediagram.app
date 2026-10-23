@@ -5,8 +5,9 @@
 
 import { appLibraryHosts, type AppLibraryHosts } from '@liveworkspace/explorer';
 import type { AppName } from '@liveworkspace/sites';
+import { appOrigin } from './page-app';
 import { workspaceToken } from './token';
 
 /** The app's Library hosts (stable per app), or none for a page it keeps none of. */
 export const libraryHosts = (app: AppName): AppLibraryHosts =>
-  appLibraryHosts(app, { token: workspaceToken });
+  appLibraryHosts(app, { token: workspaceToken, origin: appOrigin(app) });

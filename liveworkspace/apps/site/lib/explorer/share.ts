@@ -9,6 +9,7 @@
 import type { ShareHandOver, ShareHelpHref, ShareHost } from '@liveworkspace/explorer';
 import type { Item } from '@liveworkspace/index-client';
 import { APP_ITEMS, isAppName, siteOfApp, type AppName } from '@liveworkspace/sites';
+import { appOrigin } from './page-app';
 import { trackShare } from './telemetry';
 import { workspaceToken } from './token';
 
@@ -49,7 +50,7 @@ export async function loadTabsOf(
     const headers = new Headers();
     if (token) headers.set('Authorization', `Bearer ${token}`);
     if (item.sharedVia) headers.set('X-Share-Code', item.sharedVia);
-    const res = await doFetch(`${siteOfApp(item.app).url}${fill(tabsPath, { id: item.id })}`, {
+    const res = await doFetch(`${appOrigin(item.app)}${fill(tabsPath, { id: item.id })}`, {
       headers,
       credentials: 'omit',
     });

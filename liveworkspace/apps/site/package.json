@@ -27,6 +27,7 @@
     "@liveplanner/icons": "workspace:*",
     "@liveplanner/items": "workspace:*",
     "@liveplanner/ui": "workspace:*",
+    "@liveworkspace/auth-client": "workspace:*",
     "@liveworkspace/explorer": "workspace:*",
     "@liveworkspace/index-client": "workspace:*",
     "@liveworkspace/settings": "workspace:*",

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Suspense, type ReactNode } from 'react';
 import { ExplorerShell } from '@/components/explorer/ExplorerShell';
+import { explorerSilentSignInScript } from '@/lib/explorer/silent';
 import './explorer.css';
 
 // The Explorer (liveworkspace/docs/site.md "The Explorer"): every view is its own route page under /explorer, and
@@ -13,9 +14,13 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
+// On an app's own address, the app's silent sign-in, before anything renders (lib/explorer/silent.ts).
+const SILENT_SIGN_IN = explorerSilentSignInScript();
+
 export default function ExplorerLayout({ children }: { children: ReactNode }) {
   return (
     <Suspense fallback={null}>
+      {SILENT_SIGN_IN ? <script dangerouslySetInnerHTML={{ __html: SILENT_SIGN_IN }} /> : null}
       <ExplorerShell />
       {children}
     </Suspense>

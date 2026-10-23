@@ -8,6 +8,11 @@
 // the colours and logo of the app the person came from (`?from=`, the referrer, or the last app used here), opens
 // filtered to that app's items with All Apps one click away, and sends every item, New and template back to its own
 // app (lib/explorer/host.ts).
+//
+// The same page is also served under each app's own address (`liveplanner.app/explorer/…`, through the app's router;
+// lib/explorer/page-app.ts). There it is that app's Explorer: it asks as the app's session, shows the app's items kept
+// only in this browser (This Browser), keeps its links on the app's address and sends liveworkspace's own pages
+// (account, teams, settings) to liveworkspace.app.
 
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
@@ -31,13 +36,22 @@ import {
   type NavigateOptions,
   type Placement,
   type SidebarLink,
+  type ThisBrowserHost,
+  type ThisBrowserItem,
   type WelcomeManifest,
   type WelcomeOptions,
 } from '@liveworkspace/explorer';
 import { createIndexClient } from '@liveworkspace/index-client';
+import {
+  readThisBrowser,
+  subscribeThisBrowser,
+  thisBrowserKey,
+} from '@liveworkspace/explorer/this-browser';
 import { APP_ITEMS, siteOfApp, type AppName } from '@liveworkspace/sites';
 import { signInHref } from '@/lib/accounts';
 import { useSession } from '@/lib/session';
+import { pageApp, workspaceHref } from '@/lib/explorer/page-app';
+import { appSignInHref } from '@/lib/explorer/app-session';
 import {
   arrival,
   arrivalNotice,
@@ -56,6 +70,7 @@ import {
   type Arrival,
 } from '@/lib/explorer/host';
 import {
+  accountFetch,
   resetWorkspaceIdentity,
   teamsOfToken,
   workspaceIdentity,
@@ -92,8 +107,9 @@ const TITLE_PARAM = 'title';
 
 const client = createIndexClient({ getToken: workspaceToken });
 // The person's own accounts routes on this origin: people's names (owners, who did what, one cache; a guest's too),
-// and, signed in, a team's members and count and the invitations waiting.
-const accounts = createExplorerAccounts();
+// and, signed in, a team's members and count and the invitations waiting. On an app's address, through its router
+// with the page's token (accountFetch).
+const accounts = createExplorerAccounts({ fetch: accountFetch });
 
 const NO_ARRIVAL: Arrival = { app: null, via: null };
 
@@ -117,17 +133,26 @@ type Landing =
       strip: boolean;
     };
 
+// A successor on liveworkspace.app, in full from an app's address; the Explorer's own stay where they are.
+const onWorkspace = (target: string) =>
+  target.startsWith('/explorer') ? target : workspaceHref(target);
+
 function readLanding(): Landing {
   const search = window.location.search;
-  const found = arrival(search, document.referrer, readLastApp());
-  // A retired address gives way to its successor.
+  // On an app's address the page is that app's, whatever the address says.
+  const host = pageApp();
+  const found: Arrival = host
+    ? { app: host, via: 'host' }
+    : arrival(search, document.referrer, readLastApp());
+  // A retired address gives way to its successor. This Browser is a view of its own on the app's address.
   const retired = retiredView(window.location.pathname);
-  if (retired === 'offline')
+  if (retired === 'offline' && !host)
     return { leave: offlineHref(found.app ?? FALLBACK_APP) ?? '/explorer' };
-  if (retired) return { leave: retiredTarget(retired, search) };
+  if (retired && retired !== 'offline')
+    return { leave: onWorkspace(retiredTarget(retired, search)) };
   // The apps' Settings deep link (every notification email's unsubscribe link carries one).
   const settings = settingsTarget(search, found.app);
-  if (settings) return { leave: settings };
+  if (settings) return { leave: onWorkspace(settings) };
   const params = new URLSearchParams(search);
   const trashedId = params.get(TRASHED_PARAM);
   return {
@@ -144,11 +169,27 @@ let landing: Landing | null = null;
 const landingNow = () => (landing ??= readLanding());
 const noSubscribe = () => () => {};
 
+// This Browser's list as the app last wrote it, read again only when it changes (one stable array per change).
+const NO_LOCAL: readonly ThisBrowserItem[] = [];
+let localRead: { raw: string | null; items: readonly ThisBrowserItem[] } | null = null;
+function localItems(app: AppName): readonly ThisBrowserItem[] {
+  let raw: string | null = null;
+  try {
+    raw = localStorage.getItem(thisBrowserKey(app));
+  } catch {
+    return NO_LOCAL;
+  }
+  if (localRead?.raw !== raw) localRead = { raw, items: raw ? readThisBrowser(app) : NO_LOCAL };
+  return localRead.items;
+}
+
 export function ExplorerShell() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const router = useRouter();
   const session = useSession();
+  // The app whose address this is, or null on liveworkspace.app (and while prerendered).
+  const host = useSyncExternalStore(noSubscribe, pageApp, () => null);
 
   // Decided once per visit: later moves inside the Explorer carry no `?from=`. Null while prerendered.
   const landed = useSyncExternalStore(noSubscribe, landingNow, () => null);
@@ -238,6 +279,10 @@ export function ExplorerShell() {
     void loadWelcome(app).then((manifest) => manifest && setLoaded({ app, manifest }));
   }, [app]);
   const signedIn = identity?.kind === 'account';
+  // Signing in comes back here: through the app's own sign-in on its address.
+  const explorerSignInHref = host
+    ? appSignInHref(pathname || '/explorer')
+    : signInHref(pathname || '/explorer');
   // New Team in the Move dialog: made on liveworkspace, then the renewed token lists it among the teams.
   const onCreateTeam = useCallback(async (name: string) => {
     const made = await makeTeam(name);
@@ -250,11 +295,11 @@ export function ExplorerShell() {
       manifest: loaded?.app === app ? loaded.manifest : null,
       onFirstRun,
       signedIn,
-      signInHref: signInHref(pathname || '/explorer'),
+      signInHref: explorerSignInHref,
       onSelected: trackWelcome,
       onOpened: trackWelcomeOpened,
     }),
-    [loaded, app, onFirstRun, signedIn, pathname],
+    [loaded, app, onFirstRun, signedIn, explorerSignInHref],
   );
   // Home's hero art: the app's pictures, loaded once Home shows its hero with room for them.
   const [art, setArt] = useState<{ app: AppName; art: HeroArtManifest } | null>(null);
@@ -281,8 +326,31 @@ export function ExplorerShell() {
     [app],
   );
 
-  // This Browser: what the app keeps only in this browser, in its own offline view.
+  // This Browser on the app's own address: the app's list, read here and heard as it changes.
+  const subscribeLocal = useCallback(
+    (onChange: () => void) => (host ? subscribeThisBrowser(host, onChange) : () => {}),
+    [host],
+  );
+  const local = useSyncExternalStore(
+    subscribeLocal,
+    () => (host ? localItems(host) : NO_LOCAL),
+    () => NO_LOCAL,
+  );
+  const thisBrowser: ThisBrowserHost | null = useMemo(
+    () =>
+      host
+        ? {
+            items: local as ThisBrowserItem[],
+            itemHref: (item) => `${APP_ITEMS[host].itemPath}${encodeURIComponent(item.id)}`,
+            helpHref: '/help/privacy-and-security/offline-mode/',
+          }
+        : null,
+    [host, local],
+  );
+
+  // This Browser on liveworkspace.app, which can't read it: a link to the app's own offline view.
   const sidebarLinks: SidebarLink[] = useMemo(() => {
+    if (host) return [];
     const href = offlineHref(app);
     return href
       ? [
@@ -295,7 +363,7 @@ export function ExplorerShell() {
           },
         ]
       : [];
-  }, [app]);
+  }, [app, host]);
 
   // Cmd/Ctrl+K: to the search field.
   useEffect(() => {
@@ -348,7 +416,7 @@ export function ExplorerShell() {
           viewerId={identity.sub}
           shareUrl={shareUrl}
           share={share}
-          manageTeamsUrl="/account/teams"
+          manageTeamsUrl={host ? workspaceHref('/account/teams') : '/account/teams'}
           filter={shownFilter}
           onFilterChange={setFilter}
           header={header}
@@ -357,18 +425,19 @@ export function ExplorerShell() {
           welcome={welcome}
           heroArt={heroArt}
           sidebarLinks={sidebarLinks}
+          thisBrowser={thisBrowser}
           allLabel="All Apps"
           // A guest is named people too: accounts answers this browser's guest for names alone.
           accounts={accounts}
           signedIn={signedIn}
-          signInHref={signInHref(pathname || '/explorer')}
+          signInHref={explorerSignInHref}
           signInBanner={signInBanner}
           arrivalNotice={notice}
           inbox={inbox}
           gallery={library.gallery}
           shapeLibraries={library.shapeLibraries}
           imports={imports}
-          {...(signedIn ? { onCreateTeam } : {})}
+          {...(signedIn && !host ? { onCreateTeam } : {})}
           heroHidden={settings.heroHidden}
           onHideHero={settings.onHideHero}
           onTimeline={trackTimeline}

@@ -30,14 +30,18 @@ import type {
   WelcomeTelemetryType,
 } from '@liveworkspace/explorer';
 import { APP_ITEMS, isAppName, type AppName } from '@liveworkspace/sites';
+import { pageApp, workspaceOrigin } from './page-app';
 
 // Next inlines `process.env.NEXT_PUBLIC_*` at build time. On in a production build unless turned off; in
 // development only when asked for (the telemetry Worker may not be running).
 const ENABLED =
   process.env.NEXT_PUBLIC_TELEMETRY_ENABLED === 'true' ||
   (process.env.NODE_ENV === 'production' && process.env.NEXT_PUBLIC_TELEMETRY_ENABLED !== 'false');
-// The service is on this origin (/api/telemetry; the dev server proxies it).
-const SERVICE_URL = process.env.NEXT_PUBLIC_TELEMETRY_URL || '/api/telemetry';
+// The service is on this origin (/api/telemetry; the dev server proxies it). On an app's own address (page-app.ts)
+// that path is the app's, so events go to liveworkspace.app's in full, which takes every app's.
+const SERVICE_URL =
+  process.env.NEXT_PUBLIC_TELEMETRY_URL ||
+  (pageApp() ? `${workspaceOrigin()}/api/telemetry` : '/api/telemetry');
 
 type Consent = 'unknown' | 'yes' | 'no';
 
@@ -57,8 +61,14 @@ export function senderOfApp(app: AppName): TelemetrySender {
   return APP_ITEMS[app].site;
 }
 
-/** Who the page's events count for: the app it is filtered to, or liveworkspace.app for All Apps. */
+/** Who the page's events count for: the app it is filtered to, or liveworkspace.app for All Apps (on liveworkspace.app). */
 export function setExplorerSender(app: AppName, filter: 'app' | 'all') {
+  // On an app's own address every event is that app's: the service takes a page's events only for its own origin.
+  const host = pageApp();
+  if (host) {
+    sender = senderOfApp(host);
+    return;
+  }
   sender = filter === 'app' ? senderOfApp(app) : PLATFORM_TELEMETRY_APP;
 }
 

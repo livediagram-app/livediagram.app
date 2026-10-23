@@ -23,6 +23,7 @@ import {
   siteOfApp,
   type AppName,
 } from '@liveworkspace/sites';
+import { appOrigin } from './page-app';
 
 // ---------- Which app the person came from -------------------------------------------------------------------
 
@@ -49,8 +50,8 @@ export function appOfUrl(url: string | null | undefined): AppName | null {
 export type Arrival = {
   // The app whose logo the header shows, whose items the lists open filtered to, and whose kind New makes.
   app: AppName | null;
-  // How it was decided: `?from=`, the referrer, or the last app this browser used.
-  via: 'from' | 'referrer' | 'last' | null;
+  // How it was decided: `?from=`, the referrer, or the last app this browser used; `host` on an app's own address.
+  via: 'from' | 'referrer' | 'last' | 'host' | null;
 };
 
 /** `?from=<app>` (set by the apps' links and redirects), then the referrer, then the last app this browser used. */
@@ -81,7 +82,11 @@ export function rememberApp(app: AppName) {
 
 // ---------- Every app's addresses ----------------------------------------------------------------------------
 
-const appUrl = (app: App) => siteOfApp(app).url;
+// Where the person works on an item: on an app's own address, that app's own origin (the page's), so its links stay
+// there; anywhere else, the app's site.
+const appUrl = (app: App) => appOrigin(app);
+// What is handed to other people (a share link): always the app's own site.
+const publicUrl = (app: App) => siteOfApp(app).url;
 
 /** An item, in its own app: its share code when the person reaches it through a link, and the place an Inbox row
  *  points at (`#t=<tab>&el=<element>&open=…`, or a card's `&item=`: the editors' deep link, `placeHash`). */
@@ -93,7 +98,7 @@ export const itemHref: ItemHref = (item, at) => {
 
 /** A share link opens in the item's app, at the address whose page head names the item. */
 export const shareUrl: ShareUrl = (link, item) =>
-  `${appUrl(item.app)}${APP_ITEMS[item.app].sharePath}${encodeURIComponent(link.code)}`;
+  `${publicUrl(item.app)}${APP_ITEMS[item.app].sharePath}${encodeURIComponent(link.code)}`;
 
 /** New: the app's own New flow, filed where the person pressed it. */
 export function newItemHref(app: App, placement: Placement | null): string {

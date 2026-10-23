@@ -60,7 +60,17 @@ export function AccountControl() {
   );
 }
 
-function AccountMenu({ name }: { name: string }) {
+/** The signed-in person's menu. `onSignOut` and `pageHref` let the Explorer on an app's own address sign out of the
+ *  app and lead to the account pages on liveworkspace.app (components/explorer/AppAccountControl.tsx). */
+export function AccountMenu({
+  name,
+  onSignOut = signOut,
+  pageHref = (path) => path,
+}: {
+  name: string;
+  onSignOut?: () => Promise<boolean>;
+  pageHref?: (path: string) => string;
+}) {
   const [leaving, setLeaving] = useState(false);
   const { open, close, toggle, trigger, setTrigger, initialFocus, onTriggerKeyDown } =
     useMenuButton();
@@ -70,7 +80,7 @@ function AccountMenu({ name }: { name: string }) {
 
   async function leave() {
     setLeaving(true);
-    const left = await signOut();
+    const left = await onSignOut();
     setLeaving(false);
     if (left) close();
   }
@@ -117,7 +127,7 @@ function AccountMenu({ name }: { name: string }) {
           </div>
           <div className="my-1 h-px bg-slate-200 dark:bg-slate-700" />
           {PAGES.map(({ href, label, hint, Icon }) => (
-            <a key={href} href={href} role="menuitem" tabIndex={-1} className={item}>
+            <a key={href} href={pageHref(href)} role="menuitem" tabIndex={-1} className={item}>
               <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300">
                 <Icon aria-hidden className="size-4" />
               </span>

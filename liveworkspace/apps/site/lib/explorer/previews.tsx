@@ -14,7 +14,8 @@
 import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 import type { Item } from '@liveworkspace/index-client';
 import type { RenderThumbnail } from '@liveworkspace/explorer';
-import { APP_ITEMS, isAppName, siteOfApp } from '@liveworkspace/sites';
+import { APP_ITEMS, isAppName } from '@liveworkspace/sites';
+import { appOrigin } from './page-app';
 import { workspaceToken } from './token';
 
 export const PREVIEW_CACHE_MAX = 200;
@@ -30,7 +31,7 @@ export function previewUrl(item: Pick<Item, 'app' | 'id' | 'updatedAt'>): string
   const path = APP_ITEMS[item.app].previewPath;
   if (!path) return null;
   const at = path.replace(':id', encodeURIComponent(item.id));
-  return `${siteOfApp(item.app).url}${at}?v=${item.updatedAt}`;
+  return `${appOrigin(item.app)}${at}?v=${item.updatedAt}`;
 }
 
 const isEmpty = (item: Item) => (item.summary as { empty?: boolean } | null)?.empty === true;

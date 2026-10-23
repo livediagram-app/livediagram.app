@@ -30,6 +30,7 @@ const nextConfig: NextConfig = {
     '@livedocuments/api-schema',
     '@livedesign/ui',
     '@livedesign/api-schema',
+    '@liveworkspace/auth-client',
     '@liveworkspace/explorer',
     '@liveworkspace/index-client',
     '@liveworkspace/sites',
