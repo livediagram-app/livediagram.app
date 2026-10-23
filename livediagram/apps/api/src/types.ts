@@ -70,10 +70,8 @@ export type Env = {
   // a signed id unsigned; every newer id must prove possession. Unset = no
   // legacy exception.
   GUEST_SIGNING_LIVE_AT?: string;
-  // R2 bucket holding image-element bytes (docs/specs/009-elements/images.md). Optional so
-  // self-hosters who haven't provisioned R2 can still deploy the
-  // api worker: when unbound, the image endpoints all return 503
-  // and the editor app hides the Image palette entry.
+  // R2 bucket holding document snapshots (thumb/<documentId>, docs/specs/006-document/document-snapshots.md), and
+  // the image bytes uploaded before images moved to liveworkspace's media service, until they are migrated.
   IMAGES?: R2Bucket;
   // Cloudflare Workers Rate Limiting API binding. Caps per-owner
   // writes (POST / PUT / DELETE) at the configured limit/period in
@@ -116,6 +114,13 @@ export type Env = {
   // livediagram's secret on that service, sent as a bearer token on its app routes. A secret (wrangler secret put
   // COMMUNITY_KEY); unset, this deploy has no Community to publish to.
   COMMUNITY_KEY?: string;
+  // liveworkspace's media service (liveworkspace/docs/media.md, src/media.ts), which keeps every app's uploaded
+  // images. Unset means production's, https://liveworkspace.app/api/media; staging and local development name
+  // their own.
+  MEDIA_URL?: string;
+  // livediagram's secret on that service, sent as a bearer token. A secret (wrangler secret put MEDIA_KEY); unset,
+  // this deploy has no images, and the image endpoints answer 503 so the editor hides them.
+  MEDIA_KEY?: string;
   // Telemetry on/off switch (docs/specs/017-telemetry/telemetry.md). Gates every event this worker
   // sends to the liveworkspace telemetry service, its own and the relay's. A plain
   // wrangler.toml [vars] string; only the literal "true" enables it.
@@ -197,19 +202,6 @@ export type Env = {
   // OSS self-hosters who run Clerk-less stay on the open path by
   // default.
   AI_REQUIRE_CLERK?: string;
-  // Per-owner soft cap on the number of images one owner may keep
-  // in the gallery (docs/specs/009-elements/images.md). Stored as a decimal string in
-  // wrangler.toml [vars]; parsed via parseInt at request time.
-  // Unset or non-positive = no limit (the OSS self-host default
-  // where the operator runs their own storage budget). Hosted
-  // livediagram.app sets this to "100".
-  IMAGE_MAX_PER_OWNER?: string;
-  // Per-owner soft cap on the total bytes one owner may keep in
-  // the gallery (docs/specs/009-elements/images.md). Stored as a decimal byte count in
-  // wrangler.toml [vars]; parsed via parseInt at request time.
-  // Unset or non-positive = no limit. Hosted livediagram.app sets
-  // this to "104857600" (100 MB).
-  IMAGE_MAX_BYTES_PER_OWNER?: string;
   // Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md, "Self-hosting").
   // GOOGLE_CLIENT_ID (plain var) switches the feature on at all; with
   // GOOGLE_CLIENT_SECRET and DRIVE_TOKEN_KEY (both secrets) the worker brokers

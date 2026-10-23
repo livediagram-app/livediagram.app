@@ -26,6 +26,7 @@ import {
   imageRefPruneTabStatement,
   imageRefReplaceStatements,
 } from './image-refs';
+import { mediaRefQueueDocumentsStatement } from '../media';
 
 // Whether `tabId` is a tab that exists but is not one of `documentId`'s: a save must never adopt it. A save
 // upserts by tab id, so without this a tab id seen elsewhere (a share link, a Community post's document) could
@@ -428,6 +429,15 @@ export async function deleteTabRow(
   )
     .bind(documentId, tabId)
     .first<{ data: string | null }>();
+  // The document no longer shows the tab's images, if it had any: tell the media service (src/media.ts).
+  if (unlinked) {
+    await mediaRefQueueDocumentsStatement(
+      env,
+      'd.id = ?2 AND EXISTS (SELECT 1 FROM image_refs WHERE tab_id = ?3)',
+      [documentId, tabId],
+      false,
+    ).run();
+  }
   const remaining = await env.DB.prepare('SELECT COUNT(*) AS n FROM document_tabs WHERE tab_id = ?')
     .bind(tabId)
     .first<{ n: number }>();
@@ -480,7 +490,11 @@ export async function linkTabToDocument(
     .bind(now, documentId)
     .run();
   // Placement grants (docs/specs/009-elements/images.md): the new holder serves what the tab showed.
-  await imageGrantLinkStatement(env, documentId, tabId, now).run();
+  await env.DB.batch([
+    imageGrantLinkStatement(env, documentId, tabId, now),
+    // And the media service hears that it shows them (src/media.ts).
+    mediaRefQueueDocumentsStatement(env, 'd.id = ?2', [documentId]),
+  ]);
   return true;
 }
 

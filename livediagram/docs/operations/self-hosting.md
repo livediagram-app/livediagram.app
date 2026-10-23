@@ -309,14 +309,9 @@ The mirror's root folder in each user's Drive is named **`livediagram (self-host
 
 `DRIVE_TOKEN_KEY` seals the stored refresh tokens; changing it turns every connection into **Needs reconnecting**. Files a different deployment's Google project created are foreign to yours and import as copies. Your privacy policy must describe the Google user data you handle; livediagram.app's is in the help centre under Policies.
 
-## Per-owner image gallery caps
+## Images
 
-The api worker honours two optional `[vars]` that cap how much one owner can keep in the image gallery ([Image element + per-owner gallery](../specs/009-elements/images.md)), surfaced as a 403 `{ error: "gallery_full", reason, limit, current }` on `POST /api/images`:
-
-- `IMAGE_MAX_PER_OWNER`: maximum image rows per owner (decimal string).
-- `IMAGE_MAX_BYTES_PER_OWNER`: maximum summed `byte_size` per owner (decimal byte count).
-
-Both default to "no limit" when unset, blank, `0`, or non-numeric, which is the OSS self-host default where the operator runs their own R2 budget. To cap, declare them under `[vars]` in `apps/api/wrangler.toml`, not in the Cloudflare dashboard: every `wrangler deploy` replaces the worker's plain vars with the ones it declares, so a dashboard-only cap is silently gone after the next deploy. The hosted livediagram.app sets them to `100` and `104857600` (100 MB) through its hosted profile, which a fork's deploy does not apply. The worker also honours an early `X-Image-Sha256` dedupe check sent by the live editor: if the header matches an existing row at `(owner, sha256)` the upload short-circuits before the body parse, the cap check, or the R2 write, so re-uploading bytes the user already has costs almost nothing.
+Images live in liveworkspace's media service ([liveworkspace/docs/media.md](../../../liveworkspace/docs/media.md)), which keeps the bytes, the gallery and its caps (100 images and 100 MB per person). The api worker reaches it with a `MEDIA_KEY` secret, and `MEDIA_URL` when it isn't production's. Without `MEDIA_KEY` every `/api/images*` endpoint answers 503 and the editor hides the Image entry ([Image element + per-owner gallery](../specs/009-elements/images.md) "Self-host degradation").
 
 ## Custom domain
 

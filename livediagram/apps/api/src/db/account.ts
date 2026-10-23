@@ -12,6 +12,7 @@ import { detachUserFromTeams } from './teams';
 import { migrateTagStatements } from './tags';
 import { imageGrantOwnerChangeStatement } from './image-grants';
 import { disconnectDrive } from '../drive/disconnect';
+import { mediaClient, mediaOwner } from '../media';
 import { uniqueLibraryName } from '@livediagram/api-schema';
 import type { Env } from '../types';
 
@@ -49,6 +50,16 @@ export async function deleteAccount(
   // that wipe would otherwise destroy shared team work, and the dead
   // Clerk id would linger as a ghost (or sole-admin-blocking) member.
   await detachUserFromTeams(env, ownerId);
+  // Their images in liveworkspace's media service, from every app (src/media.ts). First, so a failure
+  // leaves the account whole to delete again.
+  const media = mediaClient(env);
+  let mediaDeleted = 0;
+  if (media) {
+    const forgotten = await media.forgetOwner(await mediaOwner(ownerId));
+    if (!forgotten.ok) throw new Error(`media: deleting the owner's images answered ${forgotten.status}`);
+    mediaDeleted = forgotten.value.deleted;
+  }
+  await env.DB.prepare('DELETE FROM media_images WHERE owner_id = ?').bind(ownerId).run();
   // R2 cleanup first. Enumerate the owner's image ids while the
   // index row still exists, then delete each from R2. If R2 is
   // unbound (self-host without R2), skip silently: the index rows
@@ -176,7 +187,7 @@ export async function deleteAccount(
   return {
     documents: documentsRes.meta.changes ?? 0,
     folders: foldersRes.meta.changes ?? 0,
-    images: imagesRes.meta.changes ?? 0,
+    images: (imagesRes.meta.changes ?? 0) + mediaDeleted,
   };
 }
 
@@ -228,6 +239,15 @@ export async function migrateOwnerId(
   // matters, and the batch keeps it: the grant before the documents move (it joins the guest's documents),
   // each INSERT OR IGNORE copy before its DELETE, and the copy counts recounted after the copies move.
   const now = Date.now();
+  // The guest's images in liveworkspace's media service become the account's (src/media.ts). First, so a
+  // failure leaves the guest whole to migrate again; the merge is idempotent.
+  const media = mediaClient(env);
+  let mediaMoved = 0;
+  if (media) {
+    const merged = await media.mergeOwner(await mediaOwner(fromOwnerId), await mediaOwner(toOwnerId));
+    if (!merged.ok) throw new Error(`media: merging the guest's images answered ${merged.status}`);
+    mediaMoved = merged.value.moved.length;
+  }
   const move = (sql: string, ...binds: unknown[]) => env.DB.prepare(sql).bind(...binds);
   const statements = {
     // The grant first, while the guest still owns the documents: an image left on the guest id by the
@@ -337,6 +357,14 @@ export async function migrateOwnerId(
       toOwnerId,
       fromOwnerId,
     ),
+    // media_images (src/media.ts): after the grant above, which reads it. Every one moves, those the
+    // service kept on the guest too (the account already had those bytes): the grant keeps them served
+    // in the guest's documents, and the bytes are read by id.
+    mediaImages: move(
+      'UPDATE media_images SET owner_id = ? WHERE owner_id = ?',
+      toOwnerId,
+      fromOwnerId,
+    ),
     // custom_themes (docs/specs/011-theme/custom-themes.md): move the guest's saved themes onto the
     // authed identity so the documents that reference them keep their look
     // after sign-up. Plain UPDATE — the id is the PK (no per-owner unique
@@ -378,7 +406,7 @@ export async function migrateOwnerId(
     documents: changes('documents'),
     folders: changes('folders'),
     shared: changes('shared'),
-    images: changes('images'),
+    images: changes('images') + mediaMoved,
   };
 }
 

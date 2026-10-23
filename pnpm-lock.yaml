@@ -1385,6 +1385,9 @@ importers:
       '@livediagram/templates':
         specifier: workspace:*
         version: link:../../packages/templates
+      '@liveworkspace/media':
+        specifier: workspace:*
+        version: link:../../../packages/media
       '@liveworkspace/telemetry':
         specifier: workspace:*
         version: link:../../../packages/telemetry
@@ -1404,6 +1407,9 @@ importers:
       '@liveworkspace/community-service':
         specifier: workspace:*
         version: link:../../../liveworkspace/apps/community
+      '@liveworkspace/media-service':
+        specifier: workspace:*
+        version: link:../../../liveworkspace/apps/media
       '@types/node':
         specifier: ^26.6.4
         version: 26.6.5
