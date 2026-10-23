@@ -23,7 +23,6 @@ export const SIDEBAR_LABELS = {
   invites: 'Invites',
   newTeam: 'Manage Teams',
   thisBrowser: 'This Browser',
-  tags: 'Tags',
   library: 'Library',
   gallery: 'Image Gallery',
   shapeLibraries: 'Shape Libraries',
@@ -78,8 +77,6 @@ export function sidebarGroups(input: SidebarLayoutInput): SidebarGroupLayout[] {
   // A row whose view is current stays, so the highlight never vanishes under the reader.
   const more: SidebarRowKind[] = [];
   if (offlineDocuments > 0 || selected === 'offline') more.push('thisBrowser');
-  // Tags always shows, so it can be found before the first tag (docs/specs/013-workspace/tags.md "The sidebar").
-  // Tags lives inside Library (docs/specs/013-workspace/tags.md "The sidebar"), always shown there.
   more.push('library', 'trash');
   return [
     { id: 'overview', rows: ['home', 'inbox', 'timeline', 'shared'] },
@@ -104,16 +101,10 @@ export function isLibraryView(kind: SelectedNode['kind']): boolean {
 // Entries of the shared `expanded` set; the colon keeps them apart from folder and team ids.
 export const MY_DOCUMENTS_EXPAND_KEY = 'space:my-documents';
 export const LIBRARY_EXPAND_KEY = 'more:library';
-export const TAGS_EXPAND_KEY = 'more:tags';
 
 // Computed before first paint, so nothing expands after load.
 export function initialExpanded(selected: SelectedNode): Set<string> {
   const keys = new Set([MY_DOCUMENTS_EXPAND_KEY]);
   if (isLibraryView(selected.kind)) keys.add(LIBRARY_EXPAND_KEY);
-  // A Tags page opens Library, where Tags lives, and Tags itself.
-  if (selected.kind === 'tags') {
-    keys.add(LIBRARY_EXPAND_KEY);
-    keys.add(TAGS_EXPAND_KEY);
-  }
   return keys;
 }

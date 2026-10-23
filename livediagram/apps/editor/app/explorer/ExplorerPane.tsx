@@ -22,7 +22,6 @@ import { useExplorerImport } from './useExplorerImport';
 import { explorerPathFor } from './routes';
 import { rowLocation } from './row-location';
 import { paneHeaderActions } from './pane-header-actions';
-import { useTagsPage } from './tags/useTagsPage';
 import { homeBannerShown } from '@/lib/home-banner';
 import { assignAppLocation } from '@/lib/app-location';
 
@@ -32,15 +31,7 @@ const VIEW_COMPONENTS = { list: ListView, card: CardView, details: DetailsView }
 // The browse sections that render a folders + documents grid the List/Card
 // toggle (docs/specs/006-document/document-snapshots.md) can swap. Other sections (gallery,
 // profile, team, invites, shared) have their own fixed layout.
-const BROWSE_KINDS = new Set([
-  'recent',
-  'all',
-  'folder',
-  'search',
-  'favourites',
-  'offline',
-  'tags',
-]);
+const BROWSE_KINDS = new Set(['recent', 'all', 'folder', 'search', 'favourites', 'offline']);
 
 // Each Explorer section deep-links its matching help-centre article from a
 // Help button in the pane header (docs/specs/018-help/contextual-help-links.md); the button's hover card copy comes
@@ -59,7 +50,6 @@ const SECTION_HELP: Partial<Record<string, HelpArticleKey>> = {
   folder: 'folders',
   all: 'folders',
   search: 'explorerFilters',
-  tags: 'tags',
 };
 
 // Lazy-load the heavier panes — each is only mounted on its own
@@ -97,10 +87,6 @@ const HomePane = dynamic(
   () => import('@/components/panels/home/HomePane').then((m) => m.HomePane),
   { ssr: false },
 );
-// The Tags page (docs/specs/013-workspace/tags.md), lazy like every pane.
-const TagsPane = dynamic(() => import('./tags/TagsPane').then((m) => m.TagsPane), {
-  ssr: false,
-});
 const ActivityPane = dynamic(
   () => import('@/components/panels/ActivityPane').then((m) => m.ActivityPane),
   { ssr: false },
@@ -114,8 +100,6 @@ const ActivityPane = dynamic(
 export function ExplorerPane() {
   const {
     prefs,
-    documents: liveDocs,
-    teamDocuments,
     folderById,
     favouriteIds,
     toggleFavourite,
@@ -186,17 +170,6 @@ export function ExplorerPane() {
     [selected, folderById, go, lensResult.active],
   );
 
-  // The Tags page (docs/specs/013-workspace/tags.md): a tag's name as the title, New Tag, and the documents its tags
-  // can sit on (the reader's own and their teams'), newest first.
-  const tagsPage = useTagsPage(selected, go);
-  const taggable = useMemo(
-    () =>
-      selected.kind === 'tags'
-        ? [...liveDocs, ...teamDocuments].sort((a, b) => b.savedAt - a.savedAt)
-        : [],
-    [selected.kind, liveDocs, teamDocuments],
-  );
-
   const hideTeamTitle = selected.kind === 'team' && teamNotFound;
   const sectionHelp = SECTION_HELP[selected.kind];
   const [viewMode, setViewMode] = useExplorerViewMode();
@@ -229,8 +202,7 @@ export function ExplorerPane() {
   });
 
   // List, Card and Details take the SAME props (docs/specs/006-document/document-snapshots.md,
-  // docs/specs/013-workspace/explorer-details-view.md), so build them once and pick the component by the toggle. The
-  // Tags page draws each tag's documents with them too.
+  // docs/specs/013-workspace/explorer-details-view.md), so build them once and pick the component by the toggle.
   const ViewComponent = VIEW_COMPONENTS[viewMode];
   const documentViewProps = {
     ownerId,
@@ -250,8 +222,7 @@ export function ExplorerPane() {
     recentExcludedIds: prefs.recentExcludedIds ?? [],
     onToggleRecentExclusion: toggleRecentExclusion,
     onShowHistory: (id: string) => {
-      const row =
-        paneContent.documents.find((d) => d.id === id) ?? taggable.find((d) => d.id === id);
+      const row = paneContent.documents.find((d) => d.id === id);
       // Offline documents never reach the worker, so they have
       // no server history to show (docs/specs/006-document/offline-mode.md).
       if (row && !isOfflineIdSync(id)) setHistoryFor({ id, name: row.name });
@@ -272,23 +243,21 @@ export function ExplorerPane() {
   return (
     <>
       {imports.dialogs}
-      {tagsPage.dialog}
       {/* Home's hero is its page header (docs/specs/013-workspace/explorer-home.md "The hero"); with the banner
           hidden, Home takes the ordinary one. */}
       {selected.kind === 'home' && homeBannerShown(prefs) ? null : (
         <PaneHeader
-          title={hideTeamTitle ? '' : (tagsPage.title ?? paneTitle)}
-          crumbs={hideTeamTitle ? [] : (tagsPage.crumbs ?? paneCrumbs)}
+          title={hideTeamTitle ? '' : paneTitle}
+          crumbs={hideTeamTitle ? [] : paneCrumbs}
           onOpenNav={() => setMobileNavOpen(true)}
           helpArticle={sectionHelp}
           headerActions={
-            selected.kind === 'timeline' || offers.importFrom || tagsPage.headerActions ? (
+            selected.kind === 'timeline' || offers.importFrom ? (
               <>
                 {selected.kind === 'timeline' ? (
                   <TimelineControls controls={timeline.controls} />
                 ) : null}
                 {offers.importFrom ? imports.toolbar : null}
-                {tagsPage.headerActions}
               </>
             ) : undefined
           }
@@ -389,17 +358,6 @@ export function ExplorerPane() {
         <ShapeLibrariesPane />
       ) : selected.kind === 'trash' ? (
         <TrashSection />
-      ) : selected.kind === 'tags' ? (
-        <TagsPane
-          documents={taggable}
-          tagId={selected.id}
-          onOpenTag={tagsPage.openTag}
-          onNewTag={tagsPage.newTag}
-          renderDocuments={(documents) => (
-            // A tag gathers personal and team documents, so whose each is varies (the Owner column).
-            <ViewComponent {...documentViewProps} folders={[]} documents={documents} showOwner />
-          )}
-        />
       ) : (selected.kind === 'shared' ? failedReads.shared : failedReads.documents) ? (
         // A failed read never reads as an empty account (explorer-filters.md "States").
         <LoadFailed onRetry={() => (ownerId ? void refreshPersonal(ownerId) : undefined)} />

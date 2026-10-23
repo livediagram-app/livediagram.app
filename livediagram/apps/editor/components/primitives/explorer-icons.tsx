@@ -28,7 +28,6 @@ import {
   lucideShapes,
   lucideShare2,
   lucideStar,
-  lucideTag,
 } from '@livediagram/icons/lucide';
 
 // The one glyph set for both Explorer surfaces: the full-page /explorer
@@ -181,8 +180,6 @@ export const HomeIcon = lucideGlyph(lucideHouse, 13);
 export const MyDocumentsIcon = lucideGlyph(lucideFolderRoot, 13);
 export const LibraryIcon = lucideGlyph(lucideLibrary, 13);
 export const ThisBrowserIcon = lucideGlyph(lucideAppWindow, 13);
-// A luggage tag: Tags (docs/specs/013-workspace/tags.md), the sidebar row and the document menu's verb.
-export const TagIcon = lucideGlyph(lucideTag, 13);
 
 // ---------- Verbs ----------------------------------------------------
 

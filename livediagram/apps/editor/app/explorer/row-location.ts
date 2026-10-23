@@ -24,10 +24,7 @@ export function rowLocation(
   // library, not yours), so they get no chip rather than a misleading one.
   if (d.shared) return null;
   const aggregates =
-    selected.kind === 'recent' ||
-    selected.kind === 'favourites' ||
-    selected.kind === 'search' ||
-    selected.kind === 'tags';
+    selected.kind === 'recent' || selected.kind === 'favourites' || selected.kind === 'search';
   const reaching = lensActive && (selected.kind === 'all' || selected.kind === 'folder');
   if (!aggregates && !reaching) return null;
   // A row in the folder the reader is in needs no chip.

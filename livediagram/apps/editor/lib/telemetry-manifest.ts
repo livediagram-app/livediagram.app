@@ -77,14 +77,6 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Editor·Changed',
   // Explorer filters (docs/specs/013-workspace/explorer-filters.md "Telemetry"): a facet gained a value.
   'Explorer·Selected',
-  // Tags (docs/specs/013-workspace/tags.md "Telemetry"): a tag made, put on or taken off a document, renamed,
-  // recoloured, deleted. Never its name.
-  'Explorer·Added',
-  'Explorer·Changed',
-  'Explorer·Created',
-  'Explorer·Deleted',
-  'Explorer·Removed',
-  'Explorer·Renamed',
   'Element·Added',
   'Element·Changed',
   'Element·Copied',

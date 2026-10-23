@@ -24,12 +24,18 @@ describe('RetiredViewRedirect', () => {
     expect(replace).toHaveBeenCalledWith('/explorer/inbox');
   });
 
+  it('replaces the retired Tags address with Home', () => {
+    render(<RetiredViewRedirect from="tags" />);
+    expect(replace).toHaveBeenCalledWith('/explorer/home');
+  });
+
   it('replaces the retired buckets with their successors', () => {
     expect(RETIRED_VIEW_TARGETS).toEqual({
       unsorted: '/explorer/all',
       dynamic: '/explorer/all',
       generated: '/explorer/search?q=made-by%3Aai',
       activity: '/explorer/inbox',
+      tags: '/explorer/home',
     });
   });
 });

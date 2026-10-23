@@ -17,7 +17,6 @@ export const VIEW_TITLES: Readonly<Record<NamedKind, string>> = {
   invites: SIDEBAR_LABELS.invites,
   gallery: SIDEBAR_LABELS.gallery,
   'shape-libraries': SIDEBAR_LABELS.shapeLibraries,
-  tags: SIDEBAR_LABELS.tags,
   trash: SIDEBAR_LABELS.trash,
   recent: 'Recent',
   favourites: 'Favourites',

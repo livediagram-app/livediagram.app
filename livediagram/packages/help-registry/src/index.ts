@@ -157,7 +157,7 @@ export const categories: Category[] = [
     title: 'Explorer',
     description:
       'Organise everything you build: how the Explorer keeps your documents, folders, teams, and assets easy to find and manage.',
-    articleCount: 17,
+    articleCount: 16,
     kind: 'feature',
     groups: ['Your Library', 'Activity', 'Assets and Imports'],
   },
@@ -1694,17 +1694,6 @@ export const articles: Article[] = [
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Assets and Imports',
-  },
-  {
-    slug: 'tags',
-    title: 'Tags',
-    description:
-      'Coloured labels you put on your documents to group related ones together, across folders and teams.',
-    keywords:
-      'tag tags label labels labelling categorise categorize group grouping colour color code coded organise organize project client status filter chip chips rename delete',
-    category: 'Explorer',
-    categorySlug: 'explorer',
-    group: 'Your Library',
   },
   {
     slug: 'drawio-import',

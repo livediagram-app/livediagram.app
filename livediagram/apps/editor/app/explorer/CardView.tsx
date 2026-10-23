@@ -39,7 +39,6 @@ import { FolderCard } from './explorer-folder-cards';
 import { CARD_GRID, CARD_PREVIEW as previewArea, CARD_SHELL as cardShell } from '@livediagram/ui';
 import { FolderPreview } from './FolderPreview';
 import { RelativeTimeChip } from '@/components/primitives/RelativeTimeChip';
-import { DocumentRowTags } from '@/components/tags/DocumentRowTags';
 
 export function CardView(props: CardViewProps) {
   const {
@@ -157,9 +156,6 @@ function DocumentCard(
             <EllipsisTriggerButton {...menu.triggerProps} tuck label={`Menu for ${liveDoc.name}`} />
           )}
         </div>
-        {/* The reader's tags (docs/specs/013-workspace/tags.md "Where tags show"), a line of their own so the meta
-            row below keeps its time. */}
-        <DocumentRowTags documentId={liveDoc.id} line />
         {/* Keep every column the list shows: owner, visibility, updated. */}
         {/* One line: the badges keep their size, the time gives way with an
             ellipsis, the sync mark holds the right edge. */}

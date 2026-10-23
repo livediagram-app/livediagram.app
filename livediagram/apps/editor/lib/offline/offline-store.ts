@@ -52,10 +52,6 @@ export type OfflineDocumentRecord = {
   // no row in, so its star has to live here instead. Optional so records
   // written before the field existed stay valid.
   favourite?: boolean;
-  // The reader's tags on it (docs/specs/013-workspace/tags.md "An offline document's tags live in the browser"), by
-  // tag id, for the same reason as the star: document_tags.document_id is a foreign key into `documents`. Optional so
-  // records written before the field existed stay valid.
-  tagIds?: string[];
   // When the document was moved to this browser's local Trash
   // (docs/specs/013-workspace/trash.md, see ./offline-trash.ts). Absent = live.
   // A trashed record keeps everything else so a restore is exact.
@@ -364,26 +360,6 @@ export async function offlineSetFavourite(id: string, favourite: boolean): Promi
 export async function offlineListFavouriteIds(): Promise<string[]> {
   const recs = await offlineBackend().all();
   return recs.filter((r) => r.favourite && r.trashedAt === undefined).map((r) => r.id);
-}
-
-// Put a tag on / take it off an offline document (docs/specs/013-workspace/tags.md). Like a star, a tag is the
-// reader's own label, not an edit, so savedAt is left alone.
-export async function offlineSetDocumentTag(id: string, tagId: string, on: boolean): Promise<void> {
-  await serializeOfflineWrite(() =>
-    offlineUpdateRecord(id, (rec) => {
-      if (!rec) return undefined;
-      const rest = (rec.tagIds ?? []).filter((t) => t !== tagId);
-      return { ...rec, tagIds: on ? [...rest, tagId] : rest };
-    }),
-  );
-}
-
-// Every live offline document's tags, as links.
-export async function offlineListTagLinks(): Promise<{ tagId: string; documentId: string }[]> {
-  const recs = await offlineBackend().all();
-  return recs
-    .filter((r) => r.trashedAt === undefined)
-    .flatMap((r) => (r.tagIds ?? []).map((tagId) => ({ tagId, documentId: r.id })));
 }
 
 export async function offlineSaveTab(id: string, tab: Tab, now: number): Promise<void> {

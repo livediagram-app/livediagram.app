@@ -70,6 +70,23 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('Help', 'View', 'connect-ai-mcp')).toBe(false);
   });
 
+  it('retires document tags, not card tags or the Explorer filters', () => {
+    expect(isRetiredEvent('Explorer', 'Created', 'Tag')).toBe(true);
+    expect(isRetiredEvent('Explorer', 'Added', 'Tag')).toBe(true);
+    expect(isRetiredEvent('Explorer', 'Removed', 'Tag')).toBe(true);
+    expect(isRetiredEvent('Explorer', 'Renamed', 'Tag')).toBe(true);
+    expect(isRetiredEvent('Explorer', 'Changed', 'TagColour')).toBe(true);
+    expect(isRetiredEvent('Explorer', 'Deleted', 'Tag')).toBe(true);
+    expect(isRetiredEvent('UI', 'Selected', 'Sidebar.Tags')).toBe(true);
+    expect(isRetiredEvent('UI', 'Selected', 'ExplorerPanel.Tags')).toBe(true);
+    expect(isRetiredEvent('Help', 'View', 'tags')).toBe(true);
+    expect(isRetiredEvent('UI', 'Opened', 'tags')).toBe(true);
+    expect(isRetiredEvent('Element', 'Changed', 'TagColour')).toBe(false);
+    expect(isRetiredEvent('Explorer', 'Selected', 'Text')).toBe(false);
+    expect(isRetiredEvent('UI', 'Selected', 'Sidebar.Library')).toBe(false);
+    expect(isRetiredEvent('Community', 'Selected', 'Tag')).toBe(false);
+  });
+
   it('keeps everything that still exists', () => {
     expect(isRetiredEvent('Document', 'Undone', null)).toBe(false);
     expect(isRetiredEvent('Help', 'View', 'undo')).toBe(false);

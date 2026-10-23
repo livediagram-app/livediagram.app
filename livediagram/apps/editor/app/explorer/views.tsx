@@ -84,8 +84,6 @@ export type SelectedNode =
   | { kind: 'search' }
   // Documents this user starred, personal or team (docs/specs/013-workspace/favourites.md).
   | { kind: 'favourites' }
-  // The reader's tags (docs/specs/013-workspace/tags.md "The Tags page"): every tag's documents, or one tag's.
-  | { kind: 'tags'; id?: string }
   | { kind: 'offline' }
   | { kind: 'shared' }
   | { kind: 'gallery' }

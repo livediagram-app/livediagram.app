@@ -35,8 +35,6 @@ const OWNER_COLUMNS: OwnerColumn[] = [
   },
   { table: 'shared_with', column: 'owner_id', migrate: { kind: 'moves' } },
   { table: 'favourites', column: 'owner_id', migrate: { kind: 'moves' } },
-  // Tags (docs/specs/013-workspace/tags.md): guests tag documents too.
-  { table: 'tags', column: 'owner_id', migrate: { kind: 'moves' } },
   // What a reader had seen of a form's responses (Plan's forms, now in liveplanner): the rows remain.
   { table: 'form_reads', column: 'owner_id', migrate: { kind: 'moves' } },
   // Default folders (docs/specs/013-workspace/default-folders.md): guests have them too.
@@ -197,15 +195,6 @@ function seedGuestHoldable(sql: DatabaseSync, id: string, peerDocument: string) 
     folder_id: `f-${id}`,
     updated_at: T0,
   });
-  insert(sql, 'tags', {
-    id: `tag-${id}`,
-    owner_id: id,
-    name: `Tag ${id}`,
-    colour: 'blue',
-    created_at: T0,
-    updated_at: T0,
-  });
-  insert(sql, 'document_tags', { tag_id: `tag-${id}`, document_id: peerDocument, created_at: T0 });
   insert(sql, 'shape_libraries', {
     id: `l-${id}`,
     owner_id: id,

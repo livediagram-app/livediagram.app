@@ -21,8 +21,6 @@ const NO_NEW_DOCUMENT: ReadonlySet<Kind> = new Set<Kind>([
   'invites',
   // This Browser is a read-through view; offline documents come from the /new wizard.
   'offline',
-  // Tags gather documents from every place; a new one lands in none of them (docs/specs/013-workspace/tags.md).
-  'tags',
 ]);
 
 // Sections with New folder: only the places folders live, the My Work root and a folder.

@@ -13,7 +13,6 @@ const STATIC_NODES: SelectedNode[] = [
   { kind: 'inbox' },
   { kind: 'recent' },
   { kind: 'favourites' },
-  { kind: 'tags' },
   { kind: 'shape-libraries' },
   { kind: 'all' },
   { kind: 'search' },
@@ -31,12 +30,13 @@ describe('explorer route mapping', () => {
     }
   });
 
-  // docs/specs/013-workspace/tags.md "One tag's page".
-  it("round-trips one tag's page through the query string", () => {
-    const node: SelectedNode = { kind: 'tags', id: 'tag 1' };
-    const url = new URL(explorerPathFor(node), 'https://x.test');
-    expect(url.pathname).toBe('/explorer/tags');
-    expect(selectedFromRoute(url.pathname, url.searchParams)).toEqual(node);
+  // Tags were removed (docs/specs/013-workspace/tags.md): an old tag link reads as Home, which its page
+  // replaces itself with.
+  it('reads the retired Tags address, with or without a tag, as Home', () => {
+    expect(selectedFromRoute('/explorer/tags', new URLSearchParams())).toEqual({ kind: 'home' });
+    expect(selectedFromRoute('/explorer/tags/', new URLSearchParams('id=t1'))).toEqual({
+      kind: 'home',
+    });
   });
 
   it('round-trips folder and team ids through the query string', () => {

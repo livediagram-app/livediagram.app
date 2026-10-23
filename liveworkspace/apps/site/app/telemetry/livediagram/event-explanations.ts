@@ -1139,13 +1139,14 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Explorer|Selected|People':
     'Someone filtered an Explorer list by who owns the documents (Me or Others).',
   'Explorer|Created|Tag':
-    'Someone made a tag, a coloured label for grouping their documents, from the tag picker or the Tags page.',
-  'Explorer|Added|Tag': 'Someone put one of their tags on a document.',
-  'Explorer|Removed|Tag': 'Someone took one of their tags off a document.',
-  'Explorer|Renamed|Tag': 'Someone renamed one of their tags.',
-  'Explorer|Changed|TagColour': 'Someone changed the colour of one of their tags.',
-  'Explorer|Deleted|Tag':
-    'Someone deleted one of their tags, which takes it off every document it was on.',
+    'Someone made a tag, a coloured label for grouping their documents, before tags were removed.',
+  'Explorer|Added|Tag': 'Someone put one of their tags on a document, before tags were removed.',
+  'Explorer|Removed|Tag':
+    'Someone took one of their tags off a document, before tags were removed.',
+  'Explorer|Renamed|Tag': 'Someone renamed one of their tags, before tags were removed.',
+  'Explorer|Changed|TagColour':
+    'Someone changed the colour of one of their tags, before tags were removed.',
+  'Explorer|Deleted|Tag': 'Someone deleted one of their tags, before tags were removed.',
   'Explorer|Selected|Space':
     'Someone filtered an aggregate Explorer list by where documents live (My Work, Shared With Me, a team).',
   'Token|Created|MCP':
@@ -2651,12 +2652,12 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Folder|Cleared':
     'Someone cleared a default folder, so new documents of that kind land in My Work again.',
   'Trash|Opened': 'Someone opened the Trash, where deleted documents wait for 30 days.',
-  'Explorer|Created': 'Someone made something in the Explorer (a tag).',
-  'Explorer|Added': 'Someone put one of their tags on a document.',
-  'Explorer|Removed': 'Someone took one of their tags off a document.',
-  'Explorer|Renamed': 'Someone renamed one of their tags.',
-  'Explorer|Changed': 'Someone changed one of their tags (its colour).',
-  'Explorer|Deleted': 'Someone deleted one of their tags.',
+  'Explorer|Created': 'Someone made a tag in the Explorer, before tags were removed.',
+  'Explorer|Added': 'Someone put one of their tags on a document, before tags were removed.',
+  'Explorer|Removed': 'Someone took one of their tags off a document, before tags were removed.',
+  'Explorer|Renamed': 'Someone renamed one of their tags, before tags were removed.',
+  'Explorer|Changed': 'Someone changed the colour of one of their tags, before tags were removed.',
+  'Explorer|Deleted': 'Someone deleted one of their tags, before tags were removed.',
   'Explorer|Selected':
     'Someone narrowed an Explorer list with a filter: a chip, a suggestion or a typed token. The type names which kind of filter, never what was picked.',
   'Plan|Added':

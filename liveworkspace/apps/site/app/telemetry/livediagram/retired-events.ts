@@ -176,8 +176,32 @@ function isAiAssistantEvent(category: string, action: string, type: string | nul
   return false;
 }
 
+// Tags (removed 2026-10-23, docs/specs/013-workspace/tags.md): coloured labels people put on their documents. A tag
+// made, put on or taken off, renamed, recoloured or deleted, the sidebar's and the Explorer panel's Tags rows, and
+// the Tags help article. Card tags on a canvas card are a different feature (Element·Changed·TagColour), and carry on.
+const TAG_EXPLORER_TYPES = new Set(['Tag', 'TagColour']);
+const TAG_SIDEBAR_TYPES = new Set([
+  'Sidebar.Tags',
+  'Sidebar.Tag',
+  'ExplorerPanel.Tags',
+  'ExplorerPanel.Tag',
+]);
+const TAGS_HELP_ID = 'tags';
+
+function isTagsEvent(category: string, action: string, type: string | null): boolean {
+  const t = type ?? '';
+  if (category === 'Explorer') return TAG_EXPLORER_TYPES.has(t);
+  if (category === 'Help') return t === TAGS_HELP_ID;
+  if (category === 'UI') {
+    if (action === 'Selected') return TAG_SIDEBAR_TYPES.has(t);
+    return action === 'Opened' && t === TAGS_HELP_ID;
+  }
+  return false;
+}
+
 export function isRetiredEvent(category: string, action: string, type: string | null): boolean {
   if (category === 'Document' && action === 'Reverted') return true;
+  if (isTagsEvent(category, action, type)) return true;
   if (isAiAssistantEvent(category, action, type)) return true;
   if (isPagesModeEvent(category, action, type)) return true;
   if (isPlanModeEvent(category, action, type)) return true;

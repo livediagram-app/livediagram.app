@@ -12,11 +12,10 @@ import { trackSidebar } from './sidebar-telemetry';
 import { LIBRARY_PAGES } from './library-pages';
 import { SidebarGroup } from './SidebarGroup';
 import { SidebarRow } from './SidebarRow';
-import { TagsSidebarRow } from './TagRows';
 import { TrashSidebarRow } from './TrashSidebarRow';
 
 // More (docs/specs/013-workspace/explorer-structure.md): This Browser (offline documents,
-// docs/specs/006-document/offline-mode.md), Library (Tags, docs/specs/013-workspace/tags.md, then the Library
+// docs/specs/006-document/offline-mode.md), Library (the Library
 // pages), and Trash (docs/specs/013-workspace/trash.md). `rows` decides whether This Browser shows.
 export function MoreGroup({
   rows,
@@ -60,7 +59,6 @@ export function MoreGroup({
         expanded={expanded.has(LIBRARY_EXPAND_KEY)}
         onToggleExpand={toggleLibrary}
       >
-        <TagsSidebarRow depth={1} />
         {LIBRARY_PAGES.map(({ kind, label, Icon, row }) => (
           <SidebarRow
             key={kind}

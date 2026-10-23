@@ -18,8 +18,6 @@ export type SidebarTelemetryRow =
   | 'Library'
   | 'ImageGallery'
   | 'ShapeLibraries'
-  | 'Tags'
-  | 'Tag'
   | 'Trash'
   // A document or folder dropped on the Trash row (explorer-structure.md "Dragging to the Trash").
   | 'TrashDropDocument'

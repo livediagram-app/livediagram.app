@@ -1,6 +1,6 @@
 'use client';
 
-// A small panel anchored to the control that opened it (a tag picker, a colour popover), portal-rendered so a scrolling dialog body or a narrow column never clips or squeezes it. It opens under
+// A small panel anchored to the control that opened it (a colour popover), portal-rendered so a scrolling dialog body or a narrow column never clips or squeezes it. It opens under
 // its anchor, left-aligned, or above it when there is not room below, clamped on-screen. The side is chosen once:
 // as its content grows it grows away from the anchor, scrolling past the room it has, and
 // never flips; it follows the anchor as the page scrolls or resizes. Sits above the modal layer,

@@ -14,23 +14,26 @@ const on = (selected: SelectedNode, lensActive = false) => ({
   lensActive,
   folderById: folders,
 });
-const tags: SelectedNode = { kind: 'tags' };
+const favourites: SelectedNode = { kind: 'favourites' };
 
 describe('rowLocation', () => {
   it('names a document kept in this browser by that place, and opens it', () => {
-    expect(rowLocation(doc({ ownerId: OFFLINE_OWNER_ID }), on(tags))).toEqual({
+    expect(rowLocation(doc({ ownerId: OFFLINE_OWNER_ID }), on(favourites))).toEqual({
       label: 'This Browser',
       opens: { kind: 'offline' },
     });
   });
 
   it('names My Work for a cloud document at the root, its folder or its team otherwise', () => {
-    expect(rowLocation(doc(), on(tags))).toEqual({ label: 'My Work', opens: { kind: 'all' } });
-    expect(rowLocation(doc({ folderId: 'f1' }), on(tags))).toEqual({
+    expect(rowLocation(doc(), on(favourites))).toEqual({
+      label: 'My Work',
+      opens: { kind: 'all' },
+    });
+    expect(rowLocation(doc({ folderId: 'f1' }), on(favourites))).toEqual({
       label: 'Plans',
       opens: { kind: 'folder', id: 'f1' },
     });
-    expect(rowLocation(doc({ team: { id: 't1', name: 'Design' } }), on(tags))).toEqual({
+    expect(rowLocation(doc({ team: { id: 't1', name: 'Design' } }), on(favourites))).toEqual({
       label: 'Design',
       opens: { kind: 'team', id: 't1' },
     });
@@ -41,7 +44,7 @@ describe('rowLocation', () => {
     const shared = doc({
       shared: { ownerName: 'A', role: 'edit', shareCode: 'x' },
     });
-    expect(rowLocation(shared, on(tags))).toBeNull();
+    expect(rowLocation(shared, on(favourites))).toBeNull();
     expect(rowLocation(doc({ folderId: 'f1' }), on({ kind: 'folder', id: 'f1' }, true))).toBeNull();
   });
 });

@@ -619,7 +619,7 @@ is a person's editor and every route re-gates it with the owner's identity at th
 | GET                    | `capabilities`, `openapi.json`, `templates/**`, `icons`, `schema/**`, `preferences`, `participants/:owner` (the owner only)         |
 | GET                    | `share/**` (the person opening a link shared with them)                                                                             |
 | GET, POST, PUT, DELETE | `documents/**` but `documents/:p/community/**` and `documents/:p/tabs/:p/presence`                                                  |
-| GET, POST, PUT, DELETE | `folders/**`, `shared/**`, `favourites/**`, `tags/**`, `home/**`, `timeline/**`, `activity/**`, `trash/**`, `placement-defaults/**` |
+| GET, POST, PUT, DELETE | `folders/**`, `shared/**`, `favourites/**`, `home/**`, `timeline/**`, `activity/**`, `trash/**`, `placement-defaults/**` |
 | GET, POST, PUT, DELETE | `images/**`, `shape-libraries/**`                                                                                                   |
 | GET                    | `teams`, `teams/:p`, `teams/:p/library`, `teams/:p/members`                                                                         |
 | DELETE                 | `workbench/sessions/current`                                                                                                        |

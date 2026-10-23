@@ -27,7 +27,6 @@ import {
 } from './details-cells';
 import { formatSize } from './details-format';
 import { useSnapshotPrefetch } from './useSnapshotPrefetch';
-import { DocumentRowTags } from '@/components/tags/DocumentRowTags';
 
 // One document in the Details view (docs/specs/013-workspace/explorer-details-view.md): its columns,
 // the preview on a resting hover over the row, the drag source, and the `⋯` menu shown on hover.
@@ -97,8 +96,6 @@ export function DetailsDocumentRow(props: DocumentEntryProps) {
               {doc.name}
             </Link>
           )}
-          {/* The reader's tags (docs/specs/013-workspace/tags.md "Where tags show"), right after the name. */}
-          <DocumentRowTags documentId={doc.id} />
           {local ? <ThisBrowserPill /> : null}
           {isMadeByAi(doc) ? <MadeByAiPill /> : null}
           {folderChip ? (

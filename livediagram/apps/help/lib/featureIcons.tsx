@@ -1619,13 +1619,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <circle cx="10" cy="14" r="3" />
     </Glyph>
   ),
-  // A luggage tag with its eyelet: a label you put on a document.
-  tags: (
-    <Glyph>
-      <path d="M3.5 12.2V4.5a1 1 0 0 1 1-1h7.7a1 1 0 0 1 .7.3l7.6 7.6a1 1 0 0 1 0 1.4l-7.7 7.7a1 1 0 0 1-1.4 0l-7.6-7.6a1 1 0 0 1-.3-.7z" />
-      <circle cx="8" cy="8" r="1.5" />
-    </Glyph>
-  ),
   // A diagram's box and decision, joined by a bent connector, arriving as a document.
   'drawio-import': (
     <Glyph>

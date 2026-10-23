@@ -9,7 +9,6 @@
 
 import { DOCUMENT_CONVERSION_HEADER } from '@livediagram/api-schema';
 import { apiCreateDocument, apiSetFavourite } from '@/lib/api-client';
-import { apiSetDocumentTag } from '@/lib/api/tags';
 import { API_BASE, ApiError, apiDelete } from '@/lib/api/core';
 import { uploadEmbeddedImages } from './offline-images';
 import {
@@ -116,13 +115,6 @@ export async function syncOfflineDocument(
       // on the server AFTER the delete: while the id is still registered offline,
       // apiSetFavourite would route the star straight back to the local store.
       if (done.rec.favourite) await apiSetFavourite(ownerId, rec.id, true);
-      // Its tags the same way (docs/specs/013-workspace/tags.md). One deleted meanwhile is refused and left off;
-      // the document is synced either way.
-      await Promise.allSettled(
-        (done.rec.tagIds ?? []).map((tagId) =>
-          apiSetDocumentTag(ownerId, tagId, done.rec.id, true),
-        ),
-      );
       return { id: rec.id, imageIds };
     }
     console.warn(`[offline-sync] changed-during-upload attempt=${attempt}`);

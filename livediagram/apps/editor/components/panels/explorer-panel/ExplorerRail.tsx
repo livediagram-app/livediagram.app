@@ -11,7 +11,6 @@ import {
   LibraryIcon,
   MyDocumentsIcon,
   ShareIcon,
-  TagIcon,
   ThisBrowserIcon,
   TimelineIcon,
   TrashIcon,
@@ -38,7 +37,6 @@ const ICONS: Record<PanelSection['kind'], () => ReactNode> = {
   mine: () => <MyDocumentsIcon />,
   team: () => <TeamIcon />,
   browser: () => <ThisBrowserIcon />,
-  tags: () => <TagIcon />,
   library: () => <LibraryIcon />,
   trash: () => <TrashIcon />,
 };

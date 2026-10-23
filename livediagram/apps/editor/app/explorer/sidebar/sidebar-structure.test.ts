@@ -9,7 +9,6 @@ import {
   SIDEBAR_GROUP_TITLES,
   sidebarDivider,
   sidebarGroups,
-  TAGS_EXPAND_KEY,
   type SidebarLayoutInput,
 } from './sidebar-structure';
 
@@ -80,12 +79,6 @@ describe('sidebarGroups', () => {
     ]);
   });
 
-  // docs/specs/013-workspace/tags.md "The sidebar": always shown, so it can be found before the first tag.
-  it('holds Tags inside Library, not as a row of More (tags.md "The sidebar")', () => {
-    expect(rowsOf(GUEST, 'more')).not.toContain('tags' as never);
-    expect(rowsOf(SIGNED_IN, 'more')).toContain('library');
-  });
-
   it('keeps This Browser while its view is current, even when empty', () => {
     expect(rowsOf({ ...GUEST, selected: 'offline' }, 'more')).toContain('thisBrowser');
   });
@@ -144,13 +137,6 @@ describe('initialExpanded', () => {
 
   it('also opens Library when a Library page is the current view', () => {
     expect(initialExpanded({ kind: 'shape-libraries' }).has(LIBRARY_EXPAND_KEY)).toBe(true);
-  });
-
-  it('opens Tags when a Tags page is the current view, and only then', () => {
-    expect(initialExpanded({ kind: 'tags', id: 't1' }).has(TAGS_EXPAND_KEY)).toBe(true);
-    // Tags lives inside Library, so a Tags page opens Library too.
-    expect(initialExpanded({ kind: 'tags', id: 't1' }).has(LIBRARY_EXPAND_KEY)).toBe(true);
-    expect(initialExpanded({ kind: 'all' }).has(TAGS_EXPAND_KEY)).toBe(false);
   });
 
   it('keeps the expand keys apart from folder and team ids', () => {

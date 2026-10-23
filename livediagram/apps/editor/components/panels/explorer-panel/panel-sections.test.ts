@@ -17,16 +17,18 @@ describe('the editor Explorer sections', () => {
     expect(groups.map((g) => g.sections.map(sectionKey))).toEqual([
       ['home', 'inbox', 'timeline', 'shared'],
       ['mine', 'team:t1'],
-      ['browser', 'tags', 'library', 'trash'],
+      ['browser', 'library', 'trash'],
     ]);
     const none = panelSectionGroups({ teams: [], hasBrowserDocuments: false });
-    expect(none[2]!.sections.map(sectionKey)).toEqual(['tags', 'library', 'trash']);
+    expect(none[2]!.sections.map(sectionKey)).toEqual(['library', 'trash']);
   });
 
   it('round-trips a key, and refuses one it does not know', () => {
     for (const s of groups.flatMap((g) => g.sections))
       expect(sectionFromKey(sectionKey(s))).toEqual(s);
     expect(sectionFromKey('nope')).toBeNull();
+    // Tags were removed (docs/specs/013-workspace/tags.md): a remembered Tags section is no longer one.
+    expect(sectionFromKey('tags')).toBeNull();
     expect(sectionFromKey('team:')).toBeNull();
     expect(sectionFromKey(null)).toBeNull();
   });
@@ -41,8 +43,6 @@ describe('the editor Explorer sections', () => {
     expect(sectionPage({ kind: 'mine' })).toEqual({ kind: 'all' });
     expect(sectionPage({ kind: 'browser' })).toEqual({ kind: 'offline' });
     expect(sectionPage({ kind: 'library' })).toEqual({ kind: 'gallery' });
-    expect(sectionPage({ kind: 'tags' })).toEqual({ kind: 'tags' });
-    expect(sectionLabel({ kind: 'tags' })).toBe('Tags');
     expect(sectionPage({ kind: 'team', id: 't1' })).toEqual({ kind: 'team', id: 't1' });
     expect(sectionPage({ kind: 'inbox' })).toEqual({ kind: 'inbox' });
   });

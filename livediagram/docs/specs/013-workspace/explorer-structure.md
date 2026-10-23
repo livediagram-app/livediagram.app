@@ -35,9 +35,9 @@ The sidebar shares Home's front-page language ([Explorer Home](explorer-home.md#
   slate wash.
 - **Tiles.** Every top-level row of Overview and Spaces carries its icon on a small rounded **tile** (24 px, radius
   8 px) tinted in the row's **tone**: Home and My Work sky, Inbox violet, Timeline amber, Shared With Me emerald,
-  a team indigo, Invites rose. Manage Teams and the rows of More (This Browser, Tags, Library, Trash) keep a bare slate
+  a team indigo, Invites rose. Manage Teams and the rows of More (This Browser, Library, Trash) keep a bare slate
   icon, so the places and views people go to most read first. Nested rows (folders, a team's folders, the Library
-  pages, tags) keep a bare icon too.
+  pages) keep a bare icon too.
 - **The current row** is a raised pill: white, a hairline sky edge and a soft sky shadow, its label in semibold deep
   sky, and its tile filled solid sky with a white icon (a bare icon turns sky). In dark mode it is a glass pill: a
   faint sky wash fading to the right with a sky hairline inside its edge, its label white.
@@ -99,20 +99,17 @@ reached from Home's What Happened (**See Timeline**). The retired `/explorer/act
 
 ### More
 
-| Row          | Opens                                  | Children                             | Badge                     |
-| ------------ | -------------------------------------- | ------------------------------------ | ------------------------- |
-| This Browser | `/explorer/offline`                    | None                                 | Documents in this browser |
-| Library      | Nothing: the row expands and collapses | Tags, Image Gallery, Shape Libraries | None                      |
-| Trash        | `/explorer/trash` ([Trash](trash.md))  | None                                 | None                      |
+| Row          | Opens                                  | Children                       | Badge                     |
+| ------------ | -------------------------------------- | ------------------------------ | ------------------------- |
+| This Browser | `/explorer/offline`                    | None                           | Documents in this browser |
+| Library      | Nothing: the row expands and collapses | Image Gallery, Shape Libraries | None                      |
+| Trash        | `/explorer/trash` ([Trash](trash.md))  | None                           | None                      |
 
 - **This Browser** shows only while this browser holds at least one offline document, or while its view is the current
   one (so the highlighted row never vanishes under the reader). Its documents are the reader's own
   ([documents in This Browser](#documents-in-this-browser)).
 - **Library** has no view of its own: activating it expands or collapses it. It opens by itself when one of its
-  pages is the current view, the Tags pages included.
-- **Tags** is Library's first row, always shown (so it can be found before the first tag). It opens the Tags page and
-  expands to one row per tag, each carrying its colour, its document count as its badge and its menu
-  ([Tags: The sidebar](tags.md#the-sidebar)). The editor's Explorer panel keeps Tags as its own rail entry.
+  pages is the current view.
 
 The group's title is **More**.
 
@@ -282,7 +279,7 @@ aside: the panel reaches under the strip and they would cover its header.
 
 The rail opens with **New Document** (one click to a new document; a "New" chip first in the row on a phone), then the
 sidebar's three groups, Overview, Spaces and More, as one column of entries: Home, Inbox, Timeline,
-Shared With Me; My Work and each team; This Browser, Tags, Library and Trash. Shared With Me and This Browser carry
+Shared With Me; My Work and each team; This Browser, Library and Trash. Shared With Me and This Browser carry
 their counts (the panel reads no other feed until its section is shown). No
 Invites, Manage Teams or sign-in nudge: those are the Explorer page's.
 
@@ -310,7 +307,6 @@ compact size, skeleton rows while loading, and one line with **Try Again** when 
 | Shared With Me | The documents shared with the reader, as rows                                                                                                                                                                                                                                                                                                                                                                      | None       |
 | My Work        | The root folders as preview cards (their counts on the picture), then the root documents as rows; a folder opens **in the pane** under the import and export screens' back bar (back to the folder above, the folder as its chip). New Folder makes the folder in the one open here; a folder's New Subfolder opens it                                                                                             | New Folder |
 | A team         | The team's folders, then its documents, the same way                                                                                                                                                                                                                                                                                                                                                               | New Folder |
-| Tags           | Each tag as a heading (its chip and count) over its documents as rows ([Tags](tags.md#the-editors-explorer-panel))                                                                                                                                                                                                                                                                                                 | None       |
 | This Browser   | The documents saved only in this browser                                                                                                                                                                                                                                                                                                                                                                           | None       |
 | Library        | Two tabs: Image gallery, Shape libraries, each the Explorer page's own view at the pane's width; Open Page goes to the tab shown                                                                                                                                                                                                                                                                                   | None       |
 | Trash          | A line on the 30 days, then each deleted document as a row with **Restore** and **Delete** as icon buttons named by their tooltips (Delete asked first)                                                                                                                                                                                                                                                            | None       |

@@ -16,7 +16,6 @@ export * from './share';
 export * from './shared';
 export * from './folders';
 export * from './favourites';
-export * from './tags';
 export * from './placement-defaults';
 export * from './shape-libraries';
 export * from './teams';

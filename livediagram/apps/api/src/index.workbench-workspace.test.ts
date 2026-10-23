@@ -38,7 +38,6 @@ vi.mock('./routes/migrate', () => stub('handleMigrate'));
 vi.mock('./routes/guest-id', () => stub('handleGuestId'));
 vi.mock('./routes/participants', () => stub('handleParticipants'));
 vi.mock('./routes/favourites', () => stub('handleFavourites'));
-vi.mock('./routes/tags', () => stub('handleTags'));
 vi.mock('./routes/placement-defaults', () => stub('handlePlacementDefaults'));
 vi.mock('./routes/timeline', () => stub('handleTimeline'));
 vi.mock('./routes/activity', () => stub('handleActivity'));
@@ -109,7 +108,6 @@ describe('a workspace session at the front door', () => {
     ['DELETE', 'folders/f1', 'handleFolders'],
     ['GET', 'shared', 'handleShared'],
     ['PUT', 'favourites/doc1', 'handleFavourites'],
-    ['GET', 'tags', 'handleTags'],
     ['GET', 'home', 'handleHome'],
     ['GET', 'timeline', 'handleTimeline'],
     ['GET', 'activity', 'handleActivity'],

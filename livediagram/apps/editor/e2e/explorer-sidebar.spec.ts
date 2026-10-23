@@ -91,10 +91,8 @@ test.describe('explorer sidebar', () => {
     await expect(row(page, 'Library')).toBeFocused();
     await page.keyboard.press('ArrowRight');
     await expect(row(page, 'Library')).toHaveAttribute('aria-expanded', 'true');
-    // Library's first row is Tags (tags.md "The sidebar"), then its pages.
+    // Library's first row is its first page.
     await page.keyboard.press('ArrowRight');
-    await expect(row(page, 'Tags')).toBeFocused();
-    await page.keyboard.press('ArrowDown');
     await expect(row(page, 'Image Gallery')).toBeFocused();
     await page.keyboard.press('Enter');
     await expect(page).toHaveURL(/\/explorer\/images\/?$/);

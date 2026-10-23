@@ -241,7 +241,6 @@ describe('workbenchRouteVerdict, workspace scope', () => {
     ['GET', 'shared'],
     ['DELETE', 'shared/doc1'],
     ['PUT', 'favourites/doc1'],
-    ['GET', 'tags'],
     ['GET', 'home'],
     ['GET', 'timeline'],
     ['GET', 'activity'],

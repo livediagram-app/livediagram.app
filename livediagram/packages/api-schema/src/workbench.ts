@@ -285,7 +285,6 @@ const WORKSPACE_ROUTES: readonly RouteShape[] = [
     'folders',
     'shared',
     'favourites',
-    'tags',
     'home',
     'timeline',
     'activity',

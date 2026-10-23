@@ -1,14 +1,13 @@
 import type { Metadata } from 'next';
-import { ExplorerPane } from '../ExplorerPane';
-import { viewDocumentTitle } from '../view-titles';
+import { RetiredViewRedirect } from '../RetiredViewRedirect';
 
-// /explorer/tags — the reader's documents grouped by tag, or one tag's (`?id=`) (docs/specs/013-workspace/tags.md
-// "The Tags page"). The layout's ExplorerShell provides the chrome + state; this page only pins the route and the tab
-// title (docs/specs/013-workspace/folders.md, routes.ts).
+// /explorer/tags is retired (docs/specs/013-workspace/folders.md#explorer-routes): tags were removed, so this
+// address replaces itself with Home and links to it keep working.
 export const metadata: Metadata = {
-  title: viewDocumentTitle('tags'),
+  title: 'Explorer | livediagram',
+  robots: { index: false, follow: false },
 };
 
 export default function Page() {
-  return <ExplorerPane />;
+  return <RetiredViewRedirect from="tags" />;
 }
