@@ -6,7 +6,11 @@ import type { Env } from './env.ts';
 import { GUEST_COOKIE, readGuestCookie, signGuestCookie } from './guests.ts';
 import { RESOURCES } from './resources.ts';
 import { testD1 } from './test-d1.ts';
-import { WORKSPACE_TOKEN_TTL_SECONDS, workspaceToken } from './workspace-token.ts';
+import {
+  WORKSPACE_TOKEN_TTL_SECONDS,
+  workspaceProfiles,
+  workspaceToken,
+} from './workspace-token.ts';
 
 const BASE = 'https://liveworkspace.app';
 const SECRET = 'test-secret-that-is-at-least-32-characters';
@@ -130,5 +134,42 @@ describe("liveworkspace.app's own token", () => {
 
   it('refuses a request from another site', async () => {
     expect((await ask({ 'sec-fetch-site': 'cross-site' })).status).toBe(403);
+  });
+});
+
+describe("liveworkspace.app's names for who did what", () => {
+  const read = (ids: unknown, headers: Record<string, string>) =>
+    workspaceProfiles(
+      new Request(`${BASE}/api/auth/workspace-profiles`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', origin: BASE, ...headers },
+        body: JSON.stringify({ ids }),
+      }),
+      env,
+      auth,
+    );
+
+  it('names accounts for a signed-in person, many at once, and leaves out unknown ids', async () => {
+    const cookie = await sessionCookie();
+    const me = ((await (await ask({ cookie })).json()) as { sub: string }).sub;
+    await env.AUTH_DB.prepare('UPDATE "user" SET name = ? WHERE id = ?').bind('Ada Lovelace', me).run();
+    const response = await read([me, 'guest_00000000-0000-4000-8000-00000000dead'], { cookie });
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ profiles: [{ id: me, name: 'Ada Lovelace' }] });
+  });
+
+  it('answers a guest this browser already is, and nobody else', async () => {
+    const guestId = 'guest_00000000-0000-4000-8000-000000000002';
+    const cookie = `${GUEST_COOKIE}=${await signGuestCookie(guestId, SECRET)}`;
+    expect((await read([guestId], { cookie })).status).toBe(200);
+    expect((await read([guestId], {})).status).toBe(401);
+  });
+
+  it('refuses another site, bad ids and more than a hundred', async () => {
+    const cookie = await sessionCookie();
+    expect((await read(['user_x'], { cookie, origin: 'https://evil.example' })).status).toBe(403);
+    expect((await read(['not an id'], { cookie })).status).toBe(400);
+    const many = Array.from({ length: 101 }, (_, i) => `guest_00000000-0000-4000-8000-${String(i).padStart(12, '0')}`);
+    expect((await read(many, { cookie })).status).toBe(400);
   });
 });

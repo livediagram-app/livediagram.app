@@ -27,4 +27,21 @@ describe('a host’s own chrome', () => {
     expect(assign).toHaveBeenCalledWith('https://lp/offline');
     vi.unstubAllGlobals();
   });
+
+  it('says the host’s word on arrival once, as a toast', async () => {
+    render(
+      <Explorer
+        app="liveplanner"
+        client={createFakeIndex().client}
+        view={{ kind: 'recent' }}
+        onNavigate={vi.fn()}
+        itemHref={(i) => `/open/${i.id}`}
+        onCreate={vi.fn()}
+        arrivalNotice="The link you opened that plan with was revoked."
+      />,
+    );
+    expect(
+      await screen.findAllByText('The link you opened that plan with was revoked.'),
+    ).toHaveLength(1);
+  });
 });

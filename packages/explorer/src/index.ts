@@ -61,3 +61,4 @@ export type {
   WelcomeTelemetryType,
 } from './welcome/types';
 export type { SidebarLink } from './explorer/host';
+export { NAME_BATCH, type NameLookup } from './data/names';

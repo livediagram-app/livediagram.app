@@ -30,6 +30,7 @@ import type { AppFilter } from '../words';
 import { AppMark } from './badges';
 import { useExplorer } from './context';
 import { isAbort } from '../data/errors';
+import { useNamedEvents } from '../data/names';
 
 const PANEL =
   'rounded-[20px] border border-slate-200 bg-white px-3 py-2 sm:px-5 dark:border-slate-700 dark:bg-slate-800';
@@ -88,16 +89,18 @@ export function useWhatHappened(
 export function useWhatHappenedGroups(state: WhatHappenedState): WhatHappenedGroup[] {
   const { overlay, viewerId } = useExplorer();
   const version = useSyncExternalStore(overlay.subscribe, overlay.version, overlay.version);
+  // Who did it, by name: the index keeps ids only.
+  const events = useNamedEvents(state.events);
   return useMemo(
     () =>
       groupWhatHappened(
-        state.events
+        events
           .map((e) => ({ ...e, item: overlay.apply(e.item) }))
           .filter((e) => !(e.item as { gone?: boolean }).gone),
         viewerId,
       ),
     // eslint-disable-next-line react-hooks/exhaustive-deps -- version is what changes overlay.apply
-    [state.events, viewerId, overlay, version],
+    [events, viewerId, overlay, version],
   );
 }
 

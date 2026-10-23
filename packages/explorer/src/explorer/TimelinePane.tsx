@@ -41,6 +41,7 @@ import { useExplorer, type ExplorerContextValue } from './context';
 import { EmptyPane } from './EmptyPane';
 import { ItemMenu } from './menus';
 import { PaneHeader } from './PaneHeader';
+import { useNamedEvents } from '../data/names';
 
 // A link to one event looks this many pages back for it before giving up: a bounded walk, never the whole history.
 export const FOCUS_PAGES_MAX = 5;
@@ -160,10 +161,12 @@ export function TimelinePane({ onOpenNav }: { onOpenNav?: () => void }) {
   // Renames, favourites and deletes made anywhere show on the cards at once.
   const overlayVersion = useSyncExternalStore(overlay.subscribe, overlay.version, overlay.version);
   // An item purged or dismissed since the page loaded takes its events with it.
+  // Who did it, by name: the index keeps ids only.
+  const named = useNamedEvents(feed.events);
   const events = useMemo(
-    () => feed.events.filter((e) => !overlay.apply(e.item).gone),
+    () => named.filter((e) => !overlay.apply(e.item).gone),
     // eslint-disable-next-line react-hooks/exhaustive-deps -- overlayVersion is what changes overlay.apply
-    [feed.events, overlay, overlayVersion],
+    [named, overlay, overlayVersion],
   );
   const controls = useTimelineControls(events, {
     viewerId,

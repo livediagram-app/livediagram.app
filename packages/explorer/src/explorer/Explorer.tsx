@@ -42,6 +42,7 @@ import { Sidebar } from './Sidebar';
 import { TimelinePane } from './TimelinePane';
 import { useHeroPresence } from './useHeroPresence';
 import { HostExtrasProvider, type SidebarLink } from './host';
+import { createNameStore, NamesProvider, type NameLookup } from '../data/names';
 import { WelcomeProvider, useFirstRun } from '../welcome/context';
 import { WelcomeFan } from '../welcome/HomeWelcome';
 import type { WelcomeOptions } from '../welcome/types';
@@ -115,6 +116,11 @@ export type ExplorerProps = {
   sidebarLinks?: readonly SidebarLink[];
   /** The filter's every-app choice, "All" by default ("All apps" where the Explorer is no one app's). */
   allLabel?: string;
+  /** Names for the actor ids What Happened and the Timeline show (the index keeps none), asked in batches of up to
+   *  100 and kept for the page's life. Without it they say "A teammate". Stable, or the names are asked again. */
+  lookupNames?: NameLookup;
+  /** A sentence said once on arrival, as a toast (why the person was sent here: a revoked link, say). */
+  arrivalNotice?: string | null;
 };
 
 const FILTER_KEY = (app: App) => `liveworkspace:explorer-filter:${app}`;
@@ -214,6 +220,8 @@ function ExplorerInner({
   welcome,
   sidebarLinks,
   allLabel,
+  lookupNames,
+  arrivalNotice,
 }: ExplorerProps) {
   const [filter, setFilter] = useFilter(app, controlledFilter, onFilterChange);
   const [heroHidden, hideHero] = useHeroHidden(app, controlledHeroHidden, onHideHero);
@@ -233,6 +241,7 @@ function ExplorerInner({
     () => ({ sidebarLinks: sidebarLinks ?? [], allLabel: allLabel ?? 'All' }),
     [sidebarLinks, allLabel],
   );
+  const names = useMemo(() => createNameStore(lookupNames), [lookupNames]);
   return (
     <ExplorerProvider
       app={app}
@@ -261,48 +270,51 @@ function ExplorerInner({
       onLensSelected={onLensSelected}
     >
       <HostExtrasProvider value={extras}>
-        <WelcomeProvider welcome={welcome} active={view.kind === 'home'}>
-          <div data-explorer="" className="flex min-w-0 flex-1 flex-col">
-            {header ? (
-              header({ search: heroOnHome ? null : <BarSearch toolbar={toolbar} /> })
-            ) : heroOnHome ? null : (
-              <div className="sticky top-0 z-30 flex h-12 shrink-0 items-center border-b border-slate-200 bg-white/85 px-4 backdrop-blur dark:border-slate-700 dark:bg-slate-900/85">
-                <div className="w-full sm:mx-auto sm:max-w-md">
-                  <BarSearch toolbar={toolbar} />
+        <NamesProvider value={names}>
+          <WelcomeProvider welcome={welcome} active={view.kind === 'home'}>
+            <div data-explorer="" className="flex min-w-0 flex-1 flex-col">
+              {header ? (
+                header({ search: heroOnHome ? null : <BarSearch toolbar={toolbar} /> })
+              ) : heroOnHome ? null : (
+                <div className="sticky top-0 z-30 flex h-12 shrink-0 items-center border-b border-slate-200 bg-white/85 px-4 backdrop-blur dark:border-slate-700 dark:bg-slate-900/85">
+                  <div className="w-full sm:mx-auto sm:max-w-md">
+                    <BarSearch toolbar={toolbar} />
+                  </div>
                 </div>
-              </div>
-            )}
-            {hero.mounted ? (
-              <div
-                data-home-hero-fold={hero.open ? 'open' : 'closed'}
-                inert={!hero.open}
-                aria-hidden={!hero.open || undefined}
-                className={`grid transition-[grid-template-rows,opacity] duration-long ease-out motion-reduce:transition-none ${
-                  hero.open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
-                }`}
-              >
-                <div className="min-h-0 overflow-hidden">
-                  <HeroWithCount art={heroArt} onHide={hideHero} />
+              )}
+              {hero.mounted ? (
+                <div
+                  data-home-hero-fold={hero.open ? 'open' : 'closed'}
+                  inert={!hero.open}
+                  aria-hidden={!hero.open || undefined}
+                  className={`grid transition-[grid-template-rows,opacity] duration-long ease-out motion-reduce:transition-none ${
+                    hero.open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
+                  }`}
+                >
+                  <div className="min-h-0 overflow-hidden">
+                    <HeroWithCount art={heroArt} onHide={hideHero} />
+                  </div>
                 </div>
-              </div>
-            ) : null}
-            <main className="mx-auto flex w-full max-w-7xl flex-1 gap-8 px-4 pb-16 pt-8 sm:px-6">
-              {/* No box: the tree sits on the page. Hidden on a phone, where the drawer holds it. */}
-              <aside className="hidden w-64 shrink-0 self-start sm:block" aria-label="Sections">
-                <div className="sticky top-20 px-1 py-1">
-                  <Sidebar />
-                </div>
-              </aside>
-              {navOpen ? <SectionsDrawer onClose={() => setNavOpen(false)} /> : null}
-              <section className="min-w-0 flex-1">
-                <Pane view={view} onOpenNav={openNav} hero={heroOnHome} />
-              </section>
-            </main>
-          </div>
-        </WelcomeProvider>
+              ) : null}
+              <main className="mx-auto flex w-full max-w-7xl flex-1 gap-8 px-4 pb-16 pt-8 sm:px-6">
+                {/* No box: the tree sits on the page. Hidden on a phone, where the drawer holds it. */}
+                <aside className="hidden w-64 shrink-0 self-start sm:block" aria-label="Sections">
+                  <div className="sticky top-20 px-1 py-1">
+                    <Sidebar />
+                  </div>
+                </aside>
+                {navOpen ? <SectionsDrawer onClose={() => setNavOpen(false)} /> : null}
+                <section className="min-w-0 flex-1">
+                  <Pane view={view} onOpenNav={openNav} hero={heroOnHome} />
+                </section>
+              </main>
+            </div>
+          </WelcomeProvider>
+        </NamesProvider>
       </HostExtrasProvider>
       <ExplorerDialogs />
       {trashedOnArrival ? <ArrivalUndo trashed={trashedOnArrival} /> : null}
+      {arrivalNotice ? <ArrivalNotice text={arrivalNotice} /> : null}
     </ExplorerProvider>
   );
 }
@@ -329,6 +341,18 @@ function ArrivalUndo({ trashed }: { trashed: { id: string; title: string | null 
       },
     });
   }, [trashed, client, toast, reloadLists]);
+  return null;
+}
+
+/** The host's word on arrival, said once. */
+function ArrivalNotice({ text }: { text: string }) {
+  const { toast } = useExplorerContext();
+  const said = useRef<string | null>(null);
+  useEffect(() => {
+    if (said.current === text) return;
+    said.current = text;
+    toast.show(text);
+  }, [text, toast]);
   return null;
 }
 

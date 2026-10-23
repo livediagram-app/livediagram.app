@@ -24,7 +24,12 @@ import { runLifecycle, sendWelcomes, takeWelcomes, type SendEmail } from './life
 import { sweepInvitations } from './teams.ts';
 import { sweepExpiringTokens } from './token-expiry.ts';
 import { flushServerEvents, flushServerEventsAfter } from './telemetry.ts';
-import { WORKSPACE_TOKEN_PATH, workspaceToken } from './workspace-token.ts';
+import {
+  WORKSPACE_PROFILES_PATH,
+  WORKSPACE_TOKEN_PATH,
+  workspaceProfiles,
+  workspaceToken,
+} from './workspace-token.ts';
 
 // The accounts API. Only the paths routed to this Worker reach it (wrangler.toml): /api/auth/*,
 // /api/account/* (teams and API tokens, account-api.ts) and the two discovery documents. Every page, the sign-in pages included, is the static site's
@@ -70,6 +75,11 @@ export default {
 
     if (request.method === 'POST' && pathname === `${AUTH_BASE_PATH}${DELETE_ACCOUNT_PATH}`) {
       return deleteAccount(request, getAuth(env), env.AUTH_DB, indexPurgeConfig(env));
+    }
+
+    // liveworkspace.app's Explorer naming who did what: display names for up to 100 ids at once.
+    if (request.method === 'POST' && pathname === `${AUTH_BASE_PATH}${WORKSPACE_PROFILES_PATH}`) {
+      return workspaceProfiles(request, env, getAuth(env));
     }
 
     if (pathname === AUTH_BASE_PATH || pathname.startsWith(`${AUTH_BASE_PATH}/`)) {
