@@ -1,20 +1,21 @@
 'use client';
 
 // Every view that lists items (My Work, a folder, a team, Unsorted, Recent, Favourites, Shared With Me,
-// one tag, Search, the Trash): its header, its folder rows from the folder tree, and its items from one
-// paged list, in the chosen layout.
+// Search, the Trash): its header, its folder rows from the folder tree, and its items from one paged list,
+// in the chosen layout. As livediagram's: cards by default; Shared With Me is a fixed list and the Trash its
+// own grouped page, neither with the layout toggle; New Folder only where folders live.
 
 import { useCallback, useMemo, useRef, useState } from 'react';
 import type { Folder } from '@liveworkspace/index-client';
 import { folderPath } from '../data/useFolders';
 import { useItemList } from '../data/useItemList';
 import { viewList, type SharedMeta } from '../data/viewLists';
-import { Button } from '../ui/Button';
 import { explorerPath, SIDEBAR_LABELS, VIEW_TITLES, type ExplorerView } from '../views';
 import { CardView } from './CardView';
 import { useExplorer } from './context';
 import { DetailsView } from './DetailsView';
 import { EmptyPane, SkeletonRows } from './EmptyPane';
+import { TrashNote, TrashPane } from './TrashPane';
 import { ListView } from './ListView';
 import { PaneHeader, type Crumb, type ViewMode } from './PaneHeader';
 import type { RowOptions } from './rows';
@@ -26,9 +27,9 @@ export function useViewMode(): [ViewMode, (mode: ViewMode) => void] {
     try {
       const saved =
         typeof localStorage === 'undefined' ? null : localStorage.getItem(VIEW_MODE_KEY);
-      return saved === 'card' || saved === 'details' ? saved : 'list';
+      return saved === 'list' || saved === 'details' ? saved : 'card';
     } catch {
-      return 'list';
+      return 'card';
     }
   });
   const set = useCallback((next: ViewMode) => {
@@ -84,15 +85,14 @@ export function ItemsPane({
   }, [viewKey, folders]);
 
   const { title, crumbs } = heading(view, ctx);
-  const showFolder = ['recent', 'favourites', 'search', 'tags', 'unsorted', 'shared'].includes(
-    view.kind,
-  );
+  const layouts = !FIXED_LAYOUT.has(view.kind);
+  const showFolder = ['recent', 'favourites', 'search', 'unsorted', 'shared'].includes(view.kind);
   const options = useMemo<RowOptions>(
     () => ({ showApp: filter === 'all', showFolder }),
     [filter, showFolder],
   );
 
-  const createFolder = place
+  const createFolder = place && FOLDER_VIEWS.has(view.kind)
     ? () => {
         void folders
           .create({ name: 'New Folder', parentId: place.folderId, teamId: place.teamId })
@@ -100,13 +100,6 @@ export function ItemsPane({
       }
     : undefined;
   const createItem = place ? () => onCreate(place) : undefined;
-
-  const trashActions =
-    view.kind === 'trash' && state.items.length > 0 ? (
-      <Button variant="secondary" size="xs" onClick={() => ctx.openDialog({ kind: 'empty-trash' })}>
-        Empty Trash
-      </Button>
-    ) : null;
 
   const empty = !state.loading && state.items.length === 0 && folderRows.length === 0;
   const sharedProps = {
@@ -131,15 +124,10 @@ export function ItemsPane({
             ? 'New Subfolder'
             : 'New Folder'
         }
-        actions={trashActions}
-        viewMode={mode}
-        onSetViewMode={setMode}
+        viewMode={layouts ? mode : undefined}
+        onSetViewMode={layouts ? setMode : undefined}
       />
-      {view.kind === 'trash' ? (
-        <p className="-mt-2 mb-4 text-xs text-slate-500 dark:text-slate-400">
-          Items in the Trash are deleted for good after 30 days.
-        </p>
-      ) : null}
+      {view.kind === 'trash' ? <TrashNote words={words} /> : null}
       {state.error ? (
         <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-200">
           Couldn’t load this list.{' '}
@@ -149,14 +137,22 @@ export function ItemsPane({
         </div>
       ) : state.loading && folderRows.length === 0 ? (
         <SkeletonRows />
+      ) : view.kind === 'trash' ? (
+        <TrashPane
+          items={state.items}
+          hasMore={state.hasMore}
+          loadingMore={state.loadingMore}
+          onLoadMore={state.loadMore}
+        />
       ) : empty ? (
-        <EmptyPane view={view} words={words}>
-          {createItem ? (
-            <Button size="sm" onClick={createItem}>
-              New {ctx.kind.one}
-            </Button>
-          ) : null}
-        </EmptyPane>
+        <EmptyPane
+          view={view}
+          words={words}
+          onCreate={createItem}
+          createLabel={`New ${ctx.kind.one}`}
+        />
+      ) : !layouts ? (
+        <ListView {...sharedProps} />
       ) : mode === 'card' ? (
         <CardView {...sharedProps} resetKey={list?.key ?? ''} />
       ) : mode === 'details' ? (
@@ -169,6 +165,10 @@ export function ItemsPane({
 }
 
 const NO_FOLDERS: Folder[] = [];
+// Where New Folder applies: the places folders live.
+const FOLDER_VIEWS: ReadonlySet<ExplorerView['kind']> = new Set(['all', 'folder', 'team']);
+// Shared With Me and the Trash keep one layout (livediagram's fixed lists).
+const FIXED_LAYOUT: ReadonlySet<ExplorerView['kind']> = new Set(['shared', 'trash']);
 const NO_LOAD = async () => ({ items: [], nextCursor: null });
 
 /** Where New files an item from this view, or null where New does not apply. */
@@ -181,6 +181,7 @@ export function placement(
     case 'recent':
     case 'unsorted':
     case 'favourites':
+    case 'search':
       return { folderId: null, teamId: null };
     case 'folder':
       return { folderId: view.id, teamId: null };
@@ -195,7 +196,7 @@ function heading(
   view: ExplorerView,
   ctx: ReturnType<typeof useExplorer>,
 ): { title: string; crumbs: Crumb[] } {
-  const { folders, tags, teamName, navigate } = ctx;
+  const { folders, teamName, navigate } = ctx;
   const crumbsFor = (folderId: string | null, root: Crumb): Crumb[] => [
     root,
     ...folderPath(folders.byId, folderId).map<Crumb>((f) => ({
@@ -237,19 +238,6 @@ function heading(
         }),
       };
     }
-    case 'tags': {
-      if (!view.id) return { title: VIEW_TITLES.tags, crumbs: [] };
-      const t = tags.byId.get(view.id);
-      return {
-        title: t?.name ?? 'Tag',
-        crumbs: [
-          { name: VIEW_TITLES.tags, onClick: () => navigate({ kind: 'tags' }) },
-          { name: t?.name ?? 'Tag' },
-        ],
-      };
-    }
-    case 'search':
-      return { title: view.q ? `Results for “${view.q}”` : VIEW_TITLES.search, crumbs: [] };
     default:
       return { title: VIEW_TITLES[view.kind], crumbs: [] };
   }

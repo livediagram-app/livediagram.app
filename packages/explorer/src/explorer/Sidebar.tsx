@@ -1,8 +1,8 @@
 'use client';
 
 // The Explorer's sidebar (liveplanner's ExplorerSidebar): Overview (Home, Inbox, Shared With Me), Spaces
-// (My Work and its folders, each team and its folders), and More (the Library's Recent, Favourites,
-// Unsorted and Tags, then the Trash). Rows carry toned tiles and the current row is a raised pill, in the
+// (My Work and its folders, each team and its folders), and More (the Library's Recent, Favourites and
+// Unsorted, then the Trash). Rows carry toned tiles and the current row is a raised pill, in the
 // host app's brand colour. The tree reads the folder store, so it costs no request of its own.
 
 import { useCallback, useEffect, useId, useState, type ReactNode } from 'react';
@@ -18,7 +18,6 @@ import {
   PlusIcon,
   ShareIcon,
   StarIcon,
-  TagIcon,
   TeamIcon,
   TrashIcon,
   TreeChevronIcon,
@@ -26,7 +25,6 @@ import {
 } from '../ui/icons';
 import { inboxCount } from '../data/useInbox';
 import { sameView, SIDEBAR_LABELS, type ExplorerView } from '../views';
-import { TagDot } from './badges';
 import { useExplorer } from './context';
 
 type Tone = 'sky' | 'violet' | 'amber' | 'emerald' | 'indigo' | 'rose';
@@ -51,16 +49,24 @@ const EXPANDED_KEY = 'liveworkspace:explorer-expanded';
 const MY_WORK = 'my-work';
 const LIBRARY = 'library';
 
-function useExpanded() {
-  const [expanded, setExpanded] = useState<Set<string>>(() => new Set([LIBRARY]));
+// The Library's pages: opening one unfolds the Library, so the current row is never hidden.
+const LIBRARY_VIEWS: ReadonlySet<ExplorerView['kind']> = new Set(['recent', 'favourites', 'unsorted']);
+
+function useExpanded(view: ExplorerView) {
+  // As livediagram's tree starts: My Work unfolded, the Library folded unless one of its pages is open.
+  const [expanded, setExpanded] = useState<Set<string>>(() => new Set([MY_WORK]));
   useEffect(() => {
     try {
       const saved = localStorage.getItem(EXPANDED_KEY);
       if (saved) setExpanded(new Set(JSON.parse(saved) as string[]));
     } catch {
-      // Private mode or no storage: start folded.
+      // Private mode or no storage: the starting folds.
     }
   }, []);
+  const inLibrary = LIBRARY_VIEWS.has(view.kind);
+  useEffect(() => {
+    if (inLibrary) setExpanded((prev) => (prev.has(LIBRARY) ? prev : new Set([...prev, LIBRARY])));
+  }, [inLibrary]);
   const toggle = useCallback((key: string) => {
     setExpanded((prev) => {
       const next = new Set(prev);
@@ -119,10 +125,11 @@ export function SidebarRow({
           tabIndex={-1}
           aria-hidden
           onClick={() => expandable && onToggleExpand?.()}
-          className={`flex h-5 w-5 shrink-0 items-center justify-center text-slate-400 transition ${
+          // On a touch screen the chevron is a 44 px disclosure at the row's end, the row's full height.
+          className={`flex h-5 w-5 shrink-0 items-center justify-center text-slate-400 transition pointer-coarse:order-last pointer-coarse:-mr-1 pointer-coarse:h-auto pointer-coarse:w-11 pointer-coarse:self-stretch ${
             expandable
               ? 'cursor-pointer hover:text-slate-700 dark:hover:text-slate-200'
-              : 'pointer-events-none'
+              : 'pointer-events-none pointer-coarse:hidden'
           }`}
         >
           {expandable ? <TreeChevronIcon open={expanded} /> : null}
@@ -131,8 +138,8 @@ export function SidebarRow({
           type="button"
           onClick={onActivate}
           aria-current={selected ? 'page' : undefined}
-          className={`flex min-w-0 flex-1 items-center gap-2.5 rounded text-left text-sm leading-5 outline-none focus-visible:ring-2 focus-visible:ring-brand-500 ${
-            tone ? 'py-1.5' : 'py-2'
+          className={`flex min-w-0 flex-1 items-center gap-2.5 rounded text-left text-sm leading-5 outline-none focus-visible:ring-2 focus-visible:ring-brand-500 pointer-coarse:text-[15px] ${
+            tone ? 'py-1.5 pointer-coarse:py-2.5' : 'py-2 pointer-coarse:py-3'
           } ${
             selected
               ? 'font-semibold text-brand-900 dark:text-white'
@@ -143,7 +150,7 @@ export function SidebarRow({
             <span className={`${TILE} ${selected ? TILE_CURRENT : TONES[tone]}`}>{icon}</span>
           ) : (
             <span
-              className={`shrink-0 ${selected ? 'text-brand-700 dark:text-brand-300' : 'text-slate-400'}`}
+              className={`shrink-0 pointer-coarse:[&_svg]:size-[17px] ${selected ? 'text-brand-600 dark:text-brand-300' : 'text-slate-400'}`}
             >
               {icon}
             </span>
@@ -225,8 +232,8 @@ function FolderSubtree({
 }
 
 export function Sidebar() {
-  const { view, navigate, folders, teams, tags, inbox, viewerId, manageTeamsUrl } = useExplorer();
-  const { expanded, toggle } = useExpanded();
+  const { view, navigate, folders, teams, inbox, viewerId, manageTeamsUrl } = useExplorer();
+  const { expanded, toggle } = useExpanded(view);
   const is = (v: ExplorerView) => sameView(view, v);
   const myRoots = folders.childrenOf(null, null);
   return (
@@ -344,27 +351,6 @@ export function Sidebar() {
             onActivate={() => navigate({ kind: 'unsorted' })}
             depth={1}
           />
-          <SidebarRow
-            icon={<TagIcon />}
-            label={SIDEBAR_LABELS.tags}
-            selected={view.kind === 'tags' && !view.id}
-            onActivate={() => navigate({ kind: 'tags' })}
-            depth={1}
-            expandable={tags.tags.length > 0}
-            expanded={expanded.has('tags')}
-            onToggleExpand={() => toggle('tags')}
-          >
-            {tags.tags.map((t) => (
-              <SidebarRow
-                key={t.id}
-                icon={<TagDot colour={t.colour} />}
-                label={t.name}
-                selected={view.kind === 'tags' && view.id === t.id}
-                onActivate={() => navigate({ kind: 'tags', id: t.id })}
-                depth={2}
-              />
-            ))}
-          </SidebarRow>
         </SidebarRow>
         <SidebarRow
           icon={<TrashIcon />}

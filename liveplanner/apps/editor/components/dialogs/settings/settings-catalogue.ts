@@ -633,6 +633,26 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     ],
   },
   {
+    id: 'projects',
+    label: 'Plans',
+    rows: [
+      {
+        // Home's banner (docs/specs/013-workspace/explorer-home.md "Hiding the banner"): its own close writes `false`,
+        // and this switch brings it back. The shared Explorer draws it (@liveworkspace/explorer's HomeHero).
+        kind: 'toggle',
+        key: 'homeBanner',
+        section: 'Explorer',
+        keywords: 'home banner hero greeting welcome header top search explorer hide show close',
+        label: 'Show Home Banner',
+        description:
+          "The greeting, status pills and large search at the top of Explorer Home. When it's hidden, Home's search sits in the header, as on every other Explorer page.",
+        read: (p) => p.homeBanner !== false,
+        write: (p, v) => ({ ...p, homeBanner: v }),
+        event: { category: 'UI', on: 'HomeBannerOn', off: 'HomeBannerOff' },
+      },
+    ],
+  },
+  {
     id: 'account',
     label: 'Account',
     rows: [
@@ -808,7 +828,7 @@ export function visibleCategories(ctx: SettingsRowContext): SettingsCategorySpec
 // What a workbench's Settings leave out (docs/specs/013-workspace/blueprints/workbench-embeds.md,
 // Surface table): the account and everything beyond the one project. A category nested under one
 // goes with it, so nothing is left without its parent.
-const WORKBENCH_HIDDEN_CATEGORIES = new Set(['account', 'tokens']);
+const WORKBENCH_HIDDEN_CATEGORIES = new Set(['projects', 'account', 'tokens']);
 
 function hiddenInWorkbench(category: SettingsCategorySpec): boolean {
   return (

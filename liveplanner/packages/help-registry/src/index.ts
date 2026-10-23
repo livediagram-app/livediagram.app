@@ -159,7 +159,7 @@ export const categories: Category[] = [
     title: 'Explorer',
     description:
       'Organise everything you build: one library, shared by every liveworkspace app, that keeps your plans, folders and teams easy to find and manage.',
-    articleCount: 12,
+    articleCount: 11,
     kind: 'feature',
     groups: ['Your Library', 'Activity'],
   },
@@ -899,17 +899,6 @@ export const articles: Article[] = [
       "The full-page library every liveworkspace app shares: Plans or All, the sidebar's Overview, Spaces and More, views and search.",
     keywords:
       'library home dashboard files my plans list manage browse sidebar overview spaces more search all apps every app filter canvases designs liveworkspace duplicate copy plans project',
-    category: 'Explorer',
-    categorySlug: 'explorer',
-    group: 'Your Library',
-  },
-  {
-    slug: 'tags',
-    title: 'Tags',
-    description:
-      'Coloured labels you put on your items to group related ones together, across folders, teams and apps.',
-    keywords:
-      'tag tags label labels labelling categorise categorize group grouping colour color code coded organise organize project client status chip chips rename delete plan',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Your Library',

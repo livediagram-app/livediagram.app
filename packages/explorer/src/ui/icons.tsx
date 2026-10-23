@@ -156,13 +156,6 @@ export const MyWorkIcon = lucide(
   13,
 );
 export const LibraryIcon = lucide(<path d="m16 6 4 14M12 6v14M8 8v12M4 4v16" />, 13);
-export const TagIcon = lucide(
-  <>
-    <path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z" />
-    <circle cx="7.5" cy="7.5" r=".5" fill="currentColor" />
-  </>,
-  13,
-);
 export const TeamIcon = lucide(
   <>
     <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
@@ -382,3 +375,26 @@ export function DetailsViewIcon() {
     </Glyph>
   );
 }
+
+/** The `?` in a circle on the Help buttons. */
+export function HelpMarkIcon() {
+  return (
+    <Glyph size={14} units={16} strokeLinejoin="miter">
+      <circle cx="8" cy="8" r="6.25" />
+      <path d="M6.3 6.2a1.8 1.8 0 1 1 2.5 1.7c-.5.25-.9.65-.9 1.25v.3" strokeLinejoin="round" />
+      <circle cx="8" cy="11.6" r="0.6" fill="currentColor" stroke="none" />
+    </Glyph>
+  );
+}
+
+/** The small caret on a button that opens a menu (Create). */
+export function CaretDownIcon() {
+  return (
+    <Glyph size={10} units={16} className="-mr-0.5">
+      <path d="M4 6l4 4 4-4" />
+    </Glyph>
+  );
+}
+
+/** An `i` in a circle, for a quiet note (the Trash's). */
+export const InfoIcon = lucide(<path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20ZM12 16v-4M12 8h.01" />, 14);

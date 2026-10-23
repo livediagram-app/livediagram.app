@@ -8,7 +8,6 @@ import { isWithin } from '../data/useFolders';
 import { MoveToFolderDialog } from '../dialogs/MoveToFolderDialog';
 import type { PickerFolder, PickerTeam } from '../dialogs/PlacementBrowser';
 import { ShareDialog } from '../dialogs/ShareDialog';
-import { TagPickerDialog } from '../dialogs/TagPickerDialog';
 import { ConfirmDialog } from '../ui/ConfirmDialog';
 import type { ShareUrl } from '../types';
 import { useExplorer } from './context';
@@ -92,8 +91,6 @@ export function ExplorerDialogs() {
           onClose={close}
         />
       );
-    case 'tags':
-      return <TagPickerDialog onClose={close} />;
     case 'delete-folder': {
       const folder = folders.byId.get(dialog.folderId);
       if (!folder) return null;

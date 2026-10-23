@@ -1,19 +1,25 @@
 'use client';
 
 // The Explorer's shared state, made once per <Explorer>: the client, the optimistic overlay, the folder tree,
-// the tags, the item actions, the Inbox, and the host's routing callbacks. Lists, rows, the sidebar and the
+// the item actions, the Inbox, and the host's routing callbacks. Lists, rows, the sidebar and the
 // dialogs read it, so nothing is fetched twice and every surface shows a change at once.
 
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
 import type { App, IndexClient, Item } from '@liveworkspace/index-client';
 import { createItemOverlay, type ItemOverlay } from '../data/overlay';
 import { useFolderStore, type FolderStore } from '../data/useFolders';
-import { useTagStore, type TagStore } from '../data/useTags';
 import { useItemActions, type ItemActions } from '../data/useItemActions';
 import { useInbox, type InboxState } from '../data/useInbox';
 import { useToast, type ToastApi } from '../ui/Toasts';
 import { explorerPath, type ExplorerView } from '../views';
-import { kindWords, listWords, type AppFilter, type Words } from '../words';
+import {
+  heroWords as heroWordsFor,
+  kindWords,
+  listWords,
+  type AppFilter,
+  type HeroWords,
+  type Words,
+} from '../words';
 import type {
   ItemHref,
   LinkComponent,
@@ -28,7 +34,6 @@ export type DialogTarget =
   | { kind: 'move-item'; item: Item }
   | { kind: 'move-folder'; folderId: string }
   | { kind: 'share'; item: Item }
-  | { kind: 'tags'; item: Item }
   | { kind: 'delete-folder'; folderId: string }
   | { kind: 'empty-trash' }
   | null;
@@ -45,7 +50,6 @@ export type ExplorerContextValue = {
   epoch: number;
   reloadLists: () => void;
   folders: FolderStore;
-  tags: TagStore;
   actions: ItemActions;
   inbox: InboxState;
   toast: ToastApi;
@@ -68,7 +72,15 @@ export type ExplorerContextValue = {
   setRenamingId: (id: string | null) => void;
   dialog: DialogTarget;
   openDialog: (target: DialogTarget) => void;
+  // Opens the sections drawer on a phone (a no-op where there is none, the editor's panel).
+  openNav: () => void;
+  // A view's help article, when the host has one; the pane header and Home's hero draw a Help button.
+  helpHref?: HelpHref;
+  // Home's hero: the question after the greeting, and the lead.
+  heroWords: HeroWords;
 };
+
+export type HelpHref = (view: ExplorerView) => string | undefined;
 
 const Ctx = createContext<ExplorerContextValue | null>(null);
 
@@ -114,8 +126,13 @@ export type ExplorerProviderProps = {
   renderThumbnail?: RenderThumbnail;
   shareUrl?: ShareUrl;
   manageTeamsUrl?: string;
+  openNav?: () => void;
+  helpHref?: HelpHref;
+  heroWords?: HeroWords;
   children: ReactNode;
 };
+
+const NO_NAV = () => {};
 
 const NO_TEAMS: TeamRef[] = [];
 
@@ -136,6 +153,9 @@ export function ExplorerProvider({
   renderThumbnail,
   shareUrl,
   manageTeamsUrl,
+  openNav = NO_NAV,
+  helpHref,
+  heroWords,
   children,
 }: ExplorerProviderProps) {
   const toast = useToast();
@@ -143,7 +163,6 @@ export function ExplorerProvider({
   const [epoch, setEpoch] = useState(0);
   const reloadLists = useCallback(() => setEpoch((n) => n + 1), []);
   const folders = useFolderStore(client, toast.error, reloadLists);
-  const tags = useTagStore(client, toast.error);
   const actions = useItemActions({ client, overlay, toast, reloadLists });
   const inbox = useInbox(client, app, filter);
   const [renamingId, setRenamingId] = useState<string | null>(null);
@@ -180,7 +199,6 @@ export function ExplorerProvider({
       epoch,
       reloadLists,
       folders,
-      tags,
       actions,
       inbox,
       toast,
@@ -201,6 +219,9 @@ export function ExplorerProvider({
       setRenamingId,
       dialog,
       openDialog,
+      openNav,
+      helpHref,
+      heroWords: heroWords ?? heroWordsFor(app),
     }),
     [
       app,
@@ -211,7 +232,6 @@ export function ExplorerProvider({
       epoch,
       reloadLists,
       folders,
-      tags,
       actions,
       inbox,
       toast,
@@ -230,6 +250,9 @@ export function ExplorerProvider({
       onCreate,
       renamingId,
       dialog,
+      openNav,
+      helpHref,
+      heroWords,
     ],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

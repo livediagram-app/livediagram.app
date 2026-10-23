@@ -9,7 +9,6 @@ import {
   type IndexClient,
   type Item,
   type ItemListQuery,
-  type Tag,
 } from '@liveworkspace/index-client';
 
 export function makeItem(i: number, over: Partial<Item> = {}): Item {
@@ -43,7 +42,6 @@ export type FakeIndex = {
   client: IndexClient;
   items: Item[];
   folders: Folder[];
-  tags: Tag[];
   inbox: InboxResponse;
   calls: Call[];
   // Methods that answer with this refusal until removed.
@@ -57,11 +55,10 @@ export type FakeIndex = {
 const abortError = () => new DOMException('The operation was aborted.', 'AbortError');
 
 export function createFakeIndex(
-  seed: { items?: Item[]; folders?: Folder[]; tags?: Tag[] } = {},
+  seed: { items?: Item[]; folders?: Folder[] } = {},
 ): FakeIndex {
   const items = seed.items ?? [];
   const folders = seed.folders ?? [];
-  const tags = seed.tags ?? [];
   const calls: Call[] = [];
   const fail = new Map<string, IndexError>();
   const hold = new Set<string>();
@@ -110,7 +107,6 @@ export function createFakeIndex(
     if (q.team === 'personal') out = out.filter((i) => i.teamId === null);
     else if (q.team) out = out.filter((i) => i.teamId === q.team);
     if (q.folder) out = out.filter((i) => i.folderId === q.folder);
-    if (q.tag) out = out.filter((i) => i.tagIds.includes(q.tag!));
     if (q.q) out = out.filter((i) => i.title.toLowerCase().includes(q.q!.toLowerCase()));
     return out;
   }
@@ -164,8 +160,6 @@ export function createFakeIndex(
         const { slice, next } = page(folders, query.limit, query.cursor);
         return { folders: slice.map((f) => ({ ...f })), nextCursor: next };
       }),
-    listTags: () =>
-      answer('listTags', [], undefined, () => ({ tags: tags.map((t) => ({ ...t })) })),
     inbox: (query: { app?: App } = {}, options: { signal?: AbortSignal } = {}) =>
       answer('inbox', [query], options.signal, () => ({
         threads: inbox.threads.filter((t) => !query.app || t.app === query.app),
@@ -202,15 +196,6 @@ export function createFakeIndex(
         const copy = { ...from, id: `${from.id}-copy`, title: input.title ?? from.title };
         items.unshift(copy);
         return { item: { ...copy } };
-      }),
-    tagItem: (tagId: string, itemId: string) =>
-      answer('tagItem', [tagId, itemId], undefined, () => {
-        find(itemId).tagIds.push(tagId);
-      }),
-    untagItem: (tagId: string, itemId: string) =>
-      answer('untagItem', [tagId, itemId], undefined, () => {
-        const item = find(itemId);
-        item.tagIds = item.tagIds.filter((t) => t !== tagId);
       }),
     removeShared: (id: string) => answer('removeShared', [id], undefined, () => undefined),
     emptyTrash: () =>
@@ -252,22 +237,6 @@ export function createFakeIndex(
           1,
         );
       }),
-    createTag: (input: { id?: string; name: string; colour: string }) =>
-      answer('createTag', [input], undefined, () => {
-        const tag = {
-          id: input.id ?? `tag-${tags.length}`,
-          name: input.name,
-          colour: input.colour,
-          createdAt: 1,
-        };
-        tags.push(tag);
-        return { tag: { ...tag } };
-      }),
-    updateTag: (id: string, input: Partial<Tag>) =>
-      answer('updateTag', [id, input], undefined, () => ({
-        tag: { ...tags.find((t) => t.id === id)!, ...input },
-      })),
-    deleteTag: (id: string) => answer('deleteTag', [id], undefined, () => undefined),
     listShareLinks: (id: string) =>
       answer('listShareLinks', [id], undefined, () => ({ links: [], passwordSet: false })),
   } as unknown as IndexClient;
@@ -276,7 +245,6 @@ export function createFakeIndex(
     client,
     items,
     folders,
-    tags,
     inbox,
     calls,
     fail,

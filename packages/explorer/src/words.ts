@@ -41,9 +41,34 @@ export function listWords(app: App, filter: AppFilter): Words {
   return filter === 'all' ? ITEM_WORDS : kindWords(app);
 }
 
+// Home's hero: the question after the greeting ("Good morning, what are you planning today?") and the lead
+// under it. Each app's kind has its own; a host can pass its own through <Explorer heroWords>.
+export type HeroWords = { question: string; lead: string };
+
+const LEAD = 'Jump back into what you use most, or see what changed while you were away.';
+
+const HERO_WORDS: Record<Kind, HeroWords> = {
+  canvas: { question: 'what are you drawing today?', lead: LEAD },
+  plan: { question: 'what are you planning today?', lead: LEAD },
+  document: { question: 'what are you writing today?', lead: LEAD },
+  design: { question: 'what are you designing today?', lead: LEAD },
+};
+
+/** The hero's words for one app's kind. */
+export function heroWords(app: App): HeroWords {
+  return HERO_WORDS[APP_KINDS[app]];
+}
+
+/** The greeting by the reader's hour: morning from 5 to 11, afternoon from 12 to 17, evening the rest. */
+export function heroGreeting(hour: number): string {
+  if (hour >= 5 && hour < 12) return 'Good morning,';
+  if (hour >= 12 && hour < 18) return 'Good afternoon,';
+  return 'Good evening,';
+}
+
 /** The site an app lives on, for its mark (name and accent) on a row in the All filter. */
 export function siteOf(app: App): Site {
   const site = APP_SITES.find((s) => s.id === `${app}.app`);
   // Every app has a site (a test pins it); the fallback keeps a new app from crashing a row.
-  return site ?? { id: 'liveworkspace.app', name: app, url: '', pitch: '', accent: '#64748b' };
+  return site ?? { id: 'liveworkspace.app', name: app, url: '', pitch: '', accent: '#64748b', deep: '#334155' };
 }

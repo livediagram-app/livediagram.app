@@ -102,12 +102,11 @@ async function downloadAndRemoveCloudCopy(
   const sheets = await fetchAllSheets({ ownerId, projectId, shareCode, tabId: null });
   const tabs = fetchedTabs;
 
-  // The person's star and tags are the index's, on the plan's item, which the server delete below takes too; carry
-  // them onto the offline record (docs/specs/013-workspace/favourites.md, tags.md "An offline project's tags live in
-  // the browser"). A failed read aborts here, before anything is written: taken as "none" it would drop them.
+  // The person's star is the index's, on the plan's item, which the server delete below takes too; carry it onto
+  // the offline record (docs/specs/013-workspace/favourites.md). A failed read aborts here, before anything is
+  // written: taken as "none" it would drop it.
   const { item } = await indexClient.getItem(liveDoc.id);
   const starred = item.favourite;
-  const tagIds = item.tagIds;
   const now = Date.now();
   const rec: OfflineProjectRecord = {
     id: liveDoc.id,
@@ -120,7 +119,6 @@ async function downloadAndRemoveCloudCopy(
     savedAt: now,
     tabs,
     ...(starred ? { favourite: true } : {}),
-    ...(tagIds.length ? { tagIds } : {}),
     ...(liveDoc.itemTypes ? { itemTypes: liveDoc.itemTypes } : {}),
     ...(itemStore.items.length
       ? { items: itemStore.items, itemsRev: itemStore.rev, itemsNextKey: itemStore.nextKey }

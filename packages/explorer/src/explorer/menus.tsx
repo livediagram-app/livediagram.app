@@ -2,7 +2,7 @@
 
 // The ⋯ menus (liveplanner's ProjectEntryMenu and FolderActionsMenu): one row per verb, grouped, the same
 // menu from a row, a card, the sidebar or the panel. What a row offers follows what the person may do:
-// an item reached through a link can be opened, copied, starred, tagged and dismissed, and renamed when
+// an item reached through a link can be opened, copied, starred and dismissed, and renamed when
 // the link edits; one in the Trash can be restored or deleted for good.
 
 import type { Folder } from '@liveworkspace/index-client';
@@ -18,7 +18,6 @@ import {
   RestoreIcon,
   ShareIcon,
   StarIcon,
-  TagIcon,
   TeamIcon,
   TrashIcon,
 } from '../ui/icons';
@@ -102,11 +101,6 @@ export function ItemMenu({
         label={item.favourite ? 'Remove from Favourites' : 'Add to Favourites'}
         icon={<StarIcon filled={item.favourite} />}
         onClick={run(() => void actions.setFavourite(item, !item.favourite))}
-      />
-      <MenuActionRow
-        label="Tags"
-        icon={<TagIcon />}
-        onClick={run(() => openDialog({ kind: 'tags', item }))}
       />
       {item.teamId && !item.sharedVia ? (
         <MenuActionRow

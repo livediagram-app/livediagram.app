@@ -139,11 +139,6 @@ export async function syncOfflineProject(
       // The star lived on the offline record (docs/specs/013-workspace/favourites.md), which just went: it goes onto
       // the plan's index item, which the upload made. A failed star leaves the plan synced, unstarred.
       if (done.rec.favourite) await indexClient.favourite(rec.id).catch(() => {});
-      // Its tags the same way (docs/specs/013-workspace/tags.md). One deleted meanwhile is refused and left off;
-      // the project is synced either way.
-      await Promise.allSettled(
-        (done.rec.tagIds ?? []).map((tagId) => indexClient.tagItem(tagId, done.rec.id)),
-      );
       return { id: rec.id };
     }
     console.warn(`[offline-sync] changed-during-upload attempt=${attempt}`);

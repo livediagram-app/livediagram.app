@@ -18,7 +18,7 @@ const N = 2000;
 const BUDGET_MS = 1000;
 
 const items: Item[] = Array.from({ length: N }, (_, i) =>
-  makeItem(i, { tagIds: i % 3 ? [] : ['t1'], favourite: i % 7 === 0 }),
+  makeItem(i, { favourite: i % 7 === 0 }),
 );
 
 function Harness({ layout, raw }: { layout: 'list' | 'card' | 'details'; raw: Item[] }) {
@@ -48,7 +48,7 @@ function Grab() {
 }
 
 async function mount(layout: 'list' | 'card' | 'details') {
-  const index = createFakeIndex({ tags: [{ id: 't1', name: 'Q3', colour: 'blue', createdAt: 1 }] });
+  const index = createFakeIndex();
   const t0 = performance.now();
   const utils = render(
     <ToastProvider>

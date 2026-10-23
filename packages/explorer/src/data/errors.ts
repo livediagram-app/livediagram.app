@@ -14,10 +14,6 @@ export function failureText(error: unknown, fallback: string): string {
         return 'A folder with that name is already here.';
       case 'cycle':
         return 'A folder can’t go inside itself.';
-      case 'tag_name_taken':
-        return 'You already have a tag with that name.';
-      case 'tag_limit':
-        return 'You have as many tags as there can be. Delete one to make room.';
       case 'share_link_limit':
         return 'This has as many passes as it can hold. Delete an old one first.';
       case 'unauthorized':

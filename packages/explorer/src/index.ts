@@ -15,7 +15,8 @@ export {
   type ExplorerView,
   type ExplorerViewKind,
 } from './views';
-export { kindWords, type AppFilter, type Words } from './words';
+export { kindWords, heroWords, type AppFilter, type HeroWords, type Words } from './words';
+export type { HelpHref } from './explorer/context';
 export type {
   ItemHref,
   ItemPlace,

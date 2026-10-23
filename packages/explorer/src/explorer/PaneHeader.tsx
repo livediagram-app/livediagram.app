@@ -1,13 +1,15 @@
 'use client';
 
-// The pane header (liveplanner's PaneHeader): the title and breadcrumbs on the left; on the right the
-// section's own actions, the This app / All filter, the List / Card / Details toggle, and Create (New
-// <kind> and New Folder in one menu where both apply).
+// The pane header (livediagram's PaneHeader): the title and breadcrumbs on the left; on the right the
+// section's own actions, the This app / All filter, the List / Card / Details toggle, Help (where the host
+// has an article for the view), and Create (New <kind> and New Folder as two tiles in one menu where both
+// apply, else the one button).
 
 import { useState, type ReactNode } from 'react';
 import { Button } from '../ui/Button';
-import { MenuActionRow, PortalMenu } from '../ui/Menu';
+import { PortalMenu } from '../ui/Menu';
 import {
+  CaretDownIcon,
   DetailsViewIcon,
   FolderOutlineIcon,
   GridViewIcon,
@@ -18,6 +20,7 @@ import {
 } from '../ui/icons';
 import { siteOf, type AppFilter } from '../words';
 import { useExplorer } from './context';
+import { HelpButton } from './HomeHero';
 
 export type ViewMode = 'list' | 'card' | 'details';
 
@@ -46,7 +49,8 @@ export function PaneHeader({
   onSetViewMode?: (mode: ViewMode) => void;
   showFilter?: boolean;
 }) {
-  const { kind } = useExplorer();
+  const { kind, helpHref, view } = useExplorer();
+  const help = helpHref?.(view);
   const [createOpen, setCreateOpen] = useState(false);
   const [createButton, setCreateButton] = useState<HTMLButtonElement | null>(null);
   const both = Boolean(onCreateItem && onCreateFolder);
@@ -81,6 +85,7 @@ export function PaneHeader({
           {viewMode && onSetViewMode ? (
             <ViewToggle mode={viewMode} onChange={onSetViewMode} />
           ) : null}
+          {help ? <HelpButton href={help} /> : null}
           {single ? (
             <Button
               size="xs"
@@ -103,26 +108,30 @@ export function PaneHeader({
             >
               <PlusIcon />
               Create
+              <CaretDownIcon />
             </Button>
           ) : null}
           {createOpen && both ? (
             <PortalMenu anchor={createButton} onClose={() => setCreateOpen(false)} label="Create">
-              <MenuActionRow
-                label={`New ${kind.one}`}
-                icon={<ItemIcon />}
-                onClick={() => {
-                  setCreateOpen(false);
-                  onCreateItem!();
-                }}
-              />
-              <MenuActionRow
-                label={folderLabel}
-                icon={<FolderOutlineIcon />}
-                onClick={() => {
-                  setCreateOpen(false);
-                  onCreateFolder!();
-                }}
-              />
+              {/* Icon-over-label tiles, two across: bigger targets than thin rows. */}
+              <div className="grid grid-cols-2 gap-1 px-1.5 py-0.5">
+                <MenuTile
+                  label={`New ${kind.one}`}
+                  icon={<ItemIcon size={20} />}
+                  onClick={() => {
+                    setCreateOpen(false);
+                    onCreateItem!();
+                  }}
+                />
+                <MenuTile
+                  label={folderLabel}
+                  icon={<FolderOutlineIcon size={20} />}
+                  onClick={() => {
+                    setCreateOpen(false);
+                    onCreateFolder!();
+                  }}
+                />
+              </div>
             </PortalMenu>
           ) : null}
         </div>
@@ -166,12 +175,35 @@ export function PaneHeader({
   );
 }
 
+function MenuTile({
+  label,
+  icon,
+  onClick,
+}: {
+  label: string;
+  icon: ReactNode;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      role="menuitem"
+      tabIndex={-1}
+      onClick={onClick}
+      className="flex cursor-pointer flex-col items-center justify-start gap-1.5 rounded-md px-1.5 py-2 text-center text-[11px] font-medium leading-tight text-slate-700 outline-none transition hover:bg-slate-100 focus-visible:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800 dark:focus-visible:bg-slate-800"
+    >
+      <span className="text-slate-400">{icon}</span>
+      <span>{label}</span>
+    </button>
+  );
+}
+
 const SEGMENTS =
   'flex items-center gap-0.5 rounded-md border border-slate-200 bg-slate-50 p-0.5 dark:border-slate-700 dark:bg-slate-800';
 const segment = (active: boolean) =>
   `flex h-7 items-center justify-center rounded px-2 text-xs font-medium transition ${
     active
-      ? 'bg-white text-brand-700 shadow-sm dark:bg-slate-700 dark:text-brand-200'
+      ? 'bg-white text-brand-700 shadow-sm dark:bg-slate-700 dark:text-brand-300'
       : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
   }`;
 
@@ -223,7 +255,7 @@ export function ViewToggle({
     </button>
   );
   return (
-    <div role="group" aria-label="View mode" className={SEGMENTS}>
+    <div role="group" aria-label="View mode" className={`${SEGMENTS} max-sm:hidden`}>
       {button('list', 'List view', <ListViewIcon />)}
       {button('card', 'Card view', <GridViewIcon />)}
       {button('details', 'Details view', <DetailsViewIcon />)}

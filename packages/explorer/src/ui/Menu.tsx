@@ -132,20 +132,16 @@ export function MenuActionRow({
   icon,
   onClick,
   disabled = false,
-  checked,
 }: {
   label: string;
   icon: ReactNode;
   onClick: (event: MouseEvent<HTMLButtonElement>) => void;
   disabled?: boolean;
-  // A toggle row (a tag in the picker): announced as checked or not.
-  checked?: boolean;
 }) {
   return (
     <button
       type="button"
-      role={checked === undefined ? 'menuitem' : 'menuitemcheckbox'}
-      aria-checked={checked}
+      role="menuitem"
       aria-disabled={disabled || undefined}
       tabIndex={-1}
       onClick={disabled ? undefined : onClick}

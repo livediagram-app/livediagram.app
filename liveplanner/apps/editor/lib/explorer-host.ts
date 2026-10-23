@@ -6,7 +6,15 @@
 
 import { useEffect, useState } from 'react';
 import type { App } from '@liveworkspace/index-client';
-import type { ItemHref, Placement, ShareUrl, TeamRef } from '@liveworkspace/explorer';
+import type {
+  ExplorerView,
+  HelpHref,
+  ItemHref,
+  Placement,
+  ShareUrl,
+  TeamRef,
+} from '@liveworkspace/explorer';
+import { helpArticleHref, type HelpArticleKey } from './help-articles';
 import { APP_SITES } from '@liveworkspace/sites';
 import { currentBearer } from './api/core';
 
@@ -82,3 +90,21 @@ export function useTokenTeams(signedIn: boolean | undefined): TeamRef[] {
   }, [signedIn]);
   return signedIn ? teams : [];
 }
+
+// Each Explorer view's Help article: the Help button in its page header, and Home's in the hero's corner. Views with
+// no article of their own (Search, Favourites) open the Explorer's.
+const VIEW_HELP: Record<ExplorerView['kind'], HelpArticleKey> = {
+  home: 'home',
+  all: 'myWork',
+  folder: 'folders',
+  team: 'teamSpaces',
+  unsorted: 'unsorted',
+  recent: 'recent',
+  favourites: 'explorerPage',
+  shared: 'sharedWithYou',
+  inbox: 'inbox',
+  trash: 'trash',
+  search: 'explorerPage',
+};
+
+export const explorerHelpHref: HelpHref = (view) => helpArticleHref(VIEW_HELP[view.kind]);

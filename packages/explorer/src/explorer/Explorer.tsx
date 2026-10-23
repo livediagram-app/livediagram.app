@@ -3,13 +3,17 @@
 // <Explorer>: the One Explorer, the same in every app. The host renders it at its own /explorer, reads
 // the view from its URL (viewFromLocation) and passes it in; the Explorer asks to go elsewhere through
 // onNavigate and links items through itemHref, so it never touches the host's router. It shows this app's
-// items or every app's (the filter), and New makes this app's kind.
+// items or every app's (the filter), and New makes this app's kind. It draws the page as livediagram's
+// Explorer does: the host's header (with the search field in its middle), Home's hero across the full width
+// under it, then the sidebar and the pane.
 
-import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { CloseIcon } from '../ui/icons';
+import { useItemCount } from '../data/useItemCount';
 import type { App, IndexClient, Item } from '@liveworkspace/index-client';
 import { ToastProvider } from '../ui/Toasts';
 import type { ExplorerView } from '../views';
-import type { AppFilter } from '../words';
+import type { AppFilter, HeroWords } from '../words';
 import type {
   ItemHref,
   LinkComponent,
@@ -18,14 +22,15 @@ import type {
   ShareUrl,
   TeamRef,
 } from '../types';
-import { ExplorerProvider } from './context';
+import { ExplorerProvider, useExplorer as useExplorerContext, type HelpHref } from './context';
 import { ExplorerDialogs } from './Dialogs';
+import { HomeHero } from './HomeHero';
 import { HomePane } from './HomePane';
 import { InboxPane } from './InboxPane';
 import { ItemsPane } from './ItemsPane';
 import { SearchField } from './SearchField';
 import { Sidebar } from './Sidebar';
-import { TagsPane } from './TagsPane';
+import { useHeroPresence } from './useHeroPresence';
 
 export type ExplorerProps = {
   /** The host app: its kind is what New makes and what "this app" shows. */
@@ -57,11 +62,51 @@ export type ExplorerProps = {
   /** Controlled filter; uncontrolled (remembered per app in this browser) when omitted. */
   filter?: AppFilter;
   onFilterChange?: (filter: AppFilter) => void;
-  /** Rendered above the pane, beside the search field (the host's own controls). */
+  /** Rendered beside the search field (the host's own controls). */
   toolbar?: ReactNode;
+  /** The host's top bar, given the search field to set in it (null while Home's hero holds the field).
+   *  Without it the Explorer draws a slim bar of its own with the field in the middle. */
+  header?: (parts: { search: ReactNode }) => ReactNode;
+  /** The picture on the right of Home's hero (a fan of previews, say), from `lg` up. */
+  heroArt?: ReactNode;
+  /** The hero's question and lead; each app's kind has its own by default. */
+  heroWords?: HeroWords;
+  /** Controlled: whether the person hid Home's hero (a synced setting). Uncontrolled (remembered in this
+   *  browser) when omitted. */
+  heroHidden?: boolean;
+  /** Called when the person hides the hero with its close. */
+  onHideHero?: () => void;
+  /** A view's help article; a Help button shows in its header (and Home's hero) when there is one. */
+  helpHref?: HelpHref;
 };
 
 const FILTER_KEY = (app: App) => `liveworkspace:explorer-filter:${app}`;
+const HERO_KEY = (app: App) => `liveworkspace:explorer-hero-hidden:${app}`;
+
+/** Whether Home's hero is hidden: the host's setting, or this browser's own choice. */
+function useHeroHidden(app: App, controlled?: boolean, onHide?: () => void) {
+  const [own, setOwn] = useState(false);
+  useEffect(() => {
+    if (controlled !== undefined) return;
+    try {
+      setOwn(localStorage.getItem(HERO_KEY(app)) === '1');
+    } catch {
+      // No storage: the hero shows.
+    }
+  }, [app, controlled]);
+  const hide = useCallback(() => {
+    if (controlled === undefined) {
+      setOwn(true);
+      try {
+        localStorage.setItem(HERO_KEY(app), '1');
+      } catch {
+        // A convenience only.
+      }
+    }
+    onHide?.();
+  }, [app, controlled, onHide]);
+  return [controlled ?? own, hide] as const;
+}
 
 function useFilter(app: App, controlled?: AppFilter, onChange?: (f: AppFilter) => void) {
   const [own, setOwn] = useState<AppFilter>('app');
@@ -117,8 +162,17 @@ function ExplorerInner({
   filter: controlledFilter,
   onFilterChange,
   toolbar,
+  header,
+  heroArt,
+  heroWords,
+  heroHidden: controlledHeroHidden,
+  onHideHero,
+  helpHref,
 }: ExplorerProps) {
   const [filter, setFilter] = useFilter(app, controlledFilter, onFilterChange);
+  const [heroHidden, hideHero] = useHeroHidden(app, controlledHeroHidden, onHideHero);
+  const heroOnHome = view.kind === 'home' && !heroHidden;
+  const hero = useHeroPresence(heroOnHome);
   const [navOpen, setNavOpen] = useState(false);
   const navigate = useCallback(
     (v: ExplorerView, href: string) => {
@@ -146,67 +200,127 @@ function ExplorerInner({
       renderThumbnail={renderThumbnail}
       shareUrl={shareUrl}
       manageTeamsUrl={manageTeamsUrl}
+      openNav={openNav}
+      helpHref={helpHref}
+      heroWords={heroWords}
     >
-      <div
-        data-explorer=""
-        className="mx-auto flex w-full max-w-7xl flex-1 gap-8 px-4 pb-16 pt-8 sm:px-6"
-      >
-        <aside className="hidden w-64 shrink-0 self-start sm:block" aria-label="Sections">
-          <div className="sticky top-20 px-1 py-1">
-            <Sidebar />
+      <div data-explorer="" className="flex min-w-0 flex-1 flex-col">
+        {header ? (
+          header({ search: heroOnHome ? null : <BarSearch toolbar={toolbar} /> })
+        ) : heroOnHome ? null : (
+          <div className="sticky top-0 z-30 flex h-12 shrink-0 items-center border-b border-slate-200 bg-white/85 px-4 backdrop-blur dark:border-slate-700 dark:bg-slate-900/85">
+            <div className="w-full sm:mx-auto sm:max-w-md">
+              <BarSearch toolbar={toolbar} />
+            </div>
           </div>
-        </aside>
-        {navOpen ? <SectionsDrawer onClose={() => setNavOpen(false)} /> : null}
-        <section className="min-w-0 flex-1">
-          <div className="mb-6 flex items-center gap-2">
-            <SearchField className="w-full sm:max-w-md" />
-            {toolbar}
+        )}
+        {hero.mounted ? (
+          <div
+            data-home-hero-fold={hero.open ? 'open' : 'closed'}
+            inert={!hero.open}
+            aria-hidden={!hero.open || undefined}
+            className={`grid transition-[grid-template-rows,opacity] duration-long ease-out motion-reduce:transition-none ${
+              hero.open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
+            }`}
+          >
+            <div className="min-h-0 overflow-hidden">
+              <HeroWithCount art={heroArt} onHide={hideHero} />
+            </div>
           </div>
-          <Pane view={view} onOpenNav={openNav} />
-        </section>
+        ) : null}
+        <main className="mx-auto flex w-full max-w-7xl flex-1 gap-8 px-4 pb-16 pt-8 sm:px-6">
+          {/* No box: the tree sits on the page. Hidden on a phone, where the drawer holds it. */}
+          <aside className="hidden w-64 shrink-0 self-start sm:block" aria-label="Sections">
+            <div className="sticky top-20 px-1 py-1">
+              <Sidebar />
+            </div>
+          </aside>
+          {navOpen ? <SectionsDrawer onClose={() => setNavOpen(false)} /> : null}
+          <section className="min-w-0 flex-1">
+            <Pane view={view} onOpenNav={openNav} hero={heroOnHome} />
+          </section>
+        </main>
       </div>
       <ExplorerDialogs />
     </ExplorerProvider>
   );
 }
 
-function Pane({ view, onOpenNav }: { view: ExplorerView; onOpenNav: () => void }) {
+/** The header's field, with the host's own controls beside it. */
+function BarSearch({ toolbar }: { toolbar?: ReactNode }) {
+  if (!toolbar) return <SearchField />;
+  return (
+    <div className="flex items-center gap-2">
+      <SearchField />
+      {toolbar}
+    </div>
+  );
+}
+
+/** The hero with My Work's count: asked for only while the hero is in the page. */
+function HeroWithCount({ art, onHide }: { art?: ReactNode; onHide: () => void }) {
+  const { client, app, filter, epoch } = useExplorerContext();
+  const items = useItemCount(client, app, filter, true, epoch);
+  return <HomeHero items={items} art={art} onHide={onHide} />;
+}
+
+function Pane({
+  view,
+  onOpenNav,
+  hero,
+}: {
+  view: ExplorerView;
+  onOpenNav: () => void;
+  hero: boolean;
+}) {
   switch (view.kind) {
     case 'home':
-      return <HomePane onOpenNav={onOpenNav} />;
+      return <HomePane onOpenNav={onOpenNav} hero={hero} />;
     case 'inbox':
       return <InboxPane onOpenNav={onOpenNav} />;
-    case 'tags':
-      return view.id ? (
-        <ItemsPane view={view} onOpenNav={onOpenNav} />
-      ) : (
-        <TagsPane onOpenNav={onOpenNav} />
-      );
     default:
       return <ItemsPane view={view} onOpenNav={onOpenNav} />;
   }
 }
 
 function SectionsDrawer({ onClose }: { onClose: () => void }) {
+  const panel = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
+    panel.current?.focus({ preventScroll: true });
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      e.preventDefault();
+      onClose();
+    };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
   }, [onClose]);
   return (
-    <div
-      className="fixed inset-0 z-40 sm:hidden"
-      role="dialog"
-      aria-modal="true"
-      aria-label="Sections"
-    >
-      <button
-        type="button"
-        aria-label="Close sections"
-        className="absolute inset-0 bg-slate-900/40"
+    <div className="fixed inset-0 z-40 sm:hidden">
+      <div
+        className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
         onClick={onClose}
+        aria-hidden
       />
-      <div className="absolute inset-y-0 left-0 w-72 max-w-[85%] overflow-y-auto bg-slate-50 p-3 shadow-xl dark:bg-slate-900">
+      <div
+        ref={panel}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Sections"
+        tabIndex={-1}
+        className="absolute inset-y-0 left-0 flex w-72 max-w-[85%] animate-slide-in-left flex-col overflow-y-auto border-r border-slate-200 bg-white px-3 py-4 shadow-xl outline-none dark:border-slate-700 dark:bg-slate-800"
+      >
+        <div className="mb-1 flex items-center justify-between pl-1">
+          <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">Sections</span>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close"
+            className="flex h-8 w-8 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+          >
+            <CloseIcon size={11} />
+          </button>
+        </div>
         <Sidebar />
       </div>
     </div>

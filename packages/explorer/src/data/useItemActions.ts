@@ -1,7 +1,7 @@
 'use client';
 
 // What a person does to an item from the Explorer. Each change shows at once through the overlay (rename,
-// favourite, move, tag, Trash, restore, dismiss) and is taken back, with a toast saying why, when the index
+// favourite, move, Trash, restore, dismiss) and is taken back, with a toast saying why, when the index
 // refuses. A copy or an emptied Trash cannot be guessed, so those reload the lists instead. Every action is
 // a stable function, so memoised rows keep their props.
 
@@ -15,7 +15,6 @@ export type ItemActions = {
   rename: (item: Item, title: string) => Promise<boolean>;
   setFavourite: (item: Item, favourite: boolean) => Promise<boolean>;
   move: (item: Item, to: { folderId: string | null; teamId: string | null }) => Promise<boolean>;
-  setTagged: (item: Item, tagId: string, tagged: boolean) => Promise<boolean>;
   trash: (item: Item) => Promise<boolean>;
   restore: (item: Item) => Promise<boolean>;
   purge: (item: Item) => Promise<boolean>;
@@ -82,17 +81,6 @@ export function createItemActions({
         { folderId: to.folderId, teamId: to.teamId },
         () => client.updateItem(item.id, input),
         'Couldn’t move it. Try again.',
-      );
-    },
-    setTagged: (item, tagId, tagged) => {
-      const has = item.tagIds.includes(tagId);
-      if (has === tagged) return Promise.resolve(true);
-      const tagIds = tagged ? [...item.tagIds, tagId] : item.tagIds.filter((t) => t !== tagId);
-      return optimistic(
-        item,
-        { tagIds },
-        () => (tagged ? client.tagItem(tagId, item.id) : client.untagItem(tagId, item.id)),
-        'Couldn’t change its tags. Try again.',
       );
     },
     trash: async (item) => {

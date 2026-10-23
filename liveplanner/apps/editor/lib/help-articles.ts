@@ -43,7 +43,6 @@ export const HELP_ARTICLES = {
   apiTokens: 'account-and-data/api-tokens',
   trash: 'account-and-data/trash',
   importTabs: 'tabs/import-tabs',
-  tags: 'explorer/tags',
   linkingTabs: 'tabs/using-tabs',
   // Teams
   // Canvas / themes
@@ -74,6 +73,14 @@ export const HELP_ARTICLES = {
   sessionTimer: 'collaboration/session-tools/timer',
   home: 'explorer/home',
   folders: 'explorer/folders',
+  // The shared Explorer's other views, each its page header's Help (lib/explorer-host.ts explorerHelpHref).
+  myWork: 'explorer/my-work',
+  recent: 'explorer/recent',
+  unsorted: 'explorer/unsorted',
+  sharedWithYou: 'explorer/shared-with-you',
+  inbox: 'explorer/activity',
+  teamSpaces: 'explorer/team-spaces',
+  explorerPage: 'explorer/explorer-page',
   dataElements: 'plan/visualisations',
   sankeyDiagram: 'plan/visualisations',
   // The round-two element tours' closing cards (docs/specs/007-editor/element-tours.md).
@@ -233,13 +240,37 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about Home',
     description: 'Jump back in, and what was shared with you recently.',
   },
-  tags: {
-    title: 'Learn about tags',
-    description: 'Coloured labels that group related plans across folders and teams.',
-  },
   folders: {
     title: 'Learn about folders',
     description: 'Tips for organising plans into a nestable tree of folders.',
+  },
+  myWork: {
+    title: 'Learn about My Work',
+    description: 'Your own plans and folders, in one place.',
+  },
+  recent: {
+    title: 'Learn about Recent',
+    description: 'Everything you opened, newest first.',
+  },
+  unsorted: {
+    title: 'Learn about Unsorted',
+    description: 'Every plan that is in no folder, yours and your teams’.',
+  },
+  sharedWithYou: {
+    title: 'Learn about Shared With Me',
+    description: 'The plans other people shared with you through a link.',
+  },
+  inbox: {
+    title: 'Learn about the Inbox',
+    description: 'Comments and actions that wait on you, from every app.',
+  },
+  teamSpaces: {
+    title: 'Learn about team spaces',
+    description: 'A team’s shared library of plans and folders.',
+  },
+  explorerPage: {
+    title: 'Learn about the Explorer',
+    description: 'The library every liveworkspace app shares: sections, views and search.',
   },
   dataElements: {
     title: 'Learn about data elements',

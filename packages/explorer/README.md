@@ -2,7 +2,8 @@
 
 The One Explorer UI, built once. Each app renders it at its own `/explorer`. It lists that app's items or
 every app's, and its New button makes that app's kind (Canvas, Plan, Document or Design). It looks and
-behaves like liveplanner's Explorer, whose components it was ported from. Its data comes from the index
+behaves like livediagram's Explorer, in the host's accent and words; its components were ported from
+liveplanner's. Its data comes from the index
 through `@liveworkspace/index-client`.
 
 The plan is [one-explorer.md](../../liveworkspace/docs/one-explorer.md). The calls it makes are in
@@ -78,21 +79,25 @@ Dark mode follows the host's `.dark` variant. The empty-state art animates only 
 | `manageTeamsUrl?`          | `string`                               | Shows a Manage Teams row that links here.                                                    |
 | `filter?`/`onFilterChange` | `'app' \| 'all'`                       | Controls the filter from outside. Without them the Explorer keeps it, remembered per app.    |
 | `toolbar?`                 | `ReactNode`                            | The host's own controls, beside the search field.                                            |
+| `header?`                  | `({ search }) => ReactNode`            | The host's header, drawn above the hero and given the search field to place (null on Home with the hero). Without it the Explorer draws a plain bar. |
+| `heroArt?`                 | `ReactNode`                            | A picture for the right of Home's hero, from `lg` up (liveplanner's fanned previews).          |
+| `heroWords?`               | `{ question, lead }`                   | The hero's words after the greeting. Defaults to the app kind's.                              |
+| `heroHidden?`/`onHideHero` | `boolean` / `() => void`               | Controls the hero from the host's setting. Without them the close is remembered per app in this browser. |
+| `helpHref?`                | `(view) => string \| undefined`        | A Help article for a view. Shows a Help button in that view's header and the hero's corner.   |
 
 Views (`ExplorerView`) and their addresses under `basePath`:
 
 | View                              | Address                         | Shows                                                           |
 | --------------------------------- | ------------------------------- | --------------------------------------------------------------- |
-| `{ kind: 'home' }`                | `/explorer` or `/explorer/home` | Jump back in (Recent), and Shared with you recently             |
+| `{ kind: 'home' }`                | `/explorer` or `/explorer/home` | The hero, Jump Back In (Recent, Earlier) and Shared With You Recently |
 | `{ kind: 'all' }`                 | `/explorer/all`                 | My Work: your root folders and your items that are in no folder |
 | `{ kind: 'unsorted' }`            | `/explorer/unsorted`            | Every item in no folder, yours and your teams'                  |
 | `{ kind: 'recent' }`              | `/explorer/recent`              | By last opened                                                  |
 | `{ kind: 'favourites' }`          | `/explorer/favourites`          | Starred                                                         |
 | `{ kind: 'shared' }`              | `/explorer/shared`              | Shared With Me: items reached through a link                    |
-| `{ kind: 'tags', id? }`           | `/explorer/tags[?id=]`          | Every tag, or one tag's items                                   |
-| `{ kind: 'trash' }`               | `/explorer/trash`               | The Trash, with Restore, Delete Forever and Empty Trash         |
+| `{ kind: 'trash' }`               | `/explorer/trash`               | The Trash, grouped by owner: Restore, Delete permanently, Empty Trash |
 | `{ kind: 'inbox' }`               | `/explorer/inbox`               | `GET /inbox`: actions and threads, each linking to its app      |
-| `{ kind: 'search', q }`           | `/explorer/search?q=`           | The index's title, tag and folder search                        |
+| `{ kind: 'search', q }`           | `/explorer/search?q=`           | The index's title and folder search                             |
 | `{ kind: 'folder', id }`          | `/explorer/folder?id=`          | A folder                                                        |
 | `{ kind: 'team', id, folderId? }` | `/explorer/team?id=[&folder=]`  | A team's library, or one of its folders                         |
 
@@ -134,14 +139,13 @@ the list scrolls near.
 | Data          | When it loads                                                                              |
 | ------------- | ------------------------------------------------------------------------------------------ |
 | Folders       | Once, paging if needed. The sidebar, breadcrumbs, folder rows and Move all read this copy. |
-| Tags          | Once (`GET /tags`, at most 100).                                                           |
 | Inbox         | Once per filter. The sidebar's count and the Inbox view share it.                          |
 | Home          | Two small requests: Recent (8) and Shared (4).                                             |
-| Tags overview | No item requests. A tag's items load when it is opened.                                    |
+| Home's hero   | One count request while it shows (My Work, one page of up to 200; "200+" past that). The Inbox pill reuses the sidebar's Inbox. None when the hero is hidden. |
 
-Nothing is fetched per row, per folder or per tag.
+Nothing is fetched per row, or per folder.
 
-Changes are optimistic: rename, favourite, move, tag, Trash, restore and dismiss.
+Changes are optimistic: rename, favourite, move, Trash, restore and dismiss.
 
 - A change is laid over every loaded list at once, through a shared overlay.
 - If the index refuses, the change is taken back and a toast says why.
@@ -160,4 +164,5 @@ Search waits 250 ms after typing stops, and a newer search cancels the older req
 `corepack pnpm --filter @liveworkspace/explorer test` (vitest with jsdom).
 
 - The hooks' optimistic paths are tested against an in-memory fake index (`src/test/fakeClient.ts`).
+- `HomeHero.test.tsx` covers the hero: greeting, pills, New, art, Help and close, and its one count request.
 - `perf.test.tsx` renders 2,000 items in each layout under a time budget.

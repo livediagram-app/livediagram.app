@@ -4,15 +4,16 @@
 
 import type { ReactNode } from 'react';
 import { EmptyState } from '../ui/EmptyState';
+import { FOCUS_RING, SOLID_BRAND_DARK_CONTROL } from '../ui/classes';
 import {
   ClockIcon,
   FolderSolidIcon,
   InboxIcon,
+  PlusIcon,
   MyWorkIcon,
   SearchIcon,
   ShareIcon,
   StarIcon,
-  TagIcon,
   TeamIcon,
   TrashIcon,
   UnsortedIcon,
@@ -23,103 +24,121 @@ import type { Words } from '../words';
 export function emptyCopy(
   view: ExplorerView,
   w: Words,
-): { icon: ReactNode; title: string; description: string } {
+): { icon: ReactNode; title: string; description: string; cta: boolean } {
   switch (view.kind) {
     case 'all':
       return {
         icon: <MyWorkIcon />,
         title: `No ${w.lowerMany} yet`,
-        description: `Make your first ${w.lowerOne}, or a folder to keep them in.`,
+        description: `Create your first ${w.lowerOne} and it will appear here.`,
+        cta: true,
       };
     case 'unsorted':
       return {
         icon: <UnsortedIcon />,
         title: 'Nothing unsorted',
         description: `Every ${w.lowerOne} is in a folder.`,
+        cta: false,
       };
     case 'recent':
       return {
         icon: <ClockIcon />,
-        title: 'Nothing opened yet',
-        description: `${w.many} you open show here, latest first.`,
+        title: `No recent ${w.lowerMany}`,
+        description: `${w.many} show up here as you open them, newest first. Make your first one.`,
+        cta: true,
       };
     case 'favourites':
       return {
         icon: <StarIcon />,
         title: 'No favourites yet',
-        description: `Star a ${w.lowerOne} from its menu to keep it here.`,
+        description: `Mark a ${w.lowerOne} as a favourite to show it here.`,
+        cta: false,
       };
     case 'shared':
       return {
         icon: <ShareIcon />,
         title: 'Nothing shared with you yet',
-        description: `${w.many} you open through someone’s link show here.`,
-      };
-    case 'tags':
-      return {
-        icon: <TagIcon />,
-        title: view.id ? `No ${w.lowerMany} with this tag` : 'No tags yet',
-        description: view.id
-          ? `Tag a ${w.lowerOne} from its menu to list it here.`
-          : `Make a tag from a ${w.lowerOne}’s menu.`,
+        description: `Open a share link someone sends you and the ${w.lowerOne} lands here.`,
+        cta: false,
       };
     case 'trash':
       return {
         icon: <TrashIcon />,
-        title: 'The Trash is empty',
-        description: 'Deleted items stay here for 30 days, then go for good.',
+        title: 'Nothing in the Trash right now',
+        description: `Delete a ${w.lowerOne} and it is kept here for 30 days, so you can restore it.`,
+        cta: false,
       };
     case 'inbox':
       return {
         icon: <InboxIcon />,
-        title: 'You’re all caught up',
-        description: 'Actions for you and threads you’re in show here.',
+        title: 'Nothing waiting on you',
+        description: `Open actions assigned to you, actions you assigned, and comment threads you’re in, collect here across every ${w.lowerOne}.`,
+        cta: false,
       };
     case 'search':
       return view.q
         ? {
             icon: <SearchIcon />,
             title: `Nothing matches “${view.q}”`,
-            description: 'Search looks at names, tags and folders.',
+            description: 'Search looks at names and folders.',
+            cta: false,
           }
         : {
             icon: <SearchIcon />,
             title: 'Search everything',
-            description: `Type to find ${w.lowerMany} by name, tag or folder.`,
+            description: `Type to find ${w.lowerMany} by name or folder.`,
+            cta: false,
           };
     case 'folder':
       return {
-        icon: <FolderSolidIcon />,
+        icon: <FolderSolidIcon open />,
         title: 'This folder is empty',
-        description: `Make a ${w.lowerOne} here, or move one in from its menu.`,
+        description: `Add a ${w.lowerOne} or a subfolder to organise your work.`,
+        cta: true,
       };
     case 'team':
       return {
         icon: <TeamIcon />,
         title: `No team ${w.lowerMany} yet`,
         description: `${w.many} here are open to everyone in the team.`,
+        cta: true,
       };
     case 'home':
       return {
         icon: <ClockIcon />,
-        title: 'Nothing to jump back into',
-        description: `${w.many} you open show here.`,
+        title: `No ${w.lowerMany} yet`,
+        description: `The ${w.lowerMany} you open will gather here.`,
+        cta: true,
       };
   }
 }
 
+/** livediagram's empty-state call to action: a solid brand button with a plus. */
+export const EMPTY_CTA = `inline-flex items-center gap-1.5 rounded-lg bg-brand-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-800 ${SOLID_BRAND_DARK_CONTROL} ${FOCUS_RING}`;
+
 export function EmptyPane({
   view,
   words,
+  onCreate,
+  createLabel,
   children,
 }: {
   view: ExplorerView;
   words: Words;
+  /** New, offered where the view's words call for it. */
+  onCreate?: () => void;
+  createLabel?: string;
   children?: ReactNode;
 }) {
   const copy = emptyCopy(view, words);
   return (
     <EmptyState icon={copy.icon} title={copy.title} description={copy.description}>
+      {copy.cta && onCreate ? (
+        <button type="button" onClick={onCreate} className={EMPTY_CTA}>
+          <PlusIcon size={14} />
+          {createLabel ?? `New ${words.one}`}
+        </button>
+      ) : null}
       {children}
     </EmptyState>
   );

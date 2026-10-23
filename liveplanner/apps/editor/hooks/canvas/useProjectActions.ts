@@ -1,6 +1,6 @@
 // The editor's verbs on whole plans: open one, start a new one, copy the open one, delete the open one. Plans are
 // items of the central index (liveworkspace/docs/one-explorer-contracts.md), so copy and delete go there; the index
-// asks this app's api to copy the content. Everything else a plan's row offers (move, rename, favourite, tags, the
+// asks this app's api to copy the content. Everything else a plan's row offers (move, rename, favourite, the
 // Trash) is the shared Explorer's.
 //
 // Navigation is deliberately a hard `window.location.assign` rather

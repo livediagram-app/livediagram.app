@@ -13,7 +13,7 @@ The Explorer, and everything it lists, lives in liveworkspace's index and its sh
 - ./team-shared-projects.md - when working on a team's library (moved)
 - ./folders.md - when working on folders (moved)
 - ./default-folders.md - when working on where a new plan is filed by default (moved)
-- ./tags.md - when working on tags (moved)
+- ./tags.md - tags (removed from the Explorer)
 - ./favourites.md - when working on favourites (moved)
 - ./trash.md - when working on the Trash or a trashed plan's refusals (moved)
 - ./empty-project-cleanup.md - when looking for the empty-project sweep (removed)

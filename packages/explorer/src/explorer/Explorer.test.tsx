@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { IndexError, type Item } from '@liveworkspace/index-client';
 import { createFakeIndex, makeItem } from '../test/fakeClient';
 import type { ExplorerView } from '../views';
@@ -32,11 +32,13 @@ function renderExplorer(
 const rows = () => document.querySelectorAll('[data-item-row]');
 
 describe('<Explorer>', () => {
-  it('asks the index once per list, never once per row, folder or tag', async () => {
-    const items = Array.from({ length: 2000 }, (_, i) => makeItem(i, { tagIds: ['t1'] }));
+  // Most cases read rows; the card default has its own case.
+  beforeEach(() => localStorage.setItem('liveworkspace:explorer-view-mode', 'list'));
+
+  it('asks the index once per list, never once per row or folder, and never for tags', async () => {
+    const items = Array.from({ length: 2000 }, (_, i) => makeItem(i));
     const index = createFakeIndex({
       items,
-      tags: [{ id: 't1', name: 'Q3', colour: 'blue', createdAt: 1 }],
       folders: [
         {
           id: 'f1',
@@ -53,7 +55,7 @@ describe('<Explorer>', () => {
     await waitFor(() => expect(rows().length).toBeGreaterThan(0));
     expect(index.count('listItems')).toBe(1);
     expect(index.count('listFolders')).toBe(1);
-    expect(index.count('listTags')).toBe(1);
+    expect(index.count('listTags')).toBe(0);
     expect(index.count('inbox')).toBe(1);
     // Windowed: a screenful of rows, not the page of 200.
     expect(rows().length).toBeLessThan(60);
@@ -161,18 +163,45 @@ describe('<Explorer>', () => {
     expect(index.count('restoreItem')).toBe(1);
   });
 
-  it('shows the Tags overview without asking for any tag’s items', async () => {
+  it('lays a list out as cards until the person picks another layout', async () => {
+    localStorage.removeItem('liveworkspace:explorer-view-mode');
+    const index = createFakeIndex({ items: [makeItem(1)] });
+    renderExplorer(index, { kind: 'all' });
+    await waitFor(() => expect(document.querySelector('[data-item-card="item-1"]')).toBeTruthy());
+    expect(rows()).toHaveLength(0);
+    expect(screen.getByRole('button', { name: 'Card view' }).getAttribute('aria-pressed')).toBe(
+      'true',
+    );
+  });
+
+  it('offers New Folder only where folders live, and New alone elsewhere', async () => {
+    renderExplorer(createFakeIndex(), { kind: 'recent' });
+    expect(await screen.findByRole('button', { name: 'New Plan' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Create' })).toBeNull();
+  });
+
+  it('keeps Shared With Me to one list, with no layout toggle', async () => {
+    renderExplorer(createFakeIndex(), { kind: 'shared' });
+    await screen.findByText('Nothing shared with you yet');
+    expect(screen.queryByRole('group', { name: 'View mode' })).toBeNull();
+    expect(screen.queryByRole('button', { name: /^New / })).toBeNull();
+  });
+
+  it('groups the Trash by whose it is, with Restore and Delete permanently', async () => {
     const index = createFakeIndex({
-      tags: Array.from({ length: 30 }, (_, i) => ({
-        id: `t${i}`,
-        name: `Tag ${i}`,
-        colour: 'red',
-        createdAt: 1,
-      })),
+      items: [makeItem(1, { trashedAt: Date.now(), trashReason: 'deleted' })],
     });
-    renderExplorer(index, { kind: 'tags' });
-    await screen.findByRole('button', { name: 'Tag 29' });
-    expect(index.count('listItems')).toBe(0);
+    renderExplorer(index, { kind: 'trash' });
+    expect(await screen.findByRole('heading', { name: 'Your plans' })).toBeTruthy();
+    expect(screen.getByText(/Deleted .* · 30 days left/)).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Restore Item 1' }));
+    await waitFor(() => expect(index.count('restoreItem')).toBe(1));
+  });
+
+  it('shows a Help button where the host has an article for the view', async () => {
+    renderExplorer(createFakeIndex(), { kind: 'all' }, { helpHref: (v) => `/help/${v.kind}` });
+    const help = await screen.findByRole('link', { name: 'Help' });
+    expect(help.getAttribute('href')).toBe('/help/all');
   });
 });
 

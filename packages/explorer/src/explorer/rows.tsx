@@ -13,7 +13,7 @@ import { RelativeTimeChip } from '../ui/RelativeTimeChip';
 import { EllipsisTriggerButton, useRowMenu } from '../ui/RowMenu';
 import { CARD_PREVIEW, CARD_SHELL, RENAME_INPUT } from '../ui/classes';
 import { FolderSolidIcon, ItemIcon } from '../ui/icons';
-import { AppMark, FavouriteMarker, FolderChip, ItemTags, VisibilityBadge } from './badges';
+import { AppMark, FavouriteMarker, FolderChip, VisibilityBadge } from './badges';
 import { useExplorer } from './context';
 import { FolderMenu, ItemMenu } from './menus';
 
@@ -32,7 +32,7 @@ export type RowOptions = {
 };
 
 function useItemBits(item: ShownItem) {
-  const { folders, tags, navigate, actions, setRenamingId, itemHref } = useExplorer();
+  const { folders, navigate, actions, setRenamingId, itemHref } = useExplorer();
   const folder = item.folderId ? folders.byId.get(item.folderId) : undefined;
   const openFolder = useCallback(() => {
     if (!folder) return;
@@ -42,7 +42,6 @@ function useItemBits(item: ShownItem) {
         : { kind: 'folder', id: folder.id },
     );
   }, [folder, navigate]);
-  const openTag = useCallback((id: string) => navigate({ kind: 'tags', id }), [navigate]);
   const commitRename = useCallback(
     (title: string) => {
       setRenamingId(null);
@@ -51,7 +50,7 @@ function useItemBits(item: ShownItem) {
     [actions, item, setRenamingId],
   );
   const cancelRename = useCallback(() => setRenamingId(null), [setRenamingId]);
-  return { folder, openFolder, openTag, commitRename, cancelRename, tags, href: itemHref(item) };
+  return { folder, openFolder, commitRename, cancelRename, href: itemHref(item) };
 }
 
 export const ItemRow = memo(function ItemRow({
@@ -96,9 +95,6 @@ export const ItemRow = memo(function ItemRow({
             {title}
           </Link>
         )}
-        <span className="hidden min-w-0 sm:flex">
-          <ItemTags tagIds={item.tagIds} byId={bits.tags.byId} onOpen={bits.openTag} />
-        </span>
         {options.showFolder && bits.folder ? (
           <span className="hidden shrink-0 sm:inline-flex">
             <FolderChip label={bits.folder.name} onOpen={bits.openFolder} />
@@ -266,7 +262,6 @@ export const ItemCard = memo(function ItemCard({
             <EllipsisTriggerButton {...menu.triggerProps} tuck label={`Menu for ${title}`} />
           )}
         </div>
-        <ItemTags tagIds={item.tagIds} byId={bits.tags.byId} onOpen={bits.openTag} />
         <div className="flex min-w-0 items-center gap-x-2 [&>*]:shrink-0">
           <VisibilityBadge item={item} />
           {item.favourite ? <FavouriteMarker /> : null}

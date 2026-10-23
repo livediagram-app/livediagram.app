@@ -1,7 +1,7 @@
 // The Explorer's views and their addresses. The host app owns routing (Next.js in each app): it reads the
 // view from its URL with `viewFromLocation`, renders <Explorer view=…>, and the Explorer asks it to go
 // elsewhere through `onNavigate`. `explorerPath` gives each view's address for links, so a view can open
-// in a new tab. Folder, team and tag ids ride the query string, as liveplanner's do (a static export
+// in a new tab. Folder and team ids ride the query string, as liveplanner's do (a static export
 // cannot enumerate ids).
 
 export type ExplorerView =
@@ -15,12 +15,10 @@ export type ExplorerView =
   | { kind: 'favourites' }
   // Shared with me: items reached through a link.
   | { kind: 'shared' }
-  // Every tag, or one tag's items.
-  | { kind: 'tags'; id?: string }
   | { kind: 'trash' }
   // Open actions and unresolved threads, across every app.
   | { kind: 'inbox' }
-  // Title, tag and folder search over the index.
+  // Title and folder search over the index.
   | { kind: 'search'; q: string }
   | { kind: 'folder'; id: string }
   // A team's library, at its root or one of its folders.
@@ -36,8 +34,6 @@ const enc = encodeURIComponent;
 export function explorerPath(view: ExplorerView, base = DEFAULT_BASE_PATH): string {
   const b = base.replace(/\/+$/, '');
   switch (view.kind) {
-    case 'tags':
-      return view.id ? `${b}/tags?id=${enc(view.id)}` : `${b}/tags`;
     case 'search':
       return view.q ? `${b}/search?q=${enc(view.q)}` : `${b}/search`;
     case 'folder':
@@ -72,8 +68,6 @@ export function viewFromLocation(
     case 'inbox':
     case 'home':
       return { kind: section };
-    case 'tags':
-      return id ? { kind: 'tags', id } : { kind: 'tags' };
     case 'search':
       return { kind: 'search', q: params.get('q') ?? '' };
     case 'folder':
@@ -100,7 +94,6 @@ export const SIDEBAR_LABELS = {
   shared: 'Shared With Me',
   myWork: 'My Work',
   unsorted: 'Unsorted',
-  tags: 'Tags',
   library: 'Library',
   trash: 'Trash',
   manageTeams: 'Manage Teams',
@@ -112,7 +105,6 @@ export const VIEW_TITLES: Record<Exclude<ExplorerViewKind, 'folder' | 'team'>, s
   shared: SIDEBAR_LABELS.shared,
   all: SIDEBAR_LABELS.myWork,
   unsorted: SIDEBAR_LABELS.unsorted,
-  tags: SIDEBAR_LABELS.tags,
   trash: SIDEBAR_LABELS.trash,
   recent: 'Recent',
   favourites: 'Favourites',

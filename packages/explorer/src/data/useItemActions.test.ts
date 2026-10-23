@@ -82,15 +82,6 @@ describe('item actions: optimistic, with rollback', () => {
     expect(overlay.apply(item).trashedAt).toBeNull();
   });
 
-  it('tags and untags through the overlay, rolling back a refusal', async () => {
-    const { item, index, overlay, actions } = setup();
-    await actions.setTagged(item, 't1', true);
-    expect(overlay.apply(item).tagIds).toEqual(['t1']);
-    index.fail.set('untagItem', new IndexError(404, 'not_found'));
-    await actions.setTagged(overlay.apply(item), 't1', false);
-    expect(overlay.apply(item).tagIds).toEqual(['t1']);
-  });
-
   it('reloads the lists after a copy, which cannot be guessed', async () => {
     const { item, reloadLists, actions } = setup();
     const copy = await actions.duplicate(item, 'Item 1 (copy)');

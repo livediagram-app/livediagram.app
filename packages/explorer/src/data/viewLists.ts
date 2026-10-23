@@ -1,5 +1,5 @@
 // Which index list each Explorer view reads, and which items still belong in it once a change is laid over
-// them. One request a page, at most LIST_PAGE items; never a request per row, folder or tag.
+// them. One request a page, at most LIST_PAGE items; never a request per row or folder.
 
 import type { App, IndexClient, Item, Level } from '@liveworkspace/index-client';
 import type { ExplorerView } from '../views';
@@ -18,7 +18,7 @@ export type ViewList = {
 
 const live = (i: ShownItem) => i.trashedAt === null;
 
-/** The list behind a view, or null for a view with no item list (Home, Inbox, the Tags overview). */
+/** The list behind a view, or null for a view with no item list (Home, Inbox). */
 export function viewList(
   client: IndexClient,
   view: ExplorerView,
@@ -97,16 +97,6 @@ export function viewList(
         belongs: (i) => live(i) && ofApp(i),
         enabled: true,
       };
-    case 'tags': {
-      const tag = view.id;
-      if (!tag) return null;
-      return {
-        key: key('tag', tag),
-        load: items({ view: 'all', tag }),
-        belongs: (i) => live(i) && ofApp(i) && i.tagIds.includes(tag),
-        enabled: true,
-      };
-    }
     case 'trash':
       return {
         key: key('trash'),
