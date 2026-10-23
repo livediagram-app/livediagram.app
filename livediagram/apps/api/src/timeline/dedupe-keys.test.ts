@@ -15,14 +15,12 @@ vi.mock('../db/timeline', async (importOriginal) => {
 });
 vi.mock('./audience', () => ({
   audienceForDocument: vi.fn(async () => [{ scopeType: 'user', scopeId: 'me' }]),
-  audienceForTeam: vi.fn(async () => [{ scopeType: 'user', scopeId: 'me' }]),
-  adminsForTeam: vi.fn(async () => []),
   mergeScopes: vi.fn((...lists: unknown[][]) => lists.flat()),
   userScope: (id: string) => ({ scopeType: 'user', scopeId: id }),
 }));
 
 import type { Env } from '../types';
-import { recordTeamRenamed } from './team-events';
+import { recordDocumentMoved } from './document-events';
 
 const env = {} as Env;
 
@@ -38,9 +36,19 @@ beforeEach(() => {
 });
 
 describe('repeatable events carry a unique dedupe key', () => {
-  it('two renames of one team are two rows, not one upserted', async () => {
-    await recordTeamRenamed(env, { id: 't1', name: 'Guild' }, 'Old Guild', 'me');
-    await recordTeamRenamed(env, { id: 't1', name: 'Guild 2' }, 'Guild', 'me');
+  it('two moves of one document are two rows, not one upserted', async () => {
+    await recordDocumentMoved(
+      env,
+      { id: 'd1', name: 'Notes', ownerId: 'me', teamId: null },
+      'Drafts',
+      'me',
+    );
+    await recordDocumentMoved(
+      env,
+      { id: 'd1', name: 'Notes', ownerId: 'me', teamId: null },
+      'Archive',
+      'me',
+    );
     const [a, b] = keys();
     expect(a).not.toBe(b);
   });

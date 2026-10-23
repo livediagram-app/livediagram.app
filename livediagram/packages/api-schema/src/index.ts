@@ -327,13 +327,6 @@ export type TeamInviteLinkJoin = {
   alreadyMember: boolean;
 };
 
-// What a decline token names (docs/specs/013-workspace/teams.md "Declining from the email"): the invite's team
-// name and where the invite stands, read and returned by the open `/api/teams/invite-decline/:token` doors.
-export type TeamInviteDecline = {
-  teamName: string;
-  status: TeamMemberStatus;
-};
-
 // ---------------------------------------------------------------------
 // Share links (docs/specs/014-identity/auth-and-guest-access.md, docs/specs/015-api/api.md)
 // ---------------------------------------------------------------------

@@ -2,11 +2,9 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import {
-  apiAcceptTeamInvite,
   apiCreateTeam,
   apiListTeamInvites,
   apiListTeams,
-  apiRemoveTeamMember,
   type TeamInvite,
   type TeamListItem,
 } from '@/lib/api-client';
@@ -15,12 +13,9 @@ import { track } from '@/lib/telemetry';
 // Teams list + pending invites state (docs/specs/013-workspace/teams.md), shaped after
 // useFolders so the Explorer composes both the same way. Signed-in
 // only: callers pass `enabled: false` for guests (the api 401s the
-// guest path anyway, this just avoids the doomed request). The two
-// lists are two sides of the accept/decline handshake — accepting
-// moves a team from `invites` into `teams`, declining drops it —
-// so the hook owns both and keeps them consistent. Team-detail
-// mutations (edit / delete / members) live with TeamPane and call
-// `refresh` to resync.
+// guest path anyway, this just avoids the doomed request). Invitations
+// are answered on liveworkspace.app, and team administration happens
+// there too; TeamPane calls `refresh` to resync.
 
 type UseTeamsResult = {
   teams: TeamListItem[];
@@ -30,10 +25,6 @@ type UseTeamsResult = {
     name: string;
     organisation?: string | null;
   }) => Promise<TeamListItem | undefined>;
-  // Accept a pending invite. Resolves to the joined team's id (for
-  // the caller to select it) or undefined on failure.
-  acceptInvite: (invite: TeamInvite) => Promise<string | undefined>;
-  declineInvite: (invite: TeamInvite) => Promise<void>;
   refresh: () => Promise<void>;
 };
 
@@ -109,57 +100,12 @@ export function useTeams(
     [ownerId, enabled],
   );
 
-  const acceptInvite = useCallback(
-    async (invite: TeamInvite) => {
-      if (!ownerId || !enabled) return undefined;
-      try {
-        await apiAcceptTeamInvite(ownerId, invite.team.id, invite.memberId);
-        track('Team', 'Joined');
-        // Optimistic move so the badge and lists react instantly;
-        // the refresh reconciles the joined member count.
-        setInvites((prev) => prev.filter((i) => i.memberId !== invite.memberId));
-        setTeams((prev) =>
-          [
-            ...prev,
-            { ...invite.team, myRole: 'member' as const, memberCount: invite.memberCount + 1 },
-          ].sort((a, b) => a.name.localeCompare(b.name)),
-        );
-        void refresh();
-        return invite.team.id;
-      } catch {
-        return undefined;
-      }
-    },
-    [ownerId, enabled, refresh],
-  );
-
-  const declineInvite = useCallback(
-    async (invite: TeamInvite) => {
-      if (!ownerId || !enabled) return;
-      try {
-        await apiRemoveTeamMember(ownerId, invite.team.id, invite.memberId);
-        // The RECIPIENT saying no, which is not the same fact as an admin
-        // withdrawing the invitation (that one keeps `Team·Removed·Invite`,
-        // docs/specs/017-telemetry/telemetry.md). This used to emit that event, so the two were pooled and
-        // the accept-vs-decline ratio on an invite — the only number that says
-        // whether invitations are landing — could not be read at all.
-        track('Team', 'Declined', 'Invite');
-        setInvites((prev) => prev.filter((i) => i.memberId !== invite.memberId));
-      } catch {
-        // Leave the card in place; the next refresh reconciles.
-      }
-    },
-    [ownerId, enabled],
-  );
-
   // Nothing loads for a guest or before the owner resolves: nothing to wait for.
   return {
     teams,
     invites,
     loading: enabled && ownerId ? loading : false,
     createTeam,
-    acceptInvite,
-    declineInvite,
     refresh,
   };
 }

@@ -761,7 +761,7 @@ on the argument that a ⋯ holding a single "Open" that duplicated the
 card's own click was a control that exists to look consistent. Half
 right: the reader who sees "API Token Expiring" wants to revoke it
 _there_, not go and find it. Confirm copy comes from the panes' own
-helpers (`token-copy.ts`, `team-removal.ts`),
+helpers (`token-copy.ts`),
 so the warning a reader sees is the one they'd see on the Tokens
 or Team page.
 
@@ -1061,8 +1061,6 @@ audienceForDocument(env, diagram): Promise<string[]>   // owner ids
 - The **actor is not excluded**. "You commented on X" is a legitimate
   entry in your own history; the renderer says "You" rather than your
   name, which is what makes it read correctly.
-
-Team events use the analogous `audienceForTeam(env, teamId)`.
 
 ### 4.2 Document lifecycle and editing
 

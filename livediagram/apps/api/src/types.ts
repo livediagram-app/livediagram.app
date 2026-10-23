@@ -98,10 +98,6 @@ export type Env = {
   // tighter bound than the general write limiter. Keyed on the account id.
   // Optional: absent (self-host) → "allow".
   DRIVE_TOKEN_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
-  // Per-network limiter for an invite email's Decline link (docs/specs/013-workspace/teams.md "Declining from the
-  // email"), keyed `invite-decline:<address range>`: open doors, so the owner-keyed limiter cannot key them.
-  // Optional: absent (self-host) → "allow".
-  TEAM_INVITE_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // The Community's off switch (docs/specs/025-community/community.md "Turning the Community off"): false, 0 or off
   // turns it off; unset leaves it on. See community-enabled.ts.
   COMMUNITY_ENABLED?: string;

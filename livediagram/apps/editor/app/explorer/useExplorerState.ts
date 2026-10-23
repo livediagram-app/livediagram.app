@@ -127,8 +127,6 @@ export function useExplorerState() {
     teams,
     invites,
     createTeam: hookCreateTeam,
-    acceptInvite,
-    declineInvite,
     refresh: refreshTeams,
   } = useTeams(ownerId, { enabled: teamsEnabled, invites: surface.administration });
   // The lens (docs/specs/013-workspace/explorer-filters.md): one string narrowing every document
@@ -625,8 +623,6 @@ export function useExplorerState() {
     dismissShared,
     // Teams
     hookCreateTeam,
-    acceptInvite,
-    declineInvite,
     refreshTeams,
     // After a restore from the Trash (docs/specs/013-workspace/trash.md): the
     // document is back in a personal or team list.

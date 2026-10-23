@@ -1,18 +1,11 @@
-// Team calls (docs/specs/013-workspace/teams.md): list / create / read / update / delete, plus
-// member invite / role change / remove. signed-in only on the server: every
-// endpoint 401s without a verified Bearer token, so callers gate on
-// `isSignedIn` before reaching for these. The mutations that have
-// legitimate business-rule rejections (duplicate invite, last-admin
-// guard) return discriminated results instead of throwing, because the
-// UI has to message them ("Already on this team") rather than treat
-// them as transport failures.
+// Team calls (docs/specs/013-workspace/teams.md): list, create and read teams, the team library, and the
+// assign-action and mention notices. Signed-in only on the server: every endpoint 401s without a
+// verified Bearer token, so callers gate on `isSignedIn` before reaching for these. Administering a
+// team (rename, delete, invites, roles, removal, invite links) happens on liveworkspace.app.
 import type {
   Team,
   TeamInvite,
-  TeamInviteDecline,
   TeamInviteLink,
-  TeamInviteLinkInfo,
-  TeamInviteLinkJoin,
   TeamLibraryResponse,
   TeamListItem,
   TeamMember,
@@ -20,7 +13,7 @@ import type {
   TeamsResponse,
 } from '@livediagram/api-schema';
 import { dedupeInFlight } from '../dedupe';
-import { API_BASE, apiDelete, apiHeaders, expectOk, expectOkOrNull, apiFetch } from './core';
+import { API_BASE, apiHeaders, expectOk, apiFetch } from './core';
 
 type TeamResponse = { team: Team };
 export type TeamDetailResponse = {
@@ -31,7 +24,6 @@ export type TeamDetailResponse = {
   // (docs/specs/013-workspace/teams.md). Non-admins always receive null.
   inviteLink: TeamInviteLink | null;
 };
-type TeamMemberResponse = { member: TeamMember };
 type TeamInvitesResponse = { invites: TeamInvite[] };
 
 // Same dedupe rationale as apiListFolders: the sidebar list is
@@ -52,21 +44,6 @@ async function _apiListTeamInvites(ownerId: string): Promise<TeamInvite[]> {
   return invites;
 }
 export const apiListTeamInvites = dedupeInFlight(_apiListTeamInvites, (ownerId) => ownerId);
-
-// The invitee's yes: flips their own member row from invited to
-// joined. Declining is apiRemoveTeamMember on the same row.
-export async function apiAcceptTeamInvite(
-  ownerId: string,
-  teamId: string,
-  memberId: string,
-): Promise<TeamMember> {
-  const res = await apiFetch(`${API_BASE}/teams/${teamId}/members/${memberId}/accept`, {
-    method: 'POST',
-    headers: await apiHeaders(ownerId),
-  });
-  const { member } = await expectOk<TeamMemberResponse>(res, 'accept team invite');
-  return member;
-}
 
 // The team's shared library (docs/specs/013-workspace/team-shared-documents.md): folder tree + documents in one
 // call, joined members only.
@@ -104,78 +81,6 @@ export async function apiCreateTeam(
 export async function apiGetTeam(ownerId: string, id: string): Promise<TeamDetailResponse> {
   const res = await apiFetch(`${API_BASE}/teams/${id}`, { headers: await apiHeaders(ownerId) });
   return expectOk<TeamDetailResponse>(res, 'load team');
-}
-
-export async function apiUpdateTeam(
-  ownerId: string,
-  id: string,
-  patch: { name?: string; organisation?: string | null },
-): Promise<Team> {
-  const res = await apiFetch(`${API_BASE}/teams/${id}`, {
-    method: 'PUT',
-    headers: await apiHeaders(ownerId, { body: true }),
-    body: JSON.stringify(patch),
-  });
-  const { team } = await expectOk<TeamResponse>(res, 'update team');
-  return team;
-}
-
-export async function apiDeleteTeam(ownerId: string, id: string): Promise<void> {
-  return apiDelete(`${API_BASE}/teams/${id}`, ownerId, {
-    action: 'delete team',
-    purge: { sourceType: 'team', sourceId: id },
-  });
-}
-
-type InviteTeamMemberResult =
-  { ok: true; member: TeamMember } | { ok: false; reason: 'already_member' | 'invalid_email' };
-
-export async function apiInviteTeamMember(
-  ownerId: string,
-  teamId: string,
-  email: string,
-): Promise<InviteTeamMemberResult> {
-  const res = await apiFetch(`${API_BASE}/teams/${teamId}/members`, {
-    method: 'POST',
-    headers: await apiHeaders(ownerId, { body: true }),
-    body: JSON.stringify({ email }),
-  });
-  if (res.status === 409) return { ok: false, reason: 'already_member' };
-  if (res.status === 400) return { ok: false, reason: 'invalid_email' };
-  const { member } = await expectOk<TeamMemberResponse>(res, 'invite team member');
-  return { ok: true, member };
-}
-
-type TeamMemberMutationResult = { ok: true } | { ok: false; reason: 'last_admin' };
-
-export async function apiUpdateTeamMemberRole(
-  ownerId: string,
-  teamId: string,
-  memberId: string,
-  role: TeamRole,
-): Promise<TeamMemberMutationResult> {
-  const res = await apiFetch(`${API_BASE}/teams/${teamId}/members/${memberId}`, {
-    method: 'PUT',
-    headers: await apiHeaders(ownerId, { body: true }),
-    body: JSON.stringify({ role }),
-  });
-  if (res.status === 409) return { ok: false, reason: 'last_admin' };
-  if (!res.ok) throw new Error(`change team role failed: ${res.status}`);
-  return { ok: true };
-}
-
-export async function apiRemoveTeamMember(
-  ownerId: string,
-  teamId: string,
-  memberId: string,
-): Promise<TeamMemberMutationResult> {
-  const res = await apiFetch(`${API_BASE}/teams/${teamId}/members/${memberId}`, {
-    method: 'DELETE',
-    headers: await apiHeaders(ownerId),
-  });
-  if (res.status === 409) return { ok: false, reason: 'last_admin' };
-  if (!res.ok && res.status !== 404) throw new Error(`remove team member failed: ${res.status}`);
-  return { ok: true };
 }
 
 // Whether a joined teammate can open a document (docs/specs/012-collaboration/assigned-actions.md): drives the
@@ -248,82 +153,4 @@ export async function apiNotifyMention(
     body: JSON.stringify(input),
   });
   await expectOk<{ ok: boolean }>(res, 'notify mention');
-}
-
-// --- Shareable invite link (docs/specs/013-workspace/teams.md) ----------------------------------
-
-// Admin: turn the link on (or rotate it), getting back the fresh token
-// + its 1-week expiry.
-export async function apiGenerateTeamInviteLink(
-  ownerId: string,
-  teamId: string,
-): Promise<TeamInviteLink> {
-  const res = await apiFetch(`${API_BASE}/teams/${teamId}/invite-link`, {
-    method: 'POST',
-    headers: await apiHeaders(ownerId),
-  });
-  const { inviteLink } = await expectOk<{ inviteLink: TeamInviteLink }>(
-    res,
-    'generate team invite link',
-  );
-  return inviteLink;
-}
-
-// Admin: turn the link off.
-export async function apiRevokeTeamInviteLink(ownerId: string, teamId: string): Promise<void> {
-  return apiDelete(`${API_BASE}/teams/${teamId}/invite-link`, ownerId, {
-    action: 'revoke team invite link',
-  });
-}
-
-// Resolve a join token to its team (the /join landing). Guest-callable.
-// Null when the token is unknown / turned off / expired.
-export async function apiResolveTeamInviteLink(
-  ownerId: string,
-  token: string,
-): Promise<TeamInviteLinkInfo | null> {
-  const res = await apiFetch(`${API_BASE}/teams/invite-link/${encodeURIComponent(token)}`, {
-    headers: await apiHeaders(ownerId),
-  });
-  if (res.status === 404) return null;
-  return expectOk<TeamInviteLinkInfo>(res, 'resolve team invite link');
-}
-
-// Join via the link (signed-in only on the server). Null when the token
-// is no longer valid by the time the user clicks Join.
-export async function apiJoinTeamByInviteLink(
-  ownerId: string,
-  token: string,
-): Promise<TeamInviteLinkJoin | null> {
-  const res = await apiFetch(`${API_BASE}/teams/invite-link/${encodeURIComponent(token)}/join`, {
-    method: 'POST',
-    headers: await apiHeaders(ownerId),
-  });
-  if (res.status === 404) return null;
-  return expectOk<TeamInviteLinkJoin>(res, 'join team by invite link');
-}
-
-// The invite email's Decline link (docs/specs/013-workspace/teams.md "Declining from the email"). No identity
-// headers: the token is the only credential, and the visitor may have no account. Null = the token names no
-// invite (wrong, or the invite was removed or replaced).
-const declineUrl = (token: string) =>
-  `${API_BASE}/teams/invite-decline/${encodeURIComponent(token)}`;
-
-// Read only: the team name and where the invite stands. Never declines.
-export async function apiReadTeamInviteDecline(token: string): Promise<TeamInviteDecline | null> {
-  return expectOkOrNull<TeamInviteDecline>(
-    await apiFetch(declineUrl(token)),
-    'read team invite decline',
-  );
-}
-
-// The decline itself, sent only by the page's button. Idempotent on the server; 'already_joined' when the
-// invite was accepted, which the token cannot undo.
-export async function apiDeclineTeamInvite(
-  token: string,
-): Promise<TeamInviteDecline | 'already_joined' | null> {
-  const res = await apiFetch(declineUrl(token), { method: 'POST' });
-  if (res.status === 404) return null;
-  if (res.status === 409) return 'already_joined';
-  return expectOk<TeamInviteDecline>(res, 'decline team invite');
 }

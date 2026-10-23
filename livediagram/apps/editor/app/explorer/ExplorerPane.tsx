@@ -68,8 +68,9 @@ const ShapeLibrariesPane = dynamic(
 const TeamPane = dynamic(() => import('@/components/panels/TeamPane').then((m) => m.TeamPane), {
   ssr: false,
 });
-const TeamInvitesPane = dynamic(
-  () => import('@/components/panels/TeamInvitesPane').then((m) => m.TeamInvitesPane),
+const InvitationsOnLiveworkspace = dynamic(
+  () =>
+    import('@/components/panels/ManagedOnLiveworkspace').then((m) => m.InvitationsOnLiveworkspace),
   { ssr: false },
 );
 // The Timeline is the landing route, so it's the one lazy pane most
@@ -134,9 +135,6 @@ export function ExplorerPane() {
     folderActions,
     shared,
     dismissShared,
-    invites,
-    acceptInvite,
-    declineInvite,
     movePersonalFolders,
     moveTeamDests,
     moveDocumentTo,
@@ -315,15 +313,7 @@ export function ExplorerPane() {
       ) : loading ? (
         <SkeletonRows />
       ) : selected.kind === 'invites' ? (
-        <TeamInvitesPane
-          invites={invites}
-          onAccept={(invite) =>
-            void acceptInvite(invite).then((teamId) => {
-              if (teamId) go({ kind: 'team', id: teamId });
-            })
-          }
-          onDecline={(invite) => void declineInvite(invite)}
-        />
+        <InvitationsOnLiveworkspace />
       ) : selected.kind === 'team' ? (
         ownerId ? (
           <TeamPane

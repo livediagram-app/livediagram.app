@@ -10,7 +10,7 @@ vi.mock('@liveworkspace/auth-client', () => ({
   createVerifier: (options: VerifierOptions) => createVerifierMock(options),
 }));
 
-import { accountsIssuer, getAccountIdentity } from './accounts';
+import { accountCredentials, accountsIssuer, getAccountIdentity } from './accounts';
 
 const CONFIGURED = {
   ACCOUNTS_URL: 'https://accounts.example',
@@ -76,6 +76,24 @@ describe('getAccountIdentity (guest fall-through)', () => {
 });
 
 // Every case here decides an identity the rest of the worker trusts as the owner of the request.
+describe('accountCredentials', () => {
+  it('is this app’s client at the accounts Worker, or null when any part is unset', () => {
+    const env = {
+      ACCOUNTS_URL: 'https://accounts.test',
+      ACCOUNTS_CLIENT_ID: 'livediagram',
+      ACCOUNTS_CLIENT_SECRET: 'secret',
+    };
+    expect(accountCredentials(env)).toEqual({
+      accountsUrl: 'https://accounts.test',
+      clientId: 'livediagram',
+      clientSecret: 'secret',
+    });
+    expect(accountCredentials({ ...env, ACCOUNTS_URL: undefined })).toBeNull();
+    expect(accountCredentials({ ...env, ACCOUNTS_CLIENT_ID: undefined })).toBeNull();
+    expect(accountCredentials({ ...env, ACCOUNTS_CLIENT_SECRET: undefined })).toBeNull();
+  });
+});
+
 describe('getAccountIdentity (verified token)', () => {
   it('checks the issuer and this API as the audience', async () => {
     verifyMock.mockResolvedValue(claims());
@@ -111,6 +129,13 @@ describe('getAccountIdentity (verified token)', () => {
       email: 'ada@example.com',
     });
     verifyMock.mockResolvedValue(claims({ email: 'ada@example.com', emailVerified: false }));
+    expect(await getAccountIdentity(CONFIGURED, request('Bearer t'))).toMatchObject({
+      email: null,
+    });
+  });
+
+  it('reads a verified email that is only whitespace as no email', async () => {
+    verifyMock.mockResolvedValue(claims({ email: '   ', emailVerified: true }));
     expect(await getAccountIdentity(CONFIGURED, request('Bearer t'))).toMatchObject({
       email: null,
     });

@@ -159,6 +159,39 @@ describe('revokePresentedToken and sweepRevokedTokens', () => {
   });
 });
 
+describe('without sign-in, or with an empty answer from D1', () => {
+  it('mints, revokes remotely and sweeps nothing on a deployment without sign-in', async () => {
+    const bare = sqliteD1();
+    expect(
+      await mintApiToken(bare.env, { accessToken: 'jwt', name: 'x', readOnly: false }),
+    ).toBeNull();
+    await revokePresentedToken(bare.env, { id: 'tok-n', secret: 'lwt_n' });
+    expect(await sweepRevokedTokens(bare.env)).toEqual([]);
+    expect(calls).toEqual([]);
+  });
+
+  it('reads a D1 result with no rows as none', async () => {
+    const all = vi.fn(async () => ({}));
+    const env = {
+      ...ACCOUNTS,
+      DB: { prepare: () => ({ bind: () => ({ all }) }) },
+    } as unknown as Env;
+    expect(await listApiTokensByOwner(env, 'user_ada')).toEqual([]);
+    expect(await sweepRevokedTokens(env)).toEqual([]);
+    expect(all).toHaveBeenCalledTimes(2);
+  });
+
+  it('forgets what it mirrored once it has mirrored a thousand tokens, and keeps working', async () => {
+    const fresh = await reimport();
+    let n = 0;
+    handle = () => Response.json(account(`tok-many-${n++}`));
+    for (let i = 0; i <= 1000; i++) {
+      await fresh.resolveApiToken(db.env, `lwt_${String(i).padStart(43, 'm')}`);
+    }
+    expect(db.sql.prepare('SELECT COUNT(*) AS n FROM api_tokens').get()).toEqual({ n: 1001 });
+  });
+});
+
 // A second copy of the module, with nothing remembered: what another isolate would see.
 async function reimport() {
   vi.resetModules();
