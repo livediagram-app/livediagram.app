@@ -11,6 +11,11 @@ describe("Home's hero art on liveworkspace.app", () => {
     }
   });
 
+  it("loads livedocuments' pictures, its three templates with the slide deck in front", async () => {
+    const art = await loadHeroArt('livedocuments');
+    expect(art?.sheets.map((s) => s.id)).toEqual(['event-poster', 'year-in-review', 'slide-deck']);
+  });
+
   it('is the same load for a second ask on the page', () => {
     expect(loadHeroArt('liveplanner')).toBe(loadHeroArt('liveplanner'));
   });

@@ -4,8 +4,10 @@
 // sees what livedocuments makes. Loaded lazily with Home's hero (app/explorer/ExplorerShell.tsx), with the previews it
 // draws.
 
+import type { HeroSheet } from '@liveworkspace/explorer';
 import type { TemplateKind } from '@livedocuments/templates';
 import { TemplatePicture } from '@/components/start/template-card';
+import { templateOf } from '@/components/start/start-template-items';
 
 /** The three previews fanned in the hero, the front one first. */
 export const HERO_FAN: readonly TemplateKind[] = ['slide-deck', 'event-poster', 'year-in-review'];
@@ -31,6 +33,20 @@ export function HeroTemplateFan() {
       ))}
     </>
   );
+}
+
+// The same previews as the sheets the shared Explorer fans (@liveworkspace/explorer HeroSheets), for the hero
+// manifest liveworkspace.app draws (hero-manifest.test.tsx): the backs first, the front sheet last. A template
+// preview is light-canvas art in both looks.
+export const HERO_TEMPLATES_LABEL = 'What a document can be';
+
+export function heroSheets(): HeroSheet[] {
+  return [HERO_FAN[1]!, HERO_FAN[2]!, HERO_FAN[0]!].map((kind) => ({
+    id: kind,
+    label: templateOf(kind).title,
+    light: <TemplatePicture kind={kind} />,
+    dark: <TemplatePicture kind={kind} />,
+  }));
 }
 
 export default HeroTemplateFan;

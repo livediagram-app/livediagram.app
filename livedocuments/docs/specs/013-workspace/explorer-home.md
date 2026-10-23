@@ -35,6 +35,13 @@ white sheet with a soft shadow, in the page's light or dark look, so a person se
 links: Jump Back In is the way in. For assistive technology they are one group of images. Their one motion is a
 short fade as they land, and none under reduced motion. On a phone or a tablet the column is not drawn.
 
+On liveworkspace.app, which carries none of the editor's code, the same previews ship as data in
+`@livedocuments/templates/hero.json`, written from these components by
+[`hero-manifest.test.tsx`](../../../apps/editor/components/panels/home/hero-manifest.test.tsx) through
+`@liveworkspace/explorer/hero-manifest` (`HERO_WRITE=1 pnpm vitest run components/panels/home/hero-manifest.test.tsx`
+in `apps/editor`; without it the test fails when the file has drifted), and drawn there by the Explorer's
+`HeroArt`, the slide deck in front, loaded only on a wide screen.
+
 **It comes and goes with Home.** Leaving Home for another Explorer page folds the hero away (its height to nothing as
 it fades), and the page under it slides up; returning to Home unfolds it again, over the `long` motion token
 (250 ms). Landing on Home from outside the Explorer shows it at once. Under reduced motion it appears and goes at
