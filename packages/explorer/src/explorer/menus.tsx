@@ -144,6 +144,15 @@ export function ItemMenu({
           )}
         />
       ) : null}
+      {/* The host's own verbs (an app's Take Offline and Sync, say), before the destructive ones. */}
+      {host.itemMenu?.(item).map((verb) => (
+        <MenuActionRow
+          key={verb.id}
+          label={verb.label}
+          icon={verb.icon ?? null}
+          onClick={run(verb.onSelect)}
+        />
+      ))}
       {extra}
       <MenuGroupSeparator />
       {item.sharedVia ? (
