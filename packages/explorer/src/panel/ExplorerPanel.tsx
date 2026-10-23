@@ -32,7 +32,7 @@ import { inboxCount } from '../data/useInbox';
 import { ExplorerProvider, useExplorer } from '../explorer/context';
 import { ExplorerDialogs } from '../explorer/Dialogs';
 import { AppMark, FavouriteMarker, VisibilityBadge } from '../explorer/badges';
-import { FolderMenu, ItemMenu } from '../explorer/menus';
+import { FolderMenu, ItemMenu, MyWorkMenu } from '../explorer/menus';
 import { emptyCopy } from '../explorer/EmptyPane';
 import { InboxPane } from '../explorer/InboxPane';
 import { daysLeftLabel, trashedOnLabel, trashGroups } from '../explorer/TrashPane';
@@ -601,10 +601,27 @@ function RailEntry({
   const isTrash = s.kind === 'trash';
   const trashState = isTrash ? trash.state : 'rest';
   const shown = isTrash && trash.words ? trash.words : label;
+  // My Work's entry carries its menu on a right-click, as the sidebar's My Work row does.
+  const { setRenamingId } = useExplorer();
+  const menu = useRowMenu({ disabled: s.kind !== 'mine' });
+  const entryRef = useRef<HTMLButtonElement>(null);
   return (
     <li className={phone ? 'shrink-0' : ''}>
+      {menu.open ? (
+        <MyWorkMenu
+          anchor={entryRef.current}
+          onClose={menu.close}
+          onOpen={() => onPick(s)}
+          onRename={(id) => {
+            onPick(s);
+            setRenamingId(id);
+          }}
+        />
+      ) : null}
       <button
+        ref={entryRef}
         type="button"
+        onContextMenu={menu.onContextMenu}
         data-rail-entry=""
         data-drop-over={drop.over || undefined}
         aria-current={on ? 'true' : undefined}
@@ -733,6 +750,7 @@ function Pane({
             </span>
           </button>
         ) : null}
+        {section.kind === 'mine' ? <MyWorkHeaderMenu onOpenRoot={() => onOpenFolder(null)} /> : null}
         <FilterToggle />
         <a href={explorerPath(page, basePath)} onClick={openPage} className={HEADER_BUTTON}>
           <span className={narrow ? 'sr-only' : 'max-sm:sr-only'}>Open Page</span>
@@ -749,6 +767,29 @@ function Pane({
         </div>
       </div>
     </div>
+  );
+}
+
+// My Work's menu in its pane's header: the sidebar's own (Open, New Folder, Use as Default for…), with Open and a new
+// folder showing My Work's root here rather than leaving for the Explorer page.
+function MyWorkHeaderMenu({ onOpenRoot }: { onOpenRoot: () => void }) {
+  const { setRenamingId } = useExplorer();
+  const menu = useRowMenu();
+  return (
+    <>
+      <EllipsisTriggerButton {...menu.triggerProps} size="lg" label="Menu for My Work" />
+      {menu.open ? (
+        <MyWorkMenu
+          anchor={menu.triggerRef.current}
+          onClose={menu.close}
+          onOpen={onOpenRoot}
+          onRename={(id) => {
+            onOpenRoot();
+            setRenamingId(id);
+          }}
+        />
+      ) : null}
+    </>
   );
 }
 

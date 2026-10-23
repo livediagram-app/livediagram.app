@@ -26,7 +26,8 @@ import {
   TrashIcon,
 } from '../ui/icons';
 import { useExplorer } from './context';
-import { rowsAbove } from './sidebar/expansion';
+import { MY_WORK, rowsAbove } from './sidebar/expansion';
+import { SIDEBAR_LABELS } from '../views';
 import { VisibilityBadge } from './badges';
 import { useExtras } from './extras';
 
@@ -209,6 +210,54 @@ export function FolderMenu({
         label="Delete Folder"
         icon={<TrashIcon />}
         onClick={run(() => openDialog({ kind: 'delete-folder', folderId: folder.id }))}
+      />
+    </PortalMenu>
+  );
+}
+
+/** My Work's own menu, the same from the sidebar's row and the editor's panel: Open, New Folder at its root (opened
+ *  renaming), and Use as Default for… (the root of My Work as where those creates land). */
+export function MyWorkMenu({
+  anchor,
+  onClose,
+  onOpen,
+  onRename,
+}: {
+  anchor: HTMLElement | null;
+  onClose: () => void;
+  // Where Open goes: the Explorer's My Work by default (the panel shows its own My Work instead).
+  onOpen?: () => void;
+  // Where the new folder's name is typed: wherever the folder is listed by default (the sidebar types it in its row).
+  onRename?: (folderId: string) => void;
+}) {
+  const { folders, navigate, expansion, openDialog, setRenamingId } = useExplorer();
+  const rename = onRename ?? setRenamingId;
+  const run = (fn: () => void) => () => {
+    onClose();
+    fn();
+  };
+  return (
+    <PortalMenu anchor={anchor} onClose={onClose} label={`Actions for ${SIDEBAR_LABELS.myWork}`}>
+      <MenuHeader title={SIDEBAR_LABELS.myWork} />
+      <MenuActionRow
+        label="Open"
+        icon={<OpenIcon />}
+        onClick={run(onOpen ?? (() => navigate({ kind: 'all' })))}
+      />
+      <MenuActionRow
+        label="New Folder"
+        icon={<NewFolderIcon />}
+        onClick={run(() => {
+          expansion.expand(MY_WORK);
+          void folders
+            .create({ name: 'New Folder', parentId: null, teamId: null })
+            .then((made) => made && rename(made.id));
+        })}
+      />
+      <MenuActionRow
+        label="Use as Default for…"
+        icon={<DefaultPinIcon />}
+        onClick={run(() => openDialog({ kind: 'use-as-default', folderId: null }))}
       />
     </PortalMenu>
   );

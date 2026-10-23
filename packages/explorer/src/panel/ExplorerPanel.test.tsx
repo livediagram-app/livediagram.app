@@ -110,4 +110,26 @@ describe('<ExplorerPanel>', () => {
     fireEvent.click(screen.getByRole('link', { name: /Open Page/ }));
     expect(onOpenExplorer).toHaveBeenCalledWith({ kind: 'all' });
   });
+
+  it("offers My Work's own menu, the sidebar's, with Use as Default for…", async () => {
+    renderPanel(createFakeIndex({ items: [] }));
+    fireEvent.click(within(rail()).getByRole('button', { name: 'My Work' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Menu for My Work' }));
+    const menu = await screen.findByRole('menu', { name: 'Actions for My Work' });
+    expect(
+      within(menu)
+        .getAllByRole('menuitem')
+        .map((m) => m.textContent),
+    ).toEqual(['Open', 'New Folder', 'Use as Default for…']);
+    fireEvent.click(within(menu).getByRole('menuitem', { name: /Use as Default for/ }));
+    expect(await screen.findByRole('dialog', { name: /Default/ })).toBeTruthy();
+  });
+
+  it("opens the same menu from a right-click on the rail's My Work", async () => {
+    renderPanel(createFakeIndex({ items: [] }));
+    fireEvent.contextMenu(within(rail()).getByRole('button', { name: 'My Work' }));
+    expect(await screen.findByRole('menu', { name: 'Actions for My Work' })).toBeTruthy();
+    fireEvent.contextMenu(within(rail()).getByRole('button', { name: 'Trash' }));
+    expect(screen.getAllByRole('menu')).toHaveLength(1);
+  });
 });

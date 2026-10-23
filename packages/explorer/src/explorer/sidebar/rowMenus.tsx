@@ -6,13 +6,9 @@
 // row's context menu). Rename and a new folder's name are typed in the sidebar's own row.
 
 import type { Folder } from '@liveworkspace/index-client';
-import { MenuActionRow, MenuHeader, PortalMenu } from '../../ui/Menu';
 import { EllipsisTriggerButton, useRowMenu } from '../../ui/RowMenu';
-import { DefaultPinIcon, NewFolderIcon, OpenIcon } from '../../ui/icons';
 import { SIDEBAR_LABELS } from '../../views';
-import { useExplorer } from '../context';
-import { FolderMenu } from '../menus';
-import { MY_WORK } from './expansion';
+import { FolderMenu, MyWorkMenu } from '../menus';
 
 export type RowMenuParts = {
   onContextMenu?: (e: React.MouseEvent) => void;
@@ -75,45 +71,4 @@ export function useMyWorkMenu({
       </>
     ),
   };
-}
-
-function MyWorkMenu({
-  anchor,
-  onClose,
-  onRename,
-}: {
-  anchor: HTMLElement | null;
-  onClose: () => void;
-  onRename: (folderId: string) => void;
-}) {
-  const { folders, navigate, expansion, openDialog } = useExplorer();
-  const run = (fn: () => void) => () => {
-    onClose();
-    fn();
-  };
-  return (
-    <PortalMenu anchor={anchor} onClose={onClose} label={`Actions for ${SIDEBAR_LABELS.myWork}`}>
-      <MenuHeader title={SIDEBAR_LABELS.myWork} />
-      <MenuActionRow
-        label="Open"
-        icon={<OpenIcon />}
-        onClick={run(() => navigate({ kind: 'all' }))}
-      />
-      <MenuActionRow
-        label="New Folder"
-        icon={<NewFolderIcon />}
-        onClick={run(() => {
-          expansion.expand(MY_WORK);
-          void folders
-            .create({ name: 'New Folder', parentId: null, teamId: null })
-            .then((made) => made && onRename(made.id));
-        })}
-      />
-      <MenuActionRow
-        label="Use as Default for…"
-        icon={<DefaultPinIcon />}
-        onClick={run(() => openDialog({ kind: 'use-as-default', folderId: null }))}
-      />
-    </PortalMenu>
-  );
 }

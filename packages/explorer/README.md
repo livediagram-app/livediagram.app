@@ -149,6 +149,9 @@ The content of the editor's floating Explorer panel. The host wraps it in its ow
   Explorer;
 - the chosen section as compact rows, paged.
 
+My Work carries the sidebar's own menu (`MyWorkMenu`): from the ⋯ in its pane's header, or a right-click on its
+rail entry. Folders carry the folder menu, and items the item menu, as on the page.
+
 Props: `app`, `client`, `itemHref`, `onCreate`, `current?`, `onOpenExplorer?(view)`, `onTrashCurrent?(item)` (the
 host trashes the item open in its editor itself, from any of the panel's menus or a drop on its Trash),
 `onRenameCurrent?(title)` (the open item was renamed, from its pencil or any menu's Rename, so the editor's title
@@ -195,7 +198,7 @@ The sidebar is one keyboard tree (the WAI-ARIA tree pattern, as livediagram's):
 - **The chevron** is a labelled button ("Expand My Work", "Collapse Projects"), so a click or Enter on it folds or
   opens the row too.
 - **Menus.** Each folder row has the folder menu (Open, Rename, New Subfolder, Move Folder, Delete Folder) and My
-  Work its own (Open, New Folder), from the row's ⋯, a right-click, or Shift+F10 / the Menu key on the focused row.
+  Work its own (Open, New Folder, Use as Default for…), from the row's ⋯, a right-click, or Shift+F10 / the Menu key on the focused row.
 - **Rename in place.** Rename, and the name of a folder just made from the sidebar, are typed in the row itself:
   Enter or a press outside keeps it, Escape leaves it.
 - **Open rows.** Which rows are open is remembered in this browser and read as the sidebar first renders, so the
